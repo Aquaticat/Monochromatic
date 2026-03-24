@@ -6,7 +6,10 @@
  * Filesystem paths give `lang` and `name` directly -- no string splitting needed.
  */
 import { readFile, } from 'node:fs/promises';
-import { basename, dirname, } from 'node:path';
+import {
+  basename,
+  dirname,
+} from 'node:path';
 
 import matter from 'gray-matter';
 import readdir from 'tiny-readdir-glob';

@@ -12,8 +12,15 @@ import type { Logger, } from '../log.ts';
 import type { ServerSlots, } from './document-sync.ts';
 import { findProjectRoot, } from './find-project-root.ts';
 import type { LspClient, } from './lsp-client.ts';
-import { CONFIG_FILES, spawnLspClient, type ServerType, } from './lsp-pool-config.ts';
-import { shutdownAllPooled, shutdownPoolForPath, } from './lsp-pool-shutdown.ts';
+import {
+  CONFIG_FILES,
+  type ServerType,
+  spawnLspClient,
+} from './lsp-pool-config.ts';
+import {
+  shutdownAllPooled,
+  shutdownPoolForPath,
+} from './lsp-pool-shutdown.ts';
 
 export { type ServerType, };
 
@@ -26,7 +33,7 @@ export class LspPool {
   /** Highest directory to search for config files (file tree root). */
   #ceiling: string;
   /** Callback for server-initiated notifications. */
-  #onNotification: (event: { source: string; method: string; params: unknown }) => void;
+  #onNotification: (event: { source: string; method: string; params: unknown; },) => void;
 
   /**
    * @param ceiling - highest directory for config-file search (file tree root)
@@ -36,9 +43,12 @@ export class LspPool {
    * @param onNotification - callback for server-initiated notifications
    */
   constructor({ ceiling, l, onNotification, }: {
-    ceiling: string; l: Logger;
-    onNotification: (event: { source: string; method: string; params: unknown }) => void;
-  }) {
+    ceiling: string;
+    l: Logger;
+    onNotification: (
+      event: { source: string; method: string; params: unknown; },
+    ) => void;
+  },) {
     this.#l = l;
     this.#ceiling = ceiling;
     this.#onNotification = onNotification;
@@ -49,13 +59,19 @@ export class LspPool {
    *
    * @returns promise resolving to the client, or null if no project root is found
    */
-  resolve({ type, filePath, }: { type: ServerType; filePath: string }): Promise<LspClient | null> {
-    const root = findProjectRoot({ startDir: dirname(filePath,), configFiles: CONFIG_FILES[type], ceiling: this.#ceiling, },);
-    if (root === null) return Promise.resolve(null,);
+  resolve(
+    { type, filePath, }: { type: ServerType; filePath: string; },
+  ): Promise<LspClient | null> {
+    const root = findProjectRoot({ startDir: dirname(filePath,),
+      configFiles: CONFIG_FILES[type], ceiling: this.#ceiling, },);
+    if (root === null)
+      return Promise.resolve(null,);
     const key = `${type}:${root}`;
     const existing = this.#pool.get(key,);
-    if (existing !== undefined) return existing;
-    const promise = spawnLspClient({ type, root, l: this.#l, onNotification: this.#onNotification, },);
+    if (existing !== undefined)
+      return existing;
+    const promise = spawnLspClient({ type, root, l: this.#l,
+      onNotification: this.#onNotification, },);
     this.#pool.set(key, promise,);
     return promise;
   }
@@ -65,7 +81,7 @@ export class LspPool {
    *
    * @returns server slots with oxlint, tsgo, and dprint clients
    */
-  async resolveAll({ path, }: { path: string }): Promise<ServerSlots> {
+  async resolveAll({ path, }: { path: string; },): Promise<ServerSlots> {
     const [oxlint, tsgo, dprint,] = await Promise.all([
       this.resolve({ type: 'oxlint', filePath: path, },),
       this.resolve({ type: 'tsgo', filePath: path, },),
@@ -80,7 +96,7 @@ export class LspPool {
    *
    * @param path - absolute file or directory path
    */
-  async shutdownForPath({ path, }: { path: string }): Promise<void> {
+  async shutdownForPath({ path, }: { path: string; },): Promise<void> {
     await shutdownPoolForPath({ pool: this.#pool, path, l: this.#l, },);
   }
 

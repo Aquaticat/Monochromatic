@@ -8,10 +8,10 @@
 
 import { getStrokeWidth, } from './drawing-config.ts';
 import {
-  type NormalizedPoint,
-  type StrokeData,
   getStrokes,
+  type NormalizedPoint,
   setStrokes,
+  type StrokeData,
 } from './drawing.ts';
 
 /** Minimum number of points required for a valid sub-stroke after splitting */
@@ -40,9 +40,12 @@ const MIN_SEGMENT_POINTS = 2;
  */
 function distToSegmentSq(
   { px, py, ax, ay, bx, by, }: {
-    px: number; py: number;
-    ax: number; ay: number;
-    bx: number; by: number;
+    px: number;
+    py: number;
+    ax: number;
+    ay: number;
+    bx: number;
+    by: number;
   },
 ): number {
   const dx = bx - ax;
@@ -93,7 +96,7 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
   previousPoint: NormalizedPoint | null;
   cw: number;
   ch: number;
-}): boolean {
+},): boolean {
   /** Eraser radius in CSS pixels, matching the active stroke width */
   const radiusPx = getStrokeWidth();
   /** Eraser segment endpoint in pixel space */
@@ -119,7 +122,12 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
     for (const p of stroke.points) {
       /** Squared distance from stroke point to eraser travel segment */
       const distSq = distToSegmentSq({
-        px: p[0] * cw, py: p[1] * ch, ax, ay, bx, by,
+        px: p[0] * cw,
+        py: p[1] * ch,
+        ax,
+        ay,
+        bx,
+        by,
       },);
 
       if (distSq <= radiusSq) {
@@ -138,8 +146,10 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
 
     if (strokeModified) {
       erased = true;
-      for (const seg of segments)
-        newStrokes.push({ points: [...seg,], color: stroke.color, width: stroke.width, },);
+      for (const seg of segments) {
+        newStrokes.push({ points: [...seg,], color: stroke.color, width: stroke
+          .width, },);
+      }
     }
     else {
       newStrokes.push(stroke,);

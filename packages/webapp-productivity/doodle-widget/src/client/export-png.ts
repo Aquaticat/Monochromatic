@@ -5,13 +5,13 @@
  * PNG image and triggers a download.
  */
 
-import {
-  renderBaseCanvas,
-  getContainerSize,
-  triggerDownload,
-  type ExportDeps,
-} from './export.ts';
 import { readTextEntries, } from './export-text-config.ts';
+import {
+  type ExportDeps,
+  getContainerSize,
+  renderBaseCanvas,
+  triggerDownload,
+} from './export.ts';
 
 /**
  * Exports the doodle as a PNG file.

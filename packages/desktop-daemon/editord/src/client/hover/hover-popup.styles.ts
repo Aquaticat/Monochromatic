@@ -58,4 +58,5 @@ export const STYLES = [
       'block-size': cssRem(BRIDGE_HEIGHT_REM,),
     },
   },),
-].join('',);
+]
+  .join('',);

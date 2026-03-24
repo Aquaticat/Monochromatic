@@ -42,8 +42,7 @@ export function renderToolbar(pageCount: number,): string {
         class: 'draw-settings',
         children: [
           h({ tag: 'input',
-            attrs: { type: 'color', id: 'color-picker',
-              value: '#c24e2e', }, },),
+            attrs: { type: 'color', id: 'color-picker', value: '#c24e2e', }, },),
           h({ tag: 'input',
             attrs: { type: 'range', id: 'size-slider', min: '1', max: '50',
               value: '10', }, },),
@@ -53,17 +52,15 @@ export function renderToolbar(pageCount: number,): string {
         tag: 'div',
         class: 'undo-group',
         children: [
-          h({ tag: 'button', attrs: { id: 'undo-btn', type: 'button',
-            disabled: '', }, text: 'Undo', },),
-          h({ tag: 'button', attrs: { id: 'redo-btn', type: 'button',
-            disabled: '', }, text: 'Redo', },),
+          h({ tag: 'button', attrs: { id: 'undo-btn', type: 'button', disabled: '', },
+            text: 'Undo', },),
+          h({ tag: 'button', attrs: { id: 'redo-btn', type: 'button', disabled: '', },
+            text: 'Redo', },),
         ],
       },),
       renderPageToggle(pageCount,),
-      h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button',
-        // Upload background button hidden by default because it's not needed for the upcoming demo.
-        hidden: '', },
-        text: 'Upload background', },),
+      h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', // Upload background button hidden by default because it's not needed for the upcoming demo.
+        hidden: '', }, text: 'Upload background', },),
       h({ tag: 'input',
         attrs: { type: 'file', id: 'upload-input', accept: '.svg,image/svg+xml',
           hidden: '', }, },),
@@ -73,13 +70,11 @@ export function renderToolbar(pageCount: number,): string {
         children: [
           h({ tag: 'button', attrs: { id: 'export-btn', type: 'button', },
             text: 'Export', },),
-          h({ tag: 'select', attrs: { id: 'format-select', },
-            children: [
-              h({ tag: 'option', attrs: { value: 'pdf', selected: '', },
-                text: 'PDF', },),
-              h({ tag: 'option', attrs: { value: 'svg', }, text: 'SVG', },),
-              h({ tag: 'option', attrs: { value: 'png', }, text: 'PNG', },),
-            ], },),
+          h({ tag: 'select', attrs: { id: 'format-select', }, children: [
+            h({ tag: 'option', attrs: { value: 'pdf', selected: '', }, text: 'PDF', },),
+            h({ tag: 'option', attrs: { value: 'svg', }, text: 'SVG', },),
+            h({ tag: 'option', attrs: { value: 'png', }, text: 'PNG', },),
+          ], },),
         ],
       },),
       h({ tag: 'button', attrs: { id: 'clear-btn', type: 'button', }, text: 'Clear', },),

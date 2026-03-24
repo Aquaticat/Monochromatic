@@ -165,8 +165,11 @@ export function resolveFallback(...segments: string[]): string {
   // resolve() never returns trailing slashes except for root '/'
   /** Unicode code point for `/` */
   const SLASH_CODE_POINT = 47;
-  if (normalized.length > 1 && normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT)
+  if (normalized.length > 1
+    && normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT)
+  {
     return normalized.slice(0, -1,);
+  }
   return normalized;
 }
 

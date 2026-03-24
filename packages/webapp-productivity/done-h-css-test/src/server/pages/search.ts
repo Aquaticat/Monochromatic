@@ -31,7 +31,8 @@ export async function searchPage(url: URL,): Promise<Response> {
   const pageData = { query, results, availableTags, };
 
   const html = `<!DOCTYPE html>
-${h({
+${
+    h({
       tag: 'html',
       attrs: { lang: 'en', },
       children: [
@@ -64,7 +65,8 @@ ${h({
           ],
         },),
       ],
-    },)}`;
+    },)
+  }`;
 
   return new Response(html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8', },

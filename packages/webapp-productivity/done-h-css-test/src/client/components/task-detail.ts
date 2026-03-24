@@ -118,20 +118,21 @@ class TaskDetail extends HTMLElement {
       },);
     },);
 
-    this.#shadow.addEventListener('click', function handleActionClick(event: Event,): void {
-      const { target, } = event;
-      if (!(target instanceof HTMLElement))
-        return;
-      const button = target.closest<HTMLElement>('[data-action]',);
-      if (button === null)
-        return;
-      const { action, } = button.dataset;
-      dispatchFn(new CustomEvent('action', {
-        bubbles: true,
-        detail: { action, title: refs.titleInput.value,
-          description: refs.descInput.value, },
-      },),);
-    },);
+    this.#shadow.addEventListener('click',
+      function handleActionClick(event: Event,): void {
+        const { target, } = event;
+        if (!(target instanceof HTMLElement))
+          return;
+        const button = target.closest<HTMLElement>('[data-action]',);
+        if (button === null)
+          return;
+        const { action, } = button.dataset;
+        dispatchFn(new CustomEvent('action', {
+          bubbles: true,
+          detail: { action, title: refs.titleInput.value,
+            description: refs.descInput.value, },
+        },),);
+      },);
   }
 }
 

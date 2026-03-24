@@ -6,8 +6,11 @@
  */
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 
+import {
+  groupByLang,
+  groupByName,
+} from '../lib/content-group.ts';
 import type { Post, } from '../lib/content.ts';
-import { groupByLang, groupByName, } from '../lib/content-group.ts';
 import type { Logger, } from '../lib/types.ts';
 import { indexPage, } from '../pages/index.ts';
 import { langPage, } from '../pages/lang.ts';

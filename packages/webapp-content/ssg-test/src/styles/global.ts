@@ -34,7 +34,8 @@ export function resetStyles(): string {
       color: cssVar('color-fg',),
       'background-color': cssVar('color-bg',),
     }, },),
-  ].join('\n',);
+  ]
+    .join('\n',);
 }
 
 /**
@@ -60,7 +61,8 @@ export function typographyStyles(): string {
   return [
     $({ rule: 'a', decls: { color: cssVar('color-link',), }, },),
     $({ rule: 'a:visited', decls: { color: cssVar('color-link-visited',), }, },),
-    $({ rule: 'code', decls: { 'font-family': cssCommaList(['"Monaspace Neon"', 'monospace',],), }, },),
+    $({ rule: 'code',
+      decls: { 'font-family': cssCommaList(['"Monaspace Neon"', 'monospace',],), }, },),
     $({ rule: 'pre', decls: {
       'padding-block': cssRem(GAP,),
       'padding-inline': cssRem(GAP,),
@@ -68,5 +70,6 @@ export function typographyStyles(): string {
       'border-radius': cssRem(GAP_SMALL,),
       'background-color': cssVar('color-code-bg',),
     }, },),
-  ].join('\n',);
+  ]
+    .join('\n',);
 }

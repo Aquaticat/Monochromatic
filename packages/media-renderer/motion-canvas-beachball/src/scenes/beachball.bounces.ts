@@ -1,10 +1,10 @@
 import {
-  type ThreadGenerator,
   all,
   chain,
   easeInQuad,
   easeOutQuad,
   linear,
+  type ThreadGenerator,
 } from '@motion-canvas/core';
 
 import type { SceneRefs, } from './beachball.animations.ts';

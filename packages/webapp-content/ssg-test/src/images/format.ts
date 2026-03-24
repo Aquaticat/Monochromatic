@@ -7,7 +7,12 @@
  *
  * Run via `mise run format:images`.
  */
-import { basename, dirname, extname, join, } from 'node:path';
+import {
+  basename,
+  dirname,
+  extname,
+  join,
+} from 'node:path';
 
 import readdir from 'tiny-readdir-glob';
 
@@ -33,7 +38,8 @@ const l = tagged({ tag: 'format:images', l: $, },);
  * `ImageType` enum in sharp's `src/common.h`. Excludes vector (SVG),
  * document (PDF), and specialty formats (FITS, DCRAW, VIPS, MAGICK, OpenSlide).
  */
-const RASTER_GLOB = '**/*.{png,jpg,jpeg,tif,tiff,webp,gif,heic,heif,jxl,jp2,j2k,jpx,ppm,pgm,pbm,pfm,exr,hdr}';
+const RASTER_GLOB =
+  '**/*.{png,jpg,jpeg,tif,tiff,webp,gif,heic,heif,jxl,jp2,j2k,jpx,ppm,pgm,pbm,pfm,exr,hdr}';
 
 /** Directories to scan for raster images. */
 const SCAN_DIRS = ['src/content', 'public',];
@@ -44,7 +50,9 @@ l.info('scanning for raster images',);
 
 /** Scan results from all directories, fetched concurrently. */
 const scanResults = await Promise.all(
-  SCAN_DIRS.map(function scanDir(dir,) { return readdir(`${dir}/${RASTER_GLOB}`,); },),
+  SCAN_DIRS.map(function scanDir(dir,) {
+    return readdir(`${dir}/${RASTER_GLOB}`,);
+  },),
 );
 
 /** Conversion tasks for all discovered raster images across all scanned directories. */

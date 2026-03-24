@@ -25,9 +25,10 @@ const noFurtherTypeOf = ['undefined', 'symbol',] as const;
 export function $(value: unknown,): TypeOf {
   const typeOf = typeof value;
 
-  if (noFurtherTypeOf.includes(typeOf,))
+  if (noFurtherTypeOf.includes(typeOf,)) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeOf verified to be in noFurtherTypeOf tuple
     return typeOf as (typeof noFurtherTypeOf)[number];
+  }
 
   if (typeOf === 'bigint') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is bigint

@@ -9,10 +9,10 @@
 import { PALETTE, } from './config.ts';
 import {
   c,
+  type PartDef,
   REF_GRAY_DARK,
   REF_GRAY_WARM,
   REF_RED,
-  type PartDef,
 } from './parts-types.ts';
 
 /** Skirts, legs, and boots. */

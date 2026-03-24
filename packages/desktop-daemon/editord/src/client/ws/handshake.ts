@@ -6,7 +6,10 @@
  */
 
 import type { ServerMessage, } from '../../../protocol.ts';
-import { l as rootLogger, tagged, } from '../log.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from '../log.ts';
 
 /** Tagged logger for the WebSocket handshake. */
 const l = tagged({ tag: 'ws-handshake', l: rootLogger, },);
@@ -20,8 +23,8 @@ const l = tagged({ tag: 'ws-handshake', l: rootLogger, },);
  */
 export function performHandshake({ ws, onConnected, }: {
   ws: WebSocket;
-  onConnected: (data: { rootDir: string; fsId: string },) => void;
-}): Promise<void> {
+  onConnected: (data: { rootDir: string; fsId: string; },) => void;
+},): Promise<void> {
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based WebSocket events into a promise requires new Promise
   return new Promise<void>(function awaitConnection(resolve, reject,) {
     /**

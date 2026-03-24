@@ -32,9 +32,8 @@ export function postPage(
     renderedHtml: string | undefined;
   },
 ): string {
-  if (post === undefined || renderedHtml === undefined) {
+  if (post === undefined || renderedHtml === undefined)
     return postNotFoundPage({ lang, name, },);
-  }
 
   const content = h({
     tag: 'main',

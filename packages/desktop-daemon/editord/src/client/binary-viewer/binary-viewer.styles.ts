@@ -12,8 +12,11 @@ import {
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 
+import {
+  CODE_LINE_HEIGHT,
+  MONO_FONT_FAMILY,
+} from '../styles/tokens.ts';
 import { MEDIA_STYLES, } from './media.styles.ts';
-import { CODE_LINE_HEIGHT, MONO_FONT_FAMILY, } from '../styles/tokens.ts';
 
 /** Shadow DOM styles for the binary viewer. */
 export const STYLES = [
@@ -57,4 +60,5 @@ export const STYLES = [
       'white-space': 'pre',
     },
   },),
-].join('',);
+]
+  .join('',);

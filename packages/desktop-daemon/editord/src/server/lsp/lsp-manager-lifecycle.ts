@@ -10,9 +10,11 @@ import { pathToFileURL, } from 'node:url';
 
 import type { DiagnosticStore, } from './diagnostic-store.ts';
 import {
+  didChange as syncChange,
+  didClose as syncClose,
+  didOpen as syncOpen,
+  didSave as syncSave,
   type DocumentState,
-  didChange as syncChange, didClose as syncClose,
-  didOpen as syncOpen, didSave as syncSave,
 } from './document-sync.ts';
 import type { LspPool, } from './lsp-pool.ts';
 import type { LspDiagnostic, } from './types.ts';
@@ -29,8 +31,11 @@ import type { LspDiagnostic, } from './types.ts';
  * @param text - initial file content
  */
 export async function managerDidOpen({ pool, documents, path, text, }: {
-  pool: LspPool; documents: Map<string, DocumentState>; path: string; text: string;
-}): Promise<void> {
+  pool: LspPool;
+  documents: Map<string, DocumentState>;
+  path: string;
+  text: string;
+},): Promise<void> {
   syncOpen({ path, text, documents, servers: await pool.resolveAll({ path, },), },);
 }
 
@@ -46,8 +51,11 @@ export async function managerDidOpen({ pool, documents, path, text, }: {
  * @param text - updated file content
  */
 export async function managerDidChange({ pool, documents, path, text, }: {
-  pool: LspPool; documents: Map<string, DocumentState>; path: string; text: string;
-}): Promise<void> {
+  pool: LspPool;
+  documents: Map<string, DocumentState>;
+  path: string;
+  text: string;
+},): Promise<void> {
   syncChange({ path, text, documents, servers: await pool.resolveAll({ path, },), },);
 }
 
@@ -61,8 +69,10 @@ export async function managerDidChange({ pool, documents, path, text, }: {
  * @param path - absolute file path
  */
 export async function managerDidSave({ pool, documents, path, }: {
-  pool: LspPool; documents: Map<string, DocumentState>; path: string;
-}): Promise<void> {
+  pool: LspPool;
+  documents: Map<string, DocumentState>;
+  path: string;
+},): Promise<void> {
   syncSave({ path, documents, servers: await pool.resolveAll({ path, },), },);
 }
 
@@ -78,8 +88,11 @@ export async function managerDidSave({ pool, documents, path, }: {
  * @param path - absolute file path
  */
 export async function managerDidClose({ pool, documents, diagnostics, path, }: {
-  pool: LspPool; documents: Map<string, DocumentState>; diagnostics: DiagnosticStore; path: string;
-}): Promise<void> {
+  pool: LspPool;
+  documents: Map<string, DocumentState>;
+  diagnostics: DiagnosticStore;
+  path: string;
+},): Promise<void> {
   diagnostics.delete({ uri: pathToFileURL(path,).href, },);
   syncClose({ path, documents, servers: await pool.resolveAll({ path, },), },);
 }
@@ -97,11 +110,14 @@ export async function managerDidClose({ pool, documents, diagnostics, path, }: {
  * @param params - notification parameters
  */
 export function routeNotification({ diagnostics, source, method, params, }: {
-  diagnostics: DiagnosticStore; source: string; method: string; params: unknown;
-}): void {
+  diagnostics: DiagnosticStore;
+  source: string;
+  method: string;
+  params: unknown;
+},): void {
   if (method === 'textDocument/publishDiagnostics') {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP publishDiagnostics shape
-    const p = params as { uri: string; diagnostics: LspDiagnostic[] };
+    const p = params as { uri: string; diagnostics: LspDiagnostic[]; };
     diagnostics.update({ source, uri: p.uri, diagnostics: p.diagnostics, },);
   }
 }

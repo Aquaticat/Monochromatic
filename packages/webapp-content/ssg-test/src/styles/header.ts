@@ -50,7 +50,8 @@ export function headerStyles(): string {
       'inline-size': cssRem(2,),
       'block-size': cssRem(2,),
     }, },),
-  ].join('\n',);
+  ]
+    .join('\n',);
 }
 
 /**
@@ -85,5 +86,6 @@ export function searchAndInteractionStyles(): string {
       'outline-width': cssCalc(BORDER_WIDTH_REM,),
       'outline-offset': cssCalc(BORDER_WIDTH_REM,),
     }, },),
-  ].join('\n',);
+  ]
+    .join('\n',);
 }

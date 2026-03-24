@@ -15,9 +15,7 @@ import {
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 
-import {
-  POPUP_HOST_DECLS,
-} from '../styles/tokens.ts';
+import { POPUP_HOST_DECLS, } from '../styles/tokens.ts';
 
 /** Maximum width of the references popup in rem. */
 const MAX_WIDTH_REM = 30;
@@ -36,7 +34,8 @@ export const STYLES = [
       ...POPUP_HOST_DECLS,
       'inset-block-start': cssAnchor('end',),
       'inset-inline-start': cssAnchor('start',),
-      'position-try-fallbacks': cssCommaList(['flip-block', 'flip-inline', 'flip-block flip-inline',],),
+      'position-try-fallbacks': cssCommaList(['flip-block', 'flip-inline',
+        'flip-block flip-inline',],),
       'inline-size': 'max-content',
       'max-inline-size': cssRem(MAX_WIDTH_REM,),
       'max-block-size': cssRem(MAX_HEIGHT_REM,),
@@ -77,4 +76,5 @@ export const STYLES = [
       'flex-shrink': cssNum(0,),
     },
   },),
-].join('',);
+]
+  .join('',);

@@ -48,7 +48,6 @@ const TARGETS = [
   'manifest.webmanifest',
 ] as const;
 
-
 /**
  * Creates an ICO container wrapping a single 32x32 PNG image.
  *
@@ -61,7 +60,7 @@ const TARGETS = [
  * const ico = createIco({ pngData: png32Buffer });
  * ```
  */
-function createIco({ pngData, }: { pngData: Buffer; }): Buffer {
+function createIco({ pngData, }: { pngData: Buffer; },): Buffer {
   const header = Buffer.alloc(6,);
   header.writeUInt16LE(1, 2,); // type: 1 = ICO
   header.writeUInt16LE(1, 4,); // image count
@@ -85,7 +84,7 @@ function createIco({ pngData, }: { pngData: Buffer; }): Buffer {
  *
  * @returns PNG buffer
  */
-async function renderPng({ size, }: { size: number; }): Promise<Buffer> {
+async function renderPng({ size, }: { size: number; },): Promise<Buffer> {
   return sharp(SVG_SOURCE, { density: RENDER_DENSITY, },)
     .resize(size, size,)
     .png()
@@ -161,7 +160,8 @@ export async function ensureFavicons(
     icons: [
       { src: '/icon-192.png', type: 'image/png', sizes: '192x192', },
       { src: '/icon-512.png', type: 'image/png', sizes: '512x512', },
-      { src: '/icon-mask.png', type: 'image/png', sizes: '512x512', purpose: 'maskable', },
+      { src: '/icon-mask.png', type: 'image/png', sizes: '512x512',
+        purpose: 'maskable', },
     ],
   }, undefined, 2,);
 

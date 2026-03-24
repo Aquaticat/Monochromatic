@@ -3,18 +3,28 @@
  *
  * Generates CSS, RSS feeds, and copies static assets to dist.
  */
-import { copyFile, mkdir, } from 'node:fs/promises';
-import { dirname, join, relative, } from 'node:path';
+import {
+  copyFile,
+  mkdir,
+} from 'node:fs/promises';
+import {
+  dirname,
+  join,
+  relative,
+} from 'node:path';
 
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import readdir from 'tiny-readdir-glob';
 
-import type { Post, } from '../lib/content.ts';
 import { groupByLang, } from '../lib/content-group.ts';
+import type { Post, } from '../lib/content.ts';
 import { generateLanguageRss, } from '../lib/rss.ts';
 import type { Logger, } from '../lib/types.ts';
 import { generateSiteCss, } from '../styles/base.ts';
-import { DIST, writePage, } from './write-page.ts';
+import {
+  DIST,
+  writePage,
+} from './write-page.ts';
 
 /**
  * Generates CSS, RSS feeds, and copies static assets to dist.

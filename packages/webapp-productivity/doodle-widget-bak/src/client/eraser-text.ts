@@ -24,8 +24,10 @@ import type { NormalizedPoint, } from './drawing.ts';
  */
 function pointInInputRect(
   { px, py, rect, layerRect, }: {
-    px: number; py: number;
-    rect: DOMRect; layerRect: DOMRect;
+    px: number;
+    py: number;
+    rect: DOMRect;
+    layerRect: DOMRect;
   },
 ): boolean {
   const relLeft = rect.left - layerRect.left;
@@ -68,7 +70,7 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
   cw: number;
   ch: number;
   textLayer: HTMLDivElement;
-}): boolean {
+},): boolean {
   /** Current eraser position in CSS pixels */
   const px = point[0] * cw;
   const py = point[1] * ch;
@@ -89,7 +91,8 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
       && pointInInputRect({
         px: previousPoint[0] * cw,
         py: previousPoint[1] * ch,
-        rect, layerRect,
+        rect,
+        layerRect,
       },);
 
     if (hitCurrent || hitPrevious) {

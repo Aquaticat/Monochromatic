@@ -17,7 +17,11 @@ import {
   Visitor,
 } from 'rolldown/utils';
 
-import { extractTypeFromAttributes, extractTypeFromOptions, getStringLiteralValue, } from './ast-extract.ts';
+import {
+  extractTypeFromAttributes,
+  extractTypeFromOptions,
+  getStringLiteralValue,
+} from './ast-extract.ts';
 
 /**
  * Scans an importer file's source code to find the import attribute type
@@ -68,8 +72,12 @@ export function scanImporterForAttribute(
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
       if (found !== undefined)
         return;
-      if (node.source === null || node.source.value !== specifier || node.attributes.length === 0)
+      if (node.source === null
+        || node.source.value !== specifier
+        || node.attributes.length === 0)
+      {
         return;
+      }
       found = extractTypeFromAttributes(node.attributes,);
     },
 

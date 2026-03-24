@@ -5,9 +5,9 @@
  * component class stays focused on rendering and event wiring.
  */
 import {
+  AUTOFILL_DEBOUNCE_MS,
   type AutofillResult,
   type MetadataState,
-  AUTOFILL_DEBOUNCE_MS,
 } from './task-detail-types.ts';
 
 /** Options for an autofill request. */
@@ -87,10 +87,11 @@ export class AutofillManager {
     /** Disposable guard that resets loading state on scope exit. */
     // oxlint-disable-next-line prefer-const -- using binding must be let-like per spec
     using _loadingGuard = {
-      [Symbol.dispose]: function resetLoading(this: AutofillManager): void {
+      [Symbol.dispose]: function resetLoading(this: AutofillManager,): void {
         this.loading = false;
         onUpdate();
-      }.bind(this),
+      }
+        .bind(this,),
     };
 
     try {

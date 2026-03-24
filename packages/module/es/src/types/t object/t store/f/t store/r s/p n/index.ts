@@ -161,9 +161,10 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       if (lru !== undefined)
         lru.clear();
       for (const backend of backends) {
-        if ('clear' in backend && typeof backend.clear === 'function')
+        if ('clear' in backend && typeof backend.clear === 'function') {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime check confirms clear is a function
           (backend.clear as () => unknown)();
+        }
       }
     },
   };

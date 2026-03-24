@@ -9,7 +9,10 @@ import type { FileKind, } from '../../../protocol.ts';
 import type { BinaryViewer, } from '../binary-viewer/binary-viewer.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import { getParserForPath, } from '../highlight/languages.ts';
-import { l as rootLogger, tagged, } from '../log.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from '../log.ts';
 import { showFixedToast, } from '../toast/toast.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
@@ -43,18 +46,21 @@ const FILE_SIZE_WARNING_THRESHOLD = 100 * BYTES_PER_KB;
  *
  * @returns the file kind, or null on failure
  */
-export async function loadFile({ ws, editorPane, binaryViewer, token, path, line, character, }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  binaryViewer: BinaryViewer;
-  token: string;
-  path: string;
-  line?: number | undefined;
-  character?: number | undefined;
-}): Promise<FileKind | null> {
+export async function loadFile(
+  { ws, editorPane, binaryViewer, token, path, line, character, }: {
+    ws: EditorWsClient;
+    editorPane: EditorPane;
+    binaryViewer: BinaryViewer;
+    token: string;
+    path: string;
+    line?: number | undefined;
+    character?: number | undefined;
+  },
+): Promise<FileKind | null> {
   try {
     const r = await ws.request({ type: 'open', path, },);
-    if (!('kind' in r)) return null;
+    if (!('kind' in r))
+      return null;
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'kind' in r; cast needed because ServerMessage union is wide
     const kind = r.kind as FileKind;
     document.title = `editord - ${path}`;
@@ -65,9 +71,12 @@ export async function loadFile({ ws, editorPane, binaryViewer, token, path, line
       const mediaOpts = 'mediaInfo' in r && typeof r.mediaInfo === 'string'
         ? { url: mediaUrl, mediaInfo: r.mediaInfo, }
         : { url: mediaUrl, };
-      if (kind === 'image') binaryViewer.showImage(mediaOpts,);
-      else if (kind === 'audio') binaryViewer.showAudio(mediaOpts,);
-      else binaryViewer.showVideo(mediaOpts,);
+      if (kind === 'image')
+        binaryViewer.showImage(mediaOpts,);
+      else if (kind === 'audio')
+        binaryViewer.showAudio(mediaOpts,);
+      else
+        binaryViewer.showVideo(mediaOpts,);
       return kind;
     }
 
@@ -81,7 +90,8 @@ export async function loadFile({ ws, editorPane, binaryViewer, token, path, line
     editorPane.style.display = '';
     if ('content' in r) {
       const content = String(r.content,);
-      if (content.length > FILE_SIZE_WARNING_THRESHOLD) showFixedToast({ message: 'File too large (>100KB)', },);
+      if (content.length > FILE_SIZE_WARNING_THRESHOLD)
+        showFixedToast({ message: 'File too large (>100KB)', },);
       editorPane.setParser(getParserForPath({ path, },),);
       editorPane.setText(content,);
       if (line !== undefined) {

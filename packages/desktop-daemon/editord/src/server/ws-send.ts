@@ -6,7 +6,7 @@
  */
 
 /** Peer type used throughout message dispatch. */
-export type Peer = { send: (data: string) => void };
+export type Peer = { send: (data: string,) => void; };
 
 /**
  * Sends a JSON-serialized message to a WebSocket peer.
@@ -15,6 +15,8 @@ export type Peer = { send: (data: string) => void };
  *
  * @param message - message object to serialize and send
  */
-export function sendJson({ peer, message, }: { peer: Peer; message: Record<string, unknown> }): void {
+export function sendJson(
+  { peer, message, }: { peer: Peer; message: Record<string, unknown>; },
+): void {
   peer.send(JSON.stringify(message,),);
 }

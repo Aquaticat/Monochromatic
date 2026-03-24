@@ -25,7 +25,7 @@ export const MAX_HIGHLIGHT_BYTES = HIGHLIGHT_LIMIT_KB * BYTES_PER_KB;
  *
  * @returns array of line text strings
  */
-export function getLineTexts({ editor, }: { editor: HTMLDivElement }): string[] {
+export function getLineTexts({ editor, }: { editor: HTMLDivElement; },): string[] {
   return [...editor.children,].map(function readLine(div,) {
     // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- textContent is typed as `string | null` in DOM; null when node has no text
     const text = div.textContent ?? '';
@@ -45,8 +45,10 @@ export function getLineTexts({ editor, }: { editor: HTMLDivElement }): string[] 
 export function findLineForOffset({ offset, lineStarts, }: {
   offset: number;
   lineStarts: readonly number[];
-}): number {
-  const index = lineStarts.findLastIndex(function startsBeforeOffset(start,) { return start <= offset; },);
+},): number {
+  const index = lineStarts.findLastIndex(function startsBeforeOffset(start,) {
+    return start <= offset;
+  },);
   return index === -1 ? 0 : index;
 }
 
@@ -54,7 +56,6 @@ export function findLineForOffset({ offset, lineStarts, }: {
  * Removes all syntax highlighting by clearing registered highlight groups.
  */
 export function clearHighlights(): void {
-  for (const group of HIGHLIGHT_GROUPS) {
+  for (const group of HIGHLIGHT_GROUPS)
     CSS.highlights.delete(`hl-${group}`,);
-  }
 }

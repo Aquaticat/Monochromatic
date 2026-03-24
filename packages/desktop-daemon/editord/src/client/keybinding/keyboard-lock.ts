@@ -7,7 +7,10 @@
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Keyboard/lock
  */
 
-import { l, tagged, } from '../log.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 
 /** Tagged logger for keyboard lock. */
 const lockLog = tagged({ tag: 'keyboard-lock', l, },);
@@ -16,7 +19,7 @@ const lockLog = tagged({ tag: 'keyboard-lock', l, },);
 
 /** Keyboard Lock API surface on the Keyboard interface. */
 type KeyboardWithLock = {
-  lock: (keyCodes?: string[]) => Promise<void>;
+  lock: (keyCodes?: string[],) => Promise<void>;
   unlock: () => void;
 };
 

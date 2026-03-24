@@ -15,7 +15,7 @@
 export function findCharAtX({ lineDiv, x, }: {
   lineDiv: Element;
   x: number;
-}): number {
+},): number {
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec
   const text = lineDiv.textContent ?? '';
   if (text.length === 0 || text === '\n')
@@ -29,7 +29,7 @@ export function findCharAtX({ lineDiv, x, }: {
 
   // Mutable accumulator is unavoidable here: TreeWalker is imperative and does not expose a functional iterator
   /** Collect all text nodes with cumulative offsets. */
-  const textNodes: { node: Text; start: number; length: number }[] = [];
+  const textNodes: { node: Text; start: number; length: number; }[] = [];
   let total = 0;
   let current: Node | null = firstTextNode;
   while (current !== null) {
@@ -52,12 +52,10 @@ export function findCharAtX({ lineDiv, x, }: {
     range.setEnd(node, localOffset,);
     const rect = range.getBoundingClientRect();
 
-    if (rect.left < x) {
+    if (rect.left < x)
       lo = mid + 1;
-    }
-    else {
+    else
       hi = mid;
-    }
   }
 
   return lo;
@@ -69,21 +67,20 @@ export function findCharAtX({ lineDiv, x, }: {
  * @returns text node and the local character offset within it
  */
 function resolveOffset({ textNodes, offset, }: {
-  textNodes: { node: Text; start: number; length: number }[];
+  textNodes: { node: Text; start: number; length: number; }[];
   offset: number;
-}): { node: Text; localOffset: number } {
+},): { node: Text; localOffset: number; } {
   for (const entry of textNodes) {
-    if (offset <= entry.start + entry.length) {
+    if (offset <= entry.start + entry.length)
       return { node: entry.node, localOffset: offset - entry.start, };
-    }
   }
   /** Clamp to end of last text node. */
-  const last = textNodes.at(-1);
-  if (last !== undefined) {
+  const last = textNodes.at(-1,);
+  if (last !== undefined)
     return { node: last.node, localOffset: last.length, };
-  }
   /** Fallback: should never reach here with non-empty text. */
   const [first,] = textNodes;
-  if (first === undefined) throw new Error('resolveOffset called with empty textNodes',);
+  if (first === undefined)
+    throw new Error('resolveOffset called with empty textNodes',);
   return { node: first.node, localOffset: 0, };
 }

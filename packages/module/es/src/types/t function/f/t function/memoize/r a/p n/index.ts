@@ -4,10 +4,10 @@ import {
 import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index.ts';
 import { buildCacheKey, } from '../../cacheKey.ts';
 import {
+  DEFAULT_MAX_CACHE_SIZE,
   type MemoizeAsyncNamedOptions,
   type MemoizedAsyncFunction,
   type MemoizedCallOptions,
-  DEFAULT_MAX_CACHE_SIZE,
 } from '../../t/index.ts';
 
 /**

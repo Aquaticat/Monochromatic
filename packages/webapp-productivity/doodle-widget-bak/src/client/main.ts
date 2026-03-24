@@ -6,9 +6,18 @@
  */
 
 import {
-  backgroundsScript, canvas, container, drawRadio, eraseRadio,
-  pageToggle, redoBtn, requireElement, svgOverlay, textLayer,
-  toolToggle, undoBtn,
+  backgroundsScript,
+  canvas,
+  container,
+  drawRadio,
+  eraseRadio,
+  pageToggle,
+  redoBtn,
+  requireElement,
+  svgOverlay,
+  textLayer,
+  toolToggle,
+  undoBtn,
 } from './dom-refs.ts';
 import { redraw, } from './drawing.ts';
 import {
@@ -16,16 +25,16 @@ import {
   switchToPage,
 } from './pages.ts';
 import {
-  type ToolMode,
   setupPointerHandlers,
+  type ToolMode,
 } from './pointer-handlers.ts';
 import {
   discardActiveInput,
   setTextLayer,
 } from './text.ts';
 import { setupToolbarHandlers, } from './toolbar-handlers.ts';
-import { initHistory, } from './undo-history.ts';
 import { setupUndoHandlers, } from './undo-handlers.ts';
+import { initHistory, } from './undo-history.ts';
 
 /** Maybe-null canvas rendering context before validation */
 const maybeCtx = canvas.getContext('2d',);
@@ -114,13 +123,22 @@ setTextLayer(textLayer,);
 
 /** Undo system functions for snapshot capture and button state refresh */
 const { pushSnapshot, updateUndoButtons, } = setupUndoHandlers({
-  undoBtn, redoBtn, ctx, getCanvasSize, textLayer,
+  undoBtn,
+  redoBtn,
+  ctx,
+  getCanvasSize,
+  textLayer,
 },);
 
 textLayer.addEventListener('textfinalized', pushSnapshot,);
 
 setupPointerHandlers({
-  canvas, ctx, getToolMode, getCanvasSize, textLayer, pushSnapshot,
+  canvas,
+  ctx,
+  getToolMode,
+  getCanvasSize,
+  textLayer,
+  pushSnapshot,
 },);
 
 setupToolbarHandlers({
@@ -131,8 +149,14 @@ setupToolbarHandlers({
   formatSelect: requireElement<HTMLSelectElement>('#format-select',),
   uploadBtn: requireElement<HTMLButtonElement>('#upload-btn',),
   uploadInput: requireElement<HTMLInputElement>('#upload-input',),
-  container, svgOverlay, drawCanvas: canvas,
-  textLayer, ctx, getCanvasSize, sizeCanvas, pushSnapshot,
+  container,
+  svgOverlay,
+  drawCanvas: canvas,
+  textLayer,
+  ctx,
+  getCanvasSize,
+  sizeCanvas,
+  pushSnapshot,
 },);
 
 pageToggle.addEventListener('change', function handlePageChange(event: Event,): void {
@@ -142,9 +166,12 @@ pageToggle.addEventListener('change', function handlePageChange(event: Event,): 
   /** Zero-based page index from the radio value */
   const pageIndex = Number(target.value,);
   switchToPage({
-    index: pageIndex, ctx,
-    cw: canvasWidth, ch: canvasHeight,
-    overlay: svgOverlay, textLayer,
+    index: pageIndex,
+    ctx,
+    cw: canvasWidth,
+    ch: canvasHeight,
+    overlay: svgOverlay,
+    textLayer,
   },);
   updateUndoButtons();
 },);

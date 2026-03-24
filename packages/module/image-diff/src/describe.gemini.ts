@@ -129,7 +129,9 @@ export async function describeViaGemini(imageA: ImageInput,
 
   if (!response.ok) {
     const errorBody = await response.text();
-    rl.error(`Gemini generateContent returned ${String(response.status,)}: ${errorBody}`,);
+    rl.error(
+      `Gemini generateContent returned ${String(response.status,)}: ${errorBody}`,
+    );
     throw new Error(
       `Gemini generateContent error (${String(response.status,)}): ${errorBody}`,
     );
@@ -146,6 +148,8 @@ export async function describeViaGemini(imageA: ImageInput,
     throw new Error('Gemini generateContent returned no content parts',);
 
   const description = part.text;
-  rl.debug(`received description (${String(description.length,)} chars) via native Gemini`,);
+  rl.debug(
+    `received description (${String(description.length,)} chars) via native Gemini`,
+  );
   return description;
 }

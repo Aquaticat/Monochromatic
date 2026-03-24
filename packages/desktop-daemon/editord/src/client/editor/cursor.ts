@@ -4,7 +4,10 @@
  * Uses `getComposedRanges` to cross the shadow DOM boundary.
  */
 
-import { resolveLineCharacter, resolveTextPosition, } from './text-resolve.ts';
+import {
+  resolveLineCharacter,
+  resolveTextPosition,
+} from './text-resolve.ts';
 
 import type { EditorPosition, } from '../position.ts';
 import type { SelectionCoords, } from './indent.ts';
@@ -16,9 +19,12 @@ import type { SelectionCoords, } from './indent.ts';
  *
  * @returns the first composed range, or null
  */
-export function getComposedRange({ shadow, }: { shadow: ShadowRoot }): StaticRange | null {
+export function getComposedRange(
+  { shadow, }: { shadow: ShadowRoot; },
+): StaticRange | null {
   const selection = document.getSelection();
-  if (selection === null) return null;
+  if (selection === null)
+    return null;
   const ranges = selection.getComposedRanges({ shadowRoots: [shadow,], },);
   return ranges[0] ?? null;
 }
@@ -33,11 +39,14 @@ export function getComposedRange({ shadow, }: { shadow: ShadowRoot }): StaticRan
  * @returns 0-based line and character, or null
  */
 export function getCursorPosition({ editor, shadow, }: {
-  editor: HTMLDivElement; shadow: ShadowRoot;
-}): EditorPosition | null {
+  editor: HTMLDivElement;
+  shadow: ShadowRoot;
+},): EditorPosition | null {
   const range = getComposedRange({ shadow, },);
-  if (range === null) return null;
-  return resolveLineCharacter({ editor, container: range.startContainer, offset: range.startOffset, },);
+  if (range === null)
+    return null;
+  return resolveLineCharacter({ editor, container: range.startContainer,
+    offset: range.startOffset, },);
 }
 
 /**
@@ -47,9 +56,10 @@ export function getCursorPosition({ editor, shadow, }: {
  *
  * @returns DOMRect of the caret, or null
  */
-export function getCursorRect({ shadow, }: { shadow: ShadowRoot }): DOMRect | null {
+export function getCursorRect({ shadow, }: { shadow: ShadowRoot; },): DOMRect | null {
   const sRange = getComposedRange({ shadow, },);
-  if (sRange === null) return null;
+  if (sRange === null)
+    return null;
   const range = document.createRange();
   range.setStart(sRange.startContainer, sRange.startOffset,);
   range.setEnd(sRange.endContainer, sRange.endOffset,);
@@ -66,13 +76,18 @@ export function getCursorRect({ shadow, }: { shadow: ShadowRoot }): DOMRect | nu
  * @param character - 0-based character offset
  */
 export function restoreCursor({ editor, line, character, }: {
-  editor: HTMLDivElement; line: number; character: number;
-}): void {
+  editor: HTMLDivElement;
+  line: number;
+  character: number;
+},): void {
   const selection = document.getSelection();
-  if (selection === null) return;
+  if (selection === null)
+    return;
   const resolved = resolveTextPosition({ editor, lineIndex: line, character, },);
-  if (resolved === null) return;
-  selection.setBaseAndExtent(resolved.node, resolved.offset, resolved.node, resolved.offset,);
+  if (resolved === null)
+    return;
+  selection.setBaseAndExtent(resolved.node, resolved.offset, resolved.node,
+    resolved.offset,);
 }
 
 /**
@@ -83,13 +98,18 @@ export function restoreCursor({ editor, line, character, }: {
  * @param coords - selection start and end coordinates
  */
 export function setSelection({ editor, coords, }: {
-  editor: HTMLDivElement; coords: SelectionCoords;
-}): void {
+  editor: HTMLDivElement;
+  coords: SelectionCoords;
+},): void {
   const selection = document.getSelection();
-  if (selection === null) return;
-  const start = resolveTextPosition({ editor, lineIndex: coords.startLine, character: coords.startCharacter, },);
-  const end = resolveTextPosition({ editor, lineIndex: coords.endLine, character: coords.endCharacter, },);
-  if (start === null || end === null) return;
+  if (selection === null)
+    return;
+  const start = resolveTextPosition({ editor, lineIndex: coords.startLine,
+    character: coords.startCharacter, },);
+  const end = resolveTextPosition({ editor, lineIndex: coords.endLine,
+    character: coords.endCharacter, },);
+  if (start === null || end === null)
+    return;
   selection.setBaseAndExtent(start.node, start.offset, end.node, end.offset,);
 }
 
@@ -103,12 +123,18 @@ export function setSelection({ editor, coords, }: {
  * @returns selection coordinates, or null
  */
 export function getSelection({ editor, shadow, }: {
-  editor: HTMLDivElement; shadow: ShadowRoot;
-}): SelectionCoords | null {
+  editor: HTMLDivElement;
+  shadow: ShadowRoot;
+},): SelectionCoords | null {
   const range = getComposedRange({ shadow, },);
-  if (range === null) return null;
-  const start = resolveLineCharacter({ editor, container: range.startContainer, offset: range.startOffset, },);
-  const end = resolveLineCharacter({ editor, container: range.endContainer, offset: range.endOffset, },);
-  if (start === null || end === null) return null;
-  return { startLine: start.line, startCharacter: start.character, endLine: end.line, endCharacter: end.character, };
+  if (range === null)
+    return null;
+  const start = resolveLineCharacter({ editor, container: range.startContainer,
+    offset: range.startOffset, },);
+  const end = resolveLineCharacter({ editor, container: range.endContainer,
+    offset: range.endOffset, },);
+  if (start === null || end === null)
+    return null;
+  return { startLine: start.line, startCharacter: start.character, endLine: end.line,
+    endCharacter: end.character, };
 }

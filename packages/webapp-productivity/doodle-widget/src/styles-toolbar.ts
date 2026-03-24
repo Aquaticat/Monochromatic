@@ -34,7 +34,8 @@ import { renderToggleGroupStyles, } from './styles-toolbar-toggle.ts';
  * Buttons, selects, toggle-option labels, and the color picker
  * share the same base styling.
  */
-const CONTROL_SELECTOR = '.toolbar button, .toolbar select, .toggle-option, #color-picker';
+const CONTROL_SELECTOR =
+  '.toolbar button, .toolbar select, .toggle-option, #color-picker';
 
 /**
  * Generates CSS rules for the toolbar, buttons, and composed sub-groups.
@@ -85,9 +86,16 @@ export function renderToolbarStyles(): string[] {
     },),
 
     $({
-      rule: `${CONTROL_SELECTOR.split(', ',).map(
-        function addHover(sel,): string { return `${sel}:hover`; },
-      ).join(', ',)}`,
+      rule: `${
+        CONTROL_SELECTOR
+          .split(', ',)
+          .map(
+            function addHover(sel,): string {
+              return `${sel}:hover`;
+            },
+          )
+          .join(', ',)
+      }`,
       decls: { 'background-color': BG_CONTROL_HOVER, },
     },),
 

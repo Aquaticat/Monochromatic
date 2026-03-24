@@ -4,8 +4,8 @@
  * Separated to keep `mixins.ts` under the line budget.
  */
 import {
-  type CssDeclarations,
   cssCalc,
+  type CssDeclarations,
   cssInt,
   cssRem,
   cssVar,

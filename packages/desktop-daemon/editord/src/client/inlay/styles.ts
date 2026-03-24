@@ -55,4 +55,5 @@ export const INLAY_STYLES = [
       color: cssVar('diag-info',),
     },
   },),
-].join('',);
+]
+  .join('',);

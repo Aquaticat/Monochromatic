@@ -6,7 +6,10 @@
  * for use in `beforeunload`.
  */
 
-import { saveSessionState, type SessionState, } from './state.ts';
+import {
+  saveSessionState,
+  type SessionState,
+} from './state.ts';
 
 /** Minimum interval between debounced saves, in milliseconds. */
 const SAVE_DEBOUNCE_MS = 300;
@@ -40,7 +43,7 @@ export function createDebouncedSave({ fsId, rootDir, getState, }: {
   fsId: string;
   rootDir: string;
   getState: () => SessionState;
-}): { debouncedSave: () => void; saveNow: () => void } {
+},): { debouncedSave: () => void; saveNow: () => void; } {
   let timerId = 0;
 
   /** Saves state immediately without debouncing. */

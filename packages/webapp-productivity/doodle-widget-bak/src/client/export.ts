@@ -111,12 +111,14 @@ export function renderStrokesToContext({ ctx, cw, ch, strokes, }: {
  * await renderSvgOverlayToContext({ ctx, container, overlay, imageScale: 2 });
  * ```
  */
-export async function renderSvgOverlayToContext({ ctx, container, overlay, imageScale, }: {
-  ctx: OffscreenCanvasRenderingContext2D;
-  container: HTMLDivElement;
-  overlay: HTMLDivElement;
-  imageScale?: number;
-},): Promise<void> {
+export async function renderSvgOverlayToContext(
+  { ctx, container, overlay, imageScale, }: {
+    ctx: OffscreenCanvasRenderingContext2D;
+    container: HTMLDivElement;
+    overlay: HTMLDivElement;
+    imageScale?: number;
+  },
+): Promise<void> {
   /** SVG element from the overlay, if present */
   const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
   if (svgElement === null)

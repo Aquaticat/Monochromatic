@@ -7,8 +7,14 @@
  * within the tree root.
  */
 
-import { access, constants, } from 'node:fs/promises';
-import { dirname, resolve, } from 'node:path';
+import {
+  access,
+  constants,
+} from 'node:fs/promises';
+import {
+  dirname,
+  resolve,
+} from 'node:path';
 
 /**
  * Collects all ancestor directory paths from a starting path up to the filesystem root.

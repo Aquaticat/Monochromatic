@@ -4,9 +4,12 @@
  * Separated from hover wiring to keep files under max-lines.
  */
 
-import type { HoverPopup, } from './hover-popup.ts';
-import { l, tagged, } from '../log.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
+import type { HoverPopup, } from './hover-popup.ts';
 
 /** Tagged logger for hover requests. */
 const hoverLog = tagged({ tag: 'hover-request', l, },);
@@ -29,14 +32,19 @@ const hoverLog = tagged({ tag: 'hover-request', l, },);
  * @param y - mouse Y coordinate for popup positioning
  */
 export async function doRequestHover({ ws, hoverPopup, path, line, character, x, y, }: {
-  ws: EditorWsClient; hoverPopup: HoverPopup;
-  path: string; line: number; character: number; x: number; y: number;
-}): Promise<void> {
+  ws: EditorWsClient;
+  hoverPopup: HoverPopup;
+  path: string;
+  line: number;
+  character: number;
+  x: number;
+  y: number;
+},): Promise<void> {
   try {
     const response = await ws.request({ type: 'hover', path, line, character, },);
     if ('contents' in response) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'contents' check
-      const { contents, } = response as { contents: string };
+      const { contents, } = response as { contents: string; };
       if (contents !== '') {
         hoverLog.info(`showing hover at ${x},${y}`,);
         hoverPopup.show({ text: contents, x, y, },);

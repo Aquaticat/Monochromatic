@@ -5,7 +5,7 @@
  */
 
 /** Entry names always ignored (VCS dirs, OS metadata). */
-const IGNORED_NAMES = new Set(['.git', 'node_modules', '.DS_Store', 'Thumbs.db',]);
+const IGNORED_NAMES = new Set(['.git', 'node_modules', '.DS_Store', 'Thumbs.db',],);
 
 /** Pattern matching editor swap/temp files. */
 const IGNORED_PATTERN = /\.swp$|~$|^\.#|^#.*#$|^4913$/;
@@ -17,7 +17,7 @@ const IGNORED_PATTERN = /\.swp$|~$|^\.#|^#.*#$|^4913$/;
  *
  * @returns true when the name matches a known noise source
  */
-export function isIgnored({ name, }: { name: string }): boolean {
+export function isIgnored({ name, }: { name: string; },): boolean {
   return IGNORED_NAMES.has(name,) || IGNORED_PATTERN.test(name,);
 }
 

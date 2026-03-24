@@ -5,11 +5,11 @@ import {
 } from 'bun:test';
 
 import {
-  RULE_GUIDANCE,
   augmentOxlintOutput,
   extractRuleName,
   formatGuidanceLine,
   isHelpLine,
+  RULE_GUIDANCE,
   stripAnsi,
 } from './oxlint-augment.ts';
 
@@ -42,31 +42,36 @@ describe('extractRuleName', () => {
   test('extracts from error diagnostic header', () => {
     expect(extractRuleName(
       '  x typescript-eslint(no-misused-promises): Promise-returning function provided to method that expects a function returning void.',
-    ),).toBe('no-misused-promises',);
+    ),)
+      .toBe('no-misused-promises',);
   });
 
   test('extracts from warning diagnostic header', () => {
     expect(extractRuleName(
       '  ! eslint(no-magic-numbers): No magic number: 42.',
-    ),).toBe('no-magic-numbers',);
+    ),)
+      .toBe('no-magic-numbers',);
   });
 
   test('extracts from unicorn plugin format', () => {
     expect(extractRuleName(
-      '  x eslint-plugin-unicorn(no-process-exit): Don\'t use `process.exit()`',
-    ),).toBe('no-process-exit',);
+      "  x eslint-plugin-unicorn(no-process-exit): Don't use `process.exit()`",
+    ),)
+      .toBe('no-process-exit',);
   });
 
   test('extracts from custom plugin format', () => {
     expect(extractRuleName(
       '  x no-restricted-syntax(no-arrow-function): Arrow functions are banned.',
-    ),).toBe('no-arrow-function',);
+    ),)
+      .toBe('no-arrow-function',);
   });
 
   test('extracts with ANSI codes present', () => {
     expect(extractRuleName(
       '  \u001B[31mx\u001B[0m \u001B[33mtypescript-eslint(no-misused-promises)\u001B[0m: Promise-returning function.',
-    ),).toBe('no-misused-promises',);
+    ),)
+      .toBe('no-misused-promises',);
   });
 
   test('returns null for context lines', () => {
@@ -133,12 +138,12 @@ describe('augmentOxlintOutput', () => {
     message: string;
     file: string;
     helpText?: string;
-  }): string[] {
+  },): string[] {
     const lines = [
       `  x ${plugin}(${rule}): ${message}`,
       `    ,-[${file}:93:30]`,
       ' 92 |   const form = document.querySelector();',
-      ' 93 |   form?.addEventListener(\'submit\', async function handleSubmit(event) {',
+      " 93 |   form?.addEventListener('submit', async function handleSubmit(event) {",
       '    |                                    ^^^^',
       '    `----',
     ];
@@ -152,12 +157,14 @@ describe('augmentOxlintOutput', () => {
       ...buildDiagnostic({
         rule: 'no-misused-promises',
         plugin: 'typescript-eslint',
-        message: 'Promise-returning function provided to method that expects a function returning void.',
+        message:
+          'Promise-returning function provided to method that expects a function returning void.',
         file: 'src/client.ts',
         helpText: 'Expected void return type.',
-      }),
+      },),
       '',
-    ].join('\n',);
+    ]
+      .join('\n',);
 
     const result = augmentOxlintOutput(input,);
 
@@ -177,9 +184,10 @@ describe('augmentOxlintOutput', () => {
         plugin: 'typescript-eslint',
         message: 'Promise-returning function.',
         file: 'src/client.ts',
-      }),
+      },),
       '',
-    ].join('\n',);
+    ]
+      .join('\n',);
 
     const result = augmentOxlintOutput(input,);
 
@@ -188,7 +196,7 @@ describe('augmentOxlintOutput', () => {
     // Note should appear before the trailing blank line
     const lines = result.split('\n',);
     const noteLine = lines.findIndex(
-      (l,) => l.includes('note:',),
+      l => l.includes('note:',),
     );
     expect(lines[noteLine + 1],).toBe('',);
   });
@@ -201,9 +209,10 @@ describe('augmentOxlintOutput', () => {
         message: 'Unexpected any.',
         file: 'src/index.ts',
         helpText: 'Use unknown instead.',
-      }),
+      },),
       '',
-    ].join('\n',);
+    ]
+      .join('\n',);
 
     const result = augmentOxlintOutput(input,);
 
@@ -219,7 +228,7 @@ describe('augmentOxlintOutput', () => {
         message: 'Unexpected any.',
         file: 'src/index.ts',
         helpText: 'Use unknown instead.',
-      }),
+      },),
       '',
       ...buildDiagnostic({
         rule: 'no-misused-promises',
@@ -227,7 +236,7 @@ describe('augmentOxlintOutput', () => {
         message: 'Promise-returning function.',
         file: 'src/client.ts',
         helpText: 'Expected void return type.',
-      }),
+      },),
       '',
       ...buildDiagnostic({
         rule: 'no-magic-numbers',
@@ -235,9 +244,10 @@ describe('augmentOxlintOutput', () => {
         message: 'No magic number: 42.',
         file: 'src/config.ts',
         helpText: 'Extract to a named constant.',
-      }),
+      },),
       '',
-    ].join('\n',);
+    ]
+      .join('\n',);
 
     const result = augmentOxlintOutput(input,);
     const noteOccurrences = result.split('note:',).length - 1;
@@ -264,8 +274,9 @@ describe('augmentOxlintOutput', () => {
         plugin: 'typescript-eslint',
         message: 'Promise-returning function.',
         file: 'src/client.ts',
-      }),
-    ].join('\n',);
+      },),
+    ]
+      .join('\n',);
 
     const result = augmentOxlintOutput(input,);
 
@@ -279,7 +290,8 @@ describe('augmentOxlintOutput', () => {
       '    `----',
       '  \u001B[36mhelp:\u001B[0m Expected void return type.',
       '',
-    ].join('\n',);
+    ]
+      .join('\n',);
 
     const result = augmentOxlintOutput(input,);
 

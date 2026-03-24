@@ -27,10 +27,12 @@ import { resolve, } from 'node:path';
  * assertWithinRoot({ rootDir: '/home/user/project', path: '/etc/passwd' });
  * ```
  */
-export function assertWithinRoot({ rootDir, path, }: { rootDir: string; path: string }): string {
+export function assertWithinRoot(
+  { rootDir, path, }: { rootDir: string; path: string; },
+): string {
   const absolute = resolve(path,);
   /** Trailing separator ensures `/home/userX/...` doesn't match `/home/user`. */
-  const rootPrefix = rootDir.endsWith('/') ? rootDir : `${rootDir}/`;
+  const rootPrefix = rootDir.endsWith('/',) ? rootDir : `${rootDir}/`;
 
   if (absolute !== rootDir && !absolute.startsWith(rootPrefix,))
     throw new Error(`path escapes root: ${absolute}`,);

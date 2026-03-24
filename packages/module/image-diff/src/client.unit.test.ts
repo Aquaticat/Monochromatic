@@ -48,7 +48,7 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number,): strin
       crc = (crcTable[(crc ^ byte) & 0xFF] ?? 0) ^ (crc >>> 8);
     }
     // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- final XOR; bitwise truncation is intentional for CRC32
-    return Math.trunc((crc ^ 0xFF_FF_FF_FF) >>> 0);
+    return Math.trunc((crc ^ 0xFF_FF_FF_FF) >>> 0,);
   }
 
   /** Encode a 4-byte big-endian unsigned integer. */
@@ -110,7 +110,7 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number,): strin
     b = (b + a) % 65_521;
   }
   // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- Adler-32 packing; bitwise truncation is intentional
-  const adler32 = Math.trunc(((b << 16) | a) >>> 0);
+  const adler32 = Math.trunc(((b << 16) | a) >>> 0,);
   deflateBlock.push(...uint32be(adler32,),);
 
   const idat = makeChunk([0x49, 0x44, 0x41, 0x54,], deflateBlock,);

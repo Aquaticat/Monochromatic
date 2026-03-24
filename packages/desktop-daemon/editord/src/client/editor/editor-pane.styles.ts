@@ -85,4 +85,5 @@ export const STYLES = [
   },),
   HIGHLIGHT_STYLES,
   INLAY_STYLES,
-].join('',);
+]
+  .join('',);

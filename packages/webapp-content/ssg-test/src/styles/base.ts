@@ -3,10 +3,20 @@
  *
  * Composes all style modules into a single CSS string for the build.
  */
-import { layoutStyles, resetStyles, typographyStyles, } from './global.ts';
-import { headerStyles, searchAndInteractionStyles, } from './header.ts';
+import {
+  layoutStyles,
+  resetStyles,
+  typographyStyles,
+} from './global.ts';
+import {
+  headerStyles,
+  searchAndInteractionStyles,
+} from './header.ts';
 import { postStyles, } from './posts.ts';
-import { darkModeTokenStyles, tokenStyles, } from './tokens.ts';
+import {
+  darkModeTokenStyles,
+  tokenStyles,
+} from './tokens.ts';
 
 /**
  * Generates the complete site CSS as a single string.
@@ -23,5 +33,6 @@ export function generateSiteCss(): string {
     headerStyles(),
     postStyles(),
     searchAndInteractionStyles(),
-  ].join('\n',);
+  ]
+    .join('\n',);
 }

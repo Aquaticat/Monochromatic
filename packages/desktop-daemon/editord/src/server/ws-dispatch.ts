@@ -6,7 +6,10 @@
  */
 
 import type { ClientMessage, } from '../protocol.ts';
-import { l as rootLogger, tagged, } from './log.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from './log.ts';
 import type { LspManager, } from './lsp/lsp-manager.ts';
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import { listDir, } from './operations/list-dir.ts';
@@ -16,9 +19,15 @@ import { search, } from './operations/search.ts';
 import type { DirWatcher, } from './operations/watch-filesystem.ts';
 import { dispatchFsMessage, } from './ws-dispatch-fs.ts';
 import { dispatchLspMessage, } from './ws-dispatch-lsp.ts';
-import { sendJson, type Peer, } from './ws-send.ts';
+import {
+  type Peer,
+  sendJson,
+} from './ws-send.ts';
 
-export { sendJson, type Peer, };
+export {
+  type Peer,
+  sendJson,
+};
 
 /** Tagged logger for the dispatch subsystem. */
 const l = tagged({ tag: 'ws-dispatch', l: rootLogger, },);
@@ -42,16 +51,24 @@ export const peerSearchControllers = new WeakMap<object, AbortController>();
  *
  * @param dirWatcher - filesystem watcher for save suppression and dir registration
  */
-export async function dispatchMessage({ peer, messageText, rootDir, lspManager, dirWatcher, }: {
-  peer: Peer;
-  messageText: string;
-  rootDir: string;
-  lspManager: LspManager | null;
-  dirWatcher: DirWatcher | null;
-}): Promise<void> {
+export async function dispatchMessage(
+  { peer, messageText, rootDir, lspManager, dirWatcher, }: {
+    peer: Peer;
+    messageText: string;
+    rootDir: string;
+    lspManager: LspManager | null;
+    dirWatcher: DirWatcher | null;
+  },
+): Promise<void> {
   const raw: unknown = JSON.parse(messageText,);
-  if (typeof raw !== 'object' || raw === null || !('type' in raw) || typeof (raw as { type: unknown }).type !== 'string') {
-    sendJson({ peer, message: { type: 'error', message: 'invalid message: missing or non-string "type" field', }, },);
+  if (typeof raw !== 'object'
+    || raw === null
+    || !('type' in raw)
+    || typeof (raw as { type: unknown; }).type !== 'string')
+  {
+    sendJson({ peer,
+      message: { type: 'error',
+        message: 'invalid message: missing or non-string "type" field', }, },);
     return;
   }
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- shape validated above: object with string `type`; individual handlers check discriminants
@@ -60,15 +77,18 @@ export async function dispatchMessage({ peer, messageText, rootDir, lspManager, 
   if (parsed.type === 'open') {
     const result = await openFile({ rootDir, path: parsed.path, },);
     sendJson({ peer, message: { type: 'fileContent', id: parsed.id, ...result, }, },);
-    if (lspManager !== null && result.kind === 'text') await lspManager.didOpen({ path: parsed.path, text: result.content, },);
+    if (lspManager !== null && result.kind === 'text')
+      await lspManager.didOpen({ path: parsed.path, text: result.content, },);
     return;
   }
   if (parsed.type === 'save') {
     const absolutePath = assertWithinRoot({ rootDir, path: parsed.path, },);
     await saveFile({ rootDir, path: parsed.path, content: parsed.content, },);
-    if (dirWatcher !== null) dirWatcher.suppressPath({ path: absolutePath, },);
+    if (dirWatcher !== null)
+      dirWatcher.suppressPath({ path: absolutePath, },);
     sendJson({ peer, message: { type: 'saved', id: parsed.id, path: parsed.path, }, },);
-    if (lspManager !== null) await lspManager.didSave({ path: parsed.path, },);
+    if (lspManager !== null)
+      await lspManager.didSave({ path: parsed.path, },);
     return;
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
@@ -83,20 +103,24 @@ export async function dispatchMessage({ peer, messageText, rootDir, lspManager, 
     const controller = new AbortController();
     peerSearchControllers.set(peer, controller,);
     assertWithinRoot({ rootDir, path: parsed.scope, },);
-    const result = await search({ rootDir: parsed.scope, query: parsed.query, signal: controller.signal, },);
-    if (!controller.signal.aborted) sendJson({ peer, message: { type: 'searchResults', id: parsed.id, ...result, }, },);
+    const result = await search({ rootDir: parsed.scope, query: parsed.query,
+      signal: controller.signal, },);
+    if (!controller.signal.aborted)
+      sendJson({ peer, message: { type: 'searchResults', id: parsed.id, ...result, }, },);
     return;
   }
 
-  if (await dispatchLspMessage({ peer, parsed, rootDir, lspManager, dirWatcher, },)) return;
-  if (await dispatchFsMessage({ peer, parsed, rootDir, lspManager, },)) return;
+  if (await dispatchLspMessage({ peer, parsed, rootDir, lspManager, dirWatcher, },))
+    return;
+  if (await dispatchFsMessage({ peer, parsed, rootDir, lspManager, },))
+    return;
 
-  l.error(`unknown message type: ${(parsed as { type: string }).type}`,);
+  l.error(`unknown message type: ${(parsed as { type: string; }).type}`,);
   sendJson({ peer, message: {
     type: 'error',
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
-    id: (parsed as { id?: string }).id,
+    id: (parsed as { id?: string; }).id,
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
-    message: `unknown message type: ${(parsed as { type: string }).type}`,
+    message: `unknown message type: ${(parsed as { type: string; }).type}`,
   }, },);
 }

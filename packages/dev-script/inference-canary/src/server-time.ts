@@ -45,9 +45,10 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
     const dateHeader = response.headers.get('date',);
     if (dateHeader !== null) {
       const parsed = new Date(dateHeader,);
-      if (!Number.isNaN(parsed.getTime(),))
+      if (!Number.isNaN(parsed.getTime(),)) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ISOTimestamp is a branded string; toISOString() always produces a valid ISO 8601 value
         return parsed.toISOString() as ISOTimestamp;
+      }
     }
     console.warn(
       '[server-time] Date header missing or unparseable, falling back to local clock',

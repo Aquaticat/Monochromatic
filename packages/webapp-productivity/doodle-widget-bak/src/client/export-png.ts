@@ -6,9 +6,9 @@
  */
 
 import {
+  type ExportDeps,
   renderBaseCanvas,
   triggerDownload,
-  type ExportDeps,
 } from './export.ts';
 
 //region Constants

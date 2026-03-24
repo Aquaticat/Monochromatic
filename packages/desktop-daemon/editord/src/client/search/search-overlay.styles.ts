@@ -1,4 +1,3 @@
-
 /**
  * Shadow DOM styles for the `<search-overlay>` web component.
  *
@@ -90,4 +89,5 @@ export const STYLES = DIALOG_STYLES + [
       'background-color': cssVar('search-match-bg',),
     },
   },),
-].join('',);
+]
+  .join('',);

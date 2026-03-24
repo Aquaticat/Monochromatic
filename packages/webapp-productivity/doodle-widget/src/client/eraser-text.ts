@@ -7,7 +7,10 @@
  * drags that sweep across a text input without stopping inside it.
  */
 
-import { type NormalizedPoint, denormalizePoint, } from './drawing.ts';
+import {
+  denormalizePoint,
+  type NormalizedPoint,
+} from './drawing.ts';
 import { segmentIntersectsRect, } from './geometry.ts';
 
 /**
@@ -28,7 +31,8 @@ import { segmentIntersectsRect, } from './geometry.ts';
  */
 function pointInInputRect(
   { px, py, input, }: {
-    px: number; py: number;
+    px: number;
+    py: number;
     input: HTMLInputElement;
   },
 ): boolean {
@@ -71,7 +75,7 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
   cw: number;
   ch: number;
   textLayer: HTMLDivElement;
-}): boolean {
+},): boolean {
   /** Current eraser position in content-space pixels */
   const { px, py, } = denormalizePoint({ point, cw, ch, },);
 
@@ -94,7 +98,10 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
     /** Check whether the eraser travel segment crosses the input rect */
     const hitSegment = prev !== null
       && segmentIntersectsRect({
-        sx: prev.px, sy: prev.py, ex: px, ey: py,
+        sx: prev.px,
+        sy: prev.py,
+        ex: px,
+        ey: py,
         left: input.offsetLeft,
         top: input.offsetTop,
         right: input.offsetLeft + input.offsetWidth,

@@ -6,16 +6,23 @@
  * Integrates with the LSP manager for language intelligence features.
  */
 
-
 import {
   defineWebSocketHandler,
   type EventHandler,
 } from 'h3';
 
-import { l as rootLogger, tagged, } from './log.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from './log.ts';
 import type { LspManager, } from './lsp/lsp-manager.ts';
 import type { DirWatcher, } from './operations/watch-filesystem.ts';
-import { dispatchMessage, peerSearchControllers, sendJson, type Peer, } from './ws-dispatch.ts';
+import {
+  dispatchMessage,
+  type Peer,
+  peerSearchControllers,
+  sendJson,
+} from './ws-dispatch.ts';
 
 /** Tagged logger for the WebSocket subsystem. */
 const l = tagged({ tag: 'ws', l: rootLogger, },);
@@ -25,7 +32,9 @@ const l = tagged({ tag: 'ws', l: rootLogger, },);
  *
  * @param peer - WebSocket peer to reject
  */
-function rejectUnauthenticated(peer: { send: (data: string) => void; close: () => void },): void {
+function rejectUnauthenticated(
+  peer: { send: (data: string,) => void; close: () => void; },
+): void {
   sendJson({ peer, message: { type: 'error', message: 'unauthorized', }, },);
   peer.close();
 }
@@ -47,21 +56,22 @@ function rejectUnauthenticated(peer: { send: (data: string) => void; close: () =
  *
  * @returns h3 event handler that upgrades to WebSocket
  */
-export function createWsHandler({ authToken, rootDir, fsId, lspManager, connectedPeers, dirWatcher, }: {
-  authToken: string;
-  rootDir: string;
-  fsId: string;
-  lspManager: LspManager | null;
-  connectedPeers: Set<{ send: (data: string) => void }>;
-  dirWatcher: DirWatcher | null;
-}): EventHandler {
+export function createWsHandler(
+  { authToken, rootDir, fsId, lspManager, connectedPeers, dirWatcher, }: {
+    authToken: string;
+    rootDir: string;
+    fsId: string;
+    lspManager: LspManager | null;
+    connectedPeers: Set<{ send: (data: string,) => void; }>;
+    dirWatcher: DirWatcher | null;
+  },
+): EventHandler {
   return defineWebSocketHandler(function resolveHooks(event,) {
     const url = new URL(event.url, 'http://localhost',);
     const token = url.searchParams.get('token',);
 
-    if (token !== authToken) {
+    if (token !== authToken)
       return { open: rejectUnauthenticated, };
-    }
 
     return {
       open: function handleOpen(peer,) {
@@ -72,7 +82,8 @@ export function createWsHandler({ authToken, rootDir, fsId, lspManager, connecte
 
       async message(peer, message,) {
         try {
-          await dispatchMessage({ peer, messageText: message.text(), rootDir, lspManager, dirWatcher, },);
+          await dispatchMessage({ peer, messageText: message.text(), rootDir, lspManager,
+            dirWatcher, },);
         }
         catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error,);

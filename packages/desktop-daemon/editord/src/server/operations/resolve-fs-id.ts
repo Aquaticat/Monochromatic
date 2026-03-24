@@ -23,8 +23,9 @@ import { platform, } from 'node:os';
  *
  * @returns hex string filesystem identifier (e.g. `"a281dfd5d0534daf"`)
  */
-function linuxFsId({ path, }: { path: string }): string {
-  return execFileSync('stat', ['-f', '--format=%i', path,], { encoding: 'utf8', },).trim();
+function linuxFsId({ path, }: { path: string; },): string {
+  return execFileSync('stat', ['-f', '--format=%i', path,], { encoding: 'utf8', },)
+    .trim();
 }
 
 /** Length of a Windows drive root prefix (e.g. `"C:\"`). */
@@ -37,14 +38,15 @@ const DRIVE_ROOT_LENGTH = 3;
  *
  * @returns volume serial string
  */
-function windowsFsId({ path, }: { path: string }): string {
+function windowsFsId({ path, }: { path: string; },): string {
   /** Extract drive root (e.g. "C:\") from the absolute path. */
   const driveRoot = path.slice(0, DRIVE_ROOT_LENGTH,);
-  const output = execFileSync('cmd.exe', ['/c', 'vol', driveRoot,], { encoding: 'utf8', },);
+  const output = execFileSync('cmd.exe', ['/c', 'vol', driveRoot,], {
+    encoding: 'utf8',
+  },);
   const match = output.match(/Serial Number is\s+(\S+)/i,);
-  if (match === null) {
+  if (match === null)
     throw new Error(`failed to parse volume serial from: ${output}`,);
-  }
   return match[1] ?? '';
 }
 
@@ -55,7 +57,7 @@ function windowsFsId({ path, }: { path: string }): string {
  *
  * @returns filesystem identifier string
  */
-function darwinFsId({ path, }: { path: string }): string {
+function darwinFsId({ path, }: { path: string; },): string {
   return execFileSync('stat', ['-f', '%v', path,], { encoding: 'utf8', },).trim();
 }
 
@@ -80,10 +82,13 @@ function darwinFsId({ path, }: { path: string }): string {
  * // => "1A2B-3C4D"
  * ```
  */
-export function resolveFsId({ path, }: { path: string }): string {
+export function resolveFsId({ path, }: { path: string; },): string {
   const os = platform();
-  if (os === 'linux') return linuxFsId({ path, },);
-  if (os === 'win32') return windowsFsId({ path, },);
-  if (os === 'darwin') return darwinFsId({ path, },);
+  if (os === 'linux')
+    return linuxFsId({ path, },);
+  if (os === 'win32')
+    return windowsFsId({ path, },);
+  if (os === 'darwin')
+    return darwinFsId({ path, },);
   throw new Error(`unsupported platform for filesystem ID resolution: ${os}`,);
 }

@@ -5,9 +5,20 @@
  * without removing the path itself.
  */
 
-import { readdir, readFile, rm, stat, writeFile, } from 'node:fs/promises';
-import { join, parse, } from 'node:path/posix';
-import { $ as tagged, } from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
+import {
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
+import {
+  join,
+  parse,
+} from 'node:path/posix';
+import {
+  $ as tagged,
+} from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
 
 /** Module-scoped tagged logger. */
 const l = tagged({ tag: 'path/empty', },);

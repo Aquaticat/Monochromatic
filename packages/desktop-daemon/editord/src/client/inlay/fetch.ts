@@ -8,7 +8,10 @@
 
 import type { InlayHint, } from '../../../protocol.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
-import { l, tagged, } from '../log.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for inlay hints. */
@@ -28,14 +31,15 @@ export async function fetchInlayHints({ ws, editorPane, getCurrentFilePath, }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
-}): Promise<void> {
+},): Promise<void> {
   const path = getCurrentFilePath();
   if (path === null)
     return;
 
   try {
     const range = editorPane.getDocumentRange();
-    if (range === null) return;
+    if (range === null)
+      return;
 
     const result = await ws.request({ type: 'inlayHint', path, range, },);
 

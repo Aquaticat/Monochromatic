@@ -81,7 +81,7 @@ type HOptions<TTag extends string,> = {
     [K in keyof HTMLElementEventMap]?: (
       event: HTMLElementEventMap[K],
     ) => void | Promise<void>;
-  // oxlint-disable-next-line typescript/no-explicit-any -- event parameter type varies by listener
+    // oxlint-disable-next-line typescript/no-explicit-any -- event parameter type varies by listener
   } & Partial<Record<string, (event: any,) => void | Promise<void>>>;
   /** Child nodes to append */
   children?: readonly (Node | string)[];
@@ -135,9 +135,10 @@ type HOptions<TTag extends string,> = {
   }
 
   if (on !== undefined) {
-    for (const [eventName, handler,] of Object.entries(on,))
+    for (const [eventName, handler,] of Object.entries(on,)) {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event handler union cast to EventListener for addEventListener
       element.addEventListener(eventName, handler as EventListener,);
+    }
   }
 
   if (children !== undefined)

@@ -33,7 +33,7 @@ export function wireSelectionRange({ ws, editorPane, getCurrentFilePath, }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
-}): { expandSelection: () => void; shrinkSelection: () => void } {
+},): { expandSelection: () => void; shrinkSelection: () => void; } {
   return {
     expandSelection: function expand(): void {
       doExpandSelection({ ws, editorPane, getCurrentFilePath, },);

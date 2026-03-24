@@ -19,6 +19,8 @@ export function postList(posts: readonly Post[],): string {
   return h({
     tag: 'ul',
     class: 'Posts',
-    children: posts.map(function renderCard(post,) { return postCard(post,); },),
+    children: posts.map(function renderCard(post,) {
+      return postCard(post,);
+    },),
   },);
 }

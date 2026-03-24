@@ -8,7 +8,10 @@
 
 import spawn from 'nano-spawn';
 
-import { l, tagged, } from '../log.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 
 /** Tagged logger for media probing. */
 const probeLog = tagged({ tag: 'probe-media', l, },);
@@ -37,7 +40,9 @@ const TIMEOUT_MS = 5_000;
  *
  * @returns trimmed metadata, or `null` if no `Input #` line found
  */
-function extractMetadata({ stderr, path, }: { stderr: string; path: string }): string | null {
+function extractMetadata(
+  { stderr, path, }: { stderr: string; path: string; },
+): string | null {
   if (stderr === '') {
     probeLog.info(`no output for: ${path}`,);
     return null;
@@ -62,7 +67,7 @@ function extractMetadata({ stderr, path, }: { stderr: string; path: string }): s
  *
  * @returns trimmed ffprobe output starting from `Input #`, or `null` on failure
  */
-export async function probeMedia({ path, }: { path: string }): Promise<string | null> {
+export async function probeMedia({ path, }: { path: string; },): Promise<string | null> {
   try {
     /** ffprobe writes metadata to stderr even on success. */
     const result = await spawn('ffprobe', [path,], { timeout: TIMEOUT_MS, },);
@@ -75,7 +80,7 @@ export async function probeMedia({ path, }: { path: string }): Promise<string | 
      */
     if (error !== null && typeof error === 'object' && 'stderr' in error) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check
-      const { stderr, } = error as { stderr: string };
+      const { stderr, } = error as { stderr: string; };
       return extractMetadata({ stderr, path, },);
     }
 

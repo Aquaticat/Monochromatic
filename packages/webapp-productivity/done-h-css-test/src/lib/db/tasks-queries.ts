@@ -8,9 +8,9 @@ import type {
   Task,
 } from '../types.ts';
 import {
-  type TaskRow,
   getTaskRowById,
   mapTask,
+  type TaskRow,
 } from './tasks-helpers.ts';
 import {
   SQL_SEARCH_FTS,

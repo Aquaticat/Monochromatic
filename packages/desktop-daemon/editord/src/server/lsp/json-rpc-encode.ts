@@ -27,7 +27,7 @@ export type JsonRpcResponse = {
   jsonrpc: '2.0';
   id: number;
   result?: unknown;
-  error?: { code: number; message: string; data?: unknown };
+  error?: { code: number; message: string; data?: unknown; };
 };
 
 /** Any JSON-RPC message that can arrive from an LSP server. */
@@ -45,7 +45,7 @@ export type JsonRpcMessage = JsonRpcRequest | JsonRpcNotification | JsonRpcRespo
  *
  * @returns Buffer containing the framed message
  */
-export function encodeLspMessage({ message, }: { message: unknown }): Buffer {
+export function encodeLspMessage({ message, }: { message: unknown; },): Buffer {
   const json = JSON.stringify(message,);
   const content = Buffer.from(json, 'utf8',);
   const header = `Content-Length: ${content.byteLength}\r\n\r\n`;

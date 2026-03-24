@@ -14,7 +14,10 @@ import { clearStrokes, } from './drawing.ts';
 import { exportAsPdf, } from './export-pdf.ts';
 import { exportAsPng, } from './export-png.ts';
 import { exportAsSvg, } from './export-svg.ts';
-import type { ExportDeps, ExportFormat, } from './export.ts';
+import type {
+  ExportDeps,
+  ExportFormat,
+} from './export.ts';
 import { clearTextEntries, } from './text.ts';
 
 /** Format-to-exporter dispatch table */
@@ -78,9 +81,21 @@ type ToolbarHandlerDeps = {
  */
 export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   const {
-    colorPicker, sizeSlider, clearBtn, exportBtn, formatSelect,
-    uploadBtn, uploadInput, container, svgOverlay, drawCanvas,
-    textLayer, ctx, getCanvasSize, sizeCanvas, pushSnapshot,
+    colorPicker,
+    sizeSlider,
+    clearBtn,
+    exportBtn,
+    formatSelect,
+    uploadBtn,
+    uploadInput,
+    container,
+    svgOverlay,
+    drawCanvas,
+    textLayer,
+    ctx,
+    getCanvasSize,
+    sizeCanvas,
+    pushSnapshot,
   } = deps;
 
   colorPicker.addEventListener('input', function handleColorChange(): void {

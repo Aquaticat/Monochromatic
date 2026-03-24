@@ -20,7 +20,9 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  *
  * @throws when either path escapes root or the copy fails
  */
-export async function copyEntry({ rootDir, path, destPath, }: { rootDir: string; path: string; destPath: string }): Promise<void> {
+export async function copyEntry(
+  { rootDir, path, destPath, }: { rootDir: string; path: string; destPath: string; },
+): Promise<void> {
   const absoluteSource = assertWithinRoot({ rootDir, path, },);
   const absoluteDest = assertWithinRoot({ rootDir, path: destPath, },);
 

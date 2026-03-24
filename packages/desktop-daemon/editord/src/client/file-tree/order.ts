@@ -27,13 +27,12 @@ const ORDER_BASE = 128;
  *
  * @returns integer suitable for the CSS `order` property
  */
-export function nameToOrder({ name, }: { name: string }): number {
+export function nameToOrder({ name, }: { name: string; },): number {
   const lower = name.toLowerCase();
   const limit = Math.min(lower.length, ORDER_CHARS,);
   // Mutable accumulator shifted left by ORDER_BASE per character
   let order = 0;
-  for (let index = 0; index < limit; index++) {
+  for (let index = 0; index < limit; index++)
     order = order * ORDER_BASE + (lower.codePointAt(index,) ?? 0);
-  }
   return order;
 }

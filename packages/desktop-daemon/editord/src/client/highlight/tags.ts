@@ -55,10 +55,12 @@ export type HighlightGroup = typeof HIGHLIGHT_GROUPS[number];
  */
 export const editorHighlighter = tagHighlighter([
   //region Code tags (JS/TS, JSON, CSS, YAML, TOML)
-  { tag: [tags.function(tags.variableName,), tags.function(tags.propertyName,),], class: 'function', },
+  { tag: [tags.function(tags.variableName,), tags.function(tags.propertyName,),],
+    class: 'function', },
   { tag: [tags.typeName, tags.namespace,], class: 'type', },
   { tag: [tags.keyword, tags.bool, tags.null, tags.self,], class: 'keyword', },
-  { tag: [tags.string, tags.special(tags.string,), tags.regexp, tags.escape,], class: 'string', },
+  { tag: [tags.string, tags.special(tags.string,), tags.regexp, tags.escape,],
+    class: 'string', },
   { tag: tags.comment, class: 'comment', },
   { tag: tags.number, class: 'number', },
   { tag: [tags.propertyName, tags.labelName, tags.attributeName,], class: 'property', },

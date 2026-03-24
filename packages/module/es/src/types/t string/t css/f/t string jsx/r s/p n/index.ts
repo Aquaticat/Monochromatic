@@ -57,9 +57,9 @@
  */
 
 import {
-  type CssOptions,
   buildAtRule,
   buildRule,
+  type CssOptions,
 } from './index.builders.ts';
 
 //region Re-exports

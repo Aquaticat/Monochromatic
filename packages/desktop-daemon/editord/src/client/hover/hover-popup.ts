@@ -6,9 +6,7 @@
  * Positioned absolutely relative to the viewport using fixed positioning.
  */
 
-import {
-  $ as h,
-} from '@monochromatic-dev/module-es/h-dom';
+import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
 import { STYLES, } from './hover-popup.styles.ts';
 
@@ -53,19 +51,21 @@ export class HoverPopup extends HTMLElement {
    *
    * @param y - vertical viewport coordinate (pixels, below the hovered text)
    */
-  show({ text, x, y, }: { text: string; x: number; y: number }): void {
+  show({ text, x, y, }: { text: string; x: number; y: number; },): void {
     if (this.#content === null)
       return;
 
     this.#content.textContent = text;
     this.style.setProperty('inset-inline-start', `${x}px`,);
     this.style.setProperty('inset-block-start', `${y + VERTICAL_OFFSET}px`,);
-    if (!this.matches(':popover-open',)) this.showPopover();
+    if (!this.matches(':popover-open',))
+      this.showPopover();
   }
 
   /** Hides the hover popup. */
   hide(): void {
-    if (this.matches(':popover-open',)) this.hidePopover();
+    if (this.matches(':popover-open',))
+      this.hidePopover();
   }
 
   /**

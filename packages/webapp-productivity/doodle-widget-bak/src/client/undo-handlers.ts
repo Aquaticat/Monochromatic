@@ -6,19 +6,23 @@
  * modules to record state after completing actions.
  */
 
-import { getStrokes, redraw, setStrokes, } from './drawing.ts';
+import {
+  getStrokes,
+  redraw,
+  setStrokes,
+} from './drawing.ts';
 import { getCurrentPageIndex, } from './pages.ts';
-import { clearTextEntries, } from './text.ts';
 import {
   restoreTextEntries,
   serializeTextEntries,
 } from './text-page.ts';
+import { clearTextEntries, } from './text.ts';
 import {
-  type Snapshot,
   canRedo,
   canUndo,
   pushSnapshot as pushHistorySnapshot,
   redo,
+  type Snapshot,
   undo,
 } from './undo-history.ts';
 
@@ -106,31 +110,32 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
       restoreSnapshot(snapshot,);
   },);
 
-  document.addEventListener('keydown', function handleUndoRedoKey(event: KeyboardEvent,): void {
-    /** Skip when focus is inside a text input to preserve native text undo */
-    if (event.target instanceof HTMLInputElement)
-      return;
+  document.addEventListener('keydown',
+    function handleUndoRedoKey(event: KeyboardEvent,): void {
+      /** Skip when focus is inside a text input to preserve native text undo */
+      if (event.target instanceof HTMLInputElement)
+        return;
 
-    const hasModifier = event.ctrlKey || event.metaKey;
-    if (!hasModifier)
-      return;
+      const hasModifier = event.ctrlKey || event.metaKey;
+      if (!hasModifier)
+        return;
 
-    const key = event.key.toLowerCase();
-    if (key === 'z') {
-      event.preventDefault();
-      const snapshot = event.shiftKey
-        ? redo(getCurrentPageIndex(),)
-        : undo(getCurrentPageIndex(),);
-      if (snapshot !== null)
-        restoreSnapshot(snapshot,);
-    }
-    else if (key === 'y') {
-      event.preventDefault();
-      const snapshot = redo(getCurrentPageIndex(),);
-      if (snapshot !== null)
-        restoreSnapshot(snapshot,);
-    }
-  },);
+      const key = event.key.toLowerCase();
+      if (key === 'z') {
+        event.preventDefault();
+        const snapshot = event.shiftKey
+          ? redo(getCurrentPageIndex(),)
+          : undo(getCurrentPageIndex(),);
+        if (snapshot !== null)
+          restoreSnapshot(snapshot,);
+      }
+      else if (key === 'y') {
+        event.preventDefault();
+        const snapshot = redo(getCurrentPageIndex(),);
+        if (snapshot !== null)
+          restoreSnapshot(snapshot,);
+      }
+    },);
 
   updateUndoButtons();
 

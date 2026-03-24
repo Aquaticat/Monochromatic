@@ -45,26 +45,28 @@ class FocusDropdown extends HTMLElement {
       tag: 'ul',
       class: 'menu',
       attrs: { popover: 'auto', },
-      children: DEFAULT_PRESETS.map(function buildOption(this: FocusDropdown, preset: string,): HTMLElement {
-        return h({
-          tag: 'li',
-          class: 'option',
-          text: preset,
-          on: {
-            click: function selectPreset(this: FocusDropdown,): void {
-              this.#value = preset;
-              textSpan.textContent = preset;
-              menu.hidePopover();
-              this.dispatchEvent(
-                new CustomEvent('change', { bubbles: true,
-                  detail: { value: preset, }, },),
-              );
-            }
-              .bind(this,),
-          },
-        },);
-      }
-        .bind(this,),),
+      children: DEFAULT_PRESETS.map(
+        function buildOption(this: FocusDropdown, preset: string,): HTMLElement {
+          return h({
+            tag: 'li',
+            class: 'option',
+            text: preset,
+            on: {
+              click: function selectPreset(this: FocusDropdown,): void {
+                this.#value = preset;
+                textSpan.textContent = preset;
+                menu.hidePopover();
+                this.dispatchEvent(
+                  new CustomEvent('change', { bubbles: true,
+                    detail: { value: preset, }, },),
+                );
+              }
+                .bind(this,),
+            },
+          },);
+        }
+          .bind(this,),
+      ),
     },);
 
     this.#shadow.replaceChildren(

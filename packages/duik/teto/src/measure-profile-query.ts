@@ -105,7 +105,7 @@ export function minWidthInRange(
 export function contentBounds(profile: WidthProfile,): ContentBoundsResult {
   if (profile.rows.length === 0)
     return { top: 0, bottom: 0, totalHeight: 0, };
-  const [firstRow] = profile.rows;
+  const [firstRow,] = profile.rows;
   if (firstRow === undefined)
     return { top: 0, bottom: 0, totalHeight: 0, };
   const top = firstRow.y;

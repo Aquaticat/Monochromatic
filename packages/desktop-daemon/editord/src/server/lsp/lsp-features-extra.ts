@@ -8,7 +8,10 @@
 import { pathToFileURL, } from 'node:url';
 
 import type { LspClient, } from './lsp-client.ts';
-import type { LspInlayHint, LspSelectionRange, } from './types.ts';
+import type {
+  LspInlayHint,
+  LspSelectionRange,
+} from './types.ts';
 
 /**
  * Requests inlay hints from an LSP client for a given range.
@@ -24,8 +27,9 @@ import type { LspInlayHint, LspSelectionRange, } from './types.ts';
 export async function requestInlayHints({ client, path, range, }: {
   client: LspClient;
   path: string;
-  range: { start: { line: number; character: number }; end: { line: number; character: number } };
-}): Promise<LspInlayHint[]> {
+  range: { start: { line: number; character: number; };
+    end: { line: number; character: number; }; };
+},): Promise<LspInlayHint[]> {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/inlayHint',
@@ -55,8 +59,8 @@ export async function requestInlayHints({ client, path, range, }: {
 export async function requestSelectionRange({ client, path, positions, }: {
   client: LspClient;
   path: string;
-  positions: { line: number; character: number }[];
-}): Promise<LspSelectionRange[]> {
+  positions: { line: number; character: number; }[];
+},): Promise<LspSelectionRange[]> {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/selectionRange',

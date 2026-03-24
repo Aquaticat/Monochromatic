@@ -28,13 +28,17 @@ export { wireSessionPersistence, } from '../session/persistence.ts';
  *
  * @returns boot file path (or null) and saved recent files list
  */
-export async function restoreSession({ ws, editorPane, fileTree, loadFileSafe, queryFilePath, }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  fileTree: FileTree;
-  loadFileSafe: (opts: { path: string; line?: number | undefined; character?: number | undefined }) => Promise<void>;
-  queryFilePath: string | null;
-}): Promise<{ filePath: string | null; recentFiles: string[] }> {
+export async function restoreSession(
+  { ws, editorPane, fileTree, loadFileSafe, queryFilePath, }: {
+    ws: EditorWsClient;
+    editorPane: EditorPane;
+    fileTree: FileTree;
+    loadFileSafe: (
+      opts: { path: string; line?: number | undefined; character?: number | undefined; },
+    ) => Promise<void>;
+    queryFilePath: string | null;
+  },
+): Promise<{ filePath: string | null; recentFiles: string[]; }> {
   /** Saved session state from a previous visit, if any. */
   const saved = restoreSessionState({ fsId: ws.fsId, rootDir: ws.rootDir, },);
 
@@ -44,16 +48,14 @@ export async function restoreSession({ ws, editorPane, fileTree, loadFileSafe, q
    */
   const bootFilePath = queryFilePath ?? saved?.filePath ?? null;
 
-  if (bootFilePath !== null) {
+  if (bootFilePath !== null)
     await loadFileSafe({ path: bootFilePath, },);
-  }
 
   await fileTree.expandRoot(ws.rootDir,);
 
   /** Restore expanded directories from saved state after the root has been rendered. */
-  if (saved !== null && saved.expandedDirs.length > 0) {
+  if (saved !== null && saved.expandedDirs.length > 0)
     await fileTree.restoreExpansion({ dirs: saved.expandedDirs, },);
-  }
 
   /** Restore cursor and scroll position after file and tree are loaded. */
   if (saved !== null && bootFilePath !== null && bootFilePath === saved.filePath) {

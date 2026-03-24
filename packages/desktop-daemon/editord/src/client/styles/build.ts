@@ -10,14 +10,17 @@
  * ```
  */
 
-import { mkdir, writeFile, } from 'node:fs/promises';
+import {
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { STYLES as CTX_MENU_STYLES, } from '../context-menu/context-menu.styles.ts';
+import { STYLES as TOAST_STYLES, } from '../toast/toast.styles.ts';
 import { STYLES as FAB_STYLES, } from './fullscreen-fab.styles.ts';
 import { STYLES as RESET_STYLES, } from './reset.ts';
 import { STYLES as THEME_STYLES, } from './theme.ts';
-import { STYLES as TOAST_STYLES, } from '../toast/toast.styles.ts';
 
 export {};
 

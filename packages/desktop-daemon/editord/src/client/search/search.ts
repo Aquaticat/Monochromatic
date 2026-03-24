@@ -6,7 +6,10 @@
  */
 
 import type { SearchResult, } from '../../../protocol.ts';
-import { l as rootLogger, tagged, } from '../log.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from '../log.ts';
 
 /** Tagged logger for the search subsystem. */
 const l = tagged({ tag: 'search-overlay-search', l: rootLogger, },);
@@ -32,7 +35,7 @@ export type SearchState = {
 export function scheduleSearch({ state, execute, }: {
   state: SearchState;
   execute: () => void;
-}): void {
+},): void {
   globalThis.clearTimeout(state.debounceTimer,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types are loaded; client-only code always receives a number
   state.debounceTimer = globalThis.setTimeout(execute, DEBOUNCE_MS,) as unknown as number;
@@ -53,21 +56,33 @@ export async function performSearch({ raw, state, onSearch, onResults, }: {
   raw: string;
   state: SearchState;
   onSearch: (query: string,) => Promise<SearchResult[]>;
-  onResults: (opts: { results: SearchResult[]; query: string },) => void;
-}): Promise<void> {
-  if (raw.trim() === '') { onResults({ results: [], query: '', },); return; }
+  onResults: (opts: { results: SearchResult[]; query: string; },) => void;
+},): Promise<void> {
+  if (raw.trim() === '') {
+    onResults({ results: [], query: '', },);
+    return;
+  }
   const isContentOnly = raw.startsWith('%',);
   const query = isContentOnly ? raw.slice(1,).trim() : raw.trim();
-  if (query === '') { onResults({ results: [], query: '', },); return; }
+  if (query === '') {
+    onResults({ results: [], query: '', },);
+    return;
+  }
   const generation = ++state.searchGeneration;
   try {
     const results = await onSearch(query,);
-    if (generation !== state.searchGeneration) return;
-    const filtered = isContentOnly ? results.filter(function isContent(r,) { return r.kind === 'content'; },) : results;
+    if (generation !== state.searchGeneration)
+      return;
+    const filtered = isContentOnly
+      ? results.filter(function isContent(r,) {
+        return r.kind === 'content';
+      },)
+      : results;
     onResults({ results: filtered, query, },);
   }
   catch (error) {
-    if (generation !== state.searchGeneration) return;
+    if (generation !== state.searchGeneration)
+      return;
     l.error(`search failed: ${String(error,)}`,);
     onResults({ results: [], query, },);
   }

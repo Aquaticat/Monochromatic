@@ -11,7 +11,11 @@ import {
   endPan,
   startPan,
 } from './zoom-pan.ts';
-import { getPanX, getPanY, zoomAt, } from './zoom.ts';
+import {
+  getPanX,
+  getPanY,
+  zoomAt,
+} from './zoom.ts';
 
 /** Hold duration in milliseconds to trigger long-press zoom-out */
 const LONG_PRESS_MS = 500;
@@ -84,7 +88,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       if (getToolMode() !== 'zoom')
         return;
       const { cw, ch, } = getCanvasSize();
-      const dragging = continuePan({ event, containerWidth: cw, containerHeight: ch, zoomLayer, },);
+      const dragging = continuePan({ event, containerWidth: cw, containerHeight: ch,
+        zoomLayer, },);
       if (dragging) {
         clearLongPress();
         setZoomCursor('move',);
@@ -113,12 +118,11 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       setZoomCursor(event.shiftKey ? 'zoom-out' : 'zoom-in',);
     },);
 
-  canvas.addEventListener('pointercancel',
-    function handleZoomPointerCancel(): void {
-      clearLongPress();
-      endPan();
-      downEvent = null;
-    },);
+  canvas.addEventListener('pointercancel', function handleZoomPointerCancel(): void {
+    clearLongPress();
+    endPan();
+    downEvent = null;
+  },);
 
   //region iOS touch fallback
   /**

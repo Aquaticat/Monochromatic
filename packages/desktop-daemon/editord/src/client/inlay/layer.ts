@@ -6,8 +6,14 @@
  * Zero DOM contamination: annotations are pure CSS pseudo-elements.
  */
 
-import type { Diagnostic, InlayHint, } from '../../../protocol.ts';
-import { applyLineAnnotation, groupByLine, } from './line.ts';
+import type {
+  Diagnostic,
+  InlayHint,
+} from '../../../protocol.ts';
+import {
+  applyLineAnnotation,
+  groupByLine,
+} from './line.ts';
 import { measureSpaceRatio, } from './measure.ts';
 
 /**
@@ -17,7 +23,9 @@ import { measureSpaceRatio, } from './measure.ts';
  *
  * @returns 0-based line number
  */
-function hintLine(hint: InlayHint,): number { return hint.position.line; }
+function hintLine(hint: InlayHint,): number {
+  return hint.position.line;
+}
 
 /**
  * Extracts the start line number from a diagnostic.
@@ -26,7 +34,9 @@ function hintLine(hint: InlayHint,): number { return hint.position.line; }
  *
  * @returns 0-based line number
  */
-function diagLine(diagnostic: Diagnostic,): number { return diagnostic.range.start.line; }
+function diagLine(diagnostic: Diagnostic,): number {
+  return diagnostic.range.start.line;
+}
 
 /** Tracks which line indices currently have annotations, enabling targeted cleanup. */
 let annotatedLines = new Set<number>();
@@ -50,7 +60,7 @@ export function applyInlayAnnotations({ editor, hints, diagnostics, }: {
   editor: HTMLElement;
   hints: InlayHint[];
   diagnostics: Diagnostic[];
-}): void {
+},): void {
   const spaceRatio = measureSpaceRatio({ editor, },);
   const hintsByLine = groupByLine({ items: hints, keyFn: hintLine, },);
   const diagsByLine = groupByLine({ items: diagnostics, keyFn: diagLine, },);
@@ -59,13 +69,16 @@ export function applyInlayAnnotations({ editor, hints, diagnostics, }: {
 
   for (const line of newLines) {
     const div = children[line];
-    if (div !== undefined && div instanceof HTMLElement)
-      applyLineAnnotation({ div, lineHints: hintsByLine.get(line,), lineDiags: diagsByLine.get(line,), spaceRatio, },);
+    if (div !== undefined && div instanceof HTMLElement) {
+      applyLineAnnotation({ div, lineHints: hintsByLine.get(line,), lineDiags: diagsByLine
+        .get(line,), spaceRatio, },);
+    }
   }
 
   /** Clear annotations only from lines that previously had them but no longer do. */
   for (const line of annotatedLines) {
-    if (newLines.has(line,)) continue;
+    if (newLines.has(line,))
+      continue;
     const div = children[line];
     if (div instanceof HTMLElement && div.dataset.inlay !== undefined) {
       delete div.dataset.inlay;
@@ -82,7 +95,7 @@ export function applyInlayAnnotations({ editor, hints, diagnostics, }: {
  *
  * @param editor - contenteditable container element
  */
-export function clearInlayAnnotations({ editor, }: { editor: HTMLElement }): void {
+export function clearInlayAnnotations({ editor, }: { editor: HTMLElement; },): void {
   for (const line of annotatedLines) {
     const child = editor.children[line];
     if (child instanceof HTMLElement) {

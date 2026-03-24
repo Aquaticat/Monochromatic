@@ -71,8 +71,7 @@ class SideDrawer extends HTMLElement {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns the panel div we created
     this.#panel = this.#shadow.querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
 
-    this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener('click',
-      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+    this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener('click', // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
       function closeDrawer(this: SideDrawer,): void {
         this.open = false;
       }
@@ -80,11 +79,12 @@ class SideDrawer extends HTMLElement {
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
     // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-    this.#panel.addEventListener('click', function lightDismiss(this: SideDrawer, event: Event,): void {
-      if (event.target === this.#panel)
-        this.open = false;
-    }
-      .bind(this,),);
+    this.#panel.addEventListener('click',
+      function lightDismiss(this: SideDrawer, event: Event,): void {
+        if (event.target === this.#panel)
+          this.open = false;
+      }
+        .bind(this,),);
   }
 
   /** Toggles popover visibility when the open attribute changes. */

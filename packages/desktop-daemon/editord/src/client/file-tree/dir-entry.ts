@@ -39,7 +39,9 @@ export type ShowContextDetail = {
  *
  * @param event - context menu event to suppress
  */
-function suppressContextMenu(event: Event,): void { event.preventDefault(); }
+function suppressContextMenu(event: Event,): void {
+  event.preventDefault();
+}
 
 /**
  * `<tree-dir-entry>` — directory entry with native `<details>` toggle.
@@ -65,11 +67,14 @@ export class TreeDirEntry extends HTMLElement {
   /**
    * @returns container for child entry elements
    */
-  get childrenContainer(): HTMLDivElement | null { return this.#childrenContainer; }
+  get childrenContainer(): HTMLDivElement | null {
+    return this.#childrenContainer;
+  }
 
   /** Builds the `<details><summary>` structure and attaches event handlers. */
   connectedCallback(): void {
-    if (this.#initialized) return;
+    if (this.#initialized)
+      return;
     this.#initialized = true;
 
     this.dataset['path'] = this.entryPath;
@@ -82,11 +87,13 @@ export class TreeDirEntry extends HTMLElement {
       children: [h({ tag: 'span', class: 'name', text: this.entryName, },),],
       on: {
         mouseup: function handleDirContext(event: MouseEvent,) {
-          if (event.button !== 2) return;
+          if (event.button !== 2)
+            return;
           event.preventDefault();
           entry.dispatchEvent(new CustomEvent('show-context', {
             bubbles: true,
-            detail: { x: event.clientX, y: event.clientY, path: entry.entryPath, kind: 'dir' as const, },
+            detail: { x: event.clientX, y: event.clientY, path: entry.entryPath,
+              kind: 'dir' as const, },
           },),);
         },
         contextmenu: suppressContextMenu,
@@ -100,10 +107,12 @@ export class TreeDirEntry extends HTMLElement {
         toggle: function handleToggle(event: Event,) {
           // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle fires on <details>
           const detailsEl = event.currentTarget as HTMLDetailsElement;
-          if (!detailsEl.open) return;
+          if (!detailsEl.open)
+            return;
           entry.dispatchEvent(new CustomEvent('dir-open', {
             bubbles: true,
-            detail: { path: entry.entryPath, childrenContainer: entry.#childrenContainer, },
+            detail: { path: entry.entryPath,
+              childrenContainer: entry.#childrenContainer, },
           },),);
         },
       },
@@ -123,7 +132,9 @@ export class TreeDirEntry extends HTMLElement {
  *
  * @returns configured element (renders on DOM insertion)
  */
-export function createTreeDirEntry({ path, name, }: { path: string; name: string }): TreeDirEntry {
+export function createTreeDirEntry(
+  { path, name, }: { path: string; name: string; },
+): TreeDirEntry {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define
   const entry = document.createElement('tree-dir-entry',) as TreeDirEntry;
   entry.entryPath = path;

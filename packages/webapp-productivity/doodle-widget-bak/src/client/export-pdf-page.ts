@@ -44,14 +44,16 @@ import {
  * });
  * ```
  */
-export async function renderPageCanvas({ cw, ch, svgBackground, strokes, container, overlay, }: {
-  cw: number;
-  ch: number;
-  svgBackground: string;
-  strokes: readonly StrokeData[];
-  container: HTMLDivElement;
-  overlay: HTMLDivElement;
-},): Promise<OffscreenCanvas> {
+export async function renderPageCanvas(
+  { cw, ch, svgBackground, strokes, container, overlay, }: {
+    cw: number;
+    ch: number;
+    svgBackground: string;
+    strokes: readonly StrokeData[];
+    container: HTMLDivElement;
+    overlay: HTMLDivElement;
+  },
+): Promise<OffscreenCanvas> {
   /** Set overlay to this page's SVG for layout computation */
   overlay.innerHTML = svgBackground;
 

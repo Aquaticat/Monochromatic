@@ -27,35 +27,37 @@ export function renderDashboard(
     overlaysHtml: string;
   },
 ): string {
-  return `${h({
-    tag: 'nav',
-    class: 'view-switcher',
-    children: [
-      h({
-        tag: 'details',
-        class: 'view-section',
-        attrs: { open: '', },
-        children: [
-          h({ tag: 'summary', text: 'Overview', },),
-          h({ tag: 'div', class: 'pane', html: overviewHtml, },),
-        ],
-      },),
-      h({
-        tag: 'details',
-        class: 'view-section',
-        children: [
-          h({ tag: 'summary', text: 'By model', },),
-          h({ tag: 'div', class: 'pane', html: byModelHtml, },),
-        ],
-      },),
-      h({
-        tag: 'details',
-        class: 'view-section',
-        children: [
-          h({ tag: 'summary', text: 'By probe', },),
-          h({ tag: 'div', class: 'pane', html: byProbeHtml, },),
-        ],
-      },),
-    ],
-  },)}\n${overlaysHtml}`;
+  return `${
+    h({
+      tag: 'nav',
+      class: 'view-switcher',
+      children: [
+        h({
+          tag: 'details',
+          class: 'view-section',
+          attrs: { open: '', },
+          children: [
+            h({ tag: 'summary', text: 'Overview', },),
+            h({ tag: 'div', class: 'pane', html: overviewHtml, },),
+          ],
+        },),
+        h({
+          tag: 'details',
+          class: 'view-section',
+          children: [
+            h({ tag: 'summary', text: 'By model', },),
+            h({ tag: 'div', class: 'pane', html: byModelHtml, },),
+          ],
+        },),
+        h({
+          tag: 'details',
+          class: 'view-section',
+          children: [
+            h({ tag: 'summary', text: 'By probe', },),
+            h({ tag: 'div', class: 'pane', html: byProbeHtml, },),
+          ],
+        },),
+      ],
+    },)
+  }\n${overlaysHtml}`;
 }

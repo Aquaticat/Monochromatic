@@ -9,8 +9,8 @@
 
 import { jsPDF, } from 'jspdf';
 
-import type { ExportDeps, } from './export.ts';
 import { renderPageCanvas, } from './export-pdf-page.ts';
+import type { ExportDeps, } from './export.ts';
 import { snapshotAllPages, } from './pages.ts';
 
 //region Constants
@@ -128,10 +128,12 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     /** Composited raster image for this page */
     // eslint-disable-next-line no-await-in-loop -- pages render sequentially; each mutates the shared overlay element
     const pageCanvas = await renderPageCanvas({
-      cw, ch,
+      cw,
+      ch,
       svgBackground: page.svgBackground,
       strokes: page.strokes,
-      container, overlay,
+      container,
+      overlay,
     },);
 
     /** PNG image data as byte array for jsPDF embedding */

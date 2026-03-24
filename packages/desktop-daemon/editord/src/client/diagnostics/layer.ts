@@ -25,18 +25,16 @@ const SEVERITY_LEVELS = ['error', 'warning', 'info', 'hint',] as const;
 export function applyDiagnosticHighlights({ editor, diagnostics, }: {
   editor: HTMLElement;
   diagnostics: Diagnostic[];
-}): void {
+},): void {
   /** Group diagnostics by severity. */
   const bySeverity = new Map<string, globalThis.Range[]>();
-  for (const level of SEVERITY_LEVELS) {
+  for (const level of SEVERITY_LEVELS)
     bySeverity.set(level, [],);
-  }
 
   for (const diagnostic of diagnostics) {
     const range = createDiagnosticRange({ editor, diagnostic, },);
-    if (range !== null) {
+    if (range !== null)
       bySeverity.get(diagnostic.severity,)?.push(range,);
-    }
   }
 
   /** Register or remove highlights for each severity level. */
@@ -46,12 +44,10 @@ export function applyDiagnosticHighlights({ editor, diagnostics, }: {
     if (ranges === undefined)
       continue;
 
-    if (ranges.length > 0) {
+    if (ranges.length > 0)
       CSS.highlights.set(highlightName, new Highlight(...ranges,),);
-    }
-    else {
+    else
       CSS.highlights.delete(highlightName,);
-    }
   }
 }
 
@@ -59,7 +55,6 @@ export function applyDiagnosticHighlights({ editor, diagnostics, }: {
  * Clears all diagnostic highlights from the CSS Custom Highlight API.
  */
 export function clearDiagnosticHighlights(): void {
-  for (const level of SEVERITY_LEVELS) {
+  for (const level of SEVERITY_LEVELS)
     CSS.highlights.delete(`diag-${level}`,);
-  }
 }

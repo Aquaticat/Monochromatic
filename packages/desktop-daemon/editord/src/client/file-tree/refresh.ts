@@ -7,10 +7,16 @@
  */
 
 import type { DirEntry, } from '../../../protocol.ts';
-import type { FileTreeState, } from './state.ts';
-import { childPath, preloadChildren, } from './entries.ts';
-import { type TreeDirEntry, createTreeDirEntry, } from './dir-entry.ts';
+import {
+  createTreeDirEntry,
+  type TreeDirEntry,
+} from './dir-entry.ts';
+import {
+  childPath,
+  preloadChildren,
+} from './entries.ts';
 import { createTreeFileEntry, } from './file-entry.ts';
+import type { FileTreeState, } from './state.ts';
 
 /**
  * Resolves the DOM container for a directory's children.
@@ -32,18 +38,23 @@ export function resolveRefreshContainer({ tree, path, rootPath, loadedDirs, }: {
   path: string;
   rootPath: string;
   loadedDirs: Set<string>;
-}): HTMLElement | null {
+},): HTMLElement | null {
   let container: HTMLElement | null = null;
-  if (path === rootPath) {
+  if (path === rootPath)
     container = tree;
-  }
   else {
-    const summary = tree.querySelector<HTMLElement>(`summary[data-path="${CSS.escape(path,)}"]`,);
-    if (summary === null) return null;
-    container = summary.parentElement?.querySelector<HTMLElement>(':scope > .children',) ?? null;
+    const summary = tree.querySelector<HTMLElement>(
+      `summary[data-path="${CSS.escape(path,)}"]`,
+    );
+    if (summary === null)
+      return null;
+    container = summary.parentElement?.querySelector<HTMLElement>(':scope > .children',)
+      ?? null;
   }
-  if (container === null) return null;
-  if (path !== rootPath && !loadedDirs.has(path,)) return null;
+  if (container === null)
+    return null;
+  if (path !== rootPath && !loadedDirs.has(path,))
+    return null;
   return container;
 }
 
@@ -63,16 +74,22 @@ export async function performRefreshDir({ tree, path, rootPath, state, }: {
   path: string;
   rootPath: string;
   state: FileTreeState;
-}): Promise<void> {
-  if (state.fetchDir === null) return;
-  const container = resolveRefreshContainer({ tree, path, rootPath, loadedDirs: state.loadedDirs, },);
-  if (container === null) return;
+},): Promise<void> {
+  if (state.fetchDir === null)
+    return;
+  const container = resolveRefreshContainer({ tree, path, rootPath,
+    loadedDirs: state.loadedDirs, },);
+  if (container === null)
+    return;
   await refreshDirContents({
-    container, path, fetchDir: state.fetchDir,
+    container,
+    path,
+    fetchDir: state.fetchDir,
     recentPaths: state.recentPaths,
     preloadFn: function preload(opts,) {
       if (state.fetchDir !== null) {
-        void preloadChildren({ ...opts, fetchDir: state.fetchDir, prefetchCache: state.prefetchCache, },);
+        void preloadChildren({ ...opts, fetchDir: state.fetchDir, prefetchCache: state
+          .prefetchCache, },);
       }
     },
   },);
@@ -94,29 +111,38 @@ export async function performRefreshDir({ tree, path, rootPath, state, }: {
  *
  * @param preloadFn - preloads subdirectory children
  */
-export async function refreshDirContents({ container, path, fetchDir, recentPaths, preloadFn, }: {
-  container: HTMLElement;
-  path: string;
-  fetchDir: (dirPath: string,) => Promise<DirEntry[]>;
-  recentPaths: string[];
-  preloadFn: (opts: { parentPath: string; entries: DirEntry[] },) => void;
-}): Promise<void> {
+export async function refreshDirContents(
+  { container, path, fetchDir, recentPaths, preloadFn, }: {
+    container: HTMLElement;
+    path: string;
+    fetchDir: (dirPath: string,) => Promise<DirEntry[]>;
+    recentPaths: string[];
+    preloadFn: (opts: { parentPath: string; entries: DirEntry[]; },) => void;
+  },
+): Promise<void> {
   const entries = await fetchDir(path,);
 
   /** Preserve existing `<tree-dir-entry>` elements for subdirs that still exist. */
   const existingDirs = new Map<string, TreeDirEntry>();
-  for (const dirEntry of container.querySelectorAll<TreeDirEntry>(':scope > tree-dir-entry',)) {
-    if (dirEntry.entryPath !== '') existingDirs.set(dirEntry.entryPath, dirEntry,);
+  for (const dirEntry of container.querySelectorAll<TreeDirEntry>(
+    ':scope > tree-dir-entry',
+  )) {
+    if (dirEntry.entryPath !== '')
+      existingDirs.set(dirEntry.entryPath, dirEntry,);
   }
 
   const elements = entries.map(function createOrReuseEntry(entry,) {
     const fullPath = childPath({ parentPath: path, name: entry.name, },);
     if (entry.isDirectory) {
       const existing = existingDirs.get(fullPath,);
-      if (existing !== undefined) { existingDirs.delete(fullPath,); return existing; }
+      if (existing !== undefined) {
+        existingDirs.delete(fullPath,);
+        return existing;
+      }
       return createTreeDirEntry({ path: fullPath, name: entry.name, },);
     }
-    return createTreeFileEntry({ path: fullPath, name: entry.name, recencyIndex: recentPaths.indexOf(fullPath,), },);
+    return createTreeFileEntry({ path: fullPath, name: entry.name,
+      recencyIndex: recentPaths.indexOf(fullPath,), },);
   },);
 
   container.replaceChildren(...elements,);

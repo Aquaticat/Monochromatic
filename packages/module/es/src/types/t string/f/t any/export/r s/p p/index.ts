@@ -60,9 +60,10 @@ const primitive = Object.freeze(
  */
 export function $(obj: unknown,): string {
   const objType = unknownToTypeOfString(obj,);
-  if (primitive.includes(objType,))
+  if (primitive.includes(objType,)) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- objType verified in primitive tuple
     return serializePrimitive(obj, objType as typeof primitive[number],);
+  }
 
   return match(objType,)
     .with('set', function handler() {

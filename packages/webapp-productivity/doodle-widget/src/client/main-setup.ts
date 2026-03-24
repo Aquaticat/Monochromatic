@@ -5,14 +5,17 @@
  * and attaches page switching and resize observers.
  */
 
+import {
+  initPages,
+  switchToPage,
+} from './pages.ts';
 import type { ToolMode, } from './pointer-handler-deps.ts';
-import { initPages, switchToPage, } from './pages.ts';
-import { setupPointerHandlers, } from './pointer-handlers.ts';
 import { setupZoomPointerHandlers, } from './pointer-handlers-zoom.ts';
+import { setupPointerHandlers, } from './pointer-handlers.ts';
 import { setTextLayer, } from './text.ts';
 import { setupToolbarHandlers, } from './toolbar-handlers.ts';
-import { initHistory, } from './undo-history.ts';
 import { setupUndoHandlers, } from './undo-handlers.ts';
+import { initHistory, } from './undo-history.ts';
 import { resetZoom, } from './zoom.ts';
 
 /**
@@ -48,10 +51,26 @@ export type WidgetDeps = {
  */
 export function setupWidget(deps: WidgetDeps,): void {
   const {
-    backgroundsScript, canvas, ctx, getToolMode, getCanvasSize,
-    textLayer, container, zoomLayer, svgOverlay, pageToggle,
-    colorPicker, sizeSlider, clearBtn, exportBtn, formatSelect,
-    uploadBtn, uploadInput, undoBtn, redoBtn, sizeCanvas,
+    backgroundsScript,
+    canvas,
+    ctx,
+    getToolMode,
+    getCanvasSize,
+    textLayer,
+    container,
+    zoomLayer,
+    svgOverlay,
+    pageToggle,
+    colorPicker,
+    sizeSlider,
+    clearBtn,
+    exportBtn,
+    formatSelect,
+    uploadBtn,
+    uploadInput,
+    undoBtn,
+    redoBtn,
+    sizeCanvas,
   } = deps;
 
   const parsed: unknown = JSON.parse(backgroundsScript.textContent,);
@@ -64,21 +83,43 @@ export function setupWidget(deps: WidgetDeps,): void {
   setTextLayer(textLayer,);
 
   const { pushSnapshot, updateUndoButtons, } = setupUndoHandlers({
-    undoBtn, redoBtn, ctx, getCanvasSize, textLayer,
+    undoBtn,
+    redoBtn,
+    ctx,
+    getCanvasSize,
+    textLayer,
   },);
   textLayer.addEventListener('textfinalized', pushSnapshot,);
 
   const pointerDeps = {
-    canvas, ctx, getToolMode, getCanvasSize,
-    textLayer, pushSnapshot, container, zoomLayer,
+    canvas,
+    ctx,
+    getToolMode,
+    getCanvasSize,
+    textLayer,
+    pushSnapshot,
+    container,
+    zoomLayer,
   };
   setupPointerHandlers(pointerDeps,);
   setupZoomPointerHandlers(pointerDeps,);
 
   setupToolbarHandlers({
-    colorPicker, sizeSlider, clearBtn, exportBtn, formatSelect,
-    uploadBtn, uploadInput, container, svgOverlay, drawCanvas: canvas,
-    textLayer, ctx, getCanvasSize, sizeCanvas, pushSnapshot,
+    colorPicker,
+    sizeSlider,
+    clearBtn,
+    exportBtn,
+    formatSelect,
+    uploadBtn,
+    uploadInput,
+    container,
+    svgOverlay,
+    drawCanvas: canvas,
+    textLayer,
+    ctx,
+    getCanvasSize,
+    sizeCanvas,
+    pushSnapshot,
   },);
 
   pageToggle.addEventListener('change', function handlePageChange(event: Event,): void {
@@ -87,7 +128,8 @@ export function setupWidget(deps: WidgetDeps,): void {
       return;
     resetZoom(zoomLayer,);
     const { cw, ch, } = getCanvasSize();
-    switchToPage({ index: Number(target.value,), ctx, cw, ch, overlay: svgOverlay, textLayer, },);
+    switchToPage({ index: Number(target.value,), ctx, cw, ch, overlay: svgOverlay,
+      textLayer, },);
     updateUndoButtons();
   },);
 

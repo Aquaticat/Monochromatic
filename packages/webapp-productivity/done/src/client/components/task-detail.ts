@@ -51,26 +51,31 @@ class TaskDetail extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
     this.#autofill = new AutofillController({
       // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-      getState: function getState(this: TaskDetail,): { tags: string[]; locations: string[];
-        priority: string | null; complexity: string | null; }
+      getState: function getState(
+        this: TaskDetail,
+      ): { tags: string[]; locations: string[]; priority: string | null;
+        complexity: string | null; }
       {
         return { tags: this.#tags, locations: this.#locations, priority: this.#priority,
           complexity: this.#complexity, };
       }
         .bind(this,),
-      setState: function setState(this: TaskDetail, update: { tags?: string[];
-        locations?: string[]; priority?: string | null;
-        complexity?: string | null; },): void {
+      setState: function setState(this: TaskDetail,
+        update: { tags?: string[]; locations?: string[]; priority?: string | null;
+          complexity?: string | null; },): void
+      {
         if (update.tags !== undefined)
           this.#tags = update.tags as string[];
         if (update.locations !== undefined)
           this.#locations = update.locations as string[];
-        if (update.priority !== undefined)
+        if (update.priority !== undefined) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskPriority union
           this.#priority = update.priority as TaskPriority | null;
-        if (update.complexity !== undefined)
+        }
+        if (update.complexity !== undefined) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskComplexity union
           this.#complexity = update.complexity as TaskComplexity | null;
+        }
       }
         .bind(this,),
       // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)

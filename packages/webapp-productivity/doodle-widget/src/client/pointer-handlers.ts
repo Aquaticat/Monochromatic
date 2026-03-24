@@ -7,17 +7,17 @@
  * {@link import('./pointer-handlers-zoom.ts')}.
  */
 import {
-  type NormalizedPoint,
+  getStrokeColor,
+  getStrokeWidth,
+} from './drawing-config.ts';
+import {
   continueStroke,
   endStroke,
+  type NormalizedPoint,
   normalizePointer,
   redraw,
   startStroke,
 } from './drawing.ts';
-import {
-  getStrokeColor,
-  getStrokeWidth,
-} from './drawing-config.ts';
 import { eraseStrokesAt, } from './eraser-strokes.ts';
 import { eraseTextAt, } from './eraser-text.ts';
 import type { PointerHandlerDeps, } from './pointer-handler-deps.ts';
@@ -65,7 +65,8 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
         erasedInGesture = false;
         prevErasePoint = null;
         const strokeErased = eraseStrokesAt({ point, previousPoint: null, cw, ch, },);
-        const textErased = eraseTextAt({ point, previousPoint: null, cw, ch, textLayer, },);
+        const textErased = eraseTextAt({ point, previousPoint: null, cw, ch,
+          textLayer, },);
         if (strokeErased || textErased)
           erasedInGesture = true;
         if (strokeErased)
@@ -89,8 +90,10 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       if (mode === 'erase') {
         if (!erasing)
           return;
-        const strokeErased = eraseStrokesAt({ point, previousPoint: prevErasePoint, cw, ch, },);
-        const textErased = eraseTextAt({ point, previousPoint: prevErasePoint, cw, ch, textLayer, },);
+        const strokeErased = eraseStrokesAt({ point, previousPoint: prevErasePoint, cw,
+          ch, },);
+        const textErased = eraseTextAt({ point, previousPoint: prevErasePoint, cw, ch,
+          textLayer, },);
         if (strokeErased || textErased)
           erasedInGesture = true;
         if (strokeErased)

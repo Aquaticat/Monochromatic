@@ -162,7 +162,7 @@ function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[
  */
 export function readTextEntries({ textLayer, }: {
   textLayer: HTMLDivElement;
-}): ExportTextEntry[] {
+},): ExportTextEntry[] {
   const inputs = textLayer.querySelectorAll<HTMLInputElement>('.text-input',);
 
   return resolveExportEntries(

@@ -47,14 +47,17 @@ function renderCanvasContainer(): string {
  */
 export function renderPage(
   { css, js, svgBackgrounds, }: {
-    css: string; js: string; svgBackgrounds: readonly string[];
+    css: string;
+    js: string;
+    svgBackgrounds: readonly string[];
   },
 ): string {
   /**
    * Escape `</` as `<\/` to prevent premature script tag closure.
    * `\/` is a valid JSON escape for `/`.
    */
-  const backgroundsJson = JSON.stringify(svgBackgrounds,).replaceAll('</', String.raw`<\/`,);
+  const backgroundsJson = JSON.stringify(svgBackgrounds,).replaceAll('</',
+    String.raw`<\/`,);
 
   return `<!DOCTYPE html>\n${
     h({
@@ -87,7 +90,8 @@ export function renderPage(
             h({
               tag: 'div',
               attrs: { id: 'zoom-toast', popover: 'manual', },
-              text: 'Click to zoom in \u00B7 Shift+click or long-press to zoom out \u00B7 Drag to pan',
+              text:
+                'Click to zoom in \u00B7 Shift+click or long-press to zoom out \u00B7 Drag to pan',
             },),
             h({
               tag: 'script',

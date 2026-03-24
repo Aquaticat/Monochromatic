@@ -5,7 +5,9 @@
  * offset, hex bytes grouped by 8, ASCII representation.
  */
 
-import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
 
 /** Hexadecimal radix for `toString` and `padStart`. */
 const HEX_RADIX = 16;
@@ -48,7 +50,9 @@ const ASCII_PRINTABLE_END = 0x7E;
  * // "00000000  48 65 6c 6c 6f                                    |Hello|"
  * ```
  */
-export function generateHexDump({ buffer, totalSize, }: { buffer: Buffer; totalSize?: number }): string {
+export function generateHexDump(
+  { buffer, totalSize, }: { buffer: Buffer; totalSize?: number; },
+): string {
   const fullSize = totalSize ?? buffer.length;
   const limit = Math.min(buffer.length, HEX_DUMP_MAX_BYTES,);
   const lines: string[] = [];
@@ -62,7 +66,8 @@ export function generateHexDump({ buffer, totalSize, }: { buffer: Buffer; totalS
     let ascii = '';
 
     for (let i = 0; i < BYTES_PER_LINE; i++) {
-      if (i === GROUP_BOUNDARY) hexParts.push('',);
+      if (i === GROUP_BOUNDARY)
+        hexParts.push('',);
       if (i < chunk.length) {
         const byte = notNullishOrThrow(chunk[i],);
         hexParts.push(byte.toString(HEX_RADIX,).padStart(2, '0',),);
@@ -80,7 +85,9 @@ export function generateHexDump({ buffer, totalSize, }: { buffer: Buffer; totalS
 
   if (fullSize > limit) {
     lines.push('',);
-    lines.push(`... truncated (showing ${limit.toLocaleString()} of ${fullSize.toLocaleString()} bytes)`,);
+    lines.push(
+      `... truncated (showing ${limit.toLocaleString()} of ${fullSize.toLocaleString()} bytes)`,
+    );
   }
 
   return lines.join('\n',);

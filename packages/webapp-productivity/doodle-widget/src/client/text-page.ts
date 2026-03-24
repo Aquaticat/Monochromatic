@@ -59,7 +59,7 @@ export function createTextInput({ insetInlineStart, insetBlockStart, color, font
   insetBlockStart: string;
   color: string;
   fontSize: string;
-}): HTMLInputElement {
+},): HTMLInputElement {
   const input = document.createElement('input',);
   input.type = 'text';
   input.className = 'text-input';
@@ -109,7 +109,7 @@ export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
 export function restoreTextEntries({ entries, layer, }: {
   entries: readonly TextEntryData[];
   layer: HTMLDivElement;
-}): void {
+},): void {
   for (const entry of entries) {
     const input = createTextInput({
       insetInlineStart: entry.insetInlineStart,
@@ -148,7 +148,7 @@ export function replaceTextEntries({ entries, layer, clearFn, }: {
   entries: readonly TextEntryData[];
   layer: HTMLDivElement;
   clearFn: () => void;
-}): void {
+},): void {
   clearFn();
   restoreTextEntries({ entries, layer, },);
 }

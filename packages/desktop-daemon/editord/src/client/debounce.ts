@@ -21,7 +21,9 @@
  *
  * @returns debounced wrapper
  */
-export function createDebounced({ fn, delayMs, }: { fn: () => void; delayMs: number }): () => void {
+export function createDebounced(
+  { fn, delayMs, }: { fn: () => void; delayMs: number; },
+): () => void {
   let timer = 0;
   return function debounced(): void {
     clearTimeout(timer,);

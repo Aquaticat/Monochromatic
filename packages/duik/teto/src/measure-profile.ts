@@ -69,7 +69,7 @@ export function measureWidthProfile(imagePath: string, tmpDir: string,): WidthPr
   },);
 
   /** First data line is "width height", second is max value. */
-  const [firstLine] = dataLines;
+  const [firstLine,] = dataLines;
   if (firstLine === undefined)
     throw new Error('PGM file has no data lines',);
   const [width, height,] = firstLine.trim().split(/\s+/,).map(Number,);

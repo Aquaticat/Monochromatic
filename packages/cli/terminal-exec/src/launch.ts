@@ -11,7 +11,10 @@
 import { spawn, } from 'node:child_process';
 
 import { buildCommand, } from './build-command.ts';
-import { l as parentLogger, tagged, } from './log.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
 import { resolveTerminal, } from './resolve.ts';
 
 /** Tagged logger for this module. */
@@ -38,7 +41,7 @@ export async function launchTerminal({ dir, command = [], title = '', }: {
   dir: string;
   command?: readonly string[];
   title?: string;
-}): Promise<void> {
+},): Promise<void> {
   const terminal = await resolveTerminal();
 
   if (terminal === null) {
@@ -56,9 +59,8 @@ export async function launchTerminal({ dir, command = [], title = '', }: {
     options: { appId: '', title, dir, hold: false, command, },
   },);
 
-  if (argv.length === 0) {
+  if (argv.length === 0)
     throw new Error('launchTerminal: buildCommand returned empty argv',);
-  }
 
   const [executable, ...args] = argv;
 

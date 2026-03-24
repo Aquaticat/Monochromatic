@@ -10,7 +10,10 @@
 import { relative, } from 'node:path';
 
 import type { SearchResult, } from '../../protocol.ts';
-import { l as rootLogger, tagged, } from '../log.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from '../log.ts';
 import { streamRg, } from './stream-rg.ts';
 
 /** Tagged logger for the search subsystem. */
@@ -37,8 +40,8 @@ type SearchOperationResult = {
 type RgJsonMatch = {
   type: 'match';
   data: {
-    path: { text: string };
-    lines: { text: string };
+    path: { text: string; };
+    lines: { text: string; };
     line_number: number;
   };
 };
@@ -56,7 +59,7 @@ type RgJsonMatch = {
  *
  * @returns whether the query contains an uppercase character
  */
-function hasUpperCase({ query, }: { query: string }): boolean {
+function hasUpperCase({ query, }: { query: string; },): boolean {
   return query !== query.toLowerCase();
 }
 
@@ -80,7 +83,7 @@ function searchFiles({ rootDir, query, signal, }: {
   rootDir: string;
   query: string;
   signal: AbortSignal | undefined;
-}): Promise<SearchResult[]> {
+},): Promise<SearchResult[]> {
   const caseSensitive = hasUpperCase({ query, },);
   const normalizedQuery = caseSensitive ? query : query.toLowerCase();
 
@@ -128,7 +131,7 @@ export async function search({ rootDir, query, signal, }: {
   rootDir: string;
   query: string;
   signal?: AbortSignal;
-}): Promise<SearchOperationResult> {
+},): Promise<SearchOperationResult> {
   l.info(`searching for "${query}"`,);
 
   const [files, contents,] = await Promise.all([
@@ -155,7 +158,7 @@ function searchContents({ rootDir, query, signal, }: {
   rootDir: string;
   query: string;
   signal: AbortSignal | undefined;
-}): Promise<SearchResult[]> {
+},): Promise<SearchResult[]> {
   return streamRg({
     args: ['--json', '--smart-case', '--max-count', '1', '--', query, rootDir,],
     maxResults: MAX_CONTENT_RESULTS,
@@ -163,7 +166,7 @@ function searchContents({ rootDir, query, signal, }: {
     processLine: function matchContent(line,) {
       try {
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- rg --json output is typed; we only process 'match' entries
-        const parsed = JSON.parse(line,) as RgJsonMatch | { type: string };
+        const parsed = JSON.parse(line,) as RgJsonMatch | { type: string; };
         if (parsed.type !== 'match')
           return null;
 

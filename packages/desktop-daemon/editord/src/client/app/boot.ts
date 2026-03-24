@@ -11,7 +11,10 @@ import type { RecentFiles, } from '../recent-files.ts';
 import type { SearchOverlay, } from '../search/search-overlay.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 import type { AppState, } from './events.ts';
-import { restoreSession, wireSessionPersistence, } from './session.ts';
+import {
+  restoreSession,
+  wireSessionPersistence,
+} from './session.ts';
 
 /**
  * Performs session restore and initial state setup after WebSocket is ready.
@@ -34,26 +37,40 @@ import { restoreSession, wireSessionPersistence, } from './session.ts';
  *
  * @param queryFilePath - file path from URL query parameter
  */
-export async function bootSession({ ws, editorPane, fileTree, searchOverlay, state, recentFiles, loadFileSafe, refreshInlayHints, queryFilePath, }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  fileTree: FileTree;
-  searchOverlay: SearchOverlay;
-  state: AppState;
-  recentFiles: RecentFiles;
-  loadFileSafe: (opts: { path: string; line?: number | undefined; character?: number | undefined }) => Promise<void>;
-  refreshInlayHints: () => void;
-  queryFilePath: string | null;
-}): Promise<void> {
+export async function bootSession(
+  { ws, editorPane, fileTree, searchOverlay, state, recentFiles, loadFileSafe,
+    refreshInlayHints, queryFilePath, }: {
+      ws: EditorWsClient;
+      editorPane: EditorPane;
+      fileTree: FileTree;
+      searchOverlay: SearchOverlay;
+      state: AppState;
+      recentFiles: RecentFiles;
+      loadFileSafe: (
+        opts: { path: string; line?: number | undefined;
+          character?: number | undefined; },
+      ) => Promise<void>;
+      refreshInlayHints: () => void;
+      queryFilePath: string | null;
+    },
+): Promise<void> {
   await ws.ready;
-  wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay, getCurrentFilePath: function get() { return state.currentFilePath; }, getRecentFiles: function get() { return recentFiles.paths; }, },);
-  const restored = await restoreSession({ ws, editorPane, fileTree, loadFileSafe, queryFilePath, },);
+  wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay,
+    getCurrentFilePath: function get() {
+      return state.currentFilePath;
+    }, getRecentFiles: function get() {
+      return recentFiles.paths;
+    }, },);
+  const restored = await restoreSession({ ws, editorPane, fileTree, loadFileSafe,
+    queryFilePath, },);
   state.currentFilePath = restored.filePath;
   recentFiles.paths.length = 0;
   recentFiles.paths.push(...restored.recentFiles,);
-  if (state.currentFilePath !== null) recentFiles.push(state.currentFilePath,);
+  if (state.currentFilePath !== null)
+    recentFiles.push(state.currentFilePath,);
   await fileTree.revealFiles({ paths: recentFiles.paths, },);
   fileTree.updateRecency({ paths: recentFiles.paths, },);
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- currentFileKind is mutated by loadFileSafe which runs during restoreSession above
-  if (state.currentFilePath !== null && state.currentFileKind === 'text') refreshInlayHints();
+  if (state.currentFilePath !== null && state.currentFileKind === 'text')
+    refreshInlayHints();
 }

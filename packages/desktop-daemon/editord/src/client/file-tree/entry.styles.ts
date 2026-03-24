@@ -99,4 +99,5 @@ export const ENTRY_STYLES = [
       opacity: cssNum(1 / 2,),
     },
   },),
-].join('',);
+]
+  .join('',);

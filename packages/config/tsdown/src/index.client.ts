@@ -33,7 +33,7 @@ const _default_1: UserConfig = defineConfig({
     },
   },
   deps: {
-    alwaysBundle: [/^@monochromatic-dev\//, /^@lezer\//, /^lezer-/, /^jspdf$/],
+    alwaysBundle: [/^@monochromatic-dev\//, /^@lezer\//, /^lezer-/, /^jspdf$/,],
   },
   minify: process.env.NODE_ENV === 'production',
   report: false,

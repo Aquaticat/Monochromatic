@@ -6,14 +6,17 @@
  */
 
 import type { EditorPane, } from '../editor/editor-pane.ts';
-import { l, tagged, } from '../log.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
+import type { EditorWsClient, } from '../ws/client.ts';
 import { fetchChain, } from './fetch.ts';
 import {
   type FlatRange,
   strictlyContains,
   toFlat,
 } from './utils.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for selection shrink. */
 const shrinkLog = tagged({ tag: 'selection-shrink', l, },);
@@ -32,20 +35,25 @@ export function doShrinkSelection({ ws, editorPane, getCurrentFilePath, }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
-}): void {
+},): void {
   const path = getCurrentFilePath();
-  if (path === null) return;
+  if (path === null)
+    return;
 
   const currentSel = editorPane.getSelection();
-  if (currentSel === null) return;
+  if (currentSel === null)
+    return;
 
   const pos = editorPane.getCursorPosition();
-  if (pos === null) return;
+  if (pos === null)
+    return;
 
   void (async function doShrink(): Promise<void> {
     try {
-      const chain = await fetchChain({ ws, path, line: pos.line, character: pos.character, },);
-      if (chain.length === 0) return;
+      const chain = await fetchChain({ ws, path, line: pos.line, character: pos
+        .character, },);
+      if (chain.length === 0)
+        return;
 
       /**
        * Find the largest range strictly smaller than the current selection.
@@ -57,14 +65,17 @@ export function doShrinkSelection({ ws, editorPane, getCurrentFilePath, }: {
         const flat = toFlat({ sr: entry, },);
         /** Without this combined check, the inner `best` comparison would run for non-contained ranges. */
         if (strictlyContains({ outer: currentSel, inner: flat, },)
-          && (best === null || strictlyContains({ outer: flat, inner: best, },))) {
+          && (best === null || strictlyContains({ outer: flat, inner: best, },)))
+        {
           best = flat;
         }
       }
 
       if (best !== null) {
         editorPane.setSelection(best,);
-        shrinkLog.info(`shrink: ${best.startLine}:${best.startCharacter}-${best.endLine}:${best.endCharacter}`,);
+        shrinkLog.info(
+          `shrink: ${best.startLine}:${best.startCharacter}-${best.endLine}:${best.endCharacter}`,
+        );
       }
       else {
         /** No smaller range — collapse to cursor. */

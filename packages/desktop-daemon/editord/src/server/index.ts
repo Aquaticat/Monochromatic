@@ -16,13 +16,22 @@
  * ```
  */
 
-import { H3, serve, } from 'h3';
-import { join, } from 'node:path';
 import { plugin as ws, } from 'crossws/server';
+import {
+  H3,
+  serve,
+} from 'h3';
+import { join, } from 'node:path';
 
 import { registerRoutes, } from './index-routes.ts';
-import { l, tagged, } from './log.ts';
-import { LspManager, type WireDiagnostic, } from './lsp/lsp-manager.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import {
+  LspManager,
+  type WireDiagnostic,
+} from './lsp/lsp-manager.ts';
 import { resolveFsId, } from './operations/resolve-fs-id.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
 import { DirWatcher, } from './operations/watch-filesystem.ts';
@@ -71,7 +80,7 @@ const lspLog = tagged({ tag: 'lsp', l, },);
  * Set of connected WebSocket peers for broadcasting diagnostics.
  * Updated by the ws handler on open/close.
  */
-const connectedPeers = new Set<{ send: (data: string) => void }>();
+const connectedPeers = new Set<{ send: (data: string,) => void; }>();
 
 /**
  * Pushes diagnostics from LSP servers to all connected WebSocket peers.
@@ -80,11 +89,12 @@ const connectedPeers = new Set<{ send: (data: string) => void }>();
  *
  * @param diagnostics - merged diagnostics from all LSP sources
  */
-function handleDiagnostics({ path, diagnostics, }: { path: string; diagnostics: WireDiagnostic[] }): void {
+function handleDiagnostics(
+  { path, diagnostics, }: { path: string; diagnostics: WireDiagnostic[]; },
+): void {
   const message = JSON.stringify({ type: 'diagnostics', path, diagnostics, },);
-  for (const peer of connectedPeers) {
+  for (const peer of connectedPeers)
     peer.send(message,);
-  }
 }
 
 /** LSP server coordinator managing oxlint, tsgo, and dprint. */
@@ -110,9 +120,8 @@ const dirWatcher = new DirWatcher({
       changeType: event.changeType,
       isDirectory: event.isDirectory,
     },);
-    for (const peer of connectedPeers) {
+    for (const peer of connectedPeers)
       peer.send(message,);
-    }
   },
   l,
 },);
@@ -129,7 +138,9 @@ registerRoutes({ app, packageRoot, authToken: AUTH_TOKEN, rootDir: ROOT_DIR, },)
 
 //region WebSocket — editor communication
 
-app.get('/_ws', createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, fsId: FS_ID, lspManager, connectedPeers, dirWatcher, },),);
+app.get('/_ws',
+  createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, fsId: FS_ID, lspManager,
+    connectedPeers, dirWatcher, },),);
 
 //endregion WebSocket
 

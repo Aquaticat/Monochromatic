@@ -31,7 +31,9 @@ export function postStyles(): string {
   return [
     $({ rule: '.Posts', decls: {
       display: 'grid',
-      'grid-template-columns': cssCompounded([`repeat(auto-fit, minmax(${cssRem(POST_GRID_MIN,)}, 1fr))`,],),
+      'grid-template-columns': cssCompounded([
+        `repeat(auto-fit, minmax(${cssRem(POST_GRID_MIN,)}, 1fr))`,
+      ],),
       gap: cssRem(GAP,),
       'list-style-type': 'none',
       'padding-inline-start': 0,
@@ -75,5 +77,6 @@ export function postStyles(): string {
       'font-size': cssRem(FONT_SIZE_SMALL,),
       color: cssVar('color-subtle',),
     }, },),
-  ].join('\n',);
+  ]
+    .join('\n',);
 }

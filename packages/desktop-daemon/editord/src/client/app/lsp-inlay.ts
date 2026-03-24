@@ -27,7 +27,7 @@ export function wireInlayHints({ ws, editorPane, getCurrentFilePath, }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
-}): { refresh: () => void } {
+},): { refresh: () => void; } {
   editorPane.addEventListener('contentchange', createDebounced({
     fn: function refreshInlayHints() {
       void fetchInlayHints({ ws, editorPane, getCurrentFilePath, },);

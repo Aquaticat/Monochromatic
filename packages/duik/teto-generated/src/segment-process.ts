@@ -119,7 +119,9 @@ export async function processPart({
   const BBOX_H_IDX = 3;
   const MIN_BLOB_AREA = 20;
   const AREA_FRACTION = 0.01;
-  const bboxArea = Math.round(part.bbox[BBOX_W_IDX] * imgWidth * part.bbox[BBOX_H_IDX] * imgHeight,);
+  const bboxArea = Math.round(
+    part.bbox[BBOX_W_IDX] * imgWidth * part.bbox[BBOX_H_IDX] * imgHeight,
+  );
   const areaThreshold = Math.max(MIN_BLOB_AREA, Math.round(bboxArea * AREA_FRACTION,),);
   const final = `${masksDir}/${part.name}.pgm`;
   await run([

@@ -22,8 +22,11 @@ import {
  *
  * @param mediaInfo - trimmed ffprobe output, or undefined to skip
  */
-function appendMediaInfo({ shadow, mediaInfo, }: { shadow: ShadowRoot; mediaInfo: string | undefined }): void {
-  if (mediaInfo === undefined) return;
+function appendMediaInfo(
+  { shadow, mediaInfo, }: { shadow: ShadowRoot; mediaInfo: string | undefined; },
+): void {
+  if (mediaInfo === undefined)
+    return;
   shadow.append(h({ tag: 'pre', class: 'media-info', text: mediaInfo, },),);
 }
 
@@ -41,9 +44,12 @@ function appendMediaInfo({ shadow, mediaInfo, }: { shadow: ShadowRoot; mediaInfo
  * @param mediaInfo - optional ffprobe metadata to display below the image
  */
 export function showImage({ shadow, host, clear, url, mediaInfo, }: {
-  shadow: ShadowRoot; host: HTMLElement; clear: () => void;
-  url: string; mediaInfo: string | undefined;
-}): void {
+  shadow: ShadowRoot;
+  host: HTMLElement;
+  clear: () => void;
+  url: string;
+  mediaInfo: string | undefined;
+},): void {
   clear();
   shadow.append(createImageContent({ url, },),);
   appendMediaInfo({ shadow, mediaInfo, },);
@@ -64,9 +70,12 @@ export function showImage({ shadow, host, clear, url, mediaInfo, }: {
  * @param mediaInfo - optional ffprobe metadata to display below the player
  */
 export function showAudio({ shadow, host, clear, url, mediaInfo, }: {
-  shadow: ShadowRoot; host: HTMLElement; clear: () => void;
-  url: string; mediaInfo: string | undefined;
-}): void {
+  shadow: ShadowRoot;
+  host: HTMLElement;
+  clear: () => void;
+  url: string;
+  mediaInfo: string | undefined;
+},): void {
   clear();
   shadow.append(createAudioContent({ url, },),);
   appendMediaInfo({ shadow, mediaInfo, },);
@@ -87,9 +96,12 @@ export function showAudio({ shadow, host, clear, url, mediaInfo, }: {
  * @param mediaInfo - optional ffprobe metadata to display below the player
  */
 export function showVideo({ shadow, host, clear, url, mediaInfo, }: {
-  shadow: ShadowRoot; host: HTMLElement; clear: () => void;
-  url: string; mediaInfo: string | undefined;
-}): void {
+  shadow: ShadowRoot;
+  host: HTMLElement;
+  clear: () => void;
+  url: string;
+  mediaInfo: string | undefined;
+},): void {
   clear();
   shadow.append(createVideoContent({ url, },),);
   appendMediaInfo({ shadow, mediaInfo, },);

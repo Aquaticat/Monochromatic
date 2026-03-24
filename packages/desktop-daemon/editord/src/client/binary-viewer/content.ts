@@ -12,7 +12,8 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
  * Repeat/loop icon as inline SVG.
  * Single circular arrow indicating track repeat.
  */
-const REPEAT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>`;
+const REPEAT_ICON_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>`;
 
 /**
  * Creates an image preview element.
@@ -21,7 +22,7 @@ const REPEAT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" heig
  *
  * @returns img element
  */
-export function createImageContent({ url, }: { url: string }): HTMLElement {
+export function createImageContent({ url, }: { url: string; },): HTMLElement {
   return h({ tag: 'img', attrs: { src: url, alt: 'Image preview', }, },);
 }
 
@@ -32,7 +33,7 @@ export function createImageContent({ url, }: { url: string }): HTMLElement {
  *
  * @returns container with audio element and repeat button
  */
-export function createAudioContent({ url, }: { url: string }): HTMLElement {
+export function createAudioContent({ url, }: { url: string; },): HTMLElement {
   const audio = h({ tag: 'audio', attrs: { src: url, controls: '', }, },);
 
   const repeatBtn = h({
@@ -58,7 +59,7 @@ export function createAudioContent({ url, }: { url: string }): HTMLElement {
  *
  * @returns video element
  */
-export function createVideoContent({ url, }: { url: string }): HTMLElement {
+export function createVideoContent({ url, }: { url: string; },): HTMLElement {
   return h({ tag: 'video', attrs: { src: url, controls: '', }, },);
 }
 
@@ -69,6 +70,6 @@ export function createVideoContent({ url, }: { url: string }): HTMLElement {
  *
  * @returns pre element
  */
-export function createHexDumpContent({ content, }: { content: string }): HTMLElement {
+export function createHexDumpContent({ content, }: { content: string; },): HTMLElement {
   return h({ tag: 'pre', text: content, },);
 }

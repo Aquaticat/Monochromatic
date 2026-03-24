@@ -16,7 +16,9 @@ import type { DirEntry, } from '../../../protocol.ts';
  *
  * @returns absolute path for the child
  */
-export function childPath({ parentPath, name, }: { parentPath: string; name: string }): string {
+export function childPath(
+  { parentPath, name, }: { parentPath: string; name: string; },
+): string {
   return parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
 }
 
@@ -29,12 +31,14 @@ const MAX_PREFETCH_CACHE_SIZE = 200;
  *
  * @param cache - prefetch cache map to evict from
  */
-function evictPrefetchCache({ cache, }: { cache: Map<string, DirEntry[]> }): void {
-  if (cache.size <= MAX_PREFETCH_CACHE_SIZE) return;
+function evictPrefetchCache({ cache, }: { cache: Map<string, DirEntry[]>; },): void {
+  if (cache.size <= MAX_PREFETCH_CACHE_SIZE)
+    return;
   const excess = cache.size - MAX_PREFETCH_CACHE_SIZE;
   let removed = 0;
   for (const key of cache.keys()) {
-    if (removed >= excess) break;
+    if (removed >= excess)
+      break;
     cache.delete(key,);
     removed++;
   }
@@ -58,10 +62,12 @@ export async function preloadChildren({ parentPath, entries, fetchDir, prefetchC
   entries: DirEntry[];
   fetchDir: (path: string,) => Promise<DirEntry[]>;
   prefetchCache: Map<string, DirEntry[]>;
-}): Promise<void> {
+},): Promise<void> {
   await Promise.allSettled(
     entries
-      .filter(function isDir(entry,) { return entry.isDirectory; },)
+      .filter(function isDir(entry,) {
+        return entry.isDirectory;
+      },)
       .map(async function prefetchDir(entry,) {
         const fullPath = childPath({ parentPath, name: entry.name, },);
         const children = await fetchDir(fullPath,);

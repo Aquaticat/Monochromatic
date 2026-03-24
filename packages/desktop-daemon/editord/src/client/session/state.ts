@@ -7,7 +7,10 @@
  * machines or volumes serving the same path never collide.
  */
 
-import { l as rootLogger, tagged, } from '../log.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from '../log.ts';
 
 /** Tagged logger for session state operations. */
 const l = tagged({ tag: 'session', l: rootLogger, },);
@@ -19,7 +22,7 @@ export type SessionState = {
   /** Absolute paths of all expanded directories in the file tree. */
   expandedDirs: string[];
   /** 0-based cursor position in the editor. */
-  cursor: { line: number; character: number };
+  cursor: { line: number; character: number; };
   /** Vertical scroll offset of the editor pane in pixels. */
   scrollTop: number;
   /** Recently opened file paths, index 0 = most recent. May be absent in older saved state. */
@@ -35,7 +38,7 @@ export type SessionState = {
  *
  * @returns scoped localStorage key
  */
-function storageKey({ fsId, rootDir, }: { fsId: string; rootDir: string }): string {
+function storageKey({ fsId, rootDir, }: { fsId: string; rootDir: string; },): string {
   return `editord:${fsId}:${rootDir}`;
 }
 
@@ -52,7 +55,7 @@ export function saveSessionState({ fsId, rootDir, state, }: {
   fsId: string;
   rootDir: string;
   state: SessionState;
-}): void {
+},): void {
   try {
     const key = storageKey({ fsId, rootDir, },);
     localStorage.setItem(key, JSON.stringify(state,),);
@@ -74,11 +77,12 @@ export function saveSessionState({ fsId, rootDir, state, }: {
 export function restoreSessionState({ fsId, rootDir, }: {
   fsId: string;
   rootDir: string;
-}): SessionState | null {
+},): SessionState | null {
   try {
     const key = storageKey({ fsId, rootDir, },);
     const raw = localStorage.getItem(key,);
-    if (raw === null) return null;
+    if (raw === null)
+      return null;
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated by caller usage
     return JSON.parse(raw,) as SessionState;
   }

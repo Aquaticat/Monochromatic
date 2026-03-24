@@ -17,7 +17,10 @@ const WHITE_FILL_RE = /fill:#fff(?:fff)?/gu;
 
 /** White fill attribute values to detect on elements */
 const WHITE_FILL_ATTRS: ReadonlySet<string> = new Set([
-  '#fff', '#ffffff', 'white', 'rgb(255,255,255)',
+  '#fff',
+  '#ffffff',
+  'white',
+  'rgb(255,255,255)',
 ],);
 
 /**
@@ -46,10 +49,10 @@ export function removeWhiteFills(svgMarkup: string,): string {
   const doc = parser.parseFromString(processed, 'image/svg+xml',);
   const allElements = doc.querySelectorAll<SVGElement>('[fill]',);
   for (const element of allElements) {
-    const fill = (element.getAttribute('fill',) ?? '').toLowerCase().replaceAll(/\s/gu, '',);
-    if (WHITE_FILL_ATTRS.has(fill,)) {
+    const fill = (element.getAttribute('fill',) ?? '').toLowerCase().replaceAll(/\s/gu,
+      '',);
+    if (WHITE_FILL_ATTRS.has(fill,))
       element.setAttribute('fill', 'none',);
-    }
   }
   return new XMLSerializer().serializeToString(doc.documentElement,);
 }

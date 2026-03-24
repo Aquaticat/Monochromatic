@@ -36,7 +36,7 @@ export function middleOut({ text, query, budget, }: {
   text: string;
   query: string;
   budget: number;
-}): string {
+},): string {
   if (text.length <= budget)
     return text;
 

@@ -20,22 +20,29 @@ export function selectAndCopyLine({ editor, line, composedRange, }: {
   editor: HTMLDivElement;
   line: number;
   composedRange: StaticRange;
-}): boolean {
-  if (!composedRange.collapsed) return false;
+},): boolean {
+  if (!composedRange.collapsed)
+    return false;
 
   const lineDiv = editor.children[line];
-  if (lineDiv === undefined) return false;
+  if (lineDiv === undefined)
+    return false;
 
   const selection = document.getSelection();
-  if (selection === null) return false;
+  if (selection === null)
+    return false;
 
   const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
   const firstText = walker.nextNode();
-  if (firstText === null) return false;
+  if (firstText === null)
+    return false;
 
   let lastText: Node = firstText;
   let next = walker.nextNode();
-  while (next !== null) { lastText = next; next = walker.nextNode(); }
+  while (next !== null) {
+    lastText = next;
+    next = walker.nextNode();
+  }
 
   const lastLen = lastText.textContent?.length ?? 0;
   selection.setBaseAndExtent(firstText, 0, lastText, lastLen,);

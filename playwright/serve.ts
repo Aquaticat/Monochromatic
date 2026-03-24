@@ -24,10 +24,11 @@ app.all(
   defineHandler(async function serveTestHarness(event,) {
     const { pathname, } = event.url;
 
-    if (pathname === '/' || pathname === '/test-harness.html')
+    if (pathname === '/' || pathname === '/test-harness.html') {
       return new Response(await readFile('playwright/test-harness.html',), {
         headers: { 'content-type': 'text/html', },
       },);
+    }
 
     if (pathname.startsWith('/dist/',)) {
       const contentType = mimeTypes[extname(pathname,)] ?? 'application/octet-stream';

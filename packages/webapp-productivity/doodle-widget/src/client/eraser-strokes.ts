@@ -8,13 +8,16 @@
 
 import { getStrokeWidth, } from './drawing-config.ts';
 import {
-  type NormalizedPoint,
-  type StrokeData,
   denormalizePoint,
   getStrokes,
+  type NormalizedPoint,
   setStrokes,
+  type StrokeData,
 } from './drawing.ts';
-import { distToSegmentSq, segToSegDistSq, } from './geometry.ts';
+import {
+  distToSegmentSq,
+  segToSegDistSq,
+} from './geometry.ts';
 
 /** Minimum number of points required for a valid sub-stroke after splitting */
 const MIN_SEGMENT_POINTS = 2;
@@ -54,7 +57,7 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
   previousPoint: NormalizedPoint | null;
   cw: number;
   ch: number;
-}): boolean {
+},): boolean {
   /** Eraser radius in CSS pixels, matching the active stroke width */
   const radiusPx = getStrokeWidth();
   /** Eraser segment endpoint in pixel space */
@@ -87,7 +90,12 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
       const { px, py, } = denormalizePoint({ point: p, cw, ch, },);
       /** Squared distance from stroke point to eraser travel segment */
       const pointDistSq = distToSegmentSq({
-        px, py, ax, ay, bx, by,
+        px,
+        py,
+        ax,
+        ay,
+        bx,
+        by,
       },);
 
       let shouldErase = pointDistSq <= radiusSq;
@@ -98,8 +106,14 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
       // erases that cross between widely-spaced stroke points.
       if (!shouldErase && i > 0) {
         const segDistSq = segToSegDistSq({
-          a1x: prevStrokePx, a1y: prevStrokePy, a2x: px, a2y: py,
-          b1x: ax, b1y: ay, b2x: bx, b2y: by,
+          a1x: prevStrokePx,
+          a1y: prevStrokePy,
+          a2x: px,
+          a2y: py,
+          b1x: ax,
+          b1y: ay,
+          b2x: bx,
+          b2y: by,
         },);
         shouldErase = segDistSq <= radiusSq;
       }
@@ -123,8 +137,10 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
 
     if (strokeModified) {
       erased = true;
-      for (const seg of segments)
-        newStrokes.push({ points: [...seg,], color: stroke.color, width: stroke.width, },);
+      for (const seg of segments) {
+        newStrokes.push({ points: [...seg,], color: stroke.color, width: stroke
+          .width, },);
+      }
     }
     else {
       newStrokes.push(stroke,);

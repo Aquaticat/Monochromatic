@@ -75,7 +75,8 @@ export const SIDE_DRAWER_PANEL_STYLES = [
     params: 'drawer-slide-in',
     children: [
       css({ rule: 'from',
-        decls: { transform: cssTranslateX(cssPercent(NEG_FULL_PERCENT,),), opacity: 0, }, },),
+        decls: { transform: cssTranslateX(cssPercent(NEG_FULL_PERCENT,),),
+          opacity: 0, }, },),
       css({ rule: 'to',
         decls: { transform: cssTranslateX(cssNum(0,),), opacity: 1, }, },),
     ],

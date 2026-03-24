@@ -10,9 +10,7 @@
  * see {@link toast.styles.ts} for the h-css definitions.
  */
 
-import {
-  $ as h,
-} from '@monochromatic-dev/module-es/h-dom';
+import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
 /** Duration in milliseconds before the toast is removed. */
 const DISMISS_MS = 2_000;
@@ -32,8 +30,9 @@ const VERTICAL_OFFSET = 4;
  * showFixedToast({ message: 'File too large to open' });
  * ```
  */
-export function showFixedToast({ message, }: { message: string }): void {
-  const toast = h({ tag: 'div', class: 'toast', text: message, attrs: { 'data-variant': 'fixed', }, },);
+export function showFixedToast({ message, }: { message: string; },): void {
+  const toast = h({ tag: 'div', class: 'toast', text: message,
+    attrs: { 'data-variant': 'fixed', }, },);
   document.body.append(toast,);
 
   globalThis.setTimeout(function dismissToast() {
@@ -55,8 +54,11 @@ export function showFixedToast({ message, }: { message: string }): void {
  * if (rect !== null) showCursorToast({ message: 'No definition found', rect });
  * ```
  */
-export function showCursorToast({ message, rect, }: { message: string; rect: DOMRect }): void {
-  const toast = h({ tag: 'div', class: 'toast', text: message, attrs: { 'data-variant': 'cursor', }, },);
+export function showCursorToast(
+  { message, rect, }: { message: string; rect: DOMRect; },
+): void {
+  const toast = h({ tag: 'div', class: 'toast', text: message,
+    attrs: { 'data-variant': 'cursor', }, },);
 
   /** Dynamic position properties that vary per toast instance. */
   toast.style.setProperty('inset-inline-start', `${rect.left}px`,);

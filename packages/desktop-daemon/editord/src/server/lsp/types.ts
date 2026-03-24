@@ -6,7 +6,10 @@
  * and go-to-definition.
  */
 
-import type { LspPosition, LspRange, } from './lsp-types-core.ts';
+import type {
+  LspPosition,
+  LspRange,
+} from './lsp-types-core.ts';
 
 export type {
   DiagnosticSeverity,
@@ -73,18 +76,18 @@ export type LspServerCapabilities = {
   textDocumentSync?: number | {
     openClose?: boolean;
     change?: number;
-    save?: boolean | { includeText?: boolean };
+    save?: boolean | { includeText?: boolean; };
   };
   /** Whether hover is supported. */
   hoverProvider?: boolean;
   /** Completion provider configuration. */
-  completionProvider?: { triggerCharacters?: string[] };
+  completionProvider?: { triggerCharacters?: string[]; };
   /** Whether document formatting is supported. */
   documentFormattingProvider?: boolean;
   /** Whether go-to-definition is supported. */
   definitionProvider?: boolean;
   /** Whether inlay hints are supported. */
-  inlayHintProvider?: boolean | { resolveProvider?: boolean };
+  inlayHintProvider?: boolean | { resolveProvider?: boolean; };
   /** Whether selection range is supported. */
   selectionRangeProvider?: boolean;
 };

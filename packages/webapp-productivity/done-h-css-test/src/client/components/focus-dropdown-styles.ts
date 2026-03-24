@@ -25,7 +25,8 @@ const OPTION_PADDING = 1 / 2;
 export const FOCUS_DROPDOWN_STYLES = [
   css({
     rule: ':host',
-    decls: { display: 'block', 'inline-size': cssPercent(FULL_PERCENT,), position: 'relative', },
+    decls: { display: 'block', 'inline-size': cssPercent(FULL_PERCENT,),
+      position: 'relative', },
   },),
   css({
     rule: '.trigger',
@@ -71,8 +72,8 @@ export const FOCUS_DROPDOWN_STYLES = [
   },),
   css({
     rule: '.option',
-    decls: { 'padding-block': cssRem(OPTION_PADDING,), 'padding-inline': cssRem(OPTION_PADDING,),
-      cursor: 'pointer', },
+    decls: { 'padding-block': cssRem(OPTION_PADDING,),
+      'padding-inline': cssRem(OPTION_PADDING,), cursor: 'pointer', },
     children: [
       css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg',), }, },),
     ],

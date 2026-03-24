@@ -14,10 +14,10 @@
  *
  * @returns map from key to grouped items
  */
-export function groupByLine<T>({ items, keyFn, }: {
+export function groupByLine<T,>({ items, keyFn, }: {
   items: T[];
   keyFn: (item: T,) => number;
-}): Map<number, T[]> {
+},): Map<number, T[]> {
   const groups = new Map<number, T[]>();
   for (const item of items) {
     const key = keyFn(item,);

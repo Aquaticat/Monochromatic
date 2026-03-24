@@ -29,7 +29,7 @@ export function handleSearchKeydown({ event, moveSelection, confirmSelection, }:
   event: KeyboardEvent;
   moveSelection: (delta: number,) => void;
   confirmSelection: () => void;
-}): void {
+},): void {
   if (event.key === 'ArrowDown') {
     event.preventDefault();
     moveSelection(1,);
@@ -62,15 +62,16 @@ export function moveSearchSelection({ delta, results, selectedIndex, container, 
   results: SearchResult[];
   selectedIndex: number;
   container: HTMLDivElement;
-}): number {
+},): number {
   if (results.length === 0)
     return selectedIndex;
 
   const { children, } = container;
   const previous = children[selectedIndex];
-  if (previous !== undefined)
+  if (previous !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
     delete (previous as HTMLElement).dataset['selected'];
+  }
 
   const newIndex = (selectedIndex + delta + results.length) % results.length;
 
@@ -97,7 +98,7 @@ export function moveSearchSelection({ delta, results, selectedIndex, container, 
 export function buildResultDetail({ index, results, }: {
   index: number;
   results: SearchResult[];
-}): ResultSelectDetail | null {
+},): ResultSelectDetail | null {
   const result = results[index];
   if (result === undefined)
     return null;

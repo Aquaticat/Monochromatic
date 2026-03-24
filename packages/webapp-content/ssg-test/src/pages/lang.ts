@@ -28,7 +28,8 @@ export function langPage(
   const content = [
     h({ tag: 'main', children: [h({ tag: 'h1', text: title, },),], },),
     h({ tag: 'aside', html: postList(posts,), },),
-  ].join('',);
+  ]
+    .join('',);
 
   return pageLayout({ title, lang, content, },);
 }

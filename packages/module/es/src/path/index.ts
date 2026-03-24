@@ -10,9 +10,21 @@
  * and `./trim.ts`.
  */
 
-export { emptyDir, emptyFile, emptyPath, removeEmptyFilesInDir, } from './empty.ts';
-export { ensureDir, ensureFile, ensurePath, } from './ensure.ts';
-export { trimLeadingSlash, trimTrailingSlash, } from './trim.ts';
+export {
+  emptyDir,
+  emptyFile,
+  emptyPath,
+  removeEmptyFilesInDir,
+} from './empty.ts';
+export {
+  ensureDir,
+  ensureFile,
+  ensurePath,
+} from './ensure.ts';
+export {
+  trimLeadingSlash,
+  trimTrailingSlash,
+} from './trim.ts';
 
 //region Node delegation -- use real node:path/posix when the runtime has it
 

@@ -13,14 +13,14 @@ import {
   type StrokeData,
 } from './drawing.ts';
 import {
-  clearTextEntries,
-  finalizeActiveInput,
-} from './text.ts';
-import {
   restoreTextEntries,
   serializeTextEntries,
   type TextEntryData,
 } from './text-page.ts';
+import {
+  clearTextEntries,
+  finalizeActiveInput,
+} from './text.ts';
 
 /**
  * Saved state for a single page.
@@ -62,7 +62,7 @@ let currentIndex = 0;
 export function initPages({ backgrounds, overlay, }: {
   backgrounds: readonly string[];
   overlay: HTMLElement;
-}): void {
+},): void {
   pages = backgrounds.map(function createPage(svg,): PageState {
     return { strokes: [], textEntries: [], svgBackground: svg, };
   },);
@@ -108,7 +108,7 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
   ch: number;
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
-}): void {
+},): void {
   if (index === currentIndex)
     return;
   if (index < 0 || index >= pages.length)
@@ -163,7 +163,7 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
 export function snapshotAllPages({ overlay, textLayer, }: {
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
-}): readonly PageState[] {
+},): readonly PageState[] {
   endStroke();
   /** Current page state to save live data into */
   const currentPage = pages[currentIndex];

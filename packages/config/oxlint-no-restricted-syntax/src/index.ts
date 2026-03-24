@@ -6,9 +6,7 @@ import { noDisableNoArrowFunction, } from './rules/no-disable-no-arrow-function.
 import { noDisableNoEnum, } from './rules/no-disable-no-enum.ts';
 import { noDisableNoForIn, } from './rules/no-disable-no-for-in.ts';
 import { noDisableNoHasownproperty, } from './rules/no-disable-no-hasownproperty.ts';
-import {
-  noDisableNoMisusedPromises,
-} from './rules/no-disable-no-misused-promises.ts';
+import { noDisableNoMisusedPromises, } from './rules/no-disable-no-misused-promises.ts';
 import {
   noDisableNoNonNullAssertion,
 } from './rules/no-disable-no-non-null-assertion.ts';

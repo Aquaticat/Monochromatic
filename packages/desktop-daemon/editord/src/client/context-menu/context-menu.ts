@@ -10,12 +10,13 @@
  * and presses Enter to confirm.
  */
 
+import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/h-dom';
-
-import { renderButtonItem, renderInputItem, type ContextMenuItem, } from './items.ts';
+  type ContextMenuItem,
+  renderButtonItem,
+  renderInputItem,
+} from './items.ts';
 
 export type { ContextMenuItem, } from './items.ts';
 
@@ -49,7 +50,7 @@ export class ContextMenu {
   #popup: HTMLDivElement | null = null;
 
   /** Callback fired when the popover is dismissed by the browser. */
-  #onToggleBound: (event: Event) => void;
+  #onToggleBound: (event: Event,) => void;
 
   /** Initializes the invisible anchor div and popover toggle handler. */
   constructor() {
@@ -66,7 +67,7 @@ export class ContextMenu {
    *
    * @param items - menu items to display
    */
-  show({ x, y, items, }: { x: number; y: number; items: ContextMenuItem[] }): void {
+  show({ x, y, items, }: { x: number; y: number; items: ContextMenuItem[]; },): void {
     this.hide();
 
     const self = this;
@@ -104,7 +105,8 @@ export class ContextMenu {
     this.#popup.showPopover();
 
     const [firstItem,] = menuItems;
-    if (firstItem !== undefined) firstItem.focus();
+    if (firstItem !== undefined)
+      firstItem.focus();
   }
 
   /** Hides the context menu and cleans up the anchor. */
@@ -116,5 +118,4 @@ export class ContextMenu {
     }
     this.#anchor.remove();
   }
-
 }

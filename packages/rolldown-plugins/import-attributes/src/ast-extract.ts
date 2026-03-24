@@ -119,7 +119,9 @@ export function extractTypeFromOptions(
       if (innerKey === 'type'
         && innerValue !== undefined
         && HANDLERS[innerValue] !== undefined)
+      {
         return innerValue;
+      }
     }
   }
 

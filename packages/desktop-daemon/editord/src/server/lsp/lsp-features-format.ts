@@ -22,7 +22,7 @@ import type { LspTextEdit, } from './types.ts';
 export async function requestFormat({ client, path, }: {
   client: LspClient;
   path: string;
-}): Promise<LspTextEdit[]> {
+},): Promise<LspTextEdit[]> {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/formatting',

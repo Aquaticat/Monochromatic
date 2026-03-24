@@ -31,35 +31,37 @@ export function buildOverallPoints(
   openrouterId: string,
   color: string,
 ): readonly ScatterPoint[] {
-  return entries.filter(function filterMultipleProbes(entry,) {
-    return hasMultipleProbes(entry,);
-  },).map(
-    function toPoint(entry, index,): ScatterPoint {
-      const runId = `${label}-${entry.timestamp}`;
-      return {
-        runId,
-        index,
-        timestamp: entry.timestamp,
-        score: entry.overallScore,
-        color,
-        icon: vendorIcon(openrouterId,),
-        title: `${label} ${entry.timestamp.slice(0, 10,)}: ${
-          entry
-            .overallScore
-            .toFixed(2,)
-        }`,
-        failed: entry.failed,
-        tableRow: {
-          timestamp: entry.timestamp,
-          model: label,
-          probe: 'overall',
-          score: entry.overallScore,
-          failed: entry.failed,
+  return entries
+    .filter(function filterMultipleProbes(entry,) {
+      return hasMultipleProbes(entry,);
+    },)
+    .map(
+      function toPoint(entry, index,): ScatterPoint {
+        const runId = `${label}-${entry.timestamp}`;
+        return {
           runId,
-        },
-      };
-    },
-  );
+          index,
+          timestamp: entry.timestamp,
+          score: entry.overallScore,
+          color,
+          icon: vendorIcon(openrouterId,),
+          title: `${label} ${entry.timestamp.slice(0, 10,)}: ${
+            entry
+              .overallScore
+              .toFixed(2,)
+          }`,
+          failed: entry.failed,
+          tableRow: {
+            timestamp: entry.timestamp,
+            model: label,
+            probe: 'overall',
+            score: entry.overallScore,
+            failed: entry.failed,
+            runId,
+          },
+        };
+      },
+    );
 }
 
 /**

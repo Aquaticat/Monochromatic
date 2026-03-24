@@ -88,4 +88,5 @@ export const HIGHLIGHT_STYLES = [
       'text-decoration-skip-ink': 'none',
     },
   },),
-].join('',);
+]
+  .join('',);

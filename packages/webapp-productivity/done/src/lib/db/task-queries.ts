@@ -12,7 +12,6 @@ import type {
 } from '../types.ts';
 import { mapTask, } from './task-mapping.ts';
 import {
-  type TaskRow,
   SQL_SEARCH_FTS,
   SQL_SEARCH_LIKE,
   SQL_SELECT_ALL_TAGS,
@@ -21,6 +20,7 @@ import {
   SQL_SELECT_IN_PROGRESS,
   SQL_SELECT_INBOX_UNBLOCKED,
   SQL_SELECT_TASK_BY_ID,
+  type TaskRow,
 } from './task-sql.ts';
 
 /**

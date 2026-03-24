@@ -9,9 +9,9 @@
 import { PALETTE, } from './config.ts';
 import {
   c,
+  type PartDef,
   REF_GRAY_DARK,
   REF_GRAY_WARM,
-  type PartDef,
 } from './parts-types.ts';
 
 /** Upper arms, forearms, and hands. */

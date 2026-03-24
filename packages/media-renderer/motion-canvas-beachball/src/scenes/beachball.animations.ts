@@ -3,13 +3,13 @@ import type {
   Node,
 } from '@motion-canvas/2d';
 import {
-  type ThreadGenerator,
   all,
   chain,
   easeInQuad,
   easeOutQuad,
   linear,
   type Reference,
+  type ThreadGenerator,
 } from '@motion-canvas/core';
 
 import {

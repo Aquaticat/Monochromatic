@@ -6,10 +6,10 @@
  * based on the active tool.
  */
 import {
-  type NormalizedPoint,
   configureCtx,
   continueStroke,
   endStroke,
+  type NormalizedPoint,
   normalizePointer,
   redraw,
   startStroke,
@@ -79,7 +79,8 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
         erasedInGesture = false;
         prevErasePoint = null;
         const strokeErased = eraseStrokesAt({ point, previousPoint: null, cw, ch, },);
-        const textErased = eraseTextAt({ point, previousPoint: null, cw, ch, textLayer, },);
+        const textErased = eraseTextAt({ point, previousPoint: null, cw, ch,
+          textLayer, },);
         if (strokeErased || textErased)
           erasedInGesture = true;
         if (strokeErased)
@@ -102,10 +103,17 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
         if (!erasing)
           return;
         const strokeErased = eraseStrokesAt({
-          point, previousPoint: prevErasePoint, cw, ch,
+          point,
+          previousPoint: prevErasePoint,
+          cw,
+          ch,
         },);
         const textErased = eraseTextAt({
-          point, previousPoint: prevErasePoint, cw, ch, textLayer,
+          point,
+          previousPoint: prevErasePoint,
+          cw,
+          ch,
+          textLayer,
         },);
         if (strokeErased || textErased)
           erasedInGesture = true;

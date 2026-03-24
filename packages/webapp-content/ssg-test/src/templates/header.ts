@@ -24,7 +24,8 @@ const SEARCH_ICON = [
   ' 10.1667 2.66666C13.8486 2.66666 16.8333 5.65143',
   ' 16.8333 9.33333Z" stroke="currentColor" stroke-width="2"/>',
   '</svg>',
-].join('',);
+]
+  .join('',);
 
 /**
  * Renders the site header with brand link and search stub.

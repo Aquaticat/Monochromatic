@@ -53,7 +53,9 @@ async function main(): Promise<void> {
   const TRANSLATE_PRECISION = 2;
   const SCALE_PRECISION = 4;
   console.log(
-    `  Transform: translate(${X_OFFSET.toFixed(TRANSLATE_PRECISION,)}, 0) scale(${SCALE.toFixed(SCALE_PRECISION,)})`,
+    `  Transform: translate(${X_OFFSET.toFixed(TRANSLATE_PRECISION,)}, 0) scale(${
+      SCALE.toFixed(SCALE_PRECISION,)
+    })`,
   );
 
   // Build a lookup from part name to its definition

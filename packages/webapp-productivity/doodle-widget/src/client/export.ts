@@ -49,7 +49,9 @@ export type ExportDeps = {
  *
  * @returns width and height as `cw` and `ch`
  */
-export function getContainerSize(container: HTMLDivElement,): { cw: number; ch: number; } {
+export function getContainerSize(
+  container: HTMLDivElement,
+): { cw: number; ch: number; } {
   return { cw: container.clientWidth, ch: container.clientHeight, };
 }
 
@@ -79,12 +81,14 @@ export function getContainerSize(container: HTMLDivElement,): { cw: number; ch: 
  * await renderSvgOverlayToContext({ ctx, container, overlay, imageScale: 2 });
  * ```
  */
-export async function renderSvgOverlayToContext({ ctx, container, overlay, imageScale, }: {
-  ctx: OffscreenCanvasRenderingContext2D;
-  container: HTMLDivElement;
-  overlay: HTMLDivElement;
-  imageScale?: number;
-},): Promise<void> {
+export async function renderSvgOverlayToContext(
+  { ctx, container, overlay, imageScale, }: {
+    ctx: OffscreenCanvasRenderingContext2D;
+    container: HTMLDivElement;
+    overlay: HTMLDivElement;
+    imageScale?: number;
+  },
+): Promise<void> {
   const info = measureSvgOverlay({ container, overlay, },);
   if (info === null)
     return;

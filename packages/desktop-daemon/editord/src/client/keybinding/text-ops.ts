@@ -9,7 +9,9 @@
 import type { KeybindingDeps, } from './deps.ts';
 
 /** Deps subset for text manipulation handlers. */
-type TextOpsDeps = Pick<KeybindingDeps, 'deleteCurrentLine' | 'selectAndCopyCurrentLine' | 'duplicateLineDown' | 'swapLineDown' | 'swapLineUp'>;
+type TextOpsDeps = Pick<KeybindingDeps,
+  'deleteCurrentLine' | 'selectAndCopyCurrentLine' | 'duplicateLineDown' | 'swapLineDown'
+    | 'swapLineUp'>;
 
 /**
  * Handles text manipulation keybindings.
@@ -23,7 +25,7 @@ type TextOpsDeps = Pick<KeybindingDeps, 'deleteCurrentLine' | 'selectAndCopyCurr
 export function handleTextEditKey({ event, deps, }: {
   event: KeyboardEvent;
   deps: TextOpsDeps;
-}): boolean {
+},): boolean {
   if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'z') {
     event.preventDefault();
     // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('undo') is the only way to trigger the browser's native undo stack in contenteditable
@@ -42,8 +44,11 @@ export function handleTextEditKey({ event, deps, }: {
     return true;
   }
   /** Without combined condition: no-lonely-if lint error for nested if without else. */
-  if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'c'
-    && deps.selectAndCopyCurrentLine()) {
+  if ((event.ctrlKey || event.metaKey)
+    && !event.shiftKey
+    && event.key === 'c'
+    && deps.selectAndCopyCurrentLine())
+  {
     event.preventDefault();
     return true;
   }

@@ -14,9 +14,15 @@ import type {
   LspHover,
 } from './types.ts';
 
+export {
+  requestInlayHints,
+  requestSelectionRange,
+} from './lsp-features-extra.ts';
 export { requestFormat, } from './lsp-features-format.ts';
-export { requestGotoDefinition, requestReferences, } from './lsp-features-nav.ts';
-export { requestInlayHints, requestSelectionRange, } from './lsp-features-extra.ts';
+export {
+  requestGotoDefinition,
+  requestReferences,
+} from './lsp-features-nav.ts';
 
 /**
  * Requests hover information from an LSP client.
@@ -36,7 +42,7 @@ export async function requestHover({ client, path, line, character, }: {
   path: string;
   line: number;
   character: number;
-}): Promise<LspHover | null> {
+},): Promise<LspHover | null> {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/hover',
@@ -65,7 +71,7 @@ export async function requestCompletion({ client, path, line, character, }: {
   path: string;
   line: number;
   character: number;
-}): Promise<LspCompletionItem[]> {
+},): Promise<LspCompletionItem[]> {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/completion',
@@ -74,13 +80,15 @@ export async function requestCompletion({ client, path, line, character, }: {
 
   if (result === null || result === undefined)
     return [];
-  if (Array.isArray(result,))
+  if (Array.isArray(result,)) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP completion can return CompletionItem[]
     return result as LspCompletionItem[];
+  }
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access -- LSP completion can return CompletionList
-  if ('items' in (result as Record<string, unknown>))
+  if ('items' in (result as Record<string, unknown>)) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrow from CompletionList shape
-    return (result as { items: LspCompletionItem[] }).items;
+    return (result as { items: LspCompletionItem[]; }).items;
+  }
 
   return [];
 }

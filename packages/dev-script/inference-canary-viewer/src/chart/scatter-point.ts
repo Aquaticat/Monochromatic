@@ -36,7 +36,9 @@ export function renderPointElements(points: readonly ScatterPoint[],): string {
 
   return points
     .map(function renderPoint(point,) {
-      const left = totalRuns === 1 ? CENTER_PERCENT : (point.index / (totalRuns - 1)) * PERCENT;
+      const left = totalRuns === 1
+        ? CENTER_PERCENT
+        : (point.index / (totalRuns - 1)) * PERCENT;
       const bottom = point.score * PERCENT;
 
       const hasIcon = point.icon !== undefined && point.icon !== '' && !point.failed;

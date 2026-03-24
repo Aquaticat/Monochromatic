@@ -6,9 +6,7 @@
  * class under the line limit.
  */
 
-import {
-  $ as h,
-} from '@monochromatic-dev/module-es/h-dom';
+import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
 /**
  * Single menu item definition.
@@ -18,7 +16,7 @@ export type ContextMenuItem = {
   /** Display label for the menu item. */
   label: string;
   /** Callback invoked when the item is activated (click or Enter in input). */
-  action: (value?: string) => void;
+  action: (value?: string,) => void;
   /** When set, renders an inline input pre-filled with this value. */
   defaultValue?: string;
 };
@@ -43,15 +41,17 @@ function stopClickPropagation(event: MouseEvent,): void {
  */
 export function renderButtonItem({ item, onActivate, }: {
   item: ContextMenuItem;
-  onActivate: (action: () => void) => void;
-}): HTMLElement {
+  onActivate: (action: () => void,) => void;
+},): HTMLElement {
   return h({
     tag: 'div',
     class: 'ctx-item',
     attrs: { tabindex: '0', },
     text: item.label,
     on: {
-      click: function handleClick(): void { onActivate(item.action,); },
+      click: function handleClick(): void {
+        onActivate(item.action,);
+      },
       keydown: function handleKeydown(event: KeyboardEvent,): void {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
@@ -73,8 +73,8 @@ export function renderButtonItem({ item, onActivate, }: {
  */
 export function renderInputItem({ item, onActivate, }: {
   item: ContextMenuItem;
-  onActivate: (action: () => void) => void;
-}): HTMLElement {
+  onActivate: (action: () => void,) => void;
+},): HTMLElement {
   const input = h({
     tag: 'input',
     class: 'ctx-input',
@@ -85,7 +85,9 @@ export function renderInputItem({ item, onActivate, }: {
           event.preventDefault();
           const { value, } = input;
           if (value !== '') {
-            onActivate(function fireAction(): void { item.action(value,); },);
+            onActivate(function fireAction(): void {
+              item.action(value,);
+            },);
           }
         }
       },

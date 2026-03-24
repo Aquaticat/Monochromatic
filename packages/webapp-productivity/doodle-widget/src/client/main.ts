@@ -6,18 +6,35 @@
  */
 
 import {
-  backgroundsScript, canvas, clearBtn, colorPicker, container,
-  drawRadio, eraseRadio, exportBtn, formatSelect, pageToggle,
-  redoBtn, svgOverlay, sizeSlider, textLayer, toolToggle, undoBtn,
-  uploadBtn, uploadInput, zoomLayer, zoomRadio, zoomToast,
+  backgroundsScript,
+  canvas,
+  clearBtn,
+  colorPicker,
+  container,
+  drawRadio,
+  eraseRadio,
+  exportBtn,
+  formatSelect,
+  pageToggle,
+  redoBtn,
+  sizeSlider,
+  svgOverlay,
+  textLayer,
+  toolToggle,
+  undoBtn,
+  uploadBtn,
+  uploadInput,
+  zoomLayer,
+  zoomRadio,
+  zoomToast,
 } from './dom-refs.ts';
 import { redraw, } from './drawing.ts';
 import { setupWidget, } from './main-setup.ts';
 import type { ToolMode, } from './pointer-handlers.ts';
 import { requireCanvasContext, } from './require-context.ts';
 import { discardActiveInput, } from './text.ts';
-import { refreshZoomTransform, } from './zoom.ts';
 import { showZoomToast, } from './zoom-toast.ts';
+import { refreshZoomTransform, } from './zoom.ts';
 
 /** 2D rendering context for the drawing canvas */
 const ctx = requireCanvasContext(canvas,);
@@ -61,7 +78,8 @@ function sizeCanvas(): void {
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
   redraw({ ctx, cw: canvasWidth, ch: canvasHeight, },);
-  refreshZoomTransform({ containerWidth: canvasWidth, containerHeight: canvasHeight, zoomLayer, },);
+  refreshZoomTransform({ containerWidth: canvasWidth, containerHeight: canvasHeight,
+    zoomLayer, },);
 }
 
 /**
@@ -87,8 +105,24 @@ toolToggle.addEventListener('change', syncCursorToTool,);
 syncCursorToTool();
 
 setupWidget({
-  backgroundsScript, canvas, ctx, getToolMode, getCanvasSize,
-  textLayer, container, zoomLayer, svgOverlay, pageToggle,
-  colorPicker, sizeSlider, clearBtn, exportBtn, formatSelect,
-  uploadBtn, uploadInput, undoBtn, redoBtn, sizeCanvas,
+  backgroundsScript,
+  canvas,
+  ctx,
+  getToolMode,
+  getCanvasSize,
+  textLayer,
+  container,
+  zoomLayer,
+  svgOverlay,
+  pageToggle,
+  colorPicker,
+  sizeSlider,
+  clearBtn,
+  exportBtn,
+  formatSelect,
+  uploadBtn,
+  uploadInput,
+  undoBtn,
+  redoBtn,
+  sizeCanvas,
 },);

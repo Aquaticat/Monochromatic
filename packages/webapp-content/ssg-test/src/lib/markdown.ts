@@ -19,7 +19,10 @@ import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkSectionize from 'remark-sectionize';
-import { type Processor, unified, } from 'unified';
+import {
+  type Processor,
+  unified,
+} from 'unified';
 
 import type { Root, } from 'hast';
 

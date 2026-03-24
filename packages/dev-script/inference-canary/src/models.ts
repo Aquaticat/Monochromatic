@@ -53,12 +53,12 @@ export const models: readonly ModelConfig[] = [
 
   // Scores too low, useless:
   //   [FAIL] Nvidia Nemotron 3 Super: 0.08
-    // csv-rfc4180           0.00   fix: 0.00 (0.00)
-    // expr-eval             0.00   fix: 0.00 (0.00)
-    // css-mixin-transpiler  0.00   fix: 0.00 (0.00)
-    // sudoku-solver         0.00   fix: 0.00 (0.00)
-    // stak-interpreter      0.00   fix: 0.00 (0.00)
-    // stak-simulation       0.50
+  // csv-rfc4180           0.00   fix: 0.00 (0.00)
+  // expr-eval             0.00   fix: 0.00 (0.00)
+  // css-mixin-transpiler  0.00   fix: 0.00 (0.00)
+  // sudoku-solver         0.00   fix: 0.00 (0.00)
+  // stak-interpreter      0.00   fix: 0.00 (0.00)
+  // stak-simulation       0.50
   // { openrouterId: 'nvidia/nemotron-3-super-120b-a12b', label: 'Nvidia Nemotron 3 Super', verbosity: 'low', },
 
   // Superseded by MiniMax M2.7
@@ -75,10 +75,9 @@ export const models: readonly ModelConfig[] = [
 
   { openrouterId: 'google/gemini-3.1-flash-lite-preview',
     label: 'Gemini 3.1 Flash Lite Preview', verbosity: 'low', },
-
   // Keeps timing out.
-    // { openrouterId: 'google/gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro Preview',
-    // verbosity: 'low', },
+  // { openrouterId: 'google/gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro Preview',
+  // verbosity: 'low', },
 
   // OpenAI models dropped 2026-02-28. OpenAI signed a classified-network contract with the
   // Pentagon hours after Anthropic was designated a supply chain risk for refusing to allow

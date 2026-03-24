@@ -17,7 +17,7 @@
 export function buildInitializeParams({ rootUri, initializationOptions, }: {
   rootUri: string;
   initializationOptions: Record<string, unknown> | undefined;
-}): unknown {
+},): unknown {
   return {
     processId: process.pid,
     clientInfo: { name: 'editord', version: '0.1.0', },

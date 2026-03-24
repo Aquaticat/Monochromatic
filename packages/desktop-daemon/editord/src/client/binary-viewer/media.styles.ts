@@ -80,4 +80,5 @@ export const MEDIA_STYLES = [
       },),
     ],
   },),
-].join('',);
+]
+  .join('',);

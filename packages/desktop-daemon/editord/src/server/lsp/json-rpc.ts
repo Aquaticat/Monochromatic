@@ -39,7 +39,7 @@ const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/i;
 export function createLspParser({ onMessage, onError, }: {
   onMessage: (message: JsonRpcMessage,) => void;
   onError: (error: unknown,) => void;
-}): { feed: (chunk: Buffer,) => void } {
+},): { feed: (chunk: Buffer,) => void; } {
   let buffer = Buffer.alloc(0,);
   let contentLength = -1;
 

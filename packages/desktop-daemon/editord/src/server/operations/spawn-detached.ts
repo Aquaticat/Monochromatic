@@ -20,7 +20,9 @@ import { spawn, } from 'node:child_process';
  *
  * @throws when the process fails to spawn
  */
-export function spawnDetached({ command, args, cwd, }: { command: string; args: string[]; cwd: string }): Promise<void> {
+export function spawnDetached(
+  { command, args, cwd, }: { command: string; args: string[]; cwd: string; },
+): Promise<void> {
   return new Promise<void>(function awaitSpawn(resolve, reject,): void {
     const child = spawn(command, args, {
       cwd,

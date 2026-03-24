@@ -6,7 +6,10 @@
  * Pushing a path already in the list promotes it to the front.
  */
 
-import { l as rootLogger, tagged, } from './log.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from './log.ts';
 
 /** Tagged logger for the recent files tracker. */
 const l = tagged({ tag: 'recent-files', l: rootLogger, },);
@@ -34,7 +37,7 @@ export type RecentFiles = {
   /** Ordered paths array, index 0 is most recent. Directly mutable for restore. */
   paths: string[];
   /** Adds or promotes a path to position 0, trimming to 10 entries. */
-  push: (path: string) => void;
+  push: (path: string,) => void;
 };
 
 /**
@@ -53,12 +56,15 @@ export function createRecentFiles(): RecentFiles {
    *
    * @param path - absolute file path to record
    */
-  function push(path: string): void {
+  function push(path: string,): void {
     const existing = paths.indexOf(path,);
-    if (existing === 0) return;
-    if (existing > 0) paths.splice(existing, 1,);
+    if (existing === 0)
+      return;
+    if (existing > 0)
+      paths.splice(existing, 1,);
     paths.unshift(path,);
-    if (paths.length > MAX_RECENT) paths.pop();
+    if (paths.length > MAX_RECENT)
+      paths.pop();
     l.info(`pushed ${path} (${String(paths.length,)} tracked)`,);
   }
 

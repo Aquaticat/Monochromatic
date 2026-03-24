@@ -54,8 +54,7 @@ class FocusDropdown extends HTMLElement {
     textSpan.textContent = preset;
     menu.hidePopover();
     this.dispatchEvent(
-      new CustomEvent('change', { bubbles: true,
-        detail: { value: preset, }, },),
+      new CustomEvent('change', { bubbles: true, detail: { value: preset, }, },),
     );
   }
 

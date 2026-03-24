@@ -31,8 +31,9 @@ export async function verify(): Promise<boolean> {
 
   // Guard: skip dynamic import entirely outside Node.js to avoid
   // browser console errors from attempting to fetch node: URLs
-  if (typeof globalThis.process === 'undefined'
-    || typeof globalThis.process.versions?.node === 'undefined') {
+  if (globalThis.process === undefined
+    || globalThis.process.versions?.node === undefined)
+  {
     available = false;
     return false;
   }
@@ -42,7 +43,7 @@ export async function verify(): Promise<boolean> {
     const fs = await import('node:fs/promises');
     const { join, } = await import('node:path');
 
-    appendFile = fs.appendFile;
+    ({ appendFile } = fs);
 
     const LOG_DIR = join('node_modules', '.monochromatic',);
     await fs.mkdir(LOG_DIR, { recursive: true, },);

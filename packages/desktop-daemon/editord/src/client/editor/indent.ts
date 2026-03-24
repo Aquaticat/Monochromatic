@@ -26,7 +26,7 @@ export type IndentResult = {
   /** Selection coordinates when `isSelection` is true. */
   selection: SelectionCoords;
   /** Cursor coordinates when `isSelection` is false. */
-  cursor: { line: number; character: number };
+  cursor: { line: number; character: number; };
 };
 
 /**
@@ -47,13 +47,14 @@ export function indentLines({ editor, cursorLine, cursorCharacter, selection, }:
   cursorLine: number;
   cursorCharacter: number;
   selection: SelectionCoords | null;
-}): IndentResult {
+},): IndentResult {
   const startLine = selection !== null ? selection.startLine : cursorLine;
   const endLine = selection !== null ? selection.endLine : cursorLine;
 
   for (let i = startLine; i <= endLine; i++) {
     const lineDiv = editor.children[i];
-    if (lineDiv === undefined) continue;
+    if (lineDiv === undefined)
+      continue;
     const text = lineDiv.textContent;
     lineDiv.textContent = text === '\n' ? INDENT_UNIT : INDENT_UNIT + text;
   }
@@ -96,7 +97,7 @@ export function unindentLines({ editor, cursorLine, cursorCharacter, selection, 
   cursorLine: number;
   cursorCharacter: number;
   selection: SelectionCoords | null;
-}): IndentResult {
+},): IndentResult {
   const startLine = selection !== null ? selection.startLine : cursorLine;
   const endLine = selection !== null ? selection.endLine : cursorLine;
 
@@ -105,13 +106,21 @@ export function unindentLines({ editor, cursorLine, cursorCharacter, selection, 
 
   for (let i = startLine; i <= endLine; i++) {
     const lineDiv = editor.children[i];
-    if (lineDiv === undefined) { removedPerLine.push(0,); continue; }
+    if (lineDiv === undefined) {
+      removedPerLine.push(0,);
+      continue;
+    }
     const text = lineDiv.textContent;
-    if (text === '\n') { removedPerLine.push(0,); continue; }
+    if (text === '\n') {
+      removedPerLine.push(0,);
+      continue;
+    }
 
     let count = 0;
-    if (text.startsWith('  ',)) count = 2;
-    else if (text.startsWith(' ',)) count = 1;
+    if (text.startsWith('  ',))
+      count = 2;
+    else if (text.startsWith(' ',))
+      count = 1;
 
     if (count > 0) {
       const newText = text.slice(count,);
@@ -122,7 +131,7 @@ export function unindentLines({ editor, cursorLine, cursorCharacter, selection, 
 
   if (selection !== null) {
     const [startRemoved = 0,] = removedPerLine;
-    const endRemoved = removedPerLine.at(-1) ?? 0;
+    const endRemoved = removedPerLine.at(-1,) ?? 0;
     return {
       isSelection: true,
       selection: {

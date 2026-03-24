@@ -51,4 +51,5 @@ export const STYLES = [
     },
   },),
   ENTRY_STYLES,
-].join('',);
+]
+  .join('',);

@@ -86,7 +86,6 @@ export function renderToolbarControlStyles(): string[] {
         'inline-size': cssRem(SLIDER_INLINE_SIZE,),
       },
     },),
-
     //endregion Draw settings
   ];
 }

@@ -20,7 +20,9 @@
  * const ctx = requireCanvasContext(document.querySelector('canvas')!);
  * ```
  */
-export function requireCanvasContext(canvas: HTMLCanvasElement,): CanvasRenderingContext2D {
+export function requireCanvasContext(
+  canvas: HTMLCanvasElement,
+): CanvasRenderingContext2D {
   const ctx = canvas.getContext('2d',);
   if (ctx === null)
     throw new Error('Canvas 2D context unavailable',);
@@ -42,7 +44,9 @@ export function requireCanvasContext(canvas: HTMLCanvasElement,): CanvasRenderin
  * const ctx = requireOffscreenContext(new OffscreenCanvas(800, 600));
  * ```
  */
-export function requireOffscreenContext(canvas: OffscreenCanvas,): OffscreenCanvasRenderingContext2D {
+export function requireOffscreenContext(
+  canvas: OffscreenCanvas,
+): OffscreenCanvasRenderingContext2D {
   const ctx = canvas.getContext('2d',);
   if (ctx === null)
     throw new Error('Export canvas 2D context unavailable',);

@@ -5,9 +5,17 @@
  * via client-generated request IDs. Rejects pending requests on close.
  */
 
-
-import type { ClientNotification, ClientRequest, Diagnostic, FsChangeType, ServerMessage, } from '../../../protocol.ts';
-import { l as rootLogger, tagged, } from '../log.ts';
+import type {
+  ClientNotification,
+  ClientRequest,
+  Diagnostic,
+  FsChangeType,
+  ServerMessage,
+} from '../../../protocol.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from '../log.ts';
 import { performHandshake, } from './handshake.ts';
 
 /** Tagged logger for the WebSocket client subsystem. */
@@ -53,10 +61,15 @@ export class EditorWsClient {
   fsId = '';
 
   /** Callback invoked when the server pushes a file change notification. */
-  onFileChanged: ((event: { path: string; changeType: FsChangeType; isDirectory: boolean }) => void) | null = null;
+  onFileChanged:
+    | ((
+      event: { path: string; changeType: FsChangeType; isDirectory: boolean; },
+    ) => void)
+    | null = null;
 
   /** Callback invoked when the server pushes diagnostics for a file. */
-  onDiagnostics: ((event: { path: string; diagnostics: Diagnostic[] }) => void) | null = null;
+  onDiagnostics: ((event: { path: string; diagnostics: Diagnostic[]; },) => void) | null =
+    null;
 
   /** Resolves when the WebSocket connection is established and authenticated. */
   readonly ready: Promise<void>;
@@ -68,7 +81,7 @@ export class EditorWsClient {
    *
    * @param token - authentication token
    */
-  constructor({ port, token, }: { port: string; token: string }) {
+  constructor({ port, token, }: { port: string; token: string; },) {
     const wsUrl = `ws://localhost:${port}/_ws?token=${token}`;
     this.#ws = new WebSocket(wsUrl,);
 
@@ -82,7 +95,10 @@ export class EditorWsClient {
     const client = this;
     return performHandshake({
       ws: this.#ws,
-      onConnected: function setFields({ rootDir, fsId, },) { client.rootDir = rootDir; client.fsId = fsId; },
+      onConnected: function setFields({ rootDir, fsId, },) {
+        client.rootDir = rootDir;
+        client.fsId = fsId;
+      },
     },);
   }
 
@@ -107,7 +123,8 @@ export class EditorWsClient {
       function awaitResponse(resolve, reject,) {
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
         const timeoutId = globalThis.setTimeout(function rejectStale() {
-          if (pending.delete(id,)) reject(new Error(`request ${id} timed out after ${REQUEST_TIMEOUT_MS}ms`,),);
+          if (pending.delete(id,))
+            reject(new Error(`request ${id} timed out after ${REQUEST_TIMEOUT_MS}ms`,),);
         }, REQUEST_TIMEOUT_MS,) as unknown as number;
         pending.set(id, { resolve, reject, timeoutId, },);
       },
@@ -152,7 +169,8 @@ export class EditorWsClient {
 
     // Push notifications — no request ID
     if (data.type === 'fileChanged') {
-      this.onFileChanged?.({ path: data.path, changeType: data.changeType, isDirectory: data.isDirectory, },);
+      this.onFileChanged?.({ path: data.path, changeType: data.changeType,
+        isDirectory: data.isDirectory, },);
       return;
     }
     if (data.type === 'diagnostics') {
@@ -166,12 +184,10 @@ export class EditorWsClient {
       if (pending !== undefined) {
         this.#pending.delete(data.id,);
         clearTimeout(pending.timeoutId,);
-        if (data.type === 'error') {
+        if (data.type === 'error')
           pending.reject(new Error(data.message,),);
-        }
-        else {
+        else
           pending.resolve(data,);
-        }
       }
     }
   }

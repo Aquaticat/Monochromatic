@@ -8,8 +8,8 @@
  */
 import {
   type CssDeclarations,
-  type CssValue,
   cssRem,
+  type CssValue,
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 import { $ as css, } from './css.ts';
@@ -152,7 +152,8 @@ export function minTouchTarget(): CssDeclarations {
  */
 export function shadowDomGlobals(): string[] {
   return [
-    css({ rule: 'button:disabled', decls: { opacity: DISABLED_OPACITY, cursor: 'not-allowed', }, },),
+    css({ rule: 'button:disabled',
+      decls: { opacity: DISABLED_OPACITY, cursor: 'not-allowed', }, },),
     css({ rule: 'input::placeholder,textarea::placeholder',
       decls: { color: cssVar('medium',), }, },),
   ];

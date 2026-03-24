@@ -5,7 +5,10 @@
  * to an LSP client and converts Location results to simplified paths.
  */
 
-import { fileURLToPath, pathToFileURL, } from 'node:url';
+import {
+  fileURLToPath,
+  pathToFileURL,
+} from 'node:url';
 
 import type { LspClient, } from './lsp-client.ts';
 
@@ -27,7 +30,7 @@ export async function requestGotoDefinition({ client, path, line, character, }: 
   path: string;
   line: number;
   character: number;
-}): Promise<{ path: string; line: number; character: number } | null> {
+},): Promise<{ path: string; line: number; character: number; } | null> {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/definition',
@@ -46,9 +49,11 @@ export async function requestGotoDefinition({ client, path, line, character, }: 
     return null;
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrow from Location shape
-  const loc = rawLocation as { uri: string; range: { start: { line: number; character: number } } };
+  const loc = rawLocation as { uri: string;
+    range: { start: { line: number; character: number; }; }; };
   const defPath = loc.uri.startsWith('file://',) ? fileURLToPath(loc.uri,) : loc.uri;
-  return { path: defPath, line: loc.range.start.line, character: loc.range.start.character, };
+  return { path: defPath, line: loc.range.start.line,
+    character: loc.range.start.character, };
 }
 
 /**
@@ -70,7 +75,7 @@ export async function requestReferences({ client, path, line, character, }: {
   path: string;
   line: number;
   character: number;
-}): Promise<{ path: string; line: number; character: number }[]> {
+},): Promise<{ path: string; line: number; character: number; }[]> {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/references',
@@ -85,10 +90,15 @@ export async function requestReferences({ client, path, line, character, }: {
     return [];
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP references returns Location[]
-  return (result as { uri: string; range: { start: { line: number; character: number } } }[]).map(
-    function convertLocation(loc,) {
-      const refPath = loc.uri.startsWith('file://',) ? fileURLToPath(loc.uri,) : loc.uri;
-      return { path: refPath, line: loc.range.start.line, character: loc.range.start.character, };
-    },
-  );
+  return (result as { uri: string;
+    range: { start: { line: number; character: number; }; }; }[])
+    .map(
+      function convertLocation(loc,) {
+        const refPath = loc.uri.startsWith('file://',)
+          ? fileURLToPath(loc.uri,)
+          : loc.uri;
+        return { path: refPath, line: loc.range.start.line,
+          character: loc.range.start.character, };
+      },
+    );
 }

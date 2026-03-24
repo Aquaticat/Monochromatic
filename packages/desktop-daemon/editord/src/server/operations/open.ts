@@ -7,12 +7,18 @@
  * detected by null-byte inspection and rendered as a hex dump.
  */
 
-import { open as fsOpen, readFile, } from 'node:fs/promises';
+import {
+  open as fsOpen,
+  readFile,
+} from 'node:fs/promises';
 
 import type { FileKind, } from '../../protocol.ts';
 import { assertWithinRoot, } from './assert-within-root.ts';
 import { getMediaKind, } from './file-kind.ts';
-import { generateHexDump, HEX_DUMP_MAX_BYTES, } from './hex-dump.ts';
+import {
+  generateHexDump,
+  HEX_DUMP_MAX_BYTES,
+} from './hex-dump.ts';
 import { probeMedia, } from './probe-media.ts';
 
 /** Number of bytes to read for null-byte detection before committing to a full read. */
@@ -42,7 +48,9 @@ export type OpenResult = {
  *
  * @throws when the path escapes root or the file cannot be read
  */
-export async function openFile({ rootDir, path, }: { rootDir: string; path: string }): Promise<OpenResult> {
+export async function openFile(
+  { rootDir, path, }: { rootDir: string; path: string; },
+): Promise<OpenResult> {
   const absolutePath = assertWithinRoot({ rootDir, path, },);
 
   const mediaKind = getMediaKind({ path, },);
@@ -67,7 +75,8 @@ export async function openFile({ rootDir, path, }: { rootDir: string; path: stri
     const dumpLimit = Math.min(size, HEX_DUMP_MAX_BYTES,);
     const dumpBuffer = Buffer.alloc(dumpLimit,);
     await handle.read(dumpBuffer, 0, dumpLimit, 0,);
-    return { kind: 'binary', path: absolutePath, content: generateHexDump({ buffer: dumpBuffer, totalSize: size, },), };
+    return { kind: 'binary', path: absolutePath,
+      content: generateHexDump({ buffer: dumpBuffer, totalSize: size, },), };
   }
 
   const buffer = await readFile(absolutePath,);

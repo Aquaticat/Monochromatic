@@ -28,7 +28,10 @@
  * ```
  */
 
-import { glob, unlink, } from 'node:fs/promises';
+import {
+  glob,
+  unlink,
+} from 'node:fs/promises';
 
 import spawn from 'nano-spawn';
 
@@ -51,9 +54,8 @@ import spawn from 'nano-spawn';
  */
 async function removeStaleBuildInfo(): Promise<void> {
   const entries: string[] = [];
-  for await (const entry of glob('dist/**/*.tsbuildinfo',)) {
+  for await (const entry of glob('dist/**/*.tsbuildinfo',))
     entries.push(entry,);
-  }
   await Promise.all(entries.map(function unlinkEntry(entry,) {
     return unlink(entry,);
   },),);

@@ -11,7 +11,7 @@ run = "rm -rf .cache; bun src/build.ts"
 
 [tasks."dev:site"]
 description = "Build then serve dist/ with Caddy, rebuilding on source changes"
-run = [{tasks = ["build:site"]}, {tasks = ["_dev:site:watch", "dev:site:serve"]}]
+run = [{ tasks = ["build:site"] }, { tasks = ["_dev:site:watch", "dev:site:serve"] }]
 
 [tasks."dev:site:serve"]
 hide = true

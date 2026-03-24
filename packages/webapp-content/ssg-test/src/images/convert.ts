@@ -49,7 +49,9 @@ export async function fileExists(
     // Expected for missing files; log unexpected access errors for diagnostics
     if (!isNodeError(error,) || error.code !== 'ENOENT') {
       const target = l ?? console;
-      target.error(`Unexpected error checking file existence for ${filePath}: ${String(error,)}`,);
+      target.error(
+        `Unexpected error checking file existence for ${filePath}: ${String(error,)}`,
+      );
     }
     return false;
   }
@@ -89,9 +91,8 @@ export async function maybeConvert(
     l: { info: (message: string,) => void; };
   },
 ): Promise<boolean> {
-  if (await fileExists(avifPath,)) {
+  if (await fileExists(avifPath,))
     return false;
-  }
 
   l.info(`converting ${filePath} -> ${avifPath}`,);
   await convertToAvif({ inputPath: filePath, outputPath: avifPath, },);

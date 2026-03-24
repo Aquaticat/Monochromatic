@@ -59,8 +59,8 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
   // oxlint exits non-zero when violations are found -- capture stdout from the error
   let stdout: string;
   try {
-    const result = await spawn('oxlint', ['--format', 'json', '-c',
-      FIXTURE_CONFIG, target,], {
+    const result = await spawn('oxlint', ['--format', 'json', '-c', FIXTURE_CONFIG,
+      target,], {
       cwd: ROOT,
     },);
     ({ stdout, } = result);

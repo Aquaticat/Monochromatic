@@ -36,8 +36,11 @@ export function createReferenceAnchor(): HTMLDivElement {
  * @param cursorHeight - height of the editor cursor (pixels)
  */
 export function positionAnchor({ anchor, x, y, cursorHeight, }: {
-  anchor: HTMLDivElement; x: number; y: number; cursorHeight: number;
-}): void {
+  anchor: HTMLDivElement;
+  x: number;
+  y: number;
+  cursorHeight: number;
+},): void {
   anchor.style.setProperty('inset-inline-start', `${x}px`,);
   anchor.style.setProperty('inset-block-start', `${y}px`,);
   anchor.style.setProperty('block-size', `${cursorHeight}px`,);
@@ -50,7 +53,9 @@ export function positionAnchor({ anchor, x, y, cursorHeight, }: {
  *
  * @returns array of item div elements
  */
-export function renderReferenceItems({ locations, }: { locations: ReferenceLocation[] }): HTMLElement[] {
+export function renderReferenceItems(
+  { locations, }: { locations: ReferenceLocation[]; },
+): HTMLElement[] {
   return locations.map(function renderItem(loc, index,) {
     const item = h({ tag: 'div', class: 'item', },);
     item.append(
@@ -58,7 +63,8 @@ export function renderReferenceItems({ locations, }: { locations: ReferenceLocat
       h({ tag: 'span', class: 'line-num', text: `:${String(loc.line + 1,)}`, },),
     );
     /** Without dataset: prefer-dom-node-dataset lint error for setAttribute on data- attributes. */
-    if (index === 0) item.dataset.selected = '';
+    if (index === 0)
+      item.dataset.selected = '';
     return item;
   },);
 }
@@ -71,13 +77,19 @@ export function renderReferenceItems({ locations, }: { locations: ReferenceLocat
  * @param selectedIndex - index of the newly selected item
  */
 export function updateItemSelection({ list, selectedIndex, }: {
-  list: HTMLDivElement; selectedIndex: number;
-}): void {
+  list: HTMLDivElement;
+  selectedIndex: number;
+},): void {
   /** Without querySelectorAll: unsafe type assertion from Element to HTMLElement on children. */
   const items = list.querySelectorAll<HTMLElement>('.item',);
   for (const [i, item,] of [...items,].entries()) {
-    if (i === selectedIndex) { item.dataset.selected = ''; item.scrollIntoView({ block: 'nearest', },); }
-    else delete item.dataset.selected;
+    if (i === selectedIndex) {
+      item.dataset.selected = '';
+      item.scrollIntoView({ block: 'nearest', },);
+    }
+    else {
+      delete item.dataset.selected;
+    }
   }
 }
 
@@ -93,10 +105,11 @@ export function updateItemSelection({ list, selectedIndex, }: {
  * @returns new selected index (wraps around)
  */
 export function computeNextIndex({ current, total, direction, }: {
-  current: number; total: number; direction: 'up' | 'down';
-}): number {
-  if (direction === 'up') {
+  current: number;
+  total: number;
+  direction: 'up' | 'down';
+},): number {
+  if (direction === 'up')
     return current <= 0 ? total - 1 : current - 1;
-  }
   return current >= total - 1 ? 0 : current + 1;
 }

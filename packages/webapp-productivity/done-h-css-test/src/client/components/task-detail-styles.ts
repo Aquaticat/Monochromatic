@@ -69,7 +69,8 @@ export const TASK_DETAIL_STYLES = [
   },),
   css({
     rule: '.heading',
-    decls: { 'font-size': cssRem(HEADING_FONT_SIZE,), 'font-weight': cssInt(FONT_WEIGHT_NORMAL,), },
+    decls: { 'font-size': cssRem(HEADING_FONT_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,), },
   },),
   css({
     rule: '.title-input',

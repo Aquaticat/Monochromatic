@@ -70,8 +70,8 @@ export const inboxStyles = [
   },),
   css({
     rule: '.subsection-desc',
-    decls: { 'font-size': cssCalc(`${cssRem(DESC_FONT_SIZE_PX,)} / 16`,), 'line-height': 1.5,
-      color: cssVar('fg-weaker',), },
+    decls: { 'font-size': cssCalc(`${cssRem(DESC_FONT_SIZE_PX,)} / 16`,),
+      'line-height': 1.5, color: cssVar('fg-weaker',), },
   },),
   css({
     rule: '.location-options',

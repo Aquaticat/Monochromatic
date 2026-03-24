@@ -9,15 +9,15 @@
 
 import { jsPDF, } from 'jspdf';
 
-import {
-  getContainerSize,
-  type ExportDeps,
-} from './export.ts';
+import { renderPageCanvas, } from './export-pdf-page.ts';
 import {
   TEXT_COLOR_RGB,
   textEntriesToExport,
 } from './export-text-config.ts';
-import { renderPageCanvas, } from './export-pdf-page.ts';
+import {
+  type ExportDeps,
+  getContainerSize,
+} from './export.ts';
 import { snapshotAllPages, } from './pages.ts';
 
 //region Constants
@@ -108,7 +108,8 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     const pageCanvas = await renderPageCanvas({
       svgBackground: page.svgBackground,
       strokes: page.strokes,
-      container, overlay,
+      container,
+      overlay,
     },);
 
     /** PNG image data as byte array for jsPDF embedding */
@@ -132,7 +133,9 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       else {
         doc.setTextColor(TEXT_COLOR_RGB.r, TEXT_COLOR_RGB.g, TEXT_COLOR_RGB.b,);
       }
-      doc.text(entry.value, entry.xFraction * pageW, entry.yFraction * pageH, { baseline: 'top', },);
+      doc.text(entry.value, entry.xFraction * pageW, entry.yFraction * pageH, {
+        baseline: 'top',
+      },);
     }
     //endregion Overlay text
   }

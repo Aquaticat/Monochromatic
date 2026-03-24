@@ -14,9 +14,16 @@ import {
   Visitor,
 } from 'rolldown/utils';
 
-import { extractTypeFromAttributes, extractTypeFromOptions, getStringLiteralValue, } from './ast-extract.ts';
+import {
+  extractTypeFromAttributes,
+  extractTypeFromOptions,
+  getStringLiteralValue,
+} from './ast-extract.ts';
 import { ATTR_QUERY_KEY, } from './patterns.ts';
-import { collectStaticReplacements, type Replacement, } from './transform-helpers.ts';
+import {
+  collectStaticReplacements,
+  type Replacement,
+} from './transform-helpers.ts';
 
 /**
  * Rewrites import/export statements that use `with { type: '...' }` attributes.
@@ -46,7 +53,8 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(node.source, node.attributes, attrType, code, replacements,);
+      collectStaticReplacements(node.source, node.attributes, attrType, code,
+        replacements,);
     },
 
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
@@ -55,7 +63,8 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(node.source, node.attributes, attrType, code, replacements,);
+      collectStaticReplacements(node.source, node.attributes, attrType, code,
+        replacements,);
     },
 
     ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
@@ -64,7 +73,8 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(node.source, node.attributes, attrType, code, replacements,);
+      collectStaticReplacements(node.source, node.attributes, attrType, code,
+        replacements,);
     },
 
     ImportExpression(node: ESTree.ImportExpression,): void {
@@ -103,9 +113,8 @@ export function transformImportAttributes(
   },);
 
   let transformed = code;
-  for (const r of replacements) {
+  for (const r of replacements)
     transformed = transformed.slice(0, r.start,) + r.text + transformed.slice(r.end,);
-  }
 
   return { code: transformed, };
 }

@@ -47,7 +47,7 @@ export type SvgOverlayInfo = {
 export function measureSvgOverlay({ container, overlay, }: {
   container: HTMLDivElement;
   overlay: HTMLDivElement;
-}): SvgOverlayInfo | null {
+},): SvgOverlayInfo | null {
   /** SVG element from the overlay, if present */
   const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
   if (svgElement === null)

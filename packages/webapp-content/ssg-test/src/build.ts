@@ -68,9 +68,8 @@ l.info(`loaded ${posts.length} posts`,);
 
 /** Whether the processing pipeline source has changed since last build. */
 const pipelineChanged = cache?.pipelineHash !== pipelineHash;
-if (pipelineChanged) {
+if (pipelineChanged)
   l.info('pipeline changed, invalidating all cache entries',);
-}
 
 /** Cache to use for lookups; `undefined` forces full reprocessing on pipeline change. */
 const effectiveCache = pipelineChanged ? undefined : cache;
@@ -88,12 +87,14 @@ const processResults = await Promise.all(posts.map(async function processPost(po
   },);
 
   if (cached !== undefined) {
-    return { contentKey: `${post.lang}/${post.name}`, cacheKey, entry: cached, fromCache: true, };
+    return { contentKey: `${post.lang}/${post.name}`, cacheKey, entry: cached,
+      fromCache: true, };
   }
 
   const result = await processor.process(post.body,);
   const html = String(result,);
-  const entry = createCacheEntry({ contentHash: post.contentHash, html, frontmatter: post.data, },);
+  const entry = createCacheEntry({ contentHash: post.contentHash, html,
+    frontmatter: post.data, },);
   return { contentKey: `${post.lang}/${post.name}`, cacheKey, entry, fromCache: false, };
 },),);
 
@@ -112,9 +113,11 @@ const cacheEntries = Object.fromEntries(
 );
 
 /** Number of posts served from cache without reprocessing. */
-const cacheHits = processResults.filter(function wasFromCache({ fromCache, },) {
-  return fromCache;
-},).length;
+const cacheHits = processResults
+  .filter(function wasFromCache({ fromCache, },) {
+    return fromCache;
+  },)
+  .length;
 
 l.info(`processed ${posts.length - cacheHits} files, ${cacheHits} from cache`,);
 

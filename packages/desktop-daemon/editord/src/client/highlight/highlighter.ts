@@ -15,10 +15,17 @@
 
 import type { Parser, } from '@lezer/common';
 
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import { collectHighlightRanges, } from './collect.ts';
 import { HIGHLIGHT_GROUPS, } from './tags.ts';
-import { clearHighlights, getLineTexts, MAX_HIGHLIGHT_BYTES, } from './utils.ts';
-import { l, tagged, } from '../log.ts';
+import {
+  clearHighlights,
+  getLineTexts,
+  MAX_HIGHLIGHT_BYTES,
+} from './utils.ts';
 
 export { clearHighlights, };
 
@@ -39,12 +46,16 @@ const highlightLog = tagged({ tag: 'highlight', l, },);
 export function applyHighlights({ editor, parser, }: {
   editor: HTMLDivElement;
   parser: Parser;
-}): void {
+},): void {
   const lines = getLineTexts({ editor, },);
   const text = lines.join('\n',);
 
   if (text.length > MAX_HIGHLIGHT_BYTES) {
-    highlightLog.info(`skipping: ${String(text.length,)} bytes exceeds ${String(MAX_HIGHLIGHT_BYTES,)} limit`,);
+    highlightLog.info(
+      `skipping: ${String(text.length,)} bytes exceeds ${
+        String(MAX_HIGHLIGHT_BYTES,)
+      } limit`,
+    );
     clearHighlights();
     return;
   }
@@ -56,12 +67,10 @@ export function applyHighlights({ editor, parser, }: {
   for (const group of HIGHLIGHT_GROUPS) {
     const name = `hl-${group}`;
     const ranges = rangesByGroup.get(group,);
-    if (ranges !== undefined && ranges.length > 0) {
+    if (ranges !== undefined && ranges.length > 0)
       CSS.highlights.set(name, new Highlight(...ranges,),);
-    }
-    else {
+    else
       CSS.highlights.delete(name,);
-    }
   }
 
   highlightLog.info(`applied: ${String(rangesByGroup.size,)} groups`,);

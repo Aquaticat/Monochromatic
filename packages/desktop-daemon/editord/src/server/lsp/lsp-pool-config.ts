@@ -29,7 +29,8 @@ const COMMANDS: Record<ServerType, {
 }> = {
   oxlint: { command: 'oxlint', args: ['--lsp',], initializationOptions: {}, },
   tsgo: {
-    command: 'tsgo', args: ['--lsp', '--stdio',],
+    command: 'tsgo',
+    args: ['--lsp', '--stdio',],
     initializationOptions: {
       userPreferences: {
         inlayHints: {
@@ -60,17 +61,26 @@ const COMMANDS: Record<ServerType, {
  * @returns initialized client, or null if spawn/init fails
  */
 export async function spawnLspClient({ type, root, l, onNotification, }: {
-  type: ServerType; root: string; l: Logger;
-  onNotification: (event: { source: string; method: string; params: unknown }) => void;
-}): Promise<LspClient | null> {
+  type: ServerType;
+  root: string;
+  l: Logger;
+  onNotification: (event: { source: string; method: string; params: unknown; },) => void;
+},): Promise<LspClient | null> {
   const def = COMMANDS[type];
   const binPath = join(root, 'node_modules/.bin',);
   const env = { ...process.env, PATH: `${binPath}:${process.env.PATH ?? ''}`, };
   const rootUri = pathToFileURL(root,).href;
   try {
     const c = new LspClient({
-      command: def.command, args: [...def.args,], name: type, cwd: root, env, l,
-      onNotification: function onNotif({ method, params, }: { method: string; params: unknown }): void {
+      command: def.command,
+      args: [...def.args,],
+      name: type,
+      cwd: root,
+      env,
+      l,
+      onNotification: function onNotif(
+        { method, params, }: { method: string; params: unknown; },
+      ): void {
         onNotification({ source: type, method, params, },);
       },
     },);
@@ -78,5 +88,8 @@ export async function spawnLspClient({ type, root, l, onNotification, }: {
     l.info(`${type}: ready at ${root}`,);
     return c;
   }
-  catch (error) { l.error(`${type} init failed at ${root}: ${String(error,)}`,); return null; }
+  catch (error) {
+    l.error(`${type} init failed at ${root}: ${String(error,)}`,);
+    return null;
+  }
 }

@@ -18,9 +18,8 @@ import { pageLayout, } from '../templates/layout.ts';
 export function indexPage(langs: readonly string[],): string {
   /** Page title composed from all language translations of "choose a language". */
   const chooseALangMap = i18n.get('chooseALang',);
-  if (chooseALangMap === undefined) {
+  if (chooseALangMap === undefined)
     throw new Error('i18n: missing "chooseALang" message',);
-  }
 
   const title = [...chooseALangMap.values(),]
     .map(function capitalize(str,) {

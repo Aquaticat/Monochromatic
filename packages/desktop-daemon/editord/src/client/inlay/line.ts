@@ -5,11 +5,16 @@
  * from inlay hints and diagnostics for a single line div.
  */
 
-import type { Diagnostic, InlayHint, } from '../../../protocol.ts';
-import { groupByLine, } from './group-by-line.ts';
+import type {
+  Diagnostic,
+  InlayHint,
+} from '../../../protocol.ts';
 import {
-  findWorstSeverity, formatDiagnosticLabel, formatHintLabel,
+  findWorstSeverity,
+  formatDiagnosticLabel,
+  formatHintLabel,
 } from './format.ts';
+import { groupByLine, } from './group-by-line.ts';
 
 export { groupByLine, };
 
@@ -37,13 +42,15 @@ export function applyLineAnnotation({ div, lineHints, lineDiags, spaceRatio, }: 
   lineHints: InlayHint[] | undefined;
   lineDiags: Diagnostic[] | undefined;
   spaceRatio: number;
-}): void {
+},): void {
   const rows: string[] = [];
 
   if (lineHints !== undefined) {
     /** Without toSorted: no-array-sort lint error since sort() mutates in place. */
     const sorted = lineHints.toSorted(
-      function byChar(left, right,) { return left.position.character - right.position.character; },
+      function byChar(left, right,) {
+        return left.position.character - right.position.character;
+      },
     );
 
     let rowText = '';
@@ -75,7 +82,9 @@ export function applyLineAnnotation({ div, lineHints, lineDiags, spaceRatio, }: 
 
   if (lineDiags !== undefined) {
     for (const diagnostic of lineDiags) {
-      const indent = ' '.repeat(Math.round(diagnostic.range.start.character * spaceRatio,),);
+      const indent = ' '.repeat(
+        Math.round(diagnostic.range.start.character * spaceRatio,),
+      );
       rows.push(`${indent}${formatDiagnosticLabel({ diagnostic, },)}`,);
     }
   }

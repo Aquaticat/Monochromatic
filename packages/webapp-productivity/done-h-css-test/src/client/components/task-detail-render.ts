@@ -128,7 +128,5 @@ export function buildTaskDetailTree(
     btnRow,
   ];
 
-  return { elements,
-    refs: { titleInput, descInput, pillsContainer,
-      btnRow, }, };
+  return { elements, refs: { titleInput, descInput, pillsContainer, btnRow, }, };
 }

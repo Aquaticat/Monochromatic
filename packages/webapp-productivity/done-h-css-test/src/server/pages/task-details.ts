@@ -58,7 +58,8 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
   };
 
   const html = `<!DOCTYPE html>
-${h({
+${
+    h({
       tag: 'html',
       attrs: { lang: 'en', },
       children: [
@@ -90,7 +91,8 @@ ${h({
           ],
         },),
       ],
-    },)}`;
+    },)
+  }`;
 
   return new Response(html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8', },

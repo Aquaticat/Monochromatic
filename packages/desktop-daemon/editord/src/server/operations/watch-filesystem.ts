@@ -7,13 +7,23 @@
  * get watched — typically directories the user has expanded in the tree.
  */
 
-import { watch, type FSWatcher, } from 'node:fs';
+import {
+  type FSWatcher,
+  watch,
+} from 'node:fs';
 import { stat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import type { FsChangeType, } from '../../protocol.ts';
-import { tagged, type Logger, } from '../log.ts';
-import { DEBOUNCE_MS, isIgnored, SUPPRESS_MS, } from './watch-filesystem-filter.ts';
+import {
+  type Logger,
+  tagged,
+} from '../log.ts';
+import {
+  DEBOUNCE_MS,
+  isIgnored,
+  SUPPRESS_MS,
+} from './watch-filesystem-filter.ts';
 
 /** Structured filesystem change event emitted after debounce and resolution. */
 export type FsChangeEvent = {
@@ -37,13 +47,14 @@ export class DirWatcher {
   #watchers = new Map<string, FSWatcher>();
 
   /** Pending debounced events keyed by full path of the changed entry. */
-  #pending = new Map<string, { timer: ReturnType<typeof setTimeout>; eventType: string }>();
+  #pending = new Map<string,
+    { timer: ReturnType<typeof setTimeout>; eventType: string; }>();
 
   /** Paths suppressed from emitting events (e.g. after a self-save). */
   #suppressed = new Set<string>();
 
   /** Callback invoked for each resolved change event. */
-  #onChange: (event: FsChangeEvent) => void;
+  #onChange: (event: FsChangeEvent,) => void;
 
   /** Tagged logger. */
   #l: Logger;
@@ -53,7 +64,9 @@ export class DirWatcher {
    *
    * @param l - parent logger for tag composition
    */
-  constructor({ onChange, l, }: { onChange: (event: FsChangeEvent) => void; l: Logger }) {
+  constructor(
+    { onChange, l, }: { onChange: (event: FsChangeEvent,) => void; l: Logger; },
+  ) {
     this.#onChange = onChange;
     this.#l = tagged({ tag: 'watcher', l, },);
   }
@@ -63,14 +76,17 @@ export class DirWatcher {
    *
    * @param path - absolute path of the directory to watch
    */
-  watchDir({ path, }: { path: string }): void {
-    if (this.#watchers.has(path,)) return;
+  watchDir({ path, }: { path: string; },): void {
+    if (this.#watchers.has(path,))
+      return;
 
     const self = this;
     try {
       const fsWatcher = watch(path, function handleWatchEvent(eventType, filename,) {
-        if (typeof filename !== 'string') return;
-        if (isIgnored({ name: filename, },)) return;
+        if (typeof filename !== 'string')
+          return;
+        if (isIgnored({ name: filename, },))
+          return;
         self.#schedule({ dirPath: path, filename, eventType, },);
       },);
 
@@ -93,7 +109,7 @@ export class DirWatcher {
    *
    * @param path - absolute file path to suppress
    */
-  suppressPath({ path, }: { path: string }): void {
+  suppressPath({ path, }: { path: string; },): void {
     const self = this;
     self.#suppressed.add(path,);
     globalThis.setTimeout(function clearSuppression() {
@@ -103,14 +119,12 @@ export class DirWatcher {
 
   /** Closes all watchers and cancels pending debounce timers. */
   close(): void {
-    for (const fsWatcher of this.#watchers.values()) {
+    for (const fsWatcher of this.#watchers.values())
       fsWatcher.close();
-    }
     this.#watchers.clear();
 
-    for (const entry of this.#pending.values()) {
+    for (const entry of this.#pending.values())
       clearTimeout(entry.timer,);
-    }
     this.#pending.clear();
     this.#suppressed.clear();
   }
@@ -129,12 +143,14 @@ export class DirWatcher {
     dirPath: string;
     filename: string;
     eventType: string;
-  }): void {
+  },): void {
     const fullPath = join(dirPath, filename,);
-    if (this.#suppressed.has(fullPath,)) return;
+    if (this.#suppressed.has(fullPath,))
+      return;
 
     const existing = this.#pending.get(fullPath,);
-    if (existing !== undefined) clearTimeout(existing.timer,);
+    if (existing !== undefined)
+      clearTimeout(existing.timer,);
 
     const self = this;
     const timer = globalThis.setTimeout(function emitDebounced() {
@@ -159,7 +175,7 @@ export class DirWatcher {
   async #resolveAndEmit({ fullPath, eventType, }: {
     fullPath: string;
     eventType: string;
-  }): Promise<void> {
+  },): Promise<void> {
     if (eventType === 'change') {
       this.#onChange({ path: fullPath, changeType: 'modified', isDirectory: false, },);
       return;
@@ -168,7 +184,8 @@ export class DirWatcher {
     /** Rename event: stat to determine created vs deleted. */
     try {
       const stats = await stat(fullPath,);
-      this.#onChange({ path: fullPath, changeType: 'created', isDirectory: stats.isDirectory(), },);
+      this.#onChange({ path: fullPath, changeType: 'created', isDirectory: stats
+        .isDirectory(), },);
     }
     catch {
       this.#onChange({ path: fullPath, changeType: 'deleted', isDirectory: false, },);
@@ -180,7 +197,7 @@ export class DirWatcher {
    *
    * @param path - directory path to stop watching
    */
-  #removeWatcher({ path, }: { path: string }): void {
+  #removeWatcher({ path, }: { path: string; },): void {
     const fsWatcher = this.#watchers.get(path,);
     if (fsWatcher !== undefined) {
       fsWatcher.close();

@@ -15,13 +15,35 @@
 
 import type { KeybindingDeps, } from '../keybinding/deps.ts';
 import { handleTextEditKey, } from '../keybinding/text-ops.ts';
-import { handleCompletionNav, handleReferencesNav, } from '../popup-nav.ts';
+import {
+  handleCompletionNav,
+  handleReferencesNav,
+} from '../popup-nav.ts';
 
 /**
  * Installs global keyboard shortcuts.
  * See {@link KeybindingDeps} for parameter documentation.
  */
-export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, deleteCurrentLine, selectAndCopyCurrentLine, requestCompletions, expandSelection, shrinkSelection, navigateToRecentFile, indentLines, unindentLines, duplicateLineDown, swapLineDown, swapLineUp, openTerminalAtCurrentFile, completionPopup, referencesPopup, hoverPopup, }: KeybindingDeps): void {
+export function wireKeybindings({
+  saveCurrentFile,
+  formatDocument,
+  gotoDefinition,
+  deleteCurrentLine,
+  selectAndCopyCurrentLine,
+  requestCompletions,
+  expandSelection,
+  shrinkSelection,
+  navigateToRecentFile,
+  indentLines,
+  unindentLines,
+  duplicateLineDown,
+  swapLineDown,
+  swapLineUp,
+  openTerminalAtCurrentFile,
+  completionPopup,
+  referencesPopup,
+  hoverPopup,
+}: KeybindingDeps,): void {
   document.addEventListener('keydown', function handleKeydown(event,) {
     if ((event.ctrlKey || event.metaKey) && event.key === 's') {
       event.preventDefault();
@@ -43,7 +65,12 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
       gotoDefinition();
       return;
     }
-    if (handleTextEditKey({ event, deps: { deleteCurrentLine, selectAndCopyCurrentLine, duplicateLineDown, swapLineDown, swapLineUp, }, },)) return;
+    if (handleTextEditKey({ event,
+      deps: { deleteCurrentLine, selectAndCopyCurrentLine, duplicateLineDown,
+        swapLineDown, swapLineUp, }, },))
+    {
+      return;
+    }
     if (event.ctrlKey && event.key === ' ') {
       event.preventDefault();
       requestCompletions();
@@ -59,24 +86,39 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
       expandSelection();
       return;
     }
-    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key >= '0' && event.key <= '9') {
+    if ((event.ctrlKey || event.metaKey)
+      && !event.shiftKey
+      && !event.altKey
+      && event.key >= '0'
+      && event.key <= '9')
+    {
       event.preventDefault();
       navigateToRecentFile(Number(event.key,),);
       return;
     }
-    if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key === 'F12') {
+    if (event.altKey
+      && !event.ctrlKey
+      && !event.metaKey
+      && !event.shiftKey
+      && event.key === 'F12')
+    {
       event.preventDefault();
       openTerminalAtCurrentFile();
       return;
     }
-    if (referencesPopup.visible && handleReferencesNav({ event, referencesPopup, },)) return;
-    if (completionPopup.visible && handleCompletionNav({ event, completionPopup, },)) return;
+    if (referencesPopup.visible && handleReferencesNav({ event, referencesPopup, },))
+      return;
+    if (completionPopup.visible && handleCompletionNav({ event, completionPopup, },))
+      return;
     if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();
-      if (event.shiftKey) unindentLines();
-      else indentLines();
+      if (event.shiftKey)
+        unindentLines();
+      else
+        indentLines();
       return;
     }
-    if (event.key === 'Escape') hoverPopup.hide();
+    if (event.key === 'Escape')
+      hoverPopup.hide();
   },);
 }

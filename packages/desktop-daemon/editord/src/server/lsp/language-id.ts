@@ -37,7 +37,7 @@ const EXTENSION_MAP: Record<string, string> = {
  *
  * @returns language ID string, or "plaintext" for unrecognized extensions
  */
-export function getLanguageId({ path, }: { path: string }): string {
+export function getLanguageId({ path, }: { path: string; },): string {
   const ext = extname(path,).toLowerCase();
   return EXTENSION_MAP[ext] ?? 'plaintext';
 }

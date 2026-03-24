@@ -19,7 +19,9 @@ import type { Post, } from './content.ts';
  */
 export function groupByLang(posts: readonly Post[],): Record<string, Post[]> {
   return Object.fromEntries(
-    Map.groupBy(posts, function byLang(post,) { return post.lang; },),
+    Map.groupBy(posts, function byLang(post,) {
+      return post.lang;
+    },),
   );
 }
 
@@ -32,7 +34,9 @@ export function groupByLang(posts: readonly Post[],): Record<string, Post[]> {
  */
 export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
   return Object.fromEntries(
-    Map.groupBy(posts, function byName(post,) { return post.name; },),
+    Map.groupBy(posts, function byName(post,) {
+      return post.name;
+    },),
   );
 }
 

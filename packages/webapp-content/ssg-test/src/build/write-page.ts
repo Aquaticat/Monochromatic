@@ -4,7 +4,10 @@
  * Creates parent directories as needed and writes content to the
  * output path under `dist/`.
  */
-import { mkdir, writeFile, } from 'node:fs/promises';
+import {
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 /** Output directory for generated static files. */

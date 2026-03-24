@@ -13,14 +13,14 @@ import {
   type StrokeData,
 } from './drawing.ts';
 import {
-  clearTextEntries,
-  finalizeActiveInput,
-} from './text.ts';
-import {
   replaceTextEntries,
   serializeTextEntries,
   type TextEntryData,
 } from './text-page.ts';
+import {
+  clearTextEntries,
+  finalizeActiveInput,
+} from './text.ts';
 
 /**
  * Saved state for a single page.
@@ -62,7 +62,7 @@ let currentIndex = 0;
 export function initPages({ backgrounds, overlay, }: {
   backgrounds: readonly string[];
   overlay: HTMLElement;
-}): void {
+},): void {
   pages = backgrounds.map(function createPage(svg,): PageState {
     return { strokes: [], textEntries: [], svgBackground: svg, };
   },);
@@ -96,7 +96,7 @@ export function getCurrentPageIndex(): number {
 function saveCurrentPage({ overlay, textLayer, }: {
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
-}): void {
+},): void {
   const page = pages[currentIndex];
   if (page === undefined)
     return;
@@ -131,7 +131,7 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
   ch: number;
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
-}): void {
+},): void {
   if (index === currentIndex)
     return;
   if (index < 0 || index >= pages.length)
@@ -144,7 +144,8 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
   if (targetPage === undefined)
     throw new Error(`Page state missing for target index ${String(index,)}`,);
   setStrokes(targetPage.strokes,);
-  replaceTextEntries({ entries: targetPage.textEntries, layer: textLayer, clearFn: clearTextEntries, },);
+  replaceTextEntries({ entries: targetPage.textEntries, layer: textLayer,
+    clearFn: clearTextEntries, },);
   overlay.innerHTML = targetPage.svgBackground;
   currentIndex = index;
   //endregion Restore target page
@@ -176,7 +177,7 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
 export function snapshotAllPages({ overlay, textLayer, }: {
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
-}): readonly PageState[] {
+},): readonly PageState[] {
   endStroke();
   saveCurrentPage({ overlay, textLayer, },);
   return [...pages,];

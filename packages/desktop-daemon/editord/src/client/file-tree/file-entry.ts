@@ -18,7 +18,9 @@ import { nameToOrder, } from './order.ts';
  *
  * @param event - context menu event to suppress
  */
-function suppressContextMenu(event: Event,): void { event.preventDefault(); }
+function suppressContextMenu(event: Event,): void {
+  event.preventDefault();
+}
 
 /**
  * `<tree-file-entry>` — clickable file label in the tree sidebar.
@@ -41,7 +43,8 @@ export class TreeFileEntry extends HTMLElement {
 
   /** Renders the file label and attaches event handlers. */
   connectedCallback(): void {
-    if (this.#initialized) return;
+    if (this.#initialized)
+      return;
     this.#initialized = true;
 
     this.dataset['path'] = this.entryPath;
@@ -54,22 +57,26 @@ export class TreeFileEntry extends HTMLElement {
       this.dataset['recency'] = String(this.recencyIndex,);
     }
 
-    this.replaceChildren(toggle, h({ tag: 'span', class: 'name', text: this.entryName, },),);
+    this.replaceChildren(toggle,
+      h({ tag: 'span', class: 'name', text: this.entryName, },),);
 
     const entry = this;
     this.addEventListener('click', function handleFileClick() {
       entry.focus();
       entry.dispatchEvent(new CustomEvent('file-select', {
-        bubbles: true, composed: true,
+        bubbles: true,
+        composed: true,
         detail: { path: entry.entryPath, },
       },),);
     },);
     this.addEventListener('mouseup', function handleFileContext(event: MouseEvent,) {
-      if (event.button !== 2) return;
+      if (event.button !== 2)
+        return;
       event.preventDefault();
       entry.dispatchEvent(new CustomEvent('show-context', {
         bubbles: true,
-        detail: { x: event.clientX, y: event.clientY, path: entry.entryPath, kind: 'file' as const, },
+        detail: { x: event.clientX, y: event.clientY, path: entry.entryPath,
+          kind: 'file' as const, },
       },),);
     },);
     this.addEventListener('contextmenu', suppressContextMenu,);
@@ -91,7 +98,7 @@ export function createTreeFileEntry({ path, name, recencyIndex, }: {
   path: string;
   name: string;
   recencyIndex: number;
-}): TreeFileEntry {
+},): TreeFileEntry {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define
   const entry = document.createElement('tree-file-entry',) as TreeFileEntry;
   entry.entryPath = path;

@@ -28,9 +28,12 @@
  */
 export function distToSegmentSq(
   { px, py, ax, ay, bx, by, }: {
-    px: number; py: number;
-    ax: number; ay: number;
-    bx: number; by: number;
+    px: number;
+    py: number;
+    ax: number;
+    ay: number;
+    bx: number;
+    by: number;
   },
 ): number {
   const dx = bx - ax;
@@ -72,9 +75,12 @@ export function distToSegmentSq(
  */
 function cross(
   { ax, ay, bx, by, cx, cy, }: {
-    ax: number; ay: number;
-    bx: number; by: number;
-    cx: number; cy: number;
+    ax: number;
+    ay: number;
+    bx: number;
+    by: number;
+    cx: number;
+    cy: number;
   },
 ): number {
   return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
@@ -82,10 +88,14 @@ function cross(
 
 /** Parameter shape shared by {@link segmentsIntersect} and {@link segToSegDistSq} */
 export type TwoSegments = {
-  a1x: number; a1y: number;
-  a2x: number; a2y: number;
-  b1x: number; b1y: number;
-  b2x: number; b2y: number;
+  a1x: number;
+  a1y: number;
+  a2x: number;
+  a2y: number;
+  b1x: number;
+  b1y: number;
+  b2x: number;
+  b2y: number;
 };
 
 /**
@@ -196,24 +206,40 @@ export function segToSegDistSq(
  */
 export function segmentIntersectsRect(
   { sx, sy, ex, ey, left, top, right, bottom, }: {
-    sx: number; sy: number;
-    ex: number; ey: number;
-    left: number; top: number;
-    right: number; bottom: number;
+    sx: number;
+    sy: number;
+    ex: number;
+    ey: number;
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
   },
 ): boolean {
   /** Top edge: left,top -> right,top */
-  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: top, b2x: right, b2y: top, },))
+  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: top,
+    b2x: right, b2y: top, },))
+  {
     return true;
+  }
   /** Bottom edge: left,bottom -> right,bottom */
-  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: bottom, b2x: right, b2y: bottom, },))
+  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: bottom,
+    b2x: right, b2y: bottom, },))
+  {
     return true;
+  }
   /** Left edge: left,top -> left,bottom */
-  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: top, b2x: left, b2y: bottom, },))
+  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: top,
+    b2x: left, b2y: bottom, },))
+  {
     return true;
+  }
   /** Right edge: right,top -> right,bottom */
-  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: right, b1y: top, b2x: right, b2y: bottom, },))
+  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: right, b1y: top,
+    b2x: right, b2y: bottom, },))
+  {
     return true;
+  }
 
   return false;
 }

@@ -11,8 +11,8 @@ import {
   type NormalizedPoint,
 } from './drawing.ts';
 import {
-  triggerDownload,
   type ExportDeps,
+  triggerDownload,
 } from './export.ts';
 
 //region Constants
@@ -84,12 +84,15 @@ export function exportAsSvg(
       continue;
     const path = document.createElementNS(SVG_NS, 'path',);
     /** SVG path data built from normalized stroke coordinates */
-    const d = stroke.points.map(
-      function formatPoint([nx, ny,]: NormalizedPoint, index: number,): string {
-        const cmd = index === 0 ? 'M' : 'L';
-        return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
-      },
-    ).join(' ',);
+    const d = stroke
+      .points
+      .map(
+        function formatPoint([nx, ny,]: NormalizedPoint, index: number,): string {
+          const cmd = index === 0 ? 'M' : 'L';
+          return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
+        },
+      )
+      .join(' ',);
     path.setAttribute('d', d,);
     path.setAttribute('stroke', stroke.color,);
     path.setAttribute('stroke-width', String(stroke.width,),);

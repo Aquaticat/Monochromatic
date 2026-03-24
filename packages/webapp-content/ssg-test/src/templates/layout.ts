@@ -24,23 +24,25 @@ import { headerFragment, } from './header.ts';
 export function pageLayout(
   { title, lang, content, }: { title: string; lang: string; content: string; },
 ): string {
-  return `<!DOCTYPE html>\n${h({
-    tag: 'html',
-    attrs: { lang, },
-    children: [
-      headFragment({ title, lang, },),
-      h({
-        tag: 'body',
-        children: [
-          headerFragment(lang,),
-          h({
-            tag: 'div',
-            class: 'between_header_footer',
-            html: content,
-          },),
-          h({ tag: 'footer', },),
-        ],
-      },),
-    ],
-  },)}`;
+  return `<!DOCTYPE html>\n${
+    h({
+      tag: 'html',
+      attrs: { lang, },
+      children: [
+        headFragment({ title, lang, },),
+        h({
+          tag: 'body',
+          children: [
+            headerFragment(lang,),
+            h({
+              tag: 'div',
+              class: 'between_header_footer',
+              html: content,
+            },),
+            h({ tag: 'footer', },),
+          ],
+        },),
+      ],
+    },)
+  }`;
 }

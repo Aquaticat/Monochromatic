@@ -8,9 +8,7 @@ import {
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 
-import {
-  POPUP_HOST_DECLS,
-} from '../styles/tokens.ts';
+import { POPUP_HOST_DECLS, } from '../styles/tokens.ts';
 
 /** Maximum height of the completion popup in rem. */
 const MAX_HEIGHT_REM = 16;
@@ -57,4 +55,5 @@ export const STYLES = [
       'margin-inline-start': cssRem(1 / 2,),
     },
   },),
-].join('',);
+]
+  .join('',);

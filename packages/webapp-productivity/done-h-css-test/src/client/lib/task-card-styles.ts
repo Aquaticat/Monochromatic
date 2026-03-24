@@ -59,8 +59,8 @@ export const TASK_CARD_STYLES = [
   },),
   css({
     rule: '.title',
-    decls: { 'font-size': cssRem(TITLE_FONT_SIZE,), 'font-weight': 400, 'line-height': 'normal',
-      'flex-grow': 1, 'min-inline-size': 0, },
+    decls: { 'font-size': cssRem(TITLE_FONT_SIZE,), 'font-weight': 400,
+      'line-height': 'normal', 'flex-grow': 1, 'min-inline-size': 0, },
   },),
   css({
     rule: '.chips',

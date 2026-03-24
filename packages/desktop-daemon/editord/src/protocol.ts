@@ -24,8 +24,8 @@ export type DirEntry = {
  * File-path matches have no `line` or `text`; content matches include both.
  */
 export type SearchResult =
-  | { kind: 'file'; path: string }
-  | { kind: 'content'; path: string; line: number; text: string };
+  | { kind: 'file'; path: string; }
+  | { kind: 'content'; path: string; line: number; text: string; };
 
 //endregion Search types
 
@@ -134,26 +134,27 @@ export type FsChangeType = 'created' | 'modified' | 'deleted';
  * Notifications (e.g. `didChange`) have no `id` and expect no response.
  */
 export type ClientMessage =
-  | { type: 'open'; id: string; path: string }
-  | { type: 'save'; id: string; path: string; content: string }
-  | { type: 'listDir'; id: string; path: string }
-  | { type: 'search'; id: string; query: string; scope: string }
-  | { type: 'hover'; id: string; path: string; line: number; character: number }
-  | { type: 'completion'; id: string; path: string; line: number; character: number }
-  | { type: 'format'; id: string; path: string }
-  | { type: 'gotoDefinition'; id: string; path: string; line: number; character: number }
-  | { type: 'findReferences'; id: string; path: string; line: number; character: number }
-  | { type: 'inlayHint'; id: string; path: string; range: Range }
-  | { type: 'selectionRange'; id: string; path: string; positions: Position[] }
-  | { type: 'deleteEntry'; id: string; path: string }
-  | { type: 'copyEntry'; id: string; path: string; destPath: string }
-  | { type: 'moveEntry'; id: string; path: string; destPath: string }
-  | { type: 'newEntry'; id: string; parentPath: string; name: string; isDirectory: boolean }
-  | { type: 'openInTerminal'; id: string; path: string }
-  | { type: 'openInDefaultApp'; id: string; path: string }
-  | { type: 'didChange'; path: string; content: string }
-  | { type: 'didClose'; path: string }
-  | { type: 'watchDir'; path: string };
+  | { type: 'open'; id: string; path: string; }
+  | { type: 'save'; id: string; path: string; content: string; }
+  | { type: 'listDir'; id: string; path: string; }
+  | { type: 'search'; id: string; query: string; scope: string; }
+  | { type: 'hover'; id: string; path: string; line: number; character: number; }
+  | { type: 'completion'; id: string; path: string; line: number; character: number; }
+  | { type: 'format'; id: string; path: string; }
+  | { type: 'gotoDefinition'; id: string; path: string; line: number; character: number; }
+  | { type: 'findReferences'; id: string; path: string; line: number; character: number; }
+  | { type: 'inlayHint'; id: string; path: string; range: Range; }
+  | { type: 'selectionRange'; id: string; path: string; positions: Position[]; }
+  | { type: 'deleteEntry'; id: string; path: string; }
+  | { type: 'copyEntry'; id: string; path: string; destPath: string; }
+  | { type: 'moveEntry'; id: string; path: string; destPath: string; }
+  | { type: 'newEntry'; id: string; parentPath: string; name: string;
+    isDirectory: boolean; }
+  | { type: 'openInTerminal'; id: string; path: string; }
+  | { type: 'openInDefaultApp'; id: string; path: string; }
+  | { type: 'didChange'; path: string; content: string; }
+  | { type: 'didClose'; path: string; }
+  | { type: 'watchDir'; path: string; };
 
 /**
  * Client request payload without the auto-generated `id` field.
@@ -161,15 +162,15 @@ export type ClientMessage =
  * Filters to only variants that have an `id` (excludes notifications).
  */
 export type ClientRequest = ClientMessage extends infer TVariant
-  ? TVariant extends { id: string }
-    ? Omit<TVariant, 'id'>
-    : never
+  ? TVariant extends { id: string; } ? Omit<TVariant, 'id'>
+  : never
   : never;
 
 /**
  * Client notification payload (messages without an `id` that expect no response).
  */
-export type ClientNotification = Extract<ClientMessage, { type: 'didChange' } | { type: 'didClose' } | { type: 'watchDir' }>;
+export type ClientNotification = Extract<ClientMessage,
+  { type: 'didChange'; } | { type: 'didClose'; } | { type: 'watchDir'; }>;
 
 //endregion Client messages
 
@@ -181,21 +182,23 @@ export type ClientNotification = Extract<ClientMessage, { type: 'didChange' } | 
  * Push notifications (e.g. `fileChanged`, `diagnostics`) have no `id`.
  */
 export type ServerMessage =
-  | { type: 'connected'; rootDir: string; fsId: string }
-  | { type: 'fileContent'; id: string; path: string; content: string; kind: FileKind; mediaInfo?: string }
-  | { type: 'saved'; id: string; path: string }
-  | { type: 'dirListing'; id: string; path: string; entries: DirEntry[] }
-  | { type: 'searchResults'; id: string; results: SearchResult[] }
-  | { type: 'fileChanged'; path: string; changeType: FsChangeType; isDirectory: boolean }
-  | { type: 'diagnostics'; path: string; diagnostics: Diagnostic[] }
-  | { type: 'hoverResult'; id: string; contents: string; range?: Range }
-  | { type: 'completionResult'; id: string; items: CompletionItem[] }
-  | { type: 'formatResult'; id: string; edits: TextEdit[] }
-  | { type: 'definitionResult'; id: string; path: string; line: number; character: number }
-  | { type: 'referencesResult'; id: string; locations: (Position & { path: string })[] }
-  | { type: 'inlayHintResult'; id: string; hints: InlayHint[] }
-  | { type: 'selectionRangeResult'; id: string; ranges: SelectionRange[] }
-  | { type: 'fsActionDone'; id: string }
-  | { type: 'error'; id?: string; message: string };
+  | { type: 'connected'; rootDir: string; fsId: string; }
+  | { type: 'fileContent'; id: string; path: string; content: string; kind: FileKind;
+    mediaInfo?: string; }
+  | { type: 'saved'; id: string; path: string; }
+  | { type: 'dirListing'; id: string; path: string; entries: DirEntry[]; }
+  | { type: 'searchResults'; id: string; results: SearchResult[]; }
+  | { type: 'fileChanged'; path: string; changeType: FsChangeType; isDirectory: boolean; }
+  | { type: 'diagnostics'; path: string; diagnostics: Diagnostic[]; }
+  | { type: 'hoverResult'; id: string; contents: string; range?: Range; }
+  | { type: 'completionResult'; id: string; items: CompletionItem[]; }
+  | { type: 'formatResult'; id: string; edits: TextEdit[]; }
+  | { type: 'definitionResult'; id: string; path: string; line: number;
+    character: number; }
+  | { type: 'referencesResult'; id: string; locations: (Position & { path: string; })[]; }
+  | { type: 'inlayHintResult'; id: string; hints: InlayHint[]; }
+  | { type: 'selectionRangeResult'; id: string; ranges: SelectionRange[]; }
+  | { type: 'fsActionDone'; id: string; }
+  | { type: 'error'; id?: string; message: string; };
 
 //endregion Server messages

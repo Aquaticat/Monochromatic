@@ -12,8 +12,14 @@ import { copyEntry, } from './operations/copy-entry.ts';
 import { deleteEntry, } from './operations/delete-entry.ts';
 import { moveEntry, } from './operations/move-entry.ts';
 import { newEntry, } from './operations/new-entry.ts';
-import { openInDefaultApp, openInTerminal, } from './operations/open-external.ts';
-import { sendJson, type Peer, } from './ws-send.ts';
+import {
+  openInDefaultApp,
+  openInTerminal,
+} from './operations/open-external.ts';
+import {
+  type Peer,
+  sendJson,
+} from './ws-send.ts';
 
 /**
  * Checks whether an error is a Windows file-lock error (`EBUSY` or `EPERM`).
@@ -23,8 +29,9 @@ import { sendJson, type Peer, } from './ws-send.ts';
  * @returns whether the error code indicates a file lock
  */
 function isFileLockError(error: unknown,): boolean {
-  if (typeof error !== 'object' || error === null) return false;
-  const { code, } = error as { code?: string };
+  if (typeof error !== 'object' || error === null)
+    return false;
+  const { code, } = error as { code?: string; };
   return code === 'EBUSY' || code === 'EPERM';
 }
 
@@ -44,11 +51,18 @@ async function retryOnFileLock({ operation, path, lspManager, }: {
   operation: () => Promise<void>;
   path: string;
   lspManager: LspManager | null;
-}): Promise<void> {
-  try { await operation(); }
+},): Promise<void> {
+  try {
+    await operation();
+  }
   catch (error) {
-    if (isFileLockError(error,) && lspManager !== null) { await lspManager.shutdownForPath({ path, },); await operation(); }
-    else { throw error; }
+    if (isFileLockError(error,) && lspManager !== null) {
+      await lspManager.shutdownForPath({ path, },);
+      await operation();
+    }
+    else {
+      throw error;
+    }
   }
 }
 
@@ -70,9 +84,11 @@ export async function dispatchFsMessage({ peer, parsed, rootDir, lspManager, }: 
   parsed: ClientMessage;
   rootDir: string;
   lspManager: LspManager | null;
-}): Promise<boolean> {
+},): Promise<boolean> {
   if (parsed.type === 'deleteEntry') {
-    await retryOnFileLock({ operation: function del() { return deleteEntry({ rootDir, path: parsed.path, },); }, path: parsed.path, lspManager, },);
+    await retryOnFileLock({ operation: function del() {
+      return deleteEntry({ rootDir, path: parsed.path, },);
+    }, path: parsed.path, lspManager, },);
     sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
     return true;
   }
@@ -82,12 +98,15 @@ export async function dispatchFsMessage({ peer, parsed, rootDir, lspManager, }: 
     return true;
   }
   if (parsed.type === 'moveEntry') {
-    await retryOnFileLock({ operation: function mv() { return moveEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },); }, path: parsed.path, lspManager, },);
+    await retryOnFileLock({ operation: function mv() {
+      return moveEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },);
+    }, path: parsed.path, lspManager, },);
     sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
     return true;
   }
   if (parsed.type === 'newEntry') {
-    await newEntry({ rootDir, parentPath: parsed.parentPath, name: parsed.name, isDirectory: parsed.isDirectory, },);
+    await newEntry({ rootDir, parentPath: parsed.parentPath, name: parsed.name,
+      isDirectory: parsed.isDirectory, },);
     sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
     return true;
   }

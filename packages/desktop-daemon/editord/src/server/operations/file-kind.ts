@@ -11,17 +11,34 @@ import type { FileKind, } from '../../protocol.ts';
 
 /** Extensions treated as raster/vector images (excludes SVG which is editable text). */
 const IMAGE_EXTENSIONS = new Set([
-  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.bmp', '.avif',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp',
+  '.ico',
+  '.bmp',
+  '.avif',
 ],);
 
 /** Extensions treated as audio. */
 const AUDIO_EXTENSIONS = new Set([
-  '.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.opus',
+  '.mp3',
+  '.wav',
+  '.ogg',
+  '.flac',
+  '.aac',
+  '.m4a',
+  '.opus',
 ],);
 
 /** Extensions treated as video. */
 const VIDEO_EXTENSIONS = new Set([
-  '.mp4', '.webm', '.mkv', '.avi', '.mov',
+  '.mp4',
+  '.webm',
+  '.mkv',
+  '.avi',
+  '.mov',
 ],);
 
 /**
@@ -31,11 +48,16 @@ const VIDEO_EXTENSIONS = new Set([
  *
  * @returns media kind if the extension matches a known media type, null for text or unknown files
  */
-export function getMediaKind({ path, }: { path: string }): Extract<FileKind, 'image' | 'audio' | 'video'> | null {
+export function getMediaKind(
+  { path, }: { path: string; },
+): Extract<FileKind, 'image' | 'audio' | 'video'> | null {
   const ext = extname(path,).toLowerCase();
-  if (IMAGE_EXTENSIONS.has(ext,)) return 'image';
-  if (AUDIO_EXTENSIONS.has(ext,)) return 'audio';
-  if (VIDEO_EXTENSIONS.has(ext,)) return 'video';
+  if (IMAGE_EXTENSIONS.has(ext,))
+    return 'image';
+  if (AUDIO_EXTENSIONS.has(ext,))
+    return 'audio';
+  if (VIDEO_EXTENSIONS.has(ext,))
+    return 'video';
   return null;
 }
 
@@ -70,7 +92,7 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
  *
  * @returns MIME type string, defaults to `application/octet-stream` for unknown extensions
  */
-export function getContentType({ path, }: { path: string }): string {
+export function getContentType({ path, }: { path: string; },): string {
   const ext = extname(path,).toLowerCase();
   return CONTENT_TYPE_MAP[ext] ?? 'application/octet-stream';
 }

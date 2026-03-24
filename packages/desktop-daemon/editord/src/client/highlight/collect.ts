@@ -18,7 +18,7 @@ import { findLineForOffset, } from './utils.ts';
  *
  * @returns array of cumulative offsets
  */
-function computeLineStarts({ lines, }: { lines: string[] }): number[] {
+function computeLineStarts({ lines, }: { lines: string[]; },): number[] {
   const lineStarts: number[] = [];
   let cumulativeOffset = 0;
   for (const line of lines) {
@@ -44,7 +44,7 @@ export function collectHighlightRanges({ tree, lines, editor, }: {
   tree: Tree;
   lines: string[];
   editor: HTMLDivElement;
-}): Map<string, Range[]> {
+},): Map<string, Range[]> {
   const lineStarts = computeLineStarts({ lines, },);
   const rangesByGroup = new Map<string, Range[]>();
   const { children, } = editor;

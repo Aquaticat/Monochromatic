@@ -19,10 +19,16 @@ import {
   renderReferenceItems,
   updateItemSelection,
 } from './behavior.ts';
-import type { ReferenceLocation, ReferenceSelectDetail, } from './types.ts';
 import { STYLES, } from './references-popup.styles.ts';
+import type {
+  ReferenceLocation,
+  ReferenceSelectDetail,
+} from './types.ts';
 
-export type { ReferenceLocation, ReferenceSelectDetail, };
+export type {
+  ReferenceLocation,
+  ReferenceSelectDetail,
+};
 
 /**
  * `<references-popup>` -- language server references dropdown.
@@ -58,7 +64,8 @@ export class ReferencesPopup extends HTMLElement {
     const popup = this;
     this.addEventListener('toggle', function handleToggle(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover is ToggleEvent
-      if ((event as ToggleEvent).newState === 'closed') popup.#cleanup();
+      if ((event as ToggleEvent).newState === 'closed')
+        popup.#cleanup();
     },);
   }
 
@@ -73,8 +80,12 @@ export class ReferencesPopup extends HTMLElement {
    *
    * @param cursorHeight - height of the editor cursor (pixels)
    */
-  show({ locations, x, y, cursorHeight, }: { locations: ReferenceLocation[]; x: number; y: number; cursorHeight: number }): void {
-    if (this.#list === null || locations.length === 0) return;
+  show(
+    { locations, x, y, cursorHeight, }: { locations: ReferenceLocation[]; x: number;
+      y: number; cursorHeight: number; },
+  ): void {
+    if (this.#list === null || locations.length === 0)
+      return;
     this.#locations = locations;
     this.#selectedIndex = 0;
     this.parentElement?.insertBefore(this.#anchor, this,);
@@ -85,7 +96,8 @@ export class ReferencesPopup extends HTMLElement {
 
   /** Hides the popup and removes the anchor div. */
   hide(): void {
-    if (this.matches(':popover-open',)) this.hidePopover();
+    if (this.matches(':popover-open',))
+      this.hidePopover();
     this.#cleanup();
   }
 
@@ -101,12 +113,16 @@ export class ReferencesPopup extends HTMLElement {
    *
    * @returns true when the popover is in the open state
    */
-  get visible(): boolean { return this.matches(':popover-open',); }
+  get visible(): boolean {
+    return this.matches(':popover-open',);
+  }
 
   /** Moves the selection up or down. */
-  navigate({ direction, }: { direction: 'up' | 'down' }): void {
-    if (this.#locations.length === 0 || this.#list === null) return;
-    this.#selectedIndex = computeNextIndex({ current: this.#selectedIndex, total: this.#locations.length, direction, },);
+  navigate({ direction, }: { direction: 'up' | 'down'; },): void {
+    if (this.#locations.length === 0 || this.#list === null)
+      return;
+    this.#selectedIndex = computeNextIndex({ current: this.#selectedIndex,
+      total: this.#locations.length, direction, },);
     updateItemSelection({ list: this.#list, selectedIndex: this.#selectedIndex, },);
   }
 
@@ -116,12 +132,17 @@ export class ReferencesPopup extends HTMLElement {
    * @returns selected location detail, or null if nothing selected
    */
   accept(): ReferenceSelectDetail | null {
-    if (this.#selectedIndex < 0 || this.#selectedIndex >= this.#locations.length) return null;
+    if (this.#selectedIndex < 0 || this.#selectedIndex >= this.#locations.length)
+      return null;
     const loc = this.#locations[this.#selectedIndex];
-    if (loc === undefined) return null;
-    const detail: ReferenceSelectDetail = { path: loc.path, line: loc.line + 1, character: loc.character, };
+    if (loc === undefined)
+      return null;
+    const detail: ReferenceSelectDetail = { path: loc.path, line: loc.line + 1,
+      character: loc.character, };
     this.hide();
-    this.dispatchEvent(new CustomEvent('reference-select', { detail, bubbles: true, composed: true, },),);
+    this.dispatchEvent(
+      new CustomEvent('reference-select', { detail, bubbles: true, composed: true, },),
+    );
     return detail;
   }
 }

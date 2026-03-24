@@ -10,14 +10,12 @@ import {
   getStrokes,
   type NormalizedPoint,
 } from './drawing.ts';
+import { readTextEntries, } from './export-text-config.ts';
 import {
-  triggerDownload,
-  getContainerSize,
   type ExportDeps,
+  getContainerSize,
+  triggerDownload,
 } from './export.ts';
-import {
-  readTextEntries,
-} from './export-text-config.ts';
 import { MIN_STROKE_POINTS, } from './stroke-renderer.ts';
 import { measureSvgOverlay, } from './svg-overlay-measure.ts';
 
@@ -68,12 +66,15 @@ export function exportAsSvg(
       continue;
     const path = document.createElementNS(SVG_NS, 'path',);
     /** SVG path data built from normalized stroke coordinates */
-    const d = stroke.points.map(
-      function formatPoint([nx, ny,]: NormalizedPoint, index: number,): string {
-        const cmd = index === 0 ? 'M' : 'L';
-        return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
-      },
-    ).join(' ',);
+    const d = stroke
+      .points
+      .map(
+        function formatPoint([nx, ny,]: NormalizedPoint, index: number,): string {
+          const cmd = index === 0 ? 'M' : 'L';
+          return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
+        },
+      )
+      .join(' ',);
     path.setAttribute('d', d,);
     path.setAttribute('stroke', stroke.color,);
     path.setAttribute('stroke-width', String(stroke.width,),);

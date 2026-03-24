@@ -5,12 +5,12 @@
  * consumed by style rule modules.
  */
 import {
+  type CssDeclarations,
   cssDvb,
   cssNum,
   cssOklch,
   cssPercent,
   cssRem,
-  type CssDeclarations,
   type CssValue,
 } from '@monochromatic-dev/module-es/h-css';
 

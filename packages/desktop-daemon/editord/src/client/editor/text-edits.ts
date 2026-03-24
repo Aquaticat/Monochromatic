@@ -20,7 +20,7 @@ import type { TextEdit, } from '../../../protocol.ts';
 export function applyEditsToText({ text, edits, }: {
   text: string;
   edits: TextEdit[];
-}): string {
+},): string {
   const lines = text.split('\n',);
 
   const sorted = edits.toSorted(function compareEditsReverse(a, b,) {
@@ -29,10 +29,12 @@ export function applyEditsToText({ text, edits, }: {
   },);
 
   for (const edit of sorted) {
-    const before = lines[edit.range.start.line]?.slice(0, edit.range.start.character,) ?? '';
+    const before = lines[edit.range.start.line]?.slice(0, edit.range.start.character,)
+      ?? '';
     const after = lines[edit.range.end.line]?.slice(edit.range.end.character,) ?? '';
     const newLines = (before + edit.newText + after).split('\n',);
-    lines.splice(edit.range.start.line, edit.range.end.line - edit.range.start.line + 1, ...newLines,);
+    lines.splice(edit.range.start.line, edit.range.end.line - edit.range.start.line + 1,
+      ...newLines,);
   }
 
   return lines.join('\n',);

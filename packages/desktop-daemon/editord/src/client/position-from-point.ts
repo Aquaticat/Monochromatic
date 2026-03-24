@@ -31,7 +31,7 @@ export function getPositionFromPoint({ editor, x, y, }: {
   editor: HTMLElement;
   x: number;
   y: number;
-}): EditorPosition | null {
+},): EditorPosition | null {
   const lineResult = findLineAtY({ editor, y, },);
   if (lineResult === null)
     return null;
@@ -50,7 +50,7 @@ export function getPositionFromPoint({ editor, x, y, }: {
 function findLineAtY({ editor, y, }: {
   editor: HTMLElement;
   y: number;
-}): { line: number; lineDiv: Element } | null {
+},): { line: number; lineDiv: Element; } | null {
   const { children, } = editor;
   let lo = 0;
   let hi = children.length - 1;
@@ -58,18 +58,16 @@ function findLineAtY({ editor, y, }: {
   while (lo <= hi) {
     const mid = (lo + hi) >>> 1;
     const child = children[mid];
-    if (child === undefined) return null;
+    if (child === undefined)
+      return null;
     const rect = child.getBoundingClientRect();
 
-    if (y < rect.top) {
+    if (y < rect.top)
       hi = mid - 1;
-    }
-    else if (y > rect.bottom) {
+    else if (y > rect.bottom)
       lo = mid + 1;
-    }
-    else {
+    else
       return { line: mid, lineDiv: child, };
-    }
   }
 
   return null;

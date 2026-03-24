@@ -64,7 +64,7 @@ export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
 export function restoreTextEntries({ entries, layer, }: {
   entries: readonly TextEntryData[];
   layer: HTMLDivElement;
-}): void {
+},): void {
   for (const entry of entries) {
     const input = document.createElement('input',);
     input.type = 'text';

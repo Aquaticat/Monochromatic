@@ -20,10 +20,10 @@ import { HAIR_PARTS, } from './parts-hair.ts';
 import { LOWER_PARTS, } from './parts-lower.ts';
 import {
   c,
+  type PartDef,
   REF_GRAY_DARK,
   REF_GRAY_WARM,
   REF_RED,
-  type PartDef,
 } from './parts-types.ts';
 
 export type {

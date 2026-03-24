@@ -9,7 +9,8 @@
 import type { SelectionRange, } from '../../../protocol.ts';
 
 /** Range coordinates used for comparison. */
-export type FlatRange = { startLine: number; startCharacter: number; endLine: number; endCharacter: number };
+export type FlatRange = { startLine: number; startCharacter: number; endLine: number;
+  endCharacter: number; };
 
 /**
  * Flattens the nested `parent` chain of a {@link SelectionRange} into
@@ -19,7 +20,7 @@ export type FlatRange = { startLine: number; startCharacter: number; endLine: nu
  *
  * @returns flat array where index 0 is the innermost range
  */
-export function flattenChain({ root, }: { root: SelectionRange }): SelectionRange[] {
+export function flattenChain({ root, }: { root: SelectionRange; },): SelectionRange[] {
   const result: SelectionRange[] = [];
   let current: SelectionRange | undefined = root;
   while (current !== undefined) {
@@ -39,18 +40,26 @@ export function flattenChain({ root, }: { root: SelectionRange }): SelectionRang
  *
  * @returns true if outer strictly contains inner
  */
-export function strictlyContains({ outer, inner, }: { outer: FlatRange; inner: FlatRange }): boolean {
+export function strictlyContains(
+  { outer, inner, }: { outer: FlatRange; inner: FlatRange; },
+): boolean {
   const outerStartBefore = outer.startLine < inner.startLine
-    || (outer.startLine === inner.startLine && outer.startCharacter < inner.startCharacter);
+    || (outer.startLine === inner.startLine
+      && outer.startCharacter < inner.startCharacter);
   const outerEndAfter = outer.endLine > inner.endLine
     || (outer.endLine === inner.endLine && outer.endCharacter > inner.endCharacter);
-  const outerStartSame = outer.startLine === inner.startLine && outer.startCharacter === inner.startCharacter;
-  const outerEndSame = outer.endLine === inner.endLine && outer.endCharacter === inner.endCharacter;
+  const outerStartSame = outer.startLine === inner.startLine
+    && outer.startCharacter === inner.startCharacter;
+  const outerEndSame = outer.endLine === inner.endLine
+    && outer.endCharacter === inner.endCharacter;
 
   /** Strictly larger: at least one boundary must differ outward. */
-  if (outerStartBefore && outerEndAfter) return true;
-  if (outerStartBefore && outerEndSame) return true;
-  if (outerStartSame && outerEndAfter) return true;
+  if (outerStartBefore && outerEndAfter)
+    return true;
+  if (outerStartBefore && outerEndSame)
+    return true;
+  if (outerStartSame && outerEndAfter)
+    return true;
   return false;
 }
 
@@ -61,7 +70,7 @@ export function strictlyContains({ outer, inner, }: { outer: FlatRange; inner: F
  *
  * @returns flat range coordinates
  */
-export function toFlat({ sr, }: { sr: SelectionRange }): FlatRange {
+export function toFlat({ sr, }: { sr: SelectionRange; },): FlatRange {
   return {
     startLine: sr.range.start.line,
     startCharacter: sr.range.start.character,
@@ -69,4 +78,3 @@ export function toFlat({ sr, }: { sr: SelectionRange }): FlatRange {
     endCharacter: sr.range.end.character,
   };
 }
-

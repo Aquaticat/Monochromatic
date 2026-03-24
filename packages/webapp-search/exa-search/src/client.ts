@@ -27,9 +27,11 @@ searchForm.addEventListener('submit', function onSearch(event,) {
     try {
       numTotalSearches.value++;
       resultsSection.setAttribute('hidden', 'true',);
-      resultsSection.querySelectorAll<HTMLElement>(':scope > *',).forEach(function hide(result,) {
-        result.setAttribute('hidden', 'true',);
-      },);
+      resultsSection.querySelectorAll<HTMLElement>(':scope > *',).forEach(
+        function hide(result,) {
+          result.setAttribute('hidden', 'true',);
+        },
+      );
 
       processingParagraph.removeAttribute('hidden',);
 

@@ -6,15 +6,28 @@
  * Dispatches a `result-select` CustomEvent when the user picks a result.
  */
 
-
 import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
 import type { SearchResult, } from '../../../protocol.ts';
-import { l as rootLogger, tagged, } from '../log.ts';
-import { renderResultElements, highlightMatches, } from './render.ts';
-import { handleSearchKeydown, moveSearchSelection, buildResultDetail, } from './nav.ts';
-import { scheduleSearch, performSearch, type SearchState, } from './search.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from '../log.ts';
+import {
+  buildResultDetail,
+  handleSearchKeydown,
+  moveSearchSelection,
+} from './nav.ts';
+import {
+  highlightMatches,
+  renderResultElements,
+} from './render.ts';
 import { STYLES, } from './search-overlay.styles.ts';
+import {
+  performSearch,
+  scheduleSearch,
+  type SearchState,
+} from './search.ts';
 
 export type { ResultSelectDetail, } from './nav.ts';
 
@@ -53,74 +66,172 @@ export class SearchOverlay extends HTMLElement {
   getRootDir: (() => string) | null = null;
 
   /** Initializes the shadow root. */
-  constructor() { super(); this.#shadow = this.attachShadow({ mode: 'open', },); }
+  constructor() {
+    super();
+    this.#shadow = this.attachShadow({ mode: 'open', },);
+  }
 
   /** Renders the dialog and attaches keyboard listeners for double-shift. */
   connectedCallback(): void {
     const overlay = this;
-    this.#input = h({ tag: 'input', class: 'search-input', attrs: { type: 'text', placeholder: 'Search files... (prefix with % for content only)', autocomplete: 'off', },
-      on: { input: function handleInput() { overlay.#scheduleSearch(); },
-        keydown: function handleInputKeydown(event,) { handleSearchKeydown({ event, moveSelection: function move(delta,) { overlay.#moveSelection({ delta, },); }, confirmSelection: function confirm() { overlay.#confirmSelection(); }, },); },
-        blur: function handleInputBlur(event,) { const related = event.relatedTarget; if (related === null || !(related instanceof Node) || overlay.#dialog?.contains(related,) !== true) overlay.#close(); },
-      }, },);
+    this.#input = h({ tag: 'input', class: 'search-input',
+      attrs: { type: 'text',
+        placeholder: 'Search files... (prefix with % for content only)',
+        autocomplete: 'off', }, on: { input: function handleInput() {
+          overlay.#scheduleSearch();
+        }, keydown: function handleInputKeydown(event,) {
+          handleSearchKeydown({ event, moveSelection: function move(delta,) {
+            overlay.#moveSelection({ delta, },);
+          }, confirmSelection: function confirm() {
+            overlay.#confirmSelection();
+          }, },);
+        }, blur: function handleInputBlur(event,) {
+          const related = event.relatedTarget;
+          if (related === null
+            || !(related instanceof Node)
+            || overlay.#dialog?.contains(related,) !== true)
+          {
+            overlay.#close();
+          }
+        }, }, },);
     this.#resultsContainer = h({ tag: 'div', class: 'results', },);
-    this.#dialog = h({ tag: 'dialog', children: [this.#input, this.#resultsContainer,], on: { close: function handleClose() { l.info('overlay closed',); }, }, },);
+    this.#dialog = h({ tag: 'dialog', children: [this.#input, this.#resultsContainer,],
+      on: { close: function handleClose() {
+        l.info('overlay closed',);
+      }, }, },);
     this.#shadow.replaceChildren(h({ tag: 'style', text: STYLES, },), this.#dialog,);
-    document.addEventListener('keydown', function handleGlobalKeydown(event,) { if (event.key !== 'Shift') overlay.#interveningKey = true; },);
+    document.addEventListener('keydown', function handleGlobalKeydown(event,) {
+      if (event.key !== 'Shift')
+        overlay.#interveningKey = true;
+    },);
     document.addEventListener('keyup', function handleGlobalKeyup(event,) {
-      if (event.key !== 'Shift') return;
+      if (event.key !== 'Shift')
+        return;
       const now = Date.now();
-      if (!overlay.#interveningKey && overlay.#lastShiftUp > 0 && now - overlay.#lastShiftUp < DOUBLE_SHIFT_THRESHOLD_MS) { overlay.#lastShiftUp = 0; overlay.#interveningKey = false; overlay.#show(); return; }
-      overlay.#lastShiftUp = now; overlay.#interveningKey = false;
+      if (!overlay.#interveningKey
+        && overlay.#lastShiftUp > 0
+        && now - overlay.#lastShiftUp < DOUBLE_SHIFT_THRESHOLD_MS)
+      {
+        overlay.#lastShiftUp = 0;
+        overlay.#interveningKey = false;
+        overlay.#show();
+        return;
+      }
+      overlay.#lastShiftUp = now;
+      overlay.#interveningKey = false;
     },);
   }
 
   /** Opens the overlay. */
   #show(): void {
     this.#rootDir = this.getRootDir?.() ?? '';
-    if (this.#dialog === null || this.#input === null || this.#resultsContainer === null) return;
-    this.#input.value = ''; this.#resultsContainer.replaceChildren(); this.#results = []; this.#selectedIndex = -1;
-    this.#dialog.showModal(); this.#measureCharWidth(); this.#input.focus(); l.info('overlay opened',);
+    if (this.#dialog === null || this.#input === null || this.#resultsContainer === null)
+      return;
+    this.#input.value = '';
+    this.#resultsContainer.replaceChildren();
+    this.#results = [];
+    this.#selectedIndex = -1;
+    this.#dialog.showModal();
+    this.#measureCharWidth();
+    this.#input.focus();
+    l.info('overlay opened',);
   }
 
   /** Closes the search overlay. */
-  #close(): void { if (this.#dialog !== null) this.#dialog.close(); }
+  #close(): void {
+    if (this.#dialog !== null)
+      this.#dialog.close();
+  }
 
   /** Measures the width of a single monospace character. */
-  #measureCharWidth(): void { if (this.#dialog === null) return; const { font, } = getComputedStyle(this.#dialog,); const canvas = document.createElement('canvas',); const ctx = canvas.getContext('2d',); if (ctx === null) return; ctx.font = font; this.#charWidthPx = ctx.measureText('0',).width; }
+  #measureCharWidth(): void {
+    if (this.#dialog === null)
+      return;
+    const { font, } = getComputedStyle(this.#dialog,);
+    const canvas = document.createElement('canvas',);
+    const ctx = canvas.getContext('2d',);
+    if (ctx === null)
+      return;
+    ctx.font = font;
+    this.#charWidthPx = ctx.measureText('0',).width;
+  }
 
   /**
    * Computes how many monospace characters fit in one result row.
    *
    * @returns number of monospace characters that fit in one result row
    */
-  #charBudget(): number { if (this.#charWidthPx <= 0 || this.#resultsContainer === null) return 0; return Math.floor(this.#resultsContainer.clientWidth / this.#charWidthPx,); }
+  #charBudget(): number {
+    if (this.#charWidthPx <= 0 || this.#resultsContainer === null)
+      return 0;
+    return Math.floor(this.#resultsContainer.clientWidth / this.#charWidthPx,);
+  }
 
   /** Schedules a debounced search. */
-  #scheduleSearch(): void { const overlay = this; scheduleSearch({ state: this.#searchState, execute: function run() { void overlay.#performSearch(); }, },); }
+  #scheduleSearch(): void {
+    const overlay = this;
+    scheduleSearch({ state: this.#searchState, execute: function run() {
+      void overlay.#performSearch();
+    }, },);
+  }
 
   /** Reads the input value, invokes `onSearch`, and renders results. */
   async #performSearch(): Promise<void> {
-    if (this.onSearch === null || this.#input === null) return;
+    if (this.onSearch === null || this.#input === null)
+      return;
     const overlay = this;
-    await performSearch({ raw: this.#input.value, state: this.#searchState, onSearch: this.onSearch, onResults: function render(opts,) { overlay.#renderResults(opts,); }, },);
+    await performSearch({ raw: this.#input.value, state: this.#searchState,
+      onSearch: this.onSearch, onResults: function render(opts,) {
+        overlay.#renderResults(opts,);
+      }, },);
   }
 
   /** Renders search results into the results container. */
-  #renderResults({ results, query, }: { results: SearchResult[]; query: string }): void {
-    if (this.#resultsContainer === null) return; this.#results = results; this.#selectedIndex = results.length > 0 ? 0 : -1;
-    if (results.length === 0) { const hasInput = this.#input !== null && this.#input.value.trim() !== ''; this.#resultsContainer.replaceChildren(hasInput ? h({ tag: 'div', class: 'empty', text: 'No results', },) : h({ tag: 'div', },),); return; }
-    const overlay = this; const rootPrefix = this.#rootDir.endsWith('/') ? this.#rootDir : `${this.#rootDir}/`;
-    const elements = renderResultElements({ results, query, rootPrefix, budget: this.#charBudget(), onSelect: function select(index,) { overlay.#selectResult({ index, },); }, },);
-    this.#resultsContainer.replaceChildren(...elements,); highlightMatches({ query, container: this.#resultsContainer, },);
+  #renderResults(
+    { results, query, }: { results: SearchResult[]; query: string; },
+  ): void {
+    if (this.#resultsContainer === null)
+      return;
+    this.#results = results;
+    this.#selectedIndex = results.length > 0 ? 0 : -1;
+    if (results.length === 0) {
+      const hasInput = this.#input !== null && this.#input.value.trim() !== '';
+      this.#resultsContainer.replaceChildren(
+        hasInput
+          ? h({ tag: 'div', class: 'empty', text: 'No results', },)
+          : h({ tag: 'div', },),
+      );
+      return;
+    }
+    const overlay = this;
+    const rootPrefix = this.#rootDir.endsWith('/',) ? this.#rootDir : `${this.#rootDir}/`;
+    const elements = renderResultElements({ results, query, rootPrefix,
+      budget: this.#charBudget(), onSelect: function select(index,) {
+        overlay.#selectResult({ index, },);
+      }, },);
+    this.#resultsContainer.replaceChildren(...elements,);
+    highlightMatches({ query, container: this.#resultsContainer, },);
   }
 
   /** Moves the keyboard selection by the given delta. */
-  #moveSelection({ delta, }: { delta: number }): void { if (this.#resultsContainer === null) return; this.#selectedIndex = moveSearchSelection({ delta, results: this.#results, selectedIndex: this.#selectedIndex, container: this.#resultsContainer, },); }
+  #moveSelection({ delta, }: { delta: number; },): void {
+    if (this.#resultsContainer === null)
+      return;
+    this.#selectedIndex = moveSearchSelection({ delta, results: this.#results,
+      selectedIndex: this.#selectedIndex, container: this.#resultsContainer, },);
+  }
   /** Confirms the current selection. */
-  #confirmSelection(): void { this.#selectResult({ index: this.#selectedIndex, },); }
+  #confirmSelection(): void {
+    this.#selectResult({ index: this.#selectedIndex, },);
+  }
   /** Dispatches a `result-select` event for the result at the given index and closes. */
-  #selectResult({ index, }: { index: number }): void { const detail = buildResultDetail({ index, results: this.#results, },); if (detail === null) return; this.dispatchEvent(new CustomEvent('result-select', { detail, bubbles: true, },),); this.#close(); }
+  #selectResult({ index, }: { index: number; },): void {
+    const detail = buildResultDetail({ index, results: this.#results, },);
+    if (detail === null)
+      return;
+    this.dispatchEvent(new CustomEvent('result-select', { detail, bubbles: true, },),);
+    this.#close();
+  }
 }
 
 customElements.define('search-overlay', SearchOverlay,);

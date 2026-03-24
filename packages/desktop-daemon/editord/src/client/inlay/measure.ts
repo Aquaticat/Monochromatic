@@ -23,7 +23,7 @@ let cachedRatio: number | null = null;
  *
  * @returns space count multiplier (defaults to 1 if canvas is unavailable)
  */
-export function measureSpaceRatio({ editor, }: { editor: HTMLElement }): number {
+export function measureSpaceRatio({ editor, }: { editor: HTMLElement; },): number {
   if (cachedRatio !== null)
     return cachedRatio;
 
@@ -54,14 +54,13 @@ export function measureSpaceRatio({ editor, }: { editor: HTMLElement }): number 
  *
  * @param editor - contenteditable container element
  */
-export function measureInlayOffsets({ editor, }: { editor: HTMLElement }): void {
+export function measureInlayOffsets({ editor, }: { editor: HTMLElement; },): void {
   for (const child of editor.children) {
     if (!(child instanceof HTMLElement) || child.dataset.inlay === undefined)
       continue;
 
     const beforeHeight = getComputedStyle(child, '::before',).height;
-    if (beforeHeight !== 'auto' && beforeHeight !== '0px') {
+    if (beforeHeight !== 'auto' && beforeHeight !== '0px')
       child.style.setProperty('--line-num-offset', beforeHeight,);
-    }
   }
 }

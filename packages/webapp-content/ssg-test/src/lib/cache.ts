@@ -24,7 +24,10 @@ import type { Logger, } from './types.ts';
 // File justification: 164 lines -- schema definitions, I/O, and lookup form a
 // cohesive cache API; splitting into 3+ sub-40-line files adds indirection
 // without improving navigability.
-export { computePipelineHash, sha256, } from './cache-hash.ts';
+export {
+  computePipelineHash,
+  sha256,
+} from './cache-hash.ts';
 
 //region Schema and types
 
@@ -65,7 +68,9 @@ const CACHE_PATH = '.cache/build-manifest.json';
  *
  * @returns parsed and validated manifest, or `undefined` on any failure
  */
-export async function readCache({ l, }: { l: Logger; }): Promise<BuildManifest | undefined> {
+export async function readCache(
+  { l, }: { l: Logger; },
+): Promise<BuildManifest | undefined> {
   try {
     const raw = await readFile(CACHE_PATH, 'utf8',);
     return buildManifestSchema.parse(JSON.parse(raw,),);
@@ -77,7 +82,9 @@ export async function readCache({ l, }: { l: Logger; }): Promise<BuildManifest |
       && error.code === 'ENOENT';
 
     if (!isFileNotFound) {
-      l.error(`Failed to read or validate build cache, starting fresh: ${String(error,)}`,);
+      l.error(
+        `Failed to read or validate build cache, starting fresh: ${String(error,)}`,
+      );
     }
     return undefined;
   }

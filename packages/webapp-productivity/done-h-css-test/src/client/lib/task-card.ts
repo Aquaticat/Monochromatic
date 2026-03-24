@@ -9,9 +9,9 @@ import {
 } from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
 import type { Task, } from '../../lib/types.ts';
 import {
-  type TaskCardOptions,
   buildChipTexts,
   formatTrackedTime,
+  type TaskCardOptions,
 } from './task-card-helpers.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 

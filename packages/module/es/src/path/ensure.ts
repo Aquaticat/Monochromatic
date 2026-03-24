@@ -5,9 +5,18 @@
  * not exist and verifies read/write accessibility when it does.
  */
 
-import { access, chmod, constants, mkdir, stat, writeFile, } from 'node:fs/promises';
+import {
+  access,
+  chmod,
+  constants,
+  mkdir,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import { parse, } from 'node:path/posix';
-import { $ as tagged, } from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
+import {
+  $ as tagged,
+} from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
 
 /** Module-scoped tagged logger. */
 const l = tagged({ tag: 'path/ensure', },);
@@ -58,9 +67,8 @@ export async function ensureDir(path: string,): Promise<string> {
   try {
     const stats = await stat(path,);
 
-    if (!stats.isDirectory()) {
+    if (!stats.isDirectory())
       throw new Error(`Path ${path} exists but is not a directory.`,);
-    }
 
     l.info(`${path} already exists, checking accessibility`,);
   }
@@ -106,9 +114,8 @@ export async function ensureFile(path: string,): Promise<string> {
   try {
     const stats = await stat(path,);
 
-    if (!stats.isFile()) {
+    if (!stats.isFile())
       throw new Error(`Path ${path} exists but is not a file.`,);
-    }
 
     l.info(`${path} already exists, checking accessibility`,);
   }

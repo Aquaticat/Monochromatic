@@ -79,9 +79,10 @@ async function main(): Promise<void> {
   console.log('  Created foreground mask',);
 
   // Process each part sequentially (ImageMagick is already fast per-call)
-  for (const part of PARTS)
+  for (const part of PARTS) {
     // eslint-disable-next-line no-await-in-loop -- sequential ImageMagick pipeline; each part depends on shared foreground mask state
     await processPart({ part, inputImage, imgWidth, imgHeight, fgMask, },);
+  }
 
   console.log(`Segmentation complete: ${PARTS.length} masks in ${TMP_DIR}/masks/`,);
 }

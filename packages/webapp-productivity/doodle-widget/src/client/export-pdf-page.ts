@@ -49,7 +49,10 @@ export async function renderPageCanvas({ svgBackground, strokes, container, over
   const dpr = globalThis.devicePixelRatio;
 
   const { canvas, } = await renderBaseCanvas({
-    container, overlay, strokes, imageScale: dpr,
+    container,
+    overlay,
+    strokes,
+    imageScale: dpr,
   },);
 
   return canvas;

@@ -32,7 +32,9 @@ export type WireDiagnostic = {
 };
 
 /** Callback signature for pushing merged diagnostics to the client. */
-export type DiagnosticsHandler = (event: { path: string; diagnostics: WireDiagnostic[] }) => void;
+export type DiagnosticsHandler = (
+  event: { path: string; diagnostics: WireDiagnostic[]; },
+) => void;
 
 /**
  * Stores diagnostics from multiple LSP sources and merges them per URI.
@@ -47,7 +49,7 @@ export class DiagnosticStore {
   /**
    * @param onDiagnostics - callback invoked with merged diagnostics whenever a source updates
    */
-  constructor({ onDiagnostics, }: { onDiagnostics: DiagnosticsHandler }) {
+  constructor({ onDiagnostics, }: { onDiagnostics: DiagnosticsHandler; },) {
     this.#onDiagnostics = onDiagnostics;
   }
 
@@ -60,10 +62,12 @@ export class DiagnosticStore {
    *
    * @param diagnostics - diagnostics from this source (replaces previous set)
    */
-  update({ source, uri, diagnostics, }: { source: string; uri: string; diagnostics: LspDiagnostic[] }): void {
-    if (!this.#store.has(uri,)) {
+  update(
+    { source, uri, diagnostics, }: { source: string; uri: string;
+      diagnostics: LspDiagnostic[]; },
+  ): void {
+    if (!this.#store.has(uri,))
       this.#store.set(uri, new Map(),);
-    }
     const sourceMap = this.#store.get(uri,);
     if (sourceMap === undefined)
       return;
@@ -72,7 +76,10 @@ export class DiagnosticStore {
     const previous = sourceMap.get(source,);
     if (previous !== undefined
       && previous.length === diagnostics.length
-      && JSON.stringify(previous,) === JSON.stringify(diagnostics,)) return;
+      && JSON.stringify(previous,) === JSON.stringify(diagnostics,))
+    {
+      return;
+    }
 
     sourceMap.set(source, diagnostics,);
 
@@ -82,7 +89,10 @@ export class DiagnosticStore {
       for (const diag of sourceDiags) {
         merged.push({
           range: diag.range,
-          severity: (diag.severity !== undefined ? SEVERITY_MAP[diag.severity] : undefined) ?? 'info',
+          severity: (diag
+              .severity !== undefined
+            ? SEVERITY_MAP[diag.severity]
+            : undefined) ?? 'info',
           message: diag.message,
           source: diag.source ?? sourceName,
         },);
@@ -98,7 +108,7 @@ export class DiagnosticStore {
    *
    * @param uri - document URI to clear
    */
-  delete({ uri, }: { uri: string }): void {
+  delete({ uri, }: { uri: string; },): void {
     this.#store.delete(uri,);
   }
 }

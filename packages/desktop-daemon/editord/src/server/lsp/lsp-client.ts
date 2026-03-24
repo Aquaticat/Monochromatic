@@ -6,17 +6,25 @@
  * typed `request` and `notify` methods for outgoing messages.
  */
 
+import {
+  type ChildProcess,
+  spawn,
+} from 'node:child_process';
 
-import { spawn, type ChildProcess, } from 'node:child_process';
-
-import { tagged, type Logger, } from '../log.ts';
+import {
+  type Logger,
+  tagged,
+} from '../log.ts';
 import {
   createLspParser,
   encodeLspMessage,
   type JsonRpcMessage,
 } from './json-rpc.ts';
 import { buildInitializeParams, } from './lsp-client-init.ts';
-import { routeJsonRpcMessage, type PendingLspRequest, } from './lsp-client-routing.ts';
+import {
+  type PendingLspRequest,
+  routeJsonRpcMessage,
+} from './lsp-client-routing.ts';
 import type { LspServerCapabilities, } from './types.ts';
 
 /**
@@ -44,7 +52,7 @@ export class LspClient {
   #l: Logger;
 
   /** Callback for server-initiated notifications. */
-  #onNotification: (event: { method: string; params: unknown }) => void;
+  #onNotification: (event: { method: string; params: unknown; },) => void;
 
   /** Whether the LSP initialize handshake has completed. */
   #initialized = false;
@@ -76,8 +84,8 @@ export class LspClient {
     cwd: string;
     env: Record<string, string | undefined>;
     l: Logger;
-    onNotification: (event: { method: string; params: unknown }) => void;
-  }) {
+    onNotification: (event: { method: string; params: unknown; },) => void;
+  },) {
     this.#name = name;
     this.#l = tagged({ tag: name, l, },);
     this.#onNotification = onNotification;
@@ -89,10 +97,19 @@ export class LspClient {
     },);
 
     const clientLog = this.#l;
-    const parser = createLspParser({ onMessage: this.#handleMessage.bind(this,), onError: function handleParseError(error,) { clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,); }, },);
-    this.#proc.stdout?.on('data', function handleStdout(chunk: Buffer,) { parser.feed(chunk,); },);
-    this.#proc.stderr?.on('data', function handleStderr(chunk: Buffer,) { clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,); },);
-    this.#proc.on('exit', function handleExit(code,) { clientLog.info(`exited with code ${String(code,)}`,); },);
+    const parser = createLspParser({ onMessage: this.#handleMessage.bind(this,),
+      onError: function handleParseError(error,) {
+        clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,);
+      }, },);
+    this.#proc.stdout?.on('data', function handleStdout(chunk: Buffer,) {
+      parser.feed(chunk,);
+    },);
+    this.#proc.stderr?.on('data', function handleStderr(chunk: Buffer,) {
+      clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,);
+    },);
+    this.#proc.on('exit', function handleExit(code,) {
+      clientLog.info(`exited with code ${String(code,)}`,);
+    },);
   }
 
   /**
@@ -106,12 +123,12 @@ export class LspClient {
   async initialize({ rootUri, initializationOptions, }: {
     rootUri: string;
     initializationOptions?: Record<string, unknown>;
-  }): Promise<LspServerCapabilities> {
+  },): Promise<LspServerCapabilities> {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP initialize always returns { capabilities }
     const result = await this.request({
       method: 'initialize',
       params: buildInitializeParams({ rootUri, initializationOptions, },),
-    },) as { capabilities: LspServerCapabilities };
+    },) as { capabilities: LspServerCapabilities; };
 
     this.capabilities = result.capabilities;
     this.notify({ method: 'initialized', params: {}, },);
@@ -131,15 +148,17 @@ export class LspClient {
    *
    * @throws when the server responds with a JSON-RPC error
    */
-  request({ method, params, }: { method: string; params: unknown }): Promise<unknown> {
+  request({ method, params, }: { method: string; params: unknown; },): Promise<unknown> {
     const id = this.#nextId++;
     const message = { jsonrpc: '2.0' as const, id, method, params, };
     const pending = this.#pending;
 
     // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- request correlation requires storing resolve/reject in a map
-    const responsePromise = new Promise<unknown>(function awaitLspResponse(resolve, reject,) {
-      pending.set(id, { resolve, reject, },);
-    },);
+    const responsePromise = new Promise<unknown>(
+      function awaitLspResponse(resolve, reject,) {
+        pending.set(id, { resolve, reject, },);
+      },
+    );
 
     this.#send(message,);
     return responsePromise;
@@ -152,7 +171,7 @@ export class LspClient {
    *
    * @param params - notification parameters
    */
-  notify({ method, params, }: { method: string; params: unknown }): void {
+  notify({ method, params, }: { method: string; params: unknown; },): void {
     this.#send({ jsonrpc: '2.0', method, params, },);
   }
 

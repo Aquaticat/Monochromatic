@@ -4,10 +4,10 @@ import {
 import type { $ as SyncStore, } from '../../../../../../t object/t store/t/r s/index.ts';
 import { buildCacheKey, } from '../../cacheKey.ts';
 import {
+  DEFAULT_MAX_CACHE_SIZE,
   type MemoizedCallOptions,
   type MemoizedFunction,
   type MemoizeNamedOptions,
-  DEFAULT_MAX_CACHE_SIZE,
 } from '../../t/index.ts';
 
 /**

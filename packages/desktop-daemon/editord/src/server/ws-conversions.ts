@@ -5,8 +5,18 @@
  * sent to the browser client over WebSocket.
  */
 
-import type { CompletionItem, InlayHint, SelectionRange, } from '../protocol.ts';
-import type { LspCompletionItem, LspHover, LspInlayHint, LspMarkupContent, LspSelectionRange, } from './lsp/types.ts';
+import type {
+  CompletionItem,
+  InlayHint,
+  SelectionRange,
+} from '../protocol.ts';
+import type {
+  LspCompletionItem,
+  LspHover,
+  LspInlayHint,
+  LspMarkupContent,
+  LspSelectionRange,
+} from './lsp/types.ts';
 
 /**
  * Extracts hover content as a plain string from an LSP hover result.
@@ -16,7 +26,7 @@ import type { LspCompletionItem, LspHover, LspInlayHint, LspMarkupContent, LspSe
  *
  * @returns string representation of the hover content
  */
-export function extractHoverContent({ hover, }: { hover: LspHover }): string {
+export function extractHoverContent({ hover, }: { hover: LspHover; },): string {
   if (typeof hover.contents === 'string')
     return hover.contents;
 
@@ -30,7 +40,9 @@ export function extractHoverContent({ hover, }: { hover: LspHover }): string {
  *
  * @returns wire-format completion items
  */
-export function toWireCompletionItems({ items, }: { items: LspCompletionItem[] }): CompletionItem[] {
+export function toWireCompletionItems(
+  { items, }: { items: LspCompletionItem[]; },
+): CompletionItem[] {
   return items.map(function convertItem(item,) {
     return {
       label: item.label,
@@ -48,15 +60,23 @@ export function toWireCompletionItems({ items, }: { items: LspCompletionItem[] }
  *
  * @returns wire-format inlay hints
  */
-export function toWireInlayHints({ hints, }: { hints: LspInlayHint[] }): InlayHint[] {
+export function toWireInlayHints({ hints, }: { hints: LspInlayHint[]; },): InlayHint[] {
   return hints.map(function convertHint(hint,) {
     const label = typeof hint.label === 'string'
       ? hint.label
-      : hint.label.map(function extractPart(part,) { return part.value; },).join('',);
+      : hint
+        .label
+        .map(function extractPart(part,) {
+          return part.value;
+        },)
+        .join('',);
     const result: InlayHint = { position: hint.position, label, };
-    if (hint.kind !== undefined) result.kind = hint.kind;
-    if (hint.paddingLeft !== undefined) result.paddingLeft = hint.paddingLeft;
-    if (hint.paddingRight !== undefined) result.paddingRight = hint.paddingRight;
+    if (hint.kind !== undefined)
+      result.kind = hint.kind;
+    if (hint.paddingLeft !== undefined)
+      result.paddingLeft = hint.paddingLeft;
+    if (hint.paddingRight !== undefined)
+      result.paddingRight = hint.paddingRight;
     return result;
   },);
 }
@@ -69,10 +89,11 @@ export function toWireInlayHints({ hints, }: { hints: LspInlayHint[] }): InlayHi
  *
  * @returns wire-format selection range
  */
-export function toWireSelectionRange({ lspRange, }: { lspRange: LspSelectionRange }): SelectionRange {
+export function toWireSelectionRange(
+  { lspRange, }: { lspRange: LspSelectionRange; },
+): SelectionRange {
   const result: SelectionRange = { range: lspRange.range, };
-  if (lspRange.parent !== undefined) {
+  if (lspRange.parent !== undefined)
     result.parent = toWireSelectionRange({ lspRange: lspRange.parent, },);
-  }
   return result;
 }

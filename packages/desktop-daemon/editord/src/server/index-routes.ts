@@ -8,10 +8,13 @@
 import {
   defineHandler,
   getQuery,
-  serveStatic,
   type H3,
+  serveStatic,
 } from 'h3';
-import { readFile, stat, } from 'node:fs/promises';
+import {
+  readFile,
+  stat,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
@@ -33,7 +36,7 @@ export function registerRoutes({ app, packageRoot, authToken, rootDir, }: {
   packageRoot: string;
   authToken: string;
   rootDir: string;
-}): void {
+},): void {
   //region HTML entry point
 
   app.get('/', defineHandler(async function handleIndex() {
@@ -83,13 +86,11 @@ export function registerRoutes({ app, packageRoot, authToken, rootDir, }: {
 
   app.get('/_raw', defineHandler(async function handleRawFile(event,) {
     const query = getQuery(event,);
-    if (query.token !== authToken) {
+    if (query.token !== authToken)
       return new Response('Unauthorized', { status: 401, },);
-    }
     const filePath = typeof query.path === 'string' ? query.path : null;
-    if (filePath === null) {
+    if (filePath === null)
       return new Response('Missing path', { status: 400, },);
-    }
     const absolutePath = assertWithinRoot({ rootDir, path: filePath, },);
     const buffer = await readFile(absolutePath,);
     const contentType = getContentType({ path: absolutePath, },);

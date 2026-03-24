@@ -60,7 +60,8 @@ export const searchStyles = [
     at: 'media',
     params: '(min-width: 48rem)',
     children: [
-      css({ rule: '.search-hint', decls: { 'font-size': cssRem(HINT_FONT_SIZE_DESKTOP,), }, },),
+      css({ rule: '.search-hint',
+        decls: { 'font-size': cssRem(HINT_FONT_SIZE_DESKTOP,), }, },),
     ],
   },),
 ]

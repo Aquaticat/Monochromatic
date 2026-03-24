@@ -153,8 +153,9 @@ export function isValidSolution(grid: number[][],): boolean {
   // Rows
   if (!grid.every(function checkRow(row,): boolean {
     return hasAllDigits(row,);
-  },))
+  },)) {
     return false;
+  }
 
   // Columns
   if (!COLUMN_INDICES.every(function checkCol(col,): boolean {

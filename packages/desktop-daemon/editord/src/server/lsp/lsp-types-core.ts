@@ -5,7 +5,10 @@
  * split from types.ts to stay under max-lines.
  */
 
-import type { Position, Range, } from '../../protocol.ts';
+import type {
+  Position,
+  Range,
+} from '../../protocol.ts';
 
 //region Geometry
 

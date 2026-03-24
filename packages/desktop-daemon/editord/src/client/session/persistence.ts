@@ -8,9 +8,9 @@
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import type { FileTree, } from '../file-tree/file-tree.ts';
 import type { SearchOverlay, } from '../search/search-overlay.ts';
+import type { EditorWsClient, } from '../ws/client.ts';
 import { createDebouncedSave, } from './debounce.ts';
 import type { SessionState, } from './state.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 
 /**
  * Installs save triggers that persist UI state on meaningful events.
@@ -30,14 +30,16 @@ import type { EditorWsClient, } from '../ws/client.ts';
  *
  * @returns `saveNow` for immediate state persistence
  */
-export function wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay, getCurrentFilePath, getRecentFiles, }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  fileTree: FileTree;
-  searchOverlay: SearchOverlay;
-  getCurrentFilePath: () => string | null;
-  getRecentFiles: () => string[];
-}): { saveNow: () => void } {
+export function wireSessionPersistence(
+  { ws, editorPane, fileTree, searchOverlay, getCurrentFilePath, getRecentFiles, }: {
+    ws: EditorWsClient;
+    editorPane: EditorPane;
+    fileTree: FileTree;
+    searchOverlay: SearchOverlay;
+    getCurrentFilePath: () => string | null;
+    getRecentFiles: () => string[];
+  },
+): { saveNow: () => void; } {
   /**
    * Captures the current UI state for persistence.
    *

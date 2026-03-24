@@ -19,18 +19,22 @@
  * @returns new cursor position after deletion
  */
 export function deleteLineAt({ editor, line, character, }: {
-  editor: HTMLDivElement; line: number; character: number;
-}): { line: number; character: number } {
+  editor: HTMLDivElement;
+  line: number;
+  character: number;
+},): { line: number; character: number; } {
   const { children, } = editor;
   if (children.length <= 1) {
     /** Single line — clear it instead of removing. */
     const [only,] = children;
-    if (only !== undefined) only.textContent = '\n';
+    if (only !== undefined)
+      only.textContent = '\n';
     return { line: 0, character: 0, };
   }
 
   const lineDiv = children[line];
-  if (lineDiv === undefined) return { line, character, };
+  if (lineDiv === undefined)
+    return { line, character, };
   lineDiv.remove();
 
   /** Place cursor on the line that now occupies the deleted index, or the new last line. */
@@ -50,10 +54,13 @@ export function deleteLineAt({ editor, line, character, }: {
  * @returns new cursor position on the duplicated line
  */
 export function duplicateLineAt({ editor, line, character, }: {
-  editor: HTMLDivElement; line: number; character: number;
-}): { line: number; character: number } | null {
+  editor: HTMLDivElement;
+  line: number;
+  character: number;
+},): { line: number; character: number; } | null {
   const lineDiv = editor.children[line];
-  if (lineDiv === undefined) return null;
+  if (lineDiv === undefined)
+    return null;
   const clone = lineDiv.cloneNode(true,);
   lineDiv.after(clone,);
   return { line: line + 1, character, };
@@ -71,14 +78,18 @@ export function duplicateLineAt({ editor, line, character, }: {
  * @returns new cursor position, or null if on the last line
  */
 export function swapLineDown({ editor, line, character, }: {
-  editor: HTMLDivElement; line: number; character: number;
-}): { line: number; character: number } | null {
+  editor: HTMLDivElement;
+  line: number;
+  character: number;
+},): { line: number; character: number; } | null {
   const { children, } = editor;
-  if (line >= children.length - 1) return null;
+  if (line >= children.length - 1)
+    return null;
 
   const currentDiv = children[line];
   const nextDiv = children[line + 1];
-  if (currentDiv === undefined || nextDiv === undefined) return null;
+  if (currentDiv === undefined || nextDiv === undefined)
+    return null;
 
   nextDiv.after(currentDiv,);
   return { line: line + 1, character, };
@@ -96,14 +107,18 @@ export function swapLineDown({ editor, line, character, }: {
  * @returns new cursor position, or null if on the first line
  */
 export function swapLineUp({ editor, line, character, }: {
-  editor: HTMLDivElement; line: number; character: number;
-}): { line: number; character: number } | null {
-  if (line <= 0) return null;
+  editor: HTMLDivElement;
+  line: number;
+  character: number;
+},): { line: number; character: number; } | null {
+  if (line <= 0)
+    return null;
 
   const { children, } = editor;
   const currentDiv = children[line];
   const prevDiv = children[line - 1];
-  if (currentDiv === undefined || prevDiv === undefined) return null;
+  if (currentDiv === undefined || prevDiv === undefined)
+    return null;
 
   prevDiv.before(currentDiv,);
   return { line: line - 1, character, };

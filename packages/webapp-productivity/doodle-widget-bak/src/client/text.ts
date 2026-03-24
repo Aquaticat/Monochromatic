@@ -137,4 +137,3 @@ export function clearTextEntries(): void {
   if (layerElement !== null)
     layerElement.replaceChildren();
 }
-

@@ -5,8 +5,10 @@
  * and provides severity ranking for color styling.
  */
 
-import type { Diagnostic, InlayHint, } from '../../../protocol.ts';
-
+import type {
+  Diagnostic,
+  InlayHint,
+} from '../../../protocol.ts';
 
 /**
  * Formats a single inlay hint as a display string.
@@ -16,7 +18,7 @@ import type { Diagnostic, InlayHint, } from '../../../protocol.ts';
  *
  * @returns formatted label string
  */
-export function formatHintLabel({ hint, }: { hint: InlayHint }): string {
+export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
   const padLeft = hint.paddingLeft === true ? ' ' : '';
   const padRight = hint.paddingRight === true ? ' ' : '';
   /** Parameter hints (kind=2) have a trailing colon that adds noise. */
@@ -53,7 +55,9 @@ export function formatHintLabel({ hint, }: { hint: InlayHint }): string {
  * // =\> "error(typescript): Cannot find name 'x'"
  * ```
  */
-export function formatDiagnosticLabel({ diagnostic, }: { diagnostic: Diagnostic }): string {
+export function formatDiagnosticLabel(
+  { diagnostic, }: { diagnostic: Diagnostic; },
+): string {
   const prefix = diagnostic.source !== ''
     ? `${diagnostic.severity}(${diagnostic.source})`
     : diagnostic.severity;
@@ -78,7 +82,9 @@ const LOWEST_PRIORITY = 4;
  *
  * @returns severity string of the worst diagnostic
  */
-export function findWorstSeverity({ diagnostics, }: { diagnostics: Diagnostic[] }): string {
+export function findWorstSeverity(
+  { diagnostics, }: { diagnostics: Diagnostic[]; },
+): string {
   let worst = '';
   let worstPriority = LOWEST_PRIORITY;
 

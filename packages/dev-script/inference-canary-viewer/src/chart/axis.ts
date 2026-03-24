@@ -71,7 +71,9 @@ export function renderXAxis(timestamps: readonly string[],): string {
   for (let i = 0; i < timestamps.length; i += step) {
     /** Center position when a single data point exists */
     const CENTER_PERCENT = HALF * PERCENT;
-    const left = timestamps.length === 1 ? CENTER_PERCENT : (i / (timestamps.length - 1)) * PERCENT;
+    const left = timestamps.length === 1
+      ? CENTER_PERCENT
+      : (i / (timestamps.length - 1)) * PERCENT;
     const label = formatter(timestamps[i] ?? '',);
     /** Suppress consecutive duplicate labels so the axis stays readable */
     const displayLabel = label === lastLabel ? '' : label;

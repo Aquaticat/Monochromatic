@@ -79,4 +79,5 @@ export const DIALOG_STYLES = [
       color: cssVar('gutter-fg',),
     },
   },),
-].join('',);
+]
+  .join('',);

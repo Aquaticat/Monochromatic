@@ -65,7 +65,7 @@ export function initHistory(pageCount: number,): void {
 export function pushSnapshot({ pageIndex, snapshot, }: {
   pageIndex: number;
   snapshot: Snapshot;
-}): void {
+},): void {
   const history = histories[pageIndex];
   if (history === undefined)
     return;

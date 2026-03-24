@@ -22,16 +22,16 @@ export async function shutdownPoolForPath({ pool, path, l, }: {
   pool: Map<string, Promise<LspClient | null>>;
   path: string;
   l: Logger;
-}): Promise<void> {
+},): Promise<void> {
   /** Collect matching entries for concurrent shutdown. */
   const toRemove: string[] = [];
-  const matching: { key: string; promise: Promise<LspClient | null> }[] = [];
+  const matching: { key: string; promise: Promise<LspClient | null>; }[] = [];
 
   for (const [key, promise,] of pool.entries()) {
     /** Key format is `"type:root"` — extract the root portion. */
-    const colonIndex = key.indexOf(':');
+    const colonIndex = key.indexOf(':',);
     const root = key.slice(colonIndex + 1,);
-    const rootPrefix = root.endsWith('/') ? root : `${root}/`;
+    const rootPrefix = root.endsWith('/',) ? root : `${root}/`;
     if (path === root || path.startsWith(rootPrefix,)) {
       toRemove.push(key,);
       matching.push({ key, promise, },);
@@ -39,17 +39,21 @@ export async function shutdownPoolForPath({ pool, path, l, }: {
   }
 
   /** Without parallel awaits: independent LSP servers would shut down sequentially, delaying the file operation. */
-  await Promise.all(matching.map(async function shutdownEntry({ key, promise, },): Promise<void> {
-    try {
-      const client = await promise;
-      if (client !== null) await client.shutdown();
-    }
-    catch (error) { l.error(`shutdown for ${key} failed: ${String(error,)}`,); }
-  },),);
+  await Promise.all(
+    matching.map(async function shutdownEntry({ key, promise, },): Promise<void> {
+      try {
+        const client = await promise;
+        if (client !== null)
+          await client.shutdown();
+      }
+      catch (error) {
+        l.error(`shutdown for ${key} failed: ${String(error,)}`,);
+      }
+    },),
+  );
 
-  for (const key of toRemove) {
+  for (const key of toRemove)
     pool.delete(key,);
-  }
 }
 
 /**
@@ -60,14 +64,17 @@ export async function shutdownPoolForPath({ pool, path, l, }: {
 export function shutdownAllPooled({ pool, l, }: {
   pool: Map<string, Promise<LspClient | null>>;
   l: Logger;
-}): void {
+},): void {
   for (const promise of pool.values()) {
     void (async function shutdownClient(): Promise<void> {
       try {
         const c = await promise;
-        if (c !== null) await c.shutdown();
+        if (c !== null)
+          await c.shutdown();
       }
-      catch (error) { l.error(`LSP shutdown failed: ${String(error,)}`,); }
+      catch (error) {
+        l.error(`LSP shutdown failed: ${String(error,)}`,);
+      }
     })();
   }
 }

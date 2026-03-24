@@ -72,7 +72,9 @@ export function applyZoomTransform(zoomLayer: HTMLElement,): void {
     return;
   }
   zoomLayer.style.transformOrigin = '0 0';
-  zoomLayer.style.transform = `translate(${String(panX,)}px, ${String(panY,)}px) scale(${String(scale,)})`;
+  zoomLayer.style.transform = `translate(${String(panX,)}px, ${String(panY,)}px) scale(${
+    String(scale,)
+  })`;
 }
 
 /**
@@ -85,7 +87,7 @@ export function applyZoomTransform(zoomLayer: HTMLElement,): void {
 export function clampPan({ containerWidth, containerHeight, }: {
   containerWidth: number;
   containerHeight: number;
-}): void {
+},): void {
   if (scale <= 1) {
     panX = 0;
     panY = 0;
@@ -102,7 +104,7 @@ export function clampPan({ containerWidth, containerHeight, }: {
  *
  * @param y - new pan Y offset in CSS pixels
  */
-export function setPan({ x, y, }: { x: number; y: number; }): void {
+export function setPan({ x, y, }: { x: number; y: number; },): void {
   panX = x;
   panY = y;
 }
@@ -125,14 +127,16 @@ export function setPan({ x, y, }: { x: number; y: number; }): void {
  *
  * @param zoomLayer - element to apply CSS transform to
  */
-export function zoomAt({ screenX, screenY, direction, containerWidth, containerHeight, zoomLayer, }: {
-  screenX: number;
-  screenY: number;
-  direction: 'in' | 'out';
-  containerWidth: number;
-  containerHeight: number;
-  zoomLayer: HTMLElement;
-}): void {
+export function zoomAt(
+  { screenX, screenY, direction, containerWidth, containerHeight, zoomLayer, }: {
+    screenX: number;
+    screenY: number;
+    direction: 'in' | 'out';
+    containerWidth: number;
+    containerHeight: number;
+    zoomLayer: HTMLElement;
+  },
+): void {
   const factor = direction === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
   const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * factor,),);
   if (newScale === scale)
@@ -171,7 +175,7 @@ export function refreshZoomTransform({ containerWidth, containerHeight, zoomLaye
   containerWidth: number;
   containerHeight: number;
   zoomLayer: HTMLElement;
-}): void {
+},): void {
   clampPan({ containerWidth, containerHeight, },);
   applyZoomTransform(zoomLayer,);
 }

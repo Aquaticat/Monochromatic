@@ -10,15 +10,15 @@ import type { ReferencesPopup, } from './references/references-popup.ts';
 
 /** Popup that supports keyboard navigation. */
 type NavigablePopup = {
-  navigate: (opts: { direction: 'up' | 'down' },) => void;
+  navigate: (opts: { direction: 'up' | 'down'; },) => void;
   hide: () => void;
 };
 
 /** Key action for a navigable popup. */
 type PopupKeyAction =
-  | { action: 'navigate'; direction: 'up' | 'down' }
-  | { action: 'accept'; handler: () => void }
-  | { action: 'dismiss'; consumeEvent: boolean };
+  | { action: 'navigate'; direction: 'up' | 'down'; }
+  | { action: 'accept'; handler: () => void; }
+  | { action: 'dismiss'; consumeEvent: boolean; };
 
 /**
  * Maps a key to an action for a navigable popup.
@@ -42,9 +42,10 @@ function handlePopupNav({ event, popup, keyMap, }: {
   event: KeyboardEvent;
   popup: NavigablePopup;
   keyMap: PopupKeyMap;
-}): boolean {
+},): boolean {
   const entry = keyMap[event.key];
-  if (entry === undefined) return false;
+  if (entry === undefined)
+    return false;
   if (entry.action === 'navigate') {
     event.preventDefault();
     popup.navigate({ direction: entry.direction, },);
@@ -56,7 +57,8 @@ function handlePopupNav({ event, popup, keyMap, }: {
     return true;
   }
   // Only 'dismiss' remains after navigate/accept branches
-  if (entry.consumeEvent) event.preventDefault();
+  if (entry.consumeEvent)
+    event.preventDefault();
   popup.hide();
   return entry.consumeEvent;
 }
@@ -71,12 +73,13 @@ function handlePopupNav({ event, popup, keyMap, }: {
 export function handleCompletionNav({ event, completionPopup, }: {
   event: KeyboardEvent;
   completionPopup: CompletionPopup;
-}): boolean {
+},): boolean {
   /** Tab accepts the selected completion and inserts its text. */
   function acceptCompletion(): void {
     const text = completionPopup.accept();
     // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text preserving the browser undo stack
-    if (text !== null) document.execCommand('insertText', false, text,);
+    if (text !== null)
+      document.execCommand('insertText', false, text,);
   }
   return handlePopupNav({
     event,
@@ -99,14 +102,16 @@ export function handleCompletionNav({ event, completionPopup, }: {
 export function handleReferencesNav({ event, referencesPopup, }: {
   event: KeyboardEvent;
   referencesPopup: ReferencesPopup;
-}): boolean {
+},): boolean {
   return handlePopupNav({
     event,
     popup: referencesPopup,
     keyMap: {
       ArrowDown: { action: 'navigate', direction: 'down', },
       ArrowUp: { action: 'navigate', direction: 'up', },
-      Enter: { action: 'accept', handler: function accept() { referencesPopup.accept(); }, },
+      Enter: { action: 'accept', handler: function accept() {
+        referencesPopup.accept();
+      }, },
       Escape: { action: 'dismiss', consumeEvent: true, },
     },
   },);

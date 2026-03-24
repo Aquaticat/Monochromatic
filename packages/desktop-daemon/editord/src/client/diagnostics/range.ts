@@ -20,7 +20,7 @@ import type { Diagnostic, } from '../../../protocol.ts';
 export function findTextOffset({ lineDiv, charOffset, }: {
   lineDiv: Element;
   charOffset: number;
-}): { node: Text; offset: number } | null {
+},): { node: Text; offset: number; } | null {
   const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
   let remaining = charOffset;
   let textNode = walker.nextNode();
@@ -50,14 +50,16 @@ export function findTextOffset({ lineDiv, charOffset, }: {
 export function createDiagnosticRange({ editor, diagnostic, }: {
   editor: HTMLElement;
   diagnostic: Diagnostic;
-}): globalThis.Range | null {
+},): globalThis.Range | null {
   const startDiv = editor.children[diagnostic.range.start.line];
   const endDiv = editor.children[diagnostic.range.end.line];
   if (startDiv === undefined || endDiv === undefined)
     return null;
 
-  const startPos = findTextOffset({ lineDiv: startDiv, charOffset: diagnostic.range.start.character, },);
-  const endPos = findTextOffset({ lineDiv: endDiv, charOffset: diagnostic.range.end.character, },);
+  const startPos = findTextOffset({ lineDiv: startDiv,
+    charOffset: diagnostic.range.start.character, },);
+  const endPos = findTextOffset({ lineDiv: endDiv,
+    charOffset: diagnostic.range.end.character, },);
   if (startPos === null || endPos === null)
     return null;
 

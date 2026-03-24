@@ -8,9 +8,13 @@
 
 import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
-import { createHexDumpContent, } from './content.ts';
-import { showAudio, showImage, showVideo, } from './media.ts';
 import { STYLES, } from './binary-viewer.styles.ts';
+import { createHexDumpContent, } from './content.ts';
+import {
+  showAudio,
+  showImage,
+  showVideo,
+} from './media.ts';
 
 /**
  * `<binary-viewer>` — media and hex dump viewer component.
@@ -37,8 +41,9 @@ export class BinaryViewer extends HTMLElement {
    *
    * @param mediaInfo - optional ffprobe metadata to display below the image
    */
-  showImage({ url, mediaInfo, }: { url: string; mediaInfo?: string }): void {
-    showImage({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url, mediaInfo, },);
+  showImage({ url, mediaInfo, }: { url: string; mediaInfo?: string; },): void {
+    showImage({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url,
+      mediaInfo, },);
   }
 
   /**
@@ -48,8 +53,9 @@ export class BinaryViewer extends HTMLElement {
    *
    * @param mediaInfo - optional ffprobe metadata to display below the player
    */
-  showAudio({ url, mediaInfo, }: { url: string; mediaInfo?: string }): void {
-    showAudio({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url, mediaInfo, },);
+  showAudio({ url, mediaInfo, }: { url: string; mediaInfo?: string; },): void {
+    showAudio({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url,
+      mediaInfo, },);
   }
 
   /**
@@ -59,8 +65,9 @@ export class BinaryViewer extends HTMLElement {
    *
    * @param mediaInfo - optional ffprobe metadata to display below the player
    */
-  showVideo({ url, mediaInfo, }: { url: string; mediaInfo?: string }): void {
-    showVideo({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url, mediaInfo, },);
+  showVideo({ url, mediaInfo, }: { url: string; mediaInfo?: string; },): void {
+    showVideo({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url,
+      mediaInfo, },);
   }
 
   /**
@@ -68,7 +75,7 @@ export class BinaryViewer extends HTMLElement {
    *
    * @param content - hex dump text to display
    */
-  showHexDump({ content, }: { content: string }): void {
+  showHexDump({ content, }: { content: string; },): void {
     this.#clear();
     this.#shadow.append(createHexDumpContent({ content, },),);
     this.style.display = 'flex';
@@ -84,7 +91,8 @@ export class BinaryViewer extends HTMLElement {
   #clear(): void {
     const style = this.#shadow.querySelector<HTMLStyleElement>('style',);
     this.#shadow.replaceChildren();
-    if (style !== null) this.#shadow.append(style,);
+    if (style !== null)
+      this.#shadow.append(style,);
   }
 }
 

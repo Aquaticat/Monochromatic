@@ -50,8 +50,8 @@ export const newTaskPanel = [
     children: [
       css({
         rule: 'from',
-        decls: { transform: cssScale(FAB_SCALE_FROM,), 'border-radius': cssPercent(HALF_PERCENT,),
-          opacity: FAB_OPACITY_FROM, },
+        decls: { transform: cssScale(FAB_SCALE_FROM,),
+          'border-radius': cssPercent(HALF_PERCENT,), opacity: FAB_OPACITY_FROM, },
       },),
       css({
         rule: 'to',

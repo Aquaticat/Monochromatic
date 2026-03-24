@@ -33,7 +33,7 @@ export function streamRg({ args, maxResults, processLine, signal, }: {
   maxResults: number;
   processLine: (line: string,) => SearchResult | null;
   signal: AbortSignal | undefined;
-}): Promise<SearchResult[]> {
+},): Promise<SearchResult[]> {
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping streaming child process events into a promise requires new Promise
   return new Promise<SearchResult[]>(function awaitRg(resolve, reject,) {
     const proc = spawn('rg', ['--line-buffered', ...args,],);
@@ -54,9 +54,8 @@ export function streamRg({ args, maxResults, processLine, signal, }: {
       resolve(results,);
     }
 
-    if (signal !== undefined) {
+    if (signal !== undefined)
       signal.addEventListener('abort', finish, { once: true, },);
-    }
 
     proc.stdout.on('data', function handleData(chunk: Buffer,) {
       buffer += chunk.toString('utf8',);

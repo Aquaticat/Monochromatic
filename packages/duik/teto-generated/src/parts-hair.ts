@@ -9,8 +9,8 @@
 import { PALETTE, } from './config.ts';
 import {
   c,
-  REF_RED,
   type PartDef,
+  REF_RED,
 } from './parts-types.ts';
 
 /** All six hair parts: back, bangs, drills, accessories. */

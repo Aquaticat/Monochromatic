@@ -3,7 +3,10 @@
  *
  * Minifies HTML files and compresses output with zstd.
  */
-import { readFile, writeFile, } from 'node:fs/promises';
+import {
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import spawn from 'nano-spawn';
@@ -49,9 +52,16 @@ export async function postProcess(
   // Environments without zstd installed still get a complete build.
   try {
     await spawn('zstd', [
-      '-z', '-f', '-v', '--no-check', '-T0',
-      '--exclude-compressed', '--no-content-size',
-      '-r', '--adapt', DIST,
+      '-z',
+      '-f',
+      '-v',
+      '--no-check',
+      '-T0',
+      '--exclude-compressed',
+      '--no-content-size',
+      '-r',
+      '--adapt',
+      DIST,
     ],);
     l.info('compressed with zstd',);
   }

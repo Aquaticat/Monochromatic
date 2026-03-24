@@ -84,9 +84,10 @@ export type { ObjectsMergeRules, } from './rules.ts';
   if (objs.length === 0)
     throw new TypeError('objs array cannot be empty',);
 
-  if (objs.length === 1)
+  if (objs.length === 1) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single-element array guaranteed by length check
     return objs[0] as UnknownRecord;
+  }
 
   // Collect all unique property names
   const allKeys = new Set<string>();

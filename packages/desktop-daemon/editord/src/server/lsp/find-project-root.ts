@@ -8,7 +8,10 @@
  */
 
 import { existsSync, } from 'node:fs';
-import { dirname, join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 
 /**
  * Cached results keyed by `"startDir\0file1\0file2"`.
@@ -38,10 +41,11 @@ export function findProjectRoot({ startDir, configFiles, ceiling, }: {
   startDir: string;
   configFiles: readonly string[];
   ceiling: string;
-}): string | null {
+},): string | null {
   const cacheKey = `${startDir}\0${ceiling}\0${configFiles.join('\0',)}`;
   const cached = rootCache.get(cacheKey,);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined)
+    return cached;
 
   let dir = startDir;
   while (true) {
@@ -52,9 +56,11 @@ export function findProjectRoot({ startDir, configFiles, ceiling, }: {
       }
     }
     /** Stop if we've reached the ceiling or filesystem root. */
-    if (dir === ceiling) break;
+    if (dir === ceiling)
+      break;
     const parent = dirname(dir,);
-    if (parent === dir) break;
+    if (parent === dir)
+      break;
     dir = parent;
   }
 

@@ -115,7 +115,8 @@ export function normalizePointer({ event, canvas, }: {
   canvas: HTMLCanvasElement;
 },): NormalizedPoint {
   const rect = canvas.getBoundingClientRect();
-  return [(event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height,];
+  return [(event.clientX - rect.left) / rect.width,
+    (event.clientY - rect.top) / rect.height,];
 }
 
 /**

@@ -52,8 +52,7 @@ if (!(appElement instanceof HTMLElement))
 const app = appElement;
 
 // Listen for search events from the search-bar component
-document.querySelector<HTMLElement>('search-bar',)?.addEventListener('search',
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- search-bar dispatches CustomEvent with { query } detail
+document.querySelector<HTMLElement>('search-bar',)?.addEventListener('search', // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- search-bar dispatches CustomEvent with { query } detail
   (function handleSearch(event: CustomEvent<{ query: string; }>,) {
     const { query, } = event.detail;
     globalThis.location.href = query.length === 0

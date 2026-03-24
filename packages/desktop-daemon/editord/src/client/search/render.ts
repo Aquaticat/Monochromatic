@@ -6,9 +6,7 @@
  * to keep each file under the effective line limit.
  */
 
-import {
-  $ as h,
-} from '@monochromatic-dev/module-es/h-dom';
+import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
 import type { SearchResult, } from '../../../protocol.ts';
 import { middleOut, } from '../middle-out.ts';
@@ -34,7 +32,7 @@ export function renderResultElements({ results, query, rootPrefix, budget, onSel
   rootPrefix: string;
   budget: number;
   onSelect: (index: number,) => void;
-}): HTMLElement[] {
+},): HTMLElement[] {
   return results.map(function createResultElement(result, index,) {
     /**
      * Computes a display-friendly relative path from the root directory.
@@ -88,7 +86,9 @@ export function renderResultElements({ results, query, rootPrefix, budget, onSel
  *
  * @param container - results container element whose text nodes to scan
  */
-export function highlightMatches({ query, container, }: { query: string; container: HTMLDivElement }): void {
+export function highlightMatches(
+  { query, container, }: { query: string; container: HTMLDivElement; },
+): void {
   if (query === '') {
     CSS.highlights.delete('hl-search-match',);
     return;

@@ -18,7 +18,9 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  *
  * @throws when the path escapes root or the delete fails
  */
-export async function deleteEntry({ rootDir, path, }: { rootDir: string; path: string }): Promise<void> {
+export async function deleteEntry(
+  { rootDir, path, }: { rootDir: string; path: string; },
+): Promise<void> {
   const absolutePath = assertWithinRoot({ rootDir, path, },);
 
   if (absolutePath === rootDir)

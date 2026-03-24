@@ -151,9 +151,10 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
       await Promise.all(
         backends.map(async function clearBackend(backend,) {
           // Map and similar backends support clear()
-          if ('clear' in backend && typeof backend.clear === 'function')
+          if ('clear' in backend && typeof backend.clear === 'function') {
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime check confirms clear is a function
             await (backend.clear as () => unknown)();
+          }
         },),
       );
     },

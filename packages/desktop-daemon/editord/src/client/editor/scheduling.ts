@@ -7,10 +7,22 @@
 
 import type { Parser, } from '@lezer/common';
 
-import type { Diagnostic, InlayHint, } from '../../../protocol.ts';
-import { applyDiagnosticHighlights, clearDiagnosticHighlights, } from '../diagnostics/layer.ts';
-import { applyHighlights, clearHighlights, } from '../highlight/highlighter.ts';
-import { applyInlayAnnotations, clearInlayAnnotations, } from '../inlay/layer.ts';
+import type {
+  Diagnostic,
+  InlayHint,
+} from '../../../protocol.ts';
+import {
+  applyDiagnosticHighlights,
+  clearDiagnosticHighlights,
+} from '../diagnostics/layer.ts';
+import {
+  applyHighlights,
+  clearHighlights,
+} from '../highlight/highlighter.ts';
+import {
+  applyInlayAnnotations,
+  clearInlayAnnotations,
+} from '../inlay/layer.ts';
 import { measureInlayOffsets, } from '../inlay/measure.ts';
 
 /**
@@ -25,7 +37,7 @@ import { measureInlayOffsets, } from '../inlay/measure.ts';
 export function scheduleDiagnosticHighlights({ editor, diagnostics, }: {
   editor: HTMLDivElement;
   diagnostics: Diagnostic[];
-}): number {
+},): number {
   return requestAnimationFrame(function applyScheduledDiagnostics() {
     if (diagnostics.length === 0) {
       clearDiagnosticHighlights();
@@ -51,7 +63,7 @@ export function scheduleInlayAnnotations({ editor, hints, diagnostics, }: {
   editor: HTMLDivElement;
   hints: InlayHint[];
   diagnostics: Diagnostic[];
-}): number {
+},): number {
   return requestAnimationFrame(function applyScheduledInlayAnnotations() {
     if (hints.length === 0 && diagnostics.length === 0) {
       clearInlayAnnotations({ editor, },);
@@ -77,7 +89,7 @@ export function scheduleInlayAnnotations({ editor, hints, diagnostics, }: {
 export function scheduleHighlight({ editor, parser, }: {
   editor: HTMLDivElement;
   parser: Parser | null;
-}): number {
+},): number {
   return requestAnimationFrame(function applyScheduledHighlight() {
     if (parser === null) {
       clearHighlights();
@@ -95,7 +107,7 @@ export function scheduleHighlight({ editor, parser, }: {
  *
  * @returns animation frame ID for cancellation
  */
-export function scheduleInlayMeasure({ editor, }: { editor: HTMLDivElement }): number {
+export function scheduleInlayMeasure({ editor, }: { editor: HTMLDivElement; },): number {
   return requestAnimationFrame(function remeasureInlayOffsets() {
     measureInlayOffsets({ editor, },);
   },);
