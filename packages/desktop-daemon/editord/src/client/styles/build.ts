@@ -6,7 +6,7 @@
  *
  * @example
  * ```sh
- * bun src/client/global.styles.build.ts
+ * bun src/client/styles/build.ts
  * ```
  */
 
@@ -14,7 +14,15 @@ import {
   mkdir,
   writeFile,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
+
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import { findUp, } from 'find-up';
 
 import { STYLES as CTX_MENU_STYLES, } from '../context-menu/context-menu.styles.ts';
 import { STYLES as TOAST_STYLES, } from '../toast/toast.styles.ts';
@@ -24,8 +32,13 @@ import { STYLES as THEME_STYLES, } from './theme.ts';
 
 export {};
 
-/** Output directory relative to the package root. */
-const OUT_DIR = join(import.meta.dirname, '../../dist/client',);
+/** Package root resolved by walking up to the nearest `package.json`. */
+const PACKAGE_ROOT = dirname(
+  notNullishOrThrow(await findUp('package.json', { cwd: import.meta.dirname, },),),
+);
+
+/** Output directory under the package root. */
+const OUT_DIR = join(PACKAGE_ROOT, 'dist/client',);
 
 /** Output file path. */
 const OUT_FILE = join(OUT_DIR, 'global.css',);

@@ -20,6 +20,7 @@
     "@monochromatic-dev/module-es": "workspace:*",
     "crossws": "catalog:",
     "h3": "catalog:",
+    "find-up": "catalog:",
     "nano-spawn": "catalog:"
   },
   "devDependencies": {
