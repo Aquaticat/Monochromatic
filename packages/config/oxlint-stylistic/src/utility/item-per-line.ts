@@ -39,6 +39,13 @@ export type ItemPerLineConfig = {
    * Defaults to 2 -- single-item lists are never flagged.
    */
   minItems?: number;
+  /**
+   * Delimiter to place after each item in the autofix output.
+   *
+   * Defaults to `','` for comma-separated constructs.
+   * Pass `';'` for TypeScript type/interface members.
+   */
+  delimiter?: ',' | ';';
 };
 
 /**
@@ -57,6 +64,8 @@ export type ItemPerLineConfig = {
  * @param messageId - message ID to use when reporting
  *
  * @param minItems - minimum item count to trigger (default 2)
+ *
+ * @param delimiter - separator character for items (`','` or `';'`, defaults to `','`)
  */
 export function checkItemsPerLine({
   context,
@@ -64,6 +73,7 @@ export function checkItemsPerLine({
   items,
   messageId,
   minItems = 2,
+  delimiter = ',',
 }: ItemPerLineConfig,): void {
   if (items.length < minItems)
     return;
@@ -91,6 +101,7 @@ export function checkItemsPerLine({
         items,
         sourceText,
         containerStart: containerRange[0],
+        delimiter,
       },);
     },
   },);

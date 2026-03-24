@@ -27,6 +27,13 @@ export type PerLineFixConfig = {
   sourceText: string;
   /** Byte offset of container start, for indentation detection. */
   containerStart: number;
+  /**
+   * Delimiter to place after each item.
+   *
+   * Defaults to `','` for comma-separated constructs.
+   * Pass `';'` for TypeScript type/interface members.
+   */
+  delimiter?: ',' | ';';
 };
 
 /**
@@ -47,6 +54,8 @@ export type PerLineFixConfig = {
  *
  * @param containerStart - byte offset of container start
  *
+ * @param delimiter - character to separate items (`','` or `';'`, defaults to `','`)
+ *
  * @returns fixer replacement result
  */
 export function buildPerLineFix({
@@ -56,6 +65,7 @@ export function buildPerLineFix({
   items,
   sourceText,
   containerStart,
+  delimiter = ',',
 }: PerLineFixConfig,): ReturnType<Fixer['replaceText']> {
   const lineStartOffset = sourceText.lastIndexOf(
     '\n',
@@ -92,12 +102,17 @@ export function buildPerLineFix({
   /** Text from and including the closing delimiter. */
   const after = containerText.slice(closeIdx,);
 
-  /** Extract each item's source text. */
+  /** Extract each item's source text, stripping any existing trailing delimiter. */
   const itemTexts = items.map(
-    function getItemText(item,): string { return context.sourceCode.getText(item,).trim(); },
+    function getItemText(item,): string {
+      const raw = context.sourceCode.getText(item,).trim();
+      if (raw.endsWith(';',) || raw.endsWith(',',))
+        return raw.slice(0, -1,);
+      return raw;
+    },
   );
 
-  /** Check trailing comma between last item and close delimiter. */
+  /** Check whether the original source has a trailing delimiter after the last item. */
   const lastItem = at(
     items,
     items.length - 1,
@@ -107,15 +122,16 @@ export function buildPerLineFix({
     lastRange[1],
     containerStart + closeIdx,
   );
-  const hasTrailingComma = trailingRegion.includes(',',);
+  const hasTrailingDelimiter = trailingRegion.includes(',',)
+    || trailingRegion.includes(';',);
 
   const formattedItems = itemTexts.map(function formatItem(
     text,
     idx,
   ): string {
     const isLast = idx === itemTexts.length - 1;
-    const comma = isLast && !hasTrailingComma ? '' : ',';
-    return `${childIndent}${text}${comma}`;
+    const suffix = isLast && !hasTrailingDelimiter ? '' : delimiter;
+    return `${childIndent}${text}${suffix}`;
   },).join('\n',);
 
   const replacement = `${before}\n${formattedItems}\n${baseIndent}${after}`;
