@@ -66,6 +66,13 @@ Issues with C-style comment syntax that affect multiple programming languages:
 - IDE comment features and best practices
 - Language-specific comment syntax differences
 
+### [iOS Safari touch events](TROUBLESHOOTING.ios-safari-touch.md)
+iOS Safari claims `touch-action: none` support but does not reliably honor it:
+- `pointercancel` fires despite `touch-action: none` on the target element
+- Long-press triggers system context menu instead of application gesture
+- Three-part workaround: `touchstart`/`touchmove` preventDefault, `pointerdown` preventDefault, `-webkit-touch-callout: none`
+- Twelve years of WebKit bug 133112 and counting
+
 ### [Bundling](TROUBLESHOOTING.bundling.md)
 Client-side bundling issues where Node.js code leaks into browser bundles:
 - `node:` protocol dynamic imports cause CORS errors in browser consoles
@@ -95,6 +102,7 @@ For common issues:
 - **Figma automation not working?** → [The WebGL wall](TROUBLESHOOTING.figma-browser-automation.md)
 - **CORS errors for `node:` imports in browser?** → [node: protocol in bundles](TROUBLESHOOTING.bundling.md#node-protocol-imports-cause-cors-errors-in-browser-bundles)
 - **CLI hangs with ImageMagick errors?** → [Missing shebang](TROUBLESHOOTING.cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
+- **Touch gestures broken on iPhone?** → [iOS Safari touch-action betrayal](TROUBLESHOOTING.ios-safari-touch.md)
 
 ## Contributing
 
