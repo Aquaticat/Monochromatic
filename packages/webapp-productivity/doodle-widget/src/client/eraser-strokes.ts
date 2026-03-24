@@ -1,9 +1,9 @@
 /**
  * Stroke erasure for the doodle widget.
  *
- * Tests stroke points against the eraser's travel segment between
- * frames using point-to-segment distance, so fast drags do not skip
- * over strokes.
+ * Tests stroke points **and stroke segments** against the eraser's
+ * travel segment between frames, so fast drags do not skip over
+ * strokes even when stroke points are widely spaced.
  */
 
 import { getStrokeWidth, } from './drawing-config.ts';
@@ -14,62 +14,22 @@ import {
   getStrokes,
   setStrokes,
 } from './drawing.ts';
+import { distToSegmentSq, segToSegDistSq, } from './geometry.ts';
 
 /** Minimum number of points required for a valid sub-stroke after splitting */
 const MIN_SEGMENT_POINTS = 2;
 
 /**
- * Computes the squared distance from point P to the closest point
- * on line segment AB, in pixel space.
- *
- * Uses projection clamped to [0, 1] to find the nearest point on the
- * segment rather than the infinite line.
- *
- * @param px - point x in pixels
- *
- * @param py - point y in pixels
- *
- * @param ax - segment start x in pixels
- *
- * @param ay - segment start y in pixels
- *
- * @param bx - segment end x in pixels
- *
- * @param by - segment end y in pixels
- *
- * @returns squared pixel distance from P to nearest point on AB
- */
-function distToSegmentSq(
-  { px, py, ax, ay, bx, by, }: {
-    px: number; py: number;
-    ax: number; ay: number;
-    bx: number; by: number;
-  },
-): number {
-  const dx = bx - ax;
-  const dy = by - ay;
-  /** Squared length of segment AB; zero means degenerate (A == B) */
-  const lenSq = dx * dx + dy * dy;
-
-  if (lenSq === 0)
-    return (px - ax) ** 2 + (py - ay) ** 2;
-
-  /** Projection parameter clamped to [0, 1] so closest point stays on segment */
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq,),);
-  /** Closest point on segment */
-  const cx = ax + t * dx;
-  const cy = ay + t * dy;
-
-  return (px - cx) ** 2 + (py - cy) ** 2;
-}
-
-/**
  * Erases stroke segments near the eraser path.
  *
- * Tests each stroke point against the line segment from
- * `previousPoint` to `point` (the eraser's travel path between
- * frames). When `previousPoint` is null (first event of a gesture),
- * tests against the single point only.
+ * Tests each stroke point **and each stroke segment** against the
+ * line segment from `previousPoint` to `point` (the eraser's travel
+ * path between frames). When `previousPoint` is null (first event of
+ * a gesture), tests against the single point only.
+ *
+ * The segment-to-segment check catches cases where the eraser crosses
+ * a stroke line between two widely-spaced points without being close
+ * enough to either individual point.
  *
  * @param point - current eraser position in normalized [0..1] space
  *
@@ -117,15 +77,34 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
     /** Points accumulating for the current sub-stroke */
     let currentSegment: NormalizedPoint[] = [];
 
-    for (const p of stroke.points) {
+    /** Previous stroke point in pixel space, for segment-to-segment checks */
+    let prevStrokePx = 0;
+    let prevStrokePy = 0;
+
+    for (let i = 0; i < stroke.points.length; i++) {
+      const p = stroke.points[i]!;
       /** Stroke point in pixel space */
       const { px, py, } = denormalizePoint({ point: p, cw, ch, },);
       /** Squared distance from stroke point to eraser travel segment */
-      const distSq = distToSegmentSq({
+      const pointDistSq = distToSegmentSq({
         px, py, ax, ay, bx, by,
       },);
 
-      if (distSq <= radiusSq) {
+      let shouldErase = pointDistSq <= radiusSq;
+
+      // When the point itself is not close enough, check whether the
+      // stroke *segment* (line from previous point to this point) is
+      // close to or intersects the eraser segment. This catches fast
+      // erases that cross between widely-spaced stroke points.
+      if (!shouldErase && i > 0) {
+        const segDistSq = segToSegDistSq({
+          a1x: prevStrokePx, a1y: prevStrokePy, a2x: px, a2y: py,
+          b1x: ax, b1y: ay, b2x: bx, b2y: by,
+        },);
+        shouldErase = segDistSq <= radiusSq;
+      }
+
+      if (shouldErase) {
         strokeModified = true;
         if (currentSegment.length >= MIN_SEGMENT_POINTS)
           segments.push(currentSegment,);
@@ -134,6 +113,9 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
       else {
         currentSegment.push(p,);
       }
+
+      prevStrokePx = px;
+      prevStrokePy = py;
     }
 
     if (currentSegment.length >= MIN_SEGMENT_POINTS)

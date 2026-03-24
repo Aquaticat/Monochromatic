@@ -2,11 +2,13 @@
  * Text erasure for the doodle widget.
  *
  * Removes entire text input elements when the eraser path touches
- * their bounding rect. Tests both current and previous eraser
- * positions to avoid missing items during fast drags.
+ * their bounding rect. Tests both eraser endpoint positions **and**
+ * the full eraser travel segment to avoid missing items during fast
+ * drags that sweep across a text input without stopping inside it.
  */
 
 import { type NormalizedPoint, denormalizePoint, } from './drawing.ts';
+import { segmentIntersectsRect, } from './geometry.ts';
 
 /**
  * Checks whether a content-space pixel coordinate falls inside an
@@ -39,8 +41,9 @@ function pointInInputRect(
 /**
  * Erases text items touched by the eraser path.
  *
- * Tests both the current and previous eraser positions against each
- * text input's bounding rect to avoid missing items during fast drags.
+ * Tests the current and previous eraser positions against each text
+ * input's bounding rect, and checks whether the eraser travel segment
+ * crosses any edge of the rect to catch fast sweeps.
  *
  * @param point - current eraser position in normalized [0..1] space
  *
@@ -75,18 +78,30 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
   const inputs = [...textLayer.querySelectorAll<HTMLInputElement>('.text-input',),];
   let erased = false;
 
+  /** Previous eraser position in content-space pixels when available */
+  const prev = previousPoint !== null
+    ? denormalizePoint({ point: previousPoint, cw, ch, },)
+    : null;
+
   for (const input of inputs) {
     /** Check current eraser position */
     const hitCurrent = pointInInputRect({ px, py, input, },);
 
     /** Check previous eraser position when available */
-    const hitPrevious = previousPoint !== null
-      && pointInInputRect({
-        ...denormalizePoint({ point: previousPoint, cw, ch, },),
-        input,
+    const hitPrevious = prev !== null
+      && pointInInputRect({ px: prev.px, py: prev.py, input, },);
+
+    /** Check whether the eraser travel segment crosses the input rect */
+    const hitSegment = prev !== null
+      && segmentIntersectsRect({
+        sx: prev.px, sy: prev.py, ex: px, ey: py,
+        left: input.offsetLeft,
+        top: input.offsetTop,
+        right: input.offsetLeft + input.offsetWidth,
+        bottom: input.offsetTop + input.offsetHeight,
       },);
 
-    if (hitCurrent || hitPrevious) {
+    if (hitCurrent || hitPrevious || hitSegment) {
       input.remove();
       erased = true;
     }
