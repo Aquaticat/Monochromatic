@@ -6,7 +6,7 @@ import {
   parseAtomFeed,
   parseRssFeed,
 } from 'feedsmith';
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 import { l as parentLogger, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
 

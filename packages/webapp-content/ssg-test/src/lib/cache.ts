@@ -16,7 +16,7 @@ import {
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
-import { z, } from 'zod';
+import * as z from 'zod/mini';
 
 import { postFrontmatterSchema, } from './content.ts';
 import type { Logger, } from './types.ts';

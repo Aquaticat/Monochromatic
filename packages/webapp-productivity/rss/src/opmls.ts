@@ -1,6 +1,6 @@
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { findUp, } from 'find-up';
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for the opmls module. */

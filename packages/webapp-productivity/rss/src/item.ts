@@ -5,7 +5,7 @@ import type {
   parseAtomFeed,
   parseRssFeed,
 } from 'feedsmith';
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 import type { FeedWOutline, } from './feed.ts';
 import type {
   AtomItem,

@@ -3,7 +3,7 @@ import {
   type Opml,
   parseOpml,
 } from 'feedsmith';
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 import { l as parentLogger, } from './log.ts';
 import { getOPMLTexts, } from './opml-text.ts';
 import type { OPMLS_SCHEMA, } from './opmls.ts';

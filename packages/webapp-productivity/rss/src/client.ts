@@ -2,7 +2,7 @@
 import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 
 //region Scroll event observer -- Tracks element visibility and dispatches custom scroll lifecycle events
 

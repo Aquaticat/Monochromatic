@@ -1,4 +1,4 @@
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 
 /**
  * Default port number for the exa-search server when no environment variable is set.

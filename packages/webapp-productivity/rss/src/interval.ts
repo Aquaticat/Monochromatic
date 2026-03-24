@@ -1,5 +1,5 @@
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for the interval module. */

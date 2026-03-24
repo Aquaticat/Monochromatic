@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { swagger, } from '@elysiajs/swagger';
 import { Elysia, } from 'elysia';
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 
 /** Pre-configured Anthropic client with extended beta features enabled. */
 const anthropic = new Anthropic({

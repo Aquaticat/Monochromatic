@@ -9,7 +9,7 @@ import {
   resolve,
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
-import type { z, } from 'zod/v4-mini';
+import type * as z from 'zod/mini';
 import { l as parentLogger, } from './log.ts';
 import {
   DOT_ENV_PATH,

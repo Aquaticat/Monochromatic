@@ -5,7 +5,7 @@ import {
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import { prompt, } from '@monochromatic-dev/module-es/ts/deprecated/dom/prompt.ts';
 import { Exa, } from 'exa-js';
-import { z, } from 'zod/v4-mini';
+import * as z from 'zod/mini';
 
 import { replicateElementAsContentOf, } from './client-replicate-element.ts';
 

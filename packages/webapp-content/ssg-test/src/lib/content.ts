@@ -13,7 +13,7 @@ import {
 
 import matter from 'gray-matter';
 import readdir from 'tiny-readdir-glob';
-import { z, } from 'zod';
+import * as z from 'zod/mini';
 
 import { sha256, } from './cache-hash.ts';
 
