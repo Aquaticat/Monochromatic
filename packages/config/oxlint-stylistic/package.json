@@ -1,0 +1,40 @@
+{
+  "name": "@monochromatic-dev/config-oxlint-stylistic",
+  "keywords": [
+    "oxlint",
+    "stylistic",
+    "config",
+    "monochromatic"
+  ],
+  "dependencies": {
+    "@oxlint/plugins": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "type": "module",
+  "files": [
+    "src"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/config/oxlint-stylistic"
+  },
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./.ts": {
+      "default": "./src/index.ts"
+    }
+  },
+  "description": "Oxlint JS plugin enforcing one-item-per-line formatting across all multi-element TypeScript constructs."
+}

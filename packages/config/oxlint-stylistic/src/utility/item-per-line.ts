@@ -1,0 +1,97 @@
+// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-argument, typescript/no-unsafe-return -- oxlint plugin API is untyped; all member access is inherently unsafe
+import type {
+  Context,
+  Fixer,
+  Span,
+} from '@oxlint/plugins';
+
+import {
+  buildPerLineFix,
+} from './item-per-line-fix.ts';
+import { needsPerLineFix, } from './needs-fix.ts';
+import { rangeOf, } from './range.ts';
+
+/**
+ * Configuration for the shared per-line enforcement logic.
+ *
+ * @example
+ * ```ts
+ * checkItemsPerLine({
+ *   context,
+ *   container: arrayNode,
+ *   items: arrayNode.elements,
+ *   messageId: 'itemPerLine',
+ * });
+ * ```
+ */
+export type ItemPerLineConfig = {
+  /** Lint context for reporting and source access. */
+  context: Context;
+  /** Container AST node (array literal, object expression, params list, etc.). */
+  container: Span;
+  /** Ordered list of child items that should each appear on their own line. */
+  items: Span[];
+  /** Message ID to use when reporting. */
+  messageId: string;
+  /**
+   * Minimum number of items required to trigger the rule.
+   *
+   * Defaults to 2 -- single-item lists are never flagged.
+   */
+  minItems?: number;
+};
+
+/**
+ * Reports and auto-fixes when multiple items share a line.
+ *
+ * Designed as the single implementation behind every per-line rule
+ * in this plugin. Each rule's visitor extracts the relevant container
+ * and items, then delegates here.
+ *
+ * @param context - lint context for reporting and source access
+ *
+ * @param container - container AST node
+ *
+ * @param items - ordered list of child items
+ *
+ * @param messageId - message ID to use when reporting
+ *
+ * @param minItems - minimum item count to trigger (default 2)
+ */
+export function checkItemsPerLine({
+  context,
+  container,
+  items,
+  messageId,
+  minItems = 2,
+}: ItemPerLineConfig,): void {
+  if (items.length < minItems)
+    return;
+
+  /** Source text of the entire file. */
+  const sourceText = context.sourceCode.getText();
+
+  if (!needsPerLineFix(
+    sourceText,
+    container,
+    items,
+  ))
+    return;
+
+  const containerRange = rangeOf(container,);
+
+  context.report({
+    node: container,
+    messageId,
+    fix(fixer: Fixer,) {
+      return buildPerLineFix({
+        fixer,
+        context,
+        container,
+        items,
+        sourceText,
+        containerStart: containerRange[0],
+      },);
+    },
+  },);
+}

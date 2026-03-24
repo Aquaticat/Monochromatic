@@ -1,0 +1,9 @@
+{
+  "name": "@monochromatic-dev/test-fixture-oxlint-stylistic",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "files": [
+    "src/"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Dedicated config for fixture linting: all stylistic rules enabled,
+  // no ignorePatterns that would skip invalid/ or test-fixture/ paths.
+  // Used by the lint-fixture mise task and the oxlint-stylistic unit tests.
+  "jsPlugins": [
+    "../../config/oxlint-stylistic/src/index.ts"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "stylistic/param-per-line": "error",
+    "stylistic/argument-per-line": "error",
+    "stylistic/array-element-per-line": "error",
+    "stylistic/object-property-per-line": "error",
+    "stylistic/import-per-line": "error",
+    "stylistic/export-per-line": "error",
+    "stylistic/type-property-per-line": "error",
+    "stylistic/tuple-per-line": "error",
+    "stylistic/destructure-per-line": "error"
+  }
+}

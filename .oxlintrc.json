@@ -18,7 +18,10 @@
     "./packages/config/oxlint-tsdoc/src/index.ts",
 
     // Banned syntax patterns that oxlint's built-in rules can't express.
-    "./packages/config/oxlint-no-restricted-syntax/src/index.ts"
+    "./packages/config/oxlint-no-restricted-syntax/src/index.ts",
+
+    // One-item-per-line formatting enforcement for all multi-element constructs.
+    "./packages/config/oxlint-stylistic/src/index.ts"
   ],
   "env": {
     "browser": true,
@@ -384,7 +387,7 @@
     // Since we're skipping blank lines and comments, 100 is generous enough that splitting up code files is always feasible.
     "eslint/max-lines": [
       "error",
-      { "max": 100, "skipBlankLines": true, "skipComments": true }
+      { "max": 200, "skipBlankLines": true, "skipComments": true }
     ],
     "eslint/max-params": "off",
     "eslint/max-depth": "off",
@@ -483,6 +486,18 @@
 
     "import/no-named-export": "off",
     "import/no-namespace": "off",
+
+    //region stylistic -- one-item-per-line enforcement
+    "stylistic/param-per-line": "warn",
+    "stylistic/argument-per-line": "warn",
+    "stylistic/array-element-per-line": "warn",
+    "stylistic/object-property-per-line": "warn",
+    "stylistic/import-per-line": "warn",
+    "stylistic/export-per-line": "warn",
+    "stylistic/type-property-per-line": "warn",
+    "stylistic/tuple-per-line": "warn",
+    "stylistic/destructure-per-line": "warn",
+    //endregion stylistic
 
     // formatting concern only.
     "eslint/curly": "off",
@@ -702,6 +717,17 @@
 
         // Tests may use arrow functions in callbacks freely.
         "no-restricted-syntax/no-arrow-function": "off",
+
+        // Test code uses inline arrays, objects, and multi-arg calls freely.
+        "stylistic/param-per-line": "off",
+        "stylistic/argument-per-line": "off",
+        "stylistic/array-element-per-line": "off",
+        "stylistic/object-property-per-line": "off",
+        "stylistic/import-per-line": "off",
+        "stylistic/export-per-line": "off",
+        "stylistic/type-property-per-line": "off",
+        "stylistic/tuple-per-line": "off",
+        "stylistic/destructure-per-line": "off",
 
         // Test setup/teardown may use init without assignment.
         "eslint/init-declarations": "off",
