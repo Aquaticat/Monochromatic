@@ -85,6 +85,11 @@ Why the exec plugin silently does nothing and why certain tools are incompatible
 - Exec reads stdout as formatted content; in-place file modifiers (oxlint --fix) are incompatible
 - `cacheKeyFilesHash: null` in resolved config is expected (hash is moved to global `cacheKey`)
 
+### [Bash and CLI](TROUBLESHOOTING.bash.md)
+Bash shell and CLI tool quirks that cause confusing behavior:
+- `2>&1 > file` splits stderr and stdout instead of merging them, producing interleaved output that misrepresents execution order
+- rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
+
 ### [CLI bin entries](TROUBLESHOOTING.cli-bin.md)
 Problems with CLI tools installed via `node_modules/.bin/`:
 - Missing shebang causes Unix to fall back to `/bin/sh`, triggering ImageMagick `import` hangs
@@ -111,6 +116,8 @@ For common issues:
 - **CLI hangs with ImageMagick errors?** → [Missing shebang](TROUBLESHOOTING.cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
 - **Touch gestures broken on iPhone?** → [iOS Safari touch-action betrayal](TROUBLESHOOTING.ios-safari-touch.md)
 - **dprint exec plugin not running?** → [Plugin silently does nothing](TROUBLESHOOTING.dprint-exec.md#exec-plugin-silently-does-nothing)
+- **Output order looks wrong with `2>&1 > file`?** → [Redirect ordering splits streams](TROUBLESHOOTING.bash.md#2>&1--file-splits-stderr-and-stdout-producing-interleaved-output)
+- **rg missing files with spaces in paths?** → [Content-vs-filename search confusion](TROUBLESHOOTING.bash.md#rg---glob-finds-files-but--l-with-a-content-pattern-does-not)
 
 ## Contributing
 
