@@ -7,13 +7,16 @@
  * detected by null-byte inspection and rendered as a hex dump.
  */
 
-import { readFile, } from 'node:fs/promises';
+import { open as fsOpen, readFile, } from 'node:fs/promises';
 
 import type { FileKind, } from '../../protocol.ts';
 import { assertWithinRoot, } from './assert-within-root.ts';
 import { getMediaKind, } from './file-kind.ts';
-import { generateHexDump, } from './hex-dump.ts';
+import { generateHexDump, HEX_DUMP_MAX_BYTES, } from './hex-dump.ts';
 import { probeMedia, } from './probe-media.ts';
+
+/** Number of bytes to read for null-byte detection before committing to a full read. */
+const BINARY_PROBE_SIZE = 8_192;
 
 /** Result of opening a file. */
 export type OpenResult = {
@@ -53,10 +56,20 @@ export async function openFile({ rootDir, path, }: { rootDir: string; path: stri
     };
   }
 
-  const buffer = await readFile(absolutePath,);
-  if (buffer.includes(0,)) {
-    return { kind: 'binary', path: absolutePath, content: generateHexDump({ buffer, },), };
+  /** Probe first bytes for null to detect binary without reading the entire file. */
+  await using handle = await fsOpen(absolutePath,);
+  const probe = Buffer.alloc(BINARY_PROBE_SIZE,);
+  const { bytesRead, } = await handle.read(probe, 0, BINARY_PROBE_SIZE, 0,);
+
+  if (probe.subarray(0, bytesRead,).includes(0,)) {
+    /** Binary: read only what hex dump needs instead of the entire file. */
+    const { size, } = await handle.stat();
+    const dumpLimit = Math.min(size, HEX_DUMP_MAX_BYTES,);
+    const dumpBuffer = Buffer.alloc(dumpLimit,);
+    await handle.read(dumpBuffer, 0, dumpLimit, 0,);
+    return { kind: 'binary', path: absolutePath, content: generateHexDump({ buffer: dumpBuffer, totalSize: size, },), };
   }
 
+  const buffer = await readFile(absolutePath,);
   return { kind: 'text', path: absolutePath, content: buffer.toString('utf8',), };
 }

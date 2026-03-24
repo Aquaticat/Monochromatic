@@ -23,7 +23,7 @@ const GROUP_BOUNDARY = OFFSET_WIDTH;
 const DUMP_LINE_COUNT = 1_024;
 
 /** Maximum bytes to include in the dump before truncating. */
-const MAX_DUMP_BYTES = BYTES_PER_LINE * DUMP_LINE_COUNT;
+export const HEX_DUMP_MAX_BYTES = BYTES_PER_LINE * DUMP_LINE_COUNT;
 
 /** First printable ASCII code point (space). */
 const ASCII_PRINTABLE_START = 0x20;
@@ -35,7 +35,10 @@ const ASCII_PRINTABLE_END = 0x7E;
  * Generates a hex dump string from a binary buffer.
  * Output is truncated to {@link MAX_DUMP_BYTES} with a summary footer.
  *
- * @param buffer - raw file contents
+ * @param buffer - raw file contents (may be a prefix when `totalSize` is provided)
+ *
+ * @param totalSize - actual file size for the truncation message when
+ * `buffer` is a partial read; defaults to `buffer.length`
  *
  * @returns formatted hex dump string
  *
@@ -45,8 +48,9 @@ const ASCII_PRINTABLE_END = 0x7E;
  * // "00000000  48 65 6c 6c 6f                                    |Hello|"
  * ```
  */
-export function generateHexDump({ buffer, }: { buffer: Buffer }): string {
-  const limit = Math.min(buffer.length, MAX_DUMP_BYTES,);
+export function generateHexDump({ buffer, totalSize, }: { buffer: Buffer; totalSize?: number }): string {
+  const fullSize = totalSize ?? buffer.length;
+  const limit = Math.min(buffer.length, HEX_DUMP_MAX_BYTES,);
   const lines: string[] = [];
 
   for (let offset = 0; offset < limit; offset += BYTES_PER_LINE) {
@@ -74,9 +78,9 @@ export function generateHexDump({ buffer, }: { buffer: Buffer }): string {
     lines.push(`${offsetHex}  ${hexParts.join(' ',)}  |${ascii}|`,);
   }
 
-  if (buffer.length > MAX_DUMP_BYTES) {
+  if (fullSize > limit) {
     lines.push('',);
-    lines.push(`... truncated (showing ${MAX_DUMP_BYTES.toLocaleString()} of ${buffer.length.toLocaleString()} bytes)`,);
+    lines.push(`... truncated (showing ${limit.toLocaleString()} of ${fullSize.toLocaleString()} bytes)`,);
   }
 
   return lines.join('\n',);

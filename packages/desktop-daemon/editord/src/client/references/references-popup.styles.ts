@@ -16,11 +16,7 @@ import {
 } from '@monochromatic-dev/module-es/h-css';
 
 import {
-  CODE_LINE_HEIGHT,
-  MONO_FONT_FAMILY,
-  POPUP_BORDER_DECLS,
-  POPUP_BORDER_RADIUS,
-  POPUP_FONT_SIZE,
+  POPUP_HOST_DECLS,
 } from '../styles/tokens.ts';
 
 /** Maximum width of the references popup in rem. */
@@ -37,8 +33,7 @@ export const STYLES = [
   $({
     rule: ':host',
     decls: {
-      inset: 'auto',
-      margin: cssNum(0,),
+      ...POPUP_HOST_DECLS,
       'inset-block-start': cssAnchor('end',),
       'inset-inline-start': cssAnchor('start',),
       'position-try-fallbacks': cssCommaList(['flip-block', 'flip-inline', 'flip-block flip-inline',],),
@@ -46,13 +41,6 @@ export const STYLES = [
       'max-inline-size': cssRem(MAX_WIDTH_REM,),
       'max-block-size': cssRem(MAX_HEIGHT_REM,),
       overflow: 'auto',
-      'background-color': cssVar('hover-bg',),
-      color: cssVar('fg',),
-      'border-radius': cssRem(POPUP_BORDER_RADIUS,),
-      ...POPUP_BORDER_DECLS,
-      'font-family': MONO_FONT_FAMILY,
-      'font-size': cssRem(POPUP_FONT_SIZE,),
-      'line-height': cssNum(CODE_LINE_HEIGHT,),
     },
   },),
   $({

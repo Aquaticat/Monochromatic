@@ -5,23 +5,15 @@
  * split from types.ts to stay under max-lines.
  */
 
+import type { Position, Range, } from '../../protocol.ts';
+
 //region Geometry
 
-/** 0-based position in a text document. */
-export type LspPosition = {
-  /** 0-based line number. */
-  line: number;
-  /** 0-based character offset within the line. */
-  character: number;
-};
+/** LSP position, aliased from the shared wire protocol type. */
+export type LspPosition = Position;
 
-/** Range of text in a document, start-inclusive and end-exclusive. */
-export type LspRange = {
-  /** Start position (inclusive). */
-  start: LspPosition;
-  /** End position (exclusive). */
-  end: LspPosition;
-};
+/** LSP range, aliased from the shared wire protocol type. */
+export type LspRange = Range;
 
 //endregion Geometry
 

@@ -7,6 +7,7 @@
 
 import {
   cssCommaList,
+  cssNum,
   cssRem,
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
@@ -42,4 +43,31 @@ export const POPUP_BORDER_DECLS = {
   'border-inline-width': cssRem(1 / 16,),
   'border-inline-style': 'solid' as const,
   'border-inline-color': cssVar('hover-border',),
+};
+
+/**
+ * Common `:host` declarations shared by all popup components.
+ * Spread into a `:host` rule's `decls` alongside component-specific overrides.
+ *
+ * Covers: positioning reset, background, foreground, border, radius,
+ * font family, font size, and line height.
+ *
+ * @example
+ * ```ts
+ * $({
+ *   rule: ':host',
+ *   decls: { ...POPUP_HOST_DECLS, position: 'fixed', overflow: 'auto' },
+ * })
+ * ```
+ */
+export const POPUP_HOST_DECLS = {
+  inset: 'auto',
+  margin: cssNum(0,),
+  'background-color': cssVar('hover-bg',),
+  color: cssVar('fg',),
+  'border-radius': cssRem(POPUP_BORDER_RADIUS,),
+  ...POPUP_BORDER_DECLS,
+  'font-family': MONO_FONT_FAMILY,
+  'font-size': cssRem(POPUP_FONT_SIZE,),
+  'line-height': cssNum(CODE_LINE_HEIGHT,),
 };

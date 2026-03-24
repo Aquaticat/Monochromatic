@@ -8,6 +8,7 @@
 
 import { fileURLToPath, } from 'node:url';
 
+import type { Range, } from '../../protocol.ts';
 import type { LspDiagnostic, } from './types.ts';
 
 /** Severity number to wire severity string mapping. */
@@ -21,7 +22,7 @@ const SEVERITY_MAP: Record<number, 'error' | 'warning' | 'info' | 'hint'> = {
 /** Diagnostic in wire format (ready for WebSocket transport to client). */
 export type WireDiagnostic = {
   /** Text range for the diagnostic. */
-  range: { start: { line: number; character: number }; end: { line: number; character: number } };
+  range: Range;
   /** Severity level. */
   severity: 'error' | 'warning' | 'info' | 'hint';
   /** Human-readable message. */
@@ -66,6 +67,12 @@ export class DiagnosticStore {
     const sourceMap = this.#store.get(uri,);
     if (sourceMap === undefined)
       return;
+
+    /** Skip merge and broadcast when this source's diagnostics are unchanged. */
+    const previous = sourceMap.get(source,);
+    if (previous !== undefined
+      && previous.length === diagnostics.length
+      && JSON.stringify(previous,) === JSON.stringify(diagnostics,)) return;
 
     sourceMap.set(source, diagnostics,);
 

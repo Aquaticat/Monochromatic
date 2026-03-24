@@ -6,6 +6,8 @@
  * and go-to-definition.
  */
 
+import type { LspPosition, LspRange, } from './lsp-types-core.ts';
+
 export type {
   DiagnosticSeverity,
   LspCompletionItem,
@@ -28,7 +30,7 @@ export type InlayHintKind = 1 | 2;
 /** Inlay hint from an LSP server. */
 export type LspInlayHint = {
   /** Position in the document where the hint is displayed. */
-  position: { line: number; character: number };
+  position: LspPosition;
   /** Display label (string or structured label parts). */
   label: string | LspInlayHintLabelPart[];
   /** Kind of inlay hint (1=Type, 2=Parameter). */
@@ -56,7 +58,7 @@ export type LspInlayHintLabelPart = {
  */
 export type LspSelectionRange = {
   /** Range of this selection level. */
-  range: { start: { line: number; character: number }; end: { line: number; character: number } };
+  range: LspRange;
   /** Next larger enclosing selection range, or undefined at the outermost scope. */
   parent?: LspSelectionRange;
 };

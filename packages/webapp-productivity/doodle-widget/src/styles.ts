@@ -60,6 +60,7 @@ export function renderStyles(): string {
         display: 'block',
         cursor: 'crosshair',
         'touch-action': 'none',
+        '-webkit-touch-callout': 'none',
       },
     },),
 

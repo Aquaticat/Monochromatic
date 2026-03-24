@@ -4,17 +4,12 @@
 
 import {
   $,
-  cssNum,
   cssRem,
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 
 import {
-  CODE_LINE_HEIGHT,
-  MONO_FONT_FAMILY,
-  POPUP_BORDER_DECLS,
-  POPUP_BORDER_RADIUS,
-  POPUP_FONT_SIZE,
+  POPUP_HOST_DECLS,
 } from '../styles/tokens.ts';
 
 /** Maximum height of the completion popup in rem. */
@@ -31,19 +26,11 @@ export const STYLES = [
   $({
     rule: ':host',
     decls: {
-      inset: 'auto',
-      margin: cssNum(0,),
+      ...POPUP_HOST_DECLS,
       position: 'fixed',
       'inline-size': cssRem(WIDTH_REM,),
       'max-block-size': cssRem(MAX_HEIGHT_REM,),
       overflow: 'auto',
-      'background-color': cssVar('hover-bg',),
-      color: cssVar('fg',),
-      'border-radius': cssRem(POPUP_BORDER_RADIUS,),
-      ...POPUP_BORDER_DECLS,
-      'font-family': MONO_FONT_FAMILY,
-      'font-size': cssRem(POPUP_FONT_SIZE,),
-      'line-height': cssNum(CODE_LINE_HEIGHT,),
     },
   },),
   $({

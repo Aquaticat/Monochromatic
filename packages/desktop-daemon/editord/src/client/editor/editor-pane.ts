@@ -102,13 +102,13 @@ export class EditorPane extends HTMLElement {
    *
    * @param diagnostics - diagnostics from the language server
    */
-  setDiagnostics(diagnostics: Diagnostic[],): void { if (diagnostics.length === 0 && this.#diagnostics.length === 0) return; this.#diagnostics = diagnostics; this.#scheduleDiagnosticHighlights(); this.#scheduleInlayAnnotations(); }
+  setDiagnostics(diagnostics: Diagnostic[],): void { if (diagnostics.length === this.#diagnostics.length && JSON.stringify(diagnostics,) === JSON.stringify(this.#diagnostics,)) return; this.#diagnostics = diagnostics; this.#scheduleDiagnosticHighlights(); this.#scheduleInlayAnnotations(); }
   /**
    * Replaces the current inlay hints and re-renders annotations.
    *
    * @param hints - inlay hints from the language server
    */
-  setInlayHints(hints: InlayHint[],): void { if (hints.length === 0 && this.#inlayHints.length === 0) return; this.#inlayHints = hints; this.#scheduleInlayAnnotations(); }
+  setInlayHints(hints: InlayHint[],): void { if (hints.length === this.#inlayHints.length && JSON.stringify(hints,) === JSON.stringify(this.#inlayHints,)) return; this.#inlayHints = hints; this.#scheduleInlayAnnotations(); }
   /**
    * Applies text edits received from the language server.
    *

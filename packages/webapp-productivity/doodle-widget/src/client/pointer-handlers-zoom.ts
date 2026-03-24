@@ -54,6 +54,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
     function handleZoomPointerDown(event: PointerEvent,): void {
       if (getToolMode() !== 'zoom')
         return;
+      /** Prevent iOS Safari from cancelling the pointer sequence via native gesture recognition */
+      event.preventDefault();
       canvas.setPointerCapture(event.pointerId,);
       startPan({ event, currentPanX: getPanX(), currentPanY: getPanY(), },);
       downEvent = event;
@@ -117,6 +119,29 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       endPan();
       downEvent = null;
     },);
+
+  //region iOS touch fallback
+  /**
+   * iOS Safari may not fully honor `touch-action: none` in CSS and can
+   * fire `pointercancel` to take over touch handling for native gestures
+   * (scroll, page zoom, context menu). Explicitly preventing default on
+   * `touchstart` and `touchmove` stops this at the touch-event level,
+   * before pointer events are generated.
+   */
+
+  canvas.addEventListener('touchstart',
+    function handleZoomTouchStart(event: TouchEvent,): void {
+      if (getToolMode() === 'zoom')
+        event.preventDefault();
+    }, { passive: false, },);
+
+  canvas.addEventListener('touchmove',
+    function handleZoomTouchMove(event: TouchEvent,): void {
+      if (getToolMode() === 'zoom')
+        event.preventDefault();
+    }, { passive: false, },);
+
+  //endregion iOS touch fallback
 
   //region Shift key cursor toggle
 
