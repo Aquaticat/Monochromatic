@@ -69,10 +69,15 @@ export async function runProbeCore(
   // functional reduce/map would require pre-running all turns before collecting.
   const scores: number[] = [];
   // lastCompletion is let because the for-of loop reassigns it each run, and the
-  // final value is needed after the loop for the second-pass fix turn and artifact enrichment.
+  // final value is needed after the loop for artifact enrichment.
   let lastCompletion: CompletionResult | undefined = undefined;
   // lastScore tracks the score of the most recent consistency run for artifact enrichment.
   let lastScore = 0;
+  // worstCompletion tracks the consistency run with the lowest score so the fix pass
+  // operates on the output that most needs fixing, not whichever run happened to be last.
+  let worstCompletion: CompletionResult | undefined = undefined;
+  // worstScore tracks the score of the worst consistency run for fix pass selection.
+  let worstScore = Infinity;
   // enrichedInitial tracks whether the initial-pass artifact was successfully enriched,
   // so the failure handler knows whether it needs to write the artifact.
   let enrichedInitial = false;
@@ -99,6 +104,10 @@ export async function runProbeCore(
       );
       scores.push(runScore,);
       lastScore = runScore;
+      if (runScore < worstScore) {
+        worstScore = runScore;
+        worstCompletion = lastCompletion;
+      }
       rl.info(
         `run ${String(runIndex + 1,)}/${
           String(config.consistencyRuns,)
@@ -124,15 +133,18 @@ export async function runProbeCore(
       return score === scores[0];
     },);
 
-    // Fix pass has its own error handling: a failed fix should not discard
-    // valid initial-pass results. Partial fix data is saved before continuing.
+    // Fix pass uses the worst-scoring consistency run's output so the model
+    // gets a chance to fix code that actually has problems. Using the last run
+    // would skip the fix when the last run happened to be perfect but earlier
+    // runs were not.
+    const fixCompletion = worstCompletion ?? lastCompletion;
     const pass2Score = await runAndEnrichFixPass(
       probe,
       config,
       client,
       timestamp,
       signal,
-      lastCompletion?.text ?? '',
+      fixCompletion?.text ?? '',
       meanScore,
     );
 
