@@ -17,9 +17,18 @@ import { runSync, } from '@optique/run';
 
 /** Optique object parser covering every supported CLI flag */
 const parser = object({
-  model: optional(option('--model', string(),),),
-  runs: optional(option('--runs', integer(),),),
-  probe: optional(option('--probe', string(),),),
+  model: optional(option(
+    '--model',
+    string(),
+  ),),
+  runs: optional(option(
+    '--runs',
+    integer(),
+  ),),
+  probe: optional(option(
+    '--probe',
+    string(),
+  ),),
   simple: option('--simple',),
   slow: option('--slow',),
   retestAll: option('--retest-all',),
@@ -30,9 +39,12 @@ const parser = object({
 //region Parsed arguments -- module-level exports consumed by index.ts
 
 /** Parsed CLI arguments from process.argv */
-const cliArgs = runSync(parser, { programName: 'inference-canary', help: 'option', },);
+const cliArgs = runSync(
+  parser,
+  { programName: 'inference-canary', help: 'option', },
+);
 
-/** Single-model override from --model flag */
+/** Single-model override from --model flag (matches by label, e.g. "Opus 4.6 medium") */
 export const modelOverride: string | undefined = typeof cliArgs.model === 'string'
   ? cliArgs.model
   : undefined;

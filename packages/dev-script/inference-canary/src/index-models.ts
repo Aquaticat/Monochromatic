@@ -1,8 +1,12 @@
 /**
  * Model selection for the inference canary CLI.
  *
- * Resolves which models to test based on the `--model` flag, supporting both
- * known model labels and arbitrary OpenRouter model IDs.
+ * Resolves which models to test based on the `--model` flag.
+ * Only registered model labels are accepted -- ad-hoc OpenRouter IDs are not
+ * supported because they bypass per-model configuration (verbosity, label).
+ * Matching by `openrouterId` within the registry is intentionally not
+ * supported because multiple models can share the same `openrouterId`
+ * with different settings (e.g. "Opus 4.6" vs "Opus 4.6 medium").
  */
 import { modelOverride, } from './index-cli.ts';
 import {
@@ -14,22 +18,28 @@ import {
  * Determines which models to test based on CLI flags.
  *
  * @returns models to test
+ * @throws when `--model` value matches no registered label
+ *
+ * @example
+ * ```bash
+ * inference-canary --model "Opus 4.6 medium"
+ * ```
  */
 export function selectModels(): readonly ModelConfig[] {
-  if (modelOverride !== undefined) {
-    const found = models.find(function matchModel(model,): boolean {
-      return model.openrouterId === modelOverride || model.label === modelOverride;
-    },);
-    if (found !== undefined)
-      return [found,];
-    if (!modelOverride.includes('/',)) {
-      throw new Error(
-        `Invalid model ID "${modelOverride}": must be in "provider/name" format`,
-      );
-    }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- includes('/') ensures provider/model format
-    const modelId = modelOverride as `${string}/${string}`;
-    return [{ openrouterId: modelId, label: modelId, verbosity: 'low', },];
-  }
-  return models;
+  if (modelOverride === undefined)
+    return models;
+
+  const byLabel = models.find(function matchLabel(model,): boolean {
+    return model.label === modelOverride;
+  },);
+  if (byLabel !== undefined)
+    return [byLabel,];
+
+  const availableLabels = models.map(function getLabel(model,): string {
+    return `  - ${model.label}`;
+  },).join('\n',);
+
+  throw new Error(
+    `Unknown model "${modelOverride}". Available models:\n${availableLabels}`,
+  );
 }
