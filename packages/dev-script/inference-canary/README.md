@@ -39,6 +39,28 @@ a direct multiplier on the combined score. Slow implementations degrade the full
 
 A second "fix" pass sends the model its code plus diagnostics and measures improvement.
 
+### Overall score aggregation
+
+The overall model score is the **arithmetic mean** of all individual scores,
+treating initial and fix pass scores as equal participants.
+A probe that produced a fix pass contributes two scores to the mean;
+a probe without a fix pass contributes one.
+
+Geometric mean was evaluated and rejected for this use case.
+Because probes vary significantly in difficulty (stak-interpreter routinely scores 0.00
+while stak-simulation scores 1.00 for most models),
+geometric mean collapses scores toward zero -- a single hard probe tanks the entire result
+regardless of performance elsewhere.
+With a floor of 0.01, every model in a test run scored below 0.25 under geometric mean,
+destroying differentiation between strong and weak models.
+Arithmetic mean preserves proportional contribution from each probe
+and produces scores in a range where the pass/fail thresholds (0.7 WARN, 0.9 PASS) can differentiate.
+
+Simulation probes like stak-simulation score 1.00 for most models on most days,
+which looks like a freebie -- but this is intentional.
+They give a nonzero baseline to models that score nothing on code-gen probes,
+and even strong models occasionally fail them, so they still carry signal.
+
 ## Probes
 
 ### Code-gen probes

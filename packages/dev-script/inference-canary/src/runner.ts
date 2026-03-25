@@ -31,7 +31,23 @@ export type {
 } from './runner-types.ts';
 
 /**
- * Computes per-category mean scores from probe results.
+ * Collects all scores from a probe result: initial mean score and fix pass score (when present).
+ * Fix pass scores are given equal weight to initial scores in the arithmetic mean.
+ *
+ * @param result - completed probe result
+ *
+ * @returns array of 1 or 2 scores
+ */
+function collectScores(result: ProbeResult,): number[] {
+  const scores = [result.meanScore,];
+  if (result.pass2Score !== undefined)
+    scores.push(result.pass2Score,);
+  return scores;
+}
+
+/**
+ * Computes per-category scores from probe results.
+ * Both initial and fix pass scores contribute equally to the arithmetic mean.
  *
  * @param results - completed probe results
  *
@@ -51,9 +67,7 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
       },);
       return [
         category,
-        mean(categoryResults.map(function getScore(result,): number {
-        return result.meanScore;
-      },),),
+        mean(categoryResults.flatMap(collectScores,),),
       ];
     },),
   );
@@ -124,9 +138,7 @@ export async function runCanary(
       },),
     );
 
-    const overallScore = mean(results.map(function getScore(result,): number {
-      return result.meanScore;
-    },),);
+    const overallScore = mean(results.flatMap(collectScores,),);
 
     return {
       model: mergedConfig.model,
