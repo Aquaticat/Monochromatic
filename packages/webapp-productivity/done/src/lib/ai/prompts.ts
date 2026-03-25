@@ -53,8 +53,14 @@ For consistency, prefer these existing locations when applicable: ${
     }`;
 
   return [
-    { role: 'system', content: systemPrompt, },
-    { role: 'user', content: `<task_title>${title}</task_title>`, },
+    {
+      role: 'system',
+      content: systemPrompt,
+    },
+    {
+      role: 'user',
+      content: `<task_title>${title}</task_title>`,
+    },
   ];
 }
 
@@ -76,8 +82,15 @@ For consistency, prefer these existing locations when applicable: ${
  * @returns Chat messages ready for {@link chatCompletion}
  */
 export function buildSuggestionMessages(
-  tasks: readonly { id: string; title: string; tags: string[]; locations: string[];
-    priority: string | null; dueDate: string | null; complexity: string | null; }[],
+  tasks: readonly {
+    id: string;
+    title: string;
+    tags: string[];
+    locations: string[];
+    priority: string | null;
+    dueDate: string | null;
+    complexity: string | null
+  }[],
   currentLocation: string | null,
   focusDirective: string | null,
 ): ChatMessage[] {
@@ -105,8 +118,14 @@ ${JSON.stringify(tasks,)}
 </user_tasks>`;
 
   return [
-    { role: 'system', content: systemPrompt, },
-    { role: 'user', content: userContent, },
+    {
+      role: 'system',
+      content: systemPrompt,
+    },
+    {
+      role: 'user',
+      content: userContent,
+    },
   ];
 }
 

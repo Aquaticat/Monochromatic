@@ -112,7 +112,10 @@ export function isImageBase64(input: ImageInput,): input is ImageBase64 {
  * ```
  */
 export function inferFormat(filePath: string,): ImageFormat {
-  const rl = tagged({ tag: inferFormat.name, l, },);
+  const rl = tagged({
+    tag: inferFormat.name,
+    l,
+  },);
   const ext = extname(filePath,).toLowerCase();
   const format = EXTENSION_FORMAT_MAP[ext];
   if (format === undefined) {
@@ -163,8 +166,14 @@ export function bufferToBase64(buffer: ArrayBuffer,): string {
  * // 'data:image/png;base64,iVBOR...'
  * ```
  */
-export function bufferToDataUri(buffer: ArrayBuffer, format: ImageFormat,): string {
-  const rl = tagged({ tag: bufferToDataUri.name, l, },);
+export function bufferToDataUri(
+  buffer: ArrayBuffer,
+  format: ImageFormat,
+): string {
+  const rl = tagged({
+    tag: bufferToDataUri.name,
+    l,
+  },);
   const base64 = bufferToBase64(buffer,);
   rl.debug(
     `encoded ${String(new Uint8Array(buffer,).length,)} bytes as base64 data URI`,
@@ -187,14 +196,23 @@ export function bufferToDataUri(buffer: ArrayBuffer, format: ImageFormat,): stri
  * // mimeType === 'image/png', data === 'iVBOR...'
  * ```
  */
-export function parseDataUri(dataUri: string,): { mimeType: string; data: string; } {
+export function parseDataUri(dataUri: string,): {
+  mimeType: string;
+  data: string
+} {
   const match = dataUri.match(/^data:([^;]+);base64,(.+)$/,);
   if (match === null || match[1] === undefined || match[2] === undefined) {
     throw new Error(
       `Invalid data URI format: expected "data:<mime>;base64,<data>", got "${
-        dataUri.slice(0, 50,)
+        dataUri.slice(
+          0,
+          50,
+        )
       }..."`,
     );
   }
-  return { mimeType: match[1], data: match[2], };
+  return {
+    mimeType: match[1],
+    data: match[2],
+  };
 }

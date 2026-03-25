@@ -65,8 +65,14 @@ function getToolMode(): ToolMode {
  *
  * @returns width and height as `cw` and `ch`
  */
-function getCanvasSize(): { cw: number; ch: number; } {
-  return { cw: canvasWidth, ch: canvasHeight, };
+function getCanvasSize(): {
+  cw: number;
+  ch: number
+} {
+  return {
+    cw: canvasWidth,
+    ch: canvasHeight,
+  };
 }
 
 /**
@@ -77,9 +83,16 @@ function sizeCanvas(): void {
   canvasHeight = container.clientHeight;
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
-  redraw({ ctx, cw: canvasWidth, ch: canvasHeight, },);
-  refreshZoomTransform({ containerWidth: canvasWidth, containerHeight: canvasHeight,
-    zoomLayer, },);
+  redraw({
+    ctx,
+    cw: canvasWidth,
+    ch: canvasHeight,
+  },);
+  refreshZoomTransform({
+    containerWidth: canvasWidth,
+    containerHeight: canvasHeight,
+    zoomLayer,
+  },);
 }
 
 /**
@@ -101,7 +114,10 @@ function syncCursorToTool(): void {
   }
 }
 
-toolToggle.addEventListener('change', syncCursorToTool,);
+toolToggle.addEventListener(
+  'change',
+  syncCursorToTool,
+);
 syncCursorToTool();
 
 setupWidget({

@@ -27,7 +27,13 @@ export function $<
 >(
   fn: Fn,
 ): (a: Parameters<Fn>[0], b: Parameters<Fn>[1],) => ReturnType<Fn> {
-  return function binary(a: Parameters<Fn>[0], b: Parameters<Fn>[1],): ReturnType<Fn> {
-    return fn(a, b,);
+  return function binary(
+    a: Parameters<Fn>[0],
+    b: Parameters<Fn>[1],
+  ): ReturnType<Fn> {
+    return fn(
+      a,
+      b,
+    );
   };
 }

@@ -28,15 +28,26 @@ import type { SearchResult, } from '../../protocol.ts';
  *
  * @throws when `rg` cannot be spawned
  */
-export function streamRg({ args, maxResults, processLine, signal, }: {
+export function streamRg({
+  args,
+  maxResults,
+  processLine,
+  signal,
+}: {
   args: readonly string[];
   maxResults: number;
   processLine: (line: string,) => SearchResult | null;
   signal: AbortSignal | undefined;
 },): Promise<SearchResult[]> {
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping streaming child process events into a promise requires new Promise
-  return new Promise<SearchResult[]>(function awaitRg(resolve, reject,) {
-    const proc = spawn('rg', ['--line-buffered', ...args,],);
+  return new Promise<SearchResult[]>(function awaitRg(
+    resolve,
+    reject,
+  ) {
+    const proc = spawn(
+      'rg',
+      ['--line-buffered', ...args,],
+    );
     const results: SearchResult[] = [];
     let buffer = '';
     let resolved = false;
@@ -55,9 +66,15 @@ export function streamRg({ args, maxResults, processLine, signal, }: {
     }
 
     if (signal !== undefined)
-      signal.addEventListener('abort', finish, { once: true, },);
+      signal.addEventListener(
+        'abort',
+        finish,
+        { once: true, },
+      );
 
-    proc.stdout.on('data', function handleData(chunk: Buffer,) {
+    proc.stdout.on(
+      'data',
+      function handleData(chunk: Buffer,) {
       buffer += chunk.toString('utf8',);
       const lines = buffer.split('\n',);
       /** Keep the last (possibly incomplete) line in the buffer. */
@@ -76,9 +93,12 @@ export function streamRg({ args, maxResults, processLine, signal, }: {
           }
         }
       }
-    },);
+    },
+    );
 
-    proc.on('close', function handleClose() {
+    proc.on(
+      'close',
+      function handleClose() {
       if (buffer !== '') {
         const result = processLine(buffer,);
         if (result !== null)
@@ -86,13 +106,17 @@ export function streamRg({ args, maxResults, processLine, signal, }: {
       }
 
       finish();
-    },);
+    },
+    );
 
-    proc.on('error', function handleError(error,) {
+    proc.on(
+      'error',
+      function handleError(error,) {
       if (!resolved) {
         resolved = true;
         reject(error,);
       }
-    },);
+    },
+    );
   },);
 }

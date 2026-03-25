@@ -9,7 +9,10 @@ import { getOPMLTexts, } from './opml-text.ts';
 import type { OPMLS_SCHEMA, } from './opmls.ts';
 
 /** Tagged logger for the outline module. */
-const l = tagged({ tag: 'outline', l: parentLogger, },);
+const l = tagged({
+  tag: 'outline',
+  l: parentLogger,
+},);
 
 /**
  * OPML outline with a required, validated `xmlUrl` property.
@@ -37,7 +40,10 @@ export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
 export async function getOutlinesFromOpmls(
   opmls: z.infer<typeof OPMLS_SCHEMA>,
 ): Promise<InnerOutlineWUrl[]> {
-  const innerL = tagged({ tag: getOutlinesFromOpmls.name, l, },);
+  const innerL = tagged({
+    tag: getOutlinesFromOpmls.name,
+    l,
+  },);
   const texts = await getOPMLTexts(opmls,);
   const parsed = parseSafe(texts,);
   const outerOutlines = parsed.flatMap(function extractBody(opml,) {
@@ -56,7 +62,10 @@ export async function getOutlinesFromOpmls(
         return false;
       }
       try {
-        z.url({ protocol: /^https?$/, hostname: z.regexes.domain, },).parse(xmlUrl,);
+        z.url({
+          protocol: /^https?$/,
+          hostname: z.regexes.domain,
+        },).parse(xmlUrl,);
         return true;
       }
       catch (error) {
@@ -77,7 +86,10 @@ export async function getOutlinesFromOpmls(
  * @returns Successfully parsed OPML documents
  */
 function parseSafe(texts: string[],): Opml.Document<string>[] {
-  const innerL = tagged({ tag: parseSafe.name, l, },);
+  const innerL = tagged({
+    tag: parseSafe.name,
+    l,
+  },);
   return texts.flatMap(function tryParse(text,) {
     try {
       return [parseOpml(text,),];

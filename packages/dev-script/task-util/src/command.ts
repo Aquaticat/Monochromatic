@@ -55,16 +55,29 @@ export {};
 
 /** Optique parser for the task-command CLI */
 const parser = object({
-  allowFailure: option('-a', '--allowFailure',),
-  shell: option('-s', '--shell',),
-  timeout: optional(option('-t', '--timeout', integer(),),),
+  allowFailure: option(
+    '-a',
+    '--allowFailure',
+  ),
+  shell: option(
+    '-s',
+    '--shell',
+  ),
+  timeout: optional(option(
+    '-t',
+    '--timeout',
+    integer(),
+  ),),
   rest: multiple(argument(string(),),),
 },);
 
 //endregion Parser definition
 
 /** Parsed CLI arguments from process.argv */
-const args = runSync(parser, { programName: 'task-command', help: 'option', },);
+const args = runSync(
+  parser,
+  { programName: 'task-command', help: 'option', },
+);
 
 /** Destructured command and its arguments from the rest args after `--` */
 const [command, ...commandArgs] = args.rest;
@@ -73,20 +86,28 @@ if (command === undefined || command === '') {
   throw new Error(
     outdent`
       No command specified after --
-      ${JSON.stringify(args, null, 2,)}
+      ${JSON.stringify(
+        args,
+        null,
+        2,
+      )}
     `,
   );
 }
 
 try {
   // Execute the command with nano-spawn
-  await spawn(command, commandArgs, {
+  await spawn(
+    command,
+    commandArgs,
+    {
     stdout: 'inherit',
     stderr: 'inherit',
     stdin: 'inherit',
     shell: args.shell,
     timeout: typeof args.timeout === 'number' ? args.timeout : undefined,
-  },);
+  },
+  );
 
   // Script ends naturally with exit code 0
 }
@@ -96,7 +117,11 @@ catch (error) {
     .when(
       function isSubprocessError(
         candidate,
-      ): candidate is { exitCode?: number; signalName?: string; message: string; } {
+      ): candidate is {
+        exitCode?: number;
+        signalName?: string;
+        message: string
+      } {
         return candidate !== null
           && typeof candidate === 'object'
           && 'exitCode' in candidate;
@@ -114,12 +139,18 @@ catch (error) {
 
         // Exit with 0 if allowFailure is true, otherwise use the command's exit code
         match(args.allowFailure,)
-          .with(false, function exitWithCode(): void {
+          .with(
+            false,
+            function exitWithCode(): void {
             process.exitCode = subprocessError.exitCode ?? 1;
-          },)
-          .with(true, function allowFailureNoop(): void {
+          },
+          )
+          .with(
+            true,
+            function allowFailureNoop(): void {
             // Let script end naturally with exit code 0
-          },);
+          },
+          );
       },
     )
     .otherwise(function handleUnknownError(): void {
@@ -129,11 +160,17 @@ catch (error) {
         }`,
       );
       match(args.allowFailure,)
-        .with(false, function rethrowError(): void {
+        .with(
+          false,
+          function rethrowError(): void {
           throw error;
-        },)
-        .with(true, function allowFailureNoop(): void {
+        },
+        )
+        .with(
+          true,
+          function allowFailureNoop(): void {
           // Let script end naturally with exit code 0
-        },);
+        },
+        );
     },);
 }

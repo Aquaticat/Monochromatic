@@ -11,7 +11,10 @@ import type { ItemWDate, } from './item-type.ts';
 import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for the html module. */
-const l = tagged({ tag: 'html', l: parentLogger, },);
+const l = tagged({
+  tag: 'html',
+  l: parentLogger,
+},);
 
 /** Maximum number of items rendered on a single page. */
 const LIMIT = 100;
@@ -35,7 +38,10 @@ export async function getIndexHtmlBody(
   options: { items: ItemWDate[]; },
 ): Promise<string> {
   const { items, } = options;
-  const innerL = tagged({ tag: getIndexHtmlBody.name, l, },);
+  const innerL = tagged({
+    tag: getIndexHtmlBody.name,
+    l,
+  },);
 
   const ignoreContent = await getIgnoreContent();
   const ignoredLinks = parseIgnoredLinks(ignoreContent,);
@@ -52,8 +58,17 @@ export async function getIndexHtmlBody(
   return h({
     tag: 'ol',
     class: 'feeds',
-    children: filteredItems.slice(0, LIMIT,).map(function renderItem(item, index,) {
-      return itemToFeed({ itemWDate: item, index, },);
+    children: filteredItems.slice(
+      0,
+      LIMIT,
+    ).map(function renderItem(
+      item,
+      index,
+    ) {
+      return itemToFeed({
+        itemWDate: item,
+        index,
+      },);
     },),
   },);
 }

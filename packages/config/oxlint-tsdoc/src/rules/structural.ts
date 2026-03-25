@@ -34,7 +34,8 @@ export const checkAlignment: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(context,
+    return createTsdocVisitor(
+      context,
       function checkAlignmentHandler(_node, comment,): void {
         const lines = getCommentLines(comment,);
         if (lines.length < 2)
@@ -62,7 +63,8 @@ export const checkAlignment: CreateOnceRule = {
             },);
           }
         },);
-      },);
+      },
+    );
   },
 };
 
@@ -84,7 +86,9 @@ export const multilineBlocks: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(context, function multilineHandler(_node, comment,): void {
+    return createTsdocVisitor(
+      context,
+      function multilineHandler(_node, comment,): void {
       const lines = getCommentLines(comment,);
       /** Minimum line count for a proper multiline comment: opener, content, closer. */
       const minMultilineLines = 3;
@@ -94,7 +98,8 @@ export const multilineBlocks: CreateOnceRule = {
       // Single-line comment containing a tag should be multiline
       if (comment.value.includes('@',))
         context.report({ node: comment, messageId: 'singleLine', },);
-    },);
+    },
+    );
   },
 };
 

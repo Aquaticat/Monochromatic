@@ -31,7 +31,14 @@ import type { SessionState, } from './state.ts';
  * @returns `saveNow` for immediate state persistence
  */
 export function wireSessionPersistence(
-  { ws, editorPane, fileTree, searchOverlay, getCurrentFilePath, getRecentFiles, }: {
+  {
+    ws,
+    editorPane,
+    fileTree,
+    searchOverlay,
+    getCurrentFilePath,
+    getRecentFiles,
+  }: {
     ws: EditorWsClient;
     editorPane: EditorPane;
     fileTree: FileTree;
@@ -50,31 +57,50 @@ export function wireSessionPersistence(
     return {
       filePath: getCurrentFilePath(),
       expandedDirs: fileTree.expandedDirs,
-      cursor: cursor ?? { line: 0, character: 0, },
+      cursor: cursor ?? {
+        line: 0,
+        character: 0,
+      },
       scrollTop: editorPane.editorScrollTop,
       recentFiles: getRecentFiles(),
     };
   }
 
   /** Debounced and immediate save functions scoped to this server identity. */
-  const { debouncedSave, saveNow, } = createDebouncedSave({
+  const {
+    debouncedSave,
+    saveNow,
+  } = createDebouncedSave({
     fsId: ws.fsId,
     rootDir: ws.rootDir,
     getState: collectState,
   },);
 
   /** Save state synchronously on page unload (tab close, navigation, reload). */
-  globalThis.addEventListener('beforeunload', saveNow,);
+  globalThis.addEventListener(
+    'beforeunload',
+    saveNow,
+  );
 
   /** Save state when the user switches files. */
-  fileTree.addEventListener('file-select', debouncedSave,);
-  searchOverlay.addEventListener('result-select', debouncedSave,);
+  fileTree.addEventListener(
+    'file-select',
+    debouncedSave,
+  );
+  searchOverlay.addEventListener(
+    'result-select',
+    debouncedSave,
+  );
 
   /** Save state when the user scrolls the editor. */
   editorPane.addScrollListener(debouncedSave,);
 
   /** Save state when a directory is expanded or collapsed. */
-  fileTree.addEventListener('toggle', debouncedSave, true,);
+  fileTree.addEventListener(
+    'toggle',
+    debouncedSave,
+    true,
+  );
 
   return { saveNow, };
 }

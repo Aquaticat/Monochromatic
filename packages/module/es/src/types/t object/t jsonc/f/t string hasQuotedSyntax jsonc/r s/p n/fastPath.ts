@@ -92,7 +92,11 @@ export const NO_FAST_PATH: symbol = Symbol('jsonc:no-fast-path',);
  * ```
  */
 function tryContainerFastPath(
-  { value, context, closingChar, }: {
+  {
+    value,
+    context,
+    closingChar,
+  }: {
     value: string;
     context: ReturnType<typeof startsWithComment>;
     closingChar: ']' | '}';
@@ -112,15 +116,24 @@ function tryContainerFastPath(
   if (searchIndex > 0 && trimmed[searchIndex - 1] === ',') {
     // Found trailing comma pattern like ", ]" or ", }"
     // Check if there's any content between opening character and the comma
-    const contentBeforeComma = trimmed.slice(1, searchIndex - 1,).trim();
+    const contentBeforeComma = trimmed.slice(
+      1,
+      searchIndex - 1,
+    ).trim();
     if (contentBeforeComma.length === 0) {
       // Empty container with trailing comma like "[ , ]" or "{ , }" - reject
       return NO_FAST_PATH;
     }
 
-    const repairedJson = trimmed.slice(0, searchIndex - 1,) + closingChar;
+    const repairedJson = trimmed.slice(
+      0,
+      searchIndex - 1,
+    ) + closingChar;
     try {
-      return { ...context, json: JSON.parse(repairedJson,) as JsonValue, };
+      return {
+        ...context,
+        json: JSON.parse(repairedJson,) as JsonValue,
+      };
     }
     catch {
       // Parse failed - likely has comments, strings with special chars, etc.
@@ -130,7 +143,10 @@ function tryContainerFastPath(
 
   // No trailing comma found - try parsing as-is for clean JSON
   try {
-    return { ...context, json: JSON.parse(trimmed,) as JsonValue, };
+    return {
+      ...context,
+      json: JSON.parse(trimmed,) as JsonValue,
+    };
   }
   catch {
     // Parse failed - contains JSONC features like comments
@@ -144,9 +160,19 @@ function tryContainerFastPath(
  * @returns parsed array value or NO_FAST_PATH sentinel
  */
 export function tryArrayFastPath(
-  { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },
+  {
+    value,
+    context,
+  }: {
+    value: string;
+    context: ReturnType<typeof startsWithComment>
+  },
 ): Jsonc.Value | typeof NO_FAST_PATH {
-  return tryContainerFastPath({ value, context, closingChar: ']', },);
+  return tryContainerFastPath({
+    value,
+    context,
+    closingChar: ']',
+  },);
 }
 
 /**
@@ -155,9 +181,19 @@ export function tryArrayFastPath(
  * @returns parsed object value or NO_FAST_PATH sentinel
  */
 export function tryObjectFastPath(
-  { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },
+  {
+    value,
+    context,
+  }: {
+    value: string;
+    context: ReturnType<typeof startsWithComment>
+  },
 ): Jsonc.Value | typeof NO_FAST_PATH {
-  return tryContainerFastPath({ value, context, closingChar: '}', },);
+  return tryContainerFastPath({
+    value,
+    context,
+    closingChar: '}',
+  },);
 }
 //endregion Fast-path optimization functions
 
@@ -193,8 +229,13 @@ export function tryObjectFastPath(
  * ```
  */
 export function validateNoTrailingContent(
-  { remainingContent, containerType, }: { remainingContent: string;
-    containerType: 'array' | 'object'; },
+  {
+    remainingContent,
+    containerType,
+  }: {
+    remainingContent: string;
+    containerType: 'array' | 'object'
+  },
 ): void {
   const tail = startsWithComment({ value: remainingContent as FragmentStringJsonc, },)
     .remainingContent
@@ -202,7 +243,10 @@ export function validateNoTrailingContent(
   if (tail.length > 0) {
     throw new Error(
       `unexpected trailing content after ${containerType}: ${
-        tail.slice(0, MAX_ERROR_PREVIEW_LENGTH,)
+        tail.slice(
+          0,
+          MAX_ERROR_PREVIEW_LENGTH,
+        )
       }`,
     );
   }
@@ -239,19 +283,37 @@ export function parseWithFallback({
   context: ReturnType<typeof startsWithComment>;
   containerType: 'array' | 'object';
   tryFastPathFn: (
-    parameters: { value: string; context: ReturnType<typeof startsWithComment>; },
+    parameters: {
+      value: string;
+      context: ReturnType<typeof startsWithComment>
+    },
   ) => Jsonc.Value | typeof NO_FAST_PATH;
   customParserFn: (
-    parameters: { value: FragmentStringJsonc | StringJsonc; context?: Jsonc.ValueBase; },
+    parameters: {
+      value: FragmentStringJsonc | StringJsonc;
+      context?: Jsonc.ValueBase
+    },
   ) => { remainingContent: FragmentStringJsonc; } & Jsonc.Value;
 },): Jsonc.Value {
-  const fastPathResult = tryFastPathFn({ value, context, },);
+  const fastPathResult = tryFastPathFn({
+    value,
+    context,
+  },);
   if (typeof fastPathResult !== 'symbol')
     return fastPathResult;
 
-  const out = customParserFn({ value, context, },);
-  validateNoTrailingContent({ remainingContent: out.remainingContent, containerType, },);
-  const { remainingContent: _rc, ...parsed } = out;
+  const out = customParserFn({
+    value,
+    context,
+  },);
+  validateNoTrailingContent({
+    remainingContent: out.remainingContent,
+    containerType,
+  },);
+  const {
+    remainingContent: _rc,
+    ...parsed
+  } = out;
   return parsed as Jsonc.Value;
 }
 //endregion Parse with fallback orchestration

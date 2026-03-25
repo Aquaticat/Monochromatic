@@ -51,9 +51,16 @@ const HEX_RADIX = 16;
  * const { r, g, b } = hexToRgb('#c24e2e');
  * ```
  */
-function hexToRgb(hex: string,): { r: number; g: number; b: number; } {
+function hexToRgb(hex: string,): {
+  r: number;
+  g: number;
+  b: number
+} {
   /** 24-bit integer parsed from the hex digits */
-  const packed = Number.parseInt(hex.slice(1,), HEX_RADIX,);
+  const packed = Number.parseInt(
+    hex.slice(1,),
+    HEX_RADIX,
+  );
   return {
     r: (packed >> RED_SHIFT) & CHANNEL_MASK,
     g: (packed >> GREEN_SHIFT) & CHANNEL_MASK,
@@ -76,11 +83,21 @@ function hexToRgb(hex: string,): { r: number; g: number; b: number; } {
  * ```
  */
 export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
-  const { container, overlay, textLayer, } = deps;
-  const { cw, ch, } = getContainerSize(container,);
+  const {
+    container,
+    overlay,
+    textLayer,
+  } = deps;
+  const {
+    cw,
+    ch,
+  } = getContainerSize(container,);
 
   /** Snapshot all pages (saves current page's live state) */
-  const allPages = snapshotAllPages({ overlay, textLayer, },);
+  const allPages = snapshotAllPages({
+    overlay,
+    textLayer,
+  },);
   /** Save overlay HTML to restore after export */
   const savedOverlayHtml = overlay.innerHTML;
 
@@ -94,14 +111,20 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   const doc = new jsPDF({
     orientation: pageW >= pageH ? 'l' : 'p',
     unit: 'pt',
-    format: [pageW, pageH,],
+    format: [
+      pageW,
+      pageH,
+    ],
   },);
   //endregion PDF document setup
 
   //region Render each page
   for (const [pageIndex, page,] of allPages.entries()) {
     if (pageIndex > 0)
-      doc.addPage([pageW, pageH,],);
+      doc.addPage([
+        pageW,
+        pageH,
+      ],);
 
     /** Composited raster image for this page */
     // eslint-disable-next-line no-await-in-loop -- pages render sequentially; each mutates the shared overlay element
@@ -118,7 +141,14 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     // eslint-disable-next-line no-await-in-loop -- depends on sequential blob above
     const buffer = await blob.arrayBuffer();
     const imageData = new Uint8Array(buffer,);
-    doc.addImage(imageData, 'PNG', 0, 0, pageW, pageH,);
+    doc.addImage(
+      imageData,
+      'PNG',
+      0,
+      0,
+      pageW,
+      pageH,
+    );
 
     //region Overlay text as real PDF text
     const textEntries = textEntriesToExport(page.textEntries,);
@@ -128,14 +158,27 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       doc.setFontSize(fontSizePt,);
       if (entry.color.startsWith('#',)) {
         const rgb = hexToRgb(entry.color,);
-        doc.setTextColor(rgb.r, rgb.g, rgb.b,);
+        doc.setTextColor(
+          rgb.r,
+          rgb.g,
+          rgb.b,
+        );
       }
       else {
-        doc.setTextColor(TEXT_COLOR_RGB.r, TEXT_COLOR_RGB.g, TEXT_COLOR_RGB.b,);
+        doc.setTextColor(
+          TEXT_COLOR_RGB.r,
+          TEXT_COLOR_RGB.g,
+          TEXT_COLOR_RGB.b,
+        );
       }
-      doc.text(entry.value, entry.xFraction * pageW, entry.yFraction * pageH, {
+      doc.text(
+        entry.value,
+        entry.xFraction * pageW,
+        entry.yFraction * pageH,
+        {
         baseline: 'top',
-      },);
+      },
+      );
     }
     //endregion Overlay text
   }

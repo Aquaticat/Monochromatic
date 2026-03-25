@@ -67,7 +67,9 @@ detail.configure({
   blockerSummaries: pageData.blockerSummaries,
 },);
 
-detail.addEventListener('action', function onAction(event,) {
+detail.addEventListener(
+  'action',
+  function onAction(event,) {
   void (async function onActionAsync() {
     try {
       if (!(event instanceof CustomEvent))
@@ -120,6 +122,7 @@ detail.addEventListener('action', function onAction(event,) {
       console.error('task detail action handler failed', error,);
     }
   })();
-},);
+},
+);
 
 app.append(detail,);

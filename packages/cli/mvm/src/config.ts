@@ -5,13 +5,24 @@ import { join, } from 'node:path';
 export const VM_PREFIX = 'mvm-';
 
 /** Root data directory for VM images and disks. */
-export const DATA_DIR = join(homedir(), '.local', 'share', 'mvm',);
+export const DATA_DIR = join(
+  homedir(),
+  '.local',
+  'share',
+  'mvm',
+);
 
 /** Directory for cached base cloud images. */
-export const IMAGES_DIR = join(DATA_DIR, 'images',);
+export const IMAGES_DIR = join(
+  DATA_DIR,
+  'images',
+);
 
 /** Directory containing per-VM subdirectories with disks and metadata. */
-export const VMS_DIR = join(DATA_DIR, 'vms',);
+export const VMS_DIR = join(
+  DATA_DIR,
+  'vms',
+);
 
 /** Default VM memory allocation in MiB. Making it large for builds. */
 export const DEFAULT_MEMORY_MIB = 8_192;

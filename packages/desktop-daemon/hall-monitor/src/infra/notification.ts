@@ -15,12 +15,15 @@ import { log, } from '../log.ts';
  */
 export async function sendNotification(summary: string,): Promise<void> {
   try {
-    await spawn('notify-send', [
+    await spawn(
+      'notify-send',
+      [
       '--urgency=critical',
       '--app-name=Hall Monitor',
       "Hall Monitor: You've been unproductive!",
       summary,
-    ],);
+    ],
+    );
     log.info('[notify] Desktop notification sent.',);
   }
   catch (err: unknown) {

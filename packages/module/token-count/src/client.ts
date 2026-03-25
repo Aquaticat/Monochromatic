@@ -99,11 +99,17 @@ function resolveClient(
  * console.log(result.inputTokens); // e.g. 4
  * ```
  */
-export async function countTokens({ content, config = {}, }: {
+export async function countTokens({
+  content,
+  config = {},
+}: {
   readonly content: string;
   readonly config?: CountTokensConfig;
 },): Promise<TokenCountResult> {
-  const rl = tagged({ tag: countTokens.name, l, },);
+  const rl = tagged({
+    tag: countTokens.name,
+    l,
+  },);
   const model = config.model ?? DEFAULT_MODEL;
   const client = resolveClient({ apiKey: config.apiKey, },);
 
@@ -111,12 +117,18 @@ export async function countTokens({ content, config = {}, }: {
 
   const response = await client.messages.countTokens({
     model,
-    messages: [{ role: 'user', content, },],
+    messages: [{
+      role: 'user',
+      content,
+    },],
   },);
 
   rl.debug(`counted inputTokens=${String(response.input_tokens,)}`,);
 
-  return { inputTokens: response.input_tokens, model, };
+  return {
+    inputTokens: response.input_tokens,
+    model,
+  };
 }
 
 /**
@@ -139,15 +151,30 @@ export async function countTokens({ content, config = {}, }: {
  * console.log(`${result.filePath}: ${result.inputTokens} tokens`);
  * ```
  */
-export async function countFileTokens({ filePath, config = {}, }: {
+export async function countFileTokens({
+  filePath,
+  config = {},
+}: {
   readonly filePath: string;
   readonly config?: CountTokensConfig;
 },): Promise<FileTokenCountResult> {
-  const rl = tagged({ tag: countFileTokens.name, l, },);
+  const rl = tagged({
+    tag: countFileTokens.name,
+    l,
+  },);
   rl.debug(`reading file path=${filePath}`,);
 
-  const content = await readFile(filePath, 'utf8',);
-  const result = await countTokens({ content, config, },);
+  const content = await readFile(
+    filePath,
+    'utf8',
+  );
+  const result = await countTokens({
+    content,
+    config,
+  },);
 
-  return { ...result, filePath, };
+  return {
+    ...result,
+    filePath,
+  };
 }

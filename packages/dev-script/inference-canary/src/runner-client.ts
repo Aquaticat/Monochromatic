@@ -42,12 +42,28 @@ export function createProbeClient(config: RunnerConfig,): OpenAI {
  *
  * @returns full completion result from the model
  */
-export function executeProbe(probe: Probe, config: RunnerConfig, client: OpenAI,
-  signal?: AbortSignal,): Promise<CompletionResult>
+export function executeProbe(
+  probe: Probe,
+  config: RunnerConfig,
+  client: OpenAI,
+  signal?: AbortSignal,
+): Promise<CompletionResult>
 {
   const messages: ChatMessage[] = [
-    { role: 'system', content: probe.system, },
-    { role: 'user', content: probe.prompt, },
+    {
+      role: 'system',
+      content: probe.system,
+    },
+    {
+      role: 'user',
+      content: probe.prompt,
+    },
   ];
-  return streamCompletion(client, messages, config, probe.name, signal,);
+  return streamCompletion(
+    client,
+    messages,
+    config,
+    probe.name,
+    signal,
+  );
 }

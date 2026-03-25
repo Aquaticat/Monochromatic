@@ -90,7 +90,10 @@ export const noArrowFunction: CreateOnceRule = {
           || parent.parent.type !== 'VariableDeclaration'
           || parent.parent.declarations.length !== 1
         ) {
-          context.report({ node, messageId: 'forbidden', },);
+          context.report({
+            node,
+            messageId: 'forbidden',
+          },);
           return;
         }
 
@@ -144,7 +147,10 @@ export const noArrowFunction: CreateOnceRule = {
           node,
           messageId: 'forbidden',
           fix(fixer: Fixer,) {
-            return fixer.replaceText(replaceNode, replacement,);
+            return fixer.replaceText(
+              replaceNode,
+              replacement,
+            );
           },
         },);
       },

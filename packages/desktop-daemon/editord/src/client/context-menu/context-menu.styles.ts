@@ -46,8 +46,11 @@ export const STYLES = [
       'position-anchor': '--ctx-anchor',
       'inset-block-start': cssAnchor('end',),
       'inset-inline-start': cssAnchor('start',),
-      'position-try-fallbacks': cssCommaList(['flip-block', 'flip-inline',
-        'flip-block flip-inline',],),
+      'position-try-fallbacks': cssCommaList([
+        'flip-block',
+        'flip-inline',
+        'flip-block flip-inline',
+      ],),
       'min-inline-size': cssRem(MIN_WIDTH,),
       'background-color': cssVar('bg',),
       ...POPUP_BORDER_DECLS,

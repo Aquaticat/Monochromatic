@@ -24,7 +24,11 @@ import { platform, } from 'node:os';
  * @returns hex string filesystem identifier (e.g. `"a281dfd5d0534daf"`)
  */
 function linuxFsId({ path, }: { path: string; },): string {
-  return execFileSync('stat', ['-f', '--format=%i', path,], { encoding: 'utf8', },)
+  return execFileSync(
+    'stat',
+    ['-f', '--format=%i', path,],
+    { encoding: 'utf8', },
+  )
     .trim();
 }
 
@@ -40,10 +44,17 @@ const DRIVE_ROOT_LENGTH = 3;
  */
 function windowsFsId({ path, }: { path: string; },): string {
   /** Extract drive root (e.g. "C:\") from the absolute path. */
-  const driveRoot = path.slice(0, DRIVE_ROOT_LENGTH,);
-  const output = execFileSync('cmd.exe', ['/c', 'vol', driveRoot,], {
+  const driveRoot = path.slice(
+    0,
+    DRIVE_ROOT_LENGTH,
+  );
+  const output = execFileSync(
+    'cmd.exe',
+    ['/c', 'vol', driveRoot,],
+    {
     encoding: 'utf8',
-  },);
+  },
+  );
   const match = output.match(/Serial Number is\s+(\S+)/i,);
   if (match === null)
     throw new Error(`failed to parse volume serial from: ${output}`,);
@@ -58,7 +69,11 @@ function windowsFsId({ path, }: { path: string; },): string {
  * @returns filesystem identifier string
  */
 function darwinFsId({ path, }: { path: string; },): string {
-  return execFileSync('stat', ['-f', '%v', path,], { encoding: 'utf8', },).trim();
+  return execFileSync(
+    'stat',
+    ['-f', '%v', path,],
+    { encoding: 'utf8', },
+  ).trim();
 }
 
 /**

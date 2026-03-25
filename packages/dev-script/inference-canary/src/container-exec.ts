@@ -8,6 +8,10 @@ import {
   CONTAINER_TIMEOUT_SECONDS,
   HOST_TIMEOUT_BUFFER_SECONDS,
 } from './container-runtime.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
 
 /** Result of running generated code in a container */
 export type ContainerResult = {
@@ -32,8 +36,10 @@ export type ContainerResult = {
  *
  * @returns container execution result
  */
-export async function execContainer(containerArgs: readonly string[],
-  signal?: AbortSignal,): Promise<ContainerResult>
+export async function execContainer(
+  containerArgs: readonly string[],
+  signal?: AbortSignal,
+): Promise<ContainerResult>
 {
   /** Milliseconds per second for timeout computation */
   const MS_PER_SECOND = 1_000;
@@ -42,18 +48,30 @@ export async function execContainer(containerArgs: readonly string[],
   /** Total host-side timeout: container limit plus a buffer for startup/teardown */
   const timeoutMs = (CONTAINER_TIMEOUT_SECONDS + HOST_TIMEOUT_BUFFER_SECONDS)
     * MS_PER_SECOND;
-  const result = await execBun(CONTAINER_RUNTIME, containerArgs, { timeout: timeoutMs,
-    signal, },);
+  const result = await execBun(
+    CONTAINER_RUNTIME,
+    containerArgs,
+    { timeout: timeoutMs,
+    signal, },
+  );
 
   if (result.exitCode !== 0 || result.killed) {
-    console.error(
-      `    [container] exit=${String(result.exitCode,)} timedOut=${
+    /** Container-specific logger for execution failure messages. */
+    const rl = tagged({
+      tag: 'container',
+      l,
+    },);
+    rl.error(
+      `exit=${String(result.exitCode,)} timedOut=${
         String(result.killed,)
       }`,
     );
     if (result.stderr.length > 0) {
-      console.error(
-        `    [container] stderr: ${result.stderr.slice(0, STDERR_PREVIEW_LENGTH,)}`,
+      rl.error(
+        `stderr: ${result.stderr.slice(
+          0,
+          STDERR_PREVIEW_LENGTH,
+        )}`,
       );
     }
   }

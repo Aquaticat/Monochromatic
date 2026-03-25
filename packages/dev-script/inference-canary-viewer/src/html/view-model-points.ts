@@ -36,7 +36,10 @@ export function buildOverallPoints(
       return hasMultipleProbes(entry,);
     },)
     .map(
-      function toPoint(entry, index,): ScatterPoint {
+      function toPoint(
+        entry,
+        index,
+      ): ScatterPoint {
         const runId = `${label}-${entry.timestamp}`;
         return {
           runId,
@@ -45,7 +48,10 @@ export function buildOverallPoints(
           score: entry.overallScore,
           color,
           icon: vendorIcon(openrouterId,),
-          title: `${label} ${entry.timestamp.slice(0, 10,)}: ${
+          title: `${label} ${entry.timestamp.slice(
+            0,
+            10,
+          )}: ${
             entry
               .overallScore
               .toFixed(2,)
@@ -90,7 +96,10 @@ export function buildProbePoints(
     .filter(function hasProbe(entry,): boolean {
       return probe in entry.probeScores;
     },)
-    .map(function toPoint(entry, index,): ScatterPoint {
+    .map(function toPoint(
+      entry,
+      index,
+    ): ScatterPoint {
       const score = entry.probeScores[probe] ?? 0;
       const pass2Score = entry.pass2Scores?.[probe];
       const runId = `${label}-${probe}-${entry.timestamp}`;
@@ -102,7 +111,10 @@ export function buildProbePoints(
         pass2Score,
         color,
         icon: vendorIcon(openrouterId,),
-        title: `${probe} ${entry.timestamp.slice(0, 10,)}: ${score.toFixed(2,)}${
+        title: `${probe} ${entry.timestamp.slice(
+          0,
+          10,
+        )}: ${score.toFixed(2,)}${
           pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
         }`,
         failed: entry.failed,

@@ -49,7 +49,10 @@ import type { $ as MaybeAsyncIterable, } from '@_/types/t object/t iterable/t/in
  */
 export async function* $<const T,>(
   { myIterable, }: { myIterable: MaybeAsyncIterable<T>; },
-): AsyncGenerator<{ element: T; index: Int & (Positive | 0); }> {
+): AsyncGenerator<{
+  element: T;
+  index: Int & (Positive | 0)
+}> {
   let index = 0;
   for await (const element of myIterable) {
     yield {

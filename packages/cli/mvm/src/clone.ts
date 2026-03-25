@@ -48,25 +48,55 @@ import {
  * ```
  */
 export async function clone(
-  { destination, source, }: { destination: string; source: string; },
+  {
+    destination,
+    source,
+  }: {
+    destination: string;
+    source: string
+  },
 ): Promise<void> {
   validateName(source,);
   validateName(destination,);
-  const rl = tagged({ tag: clone.name, l, },);
+  const rl = tagged({
+    tag: clone.name,
+    l,
+  },);
 
-  const srcVmDir = join(VMS_DIR, source,);
-  const dstVmDir = join(VMS_DIR, destination,);
+  const srcVmDir = join(
+    VMS_DIR,
+    source,
+  );
+  const dstVmDir = join(
+    VMS_DIR,
+    destination,
+  );
 
   rl.info(`cloning VM ${source} to ${destination}`,);
-  await mkdir(dstVmDir, { recursive: true, },);
+  await mkdir(
+    dstVmDir,
+    { recursive: true, },
+  );
 
-  const srcDiskPath = join(srcVmDir, 'disk.qcow2',);
-  const dstDiskPath = join(dstVmDir, 'disk.qcow2',);
+  const srcDiskPath = join(
+    srcVmDir,
+    'disk.qcow2',
+  );
+  const dstDiskPath = join(
+    dstVmDir,
+    'disk.qcow2',
+  );
 
   rl.info('copying disk (this may take a moment)...',);
   await spawn({
     command: 'qemu-img',
-    args: ['convert', '-O', 'qcow2', srcDiskPath, dstDiskPath,],
+    args: [
+      'convert',
+      '-O',
+      'qcow2',
+      srcDiskPath,
+      dstDiskPath,
+    ],
   },);
 
   const meta = await readVmMeta(srcVmDir,);
@@ -75,12 +105,22 @@ export async function clone(
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
-  const seedIsoPath = await createSeedIso({ guest, name: destination,
-    vmDir: dstVmDir, },);
-  const xml = domainXml({ diskPath: dstDiskPath, name: destination,
-    osFamily: guest.osFamily, seedIsoPath, },);
+  const seedIsoPath = await createSeedIso({
+    guest,
+    name: destination,
+    vmDir: dstVmDir,
+  },);
+  const xml = domainXml({
+    diskPath: dstDiskPath,
+    name: destination,
+    osFamily: guest.osFamily,
+    seedIsoPath,
+  },);
 
-  await defineVm({ vmDir: dstVmDir, xml, },);
+  await defineVm({
+    vmDir: dstVmDir,
+    xml,
+  },);
   await startVm({ name: destination, },);
   await waitForGuestAgent({ name: destination, },);
 
@@ -100,7 +140,11 @@ export async function clone(
     }
   }
 
-  await writeVmMeta({ guest, image: meta.image, vmDir: dstVmDir, },);
+  await writeVmMeta({
+    guest,
+    image: meta.image,
+    vmDir: dstVmDir,
+  },);
   rl.info(
     `VM ${destination} is ready (cloned from ${source}). Connect with: mvm shell ${destination}`,
   );

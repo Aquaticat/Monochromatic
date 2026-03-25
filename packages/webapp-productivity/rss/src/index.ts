@@ -22,7 +22,10 @@ import { getOutlinesFromOpmls, } from './outline.ts';
 import { PORT, } from './port.ts';
 
 /** Tagged logger for the server entry module. */
-const l = tagged({ tag: 'server', l: parentLogger, },);
+const l = tagged({
+  tag: 'server',
+  l: parentLogger,
+},);
 
 //region Memoized pipeline -- Pull-based feed processing with content-derived cache invalidation
 
@@ -34,7 +37,10 @@ const memoizedGetSortedItems = await memoizeAsync({
   fn: async function fetchPipeline(): Promise<
     ReturnType<typeof getSortedItems>
   > {
-    const innerL = tagged({ tag: fetchPipeline.name, l, },);
+    const innerL = tagged({
+      tag: fetchPipeline.name,
+      l,
+    },);
     innerL.debug('running feed pipeline',);
     const opmls = getOpmls();
     const outlines = await getOutlinesFromOpmls(opmls,);
@@ -54,10 +60,16 @@ const memoizedGetSortedItems = await memoizeAsync({
  */
 const memoizedGetHtmlBody = await memoizeAsync({
   fn: async function renderPipeline(): Promise<string> {
-    const innerL = tagged({ tag: renderPipeline.name, l, },);
+    const innerL = tagged({
+      tag: renderPipeline.name,
+      l,
+    },);
     innerL.debug('rendering HTML body',);
     const fetchSalt = getFetchSalt();
-    const items = await memoizedGetSortedItems({ args: [], salt: fetchSalt, },);
+    const items = await memoizedGetSortedItems({
+      args: [],
+      salt: fetchSalt,
+    },);
     const body = await getIndexHtmlBody({ items, },);
     innerL.debug(`rendered ${String(body.length,)} chars`,);
     return body;
@@ -77,7 +89,10 @@ const memoizedGetHtmlBody = await memoizeAsync({
 async function getHtmlBody(): Promise<string> {
   const fetchSalt = getFetchSalt();
   const ignoreContent = await getIgnoreContent();
-  return memoizedGetHtmlBody({ args: [], salt: fetchSalt + ignoreContent, },);
+  return memoizedGetHtmlBody({
+    args: [],
+    salt: fetchSalt + ignoreContent,
+  },);
 }
 
 //endregion Memoized pipeline
@@ -110,6 +125,9 @@ app.post(
 //endregion h3 application
 
 /** Running HTTP server instance listening on the configured port. */
-const server = serve(app, { port: PORT, },);
+const server = serve(
+  app,
+  { port: PORT, },
+);
 
 l.info(`listening on ${server.url}`,);

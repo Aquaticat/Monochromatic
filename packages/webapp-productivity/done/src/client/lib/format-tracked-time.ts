@@ -26,7 +26,10 @@ const MS_PER_SECOND = 1_000;
  * @returns Formatted duration string
  */
 export function formatTrackedTime(seconds: number,): string {
-  const totalSeconds = Math.max(0, Math.floor(seconds,),);
+  const totalSeconds = Math.max(
+    0,
+    Math.floor(seconds,),
+  );
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
   const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
@@ -60,7 +63,9 @@ export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)
     return formatTrackedTime(task.trackedTime,);
 
-  const elapsedSeconds = Math.max(0,
-    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),);
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),
+  );
   return formatTrackedTime(task.trackedTime + elapsedSeconds,);
 }

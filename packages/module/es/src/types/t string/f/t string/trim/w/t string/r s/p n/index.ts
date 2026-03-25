@@ -57,8 +57,17 @@ import { $ as trimRegex, } from '../../../t object/t regexp/t global/r s/p n/ind
  * Note: For trimming from the start of strings, use the corresponding trimStartWith function
  * which follows the same pattern but removes from the beginning of the string.
  */
-export function $({ str, trimmer, }: { str: string; trimmer: string; },): string {
+export function $({
+  str,
+  trimmer,
+}: {
+  str: string;
+  trimmer: string
+},): string {
   const globalRegexp = regexpToGlobalRegexp(stringToRegexp(trimmer,),);
 
-  return trimRegex({ str, trimmer: globalRegexp, },);
+  return trimRegex({
+    str,
+    trimmer: globalRegexp,
+  },);
 }

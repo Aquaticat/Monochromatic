@@ -59,8 +59,17 @@ import {
  * Note: For trimming from the end of strings, use the corresponding trimEndWith function
  * which follows the same pattern but removes from the end of the string.
  */
-export function $({ str, trimmer, }: { str: string; trimmer: string; },): string {
+export function $({
+  str,
+  trimmer,
+}: {
+  str: string;
+  trimmer: string
+},): string {
   const globalRegexp = regexpToGlobalRegexp(stringToRegexp(trimmer,),);
 
-  return trimStartRegex({ str, trimmer: globalRegexp, },);
+  return trimStartRegex({
+    str,
+    trimmer: globalRegexp,
+  },);
 }

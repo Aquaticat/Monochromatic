@@ -43,7 +43,10 @@ export function transformImportAttributes(
   if (!code.includes(' with ',) && !code.includes(' with{',))
     return null;
 
-  const result = parseSync(id, code,);
+  const result = parseSync(
+    id,
+    code,
+  );
   const replacements: Replacement[] = [];
 
   const visitor = new Visitor({
@@ -53,8 +56,13 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(node.source, node.attributes, attrType, code,
-        replacements,);
+      collectStaticReplacements(
+        node.source,
+        node.attributes,
+        attrType,
+        code,
+        replacements,
+      );
     },
 
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
@@ -63,8 +71,13 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(node.source, node.attributes, attrType, code,
-        replacements,);
+      collectStaticReplacements(
+        node.source,
+        node.attributes,
+        attrType,
+        code,
+        replacements,
+      );
     },
 
     ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
@@ -73,8 +86,13 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(node.source, node.attributes, attrType, code,
-        replacements,);
+      collectStaticReplacements(
+        node.source,
+        node.attributes,
+        attrType,
+        code,
+        replacements,
+      );
     },
 
     ImportExpression(node: ESTree.ImportExpression,): void {
@@ -98,7 +116,11 @@ export function transformImportAttributes(
       let commaPos = node.source.end;
       while (commaPos < node.options.start && code[commaPos] !== ',')
         commaPos++;
-      replacements.push({ start: commaPos, end: node.options.end, text: '', },);
+      replacements.push({
+        start: commaPos,
+        end: node.options.end,
+        text: '',
+      },);
     },
   },);
 
@@ -108,13 +130,19 @@ export function transformImportAttributes(
     return null;
 
   // Apply replacements in reverse order to preserve byte offsets
-  replacements.sort(function byStartDesc(a, b,) {
+  replacements.sort(function byStartDesc(
+    a,
+    b,
+  ) {
     return b.start - a.start;
   },);
 
   let transformed = code;
   for (const r of replacements)
-    transformed = transformed.slice(0, r.start,) + r.text + transformed.slice(r.end,);
+    transformed = transformed.slice(
+      0,
+      r.start,
+    ) + r.text + transformed.slice(r.end,);
 
   return { code: transformed, };
 }

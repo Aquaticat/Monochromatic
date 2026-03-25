@@ -34,7 +34,10 @@ import { measureInlayOffsets, } from '../inlay/measure.ts';
  *
  * @returns animation frame ID for cancellation
  */
-export function scheduleDiagnosticHighlights({ editor, diagnostics, }: {
+export function scheduleDiagnosticHighlights({
+  editor,
+  diagnostics,
+}: {
   editor: HTMLDivElement;
   diagnostics: Diagnostic[];
 },): number {
@@ -43,7 +46,10 @@ export function scheduleDiagnosticHighlights({ editor, diagnostics, }: {
       clearDiagnosticHighlights();
       return;
     }
-    applyDiagnosticHighlights({ editor, diagnostics, },);
+    applyDiagnosticHighlights({
+      editor,
+      diagnostics,
+    },);
   },);
 }
 
@@ -59,7 +65,11 @@ export function scheduleDiagnosticHighlights({ editor, diagnostics, }: {
  *
  * @returns animation frame ID for cancellation
  */
-export function scheduleInlayAnnotations({ editor, hints, diagnostics, }: {
+export function scheduleInlayAnnotations({
+  editor,
+  hints,
+  diagnostics,
+}: {
   editor: HTMLDivElement;
   hints: InlayHint[];
   diagnostics: Diagnostic[];
@@ -69,7 +79,11 @@ export function scheduleInlayAnnotations({ editor, hints, diagnostics, }: {
       clearInlayAnnotations({ editor, },);
       return;
     }
-    applyInlayAnnotations({ editor, hints, diagnostics, },);
+    applyInlayAnnotations({
+      editor,
+      hints,
+      diagnostics,
+    },);
     /** Measure ::before heights after layout to set line number offsets. */
     requestAnimationFrame(function measureAfterLayout() {
       measureInlayOffsets({ editor, },);
@@ -86,7 +100,10 @@ export function scheduleInlayAnnotations({ editor, hints, diagnostics, }: {
  *
  * @returns animation frame ID for cancellation
  */
-export function scheduleHighlight({ editor, parser, }: {
+export function scheduleHighlight({
+  editor,
+  parser,
+}: {
   editor: HTMLDivElement;
   parser: Parser | null;
 },): number {
@@ -95,7 +112,10 @@ export function scheduleHighlight({ editor, parser, }: {
       clearHighlights();
       return;
     }
-    applyHighlights({ editor, parser, },);
+    applyHighlights({
+      editor,
+      parser,
+    },);
   },);
 }
 

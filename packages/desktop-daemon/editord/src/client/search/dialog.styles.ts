@@ -41,7 +41,10 @@ export const DIALOG_STYLES = [
       'padding-inline': cssRem(0,),
       'background-color': cssVar('bg',),
       color: cssVar('fg',),
-      'font-family': cssCommaList(["'JetBrains Mono'", 'monospace',],),
+      'font-family': cssCommaList([
+        "'JetBrains Mono'",
+        'monospace',
+      ],),
       'font-size': cssRem(1,),
       overflow: 'hidden',
       display: 'flex',
@@ -51,7 +54,12 @@ export const DIALOG_STYLES = [
   $({
     rule: 'dialog::backdrop',
     decls: {
-      'background-color': cssOklch({ l: 0, c: 0, h: 0, a: BACKDROP_ALPHA, },),
+      'background-color': cssOklch({
+        l: 0,
+        c: 0,
+        h: 0,
+        a: BACKDROP_ALPHA,
+      },),
     },
   },),
   $({

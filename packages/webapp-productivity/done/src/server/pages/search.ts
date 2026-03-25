@@ -28,7 +28,11 @@ export async function searchPage(url: URL,): Promise<Response> {
   const results = await searchTasks(query,);
   const availableTags = await listAllTags();
 
-  const pageData = { query, results, availableTags, };
+  const pageData = {
+    query,
+    results,
+    availableTags,
+  };
 
   const html = `<!DOCTYPE html>
 ${
@@ -39,36 +43,61 @@ ${
         h({
           tag: 'head',
           children: [
-            h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
-            h({ tag: 'meta',
+            h({
+              tag: 'meta',
+              attrs: { charset: 'utf8', },
+            },),
+            h({
+              tag: 'meta',
               attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', }, },),
-            h({ tag: 'title', text: 'Search - Done', },),
+                content: 'width=device-width, initial-scale=1', },
+            },),
+            h({
+              tag: 'title',
+              text: 'Search - Done',
+            },),
           ],
         },),
         h({
           tag: 'body',
           children: [
-            h({ tag: 'side-drawer', attrs: { id: 'drawer', }, },),
+            h({
+              tag: 'side-drawer',
+              attrs: { id: 'drawer', },
+            },),
             h({
               tag: 'div',
               class: 'page-wrapper',
               children: [
-                h({ tag: 'search-bar', attrs: { value: query, }, },),
-                h({ tag: 'main', attrs: { id: 'app', }, },),
+                h({
+                  tag: 'search-bar',
+                  attrs: { value: query, },
+                },),
+                h({
+                  tag: 'main',
+                  attrs: { id: 'app', },
+                },),
               ],
             },),
-            h({ tag: 'script', attrs: { type: 'application/json', id: 'page-data', },
-              html: serializePageData(pageData,), },),
-            h({ tag: 'script',
-              attrs: { type: 'module', src: '/dist/client/search.js', }, },),
+            h({
+              tag: 'script',
+              attrs: { type: 'application/json', id: 'page-data', },
+              html: serializePageData(pageData,),
+            },),
+            h({
+              tag: 'script',
+              attrs: { type: 'module', src: '/dist/client/search.js', },
+            },),
           ],
         },),
       ],
     },)
   }`;
 
-  return new Response(html, {
+  return new Response(
+    html,
+    {
     headers: { 'Content-Type': 'text/html; charset=utf-8', },
-  },);
+  },
+  );
 }

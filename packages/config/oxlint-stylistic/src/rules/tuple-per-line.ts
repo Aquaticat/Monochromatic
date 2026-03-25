@@ -33,8 +33,7 @@ export const tuplePerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      tuplePerLine:
-        'Each tuple element must be on its own line.',
+      tuplePerLine: 'Each tuple element must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -51,7 +50,10 @@ export const tuplePerLine: CreateOnceRule = {
           container: tupleNode,
           items: elements,
           messageId: 'tuplePerLine',
-          bracketPair: { open: '[', close: ']', },
+          bracketPair: {
+            open: '[',
+            close: ']',
+          },
         },);
       },
     } as VisitorWithHooks;

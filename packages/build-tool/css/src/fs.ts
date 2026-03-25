@@ -48,7 +48,10 @@ export async function readCssFile(absolutePath: string,): Promise<string> {
 
   if (nodeFs !== undefined) {
     const { readFile, } = await import('node:fs/promises');
-    return readFile(absolutePath, 'utf8',);
+    return readFile(
+      absolutePath,
+      'utf8',
+    );
   }
 
   throw new Error(
@@ -72,7 +75,10 @@ export function readCssFileSync(absolutePath: string,): string {
     return cached;
 
   if (nodeFs !== undefined)
-    return nodeFs.readFileSync(absolutePath, 'utf8',);
+    return nodeFs.readFileSync(
+      absolutePath,
+      'utf8',
+    );
 
   throw new Error(
     `File not found in registry and no filesystem available: ${absolutePath}`,

@@ -62,7 +62,11 @@ export async function execPromise(
   options: LintExecOptions = {},
 ): Promise<string> {
   const execOptions = options.timeout !== undefined ? { timeout: options.timeout, } : {};
-  const result = await execBun(command, args, execOptions,);
+  const result = await execBun(
+    command,
+    args,
+    execOptions,
+  );
 
   if (result.exitCode !== 0) {
     throw Object.assign(
@@ -73,7 +77,10 @@ export async function execPromise(
             : ''
         }: ${result.stderr}`,
       ),
-      { stdout: result.stdout, stderr: result.stderr, },
+      {
+        stdout: result.stdout,
+        stderr: result.stderr,
+      },
     );
   }
 

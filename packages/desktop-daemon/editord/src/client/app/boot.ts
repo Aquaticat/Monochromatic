@@ -38,8 +38,17 @@ import {
  * @param queryFilePath - file path from URL query parameter
  */
 export async function bootSession(
-  { ws, editorPane, fileTree, searchOverlay, state, recentFiles, loadFileSafe,
-    refreshInlayHints, queryFilePath, }: {
+  {
+    ws,
+    editorPane,
+    fileTree,
+    searchOverlay,
+    state,
+    recentFiles,
+    loadFileSafe,
+    refreshInlayHints,
+    queryFilePath,
+  }: {
       ws: EditorWsClient;
       editorPane: EditorPane;
       fileTree: FileTree;
@@ -47,22 +56,36 @@ export async function bootSession(
       state: AppState;
       recentFiles: RecentFiles;
       loadFileSafe: (
-        opts: { path: string; line?: number | undefined;
-          character?: number | undefined; },
+        opts: {
+          path: string;
+          line?: number | undefined;
+          character?: number | undefined
+        },
       ) => Promise<void>;
       refreshInlayHints: () => void;
       queryFilePath: string | null;
     },
 ): Promise<void> {
   await ws.ready;
-  wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay,
+  wireSessionPersistence({
+    ws,
+    editorPane,
+    fileTree,
+    searchOverlay,
     getCurrentFilePath: function get() {
       return state.currentFilePath;
-    }, getRecentFiles: function get() {
+    },
+    getRecentFiles: function get() {
       return recentFiles.paths;
-    }, },);
-  const restored = await restoreSession({ ws, editorPane, fileTree, loadFileSafe,
-    queryFilePath, },);
+    },
+  },);
+  const restored = await restoreSession({
+    ws,
+    editorPane,
+    fileTree,
+    loadFileSafe,
+    queryFilePath,
+  },);
   state.currentFilePath = restored.filePath;
   recentFiles.paths.length = 0;
   recentFiles.paths.push(...restored.recentFiles,);

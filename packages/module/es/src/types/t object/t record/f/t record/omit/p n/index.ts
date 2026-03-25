@@ -38,7 +38,11 @@ import {
   const TObject extends Record$<string | number | symbol, unknown>,
   const TKeys extends keyof TObject,
 >(
-  { original, toOmit, strict = true, }: {
+  {
+    original,
+    toOmit,
+    strict = true,
+  }: {
     original: TObject;
     toOmit: ReadonlySet<TKeys>;
     strict?: boolean;
@@ -60,8 +64,11 @@ import {
 
   // Reflect.ownKeys returns all own property keys including symbols, unlike Object.keys which only returns enumerable string keys.
   // This ensures symbol-keyed properties are handled correctly when toOmit contains symbols.
-  for (const key of omitFromIterable({ iterable: Reflect.ownKeys(original,),
-    toOmit: normalizedOmitSet, strict, },))
+  for (const key of omitFromIterable({
+    iterable: Reflect.ownKeys(original,),
+    toOmit: normalizedOmitSet,
+    strict,
+  },))
   {
     result[key] = (original as Record<typeof key, unknown>)[key];
   }

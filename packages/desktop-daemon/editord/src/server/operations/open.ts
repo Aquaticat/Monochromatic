@@ -49,9 +49,18 @@ export type OpenResult = {
  * @throws when the path escapes root or the file cannot be read
  */
 export async function openFile(
-  { rootDir, path, }: { rootDir: string; path: string; },
+  {
+    rootDir,
+    path,
+  }: {
+    rootDir: string;
+    path: string
+  },
 ): Promise<OpenResult> {
-  const absolutePath = assertWithinRoot({ rootDir, path, },);
+  const absolutePath = assertWithinRoot({
+    rootDir,
+    path,
+  },);
 
   const mediaKind = getMediaKind({ path, },);
   if (mediaKind !== null) {
@@ -67,18 +76,41 @@ export async function openFile(
   /** Probe first bytes for null to detect binary without reading the entire file. */
   await using handle = await fsOpen(absolutePath,);
   const probe = Buffer.alloc(BINARY_PROBE_SIZE,);
-  const { bytesRead, } = await handle.read(probe, 0, BINARY_PROBE_SIZE, 0,);
+  const { bytesRead, } = await handle.read(
+    probe,
+    0,
+    BINARY_PROBE_SIZE,
+    0,
+  );
 
-  if (probe.subarray(0, bytesRead,).includes(0,)) {
+  if (probe.subarray(
+    0,
+    bytesRead,
+  ).includes(0,)) {
     /** Binary: read only what hex dump needs instead of the entire file. */
     const { size, } = await handle.stat();
-    const dumpLimit = Math.min(size, HEX_DUMP_MAX_BYTES,);
+    const dumpLimit = Math.min(
+      size,
+      HEX_DUMP_MAX_BYTES,
+    );
     const dumpBuffer = Buffer.alloc(dumpLimit,);
-    await handle.read(dumpBuffer, 0, dumpLimit, 0,);
-    return { kind: 'binary', path: absolutePath,
-      content: generateHexDump({ buffer: dumpBuffer, totalSize: size, },), };
+    await handle.read(
+      dumpBuffer,
+      0,
+      dumpLimit,
+      0,
+    );
+    return {
+      kind: 'binary',
+      path: absolutePath,
+      content: generateHexDump({ buffer: dumpBuffer, totalSize: size, },),
+    };
   }
 
   const buffer = await readFile(absolutePath,);
-  return { kind: 'text', path: absolutePath, content: buffer.toString('utf8',), };
+  return {
+    kind: 'text',
+    path: absolutePath,
+    content: buffer.toString('utf8',),
+  };
 }

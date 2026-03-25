@@ -33,7 +33,12 @@ import type { FileTreeState, } from './state.ts';
  *
  * @returns container element, or null if not found or not loaded
  */
-export function resolveRefreshContainer({ tree, path, rootPath, loadedDirs, }: {
+export function resolveRefreshContainer({
+  tree,
+  path,
+  rootPath,
+  loadedDirs,
+}: {
   tree: HTMLDivElement;
   path: string;
   rootPath: string;
@@ -69,7 +74,12 @@ export function resolveRefreshContainer({ tree, path, rootPath, loadedDirs, }: {
  *
  * @param state - tree's internal state
  */
-export async function performRefreshDir({ tree, path, rootPath, state, }: {
+export async function performRefreshDir({
+  tree,
+  path,
+  rootPath,
+  state,
+}: {
   tree: HTMLDivElement;
   path: string;
   rootPath: string;
@@ -77,8 +87,12 @@ export async function performRefreshDir({ tree, path, rootPath, state, }: {
 },): Promise<void> {
   if (state.fetchDir === null)
     return;
-  const container = resolveRefreshContainer({ tree, path, rootPath,
-    loadedDirs: state.loadedDirs, },);
+  const container = resolveRefreshContainer({
+    tree,
+    path,
+    rootPath,
+    loadedDirs: state.loadedDirs,
+  },);
   if (container === null)
     return;
   await refreshDirContents({
@@ -88,8 +102,12 @@ export async function performRefreshDir({ tree, path, rootPath, state, }: {
     recentPaths: state.recentPaths,
     preloadFn: function preload(opts,) {
       if (state.fetchDir !== null) {
-        void preloadChildren({ ...opts, fetchDir: state.fetchDir, prefetchCache: state
-          .prefetchCache, },);
+        void preloadChildren({
+          ...opts,
+          fetchDir: state.fetchDir,
+          prefetchCache: state
+          .prefetchCache,
+        },);
       }
     },
   },);
@@ -112,12 +130,21 @@ export async function performRefreshDir({ tree, path, rootPath, state, }: {
  * @param preloadFn - preloads subdirectory children
  */
 export async function refreshDirContents(
-  { container, path, fetchDir, recentPaths, preloadFn, }: {
+  {
+    container,
+    path,
+    fetchDir,
+    recentPaths,
+    preloadFn,
+  }: {
     container: HTMLElement;
     path: string;
     fetchDir: (dirPath: string,) => Promise<DirEntry[]>;
     recentPaths: string[];
-    preloadFn: (opts: { parentPath: string; entries: DirEntry[]; },) => void;
+    preloadFn: (opts: {
+      parentPath: string;
+      entries: DirEntry[]
+    },) => void;
   },
 ): Promise<void> {
   const entries = await fetchDir(path,);
@@ -128,23 +155,38 @@ export async function refreshDirContents(
     ':scope > tree-dir-entry',
   )) {
     if (dirEntry.entryPath !== '')
-      existingDirs.set(dirEntry.entryPath, dirEntry,);
+      existingDirs.set(
+        dirEntry.entryPath,
+        dirEntry,
+      );
   }
 
   const elements = entries.map(function createOrReuseEntry(entry,) {
-    const fullPath = childPath({ parentPath: path, name: entry.name, },);
+    const fullPath = childPath({
+      parentPath: path,
+      name: entry.name,
+    },);
     if (entry.isDirectory) {
       const existing = existingDirs.get(fullPath,);
       if (existing !== undefined) {
         existingDirs.delete(fullPath,);
         return existing;
       }
-      return createTreeDirEntry({ path: fullPath, name: entry.name, },);
+      return createTreeDirEntry({
+        path: fullPath,
+        name: entry.name,
+      },);
     }
-    return createTreeFileEntry({ path: fullPath, name: entry.name,
-      recencyIndex: recentPaths.indexOf(fullPath,), },);
+    return createTreeFileEntry({
+      path: fullPath,
+      name: entry.name,
+      recencyIndex: recentPaths.indexOf(fullPath,),
+    },);
   },);
 
   container.replaceChildren(...elements,);
-  preloadFn({ parentPath: path, entries, },);
+  preloadFn({
+    parentPath: path,
+    entries,
+  },);
 }

@@ -7,6 +7,11 @@
 
 import { execFileSync, } from 'node:child_process';
 
+import {
+  l,
+  tagged,
+} from './log.ts';
+
 //region Configuration -- timeout, image tag, and buffer size shared by container-exec.ts
 
 /** Container execution timeout in seconds */
@@ -47,7 +52,11 @@ function whichSync(name: string,): string | null {
   try {
     // `where.exe` may return multiple lines; take the first match
     /** First line of which output, containing the resolved binary path. */
-    const [firstLine,] = execFileSync(WHICH_CMD, [name,], { encoding: 'utf8', },)
+    const [firstLine,] = execFileSync(
+      WHICH_CMD,
+      [name,],
+      { encoding: 'utf8', },
+    )
       .trim()
       .split('\n',);
     if (firstLine === undefined)
@@ -67,13 +76,21 @@ function whichSync(name: string,): string | null {
  * @throws if neither podman nor docker is found on PATH
  */
 function detectRuntime(): string {
-  for (const runtime of ['podman', 'docker',] as const) {
+  /** Container-specific logger for runtime detection messages. */
+  const rl = tagged({
+    tag: 'container',
+    l,
+  },);
+  for (const runtime of [
+    'podman',
+    'docker',
+  ] as const) {
     const resolved = whichSync(runtime,);
     if (resolved !== null) {
-      console.log(`    [container] using runtime: ${resolved}`,);
+      rl.info(`using runtime: ${resolved}`,);
       return runtime;
     }
-    console.log(`    [container] ${runtime} not found on PATH`,);
+    rl.info(`${runtime} not found on PATH`,);
   }
   throw new Error(
     'Neither podman nor docker found. Install one to run code-gen probes.',

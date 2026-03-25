@@ -27,8 +27,18 @@ export {};
 
 /** MCP server instance exposing mvm operations as tools. */
 const server = createMcpServer(
-  { name: 'mvm', version: '0.1.0', },
-  [listTool, createTool, destroyTool, execTool, runTool, updateTool,],
+  {
+    name: 'mvm',
+    version: '0.1.0',
+  },
+  [
+    listTool,
+    createTool,
+    destroyTool,
+    execTool,
+    runTool,
+    updateTool,
+  ],
 );
 
 await serve(server,);

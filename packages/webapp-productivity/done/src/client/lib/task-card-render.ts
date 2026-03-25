@@ -59,7 +59,11 @@ export function buildChipTexts(task: Task,): string[] {
  * @param options - Callbacks and display flags
  */
 export function renderTaskCardContent(
-  { shadow, task, options, }: {
+  {
+    shadow,
+    task,
+    options,
+  }: {
     shadow: ShadowRoot;
     task: Task;
     options: TaskCardOptions;
@@ -67,14 +71,25 @@ export function renderTaskCardContent(
 ): void {
   const chipElements: HTMLElement[] = buildChipTexts(task,).map(
     function createChip(text,): HTMLElement {
-      return h({ tag: 'span', class: 'chip', text, },);
+      return h({
+        tag: 'span',
+        class: 'chip',
+        text,
+      },);
     },
   );
   if (options.showBlockedBadge === true)
-    chipElements.push(h({ tag: 'span', class: 'chip blocked', text: 'blocked', },),);
+    chipElements.push(h({
+      tag: 'span',
+      class: 'chip blocked',
+      text: 'blocked',
+    },),);
 
   shadow.replaceChildren(
-    h({ tag: 'style', text: TASK_CARD_STYLES, },),
+    h({
+      tag: 'style',
+      text: TASK_CARD_STYLES,
+    },),
     h({
       tag: 'div',
       class: 'row',
@@ -83,7 +98,10 @@ export function renderTaskCardContent(
           tag: 'button',
           class: 'checkbox',
           attrs: { title: 'Complete task', },
-          children: [h({ tag: 'span', class: 'checkbox-box', },),],
+          children: [h({
+            tag: 'span',
+            class: 'checkbox-box',
+          },),],
           on: {
             click: function onCheckboxClick(event,): void {
               event.stopPropagation();
@@ -93,19 +111,30 @@ export function renderTaskCardContent(
                     await options.onToggleComplete(task.id,);
                   }
                   catch (error: unknown) {
-                    console.error('toggle complete failed', error,);
+                    console.error(
+                      'toggle complete failed',
+                      error,
+                    );
                   }
                 })();
               }
             },
           },
         },),
-        h({ tag: 'span', class: 'title', text: task.title, },),
+        h({
+          tag: 'span',
+          class: 'title',
+          text: task.title,
+        },),
       ],
       on: { click: function onRowClick(): void {
         options.onOpen(task.id,);
       }, },
     },),
-    h({ tag: 'div', class: 'chips', children: chipElements, },),
+    h({
+      tag: 'div',
+      class: 'chips',
+      children: chipElements,
+    },),
   );
 }

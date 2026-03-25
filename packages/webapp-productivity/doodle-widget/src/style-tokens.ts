@@ -75,23 +75,43 @@ export const BUTTON_RADIUS: CssValue = cssRem(QUARTER,);
 export const BORDER_WIDTH: CssValue = cssRem(SIXTEENTH,);
 
 /** Shared border color for toolbar controls */
-export const BORDER_COLOR: CssValue = cssOklch({ l: 0.8, c: 0, h: 0, },);
+export const BORDER_COLOR: CssValue = cssOklch({
+  l: 0.8,
+  c: 0,
+  h: 0,
+},);
 
 //endregion Computed CSS values
 
 //region Shared declaration fragments
 
 /** Default background color for interactive controls */
-export const BG_CONTROL: CssValue = cssOklch({ l: 0.97, c: 0, h: 0, },);
+export const BG_CONTROL: CssValue = cssOklch({
+  l: 0.97,
+  c: 0,
+  h: 0,
+},);
 
 /** Hover background color for interactive controls */
-export const BG_CONTROL_HOVER: CssValue = cssOklch({ l: 0.92, c: 0, h: 0, },);
+export const BG_CONTROL_HOVER: CssValue = cssOklch({
+  l: 0.92,
+  c: 0,
+  h: 0,
+},);
 
 /** Background color for checked toggle controls */
-export const BG_TOGGLE_CHECKED: CssValue = cssOklch({ l: 0.82, c: 0, h: 0, },);
+export const BG_TOGGLE_CHECKED: CssValue = cssOklch({
+  l: 0.82,
+  c: 0,
+  h: 0,
+},);
 
 /** Hover background color for checked toggle controls */
-export const BG_TOGGLE_CHECKED_HOVER: CssValue = cssOklch({ l: 0.78, c: 0, h: 0, },);
+export const BG_TOGGLE_CHECKED_HOVER: CssValue = cssOklch({
+  l: 0.78,
+  c: 0,
+  h: 0,
+},);
 
 /** Solid border on both block and inline axes */
 export const BORDER_SOLID_DECLS = {

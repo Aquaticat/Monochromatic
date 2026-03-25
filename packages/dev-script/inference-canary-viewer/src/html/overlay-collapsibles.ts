@@ -35,13 +35,20 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: `Thinking (${
+        h({
+          tag: 'summary',
+          text: `Thinking (${
           formatNumber(detail
             .reasoning
             .length,)
-        } chars)`, },),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
-          .reasoning,), },),
+        } chars)`,
+        },),
+        h({
+          tag: 'div',
+          class: 'rendered-markdown',
+          html: micromark(detail
+          .reasoning,),
+        },),
       ],
     },),);
   }
@@ -51,13 +58,20 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: `Response (${
+        h({
+          tag: 'summary',
+          text: `Response (${
           formatNumber(detail
             .initialResponse
             .length,)
-        } chars)`, },),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
-          .initialResponse,), },),
+        } chars)`,
+        },),
+        h({
+          tag: 'div',
+          class: 'rendered-markdown',
+          html: micromark(detail
+          .initialResponse,),
+        },),
       ],
     },),);
   }
@@ -67,13 +81,20 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: `Fix thinking (${
+        h({
+          tag: 'summary',
+          text: `Fix thinking (${
           formatNumber(detail
             .fixReasoning
             .length,)
-        } chars)`, },),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
-          .fixReasoning,), },),
+        } chars)`,
+        },),
+        h({
+          tag: 'div',
+          class: 'rendered-markdown',
+          html: micromark(detail
+          .fixReasoning,),
+        },),
       ],
     },),);
   }
@@ -83,13 +104,20 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: `Fix response (${
+        h({
+          tag: 'summary',
+          text: `Fix response (${
           formatNumber(detail
             .fixResponse
             .length,)
-        } chars)`, },),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
-          .fixResponse,), },),
+        } chars)`,
+        },),
+        h({
+          tag: 'div',
+          class: 'rendered-markdown',
+          html: micromark(detail
+          .fixResponse,),
+        },),
       ],
     },),);
   }
@@ -99,9 +127,16 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: 'Fix prompt', },),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
-          .fixPrompt,), },),
+        h({
+          tag: 'summary',
+          text: 'Fix prompt',
+        },),
+        h({
+          tag: 'div',
+          class: 'rendered-markdown',
+          html: micromark(detail
+          .fixPrompt,),
+        },),
       ],
     },),);
   }

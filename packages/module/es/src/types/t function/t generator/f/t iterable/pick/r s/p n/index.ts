@@ -41,7 +41,11 @@
  * ```
  */
 export function* $<T,>(
-  { iterable, toPick, strict = true, }: {
+  {
+    iterable,
+    toPick,
+    strict = true,
+  }: {
     iterable: Iterable<T>;
     toPick: ReadonlySet<T>;
     strict?: boolean;

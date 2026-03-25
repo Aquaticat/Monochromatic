@@ -23,7 +23,13 @@ export const TOP_NAV_MEDIA_STYLES = css({
         'border-block-end-color': cssVar('bg-weaker',),
       },
     },),
-    css({ rule: '.menu-toggle', decls: { display: 'none', }, },),
-    css({ rule: 'h1', decls: { 'text-align': 'start', }, },),
+    css({
+      rule: '.menu-toggle',
+      decls: { display: 'none', },
+    },),
+    css({
+      rule: 'h1',
+      decls: { 'text-align': 'start', },
+    },),
   ],
 },);

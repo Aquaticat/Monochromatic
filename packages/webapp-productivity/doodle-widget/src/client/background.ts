@@ -38,13 +38,21 @@ export function removeWhiteFills(svgMarkup: string,): string {
 
   /** Also handle fill attributes on elements */
   const parser = new DOMParser();
-  const doc = parser.parseFromString(processed, 'image/svg+xml',);
+  const doc = parser.parseFromString(
+    processed,
+    'image/svg+xml',
+  );
   const allElements = doc.querySelectorAll<SVGElement>('[fill]',);
   for (const element of allElements) {
-    const fill = (element.getAttribute('fill',) ?? '').toLowerCase().replaceAll(/\s/gu,
-      '',);
+    const fill = (element.getAttribute('fill',) ?? '').toLowerCase().replaceAll(
+      /\s/gu,
+      '',
+    );
     if (WHITE_FILL_ATTRS.has(fill,))
-      element.setAttribute('fill', 'none',);
+      element.setAttribute(
+        'fill',
+        'none',
+      );
   }
   return new XMLSerializer().serializeToString(doc.documentElement,);
 }
@@ -59,7 +67,10 @@ export function removeWhiteFills(svgMarkup: string,): string {
  *
  * @param overlay - SVG overlay element
  */
-export function setSvgBackground({ svgMarkup, overlay, }: {
+export function setSvgBackground({
+  svgMarkup,
+  overlay,
+}: {
   svgMarkup: string;
   overlay: HTMLElement;
 },): void {

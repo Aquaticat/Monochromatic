@@ -22,7 +22,10 @@ export const CODE_LINE_HEIGHT = (2 + 1) / 2;
 export const POPUP_BORDER_RADIUS = 1 / (2 * 2);
 
 /** Monospace font stack for editor components. */
-export const MONO_FONT_FAMILY = cssCommaList(["'JetBrains Mono'", 'monospace',],);
+export const MONO_FONT_FAMILY = cssCommaList([
+  "'JetBrains Mono'",
+  'monospace',
+],);
 
 /**
  * Shared popup border declarations.

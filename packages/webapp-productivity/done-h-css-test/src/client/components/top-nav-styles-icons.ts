@@ -33,7 +33,11 @@ const HANDLE_TURN = -(1 / 2 / 2 / 2);
 export const TOP_NAV_ICON_STYLES = [
   css({
     rule: '.search-icon',
-    decls: { 'inline-size': cssRem(2,), 'block-size': cssRem(2,), position: 'relative', },
+    decls: {
+      'inline-size': cssRem(2,),
+      'block-size': cssRem(2,),
+      position: 'relative',
+    },
   },),
   css({
     rule: '.circle',
@@ -59,7 +63,10 @@ export const TOP_NAV_ICON_STYLES = [
       'block-size': cssRem(HANDLE_HEIGHT,),
       'background-color': cssVar('fg',),
       transform: cssRotate(cssTurn(HANDLE_TURN,),),
-      'transform-origin': cssCompounded(['top', 'left',],),
+      'transform-origin': cssCompounded([
+        'top',
+        'left',
+      ],),
     },
   },),
 ];

@@ -31,8 +31,13 @@ import {
  * ```
  */
 async function destroyOne(
-  { name, rl, }: { name: string;
-    rl: { debug: (msg: string,) => void; info: (msg: string,) => void; }; },
+  {
+    name,
+    rl,
+  }: {
+    name: string;
+    rl: { debug: (msg: string,) => void; info: (msg: string,) => void; }
+  },
 ): Promise<void> {
   rl.info(`destroying VM ${name}`,);
 
@@ -45,8 +50,14 @@ async function destroyOne(
 
   await undefineVm({ name, },);
 
-  const vmDir = join(VMS_DIR, name,);
-  await rm(vmDir, { force: true, recursive: true, },);
+  const vmDir = join(
+    VMS_DIR,
+    name,
+  );
+  await rm(
+    vmDir,
+    { force: true, recursive: true, },
+  );
 
   rl.info(`VM ${name} destroyed`,);
 }
@@ -66,8 +77,14 @@ async function destroyOne(
  */
 export async function destroy({ name, }: { name: string; },): Promise<void> {
   validateName(name,);
-  const rl = tagged({ tag: destroy.name, l, },);
-  await destroyOne({ name, rl, },);
+  const rl = tagged({
+    tag: destroy.name,
+    l,
+  },);
+  await destroyOne({
+    name,
+    rl,
+  },);
 }
 
 /**
@@ -81,7 +98,10 @@ export async function destroy({ name, }: { name: string; },): Promise<void> {
  * ```
  */
 export async function destroyAll(): Promise<void> {
-  const rl = tagged({ tag: destroyAll.name, l, },);
+  const rl = tagged({
+    tag: destroyAll.name,
+    l,
+  },);
   const vms = await listVms();
 
   if (vms.length === 0) {
@@ -93,6 +113,9 @@ export async function destroyAll(): Promise<void> {
   // Destroy sequentially to avoid overwhelming libvirt with concurrent operations
   for (const name of vms) {
     // oxlint-disable-next-line no-await-in-loop -- intentionally sequential to avoid libvirt contention
-    await destroyOne({ name, rl, },);
+    await destroyOne({
+      name,
+      rl,
+    },);
   }
 }

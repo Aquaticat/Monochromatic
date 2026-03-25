@@ -62,8 +62,14 @@ export function createNewTaskDialog(): NewTaskDialog {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
   const detail = document.createElement('task-detail',) as TaskDetail;
 
-  const panel = h({ tag: 'div', class: 'new-task-panel', },);
-  panel.setAttribute('popover', 'manual',);
+  const panel = h({
+    tag: 'div',
+    class: 'new-task-panel',
+  },);
+  panel.setAttribute(
+    'popover',
+    'manual',
+  );
   panel.append(detail,);
 
   /** Reference to the FAB so open/close can toggle its visibility. */
@@ -76,7 +82,9 @@ export function createNewTaskDialog(): NewTaskDialog {
       fabElement.hidden = false;
   }
 
-  detail.addEventListener('action', function onAction(event,) {
+  detail.addEventListener(
+    'action',
+    function onAction(event,) {
     void (async function onActionAsync() {
       try {
         if (!(event instanceof CustomEvent))
@@ -117,13 +125,20 @@ export function createNewTaskDialog(): NewTaskDialog {
         console.error('new task action handler failed', error,);
       }
     })();
-  },);
+  },
+  );
 
   /** Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation. */
   function openPanel(): void {
-    console.log('[new-task-dialog] openPanel(), detail.configure is:',
-      typeof detail.configure,);
-    detail.configure({ task: emptyTask, blockerSummaries: [], mode: 'create', },);
+    console.log(
+      '[new-task-dialog] openPanel(), detail.configure is:',
+      typeof detail.configure,
+    );
+    detail.configure({
+      task: emptyTask,
+      blockerSummaries: [],
+      mode: 'create',
+    },);
     if (fabElement !== null)
       fabElement.hidden = true;
 
@@ -148,5 +163,8 @@ export function createNewTaskDialog(): NewTaskDialog {
   // let bindings justified: fabElement is set once after creation, read in open/close callbacks
   fabElement = fab;
 
-  return { panel, fab, };
+  return {
+    panel,
+    fab,
+  };
 }

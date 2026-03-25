@@ -26,7 +26,10 @@ import {
  *
  * @returns HTML string
  */
-export function renderByModel({ entries, thresholds, }: {
+export function renderByModel({
+  entries,
+  thresholds,
+}: {
   entries: readonly ViewerEntry[];
   thresholds: ReadonlyMap<string, number>;
 },): string {
@@ -36,10 +39,16 @@ export function renderByModel({ entries, thresholds, }: {
   },),),];
 
   if (labels.length === 0)
-    return h({ tag: 'p', text: 'No model data available.', },);
+    return h({
+      tag: 'p',
+      text: 'No model data available.',
+    },);
 
   /** Hide Model and Probe columns since we're within a per-model overall context */
-  const tableDisplay = { showModel: false, showProbe: false, };
+  const tableDisplay = {
+    showModel: false,
+    showProbe: false,
+  };
 
   return labels
     .map(function renderModelSection(label,): string {
@@ -52,7 +61,12 @@ export function renderByModel({ entries, thresholds, }: {
       const threshold = thresholds.get(label,) ?? 0;
 
       // Overall score chart
-      const overallPoints = buildOverallPoints(modelEntries, label, openrouterId, color,);
+      const overallPoints = buildOverallPoints(
+        modelEntries,
+        label,
+        openrouterId,
+        color,
+      );
       const overallChart = renderScatterChart({
         points: overallPoints,
         threshold,
@@ -69,16 +83,28 @@ export function renderByModel({ entries, thresholds, }: {
       ];
       const probeCharts = probeNames
         .map(function renderProbeChart(probe,): string {
-          const probePoints = buildProbePoints(modelEntries, label, openrouterId, probe,
-            color,);
+          const probePoints = buildProbePoints(
+            modelEntries,
+            label,
+            openrouterId,
+            probe,
+            color,
+          );
           return h({
             tag: 'details',
             class: 'probe-section',
             children: [
-              h({ tag: 'summary', text: probe, },),
-              renderScatterChart({ points: probePoints, threshold: 0, thresholdLabel: '',
+              h({
+                tag: 'summary',
+                text: probe,
+              },),
+              renderScatterChart({
+                points: probePoints,
+                threshold: 0,
+                thresholdLabel: '',
                 caption: `${label} - ${probe}`,
-                tableDisplay: { showModel: false, showProbe: false, }, },),
+                tableDisplay: { showModel: false, showProbe: false, },
+              },),
             ],
           },);
         },)
@@ -90,15 +116,21 @@ export function renderByModel({ entries, thresholds, }: {
         children: [
           h({
             tag: 'summary',
-            children: [iconDot(openrouterId, color,), ' ',
-              h({ tag: 'span', text: label, },),],
+            children: [
+              iconDot(openrouterId, color,),
+              ' ',
+              h({ tag: 'span', text: label, },),
+            ],
           },),
           h({
             tag: 'div',
             class: 'pane',
             children: [
               overallChart,
-              h({ tag: 'h3', text: 'Per-probe breakdown', },),
+              h({
+                tag: 'h3',
+                text: 'Per-probe breakdown',
+              },),
               probeCharts,
             ],
           },),

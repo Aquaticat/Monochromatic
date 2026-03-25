@@ -11,14 +11,40 @@ import {
 } from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'tokenize', l: parentLogger, },);
+const l = tagged({
+  tag: 'tokenize',
+  l: parentLogger,
+},);
 
 /** Shell metacharacters that are invalid unquoted in Exec values. */
-const UNQUOTED_REJECT = new Set(['$', '`', '>', '<', '|', '&', ';', '(', ')',],);
+const UNQUOTED_REJECT = new Set([
+  '$',
+  '`',
+  '>',
+  '<',
+  '|',
+  '&',
+  ';',
+  '(',
+  ')',
+],);
 
 /** Recognized `%` field codes to strip from Exec values. */
-const FIELD_CODES = new Set(['f', 'F', 'u', 'U', 'i', 'c', 'k', 'd', 'D', 'n', 'N', 'v',
-  'm',],);
+const FIELD_CODES = new Set([
+  'f',
+  'F',
+  'u',
+  'U',
+  'i',
+  'c',
+  'k',
+  'd',
+  'D',
+  'n',
+  'N',
+  'v',
+  'm',
+],);
 
 /**
  * Tokenizes a desktop entry `Exec` value into an argument array.

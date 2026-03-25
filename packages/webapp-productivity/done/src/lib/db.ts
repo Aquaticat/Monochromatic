@@ -59,7 +59,10 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
     return;
 
   const directoryPath = dirname(databasePath,);
-  mkdirSync(directoryPath, { recursive: true, },);
+  mkdirSync(
+    directoryPath,
+    { recursive: true, },
+  );
 }
 
 /** Resolved filesystem path for the SQLite database file. */
@@ -67,7 +70,10 @@ const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
 /** Open Turso database connection used by all data-access modules. */
-const db = await connect(databasePath, { experimental: ['triggers',], },);
+const db = await connect(
+  databasePath,
+  { experimental: ['triggers',], },
+);
 await db.exec('PRAGMA journal_mode = WAL',);
 await db.exec('PRAGMA foreign_keys = ON',);
 

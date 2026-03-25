@@ -80,7 +80,10 @@ class ToggleSwitch extends HTMLElement {
    */
   set on(value: boolean,) {
     if (value)
-      this.setAttribute('on', '',);
+      this.setAttribute(
+        'on',
+        '',
+      );
     else
       this.removeAttribute('on',);
   }
@@ -88,12 +91,18 @@ class ToggleSwitch extends HTMLElement {
   /** Renders initial content and attaches the click handler. */
   connectedCallback(): void {
     this.#render();
-    this.addEventListener('click', this.#handleClick,);
+    this.addEventListener(
+      'click',
+      this.#handleClick,
+    );
   }
 
   /** Removes the click handler on disconnect. */
   disconnectedCallback(): void {
-    this.removeEventListener('click', this.#handleClick,);
+    this.removeEventListener(
+      'click',
+      this.#handleClick,
+    );
   }
 
   /** Re-renders when observed attributes change. */
@@ -109,7 +118,10 @@ class ToggleSwitch extends HTMLElement {
   #handleClick = function handleClick(this: ToggleSwitch,): void {
     this.on = !this.on;
     this.dispatchEvent(
-      new CustomEvent('change', { detail: { on: this.on, }, bubbles: true, },),
+      new CustomEvent(
+        'change',
+        { detail: { on: this.on, }, bubbles: true, },
+      ),
     );
   }
     .bind(this,);
@@ -118,17 +130,26 @@ class ToggleSwitch extends HTMLElement {
   #render(): void {
     const isOn = this.on;
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       h({
         tag: 'div',
         class: 'track',
         children: [
-          h({ tag: 'span', class: `thumb ${isOn ? 'on' : 'off'}`,
-            text: isOn ? '\u2713' : '\u2717', },),
+          h({
+            tag: 'span',
+            class: `thumb ${isOn ? 'on' : 'off'}`,
+            text: isOn ? '\u2713' : '\u2717',
+          },),
         ],
       },),
     );
   }
 }
 
-customElements.define('toggle-switch', ToggleSwitch,);
+customElements.define(
+  'toggle-switch',
+  ToggleSwitch,
+);

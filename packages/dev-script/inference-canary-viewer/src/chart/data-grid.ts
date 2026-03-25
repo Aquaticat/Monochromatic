@@ -38,25 +38,37 @@ export function renderDataGrid(
       const score = row.score.toFixed(2,);
 
       /** Timestamp line with optional "(timeout)" suffix */
-      const timestampChildren: string[] = [h({ tag: 'span', text: row.timestamp, },),];
+      const timestampChildren: string[] = [h({
+        tag: 'span',
+        text: row.timestamp,
+      },),];
       if (row.failed) {
-        timestampChildren.push(' ',
+        timestampChildren.push(
+          ' ',
           h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', },
-            text: '(timeout)', },),);
+            text: '(timeout)', },),
+        );
       }
 
       /** Score line with optional fix suffix */
-      const scoreChildren: string[] = [h({ tag: 'strong', text: score, },),];
+      const scoreChildren: string[] = [h({
+        tag: 'strong',
+        text: score,
+      },),];
       if (hasFixScores) {
         if (row.pass2Score !== undefined)
           scoreChildren.push(` (fix: ${row.pass2Score.toFixed(2,)})`,);
         else if (row.failed) {
-          scoreChildren.push(' ',
-            h({ tag: 'span', class: 'score-warning', text: '(fix: not run)', },),);
+          scoreChildren.push(
+            ' ',
+            h({ tag: 'span', class: 'score-warning', text: '(fix: not run)', },),
+          );
         }
         else {
-          scoreChildren.push(' ',
-            h({ tag: 'span', class: 'score-warning', text: '(fix: no data)', },),);
+          scoreChildren.push(
+            ' ',
+            h({ tag: 'span', class: 'score-warning', text: '(fix: no data)', },),
+          );
         }
       }
 
@@ -72,8 +84,14 @@ export function renderDataGrid(
         class: 'score-card',
         attrs,
         children: [
-          h({ tag: 'span', children: timestampChildren, },),
-          h({ tag: 'span', children: scoreChildren, },),
+          h({
+            tag: 'span',
+            children: timestampChildren,
+          },),
+          h({
+            tag: 'span',
+            children: scoreChildren,
+          },),
         ],
       },);
     },)
@@ -82,7 +100,10 @@ export function renderDataGrid(
   return h({
     tag: 'div',
     class: 'score-card-grid',
-    attrs: { role: 'list', 'aria-label': caption, },
+    attrs: {
+      role: 'list',
+      'aria-label': caption,
+    },
     html: cards,
   },);
 }

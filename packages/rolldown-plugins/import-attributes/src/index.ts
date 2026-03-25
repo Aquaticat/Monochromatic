@@ -78,8 +78,14 @@ function importAttributesPlugin(): Plugin {
      * Delegates to {@link transformImportAttributes} to rewrite
      * `with { type: '...' }` clauses into query-parameter-tagged specifiers.
      */
-    transform(code, id,) {
-      return transformImportAttributes(code, id,);
+    transform(
+      code,
+      id,
+    ) {
+      return transformImportAttributes(
+        code,
+        id,
+      );
     },
 
     /**
@@ -90,16 +96,24 @@ function importAttributesPlugin(): Plugin {
      * For untagged specifiers, scans the importer's source to check whether
      * the import had a `with { type: '...' }` clause.
      */
-    async resolveId(source, importer, options,) {
+    async resolveId(
+      source,
+      importer,
+      options,
+    ) {
       /** Check for query-param-tagged specifiers (from static imports after transform). */
       const queryAttrType = extractAttrType(source,);
       if (queryAttrType !== undefined) {
         const cleanSource = stripAttrQuery(source,);
 
-        const resolved = await this.resolve(cleanSource, importer, {
+        const resolved = await this.resolve(
+          cleanSource,
+          importer,
+          {
           ...options,
           skipSelf: true,
-        },);
+        },
+        );
 
         if (resolved !== null) {
           return {
@@ -110,7 +124,10 @@ function importAttributesPlugin(): Plugin {
 
         if (importer !== undefined && cleanSource.startsWith('.',)) {
           const importerDir = dirname(importer.split('?',)[0] ?? importer,);
-          const absolutePath = resolve(importerDir, cleanSource,);
+          const absolutePath = resolve(
+            importerDir,
+            cleanSource,
+          );
           return {
             id: `${absolutePath}?${ATTR_QUERY_KEY}=${queryAttrType}`,
             external: false,
@@ -135,10 +152,14 @@ function importAttributesPlugin(): Plugin {
         );
 
         if (attrType !== undefined) {
-          const resolved = await this.resolve(source, importer, {
+          const resolved = await this.resolve(
+            source,
+            importer,
+            {
             ...options,
             skipSelf: true,
-          },);
+          },
+          );
 
           if (resolved !== null) {
             return {
@@ -149,7 +170,10 @@ function importAttributesPlugin(): Plugin {
 
           if (source.startsWith('.',)) {
             const importerDir = dirname(cleanImporter,);
-            const absolutePath = resolve(importerDir, source,);
+            const absolutePath = resolve(
+              importerDir,
+              source,
+            );
             return {
               id: `${absolutePath}?${ATTR_QUERY_KEY}=${attrType}`,
               external: false,
@@ -175,8 +199,14 @@ function importAttributesPlugin(): Plugin {
         return null;
 
       const filePath = stripAttrQuery(id,);
-      const content = await readFile(filePath, 'utf8',);
-      const moduleCode = handler(content, filePath,);
+      const content = await readFile(
+        filePath,
+        'utf8',
+      );
+      const moduleCode = handler(
+        content,
+        filePath,
+      );
 
       return { code: moduleCode, };
     },

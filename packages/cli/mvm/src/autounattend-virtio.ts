@@ -18,7 +18,12 @@ export const COMPONENT_ATTRS =
  * Including multiple candidates ensures the drivers are found regardless of
  * how many CDROMs are attached or in what order.
  */
-const VIRTIO_DRIVE_CANDIDATES = ['D', 'E', 'F', 'G',];
+const VIRTIO_DRIVE_CANDIDATES = [
+  'D',
+  'E',
+  'F',
+  'G',
+];
 
 /**
  * Windows Server 2025 driver subdirectory within the virtio-win ISO.
@@ -31,7 +36,12 @@ const VIRTIO_DRIVER_OS_DIR = 'w11';
  * Only the drivers needed for VM operation: storage (disk), network,
  * serial (guest agent communication), and QEMU firmware config.
  */
-const VIRTIO_DRIVER_DIRS = ['viostor', 'NetKVM', 'vioserial', 'qemufwcfg',];
+const VIRTIO_DRIVER_DIRS = [
+  'viostor',
+  'NetKVM',
+  'vioserial',
+  'qemufwcfg',
+];
 
 /**
  * Generates the PnpCustomizationsWinPE component XML for loading VirtIO drivers
@@ -46,7 +56,10 @@ const VIRTIO_DRIVER_DIRS = ['viostor', 'NetKVM', 'vioserial', 'qemufwcfg',];
  * ```
  */
 export function pnpDriverPaths(): string {
-  const driverDirs = ['viostor', 'NetKVM',];
+  const driverDirs = [
+    'viostor',
+    'NetKVM',
+  ];
   let keyValue = 1;
   const paths = driverDirs.flatMap(function mapDriver(driver,) {
     return VIRTIO_DRIVE_CANDIDATES.map(function mapLetter(letter,) {

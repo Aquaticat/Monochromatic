@@ -19,7 +19,13 @@ import type { Task, } from '../../lib/types.ts';
  * @returns Button row element
  */
 export function buildActionButtonRow(
-  { task, isCreate, }: { task: Task; isCreate: boolean; },
+  {
+    task,
+    isCreate,
+  }: {
+    task: Task;
+    isCreate: boolean
+  },
 ): HTMLElement {
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
   if (task.timerStartedAt !== null)
@@ -35,12 +41,30 @@ export function buildActionButtonRow(
     tag: 'div',
     class: 'btn-row',
     children: [
-      h({ tag: 'button', class: 'btn-outline', attrs: startAttrs, text: 'Start', },),
-      h({ tag: 'button', class: 'btn-outline', attrs: stopAttrs, text: 'Stop', },),
-      h({ tag: 'button', class: 'btn-primary', attrs: completeAttrs,
-        text: 'Complete', },),
-      h({ tag: 'button', class: 'btn-outline', attrs: { 'data-action': 'delete', },
-        text: 'Delete', },),
+      h({
+        tag: 'button',
+        class: 'btn-outline',
+        attrs: startAttrs,
+        text: 'Start',
+      },),
+      h({
+        tag: 'button',
+        class: 'btn-outline',
+        attrs: stopAttrs,
+        text: 'Stop',
+      },),
+      h({
+        tag: 'button',
+        class: 'btn-primary',
+        attrs: completeAttrs,
+        text: 'Complete',
+      },),
+      h({
+        tag: 'button',
+        class: 'btn-outline',
+        attrs: { 'data-action': 'delete', },
+        text: 'Delete',
+      },),
     ],
   },);
   if (isCreate)
@@ -61,14 +85,21 @@ export function buildActionButtonRow(
  * @param descInput - Description textarea whose value is included in the event detail
  */
 export function attachActionHandler(
-  { shadow, host, titleInput, descInput, }: {
+  {
+    shadow,
+    host,
+    titleInput,
+    descInput,
+  }: {
     shadow: ShadowRoot;
     host: HTMLElement;
     titleInput: HTMLInputElement;
     descInput: HTMLTextAreaElement;
   },
 ): void {
-  shadow.addEventListener('click', function onAction(event,): void {
+  shadow.addEventListener(
+    'click',
+    function onAction(event,): void {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
     const target = event.target as HTMLElement;
     const button = target.closest<HTMLElement>('[data-action]',);
@@ -85,5 +116,6 @@ export function attachActionHandler(
         description: descInput.value,
       },
     },),);
-  },);
+  },
+  );
 }

@@ -51,7 +51,10 @@ export const STYLES = [
       outline: 'none',
       'white-space': 'pre-wrap',
       'overflow-wrap': 'break-word',
-      'font-family': cssCommaList(["'JetBrains Mono'", 'monospace',],),
+      'font-family': cssCommaList([
+        "'JetBrains Mono'",
+        'monospace',
+      ],),
       'font-size': cssRem(1,),
       'line-height': cssNum(LINE_HEIGHT,),
       'tab-size': cssInt(2,),

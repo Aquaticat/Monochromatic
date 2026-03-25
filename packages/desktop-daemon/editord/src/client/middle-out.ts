@@ -32,7 +32,11 @@ const ELLIPSIS = '\u2026';
  * // '…nested/path/hello-world.ts'
  * ```
  */
-export function middleOut({ text, query, budget, }: {
+export function middleOut({
+  text,
+  query,
+  budget,
+}: {
   text: string;
   query: string;
   budget: number;
@@ -43,13 +47,19 @@ export function middleOut({ text, query, budget, }: {
   const matchStart = text.toLowerCase().indexOf(query.toLowerCase(),);
 
   if (matchStart === -1)
-    return text.slice(0, budget - 1,) + ELLIPSIS;
+    return text.slice(
+      0,
+      budget - 1,
+    ) + ELLIPSIS;
 
   const matchEnd = matchStart + query.length;
 
   // Match near the start: keep start, truncate end
   if (matchEnd <= budget - 1)
-    return text.slice(0, budget - 1,) + ELLIPSIS;
+    return text.slice(
+      0,
+      budget - 1,
+    ) + ELLIPSIS;
 
   // Match near the end: truncate start, keep end
   if (text.length - matchStart <= budget - 1)
@@ -60,5 +70,8 @@ export function middleOut({ text, query, budget, }: {
   const before = Math.floor(contextBudget / 2,);
   const after = contextBudget - before;
 
-  return ELLIPSIS + text.slice(matchStart - before, matchEnd + after,) + ELLIPSIS;
+  return ELLIPSIS + text.slice(
+    matchStart - before,
+    matchEnd + after,
+  ) + ELLIPSIS;
 }

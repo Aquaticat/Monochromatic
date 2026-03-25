@@ -23,26 +23,41 @@ const DESC_FONT_SIZE_PX = 15;
 const STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: cssVar('min-padding',), },
+    decls: {
+      ...flexColumn(),
+      gap: cssVar('min-padding',),
+    },
   },),
   css({
     rule: '.header',
-    decls: { ...flexRow(), gap: cssVar('min-gap',), },
+    decls: {
+      ...flexRow(),
+      gap: cssVar('min-gap',),
+    },
   },),
   css({
     rule: '.label',
-    decls: { 'font-size': cssRem(1,), 'flex-grow': 1, },
+    decls: {
+      'font-size': cssRem(1,),
+      'flex-grow': 1,
+    },
   },),
   css({
     rule: '.desc',
-    decls: { 'font-size': cssCalc(`${cssRem(DESC_FONT_SIZE_PX,)} / 16`,),
-      'line-height': 1.5, color: cssVar('fg-weaker',), },
+    decls: {
+      'font-size': cssCalc(`${cssRem(DESC_FONT_SIZE_PX,)} / 16`,),
+      'line-height': 1.5,
+      color: cssVar('fg-weaker',),
+    },
   },),
   css({
     rule: 'button',
     decls: buttonOutlined(),
     children: [
-      css({ rule: '&:focus-visible', decls: focusOutline(), },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline(),
+      },),
     ],
   },),
 ]
@@ -70,28 +85,49 @@ class SettingGroup extends HTMLElement {
     const on = this.hasAttribute('on',);
 
     const actionElement = mode === 'button'
-      ? h({ tag: 'button', attrs: { part: 'action', }, children: [
+      ? h({
+        tag: 'button',
+        attrs: { part: 'action', },
+        children: [
         h({ tag: 'slot', attrs: { name: 'action', }, text: 'connect?', },),
-      ], },)
-      : h({ tag: 'toggle-switch', attrs: on ? { on: '', } : {}, },);
+      ],
+      },)
+      : h({
+        tag: 'toggle-switch',
+        attrs: on ? { on: '', } : {},
+      },);
 
     const children: (HTMLElement)[] = [
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       h({
         tag: 'div',
         class: 'header',
         children: [
-          h({ tag: 'span', class: 'label', text: label, },),
+          h({
+            tag: 'span',
+            class: 'label',
+            text: label,
+          },),
           actionElement,
         ],
       },),
     ];
 
     if (description.length > 0)
-      children.push(h({ tag: 'p', class: 'desc', text: description, },),);
+      children.push(h({
+        tag: 'p',
+        class: 'desc',
+        text: description,
+      },),);
 
     this.#shadow.replaceChildren(...children,);
   }
 }
 
-customElements.define('setting-group', SettingGroup,);
+customElements.define(
+  'setting-group',
+  SettingGroup,
+);

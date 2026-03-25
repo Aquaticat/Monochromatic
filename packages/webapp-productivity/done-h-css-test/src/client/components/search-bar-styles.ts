@@ -42,8 +42,10 @@ export const SEARCH_BAR_STYLES = [
       color: cssVar('fg',),
     },
     children: [
-      css({ rule: '&:focus-visible',
-        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },), },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },),
+      },),
     ],
   },),
   css({
@@ -72,8 +74,14 @@ export const SEARCH_BAR_STYLES = [
           'border-block-end-color': cssVar('bg-weaker',),
         },
       },),
-      css({ rule: '.back', decls: { display: 'none', }, },),
-      css({ rule: 'input', decls: { 'font-size': cssRem(BACK_FONT_SIZE,), }, },),
+      css({
+        rule: '.back',
+        decls: { display: 'none', },
+      },),
+      css({
+        rule: 'input',
+        decls: { 'font-size': cssRem(BACK_FONT_SIZE,), },
+      },),
     ],
   },),
 ]

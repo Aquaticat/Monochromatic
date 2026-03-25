@@ -27,10 +27,19 @@ import {
  * ```
  */
 export async function exportAsPng(deps: ExportDeps,): Promise<void> {
-  const { container, textLayer, } = deps;
-  const { cw, ch, } = getContainerSize(container,);
+  const {
+    container,
+    textLayer,
+  } = deps;
+  const {
+    cw,
+    ch,
+  } = getContainerSize(container,);
 
-  const { canvas, ctx, } = await renderBaseCanvas(deps,);
+  const {
+    canvas,
+    ctx,
+  } = await renderBaseCanvas(deps,);
 
   //region Layer 4: text annotations
   ctx.textBaseline = 'top';
@@ -48,5 +57,8 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
   //endregion Layer 4
 
   const blob = await canvas.convertToBlob({ type: 'image/png', },);
-  triggerDownload({ blob, filename: 'doodle.png', },);
+  triggerDownload({
+    blob,
+    filename: 'doodle.png',
+  },);
 }

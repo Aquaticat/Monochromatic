@@ -1,20 +1,20 @@
 // Fixture: constructs with a single item should not trigger rules.
 // Expected: zero stylistic rule violations.
 
-function identity(x: number): number {
+function identity(x: number,): number {
   return x;
 }
 
-const items = [1];
+const items = [1,];
 
-const config = { host: 'localhost' };
+const config = { host: 'localhost', };
 
-const { host } = config;
+const { host, } = config;
 
-type Options = { verbose: boolean };
+type Options = { verbose: boolean; };
 
-type Single = [string];
+type Single = [string,];
 
-export { identity };
+export { identity, };
 
 export {};

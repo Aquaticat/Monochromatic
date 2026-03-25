@@ -20,7 +20,8 @@ export function rangeOf(node: Span,): [
       number,
       number,
     ];
-  }).range;
+  })
+    .range;
 }
 
 /**
@@ -36,13 +37,16 @@ export function rangeOf(node: Span,): [
  *
  * @throws when index is out of bounds
  */
-export function at<T>(
+export function at<T,>(
   arr: T[],
   index: number,
 ): T {
   const value = arr[index];
-  if (value === undefined)
-    throw new Error(`Index ${String(index)} out of bounds (length ${String(arr.length)})`,);
+  if (value === undefined) {
+    throw new Error(
+      `Index ${String(index,)} out of bounds (length ${String(arr.length,)})`,
+    );
+  }
 
   return value;
 }

@@ -14,8 +14,13 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { l, } from '../log.ts';
+
 /** Monorepo root, resolved from this file's location (src/codegen/ → 5 levels up) */
-const MONOREPO_ROOT = new URL('../../../../../', import.meta.url,).pathname;
+const MONOREPO_ROOT = new URL(
+  '../../../../../',
+  import.meta.url,
+).pathname;
 
 /**
  * Reads a project config file relative to the monorepo root.
@@ -25,7 +30,10 @@ const MONOREPO_ROOT = new URL('../../../../../', import.meta.url,).pathname;
  * @returns file content
  */
 async function readConfig(relativePath: string,): Promise<string> {
-  return await readFile(join(MONOREPO_ROOT, relativePath,), 'utf8',);
+  return await readFile(
+    join(MONOREPO_ROOT, relativePath,),
+    'utf8',
+  );
 }
 
 /**
@@ -66,4 +74,4 @@ async function buildSystemPrompt(): Promise<string> {
  * Contains the full project configs so the model knows exactly what rules apply.
  */
 export const CODE_GEN_SYSTEM = await buildSystemPrompt();
-console.log(`[canary] system prompt loaded (${String(CODE_GEN_SYSTEM.length,)} chars)`,);
+l.info(`system prompt loaded (${String(CODE_GEN_SYSTEM.length,)} chars)`,);

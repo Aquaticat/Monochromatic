@@ -54,7 +54,10 @@ export async function getDiagnostics(): Promise<Diagnostic[]> {
       try {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
         const raw = (await nvim
-          .executeLua(LUA_GET_CURRENT_BUF_DIAGNOSTICS, [],)) as Record<string, unknown>[];
+          .executeLua(
+            LUA_GET_CURRENT_BUF_DIAGNOSTICS,
+            [],
+          )) as Record<string, unknown>[];
         return raw
           .map(function mapDiag(d,) {
             return mapRawDiagnostic(d,);
@@ -92,7 +95,10 @@ export async function getCurrentFiles(): Promise<CurrentFile[]> {
     nvimClients.map(async function queryInstance(nvim,) {
       try {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
-        const result = (await nvim.executeLua(LUA_GET_CURRENT_FILE, [],)) as Record<
+        const result = (await nvim.executeLua(
+          LUA_GET_CURRENT_FILE,
+          [],
+        )) as Record<
           string,
           unknown
         >;
@@ -103,7 +109,10 @@ export async function getCurrentFiles(): Promise<CurrentFile[]> {
         };
       }
       catch (err: unknown) {
-        console.error('[mcp-nvim] Failed to query instance for current file:', err,);
+        console.error(
+          '[mcp-nvim] Failed to query instance for current file:',
+          err,
+        );
         return null;
       }
     },),

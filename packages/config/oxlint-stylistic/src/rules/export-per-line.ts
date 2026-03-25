@@ -38,8 +38,7 @@ export const exportPerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      exportPerLine:
-        'Each named export specifier must be on its own line.',
+      exportPerLine: 'Each named export specifier must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -61,7 +60,10 @@ export const exportPerLine: CreateOnceRule = {
           container: exportNode,
           items: specifiers,
           messageId: 'exportPerLine',
-          bracketPair: { open: '{', close: '}', },
+          bracketPair: {
+            open: '{',
+            close: '}',
+          },
         },);
       },
     } as VisitorWithHooks;

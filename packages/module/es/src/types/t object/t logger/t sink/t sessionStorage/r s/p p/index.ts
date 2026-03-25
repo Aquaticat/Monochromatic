@@ -29,7 +29,10 @@ export function verify(): boolean {
   try {
     const testKey = '__monochromatic_verify__';
     const testValue = `test-${Date.now()}`;
-    globalThis.sessionStorage.setItem(testKey, testValue,);
+    globalThis.sessionStorage.setItem(
+      testKey,
+      testValue,
+    );
     const readBack = globalThis.sessionStorage.getItem(testKey,);
     globalThis.sessionStorage.removeItem(testKey,);
     available = readBack === testValue;
@@ -51,7 +54,10 @@ export function $(record: LogRecord,): void {
 
   try {
     const key = `${STORAGE_KEY_PREFIX}.${lineCounter++}`;
-    globalThis.sessionStorage.setItem(key, JSON.stringify(record,),);
+    globalThis.sessionStorage.setItem(
+      key,
+      JSON.stringify(record,),
+    );
   }
   catch {
     // Silently fail if storage is full or unavailable

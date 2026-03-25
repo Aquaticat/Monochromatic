@@ -29,7 +29,10 @@ export const DEFAULT_GEMINI_MODEL: GeminiModel = 'gemini-embedding-2-preview';
  * ```
  */
 export function resolveGeminiApiKey(configKey: string | undefined,): string {
-  const rl = tagged({ tag: resolveGeminiApiKey.name, l, },);
+  const rl = tagged({
+    tag: resolveGeminiApiKey.name,
+    l,
+  },);
   const key = configKey
     ?? process.env['IMAGE_DIFF_GEMINI_API_KEY']
     ?? process.env['GEMINI_API_KEY'];

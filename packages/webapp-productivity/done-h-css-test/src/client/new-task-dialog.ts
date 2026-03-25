@@ -65,8 +65,14 @@ export function createNewTaskDialog(): NewTaskDialog {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail
   const detail = document.createElement('task-detail',) as TaskDetail;
 
-  const panel = h({ tag: 'div', class: 'new-task-panel', },);
-  panel.setAttribute('popover', 'manual',);
+  const panel = h({
+    tag: 'div',
+    class: 'new-task-panel',
+  },);
+  panel.setAttribute(
+    'popover',
+    'manual',
+  );
   panel.append(detail,);
 
   /** Reference to the FAB so open/close can toggle its visibility. */
@@ -79,7 +85,9 @@ export function createNewTaskDialog(): NewTaskDialog {
       fabElement.hidden = false;
   }
 
-  detail.addEventListener('action', function handleAction(event,) {
+  detail.addEventListener(
+    'action',
+    function handleAction(event,) {
     if (!(event instanceof CustomEvent))
       throw new TypeError("Expected CustomEvent for 'action' listener",);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
@@ -115,13 +123,20 @@ export function createNewTaskDialog(): NewTaskDialog {
         globalThis.location.reload();
       })();
     }
-  },);
+  },
+  );
 
   /** Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation. */
   function openPanel(): void {
-    console.log('[new-task-dialog] openPanel(), detail.configure is:',
-      typeof detail.configure,);
-    detail.configure({ task: emptyTask, blockerSummaries: [], mode: 'create', },);
+    console.log(
+      '[new-task-dialog] openPanel(), detail.configure is:',
+      typeof detail.configure,
+    );
+    detail.configure({
+      task: emptyTask,
+      blockerSummaries: [],
+      mode: 'create',
+    },);
     if (fabElement !== null)
       fabElement.hidden = true;
 
@@ -144,5 +159,8 @@ export function createNewTaskDialog(): NewTaskDialog {
   // let bindings justified: fabElement is set once after creation, read in open/close callbacks
   fabElement = fab;
 
-  return { panel, fab, };
+  return {
+    panel,
+    fab,
+  };
 }

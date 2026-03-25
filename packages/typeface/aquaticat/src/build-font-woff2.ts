@@ -29,18 +29,27 @@ export async function convertToWoff2(
 ): Promise<void> {
   console.log('Converting to WOFF2 via fonttools...',);
   /** Output path for the WOFF2 font file. */
-  const woff2Path = resolve(distDir, 'Aquaticat-Regular.woff2',);
+  const woff2Path = resolve(
+    distDir,
+    'Aquaticat-Regular.woff2',
+  );
   /** Python one-liner for fonttools WOFF2 conversion. */
   const woff2Script =
     `from fontTools.ttLib import TTFont; f = TTFont("${otfPath}"); f.flavor = "woff2"; f.save("${woff2Path}")`;
   try {
-    await spawn('uv', ['run', '--with', 'fonttools', '--with', 'brotli', 'python3', '-c',
-      woff2Script,],);
+    await spawn(
+      'uv',
+      ['run', '--with', 'fonttools', '--with', 'brotli', 'python3', '-c',
+      woff2Script,],
+    );
     /** File stats for the generated WOFF2 file. */
     const { size, } = statSync(woff2Path,);
     console.log(`Wrote ${woff2Path} (${size} bytes)`,);
   }
   catch (error: unknown) {
-    console.error('WOFF2 conversion failed:', (error as { stderr: string; }).stderr,);
+    console.error(
+      'WOFF2 conversion failed:',
+      (error as { stderr: string; }).stderr,
+    );
   }
 }

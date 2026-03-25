@@ -3,16 +3,29 @@ export type $ =
   /** Represents the `undefined` primitive type */
   | 'undefined'
   /** Represents the `bigint` primitive type with sign information */
-  | ['bigint', { sign: 0 | 'negative' | 'positive'; },]
+  | [
+    'bigint',
+    { sign: 0 | 'negative' | 'positive'; },
+  ]
   /** Represents the `boolean` primitive type with truthiness information */
-  | ['boolean', { true: boolean; },]
+  | [
+    'boolean',
+    { true: boolean; },
+  ]
   /** Represents function types with generator and async flags */
-  | ['function', { generator: boolean; async: boolean; },]
+  | [
+    'function',
+    { generator: boolean; async: boolean; },
+  ]
   /** Represents the `number` primitive type with sign and float information */
-  | ['number',
-    { NaN: true | [false, { sign: 0 | 'negative' | 'positive'; float: boolean; },]; },]
+  | [
+    'number',
+    { NaN: true | [false, { sign: 0 | 'negative' | 'positive'; float: boolean; },]; },
+  ]
   /** Represents object types with prototype information */
-  | ['object', {
+  | [
+    'object',
+    {
     prototype:
       /** Represents `null` values (special object case) */
       // > Object.prototype.toString.call(null)
@@ -52,11 +65,14 @@ export type $ =
       // > Object.prototype.toString.call(new RegExp())
       // '[object RegExp]'
       | ['RegExp', { global: boolean; },];
-  },]
+  },
+  ]
   /** Represents string types with emptiness and character information */
-  | ['string',
+  | [
+    'string',
     | { empty: true; }
     | { empty: [false, { char:
       | false
-      | [true, 'uppercaseLetter' | 'lowercaseLetter' | 'nonLetter',]; },]; },]
+      | [true, 'uppercaseLetter' | 'lowercaseLetter' | 'nonLetter',]; },]; },
+  ]
   | 'symbol';

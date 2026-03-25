@@ -60,7 +60,10 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
       const lintDiags = lintResult.diagnostics.get(fileEntry.path,) ?? [];
       mergedByPath.set(
         fileEntry.path,
-        dedupDiagnostics({ editor: fileEntry.diagnostics, lint: lintDiags, },),
+        dedupDiagnostics({
+          editor: fileEntry.diagnostics,
+          lint: lintDiags,
+        },),
       );
     }
 
@@ -69,7 +72,10 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
       if (!mergedByPath.has(filePath,)) {
         const lintDiags = lintResult.diagnostics.get(filePath,) ?? [];
         if (lintDiags.length > 0)
-          mergedByPath.set(filePath, lintDiags,);
+          mergedByPath.set(
+            filePath,
+            lintDiags,
+          );
       }
     }
     //endregion Merge editor and lint diagnostics per file
@@ -108,7 +114,10 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
     const sections = [...mergedByPath.entries(),].map(
       function formatSection([path, diagnostics,],) {
         const lines = diagnostics.map(function formatLine(diagnostic,) {
-          return formatDiagnostic(diagnostic, '  ',);
+          return formatDiagnostic(
+            diagnostic,
+            '  ',
+          );
         },);
         return `${path}\n${lines.join('\n',)}`;
       },
@@ -123,7 +132,13 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
   }
   catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err,);
-    console.error('[mcp-nvim] get_diagnostics failed:', err,);
-    return { content: [{ type: 'text', text: `Error: ${message}`, },], isError: true, };
+    console.error(
+      '[mcp-nvim] get_diagnostics failed:',
+      err,
+    );
+    return {
+      content: [{ type: 'text', text: `Error: ${message}`, },],
+      isError: true,
+    };
   }
 }

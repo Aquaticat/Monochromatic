@@ -48,28 +48,41 @@ export class TreeFileEntry extends HTMLElement {
     this.#initialized = true;
 
     this.dataset['path'] = this.entryPath;
-    this.setAttribute('tabindex', '0',);
+    this.setAttribute(
+      'tabindex',
+      '0',
+    );
     this.style.order = String(nameToOrder({ name: this.entryName, },),);
 
-    const toggle = h({ tag: 'span', class: 'toggle', },);
+    const toggle = h({
+      tag: 'span',
+      class: 'toggle',
+    },);
     if (this.recencyIndex !== -1) {
       toggle.textContent = String(this.recencyIndex,);
       this.dataset['recency'] = String(this.recencyIndex,);
     }
 
-    this.replaceChildren(toggle,
-      h({ tag: 'span', class: 'name', text: this.entryName, },),);
+    this.replaceChildren(
+      toggle,
+      h({ tag: 'span', class: 'name', text: this.entryName, },),
+    );
 
     const entry = this;
-    this.addEventListener('click', function handleFileClick() {
+    this.addEventListener(
+      'click',
+      function handleFileClick() {
       entry.focus();
       entry.dispatchEvent(new CustomEvent('file-select', {
         bubbles: true,
         composed: true,
         detail: { path: entry.entryPath, },
       },),);
-    },);
-    this.addEventListener('mouseup', function handleFileContext(event: MouseEvent,) {
+    },
+    );
+    this.addEventListener(
+      'mouseup',
+      function handleFileContext(event: MouseEvent,) {
       if (event.button !== 2)
         return;
       event.preventDefault();
@@ -78,8 +91,12 @@ export class TreeFileEntry extends HTMLElement {
         detail: { x: event.clientX, y: event.clientY, path: entry.entryPath,
           kind: 'file' as const, },
       },),);
-    },);
-    this.addEventListener('contextmenu', suppressContextMenu,);
+    },
+    );
+    this.addEventListener(
+      'contextmenu',
+      suppressContextMenu,
+    );
   }
 }
 
@@ -94,7 +111,11 @@ export class TreeFileEntry extends HTMLElement {
  *
  * @returns configured element (renders on DOM insertion)
  */
-export function createTreeFileEntry({ path, name, recencyIndex, }: {
+export function createTreeFileEntry({
+  path,
+  name,
+  recencyIndex,
+}: {
   path: string;
   name: string;
   recencyIndex: number;
@@ -107,4 +128,7 @@ export function createTreeFileEntry({ path, name, recencyIndex, }: {
   return entry;
 }
 
-customElements.define('tree-file-entry', TreeFileEntry,);
+customElements.define(
+  'tree-file-entry',
+  TreeFileEntry,
+);

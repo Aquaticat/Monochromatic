@@ -19,7 +19,13 @@ import { i18nObject, } from '../i18n/i18n-util.ts';
  * @returns HTML string for the `<head>` element
  */
 export function headFragment(
-  { title, lang, }: { title: string; lang: Locales; },
+  {
+    title,
+    lang,
+  }: {
+    title: string;
+    lang: Locales
+  },
 ): string {
   const t = i18nObject(lang,);
   const fullTitle = `${title} | ${t.siteName()}`;
@@ -27,34 +33,58 @@ export function headFragment(
   return h({
     tag: 'head',
     children: [
-      h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
-      h({ tag: 'meta', attrs: {
+      h({
+        tag: 'meta',
+        attrs: { charset: 'utf8', },
+      },),
+      h({
+        tag: 'meta',
+        attrs: {
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
-      }, },),
-      h({ tag: 'link', attrs: {
+      },
+      },),
+      h({
+        tag: 'link',
+        attrs: {
         rel: 'icon',
         href: '/favicon.ico',
         sizes: '32x32',
-      }, },),
-      h({ tag: 'link', attrs: {
+      },
+      },),
+      h({
+        tag: 'link',
+        attrs: {
         rel: 'icon',
         href: '/favicon.svg',
         type: 'image/svg+xml',
-      }, },),
-      h({ tag: 'link', attrs: {
+      },
+      },),
+      h({
+        tag: 'link',
+        attrs: {
         rel: 'apple-touch-icon',
         href: '/apple-touch-icon.png',
-      }, },),
-      h({ tag: 'link', attrs: {
+      },
+      },),
+      h({
+        tag: 'link',
+        attrs: {
         rel: 'manifest',
         href: '/manifest.webmanifest',
-      }, },),
-      h({ tag: 'link', attrs: {
+      },
+      },),
+      h({
+        tag: 'link',
+        attrs: {
         rel: 'stylesheet',
         href: '/styles.css',
-      }, },),
-      h({ tag: 'title', text: fullTitle, },),
+      },
+      },),
+      h({
+        tag: 'title',
+        text: fullTitle,
+      },),
     ],
   },);
 }

@@ -21,7 +21,10 @@ import { mirrorGlobPath, } from './glob.ts';
  * @param filePath - Path to the file about to be written
  */
 async function ensureDir(filePath: string,): Promise<void> {
-  await mkdir(dirname(filePath,), { recursive: true, },);
+  await mkdir(
+    dirname(filePath,),
+    { recursive: true, },
+  );
 }
 
 /**
@@ -49,7 +52,10 @@ async function readExisting(filePath: string,): Promise<string | undefined> {
  *
  * @param content - Content string to write
  */
-export async function overwrite(dest: string, content: string,): Promise<void> {
+export async function overwrite(
+  dest: string,
+  content: string,
+): Promise<void> {
   trackDest(dest,);
   /** Current file content, or undefined if file doesn't exist yet */
   const existing = await readExisting(dest,);
@@ -58,8 +64,14 @@ export async function overwrite(dest: string, content: string,): Promise<void> {
     return;
   }
   await ensureDir(dest,);
-  await writeFile(dest, content,);
-  updateCache(dest, content,);
+  await writeFile(
+    dest,
+    content,
+  );
+  updateCache(
+    dest,
+    content,
+  );
   trackWriteTime(dest,);
   console.log(`[file-enforcer] -> ${dest}`,);
 }
@@ -71,15 +83,20 @@ export async function overwrite(dest: string, content: string,): Promise<void> {
  *
  * @param content - Content string to write
  */
-export async function overwriteIfNotExists(dest: string,
-  content: string,): Promise<void>
+export async function overwriteIfNotExists(
+  dest: string,
+  content: string,
+): Promise<void>
 {
   if (await exists(dest,)) {
     trackDest(dest,);
     console.log(`[file-enforcer] skip (exists): ${dest}`,);
     return;
   }
-  await overwrite(dest, content,);
+  await overwrite(
+    dest,
+    content,
+  );
 }
 
 /**
@@ -104,7 +121,11 @@ export async function overwriteEach(
   await Promise.all(
     files.map(async function writeOneGlobMatch(file,): Promise<void> {
       /** Concrete destination path from the mirror-glob mapping */
-      const dest = mirrorGlobPath(files.sourceGlob, destGlob, file.path,);
+      const dest = mirrorGlobPath(
+        files.sourceGlob,
+        destGlob,
+        file.path,
+      );
       trackDest(dest,);
       /** Skip if content is already identical */
       const existing = await readExisting(dest,);
@@ -113,8 +134,14 @@ export async function overwriteEach(
         return;
       }
       await ensureDir(dest,);
-      await writeFile(dest, file.content,);
-      updateCache(dest, file.content,);
+      await writeFile(
+        dest,
+        file.content,
+      );
+      updateCache(
+        dest,
+        file.content,
+      );
       trackWriteTime(dest,);
       console.log(`[file-enforcer] ${file.path} -> ${dest}`,);
     },),

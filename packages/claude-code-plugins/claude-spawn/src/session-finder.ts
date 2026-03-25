@@ -45,10 +45,16 @@ export function findByProcessTree(): PidMapping | null {
   // Walk up the process tree, checking each ancestor PID.
   // Stop at PID 1 (init) to avoid infinite loops.
   while (pid > 1) {
-    const pidFilePath = join(BY_PID_DIR, String(pid,),);
+    const pidFilePath = join(
+      BY_PID_DIR,
+      String(pid,),
+    );
 
     try {
-      const raw = readFileSync(pidFilePath, 'utf8',);
+      const raw = readFileSync(
+        pidFilePath,
+        'utf8',
+      );
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
       return JSON.parse(raw,) as PidMapping;
     }
@@ -57,7 +63,10 @@ export function findByProcessTree(): PidMapping | null {
     }
 
     try {
-      const statusContent = readFileSync(`/proc/${String(pid,)}/status`, 'utf8',);
+      const statusContent = readFileSync(
+        `/proc/${String(pid,)}/status`,
+        'utf8',
+      );
       const ppidLine = statusContent.split('\n',).find(function isPpidLine(line,) {
         return line.startsWith('PPid:',);
       },);
@@ -65,7 +74,10 @@ export function findByProcessTree(): PidMapping | null {
       if (ppidLine === undefined)
         return null;
 
-      pid = Number.parseInt(ppidLine.split(/\s+/,)[1] ?? '0', 10,);
+      pid = Number.parseInt(
+        ppidLine.split(/\s+/,)[1] ?? '0',
+        10,
+      );
     }
     catch {
       // Cannot read /proc — platform limitation or process already exited.
@@ -101,19 +113,31 @@ export function findByMostRecent(): PidMapping | null {
     return null;
   }
 
-  let newest: { mapping: PidMapping; mtime: number; } | null = null;
+  let newest: {
+    mapping: PidMapping;
+    mtime: number
+  } | null = null;
 
   for (const filename of entries) {
-    const filePath = join(BY_PID_DIR, filename,);
+    const filePath = join(
+      BY_PID_DIR,
+      filename,
+    );
 
     try {
       const mtime = statSync(filePath,).mtimeMs;
-      const raw = readFileSync(filePath, 'utf8',);
+      const raw = readFileSync(
+        filePath,
+        'utf8',
+      );
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
       const mapping = JSON.parse(raw,) as PidMapping;
 
       if (newest === null || mtime > newest.mtime)
-        newest = { mapping, mtime, };
+        newest = {
+          mapping,
+          mtime,
+        };
     }
     catch {
       // Skip unreadable files.

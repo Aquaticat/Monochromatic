@@ -87,8 +87,15 @@ export type CdromSpec = {
  * ```
  */
 export function domainXml(
-  { bootDev = 'hd', cdroms = [], diskBus = 'virtio', diskPath, name, osFamily = 'linux',
-    seedIsoPath, }: {
+  {
+    bootDev = 'hd',
+    cdroms = [],
+    diskBus = 'virtio',
+    diskPath,
+    name,
+    osFamily = 'linux',
+    seedIsoPath,
+  }: {
       /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
       bootDev?: 'cdrom' | 'hd';
       /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
@@ -121,11 +128,23 @@ export function domainXml(
   const devices: string[] = [
     h({
       tag: 'disk',
-      attrs: { type: 'file', device: 'disk', },
+      attrs: {
+        type: 'file',
+        device: 'disk',
+      },
       children: [
-        h({ tag: 'driver', attrs: { name: 'qemu', type: 'qcow2', }, },),
-        h({ tag: 'source', attrs: { file: diskPath, }, },),
-        h({ tag: 'target', attrs: { dev: diskDev, bus: diskBus, }, },),
+        h({
+          tag: 'driver',
+          attrs: { name: 'qemu', type: 'qcow2', },
+        },),
+        h({
+          tag: 'source',
+          attrs: { file: diskPath, },
+        },),
+        h({
+          tag: 'target',
+          attrs: { dev: diskDev, bus: diskBus, },
+        },),
       ],
     },),
   ];
@@ -135,11 +154,23 @@ export function domainXml(
     devices.push(
       h({
         tag: 'disk',
-        attrs: { type: 'file', device: 'cdrom', },
+        attrs: {
+          type: 'file',
+          device: 'cdrom',
+        },
         children: [
-          h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw', }, },),
-          h({ tag: 'source', attrs: { file: seedIsoPath, }, },),
-          h({ tag: 'target', attrs: { dev: 'sdb', bus: 'sata', }, },),
+          h({
+            tag: 'driver',
+            attrs: { name: 'qemu', type: 'raw', },
+          },),
+          h({
+            tag: 'source',
+            attrs: { file: seedIsoPath, },
+          },),
+          h({
+            tag: 'target',
+            attrs: { dev: 'sdb', bus: 'sata', },
+          },),
           h({ tag: 'readonly', },),
         ],
       },),
@@ -154,18 +185,38 @@ export function domainXml(
     tag: 'domain',
     attrs: { type: 'kvm', },
     children: [
-      h({ tag: 'name', text: `${VM_PREFIX}${name}`, },),
-      h({ tag: 'memory', attrs: { unit: 'MiB', }, text: String(DEFAULT_MEMORY_MIB,), },),
-      h({ tag: 'vcpu', text: String(DEFAULT_VCPUS,), },),
+      h({
+        tag: 'name',
+        text: `${VM_PREFIX}${name}`,
+      },),
+      h({
+        tag: 'memory',
+        attrs: { unit: 'MiB', },
+        text: String(DEFAULT_MEMORY_MIB,),
+      },),
+      h({
+        tag: 'vcpu',
+        text: String(DEFAULT_VCPUS,),
+      },),
       h({
         tag: 'os',
         children: [
-          h({ tag: 'type', attrs: { arch: 'x86_64', }, text: 'hvm', },),
-          h({ tag: 'boot', attrs: { dev: bootDev, }, },),
+          h({
+            tag: 'type',
+            attrs: { arch: 'x86_64', },
+            text: 'hvm',
+          },),
+          h({
+            tag: 'boot',
+            attrs: { dev: bootDev, },
+          },),
         ],
       },),
       // Bun requires AVX
-      h({ tag: 'cpu', attrs: { mode: 'host-passthrough', }, },),
+      h({
+        tag: 'cpu',
+        attrs: { mode: 'host-passthrough', },
+      },),
       // ACPI enables graceful shutdown during template baking (template.ts)
       h({
         tag: 'features',

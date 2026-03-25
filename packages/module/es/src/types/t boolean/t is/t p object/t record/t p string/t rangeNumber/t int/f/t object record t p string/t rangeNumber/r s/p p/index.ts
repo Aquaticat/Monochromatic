@@ -13,7 +13,10 @@ import type {
  * @returns True if the object is a RangeNumberInt with integer bounds
  */
 export function $(value: RangeNumber,): value is RangeNumberInt {
-  const { startInclusive, endInclusive, } = value;
+  const {
+    startInclusive,
+    endInclusive,
+  } = value;
 
   // Check that both are integers
   if (!Number.isInteger(startInclusive,) || !Number.isInteger(endInclusive,))

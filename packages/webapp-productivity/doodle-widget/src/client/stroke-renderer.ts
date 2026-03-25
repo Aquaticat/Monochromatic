@@ -32,7 +32,12 @@ type RenderContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2
  * renderStrokes({ ctx, cw: 800, ch: 600, strokes: getStrokes() });
  * ```
  */
-export function renderStrokes({ ctx, cw, ch, strokes, }: {
+export function renderStrokes({
+  ctx,
+  cw,
+  ch,
+  strokes,
+}: {
   ctx: RenderContext;
   cw: number;
   ch: number;
@@ -48,9 +53,15 @@ export function renderStrokes({ ctx, cw, ch, strokes, }: {
     ctx.beginPath();
     for (const [index, point,] of stroke.points.entries()) {
       if (index === 0)
-        ctx.moveTo(point[0] * cw, point[1] * ch,);
+        ctx.moveTo(
+          point[0] * cw,
+          point[1] * ch,
+        );
       else
-        ctx.lineTo(point[0] * cw, point[1] * ch,);
+        ctx.lineTo(
+          point[0] * cw,
+          point[1] * ch,
+        );
     }
     ctx.stroke();
   }

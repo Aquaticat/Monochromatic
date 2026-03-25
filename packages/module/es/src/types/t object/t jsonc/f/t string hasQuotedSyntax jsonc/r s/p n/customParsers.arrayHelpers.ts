@@ -26,7 +26,10 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
 export function parseArrayHeader(
   valueAfterBracket: FragmentStringJsonc | StringJsonc,
   context?: Jsonc.ValueBase,
-): { arrayComment?: Jsonc.Comment; tail: FragmentStringJsonc; } {
+): {
+  arrayComment?: Jsonc.Comment;
+  tail: FragmentStringJsonc
+} {
   // Array-level comment comes from outside the '[' via context; do not consume inside comments here.
   return {
     ...(context?.comment ? { arrayComment: context.comment, } : {}),
@@ -47,8 +50,13 @@ export function parseArrayHeader(
  */
 export function expectArraySeparatorOrEnd(
   value: FragmentStringJsonc,
-): { kind: 'end'; tail: FragmentStringJsonc; } | { kind: 'next';
-  tailStart: FragmentStringJsonc; }
+): {
+  kind: 'end';
+  tail: FragmentStringJsonc
+} | {
+  kind: 'next';
+  tailStart: FragmentStringJsonc
+}
 {
   /** Leading comments/whitespace after previous element value. */
   const after = startsWithComment({ value, },);
@@ -56,7 +64,10 @@ export function expectArraySeparatorOrEnd(
   const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
 
   if (rc.startsWith(']',))
-    return { kind: 'end', tail: rc.slice(1,) as FragmentStringJsonc, };
+    return {
+      kind: 'end',
+      tail: rc.slice(1,) as FragmentStringJsonc,
+    };
 
   if (rc.startsWith(',',)) {
     /** Tail after the element separator comma. */
@@ -66,14 +77,23 @@ export function expectArraySeparatorOrEnd(
     /** Start of the next token inside the array. */
     const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
     if (nextToken.startsWith(']',))
-      return { kind: 'end', tail: nextToken.slice(1,) as FragmentStringJsonc, };
-    return { kind: 'next', tailStart: nextToken, };
+      return {
+        kind: 'end',
+        tail: nextToken.slice(1,) as FragmentStringJsonc,
+      };
+    return {
+      kind: 'next',
+      tailStart: nextToken,
+    };
   }
 
   /** Preview snippet used for error reporting context. */
   /** Maximum characters for error preview snippet */
   const ERROR_PREVIEW_LENGTH = 32;
-  const preview = rc.slice(0, ERROR_PREVIEW_LENGTH,);
+  const preview = rc.slice(
+    0,
+    ERROR_PREVIEW_LENGTH,
+  );
   throw new Error(`malformed jsonc array: expected ',' or ']' near: ${preview}`,);
 }
 //endregion Array separators

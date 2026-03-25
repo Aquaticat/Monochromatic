@@ -33,10 +33,26 @@ type SinkEntry = {
 
 /** All sink backends to attempt, in priority order. */
 const sinkEntries: SinkEntry[] = [
-  { available: null, sink: consoleSink, verify: verifyConsole, },
-  { available: null, sink: opfsSink, verify: verifyOpfs, },
-  { available: null, sink: sessionStorageSink, verify: verifySessionStorage, },
-  { available: null, sink: fileSink, verify: verifyFile, },
+  {
+    available: null,
+    sink: consoleSink,
+    verify: verifyConsole,
+  },
+  {
+    available: null,
+    sink: opfsSink,
+    verify: verifyOpfs,
+  },
+  {
+    available: null,
+    sink: sessionStorageSink,
+    verify: verifySessionStorage,
+  },
+  {
+    available: null,
+    sink: fileSink,
+    verify: verifyFile,
+  },
 ];
 
 /** Whether initialization has completed. */
@@ -110,7 +126,11 @@ function createMethod(level: Level,): (message: string,) => void {
     if (available.length === 0)
       return;
 
-    const record: LogRecord = { level, message, timestamp: Date.now(), };
+    const record: LogRecord = {
+      level,
+      message,
+      timestamp: Date.now(),
+    };
 
     available.forEach(function writeToSink(entry,) {
       try {
@@ -118,9 +138,12 @@ function createMethod(level: Level,): (message: string,) => void {
         if (result instanceof Promise) {
           // Fire-and-forget: awaiting would make the logger blocking
           // oxlint-disable-next-line promise/prefer-await-to-then, promise/always-return -- intentional fire-and-forget
-          void result.then(function noop() {/* success */}, function onReject() {
+          void result.then(
+            function noop() {/* success */},
+            function onReject() {
             markFailed(entry,);
-          },);
+          },
+          );
         }
       }
       catch {

@@ -84,7 +84,10 @@ export function applyZoomTransform(zoomLayer: HTMLElement,): void {
  *
  * @param containerHeight - container height in CSS pixels
  */
-export function clampPan({ containerWidth, containerHeight, }: {
+export function clampPan({
+  containerWidth,
+  containerHeight,
+}: {
   containerWidth: number;
   containerHeight: number;
 },): void {
@@ -93,8 +96,14 @@ export function clampPan({ containerWidth, containerHeight, }: {
     panY = 0;
     return;
   }
-  panX = Math.max(-(scale - 1) * containerWidth, Math.min(0, panX,),);
-  panY = Math.max(-(scale - 1) * containerHeight, Math.min(0, panY,),);
+  panX = Math.max(
+    -(scale - 1) * containerWidth,
+    Math.min(0, panX,),
+  );
+  panY = Math.max(
+    -(scale - 1) * containerHeight,
+    Math.min(0, panY,),
+  );
 }
 
 /**
@@ -104,7 +113,13 @@ export function clampPan({ containerWidth, containerHeight, }: {
  *
  * @param y - new pan Y offset in CSS pixels
  */
-export function setPan({ x, y, }: { x: number; y: number; },): void {
+export function setPan({
+  x,
+  y,
+}: {
+  x: number;
+  y: number
+},): void {
   panX = x;
   panY = y;
 }
@@ -128,7 +143,14 @@ export function setPan({ x, y, }: { x: number; y: number; },): void {
  * @param zoomLayer - element to apply CSS transform to
  */
 export function zoomAt(
-  { screenX, screenY, direction, containerWidth, containerHeight, zoomLayer, }: {
+  {
+    screenX,
+    screenY,
+    direction,
+    containerWidth,
+    containerHeight,
+    zoomLayer,
+  }: {
     screenX: number;
     screenY: number;
     direction: 'in' | 'out';
@@ -138,7 +160,10 @@ export function zoomAt(
   },
 ): void {
   const factor = direction === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
-  const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * factor,),);
+  const newScale = Math.max(
+    MIN_SCALE,
+    Math.min(MAX_SCALE, scale * factor,),
+  );
   if (newScale === scale)
     return;
   /** Ratio between new and old scale for pan adjustment */
@@ -146,7 +171,10 @@ export function zoomAt(
   panX = screenX * (1 - actualFactor) + panX * actualFactor;
   panY = screenY * (1 - actualFactor) + panY * actualFactor;
   scale = newScale;
-  clampPan({ containerWidth, containerHeight, },);
+  clampPan({
+    containerWidth,
+    containerHeight,
+  },);
   applyZoomTransform(zoomLayer,);
 }
 
@@ -171,11 +199,18 @@ export function resetZoom(zoomLayer: HTMLElement,): void {
  *
  * @param zoomLayer - element to apply CSS transform to
  */
-export function refreshZoomTransform({ containerWidth, containerHeight, zoomLayer, }: {
+export function refreshZoomTransform({
+  containerWidth,
+  containerHeight,
+  zoomLayer,
+}: {
   containerWidth: number;
   containerHeight: number;
   zoomLayer: HTMLElement;
 },): void {
-  clampPan({ containerWidth, containerHeight, },);
+  clampPan({
+    containerWidth,
+    containerHeight,
+  },);
   applyZoomTransform(zoomLayer,);
 }

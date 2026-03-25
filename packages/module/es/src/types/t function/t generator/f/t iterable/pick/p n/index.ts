@@ -51,7 +51,11 @@
  * ```
  */
 export async function* $<T,>(
-  { iterable, toPick, strict = true, }: {
+  {
+    iterable,
+    toPick,
+    strict = true,
+  }: {
     iterable: Iterable<T> | AsyncIterable<T>;
     toPick: ReadonlySet<T>;
     strict?: boolean;

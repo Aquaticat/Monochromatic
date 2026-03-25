@@ -47,7 +47,10 @@ const stream = await anthropic
         name: 'code_execution',
       },
     ],
-    messages: [{ role: 'user', content: 'How to change background color in VS Code?', },],
+    messages: [{
+      role: 'user',
+      content: 'How to change background color in VS Code?',
+    },],
     mcp_servers: [
       {
         type: 'url',
@@ -68,9 +71,12 @@ const PORT = z.coerce.number().parse(process.env.AI_TREE_PORT ?? DEFAULT_PORT,);
 /** Elysia HTTP server instance with Swagger documentation. */
 const app = new Elysia()
   .use(swagger(),)
-  .get('/', function handleRoot() {
+  .get(
+    '/',
+    function handleRoot() {
     return 'Hello Elysia';
-  },)
+  },
+  )
   .listen(PORT,);
 
 console.log(

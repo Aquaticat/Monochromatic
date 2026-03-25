@@ -29,7 +29,12 @@ export type {
  * @returns array of initialized clients relevant to the language
  */
 function relevantClients(
-  { languageId, oxlint, tsgo, dprint, }: { languageId: string; } & ServerSlots,
+  {
+    languageId,
+    oxlint,
+    tsgo,
+    dprint,
+  }: { languageId: string; } & ServerSlots,
 ): LspClient[] {
   const clients: LspClient[] = [];
   const isJsTs = JS_TS_LANGUAGE_IDS.has(languageId,);
@@ -47,7 +52,12 @@ function relevantClients(
  *
  * @param path - absolute file path
  */
-export function didOpen({ path, text, documents, servers, }: {
+export function didOpen({
+  path,
+  text,
+  documents,
+  servers,
+}: {
   path: string;
   text: string;
   documents: Map<string, DocumentState>;
@@ -56,11 +66,23 @@ export function didOpen({ path, text, documents, servers, }: {
   const uri = pathToFileURL(path,).href;
   const languageId = getLanguageId({ path, },);
   if (documents.has(uri,))
-    didClose({ path, documents, servers, },);
-  documents.set(uri, { version: 1, languageId, text, },);
-  for (const c of relevantClients({ languageId, ...servers, },)) {
-    c.notify({ method: 'textDocument/didOpen',
-      params: { textDocument: { uri, languageId, version: 1, text, }, }, },);
+    didClose({
+      path,
+      documents,
+      servers,
+    },);
+  documents.set(
+    uri,
+    { version: 1, languageId, text, },
+  );
+  for (const c of relevantClients({
+    languageId,
+    ...servers,
+  },)) {
+    c.notify({
+      method: 'textDocument/didOpen',
+      params: { textDocument: { uri, languageId, version: 1, text, }, },
+    },);
   }
 }
 
@@ -69,7 +91,12 @@ export function didOpen({ path, text, documents, servers, }: {
  *
  * @param path - absolute file path
  */
-export function didChange({ path, text, documents, servers, }: {
+export function didChange({
+  path,
+  text,
+  documents,
+  servers,
+}: {
   path: string;
   text: string;
   documents: Map<string, DocumentState>;
@@ -81,10 +108,15 @@ export function didChange({ path, text, documents, servers, }: {
     return;
   doc.version++;
   doc.text = text;
-  for (const c of relevantClients({ languageId: doc.languageId, ...servers, },)) {
-    c.notify({ method: 'textDocument/didChange',
+  for (const c of relevantClients({
+    languageId: doc.languageId,
+    ...servers,
+  },)) {
+    c.notify({
+      method: 'textDocument/didChange',
       params: { textDocument: { uri, version: doc.version, },
-        contentChanges: [{ text, },], }, },);
+        contentChanges: [{ text, },], },
+    },);
   }
 }
 
@@ -93,7 +125,11 @@ export function didChange({ path, text, documents, servers, }: {
  *
  * @param path - absolute file path
  */
-export function didSave({ path, documents, servers, }: {
+export function didSave({
+  path,
+  documents,
+  servers,
+}: {
   path: string;
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
@@ -102,8 +138,14 @@ export function didSave({ path, documents, servers, }: {
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;
-  for (const c of relevantClients({ languageId: doc.languageId, ...servers, },))
-    c.notify({ method: 'textDocument/didSave', params: { textDocument: { uri, }, }, },);
+  for (const c of relevantClients({
+    languageId: doc.languageId,
+    ...servers,
+  },))
+    c.notify({
+      method: 'textDocument/didSave',
+      params: { textDocument: { uri, }, },
+    },);
 }
 
 /**
@@ -111,7 +153,11 @@ export function didSave({ path, documents, servers, }: {
  *
  * @param path - absolute file path
  */
-export function didClose({ path, documents, servers, }: {
+export function didClose({
+  path,
+  documents,
+  servers,
+}: {
   path: string;
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
@@ -121,6 +167,12 @@ export function didClose({ path, documents, servers, }: {
   if (doc === undefined)
     return;
   documents.delete(uri,);
-  for (const c of relevantClients({ languageId: doc.languageId, ...servers, },))
-    c.notify({ method: 'textDocument/didClose', params: { textDocument: { uri, }, }, },);
+  for (const c of relevantClients({
+    languageId: doc.languageId,
+    ...servers,
+  },))
+    c.notify({
+      method: 'textDocument/didClose',
+      params: { textDocument: { uri, }, },
+    },);
 }

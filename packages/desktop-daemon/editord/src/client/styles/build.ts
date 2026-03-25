@@ -34,17 +34,33 @@ export {};
 
 /** Package root resolved by walking up to the nearest `package.json`. */
 const PACKAGE_ROOT = dirname(
-  notNullishOrThrow(await findUp('package.json', { cwd: import.meta.dirname, },),),
+  notNullishOrThrow(await findUp(
+    'package.json',
+    { cwd: import.meta.dirname, },
+  ),),
 );
 
 /** Output directory under the package root. */
-const OUT_DIR = join(PACKAGE_ROOT, 'dist/client',);
+const OUT_DIR = join(
+  PACKAGE_ROOT,
+  'dist/client',
+);
 
 /** Output file path. */
-const OUT_FILE = join(OUT_DIR, 'global.css',);
+const OUT_FILE = join(
+  OUT_DIR,
+  'global.css',
+);
 
 /** Combined CSS from all global style modules. */
 const css = THEME_STYLES + RESET_STYLES + TOAST_STYLES + FAB_STYLES + CTX_MENU_STYLES;
 
-await mkdir(OUT_DIR, { recursive: true, },);
-await writeFile(OUT_FILE, css, 'utf8',);
+await mkdir(
+  OUT_DIR,
+  { recursive: true, },
+);
+await writeFile(
+  OUT_FILE,
+  css,
+  'utf8',
+);

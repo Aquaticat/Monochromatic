@@ -45,7 +45,10 @@ await initPromise;
 loadAllLocales();
 
 /** Tagged logger for the build pipeline. */
-const l = tagged({ tag: 'build', l: $, },);
+const l = tagged({
+  tag: 'build',
+  l: $,
+},);
 
 /** Site base URL for RSS feed links. */
 const SITE_URL = 'https://aquati.cat';
@@ -82,7 +85,10 @@ const processor = createProcessor();
 
 /** Results from processing each post: rendered HTML and cache entry. */
 const processResults = await Promise.all(posts.map(async function processPost(post,) {
-  const cacheKey = relative('.', post.filePath,);
+  const cacheKey = relative(
+    '.',
+    post.filePath,
+  );
   const cached = getCachedEntry({
     manifest: effectiveCache,
     filePath: cacheKey,
@@ -90,28 +96,52 @@ const processResults = await Promise.all(posts.map(async function processPost(po
   },);
 
   if (cached !== undefined) {
-    return { contentKey: `${post.lang}/${post.name}`, cacheKey, entry: cached,
-      fromCache: true, };
+    return {
+      contentKey: `${post.lang}/${post.name}`,
+      cacheKey,
+      entry: cached,
+      fromCache: true,
+    };
   }
 
   const result = await processor.process(post.body,);
   const html = String(result,);
-  const entry = createCacheEntry({ contentHash: post.contentHash, html,
-    frontmatter: post.data, },);
-  return { contentKey: `${post.lang}/${post.name}`, cacheKey, entry, fromCache: false, };
+  const entry = createCacheEntry({
+    contentHash: post.contentHash,
+    html,
+    frontmatter: post.data,
+  },);
+  return {
+    contentKey: `${post.lang}/${post.name}`,
+    cacheKey,
+    entry,
+    fromCache: false,
+  };
 },),);
 
 /** Map of `lang/name` content keys to rendered HTML strings. */
 const renderedContent = new Map(
-  processResults.map(function toContentEntry({ contentKey, entry, },) {
-    return [contentKey, entry.html,] as const;
+  processResults.map(function toContentEntry({
+    contentKey,
+    entry,
+  },) {
+    return [
+      contentKey,
+      entry.html,
+    ] as const;
   },),
 );
 
 /** Cache entries keyed by relative file path for manifest persistence. */
 const cacheEntries = Object.fromEntries(
-  processResults.map(function toCacheEntry({ cacheKey, entry, },) {
-    return [cacheKey, entry,];
+  processResults.map(function toCacheEntry({
+    cacheKey,
+    entry,
+  },) {
+    return [
+      cacheKey,
+      entry,
+    ];
   },),
 );
 
@@ -126,12 +156,24 @@ l.info(`processed ${posts.length - cacheHits} files, ${cacheHits} from cache`,);
 
 await ensureFavicons({ l, },);
 await Promise.all([
-  generatePages({ posts, renderedContent, l, },),
-  generateAssets({ posts, siteUrl: SITE_URL, contentDir: CONTENT_DIR, l, },),
+  generatePages({
+    posts,
+    renderedContent,
+    l,
+  },),
+  generateAssets({
+    posts,
+    siteUrl: SITE_URL,
+    contentDir: CONTENT_DIR,
+    l,
+  },),
 ],);
 await postProcess({ l, },);
 
-await writeCache(buildManifest({ pipelineHash, entries: cacheEntries, },),);
+await writeCache(buildManifest({
+  pipelineHash,
+  entries: cacheEntries,
+},),);
 l.info('done',);
 
 //endregion Build orchestration

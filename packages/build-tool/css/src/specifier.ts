@@ -26,12 +26,18 @@ export function stripImportSpecifier(raw: string,): string {
   // url(...) wrapper
   if (trimmed.startsWith('url(',) && trimmed.endsWith(')',)) {
     /** Inner content of url() */
-    const inner = trimmed.slice(URL_PREFIX_LENGTH, -1,).trim();
+    const inner = trimmed.slice(
+      URL_PREFIX_LENGTH,
+      -1,
+    ).trim();
     // Strip inner quotes if present
     if ((inner.startsWith("'",) && inner.endsWith("'",))
       || (inner.startsWith('"',) && inner.endsWith('"',)))
     {
-      return inner.slice(1, -1,);
+      return inner.slice(
+        1,
+        -1,
+      );
     }
     return inner;
   }
@@ -40,7 +46,10 @@ export function stripImportSpecifier(raw: string,): string {
   if ((trimmed.startsWith("'",) && trimmed.endsWith("'",))
     || (trimmed.startsWith('"',) && trimmed.endsWith('"',)))
   {
-    return trimmed.slice(1, -1,);
+    return trimmed.slice(
+      1,
+      -1,
+    );
   }
 
   return trimmed;
@@ -65,24 +74,42 @@ export function isPackageSpecifier(specifier: string,): boolean {
  *
  * @returns Tuple of [packageName, subpath] where subpath starts with `./` or is `.`
  */
-export function splitPackageSpecifier(specifier: string,): [string, string,] {
+export function splitPackageSpecifier(specifier: string,): [
+  string,
+  string,
+] {
   if (specifier.startsWith('@',)) {
     // Scoped: @scope/pkg or @scope/pkg/sub/path.css
     /**
      * Index of the second slash (after \@scope/pkg).
      */
-    const secondSlash = specifier.indexOf('/', specifier.indexOf('/',) + 1,);
+    const secondSlash = specifier.indexOf(
+      '/',
+      specifier.indexOf('/',) + 1,
+    );
     if (secondSlash === -1)
-      return [specifier, '.',];
-    return [specifier.slice(0, secondSlash,), `./${specifier.slice(secondSlash + 1,)}`,];
+      return [
+        specifier,
+        '.',
+      ];
+    return [
+      specifier.slice(0, secondSlash,),
+      `./${specifier.slice(secondSlash + 1,)}`,
+    ];
   }
 
   // Unscoped: pkg or pkg/sub/path.css
   /** Index of the first slash */
   const firstSlash = specifier.indexOf('/',);
   if (firstSlash === -1)
-    return [specifier, '.',];
-  return [specifier.slice(0, firstSlash,), `./${specifier.slice(firstSlash + 1,)}`,];
+    return [
+      specifier,
+      '.',
+    ];
+  return [
+    specifier.slice(0, firstSlash,),
+    `./${specifier.slice(firstSlash + 1,)}`,
+  ];
 }
 
 //endregion Specifier Parsing

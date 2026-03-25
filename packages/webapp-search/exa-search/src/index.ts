@@ -9,7 +9,10 @@ import { l as parentLogger, } from './log.ts';
 import { PORT, } from './port.ts';
 
 /** Tagged logger for the server subsystem. */
-const l = tagged({ tag: 'server', l: parentLogger, },);
+const l = tagged({
+  tag: 'server',
+  l: parentLogger,
+},);
 
 /** H3 application instance for the exa-search server. */
 const app = new H3();
@@ -22,7 +25,10 @@ const app = new H3();
 function serveIndexHtml(): Response {
   return new Response(
     indexHtml,
-    { status: 200, headers: { 'content-type': 'text/html', }, },
+    {
+      status: 200,
+      headers: { 'content-type': 'text/html', },
+    },
   );
 }
 
@@ -35,6 +41,9 @@ app.get(
 );
 
 /** Running HTTP server instance. */
-const server = serve(app, { port: PORT, },);
+const server = serve(
+  app,
+  { port: PORT, },
+);
 
 l.info(`listening on ${server.url}`,);

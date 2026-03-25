@@ -10,9 +10,30 @@
  * Each variant carries the full payload for the server to execute.
  */
 export type ContextAction =
-  | { kind: 'delete'; path: string; }
-  | { kind: 'copy'; path: string; destPath: string; }
-  | { kind: 'move'; path: string; destPath: string; }
-  | { kind: 'new'; parentPath: string; name: string; }
-  | { kind: 'openInTerminal'; path: string; }
-  | { kind: 'openInDefaultApp'; path: string; };
+  | {
+    kind: 'delete';
+    path: string
+  }
+  | {
+    kind: 'copy';
+    path: string;
+    destPath: string
+  }
+  | {
+    kind: 'move';
+    path: string;
+    destPath: string
+  }
+  | {
+    kind: 'new';
+    parentPath: string;
+    name: string
+  }
+  | {
+    kind: 'openInTerminal';
+    path: string
+  }
+  | {
+    kind: 'openInDefaultApp';
+    path: string
+  };

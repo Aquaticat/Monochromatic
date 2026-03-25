@@ -15,8 +15,14 @@ import type * as Jsonc from '../../../../t/index.ts';
 
 /** Signature of the value dispatcher function. */
 type ParseValueFn = (
-  args: { value: FragmentStringJsonc | StringJsonc; context?: Jsonc.ValueBase; },
-) => { parsed: Jsonc.Value; remaining: FragmentStringJsonc; };
+  args: {
+    value: FragmentStringJsonc | StringJsonc;
+    context?: Jsonc.ValueBase
+  },
+) => {
+  parsed: Jsonc.Value;
+  remaining: FragmentStringJsonc
+};
 
 /** Late-bound reference, set once before any parsing call. */
 // Intentional let: configured once during module initialization by the parseValue module
@@ -43,7 +49,13 @@ export function registerParseValue(fn: ParseValueFn,): void {
  * @returns parsed value node and remaining fragment
  */
 export function callParseValue(
-  args: { value: FragmentStringJsonc | StringJsonc; context?: Jsonc.ValueBase; },
-): { parsed: Jsonc.Value; remaining: FragmentStringJsonc; } {
+  args: {
+    value: FragmentStringJsonc | StringJsonc;
+    context?: Jsonc.ValueBase
+  },
+): {
+  parsed: Jsonc.Value;
+  remaining: FragmentStringJsonc
+} {
   return ref(args,);
 }

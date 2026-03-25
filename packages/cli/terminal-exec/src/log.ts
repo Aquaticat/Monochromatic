@@ -19,7 +19,10 @@ await initPromise;
  * rl.info('starting resolution');
  * ```
  */
-export const l: Logger = tagged({ tag: 'terminal-exec', l: $, },);
+export const l: Logger = tagged({
+  tag: 'terminal-exec',
+  l: $,
+},);
 
 export type { Logger, };
 export { tagged, };

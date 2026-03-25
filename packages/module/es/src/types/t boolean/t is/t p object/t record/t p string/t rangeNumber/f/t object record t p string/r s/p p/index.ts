@@ -14,7 +14,10 @@ import type {
  * @returns `true` when both bounds are numbers and start does not exceed end
  */
 export function $(value: StringUnknownRecord,): value is RangeNumber {
-  const { startInclusive, endInclusive, } = value;
+  const {
+    startInclusive,
+    endInclusive,
+  } = value;
   if (typeof startInclusive === 'number' && typeof endInclusive === 'number')
     return startInclusive <= endInclusive;
 

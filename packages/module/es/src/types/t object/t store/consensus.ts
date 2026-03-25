@@ -45,7 +45,10 @@ export type BackendResult<TBackend = unknown,> = {
 export function pickMajority<TBackend = unknown,>(
   buckets: Map<string | undefined, BackendResult<TBackend>[]>,
   totalCount: number,
-): { hasMajority: boolean; value?: string | undefined; } {
+): {
+  hasMajority: boolean;
+  value?: string | undefined
+} {
   /** Leader candidate and its bucket after sorting by descending bucket size. */
   const sorted = [...buckets.entries(),]
     .toSorted(function byDescCount(
@@ -56,7 +59,10 @@ export function pickMajority<TBackend = unknown,>(
     },);
 
   const [leaderKey, leaderBucket,] = sorted.at(0,)
-    ?? [undefined, [] as BackendResult<TBackend>[],];
+    ?? [
+      undefined,
+      [] as BackendResult<TBackend>[],
+    ];
 
   return {
     hasMajority: leaderBucket.length > Math.floor(totalCount / 2,),
@@ -88,7 +94,10 @@ export function computeFromHighestTier<TBackend = unknown,>(
   highestResults: readonly BackendResult<TBackend>[],
   key: string,
 ): string | undefined {
-  const highestTier = pickMajority(groupedHighest, highestResults.length,);
+  const highestTier = pickMajority(
+    groupedHighest,
+    highestResults.length,
+  );
   if (!highestTier.hasMajority) {
     throw new Error(
       `(maybe sync) Store.get consensus failure for key "${key}" -- no majority in highest tier`,
@@ -121,15 +130,25 @@ export function computeCanonical<TBackend = unknown,>(
   highestResults: readonly BackendResult<TBackend>[],
   key: string,
 ): string | undefined {
-  const groupedAll = Map.groupBy(results, function byValue({ value, },) {
+  const groupedAll = Map.groupBy(
+    results,
+    function byValue({ value, },) {
     return value;
-  },);
+  },
+  );
 
-  const overall = pickMajority(groupedAll, results.length,);
+  const overall = pickMajority(
+    groupedAll,
+    results.length,
+  );
 
   return overall.hasMajority
     ? overall.value
-    : computeFromHighestTier(groupedHighest, highestResults, key,);
+    : computeFromHighestTier(
+      groupedHighest,
+      highestResults,
+      key,
+    );
 }
 
 /**
@@ -154,15 +173,24 @@ export function computeCanonical<TBackend = unknown,>(
  * ```
  */
 export function resolveConsensus<TBackend = unknown,>(
-  results: readonly [BackendResult<TBackend>, ...BackendResult<TBackend>[],],
+  results: readonly [
+    BackendResult<TBackend>,
+    ...BackendResult<TBackend>[],
+  ],
   key: string,
 ): string | undefined {
-  const grouped = Map.groupBy(results, function byPriority({ priority, },) {
+  const grouped = Map.groupBy(
+    results,
+    function byPriority({ priority, },) {
     return priority;
-  },);
+  },
+  );
 
   const sortedTiers = [...grouped.entries(),]
-    .toSorted(function byAscPriority([priorityA,], [priorityB,],) {
+    .toSorted(function byAscPriority(
+      [priorityA,],
+      [priorityB,],
+    ) {
       return priorityA - priorityB;
     },)
     .map(function extractResults([, tierResults,],) {
@@ -173,9 +201,17 @@ export function resolveConsensus<TBackend = unknown,>(
   if (highestResults === undefined || highestResults.length === 0)
     throw new Error(`(maybe sync) Store.get: no backend results for key "${key}"`,);
 
-  const groupedHighest = Map.groupBy(highestResults, function byValue({ value, },) {
+  const groupedHighest = Map.groupBy(
+    highestResults,
+    function byValue({ value, },) {
     return value;
-  },);
+  },
+  );
 
-  return computeCanonical(results, groupedHighest, highestResults, key,);
+  return computeCanonical(
+    results,
+    groupedHighest,
+    highestResults,
+    key,
+  );
 }

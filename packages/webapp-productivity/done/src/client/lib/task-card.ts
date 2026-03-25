@@ -38,7 +38,10 @@ class TaskCard extends HTMLElement {
    *
    * @param options - Callbacks and display flags
    */
-  configure(task: Task, options: TaskCardOptions,): void {
+  configure(
+    task: Task,
+    options: TaskCardOptions,
+  ): void {
     this.#task = task;
     this.#options = options;
     this.#render();
@@ -67,11 +70,18 @@ class TaskCard extends HTMLElement {
     const options = this.#options;
     if (task === null || options === null)
       return;
-    renderTaskCardContent({ shadow: this.#shadow, task, options, },);
+    renderTaskCardContent({
+      shadow: this.#shadow,
+      task,
+      options,
+    },);
   }
 }
 
-customElements.define('task-card', TaskCard,);
+customElements.define(
+  'task-card',
+  TaskCard,
+);
 
 /**
  * Factory: creates and configures a `\<task-card\>` element.
@@ -82,9 +92,15 @@ customElements.define('task-card', TaskCard,);
  *
  * @returns Configured TaskCard element
  */
-export function createTaskCard(task: Task, options: TaskCardOptions,): TaskCard {
+export function createTaskCard(
+  task: Task,
+  options: TaskCardOptions,
+): TaskCard {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-card"
   const card = document.createElement('task-card',) as TaskCard;
-  card.configure(task, options,);
+  card.configure(
+    task,
+    options,
+  );
   return card;
 }

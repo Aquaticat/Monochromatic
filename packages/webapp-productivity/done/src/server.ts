@@ -57,7 +57,10 @@ function resolvePort(): number {
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
-  const parsedPort = Number.parseInt(rawPort, DECIMAL_RADIX,);
+  const parsedPort = Number.parseInt(
+    rawPort,
+    DECIMAL_RADIX,
+  );
   return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
@@ -72,63 +75,114 @@ function resolvePort(): number {
  *
  * @throws HTTPError 400 when parameter is missing
  */
-function requireParam(event: Parameters<typeof getRouterParam>[0],
-  name: string,): string
+function requireParam(
+  event: Parameters<typeof getRouterParam>[0],
+  name: string,
+): string
 {
-  const value = getRouterParam(event, name,);
+  const value = getRouterParam(
+    event,
+    name,
+  );
   if (value === undefined) {
-    throw new HTTPError({ status: HTTP_BAD_REQUEST,
-      message: `missing route parameter: ${name}`, },);
+    throw new HTTPError({
+      status: HTTP_BAD_REQUEST,
+      message: `missing route parameter: ${name}`,
+    },);
   }
   return value;
 }
 
-await buildCSS({ input: './src/client/styles.css', output: './dist/css/styles.css', },);
+await buildCSS({
+  input: './src/client/styles.css',
+  output: './dist/css/styles.css',
+},);
 
 /** h3 application instance routing HTTP requests to handlers. */
 const app = new H3();
 
-app.get('/', defineHandler(function handleInbox() {
+app.get(
+  '/',
+  defineHandler(function handleInbox() {
   return inboxPage();
-},),);
-app.get('/in-progress', defineHandler(function handleInProgress() {
+},),
+);
+app.get(
+  '/in-progress',
+  defineHandler(function handleInProgress() {
   return inProgressPage();
-},),);
-app.get('/tasks/:id', defineHandler(function handleTaskDetails(event,) {
+},),
+);
+app.get(
+  '/tasks/:id',
+  defineHandler(function handleTaskDetails(event,) {
   return taskDetailsPage(requireParam(event, 'id',),);
-},),);
-app.get('/search', defineHandler(function handleSearch(event,) {
+},),
+);
+app.get(
+  '/search',
+  defineHandler(function handleSearch(event,) {
   return searchPage(event.url,);
-},),);
-app.get('/settings', defineHandler(function handleSettings() {
+},),
+);
+app.get(
+  '/settings',
+  defineHandler(function handleSettings() {
   return settingsPage();
-},),);
+},),
+);
 
-app.post('/api/tasks', defineHandler(function handleCreateTaskRoute(event,) {
+app.post(
+  '/api/tasks',
+  defineHandler(function handleCreateTaskRoute(event,) {
   return handleCreateTask(event.req,);
-},),);
-app.put('/api/tasks/:id', defineHandler(function handleUpdateTaskRoute(event,) {
+},),
+);
+app.put(
+  '/api/tasks/:id',
+  defineHandler(function handleUpdateTaskRoute(event,) {
   return handleUpdateTask(event.req, requireParam(event, 'id',),);
-},),);
-app.delete('/api/tasks/:id', defineHandler(function handleDeleteTaskRoute(event,) {
+},),
+);
+app.delete(
+  '/api/tasks/:id',
+  defineHandler(function handleDeleteTaskRoute(event,) {
   return handleDeleteTask(requireParam(event, 'id',),);
-},),);
-app.post('/api/tasks/:id/start', defineHandler(function handleStartTimerRoute(event,) {
+},),
+);
+app.post(
+  '/api/tasks/:id/start',
+  defineHandler(function handleStartTimerRoute(event,) {
   return handleStartTimer(requireParam(event, 'id',),);
-},),);
-app.post('/api/tasks/:id/stop', defineHandler(function handleStopTimerRoute(event,) {
+},),
+);
+app.post(
+  '/api/tasks/:id/stop',
+  defineHandler(function handleStopTimerRoute(event,) {
   return handleStopTimer(requireParam(event, 'id',),);
-},),);
-app.post('/api/tasks/:id/complete',
+},),
+);
+app.post(
+  '/api/tasks/:id/complete',
   defineHandler(function handleCompleteTaskRoute(event,) {
     return handleCompleteTask(requireParam(event, 'id',),);
-  },),);
-app.post('/api/ai/autofill', defineHandler(function handleAutofillRoute(event,) {
+  },),
+);
+app.post(
+  '/api/ai/autofill',
+  defineHandler(function handleAutofillRoute(event,) {
   return handleAutofill(event.req,);
-},),);
+},),
+);
 
-app.get('/dist/client/**', staticHandler,);
+app.get(
+  '/dist/client/**',
+  staticHandler,
+);
 
 /** Running HTTP server instance. */
-const server = serve(app, { port: resolvePort(), },);
+const server = serve(
+  app,
+  { port: resolvePort(), },
+);
 console.log(`Listening on ${server.url}`,);

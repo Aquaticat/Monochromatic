@@ -38,8 +38,11 @@ const app = appElement;
 app.append(
   h({
     tag: 'setting-group',
-    attrs: { label: 'System calendar',
-      description: 'Connect to start two-way auto-syncing.', mode: 'button', },
+    attrs: {
+      label: 'System calendar',
+      description: 'Connect to start two-way auto-syncing.',
+      mode: 'button',
+    },
   },),
 );
 //endregion Calendar connect
@@ -48,8 +51,11 @@ app.append(
 app.append(
   h({
     tag: 'setting-group',
-    attrs: { label: 'Data privacy',
-      description: 'We never sell your data, and we never will.', on: '', },
+    attrs: {
+      label: 'Data privacy',
+      description: 'We never sell your data, and we never will.',
+      on: '',
+    },
   },),
 );
 //endregion Data privacy
@@ -58,7 +64,10 @@ app.append(
 app.append(
   h({
     tag: 'setting-group',
-    attrs: { label: 'Dark theme', description: 'Unlock the dark side.', },
+    attrs: {
+      label: 'Dark theme',
+      description: 'Unlock the dark side.',
+    },
   },),
 );
 //endregion Dark theme

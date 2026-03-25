@@ -64,14 +64,20 @@ class SearchBar extends HTMLElement {
 
     const input = h({
       tag: 'input',
-      attrs: { type: 'search', placeholder: 'Search titles, tags, ...', value: query,
-        autofocus: '', },
+      attrs: {
+        type: 'search',
+        placeholder: 'Search titles, tags, ...',
+        value: query,
+        autofocus: '',
+      },
     },);
 
     // Debounced search dispatch
     const dispatchFn = this.dispatchEvent.bind(this,);
     let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
-    input.addEventListener('input', function handleInput(): void {
+    input.addEventListener(
+      'input',
+      function handleInput(): void {
       clearTimeout(timeout,);
       timeout = setTimeout(function emitSearch(): void {
         dispatchFn(
@@ -79,14 +85,21 @@ class SearchBar extends HTMLElement {
             bubbles: true, },),
         );
       }, SEARCH_DEBOUNCE_MS,);
-    },);
+    },
+    );
 
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: SEARCH_BAR_STYLES, },),
+      h({
+        tag: 'style',
+        text: SEARCH_BAR_STYLES,
+      },),
       backButton,
       input,
     );
   }
 }
 
-customElements.define('search-bar', SearchBar,);
+customElements.define(
+  'search-bar',
+  SearchBar,
+);

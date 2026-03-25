@@ -38,8 +38,7 @@ export const typePropertyPerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      typePropertyPerLine:
-        'Each type/interface member must be on its own line.',
+      typePropertyPerLine: 'Each type/interface member must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -60,7 +59,10 @@ export const typePropertyPerLine: CreateOnceRule = {
         container: bodyNode,
         items: members,
         messageId: 'typePropertyPerLine',
-        bracketPair: { open: '{', close: '}', },
+        bracketPair: {
+          open: '{',
+          close: '}',
+        },
         delimiter: ';',
       },);
     }

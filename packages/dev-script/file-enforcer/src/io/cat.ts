@@ -30,11 +30,16 @@ export type GlobResults = readonly GlobResult[] & {
  * ]);
  * ```
  */
-export function globResults(sourceGlob: string,
-  results: readonly GlobResult[],): GlobResults
+export function globResults(
+  sourceGlob: string,
+  results: readonly GlobResult[],
+): GlobResults
 {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- branded type construction requires double assertion
-  return Object.assign([...results,], { sourceGlob, },) as unknown as GlobResults;
+  return Object.assign(
+    [...results,],
+    { sourceGlob, },
+  ) as unknown as GlobResults;
 }
 
 /** Glob characters that trigger pattern expansion inside cat-array paths */
@@ -72,10 +77,16 @@ export async function cat(
     const results = await Promise.all(
       paths.map(async function readGlobMatch(path: string,): Promise<GlobResult> {
         trackRead(path,);
-        return { path, content: await readCached(path,), };
+        return {
+          path,
+          content: await readCached(path,),
+        };
       },),
     );
-    return globResults(input, results,);
+    return globResults(
+      input,
+      results,
+    );
   }
 
   /** Expand any glob patterns in the array, then flatten */

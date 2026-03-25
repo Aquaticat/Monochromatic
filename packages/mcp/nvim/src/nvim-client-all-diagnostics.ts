@@ -36,7 +36,10 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
     nvimClients.map(async function queryInstance(nvim,) {
       try {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
-        const raw = (await nvim.executeLua(LUA_GET_ALL_DIAGNOSTICS, [],)) as Record<
+        const raw = (await nvim.executeLua(
+          LUA_GET_ALL_DIAGNOSTICS,
+          [],
+        )) as Record<
           string,
           unknown
         >[];
@@ -55,7 +58,10 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
         },);
       }
       catch (err: unknown) {
-        console.error('[mcp-nvim] Failed to query instance for all diagnostics:', err,);
+        console.error(
+          '[mcp-nvim] Failed to query instance for all diagnostics:',
+          err,
+        );
         return [];
       }
     },),
@@ -70,12 +76,18 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
       if (existing !== undefined)
         existing.push(...fileEntry.diagnostics,);
       else
-        byPath.set(fileEntry.path, [...fileEntry.diagnostics,],);
+        byPath.set(
+          fileEntry.path,
+          [...fileEntry.diagnostics,],
+        );
     }
   }
   //endregion Merge diagnostics from all instances by file path
 
   return [...byPath.entries(),].map(function toFileDiagnostics([path, diagnostics,],) {
-    return { path, diagnostics: uniqueDiagnostics(diagnostics,), };
+    return {
+      path,
+      diagnostics: uniqueDiagnostics(diagnostics,),
+    };
   },);
 }

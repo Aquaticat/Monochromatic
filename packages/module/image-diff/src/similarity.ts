@@ -16,7 +16,10 @@
  * const same = dotProduct([1, 0], [1, 0]); // 1
  * ```
  */
-export function dotProduct(a: readonly number[], b: readonly number[],): number {
+export function dotProduct(
+  a: readonly number[],
+  b: readonly number[],
+): number {
   if (a.length !== b.length) {
     throw new Error(
       `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
@@ -52,7 +55,10 @@ export function dotProduct(a: readonly number[], b: readonly number[],): number 
  * const sim = cosineSimilarity([3, 4], [4, 3]); // ~0.96
  * ```
  */
-export function cosineSimilarity(a: readonly number[], b: readonly number[],): number {
+export function cosineSimilarity(
+  a: readonly number[],
+  b: readonly number[],
+): number {
   if (a.length !== b.length) {
     throw new Error(
       `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,

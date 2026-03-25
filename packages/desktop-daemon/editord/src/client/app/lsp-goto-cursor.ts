@@ -18,7 +18,10 @@ import { doGotoDefinition, } from './lsp-goto-definition.ts';
 import { showReferences, } from './lsp-references.ts';
 
 /** Tagged logger for goto-definition-at-cursor. */
-const cursorLog = tagged({ tag: 'lsp-goto-cursor', l, },);
+const cursorLog = tagged({
+  tag: 'lsp-goto-cursor',
+  l,
+},);
 
 /**
  * Performs go-to-definition at the current cursor position.
@@ -38,11 +41,22 @@ const cursorLog = tagged({ tag: 'lsp-goto-cursor', l, },);
  * @param referencesPopup - references popup for fallback display
  */
 export function performGotoAtCursor(
-  { ws, getCurrentFilePath, loadFileSafe, hoverPopup, editorPane, referencesPopup, }: {
+  {
+    ws,
+    getCurrentFilePath,
+    loadFileSafe,
+    hoverPopup,
+    editorPane,
+    referencesPopup,
+  }: {
     ws: EditorWsClient;
     getCurrentFilePath: () => string | null;
     loadFileSafe: (
-      opts: { path: string; line?: number | undefined; character?: number | undefined; },
+      opts: {
+        path: string;
+        line?: number | undefined;
+        character?: number | undefined
+      },
     ) => Promise<void>;
     hoverPopup: HoverPopup;
     editorPane: EditorPane;
@@ -58,19 +72,36 @@ export function performGotoAtCursor(
   }
   cursorLog.info(`line=${pos.line} character=${pos.character}`,);
   void (async function navigateOrFindReferences(): Promise<void> {
-    const result = await doGotoDefinition({ ws, getCurrentFilePath, loadFileSafe,
-      line: pos.line, character: pos.character, },);
+    const result = await doGotoDefinition({
+      ws,
+      getCurrentFilePath,
+      loadFileSafe,
+      line: pos.line,
+      character: pos.character,
+    },);
     if (result === 'no-definition') {
-      showCursorToast({ message: 'No definition found', rect, },);
+      showCursorToast({
+        message: 'No definition found',
+        rect,
+      },);
       return;
     }
     if (result === 'error') {
-      showCursorToast({ message: 'Go to definition failed', rect, },);
+      showCursorToast({
+        message: 'Go to definition failed',
+        rect,
+      },);
       return;
     }
     if (result !== 'already-at-definition')
       return;
-    await showReferences({ ws, referencesPopup, getCurrentFilePath, line: pos.line,
-      character: pos.character, rect, },);
+    await showReferences({
+      ws,
+      referencesPopup,
+      getCurrentFilePath,
+      line: pos.line,
+      character: pos.character,
+      rect,
+    },);
   })();
 }

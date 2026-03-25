@@ -11,7 +11,10 @@ import {
 } from '../log.ts';
 
 /** Tagged logger for the reveal subsystem. */
-const l = tagged({ tag: 'file-tree-reveal', l: rootLogger, },);
+const l = tagged({
+  tag: 'file-tree-reveal',
+  l: rootLogger,
+},);
 
 /**
  * Collects all ancestor directory paths between each file and the root.
@@ -22,16 +25,25 @@ const l = tagged({ tag: 'file-tree-reveal', l: rootLogger, },);
  *
  * @returns set of ancestor directory paths
  */
-export function collectAncestorDirs({ paths, rootLength, }: {
+export function collectAncestorDirs({
+  paths,
+  rootLength,
+}: {
   paths: string[];
   rootLength: number;
 },): Set<string> {
   const dirs = new Set<string>();
   for (const filePath of paths) {
-    let current = filePath.slice(0, filePath.lastIndexOf('/',),);
+    let current = filePath.slice(
+      0,
+      filePath.lastIndexOf('/',),
+    );
     while (current.length > rootLength) {
       dirs.add(current,);
-      current = current.slice(0, current.lastIndexOf('/',),);
+      current = current.slice(
+        0,
+        current.lastIndexOf('/',),
+      );
     }
   }
   return dirs;
@@ -46,10 +58,16 @@ export function collectAncestorDirs({ paths, rootLength, }: {
  *
  * @returns anchor element and viewport offset, or null
  */
-export function findScrollAnchor({ tree, hostElement, }: {
+export function findScrollAnchor({
+  tree,
+  hostElement,
+}: {
   tree: HTMLDivElement;
   hostElement: HTMLElement;
-},): { element: HTMLElement; offsetFromViewport: number; } | null {
+},): {
+  element: HTMLElement;
+  offsetFromViewport: number
+} | null {
   const hostRect = hostElement.getBoundingClientRect();
   const viewportTop = hostRect.top;
 
@@ -58,7 +76,10 @@ export function findScrollAnchor({ tree, hostElement, }: {
   )) {
     const rect = candidate.getBoundingClientRect();
     if (rect.bottom > viewportTop)
-      return { element: candidate, offsetFromViewport: rect.top - viewportTop, };
+      return {
+        element: candidate,
+        offsetFromViewport: rect.top - viewportTop,
+      };
   }
 
   return null;
@@ -71,7 +92,10 @@ export function findScrollAnchor({ tree, hostElement, }: {
  *
  * @param path - absolute file path to scroll into view
  */
-export function scrollToFile({ tree, path, }: {
+export function scrollToFile({
+  tree,
+  path,
+}: {
   tree: HTMLDivElement;
   path: string;
 },): void {
@@ -96,7 +120,13 @@ export function scrollToFile({ tree, path, }: {
  * @param restoreExpansion - function to restore expansion state
  */
 export async function revealFiles(
-  { tree, hostElement, rootPath, paths, restoreExpansion, }: {
+  {
+    tree,
+    hostElement,
+    rootPath,
+    paths,
+    restoreExpansion,
+  }: {
     tree: HTMLDivElement;
     hostElement: HTMLElement;
     rootPath: string;
@@ -104,7 +134,10 @@ export async function revealFiles(
     restoreExpansion: (opts: { dirs: string[]; },) => Promise<void>;
   },
 ): Promise<void> {
-  const dirs = collectAncestorDirs({ paths, rootLength: rootPath.length, },);
+  const dirs = collectAncestorDirs({
+    paths,
+    rootLength: rootPath.length,
+  },);
   if (dirs.size === 0)
     return;
   l.info(
@@ -112,7 +145,10 @@ export async function revealFiles(
       String(paths.length,)
     } recent files`,
   );
-  const anchor = findScrollAnchor({ tree, hostElement, },);
+  const anchor = findScrollAnchor({
+    tree,
+    hostElement,
+  },);
   await restoreExpansion({ dirs: [...dirs,], },);
   if (anchor !== null) {
     const newTop = anchor.element.getBoundingClientRect().top;

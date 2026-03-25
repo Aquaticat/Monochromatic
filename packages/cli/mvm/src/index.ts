@@ -48,7 +48,10 @@ const boundary = doubleDashIndex === -1 ? rawArgs.length : doubleDashIndex;
  * The logger caches its own `process.argv` check at module load time
  * (before this runs), so stripping here only affects the \@optique parser.
  */
-const filteredArgs = rawArgs.filter(function keepNonInfraArgs(arg, i,) {
+const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
+  arg,
+  i,
+) {
   return i >= boundary || !INFRA_FLAGS.has(arg,);
 },);
 
@@ -57,19 +60,28 @@ const filteredArgs = rawArgs.filter(function keepNonInfraArgs(arg, i,) {
 //region Dispatch -- parse argv and route to the appropriate handler
 
 /** Parsed CLI result from process.argv */
-const args = runSync(parser, {
+const args = runSync(
+  parser,
+  {
   programName: 'mvm',
   args: filteredArgs,
   help: 'option',
   aboveError: 'help',
   brief: message`mvm - ephemeral VM manager`,
   footer: message`Pass --verbose before the subcommand to enable debug logging.`,
-},);
+},
+);
 
 if (args.cmd === 'create') {
   await (args.from !== undefined
-    ? clone({ destination: args.name, source: args.from, },)
-    : create({ image: args.image, name: args.name, },));
+    ? clone({
+      destination: args.name,
+      source: args.from,
+    },)
+    : create({
+      image: args.image,
+      name: args.name,
+    },));
 }
 else if (args.cmd === 'shell')
   await shell({ name: args.name, },);
@@ -98,7 +110,10 @@ else if (args.cmd === 'destroy') {
 }
 else if (args.cmd === 'exec') {
   /** Execution result with stdout, stderr, and exit code. */
-  const result = await exec({ command: args.command, name: args.name, },);
+  const result = await exec({
+    command: args.command,
+    name: args.name,
+  },);
   if (result.stdout.length > 0)
     process.stdout.write(result.stdout,);
   if (result.stderr.length > 0)
@@ -108,7 +123,10 @@ else if (args.cmd === 'exec') {
 }
 else {
   /** Execution result from the ephemeral VM. */
-  const result = await run({ command: args.command, from: args.from, },);
+  const result = await run({
+    command: args.command,
+    from: args.from,
+  },);
   if (result.stdout.length > 0)
     process.stdout.write(result.stdout,);
   if (result.stderr.length > 0)

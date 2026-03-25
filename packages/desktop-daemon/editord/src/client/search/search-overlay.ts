@@ -32,7 +32,10 @@ import {
 export type { ResultSelectDetail, } from './nav.ts';
 
 /** Tagged logger for the search overlay subsystem. */
-const l = tagged({ tag: 'search-overlay', l: rootLogger, },);
+const l = tagged({
+  tag: 'search-overlay',
+  l: rootLogger,
+},);
 /** Maximum milliseconds between two Shift keyup events to count as a double-shift. */
 const DOUBLE_SHIFT_THRESHOLD_MS = 400;
 
@@ -59,7 +62,10 @@ export class SearchOverlay extends HTMLElement {
   /** True if a non-Shift key was pressed between two Shift releases. */
   #interveningKey = false;
   /** Mutable debounce state shared across search invocations. */
-  #searchState: SearchState = { debounceTimer: 0, searchGeneration: 0, };
+  #searchState: SearchState = {
+    debounceTimer: 0,
+    searchGeneration: 0,
+  };
   /** Callback that performs a search and returns results. */
   onSearch: ((query: string,) => Promise<SearchResult[]>) | null = null;
   /** Callback that returns the current search scope directory. */
@@ -74,10 +80,13 @@ export class SearchOverlay extends HTMLElement {
   /** Renders the dialog and attaches keyboard listeners for double-shift. */
   connectedCallback(): void {
     const overlay = this;
-    this.#input = h({ tag: 'input', class: 'search-input',
+    this.#input = h({
+      tag: 'input',
+      class: 'search-input',
       attrs: { type: 'text',
         placeholder: 'Search files... (prefix with % for content only)',
-        autocomplete: 'off', }, on: { input: function handleInput() {
+        autocomplete: 'off', },
+      on: { input: function handleInput() {
           overlay.#scheduleSearch();
         }, keydown: function handleInputKeydown(event,) {
           handleSearchKeydown({ event, moveSelection: function move(delta,) {
@@ -93,18 +102,33 @@ export class SearchOverlay extends HTMLElement {
           {
             overlay.#close();
           }
-        }, }, },);
-    this.#resultsContainer = h({ tag: 'div', class: 'results', },);
-    this.#dialog = h({ tag: 'dialog', children: [this.#input, this.#resultsContainer,],
+        }, },
+    },);
+    this.#resultsContainer = h({
+      tag: 'div',
+      class: 'results',
+    },);
+    this.#dialog = h({
+      tag: 'dialog',
+      children: [this.#input, this.#resultsContainer,],
       on: { close: function handleClose() {
         l.info('overlay closed',);
-      }, }, },);
-    this.#shadow.replaceChildren(h({ tag: 'style', text: STYLES, },), this.#dialog,);
-    document.addEventListener('keydown', function handleGlobalKeydown(event,) {
+      }, },
+    },);
+    this.#shadow.replaceChildren(
+      h({ tag: 'style', text: STYLES, },),
+      this.#dialog,
+    );
+    document.addEventListener(
+      'keydown',
+      function handleGlobalKeydown(event,) {
       if (event.key !== 'Shift')
         overlay.#interveningKey = true;
-    },);
-    document.addEventListener('keyup', function handleGlobalKeyup(event,) {
+    },
+    );
+    document.addEventListener(
+      'keyup',
+      function handleGlobalKeyup(event,) {
       if (event.key !== 'Shift')
         return;
       const now = Date.now();
@@ -119,7 +143,8 @@ export class SearchOverlay extends HTMLElement {
       }
       overlay.#lastShiftUp = now;
       overlay.#interveningKey = false;
-    },);
+    },
+    );
   }
 
   /** Opens the overlay. */
@@ -170,9 +195,12 @@ export class SearchOverlay extends HTMLElement {
   /** Schedules a debounced search. */
   #scheduleSearch(): void {
     const overlay = this;
-    scheduleSearch({ state: this.#searchState, execute: function run() {
+    scheduleSearch({
+      state: this.#searchState,
+      execute: function run() {
       void overlay.#performSearch();
-    }, },);
+    },
+    },);
   }
 
   /** Reads the input value, invokes `onSearch`, and renders results. */
@@ -180,15 +208,25 @@ export class SearchOverlay extends HTMLElement {
     if (this.onSearch === null || this.#input === null)
       return;
     const overlay = this;
-    await performSearch({ raw: this.#input.value, state: this.#searchState,
-      onSearch: this.onSearch, onResults: function render(opts,) {
+    await performSearch({
+      raw: this.#input.value,
+      state: this.#searchState,
+      onSearch: this.onSearch,
+      onResults: function render(opts,) {
         overlay.#renderResults(opts,);
-      }, },);
+      },
+    },);
   }
 
   /** Renders search results into the results container. */
   #renderResults(
-    { results, query, }: { results: SearchResult[]; query: string; },
+    {
+      results,
+      query,
+    }: {
+      results: SearchResult[];
+      query: string
+    },
   ): void {
     if (this.#resultsContainer === null)
       return;
@@ -198,27 +236,43 @@ export class SearchOverlay extends HTMLElement {
       const hasInput = this.#input !== null && this.#input.value.trim() !== '';
       this.#resultsContainer.replaceChildren(
         hasInput
-          ? h({ tag: 'div', class: 'empty', text: 'No results', },)
+          ? h({
+            tag: 'div',
+            class: 'empty',
+            text: 'No results',
+          },)
           : h({ tag: 'div', },),
       );
       return;
     }
     const overlay = this;
     const rootPrefix = this.#rootDir.endsWith('/',) ? this.#rootDir : `${this.#rootDir}/`;
-    const elements = renderResultElements({ results, query, rootPrefix,
-      budget: this.#charBudget(), onSelect: function select(index,) {
+    const elements = renderResultElements({
+      results,
+      query,
+      rootPrefix,
+      budget: this.#charBudget(),
+      onSelect: function select(index,) {
         overlay.#selectResult({ index, },);
-      }, },);
+      },
+    },);
     this.#resultsContainer.replaceChildren(...elements,);
-    highlightMatches({ query, container: this.#resultsContainer, },);
+    highlightMatches({
+      query,
+      container: this.#resultsContainer,
+    },);
   }
 
   /** Moves the keyboard selection by the given delta. */
   #moveSelection({ delta, }: { delta: number; },): void {
     if (this.#resultsContainer === null)
       return;
-    this.#selectedIndex = moveSearchSelection({ delta, results: this.#results,
-      selectedIndex: this.#selectedIndex, container: this.#resultsContainer, },);
+    this.#selectedIndex = moveSearchSelection({
+      delta,
+      results: this.#results,
+      selectedIndex: this.#selectedIndex,
+      container: this.#resultsContainer,
+    },);
   }
   /** Confirms the current selection. */
   #confirmSelection(): void {
@@ -226,12 +280,21 @@ export class SearchOverlay extends HTMLElement {
   }
   /** Dispatches a `result-select` event for the result at the given index and closes. */
   #selectResult({ index, }: { index: number; },): void {
-    const detail = buildResultDetail({ index, results: this.#results, },);
+    const detail = buildResultDetail({
+      index,
+      results: this.#results,
+    },);
     if (detail === null)
       return;
-    this.dispatchEvent(new CustomEvent('result-select', { detail, bubbles: true, },),);
+    this.dispatchEvent(new CustomEvent(
+      'result-select',
+      { detail, bubbles: true, },
+    ),);
     this.#close();
   }
 }
 
-customElements.define('search-overlay', SearchOverlay,);
+customElements.define(
+  'search-overlay',
+  SearchOverlay,
+);

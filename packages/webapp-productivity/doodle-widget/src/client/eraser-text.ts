@@ -30,7 +30,11 @@ import { segmentIntersectsRect, } from './geometry.ts';
  * @returns `true` if the point is inside the input's layout bounds
  */
 function pointInInputRect(
-  { px, py, input, }: {
+  {
+    px,
+    py,
+    input,
+  }: {
     px: number;
     py: number;
     input: HTMLInputElement;
@@ -69,7 +73,13 @@ function pointInInputRect(
  * });
  * ```
  */
-export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
+export function eraseTextAt({
+  point,
+  previousPoint,
+  cw,
+  ch,
+  textLayer,
+}: {
   point: NormalizedPoint;
   previousPoint: NormalizedPoint | null;
   cw: number;
@@ -77,23 +87,42 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
   textLayer: HTMLDivElement;
 },): boolean {
   /** Current eraser position in content-space pixels */
-  const { px, py, } = denormalizePoint({ point, cw, ch, },);
+  const {
+    px,
+    py,
+  } = denormalizePoint({
+    point,
+    cw,
+    ch,
+  },);
 
   const inputs = [...textLayer.querySelectorAll<HTMLInputElement>('.text-input',),];
   let erased = false;
 
   /** Previous eraser position in content-space pixels when available */
   const prev = previousPoint !== null
-    ? denormalizePoint({ point: previousPoint, cw, ch, },)
+    ? denormalizePoint({
+      point: previousPoint,
+      cw,
+      ch,
+    },)
     : null;
 
   for (const input of inputs) {
     /** Check current eraser position */
-    const hitCurrent = pointInInputRect({ px, py, input, },);
+    const hitCurrent = pointInInputRect({
+      px,
+      py,
+      input,
+    },);
 
     /** Check previous eraser position when available */
     const hitPrevious = prev !== null
-      && pointInInputRect({ px: prev.px, py: prev.py, input, },);
+      && pointInInputRect({
+        px: prev.px,
+        py: prev.py,
+        input,
+      },);
 
     /** Check whether the eraser travel segment crosses the input rect */
     const hitSegment = prev !== null

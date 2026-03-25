@@ -37,7 +37,9 @@ export const tagLines: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(context, function tagLinesHandler(_node, comment,): void {
+    return createTsdocVisitor(
+      context,
+      function tagLinesHandler(_node, comment,): void {
       const lines = getCommentLines(comment,);
       /** Minimum line count for a comment that can contain tag spacing issues. */
       const minContentLines = 3;
@@ -101,7 +103,8 @@ export const tagLines: CreateOnceRule = {
           },);
         }
       },);
-    },);
+    },
+    );
   },
 };
 

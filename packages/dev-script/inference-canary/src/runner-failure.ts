@@ -5,6 +5,10 @@
  * a zero-score report so the caller can continue with other models.
  */
 import { writeFailureArtifact, } from './linter-artifacts.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
 
 import type { RunnerConfig, } from './runner-config.ts';
 import type {
@@ -31,8 +35,13 @@ export async function handleRunFailure(
   mergedConfig: RunnerConfig,
   timestamp: ISOTimestamp,
 ): Promise<CanaryReport> {
+  /** Model-specific logger for failure messages. */
+  const rl = tagged({
+    tag: mergedConfig.label,
+    l,
+  },);
   const message = error instanceof Error ? error.message : String(error,);
-  console.error(`  [${mergedConfig.label}] FAILED: ${message}`,);
+  rl.error(`FAILED: ${message}`,);
 
   // Write a failure artifact so the artifact directory records that this run
   // was attempted, even though no probes completed successfully.
@@ -52,8 +61,9 @@ export async function handleRunFailure(
     },);
   }
   catch (writeError) {
-    console.error(`  [${mergedConfig.label}] failed to write failure artifact:`,
-      writeError,);
+    rl.error(
+      `failed to write failure artifact: ${String(writeError,)}`,
+    );
   }
 
   return {

@@ -17,7 +17,10 @@
  * ```
  */
 export function decodeBase64(encoded: string,): string {
-  return Buffer.from(encoded, 'base64',).toString('utf8',);
+  return Buffer.from(
+    encoded,
+    'base64',
+  ).toString('utf8',);
 }
 
 /**
@@ -42,19 +45,34 @@ export function decodeBase64(encoded: string,): string {
  * // => { path: 'powershell.exe', arg: ['-NoProfile', '-NonInteractive', '-Command', 'hostname'] }
  * ```
  */
-export function execArgs({ command, osFamily, shell, }: {
+export function execArgs({
+  command,
+  osFamily,
+  shell,
+}: {
   command: string;
   osFamily: string;
   shell: string;
-},): { arg: readonly string[]; path: string; } {
+},): {
+  arg: readonly string[];
+  path: string
+} {
   if (osFamily === 'windows') {
     return {
-      arg: ['-NoProfile', '-NonInteractive', '-Command', command,],
+      arg: [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        command,
+      ],
       path: shell,
     };
   }
   return {
-    arg: ['-c', command,],
+    arg: [
+      '-c',
+      command,
+    ],
     path: shell,
   };
 }

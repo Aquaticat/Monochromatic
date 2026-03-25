@@ -53,8 +53,10 @@ export async function streamCompletion(
 ): Promise<CompletionResult> {
   // Fast-path: if the signal is already aborted, skip the network request entirely.
   if (signal !== undefined && signal.aborted) {
-    throw new DOMException('Probe timeout signal already aborted before stream start',
-      'AbortError',);
+    throw new DOMException(
+      'Probe timeout signal already aborted before stream start',
+      'AbortError',
+    );
   }
 
   // Track whether the signal fired during the stream. tsgo narrows `signal.aborted` to
@@ -66,7 +68,11 @@ export async function streamCompletion(
   function onAbort(): void {
     streamWasAborted = true;
   }
-  signal?.addEventListener('abort', onAbort, { once: true, },);
+  signal?.addEventListener(
+    'abort',
+    onAbort,
+    { once: true, },
+  );
 
   const startMs = Date.now();
 
@@ -76,14 +82,17 @@ export async function streamCompletion(
     ...(config.verbosity !== 'high' ? { verbosity: config.verbosity, } : {}),
   };
 
-  const stream = await client.chat.completions.create({
+  const stream = await client.chat.completions.create(
+    {
     model: config.model,
     max_tokens: config.maxTokens,
     messages: [...messages,],
     stream: true,
     stream_options: { include_usage: true, },
     ...extraBody,
-  }, { signal, },);
+  },
+    { signal, },
+  );
 
   // Mutable accumulators are required here: for-await streams are inherently
   // imperative and each chunk must be processed as it arrives.
@@ -141,22 +150,40 @@ export async function streamCompletion(
       lastUsage = chunk.usage;
   }
 
-  signal?.removeEventListener('abort', onAbort,);
+  signal?.removeEventListener(
+    'abort',
+    onAbort,
+  );
 
   const totalMs = Date.now() - startMs;
-  const timing: StreamTiming = { timeToFirstChunkMs: firstChunkMs, interChunkMs, totalMs,
-    chunkCount, };
-  logTiming(label, timing,);
+  const timing: StreamTiming = {
+    timeToFirstChunkMs: firstChunkMs,
+    interChunkMs,
+    totalMs,
+    chunkCount,
+  };
+  logTiming(
+    label,
+    timing,
+  );
 
-  const result = buildResult(chunks, reasoningChunks, timing, lastUsage,
-    lastFinishReason,);
+  const result = buildResult(
+    chunks,
+    reasoningChunks,
+    timing,
+    lastUsage,
+    lastFinishReason,
+  );
 
   // The SDK ends the stream gracefully on abort (returns partial data) rather than throwing.
   // Throw PartialCompletionError so callers can distinguish abort from success while still
   // having access to whatever chunks arrived before cancellation.
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- mutated by addEventListener callback; oxlint can't track cross-function mutation
   if (streamWasAborted)
-    throw new PartialCompletionError('Stream aborted by probe timeout signal', result,);
+    throw new PartialCompletionError(
+      'Stream aborted by probe timeout signal',
+      result,
+    );
 
   return result;
 }

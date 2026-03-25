@@ -33,7 +33,13 @@ export type PillDatum = {
  * @returns Array of pill descriptors
  */
 export function buildPillData(
-  { task, tags, locations, priority, complexity, }: {
+  {
+    task,
+    tags,
+    locations,
+    priority,
+    complexity,
+  }: {
     task: Task;
     tags: string[];
     locations: string[];
@@ -42,20 +48,44 @@ export function buildPillData(
   },
 ): PillDatum[] {
   return [
-    { field: 'tags', text: tags.length > 0 ? `# ${tags.join(', ',)}` : '# ?', },
-    { field: 'tracked', text: `tracked: ${formatRunningTrackedTime(task,)}`, },
-    { field: 'locations', text: locations.length > 0
+    {
+      field: 'tags',
+      text: tags.length > 0 ? `# ${tags.join(', ',)}` : '# ?',
+    },
+    {
+      field: 'tracked',
+      text: `tracked: ${formatRunningTrackedTime(task,)}`,
+    },
+    {
+      field: 'locations',
+      text: locations.length > 0
       ? `where: ${locations.join(', ',)}`
-      : 'where: ?', },
-    { field: 'priority', text: `priority: ${priority ?? '?'}`, },
-    { field: 'due', text: `due: ${task.dueDate ?? '?'}`, },
-    { field: 'complexity', text: `complexity: ${complexity ?? '?'}`, },
-    { field: 'reminders', text: task.reminders.length > 0
+      : 'where: ?',
+    },
+    {
+      field: 'priority',
+      text: `priority: ${priority ?? '?'}`,
+    },
+    {
+      field: 'due',
+      text: `due: ${task.dueDate ?? '?'}`,
+    },
+    {
+      field: 'complexity',
+      text: `complexity: ${complexity ?? '?'}`,
+    },
+    {
+      field: 'reminders',
+      text: task.reminders.length > 0
       ? `reminders: ${task.reminders[0]}`
-      : 'reminders: None', },
-    { field: 'blockedBy', text: task.blockedBy.length > 0
+      : 'reminders: None',
+    },
+    {
+      field: 'blockedBy',
+      text: task.blockedBy.length > 0
       ? `blockedBy: ${String(task.blockedBy.length,)}`
-      : 'blockedBy: none', },
+      : 'blockedBy: none',
+    },
   ];
 }
 
@@ -71,7 +101,11 @@ export function buildPillData(
  * @returns Array of pill span elements
  */
 export function buildPillElements(
-  { pills, loading, autofilled, }: {
+  {
+    pills,
+    loading,
+    autofilled,
+  }: {
     pills: PillDatum[];
     loading: boolean;
     autofilled: Set<string>;
@@ -79,7 +113,11 @@ export function buildPillElements(
 ): HTMLElement[] {
   return pills.map(
     function buildPill(pill,): HTMLElement {
-      const element = h({ tag: 'span', class: 'pill', text: pill.text, },);
+      const element = h({
+        tag: 'span',
+        class: 'pill',
+        text: pill.text,
+      },);
       if (loading)
         element.dataset['loading'] = '';
       else if (autofilled.has(pill.field,))

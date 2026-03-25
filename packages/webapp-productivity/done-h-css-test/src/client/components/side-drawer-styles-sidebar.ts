@@ -41,14 +41,20 @@ export const SIDE_DRAWER_SIDEBAR_STYLES = [
           'padding-inline-end': cssVar('min-padding',),
         },
       },),
-      css({ rule: '& .close', decls: { display: 'none', }, },),
+      css({
+        rule: '& .close',
+        decls: { display: 'none', },
+      },),
     ],
   },),
   css({
     at: 'media',
     params: `(min-width: ${DESKTOP_BREAKPOINT})`,
     children: [
-      css({ rule: '.sidebar', decls: { ...flexColumn(), }, },),
+      css({
+        rule: '.sidebar',
+        decls: { ...flexColumn(), },
+      },),
     ],
   },),
 ];

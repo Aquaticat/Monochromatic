@@ -31,11 +31,17 @@ import { DIST, } from './write-page.ts';
 export async function postProcess(
   { l: parentLogger, }: { l: Logger; },
 ): Promise<void> {
-  const l = tagged({ tag: postProcess.name, l: parentLogger, },);
+  const l = tagged({
+    tag: postProcess.name,
+    l: parentLogger,
+  },);
   const htmlFiles = await readdir(`${DIST}/**/*.html`,);
 
   await Promise.all(htmlFiles.files.map(async function minifyHtml(htmlPath,) {
-    const content = await readFile(htmlPath, 'utf8',);
+    const content = await readFile(
+      htmlPath,
+      'utf8',
+    );
     const minified = String(
       await unified()
         .use(rehypeParse,)
@@ -43,7 +49,11 @@ export async function postProcess(
         .use(rehypeStringify,)
         .process(content,),
     );
-    await writeFile(htmlPath, minified, 'utf8',);
+    await writeFile(
+      htmlPath,
+      minified,
+      'utf8',
+    );
   },),);
 
   l.info(`minified ${htmlFiles.files.length} HTML files`,);
@@ -51,7 +61,9 @@ export async function postProcess(
   // Zstd compression is best-effort; the build produces valid output without it.
   // Environments without zstd installed still get a complete build.
   try {
-    await spawn('zstd', [
+    await spawn(
+      'zstd',
+      [
       '-z',
       '-f',
       '-v',
@@ -62,7 +74,8 @@ export async function postProcess(
       '-r',
       '--adapt',
       DIST,
-    ],);
+    ],
+    );
     l.info('compressed with zstd',);
   }
   catch (zstdError) {

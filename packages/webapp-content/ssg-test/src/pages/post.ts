@@ -27,7 +27,12 @@ import { pageLayout, } from '../templates/layout.ts';
  * @returns complete HTML document for the post page
  */
 export function postPage(
-  { post, lang, name, renderedHtml, }: {
+  {
+    post,
+    lang,
+    name,
+    renderedHtml,
+  }: {
     post: Post | undefined;
     lang: Locales;
     name: string;
@@ -35,17 +40,30 @@ export function postPage(
   },
 ): string {
   if (post === undefined || renderedHtml === undefined)
-    return postNotFoundPage({ lang, name, },);
+    return postNotFoundPage({
+      lang,
+      name,
+    },);
 
   const content = h({
     tag: 'main',
     children: [
-      h({ tag: 'h1', text: post.data.title, },),
-      h({ tag: 'article', html: renderedHtml, },),
+      h({
+        tag: 'h1',
+        text: post.data.title,
+      },),
+      h({
+        tag: 'article',
+        html: renderedHtml,
+      },),
     ],
   },);
 
-  return pageLayout({ title: post.data.title, lang, content, },);
+  return pageLayout({
+    title: post.data.title,
+    lang,
+    content,
+  },);
 }
 
 /**
@@ -58,7 +76,13 @@ export function postPage(
  * @returns complete HTML document with redirect link
  */
 function postNotFoundPage(
-  { lang, name, }: { lang: Locales; name: string; },
+  {
+    lang,
+    name,
+  }: {
+    lang: Locales;
+    name: string
+  },
 ): string {
   const t = i18nObject(lang,);
   const title = t.postNotInLang();
@@ -66,16 +90,27 @@ function postNotFoundPage(
   const content = h({
     tag: 'main',
     children: [
-      h({ tag: 'h1', text: title, },),
+      h({
+        tag: 'h1',
+        text: title,
+      },),
       h({
         tag: 'p',
         children: [
           `${t.redirectingToLangChooser()} `,
-          h({ tag: 'a', attrs: { href: `/${name}`, }, text: name, },),
+          h({
+            tag: 'a',
+            attrs: { href: `/${name}`, },
+            text: name,
+          },),
         ],
       },),
     ],
   },);
 
-  return pageLayout({ title, lang, content, },);
+  return pageLayout({
+    title,
+    lang,
+    content,
+  },);
 }

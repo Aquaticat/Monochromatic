@@ -74,7 +74,10 @@ export function verifyNormal(stdout: string,): number {
     // Check 1: solvable puzzle solved correctly
     solvableGrid !== undefined
     && isValidSolution(solvableGrid,)
-    && matchesClues(solvableGrid, SOLVABLE_CLUES,),
+    && matchesClues(
+      solvableGrid,
+      SOLVABLE_CLUES,
+    ),
     // Check 2: box-conflict unsolvable rejected
     unsolvableBoxSection.toUpperCase() === 'UNSOLVABLE',
     // Check 3: column-conflict unsolvable rejected
@@ -82,7 +85,10 @@ export function verifyNormal(stdout: string,): number {
     // Check 4: multi-solution returns exactly 1 valid solution
     multiGrid !== undefined
     && isValidSolution(multiGrid,)
-    && matchesClues(multiGrid, MULTI_CLUES,),
+    && matchesClues(
+      multiGrid,
+      MULTI_CLUES,
+    ),
   ]
     .filter(Boolean,)
     .length;
@@ -122,11 +128,19 @@ export function verifyAll(stdout: string,): number {
   /** Number of checks that passed out of ALL_CHECKS total */
   const correctCount = [
     // Check 1: exactly 2 valid distinct solutions matching clues
-    verifySolutionSet(twoSolSection, TWO_SOLUTION_CLUES, EXPECTED_TWO_SOLUTIONS,
-      EXPECTED_TWO_SOLUTIONS,),
+    verifySolutionSet(
+      twoSolSection,
+      TWO_SOLUTION_CLUES,
+      EXPECTED_TWO_SOLUTIONS,
+      EXPECTED_TWO_SOLUTIONS,
+    ),
     // Check 2: multiple valid distinct solutions for the many-solution puzzle
-    verifySolutionSet(manySolSection, MANY_SOLUTION_CLUES, undefined,
-      MIN_MANY_SOLUTIONS,),
+    verifySolutionSet(
+      manySolSection,
+      MANY_SOLUTION_CLUES,
+      undefined,
+      MIN_MANY_SOLUTIONS,
+    ),
     // Check 3: unsolvable still rejected under --all
     unsolvableSection.toUpperCase() === 'UNSOLVABLE',
   ]

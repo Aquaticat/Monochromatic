@@ -29,9 +29,18 @@ export function hypervFeatures(): string {
     tag: 'hyperv',
     attrs: { mode: 'custom', },
     children: [
-      h({ tag: 'relaxed', attrs: { state: 'on', }, },),
-      h({ tag: 'vapic', attrs: { state: 'on', }, },),
-      h({ tag: 'spinlocks', attrs: { state: 'on', retries: '8191', }, },),
+      h({
+        tag: 'relaxed',
+        attrs: { state: 'on', },
+      },),
+      h({
+        tag: 'vapic',
+        attrs: { state: 'on', },
+      },),
+      h({
+        tag: 'spinlocks',
+        attrs: { state: 'on', retries: '8191', },
+      },),
     ],
   },);
 }
@@ -61,12 +70,21 @@ export function clockElement(osFamily: OsFamily,): string {
       tag: 'clock',
       attrs: { offset: 'localtime', },
       children: [
-        h({ tag: 'timer', attrs: { name: 'hypervclock', present: 'yes', }, },),
-        h({ tag: 'timer', attrs: { name: 'hpet', present: 'no', }, },),
+        h({
+          tag: 'timer',
+          attrs: { name: 'hypervclock', present: 'yes', },
+        },),
+        h({
+          tag: 'timer',
+          attrs: { name: 'hpet', present: 'no', },
+        },),
       ],
     },);
   }
-  return h({ tag: 'clock', attrs: { offset: 'utc', }, },);
+  return h({
+    tag: 'clock',
+    attrs: { offset: 'utc', },
+  },);
 }
 
 //endregion Clock configuration
@@ -90,8 +108,16 @@ export function ideCdromDevices(
   cdroms: readonly { path: string; }[],
 ): readonly string[] {
   /** IDE device name sequence: hda through hdd. */
-  const ideDevNames = ['hda', 'hdb', 'hdc', 'hdd',];
-  return cdroms.map(function buildCdromElement(cdrom, index,) {
+  const ideDevNames = [
+    'hda',
+    'hdb',
+    'hdc',
+    'hdd',
+  ];
+  return cdroms.map(function buildCdromElement(
+    cdrom,
+    index,
+  ) {
     const devName = ideDevNames[index];
     if (devName === undefined) {
       throw new Error(
@@ -100,11 +126,23 @@ export function ideCdromDevices(
     }
     return h({
       tag: 'disk',
-      attrs: { type: 'file', device: 'cdrom', },
+      attrs: {
+        type: 'file',
+        device: 'cdrom',
+      },
       children: [
-        h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw', }, },),
-        h({ tag: 'source', attrs: { file: cdrom.path, }, },),
-        h({ tag: 'target', attrs: { dev: devName, bus: 'ide', }, },),
+        h({
+          tag: 'driver',
+          attrs: { name: 'qemu', type: 'raw', },
+        },),
+        h({
+          tag: 'source',
+          attrs: { file: cdrom.path, },
+        },),
+        h({
+          tag: 'target',
+          attrs: { dev: devName, bus: 'ide', },
+        },),
         h({ tag: 'readonly', },),
       ],
     },);
@@ -137,7 +175,10 @@ export function commonDevices(osFamily: OsFamily,): readonly string[] {
       tag: 'interface',
       attrs: { type: 'user', },
       children: [
-        h({ tag: 'model', attrs: { type: 'virtio', }, },),
+        h({
+          tag: 'model',
+          attrs: { type: 'virtio', },
+        },),
       ],
     },),
     // Guest agent channel for command execution via `virsh qemu-agent-command`
@@ -145,8 +186,10 @@ export function commonDevices(osFamily: OsFamily,): readonly string[] {
       tag: 'channel',
       attrs: { type: 'unix', },
       children: [
-        h({ tag: 'target',
-          attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0', }, },),
+        h({
+          tag: 'target',
+          attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0', },
+        },),
       ],
     },),
     // Serial console for interactive shell via `virsh console` (primarily for Linux)
@@ -154,14 +197,20 @@ export function commonDevices(osFamily: OsFamily,): readonly string[] {
       tag: 'serial',
       attrs: { type: 'pty', },
       children: [
-        h({ tag: 'target', attrs: { port: '0', }, },),
+        h({
+          tag: 'target',
+          attrs: { port: '0', },
+        },),
       ],
     },),
     h({
       tag: 'console',
       attrs: { type: 'pty', },
       children: [
-        h({ tag: 'target', attrs: { type: 'serial', port: '0', }, },),
+        h({
+          tag: 'target',
+          attrs: { type: 'serial', port: '0', },
+        },),
       ],
     },),
   ];
@@ -173,13 +222,19 @@ export function commonDevices(osFamily: OsFamily,): readonly string[] {
       h({
         tag: 'video',
         children: [
-          h({ tag: 'model', attrs: { type: 'vga', vram: '16384', }, },),
+          h({
+            tag: 'model',
+            attrs: { type: 'vga', vram: '16384', },
+          },),
         ],
       },),
       // Tablet input device to prevent mouse pointer offset
       h({
         tag: 'input',
-        attrs: { type: 'tablet', bus: 'usb', },
+        attrs: {
+          type: 'tablet',
+          bus: 'usb',
+        },
       },),
     );
   }

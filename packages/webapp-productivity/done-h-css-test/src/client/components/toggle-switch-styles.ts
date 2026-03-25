@@ -72,7 +72,10 @@ export const TOGGLE_SWITCH_STYLES = [
       'background-color': cssVar('bg-stronger',),
       ...flexCenter(),
       'font-size': cssRem(1,),
-      'transition-property': cssCommaList(['inset-inline-start', 'inset-inline-end',],),
+      'transition-property': cssCommaList([
+        'inset-inline-start',
+        'inset-inline-end',
+      ],),
       'transition-duration': cssS(THUMB_TRANSITION_S,),
     },
   },),

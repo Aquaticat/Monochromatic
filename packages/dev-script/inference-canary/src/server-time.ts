@@ -13,6 +13,11 @@
  * ```
  */
 
+import {
+  l,
+  tagged,
+} from './log.ts';
+
 import type { ISOTimestamp, } from './runner-types.ts';
 
 /** OpenRouter models endpoint -- lightweight, public, no auth required */
@@ -37,11 +42,19 @@ const TIMEOUT_MS = 5_000;
  * ```
  */
 export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
+  /** Server-time logger for fallback warnings. */
+  const rl = tagged({
+    tag: fetchServerTimestamp.name,
+    l,
+  },);
   try {
-    const response = await fetch(OPENROUTER_MODELS_URL, {
+    const response = await fetch(
+      OPENROUTER_MODELS_URL,
+      {
       method: 'HEAD',
       signal: AbortSignal.timeout(TIMEOUT_MS,),
-    },);
+    },
+    );
     const dateHeader = response.headers.get('date',);
     if (dateHeader !== null) {
       const parsed = new Date(dateHeader,);
@@ -50,13 +63,11 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
         return parsed.toISOString() as ISOTimestamp;
       }
     }
-    console.warn(
-      '[server-time] Date header missing or unparseable, falling back to local clock',
-    );
+    rl.warn('Date header missing or unparseable, falling back to local clock',);
   }
   catch (error) {
-    console.warn(
-      `[server-time] HEAD request failed, falling back to local clock: ${String(error,)}`,
+    rl.warn(
+      `HEAD request failed, falling back to local clock: ${String(error,)}`,
     );
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ISOTimestamp is a branded string; toISOString() always produces a valid ISO 8601 value

@@ -112,5 +112,8 @@ export type BaseStoreFields<TBackend,> = {
   /** Whether to accept lossy serialization of cyclic graphs. */
   readonly lossyForCircular: boolean;
   /** Ordered backends used by this store. */
-  readonly backends: readonly [TBackend, ...TBackend[],];
+  readonly backends: readonly [
+    TBackend,
+    ...TBackend[],
+  ];
 };

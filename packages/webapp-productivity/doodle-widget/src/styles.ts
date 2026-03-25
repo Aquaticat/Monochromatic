@@ -35,7 +35,11 @@ export function renderStyles(): string {
 
     $({
       rule: '#app',
-      decls: { display: 'flex', 'flex-direction': 'column', 'block-size': FULL_DVB, },
+      decls: {
+        display: 'flex',
+        'flex-direction': 'column',
+        'block-size': FULL_DVB,
+      },
     },),
 
     ...renderToolbarStyles(),
@@ -47,11 +51,18 @@ export function renderStyles(): string {
         'flex-grow': cssNum(1,),
         'overflow-x': 'clip',
         'overflow-y': 'clip',
-        'background-color': cssOklch({ l: 1, c: 0, h: 0, },),
+        'background-color': cssOklch({
+          l: 1,
+          c: 0,
+          h: 0,
+        },),
       },
     },),
 
-    $({ rule: '#zoom-layer', decls: { ...INSET_ZERO_DECLS, }, },),
+    $({
+      rule: '#zoom-layer',
+      decls: { ...INSET_ZERO_DECLS, },
+    },),
 
     $({
       rule: '#draw-canvas',

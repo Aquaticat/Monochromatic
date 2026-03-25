@@ -58,7 +58,8 @@ export const checkParamNames: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context,
+    return createFunctionTsdocVisitor(
+      context,
       function checkParamNamesHandler(node, result,): void {
         const paramNames = extractParamNames(node,);
         const docParamNames = extractDocParamNames(result.docComment,);
@@ -95,7 +96,8 @@ export const checkParamNames: CreateOnceRule = {
             },);
           }
         },);
-      },);
+      },
+    );
   },
 };
 
@@ -128,7 +130,8 @@ export const requireParam: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context,
+    return createFunctionTsdocVisitor(
+      context,
       function requireParamHandler(node, result,): void {
         const paramNames = extractParamNames(node,);
         const docParamNames = new Set(extractDocParamNames(result.docComment,),);
@@ -142,7 +145,8 @@ export const requireParam: CreateOnceRule = {
             },);
           }
         },);
-      },);
+      },
+    );
   },
 };
 

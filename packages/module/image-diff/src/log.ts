@@ -19,7 +19,10 @@ await initPromise;
  * rl.info('comparing images');
  * ```
  */
-export const l: Logger = tagged({ tag: 'image-diff', l: $, },);
+export const l: Logger = tagged({
+  tag: 'image-diff',
+  l: $,
+},);
 
 export type { Logger, };
 export { tagged, };

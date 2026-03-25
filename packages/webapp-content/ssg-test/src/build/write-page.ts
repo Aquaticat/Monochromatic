@@ -21,9 +21,25 @@ export const DIST = 'dist';
  * @param content - file content to write
  */
 export async function writePage(
-  { relativePath, content, }: { relativePath: string; content: string; },
+  {
+    relativePath,
+    content,
+  }: {
+    relativePath: string;
+    content: string
+  },
 ): Promise<void> {
-  const fullPath = join(DIST, relativePath,);
-  await mkdir(join(fullPath, '..',), { recursive: true, },);
-  await writeFile(fullPath, content, 'utf8',);
+  const fullPath = join(
+    DIST,
+    relativePath,
+  );
+  await mkdir(
+    join(fullPath, '..',),
+    { recursive: true, },
+  );
+  await writeFile(
+    fullPath,
+    content,
+    'utf8',
+  );
 }

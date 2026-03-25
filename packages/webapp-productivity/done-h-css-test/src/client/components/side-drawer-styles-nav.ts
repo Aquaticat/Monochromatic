@@ -51,8 +51,12 @@ export const SIDE_DRAWER_NAV_STYLES = [
   },),
   css({
     rule: 'nav',
-    decls: { ...flexColumn(), gap: cssVar('min-gap',), 'flex-grow': 1,
-      'padding-block-start': cssVar('min-gap',), },
+    decls: {
+      ...flexColumn(),
+      gap: cssVar('min-gap',),
+      'flex-grow': 1,
+      'padding-block-start': cssVar('min-gap',),
+    },
   },),
   css({
     rule: 'a',
@@ -68,9 +72,14 @@ export const SIDE_DRAWER_NAV_STYLES = [
       'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
     },
     children: [
-      css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg',), }, },),
-      css({ rule: '&:focus-visible',
-        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },), },),
+      css({
+        rule: '&:hover',
+        decls: { 'background-color': cssVar('hover-bg',), },
+      },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },),
+      },),
     ],
   },),
   css({
@@ -87,12 +96,20 @@ export const SIDE_DRAWER_NAV_STYLES = [
   },),
   css({
     rule: '.close',
-    decls: { ...appearanceNone(), ...flexCenter(), ...minTouchTarget(), },
+    decls: {
+      ...appearanceNone(),
+      ...flexCenter(),
+      ...minTouchTarget(),
+    },
     children: [
-      css({ rule: '&:focus-visible',
-        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },), },),
-      css({ rule: '& svg',
-        decls: { 'inline-size': cssRem(2,), 'block-size': cssRem(2,), }, },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },),
+      },),
+      css({
+        rule: '& svg',
+        decls: { 'inline-size': cssRem(2,), 'block-size': cssRem(2,), },
+      },),
     ],
   },),
 ];

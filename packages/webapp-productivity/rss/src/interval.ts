@@ -3,7 +3,10 @@ import * as z from 'zod/mini';
 import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for the interval module. */
-const l = tagged({ tag: 'interval', l: parentLogger, },);
+const l = tagged({
+  tag: 'interval',
+  l: parentLogger,
+},);
 
 /** Minutes per fetch interval window. */
 const MINUTES_PER_INTERVAL = 5;

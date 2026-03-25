@@ -54,7 +54,12 @@ export type TextEntryData = {
  * });
  * ```
  */
-export function createTextInput({ insetInlineStart, insetBlockStart, color, fontSize, }: {
+export function createTextInput({
+  insetInlineStart,
+  insetBlockStart,
+  color,
+  fontSize,
+}: {
   insetInlineStart: string;
   insetBlockStart: string;
   color: string;
@@ -85,7 +90,9 @@ export function createTextInput({ insetInlineStart, insetBlockStart, color, font
  */
 export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
   const inputs = layer.querySelectorAll<HTMLInputElement>('.text-input',);
-  return Array.from(inputs, function serializeInput(input,): TextEntryData {
+  return Array.from(
+    inputs,
+    function serializeInput(input,): TextEntryData {
     return {
       value: input.value,
       insetInlineStart: input.style.insetInlineStart,
@@ -93,7 +100,8 @@ export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
       color: input.dataset.color ?? '',
       fontSize: input.dataset.fontSize ?? '',
     };
-  },);
+  },
+  );
 }
 
 /**
@@ -106,7 +114,10 @@ export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
  *
  * @param layer - text layer element to append inputs to
  */
-export function restoreTextEntries({ entries, layer, }: {
+export function restoreTextEntries({
+  entries,
+  layer,
+}: {
   entries: readonly TextEntryData[];
   layer: HTMLDivElement;
 },): void {
@@ -144,11 +155,18 @@ export function restoreTextEntries({ entries, layer, }: {
  * });
  * ```
  */
-export function replaceTextEntries({ entries, layer, clearFn, }: {
+export function replaceTextEntries({
+  entries,
+  layer,
+  clearFn,
+}: {
   entries: readonly TextEntryData[];
   layer: HTMLDivElement;
   clearFn: () => void;
 },): void {
   clearFn();
-  restoreTextEntries({ entries, layer, },);
+  restoreTextEntries({
+    entries,
+    layer,
+  },);
 }

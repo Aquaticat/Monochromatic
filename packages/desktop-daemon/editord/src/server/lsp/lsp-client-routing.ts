@@ -31,17 +31,29 @@ export type PendingLspRequest = {
  *
  * @param onNotification - callback for server-initiated notifications
  */
-export function routeJsonRpcMessage({ message, pending, name, send, onNotification, }: {
+export function routeJsonRpcMessage({
+  message,
+  pending,
+  name,
+  send,
+  onNotification,
+}: {
   message: JsonRpcMessage;
   pending: Map<number, PendingLspRequest>;
   name: string;
   send: (message: unknown,) => void;
-  onNotification: (event: { method: string; params: unknown; },) => void;
+  onNotification: (event: {
+    method: string;
+    params: unknown
+  },) => void;
 },): void {
   if ('id' in message && !('method' in message)) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to response shape
-    const response = message as { id: number; result?: unknown;
-      error?: { code: number; message: string; }; };
+    const response = message as {
+      id: number;
+      result?: unknown;
+      error?: { code: number; message: string; }
+    };
     const entry = pending.get(response.id,);
     if (entry !== undefined) {
       pending.delete(response.id,);
@@ -53,12 +65,22 @@ export function routeJsonRpcMessage({ message, pending, name, send, onNotificati
   }
   else if ('method' in message && !('id' in message)) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to notification shape
-    const notification = message as { method: string; params?: unknown; };
-    onNotification({ method: notification.method, params: notification.params, },);
+    const notification = message as {
+      method: string;
+      params?: unknown
+    };
+    onNotification({
+      method: notification.method,
+      params: notification.params,
+    },);
   }
   else if ('method' in message && 'id' in message) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to request shape
     const request = message as { id: number; };
-    send({ jsonrpc: '2.0', id: request.id, result: null, },);
+    send({
+      jsonrpc: '2.0',
+      id: request.id,
+      result: null,
+    },);
   }
 }

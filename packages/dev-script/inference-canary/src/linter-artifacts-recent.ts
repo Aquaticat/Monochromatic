@@ -47,11 +47,17 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
     modelDirs = await readdir(LINT_DIR,);
   }
   catch {
-    return { probePairs, failedModels, };
+    return {
+      probePairs,
+      failedModels,
+    };
   }
 
   for (const modelDir of modelDirs) {
-    const modelPath = join(LINT_DIR, modelDir,);
+    const modelPath = join(
+      LINT_DIR,
+      modelDir,
+    );
     let artifactDirs: string[] = [];
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential directory reads per model
@@ -66,12 +72,22 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       const failureMatch = FAILURE_DIR_PATTERN.exec(dirName,);
       if (failureMatch !== null && failureMatch.groups !== undefined) {
         const rawTimestamp = failureMatch.groups['timestamp'];
-        if (rawTimestamp !== undefined && isRecentTimestamp(rawTimestamp, cutoff,)) {
+        if (rawTimestamp !== undefined && isRecentTimestamp(
+          rawTimestamp,
+          cutoff,
+        )) {
           // Read meta.json to get the model label (fall back to directory name)
-          const metaPath = join(modelPath, dirName, 'meta.json',);
+          const metaPath = join(
+            modelPath,
+            dirName,
+            'meta.json',
+          );
           try {
             // oxlint-disable-next-line no-await-in-loop -- sequential meta.json reads within nested artifact scan
-            const metaRaw = await readFile(metaPath, 'utf8',);
+            const metaRaw = await readFile(
+              metaPath,
+              'utf8',
+            );
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
             const meta = JSON.parse(metaRaw,) as Partial<FailureArtifactMeta>;
             const label = meta.label ?? modelDir;
@@ -96,14 +112,24 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       const rawTimestamp = match.groups['timestamp'];
       if (rawTimestamp === undefined)
         continue;
-      if (!isRecentTimestamp(rawTimestamp, cutoff,))
+      if (!isRecentTimestamp(
+        rawTimestamp,
+        cutoff,
+      ))
         continue;
 
       // Read meta.json to get the model label (old artifacts without label fall back to directory name)
-      const metaPath = join(modelPath, dirName, 'meta.json',);
+      const metaPath = join(
+        modelPath,
+        dirName,
+        'meta.json',
+      );
       try {
         // oxlint-disable-next-line no-await-in-loop -- sequential meta.json reads within nested artifact scan
-        const metaRaw = await readFile(metaPath, 'utf8',);
+        const metaRaw = await readFile(
+          metaPath,
+          'utf8',
+        );
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
         const meta = JSON.parse(metaRaw,) as Partial<ArtifactMeta>;
         const label = meta.label ?? modelDir;
@@ -112,7 +138,10 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
           continue;
         const existing = probePairs.get(label,) ?? new Set<string>();
         existing.add(probe,);
-        probePairs.set(label, existing,);
+        probePairs.set(
+          label,
+          existing,
+        );
       }
       catch {
         // Missing or malformed meta.json -- skip
@@ -121,5 +150,8 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
     }
   }
 
-  return { probePairs, failedModels, };
+  return {
+    probePairs,
+    failedModels,
+  };
 }

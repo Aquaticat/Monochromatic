@@ -107,7 +107,16 @@ type HOptions<TTag extends string,> = {
  * @returns created HTML element matching the tag
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $<const TTag extends string,>(
-  { tag, class: className, text, html, attrs, style, on, children, }: HOptions<TTag>,
+  {
+    tag,
+    class: className,
+    text,
+    html,
+    attrs,
+    style,
+    on,
+    children,
+  }: HOptions<TTag>,
 ): ElementFromTag<TTag> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement, narrowed via tag generic
   const element = document.createElement(tag,) as ElementFromTag<TTag>;
@@ -123,7 +132,10 @@ type HOptions<TTag extends string,> = {
 
   if (attrs !== undefined) {
     for (const [key, value,] of Object.entries(attrs,))
-      element.setAttribute(key, value,);
+      element.setAttribute(
+        key,
+        value,
+      );
   }
 
   if (style !== undefined) {
@@ -137,7 +149,10 @@ type HOptions<TTag extends string,> = {
   if (on !== undefined) {
     for (const [eventName, handler,] of Object.entries(on,)) {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event handler union cast to EventListener for addEventListener
-      element.addEventListener(eventName, handler as EventListener,);
+      element.addEventListener(
+        eventName,
+        handler as EventListener,
+      );
     }
   }
 

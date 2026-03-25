@@ -34,29 +34,48 @@ const CORE_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     format(v,) {
       return shortCommand(v,);
     },
-    fallback: { pre: 'Running command', post: 'Ran command', },
+    fallback: {
+      pre: 'Running command',
+      post: 'Ran command',
+    },
   },
-  Read: { extract: field('file_path',),
+  Read: {
+    extract: field('file_path',),
     format: pathFormat({ pre: 'Reading', post: 'Read', },),
-    fallback: { pre: 'Reading file', post: 'Read file', }, },
-  Edit: { extract: field('file_path',),
+    fallback: { pre: 'Reading file', post: 'Read file', },
+  },
+  Edit: {
+    extract: field('file_path',),
     format: pathFormat({ pre: 'Editing', post: 'Edited', },),
-    fallback: { pre: 'Editing file', post: 'Edited file', }, },
-  Write: { extract: field('file_path',),
+    fallback: { pre: 'Editing file', post: 'Edited file', },
+  },
+  Write: {
+    extract: field('file_path',),
     format: pathFormat({ pre: 'Writing', post: 'Wrote', },),
-    fallback: { pre: 'Writing file', post: 'Wrote file', }, },
-  Grep: { extract: field('pattern',),
+    fallback: { pre: 'Writing file', post: 'Wrote file', },
+  },
+  Grep: {
+    extract: field('pattern',),
     format: quotedFormat({ pre: 'Searching', post: 'Searched', },),
-    fallback: { pre: 'Searching', post: 'Searched', }, },
-  Glob: { extract: field('pattern',),
+    fallback: { pre: 'Searching', post: 'Searched', },
+  },
+  Glob: {
+    extract: field('pattern',),
     format: quotedFormat({ pre: 'Finding', post: 'Found', },),
-    fallback: { pre: 'Finding files', post: 'Found files', }, },
+    fallback: { pre: 'Finding files', post: 'Found files', },
+  },
   Agent: {
     extract: field('description',),
-    format(v, tense,) {
+    format(
+      v,
+      tense,
+    ) {
       return `${tense === 'pre' ? 'Agent' : 'Agent done'}: ${v}`;
     },
-    fallback: { pre: 'Agent working', post: 'Agent done', },
+    fallback: {
+      pre: 'Agent working',
+      post: 'Agent done',
+    },
   },
 };
 

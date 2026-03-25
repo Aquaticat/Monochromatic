@@ -28,7 +28,13 @@ import { log, } from './log.ts';
 type Decision = 'PRODUCTIVE' | 'UNPRODUCTIVE';
 
 /** Fixed-size tuple tracking the 5 most recent verdicts. */
-type DecisionWindow = [Decision, Decision, Decision, Decision, Decision,];
+type DecisionWindow = [
+  Decision,
+  Decision,
+  Decision,
+  Decision,
+  Decision,
+];
 
 /** Bytes per kilobyte, used for human-readable size formatting. */
 const BYTES_PER_KB = 1_024;
@@ -96,7 +102,11 @@ export async function cycle(): Promise<void> {
       }KB, Webcam: ${(webcam.length / BYTES_PER_KB).toFixed(0,)}KB`,
     );
 
-    store({ timestamp: ts, screenshot, webcam, },);
+    store({
+      timestamp: ts,
+      screenshot,
+      webcam,
+    },);
     const sets = getRecent();
     log.debug(`[memory] ${sets.length} capture set(s) in buffer`,);
 
@@ -106,7 +116,13 @@ export async function cycle(): Promise<void> {
 
     const verdict = parseVerdict(result,);
     /* oxlint-disable-next-line no-magic-numbers -- sliding window indices 1..4 */
-    decisions = [decisions[1], decisions[2], decisions[3], decisions[4], verdict,];
+    decisions = [
+      decisions[1],
+      decisions[2],
+      decisions[3],
+      decisions[4],
+      verdict,
+    ];
     const streakCount = decisions
       .filter(function checkUnproductive(d,) {
         return isUnproductive(d,);

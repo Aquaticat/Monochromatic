@@ -17,7 +17,11 @@ import type {
  * `querySelector<HTMLInputElement>('input')`), which narrows the return
  * type and avoids downstream casts or non-null assertions.
  */
-const SELECTOR_METHODS = new Set(['querySelector', 'querySelectorAll', 'closest',],);
+const SELECTOR_METHODS = new Set([
+  'querySelector',
+  'querySelectorAll',
+  'closest',
+],);
 
 /**
  * Bans `querySelector()`, `querySelectorAll()`, and `closest()` calls

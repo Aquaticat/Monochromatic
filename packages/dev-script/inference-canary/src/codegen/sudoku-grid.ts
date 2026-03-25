@@ -15,21 +15,34 @@ const GRID_SIZE = 9;
 const BOX_SIZE = 3;
 
 /** Column indices [0..8] for functional iteration over grid columns */
-const COLUMN_INDICES = Array.from({ length: GRID_SIZE, },
+const COLUMN_INDICES = Array.from(
+  { length: GRID_SIZE, },
   function indexFromOffset(_, idx,): number {
     return idx;
-  },);
+  },
+);
 
 /**
  * Box origin coordinates for all 9 boxes.
  * Each entry is [topRow, leftCol] for one 3x3 box, enabling functional
  * iteration without classic for loops.
  */
-const BOX_ORIGINS: readonly (readonly [number, number,])[] = Array.from(
+const BOX_ORIGINS: readonly (readonly [
+  number,
+  number,
+])[] = Array.from(
   { length: GRID_SIZE, },
-  function boxOrigin(_, idx,): readonly [number, number,] {
-    return [Math.floor(idx / BOX_SIZE,) * BOX_SIZE,
-      (idx % BOX_SIZE) * BOX_SIZE,] as const;
+  function boxOrigin(
+    _,
+    idx,
+  ): readonly [
+    number,
+    number,
+  ] {
+    return [
+      Math.floor(idx / BOX_SIZE,) * BOX_SIZE,
+      (idx % BOX_SIZE) * BOX_SIZE,
+    ] as const;
   },
 );
 
@@ -63,7 +76,10 @@ export function parseGrid(text: string,): number[][] | undefined {
   const grid = lines.map(function parseLine(line,): number[] | undefined {
     /** Digits extracted by stripping whitespace and converting each character */
     // oxlint-disable-next-line unicorn/prefer-spread -- spreading a string triggers no-misused-spread; Array.from is correct for ASCII digit iteration
-    const digits = Array.from(line.replaceAll(/\s/g, '',),).map(Number,);
+    const digits = Array.from(line.replaceAll(
+      /\s/g,
+      '',
+    ),).map(Number,);
     return digits.length === GRID_SIZE
         && digits.every(function validDigit(digit,): boolean {
           return digit >= 1 && digit <= GRID_SIZE;
@@ -92,7 +108,10 @@ export function parseGrid(text: string,): number[][] | undefined {
  * extractColumn(grid, 0); // [5, 6, 1, 8, 4, 7, 9, 2, 3]
  * ```
  */
-function extractColumn(grid: number[][], col: number,): number[] {
+function extractColumn(
+  grid: number[][],
+  col: number,
+): number[] {
   return grid.map(function getCol(row,): number {
     return row[col] ?? 0;
   },);
@@ -115,10 +134,17 @@ function extractColumn(grid: number[][], col: number,): number[] {
  * extractBox(grid, 0, 0); // top-left box values
  * ```
  */
-function extractBox(grid: number[][], originRow: number, originCol: number,): number[] {
+function extractBox(
+  grid: number[][],
+  originRow: number,
+  originCol: number,
+): number[] {
   return Array.from(
     { length: GRID_SIZE, },
-    function cellValue(_, idx,): number {
+    function cellValue(
+      _,
+      idx,
+    ): number {
       return grid[originRow + Math.floor(idx / BOX_SIZE,)]?.[originCol + (idx % BOX_SIZE)]
         ?? 0;
     },
@@ -159,14 +185,21 @@ export function isValidSolution(grid: number[][],): boolean {
 
   // Columns
   if (!COLUMN_INDICES.every(function checkCol(col,): boolean {
-    return hasAllDigits(extractColumn(grid, col,),);
+    return hasAllDigits(extractColumn(
+      grid,
+      col,
+    ),);
   },)) {
     return false;
   }
 
   // 3x3 boxes
   return BOX_ORIGINS.every(function checkBox([originRow, originCol,],): boolean {
-    return hasAllDigits(extractBox(grid, originRow, originCol,),);
+    return hasAllDigits(extractBox(
+      grid,
+      originRow,
+      originCol,
+    ),);
   },);
 }
 
@@ -184,11 +217,19 @@ export function isValidSolution(grid: number[][],): boolean {
  * matchesClues(solvedGrid, SOLVABLE_CLUES); // true
  * ```
  */
-export function matchesClues(grid: number[][],
-  clues: readonly (readonly number[])[],): boolean
+export function matchesClues(
+  grid: number[][],
+  clues: readonly (readonly number[])[],
+): boolean
 {
-  return clues.every(function checkRow(row, rowIndex,): boolean {
-    return row.every(function checkClue(clue, colIndex,): boolean {
+  return clues.every(function checkRow(
+    row,
+    rowIndex,
+  ): boolean {
+    return row.every(function checkClue(
+      clue,
+      colIndex,
+    ): boolean {
       return clue === 0 || clue === (grid[rowIndex]?.[colIndex] ?? -1);
     },);
   },);

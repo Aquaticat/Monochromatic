@@ -18,7 +18,10 @@ export type ServerType = 'oxlint' | 'tsgo' | 'dprint';
 export const CONFIG_FILES: Record<ServerType, readonly string[]> = {
   oxlint: ['package.json',],
   tsgo: ['tsconfig.json',],
-  dprint: ['dprint.json', 'dprint.jsonc',],
+  dprint: [
+    'dprint.json',
+    'dprint.jsonc',
+  ],
 };
 
 /** Spawn command and arguments for each server type. */
@@ -27,10 +30,17 @@ const COMMANDS: Record<ServerType, {
   args: readonly string[];
   initializationOptions: Record<string, unknown>;
 }> = {
-  oxlint: { command: 'oxlint', args: ['--lsp',], initializationOptions: {}, },
+  oxlint: {
+    command: 'oxlint',
+    args: ['--lsp',],
+    initializationOptions: {},
+  },
   tsgo: {
     command: 'tsgo',
-    args: ['--lsp', '--stdio',],
+    args: [
+      '--lsp',
+      '--stdio',
+    ],
     initializationOptions: {
       userPreferences: {
         inlayHints: {
@@ -44,7 +54,11 @@ const COMMANDS: Record<ServerType, {
       },
     },
   },
-  dprint: { command: 'dprint', args: ['lsp',], initializationOptions: {}, },
+  dprint: {
+    command: 'dprint',
+    args: ['lsp',],
+    initializationOptions: {},
+  },
 };
 
 /**
@@ -60,15 +74,30 @@ const COMMANDS: Record<ServerType, {
  *
  * @returns initialized client, or null if spawn/init fails
  */
-export async function spawnLspClient({ type, root, l, onNotification, }: {
+export async function spawnLspClient({
+  type,
+  root,
+  l,
+  onNotification,
+}: {
   type: ServerType;
   root: string;
   l: Logger;
-  onNotification: (event: { source: string; method: string; params: unknown; },) => void;
+  onNotification: (event: {
+    source: string;
+    method: string;
+    params: unknown
+  },) => void;
 },): Promise<LspClient | null> {
   const def = COMMANDS[type];
-  const binPath = join(root, 'node_modules/.bin',);
-  const env = { ...process.env, PATH: `${binPath}:${process.env.PATH ?? ''}`, };
+  const binPath = join(
+    root,
+    'node_modules/.bin',
+  );
+  const env = {
+    ...process.env,
+    PATH: `${binPath}:${process.env.PATH ?? ''}`,
+  };
   const rootUri = pathToFileURL(root,).href;
   try {
     const c = new LspClient({
@@ -79,12 +108,25 @@ export async function spawnLspClient({ type, root, l, onNotification, }: {
       env,
       l,
       onNotification: function onNotif(
-        { method, params, }: { method: string; params: unknown; },
+        {
+          method,
+          params,
+        }: {
+          method: string;
+          params: unknown
+        },
       ): void {
-        onNotification({ source: type, method, params, },);
+        onNotification({
+          source: type,
+          method,
+          params,
+        },);
       },
     },);
-    await c.initialize({ rootUri, initializationOptions: def.initializationOptions, },);
+    await c.initialize({
+      rootUri,
+      initializationOptions: def.initializationOptions,
+    },);
     l.info(`${type}: ready at ${root}`,);
     return c;
   }

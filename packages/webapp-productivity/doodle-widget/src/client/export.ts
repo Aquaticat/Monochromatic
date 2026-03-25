@@ -51,8 +51,14 @@ export type ExportDeps = {
  */
 export function getContainerSize(
   container: HTMLDivElement,
-): { cw: number; ch: number; } {
-  return { cw: container.clientWidth, ch: container.clientHeight, };
+): {
+  cw: number;
+  ch: number
+} {
+  return {
+    cw: container.clientWidth,
+    ch: container.clientHeight,
+  };
 }
 
 /**
@@ -82,14 +88,22 @@ export function getContainerSize(
  * ```
  */
 export async function renderSvgOverlayToContext(
-  { ctx, container, overlay, imageScale, }: {
+  {
+    ctx,
+    container,
+    overlay,
+    imageScale,
+  }: {
     ctx: OffscreenCanvasRenderingContext2D;
     container: HTMLDivElement;
     overlay: HTMLDivElement;
     imageScale?: number;
   },
 ): Promise<void> {
-  const info = measureSvgOverlay({ container, overlay, },);
+  const info = measureSvgOverlay({
+    container,
+    overlay,
+  },);
   if (info === null)
     return;
 
@@ -97,15 +111,27 @@ export async function renderSvgOverlayToContext(
   const scale = imageScale ?? 1;
 
   /** Set explicit dimensions so the Image decodes at the correct size */
-  info.clone.setAttribute('width', String(info.width * scale,),);
-  info.clone.setAttribute('height', String(info.height * scale,),);
+  info.clone.setAttribute(
+    'width',
+    String(info.width * scale,),
+  );
+  info.clone.setAttribute(
+    'height',
+    String(info.height * scale,),
+  );
   /** Re-serialized SVG markup encoded as a data URL for Image loading */
   const svgMarkup = new XMLSerializer().serializeToString(info.clone,);
   const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup,)}`;
   const img = new Image();
   img.src = dataUrl;
   await img.decode();
-  ctx.drawImage(img, info.offsetX, info.offsetY, info.width, info.height,);
+  ctx.drawImage(
+    img,
+    info.offsetX,
+    info.offsetY,
+    info.width,
+    info.height,
+  );
 }
 
 /**
@@ -127,36 +153,71 @@ export async function renderSvgOverlayToContext(
  * const { canvas, ctx } = await renderBaseCanvas({ container, overlay });
  * ```
  */
-export async function renderBaseCanvas({ container, overlay, strokes, imageScale, }: {
+export async function renderBaseCanvas({
+  container,
+  overlay,
+  strokes,
+  imageScale,
+}: {
   container: HTMLDivElement;
   overlay: HTMLDivElement;
   strokes?: readonly import('./drawing.ts').StrokeData[];
   imageScale?: number;
-},): Promise<{ canvas: OffscreenCanvas; ctx: OffscreenCanvasRenderingContext2D; }> {
-  const { cw, ch, } = getContainerSize(container,);
+},): Promise<{
+  canvas: OffscreenCanvas;
+  ctx: OffscreenCanvasRenderingContext2D
+}> {
+  const {
+    cw,
+    ch,
+  } = getContainerSize(container,);
   /** Scale factor for high-DPI rendering (defaults to 1) */
   const scale = imageScale ?? 1;
 
-  const exportCanvas = new OffscreenCanvas(cw * scale, ch * scale,);
+  const exportCanvas = new OffscreenCanvas(
+    cw * scale,
+    ch * scale,
+  );
   const ctx = requireOffscreenContext(exportCanvas,);
 
   if (scale !== 1)
-    ctx.scale(scale, scale,);
+    ctx.scale(
+      scale,
+      scale,
+    );
 
   //region Layer 1: white background
   ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, cw, ch,);
+  ctx.fillRect(
+    0,
+    0,
+    cw,
+    ch,
+  );
   //endregion Layer 1
 
   //region Layer 2: canvas strokes (behind SVG linework)
-  renderStrokes({ ctx, cw, ch, strokes: strokes ?? getStrokes(), },);
+  renderStrokes({
+    ctx,
+    cw,
+    ch,
+    strokes: strokes ?? getStrokes(),
+  },);
   //endregion Layer 2
 
   //region Layer 3: SVG background on top
-  await renderSvgOverlayToContext({ ctx, container, overlay, imageScale: scale, },);
+  await renderSvgOverlayToContext({
+    ctx,
+    container,
+    overlay,
+    imageScale: scale,
+  },);
   //endregion Layer 3
 
-  return { canvas: exportCanvas, ctx, };
+  return {
+    canvas: exportCanvas,
+    ctx,
+  };
 }
 
 /**
@@ -174,7 +235,10 @@ export async function renderBaseCanvas({ container, overlay, strokes, imageScale
  * triggerDownload({ blob: pngBlob, filename: 'doodle.png' });
  * ```
  */
-export function triggerDownload({ blob, filename, }: {
+export function triggerDownload({
+  blob,
+  filename,
+}: {
   blob: Blob;
   filename: string;
 },): void {

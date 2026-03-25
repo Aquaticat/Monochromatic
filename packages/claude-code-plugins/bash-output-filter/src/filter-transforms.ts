@@ -69,7 +69,10 @@ export function shouldStripLine(line: string,): boolean {
 export function collapseRepeatedChars(line: string,): string {
   return line.replaceAll(
     /([^\w\s])\1{9,}/g,
-    function collapseRun(match, char: string,) {
+    function collapseRun(
+      match,
+      char: string,
+    ) {
       return `${char.repeat(MAX_REPEATED_CHARS,)} (x${match.length})`;
     },
   );
@@ -113,16 +116,31 @@ export function collapseCwdPaths(line: string,): string {
   let result = line;
   if (ALT_CWD_PREFIX !== '') {
     if (ALT_CWD_PREFIX.length >= CWD_PREFIX.length) {
-      result = result.replaceAll(ALT_CWD_PREFIX, '',);
-      result = result.replaceAll(CWD_PREFIX, '',);
+      result = result.replaceAll(
+        ALT_CWD_PREFIX,
+        '',
+      );
+      result = result.replaceAll(
+        CWD_PREFIX,
+        '',
+      );
     }
     else {
-      result = result.replaceAll(CWD_PREFIX, '',);
-      result = result.replaceAll(ALT_CWD_PREFIX, '',);
+      result = result.replaceAll(
+        CWD_PREFIX,
+        '',
+      );
+      result = result.replaceAll(
+        ALT_CWD_PREFIX,
+        '',
+      );
     }
   }
   else {
-    result = result.replaceAll(CWD_PREFIX, '',);
+    result = result.replaceAll(
+      CWD_PREFIX,
+      '',
+    );
   }
   return result;
 }
@@ -160,16 +178,31 @@ export function collapseHomePaths(line: string,): string {
   let result = line;
   if (REAL_HOME_DIR !== '') {
     if (REAL_HOME_DIR.length >= HOME_DIR.length) {
-      result = result.replaceAll(REAL_HOME_DIR, '~',);
-      result = result.replaceAll(HOME_DIR, '~',);
+      result = result.replaceAll(
+        REAL_HOME_DIR,
+        '~',
+      );
+      result = result.replaceAll(
+        HOME_DIR,
+        '~',
+      );
     }
     else {
-      result = result.replaceAll(HOME_DIR, '~',);
-      result = result.replaceAll(REAL_HOME_DIR, '~',);
+      result = result.replaceAll(
+        HOME_DIR,
+        '~',
+      );
+      result = result.replaceAll(
+        REAL_HOME_DIR,
+        '~',
+      );
     }
   }
   else {
-    result = result.replaceAll(HOME_DIR, '~',);
+    result = result.replaceAll(
+      HOME_DIR,
+      '~',
+    );
   }
   return result;
 }
@@ -188,7 +221,10 @@ export function collapseHomePaths(line: string,): string {
 export function truncateLine(line: string,): string {
   if (line.length <= MAX_LINE_LENGTH)
     return line;
-  return `${line.slice(0, MAX_LINE_LENGTH,)}... [${line.length} chars]`;
+  return `${line.slice(
+    0,
+    MAX_LINE_LENGTH,
+  )}... [${line.length} chars]`;
 }
 
 //endregion

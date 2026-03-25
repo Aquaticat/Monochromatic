@@ -25,7 +25,11 @@ import {
  */
 export async function startTaskTimer(id: string,): Promise<Task | null> {
   const timestamp = nowIso();
-  await db.prepare(SQL_START_TIMER,).run(timestamp, timestamp, id,);
+  await db.prepare(SQL_START_TIMER,).run(
+    timestamp,
+    timestamp,
+    id,
+  );
   return getTaskById(id,);
 }
 
@@ -44,13 +48,20 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
 
   const elapsedSeconds = currentTask.timerStartedAt === null
     ? 0
-    : Math.max(0, Math.floor(
+    : Math.max(
+      0,
+      Math.floor(
       (Date.now() - Date.parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
-    ),);
+    ),
+    );
   const updatedTrackedTime = currentTask.trackedTime + elapsedSeconds;
   const timestamp = nowIso();
 
-  await db.prepare(SQL_STOP_TIMER,).run(updatedTrackedTime, timestamp, id,);
+  await db.prepare(SQL_STOP_TIMER,).run(
+    updatedTrackedTime,
+    timestamp,
+    id,
+  );
 
   return getTaskById(id,);
 }
@@ -66,22 +77,40 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   const currentTask = await getTaskById(id,);
   if (currentTask === null)
-    return { completed: false, notFound: true, blockedBy: [], };
+    return {
+      completed: false,
+      notFound: true,
+      blockedBy: [],
+    };
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns blocker join columns
   const blockingRows = await db
     .prepare(SQL_SELECT_BLOCKERS,)
-    .all(id,) as { blocker_id: string; blocker_title: string; }[];
+    .all(id,) as {
+      blocker_id: string;
+      blocker_title: string
+    }[];
 
   const blockedBy = blockingRows.map(function toBlockerSummary(row,) {
-    return { blockerId: row.blocker_id, blockerTitle: row.blocker_title, };
+    return {
+      blockerId: row.blocker_id,
+      blockerTitle: row.blocker_title,
+    };
   },);
   if (blockedBy.length > 0)
-    return { completed: false, notFound: false, blockedBy, };
+    return {
+      completed: false,
+      notFound: false,
+      blockedBy,
+    };
 
   if (currentTask.timerStartedAt !== null)
     await stopTaskTimer(id,);
 
   await db.prepare(SQL_DELETE_TASK,).run(id,);
-  return { completed: true, notFound: false, blockedBy: [], };
+  return {
+    completed: true,
+    notFound: false,
+    blockedBy: [],
+  };
 }

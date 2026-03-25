@@ -27,7 +27,14 @@
  * @returns squared pixel distance from P to nearest point on AB
  */
 export function distToSegmentSq(
-  { px, py, ax, ay, bx, by, }: {
+  {
+    px,
+    py,
+    ax,
+    ay,
+    bx,
+    by,
+  }: {
     px: number;
     py: number;
     ax: number;
@@ -45,7 +52,10 @@ export function distToSegmentSq(
     return (px - ax) ** 2 + (py - ay) ** 2;
 
   /** Projection parameter clamped to [0, 1] so closest point stays on segment */
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq,),);
+  const t = Math.max(
+    0,
+    Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq,),
+  );
   /** Closest point on segment */
   const cx = ax + t * dx;
   const cy = ay + t * dy;
@@ -74,7 +84,14 @@ export function distToSegmentSq(
  * @returns signed area of the parallelogram spanned by AB and AC
  */
 function cross(
-  { ax, ay, bx, by, cx, cy, }: {
+  {
+    ax,
+    ay,
+    bx,
+    by,
+    cx,
+    cy,
+  }: {
     ax: number;
     ay: number;
     bx: number;
@@ -125,16 +142,53 @@ export type TwoSegments = {
  * @returns true when the segments properly cross each other
  */
 export function segmentsIntersect(
-  { a1x, a1y, a2x, a2y, b1x, b1y, b2x, b2y, }: TwoSegments,
+  {
+    a1x,
+    a1y,
+    a2x,
+    a2y,
+    b1x,
+    b1y,
+    b2x,
+    b2y,
+  }: TwoSegments,
 ): boolean {
   /** Orientation of A1 relative to segment B */
-  const d1 = cross({ ax: b1x, ay: b1y, bx: b2x, by: b2y, cx: a1x, cy: a1y, },);
+  const d1 = cross({
+    ax: b1x,
+    ay: b1y,
+    bx: b2x,
+    by: b2y,
+    cx: a1x,
+    cy: a1y,
+  },);
   /** Orientation of A2 relative to segment B */
-  const d2 = cross({ ax: b1x, ay: b1y, bx: b2x, by: b2y, cx: a2x, cy: a2y, },);
+  const d2 = cross({
+    ax: b1x,
+    ay: b1y,
+    bx: b2x,
+    by: b2y,
+    cx: a2x,
+    cy: a2y,
+  },);
   /** Orientation of B1 relative to segment A */
-  const d3 = cross({ ax: a1x, ay: a1y, bx: a2x, by: a2y, cx: b1x, cy: b1y, },);
+  const d3 = cross({
+    ax: a1x,
+    ay: a1y,
+    bx: a2x,
+    by: a2y,
+    cx: b1x,
+    cy: b1y,
+  },);
   /** Orientation of B2 relative to segment A */
-  const d4 = cross({ ax: a1x, ay: a1y, bx: a2x, by: a2y, cx: b2x, cy: b2y, },);
+  const d4 = cross({
+    ax: a1x,
+    ay: a1y,
+    bx: a2x,
+    by: a2y,
+    cx: b2x,
+    cy: b2y,
+  },);
 
   return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0))
     && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
@@ -166,16 +220,62 @@ export function segmentsIntersect(
  * @returns squared pixel distance between the closest points on the two segments
  */
 export function segToSegDistSq(
-  { a1x, a1y, a2x, a2y, b1x, b1y, b2x, b2y, }: TwoSegments,
+  {
+    a1x,
+    a1y,
+    a2x,
+    a2y,
+    b1x,
+    b1y,
+    b2x,
+    b2y,
+  }: TwoSegments,
 ): number {
-  if (segmentsIntersect({ a1x, a1y, a2x, a2y, b1x, b1y, b2x, b2y, },))
+  if (segmentsIntersect({
+    a1x,
+    a1y,
+    a2x,
+    a2y,
+    b1x,
+    b1y,
+    b2x,
+    b2y,
+  },))
     return 0;
 
   return Math.min(
-    distToSegmentSq({ px: a1x, py: a1y, ax: b1x, ay: b1y, bx: b2x, by: b2y, },),
-    distToSegmentSq({ px: a2x, py: a2y, ax: b1x, ay: b1y, bx: b2x, by: b2y, },),
-    distToSegmentSq({ px: b1x, py: b1y, ax: a1x, ay: a1y, bx: a2x, by: a2y, },),
-    distToSegmentSq({ px: b2x, py: b2y, ax: a1x, ay: a1y, bx: a2x, by: a2y, },),
+    distToSegmentSq({
+      px: a1x,
+      py: a1y,
+      ax: b1x,
+      ay: b1y,
+      bx: b2x,
+      by: b2y,
+    },),
+    distToSegmentSq({
+      px: a2x,
+      py: a2y,
+      ax: b1x,
+      ay: b1y,
+      bx: b2x,
+      by: b2y,
+    },),
+    distToSegmentSq({
+      px: b1x,
+      py: b1y,
+      ax: a1x,
+      ay: a1y,
+      bx: a2x,
+      by: a2y,
+    },),
+    distToSegmentSq({
+      px: b2x,
+      py: b2y,
+      ax: a1x,
+      ay: a1y,
+      bx: a2x,
+      by: a2y,
+    },),
   );
 }
 
@@ -205,7 +305,16 @@ export function segToSegDistSq(
  * @returns true when the segment crosses any edge of the rectangle
  */
 export function segmentIntersectsRect(
-  { sx, sy, ex, ey, left, top, right, bottom, }: {
+  {
+    sx,
+    sy,
+    ex,
+    ey,
+    left,
+    top,
+    right,
+    bottom,
+  }: {
     sx: number;
     sy: number;
     ex: number;
@@ -217,26 +326,58 @@ export function segmentIntersectsRect(
   },
 ): boolean {
   /** Top edge: left,top -> right,top */
-  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: top,
-    b2x: right, b2y: top, },))
+  if (segmentsIntersect({
+    a1x: sx,
+    a1y: sy,
+    a2x: ex,
+    a2y: ey,
+    b1x: left,
+    b1y: top,
+    b2x: right,
+    b2y: top,
+  },))
   {
     return true;
   }
   /** Bottom edge: left,bottom -> right,bottom */
-  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: bottom,
-    b2x: right, b2y: bottom, },))
+  if (segmentsIntersect({
+    a1x: sx,
+    a1y: sy,
+    a2x: ex,
+    a2y: ey,
+    b1x: left,
+    b1y: bottom,
+    b2x: right,
+    b2y: bottom,
+  },))
   {
     return true;
   }
   /** Left edge: left,top -> left,bottom */
-  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: left, b1y: top,
-    b2x: left, b2y: bottom, },))
+  if (segmentsIntersect({
+    a1x: sx,
+    a1y: sy,
+    a2x: ex,
+    a2y: ey,
+    b1x: left,
+    b1y: top,
+    b2x: left,
+    b2y: bottom,
+  },))
   {
     return true;
   }
   /** Right edge: right,top -> right,bottom */
-  if (segmentsIntersect({ a1x: sx, a1y: sy, a2x: ex, a2y: ey, b1x: right, b1y: top,
-    b2x: right, b2y: bottom, },))
+  if (segmentsIntersect({
+    a1x: sx,
+    a1y: sy,
+    a2x: ex,
+    a2y: ey,
+    b1x: right,
+    b1y: top,
+    b2x: right,
+    b2y: bottom,
+  },))
   {
     return true;
   }

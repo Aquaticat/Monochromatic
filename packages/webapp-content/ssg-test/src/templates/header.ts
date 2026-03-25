@@ -8,7 +8,10 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 // File justification: 102 lines -- header and search popover are tightly
 // coupled; the popover is only used inside the header.
-import type { Locales, TranslationFunctions, } from '../i18n/i18n-types.ts';
+import type {
+  Locales,
+  TranslationFunctions,
+} from '../i18n/i18n-types.ts';
 import { i18nObject, } from '../i18n/i18n-util.ts';
 
 /**
@@ -45,8 +48,15 @@ export function headerFragment(lang: Locales,): string {
         attrs: { href: `/${lang}`, },
         class: 'brand',
         children: [
-          h({ tag: 'img', attrs: { src: '/favicon.svg', alt: 'avatar', }, },),
-          h({ tag: 'span', class: 'siteName', text: t.siteName(), },),
+          h({
+            tag: 'img',
+            attrs: { src: '/favicon.svg', alt: 'avatar', },
+          },),
+          h({
+            tag: 'span',
+            class: 'siteName',
+            text: t.siteName(),
+          },),
         ],
       },),
       h({
@@ -56,7 +66,10 @@ export function headerFragment(lang: Locales,): string {
             tag: 'button',
             attrs: { popovertarget: 'search', },
             children: [
-              h({ tag: 'span', text: 'Search', },),
+              h({
+                tag: 'span',
+                text: 'Search',
+              },),
               ` ${SEARCH_ICON}`,
             ],
           },),
@@ -79,7 +92,10 @@ function searchPopover(t: TranslationFunctions,): string {
 
   return h({
     tag: 'div',
-    attrs: { popover: '', id: 'search', },
+    attrs: {
+      popover: '',
+      id: 'search',
+    },
     children: [
       h({
         tag: 'search',
@@ -101,7 +117,10 @@ function searchPopover(t: TranslationFunctions,): string {
           },),
         ],
       },),
-      h({ tag: 'p', text: t.noResults(), },),
+      h({
+        tag: 'p',
+        text: t.noResults(),
+      },),
     ],
   },);
 }

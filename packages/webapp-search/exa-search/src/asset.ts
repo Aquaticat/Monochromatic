@@ -23,10 +23,16 @@ export const css: string = clientCss;
  * Bundled client-side JavaScript for the exa-search interface.
  * Pre-built by tsdown via `mise run build:js:client` and read from disk at startup.
  */
-export const js: string = await readFile('./dist/client/client.js', 'utf8',);
+export const js: string = await readFile(
+  './dist/client/client.js',
+  'utf8',
+);
 
 /** Escaped JS source safe for embedding inside a `<script>` tag. */
-const safeJs: string = js.replaceAll('</script>', String.raw`<\/script>`,);
+const safeJs: string = js.replaceAll(
+  '</script>',
+  String.raw`<\/script>`,
+);
 
 //region HTML structure -- Declarative page composition via h-html
 
@@ -43,13 +49,28 @@ export const indexHtml: string = [
       h({
         tag: 'head',
         children: [
-          h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
-          h({ tag: 'meta',
+          h({
+            tag: 'meta',
+            attrs: { charset: 'utf8', },
+          },),
+          h({
+            tag: 'meta',
             attrs: { name: 'viewport',
-              content: 'width=device-width, initial-scale=1.0', }, },),
-          h({ tag: 'title', text: 'Exa Search', },),
-          h({ tag: 'style', html: css, },),
-          h({ tag: 'script', attrs: { type: 'module', }, html: safeJs, },),
+              content: 'width=device-width, initial-scale=1.0', },
+          },),
+          h({
+            tag: 'title',
+            text: 'Exa Search',
+          },),
+          h({
+            tag: 'style',
+            html: css,
+          },),
+          h({
+            tag: 'script',
+            attrs: { type: 'module', },
+            html: safeJs,
+          },),
         ],
       },),
       h({

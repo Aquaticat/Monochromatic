@@ -13,7 +13,10 @@ import {
 } from '../log.ts';
 
 /** Tagged logger for session state operations. */
-const l = tagged({ tag: 'session', l: rootLogger, },);
+const l = tagged({
+  tag: 'session',
+  l: rootLogger,
+},);
 
 /** Persisted UI state for a single editord session. */
 export type SessionState = {
@@ -22,7 +25,10 @@ export type SessionState = {
   /** Absolute paths of all expanded directories in the file tree. */
   expandedDirs: string[];
   /** 0-based cursor position in the editor. */
-  cursor: { line: number; character: number; };
+  cursor: {
+    line: number;
+    character: number
+  };
   /** Vertical scroll offset of the editor pane in pixels. */
   scrollTop: number;
   /** Recently opened file paths, index 0 = most recent. May be absent in older saved state. */
@@ -38,7 +44,13 @@ export type SessionState = {
  *
  * @returns scoped localStorage key
  */
-function storageKey({ fsId, rootDir, }: { fsId: string; rootDir: string; },): string {
+function storageKey({
+  fsId,
+  rootDir,
+}: {
+  fsId: string;
+  rootDir: string
+},): string {
   return `editord:${fsId}:${rootDir}`;
 }
 
@@ -51,14 +63,24 @@ function storageKey({ fsId, rootDir, }: { fsId: string; rootDir: string; },): st
  *
  * @param state - UI state to persist
  */
-export function saveSessionState({ fsId, rootDir, state, }: {
+export function saveSessionState({
+  fsId,
+  rootDir,
+  state,
+}: {
   fsId: string;
   rootDir: string;
   state: SessionState;
 },): void {
   try {
-    const key = storageKey({ fsId, rootDir, },);
-    localStorage.setItem(key, JSON.stringify(state,),);
+    const key = storageKey({
+      fsId,
+      rootDir,
+    },);
+    localStorage.setItem(
+      key,
+      JSON.stringify(state,),
+    );
   }
   catch (error) {
     l.error(`failed to save session state: ${String(error,)}`,);
@@ -74,12 +96,18 @@ export function saveSessionState({ fsId, rootDir, state, }: {
  *
  * @returns saved state, or null if none exists or parsing fails
  */
-export function restoreSessionState({ fsId, rootDir, }: {
+export function restoreSessionState({
+  fsId,
+  rootDir,
+}: {
   fsId: string;
   rootDir: string;
 },): SessionState | null {
   try {
-    const key = storageKey({ fsId, rootDir, },);
+    const key = storageKey({
+      fsId,
+      rootDir,
+    },);
     const raw = localStorage.getItem(key,);
     if (raw === null)
       return null;

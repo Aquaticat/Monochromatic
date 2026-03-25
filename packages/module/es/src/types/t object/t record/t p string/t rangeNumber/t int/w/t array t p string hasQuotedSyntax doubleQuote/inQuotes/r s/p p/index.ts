@@ -30,6 +30,12 @@ import { $ as named, } from '../p n/index.ts';
  * // result.__brand.inQuotes will contain the quote status for each string
  * ```
  */
-export function $(value: Value, strs: DoubleQuote[],): Value {
-  return named({ value, strs, },);
+export function $(
+  value: Value,
+  strs: DoubleQuote[],
+): Value {
+  return named({
+    value,
+    strs,
+  },);
 }

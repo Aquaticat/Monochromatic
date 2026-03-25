@@ -47,16 +47,30 @@ export async function execBun(
 ): Promise<BunExecResult> {
   // Fast-path: if the signal is already aborted, skip spawning entirely.
   if (options.signal?.aborted === true)
-    return { stdout: '', stderr: '', exitCode: 1, killed: true, };
+    return {
+      stdout: '',
+      stderr: '',
+      exitCode: 1,
+      killed: true,
+    };
 
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn accepts mutable string array
-    const result = await spawn(command, args as string[], {
+    const result = await spawn(
+      command,
+      args as string[],
+      {
       timeout: options.timeout,
       signal: options.signal,
-    },);
+    },
+    );
 
-    return { stdout: result.stdout, stderr: result.stderr, exitCode: 0, killed: false, };
+    return {
+      stdout: result.stdout,
+      stderr: result.stderr,
+      exitCode: 0,
+      killed: false,
+    };
   }
   catch (error: unknown) {
     // nano-spawn throws SubprocessError on non-zero exit
@@ -66,8 +80,12 @@ export async function execBun(
       && 'exitCode' in error)
     {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn SubprocessError has known shape
-      const subprocessError = error as { stdout: string; stderr: string;
-        exitCode: number | undefined; signalName: string | undefined; };
+      const subprocessError = error as {
+        stdout: string;
+        stderr: string;
+        exitCode: number | undefined;
+        signalName: string | undefined
+      };
       // Killed if the signal was aborted (race: it may have become true after spawn started)
       // or the process received a termination signal
       const wasKilled = Boolean(options.signal?.aborted,)
@@ -84,6 +102,11 @@ export async function execBun(
     // Unexpected error (e.g. command not found)
     const message = error instanceof Error ? error.message : String(error,);
 
-    return { stdout: '', stderr: message, exitCode: 1, killed: false, };
+    return {
+      stdout: '',
+      stderr: message,
+      exitCode: 1,
+      killed: false,
+    };
   }
 }

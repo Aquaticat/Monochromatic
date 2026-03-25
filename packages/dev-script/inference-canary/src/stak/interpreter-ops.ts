@@ -36,19 +36,34 @@ function pop(stack: number[],): number {
 
 /** Binary arithmetic operations that pop two values and push a result */
 const BINARY_OPS: Record<string, (a: number, b: number,) => number> = {
-  ADD: function add(a, b,) {
+  ADD: function add(
+    a,
+    b,
+  ) {
     return a + b;
   },
-  SUB: function sub(a, b,) {
+  SUB: function sub(
+    a,
+    b,
+  ) {
     return a - b;
   },
-  MUL: function mul(a, b,) {
+  MUL: function mul(
+    a,
+    b,
+  ) {
     return a * b;
   },
-  DIV: function div(a, b,) {
+  DIV: function div(
+    a,
+    b,
+  ) {
     return Math.floor(a / b,);
   },
-  MOD: function mod(a, b,) {
+  MOD: function mod(
+    a,
+    b,
+  ) {
     return ((a % b) + b) % b;
   },
 };
@@ -87,7 +102,10 @@ export function executeOp(
   if (binaryOp !== undefined) {
     const b = pop(stack,);
     const a = pop(stack,);
-    stack.push(binaryOp(a, b,),);
+    stack.push(binaryOp(
+      a,
+      b,
+    ),);
   }
   else if (op === 'DUP') {
     const top = stack.at(-1,);
@@ -110,7 +128,10 @@ export function executeOp(
   else if (op === 'STORE') {
     if (arg === undefined)
       throw new Error('STORE missing name',);
-    env.set(arg, pop(stack,),);
+    env.set(
+      arg,
+      pop(stack,),
+    );
   }
   else if (op === 'LOAD') {
     if (arg === undefined)
@@ -124,11 +145,19 @@ export function executeOp(
     /* no-op */
   }
   else if (op === 'JUMP')
-    return resolveJumpTarget(op, arg, labels,);
+    return resolveJumpTarget(
+      op,
+      arg,
+      labels,
+    );
   else if (op === 'JUMPZ') {
     const val = pop(stack,);
     if (val === 0)
-      return resolveJumpTarget(op, arg, labels,);
+      return resolveJumpTarget(
+        op,
+        arg,
+        labels,
+      );
   }
   else {
     throw new Error(`unknown op: ${String(op,)}`,);

@@ -47,21 +47,33 @@ export const NO_LITERAL: symbol = Symbol('jsonc:parseLiteralToken:no-match',);
 export function parseLiteralToken(
   { value, }: { value: FragmentStringJsonc | StringJsonc; },
 ):
-  | { consumed: FragmentStringJsonc; parsed: Jsonc.Boolean | Jsonc.Null;
-    remaining: FragmentStringJsonc; }
+  | {
+    consumed: FragmentStringJsonc;
+    parsed: Jsonc.Boolean | Jsonc.Null;
+    remaining: FragmentStringJsonc
+  }
   | typeof NO_LITERAL
 {
   if (value.startsWith('null',)) {
-    return { consumed: 'null' as FragmentStringJsonc, parsed: { value: null, },
-      remaining: value.slice('null'.length,) as FragmentStringJsonc, };
+    return {
+      consumed: 'null' as FragmentStringJsonc,
+      parsed: { value: null, },
+      remaining: value.slice('null'.length,) as FragmentStringJsonc,
+    };
   }
   if (value.startsWith('true',)) {
-    return { consumed: 'true' as FragmentStringJsonc, parsed: { value: true, },
-      remaining: value.slice('true'.length,) as FragmentStringJsonc, };
+    return {
+      consumed: 'true' as FragmentStringJsonc,
+      parsed: { value: true, },
+      remaining: value.slice('true'.length,) as FragmentStringJsonc,
+    };
   }
   if (value.startsWith('false',)) {
-    return { consumed: 'false' as FragmentStringJsonc, parsed: { value: false, },
-      remaining: value.slice('false'.length,) as FragmentStringJsonc, };
+    return {
+      consumed: 'false' as FragmentStringJsonc,
+      parsed: { value: false, },
+      remaining: value.slice('false'.length,) as FragmentStringJsonc,
+    };
   }
   return NO_LITERAL;
 }
@@ -84,8 +96,11 @@ export function parseLiteralToken(
  */
 export function parseNumberToken(
   { value, }: { value: FragmentStringJsonc | StringJsonc; },
-): { consumed: FragmentStringJsonc; parsed: Jsonc.Number;
-  remaining: FragmentStringJsonc; }
+): {
+  consumed: FragmentStringJsonc;
+  parsed: Jsonc.Number;
+  remaining: FragmentStringJsonc
+}
 {
   /**
    * JSON number grammar (no leading +, leading 0 rules, optional fraction and exponent).
@@ -100,7 +115,10 @@ export function parseNumberToken(
   const consumed = match[0] as FragmentStringJsonc;
   /** Exact numeric semantics via JSON.parse; avoids manual float/exp handling. */
   const parsedValue = JSON.parse(consumed,) as number;
-  return { consumed, parsed: { value: parsedValue, },
-    remaining: value.slice(consumed.length,) as FragmentStringJsonc, };
+  return {
+    consumed,
+    parsed: { value: parsedValue, },
+    remaining: value.slice(consumed.length,) as FragmentStringJsonc,
+  };
 }
 //endregion Value tokenizers

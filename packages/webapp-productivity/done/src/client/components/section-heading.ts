@@ -60,8 +60,10 @@ class SectionHeading extends HTMLElement {
   /** Renders the heading and attaches the toggle click handler. */
   connectedCallback(): void {
     this.#render();
-    this.#shadow.querySelector<HTMLElement>('.heading',)?.addEventListener('click',
-      this.#toggle,);
+    this.#shadow.querySelector<HTMLElement>('.heading',)?.addEventListener(
+      'click',
+      this.#toggle,
+    );
   }
 
   /**
@@ -73,7 +75,10 @@ class SectionHeading extends HTMLElement {
     this.#open = !this.#open;
     this.#updateToggle();
     this.dispatchEvent(
-      new CustomEvent('toggle', { detail: { open: this.#open, }, bubbles: true, },),
+      new CustomEvent(
+        'toggle',
+        { detail: { open: this.#open, }, bubbles: true, },
+      ),
     );
   }
     .bind(this,);
@@ -96,14 +101,28 @@ class SectionHeading extends HTMLElement {
     const label = this.getAttribute('label',) ?? '';
 
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       h({
         tag: 'div',
         class: 'heading',
         children: [
-          h({ tag: 'span', class: 'icon', text: icon, },),
-          h({ tag: 'span', text: label, },),
-          h({ tag: 'span', class: 'toggle', text: this.#open ? '\u25B2' : '\u25BC', },),
+          h({
+            tag: 'span',
+            class: 'icon',
+            text: icon,
+          },),
+          h({
+            tag: 'span',
+            text: label,
+          },),
+          h({
+            tag: 'span',
+            class: 'toggle',
+            text: this.#open ? '\u25B2' : '\u25BC',
+          },),
         ],
       },),
       h({
@@ -115,4 +134,7 @@ class SectionHeading extends HTMLElement {
   }
 }
 
-customElements.define('section-heading', SectionHeading,);
+customElements.define(
+  'section-heading',
+  SectionHeading,
+);

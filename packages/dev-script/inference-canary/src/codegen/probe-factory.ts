@@ -82,14 +82,29 @@ export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
     prompt: config.prompt,
     ...slowProp,
 
-    buildFixPrompt: function buildFixPrompt(response,
-      context,): Promise<string | undefined>
+    buildFixPrompt: function buildFixPrompt(
+      response,
+      context,
+    ): Promise<string | undefined>
     {
-      return buildFixPromptImpl(config, response, context, caches,);
+      return buildFixPromptImpl(
+        config,
+        response,
+        context,
+        caches,
+      );
     },
 
-    score: function score(response, context,): Promise<number> {
-      return scoreImpl(config, response, context, caches,);
+    score: function score(
+      response,
+      context,
+    ): Promise<number> {
+      return scoreImpl(
+        config,
+        response,
+        context,
+        caches,
+      );
     },
   };
 }

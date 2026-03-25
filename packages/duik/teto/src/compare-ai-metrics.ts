@@ -17,7 +17,13 @@
  * @param cmpPath - path to composite image
  */
 export async function runAiMetrics(
-  { refPath, cmpPath, }: { refPath: string; cmpPath: string; },
+  {
+    refPath,
+    cmpPath,
+  }: {
+    refPath: string;
+    cmpPath: string
+  },
 ): Promise<void> {
   console.error('',);
   console.error('--- AI perceptual metrics ---',);
@@ -33,13 +39,22 @@ export async function runAiMetrics(
      * Only attempt providers whose API key is present.
      */
     const providers = [
-      { name: 'voyage', envKey: 'IMAGE_DIFF_VOYAGE_API_KEY', },
-      { name: 'gemini', envKey: 'IMAGE_DIFF_GEMINI_API_KEY', },
+      {
+        name: 'voyage',
+        envKey: 'IMAGE_DIFF_VOYAGE_API_KEY',
+      },
+      {
+        name: 'gemini',
+        envKey: 'IMAGE_DIFF_GEMINI_API_KEY',
+      },
     ] as const;
 
     let anyRan = false;
 
-    for (const { name, envKey, } of providers) {
+    for (const {
+      name,
+      envKey,
+    } of providers) {
       if (process.env[envKey] === undefined || process.env[envKey] === '') {
         console.error(`${name}:  skipped (${envKey} not set)`,);
         continue;
@@ -47,7 +62,11 @@ export async function runAiMetrics(
 
       try {
         // oxlint-disable-next-line no-await-in-loop -- sequential provider fallback; later providers only run if earlier ones fail
-        const result = await aiCompare(refInput, cmpInput, { provider: name, },);
+        const result = await aiCompare(
+          refInput,
+          cmpInput,
+          { provider: name, },
+        );
         console.error(
           `${name}:  similarity=${result.similarity.toFixed(4,)}  distance=${
             result

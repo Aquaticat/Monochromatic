@@ -22,20 +22,29 @@ type TextOpsDeps = Pick<KeybindingDeps,
  *
  * @returns true if the event was handled and should not propagate further
  */
-export function handleTextEditKey({ event, deps, }: {
+export function handleTextEditKey({
+  event,
+  deps,
+}: {
   event: KeyboardEvent;
   deps: TextOpsDeps;
 },): boolean {
   if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'z') {
     event.preventDefault();
     // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('undo') is the only way to trigger the browser's native undo stack in contenteditable
-    document.execCommand('undo', false,);
+    document.execCommand(
+      'undo',
+      false,
+    );
     return true;
   }
   if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'Z') {
     event.preventDefault();
     // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('redo') is the only way to trigger the browser's native redo stack in contenteditable
-    document.execCommand('redo', false,);
+    document.execCommand(
+      'redo',
+      false,
+    );
     return true;
   }
   if ((event.ctrlKey || event.metaKey) && event.key === 'y') {

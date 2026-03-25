@@ -31,13 +31,20 @@ const VERTICAL_OFFSET = 4;
  * ```
  */
 export function showFixedToast({ message, }: { message: string; },): void {
-  const toast = h({ tag: 'div', class: 'toast', text: message,
-    attrs: { 'data-variant': 'fixed', }, },);
+  const toast = h({
+    tag: 'div',
+    class: 'toast',
+    text: message,
+    attrs: { 'data-variant': 'fixed', },
+  },);
   document.body.append(toast,);
 
-  globalThis.setTimeout(function dismissToast() {
+  globalThis.setTimeout(
+    function dismissToast() {
     toast.remove();
-  }, DISMISS_MS,);
+  },
+    DISMISS_MS,
+  );
 }
 
 /**
@@ -55,18 +62,37 @@ export function showFixedToast({ message, }: { message: string; },): void {
  * ```
  */
 export function showCursorToast(
-  { message, rect, }: { message: string; rect: DOMRect; },
+  {
+    message,
+    rect,
+  }: {
+    message: string;
+    rect: DOMRect
+  },
 ): void {
-  const toast = h({ tag: 'div', class: 'toast', text: message,
-    attrs: { 'data-variant': 'cursor', }, },);
+  const toast = h({
+    tag: 'div',
+    class: 'toast',
+    text: message,
+    attrs: { 'data-variant': 'cursor', },
+  },);
 
   /** Dynamic position properties that vary per toast instance. */
-  toast.style.setProperty('inset-inline-start', `${rect.left}px`,);
-  toast.style.setProperty('inset-block-start', `${rect.bottom + VERTICAL_OFFSET}px`,);
+  toast.style.setProperty(
+    'inset-inline-start',
+    `${rect.left}px`,
+  );
+  toast.style.setProperty(
+    'inset-block-start',
+    `${rect.bottom + VERTICAL_OFFSET}px`,
+  );
 
   document.body.append(toast,);
 
-  globalThis.setTimeout(function dismissToast() {
+  globalThis.setTimeout(
+    function dismissToast() {
     toast.remove();
-  }, DISMISS_MS,);
+  },
+    DISMISS_MS,
+  );
 }

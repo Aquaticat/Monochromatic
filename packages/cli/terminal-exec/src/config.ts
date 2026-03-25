@@ -11,7 +11,10 @@ import {
 } from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'config', l: parentLogger, },);
+const l = tagged({
+  tag: 'config',
+  l: parentLogger,
+},);
 
 /**
  * Result of parsing all config files.
@@ -67,7 +70,10 @@ export async function parseConfigFiles(
         continue;
 
       if (line.startsWith('/',)) {
-        parseDirective({ line, execArgDefaults, },);
+        parseDirective({
+          line,
+          execArgDefaults,
+        },);
         continue;
       }
 
@@ -92,7 +98,11 @@ export async function parseConfigFiles(
     }
   }
 
-  return { entryIds, excludedIds, execArgDefaults, };
+  return {
+    entryIds,
+    excludedIds,
+    execArgDefaults,
+  };
 }
 
 /**
@@ -103,16 +113,28 @@ export async function parseConfigFiles(
  * @param execArgDefaults - Mutable map to populate with `/execarg_default` entries.
  */
 function parseDirective(
-  { line, execArgDefaults, }: { line: string; execArgDefaults: Map<string, string>; },
+  {
+    line,
+    execArgDefaults,
+  }: {
+    line: string;
+    execArgDefaults: Map<string, string>
+  },
 ): void {
   const EXECARG_PREFIX = '/execarg_default:';
   if (line.startsWith(EXECARG_PREFIX,)) {
     const rest = line.slice(EXECARG_PREFIX.length,);
     const colonIdx = rest.indexOf(':',);
     if (colonIdx !== -1) {
-      const entryId = rest.slice(0, colonIdx,);
+      const entryId = rest.slice(
+        0,
+        colonIdx,
+      );
       const defaultArg = rest.slice(colonIdx + 1,);
-      execArgDefaults.set(entryId, defaultArg,);
+      execArgDefaults.set(
+        entryId,
+        defaultArg,
+      );
       l.debug(`added TerminalArgExec default '${defaultArg}' for '${entryId}'`,);
     }
   }

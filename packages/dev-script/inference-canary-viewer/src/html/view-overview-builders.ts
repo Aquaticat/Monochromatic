@@ -34,7 +34,10 @@ export function buildAllModelPoints(
     .filter(function hasScore(entry,): boolean {
       return entry.overallScore > 0 && hasMultipleProbes(entry,);
     },)
-    .map(function toPoint(entry, index,): ScatterPoint {
+    .map(function toPoint(
+      entry,
+      index,
+    ): ScatterPoint {
       const color = vendorColor(entry.model,);
       const runId = `${entry.label}-${entry.timestamp}`;
       const tableRow = {
@@ -51,7 +54,10 @@ export function buildAllModelPoints(
         score: entry.overallScore,
         color,
         icon: vendorIcon(entry.model,),
-        title: `${entry.label} ${entry.timestamp.slice(0, 10,)}: ${
+        title: `${entry.label} ${entry.timestamp.slice(
+          0,
+          10,
+        )}: ${
           entry.overallScore.toFixed(2,)
         }`,
         failed: entry.failed,
@@ -74,11 +80,18 @@ export function buildOverviewLegend(summaries: readonly ModelSummary[],): string
       return h({
         tag: 'span',
         class: 'item',
-        children: [iconDot(summary.model, color,), ' ',
-          h({ tag: 'span', text: summary.label, },),],
+        children: [
+          iconDot(summary.model, color,),
+          ' ',
+          h({ tag: 'span', text: summary.label, },),
+        ],
       },);
     },)
     .join('\n',);
 
-  return h({ tag: 'div', class: 'chart-legend', html: items, },);
+  return h({
+    tag: 'div',
+    class: 'chart-legend',
+    html: items,
+  },);
 }

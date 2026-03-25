@@ -61,7 +61,10 @@ export type SyncStoreConfig = BaseStoreConfig & {
    * Ordered synchronous storage backends with optional priorities for consensus.
    * Falls back to a single in-memory `Map` when omitted.
    */
-  backends?: readonly [SyncStorageBackend, ...SyncStorageBackend[],];
+  backends?: readonly [
+    SyncStorageBackend,
+    ...SyncStorageBackend[],
+  ];
 };
 
 /**

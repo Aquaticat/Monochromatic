@@ -52,8 +52,14 @@ const STYLES = [
       'line-height': 1.2,
     },
     children: [
-      css({ rule: '&:hover', decls: { opacity: 0.85, }, },),
-      css({ rule: '&:focus-visible', decls: focusOutline(), },),
+      css({
+        rule: '&:hover',
+        decls: { opacity: 0.85, },
+      },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline(),
+      },),
     ],
   },),
 ]
@@ -77,14 +83,26 @@ class FabButton extends HTMLElement {
   connectedCallback(): void {
     const label = this.getAttribute('label',) ?? 'Action';
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       h({
         tag: 'button',
-        attrs: { part: 'button', 'aria-label': label, },
-        children: [h({ tag: 'slot', text: '+', },),],
+        attrs: {
+          part: 'button',
+          'aria-label': label,
+        },
+        children: [h({
+          tag: 'slot',
+          text: '+',
+        },),],
       },),
     );
   }
 }
 
-customElements.define('fab-button', FabButton,);
+customElements.define(
+  'fab-button',
+  FabButton,
+);

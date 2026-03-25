@@ -23,11 +23,21 @@ import {
  * @param mediaInfo - trimmed ffprobe output, or undefined to skip
  */
 function appendMediaInfo(
-  { shadow, mediaInfo, }: { shadow: ShadowRoot; mediaInfo: string | undefined; },
+  {
+    shadow,
+    mediaInfo,
+  }: {
+    shadow: ShadowRoot;
+    mediaInfo: string | undefined
+  },
 ): void {
   if (mediaInfo === undefined)
     return;
-  shadow.append(h({ tag: 'pre', class: 'media-info', text: mediaInfo, },),);
+  shadow.append(h({
+    tag: 'pre',
+    class: 'media-info',
+    text: mediaInfo,
+  },),);
 }
 
 /**
@@ -43,7 +53,13 @@ function appendMediaInfo(
  *
  * @param mediaInfo - optional ffprobe metadata to display below the image
  */
-export function showImage({ shadow, host, clear, url, mediaInfo, }: {
+export function showImage({
+  shadow,
+  host,
+  clear,
+  url,
+  mediaInfo,
+}: {
   shadow: ShadowRoot;
   host: HTMLElement;
   clear: () => void;
@@ -52,7 +68,10 @@ export function showImage({ shadow, host, clear, url, mediaInfo, }: {
 },): void {
   clear();
   shadow.append(createImageContent({ url, },),);
-  appendMediaInfo({ shadow, mediaInfo, },);
+  appendMediaInfo({
+    shadow,
+    mediaInfo,
+  },);
   host.style.display = 'flex';
 }
 
@@ -69,7 +88,13 @@ export function showImage({ shadow, host, clear, url, mediaInfo, }: {
  *
  * @param mediaInfo - optional ffprobe metadata to display below the player
  */
-export function showAudio({ shadow, host, clear, url, mediaInfo, }: {
+export function showAudio({
+  shadow,
+  host,
+  clear,
+  url,
+  mediaInfo,
+}: {
   shadow: ShadowRoot;
   host: HTMLElement;
   clear: () => void;
@@ -78,7 +103,10 @@ export function showAudio({ shadow, host, clear, url, mediaInfo, }: {
 },): void {
   clear();
   shadow.append(createAudioContent({ url, },),);
-  appendMediaInfo({ shadow, mediaInfo, },);
+  appendMediaInfo({
+    shadow,
+    mediaInfo,
+  },);
   host.style.display = 'flex';
 }
 
@@ -95,7 +123,13 @@ export function showAudio({ shadow, host, clear, url, mediaInfo, }: {
  *
  * @param mediaInfo - optional ffprobe metadata to display below the player
  */
-export function showVideo({ shadow, host, clear, url, mediaInfo, }: {
+export function showVideo({
+  shadow,
+  host,
+  clear,
+  url,
+  mediaInfo,
+}: {
   shadow: ShadowRoot;
   host: HTMLElement;
   clear: () => void;
@@ -104,6 +138,9 @@ export function showVideo({ shadow, host, clear, url, mediaInfo, }: {
 },): void {
   clear();
   shadow.append(createVideoContent({ url, },),);
-  appendMediaInfo({ shadow, mediaInfo, },);
+  appendMediaInfo({
+    shadow,
+    mediaInfo,
+  },);
   host.style.display = 'flex';
 }

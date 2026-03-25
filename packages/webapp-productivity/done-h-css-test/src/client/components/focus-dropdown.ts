@@ -49,18 +49,29 @@ class FocusDropdown extends HTMLElement {
    *
    * @param menu - Popover menu to hide
    */
-  #selectPreset(preset: string, textSpan: HTMLElement, menu: HTMLElement,): void {
+  #selectPreset(
+    preset: string,
+    textSpan: HTMLElement,
+    menu: HTMLElement,
+  ): void {
     this.#value = preset;
     textSpan.textContent = preset;
     menu.hidePopover();
     this.dispatchEvent(
-      new CustomEvent('change', { bubbles: true, detail: { value: preset, }, },),
+      new CustomEvent(
+        'change',
+        { bubbles: true, detail: { value: preset, }, },
+      ),
     );
   }
 
   /** Renders the trigger button, divider, and popover menu into the shadow root. */
   #render(): void {
-    const textSpan = h({ tag: 'span', class: 'text', text: this.#value, },);
+    const textSpan = h({
+      tag: 'span',
+      class: 'text',
+      text: this.#value,
+    },);
     const selectFn = this.#selectPreset.bind(this,);
 
     const menu = h({
@@ -74,7 +85,11 @@ class FocusDropdown extends HTMLElement {
           text: preset,
           on: {
             click: function handleOptionClick(): void {
-              selectFn(preset, textSpan, menu,);
+              selectFn(
+                preset,
+                textSpan,
+                menu,
+              );
             },
           },
         },);
@@ -82,14 +97,23 @@ class FocusDropdown extends HTMLElement {
     },);
 
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: FOCUS_DROPDOWN_STYLES, },),
+      h({
+        tag: 'style',
+        text: FOCUS_DROPDOWN_STYLES,
+      },),
       h({
         tag: 'button',
         class: 'trigger',
         children: [
           textSpan,
-          h({ tag: 'span', class: 'divider', },),
-          h({ tag: 'span', text: '\u25BC', },),
+          h({
+            tag: 'span',
+            class: 'divider',
+          },),
+          h({
+            tag: 'span',
+            text: '\u25BC',
+          },),
         ],
         on: { click: function handleTriggerClick(): void {
           menu.togglePopover();
@@ -100,4 +124,7 @@ class FocusDropdown extends HTMLElement {
   }
 }
 
-customElements.define('focus-dropdown', FocusDropdown,);
+customElements.define(
+  'focus-dropdown',
+  FocusDropdown,
+);

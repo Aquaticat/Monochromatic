@@ -30,8 +30,14 @@ type ChatMessage = {
   role: string;
   /** Array of text and image content parts. */
   content: (
-    | { type: 'text'; text: string; }
-    | { type: 'image_url'; image_url: { url: string; }; }
+    | {
+      type: 'text';
+      text: string
+    }
+    | {
+      type: 'image_url';
+      image_url: { url: string; }
+    }
   )[];
 };
 
@@ -42,7 +48,10 @@ type CompletionResponse = {
   /** Array of completion choices. */
   choices: { message: { content: string; }; }[];
   /** Token usage statistics. */
-  usage: { prompt_tokens: number; completion_tokens: number; };
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number
+  };
 };
 
 /**
@@ -55,7 +64,10 @@ type CompletionResponse = {
  */
 function buildImageEntry(
   buf: Buffer,
-): { type: 'image_url'; image_url: { url: string; }; } {
+): {
+  type: 'image_url';
+  image_url: { url: string; }
+} {
   return {
     type: 'image_url' as const,
     image_url: { url: `data:image/jpeg;base64,${buf.toString('base64',)}`, },
@@ -106,7 +118,10 @@ export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
  * ```
  */
 export async function analyze(sets: CaptureSet[],): Promise<string> {
-  const capped = sets.slice(0, MAX_CAPTURE_SETS,);
+  const capped = sets.slice(
+    0,
+    MAX_CAPTURE_SETS,
+  );
   const numSets = capped.length;
 
   /** Build content array by flat-mapping each capture into its message entries. */
@@ -114,10 +129,19 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
     function captureEntries(capture,) {
       const ts = new Date(capture.timestamp,).toLocaleTimeString();
       return [
-        { type: 'text' as const, text: `--- Capture at ${ts} ---`, },
-        { type: 'text' as const, text: 'Desktop screenshot:', },
+        {
+          type: 'text' as const,
+          text: `--- Capture at ${ts} ---`,
+        },
+        {
+          type: 'text' as const,
+          text: 'Desktop screenshot:',
+        },
         buildImageEntry(capture.screenshot,),
-        { type: 'text' as const, text: 'Webcam:', },
+        {
+          type: 'text' as const,
+          text: 'Webcam:',
+        },
         buildImageEntry(capture.webcam,),
       ];
     },
@@ -135,8 +159,14 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   const payload = {
     model: 'lfm2.5-vl-1.6b',
     messages: [
-      { role: 'system', content: SYSTEM_PROMPT, },
-      { role: 'user', content, },
+      {
+        role: 'system',
+        content: SYSTEM_PROMPT,
+      },
+      {
+        role: 'user',
+        content,
+      },
     ],
     max_tokens: 512,
     temperature: 0.7,
@@ -145,11 +175,14 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   };
 
   const start = performance.now();
-  const res = await fetch(API_URL, {
+  const res = await fetch(
+    API_URL,
+    {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', },
     body: JSON.stringify(payload,),
-  },);
+  },
+  );
 
   if (!res.ok) {
     const text = await res.text();
@@ -162,7 +195,10 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
   const data = (await res.json()) as CompletionResponse;
   const elapsed = ((performance.now() - start) / MS_PER_SECOND).toFixed(1,);
-  const { prompt_tokens, completion_tokens, } = data.usage;
+  const {
+    prompt_tokens,
+    completion_tokens,
+  } = data.usage;
 
   log.debug(
     `[analyze] ${prompt_tokens} prompt + ${completion_tokens} completion tokens, ${elapsed}s`,

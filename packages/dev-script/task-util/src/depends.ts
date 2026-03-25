@@ -58,12 +58,32 @@ export {};
 
 /** Optique parser for the task-depends CLI */
 const parser = object({
-  sources: multiple(optional(option('-s', '--sources', string(),),),),
-  outputs: multiple(optional(option('-o', '--outputs', string(),),),),
-  sourceTimeStrategy: optional(option('--source-time-strategy', string(),),),
-  outputTimeStrategy: optional(option('--output-time-strategy', string(),),),
-  allowFailure: option('-a', '--allowFailure',),
-  verbose: option('-v', '--verbose',),
+  sources: multiple(optional(option(
+    '-s',
+    '--sources',
+    string(),
+  ),),),
+  outputs: multiple(optional(option(
+    '-o',
+    '--outputs',
+    string(),
+  ),),),
+  sourceTimeStrategy: optional(option(
+    '--source-time-strategy',
+    string(),
+  ),),
+  outputTimeStrategy: optional(option(
+    '--output-time-strategy',
+    string(),
+  ),),
+  allowFailure: option(
+    '-a',
+    '--allowFailure',
+  ),
+  verbose: option(
+    '-v',
+    '--verbose',
+  ),
   rest: multiple(argument(string(),),),
 },);
 
@@ -72,7 +92,10 @@ const parser = object({
 //region Argument validation
 
 /** Parsed CLI arguments from process.argv */
-const rawArgs = runSync(parser, { programName: 'task-depends', help: 'option', },);
+const rawArgs = runSync(
+  parser,
+  { programName: 'task-depends', help: 'option', },
+);
 
 /**
  * Filters nullish values produced by `multiple(optional(...))` when an option is omitted.
@@ -95,8 +118,12 @@ function filterNullish(values: readonly (string | null | undefined)[],): string[
 }
 
 /** Valid builtin time strategy names */
-const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set(['newest', 'oldest',
-  'mean', 'median',],);
+const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
+  'newest',
+  'oldest',
+  'mean',
+  'median',
+],);
 
 /**
  * Validates and defaults a time strategy option.
@@ -118,8 +145,10 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set(['newest', 
  * validateTimeStrategy('sh:my-script', '--source-time-strategy') // 'sh:my-script'
  * ```
  */
-function validateTimeStrategy(value: string | null | undefined,
-  flagName: string,): TimeStrategy
+function validateTimeStrategy(
+  value: string | null | undefined,
+  flagName: string,
+): TimeStrategy
 {
   if (value === null || value === undefined)
     return 'newest';
@@ -141,10 +170,14 @@ function validateTimeStrategy(value: string | null | undefined,
 const args = {
   sources: filterNullish(rawArgs.sources,),
   outputs: filterNullish(rawArgs.outputs,),
-  sourceTimeStrategy: validateTimeStrategy(rawArgs.sourceTimeStrategy,
-    '--source-time-strategy',),
-  outputTimeStrategy: validateTimeStrategy(rawArgs.outputTimeStrategy,
-    '--output-time-strategy',),
+  sourceTimeStrategy: validateTimeStrategy(
+    rawArgs.sourceTimeStrategy,
+    '--source-time-strategy',
+  ),
+  outputTimeStrategy: validateTimeStrategy(
+    rawArgs.outputTimeStrategy,
+    '--output-time-strategy',
+  ),
   allowFailure: rawArgs.allowFailure,
   verbose: rawArgs.verbose,
   rest: rawArgs.rest,

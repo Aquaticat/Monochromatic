@@ -46,8 +46,14 @@ export function scanImporterForAttribute(
   let source = importerSourceCache.get(importerPath,);
   if (source === undefined) {
     try {
-      source = readFileSync(importerPath, 'utf8',);
-      importerSourceCache.set(importerPath, source,);
+      source = readFileSync(
+        importerPath,
+        'utf8',
+      );
+      importerSourceCache.set(
+        importerPath,
+        source,
+      );
     }
     catch {
       return undefined;
@@ -57,7 +63,10 @@ export function scanImporterForAttribute(
   if (!source.includes(specifier,))
     return undefined;
 
-  const result = parseSync(importerPath, source,);
+  const result = parseSync(
+    importerPath,
+    source,
+  );
   let found: string | undefined = undefined;
 
   const visitor = new Visitor({

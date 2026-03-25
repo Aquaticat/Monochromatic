@@ -13,7 +13,10 @@ import {
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for completions. */
-const completionLog = tagged({ tag: 'completions', l, },);
+const completionLog = tagged({
+  tag: 'completions',
+  l,
+},);
 
 /**
  * Requests completions from the server and shows the popup.
@@ -27,7 +30,12 @@ const completionLog = tagged({ tag: 'completions', l, },);
  * @param getCurrentFilePath - returns the currently open file path
  */
 export async function requestCompletions(
-  { ws, completionPopup, editorPane, getCurrentFilePath, }: {
+  {
+    ws,
+    completionPopup,
+    editorPane,
+    getCurrentFilePath,
+  }: {
     ws: EditorWsClient;
     completionPopup: CompletionPopup;
     editorPane: EditorPane;
@@ -42,16 +50,28 @@ export async function requestCompletions(
     return;
 
   try {
-    const response = await ws.request({ type: 'completion', path, line: pos.line,
-      character: pos.character, },);
+    const response = await ws.request({
+      type: 'completion',
+      path,
+      line: pos.line,
+      character: pos.character,
+    },);
     if ('items' in response) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'items' check
       const { items, } = response as {
-        items: { label: string; detail: string; insertText: string; }[];
+        items: {
+          label: string;
+          detail: string;
+          insertText: string
+        }[];
       };
       const rect = editorPane.getCursorRect();
       if (items.length > 0 && rect !== null)
-        completionPopup.show({ items, x: rect.left, y: rect.bottom, },);
+        completionPopup.show({
+          items,
+          x: rect.left,
+          y: rect.bottom,
+        },);
     }
   }
   catch (error) {
@@ -66,14 +86,20 @@ export async function requestCompletions(
  *
  * @param triggerCompletions - callback to invoke when dot is typed
  */
-export function wireCompletionTrigger({ editorPane, triggerCompletions, }: {
+export function wireCompletionTrigger({
+  editorPane,
+  triggerCompletions,
+}: {
   editorPane: HTMLElement;
   triggerCompletions: () => void;
 },): void {
-  editorPane.addEventListener('keydown', function handleDotKey(event,) {
+  editorPane.addEventListener(
+    'keydown',
+    function handleDotKey(event,) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- keydown is always a KeyboardEvent
     const ke = event as KeyboardEvent;
     if (ke.key === '.')
       globalThis.setTimeout(triggerCompletions, 0,);
-  },);
+  },
+  );
 }

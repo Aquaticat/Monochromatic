@@ -48,7 +48,10 @@ export class DirWatcher {
 
   /** Pending debounced events keyed by full path of the changed entry. */
   #pending = new Map<string,
-    { timer: ReturnType<typeof setTimeout>; eventType: string; }>();
+    {
+      timer: ReturnType<typeof setTimeout>;
+      eventType: string
+    }>();
 
   /** Paths suppressed from emitting events (e.g. after a self-save). */
   #suppressed = new Set<string>();
@@ -65,10 +68,19 @@ export class DirWatcher {
    * @param l - parent logger for tag composition
    */
   constructor(
-    { onChange, l, }: { onChange: (event: FsChangeEvent,) => void; l: Logger; },
+    {
+      onChange,
+      l,
+    }: {
+      onChange: (event: FsChangeEvent,) => void;
+      l: Logger
+    },
   ) {
     this.#onChange = onChange;
-    this.#l = tagged({ tag: 'watcher', l, },);
+    this.#l = tagged({
+      tag: 'watcher',
+      l,
+    },);
   }
 
   /**
@@ -82,20 +94,29 @@ export class DirWatcher {
 
     const self = this;
     try {
-      const fsWatcher = watch(path, function handleWatchEvent(eventType, filename,) {
+      const fsWatcher = watch(
+        path,
+        function handleWatchEvent(eventType, filename,) {
         if (typeof filename !== 'string')
           return;
         if (isIgnored({ name: filename, },))
           return;
         self.#schedule({ dirPath: path, filename, eventType, },);
-      },);
+      },
+      );
 
-      fsWatcher.on('error', function handleWatchError(error,) {
+      fsWatcher.on(
+        'error',
+        function handleWatchError(error,) {
         self.#l.error(`watcher error for ${path}: ${String(error,)}`,);
         self.#removeWatcher({ path, },);
-      },);
+      },
+      );
 
-      this.#watchers.set(path, fsWatcher,);
+      this.#watchers.set(
+        path,
+        fsWatcher,
+      );
       this.#l.info(`watching: ${path}`,);
     }
     catch (error) {
@@ -112,9 +133,12 @@ export class DirWatcher {
   suppressPath({ path, }: { path: string; },): void {
     const self = this;
     self.#suppressed.add(path,);
-    globalThis.setTimeout(function clearSuppression() {
+    globalThis.setTimeout(
+      function clearSuppression() {
       self.#suppressed.delete(path,);
-    }, SUPPRESS_MS,);
+    },
+      SUPPRESS_MS,
+    );
   }
 
   /** Closes all watchers and cancels pending debounce timers. */
@@ -139,12 +163,19 @@ export class DirWatcher {
    *
    * @param eventType - raw event type from `fs.watch` ('rename' or 'change')
    */
-  #schedule({ dirPath, filename, eventType, }: {
+  #schedule({
+    dirPath,
+    filename,
+    eventType,
+  }: {
     dirPath: string;
     filename: string;
     eventType: string;
   },): void {
-    const fullPath = join(dirPath, filename,);
+    const fullPath = join(
+      dirPath,
+      filename,
+    );
     if (this.#suppressed.has(fullPath,))
       return;
 
@@ -153,12 +184,18 @@ export class DirWatcher {
       clearTimeout(existing.timer,);
 
     const self = this;
-    const timer = globalThis.setTimeout(function emitDebounced() {
+    const timer = globalThis.setTimeout(
+      function emitDebounced() {
       self.#pending.delete(fullPath,);
       void self.#resolveAndEmit({ fullPath, eventType, },);
-    }, DEBOUNCE_MS,);
+    },
+      DEBOUNCE_MS,
+    );
 
-    this.#pending.set(fullPath, { timer, eventType, },);
+    this.#pending.set(
+      fullPath,
+      { timer, eventType, },
+    );
   }
 
   /**
@@ -172,23 +209,38 @@ export class DirWatcher {
    *
    * @param eventType - raw event type from `fs.watch`
    */
-  async #resolveAndEmit({ fullPath, eventType, }: {
+  async #resolveAndEmit({
+    fullPath,
+    eventType,
+  }: {
     fullPath: string;
     eventType: string;
   },): Promise<void> {
     if (eventType === 'change') {
-      this.#onChange({ path: fullPath, changeType: 'modified', isDirectory: false, },);
+      this.#onChange({
+        path: fullPath,
+        changeType: 'modified',
+        isDirectory: false,
+      },);
       return;
     }
 
     /** Rename event: stat to determine created vs deleted. */
     try {
       const stats = await stat(fullPath,);
-      this.#onChange({ path: fullPath, changeType: 'created', isDirectory: stats
-        .isDirectory(), },);
+      this.#onChange({
+        path: fullPath,
+        changeType: 'created',
+        isDirectory: stats
+        .isDirectory(),
+      },);
     }
     catch {
-      this.#onChange({ path: fullPath, changeType: 'deleted', isDirectory: false, },);
+      this.#onChange({
+        path: fullPath,
+        changeType: 'deleted',
+        isDirectory: false,
+      },);
     }
   }
 

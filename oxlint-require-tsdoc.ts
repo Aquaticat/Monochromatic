@@ -8,7 +8,10 @@ import {
 } from '@oxlint/plugins';
 
 /** Checks whether a node is preceded by a TSDoc block comment. */
-function hasTsdoc(node: Span, context: Context,): boolean {
+function hasTsdoc(
+  node: Span,
+  context: Context,
+): boolean {
   const comments = context.sourceCode.getCommentsBefore(node,);
   return comments.some(comment =>
     comment.type === 'Block'
@@ -17,14 +20,31 @@ function hasTsdoc(node: Span, context: Context,): boolean {
 }
 
 /** Reports a diagnostic when a node lacks a TSDoc comment. */
-function reportTsdoc(node: Span, context: Context,): void {
-  if (!hasTsdoc(node, context,))
-    context.report({ node, messageId: 'no', },);
+function reportTsdoc(
+  node: Span,
+  context: Context,
+): void {
+  if (!hasTsdoc(
+    node,
+    context,
+  ))
+    context.report({
+      node,
+      messageId: 'no',
+    },);
 }
 
 /** File extensions that should be excluded from the require-tsdoc rule. */
-const IGNORED_EXTENSIONS = ['.test.ts', '.spec.ts', '.js', '.d.ts', '.mjs', '.cjs',
-  '.d.mts', '.d.cts',];
+const IGNORED_EXTENSIONS = [
+  '.test.ts',
+  '.spec.ts',
+  '.js',
+  '.d.ts',
+  '.mjs',
+  '.cjs',
+  '.d.mts',
+  '.d.cts',
+];
 
 /**
  * Oxlint JS plugin that requires TSDoc comments on all documentable declarations.
@@ -56,41 +76,77 @@ const plugin = eslintCompatPlugin({
             }
           },
           FunctionDeclaration(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           FunctionExpression(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           ArrowFunctionExpression(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           ClassDeclaration(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           MethodDefinition(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           TSInterfaceDeclaration(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           TSTypeAliasDeclaration(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           TSEnumDeclaration(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           VariableDeclaration(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           PropertyDefinition(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           TSEnumMember(node,): void {
-            reportTsdoc(node, context,);
+            reportTsdoc(
+              node,
+              context,
+            );
           },
           Property(node,): void {
             if (node.kind === 'get' || node.kind === 'set')
-              reportTsdoc(node, context,);
+              reportTsdoc(
+                node,
+                context,
+              );
           },
         } as VisitorWithHooks;
       },

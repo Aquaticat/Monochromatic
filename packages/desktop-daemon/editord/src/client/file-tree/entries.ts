@@ -17,7 +17,13 @@ import type { DirEntry, } from '../../../protocol.ts';
  * @returns absolute path for the child
  */
 export function childPath(
-  { parentPath, name, }: { parentPath: string; name: string; },
+  {
+    parentPath,
+    name,
+  }: {
+    parentPath: string;
+    name: string
+  },
 ): string {
   return parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
 }
@@ -57,7 +63,12 @@ function evictPrefetchCache({ cache, }: { cache: Map<string, DirEntry[]>; },): v
  *
  * @param prefetchCache - cache map to store preloaded children
  */
-export async function preloadChildren({ parentPath, entries, fetchDir, prefetchCache, }: {
+export async function preloadChildren({
+  parentPath,
+  entries,
+  fetchDir,
+  prefetchCache,
+}: {
   parentPath: string;
   entries: DirEntry[];
   fetchDir: (path: string,) => Promise<DirEntry[]>;
@@ -69,9 +80,15 @@ export async function preloadChildren({ parentPath, entries, fetchDir, prefetchC
         return entry.isDirectory;
       },)
       .map(async function prefetchDir(entry,) {
-        const fullPath = childPath({ parentPath, name: entry.name, },);
+        const fullPath = childPath({
+          parentPath,
+          name: entry.name,
+        },);
         const children = await fetchDir(fullPath,);
-        prefetchCache.set(fullPath, children,);
+        prefetchCache.set(
+          fullPath,
+          children,
+        );
       },),
   );
   evictPrefetchCache({ cache: prefetchCache, },);

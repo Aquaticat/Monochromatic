@@ -39,26 +39,43 @@ const SAVE_DEBOUNCE_MS = 300;
  * saveNow();
  * ```
  */
-export function createDebouncedSave({ fsId, rootDir, getState, }: {
+export function createDebouncedSave({
+  fsId,
+  rootDir,
+  getState,
+}: {
   fsId: string;
   rootDir: string;
   getState: () => SessionState;
-},): { debouncedSave: () => void; saveNow: () => void; } {
+},): {
+  debouncedSave: () => void;
+  saveNow: () => void
+} {
   let timerId = 0;
 
   /** Saves state immediately without debouncing. */
   function saveNow(): void {
     clearTimeout(timerId,);
     timerId = 0;
-    saveSessionState({ fsId, rootDir, state: getState(), },);
+    saveSessionState({
+      fsId,
+      rootDir,
+      state: getState(),
+    },);
   }
 
   /** Schedules a save after the debounce interval. */
   function debouncedSave(): void {
     clearTimeout(timerId,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- setTimeout returns NodeJS.Timeout in Node types but number in browser; we store as number
-    timerId = setTimeout(saveNow, SAVE_DEBOUNCE_MS,) as unknown as number;
+    timerId = setTimeout(
+      saveNow,
+      SAVE_DEBOUNCE_MS,
+    ) as unknown as number;
   }
 
-  return { debouncedSave, saveNow, };
+  return {
+    debouncedSave,
+    saveNow,
+  };
 }

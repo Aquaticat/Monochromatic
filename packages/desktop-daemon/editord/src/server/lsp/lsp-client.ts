@@ -61,7 +61,10 @@ export class LspClient {
   #l: Logger;
 
   /** Callback for server-initiated notifications. */
-  #onNotification: (event: { method: string; params: unknown; },) => void;
+  #onNotification: (event: {
+    method: string;
+    params: unknown
+  },) => void;
 
   /** Whether the LSP initialize handshake has completed. */
   #initialized = false;
@@ -86,39 +89,68 @@ export class LspClient {
    *
    * @param onNotification - callback for server-initiated notifications
    */
-  constructor({ command, args, name, cwd, env, l, onNotification, }: {
+  constructor({
+    command,
+    args,
+    name,
+    cwd,
+    env,
+    l,
+    onNotification,
+  }: {
     command: string;
     args: readonly string[];
     name: string;
     cwd: string;
     env: Record<string, string | undefined>;
     l: Logger;
-    onNotification: (event: { method: string; params: unknown; },) => void;
+    onNotification: (event: {
+      method: string;
+      params: unknown
+    },) => void;
   },) {
     this.#name = name;
-    this.#l = tagged({ tag: name, l, },);
+    this.#l = tagged({
+      tag: name,
+      l,
+    },);
     this.#onNotification = onNotification;
 
-    this.#proc = spawn(command, [...args,], {
+    this.#proc = spawn(
+      command,
+      [...args,],
+      {
       cwd,
       env,
       stdio: ['pipe', 'pipe', 'pipe',],
-    },);
+    },
+    );
 
     const clientLog = this.#l;
-    const parser = createLspParser({ onMessage: this.#handleMessage.bind(this,),
+    const parser = createLspParser({
+      onMessage: this.#handleMessage.bind(this,),
       onError: function handleParseError(error,) {
         clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,);
-      }, },);
-    this.#proc.stdout?.on('data', function handleStdout(chunk: Buffer,) {
+      },
+    },);
+    this.#proc.stdout?.on(
+      'data',
+      function handleStdout(chunk: Buffer,) {
       parser.feed(chunk,);
-    },);
-    this.#proc.stderr?.on('data', function handleStderr(chunk: Buffer,) {
+    },
+    );
+    this.#proc.stderr?.on(
+      'data',
+      function handleStderr(chunk: Buffer,) {
       clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,);
-    },);
-    this.#proc.on('exit', function handleExit(code,) {
+    },
+    );
+    this.#proc.on(
+      'exit',
+      function handleExit(code,) {
       clientLog.info(`exited with code ${String(code,)}`,);
-    },);
+    },
+    );
   }
 
   /**
@@ -129,18 +161,27 @@ export class LspClient {
    *
    * @returns server capabilities
    */
-  async initialize({ rootUri, initializationOptions, }: {
+  async initialize({
+    rootUri,
+    initializationOptions,
+  }: {
     rootUri: string;
     initializationOptions?: Record<string, unknown>;
   },): Promise<LspServerCapabilities> {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP initialize always returns { capabilities }
     const result = await this.request({
       method: 'initialize',
-      params: buildInitializeParams({ rootUri, initializationOptions, },),
+      params: buildInitializeParams({
+        rootUri,
+        initializationOptions,
+      },),
     },) as { capabilities: LspServerCapabilities; };
 
     this.capabilities = result.capabilities;
-    this.notify({ method: 'initialized', params: {}, },);
+    this.notify({
+      method: 'initialized',
+      params: {},
+    },);
     this.#initialized = true;
     this.#l.info('initialized',);
     return this.capabilities;
@@ -161,22 +202,38 @@ export class LspClient {
    *
    * @throws when the server responds with a JSON-RPC error or the request times out
    */
-  request({ method, params, timeoutMs, }: {
+  request({
+    method,
+    params,
+    timeoutMs,
+  }: {
     method: string;
     params: unknown;
     timeoutMs?: number;
   },): Promise<unknown> {
     const id = this.#nextId++;
-    const message = { jsonrpc: '2.0' as const, id, method, params, };
+    const message = {
+      jsonrpc: '2.0' as const,
+      id,
+      method,
+      params,
+    };
     const pending = this.#pending;
     const clientLog = this.#l;
 
     // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- request correlation requires storing resolve/reject in a map
     const responsePromise = new Promise<unknown>(
-      function awaitLspResponse(resolve, reject,) {
-        pending.set(id, { resolve, reject, },);
+      function awaitLspResponse(
+        resolve,
+        reject,
+      ) {
+        pending.set(
+          id,
+          { resolve, reject, },
+        );
         if (timeoutMs !== undefined) {
-          setTimeout(function rejectOnTimeout() {
+          setTimeout(
+            function rejectOnTimeout() {
             if (pending.delete(id,)) {
               clientLog.error(
                 `${method} (id ${id}) timed out after ${timeoutMs}ms`,
@@ -185,7 +242,9 @@ export class LspClient {
                 new Error(`${method} (id ${id}) timed out after ${timeoutMs}ms`,),
               );
             }
-          }, timeoutMs,);
+          },
+            timeoutMs,
+          );
         }
       },
     );
@@ -201,8 +260,18 @@ export class LspClient {
    *
    * @param params - notification parameters
    */
-  notify({ method, params, }: { method: string; params: unknown; },): void {
-    this.#send({ jsonrpc: '2.0', method, params, },);
+  notify({
+    method,
+    params,
+  }: {
+    method: string;
+    params: unknown
+  },): void {
+    this.#send({
+      jsonrpc: '2.0',
+      method,
+      params,
+    },);
   }
 
   /**
@@ -221,8 +290,14 @@ export class LspClient {
    */
   async shutdown(): Promise<void> {
     try {
-      await this.request({ method: 'shutdown', params: null, },);
-      this.notify({ method: 'exit', params: null, },);
+      await this.request({
+        method: 'shutdown',
+        params: null,
+      },);
+      this.notify({
+        method: 'exit',
+        params: null,
+      },);
     }
     catch (error) {
       this.#l.error(`shutdown failed, killing process: ${String(error,)}`,);

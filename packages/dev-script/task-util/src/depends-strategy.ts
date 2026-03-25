@@ -79,7 +79,10 @@ function computeMean(values: readonly number[],): number {
  * ```
  */
 function computeMedian(values: readonly number[],): number {
-  const sorted = [...values,].toSorted(function ascending(a, b,) {
+  const sorted = [...values,].toSorted(function ascending(
+    a,
+    b,
+  ) {
     return a - b;
   },);
   const mid = Math.floor(sorted.length / 2,);

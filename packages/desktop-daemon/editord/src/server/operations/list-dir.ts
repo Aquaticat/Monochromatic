@@ -32,14 +32,32 @@ type ListDirResult = {
  * @throws when the path escapes root or the directory cannot be read
  */
 export async function listDir(
-  { rootDir, path, }: { rootDir: string; path: string; },
+  {
+    rootDir,
+    path,
+  }: {
+    rootDir: string;
+    path: string
+  },
 ): Promise<ListDirResult> {
-  const absolutePath = assertWithinRoot({ rootDir, path, },);
-  const dirents = await readdir(absolutePath, { withFileTypes: true, },);
+  const absolutePath = assertWithinRoot({
+    rootDir,
+    path,
+  },);
+  const dirents = await readdir(
+    absolutePath,
+    { withFileTypes: true, },
+  );
 
   const entries: DirEntry[] = dirents.map(function toDirEntry(dirent,) {
-    return { name: dirent.name, isDirectory: dirent.isDirectory(), };
+    return {
+      name: dirent.name,
+      isDirectory: dirent.isDirectory(),
+    };
   },);
 
-  return { path: absolutePath, entries, };
+  return {
+    path: absolutePath,
+    entries,
+  };
 }

@@ -22,13 +22,33 @@ import {
 
 /** Discriminated union of all subcommand parse results */
 export type MvmArgs =
-  | { cmd: 'create'; image: string | undefined; name: string; from: string | undefined; }
-  | { cmd: 'shell'; name: string; }
+  | {
+    cmd: 'create';
+    image: string | undefined;
+    name: string;
+    from: string | undefined
+  }
+  | {
+    cmd: 'shell';
+    name: string
+  }
   | { cmd: 'list'; }
   | { cmd: 'update'; }
-  | { cmd: 'destroy'; name: string | undefined; all: boolean; }
-  | { cmd: 'exec'; name: string; command: string; }
-  | { cmd: 'run'; command: string; from: string | undefined; };
+  | {
+    cmd: 'destroy';
+    name: string | undefined;
+    all: boolean
+  }
+  | {
+    cmd: 'exec';
+    name: string;
+    command: string
+  }
+  | {
+    cmd: 'run';
+    command: string;
+    from: string | undefined
+  };
 
 //endregion Result types
 

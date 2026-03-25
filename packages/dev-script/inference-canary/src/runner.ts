@@ -1,6 +1,10 @@
 /**
  * Top-level canary orchestrator: runs all probes for a model and produces a report.
  */
+import {
+  l,
+  tagged,
+} from './log.ts';
 import { mean, } from './math.ts';
 import {
   defaultConfig,
@@ -38,13 +42,19 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
     return result.category;
   },),),];
   return Object.fromEntries(
-    categories.map(function categoryEntry(category,): [string, number,] {
+    categories.map(function categoryEntry(category,): [
+      string,
+      number,
+    ] {
       const categoryResults = results.filter(function matchCategory(result,): boolean {
         return result.category === category;
       },);
-      return [category, mean(categoryResults.map(function getScore(result,): number {
+      return [
+        category,
+        mean(categoryResults.map(function getScore(result,): number {
         return result.meanScore;
-      },),),];
+      },),),
+      ];
     },),
   );
 }
@@ -62,7 +72,15 @@ export async function runCanary(
   probes: readonly Probe[],
   config: Partial<RunnerConfig> = {},
 ): Promise<CanaryReport> {
-  const mergedConfig: RunnerConfig = { ...defaultConfig, ...config, };
+  const mergedConfig: RunnerConfig = {
+    ...defaultConfig,
+    ...config,
+  };
+  /** Model-specific logger for progress and result messages. */
+  const rl = tagged({
+    tag: mergedConfig.label,
+    l,
+  },);
   const timestamp = await fetchServerTimestamp();
 
   const probesToRun = probes.filter(
@@ -72,22 +90,31 @@ export async function runCanary(
   );
 
   if (probesToRun.length < probes.length) {
-    console.log(
-      `[${mergedConfig.label}] skipping ${
+    rl.info(
+      `skipping ${
         String(probes.length - probesToRun.length,)
       } probe(s) with recent results`,
     );
   }
-  console.log(
-    `[${mergedConfig.label}] testing with ${String(probesToRun.length,)} probe(s)...`,
+  rl.info(
+    `testing with ${String(probesToRun.length,)} probe(s)...`,
   );
 
   try {
     const results = await Promise.all(
       probesToRun.map(async function runOne(probe,): Promise<ProbeResult> {
-        const result = await runProbe(probe, mergedConfig, timestamp,);
-        console.log(
-          `  [${mergedConfig.label}:${probe.name}] => mean=${
+        const result = await runProbe(
+          probe,
+          mergedConfig,
+          timestamp,
+        );
+        /** Probe-specific logger for result summary. */
+        const pl = tagged({
+          tag: probe.name,
+          l: rl,
+        },);
+        pl.info(
+          `=> mean=${
             String(result
               .meanScore
               .toFixed(2,),)
@@ -112,6 +139,10 @@ export async function runCanary(
     };
   }
   catch (error) {
-    return handleRunFailure(error, mergedConfig, timestamp,);
+    return handleRunFailure(
+      error,
+      mergedConfig,
+      timestamp,
+    );
   }
 }

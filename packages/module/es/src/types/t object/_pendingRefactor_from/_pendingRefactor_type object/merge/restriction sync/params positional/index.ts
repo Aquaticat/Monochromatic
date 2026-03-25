@@ -114,7 +114,10 @@ export type { ObjectsMergeRules, } from './rules.ts';
     for (const value of allValuesForKey) {
       const valueType = typeof value;
       if (!valuesByType.has(valueType,))
-        valuesByType.set(valueType, [],);
+        valuesByType.set(
+          valueType,
+          [],
+        );
       const typeValues = valuesByType.get(valueType,);
       if (typeValues !== undefined)
         typeValues.push(value,);
@@ -163,7 +166,10 @@ export type { ObjectsMergeRules, } from './rules.ts';
         }
 
         // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion, typescript/no-unsafe-assignment -- values array type depends on runtime typeof check
-        result[key] = rule({ key, values: values as any, },);
+        result[key] = rule({
+          key,
+          values: values as any,
+        },);
       }
     }
   }

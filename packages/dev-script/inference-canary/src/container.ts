@@ -39,12 +39,22 @@ export type { ContainerResult, } from './container-exec.ts';
  * @returns async disposable with the staging directory path
  */
 async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: string; }> {
-  const path = join(LINT_DIR, '_tmp', crypto.randomUUID(),);
-  await mkdir(path, { recursive: true, },);
+  const path = join(
+    LINT_DIR,
+    '_tmp',
+    crypto.randomUUID(),
+  );
+  await mkdir(
+    path,
+    { recursive: true, },
+  );
   return {
     path,
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(path, { recursive: true, force: true, },);
+      await rm(
+        path,
+        { recursive: true, force: true, },
+      );
     },
   };
 }
@@ -68,13 +78,20 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
  *
  * @returns execution result with stdout, stderr, exit code
  */
-export async function runInContainer(source: string, stdinData?: string,
-  signal?: AbortSignal,): Promise<ContainerResult>
+export async function runInContainer(
+  source: string,
+  stdinData?: string,
+  signal?: AbortSignal,
+): Promise<ContainerResult>
 {
   await using stagingResource = await makeStagingDir();
   const stagingDir = stagingResource.path;
 
-  await writeFile(join(stagingDir, 'canary.ts',), source, 'utf8',);
+  await writeFile(
+    join(stagingDir, 'canary.ts',),
+    source,
+    'utf8',
+  );
 
   // cat preserves content exactly; cp can mangle encoding on some filesystems
   const shellScript = stdinData !== undefined
@@ -82,9 +99,14 @@ export async function runInContainer(source: string, stdinData?: string,
     : 'cat /mnt/canary.ts > /tmp/canary.ts && bun run /tmp/canary.ts';
 
   if (stdinData !== undefined)
-    await writeFile(join(stagingDir, 'stdin.txt',), stdinData, 'utf8',);
+    await writeFile(
+      join(stagingDir, 'stdin.txt',),
+      stdinData,
+      'utf8',
+    );
 
-  return await execContainer([
+  return await execContainer(
+    [
     'run',
     '--rm',
     '--network=none',
@@ -105,7 +127,9 @@ export async function runInContainer(source: string, stdinData?: string,
     'sh',
     '-c',
     shellScript,
-  ], signal,);
+  ],
+    signal,
+  );
 }
 
 //endregion Public API

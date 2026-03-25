@@ -34,7 +34,10 @@ import type { ImageInput, } from './types.ts';
  * ```
  */
 export async function toGeminiInlineData(input: ImageInput,): Promise<GeminiInlineData> {
-  const rl = tagged({ tag: toGeminiInlineData.name, l, },);
+  const rl = tagged({
+    tag: toGeminiInlineData.name,
+    l,
+  },);
 
   if (isImageUrl(input,)) {
     rl.debug(`fetching URL for Gemini inline data: ${input.url}`,);
@@ -47,13 +50,22 @@ export async function toGeminiInlineData(input: ImageInput,): Promise<GeminiInli
     const contentType = response.headers.get('content-type',) ?? 'image/png';
     const arrayBuffer = await response.arrayBuffer();
     const data = bufferToBase64(arrayBuffer,);
-    return { mime_type: contentType, data, };
+    return {
+      mime_type: contentType,
+      data,
+    };
   }
 
   if (isImageBase64(input,)) {
     rl.debug('parsing data URI for Gemini inline data',);
-    const { mimeType, data, } = parseDataUri(input.base64,);
-    return { mime_type: mimeType, data, };
+    const {
+      mimeType,
+      data,
+    } = parseDataUri(input.base64,);
+    return {
+      mime_type: mimeType,
+      data,
+    };
   }
 
   if (isImageBuffer(input,)) {
@@ -65,7 +77,10 @@ export async function toGeminiInlineData(input: ImageInput,): Promise<GeminiInli
       } bytes, format: ${input.format})`,
     );
     const data = bufferToBase64(input.buffer,);
-    return { mime_type: `image/${input.format}`, data, };
+    return {
+      mime_type: `image/${input.format}`,
+      data,
+    };
   }
 
   if (isImagePath(input,)) {
@@ -73,7 +88,10 @@ export async function toGeminiInlineData(input: ImageInput,): Promise<GeminiInli
     const format = inferFormat(input.path,);
     const fileBuffer = await readFile(input.path,);
     const data = bufferToBase64(fileBuffer.buffer,);
-    return { mime_type: `image/${format}`, data, };
+    return {
+      mime_type: `image/${format}`,
+      data,
+    };
   }
 
   throw new Error(

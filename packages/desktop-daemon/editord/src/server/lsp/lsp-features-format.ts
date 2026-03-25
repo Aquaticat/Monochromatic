@@ -8,8 +8,8 @@
 import { pathToFileURL, } from 'node:url';
 
 import {
-  type LspClient,
   LSP_FEATURE_TIMEOUT_MS,
+  type LspClient,
 } from './lsp-client.ts';
 import type { LspTextEdit, } from './types.ts';
 
@@ -22,7 +22,10 @@ import type { LspTextEdit, } from './types.ts';
  *
  * @returns array of text edits to apply
  */
-export async function requestFormat({ client, path, }: {
+export async function requestFormat({
+  client,
+  path,
+}: {
   client: LspClient;
   path: string;
 },): Promise<LspTextEdit[]> {
@@ -31,7 +34,10 @@ export async function requestFormat({ client, path, }: {
     method: 'textDocument/formatting',
     params: {
       textDocument: { uri, },
-      options: { tabSize: 2, insertSpaces: true, },
+      options: {
+        tabSize: 2,
+        insertSpaces: true,
+      },
     },
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);

@@ -9,8 +9,8 @@
 import { pathToFileURL, } from 'node:url';
 
 import {
-  type LspClient,
   LSP_FEATURE_TIMEOUT_MS,
+  type LspClient,
 } from './lsp-client.ts';
 import type {
   LspCompletionItem,
@@ -40,7 +40,12 @@ export {
  *
  * @returns hover result, or null if unavailable
  */
-export async function requestHover({ client, path, line, character, }: {
+export async function requestHover({
+  client,
+  path,
+  line,
+  character,
+}: {
   client: LspClient;
   path: string;
   line: number;
@@ -49,7 +54,10 @@ export async function requestHover({ client, path, line, character, }: {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/hover',
-    params: { textDocument: { uri, }, position: { line, character, }, },
+    params: {
+      textDocument: { uri, },
+      position: { line, character, },
+    },
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
@@ -70,7 +78,12 @@ export async function requestHover({ client, path, line, character, }: {
  *
  * @returns array of completion items
  */
-export async function requestCompletion({ client, path, line, character, }: {
+export async function requestCompletion({
+  client,
+  path,
+  line,
+  character,
+}: {
   client: LspClient;
   path: string;
   line: number;
@@ -79,7 +92,10 @@ export async function requestCompletion({ client, path, line, character, }: {
   const uri = pathToFileURL(path,).href;
   const result = await client.request({
     method: 'textDocument/completion',
-    params: { textDocument: { uri, }, position: { line, character, }, },
+    params: {
+      textDocument: { uri, },
+      position: { line, character, },
+    },
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 

@@ -46,25 +46,46 @@ export function addStrokedPath(
       && first[0] === last[0]
       && first[1] === last[1]
     )
-    ? points.slice(0, -1,)
+    ? points.slice(
+      0,
+      -1,
+    )
     : points;
 
-  const outerVerts = offsetPolygon(vertices, halfWidth,);
-  const innerVerts = offsetPolygon(vertices, -halfWidth,);
+  const outerVerts = offsetPolygon(
+    vertices,
+    halfWidth,
+  );
+  const innerVerts = offsetPolygon(
+    vertices,
+    -halfWidth,
+  );
 
   /**
    * Traces a polygon contour onto the opentype path.
    *
    * @param verts - ordered vertices of the contour polygon
    */
-  function traceContour(verts: readonly [number, number,][],): void {
-    verts.forEach(function traceVertex(vert, vertIndex,) {
+  function traceContour(verts: readonly [
+    number,
+    number,
+  ][],): void {
+    verts.forEach(function traceVertex(
+      vert,
+      vertIndex,
+    ) {
       const fx = vert[0] - cellX + xShift;
       const fy = fontY(vert[1],);
       if (vertIndex === 0)
-        otPath.moveTo(fx, fy,);
+        otPath.moveTo(
+          fx,
+          fy,
+        );
       else
-        otPath.lineTo(fx, fy,);
+        otPath.lineTo(
+          fx,
+          fy,
+        );
     },);
     otPath.close();
   }

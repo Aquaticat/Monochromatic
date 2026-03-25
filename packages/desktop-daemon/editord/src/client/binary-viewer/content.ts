@@ -23,7 +23,10 @@ const REPEAT_ICON_SVG =
  * @returns img element
  */
 export function createImageContent({ url, }: { url: string; },): HTMLElement {
-  return h({ tag: 'img', attrs: { src: url, alt: 'Image preview', }, },);
+  return h({
+    tag: 'img',
+    attrs: { src: url, alt: 'Image preview', },
+  },);
 }
 
 /**
@@ -34,22 +37,35 @@ export function createImageContent({ url, }: { url: string; },): HTMLElement {
  * @returns container with audio element and repeat button
  */
 export function createAudioContent({ url, }: { url: string; },): HTMLElement {
-  const audio = h({ tag: 'audio', attrs: { src: url, controls: '', }, },);
+  const audio = h({
+    tag: 'audio',
+    attrs: { src: url, controls: '', },
+  },);
 
   const repeatBtn = h({
     tag: 'button',
     class: 'repeat-btn',
     html: REPEAT_ICON_SVG,
-    attrs: { type: 'button', title: 'Repeat track', },
+    attrs: {
+      type: 'button',
+      title: 'Repeat track',
+    },
     on: {
       click: function handleRepeatToggle(): void {
         audio.loop = !audio.loop;
-        repeatBtn.toggleAttribute('data-active', audio.loop,);
+        repeatBtn.toggleAttribute(
+          'data-active',
+          audio.loop,
+        );
       },
     },
   },);
 
-  return h({ tag: 'div', class: 'audio-controls', children: [audio, repeatBtn,], },);
+  return h({
+    tag: 'div',
+    class: 'audio-controls',
+    children: [audio, repeatBtn,],
+  },);
 }
 
 /**
@@ -60,7 +76,10 @@ export function createAudioContent({ url, }: { url: string; },): HTMLElement {
  * @returns video element
  */
 export function createVideoContent({ url, }: { url: string; },): HTMLElement {
-  return h({ tag: 'video', attrs: { src: url, controls: '', }, },);
+  return h({
+    tag: 'video',
+    attrs: { src: url, controls: '', },
+  },);
 }
 
 /**
@@ -71,5 +90,8 @@ export function createVideoContent({ url, }: { url: string; },): HTMLElement {
  * @returns pre element
  */
 export function createHexDumpContent({ content, }: { content: string; },): HTMLElement {
-  return h({ tag: 'pre', text: content, },);
+  return h({
+    tag: 'pre',
+    text: content,
+  },);
 }

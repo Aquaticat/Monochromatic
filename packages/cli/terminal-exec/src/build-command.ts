@@ -12,7 +12,10 @@ import {
 import type { ResolvedTerminal, } from './resolve.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'build-command', l: parentLogger, },);
+const l = tagged({
+  tag: 'build-command',
+  l: parentLogger,
+},);
 
 /**
  * Options passed by the user to `xdg-terminal-exec`.
@@ -42,12 +45,23 @@ export type UserOptions = {
  * @param value - User-provided value.
  */
 function appendArg(
-  { args, argKey, value, }: { args: string[]; argKey: string; value: string; },
+  {
+    args,
+    argKey,
+    value,
+  }: {
+    args: string[];
+    argKey: string;
+    value: string
+  },
 ): void {
   if (argKey.endsWith('=',))
     args.push(`${argKey}${value}`,);
   else
-    args.push(argKey, value,);
+    args.push(
+      argKey,
+      value,
+    );
 }
 
 /**
@@ -94,26 +108,44 @@ function keepToken(token: string,): boolean {
  * // ['/usr/bin/ghostty', '-e', 'bash', '-l']
  * ```
  */
-export function buildCommand({ terminal, options, }: {
+export function buildCommand({
+  terminal,
+  options,
+}: {
   terminal: ResolvedTerminal;
   options: UserOptions;
 },): readonly string[] {
   const args: string[] = terminal.execTokens.filter(keepToken,);
 
   if (options.appId.length > 0 && terminal.appIdArg.length > 0)
-    appendArg({ args, argKey: terminal.appIdArg, value: options.appId, },);
+    appendArg({
+      args,
+      argKey: terminal.appIdArg,
+      value: options.appId,
+    },);
 
   if (options.title.length > 0 && terminal.titleArg.length > 0)
-    appendArg({ args, argKey: terminal.titleArg, value: options.title, },);
+    appendArg({
+      args,
+      argKey: terminal.titleArg,
+      value: options.title,
+    },);
 
   if (options.dir.length > 0 && terminal.dirArg.length > 0)
-    appendArg({ args, argKey: terminal.dirArg, value: options.dir, },);
+    appendArg({
+      args,
+      argKey: terminal.dirArg,
+      value: options.dir,
+    },);
 
   if (options.hold && terminal.holdArg.length > 0)
     args.push(terminal.holdArg,);
 
   if (options.command.length > 0)
-    args.push(terminal.execArg, ...options.command,);
+    args.push(
+      terminal.execArg,
+      ...options.command,
+    );
 
   /** Info-level because the resolved command is user-facing diagnostic output. */
   l.info(`final command: ${JSON.stringify(args,)}`,);

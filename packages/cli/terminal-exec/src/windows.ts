@@ -12,7 +12,10 @@ import {
 import type { ResolvedTerminal, } from './resolve.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'windows', l: parentLogger, },);
+const l = tagged({
+  tag: 'windows',
+  l: parentLogger,
+},);
 
 /**
  * Resolves the terminal emulator on Windows.

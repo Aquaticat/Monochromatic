@@ -35,7 +35,10 @@ import {
  * const xml = generateAutounattend({ imageIndex: 1, hostname: 'template-setup' });
  * ```
  */
-export function generateAutounattend({ hostname, imageIndex, }: {
+export function generateAutounattend({
+  hostname,
+  imageIndex,
+}: {
   hostname: string;
   imageIndex: number;
 },): string {
@@ -128,17 +131,29 @@ ${windowsPeSection({ imageIndex, },)}
  * await Bun.write('/path/to/autounattend.iso', iso);
  * ```
  */
-export function createAutounattendIso({ hostname, imageIndex, }: {
+export function createAutounattendIso({
+  hostname,
+  imageIndex,
+}: {
   hostname: string;
   imageIndex: number;
 },): Uint8Array {
-  const rl = tagged({ tag: createAutounattendIso.name, l, },);
-  const xml = generateAutounattend({ hostname, imageIndex, },);
+  const rl = tagged({
+    tag: createAutounattendIso.name,
+    l,
+  },);
+  const xml = generateAutounattend({
+    hostname,
+    imageIndex,
+  },);
   const encoder = new TextEncoder();
 
   const iso = createIso({
     files: [
-      { data: encoder.encode(xml,), name: 'Autounattend.xml', },
+      {
+        data: encoder.encode(xml,),
+        name: 'Autounattend.xml',
+      },
     ],
     volumeId: 'OEMDRV',
   },);

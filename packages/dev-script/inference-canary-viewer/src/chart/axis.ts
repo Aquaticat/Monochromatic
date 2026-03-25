@@ -20,7 +20,13 @@ const QUARTER = HALF / 2;
 const THREE_QUARTERS = HALF + QUARTER;
 
 /** Fixed Y axis tick values for score plots (0 to 1) */
-export const Y_TICKS: readonly number[] = [0, QUARTER, HALF, THREE_QUARTERS, 1,];
+export const Y_TICKS: readonly number[] = [
+  0,
+  QUARTER,
+  HALF,
+  THREE_QUARTERS,
+  1,
+];
 
 /**
  * Generates HTML for Y axis tick labels positioned absolutely within a chart container.
@@ -60,7 +66,10 @@ export function renderXAxis(timestamps: readonly string[],): string {
 
   /** Maximum number of X axis labels to show before skipping */
   const MAX_LABELS = 12;
-  const step = Math.max(1, Math.ceil(timestamps.length / MAX_LABELS,),);
+  const step = Math.max(
+    1,
+    Math.ceil(timestamps.length / MAX_LABELS,),
+  );
 
   const formatter = chooseFormatter(timestamps,);
 
@@ -101,7 +110,10 @@ export function renderXAxis(timestamps: readonly string[],): string {
  */
 function chooseFormatter(timestamps: readonly string[],): (ts: string,) => string {
   const uniqueDates = new Set(timestamps.map(function extractDate(ts,) {
-    return ts.slice(0, 10,);
+    return ts.slice(
+      0,
+      10,
+    );
   },),);
   if (uniqueDates.size <= 1)
     return formatTime;
@@ -126,7 +138,10 @@ function formatTime(timestamp: string,): string {
   const TIME_END = 16;
   if (timestamp.length < TIME_END)
     return timestamp;
-  return timestamp.slice(TIME_START, TIME_END,);
+  return timestamp.slice(
+    TIME_START,
+    TIME_END,
+  );
 }
 
 /**
@@ -146,7 +161,10 @@ function formatDate(timestamp: string,): string {
   if (timestamp.length < 10)
     return timestamp;
   /** Extract YYYY-MM-DD from the ISO string */
-  const datePart = timestamp.slice(0, 10,);
+  const datePart = timestamp.slice(
+    0,
+    10,
+  );
   const currentYear = new Date().getFullYear().toString();
   if (datePart.startsWith(currentYear,)) {
     // Same year: show MM-DD only — skip "YYYY-" prefix

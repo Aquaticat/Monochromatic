@@ -75,7 +75,10 @@ function openTask(taskId: string,): void {
  * @param taskId - UUID of the task to complete
  */
 async function completeTask(taskId: string,): Promise<void> {
-  await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
+  await api(
+    `/api/tasks/${taskId}/complete`,
+    { method: 'POST', },
+  );
   globalThis.location.reload();
 }
 
@@ -88,13 +91,21 @@ async function completeTask(taskId: string,): Promise<void> {
  *
  * @returns Unordered list element containing task cards
  */
-function buildTaskList(tasks: readonly Task[],
-  blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>,): HTMLUListElement
+function buildTaskList(
+  tasks: readonly Task[],
+  blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>,
+): HTMLUListElement
 {
-  const list = h({ tag: 'ul', class: 'task-list', },);
+  const list = h({
+    tag: 'ul',
+    class: 'task-list',
+  },);
   for (const task of tasks) {
     list.append(
-      createTaskCard(task, { onOpen: openTask, onToggleComplete: completeTask, },),
+      createTaskCard(
+        task,
+        { onOpen: openTask, onToggleComplete: completeTask, },
+      ),
     );
     const childLinks = blockedTasksByBlocker[task.id] ?? [];
     if (childLinks.length > 0) {
@@ -105,8 +116,11 @@ function buildTaskList(tasks: readonly Task[],
           tag: 'ul',
           class: 'task-list',
           children: childLinks.map(function createBlockedCard(childLink,) {
-            return createTaskCard(childLink.task, { showBlockedBadge: true,
-              onOpen: openTask, onToggleComplete: completeTask, },);
+            return createTaskCard(
+              childLink.task,
+              { showBlockedBadge: true,
+              onOpen: openTask, onToggleComplete: completeTask, },
+            );
           },),
         },),],
       },),);
@@ -121,23 +135,42 @@ app.append(buildSuggestedSection({
   buildTaskList,
 },),);
 
-app.append(h({ tag: 'div', class: 'divider', },),);
+app.append(h({
+  tag: 'div',
+  class: 'divider',
+},),);
 
 /** Collapsible section heading for all tasks. */
-const allSection = h({ tag: 'section-heading',
-  attrs: { icon: '\u221E', label: 'All', }, },);
+const allSection = h({
+  tag: 'section-heading',
+  attrs: { icon: '\u221E', label: 'All', },
+},);
 allSection.append(h({
   tag: 'div',
-  style: { display: 'flex', flexDirection: 'column', gap: 'var(--gap)', },
+  style: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'var(--gap)',
+  },
   children: [
     pageData.allTasks.length === 0
-      ? h({ tag: 'p', class: 'empty', text: 'No tasks yet.', },)
-      : buildTaskList(pageData.allTasks, pageData.blockedTasksByBlocker,),
+      ? h({
+        tag: 'p',
+        class: 'empty',
+        text: 'No tasks yet.',
+      },)
+      : buildTaskList(
+        pageData.allTasks,
+        pageData.blockedTasksByBlocker,
+      ),
   ],
 },),);
 app.append(allSection,);
 
 /** New-task panel and FAB button created by the dialog module. */
-const { panel: newTaskPanel, fab: newTaskFab, } = createNewTaskDialog();
+const {
+  panel: newTaskPanel,
+  fab: newTaskFab,
+} = createNewTaskDialog();
 document.body.append(newTaskPanel,);
 document.body.append(newTaskFab,);

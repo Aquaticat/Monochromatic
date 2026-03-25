@@ -18,6 +18,10 @@ import {
   type LintResult,
   lintSource,
 } from '../linter.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 
 import { extractCode, } from './extract-code.ts';
 
@@ -56,18 +60,27 @@ const MAX_DISPLAYED_RULES = 5;
  * combinedScore(1.0, lint);
  * ```
  */
-export function combinedScore(correctness: number, lint: LintResult,): number {
+export function combinedScore(
+  correctness: number,
+  lint: LintResult,
+): number {
   if (correctness < 1)
     return 0;
 
   // Sum lint penalties with per-rule cap
   const lintPenalty = [...lint.perRulePenalty.values(),]
-    .reduce(function capAndSum(sum, uncapped,): number {
+    .reduce(
+      function capAndSum(sum, uncapped,): number {
       return sum + Math.min(uncapped, MAX_PENALTY_PER_RULE,);
-    }, 0,);
+    },
+      0,
+    );
 
   const typePenalty = lint.typeErrors * TYPE_ERROR_PENALTY;
-  return Math.max(0, 1 - lintPenalty - typePenalty,);
+  return Math.max(
+    0,
+    1 - lintPenalty - typePenalty,
+  );
 }
 
 /**
@@ -81,17 +94,31 @@ export function combinedScore(correctness: number, lint: LintResult,): number {
  *
  * @returns full lint result for scoring
  */
-export async function lintAndLog(source: string, probeName: string,
-  context: ScoreContext,): Promise<LintResult>
+export async function lintAndLog(
+  source: string,
+  probeName: string,
+  context: ScoreContext,
+): Promise<LintResult>
 {
-  const lint = await lintSource(source, {
+  const lint = await lintSource(
+    source,
+    {
     model: context.label,
     label: context.label,
     probe: probeName,
     pass: context.pass,
     timestamp: context.timestamp,
-  },);
+  },
+  );
   if (lint.linterRan || lint.typeCheckerRan) {
+    /** Probe-specific logger for lint result summary. */
+    const rl = tagged({
+      tag: probeName,
+      l: tagged({
+        tag: context.label,
+        l,
+      },),
+    },);
     const lintSummary = lint.linterRan
       ? `lint=${String(lint.severity.errors,)}err/${String(lint.severity.warnings,)}warn`
       : 'lint=skipped';
@@ -99,11 +126,12 @@ export async function lintAndLog(source: string, probeName: string,
       ? `type=${String(lint.typeErrors,)}err`
       : 'type=skipped';
     const rulesSummary = lint.violatedRules.length > 0
-      ? ` (${lint.violatedRules.slice(0, MAX_DISPLAYED_RULES,).join(', ',)})`
+      ? ` (${lint.violatedRules.slice(
+        0,
+        MAX_DISPLAYED_RULES,
+      ).join(', ',)})`
       : '';
-    console.log(
-      `    [${context.label}:${probeName}] ${lintSummary} ${typeSummary}${rulesSummary}`,
-    );
+    rl.info(`${lintSummary} ${typeSummary}${rulesSummary}`,);
   }
   return lint;
 }

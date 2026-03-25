@@ -63,19 +63,36 @@ export class LspManager {
    * @param l - parent logger
    */
   constructor(
-    { ceiling, onDiagnostics, l, }: { ceiling: string; onDiagnostics: DiagnosticsHandler;
-      l: Logger; },
+    {
+      ceiling,
+      onDiagnostics,
+      l,
+    }: {
+      ceiling: string;
+      onDiagnostics: DiagnosticsHandler;
+      l: Logger
+    },
   ) {
-    const managerLog = tagged({ tag: 'lsp', l, },);
+    const managerLog = tagged({
+      tag: 'lsp',
+      l,
+    },);
     this.#diagnostics = new DiagnosticStore({ onDiagnostics, },);
     const diagStore = this.#diagnostics;
     this.#pool = new LspPool({
       ceiling,
       l: managerLog,
       onNotification: function handleNotification(
-        event: { source: string; method: string; params: unknown; },
+        event: {
+          source: string;
+          method: string;
+          params: unknown
+        },
       ): void {
-        routeNotification({ diagnostics: diagStore, ...event, },);
+        routeNotification({
+          diagnostics: diagStore,
+          ...event,
+        },);
       },
     },);
   }
@@ -85,8 +102,19 @@ export class LspManager {
    *
    * @param path - absolute file path
    */
-  async didOpen({ path, text, }: { path: string; text: string; },): Promise<void> {
-    await managerDidOpen({ pool: this.#pool, documents: this.#documents, path, text, },);
+  async didOpen({
+    path,
+    text,
+  }: {
+    path: string;
+    text: string
+  },): Promise<void> {
+    await managerDidOpen({
+      pool: this.#pool,
+      documents: this.#documents,
+      path,
+      text,
+    },);
   }
 
   /**
@@ -94,9 +122,19 @@ export class LspManager {
    *
    * @param path - absolute file path
    */
-  async didChange({ path, text, }: { path: string; text: string; },): Promise<void> {
-    await managerDidChange({ pool: this.#pool, documents: this.#documents, path,
-      text, },);
+  async didChange({
+    path,
+    text,
+  }: {
+    path: string;
+    text: string
+  },): Promise<void> {
+    await managerDidChange({
+      pool: this.#pool,
+      documents: this.#documents,
+      path,
+      text,
+    },);
   }
 
   /**
@@ -105,7 +143,11 @@ export class LspManager {
    * @param path - absolute file path
    */
   async didSave({ path, }: { path: string; },): Promise<void> {
-    await managerDidSave({ pool: this.#pool, documents: this.#documents, path, },);
+    await managerDidSave({
+      pool: this.#pool,
+      documents: this.#documents,
+      path,
+    },);
   }
 
   /**
@@ -114,8 +156,12 @@ export class LspManager {
    * @param path - absolute file path
    */
   async didClose({ path, }: { path: string; },): Promise<void> {
-    await managerDidClose({ pool: this.#pool, documents: this.#documents,
-      diagnostics: this.#diagnostics, path, },);
+    await managerDidClose({
+      pool: this.#pool,
+      documents: this.#documents,
+      diagnostics: this.#diagnostics,
+      path,
+    },);
   }
 
   /**
@@ -124,9 +170,22 @@ export class LspManager {
    * @returns hover content, or null when no client is available
    */
   hover(
-    { path, line, character, }: { path: string; line: number; character: number; },
+    {
+      path,
+      line,
+      character,
+    }: {
+      path: string;
+      line: number;
+      character: number
+    },
   ): Promise<LspHover | null> {
-    return managerHover({ pool: this.#pool, path, line, character, },);
+    return managerHover({
+      pool: this.#pool,
+      path,
+      line,
+      character,
+    },);
   }
 
   /**
@@ -135,9 +194,22 @@ export class LspManager {
    * @returns completion items, or empty array when no client is available
    */
   completion(
-    { path, line, character, }: { path: string; line: number; character: number; },
+    {
+      path,
+      line,
+      character,
+    }: {
+      path: string;
+      line: number;
+      character: number
+    },
   ): Promise<LspCompletionItem[]> {
-    return managerCompletion({ pool: this.#pool, path, line, character, },);
+    return managerCompletion({
+      pool: this.#pool,
+      path,
+      line,
+      character,
+    },);
   }
 
   /**
@@ -146,7 +218,10 @@ export class LspManager {
    * @returns text edits, or empty array when no client is available
    */
   format({ path, }: { path: string; },): Promise<LspTextEdit[]> {
-    return managerFormat({ pool: this.#pool, path, },);
+    return managerFormat({
+      pool: this.#pool,
+      path,
+    },);
   }
 
   /**
@@ -155,9 +230,26 @@ export class LspManager {
    * @returns definition location, or null when no client is available
    */
   gotoDefinition(
-    { path, line, character, }: { path: string; line: number; character: number; },
-  ): Promise<{ path: string; line: number; character: number; } | null> {
-    return managerGotoDefinition({ pool: this.#pool, path, line, character, },);
+    {
+      path,
+      line,
+      character,
+    }: {
+      path: string;
+      line: number;
+      character: number
+    },
+  ): Promise<{
+    path: string;
+    line: number;
+    character: number
+  } | null> {
+    return managerGotoDefinition({
+      pool: this.#pool,
+      path,
+      line,
+      character,
+    },);
   }
 
   /**
@@ -166,9 +258,26 @@ export class LspManager {
    * @returns reference locations, or empty array when no client is available
    */
   references(
-    { path, line, character, }: { path: string; line: number; character: number; },
-  ): Promise<{ path: string; line: number; character: number; }[]> {
-    return managerReferences({ pool: this.#pool, path, line, character, },);
+    {
+      path,
+      line,
+      character,
+    }: {
+      path: string;
+      line: number;
+      character: number
+    },
+  ): Promise<{
+    path: string;
+    line: number;
+    character: number
+  }[]> {
+    return managerReferences({
+      pool: this.#pool,
+      path,
+      line,
+      character,
+    },);
   }
 
   /**
@@ -177,11 +286,20 @@ export class LspManager {
    * @returns inlay hints, or empty array when no client is available
    */
   inlayHints(
-    { path, range, }: { path: string;
+    {
+      path,
+      range,
+    }: {
+      path: string;
       range: { start: { line: number; character: number; };
-        end: { line: number; character: number; }; }; },
+        end: { line: number; character: number; }; }
+    },
   ): Promise<LspInlayHint[]> {
-    return managerInlayHints({ pool: this.#pool, path, range, },);
+    return managerInlayHints({
+      pool: this.#pool,
+      path,
+      range,
+    },);
   }
 
   /**
@@ -190,10 +308,19 @@ export class LspManager {
    * @returns selection ranges, or empty array when no client is available
    */
   selectionRange(
-    { path, positions, }: { path: string;
-      positions: { line: number; character: number; }[]; },
+    {
+      path,
+      positions,
+    }: {
+      path: string;
+      positions: { line: number; character: number; }[]
+    },
   ): Promise<LspSelectionRange[]> {
-    return managerSelectionRange({ pool: this.#pool, path, positions, },);
+    return managerSelectionRange({
+      pool: this.#pool,
+      path,
+      positions,
+    },);
   }
 
   /** Gracefully shuts down all pooled LSP servers. */

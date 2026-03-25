@@ -29,7 +29,10 @@ const MAX_RUNTIME_STDERR_LENGTH = 500;
 function buildRuntimeSection(container: ContainerResult,): string {
   if (container.timedOut)
     return '=== runtime error ===\nProcess timed out.';
-  const truncated = container.stderr.slice(0, MAX_RUNTIME_STDERR_LENGTH,);
+  const truncated = container.stderr.slice(
+    0,
+    MAX_RUNTIME_STDERR_LENGTH,
+  );
   const suffix = container.stderr.length > MAX_RUNTIME_STDERR_LENGTH
     ? '\n...(truncated)'
     : '';
@@ -64,13 +67,16 @@ export async function buildCodeGenFixPrompt(
   const source = extractCode(response,);
   // Reuse the lint result from score() if available to avoid linting the same code twice.
   // Falls back to running lintSource if called without a prior result (e.g. in tests).
-  const lint = priorLint ?? await lintSource(source, {
+  const lint = priorLint ?? await lintSource(
+    source,
+    {
     model: context.label,
     label: context.label,
     probe: 'fix-prompt',
     pass: context.pass,
     timestamp: context.timestamp,
-  },);
+  },
+  );
 
   // Narrow to a failed container only when exit was non-zero or process was killed
   const failedContainer = priorContainer !== undefined
@@ -105,7 +111,10 @@ export async function buildCodeGenFixPrompt(
 
   return [
     'Your code from the previous response has issues.',
-    [lintSummary, runtimeSummary,]
+    [
+      lintSummary,
+      runtimeSummary,
+    ]
       .filter(function isDefined(line,): line is string {
         return line !== undefined;
       },)

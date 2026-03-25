@@ -27,17 +27,30 @@ import type { EditorPosition, } from './position.ts';
  *
  * @returns text position, or null if the coordinates are outside text
  */
-export function getPositionFromPoint({ editor, x, y, }: {
+export function getPositionFromPoint({
+  editor,
+  x,
+  y,
+}: {
   editor: HTMLElement;
   x: number;
   y: number;
 },): EditorPosition | null {
-  const lineResult = findLineAtY({ editor, y, },);
+  const lineResult = findLineAtY({
+    editor,
+    y,
+  },);
   if (lineResult === null)
     return null;
 
-  const character = findCharAtX({ lineDiv: lineResult.lineDiv, x, },);
-  return { line: lineResult.line, character, };
+  const character = findCharAtX({
+    lineDiv: lineResult.lineDiv,
+    x,
+  },);
+  return {
+    line: lineResult.line,
+    character,
+  };
 }
 
 /**
@@ -47,10 +60,16 @@ export function getPositionFromPoint({ editor, x, y, }: {
  *
  * @returns line index and element, or null if y is outside all lines
  */
-function findLineAtY({ editor, y, }: {
+function findLineAtY({
+  editor,
+  y,
+}: {
   editor: HTMLElement;
   y: number;
-},): { line: number; lineDiv: Element; } | null {
+},): {
+  line: number;
+  lineDiv: Element
+} | null {
   const { children, } = editor;
   let lo = 0;
   let hi = children.length - 1;
@@ -67,7 +86,10 @@ function findLineAtY({ editor, y, }: {
     else if (y > rect.bottom)
       lo = mid + 1;
     else
-      return { line: mid, lineDiv: child, };
+      return {
+        line: mid,
+        lineDiv: child,
+      };
   }
 
   return null;

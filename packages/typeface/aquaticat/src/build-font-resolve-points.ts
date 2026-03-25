@@ -22,8 +22,14 @@ import type { SVGPathCommand, } from './parse-svg.ts';
  */
 export function resolveAbsolutePoints(
   commands: readonly SVGPathCommand[],
-): [number, number,][] {
-  const points: [number, number,][] = [];
+): [
+  number,
+  number,
+][] {
+  const points: [
+    number,
+    number,
+  ][] = [];
   // Mutable cursor tracking the current pen position while replaying path commands
   // -- let needed because M/L/H/V each update different axes of the cursor
   let cx = 0;
@@ -32,15 +38,24 @@ export function resolveAbsolutePoints(
     if (cmd.type === 'M' || cmd.type === 'L') {
       cx = cmd.x;
       cy = cmd.y;
-      points.push([cx, cy,],);
+      points.push([
+        cx,
+        cy,
+      ],);
     }
     else if (cmd.type === 'H') {
       cx = cmd.x;
-      points.push([cx, cy,],);
+      points.push([
+        cx,
+        cy,
+      ],);
     }
     else if (cmd.type === 'V') {
       cy = cmd.y;
-      points.push([cx, cy,],);
+      points.push([
+        cx,
+        cy,
+      ],);
     }
   },);
   return points;

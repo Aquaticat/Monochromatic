@@ -51,35 +51,64 @@ export function printMeasurementTable(measurements: MeasurementRow[],): void {
  * @param pair - reference and composite profiles with bounds
  */
 export function printKeyProportions(pair: ProfilePair,): void {
-  const { refProfile, cmpProfile, refBounds, cmpBounds, } = pair;
+  const {
+    refProfile,
+    cmpProfile,
+    refBounds,
+    cmpBounds,
+  } = pair;
 
   /** Maximum width in the reference shoulder region (y 0.14-0.22). */
-  const shoulderRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0.14,),
-    contentToAbsY(refBounds, 0.22,),);
+  const shoulderRef = maxWidthInRange(
+    refProfile,
+    contentToAbsY(refBounds, 0.14,),
+    contentToAbsY(refBounds, 0.22,),
+  );
   /** Maximum width in the composite shoulder region (y 0.14-0.22). */
-  const shoulderCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.14,),
-    contentToAbsY(cmpBounds, 0.22,),);
+  const shoulderCmp = maxWidthInRange(
+    cmpProfile,
+    contentToAbsY(cmpBounds, 0.14,),
+    contentToAbsY(cmpBounds, 0.22,),
+  );
 
   /** Minimum width in the reference waist region (y 0.25-0.35). */
-  const waistRef = minWidthInRange(refProfile, contentToAbsY(refBounds, 0.25,),
-    contentToAbsY(refBounds, 0.35,),);
+  const waistRef = minWidthInRange(
+    refProfile,
+    contentToAbsY(refBounds, 0.25,),
+    contentToAbsY(refBounds, 0.35,),
+  );
   /** Minimum width in the composite waist region (y 0.25-0.35). */
-  const waistCmp = minWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.25,),
-    contentToAbsY(cmpBounds, 0.35,),);
+  const waistCmp = minWidthInRange(
+    cmpProfile,
+    contentToAbsY(cmpBounds, 0.25,),
+    contentToAbsY(cmpBounds, 0.35,),
+  );
 
   /** Maximum width in the reference hip/skirt region (y 0.34-0.48). */
-  const hipRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0.34,),
-    contentToAbsY(refBounds, 0.48,),);
+  const hipRef = maxWidthInRange(
+    refProfile,
+    contentToAbsY(refBounds, 0.34,),
+    contentToAbsY(refBounds, 0.48,),
+  );
   /** Maximum width in the composite hip/skirt region (y 0.34-0.48). */
-  const hipCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.34,),
-    contentToAbsY(cmpBounds, 0.48,),);
+  const hipCmp = maxWidthInRange(
+    cmpProfile,
+    contentToAbsY(cmpBounds, 0.34,),
+    contentToAbsY(cmpBounds, 0.48,),
+  );
 
   /** Maximum width in the reference head region (y 0-0.1). */
-  const headRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0,),
-    contentToAbsY(refBounds, 0.1,),);
+  const headRef = maxWidthInRange(
+    refProfile,
+    contentToAbsY(refBounds, 0,),
+    contentToAbsY(refBounds, 0.1,),
+  );
   /** Maximum width in the composite head region (y 0-0.1). */
-  const headCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0,),
-    contentToAbsY(cmpBounds, 0.1,),);
+  const headCmp = maxWidthInRange(
+    cmpProfile,
+    contentToAbsY(cmpBounds, 0,),
+    contentToAbsY(cmpBounds, 0.1,),
+  );
 
   console.error('Key proportions (normalized to content height):',);
   /** Reference content height in pixels for normalizing widths. */
@@ -90,24 +119,36 @@ export function printKeyProportions(pair: ProfilePair,): void {
     `  Max head width:      ref=${(headRef.width / refH).toFixed(3,)}  cmp=${
       (headCmp.width / cmpH)
         .toFixed(3,)
-    }  ratio=${fmtRatio(headCmp.width / cmpH, headRef.width / refH,)}`,
+    }  ratio=${fmtRatio(
+      headCmp.width / cmpH,
+      headRef.width / refH,
+    )}`,
   );
   console.error(
     `  Max shoulder width:  ref=${(shoulderRef.width / refH).toFixed(3,)}  cmp=${
       (shoulderCmp.width / cmpH).toFixed(3,)
-    }  ratio=${fmtRatio(shoulderCmp.width / cmpH, shoulderRef.width / refH,)}`,
+    }  ratio=${fmtRatio(
+      shoulderCmp.width / cmpH,
+      shoulderRef.width / refH,
+    )}`,
   );
   console.error(
     `  Min waist width:     ref=${(waistRef.width / refH).toFixed(3,)}  cmp=${
       (waistCmp.width / cmpH)
         .toFixed(3,)
-    }  ratio=${fmtRatio(waistCmp.width / cmpH, waistRef.width / refH,)}`,
+    }  ratio=${fmtRatio(
+      waistCmp.width / cmpH,
+      waistRef.width / refH,
+    )}`,
   );
   console.error(
     `  Max hip/skirt width: ref=${(hipRef.width / refH).toFixed(3,)}  cmp=${
       (hipCmp.width / cmpH)
         .toFixed(3,)
-    }  ratio=${fmtRatio(hipCmp.width / cmpH, hipRef.width / refH,)}`,
+    }  ratio=${fmtRatio(
+      hipCmp.width / cmpH,
+      hipRef.width / refH,
+    )}`,
   );
   console.error('',);
 }

@@ -46,7 +46,10 @@ export const HIGHLIGHT_STYLES = [
   },),
   $({
     rule: '::highlight(hl-link)',
-    decls: { color: cssVar('hl-link',), 'text-decoration': 'underline', },
+    decls: {
+      color: cssVar('hl-link',),
+      'text-decoration': 'underline',
+    },
   },),
   $({
     rule: '::highlight(hl-emphasis)',

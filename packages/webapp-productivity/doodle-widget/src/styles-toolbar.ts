@@ -58,7 +58,11 @@ export function renderToolbarStyles(): string[] {
         gap: TOOLBAR_GAP,
         'padding-block': TOOLBAR_PADDING_BLOCK,
         'padding-inline': TOOLBAR_PADDING_INLINE,
-        'background-color': cssOklch({ l: 0.95, c: 0, h: 0, },),
+        'background-color': cssOklch({
+          l: 0.95,
+          c: 0,
+          h: 0,
+        },),
         'border-block-end-style': 'solid',
         'border-block-end-color': BORDER_COLOR,
         'border-block-end-width': BORDER_WIDTH,

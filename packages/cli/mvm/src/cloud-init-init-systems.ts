@@ -142,7 +142,10 @@ export function templateRuncmd(initSystem: InitSystem,): string {
  * vmAutologin('systemd', 'ubuntu');
  * ```
  */
-export function vmAutologin(initSystem: InitSystem, user: string,): string {
+export function vmAutologin(
+  initSystem: InitSystem,
+  user: string,
+): string {
   if (initSystem === 'openrc')
     return vmAutologinOpenrc(user,);
   return vmAutologinSystemd(user,);

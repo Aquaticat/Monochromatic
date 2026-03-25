@@ -37,7 +37,12 @@ export { groupByLine, };
  *
  * @param spaceRatio - mono-to-inter space width ratio from {@link measureSpaceRatio}
  */
-export function applyLineAnnotation({ div, lineHints, lineDiags, spaceRatio, }: {
+export function applyLineAnnotation({
+  div,
+  lineHints,
+  lineDiags,
+  spaceRatio,
+}: {
   div: HTMLElement;
   lineHints: InlayHint[] | undefined;
   lineDiags: Diagnostic[] | undefined;
@@ -48,7 +53,10 @@ export function applyLineAnnotation({ div, lineHints, lineDiags, spaceRatio, }: 
   if (lineHints !== undefined) {
     /** Without toSorted: no-array-sort lint error since sort() mutates in place. */
     const sorted = lineHints.toSorted(
-      function byChar(left, right,) {
+      function byChar(
+        left,
+        right,
+      ) {
         return left.position.character - right.position.character;
       },
     );

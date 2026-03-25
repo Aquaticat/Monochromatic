@@ -31,7 +31,10 @@ import type {
  * @returns trimmed stdout
  */
 function run(cmd: string,): string {
-  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },).trim();
+  return execSync(
+    cmd,
+    { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
+  ).trim();
 }
 
 /** Parameters for width profile output generation. */
@@ -57,7 +60,13 @@ export type WidthProfileOutputParams = {
  * @param params - profiles, bounds, and output directory
  */
 export function generateWidthProfileOutput(params: WidthProfileOutputParams,): void {
-  const { refProfile, cmpProfile, refBounds, cmpBounds, tmpDir, } = params;
+  const {
+    refProfile,
+    cmpProfile,
+    refBounds,
+    cmpBounds,
+    tmpDir,
+  } = params;
   const refH = refBounds.totalHeight;
   const cmpH = cmpBounds.totalHeight;
 
@@ -69,13 +78,22 @@ export function generateWidthProfileOutput(params: WidthProfileOutputParams,): v
     const refAbsY = refBounds.top + relY * (refBounds.bottom - refBounds.top);
     const cmpAbsY = cmpBounds.top + relY * (cmpBounds.bottom - cmpBounds.top);
 
-    const refW = widthAtRelY(refProfile, refAbsY,) / refBounds.totalHeight;
-    const cmpW = widthAtRelY(cmpProfile, cmpAbsY,) / cmpBounds.totalHeight;
+    const refW = widthAtRelY(
+      refProfile,
+      refAbsY,
+    ) / refBounds.totalHeight;
+    const cmpW = widthAtRelY(
+      cmpProfile,
+      cmpAbsY,
+    ) / cmpBounds.totalHeight;
 
     csvLines.push(`${relY.toFixed(2,)},${refW.toFixed(4,)},${cmpW.toFixed(4,)}`,);
   }
 
-  writeFileSync(`${tmpDir}/width_profile.csv`, csvLines.join('\n',),);
+  writeFileSync(
+    `${tmpDir}/width_profile.csv`,
+    csvLines.join('\n',),
+  );
   console.error(`Width profile CSV: ${tmpDir}/width_profile.csv`,);
 
   /**
@@ -96,11 +114,23 @@ export function generateWidthProfileOutput(params: WidthProfileOutputParams,): v
 
   for (let i = 0; i <= 100; i++) {
     const relY = i / 100;
-    const refAbsY = contentToAbsY(refBounds, relY,);
-    const cmpAbsY = contentToAbsY(cmpBounds, relY,);
+    const refAbsY = contentToAbsY(
+      refBounds,
+      relY,
+    );
+    const cmpAbsY = contentToAbsY(
+      cmpBounds,
+      relY,
+    );
 
-    const refW = widthAtRelY(refProfile, refAbsY,) / refH;
-    const cmpW = widthAtRelY(cmpProfile, cmpAbsY,) / cmpH;
+    const refW = widthAtRelY(
+      refProfile,
+      refAbsY,
+    ) / refH;
+    const cmpW = widthAtRelY(
+      cmpProfile,
+      cmpAbsY,
+    ) / cmpH;
 
     const chartY = Math.round(relY * CHART_H,);
     refPoints.push(`${Math.round(refW * SCALE_X,)},${chartY}`,);
@@ -117,7 +147,10 @@ export function generateWidthProfileOutput(params: WidthProfileOutputParams,): v
   <polyline points="${cmpPoints.join(' ',)}" fill="none" stroke="red" stroke-width="2"/>
 </svg>`;
 
-  writeFileSync(`${tmpDir}/width_profile_chart.svg`, chartSvg,);
+  writeFileSync(
+    `${tmpDir}/width_profile_chart.svg`,
+    chartSvg,
+  );
 
   /** Also render to PNG. */
   try {

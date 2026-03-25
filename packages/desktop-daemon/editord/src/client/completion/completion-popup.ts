@@ -40,20 +40,43 @@ export class CompletionPopup extends HTMLElement {
 
   /** Renders the container and sets up popover behavior. */
   connectedCallback(): void {
-    this.#list = h({ tag: 'div', class: 'list', },);
-    this.#shadow.replaceChildren(h({ tag: 'style', text: STYLES, },), this.#list,);
-    this.setAttribute('popover', 'auto',);
+    this.#list = h({
+      tag: 'div',
+      class: 'list',
+    },);
+    this.#shadow.replaceChildren(
+      h({ tag: 'style', text: STYLES, },),
+      this.#list,
+    );
+    this.setAttribute(
+      'popover',
+      'auto',
+    );
   }
 
   /** Shows the popup with items at the given position. */
-  show({ items, x, y, }: { items: CompletionItem[]; x: number; y: number; },): void {
+  show({
+    items,
+    x,
+    y,
+  }: {
+    items: CompletionItem[];
+    x: number;
+    y: number
+  },): void {
     if (this.#list === null || items.length === 0)
       return;
     this.#items = items;
     this.#selectedIndex = 0;
     this.#list.replaceChildren(...renderItems({ items, },),);
-    this.style.setProperty('inset-inline-start', `${x}px`,);
-    this.style.setProperty('inset-block-start', `${y + VERTICAL_OFFSET}px`,);
+    this.style.setProperty(
+      'inset-inline-start',
+      `${x}px`,
+    );
+    this.style.setProperty(
+      'inset-block-start',
+      `${y + VERTICAL_OFFSET}px`,
+    );
     if (!this.matches(':popover-open',))
       this.showPopover();
   }
@@ -90,7 +113,10 @@ export class CompletionPopup extends HTMLElement {
         : this.#selectedIndex + 1;
     }
     if (this.#list !== null)
-      updateSelection({ list: this.#list, selectedIndex: this.#selectedIndex, },);
+      updateSelection({
+        list: this.#list,
+        selectedIndex: this.#selectedIndex,
+      },);
   }
 
   /**
@@ -107,11 +133,17 @@ export class CompletionPopup extends HTMLElement {
     const { insertText, } = item;
     this.hide();
     this.dispatchEvent(
-      new CustomEvent('completion-select', { detail: { text: insertText, }, bubbles: true,
-        composed: true, },),
+      new CustomEvent(
+        'completion-select',
+        { detail: { text: insertText, }, bubbles: true,
+        composed: true, },
+      ),
     );
     return insertText;
   }
 }
 
-customElements.define('completion-popup', CompletionPopup,);
+customElements.define(
+  'completion-popup',
+  CompletionPopup,
+);

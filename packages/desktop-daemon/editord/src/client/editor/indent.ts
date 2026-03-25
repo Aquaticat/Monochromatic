@@ -26,7 +26,10 @@ export type IndentResult = {
   /** Selection coordinates when `isSelection` is true. */
   selection: SelectionCoords;
   /** Cursor coordinates when `isSelection` is false. */
-  cursor: { line: number; character: number; };
+  cursor: {
+    line: number;
+    character: number
+  };
 };
 
 /**
@@ -42,7 +45,12 @@ export type IndentResult = {
  *
  * @returns adjusted cursor/selection coordinates
  */
-export function indentLines({ editor, cursorLine, cursorCharacter, selection, }: {
+export function indentLines({
+  editor,
+  cursorLine,
+  cursorCharacter,
+  selection,
+}: {
   editor: HTMLDivElement;
   cursorLine: number;
   cursorCharacter: number;
@@ -68,14 +76,25 @@ export function indentLines({ editor, cursorLine, cursorCharacter, selection, }:
         endLine: selection.endLine,
         endCharacter: selection.endCharacter + INDENT_UNIT.length,
       },
-      cursor: { line: cursorLine, character: cursorCharacter, },
+      cursor: {
+        line: cursorLine,
+        character: cursorCharacter,
+      },
     };
   }
 
   return {
     isSelection: false,
-    selection: { startLine: 0, startCharacter: 0, endLine: 0, endCharacter: 0, },
-    cursor: { line: cursorLine, character: cursorCharacter + INDENT_UNIT.length, },
+    selection: {
+      startLine: 0,
+      startCharacter: 0,
+      endLine: 0,
+      endCharacter: 0,
+    },
+    cursor: {
+      line: cursorLine,
+      character: cursorCharacter + INDENT_UNIT.length,
+    },
   };
 }
 
@@ -92,7 +111,12 @@ export function indentLines({ editor, cursorLine, cursorCharacter, selection, }:
  *
  * @returns adjusted cursor/selection coordinates
  */
-export function unindentLines({ editor, cursorLine, cursorCharacter, selection, }: {
+export function unindentLines({
+  editor,
+  cursorLine,
+  cursorCharacter,
+  selection,
+}: {
   editor: HTMLDivElement;
   cursorLine: number;
   cursorCharacter: number;
@@ -136,18 +160,35 @@ export function unindentLines({ editor, cursorLine, cursorCharacter, selection, 
       isSelection: true,
       selection: {
         startLine: selection.startLine,
-        startCharacter: Math.max(0, selection.startCharacter - startRemoved,),
+        startCharacter: Math.max(
+          0,
+          selection.startCharacter - startRemoved,
+        ),
         endLine: selection.endLine,
-        endCharacter: Math.max(0, selection.endCharacter - endRemoved,),
+        endCharacter: Math.max(
+          0,
+          selection.endCharacter - endRemoved,
+        ),
       },
-      cursor: { line: cursorLine, character: cursorCharacter, },
+      cursor: {
+        line: cursorLine,
+        character: cursorCharacter,
+      },
     };
   }
 
   const lineRemoved = removedPerLine[0] ?? 0;
   return {
     isSelection: false,
-    selection: { startLine: 0, startCharacter: 0, endLine: 0, endCharacter: 0, },
-    cursor: { line: cursorLine, character: Math.max(0, cursorCharacter - lineRemoved,), },
+    selection: {
+      startLine: 0,
+      startCharacter: 0,
+      endLine: 0,
+      endCharacter: 0,
+    },
+    cursor: {
+      line: cursorLine,
+      character: Math.max(0, cursorCharacter - lineRemoved,),
+    },
   };
 }

@@ -9,6 +9,10 @@ import {
   type ContainerResult,
   runInContainer,
 } from '../container.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 
 import type {
   AdditionalRun,
@@ -43,7 +47,11 @@ export function executeAdditionalRuns(
     const runSource = run.transformSource !== undefined
       ? run.transformSource(source,)
       : source;
-    return runInContainer(runSource, run.input, signal,);
+    return runInContainer(
+      runSource,
+      run.input,
+      signal,
+    );
   },);
   return Promise.all(promises,);
 }
@@ -71,11 +79,17 @@ export function cacheAdditionalResults(
   label: string,
 ): void {
   for (const [index, result,] of results.entries()) {
-    containerCaches[index]?.set(label, result,);
+    containerCaches[index]?.set(
+      label,
+      result,
+    );
     /** Run configuration for this index, used to call verify on successful containers */
     const run = runs[index];
     if (run !== undefined && result.exitCode === 0 && !result.timedOut)
-      verifyCaches[index]?.set(label, run.verify(result,),);
+      verifyCaches[index]?.set(
+        label,
+        run.verify(result,),
+      );
   }
 }
 
@@ -102,12 +116,26 @@ export function computeAdditionalCorrectnesses(
   label: string,
   probeName: string,
 ): number[] {
-  return results.map(function scoreRun(result, index,): number {
+  return results.map(function scoreRun(
+    result,
+    index,
+  ): number {
     if (result.timedOut || result.exitCode !== 0) {
       /** Run name for the log message, falls back to numeric index */
       const runName = runs[index]?.name ?? String(index,);
-      console.log(
-        `  [${label}:${probeName}:${runName}] container failed: exit=${
+      /** Run-specific logger for container failure messages. */
+      const rl = tagged({
+        tag: runName,
+        l: tagged({
+          tag: probeName,
+          l: tagged({
+            tag: label,
+            l,
+          },),
+        },),
+      },);
+      rl.info(
+        `container failed: exit=${
           String(result.exitCode,)
         } timedOut=${String(result.timedOut,)}`,
       );

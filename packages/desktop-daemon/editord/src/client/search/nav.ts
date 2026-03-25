@@ -25,7 +25,11 @@ export type ResultSelectDetail = {
  *
  * @param confirmSelection - confirms the current selection
  */
-export function handleSearchKeydown({ event, moveSelection, confirmSelection, }: {
+export function handleSearchKeydown({
+  event,
+  moveSelection,
+  confirmSelection,
+}: {
   event: KeyboardEvent;
   moveSelection: (delta: number,) => void;
   confirmSelection: () => void;
@@ -57,7 +61,12 @@ export function handleSearchKeydown({ event, moveSelection, confirmSelection, }:
  *
  * @returns new selected index
  */
-export function moveSearchSelection({ delta, results, selectedIndex, container, }: {
+export function moveSearchSelection({
+  delta,
+  results,
+  selectedIndex,
+  container,
+}: {
   delta: number;
   results: SearchResult[];
   selectedIndex: number;
@@ -95,7 +104,10 @@ export function moveSearchSelection({ delta, results, selectedIndex, container, 
  *
  * @returns result detail, or null if index is out of range
  */
-export function buildResultDetail({ index, results, }: {
+export function buildResultDetail({
+  index,
+  results,
+}: {
   index: number;
   results: SearchResult[];
 },): ResultSelectDetail | null {

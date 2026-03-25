@@ -16,4 +16,7 @@ await initPromise;
  *
  * @see `tagged` for composing nested tags
  */
-export const l: Logger = tagged({ tag: 'exa-search', l: $, },);
+export const l: Logger = tagged({
+  tag: 'exa-search',
+  l: $,
+},);

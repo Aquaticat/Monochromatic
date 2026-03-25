@@ -37,10 +37,15 @@ const DEFAULT_VOYAGE_MODEL: VoyageModel = 'voyage-multimodal-3.5';
  * const { embedding } = await voyageEmbed({ path: './photo.png' }, {});
  * ```
  */
-async function voyageEmbed(input: ImageInput,
-  config: ImageDiffConfig,): Promise<EmbeddingResult>
+async function voyageEmbed(
+  input: ImageInput,
+  config: ImageDiffConfig,
+): Promise<EmbeddingResult>
 {
-  const rl = tagged({ tag: voyageEmbed.name, l, },);
+  const rl = tagged({
+    tag: voyageEmbed.name,
+    l,
+  },);
   rl.debug('computing single image embedding via Voyage',);
 
   const apiKey = resolveVoyageApiKey(config.apiKey,);
@@ -54,7 +59,10 @@ async function voyageEmbed(input: ImageInput,
     truncation: true,
   };
 
-  const response = await callVoyageApi(request, apiKey,);
+  const response = await callVoyageApi(
+    request,
+    apiKey,
+  );
   const firstData = response.data[0];
   if (firstData === undefined)
     throw new Error('Voyage API returned empty data array',);
@@ -87,7 +95,10 @@ async function voyageEmbedBatch(
   inputs: readonly ImageInput[],
   config: ImageDiffConfig,
 ): Promise<BatchEmbeddingResult> {
-  const rl = tagged({ tag: voyageEmbedBatch.name, l, },);
+  const rl = tagged({
+    tag: voyageEmbedBatch.name,
+    l,
+  },);
   rl.debug(
     `computing batch embeddings via Voyage for ${String(inputs.length,)} image(s)`,
   );
@@ -110,10 +121,16 @@ async function voyageEmbedBatch(
     truncation: true,
   };
 
-  const response = await callVoyageApi(request, apiKey,);
+  const response = await callVoyageApi(
+    request,
+    apiKey,
+  );
 
   /** Sort by index to guarantee input order. */
-  const sorted = [...response.data,].toSorted(function byIndex(a, b,) {
+  const sorted = [...response.data,].toSorted(function byIndex(
+    a,
+    b,
+  ) {
     return a.index - b.index;
   },);
 

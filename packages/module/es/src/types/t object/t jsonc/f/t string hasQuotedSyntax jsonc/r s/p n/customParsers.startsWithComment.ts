@@ -79,7 +79,13 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
  * @returns remaining content after comments and accumulated comment value
  */
 export function startsWithComment<const Value extends StringJsonc | FragmentStringJsonc,>(
-  { value, context, }: { value: Value; context?: Jsonc.ValueBase; },
+  {
+    value,
+    context,
+  }: {
+    value: Value;
+    context?: Jsonc.ValueBase
+  },
 ): { remainingContent: Value; } & Jsonc.ValueBase {
   // Eliminate leading and trailing whitespace, including space and newline characters.
   const trimmed = value.trim();
@@ -88,34 +94,53 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
 
   if (trimmed.startsWith('//',)) {
     // Find the end of the line comment (newline character)
-    const newlinePosition = trimmed.indexOf('\n', '//'.length,);
+    const newlinePosition = trimmed.indexOf(
+      '\n',
+      '//'.length,
+    );
     if (newlinePosition === -1) {
       // No newline found - line comment extends to end of input (valid at end of file)
-      const commentPart: Jsonc.Comment = { type: 'inline', commentValue: trimmed
-        .slice('//'.length,), };
-      const mergedComments = mergeComments({ value: context?.comment,
-        value2: commentPart, },);
+      const commentPart: Jsonc.Comment = {
+        type: 'inline',
+        commentValue: trimmed
+        .slice('//'.length,),
+      };
+      const mergedComments = mergeComments({
+        value: context?.comment,
+        value2: commentPart,
+      },);
       // Return empty remaining content since comment consumed everything
-      return { remainingContent: '' as Value, comment: mergedComments, };
+      return {
+        remainingContent: '' as Value,
+        comment: mergedComments,
+      };
     }
 
     // JSON or JSONC doesn't allow newlines in quoted strings. Special handling skipped.
 
     // Extract the comment and the rest of the content after newline
     // No trimming needed because we wanna support both `// This is` and `//region`.
-    const commentPart: Jsonc.Comment = { type: 'inline', commentValue: trimmed
-      .slice('//'.length, newlinePosition,), };
-    const mergedComments = mergeComments({ value: context?.comment,
-      value2: commentPart, },);
+    const commentPart: Jsonc.Comment = {
+      type: 'inline',
+      commentValue: trimmed
+      .slice('//'.length, newlinePosition,),
+    };
+    const mergedComments = mergeComments({
+      value: context?.comment,
+      value2: commentPart,
+    },);
 
     const remainingContent = trimmed
       .slice(newlinePosition + '\n'.length,)
       .trim() as Value;
 
     // Recursively parse the remaining content
-    return startsWithComment({ value: remainingContent, context: {
+    return startsWithComment({
+      value: remainingContent,
+      context: {
       comment: mergedComments,
-    }, },);
+    },
+    },);
   }
 
   if (trimmed.startsWith('/*',)) {
@@ -124,10 +149,15 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     // Extract the comment and the rest of the content after the closing star slash
     const commentPart: Jsonc.Comment = {
       type: 'block',
-      commentValue: trimmed.slice('/*'.length, blockEndPosition,),
+      commentValue: trimmed.slice(
+        '/*'.length,
+        blockEndPosition,
+      ),
     };
-    const mergedComments = mergeComments({ value: context?.comment,
-      value2: commentPart, },);
+    const mergedComments = mergeComments({
+      value: context?.comment,
+      value2: commentPart,
+    },);
 
     // Get content after the block comment, skipping the star slash delimiter
     const remainingContent = trimmed
@@ -135,10 +165,16 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
       .trim() as Value;
 
     // Recursively parse the remaining content
-    return startsWithComment({ value: remainingContent, context: {
+    return startsWithComment({
+      value: remainingContent,
+      context: {
       comment: mergedComments,
-    }, },);
+    },
+    },);
   }
 
-  return { remainingContent: trimmed as Value, ...context, };
+  return {
+    remainingContent: trimmed as Value,
+    ...context,
+  };
 }

@@ -18,7 +18,10 @@ import {
 } from './utils.ts';
 
 /** Tagged logger for selection expand. */
-const expandLog = tagged({ tag: 'selection-expand', l, },);
+const expandLog = tagged({
+  tag: 'selection-expand',
+  l,
+},);
 
 /**
  * Expands the selection to the next larger syntactic scope.
@@ -29,7 +32,11 @@ const expandLog = tagged({ tag: 'selection-expand', l, },);
  *
  * @param getCurrentFilePath - returns the current file path
  */
-export function doExpandSelection({ ws, editorPane, getCurrentFilePath, }: {
+export function doExpandSelection({
+  ws,
+  editorPane,
+  getCurrentFilePath,
+}: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
@@ -44,8 +51,13 @@ export function doExpandSelection({ ws, editorPane, getCurrentFilePath, }: {
 
   void (async function doExpand(): Promise<void> {
     try {
-      const chain = await fetchChain({ ws, path, line: pos.line, character: pos
-        .character, },);
+      const chain = await fetchChain({
+        ws,
+        path,
+        line: pos.line,
+        character: pos
+        .character,
+      },);
       if (chain.length === 0)
         return;
 
@@ -67,7 +79,10 @@ export function doExpandSelection({ ws, editorPane, getCurrentFilePath, }: {
       /** Find the first range strictly larger than the current selection. */
       for (const entry of chain) {
         const flat = toFlat({ sr: entry, },);
-        if (strictlyContains({ outer: flat, inner: currentSel, },)) {
+        if (strictlyContains({
+          outer: flat,
+          inner: currentSel,
+        },)) {
           editorPane.setSelection(flat,);
           expandLog.info(
             `expand: ${flat.startLine}:${flat.startCharacter}-${flat.endLine}:${flat.endCharacter}`,

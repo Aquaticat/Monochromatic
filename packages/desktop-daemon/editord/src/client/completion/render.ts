@@ -18,11 +18,21 @@ import type { CompletionItem, } from '../../../protocol.ts';
  * @returns array of item div elements
  */
 export function renderItems({ items, }: { items: CompletionItem[]; },): HTMLDivElement[] {
-  return items.map(function createItemElement(item, index,) {
-    const el = h({ tag: 'div', class: 'item', },);
+  return items.map(function createItemElement(
+    item,
+    index,
+  ) {
+    const el = h({
+      tag: 'div',
+      class: 'item',
+    },);
     el.textContent = item.label;
     if (item.detail !== '')
-      el.append(h({ tag: 'span', class: 'detail', text: item.detail, },),);
+      el.append(h({
+        tag: 'span',
+        class: 'detail',
+        text: item.detail,
+      },),);
     if (index === 0)
       el.dataset.selected = '';
     return el;
@@ -37,7 +47,13 @@ export function renderItems({ items, }: { items: CompletionItem[]; },): HTMLDivE
  * @param selectedIndex - index of the item to select
  */
 export function updateSelection(
-  { list, selectedIndex, }: { list: HTMLElement; selectedIndex: number; },
+  {
+    list,
+    selectedIndex,
+  }: {
+    list: HTMLElement;
+    selectedIndex: number
+  },
 ): void {
   const { children, } = list;
   for (let i = 0; i < children.length; i++) {

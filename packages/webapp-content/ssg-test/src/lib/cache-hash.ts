@@ -30,6 +30,9 @@ export function sha256(input: string,): string {
 export async function computePipelineHash(
   pipelineSourcePath: string,
 ): Promise<string> {
-  const source = await readFile(pipelineSourcePath, 'utf8',);
+  const source = await readFile(
+    pipelineSourcePath,
+    'utf8',
+  );
   return sha256(source,);
 }

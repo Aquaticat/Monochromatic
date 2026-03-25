@@ -20,7 +20,10 @@ export type { DesktopEntry, } from './desktop-entry-types.ts';
 export { expandEscapes, } from './desktop-entry-types.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'desktop-entry', l: parentLogger, },);
+const l = tagged({
+  tag: 'desktop-entry',
+  l: parentLogger,
+},);
 
 /**
  * Parses a `.desktop` file and extracts terminal-relevant keys.
@@ -66,10 +69,17 @@ export async function parseDesktopEntry(
     if (eqIdx === -1)
       continue;
 
-    const key = line.slice(0, eqIdx,).trim();
+    const key = line.slice(
+      0,
+      eqIdx,
+    ).trim();
     const value = line.slice(eqIdx + 1,).trim();
 
-    applyKey({ key, value, result, },);
+    applyKey({
+      key,
+      value,
+      result,
+    },);
   }
 
   l.debug(

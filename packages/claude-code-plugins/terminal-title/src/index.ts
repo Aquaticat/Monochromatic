@@ -60,7 +60,10 @@ const TITLE_PREFIX = '\u2733';
  * ```
  */
 function titleForTool(event: PreToolUseInput | PostToolUseInput,): string {
-  const { tool_name: toolName, tool_input: input, } = event;
+  const {
+    tool_name: toolName,
+    tool_input: input,
+  } = event;
   const tense = event.hook_event_name === 'PreToolUse' ? 'pre' : 'post';
   const entry = TOOL_TITLES[toolName];
   if (entry === undefined)
@@ -68,7 +71,10 @@ function titleForTool(event: PreToolUseInput | PostToolUseInput,): string {
   const value = entry.extract(input,);
   if (value === undefined)
     return entry.fallback[tense];
-  return entry.format(value, tense,);
+  return entry.format(
+    value,
+    tense,
+  );
 }
 
 /**
@@ -99,11 +105,17 @@ function shortPath(filePath: string,): string {
  */
 function setTerminalTitle(title: string,): void {
   try {
-    const fd = openSync('/dev/tty', 'w',);
+    const fd = openSync(
+      '/dev/tty',
+      'w',
+    );
     using _cleanup = { [Symbol.dispose](): void {
       closeSync(fd,);
     }, };
-    writeSync(fd, `\u001B]0;${title}\u0007`,);
+    writeSync(
+      fd,
+      `\u001B]0;${title}\u0007`,
+    );
   }
   catch {
     /* /dev/tty unavailable — running inside sandbox or non-interactive context. */
@@ -181,6 +193,9 @@ function titleForEvent(hookEvent: HookInput,): string {
 
 /** Human-readable title derived from the hook event. */
 const title = titleForEvent(event,);
-setTerminalTitle(truncate(`${TITLE_PREFIX} ${title}`, MAX_TITLE_LENGTH,),);
+setTerminalTitle(truncate(
+  `${TITLE_PREFIX} ${title}`,
+  MAX_TITLE_LENGTH,
+),);
 
 //endregion

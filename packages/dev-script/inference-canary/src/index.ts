@@ -16,8 +16,6 @@
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
 import whyIsNodeRunning from 'why-is-node-running';
-// oxlint-disable-next-line import/no-unassigned-import -- side-effect: overrides console.log/error with elapsed-time prefixes
-import './index-log-prefix.ts';
 import {
   includeSlow,
   probeFilter,
@@ -25,6 +23,7 @@ import {
   runsOverride,
   useSimple,
 } from './index-cli.ts';
+import { l, } from './log.ts';
 import { selectModels, } from './index-models.ts';
 import { runAndReport, } from './index-run.ts';
 import { getRecentArtifactPairs, } from './linter-artifacts-recent.ts';
@@ -49,10 +48,15 @@ if (apiKey === undefined || apiKey === '')
 /** Models selected for this run based on CLI flags. */
 const selectedModels = selectModels();
 /** Recent probe results and failures used to skip recently-tested pairs. */
-const { probePairs: recentModelProbePairs, failedModels: recentlyFailedModels, } =
+const {
+  probePairs: recentModelProbePairs,
+  failedModels: recentlyFailedModels,
+} =
   retestAll
-    ? { probePairs: new Map<string, ReadonlySet<string>>(),
-      failedModels: new Set<string>(), }
+    ? {
+      probePairs: new Map<string, ReadonlySet<string>>(),
+      failedModels: new Set<string>(),
+    }
     : await getRecentArtifactPairs();
 
 //endregion Model selection
@@ -60,13 +64,16 @@ const { probePairs: recentModelProbePairs, failedModels: recentlyFailedModels, }
 //region Execution -- selects probe tier (simple/fast/slow), runs canary, throws on degradation
 
 if (selectedModels.length === 0)
-  console.log('[canary] no models selected for testing.',);
+  l.info('no models selected for testing.',);
 else {
   // oxlint-disable-next-line no-nested-ternary -- three-way probe tier selection; simulation runs alongside code-gen by default
   /** Code generation probe set, including slow probes when `--slow` is passed. */
   const codeGenSet = includeSlow ? codeGenProbesAll : codeGenProbes;
   /** Combined probe list from selected code-gen tier and simulation probes. */
-  const allProbes = useSimple ? simpleProbes : [...codeGenSet, ...simulationProbes,];
+  const allProbes = useSimple ? simpleProbes : [
+    ...codeGenSet,
+    ...simulationProbes,
+  ];
 
   /** Local copy of probe filter for TypeScript narrowing inside callbacks. */
   const activeProbeFilter = probeFilter;
@@ -94,7 +101,10 @@ else {
   const effectiveRecentPairs = activeProbeFilter !== undefined
     ? new Map(
       [...recentModelProbePairs.entries(),].map(
-        function filterPair([model, skipped,],): [string, Set<string>,] {
+        function filterPair([model, skipped,],): [
+          string,
+          Set<string>,
+        ] {
           return [
             model,
             new Set([...skipped,].filter(function keepName(name,): boolean {
@@ -106,17 +116,22 @@ else {
     )
     : recentModelProbePairs;
 
-  console.log(`[canary] testing ${String(selectedModels.length,)} model(s) in parallel`,);
-  console.log(`[canary] probes: ${
+  l.info(`testing ${String(selectedModels.length,)} model(s) in parallel`,);
+  l.info(`probes: ${
     probes
       .map(function getName(probe,): string {
         return probe.name;
       },)
       .join(', ',)
   }`,);
-  console.log('',);
-  await runAndReport(selectedModels, probes, effectiveRecentPairs, recentlyFailedModels,
-    apiKey, runsOverride,);
+  await runAndReport(
+    selectedModels,
+    probes,
+    effectiveRecentPairs,
+    recentlyFailedModels,
+    apiKey,
+    runsOverride,
+  );
 }
 
 // Intermittently, Bun's fetch connection pool or other async resources prevent the
@@ -130,14 +145,17 @@ const WATCHDOG_TIMEOUT_SECONDS = 5;
 const WATCHDOG_MS_PER_SECOND = 1_000;
 
 /** Watchdog timer that force-exits after stale async resources prevent natural shutdown. */
-const watchdog = setTimeout(function watchdogTimeout(): void {
-  console.error(
-    '[canary] process did not exit naturally after all work completed, dumping active handles:',
+const watchdog = setTimeout(
+  function watchdogTimeout(): void {
+  l.error(
+    'process did not exit naturally after all work completed, dumping active handles:',
   );
   whyIsNodeRunning();
   // oxlint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks
   process.exit(0,);
-}, WATCHDOG_TIMEOUT_SECONDS * WATCHDOG_MS_PER_SECOND,);
+},
+  WATCHDOG_TIMEOUT_SECONDS * WATCHDOG_MS_PER_SECOND,
+);
 watchdog.unref();
 
 //endregion Execution

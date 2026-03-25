@@ -8,7 +8,13 @@
  * @returns single string with elements separated by the given separator
  */
 export function $(
-  { strings, concatWith, }: { strings: string[]; concatWith: string; },
+  {
+    strings,
+    concatWith,
+  }: {
+    strings: string[];
+    concatWith: string
+  },
 ): string {
   return strings.join(concatWith,);
 }

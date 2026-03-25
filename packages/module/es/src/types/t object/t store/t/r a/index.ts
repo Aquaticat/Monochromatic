@@ -62,7 +62,10 @@ export type StoreConfig = BaseStoreConfig & {
    * Ordered storage backends with optional priorities for consensus.
    * Falls back to a single in-memory `Map` when omitted.
    */
-  backends?: readonly [StorageBackend, ...StorageBackend[],];
+  backends?: readonly [
+    StorageBackend,
+    ...StorageBackend[],
+  ];
 };
 
 /**

@@ -51,26 +51,40 @@ export {};
  * ```
  */
 const parser = object({
-  cwd: optional(option('--cwd', string({ metavar: 'DIR', },), {
+  cwd: optional(option(
+    '--cwd',
+    string({ metavar: 'DIR', },),
+    {
     description:
       message`Working directory for the child session. Defaults to current directory.`,
-  },),),
-  extraArguments: optional(option('--extra-arguments', string({ metavar: 'ARGS', },), {
+  },
+  ),),
+  extraArguments: optional(option(
+    '--extra-arguments',
+    string({ metavar: 'ARGS', },),
+    {
     description:
       message`Additional CLI arguments passed directly to the claude command (e.g. "--model sonnet --allowedTools Edit,Bash").`,
-  },),),
-  prompt: argument(string({ metavar: 'PROMPT', },), {
+  },
+  ),),
+  prompt: argument(
+    string({ metavar: 'PROMPT', },),
+    {
     description: message`Initial prompt for the spawned Claude session.`,
-  },),
+  },
+  ),
 },);
 
 /** Parsed CLI arguments from the spawn-claude command invocation. */
-const args = runSync(parser, {
+const args = runSync(
+  parser,
+  {
   programName: 'spawn-claude',
   help: 'option',
   brief:
     message`Spawn a steerable child Claude Code session in a visible terminal window.`,
-},);
+},
+);
 
 //endregion
 
@@ -98,7 +112,10 @@ else {
       return s.length > 0;
     },);
 
-  mkdirSync(SPAWNS_DIR, { recursive: true, },);
+  mkdirSync(
+    SPAWNS_DIR,
+    { recursive: true, },
+  );
 
   /**
    * Pre-create the spawn state file before launching the child.
@@ -119,14 +136,22 @@ else {
   };
 
   writeFileSync(
-    join(SPAWNS_DIR, `${spawnId}.json`,),
+    join(
+      SPAWNS_DIR,
+      `${spawnId}.json`,
+    ),
     JSON.stringify(initialState,),
   );
 
   /** Detached child process running the spawned Claude session in a terminal window. */
   const proc = spawn(
     'terminal-exec',
-    ['--', 'claude', ...extraArgs, args.prompt,],
+    [
+      '--',
+      'claude',
+      ...extraArgs,
+      args.prompt,
+    ],
     {
       cwd,
       env: {

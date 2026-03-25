@@ -48,7 +48,11 @@ export function isEnriched(meta: ArtifactMeta,): meta is EnrichedArtifactMeta {
  * // "Sonnet 4.6::csv-rfc4180::2026-03-06T12:00:00.000Z"
  * ```
  */
-export function probeKey(label: string, probe: string, timestamp: string,): string {
+export function probeKey(
+  label: string,
+  probe: string,
+  timestamp: string,
+): string {
   return `${label}::${probe}::${timestamp}`;
 }
 
@@ -65,7 +69,12 @@ export function probeKey(label: string, probe: string, timestamp: string,): stri
  *
  * @returns probe detail for the overlay renderer
  */
-export function buildProbeDetail({ enriched, fixEnriched, artifact, fix, }: {
+export function buildProbeDetail({
+  enriched,
+  fixEnriched,
+  artifact,
+  fix,
+}: {
   enriched: EnrichedArtifactMeta | undefined;
   fixEnriched: EnrichedArtifactMeta | undefined;
   artifact: ParsedArtifact;

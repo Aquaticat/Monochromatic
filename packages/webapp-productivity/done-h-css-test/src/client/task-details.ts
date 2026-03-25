@@ -61,7 +61,9 @@ detail.configure({
   blockerSummaries: pageData.blockerSummaries,
 },);
 
-detail.addEventListener('action', function handleAction(event,) {
+detail.addEventListener(
+  'action',
+  function handleAction(event,) {
   if (!(event instanceof CustomEvent))
     throw new TypeError("Expected CustomEvent for 'action' listener",);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
@@ -117,6 +119,7 @@ detail.addEventListener('action', function handleAction(event,) {
       globalThis.location.href = '/';
     })();
   }
-},);
+},
+);
 
 app.append(detail,);

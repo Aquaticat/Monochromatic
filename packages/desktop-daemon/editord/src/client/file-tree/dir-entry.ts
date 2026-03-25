@@ -78,23 +78,33 @@ export class TreeDirEntry extends HTMLElement {
     this.#initialized = true;
 
     this.dataset['path'] = this.entryPath;
-    this.#childrenContainer = h({ tag: 'div', class: 'children', },);
+    this.#childrenContainer = h({
+      tag: 'div',
+      class: 'children',
+    },);
 
     const entry = this;
     const summary = h({
       tag: 'summary',
       attrs: { 'data-path': this.entryPath, },
-      children: [h({ tag: 'span', class: 'name', text: this.entryName, },),],
+      children: [h({
+        tag: 'span',
+        class: 'name',
+        text: this.entryName,
+      },),],
       on: {
         mouseup: function handleDirContext(event: MouseEvent,) {
           if (event.button !== 2)
             return;
           event.preventDefault();
-          entry.dispatchEvent(new CustomEvent('show-context', {
+          entry.dispatchEvent(new CustomEvent(
+            'show-context',
+            {
             bubbles: true,
             detail: { x: event.clientX, y: event.clientY, path: entry.entryPath,
               kind: 'dir' as const, },
-          },),);
+          },
+          ),);
         },
         contextmenu: suppressContextMenu,
       },
@@ -102,18 +112,24 @@ export class TreeDirEntry extends HTMLElement {
 
     this.#details = h({
       tag: 'details',
-      children: [summary, this.#childrenContainer,],
+      children: [
+        summary,
+        this.#childrenContainer,
+      ],
       on: {
         toggle: function handleToggle(event: Event,) {
           // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle fires on <details>
           const detailsEl = event.currentTarget as HTMLDetailsElement;
           if (!detailsEl.open)
             return;
-          entry.dispatchEvent(new CustomEvent('dir-open', {
+          entry.dispatchEvent(new CustomEvent(
+            'dir-open',
+            {
             bubbles: true,
             detail: { path: entry.entryPath,
               childrenContainer: entry.#childrenContainer, },
-          },),);
+          },
+          ),);
         },
       },
     },);
@@ -133,7 +149,13 @@ export class TreeDirEntry extends HTMLElement {
  * @returns configured element (renders on DOM insertion)
  */
 export function createTreeDirEntry(
-  { path, name, }: { path: string; name: string; },
+  {
+    path,
+    name,
+  }: {
+    path: string;
+    name: string
+  },
 ): TreeDirEntry {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define
   const entry = document.createElement('tree-dir-entry',) as TreeDirEntry;
@@ -142,4 +164,7 @@ export function createTreeDirEntry(
   return entry;
 }
 
-customElements.define('tree-dir-entry', TreeDirEntry,);
+customElements.define(
+  'tree-dir-entry',
+  TreeDirEntry,
+);

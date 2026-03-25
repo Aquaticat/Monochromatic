@@ -22,7 +22,12 @@ export type WidthProfile = {
   /** Image height in pixels. */
   imageHeight: number;
   /** Per-row width measurements, only for rows with content. */
-  rows: { y: number; left: number; right: number; width: number; }[];
+  rows: {
+    y: number;
+    left: number;
+    right: number;
+    width: number
+  }[];
 };
 
 /** Single row in the proportion comparison table. */

@@ -34,8 +34,11 @@ export const STYLES = [
       ...POPUP_HOST_DECLS,
       'inset-block-start': cssAnchor('end',),
       'inset-inline-start': cssAnchor('start',),
-      'position-try-fallbacks': cssCommaList(['flip-block', 'flip-inline',
-        'flip-block flip-inline',],),
+      'position-try-fallbacks': cssCommaList([
+        'flip-block',
+        'flip-inline',
+        'flip-block flip-inline',
+      ],),
       'inline-size': 'max-content',
       'max-inline-size': cssRem(MAX_WIDTH_REM,),
       'max-block-size': cssRem(MAX_HEIGHT_REM,),

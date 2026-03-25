@@ -84,13 +84,19 @@ export async function executeWithCollapsedOutput({
 
   try {
     // nano-spawn defaults to 'pipe', capturing stdout/stderr
-    await spawn(command, [...commandArgs,],);
+    await spawn(
+      command,
+      [...commandArgs,],
+    );
 
     if (verbose)
       console.error('[task-depends] command completed successfully',);
   }
   catch (error) {
-    dumpAndHandleError(error, allowFailure,);
+    dumpAndHandleError(
+      error,
+      allowFailure,
+    );
   }
 }
 
@@ -110,7 +116,10 @@ export async function executeWithCollapsedOutput({
  * try { await spawn('cmd'); } catch (e) { dumpAndHandleError(e, false); }
  * ```
  */
-function dumpAndHandleError(error: unknown, allowFailure: boolean,): void {
+function dumpAndHandleError(
+  error: unknown,
+  allowFailure: boolean,
+): void {
   // SubprocessError from nano-spawn includes captured stdout/stderr
   if (error !== null && typeof error === 'object') {
     const subprocessError = error as {

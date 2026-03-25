@@ -15,7 +15,10 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  *
  * @returns HTML string for the threshold line, or empty string if threshold is 0
  */
-export function renderThresholdLine(threshold: number, label: string,): string {
+export function renderThresholdLine(
+  threshold: number,
+  label: string,
+): string {
   if (threshold <= 0)
     return '';
   /** Percentage multiplier */
@@ -27,7 +30,11 @@ export function renderThresholdLine(threshold: number, label: string,): string {
     style: { bottom: `${String(bottom,)}%`, },
     attrs: { title: label, },
     children: [
-      h({ tag: 'span', class: 'label', text: label, },),
+      h({
+        tag: 'span',
+        class: 'label',
+        text: label,
+      },),
     ],
   },);
 }

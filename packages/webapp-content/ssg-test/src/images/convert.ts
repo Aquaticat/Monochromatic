@@ -65,10 +65,19 @@ export async function fileExists(
  * @param outputPath - path for the AVIF output
  */
 export async function convertToAvif(
-  { inputPath, outputPath, }: { inputPath: string; outputPath: string; },
+  {
+    inputPath,
+    outputPath,
+  }: {
+    inputPath: string;
+    outputPath: string
+  },
 ): Promise<void> {
   await sharp(inputPath,)
-    .avif({ quality: AVIF_QUALITY, effort: AVIF_EFFORT, },)
+    .avif({
+      quality: AVIF_QUALITY,
+      effort: AVIF_EFFORT,
+    },)
     .toFile(outputPath,);
 }
 
@@ -85,7 +94,11 @@ export async function convertToAvif(
  * @returns `true` if a conversion was performed, `false` if skipped
  */
 export async function maybeConvert(
-  { filePath, avifPath, l, }: {
+  {
+    filePath,
+    avifPath,
+    l,
+  }: {
     filePath: string;
     avifPath: string;
     l: { info: (message: string,) => void; };
@@ -95,6 +108,9 @@ export async function maybeConvert(
     return false;
 
   l.info(`converting ${filePath} -> ${avifPath}`,);
-  await convertToAvif({ inputPath: filePath, outputPath: avifPath, },);
+  await convertToAvif({
+    inputPath: filePath,
+    outputPath: avifPath,
+  },);
   return true;
 }

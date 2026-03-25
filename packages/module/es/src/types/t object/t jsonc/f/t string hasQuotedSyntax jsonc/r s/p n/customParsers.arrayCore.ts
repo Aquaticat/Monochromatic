@@ -31,22 +31,40 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
 export function parseArrayElements(
   tail: FragmentStringJsonc,
   items: readonly Jsonc.Value[] = [],
-): { items: readonly Jsonc.Value[]; tail: FragmentStringJsonc; } {
+): {
+  items: readonly Jsonc.Value[];
+  tail: FragmentStringJsonc
+} {
   /** Leading comments at element start; carries per-element comment. */
   const lead = startsWithComment({ value: tail, },);
   /** Start positioned at element value or closing bracket. */
   const start = lead.remainingContent;
 
   if (start.startsWith(']',))
-    return { items, tail: start.slice(1,) as FragmentStringJsonc, };
+    return {
+      items,
+      tail: start.slice(1,) as FragmentStringJsonc,
+    };
 
   /** Parsed value from current element with propagated comment. */
-  const { parsed, remaining, } = callParseValue({ value: start, context: lead, },);
+  const {
+    parsed,
+    remaining,
+  } = callParseValue({
+    value: start,
+    context: lead,
+  },);
   /** Separator decision following the element. */
   const decision = expectArraySeparatorOrEnd(remaining,);
   if (decision.kind === 'end')
-    return { items: [...items, parsed,], tail: decision.tail, };
-  return parseArrayElements(decision.tailStart, [...items, parsed,],);
+    return {
+      items: [...items, parsed,],
+      tail: decision.tail,
+    };
+  return parseArrayElements(
+    decision.tailStart,
+    [...items, parsed,],
+  );
 }
 //endregion Array elements
 
@@ -68,14 +86,25 @@ export function parseArrayElements(
  * ```
  */
 export function customParserForArray(
-  { value, context, }: { value: FragmentStringJsonc | StringJsonc;
-    context?: Jsonc.ValueBase; },
+  {
+    value,
+    context,
+  }: {
+    value: FragmentStringJsonc | StringJsonc;
+    context?: Jsonc.ValueBase
+  },
 ): Jsonc.Array & { remainingContent: FragmentStringJsonc; } {
   //region Entry and comment skip -- Drop the opening '[' then consume leading comments/space
   /** Tail after stripping the opening '[' to keep pointer immutable. */
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
   /** Array-level comment from context and header tail inside brackets. */
-  const { arrayComment, tail: headerTail, } = parseArrayHeader(woOpening, context,);
+  const {
+    arrayComment,
+    tail: headerTail,
+  } = parseArrayHeader(
+    woOpening,
+    context,
+  );
   //endregion Entry and comment skip
 
   //region Empty array fast-exit -- Handle immediate closing bracket
@@ -84,7 +113,10 @@ export function customParserForArray(
   if (insideLead.remainingContent.startsWith(']',)) {
     /** Combined array-level comment when header and inside comments are present. */
     const finalComment = arrayComment && insideLead.comment
-      ? mergeComments({ value: arrayComment, value2: insideLead.comment, },)
+      ? mergeComments({
+        value: arrayComment,
+        value2: insideLead.comment,
+      },)
       : arrayComment ?? insideLead.comment;
     return {
       value: [] as Jsonc.Value[],
@@ -98,7 +130,13 @@ export function customParserForArray(
 
   //region Element recursion -- Delegate to exported pure helper
   /** Parsed items and tail after the terminating ']'. */
-  const { items, tail, } = parseArrayElements(headerTail, [],);
+  const {
+    items,
+    tail,
+  } = parseArrayElements(
+    headerTail,
+    [],
+  );
   return {
     value: items as Jsonc.Value[],
     ...(arrayComment ? { comment: arrayComment, } : {}),

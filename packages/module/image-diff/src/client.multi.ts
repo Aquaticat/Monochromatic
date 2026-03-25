@@ -25,7 +25,10 @@ import type {
 /**
  * All available provider names, used when dispatching to all providers.
  */
-const ALL_PROVIDERS: readonly Provider[] = ['voyage', 'gemini',];
+const ALL_PROVIDERS: readonly Provider[] = [
+  'voyage',
+  'gemini',
+];
 
 /**
  * Embed a single image using all available providers concurrently.
@@ -46,13 +49,22 @@ const ALL_PROVIDERS: readonly Provider[] = ['voyage', 'gemini',];
 export async function embedAll(
   input: ImageInput,
 ): Promise<readonly MultiProviderEmbedEntry[]> {
-  const rl = tagged({ tag: embedAll.name, l, },);
+  const rl = tagged({
+    tag: embedAll.name,
+    l,
+  },);
   rl.debug(`embedding image across all ${String(ALL_PROVIDERS.length,)} providers`,);
 
   const results = await Promise.all(
     ALL_PROVIDERS.map(async function embedWithProvider(provider,) {
-      const result = await embed(input, { provider, },);
-      return { provider, result, };
+      const result = await embed(
+        input,
+        { provider, },
+      );
+      return {
+        provider,
+        result,
+      };
     },),
   );
 
@@ -76,7 +88,10 @@ export async function embedAll(
 export async function embedBatchAll(
   inputs: readonly ImageInput[],
 ): Promise<readonly MultiProviderBatchEmbedEntry[]> {
-  const rl = tagged({ tag: embedBatchAll.name, l, },);
+  const rl = tagged({
+    tag: embedBatchAll.name,
+    l,
+  },);
   rl.debug(
     `batch embedding ${String(inputs.length,)} image(s) across all ${
       String(ALL_PROVIDERS.length,)
@@ -85,8 +100,14 @@ export async function embedBatchAll(
 
   const results = await Promise.all(
     ALL_PROVIDERS.map(async function embedBatchWithProvider(provider,) {
-      const result = await embedBatch(inputs, { provider, },);
-      return { provider, result, };
+      const result = await embedBatch(
+        inputs,
+        { provider, },
+      );
+      return {
+        provider,
+        result,
+      };
     },),
   );
 

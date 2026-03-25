@@ -52,7 +52,10 @@ class SideDrawer extends HTMLElement {
    */
   set open(value: boolean,) {
     if (value)
-      this.setAttribute('open', '',);
+      this.setAttribute(
+        'open',
+        '',
+      );
     else
       this.removeAttribute('open',);
   }
@@ -69,16 +72,21 @@ class SideDrawer extends HTMLElement {
     const closeFn = this.#closeDrawer.bind(this,);
     const panel = this.#panel;
 
-    this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener('click',
+    this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener(
+      'click',
       function handleClose(): void {
         closeFn();
-      },);
+      },
+    );
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
-    panel?.addEventListener('click', function handleBackdropClick(event: Event,): void {
+    panel?.addEventListener(
+      'click',
+      function handleBackdropClick(event: Event,): void {
       if (event.target === panel)
         closeFn();
-    },);
+    },
+    );
   }
 
   /** Syncs the popover visibility when the `open` attribute changes. */
@@ -98,7 +106,10 @@ class SideDrawer extends HTMLElement {
     panelClose.classList.add('panel-close',);
 
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: SIDE_DRAWER_STYLES, },),
+      h({
+        tag: 'style',
+        text: SIDE_DRAWER_STYLES,
+      },),
       h({
         tag: 'div',
         class: 'wrapper',
@@ -109,7 +120,10 @@ class SideDrawer extends HTMLElement {
             class: 'sidebar',
             children: [
               buildHeader(null,),
-              h({ tag: 'div', class: 'divider', },),
+              h({
+                tag: 'div',
+                class: 'divider',
+              },),
               buildNav(),
             ],
           },),
@@ -126,7 +140,10 @@ class SideDrawer extends HTMLElement {
                 class: 'panel-drawer',
                 children: [
                   buildHeader(panelClose,),
-                  h({ tag: 'div', class: 'divider', },),
+                  h({
+                    tag: 'div',
+                    class: 'divider',
+                  },),
                   buildNav(),
                 ],
               },),
@@ -139,4 +156,7 @@ class SideDrawer extends HTMLElement {
   }
 }
 
-customElements.define('side-drawer', SideDrawer,);
+customElements.define(
+  'side-drawer',
+  SideDrawer,
+);

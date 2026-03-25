@@ -30,8 +30,12 @@ class TaskDetail extends HTMLElement {
   #mode: TaskDetailMode = 'edit';
 
   /** Mutable metadata state updated by autofill and user edits. */
-  #metadata: MetadataState = { tags: [], locations: [], priority: null,
-    complexity: null, };
+  #metadata: MetadataState = {
+    tags: [],
+    locations: [],
+    priority: null,
+    complexity: null,
+  };
 
   /** Debounced AI autofill manager. */
   #autofill = new AutofillManager();
@@ -48,7 +52,10 @@ class TaskDetail extends HTMLElement {
    * @param data - Task data and mode configuration
    */
   configure(data: TaskDetailData,): void {
-    console.log('[task-detail] configure() called, mode:', data.mode ?? 'edit',);
+    console.log(
+      '[task-detail] configure() called, mode:',
+      data.mode ?? 'edit',
+    );
     this.#data = data;
     this.#mode = data.mode ?? 'edit';
     this.#metadata = {
@@ -66,8 +73,12 @@ class TaskDetail extends HTMLElement {
    *
    * @returns Current tags, locations, priority, and complexity
    */
-  getMetadata(): { tags: string[]; locations: string[]; priority: TaskPriority | null;
-    complexity: TaskComplexity | null; }
+  getMetadata(): {
+    tags: string[];
+    locations: string[];
+    priority: TaskPriority | null;
+    complexity: TaskComplexity | null
+  }
   {
     return { ...this.#metadata, };
   }
@@ -98,8 +109,14 @@ class TaskDetail extends HTMLElement {
     const { task, } = data;
     const isCreate = this.#mode === 'create';
 
-    const { elements, refs, } = buildTaskDetailTree({ task, isCreate,
-      styles: TASK_DETAIL_STYLES, },);
+    const {
+      elements,
+      refs,
+    } = buildTaskDetailTree({
+      task,
+      isCreate,
+      styles: TASK_DETAIL_STYLES,
+    },);
     this.#shadow.replaceChildren(...elements,);
     this.#updatePillsDisplay();
 
@@ -108,7 +125,9 @@ class TaskDetail extends HTMLElement {
     const updatePills = this.#updatePillsDisplay.bind(this,);
     const dispatchFn = this.dispatchEvent.bind(this,);
 
-    refs.titleInput.addEventListener('input', function handleTitleInput(): void {
+    refs.titleInput.addEventListener(
+      'input',
+      function handleTitleInput(): void {
       requestAutofill({
         title: refs.titleInput.value,
         metadata,
@@ -116,9 +135,11 @@ class TaskDetail extends HTMLElement {
           updatePills();
         },
       },);
-    },);
+    },
+    );
 
-    this.#shadow.addEventListener('click',
+    this.#shadow.addEventListener(
+      'click',
       function handleActionClick(event: Event,): void {
         const { target, } = event;
         if (!(target instanceof HTMLElement))
@@ -132,11 +153,15 @@ class TaskDetail extends HTMLElement {
           detail: { action, title: refs.titleInput.value,
             description: refs.descInput.value, },
         },),);
-      },);
+      },
+    );
   }
 }
 
-customElements.define('task-detail', TaskDetail,);
+customElements.define(
+  'task-detail',
+  TaskDetail,
+);
 console.log('[task-detail] custom element registered',);
 
 export { TaskDetail, };

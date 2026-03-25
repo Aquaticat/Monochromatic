@@ -26,7 +26,13 @@ const LONG_PRESS_MS = 500;
  * @param deps - shared state and element references
  */
 export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
-  const { canvas, getToolMode, getCanvasSize, container, zoomLayer, } = deps;
+  const {
+    canvas,
+    getToolMode,
+    getCanvasSize,
+    container,
+    zoomLayer,
+  } = deps;
 
   /** Timer id for the long-press gesture (mobile zoom-out) */
   let longPressTimer: ReturnType<typeof setTimeout> | null = null;
@@ -54,7 +60,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
     }
   }
 
-  canvas.addEventListener('pointerdown',
+  canvas.addEventListener(
+    'pointerdown',
     function handleZoomPointerDown(event: PointerEvent,): void {
       if (getToolMode() !== 'zoom')
         return;
@@ -81,9 +88,11 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
           zoomLayer,
         },);
       }, LONG_PRESS_MS,);
-    },);
+    },
+  );
 
-  canvas.addEventListener('pointermove',
+  canvas.addEventListener(
+    'pointermove',
     function handleZoomPointerMove(event: PointerEvent,): void {
       if (getToolMode() !== 'zoom')
         return;
@@ -94,9 +103,11 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
         clearLongPress();
         setZoomCursor('move',);
       }
-    },);
+    },
+  );
 
-  canvas.addEventListener('pointerup',
+  canvas.addEventListener(
+    'pointerup',
     function handleZoomPointerUp(event: PointerEvent,): void {
       if (getToolMode() !== 'zoom')
         return;
@@ -116,13 +127,17 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       }
       downEvent = null;
       setZoomCursor(event.shiftKey ? 'zoom-out' : 'zoom-in',);
-    },);
+    },
+  );
 
-  canvas.addEventListener('pointercancel', function handleZoomPointerCancel(): void {
+  canvas.addEventListener(
+    'pointercancel',
+    function handleZoomPointerCancel(): void {
     clearLongPress();
     endPan();
     downEvent = null;
-  },);
+  },
+  );
 
   //region iOS touch fallback
   /**
@@ -133,33 +148,43 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
    * before pointer events are generated.
    */
 
-  canvas.addEventListener('touchstart',
+  canvas.addEventListener(
+    'touchstart',
     function handleZoomTouchStart(event: TouchEvent,): void {
       if (getToolMode() === 'zoom')
         event.preventDefault();
-    }, { passive: false, },);
+    },
+    { passive: false, },
+  );
 
-  canvas.addEventListener('touchmove',
+  canvas.addEventListener(
+    'touchmove',
     function handleZoomTouchMove(event: TouchEvent,): void {
       if (getToolMode() === 'zoom')
         event.preventDefault();
-    }, { passive: false, },);
+    },
+    { passive: false, },
+  );
 
   //endregion iOS touch fallback
 
   //region Shift key cursor toggle
 
-  document.addEventListener('keydown',
+  document.addEventListener(
+    'keydown',
     function handleZoomKeyDown(event: KeyboardEvent,): void {
       if (getToolMode() === 'zoom' && event.key === 'Shift')
         setZoomCursor('zoom-out',);
-    },);
+    },
+  );
 
-  document.addEventListener('keyup',
+  document.addEventListener(
+    'keyup',
     function handleZoomKeyUp(event: KeyboardEvent,): void {
       if (getToolMode() === 'zoom' && event.key === 'Shift')
         setZoomCursor('zoom-in',);
-    },);
+    },
+  );
 
   //endregion Shift key cursor toggle
 }

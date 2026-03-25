@@ -14,7 +14,10 @@ import {
 } from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'xdg-paths', l: parentLogger, },);
+const l = tagged({
+  tag: 'xdg-paths',
+  l: parentLogger,
+},);
 
 /**
  * Builds ordered list of xdg-terminals.list config file paths to search.
@@ -44,7 +47,10 @@ export function configPaths(
   const paths: string[] = [];
 
   //region Config directories (XDG_CONFIG_HOME + XDG_CONFIG_DIRS)
-  for (const dir of [configHome, ...configDirs,]) {
+  for (const dir of [
+    configHome,
+    ...configDirs,
+  ]) {
     for (const desktop of desktops)
       paths.push(`${dir}/${desktop}-xdg-terminals.list`,);
     paths.push(`${dir}/xdg-terminals.list`,);
@@ -86,7 +92,10 @@ export function applicationDirs(): readonly string[] {
   /** Ascending priority: system dirs first, user dir last */
   const dirs = [
     ...dataDirs.toReversed().map(function ensureTrailingSlash(dir,) {
-      return `${dir.replace(/\/+$/, '',)}/applications/`;
+      return `${dir.replace(
+        /\/+$/,
+        '',
+      )}/applications/`;
     },),
     `${dataHome}/applications/`,
   ];

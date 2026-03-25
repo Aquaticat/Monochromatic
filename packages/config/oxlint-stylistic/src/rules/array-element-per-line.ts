@@ -37,8 +37,7 @@ export const arrayElementPerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      elementPerLine:
-        'Each array element must be on its own line.',
+      elementPerLine: 'Each array element must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -55,7 +54,10 @@ export const arrayElementPerLine: CreateOnceRule = {
           container: arrayNode,
           items: elements,
           messageId: 'elementPerLine',
-          bracketPair: { open: '[', close: ']', },
+          bracketPair: {
+            open: '[',
+            close: ']',
+          },
         },);
       },
     } as VisitorWithHooks;

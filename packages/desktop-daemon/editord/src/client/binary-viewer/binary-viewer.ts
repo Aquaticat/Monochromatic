@@ -31,7 +31,10 @@ export class BinaryViewer extends HTMLElement {
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
-    this.#shadow.append(h({ tag: 'style', text: STYLES, },),);
+    this.#shadow.append(h({
+      tag: 'style',
+      text: STYLES,
+    },),);
   }
 
   /**
@@ -41,9 +44,20 @@ export class BinaryViewer extends HTMLElement {
    *
    * @param mediaInfo - optional ffprobe metadata to display below the image
    */
-  showImage({ url, mediaInfo, }: { url: string; mediaInfo?: string; },): void {
-    showImage({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url,
-      mediaInfo, },);
+  showImage({
+    url,
+    mediaInfo,
+  }: {
+    url: string;
+    mediaInfo?: string
+  },): void {
+    showImage({
+      shadow: this.#shadow,
+      host: this,
+      clear: this.#clear.bind(this,),
+      url,
+      mediaInfo,
+    },);
   }
 
   /**
@@ -53,9 +67,20 @@ export class BinaryViewer extends HTMLElement {
    *
    * @param mediaInfo - optional ffprobe metadata to display below the player
    */
-  showAudio({ url, mediaInfo, }: { url: string; mediaInfo?: string; },): void {
-    showAudio({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url,
-      mediaInfo, },);
+  showAudio({
+    url,
+    mediaInfo,
+  }: {
+    url: string;
+    mediaInfo?: string
+  },): void {
+    showAudio({
+      shadow: this.#shadow,
+      host: this,
+      clear: this.#clear.bind(this,),
+      url,
+      mediaInfo,
+    },);
   }
 
   /**
@@ -65,9 +90,20 @@ export class BinaryViewer extends HTMLElement {
    *
    * @param mediaInfo - optional ffprobe metadata to display below the player
    */
-  showVideo({ url, mediaInfo, }: { url: string; mediaInfo?: string; },): void {
-    showVideo({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url,
-      mediaInfo, },);
+  showVideo({
+    url,
+    mediaInfo,
+  }: {
+    url: string;
+    mediaInfo?: string
+  },): void {
+    showVideo({
+      shadow: this.#shadow,
+      host: this,
+      clear: this.#clear.bind(this,),
+      url,
+      mediaInfo,
+    },);
   }
 
   /**
@@ -96,4 +132,7 @@ export class BinaryViewer extends HTMLElement {
   }
 }
 
-customElements.define('binary-viewer', BinaryViewer,);
+customElements.define(
+  'binary-viewer',
+  BinaryViewer,
+);

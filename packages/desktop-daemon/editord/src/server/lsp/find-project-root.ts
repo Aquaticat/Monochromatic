@@ -37,7 +37,11 @@ const rootCache = new Map<string, string | null>();
  * // '/home/user/repo'
  * ```
  */
-export function findProjectRoot({ startDir, configFiles, ceiling, }: {
+export function findProjectRoot({
+  startDir,
+  configFiles,
+  ceiling,
+}: {
   startDir: string;
   configFiles: readonly string[];
   ceiling: string;
@@ -50,8 +54,14 @@ export function findProjectRoot({ startDir, configFiles, ceiling, }: {
   let dir = startDir;
   while (true) {
     for (const file of configFiles) {
-      if (existsSync(join(dir, file,),)) {
-        rootCache.set(cacheKey, dir,);
+      if (existsSync(join(
+        dir,
+        file,
+      ),)) {
+        rootCache.set(
+          cacheKey,
+          dir,
+        );
         return dir;
       }
     }
@@ -64,6 +74,9 @@ export function findProjectRoot({ startDir, configFiles, ceiling, }: {
     dir = parent;
   }
 
-  rootCache.set(cacheKey, null,);
+  rootCache.set(
+    cacheKey,
+    null,
+  );
   return null;
 }

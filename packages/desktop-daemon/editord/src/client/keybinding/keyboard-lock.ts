@@ -13,7 +13,10 @@ import {
 } from '../log.ts';
 
 /** Tagged logger for keyboard lock. */
-const lockLog = tagged({ tag: 'keyboard-lock', l, },);
+const lockLog = tagged({
+  tag: 'keyboard-lock',
+  l,
+},);
 
 //region Keyboard Lock API type augmentation -- not yet in lib.dom.d.ts
 

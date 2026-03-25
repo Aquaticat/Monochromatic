@@ -64,7 +64,10 @@ export async function buildFixPromptImpl(
   // Apply probe-specific customization (e.g. constraint violation messages)
   /** Fix prompt after probe-specific customizeFixPrompt hook */
   const customized = config.customizeFixPrompt !== undefined
-    ? config.customizeFixPrompt(withAdditional, context,)
+    ? config.customizeFixPrompt(
+      withAdditional,
+      context,
+    )
     : withAdditional;
 
   // Append perf diagnostics when a perf test is configured and the result was slow
@@ -75,7 +78,10 @@ export async function buildFixPromptImpl(
   if (perf === undefined)
     return customized;
   /** Formatted performance diagnostic text, undefined when perf was acceptable */
-  const perfDiag = buildPerfDiagnostic(perf, config.perfTest,);
+  const perfDiag = buildPerfDiagnostic(
+    perf,
+    config.perfTest,
+  );
   if (perfDiag === undefined)
     return customized;
 

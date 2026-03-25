@@ -26,7 +26,10 @@ export async function readFileWithRetry(
 ): Promise<string> {
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- readFile with utf8 encoding returns string
-    return await readFile(path, options,) as string;
+    return await readFile(
+      path,
+      options,
+    ) as string;
   }
   catch (error) {
     if (
@@ -35,7 +38,12 @@ export async function readFileWithRetry(
     ) {
       // console.warn(`Retrying readFile for ${path} due to EPERM... (${retries} retries left, delay ${delayMs}ms)`);
       await wait(delayMs,);
-      return readFileWithRetry(path, options, retries - 1, delayMs * 2,);
+      return readFileWithRetry(
+        path,
+        options,
+        retries - 1,
+        delayMs * 2,
+      );
     }
     throw error;
   }
@@ -51,7 +59,10 @@ export async function readFileWithRetry(
 function wait(timeInMs: number,): Promise<undefined> {
   // oxlint-disable-next-line promise/avoid-new
   return new Promise(function createTimeout(resolve,) {
-    setTimeout(resolve, timeInMs,);
+    setTimeout(
+      resolve,
+      timeInMs,
+    );
   },);
 }
 

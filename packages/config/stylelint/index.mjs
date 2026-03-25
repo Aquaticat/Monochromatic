@@ -7,11 +7,17 @@ export default {
   rules: {
     //region Avoid errors
 
-    'no-descending-specificity': [true, { ignore: ['selectors-within-list',], },],
+    'no-descending-specificity': [
+      true,
+      { ignore: ['selectors-within-list',], },
+    ],
 
     //region Unknown
 
-    'at-rule-no-unknown': [true, { ignoreAtRules: ['mixin', 'apply',], },],
+    'at-rule-no-unknown': [
+      true,
+      { ignoreAtRules: ['mixin', 'apply',], },
+    ],
 
     /*'declaration-property-value-no-unknown': [true, {
       ignoreProperties: {
@@ -24,7 +30,10 @@ export default {
     // TODO: Disabled until https://github.com/stylelint/stylelint/pull/7944 is released.
     'declaration-property-value-no-unknown': null,
 
-    'unit-no-unknown': [true, { ignoreUnits: [/--[\w\-_]+/,], },],
+    'unit-no-unknown': [
+      true,
+      { ignoreUnits: [/--[\w\-_]+/,], },
+    ],
 
     //endregion Unknown
 
@@ -32,7 +41,10 @@ export default {
 
     //region At-rule
 
-    'at-rule-disallowed-list': ['charset', 'font-palette-values',],
+    'at-rule-disallowed-list': [
+      'charset',
+      'font-palette-values',
+    ],
 
     //endregion
 
@@ -115,17 +127,23 @@ export default {
 
     //region Case
 
-    'value-keyword-case': ['lower', {
+    'value-keyword-case': [
+      'lower',
+      {
       ignoreProperties: ['font-family', '/^--/', 'initial-value',],
-    },],
+    },
+    ],
 
     //endregion Case
 
     //region Empty lines
 
-    'declaration-empty-line-before': ['always', {
+    'declaration-empty-line-before': [
+      'always',
+      {
       except: ['after-comment', 'first-nested',],
-    },],
+    },
+    ],
 
     //endregion Empty lines
 
@@ -171,7 +189,12 @@ export default {
   // ignoreFiles: [],
 
   overrides: [{
-    files: ['*.astro', '**/*.astro', '*.html', '**/*.html',],
+    files: [
+      '*.astro',
+      '**/*.astro',
+      '*.html',
+      '**/*.html',
+    ],
     customSyntax: 'postcss-html',
   },],
 

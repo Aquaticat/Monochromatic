@@ -55,7 +55,10 @@ function resolvePort(): number {
   if (environmentPort === undefined)
     return DEFAULT_PORT;
 
-  const parsedPort = Number.parseInt(environmentPort, DECIMAL_RADIX,);
+  const parsedPort = Number.parseInt(
+    environmentPort,
+    DECIMAL_RADIX,
+  );
   return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
@@ -69,10 +72,16 @@ const ROOT_DIR = await resolveRoot();
 const FS_ID = resolveFsId({ path: ROOT_DIR, },);
 
 /** Tagged logger for the HTTP subsystem. */
-const httpLog = tagged({ tag: 'http', l, },);
+const httpLog = tagged({
+  tag: 'http',
+  l,
+},);
 
 /** Tagged logger for the LSP subsystem. */
-const lspLog = tagged({ tag: 'lsp', l, },);
+const lspLog = tagged({
+  tag: 'lsp',
+  l,
+},);
 
 //region LSP servers
 
@@ -90,9 +99,19 @@ const connectedPeers = new Set<{ send: (data: string,) => void; }>();
  * @param diagnostics - merged diagnostics from all LSP sources
  */
 function handleDiagnostics(
-  { path, diagnostics, }: { path: string; diagnostics: WireDiagnostic[]; },
+  {
+    path,
+    diagnostics,
+  }: {
+    path: string;
+    diagnostics: WireDiagnostic[]
+  },
 ): void {
-  const message = JSON.stringify({ type: 'diagnostics', path, diagnostics, },);
+  const message = JSON.stringify({
+    type: 'diagnostics',
+    path,
+    diagnostics,
+  },);
   for (const peer of connectedPeers)
     peer.send(message,);
 }
@@ -132,20 +151,32 @@ const dirWatcher = new DirWatcher({
 const app = new H3();
 
 /** Base path for resolving dist and source assets relative to this file. */
-const packageRoot = join(import.meta.dirname, '../..',);
+const packageRoot = join(
+  import.meta.dirname,
+  '../..',
+);
 
-registerRoutes({ app, packageRoot, authToken: AUTH_TOKEN, rootDir: ROOT_DIR, },);
+registerRoutes({
+  app,
+  packageRoot,
+  authToken: AUTH_TOKEN,
+  rootDir: ROOT_DIR,
+},);
 
 //region WebSocket — editor communication
 
-app.get('/_ws',
+app.get(
+  '/_ws',
   createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, fsId: FS_ID, lspManager,
-    connectedPeers, dirWatcher, },),);
+    connectedPeers, dirWatcher, },),
+);
 
 //endregion WebSocket
 
 /** Running HTTP server instance. */
-const _server = serve(app, {
+const _server = serve(
+  app,
+  {
   port: resolvePort(),
   plugins: [
     ws({
@@ -156,6 +187,7 @@ const _server = serve(app, {
       },
     },),
   ],
-},);
+},
+);
 
 httpLog.info(`listening on http://localhost:${resolvePort()}?token=${AUTH_TOKEN}`,);

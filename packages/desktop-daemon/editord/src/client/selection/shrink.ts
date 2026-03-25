@@ -19,7 +19,10 @@ import {
 } from './utils.ts';
 
 /** Tagged logger for selection shrink. */
-const shrinkLog = tagged({ tag: 'selection-shrink', l, },);
+const shrinkLog = tagged({
+  tag: 'selection-shrink',
+  l,
+},);
 
 /**
  * Shrinks the selection back to the previous (smaller) scope.
@@ -31,7 +34,11 @@ const shrinkLog = tagged({ tag: 'selection-shrink', l, },);
  *
  * @param getCurrentFilePath - returns the current file path
  */
-export function doShrinkSelection({ ws, editorPane, getCurrentFilePath, }: {
+export function doShrinkSelection({
+  ws,
+  editorPane,
+  getCurrentFilePath,
+}: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
@@ -50,8 +57,13 @@ export function doShrinkSelection({ ws, editorPane, getCurrentFilePath, }: {
 
   void (async function doShrink(): Promise<void> {
     try {
-      const chain = await fetchChain({ ws, path, line: pos.line, character: pos
-        .character, },);
+      const chain = await fetchChain({
+        ws,
+        path,
+        line: pos.line,
+        character: pos
+        .character,
+      },);
       if (chain.length === 0)
         return;
 
@@ -64,8 +76,14 @@ export function doShrinkSelection({ ws, editorPane, getCurrentFilePath, }: {
       for (const entry of chain) {
         const flat = toFlat({ sr: entry, },);
         /** Without this combined check, the inner `best` comparison would run for non-contained ranges. */
-        if (strictlyContains({ outer: currentSel, inner: flat, },)
-          && (best === null || strictlyContains({ outer: flat, inner: best, },)))
+        if (strictlyContains({
+          outer: currentSel,
+          inner: flat,
+        },)
+          && (best === null || strictlyContains({
+            outer: flat,
+            inner: best,
+          },)))
         {
           best = flat;
         }
@@ -79,7 +97,10 @@ export function doShrinkSelection({ ws, editorPane, getCurrentFilePath, }: {
       }
       else {
         /** No smaller range — collapse to cursor. */
-        editorPane.restoreCursor({ line: pos.line, character: pos.character, },);
+        editorPane.restoreCursor({
+          line: pos.line,
+          character: pos.character,
+        },);
         shrinkLog.info('shrink: collapsed to cursor',);
       }
     }

@@ -22,8 +22,23 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  * @throws when the path escapes root or the file cannot be written
  */
 export async function saveFile(
-  { rootDir, path, content, }: { rootDir: string; path: string; content: string; },
+  {
+    rootDir,
+    path,
+    content,
+  }: {
+    rootDir: string;
+    path: string;
+    content: string
+  },
 ): Promise<void> {
-  const absolutePath = assertWithinRoot({ rootDir, path, },);
-  await writeFile(absolutePath, content, 'utf8',);
+  const absolutePath = assertWithinRoot({
+    rootDir,
+    path,
+  },);
+  await writeFile(
+    absolutePath,
+    content,
+    'utf8',
+  );
 }

@@ -21,16 +21,34 @@ import { spawn, } from 'node:child_process';
  * @throws when the process fails to spawn
  */
 export function spawnDetached(
-  { command, args, cwd, }: { command: string; args: string[]; cwd: string; },
+  {
+    command,
+    args,
+    cwd,
+  }: {
+    command: string;
+    args: string[];
+    cwd: string
+  },
 ): Promise<void> {
-  return new Promise<void>(function awaitSpawn(resolve, reject,): void {
-    const child = spawn(command, args, {
+  return new Promise<void>(function awaitSpawn(
+    resolve,
+    reject,
+  ): void {
+    const child = spawn(
+      command,
+      args,
+      {
       cwd,
       detached: true,
       stdio: 'ignore',
-    },);
+    },
+    );
     child.unref();
-    child.on('error', reject,);
+    child.on(
+      'error',
+      reject,
+    );
     /** Resolve on next tick — if spawn failed, the error event fires synchronously. */
     queueMicrotask(resolve,);
   },);

@@ -21,7 +21,10 @@ import type {
 /**
  * All available provider names, used when dispatching to all providers.
  */
-const ALL_PROVIDERS: readonly Provider[] = ['voyage', 'gemini',];
+const ALL_PROVIDERS: readonly Provider[] = [
+  'voyage',
+  'gemini',
+];
 
 /**
  * Compare two images using all available providers concurrently.
@@ -48,7 +51,10 @@ export async function compareAll(
   imageA: ImageInput,
   imageB: ImageInput,
 ): Promise<readonly MultiProviderComparisonEntry[]> {
-  const rl = tagged({ tag: compareAll.name, l, },);
+  const rl = tagged({
+    tag: compareAll.name,
+    l,
+  },);
   rl.debug(
     `comparing two images across all ${
       String(ALL_PROVIDERS.length,)
@@ -57,10 +63,20 @@ export async function compareAll(
 
   const allResults = await Promise.allSettled([
     ...ALL_PROVIDERS.map(async function compareWithProvider(provider,) {
-      const result = await compareEmbeddings(imageA, imageB, { provider, },);
-      return { provider, result, };
+      const result = await compareEmbeddings(
+        imageA,
+        imageB,
+        { provider, },
+      );
+      return {
+        provider,
+        result,
+      };
     },),
-    describeImageDifference(imageA, imageB,),
+    describeImageDifference(
+      imageA,
+      imageB,
+    ),
   ],);
 
   /** Last settlement is the description call. */
@@ -72,15 +88,23 @@ export async function compareAll(
     : undefined;
 
   /** All settlements before the last are provider results. */
-  const providerSettlements = allResults.slice(0, -1,);
+  const providerSettlements = allResults.slice(
+    0,
+    -1,
+  );
   const successfulEntries: MultiProviderComparisonEntry[] = [];
   for (const settlement of providerSettlements) {
     if (settlement.status === 'fulfilled') {
-      const entry = settlement.value as { provider: Provider;
-        result: Omit<ComparisonResult, 'description'>; };
+      const entry = settlement.value as {
+        provider: Provider;
+        result: Omit<ComparisonResult, 'description'>
+      };
       successfulEntries.push({
         provider: entry.provider,
-        result: { ...entry.result, description, },
+        result: {
+          ...entry.result,
+          description,
+        },
       },);
     }
     else {

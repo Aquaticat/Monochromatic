@@ -26,7 +26,10 @@ export type WidgetDeps = {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   getToolMode: () => ToolMode;
-  getCanvasSize: () => { cw: number; ch: number; };
+  getCanvasSize: () => {
+    cw: number;
+    ch: number
+  };
   textLayer: HTMLDivElement;
   container: HTMLDivElement;
   zoomLayer: HTMLDivElement;
@@ -78,18 +81,27 @@ export function setupWidget(deps: WidgetDeps,): void {
     throw new Error('Page backgrounds data is not an array',);
   const backgrounds: readonly string[] = parsed;
 
-  initPages({ backgrounds, overlay: svgOverlay, },);
+  initPages({
+    backgrounds,
+    overlay: svgOverlay,
+  },);
   initHistory(backgrounds.length,);
   setTextLayer(textLayer,);
 
-  const { pushSnapshot, updateUndoButtons, } = setupUndoHandlers({
+  const {
+    pushSnapshot,
+    updateUndoButtons,
+  } = setupUndoHandlers({
     undoBtn,
     redoBtn,
     ctx,
     getCanvasSize,
     textLayer,
   },);
-  textLayer.addEventListener('textfinalized', pushSnapshot,);
+  textLayer.addEventListener(
+    'textfinalized',
+    pushSnapshot,
+  );
 
   const pointerDeps = {
     canvas,
@@ -122,7 +134,9 @@ export function setupWidget(deps: WidgetDeps,): void {
     pushSnapshot,
   },);
 
-  pageToggle.addEventListener('change', function handlePageChange(event: Event,): void {
+  pageToggle.addEventListener(
+    'change',
+    function handlePageChange(event: Event,): void {
     const { target, } = event;
     if (!(target instanceof HTMLInputElement))
       return;
@@ -131,7 +145,8 @@ export function setupWidget(deps: WidgetDeps,): void {
     switchToPage({ index: Number(target.value,), ctx, cw, ch, overlay: svgOverlay,
       textLayer, },);
     updateUndoButtons();
-  },);
+  },
+  );
 
   new ResizeObserver(sizeCanvas,).observe(container,);
   sizeCanvas();

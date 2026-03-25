@@ -48,7 +48,10 @@ export function $<T,>(
     set value(newValue: T,) {
       const old = current;
       current = newValue;
-      onChange(newValue, old,);
+      onChange(
+        newValue,
+        old,
+      );
     },
   };
 }

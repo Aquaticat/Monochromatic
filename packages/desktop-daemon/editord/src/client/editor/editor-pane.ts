@@ -78,21 +78,36 @@ export class EditorPane extends HTMLElement {
 
   /** Renders the editor container and attaches event listeners. */
   connectedCallback(): void {
-    this.#editor = h({ tag: 'div', class: 'editor',
-      attrs: { contenteditable: 'true', spellcheck: 'false', }, },);
-    this.#editor.addEventListener('paste', function handlePaste(event,) {
+    this.#editor = h({
+      tag: 'div',
+      class: 'editor',
+      attrs: { contenteditable: 'true', spellcheck: 'false', },
+    },);
+    this.#editor.addEventListener(
+      'paste',
+      function handlePaste(event,) {
       event.preventDefault();
       // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text while preserving the browser's native undo stack
       document.execCommand('insertText', false,
         event.clipboardData?.getData('text/plain',) ?? '',);
-    },);
-    this.#editor.addEventListener('input', this.#scheduleHighlight.bind(this,),);
+    },
+    );
+    this.#editor.addEventListener(
+      'input',
+      this.#scheduleHighlight.bind(this,),
+    );
     this.#mutationObserver = new MutationObserver(this.#onMutation.bind(this,),);
-    this.#mutationObserver.observe(this.#editor, { childList: true, characterData: true,
-      subtree: true, },);
+    this.#mutationObserver.observe(
+      this.#editor,
+      { childList: true, characterData: true,
+      subtree: true, },
+    );
     this.#resizeObserver = new ResizeObserver(this.#scheduleInlayMeasure.bind(this,),);
     this.#resizeObserver.observe(this.#editor,);
-    this.#shadow.replaceChildren(h({ tag: 'style', text: STYLES, },), this.#editor,);
+    this.#shadow.replaceChildren(
+      h({ tag: 'style', text: STYLES, },),
+      this.#editor,
+    );
   }
 
   /** Cleans up observers and pending animation frames. */
@@ -127,7 +142,10 @@ export class EditorPane extends HTMLElement {
     if (this.#editor === null)
       return;
     this.#editor.replaceChildren(...text.split('\n',).map(function createLineDiv(line,) {
-      return h({ tag: 'div', text: line === '' ? '\n' : line, },);
+      return h({
+        tag: 'div',
+        text: line === '' ? '\n' : line,
+      },);
     },),);
     this.#scheduleHighlight();
   }
@@ -159,7 +177,10 @@ export class EditorPane extends HTMLElement {
       return;
     const child = this
       .#editor
-      .children[Math.max(0, Math.min(line - 1, this.#editor.children.length - 1,),)];
+      .children[Math.max(
+        0,
+        Math.min(line - 1, this.#editor.children.length - 1,),
+      )];
     if (child !== undefined)
       child.scrollIntoView({ block: 'center', },);
   }
@@ -201,31 +222,58 @@ export class EditorPane extends HTMLElement {
   applyTextEdits(edits: TextEdit[],): void {
     if (this.#editor === null || edits.length === 0)
       return;
-    this.setText(applyEditsToText({ text: this.getText(), edits, },),);
+    this.setText(applyEditsToText({
+      text: this.getText(),
+      edits,
+    },),);
   }
 
   /** Deletes the line at the current cursor position. */
   deleteCurrentLine(): void {
-    this.#lineOp(function op(e, p,) {
-      return deleteLineAt({ editor: e, ...p, },);
+    this.#lineOp(function op(
+      e,
+      p,
+    ) {
+      return deleteLineAt({
+        editor: e,
+        ...p,
+      },);
     },);
   }
   /** Duplicates the current line below. */
   duplicateLineDown(): void {
-    this.#lineOp(function op(e, p,) {
-      return duplicateLineAt({ editor: e, ...p, },);
+    this.#lineOp(function op(
+      e,
+      p,
+    ) {
+      return duplicateLineAt({
+        editor: e,
+        ...p,
+      },);
     },);
   }
   /** Swaps the current line with the next line. */
   swapLineDown(): void {
-    this.#lineOp(function op(e, p,) {
-      return swapLineDown({ editor: e, ...p, },);
+    this.#lineOp(function op(
+      e,
+      p,
+    ) {
+      return swapLineDown({
+        editor: e,
+        ...p,
+      },);
     },);
   }
   /** Swaps the current line with the previous line. */
   swapLineUp(): void {
-    this.#lineOp(function op(e, p,) {
-      return swapLineUp({ editor: e, ...p, },);
+    this.#lineOp(function op(
+      e,
+      p,
+    ) {
+      return swapLineUp({
+        editor: e,
+        ...p,
+      },);
     },);
   }
 
@@ -241,8 +289,11 @@ export class EditorPane extends HTMLElement {
     const pos = this.getCursorPosition();
     if (range === null || pos === null)
       return false;
-    return selectAndCopyLine({ editor: this.#editor, line: pos.line,
-      composedRange: range, },);
+    return selectAndCopyLine({
+      editor: this.#editor,
+      line: pos.line,
+      composedRange: range,
+    },);
   }
 
   /** Indents the current line or selected lines. */
@@ -266,25 +317,43 @@ export class EditorPane extends HTMLElement {
    * @param endCharacter - 0-based end character
    */
   setSelection(
-    { startLine, startCharacter, endLine, endCharacter, }: { startLine: number;
-      startCharacter: number; endLine: number; endCharacter: number; },
+    {
+      startLine,
+      startCharacter,
+      endLine,
+      endCharacter,
+    }: {
+      startLine: number;
+      startCharacter: number;
+      endLine: number;
+      endCharacter: number
+    },
   ): void {
     if (this.#editor === null)
       return;
-    setSel({ editor: this.#editor,
-      coords: { startLine, startCharacter, endLine, endCharacter, }, },);
+    setSel({
+      editor: this.#editor,
+      coords: { startLine, startCharacter, endLine, endCharacter, },
+    },);
   }
   /**
    * Reads the current editor selection.
    *
    * @returns selection coordinates, or null
    */
-  getSelection(): { startLine: number; startCharacter: number; endLine: number;
-    endCharacter: number; } | null
+  getSelection(): {
+    startLine: number;
+    startCharacter: number;
+    endLine: number;
+    endCharacter: number
+  } | null
   {
     if (this.#editor === null)
       return null;
-    return getSel({ editor: this.#editor, shadow: this.#shadow, },);
+    return getSel({
+      editor: this.#editor,
+      shadow: this.#shadow,
+    },);
   }
 
   /**
@@ -307,10 +376,20 @@ export class EditorPane extends HTMLElement {
    *
    * @returns text position, or null if coordinates are outside text
    */
-  getPositionFromPoint({ x, y, }: { x: number; y: number; },): EditorPosition | null {
+  getPositionFromPoint({
+    x,
+    y,
+  }: {
+    x: number;
+    y: number
+  },): EditorPosition | null {
     if (this.#editor === null)
       return null;
-    return posFromPoint({ editor: this.#editor, x, y, },);
+    return posFromPoint({
+      editor: this.#editor,
+      x,
+      y,
+    },);
   }
 
   /**
@@ -349,7 +428,10 @@ export class EditorPane extends HTMLElement {
    * @param listener - event handler function
    */
   addScrollListener(listener: EventListener,): void {
-    this.#editor?.addEventListener('scroll', listener,);
+    this.#editor?.addEventListener(
+      'scroll',
+      listener,
+    );
   }
 
   /**
@@ -359,7 +441,10 @@ export class EditorPane extends HTMLElement {
    */
   getCursorPosition(): EditorPosition | null {
     return this.#editor !== null
-      ? cursorPos({ editor: this.#editor, shadow: this.#shadow, },)
+      ? cursorPos({
+        editor: this.#editor,
+        shadow: this.#shadow,
+      },)
       : null;
   }
   /**
@@ -378,10 +463,20 @@ export class EditorPane extends HTMLElement {
    *
    * @param character - 0-based character offset
    */
-  restoreCursor({ line, character, }: { line: number; character: number; },): void {
+  restoreCursor({
+    line,
+    character,
+  }: {
+    line: number;
+    character: number
+  },): void {
     if (this.#editor === null)
       return;
-    restoreCur({ editor: this.#editor, line, character, },);
+    restoreCur({
+      editor: this.#editor,
+      line,
+      character,
+    },);
   }
 
   /**
@@ -390,7 +485,10 @@ export class EditorPane extends HTMLElement {
    * @param fn - line operation that receives the editor and cursor, returns new cursor
    */
   #lineOp(
-    fn: (editor: HTMLDivElement, pos: { line: number; character: number; },) => {
+    fn: (editor: HTMLDivElement, pos: {
+      line: number;
+      character: number
+    },) => {
       line: number;
       character: number;
     } | null,
@@ -400,7 +498,10 @@ export class EditorPane extends HTMLElement {
     const pos = this.getCursorPosition();
     if (pos === null)
       return;
-    const result = fn(this.#editor, pos,);
+    const result = fn(
+      this.#editor,
+      pos,
+    );
     if (result !== null)
       this.restoreCursor(result,);
     this.#scheduleHighlight();
@@ -422,8 +523,12 @@ export class EditorPane extends HTMLElement {
         && !(sel.startLine === sel.endLine && sel.startCharacter === sel.endCharacter)
       ? sel
       : null;
-    const result = fn({ editor: this.#editor, cursorLine: pos.line,
-      cursorCharacter: pos.character, selection: nonCollapsed, },);
+    const result = fn({
+      editor: this.#editor,
+      cursorLine: pos.line,
+      cursorCharacter: pos.character,
+      selection: nonCollapsed,
+    },);
     if (result.isSelection)
       this.setSelection(result.selection,);
     else
@@ -434,22 +539,31 @@ export class EditorPane extends HTMLElement {
   /** MutationObserver callback — dispatches `contentchange` on any editor DOM mutation. */
   #onMutation(): void {
     this.dispatchEvent(
-      new CustomEvent('contentchange', { bubbles: true, composed: true, },),
+      new CustomEvent(
+        'contentchange',
+        { bubbles: true, composed: true, },
+      ),
     );
   }
 
   /** Schedules diagnostic highlights. */
   #scheduleDiagnosticHighlights(): void {
     if (this.#editor !== null) {
-      scheduleDiagnosticHighlights({ editor: this.#editor, diagnostics: this
-        .#diagnostics, },);
+      scheduleDiagnosticHighlights({
+        editor: this.#editor,
+        diagnostics: this
+        .#diagnostics,
+      },);
     }
   }
   /** Schedules inlay annotations. */
   #scheduleInlayAnnotations(): void {
     if (this.#editor !== null) {
-      scheduleInlayAnnotations({ editor: this.#editor, hints: this.#inlayHints,
-        diagnostics: this.#diagnostics, },);
+      scheduleInlayAnnotations({
+        editor: this.#editor,
+        hints: this.#inlayHints,
+        diagnostics: this.#diagnostics,
+      },);
     }
   }
   /** Schedules inlay re-measurement. */
@@ -463,10 +577,16 @@ export class EditorPane extends HTMLElement {
   #scheduleHighlight(): void {
     cancelAnimationFrame(this.#highlightFrame,);
     if (this.#editor !== null) {
-      this.#highlightFrame = scheduleHighlight({ editor: this.#editor, parser: this
-        .#parser, },);
+      this.#highlightFrame = scheduleHighlight({
+        editor: this.#editor,
+        parser: this
+        .#parser,
+      },);
     }
   }
 }
 
-customElements.define('editor-pane', EditorPane,);
+customElements.define(
+  'editor-pane',
+  EditorPane,
+);

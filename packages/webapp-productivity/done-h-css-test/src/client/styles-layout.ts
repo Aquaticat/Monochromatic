@@ -48,7 +48,10 @@ export const resets = [
   },),
   css({
     rule: 'button:disabled',
-    decls: { opacity: DISABLED_OPACITY, cursor: 'not-allowed', },
+    decls: {
+      opacity: DISABLED_OPACITY,
+      cursor: 'not-allowed',
+    },
   },),
   css({
     rule: 'input::placeholder, textarea::placeholder',
@@ -63,11 +66,18 @@ export const resets = [
 
 /** Body, sidebar, page-wrapper, and app container layout rules. */
 export const layoutShell = [
-  css({ rule: ':root', decls: { '--sidebar-basis': cssRem(SIDEBAR_BASIS,), }, },),
+  css({
+    rule: ':root',
+    decls: { '--sidebar-basis': cssRem(SIDEBAR_BASIS,), },
+  },),
   css({
     rule: 'body',
     decls: {
-      'font-family': cssCommaList(['Inter', 'system-ui', 'sans-serif',],),
+      'font-family': cssCommaList([
+        'Inter',
+        'system-ui',
+        'sans-serif',
+      ],),
       color: cssVar('fg',),
       'background-color': cssVar('bg',),
       'max-inline-size': cssCalc(`${cssRem(BODY_MAX_WIDTH_PX,)} / 16`,),
@@ -93,7 +103,10 @@ export const layoutShell = [
     at: 'media',
     params: '(min-width: 48rem)',
     children: [
-      css({ rule: 'side-drawer', decls: { 'flex-basis': cssVar('sidebar-basis',), }, },),
+      css({
+        rule: 'side-drawer',
+        decls: { 'flex-basis': cssVar('sidebar-basis',), },
+      },),
     ],
   },),
   css({

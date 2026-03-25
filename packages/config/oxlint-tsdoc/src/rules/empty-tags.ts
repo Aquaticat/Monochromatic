@@ -52,7 +52,9 @@ export const emptyTags: CreateOnceRule = {
       '@packageDocumentation',
     ],);
 
-    return createTsdocVisitor(context, function emptyTagsHandler(_node, comment,): void {
+    return createTsdocVisitor(
+      context,
+      function emptyTagsHandler(_node, comment,): void {
       const lines = getCommentLines(comment,);
       lines.forEach(function checkLine(line, index,): void {
         const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
@@ -74,6 +76,7 @@ export const emptyTags: CreateOnceRule = {
           },);
         }
       },);
-    },);
+    },
+    );
   },
 };

@@ -29,11 +29,19 @@ const _default_1: UserConfig = defineConfig({
   platform: 'neutral',
   inputOptions: {
     resolve: {
-      mainFields: ['module', 'main',],
+      mainFields: [
+        'module',
+        'main',
+      ],
     },
   },
   deps: {
-    alwaysBundle: [/^@monochromatic-dev\//, /^@lezer\//, /^lezer-/, /^jspdf$/,],
+    alwaysBundle: [
+      /^@monochromatic-dev\//,
+      /^@lezer\//,
+      /^lezer-/,
+      /^jspdf$/,
+    ],
   },
   minify: process.env.NODE_ENV === 'production',
   report: false,

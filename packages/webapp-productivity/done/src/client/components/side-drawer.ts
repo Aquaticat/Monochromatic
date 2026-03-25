@@ -60,7 +60,10 @@ class SideDrawer extends HTMLElement {
    */
   set open(value: boolean,) {
     if (value)
-      this.setAttribute('open', '',);
+      this.setAttribute(
+        'open',
+        '',
+      );
     else
       this.removeAttribute('open',);
   }
@@ -71,20 +74,24 @@ class SideDrawer extends HTMLElement {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns the panel div we created
     this.#panel = this.#shadow.querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
 
-    this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener('click', // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+    this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener(
+      'click',
       function closeDrawer(this: SideDrawer,): void {
         this.open = false;
       }
-        .bind(this,),);
+        .bind(this,),
+    );
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
     // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-    this.#panel.addEventListener('click',
+    this.#panel.addEventListener(
+      'click',
       function lightDismiss(this: SideDrawer, event: Event,): void {
         if (event.target === this.#panel)
           this.open = false;
       }
-        .bind(this,),);
+        .bind(this,),
+    );
   }
 
   /** Toggles popover visibility when the open attribute changes. */
@@ -104,7 +111,10 @@ class SideDrawer extends HTMLElement {
     panelClose.classList.add('panel-close',);
 
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: SIDE_DRAWER_STYLES, },),
+      h({
+        tag: 'style',
+        text: SIDE_DRAWER_STYLES,
+      },),
       h({
         tag: 'div',
         class: 'wrapper',
@@ -115,7 +125,10 @@ class SideDrawer extends HTMLElement {
             class: 'sidebar',
             children: [
               buildHeader(null,),
-              h({ tag: 'div', class: 'divider', },),
+              h({
+                tag: 'div',
+                class: 'divider',
+              },),
               buildNav(),
             ],
           },),
@@ -132,7 +145,10 @@ class SideDrawer extends HTMLElement {
                 class: 'panel-drawer',
                 children: [
                   buildHeader(panelClose,),
-                  h({ tag: 'div', class: 'divider', },),
+                  h({
+                    tag: 'div',
+                    class: 'divider',
+                  },),
                   buildNav(),
                 ],
               },),
@@ -145,4 +161,7 @@ class SideDrawer extends HTMLElement {
   }
 }
 
-customElements.define('side-drawer', SideDrawer,);
+customElements.define(
+  'side-drawer',
+  SideDrawer,
+);

@@ -43,12 +43,19 @@ import {
  * });
  * ```
  */
-async function downloadIfMissing({ destPath, tag, url, }: {
+async function downloadIfMissing({
+  destPath,
+  tag,
+  url,
+}: {
   destPath: string;
   tag: string;
   url: string;
 },): Promise<string> {
-  const rl = tagged({ tag, l, },);
+  const rl = tagged({
+    tag,
+    l,
+  },);
 
   if (existsSync(destPath,)) {
     rl.info(`using cached file ${destPath}`,);
@@ -56,7 +63,10 @@ async function downloadIfMissing({ destPath, tag, url, }: {
   }
 
   rl.info(`downloading to ${destPath}`,);
-  await mkdir(IMAGES_DIR, { recursive: true, },);
+  await mkdir(
+    IMAGES_DIR,
+    { recursive: true, },
+  );
 
   const response = await fetch(url,);
   if (!response.ok) {
@@ -65,7 +75,11 @@ async function downloadIfMissing({ destPath, tag, url, }: {
     );
   }
 
-  await writeWithProgress({ destPath, response, rl, },);
+  await writeWithProgress({
+    destPath,
+    response,
+    rl,
+  },);
   return destPath;
 }
 
@@ -90,7 +104,10 @@ async function downloadIfMissing({ destPath, tag, url, }: {
  */
 export function ensureImage(spec: ImageSpec,): Promise<string> {
   return downloadIfMissing({
-    destPath: join(IMAGES_DIR, spec.fileName,),
+    destPath: join(
+      IMAGES_DIR,
+      spec.fileName,
+    ),
     tag: ensureImage.name,
     url: spec.url,
   },);
@@ -113,7 +130,10 @@ export function ensureImage(spec: ImageSpec,): Promise<string> {
  */
 export function ensureVirtioWin(): Promise<string> {
   return downloadIfMissing({
-    destPath: join(IMAGES_DIR, VIRTIO_WIN_FILENAME,),
+    destPath: join(
+      IMAGES_DIR,
+      VIRTIO_WIN_FILENAME,
+    ),
     tag: ensureVirtioWin.name,
     url: VIRTIO_WIN_URL,
   },);

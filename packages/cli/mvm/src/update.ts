@@ -36,7 +36,10 @@ import { ensureTemplate, } from './template.ts';
  * ```
  */
 export async function update(): Promise<void> {
-  const rl = tagged({ tag: update.name, l, },);
+  const rl = tagged({
+    tag: update.name,
+    l,
+  },);
 
   rl.info('updating all template images unconditionally',);
 
@@ -44,8 +47,14 @@ export async function update(): Promise<void> {
   const removePromises = Object.entries(IMAGES,).flatMap(
     function buildRemoveOps([name, spec,],) {
       const ops: Promise<void>[] = [];
-      const imagePath = join(IMAGES_DIR, spec.fileName,);
-      const templatePath = join(IMAGES_DIR, spec.templateFileName,);
+      const imagePath = join(
+        IMAGES_DIR,
+        spec.fileName,
+      );
+      const templatePath = join(
+        IMAGES_DIR,
+        spec.templateFileName,
+      );
 
       if (existsSync(imagePath,)) {
         rl.info(`removing cached base image for ${name}: ${spec.fileName}`,);
@@ -62,7 +71,10 @@ export async function update(): Promise<void> {
   await Promise.all(removePromises,);
 
   // Delete cached virtio-win ISO (shared across Windows versions)
-  const virtioPath = join(IMAGES_DIR, VIRTIO_WIN_FILENAME,);
+  const virtioPath = join(
+    IMAGES_DIR,
+    VIRTIO_WIN_FILENAME,
+  );
   if (existsSync(virtioPath,)) {
     rl.info(`removing cached virtio-win ISO: ${VIRTIO_WIN_FILENAME}`,);
     await rm(virtioPath,);

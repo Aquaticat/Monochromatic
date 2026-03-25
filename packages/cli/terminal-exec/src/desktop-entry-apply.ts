@@ -20,7 +20,11 @@ import {
  *
  * @param result - Mutable result object to populate.
  */
-export function applyKey({ key, value, result, }: {
+export function applyKey({
+  key,
+  value,
+  result,
+}: {
   key: string;
   value: string;
   result: MutableDesktopEntry;

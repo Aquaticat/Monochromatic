@@ -1,20 +1,29 @@
 /** All recognized priority levels, ordered ascending. */
-export const TASK_PRIORITIES = ['low', 'medium',
-  'high',] as const satisfies readonly string[];
+export const TASK_PRIORITIES = [
+  'low',
+  'medium',
+  'high',
+] as const satisfies readonly string[];
 
 /** Discriminated union of valid priority values. */
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
 /** All recognized complexity levels, ordered ascending. */
-export const TASK_COMPLEXITIES = ['low', 'medium',
-  'high',] as const satisfies readonly string[];
+export const TASK_COMPLEXITIES = [
+  'low',
+  'medium',
+  'high',
+] as const satisfies readonly string[];
 
 /** Discriminated union of valid complexity values. */
 export type TaskComplexity = (typeof TASK_COMPLEXITIES)[number];
 
 /** All recognized task statuses. */
-export const TASK_STATUSES = ['inbox', 'in_progress',
-  'done',] as const satisfies readonly string[];
+export const TASK_STATUSES = [
+  'inbox',
+  'in_progress',
+  'done',
+] as const satisfies readonly string[];
 
 /** Discriminated union of valid task lifecycle statuses. */
 export type TaskStatus = (typeof TASK_STATUSES)[number];

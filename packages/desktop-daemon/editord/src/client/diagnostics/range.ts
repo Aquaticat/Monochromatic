@@ -17,11 +17,20 @@ import type { Diagnostic, } from '../../../protocol.ts';
  *
  * @returns text node and offset, or null if beyond the line's length
  */
-export function findTextOffset({ lineDiv, charOffset, }: {
+export function findTextOffset({
+  lineDiv,
+  charOffset,
+}: {
   lineDiv: Element;
   charOffset: number;
-},): { node: Text; offset: number; } | null {
-  const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+},): {
+  node: Text;
+  offset: number
+} | null {
+  const walker = document.createTreeWalker(
+    lineDiv,
+    NodeFilter.SHOW_TEXT,
+  );
   let remaining = charOffset;
   let textNode = walker.nextNode();
 
@@ -29,7 +38,10 @@ export function findTextOffset({ lineDiv, charOffset, }: {
     const len = textNode.textContent?.length ?? 0;
     if (remaining <= len) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TreeWalker with SHOW_TEXT filter only yields Text nodes
-      return { node: textNode as Text, offset: remaining, };
+      return {
+        node: textNode as Text,
+        offset: remaining,
+      };
     }
     remaining -= len;
     textNode = walker.nextNode();
@@ -47,7 +59,10 @@ export function findTextOffset({ lineDiv, charOffset, }: {
  *
  * @returns DOM Range spanning the diagnostic text, or null if positions are out of bounds
  */
-export function createDiagnosticRange({ editor, diagnostic, }: {
+export function createDiagnosticRange({
+  editor,
+  diagnostic,
+}: {
   editor: HTMLElement;
   diagnostic: Diagnostic;
 },): globalThis.Range | null {
@@ -56,15 +71,25 @@ export function createDiagnosticRange({ editor, diagnostic, }: {
   if (startDiv === undefined || endDiv === undefined)
     return null;
 
-  const startPos = findTextOffset({ lineDiv: startDiv,
-    charOffset: diagnostic.range.start.character, },);
-  const endPos = findTextOffset({ lineDiv: endDiv,
-    charOffset: diagnostic.range.end.character, },);
+  const startPos = findTextOffset({
+    lineDiv: startDiv,
+    charOffset: diagnostic.range.start.character,
+  },);
+  const endPos = findTextOffset({
+    lineDiv: endDiv,
+    charOffset: diagnostic.range.end.character,
+  },);
   if (startPos === null || endPos === null)
     return null;
 
   const range = document.createRange();
-  range.setStart(startPos.node, startPos.offset,);
-  range.setEnd(endPos.node, endPos.offset,);
+  range.setStart(
+    startPos.node,
+    startPos.offset,
+  );
+  range.setEnd(
+    endPos.node,
+    endPos.offset,
+  );
   return range;
 }

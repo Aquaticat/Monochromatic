@@ -52,7 +52,10 @@ export async function $<T,>(
     set value(newValue: T,) {
       const old = current;
       current = newValue;
-      void onChange(newValue, old,);
+      void onChange(
+        newValue,
+        old,
+      );
     },
   };
 }

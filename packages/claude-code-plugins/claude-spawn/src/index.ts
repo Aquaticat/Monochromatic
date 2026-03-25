@@ -68,11 +68,17 @@ else if (event.hook_event_name === 'Stop') {
 
   if (spawnId !== undefined && event.last_assistant_message !== undefined) {
     /** Path to this child's spawn state JSON file. */
-    const filePath = join(SPAWNS_DIR, `${spawnId}.json`,);
+    const filePath = join(
+      SPAWNS_DIR,
+      `${spawnId}.json`,
+    );
 
     try {
       /** Raw JSON content of the existing spawn state file. */
-      const existing = readFileSync(filePath, 'utf8',);
+      const existing = readFileSync(
+        filePath,
+        'utf8',
+      );
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
       const state = JSON.parse(existing,) as SpawnState;
 
@@ -82,9 +88,15 @@ else if (event.hook_event_name === 'Stop') {
        * `session_id` than the one registered by the genuine child's SessionStart.
        */
       if (state.sessionId === event.session_id) {
-        const updated: SpawnState = { ...state, lastMessage: event.last_assistant_message,
-          status: 'stopped', };
-        writeFileSync(filePath, JSON.stringify(updated,),);
+        const updated: SpawnState = {
+          ...state,
+          lastMessage: event.last_assistant_message,
+          status: 'stopped',
+        };
+        writeFileSync(
+          filePath,
+          JSON.stringify(updated,),
+        );
       }
     }
     catch {
@@ -98,8 +110,10 @@ else if (event.hook_event_name === 'Stop') {
    * Skip when `stop_hook_active` is true to prevent infinite block loops.
    */
   if (!event.stop_hook_active) {
-    const context = checkCompletedChildren({ parentSessionId: event.session_id,
-      consume: true, },);
+    const context = checkCompletedChildren({
+      parentSessionId: event.session_id,
+      consume: true,
+    },);
 
     if (context !== null) {
       /** Block the stop and deliver spawn results as the reason. */
@@ -144,8 +158,10 @@ else {
    * UserPromptSubmit (stdout) and Stop (blocking reason) provide redundant
    * delivery paths if `additionalContext` is ever broken for plugin hooks.
    */
-  const context = checkCompletedChildren({ parentSessionId: event.session_id,
-    consume: true, },);
+  const context = checkCompletedChildren({
+    parentSessionId: event.session_id,
+    consume: true,
+  },);
 
   if (context !== null) {
     /** Hook output carrying completed child results as additional context (best-effort). */

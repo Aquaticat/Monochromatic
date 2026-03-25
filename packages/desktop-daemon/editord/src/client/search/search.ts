@@ -12,7 +12,10 @@ import {
 } from '../log.ts';
 
 /** Tagged logger for the search subsystem. */
-const l = tagged({ tag: 'search-overlay-search', l: rootLogger, },);
+const l = tagged({
+  tag: 'search-overlay-search',
+  l: rootLogger,
+},);
 
 /** Debounce delay for search input in milliseconds. */
 const DEBOUNCE_MS = 150;
@@ -32,13 +35,19 @@ export type SearchState = {
  *
  * @param execute - callback to execute the search
  */
-export function scheduleSearch({ state, execute, }: {
+export function scheduleSearch({
+  state,
+  execute,
+}: {
   state: SearchState;
   execute: () => void;
 },): void {
   globalThis.clearTimeout(state.debounceTimer,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types are loaded; client-only code always receives a number
-  state.debounceTimer = globalThis.setTimeout(execute, DEBOUNCE_MS,) as unknown as number;
+  state.debounceTimer = globalThis.setTimeout(
+    execute,
+    DEBOUNCE_MS,
+  ) as unknown as number;
 }
 
 /**
@@ -52,20 +61,34 @@ export function scheduleSearch({ state, execute, }: {
  *
  * @param onResults - callback to render results
  */
-export async function performSearch({ raw, state, onSearch, onResults, }: {
+export async function performSearch({
+  raw,
+  state,
+  onSearch,
+  onResults,
+}: {
   raw: string;
   state: SearchState;
   onSearch: (query: string,) => Promise<SearchResult[]>;
-  onResults: (opts: { results: SearchResult[]; query: string; },) => void;
+  onResults: (opts: {
+    results: SearchResult[];
+    query: string
+  },) => void;
 },): Promise<void> {
   if (raw.trim() === '') {
-    onResults({ results: [], query: '', },);
+    onResults({
+      results: [],
+      query: '',
+    },);
     return;
   }
   const isContentOnly = raw.startsWith('%',);
   const query = isContentOnly ? raw.slice(1,).trim() : raw.trim();
   if (query === '') {
-    onResults({ results: [], query: '', },);
+    onResults({
+      results: [],
+      query: '',
+    },);
     return;
   }
   const generation = ++state.searchGeneration;
@@ -78,12 +101,18 @@ export async function performSearch({ raw, state, onSearch, onResults, }: {
         return r.kind === 'content';
       },)
       : results;
-    onResults({ results: filtered, query, },);
+    onResults({
+      results: filtered,
+      query,
+    },);
   }
   catch (error) {
     if (generation !== state.searchGeneration)
       return;
     l.error(`search failed: ${String(error,)}`,);
-    onResults({ results: [], query, },);
+    onResults({
+      results: [],
+      query,
+    },);
   }
 }

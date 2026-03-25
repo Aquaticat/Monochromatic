@@ -3,5 +3,8 @@ import { defineConfig, } from 'tsdown';
 
 export default defineConfig({
   ...base,
-  entry: ['./src/index.ts', './src/filter.ts',],
+  entry: [
+    './src/index.ts',
+    './src/filter.ts',
+  ],
 },);

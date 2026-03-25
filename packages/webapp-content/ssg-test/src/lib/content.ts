@@ -80,14 +80,30 @@ export async function loadContent(contentDir: string,): Promise<Post[]> {
   const filePaths = result.files;
 
   const posts = await Promise.all(filePaths.map(async function parsePost(filePath,) {
-    const raw = await readFile(filePath, 'utf8',);
+    const raw = await readFile(
+      filePath,
+      'utf8',
+    );
     const contentHash = sha256(raw,);
-    const { data: rawData, content: body, } = matter(raw,);
+    const {
+      data: rawData,
+      content: body,
+    } = matter(raw,);
     const data = postFrontmatterSchema.parse(rawData,);
     const lang = basename(dirname(filePath,),);
-    const name = basename(filePath, '.mdx',);
+    const name = basename(
+      filePath,
+      '.mdx',
+    );
 
-    return { lang, name, data, body, filePath, contentHash, };
+    return {
+      lang,
+      name,
+      data,
+      body,
+      filePath,
+      contentHash,
+    };
   },),);
 
   return posts;

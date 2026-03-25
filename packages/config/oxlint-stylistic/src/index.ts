@@ -5,14 +5,10 @@ import { arrayElementPerLine, } from './rules/array-element-per-line.ts';
 import { destructurePerLine, } from './rules/destructure-per-line.ts';
 import { exportPerLine, } from './rules/export-per-line.ts';
 import { importPerLine, } from './rules/import-per-line.ts';
-import {
-  objectPropertyPerLine,
-} from './rules/object-property-per-line.ts';
+import { objectPropertyPerLine, } from './rules/object-property-per-line.ts';
 import { paramPerLine, } from './rules/param-per-line.ts';
 import { tuplePerLine, } from './rules/tuple-per-line.ts';
-import {
-  typePropertyPerLine,
-} from './rules/type-property-per-line.ts';
+import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
 
 /**
  * Oxlint JS plugin enforcing one-item-per-line formatting across

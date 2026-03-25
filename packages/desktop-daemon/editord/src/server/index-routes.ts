@@ -31,7 +31,12 @@ import { getContentType, } from './operations/file-kind.ts';
  *
  * @param rootDir - root directory for path containment checks
  */
-export function registerRoutes({ app, packageRoot, authToken, rootDir, }: {
+export function registerRoutes({
+  app,
+  packageRoot,
+  authToken,
+  rootDir,
+}: {
   app: H3;
   packageRoot: string;
   authToken: string;
@@ -39,19 +44,24 @@ export function registerRoutes({ app, packageRoot, authToken, rootDir, }: {
 },): void {
   //region HTML entry point
 
-  app.get('/', defineHandler(async function handleIndex() {
+  app.get(
+    '/',
+    defineHandler(async function handleIndex() {
     const html = await readFile(join(packageRoot, 'src/client/index.html',), 'utf8',);
     return new Response(
       html,
       { headers: { 'Content-Type': 'text/html; charset=utf-8', }, },
     );
-  },),);
+  },),
+  );
 
   //endregion HTML entry point
 
   //region Static asset serving — built client bundles from dist/client/
 
-  app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
+  app.get(
+    '/dist/client/**',
+    defineHandler(function handleStaticAsset(event,) {
     return serveStatic(event, {
       getContents: function readContents(id,) {
         return readFile(join(packageRoot, id,),);
@@ -78,13 +88,16 @@ export function registerRoutes({ app, packageRoot, authToken, rootDir, }: {
         return { size: stats.size, mtime: stats.mtimeMs, };
       },
     },);
-  },),);
+  },),
+  );
 
   //endregion Static asset serving
 
   //region Raw file serving — media files via HTTP for native browser rendering
 
-  app.get('/_raw', defineHandler(async function handleRawFile(event,) {
+  app.get(
+    '/_raw',
+    defineHandler(async function handleRawFile(event,) {
     const query = getQuery(event,);
     if (query.token !== authToken)
       return new Response('Unauthorized', { status: 401, },);
@@ -95,7 +108,8 @@ export function registerRoutes({ app, packageRoot, authToken, rootDir, }: {
     const buffer = await readFile(absolutePath,);
     const contentType = getContentType({ path: absolutePath, },);
     return new Response(buffer, { headers: { 'Content-Type': contentType, }, },);
-  },),);
+  },),
+  );
 
   //endregion Raw file serving
 }

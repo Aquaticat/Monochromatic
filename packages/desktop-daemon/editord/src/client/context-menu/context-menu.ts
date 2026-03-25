@@ -54,7 +54,10 @@ export class ContextMenu {
 
   /** Initializes the invisible anchor div and popover toggle handler. */
   constructor() {
-    this.#anchor = h({ tag: 'div', class: 'ctx-anchor', },);
+    this.#anchor = h({
+      tag: 'div',
+      class: 'ctx-anchor',
+    },);
     this.#onToggleBound = handlePopoverToggle;
   }
 
@@ -67,7 +70,15 @@ export class ContextMenu {
    *
    * @param items - menu items to display
    */
-  show({ x, y, items, }: { x: number; y: number; items: ContextMenuItem[]; },): void {
+  show({
+    x,
+    y,
+    items,
+  }: {
+    x: number;
+    y: number;
+    items: ContextMenuItem[]
+  },): void {
     this.hide();
 
     const self = this;
@@ -84,13 +95,25 @@ export class ContextMenu {
 
     const menuItems = items.map(function renderItem(item,) {
       return item.defaultValue !== undefined
-        ? renderInputItem({ item, onActivate, },)
-        : renderButtonItem({ item, onActivate, },);
+        ? renderInputItem({
+          item,
+          onActivate,
+        },)
+        : renderButtonItem({
+          item,
+          onActivate,
+        },);
     },);
 
     /** Position the invisible anchor at the click point. */
-    this.#anchor.style.setProperty('inset-inline-start', `${x}px`,);
-    this.#anchor.style.setProperty('inset-block-start', `${y}px`,);
+    this.#anchor.style.setProperty(
+      'inset-inline-start',
+      `${x}px`,
+    );
+    this.#anchor.style.setProperty(
+      'inset-block-start',
+      `${y}px`,
+    );
     document.body.append(this.#anchor,);
 
     this.#popup = h({
@@ -100,7 +123,10 @@ export class ContextMenu {
       children: menuItems,
     },);
 
-    this.#popup.addEventListener('toggle', this.#onToggleBound,);
+    this.#popup.addEventListener(
+      'toggle',
+      this.#onToggleBound,
+    );
     document.body.append(this.#popup,);
     this.#popup.showPopover();
 

@@ -25,7 +25,10 @@ import {
 } from './ws-dispatch.ts';
 
 /** Tagged logger for the WebSocket subsystem. */
-const l = tagged({ tag: 'ws', l: rootLogger, },);
+const l = tagged({
+  tag: 'ws',
+  l: rootLogger,
+},);
 
 /**
  * Rejects an unauthenticated peer by sending an error and closing.
@@ -33,9 +36,15 @@ const l = tagged({ tag: 'ws', l: rootLogger, },);
  * @param peer - WebSocket peer to reject
  */
 function rejectUnauthenticated(
-  peer: { send: (data: string,) => void; close: () => void; },
+  peer: {
+    send: (data: string,) => void;
+    close: () => void
+  },
 ): void {
-  sendJson({ peer, message: { type: 'error', message: 'unauthorized', }, },);
+  sendJson({
+    peer,
+    message: { type: 'error', message: 'unauthorized', },
+  },);
   peer.close();
 }
 
@@ -57,7 +66,14 @@ function rejectUnauthenticated(
  * @returns h3 event handler that upgrades to WebSocket
  */
 export function createWsHandler(
-  { authToken, rootDir, fsId, lspManager, connectedPeers, dirWatcher, }: {
+  {
+    authToken,
+    rootDir,
+    fsId,
+    lspManager,
+    connectedPeers,
+    dirWatcher,
+  }: {
     authToken: string;
     rootDir: string;
     fsId: string;
@@ -67,7 +83,10 @@ export function createWsHandler(
   },
 ): EventHandler {
   return defineWebSocketHandler(function resolveHooks(event,) {
-    const url = new URL(event.url, 'http://localhost',);
+    const url = new URL(
+      event.url,
+      'http://localhost',
+    );
     const token = url.searchParams.get('token',);
 
     if (token !== authToken)
@@ -77,20 +96,34 @@ export function createWsHandler(
       open: function handleOpen(peer,) {
         l.info('peer connected',);
         connectedPeers.add(peer,);
-        sendJson({ peer, message: { type: 'connected', rootDir, fsId, }, },);
+        sendJson({
+          peer,
+          message: { type: 'connected', rootDir, fsId, },
+        },);
       },
 
-      async message(peer, message,) {
+      async message(
+        peer,
+        message,
+      ) {
         try {
-          await dispatchMessage({ peer, messageText: message.text(), rootDir, lspManager,
-            dirWatcher, },);
+          await dispatchMessage({
+            peer,
+            messageText: message.text(),
+            rootDir,
+            lspManager,
+            dirWatcher,
+          },);
         }
         catch (error) {
           // Only reached for pre-parse errors (malformed JSON) where no request id exists.
           // Handler-level errors are caught inside dispatchMessage with proper id correlation.
           const errorMessage = error instanceof Error ? error.message : String(error,);
           l.error(`message handler failed: ${errorMessage}`,);
-          sendJson({ peer, message: { type: 'error', message: errorMessage, }, },);
+          sendJson({
+            peer,
+            message: { type: 'error', message: errorMessage, },
+          },);
         }
       },
 

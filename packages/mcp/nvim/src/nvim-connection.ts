@@ -75,8 +75,14 @@ function connectToSocket(socketPath: string,): NeovimClient {
     return cached;
 
   const socket = connect(socketPath,);
-  const nvim = attach({ reader: socket, writer: socket, },);
-  clients.set(socketPath, nvim,);
+  const nvim = attach({
+    reader: socket,
+    writer: socket,
+  },);
+  clients.set(
+    socketPath,
+    nvim,
+  );
   return nvim;
 }
 

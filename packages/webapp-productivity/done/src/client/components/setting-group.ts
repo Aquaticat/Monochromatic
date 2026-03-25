@@ -57,28 +57,49 @@ class SettingGroup extends HTMLElement {
     const on = this.hasAttribute('on',);
 
     const actionElement = mode === 'button'
-      ? h({ tag: 'button', attrs: { part: 'action', }, children: [
+      ? h({
+        tag: 'button',
+        attrs: { part: 'action', },
+        children: [
         h({ tag: 'slot', attrs: { name: 'action', }, text: 'connect?', },),
-      ], },)
-      : h({ tag: 'toggle-switch', attrs: on ? { on: '', } : {}, },);
+      ],
+      },)
+      : h({
+        tag: 'toggle-switch',
+        attrs: on ? { on: '', } : {},
+      },);
 
     const children: (HTMLElement)[] = [
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       h({
         tag: 'div',
         class: 'header',
         children: [
-          h({ tag: 'span', class: 'label', text: label, },),
+          h({
+            tag: 'span',
+            class: 'label',
+            text: label,
+          },),
           actionElement,
         ],
       },),
     ];
 
     if (description.length > 0)
-      children.push(h({ tag: 'p', class: 'desc', text: description, },),);
+      children.push(h({
+        tag: 'p',
+        class: 'desc',
+        text: description,
+      },),);
 
     this.#shadow.replaceChildren(...children,);
   }
 }
 
-customElements.define('setting-group', SettingGroup,);
+customElements.define(
+  'setting-group',
+  SettingGroup,
+);

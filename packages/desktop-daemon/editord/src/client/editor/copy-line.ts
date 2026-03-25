@@ -16,7 +16,11 @@
  *
  * @returns true if the line was copied (selection was collapsed)
  */
-export function selectAndCopyLine({ editor, line, composedRange, }: {
+export function selectAndCopyLine({
+  editor,
+  line,
+  composedRange,
+}: {
   editor: HTMLDivElement;
   line: number;
   composedRange: StaticRange;
@@ -32,7 +36,10 @@ export function selectAndCopyLine({ editor, line, composedRange, }: {
   if (selection === null)
     return false;
 
-  const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+  const walker = document.createTreeWalker(
+    lineDiv,
+    NodeFilter.SHOW_TEXT,
+  );
   const firstText = walker.nextNode();
   if (firstText === null)
     return false;
@@ -45,7 +52,12 @@ export function selectAndCopyLine({ editor, line, composedRange, }: {
   }
 
   const lastLen = lastText.textContent?.length ?? 0;
-  selection.setBaseAndExtent(firstText, 0, lastText, lastLen,);
+  selection.setBaseAndExtent(
+    firstText,
+    0,
+    lastText,
+    lastLen,
+  );
 
   const raw = lineDiv.textContent;
   void navigator.clipboard.writeText(`${raw === '\n' ? '' : raw}\n`,);

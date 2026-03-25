@@ -56,8 +56,10 @@ export function parseStringArray(value: unknown,): string[] | null {
  *
  * @returns Validated enum value, null, or undefined
  */
-export function parseEnumValue<T extends string,>(value: unknown,
-  validValues: Set<string>,): T | null | undefined
+export function parseEnumValue<T extends string,>(
+  value: unknown,
+  validValues: Set<string>,
+): T | null | undefined
 {
   if (value === undefined)
     return undefined;

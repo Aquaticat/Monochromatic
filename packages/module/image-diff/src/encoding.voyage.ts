@@ -37,16 +37,25 @@ import type { VoyageContentItem, } from './types.voyage-api.ts';
 export async function toVoyageContentItem(
   input: ImageInput,
 ): Promise<VoyageContentItem> {
-  const rl = tagged({ tag: toVoyageContentItem.name, l, },);
+  const rl = tagged({
+    tag: toVoyageContentItem.name,
+    l,
+  },);
 
   if (isImageUrl(input,)) {
     rl.debug(`using URL input: ${input.url}`,);
-    return { type: 'image_url', image_url: input.url, };
+    return {
+      type: 'image_url',
+      image_url: input.url,
+    };
   }
 
   if (isImageBase64(input,)) {
     rl.debug('using pre-encoded base64 input',);
-    return { type: 'image_base64', image_base64: input.base64, };
+    return {
+      type: 'image_base64',
+      image_base64: input.base64,
+    };
   }
 
   if (isImageBuffer(input,)) {
@@ -57,16 +66,28 @@ export async function toVoyageContentItem(
           .byteLength,)
       } bytes, format: ${input.format})`,
     );
-    const dataUri = bufferToDataUri(input.buffer, input.format,);
-    return { type: 'image_base64', image_base64: dataUri, };
+    const dataUri = bufferToDataUri(
+      input.buffer,
+      input.format,
+    );
+    return {
+      type: 'image_base64',
+      image_base64: dataUri,
+    };
   }
 
   if (isImagePath(input,)) {
     rl.debug(`reading file: ${input.path}`,);
     const format = inferFormat(input.path,);
     const fileBuffer = await readFile(input.path,);
-    const dataUri = bufferToDataUri(fileBuffer.buffer, format,);
-    return { type: 'image_base64', image_base64: dataUri, };
+    const dataUri = bufferToDataUri(
+      fileBuffer.buffer,
+      format,
+    );
+    return {
+      type: 'image_base64',
+      image_base64: dataUri,
+    };
   }
 
   throw new Error(

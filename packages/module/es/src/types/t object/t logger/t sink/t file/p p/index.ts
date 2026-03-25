@@ -43,18 +43,36 @@ export async function verify(): Promise<boolean> {
     const fs = await import('node:fs/promises');
     const { join, } = await import('node:path');
 
-    ({ appendFile } = fs);
+    ({ appendFile, } = fs);
 
-    const LOG_DIR = join('node_modules', '.monochromatic',);
-    await fs.mkdir(LOG_DIR, { recursive: true, },);
+    const LOG_DIR = join(
+      'node_modules',
+      '.monochromatic',
+    );
+    await fs.mkdir(
+      LOG_DIR,
+      { recursive: true, },
+    );
 
-    const timestamp = new Date().toISOString().replaceAll(':', '-',);
-    filePath = join(LOG_DIR, `${timestamp}.log.jsonl`,);
+    const timestamp = new Date().toISOString().replaceAll(
+      ':',
+      '-',
+    );
+    filePath = join(
+      LOG_DIR,
+      `${timestamp}.log.jsonl`,
+    );
 
     // Verify by writing and reading test data
     const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
-    await appendFile(filePath, testData,);
-    const content = await fs.readFile(filePath, 'utf8',);
+    await appendFile(
+      filePath,
+      testData,
+    );
+    const content = await fs.readFile(
+      filePath,
+      'utf8',
+    );
     available = content.includes('"test":true',);
   }
   catch {
@@ -76,7 +94,10 @@ export async function $(record: LogRecord,): Promise<void> {
     return;
 
   try {
-    await appendFile(filePath, `${JSON.stringify(record,)}\n`,);
+    await appendFile(
+      filePath,
+      `${JSON.stringify(record,)}\n`,
+    );
   }
   catch (error) {
     console.error(

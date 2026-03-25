@@ -14,7 +14,10 @@ import type { ImageInput, } from './types.ts';
  */
 type GenerateContentPart =
   | { readonly text: string; }
-  | { readonly inline_data: { readonly mime_type: string; readonly data: string; }; };
+  | { readonly inline_data: {
+    readonly mime_type: string;
+    readonly data: string
+  }; };
 
 /**
  * Request body for the Gemini generateContent API.
@@ -88,10 +91,15 @@ function resolveGeminiDescribeKey(): string | undefined {
  * );
  * ```
  */
-export async function describeViaGemini(imageA: ImageInput,
-  imageB: ImageInput,): Promise<string | undefined>
+export async function describeViaGemini(
+  imageA: ImageInput,
+  imageB: ImageInput,
+): Promise<string | undefined>
 {
-  const rl = tagged({ tag: describeViaGemini.name, l, },);
+  const rl = tagged({
+    tag: describeViaGemini.name,
+    l,
+  },);
 
   const apiKey = resolveGeminiDescribeKey();
   if (apiKey === undefined)
@@ -108,8 +116,14 @@ export async function describeViaGemini(imageA: ImageInput,
       {
         parts: [
           { text: DESCRIBE_PROMPT, },
-          { inline_data: { mime_type: inlineA.mime_type, data: inlineA.data, }, },
-          { inline_data: { mime_type: inlineB.mime_type, data: inlineB.data, }, },
+          { inline_data: {
+            mime_type: inlineA.mime_type,
+            data: inlineA.data,
+          }, },
+          { inline_data: {
+            mime_type: inlineB.mime_type,
+            data: inlineB.data,
+          }, },
         ],
       },
     ],
@@ -118,14 +132,17 @@ export async function describeViaGemini(imageA: ImageInput,
   const url = `${GEMINI_API_BASE}/${GEMINI_DESCRIBE_MODEL}:generateContent`;
   rl.debug(`calling Gemini generateContent: ${url}`,);
 
-  const response = await fetch(url, {
+  const response = await fetch(
+    url,
+    {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-goog-api-key': apiKey,
     },
     body: JSON.stringify(requestBody,),
-  },);
+  },
+  );
 
   if (!response.ok) {
     const errorBody = await response.text();

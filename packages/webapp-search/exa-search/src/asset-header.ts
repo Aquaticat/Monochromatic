@@ -10,7 +10,11 @@ export function buildHeader(): string {
     tag: 'header',
     class: 'header',
     children: [
-      h({ tag: 'h1', class: 'logo', text: 'Unofficial Exa Search', },),
+      h({
+        tag: 'h1',
+        class: 'logo',
+        text: 'Unofficial Exa Search',
+      },),
       h({
         tag: 'nav',
         class: 'headerNav',
@@ -25,7 +29,10 @@ export function buildHeader(): string {
                 attrs: { type: 'button', },
                 text: 'Change API Key',
               },),
-              h({ tag: 'dialog', class: 'setApiKey', },),
+              h({
+                tag: 'dialog',
+                class: 'setApiKey',
+              },),
             ],
           },),
           h({
@@ -38,8 +45,13 @@ export function buildHeader(): string {
                   'request ',
                   h({
                     tag: 'input',
-                    attrs: { type: 'number', name: 'numResults', value: '10', max: '100',
-                      min: '1', },
+                    attrs: {
+                      type: 'number',
+                      name: 'numResults',
+                      value: '10',
+                      max: '100',
+                      min: '1',
+                    },
                   },),
                   ' results',
                 ]

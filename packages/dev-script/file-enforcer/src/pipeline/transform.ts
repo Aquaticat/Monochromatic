@@ -22,12 +22,21 @@ export function dedup(content: string,): string {
  *
  * @returns Extracted value as a string (stringified if not already a string)
  */
-export function getProperty(path: string, content: string,): string {
+export function getProperty(
+  path: string,
+  content: string,
+): string {
   /** Parsed JSON value */
   const parsed: unknown = JSON.parse(content,);
   /** Extracted value at the dot-path (slice(1) removes leading dot) */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown, dot-prop requires Record
-  const extracted: unknown = dotPropGet(parsed as Record<string, unknown>,
-    path.slice(1,),);
-  return typeof extracted === 'string' ? extracted : JSON.stringify(extracted, null, 2,);
+  const extracted: unknown = dotPropGet(
+    parsed as Record<string, unknown>,
+    path.slice(1,),
+  );
+  return typeof extracted === 'string' ? extracted : JSON.stringify(
+    extracted,
+    null,
+    2,
+  );
 }

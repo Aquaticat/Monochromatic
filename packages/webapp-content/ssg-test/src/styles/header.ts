@@ -28,7 +28,9 @@ import {
  */
 export function headerStyles(): string {
   return [
-    $({ rule: 'header', decls: {
+    $({
+      rule: 'header',
+      decls: {
       display: 'flex',
       'align-items': 'center',
       'justify-content': 'space-between',
@@ -37,19 +39,26 @@ export function headerStyles(): string {
       'border-block-end-style': 'solid',
       'border-block-end-width': cssCalc(BORDER_WIDTH_REM,),
       'border-block-end-color': cssVar('color-border',),
-    }, },),
-    $({ rule: '.brand', decls: {
+    },
+    },),
+    $({
+      rule: '.brand',
+      decls: {
       display: 'flex',
       'align-items': 'center',
       gap: cssRem(GAP_SMALL,),
       'text-decoration-line': 'none',
       color: 'inherit',
       'font-weight': 600,
-    }, },),
-    $({ rule: '.brand img', decls: {
+    },
+    },),
+    $({
+      rule: '.brand img',
+      decls: {
       'inline-size': cssRem(2,),
       'block-size': cssRem(2,),
-    }, },),
+    },
+    },),
   ]
     .join('\n',);
 }
@@ -61,7 +70,9 @@ export function headerStyles(): string {
  */
 export function searchAndInteractionStyles(): string {
   return [
-    $({ rule: '[popover]', decls: {
+    $({
+      rule: '[popover]',
+      decls: {
       'padding-block': cssRem(GAP,),
       'padding-inline': cssRem(GAP,),
       'max-inline-size': cssRem(MAX_WIDTH,),
@@ -69,23 +80,33 @@ export function searchAndInteractionStyles(): string {
       'border-width': cssCalc(BORDER_WIDTH_REM,),
       'border-color': cssVar('color-border',),
       'border-radius': cssRem(GAP_SMALL,),
-    }, },),
-    $({ rule: '[popover] input[type="search"]', decls: {
+    },
+    },),
+    $({
+      rule: '[popover] input[type="search"]',
+      decls: {
       'inline-size': cssPercent(FULL_WIDTH,),
       'padding-block': cssRem(GAP_SMALL,),
       'padding-inline': cssRem(GAP_SMALL,),
       'font-size': cssRem(1,),
-    }, },),
-    $({ rule: 'button, a', decls: {
+    },
+    },),
+    $({
+      rule: 'button, a',
+      decls: {
       'min-inline-size': cssRem(TOUCH_TARGET,),
       'min-block-size': cssRem(TOUCH_TARGET,),
-    }, },),
-    $({ rule: ':focus-visible', decls: {
+    },
+    },),
+    $({
+      rule: ':focus-visible',
+      decls: {
       'outline-color': cssVar('color-focus-ring',),
       'outline-style': 'solid',
       'outline-width': cssCalc(BORDER_WIDTH_REM,),
       'outline-offset': cssCalc(BORDER_WIDTH_REM,),
-    }, },),
+    },
+    },),
   ]
     .join('\n',);
 }

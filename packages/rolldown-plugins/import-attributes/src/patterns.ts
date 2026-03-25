@@ -34,10 +34,16 @@ export function extractAttrType(id: string,): string | undefined {
   if (queryIndex === -1)
     return undefined;
   const valueStart = queryIndex + ATTR_QUERY_KEY.length + 2;
-  const ampIndex = id.indexOf('&', valueStart,);
+  const ampIndex = id.indexOf(
+    '&',
+    valueStart,
+  );
   if (ampIndex === -1)
     return id.slice(valueStart,);
-  return id.slice(valueStart, ampIndex,);
+  return id.slice(
+    valueStart,
+    ampIndex,
+  );
 }
 
 /**
@@ -57,7 +63,10 @@ export function stripAttrQuery(id: string,): string {
   const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`,);
   if (queryIndex === -1)
     return id;
-  return id.slice(0, queryIndex,);
+  return id.slice(
+    0,
+    queryIndex,
+  );
 }
 
 //endregion Query helpers

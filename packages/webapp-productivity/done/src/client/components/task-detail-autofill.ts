@@ -12,12 +12,20 @@ const AUTOFILL_DEBOUNCE_MS = 500;
 /** Callback interface for the autofill controller to update the host component. */
 export type AutofillCallbacks = {
   /** Returns current metadata values. */
-  getState: () => { tags: string[]; locations: string[]; priority: string | null;
-    complexity: string | null; };
+  getState: () => {
+    tags: string[];
+    locations: string[];
+    priority: string | null;
+    complexity: string | null
+  };
   /** Applies new metadata values. */
   setState: (
-    update: { tags?: string[]; locations?: string[]; priority?: string | null;
-      complexity?: string | null; },
+    update: {
+      tags?: string[];
+      locations?: string[];
+      priority?: string | null;
+      complexity?: string | null
+    },
   ) => void;
   /** Refreshes the pill display. */
   updateDisplay: () => void;
@@ -65,11 +73,14 @@ export class AutofillController {
     if (title.trim().length === 0)
       return;
 
-    this.#timer = setTimeout(function triggerAutofill(this: AutofillController,): void {
+    this.#timer = setTimeout(
+      function triggerAutofill(this: AutofillController,): void {
       // oxlint-disable-next-line typescript/no-floating-promises -- fire-and-forget
       this.#fetch(title.trim(),);
     }
-      .bind(this,), AUTOFILL_DEBOUNCE_MS,);
+      .bind(this,),
+      AUTOFILL_DEBOUNCE_MS,
+    );
   }
 
   /**
@@ -84,12 +95,15 @@ export class AutofillController {
     this.#callbacks.updateDisplay();
 
     try {
-      const response = await fetch('/api/ai/autofill', {
+      const response = await fetch(
+        '/api/ai/autofill',
+        {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
         body: JSON.stringify({ title, },),
         signal: controller.signal,
-      },);
+      },
+      );
 
       if (response.ok) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape
@@ -120,7 +134,10 @@ export class AutofillController {
     }
     catch (error: unknown) {
       if (!(error instanceof DOMException && error.name === 'AbortError'))
-        console.error('Autofill request failed:', error,);
+        console.error(
+          'Autofill request failed:',
+          error,
+        );
     }
 
     this.loading = false;

@@ -34,5 +34,9 @@ import { $ as pickNamed, } from '../p n/index.ts';
   toPick: ReadonlySet<TKeys>,
   strict = true,
 ): Pick<TObject, TKeys> {
-  return pickNamed({ original, toPick, strict, },);
+  return pickNamed({
+    original,
+    toPick,
+    strict,
+  },);
 }

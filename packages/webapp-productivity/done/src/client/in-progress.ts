@@ -50,20 +50,30 @@ if (!(appElement instanceof HTMLElement))
 const app = appElement;
 
 if (pageData.tasks.length === 0)
-  app.append(h({ tag: 'p', class: 'empty', text: 'No active timers.', },),);
+  app.append(h({
+    tag: 'p',
+    class: 'empty',
+    text: 'No active timers.',
+  },),);
 
 /** Task card list for in-progress tasks. */
-const list = h({ tag: 'ul', class: 'task-list', },);
+const list = h({
+  tag: 'ul',
+  class: 'task-list',
+},);
 
 for (const task of pageData.tasks) {
   list.append(
-    createTaskCard(task, {
+    createTaskCard(
+      task,
+      {
       onOpen: openTask,
       onToggleComplete: async function stopTimer(taskId,) {
         await api(`/api/tasks/${taskId}/stop`, { method: 'POST', },);
         globalThis.location.reload();
       },
-    },),
+    },
+    ),
   );
 }
 
@@ -74,7 +84,8 @@ if (pageData.tasks.length > 0)
 const TIMER_UPDATE_MS = 1_000;
 
 // Live timer updates -- correlate each card with its task by DOM order
-setInterval(function updateTimers() {
+setInterval(
+  function updateTimers() {
   const cards = list.querySelectorAll<HTMLElement>('task-card',);
   cards.forEach(function updateCard(card, cardIndex,) {
     const task = pageData.tasks[cardIndex];
@@ -88,4 +99,6 @@ setInterval(function updateTimers() {
     if (chipEl instanceof HTMLSpanElement)
       chipEl.textContent = `tracked: ${formatRunningTrackedTime(task,)}`;
   },);
-}, TIMER_UPDATE_MS,);
+},
+  TIMER_UPDATE_MS,
+);

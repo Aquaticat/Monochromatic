@@ -28,7 +28,10 @@ export type DiffLine = {
  * // [{ type: 'removed', content: 'const x = 1;' }, { type: 'added', content: 'const x = 2;' }]
  * ```
  */
-export async function computeDiff({ initialPath, fixPath, }: {
+export async function computeDiff({
+  initialPath,
+  fixPath,
+}: {
   initialPath: string;
   fixPath: string;
 },): Promise<readonly DiffLine[]> {
@@ -38,8 +41,11 @@ export async function computeDiff({ initialPath, fixPath, }: {
    */
   let stdout = '';
   try {
-    const result = await spawn('git', ['diff', '--no-index', '--unified=99999',
-      '--no-color', initialPath, fixPath,],);
+    const result = await spawn(
+      'git',
+      ['diff', '--no-index', '--unified=99999',
+      '--no-color', initialPath, fixPath,],
+    );
     ({ stdout, } = result);
   }
   catch (error: unknown) {
@@ -75,11 +81,20 @@ function parseDiffOutput(output: string,): readonly DiffLine[] {
       continue;
 
     if (line.startsWith('+',))
-      result.push({ type: 'added', content: line.slice(1,), },);
+      result.push({
+        type: 'added',
+        content: line.slice(1,),
+      },);
     else if (line.startsWith('-',))
-      result.push({ type: 'removed', content: line.slice(1,), },);
+      result.push({
+        type: 'removed',
+        content: line.slice(1,),
+      },);
     else if (line.startsWith(' ',))
-      result.push({ type: 'unchanged', content: line.slice(1,), },);
+      result.push({
+        type: 'unchanged',
+        content: line.slice(1,),
+      },);
     // Skip "\ No newline at end of file" and empty trailing lines
   }
 

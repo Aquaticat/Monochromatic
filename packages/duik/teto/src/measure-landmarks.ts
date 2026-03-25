@@ -60,7 +60,12 @@ export type ProfilePair = {
  * @returns array of measurement rows for all landmarks
  */
 export function computeLandmarkMeasurements(pair: ProfilePair,): MeasurementRow[] {
-  const { refProfile, cmpProfile, refBounds, cmpBounds, } = pair;
+  const {
+    refProfile,
+    cmpProfile,
+    refBounds,
+    cmpBounds,
+  } = pair;
   const measurements: MeasurementRow[] = [];
 
   for (const [name, relY,] of Object.entries(LANDMARKS,)) {
@@ -68,8 +73,14 @@ export function computeLandmarkMeasurements(pair: ProfilePair,): MeasurementRow[
     const refAbsY = refBounds.top + relY * (refBounds.bottom - refBounds.top);
     const cmpAbsY = cmpBounds.top + relY * (cmpBounds.bottom - cmpBounds.top);
 
-    const refW = widthAtRelY(refProfile, refAbsY,);
-    const cmpW = widthAtRelY(cmpProfile, cmpAbsY,);
+    const refW = widthAtRelY(
+      refProfile,
+      refAbsY,
+    );
+    const cmpW = widthAtRelY(
+      cmpProfile,
+      cmpAbsY,
+    );
 
     /** Normalize widths relative to content height for fair comparison. */
     const refNorm = refW / refBounds.totalHeight;

@@ -19,12 +19,18 @@ import type { EditorWsClient, } from '../ws/client.ts';
  *
  * @param getCurrentFilePath - returns the current file path
  */
-export function wireContentSync({ ws, editorPane, getCurrentFilePath, }: {
+export function wireContentSync({
+  ws,
+  editorPane,
+  getCurrentFilePath,
+}: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
 },): void {
-  editorPane.addEventListener('contentchange', createDebounced({
+  editorPane.addEventListener(
+    'contentchange',
+    createDebounced({
     fn: function syncContent() {
       const path = getCurrentFilePath();
       if (path === null)
@@ -32,7 +38,8 @@ export function wireContentSync({ ws, editorPane, getCurrentFilePath, }: {
       void ws.notify({ type: 'didChange', path, content: editorPane.getText(), },);
     },
     delayMs: CONTENT_SYNC_DEBOUNCE_MS,
-  },),);
+  },),
+  );
 }
 
 /**
@@ -44,12 +51,19 @@ export function wireContentSync({ ws, editorPane, getCurrentFilePath, }: {
  *
  * @param getCurrentFilePath - returns the current file path
  */
-export function wireDiagnostics({ ws, editorPane, getCurrentFilePath, }: {
+export function wireDiagnostics({
+  ws,
+  editorPane,
+  getCurrentFilePath,
+}: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
 },): void {
-  ws.onDiagnostics = function handleDiagnostics({ path, diagnostics, },): void {
+  ws.onDiagnostics = function handleDiagnostics({
+    path,
+    diagnostics,
+  },): void {
     if (path === getCurrentFilePath())
       editorPane.setDiagnostics(diagnostics,);
   };

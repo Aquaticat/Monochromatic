@@ -50,7 +50,10 @@ export function verifySolutionSet(
     return false;
   /** Whether every parsed grid is a valid complete sudoku matching the original clues */
   const allValid = grids.every(function validateGrid(grid,): boolean {
-    return isValidSolution(grid,) && matchesClues(grid, clues,);
+    return isValidSolution(grid,) && matchesClues(
+      grid,
+      clues,
+    );
   },);
   if (!allValid)
     return false;

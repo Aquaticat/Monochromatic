@@ -52,7 +52,12 @@ const MIN_SEGMENT_POINTS = 2;
  * if (erased) redraw({ ctx, cw, ch });
  * ```
  */
-export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
+export function eraseStrokesAt({
+  point,
+  previousPoint,
+  cw,
+  ch,
+}: {
   point: NormalizedPoint;
   previousPoint: NormalizedPoint | null;
   cw: number;
@@ -61,11 +66,28 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
   /** Eraser radius in CSS pixels, matching the active stroke width */
   const radiusPx = getStrokeWidth();
   /** Eraser segment endpoint in pixel space */
-  const { px: bx, py: by, } = denormalizePoint({ point, cw, ch, },);
+  const {
+    px: bx,
+    py: by,
+  } = denormalizePoint({
+    point,
+    cw,
+    ch,
+  },);
   /** Eraser segment start in pixel space (same as end when no previous point) */
-  const { px: ax, py: ay, } = previousPoint !== null
-    ? denormalizePoint({ point: previousPoint, cw, ch, },)
-    : { px: bx, py: by, };
+  const {
+    px: ax,
+    py: ay,
+  } = previousPoint !== null
+    ? denormalizePoint({
+      point: previousPoint,
+      cw,
+      ch,
+    },)
+    : {
+      px: bx,
+      py: by,
+    };
   /** Squared radius for distance comparison without sqrt */
   const radiusSq = radiusPx * radiusPx;
 
@@ -87,7 +109,14 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
     for (let i = 0; i < stroke.points.length; i++) {
       const p = stroke.points[i]!;
       /** Stroke point in pixel space */
-      const { px, py, } = denormalizePoint({ point: p, cw, ch, },);
+      const {
+        px,
+        py,
+      } = denormalizePoint({
+        point: p,
+        cw,
+        ch,
+      },);
       /** Squared distance from stroke point to eraser travel segment */
       const pointDistSq = distToSegmentSq({
         px,
@@ -138,8 +167,12 @@ export function eraseStrokesAt({ point, previousPoint, cw, ch, }: {
     if (strokeModified) {
       erased = true;
       for (const seg of segments) {
-        newStrokes.push({ points: [...seg,], color: stroke.color, width: stroke
-          .width, },);
+        newStrokes.push({
+          points: [...seg,],
+          color: stroke.color,
+          width: stroke
+          .width,
+        },);
       }
     }
     else {

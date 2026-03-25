@@ -245,7 +245,17 @@ export function cssTurn(n: number,): CssValue {
  * ```
  */
 export function cssOklch(
-  { l, c, h, a, }: { l: number; c: number; h: number; a?: number; },
+  {
+    l,
+    c,
+    h,
+    a,
+  }: {
+    l: number;
+    c: number;
+    h: number;
+    a?: number
+  },
 ): CssValue {
   if (a !== undefined)
     return `oklch(${l} ${c} ${h} / ${a})` as CssValue;
@@ -274,7 +284,15 @@ export function cssOklch(
  * ```
  */
 export function cssColorFn(
-  { space, channels, a, }: { space: string; channels: string; a?: number; },
+  {
+    space,
+    channels,
+    a,
+  }: {
+    space: string;
+    channels: string;
+    a?: number
+  },
 ): CssValue {
   if (a !== undefined)
     return `color(${space} ${channels} / ${a})` as CssValue;

@@ -40,13 +40,20 @@ class FocusDropdown extends HTMLElement {
 
   /** Renders the trigger button and popover menu with preset options. */
   #render(): void {
-    const textSpan = h({ tag: 'span', class: 'text', text: this.#value, },);
+    const textSpan = h({
+      tag: 'span',
+      class: 'text',
+      text: this.#value,
+    },);
     const menu = h({
       tag: 'ul',
       class: 'menu',
       attrs: { popover: 'auto', },
       children: DEFAULT_PRESETS.map(
-        function buildOption(this: FocusDropdown, preset: string,): HTMLElement {
+        function buildOption(
+          this: FocusDropdown,
+          preset: string,
+        ): HTMLElement {
           return h({
             tag: 'li',
             class: 'option',
@@ -57,8 +64,11 @@ class FocusDropdown extends HTMLElement {
                 textSpan.textContent = preset;
                 menu.hidePopover();
                 this.dispatchEvent(
-                  new CustomEvent('change', { bubbles: true,
-                    detail: { value: preset, }, },),
+                  new CustomEvent(
+                    'change',
+                    { bubbles: true,
+                    detail: { value: preset, }, },
+                  ),
                 );
               }
                 .bind(this,),
@@ -70,14 +80,23 @@ class FocusDropdown extends HTMLElement {
     },);
 
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: FOCUS_DROPDOWN_STYLES, },),
+      h({
+        tag: 'style',
+        text: FOCUS_DROPDOWN_STYLES,
+      },),
       h({
         tag: 'button',
         class: 'trigger',
         children: [
           textSpan,
-          h({ tag: 'span', class: 'divider', },),
-          h({ tag: 'span', text: '\u25BC', },),
+          h({
+            tag: 'span',
+            class: 'divider',
+          },),
+          h({
+            tag: 'span',
+            text: '\u25BC',
+          },),
         ],
         on: { click: function onTriggerClick(): void {
           menu.togglePopover();
@@ -88,4 +107,7 @@ class FocusDropdown extends HTMLElement {
   }
 }
 
-customElements.define('focus-dropdown', FocusDropdown,);
+customElements.define(
+  'focus-dropdown',
+  FocusDropdown,
+);

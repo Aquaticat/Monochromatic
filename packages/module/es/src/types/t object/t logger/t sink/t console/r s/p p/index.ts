@@ -19,7 +19,10 @@ let available = true;
  * SILENT_LEVELS.has('info');  // false
  * ```
  */
-const SILENT_LEVELS: ReadonlySet<string> = new Set(['debug', 'trace',],);
+const SILENT_LEVELS: ReadonlySet<string> = new Set([
+  'debug',
+  'trace',
+],);
 
 /**
  * Detects verbose mode from environment variables, process arguments,

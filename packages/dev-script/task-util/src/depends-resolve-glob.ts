@@ -32,19 +32,34 @@ const GLOB_META = /[*?{[]/;
  * splitGlob('src/**') // ['/abs/path/src', '**']
  * ```
  */
-function splitGlob(pattern: string,): readonly [cwd: string, relativeGlob: string,] {
+function splitGlob(pattern: string,): readonly [
+  cwd: string,
+  relativeGlob: string,
+] {
   const metaIndex = pattern.search(GLOB_META,);
 
   if (metaIndex === -1)
-    return [resolve(pattern,), '',];
+    return [
+      resolve(pattern,),
+      '',
+    ];
 
-  const staticPrefix = pattern.slice(0, metaIndex,);
+  const staticPrefix = pattern.slice(
+    0,
+    metaIndex,
+  );
   const lastSep = staticPrefix.lastIndexOf('/',);
 
   if (lastSep === -1)
-    return [resolve('.',), pattern,];
+    return [
+      resolve('.',),
+      pattern,
+    ];
 
-  return [resolve(staticPrefix.slice(0, lastSep,),), pattern.slice(lastSep + 1,),];
+  return [
+    resolve(staticPrefix.slice(0, lastSep,),),
+    pattern.slice(lastSep + 1,),
+  ];
 }
 
 /**
@@ -65,7 +80,10 @@ export async function resolveGlobFiles(pattern: string,): Promise<string[]> {
   if (relativeGlob === '')
     return [cwd,];
 
-  const { files, } = await readdirGlob(relativeGlob, { cwd, },);
+  const { files, } = await readdirGlob(
+    relativeGlob,
+    { cwd, },
+  );
   return files;
 }
 

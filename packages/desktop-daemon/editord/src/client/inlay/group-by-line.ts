@@ -14,7 +14,10 @@
  *
  * @returns map from key to grouped items
  */
-export function groupByLine<T,>({ items, keyFn, }: {
+export function groupByLine<T,>({
+  items,
+  keyFn,
+}: {
   items: T[];
   keyFn: (item: T,) => number;
 },): Map<number, T[]> {
@@ -24,7 +27,10 @@ export function groupByLine<T,>({ items, keyFn, }: {
     let group = groups.get(key,);
     if (group === undefined) {
       group = [];
-      groups.set(key, group,);
+      groups.set(
+        key,
+        group,
+      );
     }
     group.push(item,);
   }

@@ -65,5 +65,8 @@ async function cleanupTemplateVm(rl: { debug: (msg: string,) => void; },): Promi
   catch {
     rl.debug('template VM was not defined, skipping undefine',);
   }
-  await rm(join(VMS_DIR, TEMPLATE_VM_NAME,), { force: true, recursive: true, },);
+  await rm(
+    join(VMS_DIR, TEMPLATE_VM_NAME,),
+    { force: true, recursive: true, },
+  );
 }

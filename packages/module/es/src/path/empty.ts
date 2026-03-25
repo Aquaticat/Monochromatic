@@ -40,7 +40,10 @@ const l = tagged({ tag: 'path/empty', },);
  */
 export async function emptyPath(path: string,): Promise<string> {
   const queryIndex = path.indexOf('?',);
-  const cleanPath = queryIndex !== -1 ? path.slice(0, queryIndex,) : path;
+  const cleanPath = queryIndex !== -1 ? path.slice(
+    0,
+    queryIndex,
+  ) : path;
   const parsed = parse(cleanPath,);
 
   if (parsed.ext) {
@@ -67,7 +70,10 @@ export async function emptyDir(path: string,): Promise<string> {
   const entries = await readdir(path,);
 
   await Promise.all(entries.map(function removeEntry(entry,): Promise<void> {
-    return rm(join(path, entry,), { recursive: true, force: true, },);
+    return rm(
+      join(path, entry,),
+      { recursive: true, force: true, },
+    );
   },),);
 
   return path;
@@ -88,9 +94,15 @@ export async function emptyDir(path: string,): Promise<string> {
  */
 export async function emptyFile(path: string,): Promise<string> {
   const queryIndex = path.indexOf('?',);
-  const cleanPath = queryIndex !== -1 ? path.slice(0, queryIndex,) : path;
+  const cleanPath = queryIndex !== -1 ? path.slice(
+    0,
+    queryIndex,
+  ) : path;
 
-  await writeFile(cleanPath, '',);
+  await writeFile(
+    cleanPath,
+    '',
+  );
   return path;
 }
 
@@ -112,14 +124,23 @@ export async function removeEmptyFilesInDir(path: string,): Promise<string> {
 
   await Promise.all(
     entries.map(async function checkAndRemoveIfEmpty(entry,): Promise<void> {
-      const fullPath = join(path, entry,);
+      const fullPath = join(
+        path,
+        entry,
+      );
       const stats = await stat(fullPath,);
 
       if (stats.isFile()) {
-        const content = await readFile(fullPath, 'utf8',);
+        const content = await readFile(
+          fullPath,
+          'utf8',
+        );
         if (content.trim() === '') {
           l.debug(`Removing empty file ${fullPath}`,);
-          await rm(fullPath, { force: true, },);
+          await rm(
+            fullPath,
+            { force: true, },
+          );
         }
       }
     },),

@@ -45,7 +45,8 @@ export const requireReturns: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context,
+    return createFunctionTsdocVisitor(
+      context,
       function requireReturnsHandler(node, result,): void {
         if (!functionReturnsValue(node,))
           return;
@@ -55,7 +56,8 @@ export const requireReturns: CreateOnceRule = {
             messageId: 'missing',
           },);
         }
-      },);
+      },
+    );
   },
 };
 
@@ -78,7 +80,8 @@ export const requireReturnsCheck: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context,
+    return createFunctionTsdocVisitor(
+      context,
       function requireReturnsCheckHandler(node, result,): void {
         if (!functionReturnsValue(node,)
           && result.docComment.returnsBlock !== undefined)
@@ -88,7 +91,8 @@ export const requireReturnsCheck: CreateOnceRule = {
             messageId: 'voidReturn',
           },);
         }
-      },);
+      },
+    );
   },
 };
 

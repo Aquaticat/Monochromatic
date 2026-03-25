@@ -54,7 +54,10 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
   if (databasePath === ':memory:')
     return;
   const directoryPath = dirname(databasePath,);
-  mkdirSync(directoryPath, { recursive: true, },);
+  mkdirSync(
+    directoryPath,
+    { recursive: true, },
+  );
 }
 
 /** Resolved database file path. */
@@ -62,7 +65,10 @@ const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
 /** Open SQLite database connection with WAL mode and foreign keys. */
-const db = await connect(databasePath, { experimental: ['triggers',], },);
+const db = await connect(
+  databasePath,
+  { experimental: ['triggers',], },
+);
 await db.exec('PRAGMA journal_mode = WAL',);
 await db.exec('PRAGMA foreign_keys = ON',);
 

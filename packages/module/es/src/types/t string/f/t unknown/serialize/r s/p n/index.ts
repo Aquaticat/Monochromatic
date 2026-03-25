@@ -86,7 +86,11 @@ export type SerializeOptions = {
  * ```
  */
 export function $(options: SerializeOptions,): string {
-  const { value, serializer, lossyForCircular, } = options;
+  const {
+    value,
+    serializer,
+    lossyForCircular,
+  } = options;
 
   if (hasCycle(value,)) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- hasCycle verified value is an object with cycles
@@ -95,13 +99,19 @@ export function $(options: SerializeOptions,): string {
     if (!lossyForCircular) {
       throw new TypeError(
         `Cannot store value perfectly because it has cycles: ${
-          serialized.slice(0, DEFAULT_LOG_LIMIT,)
+          serialized.slice(
+            0,
+            DEFAULT_LOG_LIMIT,
+          )
         }`,
       );
     }
     defaultLogger.warn(
       `Value has cycles, storing decycled version: ${
-        serialized.slice(0, DEFAULT_LOG_LIMIT,)
+        serialized.slice(
+          0,
+          DEFAULT_LOG_LIMIT,
+        )
       }`,
     );
     return serialized;

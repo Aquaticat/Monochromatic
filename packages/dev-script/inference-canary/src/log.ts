@@ -1,3 +1,17 @@
+/**
+ * Root tagged logger for the inference canary.
+ * Sub-modules compose deeper tags via `tagged({ tag, l })`.
+ *
+ * @example
+ * ```ts
+ * import { l, tagged } from './log.ts';
+ *
+ * function runProbe(probe: Probe): void {
+ *   const rl = tagged({ tag: runProbe.name, l });
+ *   rl.info('starting probe execution');
+ * }
+ * ```
+ */
 import {
   $,
   initPromise,
@@ -10,17 +24,17 @@ import type {
 await initPromise;
 
 /**
- * Root tagged logger for the token-count library.
+ * Root tagged logger for all inference canary subsystems.
  * Sub-modules compose deeper tags via `tagged({ tag, l })`.
  *
  * @example
  * ```ts
  * const rl = tagged({ tag: myFn.name, l });
- * rl.info('counting tokens');
+ * rl.info('starting operation');
  * ```
  */
 export const l: Logger = tagged({
-  tag: 'token-count',
+  tag: 'canary',
   l: $,
 },);
 

@@ -20,12 +20,18 @@
  * trimEndWith('String', 'prefix'); // 'String' (no change)
  * ```
  */
-export function trimEndWith(str: string, trimmer: string,): string {
+export function trimEndWith(
+  str: string,
+  trimmer: string,
+): string {
   if (trimmer === '')
     throw new Error('trimmer cannot be empty',);
   let result = str;
   while (result.endsWith(trimmer,))
-    result = result.slice(0, -trimmer.length,);
+    result = result.slice(
+      0,
+      -trimmer.length,
+    );
   return result;
 }
 
@@ -51,13 +57,19 @@ export function trimEndWith(str: string, trimmer: string,): string {
  * trimStartWith('String', 'suffix'); // 'String' (no change)
  * ```
  */
-export function trimStartWith(str: string, trimmer: string,): string {
+export function trimStartWith(
+  str: string,
+  trimmer: string,
+): string {
   if (trimmer === '')
     throw new Error('trimmer cannot be empty',);
   if (!str.startsWith(trimmer,))
     return str;
   let modifyingString = str;
   while (modifyingString.startsWith(trimmer,))
-    modifyingString = modifyingString.replace(trimmer, '',);
+    modifyingString = modifyingString.replace(
+      trimmer,
+      '',
+    );
   return modifyingString;
 }

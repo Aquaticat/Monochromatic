@@ -27,22 +27,37 @@ export const {
   processingParagraph,
 } = {
   exa: createObservable(
-    await (async function createExaExtra(): Promise<[Exa, { apiKey: string; },]> {
+    await (async function createExaExtra(): Promise<[
+      Exa,
+      { apiKey: string; },
+    ]> {
       const apiKey = await z
-        .pipe(z
+        .pipe(
+          z
           .pipe(z.nullable(z.uuid(),), z.transform(async function promptSet(val,) {
             if (val)
               return val;
             const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
             localStorage.setItem('exaApiKey', inputApiKey,);
             return inputApiKey;
-          },),), z.uuid(),)
+          },),),
+          z.uuid(),
+        )
         .parseAsync(localStorage.getItem('exaApiKey',),);
-      const exa = new Exa(apiKey, baseUrl,);
-      return [exa, { apiKey, },];
+      const exa = new Exa(
+        apiKey,
+        baseUrl,
+      );
+      return [
+        exa,
+        { apiKey, },
+      ];
     })(),
     function updateStorage(val,) {
-      localStorage.setItem('exaApiKey', val[1].apiKey,);
+      localStorage.setItem(
+        'exaApiKey',
+        val[1].apiKey,
+      );
     },
   ),
   searchForm: notNullishOrThrow(
@@ -88,7 +103,10 @@ export const {
   exaMaxResults: z.coerce.number().parse(numResultsInput.max,),
   numTotalSearches: createObservable(
     z
-      ._default(z.coerce.number(), 0,)
+      ._default(
+        z.coerce.number(),
+        0,
+      )
       .parse(localStorage.getItem('numTotalSearches',),),
     function updateDisplay(val,) {
       numTotalSearchesSpan.textContent = String(val,);
@@ -99,14 +117,21 @@ export const {
       localStorage.getItem('numResults',) ?? numResultsInput.value,
     ),
     function updateStored(val,) {
-      localStorage.setItem('numResults', String(val,),);
+      localStorage.setItem(
+        'numResults',
+        String(val,),
+      );
       numResultsInput.value = String(val,);
     },
   ),
 };
 
 // TODO: Use logic of replicating element inside fetch result to avoid errors on subsequent searches.
-replicateElementAsContentOf(firstResult, resultsSection, exaMaxResults,);
+replicateElementAsContentOf(
+  firstResult,
+  resultsSection,
+  exaMaxResults,
+);
 
 /** Live HTMLCollection of result article elements inside the results section. */
 export const resultArticles: HTMLCollection = resultsSection.children;

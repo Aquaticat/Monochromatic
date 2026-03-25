@@ -47,30 +47,49 @@ const TEXTAREA_MIN_HEIGHT = 4.5;
 export const TASK_DETAIL_STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: cssRem(1,), 'padding-block': cssRem(1,),
-      'padding-inline': cssRem(1,), },
+    decls: {
+      ...flexColumn(),
+      gap: cssRem(1,),
+      'padding-block': cssRem(1,),
+      'padding-inline': cssRem(1,),
+    },
   },),
   css({
     rule: '.header',
-    decls: { ...flexRow(), 'justify-content': 'space-between', },
+    decls: {
+      ...flexRow(),
+      'justify-content': 'space-between',
+    },
   },),
   css({
     rule: '.close',
-    decls: { ...appearanceNone(), ...flexCenter(), ...minTouchTarget(), },
+    decls: {
+      ...appearanceNone(),
+      ...flexCenter(),
+      ...minTouchTarget(),
+    },
     children: [
-      css({ rule: '&:focus-visible',
-        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },), },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },),
+      },),
       css({
         rule: '& svg',
-        decls: { 'inline-size': cssRem(2,), 'block-size': cssRem(2,),
-          stroke: cssVar('fg',), 'stroke-width': cssInt(STROKE_WIDTH,), },
+        decls: {
+          'inline-size': cssRem(2,),
+          'block-size': cssRem(2,),
+          stroke: cssVar('fg',),
+          'stroke-width': cssInt(STROKE_WIDTH,),
+        },
       },),
     ],
   },),
   css({
     rule: '.heading',
-    decls: { 'font-size': cssRem(HEADING_FONT_SIZE,),
-      'font-weight': cssInt(FONT_WEIGHT_NORMAL,), },
+    decls: {
+      'font-size': cssRem(HEADING_FONT_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
+    },
   },),
   css({
     rule: '.title-input',
@@ -111,7 +130,10 @@ export const TASK_DETAIL_STYLES = [
   },),
   css({
     rule: '.actions',
-    decls: { display: 'flex', gap: cssRem(1,), },
+    decls: {
+      display: 'flex',
+      gap: cssRem(1,),
+    },
   },),
   TASK_DETAIL_INTERACTIVE_STYLES,
 ]

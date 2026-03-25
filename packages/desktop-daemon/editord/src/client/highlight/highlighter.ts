@@ -30,7 +30,10 @@ import {
 export { clearHighlights, };
 
 /** Tagged logger for the highlighting subsystem. */
-const highlightLog = tagged({ tag: 'highlight', l, },);
+const highlightLog = tagged({
+  tag: 'highlight',
+  l,
+},);
 
 /**
  * Parses text and applies syntax highlighting via CSS Custom Highlight API.
@@ -43,7 +46,10 @@ const highlightLog = tagged({ tag: 'highlight', l, },);
  *
  * @param parser - Lezer parser configured for the file's language
  */
-export function applyHighlights({ editor, parser, }: {
+export function applyHighlights({
+  editor,
+  parser,
+}: {
   editor: HTMLDivElement;
   parser: Parser;
 },): void {
@@ -61,14 +67,21 @@ export function applyHighlights({ editor, parser, }: {
   }
 
   const tree = parser.parse(text,);
-  const rangesByGroup = collectHighlightRanges({ tree, lines, editor, },);
+  const rangesByGroup = collectHighlightRanges({
+    tree,
+    lines,
+    editor,
+  },);
 
   /** Register highlights with the CSS Custom Highlight API. */
   for (const group of HIGHLIGHT_GROUPS) {
     const name = `hl-${group}`;
     const ranges = rangesByGroup.get(group,);
     if (ranges !== undefined && ranges.length > 0)
-      CSS.highlights.set(name, new Highlight(...ranges,),);
+      CSS.highlights.set(
+        name,
+        new Highlight(...ranges,),
+      );
     else
       CSS.highlights.delete(name,);
   }

@@ -107,7 +107,10 @@ async function resolveShellCommand(
   let stdout = '';
 
   try {
-    const result = await spawn(command, { shell: true, },);
+    const result = await spawn(
+      command,
+      { shell: true, },
+    );
     stdout = result.stdout.trim();
   }
   catch (error) {
@@ -170,10 +173,18 @@ export async function resolveItems(
   const results = await Promise.all(
     items.map(async function resolveItem(item,): Promise<number[]> {
       if (isShellCommand(item,)) {
-        const ts = await resolveShellCommand(extractCommand(item,), position, verbose,);
+        const ts = await resolveShellCommand(
+          extractCommand(item,),
+          position,
+          verbose,
+        );
         return [ts,];
       }
-      return resolveGlob(item, position, verbose,);
+      return resolveGlob(
+        item,
+        position,
+        verbose,
+      );
     },),
   );
 

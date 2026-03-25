@@ -56,7 +56,10 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
    *
    * @returns Accumulator with new nodes appended
    */
-  function accumulateExpandedNode(result: ChildNode[], node: ChildNode,): ChildNode[] {
+  function accumulateExpandedNode(
+    result: ChildNode[],
+    node: ChildNode,
+  ): ChildNode[] {
     if (isAtRule(node,) && node.name === 'apply') {
       /** Trimmed at-rule parameter identifying which mixin to inline */
       const mixinName = node.params.trim();
@@ -91,9 +94,12 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
     return result;
   }
 
-  return nodes.reduce<ChildNode[]>(function accumulate(result, node,) {
+  return nodes.reduce<ChildNode[]>(
+    function accumulate(result, node,) {
     return accumulateExpandedNode(result, node,);
-  }, [],);
+  },
+    [],
+  );
 }
 
 /**
@@ -148,7 +154,10 @@ export function expandMixinBodies(): void {
 
       if (originalStr !== expandedStr) {
         hasChanges = true;
-        mixins.set(mixinName, expanded,);
+        mixins.set(
+          mixinName,
+          expanded,
+        );
       }
     }
   }

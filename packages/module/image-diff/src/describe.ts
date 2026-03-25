@@ -32,8 +32,14 @@ Image A is the first image, Image B is the second.`;
  * Content part in an OpenRouter chat message.
  */
 type ContentPart =
-  | { readonly type: 'text'; readonly text: string; }
-  | { readonly type: 'image_url'; readonly image_url: { readonly url: string; }; };
+  | {
+    readonly type: 'text';
+    readonly text: string
+  }
+  | {
+    readonly type: 'image_url';
+    readonly image_url: { readonly url: string; }
+  };
 
 /**
  * Chat message for the OpenRouter API.
@@ -78,7 +84,10 @@ type ChatCompletionResponse = {
  * ```
  */
 function resolveOpenRouterApiKey(): string | undefined {
-  const rl = tagged({ tag: resolveOpenRouterApiKey.name, l, },);
+  const rl = tagged({
+    tag: resolveOpenRouterApiKey.name,
+    l,
+  },);
   const key = process.env['IMAGE_DIFF_OPENROUTER_API_KEY']
     ?? process.env['OPENROUTER_API_KEY'];
   if (key === undefined || key === '') {
@@ -111,13 +120,21 @@ function resolveOpenRouterApiKey(): string | undefined {
  * if (description !== undefined) console.log(description);
  * ```
  */
-export async function describeImageDifference(imageA: ImageInput,
-  imageB: ImageInput,): Promise<string | undefined>
+export async function describeImageDifference(
+  imageA: ImageInput,
+  imageB: ImageInput,
+): Promise<string | undefined>
 {
-  const rl = tagged({ tag: describeImageDifference.name, l, },);
+  const rl = tagged({
+    tag: describeImageDifference.name,
+    l,
+  },);
 
   // Prefer the native Gemini API -- avoids the OpenRouter proxy overhead
-  const geminiResult = await describeViaGemini(imageA, imageB,);
+  const geminiResult = await describeViaGemini(
+    imageA,
+    imageB,
+  );
   if (geminiResult !== undefined) {
     rl.debug('description obtained via native Gemini API',);
     return geminiResult;
@@ -129,7 +146,10 @@ export async function describeImageDifference(imageA: ImageInput,
     return undefined;
 
   rl.debug('describing image differences via Gemini 3.1 Pro Preview on OpenRouter',);
-  const [uriA, uriB,] = await Promise.all([toImageUri(imageA,), toImageUri(imageB,),],);
+  const [uriA, uriB,] = await Promise.all([
+    toImageUri(imageA,),
+    toImageUri(imageB,),
+  ],);
 
   const requestBody: ChatCompletionRequest = {
     model: MODEL,
@@ -137,9 +157,18 @@ export async function describeImageDifference(imageA: ImageInput,
       {
         role: 'user',
         content: [
-          { type: 'text', text: DESCRIBE_PROMPT, },
-          { type: 'image_url', image_url: { url: uriA, }, },
-          { type: 'image_url', image_url: { url: uriB, }, },
+          {
+            type: 'text',
+            text: DESCRIBE_PROMPT,
+          },
+          {
+            type: 'image_url',
+            image_url: { url: uriA, },
+          },
+          {
+            type: 'image_url',
+            image_url: { url: uriB, },
+          },
         ],
       },
     ],
@@ -147,14 +176,17 @@ export async function describeImageDifference(imageA: ImageInput,
 
   rl.debug(`calling OpenRouter API with model ${MODEL}`,);
 
-  const response = await fetch(OPENROUTER_API_URL, {
+  const response = await fetch(
+    OPENROUTER_API_URL,
+    {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(requestBody,),
-  },);
+  },
+  );
 
   if (!response.ok) {
     const errorBody = await response.text();

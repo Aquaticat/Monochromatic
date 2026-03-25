@@ -50,7 +50,10 @@ export default makeScene2D(function* beachballScene(view,) {
   view.add(
     <Node ref={refs.ballGroup} x={startX} y={ballRestY}>
       <Circle ref={refs.ballBody} width={BALL_RADIUS * 2} height={BALL_RADIUS * 2} clip>
-        {STRIPE_COLORS.map(function renderStripe(color, stripeIndex,) {
+        {STRIPE_COLORS.map(function renderStripe(
+          color,
+          stripeIndex,
+        ) {
           const stripeWidth = (BALL_RADIUS * 2) / STRIPE_COUNT;
           const stripeX = -BALL_RADIUS + stripeWidth * stripeIndex + stripeWidth / 2;
           return (
@@ -67,7 +70,13 @@ export default makeScene2D(function* beachballScene(view,) {
     </Node>,
   );
 
-  yield* animateEntry(refs, ballRestY,);
-  yield* animateBounces(refs, ballRestY,);
+  yield* animateEntry(
+    refs,
+    ballRestY,
+  );
+  yield* animateBounces(
+    refs,
+    ballRestY,
+  );
   yield* waitFor(FINAL_WAIT_DURATION,);
 },);

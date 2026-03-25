@@ -15,7 +15,13 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  *
  * @returns complete HTML document string
  */
-export function renderPage({ body, title, }: { body: string; title: string; },): string {
+export function renderPage({
+  body,
+  title,
+}: {
+  body: string;
+  title: string
+},): string {
   return `<!DOCTYPE html>\n${
     h({
       tag: 'html',
@@ -24,15 +30,31 @@ export function renderPage({ body, title, }: { body: string; title: string; },):
         h({
           tag: 'head',
           children: [
-            h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
-            h({ tag: 'meta',
+            h({
+              tag: 'meta',
+              attrs: { charset: 'utf8', },
+            },),
+            h({
+              tag: 'meta',
               attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', }, },),
-            h({ tag: 'meta', attrs: { name: 'color-scheme', content: 'light dark', }, },),
-            h({ tag: 'title', text: title, },),
-            h({ tag: 'style',
-              html: 'html { background-color: light-dark(#fafafa, #1a1a1a) }', },),
-            h({ tag: 'link', attrs: { rel: 'stylesheet', href: 'style.css', }, },),
+                content: 'width=device-width, initial-scale=1', },
+            },),
+            h({
+              tag: 'meta',
+              attrs: { name: 'color-scheme', content: 'light dark', },
+            },),
+            h({
+              tag: 'title',
+              text: title,
+            },),
+            h({
+              tag: 'style',
+              html: 'html { background-color: light-dark(#fafafa, #1a1a1a) }',
+            },),
+            h({
+              tag: 'link',
+              attrs: { rel: 'stylesheet', href: 'style.css', },
+            },),
           ],
         },),
         h({
@@ -41,9 +63,15 @@ export function renderPage({ body, title, }: { body: string; title: string; },):
             h({
               tag: 'header',
               class: 'site-header',
-              children: [h({ tag: 'h1', text: title, },),],
+              children: [h({
+                tag: 'h1',
+                text: title,
+              },),],
             },),
-            h({ tag: 'main', html: body, },),
+            h({
+              tag: 'main',
+              html: body,
+            },),
           ],
         },),
       ],

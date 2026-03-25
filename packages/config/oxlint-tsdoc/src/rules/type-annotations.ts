@@ -39,7 +39,9 @@ export const noTypes: CreateOnceRule = {
     /** Regex detecting JSDoc-style type annotations like `{Type}` after a tag. */
     const typePattern = /@\w+\s+\{([^}]+)\}/g;
 
-    return createTsdocVisitor(context, function noTypesHandler(_node, comment,): void {
+    return createTsdocVisitor(
+      context,
+      function noTypesHandler(_node, comment,): void {
       const lines = comment.value.split('\n',);
       lines.forEach(function checkLine(line, index,): void {
         const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
@@ -57,6 +59,7 @@ export const noTypes: CreateOnceRule = {
           match = typePattern.exec(trimmed,);
         }
       },);
-    },);
+    },
+    );
   },
 };

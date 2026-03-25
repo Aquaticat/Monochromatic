@@ -20,7 +20,11 @@ export const PERCENT_DIVISOR = 100;
 export const TEXT_COLOR = 'oklch(0.3 0 0)';
 
 /** Approximate sRGB components for oklch(0.3 0 0), used by jsPDF */
-export const TEXT_COLOR_RGB = { r: 46, g: 46, b: 46, } as const;
+export const TEXT_COLOR_RGB = {
+  r: 46,
+  g: 46,
+  b: 46,
+} as const;
 
 //endregion Constants
 
@@ -102,7 +106,13 @@ type RawEntryFields = {
  * @returns resolved export entry
  */
 function resolveExportEntry(
-  { raw, defaultFontSizePx, }: { raw: RawEntryFields; defaultFontSizePx: number; },
+  {
+    raw,
+    defaultFontSizePx,
+  }: {
+    raw: RawEntryFields;
+    defaultFontSizePx: number
+  },
 ): ExportTextEntry {
   /** Per-entry font size, falling back to CSS default */
   const fontSizePx = raw.fontSize !== undefined && raw.fontSize !== ''
@@ -138,7 +148,10 @@ function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[
   for (const raw of raws) {
     if (raw.value.trim() === '')
       continue;
-    entries.push(resolveExportEntry({ raw, defaultFontSizePx, },),);
+    entries.push(resolveExportEntry({
+      raw,
+      defaultFontSizePx,
+    },),);
   }
 
   return entries;
@@ -166,7 +179,9 @@ export function readTextEntries({ textLayer, }: {
   const inputs = textLayer.querySelectorAll<HTMLInputElement>('.text-input',);
 
   return resolveExportEntries(
-    Array.from(inputs, function toRaw(input,): RawEntryFields {
+    Array.from(
+      inputs,
+      function toRaw(input,): RawEntryFields {
       return {
         value: input.value,
         insetInlineStart: input.style.insetInlineStart,
@@ -174,7 +189,8 @@ export function readTextEntries({ textLayer, }: {
         fontSize: input.dataset.fontSize,
         color: input.dataset.color,
       };
-    },),
+    },
+    ),
   );
 }
 

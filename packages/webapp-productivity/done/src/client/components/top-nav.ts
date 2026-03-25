@@ -24,7 +24,10 @@ class TopNav extends HTMLElement {
   connectedCallback(): void {
     const heading = this.getAttribute('heading',) ?? '';
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: TOP_NAV_STYLES, },),
+      h({
+        tag: 'style',
+        text: TOP_NAV_STYLES,
+      },),
       h({
         tag: 'button',
         class: 'action menu-toggle',
@@ -34,9 +37,18 @@ class TopNav extends HTMLElement {
             tag: 'span',
             class: 'hamburger',
             children: [
-              h({ tag: 'span', class: 'line', },),
-              h({ tag: 'span', class: 'line', },),
-              h({ tag: 'span', class: 'line', },),
+              h({
+                tag: 'span',
+                class: 'line',
+              },),
+              h({
+                tag: 'span',
+                class: 'line',
+              },),
+              h({
+                tag: 'span',
+                class: 'line',
+              },),
             ],
           },),
         ],
@@ -44,24 +56,39 @@ class TopNav extends HTMLElement {
           // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
           click: function openMenu(this: TopNav,): void {
             this.dispatchEvent(
-              new CustomEvent('menu-open', { bubbles: true, composed: true, },),
+              new CustomEvent(
+                'menu-open',
+                { bubbles: true, composed: true, },
+              ),
             );
           }
             .bind(this,),
         },
       },),
-      h({ tag: 'h1', text: heading, },),
+      h({
+        tag: 'h1',
+        text: heading,
+      },),
       h({
         tag: 'a',
         class: 'action',
-        attrs: { href: '/search', 'aria-label': 'Search', },
+        attrs: {
+          href: '/search',
+          'aria-label': 'Search',
+        },
         children: [
           h({
             tag: 'span',
             class: 'search-icon',
             children: [
-              h({ tag: 'span', class: 'circle', },),
-              h({ tag: 'span', class: 'handle', },),
+              h({
+                tag: 'span',
+                class: 'circle',
+              },),
+              h({
+                tag: 'span',
+                class: 'handle',
+              },),
             ],
           },),
         ],
@@ -70,4 +97,7 @@ class TopNav extends HTMLElement {
   }
 }
 
-customElements.define('top-nav', TopNav,);
+customElements.define(
+  'top-nav',
+  TopNav,
+);

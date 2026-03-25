@@ -11,6 +11,9 @@ import { $ as named, } from '../p n/index.ts';
  */
 export function $<const T,>(
   myIterable: Iterable<T>,
-): Generator<{ element: T; index: Int & (Positive | 0); }> {
+): Generator<{
+  element: T;
+  index: Int & (Positive | 0)
+}> {
   return named({ myIterable, },);
 }

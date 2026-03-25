@@ -95,7 +95,9 @@ export function placeTextInput(position: NormalizedPoint,): void {
     fontSize: String(textSizePx,),
   },);
 
-  input.addEventListener('keydown', function handleKeydown(event: KeyboardEvent,): void {
+  input.addEventListener(
+    'keydown',
+    function handleKeydown(event: KeyboardEvent,): void {
     if (event.key === 'Enter') {
       event.preventDefault();
       finalizeActiveInput();
@@ -103,9 +105,13 @@ export function placeTextInput(position: NormalizedPoint,): void {
     else if (event.key === 'Escape') {
       discardActiveInput();
     }
-  },);
+  },
+  );
 
-  input.addEventListener('blur', finalizeActiveInput,);
+  input.addEventListener(
+    'blur',
+    finalizeActiveInput,
+  );
 
   activeInput = input;
   layerElement.append(input,);

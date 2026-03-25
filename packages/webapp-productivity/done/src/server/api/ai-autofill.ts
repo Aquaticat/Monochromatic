@@ -70,8 +70,12 @@ const MAX_TOKENS = 256;
  * @returns Validated autofill result with safe defaults
  */
 function parseAutofillResponse(raw: string,): AutofillResult {
-  const empty: AutofillResult = { tags: [], locations: [], priority: null,
-    complexity: null, };
+  const empty: AutofillResult = {
+    tags: [],
+    locations: [],
+    priority: null,
+    complexity: null,
+  };
 
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated below
@@ -103,7 +107,12 @@ function parseAutofillResponse(raw: string,): AutofillResult {
       ? (parsed.complexity as TaskComplexity)
       : null;
 
-    return { tags, locations, priority, complexity, };
+    return {
+      tags,
+      locations,
+      priority,
+      complexity,
+    };
   }
   catch {
     return empty;
@@ -149,13 +158,21 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     const title = typeof body.title === 'string' ? body.title.trim() : '';
 
     if (title.length === 0) {
-      return Response.json({ tags: [], locations: [], priority: null,
-        complexity: null, },);
+      return Response.json({
+        tags: [],
+        locations: [],
+        priority: null,
+        complexity: null,
+      },);
     }
 
     const existingTags = await listAllTags();
     const existingLocations = await listAllLocations();
-    const messages = buildAutofillMessages(title, existingTags, existingLocations,);
+    const messages = buildAutofillMessages(
+      title,
+      existingTags,
+      existingLocations,
+    );
 
     const result = await chatCompletion({
       messages,
@@ -165,17 +182,32 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     },);
 
     if (!result.ok) {
-      console.error('AI autofill failed:', result.error,);
-      return Response.json({ tags: [], locations: [], priority: null,
-        complexity: null, },);
+      console.error(
+        'AI autofill failed:',
+        result.error,
+      );
+      return Response.json({
+        tags: [],
+        locations: [],
+        priority: null,
+        complexity: null,
+      },);
     }
 
     const autofill = parseAutofillResponse(result.content,);
     return Response.json(autofill,);
   }
   catch (error) {
-    console.error('AI autofill handler error:', error,);
-    return Response.json({ tags: [], locations: [], priority: null, complexity: null, },);
+    console.error(
+      'AI autofill handler error:',
+      error,
+    );
+    return Response.json({
+      tags: [],
+      locations: [],
+      priority: null,
+      complexity: null,
+    },);
   }
 }
 

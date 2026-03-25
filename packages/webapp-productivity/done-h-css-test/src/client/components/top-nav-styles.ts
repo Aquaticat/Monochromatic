@@ -40,7 +40,10 @@ const LINE_HEIGHT = 1 / 2 / 2;
 export const TOP_NAV_STYLES = [
   css({
     rule: ':host',
-    decls: { ...stickyBar(), 'justify-content': 'center', },
+    decls: {
+      ...stickyBar(),
+      'justify-content': 'center',
+    },
   },),
   css({
     rule: 'h1',
@@ -64,8 +67,10 @@ export const TOP_NAV_STYLES = [
       'text-decoration': 'none',
     },
     children: [
-      css({ rule: '&:focus-visible',
-        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },), },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },),
+      },),
     ],
   },),
   css({

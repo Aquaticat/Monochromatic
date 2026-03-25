@@ -70,7 +70,10 @@ export function toWireInlayHints({ hints, }: { hints: LspInlayHint[]; },): Inlay
           return part.value;
         },)
         .join('',);
-    const result: InlayHint = { position: hint.position, label, };
+    const result: InlayHint = {
+      position: hint.position,
+      label,
+    };
     if (hint.kind !== undefined)
       result.kind = hint.kind;
     if (hint.paddingLeft !== undefined)

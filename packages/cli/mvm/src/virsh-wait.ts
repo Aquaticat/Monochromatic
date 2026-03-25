@@ -45,11 +45,17 @@ const SHUTDOWN_TIMEOUT_MS = 120_000;
  * await waitForGuestAgent({ name: 'template', timeoutMs: 120_000 });
  * ```
  */
-export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOUT_MS, }: {
+export async function waitForGuestAgent({
+  name,
+  timeoutMs = DEFAULT_AGENT_TIMEOUT_MS,
+}: {
   name: string;
   timeoutMs?: number;
 },): Promise<void> {
-  const rl = tagged({ tag: waitForGuestAgent.name, l, },);
+  const rl = tagged({
+    tag: waitForGuestAgent.name,
+    l,
+  },);
   const fullName = `${VM_PREFIX}${name}`;
   const pingPayload = JSON.stringify({ execute: 'guest-ping', },);
   const startTime = Date.now();
@@ -59,7 +65,11 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
   // oxlint-disable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new -- polling loop
   while (true) {
     try {
-      await virsh({ args: ['qemu-agent-command', fullName, pingPayload,], },);
+      await virsh({ args: [
+        'qemu-agent-command',
+        fullName,
+        pingPayload,
+      ], },);
       rl.info(`guest agent on ${name} is ready`,);
       return;
     }
@@ -78,7 +88,10 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
         }s elapsed), retrying...`,
       );
       await new Promise(function agentPollDelay(resolve,) {
-        setTimeout(resolve, AGENT_POLL_INTERVAL_MS,);
+        setTimeout(
+          resolve,
+          AGENT_POLL_INTERVAL_MS,
+        );
       },);
     }
   }
@@ -96,11 +109,18 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
  * ```
  */
 export async function shutdownVm({ name, }: { name: string; },): Promise<void> {
-  const rl = tagged({ tag: shutdownVm.name, l, },);
+  const rl = tagged({
+    tag: shutdownVm.name,
+    l,
+  },);
   const fullName = `${VM_PREFIX}${name}`;
   const payload = JSON.stringify({ execute: 'guest-shutdown', },);
   try {
-    await virsh({ args: ['qemu-agent-command', fullName, payload,], },);
+    await virsh({ args: [
+      'qemu-agent-command',
+      fullName,
+      payload,
+    ], },);
   }
   catch {
     // Guest agent often disconnects before sending a response during shutdown.
@@ -122,7 +142,10 @@ export async function shutdownVm({ name, }: { name: string; },): Promise<void> {
  * ```
  */
 export async function waitForShutdown({ name, }: { name: string; },): Promise<void> {
-  const rl = tagged({ tag: waitForShutdown.name, l, },);
+  const rl = tagged({
+    tag: waitForShutdown.name,
+    l,
+  },);
   const fullName = `${VM_PREFIX}${name}`;
   const startTime = Date.now();
 
@@ -130,7 +153,10 @@ export async function waitForShutdown({ name, }: { name: string; },): Promise<vo
 
   // oxlint-disable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new -- polling loop
   while (true) {
-    const state = await virsh({ args: ['domstate', fullName,], },);
+    const state = await virsh({ args: [
+      'domstate',
+      fullName,
+    ], },);
     if (state === 'shut off') {
       rl.info(`VM ${name} has shut down`,);
       return;
@@ -149,7 +175,10 @@ export async function waitForShutdown({ name, }: { name: string; },): Promise<vo
       `VM state: ${state} (${String(Math.round(elapsed / MS_PER_SECOND,),)}s elapsed)`,
     );
     await new Promise(function shutdownPollDelay(resolve,) {
-      setTimeout(resolve, SHUTDOWN_POLL_INTERVAL_MS,);
+      setTimeout(
+        resolve,
+        SHUTDOWN_POLL_INTERVAL_MS,
+      );
     },);
   }
   // oxlint-enable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new

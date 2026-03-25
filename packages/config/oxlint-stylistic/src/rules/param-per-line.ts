@@ -46,8 +46,7 @@ export const paramPerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      paramPerLine:
-        'Each function parameter must be on its own line.',
+      paramPerLine: 'Each function parameter must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -91,8 +90,9 @@ export const paramPerLine: CreateOnceRule = {
         openParen,
         closeParen,
         params,
-      ))
+      )) {
         return;
+      }
 
       context.report({
         node,

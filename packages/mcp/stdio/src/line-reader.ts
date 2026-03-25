@@ -28,12 +28,18 @@ export async function* readLines(
   let buffer = '';
 
   for await (const chunk of stream) {
-    buffer += decoder.decode(chunk, { stream: true, },);
+    buffer += decoder.decode(
+      chunk,
+      { stream: true, },
+    );
 
     // A single chunk may contain multiple newline-delimited messages.
     let newlineIndex = buffer.indexOf('\n',);
     while (newlineIndex !== -1) {
-      yield buffer.slice(0, newlineIndex,);
+      yield buffer.slice(
+        0,
+        newlineIndex,
+      );
       buffer = buffer.slice(newlineIndex + 1,);
       newlineIndex = buffer.indexOf('\n',);
     }
@@ -43,8 +49,10 @@ export async function* readLines(
   // Not expected in normal MCP usage (clients send newline-terminated messages),
   // but logged so protocol issues are visible during debugging.
   if (buffer.length > 0) {
-    console.error('[mcp-stdio] flushing trailing buffer without newline terminator:',
-      buffer,);
+    console.error(
+      '[mcp-stdio] flushing trailing buffer without newline terminator:',
+      buffer,
+    );
     yield buffer;
   }
 }

@@ -33,7 +33,11 @@ export class LspPool {
   /** Highest directory to search for config files (file tree root). */
   #ceiling: string;
   /** Callback for server-initiated notifications. */
-  #onNotification: (event: { source: string; method: string; params: unknown; },) => void;
+  #onNotification: (event: {
+    source: string;
+    method: string;
+    params: unknown
+  },) => void;
 
   /**
    * @param ceiling - highest directory for config-file search (file tree root)
@@ -42,11 +46,19 @@ export class LspPool {
    *
    * @param onNotification - callback for server-initiated notifications
    */
-  constructor({ ceiling, l, onNotification, }: {
+  constructor({
+    ceiling,
+    l,
+    onNotification,
+  }: {
     ceiling: string;
     l: Logger;
     onNotification: (
-      event: { source: string; method: string; params: unknown; },
+      event: {
+        source: string;
+        method: string;
+        params: unknown
+      },
     ) => void;
   },) {
     this.#l = l;
@@ -60,19 +72,35 @@ export class LspPool {
    * @returns promise resolving to the client, or null if no project root is found
    */
   resolve(
-    { type, filePath, }: { type: ServerType; filePath: string; },
+    {
+      type,
+      filePath,
+    }: {
+      type: ServerType;
+      filePath: string
+    },
   ): Promise<LspClient | null> {
-    const root = findProjectRoot({ startDir: dirname(filePath,),
-      configFiles: CONFIG_FILES[type], ceiling: this.#ceiling, },);
+    const root = findProjectRoot({
+      startDir: dirname(filePath,),
+      configFiles: CONFIG_FILES[type],
+      ceiling: this.#ceiling,
+    },);
     if (root === null)
       return Promise.resolve(null,);
     const key = `${type}:${root}`;
     const existing = this.#pool.get(key,);
     if (existing !== undefined)
       return existing;
-    const promise = spawnLspClient({ type, root, l: this.#l,
-      onNotification: this.#onNotification, },);
-    this.#pool.set(key, promise,);
+    const promise = spawnLspClient({
+      type,
+      root,
+      l: this.#l,
+      onNotification: this.#onNotification,
+    },);
+    this.#pool.set(
+      key,
+      promise,
+    );
     return promise;
   }
 
@@ -83,11 +111,24 @@ export class LspPool {
    */
   async resolveAll({ path, }: { path: string; },): Promise<ServerSlots> {
     const [oxlint, tsgo, dprint,] = await Promise.all([
-      this.resolve({ type: 'oxlint', filePath: path, },),
-      this.resolve({ type: 'tsgo', filePath: path, },),
-      this.resolve({ type: 'dprint', filePath: path, },),
+      this.resolve({
+        type: 'oxlint',
+        filePath: path,
+      },),
+      this.resolve({
+        type: 'tsgo',
+        filePath: path,
+      },),
+      this.resolve({
+        type: 'dprint',
+        filePath: path,
+      },),
     ],);
-    return { oxlint, tsgo, dprint, };
+    return {
+      oxlint,
+      tsgo,
+      dprint,
+    };
   }
 
   /**
@@ -97,11 +138,18 @@ export class LspPool {
    * @param path - absolute file or directory path
    */
   async shutdownForPath({ path, }: { path: string; },): Promise<void> {
-    await shutdownPoolForPath({ pool: this.#pool, path, l: this.#l, },);
+    await shutdownPoolForPath({
+      pool: this.#pool,
+      path,
+      l: this.#l,
+    },);
   }
 
   /** Gracefully shuts down all pooled LSP servers. */
   shutdown(): void {
-    shutdownAllPooled({ pool: this.#pool, l: this.#l, },);
+    shutdownAllPooled({
+      pool: this.#pool,
+      l: this.#l,
+    },);
   }
 }

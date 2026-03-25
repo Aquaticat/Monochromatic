@@ -34,17 +34,26 @@ import {
  * resolveNpmNames("eslint", ">=9.29.0") // ["eslint"]
  * ```
  */
-export function resolveNpmNames(catalogKey: string, catalogValue: string,): string[] {
+export function resolveNpmNames(
+  catalogKey: string,
+  catalogValue: string,
+): string[] {
   /** Length of the `npm:` prefix */
   const NPM_PREFIX_LENGTH = 4;
   if (catalogValue.startsWith('npm:',)) {
     const withoutNpm = catalogValue.slice(NPM_PREFIX_LENGTH,);
     // Find the last @ that isn't position 0 (scoped package)
     const lastAt = withoutNpm.lastIndexOf('@',);
-    const aliasTarget = lastAt > 0 ? withoutNpm.slice(0, lastAt,) : withoutNpm;
+    const aliasTarget = lastAt > 0 ? withoutNpm.slice(
+      0,
+      lastAt,
+    ) : withoutNpm;
     // Key first (bun installs under alias name), then registry target as fallback
     if (aliasTarget !== catalogKey)
-      return [catalogKey, aliasTarget,];
+      return [
+        catalogKey,
+        aliasTarget,
+      ];
     return [catalogKey,];
   }
   return [catalogKey,];
@@ -71,20 +80,35 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
   if (workspaceRootsCache !== undefined)
     return workspaceRootsCache;
 
-  const packagesDir = join(monorepoRoot, 'packages',);
+  const packagesDir = join(
+    monorepoRoot,
+    'packages',
+  );
   const roots: string[] = [];
 
   try {
-    const categories = readdirSync(packagesDir, { withFileTypes: true, },);
+    const categories = readdirSync(
+      packagesDir,
+      { withFileTypes: true, },
+    );
     for (const cat of categories) {
       if (!cat.isDirectory())
         continue;
-      const catPath = join(packagesDir, cat.name,);
-      const pkgs = readdirSync(catPath, { withFileTypes: true, },);
+      const catPath = join(
+        packagesDir,
+        cat.name,
+      );
+      const pkgs = readdirSync(
+        catPath,
+        { withFileTypes: true, },
+      );
       for (const pkg of pkgs) {
         if (!pkg.isDirectory())
           continue;
-        roots.push(join(catPath, pkg.name,),);
+        roots.push(join(
+          catPath,
+          pkg.name,
+        ),);
       }
     }
   }
@@ -115,19 +139,30 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
  * readInstalledVersion("eslint", "/home/user/Monochromatic") // "10.0.0"
  * ```
  */
-export function readInstalledVersion(npmName: string, monorepoRoot: string,):
+export function readInstalledVersion(
+  npmName: string,
+  monorepoRoot: string,
+):
   | string
   | undefined
 {
   // Try root node_modules first
-  const rootPkgJson = join(monorepoRoot, 'node_modules', npmName, 'package.json',);
+  const rootPkgJson = join(
+    monorepoRoot,
+    'node_modules',
+    npmName,
+    'package.json',
+  );
   const version = readVersionFromPackageJson(rootPkgJson,);
   if (version !== undefined)
     return version;
 
   // Try resolving from monorepo root via createRequire
   try {
-    const require = createRequire(join(monorepoRoot, 'package.json',),);
+    const require = createRequire(join(
+      monorepoRoot,
+      'package.json',
+    ),);
     const resolved = require.resolve(`${npmName}/package.json`,);
     const rootVersion = readVersionFromPackageJson(resolved,);
     if (rootVersion !== undefined)
@@ -141,7 +176,10 @@ export function readInstalledVersion(npmName: string, monorepoRoot: string,):
   const workspaceRoots = discoverWorkspaceRoots(monorepoRoot,);
   for (const wsRoot of workspaceRoots) {
     try {
-      const require = createRequire(join(wsRoot, 'package.json',),);
+      const require = createRequire(join(
+        wsRoot,
+        'package.json',
+      ),);
       const resolved = require.resolve(`${npmName}/package.json`,);
       const wsVersion = readVersionFromPackageJson(resolved,);
       if (wsVersion !== undefined)
@@ -153,7 +191,10 @@ export function readInstalledVersion(npmName: string, monorepoRoot: string,):
   }
 
   // Last resort: scan bun store directory names for transitive deps
-  return readVersionFromBunStore(npmName, monorepoRoot,);
+  return readVersionFromBunStore(
+    npmName,
+    monorepoRoot,
+  );
 }
 
 //endregion Version resolution

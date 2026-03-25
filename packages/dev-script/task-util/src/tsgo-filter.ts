@@ -169,7 +169,10 @@ export function filterTsgoOutput(output: string,): {
   readonly hasRemainingErrors: boolean;
 } {
   if (output.length === 0)
-    return { filtered: '', hasRemainingErrors: false, };
+    return {
+      filtered: '',
+      hasRemainingErrors: false,
+    };
 
   const lines = output.split('\n',);
   const kept: string[] = [];
@@ -199,7 +202,10 @@ export function filterTsgoOutput(output: string,): {
     }
   }
 
-  return { filtered: kept.join('\n',), hasRemainingErrors, };
+  return {
+    filtered: kept.join('\n',),
+    hasRemainingErrors,
+  };
 }
 
 //endregion Output filtering
@@ -215,7 +221,10 @@ const tsgoArgs = process.argv.length > 2
 await removeStaleBuildInfo();
 
 try {
-  const result = await spawn('tsgo', [...tsgoArgs,],);
+  const result = await spawn(
+    'tsgo',
+    [...tsgoArgs,],
+  );
 
   // tsgo succeeded (exit 0) -- pass output through unfiltered
   if (result.stdout.length > 0)

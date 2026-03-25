@@ -26,17 +26,28 @@ export type InboxPageData = {
  * @returns UL element containing task cards with nested blocker children
  */
 export function buildTaskList(
-  { tasks, blockedTasksByBlocker, onOpen, onToggleComplete, }: {
+  {
+    tasks,
+    blockedTasksByBlocker,
+    onOpen,
+    onToggleComplete,
+  }: {
     tasks: readonly Task[];
     blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
     onOpen: (taskId: string,) => void;
     onToggleComplete: (taskId: string,) => Promise<void>;
   },
 ): HTMLUListElement {
-  const list = h({ tag: 'ul', class: 'task-list', },);
+  const list = h({
+    tag: 'ul',
+    class: 'task-list',
+  },);
 
   for (const task of tasks) {
-    list.append(createTaskCard(task, { onOpen, onToggleComplete, },),);
+    list.append(createTaskCard(
+      task,
+      { onOpen, onToggleComplete, },
+    ),);
 
     const childLinks = blockedTasksByBlocker[task.id] ?? [];
     if (childLinks.length > 0) {
@@ -49,8 +60,11 @@ export function buildTaskList(
               tag: 'ul',
               class: 'task-list',
               children: childLinks.map(function buildBlockedCard(childLink,) {
-                return createTaskCard(childLink.task, { showBlockedBadge: true, onOpen,
-                  onToggleComplete, },);
+                return createTaskCard(
+                  childLink.task,
+                  { showBlockedBadge: true, onOpen,
+                  onToggleComplete, },
+                );
               },),
             },),
           ],

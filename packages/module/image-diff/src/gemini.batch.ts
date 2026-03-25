@@ -38,7 +38,10 @@ export async function geminiEmbedBatch(
   inputs: readonly ImageInput[],
   config: ImageDiffConfig,
 ): Promise<BatchEmbeddingResult> {
-  const rl = tagged({ tag: geminiEmbedBatch.name, l, },);
+  const rl = tagged({
+    tag: geminiEmbedBatch.name,
+    l,
+  },);
   rl.debug(
     `computing batch embeddings via Gemini for ${String(inputs.length,)} image(s)`,
   );
@@ -66,14 +69,17 @@ export async function geminiEmbedBatch(
   const url = `${GEMINI_API_BASE}/${model}:batchEmbedContents`;
   rl.debug(`calling Gemini batch API: ${url}, ${String(inputs.length,)} input(s)`,);
 
-  const response = await fetch(url, {
+  const response = await fetch(
+    url,
+    {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-goog-api-key': apiKey,
     },
     body: JSON.stringify(requestBody,),
-  },);
+  },
+  );
 
   if (!response.ok) {
     const errorBody = await response.text();

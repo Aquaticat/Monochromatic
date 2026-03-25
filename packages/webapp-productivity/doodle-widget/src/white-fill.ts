@@ -32,5 +32,8 @@ export const WHITE_FILL_RE = /fill:#fff(?:fff)?/gu;
  * ```
  */
 export function replaceWhiteFillStyles(svgMarkup: string,): string {
-  return svgMarkup.replaceAll(WHITE_FILL_RE, 'fill:none',);
+  return svgMarkup.replaceAll(
+    WHITE_FILL_RE,
+    'fill:none',
+  );
 }

@@ -38,13 +38,19 @@ const threadOverride = process.env['OXLINT_THREADS'];
 /** Arguments forwarded to oxlint. */
 const oxlintArgs = [
   ...(threadOverride !== undefined && threadOverride !== ''
-    ? ['--threads', threadOverride,]
+    ? [
+      '--threads',
+      threadOverride,
+    ]
     : []),
   ...process.argv.slice(2,),
 ];
 
 try {
-  const result = await spawn('oxlint', [...oxlintArgs,],);
+  const result = await spawn(
+    'oxlint',
+    [...oxlintArgs,],
+  );
 
   // oxlint succeeded (exit 0, no diagnostics) -- pass output through
   if (result.stdout.length > 0)

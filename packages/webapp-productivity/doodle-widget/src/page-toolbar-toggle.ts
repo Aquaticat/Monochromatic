@@ -21,7 +21,13 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  *
  * @returns label-wrapped radio input HTML string
  */
-export function renderToggleOption({ id, name, label, checked, value, }: {
+export function renderToggleOption({
+  id,
+  name,
+  label,
+  checked,
+  value,
+}: {
   id: string;
   name: string;
   label: string;
@@ -42,7 +48,10 @@ export function renderToggleOption({ id, name, label, checked, value, }: {
           ...(checked ? { checked: '', } : {}),
         },
       },),
-      h({ tag: 'span', text: label, },),
+      h({
+        tag: 'span',
+        text: label,
+      },),
     ],
   },);
 }
@@ -61,7 +70,10 @@ export function renderPageToggle(pageCount: number,): string {
     attrs: { id: 'page-toggle', },
     children: Array.from(
       { length: pageCount, },
-      function renderPageOption(_: unknown, index: number,): string {
+      function renderPageOption(
+        _: unknown,
+        index: number,
+      ): string {
         return renderToggleOption({
           id: `page-${String(index,)}`,
           name: 'page',

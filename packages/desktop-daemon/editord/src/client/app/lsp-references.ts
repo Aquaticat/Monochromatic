@@ -18,7 +18,10 @@ import { showCursorToast, } from '../toast/toast.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for LSP references. */
-const refLog = tagged({ tag: 'lsp-references', l, },);
+const refLog = tagged({
+  tag: 'lsp-references',
+  l,
+},);
 
 /**
  * Requests references from the server and shows them in the popup.
@@ -37,7 +40,14 @@ const refLog = tagged({ tag: 'lsp-references', l, },);
  * @param rect - cursor bounding rect for popup positioning
  */
 export async function showReferences(
-  { ws, referencesPopup, getCurrentFilePath, line, character, rect, }: {
+  {
+    ws,
+    referencesPopup,
+    getCurrentFilePath,
+    line,
+    character,
+    rect,
+  }: {
     ws: EditorWsClient;
     referencesPopup: ReferencesPopup;
     getCurrentFilePath: () => string | null;
@@ -50,19 +60,33 @@ export async function showReferences(
   if (path === null)
     return;
   try {
-    const response = await ws.request({ type: 'findReferences', path, line,
-      character, },);
+    const response = await ws.request({
+      type: 'findReferences',
+      path,
+      line,
+      character,
+    },);
     if (!('locations' in response)) {
-      showCursorToast({ message: 'No usages found', rect, },);
+      showCursorToast({
+        message: 'No usages found',
+        rect,
+      },);
       return;
     }
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'locations' check
     const { locations, } = response as {
-      locations: { path: string; line: number; character: number; }[];
+      locations: {
+        path: string;
+        line: number;
+        character: number
+      }[];
     };
     refLog.info(`references: ${locations.length} usage(s) found`,);
     if (locations.length === 0) {
-      showCursorToast({ message: 'No usages found', rect, },);
+      showCursorToast({
+        message: 'No usages found',
+        rect,
+      },);
       return;
     }
 
@@ -73,27 +97,43 @@ export async function showReferences(
       const label = loc.path.startsWith(rootDir,)
         ? loc.path.slice(rootDir.length + 1,)
         : loc.path;
-      return { path: loc.path, line: loc.line, character: loc.character, label, };
+      return {
+        path: loc.path,
+        line: loc.line,
+        character: loc.character,
+        label,
+      };
     },);
 
     if (items.length === 1) {
       /** Without destructuring: prefer-destructuring lint error for index-0 access. */
       const [only,] = items;
       if (only !== undefined) {
-        referencesPopup.dispatchEvent(new CustomEvent('reference-select', {
+        referencesPopup.dispatchEvent(new CustomEvent(
+          'reference-select',
+          {
           detail: { path: only.path, line: only.line + 1, character: only.character, },
           bubbles: true,
           composed: true,
-        },),);
+        },
+        ),);
       }
       return;
     }
 
-    referencesPopup.show({ locations: items, x: rect.left, y: rect.top, cursorHeight: rect
-      .height, },);
+    referencesPopup.show({
+      locations: items,
+      x: rect.left,
+      y: rect.top,
+      cursorHeight: rect
+      .height,
+    },);
   }
   catch (error) {
     refLog.error(`references request failed: ${String(error,)}`,);
-    showCursorToast({ message: 'References request failed', rect, },);
+    showCursorToast({
+      message: 'References request failed',
+      rect,
+    },);
   }
 }

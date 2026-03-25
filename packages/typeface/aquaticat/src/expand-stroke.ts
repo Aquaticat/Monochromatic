@@ -5,7 +5,10 @@
  */
 
 /** Cartesian coordinate pair. */
-type Point = [number, number,];
+type Point = [
+  number,
+  number,
+];
 
 /**
  * Intersect two infinite lines, each defined by a point and direction vector.
@@ -20,12 +23,20 @@ type Point = [number, number,];
  *
  * @returns intersection point
  */
-function lineIntersection(p1: Point, d1: Point, p2: Point, d2: Point,): Point {
+function lineIntersection(
+  p1: Point,
+  d1: Point,
+  p2: Point,
+  d2: Point,
+): Point {
   const cross = d1[0] * d2[1] - d1[1] * d2[0];
   const dx = p2[0] - p1[0];
   const dy = p2[1] - p1[1];
   const t = (dx * d2[1] - dy * d2[0]) / cross;
-  return [p1[0] + t * d1[0], p1[1] + t * d1[1],];
+  return [
+    p1[0] + t * d1[0],
+    p1[1] + t * d1[1],
+  ];
 }
 
 /**
@@ -40,32 +51,54 @@ function lineIntersection(p1: Point, d1: Point, p2: Point, d2: Point,): Point {
  *
  * @returns new polygon vertices at the requested offset
  */
-export function offsetPolygon(vertices: readonly Point[], offset: number,): Point[] {
+export function offsetPolygon(
+  vertices: readonly Point[],
+  offset: number,
+): Point[] {
   const vertexCount = vertices.length;
 
   // Compute parallel-shifted edges
-  const offsetEdges = vertices.map(function shiftEdge(vertex, vertexIndex,) {
+  const offsetEdges = vertices.map(function shiftEdge(
+    vertex,
+    vertexIndex,
+  ) {
     const next = vertices[(vertexIndex + 1) % vertexCount];
     if (next === undefined)
       throw new Error('unreachable: vertex index out of bounds',);
     const dx = next[0] - vertex[0];
     const dy = next[1] - vertex[1];
-    const len = Math.hypot(dx, dy,);
+    const len = Math.hypot(
+      dx,
+      dy,
+    );
     // Outward normal for CW polygon in SVG coords (Y-down): (dy/len, -dx/len)
     const nx = (dy / len) * offset;
     const ny = (-dx / len) * offset;
     return {
-      point: [vertex[0] + nx, vertex[1] + ny,] satisfies Point,
-      direction: [dx, dy,] satisfies Point,
+      point: [
+        vertex[0] + nx,
+        vertex[1] + ny,
+      ] satisfies Point,
+      direction: [
+        dx,
+        dy,
+      ] satisfies Point,
     };
   },);
 
   // Intersect consecutive offset edges to find new vertices
-  return offsetEdges.map(function intersectEdge(edge, edgeIndex,) {
+  return offsetEdges.map(function intersectEdge(
+    edge,
+    edgeIndex,
+  ) {
     const nextEdge = offsetEdges[(edgeIndex + 1) % vertexCount];
     if (nextEdge === undefined)
       throw new Error('unreachable: edge index out of bounds',);
-    return lineIntersection(edge.point, edge.direction, nextEdge.point,
-      nextEdge.direction,);
+    return lineIntersection(
+      edge.point,
+      edge.direction,
+      nextEdge.point,
+      nextEdge.direction,
+    );
   },);
 }

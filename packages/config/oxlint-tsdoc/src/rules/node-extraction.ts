@@ -98,12 +98,21 @@ export function extractNodeKind(node: Span,): string {
  *
  * @param context - oxlint rule context
  */
-export function reportMissing(node: Span, context: Context,): void {
-  if (findTsdocComment(node, context,) === undefined) {
+export function reportMissing(
+  node: Span,
+  context: Context,
+): void {
+  if (findTsdocComment(
+    node,
+    context,
+  ) === undefined) {
     context.report({
       node,
       messageId: 'missing',
-      data: { kind: extractNodeKind(node,), name: extractNodeName(node,), },
+      data: {
+        kind: extractNodeKind(node,),
+        name: extractNodeName(node,),
+      },
     },);
   }
 }

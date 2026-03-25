@@ -27,7 +27,10 @@ function createBaseConfig(configDir: string,): UserConfig {
     resolve: {
       alias: {
         '@': resolve(configDir,),
-        '@_': resolve(configDir, 'src',),
+        '@_': resolve(
+          configDir,
+          'src',
+        ),
       },
       tsconfigPaths: true,
     },
@@ -98,7 +101,11 @@ function createBaseConfig(configDir: string,): UserConfig {
         },
       },
       target: `firefox${FIREFOX_ESR_VERSION}`,
-      outDir: join('dist', 'final', 'js',),
+      outDir: join(
+        'dist',
+        'final',
+        'js',
+      ),
 
       // Sometimes removes important files.
       // Sometimes crashes because node rmSync doesn't work.

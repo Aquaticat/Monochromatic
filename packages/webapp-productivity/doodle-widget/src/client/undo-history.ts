@@ -46,11 +46,17 @@ let histories: PageHistory[] = [];
  */
 export function initHistory(pageCount: number,): void {
   /** Shared initial empty snapshot */
-  const empty: Snapshot = { strokes: [], textEntries: [], };
+  const empty: Snapshot = {
+    strokes: [],
+    textEntries: [],
+  };
   histories = Array.from(
     { length: pageCount, },
     function createPageHistory(): PageHistory {
-      return { states: [empty,], index: 0, };
+      return {
+        states: [empty,],
+        index: 0,
+      };
     },
   );
 }
@@ -62,7 +68,10 @@ export function initHistory(pageCount: number,): void {
  *
  * @param snapshot - captured state after the completed action
  */
-export function pushSnapshot({ pageIndex, snapshot, }: {
+export function pushSnapshot({
+  pageIndex,
+  snapshot,
+}: {
   pageIndex: number;
   snapshot: Snapshot;
 },): void {
@@ -70,7 +79,10 @@ export function pushSnapshot({ pageIndex, snapshot, }: {
   if (history === undefined)
     return;
 
-  history.states = history.states.slice(0, history.index + 1,);
+  history.states = history.states.slice(
+    0,
+    history.index + 1,
+  );
   history.states.push(snapshot,);
   history.index = history.states.length - 1;
 

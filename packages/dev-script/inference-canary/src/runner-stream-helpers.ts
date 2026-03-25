@@ -4,9 +4,13 @@
  * Contains the {@link PartialCompletionError} class for abort handling,
  * and helper functions for timing display, usage parsing, and result assembly.
  */
+import {
+  l,
+  tagged,
+} from './log.ts';
+
 // oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
-
 import type {
   CompletionResult,
   StreamTiming,
@@ -44,7 +48,10 @@ export class PartialCompletionError extends Error {
    *
    * @param partialResult - completion data collected before abort
    */
-  constructor(message: string, partialResult: CompletionResult,) {
+  constructor(
+    message: string,
+    partialResult: CompletionResult,
+  ) {
     super(message,);
     this.name = 'PartialCompletionError';
     this.partialResult = partialResult;
@@ -63,10 +70,18 @@ export class PartialCompletionError extends Error {
  *
  * @param timing - collected timing data
  */
-export function logTiming(label: string, timing: StreamTiming,): void {
+export function logTiming(
+  label: string,
+  timing: StreamTiming,
+): void {
+  /** Timing-specific logger tagged with the call label. */
+  const rl = tagged({
+    tag: `timing:${label}`,
+    l,
+  },);
   const totalSeconds = (timing.totalMs / MS_PER_SECOND).toFixed(1,);
-  console.log(
-    `    [timing:${label}] ttfc=${String(timing.timeToFirstChunkMs,)}ms`
+  rl.info(
+    `ttfc=${String(timing.timeToFirstChunkMs,)}ms`
       + ` total=${totalSeconds}s`,
   );
 }

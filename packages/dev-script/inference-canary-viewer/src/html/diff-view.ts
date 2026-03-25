@@ -28,16 +28,36 @@ export function renderSideBySideDiff(
 
   for (const line of diffLines) {
     if (line.type === 'removed') {
-      leftLines.push(h({ tag: 'span', class: 'diff-removed', text: line.content, },),);
-      rightLines.push(h({ tag: 'span', class: 'diff-spacer', },),);
+      leftLines.push(h({
+        tag: 'span',
+        class: 'diff-removed',
+        text: line.content,
+      },),);
+      rightLines.push(h({
+        tag: 'span',
+        class: 'diff-spacer',
+      },),);
     }
     else if (line.type === 'added') {
-      leftLines.push(h({ tag: 'span', class: 'diff-spacer', },),);
-      rightLines.push(h({ tag: 'span', class: 'diff-added', text: line.content, },),);
+      leftLines.push(h({
+        tag: 'span',
+        class: 'diff-spacer',
+      },),);
+      rightLines.push(h({
+        tag: 'span',
+        class: 'diff-added',
+        text: line.content,
+      },),);
     }
     else {
-      leftLines.push(h({ tag: 'span', text: line.content, },),);
-      rightLines.push(h({ tag: 'span', text: line.content, },),);
+      leftLines.push(h({
+        tag: 'span',
+        text: line.content,
+      },),);
+      rightLines.push(h({
+        tag: 'span',
+        text: line.content,
+      },),);
     }
   }
 
@@ -49,11 +69,17 @@ export function renderSideBySideDiff(
         tag: 'div',
         class: 'diff-column',
         children: [
-          h({ tag: 'h3', text: 'Initial pass', },),
+          h({
+            tag: 'h3',
+            text: 'Initial pass',
+          },),
           h({
             tag: 'pre',
             class: 'glow diff-pre',
-            children: [h({ tag: 'code', html: leftLines.join('\n',), },),],
+            children: [h({
+              tag: 'code',
+              html: leftLines.join('\n',),
+            },),],
           },),
         ],
       },),
@@ -61,11 +87,17 @@ export function renderSideBySideDiff(
         tag: 'div',
         class: 'diff-column',
         children: [
-          h({ tag: 'h3', text: 'Fix pass', },),
+          h({
+            tag: 'h3',
+            text: 'Fix pass',
+          },),
           h({
             tag: 'pre',
             class: 'glow diff-pre',
-            children: [h({ tag: 'code', html: rightLines.join('\n',), },),],
+            children: [h({
+              tag: 'code',
+              html: rightLines.join('\n',),
+            },),],
           },),
         ],
       },),

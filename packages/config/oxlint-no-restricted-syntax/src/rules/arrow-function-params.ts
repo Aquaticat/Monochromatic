@@ -37,7 +37,13 @@ type ArrowParamsNode = {
  * ```
  */
 export function extractParamsText(
-  { fullText, node, }: { fullText: string; node: ArrowParamsNode; },
+  {
+    fullText,
+    node,
+  }: {
+    fullText: string;
+    node: ArrowParamsNode
+  },
 ): string {
   /** Skip `async ` prefix if present. */
   let start = 0;
@@ -97,7 +103,10 @@ export function extractParamsText(
     else if (ch === ')') {
       depth--;
       if (depth === 0)
-        return rest.slice(0, i + 1,);
+        return rest.slice(
+          0,
+          i + 1,
+        );
     }
   }
 

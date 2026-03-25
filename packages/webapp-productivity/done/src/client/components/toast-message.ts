@@ -47,10 +47,13 @@ class ToastMessage extends HTMLElement {
   connectedCallback(): void {
     this.#render();
     // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-    this.#timer = setTimeout(function dismiss(this: ToastMessage,): void {
+    this.#timer = setTimeout(
+      function dismiss(this: ToastMessage,): void {
       this.remove();
     }
-      .bind(this,), DISMISS_MS,);
+      .bind(this,),
+      DISMISS_MS,
+    );
   }
 
   /** Cancels the auto-dismiss timer when the element is removed early. */
@@ -65,13 +68,23 @@ class ToastMessage extends HTMLElement {
   #render(): void {
     const message = this.getAttribute('message',) ?? '';
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
-      h({ tag: 'div', class: 'content', text: message, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
+      h({
+        tag: 'div',
+        class: 'content',
+        text: message,
+      },),
     );
   }
 }
 
-customElements.define('toast-message', ToastMessage,);
+customElements.define(
+  'toast-message',
+  ToastMessage,
+);
 
 /**
  * Shows a toast notification that auto-dismisses after 3 seconds.
@@ -83,6 +96,9 @@ export function showToast(message: string,): void {
   document.querySelector<HTMLElement>('toast-message',)?.remove();
 
   const toast = document.createElement('toast-message',);
-  toast.setAttribute('message', message,);
+  toast.setAttribute(
+    'message',
+    message,
+  );
   document.body.append(toast,);
 }

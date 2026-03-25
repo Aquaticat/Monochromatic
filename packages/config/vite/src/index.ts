@@ -24,7 +24,10 @@ import { createModeConfig, } from './config-modifiers.ts';
  * ```
  */
 export function getShared(configDir: string,): UserConfigFnObject {
-  return createModeConfig(configDir, createBaseConfig,);
+  return createModeConfig(
+    configDir,
+    createBaseConfig,
+  );
 }
 
 //endregion Public API

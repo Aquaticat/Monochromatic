@@ -28,12 +28,18 @@ const PAD_WIDTH = 8;
  * ```
  */
 const parser = object({
-  model: optional(option('--model', string({ metavar: 'MODEL', },),),),
+  model: optional(option(
+    '--model',
+    string({ metavar: 'MODEL', },),
+  ),),
   files: multiple(argument(string({ metavar: 'FILE', },),),),
 },);
 
 /** Parsed CLI arguments */
-const args = runSync(parser, { programName: 'token-count', help: 'option', },);
+const args = runSync(
+  parser,
+  { programName: 'token-count', help: 'option', },
+);
 
 if (args.files.length === 0)
   throw new Error('At least one FILE argument is required',);
@@ -46,7 +52,10 @@ const config = model !== undefined ? { model, } : {};
 /** Token count results for all files, resolved concurrently. */
 const results = await Promise.all(
   args.files.map(function countFile(filePath: string,) {
-    return countFileTokens({ filePath, config, },);
+    return countFileTokens({
+      filePath,
+      config,
+    },);
   },),
 );
 
@@ -54,9 +63,12 @@ for (const result of results)
   console.log(`${String(result.inputTokens,).padStart(PAD_WIDTH,)} ${result.filePath}`,);
 
 if (results.length > 1) {
-  const total = results.reduce(function sumTokens(sum, r,) {
+  const total = results.reduce(
+    function sumTokens(sum, r,) {
     return sum + r.inputTokens;
-  }, 0,);
+  },
+    0,
+  );
   console.log(`${String(total,).padStart(PAD_WIDTH,)} total`,);
 }
 

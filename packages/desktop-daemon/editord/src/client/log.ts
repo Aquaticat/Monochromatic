@@ -19,7 +19,10 @@ await initPromise;
  * Root tagged logger for all editord client subsystems.
  * Sub-modules should compose deeper tags via `tagged({ tag, l })`.
  */
-export const l: Logger = tagged({ tag: 'editord', l: $, },);
+export const l: Logger = tagged({
+  tag: 'editord',
+  l: $,
+},);
 
 export type { Logger, };
 export { tagged, };

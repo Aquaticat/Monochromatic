@@ -25,9 +25,18 @@ function renderCanvasContainer(): string {
         tag: 'div',
         attrs: { id: 'zoom-layer', },
         children: [
-          h({ tag: 'canvas', attrs: { id: 'draw-canvas', }, },),
-          h({ tag: 'div', attrs: { id: 'svg-overlay', }, },),
-          h({ tag: 'div', attrs: { id: 'text-layer', }, },),
+          h({
+            tag: 'canvas',
+            attrs: { id: 'draw-canvas', },
+          },),
+          h({
+            tag: 'div',
+            attrs: { id: 'svg-overlay', },
+          },),
+          h({
+            tag: 'div',
+            attrs: { id: 'text-layer', },
+          },),
         ],
       },),
     ],
@@ -46,7 +55,11 @@ function renderCanvasContainer(): string {
  * @returns complete HTML document string
  */
 export function renderPage(
-  { css, js, svgBackgrounds, }: {
+  {
+    css,
+    js,
+    svgBackgrounds,
+  }: {
     css: string;
     js: string;
     svgBackgrounds: readonly string[];
@@ -56,8 +69,10 @@ export function renderPage(
    * Escape `</` as `<\/` to prevent premature script tag closure.
    * `\/` is a valid JSON escape for `/`.
    */
-  const backgroundsJson = JSON.stringify(svgBackgrounds,).replaceAll('</',
-    String.raw`<\/`,);
+  const backgroundsJson = JSON.stringify(svgBackgrounds,).replaceAll(
+    '</',
+    String.raw`<\/`,
+  );
 
   return `<!DOCTYPE html>\n${
     h({
@@ -67,13 +82,27 @@ export function renderPage(
         h({
           tag: 'head',
           children: [
-            h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
-            h({ tag: 'meta',
+            h({
+              tag: 'meta',
+              attrs: { charset: 'utf8', },
+            },),
+            h({
+              tag: 'meta',
               attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', }, },),
-            h({ tag: 'meta', attrs: { name: 'color-scheme', content: 'light', }, },),
-            h({ tag: 'title', text: 'Doodle Widget', },),
-            h({ tag: 'style', html: css, },),
+                content: 'width=device-width, initial-scale=1', },
+            },),
+            h({
+              tag: 'meta',
+              attrs: { name: 'color-scheme', content: 'light', },
+            },),
+            h({
+              tag: 'title',
+              text: 'Doodle Widget',
+            },),
+            h({
+              tag: 'style',
+              html: css,
+            },),
           ],
         },),
         h({
@@ -89,16 +118,26 @@ export function renderPage(
             },),
             h({
               tag: 'div',
-              attrs: { id: 'zoom-toast', popover: 'manual', },
+              attrs: {
+                id: 'zoom-toast',
+                popover: 'manual',
+              },
               text:
                 'Click to zoom in \u00B7 Shift+click or long-press to zoom out \u00B7 Drag to pan',
             },),
             h({
               tag: 'script',
-              attrs: { id: 'page-backgrounds', type: 'application/json', },
+              attrs: {
+                id: 'page-backgrounds',
+                type: 'application/json',
+              },
               html: backgroundsJson,
             },),
-            h({ tag: 'script', attrs: { type: 'module', }, html: js, },),
+            h({
+              tag: 'script',
+              attrs: { type: 'module', },
+              html: js,
+            },),
           ],
         },),
       ],

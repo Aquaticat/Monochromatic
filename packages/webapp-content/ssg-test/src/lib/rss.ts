@@ -27,7 +27,11 @@ import type { Post, } from './content.ts';
  * ```
  */
 export function generateLanguageRss(
-  { lang, posts, siteUrl, }: {
+  {
+    lang,
+    posts,
+    siteUrl,
+  }: {
     lang: Locales;
     posts: readonly Post[];
     siteUrl: string;

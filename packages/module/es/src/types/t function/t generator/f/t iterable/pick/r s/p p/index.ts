@@ -40,5 +40,9 @@ export function* $<T,>(
   toPick: ReadonlySet<T>,
   strict = true,
 ): Generator<T, void, undefined> {
-  yield* pickNamed({ iterable, toPick, strict, },);
+  yield* pickNamed({
+    iterable,
+    toPick,
+    strict,
+  },);
 }

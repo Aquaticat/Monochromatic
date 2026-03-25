@@ -5,6 +5,10 @@
  * completions when the fix stream is aborted mid-response.
  */
 import {
+  l,
+  tagged,
+} from './log.ts';
+import {
   enrichArtifact,
   extractPartialCompletion,
 } from './runner-probe-artifacts.ts';
@@ -50,19 +54,36 @@ export async function runAndEnrichFixPass(
   lastCompletionText: string,
   meanScore: number,
 ): Promise<number | undefined> {
+  /** Probe-specific logger for fix pass messages. */
+  const rl = tagged({
+    tag: probe.name,
+    l: tagged({
+      tag: config.label,
+      l,
+    },),
+  },);
   try {
-    const fixContext: ScoreContext = { label: config.label, pass: 'fix', timestamp,
-      signal, };
-    const pass2Result = await runSecondPass(probe, config, client, lastCompletionText,
-      fixContext,);
+    const fixContext: ScoreContext = {
+      label: config.label,
+      pass: 'fix',
+      timestamp,
+      signal,
+    };
+    const pass2Result = await runSecondPass(
+      probe,
+      config,
+      client,
+      lastCompletionText,
+      fixContext,
+    );
 
     if (pass2Result === undefined)
       return undefined;
 
     const delta = pass2Result.score - meanScore;
     const deltaStr = delta >= 0 ? `+${delta.toFixed(2,)}` : delta.toFixed(2,);
-    console.log(
-      `  [${config.label}:${probe.name}] pass2: score=${
+    rl.info(
+      `pass2: score=${
         pass2Result
           .score
           .toFixed(2,)
@@ -70,10 +91,17 @@ export async function runAndEnrichFixPass(
     );
 
     // Enrich the fix-pass artifact with completion data, score, and diagnostic prompt.
-    await enrichArtifact(probe, config, timestamp, 'fix', pass2Result.completion,
-      pass2Result.score, {
+    await enrichArtifact(
+      probe,
+      config,
+      timestamp,
+      'fix',
+      pass2Result.completion,
+      pass2Result.score,
+      {
       fixPrompt: pass2Result.fixPrompt,
-    },);
+    },
+    );
 
     return pass2Result.score;
   }
@@ -81,21 +109,28 @@ export async function runAndEnrichFixPass(
     const errorMessage = fixError instanceof Error
       ? fixError.message
       : String(fixError,);
-    console.error(`  [${config.label}:${probe.name}] pass2 failed: ${errorMessage}`,);
+    rl.error(`pass2 failed: ${errorMessage}`,);
 
     // Save partial fix data if the stream was aborted mid-response.
     const partialFix = extractPartialCompletion(fixError,);
     if (partialFix !== undefined) {
       try {
-        await enrichArtifact(probe, config, timestamp, 'fix', partialFix, 0, {
+        await enrichArtifact(
+          probe,
+          config,
+          timestamp,
+          'fix',
+          partialFix,
+          0,
+          {
           partial: true,
           error: errorMessage,
-        },);
+        },
+        );
       }
       catch (saveError) {
-        console.error(
-          `  [${config.label}:${probe.name}] failed to save partial fix artifact:`,
-          saveError,
+        rl.error(
+          `failed to save partial fix artifact: ${String(saveError,)}`,
         );
       }
     }

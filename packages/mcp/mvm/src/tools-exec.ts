@@ -15,7 +15,9 @@ import {
 //region Execution tools -- run commands inside VMs
 
 /** MCP tool: execute a command inside a named running VM. */
-export const execTool = defineTool('exec_in_vm', {
+export const execTool = defineTool(
+  'exec_in_vm',
+  {
   description:
     'Runs a shell command inside a named VM via the QEMU guest agent and returns stdout, stderr, and exit code. Linux VMs use bash; Windows VMs use PowerShell.',
   inputSchema: {
@@ -39,10 +41,13 @@ export const execTool = defineTool('exec_in_vm', {
       return errorResponse('exec_in_vm', err,);
     }
   },
-},);
+},
+);
 
 /** MCP tool: create an ephemeral VM, run a command, then destroy it. */
-export const runTool = defineTool('run_in_vm', {
+export const runTool = defineTool(
+  'run_in_vm',
+  {
   description:
     'Creates an ephemeral VM, runs a shell command inside it via the QEMU guest agent, then destroys the VM. Returns stdout, stderr, and exit code. Optionally clones from an existing VM instead of creating fresh. Linux VMs use bash; Windows VMs use PowerShell.',
   inputSchema: {
@@ -67,6 +72,7 @@ export const runTool = defineTool('run_in_vm', {
       return errorResponse('run_in_vm', err,);
     }
   },
-},);
+},
+);
 
 //endregion Execution tools

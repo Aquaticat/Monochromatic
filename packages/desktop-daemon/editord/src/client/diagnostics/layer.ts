@@ -11,7 +11,12 @@ import type { Diagnostic, } from '../../../protocol.ts';
 import { createDiagnosticRange, } from './range.ts';
 
 /** Severity names that map to CSS highlight names. */
-const SEVERITY_LEVELS = ['error', 'warning', 'info', 'hint',] as const;
+const SEVERITY_LEVELS = [
+  'error',
+  'warning',
+  'info',
+  'hint',
+] as const;
 
 /**
  * Applies diagnostic highlights to the editor using the CSS Custom Highlight API.
@@ -22,17 +27,26 @@ const SEVERITY_LEVELS = ['error', 'warning', 'info', 'hint',] as const;
  *
  * @param diagnostics - array of diagnostics to render
  */
-export function applyDiagnosticHighlights({ editor, diagnostics, }: {
+export function applyDiagnosticHighlights({
+  editor,
+  diagnostics,
+}: {
   editor: HTMLElement;
   diagnostics: Diagnostic[];
 },): void {
   /** Group diagnostics by severity. */
   const bySeverity = new Map<string, globalThis.Range[]>();
   for (const level of SEVERITY_LEVELS)
-    bySeverity.set(level, [],);
+    bySeverity.set(
+      level,
+      [],
+    );
 
   for (const diagnostic of diagnostics) {
-    const range = createDiagnosticRange({ editor, diagnostic, },);
+    const range = createDiagnosticRange({
+      editor,
+      diagnostic,
+    },);
     if (range !== null)
       bySeverity.get(diagnostic.severity,)?.push(range,);
   }
@@ -45,7 +59,10 @@ export function applyDiagnosticHighlights({ editor, diagnostics, }: {
       continue;
 
     if (ranges.length > 0)
-      CSS.highlights.set(highlightName, new Highlight(...ranges,),);
+      CSS.highlights.set(
+        highlightName,
+        new Highlight(...ranges,),
+      );
     else
       CSS.highlights.delete(highlightName,);
   }

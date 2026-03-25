@@ -73,5 +73,8 @@ export function formatModelReport(report: CanaryReport,): string {
     }${timedOutAnnotation}${pass2}`;
   },);
 
-  return [header, ...probeLines,].join('\n',);
+  return [
+    header,
+    ...probeLines,
+  ].join('\n',);
 }

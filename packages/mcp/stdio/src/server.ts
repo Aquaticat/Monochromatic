@@ -90,7 +90,10 @@ export function createMcpServer(
     return {
       protocolVersion: PROTOCOL_VERSION,
       capabilities: { tools: {}, },
-      serverInfo: { name: config.name, version: config.version, },
+      serverInfo: {
+        name: config.name,
+        version: config.version,
+      },
     };
   }
 
@@ -122,18 +125,37 @@ export function createMcpServer(
    * @returns JSON-RPC success or error response.
    */
   function handleRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
-    const { id, method, } = request;
+    const {
+      id,
+      method,
+    } = request;
 
     if (method === 'initialize')
-      return Promise.resolve(respondSuccess(id, buildInitializeResult(),),);
+      return Promise.resolve(respondSuccess(
+        id,
+        buildInitializeResult(),
+      ),);
     if (method === 'ping')
-      return Promise.resolve(respondSuccess(id, {},),);
+      return Promise.resolve(respondSuccess(
+        id,
+        {},
+      ),);
     if (method === 'tools/list')
-      return Promise.resolve(respondSuccess(id, buildToolsList(),),);
+      return Promise.resolve(respondSuccess(
+        id,
+        buildToolsList(),
+      ),);
     if (method === 'tools/call')
-      return handleToolCall(toolMap, request,);
+      return handleToolCall(
+        toolMap,
+        request,
+      );
     return Promise.resolve(
-      respondError(id, JSON_RPC_METHOD_NOT_FOUND, `Method not found: ${method}`,),
+      respondError(
+        id,
+        JSON_RPC_METHOD_NOT_FOUND,
+        `Method not found: ${method}`,
+      ),
     );
   }
 

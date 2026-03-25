@@ -47,8 +47,12 @@ export const inboxStyles = [
   },),
   css({
     rule: '.controls',
-    decls: { display: 'flex', 'flex-wrap': 'wrap', gap: cssVar('gap',),
-      'align-items': 'flex-start', },
+    decls: {
+      display: 'flex',
+      'flex-wrap': 'wrap',
+      gap: cssVar('gap',),
+      'align-items': 'flex-start',
+    },
   },),
   css({
     rule: '.control-group',
@@ -66,12 +70,18 @@ export const inboxStyles = [
   },),
   css({
     rule: '.subsection-heading',
-    decls: { 'font-size': cssRem(SUBSECTION_FONT_SIZE,), 'font-weight': 400, },
+    decls: {
+      'font-size': cssRem(SUBSECTION_FONT_SIZE,),
+      'font-weight': 400,
+    },
   },),
   css({
     rule: '.subsection-desc',
-    decls: { 'font-size': cssCalc(`${cssRem(DESC_FONT_SIZE_PX,)} / 16`,),
-      'line-height': 1.5, color: cssVar('fg-weaker',), },
+    decls: {
+      'font-size': cssCalc(`${cssRem(DESC_FONT_SIZE_PX,)} / 16`,),
+      'line-height': 1.5,
+      color: cssVar('fg-weaker',),
+    },
   },),
   css({
     rule: '.location-options',

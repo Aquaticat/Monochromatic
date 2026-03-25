@@ -40,7 +40,11 @@ function computeLineStarts({ lines, }: { lines: string[]; },): number[] {
  *
  * @returns map from highlight group name to DOM Range array
  */
-export function collectHighlightRanges({ tree, lines, editor, }: {
+export function collectHighlightRanges({
+  tree,
+  lines,
+  editor,
+}: {
   tree: Tree;
   lines: string[];
   editor: HTMLDivElement;
@@ -49,7 +53,10 @@ export function collectHighlightRanges({ tree, lines, editor, }: {
   const rangesByGroup = new Map<string, Range[]>();
   const { children, } = editor;
 
-  highlightTree(tree, editorHighlighter, function collectRange(from, to, group,) {
+  highlightTree(
+    tree,
+    editorHighlighter,
+    function collectRange(from, to, group,) {
     const startLine = findLineForOffset({ offset: from, lineStarts, },);
     const endLine = findLineForOffset({ offset: to, lineStarts, },);
 
@@ -91,7 +98,8 @@ export function collectHighlightRanges({ tree, lines, editor, }: {
       }
       groupRanges.push(range,);
     }
-  },);
+  },
+  );
 
   return rangesByGroup;
 }

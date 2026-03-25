@@ -62,8 +62,12 @@ export function formatBytes(bytes: number,): string {
  *
  * @param signal - AbortSignal that stops the polling loop
  */
-async function pollProgress(destPath: string, contentLength: number, totalStr: string,
-  signal: AbortSignal,): Promise<void>
+async function pollProgress(
+  destPath: string,
+  contentLength: number,
+  totalStr: string,
+  signal: AbortSignal,
+): Promise<void>
 {
   /** Milliseconds between file size polls for progress display. */
   const POLL_INTERVAL_MS = 500;
@@ -71,7 +75,10 @@ async function pollProgress(destPath: string, contentLength: number, totalStr: s
   while (!signal.aborted) {
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling loop
     await new Promise(function pollDelay(resolve,) {
-      setTimeout(resolve, POLL_INTERVAL_MS,);
+      setTimeout(
+        resolve,
+        POLL_INTERVAL_MS,
+      );
     },);
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- signal can be aborted during the await above
     if (signal.aborted)
@@ -111,7 +118,11 @@ async function pollProgress(destPath: string, contentLength: number, totalStr: s
  * await writeWithProgress({ response, destPath: '/tmp/image.img', rl: logger });
  * ```
  */
-export async function writeWithProgress({ destPath, response, rl, }: {
+export async function writeWithProgress({
+  destPath,
+  response,
+  rl,
+}: {
   destPath: string;
   response: Response;
   rl: { info: (msg: string,) => void; };
@@ -122,8 +133,12 @@ export async function writeWithProgress({ destPath, response, rl, }: {
   const controller = new AbortController();
 
   // Start progress polling in the background
-  const progressDone = pollProgress(destPath, contentLength, totalStr,
-    controller.signal,);
+  const progressDone = pollProgress(
+    destPath,
+    contentLength,
+    totalStr,
+    controller.signal,
+  );
 
   // Stream response body to disk via AsyncIterable protocol (runtime-neutral)
   const { body, } = response;
@@ -132,7 +147,10 @@ export async function writeWithProgress({ destPath, response, rl, }: {
     await progressDone;
     throw new Error(`response body is null for ${destPath}`,);
   }
-  await pipeline(Readable.from(body,), createWriteStream(destPath,),);
+  await pipeline(
+    Readable.from(body,),
+    createWriteStream(destPath,),
+  );
 
   // Stop progress polling
   controller.abort();

@@ -48,7 +48,10 @@ import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
  */
 export function* $<const T,>(
   { myIterable, }: { myIterable: Iterable<T>; },
-): Generator<{ element: T; index: Int & (Positive | 0); }> {
+): Generator<{
+  element: T;
+  index: Int & (Positive | 0)
+}> {
   let index = 0;
   for (const element of myIterable) {
     yield {

@@ -77,7 +77,13 @@ function formatSpawnResult(state: SpawnState,): string {
  * ```
  */
 function checkCompletedChildren(
-  { parentSessionId, consume, }: { parentSessionId: string; consume: boolean; },
+  {
+    parentSessionId,
+    consume,
+  }: {
+    parentSessionId: string;
+    consume: boolean
+  },
 ): string | null {
   let entries: string[] = [];
   try {
@@ -93,11 +99,20 @@ function checkCompletedChildren(
     if (!filename.endsWith('.json',))
       continue;
 
-    const filePath = join(SPAWNS_DIR, filename,);
-    const reportedPath = join(SPAWNS_DIR, filename.replace(/\.json$/, '.reported',),);
+    const filePath = join(
+      SPAWNS_DIR,
+      filename,
+    );
+    const reportedPath = join(
+      SPAWNS_DIR,
+      filename.replace(/\.json$/, '.reported',),
+    );
 
     try {
-      const raw = readFileSync(filePath, 'utf8',);
+      const raw = readFileSync(
+        filePath,
+        'utf8',
+      );
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own hooks */
       const state = JSON.parse(raw,) as SpawnState;
 
@@ -110,7 +125,10 @@ function checkCompletedChildren(
       //region Consume: atomic rename to prevent double reliable injection
       if (consume) {
         try {
-          renameSync(filePath, reportedPath,);
+          renameSync(
+            filePath,
+            reportedPath,
+          );
         }
         catch {
           /** Another hook invocation already renamed this file. */

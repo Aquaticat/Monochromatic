@@ -35,7 +35,9 @@ export const escapeInlineTags: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(context, function escapeHandler(_node, comment,): void {
+    return createTsdocVisitor(
+      context,
+      function escapeHandler(_node, comment,): void {
       const lines = getCommentLines(comment,);
       // Skip the last line which is the legitimate closing `*/`
       lines.slice(0, -1,).forEach(function checkLine(line, index,): void {
@@ -53,6 +55,7 @@ export const escapeInlineTags: CreateOnceRule = {
           },);
         }
       },);
-    },);
+    },
+    );
   },
 };

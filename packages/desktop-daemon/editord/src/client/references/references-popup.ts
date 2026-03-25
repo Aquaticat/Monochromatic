@@ -56,17 +56,29 @@ export class ReferencesPopup extends HTMLElement {
 
   /** Renders the container and sets up popover behavior. */
   connectedCallback(): void {
-    this.#list = h({ tag: 'div', class: 'list', },);
-    this.#shadow.replaceChildren(h({ tag: 'style', text: STYLES, },), this.#list,);
-    this.setAttribute('popover', 'auto',);
+    this.#list = h({
+      tag: 'div',
+      class: 'list',
+    },);
+    this.#shadow.replaceChildren(
+      h({ tag: 'style', text: STYLES, },),
+      this.#list,
+    );
+    this.setAttribute(
+      'popover',
+      'auto',
+    );
 
     /** Clean up anchor div when popover is light-dismissed. */
     const popup = this;
-    this.addEventListener('toggle', function handleToggle(event,) {
+    this.addEventListener(
+      'toggle',
+      function handleToggle(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover is ToggleEvent
       if ((event as ToggleEvent).newState === 'closed')
         popup.#cleanup();
-    },);
+    },
+    );
   }
 
   /**
@@ -81,15 +93,32 @@ export class ReferencesPopup extends HTMLElement {
    * @param cursorHeight - height of the editor cursor (pixels)
    */
   show(
-    { locations, x, y, cursorHeight, }: { locations: ReferenceLocation[]; x: number;
-      y: number; cursorHeight: number; },
+    {
+      locations,
+      x,
+      y,
+      cursorHeight,
+    }: {
+      locations: ReferenceLocation[];
+      x: number;
+      y: number;
+      cursorHeight: number
+    },
   ): void {
     if (this.#list === null || locations.length === 0)
       return;
     this.#locations = locations;
     this.#selectedIndex = 0;
-    this.parentElement?.insertBefore(this.#anchor, this,);
-    positionAnchor({ anchor: this.#anchor, x, y, cursorHeight, },);
+    this.parentElement?.insertBefore(
+      this.#anchor,
+      this,
+    );
+    positionAnchor({
+      anchor: this.#anchor,
+      x,
+      y,
+      cursorHeight,
+    },);
     this.showPopover();
     this.#list.replaceChildren(...renderReferenceItems({ locations, },),);
   }
@@ -121,9 +150,15 @@ export class ReferencesPopup extends HTMLElement {
   navigate({ direction, }: { direction: 'up' | 'down'; },): void {
     if (this.#locations.length === 0 || this.#list === null)
       return;
-    this.#selectedIndex = computeNextIndex({ current: this.#selectedIndex,
-      total: this.#locations.length, direction, },);
-    updateItemSelection({ list: this.#list, selectedIndex: this.#selectedIndex, },);
+    this.#selectedIndex = computeNextIndex({
+      current: this.#selectedIndex,
+      total: this.#locations.length,
+      direction,
+    },);
+    updateItemSelection({
+      list: this.#list,
+      selectedIndex: this.#selectedIndex,
+    },);
   }
 
   /**
@@ -137,14 +172,23 @@ export class ReferencesPopup extends HTMLElement {
     const loc = this.#locations[this.#selectedIndex];
     if (loc === undefined)
       return null;
-    const detail: ReferenceSelectDetail = { path: loc.path, line: loc.line + 1,
-      character: loc.character, };
+    const detail: ReferenceSelectDetail = {
+      path: loc.path,
+      line: loc.line + 1,
+      character: loc.character,
+    };
     this.hide();
     this.dispatchEvent(
-      new CustomEvent('reference-select', { detail, bubbles: true, composed: true, },),
+      new CustomEvent(
+        'reference-select',
+        { detail, bubbles: true, composed: true, },
+      ),
     );
     return detail;
   }
 }
 
-customElements.define('references-popup', ReferencesPopup,);
+customElements.define(
+  'references-popup',
+  ReferencesPopup,
+);

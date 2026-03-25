@@ -25,20 +25,32 @@ const OPTION_PADDING = 1 / 2;
 export const FOCUS_DROPDOWN_STYLES = [
   css({
     rule: ':host',
-    decls: { display: 'block', 'inline-size': cssPercent(FULL_PERCENT,),
-      position: 'relative', },
+    decls: {
+      display: 'block',
+      'inline-size': cssPercent(FULL_PERCENT,),
+      position: 'relative',
+    },
   },),
   css({
     rule: '.trigger',
-    decls: { ...buttonOutlined(), 'inline-size': cssPercent(FULL_PERCENT,),
-      'text-align': 'start', },
+    decls: {
+      ...buttonOutlined(),
+      'inline-size': cssPercent(FULL_PERCENT,),
+      'text-align': 'start',
+    },
     children: [
-      css({ rule: '&:focus-visible', decls: focusOutline(), },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline(),
+      },),
     ],
   },),
   css({
     rule: '.text',
-    decls: { 'flex-grow': 1, 'text-align': 'start', },
+    decls: {
+      'flex-grow': 1,
+      'text-align': 'start',
+    },
   },),
   css({
     rule: '.divider',
@@ -67,15 +79,24 @@ export const FOCUS_DROPDOWN_STYLES = [
       'z-index': cssInt(10,),
     },
     children: [
-      css({ rule: '&:not(:popover-open)', decls: { display: 'none', }, },),
+      css({
+        rule: '&:not(:popover-open)',
+        decls: { display: 'none', },
+      },),
     ],
   },),
   css({
     rule: '.option',
-    decls: { 'padding-block': cssRem(OPTION_PADDING,),
-      'padding-inline': cssRem(OPTION_PADDING,), cursor: 'pointer', },
+    decls: {
+      'padding-block': cssRem(OPTION_PADDING,),
+      'padding-inline': cssRem(OPTION_PADDING,),
+      cursor: 'pointer',
+    },
     children: [
-      css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg',), }, },),
+      css({
+        rule: '&:hover',
+        decls: { 'background-color': cssVar('hover-bg',), },
+      },),
     ],
   },),
 ]

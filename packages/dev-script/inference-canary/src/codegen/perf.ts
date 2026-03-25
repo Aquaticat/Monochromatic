@@ -63,8 +63,15 @@ export async function runInContainerTimed(
   signal: AbortSignal | undefined,
 ): Promise<TimedContainerResult> {
   const start = Date.now();
-  const result = await runInContainer(source, input, signal,);
-  return { ...result, durationMs: Date.now() - start, };
+  const result = await runInContainer(
+    source,
+    input,
+    signal,
+  );
+  return {
+    ...result,
+    durationMs: Date.now() - start,
+  };
 }
 
 /**
@@ -86,8 +93,10 @@ export async function runInContainerTimed(
  * computePerfScore(result, { fastMs: 3000, slowMs: 10000 }); // durationMs=6500 -> 0.5
  * ```
  */
-export function computePerfScore(perfResult: TimedContainerResult,
-  config: PerfTestConfig,): number
+export function computePerfScore(
+  perfResult: TimedContainerResult,
+  config: PerfTestConfig,
+): number
 {
   if (perfResult.timedOut || perfResult.exitCode !== 0)
     return 0;
@@ -107,10 +116,15 @@ export function computePerfScore(perfResult: TimedContainerResult,
  *
  * @returns diagnostic text, or undefined if perf was acceptable
  */
-export function buildPerfDiagnostic(perfResult: TimedContainerResult,
-  config: PerfTestConfig,): string | undefined
+export function buildPerfDiagnostic(
+  perfResult: TimedContainerResult,
+  config: PerfTestConfig,
+): string | undefined
 {
-  const score = computePerfScore(perfResult, config,);
+  const score = computePerfScore(
+    perfResult,
+    config,
+  );
   if (score >= 1)
     return undefined;
   return [

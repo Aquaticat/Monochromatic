@@ -69,24 +69,37 @@ export const SIDE_DRAWER_PANEL_STYLES = [
       'overflow-y': 'visible',
     },
   },),
-  css({ rule: '.panel:not(:popover-open)', decls: { display: 'none', }, },),
+  css({
+    rule: '.panel:not(:popover-open)',
+    decls: { display: 'none', },
+  },),
   css({
     at: 'keyframes',
     params: 'drawer-slide-in',
     children: [
-      css({ rule: 'from',
+      css({
+        rule: 'from',
         decls: { transform: cssTranslateX(cssPercent(NEG_FULL_PERCENT,),),
-          opacity: 0, }, },),
-      css({ rule: 'to',
-        decls: { transform: cssTranslateX(cssNum(0,),), opacity: 1, }, },),
+          opacity: 0, },
+      },),
+      css({
+        rule: 'to',
+        decls: { transform: cssTranslateX(cssNum(0,),), opacity: 1, },
+      },),
     ],
   },),
   css({
     at: 'keyframes',
     params: 'scrim-fade-in',
     children: [
-      css({ rule: 'from', decls: { 'background-color': 'transparent', }, },),
-      css({ rule: 'to', decls: { 'background-color': cssVar('overlay-bg',), }, },),
+      css({
+        rule: 'from',
+        decls: { 'background-color': 'transparent', },
+      },),
+      css({
+        rule: 'to',
+        decls: { 'background-color': cssVar('overlay-bg',), },
+      },),
     ],
   },),
   css({
@@ -103,7 +116,12 @@ export const SIDE_DRAWER_PANEL_STYLES = [
     decls: {
       'animation-name': 'drawer-slide-in',
       'animation-duration': cssS(DRAWER_SLIDE_S,),
-      'animation-timing-function': cssCubicBezier([0, 0, EASE_CONTROL_X, 1,],),
+      'animation-timing-function': cssCubicBezier([
+        0,
+        0,
+        EASE_CONTROL_X,
+        1,
+      ],),
       'animation-fill-mode': 'both',
     },
   },),

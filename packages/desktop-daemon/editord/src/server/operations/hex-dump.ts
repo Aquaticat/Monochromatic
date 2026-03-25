@@ -51,16 +51,34 @@ const ASCII_PRINTABLE_END = 0x7E;
  * ```
  */
 export function generateHexDump(
-  { buffer, totalSize, }: { buffer: Buffer; totalSize?: number; },
+  {
+    buffer,
+    totalSize,
+  }: {
+    buffer: Buffer;
+    totalSize?: number
+  },
 ): string {
   const fullSize = totalSize ?? buffer.length;
-  const limit = Math.min(buffer.length, HEX_DUMP_MAX_BYTES,);
+  const limit = Math.min(
+    buffer.length,
+    HEX_DUMP_MAX_BYTES,
+  );
   const lines: string[] = [];
 
   for (let offset = 0; offset < limit; offset += BYTES_PER_LINE) {
-    const offsetHex = offset.toString(HEX_RADIX,).padStart(OFFSET_WIDTH, '0',);
-    const end = Math.min(offset + BYTES_PER_LINE, limit,);
-    const chunk = buffer.subarray(offset, end,);
+    const offsetHex = offset.toString(HEX_RADIX,).padStart(
+      OFFSET_WIDTH,
+      '0',
+    );
+    const end = Math.min(
+      offset + BYTES_PER_LINE,
+      limit,
+    );
+    const chunk = buffer.subarray(
+      offset,
+      end,
+    );
 
     const hexParts: string[] = [];
     let ascii = '';
@@ -70,7 +88,10 @@ export function generateHexDump(
         hexParts.push('',);
       if (i < chunk.length) {
         const byte = notNullishOrThrow(chunk[i],);
-        hexParts.push(byte.toString(HEX_RADIX,).padStart(2, '0',),);
+        hexParts.push(byte.toString(HEX_RADIX,).padStart(
+          2,
+          '0',
+        ),);
         ascii += (byte >= ASCII_PRINTABLE_START && byte <= ASCII_PRINTABLE_END)
           ? String.fromCodePoint(byte,)
           : '.';

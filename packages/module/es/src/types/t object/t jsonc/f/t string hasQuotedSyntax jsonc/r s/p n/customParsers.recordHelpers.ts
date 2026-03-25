@@ -28,7 +28,10 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
 export function parseRecordHeader(
   valueAfterBrace: FragmentStringJsonc | StringJsonc,
   context?: Jsonc.ValueBase,
-): { recordComment?: Jsonc.Comment; tail: FragmentStringJsonc; } {
+): {
+  recordComment?: Jsonc.Comment;
+  tail: FragmentStringJsonc
+} {
   return {
     ...(context?.comment ? { recordComment: context.comment, } : {}),
     tail: valueAfterBrace as FragmentStringJsonc,
@@ -48,8 +51,13 @@ export function parseRecordHeader(
  */
 export function expectRecordSeparatorOrEnd(
   tail: FragmentStringJsonc,
-): { kind: 'end'; tail: FragmentStringJsonc; } | { kind: 'next';
-  tailStart: FragmentStringJsonc; }
+): {
+  kind: 'end';
+  tail: FragmentStringJsonc
+} | {
+  kind: 'next';
+  tailStart: FragmentStringJsonc
+}
 {
   /** Leading comments/whitespace after previous member. */
   const after = startsWithComment({ value: tail, },);
@@ -57,7 +65,10 @@ export function expectRecordSeparatorOrEnd(
   const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
 
   if (rc.startsWith('}',))
-    return { kind: 'end', tail: rc.slice('}'.length,) as FragmentStringJsonc, };
+    return {
+      kind: 'end',
+      tail: rc.slice('}'.length,) as FragmentStringJsonc,
+    };
 
   if (rc.startsWith(',',)) {
     /** Tail after the member separator comma. */
@@ -67,14 +78,23 @@ export function expectRecordSeparatorOrEnd(
     /** Start of the next token inside the record. */
     const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
     if (nextToken.startsWith('}',))
-      return { kind: 'end', tail: nextToken.slice('}'.length,) as FragmentStringJsonc, };
-    return { kind: 'next', tailStart: nextToken, };
+      return {
+        kind: 'end',
+        tail: nextToken.slice('}'.length,) as FragmentStringJsonc,
+      };
+    return {
+      kind: 'next',
+      tailStart: nextToken,
+    };
   }
 
   /** Preview snippet used for error reporting context. */
   /** Maximum characters for error preview snippet */
   const ERROR_PREVIEW_LENGTH = 32;
-  const preview = rc.slice(0, ERROR_PREVIEW_LENGTH,);
+  const preview = rc.slice(
+    0,
+    ERROR_PREVIEW_LENGTH,
+  );
   throw new Error(`malformed jsonc object: expected ',' or '}' near: ${preview}`,);
 }
 //endregion Record separators
@@ -91,7 +111,10 @@ export function expectRecordSeparatorOrEnd(
  */
 export function parseRecordKey(
   tail: FragmentStringJsonc,
-): { keyNode: Jsonc.RecordKey; remaining: FragmentStringJsonc; } {
+): {
+  keyNode: Jsonc.RecordKey;
+  remaining: FragmentStringJsonc
+} {
   /** Leading comments at key start; carries per-key comment. */
   const lead = startsWithComment({ value: tail, },);
   /** Start positioned at quoted key. */
@@ -104,10 +127,16 @@ export function parseRecordKey(
   const keyScan = scanQuotedString({ value: start, },);
   /** Key node with optional propagated leading comment. */
   const keyNode: Jsonc.RecordKey = lead.comment
-    ? { ...keyScan.parsed, comment: lead.comment, }
+    ? {
+      ...keyScan.parsed,
+      comment: lead.comment,
+    }
     : keyScan.parsed;
 
-  return { keyNode, remaining: keyScan.remaining, };
+  return {
+    keyNode,
+    remaining: keyScan.remaining,
+  };
 }
 //endregion Record key parsing
 

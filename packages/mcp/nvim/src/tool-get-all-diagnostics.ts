@@ -46,20 +46,29 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
       const lintDiags = lintResult.diagnostics.get(fileEntry.path,) ?? [];
       mergedByPath.set(
         fileEntry.path,
-        dedupDiagnostics({ editor: fileEntry.diagnostics, lint: lintDiags, },),
+        dedupDiagnostics({
+          editor: fileEntry.diagnostics,
+          lint: lintDiags,
+        },),
       );
     }
 
     // Include files that only appear in lint output (not open in editor)
     for (const [lintPath, lintDiags,] of lintResult.diagnostics) {
       if (!mergedByPath.has(lintPath,))
-        mergedByPath.set(lintPath, lintDiags,);
+        mergedByPath.set(
+          lintPath,
+          lintDiags,
+        );
     }
     //endregion Merge editor and lint diagnostics per file
 
     const result: FileDiagnostics[] = [...mergedByPath.entries(),].map(
       function toFileDiagnostics([path, diagnostics,],) {
-        return { path, diagnostics, };
+        return {
+          path,
+          diagnostics,
+        };
       },
     );
 
@@ -74,7 +83,10 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
 
     const sections = result.map(function formatSection(fileEntry,) {
       const lines = fileEntry.diagnostics.map(function formatLine(diagnostic,) {
-        return formatDiagnostic(diagnostic, '  ',);
+        return formatDiagnostic(
+          diagnostic,
+          '  ',
+        );
       },);
       return `${fileEntry.path}\n${lines.join('\n',)}`;
     },);
@@ -88,7 +100,13 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
   }
   catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err,);
-    console.error('[mcp-nvim] get_all_diagnostics failed:', err,);
-    return { content: [{ type: 'text', text: `Error: ${message}`, },], isError: true, };
+    console.error(
+      '[mcp-nvim] get_all_diagnostics failed:',
+      err,
+    );
+    return {
+      content: [{ type: 'text', text: `Error: ${message}`, },],
+      isError: true,
+    };
   }
 }

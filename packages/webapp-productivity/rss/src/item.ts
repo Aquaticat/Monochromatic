@@ -18,7 +18,10 @@ import { l as parentLogger, } from './log.ts';
 export type { ItemWDate, } from './item-type.ts';
 
 /** Tagged logger for the item module. */
-const l = tagged({ tag: 'item', l: parentLogger, },);
+const l = tagged({
+  tag: 'item',
+  l: parentLogger,
+},);
 
 //region Item extraction and normalization -- Converts feed entries to a uniform dated format
 
@@ -35,7 +38,10 @@ const l = tagged({ tag: 'item', l: parentLogger, },);
  * ```
  */
 export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
-  const innerL = tagged({ tag: getSortedItems.name, l, },);
+  const innerL = tagged({
+    tag: getSortedItems.name,
+    l,
+  },);
   const items = extractItems(feeds,);
   const normalized = items.map(function normalize(feedItem,) {
     return getNormalizedItem(feedItem,);
@@ -46,7 +52,10 @@ export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
       pubDateDate: z.coerce.date().parse(item.item.pubDate ?? new Date(0,),),
     };
   },);
-  const result = dated.toSorted(function byDate(itemA, itemB,) {
+  const result = dated.toSorted(function byDate(
+    itemA,
+    itemB,
+  ) {
     return itemB.pubDateDate.getTime() - itemA.pubDateDate.getTime();
   },);
   innerL.debug(`${String(result.length,)} sorted items`,);
@@ -61,32 +70,52 @@ export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
  * @returns Flat array of items with parent feed metadata
  */
 function extractItems(feeds: FeedWOutline[],): Item[] {
-  const innerL = tagged({ tag: extractItems.name, l, },);
+  const innerL = tagged({
+    tag: extractItems.name,
+    l,
+  },);
   const result: Item[] = feeds.flatMap(
-    function extractFeedItems({ feed, outline, }: FeedWOutline,): Item[] {
+    function extractFeedItems({
+      feed,
+      outline,
+    }: FeedWOutline,): Item[] {
       if (outline.type === 'atom') {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
         const atomFeed = feed as ReturnType<typeof parseAtomFeed>;
-        const { entries, ...feedWithoutEntries } = atomFeed;
+        const {
+          entries,
+          ...feedWithoutEntries
+        } = atomFeed;
         if (entries === undefined || entries.length === 0) {
           innerL.warn(`atom feed ${outline.text ?? 'unnamed'} has no entries`,);
           return [];
         }
         return entries.map(function wrapEntry(entry,) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type narrows feed to atom
-          return { feed: feedWithoutEntries, outline, item: entry, } as Item;
+          return {
+            feed: feedWithoutEntries,
+            outline,
+            item: entry,
+          } as Item;
         },);
       }
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
       const rssFeed = feed as ReturnType<typeof parseRssFeed>;
-      const { items, ...feedWithoutItems } = rssFeed;
+      const {
+        items,
+        ...feedWithoutItems
+      } = rssFeed;
       if (items === undefined || items.length === 0) {
         innerL.warn(`rss feed ${outline.text ?? 'unnamed'} has no items`,);
         return [];
       }
       return items.map(function wrapItem(rssItem,) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
-        return { feed: feedWithoutItems, outline, item: rssItem, } as Item;
+        return {
+          feed: feedWithoutItems,
+          outline,
+          item: rssItem,
+        } as Item;
       },);
     },
   );
@@ -110,7 +139,10 @@ function getNormalizedItem(item: Item,): NormalizedItem {
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type === 'atom' narrows the item
   const atomItem = item as AtomItem;
-  const { title, subtitle, } = atomItem.feed;
+  const {
+    title,
+    subtitle,
+  } = atomItem.feed;
   const newFeed: Record<string, string> = {};
   if (title !== undefined)
     newFeed.title = title;

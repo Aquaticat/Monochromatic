@@ -30,13 +30,23 @@ import type { LspDiagnostic, } from './types.ts';
  *
  * @param text - initial file content
  */
-export async function managerDidOpen({ pool, documents, path, text, }: {
+export async function managerDidOpen({
+  pool,
+  documents,
+  path,
+  text,
+}: {
   pool: LspPool;
   documents: Map<string, DocumentState>;
   path: string;
   text: string;
 },): Promise<void> {
-  syncOpen({ path, text, documents, servers: await pool.resolveAll({ path, },), },);
+  syncOpen({
+    path,
+    text,
+    documents,
+    servers: await pool.resolveAll({ path, },),
+  },);
 }
 
 /**
@@ -50,13 +60,23 @@ export async function managerDidOpen({ pool, documents, path, text, }: {
  *
  * @param text - updated file content
  */
-export async function managerDidChange({ pool, documents, path, text, }: {
+export async function managerDidChange({
+  pool,
+  documents,
+  path,
+  text,
+}: {
   pool: LspPool;
   documents: Map<string, DocumentState>;
   path: string;
   text: string;
 },): Promise<void> {
-  syncChange({ path, text, documents, servers: await pool.resolveAll({ path, },), },);
+  syncChange({
+    path,
+    text,
+    documents,
+    servers: await pool.resolveAll({ path, },),
+  },);
 }
 
 /**
@@ -68,12 +88,20 @@ export async function managerDidChange({ pool, documents, path, text, }: {
  *
  * @param path - absolute file path
  */
-export async function managerDidSave({ pool, documents, path, }: {
+export async function managerDidSave({
+  pool,
+  documents,
+  path,
+}: {
   pool: LspPool;
   documents: Map<string, DocumentState>;
   path: string;
 },): Promise<void> {
-  syncSave({ path, documents, servers: await pool.resolveAll({ path, },), },);
+  syncSave({
+    path,
+    documents,
+    servers: await pool.resolveAll({ path, },),
+  },);
 }
 
 /**
@@ -87,14 +115,23 @@ export async function managerDidSave({ pool, documents, path, }: {
  *
  * @param path - absolute file path
  */
-export async function managerDidClose({ pool, documents, diagnostics, path, }: {
+export async function managerDidClose({
+  pool,
+  documents,
+  diagnostics,
+  path,
+}: {
   pool: LspPool;
   documents: Map<string, DocumentState>;
   diagnostics: DiagnosticStore;
   path: string;
 },): Promise<void> {
   diagnostics.delete({ uri: pathToFileURL(path,).href, },);
-  syncClose({ path, documents, servers: await pool.resolveAll({ path, },), },);
+  syncClose({
+    path,
+    documents,
+    servers: await pool.resolveAll({ path, },),
+  },);
 }
 
 /**
@@ -109,7 +146,12 @@ export async function managerDidClose({ pool, documents, diagnostics, path, }: {
  *
  * @param params - notification parameters
  */
-export function routeNotification({ diagnostics, source, method, params, }: {
+export function routeNotification({
+  diagnostics,
+  source,
+  method,
+  params,
+}: {
   diagnostics: DiagnosticStore;
   source: string;
   method: string;
@@ -117,7 +159,14 @@ export function routeNotification({ diagnostics, source, method, params, }: {
 },): void {
   if (method === 'textDocument/publishDiagnostics') {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP publishDiagnostics shape
-    const p = params as { uri: string; diagnostics: LspDiagnostic[]; };
-    diagnostics.update({ source, uri: p.uri, diagnostics: p.diagnostics, },);
+    const p = params as {
+      uri: string;
+      diagnostics: LspDiagnostic[]
+    };
+    diagnostics.update({
+      source,
+      uri: p.uri,
+      diagnostics: p.diagnostics,
+    },);
   }
 }

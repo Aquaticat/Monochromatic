@@ -273,11 +273,20 @@ export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
 export function resolveImage(identifier: string,): ResolvedImage {
   const spec = IMAGES[identifier];
   if (spec !== undefined)
-    return { kind: 'registry', spec, };
+    return {
+      kind: 'registry',
+      spec,
+    };
 
-  const customPath = join(IMAGES_DIR, `${identifier}.qcow2`,);
+  const customPath = join(
+    IMAGES_DIR,
+    `${identifier}.qcow2`,
+  );
   if (existsSync(customPath,))
-    return { customTemplatePath: customPath, kind: 'custom', };
+    return {
+      customTemplatePath: customPath,
+      kind: 'custom',
+    };
 
   const available = Object.keys(IMAGES,).join(', ',);
   throw new Error(
@@ -300,7 +309,13 @@ export function resolveImage(identifier: string,): ResolvedImage {
  * ```
  */
 export type ResolvedImage =
-  | { customTemplatePath: string; kind: 'custom'; }
-  | { kind: 'registry'; spec: ImageSpec; };
+  | {
+    customTemplatePath: string;
+    kind: 'custom'
+  }
+  | {
+    kind: 'registry';
+    spec: ImageSpec
+  };
 
 //endregion Resolution

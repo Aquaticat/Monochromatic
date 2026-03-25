@@ -10,7 +10,10 @@ import { l as parentLogger, } from './log.ts';
 import { IGNORE_PATH, } from './path.ts';
 
 /** Tagged logger for the ignore module. */
-const l = tagged({ tag: 'ignore', l: parentLogger, },);
+const l = tagged({
+  tag: 'ignore',
+  l: parentLogger,
+},);
 
 //region Ignore content loading -- Reads raw JSONL content for salt derivation and link filtering
 
@@ -21,10 +24,16 @@ const l = tagged({ tag: 'ignore', l: parentLogger, },);
  * @returns Concatenated raw text from all ignore files, or empty string if directory is missing
  */
 export async function getIgnoreContent(): Promise<string> {
-  const innerL = tagged({ tag: getIgnoreContent.name, l, },);
+  const innerL = tagged({
+    tag: getIgnoreContent.name,
+    l,
+  },);
   let filesInDir: Dirent[] = [];
   try {
-    filesInDir = await readdir(IGNORE_PATH, { withFileTypes: true, },);
+    filesInDir = await readdir(
+      IGNORE_PATH,
+      { withFileTypes: true, },
+    );
   }
   catch {
     innerL.debug('ignore directory not found',);
@@ -32,7 +41,10 @@ export async function getIgnoreContent(): Promise<string> {
   }
   const contents = await mapIterableAsync(
     function readIgnoreFile(dirent: Dirent,) {
-      return readFile(join(dirent.parentPath, dirent.name,), 'utf8',);
+      return readFile(
+        join(dirent.parentPath, dirent.name,),
+        'utf8',
+      );
     },
     filesInDir,
   );
@@ -47,7 +59,10 @@ export async function getIgnoreContent(): Promise<string> {
  * @returns Set of link URLs that should be excluded from rendering
  */
 export function parseIgnoredLinks(content: string,): Set<string> {
-  const innerL = tagged({ tag: parseIgnoredLinks.name, l, },);
+  const innerL = tagged({
+    tag: parseIgnoredLinks.name,
+    l,
+  },);
   const links = new Set<string>();
   const lines = content
     .split('\n',)

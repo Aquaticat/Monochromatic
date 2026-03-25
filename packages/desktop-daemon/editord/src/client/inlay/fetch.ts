@@ -15,7 +15,10 @@ import {
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for inlay hints. */
-const inlayLog = tagged({ tag: 'inlay', l, },);
+const inlayLog = tagged({
+  tag: 'inlay',
+  l,
+},);
 
 /**
  * Requests inlay hints from the server for the entire file.
@@ -27,7 +30,11 @@ const inlayLog = tagged({ tag: 'inlay', l, },);
  *
  * @param getCurrentFilePath - returns the current file path
  */
-export async function fetchInlayHints({ ws, editorPane, getCurrentFilePath, }: {
+export async function fetchInlayHints({
+  ws,
+  editorPane,
+  getCurrentFilePath,
+}: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
@@ -41,7 +48,11 @@ export async function fetchInlayHints({ ws, editorPane, getCurrentFilePath, }: {
     if (range === null)
       return;
 
-    const result = await ws.request({ type: 'inlayHint', path, range, },);
+    const result = await ws.request({
+      type: 'inlayHint',
+      path,
+      range,
+    },);
 
     /** Verify the file hasn't changed while awaiting the response. */
     if (path !== getCurrentFilePath())

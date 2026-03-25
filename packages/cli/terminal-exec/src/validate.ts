@@ -13,7 +13,10 @@ import {
 import { tokenizeExec, } from './tokenize.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'validate', l: parentLogger, },);
+const l = tagged({
+  tag: 'validate',
+  l: parentLogger,
+},);
 
 /**
  * Checks if an executable exists in `$PATH` using Bun's `which`.
@@ -61,7 +64,13 @@ export type ValidatedEntry = {
  *
  * @returns Validated entry with tokenized Exec, or `null` if the entry fails validation.
  */
-export function validateEntry({ entry, entryId, desktops, isFallback, execArgDefault, }: {
+export function validateEntry({
+  entry,
+  entryId,
+  desktops,
+  isFallback,
+  execArgDefault,
+}: {
   entry: DesktopEntry;
   entryId: string;
   desktops: readonly string[];

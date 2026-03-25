@@ -52,18 +52,23 @@ if (!(appElement instanceof HTMLElement))
 const app = appElement;
 
 // Listen for search events from the search-bar component
-document.querySelector<HTMLElement>('search-bar',)?.addEventListener('search', // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- search-bar dispatches CustomEvent with { query } detail
+document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
+  'search',
   (function handleSearch(event: CustomEvent<{ query: string; }>,) {
     const { query, } = event.detail;
     globalThis.location.href = query.length === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
-  }) as EventListener,);
+  }) as EventListener,
+);
 
 if (pageData.query.length === 0) {
   app.append(
-    h({ tag: 'p', class: 'search-hint',
-      text: 'Type something...or select one of the categories.', },),
+    h({
+      tag: 'p',
+      class: 'search-hint',
+      text: 'Type something...or select one of the categories.',
+    },),
   );
 
   const { availableTags, } = pageData;
@@ -89,23 +94,33 @@ if (pageData.query.length === 0) {
   }
 }
 else {
-  const resultList = h({ tag: 'ul', class: 'task-list', },);
+  const resultList = h({
+    tag: 'ul',
+    class: 'task-list',
+  },);
 
   for (const result of pageData.results) {
     resultList.append(
-      createTaskCard(result, {
+      createTaskCard(
+        result,
+        {
         showBlockedBadge: result.isBlocked,
         onOpen: handleOpen,
         onToggleComplete: async function handleComplete(taskId,) {
           await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
           globalThis.location.reload();
         },
-      },),
+      },
+      ),
     );
   }
 
   if (pageData.results.length === 0)
-    app.append(h({ tag: 'p', class: 'empty', text: 'No matching tasks.', },),);
+    app.append(h({
+      tag: 'p',
+      class: 'empty',
+      text: 'No matching tasks.',
+    },),);
   else
     app.append(resultList,);
 }

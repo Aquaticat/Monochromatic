@@ -14,11 +14,18 @@ export function inspect<const TValue,>(value: TValue,): TValue {
   /** Stringified representation for logging */
   const preview = typeof value === 'string'
     ? value
-    : JSON.stringify(value, null, 2,);
+    : JSON.stringify(
+      value,
+      null,
+      2,
+    );
   console.log(
     `[file-enforcer] inspect: ${
       preview.length > INSPECT_PREVIEW_LENGTH
-        ? `${preview.slice(0, INSPECT_PREVIEW_LENGTH,)}...`
+        ? `${preview.slice(
+          0,
+          INSPECT_PREVIEW_LENGTH,
+        )}...`
         : preview
     }`,
   );

@@ -31,12 +31,18 @@ import {
 export async function findMonorepoRoot(
   { startDir, }: { startDir: string; },
 ): Promise<string | undefined> {
-  const rl = tagged({ tag: findMonorepoRoot.name, l, },);
+  const rl = tagged({
+    tag: findMonorepoRoot.name,
+    l,
+  },);
   let dir = startDir;
   /** Filesystem root sentinel -- stop when parent equals self */
   const ROOT = '/';
   while (dir !== ROOT) {
-    const pkgPath = join(dir, 'package.json',);
+    const pkgPath = join(
+      dir,
+      'package.json',
+    );
     try {
       // oxlint-disable-next-line no-await-in-loop -- intentionally sequential directory walk
       const content = await Bun.file(pkgPath,).text();
@@ -50,7 +56,10 @@ export async function findMonorepoRoot(
     catch {
       // No package.json here, keep walking
     }
-    const parent = join(dir, '..',);
+    const parent = join(
+      dir,
+      '..',
+    );
     if (parent === dir)
       break;
     dir = parent;

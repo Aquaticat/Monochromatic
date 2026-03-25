@@ -53,9 +53,16 @@ const LAYER_ORDER = [
 ] as const;
 
 /** Directory containing individual body part SVG files. */
-const PARTS_DIR = join(import.meta.dirname, '..', 'parts',);
+const PARTS_DIR = join(
+  import.meta.dirname,
+  '..',
+  'parts',
+);
 /** Output path for the assembled composite SVG. */
-const OUTPUT_SVG = join(PARTS_DIR, '_composite_inline.svg',);
+const OUTPUT_SVG = join(
+  PARTS_DIR,
+  '_composite_inline.svg',
+);
 /** Output path for the rasterized PNG preview. */
 const OUTPUT_PNG = '/tmp/claude-1000/teto_composite.png';
 
@@ -66,13 +73,22 @@ const OUTPUT_PNG = '/tmp/claude-1000/teto_composite.png';
  *
  * @returns object with defs content and body content strings
  */
-function extractSvgContent(filePath: string,): { defs: string; body: string; } {
-  const raw = readFileSync(filePath, 'utf8',);
+function extractSvgContent(filePath: string,): {
+  defs: string;
+  body: string
+} {
+  const raw = readFileSync(
+    filePath,
+    'utf8',
+  );
 
   /** Strip the outer `<svg ...>` and `</svg>` wrapper. */
   const innerMatch = raw.match(/<svg[^>]*>([\s\S]*)<\/svg>/i,);
   if (innerMatch === null || innerMatch[1] === undefined)
-    return { defs: '', body: '', };
+    return {
+      defs: '',
+      body: '',
+    };
 
   const [, inner,] = innerMatch;
 
@@ -88,9 +104,15 @@ function extractSvgContent(filePath: string,): { defs: string; body: string; } {
   }
 
   /** Remove defs blocks from the body. */
-  body = body.replace(defsRegex, '',);
+  body = body.replace(
+    defsRegex,
+    '',
+  );
 
-  return { defs: defs.trim(), body: body.trim(), };
+  return {
+    defs: defs.trim(),
+    body: body.trim(),
+  };
 }
 
 /** Discover all part SVG files in the parts directory. */
@@ -101,7 +123,10 @@ const partFiles = readdirSync(PARTS_DIR,)
 
 /** Verify all expected parts exist. */
 const availableNames = new Set(partFiles.map(function toName(f,) {
-  return basename(f, '.svg',);
+  return basename(
+    f,
+    '.svg',
+  );
 },),);
 
 /** Layer names that are expected but have no corresponding SVG file. */
@@ -118,8 +143,14 @@ const allDefs: string[] = [];
 const layerGroups: string[] = [];
 
 for (const layerName of LAYER_ORDER) {
-  const filePath = join(PARTS_DIR, `${layerName}.svg`,);
-  const { defs, body, } = extractSvgContent(filePath,);
+  const filePath = join(
+    PARTS_DIR,
+    `${layerName}.svg`,
+  );
+  const {
+    defs,
+    body,
+  } = extractSvgContent(filePath,);
 
   if (defs.length > 0)
     allDefs.push(`    <!-- from ${layerName} -->\n    ${defs}`,);
@@ -137,14 +168,20 @@ ${layerGroups.join('\n',)}
 </svg>
 `;
 
-writeFileSync(OUTPUT_SVG, compositeSvg,);
+writeFileSync(
+  OUTPUT_SVG,
+  compositeSvg,
+);
 console.error(`Wrote composite SVG: ${OUTPUT_SVG}`,);
 
 /** Render to PNG via ImageMagick if available. */
 try {
-  execSync(`magick "${OUTPUT_SVG}" -resize 800x1200 "${OUTPUT_PNG}"`, {
+  execSync(
+    `magick "${OUTPUT_SVG}" -resize 800x1200 "${OUTPUT_PNG}"`,
+    {
     stdio: 'pipe',
-  },);
+  },
+  );
   console.error(`Rendered PNG: ${OUTPUT_PNG}`,);
 }
 catch {

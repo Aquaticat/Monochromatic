@@ -49,15 +49,30 @@ export type ExecResult = {
  * ```
  */
 export async function exec(
-  { command, name, }: { command: string; name: string; },
+  {
+    command,
+    name,
+  }: {
+    command: string;
+    name: string
+  },
 ): Promise<ExecResult> {
   validateName(name,);
-  const rl = tagged({ tag: exec.name, l, },);
+  const rl = tagged({
+    tag: exec.name,
+    l,
+  },);
   const fullName = `${VM_PREFIX}${name}`;
 
-  const vmDir = join(VMS_DIR, name,);
+  const vmDir = join(
+    VMS_DIR,
+    name,
+  );
   const meta = await readVmMeta(vmDir,);
-  const { arg, path, } = execArgs({
+  const {
+    arg,
+    path,
+  } = execArgs({
     command,
     osFamily: meta.osFamily,
     shell: meta.shell,
@@ -75,7 +90,11 @@ export async function exec(
   },);
 
   const execResult = await virsh({
-    args: ['qemu-agent-command', fullName, execPayload,],
+    args: [
+      'qemu-agent-command',
+      fullName,
+      execPayload,
+    ],
   },);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
   const execParsed = JSON.parse(execResult,) as { return: { pid: number; }; };
@@ -91,7 +110,11 @@ export async function exec(
   while (true) {
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
     const statusResult = await virsh({
-      args: ['qemu-agent-command', fullName, statusPayload,],
+      args: [
+        'qemu-agent-command',
+        fullName,
+        statusPayload,
+      ],
     },);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
     const statusParsed = JSON.parse(statusResult,) as { return: {
@@ -105,7 +128,10 @@ export async function exec(
     if (!status.exited) {
       // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling with setTimeout
       await new Promise(function execPollDelay(resolve,) {
-        setTimeout(resolve, POLL_INTERVAL_MS,);
+        setTimeout(
+          resolve,
+          POLL_INTERVAL_MS,
+        );
       },);
       continue;
     }
@@ -119,6 +145,10 @@ export async function exec(
     const exitCode = status.exitcode ?? 0;
 
     rl.debug(`command exited with code ${String(exitCode,)}`,);
-    return { exitCode, stderr, stdout, };
+    return {
+      exitCode,
+      stderr,
+      stdout,
+    };
   }
 }

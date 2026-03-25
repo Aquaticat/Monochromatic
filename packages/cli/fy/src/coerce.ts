@@ -20,7 +20,10 @@ import {
  * ```
  */
 export function coerceArg({ arg, }: { arg: string; },): unknown {
-  const rl = tagged({ tag: coerceArg.name, l, },);
+  const rl = tagged({
+    tag: coerceArg.name,
+    l,
+  },);
   try {
     const parsed: unknown = JSON.parse(arg,);
     rl.info(`"${arg}" => ${typeof parsed} ${String(parsed,)}`,);

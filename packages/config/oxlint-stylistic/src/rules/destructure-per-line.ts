@@ -34,8 +34,7 @@ export const destructurePerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      destructurePerLine:
-        'Each destructured property must be on its own line.',
+      destructurePerLine: 'Each destructured property must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -52,7 +51,10 @@ export const destructurePerLine: CreateOnceRule = {
           container: patternNode,
           items: properties,
           messageId: 'destructurePerLine',
-          bracketPair: { open: '{', close: '}', },
+          bracketPair: {
+            open: '{',
+            close: '}',
+          },
         },);
       },
     } as VisitorWithHooks;

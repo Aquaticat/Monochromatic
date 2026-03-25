@@ -47,5 +47,9 @@ export async function* $<T,>(
   toPick: ReadonlySet<T>,
   strict = true,
 ): AsyncGenerator<T, void, undefined> {
-  yield* pickNamed({ iterable, toPick, strict, },);
+  yield* pickNamed({
+    iterable,
+    toPick,
+    strict,
+  },);
 }

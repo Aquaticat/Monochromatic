@@ -36,8 +36,7 @@ export const objectPropertyPerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      propertyPerLine:
-        'Each object property must be on its own line.',
+      propertyPerLine: 'Each object property must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -54,7 +53,10 @@ export const objectPropertyPerLine: CreateOnceRule = {
           container: objNode,
           items: properties,
           messageId: 'propertyPerLine',
-          bracketPair: { open: '{', close: '}', },
+          bracketPair: {
+            open: '{',
+            close: '}',
+          },
         },);
       },
     } as VisitorWithHooks;

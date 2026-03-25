@@ -45,7 +45,10 @@ import {
  *
  * @throws When the specifier cannot be resolved
  */
-function resolveSpecifier(specifier: string, fromFile: string,): string {
+function resolveSpecifier(
+  specifier: string,
+  fromFile: string,
+): string {
   /** Directory containing the importing file */
   const fromDir = dirname(fromFile,);
 
@@ -59,7 +62,10 @@ function resolveSpecifier(specifier: string, fromFile: string,): string {
   // Explicit relative path
   if (specifier.startsWith('.',)) {
     /** Resolved absolute path from relative specifier */
-    const resolved = resolve(fromDir, specifier,);
+    const resolved = resolve(
+      fromDir,
+      specifier,
+    );
     if (existsSync(resolved,))
       return resolved;
     throw new Error(
@@ -73,13 +79,19 @@ function resolveSpecifier(specifier: string, fromFile: string,): string {
     || !specifier.includes('/',) && !specifier.startsWith('@',))
   {
     /** Attempt to resolve as relative path */
-    const asRelative = resolve(fromDir, specifier,);
+    const asRelative = resolve(
+      fromDir,
+      specifier,
+    );
     if (existsSync(asRelative,))
       return asRelative;
   }
 
   // Package specifier
-  return resolvePackage(specifier, fromDir,);
+  return resolvePackage(
+    specifier,
+    fromDir,
+  );
 }
 
 //endregion Import Resolution
@@ -104,7 +116,11 @@ export const postcssInlineImport: Plugin = {
     if (rootFrom !== undefined)
       imported.add(rootFrom,);
 
-    inlineImports(root, rootFrom ?? `${process.cwd()}${sep}input.css`, imported,);
+    inlineImports(
+      root,
+      rootFrom ?? `${process.cwd()}${sep}input.css`,
+      imported,
+    );
   },
 };
 
@@ -117,22 +133,32 @@ export const postcssInlineImport: Plugin = {
  *
  * @param imported - Set of already-imported absolute paths (prevents cycles)
  */
-function inlineImports(root: Root, fromFile: string, imported: Set<string>,): void {
+function inlineImports(
+  root: Root,
+  fromFile: string,
+  imported: Set<string>,
+): void {
   // Collect @import nodes first to avoid mutating the tree while walking
   /**
    * All \@import at-rules in the current root.
    */
   const importNodes: AtRule[] = [];
-  root.walkAtRules('import', function collectImportNode(node: AtRule,) {
+  root.walkAtRules(
+    'import',
+    function collectImportNode(node: AtRule,) {
     importNodes.push(node,);
-  },);
+  },
+  );
 
   for (const node of importNodes) {
     /** Bare specifier with quotes/url() stripped */
     const specifier = stripImportSpecifier(node.params,);
 
     /** Absolute path to the imported file */
-    const resolvedPath = resolveSpecifier(specifier, fromFile,);
+    const resolvedPath = resolveSpecifier(
+      specifier,
+      fromFile,
+    );
 
     // Skip already-imported files (prevents circular imports and duplicates)
     if (imported.has(resolvedPath,)) {
@@ -144,10 +170,17 @@ function inlineImports(root: Root, fromFile: string, imported: Set<string>,): vo
     /** Raw CSS content of the imported file */
     const content = readCssFileSync(resolvedPath,);
     /** Parsed AST of the imported file */
-    const importedRoot = parse(content, { from: resolvedPath, },);
+    const importedRoot = parse(
+      content,
+      { from: resolvedPath, },
+    );
 
     // Recursively process nested @import rules
-    inlineImports(importedRoot, resolvedPath, imported,);
+    inlineImports(
+      importedRoot,
+      resolvedPath,
+      imported,
+    );
 
     // Replace the @import node with the inlined content
     if (importedRoot.nodes.length > 0)

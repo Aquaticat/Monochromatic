@@ -18,7 +18,10 @@ import {
 } from '../log.ts';
 
 /** Tagged logger for fullscreen module. */
-const fsLog = tagged({ tag: 'fullscreen', l, },);
+const fsLog = tagged({
+  tag: 'fullscreen',
+  l,
+},);
 
 /**
  * Fullscreen expand icon as inline SVG.
@@ -41,13 +44,18 @@ export function wireFullscreen({ appElement, }: { appElement: HTMLElement; },): 
   fab.innerHTML = FULLSCREEN_ICON_SVG;
   fab.title = 'Enter fullscreen (enables Ctrl+W)';
 
-  fab.addEventListener('click', function handleFabClick(): void {
+  fab.addEventListener(
+    'click',
+    function handleFabClick(): void {
     void enterFullscreenAndLock();
-  },);
+  },
+  );
 
   appElement.append(fab,);
 
-  document.addEventListener('fullscreenchange', function handleFullscreenChange(): void {
+  document.addEventListener(
+    'fullscreenchange',
+    function handleFullscreenChange(): void {
     if (document.fullscreenElement !== null) {
       fsLog.info('fullscreen active',);
       fab.style.display = 'none';
@@ -57,5 +65,6 @@ export function wireFullscreen({ appElement, }: { appElement: HTMLElement; },): 
       fsLog.info('fullscreen exited',);
       fab.style.display = '';
     }
-  },);
+  },
+  );
 }

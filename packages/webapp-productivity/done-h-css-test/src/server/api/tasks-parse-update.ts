@@ -17,10 +17,18 @@ import {
 } from './tasks-parse.ts';
 
 /** Recognized priority/complexity values for input validation. */
-const priorities = new Set<string>(['low', 'medium', 'high',],);
+const priorities = new Set<string>([
+  'low',
+  'medium',
+  'high',
+],);
 
 /** Recognized status values for input validation. */
-const statuses = new Set<string>(['inbox', 'in_progress', 'done',],);
+const statuses = new Set<string>([
+  'inbox',
+  'in_progress',
+  'done',
+],);
 
 /**
  * Validates a task status value from untrusted input.
@@ -93,14 +101,20 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('priority' in value) {
-    const priority = parseEnumValue<TaskPriority>(value.priority, priorities,);
+    const priority = parseEnumValue<TaskPriority>(
+      value.priority,
+      priorities,
+    );
     if (priority === undefined)
       return null;
     taskUpdateInput.priority = priority;
   }
 
   if ('complexity' in value) {
-    const complexity = parseEnumValue<TaskPriority>(value.complexity, priorities,);
+    const complexity = parseEnumValue<TaskPriority>(
+      value.complexity,
+      priorities,
+    );
     if (complexity === undefined)
       return null;
     taskUpdateInput.complexity = complexity;

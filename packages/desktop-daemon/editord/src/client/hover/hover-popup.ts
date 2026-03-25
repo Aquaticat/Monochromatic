@@ -34,12 +34,21 @@ export class HoverPopup extends HTMLElement {
 
   /** Renders the hover container and sets up popover behavior. */
   connectedCallback(): void {
-    this.#content = h({ tag: 'div', class: 'content', },);
+    this.#content = h({
+      tag: 'div',
+      class: 'content',
+    },);
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       this.#content,
     );
-    this.setAttribute('popover', 'hint',);
+    this.setAttribute(
+      'popover',
+      'hint',
+    );
   }
 
   /**
@@ -51,13 +60,27 @@ export class HoverPopup extends HTMLElement {
    *
    * @param y - vertical viewport coordinate (pixels, below the hovered text)
    */
-  show({ text, x, y, }: { text: string; x: number; y: number; },): void {
+  show({
+    text,
+    x,
+    y,
+  }: {
+    text: string;
+    x: number;
+    y: number
+  },): void {
     if (this.#content === null)
       return;
 
     this.#content.textContent = text;
-    this.style.setProperty('inset-inline-start', `${x}px`,);
-    this.style.setProperty('inset-block-start', `${y + VERTICAL_OFFSET}px`,);
+    this.style.setProperty(
+      'inset-inline-start',
+      `${x}px`,
+    );
+    this.style.setProperty(
+      'inset-block-start',
+      `${y + VERTICAL_OFFSET}px`,
+    );
     if (!this.matches(':popover-open',))
       this.showPopover();
   }
@@ -78,4 +101,7 @@ export class HoverPopup extends HTMLElement {
   }
 }
 
-customElements.define('hover-popup', HoverPopup,);
+customElements.define(
+  'hover-popup',
+  HoverPopup,
+);

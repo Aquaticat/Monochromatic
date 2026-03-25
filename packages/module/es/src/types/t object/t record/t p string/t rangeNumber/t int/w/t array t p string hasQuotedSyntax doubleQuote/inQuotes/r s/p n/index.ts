@@ -28,13 +28,22 @@ import type {
  * // result.__brand.inQuotes will contain the quote status for each string
  * ```
  */
-export function $({ value, strs, }: { value: Value; strs: DoubleQuote[]; },): Value {
+export function $({
+  value,
+  strs,
+}: {
+  value: Value;
+  strs: DoubleQuote[]
+},): Value {
   // Create new map for quote status results
   const newQuoteStatusMap = new Map<string, boolean>();
 
   // For each string, check if effective (unescaped) quotes before value.startInclusive are evenly paired
   for (const str of strs) {
-    const strBefore = str.slice(0, value.startInclusive,);
+    const strBefore = str.slice(
+      0,
+      value.startInclusive,
+    );
 
     // Count effective double quotes using regex that handles escaped quotes properly
     const effectiveDoubleQuotesInStrBefore = [...strBefore
@@ -45,7 +54,10 @@ export function $({ value, strs, }: { value: Value; strs: DoubleQuote[]; },): Va
     const isInsideQuotes = effectiveDoubleQuotesInStrBefore % 2 !== 0;
 
     // Use the original branded string as the key
-    newQuoteStatusMap.set(str, isInsideQuotes,);
+    newQuoteStatusMap.set(
+      str,
+      isInsideQuotes,
+    );
   }
 
   // Merge new map with original

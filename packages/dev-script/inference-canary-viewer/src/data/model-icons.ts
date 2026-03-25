@@ -31,8 +31,10 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  * Kimi SVG has white (#fff) fills that are invisible on light backgrounds,
  * so a dark square is prepended behind its paths.
  */
-const kimiFixed = kimiSvg.replace('<path',
-  '<rect width="24" height="24" rx="3" fill="#888"/><path',);
+const kimiFixed = kimiSvg.replace(
+  '<path',
+  '<rect width="24" height="24" rx="3" fill="#888"/><path',
+);
 
 /** Raw SVG sources keyed by OpenRouter vendor prefix */
 const RAW_SVGS: Record<string, string> = {
@@ -58,11 +60,23 @@ const RAW_SVGS: Record<string, string> = {
  * // viewBox === '0 0 24 24', inner === '<path d="M0 0"/>'
  * ```
  */
-function parseSvg(raw: string,): { viewBox: string; inner: string; } {
+function parseSvg(raw: string,): {
+  viewBox: string;
+  inner: string
+} {
   const viewBoxMatch = raw.match(/viewBox="([^"]+)"/,);
   const viewBox = viewBoxMatch?.[1] ?? '0 0 24 24';
-  const inner = raw.replace(/^<svg[^>]*>/, '',).replace(/<\/svg>\s*$/, '',);
-  return { viewBox, inner, };
+  const inner = raw.replace(
+    /^<svg[^>]*>/,
+    '',
+  ).replace(
+    /<\/svg>\s*$/,
+    '',
+  );
+  return {
+    viewBox,
+    inner,
+  };
 }
 
 /**
@@ -80,14 +94,22 @@ function parseSvg(raw: string,): { viewBox: string; inner: string; } {
  * // defs === '<linearGradient id="g"/>', content === '<path/>'
  * ```
  */
-function extractDefs(inner: string,): { defs: string; content: string; } {
+function extractDefs(inner: string,): {
+  defs: string;
+  content: string
+} {
   let defs = '';
-  const content = inner.replaceAll(/<defs>([\s\S]*?)<\/defs>/g,
+  const content = inner.replaceAll(
+    /<defs>([\s\S]*?)<\/defs>/g,
     function extractDef(_match, defsContent: string,) {
       defs += defsContent;
       return '';
-    },);
-  return { defs, content, };
+    },
+  );
+  return {
+    defs,
+    content,
+  };
 }
 
 /** Parsed symbol data for a single vendor icon */
@@ -105,9 +127,18 @@ type VendorSymbol = {
 /** Map of vendor prefix to parsed symbol data */
 const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
   Object.entries(RAW_SVGS,).map(function parseEntry([vendor, raw,],) {
-    const { viewBox, inner, } = parseSvg(raw,);
-    const { defs, content, } = extractDefs(inner,);
-    return [vendor, { id: `icon-${vendor}`, viewBox, inner: content, defs, },];
+    const {
+      viewBox,
+      inner,
+    } = parseSvg(raw,);
+    const {
+      defs,
+      content,
+    } = extractDefs(inner,);
+    return [
+      vendor,
+      { id: `icon-${vendor}`, viewBox, inner: content, defs, },
+    ];
   },),
 );
 
@@ -129,7 +160,12 @@ const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
 export function renderSvgSprite(): string {
   let allDefs = '';
   const symbols = [...VENDOR_SYMBOLS.values(),].map(
-    function buildSymbol({ id, viewBox, inner, defs, },) {
+    function buildSymbol({
+      id,
+      viewBox,
+      inner,
+      defs,
+    },) {
       allDefs += defs;
       return `<symbol id="${id}" viewBox="${viewBox}">${inner}</symbol>`;
     },
@@ -173,16 +209,25 @@ function useRef(symbolId: string,): string {
  * // '<span class="color-swatch" data-shape="icon" data-vendor="anthropic"><svg ...><use href="#icon-anthropic"/></svg></span>'
  * ```
  */
-export function iconDot(modelId: string, color: string,): string {
+export function iconDot(
+  modelId: string,
+  color: string,
+): string {
   const vendor = modelId.split('/',)[0] ?? '';
   const symbol = VENDOR_SYMBOLS.get(vendor,);
   if (symbol === undefined) {
-    return h({ tag: 'span', class: 'color-swatch',
-      style: { '--point-color': color, }, },);
+    return h({
+      tag: 'span',
+      class: 'color-swatch',
+      style: { '--point-color': color, },
+    },);
   }
-  return h({ tag: 'span', class: 'color-swatch',
+  return h({
+    tag: 'span',
+    class: 'color-swatch',
     attrs: { 'data-shape': 'icon', 'data-vendor': vendor, },
-    html: useRef(symbol.id,), },);
+    html: useRef(symbol.id,),
+  },);
 }
 
 /**

@@ -19,12 +19,24 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  * @throws when the path escapes root or the delete fails
  */
 export async function deleteEntry(
-  { rootDir, path, }: { rootDir: string; path: string; },
+  {
+    rootDir,
+    path,
+  }: {
+    rootDir: string;
+    path: string
+  },
 ): Promise<void> {
-  const absolutePath = assertWithinRoot({ rootDir, path, },);
+  const absolutePath = assertWithinRoot({
+    rootDir,
+    path,
+  },);
 
   if (absolutePath === rootDir)
     throw new Error('cannot delete root directory',);
 
-  await rm(absolutePath, { recursive: true, },);
+  await rm(
+    absolutePath,
+    { recursive: true, },
+  );
 }

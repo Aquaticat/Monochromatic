@@ -29,7 +29,9 @@ import {
  */
 export function postStyles(): string {
   return [
-    $({ rule: '.Posts', decls: {
+    $({
+      rule: '.Posts',
+      decls: {
       display: 'grid',
       'grid-template-columns': cssCompounded([
         `repeat(auto-fit, minmax(${cssRem(POST_GRID_MIN,)}, 1fr))`,
@@ -37,8 +39,11 @@ export function postStyles(): string {
       gap: cssRem(GAP,),
       'list-style-type': 'none',
       'padding-inline-start': 0,
-    }, },),
-    $({ rule: '.Post', decls: {
+    },
+    },),
+    $({
+      rule: '.Post',
+      decls: {
       position: 'relative',
       'padding-block': cssRem(GAP,),
       'padding-inline': cssRem(GAP,),
@@ -46,37 +51,56 @@ export function postStyles(): string {
       'border-width': cssCalc(BORDER_WIDTH_REM,),
       'border-color': cssVar('color-border',),
       'border-radius': cssRem(GAP_SMALL,),
-    }, },),
-    $({ rule: '.Post .overlay', decls: {
+    },
+    },),
+    $({
+      rule: '.Post .overlay',
+      decls: {
       position: 'absolute',
       inset: cssInt(0,),
       'font-size': cssInt(0,),
       'text-decoration-line': 'none',
-    }, },),
-    $({ rule: '.Post h2', decls: {
+    },
+    },),
+    $({
+      rule: '.Post h2',
+      decls: {
       'margin-block-start': 0,
       'margin-block-end': cssRem(GAP_SMALL,),
       'font-size': cssRem(FONT_SIZE_H2,),
-    }, },),
-    $({ rule: '.Post .description', decls: {
+    },
+    },),
+    $({
+      rule: '.Post .description',
+      decls: {
       'margin-block': 0,
       color: cssVar('color-muted',),
-    }, },),
-    $({ rule: '.Post .tags', decls: {
+    },
+    },),
+    $({
+      rule: '.Post .tags',
+      decls: {
       display: 'flex',
       gap: cssRem(GAP_SMALL,),
       'list-style-type': 'none',
       'padding-inline-start': 0,
       'flex-wrap': 'wrap',
-    }, },),
-    $({ rule: '.Post__tag', decls: {
+    },
+    },),
+    $({
+      rule: '.Post__tag',
+      decls: {
       'font-size': cssRem(FONT_SIZE_SMALL,),
       color: cssVar('color-subtle',),
-    }, },),
-    $({ rule: '.Post .date', decls: {
+    },
+    },),
+    $({
+      rule: '.Post .date',
+      decls: {
       'font-size': cssRem(FONT_SIZE_SMALL,),
       color: cssVar('color-subtle',),
-    }, },),
+    },
+    },),
   ]
     .join('\n',);
 }

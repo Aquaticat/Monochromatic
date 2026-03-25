@@ -1,7 +1,10 @@
 import type { $ as TypeOf, } from '../../../../t/index.ts';
 
 /** Primitive types that need no further decomposition in the enhanced typeof result. */
-const noFurtherTypeOf = ['undefined', 'symbol',] as const;
+const noFurtherTypeOf = [
+  'undefined',
+  'symbol',
+] as const;
 
 /**
  * Enhanced typeof function that provides detailed type information as discriminated union.
@@ -34,33 +37,50 @@ export function $(value: unknown,): TypeOf {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is bigint
     const myValue = value as bigint;
     const sign = myValue === 0n ? 0 : (myValue > 0n ? 'positive' : 'negative');
-    return [typeOf, { sign, },];
+    return [
+      typeOf,
+      { sign, },
+    ];
   }
 
   if (typeOf === 'boolean') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is boolean
     const myValue = value as boolean;
-    return [typeOf, { true: myValue, },];
+    return [
+      typeOf,
+      { true: myValue, },
+    ];
   }
 
   if (typeOf === 'number') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is number
     const myValue = value as number;
     if (Number.isNaN(myValue,))
-      return [typeOf, { NaN: true, },];
+      return [
+        typeOf,
+        { NaN: true, },
+      ];
 
     const sign = myValue === 0 ? 0 : (myValue > 0 ? 'positive' : 'negative');
     const float = !Number.isInteger(myValue,);
-    return [typeOf, { NaN: [false, { sign, float, },], },];
+    return [
+      typeOf,
+      { NaN: [false, { sign, float, },], },
+    ];
   }
 
   if (typeOf === 'string') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is string
     const myValue = value as string;
     if (myValue.length === 0)
-      return [typeOf, { empty: true, },];
+      return [
+        typeOf,
+        { empty: true, },
+      ];
 
-    return [typeOf, {
+    return [
+      typeOf,
+      {
       empty: [false, { char: myValue
           .length !== 1
         ? false
@@ -72,48 +92,84 @@ export function $(value: unknown,): TypeOf {
               ? 'lowercaseLetter'
               : 'nonLetter'),
         ], },],
-    },];
+    },
+    ];
   }
 
   const prototypeString = Object.prototype.toString.call(value,);
 
   if (typeOf === 'function') {
     if (prototypeString === '[object Function]')
-      return [typeOf, { async: false, generator: false, },];
+      return [
+        typeOf,
+        { async: false, generator: false, },
+      ];
     if (prototypeString === '[object AsyncFunction]')
-      return [typeOf, { async: true, generator: false, },];
+      return [
+        typeOf,
+        { async: true, generator: false, },
+      ];
     if (prototypeString === '[object GeneratorFunction]')
-      return [typeOf, { async: false, generator: true, },];
+      return [
+        typeOf,
+        { async: false, generator: true, },
+      ];
     if (prototypeString === '[object AsyncGeneratorFunction]')
-      return [typeOf, { async: true, generator: true, },];
+      return [
+        typeOf,
+        { async: true, generator: true, },
+      ];
   }
 
   if (typeOf === 'object') {
     if (value === null)
-      return [typeOf, { prototype: 'Null', },];
+      return [
+        typeOf,
+        { prototype: 'Null', },
+      ];
 
     // Handle special object types based on prototype string
     if (prototypeString === '[object Array]')
-      return [typeOf, { prototype: 'Array', },];
+      return [
+        typeOf,
+        { prototype: 'Array', },
+      ];
     if (prototypeString === '[object Date]')
-      return [typeOf, { prototype: 'Date', },];
+      return [
+        typeOf,
+        { prototype: 'Date', },
+      ];
     if (prototypeString === '[object Map]')
-      return [typeOf, { prototype: 'Map', },];
+      return [
+        typeOf,
+        { prototype: 'Map', },
+      ];
     if (prototypeString === '[object Set]')
-      return [typeOf, { prototype: 'Set', },];
+      return [
+        typeOf,
+        { prototype: 'Set', },
+      ];
     if (prototypeString === '[object Promise]')
-      return [typeOf, { prototype: 'Promise', },];
+      return [
+        typeOf,
+        { prototype: 'Promise', },
+      ];
     if (prototypeString === '[object RegExp]') {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- prototype string check confirms RegExp
       const regexp = value as RegExp;
-      return [typeOf, { prototype: ['RegExp', { global: regexp.global, },], },];
+      return [
+        typeOf,
+        { prototype: ['RegExp', { global: regexp.global, },], },
+      ];
     }
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is object
     const myValue = value as object;
 
     // Default plain object
-    return [typeOf, {
+    return [
+      typeOf,
+      {
       prototype: ['Object', {
         iterable: typeof (
             // @ts-expect-error -- Might be Async Iterable
@@ -127,7 +183,8 @@ export function $(value: unknown,): TypeOf {
             ? [true, { async: false, },]
             : false),
       },],
-    },];
+    },
+    ];
   }
 
   throw new TypeError(

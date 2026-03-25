@@ -30,9 +30,16 @@ export const checkAccess: CreateOnceRule = {
   },
   createOnce(context: Context,): VisitorWithHooks {
     /** Access-level tags that are mutually exclusive. */
-    const accessTags = ['@public', '@internal', '@alpha', '@beta', '@experimental',];
+    const accessTags = [
+      '@public',
+      '@internal',
+      '@alpha',
+      '@beta',
+      '@experimental',
+    ];
 
-    return createTsdocVisitor(context,
+    return createTsdocVisitor(
+      context,
       function checkAccessHandler(_node, comment,): void {
         const found: string[] = [];
         const text = comment.value;
@@ -52,7 +59,8 @@ export const checkAccess: CreateOnceRule = {
             data: { tags: found.join(', ',), },
           },);
         }
-      },);
+      },
+    );
   },
 };
 

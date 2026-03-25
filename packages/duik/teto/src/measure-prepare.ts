@@ -17,7 +17,10 @@ import { execSync, } from 'node:child_process';
  * @returns trimmed stdout
  */
 function run(cmd: string,): string {
-  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },).trim();
+  return execSync(
+    cmd,
+    { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
+  ).trim();
 }
 
 /** Parameters for silhouette preparation. */
@@ -27,7 +30,12 @@ export type PrepareSilhouettesParams = {
   /** Path to assembled composite SVG. */
   compositeSvg: string;
   /** Crop region for front-view character from the reference sheet. */
-  refCrop: { width: number; height: number; x: number; y: number; };
+  refCrop: {
+    width: number;
+    height: number;
+    x: number;
+    y: number
+  };
   /** Height to normalize both images to for consistent measurement. */
   normHeight: number;
   /** Temporary directory for intermediate images. */
@@ -55,7 +63,13 @@ export type PrepareSilhouettesResult = {
 export function prepareSilhouettes(
   params: PrepareSilhouettesParams,
 ): PrepareSilhouettesResult {
-  const { refImage, compositeSvg, refCrop, normHeight, tmpDir, } = params;
+  const {
+    refImage,
+    compositeSvg,
+    refCrop,
+    normHeight,
+    tmpDir,
+  } = params;
 
   /**
    * Reference: crop front view, trim background, normalize height,

@@ -18,9 +18,16 @@ import { join, } from 'node:path';
 import { runAiMetrics, } from './compare-ai-metrics.ts';
 
 /** Directory containing individual body part SVG files. */
-const PARTS_DIR = join(import.meta.dirname, '..', 'parts',);
+const PARTS_DIR = join(
+  import.meta.dirname,
+  '..',
+  'parts',
+);
 /** Path to the assembled composite SVG from the build step. */
-const COMPOSITE_SVG = join(PARTS_DIR, '_composite_inline.svg',);
+const COMPOSITE_SVG = join(
+  PARTS_DIR,
+  '_composite_inline.svg',
+);
 /** Path to the reference character sheet image for comparison. */
 const REF_IMAGE = '/home/user/Nextcloud/Text/Docs/Algonquin/MTM6403/teto_sv_3views.jpg';
 /** Temporary directory for intermediate comparison images. */
@@ -28,22 +35,33 @@ const TMP = '/tmp/claude-1000';
 
 /** Always rebuild composite first. */
 console.error('--- Rebuilding composite ---',);
-execSync(`bun run ${join(import.meta.dirname, 'mise.build-composite.ts',)}`, {
+execSync(
+  `bun run ${join(import.meta.dirname, 'mise.build-composite.ts',)}`,
+  {
   stdio: 'inherit',
-},);
+},
+);
 
 /**
  * Crop region for front-view character from the reference sheet.
  * Tighter crop to exclude text annotations.
  */
-const REF_CROP = { width: 290, height: 880, x: 1_440, y: 60, };
+const REF_CROP = {
+  width: 290,
+  height: 880,
+  x: 1_440,
+  y: 60,
+};
 
 /**
  * Common comparison size.
  * Both images are trimmed to content bounds, then resized to fit
  * within this box while preserving aspect ratio, then padded to exact size.
  */
-const CMP = { width: 400, height: 700, };
+const CMP = {
+  width: 400,
+  height: 700,
+};
 
 /**
  * Runs a shell command and returns stdout trimmed.
@@ -53,7 +71,10 @@ const CMP = { width: 400, height: 700, };
  * @returns trimmed stdout
  */
 function run(cmd: string,): string {
-  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },).trim();
+  return execSync(
+    cmd,
+    { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
+  ).trim();
 }
 
 if (!existsSync(COMPOSITE_SVG,))

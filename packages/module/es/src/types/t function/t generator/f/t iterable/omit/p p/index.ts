@@ -47,5 +47,9 @@ export async function* $<T,>(
   toOmit: ReadonlySet<T>,
   strict = true,
 ): AsyncGenerator<T, void, undefined> {
-  yield* omitNamed({ iterable, toOmit, strict, },);
+  yield* omitNamed({
+    iterable,
+    toOmit,
+    strict,
+  },);
 }

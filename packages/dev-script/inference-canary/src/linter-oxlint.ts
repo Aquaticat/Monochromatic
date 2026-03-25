@@ -12,6 +12,10 @@ import {
   getStdoutFromError,
   LINT_TIMEOUT_MS,
 } from './linter-exec.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
 
 //region Types -- oxlint JSON output shape and the parsed result type returned to callers
 
@@ -114,7 +118,10 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
         ? LINT_WARNING_PENALTY
         : LINT_ERROR_PENALTY;
       const current = penaltyAccumulator.get(rule,) ?? 0;
-      penaltyAccumulator.set(rule, current + penaltyPerOccurrence,);
+      penaltyAccumulator.set(
+        rule,
+        current + penaltyPerOccurrence,
+      );
     },);
 
     return {
@@ -128,9 +135,21 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
     };
   }
   catch (parseError) {
-    console.error('    [lint:oxlint] failed to parse JSON output:', parseError,);
-    return { errors: 0, warnings: 0, violationCount: 0, violatedRules: [],
-      perRulePenalty: new Map(), linterRan: false, rawOutput: '', };
+    /** Lint-specific logger for oxlint parse failure. */
+    const rl = tagged({
+      tag: 'lint:oxlint',
+      l,
+    },);
+    rl.error(`failed to parse JSON output: ${String(parseError,)}`,);
+    return {
+      errors: 0,
+      warnings: 0,
+      violationCount: 0,
+      violatedRules: [],
+      perRulePenalty: new Map(),
+      linterRan: false,
+      rawOutput: '',
+    };
   }
 }
 
@@ -148,9 +167,13 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
  */
 export async function runAndParseOxlint(filePath: string,): Promise<OxlintResult> {
   try {
-    const output = await execPromise('oxlint', ['--format', 'json', filePath,], {
+    const output = await execPromise(
+      'oxlint',
+      ['--format', 'json', filePath,],
+      {
       timeout: LINT_TIMEOUT_MS,
-    },);
+    },
+    );
     return parseOxlintJson(output,);
   }
   catch (error) {
@@ -158,9 +181,21 @@ export async function runAndParseOxlint(filePath: string,): Promise<OxlintResult
     const stdout = getStdoutFromError(error,);
     if (stdout.includes('"diagnostics"',))
       return parseOxlintJson(stdout,);
-    console.error(`    [lint:oxlint] failed: ${String(error,)}`,);
-    return { errors: 0, warnings: 0, violationCount: 0, violatedRules: [],
-      perRulePenalty: new Map(), linterRan: false, rawOutput: '', };
+    /** Lint-specific logger for oxlint execution failure. */
+    const rl = tagged({
+      tag: 'lint:oxlint',
+      l,
+    },);
+    rl.error(`failed: ${String(error,)}`,);
+    return {
+      errors: 0,
+      warnings: 0,
+      violationCount: 0,
+      violatedRules: [],
+      perRulePenalty: new Map(),
+      linterRan: false,
+      rawOutput: '',
+    };
   }
 }
 

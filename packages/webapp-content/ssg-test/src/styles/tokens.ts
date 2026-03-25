@@ -12,7 +12,9 @@ import { $, } from '@monochromatic-dev/module-es/h-css';
  * @returns CSS string with custom property declarations
  */
 export function tokenStyles(): string {
-  return $({ rule: ':root', decls: {
+  return $({
+    rule: ':root',
+    decls: {
     '--color-fg': '#1a1a1a',
     '--color-bg': '#fafafa',
     '--color-link': '#0066cc',
@@ -22,7 +24,8 @@ export function tokenStyles(): string {
     '--color-muted': '#666',
     '--color-subtle': '#888',
     '--color-focus-ring': '#0066cc',
-  }, },);
+  },
+  },);
 }
 
 /**
@@ -37,7 +40,9 @@ export function darkModeTokenStyles(): string {
     at: 'media',
     params: '(prefers-color-scheme: dark)',
     children: [
-      $({ rule: ':root', decls: {
+      $({
+        rule: ':root',
+        decls: {
         '--color-fg': '#e5e5e5',
         '--color-bg': '#1a1a1a',
         '--color-link': '#6db3f2',
@@ -47,7 +52,8 @@ export function darkModeTokenStyles(): string {
         '--color-muted': '#999',
         '--color-subtle': '#aaa',
         '--color-focus-ring': '#6db3f2',
-      }, },),
+      },
+      },),
     ],
   },);
 }

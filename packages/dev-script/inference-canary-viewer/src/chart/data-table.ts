@@ -44,19 +44,31 @@ export type TableDisplayOptions = {
  *
  * @returns HTML string for the cell, or empty string when column is hidden
  */
-function fixScoreCell(hasFixScores: boolean, row: TableRow,): string {
+function fixScoreCell(
+  hasFixScores: boolean,
+  row: TableRow,
+): string {
   if (!hasFixScores)
     return '';
   if (row.pass2Score !== undefined)
-    return h({ tag: 'td', text: row.pass2Score.toFixed(2,), },);
+    return h({
+      tag: 'td',
+      text: row.pass2Score.toFixed(2,),
+    },);
   if (row.failed) {
-    return h({ tag: 'td', children: [
+    return h({
+      tag: 'td',
+      children: [
       h({ tag: 'span', class: 'missing-data-label', text: '(not run)', },),
-    ], },);
+    ],
+    },);
   }
-  return h({ tag: 'td', children: [
+  return h({
+    tag: 'td',
+    children: [
     h({ tag: 'span', class: 'missing-data-label', text: '(data error)', },),
-  ], },);
+  ],
+  },);
 }
 
 /**
@@ -87,7 +99,10 @@ export function renderDataTable(
 
   /** When only timestamp + score remain, render as a compact grid instead of a table */
   if (!showModel && !showProbe)
-    return renderDataGrid(rows, caption,);
+    return renderDataGrid(
+      rows,
+      caption,
+    );
 
   /** Only show the fix score column when at least one row has pass2 data */
   const hasFixScores = rows.some(function hasPass2(row,) {
@@ -97,16 +112,36 @@ export function renderDataTable(
   const headerRow = h({
     tag: 'tr',
     children: [
-      h({ tag: 'th', attrs: { scope: 'col', }, text: 'Timestamp', },),
+      h({
+        tag: 'th',
+        attrs: { scope: 'col', },
+        text: 'Timestamp',
+      },),
       ...(showModel
-        ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Model', },),]
+        ? [h({
+          tag: 'th',
+          attrs: { scope: 'col', },
+          text: 'Model',
+        },),]
         : []),
       ...(showProbe
-        ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Probe', },),]
+        ? [h({
+          tag: 'th',
+          attrs: { scope: 'col', },
+          text: 'Probe',
+        },),]
         : []),
-      h({ tag: 'th', attrs: { scope: 'col', }, text: 'Score', },),
+      h({
+        tag: 'th',
+        attrs: { scope: 'col', },
+        text: 'Score',
+      },),
       ...(hasFixScores
-        ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Fix score', },),]
+        ? [h({
+          tag: 'th',
+          attrs: { scope: 'col', },
+          text: 'Fix score',
+        },),]
         : []),
     ],
   },);
@@ -118,27 +153,52 @@ export function renderDataTable(
         ? h({
           tag: 'td',
           children: [
-            h({ tag: 'span', text: row.timestamp, },),
+            h({
+              tag: 'span',
+              text: row.timestamp,
+            },),
             ' ',
-            h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', },
-              text: '(timeout)', },),
+            h({
+              tag: 'span',
+              class: 'run-status',
+              attrs: { 'data-level': 'failed', },
+              text: '(timeout)',
+            },),
           ],
         },)
-        : h({ tag: 'td', text: row.timestamp, },);
+        : h({
+          tag: 'td',
+          text: row.timestamp,
+        },);
 
       /** Fix score cell: present, "(not run)" for failed, or "(data error)" */
-      const fixScoreTd = fixScoreCell(hasFixScores, row,);
+      const fixScoreTd = fixScoreCell(
+        hasFixScores,
+        row,
+      );
 
       return h({
         tag: 'tr',
         ...(row.failed
-          ? { class: 'run-status', attrs: { 'data-level': 'failed', }, }
+          ? {
+            class: 'run-status',
+            attrs: { 'data-level': 'failed', },
+          }
           : {}),
         children: [
           timestampTd,
-          ...(showModel ? [h({ tag: 'td', text: row.model, },),] : []),
-          ...(showProbe ? [h({ tag: 'td', text: row.probe, },),] : []),
-          h({ tag: 'td', text: row.score.toFixed(2,), },),
+          ...(showModel ? [h({
+            tag: 'td',
+            text: row.model,
+          },),] : []),
+          ...(showProbe ? [h({
+            tag: 'td',
+            text: row.probe,
+          },),] : []),
+          h({
+            tag: 'td',
+            text: row.score.toFixed(2,),
+          },),
           fixScoreTd,
         ]
           .filter(Boolean,),
@@ -150,9 +210,18 @@ export function renderDataTable(
     tag: 'table',
     class: 'chart-data-table',
     children: [
-      h({ tag: 'caption', text: caption, },),
-      h({ tag: 'thead', children: [headerRow,], },),
-      h({ tag: 'tbody', html: bodyRows, },),
+      h({
+        tag: 'caption',
+        text: caption,
+      },),
+      h({
+        tag: 'thead',
+        children: [headerRow,],
+      },),
+      h({
+        tag: 'tbody',
+        html: bodyRows,
+      },),
     ],
   },);
 }

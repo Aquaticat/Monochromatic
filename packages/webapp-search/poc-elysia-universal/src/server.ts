@@ -40,10 +40,26 @@ const adapter = await resolveAdapter();
 const { Elysia, } = await import('elysia');
 
 /** In-memory task store for the PoC. */
-const tasks: { id: string; title: string; done: boolean; }[] = [
-  { id: '1', title: 'Try Bun', done: true, },
-  { id: '2', title: 'Try Node.js', done: false, },
-  { id: '3', title: 'Try Deno', done: false, },
+const tasks: {
+  id: string;
+  title: string;
+  done: boolean
+}[] = [
+  {
+    id: '1',
+    title: 'Try Bun',
+    done: true,
+  },
+  {
+    id: '2',
+    title: 'Try Node.js',
+    done: false,
+  },
+  {
+    id: '3',
+    title: 'Try Deno',
+    done: false,
+  },
 ];
 
 /** Counter for generating task IDs. */
@@ -74,31 +90,45 @@ function detectRuntime(): string {
 // oxlint-disable typescript/no-unsafe-type-assertion -- adapter type is opaque
 /** Elysia application instance with all routes configured. */
 const app = new Elysia({ adapter: adapter as never, },)
-  .get('/', function handleRoot() {
+  .get(
+    '/',
+    function handleRoot() {
     return {
       message: 'Elysia universal PoC',
       runtime: detectRuntime(),
     };
-  },)
-  .get('/tasks', function listTasks() {
+  },
+  )
+  .get(
+    '/tasks',
+    function listTasks() {
     return tasks;
-  },)
-  .get('/tasks/:id', function getTask({ params, },) {
+  },
+  )
+  .get(
+    '/tasks/:id',
+    function getTask({ params, },) {
     const task = tasks.find(function findById(t,) {
       return t.id === params.id;
     },);
     if (task === undefined)
       return new Response('Not found', { status: 404, },);
     return task;
-  },)
-  .post('/tasks', function createTask({ body, },) {
+  },
+  )
+  .post(
+    '/tasks',
+    function createTask({ body, },) {
     const { title, } = body as { title: string; };
     const task = { id: String(nextId,), title, done: false, };
     nextId += 1;
     tasks.push(task,);
     return task;
-  },)
-  .post('/tasks/:id/complete', function completeTask({ params, },) {
+  },
+  )
+  .post(
+    '/tasks/:id/complete',
+    function completeTask({ params, },) {
     const task = tasks.find(function findById(t,) {
       return t.id === params.id;
     },);
@@ -106,7 +136,8 @@ const app = new Elysia({ adapter: adapter as never, },)
       return new Response('Not found', { status: 404, },);
     task.done = true;
     return task;
-  },)
+  },
+  )
   // oxlint-disable-next-line no-magic-numbers -- PoC server port
   .listen(3_099,);
 // oxlint-enable

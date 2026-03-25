@@ -22,12 +22,21 @@
  * @returns debounced wrapper
  */
 export function createDebounced(
-  { fn, delayMs, }: { fn: () => void; delayMs: number; },
+  {
+    fn,
+    delayMs,
+  }: {
+    fn: () => void;
+    delayMs: number
+  },
 ): () => void {
   let timer = 0;
   return function debounced(): void {
     clearTimeout(timer,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
-    timer = globalThis.setTimeout(fn, delayMs,) as unknown as number;
+    timer = globalThis.setTimeout(
+      fn,
+      delayMs,
+    ) as unknown as number;
   };
 }

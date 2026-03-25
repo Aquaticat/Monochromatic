@@ -27,9 +27,15 @@ export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
   const TYPE_KIND = 1;
   /** Without parentheses: no-nested-ternary lint error for ambiguous precedence. */
   const label = hint.kind === PARAMETER_KIND
-    ? hint.label.replace(/:$/, '',)
+    ? hint.label.replace(
+      /:$/,
+      '',
+    )
     : (hint.kind === TYPE_KIND
-      ? hint.label.replace(/^: /, '',)
+      ? hint.label.replace(
+        /^: /,
+        '',
+      )
       : hint.label);
   return `${padLeft}${label}${padRight}`;
 }

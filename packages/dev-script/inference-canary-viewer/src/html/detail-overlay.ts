@@ -27,7 +27,10 @@ import { renderProbeOverlay, } from './overlay-probe.ts';
  *
  * @returns HTML string containing all overlay sections
  */
-export async function renderAllOverlays({ entries, probeDetails, }: {
+export async function renderAllOverlays({
+  entries,
+  probeDetails,
+}: {
   entries: readonly ViewerEntry[];
   probeDetails: ReadonlyMap<string, ProbeDetail>;
 },): Promise<string> {
@@ -36,12 +39,23 @@ export async function renderAllOverlays({ entries, probeDetails, }: {
     const overallId = `${entry.label}-${entry.timestamp}`;
 
     return [
-      Promise.resolve(renderRunOverlay({ id: overallId, entry, },),),
+      Promise.resolve(renderRunOverlay({
+        id: overallId,
+        entry,
+      },),),
       ...probeNames.map(function buildProbeOverlay(probe,) {
         const probeId = `${entry.label}-${probe}-${entry.timestamp}`;
-        const key = probeKey(entry.label, probe, entry.timestamp,);
-        return renderProbeOverlay({ id: probeId, entry, probe,
-          detail: probeDetails.get(key,), },);
+        const key = probeKey(
+          entry.label,
+          probe,
+          entry.timestamp,
+        );
+        return renderProbeOverlay({
+          id: probeId,
+          entry,
+          probe,
+          detail: probeDetails.get(key,),
+        },);
       },),
     ];
   },),);
@@ -59,7 +73,10 @@ export async function renderAllOverlays({ entries, probeDetails, }: {
  *
  * @returns HTML string
  */
-function renderRunOverlay({ id, entry, }: {
+function renderRunOverlay({
+  id,
+  entry,
+}: {
   id: string;
   entry: ViewerEntry;
 },): string {
@@ -74,11 +91,17 @@ function renderRunOverlay({ id, entry, }: {
         class: 'probe-card',
         attrs: { popovertarget: probeOverlayId, },
         children: [
-          h({ tag: 'span', text: name, },),
+          h({
+            tag: 'span',
+            text: name,
+          },),
           h({
             tag: 'span',
             class: 'score',
-            children: [h({ tag: 'strong', text: score.toFixed(2,), },),],
+            children: [h({
+              tag: 'strong',
+              text: score.toFixed(2,),
+            },),],
           },),
         ],
       },);
@@ -93,10 +116,21 @@ function renderRunOverlay({ id, entry, }: {
   return h({
     tag: 'div',
     class: 'detail-popover',
-    attrs: { popover: 'auto', id: `run-${id}`, },
+    attrs: {
+      popover: 'auto',
+      id: `run-${id}`,
+    },
     children: [
-      h({ tag: 'h2', class: 'detail-popover-title', text: title, },),
-      h({ tag: 'div', class: 'probe-grid', html: probeCards, },),
+      h({
+        tag: 'h2',
+        class: 'detail-popover-title',
+        text: title,
+      },),
+      h({
+        tag: 'div',
+        class: 'probe-grid',
+        html: probeCards,
+      },),
     ],
   },);
 }

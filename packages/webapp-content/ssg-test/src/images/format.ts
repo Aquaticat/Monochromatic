@@ -29,7 +29,10 @@ export {}; // eslint module boundary marker
 await initPromise;
 
 /** Tagged logger for the image format conversion subsystem. */
-const l = tagged({ tag: 'format:images', l: $, },);
+const l = tagged({
+  tag: 'format:images',
+  l: $,
+},);
 
 /**
  * Glob pattern matching raster image extensions eligible for AVIF conversion.
@@ -42,7 +45,10 @@ const RASTER_GLOB =
   '**/*.{png,jpg,jpeg,tif,tiff,webp,gif,heic,heif,jxl,jp2,j2k,jpx,ppm,pgm,pbm,pfm,exr,hdr}';
 
 /** Directories to scan for raster images. */
-const SCAN_DIRS = ['src/content', 'public',];
+const SCAN_DIRS = [
+  'src/content',
+  'public',
+];
 
 //region Top-level conversion pipeline -- scans directories and converts raster images to AVIF
 
@@ -59,10 +65,20 @@ const scanResults = await Promise.all(
 const tasks = scanResults.flatMap(function buildTasks(result,) {
   return result.files.map(function createTask(filePath,) {
     /** Base filename without extension, used to derive the AVIF output path. */
-    const nameWithoutExt = basename(filePath, extname(filePath,),);
+    const nameWithoutExt = basename(
+      filePath,
+      extname(filePath,),
+    );
     /** Target AVIF path sitting alongside the source raster image. */
-    const avifPath = join(dirname(filePath,), `${nameWithoutExt}.avif`,);
-    return maybeConvert({ filePath, avifPath, l, },);
+    const avifPath = join(
+      dirname(filePath,),
+      `${nameWithoutExt}.avif`,
+    );
+    return maybeConvert({
+      filePath,
+      avifPath,
+      l,
+    },);
   },);
 },);
 

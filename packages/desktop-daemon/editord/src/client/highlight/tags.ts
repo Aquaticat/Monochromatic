@@ -55,24 +55,64 @@ export type HighlightGroup = typeof HIGHLIGHT_GROUPS[number];
  */
 export const editorHighlighter = tagHighlighter([
   //region Code tags (JS/TS, JSON, CSS, YAML, TOML)
-  { tag: [tags.function(tags.variableName,), tags.function(tags.propertyName,),],
-    class: 'function', },
-  { tag: [tags.typeName, tags.namespace,], class: 'type', },
-  { tag: [tags.keyword, tags.bool, tags.null, tags.self,], class: 'keyword', },
-  { tag: [tags.string, tags.special(tags.string,), tags.regexp, tags.escape,],
-    class: 'string', },
-  { tag: tags.comment, class: 'comment', },
-  { tag: tags.number, class: 'number', },
-  { tag: [tags.propertyName, tags.labelName, tags.attributeName,], class: 'property', },
+  {
+    tag: [tags.function(tags.variableName,), tags.function(tags.propertyName,),],
+    class: 'function',
+  },
+  {
+    tag: [tags.typeName, tags.namespace,],
+    class: 'type',
+  },
+  {
+    tag: [tags.keyword, tags.bool, tags.null, tags.self,],
+    class: 'keyword',
+  },
+  {
+    tag: [tags.string, tags.special(tags.string,), tags.regexp, tags.escape,],
+    class: 'string',
+  },
+  {
+    tag: tags.comment,
+    class: 'comment',
+  },
+  {
+    tag: tags.number,
+    class: 'number',
+  },
+  {
+    tag: [tags.propertyName, tags.labelName, tags.attributeName,],
+    class: 'property',
+  },
   //endregion Code tags
 
   //region Document tags (Markdown, HTML)
-  { tag: tags.heading, class: 'heading', },
-  { tag: [tags.link, tags.url,], class: 'link', },
-  { tag: [tags.emphasis, tags.strong,], class: 'emphasis', },
-  { tag: tags.monospace, class: 'string', },
-  { tag: tags.quote, class: 'comment', },
-  { tag: tags.contentSeparator, class: 'comment', },
-  { tag: [tags.tagName, tags.angleBracket,], class: 'keyword', },
+  {
+    tag: tags.heading,
+    class: 'heading',
+  },
+  {
+    tag: [tags.link, tags.url,],
+    class: 'link',
+  },
+  {
+    tag: [tags.emphasis, tags.strong,],
+    class: 'emphasis',
+  },
+  {
+    tag: tags.monospace,
+    class: 'string',
+  },
+  {
+    tag: tags.quote,
+    class: 'comment',
+  },
+  {
+    tag: tags.contentSeparator,
+    class: 'comment',
+  },
+  {
+    tag: [tags.tagName, tags.angleBracket,],
+    class: 'keyword',
+  },
   //endregion Document tags
 ],);

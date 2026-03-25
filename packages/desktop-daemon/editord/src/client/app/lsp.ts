@@ -47,8 +47,15 @@ import {
  * @returns callbacks for formatting, completions, go-to-definition, and inlay hint refresh
  */
 export function wireLsp(
-  { ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath,
-    loadFileSafe, }: {
+  {
+    ws,
+    editorPane,
+    hoverPopup,
+    completionPopup,
+    referencesPopup,
+    getCurrentFilePath,
+    loadFileSafe,
+  }: {
       ws: EditorWsClient;
       editorPane: EditorPane;
       hoverPopup: HoverPopup;
@@ -56,43 +63,100 @@ export function wireLsp(
       referencesPopup: ReferencesPopup;
       getCurrentFilePath: () => string | null;
       loadFileSafe: (
-        opts: { path: string; line?: number | undefined;
-          character?: number | undefined; },
+        opts: {
+          path: string;
+          line?: number | undefined;
+          character?: number | undefined
+        },
       ) => Promise<void>;
     },
-): { formatDocument: () => Promise<void>; requestCompletions: () => void;
-  refreshInlayHints: () => void; gotoDefinitionAtCursor: () => void;
-  expandSelection: () => void; shrinkSelection: () => void; }
+): {
+  formatDocument: () => Promise<void>;
+  requestCompletions: () => void;
+  refreshInlayHints: () => void;
+  gotoDefinitionAtCursor: () => void;
+  expandSelection: () => void;
+  shrinkSelection: () => void
+}
 {
-  wireContentSync({ ws, editorPane, getCurrentFilePath, },);
-  wireDiagnostics({ ws, editorPane, getCurrentFilePath, },);
-  wireHover({ ws, editorPane, hoverPopup, completionPopup, referencesPopup,
-    getCurrentFilePath, },);
+  wireContentSync({
+    ws,
+    editorPane,
+    getCurrentFilePath,
+  },);
+  wireDiagnostics({
+    ws,
+    editorPane,
+    getCurrentFilePath,
+  },);
+  wireHover({
+    ws,
+    editorPane,
+    hoverPopup,
+    completionPopup,
+    referencesPopup,
+    getCurrentFilePath,
+  },);
   wireCompletionTrigger({
     editorPane,
     triggerCompletions: function trigger() {
-      void requestCompletions({ ws, completionPopup, editorPane, getCurrentFilePath, },);
+      void requestCompletions({
+        ws,
+        completionPopup,
+        editorPane,
+        getCurrentFilePath,
+      },);
     },
   },);
-  wireGotoDefinition({ ws, editorPane, getCurrentFilePath, loadFileSafe, },);
+  wireGotoDefinition({
+    ws,
+    editorPane,
+    getCurrentFilePath,
+    loadFileSafe,
+  },);
 
-  const inlayState = wireInlayHints({ ws, editorPane, getCurrentFilePath, },);
-  const { expandSelection, shrinkSelection, } = wireSelectionRange({ ws, editorPane,
-    getCurrentFilePath, },);
+  const inlayState = wireInlayHints({
+    ws,
+    editorPane,
+    getCurrentFilePath,
+  },);
+  const {
+    expandSelection,
+    shrinkSelection,
+  } = wireSelectionRange({
+    ws,
+    editorPane,
+    getCurrentFilePath,
+  },);
 
   return {
     formatDocument: function format(): Promise<void> {
-      return formatDocument({ ws, editorPane, getCurrentFilePath, },);
+      return formatDocument({
+        ws,
+        editorPane,
+        getCurrentFilePath,
+      },);
     },
     requestCompletions: function completions(): void {
-      void requestCompletions({ ws, completionPopup, editorPane, getCurrentFilePath, },);
+      void requestCompletions({
+        ws,
+        completionPopup,
+        editorPane,
+        getCurrentFilePath,
+      },);
     },
     refreshInlayHints: inlayState.refresh,
     expandSelection,
     shrinkSelection,
     gotoDefinitionAtCursor: function gotoDefAtCursor(): void {
-      performGotoAtCursor({ ws, getCurrentFilePath, loadFileSafe, hoverPopup, editorPane,
-        referencesPopup, },);
+      performGotoAtCursor({
+        ws,
+        getCurrentFilePath,
+        loadFileSafe,
+        hoverPopup,
+        editorPane,
+        referencesPopup,
+      },);
     },
   };
 }

@@ -59,7 +59,10 @@ function resolvePort(): number {
   if (rawPort === undefined)
     return DEFAULT_PORT;
 
-  const parsedPort = Number.parseInt(rawPort, DECIMAL_RADIX,);
+  const parsedPort = Number.parseInt(
+    rawPort,
+    DECIMAL_RADIX,
+  );
   return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
@@ -68,26 +71,41 @@ const app = new H3();
 
 //region Page routes -- return full HTML documents (via renderPage / inline HTML)
 
-app.get('/', defineHandler(function handleInbox() {
+app.get(
+  '/',
+  defineHandler(function handleInbox() {
   return inboxPage();
-},),);
-app.get('/in-progress', defineHandler(function handleInProgress() {
+},),
+);
+app.get(
+  '/in-progress',
+  defineHandler(function handleInProgress() {
   return inProgressPage();
-},),);
+},),
+);
 
-app.get('/tasks/:id', defineHandler(function handleTaskDetails(event,) {
+app.get(
+  '/tasks/:id',
+  defineHandler(function handleTaskDetails(event,) {
   const id = getRouterParam(event, 'id',);
   if (id === undefined)
     throw new Error('missing route parameter: id',);
   return taskDetailsPage(id,);
-},),);
+},),
+);
 
-app.get('/search', defineHandler(function handleSearch(event,) {
+app.get(
+  '/search',
+  defineHandler(function handleSearch(event,) {
   return searchPage(event.url,);
-},),);
-app.get('/settings', defineHandler(function handleSettings() {
+},),
+);
+app.get(
+  '/settings',
+  defineHandler(function handleSettings() {
   return settingsPage();
-},),);
+},),
+);
 
 //endregion Page routes
 
@@ -99,7 +117,9 @@ registerApiRoutes(app,);
 
 //region Static asset serving -- bundled JS from dist/client/
 
-app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
+app.get(
+  '/dist/client/**',
+  defineHandler(function handleStaticAsset(event,) {
   return serveStatic(event, {
     getContents: function readContents(id,) {
       return readFile(join('.', id,),);
@@ -117,12 +137,16 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
       return { size: stats.size, mtime: stats.mtimeMs, };
     },
   },);
-},),);
+},),
+);
 
 //endregion Static asset serving
 
 // Start server.
 /** Running HTTP server instance listening on the configured port. */
-const _server = serve(app, { port: resolvePort(), },);
+const _server = serve(
+  app,
+  { port: resolvePort(), },
+);
 
 console.log(`Listening on ${_server.url}`,);

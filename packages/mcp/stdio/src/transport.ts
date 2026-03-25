@@ -90,13 +90,23 @@ export async function serve(
       parsed = JSON.parse(line,);
     }
     catch (error: unknown) {
-      console.error('[mcp-stdio] failed to parse JSON from stdin:', error,);
+      console.error(
+        '[mcp-stdio] failed to parse JSON from stdin:',
+        error,
+      );
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
-        error: { code: JSON_RPC_PARSE_ERROR, message: 'Failed to parse JSON', },
+        error: {
+          code: JSON_RPC_PARSE_ERROR,
+          message: 'Failed to parse JSON',
+        },
       };
-      await writeMessage(output, encoder, errorResponse,);
+      await writeMessage(
+        output,
+        encoder,
+        errorResponse,
+      );
       continue;
     }
 
@@ -110,10 +120,16 @@ export async function serve(
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
-        error: { code: JSON_RPC_PARSE_ERROR,
-          message: 'Invalid JSON-RPC message: missing jsonrpc or method field', },
+        error: {
+          code: JSON_RPC_PARSE_ERROR,
+          message: 'Invalid JSON-RPC message: missing jsonrpc or method field',
+        },
       };
-      await writeMessage(output, encoder, errorResponse,);
+      await writeMessage(
+        output,
+        encoder,
+        errorResponse,
+      );
       continue;
     }
 
@@ -126,7 +142,11 @@ export async function serve(
       continue;
 
     console.error(`[mcp-stdio] -> ${JSON.stringify(response,)}`,);
-    await writeMessage(output, encoder, response,);
+    await writeMessage(
+      output,
+      encoder,
+      response,
+    );
   }
 }
 

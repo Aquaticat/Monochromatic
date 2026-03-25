@@ -16,9 +16,18 @@ type NavigablePopup = {
 
 /** Key action for a navigable popup. */
 type PopupKeyAction =
-  | { action: 'navigate'; direction: 'up' | 'down'; }
-  | { action: 'accept'; handler: () => void; }
-  | { action: 'dismiss'; consumeEvent: boolean; };
+  | {
+    action: 'navigate';
+    direction: 'up' | 'down'
+  }
+  | {
+    action: 'accept';
+    handler: () => void
+  }
+  | {
+    action: 'dismiss';
+    consumeEvent: boolean
+  };
 
 /**
  * Maps a key to an action for a navigable popup.
@@ -38,7 +47,11 @@ type PopupKeyMap = Record<string, PopupKeyAction>;
  *
  * @returns true if the event was consumed, false otherwise
  */
-function handlePopupNav({ event, popup, keyMap, }: {
+function handlePopupNav({
+  event,
+  popup,
+  keyMap,
+}: {
   event: KeyboardEvent;
   popup: NavigablePopup;
   keyMap: PopupKeyMap;
@@ -70,7 +83,10 @@ function handlePopupNav({ event, popup, keyMap, }: {
  *
  * @returns true if the event was consumed, false otherwise
  */
-export function handleCompletionNav({ event, completionPopup, }: {
+export function handleCompletionNav({
+  event,
+  completionPopup,
+}: {
   event: KeyboardEvent;
   completionPopup: CompletionPopup;
 },): boolean {
@@ -79,17 +95,36 @@ export function handleCompletionNav({ event, completionPopup, }: {
     const text = completionPopup.accept();
     // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text preserving the browser undo stack
     if (text !== null)
-      document.execCommand('insertText', false, text,);
+      document.execCommand(
+        'insertText',
+        false,
+        text,
+      );
   }
   return handlePopupNav({
     event,
     popup: completionPopup,
     keyMap: {
-      ArrowDown: { action: 'navigate', direction: 'down', },
-      ArrowUp: { action: 'navigate', direction: 'up', },
-      Tab: { action: 'accept', handler: acceptCompletion, },
-      Enter: { action: 'dismiss', consumeEvent: false, },
-      Escape: { action: 'dismiss', consumeEvent: true, },
+      ArrowDown: {
+        action: 'navigate',
+        direction: 'down',
+      },
+      ArrowUp: {
+        action: 'navigate',
+        direction: 'up',
+      },
+      Tab: {
+        action: 'accept',
+        handler: acceptCompletion,
+      },
+      Enter: {
+        action: 'dismiss',
+        consumeEvent: false,
+      },
+      Escape: {
+        action: 'dismiss',
+        consumeEvent: true,
+      },
     },
   },);
 }
@@ -99,7 +134,10 @@ export function handleCompletionNav({ event, completionPopup, }: {
  *
  * @returns true if the event was consumed, false otherwise
  */
-export function handleReferencesNav({ event, referencesPopup, }: {
+export function handleReferencesNav({
+  event,
+  referencesPopup,
+}: {
   event: KeyboardEvent;
   referencesPopup: ReferencesPopup;
 },): boolean {
@@ -107,12 +145,24 @@ export function handleReferencesNav({ event, referencesPopup, }: {
     event,
     popup: referencesPopup,
     keyMap: {
-      ArrowDown: { action: 'navigate', direction: 'down', },
-      ArrowUp: { action: 'navigate', direction: 'up', },
-      Enter: { action: 'accept', handler: function accept() {
+      ArrowDown: {
+        action: 'navigate',
+        direction: 'down',
+      },
+      ArrowUp: {
+        action: 'navigate',
+        direction: 'up',
+      },
+      Enter: {
+        action: 'accept',
+        handler: function accept() {
         referencesPopup.accept();
-      }, },
-      Escape: { action: 'dismiss', consumeEvent: true, },
+      },
+      },
+      Escape: {
+        action: 'dismiss',
+        consumeEvent: true,
+      },
     },
   },);
 }

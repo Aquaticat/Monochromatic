@@ -80,10 +80,16 @@ export function $<
   this: void,
   options: MemoizeNamedOptions<TArgs, TReturn>,
 ): MemoizedFunction<TArgs, TReturn> {
-  const { fn, keyFn, } = options;
+  const {
+    fn,
+    keyFn,
+  } = options;
   const store: SyncStore = options.store ?? createSyncStore({
     storeId: `memoize-${crypto.randomUUID()}`,
-    eviction: [{ policy: 'lru', maxSize: DEFAULT_MAX_CACHE_SIZE, },],
+    eviction: [{
+      policy: 'lru',
+      maxSize: DEFAULT_MAX_CACHE_SIZE,
+    },],
   },);
 
   /**
@@ -92,15 +98,24 @@ export function $<
    *
    * @returns cached or freshly computed result
    */
-  function memoized(this: void, { args, salt, }: MemoizedCallOptions<TArgs>,): TReturn {
-    const cacheKey = buildCacheKey(keyFn(...args,), salt,);
+  function memoized(
+    this: void,
+    { args, salt, }: MemoizedCallOptions<TArgs>,
+  ): TReturn {
+    const cacheKey = buildCacheKey(
+      keyFn(...args,),
+      salt,
+    );
 
     const cached = store.get<TReturn>(cacheKey,);
     if (cached !== undefined)
       return cached;
 
     const result = fn(...args,);
-    store.set(cacheKey, result,);
+    store.set(
+      cacheKey,
+      result,
+    );
     return result;
   }
 
@@ -114,13 +129,17 @@ export function $<
     store.delete(key,);
   };
 
-  Object.defineProperty(memoized, 'size', {
+  Object.defineProperty(
+    memoized,
+    'size',
+    {
     get(): number {
       return store.size;
     },
     enumerable: true,
     configurable: false,
-  },);
+  },
+  );
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- memoized function is extended with store/clear/delete/size properties
   return memoized as MemoizedFunction<TArgs, TReturn>;

@@ -66,11 +66,26 @@
  */
 function escapeXml(raw: string,): string {
   return raw
-    .replaceAll('&', '&amp;',)
-    .replaceAll('<', '&lt;',)
-    .replaceAll('>', '&gt;',)
-    .replaceAll('"', '&quot;',)
-    .replaceAll("'", '&apos;',);
+    .replaceAll(
+      '&',
+      '&amp;',
+    )
+    .replaceAll(
+      '<',
+      '&lt;',
+    )
+    .replaceAll(
+      '>',
+      '&gt;',
+    )
+    .replaceAll(
+      '"',
+      '&quot;',
+    )
+    .replaceAll(
+      "'",
+      '&apos;',
+    );
 }
 
 /**
@@ -111,7 +126,13 @@ type XmlOptions = {
  * @returns well-formed XML element string
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $(
-  { tag, text, raw, attrs, children, }: XmlOptions,
+  {
+    tag,
+    text,
+    raw,
+    attrs,
+    children,
+  }: XmlOptions,
 ): string {
   const parts: string[] = [`<${tag}`,];
 

@@ -69,16 +69,23 @@ export class AutofillManager {
       return;
 
     const fetchFn = this.#fetch.bind(this,);
-    this.#timer = setTimeout(function triggerFetch(): void {
+    this.#timer = setTimeout(
+      function triggerFetch(): void {
       void fetchFn(options,);
-    }, AUTOFILL_DEBOUNCE_MS,);
+    },
+      AUTOFILL_DEBOUNCE_MS,
+    );
   }
 
   /**
    * Sends an autofill request and merges results into empty metadata fields.
    * Abortable: a new request cancels any in-flight one.
    */
-  async #fetch({ title, metadata, onUpdate, }: AutofillRequestOptions,): Promise<void> {
+  async #fetch({
+    title,
+    metadata,
+    onUpdate,
+  }: AutofillRequestOptions,): Promise<void> {
     const controller = new AbortController();
     this.#abort = controller;
     this.loading = true;
@@ -95,12 +102,15 @@ export class AutofillManager {
     };
 
     try {
-      const response = await fetch('/api/ai/autofill', {
+      const response = await fetch(
+        '/api/ai/autofill',
+        {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
         body: JSON.stringify({ title: title.trim(), },),
         signal: controller.signal,
-      },);
+      },
+      );
 
       if (!response.ok)
         return;
@@ -129,7 +139,10 @@ export class AutofillManager {
     catch (error: unknown) {
       if (error instanceof DOMException && error.name === 'AbortError')
         return;
-      console.error('Autofill request failed:', error,);
+      console.error(
+        'Autofill request failed:',
+        error,
+      );
     }
   }
 }

@@ -25,7 +25,10 @@ import type {
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for the app events subsystem. */
-const appLog = tagged({ tag: 'app-events', l: rootLogger, },);
+const appLog = tagged({
+  tag: 'app-events',
+  l: rootLogger,
+},);
 
 /** Mutable app state passed by reference from the main module. */
 export type AppState = {
@@ -53,21 +56,33 @@ export type AppState = {
  * @param refreshInlayHints - refreshes inlay hints for the current file
  */
 export function wireSelectEvents(
-  { fileTree, searchOverlay, referencesPopup, state, recordFileOpen, loadFileSafe,
-    refreshInlayHints, }: {
+  {
+    fileTree,
+    searchOverlay,
+    referencesPopup,
+    state,
+    recordFileOpen,
+    loadFileSafe,
+    refreshInlayHints,
+  }: {
       fileTree: FileTree;
       searchOverlay: SearchOverlay;
       referencesPopup: ReferencesPopup;
       state: AppState;
       recordFileOpen: (path: string,) => void;
       loadFileSafe: (
-        opts: { path: string; line?: number | undefined;
-          character?: number | undefined; },
+        opts: {
+          path: string;
+          line?: number | undefined;
+          character?: number | undefined
+        },
       ) => Promise<void>;
       refreshInlayHints: () => void;
     },
 ): void {
-  fileTree.addEventListener('file-select', function handleFileSelect(event,) {
+  fileTree.addEventListener(
+    'file-select',
+    function handleFileSelect(event,) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree
     const { path, } = (event as CustomEvent<{ path: string; }>).detail;
     state.currentFilePath = path;
@@ -77,8 +92,11 @@ export function wireSelectEvents(
       if (state.currentFileKind === 'text')
         refreshInlayHints();
     })();
-  },);
-  searchOverlay.addEventListener('result-select', function handleResultSelect(event,) {
+  },
+  );
+  searchOverlay.addEventListener(
+    'result-select',
+    function handleResultSelect(event,) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
     const { path, line, } = (event as CustomEvent<ResultSelectDetail>).detail;
     state.currentFilePath = path;
@@ -88,8 +106,10 @@ export function wireSelectEvents(
       if (state.currentFileKind === 'text')
         refreshInlayHints();
     })();
-  },);
-  referencesPopup.addEventListener('reference-select',
+  },
+  );
+  referencesPopup.addEventListener(
+    'reference-select',
     function handleReferenceSelect(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup
       const { path, line, character, } =
@@ -101,7 +121,8 @@ export function wireSelectEvents(
         if (state.currentFileKind === 'text')
           refreshInlayHints();
       })();
-    },);
+    },
+  );
 }
 
 /**
@@ -115,20 +136,38 @@ export function wireSelectEvents(
  *
  * @param loadFileSafe - loads a file from the server
  */
-export function wireFileWatching({ ws, fileTree, state, loadFileSafe, }: {
+export function wireFileWatching({
+  ws,
+  fileTree,
+  state,
+  loadFileSafe,
+}: {
   ws: EditorWsClient;
   fileTree: FileTree;
   state: AppState;
   loadFileSafe: (
-    opts: { path: string; line?: number | undefined; character?: number | undefined; },
+    opts: {
+      path: string;
+      line?: number | undefined;
+      character?: number | undefined
+    },
   ) => Promise<void>;
 },): void {
   fileTree.onDirExpanded = function handleDirExpanded(path: string,): void {
-    void ws.notify({ type: 'watchDir', path, },);
+    void ws.notify({
+      type: 'watchDir',
+      path,
+    },);
   };
   ws.onFileChanged = function handleFileChanged(
-    { path, changeType, }: { path: string; changeType: FsChangeType;
-      isDirectory: boolean; },
+    {
+      path,
+      changeType,
+    }: {
+      path: string;
+      changeType: FsChangeType;
+      isDirectory: boolean
+    },
   ): void {
     appLog.info(`file changed: ${path} (${changeType})`,);
     if ((changeType === 'modified' || changeType === 'created')
@@ -139,6 +178,9 @@ export function wireFileWatching({ ws, fileTree, state, loadFileSafe, }: {
         return;
     }
     if (changeType === 'created' || changeType === 'deleted')
-      void fileTree.refreshDir({ path: path.slice(0, path.lastIndexOf('/',),), },);
+      void fileTree.refreshDir({ path: path.slice(
+        0,
+        path.lastIndexOf('/',),
+      ), },);
   };
 }

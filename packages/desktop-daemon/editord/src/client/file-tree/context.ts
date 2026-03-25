@@ -22,14 +22,24 @@ import type { ContextAction, } from './types.ts';
  *
  * @param onAction - callback for the selected action
  */
-export function showDirContextMenu({ contextMenu, x, y, path, onAction, }: {
+export function showDirContextMenu({
+  contextMenu,
+  x,
+  y,
+  path,
+  onAction,
+}: {
   contextMenu: ContextMenu;
   x: number;
   y: number;
   path: string;
   onAction: (action: ContextAction,) => void;
 },): void {
-  contextMenu.show({ x, y, items: buildDirContextItems({ path, onAction, },), },);
+  contextMenu.show({
+    x,
+    y,
+    items: buildDirContextItems({ path, onAction, },),
+  },);
 }
 
 /**
@@ -45,14 +55,24 @@ export function showDirContextMenu({ contextMenu, x, y, path, onAction, }: {
  *
  * @param onAction - callback for the selected action
  */
-export function showFileContextMenu({ contextMenu, x, y, path, onAction, }: {
+export function showFileContextMenu({
+  contextMenu,
+  x,
+  y,
+  path,
+  onAction,
+}: {
   contextMenu: ContextMenu;
   x: number;
   y: number;
   path: string;
   onAction: (action: ContextAction,) => void;
 },): void {
-  contextMenu.show({ x, y, items: buildFileContextItems({ path, onAction, },), },);
+  contextMenu.show({
+    x,
+    y,
+    items: buildFileContextItems({ path, onAction, },),
+  },);
 }
 
 /**
@@ -64,29 +84,50 @@ export function showFileContextMenu({ contextMenu, x, y, path, onAction, }: {
  *
  * @returns array of menu items for the directory context menu
  */
-export function buildDirContextItems({ path, onAction, }: {
+export function buildDirContextItems({
+  path,
+  onAction,
+}: {
   path: string;
   onAction: (action: ContextAction,) => void;
 },): ContextMenuItem[] {
   return [
-    { label: 'New', defaultValue: '', action: function newEntry(name,): void {
+    {
+      label: 'New',
+      defaultValue: '',
+      action: function newEntry(name,): void {
       if (name !== undefined)
         onAction({ kind: 'new', parentPath: path, name, },);
-    }, },
-    { label: 'Copy to', defaultValue: path, action: function copy(destPath,): void {
+    },
+    },
+    {
+      label: 'Copy to',
+      defaultValue: path,
+      action: function copy(destPath,): void {
       if (destPath !== undefined)
         onAction({ kind: 'copy', path, destPath, },);
-    }, },
-    { label: 'Move to', defaultValue: path, action: function move(destPath,): void {
+    },
+    },
+    {
+      label: 'Move to',
+      defaultValue: path,
+      action: function move(destPath,): void {
       if (destPath !== undefined)
         onAction({ kind: 'move', path, destPath, },);
-    }, },
-    { label: 'Delete', action: function del(): void {
+    },
+    },
+    {
+      label: 'Delete',
+      action: function del(): void {
       onAction({ kind: 'delete', path, },);
-    }, },
-    { label: 'Open in terminal', action: function openTerm(): void {
+    },
+    },
+    {
+      label: 'Open in terminal',
+      action: function openTerm(): void {
       onAction({ kind: 'openInTerminal', path, },);
-    }, },
+    },
+    },
   ];
 }
 
@@ -99,24 +140,41 @@ export function buildDirContextItems({ path, onAction, }: {
  *
  * @returns array of menu items for the file context menu
  */
-export function buildFileContextItems({ path, onAction, }: {
+export function buildFileContextItems({
+  path,
+  onAction,
+}: {
   path: string;
   onAction: (action: ContextAction,) => void;
 },): ContextMenuItem[] {
   return [
-    { label: 'Copy to', defaultValue: path, action: function copy(destPath,): void {
+    {
+      label: 'Copy to',
+      defaultValue: path,
+      action: function copy(destPath,): void {
       if (destPath !== undefined)
         onAction({ kind: 'copy', path, destPath, },);
-    }, },
-    { label: 'Move to', defaultValue: path, action: function move(destPath,): void {
+    },
+    },
+    {
+      label: 'Move to',
+      defaultValue: path,
+      action: function move(destPath,): void {
       if (destPath !== undefined)
         onAction({ kind: 'move', path, destPath, },);
-    }, },
-    { label: 'Delete', action: function del(): void {
+    },
+    },
+    {
+      label: 'Delete',
+      action: function del(): void {
       onAction({ kind: 'delete', path, },);
-    }, },
-    { label: 'Open in default app', action: function openApp(): void {
+    },
+    },
+    {
+      label: 'Open in default app',
+      action: function openApp(): void {
       onAction({ kind: 'openInDefaultApp', path, },);
-    }, },
+    },
+    },
   ];
 }

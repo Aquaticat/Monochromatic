@@ -20,7 +20,10 @@ export const css: string = clientCss;
  *
  * @see `indexHtmlStart` for where it is inlined into the page
  */
-export const js: string = await readFile('./dist/client/client.js', 'utf8',);
+export const js: string = await readFile(
+  './dist/client/client.js',
+  'utf8',
+);
 
 /**
  * Opening HTML fragment (doctype through body start) with inlined CSS and JS.
@@ -36,7 +39,10 @@ export const indexHtmlStart: string = `<!DOCTYPE html>
     <meta charset=UTF-8>
     <meta name=viewport content='width=device-width,initial-scale=1.0'>
     <style>${css}</style>
-    <script type=module>${js.replaceAll('</script>', String.raw`<\/script>`,)}</script>
+    <script type=module>${js.replaceAll(
+      '</script>',
+      String.raw`<\/script>`,
+    )}</script>
     </head>
     <body>`;
 

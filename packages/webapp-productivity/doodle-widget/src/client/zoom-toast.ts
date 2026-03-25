@@ -25,8 +25,11 @@ export function showZoomToast(toast: HTMLElement,): void {
     hideTimer = null;
   }
   toast.showPopover();
-  hideTimer = setTimeout(function hideToast(): void {
+  hideTimer = setTimeout(
+    function hideToast(): void {
     toast.hidePopover();
     hideTimer = null;
-  }, TOAST_DURATION_MS,);
+  },
+    TOAST_DURATION_MS,
+  );
 }

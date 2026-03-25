@@ -36,10 +36,15 @@ import type {
  * const { embedding } = await geminiEmbed({ path: './photo.png' }, {});
  * ```
  */
-async function geminiEmbed(input: ImageInput,
-  config: ImageDiffConfig,): Promise<EmbeddingResult>
+async function geminiEmbed(
+  input: ImageInput,
+  config: ImageDiffConfig,
+): Promise<EmbeddingResult>
 {
-  const rl = tagged({ tag: geminiEmbed.name, l, },);
+  const rl = tagged({
+    tag: geminiEmbed.name,
+    l,
+  },);
   rl.debug('computing single image embedding via Gemini',);
 
   const apiKey = resolveGeminiApiKey(config.apiKey,);
@@ -55,14 +60,17 @@ async function geminiEmbed(input: ImageInput,
   const url = `${GEMINI_API_BASE}/${model}:embedContent`;
   rl.debug(`calling Gemini API: ${url}`,);
 
-  const response = await fetch(url, {
+  const response = await fetch(
+    url,
+    {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-goog-api-key': apiKey,
     },
     body: JSON.stringify(requestBody,),
-  },);
+  },
+  );
 
   if (!response.ok) {
     const errorBody = await response.text();

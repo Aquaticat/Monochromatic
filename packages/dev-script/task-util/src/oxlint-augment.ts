@@ -43,7 +43,10 @@ const ANSI_PATTERN = /\u001B\[\d+(?:;\d+)*m/g;
  * ```
  */
 export function stripAnsi(text: string,): string {
-  return text.replace(ANSI_PATTERN, '',);
+  return text.replace(
+    ANSI_PATTERN,
+    '',
+  );
 }
 
 //endregion ANSI handling

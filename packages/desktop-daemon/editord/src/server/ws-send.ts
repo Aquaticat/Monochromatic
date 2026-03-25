@@ -16,7 +16,13 @@ export type Peer = { send: (data: string,) => void; };
  * @param message - message object to serialize and send
  */
 export function sendJson(
-  { peer, message, }: { peer: Peer; message: Record<string, unknown>; },
+  {
+    peer,
+    message,
+  }: {
+    peer: Peer;
+    message: Record<string, unknown>
+  },
 ): void {
   peer.send(JSON.stringify(message,),);
 }

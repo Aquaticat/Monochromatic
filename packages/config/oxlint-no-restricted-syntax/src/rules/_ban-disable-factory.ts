@@ -30,7 +30,11 @@ const DISABLE_DIRECTIVE_PATTERN = /oxlint-disable(?:-next-line)?\b/;
  * });
  * ```
  */
-export function banDisableRule({ ruleId, description, message, }: {
+export function banDisableRule({
+  ruleId,
+  description,
+  message,
+}: {
   ruleId: string;
   description: string;
   message: string;

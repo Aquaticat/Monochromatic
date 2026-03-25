@@ -58,14 +58,28 @@ export const cssMixinTranspiler = createCodeGenProbe({
     fastMs: 3_000,
     slowMs: 12_000,
   },
-  transformSource: function checkRegex(source,
-    context,): { reject: boolean; source: string; }
+  transformSource: function checkRegex(
+    source,
+    context,
+  ): {
+      reject: boolean;
+      source: string
+    }
   {
     const usesRegex = detectsRegexUsage(source,);
-    regexViolationCache.set(context.label, usesRegex,);
-    return { reject: usesRegex, source, };
+    regexViolationCache.set(
+      context.label,
+      usesRegex,
+    );
+    return {
+      reject: usesRegex,
+      source,
+    };
   },
-  customizeFixPrompt: function addRegexWarning(base, context,): string | undefined {
+  customizeFixPrompt: function addRegexWarning(
+    base,
+    context,
+  ): string | undefined {
     if (regexViolationCache.get(context.label,) !== true)
       return base;
     // Prepend constraint violation to existing fix prompt, or create a standalone prompt

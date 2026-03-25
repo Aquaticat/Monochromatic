@@ -57,11 +57,16 @@ function getProvider(provider: Provider,): EmbeddingProvider {
  * const geminiResult = await embed({ path: './photo.png' }, { provider: 'gemini' });
  * ```
  */
-export async function embed(input: ImageInput,
-  config: ImageDiffConfig = {},): Promise<EmbeddingResult>
+export async function embed(
+  input: ImageInput,
+  config: ImageDiffConfig = {},
+): Promise<EmbeddingResult>
 {
   const provider = config.provider ?? 'voyage';
-  return getProvider(provider,).embed(input, config,);
+  return getProvider(provider,).embed(
+    input,
+    config,
+  );
 }
 
 /**
@@ -87,7 +92,10 @@ export async function embedBatch(
   config: ImageDiffConfig = {},
 ): Promise<BatchEmbeddingResult> {
   const provider = config.provider ?? 'voyage';
-  return getProvider(provider,).embedBatch(inputs, config,);
+  return getProvider(provider,).embedBatch(
+    inputs,
+    config,
+  );
 }
 
 /**
@@ -108,17 +116,25 @@ export async function compareEmbeddings(
   imageB: ImageInput,
   config: ImageDiffConfig = {},
 ): Promise<Omit<ComparisonResult, 'description'>> {
-  const rl = tagged({ tag: compareEmbeddings.name, l, },);
+  const rl = tagged({
+    tag: compareEmbeddings.name,
+    l,
+  },);
   const provider = config.provider ?? 'voyage';
   rl.debug(`comparing embeddings via ${provider}`,);
 
-  const { embeddings, } = await getProvider(provider,).embedBatch([imageA, imageB,],
-    config,);
+  const { embeddings, } = await getProvider(provider,).embedBatch(
+    [imageA, imageB,],
+    config,
+  );
   const [embeddingA, embeddingB,] = embeddings;
   if (embeddingA === undefined || embeddingB === undefined)
     throw new Error('Expected exactly 2 embeddings from batch call',);
 
-  const similarity = dotProduct(embeddingA, embeddingB,);
+  const similarity = dotProduct(
+    embeddingA,
+    embeddingB,
+  );
   const distance = 1 - similarity;
 
   rl.debug(
@@ -127,7 +143,12 @@ export async function compareEmbeddings(
     }, distance=${String(distance,)}`,
   );
 
-  return { similarity, distance, embeddingA, embeddingB, };
+  return {
+    similarity,
+    distance,
+    embeddingA,
+    embeddingB,
+  };
 }
 
 /**
@@ -158,12 +179,22 @@ export async function compare(
   imageB: ImageInput,
   config: ImageDiffConfig = {},
 ): Promise<ComparisonResult> {
-  const rl = tagged({ tag: compare.name, l, },);
+  const rl = tagged({
+    tag: compare.name,
+    l,
+  },);
   rl.debug('running embedding comparison and description concurrently',);
 
   const results = await Promise.all([
-    compareEmbeddings(imageA, imageB, config,),
-    describeImageDifference(imageA, imageB,),
+    compareEmbeddings(
+      imageA,
+      imageB,
+      config,
+    ),
+    describeImageDifference(
+      imageA,
+      imageB,
+    ),
   ],);
   const [embeddingResult, description,] = results;
   if (description === undefined) {
@@ -174,5 +205,8 @@ export async function compare(
 
   rl.debug('comparison with description complete',);
 
-  return { ...embeddingResult, description, };
+  return {
+    ...embeddingResult,
+    description,
+  };
 }

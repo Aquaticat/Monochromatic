@@ -55,9 +55,15 @@ export function createTsdocVisitor(
    * @param node - AST node to check
    */
   function check(node: Span,): void {
-    const comment = findTsdocComment(node, context,);
+    const comment = findTsdocComment(
+      node,
+      context,
+    );
     if (comment !== undefined)
-      handler(node, comment,);
+      handler(
+        node,
+        comment,
+      );
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
@@ -107,11 +113,17 @@ export function createFunctionTsdocVisitor(
    * @param node - AST node to check
    */
   function check(node: Span,): void {
-    const result = parseTsdocForNode(node, context,);
+    const result = parseTsdocForNode(
+      node,
+      context,
+    );
     if (result === undefined)
       return;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    handler(node as Span & Record<string, unknown>, result,);
+    handler(
+      node as Span & Record<string, unknown>,
+      result,
+    );
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys

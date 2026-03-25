@@ -105,7 +105,10 @@ export const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
  * const comment = findTsdocComment(node, context);
  * ```
  */
-export function findTsdocComment(node: Span, context: Context,): Comment | undefined {
+export function findTsdocComment(
+  node: Span,
+  context: Context,
+): Comment | undefined {
   // Fast path: getCommentsBefore works for most declarations
   const comments = context.sourceCode.getCommentsBefore(node,);
   for (let i = comments.length - 1; i >= 0; i--) {
@@ -167,7 +170,10 @@ export function parseTsdocForNode(
   node: Span,
   context: Context,
 ): TsdocParseResult | undefined {
-  const comment = findTsdocComment(node, context,);
+  const comment = findTsdocComment(
+    node,
+    context,
+  );
   if (comment === undefined)
     return undefined;
 

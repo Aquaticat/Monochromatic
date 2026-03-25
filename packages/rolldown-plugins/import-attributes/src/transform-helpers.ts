@@ -33,12 +33,21 @@ export type Replacement = {
  *
  * @returns position of the clause start (including leading whitespace), or -1
  */
-function findWithClauseStart(code: string, fromPos: number,): number {
+function findWithClauseStart(
+  code: string,
+  fromPos: number,
+): number {
   let pos = fromPos;
   const saved = pos;
   while (pos < code.length && ' \t\n\r'.includes(code.at(pos,) ?? '',))
     pos++;
-  if (code.startsWith('with', pos,) || code.startsWith('assert', pos,))
+  if (code.startsWith(
+    'with',
+    pos,
+  ) || code.startsWith(
+    'assert',
+    pos,
+  ))
     return saved;
   return -1;
 }
@@ -53,7 +62,10 @@ function findWithClauseStart(code: string, fromPos: number,): number {
  *
  * @returns position after the closing `}`
  */
-function findWithClauseEnd(code: string, afterLastAttr: number,): number {
+function findWithClauseEnd(
+  code: string,
+  afterLastAttr: number,
+): number {
   let pos = afterLastAttr;
   while (pos < code.length && code[pos] !== '}')
     pos++;
@@ -90,12 +102,22 @@ export function collectStaticReplacements(
     text: `${quote}${source.value}?${ATTR_QUERY_KEY}=${attrType}${quote}`,
   },);
 
-  const withStart = findWithClauseStart(code, source.end,);
+  const withStart = findWithClauseStart(
+    code,
+    source.end,
+  );
   if (withStart === -1)
     return;
   const lastAttr = attributes.at(-1,);
   if (lastAttr === undefined)
     return;
-  const withEnd = findWithClauseEnd(code, lastAttr.end,);
-  replacements.push({ start: withStart, end: withEnd, text: '', },);
+  const withEnd = findWithClauseEnd(
+    code,
+    lastAttr.end,
+  );
+  replacements.push({
+    start: withStart,
+    end: withEnd,
+    text: '',
+  },);
 }

@@ -10,7 +10,12 @@ import sharp from 'sharp';
 const SVG_SOURCE = 'public/favicon.svg';
 
 /** Background color for apple-touch-icon and maskable icon (dark purple). */
-const BACKGROUND = { r: 45, g: 27, b: 78, alpha: 1, };
+const BACKGROUND = {
+  r: 45,
+  g: 27,
+  b: 78,
+  alpha: 1,
+};
 
 /** SVG render density for high-quality rasterization. */
 const RENDER_DENSITY = 384;
@@ -23,8 +28,14 @@ const RENDER_DENSITY = 384;
  * @returns PNG buffer
  */
 export function renderPng({ size, }: { size: number; },): Promise<Buffer> {
-  return sharp(SVG_SOURCE, { density: RENDER_DENSITY, },)
-    .resize(size, size,)
+  return sharp(
+    SVG_SOURCE,
+    { density: RENDER_DENSITY, },
+  )
+    .resize(
+      size,
+      size,
+    )
     .png()
     .toBuffer();
 }
@@ -39,7 +50,13 @@ export function renderPng({ size, }: { size: number; },): Promise<Buffer> {
  * @returns PNG buffer with content centered on colored background
  */
 export async function renderPadded(
-  { contentSize, canvasSize, }: { contentSize: number; canvasSize: number; },
+  {
+    contentSize,
+    canvasSize,
+  }: {
+    contentSize: number;
+    canvasSize: number
+  },
 ): Promise<Buffer> {
   const content = await renderPng({ size: contentSize, },);
   return sharp({
@@ -50,7 +67,10 @@ export async function renderPadded(
       background: BACKGROUND,
     },
   },)
-    .composite([{ input: content, gravity: 'centre', },],)
+    .composite([{
+      input: content,
+      gravity: 'centre',
+    },],)
     .png()
     .toBuffer();
 }

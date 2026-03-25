@@ -21,7 +21,9 @@ import {
   searchInput,
 } from './client-dom.ts';
 
-searchForm.addEventListener('submit', function onSearch(event,) {
+searchForm.addEventListener(
+  'submit',
+  function onSearch(event,) {
   event.preventDefault();
   void (async function onSearchAsync() {
     try {
@@ -64,9 +66,12 @@ searchForm.addEventListener('submit', function onSearch(event,) {
       console.error('search failed', error,);
     }
   })();
-},);
+},
+);
 
-changeApiKeyButton.addEventListener('click', function onChangeApiKey() {
+changeApiKeyButton.addEventListener(
+  'click',
+  function onChangeApiKey() {
   void (async function promptForNewApiKey() {
     try {
       const inputApiKey = notNullishOrThrow(await prompt('Change api key',),);
@@ -76,10 +81,14 @@ changeApiKeyButton.addEventListener('click', function onChangeApiKey() {
       console.error('api key change failed', error,);
     }
   })();
-},);
+},
+);
 
-numResultsInput.addEventListener('input', function setNewNumResults() {
+numResultsInput.addEventListener(
+  'input',
+  function setNewNumResults() {
   numResults.value = Number(numResultsInput.value,);
-},);
+},
+);
 
 export {};

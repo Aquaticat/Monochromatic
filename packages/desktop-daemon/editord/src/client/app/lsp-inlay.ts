@@ -23,21 +23,32 @@ import type { EditorWsClient, } from '../ws/client.ts';
  *
  * @returns object with `refresh` for immediate hint fetching
  */
-export function wireInlayHints({ ws, editorPane, getCurrentFilePath, }: {
+export function wireInlayHints({
+  ws,
+  editorPane,
+  getCurrentFilePath,
+}: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
 },): { refresh: () => void; } {
-  editorPane.addEventListener('contentchange', createDebounced({
+  editorPane.addEventListener(
+    'contentchange',
+    createDebounced({
     fn: function refreshInlayHints() {
       void fetchInlayHints({ ws, editorPane, getCurrentFilePath, },);
     },
     delayMs: INLAY_HINT_DEBOUNCE_MS,
-  },),);
+  },),
+  );
 
   return {
     refresh: function immediateRefresh(): void {
-      void fetchInlayHints({ ws, editorPane, getCurrentFilePath, },);
+      void fetchInlayHints({
+        ws,
+        editorPane,
+        getCurrentFilePath,
+      },);
     },
   };
 }

@@ -36,11 +36,17 @@ import {
  * // => "/home/user/project"
  * ```
  */
-export function findAncestorWithFile(startDir: string, filename: string,): string | null {
+export function findAncestorWithFile(
+  startDir: string,
+  filename: string,
+): string | null {
   let current = startDir;
   // oxlint-disable-next-line no-constant-condition -- walk up until filesystem root
   while (true) {
-    if (existsSync(resolve(current, filename,),))
+    if (existsSync(resolve(
+      current,
+      filename,
+    ),))
       return current;
     const parent = dirname(current,);
     if (parent === current)
@@ -69,8 +75,10 @@ export function findAncestorWithFile(startDir: string, filename: string,): strin
  * // => Map { "/home/user/project/src/index.ts" => [{ severity: "ERROR", ... }] }
  * ```
  */
-export function parseOxlintOutput(output: OxlintJsonOutput,
-  cwd: string,): Map<string, Diagnostic[]>
+export function parseOxlintOutput(
+  output: OxlintJsonOutput,
+  cwd: string,
+): Map<string, Diagnostic[]>
 {
   const result = new Map<string, Diagnostic[]>();
 
@@ -79,7 +87,10 @@ export function parseOxlintOutput(output: OxlintJsonOutput,
     if (span === undefined)
       continue;
 
-    const absolutePath = resolve(cwd, entry.filename,);
+    const absolutePath = resolve(
+      cwd,
+      entry.filename,
+    );
     const message = entry.help !== undefined && entry.help.length > 0
       ? `${entry.message} (help: ${entry.help})`
       : entry.message;
@@ -98,7 +109,10 @@ export function parseOxlintOutput(output: OxlintJsonOutput,
     if (existing !== undefined)
       existing.push(diagnostic,);
     else
-      result.set(absolutePath, [diagnostic,],);
+      result.set(
+        absolutePath,
+        [diagnostic,],
+      );
   }
 
   return result;

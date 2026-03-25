@@ -22,12 +22,21 @@ import { pageLayout, } from '../templates/layout.ts';
  * @returns complete HTML document listing available translations
  */
 export function namePage(
-  { name, posts, }: { name: string; posts: readonly Post[]; },
+  {
+    name,
+    posts,
+  }: {
+    name: string;
+    posts: readonly Post[]
+  },
 ): string {
   const content = h({
     tag: 'main',
     children: [
-      h({ tag: 'h1', text: name, },),
+      h({
+        tag: 'h1',
+        text: name,
+      },),
       h({
         tag: 'ul',
         children: posts.map(function langVariant(post,) {
@@ -49,7 +58,12 @@ export function namePage(
   /** Default to the first available translation's language, falling back to 'en'. */
   const [firstPost,] = posts;
   const lang: Locales = firstPost !== undefined && isLocale(firstPost.lang,)
-    ? firstPost.lang : 'en';
+    ? firstPost.lang
+    : 'en';
 
-  return pageLayout({ title: name, lang, content, },);
+  return pageLayout({
+    title: name,
+    lang,
+    content,
+  },);
 }

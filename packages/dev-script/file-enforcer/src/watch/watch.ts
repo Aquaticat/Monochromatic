@@ -56,7 +56,10 @@ export function startWatching(configPath: string,): Promise<never> {
       await import(`${absoluteConfig}?v=${String(Date.now(),)}`);
     }
     catch (importError: unknown) {
-      console.error('[file-enforcer] config execution failed:', importError,);
+      console.error(
+        '[file-enforcer] config execution failed:',
+        importError,
+      );
       return;
     }
     console.log('[file-enforcer] re-run complete',);
@@ -74,24 +77,37 @@ export function startWatching(configPath: string,): Promise<never> {
    *
    * @param dir - directory the event occurred in
    */
-  function handleEvent(kind: EventKind, filename: string, dir: string,): void {
+  function handleEvent(
+    kind: EventKind,
+    filename: string,
+    dir: string,
+  ): void {
     /** Absolute path of the file that triggered this event */
-    const changedPath = resolve(join(dir, filename,),);
+    const changedPath = resolve(join(
+      dir,
+      filename,
+    ),);
     clearTimeout(debounceTimer,);
     if (kind === 'protected') {
-      debounceTimer = setTimeout(function protectedRerun(): void {
+      debounceTimer = setTimeout(
+        function protectedRerun(): void {
         // oxlint-disable-next-line typescript/no-floating-promises -- debounced async protection
         (async function notifyAndRerun(): Promise<void> {
           await notifyWriteProtection(changedPath,);
           await rerun(changedPath,);
         })();
-      }, DEBOUNCE_MS,);
+      },
+        DEBOUNCE_MS,
+      );
       return;
     }
-    debounceTimer = setTimeout(function sourceRerun(): void {
+    debounceTimer = setTimeout(
+      function sourceRerun(): void {
       // oxlint-disable-next-line typescript/no-floating-promises -- debounced async re-run
       rerun(changedPath,);
-    }, DEBOUNCE_MS,);
+    },
+      DEBOUNCE_MS,
+    );
   }
 
   /** Creates watchers for every directory derived from tracked reads and writes. */
@@ -103,13 +119,20 @@ export function startWatching(configPath: string,): Promise<never> {
     dirs.forEach(function setupDir(dir,): void {
       /** Per-directory abort controller for teardown */
       const controller = new AbortController();
-      controllers.set(dir, controller,);
+      controllers.set(
+        dir,
+        controller,
+      );
 
       // oxlint-disable-next-line typescript/no-floating-promises -- intentional fire-and-forget watcher loop
-      watchDirectory(dir, controller.signal, absoluteConfig,
+      watchDirectory(
+        dir,
+        controller.signal,
+        absoluteConfig,
         function onWatchEvent(kind, filename,): void {
           handleEvent(kind, filename, dir,);
-        },);
+        },
+      );
     },);
   }
 

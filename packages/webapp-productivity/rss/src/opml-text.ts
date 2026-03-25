@@ -17,7 +17,10 @@ import {
 } from './opmls.ts';
 
 /** Tagged logger for the opml-text module. */
-const l = tagged({ tag: 'opml-text', l: parentLogger, },);
+const l = tagged({
+  tag: 'opml-text',
+  l: parentLogger,
+},);
 
 //region OPML text fetching -- Retrieves raw OPML content from HTTP and file URLs
 
@@ -37,7 +40,10 @@ const l = tagged({ tag: 'opml-text', l: parentLogger, },);
 export async function getOPMLTexts(
   opmls: z.infer<typeof OPMLS_SCHEMA>,
 ): Promise<string[]> {
-  const innerL = tagged({ tag: getOPMLTexts.name, l, },);
+  const innerL = tagged({
+    tag: getOPMLTexts.name,
+    l,
+  },);
   const DISCARD = Symbol('discard',);
   const result = (await mapIterableAsync(
     async function fetchOpml(
@@ -62,17 +68,26 @@ export async function getOPMLTexts(
       if (opmlLink.startsWith('file',)) {
         if (opmlLink.startsWith('file:///',)) {
           try {
-            return await readFile(fileURLToPath(opmlLink,), 'utf8',);
+            return await readFile(
+              fileURLToPath(opmlLink,),
+              'utf8',
+            );
           }
           catch (error) {
             innerL.warn(`failed reading ${opmlLink}: ${JSON.stringify(error,)}`,);
             return DISCARD;
           }
         }
-        const absPath = resolve(dirname(notNullishOrThrow(DOT_ENV_PATH,),), opmlLink
-          .slice('file://'.length,),);
+        const absPath = resolve(
+          dirname(notNullishOrThrow(DOT_ENV_PATH,),),
+          opmlLink
+          .slice('file://'.length,),
+        );
         try {
-          return await readFile(absPath, 'utf8',);
+          return await readFile(
+            absPath,
+            'utf8',
+          );
         }
         catch (error) {
           innerL.warn(

@@ -29,7 +29,10 @@ import { isStrictlyGreater, } from './version-parse.ts';
  */
 export function readVersionFromPackageJson(pkgJsonPath: string,): string | undefined {
   try {
-    const content = readFileSync(pkgJsonPath, 'utf8',);
+    const content = readFileSync(
+      pkgJsonPath,
+      'utf8',
+    );
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON structure from package.json is well-known
     const parsed = JSON.parse(content,) as { version?: string; };
     return parsed.version;
@@ -57,14 +60,24 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): string | undef
  * readVersionFromBunStore("chokidar", "/home/user/Monochromatic") // "5.0.0"
  * ```
  */
-export function readVersionFromBunStore(npmName: string, monorepoRoot: string,):
+export function readVersionFromBunStore(
+  npmName: string,
+  monorepoRoot: string,
+):
   | string
   | undefined
 {
-  const bunStoreDir = join(monorepoRoot, 'node_modules', '.bun',);
+  const bunStoreDir = join(
+    monorepoRoot,
+    'node_modules',
+    '.bun',
+  );
   // Bun encodes `@scope/name` as `@scope+name` in store directory names
   const storePrefix = npmName.includes('/',)
-    ? npmName.replace('/', '+',)
+    ? npmName.replace(
+      '/',
+      '+',
+    )
     : npmName;
 
   let entries: string[] = [];
@@ -87,12 +100,20 @@ export function readVersionFromBunStore(npmName: string, monorepoRoot: string,):
   // Read package.json from each candidate and pick the highest version
   let bestVersion: string | undefined = undefined;
   for (const candidate of candidates) {
-    const pkgJsonPath = join(bunStoreDir, candidate, 'node_modules', npmName,
-      'package.json',);
+    const pkgJsonPath = join(
+      bunStoreDir,
+      candidate,
+      'node_modules',
+      npmName,
+      'package.json',
+    );
     const candidateVersion = readVersionFromPackageJson(pkgJsonPath,);
     if (candidateVersion === undefined)
       continue;
-    if (bestVersion === undefined || isStrictlyGreater(bestVersion, candidateVersion,))
+    if (bestVersion === undefined || isStrictlyGreater(
+      bestVersion,
+      candidateVersion,
+    ))
       bestVersion = candidateVersion;
   }
 

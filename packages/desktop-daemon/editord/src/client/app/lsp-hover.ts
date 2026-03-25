@@ -18,7 +18,10 @@ import { HOVER_DEBOUNCE_MS, } from '../timing.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for hover. */
-const hoverLog = tagged({ tag: 'hover', l, },);
+const hoverLog = tagged({
+  tag: 'hover',
+  l,
+},);
 
 /**
  * Wires hover tooltips onto the editor pane.
@@ -36,7 +39,14 @@ const hoverLog = tagged({ tag: 'hover', l, },);
  * @param getCurrentFilePath - returns the currently open file path
  */
 export function wireHover(
-  { ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, }: {
+  {
+    ws,
+    editorPane,
+    hoverPopup,
+    completionPopup,
+    referencesPopup,
+    getCurrentFilePath,
+  }: {
     ws: EditorWsClient;
     editorPane: EditorPane;
     hoverPopup: HoverPopup;
@@ -49,7 +59,9 @@ export function wireHover(
   let lastLine = -1;
   let lastChar = -1;
 
-  editorPane.addEventListener('mousemove', function handleMouseMove(event,) {
+  editorPane.addEventListener(
+    'mousemove',
+    function handleMouseMove(event,) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mousemove is always a MouseEvent
     const me = event as MouseEvent;
     clearTimeout(timer,);
@@ -70,9 +82,12 @@ export function wireHover(
       void doRequestHover({ ws, hoverPopup, path, line: pos.line,
         character: pos.character, x: me.clientX, y: me.clientY, },);
     }, HOVER_DEBOUNCE_MS,) as unknown as number;
-  },);
+  },
+  );
 
-  editorPane.addEventListener('mouseleave', function handleMouseLeave(event,) {
+  editorPane.addEventListener(
+    'mouseleave',
+    function handleMouseLeave(event,) {
     clearTimeout(timer,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mouseleave is always a MouseEvent
     const me = event as MouseEvent;
@@ -84,11 +99,15 @@ export function wireHover(
     hoverPopup.hide();
     lastLine = -1;
     lastChar = -1;
-  },);
+  },
+  );
 
-  hoverPopup.addEventListener('mouseleave', function handlePopupLeave() {
+  hoverPopup.addEventListener(
+    'mouseleave',
+    function handlePopupLeave() {
     hoverPopup.hide();
     lastLine = -1;
     lastChar = -1;
-  },);
+  },
+  );
 }

@@ -52,7 +52,13 @@ function asLinux(guest: GuestConfig,): LinuxGuestConfig {
  * vmUserData({ name: 'my-vm', guest: IMAGES['ubuntu'] });
  * ```
  */
-function vmUserData({ guest, name, }: { guest: GuestConfig; name: string; },): string {
+function vmUserData({
+  guest,
+  name,
+}: {
+  guest: GuestConfig;
+  name: string
+},): string {
   const linux = asLinux(guest,);
   return `#cloud-config
 hostname: ${name}
@@ -60,7 +66,10 @@ users:
   - name: ${linux.defaultUser}
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: ${linux.shell}
-${vmAutologin(linux.initSystem, linux.defaultUser,)}`;
+${vmAutologin(
+  linux.initSystem,
+  linux.defaultUser,
+)}`;
 }
 
 /**
@@ -80,7 +89,13 @@ ${vmAutologin(linux.initSystem, linux.defaultUser,)}`;
  * ```
  */
 function templateUserData(
-  { guest, name, }: { guest: GuestConfig; name: string; },
+  {
+    guest,
+    name,
+  }: {
+    guest: GuestConfig;
+    name: string
+  },
 ): string {
   const linux = asLinux(guest,);
   return `#cloud-config
@@ -129,25 +144,42 @@ ${templateRuncmd(linux.initSystem,)}`;
  * // winSeed => undefined
  * ```
  */
-export async function createSeedIso({ guest, name, template = false, vmDir, }: {
+export async function createSeedIso({
+  guest,
+  name,
+  template = false,
+  vmDir,
+}: {
   guest: GuestConfig;
   name: string;
   template?: boolean;
   vmDir: string;
 },): Promise<string | undefined> {
   if (guest.osFamily === 'windows') {
-    const rl = tagged({ tag: createSeedIso.name, l, },);
+    const rl = tagged({
+      tag: createSeedIso.name,
+      l,
+    },);
     rl.info('skipping seed ISO for Windows guest (uses guest agent for provisioning)',);
     return undefined;
   }
 
-  const rl = tagged({ tag: createSeedIso.name, l, },);
+  const rl = tagged({
+    tag: createSeedIso.name,
+    l,
+  },);
 
   const encoder = new TextEncoder();
   const userData = encoder.encode(
     template
-      ? templateUserData({ guest, name, },)
-      : vmUserData({ guest, name, },),
+      ? templateUserData({
+        guest,
+        name,
+      },)
+      : vmUserData({
+        guest,
+        name,
+      },),
   );
 
   const metaData = encoder.encode(
@@ -158,14 +190,26 @@ local-hostname: ${name}
 
   const iso = createIso({
     files: [
-      { data: userData, name: 'user-data', },
-      { data: metaData, name: 'meta-data', },
+      {
+        data: userData,
+        name: 'user-data',
+      },
+      {
+        data: metaData,
+        name: 'meta-data',
+      },
     ],
     volumeId: 'cidata',
   },);
 
-  const seedPath = join(vmDir, 'seed.iso',);
-  await writeFile(seedPath, iso,);
+  const seedPath = join(
+    vmDir,
+    'seed.iso',
+  );
+  await writeFile(
+    seedPath,
+    iso,
+  );
   rl.info(`created seed ISO at ${seedPath}`,);
   return seedPath;
 }

@@ -17,7 +17,10 @@ import {
 import { streamRg, } from './stream-rg.ts';
 
 /** Tagged logger for the search subsystem. */
-const l = tagged({ tag: 'search', l: rootLogger, },);
+const l = tagged({
+  tag: 'search',
+  l: rootLogger,
+},);
 
 /** Maximum number of file-path results returned. */
 const MAX_FILE_RESULTS = 20;
@@ -79,7 +82,11 @@ function hasUpperCase({ query, }: { query: string; },): boolean {
  *
  * @returns file-path search results, capped at {@link MAX_FILE_RESULTS}
  */
-function searchFiles({ rootDir, query, signal, }: {
+function searchFiles({
+  rootDir,
+  query,
+  signal,
+}: {
   rootDir: string;
   query: string;
   signal: AbortSignal | undefined;
@@ -88,15 +95,24 @@ function searchFiles({ rootDir, query, signal, }: {
   const normalizedQuery = caseSensitive ? query : query.toLowerCase();
 
   return streamRg({
-    args: ['--files', rootDir,],
+    args: [
+      '--files',
+      rootDir,
+    ],
     maxResults: MAX_FILE_RESULTS,
     signal,
     processLine: function matchFilePath(line,) {
-      const relativePath = relative(rootDir, line,);
+      const relativePath = relative(
+        rootDir,
+        line,
+      );
       const candidate = caseSensitive ? relativePath : relativePath.toLowerCase();
 
       if (candidate.includes(normalizedQuery,))
-        return { kind: 'file', path: line, };
+        return {
+          kind: 'file',
+          path: line,
+        };
 
       return null;
     },
@@ -127,7 +143,11 @@ function searchFiles({ rootDir, query, signal, }: {
  * // results: [{ kind: 'file', path: '/project/src/index.ts' }, { kind: 'content', ... }]
  * ```
  */
-export async function search({ rootDir, query, signal, }: {
+export async function search({
+  rootDir,
+  query,
+  signal,
+}: {
   rootDir: string;
   query: string;
   signal?: AbortSignal;
@@ -135,11 +155,22 @@ export async function search({ rootDir, query, signal, }: {
   l.info(`searching for "${query}"`,);
 
   const [files, contents,] = await Promise.all([
-    searchFiles({ rootDir, query, signal, },),
-    searchContents({ rootDir, query, signal, },),
+    searchFiles({
+      rootDir,
+      query,
+      signal,
+    },),
+    searchContents({
+      rootDir,
+      query,
+      signal,
+    },),
   ],);
 
-  return { results: [...files, ...contents,], };
+  return { results: [
+    ...files,
+    ...contents,
+  ], };
 }
 
 /**
@@ -154,13 +185,25 @@ export async function search({ rootDir, query, signal, }: {
  *
  * @returns content search results, capped at {@link MAX_CONTENT_RESULTS}
  */
-function searchContents({ rootDir, query, signal, }: {
+function searchContents({
+  rootDir,
+  query,
+  signal,
+}: {
   rootDir: string;
   query: string;
   signal: AbortSignal | undefined;
 },): Promise<SearchResult[]> {
   return streamRg({
-    args: ['--json', '--smart-case', '--max-count', '1', '--', query, rootDir,],
+    args: [
+      '--json',
+      '--smart-case',
+      '--max-count',
+      '1',
+      '--',
+      query,
+      rootDir,
+    ],
     maxResults: MAX_CONTENT_RESULTS,
     signal,
     processLine: function matchContent(line,) {
@@ -180,7 +223,10 @@ function searchContents({ rootDir, query, signal, }: {
         };
       }
       catch {
-        l.warn(`failed to parse rg JSON line: ${line.slice(0, 100,)}`,);
+        l.warn(`failed to parse rg JSON line: ${line.slice(
+          0,
+          100,
+        )}`,);
         return null;
       }
     },

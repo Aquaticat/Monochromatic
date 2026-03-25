@@ -34,18 +34,29 @@ export type { ModelSummary, } from './view-overview-types.ts';
  *
  * @returns HTML string
  */
-export function renderOverview({ summaries, entries, }: {
+export function renderOverview({
+  summaries,
+  entries,
+}: {
   summaries: readonly ModelSummary[];
   entries: readonly ViewerEntry[];
 },): string {
   if (summaries.length === 0)
-    return h({ tag: 'p', text: 'No history data available. Run the canary first.', },);
+    return h({
+      tag: 'p',
+      text: 'No history data available. Run the canary first.',
+    },);
 
   // Combined scatter chart: all models' overall scores
   const chartPoints = buildAllModelPoints(entries,);
   const legend = buildOverviewLegend(summaries,);
-  const chart = renderScatterChart({ points: chartPoints, threshold: 0,
-    thresholdLabel: '', caption: 'All models overall score', hideTable: true, },);
+  const chart = renderScatterChart({
+    points: chartPoints,
+    threshold: 0,
+    thresholdLabel: '',
+    caption: 'All models overall score',
+    hideTable: true,
+  },);
 
   // Summary table — status is shown inline rather than in its own column
   const rows = summaries
@@ -56,31 +67,57 @@ export function renderOverview({ summaries, entries, }: {
 
       const inlineStatus = summary.failed
         ? ` ${
-          h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', },
-            text: '(timeout)', },)
+          h({
+            tag: 'span',
+            class: 'run-status',
+            attrs: { 'data-level': 'failed', },
+            text: '(timeout)',
+          },)
         }`
         : (summary.degraded
           ? ` ${
-            h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'degraded', },
-              text: '(degraded)', },)
+            h({
+              tag: 'span',
+              class: 'run-status',
+              attrs: { 'data-level': 'degraded', },
+              text: '(degraded)',
+            },)
           }`
           : '');
 
       return h({
         tag: 'tr',
         ...(statusClass !== ''
-          ? { class: 'run-status', attrs: { 'data-level': statusClass, }, }
+          ? {
+            class: 'run-status',
+            attrs: { 'data-level': statusClass, },
+          }
           : {}),
         children: [
           h({
             tag: 'td',
-            children: [iconDot(summary.model, color,), ' ',
-              h({ tag: 'span', text: summary.label, },),],
+            children: [
+              iconDot(summary.model, color,),
+              ' ',
+              h({ tag: 'span', text: summary.label, },),
+            ],
           },),
-          h({ tag: 'td', html: summary.latestScore.toFixed(2,) + inlineStatus, },),
-          h({ tag: 'td', text: summary.latestTimestamp.slice(0, 10,), },),
-          h({ tag: 'td', text: String(summary.runCount,), },),
-          h({ tag: 'td', text: summary.threshold.toFixed(2,), },),
+          h({
+            tag: 'td',
+            html: summary.latestScore.toFixed(2,) + inlineStatus,
+          },),
+          h({
+            tag: 'td',
+            text: summary.latestTimestamp.slice(0, 10,),
+          },),
+          h({
+            tag: 'td',
+            text: String(summary.runCount,),
+          },),
+          h({
+            tag: 'td',
+            text: summary.threshold.toFixed(2,),
+          },),
         ],
       },);
     },)
@@ -90,7 +127,10 @@ export function renderOverview({ summaries, entries, }: {
     legend,
     SHAPE_LEGEND,
     chart,
-    h({ tag: 'h3', text: 'Summary', },),
+    h({
+      tag: 'h3',
+      text: 'Summary',
+    },),
     h({
       tag: 'table',
       class: 'overview-table',
@@ -101,16 +141,39 @@ export function renderOverview({ summaries, entries, }: {
             h({
               tag: 'tr',
               children: [
-                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Model', },),
-                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Score', },),
-                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Last run', },),
-                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Runs', },),
-                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Threshold', },),
+                h({
+                  tag: 'th',
+                  attrs: { scope: 'col', },
+                  text: 'Model',
+                },),
+                h({
+                  tag: 'th',
+                  attrs: { scope: 'col', },
+                  text: 'Score',
+                },),
+                h({
+                  tag: 'th',
+                  attrs: { scope: 'col', },
+                  text: 'Last run',
+                },),
+                h({
+                  tag: 'th',
+                  attrs: { scope: 'col', },
+                  text: 'Runs',
+                },),
+                h({
+                  tag: 'th',
+                  attrs: { scope: 'col', },
+                  text: 'Threshold',
+                },),
               ],
             },),
           ],
         },),
-        h({ tag: 'tbody', html: rows, },),
+        h({
+          tag: 'tbody',
+          html: rows,
+        },),
       ],
     },),
   ]

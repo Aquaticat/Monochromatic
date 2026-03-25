@@ -14,7 +14,10 @@ import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { fileExists, } from '../images/convert.ts';
 import type { Logger, } from '../lib/types.ts';
 import { createIco, } from './ico.ts';
-import { renderPadded, renderPng, } from './render.ts';
+import {
+  renderPadded,
+  renderPng,
+} from './render.ts';
 
 /** Public directory where favicon files are placed alongside other static assets. */
 const PUBLIC = 'public';
@@ -54,11 +57,17 @@ const TARGETS = [
 export async function ensureFavicons(
   { l: parentLogger, }: { l: Logger; },
 ): Promise<void> {
-  const l = tagged({ tag: ensureFavicons.name, l: parentLogger, },);
+  const l = tagged({
+    tag: ensureFavicons.name,
+    l: parentLogger,
+  },);
 
   const checks = await Promise.all(
     TARGETS.map(function checkTarget(name,) {
-      return fileExists(join(PUBLIC, name,),);
+      return fileExists(join(
+        PUBLIC,
+        name,
+      ),);
     },),
   );
 
@@ -73,26 +82,55 @@ export async function ensureFavicons(
     renderPng({ size: 32, },),
     renderPng({ size: 192, },),
     renderPng({ size: 512, },),
-    renderPadded({ contentSize: APPLE_CONTENT, canvasSize: APPLE_SIZE, },),
-    renderPadded({ contentSize: MASKABLE_SAFE, canvasSize: 512, },),
+    renderPadded({
+      contentSize: APPLE_CONTENT,
+      canvasSize: APPLE_SIZE,
+    },),
+    renderPadded({
+      contentSize: MASKABLE_SAFE,
+      canvasSize: 512,
+    },),
   ],);
 
-  const manifest = JSON.stringify({
+  const manifest = JSON.stringify(
+    {
     icons: [
       { src: '/icon-192.png', type: 'image/png', sizes: '192x192', },
       { src: '/icon-512.png', type: 'image/png', sizes: '512x512', },
       { src: '/icon-mask.png', type: 'image/png', sizes: '512x512',
         purpose: 'maskable', },
     ],
-  }, undefined, 2,);
+  },
+    undefined,
+    2,
+  );
 
   await Promise.all([
-    writeFile(join(PUBLIC, 'favicon.ico',), createIco({ pngData: png32, },),),
-    writeFile(join(PUBLIC, 'apple-touch-icon.png',), appleTouchIcon,),
-    writeFile(join(PUBLIC, 'icon-192.png',), png192,),
-    writeFile(join(PUBLIC, 'icon-512.png',), png512,),
-    writeFile(join(PUBLIC, 'icon-mask.png',), maskableIcon,),
-    writeFile(join(PUBLIC, 'manifest.webmanifest',), manifest, 'utf8',),
+    writeFile(
+      join(PUBLIC, 'favicon.ico',),
+      createIco({ pngData: png32, },),
+    ),
+    writeFile(
+      join(PUBLIC, 'apple-touch-icon.png',),
+      appleTouchIcon,
+    ),
+    writeFile(
+      join(PUBLIC, 'icon-192.png',),
+      png192,
+    ),
+    writeFile(
+      join(PUBLIC, 'icon-512.png',),
+      png512,
+    ),
+    writeFile(
+      join(PUBLIC, 'icon-mask.png',),
+      maskableIcon,
+    ),
+    writeFile(
+      join(PUBLIC, 'manifest.webmanifest',),
+      manifest,
+      'utf8',
+    ),
   ],);
 
   l.info('favicon files generated',);
@@ -100,7 +138,10 @@ export async function ensureFavicons(
 
 //region Standalone execution -- allows running via `mise run generate:favicons`
 if (import.meta.main) {
-  const { $: logger, initPromise, } = await import('@monochromatic-dev/module-es/logger');
+  const {
+    $: logger,
+    initPromise,
+  } = await import('@monochromatic-dev/module-es/logger');
   await initPromise;
   await ensureFavicons({ l: logger, },);
 }

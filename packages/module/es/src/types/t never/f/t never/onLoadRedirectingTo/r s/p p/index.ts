@@ -34,10 +34,13 @@ export function $(delayTime: number = 5_000,): void {
   const potentialRedirectingToElement: HTMLAnchorElement | null = document
     .querySelector<HTMLAnchorElement>('a.redirectingTo',);
   if (potentialRedirectingToElement) {
-    setTimeout(function redirect() {
+    setTimeout(
+      function redirect() {
       globalThis.location.replace(
         potentialRedirectingToElement.href,
       );
-    }, delayTime,);
+    },
+      delayTime,
+    );
   }
 }

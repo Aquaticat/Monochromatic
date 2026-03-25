@@ -51,6 +51,12 @@ import { $ as named, } from '../p n/index.ts';
  * Note: For trimming from the end of strings, use the corresponding trimEndWith function
  * which follows the same pattern but removes from the end of the string.
  */
-export function $(str: string, trimmer: string,): string {
-  return named({ str, trimmer, },);
+export function $(
+  str: string,
+  trimmer: string,
+): string {
+  return named({
+    str,
+    trimmer,
+  },);
 }

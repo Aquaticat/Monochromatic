@@ -20,7 +20,10 @@ export async function hashString(value: string,): Promise<string> {
   /** UTF-8 encoded bytes of the input string */
   const data = encoder.encode(value,);
   /** SHA-256 hash digest as ArrayBuffer */
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data,);
+  const hashBuffer = await crypto.subtle.digest(
+    'SHA-256',
+    data,
+  );
   /** Convert ArrayBuffer to array of bytes for processing */
   const hashArray = [...new Uint8Array(hashBuffer,),];
   /** Convert bytes to hexadecimal string with zero-padding */
@@ -28,7 +31,10 @@ export async function hashString(value: string,): Promise<string> {
     .map(function toHex(b,) {
       /** Hexadecimal base for byte-to-hex conversion */
       const HEX_BASE = 16;
-      return b.toString(HEX_BASE,).padStart(2, '0',);
+      return b.toString(HEX_BASE,).padStart(
+        2,
+        '0',
+      );
     },)
     .join('',);
   return hashHex;

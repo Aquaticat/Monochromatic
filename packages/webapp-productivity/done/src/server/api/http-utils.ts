@@ -29,6 +29,12 @@ export const HTTP_INTERNAL_ERROR = 500;
  *
  * @returns JSON response with content-type header
  */
-export function jsonResponse(payload: unknown, status: number = HTTP_OK,): Response {
-  return Response.json(payload, { status, },);
+export function jsonResponse(
+  payload: unknown,
+  status: number = HTTP_OK,
+): Response {
+  return Response.json(
+    payload,
+    { status, },
+  );
 }

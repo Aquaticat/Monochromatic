@@ -13,7 +13,10 @@ import type {
  * @returns True if the object is a RangeNumberInt with integer bounds
  */
 export function $(value: StringUnknownRecord,): value is RangeNumberInt {
-  const { startInclusive, endInclusive, } = value;
+  const {
+    startInclusive,
+    endInclusive,
+  } = value;
 
   // Check that both properties are numbers
   if (typeof startInclusive !== 'number' || typeof endInclusive !== 'number')

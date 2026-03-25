@@ -97,7 +97,13 @@ function formatTimestamp(t: number,): string {
  * ```
  */
 export async function checkStaleness(
-  { sources, outputs, verbose, sourceTimeStrategy, outputTimeStrategy, }: {
+  {
+    sources,
+    outputs,
+    verbose,
+    sourceTimeStrategy,
+    outputTimeStrategy,
+  }: {
     readonly sources: readonly string[];
     readonly outputs: readonly string[];
     readonly verbose: boolean;
@@ -105,13 +111,27 @@ export async function checkStaleness(
     readonly outputTimeStrategy: TimeStrategy;
   },
 ): Promise<boolean> {
-  const sourceTimestamps = await resolveItems(sources, 'source', verbose,);
-  const outputTimestamps = await resolveItems(outputs, 'output', verbose,);
+  const sourceTimestamps = await resolveItems(
+    sources,
+    'source',
+    verbose,
+  );
+  const outputTimestamps = await resolveItems(
+    outputs,
+    'output',
+    verbose,
+  );
 
-  const sourceTime = await aggregateTimestamps(sourceTimestamps, sourceTimeStrategy,
-    verbose,);
-  const outputTime = await aggregateTimestamps(outputTimestamps, outputTimeStrategy,
-    verbose,);
+  const sourceTime = await aggregateTimestamps(
+    sourceTimestamps,
+    sourceTimeStrategy,
+    verbose,
+  );
+  const outputTime = await aggregateTimestamps(
+    outputTimestamps,
+    outputTimeStrategy,
+    verbose,
+  );
 
   const stale = sourceTime > outputTime;
 

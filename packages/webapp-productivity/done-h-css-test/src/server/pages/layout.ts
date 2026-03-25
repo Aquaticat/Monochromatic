@@ -35,7 +35,10 @@ type LayoutOptions = {
  * @returns Escaped JSON string safe for embedding in HTML
  */
 export function serializePageData(data: unknown,): string {
-  return JSON.stringify(data,).replaceAll('<', String.raw`\u003C`,);
+  return JSON.stringify(data,).replaceAll(
+    '<',
+    String.raw`\u003C`,
+  );
 }
 
 /** Inline script that wires the top-nav hamburger menu to the side-drawer */
@@ -54,7 +57,10 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
 export function renderPage(options: LayoutOptions,): Response {
   const topNav = options.hideTopNav === true
     ? ''
-    : h({ tag: 'top-nav', attrs: { heading: options.heading, }, },);
+    : h({
+      tag: 'top-nav',
+      attrs: { heading: options.heading, },
+    },);
 
   const html = `<!DOCTYPE html>
 ${
@@ -65,37 +71,62 @@ ${
         h({
           tag: 'head',
           children: [
-            h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
-            h({ tag: 'meta',
+            h({
+              tag: 'meta',
+              attrs: { charset: 'utf8', },
+            },),
+            h({
+              tag: 'meta',
               attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', }, },),
-            h({ tag: 'title', text: options.title, },),
+                content: 'width=device-width, initial-scale=1', },
+            },),
+            h({
+              tag: 'title',
+              text: options.title,
+            },),
           ],
         },),
         h({
           tag: 'body',
           children: [
-            h({ tag: 'side-drawer', attrs: { id: 'drawer', }, },),
+            h({
+              tag: 'side-drawer',
+              attrs: { id: 'drawer', },
+            },),
             h({
               tag: 'div',
               class: 'page-wrapper',
               children: [
                 topNav,
-                h({ tag: 'main', attrs: { id: 'app', }, },),
+                h({
+                  tag: 'main',
+                  attrs: { id: 'app', },
+                },),
               ],
             },),
-            h({ tag: 'script', attrs: { type: 'application/json', id: 'page-data', },
-              html: serializePageData(options.pageData,), },),
-            h({ tag: 'script',
-              attrs: { type: 'module', src: options.entryScriptPath, }, },),
-            h({ tag: 'script', html: MENU_OPEN_SCRIPT, },),
+            h({
+              tag: 'script',
+              attrs: { type: 'application/json', id: 'page-data', },
+              html: serializePageData(options.pageData,),
+            },),
+            h({
+              tag: 'script',
+              attrs: { type: 'module', src: options.entryScriptPath, },
+            },),
+            h({
+              tag: 'script',
+              html: MENU_OPEN_SCRIPT,
+            },),
           ],
         },),
       ],
     },)
   }`;
 
-  return new Response(html, {
+  return new Response(
+    html,
+    {
     headers: { 'Content-Type': 'text/html; charset=utf-8', },
-  },);
+  },
+  );
 }

@@ -25,7 +25,10 @@ export function buildProbeLegend(
   const seen = new Map<string, string>();
   for (const entry of entries) {
     if (!seen.has(entry.label,))
-      seen.set(entry.label, entry.model,);
+      seen.set(
+        entry.label,
+        entry.model,
+      );
   }
 
   const items = [...seen.entries(),]
@@ -34,11 +37,18 @@ export function buildProbeLegend(
       return h({
         tag: 'span',
         class: 'item',
-        children: [iconDot(openrouterId, color,), ' ',
-          h({ tag: 'span', text: label, },),],
+        children: [
+          iconDot(openrouterId, color,),
+          ' ',
+          h({ tag: 'span', text: label, },),
+        ],
       },);
     },)
     .join('\n',);
 
-  return h({ tag: 'div', class: 'chart-legend', html: items, },);
+  return h({
+    tag: 'div',
+    class: 'chart-legend',
+    html: items,
+  },);
 }

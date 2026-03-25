@@ -15,20 +15,38 @@ export function buildStatusSection(): string {
         class: 'metrics',
         attrs: { hidden: '', },
         html: `${
-          h({ tag: 'span', class: 'number numTotalSearches', text: '0', },)
+          h({
+            tag: 'span',
+            class: 'number numTotalSearches',
+            text: '0',
+          },)
         } searches total`,
       },),
-      h({ tag: 'p', class: 'processing', attrs: { hidden: '', }, text: 'Searching', },),
+      h({
+        tag: 'p',
+        class: 'processing',
+        attrs: { hidden: '', },
+        text: 'Searching',
+      },),
       h({
         tag: 'p',
         class: 'success',
         attrs: { hidden: '', },
         html: [
-          h({ tag: 'span', class: 'number', },),
+          h({
+            tag: 'span',
+            class: 'number',
+          },),
           ' results in ',
-          h({ tag: 'span', class: 'number', },),
+          h({
+            tag: 'span',
+            class: 'number',
+          },),
           ' costing ',
-          h({ tag: 'span', class: 'number costDollars', },),
+          h({
+            tag: 'span',
+            class: 'number costDollars',
+          },),
           ' USD',
         ]
           .join('',),
@@ -37,7 +55,10 @@ export function buildStatusSection(): string {
         tag: 'p',
         class: 'fail',
         attrs: { hidden: '', },
-        html: `Error: ${h({ tag: 'span', class: 'message', },)}`,
+        html: `Error: ${h({
+          tag: 'span',
+          class: 'message',
+        },)}`,
       },),
     ],
   },);
@@ -58,7 +79,10 @@ export function buildSearchForm(): string {
         children: [
           h({
             tag: 'label',
-            attrs: { for: 'search', 'data-sr-only': '', },
+            attrs: {
+              for: 'search',
+              'data-sr-only': '',
+            },
             text: 'Search with Exa',
           },),
           h({
@@ -71,8 +95,12 @@ export function buildSearchForm(): string {
               id: 'search',
             },
           },),
-          h({ tag: 'button', class: 'search-button', attrs: { type: 'submit', },
-            text: 'Search', },),
+          h({
+            tag: 'button',
+            class: 'search-button',
+            attrs: { type: 'submit', },
+            text: 'Search',
+          },),
         ],
       },),
     ],

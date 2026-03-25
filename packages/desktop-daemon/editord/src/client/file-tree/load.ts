@@ -25,7 +25,10 @@ import type { FileTreeState, } from './state.ts';
 import type { DirEntry, } from '../../../protocol.ts';
 
 /** Tagged logger for the directory loading subsystem. */
-const l = tagged({ tag: 'file-tree-load', l: rootLogger, },);
+const l = tagged({
+  tag: 'file-tree-load',
+  l: rootLogger,
+},);
 
 /**
  * Handles a `dir-open` event by loading directory children.
@@ -38,11 +41,17 @@ const l = tagged({ tag: 'file-tree-load', l: rootLogger, },);
  *
  * @param state - tree's shared mutable state
  */
-export function loadDirChildren({ detail, state, }: {
+export function loadDirChildren({
+  detail,
+  state,
+}: {
   detail: DirOpenDetail;
   state: FileTreeState;
 },): void {
-  const { path, childrenContainer, } = detail;
+  const {
+    path,
+    childrenContainer,
+  } = detail;
   if (state.loadedDirs.has(path,))
     return;
   state.loadedDirs.add(path,);
@@ -56,21 +65,34 @@ export function loadDirChildren({ detail, state, }: {
       // Render cached entries immediately for responsiveness
       if (cached !== undefined) {
         childrenContainer.replaceChildren(
-          ...createEntryElements({ parentPath: path, entries: cached, recentPaths: state
-            .recentPaths, },),);
+          ...createEntryElements({
+            parentPath: path,
+            entries: cached,
+            recentPaths: state
+            .recentPaths,
+          },),
+        );
       }
 
       // Always verify with a fresh fetch — prefetch cache can be stale
       // when files are created after the parent directory was expanded
       const entries = await (state.fetchDir?.(path,) ?? Promise.resolve([],));
 
-      const children = createEntryElements({ parentPath: path, entries, recentPaths: state
-        .recentPaths, },);
+      const children = createEntryElements({
+        parentPath: path,
+        entries,
+        recentPaths: state
+        .recentPaths,
+      },);
       childrenContainer.replaceChildren(...children,);
 
       if (state.fetchDir !== null) {
-        void preloadChildren({ parentPath: path, entries, fetchDir: state.fetchDir,
-          prefetchCache: state.prefetchCache, },);
+        void preloadChildren({
+          parentPath: path,
+          entries,
+          fetchDir: state.fetchDir,
+          prefetchCache: state.prefetchCache,
+        },);
       }
     }
     catch (error) {
@@ -80,7 +102,10 @@ export function loadDirChildren({ detail, state, }: {
     state.loadPromises.delete(path,);
   })();
 
-  state.loadPromises.set(path, loadPromise,);
+  state.loadPromises.set(
+    path,
+    loadPromise,
+  );
 }
 
 /**
@@ -94,16 +119,29 @@ export function loadDirChildren({ detail, state, }: {
  *
  * @returns array of `<tree-dir-entry>` and `<tree-file-entry>` elements
  */
-export function createEntryElements({ parentPath, entries, recentPaths, }: {
+export function createEntryElements({
+  parentPath,
+  entries,
+  recentPaths,
+}: {
   parentPath: string;
   entries: DirEntry[];
   recentPaths: string[];
 },): HTMLElement[] {
   return entries.map(function createEntry(entry,) {
-    const fullPath = childPath({ parentPath, name: entry.name, },);
+    const fullPath = childPath({
+      parentPath,
+      name: entry.name,
+    },);
     if (entry.isDirectory)
-      return createTreeDirEntry({ path: fullPath, name: entry.name, },);
-    return createTreeFileEntry({ path: fullPath, name: entry.name,
-      recencyIndex: recentPaths.indexOf(fullPath,), },);
+      return createTreeDirEntry({
+        path: fullPath,
+        name: entry.name,
+      },);
+    return createTreeFileEntry({
+      path: fullPath,
+      name: entry.name,
+      recencyIndex: recentPaths.indexOf(fullPath,),
+    },);
   },);
 }

@@ -38,7 +38,12 @@ export type RenderResult = {
  * @returns References to title and description inputs
  */
 export function renderTaskDetail(
-  { shadow, task, mode, host, }: {
+  {
+    shadow,
+    task,
+    mode,
+    host,
+  }: {
     shadow: ShadowRoot;
     task: Task;
     mode: TaskDetailMode;
@@ -52,7 +57,10 @@ export function renderTaskDetail(
   const closeButton = h({
     tag: 'button',
     class: 'close',
-    attrs: { 'data-action': 'close', 'aria-label': 'Close', },
+    attrs: {
+      'data-action': 'close',
+      'aria-label': 'Close',
+    },
   },);
   closeButton.innerHTML =
     `<svg viewBox="0 0 48 48" fill="none"><line x1="14" y1="14" x2="34" y2="34"/><line x1="34" y1="14" x2="14" y2="34"/></svg>`;
@@ -60,23 +68,37 @@ export function renderTaskDetail(
   const titleInput = h({
     tag: 'input',
     class: 'title-input',
-    attrs: { type: 'text', value: task.title, placeholder: 'Title', required: '', },
+    attrs: {
+      type: 'text',
+      value: task.title,
+      placeholder: 'Title',
+      required: '',
+    },
   },);
 
-  const descInput = h({ tag: 'textarea', class: 'desc-input',
-    attrs: { placeholder: 'description', }, },);
+  const descInput = h({
+    tag: 'textarea',
+    class: 'desc-input',
+    attrs: { placeholder: 'description', },
+  },);
   if (task.description !== null)
     descInput.textContent = task.description;
 
   shadow.replaceChildren(
-    h({ tag: 'style', text: TASK_DETAIL_STYLES, },),
+    h({
+      tag: 'style',
+      text: TASK_DETAIL_STYLES,
+    },),
     h({
       tag: 'div',
       class: 'header',
       children: [
         closeButton,
-        h({ tag: 'span', class: 'heading',
-          text: isCreate ? 'New task' : 'Task details', },),
+        h({
+          tag: 'span',
+          class: 'heading',
+          text: isCreate ? 'New task' : 'Task details',
+        },),
         h({
           tag: 'button',
           class: isCreate ? 'btn-primary' : 'btn-outline',
@@ -91,14 +113,28 @@ export function renderTaskDetail(
       tag: 'div',
       class: 'actions',
       children: [
-        h({ tag: 'button', class: 'btn-outline', attrs: { 'data-action': 'attach', },
-          text: 'Attach file', },),
-        h({ tag: 'button', class: 'btn-outline', attrs: { 'data-action': 'photo', },
-          text: 'Take photo', },),
+        h({
+          tag: 'button',
+          class: 'btn-outline',
+          attrs: { 'data-action': 'attach', },
+          text: 'Attach file',
+        },),
+        h({
+          tag: 'button',
+          class: 'btn-outline',
+          attrs: { 'data-action': 'photo', },
+          text: 'Take photo',
+        },),
       ],
     },),
-    h({ tag: 'div', class: 'pills', },),
-    buildActionButtonRow({ task, isCreate, },),
+    h({
+      tag: 'div',
+      class: 'pills',
+    },),
+    buildActionButtonRow({
+      task,
+      isCreate,
+    },),
   );
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- h() created these elements with the correct tag
@@ -106,8 +142,15 @@ export function renderTaskDetail(
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- h() created these elements with the correct tag
   const typedDescInput = descInput as HTMLTextAreaElement;
 
-  attachActionHandler({ shadow, host, titleInput: typedTitleInput,
-    descInput: typedDescInput, },);
+  attachActionHandler({
+    shadow,
+    host,
+    titleInput: typedTitleInput,
+    descInput: typedDescInput,
+  },);
 
-  return { titleInput: typedTitleInput, descInput: typedDescInput, };
+  return {
+    titleInput: typedTitleInput,
+    descInput: typedDescInput,
+  };
 }

@@ -11,7 +11,10 @@ import { l as parentLogger, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
 
 /** Tagged logger for the feed module. */
-const l = tagged({ tag: 'feed', l: parentLogger, },);
+const l = tagged({
+  tag: 'feed',
+  l: parentLogger,
+},);
 
 /**
  * Parsed feed data paired with its OPML outline metadata.
@@ -40,9 +43,15 @@ export type FeedWOutline = {
 export async function getSortedFeeds(
   outlines: InnerOutlineWUrl[],
 ): Promise<FeedWOutline[]> {
-  const innerL = tagged({ tag: getSortedFeeds.name, l, },);
+  const innerL = tagged({
+    tag: getSortedFeeds.name,
+    l,
+  },);
   const feeds = await fetchAndParseFeeds(outlines,);
-  const result = feeds.toSorted(function byDate(feedA, feedB,) {
+  const result = feeds.toSorted(function byDate(
+    feedA,
+    feedB,
+  ) {
     return extractDate(feedB,).getTime() - extractDate(feedA,).getTime();
   },);
   innerL.debug(`sorted ${String(result.length,)} feeds`,);
@@ -59,11 +68,16 @@ export async function getSortedFeeds(
 async function fetchAndParseFeeds(
   outlines: InnerOutlineWUrl[],
 ): Promise<FeedWOutline[]> {
-  const innerL = tagged({ tag: fetchAndParseFeeds.name, l, },);
+  const innerL = tagged({
+    tag: fetchAndParseFeeds.name,
+    l,
+  },);
   const DISCARD = Symbol('discard',);
   /** Fetched OPML text paired with its source outline for later parsing. */
-  type TextWOutline = { text: string;
-    outline: Opml.Outline<string> & { xmlUrl: string; }; };
+  type TextWOutline = {
+    text: string;
+    outline: Opml.Outline<string> & { xmlUrl: string; }
+  };
   const textsWOutline: TextWOutline[] = (await mapIterableAsync(
     async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {
       const response = await fetch(outline.xmlUrl,);
@@ -72,7 +86,10 @@ async function fetchAndParseFeeds(
         return DISCARD;
       }
       try {
-        return { text: await response.text(), outline, };
+        return {
+          text: await response.text(),
+          outline,
+        };
       }
       catch (error) {
         innerL.warn(
@@ -87,10 +104,16 @@ async function fetchAndParseFeeds(
       return value !== DISCARD;
     },);
   innerL.debug(`fetched ${String(textsWOutline.length,)} feed texts`,);
-  return textsWOutline.flatMap(function parse({ text, outline, },) {
+  return textsWOutline.flatMap(function parse({
+    text,
+    outline,
+  },) {
     const parser = outline.type === 'atom' ? parseAtomFeed : parseRssFeed;
     try {
-      return [{ feed: parser(text,), outline, },];
+      return [{
+        feed: parser(text,),
+        outline,
+      },];
     }
     catch (error) {
       innerL.warn(`parse failed for ${outline.xmlUrl}: ${JSON.stringify(error,)}`,);
@@ -107,7 +130,10 @@ async function fetchAndParseFeeds(
  * @returns Parsed publication date
  */
 function extractDate(feedWOutline: FeedWOutline,): Date {
-  const { feed, outline, } = feedWOutline;
+  const {
+    feed,
+    outline,
+  } = feedWOutline;
   if (outline.type === 'atom') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
     const atomFeed = feed as ReturnType<typeof parseAtomFeed>;

@@ -17,10 +17,26 @@ export function buildNav(): HTMLElement {
   return h({
     tag: 'nav',
     children: [
-      h({ tag: 'a', attrs: { href: '/', }, text: 'Inbox', },),
-      h({ tag: 'a', attrs: { href: '/in-progress', }, text: 'In Progress', },),
-      h({ tag: 'a', attrs: { href: '/settings', }, text: 'Settings', },),
-      h({ tag: 'a', attrs: { href: '#', }, text: 'Contact', },),
+      h({
+        tag: 'a',
+        attrs: { href: '/', },
+        text: 'Inbox',
+      },),
+      h({
+        tag: 'a',
+        attrs: { href: '/in-progress', },
+        text: 'In Progress',
+      },),
+      h({
+        tag: 'a',
+        attrs: { href: '/settings', },
+        text: 'Settings',
+      },),
+      h({
+        tag: 'a',
+        attrs: { href: '#', },
+        text: 'Contact',
+      },),
     ],
   },);
 }
@@ -34,11 +50,19 @@ export function buildNav(): HTMLElement {
  */
 export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
   const children: HTMLElement[] = [
-    h({ tag: 'span', style: { fontSize: '1.25rem', }, text: 'Firstname', },),
+    h({
+      tag: 'span',
+      style: { fontSize: '1.25rem', },
+      text: 'Firstname',
+    },),
   ];
   if (closeButton !== null)
     children.push(closeButton,);
-  return h({ tag: 'div', class: 'header', children, },);
+  return h({
+    tag: 'div',
+    class: 'header',
+    children,
+  },);
 }
 
 /**

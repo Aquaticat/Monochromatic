@@ -16,8 +16,12 @@ const FULL_PERCENT = 100;
 export const utilities = [
   css({
     rule: '.task-list',
-    decls: { display: 'flex', 'flex-direction': 'column', gap: cssVar('gap',),
-      'list-style': 'none', },
+    decls: {
+      display: 'flex',
+      'flex-direction': 'column',
+      gap: cssVar('gap',),
+      'list-style': 'none',
+    },
   },),
   css({
     rule: '.divider',
@@ -27,6 +31,9 @@ export const utilities = [
       'inline-size': cssPercent(FULL_PERCENT,),
     },
   },),
-  css({ rule: '.empty', decls: { color: cssVar('medium',), }, },),
+  css({
+    rule: '.empty',
+    decls: { color: cssVar('medium',), },
+  },),
 ]
   .join('',);

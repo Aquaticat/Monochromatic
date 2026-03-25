@@ -119,11 +119,15 @@ export function buildPerLineFix({
     }
   }
 
-  if (openPos === -1 || closePos === -1)
+  if (openPos === -1 || closePos === -1) {
     return fixer.replaceTextRange(
-      [firstRange[0], firstRange[0],],
+      [
+        firstRange[0],
+        firstRange[0],
+      ],
       '',
     );
+  }
 
   /** Compute base indentation from the line containing the opening bracket. */
   const lineStart = sourceText.lastIndexOf(
@@ -142,32 +146,41 @@ export function buildPerLineFix({
     function getItemText(item,): string {
       const raw = context.sourceCode.getText(item,).trim();
       if (raw.endsWith(';',) || raw.endsWith(',',))
-        return raw.slice(0, -1,);
+        return raw.slice(
+          0,
+          -1,
+        );
       return raw;
     },
   );
 
   /** Check whether the original source has a trailing delimiter between last item and close bracket. */
-  const trailingRegion = sourceText.slice(
+  const trailingRegion = new Set(sourceText.slice(
     lastRange[1],
     closePos,
-  );
-  const hasTrailingDelimiter = trailingRegion.includes(',',)
-    || trailingRegion.includes(';',);
+  ));
+  const hasTrailingDelimiter = trailingRegion.has(',',)
+    || trailingRegion.has(';',);
 
-  const formattedItems = itemTexts.map(function formatItem(
-    text,
-    idx,
-  ): string {
-    const isLast = idx === itemTexts.length - 1;
-    const suffix = isLast && !hasTrailingDelimiter ? '' : delimiter;
-    return `${childIndent}${text}${suffix}`;
-  },).join('\n',);
+  const formattedItems = itemTexts
+    .map(function formatItem(
+      text,
+      idx,
+    ): string {
+      const isLast = idx === itemTexts.length - 1;
+      const suffix = isLast && !hasTrailingDelimiter ? '' : delimiter;
+      return `${childIndent}${text}${suffix}`;
+    },)
+    .join('\n',);
 
   /** Replace from opening bracket to closing bracket inclusive. */
-  const replacement = `${bracketPair.open}\n${formattedItems}\n${baseIndent}${bracketPair.close}`;
+  const replacement =
+    `${bracketPair.open}\n${formattedItems}\n${baseIndent}${bracketPair.close}`;
   return fixer.replaceTextRange(
-    [openPos, closePos + 1,],
+    [
+      openPos,
+      closePos + 1,
+    ],
     replacement,
   );
 }

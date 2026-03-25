@@ -56,22 +56,40 @@ let annotatedLines = new Set<number>();
  *
  * @param diagnostics - diagnostics from the language server
  */
-export function applyInlayAnnotations({ editor, hints, diagnostics, }: {
+export function applyInlayAnnotations({
+  editor,
+  hints,
+  diagnostics,
+}: {
   editor: HTMLElement;
   hints: InlayHint[];
   diagnostics: Diagnostic[];
 },): void {
   const spaceRatio = measureSpaceRatio({ editor, },);
-  const hintsByLine = groupByLine({ items: hints, keyFn: hintLine, },);
-  const diagsByLine = groupByLine({ items: diagnostics, keyFn: diagLine, },);
-  const newLines = new Set([...hintsByLine.keys(), ...diagsByLine.keys(),],);
+  const hintsByLine = groupByLine({
+    items: hints,
+    keyFn: hintLine,
+  },);
+  const diagsByLine = groupByLine({
+    items: diagnostics,
+    keyFn: diagLine,
+  },);
+  const newLines = new Set([
+    ...hintsByLine.keys(),
+    ...diagsByLine.keys(),
+  ],);
   const { children, } = editor;
 
   for (const line of newLines) {
     const div = children[line];
     if (div !== undefined && div instanceof HTMLElement) {
-      applyLineAnnotation({ div, lineHints: hintsByLine.get(line,), lineDiags: diagsByLine
-        .get(line,), spaceRatio, },);
+      applyLineAnnotation({
+        div,
+        lineHints: hintsByLine.get(line,),
+        lineDiags: diagsByLine
+        .get(line,),
+        spaceRatio,
+      },);
     }
   }
 

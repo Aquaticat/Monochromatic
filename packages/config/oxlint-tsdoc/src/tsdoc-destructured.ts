@@ -51,8 +51,10 @@ function extractRawParams(
  *
  * @param names - mutable set to collect names into
  */
-function collectDestructuredNames(pattern: Record<string, unknown>,
-  names: Set<string>,): void
+function collectDestructuredNames(
+  pattern: Record<string, unknown>,
+  names: Set<string>,
+): void
 {
   if (pattern.type === 'Identifier') {
     // Named params are handled by extractParamNames, skip here
@@ -61,18 +63,27 @@ function collectDestructuredNames(pattern: Record<string, unknown>,
   if (pattern.type === 'AssignmentPattern') {
     // `{ a = defaultValue }` -- unwrap to the left side
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    collectDestructuredNames(pattern.left as Record<string, unknown>, names,);
+    collectDestructuredNames(
+      pattern.left as Record<string, unknown>,
+      names,
+    );
     return;
   }
   if (pattern.type === 'RestElement') {
     // `...rest` inside destructuring
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    collectDestructuredNames(pattern.argument as Record<string, unknown>, names,);
+    collectDestructuredNames(
+      pattern.argument as Record<string, unknown>,
+      names,
+    );
     return;
   }
   if (pattern.type === 'TSParameterProperty') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    collectDestructuredNames(pattern.parameter as Record<string, unknown>, names,);
+    collectDestructuredNames(
+      pattern.parameter as Record<string, unknown>,
+      names,
+    );
     return;
   }
   if (pattern.type === 'ObjectPattern') {
@@ -83,7 +94,10 @@ function collectDestructuredNames(pattern: Record<string, unknown>,
     for (const prop of properties) {
       if (prop.type === 'RestElement') {
         // `{ ...rest }` inside object destructuring
-        collectDestructuredNames(prop, names,);
+        collectDestructuredNames(
+          prop,
+          names,
+        );
       }
       else {
         // Property node -- extract the key name
@@ -105,7 +119,10 @@ function collectDestructuredNames(pattern: Record<string, unknown>,
       return;
     for (const element of elements) {
       if (element !== null)
-        collectDestructuredNames(element, names,);
+        collectDestructuredNames(
+          element,
+          names,
+        );
     }
   }
   // Unknown pattern types are silently ignored
@@ -139,7 +156,10 @@ export function extractDestructuredParamNames(
   const names = new Set<string>();
 
   for (const param of extractRawParams(node,))
-    collectDestructuredNames(param, names,);
+    collectDestructuredNames(
+      param,
+      names,
+    );
 
   return names;
 }

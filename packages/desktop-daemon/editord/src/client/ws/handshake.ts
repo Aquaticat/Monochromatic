@@ -12,7 +12,10 @@ import {
 } from '../log.ts';
 
 /** Tagged logger for the WebSocket handshake. */
-const l = tagged({ tag: 'ws-handshake', l: rootLogger, },);
+const l = tagged({
+  tag: 'ws-handshake',
+  l: rootLogger,
+},);
 
 /**
  * Performs the WebSocket handshake with the server.
@@ -21,12 +24,21 @@ const l = tagged({ tag: 'ws-handshake', l: rootLogger, },);
  *
  * @param onConnected - callback with rootDir and fsId on success
  */
-export function performHandshake({ ws, onConnected, }: {
+export function performHandshake({
+  ws,
+  onConnected,
+}: {
   ws: WebSocket;
-  onConnected: (data: { rootDir: string; fsId: string; },) => void;
+  onConnected: (data: {
+    rootDir: string;
+    fsId: string
+  },) => void;
 },): Promise<void> {
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based WebSocket events into a promise requires new Promise
-  return new Promise<void>(function awaitConnection(resolve, reject,) {
+  return new Promise<void>(function awaitConnection(
+    resolve,
+    reject,
+  ) {
     /**
      * Handles the first WebSocket message, expecting a handshake confirmation.
      *
@@ -37,7 +49,10 @@ export function performHandshake({ ws, onConnected, }: {
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
         const data = JSON.parse(String(event.data,),) as ServerMessage;
         if (data.type === 'connected') {
-          onConnected({ rootDir: data.rootDir, fsId: data.fsId, },);
+          onConnected({
+            rootDir: data.rootDir,
+            fsId: data.fsId,
+          },);
           resolve();
         }
         else if (data.type === 'error') {
@@ -50,10 +65,18 @@ export function performHandshake({ ws, onConnected, }: {
       }
     }
 
-    ws.addEventListener('message', handleFirstMessage, { once: true, },);
-    ws.addEventListener('error', function handleError() {
+    ws.addEventListener(
+      'message',
+      handleFirstMessage,
+      { once: true, },
+    );
+    ws.addEventListener(
+      'error',
+      function handleError() {
       l.error('WebSocket connection failed',);
       reject(new Error('WebSocket connection failed',),);
-    }, { once: true, },);
+    },
+      { once: true, },
+    );
   },);
 }

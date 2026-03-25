@@ -14,6 +14,10 @@
  */
 import { readFile, } from 'node:fs/promises';
 
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import { SIMULATION_CASES, } from '../stak/test-cases.ts';
 import { SIMULATION_SYSTEM, } from './system-prompt.ts';
 
@@ -36,7 +40,10 @@ async function readInterpreterSource(): Promise<string> {
   ] as const;
   const sources = await Promise.all(
     files.map(function readSourceFile(relativePath,): Promise<string> {
-      return readFile(new URL(relativePath, import.meta.url,), 'utf8',);
+      return readFile(
+        new URL(relativePath, import.meta.url,),
+        'utf8',
+      );
     },),
   );
   return sources.join('\n',);
@@ -52,7 +59,10 @@ const INTERPRETER_SOURCE = await readInterpreterSource();
  */
 function buildSimulationPrompt(): string {
   const programBlocks = SIMULATION_CASES.map(
-    function formatCase(testCase, index,): string {
+    function formatCase(
+      testCase,
+      index,
+    ): string {
       const lines = [
         `Program ${String(index + 1,)}:`,
         '```',
@@ -74,7 +84,10 @@ function buildSimulationPrompt(): string {
     'Separate the five results with "---" on its own line.',
     '',
     ...programBlocks.flatMap(function addSeparator(block,): string[] {
-      return [block, '',];
+      return [
+        block,
+        '',
+      ];
     },),
   ]
     .join('\n',);
@@ -92,7 +105,10 @@ function buildSimulationPrompt(): string {
  * @returns array of trimmed output sections, one per program
  */
 function parseSections(response: string,): readonly string[] {
-  const normalized = response.replaceAll(/([^\n])---/g, '$1\n---',);
+  const normalized = response.replaceAll(
+    /([^\n])---/g,
+    '$1\n---',
+  );
   return normalized
     .split(/^---$/m,)
     .map(function trimSection(section,): string {
@@ -108,16 +124,27 @@ export const stakSimulation: Probe = {
   category: 'simulation',
   system: SIMULATION_SYSTEM,
   prompt: buildSimulationPrompt(),
-  score: function scoreStakSimulation(response, context,): number {
+  score: function scoreStakSimulation(
+    response,
+    context,
+  ): number {
     const sections = parseSections(response,);
+    /** Probe-specific logger for simulation case mismatch messages. */
+    const rl = tagged({
+      tag: 'stak-simulation',
+      l: tagged({
+        tag: context.label,
+        l,
+      },),
+    },);
     let allCorrect = true;
     for (const [index, testCase,] of SIMULATION_CASES.entries()) {
       const section = sections[index] ?? '';
       const match = section === testCase.expected;
       if (!match) {
         allCorrect = false;
-        console.log(
-          `  [${context.label}:stak-simulation] case ${testCase.label}: expected ${
+        rl.info(
+          `case ${testCase.label}: expected ${
             JSON.stringify(testCase.expected,)
           }, got ${JSON.stringify(section,)}`,
         );

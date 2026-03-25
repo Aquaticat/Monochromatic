@@ -36,11 +36,17 @@ export function renderByProbe({ entries, }: {
   },),),];
 
   if (probeNames.length === 0)
-    return h({ tag: 'p', text: 'No probe data available.', },);
+    return h({
+      tag: 'p',
+      text: 'No probe data available.',
+    },);
 
   return probeNames
     .map(function renderProbeSection(probe,): string {
-      const points = buildCrossModelPoints(entries, probe,);
+      const points = buildCrossModelPoints(
+        entries,
+        probe,
+      );
       const legend = buildProbeLegend(entries,);
 
       // Per-model breakdown within this probe
@@ -59,20 +65,32 @@ export function renderByProbe({ entries, }: {
           /** OpenRouter model ID from the first entry for vendor icon/color */
           const openrouterId = modelEntries[0]?.model ?? '';
           const color = vendorColor(openrouterId,);
-          const modelPoints = buildSingleModelPoints(entries, probe, label, openrouterId,
-            color,);
+          const modelPoints = buildSingleModelPoints(
+            entries,
+            probe,
+            label,
+            openrouterId,
+            color,
+          );
           return h({
             tag: 'details',
             class: 'model-section',
             children: [
               h({
                 tag: 'summary',
-                children: [iconDot(openrouterId, color,), ' ',
-                  h({ tag: 'span', text: label, },),],
+                children: [
+                  iconDot(openrouterId, color,),
+                  ' ',
+                  h({ tag: 'span', text: label, },),
+                ],
               },),
-              renderScatterChart({ points: modelPoints, threshold: 0, thresholdLabel: '',
+              renderScatterChart({
+                points: modelPoints,
+                threshold: 0,
+                thresholdLabel: '',
                 caption: `${probe} - ${label}`,
-                tableDisplay: { showModel: false, showProbe: false, }, },),
+                tableDisplay: { showModel: false, showProbe: false, },
+              },),
             ],
           },);
         },)
@@ -82,16 +100,26 @@ export function renderByProbe({ entries, }: {
         tag: 'details',
         class: 'probe-section',
         children: [
-          h({ tag: 'summary', text: probe, },),
+          h({
+            tag: 'summary',
+            text: probe,
+          },),
           h({
             tag: 'div',
             class: 'pane',
             children: [
               legend,
-              renderScatterChart({ points, threshold: 0, thresholdLabel: '',
+              renderScatterChart({
+                points,
+                threshold: 0,
+                thresholdLabel: '',
                 caption: `${probe} - all models`,
-                tableDisplay: { showProbe: false, }, },),
-              h({ tag: 'h3', text: 'Per-model breakdown', },),
+                tableDisplay: { showProbe: false, },
+              },),
+              h({
+                tag: 'h3',
+                text: 'Per-model breakdown',
+              },),
               modelBreakdown,
             ],
           },),

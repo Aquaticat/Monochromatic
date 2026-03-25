@@ -34,5 +34,9 @@ import { $ as omitNamed, } from '../p n/index.ts';
   toOmit: ReadonlySet<TKeys>,
   strict = true,
 ): Omit<TObject, TKeys> {
-  return omitNamed({ original, toOmit, strict, },);
+  return omitNamed({
+    original,
+    toOmit,
+    strict,
+  },);
 }

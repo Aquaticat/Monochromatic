@@ -46,7 +46,11 @@ let dragExceededThreshold = false;
  *
  * @param currentPanY - current pan Y offset to snapshot
  */
-export function startPan({ event, currentPanX, currentPanY, }: {
+export function startPan({
+  event,
+  currentPanX,
+  currentPanY,
+}: {
   event: PointerEvent;
   currentPanX: number;
   currentPanY: number;
@@ -72,7 +76,12 @@ export function startPan({ event, currentPanX, currentPanY, }: {
  *
  * @returns whether the pointer has moved enough to count as a drag
  */
-export function continuePan({ event, containerWidth, containerHeight, zoomLayer, }: {
+export function continuePan({
+  event,
+  containerWidth,
+  containerHeight,
+  zoomLayer,
+}: {
   event: PointerEvent;
   containerWidth: number;
   containerHeight: number;
@@ -91,8 +100,14 @@ export function continuePan({ event, containerWidth, containerHeight, zoomLayer,
       return false;
   }
 
-  setPan({ x: panStartOffsetX + dx, y: panStartOffsetY + dy, },);
-  clampPan({ containerWidth, containerHeight, },);
+  setPan({
+    x: panStartOffsetX + dx,
+    y: panStartOffsetY + dy,
+  },);
+  clampPan({
+    containerWidth,
+    containerHeight,
+  },);
   applyZoomTransform(zoomLayer,);
   return true;
 }

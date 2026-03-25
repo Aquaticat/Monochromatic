@@ -7,7 +7,13 @@ import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
  * @returns array of branded Int values in the exclusive range
  */
 export function $(
-  { startExclusive, endExclusive, }: { startExclusive: number; endExclusive: number; },
+  {
+    startExclusive,
+    endExclusive,
+  }: {
+    startExclusive: number;
+    endExclusive: number
+  },
 ): Int[] {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing floor+1 to branded Int
   const start = (Math.floor(startExclusive,) + 1) as Int;
@@ -16,7 +22,10 @@ export function $(
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- constructed array of verified integers matches Int[]
   return (start > end
     ? []
-    : Array.from({ length: end - start + 1, }, function offset(_, index,) {
+    : Array.from(
+      { length: end - start + 1, },
+      function offset(_, index,) {
       return start + index;
-    },)) as Int[];
+    },
+    )) as Int[];
 }

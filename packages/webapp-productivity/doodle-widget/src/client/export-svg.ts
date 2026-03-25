@@ -41,21 +41,55 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
  * ```
  */
 export function exportAsSvg(
-  { container, overlay, textLayer, }: ExportDeps,
+  {
+    container,
+    overlay,
+    textLayer,
+  }: ExportDeps,
 ): void {
-  const { cw, ch, } = getContainerSize(container,);
+  const {
+    cw,
+    ch,
+  } = getContainerSize(container,);
 
-  const svg = document.createElementNS(SVG_NS, 'svg',);
-  svg.setAttribute('xmlns', SVG_NS,);
-  svg.setAttribute('viewBox', `0 0 ${String(cw,)} ${String(ch,)}`,);
-  svg.setAttribute('width', String(cw,),);
-  svg.setAttribute('height', String(ch,),);
+  const svg = document.createElementNS(
+    SVG_NS,
+    'svg',
+  );
+  svg.setAttribute(
+    'xmlns',
+    SVG_NS,
+  );
+  svg.setAttribute(
+    'viewBox',
+    `0 0 ${String(cw,)} ${String(ch,)}`,
+  );
+  svg.setAttribute(
+    'width',
+    String(cw,),
+  );
+  svg.setAttribute(
+    'height',
+    String(ch,),
+  );
 
   //region White background
-  const bgRect = document.createElementNS(SVG_NS, 'rect',);
-  bgRect.setAttribute('width', String(cw,),);
-  bgRect.setAttribute('height', String(ch,),);
-  bgRect.setAttribute('fill', 'white',);
+  const bgRect = document.createElementNS(
+    SVG_NS,
+    'rect',
+  );
+  bgRect.setAttribute(
+    'width',
+    String(cw,),
+  );
+  bgRect.setAttribute(
+    'height',
+    String(ch,),
+  );
+  bgRect.setAttribute(
+    'fill',
+    'white',
+  );
   svg.append(bgRect,);
   //endregion White background
 
@@ -64,34 +98,73 @@ export function exportAsSvg(
   for (const stroke of strokes) {
     if (stroke.points.length < MIN_STROKE_POINTS)
       continue;
-    const path = document.createElementNS(SVG_NS, 'path',);
+    const path = document.createElementNS(
+      SVG_NS,
+      'path',
+    );
     /** SVG path data built from normalized stroke coordinates */
     const d = stroke
       .points
       .map(
-        function formatPoint([nx, ny,]: NormalizedPoint, index: number,): string {
+        function formatPoint(
+          [nx, ny,]: NormalizedPoint,
+          index: number,
+        ): string {
           const cmd = index === 0 ? 'M' : 'L';
           return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
         },
       )
       .join(' ',);
-    path.setAttribute('d', d,);
-    path.setAttribute('stroke', stroke.color,);
-    path.setAttribute('stroke-width', String(stroke.width,),);
-    path.setAttribute('fill', 'none',);
-    path.setAttribute('stroke-linecap', 'round',);
-    path.setAttribute('stroke-linejoin', 'round',);
+    path.setAttribute(
+      'd',
+      d,
+    );
+    path.setAttribute(
+      'stroke',
+      stroke.color,
+    );
+    path.setAttribute(
+      'stroke-width',
+      String(stroke.width,),
+    );
+    path.setAttribute(
+      'fill',
+      'none',
+    );
+    path.setAttribute(
+      'stroke-linecap',
+      'round',
+    );
+    path.setAttribute(
+      'stroke-linejoin',
+      'round',
+    );
     svg.append(path,);
   }
   //endregion Strokes
 
   //region Background SVG (on top of strokes)
-  const overlayInfo = measureSvgOverlay({ container, overlay, },);
+  const overlayInfo = measureSvgOverlay({
+    container,
+    overlay,
+  },);
   if (overlayInfo !== null) {
-    overlayInfo.clone.setAttribute('x', String(overlayInfo.offsetX,),);
-    overlayInfo.clone.setAttribute('y', String(overlayInfo.offsetY,),);
-    overlayInfo.clone.setAttribute('width', String(overlayInfo.width,),);
-    overlayInfo.clone.setAttribute('height', String(overlayInfo.height,),);
+    overlayInfo.clone.setAttribute(
+      'x',
+      String(overlayInfo.offsetX,),
+    );
+    overlayInfo.clone.setAttribute(
+      'y',
+      String(overlayInfo.offsetY,),
+    );
+    overlayInfo.clone.setAttribute(
+      'width',
+      String(overlayInfo.width,),
+    );
+    overlayInfo.clone.setAttribute(
+      'height',
+      String(overlayInfo.height,),
+    );
     svg.append(overlayInfo.clone,);
   }
   //endregion Background SVG
@@ -99,13 +172,34 @@ export function exportAsSvg(
   //region Text annotations
   const textEntries = readTextEntries({ textLayer, },);
   for (const entry of textEntries) {
-    const text = document.createElementNS(SVG_NS, 'text',);
-    text.setAttribute('x', String(entry.xFraction * cw,),);
-    text.setAttribute('y', String(entry.yFraction * ch,),);
-    text.setAttribute('font-family', 'system-ui, sans-serif',);
-    text.setAttribute('font-size', String(entry.fontSizePx,),);
-    text.setAttribute('fill', entry.color,);
-    text.setAttribute('dominant-baseline', 'hanging',);
+    const text = document.createElementNS(
+      SVG_NS,
+      'text',
+    );
+    text.setAttribute(
+      'x',
+      String(entry.xFraction * cw,),
+    );
+    text.setAttribute(
+      'y',
+      String(entry.yFraction * ch,),
+    );
+    text.setAttribute(
+      'font-family',
+      'system-ui, sans-serif',
+    );
+    text.setAttribute(
+      'font-size',
+      String(entry.fontSizePx,),
+    );
+    text.setAttribute(
+      'fill',
+      entry.color,
+    );
+    text.setAttribute(
+      'dominant-baseline',
+      'hanging',
+    );
     text.textContent = entry.value;
     svg.append(text,);
   }
@@ -113,6 +207,12 @@ export function exportAsSvg(
 
   /** Serialized SVG markup for download */
   const markup = new XMLSerializer().serializeToString(svg,);
-  const blob = new Blob([markup,], { type: 'image/svg+xml;charset=utf-8', },);
-  triggerDownload({ blob, filename: 'doodle.svg', },);
+  const blob = new Blob(
+    [markup,],
+    { type: 'image/svg+xml;charset=utf-8', },
+  );
+  triggerDownload({
+    blob,
+    filename: 'doodle.svg',
+  },);
 }

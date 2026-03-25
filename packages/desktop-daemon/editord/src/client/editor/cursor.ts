@@ -38,15 +38,21 @@ export function getComposedRange(
  *
  * @returns 0-based line and character, or null
  */
-export function getCursorPosition({ editor, shadow, }: {
+export function getCursorPosition({
+  editor,
+  shadow,
+}: {
   editor: HTMLDivElement;
   shadow: ShadowRoot;
 },): EditorPosition | null {
   const range = getComposedRange({ shadow, },);
   if (range === null)
     return null;
-  return resolveLineCharacter({ editor, container: range.startContainer,
-    offset: range.startOffset, },);
+  return resolveLineCharacter({
+    editor,
+    container: range.startContainer,
+    offset: range.startOffset,
+  },);
 }
 
 /**
@@ -61,8 +67,14 @@ export function getCursorRect({ shadow, }: { shadow: ShadowRoot; },): DOMRect | 
   if (sRange === null)
     return null;
   const range = document.createRange();
-  range.setStart(sRange.startContainer, sRange.startOffset,);
-  range.setEnd(sRange.endContainer, sRange.endOffset,);
+  range.setStart(
+    sRange.startContainer,
+    sRange.startOffset,
+  );
+  range.setEnd(
+    sRange.endContainer,
+    sRange.endOffset,
+  );
   return range.getBoundingClientRect();
 }
 
@@ -75,7 +87,11 @@ export function getCursorRect({ shadow, }: { shadow: ShadowRoot; },): DOMRect | 
  *
  * @param character - 0-based character offset
  */
-export function restoreCursor({ editor, line, character, }: {
+export function restoreCursor({
+  editor,
+  line,
+  character,
+}: {
   editor: HTMLDivElement;
   line: number;
   character: number;
@@ -83,11 +99,19 @@ export function restoreCursor({ editor, line, character, }: {
   const selection = document.getSelection();
   if (selection === null)
     return;
-  const resolved = resolveTextPosition({ editor, lineIndex: line, character, },);
+  const resolved = resolveTextPosition({
+    editor,
+    lineIndex: line,
+    character,
+  },);
   if (resolved === null)
     return;
-  selection.setBaseAndExtent(resolved.node, resolved.offset, resolved.node,
-    resolved.offset,);
+  selection.setBaseAndExtent(
+    resolved.node,
+    resolved.offset,
+    resolved.node,
+    resolved.offset,
+  );
 }
 
 /**
@@ -97,20 +121,34 @@ export function restoreCursor({ editor, line, character, }: {
  *
  * @param coords - selection start and end coordinates
  */
-export function setSelection({ editor, coords, }: {
+export function setSelection({
+  editor,
+  coords,
+}: {
   editor: HTMLDivElement;
   coords: SelectionCoords;
 },): void {
   const selection = document.getSelection();
   if (selection === null)
     return;
-  const start = resolveTextPosition({ editor, lineIndex: coords.startLine,
-    character: coords.startCharacter, },);
-  const end = resolveTextPosition({ editor, lineIndex: coords.endLine,
-    character: coords.endCharacter, },);
+  const start = resolveTextPosition({
+    editor,
+    lineIndex: coords.startLine,
+    character: coords.startCharacter,
+  },);
+  const end = resolveTextPosition({
+    editor,
+    lineIndex: coords.endLine,
+    character: coords.endCharacter,
+  },);
   if (start === null || end === null)
     return;
-  selection.setBaseAndExtent(start.node, start.offset, end.node, end.offset,);
+  selection.setBaseAndExtent(
+    start.node,
+    start.offset,
+    end.node,
+    end.offset,
+  );
 }
 
 /**
@@ -122,19 +160,32 @@ export function setSelection({ editor, coords, }: {
  *
  * @returns selection coordinates, or null
  */
-export function getSelection({ editor, shadow, }: {
+export function getSelection({
+  editor,
+  shadow,
+}: {
   editor: HTMLDivElement;
   shadow: ShadowRoot;
 },): SelectionCoords | null {
   const range = getComposedRange({ shadow, },);
   if (range === null)
     return null;
-  const start = resolveLineCharacter({ editor, container: range.startContainer,
-    offset: range.startOffset, },);
-  const end = resolveLineCharacter({ editor, container: range.endContainer,
-    offset: range.endOffset, },);
+  const start = resolveLineCharacter({
+    editor,
+    container: range.startContainer,
+    offset: range.startOffset,
+  },);
+  const end = resolveLineCharacter({
+    editor,
+    container: range.endContainer,
+    offset: range.endOffset,
+  },);
   if (start === null || end === null)
     return null;
-  return { startLine: start.line, startCharacter: start.character, endLine: end.line,
-    endCharacter: end.character, };
+  return {
+    startLine: start.line,
+    startCharacter: start.character,
+    endLine: end.line,
+    endCharacter: end.character,
+  };
 }

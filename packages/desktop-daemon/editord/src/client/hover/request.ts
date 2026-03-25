@@ -12,7 +12,10 @@ import type { EditorWsClient, } from '../ws/client.ts';
 import type { HoverPopup, } from './hover-popup.ts';
 
 /** Tagged logger for hover requests. */
-const hoverLog = tagged({ tag: 'hover-request', l, },);
+const hoverLog = tagged({
+  tag: 'hover-request',
+  l,
+},);
 
 /**
  * Sends a hover request and shows the popup.
@@ -31,7 +34,15 @@ const hoverLog = tagged({ tag: 'hover-request', l, },);
  *
  * @param y - mouse Y coordinate for popup positioning
  */
-export async function doRequestHover({ ws, hoverPopup, path, line, character, x, y, }: {
+export async function doRequestHover({
+  ws,
+  hoverPopup,
+  path,
+  line,
+  character,
+  x,
+  y,
+}: {
   ws: EditorWsClient;
   hoverPopup: HoverPopup;
   path: string;
@@ -41,13 +52,22 @@ export async function doRequestHover({ ws, hoverPopup, path, line, character, x,
   y: number;
 },): Promise<void> {
   try {
-    const response = await ws.request({ type: 'hover', path, line, character, },);
+    const response = await ws.request({
+      type: 'hover',
+      path,
+      line,
+      character,
+    },);
     if ('contents' in response) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'contents' check
       const { contents, } = response as { contents: string; };
       if (contents !== '') {
         hoverLog.info(`showing hover at ${x},${y}`,);
-        hoverPopup.show({ text: contents, x, y, },);
+        hoverPopup.show({
+          text: contents,
+          x,
+          y,
+        },);
       }
     }
   }

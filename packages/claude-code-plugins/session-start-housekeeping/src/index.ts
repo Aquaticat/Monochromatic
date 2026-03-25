@@ -43,7 +43,10 @@ export {};
  * ```
  */
 async function ensureDir(dirPath: string,): Promise<void> {
-  await mkdir(dirPath, { recursive: true, },);
+  await mkdir(
+    dirPath,
+    { recursive: true, },
+  );
 }
 
 /**
@@ -73,13 +76,19 @@ const STALE_DIST_ARTIFACTS = [
 async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
   const removals: Promise<void>[] = [];
 
-  for await (const finalDir of glob('packages/*/*/dist/final', {
+  for await (const finalDir of glob(
+    'packages/*/*/dist/final',
+    {
     cwd: workspaceRoot,
-  },)) {
+  },
+  )) {
     for (const artifact of STALE_DIST_ARTIFACTS) {
       removals.push(
-        rm(`${workspaceRoot}/${finalDir}/${artifact}`, { recursive: true,
-          force: true, },),
+        rm(
+          `${workspaceRoot}/${finalDir}/${artifact}`,
+          { recursive: true,
+          force: true, },
+        ),
       );
     }
   }
@@ -99,7 +108,10 @@ async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
  * ```
  */
 async function removeMcpJson(workspaceRoot: string,): Promise<void> {
-  await rm(`${workspaceRoot}/.mcp.json`, { force: true, },);
+  await rm(
+    `${workspaceRoot}/.mcp.json`,
+    { force: true, },
+  );
 }
 
 //endregion

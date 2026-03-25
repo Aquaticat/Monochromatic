@@ -34,7 +34,10 @@ export type Cell = {
  *
  * @returns attribute value, or undefined if not found
  */
-function attr(attrs: string, name: string,): string | undefined {
+function attr(
+  attrs: string,
+  name: string,
+): string | undefined {
   const match = attrs.match(new RegExp(`${name}="([^"]*)"`,),);
   return match?.[1];
 }
@@ -61,30 +64,52 @@ export function parseSvg(svgContent: string,): Cell[] {
       continue;
 
     if (tag === 'rect') {
-      const transform = attr(attrs, 'transform',);
+      const transform = attr(
+        attrs,
+        'transform',
+      );
       const translateMatch = transform?.match(/translate\((\d+(?:\.\d+)?)\)/,);
       const xOffset = translateMatch !== undefined && translateMatch !== null
         ? Number(translateMatch[1] ?? '0',)
         : 0;
-      cells.push({ xOffset, paths: [], },);
+      cells.push({
+        xOffset,
+        paths: [],
+      },);
       continue;
     }
 
     // tag === "path"
-    const d = attr(attrs, 'd',);
+    const d = attr(
+      attrs,
+      'd',
+    );
     if (d === undefined)
       continue;
 
-    const strokeAttr = attr(attrs, 'stroke',);
-    const isStroked = strokeAttr !== undefined && attr(attrs, 'fill',) === undefined;
-    const strokeWidthStr = attr(attrs, 'stroke-width',);
+    const strokeAttr = attr(
+      attrs,
+      'stroke',
+    );
+    const isStroked = strokeAttr !== undefined && attr(
+      attrs,
+      'fill',
+    ) === undefined;
+    const strokeWidthStr = attr(
+      attrs,
+      'stroke-width',
+    );
     const strokeWidth = isStroked && strokeWidthStr !== undefined
       ? Number(strokeWidthStr,)
       : 0;
 
     const currentCell = cells.at(-1,);
     if (currentCell !== undefined)
-      currentCell.paths.push({ d, isStroked, strokeWidth, },);
+      currentCell.paths.push({
+        d,
+        isStroked,
+        strokeWidth,
+      },);
   }
 
   return cells;
@@ -94,10 +119,24 @@ export function parseSvg(svgContent: string,): Cell[] {
 
 /** Parsed absolute SVG path command (M/L/H/V/Z only). */
 export type SVGPathCommand =
-  | { type: 'M'; x: number; y: number; }
-  | { type: 'L'; x: number; y: number; }
-  | { type: 'H'; x: number; }
-  | { type: 'V'; y: number; }
+  | {
+    type: 'M';
+    x: number;
+    y: number
+  }
+  | {
+    type: 'L';
+    x: number;
+    y: number
+  }
+  | {
+    type: 'H';
+    x: number
+  }
+  | {
+    type: 'V';
+    y: number
+  }
   | { type: 'Z'; };
 
 /**
@@ -132,12 +171,22 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
       const yTok = tokenRegex.exec(d,);
       if (yTok === null)
         break;
-      commands.push({ type: currentCmd, x: num, y: Number(yTok[2],), },);
+      commands.push({
+        type: currentCmd,
+        x: num,
+        y: Number(yTok[2],),
+      },);
     }
     else if (currentCmd === 'H')
-      commands.push({ type: 'H', x: num, },);
+      commands.push({
+        type: 'H',
+        x: num,
+      },);
     else if (currentCmd === 'V')
-      commands.push({ type: 'V', y: num, },);
+      commands.push({
+        type: 'V',
+        y: num,
+      },);
   }
 
   return commands;

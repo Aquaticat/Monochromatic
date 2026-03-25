@@ -12,7 +12,10 @@
  *
  * @returns 0-based character offset
  */
-export function findCharAtX({ lineDiv, x, }: {
+export function findCharAtX({
+  lineDiv,
+  x,
+}: {
   lineDiv: Element;
   x: number;
 },): number {
@@ -22,20 +25,31 @@ export function findCharAtX({ lineDiv, x, }: {
     return 0;
 
   /** Get the first text node in the line. */
-  const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+  const walker = document.createTreeWalker(
+    lineDiv,
+    NodeFilter.SHOW_TEXT,
+  );
   const firstTextNode = walker.nextNode();
   if (firstTextNode === null)
     return 0;
 
   // Mutable accumulator is unavoidable here: TreeWalker is imperative and does not expose a functional iterator
   /** Collect all text nodes with cumulative offsets. */
-  const textNodes: { node: Text; start: number; length: number; }[] = [];
+  const textNodes: {
+    node: Text;
+    start: number;
+    length: number
+  }[] = [];
   let total = 0;
   let current: Node | null = firstTextNode;
   while (current !== null) {
     const len = current.textContent?.length ?? 0;
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TreeWalker SHOW_TEXT yields Text nodes
-    textNodes.push({ node: current as Text, start: total, length: len, },);
+    textNodes.push({
+      node: current as Text,
+      start: total,
+      length: len,
+    },);
     total += len;
     current = walker.nextNode();
   }
@@ -47,9 +61,21 @@ export function findCharAtX({ lineDiv, x, }: {
 
   while (lo < hi) {
     const mid = (lo + hi) >>> 1;
-    const { node, localOffset, } = resolveOffset({ textNodes, offset: mid, },);
-    range.setStart(node, localOffset,);
-    range.setEnd(node, localOffset,);
+    const {
+      node,
+      localOffset,
+    } = resolveOffset({
+      textNodes,
+      offset: mid,
+    },);
+    range.setStart(
+      node,
+      localOffset,
+    );
+    range.setEnd(
+      node,
+      localOffset,
+    );
     const rect = range.getBoundingClientRect();
 
     if (rect.left < x)
@@ -66,21 +92,40 @@ export function findCharAtX({ lineDiv, x, }: {
  *
  * @returns text node and the local character offset within it
  */
-function resolveOffset({ textNodes, offset, }: {
-  textNodes: { node: Text; start: number; length: number; }[];
+function resolveOffset({
+  textNodes,
+  offset,
+}: {
+  textNodes: {
+    node: Text;
+    start: number;
+    length: number
+  }[];
   offset: number;
-},): { node: Text; localOffset: number; } {
+},): {
+  node: Text;
+  localOffset: number
+} {
   for (const entry of textNodes) {
     if (offset <= entry.start + entry.length)
-      return { node: entry.node, localOffset: offset - entry.start, };
+      return {
+        node: entry.node,
+        localOffset: offset - entry.start,
+      };
   }
   /** Clamp to end of last text node. */
   const last = textNodes.at(-1,);
   if (last !== undefined)
-    return { node: last.node, localOffset: last.length, };
+    return {
+      node: last.node,
+      localOffset: last.length,
+    };
   /** Fallback: should never reach here with non-empty text. */
   const [first,] = textNodes;
   if (first === undefined)
     throw new Error('resolveOffset called with empty textNodes',);
-  return { node: first.node, localOffset: 0, };
+  return {
+    node: first.node,
+    localOffset: 0,
+  };
 }

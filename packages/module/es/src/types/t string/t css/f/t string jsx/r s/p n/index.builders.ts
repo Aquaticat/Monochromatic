@@ -39,8 +39,10 @@ export type {
 function serializeDecls(decls: object,): string {
   const parts: string[] = [];
 
-  for (const [property, value,] of Object.entries(decls,) as readonly [string,
-    CssValue | string | number | undefined,][])
+  for (const [property, value,] of Object.entries(decls,) as readonly [
+    string,
+    CssValue | string | number | undefined,
+  ][])
   {
     if (value === undefined)
       continue;
@@ -91,7 +93,12 @@ function hasBlock(options: AtRuleOptions,): boolean {
  * @returns CSS rule string (e.g. `'.card{display:flex}'`)
  */
 export function buildRule(
-  { rule, decls, raw, children, }: RuleOptions,
+  {
+    rule,
+    decls,
+    raw,
+    children,
+  }: RuleOptions,
 ): string {
   const parts: string[] = [`${rule}{`,];
 
@@ -133,7 +140,13 @@ export function buildRule(
 export function buildAtRule(
   options: AtRuleOptions,
 ): string {
-  const { at, params, decls, raw, children, } = options;
+  const {
+    at,
+    params,
+    decls,
+    raw,
+    children,
+  } = options;
   const head = params !== undefined
     ? `@${at} ${params}`
     : `@${at}`;

@@ -59,8 +59,14 @@ export function measureInlayOffsets({ editor, }: { editor: HTMLElement; },): voi
     if (!(child instanceof HTMLElement) || child.dataset.inlay === undefined)
       continue;
 
-    const beforeHeight = getComputedStyle(child, '::before',).height;
+    const beforeHeight = getComputedStyle(
+      child,
+      '::before',
+    ).height;
     if (beforeHeight !== 'auto' && beforeHeight !== '0px')
-      child.style.setProperty('--line-num-offset', beforeHeight,);
+      child.style.setProperty(
+        '--line-num-offset',
+        beforeHeight,
+      );
   }
 }

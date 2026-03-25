@@ -19,7 +19,10 @@ await initPromise;
  * rl.info('starting operation');
  * ```
  */
-export const l: Logger = tagged({ tag: 'cli-fy', l: $, },);
+export const l: Logger = tagged({
+  tag: 'cli-fy',
+  l: $,
+},);
 
 export type { Logger, };
 export { tagged, };

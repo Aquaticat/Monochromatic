@@ -14,19 +14,31 @@
  *
  * @returns params suitable for a JSON-RPC initialize request
  */
-export function buildInitializeParams({ rootUri, initializationOptions, }: {
+export function buildInitializeParams({
+  rootUri,
+  initializationOptions,
+}: {
   rootUri: string;
   initializationOptions: Record<string, unknown> | undefined;
 },): unknown {
   return {
     processId: process.pid,
-    clientInfo: { name: 'editord', version: '0.1.0', },
+    clientInfo: {
+      name: 'editord',
+      version: '0.1.0',
+    },
     rootUri,
-    workspaceFolders: [{ uri: rootUri, name: 'root', },],
+    workspaceFolders: [{
+      uri: rootUri,
+      name: 'root',
+    },],
     capabilities: {
       textDocument: {
         synchronization: { didSave: true, },
-        hover: { contentFormat: ['markdown', 'plaintext',], },
+        hover: { contentFormat: [
+          'markdown',
+          'plaintext',
+        ], },
         completion: { completionItem: { snippetSupport: false, }, },
         publishDiagnostics: {},
         inlayHint: {},

@@ -77,7 +77,10 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
   const lossyForCircular = config.lossyForCircular ?? true;
 
   const defaultBackendsBuilder = getDefaultBackendsBuilder();
-  const backends: readonly [StorageBackend, ...StorageBackend[],] = config.backends
+  const backends: readonly [
+    StorageBackend,
+    ...StorageBackend[],
+  ] = config.backends
     ?? (defaultBackendsBuilder !== undefined
       ? await defaultBackendsBuilder({ storeId, },)
       : [new Map<string, string>(),]);
@@ -102,31 +105,61 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     lossyForCircular,
     backends,
 
-    async set(key: string, value: unknown,): Promise<Store> {
+    async set(
+      key: string,
+      value: unknown,
+    ): Promise<Store> {
       defaultLogger.debug(`Store.set: "${key}"`,);
-      const serialized = serializeValue({ value, serializer, lossyForCircular, },);
+      const serialized = serializeValue({
+        value,
+        serializer,
+        lossyForCircular,
+      },);
       const resolvedKey = key.length === 0 ? await hashString(serialized,) : key;
 
       await Promise.all(
         backends.map(async function persistToBackend(backend,) {
-          await backend.set(resolvedKey, serialized,);
+          await backend.set(
+            resolvedKey,
+            serialized,
+          );
         },),
       );
 
-      await evictLruEntry({ lru, key: resolvedKey, backends, logger: defaultLogger, },);
+      await evictLruEntry({
+        lru,
+        key: resolvedKey,
+        backends,
+        logger: defaultLogger,
+      },);
 
       return store;
     },
 
     async get<const T = unknown,>(key: string,): Promise<T | undefined> {
       defaultLogger.debug(`Store.get: "${key}"`,);
-      const results = await queryAllBackends(backends, key,);
-      const canonicalSerialized = resolveConsensus(results, key,);
+      const results = await queryAllBackends(
+        backends,
+        key,
+      );
+      const canonicalSerialized = resolveConsensus(
+        results,
+        key,
+      );
 
-      await healBackends(results, canonicalSerialized, key,);
+      await healBackends(
+        results,
+        canonicalSerialized,
+        key,
+      );
 
       if (canonicalSerialized !== undefined)
-        await evictLruEntry({ lru, key, backends, logger: defaultLogger, },);
+        await evictLruEntry({
+          lru,
+          key,
+          backends,
+          logger: defaultLogger,
+        },);
 
       return canonicalSerialized === undefined
         ? undefined

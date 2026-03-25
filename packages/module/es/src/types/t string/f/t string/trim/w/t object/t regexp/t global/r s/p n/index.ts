@@ -63,11 +63,23 @@ import {
  * which follow the same pattern but remove from only one end of the string.
  */
 export function $(
-  { str, trimmer, }: { str: string; trimmer: Global; },
+  {
+    str,
+    trimmer,
+  }: {
+    str: string;
+    trimmer: Global
+  },
 ): string {
   // First trim from the start
-  const startTrimmed = trimRegexpStart({ str, trimmer, },);
+  const startTrimmed = trimRegexpStart({
+    str,
+    trimmer,
+  },);
 
   // Then trim from the end
-  return trimRegexpEnd({ str: startTrimmed, trimmer, },);
+  return trimRegexpEnd({
+    str: startTrimmed,
+    trimmer,
+  },);
 }

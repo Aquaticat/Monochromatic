@@ -39,7 +39,10 @@ import {
 export function computeLocalXBounds(
   paths: readonly CellPath[],
   cellX: number,
-): { minX: number; maxX: number; } {
+): {
+  minX: number;
+  maxX: number
+} {
   // Mutable accumulators narrowed across all path points
   // -- let needed because we reduce across multiple paths and their points
   let minX = Infinity;
@@ -52,12 +55,21 @@ export function computeLocalXBounds(
 
     points.forEach(function updateBounds([px,],) {
       const localX = px - cellX;
-      minX = Math.min(minX, localX - halfStroke,);
-      maxX = Math.max(maxX, localX + halfStroke,);
+      minX = Math.min(
+        minX,
+        localX - halfStroke,
+      );
+      maxX = Math.max(
+        maxX,
+        localX + halfStroke,
+      );
     },);
   },);
 
-  return { minX, maxX, };
+  return {
+    minX,
+    maxX,
+  };
 }
 
 /**
@@ -85,20 +97,32 @@ export function addFilledPath(
     if (cmd.type === 'M') {
       cx = cmd.x;
       cy = cmd.y;
-      otPath.moveTo(cx - cellX + xShift, fontY(cy,),);
+      otPath.moveTo(
+        cx - cellX + xShift,
+        fontY(cy,),
+      );
     }
     else if (cmd.type === 'L') {
       cx = cmd.x;
       cy = cmd.y;
-      otPath.lineTo(cx - cellX + xShift, fontY(cy,),);
+      otPath.lineTo(
+        cx - cellX + xShift,
+        fontY(cy,),
+      );
     }
     else if (cmd.type === 'H') {
       cx = cmd.x;
-      otPath.lineTo(cx - cellX + xShift, fontY(cy,),);
+      otPath.lineTo(
+        cx - cellX + xShift,
+        fontY(cy,),
+      );
     }
     else if (cmd.type === 'V') {
       cy = cmd.y;
-      otPath.lineTo(cx - cellX + xShift, fontY(cy,),);
+      otPath.lineTo(
+        cx - cellX + xShift,
+        fontY(cy,),
+      );
     }
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- SVG command type discriminant is checked exhaustively
     else if (cmd.type === 'Z') {

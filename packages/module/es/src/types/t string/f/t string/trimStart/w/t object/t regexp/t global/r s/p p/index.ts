@@ -10,6 +10,12 @@ import { $ as named, } from '../p n/index.ts';
  *
  * @returns trimmed string
  */
-export function $(str: string, trimmer: Global,): string {
-  return named({ str, trimmer, },);
+export function $(
+  str: string,
+  trimmer: Global,
+): string {
+  return named({
+    str,
+    trimmer,
+  },);
 }

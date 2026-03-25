@@ -39,7 +39,10 @@ function stopClickPropagation(event: MouseEvent,): void {
  *
  * @returns menu item element
  */
-export function renderButtonItem({ item, onActivate, }: {
+export function renderButtonItem({
+  item,
+  onActivate,
+}: {
   item: ContextMenuItem;
   onActivate: (action: () => void,) => void;
 },): HTMLElement {
@@ -71,14 +74,20 @@ export function renderButtonItem({ item, onActivate, }: {
  *
  * @returns menu item element containing label and input
  */
-export function renderInputItem({ item, onActivate, }: {
+export function renderInputItem({
+  item,
+  onActivate,
+}: {
   item: ContextMenuItem;
   onActivate: (action: () => void,) => void;
 },): HTMLElement {
   const input = h({
     tag: 'input',
     class: 'ctx-input',
-    attrs: { type: 'text', value: item.defaultValue ?? '', },
+    attrs: {
+      type: 'text',
+      value: item.defaultValue ?? '',
+    },
     on: {
       keydown: function handleInputKeydown(event: KeyboardEvent,): void {
         if (event.key === 'Enter') {
@@ -99,7 +108,11 @@ export function renderInputItem({ item, onActivate, }: {
     tag: 'div',
     class: 'ctx-input-row',
     children: [
-      h({ tag: 'span', class: 'ctx-label', text: item.label, },),
+      h({
+        tag: 'span',
+        class: 'ctx-label',
+        text: item.label,
+      },),
       input,
     ],
   },);

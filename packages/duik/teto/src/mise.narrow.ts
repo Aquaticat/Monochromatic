@@ -21,7 +21,11 @@ import { join, } from 'node:path';
 import { transformSvg, } from './narrow-svg.ts';
 
 /** Directory containing individual body part SVG files. */
-const PARTS_DIR = join(import.meta.dirname, '..', 'parts',);
+const PARTS_DIR = join(
+  import.meta.dirname,
+  '..',
+  'parts',
+);
 
 /**
  * Single-pass narrowing factors from original coordinates.
@@ -66,15 +70,27 @@ console.error('--- Narrowing SVG parts ---',);
 console.error('',);
 
 for (const [partName, factor,] of Object.entries(PART_FACTORS,)) {
-  const filePath = join(PARTS_DIR, `${partName}.svg`,);
-  const original = readFileSync(filePath, 'utf8',);
-  const transformed = transformSvg(original, factor,);
+  const filePath = join(
+    PARTS_DIR,
+    `${partName}.svg`,
+  );
+  const original = readFileSync(
+    filePath,
+    'utf8',
+  );
+  const transformed = transformSvg(
+    original,
+    factor,
+  );
 
   /** Count how many coordinates changed. */
   const origNums = original.match(/[-\d.]+/g,)?.length ?? 0;
   const transNums = transformed.match(/[-\d.]+/g,)?.length ?? 0;
 
-  writeFileSync(filePath, transformed,);
+  writeFileSync(
+    filePath,
+    transformed,
+  );
   console.error(
     `  ${partName}: factor=${factor}  (${origNums} nums -> ${transNums} nums)`,
   );

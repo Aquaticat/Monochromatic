@@ -26,7 +26,10 @@ export type PointerHandlerDeps = {
   /** Returns the currently active tool mode */
   getToolMode: () => ToolMode;
   /** Returns current canvas dimensions in CSS pixels */
-  getCanvasSize: () => { cw: number; ch: number; };
+  getCanvasSize: () => {
+    cw: number;
+    ch: number
+  };
   /** Text layer element for eraser hit testing */
   textLayer: HTMLDivElement;
   /** Pushes current state to undo history after a completed action */

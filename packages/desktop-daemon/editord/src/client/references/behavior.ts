@@ -16,11 +16,26 @@ import type { ReferenceLocation, } from './types.ts';
  */
 export function createReferenceAnchor(): HTMLDivElement {
   const anchor = document.createElement('div',);
-  anchor.style.setProperty('position', 'fixed',);
-  anchor.style.setProperty('anchor-name', '--ref-anchor',);
-  anchor.style.setProperty('inline-size', '2px',);
-  anchor.style.setProperty('pointer-events', 'none',);
-  anchor.style.setProperty('z-index', '9999',);
+  anchor.style.setProperty(
+    'position',
+    'fixed',
+  );
+  anchor.style.setProperty(
+    'anchor-name',
+    '--ref-anchor',
+  );
+  anchor.style.setProperty(
+    'inline-size',
+    '2px',
+  );
+  anchor.style.setProperty(
+    'pointer-events',
+    'none',
+  );
+  anchor.style.setProperty(
+    'z-index',
+    '9999',
+  );
   return anchor;
 }
 
@@ -35,15 +50,29 @@ export function createReferenceAnchor(): HTMLDivElement {
  *
  * @param cursorHeight - height of the editor cursor (pixels)
  */
-export function positionAnchor({ anchor, x, y, cursorHeight, }: {
+export function positionAnchor({
+  anchor,
+  x,
+  y,
+  cursorHeight,
+}: {
   anchor: HTMLDivElement;
   x: number;
   y: number;
   cursorHeight: number;
 },): void {
-  anchor.style.setProperty('inset-inline-start', `${x}px`,);
-  anchor.style.setProperty('inset-block-start', `${y}px`,);
-  anchor.style.setProperty('block-size', `${cursorHeight}px`,);
+  anchor.style.setProperty(
+    'inset-inline-start',
+    `${x}px`,
+  );
+  anchor.style.setProperty(
+    'inset-block-start',
+    `${y}px`,
+  );
+  anchor.style.setProperty(
+    'block-size',
+    `${cursorHeight}px`,
+  );
 }
 
 /**
@@ -56,11 +85,25 @@ export function positionAnchor({ anchor, x, y, cursorHeight, }: {
 export function renderReferenceItems(
   { locations, }: { locations: ReferenceLocation[]; },
 ): HTMLElement[] {
-  return locations.map(function renderItem(loc, index,) {
-    const item = h({ tag: 'div', class: 'item', },);
+  return locations.map(function renderItem(
+    loc,
+    index,
+  ) {
+    const item = h({
+      tag: 'div',
+      class: 'item',
+    },);
     item.append(
-      h({ tag: 'span', class: 'item-path', text: loc.label, },),
-      h({ tag: 'span', class: 'line-num', text: `:${String(loc.line + 1,)}`, },),
+      h({
+        tag: 'span',
+        class: 'item-path',
+        text: loc.label,
+      },),
+      h({
+        tag: 'span',
+        class: 'line-num',
+        text: `:${String(loc.line + 1,)}`,
+      },),
     );
     /** Without dataset: prefer-dom-node-dataset lint error for setAttribute on data- attributes. */
     if (index === 0)
@@ -76,7 +119,10 @@ export function renderReferenceItems(
  *
  * @param selectedIndex - index of the newly selected item
  */
-export function updateItemSelection({ list, selectedIndex, }: {
+export function updateItemSelection({
+  list,
+  selectedIndex,
+}: {
   list: HTMLDivElement;
   selectedIndex: number;
 },): void {
@@ -104,7 +150,11 @@ export function updateItemSelection({ list, selectedIndex, }: {
  *
  * @returns new selected index (wraps around)
  */
-export function computeNextIndex({ current, total, direction, }: {
+export function computeNextIndex({
+  current,
+  total,
+  direction,
+}: {
   current: number;
   total: number;
   direction: 'up' | 'down';

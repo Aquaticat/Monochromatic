@@ -11,6 +11,10 @@ import {
   runInContainer,
 } from '../container.ts';
 import {
+  l,
+  tagged,
+} from '../log.ts';
+import {
   runInContainerTimed,
   type TimedContainerResult,
 } from './perf.ts';
@@ -57,15 +61,25 @@ export async function scoreImpl(
   context: ScoreContext,
   caches: ProbeFactoryCaches,
 ): Promise<number> {
+  /** Probe-specific logger for scoring messages. */
+  const rl = tagged({
+    tag: config.name,
+    l: tagged({
+      tag: context.label,
+      l,
+    },),
+  },);
   /** Extraction result: source code and whether a fenced block was found */
   const extraction = tryExtractCode(response,);
   if (!extraction.fenced) {
-    console.log(
-      `  [${context.label}:${config.name}] no fenced code block found in response`,
-    );
+    rl.info('no fenced code block found in response',);
     // Still lint the raw response so artifacts are written for debugging,
     // but score is forced to 0 since the model didn't follow the output format.
-    await lintAndLog(extraction.source, config.name, context,);
+    await lintAndLog(
+      extraction.source,
+      config.name,
+      context,
+    );
     return 0;
   }
 
@@ -73,34 +87,65 @@ export async function scoreImpl(
   const rawSource = extraction.source;
   /** Source after probe-level transform, with reject flag for constraint violations */
   const transformed = config.transformSource !== undefined
-    ? config.transformSource(rawSource, context,)
-    : { reject: false, source: rawSource, };
+    ? config.transformSource(
+      rawSource,
+      context,
+    )
+    : {
+      reject: false,
+      source: rawSource,
+    };
 
   /** Final source to execute in containers */
   const { source, } = transformed;
 
   // Launch all container runs in parallel: correctness + lint + perf + additional
   /** Main correctness container promise */
-  const correctnessPromise = runInContainer(source, config.testInput, context.signal,);
+  const correctnessPromise = runInContainer(
+    source,
+    config.testInput,
+    context.signal,
+  );
   /** Lint analysis promise */
-  const lintPromise = lintAndLog(source, config.name, context,);
+  const lintPromise = lintAndLog(
+    source,
+    config.name,
+    context,
+  );
   /** Perf container promise (undefined when no perfTest configured) */
   const perfPromise = config.perfTest !== undefined
-    ? runInContainerTimed(source, config.perfTest.input, context.signal,)
+    ? runInContainerTimed(
+      source,
+      config.perfTest.input,
+      context.signal,
+    )
     : undefined;
   /** Additional run container promises (empty array when no additional runs) */
   const additionalPromise = config.additionalRuns !== undefined
-    ? executeAdditionalRuns(source, config.additionalRuns, context.signal,)
+    ? executeAdditionalRuns(
+      source,
+      config.additionalRuns,
+      context.signal,
+    )
     : undefined;
 
-  const [result, lint,] = await Promise.all([correctnessPromise, lintPromise,],);
+  const [result, lint,] = await Promise.all([
+    correctnessPromise,
+    lintPromise,
+  ],);
   const perfResult = perfPromise !== undefined ? await perfPromise : undefined;
   const additionalResults = additionalPromise !== undefined
     ? await additionalPromise
     : undefined;
 
-  caches.lint.set(context.label, lint,);
-  caches.container.set(context.label, result,);
+  caches.lint.set(
+    context.label,
+    lint,
+  );
+  caches.container.set(
+    context.label,
+    result,
+  );
 
   // Cache and verify additional runs
   if (additionalResults !== undefined && config.additionalRuns !== undefined) {
@@ -113,18 +158,28 @@ export async function scoreImpl(
     );
   }
 
-  const perfMultiplier = cacheAndComputePerfMultiplier(config, context, caches,
-    perfResult,);
+  const perfMultiplier = cacheAndComputePerfMultiplier(
+    config,
+    context,
+    caches,
+    perfResult,
+  );
 
   if (transformed.reject)
-    return combinedScore(0, lint,) * perfMultiplier;
+    return combinedScore(
+      0,
+      lint,
+    ) * perfMultiplier;
   if (result.timedOut || result.exitCode !== 0) {
-    console.log(
-      `  [${context.label}:${config.name}] container failed: exit=${
+    rl.info(
+      `container failed: exit=${
         String(result.exitCode,)
       } timedOut=${String(result.timedOut,)}`,
     );
-    return combinedScore(0, lint,) * perfMultiplier;
+    return combinedScore(
+      0,
+      lint,
+    ) * perfMultiplier;
   }
 
   const { correctness: mainCorrectness, } = config.verify(result,);
@@ -144,6 +199,12 @@ export async function scoreImpl(
       : [];
 
   /** Combined correctness: minimum of main and all additional runs */
-  const overallCorrectness = Math.min(mainCorrectness, ...additionalCorrectnesses,);
-  return combinedScore(overallCorrectness, lint,) * perfMultiplier;
+  const overallCorrectness = Math.min(
+    mainCorrectness,
+    ...additionalCorrectnesses,
+  );
+  return combinedScore(
+    overallCorrectness,
+    lint,
+  ) * perfMultiplier;
 }

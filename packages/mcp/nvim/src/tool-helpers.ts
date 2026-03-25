@@ -71,7 +71,10 @@ export function buildHeader(files: readonly CurrentFile[],): string {
     return `path: ${firstFile.path}\nfiletype: ${firstFile.filetype}\nmodified: ${firstFile.modified}`;
 
   return files
-    .map(function formatEntry(file, index,) {
+    .map(function formatEntry(
+      file,
+      index,
+    ) {
       return `[instance ${
         index + 1
       }] path: ${file.path} | filetype: ${file.filetype} | modified: ${file.modified}`;

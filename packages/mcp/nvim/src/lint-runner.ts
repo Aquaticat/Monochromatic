@@ -59,31 +59,52 @@ export async function runOxlint(
   { files, }: { files: readonly string[]; },
 ): Promise<LintResult> {
   if (files.length === 0)
-    return { diagnostics: new Map(), notes: [], };
+    return {
+      diagnostics: new Map(),
+      notes: [],
+    };
 
   /** First file's directory as starting point for config search. */
   const [firstFile,] = files;
   if (firstFile === undefined)
-    return { diagnostics: new Map(), notes: [], };
-  const configDir = findAncestorWithFile(dirname(firstFile,), '.oxlintrc.json',);
+    return {
+      diagnostics: new Map(),
+      notes: [],
+    };
+  const configDir = findAncestorWithFile(
+    dirname(firstFile,),
+    '.oxlintrc.json',
+  );
   if (configDir === null) {
     console.error('[mcp-nvim] Could not find .oxlintrc.json in any ancestor directory',);
-    return { diagnostics: new Map(), notes: [], };
+    return {
+      diagnostics: new Map(),
+      notes: [],
+    };
   }
-  const configPath = resolve(configDir, '.oxlintrc.json',);
+  const configPath = resolve(
+    configDir,
+    '.oxlintrc.json',
+  );
 
   //region Group files by tsconfig ancestor -- each group runs in its own cwd
   const groupsByPackageRoot = new Map<string, string[]>();
   const filesWithoutTsconfig: string[] = [];
 
   for (const filePath of files) {
-    const packageRoot = findAncestorWithFile(dirname(filePath,), 'tsconfig.json',);
+    const packageRoot = findAncestorWithFile(
+      dirname(filePath,),
+      'tsconfig.json',
+    );
     if (packageRoot !== null) {
       const existing = groupsByPackageRoot.get(packageRoot,);
       if (existing !== undefined)
         existing.push(filePath,);
       else
-        groupsByPackageRoot.set(packageRoot, [filePath,],);
+        groupsByPackageRoot.set(
+          packageRoot,
+          [filePath,],
+        );
     }
     else {
       filesWithoutTsconfig.push(filePath,);
@@ -130,11 +151,20 @@ export async function runOxlint(
   ],);
 
   for (const resultMap of packageResults)
-    mergeInto(merged, resultMap,);
+    mergeInto(
+      merged,
+      resultMap,
+    );
   if (fallbackResult !== null)
-    mergeInto(merged, fallbackResult,);
+    mergeInto(
+      merged,
+      fallbackResult,
+    );
 
-  return { diagnostics: merged, notes, };
+  return {
+    diagnostics: merged,
+    notes,
+  };
 }
 
 //endregion Runner
@@ -148,15 +178,20 @@ export async function runOxlint(
  *
  * @param source - Map to merge from.
  */
-function mergeInto(target: Map<string, Diagnostic[]>,
-  source: Map<string, Diagnostic[]>,): void
+function mergeInto(
+  target: Map<string, Diagnostic[]>,
+  source: Map<string, Diagnostic[]>,
+): void
 {
   for (const [filePath, diagnostics,] of source) {
     const existing = target.get(filePath,);
     if (existing !== undefined)
       existing.push(...diagnostics,);
     else
-      target.set(filePath, [...diagnostics,],);
+      target.set(
+        filePath,
+        [...diagnostics,],
+      );
   }
 }
 

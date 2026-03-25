@@ -36,7 +36,12 @@ import { renderBaseCanvas, } from './export.ts';
  * });
  * ```
  */
-export async function renderPageCanvas({ svgBackground, strokes, container, overlay, }: {
+export async function renderPageCanvas({
+  svgBackground,
+  strokes,
+  container,
+  overlay,
+}: {
   svgBackground: string;
   strokes: readonly StrokeData[];
   container: HTMLDivElement;

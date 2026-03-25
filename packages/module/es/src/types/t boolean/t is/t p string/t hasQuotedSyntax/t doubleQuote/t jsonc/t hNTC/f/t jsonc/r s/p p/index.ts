@@ -45,9 +45,15 @@ export function $(value: Jsonc,): value is HasNoTrailingCommas {
     const endInclusive = (potentialTrailingComma
       .index + potentialTrailingComma[0].length) as Int;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- constructing branded RangeInt from verified Int values
-    const rangeInt = { startInclusive, endInclusive, } as RangeInt;
+    const rangeInt = {
+      startInclusive,
+      endInclusive,
+    } as RangeInt;
 
-    const rangeIntWInQuotesInfo = inQuotes({ value: rangeInt, strs: [value,], },);
+    const rangeIntWInQuotesInfo = inQuotes({
+      value: rangeInt,
+      strs: [value,],
+    },);
 
     // return false for the entire fn on not-in-quotes
 

@@ -44,7 +44,9 @@ export function wireKeybindings({
   referencesPopup,
   hoverPopup,
 }: KeybindingDeps,): void {
-  document.addEventListener('keydown', function handleKeydown(event,) {
+  document.addEventListener(
+    'keydown',
+    function handleKeydown(event,) {
     if ((event.ctrlKey || event.metaKey) && event.key === 's') {
       event.preventDefault();
       saveCurrentFile();
@@ -120,5 +122,6 @@ export function wireKeybindings({
     }
     if (event.key === 'Escape')
       hoverPopup.hide();
-  },);
+  },
+  );
 }

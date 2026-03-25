@@ -12,6 +12,9 @@ import { $ as named, } from '../p n/index.ts';
  */
 export function $<const T,>(
   myIterable: MaybeAsyncIterable<T>,
-): AsyncGenerator<{ element: T; index: Int & (Positive | 0); }> {
+): AsyncGenerator<{
+  element: T;
+  index: Int & (Positive | 0)
+}> {
   return named({ myIterable, },);
 }

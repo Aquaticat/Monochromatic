@@ -1,4 +1,7 @@
-import type { Formatters, Locales, } from './i18n-types.ts';
+import type {
+  Formatters,
+  Locales,
+} from './i18n-types.ts';
 
 /**
  * Initializes locale-specific formatters.

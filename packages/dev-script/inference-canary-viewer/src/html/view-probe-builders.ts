@@ -30,7 +30,10 @@ export function buildCrossModelPoints(
     return probe in entry.probeScores;
   },);
 
-  return relevant.map(function toPoint(entry, index,): ScatterPoint {
+  return relevant.map(function toPoint(
+    entry,
+    index,
+  ): ScatterPoint {
     const score = entry.probeScores[probe] ?? 0;
     const pass2Score = entry.pass2Scores?.[probe];
     const color = vendorColor(entry.model,);
@@ -43,7 +46,10 @@ export function buildCrossModelPoints(
       pass2Score,
       color,
       icon: vendorIcon(entry.model,),
-      title: `${entry.label} ${entry.timestamp.slice(0, 10,)}: ${score.toFixed(2,)}${
+      title: `${entry.label} ${entry.timestamp.slice(
+        0,
+        10,
+      )}: ${score.toFixed(2,)}${
         pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
       }`,
       failed: entry.failed,
@@ -86,7 +92,10 @@ export function buildSingleModelPoints(
     return entry.label === label && probe in entry.probeScores;
   },);
 
-  return relevant.map(function toPoint(entry, index,): ScatterPoint {
+  return relevant.map(function toPoint(
+    entry,
+    index,
+  ): ScatterPoint {
     const score = entry.probeScores[probe] ?? 0;
     const pass2Score = entry.pass2Scores?.[probe];
     const runId = `${label}-${probe}-${entry.timestamp}`;
@@ -98,7 +107,10 @@ export function buildSingleModelPoints(
       pass2Score,
       color,
       icon: vendorIcon(openrouterId,),
-      title: `${entry.timestamp.slice(0, 10,)}: ${score.toFixed(2,)}${
+      title: `${entry.timestamp.slice(
+        0,
+        10,
+      )}: ${score.toFixed(2,)}${
         pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
       }`,
       failed: entry.failed,

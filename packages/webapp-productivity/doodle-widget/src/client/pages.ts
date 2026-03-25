@@ -59,12 +59,19 @@ let currentIndex = 0;
  *
  * @param overlay - SVG overlay element to set initial background
  */
-export function initPages({ backgrounds, overlay, }: {
+export function initPages({
+  backgrounds,
+  overlay,
+}: {
   backgrounds: readonly string[];
   overlay: HTMLElement;
 },): void {
   pages = backgrounds.map(function createPage(svg,): PageState {
-    return { strokes: [], textEntries: [], svgBackground: svg, };
+    return {
+      strokes: [],
+      textEntries: [],
+      svgBackground: svg,
+    };
   },);
   currentIndex = 0;
   /** First page state for initial background rendering */
@@ -93,7 +100,10 @@ export function getCurrentPageIndex(): number {
  *
  * @param textLayer - text layer element for serializing current text entries
  */
-function saveCurrentPage({ overlay, textLayer, }: {
+function saveCurrentPage({
+  overlay,
+  textLayer,
+}: {
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
 },): void {
@@ -124,7 +134,14 @@ function saveCurrentPage({ overlay, textLayer, }: {
  *
  * @param textLayer - text layer element
  */
-export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
+export function switchToPage({
+  index,
+  ctx,
+  cw,
+  ch,
+  overlay,
+  textLayer,
+}: {
   index: number;
   ctx: CanvasRenderingContext2D;
   cw: number;
@@ -137,20 +154,30 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
   if (index < 0 || index >= pages.length)
     return;
   endStroke();
-  saveCurrentPage({ overlay, textLayer, },);
+  saveCurrentPage({
+    overlay,
+    textLayer,
+  },);
 
   //region Restore target page
   const targetPage = pages[index];
   if (targetPage === undefined)
     throw new Error(`Page state missing for target index ${String(index,)}`,);
   setStrokes(targetPage.strokes,);
-  replaceTextEntries({ entries: targetPage.textEntries, layer: textLayer,
-    clearFn: clearTextEntries, },);
+  replaceTextEntries({
+    entries: targetPage.textEntries,
+    layer: textLayer,
+    clearFn: clearTextEntries,
+  },);
   overlay.innerHTML = targetPage.svgBackground;
   currentIndex = index;
   //endregion Restore target page
 
-  redraw({ ctx, cw, ch, },);
+  redraw({
+    ctx,
+    cw,
+    ch,
+  },);
 }
 
 /**
@@ -174,11 +201,17 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
  * }
  * ```
  */
-export function snapshotAllPages({ overlay, textLayer, }: {
+export function snapshotAllPages({
+  overlay,
+  textLayer,
+}: {
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
 },): readonly PageState[] {
   endStroke();
-  saveCurrentPage({ overlay, textLayer, },);
+  saveCurrentPage({
+    overlay,
+    textLayer,
+  },);
   return [...pages,];
 }

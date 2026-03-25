@@ -48,7 +48,10 @@ export function maxWidthInRange(
   profile: WidthProfile,
   relYStart: number,
   relYEnd: number,
-): { width: number; relY: number; } {
+): {
+  width: number;
+  relY: number
+} {
   const yStart = Math.round(relYStart * profile.imageHeight,);
   const yEnd = Math.round(relYEnd * profile.imageHeight,);
   let maxW = 0;
@@ -61,7 +64,10 @@ export function maxWidthInRange(
     }
   }
 
-  return { width: maxW, relY: maxY / profile.imageHeight, };
+  return {
+    width: maxW,
+    relY: maxY / profile.imageHeight,
+  };
 }
 
 /**
@@ -79,7 +85,10 @@ export function minWidthInRange(
   profile: WidthProfile,
   relYStart: number,
   relYEnd: number,
-): { width: number; relY: number; } {
+): {
+  width: number;
+  relY: number
+} {
   const yStart = Math.round(relYStart * profile.imageHeight,);
   const yEnd = Math.round(relYEnd * profile.imageHeight,);
   let minW = Infinity;
@@ -92,7 +101,10 @@ export function minWidthInRange(
     }
   }
 
-  return { width: minW === Infinity ? 0 : minW, relY: minY / profile.imageHeight, };
+  return {
+    width: minW === Infinity ? 0 : minW,
+    relY: minY / profile.imageHeight,
+  };
 }
 
 /**
@@ -104,14 +116,26 @@ export function minWidthInRange(
  */
 export function contentBounds(profile: WidthProfile,): ContentBoundsResult {
   if (profile.rows.length === 0)
-    return { top: 0, bottom: 0, totalHeight: 0, };
+    return {
+      top: 0,
+      bottom: 0,
+      totalHeight: 0,
+    };
   const [firstRow,] = profile.rows;
   if (firstRow === undefined)
-    return { top: 0, bottom: 0, totalHeight: 0, };
+    return {
+      top: 0,
+      bottom: 0,
+      totalHeight: 0,
+    };
   const top = firstRow.y;
   const lastRow = profile.rows.at(-1,);
   if (lastRow === undefined)
-    return { top: 0, bottom: 0, totalHeight: 0, };
+    return {
+      top: 0,
+      bottom: 0,
+      totalHeight: 0,
+    };
   const bottom = lastRow.y;
   return {
     top: top / profile.imageHeight,
@@ -145,7 +169,10 @@ export function contentToAbsY(
  *
  * @returns formatted ratio string
  */
-export function fmtRatio(cmpVal: number, refVal: number,): string {
+export function fmtRatio(
+  cmpVal: number,
+  refVal: number,
+): string {
   if (refVal === 0)
     return 'N/A';
   return (cmpVal / refVal).toFixed(2,);

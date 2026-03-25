@@ -74,7 +74,10 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
     .prepare(SQL_SELECT_BLOCKED_INBOX,)
     .all() as (TaskRow & { blocker_id: string; })[];
   return rows.map(function toBlockedLink(row,) {
-    return { blockerId: row.blocker_id, task: mapTask(row,), };
+    return {
+      blockerId: row.blocker_id,
+      task: mapTask(row,),
+    };
   },);
 }
 
@@ -138,17 +141,25 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
       normalizedSearchQuery,
     ) as (TaskRow & { is_blocked: number; })[];
     return rows.map(function toSearchTask(row,) {
-      return { ...mapTask(row,), isBlocked: row.is_blocked === 1, };
+      return {
+        ...mapTask(row,),
+        isBlocked: row.is_blocked === 1,
+      };
     },);
   }
   catch {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database LIKE query
     const rows = await db
       .prepare(SQL_SEARCH_LIKE,)
-      .all(`%${normalizedSearchQuery}%`,
-        `%${normalizedSearchQuery}%`,) as (TaskRow & { is_blocked: number; })[];
+      .all(
+        `%${normalizedSearchQuery}%`,
+        `%${normalizedSearchQuery}%`,
+      ) as (TaskRow & { is_blocked: number; })[];
     return rows.map(function toSearchTask(row,) {
-      return { ...mapTask(row,), isBlocked: row.is_blocked === 1, };
+      return {
+        ...mapTask(row,),
+        isBlocked: row.is_blocked === 1,
+      };
     },);
   }
 }

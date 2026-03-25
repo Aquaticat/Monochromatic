@@ -37,8 +37,7 @@ export const argumentPerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      argumentPerLine:
-        'Each function call argument must be on its own line.',
+      argumentPerLine: 'Each function call argument must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -59,7 +58,10 @@ export const argumentPerLine: CreateOnceRule = {
         container: callNode,
         items: args,
         messageId: 'argumentPerLine',
-        bracketPair: { open: '(', close: ')', },
+        bracketPair: {
+          open: '(',
+          close: ')',
+        },
       },);
     }
 

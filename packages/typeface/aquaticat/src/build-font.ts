@@ -44,14 +44,27 @@ import {
 const scriptDir = dirname(new URL(import.meta.url,).pathname,);
 
 /** Absolute path to the master glyph strip SVG. */
-const svgPath = resolve(scriptDir, 'glyphs.svg',);
+const svgPath = resolve(
+  scriptDir,
+  'glyphs.svg',
+);
 
 /** Output directory for generated font files. */
-const distDir = resolve(scriptDir, '..', 'dist',);
+const distDir = resolve(
+  scriptDir,
+  '..',
+  'dist',
+);
 
-console.log('Reading glyph SVG:', svgPath,);
+console.log(
+  'Reading glyph SVG:',
+  svgPath,
+);
 /** Raw SVG file content. */
-const svgContent = readFileSync(svgPath, 'utf8',);
+const svgContent = readFileSync(
+  svgPath,
+  'utf8',
+);
 /** Parsed glyph cells from the SVG strip. */
 const cells = parseSvg(svgContent,);
 console.log(`Parsed ${cells.length} glyph cells`,);
@@ -74,13 +87,22 @@ const spaceGlyph = new opentype.Glyph({
 
 /** Assembled letter glyphs from the parsed SVG cells. */
 const letterGlyphs = cells.flatMap(
-  function buildGlyph(cell, cellIndex,): opentype.Glyph[] {
+  function buildGlyph(
+    cell,
+    cellIndex,
+  ): opentype.Glyph[] {
     const unicode = CELL_UNICODE[cellIndex];
     if (unicode === undefined)
       return [];
 
     const letterName = String.fromCodePoint(unicode,);
-    const { minX, maxX, } = computeLocalXBounds(cell.paths, cell.xOffset,);
+    const {
+      minX,
+      maxX,
+    } = computeLocalXBounds(
+      cell.paths,
+      cell.xOffset,
+    );
     const xShift = SIDE_BEARING - minX;
     const advanceWidth = maxX - minX + 2 * SIDE_BEARING;
 
@@ -88,9 +110,20 @@ const letterGlyphs = cells.flatMap(
     cell.paths.forEach(function addCellPath(cellPath,) {
       const commands = parseSvgPathD(cellPath.d,);
       if (cellPath.isStroked)
-        addStrokedPath(path, commands, cellPath.strokeWidth, cell.xOffset, xShift,);
+        addStrokedPath(
+          path,
+          commands,
+          cellPath.strokeWidth,
+          cell.xOffset,
+          xShift,
+        );
       else
-        addFilledPath(path, commands, cell.xOffset, xShift,);
+        addFilledPath(
+          path,
+          commands,
+          cell.xOffset,
+          xShift,
+        );
     },);
 
     console.log(
@@ -113,18 +146,34 @@ const font = new opentype.Font({
   unitsPerEm: UNITS_PER_EM,
   ascender: ASCENDER,
   descender: DESCENDER,
-  glyphs: [notdefGlyph, spaceGlyph, ...letterGlyphs,],
+  glyphs: [
+    notdefGlyph,
+    spaceGlyph,
+    ...letterGlyphs,
+  ],
 },);
 
-mkdirSync(distDir, { recursive: true, },);
+mkdirSync(
+  distDir,
+  { recursive: true, },
+);
 
 /** Output path for the OTF font file. */
-const otfPath = resolve(distDir, 'Aquaticat-Regular.otf',);
+const otfPath = resolve(
+  distDir,
+  'Aquaticat-Regular.otf',
+);
 /** Raw OTF binary data. */
 const buffer = font.toArrayBuffer();
-writeFileSync(otfPath, Buffer.from(buffer,),);
+writeFileSync(
+  otfPath,
+  Buffer.from(buffer,),
+);
 console.log(`Wrote ${otfPath} (${buffer.byteLength} bytes)`,);
 
-await convertToWoff2(otfPath, distDir,);
+await convertToWoff2(
+  otfPath,
+  distDir,
+);
 
 //endregion Main build

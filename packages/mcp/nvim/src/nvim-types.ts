@@ -93,7 +93,10 @@ export function normalizeMessage(message: string,): string {
   const helpIndex = message.indexOf('\nhelp: ',);
   if (helpIndex === -1)
     return message;
-  const mainMessage = message.slice(0, helpIndex,);
+  const mainMessage = message.slice(
+    0,
+    helpIndex,
+  );
   const helpText = message.slice(helpIndex + '\nhelp: '.length,);
   return `${mainMessage} (help: ${helpText})`;
 }

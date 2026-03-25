@@ -30,7 +30,10 @@ export const INLAY_STYLES = [
       display: 'block',
       'inline-size': 'fit-content',
       color: cssVar('inlay-fg',),
-      'font-family': cssCommaList(["'Inter'", 'sans-serif',],),
+      'font-family': cssCommaList([
+        "'Inter'",
+        'sans-serif',
+      ],),
       'pointer-events': 'none',
       'user-select': 'none',
       'white-space': 'pre-wrap',

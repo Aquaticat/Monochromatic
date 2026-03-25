@@ -40,8 +40,9 @@ export function paramsNeedFix(
   ) === lineAt(
     sourceText,
     firstRange[0],
-  ))
+  )) {
     return true;
+  }
 
   const lastRange = rangeOf(at(
     params,
@@ -53,8 +54,9 @@ export function paramsNeedFix(
   ) === lineAt(
     sourceText,
     closeParen,
-  ))
+  )) {
     return true;
+  }
 
   for (let i = 1; i < params.length; i++) {
     const prevRange = rangeOf(at(
@@ -71,8 +73,9 @@ export function paramsNeedFix(
     ) === lineAt(
       sourceText,
       currRange[0],
-    ))
+    )) {
       return true;
+    }
   }
 
   return false;
@@ -116,7 +119,9 @@ export function buildParamFix(
   const childIndent = `${baseIndent}  `;
 
   const paramTexts = params.map(
-    function getParamText(p,): string { return context.sourceCode.getText(p,).trim(); },
+    function getParamText(p,): string {
+      return context.sourceCode.getText(p,).trim();
+    },
   );
 
   /** Check trailing comma. */
@@ -130,14 +135,16 @@ export function buildParamFix(
   );
   const hasTrailing = between.includes(',',);
 
-  const formatted = paramTexts.map(function fmt(
-    text,
-    idx,
-  ): string {
-    const isLast = idx === paramTexts.length - 1;
-    const comma = isLast && !hasTrailing ? '' : ',';
-    return `${childIndent}${text}${comma}`;
-  },).join('\n',);
+  const formatted = paramTexts
+    .map(function fmt(
+      text,
+      idx,
+    ): string {
+      const isLast = idx === paramTexts.length - 1;
+      const comma = isLast && !hasTrailing ? '' : ',';
+      return `${childIndent}${text}${comma}`;
+    },)
+    .join('\n',);
 
   /** Replace from `(` through `)` inclusive. */
   const replacement = `(\n${formatted}\n${baseIndent})`;
@@ -145,7 +152,7 @@ export function buildParamFix(
   return fixer.replaceTextRange(
     [
       openParen,
-      closeParen + 1
+      closeParen + 1,
     ],
     replacement,
   );

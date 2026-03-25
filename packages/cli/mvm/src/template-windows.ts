@@ -61,8 +61,14 @@ import {
  * ```
  */
 export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<string> {
-  const rl = tagged({ tag: ensureWindowsTemplate.name, l, },);
-  const templatePath = join(IMAGES_DIR, spec.templateFileName,);
+  const rl = tagged({
+    tag: ensureWindowsTemplate.name,
+    l,
+  },);
+  const templatePath = join(
+    IMAGES_DIR,
+    spec.templateFileName,
+  );
 
   rl.info(`creating Windows template ${spec.templateFileName} from evaluation ISO...`,);
   rl.info('this will take 15-30 minutes for unattended Windows installation',);
@@ -73,17 +79,32 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     ensureVirtioWin(),
   ],);
 
-  const vmDir = join(VMS_DIR, TEMPLATE_VM_NAME,);
-  await mkdir(vmDir, { recursive: true, },);
+  const vmDir = join(
+    VMS_DIR,
+    TEMPLATE_VM_NAME,
+  );
+  await mkdir(
+    vmDir,
+    { recursive: true, },
+  );
 
-  const diskPath = join(vmDir, 'disk.qcow2',);
+  const diskPath = join(
+    vmDir,
+    'disk.qcow2',
+  );
 
   await using _cleanup = templateVmGuard(rl,);
 
   rl.info('creating empty disk for Windows installation...',);
   await spawn({
     command: 'qemu-img',
-    args: ['create', '-f', 'qcow2', diskPath, WINDOWS_DISK_SIZE,],
+    args: [
+      'create',
+      '-f',
+      'qcow2',
+      diskPath,
+      WINDOWS_DISK_SIZE,
+    ],
   },);
 
   // Generate autounattend ISO with answer file for unattended install
@@ -91,8 +112,14 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     hostname: TEMPLATE_VM_NAME,
     imageIndex: spec.imageIndex,
   },);
-  const autounattendIsoPath = join(vmDir, 'autounattend.iso',);
-  await writeFile(autounattendIsoPath, autounattendIso,);
+  const autounattendIsoPath = join(
+    vmDir,
+    'autounattend.iso',
+  );
+  await writeFile(
+    autounattendIsoPath,
+    autounattendIso,
+  );
 
   const xml = domainXml({
     bootDev: 'cdrom',
@@ -107,21 +134,36 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     osFamily: 'windows',
   },);
 
-  await defineVm({ vmDir, xml, },);
+  await defineVm({
+    vmDir,
+    xml,
+  },);
   await startVm({ name: TEMPLATE_VM_NAME, },);
 
   rl.info('Windows installation in progress (waiting for guest agent)...',);
-  await waitForGuestAgent({ name: TEMPLATE_VM_NAME,
-    timeoutMs: WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS, },);
+  await waitForGuestAgent({
+    name: TEMPLATE_VM_NAME,
+    timeoutMs: WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS,
+  },);
 
   // Phase 1 complete: Windows installed with SATA disk, VirtIO drivers installed.
   // Switch to VirtIO disk bus and verify Windows boots with VirtIO storage.
-  await verifyVirtioBoot({ vmDir, diskPath, rl, },);
+  await verifyVirtioBoot({
+    vmDir,
+    diskPath,
+    rl,
+  },);
 
   rl.info('converting disk to standalone template image...',);
   await spawn({
     command: 'qemu-img',
-    args: ['convert', '-O', 'qcow2', diskPath, templatePath,],
+    args: [
+      'convert',
+      '-O',
+      'qcow2',
+      diskPath,
+      templatePath,
+    ],
   },);
 
   rl.info(`Windows template image saved to ${templatePath}`,);

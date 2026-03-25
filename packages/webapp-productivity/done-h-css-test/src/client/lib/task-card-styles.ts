@@ -32,19 +32,36 @@ const CHIP_GAP = 1 / 2 / 2;
 export const TASK_CARD_STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: cssVar('min-gap',), 'background-color': cssVar('bg',),
-      'overflow-x': 'hidden', 'overflow-y': 'hidden', cursor: 'pointer', },
+    decls: {
+      ...flexColumn(),
+      gap: cssVar('min-gap',),
+      'background-color': cssVar('bg',),
+      'overflow-x': 'hidden',
+      'overflow-y': 'hidden',
+      cursor: 'pointer',
+    },
   },),
   css({
     rule: '.row',
-    decls: { ...flexRow(), gap: cssVar('min-gap',), 'align-items': 'flex-start', },
+    decls: {
+      ...flexRow(),
+      gap: cssVar('min-gap',),
+      'align-items': 'flex-start',
+    },
   },),
   css({
     rule: '.checkbox',
-    decls: { ...appearanceNone(), ...flexCenter(), 'inline-size': cssRem(2,),
-      'block-size': cssRem(2,), },
+    decls: {
+      ...appearanceNone(),
+      ...flexCenter(),
+      'inline-size': cssRem(2,),
+      'block-size': cssRem(2,),
+    },
     children: [
-      css({ rule: '&:focus-visible', decls: focusOutline(), },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline(),
+      },),
     ],
   },),
   css({
@@ -59,22 +76,38 @@ export const TASK_CARD_STYLES = [
   },),
   css({
     rule: '.title',
-    decls: { 'font-size': cssRem(TITLE_FONT_SIZE,), 'font-weight': 400,
-      'line-height': 'normal', 'flex-grow': 1, 'min-inline-size': 0, },
+    decls: {
+      'font-size': cssRem(TITLE_FONT_SIZE,),
+      'font-weight': 400,
+      'line-height': 'normal',
+      'flex-grow': 1,
+      'min-inline-size': 0,
+    },
   },),
   css({
     rule: '.chips',
     decls: scrollRow(),
   },),
-  css({ rule: '.chips::-webkit-scrollbar', decls: { display: 'none', }, },),
+  css({
+    rule: '.chips::-webkit-scrollbar',
+    decls: { display: 'none', },
+  },),
   css({
     rule: '.chip',
-    decls: { ...flexRow(), ...whitespaceNowrap(), gap: cssRem(CHIP_GAP,),
-      'font-size': cssRem(1,), 'line-height': 1.5, },
+    decls: {
+      ...flexRow(),
+      ...whitespaceNowrap(),
+      gap: cssRem(CHIP_GAP,),
+      'font-size': cssRem(1,),
+      'line-height': 1.5,
+    },
   },),
   css({
     rule: '.chip.blocked',
-    decls: { 'border-color': cssVar('red-fg',), color: cssVar('red-fg',), },
+    decls: {
+      'border-color': cssVar('red-fg',),
+      color: cssVar('red-fg',),
+    },
   },),
 ]
   .join('',);

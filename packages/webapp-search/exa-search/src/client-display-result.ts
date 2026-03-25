@@ -10,7 +10,11 @@ import type {
 import { replicateElementAsContentOf, } from './client-replicate-element.ts';
 
 /** Content options used for search requests requiring text, summary, and highlights. */
-type SearchContents = { text: true; summary: true; highlights: true; };
+type SearchContents = {
+  text: true;
+  summary: true;
+  highlights: true
+};
 
 /**
  * Populates a single result article element with data from an Exa search result.
@@ -82,7 +86,10 @@ export function displayResult(
   );
 
   result.highlights.forEach(
-    function populateHighlight(highlight: string, highlightIndex: number,) {
+    function populateHighlight(
+      highlight: string,
+      highlightIndex: number,
+    ) {
       const currentHighlight = notNullishOrThrow(
         highlights.querySelector<HTMLElement>(`:nth-child(${highlightIndex + 1})`,),
       );

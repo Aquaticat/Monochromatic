@@ -41,7 +41,11 @@
  * ```
  */
 export function* $<T,>(
-  { iterable, toOmit, strict = true, }: {
+  {
+    iterable,
+    toOmit,
+    strict = true,
+  }: {
     iterable: Iterable<T>;
     toOmit: ReadonlySet<T>;
     strict?: boolean;

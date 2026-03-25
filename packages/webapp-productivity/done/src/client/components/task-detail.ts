@@ -53,16 +53,26 @@ class TaskDetail extends HTMLElement {
       // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
       getState: function getState(
         this: TaskDetail,
-      ): { tags: string[]; locations: string[]; priority: string | null;
-        complexity: string | null; }
+      ): {
+        tags: string[];
+        locations: string[];
+        priority: string | null;
+        complexity: string | null
+      }
       {
-        return { tags: this.#tags, locations: this.#locations, priority: this.#priority,
-          complexity: this.#complexity, };
+        return {
+          tags: this.#tags,
+          locations: this.#locations,
+          priority: this.#priority,
+          complexity: this.#complexity,
+        };
       }
         .bind(this,),
-      setState: function setState(this: TaskDetail,
+      setState: function setState(
+        this: TaskDetail,
         update: { tags?: string[]; locations?: string[]; priority?: string | null;
-          complexity?: string | null; },): void
+          complexity?: string | null; },
+      ): void
       {
         if (update.tags !== undefined)
           this.#tags = update.tags as string[];
@@ -92,7 +102,10 @@ class TaskDetail extends HTMLElement {
    * @param data - Task data and configuration
    */
   configure(data: TaskDetailData,): void {
-    console.log('[task-detail] configure() called, mode:', data.mode ?? 'edit',);
+    console.log(
+      '[task-detail] configure() called, mode:',
+      data.mode ?? 'edit',
+    );
     this.#data = data;
     this.#mode = data.mode ?? 'edit';
     this.#tags = [...data.task.tags,];
@@ -108,11 +121,19 @@ class TaskDetail extends HTMLElement {
    *
    * @returns Current metadata values
    */
-  getMetadata(): { tags: string[]; locations: string[]; priority: TaskPriority | null;
-    complexity: TaskComplexity | null; }
+  getMetadata(): {
+    tags: string[];
+    locations: string[];
+    priority: TaskPriority | null;
+    complexity: TaskComplexity | null
+  }
   {
-    return { tags: this.#tags, locations: this.#locations, priority: this.#priority,
-      complexity: this.#complexity, };
+    return {
+      tags: this.#tags,
+      locations: this.#locations,
+      priority: this.#priority,
+      complexity: this.#complexity,
+    };
   }
 
   /** Rebuilds pill elements from current metadata state. */
@@ -124,11 +145,19 @@ class TaskDetail extends HTMLElement {
     if (task === undefined)
       return;
 
-    const pills = buildPillData({ task, tags: this.#tags, locations: this.#locations,
-      priority: this.#priority, complexity: this.#complexity, },);
+    const pills = buildPillData({
+      task,
+      tags: this.#tags,
+      locations: this.#locations,
+      priority: this.#priority,
+      complexity: this.#complexity,
+    },);
     pillsContainer.replaceChildren(
-      ...buildPillElements({ pills, loading: this.#autofill.loading,
-        autofilled: this.#autofill.autofilled, },),
+      ...buildPillElements({
+        pills,
+        loading: this.#autofill.loading,
+        autofilled: this.#autofill.autofilled,
+      },),
     );
   }
 
@@ -137,17 +166,27 @@ class TaskDetail extends HTMLElement {
     const data = this.#data;
     if (data === null)
       return;
-    const { titleInput, } = renderTaskDetail({ shadow: this.#shadow, task: data.task,
-      mode: this.#mode, host: this, },);
+    const { titleInput, } = renderTaskDetail({
+      shadow: this.#shadow,
+      task: data.task,
+      mode: this.#mode,
+      host: this,
+    },);
     this.#updatePillsDisplay();
-    titleInput.addEventListener('input', function onTitleInput(this: TaskDetail,): void {
+    titleInput.addEventListener(
+      'input',
+      function onTitleInput(this: TaskDetail,): void {
       this.#autofill.request(titleInput.value,);
     }
-      .bind(this,),);
+      .bind(this,),
+    );
   }
 }
 
-customElements.define('task-detail', TaskDetail,);
+customElements.define(
+  'task-detail',
+  TaskDetail,
+);
 console.log('[task-detail] custom element registered',);
 
 export { TaskDetail, };

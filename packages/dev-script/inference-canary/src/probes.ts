@@ -6,6 +6,11 @@
  * - **Code-gen** (default): the model writes a TypeScript CLI, scored by correctness + lint + types
  * - **Simulation** (default): the model reads an interpreter source file and traces execution
  */
+import {
+  l,
+  tagged,
+} from './log.ts';
+
 import type { Probe, } from './probe-types.ts';
 
 export type {
@@ -21,7 +26,10 @@ const simpleArithmetic: Probe = {
   category: 'simple',
   system: 'Answer with only the number, nothing else.',
   prompt: 'What is 7 * 8?',
-  score: function scoreArithmetic(response, _context,): number {
+  score: function scoreArithmetic(
+    response,
+    _context,
+  ): number {
     return response.trim() === '56' ? 1 : 0;
   },
 };
@@ -32,7 +40,10 @@ const simpleFormat: Probe = {
   category: 'simple',
   system: 'Follow the formatting instruction exactly. Output nothing else.',
   prompt: 'Output exactly this text with no changes: <<CANARY_OK>>',
-  score: function scoreFormat(response, _context,): number {
+  score: function scoreFormat(
+    response,
+    _context,
+  ): number {
     return response.trim() === '<<CANARY_OK>>' ? 1 : 0;
   },
 };
@@ -44,7 +55,10 @@ const simpleJson: Probe = {
   system: 'Respond with valid JSON only. No markdown fences, no explanation.',
   prompt:
     'Return a JSON object with keys "status" (string "ok") and "value" (number 42).',
-  score: function scoreJson(response, _context,): number {
+  score: function scoreJson(
+    response,
+    _context,
+  ): number {
     try {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse result checked structurally below
       const parsed = JSON.parse(response.trim(),) as Record<string, unknown>;
@@ -57,9 +71,12 @@ const simpleJson: Probe = {
       return PARTIAL_SCORE;
     }
     catch (parseError) {
-      console.log(
-        `[probe:json-output] response was not valid JSON: ${String(parseError,)}`,
-      );
+      /** Probe-specific logger for parse failure. */
+      const rl = tagged({
+        tag: 'json-output',
+        l,
+      },);
+      rl.warn(`response was not valid JSON: ${String(parseError,)}`,);
       return 0;
     }
   },
@@ -68,8 +85,11 @@ const simpleJson: Probe = {
 //endregion Simple probes
 
 /** Simple probes, disabled by default to save money */
-export const simpleProbes: readonly Probe[] = [simpleArithmetic, simpleFormat,
-  simpleJson,];
+export const simpleProbes: readonly Probe[] = [
+  simpleArithmetic,
+  simpleFormat,
+  simpleJson,
+];
 
 export {
   codeGenProbes,

@@ -12,13 +12,19 @@ import type * as Jsonc from '../../../../t/index.ts';
  * @returns merged comment, single comment, or `undefined`
  */
 export function mergeComments(
-  { value, value2, }: {
+  {
+    value,
+    value2,
+  }: {
     value?: undefined;
     value2?: undefined;
   },
 ): undefined;
 export function mergeComments(
-  { value, value2, }: {
+  {
+    value,
+    value2,
+  }: {
     value: Jsonc.Comment;
     value2?: Jsonc.Comment | undefined;
   } | {
@@ -32,8 +38,13 @@ export function mergeComments(
  * @returns merged comment, single comment, or `undefined`
  */
 export function mergeComments(
-  { value, value2, }: { value?: Jsonc.Comment | undefined;
-    value2?: Jsonc.Comment | undefined; },
+  {
+    value,
+    value2,
+  }: {
+    value?: Jsonc.Comment | undefined;
+    value2?: Jsonc.Comment | undefined
+  },
 ): Jsonc.Comment | undefined {
   if (value === undefined)
     return value2;
@@ -46,6 +57,13 @@ export function mergeComments(
   const commentValue = `${value.commentValue}
 ${value2.commentValue}`;
   return value.type === value2.type
-    ? { ...value, commentValue, }
-    : { ...value, type: 'mixed', commentValue, };
+    ? {
+      ...value,
+      commentValue,
+    }
+    : {
+      ...value,
+      type: 'mixed',
+      commentValue,
+    };
 }

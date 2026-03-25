@@ -59,7 +59,10 @@ export function trackDest(filePath: string,): void {
  * @param filePath - path that was just written
  */
 export function trackWriteTime(filePath: string,): void {
-  writeTimestamps.set(resolve(filePath,), Date.now(),);
+  writeTimestamps.set(
+    resolve(filePath,),
+    Date.now(),
+  );
 }
 
 /**

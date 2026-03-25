@@ -28,7 +28,13 @@ import { resolve, } from 'node:path';
  * ```
  */
 export function assertWithinRoot(
-  { rootDir, path, }: { rootDir: string; path: string; },
+  {
+    rootDir,
+    path,
+  }: {
+    rootDir: string;
+    path: string
+  },
 ): string {
   const absolute = resolve(path,);
   /** Trailing separator ensures `/home/userX/...` doesn't match `/home/user`. */

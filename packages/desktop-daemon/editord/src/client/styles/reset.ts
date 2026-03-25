@@ -40,8 +40,10 @@ export const STYLES = [
       'background-color': cssVar('bg',),
       color: cssVar('fg',),
       'font-family': MONO_FONT_FAMILY,
-      'scrollbar-color': cssCompounded([cssVar('gutter-fg',),
-        cssVar('tree-hover-bg',),],),
+      'scrollbar-color': cssCompounded([
+        cssVar('gutter-fg',),
+        cssVar('tree-hover-bg',),
+      ],),
     },
   },),
   $({

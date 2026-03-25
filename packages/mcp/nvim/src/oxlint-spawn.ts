@@ -35,7 +35,12 @@ const OXLINT_TIMEOUT_MS = 10_000;
  *
  * @returns Diagnostics grouped by absolute file path.
  */
-export async function spawnOxlint({ configPath, cwd, files, typeAware, }: {
+export async function spawnOxlint({
+  configPath,
+  cwd,
+  files,
+  typeAware,
+}: {
   configPath: string;
   cwd: string;
   files: readonly string[];
@@ -51,7 +56,11 @@ export async function spawnOxlint({ configPath, cwd, files, typeAware, }: {
   ];
 
   try {
-    const result = await spawn('oxlint', args, { cwd, timeout: OXLINT_TIMEOUT_MS, },);
+    const result = await spawn(
+      'oxlint',
+      args,
+      { cwd, timeout: OXLINT_TIMEOUT_MS, },
+    );
     const { stdout, } = result;
 
     if (stdout.trim().length === 0) {
@@ -61,7 +70,10 @@ export async function spawnOxlint({ configPath, cwd, files, typeAware, }: {
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
     const parsed = JSON.parse(stdout,) as OxlintJsonOutput;
-    return parseOxlintOutput(parsed, cwd,);
+    return parseOxlintOutput(
+      parsed,
+      cwd,
+    );
   }
   catch (err: unknown) {
     // oxlint exits non-zero when it finds diagnostics, which is expected
@@ -70,7 +82,10 @@ export async function spawnOxlint({ configPath, cwd, files, typeAware, }: {
       if (stdout.trim().length > 0) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
         const parsed = JSON.parse(stdout,) as OxlintJsonOutput;
-        return parseOxlintOutput(parsed, cwd,);
+        return parseOxlintOutput(
+          parsed,
+          cwd,
+        );
       }
       const exitCode = 'exitCode' in err ? String(err.exitCode,) : 'unknown';
       console.error(`[mcp-nvim] oxlint produced no output (exit code ${exitCode})`,);

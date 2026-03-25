@@ -6,14 +6,23 @@ import {
 
 await Promise.all([
   // CLAUDE.md must literally contain AGENTS.md content (Claude Code's @include is unreliable)
-  overwrite('./CLAUDE.md', await cat(['./AGENTS.md',],),),
+  overwrite(
+    './CLAUDE.md',
+    await cat(['./AGENTS.md',],),
+  ),
 
   // Canonical skills live in .agents/skills/; mirror them to .factory/skills/ for legacy consumers
   (async (): Promise<void> => {
     const skills = await cat('./.agents/skills/*/*.md',);
     await Promise.all([
-      overwriteEach('./.factory/skills/*/*.md', skills,),
-      overwriteEach('./.claude/skills/*/*.md', skills,),
+      overwriteEach(
+        './.factory/skills/*/*.md',
+        skills,
+      ),
+      overwriteEach(
+        './.claude/skills/*/*.md',
+        skills,
+      ),
     ],);
   })(),
   // Oxlint config lives in the config package; copy canonical files to monorepo root

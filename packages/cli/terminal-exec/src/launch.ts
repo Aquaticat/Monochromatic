@@ -18,7 +18,10 @@ import {
 import { resolveTerminal, } from './resolve.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'launch', l: parentLogger, },);
+const l = tagged({
+  tag: 'launch',
+  l: parentLogger,
+},);
 
 /**
  * Resolves the preferred terminal emulator and launches it as a detached process.
@@ -37,7 +40,11 @@ const l = tagged({ tag: 'launch', l: parentLogger, },);
  * await launchTerminal({ dir: '/tmp', command: ['bash', '-l'] });
  * ```
  */
-export async function launchTerminal({ dir, command = [], title = '', }: {
+export async function launchTerminal({
+  dir,
+  command = [],
+  title = '',
+}: {
   dir: string;
   command?: readonly string[];
   title?: string;
@@ -56,7 +63,13 @@ export async function launchTerminal({ dir, command = [], title = '', }: {
 
   const argv = buildCommand({
     terminal,
-    options: { appId: '', title, dir, hold: false, command, },
+    options: {
+      appId: '',
+      title,
+      dir,
+      hold: false,
+      command,
+    },
   },);
 
   if (argv.length === 0)
@@ -67,14 +80,24 @@ export async function launchTerminal({ dir, command = [], title = '', }: {
   l.info(`launching: ${String(executable,)} ${args.join(' ',)}`,);
 
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based child_process.spawn requires manual Promise construction
-  await new Promise<void>(function awaitSpawn(resolve, reject,): void {
-    const child = spawn(String(executable,), args, {
+  await new Promise<void>(function awaitSpawn(
+    resolve,
+    reject,
+  ): void {
+    const child = spawn(
+      String(executable,),
+      args,
+      {
       cwd: dir,
       detached: true,
       stdio: 'ignore',
-    },);
+    },
+    );
     child.unref();
-    child.on('error', reject,);
+    child.on(
+      'error',
+      reject,
+    );
     /** Resolve on next tick -- if spawn failed, the error event fires synchronously. */
     queueMicrotask(resolve,);
   },);

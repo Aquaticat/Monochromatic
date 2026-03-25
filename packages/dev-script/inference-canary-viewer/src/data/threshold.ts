@@ -59,18 +59,38 @@ export function computeThreshold(
     },);
 
   if (scores.length < MIN_SAMPLES) {
-    return { model: label, mean: 0, stddev: 0, threshold: THRESHOLD_FLOOR,
-      sampleCount: scores.length, };
+    return {
+      model: label,
+      mean: 0,
+      stddev: 0,
+      threshold: THRESHOLD_FLOOR,
+      sampleCount: scores.length,
+    };
   }
 
-  const mean = scores.reduce(function add(sum, score,): number {
+  const mean = scores.reduce(
+    function add(sum, score,): number {
     return sum + score;
-  }, 0,) / scores.length;
-  const variance = scores.reduce(function addVariance(sum, score,): number {
+  },
+    0,
+  ) / scores.length;
+  const variance = scores.reduce(
+    function addVariance(sum, score,): number {
     return sum + (score - mean) ** 2;
-  }, 0,) / scores.length;
+  },
+    0,
+  ) / scores.length;
   const stddev = Math.sqrt(variance,);
-  const threshold = Math.max(THRESHOLD_FLOOR, mean - STDDEV_MULTIPLIER * stddev,);
+  const threshold = Math.max(
+    THRESHOLD_FLOOR,
+    mean - STDDEV_MULTIPLIER * stddev,
+  );
 
-  return { model: label, mean, stddev, threshold, sampleCount: scores.length, };
+  return {
+    model: label,
+    mean,
+    stddev,
+    threshold,
+    sampleCount: scores.length,
+  };
 }

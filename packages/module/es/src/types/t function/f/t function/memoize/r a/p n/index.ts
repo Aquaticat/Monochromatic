@@ -81,10 +81,16 @@ export async function $<
   this: void,
   options: MemoizeAsyncNamedOptions<TArgs, TReturn>,
 ): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
-  const { fn, keyFn, } = options;
+  const {
+    fn,
+    keyFn,
+  } = options;
   const store: Store = options.store ?? await createStore({
     storeId: `memoize-${crypto.randomUUID()}`,
-    eviction: [{ policy: 'lru', maxSize: DEFAULT_MAX_CACHE_SIZE, },],
+    eviction: [{
+      policy: 'lru',
+      maxSize: DEFAULT_MAX_CACHE_SIZE,
+    },],
   },);
 
   /** In-flight promises for deduplication of concurrent calls. */
@@ -119,7 +125,10 @@ export async function $<
    *
    * @returns cached or freshly computed result
    */
-  async function resolveValue(cacheKey: string, args: TArgs,): Promise<TReturn> {
+  async function resolveValue(
+    cacheKey: string,
+    args: TArgs,
+  ): Promise<TReturn> {
     using _guard = inflightGuard(cacheKey,);
 
     const stored = await store.get<TReturn>(cacheKey,);
@@ -127,7 +136,10 @@ export async function $<
       return stored;
 
     const result = await fn(...args,);
-    await store.set(cacheKey, result,);
+    await store.set(
+      cacheKey,
+      result,
+    );
     return result;
   }
 
@@ -141,13 +153,22 @@ export async function $<
    *
    * @returns promise resolving to the cached or computed value
    */
-  function dispatch(cacheKey: string, args: TArgs,): Promise<TReturn> {
+  function dispatch(
+    cacheKey: string,
+    args: TArgs,
+  ): Promise<TReturn> {
     const existing = inflight.get(cacheKey,);
     if (existing !== undefined)
       return existing;
 
-    const promise = resolveValue(cacheKey, args,);
-    inflight.set(cacheKey, promise,);
+    const promise = resolveValue(
+      cacheKey,
+      args,
+    );
+    inflight.set(
+      cacheKey,
+      promise,
+    );
     return promise;
   }
 
@@ -157,11 +178,19 @@ export async function $<
    *
    * @returns cached or freshly computed result
    */
-  function memoized(this: void,
-    { args, salt, }: MemoizedCallOptions<TArgs>,): Promise<TReturn>
+  function memoized(
+    this: void,
+    { args, salt, }: MemoizedCallOptions<TArgs>,
+  ): Promise<TReturn>
   {
-    const cacheKey = buildCacheKey(keyFn(...args,), salt,);
-    return dispatch(cacheKey, args,);
+    const cacheKey = buildCacheKey(
+      keyFn(...args,),
+      salt,
+    );
+    return dispatch(
+      cacheKey,
+      args,
+    );
   }
 
   memoized.store = store;

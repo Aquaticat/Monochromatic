@@ -22,7 +22,11 @@ import type {
 export { PACKAGE_DIR, } from './paths.ts';
 
 /** Root directory for all lint artifacts, gitignored via the package .gitignore. */
-export const LINT_DIR = join(PACKAGE_DIR, 'src', 'canary-lint',);
+export const LINT_DIR = join(
+  PACKAGE_DIR,
+  'src',
+  'canary-lint',
+);
 
 //region Artifact writing -- writes generated source and meta.json sidecar for oxlint/tsgo to consume
 
@@ -91,7 +95,10 @@ export type FailureArtifactMeta = {
  * ```
  */
 function timestampSlug(timestamp: string,): string {
-  return timestamp.replaceAll(':', '-',);
+  return timestamp.replaceAll(
+    ':',
+    '-',
+  );
 }
 
 /**
@@ -110,7 +117,11 @@ export function artifactDir(meta: ArtifactMeta,): string {
     );
   }
   const safeTs = timestampSlug(meta.timestamp,);
-  return join(LINT_DIR, meta.label, `${meta.probe}-${meta.pass}-${safeTs}`,);
+  return join(
+    LINT_DIR,
+    meta.label,
+    `${meta.probe}-${meta.pass}-${safeTs}`,
+  );
 }
 
 /**
@@ -127,18 +138,38 @@ export function artifactDir(meta: ArtifactMeta,): string {
  *
  * @returns file path and lint subdirectory path
  */
-export async function writeLintFile(source: string, meta: ArtifactMeta,): Promise<{
+export async function writeLintFile(
+  source: string,
+  meta: ArtifactMeta,
+): Promise<{
   readonly filePath: string;
   readonly lintDir: string;
 }> {
   const lintDir = artifactDir(meta,);
-  await mkdir(lintDir, { recursive: true, },);
-  const filePath = join(lintDir, 'canary.ts',);
+  await mkdir(
+    lintDir,
+    { recursive: true, },
+  );
+  const filePath = join(
+    lintDir,
+    'canary.ts',
+  );
   await Promise.all([
-    writeFile(filePath, source, 'utf8',),
-    writeFile(join(lintDir, 'meta.json',), JSON.stringify(meta, null, 2,), 'utf8',),
+    writeFile(
+      filePath,
+      source,
+      'utf8',
+    ),
+    writeFile(
+      join(lintDir, 'meta.json',),
+      JSON.stringify(meta, null, 2,),
+      'utf8',
+    ),
   ],);
-  return { filePath, lintDir, };
+  return {
+    filePath,
+    lintDir,
+  };
 }
 
 /**
@@ -155,14 +186,27 @@ export async function writeLintFile(source: string, meta: ArtifactMeta,): Promis
  *
  * @param rawResponse - raw model output text
  */
-export async function writeEnrichedArtifact(enriched: EnrichedArtifactMeta,
-  rawResponse: string,): Promise<void>
+export async function writeEnrichedArtifact(
+  enriched: EnrichedArtifactMeta,
+  rawResponse: string,
+): Promise<void>
 {
   const dir = artifactDir(enriched,);
-  await mkdir(dir, { recursive: true, },);
+  await mkdir(
+    dir,
+    { recursive: true, },
+  );
   await Promise.all([
-    writeFile(join(dir, 'meta.json',), JSON.stringify(enriched, null, 2,), 'utf8',),
-    writeFile(join(dir, 'response.txt',), rawResponse, 'utf8',),
+    writeFile(
+      join(dir, 'meta.json',),
+      JSON.stringify(enriched, null, 2,),
+      'utf8',
+    ),
+    writeFile(
+      join(dir, 'response.txt',),
+      rawResponse,
+      'utf8',
+    ),
   ],);
 }
 
@@ -176,9 +220,20 @@ export async function writeEnrichedArtifact(enriched: EnrichedArtifactMeta,
  */
 export async function writeFailureArtifact(meta: FailureArtifactMeta,): Promise<void> {
   const safeTs = timestampSlug(meta.timestamp,);
-  const dir = join(LINT_DIR, meta.label, `failure-${safeTs}`,);
-  await mkdir(dir, { recursive: true, },);
-  await writeFile(join(dir, 'meta.json',), JSON.stringify(meta, null, 2,), 'utf8',);
+  const dir = join(
+    LINT_DIR,
+    meta.label,
+    `failure-${safeTs}`,
+  );
+  await mkdir(
+    dir,
+    { recursive: true, },
+  );
+  await writeFile(
+    join(dir, 'meta.json',),
+    JSON.stringify(meta, null, 2,),
+    'utf8',
+  );
 }
 
 //endregion Artifact writing

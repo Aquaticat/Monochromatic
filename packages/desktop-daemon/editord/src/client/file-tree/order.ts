@@ -29,7 +29,10 @@ const ORDER_BASE = 128;
  */
 export function nameToOrder({ name, }: { name: string; },): number {
   const lower = name.toLowerCase();
-  const limit = Math.min(lower.length, ORDER_CHARS,);
+  const limit = Math.min(
+    lower.length,
+    ORDER_CHARS,
+  );
   // Mutable accumulator shifted left by ORDER_BASE per character
   let order = 0;
   for (let index = 0; index < limit; index++)

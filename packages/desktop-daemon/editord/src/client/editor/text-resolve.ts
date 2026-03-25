@@ -21,22 +21,35 @@ export const INDENT_UNIT = '  ';
  *
  * @returns text node and offset, or null if not resolvable
  */
-export function resolveTextPosition({ editor, lineIndex, character, }: {
+export function resolveTextPosition({
+  editor,
+  lineIndex,
+  character,
+}: {
   editor: HTMLDivElement;
   lineIndex: number;
   character: number;
-},): { node: Node; offset: number; } | null {
+},): {
+  node: Node;
+  offset: number
+} | null {
   const lineDiv = editor.children[lineIndex];
   if (lineDiv === undefined)
     return null;
 
-  const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+  const walker = document.createTreeWalker(
+    lineDiv,
+    NodeFilter.SHOW_TEXT,
+  );
   let remaining = character;
   let textNode = walker.nextNode();
   while (textNode !== null) {
     const len = textNode.textContent?.length ?? 0;
     if (remaining <= len)
-      return { node: textNode, offset: remaining, };
+      return {
+        node: textNode,
+        offset: remaining,
+      };
     remaining -= len;
     textNode = walker.nextNode();
   }
@@ -44,7 +57,10 @@ export function resolveTextPosition({ editor, lineIndex, character, }: {
   /** Offset past end — clamp to last text node's end. */
   const { lastChild, } = lineDiv;
   if (lastChild !== null)
-    return { node: lastChild, offset: lastChild.textContent?.length ?? 0, };
+    return {
+      node: lastChild,
+      offset: lastChild.textContent?.length ?? 0,
+    };
   return null;
 }
 
@@ -60,11 +76,18 @@ export function resolveTextPosition({ editor, lineIndex, character, }: {
  *
  * @returns 0-based line and character, or null
  */
-export function resolveLineCharacter({ editor, container, offset, }: {
+export function resolveLineCharacter({
+  editor,
+  container,
+  offset,
+}: {
   editor: HTMLDivElement;
   container: Node;
   offset: number;
-},): { line: number; character: number; } | null {
+},): {
+  line: number;
+  character: number
+} | null {
   let node: Node | null = container;
   let lineDiv: HTMLElement | null = null;
   while (node !== null && node !== editor) {
@@ -82,7 +105,10 @@ export function resolveLineCharacter({ editor, container, offset, }: {
     return null;
 
   let character = 0;
-  const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+  const walker = document.createTreeWalker(
+    lineDiv,
+    NodeFilter.SHOW_TEXT,
+  );
   let textNode = walker.nextNode();
   while (textNode !== null) {
     if (textNode === container) {
@@ -93,5 +119,8 @@ export function resolveLineCharacter({ editor, container, offset, }: {
     textNode = walker.nextNode();
   }
 
-  return { line, character, };
+  return {
+    line,
+    character,
+  };
 }

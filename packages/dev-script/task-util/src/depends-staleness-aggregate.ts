@@ -57,7 +57,10 @@ async function runStrategyCommand(
   /** Raw stdout from the command */
   let stdout = '';
   try {
-    const result = await spawn(fullCommand, { shell: true, },);
+    const result = await spawn(
+      fullCommand,
+      { shell: true, },
+    );
     stdout = result.stdout.trim();
   }
   catch (error) {
@@ -138,8 +141,11 @@ export async function aggregateTimestamps(
   if (strategy.startsWith(shPrefix,)) {
     if (timestamps.length === 0)
       return -Infinity;
-    return await runStrategyCommand(strategy.slice(shPrefix.length,), timestamps,
-      verbose,);
+    return await runStrategyCommand(
+      strategy.slice(shPrefix.length,),
+      timestamps,
+      verbose,
+    );
   }
 
   throw new Error(`Unknown time strategy: "${strategy}"`,);

@@ -21,7 +21,9 @@ import { join, } from 'node:path';
  * ```
  */
 export const staticHandler = defineHandler(function handleStaticAsset(event,) {
-  return serveStatic(event, {
+  return serveStatic(
+    event,
+    {
     getContents: function readContents(id,) {
       return readFile(join('.', id,),);
     },
@@ -37,5 +39,6 @@ export const staticHandler = defineHandler(function handleStaticAsset(event,) {
         return;
       return { size: stats.size, mtime: stats.mtimeMs, };
     },
-  },);
+  },
+  );
 },);

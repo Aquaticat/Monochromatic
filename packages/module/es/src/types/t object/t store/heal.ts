@@ -16,13 +16,19 @@ import type { BackendResult, } from './consensus.ts';
  */
 export async function healBackends(
   results: readonly BackendResult<
-    { set: (key: string, value: string,) => unknown; delete: (key: string,) => unknown; }
+    {
+      set: (key: string, value: string,) => unknown;
+      delete: (key: string,) => unknown
+    }
   >[],
   canonicalSerialized: string | undefined,
   key: string,
 ): Promise<void> {
   await Promise.all(
-    results.map(async function heal({ value, backend, },) {
+    results.map(async function heal({
+      value,
+      backend,
+    },) {
       if (canonicalSerialized === undefined) {
         if (value !== undefined)
           await backend.delete(key,);
@@ -30,7 +36,10 @@ export async function healBackends(
       }
 
       if (value !== canonicalSerialized)
-        await backend.set(key, canonicalSerialized,);
+        await backend.set(
+          key,
+          canonicalSerialized,
+        );
     },),
   );
 }
@@ -51,12 +60,18 @@ export async function healBackends(
  */
 export function healBackendsSync(
   results: readonly BackendResult<
-    { set: (key: string, value: string,) => unknown; delete: (key: string,) => unknown; }
+    {
+      set: (key: string, value: string,) => unknown;
+      delete: (key: string,) => unknown
+    }
   >[],
   canonicalSerialized: string | undefined,
   key: string,
 ): void {
-  for (const { value, backend, } of results) {
+  for (const {
+    value,
+    backend,
+  } of results) {
     if (canonicalSerialized === undefined) {
       if (value !== undefined)
         backend.delete(key,);
@@ -64,6 +79,9 @@ export function healBackendsSync(
     }
 
     if (value !== canonicalSerialized)
-      backend.set(key, canonicalSerialized,);
+      backend.set(
+        key,
+        canonicalSerialized,
+      );
   }
 }

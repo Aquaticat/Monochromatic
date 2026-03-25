@@ -38,8 +38,7 @@ export const importPerLine: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      importPerLine:
-        'Each named import specifier must be on its own line.',
+      importPerLine: 'Each named import specifier must be on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -47,13 +46,18 @@ export const importPerLine: CreateOnceRule = {
     return {
       ImportDeclaration(node: Span,): void {
         const importNode = node as Span & Record<string, unknown>;
-        const specifiers = importNode['specifiers'] as (Span & Record<string, unknown>)[] | null | undefined;
+        const specifiers = importNode['specifiers'] as
+          | (Span & Record<string, unknown>)[]
+          | null
+          | undefined;
         if (specifiers === undefined || specifiers === null)
           return;
 
         /** Filter to only named import specifiers (skip default and namespace). */
         const namedSpecifiers = specifiers.filter(
-          function isNamed(s,): boolean { return s['type'] === 'ImportSpecifier'; },
+          function isNamed(s,): boolean {
+            return s['type'] === 'ImportSpecifier';
+          },
         );
 
         if (namedSpecifiers.length < 2)
@@ -64,7 +68,10 @@ export const importPerLine: CreateOnceRule = {
           container: importNode,
           items: namedSpecifiers as Span[],
           messageId: 'importPerLine',
-          bracketPair: { open: '{', close: '}', },
+          bracketPair: {
+            open: '{',
+            close: '}',
+          },
         },);
       },
     } as VisitorWithHooks;

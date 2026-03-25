@@ -28,7 +28,10 @@ export type {
  * @returns trimmed stdout
  */
 function run(cmd: string,): string {
-  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },).trim();
+  return execSync(
+    cmd,
+    { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
+  ).trim();
 }
 
 /**
@@ -43,7 +46,10 @@ function run(cmd: string,): string {
  *
  * @returns object with dimensions and per-row width data
  */
-export function measureWidthProfile(imagePath: string, tmpDir: string,): WidthProfile {
+export function measureWidthProfile(
+  imagePath: string,
+  tmpDir: string,
+): WidthProfile {
   /** Get image dimensions. */
   const dims = run(`magick identify -format "%w %h" "${imagePath}"`,);
   const [imgW, imgH,] = dims.split(' ',).map(Number,);
@@ -57,7 +63,10 @@ export function measureWidthProfile(imagePath: string, tmpDir: string,): WidthPr
   );
 
   /** Read the PGM file directly -- it's a simple text format. */
-  const pgmData = readFileSync(`${tmpDir}/measure_dump.pgm`, 'utf8',);
+  const pgmData = readFileSync(
+    `${tmpDir}/measure_dump.pgm`,
+    'utf8',
+  );
   const pgmLines = pgmData.split('\n',);
 
   /**
@@ -104,8 +113,17 @@ export function measureWidthProfile(imagePath: string, tmpDir: string,): WidthPr
     }
 
     if (left !== -1)
-      rows.push({ y, left, right, width: right - left + 1, },);
+      rows.push({
+        y,
+        left,
+        right,
+        width: right - left + 1,
+      },);
   }
 
-  return { imageWidth: width, imageHeight: height, rows, };
+  return {
+    imageWidth: width,
+    imageHeight: height,
+    rows,
+  };
 }

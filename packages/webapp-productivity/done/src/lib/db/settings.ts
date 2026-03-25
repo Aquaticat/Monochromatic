@@ -34,7 +34,10 @@ export async function getSetting(key: string,): Promise<string | null> {
  *
  * @param value - Text payload to store
  */
-export async function setSetting(key: string, value: string,): Promise<void> {
+export async function setSetting(
+  key: string,
+  value: string,
+): Promise<void> {
   await db
     .prepare(
       'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
@@ -68,6 +71,9 @@ export async function getAllSettings(): Promise<Record<string, string>> {
     .prepare('SELECT key, value FROM settings ORDER BY key ASC',)
     .all() as SettingRow[];
   return Object.fromEntries(rows.map(function toEntry(row,) {
-    return [row.key, row.value,];
+    return [
+      row.key,
+      row.value,
+    ];
   },),);
 }

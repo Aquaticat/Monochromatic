@@ -26,12 +26,18 @@ import { serializePageData, } from './layout.ts';
 export async function taskDetailsPage(taskId: string,): Promise<Response> {
   const task = await getTaskById(taskId,);
   if (task === null)
-    return new Response('Task not found', { status: 404, },);
+    return new Response(
+      'Task not found',
+      { status: 404, },
+    );
 
   const blockerCandidates = await listTasksForBlockerPicker(taskId,);
   const blockerCandidatesById = Object.fromEntries(
     blockerCandidates.map(function toEntry(candidate,) {
-      return [candidate.id, candidate,];
+      return [
+        candidate.id,
+        candidate,
+      ];
     },),
   );
   const blockerSummaries = task
@@ -43,7 +49,11 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
       return candidate !== undefined;
     },)
     .map(function toSummary(candidate,) {
-      return { id: candidate.id, title: candidate.title, status: candidate.status, };
+      return {
+        id: candidate.id,
+        title: candidate.title,
+        status: candidate.status,
+      };
     },);
 
   const pageData = {
@@ -66,35 +76,57 @@ ${
         h({
           tag: 'head',
           children: [
-            h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
-            h({ tag: 'meta',
+            h({
+              tag: 'meta',
+              attrs: { charset: 'utf8', },
+            },),
+            h({
+              tag: 'meta',
               attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', }, },),
-            h({ tag: 'title', text: `Task - ${task.title}`, },),
+                content: 'width=device-width, initial-scale=1', },
+            },),
+            h({
+              tag: 'title',
+              text: `Task - ${task.title}`,
+            },),
           ],
         },),
         h({
           tag: 'body',
           children: [
-            h({ tag: 'side-drawer', attrs: { id: 'drawer', }, },),
+            h({
+              tag: 'side-drawer',
+              attrs: { id: 'drawer', },
+            },),
             h({
               tag: 'div',
               class: 'page-wrapper',
               children: [
-                h({ tag: 'main', attrs: { id: 'app', }, },),
+                h({
+                  tag: 'main',
+                  attrs: { id: 'app', },
+                },),
               ],
             },),
-            h({ tag: 'script', attrs: { type: 'application/json', id: 'page-data', },
-              html: serializePageData(pageData,), },),
-            h({ tag: 'script',
-              attrs: { type: 'module', src: '/dist/client/task-details.js', }, },),
+            h({
+              tag: 'script',
+              attrs: { type: 'application/json', id: 'page-data', },
+              html: serializePageData(pageData,),
+            },),
+            h({
+              tag: 'script',
+              attrs: { type: 'module', src: '/dist/client/task-details.js', },
+            },),
           ],
         },),
       ],
     },)
   }`;
 
-  return new Response(html, {
+  return new Response(
+    html,
+    {
     headers: { 'Content-Type': 'text/html; charset=utf-8', },
-  },);
+  },
+  );
 }

@@ -54,8 +54,14 @@ import { $ as partitionNamed, } from '../p n/index.ts';
 export function* $<T,>(
   predicate: (item: T,) => boolean,
   iterable: Iterable<T>,
-): Generator<{ decision: 'pass' | 'fail' | ['thrown', unknown,]; item: T; }, void,
+): Generator<{
+  decision: 'pass' | 'fail' | ['thrown', unknown,];
+  item: T
+}, void,
   undefined>
 {
-  yield* partitionNamed({ predicate, iterable, },);
+  yield* partitionNamed({
+    predicate,
+    iterable,
+  },);
 }

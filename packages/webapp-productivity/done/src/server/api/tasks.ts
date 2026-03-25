@@ -30,7 +30,11 @@ import {
 } from './task-validation.ts';
 
 /** Recognized priority/complexity values for create handler. */
-const priorities = new Set<string>(['low', 'medium', 'high',],);
+const priorities = new Set<string>([
+  'low',
+  'medium',
+  'high',
+],);
 
 /**
  * POST /api/tasks -- creates a new task from the request body.
@@ -43,24 +47,42 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
     const body: unknown = await req.json();
     if (!isRecord(body,))
-      return jsonResponse({ error: 'Invalid request body', }, HTTP_BAD_REQUEST,);
+      return jsonResponse(
+        { error: 'Invalid request body', },
+        HTTP_BAD_REQUEST,
+      );
 
     const title = typeof body.title === 'string' ? body.title.trim() : '';
     if (title.length === 0)
-      return jsonResponse({ error: 'Task title is required', }, HTTP_BAD_REQUEST,);
+      return jsonResponse(
+        { error: 'Task title is required', },
+        HTTP_BAD_REQUEST,
+      );
 
     const task = await createTask({
       title,
       description: typeof body.description === 'string' ? body.description : null,
       tags: parseStringArray(body.tags,) ?? [],
       locations: parseStringArray(body.locations,) ?? [],
-      priority: parseEnumValue<TaskPriority>(body.priority, priorities,) ?? null,
-      complexity: parseEnumValue<TaskPriority>(body.complexity, priorities,) ?? null,
+      priority: parseEnumValue<TaskPriority>(
+        body.priority,
+        priorities,
+      ) ?? null,
+      complexity: parseEnumValue<TaskPriority>(
+        body.complexity,
+        priorities,
+      ) ?? null,
     },);
-    return jsonResponse(task, HTTP_CREATED,);
+    return jsonResponse(
+      task,
+      HTTP_CREATED,
+    );
   }
   catch (error) {
-    return jsonResponse({ error: String(error,), }, HTTP_INTERNAL_ERROR,);
+    return jsonResponse(
+      { error: String(error,), },
+      HTTP_INTERNAL_ERROR,
+    );
   }
 }
 
@@ -73,20 +95,35 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
  *
  * @returns 200 with updated task, 400 on bad payload, 404 when missing
  */
-export async function handleUpdateTask(req: Request, id: string,): Promise<Response> {
+export async function handleUpdateTask(
+  req: Request,
+  id: string,
+): Promise<Response> {
   try {
     const body: unknown = await req.json();
     const taskUpdateInput = parseTaskUpdateInput(body,);
     if (taskUpdateInput === null)
-      return jsonResponse({ error: 'Invalid update payload', }, HTTP_BAD_REQUEST,);
+      return jsonResponse(
+        { error: 'Invalid update payload', },
+        HTTP_BAD_REQUEST,
+      );
 
-    const task = await updateTask(id, taskUpdateInput,);
+    const task = await updateTask(
+      id,
+      taskUpdateInput,
+    );
     if (task === null)
-      return jsonResponse({ error: 'Task not found', }, HTTP_NOT_FOUND,);
+      return jsonResponse(
+        { error: 'Task not found', },
+        HTTP_NOT_FOUND,
+      );
     return jsonResponse(task,);
   }
   catch (error) {
-    return jsonResponse({ error: String(error,), }, HTTP_INTERNAL_ERROR,);
+    return jsonResponse(
+      { error: String(error,), },
+      HTTP_INTERNAL_ERROR,
+    );
   }
 }
 
@@ -100,6 +137,9 @@ export async function handleUpdateTask(req: Request, id: string,): Promise<Respo
 export async function handleDeleteTask(id: string,): Promise<Response> {
   const deleted = await deleteTask(id,);
   if (!deleted)
-    return jsonResponse({ error: 'Task not found', }, HTTP_NOT_FOUND,);
+    return jsonResponse(
+      { error: 'Task not found', },
+      HTTP_NOT_FOUND,
+    );
   return jsonResponse({ ok: true, },);
 }

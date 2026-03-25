@@ -40,7 +40,10 @@ if (terminal === null) {
 l.info(`resolved terminal: ${terminal.entryId}`,);
 
 /** Final command array built from resolved terminal and user options. */
-const command = buildCommand({ terminal, options, },);
+const command = buildCommand({
+  terminal,
+  options,
+},);
 
 /**
  * If `--dir` was provided but the terminal has no dir argument support,

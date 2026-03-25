@@ -26,7 +26,9 @@ export {
  * @throws When a \@mixin has no body (definitions require content)
  */
 export function collectMixins(root: Root,): void {
-  root.walkAtRules('mixin', function processMixin(node: AtRule,) {
+  root.walkAtRules(
+    'mixin',
+    function processMixin(node: AtRule,) {
     /** Trimmed at-rule parameter used as the mixin identifier */
     const mixinName = node.params.trim();
 
@@ -41,7 +43,8 @@ export function collectMixins(root: Root,): void {
       },),);
       node.remove();
     }
-  },);
+  },
+  );
 }
 
 /**
@@ -52,7 +55,9 @@ export function collectMixins(root: Root,): void {
  * @throws When an \@apply references an unknown mixin
  */
 export function expandApplyRules(root: Root,): void {
-  root.walkAtRules('apply', function processApply(node: AtRule,) {
+  root.walkAtRules(
+    'apply',
+    function processApply(node: AtRule,) {
     /** Trimmed at-rule parameter identifying which mixin to inline */
     const mixinName = node.params.trim();
 
@@ -91,7 +96,8 @@ export function expandApplyRules(root: Root,): void {
     },);
 
     node.replaceWith(...clonedNodes,);
-  },);
+  },
+  );
 }
 
 //endregion Mixin Processing

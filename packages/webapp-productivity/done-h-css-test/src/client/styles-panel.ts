@@ -50,8 +50,11 @@ export const newTaskPanel = [
     children: [
       css({
         rule: 'from',
-        decls: { transform: cssScale(FAB_SCALE_FROM,),
-          'border-radius': cssPercent(HALF_PERCENT,), opacity: FAB_OPACITY_FROM, },
+        decls: {
+          transform: cssScale(FAB_SCALE_FROM,),
+          'border-radius': cssPercent(HALF_PERCENT,),
+          opacity: FAB_OPACITY_FROM,
+        },
       },),
       css({
         rule: 'to',
@@ -88,9 +91,16 @@ export const newTaskPanel = [
       'border-start-end-radius': cssRem(1,),
       'border-end-start-radius': 0,
       'border-end-end-radius': 0,
-      'box-shadow': cssCompounded([0, cssRem(-(1 / 2 / 2),), cssRem(1,),
-        cssOklch({ l: 0, c: 0, h: 0, a: SHADOW_ALPHA, },),],),
-      'transform-origin': cssCompounded(['bottom', 'right',],),
+      'box-shadow': cssCompounded([
+        0,
+        cssRem(-(1 / 2 / 2),),
+        cssRem(1,),
+        cssOklch({ l: 0, c: 0, h: 0, a: SHADOW_ALPHA, },),
+      ],),
+      'transform-origin': cssCompounded([
+        'bottom',
+        'right',
+      ],),
     },
     children: [
       css({
@@ -98,7 +108,12 @@ export const newTaskPanel = [
         decls: {
           'animation-name': 'fab-to-surface',
           'animation-duration': cssS(PANEL_SLIDE_S,),
-          'animation-timing-function': cssCubicBezier([EASE_X1, 0, EASE_X2, 1,],),
+          'animation-timing-function': cssCubicBezier([
+            EASE_X1,
+            0,
+            EASE_X2,
+            1,
+          ],),
           'animation-fill-mode': 'both',
         },
       },),

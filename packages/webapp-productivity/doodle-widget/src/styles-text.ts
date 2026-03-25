@@ -38,13 +38,25 @@ export function renderTextStyles(): string[] {
       rule: '.text-input',
       decls: {
         position: 'absolute',
-        'background-color': cssOklch({ l: 1, c: 0, h: 0, a: 0.85, },),
-        color: cssOklch({ l: 0.3, c: 0, h: 0, },),
+        'background-color': cssOklch({
+          l: 1,
+          c: 0,
+          h: 0,
+          a: 0.85,
+        },),
+        color: cssOklch({
+          l: 0.3,
+          c: 0,
+          h: 0,
+        },),
         'pointer-events': 'auto',
         'border-block-style': 'none',
         'border-inline-style': 'none',
         'outline-style': 'none',
-        'font-family': cssCommaList(['system-ui', 'sans-serif',],),
+        'font-family': cssCommaList([
+          'system-ui',
+          'sans-serif',
+        ],),
         'font-size': cssRem(1 + 1 / 2 / 2,),
         'line-height': cssNum(TEXT_INPUT_LINE_HEIGHT,),
         'padding-block': cssNum(0,),

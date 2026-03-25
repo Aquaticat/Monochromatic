@@ -28,7 +28,10 @@ import { spawn, } from './spawn.ts';
  * ```
  */
 export function virsh({ args, }: { args: readonly string[]; },): Promise<string> {
-  return spawn({ command: 'virsh', args: ['--connect', LIBVIRT_URI, ...args,], },);
+  return spawn({
+    command: 'virsh',
+    args: ['--connect', LIBVIRT_URI, ...args,],
+  },);
 }
 
 /**
@@ -40,11 +43,26 @@ export function virsh({ args, }: { args: readonly string[]; },): Promise<string>
  * @param xml - XML content for the domain definition
  */
 export async function defineVm(
-  { vmDir, xml, }: { vmDir: string; xml: string; },
+  {
+    vmDir,
+    xml,
+  }: {
+    vmDir: string;
+    xml: string
+  },
 ): Promise<void> {
-  const xmlPath = join(vmDir, 'domain.xml',);
-  await writeFile(xmlPath, xml,);
-  await virsh({ args: ['define', xmlPath,], },);
+  const xmlPath = join(
+    vmDir,
+    'domain.xml',
+  );
+  await writeFile(
+    xmlPath,
+    xml,
+  );
+  await virsh({ args: [
+    'define',
+    xmlPath,
+  ], },);
 }
 
 /**
@@ -53,7 +71,10 @@ export async function defineVm(
  * @param name - VM name without the mvm- prefix
  */
 export async function startVm({ name, }: { name: string; },): Promise<void> {
-  await virsh({ args: ['start', `${VM_PREFIX}${name}`,], },);
+  await virsh({ args: [
+    'start',
+    `${VM_PREFIX}${name}`,
+  ], },);
 }
 
 /**
@@ -62,7 +83,10 @@ export async function startVm({ name, }: { name: string; },): Promise<void> {
  * @param name - VM name without the mvm- prefix
  */
 export async function destroyVm({ name, }: { name: string; },): Promise<void> {
-  await virsh({ args: ['destroy', `${VM_PREFIX}${name}`,], },);
+  await virsh({ args: [
+    'destroy',
+    `${VM_PREFIX}${name}`,
+  ], },);
 }
 
 /**
@@ -71,7 +95,11 @@ export async function destroyVm({ name, }: { name: string; },): Promise<void> {
  * @param name - VM name without the mvm- prefix
  */
 export async function undefineVm({ name, }: { name: string; },): Promise<void> {
-  await virsh({ args: ['undefine', `${VM_PREFIX}${name}`, '--remove-all-storage',], },);
+  await virsh({ args: [
+    'undefine',
+    `${VM_PREFIX}${name}`,
+    '--remove-all-storage',
+  ], },);
 }
 
 /**
@@ -80,7 +108,11 @@ export async function undefineVm({ name, }: { name: string; },): Promise<void> {
  * @returns Array of VM names without the prefix
  */
 export async function listVms(): Promise<readonly string[]> {
-  const output = await virsh({ args: ['list', '--all', '--name',], },);
+  const output = await virsh({ args: [
+    'list',
+    '--all',
+    '--name',
+  ], },);
   return output
     .split('\n',)
     .filter(function startsWithPrefix(line,) {

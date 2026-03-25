@@ -23,14 +23,22 @@ import { flattenChain, } from './utils.ts';
  *
  * @returns flattened chain from innermost to outermost, or empty
  */
-export async function fetchChain({ ws, path, line, character, }: {
+export async function fetchChain({
+  ws,
+  path,
+  line,
+  character,
+}: {
   ws: EditorWsClient;
   path: string;
   line: number;
   character: number;
 },): Promise<SelectionRange[]> {
-  const r = await ws.request({ type: 'selectionRange', path,
-    positions: [{ line, character, },], },);
+  const r = await ws.request({
+    type: 'selectionRange',
+    path,
+    positions: [{ line, character, },],
+  },);
   if (!('ranges' in r))
     return [];
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'ranges' in r

@@ -67,22 +67,37 @@
 export function* $<T,>(params: {
   predicate: (item: T,) => boolean;
   iterable: Iterable<T>;
-},): Generator<{ decision: 'pass' | 'fail' | ['thrown', unknown,]; item: T; }, void,
+},): Generator<{
+  decision: 'pass' | 'fail' | ['thrown', unknown,];
+  item: T
+}, void,
   undefined>
 {
-  const { predicate, iterable, } = params;
+  const {
+    predicate,
+    iterable,
+  } = params;
 
   for (const item of iterable) {
     try {
       const result = predicate(item,);
       // oxlint-disable-next-line unicorn/prefer-ternary -- yield cannot be used in ternary expression
       if (result)
-        yield { decision: 'pass', item, };
+        yield {
+          decision: 'pass',
+          item,
+        };
       else
-        yield { decision: 'fail', item, };
+        yield {
+          decision: 'fail',
+          item,
+        };
     }
     catch (error) {
-      yield { decision: ['thrown', error,], item, };
+      yield {
+        decision: ['thrown', error,],
+        item,
+      };
     }
   }
 }

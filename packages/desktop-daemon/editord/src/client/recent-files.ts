@@ -12,7 +12,10 @@ import {
 } from './log.ts';
 
 /** Tagged logger for the recent files tracker. */
-const l = tagged({ tag: 'recent-files', l: rootLogger, },);
+const l = tagged({
+  tag: 'recent-files',
+  l: rootLogger,
+},);
 
 /** Maximum number of recent files to track (indices 0 through 9). */
 const MAX_RECENT = 10;
@@ -61,12 +64,18 @@ export function createRecentFiles(): RecentFiles {
     if (existing === 0)
       return;
     if (existing > 0)
-      paths.splice(existing, 1,);
+      paths.splice(
+        existing,
+        1,
+      );
     paths.unshift(path,);
     if (paths.length > MAX_RECENT)
       paths.pop();
     l.info(`pushed ${path} (${String(paths.length,)} tracked)`,);
   }
 
-  return { paths, push, };
+  return {
+    paths,
+    push,
+  };
 }

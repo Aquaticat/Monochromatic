@@ -15,7 +15,11 @@ export function buildResultTemplate(): string {
         tag: 'div',
         class: 'result__header',
         children: [
-          h({ tag: 'img', class: 'result__favicon', attrs: { src: '', alt: '', }, },),
+          h({
+            tag: 'img',
+            class: 'result__favicon',
+            attrs: { src: '', alt: '', },
+          },),
           h({
             tag: 'h2',
             class: 'result__title',
@@ -23,7 +27,11 @@ export function buildResultTemplate(): string {
               h({
                 tag: 'a',
                 class: 'result__link',
-                attrs: { href: '#', target: '_blank', rel: 'noopener noreferrer', },
+                attrs: {
+                  href: '#',
+                  target: '_blank',
+                  rel: 'noopener noreferrer',
+                },
               },),
             ],
           },),
@@ -31,7 +39,10 @@ export function buildResultTemplate(): string {
             tag: 'address',
             class: 'result__author',
             children: [
-              h({ tag: 'time', class: 'result__publishedDate', },),
+              h({
+                tag: 'time',
+                class: 'result__publishedDate',
+              },),
             ],
           },),
         ],
@@ -50,22 +61,35 @@ export function buildResultTemplate(): string {
                   h({
                     tag: 'summary',
                     children: [
-                      h({ tag: 'p', class: 'result__summary', },),
+                      h({
+                        tag: 'p',
+                        class: 'result__summary',
+                      },),
                     ],
                   },),
-                  h({ tag: 'p', class: 'result__text', },),
+                  h({
+                    tag: 'p',
+                    class: 'result__text',
+                  },),
                 ],
               },),
               h({
                 tag: 'ul',
                 class: 'result__highlights',
                 children: [
-                  h({ tag: 'li', class: 'result__highlight', },),
+                  h({
+                    tag: 'li',
+                    class: 'result__highlight',
+                  },),
                 ],
               },),
             ],
           },),
-          h({ tag: 'img', class: 'result__image', attrs: { src: '', alt: '', }, },),
+          h({
+            tag: 'img',
+            class: 'result__image',
+            attrs: { src: '', alt: '', },
+          },),
         ],
       },),
     ],

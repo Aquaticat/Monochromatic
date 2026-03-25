@@ -34,7 +34,10 @@ import type { ImageInput, } from './types.ts';
  * ```
  */
 export async function toImageUri(input: ImageInput,): Promise<string> {
-  const rl = tagged({ tag: toImageUri.name, l, },);
+  const rl = tagged({
+    tag: toImageUri.name,
+    l,
+  },);
 
   if (isImageUrl(input,)) {
     rl.debug(`passing through URL: ${input.url}`,);
@@ -54,14 +57,20 @@ export async function toImageUri(input: ImageInput,): Promise<string> {
           .byteLength,)
       } bytes, format: ${input.format})`,
     );
-    return bufferToDataUri(input.buffer, input.format,);
+    return bufferToDataUri(
+      input.buffer,
+      input.format,
+    );
   }
 
   if (isImagePath(input,)) {
     rl.debug(`reading file as data URI: ${input.path}`,);
     const format = inferFormat(input.path,);
     const fileBuffer = await readFile(input.path,);
-    return bufferToDataUri(fileBuffer.buffer, format,);
+    return bufferToDataUri(
+      fileBuffer.buffer,
+      format,
+    );
   }
 
   throw new Error(

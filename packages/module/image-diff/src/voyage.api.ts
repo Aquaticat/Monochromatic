@@ -28,7 +28,10 @@ export const VOYAGE_API_URL = 'https://api.voyageai.com/v1/multimodalembeddings'
  * ```
  */
 export function resolveVoyageApiKey(configKey: string | undefined,): string {
-  const rl = tagged({ tag: resolveVoyageApiKey.name, l, },);
+  const rl = tagged({
+    tag: resolveVoyageApiKey.name,
+    l,
+  },);
   const key = configKey
     ?? process.env['IMAGE_DIFF_VOYAGE_API_KEY']
     ?? process.env['VOYAGE_API_KEY'];
@@ -57,10 +60,15 @@ export function resolveVoyageApiKey(configKey: string | undefined,): string {
  * const response = await callVoyageApi(request, 'pa-...');
  * ```
  */
-export async function callVoyageApi(requestBody: VoyageApiRequest,
-  apiKey: string,): Promise<VoyageApiResponse>
+export async function callVoyageApi(
+  requestBody: VoyageApiRequest,
+  apiKey: string,
+): Promise<VoyageApiResponse>
 {
-  const rl = tagged({ tag: callVoyageApi.name, l, },);
+  const rl = tagged({
+    tag: callVoyageApi.name,
+    l,
+  },);
 
   rl.debug(
     `calling Voyage API with model "${requestBody.model}", ${
@@ -70,14 +78,17 @@ export async function callVoyageApi(requestBody: VoyageApiRequest,
     } input(s)`,
   );
 
-  const response = await fetch(VOYAGE_API_URL, {
+  const response = await fetch(
+    VOYAGE_API_URL,
+    {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(requestBody,),
-  },);
+  },
+  );
 
   if (!response.ok) {
     const errorBody = await response.text();

@@ -31,14 +31,24 @@ export async function isBlackFrame(jpegBuf: Buffer,): Promise<boolean> {
       'null',
       '-',
     ],
-    { stdio: ['pipe', 'pipe', 'pipe',], },
+    { stdio: [
+      'pipe',
+      'pipe',
+      'pipe',
+    ], },
   );
   proc.stdin.end(jpegBuf,);
   const stderrChunks: Buffer[] = [];
-  proc.stderr.on('data', function collectChunk(chunk: Buffer,) {
+  proc.stderr.on(
+    'data',
+    function collectChunk(chunk: Buffer,) {
     stderrChunks.push(chunk,);
-  },);
-  await once(proc, 'close',);
+  },
+  );
+  await once(
+    proc,
+    'close',
+  );
   const stderr = Buffer.concat(stderrChunks,).toString('utf8',);
   // blackdetect emits "black_start:..." lines on stderr when a black frame is found
   return stderr.includes('black_start',);

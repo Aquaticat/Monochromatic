@@ -59,19 +59,31 @@ export function createProcessor(): Processor<Root, Root, Root, Root, string> {
     .use(remarkSectionize,)
     // Content is trusted filesystem input authored by the site owner,
     // not user-submitted data, so allowing raw HTML is safe here.
-    .use(remarkRehype, { allowDangerousHtml: true, },)
-    .use(rehypeSlug, {
+    .use(
+      remarkRehype,
+      { allowDangerousHtml: true, },
+    )
+    .use(
+      rehypeSlug,
+      {
       enableCustomId: true,
       maintainCase: true,
       removeAccents: true,
-    },)
+    },
+    )
     .use(rehypeAutolinkHeadings,)
-    .use(rehypeShiki, {
+    .use(
+      rehypeShiki,
+      {
       themes: {
         light: 'github-light-high-contrast',
         dark: 'github-dark-high-contrast',
       },
       transformers: [transformerNotationDiff(), transformerNotationHighlight(),],
-    },)
-    .use(rehypeStringify, { allowDangerousHtml: true, },); // see remark-rehype comment above
+    },
+    )
+    .use(
+      rehypeStringify,
+      { allowDangerousHtml: true, },
+    ); // see remark-rehype comment above
 }

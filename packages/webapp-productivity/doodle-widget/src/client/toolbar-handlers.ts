@@ -67,7 +67,10 @@ type ToolbarHandlerDeps = {
   /** Canvas 2D rendering context */
   ctx: CanvasRenderingContext2D;
   /** Returns current canvas dimensions */
-  getCanvasSize: () => { cw: number; ch: number; };
+  getCanvasSize: () => {
+    cw: number;
+    ch: number
+  };
   /** Resizes and redraws the canvas */
   sizeCanvas: () => void;
   /** Pushes current state to undo history after a completed action */
@@ -98,33 +101,48 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     pushSnapshot,
   } = deps;
 
-  colorPicker.addEventListener('input', function handleColorChange(): void {
+  colorPicker.addEventListener(
+    'input',
+    function handleColorChange(): void {
     setStrokeColor(colorPicker.value,);
-  },);
+  },
+  );
 
-  sizeSlider.addEventListener('input', function handleSizeChange(): void {
+  sizeSlider.addEventListener(
+    'input',
+    function handleSizeChange(): void {
     setStrokeWidth(Number(sizeSlider.value,),);
-  },);
+  },
+  );
 
-  clearBtn.addEventListener('click', function handleClear(): void {
+  clearBtn.addEventListener(
+    'click',
+    function handleClear(): void {
     const { cw, ch, } = getCanvasSize();
     clearStrokes();
     clearTextEntries();
     ctx.clearRect(0, 0, cw, ch,);
     pushSnapshot();
-  },);
+  },
+  );
 
-  exportBtn.addEventListener('click', function handleExportClick(): void {
+  exportBtn.addEventListener(
+    'click',
+    function handleExportClick(): void {
     /** Selected export format from the dropdown */
     const format = formatSelect.value;
     if (!isExportFormat(format,))
       return;
     void EXPORTERS[format]({ container, overlay: svgOverlay, drawCanvas, textLayer, },);
-  },);
+  },
+  );
 
-  uploadBtn.addEventListener('click', function handleUploadClick(): void {
+  uploadBtn.addEventListener(
+    'click',
+    function handleUploadClick(): void {
     uploadInput.click();
-  },);
+  },
+  );
 
   /**
    * Processes a user-selected SVG background file.
@@ -138,16 +156,22 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     clearTextEntries();
     /** Raw SVG markup read from the uploaded file */
     const svgMarkup = await file.text();
-    setSvgBackground({ svgMarkup, overlay: svgOverlay, },);
+    setSvgBackground({
+      svgMarkup,
+      overlay: svgOverlay,
+    },);
     sizeCanvas();
     pushSnapshot();
   }
 
-  uploadInput.addEventListener('change', function handleFileChange(): void {
+  uploadInput.addEventListener(
+    'change',
+    function handleFileChange(): void {
     /** Selected file from the upload input */
     const file = uploadInput.files?.item(0,) ?? null;
     if (file === null)
       return;
     void processBackgroundFile(file,);
-  },);
+  },
+  );
 }

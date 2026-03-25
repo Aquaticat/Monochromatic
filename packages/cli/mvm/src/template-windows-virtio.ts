@@ -31,7 +31,11 @@ import {
  *
  * @param rl - Logger for status messages
  */
-export async function verifyVirtioBoot({ vmDir, diskPath, rl, }: {
+export async function verifyVirtioBoot({
+  vmDir,
+  diskPath,
+  rl,
+}: {
   vmDir: string;
   diskPath: string;
   rl: { info: (msg: string,) => void; };
@@ -47,12 +51,17 @@ export async function verifyVirtioBoot({ vmDir, diskPath, rl, }: {
     name: TEMPLATE_VM_NAME,
     osFamily: 'windows',
   },);
-  await defineVm({ vmDir, xml: virtioXml, },);
+  await defineVm({
+    vmDir,
+    xml: virtioXml,
+  },);
   await startVm({ name: TEMPLATE_VM_NAME, },);
 
   rl.info('verifying Windows boots with VirtIO disk (waiting for guest agent)...',);
-  await waitForGuestAgent({ name: TEMPLATE_VM_NAME,
-    timeoutMs: VIRTIO_VERIFY_AGENT_TIMEOUT_MS, },);
+  await waitForGuestAgent({
+    name: TEMPLATE_VM_NAME,
+    timeoutMs: VIRTIO_VERIFY_AGENT_TIMEOUT_MS,
+  },);
 
   rl.info('VirtIO boot verified, shutting down for template capture...',);
   await shutdownVm({ name: TEMPLATE_VM_NAME, },);

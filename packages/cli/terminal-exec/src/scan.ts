@@ -19,7 +19,10 @@ import {
 } from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'scan', l: parentLogger, },);
+const l = tagged({
+  tag: 'scan',
+  l: parentLogger,
+},);
 
 /**
  * Registry entry mapping an entry ID to its filesystem path.
@@ -51,13 +54,19 @@ async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly s
   async function walk({ current, }: { current: string; },): Promise<void> {
     let entries: Dirent[] = [];
     try {
-      entries = await readdir(current, { withFileTypes: true, },);
+      entries = await readdir(
+        current,
+        { withFileTypes: true, },
+      );
     }
     catch {
       return;
     }
     for (const entry of entries) {
-      const fullPath = join(current, entry.name,);
+      const fullPath = join(
+        current,
+        entry.name,
+      );
       if (entry.isDirectory()) {
         /* oxlint-disable-next-line no-await-in-loop -- recursive directory walk must be sequential */
         await walk({ current: fullPath, },);
@@ -100,13 +109,25 @@ export async function scanEntries({ dirs, }: { dirs: readonly string[]; },): Pro
     /* oxlint-disable-next-line no-await-in-loop -- sequential: later dirs override earlier for same ID */
     const files = await findDesktopFiles({ dir, },);
     for (const filePath of files) {
-      const rel = relative(dir, filePath,);
-      const id = rel.replaceAll('/', '-',);
-      registry.set(id, { id, path: filePath, },);
+      const rel = relative(
+        dir,
+        filePath,
+      );
+      const id = rel.replaceAll(
+        '/',
+        '-',
+      );
+      registry.set(
+        id,
+        { id, path: filePath, },
+      );
       /** Remove previous occurrence so re-adding puts it at the end (higher priority). */
       const prevIdx = allIds.indexOf(id,);
       if (prevIdx !== -1)
-        allIds.splice(prevIdx, 1,);
+        allIds.splice(
+          prevIdx,
+          1,
+        );
       allIds.push(id,);
     }
   }
@@ -119,5 +140,8 @@ export async function scanEntries({ dirs, }: { dirs: readonly string[]; },): Pro
       String(fallbackIds.length,)
     } fallback candidates`,
   );
-  return { registry, fallbackIds, };
+  return {
+    registry,
+    fallbackIds,
+  };
 }

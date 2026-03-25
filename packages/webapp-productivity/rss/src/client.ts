@@ -32,9 +32,18 @@ function addScrollEvents(scrollOptions: {
   element: HTMLElement;
   options?: IntersectionObserverInit;
 },): IntersectionObserver {
-  const { element, options = {}, } = scrollOptions;
+  const {
+    element,
+    options = {},
+  } = scrollOptions;
   const config: IntersectionObserverInit = {
-    threshold: [0, QUARTER_THRESHOLD, HALF_THRESHOLD, THREE_QUARTER_THRESHOLD, 1,],
+    threshold: [
+      0,
+      QUARTER_THRESHOLD,
+      HALF_THRESHOLD,
+      THREE_QUARTER_THRESHOLD,
+      1,
+    ],
     rootMargin: '0px',
     ...options,
   };
@@ -42,7 +51,8 @@ function addScrollEvents(scrollOptions: {
   let wasFullyVisible = false;
   let lastRatio = 0;
 
-  const observer = new IntersectionObserver(function onIntersect(entries,) {
+  const observer = new IntersectionObserver(
+    function onIntersect(entries,) {
     const [entry,] = entries;
     if (!entry) {
       console.error(`empty entries for observer`, entries, observer,);
@@ -70,7 +80,9 @@ function addScrollEvents(scrollOptions: {
       element.dispatchEvent(new CustomEvent('halfVisible',),);
 
     lastRatio = ratio;
-  }, config,);
+  },
+    config,
+  );
 
   observer.observe(element,);
   return observer;
@@ -90,7 +102,9 @@ const elements: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>
 );
 elements.forEach(function bindScrollIgnore(element,) {
   addScrollEvents({ element, },);
-  element.addEventListener('scrolledOut', function onScrolledOut() {
+  element.addEventListener(
+    'scrolledOut',
+    function onScrolledOut() {
     void (async function onScrolledOutAsync() {
       try {
         console.error('scrolledOut',);
@@ -121,7 +135,8 @@ elements.forEach(function bindScrollIgnore(element,) {
         console.error(`scrolledOut handler failed`, error,);
       }
     })();
-  },);
+  },
+  );
 },);
 
 //endregion Feed element binding

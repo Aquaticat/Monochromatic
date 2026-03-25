@@ -26,21 +26,35 @@ import { spawnDetached, } from './spawn-detached.ts';
  * @throws when the path escapes root or no terminal emulator is found
  */
 export async function openInTerminal(
-  { rootDir, path, }: { rootDir: string; path: string; },
+  {
+    rootDir,
+    path,
+  }: {
+    rootDir: string;
+    path: string
+  },
 ): Promise<void> {
-  const absolutePath = assertWithinRoot({ rootDir, path, },);
+  const absolutePath = assertWithinRoot({
+    rootDir,
+    path,
+  },);
   const currentPlatform = platform;
 
   if (currentPlatform === 'linux')
     await launchTerminal({ dir: absolutePath, },);
   else if (currentPlatform === 'darwin') {
-    await spawnDetached({ command: 'open', args: ['-a', 'Terminal', absolutePath,],
-      cwd: absolutePath, },);
+    await spawnDetached({
+      command: 'open',
+      args: ['-a', 'Terminal', absolutePath,],
+      cwd: absolutePath,
+    },);
   }
   else if (currentPlatform === 'win32') {
-    await spawnDetached({ command: 'cmd',
+    await spawnDetached({
+      command: 'cmd',
       args: ['/c', 'start', 'cmd', '/k', `cd /d ${absolutePath}`,],
-      cwd: absolutePath, },);
+      cwd: absolutePath,
+    },);
   }
   else {
     throw new Error(`unsupported platform: ${currentPlatform}`,);
@@ -58,20 +72,40 @@ export async function openInTerminal(
  * @throws when the path escapes root or the open command fails
  */
 export async function openInDefaultApp(
-  { rootDir, path, }: { rootDir: string; path: string; },
+  {
+    rootDir,
+    path,
+  }: {
+    rootDir: string;
+    path: string
+  },
 ): Promise<void> {
-  const absolutePath = assertWithinRoot({ rootDir, path, },);
+  const absolutePath = assertWithinRoot({
+    rootDir,
+    path,
+  },);
   const currentPlatform = platform;
 
   const dir = dirname(absolutePath,);
 
   if (currentPlatform === 'linux')
-    await spawnDetached({ command: 'xdg-open', args: [absolutePath,], cwd: dir, },);
+    await spawnDetached({
+      command: 'xdg-open',
+      args: [absolutePath,],
+      cwd: dir,
+    },);
   else if (currentPlatform === 'darwin')
-    await spawnDetached({ command: 'open', args: [absolutePath,], cwd: dir, },);
+    await spawnDetached({
+      command: 'open',
+      args: [absolutePath,],
+      cwd: dir,
+    },);
   else if (currentPlatform === 'win32') {
-    await spawnDetached({ command: 'cmd', args: ['/c', 'start', '', absolutePath,],
-      cwd: dir, },);
+    await spawnDetached({
+      command: 'cmd',
+      args: ['/c', 'start', '', absolutePath,],
+      cwd: dir,
+    },);
   }
   else {
     throw new Error(`unsupported platform: ${currentPlatform}`,);

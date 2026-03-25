@@ -50,7 +50,13 @@ const ESCAPED_AT_PATTERN = /\\@/g;
  * @returns line with inline code and escaped at signs removed
  */
 function stripInlineCodeAndEscapes(line: string,): string {
-  return line.replace(INLINE_CODE_PATTERN, '',).replace(ESCAPED_AT_PATTERN, '',);
+  return line.replace(
+    INLINE_CODE_PATTERN,
+    '',
+  ).replace(
+    ESCAPED_AT_PATTERN,
+    '',
+  );
 }
 
 /**
@@ -75,7 +81,8 @@ export const checkTagNames: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(context,
+    return createTsdocVisitor(
+      context,
       function checkTagNamesHandler(_node, comment,): void {
         const lines = comment.value.split('\n',);
         let insideCodeFence = false;
@@ -116,6 +123,7 @@ export const checkTagNames: CreateOnceRule = {
             }
           }
         },);
-      },);
+      },
+    );
   },
 };

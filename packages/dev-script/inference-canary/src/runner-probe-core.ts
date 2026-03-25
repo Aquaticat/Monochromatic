@@ -5,6 +5,10 @@
  * the second-pass fix loop gives the model a chance to improve its output.
  * On failure, persists whatever partial data was collected before re-throwing.
  */
+import {
+  l,
+  tagged,
+} from './log.ts';
 import { mean, } from './math.ts';
 import {
   createProbeClient,
@@ -44,9 +48,21 @@ import type {
  *
  * @returns scored result with consistency information
  */
-export async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: string,
-  signal: AbortSignal,): Promise<ProbeResult>
+export async function runProbeCore(
+  probe: Probe,
+  config: RunnerConfig,
+  timestamp: string,
+  signal: AbortSignal,
+): Promise<ProbeResult>
 {
+  /** Probe-specific logger for run progress and error messages. */
+  const rl = tagged({
+    tag: probe.name,
+    l: tagged({
+      tag: config.label,
+      l,
+    },),
+  },);
   const client = createProbeClient(config,);
   // Consistency runs must be sequential (rate limits) and each run's score is
   // logged immediately. scores uses push because each run appends in the loop;
@@ -64,15 +80,27 @@ export async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp
   try {
     for (const runIndex of Array.from({ length: config.consistencyRuns, },).keys()) {
       // oxlint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
-      lastCompletion = await executeProbe(probe, config, client, signal,);
-      const scoreContext: ScoreContext = { label: config.label, pass: 'initial',
-        timestamp, signal, };
+      lastCompletion = await executeProbe(
+        probe,
+        config,
+        client,
+        signal,
+      );
+      const scoreContext: ScoreContext = {
+        label: config.label,
+        pass: 'initial',
+        timestamp,
+        signal,
+      };
       // oxlint-disable-next-line no-await-in-loop -- score may involve container execution
-      const runScore = await probe.score(lastCompletion.text, scoreContext,);
+      const runScore = await probe.score(
+        lastCompletion.text,
+        scoreContext,
+      );
       scores.push(runScore,);
       lastScore = runScore;
-      console.log(
-        `  [${config.label}:${probe.name}] run ${String(runIndex + 1,)}/${
+      rl.info(
+        `run ${String(runIndex + 1,)}/${
           String(config.consistencyRuns,)
         }: score=${runScore.toFixed(2,)}`,
       );
@@ -80,8 +108,14 @@ export async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp
 
     // Enrich the initial-pass artifact with the last consistency run's data.
     if (lastCompletion !== undefined) {
-      await enrichArtifact(probe, config, timestamp, 'initial', lastCompletion,
-        lastScore,);
+      await enrichArtifact(
+        probe,
+        config,
+        timestamp,
+        'initial',
+        lastCompletion,
+        lastScore,
+      );
       enrichedInitial = true;
     }
 
@@ -131,8 +165,9 @@ export async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp
       );
     }
     catch (saveError) {
-      console.error(`  [${config.label}:${probe.name}] failed to save failure artifacts:`,
-        saveError,);
+      rl.error(
+        `failed to save failure artifacts: ${String(saveError,)}`,
+      );
     }
     throw error;
   }

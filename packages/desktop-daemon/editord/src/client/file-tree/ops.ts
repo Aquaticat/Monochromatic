@@ -16,7 +16,10 @@ export {
 } from './reveal.ts';
 
 /** Tagged logger for the file tree operations subsystem. */
-const l = tagged({ tag: 'file-tree-ops', l: rootLogger, },);
+const l = tagged({
+  tag: 'file-tree-ops',
+  l: rootLogger,
+},);
 
 /**
  * Restores previously expanded directories by programmatically
@@ -28,12 +31,19 @@ const l = tagged({ tag: 'file-tree-ops', l: rootLogger, },);
  *
  * @param loadPromises - in-flight load promises keyed by directory path
  */
-export async function restoreExpansion({ tree, dirs, loadPromises, }: {
+export async function restoreExpansion({
+  tree,
+  dirs,
+  loadPromises,
+}: {
   tree: HTMLDivElement;
   dirs: string[];
   loadPromises: Map<string, Promise<void>>;
 },): Promise<void> {
-  const sorted = dirs.toSorted(function byDepth(a, b,) {
+  const sorted = dirs.toSorted(function byDepth(
+    a,
+    b,
+  ) {
     return a.split('/',).length - b.split('/',).length;
   },);
 
@@ -62,7 +72,10 @@ export async function restoreExpansion({ tree, dirs, loadPromises, }: {
  *
  * @param paths - ordered recent file paths (index 0 = most recent)
  */
-export function updateRecencyMarkers({ tree, paths, }: {
+export function updateRecencyMarkers({
+  tree,
+  paths,
+}: {
   tree: HTMLDivElement;
   paths: string[];
 },): void {
@@ -70,7 +83,10 @@ export function updateRecencyMarkers({ tree, paths, }: {
   for (let i = 0; i < paths.length; i++) {
     const recentPath = paths[i];
     if (recentPath !== undefined)
-      recencyByPath.set(recentPath, i,);
+      recencyByPath.set(
+        recentPath,
+        i,
+      );
   }
 
   for (const label of tree.querySelectorAll<HTMLElement>('tree-file-entry[data-path]',)) {
@@ -111,7 +127,10 @@ export function resolveSelectedDir(
   if (lastFocused.tagName === 'SUMMARY')
     return itemPath;
   const lastSlash = itemPath.lastIndexOf('/',);
-  return lastSlash > 0 ? itemPath.slice(0, lastSlash,) : '';
+  return lastSlash > 0 ? itemPath.slice(
+    0,
+    lastSlash,
+  ) : '';
 }
 
 /**

@@ -30,7 +30,10 @@ export const STYLES = [
       'flex-shrink': cssNum(0,),
       overflow: 'auto',
       resize: 'inline',
-      'font-family': cssCommaList(["'JetBrains Mono'", 'monospace',],),
+      'font-family': cssCommaList([
+        "'JetBrains Mono'",
+        'monospace',
+      ],),
       'font-size': cssRem(1,),
       'line-height': cssNum((2 + 1) / 2,),
       color: cssVar('fg',),

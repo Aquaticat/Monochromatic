@@ -30,13 +30,20 @@ import { writePage, } from './write-page.ts';
  * @param l - parent logger for tagged output
  */
 export async function generatePages(
-  { posts, renderedContent, l: parentLogger, }: {
+  {
+    posts,
+    renderedContent,
+    l: parentLogger,
+  }: {
     posts: readonly Post[];
     renderedContent: ReadonlyMap<string, string>;
     l: Logger;
   },
 ): Promise<void> {
-  const l = tagged({ tag: generatePages.name, l: parentLogger, },);
+  const l = tagged({
+    tag: generatePages.name,
+    l: parentLogger,
+  },);
   const byLang = groupByLang(posts,);
   const byName = groupByName(posts,);
   const langs = Object.keys(byLang,).filter(function filterLocale(key,) {
@@ -45,13 +52,19 @@ export async function generatePages(
   const names = Object.keys(byName,);
 
   const writes = [
-    writePage({ relativePath: 'index.html', content: indexPage(langs,), },),
+    writePage({
+      relativePath: 'index.html',
+      content: indexPage(langs,),
+    },),
     ...langs.flatMap(function langWrites(lang,) {
       const langPosts = byLang[lang] ?? [];
       return [
         writePage({
           relativePath: `${lang}/index.html`,
-          content: langPage({ lang, posts: langPosts, },),
+          content: langPage({
+            lang,
+            posts: langPosts,
+          },),
         },),
         ...names.map(function postWrite(name,) {
           const post = langPosts.find(function matchName(lp,) {
@@ -60,7 +73,12 @@ export async function generatePages(
           const html = renderedContent.get(`${lang}/${name}`,);
           return writePage({
             relativePath: `${lang}/${name}.html`,
-            content: postPage({ post, lang, name, renderedHtml: html, },),
+            content: postPage({
+              post,
+              lang,
+              name,
+              renderedHtml: html,
+            },),
           },);
         },),
       ];
@@ -69,7 +87,10 @@ export async function generatePages(
       const namePosts = byName[name] ?? [];
       return writePage({
         relativePath: `${name}.html`,
-        content: namePage({ name, posts: namePosts, },),
+        content: namePage({
+          name,
+          posts: namePosts,
+        },),
       },);
     },),
   ];

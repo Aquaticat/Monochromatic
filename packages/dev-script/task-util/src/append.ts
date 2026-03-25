@@ -72,7 +72,10 @@ async function validateFile(filePath: string,): Promise<void> {
     throw new Error(ERROR_MESSAGES.fileNotFound(filePath,),);
 
   try {
-    await access(filePath, constants.W_OK,);
+    await access(
+      filePath,
+      constants.W_OK,
+    );
   }
   catch {
     throw new Error(ERROR_MESSAGES.noWritePermission(filePath,),);
@@ -91,25 +94,37 @@ async function validateFile(filePath: string,): Promise<void> {
  * await appendLinesToFile('./output.md', ['line 1', 'line 2']);
  * ```
  */
-async function appendLinesToFile(filePath: string,
-  lines: readonly string[],): Promise<void>
+async function appendLinesToFile(
+  filePath: string,
+  lines: readonly string[],
+): Promise<void>
 {
   const content = `${lines.join('\n',)}\n`;
-  await appendFile(filePath, content,);
+  await appendFile(
+    filePath,
+    content,
+  );
 }
 
 //region Parser definition -- required --to option and variadic positional text lines
 
 /** Optique parser for the task-append CLI */
 const parser = object({
-  to: option('-t', '--to', string(),),
+  to: option(
+    '-t',
+    '--to',
+    string(),
+  ),
   lines: multiple(argument(string(),),),
 },);
 
 //endregion Parser definition
 
 /** Parsed CLI arguments from process.argv */
-const args = runSync(parser, { programName: 'task-append', help: 'option', },);
+const args = runSync(
+  parser,
+  { programName: 'task-append', help: 'option', },
+);
 
 if (args.lines.length === 0)
   throw new Error(ERROR_MESSAGES.noTextProvided,);
@@ -118,4 +133,7 @@ if (args.lines.length === 0)
 await validateFile(args.to,);
 
 // Append all lines to the file
-await appendLinesToFile(args.to, args.lines,);
+await appendLinesToFile(
+  args.to,
+  args.lines,
+);

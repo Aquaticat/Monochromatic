@@ -18,7 +18,9 @@ import {
 //region Mutation tools -- VM creation and destruction
 
 /** MCP tool: create a new VM, optionally cloned from an existing one. */
-export const createTool = defineTool('create_vm', {
+export const createTool = defineTool(
+  'create_vm',
+  {
   description:
     'Creates and starts a new VM. Supports ubuntu (default), fedora, alpine, windows, or a custom template name via the `image` parameter. Windows VMs use a Windows Server 2025 evaluation ISO with unattended install (first creation takes 15-30 minutes). When `from` is provided, clones from that existing VM instead of creating fresh.',
   inputSchema: {
@@ -51,10 +53,13 @@ export const createTool = defineTool('create_vm', {
       return errorResponse('create_vm', err,);
     }
   },
-},);
+},
+);
 
 /** MCP tool: destroy VMs by name or all at once. */
-export const destroyTool = defineTool('destroy_vm', {
+export const destroyTool = defineTool(
+  'destroy_vm',
+  {
   description:
     'Force-stops and deletes a VM by name, or all managed VMs when `all` is true. Provide exactly one of `name` or `all`.',
   inputSchema: {
@@ -88,6 +93,7 @@ export const destroyTool = defineTool('destroy_vm', {
       return errorResponse('destroy_vm', err,);
     }
   },
-},);
+},
+);
 
 //endregion Mutation tools

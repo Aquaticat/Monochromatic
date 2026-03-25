@@ -32,7 +32,14 @@ export type { ToolMode, } from './pointer-handler-deps.ts';
  * @param deps - shared state and element references
  */
 export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
-  const { canvas, ctx, getToolMode, getCanvasSize, textLayer, pushSnapshot, } = deps;
+  const {
+    canvas,
+    ctx,
+    getToolMode,
+    getCanvasSize,
+    textLayer,
+    pushSnapshot,
+  } = deps;
 
   /** Whether an erase gesture is currently active */
   let erasing = false;
@@ -43,7 +50,8 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   /** Previous eraser position for segment-based hit testing */
   let prevErasePoint: NormalizedPoint | null = null;
 
-  canvas.addEventListener('pointerdown',
+  canvas.addEventListener(
+    'pointerdown',
     function handlePointerDown(event: PointerEvent,): void {
       const mode = getToolMode();
       if (mode === 'zoom')
@@ -76,9 +84,11 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       }
 
       startStroke(point,);
-    },);
+    },
+  );
 
-  canvas.addEventListener('pointermove',
+  canvas.addEventListener(
+    'pointermove',
     function handlePointerMove(event: PointerEvent,): void {
       const mode = getToolMode();
       if (mode === 'zoom' || mode === 'text')
@@ -114,7 +124,8 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       ctx.moveTo(segment.from[0] * cw, segment.from[1] * ch,);
       ctx.lineTo(segment.to[0] * cw, segment.to[1] * ch,);
       ctx.stroke();
-    },);
+    },
+  );
 
   /** Resets draw/erase gesture state at pointer release */
   function endGesture(): void {
@@ -124,14 +135,20 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
     prevErasePoint = null;
   }
 
-  canvas.addEventListener('pointerup', function handlePointerUp(): void {
+  canvas.addEventListener(
+    'pointerup',
+    function handlePointerUp(): void {
     const mode = getToolMode();
     if (mode === 'zoom')
       return;
     if (mode === 'draw' || (mode === 'erase' && erasedInGesture))
       pushSnapshot();
     endGesture();
-  },);
+  },
+  );
 
-  canvas.addEventListener('pointercancel', endGesture,);
+  canvas.addEventListener(
+    'pointercancel',
+    endGesture,
+  );
 }

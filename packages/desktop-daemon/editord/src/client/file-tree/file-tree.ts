@@ -137,20 +137,34 @@ export class FileTree extends HTMLElement {
   /** Renders the tree container and attaches event delegation. */
   connectedCallback(): void {
     const tree = this;
-    this.#tree = h({ tag: 'div', class: 'tree', },);
+    this.#tree = h({
+      tag: 'div',
+      class: 'tree',
+    },);
     this.#contextMenu = new ContextMenu();
-    this.#shadow.replaceChildren(h({ tag: 'style', text: STYLES, },), this.#tree,);
+    this.#shadow.replaceChildren(
+      h({ tag: 'style', text: STYLES, },),
+      this.#tree,
+    );
 
-    this.#shadow.addEventListener('focusin', function handleFocusIn(event,) {
+    this.#shadow.addEventListener(
+      'focusin',
+      function handleFocusIn(event,) {
       if (event.target instanceof HTMLElement)
         tree.#lastFocused = event.target;
-    },);
-    this.#tree.addEventListener('dir-open', function handleDirOpen(event,) {
+    },
+    );
+    this.#tree.addEventListener(
+      'dir-open',
+      function handleDirOpen(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from TreeDirEntry
       loadDirChildren({ detail: (event as CustomEvent<DirOpenDetail>).detail,
         state: tree.#state, },);
-    },);
-    this.#tree.addEventListener('show-context', function handleShowContext(event,) {
+    },
+    );
+    this.#tree.addEventListener(
+      'show-context',
+      function handleShowContext(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from tree entries
       const { x, y, path, kind, } = (event as CustomEvent<ShowContextDetail>).detail;
       if (tree.#contextMenu === null)
@@ -171,7 +185,8 @@ export class FileTree extends HTMLElement {
         showDirContextMenu({ contextMenu: tree.#contextMenu, x, y, path,
           onAction: fireAction, },);
       }
-    },);
+    },
+    );
   }
 
   /**
@@ -185,11 +200,18 @@ export class FileTree extends HTMLElement {
       return;
     this.#rootPath = rootPath;
     const entries = await fetchDir(rootPath,);
-    const children = createEntryElements({ parentPath: rootPath, entries,
-      recentPaths: this.#state.recentPaths, },);
+    const children = createEntryElements({
+      parentPath: rootPath,
+      entries,
+      recentPaths: this.#state.recentPaths,
+    },);
     this.#tree.replaceChildren(...children,);
-    void preloadChildren({ parentPath: rootPath, entries, fetchDir,
-      prefetchCache: this.#state.prefetchCache, },);
+    void preloadChildren({
+      parentPath: rootPath,
+      entries,
+      fetchDir,
+      prefetchCache: this.#state.prefetchCache,
+    },);
     this.#state.onDirExpanded?.(rootPath,);
   }
 
@@ -218,8 +240,11 @@ export class FileTree extends HTMLElement {
     },);
     if (validDirs.length === 0)
       return;
-    await doRestoreExpansion({ tree: this.#tree, dirs: validDirs,
-      loadPromises: this.#state.loadPromises, },);
+    await doRestoreExpansion({
+      tree: this.#tree,
+      dirs: validDirs,
+      loadPromises: this.#state.loadPromises,
+    },);
   }
 
   /**
@@ -230,7 +255,10 @@ export class FileTree extends HTMLElement {
   updateRecency({ paths, }: { paths: string[]; },): void {
     this.#state.recentPaths = paths;
     if (this.#tree !== null)
-      updateRecencyMarkers({ tree: this.#tree, paths, },);
+      updateRecencyMarkers({
+        tree: this.#tree,
+        paths,
+      },);
   }
 
   /**
@@ -242,10 +270,15 @@ export class FileTree extends HTMLElement {
     if (this.#tree === null || this.#rootPath === '')
       return;
     const tree = this;
-    await doRevealFiles({ tree: this.#tree, hostElement: this, rootPath: this.#rootPath,
-      paths, restoreExpansion: function restore(opts,) {
+    await doRevealFiles({
+      tree: this.#tree,
+      hostElement: this,
+      rootPath: this.#rootPath,
+      paths,
+      restoreExpansion: function restore(opts,) {
         return tree.restoreExpansion(opts,);
-      }, },);
+      },
+    },);
   }
 
   /**
@@ -256,7 +289,10 @@ export class FileTree extends HTMLElement {
   scrollToFile({ path, }: { path: string; },): void {
     if (this.#tree === null)
       return;
-    doScrollToFile({ tree: this.#tree, path, },);
+    doScrollToFile({
+      tree: this.#tree,
+      path,
+    },);
   }
 
   /**
@@ -267,9 +303,16 @@ export class FileTree extends HTMLElement {
   async refreshDir({ path, }: { path: string; },): Promise<void> {
     if (this.#tree === null)
       return;
-    await performRefreshDir({ tree: this.#tree, path, rootPath: this.#rootPath,
-      state: this.#state, },);
+    await performRefreshDir({
+      tree: this.#tree,
+      path,
+      rootPath: this.#rootPath,
+      state: this.#state,
+    },);
   }
 }
 
-customElements.define('file-tree', FileTree,);
+customElements.define(
+  'file-tree',
+  FileTree,
+);

@@ -5,6 +5,10 @@
  * (consistency runs + fix pass). On timeout the probe resolves with score=0
  * rather than throwing, so partial results from other probes can still be collected.
  */
+import {
+  l,
+  tagged,
+} from './log.ts';
 import { runProbeCore, } from './runner-probe-core.ts';
 
 import type { Probe, } from './probes.ts';
@@ -33,8 +37,14 @@ const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SEC
  *
  * @returns disposable handle; timer is cleared when disposed
  */
-function createDisposableTimeout(callback: () => void, ms: number,): Disposable {
-  const id = setTimeout(callback, ms,);
+function createDisposableTimeout(
+  callback: () => void,
+  ms: number,
+): Disposable {
+  const id = setTimeout(
+    callback,
+    ms,
+  );
   id.unref();
   return { [Symbol.dispose](): void {
     clearTimeout(id,);
@@ -60,11 +70,19 @@ function createDisposableTimeout(callback: () => void, ms: number,): Disposable 
  *
  * @returns scored result; on timeout, a zero-score result with `timedOut: true`
  */
-export async function runProbe(probe: Probe, config: RunnerConfig,
-  timestamp: string,): Promise<ProbeResult>
+export async function runProbe(
+  probe: Probe,
+  config: RunnerConfig,
+  timestamp: string,
+): Promise<ProbeResult>
 {
   const controller = new AbortController();
-  const corePromise = runProbeCore(probe, config, timestamp, controller.signal,);
+  const corePromise = runProbeCore(
+    probe,
+    config,
+    timestamp,
+    controller.signal,
+  );
   // Zero-score sentinel returned when the timeout fires; score 0 is recorded in history
   // so the overall model score reflects the failure without discarding other probe results.
   const timedOutResult: ProbeResult = {
@@ -95,7 +113,10 @@ export async function runProbe(probe: Probe, config: RunnerConfig,
     }
   }
 
-  const { promise: timeoutPromise, resolve: resolveTimeout, } = Promise.withResolvers<
+  const {
+    promise: timeoutPromise,
+    resolve: resolveTimeout,
+  } = Promise.withResolvers<
     ProbeResult
   >();
 
@@ -103,8 +124,16 @@ export async function runProbe(probe: Probe, config: RunnerConfig,
   using _timer = createDisposableTimeout(
     function onTimeout(): void {
       controller.abort();
-      console.error(
-        `  [${config.label}:${probe.name}] timed out after ${
+      /** Probe-specific logger for timeout message. */
+      const rl = tagged({
+        tag: probe.name,
+        l: tagged({
+          tag: config.label,
+          l,
+        },),
+      },);
+      rl.error(
+        `timed out after ${
           String(PROBE_TIMEOUT_MINUTES,)
         } minutes`,
       );
@@ -113,5 +142,8 @@ export async function runProbe(probe: Probe, config: RunnerConfig,
     PROBE_TIMEOUT_MS,
   );
 
-  return await Promise.race([observedCore(), timeoutPromise,],);
+  return await Promise.race([
+    observedCore(),
+    timeoutPromise,
+  ],);
 }

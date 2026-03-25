@@ -42,8 +42,14 @@ export {
  * ```
  */
 export async function ensureTemplate(spec: ImageSpec,): Promise<string> {
-  const rl = tagged({ tag: ensureTemplate.name, l, },);
-  const templatePath = join(IMAGES_DIR, spec.templateFileName,);
+  const rl = tagged({
+    tag: ensureTemplate.name,
+    l,
+  },);
+  const templatePath = join(
+    IMAGES_DIR,
+    spec.templateFileName,
+  );
 
   if (existsSync(templatePath,)) {
     rl.info(`using cached template ${templatePath}`,);

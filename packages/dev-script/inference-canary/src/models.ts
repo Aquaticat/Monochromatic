@@ -35,21 +35,36 @@ export const models: readonly ModelConfig[] = [
   // Claude 4.6 models use adaptive effort -- even at "low", the model decides how much to
   // think based on problem difficulty. Scoring poorly on hard probes at low effort is the
   // model's own calibration failure, not a testing artifact.
-  { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6', verbosity: 'low', },
-  { openrouterId: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6', verbosity: 'low', },
+  {
+    openrouterId: 'anthropic/claude-opus-4.6',
+    label: 'Opus 4.6',
+    verbosity: 'low',
+  },
+  {
+    openrouterId: 'anthropic/claude-sonnet-4.6',
+    label: 'Sonnet 4.6',
+    verbosity: 'low',
+  },
 
   // Add the best model + highest effort possible just to see what frontier looks like now.
   // Update: Opus 4.6 max effort constantly times out.
   // { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 max', verbosity: 'max', },
   // Update: Opus 4.6 high effort also constantly times out.
   // { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 high', verbosity: 'high', },
-  { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 medium',
-    verbosity: 'medium', },
+  {
+    openrouterId: 'anthropic/claude-opus-4.6',
+    label: 'Opus 4.6 medium',
+    verbosity: 'medium',
+  },
 
   // Constantly times out.
   // { openrouterId: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6 medium', verbosity: 'medium', },
 
-  { openrouterId: 'anthropic/claude-haiku-4.5', label: 'Haiku 4.5', verbosity: 'low', },
+  {
+    openrouterId: 'anthropic/claude-haiku-4.5',
+    label: 'Haiku 4.5',
+    verbosity: 'low',
+  },
 
   // Scores too low, useless:
   //   [FAIL] Nvidia Nemotron 3 Super: 0.08
@@ -63,7 +78,11 @@ export const models: readonly ModelConfig[] = [
 
   // Superseded by MiniMax M2.7
   // { openrouterId: 'minimax/minimax-m2.5', label: 'MiniMax M2.5', verbosity: 'low', },
-  { openrouterId: 'minimax/minimax-m2.7', label: 'MiniMax M2.7', verbosity: 'low', },
+  {
+    openrouterId: 'minimax/minimax-m2.7',
+    label: 'MiniMax M2.7',
+    verbosity: 'low',
+  },
 
   // Keeps timing out.
   // { openrouterId: 'moonshotai/kimi-k2.5', label: 'Kimi K2.5', verbosity: 'low', },
@@ -73,8 +92,11 @@ export const models: readonly ModelConfig[] = [
   // Keeps timing out.
   // { openrouterId: 'qwen/qwen3.5-397b-a17b', label: 'Qwen 3.5 OSS', verbosity: 'low', },
 
-  { openrouterId: 'google/gemini-3.1-flash-lite-preview',
-    label: 'Gemini 3.1 Flash Lite Preview', verbosity: 'low', },
+  {
+    openrouterId: 'google/gemini-3.1-flash-lite-preview',
+    label: 'Gemini 3.1 Flash Lite Preview',
+    verbosity: 'low',
+  },
   // Keeps timing out.
   // { openrouterId: 'google/gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro Preview',
   // verbosity: 'low', },

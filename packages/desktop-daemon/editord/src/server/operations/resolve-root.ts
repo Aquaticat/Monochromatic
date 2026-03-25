@@ -61,15 +61,21 @@ export async function resolveRoot(): Promise<string> {
   /** Check write permission for all ancestors concurrently. */
   const results = await Promise.allSettled(
     ancestors.map(async function checkWriteAccess(path,) {
-      await access(path, constants.W_OK,);
+      await access(
+        path,
+        constants.W_OK,
+      );
       return path;
     },),
   );
 
   /** Find the highest writable ancestor (last fulfilled in the ordered list). */
-  const root = results.reduce(function pickLastFulfilled(acc, result,) {
+  const root = results.reduce(
+    function pickLastFulfilled(acc, result,) {
     return result.status === 'fulfilled' ? result.value : acc;
-  }, cwd,);
+  },
+    cwd,
+  );
 
   return root;
 }

@@ -76,7 +76,10 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
   // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
   const deserializer: Deserializer = config.deserializer ?? superjson.parse;
   const lossyForCircular = config.lossyForCircular ?? true;
-  const backends: readonly [SyncStorageBackend, ...SyncStorageBackend[],] =
+  const backends: readonly [
+    SyncStorageBackend,
+    ...SyncStorageBackend[],
+  ] =
     config.backends
       ?? [new Map<string, string>(),];
 
@@ -108,12 +111,22 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       return 0;
     },
 
-    set(key: string, value: unknown,): SyncStore {
+    set(
+      key: string,
+      value: unknown,
+    ): SyncStore {
       defaultLogger.debug(`SyncStore.set: "${key}"`,);
-      const serialized = serializeValue({ value, serializer, lossyForCircular, },);
+      const serialized = serializeValue({
+        value,
+        serializer,
+        lossyForCircular,
+      },);
 
       for (const backend of backends)
-        backend.set(key, serialized,);
+        backend.set(
+          key,
+          serialized,
+        );
 
       if (lru !== undefined) {
         const evicted = lru.touch(key,);
@@ -129,10 +142,20 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
 
     get<const T = unknown,>(key: string,): T | undefined {
       defaultLogger.debug(`SyncStore.get: "${key}"`,);
-      const results = queryAllBackendsSync(backends, key,);
-      const canonicalSerialized = resolveConsensus(results, key,);
+      const results = queryAllBackendsSync(
+        backends,
+        key,
+      );
+      const canonicalSerialized = resolveConsensus(
+        results,
+        key,
+      );
 
-      healBackendsSync(results, canonicalSerialized, key,);
+      healBackendsSync(
+        results,
+        canonicalSerialized,
+        key,
+      );
 
       if (canonicalSerialized !== undefined && lru !== undefined) {
         const evicted = lru.touch(key,);

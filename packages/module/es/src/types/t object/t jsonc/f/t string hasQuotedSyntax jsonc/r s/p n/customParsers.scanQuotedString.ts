@@ -13,7 +13,10 @@ import type * as Jsonc from '../../../../t/index.ts';
  *
  * @returns index of the closing double quote
  */
-function findTerminatingQuote(input: string, fromIndex: number,): number {
+function findTerminatingQuote(
+  input: string,
+  fromIndex: number,
+): number {
   // Mutable scan index and counter required for allocation-free O(n) traversal
   let consecutiveBackslashes = 0;
   for (let charIndex = fromIndex; charIndex < input.length; charIndex++) {
@@ -51,16 +54,29 @@ function findTerminatingQuote(input: string, fromIndex: number,): number {
  */
 export function scanQuotedString(
   { value, }: { value: FragmentStringJsonc | StringJsonc; },
-): { consumed: FragmentStringJsonc; parsed: Jsonc.StringBase & Jsonc.ValueBase;
-  remaining: FragmentStringJsonc; }
+): {
+  consumed: FragmentStringJsonc;
+  parsed: Jsonc.StringBase & Jsonc.ValueBase;
+  remaining: FragmentStringJsonc
+}
 {
   if (!value.startsWith('"',))
     throw new Error('expected a double quote to start a JSON string',);
 
-  const closingIndex = findTerminatingQuote(value, 1,);
+  const closingIndex = findTerminatingQuote(
+    value,
+    1,
+  );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- slice of JSONC string remains a JSONC fragment
-  const consumed = value.slice(0, closingIndex + 1,) as FragmentStringJsonc;
+  const consumed = value.slice(
+    0,
+    closingIndex + 1,
+  ) as FragmentStringJsonc;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- slice of JSONC string remains a JSONC fragment
   const remaining = value.slice(closingIndex + 1,) as FragmentStringJsonc;
-  return { consumed, parsed: { value: consumed, }, remaining, };
+  return {
+    consumed,
+    parsed: { value: consumed, },
+    remaining,
+  };
 }

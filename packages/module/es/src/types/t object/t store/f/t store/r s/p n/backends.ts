@@ -20,9 +20,15 @@ import type { SyncStorageBackend, } from '../../../../t/r s/index.ts';
  * ```
  */
 export function queryAllBackendsSync(
-  backends: readonly [SyncStorageBackend, ...SyncStorageBackend[],],
+  backends: readonly [
+    SyncStorageBackend,
+    ...SyncStorageBackend[],
+  ],
   key: string,
-): [BackendResult<SyncStorageBackend>, ...BackendResult<SyncStorageBackend>[],] {
+): [
+  BackendResult<SyncStorageBackend>,
+  ...BackendResult<SyncStorageBackend>[],
+] {
   const results = backends.map(function queryBackend(backend,) {
     const raw = backend.get(key,);
     return {
@@ -33,6 +39,8 @@ export function queryAllBackendsSync(
     };
   },);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-empty backends guarantees non-empty results
-  return results as [BackendResult<SyncStorageBackend>,
-    ...BackendResult<SyncStorageBackend>[],];
+  return results as [
+    BackendResult<SyncStorageBackend>,
+    ...BackendResult<SyncStorageBackend>[],
+  ];
 }

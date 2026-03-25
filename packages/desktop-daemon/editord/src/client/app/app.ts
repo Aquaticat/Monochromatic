@@ -60,7 +60,10 @@ import { wireKeybindings, } from './keybindings.ts';
 import { wireLsp, } from './lsp.ts';
 
 /** Tagged logger for the app. */
-const appLog = tagged({ tag: 'app', l, },);
+const appLog = tagged({
+  tag: 'app',
+  l,
+},);
 /** URL query parameters from the page URL. */
 const params = new URLSearchParams(globalThis.location.search,);
 /** Auth token passed by editord on startup. */
@@ -70,7 +73,10 @@ const filePath = params.get('file',);
 /** Port derived from the current page origin. */
 const { port, } = globalThis.location;
 /** WebSocket client instance. */
-const ws = new EditorWsClient({ port, token, },);
+const ws = new EditorWsClient({
+  port,
+  token,
+},);
 /** App container element. */
 const appElement = notNullishOrThrow(document.querySelector<HTMLElement>('#app',),);
 
@@ -92,13 +98,19 @@ const binaryViewer = document.createElement('binary-viewer',) as BinaryViewer;
 // oxlint-enable typescript-eslint/no-unsafe-type-assertion
 
 fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> {
-  const r = await ws.request({ type: 'listDir', path, },);
+  const r = await ws.request({
+    type: 'listDir',
+    path,
+  },);
   return 'entries' in r ? r.entries : [];
 };
 fileTree.onContextAction = function handleContextAction(action: ContextAction,): void {
   void (async function dispatch(): Promise<void> {
     try {
-      await dispatchFsAction({ action, ws, },);
+      await dispatchFsAction({
+        action,
+        ws,
+      },);
     }
     catch (error) {
       showFixedToast({ message: `Action failed: ${String(error,)}`, },);
@@ -112,16 +124,30 @@ searchOverlay.onSearch = async function handleSearch(
   query: string,
 ): Promise<SearchResult[]> {
   const scope = fileTree.selectedDir !== '' ? fileTree.selectedDir : ws.rootDir;
-  const r = await ws.request({ type: 'search', query, scope, },);
+  const r = await ws.request({
+    type: 'search',
+    query,
+    scope,
+  },);
   return 'results' in r ? r.results : [];
 };
 
-appElement.append(fileTree, editorPane, binaryViewer, searchOverlay, hoverPopup,
-  completionPopup, referencesPopup,);
+appElement.append(
+  fileTree,
+  editorPane,
+  binaryViewer,
+  searchOverlay,
+  hoverPopup,
+  completionPopup,
+  referencesPopup,
+);
 wireFullscreen({ appElement, },);
 
 /** Mutable app state shared with event handlers. */
-const state: AppState = { currentFilePath: filePath, currentFileKind: 'text', };
+const state: AppState = {
+  currentFilePath: filePath,
+  currentFileKind: 'text',
+};
 
 /** Tracks recently opened files for recency markers in the file tree. */
 const recentFiles = createRecentFiles();
@@ -139,41 +165,82 @@ function recordFileOpen(path: string,): void {
 
 /** Loads a file and updates the current file state. */
 async function loadFileSafe(
-  { path, line, character, }: { path: string; line?: number | undefined;
-    character?: number | undefined; },
+  {
+    path,
+    line,
+    character,
+  }: {
+    path: string;
+    line?: number | undefined;
+    character?: number | undefined
+  },
 ): Promise<void> {
-  const kind = await loadFile({ ws, editorPane, binaryViewer, token, path, line,
-    character, },);
+  const kind = await loadFile({
+    ws,
+    editorPane,
+    binaryViewer,
+    token,
+    path,
+    line,
+    character,
+  },);
   if (kind !== null)
     state.currentFileKind = kind;
 }
 
 /** LSP feature callbacks returned from wiring. */
-const { formatDocument, requestCompletions, refreshInlayHints, gotoDefinitionAtCursor,
-  expandSelection, shrinkSelection, } = wireLsp({ ws, editorPane, hoverPopup,
-    completionPopup, referencesPopup, getCurrentFilePath: function get() {
+const {
+  formatDocument,
+  requestCompletions,
+  refreshInlayHints,
+  gotoDefinitionAtCursor,
+  expandSelection,
+  shrinkSelection,
+} = wireLsp({
+    ws,
+    editorPane,
+    hoverPopup,
+    completionPopup,
+    referencesPopup,
+    getCurrentFilePath: function get() {
       return state.currentFilePath;
-    }, loadFileSafe, },);
+    },
+    loadFileSafe,
+  },);
 
-wireSelectEvents({ fileTree, searchOverlay, referencesPopup, state, recordFileOpen,
-  loadFileSafe, refreshInlayHints, },);
+wireSelectEvents({
+  fileTree,
+  searchOverlay,
+  referencesPopup,
+  state,
+  recordFileOpen,
+  loadFileSafe,
+  refreshInlayHints,
+},);
 
 /** Saves the current editor content to the server. Skips non-text files. */
 async function saveCurrentFile(): Promise<void> {
   if (state.currentFilePath === null || state.currentFileKind !== 'text')
     return;
   try {
-    await ws.request({ type: 'save', path: state.currentFilePath, content: editorPane
-      .getText(), },);
+    await ws.request({
+      type: 'save',
+      path: state.currentFilePath,
+      content: editorPane
+      .getText(),
+    },);
   }
   catch (error) {
     appLog.error(`save failed: ${String(error,)}`,);
   }
 }
 
-editorPane.addEventListener('contentchange', createDebounced({ fn: function autoSave() {
+editorPane.addEventListener(
+  'contentchange',
+  createDebounced({ fn: function autoSave() {
   void saveCurrentFile();
-}, delayMs: AUTO_SAVE_DEBOUNCE_MS, },),);
+}, delayMs: AUTO_SAVE_DEBOUNCE_MS, },),
+);
 
 wireKeybindings({
   saveCurrentFile: function save() {
@@ -192,9 +259,15 @@ wireKeybindings({
   swapLineUp: editorPane.swapLineUp.bind(editorPane,),
   openTerminalAtCurrentFile: function openTerminal() {
     const dir = state.currentFilePath !== null
-      ? state.currentFilePath.slice(0, state.currentFilePath.lastIndexOf('/',),)
+      ? state.currentFilePath.slice(
+        0,
+        state.currentFilePath.lastIndexOf('/',),
+      )
       : ws.rootDir;
-    void ws.request({ type: 'openInTerminal', path: dir, },);
+    void ws.request({
+      type: 'openInTerminal',
+      path: dir,
+    },);
   },
   requestCompletions,
   expandSelection,
@@ -219,7 +292,21 @@ wireKeybindings({
   hoverPopup,
 },);
 
-wireFileWatching({ ws, fileTree, state, loadFileSafe, },);
+wireFileWatching({
+  ws,
+  fileTree,
+  state,
+  loadFileSafe,
+},);
 
-await bootSession({ ws, editorPane, fileTree, searchOverlay, state, recentFiles,
-  loadFileSafe, refreshInlayHints, queryFilePath: filePath, },);
+await bootSession({
+  ws,
+  editorPane,
+  fileTree,
+  searchOverlay,
+  state,
+  recentFiles,
+  loadFileSafe,
+  refreshInlayHints,
+  queryFilePath: filePath,
+},);

@@ -35,8 +35,9 @@ export function needsPerLineFix(
   ) === lineAt(
     sourceText,
     firstRange[0],
-  ))
+  )) {
     return true;
+  }
 
   const lastRange = rangeOf(at(
     items,
@@ -48,8 +49,9 @@ export function needsPerLineFix(
   ) === lineAt(
     sourceText,
     containerRange[1],
-  ))
+  )) {
     return true;
+  }
 
   for (let i = 1; i < items.length; i++) {
     const prevRange = rangeOf(at(
@@ -66,8 +68,9 @@ export function needsPerLineFix(
     ) === lineAt(
       sourceText,
       currRange[0],
-    ))
+    )) {
       return true;
+    }
   }
 
   return false;

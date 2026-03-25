@@ -6,9 +6,7 @@ import type {
 } from '@oxlint/plugins';
 
 import type { BracketPair, } from './item-per-line-fix.ts';
-import {
-  buildPerLineFix,
-} from './item-per-line-fix.ts';
+import { buildPerLineFix, } from './item-per-line-fix.ts';
 import { needsPerLineFix, } from './needs-fix.ts';
 
 /**
@@ -96,8 +94,9 @@ export function checkItemsPerLine({
     sourceText,
     container,
     items,
-  ))
+  )) {
     return;
+  }
 
   context.report({
     node: container,

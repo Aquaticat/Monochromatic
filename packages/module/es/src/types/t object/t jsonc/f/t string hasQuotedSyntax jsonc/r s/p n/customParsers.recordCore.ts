@@ -31,16 +31,28 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
  */
 export function parseRecordValue(
   tail: FragmentStringJsonc,
-): { valueNode: Jsonc.Value; remaining: FragmentStringJsonc; } {
+): {
+  valueNode: Jsonc.Value;
+  remaining: FragmentStringJsonc
+} {
   /** Comments/whitespace after colon before the value. */
   const valueLead = startsWithComment({ value: tail, },);
   /** Parsed value node with propagated comment and the remaining tail. */
-  const { parsed: valueNode, remaining, } = callParseValue(
+  const {
+    parsed: valueNode,
+    remaining,
+  } = callParseValue(
     valueLead.comment
-      ? { value: valueLead.remainingContent, context: { comment: valueLead.comment, }, }
+      ? {
+        value: valueLead.remainingContent,
+        context: { comment: valueLead.comment, },
+      }
       : { value: valueLead.remainingContent, },
   );
-  return { valueNode, remaining, };
+  return {
+    valueNode,
+    remaining,
+  };
 }
 //endregion Record value parsing
 
@@ -54,11 +66,23 @@ export function parseRecordValue(
  */
 export function parseOneRecordMember(
   tail: FragmentStringJsonc,
-): { entry: [Jsonc.RecordKey, Jsonc.Value,]; remaining: FragmentStringJsonc; } {
-  const { keyNode, remaining: afterKey, } = parseRecordKey(tail,);
+): {
+  entry: [Jsonc.RecordKey, Jsonc.Value,];
+  remaining: FragmentStringJsonc
+} {
+  const {
+    keyNode,
+    remaining: afterKey,
+  } = parseRecordKey(tail,);
   const afterColon = expectColonAfterKey(afterKey,);
-  const { valueNode, remaining, } = parseRecordValue(afterColon,);
-  return { entry: [keyNode, valueNode,], remaining, };
+  const {
+    valueNode,
+    remaining,
+  } = parseRecordValue(afterColon,);
+  return {
+    entry: [keyNode, valueNode,],
+    remaining,
+  };
 }
 //endregion One record member
 
@@ -74,25 +98,46 @@ export function parseOneRecordMember(
  */
 export function parseRecordMembers(
   tail: FragmentStringJsonc,
-  entries: readonly [Jsonc.RecordKey, Jsonc.Value,][] = [],
-): { entries: readonly [Jsonc.RecordKey, Jsonc.Value,][]; tail: FragmentStringJsonc; } {
+  entries: readonly [
+    Jsonc.RecordKey,
+    Jsonc.Value,
+  ][] = [],
+): {
+  entries: readonly [Jsonc.RecordKey, Jsonc.Value,][];
+  tail: FragmentStringJsonc
+} {
   /** Leading comments at member start; check for closing brace. */
   const lead = startsWithComment({ value: tail, },);
   /** Start positioned at quoted key or closing brace. */
   const start = lead.remainingContent;
 
   if (start.startsWith('}',))
-    return { entries, tail: start.slice('}'.length,) as FragmentStringJsonc, };
+    return {
+      entries,
+      tail: start.slice('}'.length,) as FragmentStringJsonc,
+    };
 
   /** Parse one member from current position. */
-  const { entry, remaining, } = parseOneRecordMember(tail,);
+  const {
+    entry,
+    remaining,
+  } = parseOneRecordMember(tail,);
   /** Separator/end decision for subsequent member parsing. */
   const decision = expectRecordSeparatorOrEnd(remaining,);
   /** Immutable accumulation of parsed entries. */
-  const nextEntries = [...entries, entry,];
+  const nextEntries = [
+    ...entries,
+    entry,
+  ];
   return decision.kind === 'end'
-    ? { entries: nextEntries, tail: decision.tail, }
-    : parseRecordMembers(decision.tailStart, nextEntries,);
+    ? {
+      entries: nextEntries,
+      tail: decision.tail,
+    }
+    : parseRecordMembers(
+      decision.tailStart,
+      nextEntries,
+    );
 }
 //endregion Record members
 
@@ -109,8 +154,13 @@ export function parseRecordMembers(
  * @returns Parsed record node and `remainingContent` after the closing '}'
  */
 export function customParserForRecord(
-  { value, context, }: { value: FragmentStringJsonc | StringJsonc;
-    context?: Jsonc.ValueBase; },
+  {
+    value,
+    context,
+  }: {
+    value: FragmentStringJsonc | StringJsonc;
+    context?: Jsonc.ValueBase
+  },
 ): Jsonc.Record & { remainingContent: FragmentStringJsonc; } {
   //region Entry and empty-object fast-exit
   /** Tail after stripping the opening '{' to keep pointer immutable. */
@@ -121,8 +171,11 @@ export function customParserForRecord(
     /** Combined record-level comment when context and inside comments are present. */
     let finalComment: Jsonc.Comment | undefined;
     if (context?.comment && insideLead.comment) {
-      finalComment = mergeComments({ value: context.comment, value2: insideLead
-        .comment, },);
+      finalComment = mergeComments({
+        value: context.comment,
+        value2: insideLead
+        .comment,
+      },);
     }
     else if (context?.comment)
       finalComment = mergeComments({ value: context.comment, },);
@@ -141,7 +194,13 @@ export function customParserForRecord(
 
   //region Members recursion
   /** Parsed entries and tail after the terminating '}'. */
-  const { entries, tail, } = parseRecordMembers(woOpening, [],);
+  const {
+    entries,
+    tail,
+  } = parseRecordMembers(
+    woOpening,
+    [],
+  );
   return {
     value: new Map(entries,),
     ...(context?.comment ? { comment: context.comment, } : {}),

@@ -22,7 +22,11 @@ export function postCard(post: Post,): string {
       tag: 'li',
       class: 'Post__tag',
       children: [
-        h({ tag: 'a', attrs: { href: `#tag__${tag}`, }, text: tag, },),
+        h({
+          tag: 'a',
+          attrs: { href: `#tag__${tag}`, },
+          text: tag,
+        },),
       ],
     },);
   },);
@@ -41,19 +45,36 @@ export function postCard(post: Post,): string {
         tag: 'div',
         class: 'content',
         children: [
-          h({ tag: 'h2', text: post.data.title, },),
-          h({ tag: 'p', class: 'description', text: post.data.description, },),
+          h({
+            tag: 'h2',
+            text: post.data.title,
+          },),
+          h({
+            tag: 'p',
+            class: 'description',
+            text: post.data.description,
+          },),
           h({
             tag: 'aside',
             children: [
-              h({ tag: 'ul', class: 'tags', children: tagItems, },),
+              h({
+                tag: 'ul',
+                class: 'tags',
+                children: tagItems,
+              },),
               h({
                 tag: 'span',
                 class: 'date',
                 children: [
-                  prettyDate({ date: post.data.published, lang: post.lang, },),
+                  prettyDate({
+                    date: post.data.published,
+                    lang: post.lang,
+                  },),
                   ' - ',
-                  prettyDate({ date: post.data.updated, lang: post.lang, },),
+                  prettyDate({
+                    date: post.data.updated,
+                    lang: post.lang,
+                  },),
                 ],
               },),
             ],

@@ -36,7 +36,12 @@ import {
  *
  * @returns HTML string
  */
-export async function renderProbeOverlay({ id, entry, probe, detail, }: {
+export async function renderProbeOverlay({
+  id,
+  entry,
+  probe,
+  detail,
+}: {
   id: string;
   entry: ViewerEntry;
   probe: string;
@@ -51,33 +56,55 @@ export async function renderProbeOverlay({ id, entry, probe, detail, }: {
 
   // Pass metadata sections (timing, usage, finish reason)
   const initialMeta = detail !== undefined
-    ? renderPassMeta({ label: 'Initial pass', timing: detail.timing, usage: detail.usage,
-      finishReason: detail.finishReason, },)
+    ? renderPassMeta({
+      label: 'Initial pass',
+      timing: detail.timing,
+      usage: detail.usage,
+      finishReason: detail.finishReason,
+    },)
     : '';
   const fixMeta = detail !== undefined
       && (detail.fixTiming !== undefined || detail.fixUsage !== undefined)
-    ? renderPassMeta({ label: 'Fix pass', timing: detail.fixTiming,
-      usage: detail.fixUsage, finishReason: detail.fixFinishReason, },)
+    ? renderPassMeta({
+      label: 'Fix pass',
+      timing: detail.fixTiming,
+      usage: detail.fixUsage,
+      finishReason: detail.fixFinishReason,
+    },)
     : '';
 
   // Source code section (diff or single)
   let sourceSection = detail === undefined
-    ? h({ tag: 'p', class: 'detail-popover-empty',
-      text: 'Artifacts not available for this run.', },)
+    ? h({
+      tag: 'p',
+      class: 'detail-popover-empty',
+      text: 'Artifacts not available for this run.',
+    },)
     : '';
   if (detail?.initialSource !== undefined) {
     const initialHighlighted = highlightTs(detail.initialSource,);
 
     if (detail.fixSource !== undefined && detail.fixDir !== undefined) {
-      const initialFile = join(detail.initialDir, 'canary.ts',);
-      const fixFile = join(detail.fixDir, 'canary.ts',);
-      const diffLines = await computeDiff({ initialPath: initialFile,
-        fixPath: fixFile, },);
+      const initialFile = join(
+        detail.initialDir,
+        'canary.ts',
+      );
+      const fixFile = join(
+        detail.fixDir,
+        'canary.ts',
+      );
+      const diffLines = await computeDiff({
+        initialPath: initialFile,
+        fixPath: fixFile,
+      },);
       sourceSection = h({
         tag: 'details',
         class: 'collapsible-section',
         children: [
-          h({ tag: 'summary', text: 'Source diff', },),
+          h({
+            tag: 'summary',
+            text: 'Source diff',
+          },),
           renderSideBySideDiff(diffLines,),
         ],
       },);
@@ -87,8 +114,15 @@ export async function renderProbeOverlay({ id, entry, probe, detail, }: {
         tag: 'details',
         class: 'collapsible-section',
         children: [
-          h({ tag: 'summary', text: 'Source', },),
-          h({ tag: 'pre', class: 'glow', html: initialHighlighted, },),
+          h({
+            tag: 'summary',
+            text: 'Source',
+          },),
+          h({
+            tag: 'pre',
+            class: 'glow',
+            html: initialHighlighted,
+          },),
         ],
       },);
     }
@@ -105,9 +139,17 @@ export async function renderProbeOverlay({ id, entry, probe, detail, }: {
   return h({
     tag: 'div',
     class: 'detail-popover',
-    attrs: { popover: 'auto', id: `run-${id}`, 'data-layout': 'centered', },
+    attrs: {
+      popover: 'auto',
+      id: `run-${id}`,
+      'data-layout': 'centered',
+    },
     children: [
-      h({ tag: 'h2', class: 'detail-popover-title', text: title, },),
+      h({
+        tag: 'h2',
+        class: 'detail-popover-title',
+        text: title,
+      },),
       badges,
       initialMeta,
       fixMeta,

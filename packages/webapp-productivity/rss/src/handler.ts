@@ -13,7 +13,10 @@ import { l as parentLogger, } from './log.ts';
 import { IGNORE_PATH, } from './path.ts';
 
 /** Tagged logger for the handler module. */
-const l = tagged({ tag: 'handler', l: parentLogger, },);
+const l = tagged({
+  tag: 'handler',
+  l: parentLogger,
+},);
 
 //region HTTP handlers -- Serve rendered HTML and persist ignored items
 
@@ -28,12 +31,18 @@ export async function serveIndex(options: {
   getHtmlBody: () => Promise<string>;
 },): Promise<Response> {
   const { getHtmlBody, } = options;
-  const innerL = tagged({ tag: serveIndex.name, l, },);
+  const innerL = tagged({
+    tag: serveIndex.name,
+    l,
+  },);
   innerL.debug('serving index',);
   const body = await getHtmlBody();
   return new Response(
     `${indexHtmlStart}${body}${INDEX_HTML_END}`,
-    { status: 200, headers: { 'content-type': 'text/html', }, },
+    {
+      status: 200,
+      headers: { 'content-type': 'text/html', },
+    },
   );
 }
 
@@ -46,17 +55,33 @@ export async function serveIndex(options: {
  * @returns Response with file stats after appending
  */
 export async function ignore(request: Request,): Promise<Response> {
-  const innerL = tagged({ tag: ignore.name, l, },);
+  const innerL = tagged({
+    tag: ignore.name,
+    l,
+  },);
   const body = await request.text();
   innerL.debug(`ignore ${body}`,);
 
-  const filePath = join(IGNORE_PATH, 'api.jsonl',);
+  const filePath = join(
+    IGNORE_PATH,
+    'api.jsonl',
+  );
   if (!await exists(filePath,)) {
     innerL.debug('creating api.jsonl',);
-    await mkdir(IGNORE_PATH, { recursive: true, },);
-    await writeFile(filePath, '', 'utf8',);
+    await mkdir(
+      IGNORE_PATH,
+      { recursive: true, },
+    );
+    await writeFile(
+      filePath,
+      '',
+      'utf8',
+    );
   }
-  await appendFile(filePath, `\n${body}`,);
+  await appendFile(
+    filePath,
+    `\n${body}`,
+  );
 
   const stats = await stat(filePath,);
   return Response.json(stats,);

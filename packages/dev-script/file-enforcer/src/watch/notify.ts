@@ -16,13 +16,20 @@ export async function notifyWriteProtection(filePath: string,): Promise<void> {
   const notifyBody = `"${filePath}" was modified externally and has been reverted.`;
   try {
     /** Spawn notify-send as fire-and-forget; failure is non-fatal */
-    await spawn('notify-send', ['--urgency=critical', 'file-enforcer: write protected',
-      notifyBody,], {
+    await spawn(
+      'notify-send',
+      ['--urgency=critical', 'file-enforcer: write protected',
+      notifyBody,],
+      {
       stdout: 'ignore',
-    },);
+    },
+    );
   }
   catch (notifyError: unknown) {
     // notify-send may not be installed -- log and move on
-    console.warn('[file-enforcer] could not send desktop notification:', notifyError,);
+    console.warn(
+      '[file-enforcer] could not send desktop notification:',
+      notifyError,
+    );
   }
 }

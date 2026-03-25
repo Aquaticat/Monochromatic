@@ -47,7 +47,11 @@ function isFileLockError(error: unknown,): boolean {
  *
  * @throws re-throws non-file-lock errors and file-lock errors when lspManager is null
  */
-async function retryOnFileLock({ operation, path, lspManager, }: {
+async function retryOnFileLock({
+  operation,
+  path,
+  lspManager,
+}: {
   operation: () => Promise<void>;
   path: string;
   lspManager: LspManager | null;
@@ -79,45 +83,90 @@ async function retryOnFileLock({ operation, path, lspManager, }: {
  *
  * @returns true if the message was handled, false if not an FS action type
  */
-export async function dispatchFsMessage({ peer, parsed, rootDir, lspManager, }: {
+export async function dispatchFsMessage({
+  peer,
+  parsed,
+  rootDir,
+  lspManager,
+}: {
   peer: Peer;
   parsed: ClientMessage;
   rootDir: string;
   lspManager: LspManager | null;
 },): Promise<boolean> {
   if (parsed.type === 'deleteEntry') {
-    await retryOnFileLock({ operation: function del() {
+    await retryOnFileLock({
+      operation: function del() {
       return deleteEntry({ rootDir, path: parsed.path, },);
-    }, path: parsed.path, lspManager, },);
-    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
+    },
+      path: parsed.path,
+      lspManager,
+    },);
+    sendJson({
+      peer,
+      message: { type: 'fsActionDone', id: parsed.id, },
+    },);
     return true;
   }
   if (parsed.type === 'copyEntry') {
-    await copyEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },);
-    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
+    await copyEntry({
+      rootDir,
+      path: parsed.path,
+      destPath: parsed.destPath,
+    },);
+    sendJson({
+      peer,
+      message: { type: 'fsActionDone', id: parsed.id, },
+    },);
     return true;
   }
   if (parsed.type === 'moveEntry') {
-    await retryOnFileLock({ operation: function mv() {
+    await retryOnFileLock({
+      operation: function mv() {
       return moveEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },);
-    }, path: parsed.path, lspManager, },);
-    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
+    },
+      path: parsed.path,
+      lspManager,
+    },);
+    sendJson({
+      peer,
+      message: { type: 'fsActionDone', id: parsed.id, },
+    },);
     return true;
   }
   if (parsed.type === 'newEntry') {
-    await newEntry({ rootDir, parentPath: parsed.parentPath, name: parsed.name,
-      isDirectory: parsed.isDirectory, },);
-    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
+    await newEntry({
+      rootDir,
+      parentPath: parsed.parentPath,
+      name: parsed.name,
+      isDirectory: parsed.isDirectory,
+    },);
+    sendJson({
+      peer,
+      message: { type: 'fsActionDone', id: parsed.id, },
+    },);
     return true;
   }
   if (parsed.type === 'openInTerminal') {
-    await openInTerminal({ rootDir, path: parsed.path, },);
-    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
+    await openInTerminal({
+      rootDir,
+      path: parsed.path,
+    },);
+    sendJson({
+      peer,
+      message: { type: 'fsActionDone', id: parsed.id, },
+    },);
     return true;
   }
   if (parsed.type === 'openInDefaultApp') {
-    await openInDefaultApp({ rootDir, path: parsed.path, },);
-    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
+    await openInDefaultApp({
+      rootDir,
+      path: parsed.path,
+    },);
+    sendJson({
+      peer,
+      message: { type: 'fsActionDone', id: parsed.id, },
+    },);
     return true;
   }
   return false;

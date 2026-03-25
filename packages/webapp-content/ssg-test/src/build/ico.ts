@@ -50,16 +50,44 @@ const ICO_DATA_OFFSET = 22;
  */
 export function createIco({ pngData, }: { pngData: Buffer; },): Buffer {
   const header = Buffer.alloc(ICO_HEADER_SIZE,);
-  header.writeUInt16LE(1, 2,); // type: 1 = ICO
-  header.writeUInt16LE(1, ICO_HEADER_COUNT_OFFSET,); // image count
+  header.writeUInt16LE(
+    1,
+    2,
+  ); // type: 1 = ICO
+  header.writeUInt16LE(
+    1,
+    ICO_HEADER_COUNT_OFFSET,
+  ); // image count
 
   const entry = Buffer.alloc(ICO_ENTRY_SIZE,);
-  entry.writeUInt8(ICO_DIMENSION, 0,); // width
-  entry.writeUInt8(ICO_DIMENSION, 1,); // height
-  entry.writeUInt16LE(1, ICO_ENTRY_PLANES_OFFSET,); // color planes
-  entry.writeUInt16LE(ICO_BITS_PER_PIXEL, ICO_ENTRY_BPP_OFFSET,); // bits per pixel
-  entry.writeUInt32LE(pngData.length, ICO_ENTRY_DATASIZE_OFFSET,); // image data size
-  entry.writeUInt32LE(ICO_DATA_OFFSET, ICO_ENTRY_DATAPTR_OFFSET,); // data offset
+  entry.writeUInt8(
+    ICO_DIMENSION,
+    0,
+  ); // width
+  entry.writeUInt8(
+    ICO_DIMENSION,
+    1,
+  ); // height
+  entry.writeUInt16LE(
+    1,
+    ICO_ENTRY_PLANES_OFFSET,
+  ); // color planes
+  entry.writeUInt16LE(
+    ICO_BITS_PER_PIXEL,
+    ICO_ENTRY_BPP_OFFSET,
+  ); // bits per pixel
+  entry.writeUInt32LE(
+    pngData.length,
+    ICO_ENTRY_DATASIZE_OFFSET,
+  ); // image data size
+  entry.writeUInt32LE(
+    ICO_DATA_OFFSET,
+    ICO_ENTRY_DATAPTR_OFFSET,
+  ); // data offset
 
-  return Buffer.concat([header, entry, pngData,],);
+  return Buffer.concat([
+    header,
+    entry,
+    pngData,
+  ],);
 }

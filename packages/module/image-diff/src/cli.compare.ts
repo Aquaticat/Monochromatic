@@ -17,11 +17,23 @@ import {
  *
  * @param printUsageAndExit - callback to print usage and exit on errors
  */
-export async function handleCompare(args: string[],
-  printUsageAndExit: () => never,): Promise<void>
+export async function handleCompare(
+  args: string[],
+  printUsageAndExit: () => never,
+): Promise<void>
 {
-  const rl = tagged({ tag: handleCompare.name, l, },);
-  const { provider, model, remaining, } = parseFlags(args, printUsageAndExit,);
+  const rl = tagged({
+    tag: handleCompare.name,
+    l,
+  },);
+  const {
+    provider,
+    model,
+    remaining,
+  } = parseFlags(
+    args,
+    printUsageAndExit,
+  );
 
   if (remaining.length !== 2) {
     console.error('Error: compare requires exactly 2 image arguments',);
@@ -43,19 +55,30 @@ export async function handleCompare(args: string[],
       provider,
       ...(model !== undefined ? { model, } : {}),
     };
-    const result = await compare(imageA, imageB, config,);
+    const result = await compare(
+      imageA,
+      imageB,
+      config,
+    );
 
-    console.log(JSON.stringify({
+    console.log(JSON.stringify(
+      {
       provider,
       similarity: result.similarity,
       distance: result.distance,
       embeddingDimensions: result.embeddingA.length,
       description: result.description,
-    }, null, 2,),);
+    },
+      null,
+      2,
+    ),);
   }
   else {
     rl.debug('comparing via all providers',);
-    const results = await compareAll(imageA, imageB,);
+    const results = await compareAll(
+      imageA,
+      imageB,
+    );
 
     console.log(JSON.stringify(
       results.map(function formatEntry(entry,) {

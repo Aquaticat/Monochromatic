@@ -29,18 +29,34 @@ export { wireSessionPersistence, } from '../session/persistence.ts';
  * @returns boot file path (or null) and saved recent files list
  */
 export async function restoreSession(
-  { ws, editorPane, fileTree, loadFileSafe, queryFilePath, }: {
+  {
+    ws,
+    editorPane,
+    fileTree,
+    loadFileSafe,
+    queryFilePath,
+  }: {
     ws: EditorWsClient;
     editorPane: EditorPane;
     fileTree: FileTree;
     loadFileSafe: (
-      opts: { path: string; line?: number | undefined; character?: number | undefined; },
+      opts: {
+        path: string;
+        line?: number | undefined;
+        character?: number | undefined
+      },
     ) => Promise<void>;
     queryFilePath: string | null;
   },
-): Promise<{ filePath: string | null; recentFiles: string[]; }> {
+): Promise<{
+  filePath: string | null;
+  recentFiles: string[]
+}> {
   /** Saved session state from a previous visit, if any. */
-  const saved = restoreSessionState({ fsId: ws.fsId, rootDir: ws.rootDir, },);
+  const saved = restoreSessionState({
+    fsId: ws.fsId,
+    rootDir: ws.rootDir,
+  },);
 
   /**
    * File to open on boot: query param takes precedence (explicit navigation),
@@ -63,5 +79,8 @@ export async function restoreSession(
     editorPane.editorScrollTop = saved.scrollTop;
   }
 
-  return { filePath: bootFilePath, recentFiles: saved?.recentFiles ?? [], };
+  return {
+    filePath: bootFilePath,
+    recentFiles: saved?.recentFiles ?? [],
+  };
 }

@@ -32,15 +32,29 @@ import { renderByProbe, } from './html/view-probe.ts';
 export {};
 
 /** Absolute path to this package's root directory */
-const PACKAGE_DIR: string = new URL('..', import.meta.url,).pathname;
+const PACKAGE_DIR: string = new URL(
+  '..',
+  import.meta.url,
+).pathname;
 /** Output directory for the generated site */
-const DIST_DIR = join(PACKAGE_DIR, 'dist', 'final',);
+const DIST_DIR = join(
+  PACKAGE_DIR,
+  'dist',
+  'final',
+);
 /** Directory containing CSS source files */
-const CSS_DIR = join(PACKAGE_DIR, 'src', 'css',);
+const CSS_DIR = join(
+  PACKAGE_DIR,
+  'src',
+  'css',
+);
 
 console.error('[viewer] reading artifacts...',);
 /** All run entries and per-probe detail data loaded from artifact directories. */
-const { entries, probeDetails, } = await readArtifacts();
+const {
+  entries,
+  probeDetails,
+} = await readArtifacts();
 
 console.error(
   `[viewer] ${String(entries.length,)} runs, ${String(probeDetails.size,)} probe details`,
@@ -56,7 +70,10 @@ const uniqueLabels = [...new Set(entries.map(function getLabel(entry,) {
 /** Map from model label to computed degradation threshold */
 const thresholds = new Map<string, number>(
   uniqueLabels.map(function buildThreshold(label,) {
-    return [label, computeThreshold(label, entries,).threshold,];
+    return [
+      label,
+      computeThreshold(label, entries,).threshold,
+    ];
   },),
 );
 
@@ -96,39 +113,69 @@ const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(lab
 console.error('[viewer] rendering HTML...',);
 
 /** Overview table HTML for the dashboard. */
-const overviewHtml = renderOverview({ summaries, entries, },);
+const overviewHtml = renderOverview({
+  summaries,
+  entries,
+},);
 /** By-model charts HTML for the dashboard. */
-const byModelHtml = renderByModel({ entries, thresholds, },);
+const byModelHtml = renderByModel({
+  entries,
+  thresholds,
+},);
 /** By-probe charts HTML for the dashboard. */
 const byProbeHtml = renderByProbe({ entries, },);
 /** Detail overlay popovers HTML for all entries. */
-const overlaysHtml = await renderAllOverlays({ entries, probeDetails, },);
+const overlaysHtml = await renderAllOverlays({
+  entries,
+  probeDetails,
+},);
 
 /** Assembled dashboard HTML combining all sections. */
-const dashboardHtml = renderDashboard({ overviewHtml, byModelHtml, byProbeHtml,
-  overlaysHtml, },);
+const dashboardHtml = renderDashboard({
+  overviewHtml,
+  byModelHtml,
+  byProbeHtml,
+  overlaysHtml,
+},);
 /** Inline SVG icon sprite sheet. */
 const spriteHtml = renderSvgSprite();
 /** Complete page HTML ready to write to disk. */
-const pageHtml = renderPage({ body: spriteHtml + dashboardHtml,
-  title: 'Inference canary dashboard', },);
+const pageHtml = renderPage({
+  body: spriteHtml + dashboardHtml,
+  title: 'Inference canary dashboard',
+},);
 
 //endregion Render all HTML sections
 
 //region Build CSS and write output
 
-await mkdir(DIST_DIR, { recursive: true, },);
+await mkdir(
+  DIST_DIR,
+  { recursive: true, },
+);
 
 /** Destructured CSS build result; HTML write result is discarded. */
 const [, cssResult,] = await Promise.all([
-  writeFile(join(DIST_DIR, 'index.html',), pageHtml, 'utf8',),
-  buildCss({ input: join(CSS_DIR, 'index.css',),
-    output: join(DIST_DIR, 'style.css',), },),
+  writeFile(
+    join(DIST_DIR, 'index.html',),
+    pageHtml,
+    'utf8',
+  ),
+  buildCss({
+    input: join(CSS_DIR, 'index.css',),
+    output: join(DIST_DIR, 'style.css',),
+  },),
 ],);
 
-console.error(`[viewer] wrote ${join(DIST_DIR, 'index.html',)}`,);
+console.error(`[viewer] wrote ${join(
+  DIST_DIR,
+  'index.html',
+)}`,);
 console.error(
-  `[viewer] wrote ${join(DIST_DIR, 'style.css',)} (${String(cssResult.length,)} bytes)`,
+  `[viewer] wrote ${join(
+    DIST_DIR,
+    'style.css',
+  )} (${String(cssResult.length,)} bytes)`,
 );
 
 //endregion Build CSS and write output

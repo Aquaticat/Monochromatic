@@ -23,12 +23,24 @@ import {
  * ```
  */
 export async function spawn(
-  { args, command, }: { args: readonly string[]; command: string; },
+  {
+    args,
+    command,
+  }: {
+    args: readonly string[];
+    command: string
+  },
 ): Promise<string> {
-  const rl = tagged({ tag: spawn.name, l, },);
+  const rl = tagged({
+    tag: spawn.name,
+    l,
+  },);
   rl.debug(`${command} ${args.join(' ',)}`,);
 
-  const { stdout, } = await nanoSpawn(command, [...args,],);
+  const { stdout, } = await nanoSpawn(
+    command,
+    [...args,],
+  );
 
   return stdout.trim();
 }

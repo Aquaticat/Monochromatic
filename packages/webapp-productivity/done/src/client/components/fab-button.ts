@@ -57,14 +57,26 @@ class FabButton extends HTMLElement {
   connectedCallback(): void {
     const label = this.getAttribute('label',) ?? 'Action';
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       h({
         tag: 'button',
-        attrs: { part: 'button', 'aria-label': label, },
-        children: [h({ tag: 'slot', text: '+', },),],
+        attrs: {
+          part: 'button',
+          'aria-label': label,
+        },
+        children: [h({
+          tag: 'slot',
+          text: '+',
+        },),],
       },),
     );
   }
 }
 
-customElements.define('fab-button', FabButton,);
+customElements.define(
+  'fab-button',
+  FabButton,
+);

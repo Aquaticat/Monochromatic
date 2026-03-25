@@ -46,8 +46,17 @@ export function parseRange(value: string,): ParsedRange | undefined {
   if (match === null)
     return undefined;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex named groups are guaranteed by RANGE_RE pattern
-  const { prefix, version, } = match.groups as { prefix: string; version: string; };
-  return { prefix, version, };
+  const {
+    prefix,
+    version,
+  } = match.groups as {
+    prefix: string;
+    version: string
+  };
+  return {
+    prefix,
+    version,
+  };
 }
 
 /**
@@ -64,10 +73,18 @@ export function parseRange(value: string,): ParsedRange | undefined {
  * splitSemver("7.0.0-dev.20250311") // [7, 0, 0, "dev.20250311"]
  * ```
  */
-function splitSemver(version: string,): [number, number, number, string,] {
+function splitSemver(version: string,): [
+  number,
+  number,
+  number,
+  string,
+] {
   const dashIndex = version.indexOf('-',);
   const prerelease = dashIndex === -1 ? '' : version.slice(dashIndex + 1,);
-  const coreStr = dashIndex === -1 ? version : version.slice(0, dashIndex,);
+  const coreStr = dashIndex === -1 ? version : version.slice(
+    0,
+    dashIndex,
+  );
   const parts = coreStr.split('.',);
   return [
     Number(parts[0],),
@@ -95,7 +112,10 @@ function splitSemver(version: string,): [number, number, number, string,] {
  * isStrictlyGreater("7.0.0-dev.1", "7.0.0-dev.2") // true
  * ```
  */
-export function isStrictlyGreater(cataloged: string, installed: string,): boolean {
+export function isStrictlyGreater(
+  cataloged: string,
+  installed: string,
+): boolean {
   const [cMaj, cMin, cPat, cPre,] = splitSemver(cataloged,);
   const [iMaj, iMin, iPat, iPre,] = splitSemver(installed,);
 

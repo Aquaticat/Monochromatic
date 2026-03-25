@@ -44,7 +44,10 @@ export type CacheEntry = z.infer<typeof cacheEntrySchema>;
 /** Zod schema for the on-disk build manifest. */
 const buildManifestSchema = z.object({
   pipelineHash: z.string(),
-  content: z.record(z.string(), cacheEntrySchema,),
+  content: z.record(
+    z.string(),
+    cacheEntrySchema,
+  ),
 },);
 
 /** On-disk cache structure at `.cache/build-manifest.json`. */
@@ -72,7 +75,10 @@ export async function readCache(
   { l, }: { l: Logger; },
 ): Promise<BuildManifest | undefined> {
   try {
-    const raw = await readFile(CACHE_PATH, 'utf8',);
+    const raw = await readFile(
+      CACHE_PATH,
+      'utf8',
+    );
     return buildManifestSchema.parse(JSON.parse(raw,),);
   }
   catch (error) {
@@ -96,8 +102,15 @@ export async function readCache(
  * @param manifest - build manifest to persist
  */
 export async function writeCache(manifest: BuildManifest,): Promise<void> {
-  await mkdir(dirname(CACHE_PATH,), { recursive: true, },);
-  await writeFile(CACHE_PATH, JSON.stringify(manifest, undefined, 2,), 'utf8',);
+  await mkdir(
+    dirname(CACHE_PATH,),
+    { recursive: true, },
+  );
+  await writeFile(
+    CACHE_PATH,
+    JSON.stringify(manifest, undefined, 2,),
+    'utf8',
+  );
 }
 
 //endregion Cache I/O
@@ -116,7 +129,11 @@ export async function writeCache(manifest: BuildManifest,): Promise<void> {
  * @returns cached entry if the content hash matches, otherwise `undefined`
  */
 export function getCachedEntry(
-  { manifest, filePath, contentHash, }: {
+  {
+    manifest,
+    filePath,
+    contentHash,
+  }: {
     manifest: BuildManifest | undefined;
     filePath: string;
     contentHash: string;
@@ -147,13 +164,21 @@ export function getCachedEntry(
  * @returns cache entry ready for insertion into the manifest
  */
 export function createCacheEntry(
-  { contentHash, html, frontmatter, }: {
+  {
+    contentHash,
+    html,
+    frontmatter,
+  }: {
     contentHash: string;
     html: string;
     frontmatter: CacheEntry['frontmatter'];
   },
 ): CacheEntry {
-  return { contentHash, html, frontmatter, };
+  return {
+    contentHash,
+    html,
+    frontmatter,
+  };
 }
 
 /**
@@ -166,12 +191,18 @@ export function createCacheEntry(
  * @returns new build manifest
  */
 export function buildManifest(
-  { pipelineHash, entries, }: {
+  {
+    pipelineHash,
+    entries,
+  }: {
     pipelineHash: string;
     entries: Record<string, CacheEntry>;
   },
 ): BuildManifest {
-  return { pipelineHash, content: entries, };
+  return {
+    pipelineHash,
+    content: entries,
+  };
 }
 
 //endregion Cache lookup

@@ -33,16 +33,30 @@ import type {
  *
  * @returns hover content, or null when no client is available or the request fails
  */
-export async function managerHover({ pool, path, line, character, }: {
+export async function managerHover({
+  pool,
+  path,
+  line,
+  character,
+}: {
   pool: LspPool;
   path: string;
   line: number;
   character: number;
 },): Promise<LspHover | null> {
-  const c = await pool.resolve({ type: 'tsgo', filePath: path, },);
-  if (c === null || !c.initialized) return null;
+  const c = await pool.resolve({
+    type: 'tsgo',
+    filePath: path,
+  },);
+  if (c === null || !c.initialized)
+    return null;
   try {
-    return await requestHover({ client: c, path, line, character, },);
+    return await requestHover({
+      client: c,
+      path,
+      line,
+      character,
+    },);
   }
   catch {
     return null;
@@ -54,16 +68,30 @@ export async function managerHover({ pool, path, line, character, }: {
  *
  * @returns completion items, or empty array when no client is available or the request fails
  */
-export async function managerCompletion({ pool, path, line, character, }: {
+export async function managerCompletion({
+  pool,
+  path,
+  line,
+  character,
+}: {
   pool: LspPool;
   path: string;
   line: number;
   character: number;
 },): Promise<LspCompletionItem[]> {
-  const c = await pool.resolve({ type: 'tsgo', filePath: path, },);
-  if (c === null || !c.initialized) return [];
+  const c = await pool.resolve({
+    type: 'tsgo',
+    filePath: path,
+  },);
+  if (c === null || !c.initialized)
+    return [];
   try {
-    return await requestCompletion({ client: c, path, line, character, },);
+    return await requestCompletion({
+      client: c,
+      path,
+      line,
+      character,
+    },);
   }
   catch {
     return [];
@@ -75,14 +103,24 @@ export async function managerCompletion({ pool, path, line, character, }: {
  *
  * @returns text edits, or empty array when no client is available or the request fails
  */
-export async function managerFormat({ pool, path, }: {
+export async function managerFormat({
+  pool,
+  path,
+}: {
   pool: LspPool;
   path: string;
 },): Promise<LspTextEdit[]> {
-  const c = await pool.resolve({ type: 'dprint', filePath: path, },);
-  if (c === null || !c.initialized) return [];
+  const c = await pool.resolve({
+    type: 'dprint',
+    filePath: path,
+  },);
+  if (c === null || !c.initialized)
+    return [];
   try {
-    return await requestFormat({ client: c, path, },);
+    return await requestFormat({
+      client: c,
+      path,
+    },);
   }
   catch {
     return [];
@@ -94,16 +132,34 @@ export async function managerFormat({ pool, path, }: {
  *
  * @returns definition location, or null when no client is available or the request fails
  */
-export async function managerGotoDefinition({ pool, path, line, character, }: {
+export async function managerGotoDefinition({
+  pool,
+  path,
+  line,
+  character,
+}: {
   pool: LspPool;
   path: string;
   line: number;
   character: number;
-},): Promise<{ path: string; line: number; character: number; } | null> {
-  const c = await pool.resolve({ type: 'tsgo', filePath: path, },);
-  if (c === null || !c.initialized) return null;
+},): Promise<{
+  path: string;
+  line: number;
+  character: number
+} | null> {
+  const c = await pool.resolve({
+    type: 'tsgo',
+    filePath: path,
+  },);
+  if (c === null || !c.initialized)
+    return null;
   try {
-    return await requestGotoDefinition({ client: c, path, line, character, },);
+    return await requestGotoDefinition({
+      client: c,
+      path,
+      line,
+      character,
+    },);
   }
   catch {
     return null;
@@ -115,16 +171,34 @@ export async function managerGotoDefinition({ pool, path, line, character, }: {
  *
  * @returns reference locations, or empty array when no client is available or the request fails
  */
-export async function managerReferences({ pool, path, line, character, }: {
+export async function managerReferences({
+  pool,
+  path,
+  line,
+  character,
+}: {
   pool: LspPool;
   path: string;
   line: number;
   character: number;
-},): Promise<{ path: string; line: number; character: number; }[]> {
-  const c = await pool.resolve({ type: 'tsgo', filePath: path, },);
-  if (c === null || !c.initialized) return [];
+},): Promise<{
+  path: string;
+  line: number;
+  character: number
+}[]> {
+  const c = await pool.resolve({
+    type: 'tsgo',
+    filePath: path,
+  },);
+  if (c === null || !c.initialized)
+    return [];
   try {
-    return await requestReferences({ client: c, path, line, character, },);
+    return await requestReferences({
+      client: c,
+      path,
+      line,
+      character,
+    },);
   }
   catch {
     return [];
@@ -136,16 +210,30 @@ export async function managerReferences({ pool, path, line, character, }: {
  *
  * @returns inlay hints, or empty array when no client is available or the request fails
  */
-export async function managerInlayHints({ pool, path, range, }: {
+export async function managerInlayHints({
+  pool,
+  path,
+  range,
+}: {
   pool: LspPool;
   path: string;
-  range: { start: { line: number; character: number; };
-    end: { line: number; character: number; }; };
+  range: {
+    start: { line: number; character: number; };
+    end: { line: number; character: number; }
+  };
 },): Promise<LspInlayHint[]> {
-  const c = await pool.resolve({ type: 'tsgo', filePath: path, },);
-  if (c === null || !c.initialized) return [];
+  const c = await pool.resolve({
+    type: 'tsgo',
+    filePath: path,
+  },);
+  if (c === null || !c.initialized)
+    return [];
   try {
-    return await requestInlayHints({ client: c, path, range, },);
+    return await requestInlayHints({
+      client: c,
+      path,
+      range,
+    },);
   }
   catch {
     return [];
@@ -157,15 +245,30 @@ export async function managerInlayHints({ pool, path, range, }: {
  *
  * @returns selection ranges, or empty array when no client is available or the request fails
  */
-export async function managerSelectionRange({ pool, path, positions, }: {
+export async function managerSelectionRange({
+  pool,
+  path,
+  positions,
+}: {
   pool: LspPool;
   path: string;
-  positions: { line: number; character: number; }[];
+  positions: {
+    line: number;
+    character: number
+  }[];
 },): Promise<LspSelectionRange[]> {
-  const c = await pool.resolve({ type: 'tsgo', filePath: path, },);
-  if (c === null || !c.initialized) return [];
+  const c = await pool.resolve({
+    type: 'tsgo',
+    filePath: path,
+  },);
+  if (c === null || !c.initialized)
+    return [];
   try {
-    return await requestSelectionRange({ client: c, path, positions, },);
+    return await requestSelectionRange({
+      client: c,
+      path,
+      positions,
+    },);
   }
   catch {
     return [];

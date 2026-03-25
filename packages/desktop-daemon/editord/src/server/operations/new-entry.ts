@@ -26,7 +26,12 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  *
  * @throws when the path escapes root, name contains a separator, or the operation fails
  */
-export async function newEntry({ rootDir, parentPath, name, isDirectory, }: {
+export async function newEntry({
+  rootDir,
+  parentPath,
+  name,
+  isDirectory,
+}: {
   rootDir: string;
   parentPath: string;
   name: string;
@@ -35,11 +40,24 @@ export async function newEntry({ rootDir, parentPath, name, isDirectory, }: {
   if (name.includes('/',) || name.includes('\\',))
     throw new Error(`name must be a bare filename, got: ${name}`,);
 
-  const absoluteParent = assertWithinRoot({ rootDir, path: parentPath, },);
-  const absolutePath = join(absoluteParent, name,);
-  assertWithinRoot({ rootDir, path: absolutePath, },);
+  const absoluteParent = assertWithinRoot({
+    rootDir,
+    path: parentPath,
+  },);
+  const absolutePath = join(
+    absoluteParent,
+    name,
+  );
+  assertWithinRoot({
+    rootDir,
+    path: absolutePath,
+  },);
 
   await (isDirectory
     ? mkdir(absolutePath,)
-    : writeFile(absolutePath, '', 'utf8',));
+    : writeFile(
+      absolutePath,
+      '',
+      'utf8',
+    ));
 }

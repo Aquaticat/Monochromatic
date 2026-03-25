@@ -33,7 +33,13 @@ import type { $ as Logger, } from '../../../../../../t/index.ts';
  * // logs: [retry] [http] attempt 3
  * ```
  */
-export function $({ tag, l = defaultLogger, }: { l?: Logger; tag: string; },): Logger {
+export function $({
+  tag,
+  l = defaultLogger,
+}: {
+  l?: Logger;
+  tag: string
+},): Logger {
   const prefix = `[${tag}] `;
   return {
     debug: function debug(message: string,): void {

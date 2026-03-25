@@ -38,7 +38,11 @@ import {
   const TObject extends Record$<string | number | symbol, unknown>,
   const TKeys extends keyof TObject,
 >(
-  { original, toPick, strict = true, }: {
+  {
+    original,
+    toPick,
+    strict = true,
+  }: {
     original: TObject;
     toPick: ReadonlySet<TKeys>;
     strict?: boolean;
@@ -67,8 +71,11 @@ import {
   // key from normalizedOriginalKeys is missing from toPick. We need the reverse: throw if toPick has
   // keys missing from normalizedOriginalKeys. So we swap: iterate normalizedOriginalKeys, filter by toPick.
   // However, this defeats the O(M) optimization. Instead, manually validate and iterate.
-  for (const key of pickFromIterable({ iterable: normalizedOriginalKeys, toPick,
-    strict, },))
+  for (const key of pickFromIterable({
+    iterable: normalizedOriginalKeys,
+    toPick,
+    strict,
+  },))
   {
     result[key] = (original as Record<typeof key, unknown>)[key];
   }

@@ -10,8 +10,17 @@ import { serializePrimitive, } from './serializePrimitive.ts';
 
 /** Frozen tuple of primitive type discriminants handled by direct serialization. */
 const primitive = Object.freeze(
-  ['boolean', 'string', 'number', 'date', 'bigint', 'null', 'undefined', 'NaN',
-    'symbol',] as const,
+  [
+    'boolean',
+    'string',
+    'number',
+    'date',
+    'bigint',
+    'null',
+    'undefined',
+    'NaN',
+    'symbol',
+  ] as const,
 );
 
 /**
@@ -62,11 +71,16 @@ export function $(obj: unknown,): string {
   const objType = unknownToTypeOfString(obj,);
   if (primitive.includes(objType,)) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- objType verified in primitive tuple
-    return serializePrimitive(obj, objType as typeof primitive[number],);
+    return serializePrimitive(
+      obj,
+      objType as typeof primitive[number],
+    );
   }
 
   return match(objType,)
-    .with('set', function handler() {
+    .with(
+      'set',
+      function handler() {
       // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Set
       const setObj = obj as Set<any>;
       return `Object.freeze(new Set([${
@@ -77,8 +91,11 @@ export function $(obj: unknown,): string {
           },)
           .join(',',)
       }]))`;
-    },)
-    .with('map', function handler() {
+    },
+    )
+    .with(
+      'map',
+      function handler() {
       // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Map
       const mapObj = obj as Map<any, any>;
       return `Object.freeze(new Map([${
@@ -88,8 +105,11 @@ export function $(obj: unknown,): string {
           },)
           .join(',',)
       }]))`;
-    },)
-    .with('array', function handler() {
+    },
+    )
+    .with(
+      'array',
+      function handler() {
       // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms array
       const arrayObj = obj as any[];
       return `Object.freeze([${
@@ -100,9 +120,12 @@ export function $(obj: unknown,): string {
           },)
           .join(',',)
       }])`;
-    },)
+    },
+    )
     // FIXME: Possible bug here
-    .with('object', function handler() {
+    .with(
+      'object',
+      function handler() {
       // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms plain object
       const objectObj = obj as Record<string, any>;
       return `Object.freeze(Object.fromEntries([${
@@ -115,7 +138,8 @@ export function $(obj: unknown,): string {
           )
           .join(',',)
       }]))`;
-    },)
+    },
+    )
     /* v8 ignore next -- @preserve */
     .otherwise(
       /* v8 ignore next -- @preserve */

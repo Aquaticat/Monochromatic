@@ -23,7 +23,10 @@ const _default_1: UserConfig = defineConfig({
   platform: 'neutral',
   inputOptions: {
     resolve: {
-      mainFields: ['module', 'main',],
+      mainFields: [
+        'module',
+        'main',
+      ],
     },
   },
   deps: {

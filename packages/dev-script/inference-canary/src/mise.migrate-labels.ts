@@ -58,7 +58,10 @@ for (const modelDir of modelDirs) {
   }
 
   /** Absolute path to this model's artifact directory */
-  const modelPath = join(LINT_DIR, modelDir,);
+  const modelPath = join(
+    LINT_DIR,
+    modelDir,
+  );
 
   // Update meta.json files inside this model dir
   /** Artifact subdirectories for this model */
@@ -73,11 +76,18 @@ for (const modelDir of modelDirs) {
 
   for (const subdir of subdirs) {
     /** Absolute path to the meta.json file in this artifact */
-    const metaPath = join(modelPath, subdir, 'meta.json',);
+    const metaPath = join(
+      modelPath,
+      subdir,
+      'meta.json',
+    );
     try {
       /** Raw JSON content of the meta.json file */
       // oxlint-disable-next-line no-await-in-loop -- sequential meta.json updates within a model directory
-      const raw = await readFile(metaPath, 'utf8',);
+      const raw = await readFile(
+        metaPath,
+        'utf8',
+      );
       /** Parsed meta.json contents for label injection */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- meta.json structure is known
       const meta = JSON.parse(raw,) as Record<string, unknown>;
@@ -85,7 +95,11 @@ for (const modelDir of modelDirs) {
         continue;
       meta['label'] = label;
       // oxlint-disable-next-line no-await-in-loop -- must finish writing before renaming the parent directory
-      await writeFile(metaPath, JSON.stringify(meta, null, 2,), 'utf8',);
+      await writeFile(
+        metaPath,
+        JSON.stringify(meta, null, 2,),
+        'utf8',
+      );
       console.log(`  updated: ${modelDir}/${subdir}/meta.json`,);
     }
     catch {
@@ -98,10 +112,16 @@ for (const modelDir of modelDirs) {
   const newName = DIR_RENAMES[modelDir];
   if (newName !== undefined) {
     /** Absolute path for the renamed directory */
-    const newPath = join(LINT_DIR, newName,);
+    const newPath = join(
+      LINT_DIR,
+      newName,
+    );
     try {
       // oxlint-disable-next-line no-await-in-loop -- directory renames must be sequential to avoid path conflicts
-      await rename(modelPath, newPath,);
+      await rename(
+        modelPath,
+        newPath,
+      );
       console.log(`  renamed: ${modelDir} -> ${newName}`,);
     }
     catch (error) {

@@ -24,14 +24,25 @@ import { headerFragment, } from './header.ts';
  * @returns complete HTML document string including `<!DOCTYPE html>`
  */
 export function pageLayout(
-  { title, lang, content, }: { title: string; lang: Locales; content: string; },
+  {
+    title,
+    lang,
+    content,
+  }: {
+    title: string;
+    lang: Locales;
+    content: string
+  },
 ): string {
   return `<!DOCTYPE html>\n${
     h({
       tag: 'html',
       attrs: { lang, },
       children: [
-        headFragment({ title, lang, },),
+        headFragment({
+          title,
+          lang,
+        },),
         h({
           tag: 'body',
           children: [

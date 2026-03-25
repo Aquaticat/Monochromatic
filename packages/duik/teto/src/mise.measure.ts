@@ -28,25 +28,40 @@ import { contentBounds, } from './measure-profile-query.ts';
 import { measureWidthProfile, } from './measure-profile.ts';
 
 /** Directory containing individual body part SVG files. */
-const PARTS_DIR = join(import.meta.dirname, '..', 'parts',);
+const PARTS_DIR = join(
+  import.meta.dirname,
+  '..',
+  'parts',
+);
 /** Path to the assembled composite SVG from the build step. */
-const COMPOSITE_SVG = join(PARTS_DIR, '_composite_inline.svg',);
+const COMPOSITE_SVG = join(
+  PARTS_DIR,
+  '_composite_inline.svg',
+);
 /** Path to the reference character sheet image for comparison. */
 const REF_IMAGE = '/home/user/Nextcloud/Text/Docs/Algonquin/MTM6403/teto_sv_3views.jpg';
 /** Temporary directory for intermediate measurement images. */
 const TMP = '/tmp/claude-1000';
 
 /** Crop region for front-view character from the reference sheet. */
-const REF_CROP = { width: 290, height: 880, x: 1_440, y: 60, };
+const REF_CROP = {
+  width: 290,
+  height: 880,
+  x: 1_440,
+  y: 60,
+};
 
 /** Height to normalize both images to for consistent measurement. */
 const NORM_HEIGHT = 1_000;
 
 /** Always rebuild composite first. */
 console.error('--- Rebuilding composite ---',);
-execSync(`bun run ${join(import.meta.dirname, 'mise.build-composite.ts',)}`, {
+execSync(
+  `bun run ${join(import.meta.dirname, 'mise.build-composite.ts',)}`,
+  {
   stdio: 'inherit',
-},);
+},
+);
 
 if (!existsSync(REF_IMAGE,))
   throw new Error(`Reference image not found at ${REF_IMAGE}`,);
@@ -54,7 +69,10 @@ if (!existsSync(REF_IMAGE,))
 console.error('--- Preparing normalized silhouettes ---',);
 
 /** Paths to generated binary silhouette images for width measurement. */
-const { refSilhouette, cmpSilhouette, } = prepareSilhouettes({
+const {
+  refSilhouette,
+  cmpSilhouette,
+} = prepareSilhouettes({
   refImage: REF_IMAGE,
   compositeSvg: COMPOSITE_SVG,
   refCrop: REF_CROP,
@@ -64,11 +82,17 @@ const { refSilhouette, cmpSilhouette, } = prepareSilhouettes({
 
 console.error('--- Measuring reference ---',);
 /** Per-row width profile of the reference silhouette. */
-const refProfile = measureWidthProfile(refSilhouette, TMP,);
+const refProfile = measureWidthProfile(
+  refSilhouette,
+  TMP,
+);
 
 console.error('--- Measuring composite ---',);
 /** Per-row width profile of the composite silhouette. */
-const cmpProfile = measureWidthProfile(cmpSilhouette, TMP,);
+const cmpProfile = measureWidthProfile(
+  cmpSilhouette,
+  TMP,
+);
 
 console.error('--- Proportion Analysis ---',);
 console.error('',);
@@ -87,7 +111,12 @@ console.error(
 console.error('',);
 
 /** Paired profiles for landmark and proportion analysis. */
-const pair = { refProfile, cmpProfile, refBounds, cmpBounds, };
+const pair = {
+  refProfile,
+  cmpProfile,
+  refBounds,
+  cmpBounds,
+};
 
 /** Collected measurement rows for the proportion comparison table. */
 const measurements = computeLandmarkMeasurements(pair,);

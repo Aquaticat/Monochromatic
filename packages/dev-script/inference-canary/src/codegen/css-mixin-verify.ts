@@ -33,8 +33,14 @@ function verifyOverrideTest(output: string,): boolean {
   const start = output.indexOf('.override-test',);
   if (start === -1)
     return false;
-  const blockEnd = output.indexOf('}', start,);
-  const block = output.slice(start, blockEnd,);
+  const blockEnd = output.indexOf(
+    '}',
+    start,
+  );
+  const block = output.slice(
+    start,
+    blockEnd,
+  );
   const lastDisplay = block.lastIndexOf('display:',);
   return lastDisplay !== -1 && block.slice(lastDisplay,).includes('grid',);
 }
@@ -57,7 +63,13 @@ function verifyOverrideTest(output: string,): boolean {
  */
 export function verifyCssMixin(result: ContainerResult,): { correctness: number; } {
   // Normalize whitespace so cosmetic formatting differences don't affect scoring
-  const output = result.stdout.replaceAll(/[ \t]+/g, ' ',).replaceAll(/\n{3,}/g, '\n\n',);
+  const output = result.stdout.replaceAll(
+    /[ \t]+/g,
+    ' ',
+  ).replaceAll(
+    /\n{3,}/g,
+    '\n\n',
+  );
 
   const flexOccurrences = output.split('display: flex',).length - 1;
   const checks = [

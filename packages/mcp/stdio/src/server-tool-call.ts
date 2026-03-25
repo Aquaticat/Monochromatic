@@ -29,13 +29,19 @@ export async function handleToolCall(
   toolMap: ReadonlyMap<string, RegisteredTool>,
   request: JsonRpcRequest,
 ): Promise<JsonRpcOutbound> {
-  const { id, params, } = request;
+  const {
+    id,
+    params,
+  } = request;
 
   // Validate tool name is a string rather than blindly casting untrusted input.
   const toolName = typeof params?.name === 'string' ? params.name : undefined;
   if (toolName === undefined) {
-    return respondError(id, JSON_RPC_INVALID_PARAMS,
-      'Missing or non-string tool name in tools/call',);
+    return respondError(
+      id,
+      JSON_RPC_INVALID_PARAMS,
+      'Missing or non-string tool name in tools/call',
+    );
   }
 
   // Validate arguments is a plain object when present, default to empty object otherwise.
@@ -50,18 +56,31 @@ export async function handleToolCall(
 
   const registered = toolMap.get(toolName,);
   if (registered === undefined)
-    return respondError(id, JSON_RPC_INVALID_PARAMS, `Unknown tool: ${toolName}`,);
+    return respondError(
+      id,
+      JSON_RPC_INVALID_PARAMS,
+      `Unknown tool: ${toolName}`,
+    );
 
   // Deliberate catch-and-return: in a server context, tool handler errors must be
   // reported as JSON-RPC error responses rather than crashing the server process.
   try {
     const result: ToolCallResult = await registered.handler(toolArgs,);
-    return respondSuccess(id, result,);
+    return respondSuccess(
+      id,
+      result,
+    );
   }
   catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error,);
-    console.error(`[mcp-stdio] tool "${toolName}" threw:`, error,);
-    return respondError(id, JSON_RPC_INTERNAL_ERROR,
-      `Tool execution failed: ${message}`,);
+    console.error(
+      `[mcp-stdio] tool "${toolName}" threw:`,
+      error,
+    );
+    return respondError(
+      id,
+      JSON_RPC_INTERNAL_ERROR,
+      `Tool execution failed: ${message}`,
+    );
   }
 }

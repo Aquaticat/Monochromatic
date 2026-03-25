@@ -9,6 +9,12 @@ import { $ as named, } from '../p n/index.ts';
  *
  * @returns single string with elements separated by the given separator
  */
-export function $(strings: string[], concatWith: string,): string {
-  return named({ strings, concatWith, },);
+export function $(
+  strings: string[],
+  concatWith: string,
+): string {
+  return named({
+    strings,
+    concatWith,
+  },);
 }

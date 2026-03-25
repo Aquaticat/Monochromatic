@@ -87,13 +87,19 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
     result.reminders = v;
   }
   if ('priority' in value) {
-    const v = parseEnumValue<TaskPriority>(value.priority, priorities,);
+    const v = parseEnumValue<TaskPriority>(
+      value.priority,
+      priorities,
+    );
     if (v === undefined)
       return null;
     result.priority = v;
   }
   if ('complexity' in value) {
-    const v = parseEnumValue<TaskPriority>(value.complexity, priorities,);
+    const v = parseEnumValue<TaskPriority>(
+      value.complexity,
+      priorities,
+    );
     if (v === undefined)
       return null;
     result.complexity = v;

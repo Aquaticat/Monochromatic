@@ -19,9 +19,12 @@ export function $(
   value: string,
 ): value is hasNoTrailingCommas & hasNoBlockComments & hasNoInlineComments {
   try {
-    JSON.parse(value, function alwaysNull() {
+    JSON.parse(
+      value,
+      function alwaysNull() {
       return null;
-    },);
+    },
+    );
     return true;
   }
   catch {

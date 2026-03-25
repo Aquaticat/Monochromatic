@@ -82,8 +82,10 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
  *
  * @returns Updated task, or `null` when the ID does not exist
  */
-export async function updateTask(id: string,
-  input: TaskUpdateInput,): Promise<Task | null>
+export async function updateTask(
+  id: string,
+  input: TaskUpdateInput,
+): Promise<Task | null>
 {
   const currentTask = await getTaskById(id,);
   if (currentTask === null)

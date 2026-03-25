@@ -5,7 +5,7 @@ function greet(
   name: string,
   age: number,
 ): string {
-  return `${name} is ${String(age)}`;
+  return `${name} is ${String(age,)}`;
 }
 
 const items = [

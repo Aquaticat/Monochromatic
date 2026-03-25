@@ -13,7 +13,10 @@ import {
 } from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'cli', l: parentLogger, },);
+const l = tagged({
+  tag: 'cli',
+  l: parentLogger,
+},);
 
 /**
  * Parses process arguments into structured user options.
@@ -94,5 +97,11 @@ export function parseArgs({ argv, }: { argv: readonly string[]; },): UserOptions
       String(hold,)
     }, command=${JSON.stringify(command,)}`,
   );
-  return { appId, title, dir, hold, command, };
+  return {
+    appId,
+    title,
+    dir,
+    hold,
+    command,
+  };
 }

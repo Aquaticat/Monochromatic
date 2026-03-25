@@ -14,7 +14,10 @@ import {
 } from '../log.ts';
 
 /** Tagged logger for media probing. */
-const probeLog = tagged({ tag: 'probe-media', l, },);
+const probeLog = tagged({
+  tag: 'probe-media',
+  l,
+},);
 
 /**
  * Regex matching the start of the useful ffprobe output.
@@ -41,7 +44,13 @@ const TIMEOUT_MS = 5_000;
  * @returns trimmed metadata, or `null` if no `Input #` line found
  */
 function extractMetadata(
-  { stderr, path, }: { stderr: string; path: string; },
+  {
+    stderr,
+    path,
+  }: {
+    stderr: string;
+    path: string
+  },
 ): string | null {
   if (stderr === '') {
     probeLog.info(`no output for: ${path}`,);
@@ -70,8 +79,15 @@ function extractMetadata(
 export async function probeMedia({ path, }: { path: string; },): Promise<string | null> {
   try {
     /** ffprobe writes metadata to stderr even on success. */
-    const result = await spawn('ffprobe', [path,], { timeout: TIMEOUT_MS, },);
-    return extractMetadata({ stderr: result.stderr, path, },);
+    const result = await spawn(
+      'ffprobe',
+      [path,],
+      { timeout: TIMEOUT_MS, },
+    );
+    return extractMetadata({
+      stderr: result.stderr,
+      path,
+    },);
   }
   catch (error) {
     /**
@@ -81,7 +97,10 @@ export async function probeMedia({ path, }: { path: string; },): Promise<string 
     if (error !== null && typeof error === 'object' && 'stderr' in error) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check
       const { stderr, } = error as { stderr: string; };
-      return extractMetadata({ stderr, path, },);
+      return extractMetadata({
+        stderr,
+        path,
+      },);
     }
 
     probeLog.info(`ffprobe failed for: ${path}`,);

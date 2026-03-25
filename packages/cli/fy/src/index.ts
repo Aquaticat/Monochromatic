@@ -49,7 +49,9 @@ const parser = map(
 );
 
 /** Parsed result from process.argv */
-const args = runSync(parser, {
+const args = runSync(
+  parser,
+  {
   programName: 'cli-fy',
   args: process.argv.slice(2,),
   help: 'option',
@@ -57,14 +59,18 @@ const args = runSync(parser, {
   brief: message`cli-fy - call any ESM export from the command line`,
   footer:
     message`Examples:\n  cli-fy lodash add 1 1\n  cli-fy @scope/pkg myFn arg1 arg2\n  cli-fy lodash-es/add default 1 1`,
-},);
+},
+);
 
 //endregion Arg parsing
 
 //region Main execution -- resolve, import, call, print
 
 /** Tagged logger for the main execution flow. */
-const rl = tagged({ tag: 'main', l, },);
+const rl = tagged({
+  tag: 'main',
+  l,
+},);
 
 rl.info(
   `specifier="${args.specifier}" export="${args.exportName}" args=[${

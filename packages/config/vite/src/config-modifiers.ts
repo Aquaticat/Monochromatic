@@ -25,7 +25,10 @@ function withNoMinify(config: VitestUserConfig,): VitestUserConfig;
 function withNoMinify(
   config: UserConfig | VitestUserConfig,
 ): UserConfig | VitestUserConfig {
-  return mergeConfig(config, { build: { minify: false, }, },);
+  return mergeConfig(
+    config,
+    { build: { minify: false, }, },
+  );
 }
 
 function withNodeResolveConditions(config: UserConfig,): UserConfig;
@@ -41,7 +44,9 @@ function withNodeResolveConditions(config: VitestUserConfig,): VitestUserConfig;
 function withNodeResolveConditions(
   config: UserConfig | VitestUserConfig,
 ): UserConfig | VitestUserConfig {
-  return mergeConfig(config, {
+  return mergeConfig(
+    config,
+    {
     resolve: {
       conditions: ['node', 'module', 'import', 'default',],
     },
@@ -50,7 +55,8 @@ function withNodeResolveConditions(
         fileName: 'index.node',
       },
     },
-  },);
+  },
+  );
 }
 
 function createModeConfig(configDir: string,
@@ -67,7 +73,8 @@ function createModeConfig(configDir: string,
  *
  * @returns Vite config function that applies mode-based enhancements
  */
-function createModeConfig(configDir: string,
+function createModeConfig(
+  configDir: string,
   sharedFactory: (configDir: string,) => UserConfig | VitestUserConfig,
 ): UserConfigFnObject | VitestUserConfigFnObject {
   return function enhanceBaseConfig({ mode, },) {
@@ -99,9 +106,12 @@ function createModeConfig(configDir: string,
     }
 
     // Apply mode-specific transformations using reduce for immutability
-    const config = modes.reduce(function applyMode(currentConfig, currentMode,) {
+    const config = modes.reduce(
+      function applyMode(currentConfig, currentMode,) {
       return applyModeTransform(currentConfig, currentMode,);
-    }, sharedFactory(configDir,),);
+    },
+      sharedFactory(configDir,),
+    );
 
     return config;
   };

@@ -68,26 +68,42 @@ export function renderBadges(detail: ProbeDetail,): string {
 
   if (detail.partial === true) {
     badges.push(
-      h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'warning', },
-        text: 'partial', },),
+      h({
+        tag: 'span',
+        class: 'run-indicator',
+        attrs: { 'data-severity': 'warning', },
+        text: 'partial',
+      },),
     );
   }
   if (detail.error !== undefined && detail.error !== '') {
     badges.push(
-      h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'error', },
-        text: detail.error, },),
+      h({
+        tag: 'span',
+        class: 'run-indicator',
+        attrs: { 'data-severity': 'error', },
+        text: detail.error,
+      },),
     );
   }
   if (detail.finishReason !== undefined && detail.finishReason !== 'stop') {
     badges.push(
-      h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'neutral', },
-        text: detail.finishReason, },),
+      h({
+        tag: 'span',
+        class: 'run-indicator',
+        attrs: { 'data-severity': 'neutral', },
+        text: detail.finishReason,
+      },),
     );
   }
 
   if (badges.length === 0)
     return '';
-  return h({ tag: 'div', class: 'detail-popover-badges', children: badges, },);
+  return h({
+    tag: 'div',
+    class: 'detail-popover-badges',
+    children: badges,
+  },);
 }
 
 /**
@@ -110,7 +126,12 @@ export function renderBadges(detail: ProbeDetail,): string {
  * // '<details class="collapsible-section"><summary>Initial pass</summary><dl ...>...'
  * ```
  */
-export function renderPassMeta({ label, timing, usage, finishReason, }: {
+export function renderPassMeta({
+  label,
+  timing,
+  usage,
+  finishReason,
+}: {
   label: string;
   timing: StreamTiming | undefined;
   usage: StreamUsage | undefined;
@@ -120,38 +141,86 @@ export function renderPassMeta({ label, timing, usage, finishReason, }: {
 
   if (timing !== undefined) {
     items.push(
-      h({ tag: 'dt', text: 'TTFC', },),
-      h({ tag: 'dd', text: formatMs(timing.timeToFirstChunkMs,), },),
-      h({ tag: 'dt', text: 'Total time', },),
-      h({ tag: 'dd', text: formatMs(timing.totalMs,), },),
-      h({ tag: 'dt', text: 'Chunks', },),
-      h({ tag: 'dd', text: formatNumber(timing.chunkCount,), },),
+      h({
+        tag: 'dt',
+        text: 'TTFC',
+      },),
+      h({
+        tag: 'dd',
+        text: formatMs(timing.timeToFirstChunkMs,),
+      },),
+      h({
+        tag: 'dt',
+        text: 'Total time',
+      },),
+      h({
+        tag: 'dd',
+        text: formatMs(timing.totalMs,),
+      },),
+      h({
+        tag: 'dt',
+        text: 'Chunks',
+      },),
+      h({
+        tag: 'dd',
+        text: formatNumber(timing.chunkCount,),
+      },),
     );
   }
 
   if (usage !== undefined) {
     items.push(
-      h({ tag: 'dt', text: 'Prompt tokens', },),
-      h({ tag: 'dd', text: formatNumber(usage.promptTokens,), },),
-      h({ tag: 'dt', text: 'Completion tokens', },),
-      h({ tag: 'dd', text: formatNumber(usage.completionTokens,), },),
+      h({
+        tag: 'dt',
+        text: 'Prompt tokens',
+      },),
+      h({
+        tag: 'dd',
+        text: formatNumber(usage.promptTokens,),
+      },),
+      h({
+        tag: 'dt',
+        text: 'Completion tokens',
+      },),
+      h({
+        tag: 'dd',
+        text: formatNumber(usage.completionTokens,),
+      },),
     );
     if (usage.reasoningTokens !== undefined) {
       items.push(
-        h({ tag: 'dt', text: 'Reasoning tokens', },),
-        h({ tag: 'dd', text: formatNumber(usage.reasoningTokens,), },),
+        h({
+          tag: 'dt',
+          text: 'Reasoning tokens',
+        },),
+        h({
+          tag: 'dd',
+          text: formatNumber(usage.reasoningTokens,),
+        },),
       );
     }
     items.push(
-      h({ tag: 'dt', text: 'Total tokens', },),
-      h({ tag: 'dd', text: formatNumber(usage.totalTokens,), },),
+      h({
+        tag: 'dt',
+        text: 'Total tokens',
+      },),
+      h({
+        tag: 'dd',
+        text: formatNumber(usage.totalTokens,),
+      },),
     );
   }
 
   if (finishReason !== undefined) {
     items.push(
-      h({ tag: 'dt', text: 'Finish reason', },),
-      h({ tag: 'dd', text: finishReason, },),
+      h({
+        tag: 'dt',
+        text: 'Finish reason',
+      },),
+      h({
+        tag: 'dd',
+        text: finishReason,
+      },),
     );
   }
 
@@ -162,8 +231,15 @@ export function renderPassMeta({ label, timing, usage, finishReason, }: {
     tag: 'details',
     class: 'collapsible-section',
     children: [
-      h({ tag: 'summary', text: label, },),
-      h({ tag: 'dl', class: 'metadata-grid', children: items, },),
+      h({
+        tag: 'summary',
+        text: label,
+      },),
+      h({
+        tag: 'dl',
+        class: 'metadata-grid',
+        children: items,
+      },),
     ],
   },);
 }

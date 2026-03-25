@@ -20,9 +20,15 @@ import type { StorageBackend, } from '../../../../t/r a/index.ts';
  * ```
  */
 export async function queryAllBackends(
-  backends: readonly [StorageBackend, ...StorageBackend[],],
+  backends: readonly [
+    StorageBackend,
+    ...StorageBackend[],
+  ],
   key: string,
-): Promise<[BackendResult<StorageBackend>, ...BackendResult<StorageBackend>[],]> {
+): Promise<[
+  BackendResult<StorageBackend>,
+  ...BackendResult<StorageBackend>[],
+]> {
   const results = await Promise.all(
     backends.map(async function queryBackend(backend,) {
       const raw = await backend.get(key,);
@@ -34,7 +40,10 @@ export async function queryAllBackends(
     },),
   );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-empty backends guarantees non-empty results
-  return results as [BackendResult<StorageBackend>, ...BackendResult<StorageBackend>[],];
+  return results as [
+    BackendResult<StorageBackend>,
+    ...BackendResult<StorageBackend>[],
+  ];
 }
 
 /**
@@ -50,7 +59,10 @@ export async function queryAllBackends(
  */
 export type DefaultBackendsBuilder = (args: {
   storeId: string;
-},) => Promise<readonly [StorageBackend, ...StorageBackend[],]>;
+},) => Promise<readonly [
+  StorageBackend,
+  ...StorageBackend[],
+]>;
 
 /** Module-level builder set by platform entry files. */
 // Intentional let: configured once at module load by platform entry
@@ -97,10 +109,18 @@ export function getDefaultBackendsBuilder(): DefaultBackendsBuilder | undefined 
  * @param logger - logger for debug output
  */
 export async function evictLruEntry(
-  { lru, key, backends, logger, }: {
+  {
+    lru,
+    key,
+    backends,
+    logger,
+  }: {
     lru: { touch(key: string,): string | undefined; } | undefined;
     key: string;
-    backends: readonly [StorageBackend, ...StorageBackend[],];
+    backends: readonly [
+      StorageBackend,
+      ...StorageBackend[],
+    ];
     logger: { debug(msg: string,): void; };
   },
 ): Promise<void> {

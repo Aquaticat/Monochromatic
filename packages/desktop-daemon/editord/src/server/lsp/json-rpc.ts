@@ -36,7 +36,10 @@ const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/i;
  *
  * @returns object with a `feed` method accepting Buffer chunks
  */
-export function createLspParser({ onMessage, onError, }: {
+export function createLspParser({
+  onMessage,
+  onError,
+}: {
   onMessage: (message: JsonRpcMessage,) => void;
   onError: (error: unknown,) => void;
 },): { feed: (chunk: Buffer,) => void; } {
@@ -45,7 +48,10 @@ export function createLspParser({ onMessage, onError, }: {
 
   return {
     feed(chunk: Buffer,): void {
-      buffer = Buffer.concat([buffer, chunk,],);
+      buffer = Buffer.concat([
+        buffer,
+        chunk,
+      ],);
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- loop exits via return when buffer is incomplete
       while (true) {
@@ -54,7 +60,10 @@ export function createLspParser({ onMessage, onError, }: {
           if (headerEnd === -1)
             return;
 
-          const header = buffer.subarray(0, headerEnd,).toString('ascii',);
+          const header = buffer.subarray(
+            0,
+            headerEnd,
+          ).toString('ascii',);
           const match = CONTENT_LENGTH_PATTERN.exec(header,);
           if (match === null) {
             buffer = buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
@@ -68,7 +77,10 @@ export function createLspParser({ onMessage, onError, }: {
         if (buffer.byteLength < contentLength)
           return;
 
-        const json = buffer.subarray(0, contentLength,).toString('utf8',);
+        const json = buffer.subarray(
+          0,
+          contentLength,
+        ).toString('utf8',);
         buffer = buffer.subarray(contentLength,);
         contentLength = -1;
 

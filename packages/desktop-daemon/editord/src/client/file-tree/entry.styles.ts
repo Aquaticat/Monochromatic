@@ -95,7 +95,10 @@ export const ENTRY_STYLES = [
   $({
     rule: 'tree-file-entry[data-recency] .toggle',
     decls: {
-      'font-family': cssCommaList(["'Inter'", 'sans-serif',],),
+      'font-family': cssCommaList([
+        "'Inter'",
+        'sans-serif',
+      ],),
       opacity: cssNum(1 / 2,),
     },
   },),

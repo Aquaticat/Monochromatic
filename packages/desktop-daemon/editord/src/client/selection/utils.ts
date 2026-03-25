@@ -9,8 +9,12 @@
 import type { SelectionRange, } from '../../../protocol.ts';
 
 /** Range coordinates used for comparison. */
-export type FlatRange = { startLine: number; startCharacter: number; endLine: number;
-  endCharacter: number; };
+export type FlatRange = {
+  startLine: number;
+  startCharacter: number;
+  endLine: number;
+  endCharacter: number
+};
 
 /**
  * Flattens the nested `parent` chain of a {@link SelectionRange} into
@@ -41,7 +45,13 @@ export function flattenChain({ root, }: { root: SelectionRange; },): SelectionRa
  * @returns true if outer strictly contains inner
  */
 export function strictlyContains(
-  { outer, inner, }: { outer: FlatRange; inner: FlatRange; },
+  {
+    outer,
+    inner,
+  }: {
+    outer: FlatRange;
+    inner: FlatRange
+  },
 ): boolean {
   const outerStartBefore = outer.startLine < inner.startLine
     || (outer.startLine === inner.startLine

@@ -33,7 +33,10 @@ export type WireDiagnostic = {
 
 /** Callback signature for pushing merged diagnostics to the client. */
 export type DiagnosticsHandler = (
-  event: { path: string; diagnostics: WireDiagnostic[]; },
+  event: {
+    path: string;
+    diagnostics: WireDiagnostic[]
+  },
 ) => void;
 
 /**
@@ -63,11 +66,21 @@ export class DiagnosticStore {
    * @param diagnostics - diagnostics from this source (replaces previous set)
    */
   update(
-    { source, uri, diagnostics, }: { source: string; uri: string;
-      diagnostics: LspDiagnostic[]; },
+    {
+      source,
+      uri,
+      diagnostics,
+    }: {
+      source: string;
+      uri: string;
+      diagnostics: LspDiagnostic[]
+    },
   ): void {
     if (!this.#store.has(uri,))
-      this.#store.set(uri, new Map(),);
+      this.#store.set(
+        uri,
+        new Map(),
+      );
     const sourceMap = this.#store.get(uri,);
     if (sourceMap === undefined)
       return;
@@ -81,7 +94,10 @@ export class DiagnosticStore {
       return;
     }
 
-    sourceMap.set(source, diagnostics,);
+    sourceMap.set(
+      source,
+      diagnostics,
+    );
 
     /** Merge diagnostics from all sources for this URI. */
     const merged: WireDiagnostic[] = [];
@@ -100,7 +116,10 @@ export class DiagnosticStore {
     }
 
     const path = uri.startsWith('file://',) ? fileURLToPath(uri,) : uri;
-    this.#onDiagnostics({ path, diagnostics: merged, },);
+    this.#onDiagnostics({
+      path,
+      diagnostics: merged,
+    },);
   }
 
   /**

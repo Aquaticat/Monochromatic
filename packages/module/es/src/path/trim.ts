@@ -13,7 +13,10 @@
  * ```
  */
 export function trimTrailingSlash(path: string,): string {
-  return path !== '/' && path.endsWith('/',) ? path.slice(0, -1,) : path;
+  return path !== '/' && path.endsWith('/',) ? path.slice(
+    0,
+    -1,
+  ) : path;
 }
 
 /**

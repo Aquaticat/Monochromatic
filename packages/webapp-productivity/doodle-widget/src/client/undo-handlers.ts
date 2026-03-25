@@ -37,7 +37,10 @@ export type UndoHandlerDeps = {
   /** Canvas 2D rendering context for redraw after restore */
   ctx: CanvasRenderingContext2D;
   /** Returns current canvas dimensions */
-  getCanvasSize: () => { cw: number; ch: number; };
+  getCanvasSize: () => {
+    cw: number;
+    ch: number
+  };
   /** Text layer element for serializing and restoring text entries */
   textLayer: HTMLDivElement;
 };
@@ -55,7 +58,13 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   pushSnapshot: () => void;
   updateUndoButtons: () => void;
 } {
-  const { undoBtn, redoBtn, ctx, getCanvasSize, textLayer, } = deps;
+  const {
+    undoBtn,
+    redoBtn,
+    ctx,
+    getCanvasSize,
+    textLayer,
+  } = deps;
 
   /**
    * Refreshes the disabled state of undo/redo buttons based on
@@ -91,26 +100,43 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
    */
   function restoreSnapshot(snapshot: Snapshot,): void {
     setStrokes([...snapshot.strokes,],);
-    replaceTextEntries({ entries: snapshot.textEntries, layer: textLayer,
-      clearFn: clearTextEntries, },);
-    const { cw, ch, } = getCanvasSize();
-    redraw({ ctx, cw, ch, },);
+    replaceTextEntries({
+      entries: snapshot.textEntries,
+      layer: textLayer,
+      clearFn: clearTextEntries,
+    },);
+    const {
+      cw,
+      ch,
+    } = getCanvasSize();
+    redraw({
+      ctx,
+      cw,
+      ch,
+    },);
     updateUndoButtons();
   }
 
-  undoBtn.addEventListener('click', function handleUndo(): void {
+  undoBtn.addEventListener(
+    'click',
+    function handleUndo(): void {
     const snapshot = undo(getCurrentPageIndex(),);
     if (snapshot !== null)
       restoreSnapshot(snapshot,);
-  },);
+  },
+  );
 
-  redoBtn.addEventListener('click', function handleRedo(): void {
+  redoBtn.addEventListener(
+    'click',
+    function handleRedo(): void {
     const snapshot = redo(getCurrentPageIndex(),);
     if (snapshot !== null)
       restoreSnapshot(snapshot,);
-  },);
+  },
+  );
 
-  document.addEventListener('keydown',
+  document.addEventListener(
+    'keydown',
     function handleUndoRedoKey(event: KeyboardEvent,): void {
       /** Skip when focus is inside a text input to preserve native text undo */
       if (event.target instanceof HTMLInputElement)
@@ -135,9 +161,13 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
         if (snapshot !== null)
           restoreSnapshot(snapshot,);
       }
-    },);
+    },
+  );
 
   updateUndoButtons();
 
-  return { pushSnapshot, updateUndoButtons, };
+  return {
+    pushSnapshot,
+    updateUndoButtons,
+  };
 }

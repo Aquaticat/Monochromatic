@@ -77,7 +77,11 @@ export function renderScatterChart({
   tableDisplay?: TableDisplayOptions;
 },): string {
   if (points.length === 0)
-    return h({ tag: 'p', class: 'chart-empty-state', text: 'No data available.', },);
+    return h({
+      tag: 'p',
+      class: 'chart-empty-state',
+      text: 'No data available.',
+    },);
 
   const pointElements = renderPointElements(points,);
 
@@ -99,19 +103,36 @@ export function renderScatterChart({
     tag: 'figure',
     class: 'chart-figure',
     children: [
-      h({ tag: 'figcaption', text: caption, },),
+      h({
+        tag: 'figcaption',
+        text: caption,
+      },),
       h({
         tag: 'div',
         class: 'chart-area',
-        attrs: { role: 'img', 'aria-label': caption, },
+        attrs: {
+          role: 'img',
+          'aria-label': caption,
+        },
         children: [
-          h({ tag: 'div', class: 'chart-y-axis', html: renderYAxis(), },),
+          h({
+            tag: 'div',
+            class: 'chart-y-axis',
+            html: renderYAxis(),
+          },),
           h({
             tag: 'div',
             class: 'chart-plot',
-            children: [renderThresholdLine(threshold, thresholdLabel,), pointElements,],
+            children: [
+              renderThresholdLine(threshold, thresholdLabel,),
+              pointElements,
+            ],
           },),
-          h({ tag: 'div', class: 'chart-x-axis', html: renderXAxis(timestamps,), },),
+          h({
+            tag: 'div',
+            class: 'chart-x-axis',
+            html: renderXAxis(timestamps,),
+          },),
         ],
       },),
       tableHtml,

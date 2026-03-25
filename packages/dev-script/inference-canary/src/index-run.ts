@@ -4,6 +4,10 @@
  * History persistence is handled by artifact enrichment in the runner pipeline.
  * Degradation detection against historical baselines is the viewer's responsibility.
  */
+import {
+  l,
+  tagged,
+} from './log.ts';
 import { formatMultiModelReport, } from './report.ts';
 import {
   type CanaryReport,
@@ -47,7 +51,12 @@ export async function runAndReport(
   // Their failure artifacts are already recorded; retesting would just hit the same error.
   const modelsToRun = selectedModels.filter(function shouldRun(model,): boolean {
     if (recentlyFailedModels.has(model.label,)) {
-      console.log(`[${model.label}] skipping all probes (recent whole-model failure)`,);
+      /** Model-specific logger for skip messages. */
+      const rl = tagged({
+        tag: model.label,
+        l,
+      },);
+      rl.info('skipping all probes (recent whole-model failure)',);
       return false;
     }
     return true;
@@ -55,14 +64,17 @@ export async function runAndReport(
 
   const reports: readonly CanaryReport[] = await Promise.all(
     modelsToRun.map(function runModel(model,): Promise<CanaryReport> {
-      return runCanary(probes, {
+      return runCanary(
+        probes,
+        {
         model: model.openrouterId,
         label: model.label,
         verbosity: model.verbosity,
         apiKey,
         skipProbes: recentModelProbePairs,
         ...consistencyRunsOverride,
-      },);
+      },
+      );
     },),
   );
 
@@ -77,15 +89,15 @@ export async function runAndReport(
   // Probe-level timeouts now produce zero-score results rather than failing the model,
   // so they appear in reportsWithResults and are never silently dropped.
   if (reportsWithResults.length === 0 && failedReports.length === 0) {
-    console.log(
-      '[canary] all probes skipped due to recent results. Use --retest-all to force re-run.',
-    );
+    l.info('all probes skipped due to recent results. Use --retest-all to force re-run.',);
     return;
   }
 
   // reportsWithResults covers timed-out models (they now have zero-score results);
   // failedReports covers whole-model failures (API errors, auth failures, etc.).
-  const reportsToDisplay = [...reportsWithResults, ...failedReports,];
-  console.log('',);
-  console.log(formatMultiModelReport(reportsToDisplay,),);
+  const reportsToDisplay = [
+    ...reportsWithResults,
+    ...failedReports,
+  ];
+  l.info(formatMultiModelReport(reportsToDisplay,),);
 }

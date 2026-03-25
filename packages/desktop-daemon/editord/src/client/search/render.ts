@@ -26,14 +26,23 @@ import { middleOut, } from '../middle-out.ts';
  *
  * @returns array of result DOM elements
  */
-export function renderResultElements({ results, query, rootPrefix, budget, onSelect, }: {
+export function renderResultElements({
+  results,
+  query,
+  rootPrefix,
+  budget,
+  onSelect,
+}: {
   results: SearchResult[];
   query: string;
   rootPrefix: string;
   budget: number;
   onSelect: (index: number,) => void;
 },): HTMLElement[] {
-  return results.map(function createResultElement(result, index,) {
+  return results.map(function createResultElement(
+    result,
+    index,
+  ) {
     /**
      * Computes a display-friendly relative path from the root directory.
      *
@@ -54,13 +63,25 @@ export function renderResultElements({ results, query, rootPrefix, budget, onSel
     },);
 
     const children: (Node | string)[] = [
-      h({ tag: 'span', class: 'result-path', text: displayPath, },),
+      h({
+        tag: 'span',
+        class: 'result-path',
+        text: displayPath,
+      },),
     ];
 
     if (result.kind === 'content') {
       children.push(
-        h({ tag: 'span', class: 'result-line', text: `:${String(result.line,)}`, },),
-        h({ tag: 'span', class: 'result-text', text: result.text, },),
+        h({
+          tag: 'span',
+          class: 'result-line',
+          text: `:${String(result.line,)}`,
+        },),
+        h({
+          tag: 'span',
+          class: 'result-text',
+          text: result.text,
+        },),
       );
     }
 
@@ -87,7 +108,13 @@ export function renderResultElements({ results, query, rootPrefix, budget, onSel
  * @param container - results container element whose text nodes to scan
  */
 export function highlightMatches(
-  { query, container, }: { query: string; container: HTMLDivElement; },
+  {
+    query,
+    container,
+  }: {
+    query: string;
+    container: HTMLDivElement
+  },
 ): void {
   if (query === '') {
     CSS.highlights.delete('hl-search-match',);
@@ -98,7 +125,10 @@ export function highlightMatches(
   const queryLength = query.length;
   const ranges: Range[] = [];
 
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT,);
+  const walker = document.createTreeWalker(
+    container,
+    NodeFilter.SHOW_TEXT,
+  );
 
   let node = walker.nextNode();
   while (node !== null) {
@@ -108,13 +138,22 @@ export function highlightMatches(
 
     // oxlint-disable-next-line -- indexOf returns -1 when not found; loop terminates correctly
     for (;;) {
-      const index = lowerText.indexOf(lowerQuery, searchFrom,);
+      const index = lowerText.indexOf(
+        lowerQuery,
+        searchFrom,
+      );
       if (index === -1)
         break;
 
       const range = new Range();
-      range.setStart(node, index,);
-      range.setEnd(node, index + queryLength,);
+      range.setStart(
+        node,
+        index,
+      );
+      range.setEnd(
+        node,
+        index + queryLength,
+      );
       ranges.push(range,);
       searchFrom = index + queryLength;
     }
@@ -123,7 +162,10 @@ export function highlightMatches(
   }
 
   if (ranges.length > 0)
-    CSS.highlights.set('hl-search-match', new Highlight(...ranges,),);
+    CSS.highlights.set(
+      'hl-search-match',
+      new Highlight(...ranges,),
+    );
   else
     CSS.highlights.delete('hl-search-match',);
 }

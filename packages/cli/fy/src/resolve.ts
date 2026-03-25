@@ -24,12 +24,24 @@ import { findMonorepoRoot, } from './monorepo.ts';
  * ```
  */
 function resolveFrom(
-  { specifier, baseDir, }: { specifier: string; baseDir: string; },
+  {
+    specifier,
+    baseDir,
+  }: {
+    specifier: string;
+    baseDir: string
+  },
 ): string | undefined {
-  const rl = tagged({ tag: resolveFrom.name, l, },);
+  const rl = tagged({
+    tag: resolveFrom.name,
+    l,
+  },);
   rl.info(`trying base ${baseDir}`,);
   try {
-    const require = createRequire(join(baseDir, 'noop.js',),);
+    const require = createRequire(join(
+      baseDir,
+      'noop.js',
+    ),);
     const resolved = require.resolve(specifier,);
     rl.info(`resolved to ${resolved}`,);
     return resolved;
@@ -53,7 +65,10 @@ function resolveFrom(
  * ```
  */
 function findGlobalNodeModules(): string | undefined {
-  const rl = tagged({ tag: findGlobalNodeModules.name, l, },);
+  const rl = tagged({
+    tag: findGlobalNodeModules.name,
+    l,
+  },);
   const home = process.env['HOME'] ?? process.env['USERPROFILE'];
   if (home === undefined) {
     rl.info('no HOME or USERPROFILE set',);
@@ -61,14 +76,28 @@ function findGlobalNodeModules(): string | undefined {
   }
   /** Candidate global node_modules paths, ordered by priority */
   const candidates = [
-    join(home, '.bun', 'install', 'global', 'node_modules',),
-    join(home, '.local', 'lib', 'node_modules',),
+    join(
+      home,
+      '.bun',
+      'install',
+      'global',
+      'node_modules',
+    ),
+    join(
+      home,
+      '.local',
+      'lib',
+      'node_modules',
+    ),
     '/usr/local/lib/node_modules',
     '/usr/lib/node_modules',
   ];
   for (const candidate of candidates) {
     try {
-      const bunFile = Bun.file(join(candidate, '.package-lock.json',),);
+      const bunFile = Bun.file(join(
+        candidate,
+        '.package-lock.json',
+      ),);
       if (bunFile.size > 0) {
         rl.info(`found global node_modules at ${candidate}`,);
         return candidate;
@@ -101,12 +130,18 @@ function findGlobalNodeModules(): string | undefined {
 export async function resolveSpecifier(
   { specifier, }: { specifier: string; },
 ): Promise<string> {
-  const rl = tagged({ tag: resolveSpecifier.name, l, },);
+  const rl = tagged({
+    tag: resolveSpecifier.name,
+    l,
+  },);
   const cwd = process.cwd();
 
   //region CWD resolution
   rl.info(`resolving "${specifier}" from CWD: ${cwd}`,);
-  const fromCwd = resolveFrom({ specifier, baseDir: cwd, },);
+  const fromCwd = resolveFrom({
+    specifier,
+    baseDir: cwd,
+  },);
   if (fromCwd !== undefined)
     return fromCwd;
   //endregion CWD resolution
@@ -115,7 +150,10 @@ export async function resolveSpecifier(
   const monorepoRoot = await findMonorepoRoot({ startDir: cwd, },);
   if (monorepoRoot !== undefined && monorepoRoot !== cwd) {
     rl.info(`trying monorepo root: ${monorepoRoot}`,);
-    const fromMonorepo = resolveFrom({ specifier, baseDir: monorepoRoot, },);
+    const fromMonorepo = resolveFrom({
+      specifier,
+      baseDir: monorepoRoot,
+    },);
     if (fromMonorepo !== undefined)
       return fromMonorepo;
   }
@@ -125,7 +163,10 @@ export async function resolveSpecifier(
   const globalDir = findGlobalNodeModules();
   if (globalDir !== undefined) {
     rl.info(`trying global: ${globalDir}`,);
-    const fromGlobal = resolveFrom({ specifier, baseDir: join(globalDir, '..',), },);
+    const fromGlobal = resolveFrom({
+      specifier,
+      baseDir: join(globalDir, '..',),
+    },);
     if (fromGlobal !== undefined)
       return fromGlobal;
   }

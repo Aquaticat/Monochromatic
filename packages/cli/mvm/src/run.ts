@@ -56,9 +56,18 @@ function generateEphemeralName(): string {
  * ```
  */
 export async function run(
-  { command, from, }: { command: string; from: string | undefined; },
+  {
+    command,
+    from,
+  }: {
+    command: string;
+    from: string | undefined
+  },
 ): Promise<ExecResult> {
-  const rl = tagged({ tag: run.name, l, },);
+  const rl = tagged({
+    tag: run.name,
+    l,
+  },);
   const name = generateEphemeralName();
 
   rl.info(
@@ -96,25 +105,46 @@ export async function run(
       catch {
         // cleanup() already logs errors internally
       }
-      process.kill(process.pid, signal,);
+      process.kill(
+        process.pid,
+        signal,
+      );
     })();
   }
 
-  process.on('SIGINT', onSignal,);
-  process.on('SIGTERM', onSignal,);
+  process.on(
+    'SIGINT',
+    onSignal,
+  );
+  process.on(
+    'SIGTERM',
+    onSignal,
+  );
 
   await using _guard = {
     async [Symbol.asyncDispose](): Promise<void> {
-      process.removeListener('SIGINT', onSignal,);
-      process.removeListener('SIGTERM', onSignal,);
+      process.removeListener(
+        'SIGINT',
+        onSignal,
+      );
+      process.removeListener(
+        'SIGTERM',
+        onSignal,
+      );
       await cleanup();
     },
   };
 
   await (from !== undefined
-    ? clone({ destination: name, source: from, },)
+    ? clone({
+      destination: name,
+      source: from,
+    },)
     : create({ name, },));
 
-  const result = await exec({ command, name, },);
+  const result = await exec({
+    command,
+    name,
+  },);
   return result;
 }

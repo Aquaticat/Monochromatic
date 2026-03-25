@@ -1,6 +1,10 @@
 /**
  * Second-pass fix loop: sends the model its own code + diagnostics and scores the fix.
  */
+import {
+  l,
+  tagged,
+} from './log.ts';
 import { streamCompletion, } from './runner-stream.ts';
 
 // oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
@@ -51,24 +55,57 @@ export async function runSecondPass(
   if (probe.buildFixPrompt === undefined)
     return undefined;
 
-  const fixPrompt = await probe.buildFixPrompt(firstResponse, context,);
+  /** Probe-specific logger for pass2 messages. */
+  const rl = tagged({
+    tag: probe.name,
+    l: tagged({
+      tag: config.label,
+      l,
+    },),
+  },);
+  const fixPrompt = await probe.buildFixPrompt(
+    firstResponse,
+    context,
+  );
   if (fixPrompt === undefined) {
-    console.log(
-      `  [${config.label}:${probe.name}] pass2: skipped (no diagnostics to fix)`,
-    );
+    rl.info('pass2: skipped (no diagnostics to fix)',);
     return undefined;
   }
 
-  console.log(`  [${config.label}:${probe.name}] pass2: sending fix prompt...`,);
+  rl.info('pass2: sending fix prompt...',);
 
   const messages: ChatMessage[] = [
-    { role: 'system', content: probe.system, },
-    { role: 'user', content: probe.prompt, },
-    { role: 'assistant', content: firstResponse, },
-    { role: 'user', content: fixPrompt, },
+    {
+      role: 'system',
+      content: probe.system,
+    },
+    {
+      role: 'user',
+      content: probe.prompt,
+    },
+    {
+      role: 'assistant',
+      content: firstResponse,
+    },
+    {
+      role: 'user',
+      content: fixPrompt,
+    },
   ];
-  const completion = await streamCompletion(client, messages, config, `${probe.name}:fix`,
-    context.signal,);
-  const score = await probe.score(completion.text, context,);
-  return { score, completion, fixPrompt, };
+  const completion = await streamCompletion(
+    client,
+    messages,
+    config,
+    `${probe.name}:fix`,
+    context.signal,
+  );
+  const score = await probe.score(
+    completion.text,
+    context,
+  );
+  return {
+    score,
+    completion,
+    fixPrompt,
+  };
 }

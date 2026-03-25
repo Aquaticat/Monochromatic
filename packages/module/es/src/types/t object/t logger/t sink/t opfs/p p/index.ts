@@ -25,7 +25,10 @@ export async function verify(): Promise<boolean> {
 
   try {
     const opfsRoot = await navigator.storage.getDirectory();
-    const timestamp = new Date().toISOString().replaceAll(':', '-',);
+    const timestamp = new Date().toISOString().replaceAll(
+      ':',
+      '-',
+    );
     const fileHandle = await opfsRoot.getFileHandle(
       `monochromatic-${timestamp}.log.jsonl`,
       { create: true, },

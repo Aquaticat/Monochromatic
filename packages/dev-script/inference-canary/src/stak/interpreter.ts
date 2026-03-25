@@ -34,7 +34,10 @@ export function runStak(source: string,): string {
       continue;
     const [op, name,] = token.split(' ',);
     if (op === 'LABEL' && name !== undefined)
-      labels.set(name, i,);
+      labels.set(
+        name,
+        i,
+      );
   }
 
   const stack: number[] = [];
@@ -53,7 +56,13 @@ export function runStak(source: string,): string {
       continue;
     }
 
-    const step = executeOp(op, arg, stack, env, labels,);
+    const step = executeOp(
+      op,
+      arg,
+      stack,
+      env,
+      labels,
+    );
     if (step.output !== undefined)
       out += step.output;
     if (step.jumpTo !== undefined) {

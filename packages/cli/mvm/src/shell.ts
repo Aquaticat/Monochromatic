@@ -24,17 +24,24 @@ import {
  */
 export async function shell({ name, }: { name: string; },): Promise<void> {
   validateName(name,);
-  const rl = tagged({ tag: shell.name, l, },);
+  const rl = tagged({
+    tag: shell.name,
+    l,
+  },);
   const fullName = `${VM_PREFIX}${name}`;
 
   rl.info(`connecting to VM ${name} via console (press Ctrl+] to disconnect, not exit)`,);
 
   try {
-    await nanoSpawn('virsh', ['--connect', LIBVIRT_URI, 'console', fullName,], {
+    await nanoSpawn(
+      'virsh',
+      ['--connect', LIBVIRT_URI, 'console', fullName,],
+      {
       stderr: 'inherit',
       stdin: 'inherit',
       stdout: 'inherit',
-    },);
+    },
+    );
   }
   catch (error: unknown) {
     if (error !== null

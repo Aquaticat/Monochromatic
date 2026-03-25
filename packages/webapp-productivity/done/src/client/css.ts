@@ -27,5 +27,8 @@ import mixinSource from './mixins.css' with { type: 'text', };
  * @returns Expanded CSS with all \@apply rules replaced by mixin bodies
  */
 export function css(raw: string,): string {
-  return applyMixins(raw, mixinSource,);
+  return applyMixins(
+    raw,
+    mixinSource,
+  );
 }

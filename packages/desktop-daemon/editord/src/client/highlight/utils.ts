@@ -42,7 +42,10 @@ export function getLineTexts({ editor, }: { editor: HTMLDivElement; },): string[
  *
  * @returns zero-based line index
  */
-export function findLineForOffset({ offset, lineStarts, }: {
+export function findLineForOffset({
+  offset,
+  lineStarts,
+}: {
   offset: number;
   lineStarts: readonly number[];
 },): number {

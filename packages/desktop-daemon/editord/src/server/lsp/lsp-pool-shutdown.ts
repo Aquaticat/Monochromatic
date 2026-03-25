@@ -18,14 +18,21 @@ import type { LspClient, } from './lsp-client.ts';
  *
  * @param l - logger for error reporting
  */
-export async function shutdownPoolForPath({ pool, path, l, }: {
+export async function shutdownPoolForPath({
+  pool,
+  path,
+  l,
+}: {
   pool: Map<string, Promise<LspClient | null>>;
   path: string;
   l: Logger;
 },): Promise<void> {
   /** Collect matching entries for concurrent shutdown. */
   const toRemove: string[] = [];
-  const matching: { key: string; promise: Promise<LspClient | null>; }[] = [];
+  const matching: {
+    key: string;
+    promise: Promise<LspClient | null>
+  }[] = [];
 
   for (const [key, promise,] of pool.entries()) {
     /** Key format is `"type:root"` — extract the root portion. */
@@ -34,13 +41,19 @@ export async function shutdownPoolForPath({ pool, path, l, }: {
     const rootPrefix = root.endsWith('/',) ? root : `${root}/`;
     if (path === root || path.startsWith(rootPrefix,)) {
       toRemove.push(key,);
-      matching.push({ key, promise, },);
+      matching.push({
+        key,
+        promise,
+      },);
     }
   }
 
   /** Without parallel awaits: independent LSP servers would shut down sequentially, delaying the file operation. */
   await Promise.all(
-    matching.map(async function shutdownEntry({ key, promise, },): Promise<void> {
+    matching.map(async function shutdownEntry({
+      key,
+      promise,
+    },): Promise<void> {
       try {
         const client = await promise;
         if (client !== null)
@@ -61,7 +74,10 @@ export async function shutdownPoolForPath({ pool, path, l, }: {
  *
  * @param pool - the pool map to shut down
  */
-export function shutdownAllPooled({ pool, l, }: {
+export function shutdownAllPooled({
+  pool,
+  l,
+}: {
   pool: Map<string, Promise<LspClient | null>>;
   l: Logger;
 },): void {

@@ -18,10 +18,15 @@ import type { Range, } from '../../../protocol.ts';
  * @returns document range from (0,0) to end-of-file
  */
 export function computeDocumentRange({ editor, }: { editor: HTMLDivElement; },): Range {
-  const lastLineIndex = Math.max(0, editor.children.length - 1,);
+  const lastLineIndex = Math.max(
+    0,
+    editor.children.length - 1,
+  );
   const lastLineEl = editor.children[lastLineIndex];
   const lastLineText = lastLineEl?.textContent ?? '';
   const lastLineLength = lastLineText === '\n' ? 0 : lastLineText.length;
-  return { start: { line: 0, character: 0, },
-    end: { line: lastLineIndex, character: lastLineLength, }, };
+  return {
+    start: { line: 0, character: 0, },
+    end: { line: lastLineIndex, character: lastLineLength, },
+  };
 }

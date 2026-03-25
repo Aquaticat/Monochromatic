@@ -11,7 +11,10 @@ import {
 } from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'kde', l: parentLogger, },);
+const l = tagged({
+  tag: 'kde',
+  l: parentLogger,
+},);
 
 /**
  * Reads `TerminalService` from `~/.config/kdeglobals`.

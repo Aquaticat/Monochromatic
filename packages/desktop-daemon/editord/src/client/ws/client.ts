@@ -19,7 +19,10 @@ import {
 import { performHandshake, } from './handshake.ts';
 
 /** Tagged logger for the WebSocket client subsystem. */
-const l = tagged({ tag: 'ws', l: rootLogger, },);
+const l = tagged({
+  tag: 'ws',
+  l: rootLogger,
+},);
 
 //region Pending request tracking
 
@@ -63,12 +66,19 @@ export class EditorWsClient {
   /** Callback invoked when the server pushes a file change notification. */
   onFileChanged:
     | ((
-      event: { path: string; changeType: FsChangeType; isDirectory: boolean; },
+      event: {
+        path: string;
+        changeType: FsChangeType;
+        isDirectory: boolean
+      },
     ) => void)
     | null = null;
 
   /** Callback invoked when the server pushes diagnostics for a file. */
-  onDiagnostics: ((event: { path: string; diagnostics: Diagnostic[]; },) => void) | null =
+  onDiagnostics: ((event: {
+    path: string;
+    diagnostics: Diagnostic[]
+  },) => void) | null =
     null;
 
   /** Resolves when the WebSocket connection is established and authenticated. */
@@ -81,13 +91,25 @@ export class EditorWsClient {
    *
    * @param token - authentication token
    */
-  constructor({ port, token, }: { port: string; token: string; },) {
+  constructor({
+    port,
+    token,
+  }: {
+    port: string;
+    token: string
+  },) {
     const wsUrl = `ws://localhost:${port}/_ws?token=${token}`;
     this.#ws = new WebSocket(wsUrl,);
 
     this.ready = this.#performHandshake();
-    this.#ws.addEventListener('message', this.#handleMessage.bind(this,),);
-    this.#ws.addEventListener('close', this.#handleClose.bind(this,),);
+    this.#ws.addEventListener(
+      'message',
+      this.#handleMessage.bind(this,),
+    );
+    this.#ws.addEventListener(
+      'close',
+      this.#handleClose.bind(this,),
+    );
   }
 
   /** Performs the server handshake using the extracted handshake module. */
@@ -95,7 +117,10 @@ export class EditorWsClient {
     const client = this;
     return performHandshake({
       ws: this.#ws,
-      onConnected: function setFields({ rootDir, fsId, },) {
+      onConnected: function setFields({
+        rootDir,
+        fsId,
+      },) {
         client.rootDir = rootDir;
         client.fsId = fsId;
       },
@@ -115,18 +140,30 @@ export class EditorWsClient {
     await this.ready;
 
     const id = String(this.#nextId++,);
-    const fullMessage = { ...message, id, };
+    const fullMessage = {
+      ...message,
+      id,
+    };
     const pending = this.#pending;
 
     // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- pending request tracking requires storing resolve/reject callbacks in a map
     const responsePromise = new Promise<ServerMessage>(
-      function awaitResponse(resolve, reject,) {
+      function awaitResponse(
+        resolve,
+        reject,
+      ) {
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
-        const timeoutId = globalThis.setTimeout(function rejectStale() {
+        const timeoutId = globalThis.setTimeout(
+          function rejectStale() {
           if (pending.delete(id,))
             reject(new Error(`request ${id} timed out after ${REQUEST_TIMEOUT_MS}ms`,),);
-        }, REQUEST_TIMEOUT_MS,) as unknown as number;
-        pending.set(id, { resolve, reject, timeoutId, },);
+        },
+          REQUEST_TIMEOUT_MS,
+        ) as unknown as number;
+        pending.set(
+          id,
+          { resolve, reject, timeoutId, },
+        );
       },
     );
 
@@ -169,12 +206,18 @@ export class EditorWsClient {
 
     // Push notifications — no request ID
     if (data.type === 'fileChanged') {
-      this.onFileChanged?.({ path: data.path, changeType: data.changeType,
-        isDirectory: data.isDirectory, },);
+      this.onFileChanged?.({
+        path: data.path,
+        changeType: data.changeType,
+        isDirectory: data.isDirectory,
+      },);
       return;
     }
     if (data.type === 'diagnostics') {
-      this.onDiagnostics?.({ path: data.path, diagnostics: data.diagnostics, },);
+      this.onDiagnostics?.({
+        path: data.path,
+        diagnostics: data.diagnostics,
+      },);
       return;
     }
 

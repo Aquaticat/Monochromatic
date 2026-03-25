@@ -35,7 +35,10 @@ const HOURS_PER_DAY = 24;
  * ```
  */
 export function formatTrackedTime(seconds: number,): string {
-  const totalSeconds = Math.max(0, Math.floor(seconds,),);
+  const totalSeconds = Math.max(
+    0,
+    Math.floor(seconds,),
+  );
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
   const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;

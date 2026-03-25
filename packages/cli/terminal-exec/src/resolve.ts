@@ -34,7 +34,10 @@ import {
 } from './xdg-paths.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'resolve', l: parentLogger, },);
+const l = tagged({
+  tag: 'resolve',
+  l: parentLogger,
+},);
 
 /**
  * Successful terminal resolution result.
@@ -80,7 +83,10 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
   const config = await parseConfigFiles({ paths: configs, },);
 
   const dirs = applicationDirs();
-  const { registry, fallbackIds, } = await scanEntries({ dirs, },);
+  const {
+    registry,
+    fallbackIds,
+  } = await scanEntries({ dirs, },);
 
   //region Build candidate list: explicit entries, then KDE fallback, then fallback scan
   let explicitIds = [...config.entryIds,];
@@ -103,20 +109,36 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
   //region Try explicit entries first (bypass OnlyShowIn/NotShowIn)
   for (const entryId of explicitIds) {
     /* oxlint-disable-next-line no-await-in-loop -- sequential: first valid entry wins */
-    const result = await tryEntry({ entryId, registry, desktops, isFallback: false,
-      config, },);
+    const result = await tryEntry({
+      entryId,
+      registry,
+      desktops,
+      isFallback: false,
+      config,
+    },);
     if (result !== null)
-      return { ...result, entryId, };
+      return {
+        ...result,
+        entryId,
+      };
   }
   //endregion
 
   //region Try fallback entries
   for (const entryId of filteredFallbackIds) {
     /* oxlint-disable-next-line no-await-in-loop -- sequential: first valid entry wins */
-    const result = await tryEntry({ entryId, registry, desktops, isFallback: true,
-      config, },);
+    const result = await tryEntry({
+      entryId,
+      registry,
+      desktops,
+      isFallback: true,
+      config,
+    },);
     if (result !== null)
-      return { ...result, entryId, };
+      return {
+        ...result,
+        entryId,
+      };
   }
   //endregion
 
@@ -139,9 +161,18 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
  *
  * @returns Validated entry or `null`.
  */
-async function tryEntry({ entryId, registry, desktops, isFallback, config, }: {
+async function tryEntry({
+  entryId,
+  registry,
+  desktops,
+  isFallback,
+  config,
+}: {
   entryId: string;
-  registry: ReadonlyMap<string, { readonly id: string; readonly path: string; }>;
+  registry: ReadonlyMap<string, {
+    readonly id: string;
+    readonly path: string
+  }>;
   desktops: readonly string[];
   isFallback: boolean;
   config: { readonly execArgDefaults: ReadonlyMap<string, string>; };

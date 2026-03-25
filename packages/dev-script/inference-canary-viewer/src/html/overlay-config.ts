@@ -22,19 +22,46 @@ export function renderConfig(config: ConfigSnapshot,): string {
     tag: 'details',
     class: 'collapsible-section',
     children: [
-      h({ tag: 'summary', text: 'Config', },),
+      h({
+        tag: 'summary',
+        text: 'Config',
+      },),
       h({
         tag: 'dl',
         class: 'metadata-grid',
         children: [
-          h({ tag: 'dt', text: 'Verbosity', },),
-          h({ tag: 'dd', text: config.verbosity, },),
-          h({ tag: 'dt', text: 'Reasoning', },),
-          h({ tag: 'dd', text: String(config.reasoning,), },),
-          h({ tag: 'dt', text: 'Max tokens', },),
-          h({ tag: 'dd', text: formatNumber(config.maxTokens,), },),
-          h({ tag: 'dt', text: 'Consistency runs', },),
-          h({ tag: 'dd', text: String(config.consistencyRuns,), },),
+          h({
+            tag: 'dt',
+            text: 'Verbosity',
+          },),
+          h({
+            tag: 'dd',
+            text: config.verbosity,
+          },),
+          h({
+            tag: 'dt',
+            text: 'Reasoning',
+          },),
+          h({
+            tag: 'dd',
+            text: String(config.reasoning,),
+          },),
+          h({
+            tag: 'dt',
+            text: 'Max tokens',
+          },),
+          h({
+            tag: 'dd',
+            text: formatNumber(config.maxTokens,),
+          },),
+          h({
+            tag: 'dt',
+            text: 'Consistency runs',
+          },),
+          h({
+            tag: 'dd',
+            text: String(config.consistencyRuns,),
+          },),
         ],
       },),
     ],

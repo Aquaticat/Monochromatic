@@ -28,47 +28,74 @@ export function serializePrimitive(
     | 'undefined' | 'NaN' | 'symbol',
 ): string {
   return match(primitiveObjType,)
-    .with('boolean', function handler() {
+    .with(
+      'boolean',
+      function handler() {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms boolean
       const boolObj = obj as boolean;
       return String(boolObj,);
-    },)
-    .with('number', function handler() {
+    },
+    )
+    .with(
+      'number',
+      function handler() {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms number
       const numberObj = obj as number;
       return String(numberObj,);
-    },)
-    .with('string', function handler() {
+    },
+    )
+    .with(
+      'string',
+      function handler() {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms string
       const stringObj = obj as string;
       return JSON.stringify(stringObj,);
-    },)
-    .with('date', function handler() {
+    },
+    )
+    .with(
+      'date',
+      function handler() {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms Date
       const dateObj = obj as Date;
       return `new Date(${JSON.stringify(dateObj,)})`;
-    },)
-    .with('bigint', function handler() {
+    },
+    )
+    .with(
+      'bigint',
+      function handler() {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms bigint
       const bigintObj = obj as bigint;
       return `${String(bigintObj,)}n`;
-    },)
-    .with('null', function handler() {
+    },
+    )
+    .with(
+      'null',
+      function handler() {
       return 'null';
-    },)
-    .with('undefined', function handler() {
+    },
+    )
+    .with(
+      'undefined',
+      function handler() {
       return 'undefined';
-    },)
-    .with('NaN', function handler() {
+    },
+    )
+    .with(
+      'NaN',
+      function handler() {
       return 'NaN';
-    },)
-    .with('symbol', function handler() {
+    },
+    )
+    .with(
+      'symbol',
+      function handler() {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms symbol
       const symbolObj = obj as symbol;
       const { description, } = symbolObj;
       return description !== undefined
         ? `Symbol(${JSON.stringify(description,)})`
         : 'Symbol()';
-    },)
+    },
+    )
     .exhaustive();
 }

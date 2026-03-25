@@ -27,24 +27,42 @@ const FONT_WEIGHT_NORMAL = 400;
 const STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: cssRem(HOST_GAP,), },
+    decls: {
+      ...flexColumn(),
+      gap: cssRem(HOST_GAP,),
+    },
   },),
   css({
     rule: '.heading',
-    decls: { ...flexRow(), gap: cssRem(1,), 'font-size': cssRem(HEADING_SIZE,),
-      'font-weight': cssInt(FONT_WEIGHT_NORMAL,), cursor: 'pointer', },
+    decls: {
+      ...flexRow(),
+      gap: cssRem(1,),
+      'font-size': cssRem(HEADING_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
+      cursor: 'pointer',
+    },
   },),
   css({
     rule: '.icon',
-    decls: { ...flexCenter(), ...minTouchTarget(), 'font-size': cssRem(2,), },
+    decls: {
+      ...flexCenter(),
+      ...minTouchTarget(),
+      'font-size': cssRem(2,),
+    },
   },),
   css({
     rule: '.toggle',
-    decls: { 'inline-size': cssRem(HEADING_SIZE,), 'block-size': cssRem(HEADING_SIZE,), },
+    decls: {
+      'inline-size': cssRem(HEADING_SIZE,),
+      'block-size': cssRem(HEADING_SIZE,),
+    },
   },),
   css({
     rule: '.content',
-    decls: { ...flexColumn(), gap: cssVar('gap',), },
+    decls: {
+      ...flexColumn(),
+      gap: cssVar('gap',),
+    },
   },),
 ]
   .join('',);
@@ -78,8 +96,10 @@ class SectionHeading extends HTMLElement {
   /** Renders content and wires the heading click listener. */
   connectedCallback(): void {
     this.#render();
-    this.#shadow.querySelector<HTMLElement>('.heading',)?.addEventListener('click',
-      this.#toggle,);
+    this.#shadow.querySelector<HTMLElement>('.heading',)?.addEventListener(
+      'click',
+      this.#toggle,
+    );
   }
 
   /** Bound toggle handler that collapses/expands and dispatches a `toggle` event. */
@@ -90,7 +110,10 @@ class SectionHeading extends HTMLElement {
     this.#open = !this.#open;
     this.#updateToggle();
     this.dispatchEvent(
-      new CustomEvent('toggle', { detail: { open: this.#open, }, bubbles: true, },),
+      new CustomEvent(
+        'toggle',
+        { detail: { open: this.#open, }, bubbles: true, },
+      ),
     );
   }
 
@@ -110,14 +133,28 @@ class SectionHeading extends HTMLElement {
     const label = this.getAttribute('label',) ?? '';
 
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       h({
         tag: 'div',
         class: 'heading',
         children: [
-          h({ tag: 'span', class: 'icon', text: icon, },),
-          h({ tag: 'span', text: label, },),
-          h({ tag: 'span', class: 'toggle', text: this.#open ? '\u25B2' : '\u25BC', },),
+          h({
+            tag: 'span',
+            class: 'icon',
+            text: icon,
+          },),
+          h({
+            tag: 'span',
+            text: label,
+          },),
+          h({
+            tag: 'span',
+            class: 'toggle',
+            text: this.#open ? '\u25B2' : '\u25BC',
+          },),
         ],
       },),
       h({
@@ -129,4 +166,7 @@ class SectionHeading extends HTMLElement {
   }
 }
 
-customElements.define('section-heading', SectionHeading,);
+customElements.define(
+  'section-heading',
+  SectionHeading,
+);

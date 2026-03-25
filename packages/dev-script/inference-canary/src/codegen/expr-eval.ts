@@ -13,7 +13,14 @@ const EXPR_TEST_INPUT =
   '2 + 3 * 4\n(2 + 3) * 4\n10 / (5 - 5)\n-3 + 4 * -2\n((1 + 2) * (3 + 4))\n3.5 * 2 + 1.5\n';
 
 /** Expected outputs for each expression in EXPR_TEST_INPUT */
-const EXPR_EXPECTED = ['14', '20', 'ERR', '-11', '21', '8.5',] as const;
+const EXPR_EXPECTED = [
+  '14',
+  '20',
+  'ERR',
+  '-11',
+  '21',
+  '8.5',
+] as const;
 
 /** Allowed floating-point comparison tolerance */
 const FLOAT_TOLERANCE = 0.001;
@@ -61,7 +68,10 @@ export const expressionEvaluator = createCodeGenProbe({
       return line.trim();
     },);
     const correctCount = EXPR_EXPECTED
-      .filter(function checkLine(exp, index,): boolean {
+      .filter(function checkLine(
+        exp,
+        index,
+      ): boolean {
         const actual = lines[index];
         if (actual === undefined)
           return false;

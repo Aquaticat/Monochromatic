@@ -55,9 +55,15 @@ export async function* $<T,>(
   predicate: (item: T,) => boolean | Promise<boolean>,
   iterable: Iterable<T> | AsyncIterable<T>,
 ): AsyncGenerator<
-  { decision: 'pass' | 'fail' | ['thrown', unknown,]; item: T; },
+  {
+    decision: 'pass' | 'fail' | ['thrown', unknown,];
+    item: T
+  },
   void,
   undefined
 > {
-  yield* partitionNamed({ predicate, iterable, },);
+  yield* partitionNamed({
+    predicate,
+    iterable,
+  },);
 }

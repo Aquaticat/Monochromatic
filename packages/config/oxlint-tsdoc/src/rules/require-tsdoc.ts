@@ -57,7 +57,10 @@ export const requireTsdoc: CreateOnceRule = {
         return undefined;
       },
       FunctionDeclaration(node,): void {
-        reportMissing(node, context,);
+        reportMissing(
+          node,
+          context,
+        );
         scopeDepth++;
       },
       'FunctionDeclaration:exit'(): void {
@@ -76,19 +79,34 @@ export const requireTsdoc: CreateOnceRule = {
         scopeDepth--;
       },
       ClassDeclaration(node,): void {
-        reportMissing(node, context,);
+        reportMissing(
+          node,
+          context,
+        );
       },
       MethodDefinition(node,): void {
-        reportMissing(node, context,);
+        reportMissing(
+          node,
+          context,
+        );
       },
       TSInterfaceDeclaration(node,): void {
-        reportMissing(node, context,);
+        reportMissing(
+          node,
+          context,
+        );
       },
       TSTypeAliasDeclaration(node,): void {
-        reportMissing(node, context,);
+        reportMissing(
+          node,
+          context,
+        );
       },
       TSEnumDeclaration(node,): void {
-        reportMissing(node, context,);
+        reportMissing(
+          node,
+          context,
+        );
       },
       BlockStatement(): void {
         blockDepth++;
@@ -111,17 +129,29 @@ export const requireTsdoc: CreateOnceRule = {
           return;
         }
         if (scopeDepth === 0 && blockDepth === 0)
-          reportMissing(node, context,);
+          reportMissing(
+            node,
+            context,
+          );
       },
       PropertyDefinition(node,): void {
-        reportMissing(node, context,);
+        reportMissing(
+          node,
+          context,
+        );
       },
       TSEnumMember(node,): void {
-        reportMissing(node, context,);
+        reportMissing(
+          node,
+          context,
+        );
       },
       Property(node,): void {
         if (node.kind === 'get' || node.kind === 'set')
-          reportMissing(node, context,);
+          reportMissing(
+            node,
+            context,
+          );
       },
     } as VisitorWithHooks;
   },

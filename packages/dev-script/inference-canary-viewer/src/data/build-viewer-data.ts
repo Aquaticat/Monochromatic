@@ -45,7 +45,11 @@ export function buildViewerData(
     if (firstProbe === undefined)
       continue;
 
-    const { model, label, timestamp, } = firstProbe.meta;
+    const {
+      model,
+      label,
+      timestamp,
+    } = firstProbe.meta;
     const probeScores: Record<string, number> = {};
     const pass2Scores: Record<string, number> = {};
     let config: ViewerEntry['config'] = undefined;
@@ -66,19 +70,25 @@ export function buildViewerData(
         hasPass2 = true;
       }
 
-      probeDetails.set(probeKey(label, probeName, timestamp,), buildProbeDetail({
+      probeDetails.set(
+        probeKey(label, probeName, timestamp,),
+        buildProbeDetail({
         enriched,
         fixEnriched,
         artifact,
         fix,
-      },),);
+      },),
+      );
     }
 
     const scores = Object.values(probeScores,);
     const overallScore = scores.length > 0
-      ? scores.reduce(function addScore(sum, score,) {
+      ? scores.reduce(
+        function addScore(sum, score,) {
         return sum + score;
-      }, 0,) / scores.length
+      },
+        0,
+      ) / scores.length
       : 0;
 
     entries.push({
@@ -106,7 +116,10 @@ export function buildViewerData(
     },);
   }
 
-  entries.sort(function byTimestamp(a, b,) {
+  entries.sort(function byTimestamp(
+    a,
+    b,
+  ) {
     return a.timestamp.localeCompare(b.timestamp,);
   },);
 
@@ -115,5 +128,8 @@ export function buildViewerData(
       String(probeDetails.size,)
     } probe details`,
   );
-  return { entries, probeDetails, };
+  return {
+    entries,
+    probeDetails,
+  };
 }

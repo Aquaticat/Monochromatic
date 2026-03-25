@@ -39,8 +39,10 @@ export type FormattableDiagnostic = {
  * // => 'ERROR 10:5 [ts 2345] Bad type'
  * ```
  */
-export function formatDiagnostic(diagnostic: FormattableDiagnostic,
-  indent: string = '',): string
+export function formatDiagnostic(
+  diagnostic: FormattableDiagnostic,
+  indent: string = '',
+): string
 {
   const source = diagnostic.source !== null && diagnostic.source !== ''
     ? ` [${diagnostic.source}${

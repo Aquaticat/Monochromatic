@@ -25,15 +25,21 @@ import {
  */
 export function resetStyles(): string {
   return [
-    $({ rule: '*, *::before, *::after', decls: { 'box-sizing': 'border-box', }, },),
-    $({ rule: 'body', decls: {
+    $({
+      rule: '*, *::before, *::after',
+      decls: { 'box-sizing': 'border-box', },
+    },),
+    $({
+      rule: 'body',
+      decls: {
       'margin-block': 0,
       'margin-inline': 0,
       'font-family': cssCommaList(['Inter', 'system-ui', 'sans-serif',],),
       'line-height': LINE_HEIGHT,
       color: cssVar('color-fg',),
       'background-color': cssVar('color-bg',),
-    }, },),
+    },
+    },),
   ]
     .join('\n',);
 }
@@ -44,12 +50,15 @@ export function resetStyles(): string {
  * @returns CSS string for layout rules
  */
 export function layoutStyles(): string {
-  return $({ rule: '.between_header_footer', decls: {
+  return $({
+    rule: '.between_header_footer',
+    decls: {
     'max-inline-size': cssRem(MAX_WIDTH,),
     'margin-inline': 'auto',
     'padding-inline': cssRem(GAP,),
     'padding-block': cssRem(GAP,),
-  }, },);
+  },
+  },);
 }
 
 /**
@@ -59,17 +68,28 @@ export function layoutStyles(): string {
  */
 export function typographyStyles(): string {
   return [
-    $({ rule: 'a', decls: { color: cssVar('color-link',), }, },),
-    $({ rule: 'a:visited', decls: { color: cssVar('color-link-visited',), }, },),
-    $({ rule: 'code',
-      decls: { 'font-family': cssCommaList(['"Monaspace Neon"', 'monospace',],), }, },),
-    $({ rule: 'pre', decls: {
+    $({
+      rule: 'a',
+      decls: { color: cssVar('color-link',), },
+    },),
+    $({
+      rule: 'a:visited',
+      decls: { color: cssVar('color-link-visited',), },
+    },),
+    $({
+      rule: 'code',
+      decls: { 'font-family': cssCommaList(['"Monaspace Neon"', 'monospace',],), },
+    },),
+    $({
+      rule: 'pre',
+      decls: {
       'padding-block': cssRem(GAP,),
       'padding-inline': cssRem(GAP,),
       'overflow-x': 'auto',
       'border-radius': cssRem(GAP_SMALL,),
       'background-color': cssVar('color-code-bg',),
-    }, },),
+    },
+    },),
   ]
     .join('\n',);
 }

@@ -92,7 +92,10 @@ export function dirnameFallback(filePath: string,): string {
     return isRoot ? '/' : '.';
   if (isRoot && lastSlash === 0)
     return '/';
-  return filePath.slice(0, lastSlash,);
+  return filePath.slice(
+    0,
+    lastSlash,
+  );
 }
 
 //endregion dirnameFallback
@@ -168,7 +171,10 @@ export function resolveFallback(...segments: string[]): string {
   if (normalized.length > 1
     && normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT)
   {
-    return normalized.slice(0, -1,);
+    return normalized.slice(
+      0,
+      -1,
+    );
   }
   return normalized;
 }

@@ -29,17 +29,32 @@ import type { EditorWsClient, } from '../ws/client.ts';
  *
  * @returns expand and shrink callbacks
  */
-export function wireSelectionRange({ ws, editorPane, getCurrentFilePath, }: {
+export function wireSelectionRange({
+  ws,
+  editorPane,
+  getCurrentFilePath,
+}: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
-},): { expandSelection: () => void; shrinkSelection: () => void; } {
+},): {
+  expandSelection: () => void;
+  shrinkSelection: () => void
+} {
   return {
     expandSelection: function expand(): void {
-      doExpandSelection({ ws, editorPane, getCurrentFilePath, },);
+      doExpandSelection({
+        ws,
+        editorPane,
+        getCurrentFilePath,
+      },);
     },
     shrinkSelection: function shrink(): void {
-      doShrinkSelection({ ws, editorPane, getCurrentFilePath, },);
+      doShrinkSelection({
+        ws,
+        editorPane,
+        getCurrentFilePath,
+      },);
     },
   };
 }

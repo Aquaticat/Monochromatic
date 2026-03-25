@@ -5,7 +5,10 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import { i18nObject, locales, } from '../i18n/i18n-util.ts';
+import {
+  i18nObject,
+  locales,
+} from '../i18n/i18n-util.ts';
 import { pageLayout, } from '../templates/layout.ts';
 
 /**
@@ -27,18 +30,29 @@ export function indexPage(langs: readonly string[],): string {
   const content = h({
     tag: 'main',
     children: [
-      h({ tag: 'h1', text: title, },),
+      h({
+        tag: 'h1',
+        text: title,
+      },),
       h({
         tag: 'ul',
         children: langs.map(function langLink(lang,) {
           return h({
             tag: 'li',
-            children: [h({ tag: 'a', attrs: { href: `/${lang}`, }, text: lang, },),],
+            children: [h({
+              tag: 'a',
+              attrs: { href: `/${lang}`, },
+              text: lang,
+            },),],
           },);
         },),
       },),
     ],
   },);
 
-  return pageLayout({ title, lang: 'en', content, },);
+  return pageLayout({
+    title,
+    lang: 'en',
+    content,
+  },);
 }

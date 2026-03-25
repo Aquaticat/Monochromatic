@@ -56,13 +56,19 @@ export {
  *
  * @throws When an \@apply references an unknown mixin
  */
-export function applyMixins(cssText: string, mixinCssText: string,): string {
+export function applyMixins(
+  cssText: string,
+  mixinCssText: string,
+): string {
   mixins.clear();
 
   /**
    * PostCSS AST of mixin definitions, parsed to extract \@mixin rules.
    */
-  const mixinRoot = parse(mixinCssText, { from: 'mixins.css', },);
+  const mixinRoot = parse(
+    mixinCssText,
+    { from: 'mixins.css', },
+  );
   collectMixins(mixinRoot,);
   expandMixinBodies();
 
@@ -91,7 +97,10 @@ export function applyMixins(cssText: string, mixinCssText: string,): string {
  * @throws When an import cannot be resolved or a mixin reference is invalid
  */
 export async function build(options: BuildOptions,): Promise<string> {
-  const { input, output, } = options;
+  const {
+    input,
+    output,
+  } = options;
 
   // Clear mixin registry for fresh build
   mixins.clear();
@@ -106,9 +115,12 @@ export async function build(options: BuildOptions,): Promise<string> {
   /**
    * PostCSS result after resolving and inlining all \@import rules.
    */
-  const bundled = postcss([postcssInlineImport,],).process(cssText, {
+  const bundled = postcss([postcssInlineImport,],).process(
+    cssText,
+    {
     from: inputPath,
-  },);
+  },
+  );
 
   /** PostCSS AST with all imports inlined, ready for mixin processing */
   const { root, } = bundled;
@@ -122,11 +134,20 @@ export async function build(options: BuildOptions,): Promise<string> {
   const result = root.toString();
 
   // Write output — uses dynamic import so browser callers don't pull in node:fs
-  const { mkdir, writeFile, } = await import('node:fs/promises');
+  const {
+    mkdir,
+    writeFile,
+  } = await import('node:fs/promises');
   /** Absolute path for the output file */
   const outputPath = resolve(output,);
-  await mkdir(dirname(outputPath,), { recursive: true, },);
-  await writeFile(outputPath, result,);
+  await mkdir(
+    dirname(outputPath,),
+    { recursive: true, },
+  );
+  await writeFile(
+    outputPath,
+    result,
+  );
 
   return result;
 }

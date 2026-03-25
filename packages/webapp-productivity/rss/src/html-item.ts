@@ -17,10 +17,20 @@ import type { ItemWDate, } from './item-type.ts';
  * ```
  */
 export function itemToFeed(
-  options: { itemWDate: ItemWDate; index: number; },
+  options: {
+    itemWDate: ItemWDate;
+    index: number
+  },
 ): string {
-  const { itemWDate, index, } = options;
-  const { item, pubDateDate, feed, } = itemWDate;
+  const {
+    itemWDate,
+    index,
+  } = options;
+  const {
+    item,
+    pubDateDate,
+    feed,
+  } = itemWDate;
   const descriptionIframe = item.description !== undefined && item.description !== ''
     ? h({
       tag: 'iframe',

@@ -20,7 +20,10 @@ import { renderStrokes, } from './stroke-renderer.ts';
 //region Types
 
 /** Normalized coordinate pair [x, y] in [0..1] range */
-export type NormalizedPoint = readonly [number, number,];
+export type NormalizedPoint = readonly [
+  number,
+  number,
+];
 
 /**
  * Stroke data with normalized coordinates, color, and width.
@@ -91,10 +94,28 @@ let drawing = false;
  * @param ch - current canvas height in CSS pixels
  */
 export function redraw(
-  { ctx, cw, ch, }: { ctx: CanvasRenderingContext2D; cw: number; ch: number; },
+  {
+    ctx,
+    cw,
+    ch,
+  }: {
+    ctx: CanvasRenderingContext2D;
+    cw: number;
+    ch: number
+  },
 ): void {
-  ctx.clearRect(0, 0, cw, ch,);
-  renderStrokes({ ctx, cw, ch, strokes, },);
+  ctx.clearRect(
+    0,
+    0,
+    cw,
+    ch,
+  );
+  renderStrokes({
+    ctx,
+    cw,
+    ch,
+    strokes,
+  },);
 }
 
 /**
@@ -110,13 +131,18 @@ export function redraw(
  *
  * @returns normalized [x, y] coordinate pair
  */
-export function normalizePointer({ event, canvas, }: {
+export function normalizePointer({
+  event,
+  canvas,
+}: {
   event: PointerEvent;
   canvas: HTMLCanvasElement;
 },): NormalizedPoint {
   const rect = canvas.getBoundingClientRect();
-  return [(event.clientX - rect.left) / rect.width,
-    (event.clientY - rect.top) / rect.height,];
+  return [
+    (event.clientX - rect.left) / rect.width,
+    (event.clientY - rect.top) / rect.height,
+  ];
 }
 
 /**
@@ -138,12 +164,22 @@ export function normalizePointer({ event, canvas, }: {
  * // px === 400, py === 300
  * ```
  */
-export function denormalizePoint({ point, cw, ch, }: {
+export function denormalizePoint({
+  point,
+  cw,
+  ch,
+}: {
   point: NormalizedPoint;
   cw: number;
   ch: number;
-},): { px: number; py: number; } {
-  return { px: point[0] * cw, py: point[1] * ch, };
+},): {
+  px: number;
+  py: number
+} {
+  return {
+    px: point[0] * cw,
+    py: point[1] * ch,
+  };
 }
 
 /**
@@ -156,7 +192,11 @@ export function denormalizePoint({ point, cw, ch, }: {
  */
 export function startStroke(point: NormalizedPoint,): void {
   drawing = true;
-  current = { points: [point,], color: getStrokeColor(), width: getStrokeWidth(), };
+  current = {
+    points: [point,],
+    color: getStrokeColor(),
+    width: getStrokeWidth(),
+  };
   strokes.push(current,);
 }
 
@@ -175,7 +215,10 @@ export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
   if (previous === undefined)
     return null;
   current.points.push(point,);
-  return { from: previous, to: point, };
+  return {
+    from: previous,
+    to: point,
+  };
 }
 
 /**

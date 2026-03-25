@@ -60,36 +60,59 @@ function openTask(taskId: string,): void {
  * @param taskId - ID of task to complete
  */
 async function completeTask(taskId: string,): Promise<void> {
-  await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
+  await api(
+    `/api/tasks/${taskId}/complete`,
+    { method: 'POST', },
+  );
   globalThis.location.reload();
 }
 
 //region Suggested section
 
 app.append(
-  buildSuggestedSection({ pageData, onOpen: openTask, onComplete: completeTask, },),
+  buildSuggestedSection({
+    pageData,
+    onOpen: openTask,
+    onComplete: completeTask,
+  },),
 );
 
 //endregion Suggested section
 
-app.append(h({ tag: 'div', class: 'divider', },),);
+app.append(h({
+  tag: 'div',
+  class: 'divider',
+},),);
 
 //region All section
 
 /** Collapsible section heading for the "All" tasks block. */
-const allSection = h({ tag: 'section-heading',
-  attrs: { icon: '\u221E', label: 'All', }, },);
+const allSection = h({
+  tag: 'section-heading',
+  attrs: { icon: '\u221E', label: 'All', },
+},);
 
 /** Content container for the all tasks section. */
 const allContent = h({
   tag: 'div',
-  style: { display: 'flex', flexDirection: 'column', gap: 'var(--gap)', },
+  style: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'var(--gap)',
+  },
   children: [
     pageData.allTasks.length === 0
-      ? h({ tag: 'p', class: 'empty', text: 'No tasks yet.', },)
-      : buildTaskList({ tasks: pageData.allTasks,
-        blockedTasksByBlocker: pageData.blockedTasksByBlocker, onOpen: openTask,
-        onToggleComplete: completeTask, },),
+      ? h({
+        tag: 'p',
+        class: 'empty',
+        text: 'No tasks yet.',
+      },)
+      : buildTaskList({
+        tasks: pageData.allTasks,
+        blockedTasksByBlocker: pageData.blockedTasksByBlocker,
+        onOpen: openTask,
+        onToggleComplete: completeTask,
+      },),
   ],
 },);
 
@@ -101,7 +124,10 @@ app.append(allSection,);
 //region New-task dialog -- FAB opens a modal <dialog> with task-detail in create mode
 
 /** New-task dialog panel and trigger FAB button. */
-const { panel: newTaskPanel, fab: newTaskFab, } = createNewTaskDialog();
+const {
+  panel: newTaskPanel,
+  fab: newTaskFab,
+} = createNewTaskDialog();
 document.body.append(newTaskPanel,);
 document.body.append(newTaskFab,);
 

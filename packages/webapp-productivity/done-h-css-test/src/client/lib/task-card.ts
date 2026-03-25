@@ -45,7 +45,10 @@ class TaskCard extends HTMLElement {
    *
    * @param options - Callbacks and display flags
    */
-  configure(task: Task, options: TaskCardOptions,): void {
+  configure(
+    task: Task,
+    options: TaskCardOptions,
+  ): void {
     this.#task = task;
     this.#options = options;
     this.#render();
@@ -76,13 +79,24 @@ class TaskCard extends HTMLElement {
 
     const chipTexts = buildChipTexts(task,);
     const chipElements: HTMLElement[] = chipTexts.map(function toChipElement(text,) {
-      return h({ tag: 'span', class: 'chip', text, },);
+      return h({
+        tag: 'span',
+        class: 'chip',
+        text,
+      },);
     },);
     if (options.showBlockedBadge === true)
-      chipElements.push(h({ tag: 'span', class: 'chip blocked', text: 'blocked', },),);
+      chipElements.push(h({
+        tag: 'span',
+        class: 'chip blocked',
+        text: 'blocked',
+      },),);
 
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: TASK_CARD_STYLES, },),
+      h({
+        tag: 'style',
+        text: TASK_CARD_STYLES,
+      },),
       h({
         tag: 'div',
         class: 'row',
@@ -91,7 +105,10 @@ class TaskCard extends HTMLElement {
             tag: 'button',
             class: 'checkbox',
             attrs: { title: 'Complete task', },
-            children: [h({ tag: 'span', class: 'checkbox-box', },),],
+            children: [h({
+              tag: 'span',
+              class: 'checkbox-box',
+            },),],
             on: {
               click: async function handleCheckboxClick(event,) {
                 event.stopPropagation();
@@ -100,7 +117,11 @@ class TaskCard extends HTMLElement {
               },
             },
           },),
-          h({ tag: 'span', class: 'title', text: task.title, },),
+          h({
+            tag: 'span',
+            class: 'title',
+            text: task.title,
+          },),
         ],
         on: {
           click: function handleCardClick() {
@@ -108,12 +129,19 @@ class TaskCard extends HTMLElement {
           },
         },
       },),
-      h({ tag: 'div', class: 'chips', children: chipElements, },),
+      h({
+        tag: 'div',
+        class: 'chips',
+        children: chipElements,
+      },),
     );
   }
 }
 
-customElements.define('task-card', TaskCard,);
+customElements.define(
+  'task-card',
+  TaskCard,
+);
 
 /**
  * Factory: creates and configures a `<task-card>` element ready for DOM insertion.
@@ -124,10 +152,16 @@ customElements.define('task-card', TaskCard,);
  *
  * @returns Configured task-card element
  */
-export function createTaskCard(task: Task, options: TaskCardOptions,): TaskCard {
+export function createTaskCard(
+  task: Task,
+  options: TaskCardOptions,
+): TaskCard {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard
   const card = document.createElement('task-card',) as TaskCard;
-  card.configure(task, options,);
+  card.configure(
+    task,
+    options,
+  );
   return card;
 }
 
@@ -143,7 +177,9 @@ export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)
     return formatTrackedTime(task.trackedTime,);
 
-  const elapsedSeconds = Math.max(0,
-    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),);
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),
+  );
   return formatTrackedTime(task.trackedTime + elapsedSeconds,);
 }

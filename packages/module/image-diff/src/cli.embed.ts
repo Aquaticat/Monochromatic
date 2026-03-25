@@ -17,11 +17,23 @@ import {
  *
  * @param printUsageAndExit - callback to print usage and exit on errors
  */
-export async function handleEmbed(args: string[],
-  printUsageAndExit: () => never,): Promise<void>
+export async function handleEmbed(
+  args: string[],
+  printUsageAndExit: () => never,
+): Promise<void>
 {
-  const rl = tagged({ tag: handleEmbed.name, l, },);
-  const { provider, model, remaining, } = parseFlags(args, printUsageAndExit,);
+  const rl = tagged({
+    tag: handleEmbed.name,
+    l,
+  },);
+  const {
+    provider,
+    model,
+    remaining,
+  } = parseFlags(
+    args,
+    printUsageAndExit,
+  );
 
   if (remaining.length !== 1) {
     console.error('Error: embed requires exactly 1 image argument',);
@@ -41,14 +53,21 @@ export async function handleEmbed(args: string[],
       provider,
       ...(model !== undefined ? { model, } : {}),
     };
-    const result = await embed(image, config,);
+    const result = await embed(
+      image,
+      config,
+    );
 
-    console.log(JSON.stringify({
+    console.log(JSON.stringify(
+      {
       provider,
       dimensions: result.embedding.length,
       usage: result.usage,
       embedding: result.embedding,
-    }, null, 2,),);
+    },
+      null,
+      2,
+    ),);
   }
   else {
     rl.debug('embedding via all providers',);

@@ -24,8 +24,11 @@ const parser = object({
 },);
 
 /** Parsed CLI arguments cast to the shared build options type */
-const args: BuildOptions = runSync(parser, { programName: 'build-css',
-  help: 'option', },);
+const args: BuildOptions = runSync(
+  parser,
+  { programName: 'build-css',
+  help: 'option', },
+);
 
 console.log(`Building CSS: ${args.input} -> ${args.output}`,);
 await build(args,);

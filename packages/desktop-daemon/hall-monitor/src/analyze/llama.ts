@@ -78,7 +78,11 @@ export async function start(): Promise<void> {
       '--port',
       String(PORT,),
     ],
-    { stdio: ['ignore', 'ignore', 'ignore',], },
+    { stdio: [
+      'ignore',
+      'ignore',
+      'ignore',
+    ], },
   );
 
   await waitForHealth();
@@ -102,7 +106,10 @@ export async function stop(): Promise<void> {
 
   // Kill the actual llama-server process by name since distrobox wraps it
   try {
-    await spawn('pkill', ['-f', `llama-server.*--port ${PORT}`,],);
+    await spawn(
+      'pkill',
+      ['-f', `llama-server.*--port ${PORT}`,],
+    );
   }
   catch {
     // process may already be gone, or pkill exits non-zero if no match
@@ -115,7 +122,10 @@ export async function stop(): Promise<void> {
   currentServer.kill();
   // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js event-based ChildProcess API
   await new Promise<void>(function awaitExit(resolve,) {
-    currentServer.on('exit', resolve,);
+    currentServer.on(
+      'exit',
+      resolve,
+    );
   },);
   server = null;
 
@@ -135,7 +145,10 @@ export async function stop(): Promise<void> {
  */
 export async function forceCleanup(): Promise<void> {
   try {
-    await spawn('pkill', ['-9', '-f', `llama-server.*--port ${PORT}`,],);
+    await spawn(
+      'pkill',
+      ['-9', '-f', `llama-server.*--port ${PORT}`,],
+    );
   }
   catch {
     // process may already be gone, or pkill exits non-zero if no match

@@ -34,7 +34,9 @@ export const noMultiAsterisks: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(context, function noMultiHandler(_node, comment,): void {
+    return createTsdocVisitor(
+      context,
+      function noMultiHandler(_node, comment,): void {
       const lines = getCommentLines(comment,);
       // Skip first line (opening) and last line (closing)
       lines.slice(1, -1,).forEach(function checkLine(line, index,): void {
@@ -49,6 +51,7 @@ export const noMultiAsterisks: CreateOnceRule = {
           },);
         }
       },);
-    },);
+    },
+    );
   },
 };

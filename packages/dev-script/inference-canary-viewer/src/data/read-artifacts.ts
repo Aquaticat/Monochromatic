@@ -61,12 +61,18 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  */
 async function readOptional(path: string,): Promise<string | undefined> {
   try {
-    return await readFile(path, 'utf8',);
+    return await readFile(
+      path,
+      'utf8',
+    );
   }
   catch (error: unknown) {
     // ENOENT is expected for optional files (e.g. canary.ts not saved in old artifacts)
     if (!isErrnoException(error,) || error.code !== 'ENOENT')
-      console.error(`[viewer] failed to read ${path}:`, error,);
+      console.error(
+        `[viewer] failed to read ${path}:`,
+        error,
+      );
     return undefined;
   }
 }
@@ -89,33 +95,54 @@ export async function readArtifacts(): Promise<ArtifactData> {
 
   let modelDirents: Dirent[] = [];
   try {
-    modelDirents = await readdir(LINT_DIR, { withFileTypes: true, },);
+    modelDirents = await readdir(
+      LINT_DIR,
+      { withFileTypes: true, },
+    );
   }
   catch {
     console.error('[viewer] no artifact directory found, skipping artifact loading',);
-    return { entries: [], probeDetails: new Map(), };
+    return {
+      entries: [],
+      probeDetails: new Map(),
+    };
   }
 
   for (const modelDirent of modelDirents.filter(function isDir(dirent,) {
     return dirent.isDirectory();
   },)) {
-    const modelPath = join(LINT_DIR, modelDirent.name,);
+    const modelPath = join(
+      LINT_DIR,
+      modelDirent.name,
+    );
     let subdirents: Dirent[] = [];
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential directory reads with per-iteration error handling
-      subdirents = await readdir(modelPath, { withFileTypes: true, },);
+      subdirents = await readdir(
+        modelPath,
+        { withFileTypes: true, },
+      );
     }
     catch (error) {
-      console.error(`[viewer] failed to read model directory ${modelPath}:`, error,);
+      console.error(
+        `[viewer] failed to read model directory ${modelPath}:`,
+        error,
+      );
       continue;
     }
 
     for (const subdirent of subdirents.filter(function isDir(dirent,) {
       return dirent.isDirectory();
     },)) {
-      const dirPath = join(modelPath, subdirent.name,);
+      const dirPath = join(
+        modelPath,
+        subdirent.name,
+      );
       // oxlint-disable-next-line no-await-in-loop -- sequential per-artifact reads with individual error handling
-      const metaRaw = await readOptional(join(dirPath, 'meta.json',),);
+      const metaRaw = await readOptional(join(
+        dirPath,
+        'meta.json',
+      ),);
       if (metaRaw === undefined)
         continue;
 
@@ -125,7 +152,10 @@ export async function readArtifacts(): Promise<ArtifactData> {
         parsed = JSON.parse(metaRaw,) as Record<string, unknown>;
       }
       catch (error) {
-        console.error(`[viewer] malformed meta.json in ${dirPath}:`, error,);
+        console.error(
+          `[viewer] malformed meta.json in ${dirPath}:`,
+          error,
+        );
         continue;
       }
 
@@ -144,18 +174,39 @@ export async function readArtifacts(): Promise<ArtifactData> {
       };
       // oxlint-disable-next-line no-await-in-loop -- sequential per-artifact reads grouped by run
       const [source, response,] = await Promise.all([
-        readOptional(join(dirPath, 'canary.ts',),),
-        readOptional(join(dirPath, 'response.txt',),),
+        readOptional(join(
+          dirPath,
+          'canary.ts',
+        ),),
+        readOptional(join(
+          dirPath,
+          'response.txt',
+        ),),
       ],);
-      const artifact: ParsedArtifact = { meta, source, response, dir: dirPath, };
+      const artifact: ParsedArtifact = {
+        meta,
+        source,
+        response,
+        dir: dirPath,
+      };
       const runKey = `${meta.label}::${meta.timestamp}`;
 
       const target = meta.pass === 'initial' ? initialByRun : fixByRun;
       const probes = target.get(runKey,) ?? new Map<string, ParsedArtifact>();
-      probes.set(meta.probe, artifact,);
-      target.set(runKey, probes,);
+      probes.set(
+        meta.probe,
+        artifact,
+      );
+      target.set(
+        runKey,
+        probes,
+      );
     }
   }
 
-  return buildViewerData(initialByRun, fixByRun, failures,);
+  return buildViewerData(
+    initialByRun,
+    fixByRun,
+    failures,
+  );
 }

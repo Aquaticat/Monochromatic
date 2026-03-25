@@ -22,13 +22,22 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  * ```
  */
 export function prettyDate(
-  { date, lang, }: { date: Date; lang: string; },
+  {
+    date,
+    lang,
+  }: {
+    date: Date;
+    lang: string
+  },
 ): string {
-  const formatted = date.toLocaleDateString(lang, {
+  const formatted = date.toLocaleDateString(
+    lang,
+    {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
-  },);
+  },
+  );
 
   return h({
     tag: 'time',

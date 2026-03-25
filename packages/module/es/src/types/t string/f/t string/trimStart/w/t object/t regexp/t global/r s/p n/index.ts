@@ -57,7 +57,13 @@ import type { $ as Global, } from '@_/types/t object/t regexp/t global/t/index.t
  * which follows the same pattern but removes from the end of the string.
  */
 export function $(
-  { str, trimmer, }: { str: string; trimmer: Global; },
+  {
+    str,
+    trimmer,
+  }: {
+    str: string;
+    trimmer: Global
+  },
 ): string {
   // Use matchAll to get all matches in a single regex execution
   const matches = str.matchAll(trimmer,);

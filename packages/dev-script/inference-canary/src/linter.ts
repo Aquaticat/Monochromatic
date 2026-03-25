@@ -75,7 +75,13 @@ export async function lintSource(
   source: string,
   meta: ArtifactMeta,
 ): Promise<LintResult> {
-  const { filePath, lintDir, } = await writeLintFile(source, meta,);
+  const {
+    filePath,
+    lintDir,
+  } = await writeLintFile(
+    source,
+    meta,
+  );
 
   // runAndParseOxlint and runAndParseTypeCheck each catch their own errors and
   // return safe defaults, so no outer catch is needed here.
@@ -93,7 +99,10 @@ export async function lintSource(
     },);
 
   return {
-    severity: { errors: oxlintResult.errors, warnings: oxlintResult.warnings, },
+    severity: {
+      errors: oxlintResult.errors,
+      warnings: oxlintResult.warnings,
+    },
     violationCount: oxlintResult.violationCount,
     violatedRules: oxlintResult.violatedRules,
     perRulePenalty: oxlintResult.perRulePenalty,

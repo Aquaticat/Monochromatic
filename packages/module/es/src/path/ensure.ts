@@ -75,19 +75,28 @@ export async function ensureDir(path: string,): Promise<string> {
   catch (error: unknown) {
     if ((error as { code?: string; }).code === 'ENOENT') {
       l.info(`${path} does not exist, creating recursively`,);
-      await mkdir(path, { recursive: true, },);
+      await mkdir(
+        path,
+        { recursive: true, },
+      );
       return path;
     }
     throw error;
   }
 
   try {
-    await access(path, constants.R_OK | constants.W_OK,);
+    await access(
+      path,
+      constants.R_OK | constants.W_OK,
+    );
     l.info(`${path} is accessible`,);
   }
   catch {
     l.info(`${path} not accessible, adjusting permissions`,);
-    await chmod(path, constants.R_OK | constants.W_OK,);
+    await chmod(
+      path,
+      constants.R_OK | constants.W_OK,
+    );
   }
 
   return path;
@@ -123,19 +132,29 @@ export async function ensureFile(path: string,): Promise<string> {
     if ((error as { code?: string; }).code === 'ENOENT') {
       l.info(`${path} does not exist, creating`,);
       await ensureDir(parsed.dir,);
-      await writeFile(path, '', { flag: 'w', },);
+      await writeFile(
+        path,
+        '',
+        { flag: 'w', },
+      );
       return path;
     }
     throw error;
   }
 
   try {
-    await access(path, constants.R_OK | constants.W_OK,);
+    await access(
+      path,
+      constants.R_OK | constants.W_OK,
+    );
     l.info(`${path} is accessible`,);
   }
   catch {
     l.info(`${path} not accessible, adjusting permissions`,);
-    await chmod(path, constants.R_OK | constants.W_OK,);
+    await chmod(
+      path,
+      constants.R_OK | constants.W_OK,
+    );
   }
 
   return path;

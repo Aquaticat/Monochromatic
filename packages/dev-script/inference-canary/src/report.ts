@@ -19,11 +19,26 @@ function formatTimestamp(isoTimestamp: string,): string {
   const date = new Date(isoTimestamp,);
   const year = String(date.getUTCFullYear(),);
   // padStart(2, '0') ensures consistent two-digit month/day/hour/minute/second display
-  const month = String(date.getUTCMonth() + 1,).padStart(2, '0',);
-  const day = String(date.getUTCDate(),).padStart(2, '0',);
-  const hours = String(date.getUTCHours(),).padStart(2, '0',);
-  const minutes = String(date.getUTCMinutes(),).padStart(2, '0',);
-  const seconds = String(date.getUTCSeconds(),).padStart(2, '0',);
+  const month = String(date.getUTCMonth() + 1,).padStart(
+    2,
+    '0',
+  );
+  const day = String(date.getUTCDate(),).padStart(
+    2,
+    '0',
+  );
+  const hours = String(date.getUTCHours(),).padStart(
+    2,
+    '0',
+  );
+  const minutes = String(date.getUTCMinutes(),).padStart(
+    2,
+    '0',
+  );
+  const seconds = String(date.getUTCSeconds(),).padStart(
+    2,
+    '0',
+  );
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} UTC`;
 }
 
@@ -57,15 +72,23 @@ export function formatMultiModelReport(
       : 'All models healthy.');
 
   const successSection = successful.length > 0
-    ? ['--- Results ---', ...successful.map(function fmtSuccess(report,): string {
+    ? [
+      '--- Results ---',
+      ...successful.map(function fmtSuccess(report,): string {
       return formatModelReport(report,);
-    },), '',]
+    },),
+      '',
+    ]
     : [];
 
   const failSection = failed.length > 0
-    ? ['--- Failed ---', ...failed.map(function fmtFailed(report,): string {
+    ? [
+      '--- Failed ---',
+      ...failed.map(function fmtFailed(report,): string {
       return formatModelReport(report,);
-    },), '',]
+    },),
+      '',
+    ]
     : [];
 
   return [

@@ -5,7 +5,12 @@
  */
 
 /** Entry names always ignored (VCS dirs, OS metadata). */
-const IGNORED_NAMES = new Set(['.git', 'node_modules', '.DS_Store', 'Thumbs.db',],);
+const IGNORED_NAMES = new Set([
+  '.git',
+  'node_modules',
+  '.DS_Store',
+  'Thumbs.db',
+],);
 
 /** Pattern matching editor swap/temp files. */
 const IGNORED_PATTERN = /\.swp$|~$|^\.#|^#.*#$|^4913$/;

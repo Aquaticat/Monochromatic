@@ -83,7 +83,10 @@ export type ChatCompletionOptions = {
 /** Single choice from a chat completion response. */
 type ChatCompletionResponseChoice = {
   /** Message content of the choice. */
-  message: { role: string; content: string; };
+  message: {
+    role: string;
+    content: string
+  };
 };
 
 /** Full chat completion response from the API. */
@@ -94,8 +97,14 @@ type ChatCompletionResponse = {
 
 /** Discriminated union result of a chat completion attempt. */
 export type ChatCompletionResult =
-  | { ok: true; content: string; }
-  | { ok: false; error: string; };
+  | {
+    ok: true;
+    content: string
+  }
+  | {
+    ok: false;
+    error: string
+  };
 
 //endregion Types
 
@@ -115,7 +124,10 @@ export async function chatCompletion(
   options: ChatCompletionOptions,
 ): Promise<ChatCompletionResult> {
   if (isRateLimited())
-    return { ok: false, error: 'Rate limit exceeded -- try again in a moment', };
+    return {
+      ok: false,
+      error: 'Rate limit exceeded -- try again in a moment',
+    };
 
   recordRequest();
 
@@ -131,12 +143,15 @@ export async function chatCompletion(
     body.response_format = { type: 'json_object', };
 
   try {
-    const response = await fetch(completionsUrl, {
+    const response = await fetch(
+      completionsUrl,
+      {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', },
       body: JSON.stringify(body,),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS,),
-    },);
+    },
+    );
 
     if (!response.ok) {
       let errorText = 'unknown error';
@@ -146,25 +161,40 @@ export async function chatCompletion(
       catch {
         // Ignore text parsing failure
       }
-      return { ok: false, error: `AI endpoint returned ${
+      return {
+        ok: false,
+        error: `AI endpoint returned ${
         String(response.status,)
-      }: ${errorText}`, };
+      }: ${errorText}`,
+      };
     }
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
     const data = (await response.json()) as ChatCompletionResponse;
     const [firstChoice,] = data.choices;
     if (firstChoice === undefined)
-      return { ok: false, error: 'AI returned no choices', };
+      return {
+        ok: false,
+        error: 'AI returned no choices',
+      };
 
-    return { ok: true, content: firstChoice.message.content, };
+    return {
+      ok: true,
+      content: firstChoice.message.content,
+    };
   }
   catch (caughtError: unknown) {
     const message = caughtError instanceof Error
       ? caughtError.message
       : String(caughtError,);
-    console.error('AI chat completion failed:', caughtError,);
-    return { ok: false, error: `AI request failed: ${message}`, };
+    console.error(
+      'AI chat completion failed:',
+      caughtError,
+    );
+    return {
+      ok: false,
+      error: `AI request failed: ${message}`,
+    };
   }
 }
 

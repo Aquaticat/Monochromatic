@@ -30,7 +30,10 @@ export {
 };
 
 /** Tagged logger for the dispatch subsystem. */
-const l = tagged({ tag: 'ws-dispatch', l: rootLogger, },);
+const l = tagged({
+  tag: 'ws-dispatch',
+  l: rootLogger,
+},);
 
 /**
  * Tracks the `AbortController` for the currently in-flight search per peer.
@@ -52,7 +55,13 @@ export const peerSearchControllers = new WeakMap<object, AbortController>();
  * @param dirWatcher - filesystem watcher for save suppression and dir registration
  */
 export async function dispatchMessage(
-  { peer, messageText, rootDir, lspManager, dirWatcher, }: {
+  {
+    peer,
+    messageText,
+    rootDir,
+    lspManager,
+    dirWatcher,
+  }: {
     peer: Peer;
     messageText: string;
     rootDir: string;
@@ -66,9 +75,11 @@ export async function dispatchMessage(
     || !('type' in raw)
     || typeof (raw as { type: unknown; }).type !== 'string')
   {
-    sendJson({ peer,
+    sendJson({
+      peer,
       message: { type: 'error',
-        message: 'invalid message: missing or non-string "type" field', }, },);
+        message: 'invalid message: missing or non-string "type" field', },
+    },);
     return;
   }
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- shape validated above: object with string `type`; individual handlers check discriminants
@@ -76,61 +87,118 @@ export async function dispatchMessage(
 
   try {
     if (parsed.type === 'open') {
-      const result = await openFile({ rootDir, path: parsed.path, },);
-      sendJson({ peer, message: { type: 'fileContent', id: parsed.id, ...result, }, },);
+      const result = await openFile({
+        rootDir,
+        path: parsed.path,
+      },);
+      sendJson({
+        peer,
+        message: { type: 'fileContent', id: parsed.id, ...result, },
+      },);
       if (lspManager !== null && result.kind === 'text')
-        await lspManager.didOpen({ path: parsed.path, text: result.content, },);
+        await lspManager.didOpen({
+          path: parsed.path,
+          text: result.content,
+        },);
       return;
     }
     if (parsed.type === 'save') {
-      const absolutePath = assertWithinRoot({ rootDir, path: parsed.path, },);
-      await saveFile({ rootDir, path: parsed.path, content: parsed.content, },);
+      const absolutePath = assertWithinRoot({
+        rootDir,
+        path: parsed.path,
+      },);
+      await saveFile({
+        rootDir,
+        path: parsed.path,
+        content: parsed.content,
+      },);
       if (dirWatcher !== null)
         dirWatcher.suppressPath({ path: absolutePath, },);
-      sendJson({ peer, message: { type: 'saved', id: parsed.id, path: parsed.path, }, },);
+      sendJson({
+        peer,
+        message: { type: 'saved', id: parsed.id, path: parsed.path, },
+      },);
       if (lspManager !== null)
         await lspManager.didSave({ path: parsed.path, },);
       return;
     }
     // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
     if (parsed.type === 'listDir') {
-      const result = await listDir({ rootDir, path: parsed.path, },);
-      sendJson({ peer, message: { type: 'dirListing', id: parsed.id, ...result, }, },);
+      const result = await listDir({
+        rootDir,
+        path: parsed.path,
+      },);
+      sendJson({
+        peer,
+        message: { type: 'dirListing', id: parsed.id, ...result, },
+      },);
       return;
     }
     // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
     if (parsed.type === 'search') {
       peerSearchControllers.get(peer,)?.abort();
       const controller = new AbortController();
-      peerSearchControllers.set(peer, controller,);
-      assertWithinRoot({ rootDir, path: parsed.scope, },);
-      const result = await search({ rootDir: parsed.scope, query: parsed.query,
-        signal: controller.signal, },);
-      if (!controller.signal.aborted)
-        sendJson({ peer, message: { type: 'searchResults', id: parsed.id, ...result, }, },);
+      peerSearchControllers.set(
+        peer,
+        controller,
+      );
+      assertWithinRoot({
+        rootDir,
+        path: parsed.scope,
+      },);
+      const result = await search({
+        rootDir: parsed.scope,
+        query: parsed.query,
+        signal: controller.signal,
+      },);
+      if (!controller.signal.aborted) {
+        sendJson({
+          peer,
+          message: { type: 'searchResults', id: parsed
+          .id, ...result, },
+        },);
+      }
       return;
     }
 
-    if (await dispatchLspMessage({ peer, parsed, rootDir, lspManager, dirWatcher, },))
+    if (await dispatchLspMessage({
+      peer,
+      parsed,
+      rootDir,
+      lspManager,
+      dirWatcher,
+    },))
       return;
-    if (await dispatchFsMessage({ peer, parsed, rootDir, lspManager, },))
+    if (await dispatchFsMessage({
+      peer,
+      parsed,
+      rootDir,
+      lspManager,
+    },))
       return;
 
     l.error(`unknown message type: ${(parsed as { type: string; }).type}`,);
-    sendJson({ peer, message: {
+    sendJson({
+      peer,
+      message: {
       type: 'error',
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
       id: (parsed as { id?: string; }).id,
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
       message: `unknown message type: ${(parsed as { type: string; }).type}`,
-    }, },);
+    },
+    },);
   }
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error,);
     l.error(`dispatch failed: ${errorMessage}`,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- `parsed` is from unvalidated JSON cast; requests have `id`, notifications do not
     const requestId = 'id' in parsed ? (parsed as { id: string; }).id : undefined;
-    if (requestId !== undefined)
-      sendJson({ peer, message: { type: 'error', id: requestId, message: errorMessage, }, },);
+    if (requestId !== undefined) {
+      sendJson({
+        peer,
+        message: { type: 'error', id: requestId, message: errorMessage, },
+      },);
+    }
   }
 }

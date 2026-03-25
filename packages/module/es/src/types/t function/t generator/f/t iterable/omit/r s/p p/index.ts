@@ -40,5 +40,9 @@ export function* $<T,>(
   toOmit: ReadonlySet<T>,
   strict = true,
 ): Generator<T, void, undefined> {
-  yield* omitNamed({ iterable, toOmit, strict, },);
+  yield* omitNamed({
+    iterable,
+    toOmit,
+    strict,
+  },);
 }

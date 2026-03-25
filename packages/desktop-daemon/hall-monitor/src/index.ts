@@ -26,7 +26,10 @@ const INTERVAL_MS = INTERVAL_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;
 /** Parsed CLI arguments for the hall-monitor daemon. */
 const { values: args, } = parseArgs({
   args: process.argv.slice(2,),
-  options: { 'kill-existing': { type: 'boolean', default: false, }, },
+  options: { 'kill-existing': {
+    type: 'boolean',
+    default: false,
+  }, },
 },);
 
 /** Whether the daemon loop should continue running. */
@@ -46,8 +49,14 @@ function shutdown(): void {
   },);
 }
 
-process.on('SIGINT', shutdown,);
-process.on('SIGTERM', shutdown,);
+process.on(
+  'SIGINT',
+  shutdown,
+);
+process.on(
+  'SIGTERM',
+  shutdown,
+);
 
 /**
  * Main daemon entry point.
@@ -79,7 +88,10 @@ async function main(): Promise<void> {
   while (running) {
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential timer loop; setTimeout wrapper for delay
     await new Promise(function intervalDelay(resolve,) {
-      setTimeout(resolve, INTERVAL_MS,);
+      setTimeout(
+        resolve,
+        INTERVAL_MS,
+      );
     },);
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- running is mutated by signal handler
     if (running) {

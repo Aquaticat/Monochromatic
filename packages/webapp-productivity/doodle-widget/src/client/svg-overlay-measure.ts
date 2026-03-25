@@ -44,7 +44,10 @@ export type SvgOverlayInfo = {
  * const info = measureSvgOverlay({ container, overlay });
  * ```
  */
-export function measureSvgOverlay({ container, overlay, }: {
+export function measureSvgOverlay({
+  container,
+  overlay,
+}: {
   container: HTMLDivElement;
   overlay: HTMLDivElement;
 },): SvgOverlayInfo | null {

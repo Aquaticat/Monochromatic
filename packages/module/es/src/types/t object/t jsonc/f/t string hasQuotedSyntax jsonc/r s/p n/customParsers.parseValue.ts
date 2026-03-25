@@ -42,51 +42,104 @@ import {
  * ```
  */
 export function parseValueFromStart(
-  { value, context, }: { value: FragmentStringJsonc | StringJsonc;
-    context?: Jsonc.ValueBase; },
-): { parsed: Jsonc.Value; remaining: FragmentStringJsonc; } {
+  {
+    value,
+    context,
+  }: {
+    value: FragmentStringJsonc | StringJsonc;
+    context?: Jsonc.ValueBase
+  },
+): {
+  parsed: Jsonc.Value;
+  remaining: FragmentStringJsonc
+} {
   if (value.startsWith('"',)) {
     /** Result of scanning the leading quoted string, with parsed node and tail. */
     const out = scanQuotedString({ value, },);
     /** Final value node for string branch after optional comment propagation. */
     const parsed: Jsonc.Value = context?.comment
-      ? { ...out.parsed, comment: context.comment, }
+      ? {
+        ...out.parsed,
+        comment: context.comment,
+      }
       : out.parsed;
-    return { parsed, remaining: out.remaining, };
+    return {
+      parsed,
+      remaining: out.remaining,
+    };
   }
 
   const literal = parseLiteralToken({ value, },);
   if (typeof literal !== 'symbol') {
     /** Matched literal node and remaining fragment extracted from tokenizer result. */
-    const { parsed: litParsed, remaining, } = literal;
+    const {
+      parsed: litParsed,
+      remaining,
+    } = literal;
     /** Final value node for literal branch with optional comment propagation. */
     const parsed: Jsonc.Value = context?.comment
-      ? { ...litParsed, comment: context.comment, }
+      ? {
+        ...litParsed,
+        comment: context.comment,
+      }
       : litParsed;
-    return { parsed, remaining, };
+    return {
+      parsed,
+      remaining,
+    };
   }
 
   if (value.startsWith('[',)) {
     /** Delegated array parse preserving comments; context provides array-level comment. */
     const out = context
-      ? customParserForArray({ value, context, },)
+      ? customParserForArray({
+        value,
+        context,
+      },)
       : customParserForArray({ value, },);
     /** Strip `remainingContent` to produce standard Value shape for the caller. */
-    const { remainingContent, ...parsed } = out;
-    return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
+    const {
+      remainingContent,
+      ...parsed
+    } = out;
+    return {
+      parsed: parsed as Jsonc.Value,
+      remaining: remainingContent,
+    };
   }
 
   if (value.startsWith('{',)) {
     /** Delegated object parse preserving comments; context comment applies to record node. */
     const out = context
-      ? customParserForRecord({ value, context, },)
+      ? customParserForRecord({
+        value,
+        context,
+      },)
       : customParserForRecord({ value, },);
     /** Strip `remainingContent` to produce standard Value shape for the caller. */
-    const { remainingContent, ...parsed } = out;
-    return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
+    const {
+      remainingContent,
+      ...parsed
+    } = out;
+    return {
+      parsed: parsed as Jsonc.Value,
+      remaining: remainingContent,
+    };
   }
 
-  if (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].some(
+  if ([
+    '-',
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+  ].some(
     function startsWithDigit(m,) {
       return value.startsWith(m,);
     },
@@ -95,9 +148,15 @@ export function parseValueFromStart(
     const out = parseNumberToken({ value, },);
     /** Final value node for number branch with optional comment propagation. */
     const parsed: Jsonc.Value = context?.comment
-      ? { ...out.parsed, comment: context.comment, }
+      ? {
+        ...out.parsed,
+        comment: context.comment,
+      }
       : out.parsed;
-    return { parsed, remaining: out.remaining, };
+    return {
+      parsed,
+      remaining: out.remaining,
+    };
   }
 
   throw new Error('invalid jsonc value start',);

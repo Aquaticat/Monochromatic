@@ -19,9 +19,12 @@ import { renderPage, } from './layout.ts';
 export async function inboxPage(): Promise<Response> {
   const inboxTasks = await listInboxUnblockedTasks();
   const blockedLinks = await listBlockedInboxTasks();
-  const blockedTasksByBlocker = Object.groupBy(blockedLinks, function byBlocker(link,) {
+  const blockedTasksByBlocker = Object.groupBy(
+    blockedLinks,
+    function byBlocker(link,) {
     return link.blockerId;
-  },);
+  },
+  );
 
   return renderPage({
     title: 'Inbox - Done',

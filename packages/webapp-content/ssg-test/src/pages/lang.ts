@@ -23,16 +23,32 @@ import { postList, } from '../templates/post-list.ts';
  * @returns complete HTML document for the language landing page
  */
 export function langPage(
-  { lang, posts, }: { lang: Locales; posts: readonly Post[]; },
+  {
+    lang,
+    posts,
+  }: {
+    lang: Locales;
+    posts: readonly Post[]
+  },
 ): string {
   const t = i18nObject(lang,);
   const title = t.siteDescription();
 
   const content = [
-    h({ tag: 'main', children: [h({ tag: 'h1', text: title, },),], },),
-    h({ tag: 'aside', html: postList(posts,), },),
+    h({
+      tag: 'main',
+      children: [h({ tag: 'h1', text: title, },),],
+    },),
+    h({
+      tag: 'aside',
+      html: postList(posts,),
+    },),
   ]
     .join('',);
 
-  return pageLayout({ title, lang, content, },);
+  return pageLayout({
+    title,
+    lang,
+    content,
+  },);
 }

@@ -43,8 +43,15 @@ import {
  *
  * @returns motion-canvas thread generator
  */
-export function* animateBounces(refs: SceneRefs, ballRestY: number,): ThreadGenerator {
-  const { ballGroup, ballBody, shadow, } = refs;
+export function* animateBounces(
+  refs: SceneRefs,
+  ballRestY: number,
+): ThreadGenerator {
+  const {
+    ballGroup,
+    ballBody,
+    shadow,
+  } = refs;
   let currentX = -(WIDTH / QUARTER_DIVISOR);
   let currentArcHeight = INITIAL_ARC_HEIGHT;
   let currentBounceDist = INITIAL_BOUNCE_DISTANCE;
@@ -57,24 +64,59 @@ export function* animateBounces(refs: SceneRefs, ballRestY: number,): ThreadGene
     const decayFactor = 1 - bounceIndex * ROTATION_DECAY_PER_BOUNCE;
 
     yield* all(
-      ballGroup().position.x(targetX, duration, linear,),
-      shadow().position.x(targetX, duration, linear,),
+      ballGroup().position.x(
+        targetX,
+        duration,
+        linear,
+      ),
+      shadow().position.x(
+        targetX,
+        duration,
+        linear,
+      ),
       chain(
-        ballGroup().position.y(ballRestY - currentArcHeight, duration / 2, easeOutQuad,),
-        ballGroup().position.y(ballRestY, duration / 2, easeInQuad,),
+        ballGroup().position.y(
+          ballRestY - currentArcHeight,
+          duration / 2,
+          easeOutQuad,
+        ),
+        ballGroup().position.y(
+          ballRestY,
+          duration / 2,
+          easeInQuad,
+        ),
       ),
       chain(
         all(
-          shadow().scale(SHADOW_SCALE_AIR, duration / 2, easeOutQuad,),
-          shadow().opacity(SHADOW_OPACITY_AIR, duration / 2, easeOutQuad,),
+          shadow().scale(
+            SHADOW_SCALE_AIR,
+            duration / 2,
+            easeOutQuad,
+          ),
+          shadow().opacity(
+            SHADOW_OPACITY_AIR,
+            duration / 2,
+            easeOutQuad,
+          ),
         ),
         all(
-          shadow().scale(SHADOW_SCALE_GROUND, duration / 2, easeInQuad,),
-          shadow().opacity(SHADOW_OPACITY_GROUND, duration / 2, easeInQuad,),
+          shadow().scale(
+            SHADOW_SCALE_GROUND,
+            duration / 2,
+            easeInQuad,
+          ),
+          shadow().opacity(
+            SHADOW_OPACITY_GROUND,
+            duration / 2,
+            easeInQuad,
+          ),
         ),
       ),
-      ballBody().rotation(totalRotation + ROTATION_SPEED * duration * decayFactor,
-        duration, linear,),
+      ballBody().rotation(
+        totalRotation + ROTATION_SPEED * duration * decayFactor,
+        duration,
+        linear,
+      ),
     );
     totalRotation += ROTATION_SPEED * duration * decayFactor;
 
@@ -82,12 +124,18 @@ export function* animateBounces(refs: SceneRefs, ballRestY: number,): ThreadGene
     const squashIntensity = 1 - bounceIndex * SQUASH_DECAY_PER_BOUNCE;
     const impactSquashX = 1 + (SQUASH_SCALE_X - 1) * squashIntensity;
     const impactSquashY = 1 - (1 - SQUASH_SCALE_Y) * squashIntensity;
-    yield* all(ballBody().scale.x(impactSquashX, SQUASH_DURATION,), ballBody()
+    yield* all(
+      ballBody().scale.x(impactSquashX, SQUASH_DURATION,),
+      ballBody()
       .scale
-      .y(impactSquashY, SQUASH_DURATION,),);
-    yield* all(ballBody().scale.x(1, SQUASH_DURATION,), ballBody()
+      .y(impactSquashY, SQUASH_DURATION,),
+    );
+    yield* all(
+      ballBody().scale.x(1, SQUASH_DURATION,),
+      ballBody()
       .scale
-      .y(1, SQUASH_DURATION,),);
+      .y(1, SQUASH_DURATION,),
+    );
 
     currentX = targetX;
     currentArcHeight *= BOUNCE_DAMPING;
@@ -97,9 +145,20 @@ export function* animateBounces(refs: SceneRefs, ballRestY: number,): ThreadGene
 
   const rollTargetX = currentX + ROLL_DISTANCE;
   yield* all(
-    ballGroup().position.x(rollTargetX, ROLL_DURATION, easeOutQuad,),
-    shadow().position.x(rollTargetX, ROLL_DURATION, easeOutQuad,),
-    ballBody().rotation(totalRotation + ROLL_ROTATION_DEGREES, ROLL_DURATION,
-      easeOutQuad,),
+    ballGroup().position.x(
+      rollTargetX,
+      ROLL_DURATION,
+      easeOutQuad,
+    ),
+    shadow().position.x(
+      rollTargetX,
+      ROLL_DURATION,
+      easeOutQuad,
+    ),
+    ballBody().rotation(
+      totalRotation + ROLL_ROTATION_DEGREES,
+      ROLL_DURATION,
+      easeOutQuad,
+    ),
   );
 }

@@ -88,11 +88,26 @@ const VOID_ELEMENTS = new Set([
  */
 function escapeHtml(raw: string,): string {
   return raw
-    .replaceAll('&', '&amp;',)
-    .replaceAll('<', '&lt;',)
-    .replaceAll('>', '&gt;',)
-    .replaceAll('"', '&quot;',)
-    .replaceAll("'", '&#39;',);
+    .replaceAll(
+      '&',
+      '&amp;',
+    )
+    .replaceAll(
+      '<',
+      '&lt;',
+    )
+    .replaceAll(
+      '>',
+      '&gt;',
+    )
+    .replaceAll(
+      '"',
+      '&quot;',
+    )
+    .replaceAll(
+      "'",
+      '&#39;',
+    );
 }
 
 /** Named parameters for string-based element creation */
@@ -128,9 +143,12 @@ type HOptions = {
  * ```
  */
 function camelToKebab(property: string,): string {
-  return property.replaceAll(/[A-Z]/g, function toLower(match,) {
+  return property.replaceAll(
+    /[A-Z]/g,
+    function toLower(match,) {
     return `-${match.toLowerCase()}`;
-  },);
+  },
+  );
 }
 
 /**
@@ -151,7 +169,15 @@ function camelToKebab(property: string,): string {
  * @returns well-formed HTML element string
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $(
-  { tag, class: className, text, html, attrs, style, children, }: HOptions,
+  {
+    tag,
+    class: className,
+    text,
+    html,
+    attrs,
+    style,
+    children,
+  }: HOptions,
 ): string {
   const parts: string[] = [`<${tag}`,];
 

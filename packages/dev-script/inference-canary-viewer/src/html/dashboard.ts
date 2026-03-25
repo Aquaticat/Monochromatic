@@ -20,7 +20,12 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  * @returns dashboard HTML string
  */
 export function renderDashboard(
-  { overviewHtml, byModelHtml, byProbeHtml, overlaysHtml, }: {
+  {
+    overviewHtml,
+    byModelHtml,
+    byProbeHtml,
+    overlaysHtml,
+  }: {
     overviewHtml: string;
     byModelHtml: string;
     byProbeHtml: string;
@@ -37,24 +42,45 @@ export function renderDashboard(
           class: 'view-section',
           attrs: { open: '', },
           children: [
-            h({ tag: 'summary', text: 'Overview', },),
-            h({ tag: 'div', class: 'pane', html: overviewHtml, },),
+            h({
+              tag: 'summary',
+              text: 'Overview',
+            },),
+            h({
+              tag: 'div',
+              class: 'pane',
+              html: overviewHtml,
+            },),
           ],
         },),
         h({
           tag: 'details',
           class: 'view-section',
           children: [
-            h({ tag: 'summary', text: 'By model', },),
-            h({ tag: 'div', class: 'pane', html: byModelHtml, },),
+            h({
+              tag: 'summary',
+              text: 'By model',
+            },),
+            h({
+              tag: 'div',
+              class: 'pane',
+              html: byModelHtml,
+            },),
           ],
         },),
         h({
           tag: 'details',
           class: 'view-section',
           children: [
-            h({ tag: 'summary', text: 'By probe', },),
-            h({ tag: 'div', class: 'pane', html: byProbeHtml, },),
+            h({
+              tag: 'summary',
+              text: 'By probe',
+            },),
+            h({
+              tag: 'div',
+              class: 'pane',
+              html: byProbeHtml,
+            },),
           ],
         },),
       ],

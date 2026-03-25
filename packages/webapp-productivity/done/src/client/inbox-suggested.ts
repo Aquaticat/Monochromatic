@@ -24,7 +24,11 @@ import type {
  * @returns Suggested section element ready for DOM insertion
  */
 export function buildSuggestedSection(
-  { suggestedTasks, blockedTasksByBlocker, buildTaskList, }: {
+  {
+    suggestedTasks,
+    blockedTasksByBlocker,
+    buildTaskList,
+  }: {
     suggestedTasks: readonly Task[];
     blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
     buildTaskList: (tasks: readonly Task[],
@@ -32,13 +36,19 @@ export function buildSuggestedSection(
   },
 ): HTMLElement {
   /** Collapsible section heading for suggested tasks. */
-  const suggestedSection = h({ tag: 'section-heading',
-    attrs: { icon: '\u2728', label: 'Suggested', }, },);
+  const suggestedSection = h({
+    tag: 'section-heading',
+    attrs: { icon: '\u2728', label: 'Suggested', },
+  },);
 
   /** Content container for the suggested tasks section. */
   const suggestedContent = h({
     tag: 'div',
-    style: { display: 'flex', flexDirection: 'column', gap: 'var(--gap)', },
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 'var(--gap)',
+    },
     children: [
       h({
         tag: 'div',
@@ -48,9 +58,16 @@ export function buildSuggestedSection(
             tag: 'div',
             class: 'control-group',
             children: [
-              h({ tag: 'h3', class: 'subsection-heading', text: 'My location', },),
-              h({ tag: 'p', class: 'subsection-desc',
-                text: 'Suggesting tasks can be done near the location.', },),
+              h({
+                tag: 'h3',
+                class: 'subsection-heading',
+                text: 'My location',
+              },),
+              h({
+                tag: 'p',
+                class: 'subsection-desc',
+                text: 'Suggesting tasks can be done near the location.',
+              },),
               h({
                 tag: 'div',
                 class: 'location-options',
@@ -59,8 +76,14 @@ export function buildSuggestedSection(
                     tag: 'button',
                     class: 'autodetect-toggle',
                     children: [
-                      h({ tag: 'span', text: 'autodetect', },),
-                      h({ tag: 'toggle-switch', attrs: { on: '', }, },),
+                      h({
+                        tag: 'span',
+                        text: 'autodetect',
+                      },),
+                      h({
+                        tag: 'toggle-switch',
+                        attrs: { on: '', },
+                      },),
                     ],
                   },),
                 ],
@@ -71,17 +94,34 @@ export function buildSuggestedSection(
             tag: 'div',
             class: 'control-group',
             children: [
-              h({ tag: 'h3', class: 'subsection-heading', text: 'My focus', },),
-              h({ tag: 'p', class: 'subsection-desc',
-                text: 'Additional instructions on which tasks to suggest.', },),
-              h({ tag: 'focus-dropdown', attrs: { value: 'Adulting tasks first', }, },),
+              h({
+                tag: 'h3',
+                class: 'subsection-heading',
+                text: 'My focus',
+              },),
+              h({
+                tag: 'p',
+                class: 'subsection-desc',
+                text: 'Additional instructions on which tasks to suggest.',
+              },),
+              h({
+                tag: 'focus-dropdown',
+                attrs: { value: 'Adulting tasks first', },
+              },),
             ],
           },),
         ],
       },),
       suggestedTasks.length === 0
-        ? h({ tag: 'p', class: 'empty', text: 'No tasks yet.', },)
-        : buildTaskList(suggestedTasks, blockedTasksByBlocker,),
+        ? h({
+          tag: 'p',
+          class: 'empty',
+          text: 'No tasks yet.',
+        },)
+        : buildTaskList(
+          suggestedTasks,
+          blockedTasksByBlocker,
+        ),
     ],
   },);
 

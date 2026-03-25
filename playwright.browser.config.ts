@@ -8,7 +8,10 @@ export default defineConfig({
   testMatch: '**/*.browser.test.ts',
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
-  reporter: [['dot',], ['html', { open: 'never', },],],
+  reporter: [
+    ['dot',],
+    ['html', { open: 'never', },],
+  ],
 
   use: {
     baseURL: 'http://localhost:3005',
@@ -22,7 +25,13 @@ export default defineConfig({
   },
 
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'], }, },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'], }, },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'], },
+    },
   ],
 },);

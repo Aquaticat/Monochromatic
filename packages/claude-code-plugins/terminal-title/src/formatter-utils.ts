@@ -51,10 +51,16 @@ export type ToolTitleEntry = {
  * truncate('a very long string', 10) // 'a very lo…'
  * ```
  */
-export function truncate(value: string, maxLength: number,): string {
+export function truncate(
+  value: string,
+  maxLength: number,
+): string {
   if (value.length <= maxLength)
     return value;
-  return `${value.slice(0, maxLength - 1,)}\u2026`;
+  return `${value.slice(
+    0,
+    maxLength - 1,
+  )}\u2026`;
 }
 
 /**
@@ -88,7 +94,10 @@ export function shortPath(filePath: string,): string {
  * stringField({ count: 5 }, 'file_path') // undefined
  * ```
  */
-export function stringField(input: GenericToolInput, key: string,): string | undefined {
+export function stringField(
+  input: GenericToolInput,
+  key: string,
+): string | undefined {
   const value = input[key];
   if (typeof value === 'string')
     return value;
@@ -110,7 +119,10 @@ export function stringField(input: GenericToolInput, key: string,): string | und
  */
 export function field(key: string,): (input: GenericToolInput,) => string | undefined {
   return function extractField(input: GenericToolInput,) {
-    return stringField(input, key,);
+    return stringField(
+      input,
+      key,
+    );
   };
 }
 
@@ -129,7 +141,10 @@ export function field(key: string,): (input: GenericToolInput,) => string | unde
 export function pathFormat(
   labels: TenseLabels,
 ): (value: string, tense: 'pre' | 'post',) => string {
-  return function formatPath(v: string, tense: 'pre' | 'post',) {
+  return function formatPath(
+    v: string,
+    tense: 'pre' | 'post',
+  ) {
     return `${labels[tense]} ${shortPath(v,)}`;
   };
 }
@@ -149,8 +164,14 @@ export function pathFormat(
 export function quotedFormat(
   labels: TenseLabels,
 ): (value: string, tense: 'pre' | 'post',) => string {
-  return function formatQuoted(v: string, tense: 'pre' | 'post',) {
-    return `${labels[tense]} "${truncate(v, MAX_PATTERN_LENGTH,)}"`;
+  return function formatQuoted(
+    v: string,
+    tense: 'pre' | 'post',
+  ) {
+    return `${labels[tense]} "${truncate(
+      v,
+      MAX_PATTERN_LENGTH,
+    )}"`;
   };
 }
 
@@ -176,5 +197,8 @@ const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s
  * ```
  */
 export function shortCommand(command: string,): string {
-  return command.replace(COMMAND_NOISE_RE, '',);
+  return command.replace(
+    COMMAND_NOISE_RE,
+    '',
+  );
 }

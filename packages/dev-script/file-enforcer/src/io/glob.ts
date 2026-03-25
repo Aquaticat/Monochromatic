@@ -29,27 +29,45 @@ const GLOB_META = /[*?{[]/;
  */
 function splitGlob(
   pattern: string,
-): readonly [cwd: string, relativeGlob: string, originalPrefix: string,] {
+): readonly [
+  cwd: string,
+  relativeGlob: string,
+  originalPrefix: string,
+] {
   /** Position of the first metacharacter */
   const metaIndex = pattern.search(GLOB_META,);
 
   if (metaIndex === -1) {
     // No wildcards -- treat entire pattern as a literal path
-    return [resolve(pattern,), '', pattern,];
+    return [
+      resolve(pattern,),
+      '',
+      pattern,
+    ];
   }
 
   /** Static prefix up to the last `/` before the first metacharacter */
-  const staticPrefix = pattern.slice(0, metaIndex,);
+  const staticPrefix = pattern.slice(
+    0,
+    metaIndex,
+  );
   /** Index of the last separator in the static prefix */
   const lastSep = staticPrefix.lastIndexOf('/',);
 
   if (lastSep === -1) {
     // Metacharacter appears in the first segment; cwd is the current directory
-    return [resolve('.',), pattern, '.',];
+    return [
+      resolve('.',),
+      pattern,
+      '.',
+    ];
   }
 
   /** Original prefix as written in the pattern (preserves `./` or absolute form) */
-  const originalPrefix = staticPrefix.slice(0, lastSep,);
+  const originalPrefix = staticPrefix.slice(
+    0,
+    lastSep,
+  );
   return [
     resolve(originalPrefix,),
     pattern.slice(lastSep + 1,),
@@ -80,14 +98,20 @@ export async function expandGlob(pattern: string,): Promise<readonly string[]> {
   if (relativeGlob === '')
     return [cwd,];
 
-  const { files, } = await readdirGlob(relativeGlob, { cwd, },);
+  const { files, } = await readdirGlob(
+    relativeGlob,
+    { cwd, },
+  );
 
   // Reconstruct paths using the original prefix to preserve relative/absolute form.
   // Use string concatenation instead of `join()` to preserve `./` prefixes
   // that `join()` would normalize away (e.g., `./.agents` -> `.agents`).
   return files.map(function toOriginalForm(absolutePath: string,): string {
     /** Path relative to the resolved cwd */
-    const relPath = relative(cwd, absolutePath,);
+    const relPath = relative(
+      cwd,
+      absolutePath,
+    );
     /** Separator between prefix and relative path */
     const sep = originalPrefix.endsWith('/',) ? '' : '/';
     return `${originalPrefix}${sep}${relPath}`;
@@ -161,7 +185,10 @@ export function mirrorGlobPath(
           `Source path "${sourcePath}" does not match pattern "${sourcePattern}"`,
         );
       }
-      captured.push(remainder.slice(0, nextFixedPos,),);
+      captured.push(remainder.slice(
+        0,
+        nextFixedPos,
+      ),);
       remainder = remainder.slice(nextFixedPos,);
     }
   }

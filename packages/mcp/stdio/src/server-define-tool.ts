@@ -24,8 +24,14 @@ import type { ToolEntry, } from './server-types.ts';
  * });
  * ```
  */
-export function defineTool(name: string, entry: Omit<ToolEntry, 'name'>,): ToolEntry {
-  return { name, ...entry, };
+export function defineTool(
+  name: string,
+  entry: Omit<ToolEntry, 'name'>,
+): ToolEntry {
+  return {
+    name,
+    ...entry,
+  };
 }
 
 //endregion

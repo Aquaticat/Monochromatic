@@ -17,7 +17,10 @@ const VALID_MODELS: readonly string[] = [
 /**
  * All recognized provider names.
  */
-const VALID_PROVIDERS: readonly string[] = ['voyage', 'gemini',];
+const VALID_PROVIDERS: readonly string[] = [
+  'voyage',
+  'gemini',
+];
 
 /**
  * Parse a positional image argument into an {@link ImageInput}.
@@ -61,7 +64,10 @@ export type ParsedFlags = {
  *
  * @returns parsed flags and remaining positional args
  */
-export function parseFlags(args: string[], printUsageAndExit: () => never,): ParsedFlags {
+export function parseFlags(
+  args: string[],
+  printUsageAndExit: () => never,
+): ParsedFlags {
   let provider: Provider | undefined;
   let model: EmbeddingModel | undefined;
   const remaining: string[] = [];
@@ -108,5 +114,9 @@ export function parseFlags(args: string[], printUsageAndExit: () => never,): Par
     }
   }
 
-  return { provider, model, remaining, };
+  return {
+    provider,
+    model,
+    remaining,
+  };
 }

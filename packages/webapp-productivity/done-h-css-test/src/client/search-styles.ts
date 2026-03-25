@@ -26,11 +26,19 @@ const HINT_FONT_SIZE_DESKTOP = (2 + 1) / 2;
 export const searchStyles = [
   css({
     rule: '.search-hint',
-    decls: { color: cssVar('fg-weaker',), 'font-size': cssRem(1,), 'line-height': 1.5, },
+    decls: {
+      color: cssVar('fg-weaker',),
+      'font-size': cssRem(1,),
+      'line-height': 1.5,
+    },
   },),
   css({
     rule: '.tag-chips',
-    decls: { display: 'flex', 'flex-wrap': 'wrap', gap: cssVar('min-gap',), },
+    decls: {
+      display: 'flex',
+      'flex-wrap': 'wrap',
+      gap: cssVar('min-gap',),
+    },
   },),
   css({
     rule: '.tag-chip',
@@ -53,15 +61,20 @@ export const searchStyles = [
       'line-height': 'inherit',
     },
     children: [
-      css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg',), }, },),
+      css({
+        rule: '&:hover',
+        decls: { 'background-color': cssVar('hover-bg',), },
+      },),
     ],
   },),
   css({
     at: 'media',
     params: '(min-width: 48rem)',
     children: [
-      css({ rule: '.search-hint',
-        decls: { 'font-size': cssRem(HINT_FONT_SIZE_DESKTOP,), }, },),
+      css({
+        rule: '.search-hint',
+        decls: { 'font-size': cssRem(HINT_FONT_SIZE_DESKTOP,), },
+      },),
     ],
   },),
 ]

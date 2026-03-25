@@ -48,7 +48,10 @@ export function appendAdditionalRunDiagnostics(
 
   /** Diagnostic text sections for runs that failed or produced incorrect output */
   const diagSections = runs
-    .map(function buildDiagSection(run, index,): string | undefined {
+    .map(function buildDiagSection(
+      run,
+      index,
+    ): string | undefined {
       /** Cached container result for this run and model */
       const container = containerCaches[index]?.get(label,);
       if (container === undefined)
@@ -57,14 +60,20 @@ export function appendAdditionalRunDiagnostics(
         return `=== ${run.name} ===\nProcess timed out.`;
       if (container.exitCode !== 0) {
         return `=== ${run.name} ===\nExited with code ${String(container.exitCode,)}.\n${
-          container.stderr.slice(0, MAX_ADDITIONAL_OUTPUT,)
+          container.stderr.slice(
+            0,
+            MAX_ADDITIONAL_OUTPUT,
+          )
         }`;
       }
       /** Cached verification result for this run and model */
       const verify = verifyCaches[index]?.get(label,);
       if (verify !== undefined && verify.correctness < 1) {
         return `=== ${run.name} (incorrect output) ===\n${
-          container.stdout.slice(0, MAX_ADDITIONAL_OUTPUT,)
+          container.stdout.slice(
+            0,
+            MAX_ADDITIONAL_OUTPUT,
+          )
         }`;
       }
       return undefined;

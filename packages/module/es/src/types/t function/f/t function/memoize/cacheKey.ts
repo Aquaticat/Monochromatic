@@ -12,6 +12,9 @@
  * buildCacheKey('arg-key', 'v1'); // 'arg-key:v1'
  * ```
  */
-export function buildCacheKey(argKey: string, salt: string,): string {
+export function buildCacheKey(
+  argKey: string,
+  salt: string,
+): string {
   return `${argKey}:${salt}`;
 }

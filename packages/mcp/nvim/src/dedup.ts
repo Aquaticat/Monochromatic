@@ -74,7 +74,10 @@ export function uniqueDiagnostics(diagnostics: readonly Diagnostic[],): Diagnost
  * // => editor diagnostic kept, lint duplicate removed
  * ```
  */
-export function dedupDiagnostics({ editor, lint, }: {
+export function dedupDiagnostics({
+  editor,
+  lint,
+}: {
   editor: readonly Diagnostic[];
   lint: readonly Diagnostic[];
 },): Diagnostic[] {
@@ -84,7 +87,10 @@ export function dedupDiagnostics({ editor, lint, }: {
   const lintOnly = lint.filter(function isNotDuplicate(diagnostic,) {
     return !editorKeys.has(dedupKey(diagnostic,),);
   },);
-  return [...editor, ...lintOnly,];
+  return [
+    ...editor,
+    ...lintOnly,
+  ];
 }
 
 //endregion Public API

@@ -22,7 +22,10 @@ const CENTER_X = 400;
  *
  * @returns transformed x-coordinate, rounded to nearest integer
  */
-function narrowX(x: number, factor: number,): number {
+function narrowX(
+  x: number,
+  factor: number,
+): number {
   return Math.round(CENTER_X + (x - CENTER_X) * factor,);
 }
 
@@ -38,7 +41,10 @@ function narrowX(x: number, factor: number,): number {
  *
  * @returns transformed path data string
  */
-function transformPathD(d: string, factor: number,): string {
+function transformPathD(
+  d: string,
+  factor: number,
+): string {
   /**
    * Tokenize: split into commands and numbers.
    * Commands: M, L, Q, C, Z, H, V, A, S, T (uppercase only since our SVGs use absolute coords).
@@ -78,7 +84,10 @@ function transformPathD(d: string, factor: number,): string {
 
     if (upperCmd === 'H') {
       /** H takes a single x value. */
-      result.push(String(narrowX(num, factor,),),);
+      result.push(String(narrowX(
+        num,
+        factor,
+      ),),);
       paramIndex++;
       continue;
     }
@@ -98,7 +107,10 @@ function transformPathD(d: string, factor: number,): string {
        */
       const arcIndex = paramIndex % 7;
       if (arcIndex === 5)
-        result.push(String(narrowX(num, factor,),),);
+        result.push(String(narrowX(
+          num,
+          factor,
+        ),),);
       else
         result.push(token,);
       paramIndex++;
@@ -110,7 +122,10 @@ function transformPathD(d: string, factor: number,): string {
      * even paramIndex = x, odd paramIndex = y.
      */
     if (paramIndex % 2 === 0)
-      result.push(String(narrowX(num, factor,),),);
+      result.push(String(narrowX(
+        num,
+        factor,
+      ),),);
     else
       result.push(token,);
     paramIndex++;
@@ -133,40 +148,55 @@ function transformPathD(d: string, factor: number,): string {
  *
  * @returns transformed SVG content
  */
-export function transformSvg(svgContent: string, factor: number,): string {
+export function transformSvg(
+  svgContent: string,
+  factor: number,
+): string {
   let result = svgContent;
 
   /** Transform path d attributes. */
-  result = result.replaceAll(/\bd="([^"]+)"/g, function transformD(_match, d: string,) {
+  result = result.replaceAll(
+    /\bd="([^"]+)"/g,
+    function transformD(_match, d: string,) {
     return `d="${transformPathD(d, factor,)}"`;
-  },);
+  },
+  );
 
   /** Transform x1 attributes (line elements). */
-  result = result.replaceAll(/\bx1="([-\d.]+)"/g,
+  result = result.replaceAll(
+    /\bx1="([-\d.]+)"/g,
     function transformX1(_match, v: string,) {
       return `x1="${narrowX(Number.parseFloat(v,), factor,)}"`;
-    },);
+    },
+  );
 
   /** Transform x2 attributes. */
-  result = result.replaceAll(/\bx2="([-\d.]+)"/g,
+  result = result.replaceAll(
+    /\bx2="([-\d.]+)"/g,
     function transformX2(_match, v: string,) {
       return `x2="${narrowX(Number.parseFloat(v,), factor,)}"`;
-    },);
+    },
+  );
 
   /** Transform cx attributes (circle elements). */
-  result = result.replaceAll(/\bcx="([-\d.]+)"/g,
+  result = result.replaceAll(
+    /\bcx="([-\d.]+)"/g,
     function transformCx(_match, v: string,) {
       return `cx="${narrowX(Number.parseFloat(v,), factor,)}"`;
-    },);
+    },
+  );
 
   /**
    * Transform x attributes on non-gradient elements.
    * Skip gradient stop x1/x2 and viewBox.
    * Match `x="..."` but not `x1=` or `x2=` (already handled).
    */
-  result = result.replaceAll(/\bx="([-\d.]+)"/g, function transformX(_match, v: string,) {
+  result = result.replaceAll(
+    /\bx="([-\d.]+)"/g,
+    function transformX(_match, v: string,) {
     return `x="${narrowX(Number.parseFloat(v,), factor,)}"`;
-  },);
+  },
+  );
 
   return result;
 }

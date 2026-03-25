@@ -4,6 +4,10 @@
  * Extracted from {@link scoreImpl} to keep the scoring module under the line limit.
  */
 import {
+  l,
+  tagged,
+} from '../log.ts';
+import {
   computePerfScore,
   type TimedContainerResult,
 } from './perf.ts';
@@ -39,10 +43,24 @@ export function cacheAndComputePerfMultiplier(
 ): number {
   if (config.perfTest === undefined || perfResult === undefined)
     return 1;
-  caches.perf.set(context.label, perfResult,);
-  const score = computePerfScore(perfResult, config.perfTest,);
-  console.log(
-    `  [${context.label}:${config.name}] perf: ${
+  caches.perf.set(
+    context.label,
+    perfResult,
+  );
+  const score = computePerfScore(
+    perfResult,
+    config.perfTest,
+  );
+  /** Probe-specific logger for perf result messages. */
+  const rl = tagged({
+    tag: config.name,
+    l: tagged({
+      tag: context.label,
+      l,
+    },),
+  },);
+  rl.info(
+    `perf: ${
       String(perfResult.durationMs,)
     }ms score=${score.toFixed(2,)}`,
   );

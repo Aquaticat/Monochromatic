@@ -58,7 +58,11 @@ export async function enrichArtifact(
   pass: 'initial' | 'fix',
   completion: CompletionResult,
   score: number,
-  options?: { fixPrompt?: string; partial?: boolean; error?: string; },
+  options?: {
+    fixPrompt?: string;
+    partial?: boolean;
+    error?: string
+  },
 ): Promise<void> {
   const enriched: EnrichedArtifactMeta = {
     model: config.model,
@@ -76,7 +80,10 @@ export async function enrichArtifact(
     ...(options?.partial === true ? { partial: true, } : {}),
     ...(options?.error !== undefined ? { error: options.error, } : {}),
   };
-  await writeEnrichedArtifact(enriched, completion.text,);
+  await writeEnrichedArtifact(
+    enriched,
+    completion.text,
+  );
 }
 
 /**
@@ -131,17 +138,33 @@ export async function saveFailureArtifacts(
   // If we have a partial completion from an aborted stream, save it.
   // This captures the mid-stream response that would otherwise be lost.
   if (partialCompletion !== undefined) {
-    await enrichArtifact(probe, config, timestamp, 'initial', partialCompletion, 0, {
+    await enrichArtifact(
+      probe,
+      config,
+      timestamp,
+      'initial',
+      partialCompletion,
+      0,
+      {
       partial: true,
       error: errorMessage,
-    },);
+    },
+    );
     return;
   }
 
   // If we completed at least one run but haven't enriched the artifact yet, do it now.
   if (lastCompletion !== undefined && !enrichedInitial) {
-    await enrichArtifact(probe, config, timestamp, 'initial', lastCompletion, lastScore, {
+    await enrichArtifact(
+      probe,
+      config,
+      timestamp,
+      'initial',
+      lastCompletion,
+      lastScore,
+      {
       error: errorMessage,
-    },);
+    },
+    );
   }
 }
