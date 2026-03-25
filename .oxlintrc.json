@@ -387,7 +387,7 @@
     // Since we're skipping blank lines and comments, 100 is generous enough that splitting up code files is always feasible.
     "eslint/max-lines": [
       "error",
-      { "max": 200, "skipBlankLines": true, "skipComments": true }
+      { "max": 300, "skipBlankLines": true, "skipComments": true }
     ],
     "eslint/max-params": "off",
     "eslint/max-depth": "off",

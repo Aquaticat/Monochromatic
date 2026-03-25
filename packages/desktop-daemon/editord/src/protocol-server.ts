@@ -9,9 +9,9 @@ import type {
   Diagnostic,
   DirEntry,
   FileKind,
+  FilePosition,
   FsChangeType,
   InlayHint,
-  Position,
   Range,
   SearchResult,
   SelectionRange,
@@ -82,17 +82,14 @@ export type ServerMessage =
     id: string;
     edits: TextEdit[]
   }
-  | {
+  | ({
     type: 'definitionResult';
     id: string;
-    path: string;
-    line: number;
-    character: number
-  }
+  } & FilePosition)
   | {
     type: 'referencesResult';
     id: string;
-    locations: (Position & { path: string; })[]
+    locations: FilePosition[]
   }
   | {
     type: 'inlayHintResult';

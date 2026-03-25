@@ -47,6 +47,12 @@ export type Position = {
   character: number;
 };
 
+/** Position within a specific file, combining a file path with a text position. */
+export type FilePosition = Position & {
+  /** Absolute file path. */
+  path: string;
+};
+
 /** Range in a text document (start-inclusive, end-exclusive). */
 export type Range = {
   /** Start position (inclusive). */

@@ -5,6 +5,7 @@
  */
 
 import type {
+  FilePosition,
   Position,
   Range,
 } from './protocol.ts';
@@ -39,39 +40,27 @@ export type ClientMessage =
     query: string;
     scope: string
   }
-  | {
+  | ({
     type: 'hover';
     id: string;
-    path: string;
-    line: number;
-    character: number
-  }
-  | {
+  } & FilePosition)
+  | ({
     type: 'completion';
     id: string;
-    path: string;
-    line: number;
-    character: number
-  }
+  } & FilePosition)
   | {
     type: 'format';
     id: string;
     path: string
   }
-  | {
+  | ({
     type: 'gotoDefinition';
     id: string;
-    path: string;
-    line: number;
-    character: number
-  }
-  | {
+  } & FilePosition)
+  | ({
     type: 'findReferences';
     id: string;
-    path: string;
-    line: number;
-    character: number
-  }
+  } & FilePosition)
   | {
     type: 'inlayHint';
     id: string;

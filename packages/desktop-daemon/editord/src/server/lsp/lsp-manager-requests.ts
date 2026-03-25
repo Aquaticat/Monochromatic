@@ -2,7 +2,7 @@
  * Feature request delegations for the LSP manager.
  *
  * Each function resolves the appropriate LSP client from the pool
- * and delegates to the corresponding feature handler.
+ * and delegates to the corresponding feature handler via {@link withClient}.
  * Request failures (including timeouts for unsupported files)
  * are caught and mapped to the same fallback as "no client available",
  * so callers always receive a well-typed result.
@@ -10,6 +10,8 @@
  * they propagate here, so the catch blocks do not re-log.
  */
 
+import type { FilePosition, } from '../../protocol.ts';
+import type { LspClient, } from './lsp-client.ts';
 import {
   requestCompletion,
   requestFormat,
@@ -24,43 +26,84 @@ import type {
   LspCompletionItem,
   LspHover,
   LspInlayHint,
+  LspRange,
   LspSelectionRange,
   LspTextEdit,
 } from './types.ts';
+
+//region Client resolution helper
+
+/**
+ * Resolves an LSP client from the pool and runs a request against it.
+ * Returns the fallback value when no initialized client is available
+ * or when the request throws (e.g. timeout).
+ *
+ * @param pool - LSP client pool
+ *
+ * @param serverType - which LSP server to resolve
+ *
+ * @param path - file path for project-root resolution
+ *
+ * @param fallback - value to return when no client is available or the request fails
+ *
+ * @param request - callback that performs the actual LSP request
+ *
+ * @returns request result, or fallback on failure
+ */
+async function withClient<T>({
+  pool,
+  serverType,
+  path,
+  fallback,
+  request,
+}: {
+  pool: LspPool;
+  serverType: 'tsgo' | 'dprint';
+  path: string;
+  fallback: T;
+  request: (client: LspClient,) => Promise<T>;
+},): Promise<T> {
+  const c = await pool.resolve({
+    type: serverType,
+    filePath: path,
+  },);
+  if (c === null || !c.initialized)
+    return fallback;
+  try {
+    return await request(c,);
+  }
+  catch {
+    return fallback;
+  }
+}
+
+//endregion Client resolution helper
+
+//region Feature delegations
 
 /**
  * {@inheritDoc requestHover}
  *
  * @returns hover content, or null when no client is available or the request fails
  */
-export async function managerHover({
+export function managerHover({
   pool,
-  path,
-  line,
-  character,
+  ...pos
 }: {
   pool: LspPool;
-  path: string;
-  line: number;
-  character: number;
-},): Promise<LspHover | null> {
-  const c = await pool.resolve({
-    type: 'tsgo',
-    filePath: path,
+} & FilePosition,): Promise<LspHover | null> {
+  return withClient({
+    pool,
+    serverType: 'tsgo',
+    path: pos.path,
+    fallback: null,
+    request: function doHover(client,) {
+      return requestHover({
+        client,
+        ...pos,
+      },);
+    },
   },);
-  if (c === null || !c.initialized)
-    return null;
-  try {
-    return await requestHover({
-      client: c,
-      path,
-      line,
-      character,
-    },);
-  }
-  catch {
-    return null;
-  }
 }
 
 /**
@@ -68,34 +111,24 @@ export async function managerHover({
  *
  * @returns completion items, or empty array when no client is available or the request fails
  */
-export async function managerCompletion({
+export function managerCompletion({
   pool,
-  path,
-  line,
-  character,
+  ...pos
 }: {
   pool: LspPool;
-  path: string;
-  line: number;
-  character: number;
-},): Promise<LspCompletionItem[]> {
-  const c = await pool.resolve({
-    type: 'tsgo',
-    filePath: path,
+} & FilePosition,): Promise<LspCompletionItem[]> {
+  return withClient({
+    pool,
+    serverType: 'tsgo',
+    path: pos.path,
+    fallback: [],
+    request: function doCompletion(client,) {
+      return requestCompletion({
+        client,
+        ...pos,
+      },);
+    },
   },);
-  if (c === null || !c.initialized)
-    return [];
-  try {
-    return await requestCompletion({
-      client: c,
-      path,
-      line,
-      character,
-    },);
-  }
-  catch {
-    return [];
-  }
 }
 
 /**
@@ -103,28 +136,25 @@ export async function managerCompletion({
  *
  * @returns text edits, or empty array when no client is available or the request fails
  */
-export async function managerFormat({
+export function managerFormat({
   pool,
   path,
 }: {
   pool: LspPool;
   path: string;
 },): Promise<LspTextEdit[]> {
-  const c = await pool.resolve({
-    type: 'dprint',
-    filePath: path,
+  return withClient({
+    pool,
+    serverType: 'dprint',
+    path,
+    fallback: [],
+    request: function doFormat(client,) {
+      return requestFormat({
+        client,
+        path,
+      },);
+    },
   },);
-  if (c === null || !c.initialized)
-    return [];
-  try {
-    return await requestFormat({
-      client: c,
-      path,
-    },);
-  }
-  catch {
-    return [];
-  }
 }
 
 /**
@@ -132,38 +162,24 @@ export async function managerFormat({
  *
  * @returns definition location, or null when no client is available or the request fails
  */
-export async function managerGotoDefinition({
+export function managerGotoDefinition({
   pool,
-  path,
-  line,
-  character,
+  ...pos
 }: {
   pool: LspPool;
-  path: string;
-  line: number;
-  character: number;
-},): Promise<{
-  path: string;
-  line: number;
-  character: number
-} | null> {
-  const c = await pool.resolve({
-    type: 'tsgo',
-    filePath: path,
+} & FilePosition,): Promise<FilePosition | null> {
+  return withClient({
+    pool,
+    serverType: 'tsgo',
+    path: pos.path,
+    fallback: null,
+    request: function doGotoDef(client,) {
+      return requestGotoDefinition({
+        client,
+        ...pos,
+      },);
+    },
   },);
-  if (c === null || !c.initialized)
-    return null;
-  try {
-    return await requestGotoDefinition({
-      client: c,
-      path,
-      line,
-      character,
-    },);
-  }
-  catch {
-    return null;
-  }
 }
 
 /**
@@ -171,38 +187,24 @@ export async function managerGotoDefinition({
  *
  * @returns reference locations, or empty array when no client is available or the request fails
  */
-export async function managerReferences({
+export function managerReferences({
   pool,
-  path,
-  line,
-  character,
+  ...pos
 }: {
   pool: LspPool;
-  path: string;
-  line: number;
-  character: number;
-},): Promise<{
-  path: string;
-  line: number;
-  character: number
-}[]> {
-  const c = await pool.resolve({
-    type: 'tsgo',
-    filePath: path,
+} & FilePosition,): Promise<FilePosition[]> {
+  return withClient({
+    pool,
+    serverType: 'tsgo',
+    path: pos.path,
+    fallback: [],
+    request: function doRefs(client,) {
+      return requestReferences({
+        client,
+        ...pos,
+      },);
+    },
   },);
-  if (c === null || !c.initialized)
-    return [];
-  try {
-    return await requestReferences({
-      client: c,
-      path,
-      line,
-      character,
-    },);
-  }
-  catch {
-    return [];
-  }
 }
 
 /**
@@ -210,40 +212,28 @@ export async function managerReferences({
  *
  * @returns inlay hints, or empty array when no client is available or the request fails
  */
-export async function managerInlayHints({
+export function managerInlayHints({
   pool,
   path,
   range,
 }: {
   pool: LspPool;
   path: string;
-  range: {
-    start: {
-      line: number;
-      character: number;
-    };
-    end: {
-      line: number;
-      character: number;
-    }
-  };
+  range: LspRange;
 },): Promise<LspInlayHint[]> {
-  const c = await pool.resolve({
-    type: 'tsgo',
-    filePath: path,
+  return withClient({
+    pool,
+    serverType: 'tsgo',
+    path,
+    fallback: [],
+    request: function doInlayHints(client,) {
+      return requestInlayHints({
+        client,
+        path,
+        range,
+      },);
+    },
   },);
-  if (c === null || !c.initialized)
-    return [];
-  try {
-    return await requestInlayHints({
-      client: c,
-      path,
-      range,
-    },);
-  }
-  catch {
-    return [];
-  }
 }
 
 /**
@@ -251,7 +241,7 @@ export async function managerInlayHints({
  *
  * @returns selection ranges, or empty array when no client is available or the request fails
  */
-export async function managerSelectionRange({
+export function managerSelectionRange({
   pool,
   path,
   positions,
@@ -263,20 +253,19 @@ export async function managerSelectionRange({
     character: number
   }[];
 },): Promise<LspSelectionRange[]> {
-  const c = await pool.resolve({
-    type: 'tsgo',
-    filePath: path,
+  return withClient({
+    pool,
+    serverType: 'tsgo',
+    path,
+    fallback: [],
+    request: function doSelRange(client,) {
+      return requestSelectionRange({
+        client,
+        path,
+        positions,
+      },);
+    },
   },);
-  if (c === null || !c.initialized)
-    return [];
-  try {
-    return await requestSelectionRange({
-      client: c,
-      path,
-      positions,
-    },);
-  }
-  catch {
-    return [];
-  }
 }
+
+//endregion Feature delegations

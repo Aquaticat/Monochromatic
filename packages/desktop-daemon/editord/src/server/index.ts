@@ -29,7 +29,7 @@ import {
   tagged,
 } from './log.ts';
 import {
-  LspManager,
+  createLspManager,
   type WireDiagnostic,
 } from './lsp/lsp-manager.ts';
 import { resolveFsId, } from './operations/resolve-fs-id.ts';
@@ -121,7 +121,7 @@ function handleDiagnostics(
 }
 
 /** LSP server coordinator managing oxlint, tsgo, and dprint. */
-const lspManager = new LspManager({
+const lspManager = createLspManager({
   ceiling: ROOT_DIR,
   onDiagnostics: handleDiagnostics,
   l: lspLog,

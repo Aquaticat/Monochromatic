@@ -318,7 +318,6 @@ function logMessages({ messages }: { messages: readonly string[] }): void { ... 
 - `for...of` when iteration is unavoidable, never classic `for` loops
 - No single-letter variables (except math formulas)
 - Magic numbers/strings extracted to named constants (0, 1, 2, -1, -2 exempt); when a named constant's value is composed from exempt-range arithmetic (e.g. `1 / (2 * 2)` for 1/4, `(16 - 2 - 1) / 16` for 13/16), do not flag the expression as a readability issue
-- Every source code file must be less than 100 lines unless a justification comment is given; flag unjustified files as WARNING (test, fixture, config, and doc files are exempt)
 - Extract and name complex conditions
 
 #### `const` over `let`
@@ -870,8 +869,8 @@ if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent")
 | port   | number | 8080    |
 
 <!-- Good -->
-- **host** -- `string`, default `localhost`
-- **port** -- `number`, default `8080`
+- host -- `string`, default `localhost`
+- port -- `number`, default `8080`
 ````
 
 ### Testing gaps

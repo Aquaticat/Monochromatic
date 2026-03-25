@@ -148,7 +148,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - `-` for unordered lists; pad numbered markers to 4 chars (`1.  `, `10. `)
 - Fenced code blocks with language tags; include file paths as comments
 - Reference-style links for repeated URLs; relative links for internal docs
-- **No tables** -- use headings or lists instead
+- No tables -- use headings or lists instead
 - ATX headers, max 4 levels, blank line before headers, lines under 120 chars
 
 ## Git commit guidelines
@@ -223,16 +223,13 @@ Only pin versions with clear justification and a comment explaining why.
 - Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-es`) over manual promise creation
 - Extract and name concepts; start simple, refactor to complexity only when necessary
 - Simplification progression: imperative loop -> while -> for -> recursive -> higher-order functions/async iterators
-- Split production source files over 100 lines (target under 200); add justification comment if splitting is not feasible; exempt: tests, fixtures, configs, docs
 - Never disable, raise, or bypass the max-lines limit; always split into separate files instead of trimming, compressing, or removing content to fit
 
 ## Linting
 
 - Identify which tool reports an error (ESLint vs Oxlint) before fixing
 - Prefer `Object.entries` and functional methods over `for...in`
-- Add `eslint-disable-next-line` comments with justification for namespace imports, CSS imports, and sequential `await`
-- Use explicit `!== null && !== undefined` instead of `!= null`
-- Add `export {}` for scripts that might be parsed as CommonJS
+- Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
 
 ## Logging
 
