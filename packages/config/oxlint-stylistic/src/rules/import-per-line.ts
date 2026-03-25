@@ -64,6 +64,7 @@ export const importPerLine: CreateOnceRule = {
           container: importNode,
           items: namedSpecifiers as Span[],
           messageId: 'importPerLine',
+          bracketPair: { open: '{', close: '}', },
         },);
       },
     } as VisitorWithHooks;

@@ -5,11 +5,11 @@ import type {
   Span,
 } from '@oxlint/plugins';
 
+import type { BracketPair, } from './item-per-line-fix.ts';
 import {
   buildPerLineFix,
 } from './item-per-line-fix.ts';
 import { needsPerLineFix, } from './needs-fix.ts';
-import { rangeOf, } from './range.ts';
 
 /**
  * Configuration for the shared per-line enforcement logic.
@@ -21,6 +21,7 @@ import { rangeOf, } from './range.ts';
  *   container: arrayNode,
  *   items: arrayNode.elements,
  *   messageId: 'itemPerLine',
+ *   bracketPair: { open: '[', close: ']' },
  * });
  * ```
  */
@@ -33,6 +34,13 @@ export type ItemPerLineConfig = {
   items: Span[];
   /** Message ID to use when reporting. */
   messageId: string;
+  /**
+   * Bracket pair that wraps the items.
+   *
+   * Used by the fixer to locate the correct opening and closing brackets
+   * by scanning from item positions.
+   */
+  bracketPair: BracketPair;
   /**
    * Minimum number of items required to trigger the rule.
    *
@@ -63,6 +71,8 @@ export type ItemPerLineConfig = {
  *
  * @param messageId - message ID to use when reporting
  *
+ * @param bracketPair - opening and closing bracket characters for the construct
+ *
  * @param minItems - minimum item count to trigger (default 2)
  *
  * @param delimiter - separator character for items (`','` or `';'`, defaults to `','`)
@@ -72,6 +82,7 @@ export function checkItemsPerLine({
   container,
   items,
   messageId,
+  bracketPair,
   minItems = 2,
   delimiter = ',',
 }: ItemPerLineConfig,): void {
@@ -88,8 +99,6 @@ export function checkItemsPerLine({
   ))
     return;
 
-  const containerRange = rangeOf(container,);
-
   context.report({
     node: container,
     messageId,
@@ -97,10 +106,9 @@ export function checkItemsPerLine({
       return buildPerLineFix({
         fixer,
         context,
-        container,
         items,
         sourceText,
-        containerStart: containerRange[0],
+        bracketPair,
         delimiter,
       },);
     },

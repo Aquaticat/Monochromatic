@@ -61,6 +61,7 @@ export const exportPerLine: CreateOnceRule = {
           container: exportNode,
           items: specifiers,
           messageId: 'exportPerLine',
+          bracketPair: { open: '{', close: '}', },
         },);
       },
     } as VisitorWithHooks;

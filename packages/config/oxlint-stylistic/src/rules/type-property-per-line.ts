@@ -60,6 +60,7 @@ export const typePropertyPerLine: CreateOnceRule = {
         container: bodyNode,
         items: members,
         messageId: 'typePropertyPerLine',
+        bracketPair: { open: '{', close: '}', },
         delimiter: ';',
       },);
     }

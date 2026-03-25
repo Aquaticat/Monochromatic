@@ -51,6 +51,7 @@ export const tuplePerLine: CreateOnceRule = {
           container: tupleNode,
           items: elements,
           messageId: 'tuplePerLine',
+          bracketPair: { open: '[', close: ']', },
         },);
       },
     } as VisitorWithHooks;

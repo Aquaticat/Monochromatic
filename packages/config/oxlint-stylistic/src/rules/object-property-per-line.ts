@@ -54,6 +54,7 @@ export const objectPropertyPerLine: CreateOnceRule = {
           container: objNode,
           items: properties,
           messageId: 'propertyPerLine',
+          bracketPair: { open: '{', close: '}', },
         },);
       },
     } as VisitorWithHooks;

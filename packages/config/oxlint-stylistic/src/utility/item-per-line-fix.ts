@@ -5,11 +5,32 @@ import type {
   Span,
 } from '@oxlint/plugins';
 
-import { findDelimiter, } from './delimiter.ts';
 import {
   at,
   rangeOf,
 } from './range.ts';
+
+/**
+ * Bracket pair that delimits the list being reformatted.
+ *
+ * @example
+ * ```ts
+ * // Function arguments / parameters
+ * { open: '(', close: ')' }
+ *
+ * // Array / tuple
+ * { open: '[', close: ']' }
+ *
+ * // Object / destructure / type literal
+ * { open: '{', close: '}' }
+ * ```
+ */
+export type BracketPair = {
+  /** Opening bracket character. */
+  open: '(' | '[' | '{';
+  /** Closing bracket character. */
+  close: ')' | ']' | '}';
+};
 
 /**
  * Configuration for generating a per-line autofix.
@@ -19,14 +40,18 @@ export type PerLineFixConfig = {
   fixer: Fixer;
   /** Lint context for source text access. */
   context: Context;
-  /** Container AST node to replace. */
-  container: Span;
   /** Child items to place one per line. */
   items: Span[];
   /** Full file source text. */
   sourceText: string;
-  /** Byte offset of container start, for indentation detection. */
-  containerStart: number;
+  /**
+   * Bracket pair that wraps the items.
+   *
+   * Used to locate the opening and closing brackets by scanning
+   * from item positions rather than from the (potentially larger)
+   * container node span.
+   */
+  bracketPair: BracketPair;
   /**
    * Delimiter to place after each item.
    *
@@ -39,20 +64,21 @@ export type PerLineFixConfig = {
 /**
  * Builds a fixer result that reformats items one per line.
  *
- * Detects the container's base indentation, then rebuilds the content
- * with each item on its own line at base + 2 spaces.
+ * Finds the enclosing brackets by scanning backward from the first item
+ * and forward from the last item, then replaces the bracket range with
+ * properly formatted content. This avoids the container-text approach
+ * which breaks when the container span includes extraneous content
+ * (type annotations, callee chains with nested brackets, generics).
  *
  * @param fixer - fixer instance from the lint report callback
  *
  * @param context - lint context for source text access
  *
- * @param container - container AST node to replace
- *
  * @param items - child items to place one per line
  *
  * @param sourceText - full file source text
  *
- * @param containerStart - byte offset of container start
+ * @param bracketPair - opening and closing bracket characters to locate
  *
  * @param delimiter - character to separate items (`','` or `';'`, defaults to `','`)
  *
@@ -61,46 +87,55 @@ export type PerLineFixConfig = {
 export function buildPerLineFix({
   fixer,
   context,
-  container,
   items,
   sourceText,
-  containerStart,
+  bracketPair,
   delimiter = ',',
 }: PerLineFixConfig,): ReturnType<Fixer['replaceText']> {
-  const lineStartOffset = sourceText.lastIndexOf(
-    '\n',
-    containerStart - 1,
-  ) + 1;
-  const lineText = sourceText.slice(
-    lineStartOffset,
-    containerStart,
-  );
-  const baseIndent = lineText.match(/^(\s*)/,)?.[1] ?? '';
-  const childIndent = `${baseIndent}  `;
+  const firstRange = rangeOf(at(
+    items,
+    0,
+  ),);
+  const lastRange = rangeOf(at(
+    items,
+    items.length - 1,
+  ),);
 
-  const containerText = context.sourceCode.getText(container,);
-  const openIdx = findDelimiter(
-    containerText,
-    'open',
-  );
-  const closeIdx = findDelimiter(
-    containerText,
-    'close',
-  );
+  /** Scan backward from first item to find the opening bracket. */
+  let openPos = -1;
+  for (let i = firstRange[0] - 1; i >= 0; i--) {
+    if (sourceText.charAt(i,) === bracketPair.open) {
+      openPos = i;
+      break;
+    }
+  }
 
-  if (openIdx === -1 || closeIdx === -1)
-    return fixer.replaceText(
-      container,
-      containerText,
+  /** Scan forward from last item to find the closing bracket. */
+  let closePos = -1;
+  for (let i = lastRange[1]; i < sourceText.length; i++) {
+    if (sourceText.charAt(i,) === bracketPair.close) {
+      closePos = i;
+      break;
+    }
+  }
+
+  if (openPos === -1 || closePos === -1)
+    return fixer.replaceTextRange(
+      [firstRange[0], firstRange[0],],
+      '',
     );
 
-  /** Text before and including the opening delimiter. */
-  const before = containerText.slice(
-    0,
-    openIdx + 1,
+  /** Compute base indentation from the line containing the opening bracket. */
+  const lineStart = sourceText.lastIndexOf(
+    '\n',
+    openPos - 1,
+  ) + 1;
+  const linePrefix = sourceText.slice(
+    lineStart,
+    openPos,
   );
-  /** Text from and including the closing delimiter. */
-  const after = containerText.slice(closeIdx,);
+  const baseIndent = linePrefix.match(/^(\s*)/,)?.[1] ?? '';
+  const childIndent = `${baseIndent}  `;
 
   /** Extract each item's source text, stripping any existing trailing delimiter. */
   const itemTexts = items.map(
@@ -112,15 +147,10 @@ export function buildPerLineFix({
     },
   );
 
-  /** Check whether the original source has a trailing delimiter after the last item. */
-  const lastItem = at(
-    items,
-    items.length - 1,
-  );
-  const lastRange = rangeOf(lastItem,);
+  /** Check whether the original source has a trailing delimiter between last item and close bracket. */
   const trailingRegion = sourceText.slice(
     lastRange[1],
-    containerStart + closeIdx,
+    closePos,
   );
   const hasTrailingDelimiter = trailingRegion.includes(',',)
     || trailingRegion.includes(';',);
@@ -134,9 +164,10 @@ export function buildPerLineFix({
     return `${childIndent}${text}${suffix}`;
   },).join('\n',);
 
-  const replacement = `${before}\n${formattedItems}\n${baseIndent}${after}`;
-  return fixer.replaceText(
-    container,
+  /** Replace from opening bracket to closing bracket inclusive. */
+  const replacement = `${bracketPair.open}\n${formattedItems}\n${baseIndent}${bracketPair.close}`;
+  return fixer.replaceTextRange(
+    [openPos, closePos + 1,],
     replacement,
   );
 }

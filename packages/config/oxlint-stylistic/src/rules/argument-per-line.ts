@@ -59,6 +59,7 @@ export const argumentPerLine: CreateOnceRule = {
         container: callNode,
         items: args,
         messageId: 'argumentPerLine',
+        bracketPair: { open: '(', close: ')', },
       },);
     }
 

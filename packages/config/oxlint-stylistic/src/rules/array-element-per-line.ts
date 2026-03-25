@@ -55,6 +55,7 @@ export const arrayElementPerLine: CreateOnceRule = {
           container: arrayNode,
           items: elements,
           messageId: 'elementPerLine',
+          bracketPair: { open: '[', close: ']', },
         },);
       },
     } as VisitorWithHooks;

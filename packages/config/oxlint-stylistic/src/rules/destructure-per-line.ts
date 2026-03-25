@@ -52,6 +52,7 @@ export const destructurePerLine: CreateOnceRule = {
           container: patternNode,
           items: properties,
           messageId: 'destructurePerLine',
+          bracketPair: { open: '{', close: '}', },
         },);
       },
     } as VisitorWithHooks;
