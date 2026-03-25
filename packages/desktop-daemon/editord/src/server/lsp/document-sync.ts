@@ -73,7 +73,11 @@ export function didOpen({
     },);
   documents.set(
     uri,
-    { version: 1, languageId, text, },
+    {
+      version: 1,
+      languageId,
+      text,
+    },
   );
   for (const c of relevantClients({
     languageId,
@@ -81,7 +85,14 @@ export function didOpen({
   },)) {
     c.notify({
       method: 'textDocument/didOpen',
-      params: { textDocument: { uri, languageId, version: 1, text, }, },
+      params: {
+        textDocument: {
+          uri,
+          languageId,
+          version: 1,
+          text,
+        },
+      },
     },);
   }
 }
@@ -114,8 +125,13 @@ export function didChange({
   },)) {
     c.notify({
       method: 'textDocument/didChange',
-      params: { textDocument: { uri, version: doc.version, },
-        contentChanges: [{ text, },], },
+      params: {
+        textDocument: {
+          uri,
+          version: doc.version,
+        },
+        contentChanges: [{ text, },],
+      },
     },);
   }
 }

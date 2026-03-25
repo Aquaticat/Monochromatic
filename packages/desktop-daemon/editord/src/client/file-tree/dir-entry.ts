@@ -101,8 +101,12 @@ export class TreeDirEntry extends HTMLElement {
             'show-context',
             {
             bubbles: true,
-            detail: { x: event.clientX, y: event.clientY, path: entry.entryPath,
-              kind: 'dir' as const, },
+            detail: {
+              x: event.clientX,
+              y: event.clientY,
+              path: entry.entryPath,
+              kind: 'dir' as const,
+            },
           },
           ),);
         },
@@ -126,8 +130,10 @@ export class TreeDirEntry extends HTMLElement {
             'dir-open',
             {
             bubbles: true,
-            detail: { path: entry.entryPath,
-              childrenContainer: entry.#childrenContainer, },
+            detail: {
+              path: entry.entryPath,
+              childrenContainer: entry.#childrenContainer,
+            },
           },
           ),);
         },

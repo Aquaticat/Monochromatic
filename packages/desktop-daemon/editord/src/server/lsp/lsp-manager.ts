@@ -291,8 +291,16 @@ export class LspManager {
       range,
     }: {
       path: string;
-      range: { start: { line: number; character: number; };
-        end: { line: number; character: number; }; }
+      range: {
+        start: {
+          line: number;
+          character: number;
+        };
+        end: {
+          line: number;
+          character: number;
+        };
+      }
     },
   ): Promise<LspInlayHint[]> {
     return managerInlayHints({
@@ -313,7 +321,10 @@ export class LspManager {
       positions,
     }: {
       path: string;
-      positions: { line: number; character: number; }[]
+      positions: {
+        line: number;
+        character: number;
+      }[]
     },
   ): Promise<LspSelectionRange[]> {
     return managerSelectionRange({

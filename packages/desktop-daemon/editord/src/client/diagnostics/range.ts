@@ -37,8 +37,8 @@ export function findTextOffset({
   while (textNode !== null) {
     const len = textNode.textContent?.length ?? 0;
     if (remaining <= len) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TreeWalker with SHOW_TEXT filter only yields Text nodes
       return {
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TreeWalker with SHOW_TEXT filter only yields Text nodes
         node: textNode as Text,
         offset: remaining,
       };

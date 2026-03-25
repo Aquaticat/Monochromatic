@@ -188,7 +188,11 @@ export class EditorWsClient {
         ) as unknown as number;
         pending.set(
           id,
-          { resolve, reject, timeoutId, },
+          {
+            resolve,
+            reject,
+            timeoutId,
+          },
         );
       },
     );

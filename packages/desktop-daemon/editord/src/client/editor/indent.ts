@@ -188,7 +188,10 @@ export function unindentLines({
     },
     cursor: {
       line: cursorLine,
-      character: Math.max(0, cursorCharacter - lineRemoved,),
+      character: Math.max(
+        0,
+        cursorCharacter - lineRemoved,
+      ),
     },
   };
 }

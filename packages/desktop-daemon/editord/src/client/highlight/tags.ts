@@ -56,19 +56,35 @@ export type HighlightGroup = typeof HIGHLIGHT_GROUPS[number];
 export const editorHighlighter = tagHighlighter([
   //region Code tags (JS/TS, JSON, CSS, YAML, TOML)
   {
-    tag: [tags.function(tags.variableName,), tags.function(tags.propertyName,),],
+    tag: [
+      tags.function(tags.variableName,),
+      tags.function(tags.propertyName,),
+    ],
     class: 'function',
   },
   {
-    tag: [tags.typeName, tags.namespace,],
+    tag: [
+      tags.typeName,
+      tags.namespace,
+    ],
     class: 'type',
   },
   {
-    tag: [tags.keyword, tags.bool, tags.null, tags.self,],
+    tag: [
+      tags.keyword,
+      tags.bool,
+      tags.null,
+      tags.self,
+    ],
     class: 'keyword',
   },
   {
-    tag: [tags.string, tags.special(tags.string,), tags.regexp, tags.escape,],
+    tag: [
+      tags.string,
+      tags.special(tags.string,),
+      tags.regexp,
+      tags.escape,
+    ],
     class: 'string',
   },
   {
@@ -80,7 +96,11 @@ export const editorHighlighter = tagHighlighter([
     class: 'number',
   },
   {
-    tag: [tags.propertyName, tags.labelName, tags.attributeName,],
+    tag: [
+      tags.propertyName,
+      tags.labelName,
+      tags.attributeName,
+    ],
     class: 'property',
   },
   //endregion Code tags
@@ -91,11 +111,17 @@ export const editorHighlighter = tagHighlighter([
     class: 'heading',
   },
   {
-    tag: [tags.link, tags.url,],
+    tag: [
+      tags.link,
+      tags.url,
+    ],
     class: 'link',
   },
   {
-    tag: [tags.emphasis, tags.strong,],
+    tag: [
+      tags.emphasis,
+      tags.strong,
+    ],
     class: 'emphasis',
   },
   {
@@ -111,7 +137,10 @@ export const editorHighlighter = tagHighlighter([
     class: 'comment',
   },
   {
-    tag: [tags.tagName, tags.angleBracket,],
+    tag: [
+      tags.tagName,
+      tags.angleBracket,
+    ],
     class: 'keyword',
   },
   //endregion Document tags

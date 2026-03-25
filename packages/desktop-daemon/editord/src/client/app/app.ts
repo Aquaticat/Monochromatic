@@ -237,9 +237,12 @@ async function saveCurrentFile(): Promise<void> {
 
 editorPane.addEventListener(
   'contentchange',
-  createDebounced({ fn: function autoSave() {
-  void saveCurrentFile();
-}, delayMs: AUTO_SAVE_DEBOUNCE_MS, },),
+  createDebounced({
+    fn: function autoSave() {
+      void saveCurrentFile();
+    },
+    delayMs: AUTO_SAVE_DEBOUNCE_MS,
+  },),
 );
 
 wireKeybindings({

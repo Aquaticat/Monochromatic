@@ -45,14 +45,24 @@ export async function openInTerminal(
   else if (currentPlatform === 'darwin') {
     await spawnDetached({
       command: 'open',
-      args: ['-a', 'Terminal', absolutePath,],
+      args: [
+        '-a',
+        'Terminal',
+        absolutePath,
+      ],
       cwd: absolutePath,
     },);
   }
   else if (currentPlatform === 'win32') {
     await spawnDetached({
       command: 'cmd',
-      args: ['/c', 'start', 'cmd', '/k', `cd /d "${absolutePath}"`,],
+      args: [
+        '/c',
+        'start',
+        'cmd',
+        '/k',
+        `cd /d "${absolutePath}"`,
+      ],
       cwd: absolutePath,
     },);
   }
@@ -103,7 +113,12 @@ export async function openInDefaultApp(
   else if (currentPlatform === 'win32') {
     await spawnDetached({
       command: 'cmd',
-      args: ['/c', 'start', '', absolutePath,],
+      args: [
+        '/c',
+        'start',
+        '',
+        absolutePath,
+      ],
       cwd: dir,
     },);
   }

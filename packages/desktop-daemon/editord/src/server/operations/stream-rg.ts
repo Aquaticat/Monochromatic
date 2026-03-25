@@ -46,7 +46,10 @@ export function streamRg({
   ) {
     const proc = spawn(
       'rg',
-      ['--line-buffered', ...args,],
+      [
+        '--line-buffered',
+        ...args,
+      ],
     );
     const results: SearchResult[] = [];
     let buffer = '';

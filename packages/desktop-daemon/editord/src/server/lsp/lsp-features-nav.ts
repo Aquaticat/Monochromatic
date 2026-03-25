@@ -48,7 +48,10 @@ export async function requestGotoDefinition({
     method: 'textDocument/definition',
     params: {
       textDocument: { uri, },
-      position: { line, character, },
+      position: {
+        line,
+        character,
+      },
     },
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
@@ -67,7 +70,12 @@ export async function requestGotoDefinition({
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrow from Location shape
   const loc = rawLocation as {
     uri: string;
-    range: { start: { line: number; character: number; }; }
+    range: {
+      start: {
+        line: number;
+        character: number;
+      };
+    }
   };
   const defPath = loc.uri.startsWith('file://',) ? fileURLToPath(loc.uri,) : loc.uri;
   return {
@@ -126,7 +134,12 @@ export async function requestReferences({
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP references returns Location[]
   return (result as {
     uri: string;
-    range: { start: { line: number; character: number; }; }
+    range: {
+      start: {
+        line: number;
+        character: number;
+      };
+    }
   }[])
     .map(
       function convertLocation(loc,) {

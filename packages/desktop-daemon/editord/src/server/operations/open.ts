@@ -100,7 +100,10 @@ export async function openFile(
     return {
       kind: 'binary',
       path: absolutePath,
-      content: generateHexDump({ buffer: dumpBuffer, totalSize: size, },),
+      content: generateHexDump({
+        buffer: dumpBuffer,
+        totalSize: size,
+      },),
     };
   }
 

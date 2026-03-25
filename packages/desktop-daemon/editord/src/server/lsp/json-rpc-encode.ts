@@ -57,7 +57,10 @@ export function encodeLspMessage({ message, }: { message: unknown; },): Buffer {
   );
   const header = `Content-Length: ${content.byteLength}\r\n\r\n`;
   return Buffer.concat([
-    Buffer.from(header, 'ascii',),
+    Buffer.from(
+      header,
+      'ascii',
+    ),
     content,
   ],);
 }

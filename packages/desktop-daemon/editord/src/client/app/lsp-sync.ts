@@ -35,7 +35,11 @@ export function wireContentSync({
       const path = getCurrentFilePath();
       if (path === null)
         return;
-      void ws.notify({ type: 'didChange', path, content: editorPane.getText(), },);
+      void ws.notify({
+        type: 'didChange',
+        path,
+        content: editorPane.getText(),
+      },);
     },
     delayMs: CONTENT_SYNC_DEBOUNCE_MS,
   },),

@@ -52,7 +52,10 @@ export function routeJsonRpcMessage({
     const response = message as {
       id: number;
       result?: unknown;
-      error?: { code: number; message: string; }
+      error?: {
+        code: number;
+        message: string;
+      }
     };
     const entry = pending.get(response.id,);
     if (entry !== undefined) {

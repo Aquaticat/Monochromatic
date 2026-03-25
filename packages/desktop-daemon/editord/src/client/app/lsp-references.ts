@@ -112,7 +112,11 @@ export async function showReferences(
         referencesPopup.dispatchEvent(new CustomEvent(
           'reference-select',
           {
-          detail: { path: only.path, line: only.line + 1, character: only.character, },
+          detail: {
+            path: only.path,
+            line: only.line + 1,
+            character: only.character,
+          },
           bubbles: true,
           composed: true,
         },

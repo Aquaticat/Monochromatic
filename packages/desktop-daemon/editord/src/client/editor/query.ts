@@ -26,7 +26,13 @@ export function computeDocumentRange({ editor, }: { editor: HTMLDivElement; },):
   const lastLineText = lastLineEl?.textContent ?? '';
   const lastLineLength = lastLineText === '\n' ? 0 : lastLineText.length;
   return {
-    start: { line: 0, character: 0, },
-    end: { line: lastLineIndex, character: lastLineLength, },
+    start: {
+      line: 0,
+      character: 0,
+    },
+    end: {
+      line: lastLineIndex,
+      character: lastLineLength,
+    },
   };
 }

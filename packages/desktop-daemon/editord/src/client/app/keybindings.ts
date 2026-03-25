@@ -67,9 +67,16 @@ export function wireKeybindings({
       gotoDefinition();
       return;
     }
-    if (handleTextEditKey({ event,
-      deps: { deleteCurrentLine, selectAndCopyCurrentLine, duplicateLineDown,
-        swapLineDown, swapLineUp, }, },))
+    if (handleTextEditKey({
+      event,
+      deps: {
+        deleteCurrentLine,
+        selectAndCopyCurrentLine,
+        duplicateLineDown,
+        swapLineDown,
+        swapLineUp,
+      },
+    },))
     {
       return;
     }
@@ -108,9 +115,15 @@ export function wireKeybindings({
       openTerminalAtCurrentFile();
       return;
     }
-    if (referencesPopup.visible && handleReferencesNav({ event, referencesPopup, },))
+    if (referencesPopup.visible && handleReferencesNav({
+      event,
+      referencesPopup,
+    },))
       return;
-    if (completionPopup.visible && handleCompletionNav({ event, completionPopup, },))
+    if (completionPopup.visible && handleCompletionNav({
+      event,
+      completionPopup,
+    },))
       return;
     if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();

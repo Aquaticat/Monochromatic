@@ -65,7 +65,11 @@ export class TreeFileEntry extends HTMLElement {
 
     this.replaceChildren(
       toggle,
-      h({ tag: 'span', class: 'name', text: this.entryName, },),
+      h({
+        tag: 'span',
+        class: 'name',
+        text: this.entryName,
+      },),
     );
 
     const entry = this;
@@ -73,11 +77,14 @@ export class TreeFileEntry extends HTMLElement {
       'click',
       function handleFileClick() {
       entry.focus();
-      entry.dispatchEvent(new CustomEvent('file-select', {
-        bubbles: true,
-        composed: true,
-        detail: { path: entry.entryPath, },
-      },),);
+      entry.dispatchEvent(new CustomEvent(
+        'file-select',
+        {
+          bubbles: true,
+          composed: true,
+          detail: { path: entry.entryPath, },
+        },
+      ),);
     },
     );
     this.addEventListener(
@@ -86,11 +93,18 @@ export class TreeFileEntry extends HTMLElement {
       if (event.button !== 2)
         return;
       event.preventDefault();
-      entry.dispatchEvent(new CustomEvent('show-context', {
-        bubbles: true,
-        detail: { x: event.clientX, y: event.clientY, path: entry.entryPath,
-          kind: 'file' as const, },
-      },),);
+      entry.dispatchEvent(new CustomEvent(
+        'show-context',
+        {
+          bubbles: true,
+          detail: {
+            x: event.clientX,
+            y: event.clientY,
+            path: entry.entryPath,
+            kind: 'file' as const,
+          },
+        },
+      ),);
     },
     );
     this.addEventListener(

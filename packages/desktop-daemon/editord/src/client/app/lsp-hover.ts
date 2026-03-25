@@ -66,22 +66,35 @@ export function wireHover(
     const me = event as MouseEvent;
     clearTimeout(timer,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types are loaded
-    timer = globalThis.setTimeout(function doHover() {
-      if (completionPopup.visible || referencesPopup.visible)
-        return;
-      const path = getCurrentFilePath();
-      if (path === null)
-        return;
-      const pos = editorPane.getPositionFromPoint({ x: me.clientX, y: me.clientY, },);
-      if (pos === null)
-        return;
-      if (pos.line === lastLine && pos.character === lastChar)
-        return;
-      lastLine = pos.line;
-      lastChar = pos.character;
-      void doRequestHover({ ws, hoverPopup, path, line: pos.line,
-        character: pos.character, x: me.clientX, y: me.clientY, },);
-    }, HOVER_DEBOUNCE_MS,) as unknown as number;
+    timer = globalThis.setTimeout(
+      function doHover() {
+        if (completionPopup.visible || referencesPopup.visible)
+          return;
+        const path = getCurrentFilePath();
+        if (path === null)
+          return;
+        const pos = editorPane.getPositionFromPoint({
+          x: me.clientX,
+          y: me.clientY,
+        },);
+        if (pos === null)
+          return;
+        if (pos.line === lastLine && pos.character === lastChar)
+          return;
+        lastLine = pos.line;
+        lastChar = pos.character;
+        void doRequestHover({
+          ws,
+          hoverPopup,
+          path,
+          line: pos.line,
+          character: pos.character,
+          x: me.clientX,
+          y: me.clientY,
+        },);
+      },
+      HOVER_DEBOUNCE_MS,
+    ) as unknown as number;
   },
   );
 

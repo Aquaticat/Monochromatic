@@ -45,7 +45,10 @@ function rejectUnauthenticated(
 ): void {
   sendJson({
     peer,
-    message: { type: 'error', message: 'unauthorized', },
+    message: {
+      type: 'error',
+      message: 'unauthorized',
+    },
   },);
   peer.close();
 }
@@ -100,7 +103,11 @@ export function createWsHandler(
         connectedPeers.add(peer,);
         sendJson({
           peer,
-          message: { type: 'connected', rootDir, fsId, },
+          message: {
+            type: 'connected',
+            rootDir,
+            fsId,
+          },
         },);
       },
 
@@ -124,7 +131,10 @@ export function createWsHandler(
           l.error(`message handler failed: ${errorMessage}`,);
           sendJson({
             peer,
-            message: { type: 'error', message: errorMessage, },
+            message: {
+              type: 'error',
+              message: errorMessage,
+            },
           },);
         }
       },

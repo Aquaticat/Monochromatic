@@ -25,7 +25,10 @@ const REPEAT_ICON_SVG =
 export function createImageContent({ url, }: { url: string; },): HTMLElement {
   return h({
     tag: 'img',
-    attrs: { src: url, alt: 'Image preview', },
+    attrs: {
+      src: url,
+      alt: 'Image preview',
+    },
   },);
 }
 
@@ -39,7 +42,10 @@ export function createImageContent({ url, }: { url: string; },): HTMLElement {
 export function createAudioContent({ url, }: { url: string; },): HTMLElement {
   const audio = h({
     tag: 'audio',
-    attrs: { src: url, controls: '', },
+    attrs: {
+      src: url,
+      controls: '',
+    },
   },);
 
   const repeatBtn = h({
@@ -64,7 +70,10 @@ export function createAudioContent({ url, }: { url: string; },): HTMLElement {
   return h({
     tag: 'div',
     class: 'audio-controls',
-    children: [audio, repeatBtn,],
+    children: [
+      audio,
+      repeatBtn,
+    ],
   },);
 }
 
@@ -78,7 +87,10 @@ export function createAudioContent({ url, }: { url: string; },): HTMLElement {
 export function createVideoContent({ url, }: { url: string; },): HTMLElement {
   return h({
     tag: 'video',
-    attrs: { src: url, controls: '', },
+    attrs: {
+      src: url,
+      controls: '',
+    },
   },);
 }
 

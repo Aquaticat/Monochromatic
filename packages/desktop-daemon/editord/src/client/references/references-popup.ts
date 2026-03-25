@@ -61,7 +61,10 @@ export class ReferencesPopup extends HTMLElement {
       class: 'list',
     },);
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       this.#list,
     );
     this.setAttribute(
@@ -181,7 +184,11 @@ export class ReferencesPopup extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent(
         'reference-select',
-        { detail, bubbles: true, composed: true, },
+        {
+          detail,
+          bubbles: true,
+          composed: true,
+        },
       ),
     );
     return detail;

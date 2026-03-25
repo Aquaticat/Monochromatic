@@ -75,9 +75,12 @@ export async function resolveRoot(): Promise<string> {
 
   /** Find the highest writable ancestor (last fulfilled in the ordered list). */
   const root = results.reduce(
-    function pickLastFulfilled(acc, result,) {
-    return result.status === 'fulfilled' ? result.value : acc;
-  },
+    function pickLastFulfilled(
+      acc,
+      result,
+    ) {
+      return result.status === 'fulfilled' ? result.value : acc;
+    },
     cwd,
   );
 

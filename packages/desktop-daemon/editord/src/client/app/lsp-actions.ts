@@ -50,8 +50,14 @@ export async function formatDocument({
       const { edits, } = response as {
         edits: {
           range: {
-            start: { line: number; character: number; };
-            end: { line: number; character: number; }
+            start: {
+              line: number;
+              character: number;
+            };
+            end: {
+              line: number;
+              character: number;
+            }
           };
           newText: string;
         }[];
@@ -102,11 +108,19 @@ export function wireGotoDefinition(
     const me = event as MouseEvent;
     if (!me.ctrlKey && !me.metaKey)
       return;
-    const pos = editorPane.getPositionFromPoint({ x: me.clientX, y: me.clientY, },);
+    const pos = editorPane.getPositionFromPoint({
+      x: me.clientX,
+      y: me.clientY,
+    },);
     if (pos === null)
       return;
-    void doGotoDefinition({ ws, getCurrentFilePath, loadFileSafe, line: pos.line,
-      character: pos.character, },);
+    void doGotoDefinition({
+      ws,
+      getCurrentFilePath,
+      loadFileSafe,
+      line: pos.line,
+      character: pos.character,
+    },);
   },
   );
 }

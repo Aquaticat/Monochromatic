@@ -56,7 +56,10 @@ export async function requestHover({
     method: 'textDocument/hover',
     params: {
       textDocument: { uri, },
-      position: { line, character, },
+      position: {
+        line,
+        character,
+      },
     },
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
@@ -94,7 +97,10 @@ export async function requestCompletion({
     method: 'textDocument/completion',
     params: {
       textDocument: { uri, },
-      position: { line, character, },
+      position: {
+        line,
+        character,
+      },
     },
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);

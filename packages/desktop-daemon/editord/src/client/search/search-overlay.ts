@@ -83,18 +83,27 @@ export class SearchOverlay extends HTMLElement {
     this.#input = h({
       tag: 'input',
       class: 'search-input',
-      attrs: { type: 'text',
+      attrs: {
+        type: 'text',
         placeholder: 'Search files... (prefix with % for content only)',
-        autocomplete: 'off', },
-      on: { input: function handleInput() {
+        autocomplete: 'off',
+      },
+      on: {
+        input: function handleInput() {
           overlay.#scheduleSearch();
-        }, keydown: function handleInputKeydown(event,) {
-          handleSearchKeydown({ event, moveSelection: function move(delta,) {
-            overlay.#moveSelection({ delta, },);
-          }, confirmSelection: function confirm() {
-            overlay.#confirmSelection();
-          }, },);
-        }, blur: function handleInputBlur(event,) {
+        },
+        keydown: function handleInputKeydown(event,) {
+          handleSearchKeydown({
+            event,
+            moveSelection: function move(delta,) {
+              overlay.#moveSelection({ delta, },);
+            },
+            confirmSelection: function confirm() {
+              overlay.#confirmSelection();
+            },
+          },);
+        },
+        blur: function handleInputBlur(event,) {
           const related = event.relatedTarget;
           if (related === null
             || !(related instanceof Node)
@@ -102,7 +111,8 @@ export class SearchOverlay extends HTMLElement {
           {
             overlay.#close();
           }
-        }, },
+        },
+      },
     },);
     this.#resultsContainer = h({
       tag: 'div',
@@ -110,13 +120,21 @@ export class SearchOverlay extends HTMLElement {
     },);
     this.#dialog = h({
       tag: 'dialog',
-      children: [this.#input, this.#resultsContainer,],
-      on: { close: function handleClose() {
-        l.info('overlay closed',);
-      }, },
+      children: [
+        this.#input,
+        this.#resultsContainer,
+      ],
+      on: {
+        close: function handleClose() {
+          l.info('overlay closed',);
+        },
+      },
     },);
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       this.#dialog,
     );
     document.addEventListener(
@@ -288,7 +306,10 @@ export class SearchOverlay extends HTMLElement {
       return;
     this.dispatchEvent(new CustomEvent(
       'result-select',
-      { detail, bubbles: true, },
+      {
+        detail,
+        bubbles: true,
+      },
     ),);
     this.#close();
   }

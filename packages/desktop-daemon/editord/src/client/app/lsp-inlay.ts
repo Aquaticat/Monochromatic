@@ -36,7 +36,11 @@ export function wireInlayHints({
     'contentchange',
     createDebounced({
     fn: function refreshInlayHints() {
-      void fetchInlayHints({ ws, editorPane, getCurrentFilePath, },);
+      void fetchInlayHints({
+        ws,
+        editorPane,
+        getCurrentFilePath,
+      },);
     },
     delayMs: INLAY_HINT_DEBOUNCE_MS,
   },),

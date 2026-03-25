@@ -171,8 +171,14 @@ registerRoutes({
 
 app.get(
   '/_ws',
-  createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, fsId: FS_ID, lspManager,
-    connectedPeers, dirWatcher, },),
+  createWsHandler({
+    authToken: AUTH_TOKEN,
+    rootDir: ROOT_DIR,
+    fsId: FS_ID,
+    lspManager,
+    connectedPeers,
+    dirWatcher,
+  },),
 );
 
 //endregion WebSocket

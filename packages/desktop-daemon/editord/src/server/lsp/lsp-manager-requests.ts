@@ -218,8 +218,14 @@ export async function managerInlayHints({
   pool: LspPool;
   path: string;
   range: {
-    start: { line: number; character: number; };
-    end: { line: number; character: number; }
+    start: {
+      line: number;
+      character: number;
+    };
+    end: {
+      line: number;
+      character: number;
+    }
   };
 },): Promise<LspInlayHint[]> {
   const c = await pool.resolve({

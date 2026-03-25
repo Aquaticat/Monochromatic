@@ -97,12 +97,18 @@ export function wireSelectEvents(
   searchOverlay.addEventListener(
     'result-select',
     function handleResultSelect(event,) {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
-    const { path, line, } = (event as CustomEvent<ResultSelectDetail>).detail;
+    const {
+      path,
+      line,
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
+    } = (event as CustomEvent<ResultSelectDetail>).detail;
     state.currentFilePath = path;
     recordFileOpen(path,);
     void (async function loadAndRefresh(): Promise<void> {
-      await loadFileSafe({ path, line, },);
+      await loadFileSafe({
+        path,
+        line,
+      },);
       if (state.currentFileKind === 'text')
         refreshInlayHints();
     })();
@@ -111,13 +117,20 @@ export function wireSelectEvents(
   referencesPopup.addEventListener(
     'reference-select',
     function handleReferenceSelect(event,) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup
-      const { path, line, character, } =
-        (event as CustomEvent<ReferenceSelectDetail>).detail;
+      const {
+        path,
+        line,
+        character,
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup
+      } = (event as CustomEvent<ReferenceSelectDetail>).detail;
       state.currentFilePath = path;
       recordFileOpen(path,);
       void (async function loadAndRefresh(): Promise<void> {
-        await loadFileSafe({ path, line, character, },);
+        await loadFileSafe({
+          path,
+          line,
+          character,
+        },);
         if (state.currentFileKind === 'text')
           refreshInlayHints();
       })();

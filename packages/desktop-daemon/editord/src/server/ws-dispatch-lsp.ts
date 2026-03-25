@@ -83,8 +83,11 @@ export async function dispatchLspMessage(
     if (lspManager === null) {
       return replyEmpty({
         peer,
-        message: { type: 'inlayHintResult', id: parsed
-        .id, hints: [], },
+        message: {
+          type: 'inlayHintResult',
+          id: parsed.id,
+          hints: [],
+        },
       },);
     }
     const hints = await lspManager.inlayHints({
@@ -94,8 +97,11 @@ export async function dispatchLspMessage(
     },);
     sendJson({
       peer,
-      message: { type: 'inlayHintResult', id: parsed
-      .id, hints: toWireInlayHints({ hints, },), },
+      message: {
+        type: 'inlayHintResult',
+        id: parsed.id,
+        hints: toWireInlayHints({ hints, },),
+      },
     },);
     return true;
   }
@@ -126,8 +132,11 @@ export async function dispatchLspMessage(
     if (lspManager === null) {
       return replyEmpty({
         peer,
-        message: { type: 'hoverResult', id: parsed
-        .id, contents: '', },
+        message: {
+          type: 'hoverResult',
+          id: parsed.id,
+          contents: '',
+        },
       },);
     }
     const hover = await lspManager.hover({
@@ -138,16 +147,22 @@ export async function dispatchLspMessage(
     if (hover === null) {
       sendJson({
         peer,
-        message: { type: 'hoverResult', id: parsed
-        .id, contents: '', },
+        message: {
+          type: 'hoverResult',
+          id: parsed.id,
+          contents: '',
+        },
       },);
       return true;
     }
     sendJson({
       peer,
-      message: { type: 'hoverResult', id: parsed
-      .id, contents: extractHoverContent({ hover, },), range: hover
-        .range, },
+      message: {
+        type: 'hoverResult',
+        id: parsed.id,
+        contents: extractHoverContent({ hover, },),
+        range: hover.range,
+      },
     },);
     return true;
   }
@@ -155,8 +170,11 @@ export async function dispatchLspMessage(
     if (lspManager === null) {
       return replyEmpty({
         peer,
-        message: { type: 'completionResult', id: parsed
-        .id, items: [], },
+        message: {
+          type: 'completionResult',
+          id: parsed.id,
+          items: [],
+        },
       },);
     }
     const items = await lspManager.completion({
@@ -166,8 +184,11 @@ export async function dispatchLspMessage(
     },);
     sendJson({
       peer,
-      message: { type: 'completionResult', id: parsed
-      .id, items: toWireCompletionItems({ items, },), },
+      message: {
+        type: 'completionResult',
+        id: parsed.id,
+        items: toWireCompletionItems({ items, },),
+      },
     },);
     return true;
   }
@@ -175,8 +196,11 @@ export async function dispatchLspMessage(
     if (lspManager === null) {
       return replyEmpty({
         peer,
-        message: { type: 'formatResult', id: parsed
-        .id, edits: [], },
+        message: {
+          type: 'formatResult',
+          id: parsed.id,
+          edits: [],
+        },
       },);
     }
     const lspEdits = await lspManager.format({ path: parsed.path, },);
@@ -188,7 +212,11 @@ export async function dispatchLspMessage(
     },);
     sendJson({
       peer,
-      message: { type: 'formatResult', id: parsed.id, edits, },
+      message: {
+        type: 'formatResult',
+        id: parsed.id,
+        edits,
+      },
     },);
     return true;
   }
@@ -196,8 +224,13 @@ export async function dispatchLspMessage(
     if (lspManager === null) {
       return replyEmpty({
         peer,
-        message: { type: 'definitionResult', id: parsed
-        .id, path: '', line: 0, character: 0, },
+        message: {
+          type: 'definitionResult',
+          id: parsed.id,
+          path: '',
+          line: 0,
+          character: 0,
+        },
       },);
     }
     const def = await lspManager.gotoDefinition({
@@ -208,16 +241,25 @@ export async function dispatchLspMessage(
     if (def === null) {
       sendJson({
         peer,
-        message: { type: 'definitionResult', id: parsed
-        .id, path: '', line: 0, character: 0, },
+        message: {
+          type: 'definitionResult',
+          id: parsed.id,
+          path: '',
+          line: 0,
+          character: 0,
+        },
       },);
       return true;
     }
     sendJson({
       peer,
-      message: { type: 'definitionResult', id: parsed
-      .id, path: def.path, line: def.line, character: def
-        .character, },
+      message: {
+        type: 'definitionResult',
+        id: parsed.id,
+        path: def.path,
+        line: def.line,
+        character: def.character,
+      },
     },);
     return true;
   }
@@ -225,8 +267,11 @@ export async function dispatchLspMessage(
     if (lspManager === null) {
       return replyEmpty({
         peer,
-        message: { type: 'referencesResult', id: parsed
-        .id, locations: [], },
+        message: {
+          type: 'referencesResult',
+          id: parsed.id,
+          locations: [],
+        },
       },);
     }
     const locations = await lspManager.references({
@@ -236,8 +281,11 @@ export async function dispatchLspMessage(
     },);
     sendJson({
       peer,
-      message: { type: 'referencesResult', id: parsed
-      .id, locations, },
+      message: {
+        type: 'referencesResult',
+        id: parsed.id,
+        locations,
+      },
     },);
     return true;
   }
@@ -245,8 +293,11 @@ export async function dispatchLspMessage(
     if (lspManager === null) {
       return replyEmpty({
         peer,
-        message: { type: 'selectionRangeResult', id: parsed
-        .id, ranges: [], },
+        message: {
+          type: 'selectionRangeResult',
+          id: parsed.id,
+          ranges: [],
+        },
       },);
     }
     const lspRanges = await lspManager.selectionRange({
@@ -258,8 +309,11 @@ export async function dispatchLspMessage(
     },);
     sendJson({
       peer,
-      message: { type: 'selectionRangeResult', id: parsed
-      .id, ranges, },
+      message: {
+        type: 'selectionRangeResult',
+        id: parsed.id,
+        ranges,
+      },
     },);
     return true;
   }

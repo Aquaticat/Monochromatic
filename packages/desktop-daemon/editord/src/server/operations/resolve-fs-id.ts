@@ -26,7 +26,11 @@ import { platform, } from 'node:os';
 function linuxFsId({ path, }: { path: string; },): string {
   return execFileSync(
     'stat',
-    ['-f', '--format=%i', path,],
+    [
+      '-f',
+      '--format=%i',
+      path,
+    ],
     { encoding: 'utf8', },
   )
     .trim();
@@ -50,7 +54,11 @@ function windowsFsId({ path, }: { path: string; },): string {
   );
   const output = execFileSync(
     'cmd.exe',
-    ['/c', 'vol', driveRoot,],
+    [
+      '/c',
+      'vol',
+      driveRoot,
+    ],
     {
     encoding: 'utf8',
   },
@@ -71,7 +79,11 @@ function windowsFsId({ path, }: { path: string; },): string {
 function darwinFsId({ path, }: { path: string; },): string {
   return execFileSync(
     'stat',
-    ['-f', '%v', path,],
+    [
+      '-f',
+      '%v',
+      path,
+    ],
     { encoding: 'utf8', },
   ).trim();
 }

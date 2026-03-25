@@ -93,8 +93,8 @@ export function handleCompletionNav({
   /** Tab accepts the selected completion and inserts its text. */
   function acceptCompletion(): void {
     const text = completionPopup.accept();
-    // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text preserving the browser undo stack
     if (text !== null)
+      // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text preserving the browser undo stack
       document.execCommand(
         'insertText',
         false,

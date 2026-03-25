@@ -47,7 +47,13 @@ export function registerRoutes({
   app.get(
     '/',
     defineHandler(async function handleIndex() {
-    const html = await readFile(join(packageRoot, 'src/client/index.html',), 'utf8',);
+    const html = await readFile(
+      join(
+        packageRoot,
+        'src/client/index.html',
+      ),
+      'utf8',
+    );
     return new Response(
       html,
       { headers: { 'Content-Type': 'text/html; charset=utf-8', }, },
@@ -62,12 +68,20 @@ export function registerRoutes({
   app.get(
     '/dist/client/**',
     defineHandler(function handleStaticAsset(event,) {
-    return serveStatic(event, {
+    return serveStatic(
+      event,
+      {
       getContents: function readContents(id,) {
-        return readFile(join(packageRoot, id,),);
+        return readFile(join(
+          packageRoot,
+          id,
+        ),);
       },
       getMeta: async function getMetadata(id,) {
-        const fullPath = join(packageRoot, id,);
+        const fullPath = join(
+          packageRoot,
+          id,
+        );
         let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
         try {
           stats = await stat(fullPath,);
@@ -85,9 +99,13 @@ export function registerRoutes({
         }
         if (!stats.isFile())
           return;
-        return { size: stats.size, mtime: stats.mtimeMs, };
+        return {
+          size: stats.size,
+          mtime: stats.mtimeMs,
+        };
       },
-    },);
+    },
+    );
   },),
   );
 
@@ -100,14 +118,26 @@ export function registerRoutes({
     defineHandler(async function handleRawFile(event,) {
     const query = getQuery(event,);
     if (query.token !== authToken)
-      return new Response('Unauthorized', { status: 401, },);
+      return new Response(
+        'Unauthorized',
+        { status: 401, },
+      );
     const filePath = typeof query.path === 'string' ? query.path : null;
     if (filePath === null)
-      return new Response('Missing path', { status: 400, },);
-    const absolutePath = assertWithinRoot({ rootDir, path: filePath, },);
+      return new Response(
+        'Missing path',
+        { status: 400, },
+      );
+    const absolutePath = assertWithinRoot({
+      rootDir,
+      path: filePath,
+    },);
     const buffer = await readFile(absolutePath,);
     const contentType = getContentType({ path: absolutePath, },);
-    return new Response(buffer, { headers: { 'Content-Type': contentType, }, },);
+    return new Response(
+      buffer,
+      { headers: { 'Content-Type': contentType, }, },
+    );
   },),
   );
 

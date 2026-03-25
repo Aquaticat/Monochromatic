@@ -35,8 +35,14 @@ export async function requestInlayHints({
   client: LspClient;
   path: string;
   range: {
-    start: { line: number; character: number; };
-    end: { line: number; character: number; }
+    start: {
+      line: number;
+      character: number;
+    };
+    end: {
+      line: number;
+      character: number;
+    }
   };
 },): Promise<LspInlayHint[]> {
   const uri = pathToFileURL(path,).href;

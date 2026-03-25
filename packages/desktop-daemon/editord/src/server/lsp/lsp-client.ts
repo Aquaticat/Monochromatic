@@ -122,7 +122,11 @@ export class LspClient {
       {
       cwd,
       env,
-      stdio: ['pipe', 'pipe', 'pipe',],
+      stdio: [
+        'pipe',
+        'pipe',
+        'pipe',
+      ],
     },
     );
 
@@ -229,7 +233,10 @@ export class LspClient {
       ) {
         pending.set(
           id,
-          { resolve, reject, },
+          {
+            resolve,
+            reject,
+          },
         );
         if (timeoutMs !== undefined) {
           setTimeout(

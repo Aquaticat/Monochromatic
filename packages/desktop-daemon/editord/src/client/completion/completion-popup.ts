@@ -45,7 +45,10 @@ export class CompletionPopup extends HTMLElement {
       class: 'list',
     },);
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       this.#list,
     );
     this.setAttribute(
@@ -135,8 +138,11 @@ export class CompletionPopup extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent(
         'completion-select',
-        { detail: { text: insertText, }, bubbles: true,
-        composed: true, },
+        {
+          detail: { text: insertText, },
+          bubbles: true,
+          composed: true,
+        },
       ),
     );
     return insertText;

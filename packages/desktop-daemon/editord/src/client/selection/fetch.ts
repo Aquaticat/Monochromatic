@@ -37,7 +37,10 @@ export async function fetchChain({
   const r = await ws.request({
     type: 'selectionRange',
     path,
-    positions: [{ line, character, },],
+    positions: [{
+      line,
+      character,
+    },],
   },);
   if (!('ranges' in r))
     return [];

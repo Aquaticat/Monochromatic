@@ -89,7 +89,10 @@ export class DiagnosticStore {
     const previous = sourceMap.get(source,);
     if (previous !== undefined
       && previous.length === diagnostics.length
-      && previous.every(function matchesDiagnostic(prev, i,) {
+      && previous.every(function matchesDiagnostic(
+        prev,
+        i,
+      ) {
         const next = diagnostics[i];
         if (next === undefined)
           return false;

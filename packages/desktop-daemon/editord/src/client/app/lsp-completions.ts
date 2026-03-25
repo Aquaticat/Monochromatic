@@ -99,7 +99,10 @@ export function wireCompletionTrigger({
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- keydown is always a KeyboardEvent
     const ke = event as KeyboardEvent;
     if (ke.key === '.')
-      globalThis.setTimeout(triggerCompletions, 0,);
+      globalThis.setTimeout(
+        triggerCompletions,
+        0,
+      );
   },
   );
 }

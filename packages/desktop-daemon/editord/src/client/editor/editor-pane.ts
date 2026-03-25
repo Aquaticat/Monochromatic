@@ -81,15 +81,21 @@ export class EditorPane extends HTMLElement {
     this.#editor = h({
       tag: 'div',
       class: 'editor',
-      attrs: { contenteditable: 'true', spellcheck: 'false', },
+      attrs: {
+        contenteditable: 'true',
+        spellcheck: 'false',
+      },
     },);
     this.#editor.addEventListener(
       'paste',
       function handlePaste(event,) {
       event.preventDefault();
       // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text while preserving the browser's native undo stack
-      document.execCommand('insertText', false,
-        event.clipboardData?.getData('text/plain',) ?? '',);
+      document.execCommand(
+        'insertText',
+        false,
+        event.clipboardData?.getData('text/plain',) ?? '',
+      );
     },
     );
     this.#editor.addEventListener(
@@ -99,13 +105,19 @@ export class EditorPane extends HTMLElement {
     this.#mutationObserver = new MutationObserver(this.#onMutation.bind(this,),);
     this.#mutationObserver.observe(
       this.#editor,
-      { childList: true, characterData: true,
-      subtree: true, },
+      {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      },
     );
     this.#resizeObserver = new ResizeObserver(this.#scheduleInlayMeasure.bind(this,),);
     this.#resizeObserver.observe(this.#editor,);
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       this.#editor,
     );
   }
@@ -155,12 +167,12 @@ export class EditorPane extends HTMLElement {
    *
    * @returns full text content of the editor
    */
-  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec
   getText(): string {
     if (this.#editor === null)
       return '';
     return [...this.#editor.children,]
       .map(function readLine(child,) {
+        // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec
         const t = child.textContent ?? '';
         return t === '\n' ? '' : t;
       },)
@@ -179,7 +191,10 @@ export class EditorPane extends HTMLElement {
       .#editor
       .children[Math.max(
         0,
-        Math.min(line - 1, this.#editor.children.length - 1,),
+        Math.min(
+          line - 1,
+          this.#editor.children.length - 1,
+        ),
       )];
     if (child !== undefined)
       child.scrollIntoView({ block: 'center', },);
@@ -333,7 +348,12 @@ export class EditorPane extends HTMLElement {
       return;
     setSel({
       editor: this.#editor,
-      coords: { startLine, startCharacter, endLine, endCharacter, },
+      coords: {
+        startLine,
+        startCharacter,
+        endLine,
+        endCharacter,
+      },
     },);
   }
   /**
@@ -541,7 +561,10 @@ export class EditorPane extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent(
         'contentchange',
-        { bubbles: true, composed: true, },
+        {
+          bubbles: true,
+          composed: true,
+        },
       ),
     );
   }

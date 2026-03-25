@@ -56,9 +56,19 @@ export function collectHighlightRanges({
   highlightTree(
     tree,
     editorHighlighter,
-    function collectRange(from, to, group,) {
-    const startLine = findLineForOffset({ offset: from, lineStarts, },);
-    const endLine = findLineForOffset({ offset: to, lineStarts, },);
+    function collectRange(
+      from,
+      to,
+      group,
+    ) {
+      const startLine = findLineForOffset({
+        offset: from,
+        lineStarts,
+      },);
+      const endLine = findLineForOffset({
+        offset: to,
+        lineStarts,
+      },);
 
     for (let lineIndex = startLine; lineIndex <= endLine; lineIndex++) {
       const div = children[lineIndex];
@@ -88,13 +98,28 @@ export function collectHighlightRanges({
         continue;
 
       const range = new Range();
-      range.setStart(textNode, Math.min(rangeStart, nodeLength,),);
-      range.setEnd(textNode, Math.min(rangeEnd, nodeLength,),);
+      range.setStart(
+        textNode,
+        Math.min(
+          rangeStart,
+          nodeLength,
+        ),
+      );
+      range.setEnd(
+        textNode,
+        Math.min(
+          rangeEnd,
+          nodeLength,
+        ),
+      );
 
       let groupRanges = rangesByGroup.get(group,);
       if (groupRanges === undefined) {
         groupRanges = [];
-        rangesByGroup.set(group, groupRanges,);
+        rangesByGroup.set(
+          group,
+          groupRanges,
+        );
       }
       groupRanges.push(range,);
     }

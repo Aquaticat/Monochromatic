@@ -72,8 +72,10 @@ export async function dispatchMessage(
   {
     sendJson({
       peer,
-      message: { type: 'error',
-        message: 'invalid message: missing or non-string "type" field', },
+      message: {
+        type: 'error',
+        message: 'invalid message: missing or non-string "type" field',
+      },
     },);
     return;
   }
@@ -88,7 +90,11 @@ export async function dispatchMessage(
       },);
       sendJson({
         peer,
-        message: { type: 'fileContent', id: parsed.id, ...result, },
+        message: {
+          type: 'fileContent',
+          id: parsed.id,
+          ...result,
+        },
       },);
       if (lspManager !== null && result.kind === 'text')
         await lspManager.didOpen({
@@ -111,7 +117,11 @@ export async function dispatchMessage(
         dirWatcher.suppressPath({ path: absolutePath, },);
       sendJson({
         peer,
-        message: { type: 'saved', id: parsed.id, path: parsed.path, },
+        message: {
+          type: 'saved',
+          id: parsed.id,
+          path: parsed.path,
+        },
       },);
       if (lspManager !== null)
         await lspManager.didSave({ path: parsed.path, },);
@@ -125,7 +135,11 @@ export async function dispatchMessage(
       },);
       sendJson({
         peer,
-        message: { type: 'dirListing', id: parsed.id, ...result, },
+        message: {
+          type: 'dirListing',
+          id: parsed.id,
+          ...result,
+        },
       },);
       return;
     }
@@ -149,8 +163,11 @@ export async function dispatchMessage(
       if (!controller.signal.aborted) {
         sendJson({
           peer,
-          message: { type: 'searchResults', id: parsed
-          .id, ...result, },
+          message: {
+            type: 'searchResults',
+            id: parsed.id,
+            ...result,
+          },
         },);
       }
       return;
@@ -192,7 +209,11 @@ export async function dispatchMessage(
     if (requestId !== undefined) {
       sendJson({
         peer,
-        message: { type: 'error', id: requestId, message: errorMessage, },
+        message: {
+          type: 'error',
+          id: requestId,
+          message: errorMessage,
+        },
       },);
     }
   }

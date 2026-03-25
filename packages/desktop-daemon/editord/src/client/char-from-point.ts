@@ -44,8 +44,8 @@ export function findCharAtX({
   let current: Node | null = firstTextNode;
   while (current !== null) {
     const len = current.textContent?.length ?? 0;
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TreeWalker SHOW_TEXT yields Text nodes
     textNodes.push({
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TreeWalker SHOW_TEXT yields Text nodes
       node: current as Text,
       start: total,
       length: len,

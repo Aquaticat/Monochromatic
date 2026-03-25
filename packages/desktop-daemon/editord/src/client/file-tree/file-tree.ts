@@ -143,7 +143,10 @@ export class FileTree extends HTMLElement {
     },);
     this.#contextMenu = new ContextMenu();
     this.#shadow.replaceChildren(
-      h({ tag: 'style', text: STYLES, },),
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
       this.#tree,
     );
 
@@ -157,16 +160,23 @@ export class FileTree extends HTMLElement {
     this.#tree.addEventListener(
       'dir-open',
       function handleDirOpen(event,) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from TreeDirEntry
-      loadDirChildren({ detail: (event as CustomEvent<DirOpenDetail>).detail,
-        state: tree.#state, },);
+      loadDirChildren({
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from TreeDirEntry
+        detail: (event as CustomEvent<DirOpenDetail>).detail,
+        state: tree.#state,
+      },);
     },
     );
     this.#tree.addEventListener(
       'show-context',
       function handleShowContext(event,) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from tree entries
-      const { x, y, path, kind, } = (event as CustomEvent<ShowContextDetail>).detail;
+      const {
+        x,
+        y,
+        path,
+        kind,
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from tree entries
+      } = (event as CustomEvent<ShowContextDetail>).detail;
       if (tree.#contextMenu === null)
         return;
       /**
@@ -178,12 +188,22 @@ export class FileTree extends HTMLElement {
         tree.#onContextAction?.(action,);
       }
       if (kind === 'file') {
-        showFileContextMenu({ contextMenu: tree.#contextMenu, x, y, path,
-          onAction: fireAction, },);
+        showFileContextMenu({
+          contextMenu: tree.#contextMenu,
+          x,
+          y,
+          path,
+          onAction: fireAction,
+        },);
       }
       else {
-        showDirContextMenu({ contextMenu: tree.#contextMenu, x, y, path,
-          onAction: fireAction, },);
+        showDirContextMenu({
+          contextMenu: tree.#contextMenu,
+          x,
+          y,
+          path,
+          onAction: fireAction,
+        },);
       }
     },
     );

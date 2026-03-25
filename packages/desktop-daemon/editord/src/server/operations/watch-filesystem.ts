@@ -96,13 +96,20 @@ export class DirWatcher {
     try {
       const fsWatcher = watch(
         path,
-        function handleWatchEvent(eventType, filename,) {
-        if (typeof filename !== 'string')
-          return;
-        if (isIgnored({ name: filename, },))
-          return;
-        self.#schedule({ dirPath: path, filename, eventType, },);
-      },
+        function handleWatchEvent(
+          eventType,
+          filename,
+        ) {
+          if (typeof filename !== 'string')
+            return;
+          if (isIgnored({ name: filename, },))
+            return;
+          self.#schedule({
+            dirPath: path,
+            filename,
+            eventType,
+          },);
+        },
       );
 
       fsWatcher.on(
@@ -187,14 +194,20 @@ export class DirWatcher {
     const timer = globalThis.setTimeout(
       function emitDebounced() {
       self.#pending.delete(fullPath,);
-      void self.#resolveAndEmit({ fullPath, eventType, },);
+      void self.#resolveAndEmit({
+        fullPath,
+        eventType,
+      },);
     },
       DEBOUNCE_MS,
     );
 
     this.#pending.set(
       fullPath,
-      { timer, eventType, },
+      {
+        timer,
+        eventType,
+      },
     );
   }
 
