@@ -3,8 +3,8 @@
  *
  * Walks up from a starting directory to find the nearest ancestor
  * containing one of the specified config files.
- * Results are cached so repeated lookups from the same directory
- * resolve instantly without filesystem access.
+ * Results are cached with a TTL so new config files are picked up
+ * without restarting the server.
  */
 
 import { existsSync, } from 'node:fs';
@@ -13,11 +13,23 @@ import {
   join,
 } from 'node:path';
 
+/** Cache entry with a timestamp for TTL-based eviction. */
+type CacheEntry = {
+  /** Cached result: project root path or null. */
+  value: string | null;
+  /** Timestamp when the entry was stored (milliseconds since epoch). */
+  storedAt: number;
+};
+
+/** Time-to-live for cache entries (milliseconds). */
+const CACHE_TTL_MS = 60_000;
+
 /**
- * Cached results keyed by `"startDir\0file1\0file2"`.
- * Value is the found root directory or `null`.
+ * Cached results keyed by `"startDir\0ceiling\0file1\0file2"`.
+ * Entries expire after {@link CACHE_TTL_MS} so newly created
+ * config files are picked up without restarting the server.
  */
-const rootCache = new Map<string, string | null>();
+const rootCache = new Map<string, CacheEntry>();
 
 /**
  * Finds the nearest ancestor directory containing one of the config files.
@@ -48,8 +60,8 @@ export function findProjectRoot({
 },): string | null {
   const cacheKey = `${startDir}\0${ceiling}\0${configFiles.join('\0',)}`;
   const cached = rootCache.get(cacheKey,);
-  if (cached !== undefined)
-    return cached;
+  if (cached !== undefined && Date.now() - cached.storedAt < CACHE_TTL_MS)
+    return cached.value;
 
   let dir = startDir;
   while (true) {
@@ -60,7 +72,10 @@ export function findProjectRoot({
       ),)) {
         rootCache.set(
           cacheKey,
-          dir,
+          {
+            value: dir,
+            storedAt: Date.now(),
+          },
         );
         return dir;
       }
@@ -76,7 +91,10 @@ export function findProjectRoot({
 
   rootCache.set(
     cacheKey,
-    null,
+    {
+      value: null,
+      storedAt: Date.now(),
+    },
   );
   return null;
 }

@@ -19,10 +19,12 @@ import type { LspManager, } from './lsp/lsp-manager.ts';
 import type { DirWatcher, } from './operations/watch-filesystem.ts';
 import {
   dispatchMessage,
-  type Peer,
   peerSearchControllers,
-  sendJson,
 } from './ws-dispatch.ts';
+import {
+  type Peer,
+  sendJson,
+} from './ws-send.ts';
 
 /** Tagged logger for the WebSocket subsystem. */
 const l = tagged({

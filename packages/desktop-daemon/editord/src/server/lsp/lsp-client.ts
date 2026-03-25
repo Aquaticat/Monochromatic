@@ -28,14 +28,6 @@ import {
 import type { LspServerCapabilities, } from './types.ts';
 
 /**
- * Client for a single LSP server process.
- *
- * Spawns the process, manages the JSON-RPC framing over stdio,
- * and provides request/notification methods. Incoming server
- * notifications (e.g. `textDocument/publishDiagnostics`) are
- * forwarded to the `onNotification` callback.
- */
-/**
  * Timeout for LSP feature requests such as hover, completion,
  * inlay hints, and navigation (milliseconds).
  * Shorter than the client-side WebSocket timeout (30 s) so
@@ -44,6 +36,14 @@ import type { LspServerCapabilities, } from './types.ts';
  */
 export const LSP_FEATURE_TIMEOUT_MS = 10_000;
 
+/**
+ * Client for a single LSP server process.
+ *
+ * Spawns the process, manages the JSON-RPC framing over stdio,
+ * and provides request/notification methods. Incoming server
+ * notifications (e.g. `textDocument/publishDiagnostics`) are
+ * forwarded to the `onNotification` callback.
+ */
 export class LspClient {
   /** Child process handle. */
   #proc: ChildProcess;

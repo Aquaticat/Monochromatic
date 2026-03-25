@@ -7,10 +7,7 @@
  * detected by null-byte inspection and rendered as a hex dump.
  */
 
-import {
-  open as fsOpen,
-  readFile,
-} from 'node:fs/promises';
+import { open as fsOpen, } from 'node:fs/promises';
 
 import type { FileKind, } from '../../protocol.ts';
 import { assertWithinRoot, } from './assert-within-root.ts';
@@ -107,10 +104,35 @@ export async function openFile(
     };
   }
 
-  const buffer = await readFile(absolutePath,);
+  /** Read the remainder from the already-open handle instead of re-reading the full file. */
+  const { size, } = await handle.stat();
+  const remaining = size - bytesRead;
+  if (remaining <= 0) {
+    return {
+      kind: 'text',
+      path: absolutePath,
+      content: probe.subarray(
+        0,
+        bytesRead,
+      ).toString('utf8',),
+    };
+  }
+  const tail = Buffer.alloc(remaining,);
+  await handle.read(
+    tail,
+    0,
+    remaining,
+    bytesRead,
+  );
   return {
     kind: 'text',
     path: absolutePath,
-    content: buffer.toString('utf8',),
+    content: Buffer.concat([
+      probe.subarray(
+        0,
+        bytesRead,
+      ),
+      tail,
+    ],).toString('utf8',),
   };
 }

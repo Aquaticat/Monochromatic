@@ -62,7 +62,11 @@ function resolvePort(): number {
   return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
-/** Auth token for WebSocket connections, generated fresh each startup. */
+/**
+ * Auth token for WebSocket connections, generated fresh each startup.
+ * Passed via URL query string; acceptable for localhost-only access
+ * but exposes the token in browser history and the Referer header.
+ */
 const AUTH_TOKEN = crypto.randomUUID();
 
 /** Highest writable ancestor directory, used as the file tree root. */

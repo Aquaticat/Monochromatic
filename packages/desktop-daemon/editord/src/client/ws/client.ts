@@ -2,7 +2,8 @@
  * WebSocket client for communicating with editord.
  *
  * Provides typed request/response messaging with automatic correlation
- * via client-generated request IDs. Rejects pending requests on close.
+ * via client-generated request IDs. Rejects pending requests on close
+ * and reconnects automatically with exponential backoff.
  */
 
 import type {
@@ -39,6 +40,19 @@ const REQUEST_TIMEOUT_MS = 30_000;
 
 //endregion Pending request tracking
 
+//region Reconnect constants
+
+/** Initial delay before the first reconnection attempt (milliseconds). */
+const RECONNECT_BASE_MS = 1_000;
+
+/** Maximum delay between reconnection attempts (milliseconds). */
+const RECONNECT_MAX_MS = 16_000;
+
+/** Multiplier applied to the reconnect delay after each failed attempt. */
+const RECONNECT_BACKOFF_FACTOR = 2;
+
+//endregion Reconnect constants
+
 /**
  * Typed WebSocket client for editord communication.
  *
@@ -46,6 +60,7 @@ const REQUEST_TIMEOUT_MS = 30_000;
  * provides `request()` for correlated request/response pairs, and
  * invokes `onFileChanged` for server push notifications.
  * Pending requests are automatically rejected when the connection closes.
+ * Reconnects automatically with exponential backoff when the connection drops.
  */
 export class EditorWsClient {
   /** Underlying WebSocket connection. */
@@ -82,7 +97,13 @@ export class EditorWsClient {
     null;
 
   /** Resolves when the WebSocket connection is established and authenticated. */
-  readonly ready: Promise<void>;
+  ready: Promise<void>;
+
+  /** WebSocket URL for reconnection. */
+  #wsUrl: string;
+
+  /** Current reconnect delay in milliseconds; reset on successful connection. */
+  #reconnectDelay = RECONNECT_BASE_MS;
 
   /**
    * Creates a new WebSocket client and connects to editord.
@@ -98,10 +119,14 @@ export class EditorWsClient {
     port: string;
     token: string
   },) {
-    const wsUrl = `ws://localhost:${port}/_ws?token=${token}`;
-    this.#ws = new WebSocket(wsUrl,);
+    this.#wsUrl = `ws://localhost:${port}/_ws?token=${token}`;
+    this.#ws = new WebSocket(this.#wsUrl,);
+    this.ready = this.#wireConnection();
+  }
 
-    this.ready = this.#performHandshake();
+  /** Wires message, close, and handshake handlers onto the current WebSocket. */
+  #wireConnection(): Promise<void> {
+    const handshakePromise = this.#performHandshake();
     this.#ws.addEventListener(
       'message',
       this.#handleMessage.bind(this,),
@@ -110,6 +135,7 @@ export class EditorWsClient {
       'close',
       this.#handleClose.bind(this,),
     );
+    return handshakePromise;
   }
 
   /** Performs the server handshake using the extracted handshake module. */
@@ -236,8 +262,8 @@ export class EditorWsClient {
   }
 
   /**
-   * Rejects all pending requests when the WebSocket connection closes.
-   * Prevents promise leaks from requests that will never receive a response.
+   * Rejects all pending requests when the WebSocket connection closes,
+   * then schedules a reconnection attempt with exponential backoff.
    */
   #handleClose(): void {
     const closeError = new Error('WebSocket connection closed',);
@@ -246,5 +272,37 @@ export class EditorWsClient {
       pending.reject(closeError,);
     }
     this.#pending.clear();
+    this.#scheduleReconnect();
+  }
+
+  /**
+   * Schedules a reconnection attempt after an exponentially increasing delay.
+   * Resets the delay to {@link RECONNECT_BASE_MS} on successful reconnection.
+   */
+  #scheduleReconnect(): void {
+    const delay = this.#reconnectDelay;
+    this.#reconnectDelay = Math.min(
+      delay * RECONNECT_BACKOFF_FACTOR,
+      RECONNECT_MAX_MS,
+    );
+    l.info(`reconnecting in ${delay}ms`,);
+    const client = this;
+    globalThis.setTimeout(
+      function attemptReconnect() {
+        client.#ws = new WebSocket(client.#wsUrl,);
+        client.ready = client.#wireConnection();
+        void (async function awaitReconnect(): Promise<void> {
+          try {
+            await client.ready;
+            client.#reconnectDelay = RECONNECT_BASE_MS;
+            l.info('reconnected',);
+          }
+          catch {
+            l.error('reconnect handshake failed',);
+          }
+        })();
+      },
+      delay,
+    );
   }
 }

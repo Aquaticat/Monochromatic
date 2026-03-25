@@ -52,7 +52,7 @@ export async function openInTerminal(
   else if (currentPlatform === 'win32') {
     await spawnDetached({
       command: 'cmd',
-      args: ['/c', 'start', 'cmd', '/k', `cd /d ${absolutePath}`,],
+      args: ['/c', 'start', 'cmd', '/k', `cd /d "${absolutePath}"`,],
       cwd: absolutePath,
     },);
   }

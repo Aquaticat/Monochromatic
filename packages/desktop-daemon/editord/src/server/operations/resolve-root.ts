@@ -46,6 +46,10 @@ function collectAncestors(start: string,): string[] {
  * then returns the highest (most distant) ancestor that succeeds.
  * Falls back to cwd if no parent is writable.
  *
+ * On standard Linux systems, this is typically `/home/user`, so the file
+ * tree spans the entire home directory. In containers or VMs where `/`
+ * is writable, the tree spans the whole filesystem.
+ *
  * @returns absolute path to the highest writable ancestor
  *
  * @example

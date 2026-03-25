@@ -49,8 +49,10 @@ export function spawnDetached(
       'error',
       reject,
     );
-    /** Resolve on next tick — if spawn failed, the error event fires synchronously. */
-    queueMicrotask(resolve,);
+    child.on(
+      'spawn',
+      resolve,
+    );
   },);
 }
 // oxlint-enable eslint-plugin-promise/avoid-new

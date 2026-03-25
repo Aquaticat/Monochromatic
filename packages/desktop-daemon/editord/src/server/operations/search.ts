@@ -119,60 +119,6 @@ function searchFiles({
   },);
 }
 
-//endregion Search functions
-
-//region Main export
-
-/**
- * Searches for files and file contents matching the query.
- * Returns file-path matches first, then content matches.
- *
- * @param rootDir - root directory for path containment and search scope
- *
- * @param query - search query string
- *
- * @param signal - optional abort signal; aborts both rg processes when triggered
- *
- * @returns search results with file-path matches before content matches
- *
- * @throws when `rg` is not installed or encounters an unexpected error
- *
- * @example
- * ```ts
- * const { results } = await search({ rootDir: '/project', query: 'index' });
- * // results: [{ kind: 'file', path: '/project/src/index.ts' }, { kind: 'content', ... }]
- * ```
- */
-export async function search({
-  rootDir,
-  query,
-  signal,
-}: {
-  rootDir: string;
-  query: string;
-  signal?: AbortSignal;
-},): Promise<SearchOperationResult> {
-  l.info(`searching for "${query}"`,);
-
-  const [files, contents,] = await Promise.all([
-    searchFiles({
-      rootDir,
-      query,
-      signal,
-    },),
-    searchContents({
-      rootDir,
-      query,
-      signal,
-    },),
-  ],);
-
-  return { results: [
-    ...files,
-    ...contents,
-  ], };
-}
-
 /**
  * Searches file contents for lines matching the query.
  * Uses `rg --json --smart-case --max-count 1` for one match per file.
@@ -231,6 +177,60 @@ function searchContents({
       }
     },
   },);
+}
+
+//endregion Search functions
+
+//region Main export
+
+/**
+ * Searches for files and file contents matching the query.
+ * Returns file-path matches first, then content matches.
+ *
+ * @param rootDir - root directory for path containment and search scope
+ *
+ * @param query - search query string
+ *
+ * @param signal - optional abort signal; aborts both rg processes when triggered
+ *
+ * @returns search results with file-path matches before content matches
+ *
+ * @throws when `rg` is not installed or encounters an unexpected error
+ *
+ * @example
+ * ```ts
+ * const { results } = await search({ rootDir: '/project', query: 'index' });
+ * // results: [{ kind: 'file', path: '/project/src/index.ts' }, { kind: 'content', ... }]
+ * ```
+ */
+export async function search({
+  rootDir,
+  query,
+  signal,
+}: {
+  rootDir: string;
+  query: string;
+  signal?: AbortSignal;
+},): Promise<SearchOperationResult> {
+  l.info(`searching for "${query}"`,);
+
+  const [files, contents,] = await Promise.all([
+    searchFiles({
+      rootDir,
+      query,
+      signal,
+    },),
+    searchContents({
+      rootDir,
+      query,
+      signal,
+    },),
+  ],);
+
+  return { results: [
+    ...files,
+    ...contents,
+  ], };
 }
 
 //endregion Main export

@@ -89,7 +89,18 @@ export class DiagnosticStore {
     const previous = sourceMap.get(source,);
     if (previous !== undefined
       && previous.length === diagnostics.length
-      && JSON.stringify(previous,) === JSON.stringify(diagnostics,))
+      && previous.every(function matchesDiagnostic(prev, i,) {
+        const next = diagnostics[i];
+        if (next === undefined)
+          return false;
+        return prev.message === next.message
+          && prev.severity === next.severity
+          && prev.source === next.source
+          && prev.range.start.line === next.range.start.line
+          && prev.range.start.character === next.range.start.character
+          && prev.range.end.line === next.range.end.line
+          && prev.range.end.character === next.range.end.character;
+      },))
     {
       return;
     }

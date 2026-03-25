@@ -5,7 +5,10 @@
  * and the function that creates an initialized LSP client.
  */
 
-import { join, } from 'node:path';
+import {
+  delimiter,
+  join,
+} from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
 import type { Logger, } from '../log.ts';
@@ -96,7 +99,7 @@ export async function spawnLspClient({
   );
   const env = {
     ...process.env,
-    PATH: `${binPath}:${process.env.PATH ?? ''}`,
+    PATH: `${binPath}${delimiter}${process.env.PATH ?? ''}`,
   };
   const rootUri = pathToFileURL(root,).href;
   try {

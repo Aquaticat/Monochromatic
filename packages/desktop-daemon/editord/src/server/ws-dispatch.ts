@@ -24,11 +24,6 @@ import {
   sendJson,
 } from './ws-send.ts';
 
-export {
-  type Peer,
-  sendJson,
-};
-
 /** Tagged logger for the dispatch subsystem. */
 const l = tagged({
   tag: 'ws-dispatch',
