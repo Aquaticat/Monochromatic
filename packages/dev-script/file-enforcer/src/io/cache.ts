@@ -7,7 +7,7 @@ import { resolve, } from 'node:path';
  * Watch mode invalidates specific entries when it knows which file changed,
  * so subsequent `readCached()` calls re-read only the invalidated files.
  */
-export const readCache = new Map<string, string>();
+export const readCache: Map<string, string> = new Map<string, string>();
 
 /**
  * Removes specific paths from the read cache so the next `readCached()`
@@ -36,8 +36,14 @@ export async function readCached(filePath: string,): Promise<string> {
   const cached = readCache.get(absPath,);
   if (cached !== undefined)
     return cached;
-  const content = await readFile(absPath, 'utf8',);
-  readCache.set(absPath, content,);
+  const content = await readFile(
+    absPath,
+    'utf8',
+  );
+  readCache.set(
+    absPath,
+    content,
+  );
   return content;
 }
 
@@ -50,6 +56,12 @@ export async function readCached(filePath: string,): Promise<string> {
  *
  * @param content - Content that was written to the file
  */
-export function updateCache(filePath: string, content: string,): void {
-  readCache.set(resolve(filePath,), content,);
+export function updateCache(
+  filePath: string,
+  content: string,
+): void {
+  readCache.set(
+    resolve(filePath,),
+    content,
+  );
 }

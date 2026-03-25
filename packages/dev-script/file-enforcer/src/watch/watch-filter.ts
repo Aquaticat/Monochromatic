@@ -24,7 +24,11 @@ export type EventKind = 'source' | 'protected' | 'ignore';
  */
 export function watchDirs(configPath: string,): Set<string> {
   /** All paths that need monitoring: reads, writes, and the config */
-  const allPaths = [...reads, ...writes, resolve(configPath,),];
+  const allPaths = [
+    ...reads,
+    ...writes,
+    resolve(configPath,),
+  ];
   return new Set(allPaths.map(function toDir(filePath,): string {
     return dirname(filePath,);
   },),);
@@ -53,7 +57,10 @@ export async function classifyEvent(
   configPath: string,
 ): Promise<EventKind> {
   /** Absolute path of the changed file */
-  const absolutePath = resolve(join(watchedDir, filename,),);
+  const absolutePath = resolve(join(
+    watchedDir,
+    filename,
+  ),);
 
   if (writes.has(absolutePath,)) {
     /** Timestamp of our last actual write, if any */
@@ -66,8 +73,11 @@ export async function classifyEvent(
     try {
       /** File metadata for mtime comparison */
       const fileStat = await stat(absolutePath,);
-      // External edit: file was modified after our last write
-      if (fileStat.mtimeMs > ourWriteTime)
+      // External edit: file was modified after our last write.
+      // Floor mtimeMs because stat() returns sub-ms precision (float)
+      // while Date.now() returns whole ms (integer), causing false positives
+      // when both timestamps fall within the same millisecond.
+      if (Math.floor(fileStat.mtimeMs,) > ourWriteTime)
         return 'protected';
     }
     catch {
@@ -103,5 +113,9 @@ export async function shouldTrigger(
   watchedDir: string,
   configPath: string,
 ): Promise<boolean> {
-  return (await classifyEvent(filename, watchedDir, configPath,)) !== 'ignore';
+  return (await classifyEvent(
+    filename,
+    watchedDir,
+    configPath,
+  )) !== 'ignore';
 }
