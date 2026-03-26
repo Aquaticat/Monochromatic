@@ -33,13 +33,16 @@ lowercase `-j` (filter-prog) to uppercase `-J`, while taking `-j` for its own `-
 
 ### Solution
 
-Call `watchexec` directly instead of `mise watch`:
+Call `watchexec` directly instead of `mise watch`,
+and run the server command directly (not through `mise run`):
 
 ```toml
 # mise.toml
 [tasks."dev:server"]
 # Calls watchexec directly because mise drops --no-meta and -j flags.
-run = "watchexec -w src/server --no-meta -j @src/server/content-changed.jaq -r -- mise run start:server"
+# Runs bun directly (not `mise run start:server`) to keep a flat process tree
+# so SIGTERM reaches the server process -- see "EADDRINUSE from deep process trees" below.
+run = "watchexec -w src/server --no-meta -j @src/server/content-changed.jaq -r -- bun src/server/index.ts"
 ```
 
 Note the flag difference: use lowercase `-j` (watchexec native) not uppercase `-J` (mise alias).
@@ -155,3 +158,40 @@ on the next manual start.
   which deleted the file before the new process could read it.
 - Using the same cleanup function for both signals -- SIGTERM must preserve the
   file, SIGINT must delete it. Split into `handleSigterm` and `handleSigint`.
+
+---
+
+## EADDRINUSE from deep process trees on restart
+
+### Problem
+
+After switching to `watchexec` directly, restarts fail with `EADDRINUSE`
+because the previous server process still holds the port.
+
+### Root cause
+
+When the inner command is `mise run start:server`, the process tree is:
+
+```
+watchexec → mise → nu (nushell) → bun src/server/index.ts
+```
+
+watchexec sends SIGTERM to its direct child (`mise`) on restart.
+mise exits, but the signal does not propagate through nushell to `bun`.
+The bun process orphans and keeps the port bound.
+
+### Solution
+
+Run `bun` directly as the inner command so watchexec's SIGTERM reaches it:
+
+```
+watchexec -w src/server -r -- bun src/server/index.ts
+```
+
+Process tree: `watchexec → bun`. SIGTERM goes directly to bun,
+the signal handler runs, the port is released before the new instance starts.
+
+### What does not work
+
+- `watchexec -r -- mise run start:server` -- SIGTERM does not propagate
+  through the `mise → nushell → bun` chain, leaving orphaned bun processes
