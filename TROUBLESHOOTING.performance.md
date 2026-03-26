@@ -10,6 +10,13 @@ Build system performance optimizations
 - File system checks vs binary execution
 - Cross-platform optimization strategies
 
+### [tsdown / DTS Bundling](TROUBLESHOOTING.tsdown.md)
+Why tsdown builds take 360+ms despite benchmarks showing 36ms
+- DTS bundling via `rolldown-plugin-dts` is the bottleneck (~340ms for module-es)
+- OXC isolated declarations already active; no faster code path available
+- JS event loop serialization of NAPI callbacks during the DTS second pass
+- Packages that are not libraries should set `dts: false`
+
 ### [Logging Performance](TROUBLESHOOTING.performance.logging.md)  
 Runtime logging performance issues
 - Function entry tracing migration (l.trace → l.debug)
