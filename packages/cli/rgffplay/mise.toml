@@ -1,0 +1,13 @@
+[tasks.run]
+description = "Run rgffplay"
+usage = 'arg "[args]" var=#true help="Name words to search for"'
+run = "bun src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks.'lint:types']
+extends = "lint:types"
+
+[tasks.'lint:oxlint']
+extends = "lint:oxlint"
