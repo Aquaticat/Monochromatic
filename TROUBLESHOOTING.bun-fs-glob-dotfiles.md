@@ -1,6 +1,6 @@
 # Bun `node:fs` glob silently skips dot files
 
-Status: **root cause identified** -- no upstream issue filed yet
+Status: **root cause identified** -- upstream issue filed: [oven-sh/bun#28021](https://github.com/oven-sh/bun/issues/28021)
 
 ## Symptom
 

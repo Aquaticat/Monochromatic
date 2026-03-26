@@ -1,142 +1,90 @@
-# C-Like Comment Syntax Troubleshooting
+# Block comment nesting limits the JSONC parser's `*/` handling
 
-Issues with C-style comment syntax (`/* */` and `//`) that affect multiple programming languages.
+## Problem
 
-## Block Comment Limitations vs Inline Comments
+The JSONC comment-preserving parser in `packages/module/es` terminates
+block comments at the **first** `*/` encountered, even when that `*/`
+appears inside a line comment (`//`) on the same line.
 
-### Problem
-You encounter syntax errors or unexpected behavior when trying to comment out large sections of code that already contain block comments, or when trying to nest comments for documentation purposes.
+This means the parser cannot correctly handle:
 
-### Root Cause
-Block comments (`/* */`) cannot be nested in most C-style languages (JavaScript, TypeScript, C, C++, Java, C#, PHP, etc.). Once a `/*` is opened, the first `*/` encountered closes the entire comment block, regardless of any `/*` tokens inside.
-
-### Examples of the Issue
-
-#### Nested Block Comments Don't Work
-```js
+```jsonc
 /*
-  This is a comment
-  /* This inner comment breaks everything */
-  Code here is no longer commented out!
+  some config
+  // this line has */ in it
+  more config
 */
-```
-The code after the inner `*/` will be treated as regular code, not as part of the comment.
-
-#### Commenting Out Code with Existing Block Comments
-```js
-/*  // Trying to comment out this entire block
-function processData(input) {
-  /* This is an existing block comment about the logic */
-  return input.toUpperCase();
-}
-*/  // This closes at the first */, leaving the rest uncommented
+{"key": "value"}
 ```
 
-### Languages Affected
-This limitation applies to most C-style syntax languages:
-- **JavaScript/TypeScript** - `/* */` and `//`
-- **C/C++** - `/* */` and `//` 
-- **Java** - `/* */` and `//`
-- **C#** - `/* */` and `//`
-- **PHP** - `/* */` and `//`
-- **Rust** - `/* */` and `//`
-- **Go** - `/* */` and `//`
-- **CSS** - `/* */` only
-- **SQL** - `/* */` and `--`
+The parser stops at the `*/` inside the `//` comment on line 3,
+leaving `in it\nmore config\n*/{"key": "value"}` as unparsed content.
 
-### Solutions
+## Root cause
 
-#### Use Inline Comments for Large Blocks
-```js
-// function processData(input) {
-//   /* This existing block comment is preserved */
-//   return input.toUpperCase();
-// }
+Block comments (`/* */`) cannot nest in C-like languages.
+The closing `*/` is always the **first** `*/` after the opening `/*`,
+regardless of surrounding context (quotes, line comments, other block comments).
+
+This is not a bug in our parser -- it matches the behavior of every
+C-family language (JavaScript, TypeScript, C, C++, Java, Rust, Go, CSS).
+From `customParsers.startsWithComment.ts` line 40:
+
+```
+// Because in all languages, */ upon first found after starting a block comment,
+// auto becomes end marker of block comment.
 ```
 
-#### Use IDE Block Comment Features
-Most IDEs provide "Toggle Block Comment" functionality that intelligently handles existing comments:
-- **VSCode**: `Shift + Alt + A` (Windows/Linux) or `Shift + Option + A` (Mac)
-- **IntelliJ/WebStorm**: `Ctrl + Shift + /` (Windows/Linux) or `Cmd + Shift + /` (Mac)
-- **Sublime Text**: `Ctrl + Shift + /` (Windows/Linux) or `Cmd + Alt + /` (Mac)
+The parser's `findBlockEndPosition` function
+(`customParsers.startsWithComment.ts:20-74`)
+does attempt to skip `*/` on lines containing `//`,
+but this heuristic is incomplete -- it can't distinguish between
+`// text */ more text` (where `*/` is inside a line comment)
+and `code */ // trailing comment` (where `*/` is real).
 
-These features typically convert to multiple inline comments when block comments would conflict.
+## Impact on the parser
 
-#### Language-Specific Alternatives
+Two test cases are skipped because of this limitation:
 
-**Python** (uses `#` for comments, no block comments by default):
-```python
-# Use triple quotes for multi-line strings that act like block comments
-"""
-This is a multi-line comment in Python
-It won't have nesting issues because it's actually a string literal
-"""
+- `customParsers.startsWithComment.unit.test.ts:396-410` --
+  block comment containing a line comment with `*/`
+- `customParsers.startsWithComment.unit.test.ts:413-428` --
+  block comment with multiple line comments containing `*/`
+
+A third test confirms the intentional behavior:
+
+- `customParsers.startsWithComment.unit.test.ts:529-538` --
+  `*/` inside quoted strings also terminates the block comment,
+  because quotes have no special meaning inside comments
+
+## Why we accepted this
+
+The subset of comment patterns that hit this edge case --
+a `*/` appearing literally inside a `//` comment that itself is inside
+a `/* */` block -- is vanishingly rare in real JSONC configuration files.
+
+Supporting it would require a full character-by-character state machine
+that tracks "inside line comment" state within block comments,
+adding complexity for a case that doesn't occur in practice.
+The current regex-based approach handles all real-world JSONC patterns
+we've encountered.
+
+## Workaround
+
+If a block comment must contain `*/`, use multiple line comments instead:
+
+```jsonc
+// some config
+// this line has */ in it
+// more config
+{"key": "value"}
 ```
 
-**HTML** (uses `<!-- -->`):
-```html
-<!-- 
-  HTML comments also cannot be nested
-  <!-- This inner comment breaks things -->
-  Content here becomes visible!
--->
-```
+Line comments (`//`) have no nesting limitations and can contain
+any characters including `*/` and `/*` without ambiguity.
 
-#### Mixed Approach for Documentation
-```js
-/**
- * Main function documentation (JSDoc/TSDoc)
- */
-function complexFunction() {
-  // Inline comment for this section
-  const step1 = processStep1();
-  
-  /* 
-   * Block comment for algorithm explanation
-   * (safe because no nested blocks)
-   */
-  const step2 = processStep2(step1);
-  
-  // Another inline comment
-  return combineResults(step1, step2);
-}
-```
+## Related
 
-### Best Practices
-1. **Prefer inline comments (`//`) for temporary code commenting** - they don't have nesting issues
-2. **Use block comments (`/* */`) only for permanent documentation** where you control the content
-3. **Use language-specific documentation comments** (JSDoc `/** */`, etc.) for function/type documentation
-4. **When commenting out large blocks, use your editor's block comment feature** rather than manual `/* */`
-5. **Be aware of language-specific comment syntax**:
-   - Python: `#` only (no block comments)
-   - HTML: `<!-- -->` (cannot nest)
-   - CSS: `/* */` only (cannot nest)
-   - Shell/Bash: `#` only
-
-### Why This Matters
-- **Code maintenance**: Large commented-out blocks are common during development and debugging
-- **Documentation**: Complex code often has mixed comment styles that can conflict  
-- **Team collaboration**: Understanding comment limitations prevents syntax errors in shared code
-- **IDE compatibility**: Proper comment usage works better with editor features and formatting tools
-- **Cross-language knowledge**: Many developers work with multiple languages that share this limitation
-
-### Language-Specific Notes
-
-#### JavaScript/TypeScript
-- Supports both `/* */` and `//`
-- JSDoc/TSDoc uses `/** */` for documentation
-- Template literals can span multiple lines as an alternative to block comments
-
-#### C/C++
-- Supports both `/* */` and `//` (C++ style comments)
-- Preprocessor directives like `#if 0` can be used to conditionally exclude code blocks
-
-#### CSS
-- Only supports `/* */` comments
-- No inline comment syntax available
-- Nesting limitations are particularly important for temporarily disabling style rules
-
-## Related Documentation
-
-- [TypeScript Troubleshooting](./TROUBLESHOOTING.typescript.md) - TypeScript-specific issues and configurations
-- [Editor Setup](./TROUBLESHOOTING.editors.md) - Editor-specific configuration and features
+- `TROUBLESHOOTING.toml.md` -- why we wrote a JSONC parser instead of using TOML
+- `customParsers.startsWithComment.ts:20-74` -- `findBlockEndPosition` implementation
+- `customParsers.startsWithComment.ts:95-144` -- inline comment handling (no nesting issues)
