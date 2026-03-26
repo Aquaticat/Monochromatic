@@ -32,6 +32,33 @@ const CACHE_TTL_MS = 60_000;
 const rootCache = new Map<string, CacheEntry>();
 
 /**
+ * Pre-computed join suffix for each config file list.
+ * Avoids re-joining the same static array on every lookup.
+ */
+const joinedConfigFilesCache = new WeakMap<readonly string[], string>();
+
+/**
+ * Returns a cached `\0`-joined string for a config file list.
+ * Since CONFIG_FILES values are static frozen arrays, this runs
+ * the join at most once per server type.
+ *
+ * @param configFiles - config file names to join
+ *
+ * @returns null-separated string of file names
+ */
+function getJoinedConfigFiles(configFiles: readonly string[],): string {
+  const cached = joinedConfigFilesCache.get(configFiles,);
+  if (cached !== undefined)
+    return cached;
+  const joined = configFiles.join('\0',);
+  joinedConfigFilesCache.set(
+    configFiles,
+    joined,
+  );
+  return joined;
+}
+
+/**
  * Finds the nearest ancestor directory containing one of the config files.
  * Stops walking at `ceiling` to prevent scanning above the file tree root.
  *
@@ -58,7 +85,7 @@ export function findProjectRoot({
   configFiles: readonly string[];
   ceiling: string;
 },): string | null {
-  const cacheKey = `${startDir}\0${ceiling}\0${configFiles.join('\0',)}`;
+  const cacheKey = `${startDir}\0${ceiling}\0${getJoinedConfigFiles(configFiles,)}`;
   const cached = rootCache.get(cacheKey,);
   if (cached !== undefined && Date.now() - cached.storedAt < CACHE_TTL_MS)
     return cached.value;

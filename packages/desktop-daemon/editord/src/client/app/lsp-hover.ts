@@ -56,8 +56,16 @@ export function wireHover(
     getCurrentFilePath: () => string | null;
   },
 ): void {
+  /** Tracks last hovered position to avoid redundant requests. */
   let lastLine = -1;
   let lastChar = -1;
+
+  /** Hides the popup and resets position tracking. */
+  function resetHover(): void {
+    hoverPopup.hide();
+    lastLine = -1;
+    lastChar = -1;
+  }
 
   /** Latest mouse event captured in the mousemove handler. */
   let latestMouseEvent: MouseEvent | null = null;
@@ -118,18 +126,14 @@ export function wireHover(
     {
       return;
     }
-    hoverPopup.hide();
-    lastLine = -1;
-    lastChar = -1;
+    resetHover();
   },
   );
 
   hoverPopup.addEventListener(
     'mouseleave',
     function handlePopupLeave() {
-    hoverPopup.hide();
-    lastLine = -1;
-    lastChar = -1;
+    resetHover();
   },
   );
 }

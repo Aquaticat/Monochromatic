@@ -5,7 +5,9 @@
  */
 
 import type { Logger, } from '../log.ts';
+import { isWithinRoot, } from '../operations/assert-within-root.ts';
 import type { LspClient, } from './lsp-client.ts';
+import { rootFromPoolKey, } from './lsp-pool-config.ts';
 
 /**
  * Shuts down and removes all pooled LSP servers whose project root
@@ -35,11 +37,11 @@ export async function shutdownPoolForPath({
   }[] = [];
 
   for (const [key, promise,] of pool.entries()) {
-    /** Key format is `"type:root"` — extract the root portion. */
-    const colonIndex = key.indexOf(':',);
-    const root = key.slice(colonIndex + 1,);
-    const rootPrefix = root.endsWith('/',) ? root : `${root}/`;
-    if (path === root || path.startsWith(rootPrefix,)) {
+    const root = rootFromPoolKey({ key, },);
+    if (isWithinRoot({
+      root,
+      path,
+    },)) {
       toRemove.push(key,);
       matching.push({
         key,

@@ -19,6 +19,8 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  *
  * @param content - full file content to write
  *
+ * @returns resolved absolute path (for callers that need it, e.g. watcher suppression)
+ *
  * @throws when the path escapes root or the file cannot be written
  */
 export async function saveFile(
@@ -31,7 +33,7 @@ export async function saveFile(
     path: string;
     content: string
   },
-): Promise<void> {
+): Promise<string> {
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
@@ -41,4 +43,5 @@ export async function saveFile(
     content,
     'utf8',
   );
+  return absolutePath;
 }

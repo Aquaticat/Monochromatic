@@ -66,6 +66,10 @@ export class SearchOverlay extends HTMLElement {
     debouncedSearch: null,
     searchGeneration: 0,
   };
+  /** Bound global keydown handler for cleanup in disconnectedCallback. */
+  #boundKeydown: ((event: KeyboardEvent,) => void) | null = null;
+  /** Bound global keyup handler for cleanup in disconnectedCallback. */
+  #boundKeyup: ((event: KeyboardEvent,) => void) | null = null;
   /** Callback that performs a search and returns results. */
   onSearch: ((query: string,) => Promise<SearchResult[]>) | null = null;
   /** Callback that returns the current search scope directory. */
@@ -137,16 +141,11 @@ export class SearchOverlay extends HTMLElement {
       },),
       this.#dialog,
     );
-    document.addEventListener(
-      'keydown',
-      function handleGlobalKeydown(event,) {
+    this.#boundKeydown = function handleGlobalKeydown(event: KeyboardEvent,): void {
       if (event.key !== 'Shift')
         overlay.#interveningKey = true;
-    },
-    );
-    document.addEventListener(
-      'keyup',
-      function handleGlobalKeyup(event,) {
+    };
+    this.#boundKeyup = function handleGlobalKeyup(event: KeyboardEvent,): void {
       if (event.key !== 'Shift')
         return;
       const now = Date.now();
@@ -161,8 +160,29 @@ export class SearchOverlay extends HTMLElement {
       }
       overlay.#lastShiftUp = now;
       overlay.#interveningKey = false;
-    },
+    };
+    document.addEventListener(
+      'keydown',
+      this.#boundKeydown,
     );
+    document.addEventListener(
+      'keyup',
+      this.#boundKeyup,
+    );
+  }
+
+  /** Removes global keyboard listeners added in connectedCallback. */
+  disconnectedCallback(): void {
+    if (this.#boundKeydown !== null)
+      document.removeEventListener(
+        'keydown',
+        this.#boundKeydown,
+      );
+    if (this.#boundKeyup !== null)
+      document.removeEventListener(
+        'keyup',
+        this.#boundKeyup,
+      );
   }
 
   /** Opens the overlay. */
@@ -186,8 +206,14 @@ export class SearchOverlay extends HTMLElement {
       this.#dialog.close();
   }
 
-  /** Measures the width of a single monospace character. */
+  /**
+   * Measures the width of a single monospace character.
+   * Skips re-measurement when a valid cached value already exists,
+   * since the dialog font does not change between opens.
+   */
   #measureCharWidth(): void {
+    if (this.#charWidthPx > 0)
+      return;
     if (this.#dialog === null)
       return;
     const { font, } = getComputedStyle(this.#dialog,);

@@ -43,19 +43,39 @@ export function createLspParser({
   onMessage: (message: JsonRpcMessage,) => void;
   onError: (error: unknown,) => void;
 },): { feed: (chunk: Buffer,) => void; } {
+  /** Pending chunks that haven't been consolidated yet. */
+  const chunks: Buffer[] = [];
+  /** Total byte length across all pending chunks. */
+  let totalLength = 0;
+  /** Consolidated buffer — rebuilt from chunks only when needed for parsing. */
   let buffer = Buffer.alloc(0,);
   let contentLength = -1;
 
+  /**
+   * Consolidates pending chunks into a single buffer.
+   * Only copies when multiple chunks are pending, avoiding
+   * the O(N^2) cost of `Buffer.concat` on every incoming chunk.
+   */
+  function consolidate(): void {
+    if (chunks.length === 0)
+      return;
+    buffer = Buffer.concat([
+      buffer,
+      ...chunks,
+    ],);
+    chunks.length = 0;
+    totalLength = buffer.byteLength;
+  }
+
   return {
     feed(chunk: Buffer,): void {
-      buffer = Buffer.concat([
-        buffer,
-        chunk,
-      ],);
+      chunks.push(chunk,);
+      totalLength += chunk.byteLength;
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- loop exits via return when buffer is incomplete
       while (true) {
         if (contentLength === -1) {
+          consolidate();
           const headerEnd = buffer.indexOf(HEADER_SEPARATOR,);
           if (headerEnd === -1)
             return;
@@ -67,21 +87,26 @@ export function createLspParser({
           const match = CONTENT_LENGTH_PATTERN.exec(header,);
           if (match === null) {
             buffer = buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
+            totalLength = buffer.byteLength;
             continue;
           }
 
           contentLength = Number(match[1],);
           buffer = buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
+          totalLength = buffer.byteLength;
         }
 
-        if (buffer.byteLength < contentLength)
+        /** Wait for enough data before consolidating for body extraction. */
+        if (totalLength < contentLength)
           return;
+        consolidate();
 
         const json = buffer.subarray(
           0,
           contentLength,
         ).toString('utf8',);
         buffer = buffer.subarray(contentLength,);
+        totalLength = buffer.byteLength;
         contentLength = -1;
 
         try {

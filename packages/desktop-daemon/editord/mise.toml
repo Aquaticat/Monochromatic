@@ -22,7 +22,10 @@ extends = "watch:build:js:client"
 
 [tasks."watch:build:css"]
 description = "Watch h-css style modules and rebuild global CSS on change"
-run = "mise watch -w src/client -g '*.styles.ts' -r -- build:css"
+# Initial build so global.css exists before the first file change;
+# tsdown --watch does this automatically but mise watch does not.
+# Glob includes styles/*.ts to catch reset.ts and theme.ts alongside *.styles.ts.
+run = "mise run build:css; mise watch -w src/client -g '*.styles.ts' -g 'styles/*.ts' -r -- build:css"
 
 [tasks."dev"]
 description = "Start editord in watch mode (rebuilds client, restarts server)"

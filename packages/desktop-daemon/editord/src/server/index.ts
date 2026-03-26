@@ -111,6 +111,8 @@ function handleDiagnostics(
     diagnostics: WireDiagnostic[]
   },
 ): void {
+  if (connectedPeers.size === 0)
+    return;
   const message = JSON.stringify({
     type: 'diagnostics',
     path,
@@ -137,6 +139,8 @@ const lspManager = createLspManager({
  */
 const dirWatcher = new DirWatcher({
   onChange: function handleFsChange(event,): void {
+    if (connectedPeers.size === 0)
+      return;
     const message = JSON.stringify({
       type: 'fileChanged',
       path: event.path,
@@ -183,11 +187,14 @@ app.get(
 
 //endregion WebSocket
 
+/** Resolved HTTP listen port. */
+const PORT = resolvePort();
+
 /** Running HTTP server instance. */
 const _server = serve(
   app,
   {
-  port: resolvePort(),
+  port: PORT,
   plugins: [
     ws({
       resolve: async function resolveWebSocketHooks(request,) {
@@ -200,4 +207,4 @@ const _server = serve(
 },
 );
 
-httpLog.info(`listening on http://localhost:${resolvePort()}?token=${AUTH_TOKEN}`,);
+httpLog.info(`listening on http://localhost:${String(PORT,)}?token=${AUTH_TOKEN}`,);

@@ -66,21 +66,20 @@ export async function showReferences(
       line,
       character,
     },);
-    if (!('locations' in response)) {
-      showCursorToast({
-        message: 'No usages found',
-        rect,
-      },);
-      return;
-    }
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'locations' check
-    const { locations, } = response as {
-      locations: {
-        path: string;
-        line: number;
-        character: number
-      }[];
-    };
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'locations' check; falls back to empty array when field is absent
+    const locations: {
+      path: string;
+      line: number;
+      character: number;
+    }[] = 'locations' in response
+      ? (response as {
+        locations: {
+          path: string;
+          line: number;
+          character: number;
+        }[];
+      }).locations
+      : [];
     refLog.info(`references: ${locations.length} usage(s) found`,);
     if (locations.length === 0) {
       showCursorToast({

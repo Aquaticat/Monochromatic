@@ -8,6 +8,27 @@
 import { resolve, } from 'node:path';
 
 /**
+ * Tests whether an absolute path is within the given root directory.
+ *
+ * @param root - absolute root directory path
+ *
+ * @param path - absolute path to test
+ *
+ * @returns true when `path` equals `root` or is a descendant of it
+ */
+export function isWithinRoot({
+  root,
+  path,
+}: {
+  root: string;
+  path: string;
+},): boolean {
+  /** Trailing separator ensures `/home/userX/...` doesn't match `/home/user`. */
+  const rootPrefix = root.endsWith('/',) ? root : `${root}/`;
+  return path === root || path.startsWith(rootPrefix,);
+}
+
+/**
  * Resolves a path and asserts it falls within the root directory.
  *
  * @param rootDir - absolute path to the allowed root
@@ -37,10 +58,11 @@ export function assertWithinRoot(
   },
 ): string {
   const absolute = resolve(path,);
-  /** Trailing separator ensures `/home/userX/...` doesn't match `/home/user`. */
-  const rootPrefix = rootDir.endsWith('/',) ? rootDir : `${rootDir}/`;
 
-  if (absolute !== rootDir && !absolute.startsWith(rootPrefix,))
+  if (!isWithinRoot({
+    root: rootDir,
+    path: absolute,
+  },))
     throw new Error(`path escapes root: ${absolute}`,);
 
   return absolute;

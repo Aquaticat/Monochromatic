@@ -133,13 +133,21 @@ fileTree.onContextAction = function handleContextAction(action: ContextAction,):
     }
   })();
 };
-searchOverlay.getRootDir = function getScope(): string {
+/**
+ * Returns the search scope: selected directory if any, otherwise the root.
+ *
+ * @returns absolute directory path to scope the search within
+ */
+function resolveSearchScope(): string {
   return fileTree.selectedDir !== '' ? fileTree.selectedDir : ws.rootDir;
+}
+searchOverlay.getRootDir = function getScope(): string {
+  return resolveSearchScope();
 };
 searchOverlay.onSearch = async function handleSearch(
   query: string,
 ): Promise<SearchResult[]> {
-  const scope = fileTree.selectedDir !== '' ? fileTree.selectedDir : ws.rootDir;
+  const scope = resolveSearchScope();
   const r = await ws.request({
     type: 'search',
     query,

@@ -9,13 +9,47 @@ import {
   delimiter,
   join,
 } from 'node:path';
-import { pathToFileURL, } from 'node:url';
 
 import type { Logger, } from '../log.ts';
 import { LspClient, } from './lsp-client.ts';
+import { pathToUri, } from './uri.ts';
 
 /** LSP server type identifier. */
 export type ServerType = 'oxlint' | 'tsgo' | 'dprint';
+
+/** Separator between server type and root in pool map keys. */
+export const POOL_KEY_SEPARATOR = ':';
+
+/**
+ * Builds a pool map key from server type and project root.
+ *
+ * @param type - LSP server type
+ *
+ * @param root - project root directory
+ *
+ * @returns composite key for the pool Map
+ */
+export function buildPoolKey({
+  type,
+  root,
+}: {
+  type: ServerType;
+  root: string;
+},): string {
+  return `${type}${POOL_KEY_SEPARATOR}${root}`;
+}
+
+/**
+ * Extracts the project root from a pool map key.
+ *
+ * @param key - pool key in `"type:root"` format
+ *
+ * @returns root portion of the key
+ */
+export function rootFromPoolKey({ key, }: { key: string; },): string {
+  const colonIndex = key.indexOf(POOL_KEY_SEPARATOR,);
+  return key.slice(colonIndex + 1,);
+}
 
 /** Config files that define a project root for each server type. */
 export const CONFIG_FILES: Record<ServerType, readonly string[]> = {
@@ -101,7 +135,7 @@ export async function spawnLspClient({
     ...process.env,
     PATH: `${binPath}${delimiter}${process.env.PATH ?? ''}`,
   };
-  const rootUri = pathToFileURL(root,).href;
+  const rootUri = pathToUri({ path: root, },);
   try {
     const c = new LspClient({
       command: def.command,

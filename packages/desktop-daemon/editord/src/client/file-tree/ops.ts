@@ -40,11 +40,23 @@ export async function restoreExpansion({
   dirs: string[];
   loadPromises: Map<string, Promise<void>>;
 },): Promise<void> {
+  /** Pre-compute depths to avoid O(N log N) split calls inside the comparator. */
+  const depthOf = new Map<string, number>(
+    dirs.map(function computeDepth(d,): [
+      string,
+      number,
+    ] {
+      return [
+        d,
+        d.split('/',).length,
+      ];
+    },),
+  );
   const sorted = dirs.toSorted(function byDepth(
     a,
     b,
   ) {
-    return a.split('/',).length - b.split('/',).length;
+    return (depthOf.get(a,) ?? 0) - (depthOf.get(b,) ?? 0);
   },);
 
   for (const dirPath of sorted) {
@@ -143,7 +155,9 @@ export function resolveSelectedDir(
 export function collectExpandedDirs({ tree, }: { tree: HTMLDivElement; },): string[] {
   const dirs: string[] = [];
   for (const details of tree.querySelectorAll<HTMLDetailsElement>('details[open]',)) {
-    const path = details.querySelector<HTMLElement>('summary',)?.dataset['path'] ?? '';
+    /** `<summary>` is always the first child of `<details>` (set in TreeDirEntry.connectedCallback). */
+    const first = details.firstElementChild;
+    const path = first instanceof HTMLElement ? (first.dataset['path'] ?? '') : '';
     if (path !== '')
       dirs.push(path,);
   }

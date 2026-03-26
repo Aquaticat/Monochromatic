@@ -105,11 +105,7 @@ export async function dispatchMessage(
       return;
     }
     if (parsed.type === 'save') {
-      const absolutePath = assertWithinRoot({
-        rootDir,
-        path: parsed.path,
-      },);
-      await saveFile({
+      const absolutePath = await saveFile({
         rootDir,
         path: parsed.path,
         content: parsed.content,

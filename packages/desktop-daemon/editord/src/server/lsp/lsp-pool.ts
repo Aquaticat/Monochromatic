@@ -13,6 +13,7 @@ import type { ServerSlots, } from './document-sync.ts';
 import { findProjectRoot, } from './find-project-root.ts';
 import type { LspClient, } from './lsp-client.ts';
 import {
+  buildPoolKey,
   CONFIG_FILES,
   type ServerType,
   spawnLspClient,
@@ -87,7 +88,10 @@ export class LspPool {
     },);
     if (root === null)
       return Promise.resolve(null,);
-    const key = `${type}:${root}`;
+    const key = buildPoolKey({
+      type,
+      root,
+    },);
     const existing = this.#pool.get(key,);
     if (existing !== undefined)
       return existing;

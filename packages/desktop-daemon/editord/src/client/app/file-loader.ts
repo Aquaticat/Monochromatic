@@ -9,6 +9,7 @@ import type { FileKind, } from '../../../protocol.ts';
 import type { BinaryViewer, } from '../binary-viewer/binary-viewer.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import { getParserForPath, } from '../highlight/languages.ts';
+import { BYTES_PER_KB, } from '../highlight/utils.ts';
 import {
   l as rootLogger,
   tagged,
@@ -21,9 +22,6 @@ const appLog = tagged({
   tag: 'app-file-loader',
   l: rootLogger,
 },);
-
-/** Bytes per kilobyte. */
-const BYTES_PER_KB = 1_024;
 
 /** Content length threshold for showing a "file too large" warning toast. */
 const FILE_SIZE_WARNING_THRESHOLD = 100 * BYTES_PER_KB;
