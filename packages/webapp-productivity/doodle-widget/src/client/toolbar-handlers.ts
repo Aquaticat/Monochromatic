@@ -56,8 +56,8 @@ type ToolbarHandlerDeps = {
   uploadBtn: HTMLButtonElement;
   /** Hidden file input */
   uploadInput: HTMLInputElement;
-  /** Canvas container element */
-  container: HTMLDivElement;
+  /** Page element (coordinate reference for export sizing) */
+  page: HTMLDivElement;
   /** SVG overlay element */
   svgOverlay: HTMLDivElement;
   /** Drawing canvas element */
@@ -91,7 +91,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     formatSelect,
     uploadBtn,
     uploadInput,
-    container,
+    page,
     svgOverlay,
     drawCanvas,
     textLayer,
@@ -133,7 +133,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     const format = formatSelect.value;
     if (!isExportFormat(format,))
       return;
-    void EXPORTERS[format]({ container, overlay: svgOverlay, drawCanvas, textLayer, },);
+    void EXPORTERS[format]({ container: page, overlay: svgOverlay, drawCanvas, textLayer, },);
   },
   );
 

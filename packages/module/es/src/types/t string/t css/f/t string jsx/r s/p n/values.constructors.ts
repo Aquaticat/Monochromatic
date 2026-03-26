@@ -342,6 +342,26 @@ export function cssCalc(expr: string,): CssValue {
   return `calc(${expr})` as CssValue;
 }
 
+/**
+ * Creates a `min()` expression from two or more CSS values.
+ *
+ * Each argument can be a raw expression string or a branded {@link CssValue}.
+ * Use `calc()` inside arguments for arithmetic sub-expressions.
+ *
+ * @param values - two or more CSS length/percentage expressions to compare
+ *
+ * @returns branded CSS min expression
+ *
+ * @example
+ * ```ts
+ * cssMin('100cqi', 'calc(100cqb * 8.5 / 11)')  // 'min(100cqi, calc(100cqb * 8.5 / 11))'
+ * cssMin(cssRem(20), cssPercent(100))            // 'min(20rem, 100%)'
+ * ```
+ */
+export function cssMin(...values: readonly (CssValue | string)[]): CssValue {
+  return `min(${values.join(', ',)})` as CssValue;
+}
+
 //endregion
 
 //region Number constructors

@@ -30,7 +30,7 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
     canvas,
     getToolMode,
     getCanvasSize,
-    container,
+    page,
     zoomLayer,
   } = deps;
 
@@ -77,7 +77,7 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
         longPressTimer = null;
         if (downEvent === null)
           return;
-        const containerRect = container.getBoundingClientRect();
+        const containerRect = page.getBoundingClientRect();
         const { cw, ch, } = getCanvasSize();
         zoomAt({
           screenX: downEvent.clientX - containerRect.left,
@@ -114,7 +114,7 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       clearLongPress();
       const wasDrag = endPan();
       if (!wasDrag && !longPressFired) {
-        const containerRect = container.getBoundingClientRect();
+        const containerRect = page.getBoundingClientRect();
         const { cw, ch, } = getCanvasSize();
         zoomAt({
           screenX: event.clientX - containerRect.left,

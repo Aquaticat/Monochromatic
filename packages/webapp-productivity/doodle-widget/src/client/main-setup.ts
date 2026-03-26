@@ -32,6 +32,8 @@ export type WidgetDeps = {
   };
   textLayer: HTMLDivElement;
   container: HTMLDivElement;
+  /** Fixed letter-size page element (coordinate reference for drawing and export) */
+  page: HTMLDivElement;
   zoomLayer: HTMLDivElement;
   svgOverlay: HTMLDivElement;
   pageToggle: HTMLDivElement;
@@ -61,6 +63,7 @@ export function setupWidget(deps: WidgetDeps,): void {
     getCanvasSize,
     textLayer,
     container,
+    page,
     zoomLayer,
     svgOverlay,
     pageToggle,
@@ -110,7 +113,7 @@ export function setupWidget(deps: WidgetDeps,): void {
     getCanvasSize,
     textLayer,
     pushSnapshot,
-    container,
+    page,
     zoomLayer,
   };
   setupPointerHandlers(pointerDeps,);
@@ -124,7 +127,7 @@ export function setupWidget(deps: WidgetDeps,): void {
     formatSelect,
     uploadBtn,
     uploadInput,
-    container,
+    page,
     svgOverlay,
     drawCanvas: canvas,
     textLayer,
@@ -148,6 +151,6 @@ export function setupWidget(deps: WidgetDeps,): void {
   },
   );
 
-  new ResizeObserver(sizeCanvas,).observe(container,);
+  new ResizeObserver(sizeCanvas,).observe(page,);
   sizeCanvas();
 }

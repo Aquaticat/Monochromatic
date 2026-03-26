@@ -34,8 +34,8 @@ export type PointerHandlerDeps = {
   textLayer: HTMLDivElement;
   /** Pushes current state to undo history after a completed action */
   pushSnapshot: () => void;
-  /** Container element for zoom screen-to-content coordinate mapping */
-  container: HTMLDivElement;
+  /** Page element for zoom screen-to-content coordinate mapping */
+  page: HTMLDivElement;
   /** Zoom layer element for CSS transform application */
   zoomLayer: HTMLDivElement;
 };

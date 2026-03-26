@@ -13,7 +13,8 @@ import {
 import { readTextEntries, } from './export-text-config.ts';
 import {
   type ExportDeps,
-  getContainerSize,
+  getExportSize,
+  getRenderedSize,
   triggerDownload,
 } from './export.ts';
 import { MIN_STROKE_POINTS, } from './stroke-renderer.ts';
@@ -50,7 +51,13 @@ export function exportAsSvg(
   const {
     cw,
     ch,
-  } = getContainerSize(container,);
+  } = getExportSize();
+
+  /** Scale from rendered page size to letter export size */
+  const {
+    cw: renderedCw,
+  } = getRenderedSize(container,);
+  const exportScale = cw / renderedCw;
 
   const svg = document.createElementNS(
     SVG_NS,
@@ -151,19 +158,19 @@ export function exportAsSvg(
   if (overlayInfo !== null) {
     overlayInfo.clone.setAttribute(
       'x',
-      String(overlayInfo.offsetX,),
+      String(overlayInfo.offsetX * exportScale,),
     );
     overlayInfo.clone.setAttribute(
       'y',
-      String(overlayInfo.offsetY,),
+      String(overlayInfo.offsetY * exportScale,),
     );
     overlayInfo.clone.setAttribute(
       'width',
-      String(overlayInfo.width,),
+      String(overlayInfo.width * exportScale,),
     );
     overlayInfo.clone.setAttribute(
       'height',
-      String(overlayInfo.height,),
+      String(overlayInfo.height * exportScale,),
     );
     overlayInfo.clone.setAttribute(
       'style',

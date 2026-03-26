@@ -5,13 +5,22 @@
  */
 import {
   $,
+  cssCalc,
+  cssCqb,
+  cssCqi,
+  cssMin,
   cssNum,
   cssOklch,
 } from '@monochromatic-dev/module-es/h-css';
 import {
+  BORDER_WIDTH,
+  BG_VIEWPORT,
   FULL_DVB,
   FULL_PERCENT,
   INSET_ZERO_DECLS,
+  LETTER_ASPECT_RATIO,
+  PAGE_FRAME_COLOR,
+  VIEWPORT_PADDING,
 } from './style-tokens.ts';
 import { renderTextStyles, } from './styles-text.ts';
 import { renderToastStyles, } from './styles-toast.ts';
@@ -47,15 +56,39 @@ export function renderStyles(): string {
     $({
       rule: '#canvas-container',
       decls: {
-        position: 'relative',
         'flex-grow': cssNum(1,),
+        display: 'flex',
+        'container-type': 'size',
         'overflow-x': 'clip',
         'overflow-y': 'clip',
+        'padding-block': VIEWPORT_PADDING,
+        'padding-inline': VIEWPORT_PADDING,
+        'background-color': BG_VIEWPORT,
+      },
+    },),
+
+    $({
+      rule: '#page',
+      decls: {
+        position: 'relative',
+        'margin-block': 'auto',
+        'margin-inline': 'auto',
+        'inline-size': cssMin(
+          cssCqi(100,),
+          cssCalc(`${cssCqb(100,)} * ${String(8.5,)} / ${String(11,)}`,),
+        ),
+        'aspect-ratio': LETTER_ASPECT_RATIO,
         'background-color': cssOklch({
           l: 1,
           c: 0,
           h: 0,
         },),
+        'border-block-style': 'solid',
+        'border-block-color': PAGE_FRAME_COLOR,
+        'border-block-width': BORDER_WIDTH,
+        'border-inline-style': 'solid',
+        'border-inline-color': PAGE_FRAME_COLOR,
+        'border-inline-width': BORDER_WIDTH,
       },
     },),
 

@@ -82,6 +82,7 @@ export {
   cssFr,
   cssInt,
   cssLh,
+  cssMin,
   cssNum,
   cssOklch,
   cssPercent,

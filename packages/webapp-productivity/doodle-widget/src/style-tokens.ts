@@ -81,6 +81,26 @@ export const BORDER_COLOR: CssValue = cssOklch({
   h: 0,
 },);
 
+/** Background color for the canvas viewport area behind the page */
+export const BG_VIEWPORT: CssValue = cssOklch({
+  l: 0.93,
+  c: 0,
+  h: 0,
+},);
+
+/** Border color for the page frame */
+export const PAGE_FRAME_COLOR: CssValue = cssOklch({
+  l: 0.7,
+  c: 0,
+  h: 0,
+},);
+
+/** US Letter aspect ratio (8.5 / 11) for CSS `aspect-ratio` */
+export const LETTER_ASPECT_RATIO: CssValue = `${String(8.5)} / ${String(11)}` as CssValue;
+
+/** Padding around the page inside the viewport */
+export const VIEWPORT_PADDING: CssValue = cssRem(1,);
+
 //endregion Computed CSS values
 
 //region Shared declaration fragments

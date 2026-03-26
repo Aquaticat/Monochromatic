@@ -28,19 +28,25 @@ function renderCanvasContainer(): string {
     children: [
       h({
         tag: 'div',
-        attrs: { id: 'zoom-layer', },
+        attrs: { id: 'page', },
         children: [
           h({
-            tag: 'canvas',
-            attrs: { id: 'draw-canvas', },
-          },),
-          h({
             tag: 'div',
-            attrs: { id: 'svg-overlay', },
-          },),
-          h({
-            tag: 'div',
-            attrs: { id: 'text-layer', },
+            attrs: { id: 'zoom-layer', },
+            children: [
+              h({
+                tag: 'canvas',
+                attrs: { id: 'draw-canvas', },
+              },),
+              h({
+                tag: 'div',
+                attrs: { id: 'svg-overlay', },
+              },),
+              h({
+                tag: 'div',
+                attrs: { id: 'text-layer', },
+              },),
+            ],
           },),
         ],
       },),

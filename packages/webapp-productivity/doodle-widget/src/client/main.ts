@@ -15,6 +15,7 @@ import {
   eraseRadio,
   exportBtn,
   formatSelect,
+  page,
   pageToggle,
   redoBtn,
   sizeSlider,
@@ -76,11 +77,15 @@ function getCanvasSize(): {
 }
 
 /**
- * Resizes the canvas to match its container and redraws all strokes.
+ * Resizes the canvas to match the page element and redraws all strokes.
+ *
+ * The page element maintains a fixed letter aspect ratio via CSS,
+ * scaling to fit the viewport. The canvas always matches the page's
+ * rendered dimensions so strokes align with the visual frame.
  */
 function sizeCanvas(): void {
-  canvasWidth = container.clientWidth;
-  canvasHeight = container.clientHeight;
+  canvasWidth = page.clientWidth;
+  canvasHeight = page.clientHeight;
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
   redraw({
@@ -128,6 +133,7 @@ setupWidget({
   getCanvasSize,
   textLayer,
   container,
+  page,
   zoomLayer,
   svgOverlay,
   pageToggle,

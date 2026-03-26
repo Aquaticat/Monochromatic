@@ -27,8 +27,11 @@ export function requireElement<T extends Element,>(selector: string,): T {
   return element;
 }
 
-/** Canvas container element */
+/** Canvas container element (scrollable centering viewport) */
 export const container = requireElement<HTMLDivElement>('#canvas-container',);
+
+/** Fixed letter-size page element (coordinate reference for drawing and export) */
+export const page = requireElement<HTMLDivElement>('#page',);
 
 /** Drawing canvas element */
 export const canvas = requireElement<HTMLCanvasElement>('#draw-canvas',);

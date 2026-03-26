@@ -16,7 +16,7 @@ import {
 } from './export-text-config.ts';
 import {
   type ExportDeps,
-  getContainerSize,
+  getExportSize,
 } from './export.ts';
 import { snapshotAllPages, } from './pages.ts';
 
@@ -91,7 +91,7 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   const {
     cw,
     ch,
-  } = getContainerSize(container,);
+  } = getExportSize();
 
   /** Snapshot all pages (saves current page's live state) */
   const allPages = snapshotAllPages({

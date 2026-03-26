@@ -11,6 +11,10 @@
  */
 
 import { getStrokes, } from './drawing.ts';
+import {
+  LETTER_HEIGHT,
+  LETTER_WIDTH,
+} from './page-size.ts';
 import { requireOffscreenContext, } from './require-context.ts';
 import { renderStrokes, } from './stroke-renderer.ts';
 import { measureSvgOverlay, } from './svg-overlay-measure.ts';
@@ -30,7 +34,7 @@ export type ExportFormat = 'pdf' | 'png' | 'svg';
  * ```
  */
 export type ExportDeps = {
-  /** Canvas container element for sizing and coordinate reference */
+  /** Page element for SVG overlay measurement and coordinate reference */
   readonly container: HTMLDivElement;
   /** SVG overlay div holding the background SVG element */
   readonly overlay: HTMLDivElement;
@@ -43,13 +47,34 @@ export type ExportDeps = {
 //endregion Types
 
 /**
- * Reads the container's CSS pixel dimensions.
+ * Returns the fixed letter-size dimensions for export output.
  *
- * @param container - canvas container element
+ * All exports produce US Letter (8.5 x 11 inches at 96 DPI)
+ * regardless of the viewport's rendered page size.
  *
  * @returns width and height as `cw` and `ch`
  */
-export function getContainerSize(
+export function getExportSize(): {
+  cw: number;
+  ch: number
+} {
+  return {
+    cw: LETTER_WIDTH,
+    ch: LETTER_HEIGHT,
+  };
+}
+
+/**
+ * Reads the page element's rendered CSS pixel dimensions.
+ *
+ * Used internally for computing the scale ratio between the
+ * rendered page size and the fixed letter-size export output.
+ *
+ * @param container - page element (coordinate reference)
+ *
+ * @returns width and height as `cw` and `ch`
+ */
+export function getRenderedSize(
   container: HTMLDivElement,
 ): {
   cw: number;
@@ -73,18 +98,25 @@ export function getContainerSize(
  * high-DPI exports remain sharp. The drawing coordinates remain
  * in CSS pixels (the caller's context transform handles scaling).
  *
+ * When `exportScale` is provided, the SVG overlay position and size
+ * are scaled from rendered page coordinates to export coordinates
+ * (e.g. from a viewport-scaled page up to full letter dimensions).
+ *
  * @param ctx - canvas 2D context to draw on
  *
- * @param container - canvas container for position reference
+ * @param container - page element for position reference
  *
  * @param overlay - SVG overlay div holding the background SVG element
  *
  * @param imageScale - rasterization multiplier for the SVG Image
  *   (defaults to 1; set to `devicePixelRatio` for high-DPI exports)
  *
+ * @param exportScale - uniform scale from rendered page size to export
+ *   size (defaults to 1; set to `LETTER_WIDTH / page.clientWidth`)
+ *
  * @example
  * ```ts
- * await renderSvgOverlayToContext({ ctx, container, overlay, imageScale: 2 });
+ * await renderSvgOverlayToContext({ ctx, container, overlay, imageScale: 2, exportScale: 1.5 });
  * ```
  */
 export async function renderSvgOverlayToContext(
@@ -93,11 +125,13 @@ export async function renderSvgOverlayToContext(
     container,
     overlay,
     imageScale,
+    exportScale,
   }: {
     ctx: OffscreenCanvasRenderingContext2D;
     container: HTMLDivElement;
     overlay: HTMLDivElement;
     imageScale?: number;
+    exportScale?: number;
   },
 ): Promise<void> {
   const info = measureSvgOverlay({
@@ -107,17 +141,24 @@ export async function renderSvgOverlayToContext(
   if (info === null)
     return;
 
+  /** Scale from rendered page coordinates to export coordinates */
+  const es = exportScale ?? 1;
+
   /** Rasterization scale factor for the SVG Image */
   const scale = imageScale ?? 1;
+
+  /** Export-space dimensions of the SVG overlay */
+  const exportWidth = info.width * es;
+  const exportHeight = info.height * es;
 
   /** Set explicit dimensions so the Image decodes at the correct size */
   info.clone.setAttribute(
     'width',
-    String(info.width * scale,),
+    String(exportWidth * scale,),
   );
   info.clone.setAttribute(
     'height',
-    String(info.height * scale,),
+    String(exportHeight * scale,),
   );
   /** Re-serialized SVG markup encoded as a data URL for Image loading */
   const svgMarkup = new XMLSerializer().serializeToString(info.clone,);
@@ -127,16 +168,20 @@ export async function renderSvgOverlayToContext(
   await img.decode();
   ctx.drawImage(
     img,
-    info.offsetX,
-    info.offsetY,
-    info.width,
-    info.height,
+    info.offsetX * es,
+    info.offsetY * es,
+    exportWidth,
+    exportHeight,
   );
 }
 
 /**
  * Renders the base composite canvas with white background, drawn
  * strokes, and SVG overlay composited via multiply blending.
+ *
+ * Output is always at fixed letter dimensions (816 x 1056).
+ * The SVG overlay is measured from the live DOM then scaled from
+ * rendered page size to letter size.
  *
  * Multiply blending makes white SVG fills transparent (user strokes
  * show through) while black outlines stay opaque on top, matching
@@ -145,7 +190,7 @@ export async function renderSvgOverlayToContext(
  * Text is intentionally excluded so that PDF export can handle
  * text separately as real, selectable PDF text content.
  *
- * @param container - canvas container for sizing
+ * @param container - page element for SVG position measurement
  *
  * @param overlay - SVG overlay div
  *
@@ -173,7 +218,14 @@ export async function renderBaseCanvas({
   const {
     cw,
     ch,
-  } = getContainerSize(container,);
+  } = getExportSize();
+
+  /** Scale from rendered page size to letter export size */
+  const {
+    cw: renderedCw,
+  } = getRenderedSize(container,);
+  const exportScale = cw / renderedCw;
+
   /** Scale factor for high-DPI rendering (defaults to 1) */
   const scale = imageScale ?? 1;
 
@@ -215,6 +267,7 @@ export async function renderBaseCanvas({
     container,
     overlay,
     imageScale: scale,
+    exportScale,
   },);
   ctx.globalCompositeOperation = 'source-over';
   //endregion Layer 3

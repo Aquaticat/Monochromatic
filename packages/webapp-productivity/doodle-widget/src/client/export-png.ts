@@ -8,7 +8,7 @@
 import { readTextEntries, } from './export-text-config.ts';
 import {
   type ExportDeps,
-  getContainerSize,
+  getExportSize,
   renderBaseCanvas,
   triggerDownload,
 } from './export.ts';
@@ -28,13 +28,12 @@ import {
  */
 export async function exportAsPng(deps: ExportDeps,): Promise<void> {
   const {
-    container,
     textLayer,
   } = deps;
   const {
     cw,
     ch,
-  } = getContainerSize(container,);
+  } = getExportSize();
 
   const {
     canvas,
