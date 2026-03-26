@@ -38,7 +38,7 @@ description = "Start editord server with file-watch auto-restart"
 # -j @content-changed.jaq: compare file content hashes via kv_store so
 #   same-content writes (e.g. format-on-save producing identical output,
 #   or editing editord source files in editord itself) do not trigger restarts.
-run = "mise watch -w src/server --no-meta -j @src/server/content-changed.jaq -r -- start:server"
+run = "mise watch -w src/server --no-meta -J @src/server/content-changed.jaq -r -- start:server"
 
 [tasks."start:server"]
 hide = true
