@@ -136,8 +136,11 @@ export async function renderSvgOverlayToContext(
 
 /**
  * Renders the base composite canvas with white background, drawn
- * strokes, and SVG background on top. Strokes are drawn beneath
- * the SVG linework, matching the on-screen layer order.
+ * strokes, and SVG overlay composited via multiply blending.
+ *
+ * Multiply blending makes white SVG fills transparent (user strokes
+ * show through) while black outlines stay opaque on top, matching
+ * the on-screen `mix-blend-mode: multiply` CSS behavior.
  *
  * Text is intentionally excluded so that PDF export can handle
  * text separately as real, selectable PDF text content.
@@ -196,7 +199,7 @@ export async function renderBaseCanvas({
   );
   //endregion Layer 1
 
-  //region Layer 2: canvas strokes (behind SVG linework)
+  //region Layer 2: canvas strokes (beneath SVG)
   renderStrokes({
     ctx,
     cw,
@@ -205,13 +208,15 @@ export async function renderBaseCanvas({
   },);
   //endregion Layer 2
 
-  //region Layer 3: SVG background on top
+  //region Layer 3: SVG overlay with multiply blending
+  ctx.globalCompositeOperation = 'multiply';
   await renderSvgOverlayToContext({
     ctx,
     container,
     overlay,
     imageScale: scale,
   },);
+  ctx.globalCompositeOperation = 'source-over';
   //endregion Layer 3
 
   return {

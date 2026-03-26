@@ -1,9 +1,9 @@
 /**
  * Per-page canvas compositing for PDF export.
  *
- * Renders a single page's layers (white background, strokes, SVG)
- * to an offscreen canvas at device pixel resolution for sharp
- * PDF embedding.
+ * Renders a single page's layers (white background, strokes, SVG
+ * with multiply blending) to an offscreen canvas at device pixel
+ * resolution for sharp PDF embedding.
  */
 
 import type { StrokeData, } from './drawing.ts';
@@ -12,10 +12,10 @@ import { renderBaseCanvas, } from './export.ts';
 /**
  * Renders a single page's layers to an offscreen canvas.
  *
- * Composites white background, strokes (behind), and SVG linework
- * (on top) at device pixel resolution. The SVG overlay element is
- * temporarily set to the page's background markup for CSS layout
- * computation via `getBoundingClientRect`.
+ * Composites white background, strokes, and SVG overlay (via
+ * multiply blending) at device pixel resolution. The SVG overlay
+ * element is temporarily set to the page's background markup for
+ * CSS layout computation via `getBoundingClientRect`.
  *
  * @param svgBackground - SVG overlay innerHTML for this page
  *

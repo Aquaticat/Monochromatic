@@ -83,6 +83,7 @@ export function renderStyles(): string {
         'align-items': 'center',
         'justify-content': 'center',
         'pointer-events': 'none',
+        'mix-blend-mode': 'multiply',
       },
     },),
 

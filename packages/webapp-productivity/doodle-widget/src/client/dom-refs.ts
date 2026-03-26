@@ -33,7 +33,7 @@ export const container = requireElement<HTMLDivElement>('#canvas-container',);
 /** Drawing canvas element */
 export const canvas = requireElement<HTMLCanvasElement>('#draw-canvas',);
 
-/** SVG overlay element for displaying SVG backgrounds */
+/** SVG overlay element for displaying SVG backgrounds with multiply blending */
 export const svgOverlay = requireElement<HTMLDivElement>('#svg-overlay',);
 
 /** Draw tool radio input */

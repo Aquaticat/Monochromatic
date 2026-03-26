@@ -93,7 +93,7 @@ export function exportAsSvg(
   svg.append(bgRect,);
   //endregion White background
 
-  //region Strokes (behind SVG linework)
+  //region Strokes (behind SVG overlay)
   const strokes = getStrokes();
   for (const stroke of strokes) {
     if (stroke.points.length < MIN_STROKE_POINTS)
@@ -143,7 +143,7 @@ export function exportAsSvg(
   }
   //endregion Strokes
 
-  //region Background SVG (on top of strokes)
+  //region Background SVG with multiply blending (on top of strokes)
   const overlayInfo = measureSvgOverlay({
     container,
     overlay,
@@ -164,6 +164,10 @@ export function exportAsSvg(
     overlayInfo.clone.setAttribute(
       'height',
       String(overlayInfo.height,),
+    );
+    overlayInfo.clone.setAttribute(
+      'style',
+      'mix-blend-mode:multiply',
     );
     svg.append(overlayInfo.clone,);
   }

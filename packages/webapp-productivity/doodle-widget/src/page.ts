@@ -11,6 +11,11 @@ import { renderToolbar, } from './page-toolbar.ts';
 /**
  * Renders the canvas container with drawing surface and overlay layers.
  *
+ * The drawing canvas renders beneath the SVG overlay. The overlay
+ * uses `mix-blend-mode: multiply` so white SVG fills become
+ * transparent (user strokes show through) while black outlines
+ * remain opaque on top.
+ *
  * The SVG overlay starts empty; the client populates it from the
  * embedded page backgrounds JSON on initialization.
  *

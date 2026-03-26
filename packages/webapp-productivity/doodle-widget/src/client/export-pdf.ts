@@ -3,8 +3,8 @@
  *
  * Renders all pages as a multi-page PDF with rasterized backgrounds
  * and strokes, but preserves text annotations as real, selectable
- * PDF text. Drawing strokes are composited beneath SVG linework,
- * matching the on-screen layer order.
+ * PDF text. Drawing strokes are composited between SVG fills and
+ * SVG linework, matching the on-screen layer order.
  */
 
 import { jsPDF, } from 'jspdf';
