@@ -1,9 +1,11 @@
 /**
  * Build script: generates a single self-contained HTML doodle widget.
  *
- * Reads default SVG backgrounds for each page, removes white background
- * rects so canvas strokes show through, reads the pre-bundled client JS
- * from tsdown output, then assembles HTML/CSS/JS into a single file.
+ * Reads default SVG backgrounds for each page, reads the pre-bundled
+ * client JS from tsdown output, then assembles HTML/CSS/JS into a
+ * single file. SVG backgrounds are embedded unmodified -- white fill
+ * removal for user-uploaded SVGs happens at runtime via size-based
+ * detection in the client background module.
  *
  * Requires `mise run build:js:client` to have run first so
  * `dist/client/main.js` exists.
@@ -20,7 +22,6 @@ import pageSvg2 from './assets/output_2.svg' with { type: 'text', };
 
 import { renderPage, } from './page.ts';
 import { renderStyles, } from './styles.ts';
-import { replaceWhiteFillStyles, } from './white-fill.ts';
 
 export {};
 
@@ -39,11 +40,16 @@ const DIST_DIR = join(
 
 console.error('[doodle-widget] building...',);
 
-/** Replace white fills with transparent so the canvas layer shows through */
+/**
+ * SVG backgrounds passed through unmodified -- the bundled SVGs already
+ * have transparent backgrounds (`fill:none`). White fill removal only
+ * applies to user-uploaded SVGs at runtime via `setSvgBackground`,
+ * which uses size-based detection to target actual backgrounds.
+ */
 const svgBackgrounds = [
   pageSvg1,
   pageSvg2,
-].map(replaceWhiteFillStyles,);
+];
 
 /** Minified CSS stylesheet */
 const css = renderStyles();
