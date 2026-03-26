@@ -6,12 +6,11 @@
  * Separated from the manager class to keep each file focused.
  */
 
-import { pathToFileURL, } from 'node:url';
-
 import {
   LSP_FEATURE_TIMEOUT_MS,
   type LspClient,
 } from './lsp-client.ts';
+import { pathToUri, } from './uri.ts';
 import type {
   LspCompletionItem,
   LspHover,
@@ -51,7 +50,7 @@ export async function requestHover({
   line: number;
   character: number;
 },): Promise<LspHover | null> {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const result = await client.request({
     method: 'textDocument/hover',
     params: {
@@ -92,7 +91,7 @@ export async function requestCompletion({
   line: number;
   character: number;
 },): Promise<LspCompletionItem[]> {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const result = await client.request({
     method: 'textDocument/completion',
     params: {

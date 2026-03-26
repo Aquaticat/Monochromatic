@@ -22,6 +22,7 @@ import {
   peerSearchControllers,
 } from './ws-dispatch.ts';
 import {
+  extractErrorMessage,
   type Peer,
   sendJson,
 } from './ws-send.ts';
@@ -127,13 +128,13 @@ export function createWsHandler(
         catch (error) {
           // Only reached for pre-parse errors (malformed JSON) where no request id exists.
           // Handler-level errors are caught inside dispatchMessage with proper id correlation.
-          const errorMessage = error instanceof Error ? error.message : String(error,);
-          l.error(`message handler failed: ${errorMessage}`,);
+          const msg = extractErrorMessage({ error, },);
+          l.error(`message handler failed: ${msg}`,);
           sendJson({
             peer,
             message: {
               type: 'error',
-              message: errorMessage,
+              message: msg,
             },
           },);
         }

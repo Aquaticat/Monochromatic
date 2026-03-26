@@ -71,6 +71,29 @@ async function retryOnFileLock({
 }
 
 /**
+ * Sends a `fsActionDone` acknowledgment to the peer.
+ *
+ * @param peer - WebSocket peer to notify
+ *
+ * @param id - request ID to correlate
+ */
+function sendFsActionDone({
+  peer,
+  id,
+}: {
+  peer: Peer;
+  id: string;
+},): void {
+  sendJson({
+    peer,
+    message: {
+      type: 'fsActionDone',
+      id,
+    },
+  },);
+}
+
+/**
  * Dispatches filesystem action messages to the appropriate handler.
  *
  * @param peer - WebSocket peer that sent the message
@@ -105,12 +128,9 @@ export async function dispatchFsMessage({
       path: parsed.path,
       lspManager,
     },);
-    sendJson({
+    sendFsActionDone({
       peer,
-      message: {
-        type: 'fsActionDone',
-        id: parsed.id,
-      },
+      id: parsed.id,
     },);
     return true;
   }
@@ -120,12 +140,9 @@ export async function dispatchFsMessage({
       path: parsed.path,
       destPath: parsed.destPath,
     },);
-    sendJson({
+    sendFsActionDone({
       peer,
-      message: {
-        type: 'fsActionDone',
-        id: parsed.id,
-      },
+      id: parsed.id,
     },);
     return true;
   }
@@ -141,12 +158,9 @@ export async function dispatchFsMessage({
       path: parsed.path,
       lspManager,
     },);
-    sendJson({
+    sendFsActionDone({
       peer,
-      message: {
-        type: 'fsActionDone',
-        id: parsed.id,
-      },
+      id: parsed.id,
     },);
     return true;
   }
@@ -157,12 +171,9 @@ export async function dispatchFsMessage({
       name: parsed.name,
       isDirectory: parsed.isDirectory,
     },);
-    sendJson({
+    sendFsActionDone({
       peer,
-      message: {
-        type: 'fsActionDone',
-        id: parsed.id,
-      },
+      id: parsed.id,
     },);
     return true;
   }
@@ -171,12 +182,9 @@ export async function dispatchFsMessage({
       rootDir,
       path: parsed.path,
     },);
-    sendJson({
+    sendFsActionDone({
       peer,
-      message: {
-        type: 'fsActionDone',
-        id: parsed.id,
-      },
+      id: parsed.id,
     },);
     return true;
   }
@@ -185,12 +193,9 @@ export async function dispatchFsMessage({
       rootDir,
       path: parsed.path,
     },);
-    sendJson({
+    sendFsActionDone({
       peer,
-      message: {
-        type: 'fsActionDone',
-        id: parsed.id,
-      },
+      id: parsed.id,
     },);
     return true;
   }

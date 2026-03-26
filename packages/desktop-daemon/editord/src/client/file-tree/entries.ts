@@ -28,6 +28,31 @@ export function childPath(
   return parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
 }
 
+/**
+ * Builds a Map from file path to recency index for O(1) lookups.
+ *
+ * Without this, each file entry would call `recentPaths.indexOf(path)`
+ * making the whole loop O(entries * recentPaths). The Map brings it
+ * down to O(entries + recentPaths).
+ *
+ * @param recentPaths - ordered list of recently opened file paths
+ *
+ * @returns map from path to its index in the recency list
+ */
+export function buildRecencyIndex({ recentPaths, }: { recentPaths: readonly string[]; },): Map<string, number> {
+  const index = new Map<string, number>();
+  recentPaths.forEach(function indexRecent(
+    path,
+    i,
+  ) {
+    index.set(
+      path,
+      i,
+    );
+  },);
+  return index;
+}
+
 /** Maximum number of directory listings to keep in the prefetch cache. */
 const MAX_PREFETCH_CACHE_SIZE = 200;
 

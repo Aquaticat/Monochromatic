@@ -6,6 +6,7 @@
  */
 
 import type { CompletionPopup, } from '../completion/completion-popup.ts';
+import { createDebounced, } from '../debounce.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import type { HoverPopup, } from '../hover/hover-popup.ts';
 import { doRequestHover, } from '../hover/request.ts';
@@ -55,53 +56,61 @@ export function wireHover(
     getCurrentFilePath: () => string | null;
   },
 ): void {
-  let timer = 0;
   let lastLine = -1;
   let lastChar = -1;
+
+  /** Latest mouse event captured in the mousemove handler. */
+  let latestMouseEvent: MouseEvent | null = null;
+
+  const {
+    debounced: scheduleHover,
+    cancel: cancelHover,
+  } = createDebounced({
+    fn: function doHover() {
+      const me = latestMouseEvent;
+      if (me === null)
+        return;
+      if (completionPopup.visible || referencesPopup.visible)
+        return;
+      const path = getCurrentFilePath();
+      if (path === null)
+        return;
+      const pos = editorPane.getPositionFromPoint({
+        x: me.clientX,
+        y: me.clientY,
+      },);
+      if (pos === null)
+        return;
+      if (pos.line === lastLine && pos.character === lastChar)
+        return;
+      lastLine = pos.line;
+      lastChar = pos.character;
+      void doRequestHover({
+        ws,
+        hoverPopup,
+        path,
+        line: pos.line,
+        character: pos.character,
+        x: me.clientX,
+        y: me.clientY,
+      },);
+    },
+    delayMs: HOVER_DEBOUNCE_MS,
+  },);
 
   editorPane.addEventListener(
     'mousemove',
     function handleMouseMove(event,) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mousemove is always a MouseEvent
-    const me = event as MouseEvent;
-    clearTimeout(timer,);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types are loaded
-    timer = globalThis.setTimeout(
-      function doHover() {
-        if (completionPopup.visible || referencesPopup.visible)
-          return;
-        const path = getCurrentFilePath();
-        if (path === null)
-          return;
-        const pos = editorPane.getPositionFromPoint({
-          x: me.clientX,
-          y: me.clientY,
-        },);
-        if (pos === null)
-          return;
-        if (pos.line === lastLine && pos.character === lastChar)
-          return;
-        lastLine = pos.line;
-        lastChar = pos.character;
-        void doRequestHover({
-          ws,
-          hoverPopup,
-          path,
-          line: pos.line,
-          character: pos.character,
-          x: me.clientX,
-          y: me.clientY,
-        },);
-      },
-      HOVER_DEBOUNCE_MS,
-    ) as unknown as number;
+    latestMouseEvent = event as MouseEvent;
+    scheduleHover();
   },
   );
 
   editorPane.addEventListener(
     'mouseleave',
     function handleMouseLeave(event,) {
-    clearTimeout(timer,);
+    cancelHover();
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mouseleave is always a MouseEvent
     const me = event as MouseEvent;
     if (me.relatedTarget === hoverPopup

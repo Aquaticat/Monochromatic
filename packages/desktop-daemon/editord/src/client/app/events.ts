@@ -39,6 +39,53 @@ export type AppState = {
 };
 
 /**
+ * Loads a file and refreshes inlay hints when the file is a text file.
+ *
+ * @param state - mutable app state
+ *
+ * @param loadFileSafe - loads a file from the server
+ *
+ * @param refreshInlayHints - refreshes inlay hints for the current file
+ *
+ * @param path - file path to load
+ *
+ * @param line - optional line to scroll to
+ *
+ * @param character - optional character offset within the line
+ */
+function loadFileAndRefreshHints({
+  state,
+  loadFileSafe,
+  refreshInlayHints,
+  path,
+  line,
+  character,
+}: {
+  state: AppState;
+  loadFileSafe: (
+    opts: {
+      path: string;
+      line?: number | undefined;
+      character?: number | undefined
+    },
+  ) => Promise<void>;
+  refreshInlayHints: () => void;
+  path: string;
+  line?: number | undefined;
+  character?: number | undefined;
+},): void {
+  void (async function loadAndRefresh(): Promise<void> {
+    await loadFileSafe({
+      path,
+      line,
+      character,
+    },);
+    if (state.currentFileKind === 'text')
+      refreshInlayHints();
+  })();
+}
+
+/**
  * Wires file-select, result-select, and reference-select event handlers.
  *
  * @param fileTree - file tree component
@@ -87,11 +134,12 @@ export function wireSelectEvents(
     const { path, } = (event as CustomEvent<{ path: string; }>).detail;
     state.currentFilePath = path;
     recordFileOpen(path,);
-    void (async function loadAndRefresh(): Promise<void> {
-      await loadFileSafe({ path, },);
-      if (state.currentFileKind === 'text')
-        refreshInlayHints();
-    })();
+    loadFileAndRefreshHints({
+      state,
+      loadFileSafe,
+      refreshInlayHints,
+      path,
+    },);
   },
   );
   searchOverlay.addEventListener(
@@ -104,14 +152,13 @@ export function wireSelectEvents(
     } = (event as CustomEvent<ResultSelectDetail>).detail;
     state.currentFilePath = path;
     recordFileOpen(path,);
-    void (async function loadAndRefresh(): Promise<void> {
-      await loadFileSafe({
-        path,
-        line,
-      },);
-      if (state.currentFileKind === 'text')
-        refreshInlayHints();
-    })();
+    loadFileAndRefreshHints({
+      state,
+      loadFileSafe,
+      refreshInlayHints,
+      path,
+      line,
+    },);
   },
   );
   referencesPopup.addEventListener(
@@ -125,15 +172,14 @@ export function wireSelectEvents(
       } = (event as CustomEvent<ReferenceSelectDetail>).detail;
       state.currentFilePath = path;
       recordFileOpen(path,);
-      void (async function loadAndRefresh(): Promise<void> {
-        await loadFileSafe({
-          path,
-          line,
-          character,
-        },);
-        if (state.currentFileKind === 'text')
-          refreshInlayHints();
-      })();
+      loadFileAndRefreshHints({
+        state,
+        loadFileSafe,
+        refreshInlayHints,
+        path,
+        line,
+        character,
+      },);
     },
   );
 }

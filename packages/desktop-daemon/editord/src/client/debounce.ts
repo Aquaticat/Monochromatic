@@ -31,6 +31,8 @@ export type DebouncedHandle = {
   debounced: () => void;
   /** Executes the function immediately and cancels any pending timer. */
   flush: () => void;
+  /** Cancels any pending timer without executing the function. */
+  cancel: () => void;
 };
 
 /**
@@ -71,8 +73,15 @@ export function createDebounced(
     ) as unknown as number;
   }
 
+  /** Cancels any pending timer without executing the function. */
+  function cancel(): void {
+    clearTimeout(timer,);
+    timer = 0;
+  }
+
   return {
     debounced,
     flush,
+    cancel,
   };
 }

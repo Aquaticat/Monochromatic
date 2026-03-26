@@ -231,15 +231,13 @@ export class LspClient {
         resolve,
         reject,
       ) {
-        pending.set(
-          id,
-          {
-            resolve,
-            reject,
-          },
-        );
+        const entry: PendingLspRequest = {
+          resolve,
+          reject,
+          timeoutId: null,
+        };
         if (timeoutMs !== undefined) {
-          setTimeout(
+          entry.timeoutId = setTimeout(
             function rejectOnTimeout() {
             if (pending.delete(id,)) {
               clientLog.error(
@@ -253,6 +251,10 @@ export class LspClient {
             timeoutMs,
           );
         }
+        pending.set(
+          id,
+          entry,
+        );
       },
     );
 

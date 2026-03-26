@@ -12,6 +12,7 @@ import {
   type TreeDirEntry,
 } from './dir-entry.ts';
 import {
+  buildRecencyIndex,
   childPath,
   preloadChildren,
 } from './entries.ts';
@@ -161,18 +162,7 @@ export async function refreshDirContents(
       );
   }
 
-  // Pre-index recent paths into a Map for O(1) lookups.
-  // See the identical comment in load.ts:createEntryElements for rationale.
-  const recencyMap = new Map<string, number>();
-  recentPaths.forEach(function indexRecent(
-    p,
-    i,
-  ) {
-    recencyMap.set(
-      p,
-      i,
-    );
-  },);
+  const recencyMap = buildRecencyIndex({ recentPaths, },);
 
   const elements = entries.map(function createOrReuseEntry(entry,) {
     const fullPath = childPath({

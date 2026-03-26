@@ -7,6 +7,10 @@
 
 import type { SearchResult, } from '../../../protocol.ts';
 import {
+  createDebounced,
+  type DebouncedHandle,
+} from '../debounce.ts';
+import {
   l as rootLogger,
   tagged,
 } from '../log.ts';
@@ -22,11 +26,25 @@ const DEBOUNCE_MS = 150;
 
 /** Mutable search state shared between the overlay and this module. */
 export type SearchState = {
-  /** Debounce timer ID. */
-  debounceTimer: number;
+  /** Debounced search handle. */
+  debouncedSearch: DebouncedHandle | null;
   /** Monotonic counter for stale result detection. */
   searchGeneration: number;
 };
+
+/**
+ * Creates a debounced search handle for use in a `SearchState`.
+ *
+ * @param execute - callback to execute the search
+ *
+ * @returns debounced handle
+ */
+export function createSearchDebounce({ execute, }: { execute: () => void; },): DebouncedHandle {
+  return createDebounced({
+    fn: execute,
+    delayMs: DEBOUNCE_MS,
+  },);
+}
 
 /**
  * Schedules a debounced search after the user types.
@@ -42,12 +60,8 @@ export function scheduleSearch({
   state: SearchState;
   execute: () => void;
 },): void {
-  globalThis.clearTimeout(state.debounceTimer,);
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types are loaded; client-only code always receives a number
-  state.debounceTimer = globalThis.setTimeout(
-    execute,
-    DEBOUNCE_MS,
-  ) as unknown as number;
+  state.debouncedSearch ??= createSearchDebounce({ execute, },);
+  state.debouncedSearch.debounced();
 }
 
 /**

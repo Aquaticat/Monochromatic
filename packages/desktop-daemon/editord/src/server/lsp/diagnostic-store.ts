@@ -6,9 +6,8 @@
  * into a single array for the client whenever any source updates.
  */
 
-import { fileURLToPath, } from 'node:url';
-
 import type { Range, } from '../../protocol.ts';
+import { uriToPath, } from './uri.ts';
 import type { LspDiagnostic, } from './types.ts';
 
 /** Severity number to wire severity string mapping. */
@@ -129,7 +128,7 @@ export class DiagnosticStore {
       }
     }
 
-    const path = uri.startsWith('file://',) ? fileURLToPath(uri,) : uri;
+    const path = uriToPath({ uri, },);
     this.#onDiagnostics({
       path,
       diagnostics: merged,

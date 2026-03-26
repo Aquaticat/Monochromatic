@@ -34,11 +34,15 @@ export function getLineTexts({ editor, }: { editor: HTMLDivElement; },): string[
 }
 
 /**
- * Finds the line index containing a given text offset via reverse scan.
+ * Finds the line index containing a given text offset via binary search.
+ *
+ * `lineStarts` is sorted by definition (cumulative offsets), so binary search
+ * reduces per-token lookup from O(L) to O(log L) — significant when the
+ * highlight engine calls this for every token in the parse tree.
  *
  * @param offset - character offset in the full text
  *
- * @param lineStarts - cumulative byte offset at the start of each line
+ * @param lineStarts - cumulative byte offset at the start of each line (sorted ascending)
  *
  * @returns zero-based line index
  */
@@ -49,10 +53,22 @@ export function findLineForOffset({
   offset: number;
   lineStarts: readonly number[];
 },): number {
-  const index = lineStarts.findLastIndex(function startsBeforeOffset(start,) {
-    return start <= offset;
-  },);
-  return index === -1 ? 0 : index;
+  let lo = 0;
+  let hi = lineStarts.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1;
+    const start = lineStarts[mid];
+    if (start === undefined)
+      break;
+    if (start <= offset)
+      lo = mid + 1;
+    else
+      hi = mid - 1;
+  }
+  return Math.max(
+    0,
+    hi,
+  );
 }
 
 /**

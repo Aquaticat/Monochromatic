@@ -16,6 +16,7 @@ import {
   type DirOpenDetail,
 } from './dir-entry.ts';
 import {
+  buildRecencyIndex,
   childPath,
   preloadChildren,
 } from './entries.ts';
@@ -128,21 +129,7 @@ export function createEntryElements({
   entries: DirEntry[];
   recentPaths: string[];
 },): HTMLElement[] {
-  // Pre-index recent paths into a Map for O(1) lookups.
-  // Without this, each file entry calls `recentPaths.indexOf(fullPath)`
-  // which is O(recentPaths.length) per entry, making the whole loop
-  // O(entries * recentPaths). The Map brings it down to O(entries + recentPaths).
-  // The same optimisation is applied in refresh.ts for the same reason.
-  const recencyIndex = new Map<string, number>();
-  recentPaths.forEach(function indexRecent(
-    path,
-    i,
-  ) {
-    recencyIndex.set(
-      path,
-      i,
-    );
-  },);
+  const recencyIndex = buildRecencyIndex({ recentPaths, },);
 
   return entries.map(function createEntry(entry,) {
     const fullPath = childPath({

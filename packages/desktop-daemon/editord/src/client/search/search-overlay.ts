@@ -63,7 +63,7 @@ export class SearchOverlay extends HTMLElement {
   #interveningKey = false;
   /** Mutable debounce state shared across search invocations. */
   #searchState: SearchState = {
-    debounceTimer: 0,
+    debouncedSearch: null,
     searchGeneration: 0,
   };
   /** Callback that performs a search and returns results. */

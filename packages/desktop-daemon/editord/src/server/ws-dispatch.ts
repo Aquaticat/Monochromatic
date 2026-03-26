@@ -20,6 +20,7 @@ import type { DirWatcher, } from './operations/watch-filesystem.ts';
 import { dispatchFsMessage, } from './ws-dispatch-fs.ts';
 import { dispatchLspMessage, } from './ws-dispatch-lsp.ts';
 import {
+  extractErrorMessage,
   type Peer,
   sendJson,
 } from './ws-send.ts';
@@ -202,8 +203,8 @@ export async function dispatchMessage(
     },);
   }
   catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error,);
-    l.error(`dispatch failed: ${errorMessage}`,);
+    const msg = extractErrorMessage({ error, },);
+    l.error(`dispatch failed: ${msg}`,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- `parsed` is from unvalidated JSON cast; requests have `id`, notifications do not
     const requestId = 'id' in parsed ? (parsed as { id: string; }).id : undefined;
     if (requestId !== undefined) {
@@ -212,7 +213,7 @@ export async function dispatchMessage(
         message: {
           type: 'error',
           id: requestId,
-          message: errorMessage,
+          message: msg,
         },
       },);
     }

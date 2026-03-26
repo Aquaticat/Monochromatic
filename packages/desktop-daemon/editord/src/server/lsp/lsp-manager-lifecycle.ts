@@ -6,8 +6,6 @@
  * Routes incoming LSP notifications to the diagnostic store.
  */
 
-import { pathToFileURL, } from 'node:url';
-
 import type { DiagnosticStore, } from './diagnostic-store.ts';
 import {
   didChange as syncChange,
@@ -18,6 +16,7 @@ import {
 } from './document-sync.ts';
 import type { LspPool, } from './lsp-pool.ts';
 import type { LspDiagnostic, } from './types.ts';
+import { pathToUri, } from './uri.ts';
 
 /**
  * Notifies servers that a file was opened.
@@ -126,7 +125,7 @@ export async function managerDidClose({
   diagnostics: DiagnosticStore;
   path: string;
 },): Promise<void> {
-  diagnostics.delete({ uri: pathToFileURL(path,).href, },);
+  diagnostics.delete({ uri: pathToUri({ path, },), },);
   syncClose({
     path,
     documents,

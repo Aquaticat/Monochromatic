@@ -5,12 +5,11 @@
  * to stay under max-lines.
  */
 
-import { pathToFileURL, } from 'node:url';
-
 import {
   LSP_FEATURE_TIMEOUT_MS,
   type LspClient,
 } from './lsp-client.ts';
+import { pathToUri, } from './uri.ts';
 import type {
   LspInlayHint,
   LspSelectionRange,
@@ -45,7 +44,7 @@ export async function requestInlayHints({
     }
   };
 },): Promise<LspInlayHint[]> {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const result = await client.request({
     method: 'textDocument/inlayHint',
     params: {
@@ -87,7 +86,7 @@ export async function requestSelectionRange({
     character: number
   }[];
 },): Promise<LspSelectionRange[]> {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const result = await client.request({
     method: 'textDocument/selectionRange',
     params: {

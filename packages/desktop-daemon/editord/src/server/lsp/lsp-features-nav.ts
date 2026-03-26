@@ -6,14 +6,13 @@
  */
 
 import {
-  fileURLToPath,
-  pathToFileURL,
-} from 'node:url';
-
-import {
   LSP_FEATURE_TIMEOUT_MS,
   type LspClient,
 } from './lsp-client.ts';
+import {
+  pathToUri,
+  uriToPath,
+} from './uri.ts';
 
 /**
  * Requests go-to-definition from an LSP client.
@@ -43,7 +42,7 @@ export async function requestGotoDefinition({
   line: number;
   character: number
 } | null> {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const result = await client.request({
     method: 'textDocument/definition',
     params: {
@@ -77,7 +76,7 @@ export async function requestGotoDefinition({
       };
     }
   };
-  const defPath = loc.uri.startsWith('file://',) ? fileURLToPath(loc.uri,) : loc.uri;
+  const defPath = uriToPath({ uri: loc.uri, },);
   return {
     path: defPath,
     line: loc.range.start.line,
@@ -114,7 +113,7 @@ export async function requestReferences({
   line: number;
   character: number
 }[]> {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const result = await client.request({
     method: 'textDocument/references',
     params: {
@@ -143,9 +142,7 @@ export async function requestReferences({
   }[])
     .map(
       function convertLocation(loc,) {
-        const refPath = loc.uri.startsWith('file://',)
-          ? fileURLToPath(loc.uri,)
-          : loc.uri;
+        const refPath = uriToPath({ uri: loc.uri, },);
         return {
           path: refPath,
           line: loc.range.start.line,

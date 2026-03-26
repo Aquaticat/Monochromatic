@@ -100,7 +100,10 @@ export function resolveLineCharacter({
   if (lineDiv === null)
     return null;
 
-  const line = [...editor.children,].indexOf(lineDiv,);
+  const line = Array.prototype.indexOf.call(
+    editor.children,
+    lineDiv,
+  );
   if (line === -1)
     return null;
 

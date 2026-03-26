@@ -6,8 +6,6 @@
  * the relevant LSP clients based on language.
  */
 
-import { pathToFileURL, } from 'node:url';
-
 import type {
   DocumentState,
   ServerSlots,
@@ -17,6 +15,7 @@ import {
   JS_TS_LANGUAGE_IDS,
 } from './language-id.ts';
 import type { LspClient, } from './lsp-client.ts';
+import { pathToUri, } from './uri.ts';
 
 export type {
   DocumentState,
@@ -63,7 +62,7 @@ export function didOpen({
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
 },): void {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const languageId = getLanguageId({ path, },);
   if (documents.has(uri,))
     didClose({
@@ -113,7 +112,7 @@ export function didChange({
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
 },): void {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;
@@ -150,7 +149,7 @@ export function didSave({
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
 },): void {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;
@@ -178,7 +177,7 @@ export function didClose({
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
 },): void {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;

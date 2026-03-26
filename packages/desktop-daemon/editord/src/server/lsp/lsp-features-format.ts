@@ -5,12 +5,11 @@
  * and returns the resulting text edits.
  */
 
-import { pathToFileURL, } from 'node:url';
-
 import {
   LSP_FEATURE_TIMEOUT_MS,
   type LspClient,
 } from './lsp-client.ts';
+import { pathToUri, } from './uri.ts';
 import type { LspTextEdit, } from './types.ts';
 
 /**
@@ -29,7 +28,7 @@ export async function requestFormat({
   client: LspClient;
   path: string;
 },): Promise<LspTextEdit[]> {
-  const uri = pathToFileURL(path,).href;
+  const uri = pathToUri({ path, },);
   const result = await client.request({
     method: 'textDocument/formatting',
     params: {
