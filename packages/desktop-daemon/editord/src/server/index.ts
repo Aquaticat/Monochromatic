@@ -75,7 +75,8 @@ const PORT = resolvePort();
  */
 const {
   token: AUTH_TOKEN,
-  cleanup: cleanupToken,
+  stopTouching: stopTokenTouch,
+  deleteFile: deleteTokenFile,
 } = await resolveAuthToken({
   port: PORT,
   l,
@@ -221,22 +222,33 @@ httpLog.info(`listening on http://localhost:${String(PORT,)}?token=${AUTH_TOKEN}
 //region Graceful shutdown
 
 /**
- * Cleans up resources on process termination.
- * Stops the token file mtime touch interval and shuts down LSP servers.
+ * Handles SIGTERM (auto-restart from `mise watch`).
+ * Stops the mtime touch interval but **keeps** the token file
+ * so the next instance can reuse the same token.
  */
-function handleShutdown(): void {
-  cleanupToken();
+function handleSigterm(): void {
+  stopTokenTouch();
+  lspManager.shutdown();
+  process.exit(0);
+}
+
+/**
+ * Handles SIGINT (user Ctrl+C).
+ * Deletes the token file since no restart is expected.
+ */
+function handleSigint(): void {
+  deleteTokenFile();
   lspManager.shutdown();
   process.exit(0);
 }
 
 process.on(
   'SIGINT',
-  handleShutdown,
+  handleSigint,
 );
 process.on(
   'SIGTERM',
-  handleShutdown,
+  handleSigterm,
 );
 
 //endregion Graceful shutdown

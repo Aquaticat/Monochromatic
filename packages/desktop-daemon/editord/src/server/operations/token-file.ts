@@ -142,7 +142,7 @@ async function cleanupFile({
  *
  * @param token - auth token string to persist
  *
- * @returns cleanup function that stops the touch interval and deletes the file
+ * @returns `stopTouching` to stop the interval, and `deleteFile` to remove the token file
  */
 async function writeAndTouch({
   path,
@@ -152,7 +152,10 @@ async function writeAndTouch({
   path: string;
   token: string;
   l: Logger;
-},): Promise<() => void> {
+},): Promise<{
+  stopTouching: () => void;
+  deleteFile: () => void;
+}> {
   await writeFile(
     path,
     token,
@@ -169,12 +172,17 @@ async function writeAndTouch({
     TOUCH_INTERVAL_MS,
   );
 
-  return function cleanup(): void {
-    clearInterval(interval,);
-    void cleanupFile({
-      path,
-      l,
-    },);
+  return {
+    stopTouching: function stopTouching(): void {
+      clearInterval(interval,);
+    },
+    deleteFile: function deleteFile(): void {
+      clearInterval(interval,);
+      void cleanupFile({
+        path,
+        l,
+      },);
+    },
   };
 }
 
@@ -192,7 +200,7 @@ async function writeAndTouch({
  *
  * @param l - parent logger
  *
- * @returns the auth token and a cleanup function
+ * @returns the auth token, `stopTouching` for SIGTERM, and `deleteFile` for SIGINT
  */
 export async function resolveAuthToken({
   port,
@@ -202,7 +210,8 @@ export async function resolveAuthToken({
   l: Logger;
 },): Promise<{
   token: string;
-  cleanup: () => void;
+  stopTouching: () => void;
+  deleteFile: () => void;
 }> {
   const tokenLog = tagged({
     tag: 'token',
@@ -213,26 +222,26 @@ export async function resolveAuthToken({
 
   if (existing !== null) {
     tokenLog.info('reusing token from previous instance (auto-restart detected)',);
-    const cleanup = await writeAndTouch({
+    const handles = await writeAndTouch({
       path,
       token: existing,
       l: tokenLog,
     },);
     return {
       token: existing,
-      cleanup,
+      ...handles,
     };
   }
 
   const token = crypto.randomUUID();
   tokenLog.info('generated fresh token',);
-  const cleanup = await writeAndTouch({
+  const handles = await writeAndTouch({
     path,
     token,
     l: tokenLog,
   },);
   return {
     token,
-    cleanup,
+    ...handles,
   };
 }

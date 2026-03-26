@@ -34,11 +34,13 @@ run = [{ tasks = ["watch:build:js:client", "watch:build:css", "dev:server"] }]
 [tasks."dev:server"]
 hide = true
 description = "Start editord server with file-watch auto-restart"
+# Calls watchexec directly (not `mise watch`) because mise drops --no-meta
+# and -j flags when constructing the watchexec command (mise bug).
 # --no-meta: ignore metadata-only changes (touch, chmod) at the kernel level.
 # -j @content-changed.jaq: compare file content hashes via kv_store so
 #   same-content writes (e.g. format-on-save producing identical output,
 #   or editing editord source files in editord itself) do not trigger restarts.
-run = "mise watch -w src/server --no-meta -J @src/server/content-changed.jaq -r -- start:server"
+run = "watchexec -w src/server --no-meta -j @src/server/content-changed.jaq -r -- mise run start:server"
 
 [tasks."start:server"]
 hide = true
