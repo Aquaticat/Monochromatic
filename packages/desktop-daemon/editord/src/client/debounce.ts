@@ -4,12 +4,34 @@
  * Creates a debounced wrapper that delays invocation until after
  * a quiet period. Each call resets the timer.
  *
+ * This is the single source of debounce timer logic in editord.
+ * Previously `session/debounce.ts` had its own copy of the
+ * `clearTimeout` / `setTimeout` / `as unknown as number` dance;
+ * that duplication meant the workaround for the Node.js Timeout
+ * vs browser number mismatch existed in two places, and any
+ * future fix would need to be applied twice. Consolidating here
+ * gives every consumer both `debounced` (schedule) and `flush`
+ * (execute-now-and-cancel), which `session/debounce.ts` needs
+ * for the `beforeunload` path.
+ *
  * @example
  * ```ts
- * const save = createDebounced({ fn: function doSave() { ... }, delayMs: 500, });
- * inputEl.addEventListener('input', save);
+ * const { debounced, flush } = createDebounced({ fn: function doSave() { ... }, delayMs: 500, });
+ * inputEl.addEventListener('input', debounced);
+ * // Force immediate execution and cancel any pending timer:
+ * flush();
  * ```
  */
+
+/**
+ * Return value of {@link createDebounced}.
+ */
+export type DebouncedHandle = {
+  /** Debounced wrapper; each call resets the delay timer. */
+  debounced: () => void;
+  /** Executes the function immediately and cancels any pending timer. */
+  flush: () => void;
+};
 
 /**
  * Creates a debounced function that delays invoking `fn` until
@@ -19,7 +41,7 @@
  *
  * @param delayMs - debounce delay in milliseconds
  *
- * @returns debounced wrapper
+ * @returns handle with `debounced` wrapper and `flush` for immediate execution
  */
 export function createDebounced(
   {
@@ -29,14 +51,28 @@ export function createDebounced(
     fn: () => void;
     delayMs: number
   },
-): () => void {
+): DebouncedHandle {
   let timer = 0;
-  return function debounced(): void {
+
+  /** Executes the function immediately and cancels any pending timer. */
+  function flush(): void {
+    clearTimeout(timer,);
+    timer = 0;
+    fn();
+  }
+
+  /** Schedules execution after the debounce delay. */
+  function debounced(): void {
     clearTimeout(timer,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
     timer = globalThis.setTimeout(
       fn,
       delayMs,
     ) as unknown as number;
+  }
+
+  return {
+    debounced,
+    flush,
   };
 }

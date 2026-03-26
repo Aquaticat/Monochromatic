@@ -4,8 +4,16 @@
  * Coalesces rapid state changes into a single `localStorage` write
  * after a debounce interval. Also provides an immediate `saveNow`
  * for use in `beforeunload`.
+ *
+ * Delegates to `createDebounced` from `../debounce.ts` for the timer
+ * mechanics. Previously this file had its own `clearTimeout`/`setTimeout`
+ * pair with an identical `as unknown as number` workaround. Using the
+ * shared primitive keeps the timer logic in one place and lets this
+ * module focus on the session-specific concern of capturing state via
+ * `getState()` and writing it to `localStorage`.
  */
 
+import { createDebounced, } from '../debounce.ts';
 import {
   saveSessionState,
   type SessionState,
@@ -51,12 +59,8 @@ export function createDebouncedSave({
   debouncedSave: () => void;
   saveNow: () => void
 } {
-  let timerId = 0;
-
   /** Saves state immediately without debouncing. */
   function saveNow(): void {
-    clearTimeout(timerId,);
-    timerId = 0;
     saveSessionState({
       fsId,
       rootDir,
@@ -64,18 +68,17 @@ export function createDebouncedSave({
     },);
   }
 
-  /** Schedules a save after the debounce interval. */
-  function debouncedSave(): void {
-    clearTimeout(timerId,);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- setTimeout returns NodeJS.Timeout in Node types but number in browser; we store as number
-    timerId = setTimeout(
-      saveNow,
-      SAVE_DEBOUNCE_MS,
-    ) as unknown as number;
-  }
+  const {
+    debounced: debouncedSave,
+    flush,
+  } = createDebounced({
+    fn: saveNow,
+    delayMs: SAVE_DEBOUNCE_MS,
+  },);
 
   return {
     debouncedSave,
-    saveNow,
+    /** Flushes any pending debounced save and executes immediately. */
+    saveNow: flush,
   };
 }

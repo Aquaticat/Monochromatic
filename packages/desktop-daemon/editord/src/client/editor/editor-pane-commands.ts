@@ -4,10 +4,19 @@
  * Extracted from the class to keep `editor-pane.ts` under the max-lines limit.
  * Each function operates on the pane through its public API, avoiding
  * direct access to private fields.
+ *
+ * Callers (app.ts, keybinding system) invoke these `perform*` functions
+ * directly with `{ pane: editorPane }` rather than calling wrapper
+ * methods on the class. This avoids seven one-line delegation methods
+ * on `EditorPane` that did nothing but forward `{ pane: this }` --
+ * keeping them would push editor-pane.ts over the 300-code-line limit
+ * and make the class a God-object facade for operations that already
+ * live in this file.
  */
 
 import type { EditorPosition, } from '../position.ts';
 import { selectAndCopyLine, } from './copy-line.ts';
+import { getComposedRange, } from './cursor.ts';
 import {
   type SelectionCoords,
   indentLines as doIndent,
@@ -25,6 +34,12 @@ import {
 /**
  * Subset of EditorPane's public API used by command functions.
  * Defined locally to avoid circular imports with the class module.
+ *
+ * `shadowRoot` was added so `performSelectAndCopy` can resolve the
+ * composed selection range internally via `getComposedRange`, rather
+ * than requiring the caller to pass it in. This removed the last
+ * reason `EditorPane` needed a `selectAndCopyCurrentLine` wrapper
+ * that reached into `this.#shadow`.
  */
 type PaneApi = {
   /** Returns the contenteditable container, or null before connected. */
@@ -42,6 +57,8 @@ type PaneApi = {
   setSelection(coords: SelectionCoords,): void;
   /** Triggers deferred syntax highlighting. */
   requestHighlight(): void;
+  /** Shadow root for composed range resolution. */
+  readonly shadowRoot: ShadowRoot | null;
 };
 
 //endregion Pane API type
@@ -195,24 +212,18 @@ export function performSwapUp({ pane, }: { pane: PaneApi; },): void {
 
 /**
  * Selects and copies the current line when no text is selected.
+ * Resolves the composed range from the pane's shadow root internally.
  *
  * @param pane - editor pane instance
  *
- * @param composedRange - composed selection range from the shadow root
- *
  * @returns true if the line was copied
  */
-export function performSelectAndCopy({
-  pane,
-  composedRange,
-}: {
-  pane: PaneApi;
-  composedRange: StaticRange | null;
-},): boolean {
+export function performSelectAndCopy({ pane, }: { pane: PaneApi; },): boolean {
   const editor = pane.getEditorElement();
-  if (editor === null)
+  if (editor === null || pane.shadowRoot === null)
     return false;
   const pos = pane.getCursorPosition();
+  const composedRange = getComposedRange({ shadow: pane.shadowRoot, },);
   if (composedRange === null || pos === null)
     return false;
   return selectAndCopyLine({

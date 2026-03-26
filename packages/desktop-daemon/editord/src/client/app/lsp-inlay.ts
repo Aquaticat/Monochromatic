@@ -35,15 +35,15 @@ export function wireInlayHints({
   editorPane.addEventListener(
     'contentchange',
     createDebounced({
-    fn: function refreshInlayHints() {
-      void fetchInlayHints({
-        ws,
-        editorPane,
-        getCurrentFilePath,
-      },);
-    },
-    delayMs: INLAY_HINT_DEBOUNCE_MS,
-  },),
+      fn: function refreshInlayHints() {
+        void fetchInlayHints({
+          ws,
+          editorPane,
+          getCurrentFilePath,
+        },);
+      },
+      delayMs: INLAY_HINT_DEBOUNCE_MS,
+    },).debounced,
   );
 
   return {

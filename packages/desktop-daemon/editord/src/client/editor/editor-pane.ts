@@ -19,22 +19,12 @@ import { clearHighlights, } from '../highlight/highlighter.ts';
 import { getPositionFromPoint as posFromPoint, } from '../position-from-point.ts';
 import type { EditorPosition, } from '../position.ts';
 import {
-  getComposedRange,
   getCursorPosition as cursorPos,
   getCursorRect as cursorRect,
   getSelection as getSel,
   restoreCursor as restoreCur,
   setSelection as setSel,
 } from './cursor.ts';
-import {
-  performDeleteLine,
-  performDuplicateLine,
-  performIndent,
-  performSelectAndCopy,
-  performSwapDown,
-  performSwapUp,
-  performUnindent,
-} from './editor-pane-commands.ts';
 import {
   createEditorElement,
   getTextContent,
@@ -43,7 +33,11 @@ import {
 } from './editor-pane-dom.ts';
 import { STYLES, } from './editor-pane.styles.ts';
 import type { SelectionCoords, } from './indent.ts';
-import { computeDocumentRange, } from './query.ts';
+import {
+  computeDocumentRange,
+  diagnosticsEqual,
+  hintsEqual,
+} from './query.ts';
 import {
   scheduleDiagnosticHighlights,
   scheduleHighlight,
@@ -185,11 +179,11 @@ export class EditorPane extends HTMLElement {
    * @param diagnostics - diagnostics from the language server
    */
   setDiagnostics(diagnostics: Diagnostic[],): void {
-    if (diagnostics.length === this.#diagnostics.length
-      && JSON.stringify(diagnostics,) === JSON.stringify(this.#diagnostics,))
-    {
+    if (diagnosticsEqual(
+      diagnostics,
+      this.#diagnostics,
+    ))
       return;
-    }
     this.#diagnostics = diagnostics;
     this.#scheduleDiagnosticHighlights();
     this.#scheduleInlayAnnotations();
@@ -201,11 +195,11 @@ export class EditorPane extends HTMLElement {
    * @param hints - inlay hints from the language server
    */
   setInlayHints(hints: InlayHint[],): void {
-    if (hints.length === this.#inlayHints.length
-      && JSON.stringify(hints,) === JSON.stringify(this.#inlayHints,))
-    {
+    if (hintsEqual(
+      hints,
+      this.#inlayHints,
+    ))
       return;
-    }
     this.#inlayHints = hints;
     this.#scheduleInlayAnnotations();
   }
@@ -225,52 +219,6 @@ export class EditorPane extends HTMLElement {
   }
 
   //endregion Diagnostics and hints
-
-  //region Editing commands — delegated to editor-pane-commands.ts
-
-  /** Deletes the line at the current cursor position. */
-  deleteCurrentLine(): void {
-    performDeleteLine({ pane: this, },);
-  }
-
-  /** Duplicates the current line below. */
-  duplicateLineDown(): void {
-    performDuplicateLine({ pane: this, },);
-  }
-
-  /** Swaps the current line with the next line. */
-  swapLineDown(): void {
-    performSwapDown({ pane: this, },);
-  }
-
-  /** Swaps the current line with the previous line. */
-  swapLineUp(): void {
-    performSwapUp({ pane: this, },);
-  }
-
-  /**
-   * Selects and copies the current line when no text is selected.
-   *
-   * @returns true if the line was copied
-   */
-  selectAndCopyCurrentLine(): boolean {
-    return performSelectAndCopy({
-      pane: this,
-      composedRange: getComposedRange({ shadow: this.#shadow, },),
-    },);
-  }
-
-  /** Indents the current line or selected lines. */
-  indentLines(): void {
-    performIndent({ pane: this, },);
-  }
-
-  /** Unindents the current line or selected lines. */
-  unindentLines(): void {
-    performUnindent({ pane: this, },);
-  }
-
-  //endregion Editing commands
 
   //region Selection and cursor
 

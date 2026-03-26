@@ -31,18 +31,18 @@ export function wireContentSync({
   editorPane.addEventListener(
     'contentchange',
     createDebounced({
-    fn: function syncContent() {
-      const path = getCurrentFilePath();
-      if (path === null)
-        return;
-      void ws.notify({
-        type: 'didChange',
-        path,
-        content: editorPane.getText(),
-      },);
-    },
-    delayMs: CONTENT_SYNC_DEBOUNCE_MS,
-  },),
+      fn: function syncContent() {
+        const path = getCurrentFilePath();
+        if (path === null)
+          return;
+        void ws.notify({
+          type: 'didChange',
+          path,
+          content: editorPane.getText(),
+        },);
+      },
+      delayMs: CONTENT_SYNC_DEBOUNCE_MS,
+    },).debounced,
   );
 }
 

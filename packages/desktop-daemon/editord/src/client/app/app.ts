@@ -33,6 +33,22 @@ import type {
 import type { BinaryViewer, } from '../binary-viewer/binary-viewer.ts';
 import type { CompletionPopup, } from '../completion/completion-popup.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
+// Editing commands are called as standalone functions rather than
+// methods on `editorPane`. Previously EditorPane had seven wrapper
+// methods (deleteCurrentLine, indentLines, etc.) that each did
+// nothing but `performXxx({ pane: this })`. Calling the perform
+// functions directly here removes that indirection and keeps the
+// class focused on state it actually owns (content, diagnostics,
+// cursor, lifecycle).
+import {
+  performDeleteLine,
+  performDuplicateLine,
+  performIndent,
+  performSelectAndCopy,
+  performSwapDown,
+  performSwapUp,
+  performUnindent,
+} from '../editor/editor-pane-commands.ts';
 import type {
   ContextAction,
   FileTree,
@@ -242,7 +258,7 @@ editorPane.addEventListener(
       void saveCurrentFile();
     },
     delayMs: AUTO_SAVE_DEBOUNCE_MS,
-  },),
+  },).debounced,
 );
 
 wireKeybindings({
@@ -253,13 +269,27 @@ wireKeybindings({
     void formatDocument();
   },
   gotoDefinition: gotoDefinitionAtCursor,
-  deleteCurrentLine: editorPane.deleteCurrentLine.bind(editorPane,),
-  selectAndCopyCurrentLine: editorPane.selectAndCopyCurrentLine.bind(editorPane,),
-  indentLines: editorPane.indentLines.bind(editorPane,),
-  unindentLines: editorPane.unindentLines.bind(editorPane,),
-  duplicateLineDown: editorPane.duplicateLineDown.bind(editorPane,),
-  swapLineDown: editorPane.swapLineDown.bind(editorPane,),
-  swapLineUp: editorPane.swapLineUp.bind(editorPane,),
+  deleteCurrentLine: function deleteLine() {
+    performDeleteLine({ pane: editorPane, },);
+  },
+  selectAndCopyCurrentLine: function copyLine() {
+    return performSelectAndCopy({ pane: editorPane, },);
+  },
+  indentLines: function indent() {
+    performIndent({ pane: editorPane, },);
+  },
+  unindentLines: function unindent() {
+    performUnindent({ pane: editorPane, },);
+  },
+  duplicateLineDown: function duplicate() {
+    performDuplicateLine({ pane: editorPane, },);
+  },
+  swapLineDown: function swapDown() {
+    performSwapDown({ pane: editorPane, },);
+  },
+  swapLineUp: function swapUp() {
+    performSwapUp({ pane: editorPane, },);
+  },
   openTerminalAtCurrentFile: function openTerminal() {
     const dir = state.currentFilePath !== null
       ? state.currentFilePath.slice(
