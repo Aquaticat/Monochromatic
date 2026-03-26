@@ -11,6 +11,8 @@ import { fetchInlayHints, } from '../inlay/fetch.ts';
 import { INLAY_HINT_DEBOUNCE_MS, } from '../timing.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { GetCurrentFilePathFn, } from './types.ts';
+
 /**
  * Wires inlay hint fetching on content changes with debouncing.
  * Returns a `refresh` function for triggering on file open.
@@ -30,7 +32,7 @@ export function wireInlayHints({
 }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
-  getCurrentFilePath: () => string | null;
+  getCurrentFilePath: GetCurrentFilePathFn;
 },): { refresh: () => void; } {
   editorPane.addEventListener(
     'contentchange',

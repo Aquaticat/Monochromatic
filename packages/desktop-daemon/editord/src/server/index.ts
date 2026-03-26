@@ -4,10 +4,11 @@
  * editord entry point.
  *
  * Boot sequence:
- * 1. Generate a random auth token
+ * 1. Resolve auth token (reuse from previous instance on auto-restart, or generate fresh)
  * 2. Start LSP servers (oxlint, tsgo, dprint) in the background
  * 3. Start h3 HTTP server with static file serving and WebSocket
  * 4. Print the URL with token for the user to open in Chrome
+ * 5. Register SIGINT/SIGTERM handlers for graceful shutdown
  *
  * @example
  * ```sh
@@ -34,6 +35,7 @@ import {
 } from './lsp/lsp-manager.ts';
 import { resolveFsId, } from './operations/resolve-fs-id.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
+import { resolveAuthToken, } from './operations/token-file.ts';
 import { DirWatcher, } from './operations/watch-filesystem.ts';
 import { createWsHandler, } from './ws.ts';
 
@@ -62,12 +64,22 @@ function resolvePort(): number {
   return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
+/** Resolved HTTP listen port. */
+const PORT = resolvePort();
+
 /**
- * Auth token for WebSocket connections, generated fresh each startup.
- * Passed via URL query string; acceptable for localhost-only access
- * but exposes the token in browser history and the Referer header.
+ * Auth token for WebSocket connections.
+ * Reused across dev-mode auto-restarts (token file mtime within 3s)
+ * so the client can reconnect without a stale token.
+ * On cold starts, a fresh UUID is generated.
  */
-const AUTH_TOKEN = crypto.randomUUID();
+const {
+  token: AUTH_TOKEN,
+  cleanup: cleanupToken,
+} = await resolveAuthToken({
+  port: PORT,
+  l,
+},);
 
 /** Highest writable ancestor directory, used as the file tree root. */
 const ROOT_DIR = await resolveRoot();
@@ -187,9 +199,6 @@ app.get(
 
 //endregion WebSocket
 
-/** Resolved HTTP listen port. */
-const PORT = resolvePort();
-
 /** Running HTTP server instance. */
 const _server = serve(
   app,
@@ -208,3 +217,26 @@ const _server = serve(
 );
 
 httpLog.info(`listening on http://localhost:${String(PORT,)}?token=${AUTH_TOKEN}`,);
+
+//region Graceful shutdown
+
+/**
+ * Cleans up resources on process termination.
+ * Stops the token file mtime touch interval and shuts down LSP servers.
+ */
+function handleShutdown(): void {
+  cleanupToken();
+  lspManager.shutdown();
+  process.exit(0);
+}
+
+process.on(
+  'SIGINT',
+  handleShutdown,
+);
+process.on(
+  'SIGTERM',
+  handleShutdown,
+);
+
+//endregion Graceful shutdown

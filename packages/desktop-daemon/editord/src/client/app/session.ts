@@ -10,6 +10,8 @@ import type { FileTree, } from '../file-tree/file-tree.ts';
 import { restoreSessionState, } from '../session/state.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { LoadFileFn, } from './types.ts';
+
 export { wireSessionPersistence, } from '../session/persistence.ts';
 
 /**
@@ -39,13 +41,7 @@ export async function restoreSession(
     ws: EditorWsClient;
     editorPane: EditorPane;
     fileTree: FileTree;
-    loadFileSafe: (
-      opts: {
-        path: string;
-        line?: number | undefined;
-        character?: number | undefined
-      },
-    ) => Promise<void>;
+    loadFileSafe: LoadFileFn;
     queryFilePath: string | null;
   },
 ): Promise<{

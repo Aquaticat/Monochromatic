@@ -8,6 +8,11 @@ import {
   tagged,
 } from '../log.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
+
+import type {
+  GetCurrentFilePathFn,
+  LoadFileFn,
+} from './types.ts';
 import { doGotoDefinition, } from './lsp-goto-definition.ts';
 
 export { doGotoDefinition, };
@@ -35,7 +40,7 @@ export async function formatDocument({
 }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
-  getCurrentFilePath: () => string | null;
+  getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
   const path = getCurrentFilePath();
   if (path === null)
@@ -91,14 +96,8 @@ export function wireGotoDefinition(
   }: {
     ws: EditorWsClient;
     editorPane: EditorPane;
-    getCurrentFilePath: () => string | null;
-    loadFileSafe: (
-      opts: {
-        path: string;
-        line?: number | undefined;
-        character?: number | undefined
-      },
-    ) => Promise<void>;
+    getCurrentFilePath: GetCurrentFilePathFn;
+    loadFileSafe: LoadFileFn;
   },
 ): void {
   editorPane.addEventListener(

@@ -10,6 +10,11 @@ import type { EditorPane, } from '../editor/editor-pane.ts';
 import type { HoverPopup, } from '../hover/hover-popup.ts';
 import type { ReferencesPopup, } from '../references/references-popup.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
+
+import type {
+  GetCurrentFilePathFn,
+  LoadFileFn,
+} from './types.ts';
 import {
   formatDocument,
   wireGotoDefinition,
@@ -61,14 +66,8 @@ export function wireLsp(
       hoverPopup: HoverPopup;
       completionPopup: CompletionPopup;
       referencesPopup: ReferencesPopup;
-      getCurrentFilePath: () => string | null;
-      loadFileSafe: (
-        opts: {
-          path: string;
-          line?: number | undefined;
-          character?: number | undefined
-        },
-      ) => Promise<void>;
+      getCurrentFilePath: GetCurrentFilePathFn;
+      loadFileSafe: LoadFileFn;
     },
 ): {
   formatDocument: () => Promise<void>;

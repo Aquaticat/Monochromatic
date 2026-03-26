@@ -11,6 +11,8 @@ import type { RecentFiles, } from '../recent-files.ts';
 import type { SearchOverlay, } from '../search/search-overlay.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 import type { AppState, } from './events.ts';
+
+import type { LoadFileFn, } from './types.ts';
 import {
   restoreSession,
   wireSessionPersistence,
@@ -55,13 +57,7 @@ export async function bootSession(
       searchOverlay: SearchOverlay;
       state: AppState;
       recentFiles: RecentFiles;
-      loadFileSafe: (
-        opts: {
-          path: string;
-          line?: number | undefined;
-          character?: number | undefined
-        },
-      ) => Promise<void>;
+      loadFileSafe: LoadFileFn;
       refreshInlayHints: () => void;
       queryFilePath: string | null;
     },

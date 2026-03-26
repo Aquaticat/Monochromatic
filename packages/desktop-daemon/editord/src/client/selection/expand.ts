@@ -11,6 +11,8 @@ import {
   tagged,
 } from '../log.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
+
+import type { GetCurrentFilePathFn, } from '../app/types.ts';
 import { fetchChain, } from './fetch.ts';
 import {
   strictlyContains,
@@ -32,15 +34,15 @@ const expandLog = tagged({
  *
  * @param getCurrentFilePath - returns the current file path
  */
-export function doExpandSelection({
+export async function doExpandSelection({
   ws,
   editorPane,
   getCurrentFilePath,
 }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
-  getCurrentFilePath: () => string | null;
-},): void {
+  getCurrentFilePath: GetCurrentFilePathFn;
+},): Promise<void> {
   const path = getCurrentFilePath();
   if (path === null)
     return;
@@ -49,52 +51,49 @@ export function doExpandSelection({
   if (pos === null)
     return;
 
-  void (async function doExpand(): Promise<void> {
-    try {
-      const chain = await fetchChain({
-        ws,
-        path,
-        line: pos.line,
-        character: pos
-        .character,
-      },);
-      if (chain.length === 0)
-        return;
+  try {
+    const chain = await fetchChain({
+      ws,
+      path,
+      line: pos.line,
+      character: pos.character,
+    },);
+    if (chain.length === 0)
+      return;
 
-      const currentSel = editorPane.getSelection();
+    const currentSel = editorPane.getSelection();
 
-      /** No selection or collapsed — apply the innermost range. */
-      if (currentSel === null
-        || (currentSel.startLine === currentSel.endLine
-          && currentSel.startCharacter === currentSel.endCharacter))
-      {
-        const [first,] = chain;
-        if (first !== undefined) {
-          editorPane.setSelection(toFlat({ sr: first, },),);
-          expandLog.info(`expand: applied innermost range`,);
-        }
+    /** No selection or collapsed — apply the innermost range. */
+    if (currentSel === null
+      || (currentSel.startLine === currentSel.endLine
+        && currentSel.startCharacter === currentSel.endCharacter))
+    {
+      const [first,] = chain;
+      if (first !== undefined) {
+        editorPane.setSelection(toFlat({ sr: first, },),);
+        expandLog.info(`expand: applied innermost range`,);
+      }
+      return;
+    }
+
+    /** Find the first range strictly larger than the current selection. */
+    for (const entry of chain) {
+      const flat = toFlat({ sr: entry, },);
+      if (strictlyContains({
+        outer: flat,
+        inner: currentSel,
+      },)) {
+        editorPane.setSelection(flat,);
+        expandLog.info(
+          `expand: ${flat.startLine}:${flat.startCharacter}-${flat.endLine}:${flat.endCharacter}`,
+        );
         return;
       }
-
-      /** Find the first range strictly larger than the current selection. */
-      for (const entry of chain) {
-        const flat = toFlat({ sr: entry, },);
-        if (strictlyContains({
-          outer: flat,
-          inner: currentSel,
-        },)) {
-          editorPane.setSelection(flat,);
-          expandLog.info(
-            `expand: ${flat.startLine}:${flat.startCharacter}-${flat.endLine}:${flat.endCharacter}`,
-          );
-          return;
-        }
-      }
-
-      expandLog.info('expand: already at outermost range',);
     }
-    catch (error) {
-      expandLog.error(`expand failed: ${String(error,)}`,);
-    }
-  })();
+
+    expandLog.info('expand: already at outermost range',);
+  }
+  catch (error) {
+    expandLog.error(`expand failed: ${String(error,)}`,);
+  }
 }

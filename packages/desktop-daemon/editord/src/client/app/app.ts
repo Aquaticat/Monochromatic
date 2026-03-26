@@ -121,18 +121,36 @@ fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> 
   return 'entries' in r ? r.entries : [];
 };
 fileTree.onContextAction = function handleContextAction(action: ContextAction,): void {
-  void (async function dispatch(): Promise<void> {
-    try {
-      await dispatchFsAction({
-        action,
-        ws,
-      },);
-    }
-    catch (error) {
-      showFixedToast({ message: `Action failed: ${String(error,)}`, },);
-    }
-  })();
+  void dispatchContextAction({
+    action,
+    ws,
+  },);
 };
+
+/**
+ * Dispatches a filesystem context action with error handling.
+ *
+ * @param action - context menu action to dispatch
+ *
+ * @param ws - WebSocket client
+ */
+async function dispatchContextAction({
+  action,
+  ws: wsClient,
+}: {
+  action: ContextAction;
+  ws: EditorWsClient;
+},): Promise<void> {
+  try {
+    await dispatchFsAction({
+      action,
+      ws: wsClient,
+    },);
+  }
+  catch (error) {
+    showFixedToast({ message: `Action failed: ${String(error,)}`, },);
+  }
+}
 /**
  * Returns the search scope: selected directory if any, otherwise the root.
  *
@@ -269,6 +287,19 @@ editorPane.addEventListener(
   },).debounced,
 );
 
+/**
+ * Reveals a file in the tree, scrolls to it, loads it, and refreshes hints.
+ *
+ * @param path - absolute file path to reveal and load
+ */
+async function revealAndLoadFile({ path, }: { path: string; },): Promise<void> {
+  await fileTree.revealFiles({ paths: [path,], },);
+  fileTree.scrollToFile({ path, },);
+  await loadFileSafe({ path, },);
+  if (state.currentFileKind === 'text')
+    refreshInlayHints();
+}
+
 wireKeybindings({
   saveCurrentFile: function save() {
     void saveCurrentFile();
@@ -320,13 +351,7 @@ wireKeybindings({
     state.currentFilePath = path;
     recentFiles.push(path,);
     fileTree.updateRecency({ paths: recentFiles.paths, },);
-    void (async function revealLoadAndScroll(): Promise<void> {
-      await fileTree.revealFiles({ paths: [path,], },);
-      fileTree.scrollToFile({ path, },);
-      await loadFileSafe({ path, },);
-      if (state.currentFileKind === 'text')
-        refreshInlayHints();
-    })();
+    void revealAndLoadFile({ path, },);
   },
   completionPopup,
   referencesPopup,

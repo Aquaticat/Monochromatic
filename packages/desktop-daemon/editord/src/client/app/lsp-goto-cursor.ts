@@ -14,6 +14,11 @@ import {
 import type { ReferencesPopup, } from '../references/references-popup.ts';
 import { showCursorToast, } from '../toast/toast.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
+
+import type {
+  GetCurrentFilePathFn,
+  LoadFileFn,
+} from './types.ts';
 import { doGotoDefinition, } from './lsp-goto-definition.ts';
 import { showReferences, } from './lsp-references.ts';
 
@@ -50,14 +55,8 @@ export function performGotoAtCursor(
     referencesPopup,
   }: {
     ws: EditorWsClient;
-    getCurrentFilePath: () => string | null;
-    loadFileSafe: (
-      opts: {
-        path: string;
-        line?: number | undefined;
-        character?: number | undefined
-      },
-    ) => Promise<void>;
+    getCurrentFilePath: GetCurrentFilePathFn;
+    loadFileSafe: LoadFileFn;
     hoverPopup: HoverPopup;
     editorPane: EditorPane;
     referencesPopup: ReferencesPopup;
@@ -71,37 +70,81 @@ export function performGotoAtCursor(
     return;
   }
   cursorLog.info(`line=${pos.line} character=${pos.character}`,);
-  void (async function navigateOrFindReferences(): Promise<void> {
-    const result = await doGotoDefinition({
-      ws,
-      getCurrentFilePath,
-      loadFileSafe,
-      line: pos.line,
-      character: pos.character,
-    },);
-    if (result === 'no-definition') {
-      showCursorToast({
-        message: 'No definition found',
-        rect,
-      },);
-      return;
-    }
-    if (result === 'error') {
-      showCursorToast({
-        message: 'Go to definition failed',
-        rect,
-      },);
-      return;
-    }
-    if (result !== 'already-at-definition')
-      return;
-    await showReferences({
-      ws,
-      referencesPopup,
-      getCurrentFilePath,
-      line: pos.line,
-      character: pos.character,
+  void navigateOrFindReferences({
+    ws,
+    getCurrentFilePath,
+    loadFileSafe,
+    referencesPopup,
+    line: pos.line,
+    character: pos.character,
+    rect,
+  },);
+}
+
+/**
+ * Attempts go-to-definition, falling back to find-references
+ * when already at the definition site.
+ *
+ * @param ws - WebSocket client
+ *
+ * @param getCurrentFilePath - returns the current file path
+ *
+ * @param loadFileSafe - file loading function
+ *
+ * @param referencesPopup - popup to show references in
+ *
+ * @param line - 0-based line number
+ *
+ * @param character - 0-based character offset
+ *
+ * @param rect - cursor bounding rect for toast/popup positioning
+ */
+async function navigateOrFindReferences({
+  ws,
+  getCurrentFilePath,
+  loadFileSafe,
+  referencesPopup,
+  line,
+  character,
+  rect,
+}: {
+  ws: EditorWsClient;
+  getCurrentFilePath: GetCurrentFilePathFn;
+  loadFileSafe: LoadFileFn;
+  referencesPopup: ReferencesPopup;
+  line: number;
+  character: number;
+  rect: DOMRect;
+},): Promise<void> {
+  const result = await doGotoDefinition({
+    ws,
+    getCurrentFilePath,
+    loadFileSafe,
+    line,
+    character,
+  },);
+  if (result === 'no-definition') {
+    showCursorToast({
+      message: 'No definition found',
       rect,
     },);
-  })();
+    return;
+  }
+  if (result === 'error') {
+    showCursorToast({
+      message: 'Go to definition failed',
+      rect,
+    },);
+    return;
+  }
+  if (result !== 'already-at-definition')
+    return;
+  await showReferences({
+    ws,
+    referencesPopup,
+    getCurrentFilePath,
+    line,
+    character,
+    rect,
+  },);
 }

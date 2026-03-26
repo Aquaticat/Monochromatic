@@ -18,6 +18,8 @@ import type { ReferencesPopup, } from '../references/references-popup.ts';
 import { HOVER_DEBOUNCE_MS, } from '../timing.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { GetCurrentFilePathFn, } from './types.ts';
+
 /** Tagged logger for hover. */
 const hoverLog = tagged({
   tag: 'hover',
@@ -53,7 +55,7 @@ export function wireHover(
     hoverPopup: HoverPopup;
     completionPopup: CompletionPopup;
     referencesPopup: ReferencesPopup;
-    getCurrentFilePath: () => string | null;
+    getCurrentFilePath: GetCurrentFilePathFn;
   },
 ): void {
   /** Tracks last hovered position to avoid redundant requests. */

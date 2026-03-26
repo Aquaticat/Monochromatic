@@ -11,6 +11,11 @@ import {
 } from '../log.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type {
+  GetCurrentFilePathFn,
+  LoadFileFn,
+} from './types.ts';
+
 /** Tagged logger for go-to-definition. */
 const gotoLog = tagged({
   tag: 'lsp-goto',
@@ -45,14 +50,8 @@ export async function doGotoDefinition(
     character,
   }: {
     ws: EditorWsClient;
-    getCurrentFilePath: () => string | null;
-    loadFileSafe: (
-      opts: {
-        path: string;
-        line?: number | undefined;
-        character?: number | undefined
-      },
-    ) => Promise<void>;
+    getCurrentFilePath: GetCurrentFilePathFn;
+    loadFileSafe: LoadFileFn;
     line: number;
     character: number;
   },

@@ -12,6 +12,8 @@ import {
 } from '../log.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { GetCurrentFilePathFn, } from './types.ts';
+
 /** Tagged logger for completions. */
 const completionLog = tagged({
   tag: 'completions',
@@ -39,7 +41,7 @@ export async function requestCompletions(
     ws: EditorWsClient;
     completionPopup: CompletionPopup;
     editorPane: EditorPane;
-    getCurrentFilePath: () => string | null;
+    getCurrentFilePath: GetCurrentFilePathFn;
   },
 ): Promise<void> {
   const path = getCurrentFilePath();

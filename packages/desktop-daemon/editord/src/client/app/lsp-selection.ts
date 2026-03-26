@@ -15,6 +15,8 @@ import { doExpandSelection, } from '../selection/expand.ts';
 import { doShrinkSelection, } from '../selection/shrink.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { GetCurrentFilePathFn, } from './types.ts';
+
 /**
  * Wires expand/shrink selection onto the editor.
  *
@@ -36,21 +38,21 @@ export function wireSelectionRange({
 }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
-  getCurrentFilePath: () => string | null;
+  getCurrentFilePath: GetCurrentFilePathFn;
 },): {
   expandSelection: () => void;
   shrinkSelection: () => void
 } {
   return {
     expandSelection: function expand(): void {
-      doExpandSelection({
+      void doExpandSelection({
         ws,
         editorPane,
         getCurrentFilePath,
       },);
     },
     shrinkSelection: function shrink(): void {
-      doShrinkSelection({
+      void doShrinkSelection({
         ws,
         editorPane,
         getCurrentFilePath,

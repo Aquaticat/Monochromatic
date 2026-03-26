@@ -14,6 +14,8 @@ import {
 } from '../log.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { GetCurrentFilePathFn, } from '../app/types.ts';
+
 /** Tagged logger for inlay hints. */
 const inlayLog = tagged({
   tag: 'inlay',
@@ -37,7 +39,7 @@ export async function fetchInlayHints({
 }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
-  getCurrentFilePath: () => string | null;
+  getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
   const path = getCurrentFilePath();
   if (path === null)

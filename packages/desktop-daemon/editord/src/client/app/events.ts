@@ -24,6 +24,8 @@ import type {
 } from '../search/search-overlay.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { LoadFileFn, } from './types.ts';
+
 /** Tagged logger for the app events subsystem. */
 const appLog = tagged({
   tag: 'app-events',
@@ -53,7 +55,7 @@ export type AppState = {
  *
  * @param character - optional character offset within the line
  */
-function loadFileAndRefreshHints({
+async function loadFileAndRefreshHints({
   state,
   loadFileSafe,
   refreshInlayHints,
@@ -62,27 +64,19 @@ function loadFileAndRefreshHints({
   character,
 }: {
   state: AppState;
-  loadFileSafe: (
-    opts: {
-      path: string;
-      line?: number | undefined;
-      character?: number | undefined
-    },
-  ) => Promise<void>;
+  loadFileSafe: LoadFileFn;
   refreshInlayHints: () => void;
   path: string;
   line?: number | undefined;
   character?: number | undefined;
-},): void {
-  void (async function loadAndRefresh(): Promise<void> {
-    await loadFileSafe({
-      path,
-      line,
-      character,
-    },);
-    if (state.currentFileKind === 'text')
-      refreshInlayHints();
-  })();
+},): Promise<void> {
+  await loadFileSafe({
+    path,
+    line,
+    character,
+  },);
+  if (state.currentFileKind === 'text')
+    refreshInlayHints();
 }
 
 /**
@@ -117,13 +111,7 @@ export function wireSelectEvents(
       referencesPopup: ReferencesPopup;
       state: AppState;
       recordFileOpen: (path: string,) => void;
-      loadFileSafe: (
-        opts: {
-          path: string;
-          line?: number | undefined;
-          character?: number | undefined
-        },
-      ) => Promise<void>;
+      loadFileSafe: LoadFileFn;
       refreshInlayHints: () => void;
     },
 ): void {
@@ -134,7 +122,7 @@ export function wireSelectEvents(
     const { path, } = (event as CustomEvent<{ path: string; }>).detail;
     state.currentFilePath = path;
     recordFileOpen(path,);
-    loadFileAndRefreshHints({
+    void loadFileAndRefreshHints({
       state,
       loadFileSafe,
       refreshInlayHints,
@@ -152,7 +140,7 @@ export function wireSelectEvents(
     } = (event as CustomEvent<ResultSelectDetail>).detail;
     state.currentFilePath = path;
     recordFileOpen(path,);
-    loadFileAndRefreshHints({
+    void loadFileAndRefreshHints({
       state,
       loadFileSafe,
       refreshInlayHints,
@@ -172,7 +160,7 @@ export function wireSelectEvents(
       } = (event as CustomEvent<ReferenceSelectDetail>).detail;
       state.currentFilePath = path;
       recordFileOpen(path,);
-      loadFileAndRefreshHints({
+      void loadFileAndRefreshHints({
         state,
         loadFileSafe,
         refreshInlayHints,
@@ -204,13 +192,7 @@ export function wireFileWatching({
   ws: EditorWsClient;
   fileTree: FileTree;
   state: AppState;
-  loadFileSafe: (
-    opts: {
-      path: string;
-      line?: number | undefined;
-      character?: number | undefined
-    },
-  ) => Promise<void>;
+  loadFileSafe: LoadFileFn;
 },): void {
   fileTree.onDirExpanded = function handleDirExpanded(path: string,): void {
     void ws.notify({

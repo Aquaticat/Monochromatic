@@ -9,6 +9,8 @@ import type { EditorPane, } from '../editor/editor-pane.ts';
 import type { FileTree, } from '../file-tree/file-tree.ts';
 import type { SearchOverlay, } from '../search/search-overlay.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
+
+import type { GetCurrentFilePathFn, } from '../app/types.ts';
 import { createDebouncedSave, } from './debounce.ts';
 import type { SessionState, } from './state.ts';
 
@@ -43,7 +45,7 @@ export function wireSessionPersistence(
     editorPane: EditorPane;
     fileTree: FileTree;
     searchOverlay: SearchOverlay;
-    getCurrentFilePath: () => string | null;
+    getCurrentFilePath: GetCurrentFilePathFn;
     getRecentFiles: () => string[];
   },
 ): { saveNow: () => void; } {

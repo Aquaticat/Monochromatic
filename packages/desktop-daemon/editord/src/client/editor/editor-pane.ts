@@ -16,14 +16,14 @@ import type {
   TextEdit,
 } from '../../../protocol.ts';
 import { clearHighlights, } from '../highlight/highlighter.ts';
-import { getPositionFromPoint as posFromPoint, } from '../position-from-point.ts';
+import { getPositionFromPoint, } from '../position-from-point.ts';
 import type { EditorPosition, } from '../position.ts';
 import {
-  getCursorPosition as cursorPos,
-  getCursorRect as cursorRect,
-  getSelection as getSel,
-  restoreCursor as restoreCur,
-  setSelection as setSel,
+  getCursorPosition,
+  getCursorRect,
+  getSelection,
+  restoreCursor,
+  setSelection,
 } from './cursor.ts';
 import {
   createEditorElement,
@@ -230,7 +230,7 @@ export class EditorPane extends HTMLElement {
   setSelection(coords: SelectionCoords,): void {
     if (this.#editor === null)
       return;
-    setSel({
+    setSelection({
       editor: this.#editor,
       coords,
     },);
@@ -244,7 +244,7 @@ export class EditorPane extends HTMLElement {
   getSelection(): SelectionCoords | null {
     if (this.#editor === null)
       return null;
-    return getSel({
+    return getSelection({
       editor: this.#editor,
       shadow: this.#shadow,
     },);
@@ -257,7 +257,7 @@ export class EditorPane extends HTMLElement {
    */
   getCursorPosition(): EditorPosition | null {
     return this.#editor !== null
-      ? cursorPos({
+      ? getCursorPosition({
         editor: this.#editor,
         shadow: this.#shadow,
       },)
@@ -270,7 +270,7 @@ export class EditorPane extends HTMLElement {
    * @returns DOMRect of the caret, or null
    */
   getCursorRect(): DOMRect | null {
-    return cursorRect({ shadow: this.#shadow, },);
+    return getCursorRect({ shadow: this.#shadow, },);
   }
 
   /**
@@ -289,7 +289,7 @@ export class EditorPane extends HTMLElement {
   },): void {
     if (this.#editor === null)
       return;
-    restoreCur({
+    restoreCursor({
       editor: this.#editor,
       line,
       character,
@@ -328,7 +328,7 @@ export class EditorPane extends HTMLElement {
   },): EditorPosition | null {
     if (this.#editor === null)
       return null;
-    return posFromPoint({
+    return getPositionFromPoint({
       editor: this.#editor,
       x,
       y,

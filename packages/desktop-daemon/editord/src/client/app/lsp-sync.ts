@@ -10,6 +10,8 @@ import type { EditorPane, } from '../editor/editor-pane.ts';
 import { CONTENT_SYNC_DEBOUNCE_MS, } from '../timing.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { GetCurrentFilePathFn, } from './types.ts';
+
 /**
  * Wires debounced content sync to the server.
  *
@@ -26,7 +28,7 @@ export function wireContentSync({
 }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
-  getCurrentFilePath: () => string | null;
+  getCurrentFilePath: GetCurrentFilePathFn;
 },): void {
   editorPane.addEventListener(
     'contentchange',
@@ -62,7 +64,7 @@ export function wireDiagnostics({
 }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
-  getCurrentFilePath: () => string | null;
+  getCurrentFilePath: GetCurrentFilePathFn;
 },): void {
   ws.onDiagnostics = function handleDiagnostics({
     path,

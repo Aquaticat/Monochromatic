@@ -17,6 +17,8 @@ import type {
 import { showCursorToast, } from '../toast/toast.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import type { GetCurrentFilePathFn, } from './types.ts';
+
 /** Tagged logger for LSP references. */
 const refLog = tagged({
   tag: 'lsp-references',
@@ -50,7 +52,7 @@ export async function showReferences(
   }: {
     ws: EditorWsClient;
     referencesPopup: ReferencesPopup;
-    getCurrentFilePath: () => string | null;
+    getCurrentFilePath: GetCurrentFilePathFn;
     line: number;
     character: number;
     rect: DOMRect;
