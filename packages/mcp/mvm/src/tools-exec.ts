@@ -57,7 +57,8 @@ export const runTool = defineTool(
         description:
           'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)', },
       from: { type: 'string',
-        description: 'Clone from this existing VM instead of creating fresh', },
+        description:
+          'Clone from this existing VM name instead of creating fresh. Use list_vms to see available names (e.g. "win-01", not "windows").', },
     },
     required: ['command',],
   },

@@ -1,4 +1,8 @@
-import { mkdir, } from 'node:fs/promises';
+import {
+  access,
+  mkdir,
+  readdir,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { createSeedIso, } from './cloud-init.ts';
@@ -86,6 +90,16 @@ export async function clone(
     dstVmDir,
     'disk.qcow2',
   );
+
+  try {
+    await access(srcDiskPath,);
+  }
+  catch {
+    const entries = await readdir(VMS_DIR,);
+    throw new Error(
+      `source VM "${source}" not found (no disk at ${srcDiskPath}). Available VMs: ${entries.join(', ')}`,
+    );
+  }
 
   rl.info('copying disk (this may take a moment)...',);
   await spawn({
