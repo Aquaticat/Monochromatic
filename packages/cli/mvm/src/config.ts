@@ -36,6 +36,15 @@ export const DEFAULT_DISK_SIZE = '20G';
 /** Default root disk size for Windows VMs (Server 2025 requires 32 GB minimum). */
 export const WINDOWS_DISK_SIZE = '40G';
 
+/** Name of the shared directory inside each VM directory, exposed via virtiofs. */
+export const SHARED_DIR_NAME = 'shared';
+
+/** Mount point for the virtiofs share inside Linux guests. */
+export const GUEST_MOUNT_POINT = '/mnt/shared';
+
+/** Mount point for the virtiofs share inside Windows guests (WinFSP + virtiofs driver). */
+export const WINDOWS_GUEST_MOUNT_POINT = 'Z:\\';
+
 /** libvirt connection URI targeting the user session QEMU/KVM daemon. */
 export const LIBVIRT_URI = 'qemu:///session';
 

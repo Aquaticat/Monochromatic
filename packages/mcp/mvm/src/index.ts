@@ -20,6 +20,10 @@ import {
   listTool,
   updateTool,
 } from './tools-lifecycle.ts';
+import {
+  pullTool,
+  pushTool,
+} from './tools-transfer.ts';
 
 export {};
 
@@ -38,6 +42,8 @@ const server = createMcpServer(
     execTool,
     runTool,
     updateTool,
+    pushTool,
+    pullTool,
   ],
 );
 

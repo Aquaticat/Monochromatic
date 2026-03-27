@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import { createSeedIso, } from './cloud-init.ts';
 import {
   DEFAULT_DISK_SIZE,
+  SHARED_DIR_NAME,
   validateName,
   VMS_DIR,
   WINDOWS_DISK_SIZE,
@@ -148,6 +149,16 @@ export async function create({
     ],
   },);
 
+  /** Shared directory exposed to the guest via virtiofs. */
+  const sharedDir = join(
+    vmDir,
+    SHARED_DIR_NAME,
+  );
+  await mkdir(
+    sharedDir,
+    { recursive: true, },
+  );
+
   const seedIsoPath = await createSeedIso({
     guest,
     name,
@@ -158,6 +169,7 @@ export async function create({
     name,
     osFamily: guest.osFamily,
     seedIsoPath,
+    sharedDir,
   },);
 
   await defineVm({

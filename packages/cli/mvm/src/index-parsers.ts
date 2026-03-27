@@ -12,6 +12,8 @@ import {
   execCmd,
   listCmd,
   lsCmd,
+  pullCmd,
+  pushCmd,
   rmCmd,
   runCmd,
   shellCmd,
@@ -47,7 +49,19 @@ export type MvmArgs =
   | {
     cmd: 'run';
     command: string;
-    from: string | undefined
+    from: string | undefined;
+  }
+  | {
+    cmd: 'push';
+    name: string;
+    hostPath: string;
+    guestPath: string;
+  }
+  | {
+    cmd: 'pull';
+    name: string;
+    guestPath: string;
+    hostPath: string;
   };
 
 //endregion Result types
@@ -63,4 +77,6 @@ export const parser = or(
   rmCmd,
   execCmd,
   runCmd,
+  pushCmd,
+  pullCmd,
 );

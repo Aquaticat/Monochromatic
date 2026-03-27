@@ -9,6 +9,10 @@ import {
   destroyAll,
 } from './destroy.ts';
 import { exec, } from './exec.ts';
+import {
+  pullFile,
+  pushFile,
+} from './file-transfer.ts';
 import { parser, } from './index-parsers.ts';
 import { list, } from './list.ts';
 import { run, } from './run.ts';
@@ -120,6 +124,28 @@ else if (args.cmd === 'exec') {
     process.stderr.write(result.stderr,);
   if (result.exitCode !== 0)
     process.exitCode = result.exitCode;
+}
+else if (args.cmd === 'push') {
+  /** Guest path where the file is accessible inside the VM. */
+  const guestFilePath = await pushFile({
+    name: args.name,
+    hostPath: args.hostPath,
+    guestPath: args.guestPath,
+  },);
+  console.log(`pushed ${args.hostPath} -> ${guestFilePath} in VM ${args.name}`,);
+}
+else if (args.cmd === 'pull') {
+  /** File content retrieved from the guest. */
+  const content = await pullFile({
+    name: args.name,
+    guestPath: args.guestPath,
+  },);
+  const { writeFile, } = await import('node:fs/promises',);
+  await writeFile(
+    args.hostPath,
+    content,
+  );
+  console.log(`pulled ${args.guestPath} -> ${args.hostPath} from VM ${args.name}`,);
 }
 else {
   /** Execution result from the ephemeral VM. */

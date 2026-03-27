@@ -1,0 +1,40 @@
+{
+  "name": "@monochromatic-dev/cli-vmsync",
+  "description": "CLI tool for managing VM disk images across KVM and Hyper-V with incremental sync.",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "bin": {
+    "vmsync": "src/index.ts"
+  },
+  "exports": {
+    "./import": "./src/import.ts",
+    "./boot": "./src/boot.ts",
+    "./sync": "./src/sync.ts",
+    "./status": "./src/status.ts",
+    "./list": "./src/list.ts",
+    "./config": "./src/config.ts",
+    "./qemu-img": "./src/qemu-img.ts",
+    "./nbd": "./src/nbd.ts",
+    "./types": "./src/types.ts"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "find-up": "catalog:"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "nano-spawn": "catalog:",
+    "@optique/core": "catalog:",
+    "@optique/run": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/cli/vmsync"
+  },
+  "sideEffects": true
+}

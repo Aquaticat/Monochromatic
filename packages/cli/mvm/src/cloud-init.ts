@@ -66,6 +66,11 @@ users:
   - name: ${linux.defaultUser}
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: ${linux.shell}
+mounts:
+  - [mvm-shared, /mnt/shared, virtiofs, "defaults,nofail", "0", "0"]
+runcmd:
+  - ["mkdir", "-p", "/mnt/shared"]
+  - ["mount", "-a"]
 ${vmAutologin(
   linux.initSystem,
   linux.defaultUser,

@@ -200,4 +200,53 @@ export const updateCmd = command(
   { brief: message`Re-download and rebuild all template images`, },
 );
 
+/** Value parser for file path arguments, displayed as PATH in help. */
+const path = string({ metavar: 'PATH', },);
+
+/** Parser for `push <name> <hostPath> <guestPath>` -- copy file from host into VM. */
+export const pushCmd = command(
+  'push',
+  map(
+    object({
+      name: argument(name,),
+      hostPath: argument(path,),
+      guestPath: argument(path,),
+    },),
+    function toPushArgs(
+      v: { name: string; hostPath: string; guestPath: string; },
+    ): MvmArgs {
+      return {
+        cmd: 'push',
+        name: v.name,
+        hostPath: v.hostPath,
+        guestPath: v.guestPath,
+      };
+    },
+  ),
+  { brief: message`Copy a file from the host into a running VM`, },
+);
+
+/** Parser for `pull <name> <guestPath> <hostPath>` -- copy file from VM to host. */
+export const pullCmd = command(
+  'pull',
+  map(
+    object({
+      name: argument(name,),
+      guestPath: argument(path,),
+      hostPath: argument(path,),
+    },),
+    function toPullArgs(
+      v: { name: string; guestPath: string; hostPath: string; },
+    ): MvmArgs {
+      return {
+        cmd: 'pull',
+        name: v.name,
+        guestPath: v.guestPath,
+        hostPath: v.hostPath,
+      };
+    },
+  ),
+  { brief: message`Copy a file from a running VM to the host`, },
+);
+
 //endregion Subcommand parsers

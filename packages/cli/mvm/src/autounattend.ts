@@ -1,6 +1,7 @@
 import {
   COMPONENT_ATTRS,
   virtioInstallCommand,
+  wingetInstallCommand,
 } from './autounattend-virtio.ts';
 import { windowsPeSection, } from './autounattend-winpe.ts';
 import { createIso, } from './iso9660.ts';
@@ -100,8 +101,18 @@ ${windowsPeSection({ imageIndex, },)}
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
           <Order>3</Order>
+          <CommandLine>powershell -NoProfile -Command "Set-Service -Name VirtioFsSvc -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service VirtioFsSvc -ErrorAction SilentlyContinue"</CommandLine>
+          <Description>Enable and start VirtIO FS service for host-guest file sharing</Description>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+          <Order>4</Order>
           <CommandLine>powershell -NoProfile -Command "Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False"</CommandLine>
           <Description>Disable Windows Firewall for VM networking</Description>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+          <Order>5</Order>
+          <CommandLine>${wingetInstallCommand()}</CommandLine>
+          <Description>Install winget package manager for Windows Server</Description>
         </SynchronousCommand>
       </FirstLogonCommands>
     </component>

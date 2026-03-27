@@ -7,6 +7,7 @@ import { join, } from 'node:path';
 
 import { createSeedIso, } from './cloud-init.ts';
 import {
+  SHARED_DIR_NAME,
   validateName,
   VMS_DIR,
 } from './config.ts';
@@ -119,6 +120,16 @@ export async function clone(
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
+  /** Shared directory exposed to the guest via virtiofs. */
+  const sharedDir = join(
+    dstVmDir,
+    SHARED_DIR_NAME,
+  );
+  await mkdir(
+    sharedDir,
+    { recursive: true, },
+  );
+
   const seedIsoPath = await createSeedIso({
     guest,
     name: destination,
@@ -129,6 +140,7 @@ export async function clone(
     name: destination,
     osFamily: guest.osFamily,
     seedIsoPath,
+    sharedDir,
   },);
 
   await defineVm({

@@ -16,7 +16,8 @@
     "./clone": "./src/clone.ts",
     "./registry": "./src/registry.ts",
     "./update": "./src/update.ts",
-    "./meta": "./src/meta.ts"
+    "./meta": "./src/meta.ts",
+    "./file-transfer": "./src/file-transfer.ts"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",

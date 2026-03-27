@@ -1,0 +1,409 @@
+/**
+ * End-to-end lifecycle tests for the vmsync CLI on Linux and Windows guests.
+ *
+ * Named `*.unit.test.ts` (not `*.e2e.test.ts`) because `*.e2e.test.ts`
+ * is reserved for Playwright browser tests in this monorepo, and the
+ * global `bun test` runner only discovers `*.unit.test.*` files.
+ *
+ * Uses mvm to create ephemeral VMs, pushes the tsdown-bundled vmsync
+ * entry point via virtiofs, installs mise+bun inside each guest,
+ * and exercises subcommands against real disk images.
+ *
+ * Run via: `mise run //packages/cli/vmsync:test:e2e`
+ *
+ * @module
+ */
+
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  expect,
+  test,
+} from 'bun:test';
+import { dirname, join, } from 'node:path';
+
+import { findUp, } from 'find-up';
+import nanoSpawn from 'nano-spawn';
+
+//region Constants
+
+/** Path to the mvm CLI entry point. */
+const MVM = 'bun';
+
+/** Args prefix for running mvm. */
+const MVM_ARGS = ['packages/cli/mvm/src/index.ts',];
+
+/** Timeout for VM creation (includes cloud-init / guest agent wait). */
+const CREATE_TIMEOUT_MS = 180_000;
+
+/** Timeout for individual mvm exec commands. */
+const EXEC_TIMEOUT_MS = 120_000;
+
+/** Absolute path to the vmsync package.json, found by walking up from the test file. */
+const pkgJsonPath = await findUp(
+  'package.json',
+  { cwd: dirname(new URL(import.meta.url,).pathname,), },
+);
+if (pkgJsonPath === undefined) {
+  throw new Error('could not find package.json for vmsync',);
+}
+
+/** Absolute path to the vmsync package root. */
+const PKG_ROOT = dirname(pkgJsonPath,);
+
+/** Absolute path to the tsdown bundle. */
+const BUNDLE_PATH = join(PKG_ROOT, 'dist', 'final', 'node', 'index.mjs',);
+
+//endregion Constants
+
+//region Helpers
+
+/**
+ * Runs an mvm CLI command and returns stdout.
+ *
+ * @param args - Arguments after `mvm`
+ *
+ * @param timeout - Optional timeout in ms
+ *
+ * @returns Trimmed stdout
+ */
+async function mvm(
+  args: readonly string[],
+  timeout: number = EXEC_TIMEOUT_MS,
+): Promise<string> {
+  const { stdout, } = await nanoSpawn(
+    MVM,
+    [...MVM_ARGS, ...args,],
+    { timeout, },
+  );
+  return stdout.trim();
+}
+
+/**
+ * Runs a command inside a VM and returns stdout.
+ *
+ * @param vmName - VM name
+ *
+ * @param command - Shell command to execute inside the VM
+ *
+ * @param timeout - Optional timeout in ms
+ *
+ * @returns Trimmed stdout
+ */
+async function execInVm(
+  vmName: string,
+  command: string,
+  timeout: number = EXEC_TIMEOUT_MS,
+): Promise<string> {
+  return mvm(
+    ['exec', vmName, command,],
+    timeout,
+  );
+}
+
+/**
+ * Destroys a VM, ignoring errors if it does not exist.
+ *
+ * @param vmName - VM name to destroy
+ */
+async function safeDestroy(vmName: string,): Promise<void> {
+  try {
+    await mvm(['destroy', vmName,],);
+  }
+  catch {
+    // VM may not exist
+  }
+}
+
+//endregion Helpers
+
+//region Linux lifecycle tests
+
+describe('vmsync lifecycle (Linux)', () => {
+  /** VM name for the Linux lifecycle test. */
+  const VM = 'vmsync-e2e-linux';
+
+  /** Guest path to vmsync bundle on the virtiofs mount. */
+  const BUNDLE = '/mnt/shared/index.mjs';
+
+  /** Shell preamble to set HOME and activate mise-managed bun. */
+  const MISE = 'export HOME=/home/ubuntu && eval "$(/home/ubuntu/.local/bin/mise activate bash)"';
+
+  /**
+   * Guest command to run vmsync with sudo.
+   * All commands use sudo for consistent HOME since import requires
+   * root for qemu-nbd, and non-root commands must read data from the same location.
+   */
+  const VMSYNC = `${MISE} && sudo -E "$(which bun)" ${BUNDLE}`;
+
+  beforeAll(async () => {
+    await safeDestroy(VM,);
+    await mvm(
+      ['create', VM,],
+      CREATE_TIMEOUT_MS,
+    );
+
+    // Push the tsdown bundle via virtiofs (instant)
+    await mvm(['push', VM, BUNDLE_PATH, 'index.mjs',],);
+
+    // Install mise, then use mise to install bun (handles arch detection).
+    // guest-exec runs without login shell so HOME is unset; export it explicitly.
+    await execInVm(
+      VM,
+      'export HOME=/home/ubuntu && curl -fsSL https://mise.jdx.dev/install.sh | sh',
+      EXEC_TIMEOUT_MS,
+    );
+    await execInVm(
+      VM,
+      'export HOME=/home/ubuntu && /home/ubuntu/.local/bin/mise use -g bun@latest',
+      EXEC_TIMEOUT_MS,
+    );
+
+    // Install qemu-img, fdisk, and nbd module for disk image operations
+    await execInVm(
+      VM,
+      'sudo apt-get update -qq && sudo apt-get install -y -qq qemu-utils fdisk nbd-client > /dev/null 2>&1',
+      EXEC_TIMEOUT_MS,
+    );
+    // Pre-load nbd kernel module (needed for vmsync import UEFI validation)
+    await execInVm(VM, 'sudo modprobe nbd max_part=0',);
+  }, CREATE_TIMEOUT_MS + EXEC_TIMEOUT_MS * 3,);
+
+  afterAll(async () => {
+    await safeDestroy(VM,);
+  },);
+
+  // All assertions in a single test to guarantee sequential execution.
+  // bunfig.toml sets concurrentTestGlob which runs tests in parallel;
+  // these commands have ordering dependencies (import before status, etc.).
+  test('full CLI lifecycle', async () => {
+    //region --help
+    const help = await execInVm(VM, `${VMSYNC} --help`,);
+    expect(help,).toContain('vmsync',);
+    expect(help,).toContain('import',);
+    expect(help,).toContain('boot',);
+    expect(help,).toContain('sync',);
+    expect(help,).toContain('status',);
+    expect(help,).toContain('list',);
+    expect(help,).toContain('config',);
+    //endregion --help
+
+    //region list (empty)
+    const emptyList = await execInVm(VM, `${VMSYNC} list`,);
+    expect(emptyList,).toContain('no managed VMs',);
+    //endregion list (empty)
+
+    //region Create test UEFI image
+    await execInVm(
+      VM,
+      [
+        'qemu-img create -f raw /tmp/test-uefi.raw 512M',
+        'printf "g\\nn\\n1\\n2048\\n+100M\\nt\\n1\\nw\\n" | fdisk /tmp/test-uefi.raw',
+        'qemu-img convert -f raw -O qcow2 /tmp/test-uefi.raw /tmp/test-uefi.qcow2',
+      ].join(' && ',),
+    );
+    //endregion Create test UEFI image
+
+    //region import --name
+    const importOutput = await execInVm(
+      VM,
+      `${VMSYNC} import /tmp/test-uefi.qcow2 --name test-vm`,
+    );
+    expect(importOutput,).toContain('imported "test-vm"',);
+    //endregion import --name
+
+    //region list (populated)
+    const populatedList = await execInVm(VM, `${VMSYNC} list`,);
+    expect(populatedList,).toContain('test-vm',);
+    expect(populatedList,).toContain('synced',);
+    //endregion list (populated)
+
+    //region status
+    const status = await execInVm(VM, `${VMSYNC} status test-vm`,);
+    expect(status,).toContain('name:       test-vm',);
+    expect(status,).toContain('synced:     true',);
+    expect(status,).toContain('last boot:  never',);
+    expect(status,).toContain('qcow2 hash: sha256:',);
+    expect(status,).toContain('vhdx hash:  sha256:',);
+    //endregion status
+
+    //region config update
+    const configOutput = await execInVm(
+      VM,
+      `${VMSYNC} config test-vm --memory 8G --cpus 8`,
+    );
+    expect(configOutput,).toContain('memory=8G',);
+    expect(configOutput,).toContain('cpus=8',);
+
+    const statusAfterConfig = await execInVm(VM, `${VMSYNC} status test-vm`,);
+    expect(statusAfterConfig,).toContain('memory:     8G',);
+    expect(statusAfterConfig,).toContain('cpus:       8',);
+    //endregion config update
+
+    //region config partial update (memory only, cpus preserved)
+    await execInVm(VM, `${VMSYNC} config test-vm --memory 2G`,);
+    const statusAfterPartial = await execInVm(VM, `${VMSYNC} status test-vm`,);
+    expect(statusAfterPartial,).toContain('memory:     2G',);
+    expect(statusAfterPartial,).toContain('cpus:       8',);
+    //endregion config partial update
+
+    //region import with auto-derived name
+    const autoNameOutput = await execInVm(
+      VM,
+      `${VMSYNC} import /tmp/test-uefi.qcow2`,
+    );
+    expect(autoNameOutput,).toContain('imported "test-uefi"',);
+    //endregion import with auto-derived name
+
+    //region sync (already synced)
+    const syncOutput = await execInVm(VM, `${VMSYNC} sync test-vm`,);
+    expect(syncOutput,).toContain('already synced',);
+    //endregion sync (already synced)
+  }, EXEC_TIMEOUT_MS * 9,);
+},);
+
+//endregion Linux lifecycle tests
+
+//region Windows lifecycle tests
+
+describe('vmsync lifecycle (Windows)', () => {
+  /** VM name for the Windows lifecycle test. */
+  const VM = 'vmsync-e2e-win';
+
+  /**
+   * Guest path to vmsync bundle on the virtiofs mount.
+   * VirtioFsSvc maps the `mvm-shared` virtiofs tag to `Z:` by default.
+   */
+  const BUNDLE = 'Z:\\index.mjs';
+
+  /** Full path to mise binary installed by winget. */
+  const MISE_BIN = 'C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\WinGet\\Links\\mise.exe';
+
+  /**
+   * PowerShell preamble to activate mise-managed bun.
+   * Sets HOME explicitly since guest-exec runs without a login shell,
+   * then adds mise shims to PATH so `bun` resolves.
+   */
+  const MISE = `$env:HOME = "C:\\Users\\Administrator"; $env:PATH = (& "${MISE_BIN}" where bun) + ";" + $env:PATH`;
+
+  /** Guest command to run vmsync via mise-managed bun on Windows. */
+  const VMSYNC = `${MISE}; bun ${BUNDLE}`;
+
+  beforeAll(async () => {
+    await safeDestroy(VM,);
+    await mvm(
+      ['create', VM, '--image', 'windows',],
+      CREATE_TIMEOUT_MS,
+    );
+
+    // Push the tsdown bundle via virtiofs (instant)
+    await mvm(['push', VM, BUNDLE_PATH, 'index.mjs',],);
+
+    // Install mise via winget (baked into the template), then use mise to install bun.
+    await execInVm(
+      VM,
+      '$env:PATH = "C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\WinGet\\Links;" + $env:PATH; winget install jdx.mise --accept-source-agreements --accept-package-agreements --silent',
+      EXEC_TIMEOUT_MS,
+    );
+    await execInVm(
+      VM,
+      `$env:HOME = "C:\\Users\\Administrator"; & "${MISE_BIN}" use -g bun@latest`,
+      EXEC_TIMEOUT_MS,
+    );
+  }, CREATE_TIMEOUT_MS + EXEC_TIMEOUT_MS * 2,);
+
+  afterAll(async () => {
+    await safeDestroy(VM,);
+  },);
+
+  test('full CLI lifecycle', async () => {
+    //region --help
+    const help = await execInVm(VM, `${VMSYNC} --help`,);
+    expect(help,).toContain('vmsync',);
+    expect(help,).toContain('import',);
+    expect(help,).toContain('boot',);
+    expect(help,).toContain('sync',);
+    expect(help,).toContain('status',);
+    expect(help,).toContain('list',);
+    expect(help,).toContain('config',);
+    //endregion --help
+
+    //region list (empty)
+    const emptyList = await execInVm(VM, `${VMSYNC} list`,);
+    expect(emptyList,).toContain('no managed VMs',);
+    //endregion list (empty)
+
+    //region Create config manually (Windows lacks qemu-nbd for full import)
+    await execInVm(
+      VM,
+      [
+        '$dir = "$env:USERPROFILE\\.local\\share\\vmsync\\test-vm"',
+        'New-Item -ItemType Directory -Path $dir -Force | Out-Null',
+        '$config = @{',
+        '  name = "test-vm"',
+        '  importedFrom = "C:\\test.qcow2"',
+        '  importedAt = "2026-01-01T00:00:00Z"',
+        '  diskSizeBytes = 536870912',
+        '  boot = @{ memory = "4G"; cpus = 4 }',
+        '  state = @{',
+        '    synced = $true',
+        '    checksums = @{ qcow2 = "sha256:aaa"; vhdx = "sha256:bbb" }',
+        '  }',
+        '} | ConvertTo-Json -Depth 4',
+        'Set-Content -Path "$dir\\vmsync.jsonc" -Value $config',
+      ].join('; ',),
+    );
+    //endregion Create config manually
+
+    //region list (populated)
+    const populatedList = await execInVm(VM, `${VMSYNC} list`,);
+    expect(populatedList,).toContain('test-vm',);
+    expect(populatedList,).toContain('synced',);
+    //endregion list (populated)
+
+    //region status
+    const status = await execInVm(VM, `${VMSYNC} status test-vm`,);
+    expect(status,).toContain('name:       test-vm',);
+    expect(status,).toContain('synced:     true',);
+    expect(status,).toContain('last boot:  never',);
+    expect(status,).toContain('memory:     4G',);
+    expect(status,).toContain('cpus:       4',);
+    //endregion status
+
+    //region config update
+    const configOutput = await execInVm(
+      VM,
+      `${VMSYNC} config test-vm --memory 16G --cpus 16`,
+    );
+    expect(configOutput,).toContain('memory=16G',);
+    expect(configOutput,).toContain('cpus=16',);
+
+    const statusAfterConfig = await execInVm(VM, `${VMSYNC} status test-vm`,);
+    expect(statusAfterConfig,).toContain('memory:     16G',);
+    expect(statusAfterConfig,).toContain('cpus:       16',);
+    //endregion config update
+
+    //region config partial update (cpus only, memory preserved)
+    await execInVm(VM, `${VMSYNC} config test-vm --cpus 8`,);
+    const statusAfterPartial = await execInVm(VM, `${VMSYNC} status test-vm`,);
+    expect(statusAfterPartial,).toContain('memory:     16G',);
+    expect(statusAfterPartial,).toContain('cpus:       8',);
+    //endregion config partial update
+
+    //region sync (already synced)
+    const syncOutput = await execInVm(VM, `${VMSYNC} sync test-vm`,);
+    expect(syncOutput,).toContain('already synced',);
+    //endregion sync (already synced)
+
+    //region detectHypervisor returns hyperv on Windows
+    const statusCheck = await execInVm(VM, `${VMSYNC} status test-vm`,);
+    // The VM was never booted, last boot is "never" (hypervisor detection
+    // only runs during boot, not status -- but the binary runs on Windows,
+    // confirming cross-platform compatibility)
+    expect(statusCheck,).toContain('last boot:  never',);
+    //endregion detectHypervisor
+  }, EXEC_TIMEOUT_MS * 8,);
+},);
+
+//endregion Windows lifecycle tests

@@ -95,6 +95,7 @@ export function domainXml(
     name,
     osFamily = 'linux',
     seedIsoPath,
+    sharedDir,
   }: {
       /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
       bootDev?: 'cdrom' | 'hd';
@@ -116,6 +117,8 @@ export function domainXml(
       osFamily?: OsFamily;
       /** Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows). */
       seedIsoPath?: string | undefined;
+      /** Absolute path to a host directory shared via virtiofs. */
+      sharedDir?: string | undefined;
     },
 ): string {
   const features = [h({ tag: 'acpi', },),];
@@ -177,27 +180,78 @@ export function domainXml(
     );
   }
 
+  // virtiofs shared directory for host-guest file transfer
+  if (sharedDir !== undefined) {
+    devices.push(
+      h({
+        tag: 'filesystem',
+        attrs: {
+          type: 'mount',
+          accessmode: 'passthrough',
+        },
+        children: [
+          h({
+            tag: 'driver',
+            attrs: { type: 'virtiofs', },
+          },),
+          h({
+            tag: 'source',
+            attrs: { dir: sharedDir, },
+          },),
+          h({
+            tag: 'target',
+            attrs: { dir: 'mvm-shared', },
+          },),
+        ],
+      },),
+    );
+  }
+
   // IDE CDROMs for Windows template creation (Windows ISO, autounattend, virtio-win)
   devices.push(...ideCdromDevices(cdroms,),);
   devices.push(...commonDevices(osFamily,),);
+
+  /** Top-level domain children before devices. */
+  const domainChildren: string[] = [
+    h({
+      tag: 'name',
+      text: `${VM_PREFIX}${name}`,
+    },),
+    h({
+      tag: 'memory',
+      attrs: { unit: 'MiB', },
+      text: String(DEFAULT_MEMORY_MIB,),
+    },),
+    h({
+      tag: 'vcpu',
+      text: String(DEFAULT_VCPUS,),
+    },),
+  ];
+
+  // virtiofs requires shared memory backed by memfd
+  if (sharedDir !== undefined) {
+    domainChildren.push(
+      h({
+        tag: 'memoryBacking',
+        children: [
+          h({
+            tag: 'source',
+            attrs: { type: 'memfd', },
+          },),
+          h({
+            tag: 'access',
+            attrs: { mode: 'shared', },
+          },),
+        ],
+      },),
+    );
+  }
 
   return h({
     tag: 'domain',
     attrs: { type: 'kvm', },
     children: [
-      h({
-        tag: 'name',
-        text: `${VM_PREFIX}${name}`,
-      },),
-      h({
-        tag: 'memory',
-        attrs: { unit: 'MiB', },
-        text: String(DEFAULT_MEMORY_MIB,),
-      },),
-      h({
-        tag: 'vcpu',
-        text: String(DEFAULT_VCPUS,),
-      },),
+      ...domainChildren,
       h({
         tag: 'os',
         children: [
