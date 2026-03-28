@@ -277,15 +277,16 @@ describe('vmsync lifecycle (Windows)', () => {
    */
   const BUNDLE = 'Z:\\index.mjs';
 
-  /** Full path to mise binary installed by winget. */
-  const MISE_BIN = 'C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\WinGet\\Links\\mise.exe';
+  /** Full path to mise binary installed at test runtime. */
+  const MISE_BIN = 'C:\\Users\\Administrator\\.local\\bin\\mise.exe';
 
   /**
    * PowerShell preamble to activate mise-managed bun.
-   * Sets HOME explicitly since guest-exec runs without a login shell,
-   * then adds mise shims to PATH so `bun` resolves.
+   * Uses `mise which bun | Split-Path` to get the bin directory because
+   * `mise where` returns the install root (missing the `bin` subdirectory).
+   * Guest agent runs as SYSTEM so mise installs to systemprofile, which is fine.
    */
-  const MISE = `$env:HOME = "C:\\Users\\Administrator"; $env:PATH = (& "${MISE_BIN}" where bun) + ";" + $env:PATH`;
+  const MISE = `$env:PATH = ((& "${MISE_BIN}" which bun 2>$null) | Split-Path) + ";" + $env:PATH`;
 
   /** Guest command to run vmsync via mise-managed bun on Windows. */
   const VMSYNC = `${MISE}; bun ${BUNDLE}`;
@@ -300,18 +301,47 @@ describe('vmsync lifecycle (Windows)', () => {
     // Push the tsdown bundle via virtiofs (instant)
     await mvm(['push', VM, BUNDLE_PATH, 'index.mjs',],);
 
-    // Install mise via winget (baked into the template), then use mise to install bun.
+    // Install Visual C++ runtime (required by mise.exe, not present on Server Core).
     await execInVm(
       VM,
-      '$env:PATH = "C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\WinGet\\Links;" + $env:PATH; winget install jdx.mise --accept-source-agreements --accept-package-agreements --silent',
+      [
+        '$ProgressPreference = "SilentlyContinue"',
+        'Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "$env:TEMP\\vc_redist.x64.exe"',
+        'Start-Process -FilePath "$env:TEMP\\vc_redist.x64.exe" -ArgumentList "/install","/quiet","/norestart" -Wait',
+      ].join('; ',),
       EXEC_TIMEOUT_MS,
     );
+
+    // Download and install mise at test runtime.
+    // Resolves the latest version tag via GitHub redirect, then downloads
+    // the versioned zip to ensure we always get the actual latest release.
     await execInVm(
       VM,
-      `$env:HOME = "C:\\Users\\Administrator"; & "${MISE_BIN}" use -g bun@latest`,
+      [
+        '$ProgressPreference = "SilentlyContinue"',
+        '$env:HOME = "C:\\Users\\Administrator"',
+        '$dir = "C:\\Users\\Administrator\\.local\\bin"',
+        'New-Item -ItemType Directory -Path $dir -Force | Out-Null',
+        '$r = Invoke-WebRequest -Uri "https://github.com/jdx/mise/releases/latest" -MaximumRedirection 0 -UseBasicParsing -ErrorAction SilentlyContinue',
+        '$version = ($r.Headers.Location -split "/tag/")[1]',
+        '$url = "https://github.com/jdx/mise/releases/download/$version/mise-$version-windows-x64.zip"',
+        'Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\\mise.zip" -UseBasicParsing',
+        'Expand-Archive -Path "$env:TEMP\\mise.zip" -DestinationPath "$env:TEMP\\mise" -Force',
+        'Copy-Item "$env:TEMP\\mise\\mise\\bin\\mise.exe" (Join-Path $dir "mise.exe") -Force',
+        'Remove-Item "$env:TEMP\\mise.zip","$env:TEMP\\mise" -Recurse -Force',
+      ].join('; ',),
       EXEC_TIMEOUT_MS,
     );
-  }, CREATE_TIMEOUT_MS + EXEC_TIMEOUT_MS * 2,);
+
+    // Use mise to install bun (handles arch detection).
+    // ErrorActionPreference=Continue prevents PowerShell from treating
+    // mise's stderr progress output as a terminating error.
+    await execInVm(
+      VM,
+      `$ErrorActionPreference = "Continue"; & "${MISE_BIN}" use -g bun@latest 2>$null; exit $LASTEXITCODE`,
+      EXEC_TIMEOUT_MS,
+    );
+  }, CREATE_TIMEOUT_MS + EXEC_TIMEOUT_MS * 4,);
 
   afterAll(async () => {
     await safeDestroy(VM,);
@@ -335,6 +365,8 @@ describe('vmsync lifecycle (Windows)', () => {
     //endregion list (empty)
 
     //region Create config manually (Windows lacks qemu-nbd for full import)
+    // Uses newline joins because PowerShell hash literals (@{}) require
+    // actual newlines between entries, not semicolons.
     await execInVm(
       VM,
       [
@@ -352,7 +384,7 @@ describe('vmsync lifecycle (Windows)', () => {
         '  }',
         '} | ConvertTo-Json -Depth 4',
         'Set-Content -Path "$dir\\vmsync.jsonc" -Value $config',
-      ].join('; ',),
+      ].join('\n',),
     );
     //endregion Create config manually
 

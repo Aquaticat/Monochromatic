@@ -7,6 +7,7 @@
 
 import {
   mkdir,
+  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -14,6 +15,7 @@ import { join, } from 'node:path';
 import { createAutounattendIso, } from './autounattend.ts';
 import {
   IMAGES_DIR,
+  VM_PREFIX,
   VMS_DIR,
   WINDOWS_DISK_SIZE,
   WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS,
@@ -22,6 +24,7 @@ import { domainXml, } from './domain-xml.ts';
 import {
   ensureImage,
   ensureVirtioWin,
+  ensureWinFsp,
 } from './image.ts';
 import {
   l,
@@ -38,6 +41,7 @@ import { waitForGuestAgent, } from './virsh-wait.ts';
 import {
   defineVm,
   startVm,
+  virsh,
 } from './virsh.ts';
 
 /**
@@ -73,10 +77,11 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
   rl.info(`creating Windows template ${spec.templateFileName} from evaluation ISO...`,);
   rl.info('this will take 15-30 minutes for unattended Windows installation',);
 
-  // Download both the Windows ISO and virtio-win ISO
-  const [windowsIsoPath, virtioWinPath,] = await Promise.all([
+  // Download the Windows ISO, virtio-win ISO, and WinFsp MSI
+  const [windowsIsoPath, virtioWinPath, winfspMsiPath,] = await Promise.all([
     ensureImage(spec,),
     ensureVirtioWin(),
+    ensureWinFsp(),
   ],);
 
   const vmDir = join(
@@ -107,7 +112,7 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     ],
   },);
 
-  // Generate autounattend ISO with answer file for unattended install
+  // Generate autounattend ISO with answer file
   const autounattendIso = createAutounattendIso({
     hostname: TEMPLATE_VM_NAME,
     imageIndex: spec.imageIndex,
@@ -146,6 +151,14 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     timeoutMs: WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS,
   },);
 
+  // Install VirtioFsSvc dependencies via guest agent.
+  // Cannot be done in autounattend FirstLogonCommands because the guest agent
+  // starts at Order 2 and the template code shuts down the VM before later Orders complete.
+  await installVirtioFs({
+    rl,
+    winfspMsiPath,
+  },);
+
   // Phase 1 complete: Windows installed with SATA disk, VirtIO drivers installed.
   // Switch to VirtIO disk bus and verify Windows boots with VirtIO storage.
   await verifyVirtioBoot({
@@ -170,3 +183,194 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
 
   return templatePath;
 }
+
+//region VirtioFS installation helpers
+
+/** Milliseconds to wait between polling for guest-exec completion. */
+const GUEST_EXEC_POLL_MS = 500;
+
+/**
+ * Runs a PowerShell command inside the template VM via guest agent and waits for completion.
+ * Uses virsh directly because the `exec()` module reads VM metadata which doesn't
+ * exist yet during template creation.
+ *
+ * @param command - PowerShell command string
+ *
+ * @returns Exit code from the guest process
+ *
+ * @example
+ * ```ts
+ * await guestExecWait({ command: 'Get-Service QEMU-GA' });
+ * ```
+ */
+async function guestExecWait({
+  command,
+}: {
+  command: string;
+},): Promise<number> {
+  /** Full VM name with prefix. */
+  const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
+
+  const startResult = await virsh({
+    args: [
+      'qemu-agent-command',
+      fullName,
+      JSON.stringify({
+        execute: 'guest-exec',
+        arguments: {
+          path: 'powershell.exe',
+          arg: ['-NoProfile', '-NonInteractive', '-Command', command,],
+          'capture-output': true,
+        },
+      },),
+    ],
+  },);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
+  const { pid, } = (JSON.parse(startResult,) as { return: { pid: number; }; }).return;
+
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- polling loop
+  while (true) {
+    // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
+    const statusResult = await virsh({
+      args: [
+        'qemu-agent-command',
+        fullName,
+        JSON.stringify({
+          execute: 'guest-exec-status',
+          arguments: { pid, },
+        },),
+      ],
+    },);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
+    const status = (JSON.parse(statusResult,) as { return: { exited: boolean; exitcode?: number; }; }).return;
+    if (status.exited) {
+      return status.exitcode ?? 0;
+    }
+    // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling with setTimeout
+    await new Promise(function pollDelay(resolve,) {
+      setTimeout(resolve, GUEST_EXEC_POLL_MS,);
+    },);
+  }
+}
+
+/**
+ * Pushes a host file into the template VM via the guest agent file-write protocol.
+ * Transfers the file in 1 MB base64-encoded chunks.
+ *
+ * @param guestPath - Destination path inside the guest
+ *
+ * @param hostPath - Source file path on the host
+ *
+ * @example
+ * ```ts
+ * await guestFilePush({ hostPath: '/tmp/winfsp.msi', guestPath: 'C:\\winfsp.msi' });
+ * ```
+ */
+async function guestFilePush({
+  guestPath,
+  hostPath,
+}: {
+  guestPath: string;
+  hostPath: string;
+},): Promise<void> {
+  const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
+  const data = await readFile(hostPath,);
+
+  /** Open file on guest for writing. */
+  const openResult = await virsh({
+    args: [
+      'qemu-agent-command',
+      fullName,
+      JSON.stringify({
+        execute: 'guest-file-open',
+        arguments: { path: guestPath, mode: 'wb', },
+      },),
+    ],
+  },);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
+  const handle = (JSON.parse(openResult,) as { return: number; }).return;
+
+  /** Write in 48 KB raw chunks (~65 KB base64, fits within virsh CLI arg limits). */
+  const RAW_CHUNK = 48 * 1024;
+  for (let offset = 0; offset < data.length; offset += RAW_CHUNK) {
+    const chunk = data.subarray(offset, offset + RAW_CHUNK,);
+    const b64 = Buffer.from(chunk,).toString('base64',);
+    // oxlint-disable-next-line no-await-in-loop -- deliberate serial file transfer
+    await virsh({
+      args: [
+        'qemu-agent-command',
+        fullName,
+        JSON.stringify({
+          execute: 'guest-file-write',
+          arguments: { handle, 'buf-b64': b64, },
+        },),
+      ],
+    },);
+  }
+
+  /** Close the file handle. */
+  await virsh({
+    args: [
+      'qemu-agent-command',
+      fullName,
+      JSON.stringify({
+        execute: 'guest-file-close',
+        arguments: { handle, },
+      },),
+    ],
+  },);
+}
+
+/**
+ * Installs VirtioFsSvc and its WinFsp dependency inside the template VM.
+ * Pushes the WinFsp MSI via guest agent, installs it, then installs the
+ * all-in-one VirtIO guest tools MSI from the attached virtio-win CDROM,
+ * and configures VirtioFsSvc for automatic startup.
+ *
+ * @param rl - Tagged logger
+ *
+ * @param winfspMsiPath - Host path to the cached WinFsp MSI
+ *
+ * @example
+ * ```ts
+ * await installVirtioFs({ rl, winfspMsiPath: '/path/to/winfsp.msi' });
+ * ```
+ */
+async function installVirtioFs({
+  rl,
+  winfspMsiPath,
+}: {
+  rl: ReturnType<typeof tagged>;
+  winfspMsiPath: string;
+},): Promise<void> {
+  // Push WinFsp MSI to guest via file transfer (not on virtio-win ISO)
+  rl.info('pushing WinFsp MSI to guest...',);
+  await guestFilePush({
+    guestPath: 'C:\\winfsp.msi',
+    hostPath: winfspMsiPath,
+  },);
+
+  // Install WinFsp (required by VirtioFsSvc for drive letter mapping)
+  rl.info('installing WinFsp...',);
+  await guestExecWait({
+    command: 'Start-Process msiexec -ArgumentList /i,C:\\winfsp.msi,/qn,/norestart,INSTALLLEVEL=1000,/log,C:\\winfsp-install.log -Wait',
+  },);
+
+  // Install all-in-one guest tools MSI from virtio-win CDROM (provides VirtioFsSvc)
+  rl.info('installing VirtIO guest tools MSI for VirtioFsSvc...',);
+  await guestExecWait({
+    command: [
+      '$vd = Get-ChildItem -Path D:\\,E:\\,F:\\,G:\\ -Directory -Filter viostor -ErrorAction SilentlyContinue | Select-Object -First 1',
+      'if ($vd) { $gt = Join-Path $vd.Parent.FullName virtio-win-gt-x64.msi',
+      'Start-Process msiexec -ArgumentList /i,$gt,/qn,/norestart,/log,C:\\gt-install.log -Wait }',
+    ].join('; ',),
+  },);
+
+  // Configure VirtioFsSvc for automatic startup
+  rl.info('configuring VirtioFsSvc for automatic startup...',);
+  await guestExecWait({
+    command: 'Set-Service -Name VirtioFsSvc -StartupType Automatic -ErrorAction SilentlyContinue',
+  },);
+}
+
+//endregion VirtioFS installation helpers

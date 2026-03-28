@@ -1,7 +1,6 @@
 import {
   COMPONENT_ATTRS,
   virtioInstallCommand,
-  wingetInstallCommand,
 } from './autounattend-virtio.ts';
 import { windowsPeSection, } from './autounattend-winpe.ts';
 import { createIso, } from './iso9660.ts';
@@ -109,11 +108,6 @@ ${windowsPeSection({ imageIndex, },)}
           <CommandLine>powershell -NoProfile -Command "Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False"</CommandLine>
           <Description>Disable Windows Firewall for VM networking</Description>
         </SynchronousCommand>
-        <SynchronousCommand wcm:action="add">
-          <Order>5</Order>
-          <CommandLine>${wingetInstallCommand()}</CommandLine>
-          <Description>Install winget package manager for Windows Server</Description>
-        </SynchronousCommand>
       </FirstLogonCommands>
     </component>
   </settings>
@@ -126,9 +120,9 @@ ${windowsPeSection({ imageIndex, },)}
 
 /**
  * Creates an ISO9660 image containing the Autounattend.xml answer file.
- * Windows PE automatically searches removable media (including CDROMs) for
- * this file during setup. The ISO is attached as a secondary CDROM during
- * Windows template creation.
+ * Windows PE automatically searches removable media (including CDROMs)
+ * for the answer file during setup. The ISO is attached as a secondary
+ * CDROM during Windows template creation.
  *
  * @param hostname - VM hostname
  *
@@ -138,8 +132,7 @@ ${windowsPeSection({ imageIndex, },)}
  *
  * @example
  * ```ts
- * const iso = createAutounattendIso({ imageIndex: 1, hostname: 'template-setup' });
- * await Bun.write('/path/to/autounattend.iso', iso);
+ * const iso = createAutounattendIso({ imageIndex: 1, hostname: 'setup' });
  * ```
  */
 export function createAutounattendIso({

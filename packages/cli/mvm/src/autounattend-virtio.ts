@@ -122,44 +122,10 @@ export function virtioInstallCommand(): string {
     ''}Get-ChildItem (Join-Path $root 'cert\\*.cer') -Recurse | ForEach-Object { certutil -addstore TrustedPublisher $_.FullName }; ${
     // install VirtIO drivers for Server 2025 (w11) platform only
     ''}${pnputilCalls}; ${
-    // install standalone guest agent MSI from the guest-agent subfolder
+    // install standalone guest agent MSI (provides the QEMU-GA service)
     ''}$ga = Join-Path $root 'guest-agent\\qemu-ga-x86_64.msi'; ${
     // fall back to all-in-one MSI if standalone is absent
     ''}if (-not (Test-Path $ga)) { $ga = Join-Path $root 'virtio-win-gt-x64.msi' }; ${
     // run silent install and wait for completion
     ''}Start-Process msiexec -ArgumentList '/i',$ga,'/qn','/norestart','/log','C:\\virtio-install.log' -Wait }"`;
-}
-
-/**
- * Generates a PowerShell command that installs the winget package manager
- * on Windows Server, which does not include it by default.
- *
- * Downloads the Microsoft.DesktopAppInstaller msixbundle and its
- * dependencies (VCLibs, UI.Xaml) from Microsoft's CDN, then installs
- * them via `Add-AppxPackage`.
- *
- * @returns PowerShell command string for winget installation
- *
- * @example
- * ```ts
- * wingetInstallCommand();
- * // => "powershell -NoProfile -Command ..."
- * ```
- */
-export function wingetInstallCommand(): string {
-  return `powershell -NoProfile -Command "${
-    ''}$ProgressPreference = 'SilentlyContinue'; ${
-    // VCLibs dependency
-    ''}$vclibs = 'C:\\vclibs.appx'; ${
-    ''}Invoke-WebRequest -Uri 'https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx' -OutFile $vclibs; ${
-    // UI.Xaml dependency
-    ''}$xaml = 'C:\\xaml.appx'; ${
-    ''}Invoke-WebRequest -Uri 'https://github.com/nicenemo/winget-pkgs/releases/download/v0.0.9/Microsoft.UI.Xaml.2.8.x64.appx' -OutFile $xaml; ${
-    // winget itself
-    ''}$winget = 'C:\\winget.msixbundle'; ${
-    ''}Invoke-WebRequest -Uri 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile $winget; ${
-    ''}Add-AppxPackage -Path $vclibs; ${
-    ''}Add-AppxPackage -Path $xaml; ${
-    ''}Add-AppxPackage -Path $winget; ${
-    ''}Remove-Item $vclibs,$xaml,$winget -Force -ErrorAction SilentlyContinue"`;
 }

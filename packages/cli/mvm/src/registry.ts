@@ -169,6 +169,7 @@ export const VIRTIO_WIN_FILENAME = 'virtio-win.iso';
 
 //endregion Virtio-win shared resource
 
+
 //region Built-in image registry
 
 /**
