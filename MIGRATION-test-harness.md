@@ -4,7 +4,7 @@ Replace ad-hoc test infrastructure across the monorepo with a shared
 `@monochromatic-dev/test-harness` package that provides three layers:
 
 1.  **Unit adapter** -- runtime-neutral re-exports of `bun:test` / `node:test` primitives
-    so 73 `*.unit.test.ts` files decouple from a specific runtime.
+    so 83 `*.unit.test.ts` files decouple from a specific runtime.
 2.  **Matrix runner** -- typed matrix definition, sequential/parallel execution,
     result collection, and summary reporting for `*.container-test.ts` orchestrators
     and other parameter-sweep scripts.
@@ -25,11 +25,13 @@ Replace ad-hoc test infrastructure across the monorepo with a shared
 
 ## Current state
 
-- 73 `*.unit.test.ts` files import from `bun:test`
-- Test primitives used: `describe`, `test`, `expect`, `beforeEach`, `afterEach`
+- 83 `*.unit.test.ts` files import from `bun:test`
+- Test primitives used: `describe`, `test`, `expect`, `beforeEach`, `afterEach`, `beforeAll`, `afterAll`
 - Advanced APIs: `test.each` (3 files), `test.skip` (2 files), `test.skipIf` (2 files), `spyOn` (2 files)
-- `spyOn` usage is limited to `console.log`/`console.warn` spying
-  with `.mock.calls[0]?.[0]` and `.mockClear()` -- no `toHaveBeenCalledTimes` or similar
+- `spyOn` usage includes `.mock.calls[0]?.[0]` direct access, `.mockClear()`,
+  `expect(spy).toHaveBeenCalledWith(...)` (4 call sites), and `expect.stringContaining()` (2 call sites)
+- 9 test files use `import.meta.dirname` for fixture resolution
+  (cross-runtime since Node 21.2, not a blocker)
 - `bunfig.toml` sets `concurrentTestGlob = "**/*.test.ts"` for within-file concurrency
 - `mise run test:unit` discovers files via `rg --files --glob '**/*.unit.test.*'`
   and passes them to `bun test`
@@ -74,10 +76,10 @@ Re-exports everything from `bun:test`.
 No transformation needed -- the test files already use bun:test's API shape.
 
 ```ts
-export { describe, test, expect, beforeEach, afterEach, spyOn } from 'bun:test';
+export { describe, test, expect, beforeEach, afterEach, beforeAll, afterAll, spyOn } from 'bun:test';
 ```
 
-### adapter-node.ts (~50 lines)
+### adapter-node.ts (~70 lines)
 
 Re-exports from `node:test` with two shims:
 
@@ -104,31 +106,80 @@ Re-exports from `node:test` with two shims:
     export { describe };
     ```
 
-2.  **`spyOn` adapter** -- normalizes the mock API shape.
-    `bun:test` spies expose `.mock.calls` as `[["arg1"], ["arg2"]]` and `.mockClear()`.
-    `node:test` mocks expose `.mock.calls` as `[{arguments: ["arg1"]}, ...]`
-    and `.mock.resetCalls()`.
-    The adapter translates Node's shape to Bun's so test code is unchanged.
+2.  **`spyOn` adapter** -- must produce objects that both expose `.mock.calls` (for direct access)
+    **and** carry the `Symbol.for("@MOCK")` marker that `@std/expect` checks
+    in `toHaveBeenCalledWith` and other mock matchers.
+
+    `@std/expect` calls `getMockCalls(context.value)` (`_mock_util.ts:15-22`),
+    which reads `value[Symbol.for("@MOCK")].calls`.
+    Each call entry must have the shape `{ args, returned, timestamp, returns, throws }`.
+    Without this symbol, `expect(spy).toHaveBeenCalledWith(...)` throws
+    `"Received function must be a mock or spy function"`.
+
+    The adapter wraps `node:test`'s `mock.method` and translates its call records
+    into `@std/expect`'s `MockCall` shape, then attaches them via the `@MOCK` symbol.
 
     ```ts
     import { mock } from 'node:test';
 
-    function spyOn(obj, method) {
+    /** Symbol that @std/expect checks to identify mock objects */
+    const MOCK_SYMBOL = Symbol.for('@MOCK');
+
+    function spyOn(obj: Record<string, unknown>, method: string) {
       const nodeSpy = mock.method(obj, method);
-      return {
+      const calls: Array<{
+        args: unknown[];
+        returned?: unknown;
+        timestamp: number;
+        returns: boolean;
+        throws: boolean;
+      }> = [];
+
+      /** Wrap the spy to intercept calls and record in @std/expect's format */
+      const original = obj[method] as (...args: unknown[]) => unknown;
+      // node:test already replaced obj[method] -- wrap its replacement
+      const nodeReplacement = obj[method] as (...args: unknown[]) => unknown;
+      obj[method] = function spyWrapper(...args: unknown[]) {
+        const result = nodeReplacement.apply(this, args);
+        calls.push({
+          args,
+          returned: result,
+          timestamp: Date.now(),
+          returns: true,
+          throws: false,
+        });
+        return result;
+      };
+
+      const spy = obj[method];
+      Object.defineProperty(spy, MOCK_SYMBOL, {
+        value: { calls },
+        writable: false,
+      });
+
+      return Object.assign(spy, {
         mock: {
           get calls() {
-            return nodeSpy.mock.calls.map(c => c.arguments);
+            return calls.map(function extractArgs(c) { return c.args; });
           },
-          restore() { nodeSpy.mock.restore(); },
-          clear()   { nodeSpy.mock.resetCalls(); },
         },
-        mockClear()   { nodeSpy.mock.resetCalls(); },
-        mockRestore() { nodeSpy.mock.restore(); },
-      };
+        mockClear() {
+          calls.length = 0;
+          nodeSpy.mock.resetCalls();
+        },
+        mockRestore() {
+          calls.length = 0;
+          nodeSpy.mock.restore();
+        },
+      });
     }
     export { spyOn };
     ```
+
+    This design satisfies both usage patterns present in the codebase:
+    - `logSpy.mock.calls[0]?.[0]` -- direct call inspection
+    - `expect(logSpy).toHaveBeenCalledWith(...)` -- `@std/expect` mock matchers
+    - `expect.stringContaining(...)` -- asymmetric matchers inside `toHaveBeenCalledWith`
 
 3.  **`expect` from `@std/expect`** (JSR) --
     ESM-native, TypeScript-first, cross-runtime (Node/Bun/Deno/browsers).
@@ -138,6 +189,12 @@ Re-exports from `node:test` with two shims:
     `toBeUndefined`, `toBeNull`, `toBeTruthy`, `toBeFalsy`, `toHaveLength`,
     `toHaveProperty`, `toMatch`, `toMatchObject`, `toBeInstanceOf`, `not.*`.
 
+    Mock-aware matchers: `toHaveBeenCalled`, `toHaveBeenCalledTimes`,
+    `toHaveBeenCalledWith`, `toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`.
+
+    Asymmetric matchers: `expect.stringContaining`, `expect.objectContaining`,
+    `expect.arrayContaining`, `expect.anything`, `expect.any`.
+
     ```ts
     export { expect } from '@std/expect';
     ```
@@ -145,7 +202,7 @@ Re-exports from `node:test` with two shims:
 4.  **Remaining re-exports** -- passed through directly.
 
     ```ts
-    export { test, beforeEach, afterEach } from 'node:test';
+    export { test, beforeEach, afterEach, beforeAll, afterAll } from 'node:test';
     ```
 
 ### matrix.ts (~60 lines)
@@ -322,6 +379,9 @@ All results from prototyping in `/tmp/claude-1000/`:
 - **Matchers**: `toBe`, `toEqual`, `toContain`, `toThrow`, `toBeCloseTo`,
   `toBeGreaterThan`, `toBeGreaterThanOrEqual`, `toBeUndefined` all pass
 - **spyOn adapter**: `.mock.calls[0]?.[0]`, `.mockClear()`, `.mockRestore()` work
+- **spyOn + expect matchers**: `expect(spy).toHaveBeenCalledWith(...)` works
+  when the spy carries `Symbol.for("@MOCK")` with `@std/expect`'s `MockCall` shape
+- **Asymmetric matchers**: `expect.stringContaining(...)` works inside `toHaveBeenCalledWith`
 - **test.skip**: works on both runtimes
 - **Parameterized tests**: `for...of` loop works on both runtimes
 - **ESM-native**: no CJS, no `createRequire` hack
@@ -353,7 +413,7 @@ This is the same behavior as the current `concurrentTestGlob` setup.
 Add `@monochromatic-dev/test-harness` as a devDependency
 in every package that has unit tests (via `workspace:*`).
 
-### Step 3: migrate test imports (73 files)
+### Step 3: migrate test imports (83 files)
 
 Mechanical find-and-replace per file:
 
@@ -449,7 +509,7 @@ The Bun adapter path has zero external dependencies (re-exports from `bun:test`)
 ## Files affected
 
 - **New**: `packages/test-fixture/test-harness/` (package.json, src/adapter-bun.ts, src/adapter-node.ts, src/matrix.ts, src/bench.ts, mise.toml)
-- **Modified**: 73 `*.unit.test.ts` files (import path change)
+- **Modified**: 83 `*.unit.test.ts` files (import path change)
 - **Modified**: 3 files (test.each to for...of)
 - **Modified**: 2 files (test.skipIf to options form)
 - **Modified**: 1 container test orchestrator (mise.container-test.ts -- adopt runMatrix/reportMatrix)
@@ -461,10 +521,16 @@ The Bun adapter path has zero external dependencies (re-exports from `bun:test`)
 - **`@std/expect` matcher parity** -- `@std/expect` covers all matchers used in the codebase.
   It lacks `toThrowErrorMatchingSnapshot` and `toThrowErrorMatchingInlineSnapshot`,
   neither of which are used here.
-- **Spy API surface** -- only `.mock.calls`, `.mockClear()`, `.mockRestore()` are used.
-  The adapter covers these. If future tests need `toHaveBeenCalledTimes` or similar
-  mock matchers, the spy objects would need to carry `@std/expect`'s mock symbol
-  (or those assertions would need to use `.mock.calls.length` directly).
+- **Spy API surface** -- `.mock.calls`, `.mockClear()`, `.mockRestore()` are used for direct access,
+  and `expect(spy).toHaveBeenCalledWith(...)` with `expect.stringContaining()` is used
+  for assertion-based checking (4 call sites across 2 files).
+  The spyOn adapter must attach `Symbol.for("@MOCK")` with `@std/expect`'s `MockCall` shape
+  so that `@std/expect`'s `getMockCalls()` recognizes the spy.
+  Without this symbol, `toHaveBeenCalledWith` throws
+  `"Received function must be a mock or spy function"` at runtime.
+  The adapter design in this document accounts for this requirement.
+- **`import.meta.dirname`** -- 9 test files use this for fixture path resolution.
+  Available in Node since 21.2 and Bun natively, so not a blocker for either runtime.
 - **Node type stripping** -- Node 25's type stripping does not support
   non-erasable TypeScript syntax (`enum`, `namespace`, `as const` on object literals).
   The test files do not use these. If they did, `--experimental-transform-types` or

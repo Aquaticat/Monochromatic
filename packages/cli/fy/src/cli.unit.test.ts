@@ -3,6 +3,8 @@ import {
   expect,
   test,
 } from 'bun:test';
+import type { SubprocessError, } from 'nano-spawn';
+import spawn from 'nano-spawn';
 
 /** Prefix emitted by the tagged logger on info-level lines */
 const LOG_PREFIX = '[info]';
@@ -48,19 +50,23 @@ async function runCliFy({ args, }: { args: readonly string[]; },): Promise<{
   stderr: string;
   exitCode: number;
 }> {
-  const proc = Bun.spawn(['bun', 'packages/cli/fy/src/index.ts', ...args,], {
-    cwd: process.cwd(),
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },);
-
-  const [rawStdout, stderr,] = await Promise.all([
-    new Response(proc.stdout,).text(),
-    new Response(proc.stderr,).text(),
-  ],);
-
-  const exitCode = await proc.exited;
-  return { exitCode, stderr, stdout: stripLogLines({ raw: rawStdout, },), };
+  try {
+    const result = await spawn('bun', ['packages/cli/fy/src/index.ts', ...args,], {
+      cwd: process.cwd(),
+    },);
+    return {
+      exitCode: 0,
+      stderr: result.stderr,
+      stdout: stripLogLines({ raw: result.stdout, },),
+    };
+  } catch (error: unknown) {
+    const spawnError = error as SubprocessError;
+    return {
+      exitCode: spawnError.exitCode ?? 1,
+      stderr: spawnError.stderr,
+      stdout: stripLogLines({ raw: spawnError.stdout, },),
+    };
+  }
 }
 
 describe('cli-fy integration', () => {
