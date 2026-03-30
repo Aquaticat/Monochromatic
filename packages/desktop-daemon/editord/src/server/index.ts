@@ -69,8 +69,8 @@ const PORT = resolvePort();
 
 /**
  * Auth token for WebSocket connections.
- * Reused across dev-mode auto-restarts (token file mtime within 3s)
- * so the client can reconnect without a stale token.
+ * Uses `EDITORD_TOKEN` env var if set, otherwise reused across
+ * dev-mode auto-restarts (token file mtime within 3s).
  * On cold starts, a fresh UUID is generated.
  */
 const {

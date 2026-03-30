@@ -189,11 +189,12 @@ async function writeAndTouch({
 /**
  * Resolves the auth token for this server instance.
  *
- * If a fresh token file exists (mtime within {@link FRESHNESS_THRESHOLD_MS}),
- * reuses it so that clients from a previous dev-mode instance can reconnect.
- * Otherwise generates a new random UUID token.
+ * Precedence:
+ * 1. `EDITORD_TOKEN` env var -- deterministic token for external integrations
+ * 2. Fresh token file (mtime within {@link FRESHNESS_THRESHOLD_MS}) -- reuse across dev-mode auto-restarts
+ * 3. New random UUID -- cold start fallback
  *
- * In both cases, starts a periodic mtime touch so the next restart
+ * In all cases, starts a periodic mtime touch so the next restart
  * can detect that this process was recently alive.
  *
  * @param port - HTTP listen port (used to namespace the token file)
@@ -218,6 +219,21 @@ export async function resolveAuthToken({
     l,
   },);
   const path = tokenFilePath({ port, },);
+
+  const envToken = process.env.EDITORD_TOKEN;
+  if (envToken !== undefined && envToken.length > 0) {
+    tokenLog.info('using token from EDITORD_TOKEN env var',);
+    const handles = await writeAndTouch({
+      path,
+      token: envToken,
+      l: tokenLog,
+    },);
+    return {
+      token: envToken,
+      ...handles,
+    };
+  }
+
   const existing = await readFreshToken({ path, },);
 
   if (existing !== null) {
