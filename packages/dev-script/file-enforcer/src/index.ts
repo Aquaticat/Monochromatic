@@ -15,7 +15,7 @@ export {
   installPackage,
 } from './package/manager.ts';
 export { mergeOverrides, } from './package/merge.ts';
-export { p, } from './package/p.ts';
+export { DEFAULT_CHECK, p, } from './package/p.ts';
 export type {
   PackageEntry,
   PackageManager,
@@ -46,6 +46,8 @@ export {
   overwriteEach,
   overwriteIfNotExists,
 } from './io/write.ts';
+export { l, tagged, } from './log.ts';
+export type { Logger, } from './log.ts';
 export { exec, } from './pipeline/exec.ts';
 export { inspect, } from './pipeline/inspect.ts';
 export {
@@ -56,6 +58,8 @@ export {
   addWatchedPaths,
   reads,
   reset,
+  resetWriteTimestamps,
+  setWriteTimestamp,
   trackDest,
   trackRead,
   trackWriteTime,

@@ -9,6 +9,7 @@ import {
   addWatchedPaths,
   reads,
   reset,
+  resetWriteTimestamps,
   trackDest,
   trackRead,
   trackWriteTime,
@@ -21,7 +22,7 @@ import {
 describe('tracker', () => {
   afterEach(() => {
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   test('trackRead adds absolute path to reads set', () => {
@@ -85,7 +86,7 @@ describe('tracker', () => {
 describe('writeTimestamps', () => {
   afterEach(() => {
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   test('trackWriteTime records a timestamp for the path', () => {
@@ -97,10 +98,8 @@ describe('writeTimestamps', () => {
     /** Capture time before and after to bound the timestamp */
     const before = Date.now();
     trackWriteTime('./timed.md',);
-    const after = Date.now();
     const recorded = writeTimestamps.get(resolve('./timed.md',),);
     /** Timestamp should be between the two captures */
-    const MAX_DELTA = 100;
     expect(recorded,).toBeGreaterThanOrEqual(before,);
   });
 

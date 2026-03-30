@@ -1,3 +1,4 @@
+import { DEFAULT_CHECK, } from './p.ts';
 import type { PackageEntry, } from './types.ts';
 
 //region Merge
@@ -39,7 +40,7 @@ export function mergeOverrides(
     }
     return {
       bin: override.bin !== override.effname ? override.bin : entry.bin,
-      check: override.check !== '--version' ? override.check : entry.check,
+      check: override.check !== DEFAULT_CHECK ? override.check : entry.check,
       effname: entry.effname,
       overrides: entry.overrides,
     };

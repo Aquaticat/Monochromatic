@@ -18,6 +18,7 @@
     "@types/bun": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
     "dot-prop": "catalog:",
     "find-up": "catalog:",
     "nano-spawn": "catalog:",

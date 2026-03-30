@@ -17,8 +17,8 @@ import { join, } from 'node:path';
 import {
   reads,
   reset,
+  resetWriteTimestamps,
   writes,
-  writeTimestamps,
 } from './tracker.ts';
 
 //region integration tests with real config files
@@ -30,7 +30,7 @@ describe('integration: config execution', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-integ-',),);
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   afterEach(async () => {
@@ -163,7 +163,6 @@ describe('integration: config execution', () => {
     await import(configPath);
 
     /** The manually added dependency should appear in reads */
-    const depPath = join(tempDir, 'dep.json',);
     /** resolve is applied inside addWatchedPaths */
     const hasDepTracked = [...reads,].some(readPath => readPath.endsWith('dep.json',));
     expect(hasDepTracked,).toBe(true,);

@@ -5,7 +5,7 @@ import type {
 } from './types.ts';
 
 /** Default flag used for binary existence checks when no custom check is specified. */
-const DEFAULT_CHECK = '--version';
+export const DEFAULT_CHECK = '--version';
 
 /**
  * Known {@link PackageManager} values used to separate overrides from

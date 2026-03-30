@@ -5,19 +5,20 @@ import {
   spyOn,
   test,
 } from 'bun:test';
+import { l, } from '../log.ts';
 import { notifyWriteProtection, } from './notify.ts';
 
 //region notifyWriteProtection
 
 describe('notifyWriteProtection', () => {
-  /** Spy on console.warn to verify terminal output */
-  const warnSpy = spyOn(console, 'warn',);
+  /** Spy on l.warn to verify terminal output -- tagged wrapper calls through l */
+  const warnSpy = spyOn(l, 'warn',);
 
   afterEach(() => {
     warnSpy.mockClear();
   },);
 
-  test('logs a warning to the terminal', async () => {
+  test('logs a warning via tagged logger', async () => {
     await notifyWriteProtection('/repo/CLAUDE.md',);
     /** Should have logged with the PROTECTED prefix */
     expect(warnSpy,).toHaveBeenCalledWith(
@@ -25,7 +26,7 @@ describe('notifyWriteProtection', () => {
     );
   });
 
-  test('includes the file path in the terminal warning', async () => {
+  test('includes the file path in the warning', async () => {
     await notifyWriteProtection('/repo/output.txt',);
     expect(warnSpy,).toHaveBeenCalledWith(
       expect.stringContaining('/repo/output.txt',),

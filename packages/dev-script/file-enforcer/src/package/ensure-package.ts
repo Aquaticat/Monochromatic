@@ -1,4 +1,8 @@
 import {
+  l,
+  tagged,
+} from '../log.ts';
+import {
   binaryExists,
   canProvide,
   detectManager,
@@ -141,9 +145,8 @@ export async function ensurePackage(binary: string,): Promise<void> {
     throw new PackageNotFoundError(binary, manager, packageName,);
   }
 
-  console.log(
-    `[ensurePackage] installing ${packageName} via ${manager} (binary: ${binary})`,
-  );
+  const rl = tagged({ tag: ensurePackage.name, l, },);
+  rl.info(`installing ${packageName} via ${manager} (binary: ${binary})`,);
   await installPackage(manager, packageName,);
 
   const verified = await binaryExists(binary, effectiveEntry.check,);

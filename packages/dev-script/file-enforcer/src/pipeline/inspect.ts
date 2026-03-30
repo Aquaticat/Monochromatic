@@ -1,3 +1,8 @@
+import {
+  l,
+  tagged,
+} from '../log.ts';
+
 /** Maximum preview length for inspect output */
 const INSPECT_PREVIEW_LENGTH = 200;
 
@@ -11,6 +16,7 @@ const INSPECT_PREVIEW_LENGTH = 200;
  * @returns Same value, unmodified
  */
 export function inspect<const TValue,>(value: TValue,): TValue {
+  const rl = tagged({ tag: inspect.name, l, },);
   /** Stringified representation for logging */
   const preview = typeof value === 'string'
     ? value
@@ -19,15 +25,13 @@ export function inspect<const TValue,>(value: TValue,): TValue {
       null,
       2,
     );
-  console.log(
-    `[file-enforcer] inspect: ${
-      preview.length > INSPECT_PREVIEW_LENGTH
-        ? `${preview.slice(
-          0,
-          INSPECT_PREVIEW_LENGTH,
-        )}...`
-        : preview
-    }`,
+  rl.info(
+    preview.length > INSPECT_PREVIEW_LENGTH
+      ? `${preview.slice(
+        0,
+        INSPECT_PREVIEW_LENGTH,
+      )}...`
+      : preview,
   );
   return value;
 }

@@ -19,6 +19,7 @@ import {
 } from 'node:path';
 import {
   reset,
+  resetWriteTimestamps,
   writes,
   writeTimestamps,
 } from '../tracker.ts';
@@ -38,7 +39,7 @@ describe('overwrite', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-write-',),);
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   afterEach(async () => {
@@ -81,7 +82,7 @@ describe('overwrite', () => {
     await overwrite(dest, 'new content',);
     expect(writeTimestamps.has(resolve(dest,),),).toBe(true,);
 
-    writeTimestamps.clear();
+    resetWriteTimestamps();
     await overwrite(dest, 'new content',);
     /** Same content now -- should NOT record timestamp */
     expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
@@ -118,7 +119,7 @@ describe('overwriteIfNotExists', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-wne-',),);
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   afterEach(async () => {
@@ -163,7 +164,7 @@ describe('overwriteEach', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-each-',),);
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   afterEach(async () => {

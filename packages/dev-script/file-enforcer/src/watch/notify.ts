@@ -1,78 +1,109 @@
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
 import { exec, } from '../pipeline/exec.ts';
+
+//region Notification tool detection
+
+/**
+ * Desktop notification backends, checked in order of preference.
+ * - `notify-send`: Linux with libnotify
+ * - `osascript`: macOS
+ * - `pwsh` / `powershell`: Windows
+ */
+type NotificationTool = 'notify-send' | 'osascript' | 'pwsh' | 'powershell';
+
+/**
+ * Cached detection result.
+ * `undefined` = detection not yet run, `null` = no tool found.
+ */
+let cachedTool: NotificationTool | null | undefined;
+
+/**
+ * Detects the first available desktop notification tool.
+ * Result is cached for the lifetime of the process --
+ * available tools don't change between events.
+ *
+ * @returns Detected tool name, or `null` if none found
+ */
+async function detectNotificationTool(): Promise<NotificationTool | null> {
+  if (cachedTool !== undefined)
+    return cachedTool;
+
+  if (await evaluatePredicate(['notify-send', '--version',],)) {
+    cachedTool = 'notify-send';
+    return cachedTool;
+  }
+  if (await evaluatePredicate(['osascript', '-e', 'return',],)) {
+    cachedTool = 'osascript';
+    return cachedTool;
+  }
+  if (await evaluatePredicate(['pwsh', '--version',],)) {
+    cachedTool = 'pwsh';
+    return cachedTool;
+  }
+  if (await evaluatePredicate(['powershell', '-Command', 'exit',],)) {
+    cachedTool = 'powershell';
+    return cachedTool;
+  }
+
+  cachedTool = null;
+  return null;
+}
+
+//endregion Notification tool detection
 
 /**
  * Sends a write-protection warning to both terminal and desktop notification.
  * Called when an external process modifies a file that file-enforcer manages.
  *
- * Desktop notification dispatch:
- * - `notify-send` when available (Linux with libnotify)
- * - `osascript` when available (macOS)
- * - PowerShell toast notification (Windows)
- * - Terminal-only warning when none of the above are available (headless servers)
- *
  * @param filePath - Absolute path of the externally modified managed file
  */
 export async function notifyWriteProtection(filePath: string,): Promise<void> {
-  /** Human-readable warning for the terminal */
-  const terminalMessage =
-    `[file-enforcer] PROTECTED: "${filePath}" was modified externally -- reverting to enforced content`;
-  console.warn(terminalMessage,);
+  l.warn(
+    `PROTECTED: "${filePath}" was modified externally -- reverting to enforced content`,
+  );
 
   await sendDesktopNotification(filePath,);
 }
 
 /**
- * Attempts to send a desktop notification via the first available notification tool.
- * Fails silently when no notification tool is available — the terminal warning is always printed regardless.
+ * Sends a desktop notification using the detected notification tool.
+ * Fails silently when no tool is available -- the terminal warning
+ * is always printed regardless.
  *
  * @param filePath - Absolute path shown in the notification body
  */
 async function sendDesktopNotification(filePath: string,): Promise<void> {
+  const rl = tagged({ tag: sendDesktopNotification.name, l, },);
+  const tool = await detectNotificationTool();
+  if (tool === null)
+    return;
+
   /** Desktop notification body kept short for readability in notification popups */
   const body = `"${filePath}" was modified externally and has been reverted.`;
   /** Notification title consistent across platforms */
   const title = 'file-enforcer: write protected';
 
-  const hasNotifySend = await evaluatePredicate(['notify-send', '--version',],);
-  if (hasNotifySend) {
-    try {
+  try {
+    if (tool === 'notify-send') {
       await exec('notify-send', ['--urgency=critical', title, body,],);
+      return;
     }
-    catch (notifyError: unknown) {
-      console.warn(
-        '[file-enforcer] could not send desktop notification:',
-        notifyError,
-      );
-    }
-    return;
-  }
-
-  const hasOsascript = await evaluatePredicate(['osascript', '-e', 'return',],);
-  if (hasOsascript) {
-    try {
+    if (tool === 'osascript') {
       await exec('osascript', [
         '-e',
         `display notification "${body}" with title "${title}"`,
       ],);
+      return;
     }
-    catch (notifyError: unknown) {
-      console.warn(
-        '[file-enforcer] could not send desktop notification:',
-        notifyError,
-      );
-    }
-    return;
-  }
-
-  const hasPwsh = await evaluatePredicate(['pwsh', '--version',],);
-  const hasPowershell = !hasPwsh && await evaluatePredicate(['powershell', '-Command', 'exit',],);
-  if (hasPwsh || hasPowershell) {
-    /** PowerShell toast notification via WinRT. No external modules needed. */
-    const shell = hasPwsh ? 'pwsh' : 'powershell';
+    // pwsh or powershell
     /** Escape single quotes in body/title for PowerShell string literals */
     const safeBody = body.replaceAll("'", "''",);
     const safeTitle = title.replaceAll("'", "''",);
+    /** PowerShell toast notification via WinRT. No external modules needed. */
     const script = [
       '[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null',
       `$xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)`,
@@ -81,17 +112,9 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
       `$texts[1].AppendChild($xml.CreateTextNode('${safeBody}')) > $null`,
       `[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('file-enforcer').Show([Windows.UI.Notifications.ToastNotification]::new($xml))`,
     ].join('; ',);
-    try {
-      await exec(shell, ['-Command', script,],);
-    }
-    catch (notifyError: unknown) {
-      console.warn(
-        '[file-enforcer] could not send desktop notification:',
-        notifyError,
-      );
-    }
-    return;
+    await exec(tool, ['-Command', script,],);
   }
-
-  // No desktop notification tool available — terminal warning was already printed
+  catch (notifyError: unknown) {
+    rl.warn(`could not send desktop notification: ${String(notifyError,)}`,);
+  }
 }

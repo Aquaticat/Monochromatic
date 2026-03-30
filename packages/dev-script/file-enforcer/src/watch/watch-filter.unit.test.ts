@@ -14,10 +14,11 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import {
   reset,
+  resetWriteTimestamps,
+  setWriteTimestamp,
   trackDest,
   trackRead,
   trackWriteTime,
-  writeTimestamps,
 } from '../tracker.ts';
 import {
   classifyEvent,
@@ -30,7 +31,7 @@ import {
 describe('watchDirs', () => {
   afterEach(() => {
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   test('includes config file directory', () => {
@@ -79,7 +80,7 @@ describe('classifyEvent', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-classify-',),);
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   afterEach(async () => {
@@ -120,7 +121,7 @@ describe('classifyEvent', () => {
     // Record a timestamp well in the past to simulate stale write
     /** Offset to push our recorded time into the past */
     const pastOffset = 2_000;
-    writeTimestamps.set(filePath, Date.now() - pastOffset,);
+    setWriteTimestamp({ filePath, timestamp: Date.now() - pastOffset, },);
 
     /** Now modify the file -- its mtime will be "now", after our recorded timestamp */
     await writeFile(filePath, 'externally modified',);
@@ -184,7 +185,7 @@ describe('shouldTrigger', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-trigger-',),);
     reset();
-    writeTimestamps.clear();
+    resetWriteTimestamps();
   },);
 
   afterEach(async () => {
@@ -203,7 +204,7 @@ describe('shouldTrigger', () => {
     trackDest(filePath,);
     /** Push timestamp into the past */
     const pastOffset = 2_000;
-    writeTimestamps.set(filePath, Date.now() - pastOffset,);
+    setWriteTimestamp({ filePath, timestamp: Date.now() - pastOffset, },);
     await writeFile(filePath, 'modified externally',);
 
     expect(await shouldTrigger('stale.md', tempDir, '/repo/config.ts',),).toBe(true,);

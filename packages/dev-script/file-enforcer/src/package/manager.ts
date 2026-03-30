@@ -2,6 +2,31 @@ import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
 import { exec, } from '../pipeline/exec.ts';
 import type { PackageManager, } from './types.ts';
 
+//region Template utilities
+
+/** Placeholder token in command templates, replaced with the resolved package name */
+const PKG_PLACEHOLDER = '{pkg}';
+
+/**
+ * Substitutes the `{pkg}` placeholder in a command template with the actual package name.
+ *
+ * @param template - Command template array containing `{pkg}` tokens
+ *
+ * @param packageName - Resolved package name to substitute
+ *
+ * @returns Command array with placeholders replaced
+ */
+function fillTemplate(
+  template: readonly string[],
+  packageName: string,
+): readonly string[] {
+  return template.map(function replacePlaceholder(segment,): string {
+    return segment === PKG_PLACEHOLDER ? packageName : segment;
+  },);
+}
+
+//endregion Template utilities
+
 //region Manager definitions
 
 /**
@@ -217,9 +242,7 @@ export async function canProvide(
   if (!def) {
     return false;
   }
-  const cmd = def.search.map(function replacePlaceholder(segment,): string {
-    return segment === '{pkg}' ? packageName : segment;
-  },);
+  const cmd = fillTemplate(def.search, packageName,);
   return evaluatePredicate(cmd,);
 }
 
@@ -253,10 +276,7 @@ export async function installPackage(
   if (!def) {
     throw new Error(`Unknown package manager: ${manager}`,);
   }
-  const cmdTemplate = def.install;
-  const cmd = cmdTemplate.map(function replacePlaceholder(segment,): string {
-    return segment === '{pkg}' ? packageName : segment;
-  },);
+  const cmd = fillTemplate(def.install, packageName,);
   const needsSudo = def.needsRoot && !isRoot();
   const fullCmd = needsSudo ? ['sudo', ...cmd,] : cmd;
   const [executable = '', ...args] = fullCmd;

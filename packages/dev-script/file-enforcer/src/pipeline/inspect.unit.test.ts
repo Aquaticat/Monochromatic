@@ -5,16 +5,17 @@ import {
   spyOn,
   test,
 } from 'bun:test';
+import { l, } from '../log.ts';
 import { inspect, } from './inspect.ts';
 
 //region inspect
 
 describe('inspect', () => {
-  /** Spy on console.log to verify inspect output */
-  const logSpy = spyOn(console, 'log',);
+  /** Spy on l.info to verify inspect output -- tagged wrapper calls through l */
+  const infoSpy = spyOn(l, 'info',);
 
   afterEach(() => {
-    logSpy.mockClear();
+    infoSpy.mockClear();
   },);
 
   test('returns a string unchanged', () => {
@@ -47,17 +48,17 @@ describe('inspect', () => {
     expect(inspect(null,),).toBeNull();
   });
 
-  test('logs string content directly', () => {
+  test('logs string content via tagged logger', () => {
     inspect('test-content',);
-    expect(logSpy,).toHaveBeenCalledWith(
-      '[file-enforcer] inspect: test-content',
+    expect(infoSpy,).toHaveBeenCalledWith(
+      expect.stringContaining('test-content',),
     );
   });
 
   test('logs non-string content as JSON', () => {
     inspect({ a: 1, },);
     /** Non-string values should be JSON-stringified in the log */
-    const loggedMessage = logSpy.mock.calls[0]?.[0] as string;
+    const loggedMessage = infoSpy.mock.calls[0]?.[0] as string;
     expect(loggedMessage,).toContain('"a": 1',);
   });
 
@@ -68,7 +69,7 @@ describe('inspect', () => {
     const result = inspect(longContent,);
     expect(result,).toBe(longContent,);
     /** Logged preview should be truncated with ellipsis */
-    const loggedMessage = logSpy.mock.calls[0]?.[0] as string;
+    const loggedMessage = infoSpy.mock.calls[0]?.[0] as string;
     expect(loggedMessage,).toContain('...',);
   });
 
@@ -77,13 +78,13 @@ describe('inspect', () => {
     const exactContent = 'y'.repeat(200,);
     inspect(exactContent,);
     /** Should not contain ellipsis since it's not over the limit */
-    const loggedMessage = logSpy.mock.calls[0]?.[0] as string;
+    const loggedMessage = infoSpy.mock.calls[0]?.[0] as string;
     expect(loggedMessage,).not.toContain('...',);
   });
 
   test('handles empty string', () => {
     expect(inspect('',),).toBe('',);
-    expect(logSpy,).toHaveBeenCalledWith('[file-enforcer] inspect: ',);
+    expect(infoSpy,).toHaveBeenCalled();
   });
 
   test('handles GlobResult-like array', () => {
@@ -102,7 +103,7 @@ describe('inspect', () => {
       Array.from({ length: 50, }, (_, idx,) => [`key${String(idx,)}`, 'x'.repeat(20,),],),
     );
     inspect(largeObj,);
-    const loggedMessage = logSpy.mock.calls[0]?.[0] as string;
+    const loggedMessage = infoSpy.mock.calls[0]?.[0] as string;
     expect(loggedMessage,).toContain('...',);
   });
 });

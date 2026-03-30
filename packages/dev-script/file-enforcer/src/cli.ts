@@ -1,4 +1,5 @@
 import { findUp, } from 'find-up';
+import { l, } from './log.ts';
 import { startWatching, } from './watch/watch.ts';
 
 //region CLI entry point -- finds and imports file-enforcer.config.ts, optionally watches
@@ -23,7 +24,7 @@ const configPath = positionalArgs[0] ?? await findUp(CONFIG_NAME,);
 if (configPath === undefined)
   throw new Error(`Could not find ${CONFIG_NAME} in any parent directory`,);
 
-console.log(`[file-enforcer] loading config: ${configPath}`,);
+l.info(`loading config: ${configPath}`,);
 
 // Importing the config executes it -- the config uses top-level await
 await import(configPath);

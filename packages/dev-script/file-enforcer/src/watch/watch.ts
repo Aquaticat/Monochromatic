@@ -3,6 +3,10 @@ import {
   resolve,
 } from 'node:path';
 import { invalidatePaths, } from '../io/cache.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import { reset, } from '../tracker.ts';
 import { notifyWriteProtection, } from './notify.ts';
 import {
@@ -23,9 +27,10 @@ import {
  * @param configPath - Path to the file-enforcer config file
  */
 export function startWatching(configPath: string,): Promise<never> {
+  const rl = tagged({ tag: startWatching.name, l, },);
   /** Absolute config path for reliable comparisons */
   const absoluteConfig = resolve(configPath,);
-  console.log('[file-enforcer] watch mode started',);
+  rl.info('watch mode started',);
 
   /** Active AbortControllers for each watched directory, keyed by dir path */
   const controllers = new Map<string, AbortController>();
@@ -38,6 +43,10 @@ export function startWatching(configPath: string,): Promise<never> {
     controllers.clear();
   }
 
+  /** Paths accumulated during the debounce window, invalidated together on re-run */
+  const pendingPaths: Set<string> = new Set<string>();
+  /** Protected paths that need notification, accumulated during the debounce window */
+  const pendingProtected: Set<string> = new Set<string>();
   // Debounce state -- `let` needed because the timer is replaced on each event
   let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
@@ -45,31 +54,29 @@ export function startWatching(configPath: string,): Promise<never> {
    * Re-imports the config with a cache-busting query parameter,
    * then updates the watcher set from newly tracked reads/writes.
    *
-   * @param changedPath - Absolute path of the file that triggered the re-run,
-   *   invalidated from the read cache so only that file is re-read from disk
+   * @param changedPaths - Absolute paths of files that triggered the re-run,
+   *   invalidated from the read cache so only those files are re-read from disk
    */
-  async function rerun(changedPath: string,): Promise<void> {
-    console.log('[file-enforcer] re-running config...',);
-    invalidatePaths([changedPath,],);
+  async function rerun(changedPaths: readonly string[],): Promise<void> {
+    rl.info('re-running config...',);
+    invalidatePaths(changedPaths,);
     reset();
     try {
       await import(`${absoluteConfig}?v=${String(Date.now(),)}`);
     }
     catch (importError: unknown) {
-      console.error(
-        '[file-enforcer] config execution failed:',
-        importError,
-      );
+      rl.error(`config execution failed: ${String(importError,)}`,);
       return;
     }
-    console.log('[file-enforcer] re-run complete',);
+    rl.info('re-run complete',);
     closeAllWatchers();
     setupWatchers();
   }
 
   /**
-   * Handles a classified filesystem event by either scheduling a
-   * normal re-run (source) or a re-run with notification (protected).
+   * Handles a classified filesystem event by accumulating the changed path
+   * and scheduling a debounced re-run. Multiple rapid events are coalesced
+   * into a single re-run that invalidates all accumulated paths.
    *
    * @param kind - classification of the filesystem event
    *
@@ -87,25 +94,27 @@ export function startWatching(configPath: string,): Promise<never> {
       dir,
       filename,
     ),);
-    clearTimeout(debounceTimer,);
+    pendingPaths.add(changedPath,);
     if (kind === 'protected') {
-      debounceTimer = setTimeout(
-        function protectedRerun(): void {
-        // oxlint-disable-next-line typescript/no-floating-promises -- debounced async protection
-        (async function notifyAndRerun(): Promise<void> {
-          await notifyWriteProtection(changedPath,);
-          await rerun(changedPath,);
+      pendingProtected.add(changedPath,);
+    }
+    clearTimeout(debounceTimer,);
+    debounceTimer = setTimeout(
+      function debouncedRerun(): void {
+        /** Snapshot accumulated state before clearing */
+        const paths = [...pendingPaths,];
+        const protectedPaths = [...pendingProtected,];
+        pendingPaths.clear();
+        pendingProtected.clear();
+        // oxlint-disable-next-line typescript/no-floating-promises -- debounced async re-run
+        (async function batchRerun(): Promise<void> {
+          for (const protectedPath of protectedPaths) {
+            // oxlint-disable-next-line no-await-in-loop -- sequential notification to avoid spamming
+            await notifyWriteProtection(protectedPath,);
+          }
+          await rerun(paths,);
         })();
       },
-        DEBOUNCE_MS,
-      );
-      return;
-    }
-    debounceTimer = setTimeout(
-      function sourceRerun(): void {
-      // oxlint-disable-next-line typescript/no-floating-promises -- debounced async re-run
-      rerun(changedPath,);
-    },
       DEBOUNCE_MS,
     );
   }
@@ -114,7 +123,7 @@ export function startWatching(configPath: string,): Promise<never> {
   function setupWatchers(): void {
     /** Directories to watch, derived from current tracked reads + writes */
     const dirs = watchDirs(absoluteConfig,);
-    console.log(`[file-enforcer] watching ${String(dirs.size,)} directories`,);
+    rl.info(`watching ${String(dirs.size,)} directories`,);
 
     dirs.forEach(function setupDir(dir,): void {
       /** Per-directory abort controller for teardown */

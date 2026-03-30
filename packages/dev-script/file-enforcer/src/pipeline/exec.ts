@@ -1,18 +1,15 @@
 import spawn from 'nano-spawn';
 
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import type {
   Command,
   PlatformCommands,
   PlatformEntry,
 } from '../platform/evaluate-predicate.ts';
 import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
-
-export type {
-  Command,
-  PlatformCommands,
-  PlatformEntry,
-} from '../platform/evaluate-predicate.ts';
-export type { Predicate, } from '../platform/evaluate-predicate.ts';
 
 //region exec
 
@@ -91,7 +88,8 @@ async function execDirect(
   cmd: string,
   args: readonly string[],
 ): Promise<string> {
-  console.log(`[file-enforcer] exec: ${cmd} ${args.join(' ',)}`,);
+  const rl = tagged({ tag: execDirect.name, l, },);
+  rl.debug(`${cmd} ${args.join(' ',)}`,);
   const { stdout, } = await spawn(
     cmd,
     [...args,],

@@ -1,9 +1,12 @@
 import {
-  exists,
   mkdir,
   writeFile,
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import {
   trackDest,
   trackWriteTime,
@@ -45,22 +48,28 @@ async function readExisting(filePath: string,): Promise<string | undefined> {
 }
 
 /**
- * Writes content to dest, skipping the write when existing content is identical.
- * Always registers the path as a managed destination for watch-mode protection.
+ * Core write logic shared by {@link overwrite} and {@link overwriteEach}.
+ * Compares content against existing file, skipping when identical.
+ * Handles directory creation, cache update, and write-time tracking.
  *
- * @param dest - Destination file path
- *
- * @param content - Content string to write
+ * @param options - Write operation details
+ * @param options.dest - Destination file path
+ * @param options.content - Content string to write
+ * @param options.sourcePath - Optional source path for log messages (used by overwriteEach)
  */
-export async function overwrite(
-  dest: string,
-  content: string,
+async function writeIfChanged(
+  { dest, content, sourcePath, }: {
+    readonly dest: string;
+    readonly content: string;
+    readonly sourcePath?: string;
+  },
 ): Promise<void> {
+  const rl = tagged({ tag: writeIfChanged.name, l, },);
   trackDest(dest,);
   /** Current file content, or undefined if file doesn't exist yet */
   const existing = await readExisting(dest,);
   if (existing === content) {
-    console.log(`[file-enforcer] skip (unchanged): ${dest}`,);
+    rl.info(`skip (unchanged): ${sourcePath ? `${sourcePath} -> ` : ''}${dest}`,);
     return;
   }
   await ensureDir(dest,);
@@ -73,11 +82,28 @@ export async function overwrite(
     content,
   );
   trackWriteTime(dest,);
-  console.log(`[file-enforcer] -> ${dest}`,);
+  rl.info(`${sourcePath ? `${sourcePath} -> ` : '-> '}${dest}`,);
+}
+
+/**
+ * Writes content to dest, skipping the write when existing content is identical.
+ * Always registers the path as a managed destination for watch-mode protection.
+ *
+ * @param dest - Destination file path
+ *
+ * @param content - Content string to write
+ */
+export async function overwrite(
+  dest: string,
+  content: string,
+): Promise<void> {
+  await writeIfChanged({ dest, content, },);
 }
 
 /**
  * Writes content to dest only if the file does not already exist.
+ * Uses {@link readExisting} to check for the file rather than a separate
+ * `exists()` call, avoiding a TOCTOU race window.
  *
  * @param dest - Destination file path
  *
@@ -88,15 +114,14 @@ export async function overwriteIfNotExists(
   content: string,
 ): Promise<void>
 {
-  if (await exists(dest,)) {
+  /** Existing content, or undefined if file doesn't exist */
+  const existing = await readExisting(dest,);
+  if (existing !== undefined) {
     trackDest(dest,);
-    console.log(`[file-enforcer] skip (exists): ${dest}`,);
+    l.info(`skip (exists): ${dest}`,);
     return;
   }
-  await overwrite(
-    dest,
-    content,
-  );
+  await writeIfChanged({ dest, content, },);
 }
 
 /**
@@ -117,7 +142,7 @@ export async function overwriteEach(
   destGlob: string,
   files: GlobResults,
 ): Promise<void> {
-  console.log(`[file-enforcer] overwriteEach: ${String(files.length,)} files`,);
+  l.info(`overwriteEach: ${String(files.length,)} files`,);
   await Promise.all(
     files.map(async function writeOneGlobMatch(file,): Promise<void> {
       /** Concrete destination path from the mirror-glob mapping */
@@ -126,24 +151,7 @@ export async function overwriteEach(
         destGlob,
         file.path,
       );
-      trackDest(dest,);
-      /** Skip if content is already identical */
-      const existing = await readExisting(dest,);
-      if (existing === file.content) {
-        console.log(`[file-enforcer] skip (unchanged): ${file.path} -> ${dest}`,);
-        return;
-      }
-      await ensureDir(dest,);
-      await writeFile(
-        dest,
-        file.content,
-      );
-      updateCache(
-        dest,
-        file.content,
-      );
-      trackWriteTime(dest,);
-      console.log(`[file-enforcer] ${file.path} -> ${dest}`,);
+      await writeIfChanged({ dest, content: file.content, sourcePath: file.path, },);
     },),
   );
 }

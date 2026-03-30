@@ -1,5 +1,9 @@
 import { watch, } from 'node:fs/promises';
 import {
+  l,
+  tagged,
+} from '../log.ts';
+import {
   classifyEvent,
   type EventKind,
 } from './watch-filter.ts';
@@ -28,6 +32,7 @@ export async function watchDirectory(
   configPath: string,
   onEvent: (kind: EventKind, filename: string,) => void,
 ): Promise<void> {
+  const rl = tagged({ tag: watchDirectory.name, l, },);
   try {
     /** Async iterator yielding filesystem events in this directory */
     const watcher = watch(
@@ -58,9 +63,6 @@ export async function watchDirectory(
     // AbortError is expected when closing watchers during re-setup
     if (watchError instanceof Error && watchError.name === 'AbortError')
       return;
-    console.error(
-      `[file-enforcer] watcher error in ${dir}:`,
-      watchError,
-    );
+    rl.error(`watcher error in ${dir}: ${String(watchError,)}`,);
   }
 }
