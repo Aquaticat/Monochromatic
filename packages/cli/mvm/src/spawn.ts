@@ -28,7 +28,7 @@ export async function spawn(
     command,
   }: {
     args: readonly string[];
-    command: string
+    command: string;
   },
 ): Promise<string> {
   const rl = tagged({

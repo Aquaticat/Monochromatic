@@ -115,8 +115,9 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       if (!isRecentTimestamp(
         rawTimestamp,
         cutoff,
-      ))
+      )) {
         continue;
+      }
 
       // Read meta.json to get the model label (old artifacts without label fall back to directory name)
       const metaPath = join(

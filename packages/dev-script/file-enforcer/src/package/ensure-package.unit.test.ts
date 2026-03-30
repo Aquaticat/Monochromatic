@@ -18,7 +18,9 @@ describe('registerPackages', () => {
         p('curl',),
         p({ bin: 'rg', effname: 'ripgrep', },),
       ],);
-    },).not.toThrow();
+    },)
+      .not
+      .toThrow();
   });
 
   test('replaces previously registered entries', () => {

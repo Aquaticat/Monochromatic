@@ -35,9 +35,11 @@ export function selectModels(): readonly ModelConfig[] {
   if (byLabel !== undefined)
     return [byLabel,];
 
-  const availableLabels = models.map(function getLabel(model,): string {
-    return `  - ${model.label}`;
-  },).join('\n',);
+  const availableLabels = models
+    .map(function getLabel(model,): string {
+      return `  - ${model.label}`;
+    },)
+    .join('\n',);
 
   throw new Error(
     `Unknown model "${modelOverride}". Available models:\n${availableLabels}`,

@@ -50,7 +50,7 @@ export function maxWidthInRange(
   relYEnd: number,
 ): {
   width: number;
-  relY: number
+  relY: number;
 } {
   const yStart = Math.round(relYStart * profile.imageHeight,);
   const yEnd = Math.round(relYEnd * profile.imageHeight,);
@@ -87,7 +87,7 @@ export function minWidthInRange(
   relYEnd: number,
 ): {
   width: number;
-  relY: number
+  relY: number;
 } {
   const yStart = Math.round(relYStart * profile.imageHeight,);
   const yEnd = Math.round(relYEnd * profile.imageHeight,);
@@ -115,27 +115,30 @@ export function minWidthInRange(
  * @returns top and bottom y positions (relative 0-1)
  */
 export function contentBounds(profile: WidthProfile,): ContentBoundsResult {
-  if (profile.rows.length === 0)
+  if (profile.rows.length === 0) {
     return {
       top: 0,
       bottom: 0,
       totalHeight: 0,
     };
+  }
   const [firstRow,] = profile.rows;
-  if (firstRow === undefined)
+  if (firstRow === undefined) {
     return {
       top: 0,
       bottom: 0,
       totalHeight: 0,
     };
+  }
   const top = firstRow.y;
   const lastRow = profile.rows.at(-1,);
-  if (lastRow === undefined)
+  if (lastRow === undefined) {
     return {
       top: 0,
       bottom: 0,
       totalHeight: 0,
     };
+  }
   const bottom = lastRow.y;
   return {
     top: top / profile.imageHeight,

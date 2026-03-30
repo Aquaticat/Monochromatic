@@ -26,11 +26,12 @@ import {
  */
 export async function handleStartTimer(id: string,): Promise<Response> {
   const task = await startTaskTimer(id,);
-  if (task === null)
+  if (task === null) {
     return jsonResponse(
       { error: 'Task not found', },
       HTTP_NOT_FOUND,
     );
+  }
   return jsonResponse(task,);
 }
 
@@ -43,11 +44,12 @@ export async function handleStartTimer(id: string,): Promise<Response> {
  */
 export async function handleStopTimer(id: string,): Promise<Response> {
   const task = await stopTaskTimer(id,);
-  if (task === null)
+  if (task === null) {
     return jsonResponse(
       { error: 'Task not found', },
       HTTP_NOT_FOUND,
     );
+  }
   return jsonResponse(task,);
 }
 
@@ -60,11 +62,12 @@ export async function handleStopTimer(id: string,): Promise<Response> {
  */
 export async function handleCompleteTask(id: string,): Promise<Response> {
   const result = await completeTask(id,);
-  if (result.notFound)
+  if (result.notFound) {
     return jsonResponse(
       { error: 'Task not found', },
       HTTP_NOT_FOUND,
     );
+  }
   if (!result.completed) {
     return jsonResponse(
       { error: 'Task is blocked', blockedBy: result.blockedBy, },

@@ -98,14 +98,14 @@ export function placeTextInput(position: NormalizedPoint,): void {
   input.addEventListener(
     'keydown',
     function handleKeydown(event: KeyboardEvent,): void {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      finalizeActiveInput();
-    }
-    else if (event.key === 'Escape') {
-      discardActiveInput();
-    }
-  },
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        finalizeActiveInput();
+      }
+      else if (event.key === 'Escape') {
+        discardActiveInput();
+      }
+    },
   );
 
   input.addEventListener(

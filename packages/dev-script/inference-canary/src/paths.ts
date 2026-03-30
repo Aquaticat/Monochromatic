@@ -9,4 +9,5 @@
 export const PACKAGE_DIR: string = new URL(
   '..',
   import.meta.url,
-).pathname;
+)
+  .pathname;

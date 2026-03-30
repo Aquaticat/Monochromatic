@@ -47,11 +47,10 @@ export class DirWatcher {
   #watchers = new Map<string, FSWatcher>();
 
   /** Pending debounced events keyed by full path of the changed entry. */
-  #pending = new Map<string,
-    {
-      timer: ReturnType<typeof setTimeout>;
-      eventType: string
-    }>();
+  #pending = new Map<string, {
+    timer: ReturnType<typeof setTimeout>;
+    eventType: string;
+  }>();
 
   /** Paths suppressed from emitting events (e.g. after a self-save). */
   #suppressed = new Set<string>();
@@ -73,7 +72,7 @@ export class DirWatcher {
       l,
     }: {
       onChange: (event: FsChangeEvent,) => void;
-      l: Logger
+      l: Logger;
     },
   ) {
     this.#onChange = onChange;
@@ -115,9 +114,9 @@ export class DirWatcher {
       fsWatcher.on(
         'error',
         function handleWatchError(error,) {
-        self.#l.error(`watcher error for ${path}: ${String(error,)}`,);
-        self.#removeWatcher({ path, },);
-      },
+          self.#l.error(`watcher error for ${path}: ${String(error,)}`,);
+          self.#removeWatcher({ path, },);
+        },
       );
 
       this.#watchers.set(
@@ -142,8 +141,8 @@ export class DirWatcher {
     self.#suppressed.add(path,);
     globalThis.setTimeout(
       function clearSuppression() {
-      self.#suppressed.delete(path,);
-    },
+        self.#suppressed.delete(path,);
+      },
       SUPPRESS_MS,
     );
   }
@@ -193,12 +192,12 @@ export class DirWatcher {
     const self = this;
     const timer = globalThis.setTimeout(
       function emitDebounced() {
-      self.#pending.delete(fullPath,);
-      void self.#resolveAndEmit({
-        fullPath,
-        eventType,
-      },);
-    },
+        self.#pending.delete(fullPath,);
+        void self.#resolveAndEmit({
+          fullPath,
+          eventType,
+        },);
+      },
       DEBOUNCE_MS,
     );
 
@@ -245,7 +244,7 @@ export class DirWatcher {
         path: fullPath,
         changeType: 'created',
         isDirectory: stats
-        .isDirectory(),
+          .isDirectory(),
       },);
     }
     catch {

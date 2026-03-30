@@ -76,10 +76,12 @@ export function parseGrid(text: string,): number[][] | undefined {
   const grid = lines.map(function parseLine(line,): number[] | undefined {
     /** Digits extracted by stripping whitespace and converting each character */
     // oxlint-disable-next-line unicorn/prefer-spread -- spreading a string triggers no-misused-spread; Array.from is correct for ASCII digit iteration
-    const digits = Array.from(line.replaceAll(
-      /\s/g,
-      '',
-    ),).map(Number,);
+    const digits = Array
+      .from(line.replaceAll(
+        /\s/g,
+        '',
+      ),)
+      .map(Number,);
     return digits.length === GRID_SIZE
         && digits.every(function validDigit(digit,): boolean {
           return digit >= 1 && digit <= GRID_SIZE;
@@ -220,8 +222,7 @@ export function isValidSolution(grid: number[][],): boolean {
 export function matchesClues(
   grid: number[][],
   clues: readonly (readonly number[])[],
-): boolean
-{
+): boolean {
   return clues.every(function checkRow(
     row,
     rowIndex,

@@ -88,42 +88,42 @@ export function createNewTaskDialog(): NewTaskDialog {
   detail.addEventListener(
     'action',
     function handleAction(event,) {
-    if (!(event instanceof CustomEvent))
-      throw new TypeError("Expected CustomEvent for 'action' listener",);
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
-    const { action, title, description, } = event.detail as {
-      action: string;
-      title: string;
-      description: string;
-    };
+      if (!(event instanceof CustomEvent))
+        throw new TypeError("Expected CustomEvent for 'action' listener",);
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
+      const { action, title, description, } = event.detail as {
+        action: string;
+        title: string;
+        description: string;
+      };
 
-    if (action === 'close') {
-      closePanel();
-      return;
-    }
-
-    if (action === 'save') {
-      const trimmedTitle = title.trim();
-      if (trimmedTitle.length === 0)
+      if (action === 'close') {
+        closePanel();
         return;
+      }
 
-      const metadata = detail.getMetadata();
-      void (async function saveTask(): Promise<void> {
-        await api('/api/tasks', {
-          method: 'POST',
-          body: JSON.stringify({
-            title: trimmedTitle,
-            description: description.length === 0 ? null : description,
-            tags: metadata.tags,
-            locations: metadata.locations,
-            priority: metadata.priority,
-            complexity: metadata.complexity,
-          },),
-        },);
-        globalThis.location.reload();
-      })();
-    }
-  },
+      if (action === 'save') {
+        const trimmedTitle = title.trim();
+        if (trimmedTitle.length === 0)
+          return;
+
+        const metadata = detail.getMetadata();
+        void (async function saveTask(): Promise<void> {
+          await api('/api/tasks', {
+            method: 'POST',
+            body: JSON.stringify({
+              title: trimmedTitle,
+              description: description.length === 0 ? null : description,
+              tags: metadata.tags,
+              locations: metadata.locations,
+              priority: metadata.priority,
+              complexity: metadata.complexity,
+            },),
+          },);
+          globalThis.location.reload();
+        })();
+      }
+    },
   );
 
   /** Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation. */

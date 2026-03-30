@@ -182,8 +182,9 @@ export class EditorPane extends HTMLElement {
     if (diagnosticsEqual(
       diagnostics,
       this.#diagnostics,
-    ))
+    )) {
       return;
+    }
     this.#diagnostics = diagnostics;
     this.#scheduleDiagnosticHighlights();
     this.#scheduleInlayAnnotations();
@@ -198,8 +199,9 @@ export class EditorPane extends HTMLElement {
     if (hintsEqual(
       hints,
       this.#inlayHints,
-    ))
+    )) {
       return;
+    }
     this.#inlayHints = hints;
     this.#scheduleInlayAnnotations();
   }
@@ -285,7 +287,7 @@ export class EditorPane extends HTMLElement {
     character,
   }: {
     line: number;
-    character: number
+    character: number;
   },): void {
     if (this.#editor === null)
       return;
@@ -324,7 +326,7 @@ export class EditorPane extends HTMLElement {
     y,
   }: {
     x: number;
-    y: number
+    y: number;
   },): EditorPosition | null {
     if (this.#editor === null)
       return null;

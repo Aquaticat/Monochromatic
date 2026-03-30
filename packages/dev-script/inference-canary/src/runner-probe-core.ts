@@ -53,8 +53,7 @@ export async function runProbeCore(
   config: RunnerConfig,
   timestamp: string,
   signal: AbortSignal,
-): Promise<ProbeResult>
-{
+): Promise<ProbeResult> {
   /** Probe-specific logger for run progress and error messages. */
   const rl = tagged({
     tag: probe.name,
@@ -109,9 +108,9 @@ export async function runProbeCore(
         worstCompletion = lastCompletion;
       }
       rl.info(
-        `run ${String(runIndex + 1,)}/${
-          String(config.consistencyRuns,)
-        }: score=${runScore.toFixed(2,)}`,
+        `run ${String(runIndex + 1,)}/${String(config.consistencyRuns,)}: score=${
+          runScore.toFixed(2,)
+        }`,
       );
     }
 

@@ -104,23 +104,25 @@ else {
       createTaskCard(
         result,
         {
-        showBlockedBadge: result.isBlocked,
-        onOpen: handleOpen,
-        onToggleComplete: async function handleComplete(taskId,) {
-          await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
-          globalThis.location.reload();
+          showBlockedBadge: result.isBlocked,
+          onOpen: handleOpen,
+          onToggleComplete: async function handleComplete(taskId,) {
+            await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
+            globalThis.location.reload();
+          },
         },
-      },
       ),
     );
   }
 
-  if (pageData.results.length === 0)
+  if (pageData.results.length === 0) {
     app.append(h({
       tag: 'p',
       class: 'empty',
       text: 'No matching tasks.',
     },),);
-  else
+  }
+  else {
     app.append(resultList,);
+  }
 }

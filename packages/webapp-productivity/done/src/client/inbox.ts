@@ -94,8 +94,7 @@ async function completeTask(taskId: string,): Promise<void> {
 function buildTaskList(
   tasks: readonly Task[],
   blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>,
-): HTMLUListElement
-{
+): HTMLUListElement {
   const list = h({
     tag: 'ul',
     class: 'task-list',
@@ -118,8 +117,8 @@ function buildTaskList(
           children: childLinks.map(function createBlockedCard(childLink,) {
             return createTaskCard(
               childLink.task,
-              { showBlockedBadge: true,
-              onOpen: openTask, onToggleComplete: completeTask, },
+              { showBlockedBadge: true, onOpen: openTask,
+                onToggleComplete: completeTask, },
             );
           },),
         },),],

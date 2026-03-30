@@ -51,8 +51,7 @@ export function parseStringArray(value: unknown,): string[] | null {
 export function parseEnumValue<T extends string,>(
   value: unknown,
   validValues: Set<string>,
-): T | null | undefined
-{
+): T | null | undefined {
   if (value === undefined)
     return undefined;
   if (value === null)

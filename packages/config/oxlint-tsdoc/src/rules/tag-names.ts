@@ -50,13 +50,15 @@ const ESCAPED_AT_PATTERN = /\\@/g;
  * @returns line with inline code and escaped at signs removed
  */
 function stripInlineCodeAndEscapes(line: string,): string {
-  return line.replace(
-    INLINE_CODE_PATTERN,
-    '',
-  ).replace(
-    ESCAPED_AT_PATTERN,
-    '',
-  );
+  return line
+    .replace(
+      INLINE_CODE_PATTERN,
+      '',
+    )
+    .replace(
+      ESCAPED_AT_PATTERN,
+      '',
+    );
 }
 
 /**

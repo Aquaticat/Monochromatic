@@ -12,28 +12,28 @@
 export type ContextAction =
   | {
     kind: 'delete';
-    path: string
+    path: string;
   }
   | {
     kind: 'copy';
     path: string;
-    destPath: string
+    destPath: string;
   }
   | {
     kind: 'move';
     path: string;
-    destPath: string
+    destPath: string;
   }
   | {
     kind: 'new';
     parentPath: string;
-    name: string
+    name: string;
   }
   | {
     kind: 'openInTerminal';
-    path: string
+    path: string;
   }
   | {
     kind: 'openInDefaultApp';
-    path: string
+    path: string;
   };

@@ -21,7 +21,10 @@ import {
   expect,
   test,
 } from 'bun:test';
-import { dirname, join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 
 import { findUp, } from 'find-up';
 import nanoSpawn from 'nano-spawn';
@@ -45,9 +48,8 @@ const pkgJsonPath = await findUp(
   'package.json',
   { cwd: dirname(new URL(import.meta.url,).pathname,), },
 );
-if (pkgJsonPath === undefined) {
+if (pkgJsonPath === undefined)
   throw new Error('could not find package.json for vmsync',);
-}
 
 /** Absolute path to the vmsync package root. */
 const PKG_ROOT = dirname(pkgJsonPath,);
@@ -128,7 +130,8 @@ describe('vmsync lifecycle (Linux)', () => {
   const BUNDLE = '/mnt/shared/index.mjs';
 
   /** Shell preamble to set HOME and activate mise-managed bun. */
-  const MISE = 'export HOME=/home/ubuntu && eval "$(/home/ubuntu/.local/bin/mise activate bash)"';
+  const MISE =
+    'export HOME=/home/ubuntu && eval "$(/home/ubuntu/.local/bin/mise activate bash)"';
 
   /**
    * Guest command to run vmsync with sudo.
@@ -201,7 +204,8 @@ describe('vmsync lifecycle (Linux)', () => {
         'qemu-img create -f raw /tmp/test-uefi.raw 512M',
         'printf "g\\nn\\n1\\n2048\\n+100M\\nt\\n1\\nw\\n" | fdisk /tmp/test-uefi.raw',
         'qemu-img convert -f raw -O qcow2 /tmp/test-uefi.raw /tmp/test-uefi.qcow2',
-      ].join(' && ',),
+      ]
+        .join(' && ',),
     );
     //endregion Create test UEFI image
 
@@ -261,7 +265,7 @@ describe('vmsync lifecycle (Linux)', () => {
     expect(syncOutput,).toContain('already synced',);
     //endregion sync (already synced)
   }, EXEC_TIMEOUT_MS * 9,);
-},);
+});
 
 //endregion Linux lifecycle tests
 
@@ -286,7 +290,8 @@ describe('vmsync lifecycle (Windows)', () => {
    * `mise where` returns the install root (missing the `bin` subdirectory).
    * Guest agent runs as SYSTEM so mise installs to systemprofile, which is fine.
    */
-  const MISE = `$env:PATH = ((& "${MISE_BIN}" which bun 2>$null) | Split-Path) + ";" + $env:PATH`;
+  const MISE =
+    `$env:PATH = ((& "${MISE_BIN}" which bun 2>$null) | Split-Path) + ";" + $env:PATH`;
 
   /** Guest command to run vmsync via mise-managed bun on Windows. */
   const VMSYNC = `${MISE}; bun ${BUNDLE}`;
@@ -308,7 +313,8 @@ describe('vmsync lifecycle (Windows)', () => {
         '$ProgressPreference = "SilentlyContinue"',
         'Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "$env:TEMP\\vc_redist.x64.exe"',
         'Start-Process -FilePath "$env:TEMP\\vc_redist.x64.exe" -ArgumentList "/install","/quiet","/norestart" -Wait',
-      ].join('; ',),
+      ]
+        .join('; ',),
       EXEC_TIMEOUT_MS,
     );
 
@@ -329,7 +335,8 @@ describe('vmsync lifecycle (Windows)', () => {
         'Expand-Archive -Path "$env:TEMP\\mise.zip" -DestinationPath "$env:TEMP\\mise" -Force',
         'Copy-Item "$env:TEMP\\mise\\mise\\bin\\mise.exe" (Join-Path $dir "mise.exe") -Force',
         'Remove-Item "$env:TEMP\\mise.zip","$env:TEMP\\mise" -Recurse -Force',
-      ].join('; ',),
+      ]
+        .join('; ',),
       EXEC_TIMEOUT_MS,
     );
 
@@ -384,7 +391,8 @@ describe('vmsync lifecycle (Windows)', () => {
         '  }',
         '} | ConvertTo-Json -Depth 4',
         'Set-Content -Path "$dir\\vmsync.jsonc" -Value $config',
-      ].join('\n',),
+      ]
+        .join('\n',),
     );
     //endregion Create config manually
 
@@ -436,6 +444,6 @@ describe('vmsync lifecycle (Windows)', () => {
     expect(statusCheck,).toContain('last boot:  never',);
     //endregion detectHypervisor
   }, EXEC_TIMEOUT_MS * 8,);
-},);
+});
 
 //endregion Windows lifecycle tests

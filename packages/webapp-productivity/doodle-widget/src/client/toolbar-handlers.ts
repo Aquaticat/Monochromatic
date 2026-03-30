@@ -69,7 +69,7 @@ type ToolbarHandlerDeps = {
   /** Returns current canvas dimensions */
   getCanvasSize: () => {
     cw: number;
-    ch: number
+    ch: number;
   };
   /** Resizes and redraws the canvas */
   sizeCanvas: () => void;
@@ -104,44 +104,45 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   colorPicker.addEventListener(
     'input',
     function handleColorChange(): void {
-    setStrokeColor(colorPicker.value,);
-  },
+      setStrokeColor(colorPicker.value,);
+    },
   );
 
   sizeSlider.addEventListener(
     'input',
     function handleSizeChange(): void {
-    setStrokeWidth(Number(sizeSlider.value,),);
-  },
+      setStrokeWidth(Number(sizeSlider.value,),);
+    },
   );
 
   clearBtn.addEventListener(
     'click',
     function handleClear(): void {
-    const { cw, ch, } = getCanvasSize();
-    clearStrokes();
-    clearTextEntries();
-    ctx.clearRect(0, 0, cw, ch,);
-    pushSnapshot();
-  },
+      const { cw, ch, } = getCanvasSize();
+      clearStrokes();
+      clearTextEntries();
+      ctx.clearRect(0, 0, cw, ch,);
+      pushSnapshot();
+    },
   );
 
   exportBtn.addEventListener(
     'click',
     function handleExportClick(): void {
-    /** Selected export format from the dropdown */
-    const format = formatSelect.value;
-    if (!isExportFormat(format,))
-      return;
-    void EXPORTERS[format]({ container: page, overlay: svgOverlay, drawCanvas, textLayer, },);
-  },
+      /** Selected export format from the dropdown */
+      const format = formatSelect.value;
+      if (!isExportFormat(format,))
+        return;
+      void EXPORTERS[format]({ container: page, overlay: svgOverlay, drawCanvas,
+        textLayer, },);
+    },
   );
 
   uploadBtn.addEventListener(
     'click',
     function handleUploadClick(): void {
-    uploadInput.click();
-  },
+      uploadInput.click();
+    },
   );
 
   /**
@@ -167,11 +168,11 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   uploadInput.addEventListener(
     'change',
     function handleFileChange(): void {
-    /** Selected file from the upload input */
-    const file = uploadInput.files?.item(0,) ?? null;
-    if (file === null)
-      return;
-    void processBackgroundFile(file,);
-  },
+      /** Selected file from the upload input */
+      const file = uploadInput.files?.item(0,) ?? null;
+      if (file === null)
+        return;
+      void processBackgroundFile(file,);
+    },
   );
 }

@@ -32,7 +32,7 @@ export function sendJson(
     message,
   }: {
     peer: Peer;
-    message: Record<string, unknown>
+    message: Record<string, unknown>;
   },
 ): void {
   peer.send(JSON.stringify(message,),);

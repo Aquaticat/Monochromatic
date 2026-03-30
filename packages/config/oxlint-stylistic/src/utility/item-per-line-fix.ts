@@ -145,11 +145,12 @@ export function buildPerLineFix({
   const itemTexts = items.map(
     function getItemText(item,): string {
       const raw = context.sourceCode.getText(item,).trim();
-      if (raw.endsWith(';',) || raw.endsWith(',',))
+      if (raw.endsWith(';',) || raw.endsWith(',',)) {
         return raw.slice(
           0,
           -1,
         );
+      }
       return raw;
     },
   );
@@ -158,7 +159,7 @@ export function buildPerLineFix({
   const trailingRegion = new Set(sourceText.slice(
     lastRange[1],
     closePos,
-  ));
+  ),);
   const hasTrailingDelimiter = trailingRegion.has(',',)
     || trailingRegion.has(';',);
 

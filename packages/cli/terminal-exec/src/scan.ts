@@ -123,11 +123,12 @@ export async function scanEntries({ dirs, }: { dirs: readonly string[]; },): Pro
       );
       /** Remove previous occurrence so re-adding puts it at the end (higher priority). */
       const prevIdx = allIds.indexOf(id,);
-      if (prevIdx !== -1)
+      if (prevIdx !== -1) {
         allIds.splice(
           prevIdx,
           1,
         );
+      }
       allIds.push(id,);
     }
   }

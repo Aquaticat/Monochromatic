@@ -62,8 +62,7 @@ export function buildTaskList(
               children: childLinks.map(function buildBlockedCard(childLink,) {
                 return createTaskCard(
                   childLink.task,
-                  { showBlockedBadge: true, onOpen,
-                  onToggleComplete, },
+                  { showBlockedBadge: true, onOpen, onToggleComplete, },
                 );
               },),
             },),

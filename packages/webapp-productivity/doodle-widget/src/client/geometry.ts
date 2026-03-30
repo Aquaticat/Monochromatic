@@ -240,8 +240,9 @@ export function segToSegDistSq(
     b1y,
     b2x,
     b2y,
-  },))
+  },)) {
     return 0;
+  }
 
   return Math.min(
     distToSegmentSq({
@@ -335,8 +336,7 @@ export function segmentIntersectsRect(
     b1y: top,
     b2x: right,
     b2y: top,
-  },))
-  {
+  },)) {
     return true;
   }
   /** Bottom edge: left,bottom -> right,bottom */
@@ -349,8 +349,7 @@ export function segmentIntersectsRect(
     b1y: bottom,
     b2x: right,
     b2y: bottom,
-  },))
-  {
+  },)) {
     return true;
   }
   /** Left edge: left,top -> left,bottom */
@@ -363,8 +362,7 @@ export function segmentIntersectsRect(
     b1y: top,
     b2x: left,
     b2y: bottom,
-  },))
-  {
+  },)) {
     return true;
   }
   /** Right edge: right,top -> right,bottom */
@@ -377,8 +375,7 @@ export function segmentIntersectsRect(
     b1y: top,
     b2x: right,
     b2y: bottom,
-  },))
-  {
+  },)) {
     return true;
   }
 

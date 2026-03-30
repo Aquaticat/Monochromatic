@@ -69,10 +69,12 @@ export async function parseDesktopEntry(
     if (eqIdx === -1)
       continue;
 
-    const key = line.slice(
-      0,
-      eqIdx,
-    ).trim();
+    const key = line
+      .slice(
+        0,
+        eqIdx,
+      )
+      .trim();
     const value = line.slice(eqIdx + 1,).trim();
 
     applyKey({

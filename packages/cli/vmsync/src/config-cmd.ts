@@ -66,5 +66,7 @@ export async function updateConfig(
     updatedConfig,
   );
 
-  console.log(`updated "${name}": memory=${updatedBoot.memory}, cpus=${String(updatedBoot.cpus,)}`,);
+  console.log(
+    `updated "${name}": memory=${updatedBoot.memory}, cpus=${String(updatedBoot.cpus,)}`,
+  );
 }

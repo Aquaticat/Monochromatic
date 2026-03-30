@@ -38,8 +38,8 @@ console.error('--- Rebuilding composite ---',);
 execSync(
   `bun run ${join(import.meta.dirname, 'mise.build-composite.ts',)}`,
   {
-  stdio: 'inherit',
-},
+    stdio: 'inherit',
+  },
 );
 
 /**
@@ -74,7 +74,8 @@ function run(cmd: string,): string {
   return execSync(
     cmd,
     { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
-  ).trim();
+  )
+    .trim();
 }
 
 if (!existsSync(COMPOSITE_SVG,))

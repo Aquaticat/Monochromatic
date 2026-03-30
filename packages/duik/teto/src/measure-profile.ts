@@ -31,7 +31,8 @@ function run(cmd: string,): string {
   return execSync(
     cmd,
     { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
-  ).trim();
+  )
+    .trim();
 }
 
 /**
@@ -112,13 +113,14 @@ export function measureWidthProfile(
       }
     }
 
-    if (left !== -1)
+    if (left !== -1) {
       rows.push({
         y,
         left,
         right,
         width: right - left + 1,
       },);
+    }
   }
 
   return {

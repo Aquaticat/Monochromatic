@@ -20,8 +20,7 @@ import {
 export async function handleEmbed(
   args: string[],
   printUsageAndExit: () => never,
-): Promise<void>
-{
+): Promise<void> {
   const rl = tagged({
     tag: handleEmbed.name,
     l,
@@ -60,11 +59,11 @@ export async function handleEmbed(
 
     console.log(JSON.stringify(
       {
-      provider,
-      dimensions: result.embedding.length,
-      usage: result.usage,
-      embedding: result.embedding,
-    },
+        provider,
+        dimensions: result.embedding.length,
+        usage: result.usage,
+        embedding: result.embedding,
+      },
       null,
       2,
     ),);

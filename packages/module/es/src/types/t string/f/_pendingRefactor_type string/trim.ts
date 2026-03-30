@@ -27,11 +27,12 @@ export function trimEndWith(
   if (trimmer === '')
     throw new Error('trimmer cannot be empty',);
   let result = str;
-  while (result.endsWith(trimmer,))
+  while (result.endsWith(trimmer,)) {
     result = result.slice(
       0,
       -trimmer.length,
     );
+  }
   return result;
 }
 
@@ -66,10 +67,11 @@ export function trimStartWith(
   if (!str.startsWith(trimmer,))
     return str;
   let modifyingString = str;
-  while (modifyingString.startsWith(trimmer,))
+  while (modifyingString.startsWith(trimmer,)) {
     modifyingString = modifyingString.replace(
       trimmer,
       '',
     );
+  }
   return modifyingString;
 }

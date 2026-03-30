@@ -58,7 +58,7 @@ export async function clone(
     source,
   }: {
     destination: string;
-    source: string
+    source: string;
   },
 ): Promise<void> {
   validateName(source,);
@@ -98,7 +98,9 @@ export async function clone(
   catch {
     const entries = await readdir(VMS_DIR,);
     throw new Error(
-      `source VM "${source}" not found (no disk at ${srcDiskPath}). Available VMs: ${entries.join(', ')}`,
+      `source VM "${source}" not found (no disk at ${srcDiskPath}). Available VMs: ${
+        entries.join(', ',)
+      }`,
     );
   }
 

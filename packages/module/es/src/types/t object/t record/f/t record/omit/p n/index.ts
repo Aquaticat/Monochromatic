@@ -68,8 +68,7 @@ import {
     iterable: Reflect.ownKeys(original,),
     toOmit: normalizedOmitSet,
     strict,
-  },))
-  {
+  },)) {
     result[key] = (original as Record<typeof key, unknown>)[key];
   }
 

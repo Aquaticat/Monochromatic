@@ -2,8 +2,8 @@ import {
   l,
   tagged,
 } from '../log.ts';
-import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
 import { exec, } from '../pipeline/exec.ts';
+import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
 
 //region Notification tool detection
 
@@ -19,7 +19,7 @@ type NotificationTool = 'notify-send' | 'osascript' | 'pwsh' | 'powershell';
  * Cached detection result.
  * `undefined` = detection not yet run, `null` = no tool found.
  */
-let cachedTool: NotificationTool | null | undefined;
+let cachedTool: NotificationTool | null | undefined = undefined;
 
 /**
  * Detects the first available desktop notification tool.
@@ -32,19 +32,33 @@ async function detectNotificationTool(): Promise<NotificationTool | null> {
   if (cachedTool !== undefined)
     return cachedTool;
 
-  if (await evaluatePredicate(['notify-send', '--version',],)) {
+  if (await evaluatePredicate([
+    'notify-send',
+    '--version',
+  ],)) {
     cachedTool = 'notify-send';
     return cachedTool;
   }
-  if (await evaluatePredicate(['osascript', '-e', 'return',],)) {
+  if (await evaluatePredicate([
+    'osascript',
+    '-e',
+    'return',
+  ],)) {
     cachedTool = 'osascript';
     return cachedTool;
   }
-  if (await evaluatePredicate(['pwsh', '--version',],)) {
+  if (await evaluatePredicate([
+    'pwsh',
+    '--version',
+  ],)) {
     cachedTool = 'pwsh';
     return cachedTool;
   }
-  if (await evaluatePredicate(['powershell', '-Command', 'exit',],)) {
+  if (await evaluatePredicate([
+    'powershell',
+    '-Command',
+    'exit',
+  ],)) {
     cachedTool = 'powershell';
     return cachedTool;
   }
@@ -77,7 +91,10 @@ export async function notifyWriteProtection(filePath: string,): Promise<void> {
  * @param filePath - Absolute path shown in the notification body
  */
 async function sendDesktopNotification(filePath: string,): Promise<void> {
-  const rl = tagged({ tag: sendDesktopNotification.name, l, },);
+  const rl = tagged({
+    tag: sendDesktopNotification.name,
+    l,
+  },);
   const tool = await detectNotificationTool();
   if (tool === null)
     return;
@@ -89,20 +106,36 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
 
   try {
     if (tool === 'notify-send') {
-      await exec('notify-send', ['--urgency=critical', title, body,],);
+      await exec(
+        'notify-send',
+        [
+          '--urgency=critical',
+          title,
+          body,
+        ],
+      );
       return;
     }
     if (tool === 'osascript') {
-      await exec('osascript', [
-        '-e',
-        `display notification "${body}" with title "${title}"`,
-      ],);
+      await exec(
+        'osascript',
+        [
+          '-e',
+          `display notification "${body}" with title "${title}"`,
+        ],
+      );
       return;
     }
     // pwsh or powershell
     /** Escape single quotes in body/title for PowerShell string literals */
-    const safeBody = body.replaceAll("'", "''",);
-    const safeTitle = title.replaceAll("'", "''",);
+    const safeBody = body.replaceAll(
+      "'",
+      "''",
+    );
+    const safeTitle = title.replaceAll(
+      "'",
+      "''",
+    );
     /** PowerShell toast notification via WinRT. No external modules needed. */
     const script = [
       '[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null',
@@ -111,8 +144,15 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
       `$texts[0].AppendChild($xml.CreateTextNode('${safeTitle}')) > $null`,
       `$texts[1].AppendChild($xml.CreateTextNode('${safeBody}')) > $null`,
       `[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('file-enforcer').Show([Windows.UI.Notifications.ToastNotification]::new($xml))`,
-    ].join('; ',);
-    await exec(tool, ['-Command', script,],);
+    ]
+      .join('; ',);
+    await exec(
+      tool,
+      [
+        '-Command',
+        script,
+      ],
+    );
   }
   catch (notifyError: unknown) {
     rl.warn(`could not send desktop notification: ${String(notifyError,)}`,);

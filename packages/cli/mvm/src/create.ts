@@ -185,11 +185,12 @@ export async function create({
   await waitForGuestAgent({ name, },);
 
   // Windows VMs do not use cloud-init; set hostname via guest agent
-  if (guest.osFamily === 'windows')
+  if (guest.osFamily === 'windows') {
     await setWindowsHostname({
       hostname: name,
       name,
     },);
+  }
   rl.info(`VM ${name} is ready. Connect with: mvm shell ${name}`,);
 }
 

@@ -70,60 +70,60 @@ export function collectHighlightRanges({
         lineStarts,
       },);
 
-    for (let lineIndex = startLine; lineIndex <= endLine; lineIndex++) {
-      const div = children[lineIndex];
-      if (div === undefined)
-        continue;
+      for (let lineIndex = startLine; lineIndex <= endLine; lineIndex++) {
+        const div = children[lineIndex];
+        if (div === undefined)
+          continue;
 
-      const textNode = div.firstChild;
-      if (textNode === null)
-        continue;
+        const textNode = div.firstChild;
+        if (textNode === null)
+          continue;
 
-      const lineStart = lineStarts[lineIndex];
-      if (lineStart === undefined)
-        continue;
+        const lineStart = lineStarts[lineIndex];
+        if (lineStart === undefined)
+          continue;
 
-      const lineText = lines[lineIndex];
+        const lineText = lines[lineIndex];
 
-      // Skip empty lines — text node is '\n' placeholder with no visible text
-      if (lineText === undefined || lineText === '')
-        continue;
+        // Skip empty lines — text node is '\n' placeholder with no visible text
+        if (lineText === undefined || lineText === '')
+          continue;
 
-      const rangeStart = lineIndex === startLine ? from - lineStart : 0;
-      const rangeEnd = lineIndex === endLine ? to - lineStart : lineText.length;
+        const rangeStart = lineIndex === startLine ? from - lineStart : 0;
+        const rangeEnd = lineIndex === endLine ? to - lineStart : lineText.length;
 
-      // Clamp to text node bounds
-      const nodeLength = textNode.textContent?.length ?? 0;
-      if (rangeStart >= nodeLength)
-        continue;
+        // Clamp to text node bounds
+        const nodeLength = textNode.textContent?.length ?? 0;
+        if (rangeStart >= nodeLength)
+          continue;
 
-      const range = new Range();
-      range.setStart(
-        textNode,
-        Math.min(
-          rangeStart,
-          nodeLength,
-        ),
-      );
-      range.setEnd(
-        textNode,
-        Math.min(
-          rangeEnd,
-          nodeLength,
-        ),
-      );
-
-      let groupRanges = rangesByGroup.get(group,);
-      if (groupRanges === undefined) {
-        groupRanges = [];
-        rangesByGroup.set(
-          group,
-          groupRanges,
+        const range = new Range();
+        range.setStart(
+          textNode,
+          Math.min(
+            rangeStart,
+            nodeLength,
+          ),
         );
+        range.setEnd(
+          textNode,
+          Math.min(
+            rangeEnd,
+            nodeLength,
+          ),
+        );
+
+        let groupRanges = rangesByGroup.get(group,);
+        if (groupRanges === undefined) {
+          groupRanges = [];
+          rangesByGroup.set(
+            group,
+            groupRanges,
+          );
+        }
+        groupRanges.push(range,);
       }
-      groupRanges.push(range,);
-    }
-  },
+    },
   );
 
   return rangesByGroup;

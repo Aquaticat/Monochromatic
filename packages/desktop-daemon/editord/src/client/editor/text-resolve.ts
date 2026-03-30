@@ -31,7 +31,7 @@ export function resolveTextPosition({
   character: number;
 },): {
   node: Node;
-  offset: number
+  offset: number;
 } | null {
   const lineDiv = editor.children[lineIndex];
   if (lineDiv === undefined)
@@ -45,22 +45,24 @@ export function resolveTextPosition({
   let textNode = walker.nextNode();
   while (textNode !== null) {
     const len = textNode.textContent?.length ?? 0;
-    if (remaining <= len)
+    if (remaining <= len) {
       return {
         node: textNode,
         offset: remaining,
       };
+    }
     remaining -= len;
     textNode = walker.nextNode();
   }
 
   /** Offset past end — clamp to last text node's end. */
   const { lastChild, } = lineDiv;
-  if (lastChild !== null)
+  if (lastChild !== null) {
     return {
       node: lastChild,
       offset: lastChild.textContent?.length ?? 0,
     };
+  }
   return null;
 }
 
@@ -86,7 +88,7 @@ export function resolveLineCharacter({
   offset: number;
 },): {
   line: number;
-  character: number
+  character: number;
 } | null {
   let node: Node | null = container;
   let lineDiv: HTMLElement | null = null;

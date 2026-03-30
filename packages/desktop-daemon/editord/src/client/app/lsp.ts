@@ -11,10 +11,6 @@ import type { HoverPopup, } from '../hover/hover-popup.ts';
 import type { ReferencesPopup, } from '../references/references-popup.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
-import type {
-  GetCurrentFilePathFn,
-  LoadFileFn,
-} from './types.ts';
 import {
   formatDocument,
   wireGotoDefinition,
@@ -31,6 +27,10 @@ import {
   wireContentSync,
   wireDiagnostics,
 } from './lsp-sync.ts';
+import type {
+  GetCurrentFilePathFn,
+  LoadFileFn,
+} from './types.ts';
 
 /**
  * Wires all LSP features onto the editor components.
@@ -61,23 +61,22 @@ export function wireLsp(
     getCurrentFilePath,
     loadFileSafe,
   }: {
-      ws: EditorWsClient;
-      editorPane: EditorPane;
-      hoverPopup: HoverPopup;
-      completionPopup: CompletionPopup;
-      referencesPopup: ReferencesPopup;
-      getCurrentFilePath: GetCurrentFilePathFn;
-      loadFileSafe: LoadFileFn;
-    },
+    ws: EditorWsClient;
+    editorPane: EditorPane;
+    hoverPopup: HoverPopup;
+    completionPopup: CompletionPopup;
+    referencesPopup: ReferencesPopup;
+    getCurrentFilePath: GetCurrentFilePathFn;
+    loadFileSafe: LoadFileFn;
+  },
 ): {
   formatDocument: () => Promise<void>;
   requestCompletions: () => void;
   refreshInlayHints: () => void;
   gotoDefinitionAtCursor: () => void;
   expandSelection: () => void;
-  shrinkSelection: () => void
-}
-{
+  shrinkSelection: () => void;
+} {
   wireContentSync({
     ws,
     editorPane,

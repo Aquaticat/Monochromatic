@@ -51,9 +51,9 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
     const response = await fetch(
       OPENROUTER_MODELS_URL,
       {
-      method: 'HEAD',
-      signal: AbortSignal.timeout(TIMEOUT_MS,),
-    },
+        method: 'HEAD',
+        signal: AbortSignal.timeout(TIMEOUT_MS,),
+      },
     );
     const dateHeader = response.headers.get('date',);
     if (dateHeader !== null) {

@@ -116,11 +116,12 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
       isFallback: false,
       config,
     },);
-    if (result !== null)
+    if (result !== null) {
       return {
         ...result,
         entryId,
       };
+    }
   }
   //endregion
 
@@ -134,11 +135,12 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
       isFallback: true,
       config,
     },);
-    if (result !== null)
+    if (result !== null) {
       return {
         ...result,
         entryId,
       };
+    }
   }
   //endregion
 
@@ -171,7 +173,7 @@ async function tryEntry({
   entryId: string;
   registry: ReadonlyMap<string, {
     readonly id: string;
-    readonly path: string
+    readonly path: string;
   }>;
   desktops: readonly string[];
   isFallback: boolean;

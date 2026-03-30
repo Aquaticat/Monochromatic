@@ -22,7 +22,7 @@ export async function runAiMetrics(
     cmpPath,
   }: {
     refPath: string;
-    cmpPath: string
+    cmpPath: string;
   },
 ): Promise<void> {
   console.error('',);

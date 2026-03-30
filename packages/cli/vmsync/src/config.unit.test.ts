@@ -18,67 +18,82 @@ describe('validateName', () => {
   test('accepts simple alphanumeric name', () => {
     expect(() => {
       validateName('alpine',);
-    },).not.toThrow();
+    },)
+      .not
+      .toThrow();
   });
 
   test('accepts name with hyphens and underscores', () => {
     expect(() => {
       validateName('my-vm_01',);
-    },).not.toThrow();
+    },)
+      .not
+      .toThrow();
   });
 
   test('accepts single character name', () => {
     expect(() => {
       validateName('a',);
-    },).not.toThrow();
+    },)
+      .not
+      .toThrow();
   });
 
   test('accepts name starting with digit', () => {
     expect(() => {
       validateName('9test',);
-    },).not.toThrow();
+    },)
+      .not
+      .toThrow();
   });
 
   test('rejects name starting with hyphen', () => {
     expect(() => {
       validateName('-bad',);
-    },).toThrow('invalid VM name',);
+    },)
+      .toThrow('invalid VM name',);
   });
 
   test('rejects name starting with underscore', () => {
     expect(() => {
       validateName('_bad',);
-    },).toThrow('invalid VM name',);
+    },)
+      .toThrow('invalid VM name',);
   });
 
   test('rejects path traversal', () => {
     expect(() => {
       validateName('../evil',);
-    },).toThrow('invalid VM name',);
+    },)
+      .toThrow('invalid VM name',);
   });
 
   test('rejects name with spaces', () => {
     expect(() => {
       validateName('my vm',);
-    },).toThrow('invalid VM name',);
+    },)
+      .toThrow('invalid VM name',);
   });
 
   test('rejects name with dots', () => {
     expect(() => {
       validateName('my.vm',);
-    },).toThrow('invalid VM name',);
+    },)
+      .toThrow('invalid VM name',);
   });
 
   test('rejects empty string', () => {
     expect(() => {
       validateName('',);
-    },).toThrow('invalid VM name',);
+    },)
+      .toThrow('invalid VM name',);
   });
 
   test('rejects name with slashes', () => {
     expect(() => {
       validateName('a/b',);
-    },).toThrow('invalid VM name',);
+    },)
+      .toThrow('invalid VM name',);
   });
 });
 
@@ -147,7 +162,9 @@ describe('stripJsoncComments', () => {
     const stripped = stripJsoncComments(input,);
     expect(() => {
       JSON.parse(stripped,);
-    },).not.toThrow();
+    },)
+      .not
+      .toThrow();
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- test assertion for parsed JSON shape
     const parsed = JSON.parse(stripped,) as { name: string; size: number; };
     expect(parsed.name,).toBe('alpine',);

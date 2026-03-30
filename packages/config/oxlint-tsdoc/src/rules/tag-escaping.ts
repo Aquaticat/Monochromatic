@@ -38,24 +38,24 @@ export const escapeInlineTags: CreateOnceRule = {
     return createTsdocVisitor(
       context,
       function escapeHandler(_node, comment,): void {
-      const lines = getCommentLines(comment,);
-      // Skip the last line which is the legitimate closing `*/`
-      lines.slice(0, -1,).forEach(function checkLine(line, index,): void {
-        // Skip the first line opener
-        if (index === 0 && line.trimEnd().endsWith('*',))
-          return;
-        const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',);
-        // Look for `*/` not preceded by backslash inside content
-        if (/(?<!\\)\*\//.test(trimmed,)) {
-          context.report({
-            loc: {
-              start: { line: comment.loc.start.line + index, column: 0, },
-            },
-            messageId: 'unescaped',
-          },);
-        }
-      },);
-    },
+        const lines = getCommentLines(comment,);
+        // Skip the last line which is the legitimate closing `*/`
+        lines.slice(0, -1,).forEach(function checkLine(line, index,): void {
+          // Skip the first line opener
+          if (index === 0 && line.trimEnd().endsWith('*',))
+            return;
+          const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',);
+          // Look for `*/` not preceded by backslash inside content
+          if (/(?<!\\)\*\//.test(trimmed,)) {
+            context.report({
+              loc: {
+                start: { line: comment.loc.start.line + index, column: 0, },
+              },
+              messageId: 'unescaped',
+            },);
+          }
+        },);
+      },
     );
   },
 };

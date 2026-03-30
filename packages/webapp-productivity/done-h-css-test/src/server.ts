@@ -74,37 +74,37 @@ const app = new H3();
 app.get(
   '/',
   defineHandler(function handleInbox() {
-  return inboxPage();
-},),
+    return inboxPage();
+  },),
 );
 app.get(
   '/in-progress',
   defineHandler(function handleInProgress() {
-  return inProgressPage();
-},),
+    return inProgressPage();
+  },),
 );
 
 app.get(
   '/tasks/:id',
   defineHandler(function handleTaskDetails(event,) {
-  const id = getRouterParam(event, 'id',);
-  if (id === undefined)
-    throw new Error('missing route parameter: id',);
-  return taskDetailsPage(id,);
-},),
+    const id = getRouterParam(event, 'id',);
+    if (id === undefined)
+      throw new Error('missing route parameter: id',);
+    return taskDetailsPage(id,);
+  },),
 );
 
 app.get(
   '/search',
   defineHandler(function handleSearch(event,) {
-  return searchPage(event.url,);
-},),
+    return searchPage(event.url,);
+  },),
 );
 app.get(
   '/settings',
   defineHandler(function handleSettings() {
-  return settingsPage();
-},),
+    return settingsPage();
+  },),
 );
 
 //endregion Page routes
@@ -120,24 +120,24 @@ registerApiRoutes(app,);
 app.get(
   '/dist/client/**',
   defineHandler(function handleStaticAsset(event,) {
-  return serveStatic(event, {
-    getContents: function readContents(id,) {
-      return readFile(join('.', id,),);
-    },
-    getMeta: async function getMetadata(id,) {
-      let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
-      try {
-        stats = await stat(join('.', id,),);
-      }
-      catch {
-        return;
-      }
-      if (!stats.isFile())
-        return;
-      return { size: stats.size, mtime: stats.mtimeMs, };
-    },
-  },);
-},),
+    return serveStatic(event, {
+      getContents: function readContents(id,) {
+        return readFile(join('.', id,),);
+      },
+      getMeta: async function getMetadata(id,) {
+        let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
+        try {
+          stats = await stat(join('.', id,),);
+        }
+        catch {
+          return;
+        }
+        if (!stats.isFile())
+          return;
+        return { size: stats.size, mtime: stats.mtimeMs, };
+      },
+    },);
+  },),
 );
 
 //endregion Static asset serving

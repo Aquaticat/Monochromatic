@@ -31,7 +31,7 @@ export async function openInTerminal(
     path,
   }: {
     rootDir: string;
-    path: string
+    path: string;
   },
 ): Promise<void> {
   const absolutePath = assertWithinRoot({
@@ -87,7 +87,7 @@ export async function openInDefaultApp(
     path,
   }: {
     rootDir: string;
-    path: string
+    path: string;
   },
 ): Promise<void> {
   const absolutePath = assertWithinRoot({
@@ -98,18 +98,20 @@ export async function openInDefaultApp(
 
   const dir = dirname(absolutePath,);
 
-  if (currentPlatform === 'linux')
+  if (currentPlatform === 'linux') {
     await spawnDetached({
       command: 'xdg-open',
       args: [absolutePath,],
       cwd: dir,
     },);
-  else if (currentPlatform === 'darwin')
+  }
+  else if (currentPlatform === 'darwin') {
     await spawnDetached({
       command: 'open',
       args: [absolutePath,],
       cwd: dir,
     },);
+  }
   else if (currentPlatform === 'win32') {
     await spawnDetached({
       command: 'cmd',

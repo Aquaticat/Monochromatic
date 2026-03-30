@@ -72,13 +72,15 @@ export const FAILURE_DIR_PATTERN = /^failure-(?<timestamp>\d{4}-.+)$/;
  * @returns ISO 8601 timestamp string, or undefined if parsing fails
  */
 function restoreTimestamp(rawTimestamp: string,): string {
-  const withColons = rawTimestamp.replaceAll(
-    '-',
-    ':',
-  ).replace(
-    'T:',
-    'T',
-  );
+  const withColons = rawTimestamp
+    .replaceAll(
+      '-',
+      ':',
+    )
+    .replace(
+      'T:',
+      'T',
+    );
   // Fix the date part: year:MM:DD -> year-MM-DD (first two colons after year are date separators)
   return withColons.replace(
     /^(\d{4}):(\d{2}):(\d{2})/,

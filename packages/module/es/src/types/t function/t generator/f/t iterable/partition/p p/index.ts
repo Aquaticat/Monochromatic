@@ -57,7 +57,7 @@ export async function* $<T,>(
 ): AsyncGenerator<
   {
     decision: 'pass' | 'fail' | ['thrown', unknown,];
-    item: T
+    item: T;
   },
   void,
   undefined

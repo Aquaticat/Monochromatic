@@ -8,8 +8,8 @@
 import type { FileKind, } from '../../../protocol.ts';
 import type { BinaryViewer, } from '../binary-viewer/binary-viewer.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
+import { FILE_SIZE_WARNING_THRESHOLD, } from '../../constants.ts';
 import { getParserForPath, } from '../highlight/languages.ts';
-import { BYTES_PER_KB, } from '../highlight/utils.ts';
 import {
   l as rootLogger,
   tagged,
@@ -22,9 +22,6 @@ const appLog = tagged({
   tag: 'app-file-loader',
   l: rootLogger,
 },);
-
-/** Content length threshold for showing a "file too large" warning toast. */
-const FILE_SIZE_WARNING_THRESHOLD = 100 * BYTES_PER_KB;
 
 /**
  * Loads a file from the server and displays it in the appropriate viewer.

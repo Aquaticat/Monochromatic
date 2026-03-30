@@ -94,11 +94,12 @@ export function updateRecencyMarkers({
   const recencyByPath = new Map<string, number>();
   for (let i = 0; i < paths.length; i++) {
     const recentPath = paths[i];
-    if (recentPath !== undefined)
+    if (recentPath !== undefined) {
       recencyByPath.set(
         recentPath,
         i,
       );
+    }
   }
 
   for (const label of tree.querySelectorAll<HTMLElement>('tree-file-entry[data-path]',)) {
@@ -139,10 +140,12 @@ export function resolveSelectedDir(
   if (lastFocused.tagName === 'SUMMARY')
     return itemPath;
   const lastSlash = itemPath.lastIndexOf('/',);
-  return lastSlash > 0 ? itemPath.slice(
-    0,
-    lastSlash,
-  ) : '';
+  return lastSlash > 0
+    ? itemPath.slice(
+      0,
+      lastSlash,
+    )
+    : '';
 }
 
 /**

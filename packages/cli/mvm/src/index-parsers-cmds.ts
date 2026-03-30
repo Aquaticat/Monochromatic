@@ -38,8 +38,8 @@ const fromOption = optional(
     '--from',
     string({ metavar: 'SOURCE', },),
     {
-    description: message`Clone from an existing VM instead of creating fresh`,
-  },
+      description: message`Clone from an existing VM instead of creating fresh`,
+    },
   ),
 );
 
@@ -49,9 +49,9 @@ const imageOption = optional(
     '--image',
     string({ metavar: 'IMAGE', },),
     {
-    description:
-      message`Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name`,
-  },
+      description:
+        message`Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name`,
+    },
   ),
 );
 
@@ -66,13 +66,13 @@ const commandToken = string({ metavar: 'COMMAND', },);
 export const createCmd = command(
   'create',
   map(
-  object({ name: argument(name,), from: fromOption, image: imageOption, },),
-  function toCreateArgs(
-    v: { name: string; from: string | undefined; image: string | undefined; },
-  ): MvmArgs {
-    return { cmd: 'create', from: v.from, image: v.image, name: v.name, };
-  },
-),
+    object({ name: argument(name,), from: fromOption, image: imageOption, },),
+    function toCreateArgs(
+      v: { name: string; from: string | undefined; image: string | undefined; },
+    ): MvmArgs {
+      return { cmd: 'create', from: v.from, image: v.image, name: v.name, };
+    },
+  ),
   { brief: message`Create and start a new VM`, },
 );
 
@@ -80,11 +80,11 @@ export const createCmd = command(
 export const shellCmd = command(
   'shell',
   map(
-  object({ name: argument(name,), },),
-  function toShellArgs(v: { name: string; },): MvmArgs {
-    return { cmd: 'shell', ...v, };
-  },
-),
+    object({ name: argument(name,), },),
+    function toShellArgs(v: { name: string; },): MvmArgs {
+      return { cmd: 'shell', ...v, };
+    },
+  ),
   { brief: message`Open a serial console to a running VM`, },
 );
 
@@ -92,11 +92,11 @@ export const shellCmd = command(
 export const listCmd = command(
   'list',
   map(
-  object({},),
-  function toListArgs(): MvmArgs {
-    return { cmd: 'list', };
-  },
-),
+    object({},),
+    function toListArgs(): MvmArgs {
+      return { cmd: 'list', };
+    },
+  ),
   { brief: message`Show all VMs and their state`, },
 );
 
@@ -104,11 +104,11 @@ export const listCmd = command(
 export const lsCmd = command(
   'ls',
   map(
-  object({},),
-  function toLsArgs(): MvmArgs {
-    return { cmd: 'list', };
-  },
-),
+    object({},),
+    function toLsArgs(): MvmArgs {
+      return { cmd: 'list', };
+    },
+  ),
   { hidden: true, },
 );
 
@@ -143,9 +143,9 @@ const destroyNameParser = map(
 export const destroyCmd = command(
   'destroy',
   or(
-  destroyAllParser,
-  destroyNameParser,
-),
+    destroyAllParser,
+    destroyNameParser,
+  ),
   { brief: message`Stop and delete a VM`, },
 );
 
@@ -153,9 +153,9 @@ export const destroyCmd = command(
 export const rmCmd = command(
   'rm',
   or(
-  destroyAllParser,
-  destroyNameParser,
-),
+    destroyAllParser,
+    destroyNameParser,
+  ),
   { hidden: true, },
 );
 
@@ -163,11 +163,11 @@ export const rmCmd = command(
 export const execCmd = command(
   'exec',
   map(
-  object({ name: argument(name,), args: multiple(argument(commandToken,),), },),
-  function toExecArgs(v: { name: string; args: readonly string[]; },): MvmArgs {
-    return { cmd: 'exec', name: v.name, command: v.args.join(' ',), };
-  },
-),
+    object({ name: argument(name,), args: multiple(argument(commandToken,),), },),
+    function toExecArgs(v: { name: string; args: readonly string[]; },): MvmArgs {
+      return { cmd: 'exec', name: v.name, command: v.args.join(' ',), };
+    },
+  ),
   { brief: message`Run a command inside a named VM via guest agent`, },
 );
 
@@ -175,16 +175,16 @@ export const execCmd = command(
 export const runCmd = command(
   'run',
   map(
-  object({
-    from: fromOption,
-    args: multiple(argument(commandToken,),),
-  },),
-  function toRunArgs(
-    v: { from: string | undefined; args: readonly string[]; },
-  ): MvmArgs {
-    return { cmd: 'run', command: v.args.join(' ',), from: v.from, };
-  },
-),
+    object({
+      from: fromOption,
+      args: multiple(argument(commandToken,),),
+    },),
+    function toRunArgs(
+      v: { from: string | undefined; args: readonly string[]; },
+    ): MvmArgs {
+      return { cmd: 'run', command: v.args.join(' ',), from: v.from, };
+    },
+  ),
   { brief: message`Create an ephemeral VM, run a command, then destroy it`, },
 );
 
@@ -192,11 +192,11 @@ export const runCmd = command(
 export const updateCmd = command(
   'update',
   map(
-  object({},),
-  function toUpdateArgs(): MvmArgs {
-    return { cmd: 'update', };
-  },
-),
+    object({},),
+    function toUpdateArgs(): MvmArgs {
+      return { cmd: 'update', };
+    },
+  ),
   { brief: message`Re-download and rebuild all template images`, },
 );
 

@@ -33,7 +33,7 @@ export function parseRecordValue(
   tail: FragmentStringJsonc,
 ): {
   valueNode: Jsonc.Value;
-  remaining: FragmentStringJsonc
+  remaining: FragmentStringJsonc;
 } {
   /** Comments/whitespace after colon before the value. */
   const valueLead = startsWithComment({ value: tail, },);
@@ -68,7 +68,7 @@ export function parseOneRecordMember(
   tail: FragmentStringJsonc,
 ): {
   entry: [Jsonc.RecordKey, Jsonc.Value,];
-  remaining: FragmentStringJsonc
+  remaining: FragmentStringJsonc;
 } {
   const {
     keyNode,
@@ -104,18 +104,19 @@ export function parseRecordMembers(
   ][] = [],
 ): {
   entries: readonly [Jsonc.RecordKey, Jsonc.Value,][];
-  tail: FragmentStringJsonc
+  tail: FragmentStringJsonc;
 } {
   /** Leading comments at member start; check for closing brace. */
   const lead = startsWithComment({ value: tail, },);
   /** Start positioned at quoted key or closing brace. */
   const start = lead.remainingContent;
 
-  if (start.startsWith('}',))
+  if (start.startsWith('}',)) {
     return {
       entries,
       tail: start.slice('}'.length,) as FragmentStringJsonc,
     };
+  }
 
   /** Parse one member from current position. */
   const {
@@ -159,7 +160,7 @@ export function customParserForRecord(
     context,
   }: {
     value: FragmentStringJsonc | StringJsonc;
-    context?: Jsonc.ValueBase
+    context?: Jsonc.ValueBase;
   },
 ): Jsonc.Record & { remainingContent: FragmentStringJsonc; } {
   //region Entry and empty-object fast-exit
@@ -174,7 +175,7 @@ export function customParserForRecord(
       finalComment = mergeComments({
         value: context.comment,
         value2: insideLead
-        .comment,
+          .comment,
       },);
     }
     else if (context?.comment)

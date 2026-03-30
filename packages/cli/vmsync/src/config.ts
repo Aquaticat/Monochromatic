@@ -12,7 +12,9 @@ import {
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
-import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
 
 import {
   l,
@@ -137,9 +139,8 @@ export function stripJsoncComments(text: string,): string {
         i += 2;
       }
       else {
-        if (ch === '"') {
+        if (ch === '"')
           inString = false;
-        }
         result.push(ch,);
         i += 1;
       }
@@ -150,15 +151,13 @@ export function stripJsoncComments(text: string,): string {
       i += 1;
     }
     else if (ch === '/' && text[i + 1] === '/') {
-      while (i < text.length && text[i] !== '\n') {
+      while (i < text.length && text[i] !== '\n')
         i += 1;
-      }
     }
     else if (ch === '/' && text[i + 1] === '*') {
       i += 2;
-      while (i < text.length && !(text[i - 1] === '*' && text[i] === '/')) {
+      while (i < text.length && !(text[i - 1] === '*' && text[i] === '/'))
         i += 1;
-      }
       i += 1;
     }
     else {
@@ -265,12 +264,10 @@ export async function writeConfig(
  * ```
  */
 export function detectHypervisor(): Hypervisor {
-  if (process.platform === 'linux') {
+  if (process.platform === 'linux')
     return 'kvm';
-  }
-  if (process.platform === 'win32') {
+  if (process.platform === 'win32')
     return 'hyperv';
-  }
   throw new Error(
     `unsupported platform: ${process.platform} (vmsync requires Linux with KVM or Windows with Hyper-V)`,
   );

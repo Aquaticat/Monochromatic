@@ -60,9 +60,7 @@ export function cacheAndComputePerfMultiplier(
     },),
   },);
   rl.info(
-    `perf: ${
-      String(perfResult.durationMs,)
-    }ms score=${score.toFixed(2,)}`,
+    `perf: ${String(perfResult.durationMs,)}ms score=${score.toFixed(2,)}`,
   );
   return score;
 }

@@ -144,9 +144,9 @@ export const stakSimulation: Probe = {
       if (!match) {
         allCorrect = false;
         rl.info(
-          `case ${testCase.label}: expected ${
-            JSON.stringify(testCase.expected,)
-          }, got ${JSON.stringify(section,)}`,
+          `case ${testCase.label}: expected ${JSON.stringify(testCase.expected,)}, got ${
+            JSON.stringify(section,)
+          }`,
         );
       }
     }

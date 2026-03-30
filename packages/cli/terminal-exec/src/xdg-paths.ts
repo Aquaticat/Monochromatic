@@ -92,10 +92,12 @@ export function applicationDirs(): readonly string[] {
   /** Ascending priority: system dirs first, user dir last */
   const dirs = [
     ...dataDirs.toReversed().map(function ensureTrailingSlash(dir,) {
-      return `${dir.replace(
-        /\/+$/,
-        '',
-      )}/applications/`;
+      return `${
+        dir.replace(
+          /\/+$/,
+          '',
+        )
+      }/applications/`;
     },),
     `${dataHome}/applications/`,
   ];

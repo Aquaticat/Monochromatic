@@ -12,11 +12,11 @@ import type { SearchOverlay, } from '../search/search-overlay.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 import type { AppState, } from './events.ts';
 
-import type { LoadFileFn, } from './types.ts';
 import {
   restoreSession,
   wireSessionPersistence,
 } from './session.ts';
+import type { LoadFileFn, } from './types.ts';
 
 /**
  * Performs session restore and initial state setup after WebSocket is ready.
@@ -51,16 +51,16 @@ export async function bootSession(
     refreshInlayHints,
     queryFilePath,
   }: {
-      ws: EditorWsClient;
-      editorPane: EditorPane;
-      fileTree: FileTree;
-      searchOverlay: SearchOverlay;
-      state: AppState;
-      recentFiles: RecentFiles;
-      loadFileSafe: LoadFileFn;
-      refreshInlayHints: () => void;
-      queryFilePath: string | null;
-    },
+    ws: EditorWsClient;
+    editorPane: EditorPane;
+    fileTree: FileTree;
+    searchOverlay: SearchOverlay;
+    state: AppState;
+    recentFiles: RecentFiles;
+    loadFileSafe: LoadFileFn;
+    refreshInlayHints: () => void;
+    queryFilePath: string | null;
+  },
 ): Promise<void> {
   await ws.ready;
   wireSessionPersistence({

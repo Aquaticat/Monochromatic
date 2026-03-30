@@ -26,7 +26,7 @@ export type WidthProfile = {
     y: number;
     left: number;
     right: number;
-    width: number
+    width: number;
   }[];
 };
 

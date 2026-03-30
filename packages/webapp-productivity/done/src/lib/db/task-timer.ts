@@ -70,8 +70,8 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
     : Math.max(
       0,
       Math.floor(
-      (Date.now() - Date.parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
-    ),
+        (Date.now() - Date.parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
+      ),
     );
   const timestamp = nowIso();
   await db.prepare(SQL_STOP_TIMER,).run(
@@ -91,12 +91,13 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
  */
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   const currentTask = await getTaskById(id,);
-  if (currentTask === null)
+  if (currentTask === null) {
     return {
       completed: false,
       notFound: true,
       blockedBy: [],
     };
+  }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns blocker join columns
   const blockingRows = await db.prepare(SQL_SELECT_BLOCKERS,).all(id,) as {
@@ -109,12 +110,13 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
       blockerTitle: row.blocker_title,
     };
   },);
-  if (blockedBy.length > 0)
+  if (blockedBy.length > 0) {
     return {
       completed: false,
       notFound: false,
       blockedBy,
     };
+  }
 
   if (currentTask.timerStartedAt !== null)
     await stopTaskTimer(id,);

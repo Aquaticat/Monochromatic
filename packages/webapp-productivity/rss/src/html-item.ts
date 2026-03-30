@@ -19,7 +19,7 @@ import type { ItemWDate, } from './item-type.ts';
 export function itemToFeed(
   options: {
     itemWDate: ItemWDate;
-    index: number
+    index: number;
   },
 ): string {
   const {

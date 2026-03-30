@@ -119,36 +119,44 @@ export function printKeyProportions(pair: ProfilePair,): void {
     `  Max head width:      ref=${(headRef.width / refH).toFixed(3,)}  cmp=${
       (headCmp.width / cmpH)
         .toFixed(3,)
-    }  ratio=${fmtRatio(
-      headCmp.width / cmpH,
-      headRef.width / refH,
-    )}`,
+    }  ratio=${
+      fmtRatio(
+        headCmp.width / cmpH,
+        headRef.width / refH,
+      )
+    }`,
   );
   console.error(
     `  Max shoulder width:  ref=${(shoulderRef.width / refH).toFixed(3,)}  cmp=${
       (shoulderCmp.width / cmpH).toFixed(3,)
-    }  ratio=${fmtRatio(
-      shoulderCmp.width / cmpH,
-      shoulderRef.width / refH,
-    )}`,
+    }  ratio=${
+      fmtRatio(
+        shoulderCmp.width / cmpH,
+        shoulderRef.width / refH,
+      )
+    }`,
   );
   console.error(
     `  Min waist width:     ref=${(waistRef.width / refH).toFixed(3,)}  cmp=${
       (waistCmp.width / cmpH)
         .toFixed(3,)
-    }  ratio=${fmtRatio(
-      waistCmp.width / cmpH,
-      waistRef.width / refH,
-    )}`,
+    }  ratio=${
+      fmtRatio(
+        waistCmp.width / cmpH,
+        waistRef.width / refH,
+      )
+    }`,
   );
   console.error(
     `  Max hip/skirt width: ref=${(hipRef.width / refH).toFixed(3,)}  cmp=${
       (hipCmp.width / cmpH)
         .toFixed(3,)
-    }  ratio=${fmtRatio(
-      hipCmp.width / cmpH,
-      hipRef.width / refH,
-    )}`,
+    }  ratio=${
+      fmtRatio(
+        hipCmp.width / cmpH,
+        hipRef.width / refH,
+      )
+    }`,
   );
   console.error('',);
 }

@@ -36,8 +36,8 @@ export function buildPillElements({
     {
       field: 'locations',
       text: metadata.locations.length > 0
-      ? `where: ${metadata.locations.join(', ',)}`
-      : 'where: ?',
+        ? `where: ${metadata.locations.join(', ',)}`
+        : 'where: ?',
     },
     {
       field: 'priority',
@@ -54,14 +54,14 @@ export function buildPillElements({
     {
       field: 'reminders',
       text: task.reminders.length > 0
-      ? `reminders: ${task.reminders[0]}`
-      : 'reminders: None',
+        ? `reminders: ${task.reminders[0]}`
+        : 'reminders: None',
     },
     {
       field: 'blockedBy',
       text: task.blockedBy.length > 0
-      ? `blockedBy: ${String(task.blockedBy.length,)}`
-      : 'blockedBy: none',
+        ? `blockedBy: ${String(task.blockedBy.length,)}`
+        : 'blockedBy: none',
     },
   ];
 

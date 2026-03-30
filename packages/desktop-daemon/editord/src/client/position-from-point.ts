@@ -68,7 +68,7 @@ function findLineAtY({
   y: number;
 },): {
   line: number;
-  lineDiv: Element
+  lineDiv: Element;
 } | null {
   const { children, } = editor;
   let lo = 0;
@@ -85,11 +85,12 @@ function findLineAtY({
       hi = mid - 1;
     else if (y > rect.bottom)
       lo = mid + 1;
-    else
+    else {
       return {
         line: mid,
         lineDiv: child,
       };
+    }
   }
 
   return null;

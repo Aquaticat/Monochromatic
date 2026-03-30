@@ -40,10 +40,12 @@ const l = tagged({ tag: 'path/empty', },);
  */
 export async function emptyPath(path: string,): Promise<string> {
   const queryIndex = path.indexOf('?',);
-  const cleanPath = queryIndex !== -1 ? path.slice(
-    0,
-    queryIndex,
-  ) : path;
+  const cleanPath = queryIndex !== -1
+    ? path.slice(
+      0,
+      queryIndex,
+    )
+    : path;
   const parsed = parse(cleanPath,);
 
   if (parsed.ext) {
@@ -94,10 +96,12 @@ export async function emptyDir(path: string,): Promise<string> {
  */
 export async function emptyFile(path: string,): Promise<string> {
   const queryIndex = path.indexOf('?',);
-  const cleanPath = queryIndex !== -1 ? path.slice(
-    0,
-    queryIndex,
-  ) : path;
+  const cleanPath = queryIndex !== -1
+    ? path.slice(
+      0,
+      queryIndex,
+    )
+    : path;
 
   await writeFile(
     cleanPath,

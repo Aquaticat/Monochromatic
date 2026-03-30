@@ -23,8 +23,7 @@ const HTTP_NO_CONTENT = 204;
 export async function api<TResponse = unknown,>(
   path: string,
   options?: RequestInit,
-): Promise<TResponse>
-{
+): Promise<TResponse> {
   const mergedHeaders = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers !== undefined) {
     const extra = new Headers(options.headers,);
@@ -41,9 +40,9 @@ export async function api<TResponse = unknown,>(
   const response = await fetch(
     path,
     {
-    ...options,
-    headers: mergedHeaders,
-  },
+      ...options,
+      headers: mergedHeaders,
+    },
   );
 
   if (!response.ok) {

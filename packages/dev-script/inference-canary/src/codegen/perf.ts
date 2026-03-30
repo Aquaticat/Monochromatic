@@ -96,8 +96,7 @@ export async function runInContainerTimed(
 export function computePerfScore(
   perfResult: TimedContainerResult,
   config: PerfTestConfig,
-): number
-{
+): number {
   if (perfResult.timedOut || perfResult.exitCode !== 0)
     return 0;
   if (perfResult.durationMs <= config.fastMs)
@@ -119,8 +118,7 @@ export function computePerfScore(
 export function buildPerfDiagnostic(
   perfResult: TimedContainerResult,
   config: PerfTestConfig,
-): string | undefined
-{
+): string | undefined {
   const score = computePerfScore(
     perfResult,
     config,

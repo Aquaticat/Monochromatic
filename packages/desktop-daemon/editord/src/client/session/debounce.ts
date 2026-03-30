@@ -57,7 +57,7 @@ export function createDebouncedSave({
   getState: () => SessionState;
 },): {
   debouncedSave: () => void;
-  saveNow: () => void
+  saveNow: () => void;
 } {
   /** Saves state immediately without debouncing. */
   function saveNow(): void {

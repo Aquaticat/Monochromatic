@@ -37,7 +37,7 @@ export async function listDir(
     path,
   }: {
     rootDir: string;
-    path: string
+    path: string;
   },
 ): Promise<ListDirResult> {
   const absolutePath = assertWithinRoot({

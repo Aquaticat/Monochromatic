@@ -28,23 +28,23 @@ export type MvmArgs =
     cmd: 'create';
     image: string | undefined;
     name: string;
-    from: string | undefined
+    from: string | undefined;
   }
   | {
     cmd: 'shell';
-    name: string
+    name: string;
   }
   | { cmd: 'list'; }
   | { cmd: 'update'; }
   | {
     cmd: 'destroy';
     name: string | undefined;
-    all: boolean
+    all: boolean;
   }
   | {
     cmd: 'exec';
     name: string;
-    command: string
+    command: string;
   }
   | {
     cmd: 'run';

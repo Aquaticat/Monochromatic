@@ -90,9 +90,8 @@ export async function syncFromKvm(name: string,): Promise<void> {
     },
   );
 
-  if (changedRegions.length === 0) {
+  if (changedRegions.length === 0)
     rl.info('no blocks changed during boot, skipping sync',);
-  }
   else {
     rl.info(`${String(changedRegions.length,)} regions changed, patching vhdx via NBD`,);
     await patchVhdxFromOverlay({
@@ -130,7 +129,11 @@ export async function syncFromKvm(name: string,): Promise<void> {
   );
 
   rl.info('sync from KVM complete',);
-  console.log(`synced "${name}" (overlay -> vhdx, ${String(changedRegions.length,)} regions patched)`,);
+  console.log(
+    `synced "${name}" (overlay -> vhdx, ${
+      String(changedRegions.length,)
+    } regions patched)`,
+  );
 
   //endregion Commit overlay and update checksums
 }
@@ -294,12 +297,10 @@ export async function syncVm(name: string,): Promise<void> {
     return;
   }
 
-  if (config.state.lastBootHypervisor === 'kvm') {
+  if (config.state.lastBootHypervisor === 'kvm')
     await syncFromKvm(name,);
-  }
-  else if (config.state.lastBootHypervisor === 'hyperv') {
+  else if (config.state.lastBootHypervisor === 'hyperv')
     await syncFromHyperv(name,);
-  }
   else {
     throw new Error(
       `cannot sync "${name}": no recorded boot hypervisor`,

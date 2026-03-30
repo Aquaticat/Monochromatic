@@ -138,11 +138,12 @@ export function transformImportAttributes(
   },);
 
   let transformed = code;
-  for (const r of replacements)
+  for (const r of replacements) {
     transformed = transformed.slice(
       0,
       r.start,
     ) + r.text + transformed.slice(r.end,);
+  }
 
   return { code: transformed, };
 }

@@ -39,8 +39,7 @@ export type ContainerResult = {
 export async function execContainer(
   containerArgs: readonly string[],
   signal?: AbortSignal,
-): Promise<ContainerResult>
-{
+): Promise<ContainerResult> {
   /** Milliseconds per second for timeout computation */
   const MS_PER_SECOND = 1_000;
   /** Maximum stderr characters to include in error log */
@@ -51,8 +50,7 @@ export async function execContainer(
   const result = await execBun(
     CONTAINER_RUNTIME,
     containerArgs,
-    { timeout: timeoutMs,
-    signal, },
+    { timeout: timeoutMs, signal, },
   );
 
   if (result.exitCode !== 0 || result.killed) {
@@ -62,16 +60,16 @@ export async function execContainer(
       l,
     },);
     rl.error(
-      `exit=${String(result.exitCode,)} timedOut=${
-        String(result.killed,)
-      }`,
+      `exit=${String(result.exitCode,)} timedOut=${String(result.killed,)}`,
     );
     if (result.stderr.length > 0) {
       rl.error(
-        `stderr: ${result.stderr.slice(
-          0,
-          STDERR_PREVIEW_LENGTH,
-        )}`,
+        `stderr: ${
+          result.stderr.slice(
+            0,
+            STDERR_PREVIEW_LENGTH,
+          )
+        }`,
       );
     }
   }

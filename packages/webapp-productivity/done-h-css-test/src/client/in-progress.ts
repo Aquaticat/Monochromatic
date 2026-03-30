@@ -51,12 +51,13 @@ if (!(appElement instanceof HTMLElement))
 /** Validated `#app` container element. */
 const app = appElement;
 
-if (pageData.tasks.length === 0)
+if (pageData.tasks.length === 0) {
   app.append(h({
     tag: 'p',
     class: 'empty',
     text: 'No active timers.',
   },),);
+}
 
 /** UL container for in-progress task cards. */
 const list = h({
@@ -69,12 +70,12 @@ for (const task of pageData.tasks) {
     createTaskCard(
       task,
       {
-      onOpen: handleOpen,
-      onToggleComplete: async function handleStop(taskId,) {
-        await api(`/api/tasks/${taskId}/stop`, { method: 'POST', },);
-        globalThis.location.reload();
+        onOpen: handleOpen,
+        onToggleComplete: async function handleStop(taskId,) {
+          await api(`/api/tasks/${taskId}/stop`, { method: 'POST', },);
+          globalThis.location.reload();
+        },
       },
-    },
     ),
   );
 }
@@ -85,19 +86,19 @@ if (pageData.tasks.length > 0)
 // Live timer updates -- correlate each card with its task by DOM order
 setInterval(
   function updateTimers() {
-  const cards = list.querySelectorAll<HTMLElement>('task-card',);
-  cards.forEach(function updateCard(card, cardIndex,) {
-    const task = pageData.tasks[cardIndex];
-    if (task === undefined)
-      return;
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- TaskCard has getChipElement but querySelectorAll returns generic HTMLElement
-    const chipEl = (card as unknown as {
-      getChipElement?: (prefix: string,) => HTMLSpanElement | null;
-    })
-      .getChipElement?.('tracked:',);
-    if (chipEl instanceof HTMLSpanElement)
-      chipEl.textContent = `tracked: ${formatRunningTrackedTime(task,)}`;
-  },);
-},
+    const cards = list.querySelectorAll<HTMLElement>('task-card',);
+    cards.forEach(function updateCard(card, cardIndex,) {
+      const task = pageData.tasks[cardIndex];
+      if (task === undefined)
+        return;
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- TaskCard has getChipElement but querySelectorAll returns generic HTMLElement
+      const chipEl = (card as unknown as {
+        getChipElement?: (prefix: string,) => HTMLSpanElement | null;
+      })
+        .getChipElement?.('tracked:',);
+      if (chipEl instanceof HTMLSpanElement)
+        chipEl.textContent = `tracked: ${formatRunningTrackedTime(task,)}`;
+    },);
+  },
   TIMER_INTERVAL_MS,
 );

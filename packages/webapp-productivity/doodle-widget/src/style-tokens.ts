@@ -96,7 +96,9 @@ export const PAGE_FRAME_COLOR: CssValue = cssOklch({
 },);
 
 /** US Letter aspect ratio (8.5 / 11) for CSS `aspect-ratio` */
-export const LETTER_ASPECT_RATIO: CssValue = `${String(8.5)} / ${String(11)}` as CssValue;
+export const LETTER_ASPECT_RATIO: CssValue = `${String(8.5,)} / ${
+  String(11,)
+}` as CssValue;
 
 /** Padding around the page inside the viewport */
 export const VIEWPORT_PADDING: CssValue = cssRem(1,);

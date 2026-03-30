@@ -27,11 +27,11 @@ export type VoyageApiResponse = {
 export type VoyageContentItem =
   | {
     readonly type: 'image_url';
-    readonly image_url: string
+    readonly image_url: string;
   }
   | {
     readonly type: 'image_base64';
-    readonly image_base64: string
+    readonly image_base64: string;
   };
 
 /**

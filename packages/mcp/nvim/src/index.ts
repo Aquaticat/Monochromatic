@@ -18,22 +18,22 @@ const server = createMcpServer(
     defineTool(
       'get_diagnostics',
       {
-      description: 'Returns the current buffer from every running Neovim instance, '
-        + 'with diagnostics from both LSP and oxlint CLI (merged and deduplicated). '
-        + 'Each diagnostic includes severity (ERROR/WARN/INFO/HINT), line, column, message, source, and code.',
-      handler: handleGetDiagnostics,
-    },
+        description: 'Returns the current buffer from every running Neovim instance, '
+          + 'with diagnostics from both LSP and oxlint CLI (merged and deduplicated). '
+          + 'Each diagnostic includes severity (ERROR/WARN/INFO/HINT), line, column, message, source, and code.',
+        handler: handleGetDiagnostics,
+      },
     ),
 
     defineTool(
       'get_all_diagnostics',
       {
-      description:
-        'Returns diagnostics from both LSP and oxlint CLI across all buffers in every running Neovim instance, '
-        + 'merged and deduplicated, grouped by file path. '
-        + 'Use when you need a project-wide view of errors and warnings.',
-      handler: handleGetAllDiagnostics,
-    },
+        description:
+          'Returns diagnostics from both LSP and oxlint CLI across all buffers in every running Neovim instance, '
+          + 'merged and deduplicated, grouped by file path. '
+          + 'Use when you need a project-wide view of errors and warnings.',
+        handler: handleGetAllDiagnostics,
+      },
     ),
   ],
 );

@@ -54,11 +54,10 @@ export type CodeGenProbeConfig = {
    * @param context - model identity and pass info
    * @returns transformed source or rejection signal
    */
-  readonly transformSource?: (source: string,
-    context: ScoreContext,) => {
-      readonly reject: boolean;
-      readonly source: string
-    };
+  readonly transformSource?: (source: string, context: ScoreContext,) => {
+    readonly reject: boolean;
+    readonly source: string;
+  };
   /**
    * Optional hook to customize the fix prompt beyond the standard buildCodeGenFixPrompt.
    * Receives the base fix prompt (or undefined if no diagnostics) and returns

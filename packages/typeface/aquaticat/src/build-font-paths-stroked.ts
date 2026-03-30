@@ -76,16 +76,18 @@ export function addStrokedPath(
     ) {
       const fx = vert[0] - cellX + xShift;
       const fy = fontY(vert[1],);
-      if (vertIndex === 0)
+      if (vertIndex === 0) {
         otPath.moveTo(
           fx,
           fy,
         );
-      else
+      }
+      else {
         otPath.lineTo(
           fx,
           fy,
         );
+      }
     },);
     otPath.close();
   }

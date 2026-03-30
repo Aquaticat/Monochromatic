@@ -118,8 +118,8 @@ export async function build(options: BuildOptions,): Promise<string> {
   const bundled = postcss([postcssInlineImport,],).process(
     cssText,
     {
-    from: inputPath,
-  },
+      from: inputPath,
+    },
   );
 
   /** PostCSS AST with all imports inlined, ready for mixin processing */

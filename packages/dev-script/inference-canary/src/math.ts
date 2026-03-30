@@ -21,8 +21,8 @@ export function mean(values: readonly number[],): number {
     return 0;
   return values.reduce(
     function accumulate(sum, value,): number {
-    return sum + value;
-  },
+      return sum + value;
+    },
     0,
   ) / values.length;
 }

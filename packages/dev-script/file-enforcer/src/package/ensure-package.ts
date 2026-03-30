@@ -19,7 +19,7 @@ import type {
  * Lookup index from binary name to {@link PackageEntry}.
  * Built lazily on first {@link ensurePackage} call via {@link buildIndex}.
  */
-let index: ReadonlyMap<string, PackageEntry> | undefined;
+let index: ReadonlyMap<string, PackageEntry> | undefined = undefined;
 
 /**
  * Registered package entries awaiting indexing.
@@ -56,7 +56,10 @@ export function registerPackages(entries: readonly PackageEntry[],): void {
 function buildIndex(): ReadonlyMap<string, PackageEntry> {
   const map = new Map<string, PackageEntry>();
   for (const entry of registered) {
-    map.set(entry.bin, entry,);
+    map.set(
+      entry.bin,
+      entry,
+    );
   }
   return map;
 }
@@ -67,18 +70,22 @@ function buildIndex(): ReadonlyMap<string, PackageEntry> {
 
 /**
  * Resolves the package name for a given entry and manager.
+ * Returns `undefined` when Repology data confirms the package is unavailable
+ * (manager not in `available` set), avoiding the expensive live `canProvide` check.
  * Uses the per-manager override if present, otherwise falls back to effname.
  *
  * @param entry - Package entry to resolve
  *
  * @param manager - Detected package manager
  *
- * @returns Package name to pass to the install command
+ * @returns Package name to pass to the install command, or `undefined` when unavailable
  */
 function resolvePackageName(
   entry: PackageEntry,
   manager: PackageManager,
-): string {
+): string | undefined {
+  if (entry.available !== null && !entry.available.has(manager,))
+    return undefined;
   return entry.overrides[manager] ?? entry.effname;
 }
 
@@ -90,6 +97,11 @@ function resolvePackageName(
  * Ensures a binary is available on the system.
  * Checks PATH first; if absent, installs the corresponding package
  * via the detected OS package manager.
+ *
+ * **For mise-installable tools** (node, python, jq, etc.), prefer
+ * `exec('mise', ['use', '-g', '<tool>'])` instead -- it avoids root,
+ * manages versions, and works on immutable distros. Use this function
+ * for system-level packages that mise does not cover.
  *
  * Lookup order:
  * 1. Check if the binary exists on PATH -- return immediately if so
@@ -116,42 +128,73 @@ function resolvePackageName(
  * ```
  */
 export async function ensurePackage(binary: string,): Promise<void> {
-  if (!index) {
-    index = buildIndex();
-  }
+  index ??= buildIndex();
 
   const entry = index.get(binary,);
   const effectiveEntry: PackageEntry = entry ?? {
+    available: null,
     bin: binary,
     check: '--version',
     effname: binary,
     overrides: Object.freeze({},),
   };
 
-  const alreadyInstalled = await binaryExists(binary, effectiveEntry.check,);
-  if (alreadyInstalled) {
+  const alreadyInstalled = await binaryExists(
+    binary,
+    effectiveEntry.check,
+  );
+  if (alreadyInstalled)
     return;
-  }
 
   const manager = await detectManager();
-  if (!manager) {
+  if (!manager)
     throw new NoManagerError(binary,);
+
+  const packageName = resolvePackageName(
+    effectiveEntry,
+    manager,
+  );
+
+  if (packageName === undefined) {
+    throw new PackageNotFoundError(
+      binary,
+      manager,
+      effectiveEntry.effname,
+    );
   }
 
-  const packageName = resolvePackageName(effectiveEntry, manager,);
-
-  const available = await canProvide(manager, packageName,);
+  const available = await canProvide(
+    manager,
+    packageName,
+  );
   if (!available) {
-    throw new PackageNotFoundError(binary, manager, packageName,);
+    throw new PackageNotFoundError(
+      binary,
+      manager,
+      packageName,
+    );
   }
 
-  const rl = tagged({ tag: ensurePackage.name, l, },);
+  const rl = tagged({
+    tag: ensurePackage.name,
+    l,
+  },);
   rl.info(`installing ${packageName} via ${manager} (binary: ${binary})`,);
-  await installPackage(manager, packageName,);
+  await installPackage(
+    manager,
+    packageName,
+  );
 
-  const verified = await binaryExists(binary, effectiveEntry.check,);
+  const verified = await binaryExists(
+    binary,
+    effectiveEntry.check,
+  );
   if (!verified) {
-    throw new VerificationError(binary, manager, packageName,);
+    throw new VerificationError(
+      binary,
+      manager,
+      packageName,
+    );
   }
 }
 

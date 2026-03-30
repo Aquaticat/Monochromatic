@@ -113,8 +113,9 @@ export function readVersionFromBunStore(
     if (bestVersion === undefined || isStrictlyGreater(
       bestVersion,
       candidateVersion,
-    ))
+    )) {
       bestVersion = candidateVersion;
+    }
   }
 
   return bestVersion;

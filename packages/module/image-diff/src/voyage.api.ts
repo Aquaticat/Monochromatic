@@ -63,8 +63,7 @@ export function resolveVoyageApiKey(configKey: string | undefined,): string {
 export async function callVoyageApi(
   requestBody: VoyageApiRequest,
   apiKey: string,
-): Promise<VoyageApiResponse>
-{
+): Promise<VoyageApiResponse> {
   const rl = tagged({
     tag: callVoyageApi.name,
     l,
@@ -81,13 +80,13 @@ export async function callVoyageApi(
   const response = await fetch(
     VOYAGE_API_URL,
     {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody,),
     },
-    body: JSON.stringify(requestBody,),
-  },
   );
 
   if (!response.ok) {

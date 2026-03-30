@@ -56,7 +56,7 @@ export function generateHexDump(
     totalSize,
   }: {
     buffer: Buffer;
-    totalSize?: number
+    totalSize?: number;
   },
 ): string {
   const fullSize = totalSize ?? buffer.length;

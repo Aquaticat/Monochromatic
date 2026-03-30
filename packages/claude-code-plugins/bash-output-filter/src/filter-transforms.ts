@@ -221,10 +221,12 @@ export function collapseHomePaths(line: string,): string {
 export function truncateLine(line: string,): string {
   if (line.length <= MAX_LINE_LENGTH)
     return line;
-  return `${line.slice(
-    0,
-    MAX_LINE_LENGTH,
-  )}... [${line.length} chars]`;
+  return `${
+    line.slice(
+      0,
+      MAX_LINE_LENGTH,
+    )
+  }... [${line.length} chars]`;
 }
 
 //endregion

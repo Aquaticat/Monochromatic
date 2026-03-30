@@ -24,7 +24,7 @@ export function buildActionButtonRow(
     isCreate,
   }: {
     task: Task;
-    isCreate: boolean
+    isCreate: boolean;
   },
 ): HTMLElement {
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
@@ -100,22 +100,22 @@ export function attachActionHandler(
   shadow.addEventListener(
     'click',
     function onAction(event,): void {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
-    const target = event.target as HTMLElement;
-    const button = target.closest<HTMLElement>('[data-action]',);
-    if (button === null)
-      return;
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- closest returns HTMLElement with dataset
-    const { action, } = (button as HTMLElement).dataset;
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLElement>('[data-action]',);
+      if (button === null)
+        return;
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- closest returns HTMLElement with dataset
+      const { action, } = (button as HTMLElement).dataset;
 
-    host.dispatchEvent(new CustomEvent('action', {
-      bubbles: true,
-      detail: {
-        action,
-        title: titleInput.value,
-        description: descInput.value,
-      },
-    },),);
-  },
+      host.dispatchEvent(new CustomEvent('action', {
+        bubbles: true,
+        detail: {
+          action,
+          title: titleInput.value,
+          description: descInput.value,
+        },
+      },),);
+    },
   );
 }

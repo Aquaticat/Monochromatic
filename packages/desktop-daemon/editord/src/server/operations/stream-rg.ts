@@ -68,58 +68,59 @@ export function streamRg({
       resolve(results,);
     }
 
-    if (signal !== undefined)
+    if (signal !== undefined) {
       signal.addEventListener(
         'abort',
         finish,
         { once: true, },
       );
+    }
 
     proc.stdout.on(
       'data',
       function handleData(chunk: Buffer,) {
-      buffer += chunk.toString('utf8',);
-      const lines = buffer.split('\n',);
-      /** Keep the last (possibly incomplete) line in the buffer. */
-      buffer = lines.pop() ?? '';
+        buffer += chunk.toString('utf8',);
+        const lines = buffer.split('\n',);
+        /** Keep the last (possibly incomplete) line in the buffer. */
+        buffer = lines.pop() ?? '';
 
-      for (const line of lines) {
-        if (line === '')
-          continue;
+        for (const line of lines) {
+          if (line === '')
+            continue;
 
-        const result = processLine(line,);
-        if (result !== null) {
-          results.push(result,);
-          if (results.length >= maxResults) {
-            finish();
-            return;
+          const result = processLine(line,);
+          if (result !== null) {
+            results.push(result,);
+            if (results.length >= maxResults) {
+              finish();
+              return;
+            }
           }
         }
-      }
-    },
+      },
     );
 
     proc.on(
       'close',
       function handleClose() {
-      if (buffer !== '') {
-        const result = processLine(buffer,);
-        if (result !== null)
-          results.push(result,);
-      }
+        if (buffer !== '') {
+          const result = processLine(buffer,);
+          if (result !== null)
+            results.push(result,);
+        }
 
-      finish();
-    },
+        finish();
+      },
     );
 
     proc.on(
       'error',
       function handleError(error,) {
-      if (!resolved) {
-        resolved = true;
-        reject(error,);
-      }
-    },
+        if (!resolved) {
+          resolved = true;
+          reject(error,);
+        }
+      },
     );
   },);
 }

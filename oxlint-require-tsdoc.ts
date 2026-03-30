@@ -27,11 +27,12 @@ function reportTsdoc(
   if (!hasTsdoc(
     node,
     context,
-  ))
+  )) {
     context.report({
       node,
       messageId: 'no',
     },);
+  }
 }
 
 /** File extensions that should be excluded from the require-tsdoc rule. */
@@ -142,11 +143,12 @@ const plugin = eslintCompatPlugin({
             );
           },
           Property(node,): void {
-            if (node.kind === 'get' || node.kind === 'set')
+            if (node.kind === 'get' || node.kind === 'set') {
               reportTsdoc(
                 node,
                 context,
               );
+            }
           },
         } as VisitorWithHooks;
       },

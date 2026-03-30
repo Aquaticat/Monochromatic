@@ -54,7 +54,7 @@ export function assertWithinRoot(
     path,
   }: {
     rootDir: string;
-    path: string
+    path: string;
   },
 ): string {
   const absolute = resolve(path,);
@@ -62,8 +62,9 @@ export function assertWithinRoot(
   if (!isWithinRoot({
     root: rootDir,
     path: absolute,
-  },))
+  },)) {
     throw new Error(`path escapes root: ${absolute}`,);
+  }
 
   return absolute;
 }

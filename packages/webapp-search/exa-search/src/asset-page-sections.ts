@@ -55,10 +55,12 @@ export function buildStatusSection(): string {
         tag: 'p',
         class: 'fail',
         attrs: { hidden: '', },
-        html: `Error: ${h({
-          tag: 'span',
-          class: 'message',
-        },)}`,
+        html: `Error: ${
+          h({
+            tag: 'span',
+            class: 'message',
+          },)
+        }`,
       },),
     ],
   },);

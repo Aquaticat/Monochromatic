@@ -111,31 +111,31 @@ export function wireHover(
   editorPane.addEventListener(
     'mousemove',
     function handleMouseMove(event,) {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mousemove is always a MouseEvent
-    latestMouseEvent = event as MouseEvent;
-    scheduleHover();
-  },
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mousemove is always a MouseEvent
+      latestMouseEvent = event as MouseEvent;
+      scheduleHover();
+    },
   );
 
   editorPane.addEventListener(
     'mouseleave',
     function handleMouseLeave(event,) {
-    cancelHover();
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mouseleave is always a MouseEvent
-    const me = event as MouseEvent;
-    if (me.relatedTarget === hoverPopup
-      || (me.relatedTarget instanceof Node && hoverPopup.contains(me.relatedTarget,)))
-    {
-      return;
-    }
-    resetHover();
-  },
+      cancelHover();
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mouseleave is always a MouseEvent
+      const me = event as MouseEvent;
+      if (me.relatedTarget === hoverPopup
+        || (me.relatedTarget instanceof Node && hoverPopup.contains(me.relatedTarget,)))
+      {
+        return;
+      }
+      resetHover();
+    },
   );
 
   hoverPopup.addEventListener(
     'mouseleave',
     function handlePopupLeave() {
-    resetHover();
-  },
+      resetHover();
+    },
   );
 }

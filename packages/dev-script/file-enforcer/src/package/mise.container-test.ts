@@ -15,10 +15,16 @@
  * ```
  */
 
+import { findUp, } from 'find-up';
 import spawn from 'nano-spawn';
 import { readFileSync, } from 'node:fs';
-import { dirname, resolve, } from 'node:path';
-import { findUp, } from 'find-up';
+import {
+  dirname,
+  resolve,
+} from 'node:path';
+
+/** Width of the separator lines printed between matrix entries for readability. */
+const SEPARATOR_WIDTH = 60;
 
 /**
  * Absolute path to the monorepo root.
@@ -29,31 +35,45 @@ import { findUp, } from 'find-up';
  * `resolve()` normalizes path without following symlinks.
  */
 const rootMiseToml = await findUp(
-  async function isMonorepoRoot(directory,): Promise<string | undefined> {
+  function isMonorepoRoot(directory: string,): string | undefined {
     const candidate = `${directory}/mise.toml`;
     try {
-      const content = readFileSync(candidate, 'utf8',);
-      if (content.includes('\n[monorepo]\n',)) {
+      const content = readFileSync(
+        candidate,
+        'utf8',
+      );
+      if (content.includes('\n[monorepo]\n',))
         return candidate;
-      }
     }
     catch {
       /* file does not exist -- keep searching */
     }
     return undefined;
   },
-  { cwd: resolve(import.meta.dirname,), type: 'file', },
+  {
+    cwd: resolve(import.meta.dirname,),
+    type: 'file',
+  },
 );
-if (!rootMiseToml) {
-  throw new Error('Could not find monorepo root (no mise.toml with [monorepo] section found upward)',);
+if (rootMiseToml === undefined) {
+  throw new Error(
+    'Could not find monorepo root (no mise.toml with [monorepo] section found upward)',
+  );
 }
 /**
  * Use the path as-is from findUp, but ensure it's under `/var/home` not `/home`
  * to avoid the Fedora ostree symlink that resolves `~` literally.
  */
 const rawRoot = dirname(rootMiseToml,);
+/**
+ * Canonical monorepo root path, normalized to `/var/home` on Fedora ostree
+ * where `/home` is a symlink that breaks `readlink -f` resolution.
+ */
 const MONOREPO_ROOT = rawRoot.startsWith('/home/',)
-  ? rawRoot.replace('/home/', '/var/home/',)
+  ? rawRoot.replace(
+    '/home/',
+    '/var/home/',
+  )
   : rawRoot;
 
 /** Package path relative to monorepo root */
@@ -75,6 +95,7 @@ type MatrixEntry = {
   readonly preInstall: string;
 };
 
+/** Container images and user contexts to test against, covering apt (Ubuntu) and dnf (Fedora) as root and non-root. */
 const MATRIX: readonly MatrixEntry[] = [
   {
     image: 'ubuntu:latest',
@@ -84,7 +105,8 @@ const MATRIX: readonly MatrixEntry[] = [
   {
     image: 'ubuntu:latest',
     asRoot: false,
-    preInstall: 'apt-get update && apt-get install -y curl unzip sudo && useradd -m testuser && echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
+    preInstall:
+      'apt-get update && apt-get install -y curl unzip sudo && useradd -m testuser && echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
   },
   {
     image: 'fedora:latest',
@@ -94,7 +116,8 @@ const MATRIX: readonly MatrixEntry[] = [
   {
     image: 'fedora:latest',
     asRoot: false,
-    preInstall: 'dnf install -y unzip sudo && useradd -m testuser && echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
+    preInstall:
+      'dnf install -y unzip sudo && useradd -m testuser && echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
   },
 ] as const;
 
@@ -118,14 +141,16 @@ function buildCommand(entry: MatrixEntry,): string {
       `cat > /tmp/run-test.sh << 'TESTSCRIPT'\n#!/bin/sh\nset -e\ncd /workspace\ncurl -fsSL https://bun.sh/install | bash\n$HOME/.bun/bin/bun run /workspace/${TEST_FILE}\nTESTSCRIPT`,
       'chmod +x /tmp/run-test.sh',
       'sudo -u testuser -i /tmp/run-test.sh',
-    ].join(' && ',);
+    ]
+      .join(' && ',);
   }
   return [
     entry.preInstall,
     'curl -fsSL https://bun.sh/install | bash',
     'cd /workspace',
     `~/.bun/bin/bun run /workspace/${TEST_FILE}`,
-  ].join(' && ',);
+  ]
+    .join(' && ',);
 }
 
 /**
@@ -137,24 +162,29 @@ function buildCommand(entry: MatrixEntry,): string {
  */
 async function runEntry(entry: MatrixEntry,): Promise<boolean> {
   const label = `${entry.image} (${entry.asRoot ? 'root' : 'user'})`;
-  console.log(`\n${'='.repeat(60,)}`,);
+  console.log(`\n${'='.repeat(SEPARATOR_WIDTH,)}`,);
   console.log(`[matrix] ${label}`,);
-  console.log('='.repeat(60,),);
+  console.log('='.repeat(SEPARATOR_WIDTH,),);
 
   const command = buildCommand(entry,);
 
   try {
-    const result = await spawn('podman', [
-      'run',
-      '--rm',
-      '-v', `${MONOREPO_ROOT}:/workspace:Z`,
-      entry.image,
-      'sh', '-c', command,
-    ],);
+    const result = await spawn(
+      'podman',
+      [
+        'run',
+        '--rm',
+        '-v',
+        `${MONOREPO_ROOT}:/workspace:Z`,
+        entry.image,
+        'sh',
+        '-c',
+        command,
+      ],
+    );
     console.log(result.stdout,);
-    if (result.stderr) {
+    if (result.stderr !== '')
       console.error(result.stderr,);
-    }
     console.log(`[matrix] ${label}: PASSED`,);
     return true;
   }
@@ -169,18 +199,20 @@ async function runEntry(entry: MatrixEntry,): Promise<boolean> {
 /** Run all matrix entries sequentially and report results */
 const results: boolean[] = [];
 for (const entry of MATRIX) {
+  // oxlint-disable-next-line no-await-in-loop -- sequential: containers share state and must not overlap
   const passed = await runEntry(entry,);
   results.push(passed,);
 }
 
-console.log(`\n${'='.repeat(60,)}`,);
+console.log(`\n${'='.repeat(SEPARATOR_WIDTH,)}`,);
 console.log('[matrix] Results:',);
 for (const [i, entry,] of MATRIX.entries()) {
   const label = `${entry.image} (${entry.asRoot ? 'root' : 'user'})`;
-  const status = results[i] ? 'PASSED' : 'FAILED';
+  const status = results[i] === true ? 'PASSED' : 'FAILED';
   console.log(`  ${label}: ${status}`,);
 }
 
+/** Whether every matrix entry passed. */
 const allPassed = results.every(Boolean,);
 console.log(`\n[matrix] ${allPassed ? 'ALL PASSED' : 'SOME FAILED'}`,);
 process.exitCode = allPassed ? 0 : 1;

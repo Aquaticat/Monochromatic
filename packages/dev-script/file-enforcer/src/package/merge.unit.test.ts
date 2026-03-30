@@ -33,7 +33,7 @@ describe('mergeOverrides', () => {
   });
 
   test('applies both bin and check overrides', () => {
-    const generated = [p({ effname: 'imagemagick', dnf: 'ImageMagick', },),];
+    const generated = [p({ effname: 'imagemagick', yes: [['dnf', 'ImageMagick',],], },),];
     const result = mergeOverrides(generated, [
       p({ bin: 'convert', check: '-version', effname: 'imagemagick', },),
     ],);
@@ -43,11 +43,21 @@ describe('mergeOverrides', () => {
   });
 
   test('preserves manager overrides from generated entry', () => {
-    const generated = [p({ effname: 'imagemagick', dnf: 'ImageMagick', },),];
+    const generated = [p({ effname: 'imagemagick', yes: [['dnf', 'ImageMagick',],], },),];
     const result = mergeOverrides(generated, [
       p({ bin: 'convert', effname: 'imagemagick', },),
     ],);
     expect(result[0]?.overrides,).toEqual({ dnf: 'ImageMagick', },);
+  });
+
+  test('preserves available set from generated entry', () => {
+    const generated = [p({ effname: 'imagemagick', yes: ['apt', ['dnf', 'ImageMagick',],], },),];
+    const result = mergeOverrides(generated, [
+      p({ bin: 'convert', effname: 'imagemagick', },),
+    ],);
+    expect(result[0]?.available?.has('apt',),).toBe(true,);
+    expect(result[0]?.available?.has('dnf',),).toBe(true,);
+    expect(result[0]?.available?.has('brew',),).toBe(false,);
   });
 
   test('leaves non-matching entries untouched', () => {

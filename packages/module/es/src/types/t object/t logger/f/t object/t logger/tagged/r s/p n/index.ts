@@ -38,7 +38,7 @@ export function $({
   l = defaultLogger,
 }: {
   l?: Logger;
-  tag: string
+  tag: string;
 },): Logger {
   const prefix = `[${tag}] `;
   return {

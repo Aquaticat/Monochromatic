@@ -74,8 +74,7 @@ export async function runProbe(
   probe: Probe,
   config: RunnerConfig,
   timestamp: string,
-): Promise<ProbeResult>
-{
+): Promise<ProbeResult> {
   const controller = new AbortController();
   const corePromise = runProbeCore(
     probe,
@@ -133,9 +132,7 @@ export async function runProbe(
         },),
       },);
       rl.error(
-        `timed out after ${
-          String(PROBE_TIMEOUT_MINUTES,)
-        } minutes`,
+        `timed out after ${String(PROBE_TIMEOUT_MINUTES,)} minutes`,
       );
       resolveTimeout(timedOutResult,);
     },

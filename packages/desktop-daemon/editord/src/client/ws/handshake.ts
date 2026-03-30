@@ -31,7 +31,7 @@ export function performHandshake({
   ws: WebSocket;
   onConnected: (data: {
     rootDir: string;
-    fsId: string
+    fsId: string;
   },) => void;
 },): Promise<void> {
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based WebSocket events into a promise requires new Promise
@@ -73,9 +73,9 @@ export function performHandshake({
     ws.addEventListener(
       'error',
       function handleError() {
-      l.error('WebSocket connection failed',);
-      reject(new Error('WebSocket connection failed',),);
-    },
+        l.error('WebSocket connection failed',);
+        reject(new Error('WebSocket connection failed',),);
+      },
       { once: true, },
     );
   },);

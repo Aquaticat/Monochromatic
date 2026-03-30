@@ -9,8 +9,8 @@ import {
   LSP_FEATURE_TIMEOUT_MS,
   type LspClient,
 } from './lsp-client.ts';
-import { pathToUri, } from './uri.ts';
 import type { LspTextEdit, } from './types.ts';
+import { pathToUri, } from './uri.ts';
 
 /**
  * Requests document formatting from an LSP client.

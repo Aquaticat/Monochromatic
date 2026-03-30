@@ -116,10 +116,12 @@ function tryContainerFastPath(
   if (searchIndex > 0 && trimmed[searchIndex - 1] === ',') {
     // Found trailing comma pattern like ", ]" or ", }"
     // Check if there's any content between opening character and the comma
-    const contentBeforeComma = trimmed.slice(
-      1,
-      searchIndex - 1,
-    ).trim();
+    const contentBeforeComma = trimmed
+      .slice(
+        1,
+        searchIndex - 1,
+      )
+      .trim();
     if (contentBeforeComma.length === 0) {
       // Empty container with trailing comma like "[ , ]" or "{ , }" - reject
       return NO_FAST_PATH;
@@ -165,7 +167,7 @@ export function tryArrayFastPath(
     context,
   }: {
     value: string;
-    context: ReturnType<typeof startsWithComment>
+    context: ReturnType<typeof startsWithComment>;
   },
 ): Jsonc.Value | typeof NO_FAST_PATH {
   return tryContainerFastPath({
@@ -186,7 +188,7 @@ export function tryObjectFastPath(
     context,
   }: {
     value: string;
-    context: ReturnType<typeof startsWithComment>
+    context: ReturnType<typeof startsWithComment>;
   },
 ): Jsonc.Value | typeof NO_FAST_PATH {
   return tryContainerFastPath({
@@ -234,7 +236,7 @@ export function validateNoTrailingContent(
     containerType,
   }: {
     remainingContent: string;
-    containerType: 'array' | 'object'
+    containerType: 'array' | 'object';
   },
 ): void {
   const tail = startsWithComment({ value: remainingContent as FragmentStringJsonc, },)
@@ -285,13 +287,13 @@ export function parseWithFallback({
   tryFastPathFn: (
     parameters: {
       value: string;
-      context: ReturnType<typeof startsWithComment>
+      context: ReturnType<typeof startsWithComment>;
     },
   ) => Jsonc.Value | typeof NO_FAST_PATH;
   customParserFn: (
     parameters: {
       value: FragmentStringJsonc | StringJsonc;
-      context?: Jsonc.ValueBase
+      context?: Jsonc.ValueBase;
     },
   ) => { remainingContent: FragmentStringJsonc; } & Jsonc.Value;
 },): Jsonc.Value {

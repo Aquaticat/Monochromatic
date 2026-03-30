@@ -75,8 +75,8 @@ class ToastMessage extends HTMLElement {
     const removeFn = this.remove.bind(this,);
     this.#timer = setTimeout(
       function dismiss(): void {
-      removeFn();
-    },
+        removeFn();
+      },
       DISMISS_MS,
     );
   }

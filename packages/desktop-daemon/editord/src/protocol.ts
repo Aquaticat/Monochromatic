@@ -26,13 +26,13 @@ export type DirEntry = {
 export type SearchResult =
   | {
     kind: 'file';
-    path: string
+    path: string;
   }
   | {
     kind: 'content';
     path: string;
     line: number;
-    text: string
+    text: string;
   };
 
 //endregion Search types

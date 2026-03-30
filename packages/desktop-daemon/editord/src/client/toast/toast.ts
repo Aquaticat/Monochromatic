@@ -41,8 +41,8 @@ export function showFixedToast({ message, }: { message: string; },): void {
 
   globalThis.setTimeout(
     function dismissToast() {
-    toast.remove();
-  },
+      toast.remove();
+    },
     DISMISS_MS,
   );
 }
@@ -67,7 +67,7 @@ export function showCursorToast(
     rect,
   }: {
     message: string;
-    rect: DOMRect
+    rect: DOMRect;
   },
 ): void {
   const toast = h({
@@ -91,8 +91,8 @@ export function showCursorToast(
 
   globalThis.setTimeout(
     function dismissToast() {
-    toast.remove();
-  },
+      toast.remove();
+    },
     DISMISS_MS,
   );
 }

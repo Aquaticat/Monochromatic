@@ -22,7 +22,7 @@ export function childPath(
     name,
   }: {
     parentPath: string;
-    name: string
+    name: string;
   },
 ): string {
   return parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
@@ -39,7 +39,9 @@ export function childPath(
  *
  * @returns map from path to its index in the recency list
  */
-export function buildRecencyIndex({ recentPaths, }: { recentPaths: readonly string[]; },): Map<string, number> {
+export function buildRecencyIndex(
+  { recentPaths, }: { recentPaths: readonly string[]; },
+): Map<string, number> {
   const index = new Map<string, number>();
   recentPaths.forEach(function indexRecent(
     path,

@@ -49,9 +49,9 @@ class ToastMessage extends HTMLElement {
     // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
     this.#timer = setTimeout(
       function dismiss(this: ToastMessage,): void {
-      this.remove();
-    }
-      .bind(this,),
+        this.remove();
+      }
+        .bind(this,),
       DISMISS_MS,
     );
   }

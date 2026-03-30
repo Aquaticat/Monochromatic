@@ -133,10 +133,10 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointercancel',
     function handleZoomPointerCancel(): void {
-    clearLongPress();
-    endPan();
-    downEvent = null;
-  },
+      clearLongPress();
+      endPan();
+      downEvent = null;
+    },
   );
 
   //region iOS touch fallback

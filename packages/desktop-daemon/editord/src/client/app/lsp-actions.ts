@@ -9,11 +9,11 @@ import {
 } from '../log.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import { doGotoDefinition, } from './lsp-goto-definition.ts';
 import type {
   GetCurrentFilePathFn,
   LoadFileFn,
 } from './types.ts';
-import { doGotoDefinition, } from './lsp-goto-definition.ts';
 
 export { doGotoDefinition, };
 export type { GotoDefinitionResult, } from './lsp-goto-definition.ts';
@@ -62,7 +62,7 @@ export async function formatDocument({
             end: {
               line: number;
               character: number;
-            }
+            };
           };
           newText: string;
         }[];
@@ -103,23 +103,23 @@ export function wireGotoDefinition(
   editorPane.addEventListener(
     'click',
     function handleCtrlClick(event,) {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- click is always a MouseEvent
-    const me = event as MouseEvent;
-    if (!me.ctrlKey && !me.metaKey)
-      return;
-    const pos = editorPane.getPositionFromPoint({
-      x: me.clientX,
-      y: me.clientY,
-    },);
-    if (pos === null)
-      return;
-    void doGotoDefinition({
-      ws,
-      getCurrentFilePath,
-      loadFileSafe,
-      line: pos.line,
-      character: pos.character,
-    },);
-  },
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- click is always a MouseEvent
+      const me = event as MouseEvent;
+      if (!me.ctrlKey && !me.metaKey)
+        return;
+      const pos = editorPane.getPositionFromPoint({
+        x: me.clientX,
+        y: me.clientY,
+      },);
+      if (pos === null)
+        return;
+      void doGotoDefinition({
+        ws,
+        getCurrentFilePath,
+        loadFileSafe,
+        line: pos.line,
+        character: pos.character,
+      },);
+    },
   );
 }

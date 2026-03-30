@@ -111,7 +111,7 @@ function resolveExportEntry(
     defaultFontSizePx,
   }: {
     raw: RawEntryFields;
-    defaultFontSizePx: number
+    defaultFontSizePx: number;
   },
 ): ExportTextEntry {
   /** Per-entry font size, falling back to CSS default */
@@ -182,14 +182,14 @@ export function readTextEntries({ textLayer, }: {
     Array.from(
       inputs,
       function toRaw(input,): RawEntryFields {
-      return {
-        value: input.value,
-        insetInlineStart: input.style.insetInlineStart,
-        insetBlockStart: input.style.insetBlockStart,
-        fontSize: input.dataset.fontSize,
-        color: input.dataset.color,
-      };
-    },
+        return {
+          value: input.value,
+          insetInlineStart: input.style.insetInlineStart,
+          insetBlockStart: input.style.insetBlockStart,
+          fontSize: input.dataset.fontSize,
+          color: input.dataset.color,
+        };
+      },
     ),
   );
 }

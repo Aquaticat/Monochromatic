@@ -38,7 +38,7 @@ export function findCharAtX({
   const textNodes: {
     node: Text;
     start: number;
-    length: number
+    length: number;
   }[] = [];
   let total = 0;
   let current: Node | null = firstTextNode;
@@ -99,27 +99,29 @@ function resolveOffset({
   textNodes: {
     node: Text;
     start: number;
-    length: number
+    length: number;
   }[];
   offset: number;
 },): {
   node: Text;
-  localOffset: number
+  localOffset: number;
 } {
   for (const entry of textNodes) {
-    if (offset <= entry.start + entry.length)
+    if (offset <= entry.start + entry.length) {
       return {
         node: entry.node,
         localOffset: offset - entry.start,
       };
+    }
   }
   /** Clamp to end of last text node. */
   const last = textNodes.at(-1,);
-  if (last !== undefined)
+  if (last !== undefined) {
     return {
       node: last.node,
       localOffset: last.length,
     };
+  }
   /** Fallback: should never reach here with non-empty text. */
   const [first,] = textNodes;
   if (first === undefined)

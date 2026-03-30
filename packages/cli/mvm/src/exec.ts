@@ -54,7 +54,7 @@ export async function exec(
     name,
   }: {
     command: string;
-    name: string
+    name: string;
   },
 ): Promise<ExecResult> {
   validateName(name,);

@@ -75,8 +75,8 @@ export function formatMultiModelReport(
     ? [
       '--- Results ---',
       ...successful.map(function fmtSuccess(report,): string {
-      return formatModelReport(report,);
-    },),
+        return formatModelReport(report,);
+      },),
       '',
     ]
     : [];
@@ -85,8 +85,8 @@ export function formatMultiModelReport(
     ? [
       '--- Failed ---',
       ...failed.map(function fmtFailed(report,): string {
-      return formatModelReport(report,);
-    },),
+        return formatModelReport(report,);
+      },),
       '',
     ]
     : [];

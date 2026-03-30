@@ -74,11 +74,12 @@ export function readCssFileSync(absolutePath: string,): string {
   if (cached !== undefined)
     return cached;
 
-  if (nodeFs !== undefined)
+  if (nodeFs !== undefined) {
     return nodeFs.readFileSync(
       absolutePath,
       'utf8',
     );
+  }
 
   throw new Error(
     `File not found in registry and no filesystem available: ${absolutePath}`,

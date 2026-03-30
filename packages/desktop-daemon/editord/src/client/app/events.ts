@@ -106,48 +106,48 @@ export function wireSelectEvents(
     loadFileSafe,
     refreshInlayHints,
   }: {
-      fileTree: FileTree;
-      searchOverlay: SearchOverlay;
-      referencesPopup: ReferencesPopup;
-      state: AppState;
-      recordFileOpen: (path: string,) => void;
-      loadFileSafe: LoadFileFn;
-      refreshInlayHints: () => void;
-    },
+    fileTree: FileTree;
+    searchOverlay: SearchOverlay;
+    referencesPopup: ReferencesPopup;
+    state: AppState;
+    recordFileOpen: (path: string,) => void;
+    loadFileSafe: LoadFileFn;
+    refreshInlayHints: () => void;
+  },
 ): void {
   fileTree.addEventListener(
     'file-select',
     function handleFileSelect(event,) {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree
-    const { path, } = (event as CustomEvent<{ path: string; }>).detail;
-    state.currentFilePath = path;
-    recordFileOpen(path,);
-    void loadFileAndRefreshHints({
-      state,
-      loadFileSafe,
-      refreshInlayHints,
-      path,
-    },);
-  },
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree
+      const { path, } = (event as CustomEvent<{ path: string; }>).detail;
+      state.currentFilePath = path;
+      recordFileOpen(path,);
+      void loadFileAndRefreshHints({
+        state,
+        loadFileSafe,
+        refreshInlayHints,
+        path,
+      },);
+    },
   );
   searchOverlay.addEventListener(
     'result-select',
     function handleResultSelect(event,) {
-    const {
-      path,
-      line,
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
-    } = (event as CustomEvent<ResultSelectDetail>).detail;
-    state.currentFilePath = path;
-    recordFileOpen(path,);
-    void loadFileAndRefreshHints({
-      state,
-      loadFileSafe,
-      refreshInlayHints,
-      path,
-      line,
-    },);
-  },
+      const {
+        path,
+        line,
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
+      } = (event as CustomEvent<ResultSelectDetail>).detail;
+      state.currentFilePath = path;
+      recordFileOpen(path,);
+      void loadFileAndRefreshHints({
+        state,
+        loadFileSafe,
+        refreshInlayHints,
+        path,
+        line,
+      },);
+    },
   );
   referencesPopup.addEventListener(
     'reference-select',
@@ -207,7 +207,7 @@ export function wireFileWatching({
     }: {
       path: string;
       changeType: FsChangeType;
-      isDirectory: boolean
+      isDirectory: boolean;
     },
   ): void {
     appLog.info(`file changed: ${path} (${changeType})`,);
@@ -218,10 +218,11 @@ export function wireFileWatching({
       if (changeType === 'modified')
         return;
     }
-    if (changeType === 'created' || changeType === 'deleted')
+    if (changeType === 'created' || changeType === 'deleted') {
       void fileTree.refreshDir({ path: path.slice(
         0,
         path.lastIndexOf('/',),
       ), },);
+    }
   };
 }

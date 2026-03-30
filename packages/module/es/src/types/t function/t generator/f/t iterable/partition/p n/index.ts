@@ -86,7 +86,7 @@ export async function* $<T,>({
 },): AsyncGenerator<
   {
     decision: 'pass' | 'fail' | ['thrown', unknown,];
-    item: T
+    item: T;
   },
   void,
   undefined
@@ -94,13 +94,15 @@ export async function* $<T,>({
   for await (const item of iterable) {
     try {
       const result = await predicate(item,);
-      yield (result ? {
-        decision: 'pass',
-        item,
-      } : {
-        decision: 'fail',
-        item,
-      });
+      yield (result
+        ? {
+          decision: 'pass',
+          item,
+        }
+        : {
+          decision: 'fail',
+          item,
+        });
     }
     catch (error) {
       yield {

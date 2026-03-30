@@ -20,8 +20,7 @@ import {
 export async function handleCompare(
   args: string[],
   printUsageAndExit: () => never,
-): Promise<void>
-{
+): Promise<void> {
   const rl = tagged({
     tag: handleCompare.name,
     l,
@@ -63,12 +62,12 @@ export async function handleCompare(
 
     console.log(JSON.stringify(
       {
-      provider,
-      similarity: result.similarity,
-      distance: result.distance,
-      embeddingDimensions: result.embeddingA.length,
-      description: result.description,
-    },
+        provider,
+        similarity: result.similarity,
+        distance: result.distance,
+        embeddingDimensions: result.embeddingA.length,
+        description: result.description,
+      },
       null,
       2,
     ),);

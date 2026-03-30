@@ -75,11 +75,12 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
       const existing = byPath.get(fileEntry.path,);
       if (existing !== undefined)
         existing.push(...fileEntry.diagnostics,);
-      else
+      else {
         byPath.set(
           fileEntry.path,
           [...fileEntry.diagnostics,],
         );
+      }
     }
   }
   //endregion Merge diagnostics from all instances by file path

@@ -28,7 +28,7 @@ export type WidgetDeps = {
   getToolMode: () => ToolMode;
   getCanvasSize: () => {
     cw: number;
-    ch: number
+    ch: number;
   };
   textLayer: HTMLDivElement;
   container: HTMLDivElement;
@@ -140,15 +140,15 @@ export function setupWidget(deps: WidgetDeps,): void {
   pageToggle.addEventListener(
     'change',
     function handlePageChange(event: Event,): void {
-    const { target, } = event;
-    if (!(target instanceof HTMLInputElement))
-      return;
-    resetZoom(zoomLayer,);
-    const { cw, ch, } = getCanvasSize();
-    switchToPage({ index: Number(target.value,), ctx, cw, ch, overlay: svgOverlay,
-      textLayer, },);
-    updateUndoButtons();
-  },
+      const { target, } = event;
+      if (!(target instanceof HTMLInputElement))
+        return;
+      resetZoom(zoomLayer,);
+      const { cw, ch, } = getCanvasSize();
+      switchToPage({ index: Number(target.value,), ctx, cw, ch, overlay: svgOverlay,
+        textLayer, },);
+      updateUndoButtons();
+    },
   );
 
   new ResizeObserver(sizeCanvas,).observe(page,);

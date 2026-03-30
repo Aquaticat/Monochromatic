@@ -86,11 +86,13 @@ if (command === undefined || command === '') {
   throw new Error(
     outdent`
       No command specified after --
-      ${JSON.stringify(
+      ${
+      JSON.stringify(
         args,
         null,
         2,
-      )}
+      )
+    }
     `,
   );
 }
@@ -101,12 +103,12 @@ try {
     command,
     commandArgs,
     {
-    stdout: 'inherit',
-    stderr: 'inherit',
-    stdin: 'inherit',
-    shell: args.shell,
-    timeout: typeof args.timeout === 'number' ? args.timeout : undefined,
-  },
+      stdout: 'inherit',
+      stderr: 'inherit',
+      stdin: 'inherit',
+      shell: args.shell,
+      timeout: typeof args.timeout === 'number' ? args.timeout : undefined,
+    },
   );
 
   // Script ends naturally with exit code 0
@@ -120,7 +122,7 @@ catch (error) {
       ): candidate is {
         exitCode?: number;
         signalName?: string;
-        message: string
+        message: string;
       } {
         return candidate !== null
           && typeof candidate === 'object'
@@ -142,14 +144,14 @@ catch (error) {
           .with(
             false,
             function exitWithCode(): void {
-            process.exitCode = subprocessError.exitCode ?? 1;
-          },
+              process.exitCode = subprocessError.exitCode ?? 1;
+            },
           )
           .with(
             true,
             function allowFailureNoop(): void {
-            // Let script end naturally with exit code 0
-          },
+              // Let script end naturally with exit code 0
+            },
           );
       },
     )
@@ -163,14 +165,14 @@ catch (error) {
         .with(
           false,
           function rethrowError(): void {
-          throw error;
-        },
+            throw error;
+          },
         )
         .with(
           true,
           function allowFailureNoop(): void {
-          // Let script end naturally with exit code 0
-        },
+            // Let script end naturally with exit code 0
+          },
         );
     },);
 }

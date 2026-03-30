@@ -70,12 +70,12 @@ export async function buildCodeGenFixPrompt(
   const lint = priorLint ?? await lintSource(
     source,
     {
-    model: context.label,
-    label: context.label,
-    probe: 'fix-prompt',
-    pass: context.pass,
-    timestamp: context.timestamp,
-  },
+      model: context.label,
+      label: context.label,
+      probe: 'fix-prompt',
+      pass: context.pass,
+      timestamp: context.timestamp,
+    },
   );
 
   // Narrow to a failed container only when exit was non-zero or process was killed

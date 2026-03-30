@@ -45,7 +45,8 @@ export function wireInlayHints({
         },);
       },
       delayMs: INLAY_HINT_DEBOUNCE_MS,
-    },).debounced,
+    },)
+      .debounced,
   );
 
   return {

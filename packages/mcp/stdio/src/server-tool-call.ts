@@ -55,12 +55,13 @@ export async function handleToolCall(
     : {};
 
   const registered = toolMap.get(toolName,);
-  if (registered === undefined)
+  if (registered === undefined) {
     return respondError(
       id,
       JSON_RPC_INVALID_PARAMS,
       `Unknown tool: ${toolName}`,
     );
+  }
 
   // Deliberate catch-and-return: in a server context, tool handler errors must be
   // reported as JSON-RPC error responses rather than crashing the server process.

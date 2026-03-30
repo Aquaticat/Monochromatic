@@ -39,7 +39,7 @@ export type UndoHandlerDeps = {
   /** Returns current canvas dimensions */
   getCanvasSize: () => {
     cw: number;
-    ch: number
+    ch: number;
   };
   /** Text layer element for serializing and restoring text entries */
   textLayer: HTMLDivElement;
@@ -120,19 +120,19 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   undoBtn.addEventListener(
     'click',
     function handleUndo(): void {
-    const snapshot = undo(getCurrentPageIndex(),);
-    if (snapshot !== null)
-      restoreSnapshot(snapshot,);
-  },
+      const snapshot = undo(getCurrentPageIndex(),);
+      if (snapshot !== null)
+        restoreSnapshot(snapshot,);
+    },
   );
 
   redoBtn.addEventListener(
     'click',
     function handleRedo(): void {
-    const snapshot = redo(getCurrentPageIndex(),);
-    if (snapshot !== null)
-      restoreSnapshot(snapshot,);
-  },
+      const snapshot = redo(getCurrentPageIndex(),);
+      if (snapshot !== null)
+        restoreSnapshot(snapshot,);
+    },
   );
 
   document.addEventListener(

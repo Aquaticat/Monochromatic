@@ -76,5 +76,6 @@ export function formatModelReport(report: CanaryReport,): string {
   return [
     header,
     ...probeLines,
-  ].join('\n',);
+  ]
+    .join('\n',);
 }

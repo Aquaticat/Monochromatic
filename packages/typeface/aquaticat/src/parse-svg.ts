@@ -92,9 +92,9 @@ export function parseSvg(svgContent: string,): Cell[] {
       'stroke',
     );
     const isStroked = strokeAttr !== undefined && attr(
-      attrs,
-      'fill',
-    ) === undefined;
+          attrs,
+          'fill',
+        ) === undefined;
     const strokeWidthStr = attr(
       attrs,
       'stroke-width',
@@ -104,12 +104,13 @@ export function parseSvg(svgContent: string,): Cell[] {
       : 0;
 
     const currentCell = cells.at(-1,);
-    if (currentCell !== undefined)
+    if (currentCell !== undefined) {
       currentCell.paths.push({
         d,
         isStroked,
         strokeWidth,
       },);
+    }
   }
 
   return cells;
@@ -122,20 +123,20 @@ export type SVGPathCommand =
   | {
     type: 'M';
     x: number;
-    y: number
+    y: number;
   }
   | {
     type: 'L';
     x: number;
-    y: number
+    y: number;
   }
   | {
     type: 'H';
-    x: number
+    x: number;
   }
   | {
     type: 'V';
-    y: number
+    y: number;
   }
   | { type: 'Z'; };
 
@@ -177,16 +178,18 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
         y: Number(yTok[2],),
       },);
     }
-    else if (currentCmd === 'H')
+    else if (currentCmd === 'H') {
       commands.push({
         type: 'H',
         x: num,
       },);
-    else if (currentCmd === 'V')
+    }
+    else if (currentCmd === 'V') {
       commands.push({
         type: 'V',
         y: num,
       },);
+    }
   }
 
   return commands;

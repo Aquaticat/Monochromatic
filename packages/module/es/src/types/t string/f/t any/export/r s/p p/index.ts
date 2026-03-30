@@ -81,64 +81,64 @@ export function $(obj: unknown,): string {
     .with(
       'set',
       function handler() {
-      // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Set
-      const setObj = obj as Set<any>;
-      return `Object.freeze(new Set([${
-        [...setObj,]
-          // oxlint-disable-next-line typescript/no-explicit-any -- Set element type is unknown at runtime
-          .map(function eachSetItem(element: any,) {
-            return $(element,);
-          },)
-          .join(',',)
-      }]))`;
-    },
+        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Set
+        const setObj = obj as Set<any>;
+        return `Object.freeze(new Set([${
+          [...setObj,]
+            // oxlint-disable-next-line typescript/no-explicit-any -- Set element type is unknown at runtime
+            .map(function eachSetItem(element: any,) {
+              return $(element,);
+            },)
+            .join(',',)
+        }]))`;
+      },
     )
     .with(
       'map',
       function handler() {
-      // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Map
-      const mapObj = obj as Map<any, any>;
-      return `Object.freeze(new Map([${
-        [...mapObj,]
-          .map(function eachMapEntry([k, v,],) {
-            return `[${$(k,)},${$(v,)}]`;
-          },)
-          .join(',',)
-      }]))`;
-    },
+        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Map
+        const mapObj = obj as Map<any, any>;
+        return `Object.freeze(new Map([${
+          [...mapObj,]
+            .map(function eachMapEntry([k, v,],) {
+              return `[${$(k,)},${$(v,)}]`;
+            },)
+            .join(',',)
+        }]))`;
+      },
     )
     .with(
       'array',
       function handler() {
-      // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms array
-      const arrayObj = obj as any[];
-      return `Object.freeze([${
-        arrayObj
-          // oxlint-disable-next-line typescript/no-explicit-any -- array element type is unknown at runtime
-          .map(function eachArrayItem(element: any,) {
-            return $(element,);
-          },)
-          .join(',',)
-      }])`;
-    },
+        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms array
+        const arrayObj = obj as any[];
+        return `Object.freeze([${
+          arrayObj
+            // oxlint-disable-next-line typescript/no-explicit-any -- array element type is unknown at runtime
+            .map(function eachArrayItem(element: any,) {
+              return $(element,);
+            },)
+            .join(',',)
+        }])`;
+      },
     )
     // FIXME: Possible bug here
     .with(
       'object',
       function handler() {
-      // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms plain object
-      const objectObj = obj as Record<string, any>;
-      return `Object.freeze(Object.fromEntries([${
-        Object
-          .entries(objectObj,)
-          .map(
-            function eachObjectEntry([k, v,],) {
-              return `[${$(k,)},${$(v,)}]`;
-            },
-          )
-          .join(',',)
-      }]))`;
-    },
+        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms plain object
+        const objectObj = obj as Record<string, any>;
+        return `Object.freeze(Object.fromEntries([${
+          Object
+            .entries(objectObj,)
+            .map(
+              function eachObjectEntry([k, v,],) {
+                return `[${$(k,)},${$(v,)}]`;
+              },
+            )
+            .join(',',)
+        }]))`;
+      },
     )
     /* v8 ignore next -- @preserve */
     .otherwise(

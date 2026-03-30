@@ -127,14 +127,14 @@ export function* animateBounces(
     yield* all(
       ballBody().scale.x(impactSquashX, SQUASH_DURATION,),
       ballBody()
-      .scale
-      .y(impactSquashY, SQUASH_DURATION,),
+        .scale
+        .y(impactSquashY, SQUASH_DURATION,),
     );
     yield* all(
       ballBody().scale.x(1, SQUASH_DURATION,),
       ballBody()
-      .scale
-      .y(1, SQUASH_DURATION,),
+        .scale
+        .y(1, SQUASH_DURATION,),
     );
 
     currentX = targetX;

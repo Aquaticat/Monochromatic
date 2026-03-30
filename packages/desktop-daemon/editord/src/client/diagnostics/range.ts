@@ -25,7 +25,7 @@ export function findTextOffset({
   charOffset: number;
 },): {
   node: Text;
-  offset: number
+  offset: number;
 } | null {
   const walker = document.createTreeWalker(
     lineDiv,

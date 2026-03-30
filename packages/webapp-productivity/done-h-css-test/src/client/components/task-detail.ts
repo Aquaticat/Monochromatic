@@ -77,9 +77,8 @@ class TaskDetail extends HTMLElement {
     tags: string[];
     locations: string[];
     priority: TaskPriority | null;
-    complexity: TaskComplexity | null
-  }
-  {
+    complexity: TaskComplexity | null;
+  } {
     return { ...this.#metadata, };
   }
 
@@ -128,14 +127,14 @@ class TaskDetail extends HTMLElement {
     refs.titleInput.addEventListener(
       'input',
       function handleTitleInput(): void {
-      requestAutofill({
-        title: refs.titleInput.value,
-        metadata,
-        onUpdate: function onAutofillUpdate(): void {
-          updatePills();
-        },
-      },);
-    },
+        requestAutofill({
+          title: refs.titleInput.value,
+          metadata,
+          onUpdate: function onAutofillUpdate(): void {
+            updatePills();
+          },
+        },);
+      },
     );
 
     this.#shadow.addEventListener(

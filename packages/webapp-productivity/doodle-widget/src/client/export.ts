@@ -56,7 +56,7 @@ export type ExportDeps = {
  */
 export function getExportSize(): {
   cw: number;
-  ch: number
+  ch: number;
 } {
   return {
     cw: LETTER_WIDTH,
@@ -78,7 +78,7 @@ export function getRenderedSize(
   container: HTMLDivElement,
 ): {
   cw: number;
-  ch: number
+  ch: number;
 } {
   return {
     cw: container.clientWidth,
@@ -213,7 +213,7 @@ export async function renderBaseCanvas({
   imageScale?: number;
 },): Promise<{
   canvas: OffscreenCanvas;
-  ctx: OffscreenCanvasRenderingContext2D
+  ctx: OffscreenCanvasRenderingContext2D;
 }> {
   const {
     cw,
@@ -235,11 +235,12 @@ export async function renderBaseCanvas({
   );
   const ctx = requireOffscreenContext(exportCanvas,);
 
-  if (scale !== 1)
+  if (scale !== 1) {
     ctx.scale(
       scale,
       scale,
     );
+  }
 
   //region Layer 1: white background
   ctx.fillStyle = 'white';

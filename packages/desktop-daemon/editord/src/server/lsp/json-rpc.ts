@@ -80,10 +80,12 @@ export function createLspParser({
           if (headerEnd === -1)
             return;
 
-          const header = buffer.subarray(
-            0,
-            headerEnd,
-          ).toString('ascii',);
+          const header = buffer
+            .subarray(
+              0,
+              headerEnd,
+            )
+            .toString('ascii',);
           const match = CONTENT_LENGTH_PATTERN.exec(header,);
           if (match === null) {
             buffer = buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
@@ -101,10 +103,12 @@ export function createLspParser({
           return;
         consolidate();
 
-        const json = buffer.subarray(
-          0,
-          contentLength,
-        ).toString('utf8',);
+        const json = buffer
+          .subarray(
+            0,
+            contentLength,
+          )
+          .toString('utf8',);
         buffer = buffer.subarray(contentLength,);
         totalLength = buffer.byteLength;
         contentLength = -1;

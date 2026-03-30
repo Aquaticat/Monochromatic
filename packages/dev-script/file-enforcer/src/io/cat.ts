@@ -33,8 +33,7 @@ export type GlobResults = readonly GlobResult[] & {
 export function globResults(
   sourceGlob: string,
   results: readonly GlobResult[],
-): GlobResults
-{
+): GlobResults {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- branded type construction requires double assertion
   return Object.assign(
     [...results,],

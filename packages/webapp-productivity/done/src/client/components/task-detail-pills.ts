@@ -59,8 +59,8 @@ export function buildPillData(
     {
       field: 'locations',
       text: locations.length > 0
-      ? `where: ${locations.join(', ',)}`
-      : 'where: ?',
+        ? `where: ${locations.join(', ',)}`
+        : 'where: ?',
     },
     {
       field: 'priority',
@@ -77,14 +77,14 @@ export function buildPillData(
     {
       field: 'reminders',
       text: task.reminders.length > 0
-      ? `reminders: ${task.reminders[0]}`
-      : 'reminders: None',
+        ? `reminders: ${task.reminders[0]}`
+        : 'reminders: None',
     },
     {
       field: 'blockedBy',
       text: task.blockedBy.length > 0
-      ? `blockedBy: ${String(task.blockedBy.length,)}`
-      : 'blockedBy: none',
+        ? `blockedBy: ${String(task.blockedBy.length,)}`
+        : 'blockedBy: none',
     },
   ];
 }

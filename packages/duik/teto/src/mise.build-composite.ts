@@ -75,7 +75,7 @@ const OUTPUT_PNG = '/tmp/claude-1000/teto_composite.png';
  */
 function extractSvgContent(filePath: string,): {
   defs: string;
-  body: string
+  body: string;
 } {
   const raw = readFileSync(
     filePath,
@@ -84,11 +84,12 @@ function extractSvgContent(filePath: string,): {
 
   /** Strip the outer `<svg ...>` and `</svg>` wrapper. */
   const innerMatch = raw.match(/<svg[^>]*>([\s\S]*)<\/svg>/i,);
-  if (innerMatch === null || innerMatch[1] === undefined)
+  if (innerMatch === null || innerMatch[1] === undefined) {
     return {
       defs: '',
       body: '',
     };
+  }
 
   const [, inner,] = innerMatch;
 
@@ -179,8 +180,8 @@ try {
   execSync(
     `magick "${OUTPUT_SVG}" -resize 800x1200 "${OUTPUT_PNG}"`,
     {
-    stdio: 'pipe',
-  },
+      stdio: 'pipe',
+    },
   );
   console.error(`Rendered PNG: ${OUTPUT_PNG}`,);
 }

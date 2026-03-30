@@ -82,7 +82,7 @@ function checkCompletedChildren(
     consume,
   }: {
     parentSessionId: string;
-    consume: boolean
+    consume: boolean;
   },
 ): string | null {
   let entries: string[] = [];

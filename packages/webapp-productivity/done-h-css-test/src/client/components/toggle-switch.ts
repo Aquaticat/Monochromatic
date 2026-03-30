@@ -36,13 +36,15 @@ class ToggleSwitch extends HTMLElement {
    * @param value - Whether the toggle should be on
    */
   set on(value: boolean,) {
-    if (value)
+    if (value) {
       this.setAttribute(
         'on',
         '',
       );
-    else
+    }
+    else {
       this.removeAttribute('on',);
+    }
   }
 
   /** Renders initial content and wires up the click listener. */

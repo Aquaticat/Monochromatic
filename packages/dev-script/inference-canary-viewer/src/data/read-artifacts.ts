@@ -68,11 +68,12 @@ async function readOptional(path: string,): Promise<string | undefined> {
   }
   catch (error: unknown) {
     // ENOENT is expected for optional files (e.g. canary.ts not saved in old artifacts)
-    if (!isErrnoException(error,) || error.code !== 'ENOENT')
+    if (!isErrnoException(error,) || error.code !== 'ENOENT') {
       console.error(
         `[viewer] failed to read ${path}:`,
         error,
       );
+    }
     return undefined;
   }
 }

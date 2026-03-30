@@ -201,9 +201,8 @@ export async function connectDisposable(
     '-f',
     format,
   ];
-  if (readOnly) {
+  if (readOnly)
     args.unshift('-r',);
-  }
   args.push(imagePath,);
 
   rl.info(`connecting ${imagePath} to ${device} (readOnly=${String(readOnly,)})`,);
@@ -282,7 +281,9 @@ export async function patchBlocks(
     0,
   );
   rl.info(
-    `patching ${String(changedRegions.length,)} regions (${String(Math.round(totalBytes / DD_BLOCK_SIZE,),)} MiB)`,
+    `patching ${String(changedRegions.length,)} regions (${
+      String(Math.round(totalBytes / DD_BLOCK_SIZE,),)
+    } MiB)`,
   );
 
   /** Transfer promises collected for parallel execution. */
@@ -329,7 +330,9 @@ async function transferRegion(
 ): Promise<void> {
   if (region.start % SECTOR_SIZE !== 0 || region.length % SECTOR_SIZE !== 0) {
     throw new Error(
-      `region at offset ${String(region.start,)} with length ${String(region.length,)} is not sector-aligned`,
+      `region at offset ${String(region.start,)} with length ${
+        String(region.length,)
+      } is not sector-aligned`,
     );
   }
 

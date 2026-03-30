@@ -57,9 +57,8 @@ export function scanQuotedString(
 ): {
   consumed: FragmentStringJsonc;
   parsed: Jsonc.StringBase & Jsonc.ValueBase;
-  remaining: FragmentStringJsonc
-}
-{
+  remaining: FragmentStringJsonc;
+} {
   if (!value.startsWith('"',))
     throw new Error('expected a double quote to start a JSON string',);
 

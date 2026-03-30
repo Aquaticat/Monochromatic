@@ -165,16 +165,17 @@ export async function scoreImpl(
     perfResult,
   );
 
-  if (transformed.reject)
+  if (transformed.reject) {
     return combinedScore(
       0,
       lint,
     ) * perfMultiplier;
+  }
   if (result.timedOut || result.exitCode !== 0) {
     rl.info(
-      `container failed: exit=${
-        String(result.exitCode,)
-      } timedOut=${String(result.timedOut,)}`,
+      `container failed: exit=${String(result.exitCode,)} timedOut=${
+        String(result.timedOut,)
+      }`,
     );
     return combinedScore(
       0,

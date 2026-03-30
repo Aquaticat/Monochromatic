@@ -18,7 +18,7 @@ export async function healBackends(
   results: readonly BackendResult<
     {
       set: (key: string, value: string,) => unknown;
-      delete: (key: string,) => unknown
+      delete: (key: string,) => unknown;
     }
   >[],
   canonicalSerialized: string | undefined,
@@ -35,11 +35,12 @@ export async function healBackends(
         return;
       }
 
-      if (value !== canonicalSerialized)
+      if (value !== canonicalSerialized) {
         await backend.set(
           key,
           canonicalSerialized,
         );
+      }
     },),
   );
 }
@@ -62,7 +63,7 @@ export function healBackendsSync(
   results: readonly BackendResult<
     {
       set: (key: string, value: string,) => unknown;
-      delete: (key: string,) => unknown
+      delete: (key: string,) => unknown;
     }
   >[],
   canonicalSerialized: string | undefined,
@@ -78,10 +79,11 @@ export function healBackendsSync(
       continue;
     }
 
-    if (value !== canonicalSerialized)
+    if (value !== canonicalSerialized) {
       backend.set(
         key,
         canonicalSerialized,
       );
+    }
   }
 }

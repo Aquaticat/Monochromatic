@@ -22,8 +22,8 @@ export async function inboxPage(): Promise<Response> {
   const blockedTasksByBlocker = Object.groupBy(
     blockedLinks,
     function byBlocker(link,) {
-    return link.blockerId;
-  },
+      return link.blockerId;
+    },
   );
 
   return renderPage({

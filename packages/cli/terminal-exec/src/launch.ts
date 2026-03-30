@@ -88,10 +88,10 @@ export async function launchTerminal({
       String(executable,),
       args,
       {
-      cwd: dir,
-      detached: true,
-      stdio: 'ignore',
-    },
+        cwd: dir,
+        detached: true,
+        stdio: 'ignore',
+      },
     );
     child.unref();
     child.on(

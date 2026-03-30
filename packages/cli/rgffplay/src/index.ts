@@ -41,9 +41,8 @@ export {};
  */
 function bracketFirst(word: string,): string {
   const [first,] = word;
-  if (first === undefined) {
+  if (first === undefined)
     return '';
-  }
   return `[${first.toUpperCase()}${first.toLowerCase()}]${word.slice(1,)}`;
 }
 
@@ -62,9 +61,13 @@ function bracketFirst(word: string,): string {
  * ```
  */
 function buildGlob(words: readonly string[],): string {
-  return `*${words.map(function toBracket(w,) {
-    return bracketFirst(w,);
-  },).join('*',)}*`;
+  return `*${
+    words
+      .map(function toBracket(w,) {
+        return bracketFirst(w,);
+      },)
+      .join('*',)
+  }*`;
 }
 
 //endregion Glob pattern construction
@@ -149,38 +152,42 @@ async function findFiles({
       musicDir,
       '--null',
     ],
-  ).then(
-    function extractStdout({ stdout, },) {
-      return stdout;
-    },
-    function handleRgError(err: unknown,) {
-      // rg exits 1 when no files match the glob
-      if (err !== null && err !== undefined && typeof err === 'object' && 'exitCode' in err) {
-        const { exitCode, } = err;
-        if (exitCode === 1) {
-          throw new Error(
-            `No files matching glob "${glob}" in "${musicDir}"`,
-            { cause: err, },
-          );
+  )
+    .then(
+      function extractStdout({ stdout, },) {
+        return stdout;
+      },
+      function handleRgError(err: unknown,) {
+        // rg exits 1 when no files match the glob
+        if (err !== null
+          && err !== undefined
+          && typeof err === 'object'
+          && 'exitCode' in err)
+        {
+          const { exitCode, } = err;
+          if (exitCode === 1) {
+            throw new Error(
+              `No files matching glob "${glob}" in "${musicDir}"`,
+              { cause: err, },
+            );
+          }
         }
-      }
-      throw err;
-    },
-  );
+        throw err;
+      },
+    );
 
   const files = rgOutput.split('\0',).filter(function nonEmpty(f,) {
     return f.length > 0;
   },);
 
-  if (files.length === 0) {
+  if (files.length === 0)
     throw new Error(`No files matching glob "${glob}" in "${musicDir}"`,);
-  }
 
   if (files.length > 1) {
     throw new Error(
-      `Ambiguous match: ${String(files.length,)} files found for glob "${glob}" in "${musicDir}":\n${
-        files.join('\n',)
-      }`,
+      `Ambiguous match: ${
+        String(files.length,)
+      } files found for glob "${glob}" in "${musicDir}":\n${files.join('\n',)}`,
     );
   }
 

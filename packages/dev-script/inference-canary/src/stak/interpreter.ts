@@ -33,11 +33,12 @@ export function runStak(source: string,): string {
     if (token === undefined)
       continue;
     const [op, name,] = token.split(' ',);
-    if (op === 'LABEL' && name !== undefined)
+    if (op === 'LABEL' && name !== undefined) {
       labels.set(
         name,
         i,
       );
+    }
   }
 
   const stack: number[] = [];

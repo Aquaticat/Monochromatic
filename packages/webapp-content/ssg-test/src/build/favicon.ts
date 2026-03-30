@@ -94,13 +94,13 @@ export async function ensureFavicons(
 
   const manifest = JSON.stringify(
     {
-    icons: [
-      { src: '/icon-192.png', type: 'image/png', sizes: '192x192', },
-      { src: '/icon-512.png', type: 'image/png', sizes: '512x512', },
-      { src: '/icon-mask.png', type: 'image/png', sizes: '512x512',
-        purpose: 'maskable', },
-    ],
-  },
+      icons: [
+        { src: '/icon-192.png', type: 'image/png', sizes: '192x192', },
+        { src: '/icon-512.png', type: 'image/png', sizes: '512x512', },
+        { src: '/icon-mask.png', type: 'image/png', sizes: '512x512',
+          purpose: 'maskable', },
+      ],
+    },
     undefined,
     2,
   );

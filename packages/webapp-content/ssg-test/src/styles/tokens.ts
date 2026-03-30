@@ -15,16 +15,16 @@ export function tokenStyles(): string {
   return $({
     rule: ':root',
     decls: {
-    '--color-fg': '#1a1a1a',
-    '--color-bg': '#fafafa',
-    '--color-link': '#0066cc',
-    '--color-link-visited': '#551a8b',
-    '--color-code-bg': '#f5f5f5',
-    '--color-border': '#e0e0e0',
-    '--color-muted': '#666',
-    '--color-subtle': '#888',
-    '--color-focus-ring': '#0066cc',
-  },
+      '--color-fg': '#1a1a1a',
+      '--color-bg': '#fafafa',
+      '--color-link': '#0066cc',
+      '--color-link-visited': '#551a8b',
+      '--color-code-bg': '#f5f5f5',
+      '--color-border': '#e0e0e0',
+      '--color-muted': '#666',
+      '--color-subtle': '#888',
+      '--color-focus-ring': '#0066cc',
+    },
   },);
 }
 
@@ -43,16 +43,16 @@ export function darkModeTokenStyles(): string {
       $({
         rule: ':root',
         decls: {
-        '--color-fg': '#e5e5e5',
-        '--color-bg': '#1a1a1a',
-        '--color-link': '#6db3f2',
-        '--color-link-visited': '#c084fc',
-        '--color-code-bg': '#2a2a2a',
-        '--color-border': '#333',
-        '--color-muted': '#999',
-        '--color-subtle': '#aaa',
-        '--color-focus-ring': '#6db3f2',
-      },
+          '--color-fg': '#e5e5e5',
+          '--color-bg': '#1a1a1a',
+          '--color-link': '#6db3f2',
+          '--color-link-visited': '#c084fc',
+          '--color-code-bg': '#2a2a2a',
+          '--color-border': '#333',
+          '--color-muted': '#999',
+          '--color-subtle': '#aaa',
+          '--color-focus-ring': '#6db3f2',
+        },
       },),
     ],
   },);

@@ -94,8 +94,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
 export async function updateTask(
   id: string,
   input: TaskUpdateInput,
-): Promise<Task | null>
-{
+): Promise<Task | null> {
   const currentTask = await getTaskById(id,);
   if (currentTask === null)
     return null;

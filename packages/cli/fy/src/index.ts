@@ -52,14 +52,14 @@ const parser = map(
 const args = runSync(
   parser,
   {
-  programName: 'cli-fy',
-  args: process.argv.slice(2,),
-  help: 'option',
-  aboveError: 'help',
-  brief: message`cli-fy - call any ESM export from the command line`,
-  footer:
-    message`Examples:\n  cli-fy lodash add 1 1\n  cli-fy @scope/pkg myFn arg1 arg2\n  cli-fy lodash-es/add default 1 1`,
-},
+    programName: 'cli-fy',
+    args: process.argv.slice(2,),
+    help: 'option',
+    aboveError: 'help',
+    brief: message`cli-fy - call any ESM export from the command line`,
+    footer:
+      message`Examples:\n  cli-fy lodash add 1 1\n  cli-fy @scope/pkg myFn arg1 arg2\n  cli-fy lodash-es/add default 1 1`,
+  },
 );
 
 //endregion Arg parsing

@@ -62,10 +62,9 @@ export const cssMixinTranspiler = createCodeGenProbe({
     source,
     context,
   ): {
-      reject: boolean;
-      source: string
-    }
-  {
+    reject: boolean;
+    source: string;
+  } {
     const usesRegex = detectsRegexUsage(source,);
     regexViolationCache.set(
       context.label,

@@ -40,8 +40,7 @@ const DEFAULT_VOYAGE_MODEL: VoyageModel = 'voyage-multimodal-3.5';
 async function voyageEmbed(
   input: ImageInput,
   config: ImageDiffConfig,
-): Promise<EmbeddingResult>
-{
+): Promise<EmbeddingResult> {
   const rl = tagged({
     tag: voyageEmbed.name,
     l,

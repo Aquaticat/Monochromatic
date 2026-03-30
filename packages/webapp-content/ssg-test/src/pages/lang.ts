@@ -28,7 +28,7 @@ export function langPage(
     posts,
   }: {
     lang: Locales;
-    posts: readonly Post[]
+    posts: readonly Post[];
   },
 ): string {
   const t = i18nObject(lang,);

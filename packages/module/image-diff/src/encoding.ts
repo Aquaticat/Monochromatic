@@ -198,7 +198,7 @@ export function bufferToDataUri(
  */
 export function parseDataUri(dataUri: string,): {
   mimeType: string;
-  data: string
+  data: string;
 } {
   const match = dataUri.match(/^data:([^;]+);base64,(.+)$/,);
   if (match === null || match[1] === undefined || match[2] === undefined) {

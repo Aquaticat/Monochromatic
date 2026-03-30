@@ -23,8 +23,7 @@ const HTTP_NO_CONTENT = 204;
 export async function api<TResponse = unknown,>(
   path: string,
   options?: RequestInit,
-): Promise<TResponse>
-{
+): Promise<TResponse> {
   const headers = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers !== undefined) {
     new Headers(options.headers,).forEach(function applyHeader(
@@ -40,9 +39,9 @@ export async function api<TResponse = unknown,>(
   const response = await fetch(
     path,
     {
-    ...options,
-    headers,
-  },
+      ...options,
+      headers,
+    },
   );
 
   if (!response.ok) {

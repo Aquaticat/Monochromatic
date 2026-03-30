@@ -44,7 +44,8 @@ export function wireContentSync({
         },);
       },
       delayMs: CONTENT_SYNC_DEBOUNCE_MS,
-    },).debounced,
+    },)
+      .debounced,
   );
 }
 

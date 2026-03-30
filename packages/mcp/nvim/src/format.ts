@@ -42,8 +42,7 @@ export type FormattableDiagnostic = {
 export function formatDiagnostic(
   diagnostic: FormattableDiagnostic,
   indent: string = '',
-): string
-{
+): string {
   const source = diagnostic.source !== null && diagnostic.source !== ''
     ? ` [${diagnostic.source}${
       diagnostic.code !== null ? ` ${String(diagnostic.code,)}` : ''

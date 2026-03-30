@@ -57,9 +57,8 @@ class TaskDetail extends HTMLElement {
         tags: string[];
         locations: string[];
         priority: string | null;
-        complexity: string | null
-      }
-      {
+        complexity: string | null;
+      } {
         return {
           tags: this.#tags,
           locations: this.#locations,
@@ -72,8 +71,7 @@ class TaskDetail extends HTMLElement {
         this: TaskDetail,
         update: { tags?: string[]; locations?: string[]; priority?: string | null;
           complexity?: string | null; },
-      ): void
-      {
+      ): void {
         if (update.tags !== undefined)
           this.#tags = update.tags as string[];
         if (update.locations !== undefined)
@@ -125,9 +123,8 @@ class TaskDetail extends HTMLElement {
     tags: string[];
     locations: string[];
     priority: TaskPriority | null;
-    complexity: TaskComplexity | null
-  }
-  {
+    complexity: TaskComplexity | null;
+  } {
     return {
       tags: this.#tags,
       locations: this.#locations,
@@ -176,9 +173,9 @@ class TaskDetail extends HTMLElement {
     titleInput.addEventListener(
       'input',
       function onTitleInput(this: TaskDetail,): void {
-      this.#autofill.request(titleInput.value,);
-    }
-      .bind(this,),
+        this.#autofill.request(titleInput.value,);
+      }
+        .bind(this,),
     );
   }
 }

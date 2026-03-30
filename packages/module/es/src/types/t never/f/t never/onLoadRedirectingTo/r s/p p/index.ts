@@ -36,10 +36,10 @@ export function $(delayTime: number = 5_000,): void {
   if (potentialRedirectingToElement) {
     setTimeout(
       function redirect() {
-      globalThis.location.replace(
-        potentialRedirectingToElement.href,
-      );
-    },
+        globalThis.location.replace(
+          potentialRedirectingToElement.href,
+        );
+      },
       delayTime,
     );
   }

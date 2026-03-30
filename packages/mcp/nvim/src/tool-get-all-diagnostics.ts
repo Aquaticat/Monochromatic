@@ -55,11 +55,12 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
 
     // Include files that only appear in lint output (not open in editor)
     for (const [lintPath, lintDiags,] of lintResult.diagnostics) {
-      if (!mergedByPath.has(lintPath,))
+      if (!mergedByPath.has(lintPath,)) {
         mergedByPath.set(
           lintPath,
           lintDiags,
         );
+      }
     }
     //endregion Merge editor and lint diagnostics per file
 

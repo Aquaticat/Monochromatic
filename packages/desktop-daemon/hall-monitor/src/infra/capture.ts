@@ -60,8 +60,7 @@ export async function captureScreenshot(): Promise<Buffer> {
   await spawn(
     'spectacle',
     ['-f', '-b', '-n', '-o', tmp,],
-    { stdout: 'ignore',
-    stderr: 'ignore', },
+    { stdout: 'ignore', stderr: 'ignore', },
   );
   const proc = cpSpawn(
     FFMPEG,
@@ -89,8 +88,8 @@ export async function captureScreenshot(): Promise<Buffer> {
   proc.stdout.on(
     'data',
     function collectChunk(chunk: Buffer,) {
-    chunks.push(chunk,);
-  },
+      chunks.push(chunk,);
+    },
   );
   await once(
     proc,
@@ -146,8 +145,8 @@ export async function captureWebcam(): Promise<Buffer> {
   proc.stdout.on(
     'data',
     function collectChunk(chunk: Buffer,) {
-    chunks.push(chunk,);
-  },
+      chunks.push(chunk,);
+    },
   );
   await once(
     proc,

@@ -38,11 +38,12 @@ export function renderByModel({
     return entry.label;
   },),),];
 
-  if (labels.length === 0)
+  if (labels.length === 0) {
     return h({
       tag: 'p',
       text: 'No model data available.',
     },);
+  }
 
   /** Hide Model and Probe columns since we're within a per-model overall context */
   const tableDisplay = {

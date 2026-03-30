@@ -46,7 +46,7 @@ export function routeJsonRpcMessage({
   send: (message: unknown,) => void;
   onNotification: (event: {
     method: string;
-    params: unknown
+    params: unknown;
   },) => void;
 },): void {
   if ('id' in message && !('method' in message)) {
@@ -57,7 +57,7 @@ export function routeJsonRpcMessage({
       error?: {
         code: number;
         message: string;
-      }
+      };
     };
     const entry = pending.get(response.id,);
     if (entry !== undefined) {
@@ -74,7 +74,7 @@ export function routeJsonRpcMessage({
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to notification shape
     const notification = message as {
       method: string;
-      params?: unknown
+      params?: unknown;
     };
     onNotification({
       method: notification.method,

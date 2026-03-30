@@ -8,7 +8,7 @@ import { virsh, } from './virsh.ts';
 /** Single VM entry with its display name and current libvirt state. */
 export type VmInfo = {
   name: string;
-  state: string
+  state: string;
 };
 
 /**
@@ -42,11 +42,12 @@ export async function list(): Promise<readonly VmInfo[]> {
     const match = line.match(/\s+(?:\d+|-)\s+(\S+)\s+(.+)/,);
     const vmName = match?.[1];
     const vmState = match?.[2];
-    if (vmName !== undefined && vmState !== undefined && vmName.startsWith(VM_PREFIX,))
+    if (vmName !== undefined && vmState !== undefined && vmName.startsWith(VM_PREFIX,)) {
       vms.push({
         name: vmName.slice(VM_PREFIX.length,),
         state: vmState.trim(),
       },);
+    }
   }
 
   rl.debug(`found ${String(vms.length,)} managed VMs`,);

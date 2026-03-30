@@ -47,7 +47,7 @@ export function pickMajority<TBackend = unknown,>(
   totalCount: number,
 ): {
   hasMajority: boolean;
-  value?: string | undefined
+  value?: string | undefined;
 } {
   /** Leader candidate and its bucket after sorting by descending bucket size. */
   const sorted = [...buckets.entries(),]
@@ -133,8 +133,8 @@ export function computeCanonical<TBackend = unknown,>(
   const groupedAll = Map.groupBy(
     results,
     function byValue({ value, },) {
-    return value;
-  },
+      return value;
+    },
   );
 
   const overall = pickMajority(
@@ -182,8 +182,8 @@ export function resolveConsensus<TBackend = unknown,>(
   const grouped = Map.groupBy(
     results,
     function byPriority({ priority, },) {
-    return priority;
-  },
+      return priority;
+    },
   );
 
   const sortedTiers = [...grouped.entries(),]
@@ -204,8 +204,8 @@ export function resolveConsensus<TBackend = unknown,>(
   const groupedHighest = Map.groupBy(
     highestResults,
     function byValue({ value, },) {
-    return value;
-  },
+      return value;
+    },
   );
 
   return computeCanonical(

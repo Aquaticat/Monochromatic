@@ -29,7 +29,7 @@ export type ServerMessage =
   | {
     type: 'connected';
     rootDir: string;
-    fsId: string
+    fsId: string;
   }
   | {
     type: 'fileContent';
@@ -37,50 +37,50 @@ export type ServerMessage =
     path: string;
     content: string;
     kind: FileKind;
-    mediaInfo?: string
+    mediaInfo?: string;
   }
   | {
     type: 'saved';
     id: string;
-    path: string
+    path: string;
   }
   | {
     type: 'dirListing';
     id: string;
     path: string;
-    entries: DirEntry[]
+    entries: DirEntry[];
   }
   | {
     type: 'searchResults';
     id: string;
-    results: SearchResult[]
+    results: SearchResult[];
   }
   | {
     type: 'fileChanged';
     path: string;
     changeType: FsChangeType;
-    isDirectory: boolean
+    isDirectory: boolean;
   }
   | {
     type: 'diagnostics';
     path: string;
-    diagnostics: Diagnostic[]
+    diagnostics: Diagnostic[];
   }
   | {
     type: 'hoverResult';
     id: string;
     contents: string;
-    range?: Range
+    range?: Range;
   }
   | {
     type: 'completionResult';
     id: string;
-    items: CompletionItem[]
+    items: CompletionItem[];
   }
   | {
     type: 'formatResult';
     id: string;
-    edits: TextEdit[]
+    edits: TextEdit[];
   }
   | ({
     type: 'definitionResult';
@@ -89,26 +89,26 @@ export type ServerMessage =
   | {
     type: 'referencesResult';
     id: string;
-    locations: FilePosition[]
+    locations: FilePosition[];
   }
   | {
     type: 'inlayHintResult';
     id: string;
-    hints: InlayHint[]
+    hints: InlayHint[];
   }
   | {
     type: 'selectionRangeResult';
     id: string;
-    ranges: SelectionRange[]
+    ranges: SelectionRange[];
   }
   | {
     type: 'fsActionDone';
-    id: string
+    id: string;
   }
   | {
     type: 'error';
     id?: string;
-    message: string
+    message: string;
   };
 
 //endregion Server messages

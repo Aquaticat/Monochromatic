@@ -56,10 +56,8 @@ export function* $<T,>(
   iterable: Iterable<T>,
 ): Generator<{
   decision: 'pass' | 'fail' | ['thrown', unknown,];
-  item: T
-}, void,
-  undefined>
-{
+  item: T;
+}, void, undefined> {
   yield* partitionNamed({
     predicate,
     iterable,

@@ -67,13 +67,13 @@ export async function runAndReport(
       return runCanary(
         probes,
         {
-        model: model.openrouterId,
-        label: model.label,
-        verbosity: model.verbosity,
-        apiKey,
-        skipProbes: recentModelProbePairs,
-        ...consistencyRunsOverride,
-      },
+          model: model.openrouterId,
+          label: model.label,
+          verbosity: model.verbosity,
+          apiKey,
+          skipProbes: recentModelProbePairs,
+          ...consistencyRunsOverride,
+        },
       );
     },),
   );
@@ -89,7 +89,9 @@ export async function runAndReport(
   // Probe-level timeouts now produce zero-score results rather than failing the model,
   // so they appear in reportsWithResults and are never silently dropped.
   if (reportsWithResults.length === 0 && failedReports.length === 0) {
-    l.info('all probes skipped due to recent results. Use --retest-all to force re-run.',);
+    l.info(
+      'all probes skipped due to recent results. Use --retest-all to force re-run.',
+    );
     return;
   }
 

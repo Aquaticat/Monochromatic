@@ -148,8 +148,7 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
 function validateTimeStrategy(
   value: string | null | undefined,
   flagName: string,
-): TimeStrategy
-{
+): TimeStrategy {
   if (value === null || value === undefined)
     return 'newest';
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check

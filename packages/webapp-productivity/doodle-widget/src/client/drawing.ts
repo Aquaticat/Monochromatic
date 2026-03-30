@@ -101,7 +101,7 @@ export function redraw(
   }: {
     ctx: CanvasRenderingContext2D;
     cw: number;
-    ch: number
+    ch: number;
   },
 ): void {
   ctx.clearRect(
@@ -174,7 +174,7 @@ export function denormalizePoint({
   ch: number;
 },): {
   px: number;
-  py: number
+  py: number;
 } {
   return {
     px: point[0] * cw,

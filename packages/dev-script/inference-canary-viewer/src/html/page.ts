@@ -20,7 +20,7 @@ export function renderPage({
   title,
 }: {
   body: string;
-  title: string
+  title: string;
 },): string {
   return `<!DOCTYPE html>\n${
     h({

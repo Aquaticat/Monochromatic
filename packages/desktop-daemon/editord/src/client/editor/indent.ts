@@ -28,7 +28,7 @@ export type IndentResult = {
   /** Cursor coordinates when `isSelection` is false. */
   cursor: {
     line: number;
-    character: number
+    character: number;
   };
 };
 

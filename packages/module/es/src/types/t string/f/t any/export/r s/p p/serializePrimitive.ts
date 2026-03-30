@@ -31,71 +31,71 @@ export function serializePrimitive(
     .with(
       'boolean',
       function handler() {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms boolean
-      const boolObj = obj as boolean;
-      return String(boolObj,);
-    },
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms boolean
+        const boolObj = obj as boolean;
+        return String(boolObj,);
+      },
     )
     .with(
       'number',
       function handler() {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms number
-      const numberObj = obj as number;
-      return String(numberObj,);
-    },
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms number
+        const numberObj = obj as number;
+        return String(numberObj,);
+      },
     )
     .with(
       'string',
       function handler() {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms string
-      const stringObj = obj as string;
-      return JSON.stringify(stringObj,);
-    },
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms string
+        const stringObj = obj as string;
+        return JSON.stringify(stringObj,);
+      },
     )
     .with(
       'date',
       function handler() {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms Date
-      const dateObj = obj as Date;
-      return `new Date(${JSON.stringify(dateObj,)})`;
-    },
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms Date
+        const dateObj = obj as Date;
+        return `new Date(${JSON.stringify(dateObj,)})`;
+      },
     )
     .with(
       'bigint',
       function handler() {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms bigint
-      const bigintObj = obj as bigint;
-      return `${String(bigintObj,)}n`;
-    },
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms bigint
+        const bigintObj = obj as bigint;
+        return `${String(bigintObj,)}n`;
+      },
     )
     .with(
       'null',
       function handler() {
-      return 'null';
-    },
+        return 'null';
+      },
     )
     .with(
       'undefined',
       function handler() {
-      return 'undefined';
-    },
+        return 'undefined';
+      },
     )
     .with(
       'NaN',
       function handler() {
-      return 'NaN';
-    },
+        return 'NaN';
+      },
     )
     .with(
       'symbol',
       function handler() {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms symbol
-      const symbolObj = obj as symbol;
-      const { description, } = symbolObj;
-      return description !== undefined
-        ? `Symbol(${JSON.stringify(description,)})`
-        : 'Symbol()';
-    },
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms symbol
+        const symbolObj = obj as symbol;
+        const { description, } = symbolObj;
+        return description !== undefined
+          ? `Symbol(${JSON.stringify(description,)})`
+          : 'Symbol()';
+      },
     )
     .exhaustive();
 }

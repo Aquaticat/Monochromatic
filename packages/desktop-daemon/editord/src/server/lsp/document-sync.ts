@@ -64,12 +64,13 @@ export function didOpen({
 },): void {
   const uri = pathToUri({ path, },);
   const languageId = getLanguageId({ path, },);
-  if (documents.has(uri,))
+  if (documents.has(uri,)) {
     didClose({
       path,
       documents,
       servers,
     },);
+  }
   documents.set(
     uri,
     {
@@ -156,11 +157,12 @@ export function didSave({
   for (const c of relevantClients({
     languageId: doc.languageId,
     ...servers,
-  },))
+  },)) {
     c.notify({
       method: 'textDocument/didSave',
       params: { textDocument: { uri, }, },
     },);
+  }
 }
 
 /**
@@ -185,9 +187,10 @@ export function didClose({
   for (const c of relevantClients({
     languageId: doc.languageId,
     ...servers,
-  },))
+  },)) {
     c.notify({
       method: 'textDocument/didClose',
       params: { textDocument: { uri, }, },
     },);
+  }
 }

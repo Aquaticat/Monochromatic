@@ -85,12 +85,13 @@ class TaskCard extends HTMLElement {
         text,
       },);
     },);
-    if (options.showBlockedBadge === true)
+    if (options.showBlockedBadge === true) {
       chipElements.push(h({
         tag: 'span',
         class: 'chip blocked',
         text: 'blocked',
       },),);
+    }
 
     this.#shadow.replaceChildren(
       h({

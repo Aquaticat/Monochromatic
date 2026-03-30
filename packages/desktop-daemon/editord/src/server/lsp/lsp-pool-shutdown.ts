@@ -33,7 +33,7 @@ export async function shutdownPoolForPath({
   const toRemove: string[] = [];
   const matching: {
     key: string;
-    promise: Promise<LspClient | null>
+    promise: Promise<LspClient | null>;
   }[] = [];
 
   for (const [key, promise,] of pool.entries()) {

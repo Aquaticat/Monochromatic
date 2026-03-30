@@ -24,7 +24,7 @@ export function headFragment(
     lang,
   }: {
     title: string;
-    lang: Locales
+    lang: Locales;
   },
 ): string {
   const t = i18nObject(lang,);
@@ -40,46 +40,46 @@ export function headFragment(
       h({
         tag: 'meta',
         attrs: {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
+          name: 'viewport',
+          content: 'width=device-width, initial-scale=1',
+        },
       },),
       h({
         tag: 'link',
         attrs: {
-        rel: 'icon',
-        href: '/favicon.ico',
-        sizes: '32x32',
-      },
+          rel: 'icon',
+          href: '/favicon.ico',
+          sizes: '32x32',
+        },
       },),
       h({
         tag: 'link',
         attrs: {
-        rel: 'icon',
-        href: '/favicon.svg',
-        type: 'image/svg+xml',
-      },
+          rel: 'icon',
+          href: '/favicon.svg',
+          type: 'image/svg+xml',
+        },
       },),
       h({
         tag: 'link',
         attrs: {
-        rel: 'apple-touch-icon',
-        href: '/apple-touch-icon.png',
-      },
+          rel: 'apple-touch-icon',
+          href: '/apple-touch-icon.png',
+        },
       },),
       h({
         tag: 'link',
         attrs: {
-        rel: 'manifest',
-        href: '/manifest.webmanifest',
-      },
+          rel: 'manifest',
+          href: '/manifest.webmanifest',
+        },
       },),
       h({
         tag: 'link',
         attrs: {
-        rel: 'stylesheet',
-        href: '/styles.css',
-      },
+          rel: 'stylesheet',
+          href: '/styles.css',
+        },
       },),
       h({
         tag: 'title',

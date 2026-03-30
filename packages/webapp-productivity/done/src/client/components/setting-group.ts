@@ -61,8 +61,8 @@ class SettingGroup extends HTMLElement {
         tag: 'button',
         attrs: { part: 'action', },
         children: [
-        h({ tag: 'slot', attrs: { name: 'action', }, text: 'connect?', },),
-      ],
+          h({ tag: 'slot', attrs: { name: 'action', }, text: 'connect?', },),
+        ],
       },)
       : h({
         tag: 'toggle-switch',
@@ -88,12 +88,13 @@ class SettingGroup extends HTMLElement {
       },),
     ];
 
-    if (description.length > 0)
+    if (description.length > 0) {
       children.push(h({
         tag: 'p',
         class: 'desc',
         text: description,
       },),);
+    }
 
     this.#shadow.replaceChildren(...children,);
   }

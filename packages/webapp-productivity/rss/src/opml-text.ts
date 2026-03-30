@@ -81,7 +81,7 @@ export async function getOPMLTexts(
         const absPath = resolve(
           dirname(notNullishOrThrow(DOT_ENV_PATH,),),
           opmlLink
-          .slice('file://'.length,),
+            .slice('file://'.length,),
         );
         try {
           return await readFile(

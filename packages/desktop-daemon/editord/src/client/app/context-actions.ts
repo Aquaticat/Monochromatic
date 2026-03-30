@@ -26,17 +26,18 @@ export async function dispatchFsAction({
   action: ContextAction;
   ws: EditorWsClient;
 },): Promise<void> {
-  if (action.kind === 'delete')
+  if (action.kind === 'delete') {
     await ws.request({
       type: 'deleteEntry',
       path: action.path,
     },);
+  }
   else if (action.kind === 'copy') {
     await ws.request({
       type: 'copyEntry',
       path: action.path,
       destPath: action
-      .destPath,
+        .destPath,
     },);
   }
   else if (action.kind === 'move') {
@@ -44,15 +45,17 @@ export async function dispatchFsAction({
       type: 'moveEntry',
       path: action.path,
       destPath: action
-      .destPath,
+        .destPath,
     },);
   }
   else if (action.kind === 'new') {
     const isDirectory = action.name.endsWith('/',);
-    const name = isDirectory ? action.name.slice(
-      0,
-      -1,
-    ) : action.name;
+    const name = isDirectory
+      ? action.name.slice(
+        0,
+        -1,
+      )
+      : action.name;
     await ws.request({
       type: 'newEntry',
       parentPath: action.parentPath,
@@ -60,15 +63,17 @@ export async function dispatchFsAction({
       isDirectory,
     },);
   }
-  else if (action.kind === 'openInTerminal')
+  else if (action.kind === 'openInTerminal') {
     await ws.request({
       type: 'openInTerminal',
       path: action.path,
     },);
+  }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: exhaustive check against ContextAction union
-  else if (action.kind === 'openInDefaultApp')
+  else if (action.kind === 'openInDefaultApp') {
     await ws.request({
       type: 'openInDefaultApp',
       path: action.path,
     },);
+  }
 }

@@ -24,7 +24,7 @@ export function getLengthsToTestFirst(
     lengths,
   }: {
     lengthUpperBound: number;
-    lengths: readonly number[]
+    lengths: readonly number[];
   },
 ): number[] {
   const result = [lengthUpperBound,];

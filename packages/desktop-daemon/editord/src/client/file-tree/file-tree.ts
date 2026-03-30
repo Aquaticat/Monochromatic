@@ -153,59 +153,59 @@ export class FileTree extends HTMLElement {
     this.#shadow.addEventListener(
       'focusin',
       function handleFocusIn(event,) {
-      if (event.target instanceof HTMLElement)
-        tree.#lastFocused = event.target;
-    },
+        if (event.target instanceof HTMLElement)
+          tree.#lastFocused = event.target;
+      },
     );
     this.#tree.addEventListener(
       'dir-open',
       function handleDirOpen(event,) {
-      loadDirChildren({
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from TreeDirEntry
-        detail: (event as CustomEvent<DirOpenDetail>).detail,
-        state: tree.#state,
-      },);
-    },
+        loadDirChildren({
+          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from TreeDirEntry
+          detail: (event as CustomEvent<DirOpenDetail>).detail,
+          state: tree.#state,
+        },);
+      },
     );
     this.#tree.addEventListener(
       'show-context',
       function handleShowContext(event,) {
-      const {
-        x,
-        y,
-        path,
-        kind,
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from tree entries
-      } = (event as CustomEvent<ShowContextDetail>).detail;
-      if (tree.#contextMenu === null)
-        return;
-      /**
-       * Forwards context menu action to the external callback.
-       *
-       * @param action - selected context menu action to forward
-       */
-      function fireAction(action: ContextAction,): void {
-        tree.#onContextAction?.(action,);
-      }
-      if (kind === 'file') {
-        showFileContextMenu({
-          contextMenu: tree.#contextMenu,
+        const {
           x,
           y,
           path,
-          onAction: fireAction,
-        },);
-      }
-      else {
-        showDirContextMenu({
-          contextMenu: tree.#contextMenu,
-          x,
-          y,
-          path,
-          onAction: fireAction,
-        },);
-      }
-    },
+          kind,
+          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from tree entries
+        } = (event as CustomEvent<ShowContextDetail>).detail;
+        if (tree.#contextMenu === null)
+          return;
+        /**
+         * Forwards context menu action to the external callback.
+         *
+         * @param action - selected context menu action to forward
+         */
+        function fireAction(action: ContextAction,): void {
+          tree.#onContextAction?.(action,);
+        }
+        if (kind === 'file') {
+          showFileContextMenu({
+            contextMenu: tree.#contextMenu,
+            x,
+            y,
+            path,
+            onAction: fireAction,
+          },);
+        }
+        else {
+          showDirContextMenu({
+            contextMenu: tree.#contextMenu,
+            x,
+            y,
+            path,
+            onAction: fireAction,
+          },);
+        }
+      },
     );
   }
 
@@ -274,11 +274,12 @@ export class FileTree extends HTMLElement {
    */
   updateRecency({ paths, }: { paths: string[]; },): void {
     this.#state.recentPaths = paths;
-    if (this.#tree !== null)
+    if (this.#tree !== null) {
       updateRecencyMarkers({
         tree: this.#tree,
         paths,
       },);
+    }
   }
 
   /**

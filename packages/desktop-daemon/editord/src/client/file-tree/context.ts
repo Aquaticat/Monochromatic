@@ -102,55 +102,58 @@ export function buildDirContextItems({
       label: 'New',
       defaultValue: '',
       action: function newEntry(name,): void {
-      if (name !== undefined)
-        onAction({
-          kind: 'new',
-          parentPath: path,
-          name,
-        },);
-    },
+        if (name !== undefined) {
+          onAction({
+            kind: 'new',
+            parentPath: path,
+            name,
+          },);
+        }
+      },
     },
     {
       label: 'Copy to',
       defaultValue: path,
       action: function copy(destPath,): void {
-      if (destPath !== undefined)
-        onAction({
-          kind: 'copy',
-          path,
-          destPath,
-        },);
-    },
+        if (destPath !== undefined) {
+          onAction({
+            kind: 'copy',
+            path,
+            destPath,
+          },);
+        }
+      },
     },
     {
       label: 'Move to',
       defaultValue: path,
       action: function move(destPath,): void {
-      if (destPath !== undefined)
-        onAction({
-          kind: 'move',
-          path,
-          destPath,
-        },);
-    },
+        if (destPath !== undefined) {
+          onAction({
+            kind: 'move',
+            path,
+            destPath,
+          },);
+        }
+      },
     },
     {
       label: 'Delete',
       action: function del(): void {
-      onAction({
-        kind: 'delete',
-        path,
-      },);
-    },
+        onAction({
+          kind: 'delete',
+          path,
+        },);
+      },
     },
     {
       label: 'Open in terminal',
       action: function openTerm(): void {
-      onAction({
-        kind: 'openInTerminal',
-        path,
-      },);
-    },
+        onAction({
+          kind: 'openInTerminal',
+          path,
+        },);
+      },
     },
   ];
 }
@@ -176,43 +179,45 @@ export function buildFileContextItems({
       label: 'Copy to',
       defaultValue: path,
       action: function copy(destPath,): void {
-      if (destPath !== undefined)
-        onAction({
-          kind: 'copy',
-          path,
-          destPath,
-        },);
-    },
+        if (destPath !== undefined) {
+          onAction({
+            kind: 'copy',
+            path,
+            destPath,
+          },);
+        }
+      },
     },
     {
       label: 'Move to',
       defaultValue: path,
       action: function move(destPath,): void {
-      if (destPath !== undefined)
-        onAction({
-          kind: 'move',
-          path,
-          destPath,
-        },);
-    },
+        if (destPath !== undefined) {
+          onAction({
+            kind: 'move',
+            path,
+            destPath,
+          },);
+        }
+      },
     },
     {
       label: 'Delete',
       action: function del(): void {
-      onAction({
-        kind: 'delete',
-        path,
-      },);
-    },
+        onAction({
+          kind: 'delete',
+          path,
+        },);
+      },
     },
     {
       label: 'Open in default app',
       action: function openApp(): void {
-      onAction({
-        kind: 'openInDefaultApp',
-        path,
-      },);
-    },
+        onAction({
+          kind: 'openInDefaultApp',
+          path,
+        },);
+      },
     },
   ];
 }

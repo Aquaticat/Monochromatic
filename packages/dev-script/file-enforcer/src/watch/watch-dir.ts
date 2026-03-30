@@ -32,7 +32,10 @@ export async function watchDirectory(
   configPath: string,
   onEvent: (kind: EventKind, filename: string,) => void,
 ): Promise<void> {
-  const rl = tagged({ tag: watchDirectory.name, l, },);
+  const rl = tagged({
+    tag: watchDirectory.name,
+    l,
+  },);
   try {
     /** Async iterator yielding filesystem events in this directory */
     const watcher = watch(

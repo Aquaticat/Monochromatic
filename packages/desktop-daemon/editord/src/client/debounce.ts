@@ -51,7 +51,7 @@ export function createDebounced(
     delayMs,
   }: {
     fn: () => void;
-    delayMs: number
+    delayMs: number;
   },
 ): DebouncedHandle {
   let timer = 0;

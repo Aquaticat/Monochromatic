@@ -21,79 +21,79 @@ import {
 export const createTool = defineTool(
   'create_vm',
   {
-  description:
-    'Creates and starts a new VM. Supports ubuntu (default), fedora, alpine, windows, or a custom template name via the `image` parameter. Windows VMs use a Windows Server 2025 evaluation ISO with unattended install (first creation takes 15-30 minutes). When `from` is provided, clones from that existing VM instead of creating fresh.',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      name: { type: 'string',
-        description: 'VM name (alphanumeric, hyphens, underscores)', },
-      from: { type: 'string',
-        description: 'Clone from this existing VM instead of creating fresh', },
-      image: { type: 'string',
-        description:
-          'Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name', },
+    description:
+      'Creates and starts a new VM. Supports ubuntu (default), fedora, alpine, windows, or a custom template name via the `image` parameter. Windows VMs use a Windows Server 2025 evaluation ISO with unattended install (first creation takes 15-30 minutes). When `from` is provided, clones from that existing VM instead of creating fresh.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string',
+          description: 'VM name (alphanumeric, hyphens, underscores)', },
+        from: { type: 'string',
+          description: 'Clone from this existing VM instead of creating fresh', },
+        image: { type: 'string',
+          description:
+            'Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name', },
+      },
+      required: ['name',],
     },
-    required: ['name',],
+    handler: async function handleCreateVm(args,) {
+      const name = String(args.name,);
+      const from = typeof args.from === 'string' ? args.from : undefined;
+      const image = typeof args.image === 'string' ? args.image : undefined;
+      try {
+        await (from !== undefined
+          ? clone({ destination: name, source: from, },)
+          : create({ image, name, },));
+        const suffix = from !== undefined ? ` (cloned from ${from})` : '';
+        return textResponse(
+          `VM ${name} created${suffix} and started. Use exec_in_vm to run commands inside it.`,
+        );
+      }
+      catch (err: unknown) {
+        return errorResponse('create_vm', err,);
+      }
+    },
   },
-  handler: async function handleCreateVm(args,) {
-    const name = String(args.name,);
-    const from = typeof args.from === 'string' ? args.from : undefined;
-    const image = typeof args.image === 'string' ? args.image : undefined;
-    try {
-      await (from !== undefined
-        ? clone({ destination: name, source: from, },)
-        : create({ image, name, },));
-      const suffix = from !== undefined ? ` (cloned from ${from})` : '';
-      return textResponse(
-        `VM ${name} created${suffix} and started. Use exec_in_vm to run commands inside it.`,
-      );
-    }
-    catch (err: unknown) {
-      return errorResponse('create_vm', err,);
-    }
-  },
-},
 );
 
 /** MCP tool: destroy VMs by name or all at once. */
 export const destroyTool = defineTool(
   'destroy_vm',
   {
-  description:
-    'Force-stops and deletes a VM by name, or all managed VMs when `all` is true. Provide exactly one of `name` or `all`.',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      name: { type: 'string',
-        description: 'VM name to destroy (mutually exclusive with all)', },
-      all: { type: 'boolean',
-        description: 'Destroy every managed VM (mutually exclusive with name)', },
+    description:
+      'Force-stops and deletes a VM by name, or all managed VMs when `all` is true. Provide exactly one of `name` or `all`.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string',
+          description: 'VM name to destroy (mutually exclusive with all)', },
+        all: { type: 'boolean',
+          description: 'Destroy every managed VM (mutually exclusive with name)', },
+      },
+    },
+    handler: async function handleDestroyVm(args,) {
+      const name = typeof args.name === 'string' ? args.name : undefined;
+      const all = typeof args.all === 'boolean' ? args.all : undefined;
+      try {
+        if (all === true) {
+          await destroyAll();
+          return textResponse('All VMs destroyed.',);
+        }
+        if (name !== undefined) {
+          await destroy({ name, },);
+          return textResponse(`VM ${name} destroyed.`,);
+        }
+        return {
+          content: [{ type: 'text' as const,
+            text: 'Error: provide either `name` or `all: true`.', },],
+          isError: true as const,
+        };
+      }
+      catch (err: unknown) {
+        return errorResponse('destroy_vm', err,);
+      }
     },
   },
-  handler: async function handleDestroyVm(args,) {
-    const name = typeof args.name === 'string' ? args.name : undefined;
-    const all = typeof args.all === 'boolean' ? args.all : undefined;
-    try {
-      if (all === true) {
-        await destroyAll();
-        return textResponse('All VMs destroyed.',);
-      }
-      if (name !== undefined) {
-        await destroy({ name, },);
-        return textResponse(`VM ${name} destroyed.`,);
-      }
-      return {
-        content: [{ type: 'text' as const,
-          text: 'Error: provide either `name` or `all: true`.', },],
-        isError: true as const,
-      };
-    }
-    catch (err: unknown) {
-      return errorResponse('destroy_vm', err,);
-    }
-  },
-},
 );
 
 //endregion Mutation tools

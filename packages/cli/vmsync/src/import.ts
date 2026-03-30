@@ -36,8 +36,8 @@ import {
 import { spawn, } from './spawn.ts';
 import {
   QCOW2_FILENAME,
-  type VmsyncConfig,
   VHDX_FILENAME,
+  type VmsyncConfig,
 } from './types.ts';
 
 /**
@@ -97,7 +97,7 @@ async function validateUefi(
   if (!fdiskOutput.includes('EFI System',)) {
     throw new Error(
       `image "${imagePath}" does not contain an EFI System Partition. `
-      + 'vmsync only supports UEFI images (Hyper-V Gen2 / KVM OVMF).',
+        + 'vmsync only supports UEFI images (Hyper-V Gen2 / KVM OVMF).',
     );
   }
 
@@ -168,7 +168,11 @@ export async function importImage(
 
   /** Image metadata from qemu-img. */
   const info = await imageInfo(absPath,);
-  rl.info(`detected format: ${info.format}, virtual size: ${String(info['virtual-size'],)} bytes`,);
+  rl.info(
+    `detected format: ${info.format}, virtual size: ${
+      String(info['virtual-size'],)
+    } bytes`,
+  );
 
   await validateUefi({
     imagePath: absPath,

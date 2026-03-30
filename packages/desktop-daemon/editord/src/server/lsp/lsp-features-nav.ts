@@ -40,7 +40,7 @@ export async function requestGotoDefinition({
 },): Promise<{
   path: string;
   line: number;
-  character: number
+  character: number;
 } | null> {
   const uri = pathToUri({ path, },);
   const result = await client.request({
@@ -74,7 +74,7 @@ export async function requestGotoDefinition({
         line: number;
         character: number;
       };
-    }
+    };
   };
   const defPath = uriToPath({ uri: loc.uri, },);
   return {
@@ -111,7 +111,7 @@ export async function requestReferences({
 },): Promise<{
   path: string;
   line: number;
-  character: number
+  character: number;
 }[]> {
   const uri = pathToUri({ path, },);
   const result = await client.request({
@@ -138,7 +138,7 @@ export async function requestReferences({
         line: number;
         character: number;
       };
-    }
+    };
   }[])
     .map(
       function convertLocation(loc,) {

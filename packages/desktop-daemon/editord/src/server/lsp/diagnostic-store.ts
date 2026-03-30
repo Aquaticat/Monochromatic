@@ -7,8 +7,8 @@
  */
 
 import type { Range, } from '../../protocol.ts';
-import { uriToPath, } from './uri.ts';
 import type { LspDiagnostic, } from './types.ts';
+import { uriToPath, } from './uri.ts';
 
 /** Severity number to wire severity string mapping. */
 const SEVERITY_MAP: Record<number, 'error' | 'warning' | 'info' | 'hint'> = {
@@ -34,7 +34,7 @@ export type WireDiagnostic = {
 export type DiagnosticsHandler = (
   event: {
     path: string;
-    diagnostics: WireDiagnostic[]
+    diagnostics: WireDiagnostic[];
   },
 ) => void;
 
@@ -72,14 +72,15 @@ export class DiagnosticStore {
     }: {
       source: string;
       uri: string;
-      diagnostics: LspDiagnostic[]
+      diagnostics: LspDiagnostic[];
     },
   ): void {
-    if (!this.#store.has(uri,))
+    if (!this.#store.has(uri,)) {
       this.#store.set(
         uri,
         new Map(),
       );
+    }
     const sourceMap = this.#store.get(uri,);
     if (sourceMap === undefined)
       return;

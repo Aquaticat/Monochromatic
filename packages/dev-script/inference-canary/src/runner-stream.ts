@@ -84,13 +84,13 @@ export async function streamCompletion(
 
   const stream = await client.chat.completions.create(
     {
-    model: config.model,
-    max_tokens: config.maxTokens,
-    messages: [...messages,],
-    stream: true,
-    stream_options: { include_usage: true, },
-    ...extraBody,
-  },
+      model: config.model,
+      max_tokens: config.maxTokens,
+      messages: [...messages,],
+      stream: true,
+      stream_options: { include_usage: true, },
+      ...extraBody,
+    },
     { signal, },
   );
 
@@ -179,11 +179,12 @@ export async function streamCompletion(
   // Throw PartialCompletionError so callers can distinguish abort from success while still
   // having access to whatever chunks arrived before cancellation.
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- mutated by addEventListener callback; oxlint can't track cross-function mutation
-  if (streamWasAborted)
+  if (streamWasAborted) {
     throw new PartialCompletionError(
       'Stream aborted by probe timeout signal',
       result,
     );
+  }
 
   return result;
 }

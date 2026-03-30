@@ -43,8 +43,7 @@ export async function computeDiff({
   try {
     const result = await spawn(
       'git',
-      ['diff', '--no-index', '--unified=99999',
-      '--no-color', initialPath, fixPath,],
+      ['diff', '--no-index', '--unified=99999', '--no-color', initialPath, fixPath,],
     );
     ({ stdout, } = result);
   }
@@ -80,21 +79,24 @@ function parseDiffOutput(output: string,): readonly DiffLine[] {
     if (!inHunk)
       continue;
 
-    if (line.startsWith('+',))
+    if (line.startsWith('+',)) {
       result.push({
         type: 'added',
         content: line.slice(1,),
       },);
-    else if (line.startsWith('-',))
+    }
+    else if (line.startsWith('-',)) {
       result.push({
         type: 'removed',
         content: line.slice(1,),
       },);
-    else if (line.startsWith(' ',))
+    }
+    else if (line.startsWith(' ',)) {
       result.push({
         type: 'unchanged',
         content: line.slice(1,),
       },);
+    }
     // Skip "\ No newline at end of file" and empty trailing lines
   }
 

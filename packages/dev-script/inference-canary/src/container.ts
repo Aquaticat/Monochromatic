@@ -82,8 +82,7 @@ export async function runInContainer(
   source: string,
   stdinData?: string,
   signal?: AbortSignal,
-): Promise<ContainerResult>
-{
+): Promise<ContainerResult> {
   await using stagingResource = await makeStagingDir();
   const stagingDir = stagingResource.path;
 
@@ -98,36 +97,37 @@ export async function runInContainer(
     ? 'cat /mnt/canary.ts > /tmp/canary.ts && bun run /tmp/canary.ts < /mnt/stdin.txt'
     : 'cat /mnt/canary.ts > /tmp/canary.ts && bun run /tmp/canary.ts';
 
-  if (stdinData !== undefined)
+  if (stdinData !== undefined) {
     await writeFile(
       join(stagingDir, 'stdin.txt',),
       stdinData,
       'utf8',
     );
+  }
 
   return await execContainer(
     [
-    'run',
-    '--rm',
-    '--network=none',
-    '--read-only',
-    '--cap-drop=ALL',
-    // exec needed because bun JIT-compiles TypeScript
-    '--tmpfs',
-    '/tmp:rw,exec,size=64m',
-    '--memory=256m',
-    '--timeout',
-    String(CONTAINER_TIMEOUT_SECONDS,),
-    '--workdir',
-    '/tmp',
-    // :Z relabels for SELinux (Fedora/RHEL); :ro for safety
-    '-v',
-    `${stagingDir}:/mnt:ro,Z`,
-    CONTAINER_IMAGE,
-    'sh',
-    '-c',
-    shellScript,
-  ],
+      'run',
+      '--rm',
+      '--network=none',
+      '--read-only',
+      '--cap-drop=ALL',
+      // exec needed because bun JIT-compiles TypeScript
+      '--tmpfs',
+      '/tmp:rw,exec,size=64m',
+      '--memory=256m',
+      '--timeout',
+      String(CONTAINER_TIMEOUT_SECONDS,),
+      '--workdir',
+      '/tmp',
+      // :Z relabels for SELinux (Fedora/RHEL); :ro for safety
+      '-v',
+      `${stagingDir}:/mnt:ro,Z`,
+      CONTAINER_IMAGE,
+      'sh',
+      '-c',
+      shellScript,
+    ],
     signal,
   );
 }

@@ -111,12 +111,15 @@ export function trackWriteTime(filePath: string,): void {
  * Primarily for testing -- production code should use {@link trackWriteTime}
  * which captures the current time automatically.
  *
- * @param options - path and timestamp to set
- * @param options.filePath - path to set timestamp for (resolved to absolute)
- * @param options.timestamp - ms since epoch
+ * @param filePath - path to set timestamp for (resolved to absolute)
+ *
+ * @param timestamp - ms since epoch
  */
 export function setWriteTimestamp(
-  { filePath, timestamp, }: {
+  {
+    filePath,
+    timestamp,
+  }: {
     readonly filePath: string;
     readonly timestamp: number;
   },

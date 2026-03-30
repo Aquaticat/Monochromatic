@@ -9,11 +9,11 @@ import {
   LSP_FEATURE_TIMEOUT_MS,
   type LspClient,
 } from './lsp-client.ts';
-import { pathToUri, } from './uri.ts';
 import type {
   LspInlayHint,
   LspSelectionRange,
 } from './types.ts';
+import { pathToUri, } from './uri.ts';
 
 /**
  * Requests inlay hints from an LSP client for a given range.
@@ -41,7 +41,7 @@ export async function requestInlayHints({
     end: {
       line: number;
       character: number;
-    }
+    };
   };
 },): Promise<LspInlayHint[]> {
   const uri = pathToUri({ path, },);
@@ -83,7 +83,7 @@ export async function requestSelectionRange({
   path: string;
   positions: {
     line: number;
-    character: number
+    character: number;
   }[];
 },): Promise<LspSelectionRange[]> {
   const uri = pathToUri({ path, },);

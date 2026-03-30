@@ -99,8 +99,8 @@ export async function runAndEnrichFixPass(
       pass2Result.completion,
       pass2Result.score,
       {
-      fixPrompt: pass2Result.fixPrompt,
-    },
+        fixPrompt: pass2Result.fixPrompt,
+      },
     );
 
     return pass2Result.score;
@@ -123,9 +123,9 @@ export async function runAndEnrichFixPass(
           partialFix,
           0,
           {
-          partial: true,
-          error: errorMessage,
-        },
+            partial: true,
+            error: errorMessage,
+          },
         );
       }
       catch (saveError) {

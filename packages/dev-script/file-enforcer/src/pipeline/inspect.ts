@@ -16,7 +16,10 @@ const INSPECT_PREVIEW_LENGTH = 200;
  * @returns Same value, unmodified
  */
 export function inspect<const TValue,>(value: TValue,): TValue {
-  const rl = tagged({ tag: inspect.name, l, },);
+  const rl = tagged({
+    tag: inspect.name,
+    l,
+  },);
   /** Stringified representation for logging */
   const preview = typeof value === 'string'
     ? value
@@ -27,10 +30,12 @@ export function inspect<const TValue,>(value: TValue,): TValue {
     );
   rl.info(
     preview.length > INSPECT_PREVIEW_LENGTH
-      ? `${preview.slice(
-        0,
-        INSPECT_PREVIEW_LENGTH,
-      )}...`
+      ? `${
+        preview.slice(
+          0,
+          INSPECT_PREVIEW_LENGTH,
+        )
+      }...`
       : preview,
   );
   return value;

@@ -57,7 +57,7 @@ function vmUserData({
   name,
 }: {
   guest: GuestConfig;
-  name: string
+  name: string;
 },): string {
   const linux = asLinux(guest,);
   return `#cloud-config
@@ -71,10 +71,12 @@ mounts:
 runcmd:
   - ["mkdir", "-p", "/mnt/shared"]
   - ["mount", "-a"]
-${vmAutologin(
-  linux.initSystem,
-  linux.defaultUser,
-)}`;
+${
+    vmAutologin(
+      linux.initSystem,
+      linux.defaultUser,
+    )
+  }`;
 }
 
 /**
@@ -99,7 +101,7 @@ function templateUserData(
     name,
   }: {
     guest: GuestConfig;
-    name: string
+    name: string;
   },
 ): string {
   const linux = asLinux(guest,);

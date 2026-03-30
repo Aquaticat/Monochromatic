@@ -17,10 +17,12 @@
  * ```
  */
 export function decodeBase64(encoded: string,): string {
-  return Buffer.from(
-    encoded,
-    'base64',
-  ).toString('utf8',);
+  return Buffer
+    .from(
+      encoded,
+      'base64',
+    )
+    .toString('utf8',);
 }
 
 /**
@@ -55,7 +57,7 @@ export function execArgs({
   shell: string;
 },): {
   arg: readonly string[];
-  path: string
+  path: string;
 } {
   if (osFamily === 'windows') {
     return {

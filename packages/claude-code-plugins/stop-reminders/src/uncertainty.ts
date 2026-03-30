@@ -205,11 +205,12 @@ type QuestionMatch = {
 function findUncertainty(prose: string,): UncertaintyMatch | undefined {
   for (const pattern of UNCERTAINTY_PATTERNS) {
     const match = pattern.exec(prose,);
-    if (match !== null)
+    if (match !== null) {
       return {
         phrase: match[0],
         pattern,
       };
+    }
   }
   return undefined;
 }

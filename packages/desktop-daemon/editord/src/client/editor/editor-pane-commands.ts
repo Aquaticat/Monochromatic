@@ -18,8 +18,8 @@ import type { EditorPosition, } from '../position.ts';
 import { selectAndCopyLine, } from './copy-line.ts';
 import { getComposedRange, } from './cursor.ts';
 import {
-  type SelectionCoords,
   indentLines as doIndent,
+  type SelectionCoords,
   unindentLines as doUnindent,
 } from './indent.ts';
 import {

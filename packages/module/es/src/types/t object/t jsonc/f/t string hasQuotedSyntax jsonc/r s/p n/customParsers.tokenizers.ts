@@ -50,7 +50,7 @@ export function parseLiteralToken(
   | {
     consumed: FragmentStringJsonc;
     parsed: Jsonc.Boolean | Jsonc.Null;
-    remaining: FragmentStringJsonc
+    remaining: FragmentStringJsonc;
   }
   | typeof NO_LITERAL
 {
@@ -99,9 +99,8 @@ export function parseNumberToken(
 ): {
   consumed: FragmentStringJsonc;
   parsed: Jsonc.Number;
-  remaining: FragmentStringJsonc
-}
-{
+  remaining: FragmentStringJsonc;
+} {
   /**
    * JSON number grammar (no leading +, leading 0 rules, optional fraction and exponent).
    * Matches the longest valid numeric prefix at position 0.

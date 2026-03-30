@@ -41,7 +41,7 @@ const l = tagged({
 function rejectUnauthenticated(
   peer: {
     send: (data: string,) => void;
-    close: () => void
+    close: () => void;
   },
 ): void {
   sendJson({

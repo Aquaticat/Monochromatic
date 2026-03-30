@@ -62,7 +62,8 @@ export function store(set: CaptureSet,): void {
   const next = [
     ...buffer,
     set,
-  ].slice(-MAX_ENTRIES,) as CaptureBuffer;
+  ]
+    .slice(-MAX_ENTRIES,) as CaptureBuffer;
   buffer = next;
   prune();
 }

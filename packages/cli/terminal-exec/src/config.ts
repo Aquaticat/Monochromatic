@@ -118,7 +118,7 @@ function parseDirective(
     execArgDefaults,
   }: {
     line: string;
-    execArgDefaults: Map<string, string>
+    execArgDefaults: Map<string, string>;
   },
 ): void {
   const EXECARG_PREFIX = '/execarg_default:';

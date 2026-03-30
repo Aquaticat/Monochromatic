@@ -100,14 +100,14 @@ export class TreeDirEntry extends HTMLElement {
           entry.dispatchEvent(new CustomEvent(
             'show-context',
             {
-            bubbles: true,
-            detail: {
-              x: event.clientX,
-              y: event.clientY,
-              path: entry.entryPath,
-              kind: 'dir' as const,
+              bubbles: true,
+              detail: {
+                x: event.clientX,
+                y: event.clientY,
+                path: entry.entryPath,
+                kind: 'dir' as const,
+              },
             },
-          },
           ),);
         },
         contextmenu: suppressContextMenu,
@@ -129,12 +129,12 @@ export class TreeDirEntry extends HTMLElement {
           entry.dispatchEvent(new CustomEvent(
             'dir-open',
             {
-            bubbles: true,
-            detail: {
-              path: entry.entryPath,
-              childrenContainer: entry.#childrenContainer,
+              bubbles: true,
+              detail: {
+                path: entry.entryPath,
+                childrenContainer: entry.#childrenContainer,
+              },
             },
-          },
           ),);
         },
       },
@@ -160,7 +160,7 @@ export function createTreeDirEntry(
     name,
   }: {
     path: string;
-    name: string
+    name: string;
   },
 ): TreeDirEntry {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define

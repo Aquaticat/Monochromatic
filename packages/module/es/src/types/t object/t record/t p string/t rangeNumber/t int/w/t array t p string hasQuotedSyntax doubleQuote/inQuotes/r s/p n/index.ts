@@ -33,7 +33,7 @@ export function $({
   strs,
 }: {
   value: Value;
-  strs: DoubleQuote[]
+  strs: DoubleQuote[];
 },): Value {
   // Create new map for quote status results
   const newQuoteStatusMap = new Map<string, boolean>();

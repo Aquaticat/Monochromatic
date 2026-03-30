@@ -10,11 +10,11 @@ import {
   LSP_FEATURE_TIMEOUT_MS,
   type LspClient,
 } from './lsp-client.ts';
-import { pathToUri, } from './uri.ts';
 import type {
   LspCompletionItem,
   LspHover,
 } from './types.ts';
+import { pathToUri, } from './uri.ts';
 
 export {
   requestInlayHints,

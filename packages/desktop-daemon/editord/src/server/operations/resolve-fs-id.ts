@@ -60,8 +60,8 @@ function windowsFsId({ path, }: { path: string; },): string {
       driveRoot,
     ],
     {
-    encoding: 'utf8',
-  },
+      encoding: 'utf8',
+    },
   );
   const match = output.match(/Serial Number is\s+(\S+)/i,);
   if (match === null)
@@ -85,7 +85,8 @@ function darwinFsId({ path, }: { path: string; },): string {
       path,
     ],
     { encoding: 'utf8', },
-  ).trim();
+  )
+    .trim();
 }
 
 /**

@@ -53,34 +53,34 @@ function addScrollEvents(scrollOptions: {
 
   const observer = new IntersectionObserver(
     function onIntersect(entries,) {
-    const [entry,] = entries;
-    if (!entry) {
-      console.error(`empty entries for observer`, entries, observer,);
-      return;
-    }
-    const ratio = entry.intersectionRatio;
+      const [entry,] = entries;
+      if (!entry) {
+        console.error(`empty entries for observer`, entries, observer,);
+        return;
+      }
+      const ratio = entry.intersectionRatio;
 
-    if (ratio === 1 && !wasFullyVisible) {
-      wasFullyVisible = true;
-      element.dispatchEvent(new CustomEvent('scrolledIn',),);
-    }
+      if (ratio === 1 && !wasFullyVisible) {
+        wasFullyVisible = true;
+        element.dispatchEvent(new CustomEvent('scrolledIn',),);
+      }
 
-    if (wasFullyVisible && ratio === 0) {
-      element.dispatchEvent(new CustomEvent('scrolledOut',),);
-      wasFullyVisible = false;
-    }
+      if (wasFullyVisible && ratio === 0) {
+        element.dispatchEvent(new CustomEvent('scrolledOut',),);
+        wasFullyVisible = false;
+      }
 
-    if (lastRatio === 0 && ratio > 0)
-      element.dispatchEvent(new CustomEvent('enterViewport',),);
+      if (lastRatio === 0 && ratio > 0)
+        element.dispatchEvent(new CustomEvent('enterViewport',),);
 
-    if (lastRatio > 0 && ratio === 0)
-      element.dispatchEvent(new CustomEvent('leaveViewport',),);
+      if (lastRatio > 0 && ratio === 0)
+        element.dispatchEvent(new CustomEvent('leaveViewport',),);
 
-    if (ratio >= HALF_THRESHOLD && lastRatio < HALF_THRESHOLD)
-      element.dispatchEvent(new CustomEvent('halfVisible',),);
+      if (ratio >= HALF_THRESHOLD && lastRatio < HALF_THRESHOLD)
+        element.dispatchEvent(new CustomEvent('halfVisible',),);
 
-    lastRatio = ratio;
-  },
+      lastRatio = ratio;
+    },
     config,
   );
 
@@ -105,37 +105,37 @@ elements.forEach(function bindScrollIgnore(element,) {
   element.addEventListener(
     'scrolledOut',
     function onScrolledOut() {
-    void (async function onScrolledOutAsync() {
-      try {
-        console.error('scrolledOut',);
-        const metadata = notNullishOrThrow(
-          element.querySelector<HTMLElement>('.feed__metadata',),
-        );
-        const anchor: HTMLAnchorElement = notNullishOrThrow(
-          metadata.querySelector<HTMLAnchorElement>('.feed__link',),
-        );
+      void (async function onScrolledOutAsync() {
+        try {
+          console.error('scrolledOut',);
+          const metadata = notNullishOrThrow(
+            element.querySelector<HTMLElement>('.feed__metadata',),
+          );
+          const anchor: HTMLAnchorElement = notNullishOrThrow(
+            metadata.querySelector<HTMLAnchorElement>('.feed__link',),
+          );
 
-        const body: Record<string, string> = z.url().safeParse(anchor.href,).success
-          ? { link: anchor.href, }
-          : { metadataOuterHtml: metadata.outerHTML, };
+          const body: Record<string, string> = z.url().safeParse(anchor.href,).success
+            ? { link: anchor.href, }
+            : { metadataOuterHtml: metadata.outerHTML, };
 
-        const response = await fetch(`/api/ignore/new`, {
-          method: 'POST',
-          body: JSON.stringify(body,),
-        },);
-        if (!response.ok) {
-          console.error(`ignore request failed`, response,);
-          return;
+          const response = await fetch(`/api/ignore/new`, {
+            method: 'POST',
+            body: JSON.stringify(body,),
+          },);
+          if (!response.ok) {
+            console.error(`ignore request failed`, response,);
+            return;
+          }
+          const text = await response.text();
+          console.error(`ignored: ${text}`,);
+          element.dataset.ignored = '';
         }
-        const text = await response.text();
-        console.error(`ignored: ${text}`,);
-        element.dataset.ignored = '';
-      }
-      catch (error: unknown) {
-        console.error(`scrolledOut handler failed`, error,);
-      }
-    })();
-  },
+        catch (error: unknown) {
+          console.error(`scrolledOut handler failed`, error,);
+        }
+      })();
+    },
   );
 },);
 

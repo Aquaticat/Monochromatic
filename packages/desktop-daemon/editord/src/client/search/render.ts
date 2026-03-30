@@ -113,7 +113,7 @@ export function highlightMatches(
     container,
   }: {
     query: string;
-    container: HTMLDivElement
+    container: HTMLDivElement;
   },
 ): void {
   if (query === '') {
@@ -161,11 +161,13 @@ export function highlightMatches(
     node = walker.nextNode();
   }
 
-  if (ranges.length > 0)
+  if (ranges.length > 0) {
     CSS.highlights.set(
       'hl-search-match',
       new Highlight(...ranges,),
     );
-  else
+  }
+  else {
     CSS.highlights.delete('hl-search-match',);
+  }
 }

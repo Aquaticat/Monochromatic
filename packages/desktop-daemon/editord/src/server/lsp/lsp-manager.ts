@@ -44,6 +44,7 @@ import type {
   LspSelectionRange,
   LspTextEdit,
 } from './types.ts';
+import { pathToUri, } from './uri.ts';
 
 export type {
   DiagnosticsHandler,
@@ -144,6 +145,19 @@ export function createLspManager({
     },
   },);
 
+  /**
+   * Checks whether a file is tracked by the document sync layer.
+   * Files that were too large at open time are never registered,
+   * so all feature requests for them should return empty fallbacks.
+   *
+   * @param path - absolute file path
+   *
+   * @returns true when the file has an active LSP document session
+   */
+  function hasDocument({ path, }: { path: string; },): boolean {
+    return documents.has(pathToUri({ path, },),);
+  }
+
   return {
     didOpen(opts,) {
       return managerDidOpen({
@@ -175,42 +189,56 @@ export function createLspManager({
       },);
     },
     hover(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve(null,);
       return managerHover({
         pool,
         ...opts,
       },);
     },
     completion(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve([],);
       return managerCompletion({
         pool,
         ...opts,
       },);
     },
     format(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve([],);
       return managerFormat({
         pool,
         ...opts,
       },);
     },
     gotoDefinition(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve(null,);
       return managerGotoDefinition({
         pool,
         ...opts,
       },);
     },
     references(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve([],);
       return managerReferences({
         pool,
         ...opts,
       },);
     },
     inlayHints(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve([],);
       return managerInlayHints({
         pool,
         ...opts,
       },);
     },
     selectionRange(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve([],);
       return managerSelectionRange({
         pool,
         ...opts,

@@ -32,13 +32,13 @@ export function resetStyles(): string {
     $({
       rule: 'body',
       decls: {
-      'margin-block': 0,
-      'margin-inline': 0,
-      'font-family': cssCommaList(['Inter', 'system-ui', 'sans-serif',],),
-      'line-height': LINE_HEIGHT,
-      color: cssVar('color-fg',),
-      'background-color': cssVar('color-bg',),
-    },
+        'margin-block': 0,
+        'margin-inline': 0,
+        'font-family': cssCommaList(['Inter', 'system-ui', 'sans-serif',],),
+        'line-height': LINE_HEIGHT,
+        color: cssVar('color-fg',),
+        'background-color': cssVar('color-bg',),
+      },
     },),
   ]
     .join('\n',);
@@ -53,11 +53,11 @@ export function layoutStyles(): string {
   return $({
     rule: '.between_header_footer',
     decls: {
-    'max-inline-size': cssRem(MAX_WIDTH,),
-    'margin-inline': 'auto',
-    'padding-inline': cssRem(GAP,),
-    'padding-block': cssRem(GAP,),
-  },
+      'max-inline-size': cssRem(MAX_WIDTH,),
+      'margin-inline': 'auto',
+      'padding-inline': cssRem(GAP,),
+      'padding-block': cssRem(GAP,),
+    },
   },);
 }
 
@@ -83,12 +83,12 @@ export function typographyStyles(): string {
     $({
       rule: 'pre',
       decls: {
-      'padding-block': cssRem(GAP,),
-      'padding-inline': cssRem(GAP,),
-      'overflow-x': 'auto',
-      'border-radius': cssRem(GAP_SMALL,),
-      'background-color': cssVar('color-code-bg',),
-    },
+        'padding-block': cssRem(GAP,),
+        'padding-inline': cssRem(GAP,),
+        'overflow-x': 'auto',
+        'border-radius': cssRem(GAP_SMALL,),
+        'background-color': cssVar('color-code-bg',),
+      },
     },),
   ]
     .join('\n',);

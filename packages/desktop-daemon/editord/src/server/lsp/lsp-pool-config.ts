@@ -123,7 +123,7 @@ export async function spawnLspClient({
   onNotification: (event: {
     source: string;
     method: string;
-    params: unknown
+    params: unknown;
   },) => void;
 },): Promise<LspClient | null> {
   const def = COMMANDS[type];
@@ -150,7 +150,7 @@ export async function spawnLspClient({
           params,
         }: {
           method: string;
-          params: unknown
+          params: unknown;
         },
       ): void {
         onNotification({

@@ -47,8 +47,9 @@ function findWithClauseStart(
   ) || code.startsWith(
     'assert',
     pos,
-  ))
+  )) {
     return saved;
+  }
   return -1;
 }
 

@@ -59,11 +59,12 @@ export function createTsdocVisitor(
       node,
       context,
     );
-    if (comment !== undefined)
+    if (comment !== undefined) {
       handler(
         node,
         comment,
       );
+    }
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys

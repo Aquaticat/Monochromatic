@@ -27,12 +27,13 @@ export function renderItems({ items, }: { items: CompletionItem[]; },): HTMLDivE
       class: 'item',
     },);
     el.textContent = item.label;
-    if (item.detail !== '')
+    if (item.detail !== '') {
       el.append(h({
         tag: 'span',
         class: 'detail',
         text: item.detail,
       },),);
+    }
     if (index === 0)
       el.dataset.selected = '';
     return el;
@@ -52,7 +53,7 @@ export function updateSelection(
     selectedIndex,
   }: {
     list: HTMLElement;
-    selectedIndex: number
+    selectedIndex: number;
   },
 ): void {
   const { children, } = list;

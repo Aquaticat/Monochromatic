@@ -37,10 +37,10 @@ export async function shell({ name, }: { name: string; },): Promise<void> {
       'virsh',
       ['--connect', LIBVIRT_URI, 'console', fullName,],
       {
-      stderr: 'inherit',
-      stdin: 'inherit',
-      stdout: 'inherit',
-    },
+        stderr: 'inherit',
+        stdin: 'inherit',
+        stdout: 'inherit',
+      },
     );
   }
   catch (error: unknown) {

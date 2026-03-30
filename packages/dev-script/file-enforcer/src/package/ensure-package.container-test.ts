@@ -9,11 +9,18 @@
  * Package shapes tested:
  * - String shorthand (`p('tree')`) -- binary = effname = package name
  * - Bin differs from effname (`p({ bin: 'rg', effname: 'ripgrep' })`)
- * - Per-manager overrides (`p({ bin: 'magick', effname: 'imagemagick', dnf: 'ImageMagick' })`)
+ * - Per-manager overrides via yes tuples (`yes: [['dnf', 'ImageMagick']]`)
  */
 
-import { registerPackages, ensurePackage, } from './ensure-package.ts';
-import { binaryExists, detectManager, resetManagerCache, } from './manager.ts';
+import {
+  ensurePackage,
+  registerPackages,
+} from './ensure-package.ts';
+import {
+  binaryExists,
+  detectManager,
+  resetManagerCache,
+} from './manager.ts';
 import { p, } from './p.ts';
 
 //region Test packages
@@ -27,9 +34,16 @@ const TEST_PACKAGES = [
   p('tree',),
   p('jq',),
   /** Shape: bin differs from effname */
-  p({ bin: 'rg', effname: 'ripgrep', },),
-  /** Shape: per-manager override where name varies */
-  p({ bin: 'convert', effname: 'imagemagick', dnf: 'ImageMagick', },),
+  p({
+    bin: 'rg',
+    effname: 'ripgrep',
+  },),
+  /** Shape: per-manager override where name varies (via yes tuples) */
+  p({
+    bin: 'convert',
+    effname: 'imagemagick',
+    yes: ['apt', ['dnf', 'ImageMagick',],],
+  },),
   /** Shape: effname only (bin defaults to effname) */
   p({ effname: 'strace', },),
 ] as const;
@@ -48,7 +62,10 @@ const TEST_PACKAGES = [
  *
  * @returns Whether the test passed
  */
-async function testEnsure(binary: string, label: string,): Promise<boolean> {
+async function testEnsure(
+  binary: string,
+  label: string,
+): Promise<boolean> {
   const before = await binaryExists(binary,);
   if (before) {
     console.log(`[container-test] ${label}: SKIP (already installed)`,);
@@ -84,6 +101,10 @@ async function testEnsure(binary: string, label: string,): Promise<boolean> {
   return true;
 }
 
+/**
+ * Runs the full container test suite: registers test packages,
+ * detects the manager, exercises each package shape, and reports results.
+ */
 async function run(): Promise<void> {
   resetManagerCache();
   registerPackages([...TEST_PACKAGES,],);
@@ -92,20 +113,33 @@ async function run(): Promise<void> {
   console.log(`[container-test] detected manager: ${manager}`,);
   console.log(`[container-test] uid: ${process.getuid?.() ?? 'unavailable'}`,);
 
-  const results: boolean[] = [];
-
   /** Shape: string shorthand */
-  results.push(await testEnsure('tree', 'tree (string shorthand)',),);
-  results.push(await testEnsure('jq', 'jq (string shorthand)',),);
+  const treeResult = await testEnsure(
+    'tree',
+    'tree (string shorthand)',
+  );
+  const jqResult = await testEnsure(
+    'jq',
+    'jq (string shorthand)',
+  );
 
   /** Shape: bin differs from effname */
-  results.push(await testEnsure('rg', 'rg (bin != effname)',),);
+  const rgResult = await testEnsure(
+    'rg',
+    'rg (bin != effname)',
+  );
 
   /** Shape: per-manager override */
-  results.push(await testEnsure('convert', 'convert (manager override)',),);
+  const convertResult = await testEnsure(
+    'convert',
+    'convert (manager override)',
+  );
 
   /** Shape: effname only */
-  results.push(await testEnsure('strace', 'strace (effname only)',),);
+  const straceResult = await testEnsure(
+    'strace',
+    'strace (effname only)',
+  );
 
   /** Unknown binary must throw */
   let unknownThrew = false;
@@ -116,16 +150,22 @@ async function run(): Promise<void> {
     unknownThrew = true;
   }
   console.log(`[container-test] unknown binary threw: ${unknownThrew}`,);
-  results.push(unknownThrew,);
 
   /** Summary */
+  const results = [
+    treeResult,
+    jqResult,
+    rgResult,
+    convertResult,
+    straceResult,
+    unknownThrew,
+  ];
   const passed = results.filter(Boolean,).length;
   const total = results.length;
   console.log(`\n[container-test] ${passed}/${total} passed`,);
 
-  if (passed < total) {
+  if (passed < total)
     throw new Error(`${total - passed} test(s) failed`,);
-  }
   console.log('[container-test] ALL PASSED',);
 }
 

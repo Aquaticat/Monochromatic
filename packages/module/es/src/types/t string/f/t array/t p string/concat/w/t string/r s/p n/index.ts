@@ -13,7 +13,7 @@ export function $(
     concatWith,
   }: {
     strings: string[];
-    concatWith: string
+    concatWith: string;
   },
 ): string {
   return strings.join(concatWith,);

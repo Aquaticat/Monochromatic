@@ -21,24 +21,24 @@ export type ClientMessage =
   | {
     type: 'open';
     id: string;
-    path: string
+    path: string;
   }
   | {
     type: 'save';
     id: string;
     path: string;
-    content: string
+    content: string;
   }
   | {
     type: 'listDir';
     id: string;
-    path: string
+    path: string;
   }
   | {
     type: 'search';
     id: string;
     query: string;
-    scope: string
+    scope: string;
   }
   | ({
     type: 'hover';
@@ -51,7 +51,7 @@ export type ClientMessage =
   | {
     type: 'format';
     id: string;
-    path: string
+    path: string;
   }
   | ({
     type: 'gotoDefinition';
@@ -65,60 +65,60 @@ export type ClientMessage =
     type: 'inlayHint';
     id: string;
     path: string;
-    range: Range
+    range: Range;
   }
   | {
     type: 'selectionRange';
     id: string;
     path: string;
-    positions: Position[]
+    positions: Position[];
   }
   | {
     type: 'deleteEntry';
     id: string;
-    path: string
+    path: string;
   }
   | {
     type: 'copyEntry';
     id: string;
     path: string;
-    destPath: string
+    destPath: string;
   }
   | {
     type: 'moveEntry';
     id: string;
     path: string;
-    destPath: string
+    destPath: string;
   }
   | {
     type: 'newEntry';
     id: string;
     parentPath: string;
     name: string;
-    isDirectory: boolean
+    isDirectory: boolean;
   }
   | {
     type: 'openInTerminal';
     id: string;
-    path: string
+    path: string;
   }
   | {
     type: 'openInDefaultApp';
     id: string;
-    path: string
+    path: string;
   }
   | {
     type: 'didChange';
     path: string;
-    content: string
+    content: string;
   }
   | {
     type: 'didClose';
-    path: string
+    path: string;
   }
   | {
     type: 'watchDir';
-    path: string
+    path: string;
   };
 
 /**

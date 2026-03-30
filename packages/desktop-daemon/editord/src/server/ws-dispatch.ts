@@ -5,6 +5,7 @@
  * sub-dispatcher for core, LSP, or filesystem operations.
  */
 
+import { FILE_SIZE_WARNING_THRESHOLD, } from '../constants.ts';
 import type { ClientMessage, } from '../protocol.ts';
 import {
   l as rootLogger,
@@ -97,11 +98,17 @@ export async function dispatchMessage(
           ...result,
         },
       },);
-      if (lspManager !== null && result.kind === 'text')
-        await lspManager.didOpen({
-          path: parsed.path,
-          text: result.content,
-        },);
+      if (lspManager !== null && result.kind === 'text') {
+        if (result.size !== undefined && result.size > FILE_SIZE_WARNING_THRESHOLD) {
+          l.info(`skipping LSP for large file (${result.size} bytes): ${parsed.path}`,);
+        }
+        else {
+          await lspManager.didOpen({
+            path: parsed.path,
+            text: result.content,
+          },);
+        }
+      }
       return;
     }
     if (parsed.type === 'save') {
@@ -176,26 +183,28 @@ export async function dispatchMessage(
       rootDir,
       lspManager,
       dirWatcher,
-    },))
+    },)) {
       return;
+    }
     if (await dispatchFsMessage({
       peer,
       parsed,
       rootDir,
       lspManager,
-    },))
+    },)) {
       return;
+    }
 
     l.error(`unknown message type: ${(parsed as { type: string; }).type}`,);
     sendJson({
       peer,
       message: {
-      type: 'error',
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
-      id: (parsed as { id?: string; }).id,
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
-      message: `unknown message type: ${(parsed as { type: string; }).type}`,
-    },
+        type: 'error',
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
+        id: (parsed as { id?: string; }).id,
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
+        message: `unknown message type: ${(parsed as { type: string; }).type}`,
+      },
     },);
   }
   catch (error) {

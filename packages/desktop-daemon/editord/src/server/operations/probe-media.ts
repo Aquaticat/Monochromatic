@@ -49,7 +49,7 @@ function extractMetadata(
     path,
   }: {
     stderr: string;
-    path: string
+    path: string;
   },
 ): string | null {
   if (stderr === '') {

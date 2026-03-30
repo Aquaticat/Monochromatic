@@ -191,14 +191,12 @@ export async function ensureWinFsp(): Promise<string> {
     { redirect: 'manual', },
   );
   const location = redirectResponse.headers.get('location',);
-  if (location === null) {
+  if (location === null)
     throw new Error('failed to resolve latest WinFsp release',);
-  }
   /** Version tag from the redirect URL (e.g. "v2.1"). */
   const version = location.split('/tag/',)[1];
-  if (version === undefined) {
+  if (version === undefined)
     throw new Error(`unexpected redirect URL: ${location}`,);
-  }
 
   /** Fetch release metadata to find the actual MSI asset name (includes build number). */
   const releaseResponse = await fetch(
@@ -206,16 +204,19 @@ export async function ensureWinFsp(): Promise<string> {
     { headers: { Accept: 'application/vnd.github+json', }, },
   );
   if (!releaseResponse.ok) {
-    throw new Error(`failed to fetch WinFsp release metadata: ${releaseResponse.status}`,);
+    throw new Error(
+      `failed to fetch WinFsp release metadata: ${releaseResponse.status}`,
+    );
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- GitHub API response
-  const release = await releaseResponse.json() as { assets: { name: string; browser_download_url: string; }[]; };
+  const release = await releaseResponse.json() as {
+    assets: { name: string; browser_download_url: string; }[];
+  };
   const msiAsset = release.assets.find(function findMsi(a,) {
     return a.name.endsWith('.msi',) && !a.name.includes('tests',);
   },);
-  if (msiAsset === undefined) {
+  if (msiAsset === undefined)
     throw new Error(`no MSI asset found in WinFsp release ${version}`,);
-  }
 
   rl.info(`downloading ${msiAsset.browser_download_url}`,);
 
@@ -279,17 +280,16 @@ export async function ensureMiseWindows(): Promise<string> {
     { redirect: 'manual', },
   );
   const location = redirectResponse.headers.get('location',);
-  if (location === null) {
+  if (location === null)
     throw new Error('failed to resolve latest mise release',);
-  }
   /** Version tag from the redirect URL (e.g. "v2026.3.17"). */
   const version = location.split('/tag/',)[1];
-  if (version === undefined) {
+  if (version === undefined)
     throw new Error(`unexpected redirect URL: ${location}`,);
-  }
 
   /** Download URL for the Windows x64 zip. */
-  const zipUrl = `https://github.com/jdx/mise/releases/download/${version}/mise-${version}-windows-x64.zip`;
+  const zipUrl =
+    `https://github.com/jdx/mise/releases/download/${version}/mise-${version}-windows-x64.zip`;
   rl.info(`downloading ${zipUrl}`,);
 
   const zipResponse = await fetch(zipUrl,);

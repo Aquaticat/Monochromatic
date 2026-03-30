@@ -28,7 +28,7 @@ export function deleteLineAt({
   character: number;
 },): {
   line: number;
-  character: number
+  character: number;
 } {
   const { children, } = editor;
   if (children.length <= 1) {
@@ -43,11 +43,12 @@ export function deleteLineAt({
   }
 
   const lineDiv = children[line];
-  if (lineDiv === undefined)
+  if (lineDiv === undefined) {
     return {
       line,
       character,
     };
+  }
   lineDiv.remove();
 
   /** Place cursor on the line that now occupies the deleted index, or the new last line. */
@@ -82,7 +83,7 @@ export function duplicateLineAt({
   character: number;
 },): {
   line: number;
-  character: number
+  character: number;
 } | null {
   const lineDiv = editor.children[line];
   if (lineDiv === undefined)
@@ -116,7 +117,7 @@ export function swapLineDown({
   character: number;
 },): {
   line: number;
-  character: number
+  character: number;
 } | null {
   const { children, } = editor;
   if (line >= children.length - 1)
@@ -155,7 +156,7 @@ export function swapLineUp({
   character: number;
 },): {
   line: number;
-  character: number
+  character: number;
 } | null {
   if (line <= 0)
     return null;

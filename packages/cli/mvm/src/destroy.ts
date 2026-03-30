@@ -36,7 +36,7 @@ async function destroyOne(
     rl,
   }: {
     name: string;
-    rl: { debug: (msg: string,) => void; info: (msg: string,) => void; }
+    rl: { debug: (msg: string,) => void; info: (msg: string,) => void; };
   },
 ): Promise<void> {
   rl.info(`destroying VM ${name}`,);

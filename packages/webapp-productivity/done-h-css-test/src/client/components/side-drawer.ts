@@ -51,13 +51,15 @@ class SideDrawer extends HTMLElement {
    * @param value - Whether the drawer should be open
    */
   set open(value: boolean,) {
-    if (value)
+    if (value) {
       this.setAttribute(
         'open',
         '',
       );
-    else
+    }
+    else {
       this.removeAttribute('open',);
+    }
   }
 
   /** Closes the drawer by removing the open attribute. */
@@ -83,9 +85,9 @@ class SideDrawer extends HTMLElement {
     panel?.addEventListener(
       'click',
       function handleBackdropClick(event: Event,): void {
-      if (event.target === panel)
-        closeFn();
-    },
+        if (event.target === panel)
+          closeFn();
+      },
     );
   }
 

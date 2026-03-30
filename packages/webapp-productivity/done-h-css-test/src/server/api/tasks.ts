@@ -64,18 +64,20 @@ function jsonResponse(
 export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
     const body: unknown = await req.json();
-    if (!isRecord(body,))
+    if (!isRecord(body,)) {
       return jsonResponse(
         { error: 'Invalid request body', },
         HTTP_BAD_REQUEST,
       );
+    }
 
     const title = typeof body.title === 'string' ? body.title.trim() : '';
-    if (title.length === 0)
+    if (title.length === 0) {
       return jsonResponse(
         { error: 'Task title is required', },
         HTTP_BAD_REQUEST,
       );
+    }
 
     const priorities = getPriorities();
     const task = await createTask({
@@ -121,21 +123,23 @@ export async function handleUpdateTask(
   try {
     const body: unknown = await req.json();
     const taskUpdateInput = parseTaskUpdateInput(body,);
-    if (taskUpdateInput === null)
+    if (taskUpdateInput === null) {
       return jsonResponse(
         { error: 'Invalid update payload', },
         HTTP_BAD_REQUEST,
       );
+    }
 
     const task = await updateTask(
       id,
       taskUpdateInput,
     );
-    if (task === null)
+    if (task === null) {
       return jsonResponse(
         { error: 'Task not found', },
         HTTP_NOT_FOUND,
       );
+    }
 
     return jsonResponse(task,);
   }
@@ -156,11 +160,12 @@ export async function handleUpdateTask(
  */
 export async function handleDeleteTask(id: string,): Promise<Response> {
   const deleted = await deleteTask(id,);
-  if (!deleted)
+  if (!deleted) {
     return jsonResponse(
       { error: 'Task not found', },
       HTTP_NOT_FOUND,
     );
+  }
 
   return jsonResponse({ ok: true, },);
 }

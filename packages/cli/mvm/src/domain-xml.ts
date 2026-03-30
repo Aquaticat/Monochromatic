@@ -97,29 +97,29 @@ export function domainXml(
     seedIsoPath,
     sharedDir,
   }: {
-      /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
-      bootDev?: 'cdrom' | 'hd';
-      /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
-      cdroms?: readonly CdromSpec[];
-      /**
-       * Bus type for the primary disk.
-       * Use `virtio` for production VMs (best performance).
-       * Use `sata` during Windows template creation to avoid the Server 2025
-       * SAN policy (policy 4: offline shared bus) which makes VirtIO disks
-       * appear offline in WinPE, blocking unattended installation.
-       */
-      diskBus?: 'sata' | 'virtio';
-      /** Absolute path to the VM disk image. */
-      diskPath: string;
-      /** VM name without the mvm- prefix. */
-      name: string;
-      /** Guest OS family for platform-specific optimizations. */
-      osFamily?: OsFamily;
-      /** Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows). */
-      seedIsoPath?: string | undefined;
-      /** Absolute path to a host directory shared via virtiofs. */
-      sharedDir?: string | undefined;
-    },
+    /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
+    bootDev?: 'cdrom' | 'hd';
+    /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
+    cdroms?: readonly CdromSpec[];
+    /**
+     * Bus type for the primary disk.
+     * Use `virtio` for production VMs (best performance).
+     * Use `sata` during Windows template creation to avoid the Server 2025
+     * SAN policy (policy 4: offline shared bus) which makes VirtIO disks
+     * appear offline in WinPE, blocking unattended installation.
+     */
+    diskBus?: 'sata' | 'virtio';
+    /** Absolute path to the VM disk image. */
+    diskPath: string;
+    /** VM name without the mvm- prefix. */
+    name: string;
+    /** Guest OS family for platform-specific optimizations. */
+    osFamily?: OsFamily;
+    /** Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows). */
+    seedIsoPath?: string | undefined;
+    /** Absolute path to a host directory shared via virtiofs. */
+    sharedDir?: string | undefined;
+  },
 ): string {
   const features = [h({ tag: 'acpi', },),];
   if (osFamily === 'windows')

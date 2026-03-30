@@ -12,7 +12,7 @@ export function $(
     endExclusive,
   }: {
     startExclusive: number;
-    endExclusive: number
+    endExclusive: number;
   },
 ): Int[] {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing floor+1 to branded Int
@@ -25,7 +25,7 @@ export function $(
     : Array.from(
       { length: end - start + 1, },
       function offset(_, index,) {
-      return start + index;
-    },
+        return start + index;
+      },
     )) as Int[];
 }

@@ -42,7 +42,7 @@ export function extractParamsText(
     node,
   }: {
     fullText: string;
-    node: ArrowParamsNode
+    node: ArrowParamsNode;
   },
 ): string {
   /** Skip `async ` prefix if present. */
@@ -102,11 +102,12 @@ export function extractParamsText(
       depth++;
     else if (ch === ')') {
       depth--;
-      if (depth === 0)
+      if (depth === 0) {
         return rest.slice(
           0,
           i + 1,
         );
+      }
     }
   }
 

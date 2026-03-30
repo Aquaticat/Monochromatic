@@ -52,7 +52,10 @@ export type Command = readonly string[] | PlatformCommands;
  * [['brew', '--version'], ['brew', 'install', 'git']]
  * ```
  */
-export type PlatformEntry = readonly [predicate: Predicate, cmd: Command];
+export type PlatformEntry = readonly [
+  predicate: Predicate,
+  cmd: Command,
+];
 
 /**
  * Ordered list of platform entries.
@@ -84,7 +87,10 @@ export type PlatformCommands = readonly PlatformEntry[];
 export async function evaluatePredicate(predicate: Predicate,): Promise<boolean> {
   try {
     const [cmd = '', ...args] = predicate;
-    await spawn(cmd, args,);
+    await spawn(
+      cmd,
+      args,
+    );
     return true;
   }
   catch {

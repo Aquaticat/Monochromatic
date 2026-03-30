@@ -101,13 +101,15 @@ export function scrollLineIntoView({
   editor: HTMLDivElement;
   line: number;
 },): void {
-  const child = editor.children[Math.max(
-    0,
-    Math.min(
-      line - 1,
-      editor.children.length - 1,
-    ),
-  )];
+  const child = editor.children[
+    Math.max(
+      0,
+      Math.min(
+        line - 1,
+        editor.children.length - 1,
+      ),
+    )
+  ];
   if (child !== undefined)
     child.scrollIntoView({ block: 'center', },);
 }

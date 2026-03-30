@@ -73,7 +73,7 @@ export async function doGotoDefinition(
       const def = response as {
         path: string;
         line: number;
-        character: number
+        character: number;
       };
       if (def.path !== '') {
         if (def.path === path && def.line === line)
@@ -82,7 +82,7 @@ export async function doGotoDefinition(
           path: def.path,
           line: def.line + 1,
           character: def
-          .character,
+            .character,
         },);
         return 'navigated';
       }

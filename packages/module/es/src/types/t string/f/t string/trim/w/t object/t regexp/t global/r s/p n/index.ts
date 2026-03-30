@@ -68,7 +68,7 @@ export function $(
     trimmer,
   }: {
     str: string;
-    trimmer: Global
+    trimmer: Global;
   },
 ): string {
   // First trim from the start

@@ -130,26 +130,30 @@ export function createMcpServer(
       method,
     } = request;
 
-    if (method === 'initialize')
+    if (method === 'initialize') {
       return Promise.resolve(respondSuccess(
         id,
         buildInitializeResult(),
       ),);
-    if (method === 'ping')
+    }
+    if (method === 'ping') {
       return Promise.resolve(respondSuccess(
         id,
         {},
       ),);
-    if (method === 'tools/list')
+    }
+    if (method === 'tools/list') {
       return Promise.resolve(respondSuccess(
         id,
         buildToolsList(),
       ),);
-    if (method === 'tools/call')
+    }
+    if (method === 'tools/call') {
       return handleToolCall(
         toolMap,
         request,
       );
+    }
     return Promise.resolve(
       respondError(
         id,

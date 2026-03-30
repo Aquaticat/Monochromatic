@@ -1,0 +1,334 @@
+/**
+ * Generates `data/packages.generated.ts` from Repology data.
+ *
+ * Uses a podman container running repology-updater to fetch package metadata
+ * for our target repos, then extracts per-manager package names via SQL.
+ * Filters out packages installable via mise (registry + backends).
+ *
+ * First run builds the container image and initializes the database (~15 min).
+ * Subsequent runs are incremental -- only changed repo data is re-fetched.
+ *
+ * @example
+ * ```bash
+ * bun packages/dev-script/file-enforcer/src/package/mise.generate-index.ts
+ * ```
+ */
+
+import spawn from 'nano-spawn';
+import { writeFileSync, } from 'node:fs';
+import { resolve, } from 'node:path';
+
+/** Container image name for the repology-updater environment. */
+const IMAGE_NAME = 'repology-updater';
+
+/** Podman volume names for persistent state across incremental runs. */
+const STATE_VOLUME = 'repology-state';
+const PARSED_VOLUME = 'repology-parsed';
+const PG_VOLUME = 'repology-pgdata';
+
+/** Package directory containing the generator/ subdirectory. */
+const PKG_DIR = resolve(import.meta.dirname, '..', '..',);
+
+/** Output path for the generated TypeScript file. */
+const OUTPUT_PATH = resolve(PKG_DIR, 'data', 'packages.generated.ts',);
+
+/** Generator context directory containing Containerfile, SQL, config. */
+const GENERATOR_DIR = resolve(PKG_DIR, 'generator',);
+
+/**
+ * Managers we support, keyed by the name used in our `PackageManager` type.
+ * Values are not used here but kept for documentation.
+ */
+const SUPPORTED_MANAGERS = new Set([
+  'apt',
+  'dnf',
+  'pacman',
+  'apk',
+  'zypper',
+  'brew',
+  'choco',
+  'scoop',
+],);
+
+//region Container operations
+
+/**
+ * Builds the container image, passing the GitHub token as a build secret
+ * for authenticated git clones. Falls back to unauthenticated clones
+ * when no token is available.
+ */
+async function ensureImage(): Promise<void> {
+  console.log('[generate-index] building container image...',);
+  const token = process.env['MISE_GITHUB_TOKEN'] ?? process.env['GITHUB_TOKEN'] ?? '';
+  const secretArgs = token !== ''
+    ? ['--secret', `id=github_token,env=GITHUB_TOKEN`,]
+    : [];
+  const env = token !== ''
+    ? { ...process.env, GITHUB_TOKEN: token, }
+    : process.env;
+  await spawn(
+    'podman',
+    [
+      'build',
+      ...secretArgs,
+      '-t', IMAGE_NAME,
+      '-f', resolve(GENERATOR_DIR, 'Containerfile',),
+      GENERATOR_DIR,
+    ],
+    { env, },
+  );
+  console.log('[generate-index] image ready',);
+}
+
+/**
+ * Ensures the named podman volumes exist for persistent state.
+ */
+async function ensureVolumes(): Promise<void> {
+  for (const vol of [STATE_VOLUME, PARSED_VOLUME, PG_VOLUME,]) {
+    try {
+      await spawn('podman', ['volume', 'inspect', vol,],);
+    } catch {
+      console.log(`[generate-index] creating volume: ${vol}`,);
+      await spawn('podman', ['volume', 'create', vol,],);
+    }
+  }
+}
+
+/**
+ * Runs the repology-updater container with the given arguments.
+ * Mounts persistent volumes for incremental update support.
+ *
+ * @param args - Arguments to pass to the entrypoint
+ *
+ * @returns Captured stdout
+ */
+async function runContainer(args: readonly string[],): Promise<string> {
+  const result = await spawn(
+    'podman',
+    [
+      'run', '--rm',
+      '-v', `${STATE_VOLUME}:/state:Z`,
+      '-v', `${PARSED_VOLUME}:/parsed:Z`,
+      '-v', `${PG_VOLUME}:/var/lib/pgsql/data:Z`,
+      IMAGE_NAME,
+      ...args,
+    ],
+  );
+  if (result.stderr !== '')
+    console.error(result.stderr,);
+  return result.stdout;
+}
+
+//endregion Container operations
+
+//region Mise registry
+
+/**
+ * Loads the mise tool registry and returns a set of tool names.
+ * Includes tools from all backends (aqua, cargo, npm, github, etc.)
+ * since any tool in the registry can be installed via mise instead
+ * of a system package manager.
+ *
+ * @returns Set of mise-installable tool names (lowercase)
+ */
+async function loadMiseRegistry(): Promise<ReadonlySet<string>> {
+  const result = await spawn('mise', ['registry',],);
+  const names = new Set<string>();
+  for (const line of result.stdout.split('\n',)) {
+    const name = line.split(/\s+/,)[0];
+    if (name)
+      names.add(name.toLowerCase(),);
+  }
+  console.log(`[generate-index] loaded ${names.size} mise registry entries`,);
+  return names;
+}
+
+/**
+ * Repology effname prefixes for language-ecosystem packages whose
+ * upstream registries are also available as mise backends.
+ * Only includes ecosystems where mise has a native backend:
+ *
+ * - `cargo:` -- Rust crates (Repology `rust:`)
+ * - `pipx:` -- Python packages (Repology `python:`)
+ * - `npm:` -- Node packages (Repology `node:`)
+ * - `go:` -- Go modules (Repology `go:`)
+ * - `gem:` -- Ruby gems (Repology `ruby:`)
+ *
+ * Ecosystems without mise backends (perl, haskell, erlang, ocaml,
+ * lua, php, r, java, gap, texlive) are NOT filtered -- those
+ * packages genuinely need OS package managers.
+ *
+ * @example
+ * ```
+ * rust:ripgrep   -> cargo:ripgrep     (mise)
+ * python:black   -> pipx:black        (mise)
+ * node:prettier  -> npm:prettier      (mise)
+ * ```
+ */
+const MISE_BACKEND_PREFIXES = [
+  'go:',
+  'node:',
+  'python:',
+  'ruby:',
+  'rust:',
+] as const;
+
+/**
+ * Checks whether a Repology effname belongs to a language ecosystem
+ * that mise can install via its native backends (cargo, pipx, npm, go, gem).
+ *
+ * @param effname - Repology canonical project name
+ *
+ * @returns `true` if the package is installable via a mise backend
+ */
+function isMiseBackendPackage(effname: string,): boolean {
+  return MISE_BACKEND_PREFIXES.some(
+    function hasPrefix(prefix,): boolean {
+      return effname.startsWith(prefix,);
+    },
+  );
+}
+
+//endregion Mise registry
+
+//region Code generation
+
+/**
+ * Single project entry extracted from Repology.
+ */
+type RepologyProject = {
+  readonly effname: string;
+  readonly repos: Readonly<Record<string, string>>;
+};
+
+/**
+ * Generates the TypeScript source for `packages.generated.ts`
+ * from filtered Repology project data.
+ *
+ * @param projects - Filtered project entries
+ *
+ * @returns TypeScript source code
+ */
+function generateTypeScript(projects: readonly RepologyProject[],): string {
+  const today = new Date().toISOString().split('T',)[0];
+  const lines: string[] = [
+    '/**',
+    ' * Auto-generated from Repology package metadata.',
+    ' * Do not edit manually -- run the index generator to rebuild.',
+    ' *',
+    ` * Generated: ${today}`,
+    ` * Entries: ${projects.length}`,
+    ' */',
+    '',
+    "import { p, } from '../src/package/p.ts';",
+    '',
+    '/** Auto-generated package entries from Repology, keyed by effname. */',
+    'export const generated = [',
+  ];
+
+  for (const project of projects) {
+    const entry = buildPCall(project,);
+    lines.push(`  ${entry},`,);
+  }
+
+  lines.push('] as const;',);
+  lines.push('',);
+  return lines.join('\n',);
+}
+
+/**
+ * Builds a `p()` call string for a single project.
+ * Uses string shorthand when the package name matches effname in all available repos.
+ * Otherwise uses the object form with `yes` array.
+ *
+ * @param project - Repology project with per-manager package names
+ *
+ * @returns TypeScript expression string like `p('curl')` or `p({ effname: '...', yes: [...] })`
+ */
+function buildPCall(project: RepologyProject,): string {
+  const managers = Object.entries(project.repos,)
+    .filter(function isSupported([manager,],): boolean {
+      return SUPPORTED_MANAGERS.has(manager,);
+    },);
+
+  /** Check if all managers use the effname as package name */
+  const allSameName = managers.every(
+    function matchesEffname([, pkgname,],): boolean {
+      return pkgname === project.effname;
+    },
+  );
+
+  /** Check if available in ALL supported managers with same name */
+  if (allSameName && managers.length === SUPPORTED_MANAGERS.size)
+    return `p('${escapeString(project.effname,)}',)`;
+
+  /** Build yes array entries */
+  const yesEntries = managers.map(
+    function formatEntry([manager, pkgname,],): string {
+      if (pkgname === project.effname)
+        return `'${manager}'`;
+      return `['${manager}', '${escapeString(pkgname,)}',]`;
+    },
+  );
+
+  return `p({ effname: '${escapeString(project.effname,)}', yes: [${yesEntries.join(', ',)},], },)`;
+}
+
+/**
+ * Escapes single quotes in a string for safe inclusion in a TypeScript string literal.
+ *
+ * @param value - Raw string value
+ *
+ * @returns Escaped string safe for single-quoted TypeScript literals
+ */
+function escapeString(value: string,): string {
+  return value.replace(/\\/g, '\\\\',).replace(/'/g, "\\'",);
+}
+
+//endregion Code generation
+
+//region Main
+
+console.log('[generate-index] starting package index generation',);
+
+/** Step 1: Load mise registry for filtering */
+const miseTools = await loadMiseRegistry();
+
+/** Step 2: Build container and ensure volumes */
+await ensureImage();
+await ensureVolumes();
+
+/** Step 3: Fetch and process repos (auto-inits schema on first run) */
+console.log('[generate-index] fetching and processing repos...',);
+await runContainer([
+  '--fetch', '--fetch',
+  '--parse',
+  '--database',
+],);
+
+/** Step 5: Extract package data via SQL */
+console.log('[generate-index] extracting package data...',);
+const rawJson = await runContainer(['--extract',],);
+const projects = JSON.parse(rawJson.trim(),) as RepologyProject[];
+console.log(`[generate-index] extracted ${projects.length} projects from Repology`,);
+
+/** Step 6: Filter out mise-installable packages */
+const filtered = projects.filter(
+  function notMiseInstallable(project,): boolean {
+    if (miseTools.has(project.effname.toLowerCase(),))
+      return false;
+    if (isMiseBackendPackage(project.effname,))
+      return false;
+    return true;
+  },
+);
+const removedCount = projects.length - filtered.length;
+console.log(`[generate-index] ${removedCount} packages filtered (mise registry + mise backends)`,);
+console.log(`[generate-index] ${filtered.length} packages remaining`,);
+
+/** Step 7: Generate and write TypeScript */
+const source = generateTypeScript(filtered,);
+writeFileSync(OUTPUT_PATH, source, 'utf8',);
+console.log(`[generate-index] wrote ${OUTPUT_PATH}`,);
+
+//endregion Main

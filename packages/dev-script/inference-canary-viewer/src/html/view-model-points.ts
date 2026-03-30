@@ -48,10 +48,12 @@ export function buildOverallPoints(
           score: entry.overallScore,
           color,
           icon: vendorIcon(openrouterId,),
-          title: `${label} ${entry.timestamp.slice(
-            0,
-            10,
-          )}: ${
+          title: `${label} ${
+            entry.timestamp.slice(
+              0,
+              10,
+            )
+          }: ${
             entry
               .overallScore
               .toFixed(2,)
@@ -111,10 +113,12 @@ export function buildProbePoints(
         pass2Score,
         color,
         icon: vendorIcon(openrouterId,),
-        title: `${probe} ${entry.timestamp.slice(
-          0,
-          10,
-        )}: ${score.toFixed(2,)}${
+        title: `${probe} ${
+          entry.timestamp.slice(
+            0,
+            10,
+          )
+        }: ${score.toFixed(2,)}${
           pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
         }`,
         failed: entry.failed,

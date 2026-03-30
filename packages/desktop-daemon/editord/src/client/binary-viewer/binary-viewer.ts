@@ -49,7 +49,7 @@ export class BinaryViewer extends HTMLElement {
     mediaInfo,
   }: {
     url: string;
-    mediaInfo?: string
+    mediaInfo?: string;
   },): void {
     showImage({
       shadow: this.#shadow,
@@ -72,7 +72,7 @@ export class BinaryViewer extends HTMLElement {
     mediaInfo,
   }: {
     url: string;
-    mediaInfo?: string
+    mediaInfo?: string;
   },): void {
     showAudio({
       shadow: this.#shadow,
@@ -95,7 +95,7 @@ export class BinaryViewer extends HTMLElement {
     mediaInfo,
   }: {
     url: string;
-    mediaInfo?: string
+    mediaInfo?: string;
   },): void {
     showVideo({
       shadow: this.#shadow,

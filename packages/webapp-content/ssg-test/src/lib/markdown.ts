@@ -66,21 +66,21 @@ export function createProcessor(): Processor<Root, Root, Root, Root, string> {
     .use(
       rehypeSlug,
       {
-      enableCustomId: true,
-      maintainCase: true,
-      removeAccents: true,
-    },
+        enableCustomId: true,
+        maintainCase: true,
+        removeAccents: true,
+      },
     )
     .use(rehypeAutolinkHeadings,)
     .use(
       rehypeShiki,
       {
-      themes: {
-        light: 'github-light-high-contrast',
-        dark: 'github-dark-high-contrast',
+        themes: {
+          light: 'github-light-high-contrast',
+          dark: 'github-dark-high-contrast',
+        },
+        transformers: [transformerNotationDiff(), transformerNotationHighlight(),],
       },
-      transformers: [transformerNotationDiff(), transformerNotationHighlight(),],
-    },
     )
     .use(
       rehypeStringify,

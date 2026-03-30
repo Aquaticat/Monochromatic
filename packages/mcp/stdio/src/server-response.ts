@@ -19,8 +19,7 @@ import type {
 export function respondSuccess(
   id: JsonRpcRequest['id'],
   result: unknown,
-): JsonRpcResponse
-{
+): JsonRpcResponse {
   return {
     jsonrpc: '2.0',
     id,
@@ -43,8 +42,7 @@ export function respondError(
   id: JsonRpcRequest['id'],
   code: number,
   message: string,
-): JsonRpcErrorResponse
-{
+): JsonRpcErrorResponse {
   return {
     jsonrpc: '2.0',
     id,

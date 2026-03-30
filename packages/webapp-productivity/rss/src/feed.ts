@@ -76,7 +76,7 @@ async function fetchAndParseFeeds(
   /** Fetched OPML text paired with its source outline for later parsing. */
   type TextWOutline = {
     text: string;
-    outline: Opml.Outline<string> & { xmlUrl: string; }
+    outline: Opml.Outline<string> & { xmlUrl: string; };
   };
   const textsWOutline: TextWOutline[] = (await mapIterableAsync(
     async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {

@@ -46,10 +46,12 @@ export function buildCrossModelPoints(
       pass2Score,
       color,
       icon: vendorIcon(entry.model,),
-      title: `${entry.label} ${entry.timestamp.slice(
-        0,
-        10,
-      )}: ${score.toFixed(2,)}${
+      title: `${entry.label} ${
+        entry.timestamp.slice(
+          0,
+          10,
+        )
+      }: ${score.toFixed(2,)}${
         pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
       }`,
       failed: entry.failed,
@@ -107,10 +109,12 @@ export function buildSingleModelPoints(
       pass2Score,
       color,
       icon: vendorIcon(openrouterId,),
-      title: `${entry.timestamp.slice(
-        0,
-        10,
-      )}: ${score.toFixed(2,)}${
+      title: `${
+        entry.timestamp.slice(
+          0,
+          10,
+        )
+      }: ${score.toFixed(2,)}${
         pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
       }`,
       failed: entry.failed,

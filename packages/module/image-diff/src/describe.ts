@@ -34,11 +34,11 @@ Image A is the first image, Image B is the second.`;
 type ContentPart =
   | {
     readonly type: 'text';
-    readonly text: string
+    readonly text: string;
   }
   | {
     readonly type: 'image_url';
-    readonly image_url: { readonly url: string; }
+    readonly image_url: { readonly url: string; };
   };
 
 /**
@@ -123,8 +123,7 @@ function resolveOpenRouterApiKey(): string | undefined {
 export async function describeImageDifference(
   imageA: ImageInput,
   imageB: ImageInput,
-): Promise<string | undefined>
-{
+): Promise<string | undefined> {
   const rl = tagged({
     tag: describeImageDifference.name,
     l,
@@ -179,13 +178,13 @@ export async function describeImageDifference(
   const response = await fetch(
     OPENROUTER_API_URL,
     {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody,),
     },
-    body: JSON.stringify(requestBody,),
-  },
   );
 
   if (!response.ok) {

@@ -97,7 +97,7 @@ export async function compareAll(
     if (settlement.status === 'fulfilled') {
       const entry = settlement.value as {
         provider: Provider;
-        result: Omit<ComparisonResult, 'description'>
+        result: Omit<ComparisonResult, 'description'>;
       };
       successfulEntries.push({
         provider: entry.provider,

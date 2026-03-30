@@ -20,25 +20,75 @@
 
 import { p, } from '../src/package/p.ts';
 
+/** Package entries with hand-maintained binary names and check flags that Repology cannot infer. */
 export const overrides = [
   //region Binary name differs from effname
-  p({ bin: 'convert', check: '-version', effname: 'imagemagick', },),
-  p({ bin: 'rg', effname: 'ripgrep', },),
-  p({ bin: '7z', effname: 'p7zip', },),
-  p({ bin: 'ag', effname: 'the-silver-searcher', },),
-  p({ bin: 'dig', effname: 'bind', },),
-  p({ bin: 'ip', effname: 'iproute2', },),
-  p({ bin: 'ps', effname: 'procps', },),
-  p({ bin: 'lsblk', effname: 'util-linux', },),
-  p({ bin: 'ls', effname: 'coreutils', },),
-  p({ bin: 'clear', effname: 'ncurses', },),
-  p({ bin: 'gpg', effname: 'gnupg', },),
+  p({
+    bin: 'convert',
+    check: '-version',
+    effname: 'imagemagick',
+  },),
+  p({
+    bin: 'rg',
+    effname: 'ripgrep',
+  },),
+  p({
+    bin: '7z',
+    effname: 'p7zip',
+  },),
+  p({
+    bin: 'ag',
+    effname: 'the-silver-searcher',
+  },),
+  p({
+    bin: 'dig',
+    effname: 'bind',
+  },),
+  p({
+    bin: 'ip',
+    effname: 'iproute2',
+  },),
+  p({
+    bin: 'ps',
+    effname: 'procps',
+  },),
+  p({
+    bin: 'lsblk',
+    effname: 'util-linux',
+  },),
+  p({
+    bin: 'ls',
+    effname: 'coreutils',
+  },),
+  p({
+    bin: 'clear',
+    effname: 'ncurses',
+  },),
+  p({
+    bin: 'gpg',
+    effname: 'gnupg',
+  },),
   //endregion Binary name differs from effname
 
   //region Custom check flags (--version outliers)
-  p({ check: 'version', effname: 'openssl', },),
-  p({ bin: 'ssh', check: '-V', effname: 'openssh', },),
-  p({ bin: 'nmap', check: '-V', effname: 'nmap', },),
-  p({ bin: 'nc', check: '--help', effname: 'netcat', },),
+  p({
+    check: 'version',
+    effname: 'openssl',
+  },),
+  p({
+    bin: 'ssh',
+    check: '-V',
+    effname: 'openssh',
+  },),
+  p({
+    bin: 'nmap',
+    check: '-V',
+    effname: 'nmap',
+  },),
+  p({
+    bin: 'nc',
+    check: '--help',
+    effname: 'netcat',
+  },),
   //endregion Custom check flags (--version outliers)
 ] as const;

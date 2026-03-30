@@ -12,7 +12,6 @@ export type PackageManager =
   | 'dnf'
   | 'pacman'
   | 'scoop'
-  | 'winget'
   | 'zypper';
 
 //endregion Package manager identifiers
@@ -26,20 +25,38 @@ export type PackageManager =
 export type PackageMapping = Partial<Record<PackageManager, string>>;
 
 /**
+ * Single element in the {@link PackageSpec.yes} availability array.
+ *
+ * - **String** -- manager name; package name is the effname
+ * - **Tuple** -- `[manager, packageName]` when the repo uses a different name
+ *
+ * @example
+ * ```ts
+ * 'apt'                    // available in apt as the effname
+ * ['pacman', 'acpica-utils'] // available in pacman as 'acpica-utils'
+ * ```
+ */
+export type ManagerAvailability = PackageManager | readonly [PackageManager, string];
+
+/**
  * Object form accepted by {@link p} when the binary name or effname
- * differs from the default, or when per-manager overrides are needed.
+ * differs from the default, or when per-manager availability is known.
  *
  * - `bin` -- binary name to check on PATH (defaults to `effname`)
  * - `check` -- custom flag for existence check (defaults to `--version`);
  *   some binaries use `-V`, `-v`, `--help`, or `version` instead
  * - `effname` -- Repology canonical project name (used as fallback package name)
- * - Remaining keys are {@link PackageManager} overrides
+ * - `yes` -- managers where Repology confirms the package exists;
+ *   each element is a bare manager name (uses effname) or a
+ *   `[manager, packageName]` tuple. Managers absent from this list
+ *   are treated as unavailable, skipping the live `canProvide` check.
+ *   When omitted, all managers are assumed available (for overrides
+ *   that only correct `bin`/`check`).
  *
  * @example
  * ```ts
  * { bin: 'rg', effname: 'ripgrep' }
- * { effname: 'wget', winget: 'JernejSimoncic.Wget' }
- * { bin: 'magick', effname: 'imagemagick', dnf: 'ImageMagick' }
+ * { effname: 'acpica', yes: ['apt', ['dnf', 'acpica-tools'], ['pacman', 'acpica-utils']] }
  * { bin: 'openssl', check: 'version', effname: 'openssl' }
  * ```
  */
@@ -47,13 +64,21 @@ export type PackageSpec = {
   readonly bin?: string;
   readonly check?: string;
   readonly effname: string;
-} & PackageMapping;
+  readonly yes?: readonly ManagerAvailability[];
+};
 
 /**
  * Normalized package entry produced by {@link p}.
  * Immutable value object -- safe to store in arrays and indexes.
  */
 export type PackageEntry = {
+  /**
+   * Managers where the package is known to be available (from Repology data).
+   * `null` means no availability restriction (all managers assumed available).
+   * When the detected manager is not in this set, {@link ensurePackage} skips
+   * the live `canProvide` check and fails fast.
+   */
+  readonly available: ReadonlySet<PackageManager> | null;
   /** Binary name to check on PATH. */
   readonly bin: string;
   /** Flag passed to the binary for existence check (default: `--version`). */

@@ -169,7 +169,6 @@ export const VIRTIO_WIN_FILENAME = 'virtio-win.iso';
 
 //endregion Virtio-win shared resource
 
-
 //region Built-in image registry
 
 /**
@@ -273,21 +272,23 @@ export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
  */
 export function resolveImage(identifier: string,): ResolvedImage {
   const spec = IMAGES[identifier];
-  if (spec !== undefined)
+  if (spec !== undefined) {
     return {
       kind: 'registry',
       spec,
     };
+  }
 
   const customPath = join(
     IMAGES_DIR,
     `${identifier}.qcow2`,
   );
-  if (existsSync(customPath,))
+  if (existsSync(customPath,)) {
     return {
       customTemplatePath: customPath,
       kind: 'custom',
     };
+  }
 
   const available = Object.keys(IMAGES,).join(', ',);
   throw new Error(
@@ -312,11 +313,11 @@ export function resolveImage(identifier: string,): ResolvedImage {
 export type ResolvedImage =
   | {
     customTemplatePath: string;
-    kind: 'custom'
+    kind: 'custom';
   }
   | {
     kind: 'registry';
-    spec: ImageSpec
+    spec: ImageSpec;
   };
 
 //endregion Resolution

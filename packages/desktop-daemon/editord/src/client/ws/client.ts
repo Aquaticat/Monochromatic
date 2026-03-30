@@ -84,7 +84,7 @@ export class EditorWsClient {
       event: {
         path: string;
         changeType: FsChangeType;
-        isDirectory: boolean
+        isDirectory: boolean;
       },
     ) => void)
     | null = null;
@@ -92,9 +92,8 @@ export class EditorWsClient {
   /** Callback invoked when the server pushes diagnostics for a file. */
   onDiagnostics: ((event: {
     path: string;
-    diagnostics: Diagnostic[]
-  },) => void) | null =
-    null;
+    diagnostics: Diagnostic[];
+  },) => void) | null = null;
 
   /** Resolves when the WebSocket connection is established and authenticated. */
   ready: Promise<void>;
@@ -117,7 +116,7 @@ export class EditorWsClient {
     token,
   }: {
     port: string;
-    token: string
+    token: string;
   },) {
     this.#wsUrl = `ws://localhost:${port}/_ws?token=${token}`;
     this.#ws = new WebSocket(this.#wsUrl,);
@@ -181,9 +180,12 @@ export class EditorWsClient {
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
         const timeoutId = globalThis.setTimeout(
           function rejectStale() {
-          if (pending.delete(id,))
-            reject(new Error(`request ${id} timed out after ${REQUEST_TIMEOUT_MS}ms`,),);
-        },
+            if (pending.delete(id,)) {
+              reject(
+                new Error(`request ${id} timed out after ${REQUEST_TIMEOUT_MS}ms`,),
+              );
+            }
+          },
           REQUEST_TIMEOUT_MS,
         ) as unknown as number;
         pending.set(

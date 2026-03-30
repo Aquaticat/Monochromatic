@@ -47,94 +47,95 @@ export function wireKeybindings({
   document.addEventListener(
     'keydown',
     function handleKeydown(event,) {
-    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-      event.preventDefault();
-      saveCurrentFile();
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'F') {
-      event.preventDefault();
-      formatDocument();
-      return;
-    }
-    if (event.ctrlKey && event.altKey && event.key === 'l') {
-      event.preventDefault();
-      formatDocument();
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
-      event.preventDefault();
-      gotoDefinition();
-      return;
-    }
-    if (handleTextEditKey({
-      event,
-      deps: {
-        deleteCurrentLine,
-        selectAndCopyCurrentLine,
-        duplicateLineDown,
-        swapLineDown,
-        swapLineUp,
-      },
-    },))
-    {
-      return;
-    }
-    if (event.ctrlKey && event.key === ' ') {
-      event.preventDefault();
-      requestCompletions();
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'W') {
-      event.preventDefault();
-      shrinkSelection();
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'w') {
-      event.preventDefault();
-      expandSelection();
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey)
-      && !event.shiftKey
-      && !event.altKey
-      && event.key >= '0'
-      && event.key <= '9')
-    {
-      event.preventDefault();
-      navigateToRecentFile(Number(event.key,),);
-      return;
-    }
-    if (event.altKey
-      && !event.ctrlKey
-      && !event.metaKey
-      && !event.shiftKey
-      && event.key === 'F12')
-    {
-      event.preventDefault();
-      openTerminalAtCurrentFile();
-      return;
-    }
-    if (referencesPopup.visible && handleReferencesNav({
-      event,
-      referencesPopup,
-    },))
-      return;
-    if (completionPopup.visible && handleCompletionNav({
-      event,
-      completionPopup,
-    },))
-      return;
-    if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
-      event.preventDefault();
-      if (event.shiftKey)
-        unindentLines();
-      else
-        indentLines();
-      return;
-    }
-    if (event.key === 'Escape')
-      hoverPopup.hide();
-  },
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        saveCurrentFile();
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'F') {
+        event.preventDefault();
+        formatDocument();
+        return;
+      }
+      if (event.ctrlKey && event.altKey && event.key === 'l') {
+        event.preventDefault();
+        formatDocument();
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
+        event.preventDefault();
+        gotoDefinition();
+        return;
+      }
+      if (handleTextEditKey({
+        event,
+        deps: {
+          deleteCurrentLine,
+          selectAndCopyCurrentLine,
+          duplicateLineDown,
+          swapLineDown,
+          swapLineUp,
+        },
+      },)) {
+        return;
+      }
+      if (event.ctrlKey && event.key === ' ') {
+        event.preventDefault();
+        requestCompletions();
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'W') {
+        event.preventDefault();
+        shrinkSelection();
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'w') {
+        event.preventDefault();
+        expandSelection();
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey)
+        && !event.shiftKey
+        && !event.altKey
+        && event.key >= '0'
+        && event.key <= '9')
+      {
+        event.preventDefault();
+        navigateToRecentFile(Number(event.key,),);
+        return;
+      }
+      if (event.altKey
+        && !event.ctrlKey
+        && !event.metaKey
+        && !event.shiftKey
+        && event.key === 'F12')
+      {
+        event.preventDefault();
+        openTerminalAtCurrentFile();
+        return;
+      }
+      if (referencesPopup.visible && handleReferencesNav({
+        event,
+        referencesPopup,
+      },)) {
+        return;
+      }
+      if (completionPopup.visible && handleCompletionNav({
+        event,
+        completionPopup,
+      },)) {
+        return;
+      }
+      if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        if (event.shiftKey)
+          unindentLines();
+        else
+          indentLines();
+        return;
+      }
+      if (event.key === 'Escape')
+        hoverPopup.hide();
+    },
   );
 }

@@ -23,10 +23,10 @@ import {
   runsOverride,
   useSimple,
 } from './index-cli.ts';
-import { l, } from './log.ts';
 import { selectModels, } from './index-models.ts';
 import { runAndReport, } from './index-run.ts';
 import { getRecentArtifactPairs, } from './linter-artifacts-recent.ts';
+import { l, } from './log.ts';
 import {
   codeGenProbes,
   codeGenProbesAll,
@@ -51,13 +51,12 @@ const selectedModels = selectModels();
 const {
   probePairs: recentModelProbePairs,
   failedModels: recentlyFailedModels,
-} =
-  retestAll
-    ? {
-      probePairs: new Map<string, ReadonlySet<string>>(),
-      failedModels: new Set<string>(),
-    }
-    : await getRecentArtifactPairs();
+} = retestAll
+  ? {
+    probePairs: new Map<string, ReadonlySet<string>>(),
+    failedModels: new Set<string>(),
+  }
+  : await getRecentArtifactPairs();
 
 //endregion Model selection
 
@@ -147,13 +146,13 @@ const WATCHDOG_MS_PER_SECOND = 1_000;
 /** Watchdog timer that force-exits after stale async resources prevent natural shutdown. */
 const watchdog = setTimeout(
   function watchdogTimeout(): void {
-  l.error(
-    'process did not exit naturally after all work completed, dumping active handles:',
-  );
-  whyIsNodeRunning();
-  // oxlint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks
-  process.exit(0,);
-},
+    l.error(
+      'process did not exit naturally after all work completed, dumping active handles:',
+    );
+    whyIsNodeRunning();
+    // oxlint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks
+    process.exit(0,);
+  },
   WATCHDOG_TIMEOUT_SECONDS * WATCHDOG_MS_PER_SECOND,
 );
 watchdog.unref();

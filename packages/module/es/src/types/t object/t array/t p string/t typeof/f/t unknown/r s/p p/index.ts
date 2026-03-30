@@ -55,11 +55,12 @@ export function $(value: unknown,): TypeOf {
   if (typeOf === 'number') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is number
     const myValue = value as number;
-    if (Number.isNaN(myValue,))
+    if (Number.isNaN(myValue,)) {
       return [
         typeOf,
         { NaN: true, },
       ];
+    }
 
     const sign = myValue === 0 ? 0 : (myValue > 0 ? 'positive' : 'negative');
     const float = !Number.isInteger(myValue,);
@@ -72,88 +73,99 @@ export function $(value: unknown,): TypeOf {
   if (typeOf === 'string') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is string
     const myValue = value as string;
-    if (myValue.length === 0)
+    if (myValue.length === 0) {
       return [
         typeOf,
         { empty: true, },
       ];
+    }
 
     return [
       typeOf,
       {
-      empty: [false, { char: myValue
-          .length !== 1
-        ? false
-        : [
-          true,
-          /\p{Upper}/v.test(myValue,)
-            ? 'uppercaseLetter'
-            : (/\p{Lower}/v.test(myValue,)
-              ? 'lowercaseLetter'
-              : 'nonLetter'),
-        ], },],
-    },
+        empty: [false, { char: myValue
+            .length !== 1
+          ? false
+          : [
+            true,
+            /\p{Upper}/v.test(myValue,)
+              ? 'uppercaseLetter'
+              : (/\p{Lower}/v.test(myValue,)
+                ? 'lowercaseLetter'
+                : 'nonLetter'),
+          ], },],
+      },
     ];
   }
 
   const prototypeString = Object.prototype.toString.call(value,);
 
   if (typeOf === 'function') {
-    if (prototypeString === '[object Function]')
+    if (prototypeString === '[object Function]') {
       return [
         typeOf,
         { async: false, generator: false, },
       ];
-    if (prototypeString === '[object AsyncFunction]')
+    }
+    if (prototypeString === '[object AsyncFunction]') {
       return [
         typeOf,
         { async: true, generator: false, },
       ];
-    if (prototypeString === '[object GeneratorFunction]')
+    }
+    if (prototypeString === '[object GeneratorFunction]') {
       return [
         typeOf,
         { async: false, generator: true, },
       ];
-    if (prototypeString === '[object AsyncGeneratorFunction]')
+    }
+    if (prototypeString === '[object AsyncGeneratorFunction]') {
       return [
         typeOf,
         { async: true, generator: true, },
       ];
+    }
   }
 
   if (typeOf === 'object') {
-    if (value === null)
+    if (value === null) {
       return [
         typeOf,
         { prototype: 'Null', },
       ];
+    }
 
     // Handle special object types based on prototype string
-    if (prototypeString === '[object Array]')
+    if (prototypeString === '[object Array]') {
       return [
         typeOf,
         { prototype: 'Array', },
       ];
-    if (prototypeString === '[object Date]')
+    }
+    if (prototypeString === '[object Date]') {
       return [
         typeOf,
         { prototype: 'Date', },
       ];
-    if (prototypeString === '[object Map]')
+    }
+    if (prototypeString === '[object Map]') {
       return [
         typeOf,
         { prototype: 'Map', },
       ];
-    if (prototypeString === '[object Set]')
+    }
+    if (prototypeString === '[object Set]') {
       return [
         typeOf,
         { prototype: 'Set', },
       ];
-    if (prototypeString === '[object Promise]')
+    }
+    if (prototypeString === '[object Promise]') {
       return [
         typeOf,
         { prototype: 'Promise', },
       ];
+    }
     if (prototypeString === '[object RegExp]') {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- prototype string check confirms RegExp
       const regexp = value as RegExp;
@@ -170,20 +182,20 @@ export function $(value: unknown,): TypeOf {
     return [
       typeOf,
       {
-      prototype: ['Object', {
-        iterable: typeof (
-            // @ts-expect-error -- Might be Async Iterable
-            myValue[Symbol.asyncIterator]
-          ) === 'function'
-          ? [true, { async: true, },]
-          : (typeof (
-              // @ts-expect-error -- Might be Iterable
-              myValue[Symbol.iterator]
+        prototype: ['Object', {
+          iterable: typeof (
+              // @ts-expect-error -- Might be Async Iterable
+              myValue[Symbol.asyncIterator]
             ) === 'function'
-            ? [true, { async: false, },]
-            : false),
-      },],
-    },
+            ? [true, { async: true, },]
+            : (typeof (
+                // @ts-expect-error -- Might be Iterable
+                myValue[Symbol.iterator]
+              ) === 'function'
+              ? [true, { async: false, },]
+              : false),
+        },],
+      },
     ];
   }
 

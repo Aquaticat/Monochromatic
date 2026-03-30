@@ -43,7 +43,7 @@ export function mergeComments(
     value2,
   }: {
     value?: Jsonc.Comment | undefined;
-    value2?: Jsonc.Comment | undefined
+    value2?: Jsonc.Comment | undefined;
   },
 ): Jsonc.Comment | undefined {
   if (value === undefined)

@@ -62,10 +62,12 @@ export async function getOutlinesFromOpmls(
         return false;
       }
       try {
-        z.url({
-          protocol: /^https?$/,
-          hostname: z.regexes.domain,
-        },).parse(xmlUrl,);
+        z
+          .url({
+            protocol: /^https?$/,
+            hostname: z.regexes.domain,
+          },)
+          .parse(xmlUrl,);
         return true;
       }
       catch (error) {

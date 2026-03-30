@@ -173,16 +173,18 @@ export class SearchOverlay extends HTMLElement {
 
   /** Removes global keyboard listeners added in connectedCallback. */
   disconnectedCallback(): void {
-    if (this.#boundKeydown !== null)
+    if (this.#boundKeydown !== null) {
       document.removeEventListener(
         'keydown',
         this.#boundKeydown,
       );
-    if (this.#boundKeyup !== null)
+    }
+    if (this.#boundKeyup !== null) {
       document.removeEventListener(
         'keyup',
         this.#boundKeyup,
       );
+    }
   }
 
   /** Opens the overlay. */
@@ -242,8 +244,8 @@ export class SearchOverlay extends HTMLElement {
     scheduleSearch({
       state: this.#searchState,
       execute: function run() {
-      void overlay.#performSearch();
-    },
+        void overlay.#performSearch();
+      },
     },);
   }
 
@@ -269,7 +271,7 @@ export class SearchOverlay extends HTMLElement {
       query,
     }: {
       results: SearchResult[];
-      query: string
+      query: string;
     },
   ): void {
     if (this.#resultsContainer === null)

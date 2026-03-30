@@ -27,16 +27,16 @@ export function prettyDate(
     lang,
   }: {
     date: Date;
-    lang: string
+    lang: string;
   },
 ): string {
   const formatted = date.toLocaleDateString(
     lang,
     {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  },
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    },
   );
 
   return h({

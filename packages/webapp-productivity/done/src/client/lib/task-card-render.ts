@@ -78,12 +78,13 @@ export function renderTaskCardContent(
       },);
     },
   );
-  if (options.showBlockedBadge === true)
+  if (options.showBlockedBadge === true) {
     chipElements.push(h({
       tag: 'span',
       class: 'chip blocked',
       text: 'blocked',
     },),);
+  }
 
   shadow.replaceChildren(
     h({

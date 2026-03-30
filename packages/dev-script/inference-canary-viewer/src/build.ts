@@ -35,7 +35,8 @@ export {};
 const PACKAGE_DIR: string = new URL(
   '..',
   import.meta.url,
-).pathname;
+)
+  .pathname;
 /** Output directory for the generated site */
 const DIST_DIR = join(
   PACKAGE_DIR,
@@ -167,15 +168,19 @@ const [, cssResult,] = await Promise.all([
   },),
 ],);
 
-console.error(`[viewer] wrote ${join(
-  DIST_DIR,
-  'index.html',
-)}`,);
-console.error(
-  `[viewer] wrote ${join(
+console.error(`[viewer] wrote ${
+  join(
     DIST_DIR,
-    'style.css',
-  )} (${String(cssResult.length,)} bytes)`,
+    'index.html',
+  )
+}`,);
+console.error(
+  `[viewer] wrote ${
+    join(
+      DIST_DIR,
+      'style.css',
+    )
+  } (${String(cssResult.length,)} bytes)`,
 );
 
 //endregion Build CSS and write output

@@ -29,7 +29,8 @@ export {};
 const PACKAGE_DIR: string = new URL(
   '..',
   import.meta.url,
-).pathname;
+)
+  .pathname;
 
 /** Output directory for the generated site */
 const DIST_DIR = join(
@@ -77,7 +78,9 @@ await writeFile(
   'utf8',
 );
 
-console.error(`[doodle-widget] wrote ${join(
-  DIST_DIR,
-  'index.html',
-)}`,);
+console.error(`[doodle-widget] wrote ${
+  join(
+    DIST_DIR,
+    'index.html',
+  )
+}`,);

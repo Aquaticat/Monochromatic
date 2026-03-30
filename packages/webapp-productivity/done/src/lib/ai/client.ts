@@ -85,7 +85,7 @@ type ChatCompletionResponseChoice = {
   /** Message content of the choice. */
   message: {
     role: string;
-    content: string
+    content: string;
   };
 };
 
@@ -99,11 +99,11 @@ type ChatCompletionResponse = {
 export type ChatCompletionResult =
   | {
     ok: true;
-    content: string
+    content: string;
   }
   | {
     ok: false;
-    error: string
+    error: string;
   };
 
 //endregion Types
@@ -123,11 +123,12 @@ export type ChatCompletionResult =
 export async function chatCompletion(
   options: ChatCompletionOptions,
 ): Promise<ChatCompletionResult> {
-  if (isRateLimited())
+  if (isRateLimited()) {
     return {
       ok: false,
       error: 'Rate limit exceeded -- try again in a moment',
     };
+  }
 
   recordRequest();
 
@@ -146,11 +147,11 @@ export async function chatCompletion(
     const response = await fetch(
       completionsUrl,
       {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', },
-      body: JSON.stringify(body,),
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS,),
-    },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify(body,),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS,),
+      },
     );
 
     if (!response.ok) {
@@ -163,20 +164,19 @@ export async function chatCompletion(
       }
       return {
         ok: false,
-        error: `AI endpoint returned ${
-        String(response.status,)
-      }: ${errorText}`,
+        error: `AI endpoint returned ${String(response.status,)}: ${errorText}`,
       };
     }
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
     const data = (await response.json()) as ChatCompletionResponse;
     const [firstChoice,] = data.choices;
-    if (firstChoice === undefined)
+    if (firstChoice === undefined) {
       return {
         ok: false,
         error: 'AI returned no choices',
       };
+    }
 
     return {
       ok: true,

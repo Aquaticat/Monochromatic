@@ -65,8 +65,8 @@ for (const result of results)
 if (results.length > 1) {
   const total = results.reduce(
     function sumTokens(sum, r,) {
-    return sum + r.inputTokens;
-  },
+      return sum + r.inputTokens;
+    },
     0,
   );
   console.log(`${String(total,).padStart(PAD_WIDTH,)} total`,);

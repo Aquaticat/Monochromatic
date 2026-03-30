@@ -39,7 +39,7 @@ function replyEmpty(
     message,
   }: {
     peer: Peer;
-    message: Record<string, unknown>
+    message: Record<string, unknown>;
   },
 ): true {
   sendJson({
@@ -93,7 +93,7 @@ export async function dispatchLspMessage(
     const hints = await lspManager.inlayHints({
       path: parsed.path,
       range: parsed
-      .range,
+        .range,
     },);
     sendJson({
       peer,
@@ -106,11 +106,12 @@ export async function dispatchLspMessage(
     return true;
   }
   if (parsed.type === 'didChange') {
-    if (lspManager !== null)
+    if (lspManager !== null) {
       await lspManager.didChange({
         path: parsed.path,
         text: parsed.content,
       },);
+    }
     return true;
   }
   if (parsed.type === 'didClose') {

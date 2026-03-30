@@ -146,8 +146,8 @@ function inlineImports(
   root.walkAtRules(
     'import',
     function collectImportNode(node: AtRule,) {
-    importNodes.push(node,);
-  },
+      importNodes.push(node,);
+    },
   );
 
   for (const node of importNodes) {

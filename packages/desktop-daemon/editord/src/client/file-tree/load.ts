@@ -70,7 +70,7 @@ export function loadDirChildren({
             parentPath: path,
             entries: cached,
             recentPaths: state
-            .recentPaths,
+              .recentPaths,
           },),
         );
       }
@@ -83,7 +83,7 @@ export function loadDirChildren({
         parentPath: path,
         entries,
         recentPaths: state
-        .recentPaths,
+          .recentPaths,
       },);
       childrenContainer.replaceChildren(...children,);
 
@@ -136,11 +136,12 @@ export function createEntryElements({
       parentPath,
       name: entry.name,
     },);
-    if (entry.isDirectory)
+    if (entry.isDirectory) {
       return createTreeDirEntry({
         path: fullPath,
         name: entry.name,
       },);
+    }
     return createTreeFileEntry({
       path: fullPath,
       name: entry.name,

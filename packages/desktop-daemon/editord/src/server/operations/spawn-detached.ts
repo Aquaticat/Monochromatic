@@ -28,7 +28,7 @@ export function spawnDetached(
   }: {
     command: string;
     args: string[];
-    cwd: string
+    cwd: string;
   },
 ): Promise<void> {
   return new Promise<void>(function awaitSpawn(
@@ -39,10 +39,10 @@ export function spawnDetached(
       command,
       args,
       {
-      cwd,
-      detached: true,
-      stdio: 'ignore',
-    },
+        cwd,
+        detached: true,
+        stdio: 'ignore',
+      },
     );
     child.unref();
     child.on(

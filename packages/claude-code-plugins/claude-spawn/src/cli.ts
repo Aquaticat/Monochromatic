@@ -55,23 +55,23 @@ const parser = object({
     '--cwd',
     string({ metavar: 'DIR', },),
     {
-    description:
-      message`Working directory for the child session. Defaults to current directory.`,
-  },
+      description:
+        message`Working directory for the child session. Defaults to current directory.`,
+    },
   ),),
   extraArguments: optional(option(
     '--extra-arguments',
     string({ metavar: 'ARGS', },),
     {
-    description:
-      message`Additional CLI arguments passed directly to the claude command (e.g. "--model sonnet --allowedTools Edit,Bash").`,
-  },
+      description:
+        message`Additional CLI arguments passed directly to the claude command (e.g. "--model sonnet --allowedTools Edit,Bash").`,
+    },
   ),),
   prompt: argument(
     string({ metavar: 'PROMPT', },),
     {
-    description: message`Initial prompt for the spawned Claude session.`,
-  },
+      description: message`Initial prompt for the spawned Claude session.`,
+    },
   ),
 },);
 
@@ -79,11 +79,11 @@ const parser = object({
 const args = runSync(
   parser,
   {
-  programName: 'spawn-claude',
-  help: 'option',
-  brief:
-    message`Spawn a steerable child Claude Code session in a visible terminal window.`,
-},
+    programName: 'spawn-claude',
+    help: 'option',
+    brief:
+      message`Spawn a steerable child Claude Code session in a visible terminal window.`,
+  },
 );
 
 //endregion

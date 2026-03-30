@@ -84,7 +84,7 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     context,
   }: {
     value: Value;
-    context?: Jsonc.ValueBase
+    context?: Jsonc.ValueBase;
   },
 ): { remainingContent: Value; } & Jsonc.ValueBase {
   // Eliminate leading and trailing whitespace, including space and newline characters.
@@ -103,7 +103,7 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
       const commentPart: Jsonc.Comment = {
         type: 'inline',
         commentValue: trimmed
-        .slice('//'.length,),
+          .slice('//'.length,),
       };
       const mergedComments = mergeComments({
         value: context?.comment,
@@ -123,7 +123,7 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     const commentPart: Jsonc.Comment = {
       type: 'inline',
       commentValue: trimmed
-      .slice('//'.length, newlinePosition,),
+        .slice('//'.length, newlinePosition,),
     };
     const mergedComments = mergeComments({
       value: context?.comment,
@@ -138,8 +138,8 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     return startsWithComment({
       value: remainingContent,
       context: {
-      comment: mergedComments,
-    },
+        comment: mergedComments,
+      },
     },);
   }
 
@@ -168,8 +168,8 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     return startsWithComment({
       value: remainingContent,
       context: {
-      comment: mergedComments,
-    },
+        comment: mergedComments,
+      },
     },);
   }
 

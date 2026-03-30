@@ -106,13 +106,15 @@ function transformPathD(
        * Params 0-4 are arc parameters.
        */
       const arcIndex = paramIndex % 7;
-      if (arcIndex === 5)
+      if (arcIndex === 5) {
         result.push(String(narrowX(
           num,
           factor,
         ),),);
-      else
+      }
+      else {
         result.push(token,);
+      }
       paramIndex++;
       continue;
     }
@@ -121,13 +123,15 @@ function transformPathD(
      * For M, L, Q, C, S, T commands:
      * even paramIndex = x, odd paramIndex = y.
      */
-    if (paramIndex % 2 === 0)
+    if (paramIndex % 2 === 0) {
       result.push(String(narrowX(
         num,
         factor,
       ),),);
-    else
+    }
+    else {
       result.push(token,);
+    }
     paramIndex++;
   }
 
@@ -158,8 +162,8 @@ export function transformSvg(
   result = result.replaceAll(
     /\bd="([^"]+)"/g,
     function transformD(_match, d: string,) {
-    return `d="${transformPathD(d, factor,)}"`;
-  },
+      return `d="${transformPathD(d, factor,)}"`;
+    },
   );
 
   /** Transform x1 attributes (line elements). */
@@ -194,8 +198,8 @@ export function transformSvg(
   result = result.replaceAll(
     /\bx="([-\d.]+)"/g,
     function transformX(_match, v: string,) {
-    return `x="${narrowX(Number.parseFloat(v,), factor,)}"`;
-  },
+      return `x="${narrowX(Number.parseFloat(v,), factor,)}"`;
+    },
   );
 
   return result;

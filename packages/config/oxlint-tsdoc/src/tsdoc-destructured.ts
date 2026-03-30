@@ -54,8 +54,7 @@ function extractRawParams(
 function collectDestructuredNames(
   pattern: Record<string, unknown>,
   names: Set<string>,
-): void
-{
+): void {
   if (pattern.type === 'Identifier') {
     // Named params are handled by extractParamNames, skip here
     return;
@@ -118,11 +117,12 @@ function collectDestructuredNames(
     if (elements === undefined)
       return;
     for (const element of elements) {
-      if (element !== null)
+      if (element !== null) {
         collectDestructuredNames(
           element,
           names,
         );
+      }
     }
   }
   // Unknown pattern types are silently ignored
@@ -155,11 +155,12 @@ export function extractDestructuredParamNames(
 ): ReadonlySet<string> {
   const names = new Set<string>();
 
-  for (const param of extractRawParams(node,))
+  for (const param of extractRawParams(node,)) {
     collectDestructuredNames(
       param,
       names,
     );
+  }
 
   return names;
 }

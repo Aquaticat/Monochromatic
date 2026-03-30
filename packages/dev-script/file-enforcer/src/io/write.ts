@@ -52,24 +52,34 @@ async function readExisting(filePath: string,): Promise<string | undefined> {
  * Compares content against existing file, skipping when identical.
  * Handles directory creation, cache update, and write-time tracking.
  *
- * @param options - Write operation details
- * @param options.dest - Destination file path
- * @param options.content - Content string to write
- * @param options.sourcePath - Optional source path for log messages (used by overwriteEach)
+ * @param dest - Destination file path
+ *
+ * @param content - Content string to write
+ *
+ * @param sourcePath - Optional source path for log messages (used by overwriteEach)
  */
 async function writeIfChanged(
-  { dest, content, sourcePath, }: {
+  {
+    dest,
+    content,
+    sourcePath,
+  }: {
     readonly dest: string;
     readonly content: string;
     readonly sourcePath?: string;
   },
 ): Promise<void> {
-  const rl = tagged({ tag: writeIfChanged.name, l, },);
+  const rl = tagged({
+    tag: writeIfChanged.name,
+    l,
+  },);
   trackDest(dest,);
   /** Current file content, or undefined if file doesn't exist yet */
   const existing = await readExisting(dest,);
   if (existing === content) {
-    rl.info(`skip (unchanged): ${sourcePath ? `${sourcePath} -> ` : ''}${dest}`,);
+    rl.info(
+      `skip (unchanged): ${sourcePath !== undefined ? `${sourcePath} -> ` : ''}${dest}`,
+    );
     return;
   }
   await ensureDir(dest,);
@@ -82,7 +92,7 @@ async function writeIfChanged(
     content,
   );
   trackWriteTime(dest,);
-  rl.info(`${sourcePath ? `${sourcePath} -> ` : '-> '}${dest}`,);
+  rl.info(`${sourcePath !== undefined ? `${sourcePath} -> ` : '-> '}${dest}`,);
 }
 
 /**
@@ -97,7 +107,10 @@ export async function overwrite(
   dest: string,
   content: string,
 ): Promise<void> {
-  await writeIfChanged({ dest, content, },);
+  await writeIfChanged({
+    dest,
+    content,
+  },);
 }
 
 /**
@@ -112,8 +125,7 @@ export async function overwrite(
 export async function overwriteIfNotExists(
   dest: string,
   content: string,
-): Promise<void>
-{
+): Promise<void> {
   /** Existing content, or undefined if file doesn't exist */
   const existing = await readExisting(dest,);
   if (existing !== undefined) {
@@ -121,7 +133,10 @@ export async function overwriteIfNotExists(
     l.info(`skip (exists): ${dest}`,);
     return;
   }
-  await writeIfChanged({ dest, content, },);
+  await writeIfChanged({
+    dest,
+    content,
+  },);
 }
 
 /**
@@ -151,7 +166,11 @@ export async function overwriteEach(
         destGlob,
         file.path,
       );
-      await writeIfChanged({ dest, content: file.content, sourcePath: file.path, },);
+      await writeIfChanged({
+        dest,
+        content: file.content,
+        sourcePath: file.path,
+      },);
     },),
   );
 }

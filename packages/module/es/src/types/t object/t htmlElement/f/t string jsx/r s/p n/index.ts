@@ -131,11 +131,12 @@ type HOptions<TTag extends string,> = {
     element.innerHTML = html;
 
   if (attrs !== undefined) {
-    for (const [key, value,] of Object.entries(attrs,))
+    for (const [key, value,] of Object.entries(attrs,)) {
       element.setAttribute(
         key,
         value,
       );
+    }
   }
 
   if (style !== undefined) {

@@ -27,3 +27,7 @@ run = "bun test .unit.test."
 
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks."generate:index"]
+description = "Generate packages.generated.ts from Repology data"
+run = "bun src/package/mise.generate-index.ts"

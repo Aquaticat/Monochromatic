@@ -87,7 +87,7 @@ export function applyInlayAnnotations({
         div,
         lineHints: hintsByLine.get(line,),
         lineDiags: diagsByLine
-        .get(line,),
+          .get(line,),
         spaceRatio,
       },);
     }

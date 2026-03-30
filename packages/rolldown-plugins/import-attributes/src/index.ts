@@ -110,9 +110,9 @@ function importAttributesPlugin(): Plugin {
           cleanSource,
           importer,
           {
-          ...options,
-          skipSelf: true,
-        },
+            ...options,
+            skipSelf: true,
+          },
         );
 
         if (resolved !== null) {
@@ -156,9 +156,9 @@ function importAttributesPlugin(): Plugin {
             source,
             importer,
             {
-            ...options,
-            skipSelf: true,
-          },
+              ...options,
+              skipSelf: true,
+            },
           );
 
           if (resolved !== null) {

@@ -18,11 +18,11 @@ export async function sendNotification(summary: string,): Promise<void> {
     await spawn(
       'notify-send',
       [
-      '--urgency=critical',
-      '--app-name=Hall Monitor',
-      "Hall Monitor: You've been unproductive!",
-      summary,
-    ],
+        '--urgency=critical',
+        '--app-name=Hall Monitor',
+        "Hall Monitor: You've been unproductive!",
+        summary,
+      ],
     );
     log.info('[notify] Desktop notification sent.',);
   }

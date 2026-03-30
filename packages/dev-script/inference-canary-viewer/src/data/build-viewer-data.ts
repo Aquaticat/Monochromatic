@@ -73,11 +73,11 @@ export function buildViewerData(
       probeDetails.set(
         probeKey(label, probeName, timestamp,),
         buildProbeDetail({
-        enriched,
-        fixEnriched,
-        artifact,
-        fix,
-      },),
+          enriched,
+          fixEnriched,
+          artifact,
+          fix,
+        },),
       );
     }
 
@@ -85,8 +85,8 @@ export function buildViewerData(
     const overallScore = scores.length > 0
       ? scores.reduce(
         function addScore(sum, score,) {
-        return sum + score;
-      },
+          return sum + score;
+        },
         0,
       ) / scores.length
       : 0;

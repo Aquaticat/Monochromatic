@@ -41,11 +41,12 @@ export function renderOverview({
   summaries: readonly ModelSummary[];
   entries: readonly ViewerEntry[];
 },): string {
-  if (summaries.length === 0)
+  if (summaries.length === 0) {
     return h({
       tag: 'p',
       text: 'No history data available. Run the canary first.',
     },);
+  }
 
   // Combined scatter chart: all models' overall scores
   const chartPoints = buildAllModelPoints(entries,);

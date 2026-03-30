@@ -47,15 +47,15 @@ function withNodeResolveConditions(
   return mergeConfig(
     config,
     {
-    resolve: {
-      conditions: ['node', 'module', 'import', 'default',],
-    },
-    build: {
-      lib: {
-        fileName: 'index.node',
+      resolve: {
+        conditions: ['node', 'module', 'import', 'default',],
+      },
+      build: {
+        lib: {
+          fileName: 'index.node',
+        },
       },
     },
-  },
   );
 }
 
@@ -108,8 +108,8 @@ function createModeConfig(
     // Apply mode-specific transformations using reduce for immutability
     const config = modes.reduce(
       function applyMode(currentConfig, currentMode,) {
-      return applyModeTransform(currentConfig, currentMode,);
-    },
+        return applyModeTransform(currentConfig, currentMode,);
+      },
       sharedFactory(configDir,),
     );
 

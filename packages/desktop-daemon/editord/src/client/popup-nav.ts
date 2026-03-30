@@ -18,15 +18,15 @@ type NavigablePopup = {
 type PopupKeyAction =
   | {
     action: 'navigate';
-    direction: 'up' | 'down'
+    direction: 'up' | 'down';
   }
   | {
     action: 'accept';
-    handler: () => void
+    handler: () => void;
   }
   | {
     action: 'dismiss';
-    consumeEvent: boolean
+    consumeEvent: boolean;
   };
 
 /**
@@ -93,13 +93,14 @@ export function handleCompletionNav({
   /** Tab accepts the selected completion and inserts its text. */
   function acceptCompletion(): void {
     const text = completionPopup.accept();
-    if (text !== null)
+    if (text !== null) {
       // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text preserving the browser undo stack
       document.execCommand(
         'insertText',
         false,
         text,
       );
+    }
   }
   return handlePopupNav({
     event,
@@ -156,8 +157,8 @@ export function handleReferencesNav({
       Enter: {
         action: 'accept',
         handler: function accept() {
-        referencesPopup.accept();
-      },
+          referencesPopup.accept();
+        },
       },
       Escape: {
         action: 'dismiss',

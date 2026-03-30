@@ -46,7 +46,7 @@ export async function restoreSession(
   },
 ): Promise<{
   filePath: string | null;
-  recentFiles: string[]
+  recentFiles: string[];
 }> {
   /** Saved session state from a previous visit, if any. */
   const saved = restoreSessionState({

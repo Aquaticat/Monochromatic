@@ -115,7 +115,7 @@ export function findByMostRecent(): PidMapping | null {
 
   let newest: {
     mapping: PidMapping;
-    mtime: number
+    mtime: number;
   } | null = null;
 
   for (const filename of entries) {
@@ -133,11 +133,12 @@ export function findByMostRecent(): PidMapping | null {
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
       const mapping = JSON.parse(raw,) as PidMapping;
 
-      if (newest === null || mtime > newest.mtime)
+      if (newest === null || mtime > newest.mtime) {
         newest = {
           mapping,
           mtime,
         };
+      }
     }
     catch {
       // Skip unreadable files.

@@ -242,10 +242,11 @@ async function guestExecWait({
       ],
     },);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
-    const status = (JSON.parse(statusResult,) as { return: { exited: boolean; exitcode?: number; }; }).return;
-    if (status.exited) {
+    const status = (JSON
+      .parse(statusResult,) as { return: { exited: boolean; exitcode?: number; }; })
+      .return;
+    if (status.exited)
       return status.exitcode ?? 0;
-    }
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling with setTimeout
     await new Promise(function pollDelay(resolve,) {
       setTimeout(resolve, GUEST_EXEC_POLL_MS,);
@@ -353,7 +354,8 @@ async function installVirtioFs({
   // Install WinFsp (required by VirtioFsSvc for drive letter mapping)
   rl.info('installing WinFsp...',);
   await guestExecWait({
-    command: 'Start-Process msiexec -ArgumentList /i,C:\\winfsp.msi,/qn,/norestart,INSTALLLEVEL=1000,/log,C:\\winfsp-install.log -Wait',
+    command:
+      'Start-Process msiexec -ArgumentList /i,C:\\winfsp.msi,/qn,/norestart,INSTALLLEVEL=1000,/log,C:\\winfsp-install.log -Wait',
   },);
 
   // Install all-in-one guest tools MSI from virtio-win CDROM (provides VirtioFsSvc)
@@ -363,13 +365,15 @@ async function installVirtioFs({
       '$vd = Get-ChildItem -Path D:\\,E:\\,F:\\,G:\\ -Directory -Filter viostor -ErrorAction SilentlyContinue | Select-Object -First 1',
       'if ($vd) { $gt = Join-Path $vd.Parent.FullName virtio-win-gt-x64.msi',
       'Start-Process msiexec -ArgumentList /i,$gt,/qn,/norestart,/log,C:\\gt-install.log -Wait }',
-    ].join('; ',),
+    ]
+      .join('; ',),
   },);
 
   // Configure VirtioFsSvc for automatic startup
   rl.info('configuring VirtioFsSvc for automatic startup...',);
   await guestExecWait({
-    command: 'Set-Service -Name VirtioFsSvc -StartupType Automatic -ErrorAction SilentlyContinue',
+    command:
+      'Set-Service -Name VirtioFsSvc -StartupType Automatic -ErrorAction SilentlyContinue',
   },);
 }
 

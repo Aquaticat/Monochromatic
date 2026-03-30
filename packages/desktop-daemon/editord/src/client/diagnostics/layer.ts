@@ -36,11 +36,12 @@ export function applyDiagnosticHighlights({
 },): void {
   /** Group diagnostics by severity. */
   const bySeverity = new Map<string, globalThis.Range[]>();
-  for (const level of SEVERITY_LEVELS)
+  for (const level of SEVERITY_LEVELS) {
     bySeverity.set(
       level,
       [],
     );
+  }
 
   for (const diagnostic of diagnostics) {
     const range = createDiagnosticRange({
@@ -58,13 +59,15 @@ export function applyDiagnosticHighlights({
     if (ranges === undefined)
       continue;
 
-    if (ranges.length > 0)
+    if (ranges.length > 0) {
       CSS.highlights.set(
         highlightName,
         new Highlight(...ranges,),
       );
-    else
+    }
+    else {
       CSS.highlights.delete(highlightName,);
+    }
   }
 }
 

@@ -108,11 +108,12 @@ function searchFiles({
       );
       const candidate = caseSensitive ? relativePath : relativePath.toLowerCase();
 
-      if (candidate.includes(normalizedQuery,))
+      if (candidate.includes(normalizedQuery,)) {
         return {
           kind: 'file',
           path: line,
         };
+      }
 
       return null;
     },
@@ -169,10 +170,12 @@ function searchContents({
         };
       }
       catch {
-        l.warn(`failed to parse rg JSON line: ${line.slice(
-          0,
-          100,
-        )}`,);
+        l.warn(`failed to parse rg JSON line: ${
+          line.slice(
+            0,
+            100,
+          )
+        }`,);
         return null;
       }
     },

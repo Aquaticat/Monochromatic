@@ -36,18 +36,20 @@ export type ExtractResult = {
  */
 export function tryExtractCode(response: string,): ExtractResult {
   const closedFence = response.match(/```(?:typescript|ts)?\n([\s\S]*?)```/,);
-  if (closedFence !== null && closedFence[1] !== undefined)
+  if (closedFence !== null && closedFence[1] !== undefined) {
     return {
       source: closedFence[1],
       fenced: true,
     };
+  }
 
   const openFence = response.match(/```(?:typescript|ts)?\n([\s\S]*)/,);
-  if (openFence !== null && openFence[1] !== undefined)
+  if (openFence !== null && openFence[1] !== undefined) {
     return {
       source: openFence[1],
       fenced: true,
     };
+  }
 
   return {
     source: response,

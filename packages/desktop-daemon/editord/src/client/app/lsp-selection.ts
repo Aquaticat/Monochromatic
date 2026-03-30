@@ -41,7 +41,7 @@ export function wireSelectionRange({
   getCurrentFilePath: GetCurrentFilePathFn;
 },): {
   expandSelection: () => void;
-  shrinkSelection: () => void
+  shrinkSelection: () => void;
 } {
   return {
     expandSelection: function expand(): void {

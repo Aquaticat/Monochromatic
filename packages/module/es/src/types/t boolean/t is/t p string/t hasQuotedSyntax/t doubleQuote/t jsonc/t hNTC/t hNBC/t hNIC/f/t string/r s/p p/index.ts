@@ -22,8 +22,8 @@ export function $(
     JSON.parse(
       value,
       function alwaysNull() {
-      return null;
-    },
+        return null;
+      },
     );
     return true;
   }

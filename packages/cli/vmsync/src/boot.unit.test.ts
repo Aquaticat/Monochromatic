@@ -32,31 +32,36 @@ describe('parseMemoryToBytes', () => {
   test('rejects missing unit', () => {
     expect(() => {
       parseMemoryToBytes('4096',);
-    },).toThrow('invalid memory format',);
+    },)
+      .toThrow('invalid memory format',);
   });
 
   test('rejects invalid unit', () => {
     expect(() => {
       parseMemoryToBytes('4T',);
-    },).toThrow('invalid memory format',);
+    },)
+      .toThrow('invalid memory format',);
   });
 
   test('rejects empty string', () => {
     expect(() => {
       parseMemoryToBytes('',);
-    },).toThrow('invalid memory format',);
+    },)
+      .toThrow('invalid memory format',);
   });
 
   test('rejects non-numeric prefix', () => {
     expect(() => {
       parseMemoryToBytes('abcG',);
-    },).toThrow('invalid memory format',);
+    },)
+      .toThrow('invalid memory format',);
   });
 
   test('rejects decimal values', () => {
     expect(() => {
       parseMemoryToBytes('4.5G',);
-    },).toThrow('invalid memory format',);
+    },)
+      .toThrow('invalid memory format',);
   });
 });
 

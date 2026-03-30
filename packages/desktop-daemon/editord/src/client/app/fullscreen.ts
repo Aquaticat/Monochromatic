@@ -47,8 +47,8 @@ export function wireFullscreen({ appElement, }: { appElement: HTMLElement; },): 
   fab.addEventListener(
     'click',
     function handleFabClick(): void {
-    void enterFullscreenAndLock();
-  },
+      void enterFullscreenAndLock();
+    },
   );
 
   appElement.append(fab,);
@@ -56,15 +56,15 @@ export function wireFullscreen({ appElement, }: { appElement: HTMLElement; },): 
   document.addEventListener(
     'fullscreenchange',
     function handleFullscreenChange(): void {
-    if (document.fullscreenElement !== null) {
-      fsLog.info('fullscreen active',);
-      fab.style.display = 'none';
-      void lockKeyboard();
-    }
-    else {
-      fsLog.info('fullscreen exited',);
-      fab.style.display = '';
-    }
-  },
+      if (document.fullscreenElement !== null) {
+        fsLog.info('fullscreen active',);
+        fab.style.display = 'none';
+        void lockKeyboard();
+      }
+      else {
+        fsLog.info('fullscreen exited',);
+        fab.style.display = '';
+      }
+    },
   );
 }

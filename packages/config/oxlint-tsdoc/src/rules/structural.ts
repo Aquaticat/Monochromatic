@@ -89,16 +89,16 @@ export const multilineBlocks: CreateOnceRule = {
     return createTsdocVisitor(
       context,
       function multilineHandler(_node, comment,): void {
-      const lines = getCommentLines(comment,);
-      /** Minimum line count for a proper multiline comment: opener, content, closer. */
-      const minMultilineLines = 3;
-      // A proper multiline comment has at least 3 lines: opener, content, closer
-      if (lines.length >= minMultilineLines)
-        return;
-      // Single-line comment containing a tag should be multiline
-      if (comment.value.includes('@',))
-        context.report({ node: comment, messageId: 'singleLine', },);
-    },
+        const lines = getCommentLines(comment,);
+        /** Minimum line count for a proper multiline comment: opener, content, closer. */
+        const minMultilineLines = 3;
+        // A proper multiline comment has at least 3 lines: opener, content, closer
+        if (lines.length >= minMultilineLines)
+          return;
+        // Single-line comment containing a tag should be multiline
+        if (comment.value.includes('@',))
+          context.report({ node: comment, messageId: 'singleLine', },);
+      },
     );
   },
 };

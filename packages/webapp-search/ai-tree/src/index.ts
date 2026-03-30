@@ -74,8 +74,8 @@ const app = new Elysia()
   .get(
     '/',
     function handleRoot() {
-    return 'Hello Elysia';
-  },
+      return 'Hello Elysia';
+    },
   )
   .listen(PORT,);
 

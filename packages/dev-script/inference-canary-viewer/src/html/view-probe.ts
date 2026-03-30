@@ -35,11 +35,12 @@ export function renderByProbe({ entries, }: {
     return Object.keys(entry.probeScores,);
   },),),];
 
-  if (probeNames.length === 0)
+  if (probeNames.length === 0) {
     return h({
       tag: 'p',
       text: 'No probe data available.',
     },);
+  }
 
   return probeNames
     .map(function renderProbeSection(probe,): string {

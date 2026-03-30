@@ -19,6 +19,25 @@ import type { LspDiagnostic, } from './types.ts';
 import { pathToUri, } from './uri.ts';
 
 /**
+ * Checks whether a document is currently tracked by the LSP sync layer.
+ *
+ * @param path - absolute file path
+ *
+ * @param documents - open document state map
+ *
+ * @returns true when the document has been registered via didOpen
+ */
+function isTracked({
+  path,
+  documents,
+}: {
+  path: string;
+  documents: Map<string, DocumentState>;
+},): boolean {
+  return documents.has(pathToUri({ path, },),);
+}
+
+/**
  * Notifies servers that a file was opened.
  *
  * @param pool - LSP server pool
@@ -70,6 +89,8 @@ export async function managerDidChange({
   path: string;
   text: string;
 },): Promise<void> {
+  if (!isTracked({ path, documents, },))
+    return;
   syncChange({
     path,
     text,
@@ -96,6 +117,8 @@ export async function managerDidSave({
   documents: Map<string, DocumentState>;
   path: string;
 },): Promise<void> {
+  if (!isTracked({ path, documents, },))
+    return;
   syncSave({
     path,
     documents,
@@ -160,7 +183,7 @@ export function routeNotification({
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP publishDiagnostics shape
     const p = params as {
       uri: string;
-      diagnostics: LspDiagnostic[]
+      diagnostics: LspDiagnostic[];
     };
     diagnostics.update({
       source,

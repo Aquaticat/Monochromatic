@@ -93,14 +93,14 @@ export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
   return Array.from(
     inputs,
     function serializeInput(input,): TextEntryData {
-    return {
-      value: input.value,
-      insetInlineStart: input.style.insetInlineStart,
-      insetBlockStart: input.style.insetBlockStart,
-      color: input.dataset.color ?? '',
-      fontSize: input.dataset.fontSize ?? '',
-    };
-  },
+      return {
+        value: input.value,
+        insetInlineStart: input.style.insetInlineStart,
+        insetBlockStart: input.style.insetBlockStart,
+        color: input.dataset.color ?? '',
+        fontSize: input.dataset.fontSize ?? '',
+      };
+    },
   );
 }
 

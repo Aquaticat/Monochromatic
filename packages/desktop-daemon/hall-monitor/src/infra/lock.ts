@@ -64,19 +64,19 @@ export function acquireLock(): Promise<boolean> {
     lockServer.on(
       'error',
       function handleSocketError(err: NodeJS.ErrnoException,) {
-      if (err.code === 'EADDRINUSE')
-        resolve(false,);
-      else {
-        log.error(`[lock] Socket error: ${err.message}`,);
-        resolve(false,);
-      }
-    },
+        if (err.code === 'EADDRINUSE')
+          resolve(false,);
+        else {
+          log.error(`[lock] Socket error: ${err.message}`,);
+          resolve(false,);
+        }
+      },
     );
     lockServer.listen(
       SOCKET_NAME,
       function onListening() {
-      resolve(true,);
-    },
+        resolve(true,);
+      },
     );
   },);
 }
@@ -109,11 +109,12 @@ async function findSocketOwnerPid(): Promise<number | null> {
       for (const fd of fds) {
         // oxlint-disable-next-line no-await-in-loop -- sequential readlink for each fd
         const link = await readlink(`/proc/${pid}/fd/${fd}`,);
-        if (link === `socket:[${inode}]`)
+        if (link === `socket:[${inode}]`) {
           return Number.parseInt(
             pid,
             10,
           );
+        }
       }
     }
     catch {

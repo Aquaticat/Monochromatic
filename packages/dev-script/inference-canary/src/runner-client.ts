@@ -47,8 +47,7 @@ export function executeProbe(
   config: RunnerConfig,
   client: OpenAI,
   signal?: AbortSignal,
-): Promise<CompletionResult>
-{
+): Promise<CompletionResult> {
   const messages: ChatMessage[] = [
     {
       role: 'system',

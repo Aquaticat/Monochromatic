@@ -59,7 +59,8 @@ async function runCliFy({ args, }: { args: readonly string[]; },): Promise<{
       stderr: result.stderr,
       stdout: stripLogLines({ raw: result.stdout, },),
     };
-  } catch (error: unknown) {
+  }
+  catch (error: unknown) {
     const spawnError = error as SubprocessError;
     return {
       exitCode: spawnError.exitCode ?? 1,

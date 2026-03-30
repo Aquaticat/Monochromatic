@@ -22,8 +22,8 @@ export function groupByLang(posts: readonly Post[],): Record<string, Post[]> {
     Map.groupBy(
       posts,
       function byLang(post,) {
-      return post.lang;
-    },
+        return post.lang;
+      },
     ),
   );
 }
@@ -40,8 +40,8 @@ export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
     Map.groupBy(
       posts,
       function byName(post,) {
-      return post.name;
-    },
+        return post.name;
+      },
     ),
   );
 }
@@ -77,8 +77,8 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
       return [
         tag,
         posts.filter(function hasTag(post,) {
-        return post.data.tags.includes(tag,);
-      },),
+          return post.data.tags.includes(tag,);
+        },),
       ];
     },),
   );

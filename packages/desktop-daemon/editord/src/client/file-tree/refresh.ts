@@ -107,7 +107,7 @@ export async function performRefreshDir({
           ...opts,
           fetchDir: state.fetchDir,
           prefetchCache: state
-          .prefetchCache,
+            .prefetchCache,
         },);
       }
     },
@@ -144,7 +144,7 @@ export async function refreshDirContents(
     recentPaths: string[];
     preloadFn: (opts: {
       parentPath: string;
-      entries: DirEntry[]
+      entries: DirEntry[];
     },) => void;
   },
 ): Promise<void> {
@@ -155,11 +155,12 @@ export async function refreshDirContents(
   for (const dirEntry of container.querySelectorAll<TreeDirEntry>(
     ':scope > tree-dir-entry',
   )) {
-    if (dirEntry.entryPath !== '')
+    if (dirEntry.entryPath !== '') {
       existingDirs.set(
         dirEntry.entryPath,
         dirEntry,
       );
+    }
   }
 
   const recencyMap = buildRecencyIndex({ recentPaths, },);

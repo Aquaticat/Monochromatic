@@ -189,8 +189,7 @@ export async function writeLintFile(
 export async function writeEnrichedArtifact(
   enriched: EnrichedArtifactMeta,
   rawResponse: string,
-): Promise<void>
-{
+): Promise<void> {
   const dir = artifactDir(enriched,);
   await mkdir(
     dir,

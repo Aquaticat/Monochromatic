@@ -39,8 +39,7 @@ export async function convertToWoff2(
   try {
     await spawn(
       'uv',
-      ['run', '--with', 'fonttools', '--with', 'brotli', 'python3', '-c',
-      woff2Script,],
+      ['run', '--with', 'fonttools', '--with', 'brotli', 'python3', '-c', woff2Script,],
     );
     /** File stats for the generated WOFF2 file. */
     const { size, } = statSync(woff2Path,);

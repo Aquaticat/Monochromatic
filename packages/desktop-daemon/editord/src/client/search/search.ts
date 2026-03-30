@@ -39,7 +39,9 @@ export type SearchState = {
  *
  * @returns debounced handle
  */
-export function createSearchDebounce({ execute, }: { execute: () => void; },): DebouncedHandle {
+export function createSearchDebounce(
+  { execute, }: { execute: () => void; },
+): DebouncedHandle {
   return createDebounced({
     fn: execute,
     delayMs: DEBOUNCE_MS,
@@ -86,7 +88,7 @@ export async function performSearch({
   onSearch: (query: string,) => Promise<SearchResult[]>;
   onResults: (opts: {
     results: SearchResult[];
-    query: string
+    query: string;
   },) => void;
 },): Promise<void> {
   if (raw.trim() === '') {

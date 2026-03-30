@@ -43,7 +43,7 @@ const { Elysia, } = await import('elysia');
 const tasks: {
   id: string;
   title: string;
-  done: boolean
+  done: boolean;
 }[] = [
   {
     id: '1',
@@ -93,50 +93,50 @@ const app = new Elysia({ adapter: adapter as never, },)
   .get(
     '/',
     function handleRoot() {
-    return {
-      message: 'Elysia universal PoC',
-      runtime: detectRuntime(),
-    };
-  },
+      return {
+        message: 'Elysia universal PoC',
+        runtime: detectRuntime(),
+      };
+    },
   )
   .get(
     '/tasks',
     function listTasks() {
-    return tasks;
-  },
+      return tasks;
+    },
   )
   .get(
     '/tasks/:id',
     function getTask({ params, },) {
-    const task = tasks.find(function findById(t,) {
-      return t.id === params.id;
-    },);
-    if (task === undefined)
-      return new Response('Not found', { status: 404, },);
-    return task;
-  },
+      const task = tasks.find(function findById(t,) {
+        return t.id === params.id;
+      },);
+      if (task === undefined)
+        return new Response('Not found', { status: 404, },);
+      return task;
+    },
   )
   .post(
     '/tasks',
     function createTask({ body, },) {
-    const { title, } = body as { title: string; };
-    const task = { id: String(nextId,), title, done: false, };
-    nextId += 1;
-    tasks.push(task,);
-    return task;
-  },
+      const { title, } = body as { title: string; };
+      const task = { id: String(nextId,), title, done: false, };
+      nextId += 1;
+      tasks.push(task,);
+      return task;
+    },
   )
   .post(
     '/tasks/:id/complete',
     function completeTask({ params, },) {
-    const task = tasks.find(function findById(t,) {
-      return t.id === params.id;
-    },);
-    if (task === undefined)
-      return new Response('Not found', { status: 404, },);
-    task.done = true;
-    return task;
-  },
+      const task = tasks.find(function findById(t,) {
+        return t.id === params.id;
+      },);
+      if (task === undefined)
+        return new Response('Not found', { status: 404, },);
+      task.done = true;
+      return task;
+    },
   )
   // oxlint-disable-next-line no-magic-numbers -- PoC server port
   .listen(3_099,);

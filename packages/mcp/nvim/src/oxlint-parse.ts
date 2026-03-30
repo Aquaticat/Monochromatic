@@ -46,8 +46,9 @@ export function findAncestorWithFile(
     if (existsSync(resolve(
       current,
       filename,
-    ),))
+    ),)) {
       return current;
+    }
     const parent = dirname(current,);
     if (parent === current)
       return null;
@@ -78,8 +79,7 @@ export function findAncestorWithFile(
 export function parseOxlintOutput(
   output: OxlintJsonOutput,
   cwd: string,
-): Map<string, Diagnostic[]>
-{
+): Map<string, Diagnostic[]> {
   const result = new Map<string, Diagnostic[]>();
 
   for (const entry of output.diagnostics) {
@@ -108,11 +108,12 @@ export function parseOxlintOutput(
     const existing = result.get(absolutePath,);
     if (existing !== undefined)
       existing.push(diagnostic,);
-    else
+    else {
       result.set(
         absolutePath,
         [diagnostic,],
       );
+    }
   }
 
   return result;

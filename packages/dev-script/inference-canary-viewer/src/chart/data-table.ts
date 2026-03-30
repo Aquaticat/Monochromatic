@@ -50,24 +50,25 @@ function fixScoreCell(
 ): string {
   if (!hasFixScores)
     return '';
-  if (row.pass2Score !== undefined)
+  if (row.pass2Score !== undefined) {
     return h({
       tag: 'td',
       text: row.pass2Score.toFixed(2,),
     },);
+  }
   if (row.failed) {
     return h({
       tag: 'td',
       children: [
-      h({ tag: 'span', class: 'missing-data-label', text: '(not run)', },),
-    ],
+        h({ tag: 'span', class: 'missing-data-label', text: '(not run)', },),
+      ],
     },);
   }
   return h({
     tag: 'td',
     children: [
-    h({ tag: 'span', class: 'missing-data-label', text: '(data error)', },),
-  ],
+      h({ tag: 'span', class: 'missing-data-label', text: '(data error)', },),
+    ],
   },);
 }
 
@@ -98,11 +99,12 @@ export function renderDataTable(
   const showProbe = options.showProbe ?? true;
 
   /** When only timestamp + score remain, render as a compact grid instead of a table */
-  if (!showModel && !showProbe)
+  if (!showModel && !showProbe) {
     return renderDataGrid(
       rows,
       caption,
     );
+  }
 
   /** Only show the fix score column when at least one row has pass2 data */
   const hasFixScores = rows.some(function hasPass2(row,) {
@@ -187,14 +189,18 @@ export function renderDataTable(
           : {}),
         children: [
           timestampTd,
-          ...(showModel ? [h({
-            tag: 'td',
-            text: row.model,
-          },),] : []),
-          ...(showProbe ? [h({
-            tag: 'td',
-            text: row.probe,
-          },),] : []),
+          ...(showModel
+            ? [h({
+              tag: 'td',
+              text: row.model,
+            },),]
+            : []),
+          ...(showProbe
+            ? [h({
+              tag: 'td',
+              text: row.probe,
+            },),]
+            : []),
           h({
             tag: 'td',
             text: row.score.toFixed(2,),

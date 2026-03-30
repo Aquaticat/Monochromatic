@@ -43,7 +43,13 @@ export async function showStatus(name: string,): Promise<void> {
   console.log(`memory:     ${config.boot.memory}`,);
   console.log(`cpus:       ${String(config.boot.cpus,)}`,);
   console.log(`synced:     ${String(config.state.synced,)}`,);
-  console.log(`last boot:  ${config.state.lastBootHypervisor ?? 'never'} (${config.state.lastBootAt ?? 'n/a'})`,);
+  console.log(
+    `last boot:  ${config.state.lastBootHypervisor ?? 'never'} (${
+      config
+        .state
+        .lastBootAt ?? 'n/a'
+    })`,
+  );
   console.log(`qcow2 hash: ${config.state.checksums.qcow2}`,);
   console.log(`vhdx hash:  ${config.state.checksums.vhdx}`,);
 }

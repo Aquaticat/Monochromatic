@@ -50,7 +50,7 @@ import type {
  *
  * @returns request result, or fallback on failure
  */
-async function withClient<T>({
+async function withClient<T,>({
   pool,
   serverType,
   path,
@@ -250,7 +250,7 @@ export function managerSelectionRange({
   path: string;
   positions: {
     line: number;
-    character: number
+    character: number;
   }[];
 },): Promise<LspSelectionRange[]> {
   return withClient({

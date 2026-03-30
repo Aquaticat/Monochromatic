@@ -76,36 +76,36 @@ export class TreeFileEntry extends HTMLElement {
     this.addEventListener(
       'click',
       function handleFileClick() {
-      entry.focus();
-      entry.dispatchEvent(new CustomEvent(
-        'file-select',
-        {
-          bubbles: true,
-          composed: true,
-          detail: { path: entry.entryPath, },
-        },
-      ),);
-    },
+        entry.focus();
+        entry.dispatchEvent(new CustomEvent(
+          'file-select',
+          {
+            bubbles: true,
+            composed: true,
+            detail: { path: entry.entryPath, },
+          },
+        ),);
+      },
     );
     this.addEventListener(
       'mouseup',
       function handleFileContext(event: MouseEvent,) {
-      if (event.button !== 2)
-        return;
-      event.preventDefault();
-      entry.dispatchEvent(new CustomEvent(
-        'show-context',
-        {
-          bubbles: true,
-          detail: {
-            x: event.clientX,
-            y: event.clientY,
-            path: entry.entryPath,
-            kind: 'file' as const,
+        if (event.button !== 2)
+          return;
+        event.preventDefault();
+        entry.dispatchEvent(new CustomEvent(
+          'show-context',
+          {
+            bubbles: true,
+            detail: {
+              x: event.clientX,
+              y: event.clientY,
+              path: entry.entryPath,
+              kind: 'file' as const,
+            },
           },
-        },
-      ),);
-    },
+        ),);
+      },
     );
     this.addEventListener(
       'contextmenu',

@@ -78,14 +78,14 @@ class SearchBar extends HTMLElement {
     input.addEventListener(
       'input',
       function handleInput(): void {
-      clearTimeout(timeout,);
-      timeout = setTimeout(function emitSearch(): void {
-        dispatchFn(
-          new CustomEvent('search', { detail: { query: input.value.trim(), },
-            bubbles: true, },),
-        );
-      }, SEARCH_DEBOUNCE_MS,);
-    },
+        clearTimeout(timeout,);
+        timeout = setTimeout(function emitSearch(): void {
+          dispatchFn(
+            new CustomEvent('search', { detail: { query: input.value.trim(), },
+              bubbles: true, },),
+          );
+        }, SEARCH_DEBOUNCE_MS,);
+      },
     );
 
     this.#shadow.replaceChildren(

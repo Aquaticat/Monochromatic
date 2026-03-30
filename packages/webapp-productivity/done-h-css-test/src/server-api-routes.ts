@@ -39,8 +39,7 @@ const HTTP_BAD_REQUEST = 400;
 function requireParam(
   event: Parameters<typeof getRouterParam>[0],
   name: string,
-): string
-{
+): string {
   const value = getRouterParam(
     event,
     name,
@@ -63,40 +62,40 @@ export function registerApiRoutes(app: H3,): void {
   app.post(
     '/api/tasks',
     defineHandler(function handleCreateTaskRoute(event,) {
-    return handleCreateTask(event.req,);
-  },),
+      return handleCreateTask(event.req,);
+    },),
   );
 
   app.put(
     '/api/tasks/:id',
     defineHandler(function handleUpdateTaskRoute(event,) {
-    const id = requireParam(event, 'id',);
-    return handleUpdateTask(event.req, id,);
-  },),
+      const id = requireParam(event, 'id',);
+      return handleUpdateTask(event.req, id,);
+    },),
   );
 
   app.delete(
     '/api/tasks/:id',
     defineHandler(function handleDeleteTaskRoute(event,) {
-    const id = requireParam(event, 'id',);
-    return handleDeleteTask(id,);
-  },),
+      const id = requireParam(event, 'id',);
+      return handleDeleteTask(id,);
+    },),
   );
 
   app.post(
     '/api/tasks/:id/start',
     defineHandler(function handleStartTimerRoute(event,) {
-    const id = requireParam(event, 'id',);
-    return handleStartTimer(id,);
-  },),
+      const id = requireParam(event, 'id',);
+      return handleStartTimer(id,);
+    },),
   );
 
   app.post(
     '/api/tasks/:id/stop',
     defineHandler(function handleStopTimerRoute(event,) {
-    const id = requireParam(event, 'id',);
-    return handleStopTimer(id,);
-  },),
+      const id = requireParam(event, 'id',);
+      return handleStopTimer(id,);
+    },),
   );
 
   app.post(
@@ -110,7 +109,7 @@ export function registerApiRoutes(app: H3,): void {
   app.post(
     '/api/ai/autofill',
     defineHandler(function handleAutofillRoute(event,) {
-    return handleAutofill(event.req,);
-  },),
+      return handleAutofill(event.req,);
+    },),
   );
 }

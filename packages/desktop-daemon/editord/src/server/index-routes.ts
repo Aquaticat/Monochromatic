@@ -47,18 +47,18 @@ export function registerRoutes({
   app.get(
     '/',
     defineHandler(async function handleIndex() {
-    const html = await readFile(
-      join(
-        packageRoot,
-        'src/client/index.html',
-      ),
-      'utf8',
-    );
-    return new Response(
-      html,
-      { headers: { 'Content-Type': 'text/html; charset=utf-8', }, },
-    );
-  },),
+      const html = await readFile(
+        join(
+          packageRoot,
+          'src/client/index.html',
+        ),
+        'utf8',
+      );
+      return new Response(
+        html,
+        { headers: { 'Content-Type': 'text/html; charset=utf-8', }, },
+      );
+    },),
   );
 
   //endregion HTML entry point
@@ -68,45 +68,45 @@ export function registerRoutes({
   app.get(
     '/dist/client/**',
     defineHandler(function handleStaticAsset(event,) {
-    return serveStatic(
-      event,
-      {
-      getContents: function readContents(id,) {
-        return readFile(join(
-          packageRoot,
-          id,
-        ),);
-      },
-      getMeta: async function getMetadata(id,) {
-        const fullPath = join(
-          packageRoot,
-          id,
-        );
-        let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
-        try {
-          stats = await stat(fullPath,);
-        }
-        catch (error) {
-          /** Only swallow ENOENT (file not found); rethrow unexpected errors. */
-          const isNotFound = error instanceof Error
-            && 'code' in error
-            // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
-            && (error as NodeJS.ErrnoException).code === 'ENOENT';
-          if (!isNotFound)
-            throw error;
+      return serveStatic(
+        event,
+        {
+          getContents: function readContents(id,) {
+            return readFile(join(
+              packageRoot,
+              id,
+            ),);
+          },
+          getMeta: async function getMetadata(id,) {
+            const fullPath = join(
+              packageRoot,
+              id,
+            );
+            let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
+            try {
+              stats = await stat(fullPath,);
+            }
+            catch (error) {
+              /** Only swallow ENOENT (file not found); rethrow unexpected errors. */
+              const isNotFound = error instanceof Error
+                && 'code' in error
+                // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
+                && (error as NodeJS.ErrnoException).code === 'ENOENT';
+              if (!isNotFound)
+                throw error;
 
-          return;
-        }
-        if (!stats.isFile())
-          return;
-        return {
-          size: stats.size,
-          mtime: stats.mtimeMs,
-        };
-      },
-    },
-    );
-  },),
+              return;
+            }
+            if (!stats.isFile())
+              return;
+            return {
+              size: stats.size,
+              mtime: stats.mtimeMs,
+            };
+          },
+        },
+      );
+    },),
   );
 
   //endregion Static asset serving
@@ -116,29 +116,31 @@ export function registerRoutes({
   app.get(
     '/_raw',
     defineHandler(async function handleRawFile(event,) {
-    const query = getQuery(event,);
-    if (query.token !== authToken)
+      const query = getQuery(event,);
+      if (query.token !== authToken) {
+        return new Response(
+          'Unauthorized',
+          { status: 401, },
+        );
+      }
+      const filePath = typeof query.path === 'string' ? query.path : null;
+      if (filePath === null) {
+        return new Response(
+          'Missing path',
+          { status: 400, },
+        );
+      }
+      const absolutePath = assertWithinRoot({
+        rootDir,
+        path: filePath,
+      },);
+      const buffer = await readFile(absolutePath,);
+      const contentType = getContentType({ path: absolutePath, },);
       return new Response(
-        'Unauthorized',
-        { status: 401, },
+        buffer,
+        { headers: { 'Content-Type': contentType, }, },
       );
-    const filePath = typeof query.path === 'string' ? query.path : null;
-    if (filePath === null)
-      return new Response(
-        'Missing path',
-        { status: 400, },
-      );
-    const absolutePath = assertWithinRoot({
-      rootDir,
-      path: filePath,
-    },);
-    const buffer = await readFile(absolutePath,);
-    const contentType = getContentType({ path: absolutePath, },);
-    return new Response(
-      buffer,
-      { headers: { 'Content-Type': contentType, }, },
-    );
-  },),
+    },),
   );
 
   //endregion Raw file serving

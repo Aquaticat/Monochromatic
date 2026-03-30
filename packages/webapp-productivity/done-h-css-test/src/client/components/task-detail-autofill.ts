@@ -71,8 +71,8 @@ export class AutofillManager {
     const fetchFn = this.#fetch.bind(this,);
     this.#timer = setTimeout(
       function triggerFetch(): void {
-      void fetchFn(options,);
-    },
+        void fetchFn(options,);
+      },
       AUTOFILL_DEBOUNCE_MS,
     );
   }
@@ -105,11 +105,11 @@ export class AutofillManager {
       const response = await fetch(
         '/api/ai/autofill',
         {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ title: title.trim(), },),
-        signal: controller.signal,
-      },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', },
+          body: JSON.stringify({ title: title.trim(), },),
+          signal: controller.signal,
+        },
       );
 
       if (!response.ok)

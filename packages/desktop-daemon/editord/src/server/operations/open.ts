@@ -29,6 +29,8 @@ export type OpenResult = {
   path: string;
   /** File content: UTF-8 text, hex dump, or empty string for media. */
   content: string;
+  /** On-disk file size in bytes, available for text and binary kinds. */
+  size?: number;
   /** Trimmed ffprobe output for media files, omitting version/build header. */
   mediaInfo?: string;
 };
@@ -51,7 +53,7 @@ export async function openFile(
     path,
   }: {
     rootDir: string;
-    path: string
+    path: string;
   },
 ): Promise<OpenResult> {
   const absolutePath = assertWithinRoot({
@@ -80,10 +82,13 @@ export async function openFile(
     0,
   );
 
-  if (probe.subarray(
-    0,
-    bytesRead,
-  ).includes(0,)) {
+  if (probe
+    .subarray(
+      0,
+      bytesRead,
+    )
+    .includes(0,))
+  {
     /** Binary: read only what hex dump needs instead of the entire file. */
     const { size, } = await handle.stat();
     const dumpLimit = Math.min(
@@ -104,6 +109,7 @@ export async function openFile(
         buffer: dumpBuffer,
         totalSize: size,
       },),
+      size,
     };
   }
 
@@ -114,10 +120,13 @@ export async function openFile(
     return {
       kind: 'text',
       path: absolutePath,
-      content: probe.subarray(
-        0,
-        bytesRead,
-      ).toString('utf8',),
+      content: probe
+        .subarray(
+          0,
+          bytesRead,
+        )
+        .toString('utf8',),
+      size,
     };
   }
   const tail = Buffer.alloc(remaining,);
@@ -130,12 +139,15 @@ export async function openFile(
   return {
     kind: 'text',
     path: absolutePath,
-    content: Buffer.concat([
-      probe.subarray(
-        0,
-        bytesRead,
-      ),
-      tail,
-    ],).toString('utf8',),
+    content: Buffer
+      .concat([
+        probe.subarray(
+          0,
+          bytesRead,
+        ),
+        tail,
+      ],)
+      .toString('utf8',),
+    size,
   };
 }

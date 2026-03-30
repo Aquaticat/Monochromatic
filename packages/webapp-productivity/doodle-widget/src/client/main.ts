@@ -68,7 +68,7 @@ function getToolMode(): ToolMode {
  */
 function getCanvasSize(): {
   cw: number;
-  ch: number
+  ch: number;
 } {
   return {
     cw: canvasWidth,

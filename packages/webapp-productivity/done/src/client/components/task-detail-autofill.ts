@@ -16,7 +16,7 @@ export type AutofillCallbacks = {
     tags: string[];
     locations: string[];
     priority: string | null;
-    complexity: string | null
+    complexity: string | null;
   };
   /** Applies new metadata values. */
   setState: (
@@ -24,7 +24,7 @@ export type AutofillCallbacks = {
       tags?: string[];
       locations?: string[];
       priority?: string | null;
-      complexity?: string | null
+      complexity?: string | null;
     },
   ) => void;
   /** Refreshes the pill display. */
@@ -75,10 +75,10 @@ export class AutofillController {
 
     this.#timer = setTimeout(
       function triggerAutofill(this: AutofillController,): void {
-      // oxlint-disable-next-line typescript/no-floating-promises -- fire-and-forget
-      this.#fetch(title.trim(),);
-    }
-      .bind(this,),
+        // oxlint-disable-next-line typescript/no-floating-promises -- fire-and-forget
+        this.#fetch(title.trim(),);
+      }
+        .bind(this,),
       AUTOFILL_DEBOUNCE_MS,
     );
   }
@@ -98,11 +98,11 @@ export class AutofillController {
       const response = await fetch(
         '/api/ai/autofill',
         {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ title, },),
-        signal: controller.signal,
-      },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', },
+          body: JSON.stringify({ title, },),
+          signal: controller.signal,
+        },
       );
 
       if (response.ok) {
@@ -133,11 +133,12 @@ export class AutofillController {
       }
     }
     catch (error: unknown) {
-      if (!(error instanceof DOMException && error.name === 'AbortError'))
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
         console.error(
           'Autofill request failed:',
           error,
         );
+      }
     }
 
     this.loading = false;

@@ -16,7 +16,7 @@ type GenerateContentPart =
   | { readonly text: string; }
   | { readonly inline_data: {
     readonly mime_type: string;
-    readonly data: string
+    readonly data: string;
   }; };
 
 /**
@@ -94,8 +94,7 @@ function resolveGeminiDescribeKey(): string | undefined {
 export async function describeViaGemini(
   imageA: ImageInput,
   imageB: ImageInput,
-): Promise<string | undefined>
-{
+): Promise<string | undefined> {
   const rl = tagged({
     tag: describeViaGemini.name,
     l,
@@ -135,13 +134,13 @@ export async function describeViaGemini(
   const response = await fetch(
     url,
     {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify(requestBody,),
     },
-    body: JSON.stringify(requestBody,),
-  },
   );
 
   if (!response.ok) {

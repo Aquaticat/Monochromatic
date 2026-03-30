@@ -141,8 +141,8 @@ function createMethod(level: Level,): (message: string,) => void {
           void result.then(
             function noop() {/* success */},
             function onReject() {
-            markFailed(entry,);
-          },
+              markFailed(entry,);
+            },
           );
         }
       }

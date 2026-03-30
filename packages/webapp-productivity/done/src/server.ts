@@ -78,8 +78,7 @@ function resolvePort(): number {
 function requireParam(
   event: Parameters<typeof getRouterParam>[0],
   name: string,
-): string
-{
+): string {
   const value = getRouterParam(
     event,
     name,
@@ -104,63 +103,63 @@ const app = new H3();
 app.get(
   '/',
   defineHandler(function handleInbox() {
-  return inboxPage();
-},),
+    return inboxPage();
+  },),
 );
 app.get(
   '/in-progress',
   defineHandler(function handleInProgress() {
-  return inProgressPage();
-},),
+    return inProgressPage();
+  },),
 );
 app.get(
   '/tasks/:id',
   defineHandler(function handleTaskDetails(event,) {
-  return taskDetailsPage(requireParam(event, 'id',),);
-},),
+    return taskDetailsPage(requireParam(event, 'id',),);
+  },),
 );
 app.get(
   '/search',
   defineHandler(function handleSearch(event,) {
-  return searchPage(event.url,);
-},),
+    return searchPage(event.url,);
+  },),
 );
 app.get(
   '/settings',
   defineHandler(function handleSettings() {
-  return settingsPage();
-},),
+    return settingsPage();
+  },),
 );
 
 app.post(
   '/api/tasks',
   defineHandler(function handleCreateTaskRoute(event,) {
-  return handleCreateTask(event.req,);
-},),
+    return handleCreateTask(event.req,);
+  },),
 );
 app.put(
   '/api/tasks/:id',
   defineHandler(function handleUpdateTaskRoute(event,) {
-  return handleUpdateTask(event.req, requireParam(event, 'id',),);
-},),
+    return handleUpdateTask(event.req, requireParam(event, 'id',),);
+  },),
 );
 app.delete(
   '/api/tasks/:id',
   defineHandler(function handleDeleteTaskRoute(event,) {
-  return handleDeleteTask(requireParam(event, 'id',),);
-},),
+    return handleDeleteTask(requireParam(event, 'id',),);
+  },),
 );
 app.post(
   '/api/tasks/:id/start',
   defineHandler(function handleStartTimerRoute(event,) {
-  return handleStartTimer(requireParam(event, 'id',),);
-},),
+    return handleStartTimer(requireParam(event, 'id',),);
+  },),
 );
 app.post(
   '/api/tasks/:id/stop',
   defineHandler(function handleStopTimerRoute(event,) {
-  return handleStopTimer(requireParam(event, 'id',),);
-},),
+    return handleStopTimer(requireParam(event, 'id',),);
+  },),
 );
 app.post(
   '/api/tasks/:id/complete',
@@ -171,8 +170,8 @@ app.post(
 app.post(
   '/api/ai/autofill',
   defineHandler(function handleAutofillRoute(event,) {
-  return handleAutofill(event.req,);
-},),
+    return handleAutofill(event.req,);
+  },),
 );
 
 app.get(

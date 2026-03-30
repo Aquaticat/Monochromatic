@@ -58,17 +58,19 @@ export async function getIndexHtmlBody(
   return h({
     tag: 'ol',
     class: 'feeds',
-    children: filteredItems.slice(
-      0,
-      LIMIT,
-    ).map(function renderItem(
-      item,
-      index,
-    ) {
-      return itemToFeed({
-        itemWDate: item,
+    children: filteredItems
+      .slice(
+        0,
+        LIMIT,
+      )
+      .map(function renderItem(
+        item,
         index,
-      },);
-    },),
+      ) {
+        return itemToFeed({
+          itemWDate: item,
+          index,
+        },);
+      },),
   },);
 }

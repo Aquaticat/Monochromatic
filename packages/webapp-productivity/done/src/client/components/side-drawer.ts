@@ -59,13 +59,15 @@ class SideDrawer extends HTMLElement {
    * @param value - New open state
    */
   set open(value: boolean,) {
-    if (value)
+    if (value) {
       this.setAttribute(
         'open',
         '',
       );
-    else
+    }
+    else {
       this.removeAttribute('open',);
+    }
   }
 
   /** Renders content and attaches event handlers for closing the drawer. */

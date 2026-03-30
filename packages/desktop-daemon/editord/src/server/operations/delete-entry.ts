@@ -24,7 +24,7 @@ export async function deleteEntry(
     path,
   }: {
     rootDir: string;
-    path: string
+    path: string;
   },
 ): Promise<void> {
   const absolutePath = assertWithinRoot({

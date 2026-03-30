@@ -133,12 +133,12 @@ export function $<
     memoized,
     'size',
     {
-    get(): number {
-      return store.size;
+      get(): number {
+        return store.size;
+      },
+      enumerable: true,
+      configurable: false,
     },
-    enumerable: true,
-    configurable: false,
-  },
   );
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- memoized function is extended with store/clear/delete/size properties

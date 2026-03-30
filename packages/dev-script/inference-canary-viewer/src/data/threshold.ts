@@ -70,14 +70,14 @@ export function computeThreshold(
 
   const mean = scores.reduce(
     function add(sum, score,): number {
-    return sum + score;
-  },
+      return sum + score;
+    },
     0,
   ) / scores.length;
   const variance = scores.reduce(
     function addVariance(sum, score,): number {
-    return sum + (score - mean) ** 2;
-  },
+      return sum + (score - mean) ** 2;
+    },
     0,
   ) / scores.length;
   const stddev = Math.sqrt(variance,);

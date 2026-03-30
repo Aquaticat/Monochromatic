@@ -28,7 +28,7 @@ export type PointerHandlerDeps = {
   /** Returns current canvas dimensions in CSS pixels */
   getCanvasSize: () => {
     cw: number;
-    ch: number
+    ch: number;
   };
   /** Text layer element for eraser hit testing */
   textLayer: HTMLDivElement;

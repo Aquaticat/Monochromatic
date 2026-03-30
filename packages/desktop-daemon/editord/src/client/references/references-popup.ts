@@ -77,10 +77,10 @@ export class ReferencesPopup extends HTMLElement {
     this.addEventListener(
       'toggle',
       function handleToggle(event,) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover is ToggleEvent
-      if ((event as ToggleEvent).newState === 'closed')
-        popup.#cleanup();
-    },
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover is ToggleEvent
+        if ((event as ToggleEvent).newState === 'closed')
+          popup.#cleanup();
+      },
     );
   }
 
@@ -105,7 +105,7 @@ export class ReferencesPopup extends HTMLElement {
       locations: ReferenceLocation[];
       x: number;
       y: number;
-      cursorHeight: number
+      cursorHeight: number;
     },
   ): void {
     if (this.#list === null || locations.length === 0)

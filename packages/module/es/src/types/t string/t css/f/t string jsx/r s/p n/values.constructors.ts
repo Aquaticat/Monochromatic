@@ -254,7 +254,7 @@ export function cssOklch(
     l: number;
     c: number;
     h: number;
-    a?: number
+    a?: number;
   },
 ): CssValue {
   if (a !== undefined)
@@ -291,7 +291,7 @@ export function cssColorFn(
   }: {
     space: string;
     channels: string;
-    a?: number
+    a?: number;
   },
 ): CssValue {
   if (a !== undefined)

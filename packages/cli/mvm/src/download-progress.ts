@@ -67,8 +67,7 @@ async function pollProgress(
   contentLength: number,
   totalStr: string,
   signal: AbortSignal,
-): Promise<void>
-{
+): Promise<void> {
   /** Milliseconds between file size polls for progress display. */
   const POLL_INTERVAL_MS = 500;
 

@@ -61,7 +61,7 @@ export async function enrichArtifact(
   options?: {
     fixPrompt?: string;
     partial?: boolean;
-    error?: string
+    error?: string;
   },
 ): Promise<void> {
   const enriched: EnrichedArtifactMeta = {
@@ -146,9 +146,9 @@ export async function saveFailureArtifacts(
       partialCompletion,
       0,
       {
-      partial: true,
-      error: errorMessage,
-    },
+        partial: true,
+        error: errorMessage,
+      },
     );
     return;
   }
@@ -163,8 +163,8 @@ export async function saveFailureArtifacts(
       lastCompletion,
       lastScore,
       {
-      error: errorMessage,
-    },
+        error: errorMessage,
+      },
     );
   }
 }

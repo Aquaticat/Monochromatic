@@ -66,7 +66,7 @@ export function findScrollAnchor({
   hostElement: HTMLElement;
 },): {
   element: HTMLElement;
-  offsetFromViewport: number
+  offsetFromViewport: number;
 } | null {
   const hostRect = hostElement.getBoundingClientRect();
   const viewportTop = hostRect.top;
@@ -75,11 +75,12 @@ export function findScrollAnchor({
     'summary, tree-file-entry',
   )) {
     const rect = candidate.getBoundingClientRect();
-    if (rect.bottom > viewportTop)
+    if (rect.bottom > viewportTop) {
       return {
         element: candidate,
         offsetFromViewport: rect.top - viewportTop,
       };
+    }
   }
 
   return null;

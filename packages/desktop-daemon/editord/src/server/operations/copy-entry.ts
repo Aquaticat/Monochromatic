@@ -28,7 +28,7 @@ export async function copyEntry(
   }: {
     rootDir: string;
     path: string;
-    destPath: string
+    destPath: string;
   },
 ): Promise<void> {
   const absoluteSource = assertWithinRoot({

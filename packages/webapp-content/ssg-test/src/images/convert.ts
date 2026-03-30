@@ -70,7 +70,7 @@ export async function convertToAvif(
     outputPath,
   }: {
     inputPath: string;
-    outputPath: string
+    outputPath: string;
   },
 ): Promise<void> {
   await sharp(inputPath,)

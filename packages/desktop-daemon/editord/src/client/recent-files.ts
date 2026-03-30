@@ -63,11 +63,12 @@ export function createRecentFiles(): RecentFiles {
     const existing = paths.indexOf(path,);
     if (existing === 0)
       return;
-    if (existing > 0)
+    if (existing > 0) {
       paths.splice(
         existing,
         1,
       );
+    }
     paths.unshift(path,);
     if (paths.length > MAX_RECENT)
       paths.pop();

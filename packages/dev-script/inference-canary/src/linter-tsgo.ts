@@ -69,8 +69,8 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
       'tsgo',
       ['--noEmit', '-p', canaryTsconfig,],
       {
-      timeout: LINT_TIMEOUT_MS,
-    },
+        timeout: LINT_TIMEOUT_MS,
+      },
     );
     const filtered = filterTypeErrors(
       output,

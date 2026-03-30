@@ -130,8 +130,8 @@ export default {
     'value-keyword-case': [
       'lower',
       {
-      ignoreProperties: ['font-family', '/^--/', 'initial-value',],
-    },
+        ignoreProperties: ['font-family', '/^--/', 'initial-value',],
+      },
     ],
 
     //endregion Case
@@ -141,8 +141,8 @@ export default {
     'declaration-empty-line-before': [
       'always',
       {
-      except: ['after-comment', 'first-nested',],
-    },
+        except: ['after-comment', 'first-nested',],
+      },
     ],
 
     //endregion Empty lines

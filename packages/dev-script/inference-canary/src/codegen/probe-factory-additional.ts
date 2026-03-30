@@ -85,11 +85,12 @@ export function cacheAdditionalResults(
     );
     /** Run configuration for this index, used to call verify on successful containers */
     const run = runs[index];
-    if (run !== undefined && result.exitCode === 0 && !result.timedOut)
+    if (run !== undefined && result.exitCode === 0 && !result.timedOut) {
       verifyCaches[index]?.set(
         label,
         run.verify(result,),
       );
+    }
   }
 }
 
@@ -135,9 +136,9 @@ export function computeAdditionalCorrectnesses(
         },),
       },);
       rl.info(
-        `container failed: exit=${
-          String(result.exitCode,)
-        } timedOut=${String(result.timedOut,)}`,
+        `container failed: exit=${String(result.exitCode,)} timedOut=${
+          String(result.timedOut,)
+        }`,
       );
       return 0;
     }

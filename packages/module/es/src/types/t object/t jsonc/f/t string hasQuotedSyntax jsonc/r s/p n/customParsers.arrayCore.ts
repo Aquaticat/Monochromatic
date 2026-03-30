@@ -33,18 +33,19 @@ export function parseArrayElements(
   items: readonly Jsonc.Value[] = [],
 ): {
   items: readonly Jsonc.Value[];
-  tail: FragmentStringJsonc
+  tail: FragmentStringJsonc;
 } {
   /** Leading comments at element start; carries per-element comment. */
   const lead = startsWithComment({ value: tail, },);
   /** Start positioned at element value or closing bracket. */
   const start = lead.remainingContent;
 
-  if (start.startsWith(']',))
+  if (start.startsWith(']',)) {
     return {
       items,
       tail: start.slice(1,) as FragmentStringJsonc,
     };
+  }
 
   /** Parsed value from current element with propagated comment. */
   const {
@@ -56,11 +57,12 @@ export function parseArrayElements(
   },);
   /** Separator decision following the element. */
   const decision = expectArraySeparatorOrEnd(remaining,);
-  if (decision.kind === 'end')
+  if (decision.kind === 'end') {
     return {
       items: [...items, parsed,],
       tail: decision.tail,
     };
+  }
   return parseArrayElements(
     decision.tailStart,
     [...items, parsed,],
@@ -91,7 +93,7 @@ export function customParserForArray(
     context,
   }: {
     value: FragmentStringJsonc | StringJsonc;
-    context?: Jsonc.ValueBase
+    context?: Jsonc.ValueBase;
   },
 ): Jsonc.Array & { remainingContent: FragmentStringJsonc; } {
   //region Entry and comment skip -- Drop the opening '[' then consume leading comments/space

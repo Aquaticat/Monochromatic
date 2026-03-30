@@ -7,61 +7,33 @@ import type {
 /** Default flag used for binary existence checks when no custom check is specified. */
 export const DEFAULT_CHECK = '--version';
 
-/**
- * Known {@link PackageManager} values used to separate overrides from
- * structural fields (`bin`, `check`, `effname`) when destructuring a {@link PackageSpec}.
- */
-const MANAGER_KEYS: ReadonlySet<string> = new Set<PackageManager>([
-  'apk',
-  'apt',
-  'brew',
-  'choco',
-  'dnf',
-  'pacman',
-  'scoop',
-  'winget',
-  'zypper',
-],);
-
 //region p() builder
 
 /**
- * Builds a {@link PackageEntry} from a shorthand string.
- * Binary name, effname, and all per-manager package names are the same value.
+ * Builds a {@link PackageEntry} from a shorthand string or detailed spec.
  *
- * @param shorthand - Name used as `bin`, `effname`, and default package name
+ * **String form**: binary name, effname, and all per-manager package names are the same value.
+ * Availability is unrestricted (`null`).
+ *
+ * **Object form**: `bin` defaults to `effname` when omitted.
+ * When `yes` is present, it encodes both availability and per-manager name overrides.
+ * When `yes` is absent, availability is unrestricted (`null`).
+ *
+ * @param shorthandOrSpec - Name string or object with `effname`, optional `bin`, and optional `yes` array
  *
  * @returns Immutable package entry
  *
  * @example
  * ```ts
  * p('curl')
- * // { bin: 'curl', effname: 'curl', overrides: {} }
- * ```
- */
-export function p(shorthand: string): PackageEntry;
-
-/**
- * Builds a {@link PackageEntry} from a detailed spec.
- * `bin` defaults to `effname` when omitted.
- * Any {@link PackageManager} keys present become per-manager overrides.
- *
- * @param spec - Object with `effname`, optional `bin`, and optional manager overrides
- *
- * @returns Immutable package entry
- *
- * @example
- * ```ts
+ * // { bin: 'curl', effname: 'curl', available: null, overrides: {} }
  * p({ bin: 'rg', effname: 'ripgrep' })
- * p({ effname: 'wget', winget: 'JernejSimoncic.Wget' })
+ * p({ effname: 'acpica', yes: ['apt', ['dnf', 'acpica-tools'], ['pacman', 'acpica-utils']] })
  * ```
  */
-export function p(spec: PackageSpec): PackageEntry;
-
 export function p(shorthandOrSpec: string | PackageSpec,): PackageEntry {
-  if (typeof shorthandOrSpec === 'string') {
+  if (typeof shorthandOrSpec === 'string')
     return buildFromShorthand(shorthandOrSpec,);
-  }
   return buildFromSpec(shorthandOrSpec,);
 }
 
@@ -74,10 +46,11 @@ export function p(shorthandOrSpec: string | PackageSpec,): PackageEntry {
  *
  * @param name - Shared value for `bin`, `effname`, and all managers
  *
- * @returns Immutable package entry with empty overrides
+ * @returns Immutable package entry with unrestricted availability and empty overrides
  */
 function buildFromShorthand(name: string,): PackageEntry {
   return {
+    available: null,
     bin: name,
     check: DEFAULT_CHECK,
     effname: name,
@@ -87,24 +60,58 @@ function buildFromShorthand(name: string,): PackageEntry {
 
 /**
  * Creates a {@link PackageEntry} from a structured spec,
- * extracting manager overrides from the remaining keys.
+ * parsing the `yes` array into availability set and per-manager overrides.
  *
  * @param spec - Full package specification
  *
  * @returns Immutable package entry
  */
 function buildFromSpec(spec: PackageSpec,): PackageEntry {
-  const { bin, check, effname, ...rest } = spec;
-  const overrides: Record<string, string> = {};
-  for (const [key, value,] of Object.entries(rest,)) {
-    if (MANAGER_KEYS.has(key,) && value !== undefined) {
-      overrides[key] = value;
-    }
-  }
+  const {
+    bin,
+    check,
+    effname,
+    yes,
+  } = spec;
+
+  const result = yes !== undefined
+    ? parseYes(yes,)
+    : { available: null as ReadonlySet<PackageManager> | null, overrides: Object.freeze({},), };
+
   return {
+    available: result.available,
     bin: bin ?? effname,
     check: check ?? DEFAULT_CHECK,
     effname,
+    overrides: result.overrides,
+  };
+}
+
+/**
+ * Parses a `yes` availability array into a frozen availability set
+ * and a frozen overrides map.
+ *
+ * @param yes - Array of manager names or `[manager, packageName]` tuples
+ *
+ * @returns Availability set and per-manager name overrides extracted from tuples
+ */
+function parseYes(yes: readonly (PackageManager | readonly [PackageManager, string])[],): {
+  readonly available: ReadonlySet<PackageManager>;
+  readonly overrides: Readonly<Record<string, string>>;
+} {
+  const available = new Set<PackageManager>();
+  const overrides: Record<string, string> = {};
+  for (const entry of yes) {
+    if (typeof entry === 'string') {
+      available.add(entry,);
+    } else {
+      const [manager, packageName,] = entry;
+      available.add(manager,);
+      overrides[manager] = packageName;
+    }
+  }
+  return {
+    available: Object.freeze(available,),
     overrides: Object.freeze(overrides,),
   };
 }

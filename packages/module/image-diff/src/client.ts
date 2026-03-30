@@ -60,8 +60,7 @@ function getProvider(provider: Provider,): EmbeddingProvider {
 export async function embed(
   input: ImageInput,
   config: ImageDiffConfig = {},
-): Promise<EmbeddingResult>
-{
+): Promise<EmbeddingResult> {
   const provider = config.provider ?? 'voyage';
   return getProvider(provider,).embed(
     input,

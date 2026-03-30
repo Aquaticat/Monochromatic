@@ -140,7 +140,9 @@ export async function printVmList(): Promise<void> {
       const hvLabel = config.state.lastBootHypervisor ?? 'never';
 
       console.log(
-        `${config.name.padEnd(NAME_COL,)}${syncLabel.padEnd(SYNC_COL,)}${hvLabel.padEnd(HV_COL,)}${config.boot.memory}  ${String(config.boot.cpus,)}cpu`,
+        `${config.name.padEnd(NAME_COL,)}${syncLabel.padEnd(SYNC_COL,)}${
+          hvLabel.padEnd(HV_COL,)
+        }${config.boot.memory}  ${String(config.boot.cpus,)}cpu`,
       );
     },
   );

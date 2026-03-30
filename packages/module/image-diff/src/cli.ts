@@ -68,16 +68,18 @@ const subcommand = args[0];
 /** Remaining arguments passed through to the subcommand handler. */
 const subArgs = args.slice(1,);
 
-if (subcommand === 'compare')
+if (subcommand === 'compare') {
   await handleCompare(
     subArgs,
     printUsageAndExit,
   );
-else if (subcommand === 'embed')
+}
+else if (subcommand === 'embed') {
   await handleEmbed(
     subArgs,
     printUsageAndExit,
   );
+}
 else {
   if (subcommand !== undefined)
     console.error(`Error: unknown subcommand "${subcommand}"`,);

@@ -42,8 +42,7 @@ function serializeDecls(decls: object,): string {
   for (const [property, value,] of Object.entries(decls,) as readonly [
     string,
     CssValue | string | number | undefined,
-  ][])
-  {
+  ][]) {
     if (value === undefined)
       continue;
 

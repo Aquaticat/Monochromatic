@@ -54,7 +54,7 @@ const HEX_RADIX = 16;
 function hexToRgb(hex: string,): {
   r: number;
   g: number;
-  b: number
+  b: number;
 } {
   /** 24-bit integer parsed from the hex digits */
   const packed = Number.parseInt(
@@ -120,11 +120,12 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
 
   //region Render each page
   for (const [pageIndex, page,] of allPages.entries()) {
-    if (pageIndex > 0)
+    if (pageIndex > 0) {
       doc.addPage([
         pageW,
         pageH,
       ],);
+    }
 
     /** Composited raster image for this page */
     // eslint-disable-next-line no-await-in-loop -- pages render sequentially; each mutates the shared overlay element
@@ -176,8 +177,8 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
         entry.xFraction * pageW,
         entry.yFraction * pageH,
         {
-        baseline: 'top',
-      },
+          baseline: 'top',
+        },
       );
     }
     //endregion Overlay text

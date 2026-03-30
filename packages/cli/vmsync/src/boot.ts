@@ -11,7 +11,9 @@
 import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
 
 import {
   detectHypervisor,
@@ -178,7 +180,9 @@ async function bootKvm(name: string,): Promise<void> {
   ];
 
   rl.info(`launching QEMU: qemu-system-x86_64 ${qemuArgs.join(' ',)}`,);
-  console.log(`booting "${name}" via KVM (close the VM window or shut down the guest to sync)`,);
+  console.log(
+    `booting "${name}" via KVM (close the VM window or shut down the guest to sync)`,
+  );
 
   //region Update state before boot
   config.state.lastBootHypervisor = 'kvm';
@@ -247,14 +251,17 @@ async function bootHyperv(name: string,): Promise<void> {
 
   /** PowerShell script that creates, configures, boots, waits, and cleans up the VM. */
   const psScript = [
-    `New-VM -Name "${hvName}" -MemoryStartupBytes ${String(memoryBytes,)} -VHDPath "${vhdxPath}" -Generation 2`,
+    `New-VM -Name "${hvName}" -MemoryStartupBytes ${
+      String(memoryBytes,)
+    } -VHDPath "${vhdxPath}" -Generation 2`,
     `Set-VMProcessor -VMName "${hvName}" -Count ${String(config.boot.cpus,)}`,
     `Set-VMFirmware -VMName "${hvName}" -EnableSecureBoot Off`,
     `Connect-VMNetworkAdapter -VMName "${hvName}" -SwitchName "Default Switch"`,
     `Start-VM -Name "${hvName}"`,
     `Wait-VM -Name "${hvName}" -For Stopped`,
     `Remove-VM -Name "${hvName}" -Force`,
-  ].join('; ',);
+  ]
+    .join('; ',);
 
   //region Update state before boot
   config.state.lastBootHypervisor = 'hyperv';

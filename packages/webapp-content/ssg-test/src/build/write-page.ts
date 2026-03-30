@@ -26,7 +26,7 @@ export async function writePage(
     content,
   }: {
     relativePath: string;
-    content: string
+    content: string;
   },
 ): Promise<void> {
   const fullPath = join(

@@ -85,47 +85,47 @@ export function createNewTaskDialog(): NewTaskDialog {
   detail.addEventListener(
     'action',
     function onAction(event,) {
-    void (async function onActionAsync() {
-      try {
-        if (!(event instanceof CustomEvent))
-          throw new TypeError("Expected CustomEvent for 'action' listener",);
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
-        const { action, title, description, } = event.detail as {
-          action: string;
-          title: string;
-          description: string;
-        };
+      void (async function onActionAsync() {
+        try {
+          if (!(event instanceof CustomEvent))
+            throw new TypeError("Expected CustomEvent for 'action' listener",);
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
+          const { action, title, description, } = event.detail as {
+            action: string;
+            title: string;
+            description: string;
+          };
 
-        if (action === 'close') {
-          closePanel();
-          return;
-        }
-
-        if (action === 'save') {
-          const trimmedTitle = title.trim();
-          if (trimmedTitle.length === 0)
+          if (action === 'close') {
+            closePanel();
             return;
+          }
 
-          const metadata = detail.getMetadata();
-          await api('/api/tasks', {
-            method: 'POST',
-            body: JSON.stringify({
-              title: trimmedTitle,
-              description: description.length === 0 ? null : description,
-              tags: metadata.tags,
-              locations: metadata.locations,
-              priority: metadata.priority,
-              complexity: metadata.complexity,
-            },),
-          },);
-          globalThis.location.reload();
+          if (action === 'save') {
+            const trimmedTitle = title.trim();
+            if (trimmedTitle.length === 0)
+              return;
+
+            const metadata = detail.getMetadata();
+            await api('/api/tasks', {
+              method: 'POST',
+              body: JSON.stringify({
+                title: trimmedTitle,
+                description: description.length === 0 ? null : description,
+                tags: metadata.tags,
+                locations: metadata.locations,
+                priority: metadata.priority,
+                complexity: metadata.complexity,
+              },),
+            },);
+            globalThis.location.reload();
+          }
         }
-      }
-      catch (error: unknown) {
-        console.error('new task action handler failed', error,);
-      }
-    })();
-  },
+        catch (error: unknown) {
+          console.error('new task action handler failed', error,);
+        }
+      })();
+    },
   );
 
   /** Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation. */

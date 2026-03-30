@@ -27,7 +27,7 @@ export function namePage(
     posts,
   }: {
     name: string;
-    posts: readonly Post[]
+    posts: readonly Post[];
   },
 ): string {
   const content = h({

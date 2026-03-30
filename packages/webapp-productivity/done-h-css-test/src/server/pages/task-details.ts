@@ -25,11 +25,12 @@ import { serializePageData, } from './layout.ts';
  */
 export async function taskDetailsPage(taskId: string,): Promise<Response> {
   const task = await getTaskById(taskId,);
-  if (task === null)
+  if (task === null) {
     return new Response(
       'Task not found',
       { status: 404, },
     );
+  }
 
   const blockerCandidates = await listTasksForBlockerPicker(taskId,);
   const blockerCandidatesById = Object.fromEntries(
@@ -126,7 +127,7 @@ ${
   return new Response(
     html,
     {
-    headers: { 'Content-Type': 'text/html; charset=utf-8', },
-  },
+      headers: { 'Content-Type': 'text/html; charset=utf-8', },
+    },
   );
 }

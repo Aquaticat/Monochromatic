@@ -94,7 +94,7 @@ export function renderToolbar(pageCount: number,): string {
       h({
         tag: 'button',
         attrs: { id: 'upload-btn', type: 'button', // Upload background button hidden by default because it's not needed for the upcoming demo.
-        hidden: '', },
+          hidden: '', },
         text: 'Upload background',
       },),
       h({
@@ -115,10 +115,10 @@ export function renderToolbar(pageCount: number,): string {
             tag: 'select',
             attrs: { id: 'format-select', },
             children: [
-            h({ tag: 'option', attrs: { value: 'pdf', selected: '', }, text: 'PDF', },),
-            h({ tag: 'option', attrs: { value: 'svg', }, text: 'SVG', },),
-            h({ tag: 'option', attrs: { value: 'png', }, text: 'PNG', },),
-          ],
+              h({ tag: 'option', attrs: { value: 'pdf', selected: '', }, text: 'PDF', },),
+              h({ tag: 'option', attrs: { value: 'svg', }, text: 'SVG', },),
+              h({ tag: 'option', attrs: { value: 'png', }, text: 'PNG', },),
+            ],
           },),
         ],
       },),

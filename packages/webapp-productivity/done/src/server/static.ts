@@ -24,21 +24,21 @@ export const staticHandler = defineHandler(function handleStaticAsset(event,) {
   return serveStatic(
     event,
     {
-    getContents: function readContents(id,) {
-      return readFile(join('.', id,),);
+      getContents: function readContents(id,) {
+        return readFile(join('.', id,),);
+      },
+      getMeta: async function getMetadata(id,) {
+        let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
+        try {
+          stats = await stat(join('.', id,),);
+        }
+        catch {
+          // File not found or inaccessible
+        }
+        if (stats === undefined || !stats.isFile())
+          return;
+        return { size: stats.size, mtime: stats.mtimeMs, };
+      },
     },
-    getMeta: async function getMetadata(id,) {
-      let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
-      try {
-        stats = await stat(join('.', id,),);
-      }
-      catch {
-        // File not found or inaccessible
-      }
-      if (stats === undefined || !stats.isFile())
-        return;
-      return { size: stats.size, mtime: stats.mtimeMs, };
-    },
-  },
   );
 },);

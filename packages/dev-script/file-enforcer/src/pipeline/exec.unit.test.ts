@@ -103,7 +103,9 @@ describe('exec (platform-aware)', () => {
         [['false',], ['echo', 'a',],],
         [['false',], ['echo', 'b',],],
       ],),
-    ).rejects.toThrow('No platform predicate matched',);
+    )
+      .rejects
+      .toThrow('No platform predicate matched',);
   });
 
   test('error message includes tested predicates', async () => {
@@ -113,7 +115,9 @@ describe('exec (platform-aware)', () => {
         [['nonexistent-check-1',], ['echo', 'a',],],
         [['nonexistent-check-2', '--flag',], ['echo', 'b',],],
       ],),
-    ).rejects.toThrow('nonexistent-check-1',);
+    )
+      .rejects
+      .toThrow('nonexistent-check-1',);
   });
 
   test('throws when matched command fails', async () => {
@@ -122,7 +126,9 @@ describe('exec (platform-aware)', () => {
       exec([
         [['true',], ['false',],],
       ],),
-    ).rejects.toThrow('Command failed',);
+    )
+      .rejects
+      .toThrow('Command failed',);
   });
 
   test('supports nested PlatformCommands as command value', async () => {
@@ -146,7 +152,9 @@ describe('exec (platform-aware)', () => {
       exec([
         [['true',], innerCommands,],
       ],),
-    ).rejects.toThrow('No platform predicate matched',);
+    )
+      .rejects
+      .toThrow('No platform predicate matched',);
   });
 });
 

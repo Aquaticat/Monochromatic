@@ -50,7 +50,8 @@
     "**/i18n/i18n-types.ts",
     "**/i18n/i18n-util.ts",
     "**/i18n/i18n-util.sync.ts",
-    "**/i18n/i18n-util.async.ts"
+    "**/i18n/i18n-util.async.ts",
+    "**/*.generated.ts"
   ],
   "plugins": [
     "unicorn",

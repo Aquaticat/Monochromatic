@@ -20,7 +20,8 @@ function run(cmd: string,): string {
   return execSync(
     cmd,
     { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
-  ).trim();
+  )
+    .trim();
 }
 
 /** Parameters for silhouette preparation. */
@@ -34,7 +35,7 @@ export type PrepareSilhouettesParams = {
     width: number;
     height: number;
     x: number;
-    y: number
+    y: number;
   };
   /** Height to normalize both images to for consistent measurement. */
   normHeight: number;

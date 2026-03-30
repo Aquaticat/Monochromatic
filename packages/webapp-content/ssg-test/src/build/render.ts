@@ -55,7 +55,7 @@ export async function renderPadded(
     canvasSize,
   }: {
     contentSize: number;
-    canvasSize: number
+    canvasSize: number;
   },
 ): Promise<Buffer> {
   const content = await renderPng({ size: contentSize, },);

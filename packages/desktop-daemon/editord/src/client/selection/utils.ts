@@ -13,7 +13,7 @@ export type FlatRange = {
   startLine: number;
   startCharacter: number;
   endLine: number;
-  endCharacter: number
+  endCharacter: number;
 };
 
 /**
@@ -50,7 +50,7 @@ export function strictlyContains(
     inner,
   }: {
     outer: FlatRange;
-    inner: FlatRange
+    inner: FlatRange;
   },
 ): boolean {
   const outerStartBefore = outer.startLine < inner.startLine

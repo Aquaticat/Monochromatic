@@ -27,7 +27,10 @@ import {
  * @param configPath - Path to the file-enforcer config file
  */
 export function startWatching(configPath: string,): Promise<never> {
-  const rl = tagged({ tag: startWatching.name, l, },);
+  const rl = tagged({
+    tag: startWatching.name,
+    l,
+  },);
   /** Absolute config path for reliable comparisons */
   const absoluteConfig = resolve(configPath,);
   rl.info('watch mode started',);
@@ -95,9 +98,8 @@ export function startWatching(configPath: string,): Promise<never> {
       filename,
     ),);
     pendingPaths.add(changedPath,);
-    if (kind === 'protected') {
+    if (kind === 'protected')
       pendingProtected.add(changedPath,);
-    }
     clearTimeout(debounceTimer,);
     debounceTimer = setTimeout(
       function debouncedRerun(): void {
@@ -138,8 +140,15 @@ export function startWatching(configPath: string,): Promise<never> {
         dir,
         controller.signal,
         absoluteConfig,
-        function onWatchEvent(kind, filename,): void {
-          handleEvent(kind, filename, dir,);
+        function onWatchEvent(
+          kind,
+          filename,
+        ): void {
+          handleEvent(
+            kind,
+            filename,
+            dir,
+          );
         },
       );
     },);

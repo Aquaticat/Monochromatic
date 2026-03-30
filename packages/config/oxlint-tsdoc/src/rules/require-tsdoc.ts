@@ -128,11 +128,12 @@ export const requireTsdoc: CreateOnceRule = {
           inForLoopInit = false;
           return;
         }
-        if (scopeDepth === 0 && blockDepth === 0)
+        if (scopeDepth === 0 && blockDepth === 0) {
           reportMissing(
             node,
             context,
           );
+        }
       },
       PropertyDefinition(node,): void {
         reportMissing(
@@ -147,11 +148,12 @@ export const requireTsdoc: CreateOnceRule = {
         );
       },
       Property(node,): void {
-        if (node.kind === 'get' || node.kind === 'set')
+        if (node.kind === 'get' || node.kind === 'set') {
           reportMissing(
             node,
             context,
           );
+        }
       },
     } as VisitorWithHooks;
   },

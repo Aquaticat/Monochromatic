@@ -214,7 +214,7 @@ async function loadFileSafe(
   }: {
     path: string;
     line?: number | undefined;
-    character?: number | undefined
+    character?: number | undefined;
   },
 ): Promise<void> {
   const kind = await loadFile({
@@ -239,16 +239,16 @@ const {
   expandSelection,
   shrinkSelection,
 } = wireLsp({
-    ws,
-    editorPane,
-    hoverPopup,
-    completionPopup,
-    referencesPopup,
-    getCurrentFilePath: function get() {
-      return state.currentFilePath;
-    },
-    loadFileSafe,
-  },);
+  ws,
+  editorPane,
+  hoverPopup,
+  completionPopup,
+  referencesPopup,
+  getCurrentFilePath: function get() {
+    return state.currentFilePath;
+  },
+  loadFileSafe,
+},);
 
 wireSelectEvents({
   fileTree,
@@ -269,7 +269,7 @@ async function saveCurrentFile(): Promise<void> {
       type: 'save',
       path: state.currentFilePath,
       content: editorPane
-      .getText(),
+        .getText(),
     },);
   }
   catch (error) {
@@ -284,7 +284,8 @@ editorPane.addEventListener(
       void saveCurrentFile();
     },
     delayMs: AUTO_SAVE_DEBOUNCE_MS,
-  },).debounced,
+  },)
+    .debounced,
 );
 
 /**

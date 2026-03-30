@@ -71,8 +71,8 @@ export function combinedScore(
   const lintPenalty = [...lint.perRulePenalty.values(),]
     .reduce(
       function capAndSum(sum, uncapped,): number {
-      return sum + Math.min(uncapped, MAX_PENALTY_PER_RULE,);
-    },
+        return sum + Math.min(uncapped, MAX_PENALTY_PER_RULE,);
+      },
       0,
     );
 
@@ -98,17 +98,16 @@ export async function lintAndLog(
   source: string,
   probeName: string,
   context: ScoreContext,
-): Promise<LintResult>
-{
+): Promise<LintResult> {
   const lint = await lintSource(
     source,
     {
-    model: context.label,
-    label: context.label,
-    probe: probeName,
-    pass: context.pass,
-    timestamp: context.timestamp,
-  },
+      model: context.label,
+      label: context.label,
+      probe: probeName,
+      pass: context.pass,
+      timestamp: context.timestamp,
+    },
   );
   if (lint.linterRan || lint.typeCheckerRan) {
     /** Probe-specific logger for lint result summary. */
@@ -126,10 +125,15 @@ export async function lintAndLog(
       ? `type=${String(lint.typeErrors,)}err`
       : 'type=skipped';
     const rulesSummary = lint.violatedRules.length > 0
-      ? ` (${lint.violatedRules.slice(
-        0,
-        MAX_DISPLAYED_RULES,
-      ).join(', ',)})`
+      ? ` (${
+        lint
+          .violatedRules
+          .slice(
+            0,
+            MAX_DISPLAYED_RULES,
+          )
+          .join(', ',)
+      })`
       : '';
     rl.info(`${lintSummary} ${typeSummary}${rulesSummary}`,);
   }

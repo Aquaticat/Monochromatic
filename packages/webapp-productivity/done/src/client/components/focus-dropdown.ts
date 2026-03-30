@@ -66,8 +66,7 @@ class FocusDropdown extends HTMLElement {
                 this.dispatchEvent(
                   new CustomEvent(
                     'change',
-                    { bubbles: true,
-                    detail: { value: preset, }, },
+                    { bubbles: true, detail: { value: preset, }, },
                   ),
                 );
               }

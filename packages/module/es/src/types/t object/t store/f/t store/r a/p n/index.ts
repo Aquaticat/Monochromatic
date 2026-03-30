@@ -153,13 +153,14 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
         key,
       );
 
-      if (canonicalSerialized !== undefined)
+      if (canonicalSerialized !== undefined) {
         await evictLruEntry({
           lru,
           key,
           backends,
           logger: defaultLogger,
         },);
+      }
 
       return canonicalSerialized === undefined
         ? undefined

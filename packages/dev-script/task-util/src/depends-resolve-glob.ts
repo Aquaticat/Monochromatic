@@ -38,11 +38,12 @@ function splitGlob(pattern: string,): readonly [
 ] {
   const metaIndex = pattern.search(GLOB_META,);
 
-  if (metaIndex === -1)
+  if (metaIndex === -1) {
     return [
       resolve(pattern,),
       '',
     ];
+  }
 
   const staticPrefix = pattern.slice(
     0,
@@ -50,11 +51,12 @@ function splitGlob(pattern: string,): readonly [
   );
   const lastSep = staticPrefix.lastIndexOf('/',);
 
-  if (lastSep === -1)
+  if (lastSep === -1) {
     return [
       resolve('.',),
       pattern,
     ];
+  }
 
   return [
     resolve(staticPrefix.slice(0, lastSep,),),

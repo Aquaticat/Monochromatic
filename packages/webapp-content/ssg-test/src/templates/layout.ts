@@ -31,7 +31,7 @@ export function pageLayout(
   }: {
     title: string;
     lang: Locales;
-    content: string
+    content: string;
   },
 ): string {
   return `<!DOCTYPE html>\n${

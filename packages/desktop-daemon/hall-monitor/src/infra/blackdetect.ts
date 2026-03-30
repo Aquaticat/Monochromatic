@@ -42,8 +42,8 @@ export async function isBlackFrame(jpegBuf: Buffer,): Promise<boolean> {
   proc.stderr.on(
     'data',
     function collectChunk(chunk: Buffer,) {
-    stderrChunks.push(chunk,);
-  },
+      stderrChunks.push(chunk,);
+    },
   );
   await once(
     proc,

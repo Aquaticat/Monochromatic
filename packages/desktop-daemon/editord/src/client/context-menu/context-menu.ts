@@ -77,7 +77,7 @@ export class ContextMenu {
   }: {
     x: number;
     y: number;
-    items: ContextMenuItem[]
+    items: ContextMenuItem[];
   },): void {
     this.hide();
 

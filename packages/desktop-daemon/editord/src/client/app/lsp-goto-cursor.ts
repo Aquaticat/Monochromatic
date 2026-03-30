@@ -15,12 +15,12 @@ import type { ReferencesPopup, } from '../references/references-popup.ts';
 import { showCursorToast, } from '../toast/toast.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
+import { doGotoDefinition, } from './lsp-goto-definition.ts';
+import { showReferences, } from './lsp-references.ts';
 import type {
   GetCurrentFilePathFn,
   LoadFileFn,
 } from './types.ts';
-import { doGotoDefinition, } from './lsp-goto-definition.ts';
-import { showReferences, } from './lsp-references.ts';
 
 /** Tagged logger for goto-definition-at-cursor. */
 const cursorLog = tagged({

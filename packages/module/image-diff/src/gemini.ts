@@ -39,8 +39,7 @@ import type {
 async function geminiEmbed(
   input: ImageInput,
   config: ImageDiffConfig,
-): Promise<EmbeddingResult>
-{
+): Promise<EmbeddingResult> {
   const rl = tagged({
     tag: geminiEmbed.name,
     l,
@@ -63,13 +62,13 @@ async function geminiEmbed(
   const response = await fetch(
     url,
     {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify(requestBody,),
     },
-    body: JSON.stringify(requestBody,),
-  },
   );
 
   if (!response.ok) {

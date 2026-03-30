@@ -144,20 +144,22 @@ export function executeOp(
   else if (op === 'LABEL') {
     /* no-op */
   }
-  else if (op === 'JUMP')
+  else if (op === 'JUMP') {
     return resolveJumpTarget(
       op,
       arg,
       labels,
     );
+  }
   else if (op === 'JUMPZ') {
     const val = pop(stack,);
-    if (val === 0)
+    if (val === 0) {
       return resolveJumpTarget(
         op,
         arg,
         labels,
       );
+    }
   }
   else {
     throw new Error(`unknown op: ${String(op,)}`,);

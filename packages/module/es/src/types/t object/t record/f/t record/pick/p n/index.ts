@@ -75,8 +75,7 @@ import {
     iterable: normalizedOriginalKeys,
     toPick,
     strict,
-  },))
-  {
+  },)) {
     result[key] = (original as Record<typeof key, unknown>)[key];
   }
 

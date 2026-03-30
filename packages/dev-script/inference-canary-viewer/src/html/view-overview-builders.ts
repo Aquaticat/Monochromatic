@@ -54,12 +54,12 @@ export function buildAllModelPoints(
         score: entry.overallScore,
         color,
         icon: vendorIcon(entry.model,),
-        title: `${entry.label} ${entry.timestamp.slice(
-          0,
-          10,
-        )}: ${
-          entry.overallScore.toFixed(2,)
-        }`,
+        title: `${entry.label} ${
+          entry.timestamp.slice(
+            0,
+            10,
+          )
+        }: ${entry.overallScore.toFixed(2,)}`,
         failed: entry.failed,
         tableRow,
       };

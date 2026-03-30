@@ -55,28 +55,28 @@ export const emptyTags: CreateOnceRule = {
     return createTsdocVisitor(
       context,
       function emptyTagsHandler(_node, comment,): void {
-      const lines = getCommentLines(comment,);
-      lines.forEach(function checkLine(line, index,): void {
-        const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
-        const tagMatch = trimmed.match(/^(@\w+)\s+(.+)/,);
-        if (tagMatch === null)
-          return;
-        const { 1: tag, 2: rest, } = tagMatch;
-        if (tag !== undefined
-          && modifierTags.has(tag,)
-          && rest !== undefined
-          && rest.trim().length > 0)
-        {
-          context.report({
-            loc: {
-              start: { line: comment.loc.start.line + index, column: 0, },
-            },
-            messageId: 'nonEmpty',
-            data: { tag, },
-          },);
-        }
-      },);
-    },
+        const lines = getCommentLines(comment,);
+        lines.forEach(function checkLine(line, index,): void {
+          const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
+          const tagMatch = trimmed.match(/^(@\w+)\s+(.+)/,);
+          if (tagMatch === null)
+            return;
+          const { 1: tag, 2: rest, } = tagMatch;
+          if (tag !== undefined
+            && modifierTags.has(tag,)
+            && rest !== undefined
+            && rest.trim().length > 0)
+          {
+            context.report({
+              loc: {
+                start: { line: comment.loc.start.line + index, column: 0, },
+              },
+              messageId: 'nonEmpty',
+              data: { tag, },
+            },);
+          }
+        },);
+      },
     );
   },
 };

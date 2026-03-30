@@ -34,13 +34,13 @@ export const {
       const apiKey = await z
         .pipe(
           z
-          .pipe(z.nullable(z.uuid(),), z.transform(async function promptSet(val,) {
-            if (val)
-              return val;
-            const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
-            localStorage.setItem('exaApiKey', inputApiKey,);
-            return inputApiKey;
-          },),),
+            .pipe(z.nullable(z.uuid(),), z.transform(async function promptSet(val,) {
+              if (val)
+                return val;
+              const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
+              localStorage.setItem('exaApiKey', inputApiKey,);
+              return inputApiKey;
+            },),),
           z.uuid(),
         )
         .parseAsync(localStorage.getItem('exaApiKey',),);

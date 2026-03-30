@@ -29,7 +29,7 @@ function resolveFrom(
     baseDir,
   }: {
     specifier: string;
-    baseDir: string
+    baseDir: string;
   },
 ): string | undefined {
   const rl = tagged({

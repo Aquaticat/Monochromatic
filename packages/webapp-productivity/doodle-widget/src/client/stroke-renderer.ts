@@ -52,16 +52,18 @@ export function renderStrokes({
     ctx.lineJoin = 'round';
     ctx.beginPath();
     for (const [index, point,] of stroke.points.entries()) {
-      if (index === 0)
+      if (index === 0) {
         ctx.moveTo(
           point[0] * cw,
           point[1] * ch,
         );
-      else
+      }
+      else {
         ctx.lineTo(
           point[0] * cw,
           point[1] * ch,
         );
+      }
     }
     ctx.stroke();
   }

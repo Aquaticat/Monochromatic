@@ -8,7 +8,7 @@
 /** Single text content item in an MCP response. */
 type TextContent = {
   text: string;
-  type: 'text'
+  type: 'text';
 };
 
 /** Successful MCP response containing text content. */
@@ -17,7 +17,7 @@ type TextResponse = { content: [TextContent,]; };
 /** MCP error response containing text content and an error flag. */
 type ErrorResponse = {
   content: [TextContent,];
-  isError: true
+  isError: true;
 };
 
 //endregion Types
@@ -93,7 +93,7 @@ export function formatExecResult(
   result: {
     exitCode: number;
     stderr: string;
-    stdout: string
+    stdout: string;
   },
 ): string {
   const parts: string[] = [];

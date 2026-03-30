@@ -27,7 +27,7 @@ export type SessionState = {
   /** 0-based cursor position in the editor. */
   cursor: {
     line: number;
-    character: number
+    character: number;
   };
   /** Vertical scroll offset of the editor pane in pixels. */
   scrollTop: number;
@@ -49,7 +49,7 @@ function storageKey({
   rootDir,
 }: {
   fsId: string;
-  rootDir: string
+  rootDir: string;
 },): string {
   return `editord:${fsId}:${rootDir}`;
 }

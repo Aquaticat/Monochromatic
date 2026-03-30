@@ -71,11 +71,12 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
     for (const filePath of uniquePaths) {
       if (!mergedByPath.has(filePath,)) {
         const lintDiags = lintResult.diagnostics.get(filePath,) ?? [];
-        if (lintDiags.length > 0)
+        if (lintDiags.length > 0) {
           mergedByPath.set(
             filePath,
             lintDiags,
           );
+        }
       }
     }
     //endregion Merge editor and lint diagnostics per file

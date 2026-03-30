@@ -13,7 +13,7 @@ import { replicateElementAsContentOf, } from './client-replicate-element.ts';
 type SearchContents = {
   text: true;
   summary: true;
-  highlights: true
+  highlights: true;
 };
 
 /**

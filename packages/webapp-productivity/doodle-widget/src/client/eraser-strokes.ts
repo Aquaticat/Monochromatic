@@ -171,7 +171,7 @@ export function eraseStrokesAt({
           points: [...seg,],
           color: stroke.color,
           width: stroke
-          .width,
+            .width,
         },);
       }
     }

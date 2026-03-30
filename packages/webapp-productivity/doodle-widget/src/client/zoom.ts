@@ -118,7 +118,7 @@ export function setPan({
   y,
 }: {
   x: number;
-  y: number
+  y: number;
 },): void {
   panX = x;
   panY = y;

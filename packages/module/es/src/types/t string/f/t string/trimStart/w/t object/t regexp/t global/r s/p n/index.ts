@@ -62,7 +62,7 @@ export function $(
     trimmer,
   }: {
     str: string;
-    trimmer: Global
+    trimmer: Global;
   },
 ): string {
   // Use matchAll to get all matches in a single regex execution

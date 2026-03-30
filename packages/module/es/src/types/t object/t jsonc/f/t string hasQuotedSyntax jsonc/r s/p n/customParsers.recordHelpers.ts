@@ -30,7 +30,7 @@ export function parseRecordHeader(
   context?: Jsonc.ValueBase,
 ): {
   recordComment?: Jsonc.Comment;
-  tail: FragmentStringJsonc
+  tail: FragmentStringJsonc;
 } {
   return {
     ...(context?.comment ? { recordComment: context.comment, } : {}),
@@ -53,22 +53,22 @@ export function expectRecordSeparatorOrEnd(
   tail: FragmentStringJsonc,
 ): {
   kind: 'end';
-  tail: FragmentStringJsonc
+  tail: FragmentStringJsonc;
 } | {
   kind: 'next';
-  tailStart: FragmentStringJsonc
-}
-{
+  tailStart: FragmentStringJsonc;
+} {
   /** Leading comments/whitespace after previous member. */
   const after = startsWithComment({ value: tail, },);
   /** Tail trimmed to detect ',' or '}' token. */
   const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
 
-  if (rc.startsWith('}',))
+  if (rc.startsWith('}',)) {
     return {
       kind: 'end',
       tail: rc.slice('}'.length,) as FragmentStringJsonc,
     };
+  }
 
   if (rc.startsWith(',',)) {
     /** Tail after the member separator comma. */
@@ -77,11 +77,12 @@ export function expectRecordSeparatorOrEnd(
     const next = startsWithComment({ value: afterComma, },);
     /** Start of the next token inside the record. */
     const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
-    if (nextToken.startsWith('}',))
+    if (nextToken.startsWith('}',)) {
       return {
         kind: 'end',
         tail: nextToken.slice('}'.length,) as FragmentStringJsonc,
       };
+    }
     return {
       kind: 'next',
       tailStart: nextToken,
@@ -113,7 +114,7 @@ export function parseRecordKey(
   tail: FragmentStringJsonc,
 ): {
   keyNode: Jsonc.RecordKey;
-  remaining: FragmentStringJsonc
+  remaining: FragmentStringJsonc;
 } {
   /** Leading comments at key start; carries per-key comment. */
   const lead = startsWithComment({ value: tail, },);

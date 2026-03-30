@@ -13,7 +13,7 @@ export function $<const T,>(
   myIterable: Iterable<T>,
 ): Generator<{
   element: T;
-  index: Int & (Positive | 0)
+  index: Int & (Positive | 0);
 }> {
   return named({ myIterable, },);
 }

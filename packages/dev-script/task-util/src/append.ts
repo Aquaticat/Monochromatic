@@ -97,8 +97,7 @@ async function validateFile(filePath: string,): Promise<void> {
 async function appendLinesToFile(
   filePath: string,
   lines: readonly string[],
-): Promise<void>
-{
+): Promise<void> {
   const content = `${lines.join('\n',)}\n`;
   await appendFile(
     filePath,

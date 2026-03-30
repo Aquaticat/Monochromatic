@@ -79,18 +79,14 @@ if (args.cmd === 'import') {
     name: args.name,
   },);
 }
-else if (args.cmd === 'boot') {
+else if (args.cmd === 'boot')
   await bootVm(args.name,);
-}
-else if (args.cmd === 'sync') {
+else if (args.cmd === 'sync')
   await syncVm(args.name,);
-}
-else if (args.cmd === 'status') {
+else if (args.cmd === 'status')
   await showStatus(args.name,);
-}
-else if (args.cmd === 'list') {
+else if (args.cmd === 'list')
   await printVmList();
-}
 else {
   await updateConfig({
     name: args.name,

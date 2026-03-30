@@ -171,8 +171,8 @@ export async function runAndParseOxlint(filePath: string,): Promise<OxlintResult
       'oxlint',
       ['--format', 'json', filePath,],
       {
-      timeout: LINT_TIMEOUT_MS,
-    },
+        timeout: LINT_TIMEOUT_MS,
+      },
     );
     return parseOxlintJson(output,);
   }

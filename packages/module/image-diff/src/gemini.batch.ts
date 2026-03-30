@@ -72,13 +72,13 @@ export async function geminiEmbedBatch(
   const response = await fetch(
     url,
     {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify(requestBody,),
     },
-    body: JSON.stringify(requestBody,),
-  },
   );
 
   if (!response.ok) {

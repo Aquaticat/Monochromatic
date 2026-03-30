@@ -46,20 +46,22 @@ export function middleOut({
 
   const matchStart = text.toLowerCase().indexOf(query.toLowerCase(),);
 
-  if (matchStart === -1)
+  if (matchStart === -1) {
     return text.slice(
       0,
       budget - 1,
     ) + ELLIPSIS;
+  }
 
   const matchEnd = matchStart + query.length;
 
   // Match near the start: keep start, truncate end
-  if (matchEnd <= budget - 1)
+  if (matchEnd <= budget - 1) {
     return text.slice(
       0,
       budget - 1,
     ) + ELLIPSIS;
+  }
 
   // Match near the end: truncate start, keep end
   if (text.length - matchStart <= budget - 1)

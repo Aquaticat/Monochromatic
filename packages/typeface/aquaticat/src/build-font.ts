@@ -109,7 +109,7 @@ const letterGlyphs = cells.flatMap(
     const path = new opentype.Path();
     cell.paths.forEach(function addCellPath(cellPath,) {
       const commands = parseSvgPathD(cellPath.d,);
-      if (cellPath.isStroked)
+      if (cellPath.isStroked) {
         addStrokedPath(
           path,
           commands,
@@ -117,13 +117,15 @@ const letterGlyphs = cells.flatMap(
           cell.xOffset,
           xShift,
         );
-      else
+      }
+      else {
         addFilledPath(
           path,
           commands,
           cell.xOffset,
           xShift,
         );
+      }
     },);
 
     console.log(

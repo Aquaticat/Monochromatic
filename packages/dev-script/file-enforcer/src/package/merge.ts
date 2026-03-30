@@ -30,15 +30,18 @@ export function mergeOverrides(
   /** Build lookup map from overrides array, keyed by effname */
   const overrideMap = new Map<string, PackageEntry>();
   for (const entry of overrideEntries) {
-    overrideMap.set(entry.effname, entry,);
+    overrideMap.set(
+      entry.effname,
+      entry,
+    );
   }
 
   return generated.map(function applyOverride(entry,): PackageEntry {
     const override = overrideMap.get(entry.effname,);
-    if (!override) {
+    if (!override)
       return entry;
-    }
     return {
+      available: entry.available,
       bin: override.bin !== override.effname ? override.bin : entry.bin,
       check: override.check !== DEFAULT_CHECK ? override.check : entry.check,
       effname: entry.effname,

@@ -24,11 +24,12 @@ export function buildProbeLegend(
   /** Deduplicate by label, keeping first occurrence for model ID */
   const seen = new Map<string, string>();
   for (const entry of entries) {
-    if (!seen.has(entry.label,))
+    if (!seen.has(entry.label,)) {
       seen.set(
         entry.label,
         entry.model,
       );
+    }
   }
 
   const items = [...seen.entries(),]

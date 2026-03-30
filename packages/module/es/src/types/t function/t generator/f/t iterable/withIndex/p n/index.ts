@@ -51,7 +51,7 @@ export async function* $<const T,>(
   { myIterable, }: { myIterable: MaybeAsyncIterable<T>; },
 ): AsyncGenerator<{
   element: T;
-  index: Int & (Positive | 0)
+  index: Int & (Positive | 0);
 }> {
   let index = 0;
   for await (const element of myIterable) {

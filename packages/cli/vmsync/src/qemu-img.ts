@@ -6,7 +6,9 @@
  * @module
  */
 
-import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
 
 import {
   l,
@@ -200,13 +202,19 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- trusted qemu-img JSON output
   const regions = JSON.parse(raw,) as readonly QemuMapRegion[];
   /** Count of overlay-level (depth 0) regions containing data. */
-  const changedCount = regions.filter(
-    function isOverlayData(r,) {
-      return r.depth === 0 && r.data;
-    },
-  ).length;
+  const changedCount = regions
+    .filter(
+      function isOverlayData(r,) {
+        return r.depth === 0 && r.data;
+      },
+    )
+    .length;
 
-  rl.info(`${String(regions.length,)} regions total, ${String(changedCount,)} changed in overlay`,);
+  rl.info(
+    `${String(regions.length,)} regions total, ${
+      String(changedCount,)
+    } changed in overlay`,
+  );
   return regions;
 }
 
@@ -276,7 +284,8 @@ export async function checksum(imagePath: string,): Promise<string> {
     /** Second line of certutil output is the hex hash. */
     const hash = notNullishOrThrow(
       raw.split('\n',)[1],
-    ).trim();
+    )
+      .trim();
     return `sha256:${hash}`;
   }
 

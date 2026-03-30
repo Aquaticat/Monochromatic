@@ -87,8 +87,8 @@ export function $<const Length extends number,>(
   return Array.from(
     { length, },
     function getIndex(_, index,) {
-    return index;
-  },
+      return index;
+    },
   ) as any;
   // oxlint-enable typescript/no-unsafe-return, typescript/no-explicit-any, typescript/no-unsafe-type-assertion
 }

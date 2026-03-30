@@ -28,7 +28,7 @@ export function parseArrayHeader(
   context?: Jsonc.ValueBase,
 ): {
   arrayComment?: Jsonc.Comment;
-  tail: FragmentStringJsonc
+  tail: FragmentStringJsonc;
 } {
   // Array-level comment comes from outside the '[' via context; do not consume inside comments here.
   return {
@@ -52,22 +52,22 @@ export function expectArraySeparatorOrEnd(
   value: FragmentStringJsonc,
 ): {
   kind: 'end';
-  tail: FragmentStringJsonc
+  tail: FragmentStringJsonc;
 } | {
   kind: 'next';
-  tailStart: FragmentStringJsonc
-}
-{
+  tailStart: FragmentStringJsonc;
+} {
   /** Leading comments/whitespace after previous element value. */
   const after = startsWithComment({ value, },);
   /** Tail trimmed to detect ',' or ']' token. */
   const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
 
-  if (rc.startsWith(']',))
+  if (rc.startsWith(']',)) {
     return {
       kind: 'end',
       tail: rc.slice(1,) as FragmentStringJsonc,
     };
+  }
 
   if (rc.startsWith(',',)) {
     /** Tail after the element separator comma. */
@@ -76,11 +76,12 @@ export function expectArraySeparatorOrEnd(
     const next = startsWithComment({ value: afterComma, },);
     /** Start of the next token inside the array. */
     const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
-    if (nextToken.startsWith(']',))
+    if (nextToken.startsWith(']',)) {
       return {
         kind: 'end',
         tail: nextToken.slice(1,) as FragmentStringJsonc,
       };
+    }
     return {
       kind: 'next',
       tailStart: nextToken,

@@ -47,11 +47,11 @@ export function parseValueFromStart(
     context,
   }: {
     value: FragmentStringJsonc | StringJsonc;
-    context?: Jsonc.ValueBase
+    context?: Jsonc.ValueBase;
   },
 ): {
   parsed: Jsonc.Value;
-  remaining: FragmentStringJsonc
+  remaining: FragmentStringJsonc;
 } {
   if (value.startsWith('"',)) {
     /** Result of scanning the leading quoted string, with parsed node and tail. */
@@ -139,11 +139,13 @@ export function parseValueFromStart(
     '7',
     '8',
     '9',
-  ].some(
-    function startsWithDigit(m,) {
-      return value.startsWith(m,);
-    },
-  )) {
+  ]
+    .some(
+      function startsWithDigit(m,) {
+        return value.startsWith(m,);
+      },
+    ))
+  {
     /** Delegated number token parse; ensures JSON numeric semantics. */
     const out = parseNumberToken({ value, },);
     /** Final value node for number branch with optional comment propagation. */

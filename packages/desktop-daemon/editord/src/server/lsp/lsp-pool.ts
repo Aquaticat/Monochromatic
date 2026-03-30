@@ -37,7 +37,7 @@ export class LspPool {
   #onNotification: (event: {
     source: string;
     method: string;
-    params: unknown
+    params: unknown;
   },) => void;
 
   /**
@@ -58,7 +58,7 @@ export class LspPool {
       event: {
         source: string;
         method: string;
-        params: unknown
+        params: unknown;
       },
     ) => void;
   },) {
@@ -78,7 +78,7 @@ export class LspPool {
       filePath,
     }: {
       type: ServerType;
-      filePath: string
+      filePath: string;
     },
   ): Promise<LspClient | null> {
     const root = findProjectRoot({

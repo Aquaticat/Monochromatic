@@ -64,16 +64,17 @@ export async function requestCompletions(
         items: {
           label: string;
           detail: string;
-          insertText: string
+          insertText: string;
         }[];
       };
       const rect = editorPane.getCursorRect();
-      if (items.length > 0 && rect !== null)
+      if (items.length > 0 && rect !== null) {
         completionPopup.show({
           items,
           x: rect.left,
           y: rect.bottom,
         },);
+      }
     }
   }
   catch (error) {
@@ -98,13 +99,14 @@ export function wireCompletionTrigger({
   editorPane.addEventListener(
     'keydown',
     function handleDotKey(event,) {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- keydown is always a KeyboardEvent
-    const ke = event as KeyboardEvent;
-    if (ke.key === '.')
-      globalThis.setTimeout(
-        triggerCompletions,
-        0,
-      );
-  },
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- keydown is always a KeyboardEvent
+      const ke = event as KeyboardEvent;
+      if (ke.key === '.') {
+        globalThis.setTimeout(
+          triggerCompletions,
+          0,
+        );
+      }
+    },
   );
 }

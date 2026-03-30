@@ -34,7 +34,8 @@ function run(cmd: string,): string {
   return execSync(
     cmd,
     { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
-  ).trim();
+  )
+    .trim();
 }
 
 /** Parameters for width profile output generation. */

@@ -17,11 +17,11 @@ import type * as Jsonc from '../../../../t/index.ts';
 type ParseValueFn = (
   args: {
     value: FragmentStringJsonc | StringJsonc;
-    context?: Jsonc.ValueBase
+    context?: Jsonc.ValueBase;
   },
 ) => {
   parsed: Jsonc.Value;
-  remaining: FragmentStringJsonc
+  remaining: FragmentStringJsonc;
 };
 
 /** Late-bound reference, set once before any parsing call. */
@@ -51,11 +51,11 @@ export function registerParseValue(fn: ParseValueFn,): void {
 export function callParseValue(
   args: {
     value: FragmentStringJsonc | StringJsonc;
-    context?: Jsonc.ValueBase
+    context?: Jsonc.ValueBase;
   },
 ): {
   parsed: Jsonc.Value;
-  remaining: FragmentStringJsonc
+  remaining: FragmentStringJsonc;
 } {
   return ref(args,);
 }

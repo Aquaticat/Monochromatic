@@ -67,13 +67,13 @@ const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
 const args = runSync(
   parser,
   {
-  programName: 'mvm',
-  args: filteredArgs,
-  help: 'option',
-  aboveError: 'help',
-  brief: message`mvm - ephemeral VM manager`,
-  footer: message`Pass --verbose before the subcommand to enable debug logging.`,
-},
+    programName: 'mvm',
+    args: filteredArgs,
+    help: 'option',
+    aboveError: 'help',
+    brief: message`mvm - ephemeral VM manager`,
+    footer: message`Pass --verbose before the subcommand to enable debug logging.`,
+  },
 );
 
 if (args.cmd === 'create') {
@@ -140,7 +140,7 @@ else if (args.cmd === 'pull') {
     name: args.name,
     guestPath: args.guestPath,
   },);
-  const { writeFile, } = await import('node:fs/promises',);
+  const { writeFile, } = await import('node:fs/promises');
   await writeFile(
     args.hostPath,
     content,

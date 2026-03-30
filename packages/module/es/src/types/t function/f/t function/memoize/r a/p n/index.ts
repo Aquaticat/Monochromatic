@@ -181,8 +181,7 @@ export async function $<
   function memoized(
     this: void,
     { args, salt, }: MemoizedCallOptions<TArgs>,
-  ): Promise<TReturn>
-  {
+  ): Promise<TReturn> {
     const cacheKey = buildCacheKey(
       keyFn(...args,),
       salt,

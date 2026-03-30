@@ -4,12 +4,12 @@ import {
   l,
   tagged,
 } from '../log.ts';
-import type {
-  Command,
-  PlatformCommands,
-  PlatformEntry,
+import {
+  type Command,
+  evaluatePredicate,
+  type PlatformCommands,
+  type PlatformEntry,
 } from '../platform/evaluate-predicate.ts';
-import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
 
 //region exec
 
@@ -61,14 +61,26 @@ export async function exec(
   platformCommands: PlatformCommands,
 ): Promise<string>;
 
+/**
+ * Runs an external command directly or evaluates platform entries to find a matching command.
+ *
+ * @param cmdOrPlatformCommands - Executable name (string) or ordered `[predicate, command]` tuples
+ *
+ * @param args - Arguments passed to the command (only used with string form)
+ *
+ * @returns Stdout output as a string
+ */
 export async function exec(
   cmdOrPlatformCommands: string | PlatformCommands,
   args: readonly string[] = [],
 ): Promise<string> {
   if (typeof cmdOrPlatformCommands === 'string') {
-    return execDirect(cmdOrPlatformCommands, args,);
+    return await execDirect(
+      cmdOrPlatformCommands,
+      args,
+    );
   }
-  return execPlatformAware(cmdOrPlatformCommands,);
+  return await execPlatformAware(cmdOrPlatformCommands,);
 }
 
 //endregion exec
@@ -88,7 +100,10 @@ async function execDirect(
   cmd: string,
   args: readonly string[],
 ): Promise<string> {
-  const rl = tagged({ tag: execDirect.name, l, },);
+  const rl = tagged({
+    tag: execDirect.name,
+    l,
+  },);
   rl.debug(`${cmd} ${args.join(' ',)}`,);
   const { stdout, } = await spawn(
     cmd,
@@ -102,8 +117,8 @@ async function execDirect(
 //region Platform-aware execution
 
 /**
- * Walks platform entries in order, evaluating each predicate.
- * Executes the command from the first entry whose predicate succeeds.
+ * Evaluates all predicates concurrently, then executes the command
+ * from the first entry (by declaration order) whose predicate succeeded.
  *
  * @param platformCommands - Ordered `[predicate, command]` tuples
  *
@@ -114,14 +129,20 @@ async function execDirect(
 async function execPlatformAware(
   platformCommands: PlatformCommands,
 ): Promise<string> {
-  for (const entry of platformCommands) {
-    const [predicate, cmd,] = entry;
-    const matched = await evaluatePredicate(predicate,);
-    if (matched) {
-      return execCommand(cmd,);
-    }
-  }
-  throw new PlatformMatchError(platformCommands,);
+  const results = await Promise.all(
+    platformCommands.map(async function checkPredicate(entry,): Promise<boolean> {
+      const [predicate,] = entry;
+      return await evaluatePredicate(predicate,);
+    },),
+  );
+  const matchIndex = results.findIndex(Boolean,);
+  if (matchIndex === -1)
+    throw new PlatformMatchError(platformCommands,);
+  const matched = platformCommands[matchIndex];
+  if (!matched)
+    throw new PlatformMatchError(platformCommands,);
+  const [, cmd,] = matched;
+  return await execCommand(cmd,);
 }
 
 /**
@@ -135,11 +156,13 @@ async function execPlatformAware(
  * @returns Stdout output as a string
  */
 async function execCommand(cmd: Command,): Promise<string> {
-  if (isNestedPlatformCommands(cmd,)) {
-    return execPlatformAware(cmd,);
-  }
+  if (isNestedPlatformCommands(cmd,))
+    return await execPlatformAware(cmd,);
   const [executable = '', ...args] = cmd as readonly string[];
-  return execDirect(executable, args,);
+  return await execDirect(
+    executable,
+    args,
+  );
 }
 
 /**
@@ -150,7 +173,9 @@ async function execCommand(cmd: Command,): Promise<string> {
  *
  * @returns `true` if the command is a nested {@link PlatformCommands}
  */
-function isNestedPlatformCommands(cmd: readonly string[] | PlatformCommands,): cmd is PlatformCommands {
+function isNestedPlatformCommands(
+  cmd: readonly string[] | PlatformCommands,
+): cmd is PlatformCommands {
   return cmd.length > 0 && Array.isArray(cmd[0],);
 }
 
@@ -168,7 +193,9 @@ class PlatformMatchError extends Error {
    */
   constructor(platformCommands: PlatformCommands,) {
     const predicateList = platformCommands
-      .map(formatEntry,)
+      .map(function formatOne(entry,): string {
+        return formatEntry(entry,);
+      },)
       .join(', ',);
     super(
       `No platform predicate matched. Tested: [${predicateList}]`,
@@ -186,7 +213,13 @@ class PlatformMatchError extends Error {
  */
 function formatEntry(entry: PlatformEntry,): string {
   const [predicate,] = entry;
-  return `[${predicate.map((segment,) => `"${segment}"`).join(', ',)}]`;
+  return `[${
+    predicate
+      .map(function quote(segment,): string {
+        return `"${segment}"`;
+      },)
+      .join(', ',)
+  }]`;
 }
 
 //endregion Errors

@@ -44,16 +44,19 @@ export function resolveNpmNames(
     const withoutNpm = catalogValue.slice(NPM_PREFIX_LENGTH,);
     // Find the last @ that isn't position 0 (scoped package)
     const lastAt = withoutNpm.lastIndexOf('@',);
-    const aliasTarget = lastAt > 0 ? withoutNpm.slice(
-      0,
-      lastAt,
-    ) : withoutNpm;
+    const aliasTarget = lastAt > 0
+      ? withoutNpm.slice(
+        0,
+        lastAt,
+      )
+      : withoutNpm;
     // Key first (bun installs under alias name), then registry target as fallback
-    if (aliasTarget !== catalogKey)
+    if (aliasTarget !== catalogKey) {
       return [
         catalogKey,
         aliasTarget,
       ];
+    }
     return [catalogKey,];
   }
   return [catalogKey,];

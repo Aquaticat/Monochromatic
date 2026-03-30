@@ -121,7 +121,7 @@ function handleDiagnostics(
     diagnostics,
   }: {
     path: string;
-    diagnostics: WireDiagnostic[]
+    diagnostics: WireDiagnostic[];
   },
 ): void {
   if (connectedPeers.size === 0)
@@ -204,17 +204,17 @@ app.get(
 const _server = serve(
   app,
   {
-  port: PORT,
-  plugins: [
-    ws({
-      resolve: async function resolveWebSocketHooks(request,) {
-        const response = await app.fetch(request,);
-        // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-return, typescript/no-explicit-any, typescript-eslint/no-unsafe-type-assertion -- crossws attaches hooks as a non-standard property on the Response object
-        return (response as any).crossws;
-      },
-    },),
-  ],
-},
+    port: PORT,
+    plugins: [
+      ws({
+        resolve: async function resolveWebSocketHooks(request,) {
+          const response = await app.fetch(request,);
+          // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-return, typescript/no-explicit-any, typescript-eslint/no-unsafe-type-assertion -- crossws attaches hooks as a non-standard property on the Response object
+          return (response as any).crossws;
+        },
+      },),
+    ],
+  },
 );
 
 httpLog.info(`listening on http://localhost:${String(PORT,)}?token=${AUTH_TOKEN}`,);
@@ -229,7 +229,7 @@ httpLog.info(`listening on http://localhost:${String(PORT,)}?token=${AUTH_TOKEN}
 function handleSigterm(): void {
   stopTokenTouch();
   lspManager.shutdown();
-  process.exit(0);
+  process.exit(0,);
 }
 
 /**
@@ -239,7 +239,7 @@ function handleSigterm(): void {
 function handleSigint(): void {
   deleteTokenFile();
   lspManager.shutdown();
-  process.exit(0);
+  process.exit(0,);
 }
 
 process.on(

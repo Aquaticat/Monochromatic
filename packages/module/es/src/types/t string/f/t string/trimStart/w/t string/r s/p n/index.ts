@@ -64,7 +64,7 @@ export function $({
   trimmer,
 }: {
   str: string;
-  trimmer: string
+  trimmer: string;
 },): string {
   const globalRegexp = regexpToGlobalRegexp(stringToRegexp(trimmer,),);
 

@@ -61,7 +61,7 @@ export async function run(
     from,
   }: {
     command: string;
-    from: string | undefined
+    from: string | undefined;
   },
 ): Promise<ExecResult> {
   const rl = tagged({

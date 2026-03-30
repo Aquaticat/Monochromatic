@@ -168,11 +168,12 @@ export function filterTsgoOutput(output: string,): {
   readonly filtered: string;
   readonly hasRemainingErrors: boolean;
 } {
-  if (output.length === 0)
+  if (output.length === 0) {
     return {
       filtered: '',
       hasRemainingErrors: false,
     };
+  }
 
   const lines = output.split('\n',);
   const kept: string[] = [];

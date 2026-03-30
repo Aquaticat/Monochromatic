@@ -29,8 +29,8 @@ export function getProperty(
   /** Parsed JSON value */
   const parsed: unknown = JSON.parse(content,);
   /** Extracted value at the dot-path (slice(1) removes leading dot) */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown, dot-prop requires Record
   const extracted: unknown = dotPropGet(
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown, dot-prop requires Record
     parsed as Record<string, unknown>,
     path.slice(1,),
   );

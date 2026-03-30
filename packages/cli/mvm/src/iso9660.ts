@@ -30,7 +30,7 @@ function writeDirEntry(
     isDir: boolean;
     name: string;
     sector: number;
-    size: number
+    size: number;
   },
 ): number {
   const nameLen = opts.name === '\u0000' || opts.name === '\u0001' ? 1 : opts.name.length;
@@ -64,13 +64,14 @@ function writeDirEntry(
     buf[offset + L.DIR_NAME_DATA_OFFSET] = 0;
   else if (opts.name === '\u0001')
     buf[offset + L.DIR_NAME_DATA_OFFSET] = 1;
-  else
+  else {
     L.writeStr(
       buf,
       offset + L.DIR_NAME_DATA_OFFSET,
       opts.name,
       nameLen,
     );
+  }
 
   return recordLen;
 }
@@ -110,7 +111,7 @@ export function createIso({
 }: {
   files: readonly {
     data: Uint8Array;
-    name: string
+    name: string;
   }[];
   volumeId: string;
 },): Uint8Array {
@@ -191,8 +192,7 @@ export function createIso({
     iso,
     view,
     pvd + L.PVD_ROOT_DIR_RECORD_OFFSET,
-    { isDir: true,
-    name: '\u0000', sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
+    { isDir: true, name: '\u0000', sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
   );
   L.writeTimestamp17(
     iso,
@@ -228,10 +228,8 @@ export function createIso({
   //region Path tables (sectors 18 LE, 19 BE)
   for (const [ptSector, le,] of [
     [L.PATH_TABLE_LE_SECTOR, true,],
-    [L.PATH_TABLE_BE_SECTOR,
-    false,],
-  ] as const)
-  {
+    [L.PATH_TABLE_BE_SECTOR, false,],
+  ] as const) {
     const pt = ptSector * L.SECTOR_SIZE;
     iso[pt] = 1;
     view.setUint32(
@@ -253,15 +251,13 @@ export function createIso({
     iso,
     view,
     pos,
-    { isDir: true, name: '\u0000',
-    sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
+    { isDir: true, name: '\u0000', sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
   );
   pos += writeDirEntry(
     iso,
     view,
     pos,
-    { isDir: true, name: '\u0001',
-    sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
+    { isDir: true, name: '\u0001', sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
   );
 
   for (const entry of entries) {
@@ -270,21 +266,22 @@ export function createIso({
       view,
       pos,
       {
-      isDir: false,
-      name: `${entry.name};1`,
-      sector: entry.sector,
-      size: entry.data.length,
-    },
+        isDir: false,
+        name: `${entry.name};1`,
+        sector: entry.sector,
+        size: entry.data.length,
+      },
     );
   }
   //endregion
 
   //region File data
-  for (const entry of entries)
+  for (const entry of entries) {
     iso.set(
       entry.data,
       entry.sector * L.SECTOR_SIZE,
     );
+  }
   //endregion
 
   return iso;

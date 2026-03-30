@@ -65,7 +65,7 @@ export class CompletionPopup extends HTMLElement {
   }: {
     items: CompletionItem[];
     x: number;
-    y: number
+    y: number;
   },): void {
     if (this.#list === null || items.length === 0)
       return;
@@ -115,11 +115,12 @@ export class CompletionPopup extends HTMLElement {
         ? 0
         : this.#selectedIndex + 1;
     }
-    if (this.#list !== null)
+    if (this.#list !== null) {
       updateSelection({
         list: this.#list,
         selectedIndex: this.#selectedIndex,
       },);
+    }
   }
 
   /**

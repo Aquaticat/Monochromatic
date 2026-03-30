@@ -58,19 +58,21 @@ export type LintResult = {
 export async function runOxlint(
   { files, }: { files: readonly string[]; },
 ): Promise<LintResult> {
-  if (files.length === 0)
+  if (files.length === 0) {
     return {
       diagnostics: new Map(),
       notes: [],
     };
+  }
 
   /** First file's directory as starting point for config search. */
   const [firstFile,] = files;
-  if (firstFile === undefined)
+  if (firstFile === undefined) {
     return {
       diagnostics: new Map(),
       notes: [],
     };
+  }
   const configDir = findAncestorWithFile(
     dirname(firstFile,),
     '.oxlintrc.json',
@@ -100,11 +102,12 @@ export async function runOxlint(
       const existing = groupsByPackageRoot.get(packageRoot,);
       if (existing !== undefined)
         existing.push(filePath,);
-      else
+      else {
         groupsByPackageRoot.set(
           packageRoot,
           [filePath,],
         );
+      }
     }
     else {
       filesWithoutTsconfig.push(filePath,);
@@ -150,16 +153,18 @@ export async function runOxlint(
     fallbackRun,
   ],);
 
-  for (const resultMap of packageResults)
+  for (const resultMap of packageResults) {
     mergeInto(
       merged,
       resultMap,
     );
-  if (fallbackResult !== null)
+  }
+  if (fallbackResult !== null) {
     mergeInto(
       merged,
       fallbackResult,
     );
+  }
 
   return {
     diagnostics: merged,
@@ -181,17 +186,17 @@ export async function runOxlint(
 function mergeInto(
   target: Map<string, Diagnostic[]>,
   source: Map<string, Diagnostic[]>,
-): void
-{
+): void {
   for (const [filePath, diagnostics,] of source) {
     const existing = target.get(filePath,);
     if (existing !== undefined)
       existing.push(...diagnostics,);
-    else
+    else {
       target.set(
         filePath,
         [...diagnostics,],
       );
+    }
   }
 }
 

@@ -79,9 +79,8 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
   const backends: readonly [
     SyncStorageBackend,
     ...SyncStorageBackend[],
-  ] =
-    config.backends
-      ?? [new Map<string, string>(),];
+  ] = config.backends
+    ?? [new Map<string, string>(),];
 
   const policies = config.eviction ?? [];
   const lruPolicy = policies.find(function isLru(p,) {
@@ -122,11 +121,12 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
         lossyForCircular,
       },);
 
-      for (const backend of backends)
+      for (const backend of backends) {
         backend.set(
           key,
           serialized,
         );
+      }
 
       if (lru !== undefined) {
         const evicted = lru.touch(key,);

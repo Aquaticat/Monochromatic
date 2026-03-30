@@ -63,7 +63,7 @@ export class LspClient {
   /** Callback for server-initiated notifications. */
   #onNotification: (event: {
     method: string;
-    params: unknown
+    params: unknown;
   },) => void;
 
   /** Whether the LSP initialize handshake has completed. */
@@ -106,7 +106,7 @@ export class LspClient {
     l: Logger;
     onNotification: (event: {
       method: string;
-      params: unknown
+      params: unknown;
     },) => void;
   },) {
     this.#name = name;
@@ -120,14 +120,14 @@ export class LspClient {
       command,
       [...args,],
       {
-      cwd,
-      env,
-      stdio: [
-        'pipe',
-        'pipe',
-        'pipe',
-      ],
-    },
+        cwd,
+        env,
+        stdio: [
+          'pipe',
+          'pipe',
+          'pipe',
+        ],
+      },
     );
 
     const clientLog = this.#l;
@@ -140,20 +140,20 @@ export class LspClient {
     this.#proc.stdout?.on(
       'data',
       function handleStdout(chunk: Buffer,) {
-      parser.feed(chunk,);
-    },
+        parser.feed(chunk,);
+      },
     );
     this.#proc.stderr?.on(
       'data',
       function handleStderr(chunk: Buffer,) {
-      clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,);
-    },
+        clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,);
+      },
     );
     this.#proc.on(
       'exit',
       function handleExit(code,) {
-      clientLog.info(`exited with code ${String(code,)}`,);
-    },
+        clientLog.info(`exited with code ${String(code,)}`,);
+      },
     );
   }
 
@@ -239,15 +239,15 @@ export class LspClient {
         if (timeoutMs !== undefined) {
           entry.timeoutId = setTimeout(
             function rejectOnTimeout() {
-            if (pending.delete(id,)) {
-              clientLog.error(
-                `${method} (id ${id}) timed out after ${timeoutMs}ms`,
-              );
-              reject(
-                new Error(`${method} (id ${id}) timed out after ${timeoutMs}ms`,),
-              );
-            }
-          },
+              if (pending.delete(id,)) {
+                clientLog.error(
+                  `${method} (id ${id}) timed out after ${timeoutMs}ms`,
+                );
+                reject(
+                  new Error(`${method} (id ${id}) timed out after ${timeoutMs}ms`,),
+                );
+              }
+            },
             timeoutMs,
           );
         }
@@ -274,7 +274,7 @@ export class LspClient {
     params,
   }: {
     method: string;
-    params: unknown
+    params: unknown;
   },): void {
     this.#send({
       jsonrpc: '2.0',

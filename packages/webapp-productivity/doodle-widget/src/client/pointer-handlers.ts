@@ -138,13 +138,13 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointerup',
     function handlePointerUp(): void {
-    const mode = getToolMode();
-    if (mode === 'zoom')
-      return;
-    if (mode === 'draw' || (mode === 'erase' && erasedInGesture))
-      pushSnapshot();
-    endGesture();
-  },
+      const mode = getToolMode();
+      if (mode === 'zoom')
+        return;
+      if (mode === 'draw' || (mode === 'erase' && erasedInGesture))
+        pushSnapshot();
+      endGesture();
+    },
   );
 
   canvas.addEventListener(

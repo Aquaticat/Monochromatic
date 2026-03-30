@@ -113,11 +113,12 @@ export type { ObjectsMergeRules, } from './rules.ts';
     const valuesByType = new Map<string, unknown[]>();
     for (const value of allValuesForKey) {
       const valueType = typeof value;
-      if (!valuesByType.has(valueType,))
+      if (!valuesByType.has(valueType,)) {
         valuesByType.set(
           valueType,
           [],
         );
+      }
       const typeValues = valuesByType.get(valueType,);
       if (typeValues !== undefined)
         typeValues.push(value,);

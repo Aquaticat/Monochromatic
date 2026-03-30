@@ -14,7 +14,7 @@ export function $<const T,>(
   myIterable: MaybeAsyncIterable<T>,
 ): AsyncGenerator<{
   element: T;
-  index: Int & (Positive | 0)
+  index: Int & (Positive | 0);
 }> {
   return named({ myIterable, },);
 }

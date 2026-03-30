@@ -64,17 +64,17 @@ export async function postProcess(
     await spawn(
       'zstd',
       [
-      '-z',
-      '-f',
-      '-v',
-      '--no-check',
-      '-T0',
-      '--exclude-compressed',
-      '--no-content-size',
-      '-r',
-      '--adapt',
-      DIST,
-    ],
+        '-z',
+        '-f',
+        '-v',
+        '--no-check',
+        '-T0',
+        '--exclude-compressed',
+        '--no-content-size',
+        '-r',
+        '--adapt',
+        DIST,
+      ],
     );
     l.info('compressed with zstd',);
   }

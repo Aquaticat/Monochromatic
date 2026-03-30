@@ -38,16 +38,16 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
         h({
           tag: 'summary',
           text: `Thinking (${
-          formatNumber(detail
-            .reasoning
-            .length,)
-        } chars)`,
+            formatNumber(detail
+              .reasoning
+              .length,)
+          } chars)`,
         },),
         h({
           tag: 'div',
           class: 'rendered-markdown',
           html: micromark(detail
-          .reasoning,),
+            .reasoning,),
         },),
       ],
     },),);
@@ -61,16 +61,16 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
         h({
           tag: 'summary',
           text: `Response (${
-          formatNumber(detail
-            .initialResponse
-            .length,)
-        } chars)`,
+            formatNumber(detail
+              .initialResponse
+              .length,)
+          } chars)`,
         },),
         h({
           tag: 'div',
           class: 'rendered-markdown',
           html: micromark(detail
-          .initialResponse,),
+            .initialResponse,),
         },),
       ],
     },),);
@@ -84,16 +84,16 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
         h({
           tag: 'summary',
           text: `Fix thinking (${
-          formatNumber(detail
-            .fixReasoning
-            .length,)
-        } chars)`,
+            formatNumber(detail
+              .fixReasoning
+              .length,)
+          } chars)`,
         },),
         h({
           tag: 'div',
           class: 'rendered-markdown',
           html: micromark(detail
-          .fixReasoning,),
+            .fixReasoning,),
         },),
       ],
     },),);
@@ -107,16 +107,16 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
         h({
           tag: 'summary',
           text: `Fix response (${
-          formatNumber(detail
-            .fixResponse
-            .length,)
-        } chars)`,
+            formatNumber(detail
+              .fixResponse
+              .length,)
+          } chars)`,
         },),
         h({
           tag: 'div',
           class: 'rendered-markdown',
           html: micromark(detail
-          .fixResponse,),
+            .fixResponse,),
         },),
       ],
     },),);
@@ -135,7 +135,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
           tag: 'div',
           class: 'rendered-markdown',
           html: micromark(detail
-          .fixPrompt,),
+            .fixPrompt,),
         },),
       ],
     },),);

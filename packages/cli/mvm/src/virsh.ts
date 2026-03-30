@@ -48,7 +48,7 @@ export async function defineVm(
     xml,
   }: {
     vmDir: string;
-    xml: string
+    xml: string;
   },
 ): Promise<void> {
   const xmlPath = join(

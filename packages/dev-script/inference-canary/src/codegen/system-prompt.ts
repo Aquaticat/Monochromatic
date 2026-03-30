@@ -20,7 +20,8 @@ import { l, } from '../log.ts';
 const MONOREPO_ROOT = new URL(
   '../../../../../',
   import.meta.url,
-).pathname;
+)
+  .pathname;
 
 /**
  * Reads a project config file relative to the monorepo root.

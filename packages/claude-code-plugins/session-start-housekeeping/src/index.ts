@@ -79,15 +79,14 @@ async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
   for await (const finalDir of glob(
     'packages/*/*/dist/final',
     {
-    cwd: workspaceRoot,
-  },
+      cwd: workspaceRoot,
+    },
   )) {
     for (const artifact of STALE_DIST_ARTIFACTS) {
       removals.push(
         rm(
           `${workspaceRoot}/${finalDir}/${artifact}`,
-          { recursive: true,
-          force: true, },
+          { recursive: true, force: true, },
         ),
       );
     }

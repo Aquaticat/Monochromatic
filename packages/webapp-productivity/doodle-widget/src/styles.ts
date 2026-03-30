@@ -13,8 +13,8 @@ import {
   cssOklch,
 } from '@monochromatic-dev/module-es/h-css';
 import {
-  BORDER_WIDTH,
   BG_VIEWPORT,
+  BORDER_WIDTH,
   FULL_DVB,
   FULL_PERCENT,
   INSET_ZERO_DECLS,

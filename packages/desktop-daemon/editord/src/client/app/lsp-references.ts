@@ -80,7 +80,8 @@ export async function showReferences(
           line: number;
           character: number;
         }[];
-      }).locations
+      })
+        .locations
       : [];
     refLog.info(`references: ${locations.length} usage(s) found`,);
     if (locations.length === 0) {
@@ -113,14 +114,14 @@ export async function showReferences(
         referencesPopup.dispatchEvent(new CustomEvent(
           'reference-select',
           {
-          detail: {
-            path: only.path,
-            line: only.line + 1,
-            character: only.character,
+            detail: {
+              path: only.path,
+              line: only.line + 1,
+              character: only.character,
+            },
+            bubbles: true,
+            composed: true,
           },
-          bubbles: true,
-          composed: true,
-        },
         ),);
       }
       return;
@@ -131,7 +132,7 @@ export async function showReferences(
       x: rect.left,
       y: rect.top,
       cursorHeight: rect
-      .height,
+        .height,
     },);
   }
   catch (error) {

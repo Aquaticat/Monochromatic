@@ -31,7 +31,7 @@ export async function saveFile(
   }: {
     rootDir: string;
     path: string;
-    content: string
+    content: string;
   },
 ): Promise<string> {
   const absolutePath = assertWithinRoot({

@@ -146,8 +146,8 @@ function camelToKebab(property: string,): string {
   return property.replaceAll(
     /[A-Z]/g,
     function toLower(match,) {
-    return `-${match.toLowerCase()}`;
-  },
+      return `-${match.toLowerCase()}`;
+    },
   );
 }
 

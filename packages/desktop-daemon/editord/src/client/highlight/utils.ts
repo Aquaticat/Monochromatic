@@ -5,16 +5,11 @@
  * from character offsets, and manages highlight group cleanup.
  */
 
+import { FILE_SIZE_WARNING_THRESHOLD, } from '../../constants.ts';
 import { HIGHLIGHT_GROUPS, } from './tags.ts';
 
-/** Bytes in one kilobyte. */
-export const BYTES_PER_KB = 1_024;
-
-/** Maximum highlight threshold in kilobytes. */
-export const HIGHLIGHT_LIMIT_KB = 100;
-
 /** Maximum file size in bytes for syntax highlighting. */
-export const MAX_HIGHLIGHT_BYTES = HIGHLIGHT_LIMIT_KB * BYTES_PER_KB;
+export const MAX_HIGHLIGHT_BYTES = FILE_SIZE_WARNING_THRESHOLD;
 
 /**
  * Extracts line texts from the editor's child divs.

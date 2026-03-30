@@ -46,13 +46,14 @@ export async function execBun(
   options: BunExecOptions = {},
 ): Promise<BunExecResult> {
   // Fast-path: if the signal is already aborted, skip spawning entirely.
-  if (options.signal?.aborted === true)
+  if (options.signal?.aborted === true) {
     return {
       stdout: '',
       stderr: '',
       exitCode: 1,
       killed: true,
     };
+  }
 
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn accepts mutable string array
@@ -60,9 +61,9 @@ export async function execBun(
       command,
       args as string[],
       {
-      timeout: options.timeout,
-      signal: options.signal,
-    },
+        timeout: options.timeout,
+        signal: options.signal,
+      },
     );
 
     return {
@@ -84,7 +85,7 @@ export async function execBun(
         stdout: string;
         stderr: string;
         exitCode: number | undefined;
-        signalName: string | undefined
+        signalName: string | undefined;
       };
       // Killed if the signal was aborted (race: it may have become true after spawn started)
       // or the process received a termination signal

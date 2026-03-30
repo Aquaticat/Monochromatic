@@ -46,21 +46,21 @@ export function execvp({ command, }: { command: readonly string[]; },): void {
   const proc = Bun.spawn(
     [executable, ...args,],
     {
-    stdin: 'inherit',
-    stdout: 'inherit',
-    stderr: 'inherit',
-  },
+      stdin: 'inherit',
+      stdout: 'inherit',
+      stderr: 'inherit',
+    },
   );
 
   /* oxlint-disable promise/prefer-await-to-then, promise/always-return, promise/prefer-await-to-callbacks, promise/prefer-catch -- fire-and-forget: process exits with spawned command's code; .then(onSuccess, onError) is intentional for non-async exit handling */
   proc.exited.then(
     function onExit(code,) {
-    process.exitCode = code;
-  },
+      process.exitCode = code;
+    },
     function onError(err: unknown,) {
-    console.error(`terminal-exec: failed to execute '${executable}': ${String(err,)}`,);
-    process.exitCode = EXIT_NOT_FOUND;
-  },
+      console.error(`terminal-exec: failed to execute '${executable}': ${String(err,)}`,);
+      process.exitCode = EXIT_NOT_FOUND;
+    },
   );
   /* oxlint-enable promise/prefer-await-to-then, promise/always-return, promise/prefer-await-to-callbacks, promise/prefer-catch */
 }

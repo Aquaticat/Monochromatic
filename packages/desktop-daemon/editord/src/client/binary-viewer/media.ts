@@ -28,7 +28,7 @@ function appendMediaInfo(
     mediaInfo,
   }: {
     shadow: ShadowRoot;
-    mediaInfo: string | undefined
+    mediaInfo: string | undefined;
   },
 ): void {
   if (mediaInfo === undefined)

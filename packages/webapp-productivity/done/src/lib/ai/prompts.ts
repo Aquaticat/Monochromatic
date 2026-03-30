@@ -89,7 +89,7 @@ export function buildSuggestionMessages(
     locations: string[];
     priority: string | null;
     dueDate: string | null;
-    complexity: string | null
+    complexity: string | null;
   }[],
   currentLocation: string | null,
   focusDirective: string | null,

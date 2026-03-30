@@ -120,11 +120,11 @@ export async function dispatchFsMessage({
   if (parsed.type === 'deleteEntry') {
     await retryOnFileLock({
       operation: function del() {
-      return deleteEntry({
-        rootDir,
-        path: parsed.path,
-      },);
-    },
+        return deleteEntry({
+          rootDir,
+          path: parsed.path,
+        },);
+      },
       path: parsed.path,
       lspManager,
     },);
@@ -149,12 +149,12 @@ export async function dispatchFsMessage({
   if (parsed.type === 'moveEntry') {
     await retryOnFileLock({
       operation: function mv() {
-      return moveEntry({
-        rootDir,
-        path: parsed.path,
-        destPath: parsed.destPath,
-      },);
-    },
+        return moveEntry({
+          rootDir,
+          path: parsed.path,
+          destPath: parsed.destPath,
+        },);
+      },
       path: parsed.path,
       lspManager,
     },);

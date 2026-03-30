@@ -62,17 +62,19 @@ const RAW_SVGS: Record<string, string> = {
  */
 function parseSvg(raw: string,): {
   viewBox: string;
-  inner: string
+  inner: string;
 } {
   const viewBoxMatch = raw.match(/viewBox="([^"]+)"/,);
   const viewBox = viewBoxMatch?.[1] ?? '0 0 24 24';
-  const inner = raw.replace(
-    /^<svg[^>]*>/,
-    '',
-  ).replace(
-    /<\/svg>\s*$/,
-    '',
-  );
+  const inner = raw
+    .replace(
+      /^<svg[^>]*>/,
+      '',
+    )
+    .replace(
+      /<\/svg>\s*$/,
+      '',
+    );
   return {
     viewBox,
     inner,
@@ -96,7 +98,7 @@ function parseSvg(raw: string,): {
  */
 function extractDefs(inner: string,): {
   defs: string;
-  content: string
+  content: string;
 } {
   let defs = '';
   const content = inner.replaceAll(

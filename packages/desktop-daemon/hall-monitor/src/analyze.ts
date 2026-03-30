@@ -32,11 +32,11 @@ type ChatMessage = {
   content: (
     | {
       type: 'text';
-      text: string
+      text: string;
     }
     | {
       type: 'image_url';
-      image_url: { url: string; }
+      image_url: { url: string; };
     }
   )[];
 };
@@ -50,7 +50,7 @@ type CompletionResponse = {
   /** Token usage statistics. */
   usage: {
     prompt_tokens: number;
-    completion_tokens: number
+    completion_tokens: number;
   };
 };
 
@@ -66,7 +66,7 @@ function buildImageEntry(
   buf: Buffer,
 ): {
   type: 'image_url';
-  image_url: { url: string; }
+  image_url: { url: string; };
 } {
   return {
     type: 'image_url' as const,
@@ -178,10 +178,10 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   const res = await fetch(
     API_URL,
     {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', },
-    body: JSON.stringify(payload,),
-  },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', },
+      body: JSON.stringify(payload,),
+    },
   );
 
   if (!res.ok) {

@@ -5,31 +5,6 @@ export {
   updateCache,
 } from './io/cache.ts';
 export {
-  ensurePackage,
-  registerPackages,
-} from './package/ensure-package.ts';
-export {
-  binaryExists,
-  canProvide,
-  detectManager,
-  installPackage,
-} from './package/manager.ts';
-export { mergeOverrides, } from './package/merge.ts';
-export { DEFAULT_CHECK, p, } from './package/p.ts';
-export type {
-  PackageEntry,
-  PackageManager,
-  PackageMapping,
-  PackageSpec,
-} from './package/types.ts';
-export type {
-  Command,
-  PlatformCommands,
-  PlatformEntry,
-  Predicate,
-} from './platform/evaluate-predicate.ts';
-export { evaluatePredicate, } from './platform/evaluate-predicate.ts';
-export {
   cat,
   globResults,
 } from './io/cat.ts';
@@ -46,14 +21,45 @@ export {
   overwriteEach,
   overwriteIfNotExists,
 } from './io/write.ts';
-export { l, tagged, } from './log.ts';
+export {
+  l,
+  tagged,
+} from './log.ts';
 export type { Logger, } from './log.ts';
+export {
+  ensurePackage,
+  registerPackages,
+} from './package/ensure-package.ts';
+export {
+  binaryExists,
+  canProvide,
+  detectManager,
+  installPackage,
+} from './package/manager.ts';
+export { mergeOverrides, } from './package/merge.ts';
+export {
+  DEFAULT_CHECK,
+  p,
+} from './package/p.ts';
+export type {
+  PackageEntry,
+  PackageManager,
+  PackageMapping,
+  PackageSpec,
+} from './package/types.ts';
 export { exec, } from './pipeline/exec.ts';
 export { inspect, } from './pipeline/inspect.ts';
 export {
   dedup,
   getProperty,
 } from './pipeline/transform.ts';
+export type {
+  Command,
+  PlatformCommands,
+  PlatformEntry,
+  Predicate,
+} from './platform/evaluate-predicate.ts';
+export { evaluatePredicate, } from './platform/evaluate-predicate.ts';
 export {
   addWatchedPaths,
   reads,

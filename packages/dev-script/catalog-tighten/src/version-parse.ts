@@ -51,7 +51,7 @@ export function parseRange(value: string,): ParsedRange | undefined {
     version,
   } = match.groups as {
     prefix: string;
-    version: string
+    version: string;
   };
   return {
     prefix,

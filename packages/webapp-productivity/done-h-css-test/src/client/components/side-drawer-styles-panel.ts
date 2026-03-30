@@ -79,8 +79,7 @@ export const SIDE_DRAWER_PANEL_STYLES = [
     children: [
       css({
         rule: 'from',
-        decls: { transform: cssTranslateX(cssPercent(NEG_FULL_PERCENT,),),
-          opacity: 0, },
+        decls: { transform: cssTranslateX(cssPercent(NEG_FULL_PERCENT,),), opacity: 0, },
       },),
       css({
         rule: 'to',

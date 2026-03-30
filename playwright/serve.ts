@@ -28,8 +28,8 @@ app.all(
       return new Response(
         await readFile('playwright/test-harness.html',),
         {
-        headers: { 'content-type': 'text/html', },
-      },
+          headers: { 'content-type': 'text/html', },
+        },
       );
     }
 
@@ -38,8 +38,8 @@ app.all(
       return new Response(
         await readFile(`packages/module/es${pathname}`,),
         {
-        headers: { 'content-type': contentType, },
-      },
+          headers: { 'content-type': contentType, },
+        },
       );
     }
 
