@@ -5,7 +5,6 @@
  * sub-dispatcher for core, LSP, or filesystem operations.
  */
 
-import { FILE_SIZE_WARNING_THRESHOLD, } from '../constants.ts';
 import type { ClientMessage, } from '../protocol.ts';
 import {
   l as rootLogger,
@@ -99,15 +98,11 @@ export async function dispatchMessage(
         },
       },);
       if (lspManager !== null && result.kind === 'text') {
-        if (result.size !== undefined && result.size > FILE_SIZE_WARNING_THRESHOLD) {
-          l.info(`skipping LSP for large file (${result.size} bytes): ${parsed.path}`,);
-        }
-        else {
-          await lspManager.didOpen({
-            path: parsed.path,
-            text: result.content,
-          },);
-        }
+        await lspManager.didOpen({
+          path: parsed.path,
+          text: result.content,
+          size: result.size ?? 0,
+        },);
       }
       return;
     }

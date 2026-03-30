@@ -6,6 +6,7 @@
  * document tracking, diagnostic aggregation, and feature dispatch.
  */
 
+import { FILE_SIZE_WARNING_THRESHOLD, } from '../../constants.ts';
 import type {
   FilePosition,
   Range,
@@ -55,10 +56,16 @@ export type {
 
 /** Manages LSP servers via a lazy pool, routing documents and features. */
 export type LspManager = {
-  /** Notifies LSP servers that a file was opened. */
+  /**
+   * Notifies LSP servers that a file was opened.
+   * Files exceeding {@link FILE_SIZE_WARNING_THRESHOLD} are silently
+   * skipped — no document is registered, so all subsequent operations
+   * (didChange, hover, completions, etc.) become no-ops for that path.
+   */
   didOpen(opts: {
     path: string;
     text: string;
+    size: number;
   },): Promise<void>;
   /** Notifies LSP servers that a file's content changed. */
   didChange(opts: {
@@ -148,7 +155,8 @@ export function createLspManager({
   /**
    * Checks whether a file is tracked by the document sync layer.
    * Files that were too large at open time are never registered,
-   * so all feature requests for them should return empty fallbacks.
+   * so all feature requests for them return empty fallbacks without
+   * touching the LSP pool.
    *
    * @param path - absolute file path
    *
@@ -159,11 +167,16 @@ export function createLspManager({
   }
 
   return {
-    didOpen(opts,) {
+    didOpen({ path, text, size, },) {
+      if (size > FILE_SIZE_WARNING_THRESHOLD) {
+        managerLog.info(`skipping LSP for large file (${String(size,)} bytes): ${path}`,);
+        return Promise.resolve();
+      }
       return managerDidOpen({
         pool,
         documents,
-        ...opts,
+        path,
+        text,
       },);
     },
     didChange(opts,) {
