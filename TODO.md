@@ -11,6 +11,7 @@
 - [**Security & Infrastructure**](TODO.security.md) - Application security, deployment hardening
 - [**Performance & Optimization**](TODO.performance.md) - Build performance, runtime optimization
 - [**Automation & DevOps**](TODO.automation.md) - CI/CD, development automation, release management
+- [**VM Dev Environment**](TODO.vm-dev-environment.md) - Portable immutable VM image ([rationale](PHILOSOPHY.vm-dev-environment.md))
 - [**Completed Tasks**](TODO.completed.md) - Reference for finished work
 
 ## Priority Overview
