@@ -23,9 +23,6 @@
 
 ## Write-protection notifications
 
-- `notify-send` is Linux-only and requires a desktop session.
-  On macOS, use `osascript -e 'display notification ...'`.
-  On headless servers, fall back to terminal-only warning (current behavior).
 - No notification deduplication -- rapid external edits to the same file produce multiple notifications.
 
 ## Config execution model
@@ -52,3 +49,5 @@
   Users can implement this in their config with plain TypeScript, which is the intended design.
 - `exec()` does not support stdin, environment variables, or working directory configuration.
   Wrap with `Bun.spawn` directly for advanced use cases.
+- Nested `PlatformCommands` literals require `as const` to satisfy the recursive `Command` type.
+  Extract nested dispatch tables into typed constants for readability.

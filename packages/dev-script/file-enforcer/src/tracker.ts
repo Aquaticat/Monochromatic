@@ -25,6 +25,7 @@ export const writeTimestamps: Map<string, number> = new Map<string, number>();
  * Clears tracking state between watch-mode re-runs so stale paths
  * from a previous execution don't linger.
  * Preserves `writeTimestamps` because echo detection needs to survive across re-runs.
+ * Preserves `writeTimestamps` because echo detection needs to survive across re-runs.
  */
 export function reset(): void {
   reads.clear();

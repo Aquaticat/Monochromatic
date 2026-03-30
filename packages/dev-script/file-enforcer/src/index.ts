@@ -5,6 +5,31 @@ export {
   updateCache,
 } from './io/cache.ts';
 export {
+  ensurePackage,
+  registerPackages,
+} from './package/ensure-package.ts';
+export {
+  binaryExists,
+  canProvide,
+  detectManager,
+  installPackage,
+} from './package/manager.ts';
+export { mergeOverrides, } from './package/merge.ts';
+export { p, } from './package/p.ts';
+export type {
+  PackageEntry,
+  PackageManager,
+  PackageMapping,
+  PackageSpec,
+} from './package/types.ts';
+export type {
+  Command,
+  PlatformCommands,
+  PlatformEntry,
+  Predicate,
+} from './platform/evaluate-predicate.ts';
+export { evaluatePredicate, } from './platform/evaluate-predicate.ts';
+export {
   cat,
   globResults,
 } from './io/cat.ts';

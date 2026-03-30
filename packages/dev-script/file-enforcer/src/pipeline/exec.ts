@@ -1,5 +1,21 @@
 import spawn from 'nano-spawn';
 
+import type {
+  Command,
+  PlatformCommands,
+  PlatformEntry,
+} from '../platform/evaluate-predicate.ts';
+import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
+
+export type {
+  Command,
+  PlatformCommands,
+  PlatformEntry,
+} from '../platform/evaluate-predicate.ts';
+export type { Predicate, } from '../platform/evaluate-predicate.ts';
+
+//region exec
+
 /**
  * Runs an external command and returns its stdout.
  *
@@ -10,10 +26,70 @@ import spawn from 'nano-spawn';
  * @returns Stdout output as a string
  *
  * @throws When the command exits with a non-zero code
+ *
+ * @example
+ * ```ts
+ * const version = await exec('git', ['--version']);
+ * ```
  */
 export async function exec(
   cmd: string,
+  args?: readonly string[],
+): Promise<string>;
+
+/**
+ * Evaluates platform entries top-to-bottom and executes the first matching command.
+ * Each entry is a `[predicate, command]` tuple.
+ * Predicates are direct commands (no shell); exit code 0 = match.
+ *
+ * @param platformCommands - Ordered list of `[predicate, command]` tuples
+ *
+ * @returns Stdout output from the matched command
+ *
+ * @throws When no predicate matches — includes all tested predicates in the message
+ *
+ * @throws When the matched command exits with a non-zero code
+ *
+ * @example
+ * ```ts
+ * // First match wins: try mise, then brew, then apt
+ * const output = await exec([
+ *   [['mise', '--version'],  ['mise', 'exec', '--', 'git', 'pull']],
+ *   [['brew', '--version'],  ['brew', 'install', 'git']],
+ *   [['apt-get', '--version'], ['apt-get', 'install', 'git']],
+ * ]);
+ * ```
+ */
+export async function exec(
+  platformCommands: PlatformCommands,
+): Promise<string>;
+
+export async function exec(
+  cmdOrPlatformCommands: string | PlatformCommands,
   args: readonly string[] = [],
+): Promise<string> {
+  if (typeof cmdOrPlatformCommands === 'string') {
+    return execDirect(cmdOrPlatformCommands, args,);
+  }
+  return execPlatformAware(cmdOrPlatformCommands,);
+}
+
+//endregion exec
+
+//region Direct execution
+
+/**
+ * Executes a single command directly via `nano-spawn`.
+ *
+ * @param cmd - Executable name
+ *
+ * @param args - Arguments passed to the command
+ *
+ * @returns Stdout output as a string
+ */
+async function execDirect(
+  cmd: string,
+  args: readonly string[],
 ): Promise<string> {
   console.log(`[file-enforcer] exec: ${cmd} ${args.join(' ',)}`,);
   const { stdout, } = await spawn(
@@ -22,3 +98,97 @@ export async function exec(
   );
   return stdout;
 }
+
+//endregion Direct execution
+
+//region Platform-aware execution
+
+/**
+ * Walks platform entries in order, evaluating each predicate.
+ * Executes the command from the first entry whose predicate succeeds.
+ *
+ * @param platformCommands - Ordered `[predicate, command]` tuples
+ *
+ * @returns Stdout from the matched command
+ *
+ * @throws When no predicate matches
+ */
+async function execPlatformAware(
+  platformCommands: PlatformCommands,
+): Promise<string> {
+  for (const entry of platformCommands) {
+    const [predicate, cmd,] = entry;
+    const matched = await evaluatePredicate(predicate,);
+    if (matched) {
+      return execCommand(cmd,);
+    }
+  }
+  throw new PlatformMatchError(platformCommands,);
+}
+
+/**
+ * Dispatches a {@link Command} to the appropriate execution path.
+ *
+ * - **Array, first element is string**: `[cmd, ...args]` → {@link execDirect}
+ * - **Array, first element is array**: nested {@link PlatformCommands} → {@link execPlatformAware} (recursive)
+ *
+ * @param cmd - Command as `[cmd, ...args]` or nested {@link PlatformCommands}
+ *
+ * @returns Stdout output as a string
+ */
+async function execCommand(cmd: Command,): Promise<string> {
+  if (isNestedPlatformCommands(cmd,)) {
+    return execPlatformAware(cmd,);
+  }
+  const [executable = '', ...args] = cmd as readonly string[];
+  return execDirect(executable, args,);
+}
+
+/**
+ * Determines whether a non-string {@link Command} is a nested {@link PlatformCommands}.
+ * Checks if the first element is an array (predicate tuple) rather than a string (command name).
+ *
+ * @param cmd - Array-form command to inspect
+ *
+ * @returns `true` if the command is a nested {@link PlatformCommands}
+ */
+function isNestedPlatformCommands(cmd: readonly string[] | PlatformCommands,): cmd is PlatformCommands {
+  return cmd.length > 0 && Array.isArray(cmd[0],);
+}
+
+//endregion Platform-aware execution
+
+//region Errors
+
+/**
+ * Thrown when no predicate in a {@link PlatformCommands} list matches the current platform.
+ * Includes all tested predicates for debuggability.
+ */
+class PlatformMatchError extends Error {
+  /**
+   * @param platformCommands - Entries that were tested and all failed
+   */
+  constructor(platformCommands: PlatformCommands,) {
+    const predicateList = platformCommands
+      .map(formatEntry,)
+      .join(', ',);
+    super(
+      `No platform predicate matched. Tested: [${predicateList}]`,
+    );
+    this.name = 'PlatformMatchError';
+  }
+}
+
+/**
+ * Formats a single platform entry's predicate for error messages.
+ *
+ * @param entry - Platform entry to format
+ *
+ * @returns Human-readable predicate representation
+ */
+function formatEntry(entry: PlatformEntry,): string {
+  const [predicate,] = entry;
+  return `[${predicate.map((segment,) => `"${segment}"`).join(', ',)}]`;
+}
+
+//endregion Errors
