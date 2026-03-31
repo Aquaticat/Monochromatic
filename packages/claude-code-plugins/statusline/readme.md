@@ -26,6 +26,18 @@ Opus     51,045/1,000,000    28% left (1h23m) · 12% left (3d2h)
 
 The token counter is always 7 characters wide (`TTT,OOO` format) so the display never shifts.
 
+## Model name
+
+The model family name (Opus, Sonnet, Haiku) is shown at the start.
+Version and context size are stripped when they match the current defaults:
+
+- **Opus** -- latest 4.6, default 1M context
+- **Sonnet** -- latest 4.6, default 200K context
+- **Haiku** -- latest 4.5, default 200K context
+
+Non-default values are kept: Sonnet with 1M context shows `Sonnet (1M)`,
+an older model shows `Opus 4.5`.
+
 ## Rate limit indicators
 
 Rate limit warnings use a "remaining + time-to-reset" framing.
@@ -77,18 +89,9 @@ This is built into Claude Code itself and cannot be configured from the script s
 
 ## Dependencies
 
-- `jq` for JSON parsing
-- `awk` for percentage arithmetic
-- `date` for relative time calculation
+- [Bun](https://bun.sh/) runtime
 
 ## Installation
-
-Copy the script to `~/.claude/`:
-
-```bash
-cp statusline.sh ~/.claude/statusline.sh
-chmod +x ~/.claude/statusline.sh
-```
 
 Add to `~/.claude/settings.json`:
 
@@ -96,7 +99,7 @@ Add to `~/.claude/settings.json`:
 {
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/statusline.sh"
+    "command": "bun /path/to/statusline.ts"
   }
 }
 ```
