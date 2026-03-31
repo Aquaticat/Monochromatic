@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
 /**
- * Claude Code statusline displaying model name, context window usage, and rate limit warnings.
- * Reads JSON from stdin, writes ANSI-colored status text to stdout.
+ * Claude Code statusline displaying model name, effort level, context window usage, and rate limit warnings.
+ * Reads JSON from stdin and `~/.claude/settings.json`, writes ANSI-colored status text to stdout.
  */
 
 //region ANSI escape helpers
@@ -181,6 +181,36 @@ function formatContextWindow(used: number, total: number): string {
 
 //endregion
 
+//region Effort level from settings
+
+/** Effort level symbols matching Claude Code's built-in indicators. */
+const EFFORT_SYMBOLS: Record<string, string> = {
+  low: "\u25CB",
+  medium: "\u25D0",
+  max: "\u25C9",
+}
+
+/**
+ * Read `effortLevel` from `~/.claude/settings.json`.
+ * Returns empty string for "high" (default) or when unreadable.
+ *
+ * @example readEffortIndicator() // "○" when low, "◐" when medium, "" when high
+ */
+async function readEffortIndicator(): Promise<string> {
+  try {
+    const home = process.env["HOME"] ?? ""
+    const settingsPath = `${home}/.claude/settings.json`
+    const file = Bun.file(settingsPath)
+    const settings: { effortLevel?: string } = await file.json()
+    const level = settings.effortLevel ?? "high"
+    return EFFORT_SYMBOLS[level] ?? ""
+  } catch {
+    return ""
+  }
+}
+
+//endregion
+
 //region Main
 
 const input: StatuslineInput = await Bun.stdin.json()
@@ -188,10 +218,12 @@ const input: StatuslineInput = await Bun.stdin.json()
 const SEP = "    "
 const segments: string[] = []
 
-// Model name
+// Model name + effort level
 const displayName = input.model?.display_name
+const effortIndicator = await readEffortIndicator()
 if (displayName) {
-  segments.push(formatModelDisplay(displayName))
+  const model = formatModelDisplay(displayName)
+  segments.push(effortIndicator ? `${model} ${color(YELLOW, effortIndicator)}` : model)
 }
 
 // Context window

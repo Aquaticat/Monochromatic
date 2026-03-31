@@ -1,6 +1,6 @@
 # statusline
 
-Minimal Claude Code status line showing context window token usage and API rate limit warnings.
+Minimal Claude Code status line showing model effort level, context window token usage, and API rate limit warnings.
 
 ## What it displays
 
@@ -37,6 +37,23 @@ Version and context size are stripped when they match the current defaults:
 
 Non-default values are kept: Sonnet with 1M context shows `Sonnet (1M)`,
 an older model shows `Opus 4.5`.
+
+## Effort level
+
+When the effort level is below "high" (the default), a yellow symbol appears after the model name:
+
+- **low** -- `Opus ○`
+- **medium** -- `Opus ◐`
+- **high** -- no indicator (default, nothing extra shown)
+- **max** -- `Opus ◉`
+
+The symbols match Claude Code's built-in effort indicators (○ ◐ ● ◉).
+
+The effort level is read from `~/.claude/settings.json` (`effortLevel` field)
+because the statusline JSON payload does not include it yet
+([anthropics/claude-code#40261](https://github.com/anthropics/claude-code/issues/40261)).
+Changes made via `/effort` or `/fast` that write to settings are picked up on the next statusline refresh.
+In-session toggles that skip the settings file will not be reflected.
 
 ## Rate limit indicators
 
