@@ -1,0 +1,27 @@
+{
+  "name": "@monochromatic-dev/cli-git",
+  "description": "Git wrapper that enforces repo-root execution and injects --atomic on push.",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "bin": {
+    "git": "dist/final/node/index.mjs"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "find-up": "catalog:",
+    "nano-spawn": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/cli/git"
+  },
+  "sideEffects": true
+}

@@ -1,0 +1,16 @@
+[tasks.run]
+description = "Run git wrapper CLI"
+usage = 'arg "[args]" var=#true help="Git subcommand and arguments"'
+run = "bun src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+
+[tasks.'build:js:node']
+extends = "build:js:node"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks.'lint:types']
+extends = "lint:types"
+
+[tasks.'lint:oxlint']
+extends = "lint:oxlint"
