@@ -70,6 +70,7 @@ KDE Plasma desktop:
 - [ ] `sddm` -- display manager (+ `systemctl enable sddm`)
 - [ ] `konsole` -- fallback terminal (KDE default)
 - [ ] `dolphin` -- file manager (KDE default)
+- [ ] `virt-manager` -- desktop GUI for libvirt/KVM (pairs with ucore-hci HCI stack)
 
 Browser + password manager (both must be native RPM for KeePassXC browser integration):
 - [ ] Add LibreWolf repo: `dnf config-manager addrepo --from-repofile=https://rpm.librewolf.net/librewolf-repo.repo`
@@ -162,7 +163,7 @@ Runs as user after first login. Idempotent (safe to re-run).
 - [ ] Symlink or copy dotfiles into `~/.config/` via `overwriteEach()`
 - [ ] Run `mise install` via `exec()` (installs all tools from global config)
 - [ ] Install any flatpaks needed for dev work
-  (candidates: Flatseal, virt-manager if not already in ucore-hci)
+  (candidates: Flatseal)
 
 ### Provisioner trigger sequence
 

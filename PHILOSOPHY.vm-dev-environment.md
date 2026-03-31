@@ -173,6 +173,19 @@ The scottames/ghostty COPR provides an official RPM for Fedora, which is a bette
    same person consistently; unlike Terra (which repackages upstream software), this COPR
    tracks ghostty releases directly
 
+## Why virt-manager is a native RPM, not Flatpak
+
+virt-manager communicates with libvirtd via a Unix socket (`/var/run/libvirt/libvirt-sock`).
+Flatpak sandboxing blocks direct socket access by default --
+a Flatpak virt-manager cannot reach the host libvirtd without manual Flatseal overrides,
+which defeats the goal of a zero-touch provisioned environment.
+
+virt-manager is available in Fedora's official repos and is a natural desktop companion
+to the HCI stack already present in ucore-hci (libvirt, KVM, virsh, cockpit-machines).
+Baking it into the container image puts VM management at the same layer as the hypervisor
+infrastructure it manages, and makes it available immediately after first login
+without a provisioner step.
+
 ## Why LibreWolf and KeePassXC are native RPMs, not Flatpak
 
 KeePassXC's browser integration communicates with LibreWolf

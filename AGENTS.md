@@ -206,6 +206,14 @@ Add explicit guards (transcript size check, env var flag, session type filter) t
 
 Only pin versions with clear justification and a comment explaining why.
 
+## Test assumptions before encoding them
+
+When writing instructions, configuration, or documentation that prescribes how a tool or API behaves,
+test the claim first with a real invocation.
+Do not write "use X for Y" based on how X **should** work --
+run X against a real target and confirm the output before committing to the approach.
+This applies to agent prompts, README guidance, CI scripts, and any artifact that future sessions will follow.
+
 ## Third-party libraries
 
 - Immediately retrieve documentation on undefined method errors
