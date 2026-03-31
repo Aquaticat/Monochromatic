@@ -1,0 +1,71 @@
+# syntax=docker/dockerfile:1
+# Custom dev VM image based on ucore-hci (Fedora CoreOS + HCI stack).
+# Pattern: https://github.com/ublue-os/image-template
+#
+# Layers on top of ucore-hci:
+# - KDE Plasma desktop (full plasma-workspace)
+# - Browser (LibreWolf) + password manager (KeePassXC)
+# - Terminal (Ghostty via COPR)
+# - Dev tools (helix, strace, inotify-tools, etc.)
+# - mise (system-wide at /usr/local/bin)
+# - User account with passwordless sudo
+
+FROM ghcr.io/ublue-os/ucore-hci:stable
+
+# Add LibreWolf RPM repo (domain changed from rpm.librewolf.net in 2026)
+RUN curl -fsSLo /etc/yum.repos.d/librewolf.repo \
+    https://repo.librewolf.net/librewolf.repo
+
+# Add scottames/ghostty COPR repo
+# shellcheck disable=SC1091
+RUN . /etc/os-release && \
+    curl -fsSL \
+      "https://copr.fedorainfracloud.org/coprs/scottames/ghostty/repo/fedora-${VERSION_ID}/scottames-ghostty-fedora-${VERSION_ID}.repo" \
+      -o /etc/yum.repos.d/scottames-ghostty.repo
+
+# Install all system packages in a single layer.
+# rpm-ostree is used because ucore-hci is an ostree native container.
+RUN rpm-ostree install \
+      plasma-workspace \
+      sddm \
+      konsole \
+      dolphin \
+      virt-manager \
+      librewolf \
+      keepassxc \
+      ghostty \
+      helix \
+      strace \
+      inotify-tools \
+      python3-devel \
+      potrace \
+      msitools \
+    && rpm-ostree cleanup -m \
+    && ostree container commit
+
+# Enable SDDM so KDE starts on boot
+RUN systemctl enable sddm
+
+# Create user account with wheel group and passwordless sudo
+RUN useradd --create-home --groups wheel user \
+    && echo "user:user" | chpasswd \
+    && printf '%s\n' '%wheel ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel-nopasswd \
+    && chmod 0440 /etc/sudoers.d/wheel-nopasswd
+
+# Install mise as user (goes to ~/.local/bin/mise).
+# Done after useradd so the home directory exists.
+USER user
+RUN curl -fsSL https://mise.jdx.dev/install.sh | sh
+USER root
+
+# Bake dotfiles from packages/config/dotfiles/ into the user's ~/.config/.
+# Build context is the monorepo root, so paths are relative to that.
+# Nushell in mise config is required because this monorepo's mise tasks use nushell.
+COPY --chown=user:user packages/config/dotfiles/ghostty/ /home/user/.config/ghostty/
+COPY --chown=user:user packages/config/dotfiles/mise/ /home/user/.config/mise/
+
+# Install mise tools (nushell) declared in the baked global config.
+# Without nushell, `mise install` in the monorepo fails before it can install anything.
+USER user
+RUN ~/.local/bin/mise install
+USER root

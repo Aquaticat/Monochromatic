@@ -1,0 +1,11 @@
+# bootc-image-builder disk configuration
+# See: https://github.com/osbuild/bootc-image-builder
+
+# Root filesystem -- 40 GiB covers OS + KDE + dev packages with room for
+# rpm-ostree layering during iterative development.
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "40 GiB"
+
+# TODO: Evaluate ZFS native encryption parameters once bootc-image-builder
+# ZFS support is confirmed. See TODO.vm-dev-environment.md (Phase 1, Full-disk encryption).

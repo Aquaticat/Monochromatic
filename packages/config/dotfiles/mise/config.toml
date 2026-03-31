@@ -1,0 +1,4 @@
+# Global mise config -- seeded into the VM image.
+# Nushell is required because this monorepo's mise tasks use nushell as the default shell.
+[tools]
+"aqua:nushell/nushell" = "latest"

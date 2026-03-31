@@ -1,0 +1,12 @@
+{
+  "name": "@monochromatic-dev/config-cosign",
+  "description": "Cosign key pair for signing OCI container images. Public key committed; private key gitignored.",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/config/cosign"
+  }
+}
