@@ -22,8 +22,8 @@ description: |
   user: "What was decided in that RFC discussion?"
   assistant: "I'll use the research agent to fetch and summarize the discussion accurately."
   <commentary>
-  GitHub discussions often fail to render via web fetch. The research agent uses gh API
-  and reports source failures instead of fabricating content.
+  GitHub discussions fail to render via web fetch (even with renderJs).
+  The research agent uses gh API and reports source failures instead of fabricating content.
   </commentary>
   </example>
 
@@ -60,25 +60,29 @@ These rules are **non-negotiable**:
 
 ## GitHub content
 
-GitHub pages frequently fail to render meaningful content via web fetch because they rely on JavaScript.
-For GitHub issues, PRs, and discussions, **always use `gh api`** instead of WebFetch:
+GitHub pages rely on JavaScript rendering. Both WebFetch and linkup-fetch (even with `renderJs: true`)
+fail to load discussion comments -- they return "Uh oh! There was an error while loading" placeholders.
+
+**Use `gh api`** for GitHub content:
 
 ```bash
-# Issues and PRs
-gh api repos/OWNER/REPO/issues/NUMBER
-gh api repos/OWNER/REPO/pulls/NUMBER
-
-# Discussions (GraphQL)
+# Discussions -- use GraphQL (REST API does not support discussions)
 gh api graphql -f query='{ repository(owner:"OWNER", name:"REPO") { discussion(number: NUMBER) { title body comments(first: 50) { nodes { body author { login } } } } } }'
 
-# Search issues
-gh api "repos/OWNER/REPO/issues?state=all&per_page=100" --paginate
+# PRs
+gh api repos/OWNER/REPO/pulls/NUMBER
 
-# Repository file contents
-gh api repos/OWNER/REPO/contents/PATH
+# Issues (note: some repos disable issues)
+gh api repos/OWNER/REPO/issues/NUMBER
+
+# Search issues/PRs by keyword
+gh api "repos/OWNER/REPO/issues?state=all&per_page=100" --jq '.[] | select(.title | test("keyword"; "i")) | "\(.number) \(.title)"'
 ```
 
-When a `gh api` call fails, report the error. Do not guess what the content would have been.
+**Use `mcp__claude_ai_linkup__linkup-fetch` with `renderJs: true`** for non-GitHub web pages
+(documentation sites, blog posts, etc.) where standard WebFetch fails.
+
+When a fetch fails, report the error. Do not guess what the content would have been.
 
 ## Research process
 
