@@ -139,6 +139,40 @@ reuses existing infrastructure instead of inventing a new tool.
 The only runtime dependency is bun + file-enforcer,
 both available after `mise install`.
 
+## Why ZFS native encryption for FDE
+
+ucore-hci ships ZFS. Adding LUKS below ZFS would mean two separate encryption layers:
+LUKS for block-level FDE, then ZFS on top.
+ZFS native encryption handles FDE within the same layer that manages snapshots,
+send/receive, and compression -- encrypted data stays encrypted in snapshots and
+during `zfs send` replication without a separate key-management ceremony.
+
+ZFS native encryption also provides per-dataset granularity: swap and `/tmp` datasets
+can be unencrypted while `/home` and `/var` are encrypted,
+which matches a dev VM's actual threat model (protect user data and secrets,
+not kernel modules).
+
+Key management is a passphrase prompt at boot (`keyformat=passphrase`).
+The VM is started manually from a hypervisor console, so a prompt is not disruptive.
+No TPM or auto-unlock mechanism -- avoids vTPM device requirements and keeps
+the setup portable across hypervisors.
+
+## Why ghostty is a COPR RPM, not an AppImage
+
+The original plan was to install ghostty as an AppImage in the first-login provisioner.
+The scottames/ghostty COPR provides an official RPM for Fedora, which is a better fit:
+
+-  **Immutable OS alignment**: an RPM baked into the container image is managed by rpm-ostree
+   and updated atomically; an AppImage in `~/Applications/` is invisible to the OS and
+   requires a separate update mechanism (`appimaged`, AM/AppMan, or a manual download script)
+-  **No AppImage runtime dependency**: AppImages require FUSE or `--appimage-extract-and-run`;
+   neither is guaranteed in a fresh ucore-hci image
+-  **Simpler provisioner**: ghostty moves from Phase 2 (first-login) to Phase 1 (image),
+   removing three provisioner tasks and one open question
+-  **COPR risk is acceptable**: scottames/ghostty is a single-package COPR maintained by the
+   same person consistently; unlike Terra (which repackages upstream software), this COPR
+   tracks ghostty releases directly
+
 ## Why LibreWolf and KeePassXC are native RPMs, not Flatpak
 
 KeePassXC's browser integration communicates with LibreWolf

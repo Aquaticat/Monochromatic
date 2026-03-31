@@ -10,12 +10,12 @@ with KDE Plasma layered on top via a custom Containerfile.
 ucore-hci (immutable, rpm-ostree, Fedora CoreOS base)
   + KDE Plasma, SDDM (baked into custom image)
   + system dev packages (baked into custom image)
+  + ghostty RPM via scottames/ghostty COPR (baked into custom image)
   + mise (baked, /usr/local/bin)
   + user account (baked)
   |
   + mise toolchains (first-login, ~/. local/share/mise/)
   + dotfiles (first-login, ~/.config/)
-  + ghostty AppImage (first-login, ~/Applications/)
   + librewolf RPM via LibreWolf repo (baked into custom image)
   + secrets (manual, gh auth login / SSH keys)
 ```
@@ -76,6 +76,15 @@ Browser + password manager (both must be native RPM for KeePassXC browser integr
 - [ ] `librewolf`
 - [ ] `keepassxc`
 
+Terminal:
+- [ ] Add scottames/ghostty COPR:
+  ```
+  . /etc/os-release
+  curl -fsSL "https://copr.fedorainfracloud.org/coprs/scottames/ghostty/repo/fedora-${VERSION_ID}/scottames-ghostty-fedora-${VERSION_ID}.repo" \
+    | tee /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:scottames:ghostty.repo > /dev/null
+  ```
+- [ ] `ghostty`
+
 Dev tools (system-level, mise handles the rest):
 - [ ] `helix`
 - [ ] `strace`
@@ -103,8 +112,18 @@ Infrastructure:
     --type qcow2 \
     localhost/my-dev:latest
   ```
-- [ ] Write `disk_config/disk.toml` (root filesystem size, btrfs)
+- [ ] Write `disk_config/disk.toml` (root filesystem size, ZFS, encryption settings)
 - [ ] Boot the qcow2, verify KDE starts, SDDM login works, podman runs, libvirt works
+
+### Full-disk encryption (ZFS native encryption)
+
+ucore-hci ships ZFS; use ZFS native encryption on the root pool rather than adding a
+separate LUKS layer.
+
+- [ ] Determine if bootc-image-builder supports ZFS pool encryption parameters in disk.toml
+- [ ] Configure root pool with `encryption=aes-256-gcm` and `keyformat=passphrase`
+- [ ] Verify ZFS pool unlocks at boot: `zfs get encryption,keystatus rpool`
+- [ ] Verify data is actually encrypted: inspect raw qcow2 block device for plaintext absence
 
 ### Ignition/Butane config (optional)
 
@@ -142,13 +161,8 @@ Runs as user after first login. Idempotent (safe to re-run).
 - [ ] Clone nvim config: `gh repo clone Aquaticat/nvim ~/.config/nvim`
 - [ ] Symlink or copy dotfiles into `~/.config/` via `overwriteEach()`
 - [ ] Run `mise install` via `exec()` (installs all tools from global config)
-- [ ] Install ghostty AppImage:
-  - Download from [pkgforge-dev/ghostty-appimage][ghostty-appimage] to `~/Applications/`
-  - Set up auto-updates via `appimaged` or AM/AppMan
 - [ ] Install any flatpaks needed for dev work
   (candidates: Flatseal, virt-manager if not already in ucore-hci)
-
-[ghostty-appimage]: https://github.com/pkgforge-dev/ghostty-appimage
 
 ### Provisioner trigger sequence
 
@@ -176,7 +190,8 @@ bun packages/dev-script/setup-dev/src/setup-dev.config.ts
 - [ ] Verify mise tools work: `bun --version`, `node --version`, `cargo --version`
 - [ ] Verify podman works: `podman run --rm alpine echo hello`
 - [ ] Verify libvirt works: `virsh list --all`
-- [ ] Verify ghostty launches
+- [ ] Verify ghostty launches (installed as RPM, not AppImage)
+- [ ] Verify ZFS pool encryption: `zfs get encryption,keystatus rpool`
 - [ ] Verify librewolf launches
 - [ ] Verify KeePassXC launches
 - [ ] Verify `rpm-ostree install <package>` stages for next boot and activates after reboot
@@ -204,7 +219,7 @@ No image rebuild needed -- just re-run the provisioner in the existing VM.
   depending on what ucore-hci already provides for networking/Bluetooth
 - [ ] Which flatpaks belong in the provisioner?
   Review the full flatpak list when feeling better
-- [ ] Ghostty AppImage auto-update mechanism:
-  `appimaged` vs AM/AppMan vs manual download script
+- [ ] Whether bootc-image-builder's disk.toml exposes ZFS encryption parameters,
+  or whether a post-build script is needed to re-create the pool with encryption enabled
 - [ ] Whether to keep nvim as a separate repo or fold it into the dotfiles repo
 - [ ] Cosign key setup for image signing (needed if pushing to GHCR, not needed for local-only builds)
