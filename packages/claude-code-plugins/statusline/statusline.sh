@@ -1,6 +1,8 @@
 #!/bin/bash
 input=$(cat)
 
+model_name=$(echo "$input" | jq -r '.model.display_name // empty')
+
 used=$(echo "$input" | jq -r '
   (.context_window.current_usage // {}) |
   ((.input_tokens // 0) + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0) + (.output_tokens // 0))
@@ -86,7 +88,7 @@ format_rate_limit() {
     COLOR='\033[32m'  # Green: comfortable
   fi
 
-  printf ' %b%d%% left%b (%s)' "$COLOR" "$remaining" "$RESET" "$time_left"
+  printf '%b%d%% left%b (%s)' "$COLOR" "$remaining" "$RESET" "$time_left"
 }
 
 # Context window display
@@ -123,12 +125,18 @@ fi
 five_hour_display=$(format_rate_limit "$five_hour_pct" "$five_hour_resets" 50)
 seven_day_display=$(format_rate_limit "$seven_day_pct" "$seven_day_resets" 50)
 
+SEP='    '
+
 if [ -n "$five_hour_display" ] && [ -n "$seven_day_display" ]; then
-  output="${output}${five_hour_display} ·${seven_day_display}"
+  output="${output}${SEP}${five_hour_display} · ${seven_day_display}"
 elif [ -n "$five_hour_display" ]; then
-  output="${output}${five_hour_display}"
+  output="${output}${SEP}${five_hour_display}"
 elif [ -n "$seven_day_display" ]; then
-  output="${output}${seven_day_display}"
+  output="${output}${SEP}${seven_day_display}"
+fi
+
+if [ -n "$model_name" ]; then
+  output="${model_name}${SEP}${output}"
 fi
 
 if [ -n "$output" ]; then

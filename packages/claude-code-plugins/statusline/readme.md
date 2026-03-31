@@ -9,19 +9,19 @@ A fixed-width token counter plus rate limit indicators that appear only when app
 **Normal usage** (rate limits comfortable):
 
 ```
- 51,045/1,000,000
+Opus     51,045/1,000,000
 ```
 
 **Approaching a limit** (session window at 72% used, 28% remaining):
 
 ```
- 51,045/1,000,000 28% left (1h23m)
+Opus     51,045/1,000,000    28% left (1h23m)
 ```
 
 **Both tiers constrained**:
 
 ```
- 51,045/1,000,000 28% left (1h23m) · 12% left (3d2h)
+Opus     51,045/1,000,000    28% left (1h23m) · 12% left (3d2h)
 ```
 
 The token counter is always 7 characters wide (`TTT,OOO` format) so the display never shifts.
