@@ -23,7 +23,11 @@ const _default_1: UserConfig = defineConfig({
   target: 'firefox140',
   platform: 'node',
   deps: {
-    alwaysBundle: [/^@monochromatic-dev\//,],
+    alwaysBundle: [
+      /^@monochromatic-dev\//,
+      /^find-up$/,
+      /^nano-spawn$/,
+    ],
   },
   minify: {
     compress: true,

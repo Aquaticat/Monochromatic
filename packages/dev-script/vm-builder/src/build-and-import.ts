@@ -13,29 +13,29 @@
  *
  * Prerequisites on the host:
  * - podman (rootful via sudo, for both image build and conversion)
- * - virsh and virt-install (libvirt-client, virt-install packages)
- * - Current user in the `libvirt` group for qemu:///system access
+ * - virsh (libvirt-client package)
  *
  * Run: mise run //packages/dev-script/vm-builder:run
  */
 import { exec } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+import { $ as h } from '@monochromatic-dev/module-es/h-xml';
 import { findUp } from 'find-up';
 import { spawn as nodeSpawn } from 'node:child_process';
 import { once } from 'node:events';
-import { readFile, mkdir } from 'node:fs/promises';
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 /** OCI image tag produced by the podman build step. */
 const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
 
-/** Libvirt domain name used for virsh and virt-install. */
+/** Libvirt domain name used for virsh define. */
 const VM_NAME = 'monochromatic-dev';
 
-/** VM memory in MiB (8 GiB). */
-const VM_MEMORY_MIB = '8192';
+/** VM memory in MiB (16 GiB). */
+const VM_MEMORY_MIB = '16384';
 
 /** Virtual CPU count. */
-const VM_VCPUS = '4';
+const VM_VCPUS = '8';
 
 /**
  * Absolute path to this package's root directory.
@@ -84,8 +84,8 @@ const QCOW2_PATH = join(OUTPUT_DIR, 'qcow2', 'disk.qcow2');
 /** Current user login name; used to restore ownership after the privileged build step. */
 const CURRENT_USER = process.env['USER'] ?? 'user';
 
-/** libvirt system URI -- connects to the host's system-level hypervisor. */
-const LIBVIRT_URI = 'qemu:///system';
+/** libvirt session URI -- connects to the user's QEMU/KVM daemon (no sudo needed). */
+const LIBVIRT_URI = 'qemu:///session';
 
 //region Streaming process runner
 
@@ -207,34 +207,96 @@ async function undefineVmIfExists(name: string): Promise<void> {
 }
 
 /**
- * Imports the qcow2 disk image into libvirt as a new domain.
- * The VM is registered but not started; open virt-manager or run
- * `virsh --connect qemu:///system start <name>` to boot it.
+ * Generates libvirt domain XML for the dev VM.
+ * Uses h-xml (same pattern as cli-mvm) with SPICE graphics + QXL video
+ * for virt-manager desktop access, virtio disk and NIC, UEFI boot,
+ * and host-passthrough CPU.
  *
- * Uses `--import` so virt-install skips OS installation and boots directly
- * from the existing disk. `--noautoconsole` prevents virt-install from
- * blocking waiting for a console connection.
+ * @param name - Libvirt domain name
+ *
+ * @returns Complete libvirt domain XML string
+ */
+function generateDomainXml(name: string): string {
+  return h({
+    tag: 'domain',
+    attrs: { type: 'kvm' },
+    children: [
+      h({ tag: 'name', text: name }),
+      h({ tag: 'memory', attrs: { unit: 'MiB' }, text: VM_MEMORY_MIB }),
+      h({ tag: 'vcpu', text: VM_VCPUS }),
+      h({
+        tag: 'os',
+        children: [
+          h({ tag: 'type', attrs: { arch: 'x86_64' }, text: 'hvm' }),
+          h({ tag: 'boot', attrs: { dev: 'hd' } }),
+        ],
+      }),
+      h({ tag: 'cpu', attrs: { mode: 'host-passthrough' } }),
+      h({
+        tag: 'features',
+        children: [h({ tag: 'acpi' })],
+      }),
+      h({ tag: 'clock', attrs: { offset: 'utc' } }),
+      h({
+        tag: 'devices',
+        children: [
+          h({
+            tag: 'disk',
+            attrs: { type: 'file', device: 'disk' },
+            children: [
+              h({ tag: 'driver', attrs: { name: 'qemu', type: 'qcow2' } }),
+              h({ tag: 'source', attrs: { file: QCOW2_PATH } }),
+              h({ tag: 'target', attrs: { dev: 'vda', bus: 'virtio' } }),
+            ],
+          }),
+          h({
+            tag: 'interface',
+            attrs: { type: 'user' },
+            children: [
+              h({ tag: 'model', attrs: { type: 'virtio' } }),
+            ],
+          }),
+          h({
+            tag: 'graphics',
+            attrs: { type: 'spice', autoport: 'yes' },
+            children: [
+              h({ tag: 'gl', attrs: { enable: 'yes' } }),
+            ],
+          }),
+          h({
+            tag: 'video',
+            children: [
+              h({ tag: 'model', attrs: { type: 'virtio', heads: '1' } }),
+              h({ tag: 'acceleration', attrs: { accel3d: 'yes' } }),
+            ],
+          }),
+          h({
+            tag: 'channel',
+            attrs: { type: 'unix' },
+            children: [
+              h({ tag: 'target', attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0' } }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+
+/**
+ * Imports the qcow2 disk image into libvirt as a new domain.
+ * Writes domain XML to a file and defines it via `virsh define`.
+ * The VM is registered but not started; open virt-manager or run
+ * `virsh --connect qemu:///session start <name>` to boot it.
  *
  * @param name - Libvirt domain name to create
  */
 async function importVm(name: string): Promise<void> {
   console.log(`[vm-builder] importing '${name}' into libvirt...`);
-  await run({
-    cmd: 'virt-install',
-    args: [
-      '--connect', LIBVIRT_URI,
-      '--name', name,
-      '--memory', VM_MEMORY_MIB,
-      '--vcpus', VM_VCPUS,
-      '--disk', `path=${QCOW2_PATH},format=qcow2`,
-      '--import',
-      '--os-variant', 'fedora-coreos-stable',
-      '--network', 'network=default',
-      '--graphics', 'spice',
-      '--video', 'qxl',
-      '--noautoconsole',
-    ],
-  });
+  const xml = generateDomainXml(name);
+  const xmlPath = join(OUTPUT_DIR, 'domain.xml');
+  await writeFile(xmlPath, xml);
+  await exec('virsh', ['--connect', LIBVIRT_URI, 'define', xmlPath]);
 }
 
 await buildImage();
@@ -243,4 +305,4 @@ await fixOwnership();
 await undefineVmIfExists(VM_NAME);
 await importVm(VM_NAME);
 
-console.log(`[vm-builder] done. Start the VM with: virsh --connect ${LIBVIRT_URI} start ${VM_NAME}`);
+console.log(`[vm-builder] done. Start the VM with: virsh --connect ${LIBVIRT_URI} start ${VM_NAME}\n  or open virt-manager and double-click ${VM_NAME}`);

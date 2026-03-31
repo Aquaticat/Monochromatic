@@ -46,6 +46,13 @@ RUN rpm-ostree install \
 # Enable SDDM so KDE starts on boot
 RUN systemctl enable sddm
 
+# Declare btrfs as the root filesystem for bootc-image-builder.
+# Without this, bootc-image-builder fails with "missing required info: DefaultRootFs"
+# because Fedora CoreOS / ucore does not ship a default.
+RUN mkdir -p /usr/lib/bootc/install \
+    && printf '%s\n' '[install.filesystem.root]' 'type = "btrfs"' \
+       > /usr/lib/bootc/install/00-ucore-dev.toml
+
 # Create user account with wheel group and passwordless sudo
 RUN useradd --create-home --groups wheel user \
     && echo "user:user" | chpasswd \

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
+    "@monochromatic-dev/module-es": "workspace:*",
     "find-up": "catalog:"
   },
   "version": "0.0.1",
