@@ -1,0 +1,8 @@
+{
+  "name": "research-agent",
+  "description": "Provides a research subagent with anti-hallucination guardrails for investigating external projects, GitHub discussions, and technical questions.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Aquaticat"
+  }
+}
