@@ -36,7 +36,7 @@ description: |
   </commentary>
   </example>
 
-model: inherit
+model: sonnet
 color: cyan
 tools: ["Read", "Grep", "Glob", "Bash", "WebFetch", "WebSearch", "mcp__claude_ai_linkup__linkup-search", "mcp__claude_ai_linkup__linkup-fetch"]
 ---
