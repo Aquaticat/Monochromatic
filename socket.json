@@ -8,7 +8,10 @@
     "scan": {
       "create": {
         "repo": "Monochromatic",
-        "branch": "main"
+        "branch": "main",
+        "workspace": "Aquaticat",
+        "autoManifest": true,
+        "report": true
       },
       "github": {
         "repos": "Monochromatic"
