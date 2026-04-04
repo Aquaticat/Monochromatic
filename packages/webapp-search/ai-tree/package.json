@@ -8,14 +8,12 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
-    "@elysiajs/swagger": "catalog:",
     "zod": "catalog:",
     "@anthropic-ai/sdk": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@types/bun": "catalog:",
-    "elysia": "catalog:",
     "typescript": "catalog:"
   }
 }

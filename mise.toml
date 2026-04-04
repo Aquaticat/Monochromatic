@@ -73,6 +73,7 @@ hcloud = "latest"
 "npm:markdownlint-cli2" = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
 deno = "latest"
+"npm:socket" = "latest"
 
 [settings]
 env_shell_expand = false

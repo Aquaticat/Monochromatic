@@ -4,8 +4,6 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
-    "@shikijs/rehype": "catalog:",
-    "@shikijs/transformers": "catalog:",
     "feedsmith": "catalog:",
     "gray-matter": "catalog:",
     "nano-spawn": "catalog:",

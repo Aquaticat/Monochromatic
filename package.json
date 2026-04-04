@@ -34,7 +34,6 @@
     "typescript": "catalog:",
     "tsdown": "catalog:",
     "@playwright/test": "catalog:",
-    "vue-tsc": "catalog:",
     "postcss-html": "catalog:",
     "@types/bun": "catalog:",
     "nano-spawn": "catalog:",
