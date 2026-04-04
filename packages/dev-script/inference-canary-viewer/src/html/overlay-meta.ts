@@ -4,7 +4,7 @@
  * Renders timing, usage, and badges as compact HTML sections
  * within popover overlays.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type {
   ProbeDetail,

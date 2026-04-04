@@ -4,7 +4,7 @@
  * Renders a dashed horizontal line at the computed degradation threshold
  * (mean - 2*stddev), with a label showing the threshold value.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Renders a threshold line as a positioned `<div>` inside a chart container.

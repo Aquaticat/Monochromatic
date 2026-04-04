@@ -6,7 +6,7 @@
  * Positioned absolutely relative to the viewport using fixed positioning.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { STYLES, } from './hover-popup.styles.ts';
 

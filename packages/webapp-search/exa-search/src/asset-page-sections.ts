@@ -1,4 +1,4 @@
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Builds the status section with metrics, processing, success, and error indicators.

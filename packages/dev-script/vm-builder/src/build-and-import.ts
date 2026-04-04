@@ -18,7 +18,7 @@
  * Run: mise run //packages/dev-script/vm-builder:run
  */
 import { exec } from '@monochromatic-dev/dev-script-file-enforcer/ts';
-import { $ as h } from '@monochromatic-dev/module-es/h-xml';
+import { hXml as h } from '@monochromatic-dev/module-hyperscript/ts';
 import { findUp } from 'find-up';
 import { spawn as nodeSpawn } from 'node:child_process';
 import { once } from 'node:events';

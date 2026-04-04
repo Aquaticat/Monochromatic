@@ -5,7 +5,7 @@ import {
   cssCalc,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from '../css.ts';
 import { buttonOutlined, } from '../mixins-composed.ts';
 import {

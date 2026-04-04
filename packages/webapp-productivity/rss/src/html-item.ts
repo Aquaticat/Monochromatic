@@ -1,6 +1,6 @@
 /** Renders a single RSS feed item as an HTML list-item element. */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from './asset.ts';
 import type { ItemWDate, } from './item-type.ts';
 

@@ -2,7 +2,6 @@ export * as array from './t array/index.ts';
 export * as date from './t date/index.ts';
 export * as errorLike from './t errorLike/index.ts';
 export * as globalThis from './t globalThis/index.ts';
-export * as htmlElement from './t htmlElement/index.ts';
 export * as iterable from './t iterable/index.ts';
 export * as jsonc from './t jsonc/index.ts';
 export * as logger from './t logger/index.ts';

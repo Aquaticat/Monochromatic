@@ -1,7 +1,7 @@
 // oxlint-disable typescript/no-unsafe-assignment -- CSS import has any type from static asset import
 import { readFile, } from 'node:fs/promises';
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { buildHeader, } from './asset-header.ts';
 import {
   buildSearchForm,

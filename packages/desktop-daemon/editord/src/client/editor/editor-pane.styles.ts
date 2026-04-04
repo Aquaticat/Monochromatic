@@ -6,7 +6,7 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssCh,
   cssCommaList,
   cssInt,
@@ -15,7 +15,7 @@ import {
   cssPercent,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import { HIGHLIGHT_STYLES, } from '../highlight/styles.ts';
 import { INLAY_STYLES, } from '../inlay/styles.ts';

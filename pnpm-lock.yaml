@@ -536,6 +536,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
@@ -731,6 +734,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       crossws:
         specifier: 'catalog:'
         version: 0.4.4(srvx@0.11.15)
@@ -886,6 +892,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       micromark:
         specifier: 'catalog:'
         version: 4.0.2
@@ -939,6 +948,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       find-up:
         specifier: 'catalog:'
         version: 8.0.0
@@ -1029,9 +1041,6 @@ importers:
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
-      csstype:
-        specifier: 'catalog:'
-        version: 3.2.3
       decircular:
         specifier: 'catalog:'
         version: 1.0.0
@@ -1065,6 +1074,27 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.3.6
+
+  packages/module/hyperscript:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: 'link:'
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      csstype:
+        specifier: 'catalog:'
+        version: 3.2.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
 
   packages/module/image-diff:
     dependencies:
@@ -1243,6 +1273,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       feedsmith:
         specifier: 'catalog:'
         version: 3.0.0-next.6
@@ -1325,6 +1358,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       '@tursodatabase/database':
         specifier: 'catalog:'
         version: 0.5.3
@@ -1356,6 +1392,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       '@tursodatabase/database':
         specifier: 'catalog:'
         version: 0.5.3
@@ -1381,6 +1420,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       jspdf:
         specifier: 'catalog:'
         version: 4.2.1
@@ -1400,6 +1442,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       feedsmith:
         specifier: 'catalog:'
         version: 3.0.0-next.6
@@ -1453,6 +1498,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-hyperscript':
+        specifier: workspace:*
+        version: link:../../module/hyperscript
       exa-js:
         specifier: 'catalog:'
         version: 2.11.0

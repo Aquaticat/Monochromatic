@@ -3,11 +3,11 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssNum,
   cssPercent,
   cssRem,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   CODE_LINE_HEIGHT,

@@ -5,13 +5,13 @@
  * tag lists, and date displays.
  */
 import {
-  $,
+  hCss as $,
   cssCalc,
   cssCompounded,
   cssInt,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   BORDER_WIDTH_REM,

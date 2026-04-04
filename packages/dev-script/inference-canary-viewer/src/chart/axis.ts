@@ -8,7 +8,7 @@
  * Exceeds 100 lines: Y and X axis renderers share the same spatial
  * coordinate conventions and formatter selection logic.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Half of the unit interval (0.5) */
 const HALF = 1 / 2;

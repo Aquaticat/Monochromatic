@@ -5,13 +5,13 @@
  * toast that fades in and out.
  */
 import {
-  $,
+  hCss as $,
   cssCommaList,
   cssNum,
   cssOklch,
   cssRem,
   cssS,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Toast corner radius in rem */
 const TOAST_RADIUS = 1 / 2;

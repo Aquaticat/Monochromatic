@@ -2,8 +2,8 @@
  * DOM building helpers for the Inbox page.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import type {
   BlockedTaskLink,
   Task,

@@ -5,12 +5,12 @@
  * and minimum touch target sizing for accessible interactive elements.
  */
 import {
-  $,
+  hCss as $,
   cssCalc,
   cssPercent,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   BORDER_WIDTH_REM,

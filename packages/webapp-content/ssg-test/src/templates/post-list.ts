@@ -3,7 +3,7 @@
  *
  * Renders a grid of post cards as an unordered list.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Post, } from '../lib/content.ts';
 import { postCard, } from './post-card.ts';

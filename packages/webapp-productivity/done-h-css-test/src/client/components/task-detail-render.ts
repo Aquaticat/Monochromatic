@@ -2,8 +2,8 @@
  * DOM building helpers for the `<task-detail>` render method.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 
 /** Options for building the task detail DOM tree. */

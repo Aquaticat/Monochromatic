@@ -10,7 +10,7 @@ import {
   cssNum,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Font size in rem: 13/16. */
 export const POPUP_FONT_SIZE = (16 - 2 - 1) / 16;

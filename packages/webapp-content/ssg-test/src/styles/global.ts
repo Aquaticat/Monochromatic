@@ -5,11 +5,11 @@
  * All colors reference CSS custom properties defined in `tokens.ts`.
  */
 import {
-  $,
+  hCss as $,
   cssCommaList,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   GAP,

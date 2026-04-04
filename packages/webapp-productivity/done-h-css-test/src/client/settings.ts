@@ -4,8 +4,8 @@
  * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { injectCSS, } from './lib/inject-css.ts';
 import { readPageData, } from './lib/page-data.ts';
 import { globalStyles, } from './styles.ts';

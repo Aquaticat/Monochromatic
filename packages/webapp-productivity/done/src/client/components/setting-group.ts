@@ -1,6 +1,6 @@
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the toggle-switch custom element
 import './toggle-switch.ts';

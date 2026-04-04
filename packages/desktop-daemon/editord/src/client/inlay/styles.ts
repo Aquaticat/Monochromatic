@@ -6,11 +6,11 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssCommaList,
   cssNum,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Editor line height multiplier: 1.5 = (2 + 1) / 2. */
 const LINE_HEIGHT = (2 + 1) / 2;

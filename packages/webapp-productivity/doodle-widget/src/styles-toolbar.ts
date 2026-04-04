@@ -7,9 +7,9 @@
  * {@link renderToolbarControlStyles} and {@link renderToggleGroupStyles}.
  */
 import {
-  $,
+  hCss as $,
   cssOklch,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import {
   BG_CONTROL,
   BG_CONTROL_HOVER,

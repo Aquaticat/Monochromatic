@@ -5,12 +5,12 @@
  * text input elements (active and finalized).
  */
 import {
-  $,
+  hCss as $,
   cssCommaList,
   cssNum,
   cssOklch,
   cssRem,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { INSET_ZERO_DECLS, } from './style-tokens.ts';
 
 /** Text input minimum inline size in rem */

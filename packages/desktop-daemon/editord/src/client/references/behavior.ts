@@ -5,7 +5,7 @@
  * update functions used by the ReferencesPopup class.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { ReferenceLocation, } from './types.ts';
 

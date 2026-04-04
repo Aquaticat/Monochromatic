@@ -12,7 +12,7 @@ import {
   cssS,
   cssScale,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from './css.ts';
 
 /** Initial scale for the FAB-to-surface animation. */

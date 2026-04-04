@@ -18,6 +18,7 @@
     "lezer-toml": "catalog:",
     "@monochromatic-dev/cli-terminal-exec": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
     "crossws": "catalog:",
     "h3": "catalog:",
     "find-up": "catalog:",

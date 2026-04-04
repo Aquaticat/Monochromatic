@@ -7,13 +7,13 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssAnchor,
   cssCommaList,
   cssNum,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import { POPUP_HOST_DECLS, } from '../styles/tokens.ts';
 

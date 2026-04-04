@@ -10,7 +10,7 @@
  * via event delegation.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { nameToOrder, } from './order.ts';
 

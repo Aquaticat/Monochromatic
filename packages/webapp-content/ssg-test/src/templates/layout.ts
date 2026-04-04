@@ -5,7 +5,7 @@
  * complete HTML document. All markup generated via h-html — no raw
  * HTML strings or template files.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
 

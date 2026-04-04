@@ -6,7 +6,7 @@
  * the component class concise.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Repeat/loop icon as inline SVG.

@@ -4,7 +4,7 @@
  * Provides the same data as the visual chart in a machine-readable,
  * screen-reader-navigable format.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { renderDataGrid, } from './data-grid.ts';
 

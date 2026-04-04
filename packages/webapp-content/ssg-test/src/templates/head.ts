@@ -4,7 +4,7 @@
  * Renders meta tags, title, favicon link, and CSS stylesheet reference.
  * No inline CSS or large strings — styles are in a generated external file.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
 import { i18nObject, } from '../i18n/i18n-util.ts';

@@ -6,12 +6,12 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssNum,
   cssPercent,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Full dimension as percentage. */
 const FULL = 100;

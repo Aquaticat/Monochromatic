@@ -6,7 +6,7 @@
  */
 import { join, } from 'node:path';
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { computeDiff, } from '../data/diff.ts';
 import type {

@@ -4,7 +4,7 @@
  * Renders a single blog post as a list item card with title,
  * description, tags, and date range.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Post, } from '../lib/content.ts';
 import { prettyDate, } from './pretty-date.ts';

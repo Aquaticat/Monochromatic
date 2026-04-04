@@ -6,13 +6,13 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssNum,
   cssPercent,
   cssRem,
   cssTranslateX,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   MONO_FONT_FAMILY,

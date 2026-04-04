@@ -4,7 +4,7 @@
  * When a post exists in multiple languages, this page lists all
  * available language versions so the reader can pick one.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
 import { isLocale, } from '../i18n/i18n-util.ts';

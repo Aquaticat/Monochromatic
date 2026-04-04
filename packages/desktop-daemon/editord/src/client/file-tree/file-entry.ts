@@ -9,7 +9,7 @@
  * on click and `show-context` on right-click.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { nameToOrder, } from './order.ts';
 

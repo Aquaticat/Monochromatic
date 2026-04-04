@@ -4,8 +4,8 @@
  * Extracted from task-card.ts to keep each file under the line-count limit.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 import { formatRunningTrackedTime, } from './format-tracked-time.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';

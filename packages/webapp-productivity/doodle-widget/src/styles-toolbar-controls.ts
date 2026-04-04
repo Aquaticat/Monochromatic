@@ -6,10 +6,10 @@
  * This module only provides layout and element-specific overrides.
  */
 import {
-  $,
+  hCss as $,
   cssNum,
   cssRem,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Color picker square size */
 const COLOR_PICKER_SIZE = 2;

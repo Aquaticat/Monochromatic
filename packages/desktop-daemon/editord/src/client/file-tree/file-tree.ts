@@ -10,7 +10,7 @@
  * that the tree handles centrally.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { DirEntry, } from '../../../protocol.ts';
 import { ContextMenu, } from '../context-menu/context-menu.ts';

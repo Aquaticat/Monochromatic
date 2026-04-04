@@ -7,7 +7,7 @@
  */
 
 import type { Parser, } from '@lezer/common';
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type {
   Diagnostic,

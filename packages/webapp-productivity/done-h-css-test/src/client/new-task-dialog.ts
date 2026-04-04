@@ -10,8 +10,8 @@
  * unit -- splitting further would scatter the lifecycle across files.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';
 import type { TaskDetail, } from './components/task-detail.ts';
 import { api, } from './lib/api.ts';

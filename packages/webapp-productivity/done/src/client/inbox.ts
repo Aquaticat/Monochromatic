@@ -9,8 +9,8 @@
  * 3. The script builds DOM elements via `h()` and appends them to `\<main id="app"\>`
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import styles from '../../dist/css/styles.css' with { type: 'text', };
 import type {
   BlockedTaskLink,

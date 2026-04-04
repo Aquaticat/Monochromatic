@@ -1,5 +1,5 @@
 import {
-  $,
+  hCss as $,
   cssCompounded,
   type CssDeclarations,
   cssNum,
@@ -7,7 +7,7 @@ import {
   cssRem,
   type CssValue,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import {
   describe,
   expect,

@@ -4,7 +4,7 @@
  * Renders the brand logo, site name, and a search popover that
  * always displays empty results (search is deferred).
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 // File justification: 102 lines -- header and search popover are tightly
 // coupled; the popover is only used inside the header.

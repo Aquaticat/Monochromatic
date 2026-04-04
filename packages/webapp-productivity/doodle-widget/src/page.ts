@@ -4,7 +4,7 @@
  * Uses h-html to produce a self-contained page with inlined CSS,
  * JavaScript, and embedded page background data.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { renderToolbar, } from './page-toolbar.ts';
 

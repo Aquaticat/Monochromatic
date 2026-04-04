@@ -6,7 +6,7 @@
  * Extracted from binary-viewer.ts to keep the class under max-lines.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   createAudioContent,

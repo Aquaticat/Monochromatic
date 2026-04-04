@@ -9,7 +9,7 @@ import {
   cssInt,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import {
   flexCenter,
   flexRow,

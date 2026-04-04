@@ -3,8 +3,8 @@
  * Reflects state via the `on` attribute and dispatches a `change` event on toggle.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { TOGGLE_SWITCH_STYLES, } from './toggle-switch-styles.ts';
 
 /** `<toggle-switch>` web component. */

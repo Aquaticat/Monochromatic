@@ -5,7 +5,7 @@
  * shows the initial pass (removed lines highlighted) and the right column
  * shows the fix pass (added lines highlighted).
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { DiffLine, } from '../data/diff.ts';
 

@@ -4,7 +4,7 @@
  * Produces radio-based toggle groups used for tool selection
  * and page navigation.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Renders a single radio toggle option inside a toggle group.

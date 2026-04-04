@@ -1,7 +1,7 @@
 /**
  * Primitive and semantic color tokens plus dark-mode overrides.
  */
-import { cssRem, } from '@monochromatic-dev/module-es/h-css';
+import { cssRem, } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from './css.ts';
 
 /** Minimum touch target size in rem. */

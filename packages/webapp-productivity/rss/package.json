@@ -8,6 +8,7 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
     "h3": "catalog:",
     "zod": "catalog:",
     "feedsmith": "catalog:",

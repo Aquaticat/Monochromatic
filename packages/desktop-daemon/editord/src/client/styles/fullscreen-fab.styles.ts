@@ -6,13 +6,13 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssNum,
   cssPercent,
   cssRem,
   cssS,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /** FAB stacking order above all other fixed elements. */
 const Z_INDEX = 9_999;

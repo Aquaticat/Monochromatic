@@ -6,14 +6,14 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssCommaList,
   cssDvb,
   cssOklch,
   cssPercent,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Overlay width as percentage of viewport inline size: 60%. */
 const OVERLAY_WIDTH = 60;

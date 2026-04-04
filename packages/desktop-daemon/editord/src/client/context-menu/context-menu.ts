@@ -10,7 +10,7 @@
  * and presses Enter to confirm.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   type ContextMenuItem,

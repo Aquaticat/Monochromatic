@@ -6,7 +6,7 @@
  * Pass-1 points are filled circles; pass-2 points are hollow circles overlaid
  * at the same X position.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   renderXAxis,

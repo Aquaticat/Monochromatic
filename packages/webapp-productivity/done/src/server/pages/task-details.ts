@@ -8,8 +8,8 @@
  * Client entry: `/dist/client/task-details.js` (src/client/task-details.ts)
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts';
+  hHtml as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import {
   getTaskById,
   listTasksForBlockerPicker,

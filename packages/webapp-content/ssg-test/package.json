@@ -13,6 +13,7 @@
     "@lezer/xml": "catalog:",
     "@lezer/yaml": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
     "feedsmith": "catalog:",
     "yaml": "catalog:",
     "nano-spawn": "catalog:",

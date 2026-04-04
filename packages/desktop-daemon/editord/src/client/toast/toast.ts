@@ -10,7 +10,7 @@
  * see {@link toast.styles.ts} for the h-css definitions.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Duration in milliseconds before the toast is removed. */
 const DISMISS_MS = 2_000;

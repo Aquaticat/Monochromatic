@@ -12,7 +12,7 @@ import {
   cssPercent,
   cssRem,
   type CssValue,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 //region Fractional building blocks
 

@@ -6,13 +6,13 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssCommaList,
   cssNum,
   cssPercent,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import { ENTRY_STYLES, } from './entry.styles.ts';
 

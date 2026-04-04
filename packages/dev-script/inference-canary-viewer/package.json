@@ -17,6 +17,7 @@
     "@monochromatic-dev/dev-script-inference-canary": "workspace:*",
     "micromark": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "version": "0.0.1",

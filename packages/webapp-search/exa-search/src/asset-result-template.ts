@@ -1,4 +1,4 @@
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Builds the search result template element rendered once and cloned by client JS.

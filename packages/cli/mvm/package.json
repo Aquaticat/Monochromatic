@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
     "nano-spawn": "catalog:",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"

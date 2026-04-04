@@ -4,8 +4,8 @@
  * events with `\{ value \}` when a preset is selected.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { FOCUS_DROPDOWN_STYLES, } from './focus-dropdown-styles.ts';
 
 /** Default focus preset options. */

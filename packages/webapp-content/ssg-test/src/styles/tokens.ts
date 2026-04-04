@@ -4,7 +4,7 @@
  * Defines all color tokens as a `:root` block with dark mode overrides.
  * Every color value in the site references these tokens via `var(--token-name)`.
  */
-import { $, } from '@monochromatic-dev/module-es/h-css';
+import { hCss as $, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Generates the `:root` block with all color custom properties.

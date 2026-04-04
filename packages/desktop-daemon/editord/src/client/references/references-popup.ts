@@ -10,7 +10,7 @@
  * and CSS anchor positioning auto-flips when overflowing the viewport.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   computeNextIndex,

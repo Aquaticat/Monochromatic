@@ -11,8 +11,8 @@
  * because they need a different shell structure (e.g. search-bar replaces top-nav).
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts';
+  hHtml as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Configuration for rendering a page with the standard HTML shell. */
 type LayoutOptions = {

@@ -1,0 +1,17 @@
+[tasks.build]
+extends = "build"
+
+[tasks.'build:js']
+extends = "build:js"
+
+[tasks.'build:js:browser']
+extends = "build:js:browser"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"

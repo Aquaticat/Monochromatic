@@ -3,7 +3,7 @@
  *
  * Assembles nav, sidebar, and panel styles into a single CSS string.
  */
-import { cssPercent, } from '@monochromatic-dev/module-es/h-css';
+import { cssPercent, } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from '../css.ts';
 import { SIDE_DRAWER_NAV_STYLES, } from './side-drawer-styles-nav.ts';
 import { SIDE_DRAWER_PANEL_STYLES, } from './side-drawer-styles-panel.ts';

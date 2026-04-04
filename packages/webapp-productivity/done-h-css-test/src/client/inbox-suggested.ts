@@ -2,8 +2,8 @@
  * Builds the "Suggested" section DOM for the inbox page.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import {
   buildTaskList,
   type InboxPageData,

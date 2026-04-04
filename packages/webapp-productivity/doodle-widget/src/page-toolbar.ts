@@ -4,7 +4,7 @@
  * Produces the top toolbar with tool selection toggle, page navigation
  * toggle, drawing settings, upload, export, and clear controls.
  */
-import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   renderPageToggle,
   renderToggleOption,

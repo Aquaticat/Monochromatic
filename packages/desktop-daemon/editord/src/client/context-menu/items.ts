@@ -6,7 +6,7 @@
  * class under the line limit.
  */
 
-import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Single menu item definition.

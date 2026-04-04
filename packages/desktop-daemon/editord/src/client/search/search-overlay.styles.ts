@@ -6,11 +6,11 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssNum,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import { DIALOG_STYLES, } from './dialog.styles.ts';
 

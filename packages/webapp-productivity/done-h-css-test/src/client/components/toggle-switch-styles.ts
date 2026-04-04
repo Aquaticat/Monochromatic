@@ -9,7 +9,7 @@ import {
   cssS,
   cssTranslateY,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from '../css.ts';
 import {
   borderRadiusFull,

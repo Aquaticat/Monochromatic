@@ -1,4 +1,4 @@
-import { $ as h, } from '@monochromatic-dev/module-es/h-xml';
+import { hXml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   DEFAULT_MEMORY_MIB,

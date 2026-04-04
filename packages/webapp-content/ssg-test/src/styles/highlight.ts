@@ -6,9 +6,9 @@
  */
 
 import {
-  $,
+  hCss as $,
   cssVar,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Generates `::highlight()` CSS rules for all syntax highlight groups.

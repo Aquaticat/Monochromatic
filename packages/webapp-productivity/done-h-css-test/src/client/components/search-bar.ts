@@ -3,8 +3,8 @@
  * Dispatches a `search` event with `{ query }` after the debounce delay.
  */
 import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
 import { SEARCH_BAR_STYLES, } from './search-bar-styles.ts';
 
 /** Debounce delay for search input in milliseconds */

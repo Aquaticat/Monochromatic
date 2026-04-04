@@ -4,14 +4,14 @@
  * Uses h-css for type-safe CSS generation with strict property validation.
  */
 import {
-  $,
+  hCss as $,
   cssCalc,
   cssCqb,
   cssCqi,
   cssMin,
   cssNum,
   cssOklch,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import {
   BG_VIEWPORT,
   BORDER_WIDTH,

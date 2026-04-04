@@ -7,9 +7,9 @@
  * joining, hidden radio inputs, and checked-state feedback.
  */
 import {
-  $,
+  hCss as $,
   cssNum,
-} from '@monochromatic-dev/module-es/h-css';
+} from '@monochromatic-dev/module-hyperscript/ts';
 import {
   BG_TOGGLE_CHECKED,
   BG_TOGGLE_CHECKED_HOVER,
