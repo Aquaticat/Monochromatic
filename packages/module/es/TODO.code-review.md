@@ -4,15 +4,11 @@
 
 Summary: A functional-programming utility library with a deeply nested directory hierarchy encoding type information in path names.
 The code is generally well-documented and follows the project's conventions (TSDoc, named functions, trailing commas, region markers).
-The main concerns are: excessive `as any` casts, silent catch blocks in sinks, several files exceeding the 100-line limit without justification, missing TSDoc on some functions, a non-null assertion in `merge`, and significant testing gaps across the 484 non-deprecated source files.
+The main concerns are: excessive `as any` casts, silent catch blocks in sinks, several files exceeding the 100-line limit without justification, missing TSDoc on some functions, a non-null assertion in `merge`, and significant testing gaps across source files.
 
 ## Findings
 
 ### BLOCKER
-
-- `t object/_pendingRefactor_from/_pendingRefactor_type object/merge/restriction sync/params positional/index.ts:142` - Non-null assertion (`!`) is banned by project rules.
-  `valuesByType.get(valueType,)!.push(value,);` uses `!` after `.get()`.
-  Suggested action: use a guard or `notNullishOrThrow` to narrow the type safely.
 
 - `t object/t logger/f/t never/r s/p p/index.ts:100` - Uses `.catch()` callback pattern which is banned by project rules ("No `.then()`, `.catch()`, `.finally()`").
   `result.catch(() => { ... })` should be restructured to use `async`/`await` with `try`/`catch`.
@@ -34,7 +30,6 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
   - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.ts` (331 lines) - has a comment about mutual recursion but not an explicit justification for exceeding the limit
   - `path/index.ts` (241 lines) - no justification comment
   - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/fastPath.ts` (239 lines) - no justification comment
-  - `t object/_pendingRefactor_from/_pendingRefactor_type object/merge/restriction sync/params positional/index.ts` (191 lines) - no justification comment
   - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/index.ts` (164 lines)
   - `t string/t html/f/t string jsx/r s/p n/index.ts` (157 lines)
   - `t string/f/t any/export/r s/p p/index.ts` (156 lines)
@@ -43,7 +38,6 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
   - `t object/t logger/f/t never/r s/p p/index.ts` (130 lines)
   - `t object/t array/t p string/t typeof/f/t unknown/r s/p p/index.ts` (125 lines)
   - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.recordHelpers.ts` (121 lines)
-  - `t object/_pendingRefactor_from/_pendingRefactor_type object/pick/restriction sync/params positional/index.ts` (111 lines)
   - `t string/t typeof/f/t unknown/r s/p p/index.ts` (101 lines)
 
   Suggested action: either split them or add a `// Justification: ...` comment explaining why they exceed 100 lines.
@@ -52,13 +46,6 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
   Per project rules: "Every catch block must log the caught error for debugging."
   The logger sinks are a special case (they **are** the logging infrastructure), but the file sink and OPFS sink catch blocks silently swallow errors with `// Silently fail` comments.
   Suggested action: at minimum, set the `available` flag to `false` in the sink `$` function catch blocks (already done in the orchestrator, but not in individual sinks), or use `console.error` as a last-resort fallback.
-
-- `t object/_pendingRefactor_from/_pendingRefactor_type object/merge/restriction sync/params positional/index.ts:163` - Uses `JSON.stringify` for deep equality comparison: `JSON.stringify(value) === JSON.stringify(firstValue)`.
-  This fails for objects with different key ordering, `undefined` values, functions, `BigInt`, circular references, and `Symbol` values.
-  Suggested action: use a proper deep-equality check (structuredClone round-trip, or a library like `deep-equal`), or at minimum document the limitations.
-
-- `t object/_pendingRefactor_from/_pendingRefactor_type object/merge/restriction sync/params positional/index.ts` - Multiple `let` bindings and imperative patterns (`for...of` with `.push()`, mutable `Map`) without justification comments explaining why functional alternatives are infeasible.
-  Suggested action: add justification comments for each mutable binding, or refactor to functional patterns.
 
 - `t never/f/t never/onLoadRedirectingTo/r s/p p/index.ts` - Silently does nothing if no anchor element is found. Per project rules: "Never silently discard unexpected states."
   If this function is called, it should be because a redirect is expected. Finding no target element likely indicates a bug.
@@ -113,5 +100,4 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
   This appears to be a deliberate architectural choice for the namespace-based API design (`types.boolean.is.string.sync.positional.$`).
   Best-effort idea: the tradeoff may be acceptable, but consider whether function names could be more descriptive in stack traces.
 
-- 82 files in `src/deprecated/` remain in the codebase.
-  Best-effort idea: consider whether these should be removed or moved to a separate package to reduce cognitive load and package size.
+- ~~82 files in `src/deprecated/` remain in the codebase.~~ **Resolved**: deprecated directory deleted; modules migrated to `module-dom`, `test-fixture-data-sequences`, and proper locations within the types tree.

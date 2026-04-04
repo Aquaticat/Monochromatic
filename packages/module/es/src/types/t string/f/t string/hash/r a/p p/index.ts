@@ -10,11 +10,11 @@
  *
  * @example
  * ```ts
- * const hash = await hashString('hello world');
+ * const hash = await $('hello world');
  * console.log(hash); // "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
  * ```
  */
-export async function hashString(value: string,): Promise<string> {
+export async function $(value: string,): Promise<string> {
   /** Text encoder for converting string to UTF-8 bytes */
   const encoder = new TextEncoder();
   /** UTF-8 encoded bytes of the input string */

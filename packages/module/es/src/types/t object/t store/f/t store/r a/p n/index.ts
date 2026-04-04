@@ -1,8 +1,8 @@
 import superjson from 'superjson';
 
 import {
-  hashString,
-} from '../../../../../../t string/f/_pendingRefactor_type string/hash.ts';
+  $ as hashString,
+} from '../../../../../../t string/f/t string/hash/r a/p p/index.ts';
 import {
   $ as serializeValue,
 } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
