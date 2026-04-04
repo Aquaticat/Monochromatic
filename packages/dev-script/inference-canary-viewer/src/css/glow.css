@@ -1,33 +1,28 @@
-/* Syntax highlighting styles adapted from nue-glow.
- * Semantic tags: <b> keywords, <em> strings, <sup> comments,
- * <strong> tag names, <i> operators, <label> annotations.
+/* Syntax highlighting via CSS Custom Highlight API.
+ * Styled with ::highlight(hl-*) pseudo-elements applied by
+ * the client-side Lezer tokenizer in client/highlight.ts.
  *
- * Glow theme colors are intentional overrides for the third-party
- * syntax highlighter and do not map 1:1 to the dashboard's semantic
- * token palette. They are scoped to `pre.glow` and defined as local
- * custom properties so the palette remains centralized. */
+ * Degrades gracefully to unstyled monospace text when the
+ * CSS Custom Highlight API is unavailable. */
 
-/*region Glow theme tokens */
+/*region Highlight color tokens */
 
-pre.glow {
-  --glow-bg: #1e293b;
-  --glow-fg: #a2aab1;
-  --glow-keyword: #7dd3fc;
-  --glow-string: #f472b6;
-  --glow-tag: #419fff;
-  --glow-operator: #64748b;
-  --glow-comment: #6f7a7d;
-  --glow-annotation: #fff;
-  --glow-error: #ef4444;
-  --glow-mark-bg: oklch(77.7% 0.152 0.475turn / 15%);
-  --glow-line-num: #475569;
+pre.source-code {
+  --hl-keyword: #7dd3fc;
+  --hl-string: #f472b6;
+  --hl-comment: #6f7a7d;
+  --hl-number: #a5f3fc;
+  --hl-type: #419fff;
+  --hl-function: #c4b5fd;
+  --hl-property: #a2aab1;
+  --hl-line-num: #475569;
 
-  /*endregion Glow theme tokens */
+  /*endregion Highlight color tokens */
 
-  /*region Glow base */
-  background-color: var(--glow-bg);
+  /*region Code block base */
+  background-color: #1e293b;
 
-  color: var(--glow-fg);
+  color: #a2aab1;
 
   padding-block: var(--space-4);
 
@@ -42,108 +37,38 @@ pre.glow {
   line-height: 1.7;
 
   overflow-x: auto;
-
-  counter-reset: line-counter 0;
 }
 
-pre.glow * {
-  font-weight: normal;
+/*endregion Code block base */
 
-  font-style: inherit;
+/*region ::highlight() rules */
 
-  text-decoration: inherit;
+::highlight(hl-keyword) {
+  color: var(--hl-keyword);
 }
 
-/*endregion Glow base */
-
-/*region Glow token styles */
-
-/* Keywords */
-pre.glow b {
-  color: var(--glow-keyword);
+::highlight(hl-string) {
+  color: var(--hl-string);
 }
 
-/* Strings */
-pre.glow em {
-  color: var(--glow-string);
+::highlight(hl-comment) {
+  color: var(--hl-comment);
 }
 
-/* Tag names, language keywords */
-pre.glow strong {
-  color: var(--glow-tag);
+::highlight(hl-number) {
+  color: var(--hl-number);
 }
 
-/* Operators, brackets */
-pre.glow i {
-  color: var(--glow-operator);
+::highlight(hl-type) {
+  color: var(--hl-type);
 }
 
-/* Comments */
-pre.glow sup {
-  color: var(--glow-comment);
-
-  font-size: inherit;
-
-  vertical-align: inherit;
-
-  font-style: italic;
+::highlight(hl-function) {
+  color: var(--hl-function);
 }
 
-/* Annotations (@param, @returns) */
-pre.glow label {
-  font-weight: bold;
-
-  color: var(--glow-annotation);
+::highlight(hl-property) {
+  color: var(--hl-property);
 }
 
-/* Wavy underline for errors */
-pre.glow u {
-  text-decoration: underline wavy var(--glow-error);
-
-  text-decoration-thickness: 0.15em;
-
-  text-underline-offset: 0.5em;
-}
-
-/* Marked/highlighted code */
-pre.glow mark {
-  background-color: var(--glow-mark-bg);
-
-  color: unset;
-
-  border-radius: 0.2em;
-
-  padding-block: 0.3em;
-
-  padding-inline: 0.4em;
-
-  margin-block: -0.3em;
-
-  margin-inline: -0.4em;
-}
-
-/*endregion Glow token styles */
-
-/*region Glow line numbers */
-
-pre.glow span {
-  counter-increment: line-counter 1;
-}
-
-pre.glow span::before {
-  color: var(--glow-line-num);
-
-  content: counter(line-counter);
-
-  display: inline-block;
-
-  text-align: end;
-
-  padding-inline-end: 1em;
-
-  margin-inline-end: 1em;
-
-  inline-size: 2.5em;
-}
-
-/*endregion Glow line numbers */
+/*endregion ::highlight() rules */

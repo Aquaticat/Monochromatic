@@ -55,6 +55,10 @@ export function renderPage({
               tag: 'link',
               attrs: { rel: 'stylesheet', href: 'style.css', },
             },),
+            h({
+              tag: 'script',
+              attrs: { type: 'module', src: 'client/index.js', },
+            },),
           ],
         },),
         h({

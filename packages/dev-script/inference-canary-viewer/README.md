@@ -9,9 +9,12 @@ The build script reads enriched artifact directories from the sibling `inference
 groups them by (model, timestamp) to reconstruct per-run entries,
 and renders a self-contained HTML dashboard with an external CSS stylesheet.
 
-The output is fully static -- viewable with JavaScript disabled.
+The output is static HTML with a small client-side script for syntax highlighting.
 View switching uses native `<details>` elements with CSS `:has()` to hide non-open siblings.
 Run detail overlays use the Popover API (`popover="auto"` + `popovertarget`) for light-dismiss behavior.
+Syntax highlighting uses the CSS Custom Highlight API via Lezer tokenization --
+code blocks degrade gracefully to unstyled monospace text when JavaScript is disabled
+or the Highlight API is unavailable.
 
 ### Views
 
@@ -33,7 +36,7 @@ Probe overlays include:
 
 - Status badges (partial, error, non-stop finish reason)
 - Collapsible timing and token usage metadata for initial and fix passes
-- Source code with nue-glow syntax highlighting, or a side-by-side diff (via `git diff --no-index`) when a fix pass exists
+- Source code with CSS Custom Highlight API syntax highlighting, or a side-by-side diff (via `git diff --no-index`) when a fix pass exists
 - Collapsible reasoning traces, raw responses, fix prompts, and config snapshots rendered as markdown via micromark
 
 ### Data pipeline
@@ -98,8 +101,9 @@ src/
     legend.ts               Color legend and shape legend for scatter plots
     threshold-line.ts       Horizontal threshold line overlay
     data-table.ts           Accessible backing table and compact card grid
-  highlight/
-    glow.ts                 TypeScript syntax highlighting via nue-glow
+  client/
+    index.ts                Client-side entry point (syntax highlighting via CSS Custom Highlight API)
+    tags.ts                 Lezer tag-to-highlight-group mapping
   css/
     index.css               CSS entry point
     base.css                Reset and base styles
@@ -108,5 +112,5 @@ src/
     chart.css               Scatter plot and axis styling
     overlay.css             Popover overlay styling
     diff.css                Side-by-side diff view styling
-    glow.css                nue-glow syntax highlighting theme
+    glow.css                ::highlight() syntax highlighting rules
 ```

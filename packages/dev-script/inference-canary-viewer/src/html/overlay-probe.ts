@@ -9,8 +9,6 @@ import { join, } from 'node:path';
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 import { computeDiff, } from '../data/diff.ts';
-import { highlightTs, } from '../highlight/glow.ts';
-
 import type {
   ProbeDetail,
   ViewerEntry,
@@ -82,8 +80,6 @@ export async function renderProbeOverlay({
     },)
     : '';
   if (detail?.initialSource !== undefined) {
-    const initialHighlighted = highlightTs(detail.initialSource,);
-
     if (detail.fixSource !== undefined && detail.fixDir !== undefined) {
       const initialFile = join(
         detail.initialDir,
@@ -120,8 +116,14 @@ export async function renderProbeOverlay({
           },),
           h({
             tag: 'pre',
-            class: 'glow',
-            html: initialHighlighted,
+            class: 'source-code',
+            children: [
+              h({
+                tag: 'code',
+                class: 'language-ts',
+                text: detail.initialSource,
+              },),
+            ],
           },),
         ],
       },);

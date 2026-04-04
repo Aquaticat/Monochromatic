@@ -4,17 +4,20 @@
   "type": "module",
   "main": "src/build.ts",
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:"
   },
   "dependencies": {
+    "@lezer/common": "catalog:",
+    "@lezer/highlight": "catalog:",
+    "@lezer/javascript": "catalog:",
     "@lobehub/icons-static-svg": "^1.82.0",
     "@monochromatic-dev/build-tool-css": "workspace:*",
     "@monochromatic-dev/dev-script-inference-canary": "workspace:*",
     "micromark": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
-    "nano-spawn": "catalog:",
-    "nue-glow": "^0.2.5"
+    "nano-spawn": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

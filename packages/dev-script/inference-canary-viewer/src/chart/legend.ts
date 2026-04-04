@@ -6,7 +6,7 @@
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /** HTML for the shape legend, displayed once per chart area */
-export const SHAPE_LEGEND = h({
+export const SHAPE_LEGEND: string = h({
   tag: 'div',
   class: 'chart-legend',
   children: [
