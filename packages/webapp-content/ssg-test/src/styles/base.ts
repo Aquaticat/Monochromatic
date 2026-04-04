@@ -12,6 +12,7 @@ import {
   headerStyles,
   searchAndInteractionStyles,
 } from './header.ts';
+import { highlightStyles, } from './highlight.ts';
 import { postStyles, } from './posts.ts';
 import {
   darkModeTokenStyles,
@@ -30,6 +31,7 @@ export function generateSiteCss(): string {
     resetStyles(),
     layoutStyles(),
     typographyStyles(),
+    highlightStyles(),
     headerStyles(),
     postStyles(),
     searchAndInteractionStyles(),

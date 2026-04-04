@@ -3,9 +3,18 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@lezer/common": "catalog:",
+    "@lezer/css": "catalog:",
+    "@lezer/highlight": "catalog:",
+    "@lezer/html": "catalog:",
+    "@lezer/javascript": "catalog:",
+    "@lezer/markdown": "catalog:",
+    "@lezer/rust": "catalog:",
+    "@lezer/xml": "catalog:",
+    "@lezer/yaml": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
     "feedsmith": "catalog:",
-    "gray-matter": "catalog:",
+    "yaml": "catalog:",
     "nano-spawn": "catalog:",
     "rehype-autolink-headings": "catalog:",
     "rehype-parse": "catalog:",
@@ -24,8 +33,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@types/bun": "catalog:",
     "@types/hast": "catalog:",
+    "tsdown": "catalog:",
     "typesafe-i18n": "catalog:",
     "typescript": "catalog:"
   }

@@ -5,9 +5,12 @@ extends = "build"
 description = "Generate typesafe-i18n types from locale files"
 run = "node_modules/.bin/typesafe-i18n --no-watch"
 
+[tasks."build:js:client"]
+extends = "build:js:client"
+
 [tasks."build:site"]
 description = "Build static site"
-depends = ["build:i18n"]
+depends = ["build:i18n", "build:js:client"]
 run = "bun src/build.ts"
 
 [tasks."build:site:clean"]

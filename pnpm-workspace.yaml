@@ -36,6 +36,9 @@ allowBuilds:
   core-js: false
   sharp: true
 
+overrides:
+  "jspdf>canvg": "-"
+
 catalog:
   "@anthropic-ai/sdk": ">=0.73.0"
   "@cspotcode/outdent": "npm:outdent@>=0.8.0"
@@ -71,7 +74,7 @@ catalog:
   "feedsmith": ">=3.0.0-next.4"
   "file-type": ">=21.3.0"
   "find-up": ">=8.0.0"
-  "gray-matter": ">=4.0.3"
+  "yaml": ">=2.8.0"
   "h3": ">=2.0.1-rc.16"
   "happy-dom": ">=20.5.0"
   "happy-rusty": ">=1.9.1"

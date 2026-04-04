@@ -85,6 +85,13 @@ export function headFragment(
         tag: 'title',
         text: fullTitle,
       },),
+      h({
+        tag: 'script',
+        attrs: {
+          type: 'module',
+          src: '/client/index.js',
+        },
+      },),
     ],
   },);
 }

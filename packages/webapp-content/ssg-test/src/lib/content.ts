@@ -2,7 +2,8 @@
  * Content loading and organization for MDX blog posts.
  *
  * Globs MDX files from `src/content/{lang}/`, parses YAML frontmatter with
- * gray-matter, validates with Zod, and provides grouping utilities.
+ * an inline parser backed by the `yaml` package, validates with Zod, and
+ * provides grouping utilities.
  * Filesystem paths give `lang` and `name` directly -- no string splitting needed.
  */
 import { readFile, } from 'node:fs/promises';
@@ -11,11 +12,87 @@ import {
   dirname,
 } from 'node:path';
 
-import matter from 'gray-matter';
 import readdir from 'tiny-readdir-glob';
+import { parse as parseYaml, } from 'yaml';
 import * as z from 'zod/mini';
 
 import { sha256, } from './cache-hash.ts';
+
+//region Frontmatter
+
+/** Opening delimiter for YAML frontmatter blocks. */
+const FRONTMATTER_OPEN = '---';
+
+/**
+ * Parses YAML frontmatter delimited by `---` from a raw string.
+ *
+ * Splits at the first two `---` lines to extract the YAML block and body.
+ * Returns empty data when no valid frontmatter is found.
+ *
+ * @param raw - full file content including frontmatter
+ *
+ * @returns parsed YAML data and remaining body content
+ *
+ * @example
+ * ```ts
+ * const { data, content } = parseFrontmatter('---\ntitle: Hello\n---\nbody');
+ * // data = { title: 'Hello' }, content = 'body'
+ * ```
+ */
+function parseFrontmatter(raw: string,): { data: Record<string, unknown>; content: string } {
+  /* Strip optional leading BOM. */
+  const str = raw.charCodeAt(0,) === 0xFEFF ? raw.slice(1,) : raw;
+
+  if (!str.startsWith(FRONTMATTER_OPEN,)) {
+    return { data: {}, content: str, };
+  }
+
+  /* Skip past the opening `---` and its trailing newline. */
+  const afterOpen = str.indexOf('\n', FRONTMATTER_OPEN.length,);
+  if (afterOpen === -1) {
+    return { data: {}, content: str, };
+  }
+
+  /**
+   * Scan for the closing `---` that sits at the start of a line.
+   * Start searching from the character right after the first newline.
+   */
+  const searchFrom = afterOpen + 1;
+  let closeStart = searchFrom;
+
+  for (;;) {
+    const idx = str.indexOf(FRONTMATTER_OPEN, closeStart,);
+    if (idx === -1) {
+      return { data: {}, content: str, };
+    }
+
+    /* The delimiter must be at column 0 or immediately after a newline. */
+    if (idx === 0 || str[idx - 1] === '\n') {
+      const afterDelim = idx + FRONTMATTER_OPEN.length;
+
+      /* Next char must be a newline or EOF for a valid closing fence. */
+      if (afterDelim === str.length || str[afterDelim] === '\n' || str[afterDelim] === '\r') {
+        const yamlBlock = str.slice(searchFrom, idx,);
+        let bodyStart = afterDelim;
+        if (str[bodyStart] === '\r') {
+          bodyStart += 1;
+        }
+        if (str[bodyStart] === '\n') {
+          bodyStart += 1;
+        }
+
+        return {
+          data: (parseYaml(yamlBlock,) ?? {}) as Record<string, unknown>,
+          content: str.slice(bodyStart,),
+        };
+      }
+    }
+
+    closeStart = idx + 1;
+  }
+}
+
+//endregion Frontmatter
 
 //region Schema
 
@@ -23,7 +100,7 @@ import { sha256, } from './cache-hash.ts';
  * Zod schema for MDX post frontmatter validation.
  *
  * Uses `z.coerce.date()` so the same schema handles both native `Date`
- * objects (from gray-matter YAML parsing) and ISO date strings (from
+ * objects (from YAML parsing) and ISO date strings (from
  * JSON-serialized cache entries).
  */
 export const postFrontmatterSchema = z.object({
@@ -88,7 +165,7 @@ export async function loadContent(contentDir: string,): Promise<Post[]> {
     const {
       data: rawData,
       content: body,
-    } = matter(raw,);
+    } = parseFrontmatter(raw,);
     const data = postFrontmatterSchema.parse(rawData,);
     const lang = basename(dirname(filePath,),);
     const name = basename(

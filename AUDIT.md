@@ -54,7 +54,7 @@ and was never affected by these CVEs.
 - ~~`glob@10.5.0`~~ -- removed with remark-cli
 
 **Socket severity medium (2 unique packages) -- behavioral risk, not CVEs**
-- `gray-matter@4.0.3` -- uses eval and fs access; prod dep of ssg-test
+- ~~`gray-matter@4.0.3`~~ -- removed; replaced with inline frontmatter parser + `yaml` package
 - `picomatch@2.3.2` -- transitive via stylelint (micromatch); dev-only; CVEs fixed in this version
 
 **Copyleft licenses (4 unique packages)**
@@ -64,7 +64,7 @@ and was never affected by these CVEs.
 - `@img/sharp-libvips-linux-x64@1.2.4` (LGPL-3.0-or-later) -- optional native binary for sharp; LGPL fine for dynamically linked native modules
 
 **Dynamic code execution / eval (14)**
-- gray-matter, neovim, css-tree, @sinclair/typebox, core-js, source-map-js, lodash, js-yaml, istanbul-lib-coverage, lodash.truncate, ajv, playwright-core, regenerator-runtime, uglify-js
+- neovim, css-tree, @sinclair/typebox, core-js, source-map-js, lodash, js-yaml, istanbul-lib-coverage, lodash.truncate, ajv, playwright-core, regenerator-runtime, uglify-js
 
 **Shell access (8)**
 - @tursodatabase/database, esbuild, tree-kill, cross-spawn, detect-libc, playwright-core, foreground-child, @npmcli/promise-spawn
@@ -247,7 +247,7 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] vite-plugin-json5 (dev-only)
 - [ ] istanbul-lib-report (dev-only)
 - [ ] @vitejs/plugin-basic-ssl (dev-only)
-- [ ] @shikijs/transformers
+- ~~@shikijs/transformers~~ -- removed; replaced by CSS Custom Highlight API with Lezer parsers
 - [ ] remark-github-blockquote-alert
 - [ ] remark-sectionize
 - [ ] rehype-slug-custom-id

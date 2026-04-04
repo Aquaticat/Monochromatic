@@ -4,12 +4,11 @@
  * Configures the remark/rehype chain that converts raw MDX body text into
  * rendered HTML strings. Equivalent to the markdown config previously in
  * `astro.config.ts` but without any framework dependency.
+ *
+ * Syntax highlighting is handled client-side via the CSS Custom Highlight API
+ * with Lezer parsers. The pipeline outputs plain `<pre><code class="language-xxx">`
+ * blocks that the client script picks up.
  */
-import rehypeShiki from '@shikijs/rehype';
-import {
-  transformerNotationDiff,
-  transformerNotationHighlight,
-} from '@shikijs/transformers';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeSlug from 'rehype-slug-custom-id';
 import rehypeStringify from 'rehype-stringify';
@@ -38,8 +37,11 @@ import type { Root, } from 'hast';
  * 6. `remark-rehype` -- convert markdown AST to HTML AST
  * 7. `rehype-slug` -- add `id` attributes to headings
  * 8. `rehype-autolink-headings` -- add anchor links to headings
- * 9. `@shikijs/rehype` -- syntax highlighting with Shiki
- * 10. `rehype-stringify` -- serialize HTML AST to string
+ * 9. `rehype-stringify` -- serialize HTML AST to string
+ *
+ * Syntax highlighting happens client-side via the CSS Custom Highlight API.
+ * Fenced code blocks produce `<pre><code class="language-xxx">` elements
+ * that the client highlight script processes with Lezer parsers.
  *
  * @returns configured unified processor (call `.process(content)` to render)
  *
@@ -72,16 +74,6 @@ export function createProcessor(): Processor<Root, Root, Root, Root, string> {
       },
     )
     .use(rehypeAutolinkHeadings,)
-    .use(
-      rehypeShiki,
-      {
-        themes: {
-          light: 'github-light-high-contrast',
-          dark: 'github-dark-high-contrast',
-        },
-        transformers: [transformerNotationDiff(), transformerNotationHighlight(),],
-      },
-    )
     .use(
       rehypeStringify,
       { allowDangerousHtml: true, },
