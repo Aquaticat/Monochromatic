@@ -1,3 +1,5 @@
+import { join, } from 'node:path';
+
 import {
   defineConfig,
   type UserConfig,
@@ -33,6 +35,9 @@ const _default_1: UserConfig = defineConfig({
         'module',
         'main',
       ],
+      alias: {
+        canvg: join(import.meta.dirname, 'stubs', 'canvg.ts'),
+      },
     },
   },
   deps: {
