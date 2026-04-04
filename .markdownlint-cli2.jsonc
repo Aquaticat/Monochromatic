@@ -1,0 +1,54 @@
+{
+  // Semantic markdown lint rules, replacing remark-cli + remark-lint-* plugins.
+  // Formatting is handled by dprint-plugin-markdown.
+  "config": {
+    "default": false,
+
+    // heading-increment: heading levels must only increment by one
+    "MD001": true,
+
+    // commands-show-output: shell code blocks with $ prompts
+    // Slightly more lenient than remark-lint-no-shell-dollars
+    "MD014": true,
+
+    // no-duplicate-heading: allow same heading text under different parents
+    "MD024": { "siblings_only": true },
+
+    // single-h1: only one top-level heading per document
+    "MD025": true,
+
+    // no-trailing-punctuation: headings must not end with : or .
+    "MD026": { "punctuation": ".:" },
+
+    // no-bare-urls: bare URLs must be wrapped in angle brackets
+    "MD034": true,
+
+    // no-emphasis-as-heading: don't use bold/italic as a heading substitute
+    "MD036": true,
+
+    // fenced-code-language: code blocks must have a language flag
+    "MD040": true,
+
+    // reference-links-images: all references must have definitions
+    "MD052": true,
+
+    // link-image-reference-definitions: no duplicate or unused definitions
+    "MD053": true,
+
+    // link-image-style: disallow shortcut reference syntax
+    "MD054": {
+      "autolink": true,
+      "inline": true,
+      "full": true,
+      "collapsed": true,
+      "shortcut": false,
+      "url_inline": true
+    }
+  },
+  "ignores": [
+    "node_modules/**",
+    "dist/**",
+    ".dist/**",
+    "bak/**"
+  ]
+}

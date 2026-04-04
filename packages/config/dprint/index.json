@@ -21,8 +21,16 @@
     "https://plugins.dprint.dev/typescript-0.95.9.wasm",
     "https://plugins.dprint.dev/g-plane/malva-v0.14.1.wasm",
     "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
-    "https://plugins.dprint.dev/json-0.20.0.wasm"
+    "https://plugins.dprint.dev/json-0.20.0.wasm",
+    "https://plugins.dprint.dev/markdown-0.21.1.wasm"
   ],
+  "markdown": {
+    "lineWidth": 80,
+    "textWrap": "maintain",
+    "emphasisKind": "asterisks",
+    "strongKind": "asterisks",
+    "unorderedListKind": "dashes"
+  },
   "toml": {
     "comment.forceLeadingSpace": false
   },

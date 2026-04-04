@@ -70,6 +70,7 @@ cargo-binstall = "latest"
 opentofu = "latest"
 hcloud = "latest"
 "npm:typescript-language-server" = "latest"
+"npm:markdownlint-cli2" = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
 deno = "latest"
 
@@ -373,7 +374,7 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 
 [tasks."lint"]
 description = "Lint"
-run = ["mise '//packages/...:lint'", { tasks = ["lint:dprint", "lint:stylelint"] }]
+run = ["mise '//packages/...:lint'", { tasks = ["lint:dprint", "lint:stylelint", "lint:markdownlint"] }]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
 
@@ -386,6 +387,11 @@ run = "dprint check --list-different"
 hide = true
 description = "Lint CSS with Stylelint"
 run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
+
+[tasks."lint:markdownlint"]
+hide = true
+description = "Lint Markdown with markdownlint-cli2"
+run = "markdownlint-cli2 ."
 
 #endregion Linting Tasks
 
