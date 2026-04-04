@@ -43,8 +43,14 @@ RUN rpm-ostree install \
     && rpm-ostree cleanup -m \
     && ostree container commit
 
-# Enable SDDM so KDE starts on boot
-RUN systemctl enable sddm
+# Set graphical target and enable SDDM so KDE starts on boot.
+# ucore-hci defaults to multi-user.target; without this, SDDM never starts.
+# Symlinks must go in /usr/lib/systemd/system/ (the immutable ostree tree),
+# not /etc/systemd/system/ (which ostree three-way merges and may discard).
+RUN ln -sf graphical.target /usr/lib/systemd/system/default.target \
+    && mkdir -p /usr/lib/systemd/system/graphical.target.wants \
+    && ln -sf ../sddm.service /usr/lib/systemd/system/graphical.target.wants/sddm.service \
+    && ln -sf sddm.service /usr/lib/systemd/system/display-manager.service
 
 # Declare btrfs as the root filesystem for bootc-image-builder.
 # Without this, bootc-image-builder fails with "missing required info: DefaultRootFs"
@@ -55,9 +61,14 @@ RUN mkdir -p /usr/lib/bootc/install \
 
 # Create user account with wheel group and passwordless sudo
 RUN useradd --create-home --groups wheel user \
-    && echo "user:user" | chpasswd \
+    && echo "user:password" | chpasswd \
     && printf '%s\n' '%wheel ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel-nopasswd \
     && chmod 0440 /etc/sudoers.d/wheel-nopasswd
+
+# Configure SDDM auto-login for user
+RUN mkdir -p /etc/sddm.conf.d \
+    && printf '%s\n' '[Autologin]' 'User=user' 'Session=plasma' \
+       > /etc/sddm.conf.d/autologin.conf
 
 # Install mise as user (goes to ~/.local/bin/mise).
 # Done after useradd so the home directory exists.

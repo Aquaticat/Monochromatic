@@ -83,27 +83,31 @@ export function collapseRepeatedChars(line: string,): string {
 //region Path collapsing
 
 /**
- * Replaces working directory paths with relative equivalents.
+ * Replaces working directory paths with relative equivalents,
+ * only when the path appears at the beginning of a line.
  *
  * Strips the CWD prefix from absolute paths, converting them to relative paths.
  * This saves significant tokens when tools like `fd` or `rg` output the full
  * absolute path on every line -- the model already knows the search root from
  * the command.
  *
+ * Restricts replacement to line-initial position to avoid mangling paths
+ * embedded in error messages, JSON output, or other mid-line contexts.
+ *
  * Handles both the `process.cwd()` path and its symlink-resolved real path.
- * The longer path is replaced first to avoid partial replacements.
+ * The longer path is tried first to avoid partial matches.
  *
  * @param line - Line to process.
  *
- * @returns Line with CWD-prefixed paths converted to relative paths.
+ * @returns Line with CWD-prefixed start converted to a relative path.
  *
  * @example
  * ```ts
  * // Given CWD=/home/user/project
  * collapseCwdPaths('/home/user/project/src/index.ts')
  * // → 'src/index.ts'
- * collapseCwdPaths('/var/home/user/project/packages/foo/bar.ts')
- * // → 'packages/foo/bar.ts'
+ * collapseCwdPaths('error in /home/user/project/src/index.ts')
+ * // → 'error in /home/user/project/src/index.ts' (unchanged)
  * ```
  */
 export function collapseCwdPaths(line: string,): string {
@@ -111,59 +115,52 @@ export function collapseCwdPaths(line: string,): string {
     return line;
 
   /**
-   * Replace the longer path first (same logic as {@link collapseHomePaths}).
+   * Try the longer path first (same logic as {@link collapseHomePaths}).
    */
-  let result = line;
   if (ALT_CWD_PREFIX !== '') {
     if (ALT_CWD_PREFIX.length >= CWD_PREFIX.length) {
-      result = result.replaceAll(
-        ALT_CWD_PREFIX,
-        '',
-      );
-      result = result.replaceAll(
-        CWD_PREFIX,
-        '',
-      );
+      if (line.startsWith(ALT_CWD_PREFIX,))
+        return line.slice(ALT_CWD_PREFIX.length,);
+      if (line.startsWith(CWD_PREFIX,))
+        return line.slice(CWD_PREFIX.length,);
     }
     else {
-      result = result.replaceAll(
-        CWD_PREFIX,
-        '',
-      );
-      result = result.replaceAll(
-        ALT_CWD_PREFIX,
-        '',
-      );
+      if (line.startsWith(CWD_PREFIX,))
+        return line.slice(CWD_PREFIX.length,);
+      if (line.startsWith(ALT_CWD_PREFIX,))
+        return line.slice(ALT_CWD_PREFIX.length,);
     }
   }
   else {
-    result = result.replaceAll(
-      CWD_PREFIX,
-      '',
-    );
+    if (line.startsWith(CWD_PREFIX,))
+      return line.slice(CWD_PREFIX.length,);
   }
-  return result;
+  return line;
 }
 
 /**
- * Replaces home directory paths with `~` shorthand.
+ * Replaces home directory paths with `~` shorthand,
+ * only when the path appears at the beginning of a line.
  *
  * Handles both the `$HOME` path and its real path (following symlinks),
  * since different tools resolve symlinks differently.
- * The longer path (real path) is replaced first to avoid partial matches
+ * The longer path is tried first to avoid partial matches
  * when one is a prefix of the other.
+ *
+ * Restricts replacement to line-initial position to avoid mangling paths
+ * embedded in error messages, JSON output, or other mid-line contexts.
  *
  * @param line - Line to process.
  *
- * @returns Line with home directory paths collapsed to `~`.
+ * @returns Line with home directory path collapsed to `~` if at start.
  *
  * @example
  * ```ts
  * // Given HOME=/home/user, realpath=/var/home/user
  * collapseHomePaths('/var/home/user/projects/foo')
  * // → '~/projects/foo'
- * collapseHomePaths('/home/user/.config/bar')
- * // → '~/.config/bar'
+ * collapseHomePaths('error in /home/user/.config/bar')
+ * // → 'error in /home/user/.config/bar' (unchanged)
  * ```
  */
 export function collapseHomePaths(line: string,): string {
@@ -171,40 +168,29 @@ export function collapseHomePaths(line: string,): string {
     return line;
 
   /**
-   * Replace the longer path first.
+   * Try the longer path first.
    * If REAL_HOME_DIR is `/var/home/user` and HOME_DIR is `/home/user`,
-   * replacing HOME_DIR first would leave `/var` prefixed remnants.
+   * matching HOME_DIR first would leave `/var` prefixed remnants.
    */
-  let result = line;
   if (REAL_HOME_DIR !== '') {
     if (REAL_HOME_DIR.length >= HOME_DIR.length) {
-      result = result.replaceAll(
-        REAL_HOME_DIR,
-        '~',
-      );
-      result = result.replaceAll(
-        HOME_DIR,
-        '~',
-      );
+      if (line.startsWith(REAL_HOME_DIR,))
+        return `~${line.slice(REAL_HOME_DIR.length,)}`;
+      if (line.startsWith(HOME_DIR,))
+        return `~${line.slice(HOME_DIR.length,)}`;
     }
     else {
-      result = result.replaceAll(
-        HOME_DIR,
-        '~',
-      );
-      result = result.replaceAll(
-        REAL_HOME_DIR,
-        '~',
-      );
+      if (line.startsWith(HOME_DIR,))
+        return `~${line.slice(HOME_DIR.length,)}`;
+      if (line.startsWith(REAL_HOME_DIR,))
+        return `~${line.slice(REAL_HOME_DIR.length,)}`;
     }
   }
   else {
-    result = result.replaceAll(
-      HOME_DIR,
-      '~',
-    );
+    if (line.startsWith(HOME_DIR,))
+      return `~${line.slice(HOME_DIR.length,)}`;
   }
-  return result;
+  return line;
 }
 
 //endregion

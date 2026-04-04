@@ -13,7 +13,7 @@ import {
   stat,
   writeFile,
 } from 'node:fs/promises';
-import { parse, } from 'node:path/posix';
+import { posix, } from 'node:path';
 import {
   $ as tagged,
 } from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
@@ -38,7 +38,7 @@ const l = tagged({ tag: 'path/ensure', },);
  * ```
  */
 export async function ensurePath(path: string,): Promise<string> {
-  const parsed = parse(path,);
+  const parsed = posix.parse(path,);
 
   if (parsed.ext) {
     l.info(`${path} has extension, ensuring as file`,);
@@ -118,7 +118,7 @@ export async function ensureDir(path: string,): Promise<string> {
  * ```
  */
 export async function ensureFile(path: string,): Promise<string> {
-  const parsed = parse(path,);
+  const parsed = posix.parse(path,);
 
   try {
     const stats = await stat(path,);

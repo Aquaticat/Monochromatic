@@ -18,7 +18,19 @@ User input might include raw `\n` which you should consider as newlines since ne
 Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
 Use `gh repo clone` instead of `git clone` -- `gh` handles authentication and fork remotes automatically.
 
-Sandbox breaks `bun install` despite proper allowlisting, so run it outside sandbox until this is fixed.
+Sandbox breaks `vlt install` despite proper allowlisting, so run it outside sandbox until this is fixed.
+
+A bash-output-filter hook collapses `/var/home/user` and `/home/user` to `~`,
+and strips the cwd prefix from absolute paths in Bash tool output.
+These replacements only apply at the **beginning of a line** --
+paths embedded mid-line (in error messages, JSON, etc.) are left intact.
+This is a display transform only -- actual values are correct.
+Do not treat `~` in tool output as a literal tilde in paths;
+it represents the full `/var/home/user` or `/home/user` prefix.
+When debugging path issues, account for this transform before assuming paths are wrong.
+To temporarily skip the filter for a command, include any blocklist pattern in it --
+the simplest is a no-op `eval` wrapper: `eval 'your command here'`.
+Other blocklist triggers: `export`, `source`, `$(...)`, backticks, `> file` redirect.
 
 Prefer cross-runtime patterns instead of Bun-specific implementations.
 
@@ -40,7 +52,7 @@ Completed child results are injected into context automatically between tool cal
 
 ## Dependency management
 - Use `workspace:*` for internal dependencies
-- Dependencies managed via Bun catalog in root `package.json`
+- Dependencies managed via vlt catalog in `vlt.json`
 
 ## Adding new packages
 1. Create directory under the appropriate category in `packages/`
@@ -101,6 +113,14 @@ and research them before responding.
 When a user's message contains an embedded question (e.g. "month? year?"),
 treat it as a research task: use web search, read relevant code, or check documentation
 to give an informed answer rather than deflecting with "genuinely unknown."
+
+When answering questions about external tool features, CLI options, config syntax,
+or API capabilities, fetch current documentation or source code before responding.
+Do not rely on training data for tool-specific details --
+features change across versions and confident-sounding but wrong answers
+waste more time than a brief research pause.
+If the question is "does X support Y" or "how do I do Y in X,"
+treat it as a research task, not a recall task.
 
 When the user says "I was expecting you to..." or similar unmet-expectation feedback,
 treat it as a documentation gap.

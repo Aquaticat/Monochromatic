@@ -80,51 +80,54 @@ Run via: `mise run //packages/dev-script/vm-builder:run`
 [image-template]: https://github.com/ublue-os/image-template
 
 - [x] Create package at `packages/dev-script/vm-builder/` in this monorepo
-- [ ] Write Containerfile with multi-stage build (scratch context + ucore-hci base)
-- [ ] Fill in `build-and-import.ts` system package list (stub currently)
+- [x] Write Containerfile (single-stage, rpm-ostree install on ucore-hci base)
+- [x] Fill in `build-and-import.ts` orchestration (build, convert, copy to libvirt images, import via virsh define)
 
 ### System packages to bake in (build.sh)
 
-KDE Plasma desktop (full `plasma-workspace` meta-package):
-- [ ] `plasma-workspace` -- full Plasma desktop (includes plasma-desktop, plasma-nm, plasma-pa, bluedevil, etc.)
-- [ ] `sddm` -- display manager (+ `systemctl enable sddm`)
-- [ ] `konsole` -- fallback terminal (KDE default)
-- [ ] `dolphin` -- file manager (KDE default)
-- [ ] `virt-manager` -- desktop GUI for libvirt/KVM (pairs with ucore-hci HCI stack)
+All packages below are installed and verified in the Containerfile.
 
-Browser + password manager (both must be native RPM for KeePassXC browser integration):
-- [ ] Add LibreWolf repo: `dnf config-manager addrepo --from-repofile=https://rpm.librewolf.net/librewolf-repo.repo`
-- [ ] `librewolf`
-- [ ] `keepassxc`
+KDE Plasma desktop (full `plasma-workspace` meta-package):
+- [x] `plasma-workspace`, `sddm`, `konsole`, `dolphin`, `virt-manager`
+- [x] `graphical.target` set as default (symlink in `/usr/lib/systemd/system/`,
+  not `/etc/` -- ostree discards `/etc/` symlinks during deployment)
+- [x] SDDM enabled via symlink in `graphical.target.wants/`
+- [x] SDDM auto-login configured for user `user`
+
+Browser + password manager:
+- [x] LibreWolf repo (`https://repo.librewolf.net/librewolf.repo` -- domain changed from `rpm.librewolf.net` in 2026)
+- [x] `librewolf`, `keepassxc`
 
 Terminal:
-- [ ] Add scottames/ghostty COPR:
-  ```
-  . /etc/os-release
-  curl -fsSL "https://copr.fedorainfracloud.org/coprs/scottames/ghostty/repo/fedora-${VERSION_ID}/scottames-ghostty-fedora-${VERSION_ID}.repo" \
-    | tee /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:scottames:ghostty.repo > /dev/null
-  ```
-- [ ] `ghostty`
+- [x] Ghostty COPR repo (scottames/ghostty)
+- [x] `ghostty`
 
 Dev tools (system-level, mise handles the rest):
-- [ ] `helix`
-- [ ] `strace`
-- [ ] `inotify-tools`
-- [ ] `python3-devel`
-- [ ] `potrace`
-- [ ] `msitools`
+- [x] `helix`, `strace`, `inotify-tools`, `python3-devel`, `potrace`, `msitools`
 
 Infrastructure:
-- [ ] `mise` installed as user `user` at `~/.local/bin/mise`
-- [ ] User account `user` with password, `wheel` group, passwordless sudo
-- [ ] User mise config at `~/.config/mise/config.toml`
-  so `mise install` works immediately on first login
+- [x] `mise` installed as user `user` at `~/.local/bin/mise`
+- [x] User account `user` with password `password`, `wheel` group, passwordless sudo
+- [x] Dotfiles baked into image from `packages/config/dotfiles/` (ghostty, mise configs)
+- [x] Nushell installed via mise at image build time (required for monorepo task runner)
+- [x] bootc install config: btrfs root filesystem (`/usr/lib/bootc/install/00-ucore-dev.toml`)
 
 ### Build and convert
 
-- [ ] Fill in Containerfile, then verify `mise run //packages/dev-script/vm-builder:run` succeeds end-to-end
-- [x] Write `disk_config/disk.toml` (40 GiB root; ZFS encryption TODO pending bootc-image-builder support)
-- [ ] Boot the qcow2, verify KDE starts, SDDM login works, podman runs, libvirt works
+- [x] Fill in Containerfile, verify `mise run //packages/dev-script/vm-builder:run` succeeds end-to-end
+- [x] Write `disk_config/disk.toml` (40 GiB root, btrfs)
+- [x] Boot the qcow2, verify KDE Plasma starts with SDDM auto-login
+- [ ] Verify podman runs, libvirt works inside the VM
+- [ ] Verify all installed apps launch (ghostty, librewolf, keepassxc, helix)
+
+Implementation notes discovered during build:
+- qcow2 must be copied to `/var/lib/libvirt/images/` for SELinux `virt_image_t` context
+  (files in `$HOME` have `user_home_t` which QEMU's `svirt_t` domain cannot read)
+- `getenforce` returns "Disabled" inside the Claude Code sandbox but SELinux is actually enforcing on the host
+- Flatpak virt-manager needs `org.virt_manager.virt_manager.Extension.Qemu` for `qemu:///session`
+- UEFI domains require `--nvram` flag when undefining via `virsh undefine`
+- LibreWolf repo URL changed: `rpm.librewolf.net` -> `repo.librewolf.net` (2026)
+- `findUp('package.json')` returns relative paths when the file is in cwd; wrap with `resolve()`
 
 ### Full-disk encryption -- decided: host-level FDE
 
@@ -165,9 +168,9 @@ Uses file-enforcer primitives: `exec()`, `overwrite()`, `overwriteEach()`, `cat(
 Lives at `packages/config/dotfiles/` in this monorepo.
 Only two configs needed: ghostty and mise.
 
-- [ ] Create `packages/config/dotfiles/` with:
+- [x] Create `packages/config/dotfiles/` with:
   - `ghostty/config`
-  - `mise/config.toml` (global mise config)
+  - `mise/config.toml` (global mise config, declares nushell)
 - [x] ~~Archive `Aquaticat/nvim`~~ -- nvim is deprecated by editord in the monorepo
 - [x] ~~Decide which `~/.config/` directories to include~~ -- only ghostty and mise
 
@@ -175,8 +178,8 @@ Only two configs needed: ghostty and mise.
 
 Runs as user after first login. Idempotent (safe to re-run).
 
-- [ ] Copy dotfiles from `packages/config/dotfiles/` into `~/.config/` via `overwriteEach()`
-- [ ] Run `mise install` via `exec()` (installs all tools from global config)
+- [x] ~~Copy dotfiles~~ -- baked into image at build time via Containerfile COPY
+- [ ] Run `mise install` via `exec()` (installs all tools from monorepo config)
 - [ ] Install flatpaks via `flatpak install --user -y`:
   Flatseal, Fastmail, Gear Lever, KColorChooser, KeePassXC,
   Nextcloud, OBS, RustDesk, Ungoogled Chromium
@@ -201,8 +204,8 @@ mise run //packages/dev-script/vm-builder:provision
 
 ## Phase 3: verification
 
-- [ ] Boot fresh VM from qcow2
-- [ ] Verify KDE Plasma starts with SDDM
+- [x] Boot fresh VM from qcow2
+- [x] Verify KDE Plasma starts with SDDM auto-login
 - [ ] Run provisioner sequence end-to-end
 - [ ] Verify mise tools work: `bun --version`, `node --version`, `cargo --version`
 - [ ] Verify podman works: `podman run --rm alpine echo hello`

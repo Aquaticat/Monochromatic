@@ -43,7 +43,6 @@
     "nano-spawn": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "ts-pattern": "catalog:",
-    "happy-opfs": "catalog:",
     "happy-rusty": "catalog:",
     "@csstools/css-tokenizer": "catalog:",
     "csstype": "catalog:",

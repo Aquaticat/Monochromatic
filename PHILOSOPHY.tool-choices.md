@@ -1,5 +1,41 @@
 # Tool Choices
 
+## Package registry: npm only, no JSR, no GitHub deps
+
+All dependencies must resolve from the npm registry (`registry.npmjs.org`).
+No JSR (`npm.jsr.io`), no `github:` shorthand, no `git+ssh://` dependencies.
+
+### Why not JSR
+
+JSR's npm compatibility bridge (`npm.jsr.io`) has chronic quality issues:
+
+- **Broken registry endpoints**: JSR does not implement the version-specific packument endpoint
+  (`GET /<package>/<version>`) that the npm API defines. Returns 404.
+  This is because `npm.jsr.io` is backed by static R2 objects, not a dynamic API.
+  Package managers that use this endpoint (vlt, potentially others) fail on JSR transitive deps.
+  See `TROUBLESHOOTING.vlt-jsr.md` for the full investigation.
+- **Past incidents**: `bun install` failures with 502 errors on JSR's `If-None-Match` handling
+  (jsr-io/jsr#1323). See `TROUBLESHOOTING.jsr.md`.
+- **Transitive contamination**: npm packages published from JSR (e.g. `happy-opfs`) embed
+  `@jsr/*` transitive dependencies in their `package.json`. These only resolve if the
+  package manager has JSR scope routing configured -- which most don't by default.
+  This makes seemingly normal npm packages silently broken for non-JSR-aware PMs.
+
+JSR packages that have npm equivalents are referenced by their npm versions:
+
+- `@optique/core`, `@optique/run` -- published to both npm and JSR (use npm `dev` tag for 1.x)
+- `zod` -- zod 4 is on npm as `zod@>=4.3.6`
+- `@cspotcode/outdent` -- aliased to `outdent` on npm (same author)
+
+### Why no GitHub deps
+
+`github:user/repo` dependencies use `git clone` under the hood. This fails in
+sandboxed environments without SSH key access and adds git as a runtime dependency
+for package installation. HTTPS fallback configuration varies across package managers.
+
+For CSS/font assets like TODS, vendor the file directly into the package source
+with attribution comments.
+
 ## Framework: Astro > Nue
 
 Astro: most supported static site generator.

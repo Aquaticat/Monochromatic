@@ -25,8 +25,7 @@ config_roots = [
 bun = "latest"
 
 # Package manager
-# TODO: Migrating to Bun.
-# pnpm = { version = "latest", postinstall = "pnpm install" }
+"npm:vlt" = "latest"
 
 # aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
 "cargo:fd-find" = "latest"
@@ -433,13 +432,13 @@ mise run format && mise run build && mise run test
 description = "Prepare environment (install Playwright browsers, etc.)"
 extends = "prepare"
 
-[tasks."prepare:bun"]
-run = [{ tasks = ["prepare:bun:bun"] }, { tasks = ["prepare:bun:others:*"] }]
+[tasks."prepare:vlt"]
+run = [{ tasks = ["prepare:vlt:install"] }, { tasks = ["prepare:vlt:others:*"] }]
 
-[tasks."prepare:bun:bun"]
-run = "bun install"
+[tasks."prepare:vlt:install"]
+run = "vlt install; vlt build"
 
-[tasks."prepare:bun:others:files"]
+[tasks."prepare:vlt:others:files"]
 description = "Sync file-enforcer managed files (CLAUDE.md, skill mirrors)"
 run = "bun file-enforcer.config.ts"
 
@@ -506,7 +505,7 @@ run = "bun packages/dev-script/inference-canary/src/index.ts ...($env.usage_args
 
 #endregion Inference Canary
 
-#region Catalog Tighten -- tighten >= ranges in workspaces.catalog to match installed versions
+#region Catalog Tighten -- tighten >= ranges in vlt.json catalog to match installed versions
 
 [tasks."catalog:tighten"]
 description = "Tighten catalog >=x.y.z ranges to match installed node_modules versions"
@@ -521,8 +520,8 @@ bun packages/dev-script/catalog-tighten/src/index.ts ...$args
 #region Fix Tasks -- workarounds for upstream bugs
 
 [tasks."fix:jsr"]
-description = "Clear bun HTTP cache to work around JSR 502 on If-None-Match (jsr-io/jsr#1323)"
-run = "bun pm cache rm; bun install"
+description = "Re-install to work around JSR registry issues"
+run = "vlt install; vlt build"
 
 #endregion Fix Tasks
 

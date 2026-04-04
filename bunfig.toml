@@ -6,9 +6,8 @@ coverageSkipTestFiles = true
 concurrentTestGlob = "**/*.test.ts"
 
 [install]
+# Prevent Bun from auto-installing missing imports; vlt manages node_modules
 auto = 'disable'
-scopes.jsr = 'https://npm.jsr.io'
-saveTextLockfile = true
 
 [run]
 # Always use Bun's shell

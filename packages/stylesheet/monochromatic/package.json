@@ -13,8 +13,7 @@
   },
   "version": "0.1.0",
   "dependencies": {
-    "the-new-css-reset": "catalog:",
-    "TODS": "catalog:"
+    "the-new-css-reset": "catalog:"
   },
   "exports": {
     "./.css": "./src/index.css",
