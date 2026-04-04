@@ -18,7 +18,7 @@ User input might include raw `\n` which you should consider as newlines since ne
 Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
 Use `gh repo clone` instead of `git clone` -- `gh` handles authentication and fork remotes automatically.
 
-Sandbox breaks `vlt` despite proper allowlisting, so run it outside sandbox until this is fixed.
+Sandbox breaks `pnpm install` despite proper allowlisting, so run it outside sandbox until this is fixed.
 
 A bash-output-filter hook collapses `/var/home/user` and `/home/user` to `~`,
 and strips the cwd prefix from absolute paths in Bash tool output.
@@ -52,7 +52,7 @@ Completed child results are injected into context automatically between tool cal
 
 ## Dependency management
 - Use `workspace:*` for internal dependencies
-- Dependencies managed via vlt catalog in `vlt.json`
+- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`
 
 ## Adding new packages
 1. Create directory under the appropriate category in `packages/`

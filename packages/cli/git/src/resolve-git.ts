@@ -1,14 +1,11 @@
 import { constants, } from 'node:fs';
 import {
   access,
-  realpath,
+  readFile,
 } from 'node:fs/promises';
 import {
-  dirname,
   join,
-  resolve,
 } from 'node:path';
-import { fileURLToPath, } from 'node:url';
 
 import {
   l,
@@ -16,16 +13,29 @@ import {
 } from './log.ts';
 
 /**
- * Package root directory for this wrapper, used to identify and skip
- * our own bin entry when scanning PATH.
- * Computed as two levels up from `src/resolve-git.ts`.
+ * Package name used to detect shims that delegate to this wrapper.
+ * Any candidate whose file content contains this string is a shim for us,
+ * whether it's a pnpm shell wrapper, a Bun symlink target, or anything else.
+ * Real git binaries are ELF executables that will never contain this string.
  */
-const PACKAGE_DIR = resolve(
-  dirname(
-    fileURLToPath(import.meta.url,),
-  ),
-  '..',
-);
+const PACKAGE_NAME = '@monochromatic-dev/cli-git';
+
+/**
+ * Checks whether a candidate binary is a package manager shim that delegates
+ * to this wrapper package. Reads the file content and looks for the package name.
+ *
+ * @param candidatePath - Absolute path to the candidate binary.
+ * @returns `true` if the candidate is a shim for this package.
+ */
+async function isShimForSelf(candidatePath: string): Promise<boolean> {
+  try {
+    const content = await readFile(candidatePath, 'utf8',);
+    return content.includes(PACKAGE_NAME,);
+  }
+  catch {
+    return false;
+  }
+}
 
 /**
  * Locates the real git binary by scanning PATH entries,
@@ -67,15 +77,13 @@ export async function resolveGit(): Promise<string> {
         constants.X_OK,
       );
 
-      /** Resolved real path, following symlinks. */
       // oxlint-disable-next-line no-await-in-loop -- sequential PATH scan; we need the first match and stop
-      const real = await realpath(candidate,);
-      if (real.startsWith(`${PACKAGE_DIR}/`,)) {
+      if (await isShimForSelf(candidate,)) {
         rl.debug(`skipping self at ${candidate}`,);
         continue;
       }
 
-      rl.debug(`resolved real git at ${candidate} (realpath: ${real})`,);
+      rl.debug(`resolved real git at ${candidate}`,);
       return candidate;
     }
     catch {

@@ -4,90 +4,164 @@
 
 ### Symptom
 
-`vlt install` fails with `Error: failed to fetch manifest` on a transitive dependency
+`vlt install` fails with `Error: failed to fetch manifest` on a dependency
 whose version spec includes semver build metadata (the `+<hash>` suffix):
 
 ```
 Error: failed to fetch manifest
-    at #registryManifestRequest (…/vlt/chunk-QFA4L7SI.js:1092:31)
   [cause]: {
     code: 'ERESOLVE',
-    spec: Spec2 { … spec: '@optique/core@1.0.0-dev.1692+5c265bd4' … },
+    spec: Spec2 { spec: '@optique/core@1.0.0-dev.1692+5c265bd4', … },
     url: https://registry.npmjs.org/@optique/core/1.0.0-dev.1692+5c265bd4,
   }
 ```
 
-Restoring the lockfile does not help because the lockfile edge stores the raw spec
-with build metadata, and vlt re-resolves it during install.
+Restoring the lockfile does not help.
+Graph modifiers (`"modifiers"` in `vlt.json`) do not help either --
+the failing code path runs during node extraction, which bypasses modifier logic.
 
 ### Root cause
 
-**Upstream publisher issue combined with a vlt bug.**
+Two independent issues combine to produce the failure:
 
-`@optique/run@1.0.0-dev.1692` declares a dependency on
-`@optique/core@1.0.0-dev.1692+5c265bd4` -- a version string that includes
-semver build metadata (`+5c265bd4`).
-The npm registry publishes this version as `1.0.0-dev.1692` (without build metadata)
-and does not serve version manifests at URLs containing `+`:
+**1. Upstream publisher ships build metadata in dependency specs.**
 
-- `GET /@optique/core/1.0.0-dev.1692` -- **200 OK**
-- `GET /@optique/core/1.0.0-dev.1692+5c265bd4` -- **404 Not Found**
-- `GET /@optique/core/1.0.0-dev.1692%2B5c265bd4` -- **404 Not Found**
+`@optique/run@1.0.0-dev.1692` declares `"@optique/core": "1.0.0-dev.1692+5c265bd4"`.
+Both tarballs also contain `"version": "1.0.0-dev.1692+5c265bd4"` in their `package.json`.
+The npm registry strips `+<build>` from the **version key** at publish time
+(`npm publish` has done this since 2014, per npm/npm#6379),
+but dependency **specifier strings** pass through unmodified.
 
-The SemVer 2.0.0 spec (items 10 and 11) states that build metadata **MUST** be ignored
-when determining version precedence. npm (the CLI) strips build metadata before
-making registry requests. vlt does not.
+This is extremely rare -- npm stripping `+` from versions means the public registry
+has zero packages with build metadata in version keys. The `@optique` project
+is an outlier because its toolchain writes `+<git-sha>` into both the version field
+and cross-package dependency pinning before publish.
 
-**Exact code path in vlt (vltpkg/vltpkg repo, `src/package-info/src/index.ts`):**
+**2. vlt passes build metadata verbatim into registry manifest URLs.**
 
-1. `Spec` parser sets `registrySpec = bareSpec` verbatim (`src/spec/src/browser.ts:644`),
-   preserving the `+5c265bd4` suffix
-2. `manifest()` (line 601-603) sees `range.isSingle === true` and calls `#registryManifestRequest()`
-3. `#registryManifestRequest()` (lines 405-407) constructs the URL:
-   ```ts
-   const version =
-     hasLeadingRange ? registrySpec.slice(1) : registrySpec
-   const pakuURL = new URL(`${name}/${version}`, registry)
-   ```
-   `version` is `"1.0.0-dev.1692+5c265bd4"` -- the `+` is a fragment delimiter in URL
-   semantics, making the request path invalid for the npm registry
+The npm registry returns 404 for version URLs containing `+`:
 
-**Correct fix in vlt** would be to strip build metadata before constructing the URL,
-e.g. `version.replace(/\+.*$/, '')`.
+- `GET /@optique/core/1.0.0-dev.1692` -- 200 OK
+- `GET /@optique/core/1.0.0-dev.1692+5c265bd4` -- 404
+- `GET /@optique/core/1.0.0-dev.1692%2B5c265bd4` -- 404
+
+vlt hits this because it never strips build metadata from the version string
+before constructing the per-version manifest URL.
+
+### Detailed code trace
+
+All paths in this section are relative to the **vltpkg/vltpkg** monorepo.
+
+**Entry point -- dependency spec parsing:**
+
+`src/spec/src/browser.ts:644` sets `registrySpec = bareSpec` verbatim,
+preserving the `+5c265bd4` suffix from the dependency declaration.
+
+**Trigger -- single-version fast path:**
+
+`src/package-info/src/index.ts:601-603`:
+
+```ts
+const mani =
+  spec.range?.isSingle ?
+    await this.#registryManifestRequest(spec, options)
+  : pickManifest(await this.packument(f, options), spec, options)
+```
+
+A version with build metadata parses as `isSingle === true` (the `+` part is metadata,
+not a range operator), so vlt takes the fast path instead of fetching the full packument.
+
+**Failure -- URL construction:**
+
+`src/package-info/src/index.ts:405-407`:
+
+```ts
+const version =
+  hasLeadingRange ? registrySpec.slice(1) : registrySpec
+const pakuURL = new URL(`${name}/${version}`, registry)
+```
+
+`version` becomes `"1.0.0-dev.1692+5c265bd4"`.
+In URL semantics, `+` is not a path-safe character --
+`new URL()` preserves it literally rather than encoding it,
+and the npm registry does not recognize the resulting path.
+
+**Second trigger -- extraction bypass of modifiers:**
+
+`src/graph/src/reify/extract-node.ts:57` hydrates the spec from the node's DepID:
+
+```ts
+const spec = hydrate(node.id, node.name, options)
+```
+
+The DepID is built from `mani.version` (`src/dep-id/src/browser.ts:537-542`).
+When the manifest comes from the npm registry packument, `mani.version` is
+`"1.0.0-dev.1692"` (no build metadata), so the hydrated spec is clean.
+But when the manifest comes from a dependency declaration that includes build metadata
+(e.g. `@optique/run`'s dep on `@optique/core@1.0.0-dev.1692+5c265bd4`),
+the spec flows through `fetchManifestsForDeps` (`src/graph/src/ideal/append-nodes.ts:590`)
+where `Spec.parse(name, bareSpec, options)` preserves the `+` suffix.
+Graph modifiers apply at lines 271-288 of the same file but are scoped
+to the graph-building phase -- the extraction code path at `extract-node.ts`
+creates specs independently and does not consult modifiers.
+
+### Why this was never reported before
+
+npm has stripped `+<build>` from version strings at publish time since 2014.
+Across thousands of checked packages (semver, typescript, react, electron, webpack,
+lodash, express, next, vue, angular, eslint, prettier, rollup, vite, esbuild, etc.),
+zero have build metadata in any version key or dependency specifier on the public registry.
+The vlt issue tracker (vltpkg/vltpkg) has no reports matching this pattern --
+existing "failed to fetch manifest" issues (#1534, #1263, #260) all have different causes.
+
+The trigger requires a package that pins a dependency to an **exact version
+with build metadata** (not a range). This is functionally unreachable
+through normal npm publishing workflows.
 
 ### Workaround
 
-Use a vlt graph modifier to force all instances of `@optique/core` to resolve
-from a range instead of the exact pinned spec from `@optique/run`.
-Add to `vlt.json`:
+No reliable workaround exists within vlt's configuration:
 
-```jsonc
-{
-  "modifiers": {
-    "#@optique/core": ">=1.0.0-dev.0"
-  }
-}
+- **Graph modifiers** (`"modifiers"` in `vlt.json`) override specs during
+  ideal graph building but do not apply during node extraction.
+  Tested with `"#@optique/core": ">=1.0.0-dev.0"` and
+  `"#@optique/run": ">=1.0.0-dev.0"` -- both failed, error shows `overridden: false`.
+- **Lockfile restoration** does not help because vlt re-resolves specs during install.
+- **Cache clearing** (`rm -rf ~/.cache/vlt/{package-info,registry-client}`)
+  does not help because the build metadata originates from the upstream manifest,
+  not from stale cache data.
+
+Viable alternatives until vlt is patched:
+
+- **Pin to a version of `@optique/*` that does not use build metadata**
+  (if one exists)
+- **Use a different package manager** (npm, pnpm, yarn) for installs --
+  all three strip build metadata before making registry requests
+- **Ask the `@optique` maintainer** to stop publishing dependency specs
+  with build metadata suffixes
+
+### Suggested fix
+
+Strip build metadata from the version string in `#registryManifestRequest`
+before constructing the URL:
+
+```ts
+// src/package-info/src/index.ts, inside #registryManifestRequest
+const version =
+  hasLeadingRange ? registrySpec.slice(1) : registrySpec
+const versionClean = version.replace(/\+.*$/, '')
+const pakuURL = new URL(`${name}/${versionClean}`, registry)
 ```
 
-This overrides every occurrence of `@optique/core` in the dependency graph.
-The range `>=1.0.0-dev.0` causes `range.isSingle` to be `false`,
-routing resolution through `packument()` (fetches full packument by package name,
-no version in URL) instead of `#registryManifestRequest()` (constructs a
-per-version URL that breaks with build metadata).
-
-If modifiers alone do not resolve the issue, also clear the vlt cache:
-
-```sh
-rm -rf ~/.cache/vlt/package-info
-rm -rf ~/.cache/vlt/registry-client
-```
+A more comprehensive fix would strip build metadata in the `Spec` parser
+(`src/spec/src/browser.ts:644`) so all downstream consumers see clean versions.
+This aligns with SemVer 2.0.0 items 10-11, which state build metadata
+**MUST** be ignored when determining version precedence.
 
 ### Status
 
-No upstream issue exists as of 2026-04-04. File against **vltpkg/vltpkg** if the
-workaround is insufficient. The bug is in `src/package-info/src/index.ts` at
-`#registryManifestRequest` and in `src/spec/src/browser.ts` at line 644
-(`registrySpec = bareSpec` without stripping build metadata)
+No upstream issue filed yet as of 2026-04-04.
+See the draft bug report in `BUG-REPORT.vlt-build-metadata.md`
 
 ## Package Management Warnings
 

@@ -6,7 +6,7 @@ coverageSkipTestFiles = true
 concurrentTestGlob = "**/*.test.ts"
 
 [install]
-# Prevent Bun from auto-installing missing imports; vlt manages node_modules
+# Prevent Bun from auto-installing missing imports; pnpm manages node_modules
 auto = 'disable'
 
 [run]

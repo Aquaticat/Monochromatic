@@ -34,7 +34,7 @@ The discussion continues in stylelint/stylelint#8051 and stylelint/stylelint#892
 
 **`vite-plugin-singlefile`** -- removed. Was a stale lockfile entry from the deleted
 `packages/config/vite` package. No active imports or package.json references remain.
-Will be cleaned from the lockfile on next `vlt install`.
+Will be cleaned from the lockfile on next `pnpm install`.
 
 **`picomatch@2.3.2` CVE status:**
 Two CVEs affected picomatch before 2.3.2:

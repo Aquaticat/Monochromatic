@@ -25,7 +25,7 @@ config_roots = [
 bun = "latest"
 
 # Package manager
-"npm:vlt" = "latest"
+"npm:pnpm" = "11.0.0-beta.6"
 
 # aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
 "cargo:fd-find" = "latest"
@@ -438,13 +438,17 @@ mise run format && mise run build && mise run test
 description = "Prepare environment (install Playwright browsers, etc.)"
 extends = "prepare"
 
-[tasks."prepare:vlt"]
-run = [{ tasks = ["prepare:vlt:install"] }, { tasks = ["prepare:vlt:others:*"] }]
+[tasks."prepare:pnpm"]
+run = [{ tasks = ["prepare:pnpm:install"] }, { tasks = ["prepare:pnpm:others:*"] }]
 
-[tasks."prepare:vlt:install"]
-run = "vlt install; vlt build"
+[tasks."prepare:pnpm:install"]
+run = "pnpm install"
 
-[tasks."prepare:vlt:others:files"]
+[tasks."prepare:pnpm:others:approve-builds"]
+description = "Approve build scripts for native dependencies"
+run = "pnpm approve-builds sharp"
+
+[tasks."prepare:pnpm:others:files"]
 description = "Sync file-enforcer managed files (CLAUDE.md, skill mirrors)"
 run = "bun file-enforcer.config.ts"
 
@@ -511,7 +515,7 @@ run = "bun packages/dev-script/inference-canary/src/index.ts ...($env.usage_args
 
 #endregion Inference Canary
 
-#region Catalog Tighten -- tighten >= ranges in vlt.json catalog to match installed versions
+#region Catalog Tighten -- tighten >= ranges in pnpm-workspace.yaml catalog to match installed versions
 
 [tasks."catalog:tighten"]
 description = "Tighten catalog >=x.y.z ranges to match installed node_modules versions"
@@ -525,9 +529,9 @@ bun packages/dev-script/catalog-tighten/src/index.ts ...$args
 
 #region Fix Tasks -- workarounds for upstream bugs
 
-[tasks."fix:jsr"]
-description = "Re-install to work around JSR registry issues"
-run = "vlt install; vlt build"
+[tasks."fix:reinstall"]
+description = "Clean reinstall to work around registry or resolution issues"
+run = "rm -rf node_modules; pnpm install"
 
 #endregion Fix Tasks
 

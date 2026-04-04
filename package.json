@@ -39,7 +39,7 @@
     "@types/bun": "catalog:",
     "nano-spawn": "catalog:",
     "execa": "catalog:",
-    "oxlint": "catalog:",
+    "oxlint": "catalog:"
   },
   "cpu": [
     "x64",
@@ -62,8 +62,5 @@
     "current"
   ],
   "private": true,
-  "type": "module",
-  "workspaces": [
-    "packages/*/*"
-  ]
+  "type": "module"
 }

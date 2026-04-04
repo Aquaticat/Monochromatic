@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
 /**
- * Tightens monorepo root `package.json` catalog `>=x.y.z` ranges
+ * Tightens monorepo `pnpm-workspace.yaml` catalog `>=x.y.z` ranges
  * to match the versions actually installed in `node_modules`.
  *
- * Only touches entries in the default `workspaces.catalog` object
+ * Only touches entries in the default `catalog` object
  * whose range starts with `>=`. Entries using `*`, exact versions,
  * GitHub references, or named catalogs are skipped.
  *
@@ -58,32 +58,48 @@ const dryRun = process.argv.includes('--dry-run',);
 /** Absolute path to the monorepo root (where this script is invoked from). */
 const monorepoRoot = resolve('.',);
 
-/** Absolute path to the root package.json. */
-const packageJsonPath = join(
+/** Absolute path to pnpm-workspace.yaml. */
+const workspaceYamlPath = join(
   monorepoRoot,
-  'package.json',
+  'pnpm-workspace.yaml',
 );
 
-/** Raw content of package.json, preserved for minimal-diff rewriting. */
-const packageJsonContent = readFileSync(
-  packageJsonPath,
+/** Raw content of pnpm-workspace.yaml, preserved for minimal-diff rewriting. */
+const workspaceYamlContent = readFileSync(
+  workspaceYamlPath,
   'utf8',
 );
 
-/** Parsed root package.json. */
-// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- root package.json structure is well-known
-const packageJson = JSON.parse(packageJsonContent,) as {
-  workspaces?: {
-    catalog?: Record<string, string>;
-  };
-};
+/**
+ * Extracts `catalog:` entries from pnpm-workspace.yaml using regex.
+ * Avoids a YAML parser dependency for this simple key-value structure.
+ * Matches lines like `  "package-name": ">=1.2.3"` or `  package-name: ">=1.2.3"` under `catalog:`.
+ */
+function parseCatalogFromYaml(content: string): Record<string, string> {
+  const result: Record<string, string> = {};
+  const catalogMatch = content.match(/^catalog:\s*\n((?:[ \t]+.+\n)*)/m,);
+  if (catalogMatch === null) return result;
+  const catalogBlock = catalogMatch[1];
+  if (catalogBlock === undefined) return result;
+  const entryPattern = /^\s+"?([^":]+)"?\s*:\s*"?([^"\n]+)"?\s*$/gm;
+  let match = entryPattern.exec(catalogBlock,);
+  while (match !== null) {
+    const name = match[1];
+    const value = match[2];
+    if (name !== undefined && value !== undefined) {
+      result[name] = value;
+    }
+    match = entryPattern.exec(catalogBlock,);
+  }
+  return result;
+}
 
 /** Workspace catalog mapping package names to version ranges. */
-const catalog = packageJson.workspaces?.catalog;
-if (catalog === undefined) {
-  console.error('No workspaces.catalog found in package.json',);
+const catalog = parseCatalogFromYaml(workspaceYamlContent,);
+if (Object.keys(catalog,).length === 0) {
+  console.error('No catalog found in pnpm-workspace.yaml',);
   process.exitCode = 1;
-  throw new Error('No workspaces.catalog found in package.json',);
+  throw new Error('No catalog found in pnpm-workspace.yaml',);
 }
 
 /** Collected tightening results for the summary log. */
@@ -162,27 +178,33 @@ else if (dryRun)
   console.info(`\nDry run: ${String(results.length,)} entries would be tightened.`,);
 else {
   /**
-   * Rewrite package.json using string replacement to preserve formatting.
+   * Rewrite pnpm-workspace.yaml using string replacement to preserve formatting.
    * Each catalog entry is replaced individually to avoid touching unrelated content.
+   * Handles both quoted (`">=1.2.3"`) and unquoted (`>=1.2.3`) YAML values.
    */
   const rewritten = results.reduce(
     function applyTightening(
       acc,
       { name, oldRange, newRange, },
     ) {
-      return acc.replace(
-        `"${name}": "${oldRange}"`,
-        `"${name}": "${newRange}"`,
-      );
+      return acc
+        .replace(
+          `"${name}": "${oldRange}"`,
+          `"${name}": "${newRange}"`,
+        )
+        .replace(
+          `"${name}": ${oldRange}`,
+          `"${name}": "${newRange}"`,
+        );
     },
-    packageJsonContent,
+    workspaceYamlContent,
   );
 
   writeFileSync(
-    packageJsonPath,
+    workspaceYamlPath,
     rewritten,
   );
-  console.info(`\nWrote ${String(results.length,)} tightened entries to package.json.`,);
+  console.info(`\nWrote ${String(results.length,)} tightened entries to pnpm-workspace.yaml.`,);
 }
 
 //endregion Write results
