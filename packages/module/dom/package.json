@@ -1,0 +1,23 @@
+{
+  "name": "@monochromatic-dev/module-dom",
+  "description": "Browser DOM utilities: prompt dialogs, element cloning, redirects, and CSS-from-URL-params.",
+  "type": "module",
+  "exports": {
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "files": [
+    "src/"
+  ],
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "version": "0.0.1",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/module/dom"
+  }
+}
