@@ -1,0 +1,2 @@
+# lint omitted -- test fixture package with no production code;
+# behavior tests are compile-time documentation, not runtime tests

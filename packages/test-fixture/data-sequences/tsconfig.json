@@ -1,0 +1,7 @@
+{
+  "extends": "@monochromatic-dev/config-typescript",
+  "compilerOptions": {
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
+  },
+}
