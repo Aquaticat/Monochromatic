@@ -152,7 +152,6 @@ packages/
   dev-script/               Developer utilities (file-enforcer, inference-canary,
                               catalog-tighten, backup-path)
   mcp/                      Model Context Protocol servers (stdio, nvim, mvm)
-  media-renderer/           Animation rendering (motion-canvas-beachball)
   module/                   Core libraries (es -- functional utilities)
   rolldown-plugins/         Rolldown/tsdown plugins (import-attributes)
   runtime-error/            Runtime error reproductions (bun)

@@ -35,7 +35,6 @@
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "type-fest": "catalog:",
     "@types/bun": "catalog:",
-    "vite": "catalog:",
     "vue-tsc": "catalog:",
     "typescript": "catalog:",
     "serialize-error": "catalog:",

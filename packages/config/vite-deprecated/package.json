@@ -1,17 +1,17 @@
 {
-  "name": "@monochromatic-dev/config-eslint-deprecated",
+  "name": "@monochromatic-dev/config-vite-deprecated",
   "keywords": [
-    "eslint",
+    "vite",
     "config",
     "monochromatic",
     "deprecated"
   ],
   "dependencies": {},
-  "peerDependencies": {},
   "devDependencies": {},
   "type": "module",
   "files": [
-    "src"
+    "src",
+    "dist/final"
   ],
   "author": {
     "name": "Aquaticat",
@@ -22,16 +22,17 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/config/eslint-deprecated"
+    "directory": "packages/config/vite-deprecated"
   },
   "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
     "./.ts": {
       "default": "./src/index.ts"
+    },
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
     }
   },
   "private": true,
-  "description": "DEPRECATED: Shared ESLint configuration, preserved for re-adoption reference. Replaced by oxlint."
+  "description": "DEPRECATED: Shared Vite configuration utilities, preserved for reference."
 }

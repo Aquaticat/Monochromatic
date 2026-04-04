@@ -17,11 +17,6 @@
     "@fxts/core": ">=0.29.0",
     "@mastra/core": "*",
     "@mdx-js/vue": ">=1.1.7",
-    "@motion-canvas/2d": ">=3.17.2",
-    "@motion-canvas/core": ">=3.17.2",
-    "@motion-canvas/ffmpeg": ">=3.17.2",
-    "@motion-canvas/ui": ">=3.17.2",
-    "@motion-canvas/vite-plugin": ">=3.17.2",
     "@openrouter/ai-sdk-provider": "*",
     "@optique/core": ">=1.0.0-dev.0",
     "@optique/run": ">=1.0.0-dev.0",
@@ -36,7 +31,6 @@
     "@types/mdx": ">=2.0.13",
     "@typescript/native-preview": ">=7.0.0-dev.20260313.1",
     "@ungap/structured-clone": ">=1.3.0",
-    "@vitejs/plugin-basic-ssl": ">=2.1.4",
     "@vue/runtime-dom": ">=3.4.27",
     "@vue/server-renderer": ">=3.4.27",
     "ai": ">=5.0.42",
@@ -47,7 +41,6 @@
     "dot-prop": ">=10.1.0",
     "dprint": ">=0.50.1",
     "elysia": ">=1.4.22",
-    "esbuild": ">=0.27.3",
     "exa-js": ">=2.3.0",
     "execa": ">=9.6.1",
     "feedsmith": ">=3.0.0-next.4",
@@ -57,11 +50,9 @@
     "gray-matter": ">=4.0.3",
     "happy-dom": ">=20.5.0",
     "happy-rusty": ">=1.9.1",
-    "istanbul-lib-report": ">=3.0.1",
     "jiti": ">=2.4.2",
     "jspdf": ">=2.5.2",
     "lfi": ">=4.1.2",
-    "lightningcss": ">=1.31.1",
     "mdx2vast": "*",
     "meilisearch": ">=0.45.0",
     "memfs": ">=4.17.2",
@@ -144,7 +135,6 @@
     "remark-lint-unordered-list-marker-style": ">=4.0.1",
     "remark-sectionize": ">=2.1.0",
     "rolldown": ">=1.0.0-rc.3",
-    "rollup": ">=4.57.1",
     "safe-stringify": ">=1.3.0",
     "serialize-error": ">=13.0.1",
     "sharp": ">=0.34.5",
@@ -165,9 +155,6 @@
     "typescript": ">=6.0.1-rc",
     "unified": ">=11.0.5",
     "use-sync-external-store": ">=1.5.0",
-    "vite": "8.0.0-beta.8",
-    "vite-plugin-json5": ">=1.2.0",
-    "vite-plugin-singlefile": ">=2.3.0",
     "vue": ">=3.5.13",
     "vue-tsc": ">=3.2.4",
     "watcher": ">=2.3.1",
@@ -190,12 +177,8 @@
     "zod-opts": ">=0.2.1",
     "typesafe-i18n": ">=5.27.1"
   },
-  "catalogs": {
-    "legacy": {
-      "vite": "^5.4.0"
-    }
-  },
+  "catalogs": {},
   "config": {
-    "allow-scripts": "#sharp, #dprint, #esbuild"
+    "allow-scripts": "#sharp, #dprint"
   }
 }

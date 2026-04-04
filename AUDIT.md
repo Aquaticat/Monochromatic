@@ -6,25 +6,8 @@ Dependencies excluded from full source code audit, with rationale.
 
 ### Transitive / Unavoidable
 
-- **`@motion-canvas/*`** - Unavoidable for making animations.
-- **vite** both 5 and latest — Required by @motion-canvas/*
-- **sharp** — Transitive dependency of @motion-canvas/*
-- **esbuild** — Required by @motion-canvas/*; no longer a vite dependency as of vite 8
-- **rollup** - Required by Vite 5
-- **rolldown** — Vite transitive; native Rust bundler, replaces rollup in vite 8
-- **@rolldown/pluginutils** — Vite transitive, via rolldown
-- **@oxc-project/runtime** — Vite transitive
-- **@oxc-project/types** — Vite transitive, via rolldown
-- **postcss** — Vite transitive
-- **nanoid** — Vite transitive, via postcss
-- **picocolors** — Vite transitive, via postcss
-- **source-map-js** — Vite transitive, via postcss
-- **lightningcss** — Vite transitive
-- **detect-libc** — Vite transitive, via lightningcss
-- **tinyglobby** — Vite transitive
-- **fdir** — Vite transitive, via tinyglobby
-- **picomatch** — Vite transitive, via tinyglobby
-- **fsevents** — Vite transitive, optional macOS-only
+- **postcss** — Used by stylelint and CSS build pipeline
+- **tinyglobby** — Used by tsdown and other build tooling
 
 
 ### Trusted / Pre-Vetted

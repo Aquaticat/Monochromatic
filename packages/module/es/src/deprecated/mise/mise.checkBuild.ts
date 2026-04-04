@@ -12,7 +12,7 @@ console.log('🔍 Checking build artifacts...\n',);
 const buildChecks = [
   { path: 'packages/module/es/dist', name: 'module-es build artifacts', },
   { path: 'packages/config/eslint/dist', name: 'eslint config build', },
-  { path: 'packages/config/vite/dist', name: 'vite config build', },
+  { path: 'packages/config/vite-deprecated/dist', name: 'vite config build', },
   // Note: typescript config package has no build artifacts (just config files)
 ];
 
