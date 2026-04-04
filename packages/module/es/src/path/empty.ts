@@ -12,10 +12,7 @@ import {
   stat,
   writeFile,
 } from 'node:fs/promises';
-import {
-  join,
-  parse,
-} from 'node:path/posix';
+import { posix, } from 'node:path';
 import {
   $ as tagged,
 } from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
@@ -46,7 +43,7 @@ export async function emptyPath(path: string,): Promise<string> {
       queryIndex,
     )
     : path;
-  const parsed = parse(cleanPath,);
+  const parsed = posix.parse(cleanPath,);
 
   if (parsed.ext) {
     l.info(`${path} has extension, emptying as file`,);
@@ -73,7 +70,7 @@ export async function emptyDir(path: string,): Promise<string> {
 
   await Promise.all(entries.map(function removeEntry(entry,): Promise<void> {
     return rm(
-      join(path, entry,),
+      posix.join(path, entry,),
       { recursive: true, force: true, },
     );
   },),);
@@ -128,7 +125,7 @@ export async function removeEmptyFilesInDir(path: string,): Promise<string> {
 
   await Promise.all(
     entries.map(async function checkAndRemoveIfEmpty(entry,): Promise<void> {
-      const fullPath = join(
+      const fullPath = posix.join(
         path,
         entry,
       );

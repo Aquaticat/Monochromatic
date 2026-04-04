@@ -18,7 +18,7 @@ User input might include raw `\n` which you should consider as newlines since ne
 Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
 Use `gh repo clone` instead of `git clone` -- `gh` handles authentication and fork remotes automatically.
 
-Sandbox breaks `vlt install` despite proper allowlisting, so run it outside sandbox until this is fixed.
+Sandbox breaks `vlt` despite proper allowlisting, so run it outside sandbox until this is fixed.
 
 A bash-output-filter hook collapses `/var/home/user` and `/home/user` to `~`,
 and strips the cwd prefix from absolute paths in Bash tool output.
@@ -121,6 +121,13 @@ features change across versions and confident-sounding but wrong answers
 waste more time than a brief research pause.
 If the question is "does X support Y" or "how do I do Y in X,"
 treat it as a research task, not a recall task.
+
+When explaining a warning or error, name the exact tool that emitted it
+(e.g. "Rolldown's resolver" not "some resolvers") and cite the diagnostic code or message.
+Do not attribute a diagnostic to a vague category of tools.
+If unsure which tool produced it, investigate first -- search the codebase
+for the diagnostic code, check tool documentation, or run the tool directly --
+before writing an explanation.
 
 When the user says "I was expecting you to..." or similar unmet-expectation feedback,
 treat it as a documentation gap.

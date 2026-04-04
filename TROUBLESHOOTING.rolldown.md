@@ -153,3 +153,81 @@ export default defineConfig({
 
 - `dist/types-*.d.mts:880-882` -- `inputOptions` pass-through to rolldown `InputOptions`
 - `dist/types-*.d.mts:763` -- `platform` option definition
+
+## `node:` subpath imports produce `UNRESOLVED_IMPORT` on non-node platforms
+
+**Date**: 2026-04-04
+**Rolldown version**: 1.0.0-rc.9
+**oxc-resolver**: via rolldown
+
+Static imports like `import { parse } from 'node:path/posix'` or
+`import { posix } from 'node:path/posix'` emit
+`[UNRESOLVED_IMPORT] Warning: Could not resolve 'node:path/posix'`
+when `platform` is `'neutral'` or `'browser'`.
+The bare parent specifier `node:path` resolves fine under all platforms.
+
+**Root cause**: oxc-resolver's builtin module detection is gated on a
+`builtin_modules` flag.
+Rolldown only sets this flag to `true` when `platform` is `Node`
+(`crates/rolldown_resolver/src/resolver_config.rs:133`:
+`builtin_modules: matches!(platform, Platform::Node)`).
+On `neutral` or `browser`, `builtin_modules` is `false`,
+so the resolver never short-circuits `node:` specifiers as builtins.
+The top-level `node:path` still resolves because rolldown externalizes
+bare `node:` specifiers separately from oxc-resolver's builtin check.
+But subpath specifiers like `node:path/posix` bypass that externalization --
+the resolver treats `/posix` as a filesystem path under the `node:path` package,
+tries to find it on disk, and fails.
+
+Other affected specifiers include `node:path/win32`,
+`node:stream/promises`, `node:stream/consumers`, `node:stream/web`,
+`node:dns/promises`, `node:readline/promises`, `node:timers/promises`,
+and any other `node:` subpath export.
+
+**Symptoms**:
+
+- Build warning: `Could not resolve 'node:path/posix'` with `[UNRESOLVED_IMPORT]`
+- The import is left as a bare specifier in output,
+  which works at runtime in Node/Bun but fails in browser environments
+
+**Fix**: Import from the parent module and access the subpath as a property.
+
+```ts
+// Before -- breaks under platform: 'neutral'
+import { parse } from 'node:path/posix';
+parse(somePath);
+
+// After -- resolves on all platforms
+import { posix } from 'node:path';
+posix.parse(somePath);
+```
+
+For code that must also run in browsers (where `node:path` does not exist),
+use a computed specifier to prevent static resolution:
+
+```ts
+const specifier = `node${':path'}`;
+const nodePath = hasNodeRuntime
+  ? (await import(specifier) as typeof import('node:path')).posix
+  : undefined;
+```
+
+This pattern is already used in `packages/module/es/src/path/index.ts`.
+
+**What does not work**:
+
+- Adding `node:path/posix` to rolldown's `external` array --
+  externalization applies after resolution, and the specifier fails during resolution
+- Setting `resolve.builtinModules` manually --
+  this option is not exposed in rolldown's public `InputOptions`; it is derived
+  internally from `platform`
+
+**Source locations** (rolldown):
+
+- `crates/rolldown_resolver/src/resolver_config.rs:133` -- `builtin_modules` gated on `Platform::Node`
+- `crates/rolldown/src/utils/prepare_build_context.rs:157-160` -- ESM defaults to `Browser` platform
+
+**Source locations** (oxc-resolver):
+
+- `src/lib.rs:478-488` -- `require_core()` checks `starts_with("node:")` but only when `builtin_modules` is enabled
+- `nodejs-built-in-modules` crate -- includes `path/posix`, `path/win32`, `stream/promises`, etc. in `BUILTINS` list
