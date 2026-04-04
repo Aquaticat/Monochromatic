@@ -3,7 +3,7 @@ import { $ as createObservable, } from '@monochromatic-dev/module-es/create-obse
 import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
-import { prompt, } from '@monochromatic-dev/module-es/ts/deprecated/dom/prompt.ts';
+import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 import { Exa, } from 'exa-js';
 import * as z from 'zod/mini';
 
