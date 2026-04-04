@@ -1,2 +1,5 @@
-# lint omitted -- test fixture package with no production code;
-# behavior tests are compile-time documentation, not runtime tests
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:types"]
+extends = "lint:types"

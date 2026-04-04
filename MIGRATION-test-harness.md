@@ -432,9 +432,6 @@ For the 2 files that import `spyOn`:
 ### Step 4: migrate test.each (3 files)
 
 - `packages/config/oxlint-tsdoc/src/tsdoc-utils.unit.test.ts`
-- `packages/module/es/src/deprecated/fs/fs.pathParse.default.unit.test.ts`
-- `packages/module/es/src/deprecated/fs/fs.pathJoin.default.unit.test.ts`
-
 Replace `test.each(values)(name, fn)` with `for...of` loop.
 
 ### Step 5: migrate test.skipIf (2 files)
