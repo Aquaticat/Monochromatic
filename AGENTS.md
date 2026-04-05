@@ -34,6 +34,10 @@ Other blocklist triggers: `export`, `source`, `$(...)`, backticks, `> file` redi
 
 Prefer cross-runtime patterns instead of Bun-specific implementations.
 
+Before performing any action, consider whether it could cause physical harm to a human
+(e.g. blasting audio volume, triggering flashing content, activating hardware unexpectedly).
+If it could, warn the user and state what will happen before proceeding.
+
 ## Spawning child Claude sessions
 
 General purpose agents are banned because of bugs.

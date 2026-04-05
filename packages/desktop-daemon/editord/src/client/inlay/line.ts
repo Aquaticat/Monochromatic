@@ -3,6 +3,18 @@
  *
  * Groups items by line number and builds combined annotation strings
  * from inlay hints and diagnostics for a single line div.
+ *
+ * **Proportional-font gap pitfall:**
+ * When multiple hints share a row, the gap between them cannot be computed
+ * from character counts alone. The hint labels are rendered in Inter
+ * (proportional) while the code below is in JetBrains Mono (monospace).
+ * A label like "actual" (6 chars) occupies fewer pixels in Inter than
+ * 6 monospace characters, so naively subtracting `label.length` from the
+ * cursor (in mono units) under-counts the remaining pixel distance,
+ * placing subsequent hints too far left. The fix is to measure the
+ * accumulated row text's actual pixel width via `canvas.measureText()`
+ * and derive the space count from the pixel-level gap -- see
+ * {@link interSpacesForGap} in `measure.ts`.
  */
 
 import type {
@@ -15,6 +27,7 @@ import {
   formatHintLabel,
 } from './format.ts';
 import { groupByLine, } from './group-by-line.ts';
+import { interSpacesForGap, } from './measure.ts';
 
 export { groupByLine, };
 
@@ -62,7 +75,10 @@ export function applyLineAnnotation({
     );
 
     let rowText = '';
-    /** Current position in monospace character units. */
+    /**
+     * Cursor in monospace character units, used only for the overlap
+     * check and as fallback when canvas measurement is unavailable.
+     */
     let cursor = 0;
 
     for (const hint of sorted) {
@@ -70,9 +86,18 @@ export function applyLineAnnotation({
       const charPos = hint.position.character;
 
       if (rowText === '' || charPos >= cursor) {
-        /** Fits on the current row; pad from cursor to this hint's column. */
-        const gap = charPos - cursor;
-        rowText += ' '.repeat(Math.round(gap * spaceRatio,),) + label;
+        /**
+         * Fits on the current row.
+         * Measure the actual pixel width of the current row content
+         * to compute the exact number of Inter spaces needed.
+         */
+        const spaces = interSpacesForGap({
+          charPos,
+          rowText,
+          fallbackCursor: cursor,
+          spaceRatio,
+        },);
+        rowText += ' '.repeat(spaces,) + label;
         cursor = charPos + label.length;
       }
       else {

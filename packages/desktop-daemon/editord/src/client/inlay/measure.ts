@@ -12,6 +12,11 @@
 /** Cached ratio of mono character width to Inter space width. */
 let cachedRatio: number | null = null;
 
+/** Cached canvas context (Inter font) and mono character width for label measurement. */
+let cachedCtx: CanvasRenderingContext2D | null = null;
+let cachedMonoW = 0;
+let cachedInterSpW = 0;
+
 /**
  * Computes the ratio `monoSpaceWidth / interSpaceWidth` so that
  * `Math.round(charOffset * ratio)` Inter spaces span the same pixel
@@ -43,7 +48,53 @@ export function measureSpaceRatio({ editor, }: { editor: HTMLElement; },): numbe
   const interSpace = ctx.measureText(' ',).width;
 
   cachedRatio = interSpace > 0 ? monoSpace / interSpace : 1;
+  cachedMonoW = monoSpace;
+  cachedInterSpW = interSpace;
+  /** Retain context with Inter font for {@link measureInterText}. */
+  cachedCtx = ctx;
   return cachedRatio;
+}
+
+/**
+ * Computes how many Inter spaces to insert before a hint at `charPos`,
+ * given that `rowText` (in Inter) already occupies the row.
+ *
+ * Measures the actual pixel width of `rowText` via canvas, then computes
+ * how many Inter spaces bridge the remaining distance to the target
+ * monospace column. This avoids the assumption that label characters
+ * in Inter have the same width as monospace characters or Inter spaces.
+ *
+ * Falls back to `Math.round((charPos - fallbackCursor) * spaceRatio)`
+ * when canvas state is unavailable.
+ *
+ * @param charPos - target character column in monospace units
+ *
+ * @param rowText - current row content (Inter spaces + labels)
+ *
+ * @param fallbackCursor - cursor position for fallback (monospace character units)
+ *
+ * @param spaceRatio - mono-to-inter space width ratio
+ *
+ * @returns number of Inter spaces to insert
+ */
+export function interSpacesForGap({
+  charPos,
+  rowText,
+  fallbackCursor,
+  spaceRatio,
+}: {
+  charPos: number;
+  rowText: string;
+  fallbackCursor: number;
+  spaceRatio: number;
+},): number {
+  if (cachedCtx === null || cachedMonoW === 0 || cachedInterSpW === 0)
+    return Math.round((charPos - fallbackCursor) * spaceRatio,);
+
+  const targetPx = charPos * cachedMonoW;
+  const rowPx = cachedCtx.measureText(rowText,).width;
+  const gap = Math.max(0, Math.round((targetPx - rowPx) / cachedInterSpW,),);
+  return gap;
 }
 
 /**
