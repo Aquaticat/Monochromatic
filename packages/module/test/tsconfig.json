@@ -1,0 +1,10 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/dom",
+  "compilerOptions": {
+    "types": [
+      "bun",
+      "@types/sinon",
+      "@types/sinon-chai"
+    ]
+  }
+}

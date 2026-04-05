@@ -1,0 +1,36 @@
+{
+  "name": "@monochromatic-dev/module-test",
+  "description": "Test harness with Jest-style expect over chai, sinon sandbox with dispose, and concurrent describe/it runner.",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "module": "dist/final/neutral/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/final/neutral/index.d.mts",
+      "default": "./dist/final/neutral/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "files": [
+    "dist/final",
+    "src"
+  ],
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "chai": "catalog:",
+    "chai-as-promised": "catalog:",
+    "sinon": "catalog:",
+    "sinon-chai": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/chai-as-promised": "catalog:",
+    "@types/sinon": "catalog:",
+    "@types/sinon-chai": "catalog:",
+    "typescript": "catalog:"
+  }
+}

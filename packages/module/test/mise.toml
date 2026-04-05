@@ -1,0 +1,31 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:browser"]
+extends = "build:js:browser"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+extends = "watch:build:js"
+
+[tasks."watch:build:js:browser"]
+extends = "watch:build:js:browser"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks.test]
+description = "Self-test the test harness (builds first)"
+depends = ["build"]
+run = "bun src/self.unit.test.ts"

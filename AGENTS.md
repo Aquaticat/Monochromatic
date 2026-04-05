@@ -249,6 +249,12 @@ This applies to agent prompts, README guidance, CI scripts, and any artifact tha
 - Never modify files in cloned third-party repositories -- use configuration, env vars, or wrapper scripts
 - When encountering unexpected behavior from an external tool, clone its source and trace the exact code path to pinpoint the root cause before assuming a limitation or working around it
 - After investigating, write a detailed entry in the appropriate `TROUBLESHOOTING.*.md` file covering: minimal repro, root cause with exact source locations, verified solutions, and what does not work
+- When documenting an upstream bug or documentation error in a `BUGREPORT.*.md` file,
+  always include an exact source code trace (file paths, line numbers, code snippets)
+  that proves the claim -- never assert "the source does X" without showing the code path.
+  Also include a draft GitHub issue at the end of the document,
+  ready to file against the upstream repository,
+  with title, labels, description, reproduction steps, and suggested fix.
 
 # Code Quality
 
