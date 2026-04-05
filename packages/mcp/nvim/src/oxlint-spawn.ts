@@ -25,8 +25,6 @@ const OXLINT_TIMEOUT_MS = 10_000;
 /**
  * Spawns a single oxlint process and returns parsed diagnostics.
  *
- * @param configPath - Absolute path to `.oxlintrc.json`.
- *
  * @param cwd - Working directory for the oxlint process.
  *
  * @param files - Absolute file paths to lint.
@@ -36,12 +34,10 @@ const OXLINT_TIMEOUT_MS = 10_000;
  * @returns Diagnostics grouped by absolute file path.
  */
 export async function spawnOxlint({
-  configPath,
   cwd,
   files,
   typeAware,
 }: {
-  configPath: string;
   cwd: string;
   files: readonly string[];
   typeAware: boolean;
@@ -49,8 +45,6 @@ export async function spawnOxlint({
   const args = [
     '--format',
     'json',
-    '-c',
-    configPath,
     ...(typeAware ? ['--type-aware',] : []),
     ...files,
   ];

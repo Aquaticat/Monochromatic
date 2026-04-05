@@ -9,7 +9,7 @@
  *
  * @example
  * ```bash
- * task-oxlint --type-aware -c .oxlintrc.json
+ * task-oxlint --type-aware
  * ```
  */
 

@@ -44,7 +44,7 @@ async function readConfig(relativePath: string,): Promise<string> {
  */
 async function buildSystemPrompt(): Promise<string> {
   const [oxlintrc, tsconfig,] = await Promise.all([
-    readConfig('.oxlintrc.json',),
+    readConfig('oxlint.config.ts',),
     readConfig(
       'node_modules/@monochromatic-dev/config-typescript/tsconfig.options.json',
     ),
@@ -59,7 +59,7 @@ async function buildSystemPrompt(): Promise<string> {
     'Your code will be evaluated against the following project configurations.',
     'Lint errors count 3x more than warnings in scoring. Type errors also reduce score.',
     '',
-    '=== oxlint configuration (.oxlintrc.json) ===',
+    '=== oxlint configuration (oxlint.config.ts) ===',
     oxlintrc,
     '',
     '=== TypeScript compiler options (tsconfig) ===',

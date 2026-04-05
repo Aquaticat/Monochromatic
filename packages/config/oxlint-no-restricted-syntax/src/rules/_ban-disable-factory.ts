@@ -10,7 +10,7 @@ const DISABLE_DIRECTIVE_PATTERN = /oxlint-disable(?:-next-line)?\b/;
 
 /**
  * Creates an oxlint rule that bans inline disable directives
- * targeting a specific rule ID. Config-level overrides in `.oxlintrc.json`
+ * targeting a specific rule ID. Config-level overrides in `oxlint.config.ts`
  * are unaffected -- only inline suppression comments are flagged.
  *
  * @param ruleId - full rule ID to ban (e.g. `tsdoc/require-tsdoc`)

@@ -7,10 +7,7 @@
  * @module
  */
 
-import {
-  dirname,
-  resolve,
-} from 'node:path';
+import { dirname, } from 'node:path';
 
 import type { Diagnostic, } from './nvim-client.ts';
 import { findAncestorWithFile, } from './oxlint-parse.ts';
@@ -75,19 +72,15 @@ export async function runOxlint(
   }
   const configDir = findAncestorWithFile(
     dirname(firstFile,),
-    '.oxlintrc.json',
+    'oxlint.config.ts',
   );
   if (configDir === null) {
-    console.error('[mcp-nvim] Could not find .oxlintrc.json in any ancestor directory',);
+    console.error('[mcp-nvim] Could not find oxlint.config.ts in any ancestor directory',);
     return {
       diagnostics: new Map(),
       notes: [],
     };
   }
-  const configPath = resolve(
-    configDir,
-    '.oxlintrc.json',
-  );
 
   //region Group files by tsconfig ancestor -- each group runs in its own cwd
   const groupsByPackageRoot = new Map<string, string[]>();
@@ -122,7 +115,6 @@ export async function runOxlint(
   const packageRuns = [...groupsByPackageRoot.entries(),].map(
     function runPackageOxlint([packageRoot, packageFiles,],) {
       return spawnOxlint({
-        configPath,
         cwd: packageRoot,
         files: packageFiles,
         typeAware: true,
@@ -140,7 +132,6 @@ export async function runOxlint(
         + 'oxlint ran without --type-aware for those files and some type-aware rules may not report.',
     );
     fallbackRun = spawnOxlint({
-      configPath,
       cwd: configDir,
       files: filesWithoutTsconfig,
       typeAware: false,

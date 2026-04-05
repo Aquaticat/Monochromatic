@@ -5,7 +5,7 @@ import { banDisableRule, } from './_ban-disable-factory.ts';
  *
  * TSDoc is required on all declarations. Disabling the rule hides
  * missing documentation and should be replaced with proper TSDoc.
- * The only sanctioned override is the `.oxlintrc.json` file-pattern
+ * The only sanctioned override is the `oxlint.config.ts` file-pattern
  * override for `*.d.ts` files (ambient declarations).
  */
 export const noDisableRequireTsdoc = banDisableRule({

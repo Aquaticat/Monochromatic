@@ -32,7 +32,7 @@ import {
  *
  * @example
  * ```ts
- * const root = findAncestorWithFile("/home/user/project/packages/foo/src", ".oxlintrc.json");
+ * const root = findAncestorWithFile("/home/user/project/packages/foo/src", "oxlint.config.ts");
  * // => "/home/user/project"
  * ```
  */

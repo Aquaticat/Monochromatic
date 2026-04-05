@@ -25,24 +25,10 @@ This plugin provides individual rules for each banned syntax pattern instead.
 
 ## Usage
 
-```jsonc
-// .oxlintrc.json
-{
-  "jsPlugins": ["@monochromatic-dev/config-oxlint-no-restricted-syntax"],
-  "rules": {
-    "no-restricted-syntax/no-arrow-function": "error",
-    "no-restricted-syntax/no-enum": "error",
-    "no-restricted-syntax/no-for-in": "error",
-    "no-restricted-syntax/no-hasownproperty": "error",
-    "no-restricted-syntax/no-promise-catch": "error",
-    "no-restricted-syntax/no-promise-finally": "error",
-    "no-restricted-syntax/no-regexp-exec": "error",
-    "no-restricted-syntax/no-rest-params": "error",
-    "no-restricted-syntax/no-switch": "error",
-    "no-restricted-syntax/no-trim-left-right": "error",
-    "no-restricted-syntax/no-try-finally": "error",
-    "no-restricted-syntax/no-variable-function-expression": "error",
-    "no-restricted-syntax/require-destructured-params": "error"
-  }
-}
+```typescript
+// oxlint.config.ts
+import { defineConfig } from 'oxlint';
+export default defineConfig({
+  jsPlugins: ['@monochromatic-dev/config-oxlint-no-restricted-syntax'],
+});
 ```

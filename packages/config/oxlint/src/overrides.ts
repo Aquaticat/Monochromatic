@@ -1,0 +1,202 @@
+/**
+ * File-pattern overrides for oxlint.
+ *
+ * Each override relaxes or tightens rules for specific file patterns
+ * (declaration files, test files, config files, etc.) where the base
+ * ruleset would be too strict or inappropriate.
+ *
+ * @example
+ * ```typescript
+ * import { overrides } from './overrides.ts';
+ * ```
+ */
+
+import type { OxlintOverride, } from 'oxlint';
+
+/** Figma plugin globals. */
+const figmaOverride = {
+  files: ['**/figma-plugin/**',],
+  globals: {
+    figma: 'readonly' as const,
+  },
+} satisfies OxlintOverride;
+
+/** Numeric type files can use magic numbers. */
+const typeFileOverride = {
+  files: ['**/*.type.*.ts',],
+  rules: {
+    'eslint/no-magic-numbers': 'off',
+  },
+} satisfies OxlintOverride;
+
+/** Fixture files are exempt from line limits and magic numbers. */
+const fixtureOverride = {
+  files: ['**/fixture.*',],
+  rules: {
+    'eslint/no-magic-numbers': 'off',
+    'eslint/max-lines': 'off',
+  },
+} satisfies OxlintOverride;
+
+/** Model-generated canary artifacts have no meaningful line budget. */
+const canaryOverride = {
+  files: ['**/canary-lint/**',],
+  rules: {
+    'eslint/max-lines': 'off',
+  },
+} satisfies OxlintOverride;
+
+/** Astro components have implicit module context. */
+const astroOverride = {
+  files: ['**/*.astro',],
+  rules: {
+    // Astro components have implicit module context and don't need import/export statements.
+    'import/unambiguous': 'off',
+    // Astro frontmatter requires exports (like getStaticPaths) at the top before component logic.
+    'import/exports-last': 'off',
+    // Astro requires getStaticPaths to be async even when no await is needed.
+    'eslint/require-await': 'off',
+  },
+} satisfies OxlintOverride;
+
+/** Declaration files describe external shapes that violate source conventions. */
+const declarationOverride = {
+  files: ['**/*.d.{ts,mts,cts}',],
+  rules: {
+    //region import -- Declaration files are ambient; module-system rules don't apply.
+    'import/unambiguous': 'off',
+    'import/no-commonjs': 'off',
+    //endregion import
+
+    //region typescript -- Declaration files describe external shapes that violate source conventions.
+    // Declaration merging requires `interface`, not `type`.
+    'typescript/consistent-type-definitions': 'off',
+    // `declare namespace` is standard in ambient declarations.
+    'typescript/no-namespace': 'off',
+    // Empty interfaces serve as declaration merging stubs.
+    'typescript/no-empty-object-type': 'off',
+    // CJS type definitions use `import x = require()` syntax.
+    'typescript/no-var-requires': 'off',
+    // All imports in declaration files are type-level; the distinction is meaningless.
+    'typescript/consistent-type-imports': 'off',
+    // External API types sometimes require `any`.
+    'typescript/no-explicit-any': 'off',
+    //endregion typescript
+
+    //region eslint -- No runtime code exists in declaration files.
+    // `declare var` is standard for global augmentation.
+    'eslint/no-var': 'off',
+    // Numeric literal types are not magic numbers.
+    'eslint/no-magic-numbers': 'off',
+    // Declaration files often declare multiple classes from a single external module.
+    'eslint/max-classes-per-file': 'off',
+    //endregion eslint
+
+    //region no-restricted-syntax -- External API signatures don't follow source conventions.
+    // External APIs describe enums with `declare enum`.
+    'no-restricted-syntax/no-enum': 'off',
+    // External function signatures may use rest parameters.
+    'no-restricted-syntax/no-rest-params': 'off',
+    // External function signatures use positional parameters.
+    'no-restricted-syntax/require-destructured-params': 'off',
+    //endregion no-restricted-syntax
+
+    //region tsdoc -- Ambient declarations are often trivial stubs.
+    'tsdoc/require-tsdoc': 'off',
+    'tsdoc/require-param': 'off',
+    'tsdoc/require-returns': 'off',
+    'tsdoc/require-yields': 'off',
+    //endregion tsdoc
+  },
+} satisfies OxlintOverride;
+
+/** Config files are exempt from line limits. */
+const configOverride = {
+  files: ['**/*.config.*',],
+  rules: {
+    'eslint/max-lines': 'off',
+  },
+} satisfies OxlintOverride;
+
+/** Test and benchmark files have relaxed rules for flexibility. */
+const testOverride = {
+  files: ['**/*.{test,bench}.ts',],
+  rules: {
+    'eslint/max-lines': 'off',
+    'eslint/func-names': [
+      'warn',
+      'as-needed',
+    ],
+    'eslint/no-magic-numbers': 'off',
+    'typescript/explicit-function-return-type': 'off',
+    'unicorn/consistent-function-scoping': 'off',
+    'promise/avoid-new': 'off',
+    'eslint/require-await': 'off',
+    'eslint/no-array-constructor': 'off',
+    'promise/prefer-await-to-then': 'off',
+
+    // Some test files just have too many TypeScript errors.
+    'typescript/ban-ts-comment': [
+      'error',
+      {
+        'ts-ignore': 'allow-with-description',
+        'ts-nocheck': 'allow-with-description',
+        'ts-expect-error': 'allow-with-description',
+      },
+    ],
+
+    // Test assertions commonly use `as Type` for test data shaping.
+    'typescript/no-unsafe-type-assertion': 'off',
+    // Tests use `any` for mocking and edge-case coverage.
+    'typescript/no-explicit-any': 'off',
+
+    // Test TSDoc doesn't need full tag formatting but declarations still require TSDoc.
+    'tsdoc/tag-lines': 'off',
+    'tsdoc/require-param': 'off',
+    'tsdoc/require-returns': 'off',
+    'tsdoc/check-param-names': 'off',
+
+    // Tests may use arrow functions in callbacks freely.
+    'no-restricted-syntax/no-arrow-function': 'off',
+
+    // Test code uses inline arrays, objects, and multi-arg calls freely.
+    'stylistic/param-per-line': 'off',
+    'stylistic/argument-per-line': 'off',
+    'stylistic/array-element-per-line': 'off',
+    'stylistic/object-property-per-line': 'off',
+    'stylistic/import-per-line': 'off',
+    'stylistic/export-per-line': 'off',
+    'stylistic/type-property-per-line': 'off',
+    'stylistic/tuple-per-line': 'off',
+    'stylistic/destructure-per-line': 'off',
+
+    // Test setup/teardown may use init without assignment.
+    'eslint/init-declarations': 'off',
+
+    // Test fns are async for consistency even when they contain only sync assertions.
+    'typescript/require-await': 'off',
+
+    // bun:test expect().rejects/resolves return Promises that oxlint's type analysis doesn't recognize.
+    'typescript/await-thenable': 'off',
+
+    // bun:test expect() chains produce void-in-expression patterns that are intentional.
+    'typescript/no-confusing-void-expression': 'off',
+
+    // Test callbacks often have empty bodies for skip/noop cases.
+    'eslint/no-empty-function': 'off',
+
+    'no-empty-pattern': 'allow',
+  },
+} satisfies OxlintOverride;
+
+/** All overrides, ordered from most specific to least specific. */
+export const overrides: OxlintOverride[] = [
+  figmaOverride,
+  typeFileOverride,
+  fixtureOverride,
+  canaryOverride,
+  astroOverride,
+  declarationOverride,
+  configOverride,
+  testOverride,
+];

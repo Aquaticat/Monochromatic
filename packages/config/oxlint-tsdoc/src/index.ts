@@ -39,11 +39,12 @@ import {
  * Uses `\@microsoft/tsdoc` for authoritative comment parsing.
  *
  * @example
- * ```jsonc
- * // .oxlintrc.json
- * {
- *   "jsPlugins": ["\@monochromatic-dev/config-oxlint-tsdoc"]
- * }
+ * ```typescript
+ * // oxlint.config.ts
+ * import { defineConfig } from 'oxlint';
+ * export default defineConfig({
+ *   jsPlugins: ['\@monochromatic-dev/config-oxlint-tsdoc'],
+ * });
  * ```
  */
 const plugin = eslintCompatPlugin({

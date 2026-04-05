@@ -1,3 +1,8 @@
+**Note:** The monorepo has since migrated from `.oxlintrc.json` to `oxlint.config.ts`.
+The bug report below is preserved as-is since it documents a real upstream issue.
+
+---
+
 # oxlint bug: `ignorePatterns` resolved from CWD instead of config file directory
 
 **oxlint version:** 1.55.0

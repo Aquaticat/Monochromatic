@@ -21,11 +21,12 @@ import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
  * force them to be multi-line.
  *
  * @example
- * ```jsonc
- * // .oxlintrc.json
- * {
- *   "jsPlugins": ["\@monochromatic-dev/config-oxlint-stylistic"]
- * }
+ * ```typescript
+ * // oxlint.config.ts
+ * import { defineConfig } from 'oxlint';
+ * export default defineConfig({
+ *   jsPlugins: ['\@monochromatic-dev/config-oxlint-stylistic'],
+ * });
  * ```
  */
 const plugin = eslintCompatPlugin({

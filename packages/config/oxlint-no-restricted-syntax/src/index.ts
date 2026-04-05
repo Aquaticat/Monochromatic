@@ -55,11 +55,12 @@ import { requireQueryselectorGeneric, } from './rules/require-queryselector-gene
  * conventions cannot be sidestepped with disable comments.
  *
  * @example
- * ```jsonc
- * // .oxlintrc.json
- * {
- *   "jsPlugins": ["\@monochromatic-dev/config-oxlint-no-restricted-syntax"]
- * }
+ * ```typescript
+ * // oxlint.config.ts
+ * import { defineConfig } from 'oxlint';
+ * export default defineConfig({
+ *   jsPlugins: ['\@monochromatic-dev/config-oxlint-no-restricted-syntax'],
+ * });
  * ```
  */
 const plugin = eslintCompatPlugin({

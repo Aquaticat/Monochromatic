@@ -1,0 +1,42 @@
+{
+  "name": "@monochromatic-dev/config-oxlint",
+  "keywords": [
+    "oxlint",
+    "config",
+    "monochromatic"
+  ],
+  "dependencies": {
+    "@monochromatic-dev/config-oxlint-no-restricted-syntax": "workspace:*",
+    "@monochromatic-dev/config-oxlint-stylistic": "workspace:*",
+    "@monochromatic-dev/config-oxlint-tsdoc": "workspace:*",
+    "oxlint": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "type": "module",
+  "files": [
+    "src"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/config/oxlint"
+  },
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./.ts": {
+      "default": "./src/index.ts"
+    }
+  },
+  "description": "Shared oxlint configuration for Monochromatic repositories, exported as a typed OxlintConfig object."
+}

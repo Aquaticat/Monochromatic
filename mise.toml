@@ -191,7 +191,7 @@ run = "{{vars.fanout}}"
 
 [task_templates."lint:oxlint"]
 description = "Lint with Oxlint"
-run = "task-oxlint --type-aware -c {{vars.monorepo_root}}/.oxlintrc.json"
+run = "task-oxlint --type-aware"
 
 [task_templates."lint:types"]
 description = "TypeScript"
@@ -421,7 +421,7 @@ hide = true
 # A proper fix would require per-package fan-out like lint:oxlint,
 # but the format task is not the right place for that complexity.
 description = "Auto-fix with Oxlint (non-type-aware only)"
-run = "task-oxlint --fix -c .oxlintrc.json"
+run = "task-oxlint --fix"
 
 #region Validation and Check Tasks
 

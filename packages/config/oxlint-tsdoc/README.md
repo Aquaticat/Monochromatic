@@ -11,12 +11,14 @@ adapting all rules to conform to TSDoc (not JSDoc) conventions used in the monor
 
 ## Usage
 
-Reference the package in `.oxlintrc.json`:
+Reference the package in `oxlint.config.ts`:
 
-```jsonc
-{
-  "jsPlugins": ["@monochromatic-dev/config-oxlint-tsdoc"]
-}
+```typescript
+// oxlint.config.ts
+import { defineConfig } from 'oxlint';
+export default defineConfig({
+  jsPlugins: ['@monochromatic-dev/config-oxlint-tsdoc'],
+});
 ```
 
 All rules are enabled by default at `"warn"` severity with `recommended: true`.

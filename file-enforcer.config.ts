@@ -25,7 +25,6 @@ await Promise.all([
       ),
     ],);
   })(),
-  // Oxlint config lives in the config package; copy canonical files to monorepo root
-  // await overwrite('./.oxlintrc.json', await cat(['./packages/config/oxlint/.oxlintrc.json']));
-  // Oxlint TSDoc plugin now lives at packages/config/oxlint-tsdoc and is referenced directly from .oxlintrc.json
+  // Oxlint config: root oxlint.config.ts imports @monochromatic-dev/config-oxlint and adds jsPlugins.
+  // JS plugins (tsdoc, no-restricted-syntax, stylistic) are referenced by path from the root config.
 ],);

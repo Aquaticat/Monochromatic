@@ -293,6 +293,9 @@ importers:
       '@monochromatic-dev/config-dprint':
         specifier: workspace:*
         version: link:packages/config/dprint
+      '@monochromatic-dev/config-oxlint':
+        specifier: workspace:*
+        version: link:packages/config/oxlint
       '@monochromatic-dev/config-stylelint':
         specifier: workspace:*
         version: link:packages/config/stylelint
@@ -647,6 +650,28 @@ importers:
   packages/config/dprint: {}
 
   packages/config/eslint-deprecated: {}
+
+  packages/config/oxlint:
+    dependencies:
+      '@monochromatic-dev/config-oxlint-no-restricted-syntax':
+        specifier: workspace:*
+        version: link:../oxlint-no-restricted-syntax
+      '@monochromatic-dev/config-oxlint-stylistic':
+        specifier: workspace:*
+        version: link:../oxlint-stylistic
+      '@monochromatic-dev/config-oxlint-tsdoc':
+        specifier: workspace:*
+        version: link:../oxlint-tsdoc
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.58.0(oxlint-tsgolint@0.19.0)
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../typescript
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
 
   packages/config/oxlint-no-restricted-syntax:
     dependencies:

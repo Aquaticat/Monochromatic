@@ -23,23 +23,14 @@ All rules are auto-fixable via `oxlint --fix`.
 
 ## Usage
 
-Reference the package in `.oxlintrc.json`:
+Reference the package in `oxlint.config.ts`:
 
-```jsonc
-{
-  "jsPlugins": ["@monochromatic-dev/config-oxlint-stylistic"],
-  "rules": {
-    "stylistic/param-per-line": "warn",
-    "stylistic/argument-per-line": "warn",
-    "stylistic/array-element-per-line": "warn",
-    "stylistic/object-property-per-line": "warn",
-    "stylistic/import-per-line": "warn",
-    "stylistic/export-per-line": "warn",
-    "stylistic/type-property-per-line": "warn",
-    "stylistic/tuple-per-line": "warn",
-    "stylistic/destructure-per-line": "warn"
-  }
-}
+```typescript
+// oxlint.config.ts
+import { defineConfig } from 'oxlint';
+export default defineConfig({
+  jsPlugins: ['@monochromatic-dev/config-oxlint-stylistic'],
+});
 ```
 
 ## Design decisions
