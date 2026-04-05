@@ -15,7 +15,10 @@
  * ```
  */
 
-import { defineConfig, } from 'oxlint';
+import {
+  defineConfig,
+  type OxlintConfig,
+} from 'oxlint';
 
 import { overrides, } from './overrides.ts';
 import { correctnessRules, } from './rules/correctness.ts';
@@ -24,7 +27,7 @@ import { styleRules, } from './rules/style.ts';
 import { tsdocRules, } from './rules/tsdoc.ts';
 
 /** Shared oxlint configuration. */
-const config = defineConfig({
+const config: OxlintConfig = defineConfig({
   categories: {
     correctness: 'error',
     suspicious: 'warn',

@@ -1,10 +1,12 @@
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/no-regexp-exec`.
  * Use `String.prototype.match()` or `String.prototype.matchAll()` instead of `RegExp.exec()`.
  */
-export const noDisableNoRegexpExec = banDisableRule({
+export const noDisableNoRegexpExec: CreateOnceRule = banDisableRule({
   ruleId: 'no-restricted-syntax/no-regexp-exec',
   description: 'Disallow disabling no-regexp-exec. Use String.match/matchAll instead.',
   message:

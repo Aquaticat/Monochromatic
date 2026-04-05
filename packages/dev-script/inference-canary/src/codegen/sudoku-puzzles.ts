@@ -12,7 +12,7 @@
 //region Normal mode puzzles -- solvable, two unsolvable variants, multi-solution
 
 /** Classic solvable puzzle (Wikipedia example, 30 clues, unique solution) */
-export const SOLVABLE = [
+export const SOLVABLE: string = [
   '530070000',
   '600195000',
   '098000060',
@@ -43,7 +43,7 @@ export const SOLVABLE_CLUES: readonly (readonly number[])[] = [
  * Position (2,0) changed from 0 to 3, creating duplicate 3s with (0,1)=3.
  * No row or column conflicts exist, so only box-aware solvers detect this.
  */
-export const UNSOLVABLE_BOX = [
+export const UNSOLVABLE_BOX: string = [
   '530070000',
   '600195000',
   '398000060',
@@ -61,7 +61,7 @@ export const UNSOLVABLE_BOX = [
  * Position (8,8) changed from 9 to 3, creating duplicate 3s with (3,8)=3.
  * No row or box conflicts exist, so only column-aware solvers detect this.
  */
-export const UNSOLVABLE_COL = [
+export const UNSOLVABLE_COL: string = [
   '530070000',
   '600195000',
   '098000060',
@@ -81,7 +81,7 @@ export const UNSOLVABLE_COL = [
  * quick to solve for the first solution (basic backtracking finds one in milliseconds).
  * Normal mode must return exactly one, proving the solver stops after the first solution.
  */
-export const MULTI_SOLUTION = [
+export const MULTI_SOLUTION: string = [
   '534678912',
   '672195348',
   '198342567',
@@ -122,7 +122,7 @@ export const MULTI_CLUES: readonly (readonly number[])[] = [
  * Solution A: (0,3)=6, (0,4)=7, (3,3)=7, (3,4)=6
  * Solution B: (0,3)=7, (0,4)=6, (3,3)=6, (3,4)=7
  */
-export const TWO_SOLUTION = [
+export const TWO_SOLUTION: string = [
   '534008912',
   '672195348',
   '198342567',
@@ -162,7 +162,7 @@ export const EXPECTED_TWO_SOLUTIONS = 2;
  * puzzle times out if it enumerates all solutions, while --all mode on this 6-row
  * puzzle completes because the solution count is bounded.
  */
-export const MANY_SOLUTION = [
+export const MANY_SOLUTION: string = [
   '534678912',
   '672195348',
   '198342567',
@@ -199,7 +199,7 @@ export const MIN_MANY_SOLUTIONS = 2;
  * Stdin for normal mode: 4 puzzles separated by blank lines.
  * Order: solvable, unsolvable (box), unsolvable (column), multi-solution.
  */
-export const NORMAL_INPUT =
+export const NORMAL_INPUT: string =
   [SOLVABLE, UNSOLVABLE_BOX, UNSOLVABLE_COL, MULTI_SOLUTION,].join('\n\n',) + '\n';
 
 /** Number of independent correctness checks in normal mode */
@@ -209,7 +209,7 @@ export const NORMAL_CHECKS = 4;
  * Stdin for --all mode: 3 puzzles (2-solution + many-solution + unsolvable).
  * Tests exact enumeration, many-solution enumeration, and unsolvable rejection under --all.
  */
-export const ALL_INPUT = [TWO_SOLUTION, MANY_SOLUTION, UNSOLVABLE_BOX,].join('\n\n',)
+export const ALL_INPUT: string = [TWO_SOLUTION, MANY_SOLUTION, UNSOLVABLE_BOX,].join('\n\n',)
   + '\n';
 
 /** Number of independent correctness checks in --all mode */

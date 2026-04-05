@@ -1,10 +1,12 @@
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/require-destructured-params`.
  * Functions with 2+ parameters must use a single destructured object parameter.
  */
-export const noDisableRequireDestructuredParams = banDisableRule({
+export const noDisableRequireDestructuredParams: CreateOnceRule = banDisableRule({
   ruleId: 'no-restricted-syntax/require-destructured-params',
   description: 'Disallow disabling require-destructured-params. Use object parameters.',
   message:

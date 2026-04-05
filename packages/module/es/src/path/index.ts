@@ -16,6 +16,7 @@ export {
   emptyPath,
   removeEmptyFilesInDir,
 } from './empty.ts';
+export { findMonorepoRoot, } from './find-monorepo-root.ts';
 export {
   ensureDir,
   ensureFile,

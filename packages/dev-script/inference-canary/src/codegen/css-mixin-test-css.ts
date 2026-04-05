@@ -6,7 +6,7 @@
  */
 
 /** Full test CSS covering recursive, nested, and top-level mixin expansion */
-export const CSS_MIXIN_TEST_CSS = [
+export const CSS_MIXIN_TEST_CSS: string = [
   '@mixin --flex-center {',
   '  display: flex;',
   '  align-items: center;',

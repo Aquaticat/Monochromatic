@@ -1,3 +1,5 @@
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
@@ -8,7 +10,7 @@ import { banDisableRule, } from './_ban-disable-factory.ts';
  * The only sanctioned override is the `oxlint.config.ts` file-pattern
  * override for `*.d.ts` files (ambient declarations).
  */
-export const noDisableRequireTsdoc = banDisableRule({
+export const noDisableRequireTsdoc: CreateOnceRule = banDisableRule({
   ruleId: 'tsdoc/require-tsdoc',
   description: 'Disallow disabling tsdoc/require-tsdoc. Add proper TSDoc instead.',
   message:

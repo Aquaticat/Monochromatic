@@ -15,7 +15,7 @@
 import type { DummyRuleMap, } from 'oxlint';
 
 /** Rule severity for the tsdoc JS plugin. */
-export const tsdocRules = {
+export const tsdocRules: DummyRuleMap = {
   // Every module-level declaration (function, type, const, class, enum) needs a /** *\/ comment.
   'tsdoc/require-tsdoc': 'error',
 
@@ -79,4 +79,4 @@ export const tsdocRules = {
   // Generator return types should be documented via @returns instead.
   'tsdoc/require-yields': 'off',
   'tsdoc/require-yields-check': 'off',
-} satisfies DummyRuleMap;
+};

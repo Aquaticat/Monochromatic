@@ -7,6 +7,7 @@
  */
 import { CSS_MIXIN_TEST_CSS, } from './css-mixin-test-css.ts';
 import { CSS_MIXIN_PERF_INPUT, } from './perf-test-data/index.ts';
+import type { Probe, } from '../probes.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 import { verifyCssMixin, } from './css-mixin-verify.ts';
@@ -50,7 +51,7 @@ const REGEX_CONSTRAINT_MSG = [
 /**
  * {@inheritDoc Probe}
  */
-export const cssMixinTranspiler = createCodeGenProbe({
+export const cssMixinTranspiler: Probe = createCodeGenProbe({
   name: 'css-mixin-transpiler',
   testInput: CSS_MIXIN_TEST_CSS,
   perfTest: {

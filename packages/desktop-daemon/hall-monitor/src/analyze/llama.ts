@@ -31,7 +31,7 @@ const HEALTH_TIMEOUT_MS = 30_000;
 const HEALTH_POLL_MS = 500;
 
 /** OpenAI-compatible chat completions endpoint served by llama-server. */
-export const API_URL = `http://127.0.0.1:${PORT}/v1/chat/completions`;
+export const API_URL: string = `http://127.0.0.1:${PORT}/v1/chat/completions`;
 
 /** Handle to the running llama-server subprocess, or null when stopped. */
 let server: ChildProcess | null = null;

@@ -5,7 +5,7 @@ import {
   l,
   tagged,
 } from './log.ts';
-import { findMonorepoRoot, } from './monorepo.ts';
+import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
 
 /**
  * Attempts to resolve a bare specifier from a given base directory.
@@ -147,15 +147,21 @@ export async function resolveSpecifier(
   //endregion CWD resolution
 
   //region Monorepo root resolution
-  const monorepoRoot = await findMonorepoRoot({ startDir: cwd, },);
-  if (monorepoRoot !== undefined && monorepoRoot !== cwd) {
-    rl.info(`trying monorepo root: ${monorepoRoot}`,);
-    const fromMonorepo = resolveFrom({
-      specifier,
-      baseDir: monorepoRoot,
-    },);
-    if (fromMonorepo !== undefined)
-      return fromMonorepo;
+  let monorepoRoot: string | undefined;
+  try {
+    monorepoRoot = await findMonorepoRoot({ cwd, },);
+    if (monorepoRoot !== cwd) {
+      rl.info(`trying monorepo root: ${monorepoRoot}`,);
+      const fromMonorepo = resolveFrom({
+        specifier,
+        baseDir: monorepoRoot,
+      },);
+      if (fromMonorepo !== undefined)
+        return fromMonorepo;
+    }
+  }
+  catch {
+    rl.info('no monorepo root found',);
   }
   //endregion Monorepo root resolution
 

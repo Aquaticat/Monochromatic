@@ -28,6 +28,10 @@ run = "glob '**/*.unit.test.ts' | par-each { |file| bun $file }"
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
 
+[tasks."test:container"]
+description = "Run ensurePackage container tests across OS/user matrix"
+run = "bun src/package/mise.container-test.ts"
+
 [tasks."generate:index"]
 description = "Generate packages.generated.ts from Repology data"
 run = "bun src/package/mise.generate-index.ts"

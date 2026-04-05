@@ -13,6 +13,7 @@ import {
   map,
   optional,
 } from '@optique/core/modifiers';
+import type { Parser, } from '@optique/core/parser';
 import {
   argument,
   command,
@@ -24,6 +25,14 @@ import {
 } from '@optique/core/valueparser';
 
 import type { VmsyncArgs, } from './index-parsers.ts';
+
+/**
+ * Subcommand parser producing VmsyncArgs.
+ * Uses `any` for TState because Parser is invariant in TState
+ * and the deeply-nested state types are opaque implementation details.
+ */
+// oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
+type SubcommandParser = Parser<'sync', VmsyncArgs, any>;
 
 //region Shared value parsers
 
@@ -53,7 +62,7 @@ const cpusValue = integer({
 //region Subcommand parsers
 
 /** Parser for `import <path> [--name NAME]`. */
-export const importCmd = command(
+export const importCmd: SubcommandParser = command(
   'import',
   map(
     object({
@@ -87,7 +96,7 @@ export const importCmd = command(
 );
 
 /** Parser for `boot <name>`. */
-export const bootCmd = command(
+export const bootCmd: SubcommandParser = command(
   'boot',
   map(
     object({
@@ -106,7 +115,7 @@ export const bootCmd = command(
 );
 
 /** Parser for `sync <name>`. */
-export const syncCmd = command(
+export const syncCmd: SubcommandParser = command(
   'sync',
   map(
     object({
@@ -125,7 +134,7 @@ export const syncCmd = command(
 );
 
 /** Parser for `status <name>`. */
-export const statusCmd = command(
+export const statusCmd: SubcommandParser = command(
   'status',
   map(
     object({
@@ -144,7 +153,7 @@ export const statusCmd = command(
 );
 
 /** Parser for `list`. */
-export const listCmd = command(
+export const listCmd: SubcommandParser = command(
   'list',
   map(
     object({},),
@@ -160,7 +169,7 @@ export const listCmd = command(
 );
 
 /** Parser for `config <name> [--memory MEMORY] [--cpus CPUS]`. */
-export const configCmd = command(
+export const configCmd: SubcommandParser = command(
   'config',
   map(
     object({

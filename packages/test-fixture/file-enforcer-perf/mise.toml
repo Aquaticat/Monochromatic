@@ -4,7 +4,7 @@ run = "bun packages/fixture/file-enforcer-perf/src/setup-fixture.ts"
 
 [tasks.'perf:micro']
 description = "Run micro-benchmarks of individual file-enforcer operations"
-run = "bun test packages/fixture/file-enforcer-perf/src/perf.bench.test.ts"
+run = "bun packages/fixture/file-enforcer-perf/src/perf.bench.test.ts"
 
 [tasks.'perf:e2e']
 description = "Run end-to-end benchmarks with hyperfine on host"

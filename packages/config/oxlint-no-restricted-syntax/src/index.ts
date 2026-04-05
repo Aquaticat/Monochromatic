@@ -1,4 +1,7 @@
-import { eslintCompatPlugin, } from '@oxlint/plugins';
+import {
+  eslintCompatPlugin,
+  type Plugin,
+} from '@oxlint/plugins';
 
 import { noArrowFunction, } from './rules/no-arrow-function.ts';
 import { noDisableMaxLines, } from './rules/no-disable-max-lines.ts';
@@ -63,7 +66,7 @@ import { requireQueryselectorGeneric, } from './rules/require-queryselector-gene
  * });
  * ```
  */
-const plugin = eslintCompatPlugin({
+const plugin: Plugin = eslintCompatPlugin({
   meta: {
     name: 'no-restricted-syntax',
   },

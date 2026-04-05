@@ -2,6 +2,8 @@ import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { $ as defaultLogger, } from '@monochromatic-dev/module-es/logger';
 import type { $ as Logger, } from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 
+import pLimit from 'p-limit';
+
 import type { ItResult, } from './it.ts';
 import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 
@@ -23,6 +25,12 @@ export type DescribeChild =
   | (() => Promise<DescribeResult | ItResult>);
 
 /**
+ * Default maximum number of children running at the same time
+ * when `sequential` is falsy.
+ */
+const DEFAULT_CONCURRENCY = 16;
+
+/**
  * Options for a test suite.
  */
 export type DescribeOptions = {
@@ -35,6 +43,13 @@ export type DescribeOptions = {
    * Use thunks with `sequential: true` to guarantee execution order.
    */
   readonly children: readonly DescribeChild[];
+  /**
+   * Maximum number of children running at the same time.
+   * Only takes effect when `sequential` is falsy.
+   * Pass `Infinity` to disable the limit entirely.
+   * Defaults to {@link DEFAULT_CONCURRENCY} (16).
+   */
+  readonly concurrency?: number;
   /**
    * Logger override. When omitted, a tagged logger derived from
    * the module-es default logger is used.
@@ -90,6 +105,8 @@ export type DescribeOptions = {
  *
  * @param children - Child promises or thunks from nested describe or it calls
  *
+ * @param concurrency - Maximum concurrent children when not sequential (default 16, pass `Infinity` to disable)
+ *
  * @param skip - Whether to skip the entire suite
  *
  * @param repeats - Number of additional runs after the first
@@ -122,6 +139,7 @@ export type DescribeOptions = {
 export async function describe({
   name,
   children,
+  concurrency = DEFAULT_CONCURRENCY,
   skip = false,
   repeats = 0,
   sequential = false,
@@ -158,6 +176,8 @@ export async function describe({
     return typeof child === 'function' ? child() : child;
   }
 
+  const limit = pLimit(concurrency,);
+
   /**
    * Runs all children sequentially, collecting results in order.
    * Each child starts only after the previous one settles.
@@ -192,7 +212,9 @@ export async function describe({
   async function runOnce(runLabel: string,): Promise<void> {
     const settleAll = sequential
       ? runSequential()
-      : Promise.allSettled(children.map(startChild,),);
+      : Promise.allSettled(children.map(function limitChild(child,) {
+        return limit(startChild, child,);
+      },),);
 
     const withTimeoutApplied = timeout !== undefined
       ? withTimeout({

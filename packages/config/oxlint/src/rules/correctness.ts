@@ -13,7 +13,7 @@
 import type { DummyRuleMap, } from 'oxlint';
 
 /** Correctness, typescript, and performance rules. */
-export const correctnessRules = {
+export const correctnessRules: DummyRuleMap = {
   //region jest -- Suppress leaked jest rules from vitest plugin internals.
   // oxlint re-uses jest rule implementations for vitest and leaks them globally.
   // See https://github.com/oxc-project/oxc/issues/18518
@@ -69,4 +69,4 @@ export const correctnessRules = {
   'unicorn/prefer-set-has': 'warn',
 
   //endregion perf
-} satisfies DummyRuleMap;
+};

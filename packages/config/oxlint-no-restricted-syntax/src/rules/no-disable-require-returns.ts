@@ -1,3 +1,5 @@
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
@@ -5,7 +7,7 @@ import { banDisableRule, } from './_ban-disable-factory.ts';
  * Functions that return a value must document it with `\@returns`.
  * The rule already skips `void`, `never`, `Promise<void>`, and `Promise<never>`.
  */
-export const noDisableRequireReturns = banDisableRule({
+export const noDisableRequireReturns: CreateOnceRule = banDisableRule({
   ruleId: 'tsdoc/require-returns',
   description: 'Disallow disabling tsdoc/require-returns. Add @returns tag instead.',
   message:

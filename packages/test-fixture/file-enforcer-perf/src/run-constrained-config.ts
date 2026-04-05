@@ -3,13 +3,19 @@
  * Defines container resource limits, device paths, and tuning parameters.
  */
 
+import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
 import { resolve, } from 'node:path';
 
-/** Absolute path to the monorepo root */
-export const MONOREPO_ROOT = resolve(import.meta.dirname, '..', '..', '..', '..',);
+/**
+ * Canonical monorepo root path, normalized to `/var/home` on Fedora ostree
+ * where `/home` is a symlink that breaks `readlink -f` resolution.
+ */
+export const MONOREPO_ROOT: string = await findMonorepoRoot({
+  cwd: resolve(import.meta.dirname,),
+},);
 
 /** Containerfile location */
-export const CONTAINERFILE = resolve(import.meta.dirname, '..', 'Containerfile',);
+export const CONTAINERFILE: string = resolve(import.meta.dirname, '..', 'Containerfile',);
 
 /** Container image name */
 export const IMAGE_NAME = 'file-enforcer-perf';
@@ -62,10 +68,10 @@ const WRITE_IOPS = '100';
  * CPU pinning is done via taskset inside the container rather than
  * --cpuset-cpus, avoiding the need for sudo or cpuset delegation.
  */
-export const RESOURCE_FLAGS = [
+export const RESOURCE_FLAGS: readonly string[] = [
   '--memory=1g',
   `--device-read-bps=${BLOCK_DEVICE}:${READ_BPS}`,
   `--device-write-bps=${BLOCK_DEVICE}:${WRITE_BPS}`,
   `--device-read-iops=${BLOCK_DEVICE}:${READ_IOPS}`,
   `--device-write-iops=${BLOCK_DEVICE}:${WRITE_IOPS}`,
-] as const;
+];

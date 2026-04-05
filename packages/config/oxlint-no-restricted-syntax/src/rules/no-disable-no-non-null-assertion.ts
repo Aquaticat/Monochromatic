@@ -1,3 +1,5 @@
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
@@ -8,7 +10,7 @@ import { banDisableRule, } from './_ban-disable-factory.ts';
  * Use `notNullishOrThrow()` from `\@monochromatic-dev/module-es`
  * or an explicit null check instead of the `!` postfix operator.
  */
-export const noDisableNoNonNullAssertion = banDisableRule({
+export const noDisableNoNonNullAssertion: CreateOnceRule = banDisableRule({
   ruleId: 'no-non-null-assertion',
   description:
     'Disallow disabling no-non-null-assertion. Use notNullishOrThrow() instead.',

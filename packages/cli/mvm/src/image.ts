@@ -308,7 +308,14 @@ export async function ensureMiseWindows(): Promise<string> {
 
   await spawn({
     command: 'unzip',
-    args: ['-o', '-j', zipPath, 'mise/bin/mise.exe', '-d', IMAGES_DIR,],
+    args: [
+      '-o',
+      '-j',
+      zipPath,
+      'mise/bin/mise.exe',
+      '-d',
+      IMAGES_DIR,
+    ],
   },);
 
   await unlink(zipPath,);

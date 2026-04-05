@@ -13,6 +13,7 @@ import {
   CODEGEN_TEST_INPUT,
   PERF_TEST_INPUT,
 } from '../stak/test-cases.ts';
+import type { Probe, } from '../probes.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** Number of correctness checks in the Stak codegen scoring function */
@@ -35,7 +36,7 @@ const PERF_SLOW_MS = 10_000;
 /**
  * {@inheritDoc Probe}
  */
-export const stakInterpreter = createCodeGenProbe({
+export const stakInterpreter: Probe = createCodeGenProbe({
   name: 'stak-interpreter',
   testInput: CODEGEN_TEST_INPUT,
   perfTest: {

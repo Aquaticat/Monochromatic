@@ -69,7 +69,7 @@ try {
     { stdio: 'inherit', },
   );
 
-  if (processedArgs.length > 0 && VERSION_SUBCOMMANDS.has(processedArgs[0],)) {
+  if (processedArgs.length > 0 && processedArgs[0] !== undefined && VERSION_SUBCOMMANDS.has(processedArgs[0],)) {
     console.log('cli-git wrapper (require-root, atomic-push)',);
   }
 }

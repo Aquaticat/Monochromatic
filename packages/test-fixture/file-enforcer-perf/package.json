@@ -6,9 +6,11 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
+    "@monochromatic-dev/module-es": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "devDependencies": {
-    "@types/bun": "catalog:"
+    "mitata": "catalog:",
+    "@mitata/counters": "catalog:"
   }
 }

@@ -6,6 +6,7 @@
  * wrong or fail on nested parentheses.
  */
 import { EXPR_PERF_INPUT, } from './perf-test-data/index.ts';
+import type { Probe, } from '../probes.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** Test input covering precedence, parentheses, negation, and floats */
@@ -28,7 +29,7 @@ const FLOAT_TOLERANCE = 0.001;
 /**
  * {@inheritDoc Probe}
  */
-export const expressionEvaluator = createCodeGenProbe({
+export const expressionEvaluator: Probe = createCodeGenProbe({
   name: 'expr-eval',
   testInput: EXPR_TEST_INPUT,
   perfTest: {

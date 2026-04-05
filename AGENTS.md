@@ -202,8 +202,9 @@ When unsure, propose a concrete edit and location.
 A package is not finished until:
 - It has a `README.md`
 - It passes linting with zero errors
+- It has tests that pass
 
-Do not declare work complete while either condition is unmet.
+Do not declare work complete while any condition is unmet.
 
 ## Verify at the user boundary
 

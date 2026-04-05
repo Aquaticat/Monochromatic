@@ -13,7 +13,7 @@
 import type { DummyRuleMap, } from 'oxlint';
 
 /** Restriction rules. */
-export const restrictionRules = {
+export const restrictionRules: DummyRuleMap = {
   'eslint/no-iterator': 'error',
 
   // Tagged template expressions (css``, html``, etc.) aren't unused expressions.
@@ -185,4 +185,4 @@ export const restrictionRules = {
 
   // TODO comments are tracked via issues, not lint.
   'eslint/no-warning-comments': 'off',
-} satisfies DummyRuleMap;
+};

@@ -45,6 +45,9 @@ catalogs:
     '@microsoft/tsdoc':
       specifier: '>=0.16.0'
       version: 0.16.0
+    '@mitata/counters':
+      specifier: '>=0.0.8'
+      version: 0.0.8
     '@optique/core':
       specifier: '>=1.0.0-dev.0'
       version: 1.0.0-dev.1692
@@ -123,6 +126,9 @@ catalogs:
     h3:
       specifier: '>=2.0.1-rc.16'
       version: 2.0.1-rc.20
+    happy-opfs:
+      specifier: '>=2.0.2'
+      version: 2.0.2
     happy-rusty:
       specifier: '>=1.9.1'
       version: 1.9.1
@@ -138,6 +144,9 @@ catalogs:
     micromark:
       specifier: '>=4.0.2'
       version: 4.0.2
+    mitata:
+      specifier: '>=1.0.34'
+      version: 1.0.34
     nano-spawn:
       specifier: '>=2.0.0'
       version: 2.1.0
@@ -156,6 +165,9 @@ catalogs:
     oxlint-tsgolint:
       specifier: '>=0.16.0'
       version: 0.19.0
+    p-limit:
+      specifier: '>=7.3.0'
+      version: 7.3.0
     postcss:
       specifier: '>=8.5.6'
       version: 8.5.8
@@ -374,6 +386,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -532,6 +547,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -582,6 +600,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -636,6 +657,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -695,6 +719,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -711,6 +738,12 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../typescript
+      '@monochromatic-dev/module-es':
+        specifier: workspace:*
+        version: link:../../module/es
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -889,6 +922,12 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-matrix':
+        specifier: workspace:*
+        version: link:../../module/matrix
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -988,6 +1027,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -1057,6 +1099,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -1066,6 +1111,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -1080,6 +1128,10 @@ importers:
         version: 6.0.2
 
   packages/module/es:
+    dependencies:
+      happy-opfs:
+        specifier: 'catalog:'
+        version: 2.0.2
     devDependencies:
       '@cspotcode/outdent':
         specifier: 'catalog:'
@@ -1108,9 +1160,6 @@ importers:
       decircular:
         specifier: 'catalog:'
         version: 1.0.0
-      find-up:
-        specifier: 'catalog:'
-        version: 8.0.0
       happy-rusty:
         specifier: 'catalog:'
         version: 1.9.1
@@ -1150,6 +1199,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: 'link:'
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -1172,6 +1224,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -1184,6 +1239,34 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.3.6
+
+  packages/module/matrix:
+    dependencies:
+      '@monochromatic-dev/module-es':
+        specifier: workspace:*
+        version: link:../es
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+      p-limit:
+        specifier: 'catalog:'
+        version: 7.3.0
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
 
   packages/module/test:
     dependencies:
@@ -1199,6 +1282,9 @@ importers:
       expect-type:
         specifier: 'catalog:'
         version: 1.3.0
+      p-limit:
+        specifier: 'catalog:'
+        version: 7.3.0
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -1274,6 +1360,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -1326,13 +1415,19 @@ importers:
       '@monochromatic-dev/dev-script-file-enforcer':
         specifier: workspace:*
         version: link:../../dev-script/file-enforcer
+      '@monochromatic-dev/module-es':
+        specifier: workspace:*
+        version: link:../../module/es
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
     devDependencies:
-      '@types/bun':
+      '@mitata/counters':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 0.0.8
+      mitata:
+        specifier: 'catalog:'
+        version: 1.0.34
 
   packages/test-fixture/oxlint-stylistic: {}
 
@@ -1752,6 +1847,9 @@ packages:
   '@emnapi/wasi-threads@1.2.0':
     resolution: {integrity: sha512-N10dEJNSsUx41Z6pZsXU8FjPjpBEplgH24sfkmITrBED1/U2Esum9F3lfLrMjKHHjmi557zQn7kR9R+XWXu5Rg==}
 
+  '@happy-ts/fetch-t@1.9.1':
+    resolution: {integrity: sha512-i0IgjDQj6lNUqRNNQStipzI7VnrSzflFI1yFXpG98vuN9jChhVO/gESTm/2Bh2xDNPMr9uuMrMDlHrarO30cYw==}
+
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
     engines: {node: '>=18'}
@@ -1918,6 +2016,12 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
+  '@jsr/std__internal@1.0.12':
+    resolution: {integrity: sha512-6xReMW9p+paJgqoFRpOE2nogJFvzPfaLHLIlyADYjKMUcwDyjKZxryIbgcU+gxiTygn8yCjld1HoI0ET4/iZeA==}
+
+  '@jsr/std__path@1.1.4':
+    resolution: {integrity: sha512-SK4u9H6NVTfolhPdlvdYXfNFefy1W04AEHWJydryYbk+xqzNiVmr5o7TLJLJFqwHXuwMRhwrn+mcYeUfS0YFaA==}
+
   '@keyv/bigmap@1.3.1':
     resolution: {integrity: sha512-WbzE9sdmQtKy8vrNPa9BRnwZh5UF4s1KTmSK0KUVLo3eff5BlQNNWDnFOouNpKfPKDnms9xynJjsMYjMaT/aFQ==}
     engines: {node: '>= 18'}
@@ -1962,6 +2066,9 @@ packages:
 
   '@microsoft/tsdoc@0.16.0':
     resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
+
+  '@mitata/counters@0.0.8':
+    resolution: {integrity: sha512-f11w0Y1ETFlarDP7CePj8Z+y8Gv5Ax4gMxWsEwrqh0kH/YIY030Ezx5SUJeQg0YPTZ2OHKGcLG1oGJbIqHzaJA==}
 
   '@msgpack/msgpack@2.8.0':
     resolution: {integrity: sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==}
@@ -2971,6 +3078,9 @@ packages:
       crossws:
         optional: true
 
+  happy-opfs@2.0.2:
+    resolution: {integrity: sha512-gKpIqfTbzww7G/xCeNNv0QR+rkibxgCL08Bc9xDqXPxthH4bxlxFoLkHFiei/PU4wm4sNPSw43jlKYXoGnW+pQ==}
+
   happy-rusty@1.9.1:
     resolution: {integrity: sha512-bsMPcstvxqzG16+67xXbhDoufRLgeX+omACTrzKNZCh5mewclXyc5B1k28DW+gba1G5vqVt/FYEFlCxu0IGrug==}
 
@@ -3400,6 +3510,9 @@ packages:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
 
+  mitata@1.0.34:
+    resolution: {integrity: sha512-Mc3zrtNBKIMeHSCQ0XqRLo1vbdIx1wvFV9c8NJAiyho6AjNfMY8bVhbS12bwciUdd1t4rj8099CH3N3NFahaUA==}
+
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
@@ -3496,6 +3609,10 @@ packages:
   p-limit@4.0.0:
     resolution: {integrity: sha512-5b0R4txpzjPWVw/cXXUResoD4hb6U/x9BH08L7nw+GN1sezDzPdxeRvpc9c433fZhBan/wusjbCsqwqm4EIBIQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  p-limit@7.3.0:
+    resolution: {integrity: sha512-7cIXg/Z0M5WZRblrsOla88S4wAK+zOQQWeBYfV3qJuJXMr+LnbYjaadrFaS0JILfEDPVqHyKnZ1Z/1d6J9VVUw==}
+    engines: {node: '>=20'}
 
   p-locate@6.0.0:
     resolution: {integrity: sha512-wPrq66Llhl7/4AGC6I+cqxT07LhXvWL08LNXz1fENOw0Ap4sRZZ/gZpTTJ5jpurzzzfS2W/Ge9BY3LgLjCShcw==}
@@ -3925,6 +4042,9 @@ packages:
   the-new-css-reset@1.11.3:
     resolution: {integrity: sha512-61SB81vu9foUyEIqoU1CeqxrdlsVjJojj/CBXoG8BdvlKFsllB0Rza63DblnRqH+3uttPj3FGWo7+c9nu7MT+A==}
 
+  tiny-future@1.2.0:
+    resolution: {integrity: sha512-8Z1q/jCTpbnNJjqIF8chiqIW9ecNhsKZJAw3kg9sWtqixy93roPR+To2nIjkTxPwKinO1IMk7t5kfOuYZaGl+Q==}
+
   tiny-inflate@1.0.3:
     resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
 
@@ -4274,6 +4394,10 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@happy-ts/fetch-t@1.9.1':
+    dependencies:
+      happy-rusty: 1.9.1
+
   '@img/colour@1.1.0': {}
 
   '@img/sharp-darwin-arm64@0.34.5':
@@ -4384,6 +4508,12 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@jsr/std__internal@1.0.12': {}
+
+  '@jsr/std__path@1.1.4':
+    dependencies:
+      '@jsr/std__internal': 1.0.12
+
   '@keyv/bigmap@1.3.1(keyv@5.6.0)':
     dependencies:
       hashery: 1.5.1
@@ -4446,6 +4576,8 @@ snapshots:
   '@lobehub/icons-static-svg@1.84.0': {}
 
   '@microsoft/tsdoc@0.16.0': {}
+
+  '@mitata/counters@0.0.8': {}
 
   '@msgpack/msgpack@2.8.0': {}
 
@@ -5244,6 +5376,14 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.4(srvx@0.11.15)
 
+  happy-opfs@2.0.2:
+    dependencies:
+      '@happy-ts/fetch-t': 1.9.1
+      '@std/path': '@jsr/std__path@1.1.4'
+      fflate: 0.8.2
+      happy-rusty: 1.9.1
+      tiny-future: 1.2.0
+
   happy-rusty@1.9.1: {}
 
   has-flag@4.0.0: {}
@@ -5970,6 +6110,8 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.2
 
+  mitata@1.0.34: {}
+
   ms@2.1.3: {}
 
   nano-spawn@2.1.0: {}
@@ -6052,6 +6194,10 @@ snapshots:
       oxlint-tsgolint: 0.19.0
 
   p-limit@4.0.0:
+    dependencies:
+      yocto-queue: 1.2.2
+
+  p-limit@7.3.0:
     dependencies:
       yocto-queue: 1.2.2
 
@@ -6707,6 +6853,8 @@ snapshots:
     optional: true
 
   the-new-css-reset@1.11.3: {}
+
+  tiny-future@1.2.0: {}
 
   tiny-inflate@1.0.3: {}
 

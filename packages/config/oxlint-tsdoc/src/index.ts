@@ -1,4 +1,7 @@
-import { eslintCompatPlugin, } from '@oxlint/plugins';
+import {
+  eslintCompatPlugin,
+  type Plugin,
+} from '@oxlint/plugins';
 
 import {
   checkParamNames,
@@ -47,7 +50,7 @@ import {
  * });
  * ```
  */
-const plugin = eslintCompatPlugin({
+const plugin: Plugin = eslintCompatPlugin({
   meta: {
     name: 'tsdoc',
   },

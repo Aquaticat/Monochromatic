@@ -5,6 +5,7 @@
  * line endings. Hard because most models get the escaped-quote-within-quoted-field case wrong.
  */
 import { CSV_PERF_INPUT, } from './perf-test-data/index.ts';
+import type { Probe, } from '../probes.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** Test input covering the hardest RFC 4180 edge cases */
@@ -17,7 +18,7 @@ const TOTAL_CHECKS = 5;
 /**
  * {@inheritDoc Probe}
  */
-export const csvRfc4180 = createCodeGenProbe({
+export const csvRfc4180: Probe = createCodeGenProbe({
   name: 'csv-rfc4180',
   testInput: CSV_TEST_INPUT,
   perfTest: {

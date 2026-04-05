@@ -120,6 +120,49 @@ await describe({
     }),
 
     it({
+      name: 'limits concurrency to the given value',
+      fn: async () => {
+        const DELAY = 50;
+        const CHILD_COUNT = 4;
+        let peak = 0;
+        let active = 0;
+
+        /**
+         * Creates a thunk that tracks concurrent active count
+         * while sleeping for DELAY ms.
+         *
+         * @param index - Child index used for naming
+         *
+         * @returns thunk returning a promise that resolves after DELAY
+         */
+        function makeChild(index: number,) {
+          return () => it({
+            name: `limited-${String(index,)}`,
+            fn: async () => {
+              active += 1;
+              if (active > peak) {
+                peak = active;
+              }
+
+              await new Promise((resolve,) => {
+                setTimeout(resolve, DELAY,);
+              },);
+              active -= 1;
+            },
+          },);
+        }
+
+        await describe({
+          name: 'concurrency-suite',
+          concurrency: 2,
+          children: Array.from({ length: CHILD_COUNT, }, (_, index,) => makeChild(index,),),
+        },);
+
+        expect(peak,).toBe(2,);
+      },
+    }),
+
+    it({
       name: 'respects suite timeout',
       fn: async () => {
         const DELAY = 300;

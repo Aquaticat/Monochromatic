@@ -29,7 +29,7 @@ import {
 //region Data directories
 
 /** Root data directory for all vmsync-managed VMs. */
-export const DATA_DIR = join(
+export const DATA_DIR: string = join(
   homedir(),
   '.local',
   'share',

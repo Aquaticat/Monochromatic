@@ -12,11 +12,10 @@
  * - `podman login ghcr.io` completed
  * - Cosign key pair at `packages/config/cosign/`
  */
-import { findUp } from 'find-up';
-import { spawn as nodeSpawn } from 'node:child_process';
-import { once } from 'node:events';
-import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import { spawn as nodeSpawn, } from 'node:child_process';
+import { once, } from 'node:events';
+import { join, } from 'node:path';
 
 /** Local image tag to push. */
 const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
@@ -24,27 +23,8 @@ const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
 /** GHCR image reference. Change this to match your GitHub username/org. */
 const GHCR_TAG = 'ghcr.io/aquaticat/monochromatic-dev:latest';
 
-/**
- * Absolute path to the monorepo root.
- * Found by walking up to find a `mise.toml` containing a `[monorepo]` section.
- */
-const monorepoMiseToml = await findUp(
-  async function isMonorepoRoot(directory) {
-    try {
-      const content = await readFile(join(directory, 'mise.toml'), 'utf8');
-      if (content.includes('[monorepo]\n')) {
-        return join(directory, 'mise.toml');
-      }
-    } catch {
-      // mise.toml not found in this directory, keep searching.
-    }
-    return undefined;
-  },
-);
-if (monorepoMiseToml === undefined) {
-  throw new Error('could not find monorepo root (no mise.toml with [monorepo] section)');
-}
-const MONOREPO_ROOT = dirname(monorepoMiseToml);
+/** Absolute path to the monorepo root. */
+const MONOREPO_ROOT = await findMonorepoRoot();
 
 /** Path to the cosign private key for image signing. */
 const COSIGN_KEY = join(MONOREPO_ROOT, 'packages', 'config', 'cosign', 'cosign.key');

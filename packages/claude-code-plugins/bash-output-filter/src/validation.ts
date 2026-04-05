@@ -20,7 +20,7 @@
  * and flags/arguments -- these are all safe because the pipe is appended
  * at the end, after the full command.
  */
-export const ALLOW_PATTERNS = [
+export const ALLOW_PATTERNS: readonly RegExp[] = [
   /**
    * Command composed of normal shell characters:
    * - Letters, digits, underscores (command names, variables)
@@ -61,7 +61,7 @@ export function isAllowed(command: string,): boolean {
  * - Background/daemon processes (the pipe holds the process open)
  * - Commands that rely on separate stdout/stderr streams
  */
-export const SKIP_PATTERNS = [
+export const SKIP_PATTERNS: readonly RegExp[] = [
   /**
    * Commands that produce or manipulate binary data.
    * Piping binary through a text filter corrupts the output.

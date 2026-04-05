@@ -1,36 +1,37 @@
-# Migration: test harness package (mostly completed)
+# Migration: test harness package (completed, pending verification)
 
 **Unit adapter: completed.** The monorepo migrated to `@monochromatic-dev/module-test`,
 which took a different shape than originally planned (chai + sinon instead of runtime-conditional adapters).
 88 test files now import from `@monochromatic-dev/module-test`.
 See `packages/module/test/README.md` for the current API.
 
-**Matrix runner: redesigned, not yet implemented.** Redesigned as a separate package
-`@monochromatic-dev/module-matrix-virtualized` that abstracts away container/VM lifecycle.
-Container test orchestrators still use manual loops pending implementation.
+**Matrix runner: completed.** Implemented as `@monochromatic-dev/module-matrix`
+at `packages/module/matrix/`. Container test orchestrator migrated to use `matrix()`.
+See `packages/module/matrix/README.md` for the API.
 
-**Benchmark utilities: pending.** Adopt `mitata` with `@mitata/counters` for micro-benchmarks,
-replacing the hand-rolled `measure()` / `measureAsync()` in `file-enforcer-perf`.
-The benchmark file (`perf.bench.test.ts`) is the only remaining file importing from `bun:test`.
+**Benchmark utilities: completed.** `perf.bench.test.ts` migrated to `mitata`.
+`mitata` and `@mitata/counters` added to pnpm catalog and `file-enforcer-perf` devDependencies.
+Hand-rolled `measure()` / `measureAsync()` and `bun:test` import removed.
+No source files import from `bun:test`.
 
 ---
 
 Replace ad-hoc test infrastructure across the monorepo with a shared
 test package. The original plan had three layers;
-layers 1 and 2 are preserved below as historical context,
-layer 3 (benchmarking) is the remaining actionable work.
+layer 1 is preserved below as historical context,
+layers 2 (matrix runner) and 3 (benchmarking) are preserved below as historical context.
 
 1.  ~~**Unit adapter** -- runtime-neutral re-exports of `bun:test` / `node:test` primitives
     so 83 `*.unit.test.ts` files decouple from a specific runtime.~~
     **Completed** as `@monochromatic-dev/module-test` with chai + sinon.
-2.  **Virtualized matrix runner** -- `@monochromatic-dev/module-matrix-virtualized`,
+2.  ~~**Matrix runner** -- `@monochromatic-dev/module-matrix`,
     a separate package that runs files across a cartesian product of
     OS (container/VM) × user context × JS runtime environments.
-    Abstracts away podman lifecycle, prerequisite installation, and runtime setup.
-    **Redesigned, not yet implemented.**
-3.  **Benchmark utilities** -- adopt `mitata` with `@mitata/counters` for micro-benchmarks,
-    replacing the hand-rolled `measure()` / `measureAsync()` in `file-enforcer-perf`.
-    **Pending.**
+    Abstracts away podman lifecycle, prerequisite installation, and runtime setup.~~
+    **Completed.** Container test orchestrator migrated to `matrix()` call.
+3.  ~~**Benchmark utilities** -- adopt `mitata` with `@mitata/counters` for micro-benchmarks,
+    replacing the hand-rolled `measure()` / `measureAsync()` in `file-enforcer-perf`.~~
+    **Completed.** `perf.bench.test.ts` uses `mitata` directly.
 
 ## Motivation
 
@@ -43,19 +44,19 @@ layer 3 (benchmarking) is the remaining actionable work.
   **Done.** `module-test` runs children concurrently via `Promise.allSettled` by default.
 - ~~**ESM-native, TypeScript-first** -- no CJS shims, no `createRequire`, no loaders~~
   **Done.**
-- **Eliminate container orchestration boilerplate** -- `module-matrix-virtualized` replaces
-  the 218-line orchestrator (`mise.container-test.ts`) with a ~10-line `virtualized()` call.
-  **Redesigned, not yet implemented.**
-- **Standardized benchmarking** -- `mitata` provides DCE detection, GC-aware measurement,
-  auto-batching for fast functions, and optional hardware counters via `@mitata/counters`.
-  **Pending.**
+- ~~**Eliminate container orchestration boilerplate** -- `module-matrix` replaces
+  the 173-line orchestrator (`mise.container-test.ts`) with a ~10-line `matrix()` call.~~
+  **Completed.** `mise.container-test.ts` now calls `matrix()` directly.
+- ~~**Standardized benchmarking** -- `mitata` provides DCE detection, GC-aware measurement,
+  auto-batching for fast functions, and optional hardware counters via `@mitata/counters`.~~
+  **Completed.** `perf.bench.test.ts` uses `mitata` directly.
 
 ## Current state
 
 - 88 `*.unit.test.ts` files import from `@monochromatic-dev/module-test`
-- 1 benchmark file (`perf.bench.test.ts`) still imports from `bun:test` -- pending mitata migration
+- ~~1 benchmark file (`perf.bench.test.ts`) still imports from `bun:test`~~ -- migrated to mitata
 - `module-test` provides `describe`, `it`, `expect` (chai), `sinon` sandbox, `expectTypeOf`
-- Container test orchestrators still use manual loops (matrix runner not implemented)
+- Container test orchestrator migrated to `matrix()` call from `module-matrix`
 
 ## Architecture
 
@@ -65,7 +66,7 @@ Implemented as `@monochromatic-dev/module-test` at `packages/module/test/`.
 Uses chai + sinon instead of the originally planned `@std/expect` + runtime-conditional adapters.
 See `packages/module/test/README.md` for the full API.
 
-### Benchmarking (pending)
+### Benchmarking (completed)
 
 Consumers use `mitata` and `@mitata/counters` directly as devDependencies --
 no wrapper or re-export through `module-test`.
@@ -85,12 +86,12 @@ See `packages/module/test/README.md` for the implemented API.
 
 </details>
 
-### Virtualized matrix runner (not yet implemented)
+### Matrix runner (completed)
 
-Separate package: `packages/module/matrix-virtualized/`
-→ `@monochromatic-dev/module-matrix-virtualized`
+Separate package: `packages/module/matrix/`
+→ `@monochromatic-dev/module-matrix`
 
-Runs files across a cartesian product of virtualized environments.
+Runs files across a cartesian product of environments.
 The consumer specifies axes; the package handles all environment lifecycle
 (container/VM creation, prerequisite installation, runtime installation,
 user creation, workspace mounting, execution, result collection).
@@ -98,13 +99,13 @@ user creation, workspace mounting, execution, result collection).
 **API:**
 
 ```ts
-import { virtualized } from '@monochromatic-dev/module-matrix-virtualized';
+import { matrix } from '@monochromatic-dev/module-matrix';
 
-await virtualized({
+await matrix({
   // Files to execute inside each environment.
   // Self-executing scripts run with the selected runtime.
-  // Defaults to discovering *.unit.virtualized.test.ts in the calling package.
-  files: ['./src/package/ensure-package.unit.virtualized.test.ts'],
+  // Defaults to discovering *.unit.matrix.test.ts in the calling package.
+  files: ['./src/package/ensure-package.unit.matrix.test.ts'],
 
   // Environments. Protocol prefix selects the backend.
   // container: → podman (MVP)
@@ -120,7 +121,7 @@ await virtualized({
   // Exclude specific combinations from the cartesian product.
   // Each entry is a partial match -- all specified fields must match to exclude.
   exclude: [
-    { os: 'container:alpine', user: 'user' },  // alpine non-root needs special handling
+    { os: 'container:fedora', runtime: 'deno' },  // deno + fedora has known issues
   ],
 
   // Run combinations sequentially. Default false (concurrent).
@@ -144,16 +145,16 @@ For the example above (without excludes): 1 file × 2 OS × 2 users × 2 runtime
 4.  Throw on non-zero exit (collected by `describe`/`it` from `module-test`)
 
 **File naming convention:**
-Inner files are named `*.unit.virtualized.test.ts`.
-The standard `test:unit` mise task discovers `*.unit.test.*` and skips these.
-Virtualized test orchestrators discover them via the `files` option or default glob.
+Inner files are named `*.unit.matrix.test.ts`.
+The standard `test:unit` mise task discovers `**/*.unit.test.ts` and skips these.
+Matrix test orchestrators discover them via the `files` option or default glob.
 
 **Consumer example** (`mise.container-test.ts` after migration):
 
 ```ts
-import { virtualized } from '@monochromatic-dev/module-matrix-virtualized';
+import { matrix } from '@monochromatic-dev/module-matrix';
 
-await virtualized({
+await matrix({
   os: ['container:ubuntu', 'container:fedora'],
   user: ['root', 'user'],
 });
@@ -166,7 +167,7 @@ and summary reporting are all handled by the package.
 **What stays per-consumer:**
 
 - Choice of axes (which images, which users, which runtimes)
-- The `*.unit.virtualized.test.ts` files that run inside the environments
+- The `*.unit.matrix.test.ts` files that run inside the environments
 
 **Dependencies:**
 
@@ -241,44 +242,38 @@ Implemented as `@monochromatic-dev/module-test` at `packages/module/test/`.
 
 ### ~~Step 5: migrate test.skipIf~~ (completed)
 
-### Step 6: create module-matrix-virtualized and migrate container tests
+### ~~Step 6: create module-matrix and migrate container tests~~ (completed)
 
-1.  Create `packages/module/matrix-virtualized/` with the API described above
-2.  Rename `ensure-package.container-test.ts` → `ensure-package.unit.virtualized.test.ts`
-    and rewrite its `boolean[]` + summary pattern to use `describe`/`it` from `module-test`
-3.  Replace `mise.container-test.ts` (218 lines) with a ~10-line call to `virtualized()`:
+1.  Created `packages/module/matrix/` with the `matrix()` API
+2.  Renamed `ensure-package.container-test.ts` → `ensure-package.unit.matrix.test.ts`
+    and rewrote its `boolean[]` + summary pattern to use `describe`/`it` from `module-test`
+3.  Replaced `mise.container-test.ts` (173 lines) with a ~10-line call to `matrix()`:
 
     ```ts
-    import { virtualized } from '@monochromatic-dev/module-matrix-virtualized';
+    import { matrix } from '@monochromatic-dev/module-matrix';
 
-    await virtualized({
+    await matrix({
       os: ['container:ubuntu', 'container:fedora'],
       user: ['root', 'user'],
     });
     ```
 
-4.  Remove `buildCommand`, `runEntry`, `MatrixEntry`, monorepo root detection,
+4.  Removed `buildCommand`, `runEntry`, `MatrixEntry`, monorepo root detection,
     and result collection from the orchestrator -- all handled by the package
 
-### Step 7: migrate benchmarks to mitata (1 file)
+### ~~Step 7: migrate benchmarks to mitata (1 file)~~ (completed)
 
-- `packages/test-fixture/file-enforcer-perf/src/perf.bench.test.ts`
-
-  1.  Add `mitata` and `@mitata/counters` to the pnpm catalog
-  2.  Add both as devDependencies of `file-enforcer-perf`
-  3.  Replace the hand-rolled `measure()` / `measureAsync()` timing functions
-      with `mitata`'s functional API (imported directly from `mitata`).
-      Use `do_not_optimize()` to prevent DCE on benchmark results.
-      Use `summary()` / `boxplot()` scopes for grouped output.
-  4.  Remove the `bun:test` import -- this is the last file using it
-
-  The benchmark orchestrators (`run-e2e.ts`, `run-constrained.ts`, `bench-in-container.ts`)
-  are bespoke multi-phase pipelines and do not benefit from this migration.
+Migrated `perf.bench.test.ts` to mitata. Added `mitata` and `@mitata/counters`
+to pnpm catalog and `file-enforcer-perf` devDependencies. Removed `bun:test` import
+and hand-rolled `measure()` / `measureAsync()`. Benchmarks grouped with
+`summary()` and `boxplot()` scopes; `do_not_optimize()` prevents DCE.
 
 ### Step 8: verify
 
 1.  Run `mise run buildAndTest` to confirm all unit tests still pass.
-2.  Run the benchmark to confirm mitata integration:
+2.  Run the matrix to confirm container test migration:
+    `mise run //packages/dev-script/file-enforcer:test:container`
+3.  Run the benchmark to confirm mitata integration:
     `mise run //packages/test-fixture/file-enforcer-perf:perf:micro`
 
 ## Dependencies (remaining)
@@ -287,18 +282,18 @@ Implemented as `@monochromatic-dev/module-test` at `packages/module/test/`.
 |---|---|---|---|
 | `mitata` | npm | Micro-benchmark harness (12KB, zero deps) | file-enforcer-perf devDependency |
 | `@mitata/counters` | npm | Optional hardware perf counters (Zig NAPI) | file-enforcer-perf devDependency |
-| `nano-spawn` | npm | Podman process execution | module-matrix-virtualized dependency |
-| `find-up` | npm | Monorepo root detection | module-matrix-virtualized dependency |
-| `@monochromatic-dev/module-test` | workspace | describe/it for execution and reporting | module-matrix-virtualized dependency |
-| `@monochromatic-dev/module-es` | workspace | Tagged logger | module-matrix-virtualized dependency |
+| `nano-spawn` | npm | Podman process execution | module-matrix dependency |
+| `find-up` | npm | Monorepo root detection | module-matrix dependency |
+| `@monochromatic-dev/module-test` | workspace | describe/it for execution and reporting | module-matrix dependency |
+| `@monochromatic-dev/module-es` | workspace | Tagged logger | module-matrix dependency |
 
 ## Remaining files affected
 
-- **New**: `packages/module/matrix-virtualized/` (package.json, src/, mise.toml)
-- **Modified**: `pnpm-workspace.yaml` (add `mitata`, `@mitata/counters`, and matrix-virtualized deps to catalog)
-- **Renamed**: `ensure-package.container-test.ts` → `ensure-package.unit.virtualized.test.ts`
-- **Modified**: `ensure-package.unit.virtualized.test.ts` (rewrite to use `describe`/`it` from module-test)
-- **Replaced**: `mise.container-test.ts` (218 lines → ~10-line `virtualized()` call)
+- ~~**New**: `packages/module/matrix/` (package.json, src/, mise.toml)~~ -- done
+- ~~**Modified**: `pnpm-workspace.yaml` (add `mitata` and `@mitata/counters` to catalog; `nano-spawn` and `find-up` already present)~~ -- done
+- ~~**Renamed**: `ensure-package.container-test.ts` → `ensure-package.unit.matrix.test.ts`~~ -- done
+- ~~**Modified**: `ensure-package.unit.matrix.test.ts` (rewrite to use `describe`/`it` from module-test)~~ -- done
+- ~~**Replaced**: `mise.container-test.ts` (173 lines → ~10-line `matrix()` call)~~ -- done
 - **Modified**: `packages/test-fixture/file-enforcer-perf/package.json` (add mitata devDependencies)
 - **Modified**: 1 benchmark file (`perf.bench.test.ts` -- adopt mitata, remove `bun:test` import)
 
@@ -349,5 +344,5 @@ were evaluated.
 - **act** is CLI-only (no TypeScript API) and requires YAML workflow definitions.
 - **Earthly** is CLI-only with no TypeScript API.
 
-`module-matrix-virtualized` uses `nano-spawn` + `podman` internally
+`module-matrix` uses `nano-spawn` + `podman` internally
 but abstracts away the entire container lifecycle. Consumers never see podman args.

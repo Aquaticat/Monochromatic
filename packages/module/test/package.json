@@ -23,6 +23,7 @@
     "chai": "catalog:",
     "expect-type": "catalog:",
     "chai-as-promised": "catalog:",
+    "p-limit": "catalog:",
     "sinon": "catalog:",
     "sinon-chai": "catalog:"
   },

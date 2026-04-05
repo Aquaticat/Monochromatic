@@ -14,7 +14,7 @@
 import type { DummyRuleMap, } from 'oxlint';
 
 /** Style and pedantic rules. */
-export const styleRules = {
+export const styleRules: DummyRuleMap = {
   //region pedantic
 
   // Conflicts with some required tsdoc placements.
@@ -200,4 +200,4 @@ export const styleRules = {
   ],
 
   //endregion style
-} satisfies DummyRuleMap;
+};

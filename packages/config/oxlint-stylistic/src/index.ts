@@ -1,4 +1,7 @@
-import { eslintCompatPlugin, } from '@oxlint/plugins';
+import {
+  eslintCompatPlugin,
+  type Plugin,
+} from '@oxlint/plugins';
 
 import { argumentPerLine, } from './rules/argument-per-line.ts';
 import { arrayElementPerLine, } from './rules/array-element-per-line.ts';
@@ -29,7 +32,7 @@ import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
  * });
  * ```
  */
-const plugin = eslintCompatPlugin({
+const plugin: Plugin = eslintCompatPlugin({
   meta: {
     name: 'stylistic',
   },

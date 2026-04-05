@@ -1,10 +1,12 @@
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `eslint/max-lines`.
  * Split the file into smaller modules instead of suppressing the line limit.
  */
-export const noDisableMaxLines = banDisableRule({
+export const noDisableMaxLines: CreateOnceRule = banDisableRule({
   ruleId: 'eslint/max-lines',
   description: 'Disallow disabling max-lines. Split the file into smaller modules.',
   message:

@@ -17,7 +17,7 @@ import { join, } from 'node:path';
 /**
  * Root directory for all spawn coordination files.
  */
-const SPAWN_RESULTS_DIR = join(
+const SPAWN_RESULTS_DIR: string = join(
   process.env.HOME ?? '/tmp',
   '.claude',
   'spawn-results',
@@ -27,7 +27,7 @@ const SPAWN_RESULTS_DIR = join(
  * Directory for PID-to-session-identity mapping files.
  * Written by SessionStart hook, read by CLI tool.
  */
-const BY_PID_DIR = join(
+const BY_PID_DIR: string = join(
   SPAWN_RESULTS_DIR,
   '.by-pid',
 );
@@ -37,7 +37,7 @@ const BY_PID_DIR = join(
  * Created by SessionStart hook, updated by Stop and SessionEnd hooks,
  * read and renamed by the inject check.
  */
-const SPAWNS_DIR = join(
+const SPAWNS_DIR: string = join(
   SPAWN_RESULTS_DIR,
   'spawns',
 );

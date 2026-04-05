@@ -19,11 +19,12 @@
  */
 import { exec } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import { hXml as h } from '@monochromatic-dev/module-hyperscript/ts';
-import { findUp } from 'find-up';
-import { spawn as nodeSpawn } from 'node:child_process';
-import { once } from 'node:events';
-import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import { findUp, } from 'find-up';
+import { spawn as nodeSpawn, } from 'node:child_process';
+import { once, } from 'node:events';
+import { mkdir, writeFile, } from 'node:fs/promises';
+import { dirname, join, resolve, } from 'node:path';
 
 /** OCI image tag produced by the podman build step. */
 const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
@@ -49,27 +50,10 @@ const PACKAGE_DIR = resolve(dirname(packageJson));
 
 /**
  * Absolute path to the monorepo root.
- * Found by walking up to find a `mise.toml` containing a `[monorepo]` section.
  * Used as the podman build context so the Containerfile can COPY from
  * sibling packages (e.g. `packages/config/dotfiles/`).
  */
-const monorepoMiseToml = await findUp(
-  async function isMonorepoRoot(directory) {
-    try {
-      const content = await readFile(join(directory, 'mise.toml'), 'utf8');
-      if (content.includes('[monorepo]\n')) {
-        return join(directory, 'mise.toml');
-      }
-    } catch {
-      // mise.toml not found in this directory, keep searching.
-    }
-    return undefined;
-  },
-);
-if (monorepoMiseToml === undefined) {
-  throw new Error('could not find monorepo root (no mise.toml with [monorepo] section)');
-}
-const MONOREPO_ROOT = resolve(dirname(monorepoMiseToml));
+const MONOREPO_ROOT = await findMonorepoRoot();
 
 /**
  * Directory where bootc-image-builder writes its output.

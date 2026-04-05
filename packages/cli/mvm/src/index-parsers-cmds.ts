@@ -17,6 +17,7 @@ import {
   multiple,
   optional,
 } from '@optique/core/modifiers';
+import type { Parser, } from '@optique/core/parser';
 import {
   argument,
   command,
@@ -26,6 +27,14 @@ import {
 import { string, } from '@optique/core/valueparser';
 
 import type { MvmArgs, } from './index-parsers.ts';
+
+/**
+ * Subcommand parser producing MvmArgs.
+ * Uses `any` for TState because Parser is invariant in TState
+ * and the deeply-nested state types are opaque implementation details.
+ */
+// oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
+type SubcommandParser = Parser<'sync', MvmArgs, any>;
 
 //region Shared value parsers -- reusable metavar-labeled string parsers
 
@@ -63,7 +72,7 @@ const commandToken = string({ metavar: 'COMMAND', },);
 //region Subcommand parsers
 
 /** Parser for `create <name> [--from SOURCE] [--image IMAGE]` */
-export const createCmd = command(
+export const createCmd: SubcommandParser = command(
   'create',
   map(
     object({ name: argument(name,), from: fromOption, image: imageOption, },),
@@ -77,7 +86,7 @@ export const createCmd = command(
 );
 
 /** Parser for `shell <name>` */
-export const shellCmd = command(
+export const shellCmd: SubcommandParser = command(
   'shell',
   map(
     object({ name: argument(name,), },),
@@ -89,7 +98,7 @@ export const shellCmd = command(
 );
 
 /** Parser for `list` (alias `ls`) */
-export const listCmd = command(
+export const listCmd: SubcommandParser = command(
   'list',
   map(
     object({},),
@@ -101,7 +110,7 @@ export const listCmd = command(
 );
 
 /** Parser for `ls` (hidden alias of `list`) */
-export const lsCmd = command(
+export const lsCmd: SubcommandParser = command(
   'ls',
   map(
     object({},),
@@ -140,7 +149,7 @@ const destroyNameParser = map(
 );
 
 /** Parser for `destroy` */
-export const destroyCmd = command(
+export const destroyCmd: SubcommandParser = command(
   'destroy',
   or(
     destroyAllParser,
@@ -150,7 +159,7 @@ export const destroyCmd = command(
 );
 
 /** Parser for `rm` (hidden alias of `destroy`) */
-export const rmCmd = command(
+export const rmCmd: SubcommandParser = command(
   'rm',
   or(
     destroyAllParser,
@@ -160,7 +169,7 @@ export const rmCmd = command(
 );
 
 /** Parser for `exec <name> -- <command...>` -- run a command in an existing VM */
-export const execCmd = command(
+export const execCmd: SubcommandParser = command(
   'exec',
   map(
     object({ name: argument(name,), args: multiple(argument(commandToken,),), },),
@@ -172,7 +181,7 @@ export const execCmd = command(
 );
 
 /** Parser for `run [--from SOURCE] -- <command...>` -- ephemeral VM */
-export const runCmd = command(
+export const runCmd: SubcommandParser = command(
   'run',
   map(
     object({
@@ -189,7 +198,7 @@ export const runCmd = command(
 );
 
 /** Parser for `update` -- re-downloads and rebuilds all template images */
-export const updateCmd = command(
+export const updateCmd: SubcommandParser = command(
   'update',
   map(
     object({},),
@@ -204,7 +213,7 @@ export const updateCmd = command(
 const path = string({ metavar: 'PATH', },);
 
 /** Parser for `push <name> <hostPath> <guestPath>` -- copy file from host into VM. */
-export const pushCmd = command(
+export const pushCmd: SubcommandParser = command(
   'push',
   map(
     object({
@@ -227,7 +236,7 @@ export const pushCmd = command(
 );
 
 /** Parser for `pull <name> <guestPath> <hostPath>` -- copy file from VM to host. */
-export const pullCmd = command(
+export const pullCmd: SubcommandParser = command(
   'pull',
   map(
     object({

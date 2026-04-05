@@ -84,13 +84,18 @@ function logError(msg: string,): void {
  * log.error("[cycle] ffmpeg failed");
  * ```
  */
-export const log = {
+export const log: {
   /** Log at debug priority. */
-  debug: logDebug,
+  debug: (msg: string) => void;
   /** Log at info priority. */
-  info: logInfo,
+  info: (msg: string) => void;
   /** Log at warning priority. */
-  warn: logWarn,
+  warn: (msg: string) => void;
   /** Log at err priority. */
+  error: (msg: string) => void;
+} = {
+  debug: logDebug,
+  info: logInfo,
+  warn: logWarn,
   error: logError,
 };

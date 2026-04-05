@@ -22,7 +22,7 @@ import {
 } from '../tsdoc-utils.ts';
 
 /** Regex matching a TSDoc block comment line prefix ` * `. */
-export const COMMENT_LINE_PREFIX = /^ *\*/;
+export const COMMENT_LINE_PREFIX: RegExp = /^ *\*/;
 
 /**
  * Splits a block comment value into its constituent lines.

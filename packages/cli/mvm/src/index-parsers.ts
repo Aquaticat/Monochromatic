@@ -5,6 +5,7 @@
  */
 
 import { or, } from '@optique/core/constructs';
+import type { Parser, } from '@optique/core/parser';
 
 import {
   createCmd,
@@ -66,8 +67,9 @@ export type MvmArgs =
 
 //endregion Result types
 
+// oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
 /** Combined top-level parser across all subcommands */
-export const parser = or(
+export const parser: Parser<'sync', MvmArgs, any> = or(
   createCmd,
   shellCmd,
   listCmd,

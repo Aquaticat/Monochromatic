@@ -1,3 +1,5 @@
+import type { CreateOnceRule, } from '@oxlint/plugins';
+
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
@@ -7,7 +9,7 @@ import { banDisableRule, } from './_ban-disable-factory.ts';
  * for the three-way conflict (TS7030 / no-useless-return / no-useless-undefined)
  * is always `return undefined;`. There is never a reason to disable no-useless-return.
  */
-export const noDisableNoUselessReturn = banDisableRule({
+export const noDisableNoUselessReturn: CreateOnceRule = banDisableRule({
   ruleId: 'no-useless-return',
   description: 'Disallow disabling no-useless-return. Use return undefined instead.',
   message:

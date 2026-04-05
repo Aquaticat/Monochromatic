@@ -40,7 +40,7 @@ export const MAX_REPEATED_CHARS = 3;
  * Falls back to empty string if `$HOME` is unset, which disables path collapsing
  * without breaking the filter.
  */
-export const HOME_DIR = process.env['HOME'] ?? '';
+export const HOME_DIR: string = process.env['HOME'] ?? '';
 
 /**
  * Canonical (real) path to the home directory, following symlinks.
@@ -56,7 +56,7 @@ export const HOME_DIR = process.env['HOME'] ?? '';
  * REAL_HOME_DIR = "/var/home/user"
  * ```
  */
-export const REAL_HOME_DIR = (function resolveRealHome(): string {
+export const REAL_HOME_DIR: string = (function resolveRealHome(): string {
   try {
     if (HOME_DIR === '')
       return '';
@@ -83,7 +83,7 @@ export const REAL_HOME_DIR = (function resolveRealHome(): string {
  * "/home/user/project/src/index.ts" → "src/index.ts"
  * ```
  */
-export const CWD_PREFIX = (function resolveCwdPrefix(): string {
+export const CWD_PREFIX: string = (function resolveCwdPrefix(): string {
   try {
     const cwd = process.cwd();
     return cwd.endsWith('/',) ? cwd : `${cwd}/`;
@@ -106,7 +106,7 @@ export const CWD_PREFIX = (function resolveCwdPrefix(): string {
  * ALT_CWD_PREFIX = "/home/user/project/"      (symlink form via $HOME)
  * ```
  */
-export const ALT_CWD_PREFIX = (function resolveAltCwdPrefix(): string {
+export const ALT_CWD_PREFIX: string = (function resolveAltCwdPrefix(): string {
   if (CWD_PREFIX === '' || REAL_HOME_DIR === '' || HOME_DIR === '')
     return '';
 
@@ -139,7 +139,7 @@ export const ALT_CWD_PREFIX = (function resolveAltCwdPrefix(): string {
  *  mode change 100644 => 100755 scripts/run.sh
  * ```
  */
-export const GIT_FILE_MODE_PATTERN = /^ (create|delete|copy|rename|mode change) mode /;
+export const GIT_FILE_MODE_PATTERN: RegExp = /^ (create|delete|copy|rename|mode change) mode /;
 
 /**
  * Patterns matching git transport progress lines from push/pull/fetch/clone.
@@ -159,7 +159,7 @@ export const GIT_FILE_MODE_PATTERN = /^ (create|delete|copy|rename|mode change) 
  * remote: Resolving deltas: 100% (15/15), completed with 10 local objects.
  * ```
  */
-export const GIT_TRANSPORT_PROGRESS_PATTERNS = [
+export const GIT_TRANSPORT_PROGRESS_PATTERNS: readonly RegExp[] = [
   /^Enumerating objects:/,
   /^Counting objects:/,
   /^Compressing objects:/,
@@ -181,7 +181,7 @@ export const GIT_TRANSPORT_PROGRESS_PATTERNS = [
  * These lines are artifacts of running inside the Claude Code sandbox and are
  * not part of the command's actual output.
  */
-export const SANDBOX_NOISE_PATTERNS = [
+export const SANDBOX_NOISE_PATTERNS: readonly RegExp[] = [
   /**
    * Mise cache write failures caused by the sandbox's read-only filesystem.
    * These appear on nearly every mise invocation and repeat per tool version,

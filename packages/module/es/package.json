@@ -12,6 +12,7 @@
     },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*",
+    "./find-monorepo-root": "./src/path/find-monorepo-root.ts",
     "./binary": "./src/types/t function/f/t function/binary/r s/p p/index.ts",
     "./create-observable": "./src/types/t object/t proxy/f/t any/createObservable/r s/p p/index.ts",
     "./create-observable-async": "./src/types/t object/t proxy/f/t any/createObservable/r a/p p/index.ts",
@@ -40,7 +41,6 @@
     "ts-pattern": "catalog:",
     "happy-rusty": "catalog:",
     "@csstools/css-tokenizer": "catalog:",
-    "find-up": "catalog:",
     "@cspotcode/outdent": "catalog:",
     "superjson": "catalog:",
     "decircular": "catalog:",
@@ -49,6 +49,7 @@
     "@monochromatic-dev/module-test": "workspace:*"
   },
   "dependencies": {
+    "happy-opfs": "catalog:"
   },
   "version": "0.0.125",
   "repository": {
