@@ -9,7 +9,7 @@ import {
   createSinon,
   type DisposableSandbox,
 } from './sinon.ts';
-import { withTimeout, } from './with-timeout.ts';
+import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 
 /**
  * Context passed to each test function.

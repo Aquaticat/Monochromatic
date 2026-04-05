@@ -2,6 +2,10 @@
  * Wraps a promise with a timeout that rejects if the promise
  * does not settle within the specified duration.
  *
+ * Uses `Promise.race` to race the input promise against a
+ * rejecting timer, with `using` for automatic cleanup of the
+ * timer handle regardless of outcome.
+ *
  * @param promise - Promise to race against the timeout
  *
  * @param ms - Timeout duration in milliseconds
@@ -14,18 +18,27 @@
  *
  * @example
  * ```ts
- * await withTimeout(fetch(url), 5000, 'fetch user data');
+ * await $({ promise: fetch(url), ms: 5000, label: 'fetch user data' });
+ * ```
+ *
+ * @example
+ * ```ts
+ * const result = await $({
+ *   promise: longRunningTask(),
+ *   ms: 10_000,
+ *   label: 'long running task',
+ * });
  * ```
  */
-export async function withTimeout<T>({
+export async function $<T>({
   promise,
   ms,
   label,
 }: {
-  label: string;
-  ms: number;
-  promise: Promise<T>;
-}): Promise<T> {
+  readonly label: string;
+  readonly ms: number;
+  readonly promise: Promise<T>;
+},): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined = undefined;
 
   using _cleanup = {
@@ -38,7 +51,7 @@ export async function withTimeout<T>({
 
   return await Promise.race([
     promise,
-    // oxlint-disable-next-line avoid-new -- Promise.race requires a rejecting promise; no async/await alternative exists
+    // oxlint-disable-next-line promise/avoid-new -- Promise.race requires a rejecting promise; no async/await alternative exists
     new Promise<never>(function rejectAfterTimeout(
       _resolve,
       reject,

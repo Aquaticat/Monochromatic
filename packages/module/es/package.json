@@ -19,7 +19,8 @@
     "./not-nullish-or-throw": "./src/types/t any/f/t any/notNullishOrThrow/r s/p p/index.ts",
     "./tagged": "./src/types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts",
     "./memoize-async": "./src/types/t function/f/t function/memoize/r a/p n/index.ts",
-    "./wait": "./src/types/t object/t promise/f/t number/wait/r a/p p/index.ts"
+    "./wait": "./src/types/t object/t promise/f/t number/wait/r a/p p/index.ts",
+    "./with-timeout": "./src/types/t object/t promise/f/t object/withTimeout/r a/p p/index.ts"
   },
   "files": [
     "dist/final",
@@ -43,7 +44,8 @@
     "superjson": "catalog:",
     "decircular": "catalog:",
     "safe-stringify": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@monochromatic-dev/module-test": "workspace:*"
   },
   "dependencies": {
   },

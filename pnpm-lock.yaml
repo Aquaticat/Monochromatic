@@ -1096,6 +1096,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: 'link:'
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
       '@total-typescript/ts-reset':
         specifier: 'catalog:'
         version: 0.6.1

@@ -3,7 +3,7 @@ import { $ as defaultLogger, } from '@monochromatic-dev/module-es/logger';
 import type { $ as Logger, } from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 
 import type { ItResult, } from './it.ts';
-import { withTimeout, } from './with-timeout.ts';
+import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 
 /**
  * Result returned by a completed suite, mirroring {@link ItResult}.

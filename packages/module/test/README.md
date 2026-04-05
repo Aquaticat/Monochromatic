@@ -90,7 +90,7 @@ Jest-style matchers backed by chai:
 - **Strings**: `toMatch` (regex or string)
 - **Collections**: `toContain` (reference equality), `toContainEqual` (deep equality), `toHaveLength`, `toHaveProperty`, `toMatchObject`
 - **Errors**: `toThrow` (bare, message, regex, or class)
-- **Types**: `toBeInstanceOf`
+- **Types**: `toBeInstanceOf`, `toBeTypeOf` (native `typeof` check)
 - **Predicates**: `toSatisfy` (custom predicate function)
 - **Negation**: `expect(x).not.toBe(y)`
 - **Promise rejection**: `await expect(promise).rejects.toBeInstanceOf(Error)`
@@ -99,8 +99,9 @@ Jest-style matchers backed by chai:
 Sinon-chai matchers for stubs and spies:
 
 - `toHaveBeenCalled`, `toHaveBeenCalledTimes`, `toHaveBeenCalledWith`
-- `toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`
-- `toHaveReturnedWith`
+- `toHaveBeenCalledExactlyOnceWith`, `toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`
+- `toHaveReturned`, `toHaveReturnedTimes`, `toHaveReturnedWith`
+- `toHaveLastReturnedWith`, `toHaveNthReturnedWith`
 
 Asymmetric matchers for use inside `toHaveBeenCalledWith`:
 
@@ -541,6 +542,259 @@ it({
     );
   },
 });
+```
+
+## Vitest parity
+
+Systematic comparison against the [Vitest API](https://vitest.dev/api/) surface.
+Items are grouped by category with a status:
+**supported** (direct equivalent),
+**equivalent** (same functionality via different API),
+or **omitted** (intentional gap with rationale).
+
+### Test suite API
+
+**Supported:**
+
+- `describe(name, fn)` -- `describe({ name, children })`
+- `describe.skip` -- `describe({ skip: true })` or `describe({ skip: 'reason' })`
+- `describe.concurrent` -- default behavior; suites run children concurrently via `Promise.allSettled`
+- `describe.sequential` -- `describe({ sequential: true })` or `describe({ sequential: 'reason' })`
+- `test` / `it` -- `it({ name, fn })`
+- `test.skip` -- `it({ skip: true })` or `it({ skip: 'reason' })`
+- `test.fails` -- `it({ fails: true })` or `it({ fails: 'reason' })`
+- `test.todo` -- `it({ name: 'TODO: ...', skip: true, fn: async () => {} })`
+- `describe.todo` -- same pattern with `describe({ skip: true })`
+
+**Equivalent:**
+
+- `test.skipIf(condition)` -- `it({ skip: condition || false })`
+- `test.runIf(condition)` -- `it({ skip: !condition || false })`
+- `describe.skipIf` / `describe.runIf` -- same pattern with the `skip` option
+- `test.each(cases)` / `test.for(cases)` -- `cases.map(c => it({ name: ..., fn: ... }))` passed as `children`
+- `describe.each` / `describe.for` -- same `.map()` pattern with `describe`
+- `test.concurrent` -- default behavior; all `it` calls start immediately when passed as promises
+- `describe.timeout` -- `describe({ timeout: ms })`
+- `test.timeout` -- `it({ timeout: ms })`
+- `test.repeats` -- `it({ repeats: n })` (Vitest has `retry` which retries on failure;
+  our `repeats` always re-runs regardless of outcome)
+
+**Omitted:**
+
+- **`test.only` / `describe.only`** --
+  everything is eager execution; there is no central runner to filter through.
+  Pipe test output to `rg` to focus on a specific test name.
+- **`describe.shuffle`** --
+  randomizing test order is a workaround for shared-state bugs.
+  Concurrent-by-default execution already surfaces those immediately --
+  if tests pass concurrently, order is irrelevant.
+- **`test.extend` / fixtures** --
+  adds a fixtures system with automatic setup/teardown.
+  Plain functions called explicitly in each test serve the same purpose
+  without hiding control flow.
+- **`test.scoped` / `test.override`** -- fixture-related; same reasoning as `test.extend`
+- **`bench`** -- benchmarking is a separate concern; use dedicated benchmarking tools
+
+### Lifecycle hooks
+
+**Equivalent:**
+
+- `beforeEach` / `afterEach` -- define plain functions; call at start/end of each `fn`.
+  See the "Setup and teardown" usage section.
+- `beforeAll` / `afterAll` -- top-level statements before and after `describe`.
+- `aroundEach` / `aroundAll` -- compose before/after functions manually
+
+**Omitted:**
+
+- **`onTestFinished` / `onTestFailed`** --
+  use try/catch or `await using` within the test body for cleanup-on-failure patterns.
+  No implicit hook system means no hidden execution order.
+
+### expect matchers
+
+**Supported** (direct 1:1 equivalents):
+
+- **Equality**: `toBe`, `toEqual`, `toStrictEqual`
+- **Truthiness**: `toBeTruthy`, `toBeFalsy`, `toBeNull`, `toBeDefined`, `toBeUndefined`, `toBeNaN`
+- **Numeric**: `toBeGreaterThan`, `toBeGreaterThanOrEqual`, `toBeLessThan`, `toBeLessThanOrEqual`, `toBeCloseTo`
+- **Type**: `toBeInstanceOf`, `toBeTypeOf`
+- **String/pattern**: `toMatch`
+- **Collections**: `toContain`, `toContainEqual`, `toHaveLength`, `toHaveProperty`, `toMatchObject`
+- **Error**: `toThrow` (bare, message string, regex, error class)
+- **Predicate**: `toSatisfy`
+- **Negation**: `not` modifier
+- **Promise**: `resolves`, `rejects` modifiers
+
+**Omitted:**
+
+- **`toBeNullable`** --
+  `expect(x).toSatisfy(v => v === null || v === undefined)` covers this.
+  Not common enough to warrant a dedicated matcher.
+- **`toBeOneOf`** --
+  `expect([a, b, c]).toContain(actual)` or `toSatisfy` with `includes` achieves the same check.
+- **Snapshot matchers** (`toMatchSnapshot`, `toMatchInlineSnapshot`, `toMatchFileSnapshot`,
+  `toThrowErrorMatchingSnapshot`, `toThrowErrorMatchingInlineSnapshot`) --
+  snapshot tests encode serialization format as a correctness criterion,
+  causing spurious failures on whitespace, key ordering, or formatter changes.
+  They discourage writing targeted assertions
+  and make diffs harder to review than explicit expected values.
+
+### Spy and mock matchers
+
+**Supported** (sinon-chai equivalents):
+
+- `toHaveBeenCalled`
+- `toHaveBeenCalledTimes`
+- `toHaveBeenCalledWith`
+- `toHaveBeenCalledExactlyOnceWith`
+- `toHaveBeenLastCalledWith`
+- `toHaveBeenNthCalledWith`
+- `toHaveReturned`
+- `toHaveReturnedTimes`
+- `toHaveReturnedWith`
+- `toHaveLastReturnedWith`
+- `toHaveNthReturnedWith`
+
+**Omitted:**
+
+- **`toHaveBeenCalledBefore` / `toHaveBeenCalledAfter`** --
+  sinon tracks `callCount` and call ordering natively;
+  compare `spy.calledBefore(otherSpy)` directly in a `toSatisfy` if needed.
+- **`toHaveResolved*`** (`toHaveResolved`, `toHaveResolvedTimes`, `toHaveResolvedWith`,
+  `toHaveLastResolvedWith`, `toHaveNthResolvedWith`) --
+  async spy result tracking requires Vitest's internal mock wrapper.
+  Use `await` + standard matchers on the return value instead.
+
+### Asymmetric matchers
+
+**Supported:**
+
+- `expect.anything()`
+- `expect.any(Constructor)`
+- `expect.arrayContaining(arr)`
+- `expect.objectContaining(obj)`
+- `expect.stringContaining(str)`
+- `expect.stringMatching(pattern)`
+
+**Omitted:**
+
+- **`expect.closeTo`** --
+  our asymmetric matchers are sinon matchers, so `closeTo` would only work
+  inside `toHaveBeenCalledWith` but not inside `toEqual` --
+  an inconsistency that would confuse users expecting Vitest behavior.
+  Use `toBeCloseTo` directly for float comparisons.
+- **`expect.not.*`** (negated asymmetric matchers) --
+  `expect.not.stringContaining(...)`, `expect.not.objectContaining(...)`, etc.
+  Too niche to justify the added API surface.
+- **`expect.schemaMatching`** --
+  Standard Schema v1 validation is a separate concern; validate before asserting.
+- **`expect.toBeOneOf`** (asymmetric) --
+  same rationale as the regular `toBeOneOf` matcher.
+
+### Assertion control
+
+**Supported:**
+
+- `expect.assertions(n)` -- via scoped `expect` from `TestContext`
+- `expect.hasAssertions()` -- via scoped `expect` from `TestContext`
+
+**Omitted:**
+
+- **`expect.unreachable(message?)`** --
+  `throw new Error(message)` is equivalent and more explicit.
+- **`expect.soft`** --
+  soft assertions collect all failures instead of short-circuiting.
+  Since suites already run children concurrently and report all failures
+  via `AggregateError`, the benefit is narrow --
+  it only matters within a single `it` with many assertions.
+- **`expect.poll`** --
+  retry-based assertions belong in application code (`waitFor` patterns),
+  not in the assertion library.
+- **`expect.extend`** --
+  custom matchers add framework-specific API surface.
+  Use `toSatisfy` with a predicate function instead.
+- **`expect.addSnapshotSerializer`** -- snapshot testing is omitted entirely
+- **`expect.addEqualityTesters`** -- chai's deep equality is sufficient;
+  custom equality logic belongs in the comparison function, not the test framework
+
+### Mocking and spies (vi object)
+
+Sinon replaces Vitest's `vi` object.
+The `TestContext.sinon` sandbox auto-restores after each test.
+
+**Equivalent:**
+
+- `vi.fn(impl?)` -- `sinon.stub()` or `sinon.spy(impl)`
+- `vi.spyOn(obj, method)` -- `sinon.spy(obj, 'method')` or `sinon.stub(obj, 'method')`
+- `vi.useFakeTimers()` -- `sinon.useFakeTimers()`
+- `vi.advanceTimersByTime(ms)` -- `clock.tick(ms)` (where `clock = sinon.useFakeTimers()`)
+- `vi.clearAllMocks()` -- `sinon.reset()`
+- `vi.restoreAllMocks()` -- `sinon.restore()` (automatic via `await using`)
+- `vi.isFakeTimers()` -- check `clock` reference existence
+- `vi.setSystemTime(date)` -- `sinon.useFakeTimers(date)` or `clock.setSystemTime(date)`
+- `vi.getRealSystemTime()` -- `Date.now()` before `useFakeTimers`, or `clock.now`
+- `vi.runAllTimers()` -- `clock.runAll()`
+- `vi.runAllTimersAsync()` -- `await clock.runAllAsync()`
+- `vi.advanceTimersToNextTimer()` -- `clock.next()`
+- `vi.advanceTimersToNextTimerAsync()` -- `await clock.nextAsync()`
+- `vi.runOnlyPendingTimers()` -- `clock.runToLast()`
+- `vi.getTimerCount()` -- `clock.countTimers()`
+- `vi.clearAllTimers()` -- `clock.reset()`
+- `MockInstance.mockReturnValue(v)` -- `stub.returns(v)`
+- `MockInstance.mockReturnValueOnce(v)` -- `stub.onFirstCall().returns(v)` (or `onSecondCall`, etc.)
+- `MockInstance.mockImplementation(fn)` -- `stub.callsFake(fn)`
+- `MockInstance.mockResolvedValue(v)` -- `stub.resolves(v)`
+- `MockInstance.mockRejectedValue(v)` -- `stub.rejects(v)`
+- `MockInstance.mockClear()` -- `spy.resetHistory()`
+- `MockInstance.mockReset()` -- `stub.reset()`
+- `MockInstance.mockRestore()` -- `stub.restore()` (automatic via sandbox)
+- `MockInstance.mock.calls` -- `spy.args`
+- `MockInstance.mock.results` -- `spy.returnValues` and `spy.exceptions`
+- `MockInstance.mock.lastCall` -- `spy.lastCall.args`
+- `MockInstance.mock.contexts` -- `spy.thisValues`
+- `MockInstance.mock.instances` -- not directly available; use `spy.thisValues` with `new`
+
+**Omitted:**
+
+- **`vi.mock` / `vi.doMock` / `vi.unmock`** (module mocking) --
+  requires intercepting ESM imports via a build transform or custom loader,
+  which contradicts the no-magic, no-custom-module-resolution design.
+  Restructure code to accept dependencies as parameters instead.
+- **`vi.importActual` / `vi.importMock`** -- module mocking infrastructure
+- **`vi.hoisted`** -- module mocking infrastructure
+- **`vi.mocked`** -- TypeScript narrowing helper for `vi.fn`; sinon types are already correct
+- **`vi.mockObject`** -- deep object mocking; create stubs explicitly for the methods needed
+- **`vi.stubEnv` / `vi.unstubAllEnvs`** -- set `process.env` directly; restore in afterEach
+- **`vi.stubGlobal` / `vi.unstubAllGlobals`** -- assign to `globalThis` directly; restore in afterEach
+- **`vi.resetModules`** -- module mocking infrastructure
+- **`vi.dynamicImportSettled`** -- module mocking infrastructure
+- **`vi.waitFor` / `vi.waitUntil`** -- retry/polling utilities belong in application code,
+  not the test framework
+- **`vi.setConfig` / `vi.resetConfig`** -- no per-file configuration to change
+- **`vi.defineHelper`** -- error stack trace rewriting; our plain `Error` cause chains
+  already provide clear traceability
+
+### Type testing
+
+**Supported:**
+
+- `expectTypeOf` -- re-exported from the [expect-type](https://www.npmjs.com/package/expect-type) package.
+  All `expectTypeOf` matchers from Vitest are available since Vitest uses the same library.
+
+**Omitted:**
+
+- **`assertType`** -- requires Vitest's `--typecheck` mode.
+  `expectTypeOf` covers the same use cases without a special runner mode.
+
+### Chai assert API
+
+Vitest re-exports the full Chai `assert` API (100+ methods).
+This package does not re-export `assert` --
+the Jest-style `expect` API is the single assertion interface.
+Chai is a direct dependency, so users who want `assert` can import it directly:
+
+```ts
+import { assert } from 'chai';
 ```
 
 ## Self-test

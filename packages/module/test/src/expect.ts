@@ -37,11 +37,13 @@ export type MatcherSet = {
   toBeNaN: () => void;
   toBeNull: () => void;
   toBeTruthy: () => void;
+  toBeTypeOf: (expected: 'bigint' | 'boolean' | 'function' | 'number' | 'object' | 'string' | 'symbol' | 'undefined',) => void;
   toBeUndefined: () => void;
   toContain: (expected: unknown,) => void;
   toContainEqual: (expected: unknown,) => void;
   toEqual: (expected: unknown,) => void;
   toHaveBeenCalled: () => void;
+  toHaveBeenCalledExactlyOnceWith: (...args: readonly unknown[]) => void;
   toHaveBeenCalledTimes: (count: number,) => void;
   toHaveBeenCalledWith: (...args: readonly unknown[]) => void;
   toHaveBeenLastCalledWith: (...args: readonly unknown[]) => void;
@@ -51,7 +53,11 @@ export type MatcherSet = {
     path: string,
     value?: unknown,
   ) => void;
+  toHaveReturned: () => void;
+  toHaveReturnedTimes: (count: number,) => void;
   toHaveReturnedWith: (expected: unknown,) => void;
+  toHaveLastReturnedWith: (expected: unknown,) => void;
+  toHaveNthReturnedWith: (n: number, expected: unknown,) => void;
   toMatch: (expected: string | RegExp,) => void;
   toMatchObject: (expected: Record<string, unknown>,) => void;
   toSatisfy: (predicate: (value: unknown,) => boolean,) => void;
@@ -169,6 +175,11 @@ function buildMatchers(a: Chai.Assertion, actual: unknown,): MatcherSet {
       a.to.not.be.ok;
     },
 
+    toBeTypeOf: function toBeTypeOf(expected: 'bigint' | 'boolean' | 'function' | 'number' | 'object' | 'string' | 'symbol' | 'undefined',): void {
+
+      a.to.be.a(expected,);
+    },
+
     toHaveLength: function toHaveLength(expected: number,): void {
 
       a.to.have.lengthOf(expected,);
@@ -224,6 +235,14 @@ function buildMatchers(a: Chai.Assertion, actual: unknown,): MatcherSet {
       a.to.have.been.called;
     },
 
+    toHaveBeenCalledExactlyOnceWith: function toHaveBeenCalledExactlyOnceWith(...args: readonly unknown[]): void {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      const spy = actual as SinonSpy;
+
+      chaiExpect(spy.callCount, 'expected spy to have been called exactly once',).to.equal(1,);
+      chaiExpect(spy.firstCall.args,).to.deep.equal([...args,],);
+    },
+
     toHaveBeenCalledTimes: function toHaveBeenCalledTimes(count: number,): void {
 
       a.to.have.callCount(count,);
@@ -252,9 +271,47 @@ function buildMatchers(a: Chai.Assertion, actual: unknown,): MatcherSet {
       chaiExpect(nthCall.args,).to.deep.equal([...args,],);
     },
 
+    toHaveReturned: function toHaveReturned(): void {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      const spy = actual as SinonSpy;
+      const hasReturned = spy.getCalls().some(function didReturn(call,) {
+        return call.exception === undefined;
+      },);
+
+      chaiExpect(hasReturned, 'expected spy to have returned at least once',).to.equal(true,);
+    },
+
+    toHaveReturnedTimes: function toHaveReturnedTimes(count: number,): void {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      const spy = actual as SinonSpy;
+      const returnCount = spy.getCalls().filter(function didReturn(call,) {
+        return call.exception === undefined;
+      },).length;
+
+      chaiExpect(returnCount, `expected spy to have returned ${String(count,)} times`,).to.equal(count,);
+    },
+
     toHaveReturnedWith: function toHaveReturnedWith(expected: unknown,): void {
 
       a.to.have.returned(expected,);
+    },
+
+    toHaveLastReturnedWith: function toHaveLastReturnedWith(expected: unknown,): void {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      const spy = actual as SinonSpy;
+      const lastCall = spy.lastCall;
+
+      chaiExpect(lastCall, 'expected spy to have been called at least once',).to.not.equal(null,);
+      chaiExpect(lastCall.returnValue,).to.deep.equal(expected,);
+    },
+
+    toHaveNthReturnedWith: function toHaveNthReturnedWith(n: number, expected: unknown,): void {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      const spy = actual as SinonSpy;
+      const nthCall = spy.getCall(n - 1,);
+
+      chaiExpect(nthCall, `expected spy to have been called at least ${String(n,)} times`,).to.not.equal(null,);
+      chaiExpect(nthCall.returnValue,).to.deep.equal(expected,);
     },
 
     //endregion sinon-chai matchers
@@ -283,6 +340,7 @@ const MATCHER_KEYS = [
   'toBeNaN',
   'toBeNull',
   'toBeTruthy',
+  'toBeTypeOf',
   'toBeFalsy',
   'toHaveLength',
   'toHaveProperty',
@@ -291,11 +349,16 @@ const MATCHER_KEYS = [
   'toBeInstanceOf',
   'toSatisfy',
   'toHaveBeenCalled',
+  'toHaveBeenCalledExactlyOnceWith',
   'toHaveBeenCalledTimes',
   'toHaveBeenCalledWith',
   'toHaveBeenLastCalledWith',
   'toHaveBeenNthCalledWith',
+  'toHaveReturned',
+  'toHaveReturnedTimes',
   'toHaveReturnedWith',
+  'toHaveLastReturnedWith',
+  'toHaveNthReturnedWith',
 ] as const satisfies readonly (keyof MatcherSet)[];
 
 //endregion Matcher set builder

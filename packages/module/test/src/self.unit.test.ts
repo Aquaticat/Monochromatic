@@ -13,4 +13,3 @@ import './expect.unit.test.ts';
 import './sinon.unit.test.ts';
 import './it.unit.test.ts';
 import './describe.unit.test.ts';
-import './with-timeout.unit.test.ts';
