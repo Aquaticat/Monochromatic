@@ -66,8 +66,22 @@ export class LspClient {
     params: unknown;
   },) => void;
 
+  /** Callback invoked when the process exits. */
+  #onExit: (event: {
+    unexpected: boolean;
+    code: number | null;
+  },) => void;
+
   /** Whether the LSP initialize handshake has completed. */
   #initialized = false;
+
+  /**
+   * Whether a graceful shutdown has been initiated via {@link shutdown}.
+   */
+  #shuttingDown = false;
+
+  /** Whether the child process has exited (gracefully or not). */
+  #dead = false;
 
   /** Server capabilities reported during initialization. */
   capabilities: LspServerCapabilities = {};
@@ -97,6 +111,7 @@ export class LspClient {
     env,
     l,
     onNotification,
+    onExit,
   }: {
     command: string;
     args: readonly string[];
@@ -108,6 +123,10 @@ export class LspClient {
       method: string;
       params: unknown;
     },) => void;
+    onExit: (event: {
+      unexpected: boolean;
+      code: number | null;
+    },) => void;
   },) {
     this.#name = name;
     this.#l = tagged({
@@ -115,6 +134,7 @@ export class LspClient {
       l,
     },);
     this.#onNotification = onNotification;
+    this.#onExit = onExit;
 
     this.#proc = spawn(
       command,
@@ -149,10 +169,34 @@ export class LspClient {
         clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,);
       },
     );
+
+    /**
+     * Local refs for the exit handler, which cannot capture `this`
+     * because it's passed as a plain function to the 'exit' event.
+     */
+    const client = this;
     this.#proc.on(
       'exit',
       function handleExit(code,) {
-        clientLog.info(`exited with code ${String(code,)}`,);
+        client.#dead = true;
+        const unexpected = !client.#shuttingDown;
+        if (unexpected) {
+          clientLog.error(`crashed with code ${String(code,)}`,);
+          /** Reject all pending requests so callers don't hang forever. */
+          for (const [, entry,] of client.#pending.entries()) {
+            if (entry.timeoutId !== null)
+              clearTimeout(entry.timeoutId,);
+            entry.reject(new Error(`LSP server crashed (exit code ${String(code,)})`,),);
+          }
+          client.#pending.clear();
+        }
+        else {
+          clientLog.info(`exited with code ${String(code,)}`,);
+        }
+        client.#onExit({
+          unexpected,
+          code,
+        },);
       },
     );
   }
@@ -298,6 +342,7 @@ export class LspClient {
    * Falls back to killing the process if shutdown fails.
    */
   async shutdown(): Promise<void> {
+    this.#shuttingDown = true;
     try {
       await this.request({
         method: 'shutdown',
@@ -312,6 +357,15 @@ export class LspClient {
       this.#l.error(`shutdown failed, killing process: ${String(error,)}`,);
       this.#proc.kill();
     }
+  }
+
+  /**
+   * Whether the child process has exited (gracefully or by crashing).
+   *
+   * @returns true when the process is no longer running
+   */
+  get dead(): boolean {
+    return this.#dead;
   }
 
   /**

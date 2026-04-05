@@ -36,3 +36,37 @@ export async function computePipelineHash(
   );
   return sha256(source,);
 }
+
+/**
+ * Computes a combined pipeline hash from multiple source files.
+ *
+ * When any source file changes, all cached content entries are invalidated.
+ * File contents are joined with NUL bytes to prevent accidental collisions
+ * between files whose contents could be split differently.
+ *
+ * @param pipelineSourcePaths - paths to all pipeline-affecting source files
+ *
+ * @returns hex-encoded SHA-256 digest of the combined sources
+ *
+ * @example
+ * ```ts
+ * const hash = await computePipelineHashMulti([
+ *   'src/lib/markdown.ts',
+ *   'src/lib/rehype-highlight.ts',
+ *   'src/client/tags.ts',
+ * ]);
+ * ```
+ */
+export async function computePipelineHashMulti(
+  pipelineSourcePaths: readonly string[],
+): Promise<string> {
+  const sources = await Promise.all(
+    pipelineSourcePaths.map(function readSource(path,) {
+      return readFile(
+        path,
+        'utf8',
+      );
+    },),
+  );
+  return sha256(sources.join('\0',),);
+}

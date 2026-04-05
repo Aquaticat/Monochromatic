@@ -26,6 +26,7 @@ import type { Logger, } from './types.ts';
 // without improving navigability.
 export {
   computePipelineHash,
+  computePipelineHashMulti,
   sha256,
 } from './cache-hash.ts';
 

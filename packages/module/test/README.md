@@ -26,13 +26,17 @@ Suites run children concurrently via `Promise.allSettled`.
 This is the correct default for well-isolated tests:
 sequential execution masks shared-state bugs by making pass/fail order-dependent.
 Concurrent execution surfaces these immediately.
-`Promise.allSettled` is the most portable concurrency primitive available —
+`Promise.allSettled` is the most portable concurrency primitive available --
 it works identically across Node, Bun, Deno, and browsers
 without framework-specific worker pools or process forking.
 
+Concurrency is capped at 16 children at a time by default
+to avoid overwhelming shared resources (file handles, network connections, database pools).
+The limit is configurable per suite via the `concurrency` option.
+
 ## API
 
-### `describe({ name, children, sequential?, skip?, repeats?, timeout?, l? })`
+### `describe({ name, children, concurrency?, sequential?, skip?, repeats?, timeout?, l? })`
 
 Runs all children concurrently via `Promise.allSettled` by default.
 Set `sequential: true` to run children one at a time in array order.
@@ -48,6 +52,13 @@ the filename already reveals what is being tested.
 Children can be promises (eager, start immediately) or thunks (deferred).
 Use thunks with `sequential: true` to guarantee execution order.
 
+- **`concurrency`** (`number`, default `16`) -- maximum number of children running at the same time.
+  Only takes effect when `sequential` is falsy.
+  Pass `Infinity` to disable the limit entirely and run all children simultaneously.
+  Uses [`p-limit`](https://www.npmjs.com/package/p-limit) internally.
+  Children passed as bare promises are already running when the suite starts,
+  so the limit only gates thunks that have not yet been invoked --
+  pass thunks (arrow functions returning promises) to get accurate concurrency control
 - **`skip`** (`boolean | string`, default `false`) -- skips the entire suite without running any children;
   a string is logged as the reason
 - **`repeats`** (default `0`) -- number of additional runs of the entire suite;
@@ -373,6 +384,39 @@ await describe({
 });
 ```
 
+### Limiting concurrency
+
+Pass `concurrency` to cap how many children run at the same time.
+Children must be thunks for the limit to take effect --
+bare promises are already running when the suite starts.
+
+```ts
+await describe({
+  name: 'rate-limited API calls',
+  concurrency: 3,
+  children: Array.from({ length: 10 }, (_, index) =>
+    () => it({
+      name: `request ${index}`,
+      fn: async () => {
+        const res = await fetch(`/api/item/${index}`);
+        expect(res.status).toBe(200);
+      },
+    }),
+  ),
+});
+```
+
+Pass `Infinity` to remove the limit entirely
+(the default of 16 is usually sufficient):
+
+```ts
+await describe({
+  name: 'unbounded parallelism',
+  concurrency: Infinity,
+  children: tests,
+});
+```
+
 ### Parameterized tests
 
 Use `.map()` over test data to generate `it` calls.
@@ -647,6 +691,7 @@ or **omitted** (intentional gap with rationale).
 - `test.each(cases)` / `test.for(cases)` -- `cases.map(c => it({ name: ..., fn: ... }))` passed as `children`
 - `describe.each` / `describe.for` -- same `.map()` pattern with `describe`
 - `test.concurrent` -- default behavior; all `it` calls start immediately when passed as promises
+- Vitest `maxConcurrency` config -- `describe({ concurrency: n })` per suite (default 16; Vitest defaults to 5)
 - `describe.timeout` -- `describe({ timeout: ms })`
 - `test.timeout` -- `it({ timeout: ms })`
 - `test.repeats` -- `it({ repeats: n })` (Vitest has `retry` which retries on failure;

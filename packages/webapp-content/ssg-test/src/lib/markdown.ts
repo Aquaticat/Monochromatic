@@ -25,6 +25,8 @@ import {
 
 import type { Root, } from 'hast';
 
+import rehypeHighlight from './rehype-highlight.ts';
+
 /**
  * Creates a configured unified processor for MDX-to-HTML conversion.
  *
@@ -37,11 +39,13 @@ import type { Root, } from 'hast';
  * 6. `remark-rehype` -- convert markdown AST to HTML AST
  * 7. `rehype-slug` -- add `id` attributes to headings
  * 8. `rehype-autolink-headings` -- add anchor links to headings
- * 9. `rehype-stringify` -- serialize HTML AST to string
+ * 9. `rehype-highlight` -- pre-compute Lezer syntax highlight ranges
+ * 10. `rehype-stringify` -- serialize HTML AST to string
  *
- * Syntax highlighting happens client-side via the CSS Custom Highlight API.
- * Fenced code blocks produce `<pre><code class="language-xxx">` elements
- * that the client highlight script processes with Lezer parsers.
+ * Syntax highlighting ranges are pre-computed at build time by `rehype-highlight`,
+ * which embeds `data-hl-<group>` attributes on `<code>` elements.
+ * The client script reads these attributes to register CSS Custom Highlights
+ * without shipping any Lezer parser code to the browser.
  *
  * @returns configured unified processor (call `.process(content)` to render)
  *
@@ -74,6 +78,7 @@ export function createProcessor(): Processor<Root, Root, Root, Root, string> {
       },
     )
     .use(rehypeAutolinkHeadings,)
+    .use(rehypeHighlight,)
     .use(
       rehypeStringify,
       { allowDangerousHtml: true, },

@@ -27,7 +27,7 @@ import { postProcess, } from './build/post-process.ts';
 import { loadAllLocales, } from './i18n/i18n-util.sync.ts';
 import {
   buildManifest,
-  computePipelineHash,
+  computePipelineHashMulti,
   createCacheEntry,
   getCachedEntry,
   readCache,
@@ -56,8 +56,15 @@ const SITE_URL = 'https://aquati.cat';
 /** Content source directory. */
 const CONTENT_DIR = 'src/content';
 
-/** Pipeline config source path (for cache invalidation). */
-const PIPELINE_SOURCE = 'src/lib/markdown.ts';
+/**
+ * Pipeline source paths for cache invalidation.
+ * Changes to any of these files invalidate all cached content entries.
+ */
+const PIPELINE_SOURCES = [
+  'src/lib/markdown.ts',
+  'src/lib/rehype-highlight.ts',
+  'src/client/tags.ts',
+] as const;
 
 //region Build orchestration -- loads content, processes MDX, generates pages and assets
 
@@ -67,7 +74,7 @@ l.info('starting',);
 const [posts, cache, pipelineHash,] = await Promise.all([
   loadContent(CONTENT_DIR,),
   readCache({ l, },),
-  computePipelineHash(PIPELINE_SOURCE,),
+  computePipelineHashMulti(PIPELINE_SOURCES,),
 ],);
 
 l.info(`loaded ${posts.length} posts`,);

@@ -452,6 +452,338 @@ Since `zod` resolves fine through `node_modules`, the ambient declaration is ign
 - [typescript-go resolver.go](https://github.com/microsoft/typescript-go/blob/main/internal/module/resolver.go) -- extension priority and `paths` bypass
 - [typescript-go program.go](https://github.com/microsoft/typescript-go/blob/main/internal/compiler/program.go) -- `SkipTypeChecking` implementation
 
+## tsgo LSP panics on non-source files (SVG, PNG, etc.)
+
+### Problem
+
+The tsgo LSP crashes with a panic when a non-source file
+exists in a directory covered by a `tsconfig.json`:
+
+```txt
+panic: ScriptKind must be specified when parsing source file:
+  /var/home/user/Monochromatic/packages/module/test/architecture.svg
+```
+
+### Root cause
+
+The proximate cause is a missing `ScriptKind` guard in the LSP's `compilerHost.GetSourceFile`.
+When a file with an unrecognized extension (like `.svg`) reaches the parser,
+the parser panics because `ScriptKind` is `Unknown`.
+
+All source references below are from commit `c0703e66` of `microsoft/typescript-go`.
+
+**Step 1: `diskFile.Kind()` returns `ScriptKindUnknown` for `.svg`.**
+
+`internal/project/overlayfs.go:100-102`:
+```go
+func (f *diskFile) Kind() core.ScriptKind {
+	return core.GetScriptKindFromFileName(f.fileName)
+}
+```
+
+`internal/core/core.go:512-529` — the switch only handles TS/JS/JSON extensions:
+```go
+func GetScriptKindFromFileName(fileName string) ScriptKind {
+	dotPos := strings.LastIndex(fileName, ".")
+	if dotPos >= 0 {
+		switch strings.ToLower(fileName[dotPos:]) {
+		case tspath.ExtensionJs, tspath.ExtensionCjs, tspath.ExtensionMjs:
+			return ScriptKindJS
+		case tspath.ExtensionJsx:
+			return ScriptKindJSX
+		case tspath.ExtensionTs, tspath.ExtensionCts, tspath.ExtensionMts:
+			return ScriptKindTS
+		case tspath.ExtensionTsx:
+			return ScriptKindTSX
+		case tspath.ExtensionJson:
+			return ScriptKindJSON
+		}
+	}
+	return ScriptKindUnknown  // ← .svg lands here
+}
+```
+
+**Step 2: `compilerHost.GetSourceFile` passes `Unknown` to the parse cache without checking.**
+
+`internal/project/compilerhost.go:95-102`:
+```go
+func (c *compilerHost) GetSourceFile(opts ast.SourceFileParseOptions) *ast.SourceFile {
+	c.ensureAlive()
+	if fh := c.sourceFS.GetFileByPath(opts.FileName, opts.Path); fh != nil {
+		key := NewParseCacheKey(opts, fh.Hash(), fh.Kind())  // ← Kind() = ScriptKindUnknown
+		return c.builder.parseCache.Acquire(key, fh)
+	}
+	return nil
+}
+```
+
+**Step 3: the parse cache calls `parser.ParseSourceFile` with `ScriptKindUnknown`.**
+
+`internal/project/parsecache.go:30-38`:
+```go
+func NewParseCache(options RefCountCacheOptions) *ParseCache {
+	return NewRefCountCache(
+		options,
+		func(key ParseCacheKey, fh FileHandle) *ast.SourceFile {
+			file := parser.ParseSourceFile(key.SourceFileParseOptions, fh.Content(), key.ScriptKind)
+			//                                                                       ^^^^^^^^^^^
+			//                                                                       ScriptKindUnknown
+			file.Hash = fh.Hash()
+			return file
+		},
+	)
+}
+```
+
+**Step 4: the parser panics.**
+
+`internal/parser/parser.go:288-291`:
+```go
+func (p *Parser) initializeState(opts ast.SourceFileParseOptions, sourceText string, scriptKind core.ScriptKind) {
+	if scriptKind == core.ScriptKindUnknown {
+		panic("ScriptKind must be specified when parsing source file: " + opts.FileName)
+	}
+```
+
+**The extension guard in the file loader exists but is bypassed.**
+
+`internal/compiler/filesparser.go:68-95` has a guard in `parseTask.load()`:
+```go
+if tspath.HasExtension(t.normalizedFilePath) {
+	compilerOptions := loader.opts.Config.CompilerOptions()
+	allowNonTsExtensions := compilerOptions.AllowNonTsExtensions.IsTrue()
+	if !allowNonTsExtensions {
+		canonicalFileName := tspath.GetCanonicalFileName(t.normalizedFilePath, ...)
+		if !loader.isSupportedExtension(canonicalFileName) {
+			// ... add diagnostic and return early (line 93)
+			return
+		}
+	}
+}
+```
+
+This guard is bypassed for **inferred projects** because `NewInferredProject`
+(`internal/project/project.go:100-121`) sets `AllowNonTsExtensions: core.TSTrue`
+in its default compiler options:
+
+```go
+func NewInferredProject(
+	currentDirectory string,
+	compilerOptions *core.CompilerOptions,
+	rootFileNames []string,
+	builder *ProjectCollectionBuilder,
+	logger *logging.LogTree,
+) *Project {
+	p := NewProject(inferredProjectName, KindInferred, currentDirectory, builder, logger)
+	if compilerOptions == nil {
+		compilerOptions = &core.CompilerOptions{
+			AllowNonTsExtensions:       core.TSTrue,  // ← bypasses the guard
+			// ...
+		}
+	}
+```
+
+When `AllowNonTsExtensions` is true, the guard at `filesparser.go:71` is skipped entirely,
+and the file proceeds to `loader.parseSourceFile(t)` at line 108,
+which calls `compilerHost.GetSourceFile` (step 2 above),
+which passes the `ScriptKindUnknown` to the parser (step 4).
+
+**The file scanning correctly filters by extension, but the SVG enters through a different path.**
+
+The `matchFiles` function (`internal/vfs/vfsmatch/vfsmatch.go:604-606`) checks extensions
+during directory scanning:
+```go
+for _, file := range entries.Files {
+	if len(v.extensions) > 0 && !tspath.FileExtensionIsOneOf(file, v.extensions) {
+		continue  // ← SVG would be skipped here
+	}
+```
+
+Confirmed: `tsgo --showConfig` resolves the `include` patterns correctly,
+and the SVG does not match any include pattern.
+The SVG enters the project through a path that bypasses this extension filter --
+either through the inferred project's `AllowNonTsExtensions` override,
+or through project reference resolution that feeds files directly to `compilerHost.GetSourceFile`
+without checking `isSupportedExtension` first.
+
+### Solution
+
+Add explicit `exclude` patterns for non-source binary/media extensions
+in the base `tsconfig.options.json`.
+The `exclude` patterns are applied during `matchFiles`
+(`internal/vfs/vfsmatch/vfsmatch.go:634`)
+as glob excludes in the `globMatcher`, which is checked before extension filtering:
+
+```go
+fileMatcher := newGlobMatcher(includes, excludes, absolutePath, useCaseSensitiveFileNames, UsageFiles)
+```
+
+This prevents the SVG from appearing in the project's root file list
+regardless of `AllowNonTsExtensions`:
+
+```jsonc
+// packages/config/typescript/tsconfig.options.json
+{
+  "exclude": [
+    // ... existing excludes ...
+    "${configDir}/**/*.svg",
+    "${configDir}/**/*.png",
+    "${configDir}/**/*.jpg",
+    // ... other binary extensions
+  ]
+}
+```
+
+The `${configDir}` substitution resolves to the consuming package's directory,
+so each package gets its own set of exclude patterns.
+Verified with `tsgo --showConfig` -- the resolved exclude includes fully qualified paths.
+
+### Defense in depth (editord)
+
+The `editord` LSP manager implements three layers of protection:
+
+1.  **Base tsconfig `exclude`** --
+    prevents tsgo from discovering non-source files during project loading.
+
+2.  **Resolved-include filter** (`tsconfig-includes.ts`) --
+    editord resolves the tsconfig's `include` patterns via `tsgo --showConfig`
+    and checks each file against them before sending `textDocument/didOpen` to tsgo.
+    Files that don't match get `tsgo: null` in server slots.
+
+3.  **Crash recovery with exponential backoff** (`lsp-pool.ts`, `lsp-client.ts`) --
+    on unexpected exit, editord rejects all pending requests,
+    removes the dead client from the pool,
+    and re-creates it on the next request after a backoff delay
+    (2 s base, doubling to 60 s cap).
+
+### What does not work
+
+- **Filtering `textDocument/didOpen`** alone --
+  tsgo discovers files independently during project loading,
+  so preventing editord from sending the file has no effect on the crash.
+- **Relying on `include` patterns** --
+  tsgo's `--showConfig` correctly resolves them,
+  but the LSP project loader does not honor them during file scanning
+  when `AllowNonTsExtensions` is true (inferred projects)
+  or when files enter through project reference resolution.
+- **Restarting tsgo without backoff** --
+  tsgo re-discovers the same file on startup and crashes again immediately,
+  creating a crash loop.
+
+### References
+
+- [microsoft/typescript-go PR #437](https://github.com/microsoft/typescript-go/pull/437) -- original extension guard (later bypassed)
+- [microsoft/typescript-go PR #2004](https://github.com/microsoft/typescript-go/pull/2004) -- removed "unsupported extensions" concept
+- [microsoft/typescript-go PR #1556](https://github.com/microsoft/typescript-go/pull/1556) -- improved panic message to include filename
+- [microsoft/typescript-go#2669](https://github.com/microsoft/typescript-go/issues/2669) --
+  same crash in the completions LSP path, fixed by [PR #2679](https://github.com/microsoft/typescript-go/pull/2679)
+- [denoland/deno#31423](https://github.com/denoland/deno/issues/31423) --
+  CSS imports causing the same `ScriptKind` panic
+- [neovim/nvim-lspconfig#4018](https://github.com/neovim/nvim-lspconfig/issues/4018) --
+  filetype mismatch triggering the same crash
+- Source commit: `c0703e66` of `microsoft/typescript-go`
+- `internal/core/core.go:512-529` -- `GetScriptKindFromFileName`
+- `internal/parser/parser.go:288-291` -- panic site
+- `internal/project/compilerhost.go:95-102` -- `GetSourceFile` missing guard
+- `internal/project/overlayfs.go:100-102` -- `diskFile.Kind()` returning `Unknown`
+- `internal/project/parsecache.go:30-38` -- parse cache forwarding `Unknown` to parser
+- `internal/project/project.go:100-121` -- `NewInferredProject` setting `AllowNonTsExtensions`
+- `internal/compiler/filesparser.go:68-95` -- extension guard (bypassed by `AllowNonTsExtensions`)
+
+### Draft upstream issue
+
+Ready to file against [microsoft/typescript-go](https://github.com/microsoft/typescript-go/issues).
+
+**Title:** LSP panics on ScriptKindUnknown when non-source file reaches parser via compilerHost.GetSourceFile
+
+**Labels:** `bug`, `LSP`
+
+**Body:**
+
+```markdown
+## Bug Report
+
+### Summary
+
+The LSP server panics when a non-source file (e.g. `.svg`, `.png`, `.css`)
+exists in a directory covered by a `tsconfig.json`.
+The panic occurs during project loading, before any `textDocument/didOpen`
+is sent for the file.
+
+### tsgo version
+
+7.0.0-dev.20260404.1
+
+### Reproduction
+
+1. Create a directory with a `tsconfig.json`:
+   ```json
+   {
+     "compilerOptions": { "strict": true },
+     "include": ["src/**/*.ts"]
+   }
+   ```
+2. Add `src/index.ts` (any valid TypeScript file)
+3. Add `architecture.svg` (any SVG file) in the same directory
+4. Start `tsgo --lsp --stdio` and send an `initialize` request
+   with `rootUri` pointing to this directory
+5. Open `src/index.ts` via `textDocument/didOpen`
+
+tsgo panics with:
+```
+panic: ScriptKind must be specified when parsing source file: /path/to/architecture.svg
+```
+
+### Root cause
+
+`compilerHost.GetSourceFile` (`internal/project/compilerhost.go:95-102`)
+passes `fh.Kind()` to the parse cache without checking for `ScriptKindUnknown`.
+`diskFile.Kind()` (`internal/project/overlayfs.go:100-102`) delegates to
+`GetScriptKindFromFileName` (`internal/core/core.go:512-529`),
+which returns `ScriptKindUnknown` for any unrecognized extension.
+The parse cache forwards this to `parser.ParseSourceFile`,
+which panics at `internal/parser/parser.go:289-290`.
+
+The extension guard in `filesparser.go:68-95` exists
+but is bypassed when `AllowNonTsExtensions` is true
+(as set by `NewInferredProject` at `internal/project/project.go:119`).
+
+The `include` patterns correctly exclude the SVG
+(confirmed by `--showConfig` and by `matchFiles` in `vfsmatch.go:604-606`
+filtering by supported extensions).
+The file enters the project through a path that bypasses
+the `matchFiles` extension filter.
+
+### Suggested fix
+
+Add a `ScriptKindUnknown` check in `compilerHost.GetSourceFile`
+before calling `parseCache.Acquire`:
+
+```go
+func (c *compilerHost) GetSourceFile(opts ast.SourceFileParseOptions) *ast.SourceFile {
+	c.ensureAlive()
+	if fh := c.sourceFS.GetFileByPath(opts.FileName, opts.Path); fh != nil {
+		kind := fh.Kind()
+		if kind == core.ScriptKindUnknown {
+			return nil
+		}
+		key := NewParseCacheKey(opts, fh.Hash(), kind)
+		return c.builder.parseCache.Acquire(key, fh)
+	}
+	return nil
+}
+```
+
+This is consistent with how the CLI's file loader handles unsupported extensions
+(returning early with a diagnostic rather than panicking).
+
+### Related issues
+
+- #2669 / #2679 -- same crash fixed in the completions code path
+- denoland/deno#31423 -- CSS imports causing the same panic
+- neovim/nvim-lspconfig#4018 -- filetype mismatch in LSP
+```
+
 ## Related Documentation
 
 - [ESLint Configuration](./TROUBLESHOOTING.eslint.md) - ESLint and TypeScript parser issues

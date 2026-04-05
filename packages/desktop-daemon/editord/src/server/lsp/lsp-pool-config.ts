@@ -12,6 +12,7 @@ import {
 
 import type { Logger, } from '../log.ts';
 import { LspClient, } from './lsp-client.ts';
+import { createTsgoShadowRoot, } from './tsgo-shadow-root.ts';
 import { pathToUri, } from './uri.ts';
 
 /** LSP server type identifier. */
@@ -109,6 +110,8 @@ const COMMANDS: Record<ServerType, {
  *
  * @param onNotification - callback for server-initiated notifications (source pre-tagged)
  *
+ * @param onExit - callback when the child process exits (unexpected crashes or graceful shutdown)
+ *
  * @returns initialized client, or null if spawn/init fails
  */
 export async function spawnLspClient({
@@ -116,6 +119,7 @@ export async function spawnLspClient({
   root,
   l,
   onNotification,
+  onExit,
 }: {
   type: ServerType;
   root: string;
@@ -124,6 +128,10 @@ export async function spawnLspClient({
     source: string;
     method: string;
     params: unknown;
+  },) => void;
+  onExit: (event: {
+    unexpected: boolean;
+    code: number | null;
   },) => void;
 },): Promise<LspClient | null> {
   const def = COMMANDS[type];
@@ -135,7 +143,22 @@ export async function spawnLspClient({
     ...process.env,
     PATH: `${binPath}${delimiter}${process.env.PATH ?? ''}`,
   };
-  const rootUri = pathToUri({ path: root, },);
+
+  /**
+   * For tsgo, create a shadow directory that excludes non-source files.
+   * tsgo's LSP panics on unrecognized extensions during project loading
+   * and ignores tsconfig include/exclude patterns when scanning.
+   * See TROUBLESHOOTING.typescript.md "tsgo LSP panics on non-source files".
+   */
+  const effectiveRoot = type === 'tsgo'
+    ? createTsgoShadowRoot({
+      root,
+      patterns: [],
+      l,
+    },)
+    : root;
+  const rootUri = pathToUri({ path: effectiveRoot, },);
+
   try {
     const c = new LspClient({
       command: def.command,
@@ -159,12 +182,13 @@ export async function spawnLspClient({
           params,
         },);
       },
+      onExit,
     },);
     await c.initialize({
       rootUri,
       initializationOptions: def.initializationOptions,
     },);
-    l.info(`${type}: ready at ${root}`,);
+    l.info(`${type}: ready at ${root} (shadow: ${effectiveRoot})`,);
     return c;
   }
   catch (error) {

@@ -9,12 +9,13 @@ The build pipeline runs as a single Bun script (`src/build.ts`) that:
 
 1.  Loads MDX files from `src/content/{lang}/` and validates frontmatter with Zod
 2.  Processes changed files through a remark/rehype pipeline (with SHA-256 content caching)
-3.  Generates HTML pages from h-html templates
-4.  Generates CSS from h-css declarations
-5.  Generates RSS feeds per language via feedsmith
-6.  Copies static assets from `public/`
-7.  Minifies HTML with rehype-preset-minify
-8.  Compresses output with zstd
+3.  Pre-computes syntax highlight ranges via `rehype-highlight` (Lezer parsers, build-only)
+4.  Generates HTML pages from h-html templates
+5.  Generates CSS from h-css declarations
+6.  Generates RSS feeds per language via feedsmith
+7.  Copies static assets from `public/`
+8.  Minifies HTML with rehype-preset-minify
+9.  Compresses output with zstd
 
 ## Commands
 
@@ -42,6 +43,19 @@ tags:
 
 The filename becomes the URL slug.
 The parent directory name becomes the language code.
+
+## Syntax highlighting
+
+Fenced code blocks are syntax-highlighted via the CSS Custom Highlight API.
+Lezer parsers run **at build time** in a rehype plugin (`src/lib/rehype-highlight.ts`),
+which embeds per-group character offsets as `data-hl-<group>` attributes on `<code>` elements.
+The client script (`src/client/index.ts`) reads those offsets,
+maps them to DOM Range objects, and registers CSS Custom Highlights.
+
+No Lezer code ships to the browser.
+The client bundle is ~1.8 KB (single file) versus ~313 KB (9 files) when parsers ran client-side.
+The `data-hl-*` attributes add ~1.1 KB compressed across all pages --
+a 99.4% net reduction in total transfer size for syntax highlighting.
 
 ## Output
 
