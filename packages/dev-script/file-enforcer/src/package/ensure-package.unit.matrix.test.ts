@@ -68,7 +68,7 @@ console.log(`[container-test] uid: ${String(process.getuid?.() ?? 'unavailable',
 
 await describe({
   name: 'ensurePackage (container)',
-  sequential: 'package installations must not interleave',
+  concurrency: 1,
   children: [
     //region String shorthand shape
 

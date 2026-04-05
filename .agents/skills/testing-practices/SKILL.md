@@ -242,13 +242,13 @@ it({
 
 ### Sequential execution
 
-Children run concurrently by default. Pass `sequential: true` on describe
+Children run concurrently by default. Set `concurrency: 1` on describe
 to run children one at a time in array order:
 
 ```ts
 describe({
   name: 'ordered operations',
-  sequential: true,
+  concurrency: 1,
   children: [
     () => it({ name: 'step 1', fn: async () => { ... } }),
     () => it({ name: 'step 2', fn: async () => { ... } }),
@@ -256,7 +256,7 @@ describe({
 })
 ```
 
-When `sequential: true`, children should be **thunks** (arrow-wrapped)
+When `concurrency: 1`, children should be **thunks** (arrow-wrapped)
 so execution is actually deferred until the previous child settles.
 
 ### Region markers

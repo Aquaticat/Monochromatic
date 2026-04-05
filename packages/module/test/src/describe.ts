@@ -17,16 +17,15 @@ export type DescribeResult = {
 
 /**
  * Single child entry: either an already-started promise or a thunk that starts one.
- * Thunks are required for `sequential: true` so execution is deferred.
- * Bare promises work in both modes but are already running when passed.
+ * Thunks are required for `concurrency: 1` so execution is deferred.
+ * Bare promises work in all modes but are already running when passed.
  */
 export type DescribeChild =
   | Promise<DescribeResult | ItResult>
   | (() => Promise<DescribeResult | ItResult>);
 
 /**
- * Default maximum number of children running at the same time
- * when `sequential` is falsy.
+ * Default maximum number of children running at the same time.
  */
 const DEFAULT_CONCURRENCY = 16;
 
@@ -40,13 +39,18 @@ export type DescribeOptions = {
    * can log the `child <- parent` relationship.
    *
    * Accepts promises (eager) or thunks (deferred).
-   * Use thunks with `sequential: true` to guarantee execution order.
+   * Use thunks with `concurrency: 1` to guarantee execution order.
    */
   readonly children: readonly DescribeChild[];
   /**
    * Maximum number of children running at the same time.
-   * Only takes effect when `sequential` is falsy.
-   * Pass `Infinity` to disable the limit entirely.
+   *
+   * - `1` -- sequential execution via `for...of` loop; children should be thunks
+   *   so execution is deferred until the previous child settles
+   * - `2`..`Number.MAX_SAFE_INTEGER - 1` -- bounded concurrency via `p-limit`
+   * - `Infinity` or `Number.MAX_SAFE_INTEGER` -- unbounded concurrency via
+   *   raw `Promise.allSettled` (no `p-limit` overhead)
+   *
    * Defaults to {@link DEFAULT_CONCURRENCY} (16).
    */
   readonly concurrency?: number;
@@ -72,13 +76,6 @@ export type DescribeOptions = {
    */
   readonly repeats?: number;
   /**
-   * Run children one at a time in array order instead of concurrently.
-   * Defaults to `false` (concurrent via `Promise.allSettled`).
-   * When `true` or a reason string, children should be thunks so execution is actually deferred.
-   * A string reason is logged at trace level when the suite starts.
-   */
-  readonly sequential?: boolean | string;
-  /**
    * Whether to skip execution entirely. When `true` or a reason string,
    * the suite logs SKIP and returns immediately without running children.
    * Defaults to `false`.
@@ -96,7 +93,8 @@ export type DescribeOptions = {
  * Defines and immediately executes a test suite.
  *
  * Children run concurrently via `Promise.allSettled` by default,
- * or sequentially when `sequential: true`.
+ * capped at `concurrency` (default 16) simultaneous children via `p-limit`.
+ * Set `concurrency: 1` for sequential execution.
  * If any child rejects, describe throws an error wrapping the
  * child errors in the cause chain. Empty name skips this layer
  * in the error chain -- the child error propagates directly.
@@ -105,13 +103,11 @@ export type DescribeOptions = {
  *
  * @param children - Child promises or thunks from nested describe or it calls
  *
- * @param concurrency - Maximum concurrent children when not sequential (default 16, pass `Infinity` to disable)
+ * @param concurrency - Maximum concurrent children (default 16; 1 for sequential; `Infinity` for unbounded)
  *
  * @param skip - Whether to skip the entire suite
  *
  * @param repeats - Number of additional runs after the first
- *
- * @param sequential - Run children one at a time in array order
  *
  * @param timeout - Optional timeout in milliseconds for the entire suite
  *
@@ -142,7 +138,6 @@ export async function describe({
   concurrency = DEFAULT_CONCURRENCY,
   skip = false,
   repeats = 0,
-  sequential = false,
   timeout,
   l: loggerOverride,
 }: DescribeOptions,): Promise<DescribeResult> {
@@ -160,9 +155,18 @@ export async function describe({
     return { name, };
   }
 
+  /** Whether concurrency is effectively unbounded. */
+  const isUnbounded = concurrency >= Number.MAX_SAFE_INTEGER;
+  /** Whether children run one at a time. */
+  const isSequential = concurrency <= 1;
+
   if (name !== '') {
-    const seqReason = typeof sequential === 'string' ? ` (sequential: ${sequential})` : (sequential ? ' (sequential)' : '');
-    l.debug(`start${seqReason}`,);
+    const concurrencyLabel = isSequential
+      ? ' (sequential)'
+      : isUnbounded
+        ? ' (unbounded)'
+        : ` (concurrency: ${String(concurrency,)})`;
+    l.debug(`start${concurrencyLabel}`,);
   }
 
   /**
@@ -176,10 +180,8 @@ export async function describe({
     return typeof child === 'function' ? child() : child;
   }
 
-  const limit = pLimit(concurrency,);
-
   /**
-   * Runs all children sequentially, collecting results in order.
+   * Runs all children sequentially via `for...of`, collecting results in order.
    * Each child starts only after the previous one settles.
    *
    * @returns array of settled results matching `Promise.allSettled` format
@@ -210,11 +212,20 @@ export async function describe({
    * @throws Error wrapping child failures when any child rejects
    */
   async function runOnce(runLabel: string,): Promise<void> {
-    const settleAll = sequential
-      ? runSequential()
-      : Promise.allSettled(children.map(function limitChild(child,) {
+    let settleAll: Promise<PromiseSettledResult<DescribeResult | ItResult>[]>;
+
+    if (isSequential) {
+      settleAll = runSequential();
+    }
+    else if (isUnbounded) {
+      settleAll = Promise.allSettled(children.map(startChild,),);
+    }
+    else {
+      const limit = pLimit(concurrency,);
+      settleAll = Promise.allSettled(children.map(function limitChild(child,) {
         return limit(startChild, child,);
       },),);
+    }
 
     const withTimeoutApplied = timeout !== undefined
       ? withTimeout({

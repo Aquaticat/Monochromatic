@@ -36,10 +36,10 @@ The limit is configurable per suite via the `concurrency` option.
 
 ## API
 
-### `describe({ name, children, concurrency?, sequential?, skip?, repeats?, timeout?, l? })`
+### `describe({ name, children, concurrency?, skip?, repeats?, timeout?, l? })`
 
-Runs all children concurrently via `Promise.allSettled` by default.
-Set `sequential: true` to run children one at a time in array order.
+Runs all children concurrently via `Promise.allSettled` by default,
+capped at `concurrency` (default 16) simultaneous children.
 Returns `{ name }` on success.
 Throws `Error(name, { cause })` on failure,
 with `AggregateError` as cause when multiple children fail.
@@ -50,12 +50,14 @@ Use empty-name describe as the top-level wrapper --
 the filename already reveals what is being tested.
 
 Children can be promises (eager, start immediately) or thunks (deferred).
-Use thunks with `sequential: true` to guarantee execution order.
+Use thunks with `concurrency: 1` to guarantee execution order.
 
 - **`concurrency`** (`number`, default `16`) -- maximum number of children running at the same time.
-  Only takes effect when `sequential` is falsy.
-  Pass `Infinity` to disable the limit entirely and run all children simultaneously.
-  Uses [`p-limit`](https://www.npmjs.com/package/p-limit) internally.
+  The implementation adapts to the value:
+  - `1` -- sequential execution via `for...of` loop, no `p-limit` overhead
+  - `2`..`Number.MAX_SAFE_INTEGER - 1` -- bounded concurrency via [`p-limit`](https://www.npmjs.com/package/p-limit)
+  - `Infinity` or `Number.MAX_SAFE_INTEGER` -- unbounded concurrency via raw `Promise.allSettled`, no `p-limit` overhead
+
   Children passed as bare promises are already running when the suite starts,
   so the limit only gates thunks that have not yet been invoked --
   pass thunks (arrow functions returning promises) to get accurate concurrency control
@@ -63,8 +65,6 @@ Use thunks with `sequential: true` to guarantee execution order.
   a string is logged as the reason
 - **`repeats`** (default `0`) -- number of additional runs of the entire suite;
   `repeats: 2` runs the suite 3 times total
-- **`sequential`** (`boolean | string`, default `false`) -- run children in array order instead of concurrently;
-  a string is logged at debug level as the reason
 
 Logs `childName <- suiteName` for each child result.
 
@@ -356,15 +356,18 @@ await describe({
 });
 ```
 
-### Sequential suites
+### Concurrency control
 
-Pass thunks (arrow functions returning promises) with `sequential: true`
-to run children one at a time in array order.
+The `concurrency` option controls how many children run at the same time.
+Children must be thunks for the limit to take effect --
+bare promises are already running when the suite starts.
+
+**Sequential** (`concurrency: 1`) -- runs children one at a time via `for...of`:
 
 ```ts
 await describe({
-  name: 'database migration',
-  sequential: 'migrations depend on previous state',
+  name: 'database migration -- migrations depend on previous state',
+  concurrency: 1,
   children: [
     () => it({
       name: 'creates table',
@@ -384,11 +387,7 @@ await describe({
 });
 ```
 
-### Limiting concurrency
-
-Pass `concurrency` to cap how many children run at the same time.
-Children must be thunks for the limit to take effect --
-bare promises are already running when the suite starts.
+**Bounded** (`concurrency: 3`) -- caps simultaneous children via `p-limit`:
 
 ```ts
 await describe({
@@ -406,8 +405,7 @@ await describe({
 });
 ```
 
-Pass `Infinity` to remove the limit entirely
-(the default of 16 is usually sufficient):
+**Unbounded** (`concurrency: Infinity`) -- raw `Promise.allSettled`, no `p-limit` overhead:
 
 ```ts
 await describe({
@@ -676,7 +674,7 @@ or **omitted** (intentional gap with rationale).
 - `describe(name, fn)` -- `describe({ name, children })`
 - `describe.skip` -- `describe({ skip: true })` or `describe({ skip: 'reason' })`
 - `describe.concurrent` -- default behavior; suites run children concurrently via `Promise.allSettled`
-- `describe.sequential` -- `describe({ sequential: true })` or `describe({ sequential: 'reason' })`
+- `describe.sequential` -- `describe({ concurrency: 1 })`
 - `test` / `it` -- `it({ name, fn })`
 - `test.skip` -- `it({ skip: true })` or `it({ skip: 'reason' })`
 - `test.fails` -- `it({ fails: true })` or `it({ fails: 'reason' })`
@@ -691,7 +689,7 @@ or **omitted** (intentional gap with rationale).
 - `test.each(cases)` / `test.for(cases)` -- `cases.map(c => it({ name: ..., fn: ... }))` passed as `children`
 - `describe.each` / `describe.for` -- same `.map()` pattern with `describe`
 - `test.concurrent` -- default behavior; all `it` calls start immediately when passed as promises
-- Vitest `maxConcurrency` config -- `describe({ concurrency: n })` per suite (default 16; Vitest defaults to 5)
+- Vitest `maxConcurrency` config -- `describe({ concurrency: n })` per suite; see "Concurrency model comparison" below
 - `describe.timeout` -- `describe({ timeout: ms })`
 - `test.timeout` -- `it({ timeout: ms })`
 - `test.repeats` -- `it({ repeats: n })` (Vitest has `retry` which retries on failure;
@@ -914,6 +912,48 @@ Chai is a direct dependency, so users who want `assert` can import it directly:
 ```ts
 import { assert } from 'chai';
 ```
+
+## Concurrency model comparison
+
+Both this harness and Vitest run concurrent tests as in-process promises
+within a single thread. Neither spawns additional workers for test-level concurrency.
+The differences are in scope, defaults, and error handling.
+
+**Scope of the concurrency limit.**
+Vitest uses a single global semaphore per worker (`maxConcurrency`, default 5).
+All concurrent suites in a file share that one limiter --
+3 concurrent suites each with 5 tests still only run 5 tests at a time total.
+This harness uses a **per-suite** limiter via `p-limit`.
+Each `describe` gets its own independent cap (default 16),
+so nested concurrent suites run their children independently.
+
+**Default mode.**
+Vitest runs tests **sequentially** within a file unless
+`test.concurrent` or `describe.concurrent` is used.
+This harness runs children **concurrently** by default --
+sequential execution is the opt-in (`concurrency: 1`).
+
+**Dispatch primitive.**
+Vitest dispatches concurrent groups via `Promise.all`.
+Individual tests catch their own errors internally,
+so `Promise.all` effectively behaves like `Promise.allSettled` in practice.
+This harness uses `Promise.allSettled` directly,
+making the "run all, collect all" intent explicit.
+
+**File-level parallelism.**
+Vitest distributes test **files** across OS-level workers
+(processes via `forks` or threads via `threads`),
+capped at `maxWorkers` (default: CPU count).
+This harness has no file-level parallelism --
+everything runs in a single process.
+The test runner (`mise run ...test`) can parallelize files externally if needed.
+
+**Concurrency control surface.**
+Vitest has separate APIs: `describe.concurrent` / `test.concurrent` (opt-in per suite/test),
+`describe.sequential` / `test.sequential` (opt-out overrides),
+and a global `maxConcurrency` config (default 5, cannot be set per suite).
+This harness has a single `concurrency` number per `describe`,
+covering sequential (`1`), bounded (`2`..`n`), and unbounded (`Infinity`) in one option.
 
 ## Self-test
 

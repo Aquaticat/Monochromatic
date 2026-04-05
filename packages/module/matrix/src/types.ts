@@ -63,17 +63,9 @@ export type MatrixOptions = {
 
   /**
    * Maximum number of combinations to run concurrently.
-   * Defaults to `4`. Set to `1` for fully sequential execution
-   * (equivalent to `sequential: true`).
-   * Ignored when `sequential` is `true`.
+   * Defaults to `4`. Set to `1` for sequential execution.
    */
   readonly concurrency?: number;
-
-  /**
-   * Run combinations sequentially instead of concurrently.
-   * Defaults to `false`.
-   */
-  readonly sequential?: boolean;
 };
 
 /**

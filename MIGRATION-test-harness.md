@@ -124,8 +124,8 @@ await matrix({
     { os: 'container:fedora', runtime: 'deno' },  // deno + fedora has known issues
   ],
 
-  // Run combinations sequentially. Default false (concurrent).
-  sequential: false,
+  // Set to 1 for sequential execution. Default 4 (concurrent).
+  concurrency: 4,
 });
 ```
 

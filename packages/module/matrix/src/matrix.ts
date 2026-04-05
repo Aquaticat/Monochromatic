@@ -17,7 +17,6 @@ import { $ as defaultLogger, } from '@monochromatic-dev/module-es/logger';
 import type { $ as Logger, } from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 import { resolve, } from 'node:path';
 
-import pLimit from 'p-limit';
 
 import {
   parseOs,
@@ -275,8 +274,6 @@ function executeCombination({
  *
  * @param concurrency - Maximum concurrent combination executions (defaults to 4)
  *
- * @param sequential - Whether to run combinations sequentially (escape hatch for shared-state tests)
- *
  * @throws Error (via describe/it) when any combination fails
  *
  * @example
@@ -297,7 +294,6 @@ export async function matrix({
   runtime = ['bun',],
   exclude = [],
   concurrency = DEFAULT_CONCURRENCY,
-  sequential = false,
 }: MatrixOptions,): Promise<void> {
   const l: Logger = tagged({
     tag: matrix.name,
@@ -356,11 +352,6 @@ export async function matrix({
 
   //region Execute via describe/it
 
-  /**
-   * Concurrency limiter for parallel combination execution.
-   * When `sequential` is true, the limiter is unused -- describe handles ordering.
-   */
-  const limit = pLimit(concurrency,);
   l.info(`concurrency limit: ${String(concurrency,)}`,);
 
   /**
@@ -387,36 +378,12 @@ export async function matrix({
       return describe({
         name: fileName,
         l,
-        sequential: sequential
-          ? 'sequential execution requested'
-          : false,
+        concurrency,
         children: fileCombinations.map(
           function createCombinationIt(combination,) {
             const label = formatLabel(combination,);
 
-            /**
-             * Use thunks for sequential mode so execution is deferred.
-             * For concurrent mode, bare promises work fine.
-             */
-            if (sequential) {
-              return function deferredRun(): Promise<ItResult> {
-                return it({
-                  name: label,
-                  l,
-                  fn: async function runCombination() {
-                    const output = await executeCombination({
-                      combination,
-                      monorepoRoot,
-                    },);
-                    if (output !== '') {
-                      l.info(output,);
-                    }
-                  },
-                },);
-              };
-            }
-
-            return limit(function limitedRun() {
+            return function deferredRun(): Promise<ItResult> {
               return it({
                 name: label,
                 l,
@@ -430,7 +397,7 @@ export async function matrix({
                   }
                 },
               },);
-            },);
+            };
           },
         ),
       },);

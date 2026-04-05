@@ -56,10 +56,7 @@ so concurrency is safe without additional coordination.
   Defaults to `4`. Caps how many containers or host processes execute at once
   to avoid saturating CPU and memory on large matrices.
 
-- **`sequential`** -- escape hatch: run combinations one at a time instead of concurrently.
-  Every combination is isolated by definition, so this should not be needed in normal usage.
-  Exists for debugging or for rare cases where the host cannot handle the concurrent load.
-  Defaults to `false`.
+  Set to `1` for sequential execution (debugging or resource-constrained hosts).
 
 ## Concurrency
 

@@ -64,13 +64,13 @@ Root cause:
 
 Fix:
 - Isolate state per test: create fresh state inside each `fn`.
-- Use `sequential: true` on the describe when shared state is unavoidable.
+- Use `concurrency: 1` on the describe when shared state is unavoidable.
   Pass children as thunks so execution is actually deferred:
 
 ```ts
 describe({
-  name: 'shared resource',
-  sequential: 'tests mutate shared cache',
+  name: 'shared resource -- tests mutate shared cache',
+  concurrency: 1,
   children: [
     () => it({ name: 'first', fn: async () => { ... } }),
     () => it({ name: 'second', fn: async () => { ... } }),
