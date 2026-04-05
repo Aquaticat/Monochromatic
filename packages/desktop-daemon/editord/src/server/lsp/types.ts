@@ -20,6 +20,7 @@ export type {
   LspPosition,
   LspRange,
   LspTextEdit,
+  LspWorkspaceEdit,
 } from './lsp-types-core.ts';
 
 //region Inlay hints
@@ -90,6 +91,8 @@ export type LspServerCapabilities = {
   inlayHintProvider?: boolean | { resolveProvider?: boolean; };
   /** Whether selection range is supported. */
   selectionRangeProvider?: boolean;
+  /** Whether rename is supported (optionally with prepareProvider). */
+  renameProvider?: boolean | { prepareProvider?: boolean; };
 };
 
 //endregion Capabilities

@@ -28,13 +28,16 @@ import {
   managerDidSave,
   routeNotification,
 } from './lsp-manager-lifecycle.ts';
+import type { PrepareRenameResult, } from './lsp-features-rename.ts';
 import {
   managerCompletion,
   managerFormat,
   managerGotoDefinition,
   managerHover,
   managerInlayHints,
+  managerPrepareRename,
   managerReferences,
+  managerRename,
   managerSelectionRange,
 } from './lsp-manager-requests.ts';
 import { LspPool, } from './lsp-pool.ts';
@@ -44,6 +47,7 @@ import type {
   LspInlayHint,
   LspSelectionRange,
   LspTextEdit,
+  LspWorkspaceEdit,
 } from './types.ts';
 import { pathToUri, } from './uri.ts';
 
@@ -99,6 +103,15 @@ export type LspManager = {
       character: number;
     }[];
   },): Promise<LspSelectionRange[]>;
+  /** Returns prepare-rename result, or null when symbol is not renamable. */
+  prepareRename(opts: FilePosition,): Promise<PrepareRenameResult | null>;
+  /** Returns workspace edit for rename, or null when rename failed. */
+  rename(opts: {
+    path: string;
+    line: number;
+    character: number;
+    newName: string;
+  },): Promise<LspWorkspaceEdit | null>;
   /** Gracefully shuts down all pooled LSP servers. */
   shutdown(): void;
   /** Shuts down LSP servers whose project root covers the given path. */
@@ -253,6 +266,22 @@ export function createLspManager({
       if (!hasDocument({ path: opts.path, },))
         return Promise.resolve([],);
       return managerSelectionRange({
+        pool,
+        ...opts,
+      },);
+    },
+    prepareRename(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve(null,);
+      return managerPrepareRename({
+        pool,
+        ...opts,
+      },);
+    },
+    rename(opts,) {
+      if (!hasDocument({ path: opts.path, },))
+        return Promise.resolve(null,);
+      return managerRename({
         pool,
         ...opts,
       },);

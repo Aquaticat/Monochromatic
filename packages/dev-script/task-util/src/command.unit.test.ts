@@ -1,10 +1,8 @@
 import {
-  afterEach,
-  beforeEach,
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 import { exec, } from 'node:child_process';
 import {
   existsSync,
@@ -35,181 +33,279 @@ if (arg === 'fail') {
 
 //region Fixture Setup -- Per-test fixtures replacing vitest test.extend
 
-let cliPath: string;
-let testDir: string;
-let testScript: string;
-
-beforeEach(() => {
-  // cliPath fixture
+function setup() {
   const testFileDir = import.meta.dirname;
-  cliPath = join(testFileDir, 'command.ts',);
+  const cliPath = join(testFileDir, 'command.ts',);
 
-  // testDir fixture — import.meta.dirname is src/, so parent is the package root
   const packageDir = join(testFileDir, '..',);
   const timestamp = Date.now();
   const randomId = Math.random().toString(36,).slice(2, 8,);
-  testDir = join(packageDir, 'dist', 'temp', 'test',
+  const testDir = join(packageDir, 'dist', 'temp', 'test',
     `cli-command-${timestamp}-${randomId}`,);
 
   if (!existsSync(testDir,))
     mkdirSync(testDir, { recursive: true, },);
 
-  // testScript fixture
-  testScript = join(testDir, 'test-script.js',);
+  const testScript = join(testDir, 'test-script.js',);
   writeFileSync(testScript, createTestScript(),);
-},);
 
-afterEach(() => {
-  // Clean up test script
+  return { cliPath, testDir, testScript, };
+}
+
+function teardown({ testScript, testDir, }: { testScript: string; testDir: string; },) {
   if (existsSync(testScript,))
     unlinkSync(testScript,);
 
-  // Clean up test directory
   if (existsSync(testDir,))
     rmSync(testDir, { recursive: true, },);
-},);
+}
 
 //endregion Fixture Setup
 
-describe('task-command', () => {
-  test('executes command successfully with exit code 0', async () => {
-    const { stdout, stderr, } = await execAsync(
-      `bun ${cliPath} -- node ${testScript} success`,
-    );
+await describe({
+  name: 'task-command',
+  children: [
+    it({
+      name: 'executes command successfully with exit code 0',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testScript, } = fixtures;
 
-    expect(stdout,).toContain('Success',);
-    expect(stderr,).toBe('',);
-  });
+        const { stdout, stderr, } = await execAsync(
+          `bun ${cliPath} -- node ${testScript} success`,
+        );
 
-  test('executes command and propagates failure exit code', async () => {
-    await expect(execAsync(`bun ${cliPath} -- node ${testScript} fail`,),)
-      .rejects
-      .toThrow();
+        expect(stdout,).toContain('Success',);
+        expect(stderr,).toBe('',);
 
-    try {
-      await execAsync(`bun ${cliPath} -- node ${testScript} fail`,);
-    }
-    catch (error: unknown) {
-      const execError = error as { code: number; stderr: string; };
-      expect(execError.code,).toBe(1,);
-      expect(execError.stderr,).toContain('Error: Test failure',);
-    }
-  });
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'executes command and propagates failure exit code',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testScript, } = fixtures;
 
-  test('executes command with --allowFailure flag and exits with 0', async () => {
-    const { stdout, stderr, } = await execAsync(
-      `bun ${cliPath} --allowFailure -- node ${testScript} fail`,
-    );
+        await expect(execAsync(`bun ${cliPath} -- node ${testScript} fail`,),)
+          .rejects
+          .toThrow();
 
-    expect(stderr,).toContain('Error: Test failure',);
-    // Command should succeed despite the script failing
-  });
+        try {
+          await execAsync(`bun ${cliPath} -- node ${testScript} fail`,);
+        }
+        catch (error: unknown) {
+          const execError = error as { code: number; stderr: string; };
+          expect(execError.code,).toBe(1,);
+          expect(execError.stderr,).toContain('Error: Test failure',);
+        }
 
-  test('uses short flag -a for allowFailure', async () => {
-    const { stdout, stderr, } = await execAsync(
-      `bun ${cliPath} -a -- node ${testScript} fail`,
-    );
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'executes command with --allowFailure flag and exits with 0',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testScript, } = fixtures;
 
-    expect(stderr,).toContain('Error: Test failure',);
-    // Command should succeed despite the script failing
-  });
+        const { stdout, stderr, } = await execAsync(
+          `bun ${cliPath} --allowFailure -- node ${testScript} fail`,
+        );
 
-  test('preserves stdout and stderr output', async () => {
-    const { stdout, stderr, } = await execAsync(
-      `bun ${cliPath} -- node ${testScript} output`,
-    );
+        expect(stderr,).toContain('Error: Test failure',);
+        // Command should succeed despite the script failing
 
-    expect(stdout,).toContain('stdout output',);
-    expect(stderr,).toContain('stderr output',);
-  });
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'uses short flag -a for allowFailure',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testScript, } = fixtures;
 
-  test('passes multiple arguments to the command', async () => {
-    const { stdout, } = await execAsync(`bun ${cliPath} -- echo "arg1" "arg2" "arg3"`,);
+        const { stdout, stderr, } = await execAsync(
+          `bun ${cliPath} -a -- node ${testScript} fail`,
+        );
 
-    expect(stdout,).toContain('arg1 arg2 arg3',);
-  });
+        expect(stderr,).toContain('Error: Test failure',);
+        // Command should succeed despite the script failing
 
-  test('executes shell commands with --shell flag', async () => {
-    const { stdout, } = await execAsync(
-      `bun ${cliPath} --shell -- "echo hello && echo world"`,
-    );
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'preserves stdout and stderr output',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testScript, } = fixtures;
 
-    expect(stdout,).toContain('hello',);
-    expect(stdout,).toContain('world',);
-  });
+        const { stdout, stderr, } = await execAsync(
+          `bun ${cliPath} -- node ${testScript} output`,
+        );
 
-  test('uses short flag -s for shell', async () => {
-    const { stdout, } = await execAsync(`bun ${cliPath} -s -- "echo test"`,);
+        expect(stdout,).toContain('stdout output',);
+        expect(stderr,).toContain('stderr output',);
 
-    expect(stdout,).toContain('test',);
-  });
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'passes multiple arguments to the command',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
 
-  test('fails when no command is specified', async () => {
-    try {
-      await execAsync(`bun ${cliPath}`,);
-      // Should not reach here
-      expect(true,).toBe(false,);
-    }
-    catch (error: unknown) {
-      const execError = error as { code: number; };
-      expect(execError.code,).toBeGreaterThan(0,);
-    }
-  });
+        const { stdout, } = await execAsync(`bun ${cliPath} -- echo "arg1" "arg2" "arg3"`,);
 
-  test('fails when only -- is provided without command', async () => {
-    try {
-      await execAsync(`bun ${cliPath} --`,);
-      // Should not reach here
-      expect(true,).toBe(false,);
-    }
-    catch (error: unknown) {
-      const execError = error as { code: number; };
-      expect(execError.code,).toBeGreaterThan(0,);
-    }
-  });
+        expect(stdout,).toContain('arg1 arg2 arg3',);
 
-  test('propagates custom exit codes', async () => {
-    try {
-      await execAsync(`bun ${cliPath} -- node ${testScript} fail-with-code 42`,);
-    }
-    catch (error: unknown) {
-      const execError = error as { code: number; };
-      expect(execError.code,).toBe(42,);
-    }
-  });
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'executes shell commands with --shell flag',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
 
-  test('handles non-existent command', async () => {
-    try {
-      await execAsync(`bun ${cliPath} -- nonexistentcommand123`,);
-      // Should not reach here
-      expect(true,).toBe(false,);
-    }
-    catch (error: unknown) {
-      const execError = error as { code: number; };
-      expect(execError.code,).toBeGreaterThan(0,);
-    }
-  });
+        const { stdout, } = await execAsync(
+          `bun ${cliPath} --shell -- "echo hello && echo world"`,
+        );
 
-  test('handles non-existent command with allowFailure', async () => {
-    // Should not throw with allowFailure
-    const result = await execAsync(
-      `bun ${cliPath} --allowFailure -- nonexistentcommand123`,
-    );
-    // Command succeeds even though the subcommand doesn't exist
-  });
+        expect(stdout,).toContain('hello',);
+        expect(stdout,).toContain('world',);
 
-  test('executes commands with special characters', async () => {
-    const { stdout, } = await execAsync(`bun ${cliPath} -- echo "Hello $USER!"`,);
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'uses short flag -s for shell',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
 
-    expect(stdout,).toContain('Hello',);
-    expect(stdout,).toContain('!',);
-  });
+        const { stdout, } = await execAsync(`bun ${cliPath} -s -- "echo test"`,);
 
-  test.skipIf(process.platform === 'win32',)('handles command termination by signal',
-    async () => {
-      // Create a script that sleeps and can be killed
-      const sleepScript = join(testDir, 'sleep-script.js',);
-      writeFileSync(sleepScript, `
+        expect(stdout,).toContain('test',);
+
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'fails when no command is specified',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
+
+        try {
+          await execAsync(`bun ${cliPath}`,);
+          // Should not reach here
+          expect(true,).toBe(false,);
+        }
+        catch (error: unknown) {
+          const execError = error as { code: number; };
+          expect(execError.code,).toBeGreaterThan(0,);
+        }
+
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'fails when only -- is provided without command',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
+
+        try {
+          await execAsync(`bun ${cliPath} --`,);
+          // Should not reach here
+          expect(true,).toBe(false,);
+        }
+        catch (error: unknown) {
+          const execError = error as { code: number; };
+          expect(execError.code,).toBeGreaterThan(0,);
+        }
+
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'propagates custom exit codes',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testScript, } = fixtures;
+
+        try {
+          await execAsync(`bun ${cliPath} -- node ${testScript} fail-with-code 42`,);
+        }
+        catch (error: unknown) {
+          const execError = error as { code: number; };
+          expect(execError.code,).toBe(42,);
+        }
+
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'handles non-existent command',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
+
+        try {
+          await execAsync(`bun ${cliPath} -- nonexistentcommand123`,);
+          // Should not reach here
+          expect(true,).toBe(false,);
+        }
+        catch (error: unknown) {
+          const execError = error as { code: number; };
+          expect(execError.code,).toBeGreaterThan(0,);
+        }
+
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'handles non-existent command with allowFailure',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
+
+        // Should not throw with allowFailure
+        const result = await execAsync(
+          `bun ${cliPath} --allowFailure -- nonexistentcommand123`,
+        );
+        // Command succeeds even though the subcommand doesn't exist
+
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'executes commands with special characters',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
+
+        const { stdout, } = await execAsync(`bun ${cliPath} -- echo "Hello $USER!"`,);
+
+        expect(stdout,).toContain('Hello',);
+        expect(stdout,).toContain('!',);
+
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'handles command termination by signal',
+      skip: process.platform === 'win32',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testDir, } = fixtures;
+
+        // Create a script that sleeps and can be killed
+        const sleepScript = join(testDir, 'sleep-script.js',);
+        writeFileSync(sleepScript, `
       process.on('SIGTERM', () => {
         console.log('Received SIGTERM');
         process.exit(0);
@@ -217,99 +313,141 @@ describe('task-command', () => {
       setTimeout(() => {}, 10000); // Sleep for 10 seconds
     `,);
 
-      // Start the command in background and kill it
-      const childProcess = exec(`bun ${cliPath} -- node ${sleepScript}`,);
+        // Start the command in background and kill it
+        const childProcess = exec(`bun ${cliPath} -- node ${sleepScript}`,);
 
-      // Give it time to start
-      // oxlint-disable-next-line eslint/no-promise-executor-return -- test delay
-      await new Promise(resolve => setTimeout(resolve, 100,));
+        // Give it time to start
+        // oxlint-disable-next-line eslint/no-promise-executor-return -- test delay
+        await new Promise(resolve => setTimeout(resolve, 100,));
 
-      // Kill the process
-      if (childProcess.pid !== undefined && childProcess.pid !== 0)
-        process.kill(childProcess.pid, 'SIGTERM',);
+        // Kill the process
+        if (childProcess.pid !== undefined && childProcess.pid !== 0)
+          process.kill(childProcess.pid, 'SIGTERM',);
 
-      // Wait for the process to finish
-      await new Promise((resolve, reject,) => {
-        childProcess.on('exit', resolve,);
-        childProcess.on('error', reject,);
-      },);
+        // Wait for the process to finish
+        await new Promise((resolve, reject,) => {
+          childProcess.on('exit', resolve,);
+          childProcess.on('error', reject,);
+        },);
 
-      // Clean up
-      if (existsSync(sleepScript,))
-        unlinkSync(sleepScript,);
-    },);
+        // Clean up
+        if (existsSync(sleepScript,))
+          unlinkSync(sleepScript,);
 
-  test('combines multiple flags', async () => {
-    const { stdout, } = await execAsync(
-      `bun ${cliPath} -a -s -- "echo combined && exit 1"`,
-    );
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'combines multiple flags',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, } = fixtures;
 
-    expect(stdout,).toContain('combined',);
-    // Should succeed despite exit 1 due to allowFailure
-  });
+        const { stdout, } = await execAsync(
+          `bun ${cliPath} -a -s -- "echo combined && exit 1"`,
+        );
 
-  test('executes command with timeout', async () => {
-    const { stdout, } = await execAsync(
-      `bun ${cliPath} --timeout 5000 -- node ${testScript} success`,
-    );
+        expect(stdout,).toContain('combined',);
+        // Should succeed despite exit 1 due to allowFailure
 
-    expect(stdout,).toContain('Success',);
-  });
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'executes command with timeout',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testScript, } = fixtures;
 
-  test('uses short flag -t for timeout', async () => {
-    const { stdout, } = await execAsync(
-      `bun ${cliPath} -t 5000 -- node ${testScript} success`,
-    );
+        const { stdout, } = await execAsync(
+          `bun ${cliPath} --timeout 5000 -- node ${testScript} success`,
+        );
 
-    expect(stdout,).toContain('Success',);
-  });
+        expect(stdout,).toContain('Success',);
 
-  test('timeout terminates long-running command', async () => {
-    // Create a script that runs longer than timeout
-    const longScript = join(testDir, 'long-script.js',);
-    writeFileSync(longScript, `
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'uses short flag -t for timeout',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testScript, } = fixtures;
+
+        const { stdout, } = await execAsync(
+          `bun ${cliPath} -t 5000 -- node ${testScript} success`,
+        );
+
+        expect(stdout,).toContain('Success',);
+
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'timeout terminates long-running command',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testDir, } = fixtures;
+
+        // Create a script that runs longer than timeout
+        const longScript = join(testDir, 'long-script.js',);
+        writeFileSync(longScript, `
       console.log('Starting long task');
       setTimeout(() => {
         console.log('This should not print');
       }, 2000);
     `,);
 
-    await expect(
-      execAsync(`bun ${cliPath} --timeout 500 -- node ${longScript}`,),
-    )
-      .rejects
-      .toThrow();
+        await expect(
+          execAsync(`bun ${cliPath} --timeout 500 -- node ${longScript}`,),
+        )
+          .rejects
+          .toThrow();
 
-    // Clean up
-    if (existsSync(longScript,))
-      unlinkSync(longScript,);
-  });
+        // Clean up
+        if (existsSync(longScript,))
+          unlinkSync(longScript,);
 
-  test('timeout with allowFailure exits with 0', async () => {
-    // Create a script that runs longer than timeout
-    const longScript = join(testDir, 'long-script-allow.js',);
-    writeFileSync(longScript, `
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'timeout with allowFailure exits with 0',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testDir, } = fixtures;
+
+        // Create a script that runs longer than timeout
+        const longScript = join(testDir, 'long-script-allow.js',);
+        writeFileSync(longScript, `
       console.log('Starting long task');
       setTimeout(() => {
         console.log('This should not print');
       }, 2000);
     `,);
 
-    const { stdout, } = await execAsync(
-      `bun ${cliPath} --allowFailure --timeout 500 -- node ${longScript}`,
-    );
+        const { stdout, } = await execAsync(
+          `bun ${cliPath} --allowFailure --timeout 500 -- node ${longScript}`,
+        );
 
-    expect(stdout,).toContain('Starting long task',);
+        expect(stdout,).toContain('Starting long task',);
 
-    // Clean up
-    if (existsSync(longScript,))
-      unlinkSync(longScript,);
-  });
+        // Clean up
+        if (existsSync(longScript,))
+          unlinkSync(longScript,);
 
-  test('command without timeout runs to completion', async () => {
-    // Create a script that takes some time but completes
-    const timedScript = join(testDir, 'timed-script.js',);
-    writeFileSync(timedScript, `
+        teardown(fixtures,);
+      },
+    }),
+    it({
+      name: 'command without timeout runs to completion',
+      fn: async () => {
+        const fixtures = setup();
+        const { cliPath, testDir, } = fixtures;
+
+        // Create a script that takes some time but completes
+        const timedScript = join(testDir, 'timed-script.js',);
+        writeFileSync(timedScript, `
       console.log('Start');
       setTimeout(() => {
         console.log('End');
@@ -317,15 +455,19 @@ describe('task-command', () => {
       }, 100);
     `,);
 
-    const { stdout, } = await execAsync(
-      `bun ${cliPath} -- node ${timedScript}`,
-    );
+        const { stdout, } = await execAsync(
+          `bun ${cliPath} -- node ${timedScript}`,
+        );
 
-    expect(stdout,).toContain('Start',);
-    expect(stdout,).toContain('End',);
+        expect(stdout,).toContain('Start',);
+        expect(stdout,).toContain('End',);
 
-    // Clean up
-    if (existsSync(timedScript,))
-      unlinkSync(timedScript,);
-  });
+        // Clean up
+        if (existsSync(timedScript,))
+          unlinkSync(timedScript,);
+
+        teardown(fixtures,);
+      },
+    }),
+  ],
 });

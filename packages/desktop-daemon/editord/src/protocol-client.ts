@@ -107,6 +107,15 @@ export type ClientMessage =
     id: string;
     path: string;
   }
+  | ({
+    type: 'prepareRename';
+    id: string;
+  } & FilePosition)
+  | ({
+    type: 'rename';
+    id: string;
+    newName: string;
+  } & FilePosition)
   | {
     type: 'didChange';
     path: string;

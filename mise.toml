@@ -240,7 +240,7 @@ run = "mise '//packages/...:watch:build'"
 [tasks.test]
 description = "Run all tests, or pass args to filter unit tests"
 alias = "t"
-usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test (when provided, only unit tests run)"'
+usage = 'arg "[args]" var=#true help="Test file paths (when provided, only unit tests run)"'
 run = """
 let args = ($env.usage_args? | default '' | str trim)
 if $args == '' {
@@ -248,20 +248,20 @@ if $args == '' {
 } else {
   # usage_args shell-escapes values; evaluate to recover the original
   let files = (nu -c $"echo ($args)")
-  bun test $files
+  $files | split row ' ' | where {|f| $f != '' } | par-each { |file| bun $file }
 }
 """
 
 [tasks."test:unit"]
 hide = true
 description = "Run unit tests"
-usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
+usage = 'arg "[args]" var=#true help="Test file paths to run (when provided, only those files run)"'
 run = """
 let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
 if ($args | is-empty) {
-  bun test ...(rg --files --glob '**/*.unit.test.*' --glob '!**/deprecated/**' | lines)
+  glob "**/*.unit.test.ts" | where { not ($in | str contains "/deprecated/") } | par-each { |file| bun $file }
 } else {
-  bun test ...$args
+  $args | par-each { |file| bun $file }
 }
 """
 
@@ -313,13 +313,13 @@ podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx 
 [tasks."watch:test:unit"]
 hide = true
 description = "Run unit tests in watch mode"
-usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
+usage = 'arg "[args]" var=#true help="Test file paths to watch"'
 run = """
 let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
 if ($args | is-empty) {
-  bun test --watch ...(rg --files --glob '**/*.unit.test.*' --glob '!**/deprecated/**' | lines)
+  glob "**/*.unit.test.ts" | where { not ($in | str contains "/deprecated/") } | par-each { |file| bun --watch $file }
 } else {
-  bun test --watch ...$args
+  $args | par-each { |file| bun --watch $file }
 }
 """
 
@@ -339,7 +339,7 @@ run = "docker build --progress=plain ."
 [tasks.buildAndTest]
 description = "Build then test; with args, builds only the containing package instead of the entire monorepo"
 alias = "bt"
-usage = 'arg "[args]" var=#true help="Test file path or bun test arguments"'
+usage = 'arg "[args]" var=#true help="Test file paths"'
 run = """
 let args = ($env.usage_args? | default '' | str trim)
 if $args == '' {
@@ -361,7 +361,7 @@ if $args == '' {
   } else {
     mise run try -- build
   }
-  bun test $files
+  $files | split row ' ' | where {|f| $f != '' } | par-each { |file| bun $file }
 }
 """
 

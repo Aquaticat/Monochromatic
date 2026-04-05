@@ -1,8 +1,8 @@
 import {
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 
 import {
   JSON_RPC_PARSE_ERROR,
@@ -72,106 +72,124 @@ function mockServer(response: JsonRpcOutbound | undefined,): McpServerHandle {
 
 //region serve -- stdio transport connecting stdin/stdout to server handle
 
-describe('serve', () => {
-  test('parses valid JSON-RPC message and writes response', async () => {
-    const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1,
-      result: { tools: [], }, };
-    const server = mockServer(serverResponse,);
-    const input = stdinFromMessages(['{"jsonrpc":"2.0","id":1,"method":"tools/list"}',],);
-    const { writer, lines, } = collectingWriter();
+await describe({
+  name: serve.name,
+  children: [
+    it({
+      name: 'parses valid JSON-RPC message and writes response',
+      fn: async () => {
+        const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1,
+          result: { tools: [], }, };
+        const server = mockServer(serverResponse,);
+        const input = stdinFromMessages(['{"jsonrpc":"2.0","id":1,"method":"tools/list"}',],);
+        const { writer, lines, } = collectingWriter();
 
-    await serve(server, input, writer,);
+        await serve(server, input, writer,);
 
-    expect(lines,).toEqual([JSON.stringify(serverResponse,),],);
-  });
-
-  test('skips blank lines without sending them to server', async () => {
-    const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
-    const server = mockServer(serverResponse,);
-    const input = stdinFromMessages(['', '  ',
-      '{"jsonrpc":"2.0","id":1,"method":"ping"}',],);
-    const { writer, lines, } = collectingWriter();
-
-    await serve(server, input, writer,);
-
-    expect(lines,).toHaveLength(1,);
-  });
-
-  test('returns parse error for invalid JSON', async () => {
-    const server = mockServer(undefined,);
-    const input = stdinFromMessages(['not-json',],);
-    const { writer, lines, } = collectingWriter();
-
-    await serve(server, input, writer,);
-
-    expect(lines,).toHaveLength(1,);
-    const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
-    expect((parsed as { error: { code: number; }; }).error.code,).toBe(
-      JSON_RPC_PARSE_ERROR,
-    );
-  });
-
-  test('returns parse error for valid JSON that is not a JSON-RPC message', async () => {
-    const server = mockServer(undefined,);
-    const input = stdinFromMessages(['{"not":"jsonrpc"}',],);
-    const { writer, lines, } = collectingWriter();
-
-    await serve(server, input, writer,);
-
-    expect(lines,).toHaveLength(1,);
-    const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
-    expect((parsed as { error: { code: number; }; }).error.code,).toBe(
-      JSON_RPC_PARSE_ERROR,
-    );
-  });
-
-  test('does not write response for notifications', async () => {
-    const server = mockServer(undefined,);
-    const input = stdinFromMessages([
-      '{"jsonrpc":"2.0","method":"notifications/initialized"}',
-    ],);
-    const { writer, lines, } = collectingWriter();
-
-    await serve(server, input, writer,);
-
-    expect(lines,).toHaveLength(0,);
-  });
-
-  test('handles multiple messages in sequence', async () => {
-    /** Counter to give each response a unique id. */
-    let callCount = 0;
-    const server: McpServerHandle = {
-      handleMessage: () => {
-        callCount += 1;
-        return { jsonrpc: '2.0' as const, id: callCount, result: {}, };
+        expect(lines,).toEqual([JSON.stringify(serverResponse,),],);
       },
-    };
-    const input = stdinFromMessages([
-      '{"jsonrpc":"2.0","id":1,"method":"ping"}',
-      '{"jsonrpc":"2.0","id":2,"method":"ping"}',
-      '{"jsonrpc":"2.0","id":3,"method":"ping"}',
-    ],);
-    const { writer, lines, } = collectingWriter();
+    }),
+    it({
+      name: 'skips blank lines without sending them to server',
+      fn: async () => {
+        const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
+        const server = mockServer(serverResponse,);
+        const input = stdinFromMessages(['', '  ',
+          '{"jsonrpc":"2.0","id":1,"method":"ping"}',],);
+        const { writer, lines, } = collectingWriter();
 
-    await serve(server, input, writer,);
+        await serve(server, input, writer,);
 
-    expect(lines,).toHaveLength(3,);
-  });
+        expect(lines,).toHaveLength(1,);
+      },
+    }),
+    it({
+      name: 'returns parse error for invalid JSON',
+      fn: async () => {
+        const server = mockServer(undefined,);
+        const input = stdinFromMessages(['not-json',],);
+        const { writer, lines, } = collectingWriter();
 
-  test('continues processing after encountering invalid JSON', async () => {
-    const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
-    const server = mockServer(serverResponse,);
-    const input = stdinFromMessages([
-      'bad-json',
-      '{"jsonrpc":"2.0","id":1,"method":"ping"}',
-    ],);
-    const { writer, lines, } = collectingWriter();
+        await serve(server, input, writer,);
 
-    await serve(server, input, writer,);
+        expect(lines,).toHaveLength(1,);
+        const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
+        expect((parsed as { error: { code: number; }; }).error.code,).toBe(
+          JSON_RPC_PARSE_ERROR,
+        );
+      },
+    }),
+    it({
+      name: 'returns parse error for valid JSON that is not a JSON-RPC message',
+      fn: async () => {
+        const server = mockServer(undefined,);
+        const input = stdinFromMessages(['{"not":"jsonrpc"}',],);
+        const { writer, lines, } = collectingWriter();
 
-    // One parse error response + one valid response.
-    expect(lines,).toHaveLength(2,);
-  });
+        await serve(server, input, writer,);
+
+        expect(lines,).toHaveLength(1,);
+        const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
+        expect((parsed as { error: { code: number; }; }).error.code,).toBe(
+          JSON_RPC_PARSE_ERROR,
+        );
+      },
+    }),
+    it({
+      name: 'does not write response for notifications',
+      fn: async () => {
+        const server = mockServer(undefined,);
+        const input = stdinFromMessages([
+          '{"jsonrpc":"2.0","method":"notifications/initialized"}',
+        ],);
+        const { writer, lines, } = collectingWriter();
+
+        await serve(server, input, writer,);
+
+        expect(lines,).toHaveLength(0,);
+      },
+    }),
+    it({
+      name: 'handles multiple messages in sequence',
+      fn: async () => {
+        /** Counter to give each response a unique id. */
+        let callCount = 0;
+        const server: McpServerHandle = {
+          handleMessage: () => {
+            callCount += 1;
+            return { jsonrpc: '2.0' as const, id: callCount, result: {}, };
+          },
+        };
+        const input = stdinFromMessages([
+          '{"jsonrpc":"2.0","id":1,"method":"ping"}',
+          '{"jsonrpc":"2.0","id":2,"method":"ping"}',
+          '{"jsonrpc":"2.0","id":3,"method":"ping"}',
+        ],);
+        const { writer, lines, } = collectingWriter();
+
+        await serve(server, input, writer,);
+
+        expect(lines,).toHaveLength(3,);
+      },
+    }),
+    it({
+      name: 'continues processing after encountering invalid JSON',
+      fn: async () => {
+        const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
+        const server = mockServer(serverResponse,);
+        const input = stdinFromMessages([
+          'bad-json',
+          '{"jsonrpc":"2.0","id":1,"method":"ping"}',
+        ],);
+        const { writer, lines, } = collectingWriter();
+
+        await serve(server, input, writer,);
+
+        // One parse error response + one valid response.
+        expect(lines,).toHaveLength(2,);
+      },
+    }),
+  ],
 });
 
 //endregion serve

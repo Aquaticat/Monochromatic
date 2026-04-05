@@ -1,8 +1,8 @@
 import {
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 
 import { compareAll, } from './client.multi.compare.ts';
 import { embedAll, } from './client.multi.ts';
@@ -123,150 +123,198 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number,): strin
   return `data:image/png;base64,${btoa(binary,)}`;
 }
 
-//region Single-provider tests (Voyage)
+await describe({
+  name: '',
+  children: [
+    //region Single-provider tests (Voyage)
 
-describe('embed (voyage)', function embedVoyageSuite() {
-  test('returns an embedding vector from a minimal PNG',
-    async function embedMinimalPng() {
-      const dataUri = makeMinimalPngDataUri(255, 0, 0,);
-      const result = await embed({ base64: dataUri, }, { provider: 'voyage', },);
+    describe({
+      name: 'embed (voyage)',
+      children: [
+        it({
+          name: 'returns an embedding vector from a minimal PNG',
+          fn: async () => {
+            const dataUri = makeMinimalPngDataUri(255, 0, 0,);
+            const result = await embed({ base64: dataUri, }, { provider: 'voyage', },);
 
-      expect(result.embedding.length,).toBeGreaterThan(0,);
-      expect(result.usage.totalTokens,).toBeGreaterThan(0,);
-    }, { timeout: 30_000, },);
-});
+            expect(result.embedding.length,).toBeGreaterThan(0,);
+            expect(result.usage.totalTokens,).toBeGreaterThan(0,);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'embedBatch (voyage)',
+      children: [
+        it({
+          name: 'returns embeddings for multiple images',
+          fn: async () => {
+            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const blue = makeMinimalPngDataUri(0, 0, 255,);
+            const result = await embedBatch([{ base64: red, }, { base64: blue, },], {
+              provider: 'voyage',
+            },);
 
-describe('embedBatch (voyage)', function embedBatchVoyageSuite() {
-  test('returns embeddings for multiple images', async function embedBatchMultiple() {
-    const red = makeMinimalPngDataUri(255, 0, 0,);
-    const blue = makeMinimalPngDataUri(0, 0, 255,);
-    const result = await embedBatch([{ base64: red, }, { base64: blue, },], {
-      provider: 'voyage',
-    },);
+            expect(result.embeddings.length,).toBe(2,);
+            const [first, second,] = result.embeddings;
+            if (first === undefined || second === undefined)
+              throw new Error('missing embeddings',);
+            expect(first.length,).toBeGreaterThan(0,);
+            expect(second.length,).toBeGreaterThan(0,);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'compare (voyage)',
+      children: [
+        it({
+          name: 'identical images have similarity near 1',
+          fn: async () => {
+            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const result = await compare({ base64: red, }, { base64: red, }, {
+              provider: 'voyage',
+            },);
 
-    expect(result.embeddings.length,).toBe(2,);
-    const [first, second,] = result.embeddings;
-    if (first === undefined || second === undefined)
-      throw new Error('missing embeddings',);
-    expect(first.length,).toBeGreaterThan(0,);
-    expect(second.length,).toBeGreaterThan(0,);
-  }, { timeout: 30_000, },);
-});
+            expect(result.similarity,).toBeGreaterThan(0.99,);
+            expect(result.distance,).toBeLessThan(0.01,);
+          },
+        }),
+        it({
+          name: 'different-colored images have lower similarity',
+          fn: async () => {
+            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const blue = makeMinimalPngDataUri(0, 0, 255,);
+            const result = await compare({ base64: red, }, { base64: blue, }, {
+              provider: 'voyage',
+            },);
 
-describe('compare (voyage)', function compareVoyageSuite() {
-  test('identical images have similarity near 1', async function identicalImages() {
-    const red = makeMinimalPngDataUri(255, 0, 0,);
-    const result = await compare({ base64: red, }, { base64: red, }, {
-      provider: 'voyage',
-    },);
+            expect(result.similarity,).toBeLessThan(1,);
+            expect(result.distance,).toBeGreaterThan(0,);
+            expect(result.embeddingA.length,).toBe(result.embeddingB.length,);
+          },
+        }),
+      ],
+    }),
 
-    expect(result.similarity,).toBeGreaterThan(0.99,);
-    expect(result.distance,).toBeLessThan(0.01,);
-  }, { timeout: 30_000, },);
+    //endregion Single-provider tests (Voyage)
 
-  test('different-colored images have lower similarity',
-    async function differentImages() {
-      const red = makeMinimalPngDataUri(255, 0, 0,);
-      const blue = makeMinimalPngDataUri(0, 0, 255,);
-      const result = await compare({ base64: red, }, { base64: blue, }, {
-        provider: 'voyage',
-      },);
+    //region Single-provider tests (Gemini)
 
-      expect(result.similarity,).toBeLessThan(1,);
-      expect(result.distance,).toBeGreaterThan(0,);
-      expect(result.embeddingA.length,).toBe(result.embeddingB.length,);
-    }, { timeout: 30_000, },);
-});
+    describe({
+      name: 'embed (gemini)',
+      children: [
+        it({
+          name: 'returns an embedding vector from a minimal PNG',
+          fn: async () => {
+            const dataUri = makeMinimalPngDataUri(255, 0, 0,);
+            const result = await embed({ base64: dataUri, }, { provider: 'gemini', },);
 
-//endregion Single-provider tests (Voyage)
+            expect(result.embedding.length,).toBeGreaterThan(0,);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'embedBatch (gemini)',
+      children: [
+        it({
+          name: 'returns embeddings for multiple images',
+          fn: async () => {
+            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const blue = makeMinimalPngDataUri(0, 0, 255,);
+            const result = await embedBatch([{ base64: red, }, { base64: blue, },], {
+              provider: 'gemini',
+            },);
 
-//region Single-provider tests (Gemini)
+            expect(result.embeddings.length,).toBe(2,);
+            const [first, second,] = result.embeddings;
+            if (first === undefined || second === undefined)
+              throw new Error('missing embeddings',);
+            expect(first.length,).toBeGreaterThan(0,);
+            expect(second.length,).toBeGreaterThan(0,);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'compare (gemini)',
+      children: [
+        it({
+          name: 'identical images have similarity near 1',
+          fn: async () => {
+            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const result = await compare({ base64: red, }, { base64: red, }, {
+              provider: 'gemini',
+            },);
 
-describe('embed (gemini)', function embedGeminiSuite() {
-  test('returns an embedding vector from a minimal PNG',
-    async function embedMinimalPng() {
-      const dataUri = makeMinimalPngDataUri(255, 0, 0,);
-      const result = await embed({ base64: dataUri, }, { provider: 'gemini', },);
+            expect(result.similarity,).toBeGreaterThan(0.99,);
+            expect(result.distance,).toBeLessThan(0.01,);
+          },
+        }),
+        it({
+          name: 'different-colored images have lower similarity',
+          fn: async () => {
+            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const blue = makeMinimalPngDataUri(0, 0, 255,);
+            const result = await compare({ base64: red, }, { base64: blue, }, {
+              provider: 'gemini',
+            },);
 
-      expect(result.embedding.length,).toBeGreaterThan(0,);
-    }, { timeout: 30_000, },);
-});
+            expect(result.similarity,).toBeLessThan(1,);
+            expect(result.distance,).toBeGreaterThan(0,);
+            expect(result.embeddingA.length,).toBe(result.embeddingB.length,);
+          },
+        }),
+      ],
+    }),
 
-describe('embedBatch (gemini)', function embedBatchGeminiSuite() {
-  test('returns embeddings for multiple images', async function embedBatchMultiple() {
-    const red = makeMinimalPngDataUri(255, 0, 0,);
-    const blue = makeMinimalPngDataUri(0, 0, 255,);
-    const result = await embedBatch([{ base64: red, }, { base64: blue, },], {
-      provider: 'gemini',
-    },);
+    //endregion Single-provider tests (Gemini)
 
-    expect(result.embeddings.length,).toBe(2,);
-    const [first, second,] = result.embeddings;
-    if (first === undefined || second === undefined)
-      throw new Error('missing embeddings',);
-    expect(first.length,).toBeGreaterThan(0,);
-    expect(second.length,).toBeGreaterThan(0,);
-  }, { timeout: 30_000, },);
-});
+    //region Multi-provider tests
 
-describe('compare (gemini)', function compareGeminiSuite() {
-  test('identical images have similarity near 1', async function identicalImages() {
-    const red = makeMinimalPngDataUri(255, 0, 0,);
-    const result = await compare({ base64: red, }, { base64: red, }, {
-      provider: 'gemini',
-    },);
+    describe({
+      name: compareAll.name,
+      children: [
+        it({
+          name: 'returns results from both providers',
+          fn: async () => {
+            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const blue = makeMinimalPngDataUri(0, 0, 255,);
+            const results = await compareAll({ base64: red, }, { base64: blue, },);
 
-    expect(result.similarity,).toBeGreaterThan(0.99,);
-    expect(result.distance,).toBeLessThan(0.01,);
-  }, { timeout: 30_000, },);
+            expect(results.length,).toBe(2,);
+            const providers = results.map(function getProvider(r,) {
+              return r.provider;
+            },);
+            expect(providers,).toContain('voyage' as Provider,);
+            expect(providers,).toContain('gemini' as Provider,);
 
-  test('different-colored images have lower similarity',
-    async function differentImages() {
-      const red = makeMinimalPngDataUri(255, 0, 0,);
-      const blue = makeMinimalPngDataUri(0, 0, 255,);
-      const result = await compare({ base64: red, }, { base64: blue, }, {
-        provider: 'gemini',
-      },);
+            for (const entry of results) {
+              expect(entry.result.similarity,).toBeLessThan(1,);
+              expect(entry.result.embeddingA.length,).toBeGreaterThan(0,);
+            }
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: embedAll.name,
+      children: [
+        it({
+          name: 'returns embeddings from both providers',
+          fn: async () => {
+            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const results = await embedAll({ base64: red, },);
 
-      expect(result.similarity,).toBeLessThan(1,);
-      expect(result.distance,).toBeGreaterThan(0,);
-      expect(result.embeddingA.length,).toBe(result.embeddingB.length,);
-    }, { timeout: 30_000, },);
-});
+            expect(results.length,).toBe(2,);
+            for (const entry of results)
+              expect(entry.result.embedding.length,).toBeGreaterThan(0,);
+          },
+        }),
+      ],
+    }),
 
-//endregion Single-provider tests (Gemini)
-
-//region Multi-provider tests
-
-describe('compareAll', function compareAllSuite() {
-  test('returns results from both providers', async function allProvidersCompare() {
-    const red = makeMinimalPngDataUri(255, 0, 0,);
-    const blue = makeMinimalPngDataUri(0, 0, 255,);
-    const results = await compareAll({ base64: red, }, { base64: blue, },);
-
-    expect(results.length,).toBe(2,);
-    const providers = results.map(function getProvider(r,) {
-      return r.provider;
-    },);
-    expect(providers,).toContain('voyage' as Provider,);
-    expect(providers,).toContain('gemini' as Provider,);
-
-    for (const entry of results) {
-      expect(entry.result.similarity,).toBeLessThan(1,);
-      expect(entry.result.embeddingA.length,).toBeGreaterThan(0,);
-    }
-  }, { timeout: 60_000, },);
-});
-
-describe('embedAll', function embedAllSuite() {
-  test('returns embeddings from both providers', async function allProvidersEmbed() {
-    const red = makeMinimalPngDataUri(255, 0, 0,);
-    const results = await embedAll({ base64: red, },);
-
-    expect(results.length,).toBe(2,);
-    for (const entry of results)
-      expect(entry.result.embedding.length,).toBeGreaterThan(0,);
-  }, { timeout: 60_000, },);
-});
-
-//endregion Multi-provider tests
+    //endregion Multi-provider tests
+  ],
+},);

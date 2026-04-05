@@ -23,7 +23,7 @@ extends = "lint"
 extends = "lint:types"
 
 [tasks.'test:unit']
-run = "bun test .unit.test."
+run = "glob '**/*.unit.test.ts' | par-each { |file| bun $file }"
 
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"

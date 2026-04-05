@@ -1,8 +1,8 @@
 import {
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 
 import { readLines, } from './line-reader.ts';
 
@@ -61,58 +61,82 @@ async function collectLines(
 
 //region readLines -- async generator yielding newline-delimited lines
 
-describe('readLines', () => {
-  test('yields single line from newline-terminated input', async () => {
-    const lines = await collectLines(streamFromString('hello\n',),);
-    expect(lines,).toEqual(['hello',],);
-  });
-
-  test('yields multiple lines from single chunk', async () => {
-    const lines = await collectLines(streamFromString('line1\nline2\nline3\n',),);
-    expect(lines,).toEqual(['line1', 'line2', 'line3',],);
-  });
-
-  test('handles line split across chunk boundaries', async () => {
-    const lines = await collectLines(streamFromChunks(['hel', 'lo\nwor', 'ld\n',],),);
-    expect(lines,).toEqual(['hello', 'world',],);
-  });
-
-  test('yields empty array for empty stream', async () => {
-    const lines = await collectLines(streamFromString('',),);
-    expect(lines,).toEqual([],);
-  });
-
-  test('flushes trailing content without final newline', async () => {
-    const lines = await collectLines(streamFromString('no-newline',),);
-    expect(lines,).toEqual(['no-newline',],);
-  });
-
-  test('handles empty lines between content', async () => {
-    const lines = await collectLines(streamFromString('a\n\nb\n',),);
-    expect(lines,).toEqual(['a', '', 'b',],);
-  });
-
-  test('handles multiple consecutive newlines', async () => {
-    const lines = await collectLines(streamFromString('\n\n\n',),);
-    expect(lines,).toEqual(['', '', '',],);
-  });
-
-  test('handles single newline', async () => {
-    const lines = await collectLines(streamFromString('\n',),);
-    expect(lines,).toEqual(['',],);
-  });
-
-  test('handles chunk ending exactly at newline', async () => {
-    const lines = await collectLines(streamFromChunks(['line1\n', 'line2\n',],),);
-    expect(lines,).toEqual(['line1', 'line2',],);
-  });
-
-  test('handles JSON-RPC style messages', async () => {
-    const message1 = '{"jsonrpc":"2.0","id":1,"method":"initialize"}';
-    const message2 = '{"jsonrpc":"2.0","method":"notifications/initialized"}';
-    const lines = await collectLines(streamFromString(`${message1}\n${message2}\n`,),);
-    expect(lines,).toEqual([message1, message2,],);
-  });
+await describe({
+  name: readLines.name,
+  children: [
+    it({
+      name: 'yields single line from newline-terminated input',
+      fn: async () => {
+        const lines = await collectLines(streamFromString('hello\n',),);
+        expect(lines,).toEqual(['hello',],);
+      },
+    }),
+    it({
+      name: 'yields multiple lines from single chunk',
+      fn: async () => {
+        const lines = await collectLines(streamFromString('line1\nline2\nline3\n',),);
+        expect(lines,).toEqual(['line1', 'line2', 'line3',],);
+      },
+    }),
+    it({
+      name: 'handles line split across chunk boundaries',
+      fn: async () => {
+        const lines = await collectLines(streamFromChunks(['hel', 'lo\nwor', 'ld\n',],),);
+        expect(lines,).toEqual(['hello', 'world',],);
+      },
+    }),
+    it({
+      name: 'yields empty array for empty stream',
+      fn: async () => {
+        const lines = await collectLines(streamFromString('',),);
+        expect(lines,).toEqual([],);
+      },
+    }),
+    it({
+      name: 'flushes trailing content without final newline',
+      fn: async () => {
+        const lines = await collectLines(streamFromString('no-newline',),);
+        expect(lines,).toEqual(['no-newline',],);
+      },
+    }),
+    it({
+      name: 'handles empty lines between content',
+      fn: async () => {
+        const lines = await collectLines(streamFromString('a\n\nb\n',),);
+        expect(lines,).toEqual(['a', '', 'b',],);
+      },
+    }),
+    it({
+      name: 'handles multiple consecutive newlines',
+      fn: async () => {
+        const lines = await collectLines(streamFromString('\n\n\n',),);
+        expect(lines,).toEqual(['', '', '',],);
+      },
+    }),
+    it({
+      name: 'handles single newline',
+      fn: async () => {
+        const lines = await collectLines(streamFromString('\n',),);
+        expect(lines,).toEqual(['',],);
+      },
+    }),
+    it({
+      name: 'handles chunk ending exactly at newline',
+      fn: async () => {
+        const lines = await collectLines(streamFromChunks(['line1\n', 'line2\n',],),);
+        expect(lines,).toEqual(['line1', 'line2',],);
+      },
+    }),
+    it({
+      name: 'handles JSON-RPC style messages',
+      fn: async () => {
+        const message1 = '{"jsonrpc":"2.0","id":1,"method":"initialize"}';
+        const message2 = '{"jsonrpc":"2.0","method":"notifications/initialized"}';
+        const lines = await collectLines(streamFromString(`${message1}\n${message2}\n`,),);
+        expect(lines,).toEqual([message1, message2,],);
+      },
+    }),
+  ],
 });
 
 //endregion readLines

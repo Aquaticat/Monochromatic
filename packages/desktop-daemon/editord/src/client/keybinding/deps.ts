@@ -47,12 +47,15 @@ import type { ReferencesPopup, } from '../references/references-popup.ts';
  * @param openTerminalAtCurrentFile - opens a terminal at the directory of the currently open file,
  * or at the project root when no file is open
  *
+ * @param renameAtCursor - initiates a rename at the current cursor position
+ *
  * @param hoverPopup - hover popup to dismiss on Escape
  */
 export type KeybindingDeps = {
   saveCurrentFile: () => void;
   formatDocument: () => void;
   gotoDefinition: () => void;
+  renameAtCursor: () => void;
   deleteCurrentLine: () => void;
   selectAndCopyCurrentLine: () => boolean;
   requestCompletions: () => void;

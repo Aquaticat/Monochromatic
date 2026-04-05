@@ -2,7 +2,8 @@
  * Keyboard shortcut handler for the editord client.
  *
  * Binds Ctrl+S (save), Ctrl+Shift+F / Ctrl+Alt+L (format),
- * Ctrl+B (go to definition / find references), Ctrl+Z (undo),
+ * Ctrl+B (go to definition / find references), Shift+F6 (rename),
+ * Ctrl+Z (undo),
  * Ctrl+Shift+Z (redo), Ctrl+Y (delete current line),
  * Ctrl+C (copy current line when no selection), Ctrl+Space (completions),
  * Ctrl+W (expand selection), Ctrl+Shift+W (shrink selection),
@@ -28,6 +29,7 @@ export function wireKeybindings({
   saveCurrentFile,
   formatDocument,
   gotoDefinition,
+  renameAtCursor,
   deleteCurrentLine,
   selectAndCopyCurrentLine,
   requestCompletions,
@@ -65,6 +67,16 @@ export function wireKeybindings({
       if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
         event.preventDefault();
         gotoDefinition();
+        return;
+      }
+      if (event.shiftKey
+        && !event.ctrlKey
+        && !event.metaKey
+        && !event.altKey
+        && event.key === 'F6')
+      {
+        event.preventDefault();
+        renameAtCursor();
         return;
       }
       if (handleTextEditKey({

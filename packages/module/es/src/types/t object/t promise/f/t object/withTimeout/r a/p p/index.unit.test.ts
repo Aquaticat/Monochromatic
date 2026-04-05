@@ -13,7 +13,7 @@ import {
 import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 
 await describe({
-  name: 'withTimeout',
+  name: withTimeout.name,
   children: [
     it({
       name: 'resolves when promise settles in time',

@@ -1,8 +1,8 @@
 import {
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 import type { SubprocessError, } from 'nano-spawn';
 import spawn from 'nano-spawn';
 
@@ -70,112 +70,154 @@ async function runCliFy({ args, }: { args: readonly string[]; },): Promise<{
   }
 }
 
-describe('cli-fy integration', () => {
-  //region Function calls -- calling exported functions with arguments
+await describe({
+  name: 'cli-fy integration',
+  children: [
+    //region Function calls -- calling exported functions with arguments
 
-  test('calls node:path join with two arguments', async () => {
-    const result = await runCliFy({ args: ['node:path', 'join', '/tmp', 'test',], },);
-    expect(result.stdout.trim(),).toBe('/tmp/test',);
-    expect(result.exitCode,).toBe(0,);
-  });
+    it({
+      name: 'calls node:path join with two arguments',
+      fn: async () => {
+        const result = await runCliFy({ args: ['node:path', 'join', '/tmp', 'test',], },);
+        expect(result.stdout.trim(),).toBe('/tmp/test',);
+        expect(result.exitCode,).toBe(0,);
+      },
+    }),
 
-  test('calls node:path basename with ext argument', async () => {
-    const result = await runCliFy({
-      args: ['node:path', 'basename', '/tmp/foo.txt', '.txt',],
-    },);
-    expect(result.stdout.trim(),).toBe('foo',);
-    expect(result.exitCode,).toBe(0,);
-  });
+    it({
+      name: 'calls node:path basename with ext argument',
+      fn: async () => {
+        const result = await runCliFy({
+          args: ['node:path', 'basename', '/tmp/foo.txt', '.txt',],
+        },);
+        expect(result.stdout.trim(),).toBe('foo',);
+        expect(result.exitCode,).toBe(0,);
+      },
+    }),
 
-  test('coerces numeric arguments for arithmetic', async () => {
-    const result = await runCliFy({ args: ['node:path', 'join', '/a', 'b',], },);
-    expect(result.stdout.trim(),).toBe('/a/b',);
-    expect(result.exitCode,).toBe(0,);
-  });
+    it({
+      name: 'coerces numeric arguments for arithmetic',
+      fn: async () => {
+        const result = await runCliFy({ args: ['node:path', 'join', '/a', 'b',], },);
+        expect(result.stdout.trim(),).toBe('/a/b',);
+        expect(result.exitCode,).toBe(0,);
+      },
+    }),
 
-  //endregion Function calls
+    //endregion Function calls
 
-  //region Non-function exports -- accessing values without calling
+    //region Non-function exports -- accessing values without calling
 
-  test('prints non-function export value when no args given', async () => {
-    const result = await runCliFy({ args: ['node:path', 'sep',], },);
-    expect(result.stdout.trim(),).toBe('/',);
-    expect(result.exitCode,).toBe(0,);
-  });
+    it({
+      name: 'prints non-function export value when no args given',
+      fn: async () => {
+        const result = await runCliFy({ args: ['node:path', 'sep',], },);
+        expect(result.stdout.trim(),).toBe('/',);
+        expect(result.exitCode,).toBe(0,);
+      },
+    }),
 
-  test('prints delimiter export value', async () => {
-    const result = await runCliFy({ args: ['node:path', 'delimiter',], },);
-    expect(result.stdout.trim(),).toBe(':',);
-    expect(result.exitCode,).toBe(0,);
-  });
+    it({
+      name: 'prints delimiter export value',
+      fn: async () => {
+        const result = await runCliFy({ args: ['node:path', 'delimiter',], },);
+        expect(result.stdout.trim(),).toBe(':',);
+        expect(result.exitCode,).toBe(0,);
+      },
+    }),
 
-  //endregion Non-function exports
+    //endregion Non-function exports
 
-  //region Default export -- accessing default export via "default" keyword
+    //region Default export -- accessing default export via "default" keyword
 
-  test('prints default export value from a local fixture', async () => {
-    const result = await runCliFy({
-      args: ['./packages/cli/fy/src/fixtures/return1.ts', 'default',],
-    },);
-    expect(result.stdout,).toBe('1',);
-    expect(result.exitCode,).toBe(0,);
-  });
+    it({
+      name: 'prints default export value from a local fixture',
+      fn: async () => {
+        const result = await runCliFy({
+          args: ['./packages/cli/fy/src/fixtures/return1.ts', 'default',],
+        },);
+        expect(result.stdout,).toBe('1',);
+        expect(result.exitCode,).toBe(0,);
+      },
+    }),
 
-  test('calls default export function and prints its return value', async () => {
-    const result = await runCliFy({
-      args: ['./packages/cli/fy/src/fixtures/return1-fn.ts', 'default',],
-    },);
-    expect(result.stdout,).toBe('1',);
-    expect(result.exitCode,).toBe(0,);
-  });
+    it({
+      name: 'calls default export function and prints its return value',
+      fn: async () => {
+        const result = await runCliFy({
+          args: ['./packages/cli/fy/src/fixtures/return1-fn.ts', 'default',],
+        },);
+        expect(result.stdout,).toBe('1',);
+        expect(result.exitCode,).toBe(0,);
+      },
+    }),
 
-  //endregion Default export
+    //endregion Default export
 
-  //region Error cases -- non-existent exports, type mismatches, bad specifiers
+    //region Error cases -- non-existent exports, type mismatches, bad specifiers
 
-  test('errors when export does not exist', async () => {
-    const result = await runCliFy({ args: ['node:path', 'doesNotExist',], },);
-    expect(result.exitCode,).not.toBe(0,);
-    expect(result.stderr,).toContain('not found',);
-    expect(result.stderr,).toContain('Available exports',);
-  });
+    it({
+      name: 'errors when export does not exist',
+      fn: async () => {
+        const result = await runCliFy({ args: ['node:path', 'doesNotExist',], },);
+        expect(result.exitCode,).not.toBe(0,);
+        expect(result.stderr,).toContain('not found',);
+        expect(result.stderr,).toContain('Available exports',);
+      },
+    }),
 
-  test('errors when non-function export receives arguments', async () => {
-    const result = await runCliFy({ args: ['node:path', 'sep', 'extraArg',], },);
-    expect(result.exitCode,).not.toBe(0,);
-    expect(result.stderr,).toContain('not a function',);
-  });
+    it({
+      name: 'errors when non-function export receives arguments',
+      fn: async () => {
+        const result = await runCliFy({ args: ['node:path', 'sep', 'extraArg',], },);
+        expect(result.exitCode,).not.toBe(0,);
+        expect(result.stderr,).toContain('not a function',);
+      },
+    }),
 
-  test('errors when specifier cannot be resolved', async () => {
-    const result = await runCliFy({ args: ['nonexistent-pkg-99999', 'foo',], },);
-    expect(result.exitCode,).not.toBe(0,);
-    expect(result.stderr,).toContain('Cannot resolve',);
-  });
+    it({
+      name: 'errors when specifier cannot be resolved',
+      fn: async () => {
+        const result = await runCliFy({ args: ['nonexistent-pkg-99999', 'foo',], },);
+        expect(result.exitCode,).not.toBe(0,);
+        expect(result.stderr,).toContain('Cannot resolve',);
+      },
+    }),
 
-  //endregion Error cases
+    //endregion Error cases
 
-  //region Help -- verifies --help output
+    //region Help -- verifies --help output
 
-  test('prints help with --help flag', async () => {
-    const result = await runCliFy({ args: ['--help',], },);
-    expect(result.stdout,).toContain('cli-fy',);
-    expect(result.stdout,).toContain('SPECIFIER',);
-    expect(result.stdout,).toContain('EXPORT',);
-  });
+    it({
+      name: 'prints help with --help flag',
+      fn: async () => {
+        const result = await runCliFy({ args: ['--help',], },);
+        expect(result.stdout,).toContain('cli-fy',);
+        expect(result.stdout,).toContain('SPECIFIER',);
+        expect(result.stdout,).toContain('EXPORT',);
+      },
+    }),
 
-  //endregion Help
+    //endregion Help
 
-  //region Missing arguments -- verifies parser errors
+    //region Missing arguments -- verifies parser errors
 
-  test('errors when no arguments provided', async () => {
-    const result = await runCliFy({ args: [], },);
-    expect(result.exitCode,).not.toBe(0,);
-  });
+    it({
+      name: 'errors when no arguments provided',
+      fn: async () => {
+        const result = await runCliFy({ args: [], },);
+        expect(result.exitCode,).not.toBe(0,);
+      },
+    }),
 
-  test('errors when only specifier provided', async () => {
-    const result = await runCliFy({ args: ['node:path',], },);
-    expect(result.exitCode,).not.toBe(0,);
-  });
+    it({
+      name: 'errors when only specifier provided',
+      fn: async () => {
+        const result = await runCliFy({ args: ['node:path',], },);
+        expect(result.exitCode,).not.toBe(0,);
+      },
+    }),
 
-  //endregion Missing arguments
-});
+    //endregion Missing arguments
+  ],
+},);

@@ -18,6 +18,7 @@
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
     "csstype": "catalog:",
     "typescript": "catalog:"

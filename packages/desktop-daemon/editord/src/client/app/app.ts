@@ -18,6 +18,8 @@ import '../hover/hover-popup.ts';
 import '../completion/completion-popup.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import '../references/references-popup.ts';
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
+import '../rename/rename-input.ts';
 
 import {
   $ as notNullishOrThrow,
@@ -60,6 +62,7 @@ import {
 } from '../log.ts';
 import { createRecentFiles, } from '../recent-files.ts';
 import type { ReferencesPopup, } from '../references/references-popup.ts';
+import type { RenameInput, } from '../rename/rename-input.ts';
 import type { SearchOverlay, } from '../search/search-overlay.ts';
 import { showFixedToast, } from '../toast/toast.ts';
 import { EditorWsClient, } from '../ws/client.ts';
@@ -109,6 +112,8 @@ const hoverPopup = document.createElement('hover-popup',) as HoverPopup;
 const completionPopup = document.createElement('completion-popup',) as CompletionPopup;
 /** References popup component. */
 const referencesPopup = document.createElement('references-popup',) as ReferencesPopup;
+/** Rename input component. */
+const renameInput = document.createElement('rename-input',) as RenameInput;
 /** Binary/media file viewer component. */
 const binaryViewer = document.createElement('binary-viewer',) as BinaryViewer;
 // oxlint-enable typescript-eslint/no-unsafe-type-assertion
@@ -182,6 +187,7 @@ appElement.append(
   hoverPopup,
   completionPopup,
   referencesPopup,
+  renameInput,
 );
 wireFullscreen({ appElement, },);
 
@@ -238,12 +244,14 @@ const {
   gotoDefinitionAtCursor,
   expandSelection,
   shrinkSelection,
+  renameAtCursor,
 } = wireLsp({
   ws,
   editorPane,
   hoverPopup,
   completionPopup,
   referencesPopup,
+  renameInput,
   getCurrentFilePath: function get() {
     return state.currentFilePath;
   },
@@ -309,6 +317,7 @@ wireKeybindings({
     void formatDocument();
   },
   gotoDefinition: gotoDefinitionAtCursor,
+  renameAtCursor,
   deleteCurrentLine: function deleteLine() {
     performDeleteLine({ pane: editorPane, },);
   },

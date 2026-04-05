@@ -1,10 +1,8 @@
 import {
-  afterEach,
-  beforeEach,
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 import {
   mkdir,
   mkdtemp,
@@ -30,199 +28,254 @@ import {
   overwriteIfNotExists,
 } from './write.ts';
 
-//region overwrite
+/** Creates a fresh temp directory and resets tracker state */
+async function setup(prefix: string,): Promise<string> {
+  const tempDir = await mkdtemp(join(tmpdir(), prefix,),);
+  reset();
+  resetWriteTimestamps();
+  return tempDir;
+}
 
-describe('overwrite', () => {
-  /** Temporary directory created fresh for each test */
-  let tempDir: string;
+/** Removes the temp directory */
+async function teardown(tempDir: string,): Promise<void> {
+  await rm(tempDir, { recursive: true, force: true, },);
+}
 
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-write-',),);
-    reset();
-    resetWriteTimestamps();
-  },);
+await describe({
+  name: '',
+  children: [
+    //region overwrite
 
-  afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true, },);
-  },);
+    describe({
+      name: overwrite.name,
+      children: [
+        it({
+          name: 'creates a new file with the given content',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-write-',);
+            const dest = join(tempDir, 'new.txt',);
+            await overwrite(dest, 'fresh content',);
+            expect(await readFile(dest, 'utf8',),).toBe('fresh content',);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'overwrites an existing file when content differs',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-write-',);
+            const dest = join(tempDir, 'existing.txt',);
+            await writeFile(dest, 'old',);
+            await overwrite(dest, 'new',);
+            expect(await readFile(dest, 'utf8',),).toBe('new',);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'skips write when content is identical',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-write-',);
+            const dest = join(tempDir, 'same.txt',);
+            await writeFile(dest, 'unchanged',);
+            await overwrite(dest, 'unchanged',);
+            /** No writeTimestamp recorded because the actual write was skipped */
+            expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'still registers dest in writes set even when skipping',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-write-',);
+            const dest = join(tempDir, 'tracked-skip.txt',);
+            await writeFile(dest, 'same',);
+            await overwrite(dest, 'same',);
+            /** Path should be managed regardless of skip */
+            expect(writes.has(resolve(dest,),),).toBe(true,);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'records writeTimestamp only when content actually changes',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-write-',);
+            const dest = join(tempDir, 'changed.txt',);
+            await writeFile(dest, 'old content',);
 
-  test('creates a new file with the given content', async () => {
-    const dest = join(tempDir, 'new.txt',);
-    await overwrite(dest, 'fresh content',);
-    expect(await readFile(dest, 'utf8',),).toBe('fresh content',);
-  });
+            await overwrite(dest, 'new content',);
+            expect(writeTimestamps.has(resolve(dest,),),).toBe(true,);
 
-  test('overwrites an existing file when content differs', async () => {
-    const dest = join(tempDir, 'existing.txt',);
-    await writeFile(dest, 'old',);
-    await overwrite(dest, 'new',);
-    expect(await readFile(dest, 'utf8',),).toBe('new',);
-  });
+            resetWriteTimestamps();
+            await overwrite(dest, 'new content',);
+            /** Same content now -- should NOT record timestamp */
+            expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'creates parent directories if they do not exist',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-write-',);
+            const dest = join(tempDir, 'a', 'b', 'c', 'deep.txt',);
+            await overwrite(dest, 'deep',);
+            expect(await readFile(dest, 'utf8',),).toBe('deep',);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'handles empty content',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-write-',);
+            const dest = join(tempDir, 'empty.txt',);
+            await overwrite(dest, '',);
+            expect(await readFile(dest, 'utf8',),).toBe('',);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'handles content with special characters',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-write-',);
+            const content = 'line1\nline2\ttab\r\nwindows\n\u{1F600}emoji';
+            const dest = join(tempDir, 'special.txt',);
+            await overwrite(dest, content,);
+            expect(await readFile(dest, 'utf8',),).toBe(content,);
+            await teardown(tempDir,);
+          },
+        }),
+      ],
+    }),
 
-  test('skips write when content is identical', async () => {
-    const dest = join(tempDir, 'same.txt',);
-    await writeFile(dest, 'unchanged',);
-    await overwrite(dest, 'unchanged',);
-    /** No writeTimestamp recorded because the actual write was skipped */
-    expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
-  });
+    //endregion overwrite
 
-  test('still registers dest in writes set even when skipping', async () => {
-    const dest = join(tempDir, 'tracked-skip.txt',);
-    await writeFile(dest, 'same',);
-    await overwrite(dest, 'same',);
-    /** Path should be managed regardless of skip */
-    expect(writes.has(resolve(dest,),),).toBe(true,);
-  });
+    //region overwriteIfNotExists
 
-  test('records writeTimestamp only when content actually changes', async () => {
-    const dest = join(tempDir, 'changed.txt',);
-    await writeFile(dest, 'old content',);
+    describe({
+      name: overwriteIfNotExists.name,
+      children: [
+        it({
+          name: 'creates file when it does not exist',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-wne-',);
+            const dest = join(tempDir, 'new.txt',);
+            await overwriteIfNotExists(dest, 'created',);
+            expect(await readFile(dest, 'utf8',),).toBe('created',);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'skips writing when file already exists',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-wne-',);
+            const dest = join(tempDir, 'keep.txt',);
+            await writeFile(dest, 'original',);
+            await overwriteIfNotExists(dest, 'should-not-appear',);
+            expect(await readFile(dest, 'utf8',),).toBe('original',);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'still registers dest as managed when skipped',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-wne-',);
+            const dest = join(tempDir, 'skipme.txt',);
+            await writeFile(dest, 'existing',);
+            await overwriteIfNotExists(dest, 'ignored',);
+            expect(writes.has(resolve(dest,),),).toBe(true,);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'creates parent directories for new files',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-wne-',);
+            const dest = join(tempDir, 'sub', 'dir', 'new.txt',);
+            await overwriteIfNotExists(dest, 'nested',);
+            expect(await readFile(dest, 'utf8',),).toBe('nested',);
+            await teardown(tempDir,);
+          },
+        }),
+      ],
+    }),
 
-    await overwrite(dest, 'new content',);
-    expect(writeTimestamps.has(resolve(dest,),),).toBe(true,);
+    //endregion overwriteIfNotExists
 
-    resetWriteTimestamps();
-    await overwrite(dest, 'new content',);
-    /** Same content now -- should NOT record timestamp */
-    expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
-  });
+    //region overwriteEach
 
-  test('creates parent directories if they do not exist', async () => {
-    const dest = join(tempDir, 'a', 'b', 'c', 'deep.txt',);
-    await overwrite(dest, 'deep',);
-    expect(await readFile(dest, 'utf8',),).toBe('deep',);
-  });
+    describe({
+      name: overwriteEach.name,
+      children: [
+        it({
+          name: 'writes each file to its mirrored destination',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-each-',);
+            const srcDir = join(tempDir, 'src',);
+            await mkdir(srcDir, { recursive: true, },);
 
-  test('handles empty content', async () => {
-    const dest = join(tempDir, 'empty.txt',);
-    await overwrite(dest, '',);
-    expect(await readFile(dest, 'utf8',),).toBe('',);
-  });
+            const files = globResults(join(srcDir, '*.ts',), [
+              { path: join(srcDir, 'a.ts',), content: 'alpha', },
+              { path: join(srcDir, 'b.ts',), content: 'beta', },
+            ],);
 
-  test('handles content with special characters', async () => {
-    const content = 'line1\nline2\ttab\r\nwindows\n\u{1F600}emoji';
-    const dest = join(tempDir, 'special.txt',);
-    await overwrite(dest, content,);
-    expect(await readFile(dest, 'utf8',),).toBe(content,);
-  });
-});
+            await overwriteEach(join(tempDir, 'dest', '*.ts',), files,);
 
-//endregion overwrite
+            expect(await readFile(join(tempDir, 'dest', 'a.ts',), 'utf8',),).toBe('alpha',);
+            expect(await readFile(join(tempDir, 'dest', 'b.ts',), 'utf8',),).toBe('beta',);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'skips files whose destination content is already identical',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-each-',);
+            const srcDir = join(tempDir, 'src',);
+            const destDir = join(tempDir, 'dest',);
+            await mkdir(srcDir, { recursive: true, },);
+            await mkdir(destDir, { recursive: true, },);
 
-//region overwriteIfNotExists
+            /** Pre-populate destination with identical content */
+            await writeFile(join(destDir, 'same.ts',), 'unchanged',);
 
-describe('overwriteIfNotExists', () => {
-  /** Temporary directory created fresh for each test */
-  let tempDir: string;
+            const files = globResults(join(srcDir, '*.ts',), [
+              { path: join(srcDir, 'same.ts',), content: 'unchanged', },
+            ],);
 
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-wne-',),);
-    reset();
-    resetWriteTimestamps();
-  },);
+            await overwriteEach(join(destDir, '*.ts',), files,);
 
-  afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true, },);
-  },);
+            /** No writeTimestamp because content was identical */
+            expect(writeTimestamps.size,).toBe(0,);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'handles empty file array without error',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-each-',);
+            await overwriteEach(join(tempDir, 'dest', '*.ts',),
+              globResults(join(tempDir, 'src', '*.ts',), [],),);
+            expect(writes.size,).toBe(0,);
+            await teardown(tempDir,);
+          },
+        }),
+        it({
+          name: 'tracks each destination in writes set',
+          fn: async () => {
+            const tempDir = await setup('file-enforcer-each-',);
+            const srcDir = join(tempDir, 'src',);
+            await mkdir(srcDir, { recursive: true, },);
 
-  test('creates file when it does not exist', async () => {
-    const dest = join(tempDir, 'new.txt',);
-    await overwriteIfNotExists(dest, 'created',);
-    expect(await readFile(dest, 'utf8',),).toBe('created',);
-  });
+            const files = globResults(join(srcDir, '*.ts',), [
+              { path: join(srcDir, 'x.ts',), content: '1', },
+              { path: join(srcDir, 'y.ts',), content: '2', },
+            ],);
 
-  test('skips writing when file already exists', async () => {
-    const dest = join(tempDir, 'keep.txt',);
-    await writeFile(dest, 'original',);
-    await overwriteIfNotExists(dest, 'should-not-appear',);
-    expect(await readFile(dest, 'utf8',),).toBe('original',);
-  });
+            await overwriteEach(join(tempDir, 'out', '*.ts',), files,);
+            expect(writes.size,).toBe(2,);
+            await teardown(tempDir,);
+          },
+        }),
+      ],
+    }),
 
-  test('still registers dest as managed when skipped', async () => {
-    const dest = join(tempDir, 'skipme.txt',);
-    await writeFile(dest, 'existing',);
-    await overwriteIfNotExists(dest, 'ignored',);
-    expect(writes.has(resolve(dest,),),).toBe(true,);
-  });
-
-  test('creates parent directories for new files', async () => {
-    const dest = join(tempDir, 'sub', 'dir', 'new.txt',);
-    await overwriteIfNotExists(dest, 'nested',);
-    expect(await readFile(dest, 'utf8',),).toBe('nested',);
-  });
-});
-
-//endregion overwriteIfNotExists
-
-//region overwriteEach
-
-describe('overwriteEach', () => {
-  /** Temporary directory created fresh for each test */
-  let tempDir: string;
-
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-each-',),);
-    reset();
-    resetWriteTimestamps();
-  },);
-
-  afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true, },);
-  },);
-
-  test('writes each file to its mirrored destination', async () => {
-    const srcDir = join(tempDir, 'src',);
-    await mkdir(srcDir, { recursive: true, },);
-
-    const files = globResults(join(srcDir, '*.ts',), [
-      { path: join(srcDir, 'a.ts',), content: 'alpha', },
-      { path: join(srcDir, 'b.ts',), content: 'beta', },
-    ],);
-
-    await overwriteEach(join(tempDir, 'dest', '*.ts',), files,);
-
-    expect(await readFile(join(tempDir, 'dest', 'a.ts',), 'utf8',),).toBe('alpha',);
-    expect(await readFile(join(tempDir, 'dest', 'b.ts',), 'utf8',),).toBe('beta',);
-  });
-
-  test('skips files whose destination content is already identical', async () => {
-    const srcDir = join(tempDir, 'src',);
-    const destDir = join(tempDir, 'dest',);
-    await mkdir(srcDir, { recursive: true, },);
-    await mkdir(destDir, { recursive: true, },);
-
-    /** Pre-populate destination with identical content */
-    await writeFile(join(destDir, 'same.ts',), 'unchanged',);
-
-    const files = globResults(join(srcDir, '*.ts',), [
-      { path: join(srcDir, 'same.ts',), content: 'unchanged', },
-    ],);
-
-    await overwriteEach(join(destDir, '*.ts',), files,);
-
-    /** No writeTimestamp because content was identical */
-    expect(writeTimestamps.size,).toBe(0,);
-  });
-
-  test('handles empty file array without error', async () => {
-    await overwriteEach(join(tempDir, 'dest', '*.ts',),
-      globResults(join(tempDir, 'src', '*.ts',), [],),);
-    expect(writes.size,).toBe(0,);
-  });
-
-  test('tracks each destination in writes set', async () => {
-    const srcDir = join(tempDir, 'src',);
-    await mkdir(srcDir, { recursive: true, },);
-
-    const files = globResults(join(srcDir, '*.ts',), [
-      { path: join(srcDir, 'x.ts',), content: '1', },
-      { path: join(srcDir, 'y.ts',), content: '2', },
-    ],);
-
-    await overwriteEach(join(tempDir, 'out', '*.ts',), files,);
-    expect(writes.size,).toBe(2,);
-  });
-});
-
-//endregion overwriteEach
+    //endregion overwriteEach
+  ],
+},);

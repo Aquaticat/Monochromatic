@@ -33,7 +33,7 @@ Writes ~68 destination files total.
 
 ### Micro-benchmarks (`perf.bench.test.ts`)
 
-11 tests using `performance.now()` in `bun:test`.
+11 tests using `performance.now()` in `bun:test` (benchmark file, not migrated to module-test).
 Detect gross regressions (10x+ slowdowns) but are inherently unreliable due to JIT optimization, GC pauses, and scheduler jitter.
 Use generous pass thresholds and consume results to prevent dead code elimination.
 

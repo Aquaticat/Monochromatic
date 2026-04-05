@@ -91,3 +91,16 @@ export type LspTextEdit = {
 };
 
 //endregion Text edits
+
+//region Workspace edits
+
+/**
+ * Workspace edit from `textDocument/rename`.
+ * Maps file URIs to arrays of text edits that should be applied.
+ */
+export type LspWorkspaceEdit = {
+  /** Text edits keyed by document URI. */
+  changes?: Record<string, LspTextEdit[]>;
+};
+
+//endregion Workspace edits

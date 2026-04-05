@@ -3,8 +3,8 @@ import { resolve, } from 'node:path';
 import {
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 import spawn from 'nano-spawn';
 
 //region Types
@@ -96,131 +96,179 @@ function uniqueRules(diagnostics: readonly OxlintDiagnostic[],): readonly string
 
 //endregion Helpers
 
-//region Valid fixtures -- expect zero tsdoc violations
+await describe({
+  name: '',
+  children: [
+    //region Valid fixtures -- expect zero tsdoc violations
 
-describe('valid fixtures', () => {
-  test('fully documented declarations produce no violations', async () => {
-    const diagnostics = await lint('valid/documented-declarations.ts',);
-    expect(diagnostics,).toEqual([],);
-  });
+    describe({
+      name: 'valid fixtures',
+      children: [
+        it({
+          name: 'fully documented declarations produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/documented-declarations.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        }),
+        it({
+          name: 'complete TSDoc with params, returns, yields produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/complete-tsdoc.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        }),
+        it({
+          name: '.test.ts files are ignored by tsdoc rules',
+          fn: async () => {
+            const diagnostics = await lint('valid/ignored-extensions.test.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        }),
+      ],
+    }),
 
-  test('complete TSDoc with params, returns, yields produce no violations', async () => {
-    const diagnostics = await lint('valid/complete-tsdoc.ts',);
-    expect(diagnostics,).toEqual([],);
-  });
+    //endregion Valid fixtures
 
-  test('.test.ts files are ignored by tsdoc rules', async () => {
-    const diagnostics = await lint('valid/ignored-extensions.test.ts',);
-    expect(diagnostics,).toEqual([],);
-  });
-});
+    //region Invalid fixtures -- expect specific violations
 
-//endregion Valid fixtures
+    describe({
+      name: 'require-tsdoc',
+      children: [
+        it({
+          name: 'reports missing TSDoc on undocumented declarations',
+          fn: async () => {
+            const diagnostics = await lint('invalid/missing-tsdoc.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('tsdoc(require-tsdoc)',);
 
-//region Invalid fixtures -- expect specific violations
+            // Every diagnostic should be require-tsdoc since file has no TSDoc at all
+            const requireTsdocCount = diagnostics
+              .filter(
+                function isRequireTsdoc(d,): boolean {
+                  return d.code === 'tsdoc(require-tsdoc)';
+                },
+              )
+              .length;
+            // function, arrow, class, type, interface, enum, const = at least 7
+            expect(requireTsdocCount,).toBeGreaterThanOrEqual(7,);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'structural rules',
+      children: [
+        it({
+          name: 'reports structural formatting issues',
+          fn: async () => {
+            const diagnostics = await lint('invalid/structural-issues.ts',);
+            const rules = uniqueRules(diagnostics,);
 
-describe('require-tsdoc', () => {
-  test('reports missing TSDoc on undocumented declarations', async () => {
-    const diagnostics = await lint('invalid/missing-tsdoc.ts',);
-    const rules = uniqueRules(diagnostics,);
-    expect(rules,).toContain('tsdoc(require-tsdoc)',);
+            expect(rules,).toContain('tsdoc(multiline-blocks)',);
+            expect(rules,).toContain('tsdoc(no-multi-asterisks)',);
+            expect(rules,).toContain('tsdoc(tag-lines)',);
+            expect(rules,).toContain('tsdoc(empty-tags)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'tag validation rules',
+      children: [
+        it({
+          name: 'reports invalid tag names and type annotations',
+          fn: async () => {
+            const diagnostics = await lint('invalid/tag-validation-issues.ts',);
+            const rules = uniqueRules(diagnostics,);
 
-    // Every diagnostic should be require-tsdoc since file has no TSDoc at all
-    const requireTsdocCount = diagnostics
-      .filter(
-        function isRequireTsdoc(d,): boolean {
-          return d.code === 'tsdoc(require-tsdoc)';
-        },
-      )
-      .length;
-    // function, arrow, class, type, interface, enum, const = at least 7
-    expect(requireTsdocCount,).toBeGreaterThanOrEqual(7,);
-  });
-});
+            expect(rules,).toContain('tsdoc(check-tag-names)',);
+            expect(rules,).toContain('tsdoc(check-access)',);
+            expect(rules,).toContain('tsdoc(no-types)',);
+          },
+        }),
+        it({
+          name: 'reports specific JSDoc-only tags',
+          fn: async () => {
+            const diagnostics = await lint('invalid/tag-validation-issues.ts',);
+            const tagNameDiags = diagnostics.filter(
+              function isCheckTagNames(d,): boolean {
+                return d.code === 'tsdoc(check-tag-names)';
+              },
+            );
 
-describe('structural rules', () => {
-  test('reports structural formatting issues', async () => {
-    const diagnostics = await lint('invalid/structural-issues.ts',);
-    const rules = uniqueRules(diagnostics,);
+            const messages = tagNameDiags.map(function getMsg(d,): string {
+              return d.message;
+            },);
+            // @type, @typedef, @return, @foobar should all be flagged
+            expect(messages.some(function hasType(m,): boolean {
+              return m.includes('@type',);
+            },),)
+              .toBe(true,);
+            expect(messages.some(function hasTypedef(m,): boolean {
+              return m.includes('@typedef',);
+            },),)
+              .toBe(true,);
+            expect(messages.some(function hasReturn(m,): boolean {
+              return m.includes('@return',);
+            },),)
+              .toBe(true,);
+            expect(messages.some(function hasFoobar(m,): boolean {
+              return m.includes('@foobar',);
+            },),)
+              .toBe(true,);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'param rules',
+      children: [
+        it({
+          name: 'reports parameter documentation issues',
+          fn: async () => {
+            const diagnostics = await lint('invalid/param-issues.ts',);
+            const rules = uniqueRules(diagnostics,);
 
-    expect(rules,).toContain('tsdoc(multiline-blocks)',);
-    expect(rules,).toContain('tsdoc(no-multi-asterisks)',);
-    expect(rules,).toContain('tsdoc(tag-lines)',);
-    expect(rules,).toContain('tsdoc(empty-tags)',);
-  });
-});
+            expect(rules,).toContain('tsdoc(check-param-names)',);
+            expect(rules,).toContain('tsdoc(require-param)',);
+            expect(rules,).toContain('tsdoc(require-param-description)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'returns rules',
+      children: [
+        it({
+          name: 'reports return documentation issues',
+          fn: async () => {
+            const diagnostics = await lint('invalid/returns-issues.ts',);
+            const rules = uniqueRules(diagnostics,);
 
-describe('tag validation rules', () => {
-  test('reports invalid tag names and type annotations', async () => {
-    const diagnostics = await lint('invalid/tag-validation-issues.ts',);
-    const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('tsdoc(require-returns)',);
+            expect(rules,).toContain('tsdoc(require-returns-check)',);
+            expect(rules,).toContain('tsdoc(require-returns-description)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'yields rules',
+      children: [
+        it({
+          name: 'reports yield documentation issues',
+          fn: async () => {
+            const diagnostics = await lint('invalid/yields-issues.ts',);
+            const rules = uniqueRules(diagnostics,);
 
-    expect(rules,).toContain('tsdoc(check-tag-names)',);
-    expect(rules,).toContain('tsdoc(check-access)',);
-    expect(rules,).toContain('tsdoc(no-types)',);
-  });
+            expect(rules,).toContain('tsdoc(require-yields)',);
+            expect(rules,).toContain('tsdoc(require-yields-check)',);
+          },
+        }),
+      ],
+    }),
 
-  test('reports specific JSDoc-only tags', async () => {
-    const diagnostics = await lint('invalid/tag-validation-issues.ts',);
-    const tagNameDiags = diagnostics.filter(
-      function isCheckTagNames(d,): boolean {
-        return d.code === 'tsdoc(check-tag-names)';
-      },
-    );
-
-    const messages = tagNameDiags.map(function getMsg(d,): string {
-      return d.message;
-    },);
-    // @type, @typedef, @return, @foobar should all be flagged
-    expect(messages.some(function hasType(m,): boolean {
-      return m.includes('@type',);
-    },),)
-      .toBe(true,);
-    expect(messages.some(function hasTypedef(m,): boolean {
-      return m.includes('@typedef',);
-    },),)
-      .toBe(true,);
-    expect(messages.some(function hasReturn(m,): boolean {
-      return m.includes('@return',);
-    },),)
-      .toBe(true,);
-    expect(messages.some(function hasFoobar(m,): boolean {
-      return m.includes('@foobar',);
-    },),)
-      .toBe(true,);
-  });
-});
-
-describe('param rules', () => {
-  test('reports parameter documentation issues', async () => {
-    const diagnostics = await lint('invalid/param-issues.ts',);
-    const rules = uniqueRules(diagnostics,);
-
-    expect(rules,).toContain('tsdoc(check-param-names)',);
-    expect(rules,).toContain('tsdoc(require-param)',);
-    expect(rules,).toContain('tsdoc(require-param-description)',);
-  });
-});
-
-describe('returns rules', () => {
-  test('reports return documentation issues', async () => {
-    const diagnostics = await lint('invalid/returns-issues.ts',);
-    const rules = uniqueRules(diagnostics,);
-
-    expect(rules,).toContain('tsdoc(require-returns)',);
-    expect(rules,).toContain('tsdoc(require-returns-check)',);
-    expect(rules,).toContain('tsdoc(require-returns-description)',);
-  });
-});
-
-describe('yields rules', () => {
-  test('reports yield documentation issues', async () => {
-    const diagnostics = await lint('invalid/yields-issues.ts',);
-    const rules = uniqueRules(diagnostics,);
-
-    expect(rules,).toContain('tsdoc(require-yields)',);
-    expect(rules,).toContain('tsdoc(require-yields-check)',);
-  });
-});
-
-//endregion Invalid fixtures
+    //endregion Invalid fixtures
+  ],
+},);

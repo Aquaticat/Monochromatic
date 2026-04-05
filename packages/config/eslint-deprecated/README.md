@@ -14,7 +14,7 @@ Oxlint now covers all rules previously handled by ESLint in this monorepo:
 - **Restricted syntax** -- custom `oxlint-no-restricted-syntax` JS plugin
 - **`no-unnecessary-condition`** -- added to oxlint as nursery rule
   with `allowConstantLoopConditions` support
-- **Vitest** -- not needed (using bun:test)
+- **Vitest** -- not needed (using @monochromatic-dev/module-test)
 - **Astro** -- deprecated
 
 ## Removed package.json dependencies

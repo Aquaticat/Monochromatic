@@ -57,6 +57,46 @@ Use thunks with `sequential: true` to guarantee execution order.
 
 Logs `childName <- suiteName` for each child result.
 
+**Only one top-level `await describe` per file.**
+When a file has multiple logical suites, wrap them in a single
+`await describe({ name: '', children: [...] })` where
+the inner describes are un-awaited promises in the children array:
+
+```ts
+await describe({
+  name: '',
+  children: [
+    describe({
+      name: 'suite A',
+      children: [/* ... */],
+    }),
+    describe({
+      name: 'suite B',
+      children: [/* ... */],
+    }),
+  ],
+});
+```
+
+Multiple top-level `await describe(...)` calls break test completeness:
+`describe` throws on child failure, so the first failing suite
+kills the process and **all subsequent suites are skipped**.
+The wrapper pattern runs children through `Promise.allSettled`,
+guaranteeing every suite executes regardless of earlier failures.
+
+**Derive `name` from the tested export.**
+When the test file exercises a single named export,
+derive the suite name from the export itself rather than hardcoding a string literal:
+
+- **Functions** -- use `.name`:
+  `name: myFunction.name` (stays in sync with renames)
+- **Objects** -- use `.constructor.name`:
+  `name: myObj.constructor.name` (reflects the class or constructor that created it)
+
+This keeps suite names automatically consistent with refactors.
+Fall back to a string literal only when no single export is the test subject
+(e.g. integration tests, multi-export modules).
+
 ### `it({ name, fn, timeout?, skip?, repeats?, fails?, l? })`
 
 Executes a single test case.

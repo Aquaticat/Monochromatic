@@ -21,6 +21,11 @@ import {
   requestReferences,
   requestSelectionRange,
 } from './lsp-features.ts';
+import {
+  type PrepareRenameResult,
+  requestPrepareRename,
+  requestRename,
+} from './lsp-features-rename.ts';
 import type { LspPool, } from './lsp-pool.ts';
 import type {
   LspCompletionItem,
@@ -29,6 +34,7 @@ import type {
   LspRange,
   LspSelectionRange,
   LspTextEdit,
+  LspWorkspaceEdit,
 } from './types.ts';
 
 //region Client resolution helper
@@ -263,6 +269,66 @@ export function managerSelectionRange({
         client,
         path,
         positions,
+      },);
+    },
+  },);
+}
+
+/**
+ * {@inheritDoc requestPrepareRename}
+ *
+ * @returns prepare rename result, or null when no client is available or the request fails
+ */
+export function managerPrepareRename({
+  pool,
+  ...pos
+}: {
+  pool: LspPool;
+} & FilePosition,): Promise<PrepareRenameResult | null> {
+  return withClient({
+    pool,
+    serverType: 'tsgo',
+    path: pos.path,
+    fallback: null,
+    request: function doPrepareRename(client,) {
+      return requestPrepareRename({
+        client,
+        ...pos,
+      },);
+    },
+  },);
+}
+
+/**
+ * {@inheritDoc requestRename}
+ *
+ * @returns workspace edit, or null when no client is available or the request fails
+ */
+export function managerRename({
+  pool,
+  path,
+  line,
+  character,
+  newName,
+}: {
+  pool: LspPool;
+  path: string;
+  line: number;
+  character: number;
+  newName: string;
+},): Promise<LspWorkspaceEdit | null> {
+  return withClient({
+    pool,
+    serverType: 'tsgo',
+    path,
+    fallback: null,
+    request: function doRename(client,) {
+      return requestRename({
+        client,
+        path,
+        line,
+        character,
+        newName,
       },);
     },
   },);

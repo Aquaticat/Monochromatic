@@ -27,7 +27,7 @@ but spaces are a red herring.
 
 The 3 files that matched happen to contain the literal string `.test.`
 somewhere in their source code (e.g. in an import path or comment).
-The other 78 test files contain `test` (from `bun:test`, `test(...)`)
+The other 78 test files contain `test` (from test imports, `it(...)`)
 but never `.test.` surrounded by dots.
 
 The spaces in directory names had no effect --

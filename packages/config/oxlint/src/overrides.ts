@@ -176,10 +176,10 @@ const testOverride = {
     // Test fns are async for consistency even when they contain only sync assertions.
     'typescript/require-await': 'off',
 
-    // bun:test expect().rejects/resolves return Promises that oxlint's type analysis doesn't recognize.
+    // Test harness expect().rejects/resolves return Promises that oxlint's type analysis doesn't recognize.
     'typescript/await-thenable': 'off',
 
-    // bun:test expect() chains produce void-in-expression patterns that are intentional.
+    // Test harness expect() chains produce void-in-expression patterns that are intentional.
     'typescript/no-confusing-void-expression': 'off',
 
     // Test callbacks often have empty bodies for skip/noop cases.

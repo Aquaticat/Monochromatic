@@ -16,6 +16,7 @@ import type {
   SearchResult,
   SelectionRange,
   TextEdit,
+  WorkspaceFileEdit,
 } from './protocol.ts';
 
 //region Server messages
@@ -100,6 +101,18 @@ export type ServerMessage =
     type: 'selectionRangeResult';
     id: string;
     ranges: SelectionRange[];
+  }
+  | {
+    type: 'prepareRenameResult';
+    id: string;
+    canRename: boolean;
+    range?: Range;
+    placeholder?: string;
+  }
+  | {
+    type: 'renameResult';
+    id: string;
+    edits: WorkspaceFileEdit[];
   }
   | {
     type: 'fsActionDone';

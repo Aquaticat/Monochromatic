@@ -1,10 +1,8 @@
 import {
-  afterEach,
-  beforeEach,
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 import {
   mkdtemp,
   rm,
@@ -26,203 +24,292 @@ import {
   watchDirs,
 } from './watch-filter.ts';
 
-//region watchDirs
+await describe({
+  name: '',
+  children: [
+    //region watchDirs
 
-describe('watchDirs', () => {
-  afterEach(() => {
-    reset();
-    resetWriteTimestamps();
-  },);
+    describe({
+      name: watchDirs.name,
+      children: [
+        it({
+          name: 'includes config file directory',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const dirs = watchDirs('/project/file-enforcer.config.ts',);
+            expect(dirs.has('/project',),).toBe(true,);
+          },
+        }),
+        it({
+          name: 'includes parent directories of all tracked reads',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            trackRead('/repo/AGENTS.md',);
+            trackRead('/repo/packages/config/oxlint.json',);
 
-  test('includes config file directory', () => {
-    const dirs = watchDirs('/project/file-enforcer.config.ts',);
-    expect(dirs.has('/project',),).toBe(true,);
-  });
+            const dirs = watchDirs('/repo/config.ts',);
+            expect(dirs.has('/repo',),).toBe(true,);
+            expect(dirs.has('/repo/packages/config',),).toBe(true,);
+          },
+        }),
+        it({
+          name: 'includes parent directories of tracked writes for protection',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            trackDest('/repo/CLAUDE.md',);
 
-  test('includes parent directories of all tracked reads', () => {
-    trackRead('/repo/AGENTS.md',);
-    trackRead('/repo/packages/config/oxlint.json',);
+            const dirs = watchDirs('/repo/config.ts',);
+            expect(dirs.has('/repo',),).toBe(true,);
+          },
+        }),
+        it({
+          name: 'deduplicates directories when multiple paths share a parent',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            trackRead('/repo/a.md',);
+            trackDest('/repo/b.md',);
 
-    const dirs = watchDirs('/repo/config.ts',);
-    expect(dirs.has('/repo',),).toBe(true,);
-    expect(dirs.has('/repo/packages/config',),).toBe(true,);
-  });
+            const dirs = watchDirs('/repo/config.ts',);
+            expect(dirs.size,).toBe(1,);
+          },
+        }),
+        it({
+          name: 'returns only config dir when no reads or writes are tracked',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const dirs = watchDirs('/project/config.ts',);
+            expect(dirs.size,).toBe(1,);
+          },
+        }),
+      ],
+    }),
 
-  test('includes parent directories of tracked writes for protection', () => {
-    trackDest('/repo/CLAUDE.md',);
+    //endregion watchDirs
 
-    const dirs = watchDirs('/repo/config.ts',);
-    expect(dirs.has('/repo',),).toBe(true,);
-  });
+    //region classifyEvent
 
-  test('deduplicates directories when multiple paths share a parent', () => {
-    trackRead('/repo/a.md',);
-    trackDest('/repo/b.md',);
+    describe({
+      name: classifyEvent.name,
+      children: [
+        it({
+          name: 'classifies tracked read file as source',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            trackRead('/repo/AGENTS.md',);
+            expect(await classifyEvent('AGENTS.md', '/repo', '/repo/config.ts',),).toBe(
+              'source',
+            );
+          },
+        }),
+        it({
+          name: 'classifies config file itself as source',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            expect(await classifyEvent('config.ts', '/repo', '/repo/config.ts',),).toBe(
+              'source',
+            );
+          },
+        }),
+        it({
+          name: 'classifies our own write echo as ignore (mtime <= writeTimestamp)',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-classify-',),);
+            try {
+              /** Write a real file so stat() works */
+              const filePath = join(tempDir, 'managed.md',);
+              await writeFile(filePath, 'enforced content',);
+              trackDest(filePath,);
+              trackWriteTime(filePath,);
 
-    const dirs = watchDirs('/repo/config.ts',);
-    expect(dirs.size,).toBe(1,);
-  });
+              /** Immediately after our write, mtime should be <= our timestamp */
+              expect(await classifyEvent('managed.md', tempDir, '/repo/config.ts',),).toBe(
+                'ignore',
+              );
+            } finally {
+              await rm(tempDir, { recursive: true, force: true, },);
+            }
+          },
+        }),
+        it({
+          name: 'classifies external edit as protected (mtime > writeTimestamp)',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-classify-',),);
+            try {
+              /** Write the file and record a timestamp in the past */
+              const filePath = join(tempDir, 'protected.md',);
+              await writeFile(filePath, 'original',);
+              trackDest(filePath,);
+              // Record a timestamp well in the past to simulate stale write
+              /** Offset to push our recorded time into the past */
+              const pastOffset = 2_000;
+              setWriteTimestamp({ filePath, timestamp: Date.now() - pastOffset, },);
 
-  test('returns only config dir when no reads or writes are tracked', () => {
-    const dirs = watchDirs('/project/config.ts',);
-    expect(dirs.size,).toBe(1,);
-  });
-});
+              /** Now modify the file -- its mtime will be "now", after our recorded timestamp */
+              await writeFile(filePath, 'externally modified',);
 
-//endregion watchDirs
+              expect(await classifyEvent('protected.md', tempDir, '/repo/config.ts',),).toBe(
+                'protected',
+              );
+            } finally {
+              await rm(tempDir, { recursive: true, force: true, },);
+            }
+          },
+        }),
+        it({
+          name: 'classifies as protected when dest has no write timestamp (content-skip case)',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-classify-',),);
+            try {
+              /** File registered as managed but never actually written (content was unchanged) */
+              const filePath = join(tempDir, 'skipcase.md',);
+              await writeFile(filePath, 'same',);
+              trackDest(filePath,);
+              // No trackWriteTime -- simulates content-based skip
 
-//region classifyEvent
+              expect(await classifyEvent('skipcase.md', tempDir, '/repo/config.ts',),).toBe(
+                'protected',
+              );
+            } finally {
+              await rm(tempDir, { recursive: true, force: true, },);
+            }
+          },
+        }),
+        it({
+          name: 'classifies as protected when file was deleted externally',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-classify-',),);
+            try {
+              /** Register a path that doesn't exist on disk */
+              trackDest(join(tempDir, 'deleted.md',),);
+              trackWriteTime(join(tempDir, 'deleted.md',),);
 
-describe('classifyEvent', () => {
-  /** Temporary directory for real filesystem operations */
-  let tempDir: string;
+              /** stat() will fail since the file was never created */
+              expect(await classifyEvent('deleted.md', tempDir, '/repo/config.ts',),).toBe(
+                'protected',
+              );
+            } finally {
+              await rm(tempDir, { recursive: true, force: true, },);
+            }
+          },
+        }),
+        it({
+          name: 'classifies unrelated file as ignore',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            trackRead('/repo/AGENTS.md',);
+            expect(await classifyEvent('README.md', '/repo', '/repo/config.ts',),).toBe(
+              'ignore',
+            );
+          },
+        }),
+        it({
+          name: 'write classification takes precedence over read for dual-tracked paths',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-classify-',),);
+            try {
+              /** A file that is both read and written */
+              const filePath = join(tempDir, 'dual.md',);
+              await writeFile(filePath, 'content',);
+              trackRead(filePath,);
+              trackDest(filePath,);
+              trackWriteTime(filePath,);
 
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-classify-',),);
-    reset();
-    resetWriteTimestamps();
-  },);
+              // Immediately after write, echo detection should classify as ignore
+              expect(await classifyEvent('dual.md', tempDir, '/repo/config.ts',),).toBe('ignore',);
+            } finally {
+              await rm(tempDir, { recursive: true, force: true, },);
+            }
+          },
+        }),
+      ],
+    }),
 
-  afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true, },);
-  },);
+    //endregion classifyEvent
 
-  test('classifies tracked read file as source', async () => {
-    trackRead('/repo/AGENTS.md',);
-    expect(await classifyEvent('AGENTS.md', '/repo', '/repo/config.ts',),).toBe(
-      'source',
-    );
-  });
+    //region shouldTrigger
 
-  test('classifies config file itself as source', async () => {
-    expect(await classifyEvent('config.ts', '/repo', '/repo/config.ts',),).toBe(
-      'source',
-    );
-  });
+    describe({
+      name: shouldTrigger.name,
+      children: [
+        it({
+          name: 'returns true for source events',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            trackRead('/repo/AGENTS.md',);
+            expect(await shouldTrigger('AGENTS.md', '/repo', '/repo/config.ts',),).toBe(true,);
+          },
+        }),
+        it({
+          name: 'returns true for protected events',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-trigger-',),);
+            try {
+              /** File with a stale write timestamp */
+              const filePath = join(tempDir, 'stale.md',);
+              await writeFile(filePath, 'old',);
+              trackDest(filePath,);
+              /** Push timestamp into the past */
+              const pastOffset = 2_000;
+              setWriteTimestamp({ filePath, timestamp: Date.now() - pastOffset, },);
+              await writeFile(filePath, 'modified externally',);
 
-  test('classifies our own write echo as ignore (mtime <= writeTimestamp)', async () => {
-    /** Write a real file so stat() works */
-    const filePath = join(tempDir, 'managed.md',);
-    await writeFile(filePath, 'enforced content',);
-    trackDest(filePath,);
-    trackWriteTime(filePath,);
+              expect(await shouldTrigger('stale.md', tempDir, '/repo/config.ts',),).toBe(true,);
+            } finally {
+              await rm(tempDir, { recursive: true, force: true, },);
+            }
+          },
+        }),
+        it({
+          name: 'returns false for ignore events',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            expect(await shouldTrigger('random.txt', '/repo', '/repo/config.ts',),).toBe(false,);
+          },
+        }),
+        it({
+          name: 'returns false for our own write echoes',
+          fn: async () => {
+            reset();
+            resetWriteTimestamps();
+            const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-trigger-',),);
+            try {
+              /** File just written by us */
+              const filePath = join(tempDir, 'echo.md',);
+              await writeFile(filePath, 'ours',);
+              trackDest(filePath,);
+              trackWriteTime(filePath,);
 
-    /** Immediately after our write, mtime should be <= our timestamp */
-    expect(await classifyEvent('managed.md', tempDir, '/repo/config.ts',),).toBe(
-      'ignore',
-    );
-  });
+              expect(await shouldTrigger('echo.md', tempDir, '/repo/config.ts',),).toBe(false,);
+            } finally {
+              await rm(tempDir, { recursive: true, force: true, },);
+            }
+          },
+        }),
+      ],
+    }),
 
-  test('classifies external edit as protected (mtime > writeTimestamp)', async () => {
-    /** Write the file and record a timestamp in the past */
-    const filePath = join(tempDir, 'protected.md',);
-    await writeFile(filePath, 'original',);
-    trackDest(filePath,);
-    // Record a timestamp well in the past to simulate stale write
-    /** Offset to push our recorded time into the past */
-    const pastOffset = 2_000;
-    setWriteTimestamp({ filePath, timestamp: Date.now() - pastOffset, },);
-
-    /** Now modify the file -- its mtime will be "now", after our recorded timestamp */
-    await writeFile(filePath, 'externally modified',);
-
-    expect(await classifyEvent('protected.md', tempDir, '/repo/config.ts',),).toBe(
-      'protected',
-    );
-  });
-
-  test('classifies as protected when dest has no write timestamp (content-skip case)', async () => {
-    /** File registered as managed but never actually written (content was unchanged) */
-    const filePath = join(tempDir, 'skipcase.md',);
-    await writeFile(filePath, 'same',);
-    trackDest(filePath,);
-    // No trackWriteTime -- simulates content-based skip
-
-    expect(await classifyEvent('skipcase.md', tempDir, '/repo/config.ts',),).toBe(
-      'protected',
-    );
-  });
-
-  test('classifies as protected when file was deleted externally', async () => {
-    /** Register a path that doesn't exist on disk */
-    trackDest(join(tempDir, 'deleted.md',),);
-    trackWriteTime(join(tempDir, 'deleted.md',),);
-
-    /** stat() will fail since the file was never created */
-    expect(await classifyEvent('deleted.md', tempDir, '/repo/config.ts',),).toBe(
-      'protected',
-    );
-  });
-
-  test('classifies unrelated file as ignore', async () => {
-    trackRead('/repo/AGENTS.md',);
-    expect(await classifyEvent('README.md', '/repo', '/repo/config.ts',),).toBe(
-      'ignore',
-    );
-  });
-
-  test('write classification takes precedence over read for dual-tracked paths', async () => {
-    /** A file that is both read and written */
-    const filePath = join(tempDir, 'dual.md',);
-    await writeFile(filePath, 'content',);
-    trackRead(filePath,);
-    trackDest(filePath,);
-    trackWriteTime(filePath,);
-
-    // Immediately after write, echo detection should classify as ignore
-    expect(await classifyEvent('dual.md', tempDir, '/repo/config.ts',),).toBe('ignore',);
-  });
-});
-
-//endregion classifyEvent
-
-//region shouldTrigger
-
-describe('shouldTrigger', () => {
-  /** Temporary directory for filesystem operations */
-  let tempDir: string;
-
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-trigger-',),);
-    reset();
-    resetWriteTimestamps();
-  },);
-
-  afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true, },);
-  },);
-
-  test('returns true for source events', async () => {
-    trackRead('/repo/AGENTS.md',);
-    expect(await shouldTrigger('AGENTS.md', '/repo', '/repo/config.ts',),).toBe(true,);
-  });
-
-  test('returns true for protected events', async () => {
-    /** File with a stale write timestamp */
-    const filePath = join(tempDir, 'stale.md',);
-    await writeFile(filePath, 'old',);
-    trackDest(filePath,);
-    /** Push timestamp into the past */
-    const pastOffset = 2_000;
-    setWriteTimestamp({ filePath, timestamp: Date.now() - pastOffset, },);
-    await writeFile(filePath, 'modified externally',);
-
-    expect(await shouldTrigger('stale.md', tempDir, '/repo/config.ts',),).toBe(true,);
-  });
-
-  test('returns false for ignore events', async () => {
-    expect(await shouldTrigger('random.txt', '/repo', '/repo/config.ts',),).toBe(false,);
-  });
-
-  test('returns false for our own write echoes', async () => {
-    /** File just written by us */
-    const filePath = join(tempDir, 'echo.md',);
-    await writeFile(filePath, 'ours',);
-    trackDest(filePath,);
-    trackWriteTime(filePath,);
-
-    expect(await shouldTrigger('echo.md', tempDir, '/repo/config.ts',),).toBe(false,);
-  });
-});
-
-//endregion shouldTrigger
+    //endregion shouldTrigger
+  ],
+},);

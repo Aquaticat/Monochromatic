@@ -1,68 +1,93 @@
 import {
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 import { $, } from './index.ts';
 
-const $$ = '$';
+await describe({
+  name: $.name,
+  children: [
+    it({
+      name: 'returns a valid UUID v4 format',
+      fn: async () => {
+        const uuidV4Regex = /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
+        const uuid = $({},);
+        expect(uuid,).toMatch(uuidV4Regex,);
+      },
+    }),
 
-describe($$, () => {
-  const uuidV4Regex = /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
+    it({
+      name: 'generates different UUIDs on multiple calls',
+      fn: async () => {
+        const uuid1 = $({},);
+        const uuid2 = $({},);
+        expect(uuid1,).not.toBe(uuid2,);
+      },
+    }),
 
-  test('returns a valid UUID v4 format', () => {
-    const uuid = $({},);
-    expect(uuid,).toMatch(uuidV4Regex,);
-  });
+    it({
+      name: 'accepts empty object parameter',
+      fn: async () => {
+        const uuidV4Regex = /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
+        const uuid = $({},);
+        expect(uuid,).toMatch(uuidV4Regex,);
+      },
+    }),
 
-  test('generates different UUIDs on multiple calls', () => {
-    const uuid1 = $({},);
-    const uuid2 = $({},);
-    expect(uuid1,).not.toBe(uuid2,);
-  });
+    it({
+      name: 'generates unique UUIDs across multiple calls',
+      fn: async () => {
+        const uuids = new Set<string>();
+        const callCount = 100;
 
-  test('accepts empty object parameter', () => {
-    const uuid = $({},);
-    expect(uuid,).toMatch(uuidV4Regex,);
-  });
+        for (let callIndex = 0; callIndex < callCount; callIndex++)
+          uuids.add($({},),);
 
-  test('generates unique UUIDs across multiple calls', () => {
-    const uuids = new Set<string>();
-    const callCount = 100;
+        expect(uuids.size,).toBe(callCount,);
+      },
+    }),
 
-    for (let callIndex = 0; callIndex < callCount; callIndex++)
-      uuids.add($({},),);
+    it({
+      name: 'UUID version is always 4',
+      fn: async () => {
+        const uuids = Array.from({ length: 50, }, () => $({},),);
 
-    expect(uuids.size,).toBe(callCount,);
-  });
+        uuids.forEach(uuid => {
+          const versionChar = uuid.charAt(14,);
+          expect(versionChar,).toBe('4',);
+        },);
+      },
+    }),
 
-  test('UUID version is always 4', () => {
-    const uuids = Array.from({ length: 50, }, () => $({},),);
+    it({
+      name: 'UUID variant is correct (8, 9, a, or b at position 19)',
+      fn: async () => {
+        const uuids = Array.from({ length: 50, }, () => $({},),);
+        const validVariants = ['8', '9', 'a', 'b', 'A', 'B',];
 
-    uuids.forEach(uuid => {
-      const versionChar = uuid.charAt(14,);
-      expect(versionChar,).toBe('4',);
-    },);
-  });
+        uuids.forEach(uuid => {
+          const variantChar = uuid.charAt(19,);
+          expect(validVariants,).toContain(variantChar.toLowerCase(),);
+        },);
+      },
+    }),
 
-  test('UUID variant is correct (8, 9, a, or b at position 19)', () => {
-    const uuids = Array.from({ length: 50, }, () => $({},),);
-    const validVariants = ['8', '9', 'a', 'b', 'A', 'B',];
+    it({
+      name: 'produces lowercase UUIDs',
+      fn: async () => {
+        const uuid = $({},);
+        expect(uuid,).toBe(uuid.toLowerCase(),);
+      },
+    }),
 
-    uuids.forEach(uuid => {
-      const variantChar = uuid.charAt(19,);
-      expect(validVariants,).toContain(variantChar.toLowerCase(),);
-    },);
-  });
-
-  test('produces lowercase UUIDs', () => {
-    const uuid = $({},);
-    expect(uuid,).toBe(uuid.toLowerCase(),);
-  });
-
-  test('produces 36 character string (32 hex + 4 dashes)', () => {
-    const uuid = $({},);
-    expect(uuid,).toHaveLength(36,);
-    expect(uuid.split('-',),).toHaveLength(5,);
-  });
+    it({
+      name: 'produces 36 character string (32 hex + 4 dashes)',
+      fn: async () => {
+        const uuid = $({},);
+        expect(uuid,).toHaveLength(36,);
+        expect(uuid.split('-',),).toHaveLength(5,);
+      },
+    }),
+  ],
 },);

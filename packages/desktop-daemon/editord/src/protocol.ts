@@ -120,6 +120,17 @@ export type SelectionRange = {
   parent?: SelectionRange;
 };
 
+/**
+ * Edits for a single file within a workspace edit (e.g. from rename).
+ * Groups text edits by file path for the client to apply.
+ */
+export type WorkspaceFileEdit = {
+  /** Absolute file path. */
+  path: string;
+  /** Text edits to apply to this file. */
+  edits: TextEdit[];
+};
+
 //endregion LSP types
 
 //region File kind

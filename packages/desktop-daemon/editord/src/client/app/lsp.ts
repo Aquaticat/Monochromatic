@@ -9,6 +9,7 @@ import type { CompletionPopup, } from '../completion/completion-popup.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import type { HoverPopup, } from '../hover/hover-popup.ts';
 import type { ReferencesPopup, } from '../references/references-popup.ts';
+import type { RenameInput, } from '../rename/rename-input.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
 import {
@@ -22,6 +23,10 @@ import {
 import { performGotoAtCursor, } from './lsp-goto-cursor.ts';
 import { wireHover, } from './lsp-hover.ts';
 import { wireInlayHints, } from './lsp-inlay.ts';
+import {
+  initiateRename,
+  performRename,
+} from './lsp-rename.ts';
 import { wireSelectionRange, } from './lsp-selection.ts';
 import {
   wireContentSync,
@@ -58,6 +63,7 @@ export function wireLsp(
     hoverPopup,
     completionPopup,
     referencesPopup,
+    renameInput,
     getCurrentFilePath,
     loadFileSafe,
   }: {
@@ -66,6 +72,7 @@ export function wireLsp(
     hoverPopup: HoverPopup;
     completionPopup: CompletionPopup;
     referencesPopup: ReferencesPopup;
+    renameInput: RenameInput;
     getCurrentFilePath: GetCurrentFilePathFn;
     loadFileSafe: LoadFileFn;
   },
@@ -76,6 +83,7 @@ export function wireLsp(
   gotoDefinitionAtCursor: () => void;
   expandSelection: () => void;
   shrinkSelection: () => void;
+  renameAtCursor: () => void;
 } {
   wireContentSync({
     ws,
@@ -127,6 +135,32 @@ export function wireLsp(
     getCurrentFilePath,
   },);
 
+  /**
+   * Wires the rename-confirm event from the rename input to perform the
+   * actual rename. Captures the cursor position at initiation time so the
+   * rename request uses the correct symbol location.
+   */
+  let renamePosition: { line: number; character: number; } | null = null;
+
+  renameInput.addEventListener(
+    'rename-confirm',
+    function handleRenameConfirm(event,) {
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom event detail
+      const { newName, } = (event as CustomEvent<{ newName: string; }>).detail;
+      if (renamePosition !== null) {
+        void performRename({
+          ws,
+          editorPane,
+          getCurrentFilePath,
+          newName,
+          line: renamePosition.line,
+          character: renamePosition.character,
+        },);
+        renamePosition = null;
+      }
+    },
+  );
+
   return {
     formatDocument: function format(): Promise<void> {
       return formatDocument({
@@ -154,6 +188,17 @@ export function wireLsp(
         hoverPopup,
         editorPane,
         referencesPopup,
+      },);
+    },
+    renameAtCursor: function renameAtCursorAction(): void {
+      const pos = editorPane.getCursorPosition();
+      if (pos !== null)
+        renamePosition = pos;
+      void initiateRename({
+        ws,
+        editorPane,
+        renameInput,
+        getCurrentFilePath,
       },);
     },
   };

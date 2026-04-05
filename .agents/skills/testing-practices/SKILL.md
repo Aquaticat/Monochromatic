@@ -1,18 +1,19 @@
 ---
 name: testing-practices
 description: >
-  Testing practices for the monorepo covering bun:test unit tests,
-  Playwright browser and e2e tests, test file conventions, coverage,
-  parameterized tests, async patterns, and bun:test quirks.
+  Testing practices for the monorepo covering the module-test harness,
+  describe/it API, test file conventions, coverage,
+  parameterized tests, async patterns, and sinon integration.
 ---
 
 # Testing practices
 
 ## Test framework
 
-- Unit tests use `bun:test` as the test runner
+- Unit tests use `@monochromatic-dev/module-test` -- a custom harness built on chai, sinon, and expect-type
 - Browser and e2e tests use Playwright, executed inside a podman container
-- All tests run through `mise run` — never invoke `bun test` or `playwright` directly
+- All tests run through `mise run` -- never invoke `bun test` or `playwright` directly
+- Each test file is self-contained with top-level `await describe(...)` -- no external test runner needed
 
 ## Running tests
 
@@ -59,27 +60,77 @@ The browser test server (`playwright/serve.ts`) uses h3.
 
 ## Test file naming
 
-- Unit tests: `{name}.unit.test.ts` — co-located alongside source
+- Unit tests: `{name}.unit.test.ts` -- co-located alongside source
 - Browser tests: `{name}.browser.test.ts`
 - E2E tests: `{name}.e2e.test.ts`
 
-Test discovery uses `rg --files --glob '**/*.unit.test.*'` — no configuration file needed.
+Test discovery uses `rg --files --glob '**/*.unit.test.*'` -- no configuration file needed.
 
 ## Test file setup
 
 ```ts
-import { describe, expect, test } from 'bun:test';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
 
-import { coerceArg } from './coerce.ts';
+import { coerceArg, } from './coerce.ts';
 
-describe('coerceArg', function coerceArgSuite() {
-  test('coerces integer string to number', function coercesInteger() {
-    expect(coerceArg({ arg: '42' })).toBe(42);
-  });
-});
+await describe({
+  name: coerceArg.name,
+  children: [
+    it({
+      name: 'coerces integer string to number',
+      fn: async () => {
+        expect(coerceArg({ arg: '42', },),).toBe(42,);
+      },
+    }),
+  ],
+},);
 ```
 
-Import the function or module under test directly. Use the function name or module name as the `describe` title.
+Key differences from bun:test / Jest:
+- Import `describe`, `it`, `expect` from `@monochromatic-dev/module-test` (not `bun:test`)
+- Use `it` (not `test`)
+- `describe` and `it` take an options object `{ name, children/fn }`, not positional `(name, callback)` arguments
+- `describe` returns a promise -- use `await describe(...)` at the top level
+- Children are concurrent by default via `Promise.allSettled`
+
+## Describe name conventions
+
+When a describe block names a specific **imported function**, use `functionName.name` instead of a string literal.
+This keeps names in sync with refactors.
+
+```ts
+// Imported function -- use .name
+describe({ name: coerceArg.name, ... })
+
+// Constant or descriptive category -- use string literal
+describe({ name: 'SEVERITY_MAP', ... })
+describe({ name: 'error code constants', ... })
+describe({ name: 'valid fixtures', ... })
+```
+
+For the top-level describe in a file, use an empty string `name: ''` when the file tests a single module.
+The empty-name suite is invisible in output -- the filename already identifies what is being tested.
+Nest the real function-named describes as children.
+
+```ts
+await describe({
+  name: '',
+  children: [
+    describe({
+      name: stripAnsi.name,
+      children: [ ... ],
+    }),
+    describe({
+      name: extractRuleName.name,
+      children: [ ... ],
+    }),
+  ],
+});
+```
 
 ## Coverage requirements
 
@@ -102,141 +153,234 @@ if (untestableCondition) {
 ## Test structure
 
 - Use descriptive test names that explain expected behavior
-- Group related tests using `describe` blocks
-- Keep `describe` titles unique at the same scope within a file -- duplicate titles cause misattributed results (see `TROUBLESHOOTING.testing.md`)
-- Use `test.each` for parameterized tests
+- Group related tests using nested `describe` blocks as children
+- Keep `describe` names unique at the same scope within a file -- duplicate names cause misattributed results (see `TROUBLESHOOTING.testing.md`)
+- Use `.map()` to generate parameterized `it` entries in the `children` array
 - Test both happy path and error scenarios
-- Mock external dependencies using `spyOn` and `mock` from `bun:test`
 
-### Parameterized tests with `test.each`
+### Parameterized tests with `.map()`
+
+Since there is no `test.each`, generate `it` entries with `.map()` and spread into `children`:
 
 ```ts
-describe('pathParse', function pathParseSuite() {
-  test.each([
-    { s: '' },
-    { s: '/' },
-    { s: 'foo' },
-    { s: 'foo/bar' },
-    { s: '/foo' },
-  ] as const)('pathParse($s)', function parsesPath({ s }) {
-    expect(pathParse(s)).toStrictEqual(posix.parse(s));
-  });
-});
+await describe({
+  name: shouldIgnoreFile.name,
+  children: [
+    ...IGNORED_EXTENSIONS.map(function mapExt(ext,) {
+      return it({
+        name: `returns true for ${String(ext,)} extension`,
+        fn: async () => {
+          expect(shouldIgnoreFile(`/some/path/file${String(ext,)}`,),).toBe(true,);
+        },
+      });
+    },),
+    it({
+      name: 'returns false for plain .ts files',
+      fn: async () => {
+        expect(shouldIgnoreFile('/some/path/file.ts',),).toBe(false,);
+      },
+    }),
+  ],
+},);
 ```
 
 ### Test timeouts
 
-For tests that involve network calls or slow operations, pass a timeout option as the third argument:
+Pass `timeout` in the options object (milliseconds):
 
 ```ts
-test('fetches embeddings from external API', async function fetchesEmbeddings() {
-  const result = await embed({ input: 'test' });
-  expect(result).toBeDefined();
-}, { timeout: 30_000 });
+it({
+  name: 'fetches embeddings from external API',
+  fn: async () => {
+    const result = await embed({ input: 'test', },);
+    expect(result,).toBeDefined();
+  },
+  timeout: 30_000,
+})
 ```
+
+Suites also accept `timeout` which applies to all children collectively.
+
+### Skipping tests
+
+Pass `skip: true` or `skip: 'reason string'`:
+
+```ts
+it({
+  name: 'unix-only behavior',
+  skip: process.platform === 'win32',
+  fn: async () => { ... },
+})
+```
+
+### Expected failures
+
+Pass `fails: true` to mark a test that is expected to throw.
+A throwing test is PASS; a passing test is FAIL:
+
+```ts
+it({
+  name: 'rejects invalid input',
+  fails: true,
+  fn: async () => {
+    throw new Error('expected',);
+  },
+})
+```
+
+### Repeating tests (flake detection)
+
+Pass `repeats: N` to run the test N additional times after the first:
+
+```ts
+it({
+  name: 'not flaky',
+  repeats: 2,  // runs 3 times total
+  fn: async () => { ... },
+})
+```
+
+### Sequential execution
+
+Children run concurrently by default. Pass `sequential: true` on describe
+to run children one at a time in array order:
+
+```ts
+describe({
+  name: 'ordered operations',
+  sequential: true,
+  children: [
+    () => it({ name: 'step 1', fn: async () => { ... } }),
+    () => it({ name: 'step 2', fn: async () => { ... } }),
+  ],
+})
+```
+
+When `sequential: true`, children should be **thunks** (arrow-wrapped)
+so execution is actually deferred until the previous child settles.
 
 ### Region markers
 
 Use `//region` and `//endregion` markers to organize test groups within a `describe` block:
 
 ```ts
-describe('coerceArg', function coerceArgSuite() {
-  //region Numeric coercion
+await describe({
+  name: coerceArg.name,
+  children: [
+    //region Numeric coercion
 
-  test('coerces integer string to number', function coercesInteger() {
-    expect(coerceArg({ arg: '42' })).toBe(42);
-  });
+    it({
+      name: 'coerces integer string to number',
+      fn: async () => {
+        expect(coerceArg({ arg: '42', },),).toBe(42,);
+      },
+    }),
 
-  test('coerces negative integer string to number', function coercesNegative() {
-    expect(coerceArg({ arg: '-7' })).toBe(-7);
-  });
+    //endregion Numeric coercion
 
-  //endregion Numeric coercion
+    //region Boolean and null coercion
 
-  //region Boolean and null coercion
+    it({
+      name: 'coerces "true" to boolean true',
+      fn: async () => {
+        expect(coerceArg({ arg: 'true', },),).toBe(true,);
+      },
+    }),
 
-  test('coerces "true" to boolean true', function coercesTrue() {
-    expect(coerceArg({ arg: 'true' })).toBe(true);
-  });
-
-  //endregion Boolean and null coercion
-});
+    //endregion Boolean and null coercion
+  ],
+},);
 ```
 
 Region markers provide IDE folding and navigability in long test files.
-They also prevent accidental duplicate `describe` blocks at the same scope.
 
-### Async testing with `expect.assertions`
+### Assertion count verification
 
-For async tests where assertions run inside callbacks or after async operations, declare the expected assertion count:
+The `it` function provides a scoped `expect` via the test context parameter.
+Use `ctx.expect.assertions(n)` to verify exactly N assertions run:
 
 ```ts
-test('config file that copies one file to another', async function copiesFile() {
-  expect.assertions(2);
-  await writeFile(join(tempDir, 'source.md'), '# Source Content');
-
-  await import(configPath);
-
-  expect(await readFile(join(tempDir, 'dest.md'), 'utf8')).toBe('# Source Content');
-  expect(reads.size).toBeGreaterThan(0);
-});
+it({
+  name: 'all assertions execute',
+  fn: async (ctx,) => {
+    ctx.expect.assertions(2,);
+    ctx.expect(await readFile(path,),).toBe('content',);
+    ctx.expect(exists,).toBe(true,);
+  },
+})
 ```
 
-### Integration tests with setup and teardown
+The global `expect` also works but does not support assertion counting.
 
-Use `beforeEach`/`afterEach` with module-scoped variables for integration tests that need temporary state:
+### Sinon sandbox for spies/stubs
+
+The test context provides a sinon sandbox that auto-restores after the test:
 
 ```ts
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-
-describe('integration: config execution', function configExecutionSuite() {
-  let tempDir: string;
-
-  beforeEach(async function createTempDir() {
-    tempDir = await mkdtemp(join(tmpdir(), 'my-test-'));
-  });
-
-  afterEach(async function removeTempDir() {
-    await rm(tempDir, { recursive: true, force: true });
-  });
-
-  test('writes output to temp dir', async function writesOutput() {
-    // ... uses tempDir
-  });
-});
+it({
+  name: 'logs a message',
+  fn: async (ctx,) => {
+    const spy = ctx.sinon.spy(console, 'log',);
+    doSomething();
+    expect(spy,).toHaveBeenCalledWith('hello',);
+  },
+})
 ```
 
 ## Type-level testing
 
-Use type-level tests for complex type utilities:
+Use `expectTypeOf` from `expect-type` (re-exported by `@monochromatic-dev/module-test`):
 
 ```ts
 import {
-  type IsArrayFixedLength,
-} from '@monochromatic-dev/module-es';
-import {
   describe,
   expectTypeOf,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 
-describe('ArrayFixedLength', function arrayFixedLengthSuite() {
-  test('IsArrayFixedLength', function isArrayFixedLength() {
-    expectTypeOf<IsArrayFixedLength<[number, string]>>().toEqualTypeOf<true>();
-  });
-});
+await describe({
+  name: 'ArrayFixedLength',
+  children: [
+    it({
+      name: 'IsArrayFixedLength',
+      fn: async () => {
+        expectTypeOf<IsArrayFixedLength<[number, string]>>().toEqualTypeOf<true>();
+      },
+    }),
+  ],
+},);
 ```
 
-## `bun:test` quirks
+## Available matchers
 
-- Import `expect` directly from `bun:test` — it is **not** available as a test context parameter
-- `test.for` is not available — use `test.each` instead
-- `test.extend` (fixtures) is not available — use `beforeEach`/`afterEach` with module-scoped variables
-- `test('name', { skip: condition }, fn)` options object is not available — use `test.skipIf(condition)('name', fn)`
-- `vi.spyOn` becomes `spyOn` (imported from `bun:test`)
+The `expect` function provides Jest-compatible matchers backed by chai:
 
-For known bun:test issues (duplicate describe blocks, missing test output, misattributed logs),
-see `TROUBLESHOOTING.testing.md` in the repository root.
+**Value matchers**: `toBe`, `toEqual`, `toStrictEqual`, `toContain`, `toContainEqual`,
+`toMatch`, `toMatchObject`, `toSatisfy`, `toBeCloseTo`
+
+**Type/state matchers**: `toBeDefined`, `toBeUndefined`, `toBeNull`, `toBeTruthy`,
+`toBeFalsy`, `toBeNaN`, `toBeTypeOf`, `toBeInstanceOf`
+
+**Comparison matchers**: `toBeGreaterThan`, `toBeGreaterThanOrEqual`,
+`toBeLessThan`, `toBeLessThanOrEqual`
+
+**Collection matchers**: `toHaveLength`, `toHaveProperty`
+
+**Error matcher**: `toThrow`
+
+**Spy matchers** (sinon-chai): `toHaveBeenCalled`, `toHaveBeenCalledTimes`,
+`toHaveBeenCalledWith`, `toHaveBeenCalledExactlyOnceWith`,
+`toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`,
+`toHaveReturned`, `toHaveReturnedTimes`, `toHaveReturnedWith`,
+`toHaveLastReturnedWith`, `toHaveNthReturnedWith`
+
+**Negation**: `expect(x).not.toBe(y)`
+
+**Promise matchers**: `expect(promise).rejects.toThrow()`, `expect(promise).resolves.toBe(42)`
+
+**Asymmetric matchers** (for use inside `toHaveBeenCalledWith`):
+`expect.stringContaining`, `expect.stringMatching`, `expect.objectContaining`,
+`expect.arrayContaining`, `expect.anything`, `expect.any`
 
 ## Linting test code
 
@@ -246,15 +390,12 @@ When tests intentionally violate a lint rule to verify behavior:
 
 ```ts
 // BAD: Adding data to satisfy the linter
-expect(isError(new Error('test message'))).toBe(true);
+expect(isError(new Error('test message'),),).toBe(true,);
 
 // GOOD: Use disable comments for intentional violations
 // oxlint-disable-next-line unicorn/error-message -- Testing error without message
-expect(isError(new Error())).toBe(true);
+expect(isError(new Error(),),).toBe(true,);
 ```
 
-### Async patterns
-
-- Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(resolve, ms))`
-- Add `eslint-disable-next-line no-await-in-loop` when sequential processing is required
-- Import and use existing promise utilities instead of creating new promises
+For known testing issues (duplicate describe blocks, missing test output, misattributed logs),
+see `TROUBLESHOOTING.testing.md` in the repository root.

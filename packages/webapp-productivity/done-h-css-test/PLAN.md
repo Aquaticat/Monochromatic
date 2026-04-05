@@ -1125,7 +1125,7 @@ volumes:
 
 ### 7.6 Testing (~0h, stretch goal)
 
-- Unit tests for critical database functions (bun:test): CRUD, timer, blocking validation
+- Unit tests for critical database functions (module-test): CRUD, timer, blocking validation
 - Basic Playwright smoke test: create task -> appears in inbox -> start timer -> appears in In Progress
 
 ### 7.7 Documentation (~0h, only if time permits)

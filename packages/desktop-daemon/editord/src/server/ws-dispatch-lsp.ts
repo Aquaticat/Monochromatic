@@ -2,7 +2,8 @@
  * LSP message dispatch handlers for the WebSocket server.
  *
  * Handles hover, completion, format, gotoDefinition, findReferences,
- * selectionRange, inlayHint, didChange, didClose, and watchDir messages.
+ * selectionRange, inlayHint, prepareRename, rename, didChange, didClose,
+ * and watchDir messages.
  */
 
 import type {
@@ -10,6 +11,7 @@ import type {
   TextEdit,
 } from '../protocol.ts';
 import type { LspManager, } from './lsp/lsp-manager.ts';
+import { applyWorkspaceEdit, } from './operations/apply-workspace-edit.ts';
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import type { DirWatcher, } from './operations/watch-filesystem.ts';
 import {
@@ -314,6 +316,87 @@ export async function dispatchLspMessage(
         type: 'selectionRangeResult',
         id: parsed.id,
         ranges,
+      },
+    },);
+    return true;
+  }
+  if (parsed.type === 'prepareRename') {
+    if (lspManager === null) {
+      return replyEmpty({
+        peer,
+        message: {
+          type: 'prepareRenameResult',
+          id: parsed.id,
+          canRename: false,
+        },
+      },);
+    }
+    const result = await lspManager.prepareRename({
+      path: parsed.path,
+      line: parsed.line,
+      character: parsed.character,
+    },);
+    if (result === null) {
+      sendJson({
+        peer,
+        message: {
+          type: 'prepareRenameResult',
+          id: parsed.id,
+          canRename: false,
+        },
+      },);
+      return true;
+    }
+    sendJson({
+      peer,
+      message: {
+        type: 'prepareRenameResult',
+        id: parsed.id,
+        canRename: true,
+        range: result.range,
+        placeholder: result.placeholder,
+      },
+    },);
+    return true;
+  }
+  if (parsed.type === 'rename') {
+    if (lspManager === null) {
+      return replyEmpty({
+        peer,
+        message: {
+          type: 'renameResult',
+          id: parsed.id,
+          edits: [],
+        },
+      },);
+    }
+    const workspaceEdit = await lspManager.rename({
+      path: parsed.path,
+      line: parsed.line,
+      character: parsed.character,
+      newName: parsed.newName,
+    },);
+    if (workspaceEdit === null) {
+      sendJson({
+        peer,
+        message: {
+          type: 'renameResult',
+          id: parsed.id,
+          edits: [],
+        },
+      },);
+      return true;
+    }
+    const fileEdits = await applyWorkspaceEdit({
+      workspaceEdit,
+      currentFilePath: parsed.path,
+    },);
+    sendJson({
+      peer,
+      message: {
+        type: 'renameResult',
+        id: parsed.id,
+        edits: fileEdits,
       },
     },);
     return true;

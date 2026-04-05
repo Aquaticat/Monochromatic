@@ -109,6 +109,20 @@ glob "src/**/*.ts" | where { not ($in | str contains ".test.") } | each { |file|
 glob "src/**/*.ts" | sort | each { |file| bun run $file }
 ```
 
+### Watch mode
+
+For tasks that support a `--watch` flag (e.g. `bun --watch`),
+append the flag to each execution rather than wrapping with an external watcher like `watchexec`.
+This lets the runtime handle file watching natively with faster restarts and proper cleanup.
+
+```nushell
+# Watch mode: append --watch to each bun invocation
+glob "**/*.unit.test.ts" | par-each { |file| bun --watch $file }
+```
+
+Use external watchers (`watchexec`, `mise watch`) only when the underlying command
+has no built-in watch support.
+
 ### Why this works
 
 - **Depends only on the task shell** -- no mise template functions, no runtime APIs, no extra CLI tools

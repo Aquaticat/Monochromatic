@@ -6,11 +6,10 @@ import {
 import { resolve, } from 'node:path';
 
 import {
-  afterEach,
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 import spawn from 'nano-spawn';
 
 //region Types
@@ -127,272 +126,326 @@ function uniqueRules(diagnostics: readonly OxlintDiagnostic[],): readonly string
   return deduped;
 }
 
+/**
+ * Cleans up a temporary file, ignoring errors if it does not exist.
+ *
+ * @param filePath - absolute path to remove
+ */
+function cleanupFile(filePath: string,): void {
+  try {
+    unlinkSync(filePath,);
+  }
+  catch {
+    // file may not exist if test failed before creating it
+  }
+}
+
 //endregion Helpers
 
-//region Valid fixtures -- expect zero stylistic violations
+await describe({
+  name: '',
+  children: [
+    //region Valid fixtures -- expect zero stylistic violations
 
-describe(
-  'valid fixtures',
-  () => {
-    test('already-per-line constructs produce no violations', async () => {
-      const diagnostics = await lint('valid/already-per-line.ts',);
-      expect(diagnostics,).toEqual([],);
-    });
+    describe({
+      name: 'valid fixtures',
+      children: [
+        it({
+          name: 'already-per-line constructs produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/already-per-line.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        }),
+        it({
+          name: 'single-item constructs produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/single-item.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        }),
+        it({
+          name: 'empty constructs produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/empty-constructs.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        }),
+      ],
+    }),
 
-    test('single-item constructs produce no violations', async () => {
-      const diagnostics = await lint('valid/single-item.ts',);
-      expect(diagnostics,).toEqual([],);
-    });
+    //endregion Valid fixtures
 
-    test('empty constructs produce no violations', async () => {
-      const diagnostics = await lint('valid/empty-constructs.ts',);
-      expect(diagnostics,).toEqual([],);
-    });
-  },
-);
+    //region Invalid fixtures -- expect specific violations
 
-//endregion Valid fixtures
+    describe({
+      name: 'param-per-line',
+      children: [
+        it({
+          name: 'reports params on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/param-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(param-per-line)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'argument-per-line',
+      children: [
+        it({
+          name: 'reports arguments on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/argument-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(argument-per-line)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'array-element-per-line',
+      children: [
+        it({
+          name: 'reports array elements on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/array-element-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(array-element-per-line)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'object-property-per-line',
+      children: [
+        it({
+          name: 'reports object properties on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/object-property-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(object-property-per-line)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'import-per-line',
+      children: [
+        it({
+          name: 'reports import specifiers on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/import-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(import-per-line)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'export-per-line',
+      children: [
+        it({
+          name: 'reports export specifiers on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/export-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(export-per-line)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'type-property-per-line',
+      children: [
+        it({
+          name: 'reports type members on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/type-property-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(type-property-per-line)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'tuple-per-line',
+      children: [
+        it({
+          name: 'reports tuple elements on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/tuple-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(tuple-per-line)',);
+          },
+        }),
+      ],
+    }),
+    describe({
+      name: 'destructure-per-line',
+      children: [
+        it({
+          name: 'reports destructured properties on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/destructure-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(destructure-per-line)',);
+          },
+        }),
+      ],
+    }),
 
-//region Invalid fixtures -- expect specific violations
+    //endregion Invalid fixtures
 
-describe(
-  'param-per-line',
-  () => {
-    test('reports params on the same line', async () => {
-      const diagnostics = await lint('invalid/param-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(param-per-line)',);
-    });
-  },
-);
+    //region Autofix tests
 
-describe(
-  'argument-per-line',
-  () => {
-    test('reports arguments on the same line', async () => {
-      const diagnostics = await lint('invalid/argument-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(argument-per-line)',);
-    });
-  },
-);
+    describe({
+      name: 'autofix',
+      children: [
+        it({
+          name: '--fix produces zero violations',
+          fn: async () => {
+            /** Temporary copy of fixable.ts that gets modified by --fix. */
+            const fixableSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'fixable.ts',
+            );
+            const fixableCopy = resolve(
+              FIXTURES,
+              'invalid',
+              'fixable.copy.ts',
+            );
 
-describe(
-  'array-element-per-line',
-  () => {
-    test('reports array elements on the same line', async () => {
-      const diagnostics = await lint('invalid/array-element-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(array-element-per-line)',);
-    });
-  },
-);
+            // Copy the fixable fixture so --fix doesn't modify the original
+            copyFileSync(fixableSrc, fixableCopy,);
 
-describe(
-  'object-property-per-line',
-  () => {
-    test('reports object properties on the same line', async () => {
-      const diagnostics = await lint('invalid/object-property-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(object-property-per-line)',);
-    });
-  },
-);
+            // Run --fix on the copy
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  fixableCopy,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may still exit non-zero if unfixable issues remain
+            }
 
-describe(
-  'import-per-line',
-  () => {
-    test('reports import specifiers on the same line', async () => {
-      const diagnostics = await lint('invalid/import-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(import-per-line)',);
-    });
-  },
-);
+            // Re-lint the fixed copy
+            const diagnostics = await lint('invalid/fixable.copy.ts',);
+            const stylisticDiags = diagnostics.filter(
+              function isStylistic(d,): boolean {
+                return d.code.startsWith('stylistic(',);
+              },
+            );
+            expect(stylisticDiags,).toEqual([],);
 
-describe(
-  'export-per-line',
-  () => {
-    test('reports export specifiers on the same line', async () => {
-      const diagnostics = await lint('invalid/export-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(export-per-line)',);
-    });
-  },
-);
+            cleanupFile(fixableCopy,);
+          },
+        }),
+        it({
+          name: '--fix preserves trailing commas',
+          fn: async () => {
+            const trailingSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'fixable-trailing-comma.ts',
+            );
+            const trailingCopy = resolve(
+              FIXTURES,
+              'invalid',
+              'fixable-trailing-comma.copy.ts',
+            );
+            copyFileSync(trailingSrc, trailingCopy,);
 
-describe(
-  'type-property-per-line',
-  () => {
-    test('reports type members on the same line', async () => {
-      const diagnostics = await lint('invalid/type-property-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(type-property-per-line)',);
-    });
-  },
-);
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  trailingCopy,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may still exit non-zero
+            }
 
-describe(
-  'tuple-per-line',
-  () => {
-    test('reports tuple elements on the same line', async () => {
-      const diagnostics = await lint('invalid/tuple-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(tuple-per-line)',);
-    });
-  },
-);
+            const fixedContent = readFileSync(trailingCopy, 'utf8',);
 
-describe(
-  'destructure-per-line',
-  () => {
-    test('reports destructured properties on the same line', async () => {
-      const diagnostics = await lint('invalid/destructure-per-line.ts',);
-      const rules = uniqueRules(diagnostics,);
-      expect(rules,).toContain('stylistic(destructure-per-line)',);
-    });
-  },
-);
+            // Trailing commas should be preserved on all items including the last
+            expect(fixedContent,).toContain('  name: string,',);
+            expect(fixedContent,).toContain('  age: number,',);
+            expect(fixedContent,).toMatch(/\s+3,\n/,);
+            expect(fixedContent,).toContain('  port: 3000,',);
+            expect(fixedContent,).toContain('  port,',);
 
-//endregion Invalid fixtures
+            cleanupFile(trailingCopy,);
+          },
+        }),
+        it({
+          name: '--fix places each item on its own line',
+          fn: async () => {
+            /** Temporary copy of fixable.ts that gets modified by --fix. */
+            const fixableSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'fixable.ts',
+            );
+            const fixableCopy = resolve(
+              FIXTURES,
+              'invalid',
+              'fixable.copy.ts',
+            );
 
-//region Autofix tests
+            copyFileSync(fixableSrc, fixableCopy,);
 
-describe(
-  'autofix',
-  () => {
-    /** Temporary copy of fixable.ts that gets modified by --fix. */
-    const fixableSrc = resolve(
-      FIXTURES,
-      'invalid',
-      'fixable.ts',
-    );
-    const fixableCopy = resolve(
-      FIXTURES,
-      'invalid',
-      'fixable.copy.ts',
-    );
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  fixableCopy,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may still exit non-zero
+            }
 
-    afterEach(() => {
-      try {
-        unlinkSync(fixableCopy,);
-      }
-      catch {
-        // file may not exist if test failed before creating it
-      }
-    },);
+            const fixedContent = readFileSync(fixableCopy, 'utf8',);
 
-    test('--fix produces zero violations', async () => {
-      // Copy the fixable fixture so --fix doesn't modify the original
-      copyFileSync(fixableSrc, fixableCopy,);
+            // After fix, multi-param function should have params on separate lines.
+            // No trailing comma since the original had none.
+            expect(fixedContent,).toContain('  name: string,',);
+            expect(fixedContent,).toMatch(/\s+age: number\n/,);
 
-      // Run --fix on the copy
-      try {
-        await spawn(
-          'oxlint',
-          [
-            '--fix',
-            '-c',
-            FIXTURE_CONFIG,
-            fixableCopy,
-          ],
-          { cwd: ROOT, },
-        );
-      }
-      catch {
-        // --fix may still exit non-zero if unfixable issues remain
-      }
+            // Array elements should be on separate lines
+            expect(fixedContent,).toMatch(/\[\n\s+1,\n\s+2,\n\s+3,?\n/,);
 
-      // Re-lint the fixed copy
-      const diagnostics = await lint('invalid/fixable.copy.ts',);
-      const stylisticDiags = diagnostics.filter(
-        function isStylistic(d,): boolean {
-          return d.code.startsWith('stylistic(',);
-        },
-      );
-      expect(stylisticDiags,).toEqual([],);
-    });
+            // Object properties should be on separate lines
+            expect(fixedContent,).toContain("  host: 'localhost',",);
+            expect(fixedContent,).toMatch(/\s+port: 3000\n/,);
 
-    test('--fix preserves trailing commas', async () => {
-      const trailingSrc = resolve(
-        FIXTURES,
-        'invalid',
-        'fixable-trailing-comma.ts',
-      );
-      const trailingCopy = resolve(
-        FIXTURES,
-        'invalid',
-        'fixable-trailing-comma.copy.ts',
-      );
-      copyFileSync(trailingSrc, trailingCopy,);
+            cleanupFile(fixableCopy,);
+          },
+        }),
+      ],
+    }),
 
-      try {
-        await spawn(
-          'oxlint',
-          [
-            '--fix',
-            '-c',
-            FIXTURE_CONFIG,
-            trailingCopy,
-          ],
-          { cwd: ROOT, },
-        );
-      }
-      catch {
-        // --fix may still exit non-zero
-      }
-
-      const fixedContent = readFileSync(trailingCopy, 'utf8',);
-
-      // Trailing commas should be preserved on all items including the last
-      expect(fixedContent,).toContain('  name: string,',);
-      expect(fixedContent,).toContain('  age: number,',);
-      expect(fixedContent,).toMatch(/\s+3,\n/,);
-      expect(fixedContent,).toContain('  port: 3000,',);
-      expect(fixedContent,).toContain('  port,',);
-
-      try {
-        unlinkSync(trailingCopy,);
-      }
-      catch {
-        // cleanup best-effort
-      }
-    });
-
-    test('--fix places each item on its own line', async () => {
-      copyFileSync(fixableSrc, fixableCopy,);
-
-      try {
-        await spawn(
-          'oxlint',
-          [
-            '--fix',
-            '-c',
-            FIXTURE_CONFIG,
-            fixableCopy,
-          ],
-          { cwd: ROOT, },
-        );
-      }
-      catch {
-        // --fix may still exit non-zero
-      }
-
-      const fixedContent = readFileSync(fixableCopy, 'utf8',);
-
-      // After fix, multi-param function should have params on separate lines.
-      // No trailing comma since the original had none.
-      expect(fixedContent,).toContain('  name: string,',);
-      expect(fixedContent,).toMatch(/\s+age: number\n/,);
-
-      // Array elements should be on separate lines
-      expect(fixedContent,).toMatch(/\[\n\s+1,\n\s+2,\n\s+3,?\n/,);
-
-      // Object properties should be on separate lines
-      expect(fixedContent,).toContain("  host: 'localhost',",);
-      expect(fixedContent,).toMatch(/\s+port: 3000\n/,);
-    });
-  },
-);
-
-//endregion Autofix tests
+    //endregion Autofix tests
+  ],
+},);

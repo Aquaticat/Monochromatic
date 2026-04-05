@@ -10,8 +10,8 @@
 import {
   describe,
   expect,
-  test,
-} from 'bun:test';
+  it,
+} from '@monochromatic-dev/module-test';
 import { join, } from 'node:path';
 import { rolldown, } from 'rolldown';
 import { importAttributesPlugin, } from './index.ts';
@@ -41,40 +41,52 @@ async function buildFixture(entryName: string,): Promise<string> {
     .join('',);
 }
 
-describe('importAttributesPlugin', function importAttributesPluginSuite() {
-  test('transforms static import with { type: "text" }', async function staticImportTest() {
-    const code = await buildFixture('entry-static.ts',);
-    expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
-    expect(code,).not.toContain('with',);
-  });
-
-  test('transforms dynamic import() with { with: { type: "text" } }', async function dynamicImportTest() {
-    const code = await buildFixture('entry-dynamic.ts',);
-    expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
-  });
-
-  test('transforms re-export with { type: "text" }', async function reexportTest() {
-    const code = await buildFixture('entry-reexport.ts',);
-    expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
-  });
-
-  test('ignores imports without with clause', async function noAttributeTest() {
-    const build = await rolldown({
-      input: join(FIXTURES_DIR, 'entry-static.ts',),
-      plugins: [
-        importAttributesPlugin(),
-        {
-          name: 'test-spy',
-          transform(code,) {
-            /** Verify the transform only fires when `with` is present. */
-            if (!code.includes(' with ',))
-              return null;
-            return null;
-          },
-        },
-      ],
-    },);
-    const { output, } = await build.generate({ format: 'esm', },);
-    expect(output.length,).toBeGreaterThan(0,);
-  });
-});
+await describe({
+  name: importAttributesPlugin.name,
+  children: [
+    it({
+      name: 'transforms static import with { type: "text" }',
+      fn: async () => {
+        const code = await buildFixture('entry-static.ts',);
+        expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
+        expect(code,).not.toContain('with',);
+      },
+    }),
+    it({
+      name: 'transforms dynamic import() with { with: { type: "text" } }',
+      fn: async () => {
+        const code = await buildFixture('entry-dynamic.ts',);
+        expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
+      },
+    }),
+    it({
+      name: 'transforms re-export with { type: "text" }',
+      fn: async () => {
+        const code = await buildFixture('entry-reexport.ts',);
+        expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
+      },
+    }),
+    it({
+      name: 'ignores imports without with clause',
+      fn: async () => {
+        const build = await rolldown({
+          input: join(FIXTURES_DIR, 'entry-static.ts',),
+          plugins: [
+            importAttributesPlugin(),
+            {
+              name: 'test-spy',
+              transform(code,) {
+                /** Verify the transform only fires when `with` is present. */
+                if (!code.includes(' with ',))
+                  return null;
+                return null;
+              },
+            },
+          ],
+        },);
+        const { output, } = await build.generate({ format: 'esm', },);
+        expect(output.length,).toBeGreaterThan(0,);
+      },
+    }),
+  ],
+},);

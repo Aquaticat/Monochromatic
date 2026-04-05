@@ -1,4 +1,11 @@
-# Migration: test harness package
+# Migration: test harness package (completed)
+
+**Status: completed.** The monorepo migrated to `@monochromatic-dev/module-test`,
+which took a different shape than the plan below (chai + sinon instead of runtime-conditional adapters).
+See `packages/module/test/README.md` for the current API.
+This document is preserved as historical context for the migration rationale.
+
+---
 
 Replace ad-hoc test infrastructure across the monorepo with a shared
 `@monochromatic-dev/test-harness` package that provides three layers:
