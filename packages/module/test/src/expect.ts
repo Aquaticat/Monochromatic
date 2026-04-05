@@ -6,6 +6,7 @@ import chaiAsPromised from 'chai-as-promised';
 import {
   match as sinonMatch,
   type SinonMatcher,
+  type SinonSpy,
 } from 'sinon';
 import sinonChai from 'sinon-chai';
 
@@ -38,10 +39,13 @@ export type MatcherSet = {
   toBeTruthy: () => void;
   toBeUndefined: () => void;
   toContain: (expected: unknown,) => void;
+  toContainEqual: (expected: unknown,) => void;
   toEqual: (expected: unknown,) => void;
   toHaveBeenCalled: () => void;
   toHaveBeenCalledTimes: (count: number,) => void;
   toHaveBeenCalledWith: (...args: readonly unknown[]) => void;
+  toHaveBeenLastCalledWith: (...args: readonly unknown[]) => void;
+  toHaveBeenNthCalledWith: (n: number, ...args: readonly unknown[]) => void;
   toHaveLength: (expected: number,) => void;
   toHaveProperty: (
     path: string,
@@ -50,6 +54,8 @@ export type MatcherSet = {
   toHaveReturnedWith: (expected: unknown,) => void;
   toMatch: (expected: string | RegExp,) => void;
   toMatchObject: (expected: Record<string, unknown>,) => void;
+  toSatisfy: (predicate: (value: unknown,) => boolean,) => void;
+  toStrictEqual: (expected: unknown,) => void;
   toThrow: (expected?: string | RegExp | (abstract new (...args: never) => unknown),) => void;
 };
 
@@ -58,9 +64,11 @@ export type MatcherSet = {
  *
  * @param a - Chai assertion (may have `.not` flag set)
  *
+ * @param actual - Raw value being asserted on, passed through for matchers that need direct access
+ *
  * @returns object with Jest-compatible matcher methods
  */
-function buildMatchers(a: Chai.Assertion,): MatcherSet {
+function buildMatchers(a: Chai.Assertion, actual: unknown,): MatcherSet {
   return {
     toBe: function toBe(expected: unknown,): void {
 
@@ -75,6 +83,11 @@ function buildMatchers(a: Chai.Assertion,): MatcherSet {
     toContain: function toContain(expected: unknown,): void {
 
       a.to.include(expected,);
+    },
+
+    toContainEqual: function toContainEqual(expected: unknown,): void {
+
+      a.to.deep.include(expected,);
     },
 
     toThrow: function toThrow(expected?: string | RegExp | (abstract new (...args: never) => unknown),): void {
@@ -193,6 +206,17 @@ function buildMatchers(a: Chai.Assertion,): MatcherSet {
       a.to.be.instanceOf(expected,);
     },
 
+    toSatisfy: function toSatisfy(predicate: (value: unknown,) => boolean,): void {
+      // Wrap predicate result in a new chai assertion that inherits the `not` flag from `a`.
+      // `a.to.satisfy` exists in chai but its typing is poor; using `equal(true)` on predicate output is equivalent.
+      a.to.satisfy(predicate,);
+    },
+
+    toStrictEqual: function toStrictEqual(expected: unknown,): void {
+
+      a.to.deep.equal(expected,);
+    },
+
     //region sinon-chai matchers
 
     toHaveBeenCalled: function toHaveBeenCalled(): void {
@@ -210,6 +234,24 @@ function buildMatchers(a: Chai.Assertion,): MatcherSet {
       a.to.have.been.calledWith(...args,);
     },
 
+    toHaveBeenLastCalledWith: function toHaveBeenLastCalledWith(...args: readonly unknown[]): void {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy with lastCall property
+      const spy = actual as SinonSpy;
+      const lastCall = spy.lastCall;
+
+      chaiExpect(lastCall, 'expected spy to have been called at least once',).to.not.equal(null,);
+      chaiExpect(lastCall.args,).to.deep.equal([...args,],);
+    },
+
+    toHaveBeenNthCalledWith: function toHaveBeenNthCalledWith(n: number, ...args: readonly unknown[]): void {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy with getCall method
+      const spy = actual as SinonSpy;
+      const nthCall = spy.getCall(n - 1,);
+
+      chaiExpect(nthCall, `expected spy to have been called at least ${String(n,)} times`,).to.not.equal(null,);
+      chaiExpect(nthCall.args,).to.deep.equal([...args,],);
+    },
+
     toHaveReturnedWith: function toHaveReturnedWith(expected: unknown,): void {
 
       a.to.have.returned(expected,);
@@ -218,6 +260,43 @@ function buildMatchers(a: Chai.Assertion,): MatcherSet {
     //endregion sinon-chai matchers
   };
 }
+
+/**
+ * Static list of matcher method names, extracted once to avoid
+ * creating a throwaway chai assertion on every `buildAsyncMatchers` call.
+ */
+// oxlint-disable-next-line no-unsafe-type-assertion -- literal array matches MatcherSet keys by construction
+const MATCHER_KEYS = [
+  'toBe',
+  'toEqual',
+  'toStrictEqual',
+  'toContain',
+  'toContainEqual',
+  'toThrow',
+  'toBeCloseTo',
+  'toBeGreaterThan',
+  'toBeGreaterThanOrEqual',
+  'toBeLessThan',
+  'toBeLessThanOrEqual',
+  'toBeDefined',
+  'toBeUndefined',
+  'toBeNaN',
+  'toBeNull',
+  'toBeTruthy',
+  'toBeFalsy',
+  'toHaveLength',
+  'toHaveProperty',
+  'toMatch',
+  'toMatchObject',
+  'toBeInstanceOf',
+  'toSatisfy',
+  'toHaveBeenCalled',
+  'toHaveBeenCalledTimes',
+  'toHaveBeenCalledWith',
+  'toHaveBeenLastCalledWith',
+  'toHaveBeenNthCalledWith',
+  'toHaveReturnedWith',
+] as const satisfies readonly (keyof MatcherSet)[];
 
 //endregion Matcher set builder
 
@@ -252,17 +331,15 @@ function buildAsyncMatchers(getValue: () => Promise<unknown>,): AsyncMatcherSet 
   function wrapMatcher<K extends keyof MatcherSet>(key: K,): (...args: Parameters<MatcherSet[K]>) => Promise<void> {
     return async function wrappedMatcher(...args: Parameters<MatcherSet[K]>): Promise<void> {
       const value = await getValue();
-      const matchers = buildMatchers(chaiExpect(value,),);
+      const matchers = buildMatchers(chaiExpect(value,), value,);
       // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- args are typed by MatcherSet[K]; cast needed for dynamic dispatch
       (matchers[key] as (...a: readonly unknown[]) => void)(...args,);
     };
   }
 
-  // oxlint-disable-next-line no-unsafe-type-assertion -- keys extracted from buildMatchers are guaranteed to be MatcherSet keys
-  const syncKeys = Object.keys(buildMatchers(chaiExpect(undefined,),),) as readonly (keyof MatcherSet)[];
   const result = {} as Record<string, (...args: readonly unknown[]) => Promise<void>>;
 
-  for (const key of syncKeys) {
+  for (const key of MATCHER_KEYS) {
     // oxlint-disable-next-line no-unsafe-type-assertion -- Parameters<MatcherSet[K]> produces mutable tuples; narrowing to readonly unknown[] is safe since the function never mutates args
     result[key] = wrapMatcher(key,) as (...args: readonly unknown[]) => Promise<void>;
   }
@@ -421,9 +498,9 @@ type Expect = ((actual: unknown,) => ExpectResult) & ExpectStatic;
  */
 function expectImpl(actual: unknown,): ExpectResult {
   return {
-    ...buildMatchers(chaiExpect(actual,),),
+    ...buildMatchers(chaiExpect(actual,), actual,),
 
-    not: buildMatchers(chaiExpect(actual,).not,),
+    not: buildMatchers(chaiExpect(actual,).not, actual,),
     // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern
     rejects: buildRejectsMatchers(actual as Promise<unknown>,),
     // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern

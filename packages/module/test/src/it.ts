@@ -117,12 +117,12 @@ export async function it({
   }
 
   const totalRuns = 1 + repeats;
-  const start = performance.now();
 
   for (let run = 0; run < totalRuns; run += 1) {
     const runLabel = totalRuns > 1 ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]` : '';
     let threw = false;
     let caughtError: unknown = undefined;
+    const runStart = performance.now();
 
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential test repetitions must run one at a time
@@ -137,7 +137,7 @@ export async function it({
       caughtError = error;
     }
 
-    const durationMs = performance.now() - start;
+    const durationMs = performance.now() - runStart;
 
     if (fails) {
       if (threw) {

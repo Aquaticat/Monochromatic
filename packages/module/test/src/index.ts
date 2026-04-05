@@ -1,5 +1,6 @@
 export { describe, } from './describe.ts';
 export type {
+  DescribeChild,
   DescribeOptions,
   DescribeResult,
 } from './describe.ts';
