@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/claude-code-plugins-hook-types",
   "description": "TypeScript type definitions for Claude Code hook events.",
   "type": "module",

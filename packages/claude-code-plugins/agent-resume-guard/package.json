@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/claude-code-plugins-agent-resume-guard",
   "description": "Claude Code PreToolUse hook that blocks Agent resume calls, preventing polling loops on background agents.",
   "type": "module",

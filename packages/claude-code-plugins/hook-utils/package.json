@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/claude-code-plugins-hook-utils",
   "description": "Shared utilities for Claude Code hook plugins, including stdin reading and JSON output helpers.",
   "type": "module",

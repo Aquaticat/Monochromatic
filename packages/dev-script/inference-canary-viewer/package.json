@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/dev-script-inference-canary-viewer",
   "description": "Static dashboard for inference canary results. Generates a single-page HTML viewer from canary history and artifacts.",
   "type": "module",

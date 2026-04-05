@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/cli-vmsync",
   "description": "CLI tool for managing VM disk images across KVM and Hyper-V with incremental sync.",
   "type": "module",

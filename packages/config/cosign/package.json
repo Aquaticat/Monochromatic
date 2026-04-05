@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/config-cosign",
   "description": "Cosign key pair for signing OCI container images. Public key committed; private key gitignored.",
   "type": "module",

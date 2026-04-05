@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/dev-script-backup-path",
   "description": "Backup a file or folder into the bak folder in a timestamped folder.",
   "type": "module",

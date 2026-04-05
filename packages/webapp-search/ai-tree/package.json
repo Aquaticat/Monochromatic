@@ -4,7 +4,7 @@
   "description": "AI-powered tree exploration web application.",
   "module": "dist/final/node/index.js",
   "keywords": [],
-  "license": "Apache-2.0",
+  "license": "LGPL-3.0-or-later",
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",

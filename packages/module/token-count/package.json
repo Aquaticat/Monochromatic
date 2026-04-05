@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-token-count",
   "description": "Token counting for Claude models using the Anthropic API.",
   "type": "module",

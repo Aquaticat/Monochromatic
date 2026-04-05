@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/desktop-daemon-editord",
   "description": "Local editor daemon serving a contenteditable PWA frontend over WebSocket.",
   "type": "module",

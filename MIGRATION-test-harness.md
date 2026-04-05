@@ -1,555 +1,335 @@
-# Migration: test harness package (completed)
+# Migration: test harness package (mostly completed)
 
-**Status: completed.** The monorepo migrated to `@monochromatic-dev/module-test`,
-which took a different shape than the plan below (chai + sinon instead of runtime-conditional adapters).
+**Unit adapter: completed.** The monorepo migrated to `@monochromatic-dev/module-test`,
+which took a different shape than originally planned (chai + sinon instead of runtime-conditional adapters).
+88 test files now import from `@monochromatic-dev/module-test`.
 See `packages/module/test/README.md` for the current API.
-This document is preserved as historical context for the migration rationale.
+
+**Matrix runner: redesigned, not yet implemented.** Redesigned as a separate package
+`@monochromatic-dev/module-matrix-virtualized` that abstracts away container/VM lifecycle.
+Container test orchestrators still use manual loops pending implementation.
+
+**Benchmark utilities: pending.** Adopt `mitata` with `@mitata/counters` for micro-benchmarks,
+replacing the hand-rolled `measure()` / `measureAsync()` in `file-enforcer-perf`.
+The benchmark file (`perf.bench.test.ts`) is the only remaining file importing from `bun:test`.
 
 ---
 
 Replace ad-hoc test infrastructure across the monorepo with a shared
-`@monochromatic-dev/test-harness` package that provides three layers:
+test package. The original plan had three layers;
+layers 1 and 2 are preserved below as historical context,
+layer 3 (benchmarking) is the remaining actionable work.
 
-1.  **Unit adapter** -- runtime-neutral re-exports of `bun:test` / `node:test` primitives
-    so 83 `*.unit.test.ts` files decouple from a specific runtime.
-2.  **Matrix runner** -- typed matrix definition, sequential/parallel execution,
-    result collection, and summary reporting for `*.container-test.ts` orchestrators
-    and other parameter-sweep scripts.
-3.  **Benchmark utilities** -- adopt `tinybench` for micro-benchmarks,
+1.  ~~**Unit adapter** -- runtime-neutral re-exports of `bun:test` / `node:test` primitives
+    so 83 `*.unit.test.ts` files decouple from a specific runtime.~~
+    **Completed** as `@monochromatic-dev/module-test` with chai + sinon.
+2.  **Virtualized matrix runner** -- `@monochromatic-dev/module-matrix-virtualized`,
+    a separate package that runs files across a cartesian product of
+    OS (container/VM) × user context × JS runtime environments.
+    Abstracts away podman lifecycle, prerequisite installation, and runtime setup.
+    **Redesigned, not yet implemented.**
+3.  **Benchmark utilities** -- adopt `mitata` with `@mitata/counters` for micro-benchmarks,
     replacing the hand-rolled `measure()` / `measureAsync()` in `file-enforcer-perf`.
+    **Pending.**
 
 ## Motivation
 
-- **Runtime neutrality** -- unit tests run identically under `bun test` and `node --test`
-- **No external test runner** -- each file is self-contained; mise orchestrates file discovery
-- **Fully concurrent execution** -- all tests within a file run concurrently
-  (bun:test via `concurrentTestGlob`; node:test via `{ concurrency: true }` on describe)
-- **ESM-native, TypeScript-first** -- no CJS shims, no `createRequire`, no loaders
-- **Eliminate repeated boilerplate** -- the matrix execution + result reporting skeleton
-  appears in 2 container test files today (47 lines); the harness extracts it once
-- **Standardized benchmarking** -- `tinybench` provides statistically sound measurement
-  with warmup, iteration control, and cross-runtime support
+- ~~**Runtime neutrality** -- unit tests run identically under `bun test` and `node --test`~~
+  **Done.** `module-test` uses chai + sinon, runs on any ESM runtime.
+- ~~**No external test runner** -- each file is self-contained; mise orchestrates file discovery~~
+  **Done.** `module-test` has no framework-specific globals or test runner.
+- ~~**Fully concurrent execution** -- all tests within a file run concurrently
+  (bun:test via `concurrentTestGlob`; node:test via `{ concurrency: true }` on describe)~~
+  **Done.** `module-test` runs children concurrently via `Promise.allSettled` by default.
+- ~~**ESM-native, TypeScript-first** -- no CJS shims, no `createRequire`, no loaders~~
+  **Done.**
+- **Eliminate container orchestration boilerplate** -- `module-matrix-virtualized` replaces
+  the 218-line orchestrator (`mise.container-test.ts`) with a ~10-line `virtualized()` call.
+  **Redesigned, not yet implemented.**
+- **Standardized benchmarking** -- `mitata` provides DCE detection, GC-aware measurement,
+  auto-batching for fast functions, and optional hardware counters via `@mitata/counters`.
+  **Pending.**
 
 ## Current state
 
-- 83 `*.unit.test.ts` files import from `bun:test`
-- Test primitives used: `describe`, `test`, `expect`, `beforeEach`, `afterEach`, `beforeAll`, `afterAll`
-- Advanced APIs: `test.each` (3 files), `test.skip` (2 files), `test.skipIf` (2 files), `spyOn` (2 files)
-- `spyOn` usage includes `.mock.calls[0]?.[0]` direct access, `.mockClear()`,
-  `expect(spy).toHaveBeenCalledWith(...)` (4 call sites), and `expect.stringContaining()` (2 call sites)
-- 9 test files use `import.meta.dirname` for fixture resolution
-  (cross-runtime since Node 21.2, not a blocker)
-- `bunfig.toml` sets `concurrentTestGlob = "**/*.test.ts"` for within-file concurrency
-- `mise run test:unit` discovers files via `rg --files --glob '**/*.unit.test.*'`
-  and passes them to `bun test`
+- 88 `*.unit.test.ts` files import from `@monochromatic-dev/module-test`
+- 1 benchmark file (`perf.bench.test.ts`) still imports from `bun:test` -- pending mitata migration
+- `module-test` provides `describe`, `it`, `expect` (chai), `sinon` sandbox, `expectTypeOf`
+- Container test orchestrators still use manual loops (matrix runner not implemented)
 
 ## Architecture
 
-### Workspace package: `@monochromatic-dev/test-harness`
+### Unit adapter (completed)
 
-Location: `packages/test-fixture/test-harness/`
+Implemented as `@monochromatic-dev/module-test` at `packages/module/test/`.
+Uses chai + sinon instead of the originally planned `@std/expect` + runtime-conditional adapters.
+See `packages/module/test/README.md` for the full API.
 
-Three entry points via conditional exports:
+### Benchmarking (pending)
 
-- `.` -- unit test adapter (runtime-conditional: bun vs node)
-- `./matrix` -- matrix runner (runtime-neutral)
-- `./bench` -- re-exports from `tinybench` (runtime-neutral)
+Consumers use `mitata` and `@mitata/counters` directly as devDependencies --
+no wrapper or re-export through `module-test`.
+Benchmark files import from `mitata` and `@mitata/counters` directly.
+Both packages are added to the pnpm catalog.
 
-**Conditional exports** in `package.json` route to runtime-specific entry points:
+### adapter-bun.ts / adapter-node.ts (historical)
 
-```json
-{
-  "name": "@monochromatic-dev/test-harness",
-  "type": "module",
-  "exports": {
-    ".": {
-      "bun":     "./src/adapter-bun.ts",
-      "node":    "./src/adapter-node.ts",
-      "default": "./src/adapter-node.ts"
-    },
-    "./matrix": "./src/matrix.ts",
-    "./bench":  "./src/bench.ts"
-  },
-  "dependencies": {
-    "@std/expect": "npm:@jsr/std__expect@*",
-    "tinybench": "*"
-  }
-}
-```
+<details>
+<summary>Originally planned runtime-conditional adapters -- superseded by module-test's chai + sinon approach</summary>
 
-### adapter-bun.ts (~1 line)
+The original plan used `@std/expect` with runtime-conditional exports
+routing to bun:test or node:test re-exports.
+`module-test` replaced this with a self-contained describe/it runner
+backed by chai for assertions and sinon for mocking.
+See `packages/module/test/README.md` for the implemented API.
 
-Re-exports everything from `bun:test`.
-No transformation needed -- the test files already use bun:test's API shape.
+</details>
 
-```ts
-export { describe, test, expect, beforeEach, afterEach, beforeAll, afterAll, spyOn } from 'bun:test';
-```
+### Virtualized matrix runner (not yet implemented)
 
-### adapter-node.ts (~70 lines)
+Separate package: `packages/module/matrix-virtualized/`
+→ `@monochromatic-dev/module-matrix-virtualized`
 
-Re-exports from `node:test` with two shims:
+Runs files across a cartesian product of virtualized environments.
+The consumer specifies axes; the package handles all environment lifecycle
+(container/VM creation, prerequisite installation, runtime installation,
+user creation, workspace mounting, execution, result collection).
 
-1.  **`describe` wrapper** -- injects `{ concurrency: true }` as the default option,
-    matching bun:test's concurrent behavior set by `concurrentTestGlob`.
-    Callers can still pass `{ concurrency: false }` to override.
-
-    ```ts
-    import { describe as nodeDescribe } from 'node:test';
-
-    function describe(name: string, fn: () => void): void;
-    function describe(name: string, options: Record<string, unknown>, fn: () => void): void;
-    function describe(
-      name: string,
-      optionsOrFn: (() => void) | Record<string, unknown>,
-      maybeFn?: () => void,
-    ): void {
-      if (typeof optionsOrFn === 'function') {
-        nodeDescribe(name, { concurrency: true }, optionsOrFn);
-      } else {
-        nodeDescribe(name, { concurrency: true, ...optionsOrFn }, maybeFn);
-      }
-    }
-    export { describe };
-    ```
-
-2.  **`spyOn` adapter** -- must produce objects that both expose `.mock.calls` (for direct access)
-    **and** carry the `Symbol.for("@MOCK")` marker that `@std/expect` checks
-    in `toHaveBeenCalledWith` and other mock matchers.
-
-    `@std/expect` calls `getMockCalls(context.value)` (`_mock_util.ts:15-22`),
-    which reads `value[Symbol.for("@MOCK")].calls`.
-    Each call entry must have the shape `{ args, returned, timestamp, returns, throws }`.
-    Without this symbol, `expect(spy).toHaveBeenCalledWith(...)` throws
-    `"Received function must be a mock or spy function"`.
-
-    The adapter wraps `node:test`'s `mock.method` and translates its call records
-    into `@std/expect`'s `MockCall` shape, then attaches them via the `@MOCK` symbol.
-
-    ```ts
-    import { mock } from 'node:test';
-
-    /** Symbol that @std/expect checks to identify mock objects */
-    const MOCK_SYMBOL = Symbol.for('@MOCK');
-
-    function spyOn(obj: Record<string, unknown>, method: string) {
-      const nodeSpy = mock.method(obj, method);
-      const calls: Array<{
-        args: unknown[];
-        returned?: unknown;
-        timestamp: number;
-        returns: boolean;
-        throws: boolean;
-      }> = [];
-
-      /** Wrap the spy to intercept calls and record in @std/expect's format */
-      const original = obj[method] as (...args: unknown[]) => unknown;
-      // node:test already replaced obj[method] -- wrap its replacement
-      const nodeReplacement = obj[method] as (...args: unknown[]) => unknown;
-      obj[method] = function spyWrapper(...args: unknown[]) {
-        const result = nodeReplacement.apply(this, args);
-        calls.push({
-          args,
-          returned: result,
-          timestamp: Date.now(),
-          returns: true,
-          throws: false,
-        });
-        return result;
-      };
-
-      const spy = obj[method];
-      Object.defineProperty(spy, MOCK_SYMBOL, {
-        value: { calls },
-        writable: false,
-      });
-
-      return Object.assign(spy, {
-        mock: {
-          get calls() {
-            return calls.map(function extractArgs(c) { return c.args; });
-          },
-        },
-        mockClear() {
-          calls.length = 0;
-          nodeSpy.mock.resetCalls();
-        },
-        mockRestore() {
-          calls.length = 0;
-          nodeSpy.mock.restore();
-        },
-      });
-    }
-    export { spyOn };
-    ```
-
-    This design satisfies both usage patterns present in the codebase:
-    - `logSpy.mock.calls[0]?.[0]` -- direct call inspection
-    - `expect(logSpy).toHaveBeenCalledWith(...)` -- `@std/expect` mock matchers
-    - `expect.stringContaining(...)` -- asymmetric matchers inside `toHaveBeenCalledWith`
-
-3.  **`expect` from `@std/expect`** (JSR) --
-    ESM-native, TypeScript-first, cross-runtime (Node/Bun/Deno/browsers).
-    Full Jest-compatible matcher set:
-    `toBe`, `toEqual`, `toStrictEqual`, `toContain`, `toThrow`, `toBeCloseTo`,
-    `toBeGreaterThan`, `toBeGreaterThanOrEqual`, `toBeLessThan`, `toBeLessThanOrEqual`,
-    `toBeUndefined`, `toBeNull`, `toBeTruthy`, `toBeFalsy`, `toHaveLength`,
-    `toHaveProperty`, `toMatch`, `toMatchObject`, `toBeInstanceOf`, `not.*`.
-
-    Mock-aware matchers: `toHaveBeenCalled`, `toHaveBeenCalledTimes`,
-    `toHaveBeenCalledWith`, `toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`.
-
-    Asymmetric matchers: `expect.stringContaining`, `expect.objectContaining`,
-    `expect.arrayContaining`, `expect.anything`, `expect.any`.
-
-    ```ts
-    export { expect } from '@std/expect';
-    ```
-
-4.  **Remaining re-exports** -- passed through directly.
-
-    ```ts
-    export { test, beforeEach, afterEach, beforeAll, afterAll } from 'node:test';
-    ```
-
-### matrix.ts (~60 lines)
-
-Runtime-neutral matrix runner for parameter-sweep scripts.
-No external dependencies -- uses `Promise.allSettled` for parallel execution
-and a sequential `for` loop for ordered execution.
-
-**Types:**
+**API:**
 
 ```ts
-/** Result of a single matrix entry execution */
-type MatrixResult<TEntry> = {
-  readonly entry: TEntry;
-  readonly label: string;
-  readonly status: 'passed' | 'failed';
-  readonly error?: unknown;
-};
+import { virtualized } from '@monochromatic-dev/module-matrix-virtualized';
 
-/** Options for {@link runMatrix} */
-type MatrixOptions<TEntry> = {
-  /** Entries to sweep over */
-  readonly entries: readonly TEntry[];
-  /** Human-readable label for each entry (used in console output) */
-  readonly label: (entry: TEntry) => string;
-  /** Async function to execute per entry -- throw to signal failure */
-  readonly run: (entry: TEntry) => Promise<void>;
-  /**
-   * Execution mode.
-   * - `'sequential'` -- one at a time, in order (default)
-   * - `number` -- run up to N entries concurrently
-   */
-  readonly concurrency?: 'sequential' | number;
-};
+await virtualized({
+  // Files to execute inside each environment.
+  // Self-executing scripts run with the selected runtime.
+  // Defaults to discovering *.unit.virtualized.test.ts in the calling package.
+  files: ['./src/package/ensure-package.unit.virtualized.test.ts'],
+
+  // Environments. Protocol prefix selects the backend.
+  // container: → podman (MVP)
+  // vm: → mvm (future, not in MVP)
+  os: ['container:ubuntu', 'container:fedora'],
+
+  // User contexts. Defaults to ['root'].
+  user: ['root', 'user'],
+
+  // JS runtimes to install and execute files with. Defaults to ['bun'].
+  runtime: ['bun', 'deno'],
+
+  // Exclude specific combinations from the cartesian product.
+  // Each entry is a partial match -- all specified fields must match to exclude.
+  exclude: [
+    { os: 'container:alpine', user: 'user' },  // alpine non-root needs special handling
+  ],
+
+  // Run combinations sequentially. Default false (concurrent).
+  sequential: false,
+});
 ```
 
-**Functions:**
+**Cartesian product:** `files × os × user × runtime`, minus `exclude` matches.
 
-```ts
-/**
- * Runs an async function across every matrix entry,
- * collecting labeled pass/fail results.
- *
- * Each entry is logged with a header before execution.
- * Failures are caught and recorded -- execution continues
- * for remaining entries regardless of failures.
- */
-async function runMatrix<TEntry>(
-  options: MatrixOptions<TEntry>,
-): Promise<readonly MatrixResult<TEntry>[]>;
+For the example above (without excludes): 1 file × 2 OS × 2 users × 2 runtimes = 8 combinations.
 
-/**
- * Prints a labeled summary table to stdout and sets
- * `process.exitCode` to 1 if any entry failed.
- *
- * @example
- * ```
- * ============================================================
- * [matrix] Results:
- *   ubuntu:latest (root): PASSED
- *   ubuntu:latest (user): FAILED
- *   fedora:latest (root): PASSED
- *   fedora:latest (user): PASSED
- *
- * [matrix] SOME FAILED
- * ```
- */
-function reportMatrix<TEntry>(
-  results: readonly MatrixResult<TEntry>[],
-): void;
-```
+**What the package handles per combination** (e.g. `container:fedora` × `user` × `deno`):
+
+1.  Detect package manager from OS name (ubuntu → apt, fedora → dnf, alpine → apk)
+2.  `podman run --rm -v ${monorepoRoot}:/workspace:Z fedora:latest sh -c "..."`
+3.  Inside the container:
+    - Install prerequisites (curl, unzip, sudo — derived from package manager)
+    - If `user` context: create non-root user with passwordless sudo
+    - Install the selected runtime (bun or deno)
+    - Execute each file with the runtime
+4.  Throw on non-zero exit (collected by `describe`/`it` from `module-test`)
+
+**File naming convention:**
+Inner files are named `*.unit.virtualized.test.ts`.
+The standard `test:unit` mise task discovers `*.unit.test.*` and skips these.
+Virtualized test orchestrators discover them via the `files` option or default glob.
 
 **Consumer example** (`mise.container-test.ts` after migration):
 
 ```ts
-import { runMatrix, reportMatrix } from '@monochromatic-dev/test-harness/matrix';
+import { virtualized } from '@monochromatic-dev/module-matrix-virtualized';
 
-const results = await runMatrix({
-  entries: MATRIX,
-  label: function formatLabel(entry) {
-    return `${entry.image} (${entry.asRoot ? 'root' : 'user'})`;
-  },
-  run: runEntry,
-  concurrency: 'sequential',
+await virtualized({
+  os: ['container:ubuntu', 'container:fedora'],
+  user: ['root', 'user'],
 });
-
-reportMatrix(results);
 ```
 
-This replaces 18 lines of loop + summary + exit code management
-(lines 160-177 of `mise.container-test.ts`)
-and 8 lines of label/status logging inside `runEntry` (lines 129-133, 149, 153-154).
+This replaces the entire 218-line orchestrator.
+`buildCommand`, `runEntry`, monorepo root detection, result collection,
+and summary reporting are all handled by the package.
 
 **What stays per-consumer:**
 
-- Matrix entry type definition (`MatrixEntry`)
-- Entry array (`MATRIX`)
-- The `run` function body (container commands, podman invocation, domain logic)
-- The `label` function (what to print for each entry)
+- Choice of axes (which images, which users, which runtimes)
+- The `*.unit.virtualized.test.ts` files that run inside the environments
 
-The matrix runner does not own container lifecycle, command building,
-or monorepo root detection -- those remain in each consumer file.
+**Dependencies:**
 
-### bench.ts (~5 lines)
+- `@monochromatic-dev/module-test` -- `describe`/`it` for execution and reporting
+- `@monochromatic-dev/module-es` -- tagged logger
+- `nano-spawn` -- podman execution
+- `find-up` -- monorepo root detection
 
-Re-exports from `tinybench` for micro-benchmark files.
+**Future `vm:` protocol:**
+Uses mvm instead of podman. Different lifecycle (create VM, push workspace,
+exec, pull results, destroy) but same consumer API.
+Not in MVP -- the `os` parser recognizes the prefix but throws
+`"vm: protocol not yet implemented"` until the mvm backend is added.
 
-```ts
-export { Bench } from 'tinybench';
-export type { Task, TaskResult } from 'tinybench';
-```
+### Benchmark consumer example
 
-Consumers use `Bench` directly instead of hand-rolled `measure()` / `measureAsync()`:
-
-```ts
-import { Bench } from '@monochromatic-dev/test-harness/bench';
-
-const bench = new Bench({ warmupIterations: 5, iterations: 50 });
-
-bench.add('glob expansion', async function globBench() {
-  await glob('**/*.ts');
-});
-
-await bench.run();
-console.table(bench.table());
-```
-
-`tinybench` provides:
-- Configurable warmup and iteration counts
-- Statistical analysis (mean, p75, p99, margin of error)
-- `bench.table()` for formatted console output
-- Works on Node, Bun, and browsers (7KB, zero dependencies)
-
-### test.each replacement
-
-`node:test` does not have `test.each`. The 3 files that use it should switch to a `for...of` loop:
+Consumers import `mitata` and `@mitata/counters` directly:
 
 ```ts
-// Before (bun:test)
-test.each(['.d.ts', '.d.mts'])('returns true for %s extension', ext => {
-  expect(shouldIgnoreFile(`/path/file${ext}`)).toBe(true);
-});
+import { bench, boxplot, run, summary } from 'mitata';
 
-// After
-for (const ext of ['.d.ts', '.d.mts']) {
-  test(`returns true for ${ext} extension`, () => {
-    expect(shouldIgnoreFile(`/path/file${ext}`)).toBe(true);
+summary(function globSummary() {
+  bench('glob expansion', async function globBench() {
+    await glob('**/*.ts');
   });
-}
+
+  bench('glob expansion (deep)', async function deepGlobBench() {
+    await glob('pkg-*/lib/deep/nested/very/deep/module.ts');
+  });
+});
+
+boxplot(function globBoxplot() {
+  bench('mirrorGlobPath', function mirrorBench() {
+    mirrorGlobPath('packages/*/src/*.ts', 'output/*/lib/*.ts', 'packages/pkg-00/src/index.ts');
+  }).range('iterations', 1, 1024);
+});
+
+await run();
 ```
 
-Alternatively, add a `testEach` helper to the harness that generates the loop.
+`mitata` provides:
+- Auto-detected high-resolution timing (`Bun.nanoseconds()` on Bun, `process.hrtime.bigint()` on Node)
+- Dead-code elimination detection (warns when a benchmark is within 1.42x of a noop baseline)
+- GC-aware measurement (forces GC before runs, optionally tracks GC time separately)
+- Auto-batching for fast functions (switches to batched mode when iteration time < 65μs)
+- Generator-based parameterization (`.range()`, `.args()`)
+- Built-in terminal visualization (`summary()`, `boxplot()`, `barplot()`, `lineplot()`)
+- `do_not_optimize(value)` sink to prevent DCE on benchmark results
+- Works on Node, Bun, Deno, browsers, and raw JS engines (12KB, zero dependencies)
 
-### test.skipIf replacement
+`@mitata/counters` provides optional hardware performance counters (IPC, cache stats)
+via a Zig-based NAPI module. Requires elevated permissions for counter access.
 
-`node:test` does not have `test.skipIf`. The 2 files that use it should switch to the options form:
+### test.each / test.skipIf replacements (completed)
 
-```ts
-// Before (bun:test)
-test.skipIf(process.platform === 'win32')('unix-only test', () => { ... });
-
-// After
-test('unix-only test', { skip: process.platform === 'win32' }, () => { ... });
-```
-
-On the Bun path, `test` from `bun:test` also accepts this options form,
-so the same syntax works on both runtimes.
-
-## Verified behavior (proof of concept)
-
-All results from prototyping in `/tmp/claude-1000/`:
-
-- **Concurrency**: 3 tests each sleeping 200ms complete in 200ms total (both runtimes)
-- **Matchers**: `toBe`, `toEqual`, `toContain`, `toThrow`, `toBeCloseTo`,
-  `toBeGreaterThan`, `toBeGreaterThanOrEqual`, `toBeUndefined` all pass
-- **spyOn adapter**: `.mock.calls[0]?.[0]`, `.mockClear()`, `.mockRestore()` work
-- **spyOn + expect matchers**: `expect(spy).toHaveBeenCalledWith(...)` works
-  when the spy carries `Symbol.for("@MOCK")` with `@std/expect`'s `MockCall` shape
-- **Asymmetric matchers**: `expect.stringContaining(...)` works inside `toHaveBeenCalledWith`
-- **test.skip**: works on both runtimes
-- **Parameterized tests**: `for...of` loop works on both runtimes
-- **ESM-native**: no CJS, no `createRequire` hack
-- **TypeScript-native**: Node 25 strips types natively; Bun runs `.ts` natively
-
-**Known concurrency caveat**:
-`beforeEach` with `{ concurrency: true }` does not isolate mutable state
-between concurrent tests -- both runtimes behave this way.
-Tests that share mutable state via `beforeEach` (e.g. a shared spy that gets `mockClear()`-ed)
-should either use isolated-per-test state or `{ concurrency: false }` on that specific describe block.
-This is the same behavior as the current `concurrentTestGlob` setup.
+`module-test` uses `.map()` for parameterized tests and `skip` option for conditional skipping.
+See `packages/module/test/README.md` sections on parameterized tests and skipping.
 
 ## Migration steps
 
-### Step 1: create the harness package
+### ~~Step 1: create the harness package~~ (completed)
 
-1.  Create `packages/test-fixture/test-harness/`
-2.  Add `package.json` with conditional exports as shown above
-    (`.` for unit adapter, `./matrix` for matrix runner, `./bench` for tinybench)
-3.  Add `@std/expect` dependency via `bunx jsr add @std/expect`
-4.  Add `tinybench` dependency
-5.  Write `src/adapter-bun.ts` and `src/adapter-node.ts`
-6.  Write `src/matrix.ts` (runMatrix + reportMatrix)
-7.  Write `src/bench.ts` (tinybench re-exports)
-8.  Add `mise.toml` matching sibling packages
+Implemented as `@monochromatic-dev/module-test` at `packages/module/test/`.
 
-### Step 2: install the harness as a workspace dependency
+### ~~Step 2: install as workspace dependency~~ (completed)
 
-Add `@monochromatic-dev/test-harness` as a devDependency
-in every package that has unit tests (via `workspace:*`).
+88 test files now import from `@monochromatic-dev/module-test`.
 
-### Step 3: migrate test imports (83 files)
+### ~~Step 3: migrate test imports~~ (completed)
 
-Mechanical find-and-replace per file:
+### ~~Step 4: migrate test.each~~ (completed)
 
-```
-- import { describe, test, expect, ... } from 'bun:test';
-+ import { describe, test, expect, ... } from '@monochromatic-dev/test-harness';
-```
+### ~~Step 5: migrate test.skipIf~~ (completed)
 
-For the 2 files that import `spyOn`:
+### Step 6: create module-matrix-virtualized and migrate container tests
 
-```
-- import { ..., spyOn } from 'bun:test';
-+ import { ..., spyOn } from '@monochromatic-dev/test-harness';
-```
+1.  Create `packages/module/matrix-virtualized/` with the API described above
+2.  Rename `ensure-package.container-test.ts` → `ensure-package.unit.virtualized.test.ts`
+    and rewrite its `boolean[]` + summary pattern to use `describe`/`it` from `module-test`
+3.  Replace `mise.container-test.ts` (218 lines) with a ~10-line call to `virtualized()`:
 
-### Step 4: migrate test.each (3 files)
+    ```ts
+    import { virtualized } from '@monochromatic-dev/module-matrix-virtualized';
 
-- `packages/config/oxlint-tsdoc/src/tsdoc-utils.unit.test.ts`
-Replace `test.each(values)(name, fn)` with `for...of` loop.
+    await virtualized({
+      os: ['container:ubuntu', 'container:fedora'],
+      user: ['root', 'user'],
+    });
+    ```
 
-### Step 5: migrate test.skipIf (2 files)
+4.  Remove `buildCommand`, `runEntry`, `MatrixEntry`, monorepo root detection,
+    and result collection from the orchestrator -- all handled by the package
 
-- `packages/dev-script/task-util/src/append.unit.test.ts`
-- `packages/dev-script/task-util/src/command.unit.test.ts`
-
-Replace `test.skipIf(condition)(name, fn)` with `test(name, { skip: condition }, fn)`.
-
-### Step 6: migrate container test orchestrators (2 files)
-
-Replace the manual loop + result collection + summary reporting
-in `*.container-test.ts` orchestrators with `runMatrix` / `reportMatrix`:
-
-- `packages/dev-script/file-enforcer/src/package/mise.container-test.ts`
-
-  Remove: sequential `for` loop (lines 161-165), summary block (lines 167-177),
-  label/status logging in `runEntry` (lines 131-133, 149, 153-154).
-
-  Replace with `runMatrix({ entries: MATRIX, label, run: runEntry })` + `reportMatrix(results)`.
-
-  Keep: `MATRIX` definition, `buildCommand`, the podman `spawn` call inside `runEntry`
-  (but `runEntry` changes from returning `boolean` to throwing on failure).
-
-- `packages/dev-script/file-enforcer/src/package/ensure-package.container-test.ts`
-
-  This file runs **inside** a container (not an orchestrator).
-  Its `boolean[]` + summary pattern (lines 95-129) is a candidate for `reportMatrix`,
-  but the execution is manually sequenced with different test shapes rather than a uniform sweep.
-  Migrate only if the API fits naturally; otherwise leave as-is.
-
-### Step 7: migrate benchmarks to tinybench (1 file)
+### Step 7: migrate benchmarks to mitata (1 file)
 
 - `packages/test-fixture/file-enforcer-perf/src/perf.bench.test.ts`
 
-  Replace the hand-rolled `measure()` / `measureAsync()` timing functions
-  with `Bench` from `@monochromatic-dev/test-harness/bench`.
+  1.  Add `mitata` and `@mitata/counters` to the pnpm catalog
+  2.  Add both as devDependencies of `file-enforcer-perf`
+  3.  Replace the hand-rolled `measure()` / `measureAsync()` timing functions
+      with `mitata`'s functional API (imported directly from `mitata`).
+      Use `do_not_optimize()` to prevent DCE on benchmark results.
+      Use `summary()` / `boxplot()` scopes for grouped output.
+  4.  Remove the `bun:test` import -- this is the last file using it
 
   The benchmark orchestrators (`run-e2e.ts`, `run-constrained.ts`, `bench-in-container.ts`)
   are bespoke multi-phase pipelines and do not benefit from this migration.
 
-### Step 8: update mise test tasks
+### Step 8: verify
 
-The `test:unit` task in root `mise.toml` currently runs `bun test ...files`.
-
-For runtime-neutral execution, update to detect the preferred runtime
-or keep `bun test` as the default (the adapter still works -- Bun resolves the `"bun"` export).
-
-To run under Node: `node --test ...files` (Node 25+ runs `.ts` natively).
-
-### Step 9: verify
-
-1.  Run `mise run buildAndTest` to confirm all unit tests pass.
-2.  Optionally run under Node (`node --test`) to verify cross-runtime behavior.
-3.  Run the container test orchestrator to confirm matrix runner integration:
-    `bun packages/dev-script/file-enforcer/src/package/mise.container-test.ts`
-4.  Run the benchmark to confirm tinybench integration:
+1.  Run `mise run buildAndTest` to confirm all unit tests still pass.
+2.  Run the benchmark to confirm mitata integration:
     `mise run //packages/test-fixture/file-enforcer-perf:perf:micro`
 
-## Dependencies
+## Dependencies (remaining)
 
-| Dependency | Source | Purpose | Size |
+| Dependency | Source | Purpose | Consumer |
 |---|---|---|---|
-| `@std/expect` | JSR (`@jsr/std__expect`) | Jest-compatible matchers for Node path | 4 packages (ESM-native) |
-| `tinybench` | npm | Micro-benchmark harness for `./bench` entry point | 7KB, zero dependencies |
+| `mitata` | npm | Micro-benchmark harness (12KB, zero deps) | file-enforcer-perf devDependency |
+| `@mitata/counters` | npm | Optional hardware perf counters (Zig NAPI) | file-enforcer-perf devDependency |
+| `nano-spawn` | npm | Podman process execution | module-matrix-virtualized dependency |
+| `find-up` | npm | Monorepo root detection | module-matrix-virtualized dependency |
+| `@monochromatic-dev/module-test` | workspace | describe/it for execution and reporting | module-matrix-virtualized dependency |
+| `@monochromatic-dev/module-es` | workspace | Tagged logger | module-matrix-virtualized dependency |
 
-The matrix runner (`./matrix`) has zero external dependencies --
-it uses `Promise.allSettled` and a sequential `for` loop.
+## Remaining files affected
 
-The Bun adapter path has zero external dependencies (re-exports from `bun:test`).
+- **New**: `packages/module/matrix-virtualized/` (package.json, src/, mise.toml)
+- **Modified**: `pnpm-workspace.yaml` (add `mitata`, `@mitata/counters`, and matrix-virtualized deps to catalog)
+- **Renamed**: `ensure-package.container-test.ts` → `ensure-package.unit.virtualized.test.ts`
+- **Modified**: `ensure-package.unit.virtualized.test.ts` (rewrite to use `describe`/`it` from module-test)
+- **Replaced**: `mise.container-test.ts` (218 lines → ~10-line `virtualized()` call)
+- **Modified**: `packages/test-fixture/file-enforcer-perf/package.json` (add mitata devDependencies)
+- **Modified**: 1 benchmark file (`perf.bench.test.ts` -- adopt mitata, remove `bun:test` import)
 
-## Files affected
+## Risks (remaining)
 
-- **New**: `packages/test-fixture/test-harness/` (package.json, src/adapter-bun.ts, src/adapter-node.ts, src/matrix.ts, src/bench.ts, mise.toml)
-- **Modified**: 83 `*.unit.test.ts` files (import path change)
-- **Modified**: 3 files (test.each to for...of)
-- **Modified**: 2 files (test.skipIf to options form)
-- **Modified**: 1 container test orchestrator (mise.container-test.ts -- adopt runMatrix/reportMatrix)
-- **Modified**: 1 benchmark file (perf.bench.test.ts -- adopt tinybench Bench)
-- **Modified**: root `mise.toml` (optional -- update test:unit task for dual-runtime support)
-
-## Risks
-
-- **`@std/expect` matcher parity** -- `@std/expect` covers all matchers used in the codebase.
-  It lacks `toThrowErrorMatchingSnapshot` and `toThrowErrorMatchingInlineSnapshot`,
-  neither of which are used here.
-- **Spy API surface** -- `.mock.calls`, `.mockClear()`, `.mockRestore()` are used for direct access,
-  and `expect(spy).toHaveBeenCalledWith(...)` with `expect.stringContaining()` is used
-  for assertion-based checking (4 call sites across 2 files).
-  The spyOn adapter must attach `Symbol.for("@MOCK")` with `@std/expect`'s `MockCall` shape
-  so that `@std/expect`'s `getMockCalls()` recognizes the spy.
-  Without this symbol, `toHaveBeenCalledWith` throws
-  `"Received function must be a mock or spy function"` at runtime.
-  The adapter design in this document accounts for this requirement.
-- **`import.meta.dirname`** -- 9 test files use this for fixture path resolution.
-  Available in Node since 21.2 and Bun natively, so not a blocker for either runtime.
-- **Node type stripping** -- Node 25's type stripping does not support
-  non-erasable TypeScript syntax (`enum`, `namespace`, `as const` on object literals).
-  The test files do not use these. If they did, `--experimental-transform-types` or
-  a loader like `tsx` would be needed.
-- **Matrix runner scope** -- the runner handles uniform parameter sweeps
-  (same function, different inputs). The inner container test
-  (`ensure-package.container-test.ts`) runs heterogeneous assertions
-  that don't fit this shape cleanly. The benchmark orchestrators
-  (`run-constrained.ts`, `run-e2e.ts`) are multi-phase pipelines,
-  not parameter sweeps. These files stay as-is.
-- **tinybench vs hand-rolled benchmarks** -- `tinybench` uses high-resolution
-  timing with statistical analysis. The existing `measure()` / `measureAsync()`
+- **Virtualized runner OS detection** -- mapping `container:ubuntu` to the correct
+  package manager (apt) relies on a hardcoded distro → manager lookup.
+  New distros require updating the lookup table. Alpine (apk), Arch (pacman),
+  and RHEL-family (dnf/yum) should be covered in the initial implementation.
+- **Runtime installation inside containers** -- bun and deno have different
+  install mechanisms (`curl -fsSL https://bun.sh/install | bash` vs
+  `curl -fsSL https://deno.land/install.sh | sh`). Each runtime needs
+  its own install script template and PATH setup.
+- **Non-root user creation** -- varies by distro (useradd vs adduser).
+  The package must handle this per package manager.
+- **Benchmark orchestrators** (`run-constrained.ts`, `run-e2e.ts`) are
+  multi-phase pipelines, not parameter sweeps. These files stay as-is.
+- **mitata vs hand-rolled benchmarks** -- `mitata` auto-detects the highest-resolution
+  timer per runtime (`Bun.nanoseconds()` on Bun), handles GC and DCE automatically,
+  and auto-batches fast functions. The existing `measure()` / `measureAsync()`
   in `perf.bench.test.ts` use manual `performance.now()` loops with configurable
-  iteration counts and max-time thresholds. Migration requires mapping the
-  existing threshold checks to tinybench's result properties (`mean`, `p75`, etc.).
+  iteration counts and max-time thresholds. Migration replaces explicit threshold checks
+  with mitata's built-in statistical output (min, max, avg, p25, p50, p75, p99, p999).
+  For programmatic regression detection, mitata's `format: 'json'` output mode
+  can be parsed downstream.
+- **mitata maintenance** -- mitata's maintainer (evanwashere) has been inactive since
+  Feb 2025 with 9 open issues and 5 unanswered PRs. The library is functionally
+  complete for our use case (micro-benchmarking with DCE/GC awareness).
+  If maintenance becomes a blocker, tatami-ng (`@poolifier/tatami-ng` on JSR)
+  is an API-compatible fork. `@mitata/counters` (Zig-based NAPI) may require
+  building from source if prebuilt binaries are unavailable for the target platform.
 
 ## Alternatives considered
 
@@ -569,25 +349,5 @@ were evaluated.
 - **act** is CLI-only (no TypeScript API) and requires YAML workflow definitions.
 - **Earthly** is CLI-only with no TypeScript API.
 
-The current `nano-spawn` + `podman` calls are ~10 lines per consumer.
-The matrix runner extracts the repeated *orchestration* skeleton (execution loop,
-result collection, summary reporting) without touching the container lifecycle layer.
-
-### Promise utilities (p-settle, listr2)
-
-**p-settle** provides `Promise.allSettled` with concurrency control and a mapper function.
-**listr2** is a terminal task runner with built-in progress rendering.
-
-**Why not adopted:**
-
-- `Promise.allSettled` is a language built-in; `p-settle` adds a mapper
-  and concurrency limiting that a simple `for` loop or `Promise.allSettled` already covers.
-- listr2 owns terminal rendering, which conflicts with container tests
-  that stream verbose stdout (apt-get, bun install, test output).
-  Its default renderer collapses output that is useful for debugging failures.
-
-### vitest `test.for`
-
-Parameterized test cases within a single vitest process.
-Does not orchestrate across containers or processes.
-Not applicable to the cross-environment execution pattern.
+`module-matrix-virtualized` uses `nano-spawn` + `podman` internally
+but abstracts away the entire container lifecycle. Consumers never see podman args.

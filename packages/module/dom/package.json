@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-dom",
   "description": "Browser DOM utilities: prompt dialogs, element cloning, redirects, and CSS-from-URL-params.",
   "type": "module",

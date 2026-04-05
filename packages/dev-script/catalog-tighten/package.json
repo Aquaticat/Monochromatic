@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/dev-script-catalog-tighten",
   "description": "Tighten monorepo catalog >=x.y.z ranges to match installed versions from node_modules.",
   "type": "module",

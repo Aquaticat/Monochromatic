@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/mcp-mvm",
   "version": "0.1.0",
   "description": "MCP server exposing mvm VM management operations to AI agents.",

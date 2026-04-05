@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later AND CC-BY-SA-4.0",
   "name": "@monochromatic-dev/webapp-content-ssg-test",
   "private": true,
   "type": "module",

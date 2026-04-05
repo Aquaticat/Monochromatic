@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/dev-script-file-enforcer",
   "description": "Declarative builder API for keeping derived files in sync across a monorepo.",
   "type": "module",

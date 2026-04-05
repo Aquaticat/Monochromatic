@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/dev-script-vm-builder",
   "description": "Builds the monochromatic-dev container image, converts it to qcow2, and imports it as a libvirt VM.",
   "type": "module",

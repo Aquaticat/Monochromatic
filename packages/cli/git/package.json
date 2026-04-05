@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/cli-git",
   "description": "Git wrapper that enforces repo-root execution and injects --atomic on push.",
   "type": "module",

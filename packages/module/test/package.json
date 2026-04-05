@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-test",
   "description": "Test harness with Jest-style expect over chai, sinon sandbox with dispose, and concurrent describe/it runner.",
   "type": "module",

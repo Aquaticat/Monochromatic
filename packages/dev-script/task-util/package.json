@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/dev-script-task-util",
   "description": "CLI utilities for mise task orchestration: command executor with allowFailure support, file append helper, and make-style dependency checker.",
   "type": "module",

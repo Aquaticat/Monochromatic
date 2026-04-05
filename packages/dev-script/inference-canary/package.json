@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/dev-script-inference-canary",
   "description": "Canary probes for detecting LLM inference degradation from within agent sessions.",
   "type": "module",

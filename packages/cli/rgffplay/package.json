@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/cli-rgffplay",
   "description": "Music player that finds files by case-insensitive name via ripgrep and plays them with ffplay.",
   "type": "module",

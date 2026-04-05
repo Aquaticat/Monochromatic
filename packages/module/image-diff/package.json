@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-image-diff",
   "description": "Perceptual image difference comparison using Voyage AI multimodal embeddings.",
   "type": "module",

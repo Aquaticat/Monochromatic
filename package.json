@@ -54,7 +54,7 @@
     "musl",
     "current"
   ],
-  "license": "Apache-2.0",
+  "license": "LGPL-3.0-or-later AND CC-BY-SA-4.0",
   "os": [
     "linux",
     "darwin",
