@@ -327,6 +327,42 @@ it({
 })
 ```
 
+## Async error assertions
+
+Await the async operation first, then assert on the caught error.
+`.rejects` and `.resolves` are legacy APIs -- avoid them in new test code.
+
+`.rejects.toThrow()` passes the rejected value to chai's `.throw()`,
+which expects a function to call. The harness patches around this mismatch,
+but the indirection obscures stack traces and is inherently fragile.
+`.resolves.toBe(x)` adds nothing over `const v = await p; expect(v).toBe(x)`.
+
+```ts
+// Preferred: await first, assert on the error
+it({
+  name: 'rejects on missing file',
+  fn: async () => {
+    let caught: unknown;
+    try {
+      await readConfig('/nonexistent',);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught,).toBeInstanceOf(ConfigError,);
+    expect((caught as Error).message,).toContain('not found',);
+  },
+})
+
+// Preferred: await first, assert on the resolved value
+it({
+  name: 'returns parsed config',
+  fn: async () => {
+    const result = await readConfig('/valid',);
+    expect(result,).toHaveProperty('version', 2,);
+  },
+})
+```
+
 ## Type-level testing
 
 Use `expectTypeOf` from `expect-type` (re-exported by `@monochromatic-dev/module-test`):
@@ -376,7 +412,8 @@ The `expect` function provides Jest-compatible matchers backed by chai:
 
 **Negation**: `expect(x).not.toBe(y)`
 
-**Promise matchers**: `expect(promise).rejects.toThrow()`, `expect(promise).resolves.toBe(42)`
+**Promise matchers** (legacy, avoid in new code): `expect(promise).rejects.toThrow()`, `expect(promise).resolves.toBe(42)`.
+Prefer awaiting the promise first, then asserting on the result or caught error directly.
 
 **Asymmetric matchers** (for use inside `toHaveBeenCalledWith`):
 `expect.stringContaining`, `expect.stringMatching`, `expect.objectContaining`,

@@ -133,8 +133,9 @@ Jest-style matchers backed by chai:
 - **Types**: `toBeInstanceOf`, `toBeTypeOf` (native `typeof` check)
 - **Predicates**: `toSatisfy` (custom predicate function)
 - **Negation**: `expect(x).not.toBe(y)`
-- **Promise rejection**: `await expect(promise).rejects.toBeInstanceOf(Error)`
-- **Promise resolution**: `await expect(promise).resolves.toBe(42)`
+- **Async errors**: await first, then assert on the caught error (see "Async error assertions")
+- **Promise rejection** (legacy): `await expect(promise).rejects.toBeInstanceOf(Error)`
+- **Promise resolution** (legacy): `await expect(promise).resolves.toBe(42)`
 
 Sinon-chai matchers for stubs and spies:
 
@@ -244,18 +245,50 @@ it({
 });
 ```
 
-### Promise assertions with `rejects` and `resolves`
+### Async error assertions
+
+Await the async operation first, then assert on the result or caught error.
+Avoid `.rejects` and `.resolves` -- they add an indirection layer
+that obscures stack traces and makes assertion failures harder to diagnose.
 
 ```ts
+// Preferred: await first, assert on the error
 it({
-  name: 'async assertions',
+  name: 'rejects on invalid input',
   fn: async () => {
-    await expect(Promise.resolve(42)).resolves.toBe(42);
-    await expect(Promise.reject(new Error('fail'))).rejects.toBeInstanceOf(Error);
-    await expect(Promise.reject(new Error('fail'))).rejects.toHaveProperty('message', 'fail');
+    let caught: unknown;
+    try {
+      await parseConfig('/nonexistent');
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(ConfigError);
+    expect((caught as Error).message).toContain('not found');
+  },
+});
+
+// Preferred: await first, assert on the resolved value
+it({
+  name: 'resolves to the parsed config',
+  fn: async () => {
+    const result = await parseConfig('/valid/path');
+    expect(result).toHaveProperty('version', 2);
   },
 });
 ```
+
+**Why not `.rejects`/`.resolves`?**
+
+- The rejected value is already unwrapped, but `.rejects.toThrow()` passes it to
+  chai's `.throw()` which expects a **function** to call -- a semantic mismatch.
+  The harness patches around this, but the indirection remains fragile.
+- `.resolves.toBe(x)` is strictly equivalent to `const v = await p; expect(v).toBe(x)`
+  with worse stack traces.
+- Awaiting first gives direct access to the value for multiple assertions
+  without re-awaiting the same promise.
+
+The `.rejects` and `.resolves` APIs exist for compatibility
+but should not be used in new test code.
 
 ### Skipping tests
 
@@ -663,7 +696,7 @@ or **omitted** (intentional gap with rationale).
 - **Error**: `toThrow` (bare, message string, regex, error class)
 - **Predicate**: `toSatisfy`
 - **Negation**: `not` modifier
-- **Promise**: `resolves`, `rejects` modifiers
+- **Promise**: `resolves`, `rejects` modifiers (legacy -- prefer awaiting first; see README)
 
 **Omitted:**
 

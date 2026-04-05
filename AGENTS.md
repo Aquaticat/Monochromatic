@@ -202,9 +202,25 @@ When unsure, propose a concrete edit and location.
 A package is not finished until:
 - It has a `README.md`
 - It passes linting with zero errors
-- It has tests that pass
+- It has tests that cover every exported code path, and those tests pass
 
 Do not declare work complete while any condition is unmet.
+
+## Test coverage must match the public API surface
+
+When writing or reviewing tests for a module,
+enumerate every distinct code path the module exposes --
+not just the obvious happy path.
+If the implementation has separate branches for sync vs async,
+string vs object, direct vs delegated,
+each branch needs its own test.
+
+"Tests exist and pass" is not evidence of completeness.
+Before declaring a test file done,
+compare the test names against the implementation's branches
+and confirm there is no untested path.
+A test file that covers sync matchers but skips async matchers
+is the same as no tests for the async path -- the bug ships silently.
 
 ## Verify at the user boundary
 

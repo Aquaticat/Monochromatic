@@ -443,7 +443,8 @@ extends = "prepare"
 run = [{ tasks = ["prepare:pnpm:install"] }, { tasks = ["prepare:pnpm:others:*"] }]
 
 [tasks."prepare:pnpm:install"]
-run = "pnpm install"
+alias = "pi"
+run = "task-pnpm install"
 
 [tasks."prepare:pnpm:others:approve-builds"]
 description = "Approve build scripts for native dependencies"
@@ -532,7 +533,7 @@ bun packages/dev-script/catalog-tighten/src/index.ts ...$args
 
 [tasks."fix:reinstall"]
 description = "Clean reinstall to work around registry or resolution issues"
-run = "rm -rf node_modules; pnpm install"
+run = "rm -rf node_modules; task-pnpm install"
 
 #endregion Fix Tasks
 

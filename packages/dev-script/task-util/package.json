@@ -10,6 +10,7 @@
     "task-append": "src/append.ts",
     "task-depends": "src/depends.ts",
     "task-oxlint": "src/oxlint-wrapper.ts",
+    "task-pnpm": "src/pnpm-filter.ts",
     "task-tsgo": "src/tsgo-filter.ts"
   },
   "devDependencies": {

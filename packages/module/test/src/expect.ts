@@ -415,6 +415,11 @@ function buildAsyncMatchers(getValue: () => Promise<unknown>,): AsyncMatcherSet 
  * Builds an async matcher set that awaits a promise's rejection,
  * then runs sync matchers against the rejected value.
  *
+ * Overrides `toThrow` because the standard matcher delegates to
+ * `chai.expect(value).to.throw()`, which expects a **function** to call.
+ * After rejection, the value is already an error object, so `toThrow`
+ * must check the error's message and type directly instead.
+ *
  * @param promise - Promise expected to reject
  *
  * @returns object with async Jest-compatible matcher methods
@@ -438,7 +443,30 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
     throw new Error('Expected promise to reject, but it resolved',);
   }
 
-  return buildAsyncMatchers(getRejection,);
+  const matchers = buildAsyncMatchers(getRejection,);
+
+  matchers.toThrow = async function rejectsToThrow(
+    expected?: string | RegExp | (abstract new (...args: never) => unknown),
+  ): Promise<void> {
+    const error = await getRejection();
+    if (expected === undefined) {
+      /** getRejection already verified the promise rejected; nothing more to check */
+      return;
+    }
+    if (typeof expected === 'string') {
+      const message = error instanceof Error ? error.message : String(error,);
+      chaiExpect(message,).to.include(expected,);
+    }
+    else if (expected instanceof RegExp) {
+      const message = error instanceof Error ? error.message : String(error,);
+      chaiExpect(message,).to.match(expected,);
+    }
+    else {
+      chaiExpect(error,).to.be.instanceOf(expected,);
+    }
+  };
+
+  return matchers;
 }
 
 /**

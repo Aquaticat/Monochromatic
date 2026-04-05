@@ -320,5 +320,105 @@ await describe({
     }),
 
     //endregion not (negation)
+
+    //region rejects
+
+    it({
+      name: 'rejects.toThrow passes for rejected promise (no args)',
+      fn: async () => {
+        await expect(Promise.reject(new Error('boom',),),).rejects.toThrow();
+      },
+    }),
+
+    it({
+      name: 'rejects.toThrow matches error message string',
+      fn: async () => {
+        await expect(Promise.reject(new Error('specific failure',),),).rejects.toThrow(
+          'specific',
+        );
+      },
+    }),
+
+    it({
+      name: 'rejects.toThrow matches regex',
+      fn: async () => {
+        await expect(Promise.reject(new Error('code 42 failed',),),).rejects.toThrow(
+          /code \d+ failed/,
+        );
+      },
+    }),
+
+    it({
+      name: 'rejects.toThrow matches error class',
+      fn: async () => {
+        await expect(Promise.reject(new TypeError('bad type',),),).rejects.toThrow(
+          TypeError,
+        );
+      },
+    }),
+
+    it({
+      name: 'rejects.toThrow fails on message mismatch',
+      fails: true,
+      fn: async () => {
+        await expect(Promise.reject(new Error('actual message',),),).rejects.toThrow(
+          'completely different',
+        );
+      },
+    }),
+
+    it({
+      name: 'rejects.toThrow fails when promise resolves',
+      fails: true,
+      fn: async () => {
+        await expect(Promise.resolve('ok',),).rejects.toThrow();
+      },
+    }),
+
+    it({
+      name: 'rejects.toBeInstanceOf works',
+      fn: async () => {
+        await expect(Promise.reject(new TypeError('x',),),).rejects.toBeInstanceOf(
+          TypeError,
+        );
+      },
+    }),
+
+    it({
+      name: 'rejects.toHaveProperty checks error properties',
+      fn: async () => {
+        await expect(Promise.reject(new Error('msg',),),).rejects.toHaveProperty(
+          'message',
+          'msg',
+        );
+      },
+    }),
+
+    //endregion rejects
+
+    //region resolves
+
+    it({
+      name: 'resolves.toBe works for resolved value',
+      fn: async () => {
+        await expect(Promise.resolve(42,),).resolves.toBe(42,);
+      },
+    }),
+
+    it({
+      name: 'resolves.toEqual works for deep equality',
+      fn: async () => {
+        await expect(Promise.resolve({ a: 1, },),).resolves.toEqual({ a: 1, },);
+      },
+    }),
+
+    it({
+      name: 'resolves.toContain works for substrings',
+      fn: async () => {
+        await expect(Promise.resolve('hello world',),).resolves.toContain('world',);
+      },
+    }),
+
+    //endregion resolves
   ],
 },);

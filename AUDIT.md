@@ -1,15 +1,19 @@
 # Dependency Security Report
 
-## vlt Socket security scan (2026-04-04)
+## Socket CLI scan (2026-04-05)
+
+Scanned with Socket CLI v1.1.78 via `socket scan create --report`.
+Scan ID: `5a68fe36-d693-4717-bf65-7784d11a7b20`.
+Total packages: 629 (626 libraries, 3 frameworks).
 
 ### Critical findings
 
-- **Malware (medium+):** None detected
-- **Known CVEs:** None detected (`:cve` and `:cwe` arrays empty for all packages)
+- **Malware:** None detected
+- **Known CVEs:** None detected (CVE/CVSS/EPSS columns empty for all 41 alerts)
 - **Typosquatting:** None detected
 - **Abandoned:** None detected
 - **Manifest confusion:** None detected
-- **Install scripts:** None detected by Socket (note: `sharp@0.34.5` has `scripts.install` in its manifest but Socket classifies it as non-risky)
+- **Install scripts:** None detected
 - **Unlicensed:** None detected
 - **Obfuscated:** None detected
 - **High-entropy strings:** None detected
@@ -17,69 +21,57 @@
 
 ### Dependency chains for flagged packages
 
-**`@npmcli/*`, `glob@10.5.0` (deprecated), `chokidar@3`, `picomatch@2.3.2`:**
-Removed. These were all transitive deps of `remark-cli`, which was replaced by
-`dprint-plugin-markdown` (formatting) + `markdownlint-cli2` (semantic linting) via mise.
-
-**`micromatch@4.0.8` -> `picomatch@2.3.2` -- from stylelint (dev-only):**
+**`picomatch@2.3.2` -- transitive via stylelint (dev-only):**
 ```
 stylelint -> micromatch -> picomatch@2.3.2
 stylelint -> globby -> fast-glob -> micromatch
 ```
+
+Socket flags this as `potentialVulnerability` (medium behavioral risk) for ReDoS
+via user-supplied glob patterns with unconstrained regex complexity.
+This is a behavioral risk indicator, not a CVE.
+Two historical CVEs (CVE-2026-33671, CVE-2026-33672) are **fixed in 2.3.2**.
 
 Stylelint maintainers are actively discussing migration to `tinyglobby` or `fs.glob` (Node 22+)
 but have blocked it on a major release to avoid breaking the `globbyOptions` API.
 Two community PRs (stylelint/stylelint#8988, stylelint/stylelint#9118) were closed without merge.
 The discussion continues in stylelint/stylelint#8051 and stylelint/stylelint#8929.
 
-**`vite-plugin-singlefile`** -- removed. Was a stale lockfile entry from the deleted
-`packages/config/vite` package. No active imports or package.json references remain.
-Will be cleaned from the lockfile on next `pnpm install`.
-
-**`picomatch@2.3.2` CVE status:**
-Two CVEs affected picomatch before 2.3.2:
-- CVE-2026-33671 -- ReDoS via extglob quantifiers (CVSS 7.5 High)
-- CVE-2026-33672 -- method injection in POSIX character classes (CVSS 5.3 Medium)
-
-Both are **fixed in 2.3.2**, which is the version installed. Socket reports empty CVE/CWE arrays
-for picomatch@2.3.2, confirming no active vulnerabilities. The `:severity(">=medium")` flag
-is Socket's proprietary behavioral risk score, not a CVE indicator.
-
 `picomatch@4.0.4` (used by vite, tsdown, tinyglobby, rolldown, fdir) is a separate major version
 and was never affected by these CVEs.
 
+**`openai@6.33.0` -- direct dep of `packages/dev-script/inference-canary`:**
+Socket flags this as `potentialVulnerability` (medium behavioral risk).
+The `bin/cli` file defines a `migrate` subcommand that calls `spawnSync` to download and execute
+an unsigned tarball from GitHub (`stainless-api/migrate-ts`) via `npx -y`.
+No checksum, signature, or integrity verification.
+Risk: a compromised GitHub release or MITM could achieve arbitrary code execution.
+Mitigation: we never invoke `openai migrate`; the risk is limited to the binary existing
+in `node_modules/.bin`. Dev-only dependency.
+
 ### Informational findings
 
-**Deprecated (0)**
-- ~~`glob@10.5.0`~~ -- removed with remark-cli
+**Potential vulnerabilities (2 packages) -- behavioral risk, not CVEs**
+- `picomatch@2.3.2` -- ReDoS via unconstrained regex from user-supplied globs; transitive via stylelint; dev-only
+- `openai@6.33.0` -- unsigned tarball download in `migrate` subcommand; direct dep; dev-only
 
-**Socket severity medium (2 unique packages) -- behavioral risk, not CVEs**
-- ~~`gray-matter@4.0.3`~~ -- removed; replaced with inline frontmatter parser + `yaml` package
-- `picomatch@2.3.2` -- transitive via stylelint (micromatch); dev-only; CVEs fixed in this version
+**Unpopular packages (4)**
+- `lezer-toml@1.0.0` -- direct dep of `packages/desktop-daemon/editord`; niche Lezer grammar for TOML
+- `@mitata/counters@0.0.8` -- direct dep of `packages/test-fixture/file-enforcer-perf`; companion to mitata benchmarking
+- `@tursodatabase/database-darwin-arm64@0.5.3` -- transitive platform binary for turso
+- `@tursodatabase/database-win32-x64-msvc@0.5.3` -- transitive platform binary for turso
 
-**Copyleft licenses (4 unique packages)**
-- `lightningcss@1.32.0` (MPL-2.0) -- prod dep of vite-deprecated and vite; MPL-2.0 is file-level copyleft, fine for dependencies
-- `lightningcss-linux-x64-gnu@1.32.0` (MPL-2.0) -- platform binary for lightningcss
-- `bun-types@1.3.11` (MIT but Socket flags restricted/copyleft) -- transitive via @types/bun
-- `@img/sharp-libvips-linux-x64@1.2.4` (LGPL-3.0-or-later) -- optional native binary for sharp; LGPL fine for dynamically linked native modules
+**Unmaintained (>3 years without updates, 34 packages)**
+- argparse, json-schema-traverse, fast-deep-equal, inherits, resolve-from, is-extglob, shebang-command, normalize-path, safe-buffer, to-regex-range, string_decoder, util-deprecate, extend, kind-of, require-from-string, merge2, run-parallel, queue-microtask, is-number, text-hex, lodash.truncate, astral-regex, cssesc, is-plain-object, global-modules, globjoin, svg-tags, tree-kill, enabled, fn.name, kuler, one-time, tiny-inflate, outdent
 
-**Dynamic code execution / eval (14)**
-- neovim, css-tree, @sinclair/typebox, core-js, source-map-js, lodash, js-yaml, istanbul-lib-coverage, lodash.truncate, ajv, playwright-core, regenerator-runtime, uglify-js
+All 34 are transitive dependencies except `outdent@0.8.0` (direct, aliased as `@cspotcode/outdent`).
+Count reduced from 54 in the previous scan after removing remark-cli, gray-matter, and @npmcli/* transitive trees.
 
-**Shell access (8)**
-- @tursodatabase/database, esbuild, tree-kill, cross-spawn, detect-libc, playwright-core, foreground-child, @npmcli/promise-spawn
-
-**Network access (21)**
-- vite, lfi, happy-rusty, exa-js, rolldown (2 versions), sharp, esbuild, cross-fetch, html2canvas, core-js, canvg, winston, rollup, domutils, playwright-core, acorn, clean-css, cacheable, lru-cache, @npmcli/git
-
-**New collaborator publishing (11)**
-- istanbul-lib-report, kind-of, vscode-uri, stack-trace, anymatch, fn.name, text-hex, abbrev, @npmcli/name-from-folder, npm-normalize-package-bin, validate-npm-package-name
-
-**Trivial (<10 lines, 3)**
-- is-arrayish@0.2.1, boolbase@1.0.0, @npmcli/name-from-folder@2.0.0
-
-**Unmaintained (>5 years without updates, 54 packages)**
-- outdent, tree-kill, svg-tags, normalize-path, is-plain-object, globjoin, global-modules, pluralize, fast-decode-uri-component, extend, strip-bom-string, section-matter, kind-of, tiny-inflate, path-browserify, lodash.truncate, util-deprecate, cssesc, merge2, text-table, shebang-command, rgbcolor, raf, extend-shallow, esprima, argparse (2 versions), one-time, astral-regex, require-from-string, json-schema-traverse, fast-deep-equal, resolve-from, is-empty, concat-stream, ieee754, performance-now, is-extendable, string_decoder, inherits, fn.name, kuler, enabled, to-regex-range, is-extglob, run-parallel, safe-buffer, text-hex, is-number, queue-microtask, validate-npm-package-license, promise-retry, promise-inflight, err-code
+**Note on behavioral categories:**
+The previous vlt-based scan reported behavioral indicators (dynamic code execution, shell access,
+network access, new collaborator publishing, trivial packages, copyleft licenses).
+The Socket CLI alert export only includes policy-threshold alerts (maintenance, quality, supplyChainRisk).
+Behavioral indicators are visible on the Socket dashboard but not in the CSV export.
 
 ---
 
