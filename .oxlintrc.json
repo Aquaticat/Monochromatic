@@ -291,7 +291,7 @@
     "eslint/no-eval": "error",
 
     // No setTimeout/setInterval with string arguments -- implied eval.
-    "eslint/no-implied-eval": "error",
+    "typescript/no-implied-eval": "error",
 
     // No new Boolean/String/Number wrapper objects -- use primitives.
     "eslint/no-new-wrappers": "error",
@@ -355,7 +355,7 @@
     //region perf
 
     "eslint/no-await-in-loop": "warn",
-    "eslint/no-accumulating-spread": "warn",
+    "oxc/no-accumulating-spread": "warn",
     "unicorn/prefer-set-has": "warn",
     //endregion perf
 
