@@ -9,12 +9,24 @@
  * @param b - second operand
  *
  * @returns sum of a and b
+ *
+ * @example
+ * ```ts
+ * add(1, 2); // => 3
+ * ```
  */
 function add(a: number, b: number,): number {
   return a + b;
 }
 
-/** Logs a message. */
+/**
+ * Logs a message.
+ *
+ * @example
+ * ```ts
+ * log();
+ * ```
+ */
 function log(): void {}
 
 /** Available directions. */

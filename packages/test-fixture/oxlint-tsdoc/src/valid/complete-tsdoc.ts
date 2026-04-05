@@ -23,6 +23,11 @@ function greet(name: string, count: number,): string {
  * Logs a message without returning.
  *
  * @param message - text to log
+ *
+ * @example
+ * ```ts
+ * log('something happened');
+ * ```
  */
 function log(message: string,): void {
   console.error(message,);
@@ -37,6 +42,11 @@ function internalHelper(): void {}
 
 /**
  * Escaped content with *\/ inside.
+ *
+ * @example
+ * ```ts
+ * withEscapedClose();
+ * ```
  */
 function withEscapedClose(): void {}
 
@@ -46,6 +56,11 @@ function withEscapedClose(): void {}
  * @param parts - path segments to join
  *
  * @returns joined path
+ *
+ * @example
+ * ```ts
+ * join('a', 'b', 'c'); // => 'a/b/c'
+ * ```
  */
 function join(...parts: string[]): string {
   return parts.join('/',);
@@ -67,6 +82,11 @@ type ProcessOptions = {
  * @param count - number of repetitions
  *
  * @returns processed result
+ *
+ * @example
+ * ```ts
+ * processDestructured({ value: 'ab', count: 3 }); // => 'ababab'
+ * ```
  */
 function processDestructured({ value, count, }: ProcessOptions,): string {
   return value.repeat(count,);
@@ -82,6 +102,11 @@ function processDestructured({ value, count, }: ProcessOptions,): string {
  * @param count - number of repetitions
  *
  * @returns processed result with prefix
+ *
+ * @example
+ * ```ts
+ * mixedParams('>', { value: 'x', count: 2 }); // => '>xx'
+ * ```
  */
 function mixedParams(prefix: string, { value, count, }: ProcessOptions,): string {
   return prefix + value.repeat(count,);

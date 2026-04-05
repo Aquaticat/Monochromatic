@@ -9,6 +9,7 @@ import {
   requireParamDescription,
   requireParamName,
 } from './rules/params.ts';
+import { requireExample, } from './rules/require-example.ts';
 import { requireTsdoc, } from './rules/require-tsdoc.ts';
 import {
   requireReturns,
@@ -57,6 +58,7 @@ const plugin: Plugin = eslintCompatPlugin({
   rules: {
     //region Presence
     'require-tsdoc': requireTsdoc,
+    'require-example': requireExample,
     //endregion Presence
 
     //region Structural formatting

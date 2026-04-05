@@ -12,6 +12,7 @@
   ],
   "rules": {
     "tsdoc/require-tsdoc": "error",
+    "tsdoc/require-example": "warn",
     "tsdoc/check-alignment": "error",
     "tsdoc/multiline-blocks": "warn",
     "tsdoc/no-multi-asterisks": "error",

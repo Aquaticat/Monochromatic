@@ -270,6 +270,41 @@ await describe({
       ],
     }),
 
+    describe({
+      name: 'require-example',
+      children: [
+        it({
+          name: 'reports missing @example on exported functions',
+          fn: async () => {
+            const diagnostics = await lint('invalid/require-example-issues.ts',);
+            const rules = uniqueRules(diagnostics,);
+
+            expect(rules,).toContain('tsdoc(require-example)',);
+
+            const requireExampleDiags = diagnostics.filter(
+              function isRequireExample(d,): boolean {
+                return d.code === 'tsdoc(require-example)';
+              },
+            );
+            // add (direct), greet (specifier), negate (default), double (const direct), shout (const specifier)
+            expect(requireExampleDiags.length,).toBeGreaterThanOrEqual(5,);
+          },
+        }),
+        it({
+          name: 'does not report on functions with @example or exempt tags',
+          fn: async () => {
+            const diagnostics = await lint('valid/require-example-valid.ts',);
+            const requireExampleDiags = diagnostics.filter(
+              function isRequireExample(d,): boolean {
+                return d.code === 'tsdoc(require-example)';
+              },
+            );
+            expect(requireExampleDiags,).toEqual([],);
+          },
+        }),
+      ],
+    }),
+
     //endregion Invalid fixtures
   ],
 },);

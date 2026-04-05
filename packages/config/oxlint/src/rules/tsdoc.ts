@@ -19,6 +19,10 @@ export const tsdocRules: DummyRuleMap = {
   // Every module-level declaration (function, type, const, class, enum) needs a /** *\/ comment.
   'tsdoc/require-tsdoc': 'error',
 
+  // Exported functions must include at least one @example tag.
+  // Functions with @inheritDoc or @internal are exempt.
+  'tsdoc/require-example': 'warn',
+
   // Leading * on each comment line must align vertically with the opener's first *.
   'tsdoc/check-alignment': 'error',
 
