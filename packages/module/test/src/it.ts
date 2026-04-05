@@ -1,24 +1,48 @@
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import type { $ as Logger, } from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 
+import {
+  createScopedExpect,
+  type ScopedExpect,
+} from './expect.ts';
+import {
+  createSinon,
+  type DisposableSandbox,
+} from './sinon.ts';
 import { withTimeout, } from './with-timeout.ts';
+
+/**
+ * Context passed to each test function.
+ * Contains a scoped `expect` with assertion counting
+ * and a sinon sandbox that auto-restores after the test.
+ */
+export type TestContext = {
+  /** Scoped expect with assertion tracking. Supports `expect.assertions(n)` and `expect.hasAssertions()`. */
+  readonly expect: ScopedExpect;
+  /** Sinon sandbox for stubs, spies, and fake timers. Auto-restores after the test completes. */
+  readonly sinon: DisposableSandbox;
+};
 
 /**
  * Options for a single test case.
  */
 export type ItOptions = {
-  /** Whether the test is expected to throw. When `true`, a throwing test is treated as PASS and a passing test as FAIL. Defaults to `false`. */
-  readonly fails?: boolean;
-  /** Async function that performs assertions and throws on failure. */
-  readonly fn: () => Promise<void>;
+  /** Whether the test is expected to throw. When `true` or a reason string, a throwing test is treated as PASS and a passing test as FAIL. Defaults to `false`. */
+  readonly fails?: boolean | string;
+  /**
+   * Async function that performs assertions and throws on failure.
+   * Receives a {@link TestContext} with a scoped `expect` for assertion counting.
+   * The global `expect` still works but does not support `expect.assertions(n)`.
+   */
+  readonly fn: (ctx: TestContext,) => Promise<void>;
   /** Logger to use for pass/fail output. Provided by the parent describe. */
   readonly l?: Logger;
   /** Human-readable test name, shown in output and error messages. */
   readonly name: string;
   /** Number of additional times to re-run the test after the first execution. Useful for catching flaky tests. Defaults to `0`. */
   readonly repeats?: number;
-  /** Whether to skip execution entirely. When `true`, the test logs SKIP and returns immediately. Defaults to `false`. */
-  readonly skip?: boolean;
+  /** Whether to skip execution entirely. When `true` or a reason string, the test logs SKIP and returns immediately. Defaults to `false`. */
+  readonly skip?: boolean | string;
   /** Timeout in milliseconds. Must be less than any parent describe timeout. */
   readonly timeout?: number;
 };
@@ -42,14 +66,16 @@ export type ItResult = {
  */
 async function runOnce({
   fn,
+  ctx,
   timeout,
   name,
 }: {
-  readonly fn: () => Promise<void>;
+  readonly ctx: TestContext;
+  readonly fn: (ctx: TestContext,) => Promise<void>;
   readonly name: string;
   readonly timeout: number | undefined;
 },): Promise<void> {
-  const promise = fn();
+  const promise = fn(ctx,);
 
   await (timeout !== undefined
     ? withTimeout({
@@ -112,9 +138,14 @@ export async function it({
     : tagged({ tag: name, },);
 
   if (skip) {
-    l.info('SKIP',);
+    const reason = typeof skip === 'string' ? `: ${skip}` : '';
+    l.info(`SKIP${reason}`,);
     return { name, };
   }
+
+  const [scopedExpect, tracker,] = createScopedExpect();
+  await using sandbox = createSinon();
+  const ctx: TestContext = { expect: scopedExpect, sinon: sandbox, };
 
   const totalRuns = 1 + repeats;
 
@@ -124,10 +155,14 @@ export async function it({
     let caughtError: unknown = undefined;
     const runStart = performance.now();
 
+    tracker.count = 0;
+    sandbox.restore();
+
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential test repetitions must run one at a time
       await runOnce({
         fn,
+        ctx,
         timeout,
         name,
       },);
@@ -139,13 +174,15 @@ export async function it({
 
     const durationMs = performance.now() - runStart;
 
+    const failsReason = typeof fails === 'string' ? ` (${fails})` : '';
+
     if (fails) {
       if (threw) {
-        l.info(`PASS${runLabel} — threw as expected (${durationMs.toFixed(0,)}ms)`,);
+        l.info(`PASS${runLabel} — threw as expected${failsReason} (${durationMs.toFixed(0,)}ms)`,);
         continue;
       }
 
-      l.error(`FAIL${runLabel} — expected to throw but passed (${durationMs.toFixed(0,)}ms)`,);
+      l.error(`FAIL${runLabel} — expected to throw but passed${failsReason} (${durationMs.toFixed(0,)}ms)`,);
       throw new Error(
         name,
         { cause: new Error('Expected test to throw but it passed',), },
@@ -159,6 +196,24 @@ export async function it({
         { cause: caughtError, },
       );
     }
+
+    //region Assertion count verification
+    if (tracker.expected !== null && tracker.count !== tracker.expected) {
+      l.error(`FAIL${runLabel} — expected ${String(tracker.expected,)} assertions but ${String(tracker.count,)} were called (${durationMs.toFixed(0,)}ms)`,);
+      throw new Error(
+        name,
+        { cause: new Error(`Expected ${String(tracker.expected,)} assertions, but ${String(tracker.count,)} were called`,), },
+      );
+    }
+
+    if (tracker.requiresAtLeastOne && tracker.count === 0) {
+      l.error(`FAIL${runLabel} — expected at least one assertion but none were called (${durationMs.toFixed(0,)}ms)`,);
+      throw new Error(
+        name,
+        { cause: new Error('Expected at least one assertion to be called',), },
+      );
+    }
+    //endregion Assertion count verification
 
     l.info(`PASS${runLabel} (${durationMs.toFixed(0,)}ms)`,);
   }

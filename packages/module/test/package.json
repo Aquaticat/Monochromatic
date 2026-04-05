@@ -20,6 +20,7 @@
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
     "chai": "catalog:",
+    "expect-type": "catalog:",
     "chai-as-promised": "catalog:",
     "sinon": "catalog:",
     "sinon-chai": "catalog:"

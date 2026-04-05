@@ -9,14 +9,18 @@ export { it, } from './it.ts';
 export type {
   ItOptions,
   ItResult,
+  TestContext,
 } from './it.ts';
 
-export { expect, } from './expect.ts';
+export { expect, createScopedExpect, } from './expect.ts';
 export type {
+  AssertionTracker,
   AsyncMatcherSet,
   ExpectResult,
   MatcherSet,
+  ScopedExpect,
 } from './expect.ts';
 
-export { createSinon, } from './sinon.ts';
 export type { DisposableSandbox, } from './sinon.ts';
+
+export { expectTypeOf, } from 'expect-type';

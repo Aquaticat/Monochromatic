@@ -1,25 +1,23 @@
 /**
- * Tests for `createSinon` and asymmetric matchers.
+ * Tests for sinon sandbox via TestContext and asymmetric matchers.
  *
  * @module
  */
 
 import {
-  createSinon,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test';
 
 await describe({
-  name: 'createSinon',
+  name: 'sinon via context',
   children: [
     it({
       name: 'stub and spy work with expect matchers',
-      fn: async () => {
-        await using sandbox = createSinon();
+      fn: async ({ sinon, }) => {
         const obj = { greet: (_name: string,): string => 'hi', };
-        const stub = sandbox.stub(obj, 'greet',).returns('hello',);
+        const stub = sinon.stub(obj, 'greet',).returns('hello',);
 
         obj.greet('world',);
 
@@ -30,27 +28,25 @@ await describe({
     }),
 
     it({
-      name: 'sandbox restores on dispose',
-      fn: async () => {
+      name: 'sandbox restores automatically between tests',
+      fn: async ({ sinon, }) => {
         const obj = { getValue: (): number => 42, };
         const ORIGINAL = 42;
         const STUBBED = 99;
 
-        {
-          await using sandbox = createSinon();
-          sandbox.stub(obj, 'getValue',).returns(STUBBED,);
-          expect(obj.getValue(),).toBe(STUBBED,);
-        }
+        sinon.stub(obj, 'getValue',).returns(STUBBED,);
+        expect(obj.getValue(),).toBe(STUBBED,);
 
+        // restore manually to verify the mechanism works within a test
+        sinon.restore();
         expect(obj.getValue(),).toBe(ORIGINAL,);
       },
     }),
 
     it({
       name: 'asymmetric matchers work inside toHaveBeenCalledWith',
-      fn: async () => {
-        await using sandbox = createSinon();
-        const spy = sandbox.spy();
+      fn: async ({ sinon, }) => {
+        const spy = sinon.spy();
 
         spy('hello world', { id: 1, name: 'test', },);
 
@@ -63,9 +59,8 @@ await describe({
 
     it({
       name: 'expect.anything matches any value',
-      fn: async () => {
-        await using sandbox = createSinon();
-        const spy = sandbox.spy();
+      fn: async ({ sinon, }) => {
+        const spy = sinon.spy();
 
         spy('specific', { deeply: 'nested', },);
 
@@ -75,9 +70,8 @@ await describe({
 
     it({
       name: 'expect.any matches by constructor',
-      fn: async () => {
-        await using sandbox = createSinon();
-        const spy = sandbox.spy();
+      fn: async ({ sinon, }) => {
+        const spy = sinon.spy();
 
         spy(new Error('test',),);
 
@@ -87,9 +81,8 @@ await describe({
 
     it({
       name: 'expect.arrayContaining matches subset',
-      fn: async () => {
-        await using sandbox = createSinon();
-        const spy = sandbox.spy();
+      fn: async ({ sinon, }) => {
+        const spy = sinon.spy();
 
         spy([1, 2, 3, 4, 5,],);
 
@@ -99,9 +92,8 @@ await describe({
 
     it({
       name: 'expect.stringMatching matches by regex',
-      fn: async () => {
-        await using sandbox = createSinon();
-        const spy = sandbox.spy();
+      fn: async ({ sinon, }) => {
+        const spy = sinon.spy();
 
         spy('hello world',);
 
@@ -111,11 +103,10 @@ await describe({
 
     it({
       name: 'toHaveReturnedWith checks return value',
-      fn: async () => {
-        await using sandbox = createSinon();
+      fn: async ({ sinon, }) => {
         const RETURN_VALUE = 42;
         const obj = { getValue: (): number => RETURN_VALUE, };
-        const spy = sandbox.spy(obj, 'getValue',);
+        const spy = sinon.spy(obj, 'getValue',);
 
         obj.getValue();
 

@@ -51,11 +51,24 @@ export type DescribeOptions = {
    */
   readonly name: string;
   /**
+   * Number of additional times to re-run the entire suite after the first execution.
+   * Useful for catching flaky suites. `repeats: 2` runs the suite 3 times total.
+   * Defaults to `0`.
+   */
+  readonly repeats?: number;
+  /**
    * Run children one at a time in array order instead of concurrently.
    * Defaults to `false` (concurrent via `Promise.allSettled`).
-   * When `true`, children should be thunks so execution is actually deferred.
+   * When `true` or a reason string, children should be thunks so execution is actually deferred.
+   * A string reason is logged at trace level when the suite starts.
    */
-  readonly sequential?: boolean;
+  readonly sequential?: boolean | string;
+  /**
+   * Whether to skip execution entirely. When `true` or a reason string,
+   * the suite logs SKIP and returns immediately without running children.
+   * Defaults to `false`.
+   */
+  readonly skip?: boolean | string;
   /**
    * Timeout in milliseconds for the entire suite (all children).
    * Powered by `Promise.race`. Children with their own timeout
@@ -76,6 +89,10 @@ export type DescribeOptions = {
  * @param name - Suite name shown in output and error cause chain
  *
  * @param children - Child promises or thunks from nested describe or it calls
+ *
+ * @param skip - Whether to skip the entire suite
+ *
+ * @param repeats - Number of additional runs after the first
  *
  * @param sequential - Run children one at a time in array order
  *
@@ -105,6 +122,8 @@ export type DescribeOptions = {
 export async function describe({
   name,
   children,
+  skip = false,
+  repeats = 0,
   sequential = false,
   timeout,
   l: loggerOverride,
@@ -117,8 +136,15 @@ export async function describe({
       l: baseLogger,
     },);
 
+  if (skip) {
+    const reason = typeof skip === 'string' ? `: ${skip}` : '';
+    l.info(`SKIP suite${name ? ` "${name}"` : ''}${reason}`,);
+    return { name, };
+  }
+
   if (name !== '') {
-    l.trace('start',);
+    const seqReason = typeof sequential === 'string' ? ` (sequential: ${sequential})` : (sequential ? ' (sequential)' : '');
+    l.debug(`start${seqReason}`,);
   }
 
   /**
@@ -156,52 +182,71 @@ export async function describe({
     return results;
   }
 
-  const settleAll = sequential
-    ? runSequential()
-    : Promise.allSettled(children.map(startChild,),);
+  /**
+   * Runs one pass of the suite: starts all children, collects results, reports.
+   *
+   * @param runLabel - Label suffix for repeated runs (empty string for single runs)
+   *
+   * @throws Error wrapping child failures when any child rejects
+   */
+  async function runOnce(runLabel: string,): Promise<void> {
+    const settleAll = sequential
+      ? runSequential()
+      : Promise.allSettled(children.map(startChild,),);
 
-  const withTimeoutApplied = timeout !== undefined
-    ? withTimeout({
-      promise: settleAll,
-      ms: timeout,
-      label: name || '(root)',
-    },)
-    : settleAll;
+    const withTimeoutApplied = timeout !== undefined
+      ? withTimeout({
+        promise: settleAll,
+        ms: timeout,
+        label: name || '(root)',
+      },)
+      : settleAll;
 
-  const settled = await withTimeoutApplied;
+    const settled = await withTimeoutApplied;
 
-  const errors: unknown[] = [];
-  /** Empty-name suites are invisible wrappers; downgrade success logs to debug. */
-  const logSuccess = name === '' ? l.debug : l.info;
+    const errors: unknown[] = [];
+    /** Empty-name suites are invisible wrappers; downgrade success logs to debug. */
+    const logSuccess = name === '' ? l.debug : l.info;
 
-  for (const result of settled) {
-    if (result.status === 'fulfilled') {
-      logSuccess(`${result.value.name} <- ${name || '(root)'}`,);
+    for (const result of settled) {
+      if (result.status === 'fulfilled') {
+        logSuccess(`${result.value.name} <- ${name || '(root)'}${runLabel}`,);
+      }
+      else {
+        const childName = result.reason instanceof Error ? result.reason.message : '(unknown)';
+        l.error(`${childName} <- ${name || '(root)'}${runLabel}`,);
+        errors.push(result.reason,);
+      }
     }
-    else {
-      const childName = result.reason instanceof Error ? result.reason.message : '(unknown)';
-      l.error(`${childName} <- ${name || '(root)'}`,);
-      errors.push(result.reason,);
+
+    if (errors.length === 0) {
+      return;
     }
-  }
 
-  if (errors.length === 0) {
-    return { name, };
-  }
+    const cause = errors.length === 1
+      ? errors[0]
+      : new AggregateError(
+        errors,
+        `${String(errors.length,)} children failed in suite "${name || '(root)'}"`,
+      );
 
-  const cause = errors.length === 1
-    ? errors[0]
-    : new AggregateError(
-      errors,
-      `${String(errors.length,)} children failed in suite "${name || '(root)'}"`,
+    if (name === '') {
+      throw cause;
+    }
+
+    throw new Error(
+      name,
+      { cause, },
     );
-
-  if (name === '') {
-    throw cause;
   }
 
-  throw new Error(
-    name,
-    { cause, },
-  );
+  const totalRuns = 1 + repeats;
+
+  for (let run = 0; run < totalRuns; run += 1) {
+    const runLabel = totalRuns > 1 ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]` : '';
+    // oxlint-disable-next-line no-await-in-loop -- sequential suite repetitions must run one at a time
+    await runOnce(runLabel,);
+  }
+
+  return { name, };
 }

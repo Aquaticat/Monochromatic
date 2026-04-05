@@ -32,7 +32,7 @@ without framework-specific worker pools or process forking.
 
 ## API
 
-### `describe({ name, children, sequential?, timeout?, l? })`
+### `describe({ name, children, sequential?, skip?, repeats?, timeout?, l? })`
 
 Runs all children concurrently via `Promise.allSettled` by default.
 Set `sequential: true` to run children one at a time in array order.
@@ -48,19 +48,37 @@ the filename already reveals what is being tested.
 Children can be promises (eager, start immediately) or thunks (deferred).
 Use thunks with `sequential: true` to guarantee execution order.
 
+- **`skip`** (`boolean | string`, default `false`) -- skips the entire suite without running any children;
+  a string is logged as the reason
+- **`repeats`** (default `0`) -- number of additional runs of the entire suite;
+  `repeats: 2` runs the suite 3 times total
+- **`sequential`** (`boolean | string`, default `false`) -- run children in array order instead of concurrently;
+  a string is logged at debug level as the reason
+
 Logs `childName <- suiteName` for each child result.
 
 ### `it({ name, fn, timeout?, skip?, repeats?, fails?, l? })`
 
 Executes a single test case.
+`fn` receives a `TestContext` containing:
+
+- **`expect`** -- scoped expect with assertion counting (`expect.assertions(n)`, `expect.hasAssertions()`)
+- **`sinon`** -- sinon sandbox for stubs, spies, and fake timers; auto-restores after the test.
+  The sandbox is created with default config.
+  Custom `SinonSandboxConfig` is not supported --
+  its only useful option (`useFakeTimers`) is already callable directly via `sinon.useFakeTimers()`.
+
+The global `expect` still works for tests that do not destructure the context.
 Returns `{ name }` on success.
 Throws `Error(name, { cause })` on failure or timeout.
 
-- **`skip`** (default `false`) -- skips execution entirely, logs `SKIP`, and returns immediately
+- **`skip`** (`boolean | string`, default `false`) -- skips execution entirely, logs `SKIP`, and returns immediately;
+  a string is logged as the reason
 - **`repeats`** (default `0`) -- number of additional runs after the first execution;
   `repeats: 2` runs the test 3 times total, with labels like `[run 1/3]`
-- **`fails`** (default `false`) -- inverts pass/fail logic;
-  a throwing test is treated as PASS, a passing test as FAIL
+- **`fails`** (`boolean | string`, default `false`) -- inverts pass/fail logic;
+  a throwing test is treated as PASS, a passing test as FAIL;
+  a string is logged as the reason alongside pass/fail output
 
 ### `expect(actual)`
 
@@ -89,15 +107,17 @@ Asymmetric matchers for use inside `toHaveBeenCalledWith`:
 - `expect.stringContaining`, `expect.stringMatching`, `expect.objectContaining`, `expect.arrayContaining`
 - `expect.anything`, `expect.any`
 
-### `createSinon(config?)`
+### `expectTypeOf`
 
-Returns a sinon sandbox with `Symbol.dispose` and `Symbol.asyncDispose` attached.
-Use with `await using` for automatic cleanup:
+Re-exported from the [`expect-type`](https://www.npmjs.com/package/expect-type) package.
+Compile-time type-level assertions with zero runtime cost.
 
 ```ts
-await using sandbox = createSinon();
-sandbox.stub(obj, 'method').returns('mocked');
-// sandbox.restore() called automatically at scope exit
+import { expectTypeOf } from '@monochromatic-dev/module-test';
+
+expectTypeOf<string>().toEqualTypeOf<string>();
+expectTypeOf({ a: 1 }).toHaveProperty('a');
+expectTypeOf<() => void>().toBeFunction();
 ```
 
 ## Usage
@@ -201,9 +221,9 @@ it({
 ```ts
 it({
   name: 'not ready yet',
-  skip: true,
+  skip: 'waiting for upstream fix #123',
   fn: async () => {
-    // never runs; logs SKIP and returns immediately
+    // never runs; logs "SKIP: waiting for upstream fix #123"
   },
 });
 ```
@@ -227,9 +247,9 @@ it({
 ```ts
 it({
   name: 'known broken behavior',
-  fails: true,
+  fails: 'parser bug #456',
   fn: async () => {
-    // PASS when the function throws, FAIL when it passes
+    // logs "PASS — threw as expected (parser bug #456)"
     throw new Error('expected to break');
   },
 });
@@ -259,7 +279,7 @@ to run children one at a time in array order.
 ```ts
 await describe({
   name: 'database migration',
-  sequential: true,
+  sequential: 'migrations depend on previous state',
   children: [
     () => it({
       name: 'creates table',
@@ -332,15 +352,14 @@ expect(users).toContainEqual({ id: 1, name: 'Alice' });
 
 ### Fake timers
 
-Sinon's fake timer API is available through `createSinon`.
+Sinon's fake timer API is available through the context's `sinon` sandbox.
 
 ```ts
 it({
   name: 'debounce fires after delay',
-  fn: async () => {
-    await using sandbox = createSinon();
-    const clock = sandbox.useFakeTimers();
-    const callback = sandbox.spy();
+  fn: async ({ sinon, expect }) => {
+    const clock = sinon.useFakeTimers();
+    const callback = sinon.spy();
 
     debounce(callback, 100)();
     expect(callback).not.toHaveBeenCalled();
@@ -349,6 +368,50 @@ it({
     expect(callback).toHaveBeenCalledTimes(1);
   },
 });
+```
+
+### Assertion counting with scoped `expect`
+
+Each `it` passes a `TestContext` with a scoped `expect` to `fn`.
+Use `expect.assertions(n)` or `expect.hasAssertions()` to verify
+the right number of assertions ran -- prevents silently passing async tests.
+
+```ts
+it({
+  name: 'catches all async branches',
+  fn: async ({ expect }) => {
+    expect.assertions(2);
+
+    const result = await fetchData();
+    expect(result.status).toBe(200);
+    expect(result.body).toBeDefined();
+  },
+});
+
+it({
+  name: 'at least one assertion runs',
+  fn: async ({ expect }) => {
+    expect.hasAssertions();
+
+    if (featureEnabled) {
+      expect(getFeature()).toBeTruthy();
+    }
+  },
+});
+```
+
+The global `expect` (imported directly) works for tests that do not need assertion counting.
+The scoped `expect` supports all the same matchers and asymmetric matchers.
+
+### Type-level assertions
+
+```ts
+import { expectTypeOf } from '@monochromatic-dev/module-test';
+
+expectTypeOf<string>().toEqualTypeOf<string>();
+expectTypeOf<string>().not.toEqualTypeOf<number>();
+expectTypeOf({ a: 1, b: 'hello' }).toHaveProperty('a');
+expectTypeOf<() => string>().returns.toBeString();
 ```
 
 ### Setup and teardown
@@ -415,22 +478,21 @@ await describe({
 await server.close();
 ```
 
-### Stubs and spies with `createSinon`
+### Stubs and spies
 
-The sandbox auto-restores when the `await using` scope exits.
+The `sinon` sandbox from `TestContext` auto-restores after each test.
 
 ```ts
-import { createSinon, describe, expect, it } from '@monochromatic-dev/module-test';
+import { describe, expect, it } from '@monochromatic-dev/module-test';
 
 await describe({
   name: 'mocking',
   children: [
     it({
       name: 'stubs a method',
-      fn: async () => {
-        await using sandbox = createSinon();
+      fn: async ({ sinon }) => {
         const obj = { greet: (_name: string): string => 'hi' };
-        const stub = sandbox.stub(obj, 'greet').returns('hello');
+        const stub = sinon.stub(obj, 'greet').returns('hello');
 
         obj.greet('world');
 
@@ -442,10 +504,9 @@ await describe({
     }),
     it({
       name: 'spy without changing behavior',
-      fn: async () => {
-        await using sandbox = createSinon();
+      fn: async ({ sinon }) => {
         const obj = { getValue: (): number => 42 };
-        const spy = sandbox.spy(obj, 'getValue');
+        const spy = sinon.spy(obj, 'getValue');
 
         obj.getValue();
 
@@ -462,20 +523,24 @@ await describe({
 Used inside `toHaveBeenCalledWith` to match arguments partially.
 
 ```ts
-await using sandbox = createSinon();
-const spy = sandbox.spy();
-spy('hello world', { id: 1, name: 'test' }, [1, 2, 3]);
+it({
+  name: 'partial argument matching',
+  fn: async ({ sinon }) => {
+    const spy = sinon.spy();
+    spy('hello world', { id: 1, name: 'test' }, [1, 2, 3]);
 
-expect(spy).toHaveBeenCalledWith(
-  expect.stringContaining('hello'),
-  expect.objectContaining({ id: 1 }),
-  expect.arrayContaining([1, 3]),
-);
-expect(spy).toHaveBeenCalledWith(
-  expect.stringMatching(/^hello/),
-  expect.anything(),
-  expect.any(Array),
-);
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('hello'),
+      expect.objectContaining({ id: 1 }),
+      expect.arrayContaining([1, 3]),
+    );
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(/^hello/),
+      expect.anything(),
+      expect.any(Array),
+    );
+  },
+});
 ```
 
 ## Self-test
@@ -490,6 +555,7 @@ The test files under `src/*.unit.test.ts` use the package's own primitives to va
 
 - **chai** -- assertion engine
 - **chai-as-promised** -- registered as a chai plugin for users who prefer chai's `.eventually` syntax over the built-in `rejects`/`resolves` API
-- **sinon** -- stubs, spies, sandboxes
+- **expect-type** -- compile-time type assertions, re-exported as `expectTypeOf`
+- **sinon** -- stubs, spies, sandboxes (exposed via `TestContext.sinon`)
 - **sinon-chai** -- chai plugin for sinon matchers
 - **@monochromatic-dev/module-es** -- tagged logger

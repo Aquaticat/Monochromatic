@@ -629,3 +629,139 @@ expectImpl.arrayContaining = function arrayContaining(arr: readonly unknown[],):
 const expect = expectImpl as Expect;
 
 export { expect, };
+
+//region Scoped expect with assertion tracking
+
+/**
+ * Mutable assertion counter shared between a scoped `expect` instance and
+ * the `it` runner that checks it after the test completes.
+ */
+export type AssertionTracker = {
+  /** Number of assertions actually called. */
+  count: number;
+  /** Expected assertion count set by `expect.assertions(n)`. `null` means unchecked. */
+  expected: number | null;
+  /** Whether `expect.hasAssertions()` was called. */
+  requiresAtLeastOne: boolean;
+};
+
+/**
+ * Scoped `expect` function with assertion tracking.
+ * Same API as the global `expect` plus `assertions(n)` and `hasAssertions()`.
+ */
+export type ScopedExpect = Expect & {
+  /** Verify that exactly `n` assertions are called during the test. */
+  assertions: (count: number,) => void;
+  /** Verify that at least one assertion is called during the test. */
+  hasAssertions: () => void;
+};
+
+/**
+ * Wraps a matcher set so each matcher call increments the assertion counter.
+ *
+ * @param matchers - Original matcher set
+ *
+ * @param tracker - Shared counter incremented on every assertion
+ *
+ * @returns new matcher set that counts calls
+ */
+function wrapMatchersWithCounter(matchers: MatcherSet, tracker: AssertionTracker,): MatcherSet {
+  const wrapped = {} as Record<string, (...args: readonly unknown[]) => unknown>;
+
+  for (const key of MATCHER_KEYS) {
+    const original = matchers[key];
+    wrapped[key] = function countedMatcher(...args: readonly unknown[]): unknown {
+      tracker.count += 1;
+      // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- dynamic dispatch over MatcherSet methods requires cast
+      return (original as (...a: readonly unknown[]) => unknown)(...args,);
+    };
+  }
+
+  // oxlint-disable-next-line no-unsafe-type-assertion -- wrapped keys match MatcherSet by construction
+  return wrapped as unknown as MatcherSet;
+}
+
+/**
+ * Wraps an async matcher set so each matcher call increments the assertion counter.
+ *
+ * @param matchers - Original async matcher set
+ *
+ * @param tracker - Shared counter incremented on every assertion
+ *
+ * @returns new async matcher set that counts calls
+ */
+function wrapAsyncMatchersWithCounter(matchers: AsyncMatcherSet, tracker: AssertionTracker,): AsyncMatcherSet {
+  const wrapped = {} as Record<string, (...args: readonly unknown[]) => Promise<unknown>>;
+
+  for (const key of MATCHER_KEYS) {
+    const original = matchers[key];
+    wrapped[key] = async function countedAsyncMatcher(...args: readonly unknown[]): Promise<unknown> {
+      tracker.count += 1;
+      // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- dynamic dispatch over AsyncMatcherSet methods requires cast
+      return await (original as (...a: readonly unknown[]) => Promise<unknown>)(...args,);
+    };
+  }
+
+  // oxlint-disable-next-line no-unsafe-type-assertion -- wrapped keys match AsyncMatcherSet by construction
+  return wrapped as unknown as AsyncMatcherSet;
+}
+
+/**
+ * Creates a scoped `expect` function that tracks assertion counts.
+ * Used by `it` to provide per-test assertion tracking without shared global state.
+ *
+ * @returns tuple of the scoped expect function and its assertion tracker
+ *
+ * @example
+ * ```ts
+ * const [scopedExpect, tracker] = createScopedExpect();
+ * scopedExpect.assertions(3);
+ * scopedExpect(1).toBe(1);
+ * // after test: check tracker.count === tracker.expected
+ * ```
+ */
+export function createScopedExpect(): readonly [ScopedExpect, AssertionTracker] {
+  const tracker: AssertionTracker = {
+    count: 0,
+    expected: null,
+    requiresAtLeastOne: false,
+  };
+
+  /**
+   * Scoped version of `expect(actual)` that wraps all matchers with assertion counting.
+   *
+   * @param actual - Value or spy to assert against
+   *
+   * @returns expect result with counted matchers
+   */
+  function scopedExpectImpl(actual: unknown,): ExpectResult {
+    const original = expectImpl(actual,);
+    return {
+      ...wrapMatchersWithCounter(original, tracker,),
+      not: wrapMatchersWithCounter(original.not, tracker,),
+      rejects: wrapAsyncMatchersWithCounter(original.rejects, tracker,),
+      resolves: wrapAsyncMatchersWithCounter(original.resolves, tracker,),
+    };
+  }
+
+  scopedExpectImpl.assertions = function assertions(count: number,): void {
+    tracker.expected = count;
+  };
+
+  scopedExpectImpl.hasAssertions = function hasAssertions(): void {
+    tracker.requiresAtLeastOne = true;
+  };
+
+  // Copy asymmetric matchers from the global expect
+  scopedExpectImpl.stringContaining = expectImpl.stringContaining;
+  scopedExpectImpl.stringMatching = expectImpl.stringMatching;
+  scopedExpectImpl.objectContaining = expectImpl.objectContaining;
+  scopedExpectImpl.anything = expectImpl.anything;
+  scopedExpectImpl.any = expectImpl.any;
+  scopedExpectImpl.arrayContaining = expectImpl.arrayContaining;
+
+  // oxlint-disable-next-line no-unsafe-type-assertion -- scopedExpectImpl satisfies ScopedExpect by construction
+  return [scopedExpectImpl as ScopedExpect, tracker,] as const;
+}
+
+//endregion Scoped expect with assertion tracking
