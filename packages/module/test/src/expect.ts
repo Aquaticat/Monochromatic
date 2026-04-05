@@ -1,13 +1,17 @@
 import {
   expect as chaiExpect,
   use,
-  type Assertion,
 } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import sinon from 'sinon';
+import {
+  match as sinonMatch,
+  type SinonMatcher,
+} from 'sinon';
 import sinonChai from 'sinon-chai';
 
+// oxlint-disable-next-line no-unsafe-call -- chai plugin registration is untyped
 use(chaiAsPromised,);
+// oxlint-disable-next-line no-unsafe-call -- chai plugin registration is untyped
 use(sinonChai,);
 
 //region Matcher set builder
@@ -18,7 +22,10 @@ use(sinonChai,);
  */
 export type MatcherSet = {
   toBe: (expected: unknown,) => void;
-  toBeCloseTo: (expected: number, precision?: number,) => void;
+  toBeCloseTo: (
+    expected: number,
+    precision?: number,
+  ) => void;
   toBeDefined: () => void;
   toBeFalsy: () => void;
   toBeGreaterThan: (expected: number,) => void;
@@ -34,9 +41,12 @@ export type MatcherSet = {
   toEqual: (expected: unknown,) => void;
   toHaveBeenCalled: () => void;
   toHaveBeenCalledTimes: (count: number,) => void;
-  toHaveBeenCalledWith: (...args: ReadonlyArray<unknown>) => void;
+  toHaveBeenCalledWith: (...args: readonly unknown[]) => void;
   toHaveLength: (expected: number,) => void;
-  toHaveProperty: (path: string, value?: unknown,) => void;
+  toHaveProperty: (
+    path: string,
+    value?: unknown,
+  ) => void;
   toHaveReturnedWith: (expected: unknown,) => void;
   toMatch: (expected: string | RegExp,) => void;
   toMatchObject: (expected: Record<string, unknown>,) => void;
@@ -50,115 +60,158 @@ export type MatcherSet = {
  *
  * @returns object with Jest-compatible matcher methods
  */
-function buildMatchers(a: Assertion,): MatcherSet {
+function buildMatchers(a: Chai.Assertion,): MatcherSet {
   return {
     toBe: function toBe(expected: unknown,): void {
+
       a.to.equal(expected,);
     },
 
     toEqual: function toEqual(expected: unknown,): void {
+
       a.to.deep.equal(expected,);
     },
 
     toContain: function toContain(expected: unknown,): void {
+
       a.to.include(expected,);
     },
 
     toThrow: function toThrow(expected?: string | RegExp | (abstract new (...args: never) => unknown),): void {
       if (expected !== undefined) {
+  
+        // oxlint-disable-next-line no-unsafe-type-assertion -- chai's throw() accepts string|RegExp|ErrorConstructor but the union type doesn't narrow cleanly
         a.to.throw(expected as Parameters<typeof a.to.throw>[0],);
       }
       else {
+  
         a.to.throw();
       }
     },
 
-    toBeCloseTo: function toBeCloseTo(expected: number, precision: number = 2,): void {
+    toBeCloseTo: function toBeCloseTo(
+      expected: number,
+      precision: number = 2,
+    ): void {
       const HALF = 1 / 2;
       // oxlint-disable-next-line prefer-exponentiation-operator -- Math.pow is clearer here with a variable exponent
-      a.to.be.closeTo(expected, Math.pow(10, -precision,) * HALF,);
+      const delta = Math.pow(
+        10,
+        -precision,
+      ) * HALF;
+
+      a.to.be.closeTo(
+        expected,
+        delta,
+      );
     },
 
     toBeGreaterThan: function toBeGreaterThan(expected: number,): void {
+
       a.to.be.above(expected,);
     },
 
     toBeGreaterThanOrEqual: function toBeGreaterThanOrEqual(expected: number,): void {
+
       a.to.be.at.least(expected,);
     },
 
     toBeLessThan: function toBeLessThan(expected: number,): void {
+
       a.to.be.below(expected,);
     },
 
     toBeLessThanOrEqual: function toBeLessThanOrEqual(expected: number,): void {
+
       a.to.be.at.most(expected,);
     },
 
     toBeDefined: function toBeDefined(): void {
+      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
       a.to.not.be.undefined;
     },
 
     toBeUndefined: function toBeUndefined(): void {
+      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
       a.to.be.undefined;
     },
 
     toBeNaN: function toBeNaN(): void {
+      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
       a.to.be.NaN;
     },
 
     toBeNull: function toBeNull(): void {
+      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
       a.to.be.null;
     },
 
     toBeTruthy: function toBeTruthy(): void {
+      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
       a.to.be.ok;
     },
 
     toBeFalsy: function toBeFalsy(): void {
+      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
       a.to.not.be.ok;
     },
 
     toHaveLength: function toHaveLength(expected: number,): void {
+
       a.to.have.lengthOf(expected,);
     },
 
-    toHaveProperty: function toHaveProperty(path: string, value?: unknown,): void {
+    toHaveProperty: function toHaveProperty(
+      path: string,
+      value?: unknown,
+    ): void {
       if (value !== undefined) {
-        a.to.have.nested.property(path, value,);
+  
+        a.to.have.nested.property(
+          path,
+          value,
+        );
       }
       else {
+  
         a.to.have.nested.property(path,);
       }
     },
 
     toMatch: function toMatch(expected: string | RegExp,): void {
+
       a.to.match(expected instanceof RegExp ? expected : new RegExp(expected,),);
     },
 
     toMatchObject: function toMatchObject(expected: Record<string, unknown>,): void {
+
       a.to.deep.include(expected,);
     },
 
     toBeInstanceOf: function toBeInstanceOf(expected: abstract new (...args: never) => unknown,): void {
+
       a.to.be.instanceOf(expected,);
     },
 
     //region sinon-chai matchers
 
     toHaveBeenCalled: function toHaveBeenCalled(): void {
+      // oxlint-disable-next-line no-unused-expressions -- sinon-chai property assertion
       a.to.have.been.called;
     },
 
     toHaveBeenCalledTimes: function toHaveBeenCalledTimes(count: number,): void {
+
       a.to.have.callCount(count,);
     },
 
-    toHaveBeenCalledWith: function toHaveBeenCalledWith(...args: ReadonlyArray<unknown>): void {
+    toHaveBeenCalledWith: function toHaveBeenCalledWith(...args: readonly unknown[]): void {
+
       a.to.have.been.calledWith(...args,);
     },
 
     toHaveReturnedWith: function toHaveReturnedWith(expected: unknown,): void {
+
       a.to.have.returned(expected,);
     },
 
@@ -200,18 +253,21 @@ function buildAsyncMatchers(getValue: () => Promise<unknown>,): AsyncMatcherSet 
     return async function wrappedMatcher(...args: Parameters<MatcherSet[K]>): Promise<void> {
       const value = await getValue();
       const matchers = buildMatchers(chaiExpect(value,),);
-      // oxlint-disable-next-line no-unsafe-argument -- args are typed by MatcherSet[K]
-      (matchers[key] as (...a: ReadonlyArray<unknown>) => void)(...args,);
+      // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- args are typed by MatcherSet[K]; cast needed for dynamic dispatch
+      (matchers[key] as (...a: readonly unknown[]) => void)(...args,);
     };
   }
 
-  const syncKeys = Object.keys(buildMatchers(chaiExpect(undefined,),),) as ReadonlyArray<keyof MatcherSet>;
-  const result = {} as Record<string, (...args: ReadonlyArray<unknown>) => Promise<void>>;
+  // oxlint-disable-next-line no-unsafe-type-assertion -- keys extracted from buildMatchers are guaranteed to be MatcherSet keys
+  const syncKeys = Object.keys(buildMatchers(chaiExpect(undefined,),),) as readonly (keyof MatcherSet)[];
+  const result = {} as Record<string, (...args: readonly unknown[]) => Promise<void>>;
 
   for (const key of syncKeys) {
-    result[key] = wrapMatcher(key,);
+    // oxlint-disable-next-line no-unsafe-type-assertion -- Parameters<MatcherSet[K]> produces mutable tuples; narrowing to readonly unknown[] is safe since the function never mutates args
+    result[key] = wrapMatcher(key,) as (...args: readonly unknown[]) => Promise<void>;
   }
 
+  // oxlint-disable-next-line no-unsafe-type-assertion -- result is structurally identical to AsyncMatcherSet after the loop
   return result as unknown as AsyncMatcherSet;
 }
 
@@ -251,10 +307,15 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
  *
  * @param promise - Promise expected to resolve
  *
- * @returns object with async Jest-compatible matcher methods
+ * @returns resolved value forwarded to sync matchers
  */
 function buildResolvesMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
-  async function getResolution(): Promise<unknown> {
+  /**
+   * Returns the promise for resolution-based matching.
+   *
+   * @returns original promise forwarded to async matchers
+   */
+  function getResolution(): Promise<unknown> {
     return promise;
   }
 
@@ -280,6 +341,65 @@ export type ExpectResult = MatcherSet & {
 };
 
 /**
+ * Asymmetric matchers attached as static properties of `expect`.
+ * Used inside `toHaveBeenCalledWith` and similar matchers.
+ */
+type ExpectStatic = {
+  /**
+   * Matches any value. Useful as a placeholder in `toHaveBeenCalledWith`.
+   *
+   * @returns sinon matcher that matches anything
+   */
+  anything: () => SinonMatcher;
+  /**
+   * Matches any instance of the given constructor.
+   *
+   * @param ctor - Constructor function to match against
+   *
+   * @returns sinon matcher that checks `instanceof`
+   */
+  any: (ctor: abstract new (...args: never) => unknown,) => SinonMatcher;
+  /**
+   * Matches any array that contains all elements of the given array, in any order.
+   *
+   * @param arr - Elements that must be present in the matched array
+   *
+   * @returns sinon matcher that checks array containment
+   */
+  arrayContaining: (arr: readonly unknown[],) => SinonMatcher;
+  /**
+   * Matches any object that deeply includes the given subset.
+   *
+   * @param obj - Partial object to match against
+   *
+   * @returns sinon matcher that checks for partial object match
+   */
+  objectContaining: (obj: Record<string, unknown>,) => SinonMatcher;
+  /**
+   * Matches any string containing the given substring.
+   *
+   * @param str - Substring to match
+   *
+   * @returns sinon matcher that checks for substring presence
+   */
+  stringContaining: (str: string,) => SinonMatcher;
+  /**
+   * Matches any string that matches the given regular expression.
+   *
+   * @param pattern - Regular expression to match against
+   *
+   * @returns sinon matcher that checks regex match
+   */
+  stringMatching: (pattern: RegExp,) => SinonMatcher;
+};
+
+/**
+ * Full type for the `expect` function including both the call signature
+ * and the static asymmetric matcher methods.
+ */
+type Expect = ((actual: unknown,) => ExpectResult) & ExpectStatic;
+
+/**
  * Jest-style `expect(actual)` powered by chai, chai-as-promised, and sinon-chai.
  *
  * Sync matchers assert immediately.
@@ -299,11 +419,14 @@ export type ExpectResult = MatcherSet & {
  * await expect(promise).resolves.toBe(42);
  * ```
  */
-function expect(actual: unknown,): ExpectResult {
+function expectImpl(actual: unknown,): ExpectResult {
   return {
     ...buildMatchers(chaiExpect(actual,),),
+
     not: buildMatchers(chaiExpect(actual,).not,),
+    // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern
     rejects: buildRejectsMatchers(actual as Promise<unknown>,),
+    // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern
     resolves: buildResolvesMatchers(actual as Promise<unknown>,),
   };
 }
@@ -325,8 +448,8 @@ function expect(actual: unknown,): ExpectResult {
  * expect(spy).toHaveBeenCalledWith(expect.stringContaining('hello'));
  * ```
  */
-expect.stringContaining = function stringContaining(str: string,) {
-  return sinon.match(str,);
+expectImpl.stringContaining = function stringContaining(str: string,): SinonMatcher {
+  return sinonMatch(str,);
 };
 
 /**
@@ -342,8 +465,8 @@ expect.stringContaining = function stringContaining(str: string,) {
  * expect(spy).toHaveBeenCalledWith(expect.stringMatching(/^hello/));
  * ```
  */
-expect.stringMatching = function stringMatching(pattern: RegExp,) {
-  return sinon.match(pattern,);
+expectImpl.stringMatching = function stringMatching(pattern: RegExp,): SinonMatcher {
+  return sinonMatch(pattern,);
 };
 
 /**
@@ -358,8 +481,8 @@ expect.stringMatching = function stringMatching(pattern: RegExp,) {
  * expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
  * ```
  */
-expect.objectContaining = function objectContaining(obj: Record<string, unknown>,) {
-  return sinon.match(obj,);
+expectImpl.objectContaining = function objectContaining(obj: Record<string, unknown>,): SinonMatcher {
+  return sinonMatch(obj,);
 };
 
 /**
@@ -372,8 +495,8 @@ expect.objectContaining = function objectContaining(obj: Record<string, unknown>
  * expect(spy).toHaveBeenCalledWith(expect.anything(), 'specific');
  * ```
  */
-expect.anything = function anything() {
-  return sinon.match.any;
+expectImpl.anything = function anything(): SinonMatcher {
+  return sinonMatch.any;
 };
 
 /**
@@ -388,8 +511,8 @@ expect.anything = function anything() {
  * expect(spy).toHaveBeenCalledWith(expect.any(Error));
  * ```
  */
-expect.any = function any(ctor: abstract new (...args: never) => unknown,) {
-  return sinon.match.instanceOf(ctor,);
+expectImpl.any = function any(ctor: abstract new (...args: never) => unknown,): SinonMatcher {
+  return sinonMatch.instanceOf(ctor,);
 };
 
 /**
@@ -405,17 +528,27 @@ expect.any = function any(ctor: abstract new (...args: never) => unknown,) {
  * expect(spy).toHaveBeenCalledWith(expect.arrayContaining([1, 2]));
  * ```
  */
-expect.arrayContaining = function arrayContaining(arr: ReadonlyArray<unknown>,) {
-  return sinon.match(function matchArrayContaining(actual: unknown,): boolean {
-    if (!Array.isArray(actual,)) {
-      return false;
-    }
-    return arr.every(function isContained(item,) {
-      return actual.includes(item,);
-    },);
-  }, `arrayContaining([${arr.join(', ',)}])`,);
+expectImpl.arrayContaining = function arrayContaining(arr: readonly unknown[],): SinonMatcher {
+  return sinonMatch(
+    function matchArrayContaining(actual: unknown,): boolean {
+      if (!Array.isArray(actual,)) {
+        return false;
+      }
+      return arr.every(function isContained(item,) {
+        return actual.includes(item,);
+      },);
+    },
+    `arrayContaining([${arr.join(', ',)}])`,
+  );
 };
 
 //endregion Asymmetric matchers
+
+/**
+ * Jest-style `expect` with both a call signature and static asymmetric matchers.
+ * `expectImpl` is cast to `Expect` to expose the static methods to TypeScript.
+ */
+// oxlint-disable-next-line no-unsafe-type-assertion -- expectImpl satisfies Expect by construction
+const expect = expectImpl as Expect;
 
 export { expect, };

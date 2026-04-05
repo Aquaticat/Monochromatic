@@ -22,7 +22,7 @@ export type DescribeOptions = {
    * Each child resolves with its name on success so the parent
    * can log the `child <- parent` relationship.
    */
-  readonly children: ReadonlyArray<Promise<DescribeResult | ItResult>>;
+  readonly children: readonly Promise<DescribeResult | ItResult>[];
   /**
    * Logger override. When omitted, a tagged logger derived from
    * the module-es default logger is used.
@@ -51,7 +51,15 @@ export type DescribeOptions = {
  * child errors in the cause chain. Empty name skips this layer
  * in the error chain -- the child error propagates directly.
  *
- * @param options - Suite configuration
+ * @param name - Suite name shown in output and error cause chain
+ *
+ * @param children - Child promises from nested describe or it calls
+ *
+ * @param timeout - Optional timeout in milliseconds for the entire suite
+ *
+ * @param l - Optional logger override
+ *
+ * @returns suite result containing the suite name
  *
  * @throws Error with child errors as cause when any child fails.
  *   Single failure: `Error(name, { cause: childError })`.
@@ -77,14 +85,23 @@ export async function describe({
   l: loggerOverride,
 }: DescribeOptions,): Promise<DescribeResult> {
   const baseLogger = loggerOverride ?? defaultLogger;
-  const l = name === '' ? baseLogger : tagged({ tag: name, l: baseLogger, },);
+  const l = name === ''
+    ? baseLogger
+    : tagged({
+      tag: name,
+      l: baseLogger,
+    },);
 
   if (name !== '') {
     l.trace('start',);
   }
 
   const allSettled = timeout !== undefined
-    ? withTimeout({ promise: Promise.allSettled(children,), ms: timeout, label: name || '(root)', },)
+    ? withTimeout({
+      promise: Promise.allSettled(children,),
+      ms: timeout,
+      label: name || '(root)',
+    },)
     : Promise.allSettled(children,);
 
   const settled = await allSettled;
@@ -105,11 +122,19 @@ export async function describe({
     return { name, };
   }
 
-  const cause = errors.length === 1 ? errors[0] : new AggregateError(errors,);
+  const cause = errors.length === 1
+    ? errors[0]
+    : new AggregateError(
+      errors,
+      `${String(errors.length,)} children failed in suite "${name || '(root)'}"`,
+    );
 
   if (name === '') {
     throw cause;
   }
 
-  throw new Error(name, { cause, },);
+  throw new Error(
+    name,
+    { cause, },
+  );
 }

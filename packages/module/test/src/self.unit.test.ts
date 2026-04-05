@@ -7,6 +7,8 @@
  * @module
  */
 
+// oxlint-disable no-unassigned-import -- test files execute on import via top-level await
+
 import './expect.unit.test.ts';
 import './sinon.unit.test.ts';
 import './it.unit.test.ts';

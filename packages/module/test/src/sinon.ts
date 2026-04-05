@@ -1,5 +1,8 @@
-import sinon from 'sinon';
-import type { SinonSandbox, SinonSandboxConfig, } from 'sinon';
+import {
+  createSandbox,
+  type SinonSandbox,
+  type SinonSandboxConfig,
+} from 'sinon';
 
 /**
  * Sinon sandbox extended with `Symbol.dispose` and `Symbol.asyncDispose`
@@ -26,14 +29,16 @@ export type DisposableSandbox = SinonSandbox & {
  * ```
  */
 export function createSinon(config?: SinonSandboxConfig,): DisposableSandbox {
-  const sandbox = sinon.createSandbox(config,) as DisposableSandbox;
+  // oxlint-disable-next-line no-unsafe-type-assertion -- sinon sandbox matches SinonSandbox but lacks dispose symbols
+  const sandbox = createSandbox(config,) as DisposableSandbox;
 
   sandbox[Symbol.dispose] = function dispose(): void {
     sandbox.restore();
   };
 
-  sandbox[Symbol.asyncDispose] = async function asyncDispose(): Promise<void> {
+  sandbox[Symbol.asyncDispose] = function asyncDispose(): Promise<void> {
     sandbox.restore();
+    return Promise.resolve();
   };
 
   return sandbox;

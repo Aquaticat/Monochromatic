@@ -3,7 +3,9 @@
  * does not settle within the specified duration.
  *
  * @param promise - Promise to race against the timeout
+ *
  * @param ms - Timeout duration in milliseconds
+ *
  * @param label - Human-readable label for the timeout error message
  *
  * @returns same value as the input promise if it settles in time
@@ -26,10 +28,17 @@ export function withTimeout<T>({
 }): Promise<T> {
   return Promise.race([
     promise,
-    new Promise<never>(function rejectAfterTimeout(_, reject,) {
-      setTimeout(function onTimeout() {
-        reject(new Error(`Timed out after ${String(ms,)}ms: ${label}`,),);
-      }, ms,);
+    // oxlint-disable-next-line avoid-new -- Promise.race requires a rejecting promise; no async/await alternative exists
+    new Promise<never>(function rejectAfterTimeout(
+      _resolve,
+      reject,
+    ) {
+      setTimeout(
+        function onTimeout() {
+          reject(new Error(`Timed out after ${String(ms,)}ms: ${label}`,),);
+        },
+        ms,
+      );
     },),
   ],);
 }

@@ -28,6 +28,7 @@
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:",
+    "@types/chai": "catalog:",
     "@types/chai-as-promised": "catalog:",
     "@types/sinon": "catalog:",
     "@types/sinon-chai": "catalog:",

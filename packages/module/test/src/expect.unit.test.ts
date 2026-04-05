@@ -235,7 +235,7 @@ await describe({
     it({
       name: 'toBeNaN works',
       fn: async () => {
-        expect(NaN,).toBeNaN();
+        expect(Number.NaN,).toBeNaN();
       },
     }),
 
