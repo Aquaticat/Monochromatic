@@ -34,6 +34,7 @@ const _default_1: UserConfig = defineConfig({
   },
   minify: {
     compress: true,
+    // Mangle breaks func.name and makes output difficult for users to audit.
     mangle: false,
     codegen: true,
   },

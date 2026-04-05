@@ -48,7 +48,12 @@ const _default_1: UserConfig = defineConfig({
       /^jspdf$/,
     ],
   },
-  minify: process.env.NODE_ENV === 'production',
+  minify: {
+    compress: true,
+    // Mangle breaks func.name and makes output difficult for users to audit.
+    mangle: false,
+    codegen: true,
+  },
   report: false,
   outDir: 'dist/client',
 },);

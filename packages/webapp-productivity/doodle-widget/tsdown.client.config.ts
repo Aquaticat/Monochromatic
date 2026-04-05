@@ -10,5 +10,10 @@ import { defineConfig, } from 'tsdown';
 export default defineConfig({
   ...base,
   entry: ['./src/client/main.ts',],
-  minify: true,
+  minify: {
+    compress: true,
+    // Mangle breaks func.name and makes output difficult for users to audit.
+    mangle: false,
+    codegen: true,
+  },
 },);
