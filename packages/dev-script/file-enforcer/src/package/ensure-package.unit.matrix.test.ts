@@ -67,7 +67,7 @@ console.log(`[container-test] uid: ${String(process.getuid?.() ?? 'unavailable',
 //endregion Setup
 
 await describe({
-  name: 'ensurePackage (container)',
+  name: 'ensurePackage (container) -- sequential: idempotent test depends on prior install, package manager locks prevent concurrent installs',
   concurrency: 1,
   children: [
     //region String shorthand shape

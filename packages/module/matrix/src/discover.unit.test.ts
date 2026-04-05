@@ -58,7 +58,6 @@ async function createTempDir(id: string,): Promise<TempDir> {
 
 await describe({
   name: 'discover',
-  concurrency: 1,
   children: [
     it({
       name: 'finds .unit.matrix.test.ts files',
