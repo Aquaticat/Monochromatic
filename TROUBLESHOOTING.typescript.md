@@ -606,69 +606,83 @@ either through the inferred project's `AllowNonTsExtensions` override,
 or through project reference resolution that feeds files directly to `compilerHost.GetSourceFile`
 without checking `isSupportedExtension` first.
 
-### Solution
+### Current status: partially mitigated, not fully resolved
 
-Add explicit `exclude` patterns for non-source binary/media extensions
-in the base `tsconfig.options.json`.
-The `exclude` patterns are applied during `matchFiles`
-(`internal/vfs/vfsmatch/vfsmatch.go:634`)
-as glob excludes in the `globMatcher`, which is checked before extension filtering:
+The crash is triggered by editord forwarding non-source files to tsgo.
+Two distinct paths lead to the panic:
 
-```go
-fileMatcher := newGlobMatcher(includes, excludes, absolutePath, useCaseSensitiveFileNames, UsageFiles)
-```
+1.  **Spawn trigger** -- when a non-source file is the first file opened
+    for a project root, `pool.resolve({ type: 'tsgo' })` spawns tsgo
+    with that file as the trigger. tsgo adds the file to the project
+    during initialization and panics on the unsupported extension.
 
-This prevents the SVG from appearing in the project's root file list
-regardless of `AllowNonTsExtensions`:
+2.  **Reuse + feature request** -- when tsgo is already running
+    (spawned earlier from a `.ts` file), and a non-source file is opened,
+    feature request handlers (`withClient` for hover, inlayHints, etc.)
+    call `pool.resolve()` which returns the existing client.
+    The handler sends the request with the non-source file's URI.
+    tsgo creates an inferred project for the unknown file,
+    which triggers parsing and the ScriptKind panic.
 
-```jsonc
-// packages/config/typescript/tsconfig.options.json
-{
-  "exclude": [
-    // ... existing excludes ...
-    "${configDir}/**/*.svg",
-    "${configDir}/**/*.png",
-    "${configDir}/**/*.jpg",
-    // ... other binary extensions
-  ]
-}
-```
+tsgo does NOT crash from its own directory scanning --
+`include`/`exclude` patterns work correctly during normal project loading
+from a `.ts` trigger.
 
-The `${configDir}` substitution resolves to the consuming package's directory,
-so each package gets its own set of exclude patterns.
-Verified with `tsgo --showConfig` -- the resolved exclude includes fully qualified paths.
+### Mitigations in place
 
-### Defense in depth (editord)
+**Include filter in `resolve()` gating ALL tsgo access** (`lsp-pool.ts`) --
+the `#resolveTsgoWithIncludeCheck` method runs the tsconfig include check
+before returning ANY tsgo client -- both reuse of existing clients and new spawns.
+Files outside the project's declared include scope get `null`,
+so tsgo never receives a non-source file URI through any code path:
+`resolveAll` (didOpen lifecycle), `withClient` (feature requests), or direct calls.
+The resolved include patterns are cached with a 2-minute TTL
+via `resolveTsconfigIncludes` (`tsconfig-includes.ts`).
 
-The `editord` LSP manager implements three layers of protection:
+**Crash recovery with ScriptKind-aware retry** (`lsp-pool.ts`, `lsp-client.ts`) --
+on unexpected exit, editord parses stderr for the ScriptKind panic pattern.
+For this specific crash, retry uses a flat 1 s interval (no backoff escalation)
+since the crash resolves as soon as the user navigates away from the
+non-source file. For other crashes, exponential backoff applies
+(2 s base, doubling to 60 s cap).
 
-1.  **Base tsconfig `exclude`** --
-    prevents tsgo from discovering non-source files during project loading.
-
-2.  **Resolved-include filter** (`tsconfig-includes.ts`) --
-    editord resolves the tsconfig's `include` patterns via `tsgo --showConfig`
-    and checks each file against them before sending `textDocument/didOpen` to tsgo.
-    Files that don't match get `tsgo: null` in server slots.
-
-3.  **Crash recovery with exponential backoff** (`lsp-pool.ts`, `lsp-client.ts`) --
-    on unexpected exit, editord rejects all pending requests,
-    removes the dead client from the pool,
-    and re-creates it on the next request after a backoff delay
-    (2 s base, doubling to 60 s cap).
+**Base tsconfig `exclude` for non-source extensions** (`tsconfig.options.json`) --
+added as belt-and-suspenders for the CLI path.
+Verified to work for `tsgo --build` but does not prevent the LSP crash.
 
 ### What does not work
 
-- **Filtering `textDocument/didOpen`** alone --
-  tsgo discovers files independently during project loading,
-  so preventing editord from sending the file has no effect on the crash.
-- **Relying on `include` patterns** --
-  tsgo's `--showConfig` correctly resolves them,
-  but the LSP project loader does not honor them during file scanning
-  when `AllowNonTsExtensions` is true (inferred projects)
-  or when files enter through project reference resolution.
-- **Restarting tsgo without backoff** --
-  tsgo re-discovers the same file on startup and crashes again immediately,
-  creating a crash loop.
+- **tsconfig `include`/`exclude` patterns in LSP mode** --
+  these work for CLI `tsgo --build` and for normal project loading
+  when tsgo is spawned by a `.ts` trigger,
+  but do not prevent the crash when tsgo is spawned by a non-source trigger.
+  The LSP's `DidOpenFile` → `ensureConfiguredProjectAndAncestorsForFile`
+  likely adds the trigger file as a root file name,
+  bypassing `matchFiles` extension filtering.
+- **Shadow root / symlink directory** --
+  pnpm workspace `node_modules` resolution breaks because `${configDir}`
+  resolves to the shadow path and the nested `node_modules` structure
+  does not contain hoisted dependencies.
+- **Restarting without any delay** --
+  creates a crash loop; the 1 s flat retry gives time for the user
+  to navigate away from the problematic file.
+
+### Previously broken: filtering only spawns, not reuse
+
+Two earlier approaches failed because they only gated part of the problem:
+
+1.  **Filtering only in `resolveAll`** --
+    feature request handlers call `pool.resolve()` directly via `withClient`,
+    bypassing the `resolveAll` include filter entirely.
+2.  **Filtering only before spawning in `resolve()`** --
+    returning an existing tsgo client for a non-source file is just as
+    dangerous as spawning a new one: the feature request sends the file URI
+    to tsgo, which creates an inferred project and panics.
+
+**Fixed** by checking tsconfig includes as the very first step in `resolve()`
+for tsgo, before both pool cache lookup and spawn.
+`#resolveTsgoWithIncludeCheck` returns `null` for non-matching files
+regardless of whether a tsgo client exists for the project root.
 
 ### References
 
@@ -705,10 +719,10 @@ Ready to file against [microsoft/typescript-go](https://github.com/microsoft/typ
 
 ### Summary
 
-The LSP server panics when a non-source file (e.g. `.svg`, `.png`, `.css`)
-exists in a directory covered by a `tsconfig.json`.
-The panic occurs during project loading, before any `textDocument/didOpen`
-is sent for the file.
+The LSP server panics when it receives a feature request (e.g. hover, inlayHints)
+for a non-source file (e.g. `.svg`, `.png`, `.css`).
+tsgo creates an inferred project for the file, which triggers parsing
+with `ScriptKindUnknown` and panics in `parser.initializeState`.
 
 ### tsgo version
 

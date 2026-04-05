@@ -12,7 +12,6 @@ import {
 
 import type { Logger, } from '../log.ts';
 import { LspClient, } from './lsp-client.ts';
-import { createTsgoShadowRoot, } from './tsgo-shadow-root.ts';
 import { pathToUri, } from './uri.ts';
 
 /** LSP server type identifier. */
@@ -132,6 +131,7 @@ export async function spawnLspClient({
   onExit: (event: {
     unexpected: boolean;
     code: number | null;
+    recentStderr: string;
   },) => void;
 },): Promise<LspClient | null> {
   const def = COMMANDS[type];
@@ -144,20 +144,7 @@ export async function spawnLspClient({
     PATH: `${binPath}${delimiter}${process.env.PATH ?? ''}`,
   };
 
-  /**
-   * For tsgo, create a shadow directory that excludes non-source files.
-   * tsgo's LSP panics on unrecognized extensions during project loading
-   * and ignores tsconfig include/exclude patterns when scanning.
-   * See TROUBLESHOOTING.typescript.md "tsgo LSP panics on non-source files".
-   */
-  const effectiveRoot = type === 'tsgo'
-    ? createTsgoShadowRoot({
-      root,
-      patterns: [],
-      l,
-    },)
-    : root;
-  const rootUri = pathToUri({ path: effectiveRoot, },);
+  const rootUri = pathToUri({ path: root, },);
 
   try {
     const c = new LspClient({
@@ -188,7 +175,7 @@ export async function spawnLspClient({
       rootUri,
       initializationOptions: def.initializationOptions,
     },);
-    l.info(`${type}: ready at ${root} (shadow: ${effectiveRoot})`,);
+    l.info(`${type}: ready at ${root}`,);
     return c;
   }
   catch (error) {

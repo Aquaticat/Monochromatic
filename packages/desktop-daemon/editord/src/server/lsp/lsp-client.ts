@@ -70,7 +70,14 @@ export class LspClient {
   #onExit: (event: {
     unexpected: boolean;
     code: number | null;
+    recentStderr: string;
   },) => void;
+
+  /**
+   * Rolling buffer of recent stderr output (last ~4 KB).
+   * Used to detect specific panic patterns after an unexpected exit.
+   */
+  #stderrBuffer = '';
 
   /** Whether the LSP initialize handshake has completed. */
   #initialized = false;
@@ -126,6 +133,7 @@ export class LspClient {
     onExit: (event: {
       unexpected: boolean;
       code: number | null;
+      recentStderr: string;
     },) => void;
   },) {
     this.#name = name;
@@ -163,18 +171,20 @@ export class LspClient {
         parser.feed(chunk,);
       },
     );
+    /** Maximum bytes kept in the rolling stderr buffer. */
+    const STDERR_BUFFER_LIMIT = 4096;
+    const client = this;
     this.#proc.stderr?.on(
       'data',
       function handleStderr(chunk: Buffer,) {
-        clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,);
+        const text = chunk.toString('utf8',).trimEnd();
+        clientLog.error(`stderr: ${text}`,);
+        client.#stderrBuffer += text + '\n';
+        if (client.#stderrBuffer.length > STDERR_BUFFER_LIMIT)
+          client.#stderrBuffer = client.#stderrBuffer.slice(-STDERR_BUFFER_LIMIT,);
       },
     );
 
-    /**
-     * Local refs for the exit handler, which cannot capture `this`
-     * because it's passed as a plain function to the 'exit' event.
-     */
-    const client = this;
     this.#proc.on(
       'exit',
       function handleExit(code,) {
@@ -196,6 +206,7 @@ export class LspClient {
         client.#onExit({
           unexpected,
           code,
+          recentStderr: client.#stderrBuffer,
         },);
       },
     );

@@ -42,12 +42,31 @@ const BASE_RESTART_DELAY_MS = 2_000;
  */
 const MAX_RESTART_DELAY_MS = 60_000;
 
+/**
+ * Fixed retry interval for known deterministic panics (milliseconds).
+ * tsgo's ScriptKind panic is triggered when a non-source file is open
+ * in editord and tsgo spawns for that project root. The crash resolves
+ * as soon as the user navigates away from the problematic file,
+ * so a short flat retry keeps recovery fast without backoff escalation.
+ */
+const DETERMINISTIC_PANIC_RETRY_MS = 1_000;
+
+/**
+ * Pattern matching tsgo's ScriptKind panic in stderr.
+ * When detected, the pool uses flat retry instead of exponential backoff
+ * because the crash resolves as soon as the user navigates away
+ * from the non-source file that triggered the tsgo spawn.
+ */
+const SCRIPT_KIND_PANIC_PATTERN = 'ScriptKind must be specified';
+
 /** Crash tracking state for a single pool key. */
 type CrashState = {
   /** Number of consecutive unexpected exits without a successful request in between. */
   count: number;
   /** Timestamp of last crash (milliseconds since epoch). */
   lastCrashAt: number;
+  /** Whether the crash was a known deterministic panic (flat retry, no backoff). */
+  deterministic: boolean;
 };
 
 /** Lazily creates and caches LSP clients per `(type, projectRoot)`. */
@@ -98,6 +117,11 @@ export class LspPool {
    * Finds or creates the LSP client for a server type given a file path.
    * Returns null when the server is in crash-backoff cooldown.
    *
+   * For tsgo, checks the resolved tsconfig `include` patterns before
+   * spawning a new server — files outside the project's declared scope
+   * are rejected so tsgo never receives an unsupported extension as its
+   * initial trigger, which would cause a ScriptKind panic.
+   *
    * @returns promise resolving to the client, or null if no project root is found or server is in backoff
    */
   resolve(
@@ -116,16 +140,99 @@ export class LspPool {
     },);
     if (root === null)
       return Promise.resolve(null,);
+
+    /**
+     * For tsgo, ALWAYS check tsconfig includes — both for reuse
+     * and new spawns. Returning an existing tsgo client for a
+     * non-matching file (e.g. `.svg`) is just as dangerous as
+     * spawning a new one: the feature request handler sends the
+     * file URI to tsgo, which creates an inferred project for it
+     * and panics on the unsupported ScriptKind.
+     */
+    if (type === 'tsgo') {
+      return this.#resolveTsgoWithIncludeCheck({
+        filePath,
+        root,
+      },);
+    }
+
     const key = buildPoolKey({
       type,
       root,
     },);
     const existing = this.#pool.get(key,);
-    if (existing !== undefined)
+    if (existing !== undefined) {
+      this.#l.info(`${type} resolve: reusing existing client for ${root} (trigger: ${filePath})`,);
       return existing;
+    }
     if (this.#isInBackoff({ key, },))
       return Promise.resolve(null,);
-    const promise = this.#spawnWithCrashRecovery({ type, root, key, },);
+
+    this.#l.info(`${type} resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
+    const promise = this.#spawnWithCrashRecovery({
+      type,
+      root,
+      key,
+    },);
+    this.#pool.set(
+      key,
+      promise,
+    );
+    return promise;
+  }
+
+  /**
+   * Resolves tsgo with a tsconfig include check gating ALL access.
+   *
+   * Files outside the project's declared include scope get `null`
+   * even when an existing tsgo client is running for that root.
+   * This prevents feature request handlers from sending non-source
+   * file URIs to tsgo, which would trigger inferred-project creation
+   * and a ScriptKind panic on unsupported extensions.
+   *
+   * @param filePath - absolute file path that triggered the resolve
+   *
+   * @param root - project root directory containing tsconfig.json
+   *
+   * @returns existing or new client for matching files, null otherwise
+   */
+  async #resolveTsgoWithIncludeCheck({
+    filePath,
+    root,
+  }: {
+    filePath: string;
+    root: string;
+  },): Promise<LspClient | null> {
+    const patterns = await resolveTsconfigIncludes({
+      root,
+      l: this.#l,
+    },);
+    if (!matchesTsconfigIncludes({
+      path: filePath,
+      patterns,
+    },)) {
+      this.#l.info(`${filePath} excluded by tsconfig includes, skipping tsgo`,);
+      return null;
+    }
+
+    const key = buildPoolKey({
+      type: 'tsgo',
+      root,
+    },);
+    const existing = this.#pool.get(key,);
+    if (existing !== undefined) {
+      this.#l.info(`tsgo resolve: reusing existing client for ${root} (trigger: ${filePath})`,);
+      return existing;
+    }
+    if (this.#isInBackoff({ key, },))
+      return null;
+
+    this.#l.info(`tsgo resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
+    const promise = this.#spawnWithCrashRecovery({
+      type: 'tsgo',
+      root,
+      key,
+    },);
     this.#pool.set(
       key,
       promise,
@@ -164,10 +271,14 @@ export class LspPool {
       root,
       l,
       onNotification: this.#onNotification,
-      onExit: function handleCrashRecovery({ unexpected, },) {
+      onExit: function handleCrashRecovery({
+        unexpected,
+        recentStderr,
+      },) {
         if (!unexpected)
           return;
         pool.delete(key,);
+        const deterministic = recentStderr.includes(SCRIPT_KIND_PANIC_PATTERN,);
         const prev = crashes.get(key,);
         const count = (prev?.count ?? 0) + 1;
         crashes.set(
@@ -175,14 +286,19 @@ export class LspPool {
           {
             count,
             lastCrashAt: Date.now(),
+            deterministic,
           },
         );
-        const delay = Math.min(
-          BASE_RESTART_DELAY_MS * Math.pow(2, count - 1,),
-          MAX_RESTART_DELAY_MS,
-        );
+        const delay = deterministic
+          ? DETERMINISTIC_PANIC_RETRY_MS
+          : Math.min(
+            BASE_RESTART_DELAY_MS * 2 ** (count - 1),
+            MAX_RESTART_DELAY_MS,
+          );
         l.error(
-          `${type} at ${root} crashed (attempt ${String(count,)}), next restart in ${String(delay,)}ms`,
+          `${type} at ${root} crashed (attempt ${String(count,)})${
+            deterministic ? ' [ScriptKind panic]' : ''
+          }, next restart in ${String(delay,)}ms`,
         );
       },
     },);
@@ -201,13 +317,15 @@ export class LspPool {
     const state = this.#crashes.get(key,);
     if (state === undefined)
       return false;
-    const delay = Math.min(
-      BASE_RESTART_DELAY_MS * Math.pow(2, state.count - 1,),
-      MAX_RESTART_DELAY_MS,
-    );
+    const delay = state.deterministic
+      ? DETERMINISTIC_PANIC_RETRY_MS
+      : Math.min(
+        BASE_RESTART_DELAY_MS * 2 ** (state.count - 1),
+        MAX_RESTART_DELAY_MS,
+      );
     const elapsed = Date.now() - state.lastCrashAt;
     if (elapsed >= delay) {
-      /** Backoff period has elapsed; allow restart but keep count for next escalation. */
+      /** Backoff/retry period has elapsed; allow restart. */
       return false;
     }
     return true;
@@ -215,14 +333,15 @@ export class LspPool {
 
   /**
    * Resolves all three server types for a given file path.
-   * For tsgo, also checks that the file matches the resolved
-   * tsconfig `include` patterns — returns null for tsgo when
-   * the file falls outside the project's declared scope.
+   *
+   * The tsconfig include filter for tsgo lives inside {@link resolve}
+   * itself, so both this method and direct `resolve()` callers
+   * (like feature request handlers) are equally protected.
    *
    * @returns server slots with oxlint, tsgo, and dprint clients
    */
   async resolveAll({ path, }: { path: string; },): Promise<ServerSlots> {
-    const [oxlint, tsgoRaw, dprint,] = await Promise.all([
+    const [oxlint, tsgo, dprint,] = await Promise.all([
       this.resolve({
         type: 'oxlint',
         filePath: path,
@@ -236,29 +355,6 @@ export class LspPool {
         filePath: path,
       },),
     ],);
-
-    /** Filter tsgo through resolved tsconfig includes. */
-    let tsgo = tsgoRaw;
-    if (tsgo !== null) {
-      const root = findProjectRoot({
-        startDir: dirname(path,),
-        configFiles: CONFIG_FILES.tsgo,
-        ceiling: this.#ceiling,
-      },);
-      if (root !== null) {
-        const patterns = await resolveTsconfigIncludes({
-          root,
-          l: this.#l,
-        },);
-        if (!matchesTsconfigIncludes({
-          path,
-          patterns,
-        },)) {
-          this.#l.info(`${path} excluded by tsconfig includes, skipping tsgo`,);
-          tsgo = null;
-        }
-      }
-    }
 
     return {
       oxlint,
