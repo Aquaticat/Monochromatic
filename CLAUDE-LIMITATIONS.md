@@ -1,7 +1,41 @@
-# Lessons learned
+# Claude limitations
 
 Documenting tasks where AI assistance failed to produce usable results,
 so future sessions don't repeat the same dead ends.
+
+## Humor generation (2026-04-06)
+
+**Goal:** generate additional quotes for the footer news ticker in `ssg-test`.
+The ticker cycles through short absurdist phrases that combine
+wordplay with pointed digs at specific technologies or dev culture.
+
+**Existing examples that set the bar:**
+
+- "pipeline operator stuck in pipeline" -- TC39 dig; reads as a natural English sentence
+  with a double meaning (the proposal is literally stuck in the standards pipeline)
+- "sloppiest sloppy slop" -- AI-generated content dig; word-cycling that sounds visceral
+
+**Attempts:** 4 rounds of generation with feedback between each round.
+
+**Failure modes:**
+
+- **Too generic / toothless:** early attempts were pure wordplay with no specific target.
+  "hot take: room temperature" sounds clever but doesn't dig at anything.
+- **Not funny even when aimed correctly:** later rounds targeted real technologies
+  used in the repo (Bun, tsgo, mise, Podman, oxlint) but the results
+  read as observations or commentary, not jokes.
+- **Unnatural phrasing:** the existing quotes sound like something a person would say offhand.
+  Claude's attempts sounded like a person trying to write a joke --
+  constructed rather than discovered. "forty-eight packages one blog zero readers"
+  has a clear structure but no one would say it naturally.
+
+**Root cause:** humor requires taste, timing, and cultural fluency
+that current models lack. Claude can identify what makes existing jokes work
+(compression, double meanings, specific targets) but cannot reproduce those qualities.
+Analyzing humor and generating humor are different capabilities.
+
+**Conclusion:** do not use Claude to generate jokes, quotes, or other humorous content.
+Write them by hand.
 
 ## Kasane Teto SV character art for Duik rigging (2026-03-12)
 

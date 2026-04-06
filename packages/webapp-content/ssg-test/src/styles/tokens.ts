@@ -6,8 +6,8 @@
  * Every color value in the site references these tokens via `var(--token-name)`.
  */
 import {
-  type CssDeclarations,
   cssCalc,
+  type CssDeclarations,
   cssOklchFrom,
   cssVar,
   hCss as $,

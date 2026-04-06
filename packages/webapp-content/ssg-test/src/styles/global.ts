@@ -6,9 +6,9 @@
  */
 import {
   cssCommaList,
+  cssPercent,
   cssRem,
   cssVar,
-  cssPercent,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -52,8 +52,8 @@ export function resetStyles(): string {
     },),
     $({
       rule: 'img',
-      decls: { 'max-inline-size': cssPercent(100) }
-    })
+      decls: { 'max-inline-size': cssPercent(100,), },
+    },),
   ]
     .join('\n',);
 }

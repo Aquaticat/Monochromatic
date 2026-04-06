@@ -5,6 +5,8 @@ I propose:
 
 [contents](./TODO.claude-code-words.contents.txt)
 
+[sorted](./TODO.claude-code-words.contents.sorted.txt)
+
 ## Words that are not included
 
 ### Negative

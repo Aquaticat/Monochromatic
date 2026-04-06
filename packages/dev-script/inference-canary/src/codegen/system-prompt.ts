@@ -15,8 +15,14 @@
  * are not printed by `oxlint --print-config`, so the rule modules are the
  * only source of truth for their severity.
  */
-import { readFile, readdir, } from 'node:fs/promises';
-import { join, relative, } from 'node:path';
+import {
+  readdir,
+  readFile,
+} from 'node:fs/promises';
+import {
+  join,
+  relative,
+} from 'node:path';
 
 import { l, } from '../log.ts';
 
