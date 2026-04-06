@@ -9,6 +9,13 @@ import type { PluginOption, } from 'vite';
  * @param message - text to log during config resolution
  *
  * @returns Vite plugin that logs the message
+ *
+ * @example
+ * ```ts
+ * import { viteNoopPlugin } from '\@monochromatic-dev/config-vite/utilities.ts';
+ *
+ * const plugin = viteNoopPlugin('CSS plugin disabled in test mode');
+ * ```
  */
 export function viteNoopPlugin(message: string = 'noop',): PluginOption {
   return {
@@ -26,6 +33,15 @@ export function viteNoopPlugin(message: string = 'noop',): PluginOption {
  * @param moduleId - module specifier to check
  *
  * @returns true when the module should remain external
+ *
+ * @example
+ * ```ts
+ * import { rollupExternal } from '\@monochromatic-dev/config-vite/utilities.ts';
+ *
+ * rollupExternal('node:fs'); // true
+ * rollupExternal('vite'); // true
+ * rollupExternal('./local-module'); // false
+ * ```
  */
 export function rollupExternal(moduleId: string,): boolean {
   if (

@@ -55,6 +55,14 @@ export {
  * @returns Expanded CSS with all \@apply rules replaced by mixin bodies
  *
  * @throws When an \@apply references an unknown mixin
+ *
+ * @example
+ * ```ts
+ * const expanded = applyMixins(
+ *   '.btn { \@apply --card; }',
+ *   '\@mixin --card { padding: 1rem; }',
+ * );
+ * ```
  */
 export function applyMixins(
   cssText: string,
@@ -95,6 +103,11 @@ export function applyMixins(
  * @returns Processed CSS string
  *
  * @throws When an import cannot be resolved or a mixin reference is invalid
+ *
+ * @example
+ * ```ts
+ * const css = await build({ input: 'src/main.css', output: 'dist/main.css' });
+ * ```
  */
 export async function build(options: BuildOptions,): Promise<string> {
   const {

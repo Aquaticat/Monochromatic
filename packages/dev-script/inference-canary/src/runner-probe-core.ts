@@ -47,6 +47,12 @@ import type {
  * @param signal - abort signal from the timeout controller; cancels HTTP streams and containers
  *
  * @returns scored result with consistency information
+ *
+ * @example
+ * ```ts
+ * const result = await runProbeCore(probe, config, timestamp, signal);
+ * result.meanScore; // average across consistency runs
+ * ```
  */
 export async function runProbeCore(
   probe: Probe,

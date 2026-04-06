@@ -27,6 +27,12 @@ import { splitPackageSpecifier, } from './specifier.ts';
  * @param packageName - Package name (e.g. `\@scope/pkg`)
  *
  * @returns Absolute path to the package directory, or undefined if not found
+ *
+ * @example
+ * ```ts
+ * const dir = findPackageDir('/project/src', '\@scope/tokens');
+ * // → '/project/node_modules/\@scope/tokens'
+ * ```
  */
 export function findPackageDir(
   startDir: string,
@@ -64,6 +70,11 @@ export function findPackageDir(
  * @param packageDir - Absolute path to the package directory
  *
  * @returns Parsed package.json or undefined if not found
+ *
+ * @example
+ * ```ts
+ * const pkg = readPackageJson('/project/node_modules/\@scope/tokens');
+ * ```
  */
 export function readPackageJson(
   packageDir: string,
@@ -93,6 +104,11 @@ export function readPackageJson(
  * @param subpath - Subpath to resolve (e.g. `./index.css` or `.`)
  *
  * @returns Resolved relative path or undefined if no match
+ *
+ * @example
+ * ```ts
+ * resolveExports({ '.': { style: './dist/index.css' } }, '.') // → './dist/index.css'
+ * ```
  */
 export function resolveExports(
   exports: unknown,
@@ -140,6 +156,11 @@ export function resolveExports(
  * @returns Absolute resolved path
  *
  * @throws When the package or file cannot be found
+ *
+ * @example
+ * ```ts
+ * const path = resolvePackage('\@scope/tokens/index.css', '/project/src');
+ * ```
  */
 export function resolvePackage(
   specifier: string,

@@ -18,6 +18,13 @@ import type { ExecutionStep, } from './interpreter-ops.ts';
  * @returns jump target position
  *
  * @throws when arg is undefined or label is not found
+ *
+ * @example
+ * ```ts
+ * const labels = new Map([['loop', 5]]);
+ * const step = resolveJumpTarget('JUMP', 'loop', labels);
+ * // step.jumpTo === 5
+ * ```
  */
 export function resolveJumpTarget(
   op: string,

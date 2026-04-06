@@ -74,6 +74,14 @@ export type ItemPerLineConfig = {
  * @param minItems - minimum item count to trigger (default 2)
  *
  * @param delimiter - separator character for items (`','` or `';'`, defaults to `','`)
+ *
+ * @example
+ * ```ts
+ * checkItemsPerLine({
+ *   context, container: arrayNode, items: arrayNode.elements,
+ *   messageId: 'itemPerLine', bracketPair: { open: '[', close: ']' },
+ * });
+ * ```
  */
 export function checkItemsPerLine({
   context,

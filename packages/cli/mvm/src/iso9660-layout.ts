@@ -116,6 +116,12 @@ export const PATH_TABLE_SIZE = 10;
  * @param str - ASCII string to write
  *
  * @param len - Fixed-width field length to fill (padded with spaces)
+ *
+ * @example
+ * ```ts
+ * const buf = new Uint8Array(32);
+ * writeStr(buf, 0, 'CD001', 5);
+ * ```
  */
 export function writeStr(
   buf: Uint8Array,
@@ -137,6 +143,12 @@ export function writeStr(
  * @param offset - Byte offset for the LE value (BE follows at offset+2)
  *
  * @param value - 16-bit unsigned integer to write
+ *
+ * @example
+ * ```ts
+ * const view = new DataView(new ArrayBuffer(4));
+ * writeBoth16(view, 0, 2048);
+ * ```
  */
 export function writeBoth16(
   view: DataView,
@@ -163,6 +175,12 @@ export function writeBoth16(
  * @param offset - Byte offset for the LE value (BE follows at offset+4)
  *
  * @param value - 32-bit unsigned integer to write
+ *
+ * @example
+ * ```ts
+ * const view = new DataView(new ArrayBuffer(8));
+ * writeBoth32(view, 0, 65536);
+ * ```
  */
 export function writeBoth32(
   view: DataView,
@@ -187,6 +205,12 @@ export function writeBoth32(
  * @param buf - Target byte array
  *
  * @param offset - Byte offset to start writing at
+ *
+ * @example
+ * ```ts
+ * const buf = new Uint8Array(7);
+ * writeTimestamp7(buf, 0);
+ * ```
  */
 export function writeTimestamp7(
   buf: Uint8Array,
@@ -203,6 +227,12 @@ export function writeTimestamp7(
  * @param buf - Target byte array
  *
  * @param offset - Byte offset to start writing at
+ *
+ * @example
+ * ```ts
+ * const buf = new Uint8Array(17);
+ * writeTimestamp17(buf, 0);
+ * ```
  */
 export function writeTimestamp17(
   buf: Uint8Array,

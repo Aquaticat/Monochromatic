@@ -25,6 +25,11 @@ import {
  * This function never returns under normal operation (it loops forever watching).
  *
  * @param configPath - Path to the file-enforcer config file
+ *
+ * @example
+ * ```ts
+ * await startWatching('./file-enforcer.config.ts');
+ * ```
  */
 export function startWatching(configPath: string,): Promise<never> {
   const rl = tagged({

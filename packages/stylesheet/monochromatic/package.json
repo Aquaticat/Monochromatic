@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/stylesheet-monochromatic",
+  "description": "Shared CSS stylesheet with reset, global styles, mixins, and design tokens for Monochromatic web applications.",
   "files": [
     "src/",
     "dist/"

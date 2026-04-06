@@ -35,6 +35,12 @@ export type ContainerResult = {
  * @param signal - optional abort signal; kills the container process immediately on abort
  *
  * @returns container execution result
+ *
+ * @example
+ * ```ts
+ * const result = await execContainer(['run', '--rm', 'oven/bun:1.3', 'echo', 'hi']);
+ * result.stdout; // "hi\n"
+ * ```
  */
 export async function execContainer(
   containerArgs: readonly string[],

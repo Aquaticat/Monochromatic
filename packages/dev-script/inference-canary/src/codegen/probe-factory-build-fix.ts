@@ -36,6 +36,12 @@ import type {
  * @param caches - shared per-model caches for lint, container, perf, and additional runs
  *
  * @returns fix prompt string, or undefined when no issues were detected
+ *
+ * @example
+ * ```ts
+ * const prompt = await buildFixPromptImpl(config, response, context, caches);
+ * if (prompt !== undefined) sendFixTurn(prompt);
+ * ```
  */
 export async function buildFixPromptImpl(
   config: CodeGenProbeConfig,

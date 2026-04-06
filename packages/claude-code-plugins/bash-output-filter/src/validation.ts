@@ -41,6 +41,12 @@ export const ALLOW_PATTERNS: readonly RegExp[] = [
  * @param command - Full Bash command string from the tool input.
  *
  * @returns `true` if the command matches the allowlist patterns.
+ *
+ * @example
+ * ```ts
+ * isAllowed('git status') // → true
+ * isAllowed('(subshell)')  // → false
+ * ```
  */
 export function isAllowed(command: string,): boolean {
   return ALLOW_PATTERNS.some(function patternTest(pattern,) {
@@ -139,6 +145,12 @@ export const SKIP_PATTERNS: readonly RegExp[] = [
  * @param command - Full Bash command string from the tool input.
  *
  * @returns `true` if the command matches any denylist pattern and should not be filtered.
+ *
+ * @example
+ * ```ts
+ * shouldSkip('tar xf archive.tar') // → true
+ * shouldSkip('git status')         // → false
+ * ```
  */
 export function shouldSkip(command: string,): boolean {
   return SKIP_PATTERNS.some(function patternTest(pattern,) {

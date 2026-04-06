@@ -23,7 +23,9 @@ const IMAGE_NAME = 'repology-updater';
 
 /** Podman volume names for persistent state across incremental runs. */
 const STATE_VOLUME = 'repology-state';
+/** Podman volume for parsed repository data. */
 const PARSED_VOLUME = 'repology-parsed';
+/** Podman volume for PostgreSQL data directory. */
 const PG_VOLUME = 'repology-pgdata';
 
 /** Package directory containing the generator/ subdirectory. */
@@ -308,7 +310,9 @@ await runContainer([
 
 /** Step 5: Extract package data via SQL */
 console.log('[generate-index] extracting package data...',);
+/** Raw JSON output from the repology-updater extract step. */
 const rawJson = await runContainer(['--extract',],);
+/** Parsed Repology project entries with per-manager package names. */
 const projects = JSON.parse(rawJson.trim(),) as RepologyProject[];
 console.log(`[generate-index] extracted ${projects.length} projects from Repology`,);
 
@@ -322,6 +326,7 @@ const filtered = projects.filter(
     return true;
   },
 );
+/** Number of packages filtered out because mise can install them directly. */
 const removedCount = projects.length - filtered.length;
 console.log(`[generate-index] ${removedCount} packages filtered (mise registry + mise backends)`,);
 console.log(`[generate-index] ${filtered.length} packages remaining`,);

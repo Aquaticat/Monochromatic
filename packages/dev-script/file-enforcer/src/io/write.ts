@@ -102,6 +102,11 @@ async function writeIfChanged(
  * @param dest - Destination file path
  *
  * @param content - Content string to write
+ *
+ * @example
+ * ```ts
+ * await overwrite('./dist/config.json', JSON.stringify(config, null, 2));
+ * ```
  */
 export async function overwrite(
   dest: string,
@@ -121,6 +126,11 @@ export async function overwrite(
  * @param dest - Destination file path
  *
  * @param content - Content string to write
+ *
+ * @example
+ * ```ts
+ * await overwriteIfNotExists('./config/defaults.json', '{}');
+ * ```
  */
 export async function overwriteIfNotExists(
   dest: string,

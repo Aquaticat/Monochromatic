@@ -96,6 +96,12 @@ function restoreTimestamp(rawTimestamp: string,): string {
  * @param cutoff - cutoff time in milliseconds since epoch
  *
  * @returns true if the timestamp is recent (after the cutoff)
+ *
+ * @example
+ * ```ts
+ * const cutoff = Date.now() - 86_400_000;
+ * isRecentTimestamp('2026-03-06T12-00-00.000Z', cutoff);
+ * ```
  */
 export function isRecentTimestamp(
   rawTimestamp: string,

@@ -6,6 +6,12 @@ import { getProperty as dotPropGet, } from 'dot-prop';
  * @param content - Multiline string to deduplicate
  *
  * @returns Content with duplicate lines removed
+ *
+ * @example
+ * ```ts
+ * dedup('a\nb\na\nc');
+ * // 'a\nb\nc'
+ * ```
  */
 export function dedup(content: string,): string {
   return [...new Set(content.split('\n',),),].join('\n',);
@@ -21,6 +27,12 @@ export function dedup(content: string,): string {
  * @param content - JSON string to parse and extract from
  *
  * @returns Extracted value as a string (stringified if not already a string)
+ *
+ * @example
+ * ```ts
+ * getProperty('.rules', '{"rules":{"no-var":"error"}}');
+ * // '{"no-var":"error"}'
+ * ```
  */
 export function getProperty(
   path: string,

@@ -69,6 +69,12 @@ function createDisposableTimeout(
  * @param timestamp - authoritative server timestamp for artifact naming
  *
  * @returns scored result; on timeout, a zero-score result with `timedOut: true`
+ *
+ * @example
+ * ```ts
+ * const result = await runProbe(probe, config, timestamp);
+ * result.meanScore; // 0 if timed out
+ * ```
  */
 export async function runProbe(
   probe: Probe,

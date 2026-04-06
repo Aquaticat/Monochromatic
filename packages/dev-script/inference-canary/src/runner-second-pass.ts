@@ -44,6 +44,12 @@ export type SecondPassResult = {
  * @param context - score context for artifact organization (includes abort signal)
  *
  * @returns second-pass result with score, completion data, and fix prompt; or undefined if skipped
+ *
+ * @example
+ * ```ts
+ * const result = await runSecondPass(probe, config, client, firstResponse, context);
+ * if (result !== undefined) result.score; // fix pass score
+ * ```
  */
 export async function runSecondPass(
   probe: Probe,

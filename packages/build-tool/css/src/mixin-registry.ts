@@ -112,6 +112,12 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
  * recursive calls with no clarity benefit.
  *
  * @throws When expansion exceeds the pass limit (circular \@apply references)
+ *
+ * @example
+ * ```ts
+ * collectMixins(root);
+ * expandMixinBodies();
+ * ```
  */
 export function expandMixinBodies(): void {
   /**

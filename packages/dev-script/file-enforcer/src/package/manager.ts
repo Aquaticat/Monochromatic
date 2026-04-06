@@ -71,6 +71,11 @@ export async function detectManager(): Promise<PackageManager | null> {
 /**
  * Resets the cached manager detection.
  * Primarily useful for testing.
+ *
+ * @example
+ * ```ts
+ * resetManagerCache();
+ * ```
  */
 export function resetManagerCache(): void {
   cachedManager = undefined;
@@ -124,6 +129,13 @@ let cachedIsRoot: boolean | undefined = undefined;
  * Result is cached for the lifetime of the process.
  *
  * @returns `true` if running as root
+ *
+ * @example
+ * ```ts
+ * if (isRoot()) {
+ *   // skip sudo prefix
+ * }
+ * ```
  */
 export function isRoot(): boolean {
   if (cachedIsRoot !== undefined)
@@ -135,6 +147,11 @@ export function isRoot(): boolean {
 /**
  * Resets the cached root detection.
  * Primarily useful for testing.
+ *
+ * @example
+ * ```ts
+ * resetRootCache();
+ * ```
  */
 export function resetRootCache(): void {
   cachedIsRoot = undefined;

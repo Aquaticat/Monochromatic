@@ -69,6 +69,11 @@ export async function exec(
  * @param args - Arguments passed to the command (only used with string form)
  *
  * @returns Stdout output as a string
+ *
+ * @example
+ * ```ts
+ * const version = await exec('node', ['--version']);
+ * ```
  */
 export async function exec(
   cmdOrPlatformCommands: string | PlatformCommands,

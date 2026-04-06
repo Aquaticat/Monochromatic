@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/test-fixture-oxlint-stylistic",
+  "description": "Test fixture: valid and invalid TypeScript samples for verifying oxlint-stylistic one-item-per-line rule behavior.",
   "version": "0.0.1",
   "private": true,
   "type": "module",

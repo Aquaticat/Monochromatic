@@ -19,6 +19,12 @@ import {
  * @param value - Raw value string.
  *
  * @param result - Mutable result object to populate.
+ *
+ * @example
+ * ```ts
+ * const result = createEmptyEntry();
+ * applyKey({ key: 'Exec', value: '/usr/bin/xterm', result });
+ * ```
  */
 export function applyKey({
   key,

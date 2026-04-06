@@ -17,6 +17,13 @@ import { rolldownExternal, } from './utilities.ts';
  * @param configDir - absolute path to the package directory
  *
  * @returns base Vite user config
+ *
+ * @example
+ * ```ts
+ * import { createBaseConfig } from '\@monochromatic-dev/config-vite/base-configs.ts';
+ *
+ * const baseConfig = createBaseConfig(import.meta.dirname);
+ * ```
  */
 function createBaseConfig(configDir: string,): UserConfig {
   return {

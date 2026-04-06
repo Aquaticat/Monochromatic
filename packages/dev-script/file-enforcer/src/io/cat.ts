@@ -48,6 +48,11 @@ const GLOB_CHARS = /[*?]/;
  * Reads files by glob pattern, keeping them separate for `overwriteEach()`.
  * @param glob - Glob pattern to match source files
  * @returns Array of matched files with their paths, contents, and source glob
+ *
+ * @example
+ * ```ts
+ * const files = await cat('./src/*.ts');
+ * ```
  */
 export async function cat(glob: string,): Promise<GlobResults>;
 
@@ -56,6 +61,11 @@ export async function cat(glob: string,): Promise<GlobResults>;
  * Paths containing `*` or `?` are auto-expanded as globs before concatenation.
  * @param files - Array of file paths (or glob patterns) to concatenate
  * @returns Concatenated file contents joined by newlines
+ *
+ * @example
+ * ```ts
+ * const merged = await cat(['./header.txt', './body.txt']);
+ * ```
  */
 export async function cat(files: readonly string[],): Promise<string>;
 

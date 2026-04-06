@@ -93,6 +93,12 @@ export function combinedScore(
  * @param context - model identity and pass for artifact organization
  *
  * @returns full lint result for scoring
+ *
+ * @example
+ * ```ts
+ * const lint = await lintAndLog(source, 'sudoku-solver', context);
+ * lint.violationCount; // total violations
+ * ```
  */
 export async function lintAndLog(
   source: string,

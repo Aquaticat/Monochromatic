@@ -33,6 +33,11 @@ export const NODE_KIND_LABELS: Readonly<Record<string, string>> = {
  * @param node - AST node to extract name from
  *
  * @returns declaration name, or "anonymous" when no name is available
+ *
+ * @example
+ * ```ts
+ * const name = extractNodeName(functionNode); // e.g. 'myFunction'
+ * ```
  */
 export function extractNodeName(node: Span,): string {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -82,6 +87,11 @@ export function extractNodeName(node: Span,): string {
  * @param node - AST node to get kind for
  *
  * @returns kind label like "function", "class", "variable"
+ *
+ * @example
+ * ```ts
+ * extractNodeKind(functionNode) // → 'function'
+ * ```
  */
 export function extractNodeKind(node: Span,): string {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -97,6 +107,11 @@ export function extractNodeKind(node: Span,): string {
  * @param node - AST node that should have TSDoc
  *
  * @param context - oxlint rule context
+ *
+ * @example
+ * ```ts
+ * reportMissing(node, context);
+ * ```
  */
 export function reportMissing(
   node: Span,

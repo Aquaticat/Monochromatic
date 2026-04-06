@@ -41,6 +41,11 @@ export function virsh({ args, }: { args: readonly string[]; },): Promise<string>
  * @param vmDir - Directory to write the XML file into
  *
  * @param xml - XML content for the domain definition
+ *
+ * @example
+ * ```ts
+ * await defineVm({ vmDir: '/vms/myvm', xml: domainXmlString });
+ * ```
  */
 export async function defineVm(
   {
@@ -69,6 +74,11 @@ export async function defineVm(
  * Starts a defined VM.
  *
  * @param name - VM name without the mvm- prefix
+ *
+ * @example
+ * ```ts
+ * await startVm({ name: 'win11' });
+ * ```
  */
 export async function startVm({ name, }: { name: string; },): Promise<void> {
   await virsh({ args: [
@@ -81,6 +91,11 @@ export async function startVm({ name, }: { name: string; },): Promise<void> {
  * Force-stops a running VM (equivalent to pulling the power cord).
  *
  * @param name - VM name without the mvm- prefix
+ *
+ * @example
+ * ```ts
+ * await destroyVm({ name: 'win11' });
+ * ```
  */
 export async function destroyVm({ name, }: { name: string; },): Promise<void> {
   await virsh({ args: [
@@ -93,6 +108,11 @@ export async function destroyVm({ name, }: { name: string; },): Promise<void> {
  * Removes a VM definition and deletes all associated storage volumes.
  *
  * @param name - VM name without the mvm- prefix
+ *
+ * @example
+ * ```ts
+ * await undefineVm({ name: 'win11' });
+ * ```
  */
 export async function undefineVm({ name, }: { name: string; },): Promise<void> {
   await virsh({ args: [
@@ -106,6 +126,11 @@ export async function undefineVm({ name, }: { name: string; },): Promise<void> {
  * Lists all VMs managed by this tool (those with the `mvm-` prefix).
  *
  * @returns Array of VM names without the prefix
+ *
+ * @example
+ * ```ts
+ * const vms = await listVms(); // e.g. ['win11', 'fedora']
+ * ```
  */
 export async function listVms(): Promise<readonly string[]> {
   const output = await virsh({ args: [

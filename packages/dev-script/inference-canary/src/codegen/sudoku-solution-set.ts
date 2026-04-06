@@ -25,6 +25,12 @@ import {
  * @param minCount - minimum number of solutions when expectedCount is undefined
  *
  * @returns true when all constraints are satisfied
+ *
+ * @example
+ * ```ts
+ * const ok = verifySolutionSet(section, clues, 2, 2);
+ * // true when section contains exactly 2 valid distinct solutions
+ * ```
  */
 export function verifySolutionSet(
   section: string,

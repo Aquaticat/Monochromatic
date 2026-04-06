@@ -69,6 +69,12 @@ export class PartialCompletionError extends Error {
  * @param label - probe/call label for log prefix
  *
  * @param timing - collected timing data
+ *
+ * @example
+ * ```ts
+ * logTiming('sudoku-solver', timing);
+ * // logs: [timing:sudoku-solver] ttfc=150ms total=3.2s
+ * ```
  */
 export function logTiming(
   label: string,
@@ -93,6 +99,12 @@ export function logTiming(
  * @param raw - raw usage object from the OpenAI SDK
  *
  * @returns normalized usage, or undefined
+ *
+ * @example
+ * ```ts
+ * const usage = parseUsage(chunk.usage);
+ * usage?.totalTokens; // combined prompt + completion tokens
+ * ```
  */
 export function parseUsage(
   raw: OpenAI.CompletionUsage | null | undefined,

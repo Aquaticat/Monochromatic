@@ -15,6 +15,13 @@ const WARN_THRESHOLD = 0.7;
  * @param score - numeric score between 0 and 1
  *
  * @returns PASS, WARN, or FAIL
+ *
+ * @example
+ * ```ts
+ * scoreLabel(0.95); // "PASS"
+ * scoreLabel(0.75); // "WARN"
+ * scoreLabel(0.5);  // "FAIL"
+ * ```
  */
 export function scoreLabel(score: number,): string {
   if (score >= GOOD_THRESHOLD)
@@ -47,6 +54,12 @@ function formatDelta(delta: number,): string {
  * @param report - completed canary report
  *
  * @returns formatted report text
+ *
+ * @example
+ * ```ts
+ * const text = formatModelReport(report);
+ * console.log(text);
+ * ```
  */
 export function formatModelReport(report: CanaryReport,): string {
   if (report.failed)

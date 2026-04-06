@@ -134,6 +134,12 @@ export async function expandGlob(pattern: string,): Promise<readonly string[]> {
  * @returns Concrete destination path with wildcards filled in
  *
  * @throws When wildcard counts don't match between source and dest patterns
+ *
+ * @example
+ * ```ts
+ * mirrorGlobPath('packages/*/src/*.ts', 'temp/*/src/*.ts', 'packages/foo/src/index.ts');
+ * // 'temp/foo/src/index.ts'
+ * ```
  */
 export function mirrorGlobPath(
   sourcePattern: string,

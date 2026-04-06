@@ -70,6 +70,11 @@ export function executeAdditionalRuns(
  * @param verifyCaches - per-run verification result caches to populate
  *
  * @param label - model label for cache keys
+ *
+ * @example
+ * ```ts
+ * cacheAdditionalResults(results, runs, containerCaches, verifyCaches, 'Opus');
+ * ```
  */
 export function cacheAdditionalResults(
   results: readonly ContainerResult[],
@@ -109,6 +114,12 @@ export function cacheAdditionalResults(
  * @param probeName - probe name for log prefixes
  *
  * @returns array of correctness fractions (0-1) in the same order as runs
+ *
+ * @example
+ * ```ts
+ * const fractions = computeAdditionalCorrectnesses(results, runs, verifyCaches, 'Opus', 'csv-rfc4180');
+ * // fractions might be [1.0, 0.0] for two additional runs
+ * ```
  */
 export function computeAdditionalCorrectnesses(
   results: readonly ContainerResult[],

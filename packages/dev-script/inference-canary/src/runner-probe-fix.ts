@@ -44,6 +44,11 @@ import type { RunnerConfig, } from './runner-config.ts';
  * @param meanScore - mean score across consistency runs, used for delta logging
  *
  * @returns fix pass score, or undefined if the fix was skipped or failed
+ *
+ * @example
+ * ```ts
+ * const score = await runAndEnrichFixPass(probe, config, client, timestamp, signal, text, 0.8);
+ * ```
  */
 export async function runAndEnrichFixPass(
   probe: Probe,

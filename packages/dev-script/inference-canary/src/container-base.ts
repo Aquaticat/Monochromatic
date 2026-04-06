@@ -39,6 +39,12 @@ export type BunExecOptions = {
  * @param options - optional timeout
  *
  * @returns execution result with stdout, stderr, exit code, and killed flag
+ *
+ * @example
+ * ```ts
+ * const result = await execBun('echo', ['hello']);
+ * result.stdout; // "hello\n"
+ * ```
  */
 export async function execBun(
   command: string,

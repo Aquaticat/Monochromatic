@@ -36,6 +36,12 @@ export type { RecentArtifactScan, };
  * can skip all probes for models that recently failed entirely (e.g. 429 errors).
  *
  * @returns scan result with per-probe pairs and whole-model failure labels
+ *
+ * @example
+ * ```ts
+ * const scan = await getRecentArtifactPairs();
+ * scan.probePairs.get('Opus 4.6')?.has('sudoku-solver');
+ * ```
  */
 export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
   const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS;

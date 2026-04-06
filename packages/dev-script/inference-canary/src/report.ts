@@ -48,6 +48,12 @@ function formatTimestamp(isoTimestamp: string,): string {
  * @param reports - completed reports for each model
  *
  * @returns formatted multi-line report
+ *
+ * @example
+ * ```ts
+ * const text = formatMultiModelReport(reports);
+ * console.log(text);
+ * ```
  */
 export function formatMultiModelReport(
   reports: readonly CanaryReport[],

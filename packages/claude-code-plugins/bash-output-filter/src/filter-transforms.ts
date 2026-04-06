@@ -29,6 +29,12 @@ import {
  * @param line - Trimmed line to check.
  *
  * @returns `true` if the line is noise that should be stripped.
+ *
+ * @example
+ * ```ts
+ * shouldStripLine('mode change 100644 => 100755 file.sh') // → true
+ * shouldStripLine('src/index.ts')                         // → false
+ * ```
  */
 export function shouldStripLine(line: string,): boolean {
   if (GIT_FILE_MODE_PATTERN.test(line,))
@@ -203,6 +209,12 @@ export function collapseHomePaths(line: string,): string {
  * @param line - Line to potentially truncate.
  *
  * @returns Original line if short enough, or truncated with a length marker.
+ *
+ * @example
+ * ```ts
+ * truncateLine('short line')   // → 'short line'
+ * truncateLine('x'.repeat(5000)) // → 'xxx...xxx... [5000 chars]'
+ * ```
  */
 export function truncateLine(line: string,): string {
   if (line.length <= MAX_LINE_LENGTH)
@@ -228,6 +240,13 @@ export function truncateLine(line: string,): string {
  * @param line - The repeated line content.
  *
  * @param count - How many consecutive times `line` appeared.
+ *
+ * @example
+ * ```ts
+ * const result: string[] = [];
+ * flushRepeated({ result, line: 'ok', count: 5 });
+ * // result → ['ok (x5)']
+ * ```
  */
 export function flushRepeated({
   result,

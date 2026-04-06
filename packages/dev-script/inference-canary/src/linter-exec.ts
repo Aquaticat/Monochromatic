@@ -55,6 +55,11 @@ export function getStdoutFromError(error: unknown,): string {
  * @returns stdout string on success
  *
  * @throws with `.stdout` and `.stderr` attached on non-zero exit
+ *
+ * @example
+ * ```ts
+ * const stdout = await execPromise('oxlint', ['--format', 'json', 'file.ts']);
+ * ```
  */
 export async function execPromise(
   command: string,

@@ -84,6 +84,15 @@ const BINARY_OPS: Record<string, (a: number, b: number,) => number> = {
  * @returns step result indicating jump target and/or output text
  *
  * @throws on stack underflow, undefined variable, missing argument, or unknown opcode
+ *
+ * @example
+ * ```ts
+ * const stack: number[] = [];
+ * const env = new Map<string, number>();
+ * const labels = new Map<string, number>();
+ * executeOp('42', undefined, stack, env, labels);
+ * // stack is now [42]
+ * ```
  */
 export function executeOp(
   op: string,

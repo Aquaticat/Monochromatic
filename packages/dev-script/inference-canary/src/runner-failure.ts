@@ -29,6 +29,12 @@ import type {
  * @param timestamp - authoritative server timestamp for artifact naming
  *
  * @returns zero-score canary report with the error message
+ *
+ * @example
+ * ```ts
+ * const report = await handleRunFailure(error, mergedConfig, timestamp);
+ * report.failed; // true
+ * ```
  */
 export async function handleRunFailure(
   error: unknown,

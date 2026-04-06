@@ -14,6 +14,11 @@ const INSPECT_PREVIEW_LENGTH = 200;
  * @param value - Value to log and pass through
  *
  * @returns Same value, unmodified
+ *
+ * @example
+ * ```ts
+ * const result = inspect(await readCached('./src/index.ts'));
+ * ```
  */
 export function inspect<const TValue,>(value: TValue,): TValue {
   const rl = tagged({

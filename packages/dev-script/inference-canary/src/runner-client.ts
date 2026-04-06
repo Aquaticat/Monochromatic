@@ -20,6 +20,11 @@ import type {
  * @param config - runner configuration
  *
  * @returns configured OpenAI SDK client
+ *
+ * @example
+ * ```ts
+ * const client = createProbeClient(config);
+ * ```
  */
 export function createProbeClient(config: RunnerConfig,): OpenAI {
   return new OpenAI({
@@ -41,6 +46,12 @@ export function createProbeClient(config: RunnerConfig,): OpenAI {
  * @param signal - optional abort signal; cancels the HTTP stream when aborted
  *
  * @returns full completion result from the model
+ *
+ * @example
+ * ```ts
+ * const completion = await executeProbe(probe, config, client, signal);
+ * completion.text; // model response text
+ * ```
  */
 export function executeProbe(
   probe: Probe,

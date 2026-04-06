@@ -56,6 +56,12 @@ export type PerfTestConfig = {
  * @param signal - abort signal
  *
  * @returns container result with durationMs attached
+ *
+ * @example
+ * ```ts
+ * const timedResult = await runInContainerTimed(source, stdinData, signal);
+ * console.log(`Took ${timedResult.durationMs}ms`);
+ * ```
  */
 export async function runInContainerTimed(
   source: string,
@@ -114,6 +120,12 @@ export function computePerfScore(
  * @param config - timing thresholds
  *
  * @returns diagnostic text, or undefined if perf was acceptable
+ *
+ * @example
+ * ```ts
+ * const diag = buildPerfDiagnostic(perfResult, { input: largeInput, fastMs: 3000, slowMs: 10000 });
+ * if (diag !== undefined) console.log(diag);
+ * ```
  */
 export function buildPerfDiagnostic(
   perfResult: TimedContainerResult,

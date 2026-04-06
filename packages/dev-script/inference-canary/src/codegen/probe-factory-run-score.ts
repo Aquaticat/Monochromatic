@@ -54,6 +54,12 @@ import type {
  * @param caches - shared per-model caches populated for downstream use by buildFixPromptImpl
  *
  * @returns combined score in [0, 1] range
+ *
+ * @example
+ * ```ts
+ * const score = await scoreImpl(config, response, context, caches);
+ * // score in [0, 1]
+ * ```
  */
 export async function scoreImpl(
   config: CodeGenProbeConfig,

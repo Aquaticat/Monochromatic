@@ -57,6 +57,11 @@ export const writeTimestamps: ReadonlyMap<string, number> = _writeTimestamps;
  * Clears tracking state between watch-mode re-runs so stale paths
  * from a previous execution don't linger.
  * Preserves `writeTimestamps` because echo detection needs to survive across re-runs.
+ *
+ * @example
+ * ```ts
+ * reset();
+ * ```
  */
 export function reset(): void {
   _reads.clear();
@@ -67,6 +72,11 @@ export function reset(): void {
  * Clears all write timestamps.
  * Primarily for test cleanup -- production watch mode preserves timestamps
  * across re-runs via {@link reset} which intentionally skips this collection.
+ *
+ * @example
+ * ```ts
+ * resetWriteTimestamps();
+ * ```
  */
 export function resetWriteTimestamps(): void {
   _writeTimestamps.clear();
@@ -76,6 +86,11 @@ export function resetWriteTimestamps(): void {
  * Records a read path, resolving to absolute for reliable watch comparisons.
  *
  * @param filePath - path to register as a tracked read
+ *
+ * @example
+ * ```ts
+ * trackRead('./src/config.ts');
+ * ```
  */
 export function trackRead(filePath: string,): void {
   _reads.add(resolve(filePath,),);
@@ -87,6 +102,11 @@ export function trackRead(filePath: string,): void {
  * file, even when content was unchanged and the actual write was skipped.
  *
  * @param filePath - path to register as a managed destination
+ *
+ * @example
+ * ```ts
+ * trackDest('./dist/output.js');
+ * ```
  */
 export function trackDest(filePath: string,): void {
   _writes.add(resolve(filePath,),);
@@ -98,6 +118,11 @@ export function trackDest(filePath: string,): void {
  * is guaranteed to be \<= the recorded timestamp.
  *
  * @param filePath - path that was just written
+ *
+ * @example
+ * ```ts
+ * trackWriteTime('./dist/output.js');
+ * ```
  */
 export function trackWriteTime(filePath: string,): void {
   _writeTimestamps.set(
@@ -114,6 +139,11 @@ export function trackWriteTime(filePath: string,): void {
  * @param filePath - path to set timestamp for (resolved to absolute)
  *
  * @param timestamp - ms since epoch
+ *
+ * @example
+ * ```ts
+ * setWriteTimestamp({ filePath: './dist/output.js', timestamp: Date.now() });
+ * ```
  */
 export function setWriteTimestamp(
   {
@@ -137,6 +167,11 @@ export function setWriteTimestamp(
  * tools whose inputs are opaque to the enforcer.
  *
  * @param paths - Array of file paths (resolved to absolute) to add to the read set
+ *
+ * @example
+ * ```ts
+ * addWatchedPaths(['./data/extra-input.json']);
+ * ```
  */
 export function addWatchedPaths(paths: readonly string[],): void {
   paths.forEach(function addPath(filePath,): void {

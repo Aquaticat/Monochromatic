@@ -21,6 +21,11 @@ export type EventKind = 'source' | 'protected' | 'ignore';
  * @param configPath - Absolute path to the config file
  *
  * @returns Set of absolute directory paths to watch
+ *
+ * @example
+ * ```ts
+ * const dirs = watchDirs('/abs/path/to/config.ts');
+ * ```
  */
 export function watchDirs(configPath: string,): Set<string> {
   /** All paths that need monitoring: reads, writes, and the config */
@@ -50,6 +55,11 @@ export function watchDirs(configPath: string,): Set<string> {
  * @param configPath - Absolute path of the config file
  *
  * @returns Classification of the event
+ *
+ * @example
+ * ```ts
+ * const kind = await classifyEvent('index.ts', '/abs/src', '/abs/config.ts');
+ * ```
  */
 export async function classifyEvent(
   filename: string,
@@ -107,6 +117,13 @@ export async function classifyEvent(
  * @param configPath - Absolute path of the config file
  *
  * @returns Whether this event should trigger a re-run
+ *
+ * @example
+ * ```ts
+ * if (await shouldTrigger('index.ts', '/abs/src', '/abs/config.ts')) {
+ *   // re-run config
+ * }
+ * ```
  */
 export async function shouldTrigger(
   filename: string,

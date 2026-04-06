@@ -14,6 +14,14 @@ import { createModeConfig, } from './config-modifiers.ts';
  *
  * @returns Vite config function that applies mode-specific transformations
  *
+ * @example
+ * ```ts
+ * import { getShared } from '\@monochromatic-dev/config-vite/.ts';
+ * import type { UserConfigFnObject } from 'vite';
+ *
+ * export default getShared(import.meta.dirname) satisfies UserConfigFnObject;
+ * ```
+ *
  * @remarks
  * Use it like this:
  *

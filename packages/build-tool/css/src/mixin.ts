@@ -24,6 +24,12 @@ export {
  * @param root - PostCSS root node
  *
  * @throws When a \@mixin has no body (definitions require content)
+ *
+ * @example
+ * ```ts
+ * const root = postcss.parse('\@mixin --card { padding: 1rem; }');
+ * collectMixins(root);
+ * ```
  */
 export function collectMixins(root: Root,): void {
   root.walkAtRules(
@@ -53,6 +59,12 @@ export function collectMixins(root: Root,): void {
  * @param root - PostCSS root node
  *
  * @throws When an \@apply references an unknown mixin
+ *
+ * @example
+ * ```ts
+ * const root = postcss.parse('.btn { \@apply --card; }');
+ * expandApplyRules(root);
+ * ```
  */
 export function expandApplyRules(root: Root,): void {
   root.walkAtRules(

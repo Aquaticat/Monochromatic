@@ -17,6 +17,11 @@ import {
  * @param items - child items to check (must be non-empty)
  *
  * @returns whether a fix is needed
+ *
+ * @example
+ * ```ts
+ * if (needsPerLineFix(sourceText, container, items)) { /* report *\/ }
+ * ```
  */
 export function needsPerLineFix(
   sourceText: string,

@@ -70,6 +70,12 @@ export type LintResult = {
  * @param meta - artifact metadata for directory naming and traceability
  *
  * @returns combined lint + type-check results
+ *
+ * @example
+ * ```ts
+ * const result = await lintSource('const x: number = 1;', meta);
+ * result.violationCount; // total lint violations
+ * ```
  */
 export async function lintSource(
   source: string,

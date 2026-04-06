@@ -21,6 +21,13 @@ function withNoMinify(config: VitestUserConfig,): VitestUserConfig;
  * @param config - Vite or Vitest config to modify
  *
  * @returns config with minification disabled
+ *
+ * @example
+ * ```ts
+ * import { withNoMinify } from '\@monochromatic-dev/config-vite/config-modifiers.ts';
+ *
+ * const devConfig = withNoMinify(baseConfig);
+ * ```
  */
 function withNoMinify(
   config: UserConfig | VitestUserConfig,
@@ -40,6 +47,13 @@ function withNodeResolveConditions(config: VitestUserConfig,): VitestUserConfig;
  * @param config - Vite or Vitest config to modify
  *
  * @returns config with Node resolve conditions
+ *
+ * @example
+ * ```ts
+ * import { withNodeResolveConditions } from '\@monochromatic-dev/config-vite/config-modifiers.ts';
+ *
+ * const nodeConfig = withNodeResolveConditions(baseConfig);
+ * ```
  */
 function withNodeResolveConditions(
   config: UserConfig | VitestUserConfig,
@@ -72,6 +86,14 @@ function createModeConfig(configDir: string,
  * @param sharedFactory - factory that creates the base config from `configDir`
  *
  * @returns Vite config function that applies mode-based enhancements
+ *
+ * @example
+ * ```ts
+ * import { createModeConfig } from '\@monochromatic-dev/config-vite/config-modifiers.ts';
+ * import { createBaseConfig } from '\@monochromatic-dev/config-vite/base-configs.ts';
+ *
+ * export default createModeConfig(import.meta.dirname, createBaseConfig);
+ * ```
  */
 function createModeConfig(
   configDir: string,

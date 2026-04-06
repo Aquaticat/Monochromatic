@@ -52,6 +52,12 @@ function filterTypeErrors(
  * @param lintDir - absolute path to the lint subdirectory for this probe
  *
  * @returns error count and whether tsgo ran successfully
+ *
+ * @example
+ * ```ts
+ * const result = await runAndParseTypeCheck('/path/to/canary-lint/model/probe-initial-ts');
+ * result.errorCount; // number of type errors
+ * ```
  */
 export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult> {
   /** Filter key: "model-slug/probe-pass" identifies this probe's file uniquely */

@@ -107,6 +107,11 @@ function timestampSlug(timestamp: string,): string {
  * @param meta - artifact metadata (model, probe, pass, timestamp)
  *
  * @returns absolute directory path
+ *
+ * @example
+ * ```ts
+ * const dir = artifactDir({ model: 'opus', label: 'Opus', probe: 'stak', pass: 'initial', timestamp: '2026-03-06T12:00:00.000Z' });
+ * ```
  */
 export function artifactDir(meta: ArtifactMeta,): string {
   if (typeof meta.label !== 'string') {
@@ -137,6 +142,11 @@ export function artifactDir(meta: ArtifactMeta,): string {
  * @param meta - artifact metadata (model, probe, pass, timestamp)
  *
  * @returns file path and lint subdirectory path
+ *
+ * @example
+ * ```ts
+ * const { filePath, lintDir } = await writeLintFile('const x = 1;', meta);
+ * ```
  */
 export async function writeLintFile(
   source: string,
@@ -185,6 +195,11 @@ export async function writeLintFile(
  * @param enriched - full enriched metadata including score and completion data
  *
  * @param rawResponse - raw model output text
+ *
+ * @example
+ * ```ts
+ * await writeEnrichedArtifact(enrichedMeta, '```ts\nconst x = 1;\n```');
+ * ```
  */
 export async function writeEnrichedArtifact(
   enriched: EnrichedArtifactMeta,
@@ -216,6 +231,11 @@ export async function writeEnrichedArtifact(
  * so the artifact directory records that a run was attempted and why it failed.
  *
  * @param meta - failure metadata with model, timestamp, and error
+ *
+ * @example
+ * ```ts
+ * await writeFailureArtifact({ model: 'opus', label: 'Opus', timestamp: '2026-03-06T12:00:00.000Z', failed: true, error: '429', config });
+ * ```
  */
 export async function writeFailureArtifact(meta: FailureArtifactMeta,): Promise<void> {
   const safeTs = timestampSlug(meta.timestamp,);

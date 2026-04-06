@@ -25,6 +25,7 @@ const PACKAGE_NAME = '@monochromatic-dev/cli-git';
  * to this wrapper package. Reads the file content and looks for the package name.
  *
  * @param candidatePath - Absolute path to the candidate binary.
+ *
  * @returns `true` if the candidate is a shim for this package.
  */
 async function isShimForSelf(candidatePath: string): Promise<boolean> {

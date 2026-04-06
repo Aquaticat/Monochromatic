@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/runtime-error-bun",
+  "description": "Reproducible Bun runtime error fixtures: abort, infinite loop, null deref, OOM, stack overflow, and unhandled rejection.",
   "version": "0.0.1",
   "private": true,
   "type": "module",

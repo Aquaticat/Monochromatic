@@ -40,6 +40,11 @@ const nodeFs: typeof NodeFs | undefined = hasNodeFs
  * @returns File contents as a UTF-8 string
  *
  * @throws When the file is missing from both the registry and disk
+ *
+ * @example
+ * ```ts
+ * const css = await readCssFile('/project/src/styles.css');
+ * ```
  */
 export async function readCssFile(absolutePath: string,): Promise<string> {
   const cached = fsRegistry.get(absolutePath,);
@@ -68,6 +73,11 @@ export async function readCssFile(absolutePath: string,): Promise<string> {
  * @returns File contents as a UTF-8 string
  *
  * @throws When the file is missing from both the registry and disk
+ *
+ * @example
+ * ```ts
+ * const css = readCssFileSync('/project/src/styles.css');
+ * ```
  */
 export function readCssFileSync(absolutePath: string,): string {
   const cached = fsRegistry.get(absolutePath,);
@@ -93,6 +103,11 @@ export function readCssFileSync(absolutePath: string,): string {
  * @param absolutePath - Absolute file path to check
  *
  * @returns Whether the file exists
+ *
+ * @example
+ * ```ts
+ * if (existsSync('/project/src/theme.css')) { /* process *\/ }
+ * ```
  */
 export function existsSync(absolutePath: string,): boolean {
   if (fsRegistry.has(absolutePath,))

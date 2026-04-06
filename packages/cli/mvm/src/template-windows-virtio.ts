@@ -30,6 +30,11 @@ import {
  * @param diskPath - Path to the disk image
  *
  * @param rl - Logger for status messages
+ *
+ * @example
+ * ```ts
+ * await verifyVirtioBoot({ vmDir: '/vms/win11', diskPath: '/vms/win11/disk.qcow2', rl: console });
+ * ```
  */
 export async function verifyVirtioBoot({
   vmDir,

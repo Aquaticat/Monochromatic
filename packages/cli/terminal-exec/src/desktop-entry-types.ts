@@ -64,6 +64,11 @@ export type MutableDesktopEntry = {
  * @param s - Raw value from a desktop entry key.
  *
  * @returns Expanded string with escapes resolved.
+ *
+ * @example
+ * ```ts
+ * expandEscapes({ s: 'hello\\sworld' }) // → 'hello world'
+ * ```
  */
 export function expandEscapes({ s, }: { s: string; },): string {
   return s.replaceAll(
@@ -78,6 +83,12 @@ export function expandEscapes({ s, }: { s: string; },): string {
  * Creates a fresh mutable desktop entry with default values.
  *
  * @returns Empty mutable desktop entry
+ *
+ * @example
+ * ```ts
+ * const entry = createEmptyEntry();
+ * entry.exec = '/usr/bin/xterm';
+ * ```
  */
 export function createEmptyEntry(): MutableDesktopEntry {
   return {

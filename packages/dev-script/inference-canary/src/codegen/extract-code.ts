@@ -66,6 +66,11 @@ export function tryExtractCode(response: string,): ExtractResult {
  * @param response - raw model output that may contain markdown code blocks
  *
  * @returns extracted TypeScript source, or the raw response if no fences found
+ *
+ * @example
+ * ```ts
+ * extractCode('```typescript\nconst x = 1;\n```'); // "const x = 1;\n"
+ * ```
  */
 export function extractCode(response: string,): string {
   return tryExtractCode(response,).source;

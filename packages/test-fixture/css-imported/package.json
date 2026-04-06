@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/test-fixture-css-imported",
+  "description": "Test fixture: CSS package with exports map, used to test workspace @import resolution in build-tool-css.",
   "version": "0.0.1",
   "private": true,
   "type": "module",

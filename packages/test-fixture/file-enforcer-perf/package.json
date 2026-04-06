@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/fixture-file-enforcer-perf",
+  "description": "Performance benchmarks for file-enforcer under VPS-like resource constraints using podman containers with CPU, memory, and IO throttling.",
   "version": "0.0.1",
   "private": true,
   "type": "module",

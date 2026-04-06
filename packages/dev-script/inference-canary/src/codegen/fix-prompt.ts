@@ -57,6 +57,12 @@ function buildRuntimeSection(container: ContainerResult,): string {
  * @param priorContainer - container result already computed by score(); runtime errors are included when present
  *
  * @returns follow-up user message, or undefined to skip
+ *
+ * @example
+ * ```ts
+ * const prompt = await buildCodeGenFixPrompt(response, context, priorLint, priorContainer);
+ * if (prompt !== undefined) sendFixTurn(prompt);
+ * ```
  */
 export async function buildCodeGenFixPrompt(
   response: string,

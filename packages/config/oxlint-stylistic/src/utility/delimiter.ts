@@ -22,6 +22,11 @@ const CLOSE_DELIMITERS: ReadonlySet<string> = new Set([
  * @param direction - `'open'` scans forward, `'close'` scans backward
  *
  * @returns index of the delimiter, or -1
+ *
+ * @example
+ * ```ts
+ * findDelimiter('function foo(a, b)', 'open') // → 12
+ * ```
  */
 export function findDelimiter(
   text: string,

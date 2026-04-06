@@ -9,6 +9,11 @@
  * @param offset - byte offset into source text
  *
  * @returns 1-indexed line number
+ *
+ * @example
+ * ```ts
+ * lineAt('abc\ndef', 4) // → 2
+ * ```
  */
 export function lineAt(
   sourceText: string,

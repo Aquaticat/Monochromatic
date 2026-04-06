@@ -74,6 +74,10 @@ const workspaceYamlContent = readFileSync(
  * Extracts `catalog:` entries from pnpm-workspace.yaml using regex.
  * Avoids a YAML parser dependency for this simple key-value structure.
  * Matches lines like `  "package-name": ">=1.2.3"` or `  package-name: ">=1.2.3"` under `catalog:`.
+ *
+ * @param content - Raw YAML file content to parse.
+ *
+ * @returns Map of package names to version range strings found under the `catalog:` section.
  */
 function parseCatalogFromYaml(content: string): Record<string, string> {
   const result: Record<string, string> = {};

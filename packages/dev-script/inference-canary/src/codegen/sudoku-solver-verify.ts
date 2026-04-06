@@ -42,6 +42,12 @@ const PARTIAL_CREDIT = 0.1;
  * @param stdout - raw container stdout
  *
  * @returns correctness fraction (correct checks / total checks)
+ *
+ * @example
+ * ```ts
+ * const correctness = verifyNormal(containerStdout);
+ * // 1.0 when all 4 checks pass
+ * ```
  */
 export function verifyNormal(stdout: string,): number {
   /** Per-puzzle output sections split on the `---` separator */
@@ -109,6 +115,12 @@ export function verifyNormal(stdout: string,): number {
  * @param stdout - raw container stdout
  *
  * @returns correctness fraction (correct checks / total checks)
+ *
+ * @example
+ * ```ts
+ * const correctness = verifyAll(containerStdout);
+ * // 1.0 when all 3 checks pass
+ * ```
  */
 export function verifyAll(stdout: string,): number {
   /** Per-puzzle output sections split on the `---` separator */

@@ -63,6 +63,14 @@ export type ValidatedEntry = {
  * @param execArgDefault - Default TerminalArgExec from config, if any.
  *
  * @returns Validated entry with tokenized Exec, or `null` if the entry fails validation.
+ *
+ * @example
+ * ```ts
+ * const validated = validateEntry({
+ *   entry, entryId: 'org.xterm', desktops: ['kde'],
+ *   isFallback: false, execArgDefault: '-e',
+ * });
+ * ```
  */
 export function validateEntry({
   entry,

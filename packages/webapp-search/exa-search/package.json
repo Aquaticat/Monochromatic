@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/webapp-search-exa-search",
+  "description": "Single-file HTML search interface for the Exa AI search API with dark/light mode and DuckDuckGo-inspired design.",
   "type": "module",
   "version": "0.0.1",
   "private": true,

@@ -18,6 +18,7 @@ import {
  * Determines which models to test based on CLI flags.
  *
  * @returns models to test
+ *
  * @throws when `--model` value matches no registered label
  *
  * @example

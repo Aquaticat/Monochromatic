@@ -77,7 +77,7 @@
 ### Days 11-12: README & Package Polish
 **Status**: Medium Priority - Marketing and usability
 
-- [ ] Update [`readme.md`](readme.md) to reflect **current** capabilities (not 500+ function vision)
+- [ ] Update [`README.md`](README.md) to reflect **current** capabilities (not 500+ function vision)
   - [ ] Remove references to unimplemented functions
   - [ ] Focus on ~60 actual working functions
   - [ ] Add practical usage examples for common scenarios

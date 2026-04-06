@@ -32,6 +32,11 @@ function unwrapMethodDefinition(
  * @param node - AST node to inspect
  *
  * @returns true when function appears to return a value
+ *
+ * @example
+ * ```ts
+ * if (functionReturnsValue(node)) { /* check for \@returns tag *\/ }
+ * ```
  */
 export function functionReturnsValue(node: Span & Record<string, unknown>,): boolean {
   // Check kind on the outer MethodDefinition BEFORE unwrapping to .value,
@@ -100,6 +105,11 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
  * @param node - AST node to inspect
  *
  * @returns true when the function is a generator
+ *
+ * @example
+ * ```ts
+ * if (isGeneratorFunction(node)) { /* check for \@yields tag *\/ }
+ * ```
  */
 export function isGeneratorFunction(node: Span & Record<string, unknown>,): boolean {
   const target = unwrapMethodDefinition(node,);

@@ -50,6 +50,11 @@ function snapshotConfig(config: RunnerConfig,): ConfigSnapshot {
  * @param score - computed score for this response
  *
  * @param options - optional fields for fix prompt, partial flag, and error message
+ *
+ * @example
+ * ```ts
+ * await enrichArtifact(probe, config, timestamp, 'initial', completion, 0.85);
+ * ```
  */
 export async function enrichArtifact(
   probe: Probe,
@@ -93,6 +98,12 @@ export async function enrichArtifact(
  * @param error - caught error value
  *
  * @returns partial completion result, or undefined for non-partial errors
+ *
+ * @example
+ * ```ts
+ * const partial = extractPartialCompletion(caughtError);
+ * if (partial !== undefined) savePartialData(partial);
+ * ```
  */
 export function extractPartialCompletion(error: unknown,): CompletionResult | undefined {
   if (error instanceof PartialCompletionError)
@@ -122,6 +133,11 @@ export function extractPartialCompletion(error: unknown,): CompletionResult | un
  * @param lastScore - score from the last successful consistency run
  *
  * @param enrichedInitial - whether the initial-pass artifact was already enriched
+ *
+ * @example
+ * ```ts
+ * await saveFailureArtifacts(probe, config, timestamp, error, lastCompletion, partial, 0.5, false);
+ * ```
  */
 export async function saveFailureArtifacts(
   probe: Probe,

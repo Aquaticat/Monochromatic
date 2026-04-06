@@ -25,6 +25,14 @@ export const DEBOUNCE_MS = 100;
  * @param configPath - Absolute config path for event classification
  *
  * @param onEvent - Callback receiving the event kind and the changed filename
+ *
+ * @example
+ * ```ts
+ * const controller = new AbortController();
+ * await watchDirectory('/abs/src', controller.signal, '/abs/config.ts', function onEvent(kind, filename) {
+ *   console.log(kind, filename);
+ * });
+ * ```
  */
 export async function watchDirectory(
   dir: string,

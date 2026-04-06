@@ -14,7 +14,9 @@ let cachedRatio: number | null = null;
 
 /** Cached canvas context (Inter font) and mono character width for label measurement. */
 let cachedCtx: CanvasRenderingContext2D | null = null;
+/** Cached JetBrains Mono character width in pixels, measured once via off-screen canvas. */
 let cachedMonoW = 0;
+/** Cached Inter space character width in pixels, measured once via off-screen canvas. */
 let cachedInterSpW = 0;
 
 /**

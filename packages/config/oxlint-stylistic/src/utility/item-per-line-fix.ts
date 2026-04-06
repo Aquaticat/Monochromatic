@@ -83,6 +83,14 @@ export type PerLineFixConfig = {
  * @param delimiter - character to separate items (`','` or `';'`, defaults to `','`)
  *
  * @returns fixer replacement result
+ *
+ * @example
+ * ```ts
+ * return buildPerLineFix({
+ *   fixer, context, items, sourceText,
+ *   bracketPair: { open: '(', close: ')' },
+ * });
+ * ```
  */
 export function buildPerLineFix({
   fixer,

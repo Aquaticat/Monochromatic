@@ -34,6 +34,12 @@ import type {
  * @param perfResult - timed container result, undefined when no perf test ran
  *
  * @returns performance multiplier in [0, 1]
+ *
+ * @example
+ * ```ts
+ * const multiplier = cacheAndComputePerfMultiplier(config, context, caches, perfResult);
+ * finalScore *= multiplier;
+ * ```
  */
 export function cacheAndComputePerfMultiplier(
   config: CodeGenProbeConfig,

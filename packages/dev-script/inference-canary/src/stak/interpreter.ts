@@ -15,6 +15,12 @@ import { executeOp, } from './interpreter-ops.ts';
  * @returns concatenated output from PRINT and PRINTC instructions
  *
  * @throws on stack underflow, undefined variable read, or unknown instruction
+ *
+ * @example
+ * ```ts
+ * const output = runStak('5\n3\nADD\nPRINT');
+ * // output === "8\n"
+ * ```
  */
 export function runStak(source: string,): string {
   const tokens = source

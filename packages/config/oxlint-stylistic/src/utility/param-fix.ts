@@ -23,6 +23,11 @@ import {
  * @param params - array of parameter AST nodes
  *
  * @returns whether any params share a line
+ *
+ * @example
+ * ```ts
+ * if (paramsNeedFix(sourceText, openParen, closeParen, params)) { /* report *\/ }
+ * ```
  */
 export function paramsNeedFix(
   sourceText: string,
@@ -97,6 +102,11 @@ export function paramsNeedFix(
  * @param context - lint context for source text access
  *
  * @returns fixer replacement result
+ *
+ * @example
+ * ```ts
+ * return buildParamFix(fixer, sourceText, openParen, closeParen, params, context);
+ * ```
  */
 export function buildParamFix(
   fixer: Fixer,

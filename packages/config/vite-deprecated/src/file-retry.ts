@@ -17,6 +17,13 @@ import { readFile, } from 'node:fs/promises';
  * @returns file contents as a UTF-8 string
  *
  * @throws When the file cannot be read after all retries
+ *
+ * @example
+ * ```ts
+ * import { readFileWithRetry } from '\@monochromatic-dev/config-vite/file-retry.ts';
+ *
+ * const content = await readFileWithRetry('config.json', 'utf8');
+ * ```
  */
 export async function readFileWithRetry(
   path: Parameters<typeof readFile>[0],

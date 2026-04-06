@@ -15,6 +15,11 @@ export const readCache: Map<string, string> = new Map<string, string>();
  * triggered the filesystem event -- all other cached entries stay valid.
  *
  * @param paths - File paths to invalidate (resolved to absolute internally)
+ *
+ * @example
+ * ```ts
+ * invalidatePaths(['/abs/path/to/config.ts']);
+ * ```
  */
 export function invalidatePaths(paths: readonly string[],): void {
   paths.forEach(function deletePath(filePath,): void {
@@ -29,6 +34,11 @@ export function invalidatePaths(paths: readonly string[],): void {
  * @param filePath - Path to read (resolved to absolute for cache key)
  *
  * @returns File content as a string
+ *
+ * @example
+ * ```ts
+ * const content = await readCached('./src/index.ts');
+ * ```
  */
 export async function readCached(filePath: string,): Promise<string> {
   /** Absolute path used as the cache key for reliable lookups */
@@ -55,6 +65,11 @@ export async function readCached(filePath: string,): Promise<string> {
  * @param filePath - Path that was written (resolved to absolute internally)
  *
  * @param content - Content that was written to the file
+ *
+ * @example
+ * ```ts
+ * updateCache('./dist/output.js', 'export default {};');
+ * ```
  */
 export function updateCache(
   filePath: string,

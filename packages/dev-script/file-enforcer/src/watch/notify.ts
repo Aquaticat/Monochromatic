@@ -74,6 +74,11 @@ async function detectNotificationTool(): Promise<NotificationTool | null> {
  * Called when an external process modifies a file that file-enforcer manages.
  *
  * @param filePath - Absolute path of the externally modified managed file
+ *
+ * @example
+ * ```ts
+ * await notifyWriteProtection('/abs/path/to/managed-file.json');
+ * ```
  */
 export async function notifyWriteProtection(filePath: string,): Promise<void> {
   l.warn(

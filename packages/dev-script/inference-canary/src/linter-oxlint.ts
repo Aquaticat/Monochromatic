@@ -164,6 +164,12 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
  * @param filePath - absolute path to the file to lint
  *
  * @returns parsed oxlint result
+ *
+ * @example
+ * ```ts
+ * const result = await runAndParseOxlint('/path/to/canary.ts');
+ * result.errors; // number of lint errors
+ * ```
  */
 export async function runAndParseOxlint(filePath: string,): Promise<OxlintResult> {
   try {

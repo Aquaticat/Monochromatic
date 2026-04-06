@@ -10,6 +10,11 @@ import type { Span, } from '@oxlint/plugins';
  * @param node - AST node with an untyped `.range` property
  *
  * @returns `[startOffset, endOffset]` byte range
+ *
+ * @example
+ * ```ts
+ * const [start, end] = rangeOf(node);
+ * ```
  */
 export function rangeOf(node: Span,): [
   number,
@@ -36,6 +41,11 @@ export function rangeOf(node: Span,): [
  * @returns element at index
  *
  * @throws when index is out of bounds
+ *
+ * @example
+ * ```ts
+ * const first = at(items, 0);
+ * ```
  */
 export function at<T,>(
   arr: T[],

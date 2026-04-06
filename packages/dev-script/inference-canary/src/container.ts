@@ -77,6 +77,12 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
  * @param signal - optional abort signal; kills the container immediately when aborted
  *
  * @returns execution result with stdout, stderr, exit code
+ *
+ * @example
+ * ```ts
+ * const result = await runInContainer('console.log("hello");');
+ * result.stdout; // "hello\n"
+ * ```
  */
 export async function runInContainer(
   source: string,

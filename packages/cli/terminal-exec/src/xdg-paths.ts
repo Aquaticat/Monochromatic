@@ -110,6 +110,11 @@ export function applicationDirs(): readonly string[] {
  * Extracts lowercased desktop names from `$XDG_CURRENT_DESKTOP`.
  *
  * @returns Array of desktop name strings, e.g. `['kde']`.
+ *
+ * @example
+ * ```ts
+ * const desktops = currentDesktops(); // e.g. ['kde']
+ * ```
  */
 export function currentDesktops(): readonly string[] {
   const raw = Bun.env['XDG_CURRENT_DESKTOP'] ?? '';

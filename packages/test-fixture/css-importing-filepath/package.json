@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/test-fixture-css-importing-filepath",
+  "description": "Test fixture: CSS package that imports from css-imported-no-exports via filepath, testing non-exports @import resolution.",
   "version": "0.0.1",
   "private": true,
   "type": "module",

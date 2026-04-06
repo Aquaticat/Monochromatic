@@ -15,6 +15,11 @@
  * @param raw - Raw \@import params string
  *
  * @returns Bare specifier without quotes or url() wrapper
+ *
+ * @example
+ * ```ts
+ * stripImportSpecifier("url('\@scope/pkg/style.css')") // → '\@scope/pkg/style.css'
+ * ```
  */
 export function stripImportSpecifier(raw: string,): string {
   /** Trimmed input for consistent handling */
@@ -63,6 +68,12 @@ export function stripImportSpecifier(raw: string,): string {
  * @param specifier - Bare import specifier
  *
  * @returns True for package-like specifiers (`\@scope/pkg/...` or `pkg/...`)
+ *
+ * @example
+ * ```ts
+ * isPackageSpecifier('\@scope/pkg/style.css') // → true
+ * isPackageSpecifier('./local.css')          // → false
+ * ```
  */
 export function isPackageSpecifier(specifier: string,): boolean {
   return !specifier.startsWith('.',) && !specifier.startsWith('/',);
@@ -75,6 +86,12 @@ export function isPackageSpecifier(specifier: string,): boolean {
  * @param specifier - Bare package specifier
  *
  * @returns Tuple of [packageName, subpath] where subpath starts with `./` or is `.`
+ *
+ * @example
+ * ```ts
+ * splitPackageSpecifier('\@scope/pkg/sub/path.css') // → ['\@scope/pkg', './sub/path.css']
+ * splitPackageSpecifier('pkg')                     // → ['pkg', '.']
+ * ```
  */
 export function splitPackageSpecifier(specifier: string,): [
   string,
