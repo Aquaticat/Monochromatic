@@ -4,15 +4,19 @@
  * Reads the actual project configs (oxlintrc, tsconfig) at runtime so the
  * model is graded against the exact same rules that are in force for the project.
  *
- * **Design note**: the prompt intentionally omits a human-readable summary of key
- * lint rules (e.g. "all functions need explicit return types"). An earlier version
- * included such a summary, but it was removed during the ESLint-to-oxlint migration
- * because hand-holding models with a curated rule list undermines the benchmark --
- * the probe should measure whether models can comply with raw project configs, not
- * whether they can follow a cheat sheet.
+ * The root `oxlint.config.ts` is a thin re-export of `@monochromatic-dev/config-oxlint`,
+ * so on its own it tells the model nothing about which rules are active.
+ * To close that gap, we also embed every rule module source file from the
+ * shared config package. These files contain the actual severity mappings
+ * and inline comments explaining each rule -- enough for a model to comply
+ * without a hand-curated cheat sheet.
+ *
+ * Custom JS plugin rules (`tsdoc/*`, `no-restricted-syntax/*`, `stylistic/*`)
+ * are not printed by `oxlint --print-config`, so the rule modules are the
+ * only source of truth for their severity.
  */
-import { readFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
+import { readFile, readdir, } from 'node:fs/promises';
+import { join, relative, } from 'node:path';
 
 import { l, } from '../log.ts';
 
@@ -40,18 +44,74 @@ async function readConfig(relativePath: string,): Promise<string> {
   );
 }
 
+/** Directory containing the shared oxlint config source modules. */
+const OXLINT_CONFIG_SRC = 'packages/config/oxlint/src';
+
+/**
+ * Discovers every rule module under the shared oxlint config package.
+ *
+ * Recursively walks `packages/config/oxlint/src/`, collecting all `.ts`
+ * files except the entry-point `index.ts` (which only composes and
+ * re-exports the rule modules). Results are sorted for deterministic
+ * prompt output.
+ *
+ * @returns sorted relative paths (from monorepo root)
+ */
+async function discoverRuleModules(): Promise<string[]> {
+  const absoluteDir = join(
+    MONOREPO_ROOT,
+    OXLINT_CONFIG_SRC,
+  );
+  const entries = await readdir(
+    absoluteDir,
+    {
+      recursive: true,
+      withFileTypes: true,
+    },
+  );
+
+  return entries
+    .filter(function isRuleModule(entry,): boolean {
+      return entry.isFile() && entry.name.endsWith('.ts',) && entry.name !== 'index.ts';
+    },)
+    .map(function toRelativePath(entry,): string {
+      return join(
+        OXLINT_CONFIG_SRC,
+        relative(
+          absoluteDir,
+          join(
+            entry.parentPath,
+            entry.name,
+          ),
+        ),
+      );
+    },)
+    .sort();
+}
+
 /**
  * Builds the system prompt by reading the actual project configs at runtime.
  *
  * @returns complete system prompt with embedded config contents
  */
 async function buildSystemPrompt(): Promise<string> {
-  const [oxlintrc, tsconfig,] = await Promise.all([
+  const ruleModulePaths = await discoverRuleModules();
+
+  const [oxlintrc, tsconfig, ...ruleModules] = await Promise.all([
     readConfig('oxlint.config.ts',),
     readConfig(
       'node_modules/@monochromatic-dev/config-typescript/tsconfig.options.json',
     ),
+    ...ruleModulePaths.map(function readRuleModule(path,): Promise<string> {
+      return readConfig(path,);
+    },),
   ],);
+
+  const ruleModuleSections = ruleModulePaths.map(
+    function formatRuleModule(path, index,): string {
+      return `=== ${path} ===\n${ruleModules[index]}`;
+    },
+  );
 
   return [
     'You are a senior TypeScript developer writing production-quality code.',
@@ -64,6 +124,13 @@ async function buildSystemPrompt(): Promise<string> {
     '',
     '=== oxlint configuration (oxlint.config.ts) ===',
     oxlintrc,
+    '',
+    'The root config re-exports from @monochromatic-dev/config-oxlint.',
+    'Below are the actual rule modules that define every rule severity.',
+    'Rules from custom JS plugins (tsdoc/*, no-restricted-syntax/*, stylistic/*)',
+    'are defined here and not visible in oxlint --print-config output.',
+    '',
+    ...ruleModuleSections,
     '',
     '=== TypeScript compiler options (tsconfig) ===',
     tsconfig,
