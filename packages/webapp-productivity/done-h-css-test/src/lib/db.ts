@@ -52,6 +52,11 @@ function resolveDatabasePath(): string {
  * Skips creation for `:memory:` databases.
  *
  * @param databasePath - Resolved filesystem path
+ *
+ * @example
+ * ```ts
+ * ensureDatabaseDirectoryExists('/home/user/.local/share/done/tasks.db');
+ * ```
  */
 function ensureDatabaseDirectoryExists(databasePath: string,): void {
   if (databasePath === ':memory:')

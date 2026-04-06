@@ -267,6 +267,12 @@ export const requireExample: CreateOnceRule = {
       before() {
         if (shouldIgnoreFile(context.filename,))
           return false;
+        // createOnce persists this visitor across all files in the lint run.
+        // Without clearing, function names from file A leak into file B's
+        // specifier-export check, causing false positives that vary with
+        // thread ordering.
+        functionNodes.clear();
+        specifierExportedNames.clear();
         return undefined;
       },
       FunctionDeclaration: checkFunction,

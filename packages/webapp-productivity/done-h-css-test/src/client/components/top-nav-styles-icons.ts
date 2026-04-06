@@ -29,7 +29,14 @@ const HANDLE_HEIGHT = 1 - 1 / 2 / 2 / 2;
 /** Rotation amount in turns for the handle angle (-1/8 turn). */
 const HANDLE_TURN = -(1 / 2 / 2 / 2);
 
-/** CSS rules for the search icon `.search-icon`, `.circle`, and `.handle` elements. */
+/**
+ * CSS rules for the search icon `.search-icon`, `.circle`, and `.handle` elements.
+ *
+ * @example
+ * ```ts
+ * TOP_NAV_ICON_STYLES.forEach(rule => sheet.insertRule(rule));
+ * ```
+ */
 export const TOP_NAV_ICON_STYLES: string[] = [
   css({
     rule: '.search-icon',
