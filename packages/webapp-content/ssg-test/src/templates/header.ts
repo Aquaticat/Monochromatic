@@ -1,13 +1,12 @@
 /**
- * Site header template with navigation and search stub.
+ * Site header template with navigation, theme toggle, and search stub.
  *
- * Renders the brand logo, site name, and a search popover that
- * always displays empty results (search is deferred).
+ * Renders the brand logo, site name, a theme inverse toggle (checkbox
+ * styled as a button), and a search popover that always displays empty
+ * results (search is deferred).
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-// File justification: 102 lines -- header and search popover are tightly
-// coupled; the popover is only used inside the header.
 import type {
   Locales,
   TranslationFunctions,
@@ -32,7 +31,38 @@ const SEARCH_ICON = [
   .join('',);
 
 /**
- * Renders the site header with brand link and search stub.
+ * Sun icon SVG markup for the light mode indicator.
+ *
+ * Shown when the theme is not inverted (default state).
+ * Uses `currentColor` stroke to inherit the text color.
+ */
+const SUN_ICON = [
+  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">',
+  '<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>',
+  '<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41',
+  'M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"',
+  ' stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  '</svg>',
+]
+  .join('',);
+
+/**
+ * Moon icon SVG markup for the dark mode indicator.
+ *
+ * Shown when the theme is inverted (checked state).
+ * Uses `currentColor` stroke to inherit the text color.
+ */
+const MOON_ICON = [
+  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">',
+  '<path d="M21 12.79A9 9 0 1 1 11.21 3',
+  ' 7 7 0 0 0 21 12.79z"',
+  ' stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  '</svg>',
+]
+  .join('',);
+
+/**
+ * Renders the site header with brand link, theme toggle, and search stub.
  *
  * @param lang - current language code for localized text and links
  *
@@ -70,6 +100,34 @@ export function headerFragment(lang: Locales,): string {
       h({
         tag: 'nav',
         children: [
+          h({
+            tag: 'input',
+            attrs: {
+              type: 'checkbox',
+              id: 'theme-toggle',
+            },
+            class: 'theme-toggle-input',
+          },),
+          h({
+            tag: 'label',
+            attrs: {
+              for: 'theme-toggle',
+              'aria-label': t.themeToggle(),
+            },
+            class: 'theme-toggle',
+            children: [
+              h({
+                tag: 'span',
+                class: 'icon-light',
+                html: SUN_ICON,
+              },),
+              h({
+                tag: 'span',
+                class: 'icon-dark',
+                html: MOON_ICON,
+              },),
+            ],
+          },),
           h({
             tag: 'button',
             attrs: { popovertarget: 'search', },

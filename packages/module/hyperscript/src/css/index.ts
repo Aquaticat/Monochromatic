@@ -85,6 +85,7 @@ export {
   cssMin,
   cssNum,
   cssOklch,
+  cssOklchFrom,
   cssPercent,
   cssRem,
   cssRotate,

@@ -10,6 +10,7 @@ const zh = {
   page: '页面',
   postNotInLang: '无该语言的页面',
   redirectingToLangChooser: '的语言选择',
+  themeToggle: '反转主题',
 } satisfies Translation;
 
 export default zh;

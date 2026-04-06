@@ -216,7 +216,9 @@ export async function loadContent(contentDir: string,): Promise<Post[]> {
     };
   },),);
 
-  return posts;
+  return posts.toSorted(function byUpdatedDesc(a, b,) {
+    return b.data.updated.getTime() - a.data.updated.getTime();
+  },);
 }
 
 //endregion Loading

@@ -9,6 +9,7 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
 
+import { footerFragment, } from './footer.ts';
 import { headFragment, } from './head.ts';
 import { headerFragment, } from './header.ts';
 
@@ -57,7 +58,7 @@ export function pageLayout(
               class: 'between_header_footer',
               html: content,
             },),
-            h({ tag: 'footer', },),
+            footerFragment(),
           ],
         },),
       ],

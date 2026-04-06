@@ -1,8 +1,9 @@
 /**
- * Header bar and interactive element styles.
+ * Header bar, theme toggle, and interactive element styles.
  *
- * Includes the site header, search popover, `:focus-visible` outlines,
- * and minimum touch target sizing for accessible interactive elements.
+ * Includes the site header, theme inverse toggle, search popover,
+ * `:focus-visible` outlines, and minimum touch target sizing for
+ * accessible interactive elements.
  */
 import {
   cssCalc,
@@ -64,6 +65,14 @@ export function headerStyles(): string {
         'block-size': cssRem(2,),
       },
     },),
+    $({
+      rule: 'nav',
+      decls: {
+        display: 'flex',
+        'align-items': 'center',
+        gap: cssRem(GAP_SMALL,),
+      },
+    },),
   ]
     .join('\n',);
 }
@@ -78,6 +87,75 @@ export function headerStyles(): string {
  * const css = searchAndInteractionStyles();
  * ```
  */
+/**
+ * Theme toggle checkbox-as-button styles.
+ *
+ * The real checkbox is visually hidden but remains focusable.
+ * The adjacent label acts as the visible toggle with icon swap
+ * driven by `:checked + label` selectors.
+ *
+ * @returns CSS string for theme toggle rules
+ *
+ * @example
+ * ```ts
+ * const css = themeToggleStyles();
+ * ```
+ */
+export function themeToggleStyles(): string {
+  return [
+    $({
+      rule: '.theme-toggle-input',
+      decls: {
+        position: 'absolute',
+        'inline-size': cssCalc(BORDER_WIDTH_REM,),
+        'block-size': cssCalc(BORDER_WIDTH_REM,),
+        overflow: 'hidden',
+        clip: 'rect(0 0 0 0)',
+        'white-space': 'nowrap',
+      },
+    },),
+    $({
+      rule: '.theme-toggle',
+      decls: {
+        display: 'inline-flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        'min-inline-size': cssRem(TOUCH_TARGET,),
+        'min-block-size': cssRem(TOUCH_TARGET,),
+        cursor: 'pointer',
+      },
+    },),
+    $({
+      rule: '.theme-toggle-input:focus-visible + .theme-toggle',
+      decls: {
+        'outline-color': cssVar('color-focus-ring',),
+        'outline-style': 'solid',
+        'outline-width': cssCalc(BORDER_WIDTH_REM,),
+        'outline-offset': cssCalc(BORDER_WIDTH_REM,),
+      },
+    },),
+    $({
+      rule: '.theme-toggle .icon-dark',
+      decls: {
+        display: 'none',
+      },
+    },),
+    $({
+      rule: '.theme-toggle-input:checked + .theme-toggle .icon-light',
+      decls: {
+        display: 'none',
+      },
+    },),
+    $({
+      rule: '.theme-toggle-input:checked + .theme-toggle .icon-dark',
+      decls: {
+        display: 'inline',
+      },
+    },),
+  ]
+    .join('\n',);
+}
+
 export function searchAndInteractionStyles(): string {
   return [
     $({

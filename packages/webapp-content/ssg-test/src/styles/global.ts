@@ -8,6 +8,7 @@ import {
   cssCommaList,
   cssRem,
   cssVar,
+  cssPercent,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -49,6 +50,10 @@ export function resetStyles(): string {
         'background-color': cssVar('color-bg',),
       },
     },),
+    $({
+      rule: 'img',
+      decls: { 'max-inline-size': cssPercent(100) }
+    })
   ]
     .join('\n',);
 }

@@ -314,6 +314,57 @@ export function cssOklch(
 }
 
 /**
+ * Creates a relative `oklch(from ...)` color value.
+ *
+ * Relative color syntax derives a new color from an existing origin color,
+ * with channel values expressed as CSS expressions resolved by the browser.
+ * Channel keywords (`l`, `c`, `h`) reference the origin color's components.
+ *
+ * @param from - origin color (typically a `cssVar()` reference)
+ *
+ * @param l - lightness channel expression, defaults to `'l'` (passthrough)
+ *
+ * @param c - chroma channel expression, defaults to `'c'` (passthrough)
+ *
+ * @param h - hue channel expression, defaults to `'h'` (passthrough)
+ *
+ * @param a - alpha expression (e.g. `'25%'`, `'0.5'`, optional — omitted means no alpha override)
+ *
+ * @returns branded CSS color string (e.g. `'oklch(from var(--primary) l c h / 25%)'`)
+ *
+ * @example
+ * ```ts
+ * // Only override alpha — l, c, h pass through from the origin
+ * cssOklchFrom({ from: cssVar('primary'), a: '25%' })
+ * // 'oklch(from var(--primary) l c h / 25%)'
+ *
+ * // Override lightness, keep chroma and hue
+ * cssOklchFrom({ from: cssVar('fg'), l: 'calc(l * 0.8)' })
+ * // 'oklch(from var(--fg) calc(l * 0.8) c h)'
+ * ```
+ */
+export function cssOklchFrom(
+  {
+    from,
+    l = 'l',
+    c = 'c',
+    h = 'h',
+    a,
+  }: {
+    from: CssValue | string;
+    l?: string;
+    c?: string;
+    h?: string;
+    a?: string;
+  },
+): CssValue {
+  if (a !== undefined)
+    return `oklch(from ${from} ${l} ${c} ${h} / ${a})` as CssValue;
+
+  return `oklch(from ${from} ${l} ${c} ${h})` as CssValue;
+}
+
+/**
  * Creates a `color()` function value for wide-gamut color spaces.
  *
  * Use when `oklch()` is insufficient and a specific color space is needed

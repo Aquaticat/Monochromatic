@@ -3,6 +3,7 @@
  *
  * Composes all style modules into a single CSS string for the build.
  */
+import { footerStyles, } from './footer.ts';
 import {
   layoutStyles,
   resetStyles,
@@ -11,11 +12,13 @@ import {
 import {
   headerStyles,
   searchAndInteractionStyles,
+  themeToggleStyles,
 } from './header.ts';
 import { highlightStyles, } from './highlight.ts';
 import { postStyles, } from './posts.ts';
 import {
   darkModeTokenStyles,
+  inverseTokenStyles,
   tokenStyles,
 } from './tokens.ts';
 
@@ -34,6 +37,7 @@ export function generateSiteCss(): string {
   return [
     tokenStyles(),
     darkModeTokenStyles(),
+    inverseTokenStyles(),
     resetStyles(),
     layoutStyles(),
     typographyStyles(),
@@ -41,6 +45,8 @@ export function generateSiteCss(): string {
     headerStyles(),
     postStyles(),
     searchAndInteractionStyles(),
+    themeToggleStyles(),
+    footerStyles(),
   ]
     .join('\n',);
 }

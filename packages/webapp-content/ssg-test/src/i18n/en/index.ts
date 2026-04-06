@@ -10,6 +10,7 @@ const en = {
   page: 'page',
   postNotInLang: "Post doesn't exist in specified language",
   redirectingToLangChooser: 'Choose a language for',
+  themeToggle: 'Invert theme',
 } satisfies BaseTranslation;
 
 export default en;
