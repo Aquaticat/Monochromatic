@@ -1,9 +1,10 @@
 /**
- * Site header template with navigation, theme toggle, and search stub.
+ * Site header template with navigation, theme toggle, and search input.
  *
  * Renders the brand logo, site name, a theme inverse toggle (checkbox
- * styled as a button), and a search popover that always displays empty
- * results (search is deferred).
+ * styled as a button), and an expanding search input that collapses
+ * to an icon when unfocused and expands on focus. Search results
+ * appear in a dropdown below the input, powered by Pagefind.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -12,23 +13,6 @@ import type {
   TranslationFunctions,
 } from '../i18n/i18n-types.ts';
 import { i18nObject, } from '../i18n/i18n-util.ts';
-
-/**
- * Search icon SVG markup.
- *
- * Inline rather than imported because the icon is a single path element
- * too small to warrant a separate file and build-time import.
- */
-const SEARCH_ICON = [
-  '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">',
-  '<path d="M18.7441 19.0893L14.03 14.3752M16.8333 9.33333',
-  'C16.8333 13.0152 13.8486 16 10.1667 16C6.48477 16',
-  ' 3.5 13.0152 3.5 9.33333C3.5 5.65143 6.48477 2.66666',
-  ' 10.1667 2.66666C13.8486 2.66666 16.8333 5.65143',
-  ' 16.8333 9.33333Z" stroke="currentColor" stroke-width="2"/>',
-  '</svg>',
-]
-  .join('',);
 
 /**
  * Sun icon SVG markup for the light mode indicator.
@@ -62,7 +46,11 @@ const MOON_ICON = [
   .join('',);
 
 /**
- * Renders the site header with brand link, theme toggle, and search stub.
+ * Renders the site header with brand link, theme toggle, and expanding search input.
+ *
+ * The search input collapses to an icon-sized circle when unfocused and
+ * expands to a full text input on focus. A results dropdown (`#search-results`)
+ * is populated client-side by the Pagefind search module.
  *
  * @param lang - current language code for localized text and links
  *
@@ -128,18 +116,7 @@ export function headerFragment(lang: Locales,): string {
               },),
             ],
           },),
-          h({
-            tag: 'button',
-            attrs: { popovertarget: 'search', },
-            children: [
-              h({
-                tag: 'span',
-                text: 'Search',
-              },),
-              ` ${SEARCH_ICON}`,
-            ],
-          },),
-          searchPopover(t,),
+          searchInput(t,),
         ],
       },),
     ],
@@ -147,45 +124,40 @@ export function headerFragment(lang: Locales,): string {
 }
 
 /**
- * Renders the search popover with input and empty results stub.
+ * Renders the expanding search input with results dropdown.
  *
- * @param t - translation functions for localized placeholder and labels
+ * The `<search>` landmark wraps an `<input type="search">` styled as an
+ * icon when unfocused (via a background SVG of the search magnifying glass)
+ * and an empty `<ul>` for Pagefind results populated client-side.
  *
- * @returns HTML string for the search popover
+ * @param t - translation functions for localized placeholder text
+ *
+ * @returns HTML string for the search widget
  */
-function searchPopover(t: TranslationFunctions,): string {
-  const placeholder = t.searchPlaceholder();
-
+function searchInput(t: TranslationFunctions,): string {
   return h({
-    tag: 'div',
-    attrs: {
-      popover: '',
-      id: 'search',
-    },
+    tag: 'search',
+    class: 'site-search',
     children: [
       h({
-        tag: 'search',
-        children: [
-          h({
-            tag: 'label',
-            text: placeholder,
-            children: [
-              h({
-                tag: 'input',
-                attrs: {
-                  name: 'q',
-                  type: 'search',
-                  required: '',
-                  placeholder,
-                },
-              },),
-            ],
-          },),
-        ],
+        tag: 'input',
+        attrs: {
+          type: 'search',
+          id: 'search-input',
+          placeholder: t.searchPlaceholder(),
+          autocomplete: 'off',
+          'aria-label': t.searchPlaceholder(),
+        },
+        class: 'search-input',
       },),
       h({
-        tag: 'p',
-        text: t.noResults(),
+        tag: 'ul',
+        attrs: {
+          id: 'search-results',
+          role: 'listbox',
+          'aria-label': t.searchPlaceholder(),
+        },
+        class: 'search-results',
       },),
     ],
   },);

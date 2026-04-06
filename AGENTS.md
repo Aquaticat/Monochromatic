@@ -2,8 +2,6 @@
 
 ## Working Environment
 
-Don't use "plan mode" since they currently just bug out. Waiting for upstream fixes.
-
 Don't use pipes in bash tool since they're broken for now. Workarounds like redirecting to file then reading the file works.
 
 Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.

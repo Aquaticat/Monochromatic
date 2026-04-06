@@ -56,6 +56,7 @@ export function pageLayout(
             h({
               tag: 'div',
               class: 'between_header_footer',
+              attrs: { 'data-pagefind-body': '', },
               html: content,
             },),
             footerFragment(),

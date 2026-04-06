@@ -1,35 +1,46 @@
+[tools]
+"npm:pagefind" = "latest"
+
 [tasks.build]
-extends = "build"
+description = "Build SSG pipeline: i18n + client JS in parallel, then site, then search index"
+run = """
+mise run build:i18n ::: build:js:client
+mise run build:site
+mise run build:search
+"""
 
 [tasks."build:i18n"]
 description = "Generate typesafe-i18n types from locale files"
-run = "node_modules/.bin/typesafe-i18n --no-watch"
+run = "typesafe-i18n --no-watch"
 
 [tasks."build:js:client"]
 extends = "build:js:client"
 
 [tasks."build:site"]
-description = "Build static site"
-depends = ["build:i18n", "build:js:client"]
+description = "Build static site from MDX content"
 run = "bun src/build.ts"
 
 [tasks."build:site:clean"]
 description = "Build static site from scratch (no cache)"
 run = "rm -rf .cache; bun src/build.ts"
 
-[tasks."dev:site"]
-description = "Build then serve dist/ with Caddy, rebuilding on source changes"
-run = [{ tasks = ["build:site"] }, { tasks = ["_dev:site:watch", "dev:site:serve"] }]
+[tasks."build:search"]
+description = "Generate Pagefind search index from built HTML"
+run = "pagefind --site dist"
 
-[tasks."dev:site:serve"]
+[tasks.dev]
+description = "Build then serve dist/ with Caddy, rebuilding on source changes"
+run = [{ tasks = ["build"] }, { tasks = ["dev:watch", "dev:serve"] }]
+
+[tasks."dev:watch"]
+hide = true
+description = "Rebuild on source changes"
+run = "mise watch -w src -r build"
+
+[tasks."dev:serve"]
 hide = true
 description = "Serve dist/ with Caddy (clean URLs via try_files)"
 run = "caddy run --config Caddyfile"
-
-[tasks."_dev:site:watch"]
-hide = true
-description = "Rebuild on source changes"
-run = "mise watch -w src -r build:site"
 
 [tasks."generate:favicons"]
 description = "Generate favicon files from SVG source if missing"
@@ -38,10 +49,6 @@ run = "bun src/build/favicon.ts"
 [tasks."format:images"]
 description = "Convert non-AVIF raster images to AVIF counterparts"
 run = "bun src/images/format.ts"
-
-[tasks."watch:site"]
-description = "Rebuild site on source changes"
-run = "mise watch -w src -r build:site"
 
 [tasks.lint]
 extends = "lint"

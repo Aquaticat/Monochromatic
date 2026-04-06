@@ -17,6 +17,8 @@
  * ```
  */
 
+import './search.ts';
+
 export {}; // eslint module boundary marker
 
 //region Configuration
