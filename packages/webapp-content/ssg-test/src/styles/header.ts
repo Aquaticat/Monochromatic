@@ -253,7 +253,6 @@ export function searchAndInteractionStyles(): string {
     $({
       rule: '.search-results',
       decls: {
-        display: 'none',
         position: 'absolute',
         inset: `${cssRem(SEARCH_COLLAPSED,)} 0 auto auto`,
         'min-inline-size': cssRem(SEARCH_EXPANDED,),
@@ -273,9 +272,9 @@ export function searchAndInteractionStyles(): string {
       },
     },),
     $({
-      rule: '.search-results:not(:empty)',
+      rule: '.search-results:empty',
       decls: {
-        display: 'block',
+        display: 'none',
       },
     },),
     $({
