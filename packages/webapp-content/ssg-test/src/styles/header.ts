@@ -154,10 +154,11 @@ export function themeToggleStyles(): string {
 const SEARCH_ICON_URI = [
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'",
   " viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M18.74 19.09",
-  " l-4.71-4.71M16.83 9.33A6.67 6.67 0 1 1 3.5 9.33",
+  ' l-4.71-4.71M16.83 9.33A6.67 6.67 0 1 1 3.5 9.33',
   " a6.67 6.67 0 0 1 13.33 0z'",
   " stroke='%23888' stroke-width='2'/%3E%3C/svg%3E\")",
-].join('',);
+]
+  .join('',);
 
 /** Collapsed search input size in rem (matches touch target). */
 const SEARCH_COLLAPSED = TOUCH_TARGET;
@@ -212,7 +213,8 @@ export function searchAndInteractionStyles(): string {
         color: cssVar('color-fg',),
         'font-size': cssRem(1,),
         cursor: 'pointer',
-        'transition-property': 'inline-size, padding-inline, border-color, background-color, background-position',
+        'transition-property':
+          'inline-size, padding-inline, border-color, background-color, background-position',
         'transition-duration': SEARCH_TRANSITION,
         'transition-timing-function': 'ease-out',
       },
@@ -284,7 +286,7 @@ export function searchAndInteractionStyles(): string {
       },
     },),
     $({
-      rule: '.search-results li:hover',
+      rule: '.search-results li:hover, .search-results li[data-active]',
       decls: {
         'background-color': cssVar('color-code-bg',),
       },

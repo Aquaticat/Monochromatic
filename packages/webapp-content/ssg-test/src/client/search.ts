@@ -185,6 +185,44 @@ async function executeSearch(query: string,): Promise<void> {
 
 //endregion Search execution
 
+//region Keyboard navigation state
+
+/** Index of the currently highlighted result, or -1 when none is active. */
+let activeIndex = -1;
+
+/**
+ * Updates the visual and ARIA active descendant state.
+ *
+ * Removes `data-active` from the previously active option, applies it
+ * to the new one, and sets `aria-activedescendant` on the input so
+ * screen readers announce the focused option.
+ *
+ * @param index - index of the option to activate, or -1 to clear
+ */
+function setActiveOption(index: number,): void {
+  if (resultsList === null || input === null)
+    return;
+
+  const options = resultsList.querySelectorAll<HTMLElement>('[role="option"]',);
+
+  if (activeIndex >= 0 && activeIndex < options.length)
+    options[activeIndex]!.removeAttribute('data-active',);
+
+  activeIndex = index;
+
+  if (activeIndex >= 0 && activeIndex < options.length) {
+    const option = options[activeIndex]!;
+    option.setAttribute('data-active', '',);
+    option.scrollIntoView({ block: 'nearest', },);
+    input.setAttribute('aria-activedescendant', option.id,);
+  }
+  else {
+    input.removeAttribute('aria-activedescendant',);
+  }
+}
+
+//endregion Keyboard navigation state
+
 //region Result rendering
 
 /**
@@ -207,22 +245,25 @@ function escapeHtml(text: string,): string {
  * Renders loaded search results into the dropdown list.
  *
  * Replaces all existing list items and shows the dropdown.
+ * Each option gets a unique `id` for `aria-activedescendant` referencing.
  * Title and URL are escaped; excerpt is trusted HTML from Pagefind
  * (contains `<mark>` tags for match highlighting).
  *
  * @param results - loaded Pagefind result data entries
  */
 function renderResults(results: readonly PagefindResultData[],): void {
-  if (resultsList === null)
+  if (resultsList === null || input === null)
     return;
 
+  activeIndex = -1;
+
   resultsList.innerHTML = results
-    .map(function resultToListItem(result,) {
+    .map(function resultToListItem(result, index,) {
       const title = escapeHtml(result.meta.title ?? result.url,);
       const url = escapeHtml(result.url,);
       return [
-        '<li>',
-        `<a href="${url}">`,
+        `<li id="search-option-${index}" role="option" data-url="${url}">`,
+        `<a href="${url}" tabindex="-1">`,
         `<div class="search-title">${title}</div>`,
         `<div class="search-excerpt">${result.excerpt}</div>`,
         '</a>',
@@ -233,6 +274,8 @@ function renderResults(results: readonly PagefindResultData[],): void {
     .join('',);
 
   resultsList.setAttribute('data-open', '',);
+  input.setAttribute('aria-expanded', 'true',);
+  input.removeAttribute('aria-activedescendant',);
 }
 
 /**
@@ -242,8 +285,14 @@ function hideResults(): void {
   if (resultsList === null)
     return;
 
+  activeIndex = -1;
   resultsList.removeAttribute('data-open',);
   resultsList.innerHTML = '';
+
+  if (input !== null) {
+    input.setAttribute('aria-expanded', 'false',);
+    input.removeAttribute('aria-activedescendant',);
+  }
 }
 
 //endregion Result rendering
@@ -270,11 +319,39 @@ if (input !== null && resultsList !== null) {
       hideResults();
   },);
 
-  // Close results on Escape key
   input.addEventListener('keydown', function onSearchKeydown(event,) {
+    const options = resultsList.querySelectorAll('[role="option"]',);
+    const count = options.length;
+
     if (event.key === 'Escape') {
       hideResults();
       input.blur();
+      return;
+    }
+
+    if (count === 0)
+      return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setActiveOption(activeIndex < count - 1 ? activeIndex + 1 : 0,);
+      return;
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveOption(activeIndex > 0 ? activeIndex - 1 : count - 1,);
+      return;
+    }
+
+    if (event.key === 'Enter' && activeIndex >= 0 && activeIndex < count) {
+      event.preventDefault();
+      const option = options[activeIndex];
+      if (option !== undefined) {
+        const url = option.getAttribute('data-url',);
+        if (url !== null)
+          window.location.href = url;
+      }
     }
   },);
 }
