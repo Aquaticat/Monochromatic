@@ -270,55 +270,59 @@ export function searchAndInteractionStyles(): string {
         'box-shadow': `0 ${cssRem(GAP_SMALL,)} ${cssRem(GAP,)} rgba(0, 0, 0, 0.1)`,
         'z-index': '10',
       },
-    },),
-    $({
-      rule: '.search-results:empty',
-      decls: {
-        display: 'none',
-      },
-    },),
-    $({
-      rule: '.search-results li',
-      decls: {
-        'padding-block': cssRem(GAP_SMALL,),
-        'padding-inline': cssRem(GAP,),
-      },
-    },),
-    $({
-      rule: '.search-results li:hover, .search-results li[data-active]',
-      decls: {
-        'background-color': cssVar('color-code-bg',),
-      },
-    },),
-    $({
-      rule: '.search-results a',
-      decls: {
-        'text-decoration-line': 'none',
-        color: 'inherit',
-        display: 'block',
-      },
-    },),
-    $({
-      rule: '.search-results .search-title',
-      decls: {
-        'font-weight': '600',
-      },
-    },),
-    $({
-      rule: '.search-results .search-excerpt',
-      decls: {
-        'font-size': cssRem(FONT_SIZE_SMALL,),
-        color: cssVar('color-muted',),
-        'margin-block-start': cssRem(GAP_SMALL / 2,),
-      },
-    },),
-    $({
-      rule: '.search-results mark',
-      decls: {
-        'background-color': 'transparent',
-        color: cssVar('color-link',),
-        'font-weight': '600',
-      },
+      children: [
+        $({
+          rule: '&:empty',
+          decls: {
+            display: 'none',
+          },
+        },),
+        $({
+          rule: 'li',
+          decls: {
+            'padding-block': cssRem(GAP_SMALL,),
+            'padding-inline': cssRem(GAP,),
+          },
+          children: [
+            $({
+              rule: '&:hover, &[data-active]',
+              decls: {
+                'background-color': cssVar('color-code-bg',),
+              },
+            },),
+          ],
+        },),
+        $({
+          rule: 'a',
+          decls: {
+            'text-decoration-line': 'none',
+            color: 'inherit',
+            display: 'block',
+          },
+        },),
+        $({
+          rule: '.search-title',
+          decls: {
+            'font-weight': '600',
+          },
+        },),
+        $({
+          rule: '.search-excerpt',
+          decls: {
+            'font-size': cssRem(FONT_SIZE_SMALL,),
+            color: cssVar('color-muted',),
+            'margin-block-start': cssRem(GAP_SMALL / 2,),
+          },
+        },),
+        $({
+          rule: 'mark',
+          decls: {
+            'background-color': 'transparent',
+            color: cssVar('color-link',),
+            'font-weight': '600',
+          },
+        },),
+      ],
     },),
     $({
       rule: 'a',
