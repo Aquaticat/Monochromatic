@@ -22,6 +22,11 @@ import { flattenChain, } from './utils.ts';
  * @param character - 0-based cursor character
  *
  * @returns flattened chain from innermost to outermost, or empty
+ *
+ * @example
+ * ```ts
+ * const result = await fetchChain({ ws: ws, path: '/home/user/project/src/main.ts', line: 10, character: 5, });
+ * ```
  */
 export async function fetchChain({
   ws,

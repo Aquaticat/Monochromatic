@@ -34,6 +34,11 @@ const renameLog = tagged({
  * @param renameInput - rename input component to show
  *
  * @param getCurrentFilePath - returns the current file path
+ *
+ * @example
+ * ```ts
+ * await initiateRename({ ws: ws, editorPane: editorPane, renameInput: renameInput, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function initiateRename({
   ws,
@@ -114,6 +119,11 @@ export async function initiateRename({
  * @param line - 0-based line of the symbol
  *
  * @param character - 0-based character of the symbol
+ *
+ * @example
+ * ```ts
+ * await performRename({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', newName: 'renamedSymbol', line: 10, character: 5, });
+ * ```
  */
 export async function performRename({
   ws,

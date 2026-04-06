@@ -40,6 +40,11 @@ export type GotoDefinitionResult = 'navigated' | 'no-definition' | 'already-at-d
  * @param character - 0-based character offset
  *
  * @returns result indicating whether navigation succeeded, found nothing, or errored
+ *
+ * @example
+ * ```ts
+ * const result = await doGotoDefinition({ ws: ws, getCurrentFilePath: '/home/user/project/src/main.ts', loadFileSafe: loadFileSafe, line: 10, character: 5, });
+ * ```
  */
 export async function doGotoDefinition(
   {

@@ -25,6 +25,11 @@ import { middleOut, } from '../middle-out.ts';
  * @param onSelect - callback invoked when a result is clicked
  *
  * @returns array of result DOM elements
+ *
+ * @example
+ * ```ts
+ * const result = renderResultElements({ results: [{ path: "src/app.ts", line: 5, text: "const app = ..." }], query: 'searchTerm', rootPrefix: '/home/user/project', budget: 50, onSelect: function handleSelect(event) { l.info(event); }, });
+ * ```
  */
 export function renderResultElements({
   results,
@@ -106,6 +111,11 @@ export function renderResultElements({
  * @param query - search query to highlight
  *
  * @param container - results container element whose text nodes to scan
+ *
+ * @example
+ * ```ts
+ * highlightMatches({ query: 'searchTerm', container: resultElement, });
+ * ```
  */
 export function highlightMatches(
   {

@@ -33,6 +33,11 @@ const expandLog = tagged({
  * @param editorPane - editor pane component
  *
  * @param getCurrentFilePath - returns the current file path
+ *
+ * @example
+ * ```ts
+ * await doExpandSelection({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function doExpandSelection({
   ws,

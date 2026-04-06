@@ -95,6 +95,11 @@ async function loadFileAndRefreshHints({
  * @param loadFileSafe - loads a file from the server
  *
  * @param refreshInlayHints - refreshes inlay hints for the current file
+ *
+ * @example
+ * ```ts
+ * wireSelectEvents({ fileTree: fileTree, searchOverlay: searchOverlay, referencesPopup: referencesPopup, state: sessionState, recordFileOpen: recordFileOpen, loadFileSafe: loadFileSafe, refreshInlayHints: refreshInlayHints, });
+ * ```
  */
 export function wireSelectEvents(
   {
@@ -182,6 +187,11 @@ export function wireSelectEvents(
  * @param state - mutable app state
  *
  * @param loadFileSafe - loads a file from the server
+ *
+ * @example
+ * ```ts
+ * wireFileWatching({ ws: ws, fileTree: fileTree, state: sessionState, loadFileSafe: loadFileSafe, });
+ * ```
  */
 export function wireFileWatching({
   ws,

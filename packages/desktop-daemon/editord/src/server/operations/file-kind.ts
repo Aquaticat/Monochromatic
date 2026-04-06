@@ -47,6 +47,11 @@ const VIDEO_EXTENSIONS = new Set([
  * @param path - file path to check
  *
  * @returns media kind if the extension matches a known media type, null for text or unknown files
+ *
+ * @example
+ * ```ts
+ * const result = getMediaKind({ path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function getMediaKind(
   { path, }: { path: string; },
@@ -91,6 +96,11 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
  * @param path - file path to check
  *
  * @returns MIME type string, defaults to `application/octet-stream` for unknown extensions
+ *
+ * @example
+ * ```ts
+ * const result = getContentType({ path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function getContentType({ path, }: { path: string; },): string {
   const ext = extname(path,).toLowerCase();

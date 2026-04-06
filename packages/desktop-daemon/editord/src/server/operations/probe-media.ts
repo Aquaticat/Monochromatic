@@ -75,6 +75,11 @@ function extractMetadata(
  * @param path - absolute path to the media file
  *
  * @returns trimmed ffprobe output starting from `Input #`, or `null` on failure
+ *
+ * @example
+ * ```ts
+ * const result = await probeMedia({ path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function probeMedia({ path, }: { path: string; },): Promise<string | null> {
   try {

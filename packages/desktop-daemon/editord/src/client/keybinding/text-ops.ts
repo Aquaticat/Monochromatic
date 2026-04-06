@@ -21,6 +21,11 @@ type TextOpsDeps = Pick<KeybindingDeps,
  * @param deps - text manipulation action callbacks
  *
  * @returns true if the event was handled and should not propagate further
+ *
+ * @example
+ * ```ts
+ * const result = handleTextEditKey({ event: keyboardEvent, deps: function handleDeps() { l.info("done"); }, });
+ * ```
  */
 export function handleTextEditKey({
   event,

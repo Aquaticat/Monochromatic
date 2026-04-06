@@ -25,6 +25,11 @@ import type {
  * @param hover - LSP hover result
  *
  * @returns string representation of the hover content
+ *
+ * @example
+ * ```ts
+ * const result = extractHoverContent({ hover: { contents: { kind: 'markdown', value: '```ts\nconst x: number\n```' } }, });
+ * ```
  */
 export function extractHoverContent({ hover, }: { hover: LspHover; },): string {
   if (typeof hover.contents === 'string')
@@ -39,6 +44,11 @@ export function extractHoverContent({ hover, }: { hover: LspHover; },): string {
  * @param items - LSP completion items
  *
  * @returns wire-format completion items
+ *
+ * @example
+ * ```ts
+ * const result = toWireCompletionItems({ items: [{ label: 'useState', detail: 'function', insertText: 'useState' }], });
+ * ```
  */
 export function toWireCompletionItems(
   { items, }: { items: LspCompletionItem[]; },
@@ -59,6 +69,11 @@ export function toWireCompletionItems(
  * @param hints - LSP inlay hints
  *
  * @returns wire-format inlay hints
+ *
+ * @example
+ * ```ts
+ * const result = toWireInlayHints({ hints: [{ position: { line: 3, character: 10 }, label: ': number', kind: 1 }], });
+ * ```
  */
 export function toWireInlayHints({ hints, }: { hints: LspInlayHint[]; },): InlayHint[] {
   return hints.map(function convertHint(hint,) {
@@ -91,6 +106,11 @@ export function toWireInlayHints({ hints, }: { hints: LspInlayHint[]; },): Inlay
  * @param lspRange - LSP selection range with nested parents
  *
  * @returns wire-format selection range
+ *
+ * @example
+ * ```ts
+ * const result = toWireSelectionRange({ lspRange: { range: { start: { line: 0, character: 5 }, end: { line: 0, character: 10 } } }, });
+ * ```
  */
 export function toWireSelectionRange(
   { lspRange, }: { lspRange: LspSelectionRange; },

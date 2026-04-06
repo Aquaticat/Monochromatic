@@ -202,6 +202,11 @@ async function writeAndTouch({
  * @param l - parent logger
  *
  * @returns the auth token, `stopTouching` for SIGTERM, and `deleteFile` for SIGINT
+ *
+ * @example
+ * ```ts
+ * const { token, stopTouching, deleteFile } = await resolveAuthToken({ port: 3_400, l: logger, });
+ * ```
  */
 export async function resolveAuthToken({
   port,

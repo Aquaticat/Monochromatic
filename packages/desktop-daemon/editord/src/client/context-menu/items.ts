@@ -38,6 +38,11 @@ function stopClickPropagation(event: MouseEvent,): void {
  * @param onActivate - hides the menu and fires the action
  *
  * @returns menu item element
+ *
+ * @example
+ * ```ts
+ * const result = renderButtonItem({ item: { label: "Copy", type: "button" }, onActivate: handleActivate, });
+ * ```
  */
 export function renderButtonItem({
   item,
@@ -73,6 +78,11 @@ export function renderButtonItem({
  * @param onActivate - hides the menu and fires the action
  *
  * @returns menu item element containing label and input
+ *
+ * @example
+ * ```ts
+ * const result = renderInputItem({ item: { label: "Copy", type: "button" }, onActivate: handleActivate, });
+ * ```
  */
 export function renderInputItem({
   item,

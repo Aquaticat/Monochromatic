@@ -17,6 +17,11 @@
  * @param character - 0-based character offset for cursor placement
  *
  * @returns new cursor position after deletion
+ *
+ * @example
+ * ```ts
+ * const result = deleteLineAt({ editor: editor, line: 10, character: 5, });
+ * ```
  */
 export function deleteLineAt({
   editor,
@@ -72,6 +77,11 @@ export function deleteLineAt({
  * @param character - 0-based character offset for cursor placement
  *
  * @returns new cursor position on the duplicated line
+ *
+ * @example
+ * ```ts
+ * const result = duplicateLineAt({ editor: editor, line: 10, character: 5, });
+ * ```
  */
 export function duplicateLineAt({
   editor,
@@ -106,6 +116,11 @@ export function duplicateLineAt({
  * @param character - 0-based character offset for cursor placement
  *
  * @returns new cursor position, or null if on the last line
+ *
+ * @example
+ * ```ts
+ * const result = swapLineDown({ editor: editor, line: 10, character: 5, });
+ * ```
  */
 export function swapLineDown({
   editor,
@@ -145,6 +160,11 @@ export function swapLineDown({
  * @param character - 0-based character offset for cursor placement
  *
  * @returns new cursor position, or null if on the first line
+ *
+ * @example
+ * ```ts
+ * const result = swapLineUp({ editor: editor, line: 10, character: 5, });
+ * ```
  */
 export function swapLineUp({
   editor,

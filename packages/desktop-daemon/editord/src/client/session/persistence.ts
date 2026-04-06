@@ -31,6 +31,11 @@ import type { SessionState, } from './state.ts';
  * @param getRecentFiles - returns the recent files list
  *
  * @returns `saveNow` for immediate state persistence
+ *
+ * @example
+ * ```ts
+ * const result = wireSessionPersistence({ ws: ws, editorPane: editorPane, fileTree: fileTree, searchOverlay: searchOverlay, getCurrentFilePath: '/home/user/project/src/main.ts', getRecentFiles: [], });
+ * ```
  */
 export function wireSessionPersistence(
   {

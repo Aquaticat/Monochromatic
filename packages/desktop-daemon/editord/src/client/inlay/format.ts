@@ -17,6 +17,11 @@ import type {
  * @param hint - inlay hint from the language server
  *
  * @returns formatted label string
+ *
+ * @example
+ * ```ts
+ * const result = formatHintLabel({ hint: { position: { line: 5, character: 10 }, label: ": number", kind: 1 }, });
+ * ```
  */
 export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
   const padLeft = hint.paddingLeft === true ? ' ' : '';
@@ -87,6 +92,11 @@ const LOWEST_PRIORITY = 4;
  * @param diagnostics - diagnostics on a single line
  *
  * @returns severity string of the worst diagnostic
+ *
+ * @example
+ * ```ts
+ * const result = findWorstSeverity({ diagnostics: [], });
+ * ```
  */
 export function findWorstSeverity(
   { diagnostics, }: { diagnostics: Diagnostic[]; },

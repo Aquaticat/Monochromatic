@@ -65,6 +65,11 @@ function replyEmpty(
  * @param dirWatcher - filesystem watcher for directory registration
  *
  * @returns true if the message was handled, false if not an LSP message type
+ *
+ * @example
+ * ```ts
+ * const handled = await dispatchLspMessage({ peer, parsed: { type: 'hover', id: '1', path: 'src/app.ts', line: 5, character: 12 }, rootDir: '/home/user/project', lspManager, dirWatcher, });
+ * ```
  */
 export async function dispatchLspMessage(
   {

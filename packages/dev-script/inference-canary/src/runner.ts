@@ -81,6 +81,12 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
  * @param config - runner configuration (merged with defaults)
  *
  * @returns full canary report with degradation assessment
+ *
+ * @example
+ * ```ts
+ * const report = await runCanary(probes, { model: 'opus', label: 'Opus 4.6', apiKey });
+ * report.overallScore; // aggregate score across all probes
+ * ```
  */
 export async function runCanary(
   probes: readonly Probe[],

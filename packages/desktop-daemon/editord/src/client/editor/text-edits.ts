@@ -16,6 +16,11 @@ import type { TextEdit, } from '../../../protocol.ts';
  * @param edits - text edits from the formatter
  *
  * @returns modified content as a single string
+ *
+ * @example
+ * ```ts
+ * const result = applyEditsToText({ text: 'const x = 42;', edits: [{ range: { start: { line: 2, character: 0 }, end: { line: 2, character: 5 } }, newText: "const" }], });
+ * ```
  */
 export function applyEditsToText({
   text,

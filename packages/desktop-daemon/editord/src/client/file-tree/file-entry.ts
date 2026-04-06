@@ -124,6 +124,11 @@ export class TreeFileEntry extends HTMLElement {
  * @param recencyIndex - position in recent files list (-1 if not recent)
  *
  * @returns configured element (renders on DOM insertion)
+ *
+ * @example
+ * ```ts
+ * const result = createTreeFileEntry({ path: '/home/user/project/src/main.ts', name: 'main.ts', recencyIndex: 0, });
+ * ```
  */
 export function createTreeFileEntry({
   path,

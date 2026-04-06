@@ -33,6 +33,11 @@ import { measureInlayOffsets, } from '../inlay/measure.ts';
  * @param diagnostics - current diagnostics from the language server
  *
  * @returns animation frame ID for cancellation
+ *
+ * @example
+ * ```ts
+ * const result = scheduleDiagnosticHighlights({ editor: editor, diagnostics: [], });
+ * ```
  */
 export function scheduleDiagnosticHighlights({
   editor,
@@ -64,6 +69,11 @@ export function scheduleDiagnosticHighlights({
  * @param diagnostics - current diagnostics from the language server
  *
  * @returns animation frame ID for cancellation
+ *
+ * @example
+ * ```ts
+ * const result = scheduleInlayAnnotations({ editor: editor, hints: [{ position: { line: 3, character: 10 }, label: ": number" }], diagnostics: [], });
+ * ```
  */
 export function scheduleInlayAnnotations({
   editor,
@@ -99,6 +109,11 @@ export function scheduleInlayAnnotations({
  * @param parser - Lezer parser for the current language
  *
  * @returns animation frame ID for cancellation
+ *
+ * @example
+ * ```ts
+ * const result = scheduleHighlight({ editor: editor, parser: lezerParser, });
+ * ```
  */
 export function scheduleHighlight({
   editor,
@@ -126,6 +141,11 @@ export function scheduleHighlight({
  * @param editor - contenteditable container element
  *
  * @returns animation frame ID for cancellation
+ *
+ * @example
+ * ```ts
+ * const result = scheduleInlayMeasure({ editor: editor, });
+ * ```
  */
 export function scheduleInlayMeasure({ editor, }: { editor: HTMLDivElement; },): number {
   return requestAnimationFrame(function remeasureInlayOffsets() {

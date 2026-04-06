@@ -31,6 +31,11 @@ const inlayLog = tagged({
  * @param editorPane - editor pane component
  *
  * @param getCurrentFilePath - returns the current file path
+ *
+ * @example
+ * ```ts
+ * await fetchInlayHints({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function fetchInlayHints({
   ws,

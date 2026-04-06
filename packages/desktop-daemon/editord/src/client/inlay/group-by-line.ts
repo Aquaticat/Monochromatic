@@ -13,6 +13,11 @@
  * @param keyFn - extracts grouping key from each item
  *
  * @returns map from key to grouped items
+ *
+ * @example
+ * ```ts
+ * const result = groupByLine({ items: [{ label: "useState", detail: "function" }], keyFn: function getLine(item) { return item.position.line; }, });
+ * ```
  */
 export function groupByLine<T,>({
   items,

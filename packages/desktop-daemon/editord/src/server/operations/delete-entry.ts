@@ -17,6 +17,11 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  * @param path - path to the entry to delete
  *
  * @throws when the path escapes root or the delete fails
+ *
+ * @example
+ * ```ts
+ * await deleteEntry({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function deleteEntry(
   {

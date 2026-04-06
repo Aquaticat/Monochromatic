@@ -55,6 +55,11 @@ let annotatedLines = new Set<number>();
  * @param hints - inlay hints from the language server
  *
  * @param diagnostics - diagnostics from the language server
+ *
+ * @example
+ * ```ts
+ * applyInlayAnnotations({ editor: editor, hints: [{ position: { line: 3, character: 10 }, label: ": number" }], diagnostics: [], });
+ * ```
  */
 export function applyInlayAnnotations({
   editor,
@@ -112,6 +117,11 @@ export function applyInlayAnnotations({
  * Clears all inlay annotations from the editor's line divs.
  *
  * @param editor - contenteditable container element
+ *
+ * @example
+ * ```ts
+ * clearInlayAnnotations({ editor: editor, });
+ * ```
  */
 export function clearInlayAnnotations({ editor, }: { editor: HTMLElement; },): void {
   for (const line of annotatedLines) {

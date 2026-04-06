@@ -49,6 +49,11 @@ export { groupByLine, };
  * @param lineDiags - diagnostics for this line, or undefined
  *
  * @param spaceRatio - mono-to-inter space width ratio from {@link measureSpaceRatio}
+ *
+ * @example
+ * ```ts
+ * applyLineAnnotation({ div: lineDiv, lineHints: [{ position: { line: 0, character: 10 }, label: ": string" }], lineDiags: [{ range: { start: { line: 0, character: 0 }, end: { line: 0, character: 5 } }, severity: "warning", message: "Unused", source: "oxlint" }], spaceRatio: 0.6, });
+ * ```
  */
 export function applyLineAnnotation({
   div,

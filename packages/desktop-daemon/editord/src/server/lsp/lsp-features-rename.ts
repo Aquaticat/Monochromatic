@@ -38,6 +38,11 @@ export type PrepareRenameResult = {
  * @param character - 0-based character offset
  *
  * @returns prepare rename result with range and placeholder, or null if not renamable
+ *
+ * @example
+ * ```ts
+ * const result = await requestPrepareRename({ client: client, path: '/home/user/project/src/main.ts', line: 10, character: 5, });
+ * ```
  */
 export async function requestPrepareRename({
   client,
@@ -109,6 +114,11 @@ export async function requestPrepareRename({
  * @param newName - new name for the symbol
  *
  * @returns workspace edit with changes across files, or null if rename failed
+ *
+ * @example
+ * ```ts
+ * const result = await requestRename({ client: client, path: '/home/user/project/src/main.ts', line: 10, character: 5, newName: 'renamedSymbol', });
+ * ```
  */
 export async function requestRename({
   client,

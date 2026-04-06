@@ -30,6 +30,11 @@ const l = tagged({
  * @param dirs - absolute paths of directories to expand
  *
  * @param loadPromises - in-flight load promises keyed by directory path
+ *
+ * @example
+ * ```ts
+ * await restoreExpansion({ tree: treeElement, dirs: ['/home/user/project/src', '/home/user/project/src/components'], loadPromises: loadPromises, });
+ * ```
  */
 export async function restoreExpansion({
   tree,
@@ -83,6 +88,11 @@ export async function restoreExpansion({
  * @param tree - tree container element
  *
  * @param paths - ordered recent file paths (index 0 = most recent)
+ *
+ * @example
+ * ```ts
+ * updateRecencyMarkers({ tree: treeElement, paths: ['/home/user/project/src/main.ts', '/home/user/project/src/app.ts'], });
+ * ```
  */
 export function updateRecencyMarkers({
   tree,
@@ -128,6 +138,11 @@ export function updateRecencyMarkers({
  * @param lastFocused - last focused element in the tree, or null
  *
  * @returns directory path, or empty string when nothing has been focused
+ *
+ * @example
+ * ```ts
+ * const result = resolveSelectedDir({ lastFocused: lastFocusedEntry, });
+ * ```
  */
 export function resolveSelectedDir(
   { lastFocused, }: { lastFocused: HTMLElement | null; },
@@ -154,6 +169,11 @@ export function resolveSelectedDir(
  * @param tree - tree container element
  *
  * @returns array of absolute directory paths that are expanded
+ *
+ * @example
+ * ```ts
+ * const dirs = collectExpandedDirs({ tree: treeElement, });
+ * ```
  */
 export function collectExpandedDirs({ tree, }: { tree: HTMLDivElement; },): string[] {
   const dirs: string[] = [];

@@ -45,6 +45,11 @@ const highlightLog = tagged({
  * @param editor - contenteditable container div whose children are line divs
  *
  * @param parser - Lezer parser configured for the file's language
+ *
+ * @example
+ * ```ts
+ * applyHighlights({ editor: editor, parser: lezerParser, });
+ * ```
  */
 export function applyHighlights({
   editor,

@@ -146,7 +146,14 @@ function performIndentOp({
 
 //region Exported commands
 
-/** Deletes the line at the current cursor position. */
+/**
+ * Deletes the line at the current cursor position.
+ *
+ * @example
+ * ```ts
+ * performDeleteLine({ pane, });
+ * ```
+ */
 export function performDeleteLine({ pane, }: { pane: PaneApi; },): void {
   performLineOp({
     pane,
@@ -162,7 +169,14 @@ export function performDeleteLine({ pane, }: { pane: PaneApi; },): void {
   },);
 }
 
-/** Duplicates the current line below. */
+/**
+ * Duplicates the current line below.
+ *
+ * @example
+ * ```ts
+ * performDuplicateLine({ pane, });
+ * ```
+ */
 export function performDuplicateLine({ pane, }: { pane: PaneApi; },): void {
   performLineOp({
     pane,
@@ -178,7 +192,14 @@ export function performDuplicateLine({ pane, }: { pane: PaneApi; },): void {
   },);
 }
 
-/** Swaps the current line with the next line. */
+/**
+ * Swaps the current line with the next line.
+ *
+ * @example
+ * ```ts
+ * performSwapDown({ pane, });
+ * ```
+ */
 export function performSwapDown({ pane, }: { pane: PaneApi; },): void {
   performLineOp({
     pane,
@@ -194,7 +215,14 @@ export function performSwapDown({ pane, }: { pane: PaneApi; },): void {
   },);
 }
 
-/** Swaps the current line with the previous line. */
+/**
+ * Swaps the current line with the previous line.
+ *
+ * @example
+ * ```ts
+ * performSwapUp({ pane, });
+ * ```
+ */
 export function performSwapUp({ pane, }: { pane: PaneApi; },): void {
   performLineOp({
     pane,
@@ -217,6 +245,11 @@ export function performSwapUp({ pane, }: { pane: PaneApi; },): void {
  * @param pane - editor pane instance
  *
  * @returns true if the line was copied
+ *
+ * @example
+ * ```ts
+ * const result = performSelectAndCopy({ pane: pane, });
+ * ```
  */
 export function performSelectAndCopy({ pane, }: { pane: PaneApi; },): boolean {
   const editor = pane.getEditorElement();
@@ -233,7 +266,14 @@ export function performSelectAndCopy({ pane, }: { pane: PaneApi; },): boolean {
   },);
 }
 
-/** Indents the current line or selected lines. */
+/**
+ * Indents the current line or selected lines.
+ *
+ * @example
+ * ```ts
+ * performIndent({ pane, });
+ * ```
+ */
 export function performIndent({ pane, }: { pane: PaneApi; },): void {
   performIndentOp({
     pane,
@@ -241,7 +281,14 @@ export function performIndent({ pane, }: { pane: PaneApi; },): void {
   },);
 }
 
-/** Unindents the current line or selected lines. */
+/**
+ * Unindents the current line or selected lines.
+ *
+ * @example
+ * ```ts
+ * performUnindent({ pane, });
+ * ```
+ */
 export function performUnindent({ pane, }: { pane: PaneApi; },): void {
   performIndentOp({
     pane,

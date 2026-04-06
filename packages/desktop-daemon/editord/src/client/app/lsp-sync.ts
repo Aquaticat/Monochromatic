@@ -20,6 +20,11 @@ import type { GetCurrentFilePathFn, } from './types.ts';
  * @param editorPane - editor pane component
  *
  * @param getCurrentFilePath - returns the current file path
+ *
+ * @example
+ * ```ts
+ * wireContentSync({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function wireContentSync({
   ws,
@@ -57,6 +62,11 @@ export function wireContentSync({
  * @param editorPane - editor pane component to render diagnostics on
  *
  * @param getCurrentFilePath - returns the current file path
+ *
+ * @example
+ * ```ts
+ * wireDiagnostics({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function wireDiagnostics({
   ws,

@@ -35,6 +35,15 @@ const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/i;
  * @param onError - callback invoked when a message fails to parse as JSON
  *
  * @returns object with a `feed` method accepting Buffer chunks
+ *
+ * @example
+ * ```ts
+ * const parser = createLspParser({
+ *   onMessage: function handleMessage(msg) { pending.get(msg.id)?.resolve(msg); },
+ *   onError: function handleError(err) { console.error(err); },
+ * });
+ * parser.feed(chunk);
+ * ```
  */
 export function createLspParser({
   onMessage,

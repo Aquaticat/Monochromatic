@@ -46,6 +46,11 @@ export type OpenResult = {
  * @returns resolved path, kind, and file content (empty for media)
  *
  * @throws when the path escapes root or the file cannot be read
+ *
+ * @example
+ * ```ts
+ * const result = await openFile({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function openFile(
   {

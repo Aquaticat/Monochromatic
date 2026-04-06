@@ -39,6 +39,11 @@ function computeLineStarts({ lines, }: { lines: string[]; },): number[] {
  * @param editor - contenteditable container div
  *
  * @returns map from highlight group name to DOM Range array
+ *
+ * @example
+ * ```ts
+ * const result = collectHighlightRanges({ tree: syntaxTree, lines: editorLines, editor: editor, });
+ * ```
  */
 export function collectHighlightRanges({
   tree,

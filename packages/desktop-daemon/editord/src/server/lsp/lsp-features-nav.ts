@@ -26,6 +26,11 @@ import {
  * @param character - 0-based character offset
  *
  * @returns definition location, or null if unavailable
+ *
+ * @example
+ * ```ts
+ * const result = await requestGotoDefinition({ client: client, path: '/home/user/project/src/main.ts', line: 10, character: 5, });
+ * ```
  */
 export async function requestGotoDefinition({
   client,
@@ -97,6 +102,11 @@ export async function requestGotoDefinition({
  * @param character - 0-based character offset
  *
  * @returns array of reference locations
+ *
+ * @example
+ * ```ts
+ * const result = await requestReferences({ client: client, path: '/home/user/project/src/main.ts', line: 10, character: 5, });
+ * ```
  */
 export async function requestReferences({
   client,

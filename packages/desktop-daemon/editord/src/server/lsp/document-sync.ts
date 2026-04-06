@@ -50,6 +50,11 @@ function relevantClients(
  * Registers a file as open and notifies relevant LSP servers.
  *
  * @param path - absolute file path
+ *
+ * @example
+ * ```ts
+ * didOpen({ path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function didOpen({
   path,
@@ -101,6 +106,11 @@ export function didOpen({
  * Pushes a full-content change to relevant LSP servers and bumps the version.
  *
  * @param path - absolute file path
+ *
+ * @example
+ * ```ts
+ * didChange({ path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function didChange({
   path,
@@ -140,6 +150,11 @@ export function didChange({
  * Notifies relevant LSP servers that a file was saved.
  *
  * @param path - absolute file path
+ *
+ * @example
+ * ```ts
+ * didSave({ path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function didSave({
   path,
@@ -169,6 +184,11 @@ export function didSave({
  * Removes a file from tracking and notifies relevant LSP servers.
  *
  * @param path - absolute file path
+ *
+ * @example
+ * ```ts
+ * didClose({ path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function didClose({
   path,

@@ -29,6 +29,11 @@ let cachedInterSpW = 0;
  * @param editor - editor element whose computed font-size is used for measurement
  *
  * @returns space count multiplier (defaults to 1 if canvas is unavailable)
+ *
+ * @example
+ * ```ts
+ * const result = measureSpaceRatio({ editor: editor, });
+ * ```
  */
 export function measureSpaceRatio({ editor, }: { editor: HTMLElement; },): number {
   if (cachedRatio !== null)
@@ -78,6 +83,11 @@ export function measureSpaceRatio({ editor, }: { editor: HTMLElement; },): numbe
  * @param spaceRatio - mono-to-inter space width ratio
  *
  * @returns number of Inter spaces to insert
+ *
+ * @example
+ * ```ts
+ * const result = interSpacesForGap({ charPos: 10, rowText: 'const x = 42;', fallbackCursor: 0, spaceRatio: 0.6, });
+ * ```
  */
 export function interSpacesForGap({
   charPos,
@@ -106,6 +116,11 @@ export function interSpacesForGap({
  * Must be called after layout (e.g. in a follow-up requestAnimationFrame).
  *
  * @param editor - contenteditable container element
+ *
+ * @example
+ * ```ts
+ * measureInlayOffsets({ editor: editor, });
+ * ```
  */
 export function measureInlayOffsets({ editor, }: { editor: HTMLElement; },): void {
   for (const child of editor.children) {

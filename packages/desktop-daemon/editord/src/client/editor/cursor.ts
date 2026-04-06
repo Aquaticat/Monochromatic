@@ -18,6 +18,11 @@ import type { SelectionCoords, } from './indent.ts';
  * @param shadow - shadow root to cross the boundary
  *
  * @returns the first composed range, or null
+ *
+ * @example
+ * ```ts
+ * const range = getComposedRange({ shadow: pane.shadowRoot, });
+ * ```
  */
 export function getComposedRange(
   { shadow, }: { shadow: ShadowRoot; },
@@ -37,6 +42,11 @@ export function getComposedRange(
  * @param shadow - shadow root for composed ranges
  *
  * @returns 0-based line and character, or null
+ *
+ * @example
+ * ```ts
+ * const pos = getCursorPosition({ editor: editorEl, shadow: pane.shadowRoot, });
+ * ```
  */
 export function getCursorPosition({
   editor,
@@ -61,6 +71,11 @@ export function getCursorPosition({
  * @param shadow - shadow root for composed ranges
  *
  * @returns DOMRect of the caret, or null
+ *
+ * @example
+ * ```ts
+ * const rect = getCursorRect({ shadow: pane.shadowRoot, });
+ * ```
  */
 export function getCursorRect({ shadow, }: { shadow: ShadowRoot; },): DOMRect | null {
   const sRange = getComposedRange({ shadow, },);
@@ -86,6 +101,11 @@ export function getCursorRect({ shadow, }: { shadow: ShadowRoot; },): DOMRect | 
  * @param line - 0-based line index
  *
  * @param character - 0-based character offset
+ *
+ * @example
+ * ```ts
+ * restoreCursor({ editor: editor, line: 10, character: 5, });
+ * ```
  */
 export function restoreCursor({
   editor,
@@ -120,6 +140,11 @@ export function restoreCursor({
  * @param editor - contenteditable container element
  *
  * @param coords - selection start and end coordinates
+ *
+ * @example
+ * ```ts
+ * setSelection({ editor: editorEl, coords: { startLine: 2, startCharacter: 0, endLine: 2, endCharacter: 15 }, });
+ * ```
  */
 export function setSelection({
   editor,
@@ -159,6 +184,11 @@ export function setSelection({
  * @param shadow - shadow root for composed ranges
  *
  * @returns selection coordinates, or null
+ *
+ * @example
+ * ```ts
+ * const sel = getSelection({ editor: editorEl, shadow: pane.shadowRoot, });
+ * ```
  */
 export function getSelection({
   editor,

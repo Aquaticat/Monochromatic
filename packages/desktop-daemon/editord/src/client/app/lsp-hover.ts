@@ -40,6 +40,11 @@ const hoverLog = tagged({
  * @param referencesPopup - references popup; hover is suppressed while it is visible
  *
  * @param getCurrentFilePath - returns the currently open file path
+ *
+ * @example
+ * ```ts
+ * wireHover({ ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, });
+ * ```
  */
 export function wireHover(
   {

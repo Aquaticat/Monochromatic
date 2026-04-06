@@ -20,6 +20,11 @@ import { pathToUri, } from './uri.ts';
  * @param path - absolute file path
  *
  * @returns array of text edits to apply
+ *
+ * @example
+ * ```ts
+ * const result = await requestFormat({ client: client, path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function requestFormat({
   client,

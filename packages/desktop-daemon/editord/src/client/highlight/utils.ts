@@ -19,6 +19,11 @@ export const MAX_HIGHLIGHT_BYTES = FILE_SIZE_WARNING_THRESHOLD;
  * @param editor - contenteditable container div
  *
  * @returns array of line text strings
+ *
+ * @example
+ * ```ts
+ * const result = getLineTexts({ editor: editor, });
+ * ```
  */
 export function getLineTexts({ editor, }: { editor: HTMLDivElement; },): string[] {
   return [...editor.children,].map(function readLine(div,) {
@@ -40,6 +45,11 @@ export function getLineTexts({ editor, }: { editor: HTMLDivElement; },): string[
  * @param lineStarts - cumulative byte offset at the start of each line (sorted ascending)
  *
  * @returns zero-based line index
+ *
+ * @example
+ * ```ts
+ * const result = findLineForOffset({ offset: 42, lineStarts: [0, 25, 48, 72], });
+ * ```
  */
 export function findLineForOffset({
   offset,
@@ -68,6 +78,11 @@ export function findLineForOffset({
 
 /**
  * Removes all syntax highlighting by clearing registered highlight groups.
+ *
+ * @example
+ * ```ts
+ * clearHighlights();
+ * ```
  */
 export function clearHighlights(): void {
   for (const group of HIGHLIGHT_GROUPS)

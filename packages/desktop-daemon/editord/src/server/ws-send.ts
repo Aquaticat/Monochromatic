@@ -14,6 +14,12 @@ export type Peer = { send: (data: string,) => void; };
  * @param error - caught error value
  *
  * @returns error message string
+ *
+ * @example
+ * ```ts
+ * const result = extractErrorMessage({ error: new Error('file not found'), });
+ * // result === 'file not found'
+ * ```
  */
 export function extractErrorMessage({ error, }: { error: unknown; },): string {
   return error instanceof Error ? error.message : String(error,);
@@ -25,6 +31,11 @@ export function extractErrorMessage({ error, }: { error: unknown; },): string {
  * @param peer - WebSocket peer to send to
  *
  * @param message - message object to serialize and send
+ *
+ * @example
+ * ```ts
+ * sendJson({ peer, message: { type: 'saved', id: 'req-1', path: '/src/main.ts' }, });
+ * ```
  */
 export function sendJson(
   {

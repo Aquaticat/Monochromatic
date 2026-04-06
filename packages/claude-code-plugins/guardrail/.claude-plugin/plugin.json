@@ -1,0 +1,20 @@
+{
+  "name": "guardrail",
+  "description": "Blocks general-purpose Agent calls (redirecting to spawn-claude) and Agent resume calls (preventing polling loops).",
+  "version": "0.0.1",
+  "author": {
+    "name": "Aquaticat"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/node/index.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

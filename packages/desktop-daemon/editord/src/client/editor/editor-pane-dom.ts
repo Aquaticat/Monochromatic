@@ -13,6 +13,11 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * Creates the contenteditable editor div with a paste-to-plain-text handler.
  *
  * @returns editor div element ready to be inserted into the shadow DOM
+ *
+ * @example
+ * ```ts
+ * const result = createEditorElement();
+ * ```
  */
 export function createEditorElement(): HTMLDivElement {
   const editor = h({
@@ -48,6 +53,11 @@ export function createEditorElement(): HTMLDivElement {
  * @param editor - contenteditable container element
  *
  * @param text - full file content to render
+ *
+ * @example
+ * ```ts
+ * setTextContent({ editor: editor, text: 'const x = 42;', });
+ * ```
  */
 export function setTextContent({
   editor,
@@ -72,6 +82,11 @@ export function setTextContent({
  * @param editor - contenteditable container element
  *
  * @returns joined text content with newline separators
+ *
+ * @example
+ * ```ts
+ * const result = getTextContent({ editor: editor, });
+ * ```
  */
 export function getTextContent({ editor, }: { editor: HTMLDivElement; },): string {
   return [...editor.children,]
@@ -93,6 +108,11 @@ export function getTextContent({ editor, }: { editor: HTMLDivElement; },): strin
  * @param editor - contenteditable container element
  *
  * @param line - 1-based line number to scroll to
+ *
+ * @example
+ * ```ts
+ * scrollLineIntoView({ editor: editor, line: 10, });
+ * ```
  */
 export function scrollLineIntoView({
   editor,

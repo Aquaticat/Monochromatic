@@ -24,6 +24,11 @@ import type { GetCurrentFilePathFn, } from './types.ts';
  * @param getCurrentFilePath - returns the current file path
  *
  * @returns object with `refresh` for immediate hint fetching
+ *
+ * @example
+ * ```ts
+ * const result = wireInlayHints({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function wireInlayHints({
   ws,

@@ -34,12 +34,12 @@
       "tags": ["cleanup", "session", "housekeeping"]
     },
     {
-      "name": "agent-resume-guard",
-      "source": "./packages/claude-code-plugins/agent-resume-guard",
-      "description": "Blocks Agent resume calls to prevent polling loops on background agents.",
+      "name": "guardrail",
+      "source": "./packages/claude-code-plugins/guardrail",
+      "description": "Blocks general-purpose Agent calls (redirecting to spawn-claude) and Agent resume calls (preventing polling loops).",
       "version": "0.0.1",
       "category": "quality",
-      "tags": ["agent", "polling", "guard"]
+      "tags": ["agent", "guard", "spawn-claude", "polling"]
     },
     {
       "name": "bash-output-filter",

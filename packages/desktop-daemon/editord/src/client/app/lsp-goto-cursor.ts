@@ -44,6 +44,11 @@ const cursorLog = tagged({
  * @param editorPane - editor pane for cursor position
  *
  * @param referencesPopup - references popup for fallback display
+ *
+ * @example
+ * ```ts
+ * performGotoAtCursor({ ws: ws, getCurrentFilePath: '/home/user/project/src/main.ts', loadFileSafe: loadFileSafe, hoverPopup: hoverPopup, editorPane: editorPane, referencesPopup: referencesPopup, });
+ * ```
  */
 export function performGotoAtCursor(
   {

@@ -105,6 +105,14 @@ function applyEditsToString({
  *   (edits for this file are returned but not written to disk)
  *
  * @returns edits grouped by file path
+ *
+ * @example
+ * ```ts
+ * const fileEdits = await applyWorkspaceEdit({
+ *   workspaceEdit: { changes: { 'file:///src/utils.ts': [{ range, newText: 'renamed' }] } },
+ *   currentFilePath: '/home/user/project/src/main.ts',
+ * });
+ * ```
  */
 export async function applyWorkspaceEdit({
   workspaceEdit,

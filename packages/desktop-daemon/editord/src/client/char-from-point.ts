@@ -11,6 +11,11 @@
  * Uses a binary search with Range measurement for efficiency.
  *
  * @returns 0-based character offset
+ *
+ * @example
+ * ```ts
+ * const result = findCharAtX();
+ * ```
  */
 export function findCharAtX({
   lineDiv,

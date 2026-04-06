@@ -15,6 +15,11 @@ import { resolve, } from 'node:path';
  * @param path - absolute path to test
  *
  * @returns true when `path` equals `root` or is a descendant of it
+ *
+ * @example
+ * ```ts
+ * const result = isWithinRoot({ root: '/home/user/project', path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function isWithinRoot({
   root,

@@ -21,6 +21,11 @@ import type { ContextAction, } from './types.ts';
  * @param path - absolute directory path
  *
  * @param onAction - callback for the selected action
+ *
+ * @example
+ * ```ts
+ * showDirContextMenu({ contextMenu: contextMenu, x: 120, y: 240, path: '/home/user/project/src/main.ts', onAction: function handleAction(event) { l.info(event); }, });
+ * ```
  */
 export function showDirContextMenu({
   contextMenu,
@@ -57,6 +62,11 @@ export function showDirContextMenu({
  * @param path - absolute file path
  *
  * @param onAction - callback for the selected action
+ *
+ * @example
+ * ```ts
+ * showFileContextMenu({ contextMenu: contextMenu, x: 120, y: 240, path: '/home/user/project/src/main.ts', onAction: function handleAction(event) { l.info(event); }, });
+ * ```
  */
 export function showFileContextMenu({
   contextMenu,
@@ -89,6 +99,11 @@ export function showFileContextMenu({
  * @param onAction - callback invoked with the selected action
  *
  * @returns array of menu items for the directory context menu
+ *
+ * @example
+ * ```ts
+ * const result = buildDirContextItems({ path: '/home/user/project/src/main.ts', onAction: function handleAction(event) { l.info(event); }, });
+ * ```
  */
 export function buildDirContextItems({
   path,
@@ -166,6 +181,11 @@ export function buildDirContextItems({
  * @param onAction - callback invoked with the selected action
  *
  * @returns array of menu items for the file context menu
+ *
+ * @example
+ * ```ts
+ * const result = buildFileContextItems({ path: '/home/user/project/src/main.ts', onAction: function handleAction(event) { l.info(event); }, });
+ * ```
  */
 export function buildFileContextItems({
   path,

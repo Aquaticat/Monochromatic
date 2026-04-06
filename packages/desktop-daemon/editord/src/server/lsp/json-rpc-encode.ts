@@ -48,6 +48,11 @@ export type JsonRpcMessage = JsonRpcRequest | JsonRpcNotification | JsonRpcRespo
  * @param message - JSON-serializable message object
  *
  * @returns Buffer containing the framed message
+ *
+ * @example
+ * ```ts
+ * const result = encodeLspMessage({ message: 'Operation completed', });
+ * ```
  */
 export function encodeLspMessage({ message, }: { message: unknown; },): Buffer {
   const json = JSON.stringify(message,);

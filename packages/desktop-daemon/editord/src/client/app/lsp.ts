@@ -55,6 +55,11 @@ import type {
  * @param loadFileSafe - loads a file, optionally scrolling to a line
  *
  * @returns callbacks for formatting, completions, go-to-definition, and inlay hint refresh
+ *
+ * @example
+ * ```ts
+ * const lspBindings = wireLsp({ ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, loadFileSafe, });
+ * ```
  */
 export function wireLsp(
   {

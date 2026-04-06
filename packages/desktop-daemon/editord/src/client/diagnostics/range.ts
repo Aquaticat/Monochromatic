@@ -16,6 +16,11 @@ import type { Diagnostic, } from '../../../protocol.ts';
  * @param charOffset - 0-based character offset within the line's text
  *
  * @returns text node and offset, or null if beyond the line's length
+ *
+ * @example
+ * ```ts
+ * const result = findTextOffset({ lineDiv: lineElement, charOffset: 15, });
+ * ```
  */
 export function findTextOffset({
   lineDiv,
@@ -58,6 +63,11 @@ export function findTextOffset({
  * @param diagnostic - diagnostic with start/end line and character positions
  *
  * @returns DOM Range spanning the diagnostic text, or null if positions are out of bounds
+ *
+ * @example
+ * ```ts
+ * const result = createDiagnosticRange({ editor: editor, diagnostic: { range: { start: { line: 3, character: 0 }, end: { line: 3, character: 20 } }, severity: "error", message: "Type error", source: "tsgo" }, });
+ * ```
  */
 export function createDiagnosticRange({
   editor,

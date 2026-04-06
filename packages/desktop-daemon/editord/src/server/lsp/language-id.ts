@@ -36,6 +36,11 @@ const EXTENSION_MAP: Record<string, string> = {
  * @param path - absolute or relative file path
  *
  * @returns language ID string, or "plaintext" for unrecognized extensions
+ *
+ * @example
+ * ```ts
+ * const result = getLanguageId({ path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function getLanguageId({ path, }: { path: string; },): string {
   const ext = extname(path,).toLowerCase();

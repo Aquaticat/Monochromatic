@@ -16,6 +16,11 @@ import type { CompletionItem, } from '../../../protocol.ts';
  * @param items - completion items to render
  *
  * @returns array of item div elements
+ *
+ * @example
+ * ```ts
+ * const result = renderItems({ items: [{ label: "useState", detail: "function" }], });
+ * ```
  */
 export function renderItems({ items, }: { items: CompletionItem[]; },): HTMLDivElement[] {
   return items.map(function createItemElement(
@@ -46,6 +51,11 @@ export function renderItems({ items, }: { items: CompletionItem[]; },): HTMLDivE
  * @param list - container element with item children
  *
  * @param selectedIndex - index of the item to select
+ *
+ * @example
+ * ```ts
+ * updateSelection({ list: [], selectedIndex: 0, });
+ * ```
  */
 export function updateSelection(
   {

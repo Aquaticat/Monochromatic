@@ -82,6 +82,11 @@ function handlePopupNav({
  * the browser to insert a newline.
  *
  * @returns true if the event was consumed, false otherwise
+ *
+ * @example
+ * ```ts
+ * const result = handleCompletionNav();
+ * ```
  */
 export function handleCompletionNav({
   event,
@@ -134,6 +139,11 @@ export function handleCompletionNav({
  * Handles arrow/enter/escape keys when references popup is visible.
  *
  * @returns true if the event was consumed, false otherwise
+ *
+ * @example
+ * ```ts
+ * const result = handleReferencesNav();
+ * ```
  */
 export function handleReferencesNav({
   event,

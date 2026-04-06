@@ -24,6 +24,11 @@ import { spawnDetached, } from './spawn-detached.ts';
  * @param path - directory path to open in a terminal
  *
  * @throws when the path escapes root or no terminal emulator is found
+ *
+ * @example
+ * ```ts
+ * await openInTerminal({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function openInTerminal(
   {
@@ -80,6 +85,11 @@ export async function openInTerminal(
  * @param path - file path to open
  *
  * @throws when the path escapes root or the open command fails
+ *
+ * @example
+ * ```ts
+ * await openInDefaultApp({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function openInDefaultApp(
   {

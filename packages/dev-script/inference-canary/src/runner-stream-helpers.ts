@@ -133,6 +133,12 @@ export function parseUsage(
  * @param finishReason - stop reason from the final chunk
  *
  * @returns assembled completion result
+ *
+ * @example
+ * ```ts
+ * const result = buildResult(chunks, reasoningChunks, timing, usage, 'stop');
+ * result.text; // joined content chunks
+ * ```
  */
 export function buildResult(
   chunks: readonly string[],

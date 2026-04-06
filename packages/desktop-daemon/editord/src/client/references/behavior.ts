@@ -13,6 +13,11 @@ import type { ReferenceLocation, } from './types.ts';
  * Creates the invisible anchor div used for CSS anchor positioning.
  *
  * @returns fixed-position anchor div
+ *
+ * @example
+ * ```ts
+ * const result = createReferenceAnchor();
+ * ```
  */
 export function createReferenceAnchor(): HTMLDivElement {
   const anchor = document.createElement('div',);
@@ -49,6 +54,11 @@ export function createReferenceAnchor(): HTMLDivElement {
  * @param y - top of the editor cursor (pixels)
  *
  * @param cursorHeight - height of the editor cursor (pixels)
+ *
+ * @example
+ * ```ts
+ * positionAnchor({ anchor: anchorElement, x: 120, y: 240, cursorHeight: 20, });
+ * ```
  */
 export function positionAnchor({
   anchor,
@@ -81,6 +91,11 @@ export function positionAnchor({
  * @param locations - reference locations to render
  *
  * @returns array of item div elements
+ *
+ * @example
+ * ```ts
+ * const result = renderReferenceItems({ locations: [{ path: "/src/app.ts", line: 10, character: 5 }], });
+ * ```
  */
 export function renderReferenceItems(
   { locations, }: { locations: ReferenceLocation[]; },
@@ -118,6 +133,11 @@ export function renderReferenceItems(
  * @param list - list container div
  *
  * @param selectedIndex - index of the newly selected item
+ *
+ * @example
+ * ```ts
+ * updateItemSelection({ list: [], selectedIndex: 0, });
+ * ```
  */
 export function updateItemSelection({
   list,
@@ -149,6 +169,11 @@ export function updateItemSelection({
  * @param direction - navigation direction
  *
  * @returns new selected index (wraps around)
+ *
+ * @example
+ * ```ts
+ * const result = computeNextIndex({ current: 0, total: 0, direction: 'next', });
+ * ```
  */
 export function computeNextIndex({
   current,

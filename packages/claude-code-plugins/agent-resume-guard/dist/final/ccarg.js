@@ -1,3 +1,0 @@
-#!/usr/bin/env bun
-// @bun
-async function s(){let e=[],d=new TextDecoder;for await(let r of Bun.stdin.stream())e.push(d.decode(r,{stream:!0}));return e.push(d.decode()),e.join("")}function n(e){process.stdout.write(JSON.stringify(e))}var t=await s(),o=JSON.parse(t);if(o.tool_name!=="Agent")n({});else{let e=o.tool_input;if(e.resume!==null&&e.resume!==void 0){let d={hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:[`Blocked: Agent resume call (agent ID: ${e.resume}).`,"Background agents notify automatically on completion.","Do not poll or resume running agents -- wait for the notification.","If you need the result now, use TaskOutput to check the agent's status."].join(" ")}};n(d)}else n({})}

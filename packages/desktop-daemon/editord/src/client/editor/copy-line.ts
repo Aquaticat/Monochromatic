@@ -15,6 +15,11 @@
  * @param composedRange - composed range from shadow DOM selection
  *
  * @returns true if the line was copied (selection was collapsed)
+ *
+ * @example
+ * ```ts
+ * const result = selectAndCopyLine({ editor: editor, line: 10, composedRange: range, });
+ * ```
  */
 export function selectAndCopyLine({
   editor,

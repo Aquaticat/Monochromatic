@@ -23,6 +23,11 @@ export type FlatRange = {
  * @param root - top of the nested chain returned by the server
  *
  * @returns flat array where index 0 is the innermost range
+ *
+ * @example
+ * ```ts
+ * const result = flattenChain({ root: '/home/user/project', });
+ * ```
  */
 export function flattenChain({ root, }: { root: SelectionRange; },): SelectionRange[] {
   const result: SelectionRange[] = [];
@@ -43,6 +48,11 @@ export function flattenChain({ root, }: { root: SelectionRange; },): SelectionRa
  * @param inner - candidate smaller range
  *
  * @returns true if outer strictly contains inner
+ *
+ * @example
+ * ```ts
+ * const result = strictlyContains({ outer: { start: { line: 0, character: 0 }, end: { line: 10, character: 0 } }, inner: { start: { line: 2, character: 5 }, end: { line: 2, character: 15 } }, });
+ * ```
  */
 export function strictlyContains(
   {
@@ -79,6 +89,11 @@ export function strictlyContains(
  * @param sr - selection range from the chain
  *
  * @returns flat range coordinates
+ *
+ * @example
+ * ```ts
+ * const result = toFlat({ sr: selectionRange, });
+ * ```
  */
 export function toFlat({ sr, }: { sr: SelectionRange; },): FlatRange {
   return {

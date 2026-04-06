@@ -19,6 +19,11 @@ import { spawn, } from 'node:child_process';
  * @param cwd - working directory for the spawned process
  *
  * @throws when the process fails to spawn
+ *
+ * @example
+ * ```ts
+ * await spawnDetached({ command: 'xdg-open', args: ['/home/user/project'], cwd: '/home/user/project', });
+ * ```
  */
 export function spawnDetached(
   {

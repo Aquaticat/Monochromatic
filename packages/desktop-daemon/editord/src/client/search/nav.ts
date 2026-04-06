@@ -24,6 +24,11 @@ export type ResultSelectDetail = {
  * @param moveSelection - moves the selection by the given delta
  *
  * @param confirmSelection - confirms the current selection
+ *
+ * @example
+ * ```ts
+ * handleSearchKeydown({ event: keyboardEvent, moveSelection: moveSelection, confirmSelection: confirmSelection, });
+ * ```
  */
 export function handleSearchKeydown({
   event,
@@ -60,6 +65,11 @@ export function handleSearchKeydown({
  * @param container - results container element
  *
  * @returns new selected index
+ *
+ * @example
+ * ```ts
+ * const result = moveSearchSelection({ delta: 1, results: [], selectedIndex: 0, container: resultsContainer, });
+ * ```
  */
 export function moveSearchSelection({
   delta,
@@ -103,6 +113,11 @@ export function moveSearchSelection({
  * @param results - current search results array
  *
  * @returns result detail, or null if index is out of range
+ *
+ * @example
+ * ```ts
+ * const result = buildResultDetail({ index: 0, results: [], });
+ * ```
  */
 export function buildResultDetail({
   index,

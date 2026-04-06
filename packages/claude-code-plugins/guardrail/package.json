@@ -1,16 +1,16 @@
 {
   "license": "LGPL-3.0-or-later",
-  "name": "@monochromatic-dev/claude-code-plugins-agent-resume-guard",
-  "description": "Claude Code PreToolUse hook that blocks Agent resume calls, preventing polling loops on background agents.",
+  "name": "@monochromatic-dev/claude-code-plugins-guardrail",
+  "description": "Claude Code PreToolUse hook that blocks general-purpose Agent calls (redirecting to spawn-claude) and Agent resume calls (preventing polling loops).",
   "type": "module",
   "bin": {
-    "ccarg": "./dist/final/node/index.mjs"
+    "ccgr": "./dist/final/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/claude-code-plugins/agent-resume-guard"
+    "directory": "packages/claude-code-plugins/guardrail"
   },
   "sideEffects": true,
   "dependencies": {

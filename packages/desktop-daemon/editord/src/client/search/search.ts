@@ -38,6 +38,11 @@ export type SearchState = {
  * @param execute - callback to execute the search
  *
  * @returns debounced handle
+ *
+ * @example
+ * ```ts
+ * const result = createSearchDebounce({ execute: function handleExecute() { l.info("done"); }, });
+ * ```
  */
 export function createSearchDebounce(
   { execute, }: { execute: () => void; },
@@ -54,6 +59,11 @@ export function createSearchDebounce(
  * @param state - mutable search state
  *
  * @param execute - callback to execute the search
+ *
+ * @example
+ * ```ts
+ * scheduleSearch({ state: sessionState, execute: function handleExecute() { l.info("done"); }, });
+ * ```
  */
 export function scheduleSearch({
   state,
@@ -76,6 +86,11 @@ export function scheduleSearch({
  * @param onSearch - callback that performs the actual search
  *
  * @param onResults - callback to render results
+ *
+ * @example
+ * ```ts
+ * await performSearch({ raw: "TODO", state: sessionState, onSearch: function handleSearch(event) { l.info(event); }, onResults: function handleResults(event) { l.info(event); }, });
+ * ```
  */
 export async function performSearch({
   raw,

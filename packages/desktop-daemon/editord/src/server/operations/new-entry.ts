@@ -25,6 +25,11 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  * @param isDirectory - whether to create a directory (true) or empty file (false)
  *
  * @throws when the path escapes root, name contains a separator, or the operation fails
+ *
+ * @example
+ * ```ts
+ * await newEntry({ rootDir: '/home/user/project', parentPath: 'src', name: 'utils.ts', isDirectory: false, });
+ * ```
  */
 export async function newEntry({
   rootDir,

@@ -153,6 +153,11 @@ export class TreeDirEntry extends HTMLElement {
  * @param name - display name
  *
  * @returns configured element (renders on DOM insertion)
+ *
+ * @example
+ * ```ts
+ * const result = createTreeDirEntry({ path: '/home/user/project/src/main.ts', name: 'main.ts', });
+ * ```
  */
 export function createTreeDirEntry(
   {

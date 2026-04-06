@@ -105,6 +105,11 @@ function sendFsActionDone({
  * @param lspManager - LSP server coordinator for file lock retry
  *
  * @returns true if the message was handled, false if not an FS action type
+ *
+ * @example
+ * ```ts
+ * const handled = await dispatchFsMessage({ peer, parsed: { type: 'fsAction', id: '1', action: 'newFile', path: 'src', name: 'utils.ts' }, rootDir: '/home/user/project', lspManager, });
+ * ```
  */
 export async function dispatchFsMessage({
   peer,

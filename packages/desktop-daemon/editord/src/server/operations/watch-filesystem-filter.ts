@@ -21,6 +21,11 @@ const IGNORED_PATTERN = /\.swp$|~$|^\.#|^#.*#$|^4913$/;
  * @param name - entry name (not full path)
  *
  * @returns true when the name matches a known noise source
+ *
+ * @example
+ * ```ts
+ * const result = isIgnored({ name: 'utils.ts', });
+ * ```
  */
 export function isIgnored({ name, }: { name: string; },): boolean {
   return IGNORED_NAMES.has(name,) || IGNORED_PATTERN.test(name,);

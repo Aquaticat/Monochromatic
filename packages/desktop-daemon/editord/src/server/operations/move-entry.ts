@@ -19,6 +19,11 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  * @param destPath - destination path to move to
  *
  * @throws when either path escapes root or the move fails
+ *
+ * @example
+ * ```ts
+ * await moveEntry({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', destPath: '/home/user/project/src/renamed.ts', });
+ * ```
  */
 export async function moveEntry(
   {

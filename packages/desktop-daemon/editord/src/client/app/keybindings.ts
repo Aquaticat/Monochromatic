@@ -24,6 +24,11 @@ import {
 /**
  * Installs global keyboard shortcuts.
  * See {@link KeybindingDeps} for parameter documentation.
+ *
+ * @example
+ * ```ts
+ * wireKeybindings();
+ * ```
  */
 export function wireKeybindings({
   saveCurrentFile,

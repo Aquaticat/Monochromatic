@@ -38,6 +38,11 @@ export {
  * @param character - 0-based character offset
  *
  * @returns hover result, or null if unavailable
+ *
+ * @example
+ * ```ts
+ * const result = await requestHover({ client: client, path: '/home/user/project/src/main.ts', line: 10, character: 5, });
+ * ```
  */
 export async function requestHover({
   client,
@@ -79,6 +84,11 @@ export async function requestHover({
  * @param character - 0-based character offset
  *
  * @returns array of completion items
+ *
+ * @example
+ * ```ts
+ * const result = await requestCompletion({ client: client, path: '/home/user/project/src/main.ts', line: 10, character: 5, });
+ * ```
  */
 export async function requestCompletion({
   client,

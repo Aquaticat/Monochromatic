@@ -26,6 +26,11 @@ const SEVERITY_LEVELS = [
  * @param editor - contenteditable container element
  *
  * @param diagnostics - array of diagnostics to render
+ *
+ * @example
+ * ```ts
+ * applyDiagnosticHighlights({ editor: editor, diagnostics: [], });
+ * ```
  */
 export function applyDiagnosticHighlights({
   editor,
@@ -73,6 +78,11 @@ export function applyDiagnosticHighlights({
 
 /**
  * Clears all diagnostic highlights from the CSS Custom Highlight API.
+ *
+ * @example
+ * ```ts
+ * clearDiagnosticHighlights();
+ * ```
  */
 export function clearDiagnosticHighlights(): void {
   for (const level of SEVERITY_LEVELS)

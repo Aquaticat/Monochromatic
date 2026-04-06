@@ -23,6 +23,11 @@ const l = tagged({
  * @param ws - WebSocket connection
  *
  * @param onConnected - callback with rootDir and fsId on success
+ *
+ * @example
+ * ```ts
+ * performHandshake({ ws: ws, onConnected: function handleConnected(event) { l.info(event); }, });
+ * ```
  */
 export function performHandshake({
   ws,

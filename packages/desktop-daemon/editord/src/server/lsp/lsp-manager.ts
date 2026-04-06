@@ -132,6 +132,15 @@ export type LspManager = {
  * @param l - parent logger
  *
  * @returns LSP manager instance
+ *
+ * @example
+ * ```ts
+ * const manager = createLspManager({
+ *   ceiling: '/home/user/project',
+ *   onDiagnostics: function handleDiagnostics({ path, diagnostics }) { updateUI(path, diagnostics); },
+ *   l: rootLogger,
+ * });
+ * ```
  */
 export function createLspManager({
   ceiling,

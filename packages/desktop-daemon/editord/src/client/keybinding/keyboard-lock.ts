@@ -51,6 +51,11 @@ const LOCKED_KEY_CODES = [
 /**
  * Requests keyboard lock for the configured key codes.
  * Silently succeeds when the Keyboard Lock API is unavailable.
+ *
+ * @example
+ * ```ts
+ * await lockKeyboard();
+ * ```
  */
 export async function lockKeyboard(): Promise<void> {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- type augmentation for Keyboard Lock API not in lib.dom.d.ts
@@ -74,6 +79,11 @@ export async function lockKeyboard(): Promise<void> {
  *
  * Must be called from a user gesture (click, keydown) to satisfy
  * the browser's transient activation requirement.
+ *
+ * @example
+ * ```ts
+ * await enterFullscreenAndLock();
+ * ```
  */
 export async function enterFullscreenAndLock(): Promise<void> {
   try {

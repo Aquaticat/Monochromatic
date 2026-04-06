@@ -62,6 +62,11 @@ function storageKey({
  * @param rootDir - root directory path from the server
  *
  * @param state - UI state to persist
+ *
+ * @example
+ * ```ts
+ * saveSessionState({ fsId: 'dev-sda1', rootDir: '/home/user/project', state: sessionState, });
+ * ```
  */
 export function saveSessionState({
   fsId,
@@ -95,6 +100,11 @@ export function saveSessionState({
  * @param rootDir - root directory path from the server
  *
  * @returns saved state, or null if none exists or parsing fails
+ *
+ * @example
+ * ```ts
+ * const result = restoreSessionState({ fsId: 'dev-sda1', rootDir: '/home/user/project', });
+ * ```
  */
 export function restoreSessionState({
   fsId,

@@ -47,6 +47,11 @@ export type RecentFiles = {
  * Creates a recent files tracker with push-to-front semantics.
  *
  * @returns tracker with mutable paths array and push function
+ *
+ * @example
+ * ```ts
+ * const result = createRecentFiles();
+ * ```
  */
 export function createRecentFiles(): RecentFiles {
   /** Backing array for the ordered recent list. */

@@ -26,6 +26,11 @@ import type { EditorPosition, } from './position.ts';
  * @param y - vertical mouse coordinate (client pixels)
  *
  * @returns text position, or null if the coordinates are outside text
+ *
+ * @example
+ * ```ts
+ * const result = getPositionFromPoint({ editor: editor, x: 120, y: 240, });
+ * ```
  */
 export function getPositionFromPoint({
   editor,

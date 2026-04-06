@@ -30,6 +30,11 @@ import type { GetCurrentFilePathFn, } from './types.ts';
  * @param getCurrentFilePath - returns the current file path
  *
  * @returns expand and shrink callbacks
+ *
+ * @example
+ * ```ts
+ * const result = wireSelectionRange({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function wireSelectionRange({
   ws,

@@ -44,6 +44,11 @@ export type IndentResult = {
  * @param selection - non-collapsed selection, or null for single cursor
  *
  * @returns adjusted cursor/selection coordinates
+ *
+ * @example
+ * ```ts
+ * const result = indentLines({ editor: editor, cursorLine: 0, cursorCharacter: 8, selection: { startLine: 2, startCharacter: 0, endLine: 2, endCharacter: 15 }, });
+ * ```
  */
 export function indentLines({
   editor,
@@ -110,6 +115,11 @@ export function indentLines({
  * @param selection - non-collapsed selection, or null for single cursor
  *
  * @returns adjusted cursor/selection coordinates
+ *
+ * @example
+ * ```ts
+ * const result = unindentLines({ editor: editor, cursorLine: 0, cursorCharacter: 8, selection: { startLine: 2, startCharacter: 0, endLine: 2, endCharacter: 15 }, });
+ * ```
  */
 export function unindentLines({
   editor,

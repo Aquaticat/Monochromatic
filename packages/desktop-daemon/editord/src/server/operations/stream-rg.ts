@@ -27,6 +27,16 @@ import type { SearchResult, } from '../../protocol.ts';
  * @returns collected search results
  *
  * @throws when `rg` cannot be spawned
+ *
+ * @example
+ * ```ts
+ * const results = await streamRg({
+ *   args: ['--json', 'TODO', 'src/'],
+ *   maxResults: 100,
+ *   processLine: function parseLine(line) { return JSON.parse(line); },
+ *   signal: controller.signal,
+ * });
+ * ```
  */
 export function streamRg({
   args,

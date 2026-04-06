@@ -36,6 +36,11 @@ const FULLSCREEN_ICON_SVG =
  * fullscreen is active, and reappears when fullscreen is exited.
  *
  * @param appElement - root app container to append the FAB to
+ *
+ * @example
+ * ```ts
+ * wireFullscreen({ appElement: appRoot, });
+ * ```
  */
 export function wireFullscreen({ appElement, }: { appElement: HTMLElement; },): void {
   const fab = document.createElement('button',);

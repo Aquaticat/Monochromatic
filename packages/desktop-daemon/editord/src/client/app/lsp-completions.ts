@@ -30,6 +30,11 @@ const completionLog = tagged({
  * @param editorPane - editor pane component for cursor position
  *
  * @param getCurrentFilePath - returns the currently open file path
+ *
+ * @example
+ * ```ts
+ * await requestCompletions({ ws: ws, completionPopup: completionPopup, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function requestCompletions(
   {
@@ -88,6 +93,11 @@ export async function requestCompletions(
  * @param editorPane - editor pane to listen for keydown events
  *
  * @param triggerCompletions - callback to invoke when dot is typed
+ *
+ * @example
+ * ```ts
+ * wireCompletionTrigger({ editorPane, triggerCompletions: triggerCompletionsFn, });
+ * ```
  */
 export function wireCompletionTrigger({
   editorPane,

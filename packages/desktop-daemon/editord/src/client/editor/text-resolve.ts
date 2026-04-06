@@ -20,6 +20,11 @@ export const INDENT_UNIT = '  ';
  * @param character - 0-based character offset within the line
  *
  * @returns text node and offset, or null if not resolvable
+ *
+ * @example
+ * ```ts
+ * const result = resolveTextPosition({ editor: editor, lineIndex: 0, character: 5, });
+ * ```
  */
 export function resolveTextPosition({
   editor,
@@ -77,6 +82,11 @@ export function resolveTextPosition({
  * @param offset - offset within the container node
  *
  * @returns 0-based line and character, or null
+ *
+ * @example
+ * ```ts
+ * const result = resolveLineCharacter({ editor: editor, container: dirElement, offset: 42, });
+ * ```
  */
 export function resolveLineCharacter({
   editor,

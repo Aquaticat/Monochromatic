@@ -30,6 +30,11 @@ type ListDirResult = {
  * @returns resolved path and directory entries
  *
  * @throws when the path escapes root or the directory cannot be read
+ *
+ * @example
+ * ```ts
+ * const result = await listDir({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function listDir(
   {

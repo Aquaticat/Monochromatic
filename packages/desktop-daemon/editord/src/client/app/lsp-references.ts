@@ -40,6 +40,11 @@ const refLog = tagged({
  * @param character - 0-based character offset
  *
  * @param rect - cursor bounding rect for popup positioning
+ *
+ * @example
+ * ```ts
+ * await showReferences({ ws: ws, referencesPopup: referencesPopup, getCurrentFilePath: '/home/user/project/src/main.ts', line: 10, character: 5, rect: cursorRect, });
+ * ```
  */
 export async function showReferences(
   {

@@ -13,6 +13,11 @@
  * @param initializationOptions - additional server-specific initialization options
  *
  * @returns params suitable for a JSON-RPC initialize request
+ *
+ * @example
+ * ```ts
+ * const result = buildInitializeParams({ rootUri: 'file:///home/user/project', initializationOptions: {}, });
+ * ```
  */
 export function buildInitializeParams({
   rootUri,

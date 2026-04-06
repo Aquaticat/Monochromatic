@@ -19,6 +19,11 @@ import { rootFromPoolKey, } from './lsp-pool-config.ts';
  * @param path - absolute file or directory path
  *
  * @param l - logger for error reporting
+ *
+ * @example
+ * ```ts
+ * await shutdownPoolForPath({ pool, path: '/home/user/project/src/utils.ts', l: logger, });
+ * ```
  */
 export async function shutdownPoolForPath({
   pool,
@@ -75,6 +80,11 @@ export async function shutdownPoolForPath({
  * Gracefully shuts down all pooled LSP servers (fire-and-forget).
  *
  * @param pool - the pool map to shut down
+ *
+ * @example
+ * ```ts
+ * shutdownAllPooled({ pool: new Map(), });
+ * ```
  */
 export function shutdownAllPooled({
   pool,

@@ -32,6 +32,17 @@ export type PendingLspRequest = {
  * @param send - writes a message to the child process stdin
  *
  * @param onNotification - callback for server-initiated notifications
+ *
+ * @example
+ * ```ts
+ * routeJsonRpcMessage({
+ *   message: { id: 1, result: { contents: 'hover text' } },
+ *   pending,
+ *   name: 'tsgo',
+ *   send: function writeTo(msg) { child.stdin.write(JSON.stringify(msg)); },
+ *   onNotification: function handleNotif({ method, params }) { l.info(method); },
+ * });
+ * ```
  */
 export function routeJsonRpcMessage({
   message,

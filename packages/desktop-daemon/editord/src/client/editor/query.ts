@@ -29,6 +29,11 @@ import type {
  * @param editor - the contenteditable container element
  *
  * @returns document range from (0,0) to end-of-file
+ *
+ * @example
+ * ```ts
+ * const result = computeDocumentRange({ editor: editor, });
+ * ```
  */
 export function computeDocumentRange({ editor, }: { editor: HTMLDivElement; },): Range {
   const lastLineIndex = Math.max(
@@ -72,6 +77,11 @@ export function computeDocumentRange({ editor, }: { editor: HTMLDivElement; },):
  * @param b - second diagnostic array
  *
  * @returns whether the arrays are structurally equal
+ *
+ * @example
+ * ```ts
+ * const result = diagnosticsEqual({ a: [], b: [], });
+ * ```
  */
 export function diagnosticsEqual(
   a: Diagnostic[],
@@ -107,6 +117,11 @@ export function diagnosticsEqual(
  * @param b - second inlay hint array
  *
  * @returns whether the arrays are structurally equal
+ *
+ * @example
+ * ```ts
+ * const result = hintsEqual({ a: [], b: [], });
+ * ```
  */
 export function hintsEqual(
   a: InlayHint[],

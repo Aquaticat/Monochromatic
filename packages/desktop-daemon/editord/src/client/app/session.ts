@@ -29,6 +29,11 @@ export { wireSessionPersistence, } from '../session/persistence.ts';
  * @param queryFilePath - file path from URL query param (takes precedence)
  *
  * @returns boot file path (or null) and saved recent files list
+ *
+ * @example
+ * ```ts
+ * const result = await restoreSession({ ws: ws, editorPane: editorPane, fileTree: fileTree, loadFileSafe: function handleLoadFileSafe() { l.info("done"); }, queryFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function restoreSession(
   {

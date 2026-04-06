@@ -49,6 +49,11 @@ export const peerSearchControllers = new WeakMap<object, AbortController>();
  * @param lspManager - LSP server coordinator
  *
  * @param dirWatcher - filesystem watcher for save suppression and dir registration
+ *
+ * @example
+ * ```ts
+ * await dispatchMessage({ peer, messageText: '{"type":"open","id":"1","path":"src/app.ts"}', rootDir: '/home/user/project', lspManager, dirWatcher, });
+ * ```
  */
 export async function dispatchMessage(
   {

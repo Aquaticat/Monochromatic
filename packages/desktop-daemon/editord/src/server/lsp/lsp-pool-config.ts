@@ -28,6 +28,12 @@ export const POOL_KEY_SEPARATOR = ':';
  * @param root - project root directory
  *
  * @returns composite key for the pool Map
+ *
+ * @example
+ * ```ts
+ * const key = buildPoolKey({ type: 'tsgo', root: '/home/user/project', });
+ * // key === 'tsgo:/home/user/project'
+ * ```
  */
 export function buildPoolKey({
   type,
@@ -45,6 +51,12 @@ export function buildPoolKey({
  * @param key - pool key in `"type:root"` format
  *
  * @returns root portion of the key
+ *
+ * @example
+ * ```ts
+ * const root = rootFromPoolKey({ key: 'tsgo:/home/user/project', });
+ * // root === '/home/user/project'
+ * ```
  */
 export function rootFromPoolKey({ key, }: { key: string; },): string {
   const colonIndex = key.indexOf(POOL_KEY_SEPARATOR,);
@@ -112,6 +124,17 @@ const COMMANDS: Record<ServerType, {
  * @param onExit - callback when the child process exits (unexpected crashes or graceful shutdown)
  *
  * @returns initialized client, or null if spawn/init fails
+ *
+ * @example
+ * ```ts
+ * const client = await spawnLspClient({
+ *   type: 'tsgo',
+ *   root: '/home/user/project',
+ *   l: logger,
+ *   onNotification: function handleNotification({ source, method, params }) { l.info(method); },
+ *   onExit: function handleExit({ unexpected, code }) { l.warn(`exited: ${code}`); },
+ * });
+ * ```
  */
 export async function spawnLspClient({
   type,

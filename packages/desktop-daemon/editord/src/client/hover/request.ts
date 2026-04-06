@@ -33,6 +33,11 @@ const hoverLog = tagged({
  * @param x - mouse X coordinate for popup positioning
  *
  * @param y - mouse Y coordinate for popup positioning
+ *
+ * @example
+ * ```ts
+ * await doRequestHover({ ws: ws, hoverPopup: hoverPopup, path: '/home/user/project/src/main.ts', line: 10, character: 5, x: 120, y: 240, });
+ * ```
  */
 export async function doRequestHover({
   ws,

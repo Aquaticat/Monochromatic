@@ -52,6 +52,11 @@ function appendMediaInfo(
  * @param url - source URL for the image
  *
  * @param mediaInfo - optional ffprobe metadata to display below the image
+ *
+ * @example
+ * ```ts
+ * showImage({ shadow: pane.shadowRoot, host: hostElement, clear: clearFn, url: '/_raw?token=tok\&path=/src/image.png', mediaInfo: { mime: "image/png", width: 800, height: 600 }, });
+ * ```
  */
 export function showImage({
   shadow,
@@ -87,6 +92,11 @@ export function showImage({
  * @param url - source URL for the audio file
  *
  * @param mediaInfo - optional ffprobe metadata to display below the player
+ *
+ * @example
+ * ```ts
+ * showAudio({ shadow: pane.shadowRoot, host: hostElement, clear: clearFn, url: '/_raw?token=tok\&path=/src/track.mp3', mediaInfo: 'audio/mpeg, 3:42', });
+ * ```
  */
 export function showAudio({
   shadow,
@@ -122,6 +132,11 @@ export function showAudio({
  * @param url - source URL for the video file
  *
  * @param mediaInfo - optional ffprobe metadata to display below the player
+ *
+ * @example
+ * ```ts
+ * showVideo({ shadow: pane.shadowRoot, host: hostElement, clear: clearFn, url: '/_raw?token=tok\&path=/src/clip.mp4', mediaInfo: 'video/mp4, 1920x1080', });
+ * ```
  */
 export function showVideo({
   shadow,

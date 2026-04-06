@@ -18,6 +18,11 @@ import type { EditorWsClient, } from '../ws/client.ts';
  * @param ws - WebSocket client for sending requests
  *
  * @throws when the server rejects the operation
+ *
+ * @example
+ * ```ts
+ * await dispatchFsAction({ action: 'newFile', ws: ws, });
+ * ```
  */
 export async function dispatchFsAction({
   action,

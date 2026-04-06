@@ -25,6 +25,15 @@ import { pathToUri, } from './uri.ts';
  * @param range - range to request hints for
  *
  * @returns array of inlay hints
+ *
+ * @example
+ * ```ts
+ * const hints = await requestInlayHints({
+ *   client,
+ *   path: '/home/user/project/src/main.ts',
+ *   range: { start: { line: 0, character: 0 }, end: { line: 50, character: 0 } },
+ * });
+ * ```
  */
 export async function requestInlayHints({
   client,
@@ -73,6 +82,15 @@ export async function requestInlayHints({
  * @param positions - cursor positions to compute selection ranges for
  *
  * @returns array of selection ranges (one per input position), or empty if unavailable
+ *
+ * @example
+ * ```ts
+ * const ranges = await requestSelectionRange({
+ *   client,
+ *   path: '/home/user/project/src/main.ts',
+ *   positions: [{ line: 10, character: 5 }],
+ * });
+ * ```
  */
 export async function requestSelectionRange({
   client,

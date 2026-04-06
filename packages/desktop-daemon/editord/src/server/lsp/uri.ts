@@ -37,6 +37,11 @@ export function pathToUri({ path, }: { path: string; },): string {
  * @param uri - URI string, typically from an LSP Location or diagnostic
  *
  * @returns absolute file-system path (for `file://` URIs) or the original string
+ *
+ * @example
+ * ```ts
+ * const result = uriToPath({ uri: 'file:///home/user/project/src/main.ts', });
+ * ```
  */
 export function uriToPath({ uri, }: { uri: string; },): string {
   return uri.startsWith('file://',) ? fileURLToPath(uri,) : uri;

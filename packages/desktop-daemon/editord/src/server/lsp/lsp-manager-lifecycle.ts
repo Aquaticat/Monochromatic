@@ -47,6 +47,11 @@ function isTracked({
  * @param path - absolute file path
  *
  * @param text - initial file content
+ *
+ * @example
+ * ```ts
+ * await managerDidOpen({ pool, documents, path: '/home/user/project/src/main.ts', text: 'const x = 42;', });
+ * ```
  */
 export async function managerDidOpen({
   pool,
@@ -77,6 +82,11 @@ export async function managerDidOpen({
  * @param path - absolute file path
  *
  * @param text - updated file content
+ *
+ * @example
+ * ```ts
+ * await managerDidChange({ pool, documents, path: '/home/user/project/src/main.ts', text: 'const y = 99;', });
+ * ```
  */
 export async function managerDidChange({
   pool,
@@ -107,6 +117,11 @@ export async function managerDidChange({
  * @param documents - open document state map
  *
  * @param path - absolute file path
+ *
+ * @example
+ * ```ts
+ * await managerDidSave({ pool, documents, path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function managerDidSave({
   pool,
@@ -136,6 +151,11 @@ export async function managerDidSave({
  * @param diagnostics - diagnostic store to clear
  *
  * @param path - absolute file path
+ *
+ * @example
+ * ```ts
+ * await managerDidClose({ pool, documents, diagnostics: diagnosticStore, path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function managerDidClose({
   pool,
@@ -167,6 +187,16 @@ export async function managerDidClose({
  * @param method - LSP notification method name
  *
  * @param params - notification parameters
+ *
+ * @example
+ * ```ts
+ * routeNotification({
+ *   diagnostics: diagnosticStore,
+ *   source: 'tsgo',
+ *   method: 'textDocument/publishDiagnostics',
+ *   params: { uri: 'file:///src/main.ts', diagnostics: [] },
+ * });
+ * ```
  */
 export function routeNotification({
   diagnostics,

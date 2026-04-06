@@ -30,6 +30,11 @@ import { getContentType, } from './operations/file-kind.ts';
  * @param authToken - authentication token for raw file access
  *
  * @param rootDir - root directory for path containment checks
+ *
+ * @example
+ * ```ts
+ * registerRoutes({ app, packageRoot: '/opt/editord', authToken: 'tok_abc123', rootDir: '/home/user/project', });
+ * ```
  */
 export function registerRoutes({
   app,

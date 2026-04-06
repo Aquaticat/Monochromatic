@@ -33,6 +33,11 @@ import type { FileTreeState, } from './state.ts';
  * @param loadedDirs - set of directories whose contents have been loaded
  *
  * @returns container element, or null if not found or not loaded
+ *
+ * @example
+ * ```ts
+ * const result = resolveRefreshContainer({ tree: treeElement, path: '/home/user/project/src/main.ts', rootPath: '/home/user/project', loadedDirs: loadedDirs, });
+ * ```
  */
 export function resolveRefreshContainer({
   tree,
@@ -74,6 +79,11 @@ export function resolveRefreshContainer({
  * @param rootPath - absolute root directory path
  *
  * @param state - tree's internal state
+ *
+ * @example
+ * ```ts
+ * await performRefreshDir({ tree: treeElement, path: '/home/user/project/src', rootPath: '/home/user/project', state: treeState, });
+ * ```
  */
 export async function performRefreshDir({
   tree,
@@ -129,6 +139,11 @@ export async function performRefreshDir({
  * @param recentPaths - current recent file paths for recency markers
  *
  * @param preloadFn - preloads subdirectory children
+ *
+ * @example
+ * ```ts
+ * await refreshDirContents({ container: dirElement, path: '/home/user/project/src/main.ts', fetchDir: function handleFetchDir() { l.info("done"); }, recentPaths: '/home/user/project/src/main.ts', preloadFn: preloadChildren, });
+ * ```
  */
 export async function refreshDirContents(
   {

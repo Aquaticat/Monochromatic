@@ -41,6 +41,11 @@ const l = tagged({
  * @param detail - event detail with path and container
  *
  * @param state - tree's shared mutable state
+ *
+ * @example
+ * ```ts
+ * loadDirChildren({ detail: event.detail, state: sessionState, });
+ * ```
  */
 export function loadDirChildren({
   detail,
@@ -119,6 +124,11 @@ export function loadDirChildren({
  * @param recentPaths - current recent file paths for recency markers
  *
  * @returns array of `<tree-dir-entry>` and `<tree-file-entry>` elements
+ *
+ * @example
+ * ```ts
+ * const result = createEntryElements({ parentPath: '/home/user/project/src/main.ts', entries: [], recentPaths: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function createEntryElements({
   parentPath,

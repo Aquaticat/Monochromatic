@@ -26,6 +26,11 @@ const ORDER_BASE = 128;
  * @param name - entry name (not full path)
  *
  * @returns integer suitable for the CSS `order` property
+ *
+ * @example
+ * ```ts
+ * const result = nameToOrder({ name: 'utils.ts', });
+ * ```
  */
 export function nameToOrder({ name, }: { name: string; },): number {
   const lower = name.toLowerCase();

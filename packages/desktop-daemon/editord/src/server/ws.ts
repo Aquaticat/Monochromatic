@@ -70,6 +70,11 @@ function rejectUnauthenticated(
  * @param dirWatcher - filesystem watcher for directory change events
  *
  * @returns h3 event handler that upgrades to WebSocket
+ *
+ * @example
+ * ```ts
+ * const handler = createWsHandler({ authToken: 'tok_abc123', rootDir: '/home/user/project', fsId: 'dev-sda1', lspManager, connectedPeers: new Set(), dirWatcher, });
+ * ```
  */
 export function createWsHandler(
   {

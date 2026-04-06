@@ -44,6 +44,11 @@ export type DebouncedHandle = {
  * @param delayMs - debounce delay in milliseconds
  *
  * @returns handle with `debounced` wrapper and `flush` for immediate execution
+ *
+ * @example
+ * ```ts
+ * const result = createDebounced({ fn: function handleFn() { l.info("done"); }, delayMs: 300, });
+ * ```
  */
 export function createDebounced(
   {

@@ -32,6 +32,11 @@ const actionLog = tagged({
  * @param editorPane - editor pane to apply edits to
  *
  * @param getCurrentFilePath - returns the currently open file path
+ *
+ * @example
+ * ```ts
+ * await formatDocument({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function formatDocument({
   ws,
@@ -86,6 +91,11 @@ export async function formatDocument({
  * @param getCurrentFilePath - returns the currently open file path
  *
  * @param loadFileSafe - loads a file with error handling
+ *
+ * @example
+ * ```ts
+ * wireGotoDefinition({ ws: ws, editorPane: editorPane, getCurrentFilePath: '/home/user/project/src/main.ts', loadFileSafe: loadFileSafe, });
+ * ```
  */
 export function wireGotoDefinition(
   {

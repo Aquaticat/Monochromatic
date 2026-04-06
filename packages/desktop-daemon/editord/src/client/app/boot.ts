@@ -38,6 +38,11 @@ import type { LoadFileFn, } from './types.ts';
  * @param refreshInlayHints - triggers inlay hint refresh
  *
  * @param queryFilePath - file path from URL query parameter
+ *
+ * @example
+ * ```ts
+ * await bootSession({ ws: ws, editorPane: editorPane, fileTree: fileTree, searchOverlay: searchOverlay, state: sessionState, recentFiles: recentFiles, loadFileSafe: function handleLoadFileSafe() { l.info("done"); }, refreshInlayHints: refreshInlayHints, queryFilePath: '/home/user/project/src/main.ts', });
+ * ```
  */
 export async function bootSession(
   {

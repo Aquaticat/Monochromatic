@@ -15,6 +15,11 @@ import type { DirEntry, } from '../../../protocol.ts';
  * @param name - child entry name
  *
  * @returns absolute path for the child
+ *
+ * @example
+ * ```ts
+ * const result = childPath({ parentPath: '/home/user/project/src/main.ts', name: 'utils.ts', });
+ * ```
  */
 export function childPath(
   {
@@ -38,6 +43,11 @@ export function childPath(
  * @param recentPaths - ordered list of recently opened file paths
  *
  * @returns map from path to its index in the recency list
+ *
+ * @example
+ * ```ts
+ * const result = buildRecencyIndex({ recentPaths: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function buildRecencyIndex(
   { recentPaths, }: { recentPaths: readonly string[]; },
@@ -89,6 +99,11 @@ function evictPrefetchCache({ cache, }: { cache: Map<string, DirEntry[]>; },): v
  * @param fetchDir - function that fetches directory contents
  *
  * @param prefetchCache - cache map to store preloaded children
+ *
+ * @example
+ * ```ts
+ * await preloadChildren({ parentPath: '/home/user/project/src/main.ts', entries: dirEntries, fetchDir: function handleFetchDir() { l.info("done"); }, prefetchCache: new Map(), });
+ * ```
  */
 export async function preloadChildren({
   parentPath,

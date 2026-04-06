@@ -24,6 +24,11 @@ const l = tagged({
  * @param rootLength - character length of the root path
  *
  * @returns set of ancestor directory paths
+ *
+ * @example
+ * ```ts
+ * const result = collectAncestorDirs({ paths: ['/home/user/project/src/main.ts'], rootLength: 22, });
+ * ```
  */
 export function collectAncestorDirs({
   paths,
@@ -57,6 +62,11 @@ export function collectAncestorDirs({
  * @param hostElement - host custom element for viewport rect
  *
  * @returns anchor element and viewport offset, or null
+ *
+ * @example
+ * ```ts
+ * const result = findScrollAnchor({ tree: treeElement, hostElement: fileTreeHost, });
+ * ```
  */
 export function findScrollAnchor({
   tree,
@@ -92,6 +102,11 @@ export function findScrollAnchor({
  * @param tree - tree container element
  *
  * @param path - absolute file path to scroll into view
+ *
+ * @example
+ * ```ts
+ * scrollToFile({ tree: treeElement, path: '/home/user/project/src/main.ts', });
+ * ```
  */
 export function scrollToFile({
   tree,
@@ -119,6 +134,17 @@ export function scrollToFile({
  * @param paths - absolute file paths to reveal
  *
  * @param restoreExpansion - function to restore expansion state
+ *
+ * @example
+ * ```ts
+ * await revealFiles({
+ *   tree: treeElement,
+ *   hostElement: fileTreeHost,
+ *   rootPath: '/home/user/project',
+ *   paths: ['/home/user/project/src/main.ts'],
+ *   restoreExpansion: restoreExpansionFn,
+ * });
+ * ```
  */
 export async function revealFiles(
   {

@@ -43,6 +43,12 @@ export { PartialCompletionError, } from './runner-stream-helpers.ts';
  * @returns full completion result with all captured data
  *
  * @throws when the stream is aborted, carrying partial data as PartialCompletionError
+ *
+ * @example
+ * ```ts
+ * const result = await streamCompletion(client, messages, config, 'sudoku-solver', signal);
+ * result.text; // full model response
+ * ```
  */
 export async function streamCompletion(
   client: OpenAI,

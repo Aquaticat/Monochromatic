@@ -22,6 +22,11 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  * @returns resolved absolute path (for callers that need it, e.g. watcher suppression)
  *
  * @throws when the path escapes root or the file cannot be written
+ *
+ * @example
+ * ```ts
+ * const result = await saveFile({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', content: 'const x = 42;', });
+ * ```
  */
 export async function saveFile(
   {

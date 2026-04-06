@@ -43,6 +43,11 @@ const appLog = tagged({
  * @param character - optional 0-based character offset within the line
  *
  * @returns the file kind, or null on failure
+ *
+ * @example
+ * ```ts
+ * const result = await loadFile({ ws: ws, editorPane: editorPane, binaryViewer: binaryViewer, token: 'abc123', path: '/home/user/project/src/main.ts', line: 10, character: 5, });
+ * ```
  */
 export async function loadFile(
   {
