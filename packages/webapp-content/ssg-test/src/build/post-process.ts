@@ -42,17 +42,19 @@ export async function postProcess(
   },);
   const htmlFiles = await readdir(`${DIST}/**/*.html`,);
 
+  /** Shared minification processor -- stateless after configuration. */
+  const minifier = unified()
+    .use(rehypeParse,)
+    .use(rehypePresetMinify,)
+    .use(rehypeStringify,);
+
   await Promise.all(htmlFiles.files.map(async function minifyHtml(htmlPath,) {
     const content = await readFile(
       htmlPath,
       'utf8',
     );
     const minified = String(
-      await unified()
-        .use(rehypeParse,)
-        .use(rehypePresetMinify,)
-        .use(rehypeStringify,)
-        .process(content,),
+      await minifier.process(content,),
     );
     await writeFile(
       htmlPath,

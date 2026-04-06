@@ -154,7 +154,6 @@ function searchInput(t: TranslationFunctions,): string {
         tag: 'ul',
         attrs: {
           id: 'search-results',
-          role: 'listbox',
           'aria-label': t.searchPlaceholder(),
         },
         class: 'search-results',

@@ -13,17 +13,12 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
+import { TICKER_QUOTES, } from '../templates/ticker-quotes.ts';
+
 //region Constants
 
-/**
- * Number of quotes in the ticker.
- *
- * @example
- * ```ts
- * QUOTE_COUNT // 6
- * ```
- */
-const QUOTE_COUNT = 6;
+/** Number of quotes in the ticker, derived from the shared quotes array. */
+const QUOTE_COUNT = TICKER_QUOTES.length;
 
 /**
  * Seconds each quote is held visible before scrolling.
@@ -85,7 +80,9 @@ function tickerKeyframeStops(): string[] {
 
   for (let i = 0; i < QUOTE_COUNT; i++) {
     const holdStart = (i * (HOLD_DURATION + SCROLL_DURATION) / TOTAL_DURATION) * 100;
-    const holdEnd = (i * (HOLD_DURATION + SCROLL_DURATION) + HOLD_DURATION) / TOTAL_DURATION * 100;
+    const holdEnd = (i * (HOLD_DURATION + SCROLL_DURATION) + HOLD_DURATION)
+      / TOTAL_DURATION
+      * 100;
     const offset = cssTranslateY(cssPercent(-(i * stepPercent),),);
 
     stops.push(
@@ -108,7 +105,9 @@ function tickerKeyframeStops(): string[] {
   stops.push(
     $({
       rule: '100%',
-      decls: { transform: cssTranslateY(cssPercent(-(QUOTE_COUNT - 1) * (100 / QUOTE_COUNT),),), },
+      decls: {
+        transform: cssTranslateY(cssPercent(-(QUOTE_COUNT - 1) * (100 / QUOTE_COUNT),),),
+      },
     },),
   );
 

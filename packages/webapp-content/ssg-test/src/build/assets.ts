@@ -79,6 +79,8 @@ export async function generateAssets(
     },);
   },);
 
+  // Copies all content files (including MDX source) to dist intentionally,
+  // so readers can inspect the original source of any post.
   const [contentResult, publicResult,] = await Promise.all([
     readdir(`${contentDir}/**/*`,),
     readdir('public/**/*',),

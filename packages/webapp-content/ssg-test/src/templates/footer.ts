@@ -6,22 +6,7 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-/**
- * Ticker quotes displayed one at a time in the footer.
- *
- * @example
- * ```ts
- * TICKER_QUOTES.length // 6
- * ```
- */
-const TICKER_QUOTES = [
-  'flavor text flavored flavorless',
-  'sloppiest sloppy slop',
-  'drinking drinks may make drinkers drunk',
-  'programmable blogging program programmed for blogging',
-  'ErrorError: ErrorError in erroring Error to ErrorError',
-  'pipeline operator stuck in pipeline',
-];
+import { TICKER_QUOTES, } from './ticker-quotes.ts';
 
 /**
  * Renders the site footer with a rolling newsticker.

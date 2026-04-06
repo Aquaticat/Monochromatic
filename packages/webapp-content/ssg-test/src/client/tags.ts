@@ -14,25 +14,10 @@ import {
   tags,
 } from '@lezer/highlight';
 
-/**
- * Named highlight groups used with the CSS Custom Highlight API.
- * Each group gets a `::highlight(hl-<name>)` CSS rule and a `--hl-<name>` color variable.
- */
-export const HIGHLIGHT_GROUPS = [
-  'keyword',
-  'string',
-  'comment',
-  'number',
-  'type',
-  'function',
-  'property',
-  'heading',
-  'link',
-  'emphasis',
-] as const;
-
-/** Union type of all highlight group names. */
-export type HighlightGroup = typeof HIGHLIGHT_GROUPS[number];
+export {
+  HIGHLIGHT_GROUPS,
+  type HighlightGroup,
+} from './highlight-groups.ts';
 
 /**
  * Lezer highlighter that maps parse tree tags to highlight group names.

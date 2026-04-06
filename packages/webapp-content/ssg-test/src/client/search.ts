@@ -56,7 +56,7 @@ type PagefindSearchResponse = {
  */
 type PagefindApi = {
   init(): void;
-  search(query: string): Promise<PagefindSearchResponse>;
+  search(query: string,): Promise<PagefindSearchResponse>;
   debouncedSearch(
     query: string,
     options: Record<string, unknown>,
@@ -188,9 +188,27 @@ async function executeSearch(query: string,): Promise<void> {
 //region Result rendering
 
 /**
+ * Escapes HTML special characters to prevent injection when
+ * interpolating text into `innerHTML`.
+ *
+ * @param text - raw text to escape
+ *
+ * @returns HTML-safe string
+ */
+function escapeHtml(text: string,): string {
+  return text
+    .replaceAll('&', '&amp;',)
+    .replaceAll('<', '&lt;',)
+    .replaceAll('>', '&gt;',)
+    .replaceAll('"', '&quot;',);
+}
+
+/**
  * Renders loaded search results into the dropdown list.
  *
  * Replaces all existing list items and shows the dropdown.
+ * Title and URL are escaped; excerpt is trusted HTML from Pagefind
+ * (contains `<mark>` tags for match highlighting).
  *
  * @param results - loaded Pagefind result data entries
  */
@@ -200,15 +218,17 @@ function renderResults(results: readonly PagefindResultData[],): void {
 
   resultsList.innerHTML = results
     .map(function resultToListItem(result,) {
-      const title = result.meta.title ?? result.url;
+      const title = escapeHtml(result.meta.title ?? result.url,);
+      const url = escapeHtml(result.url,);
       return [
-        '<li role="option">',
-        `<a href="${result.url}">`,
+        '<li>',
+        `<a href="${url}">`,
         `<div class="search-title">${title}</div>`,
         `<div class="search-excerpt">${result.excerpt}</div>`,
         '</a>',
         '</li>',
-      ].join('',);
+      ]
+        .join('',);
     },)
     .join('',);
 
@@ -246,9 +266,8 @@ if (input !== null && resultsList !== null) {
     // oxlint-disable-next-line no-unsafe-type-assertion -- EventTarget is always a Node in click handlers
     const target = event.target as Node;
     const searchContainer = input.closest('.site-search',);
-    if (searchContainer !== null && !searchContainer.contains(target,)) {
+    if (searchContainer !== null && !searchContainer.contains(target,))
       hideResults();
-    }
   },);
 
   // Close results on Escape key

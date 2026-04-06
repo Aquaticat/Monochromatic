@@ -5,6 +5,11 @@
  * an inline parser backed by the `yaml` package, validates with Zod, and
  * provides grouping utilities.
  * Filesystem paths give `lang` and `name` directly -- no string splitting needed.
+ *
+ * Uses a custom frontmatter parser instead of `gray-matter` because `gray-matter`
+ * pulls in a large dependency tree and uses `eval` internally (via `js-yaml`'s
+ * unsafe loading), which is both a security concern and unnecessary for trusted
+ * YAML-only frontmatter.
  */
 import { readFile, } from 'node:fs/promises';
 import {

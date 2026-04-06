@@ -17,33 +17,10 @@
  * ```
  */
 
+import { HIGHLIGHT_GROUPS, } from './highlight-groups.ts';
 import './search.ts';
 
 export {}; // eslint module boundary marker
-
-//region Configuration
-
-/**
- * Named highlight groups matching the build-time `data-hl-<group>` attributes.
- * Each group gets a `::highlight(hl-<name>)` CSS rule and a `--hl-<name>` color variable.
- *
- * Inlined here to avoid importing `@lezer/highlight` in the client bundle.
- * Must stay in sync with `HIGHLIGHT_GROUPS` in `../client/tags.ts`.
- */
-const HIGHLIGHT_GROUPS = [
-  'keyword',
-  'string',
-  'comment',
-  'number',
-  'type',
-  'function',
-  'property',
-  'heading',
-  'link',
-  'emphasis',
-] as const;
-
-//endregion Configuration
 
 //region Offset-to-Range mapping
 
