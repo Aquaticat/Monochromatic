@@ -37,16 +37,16 @@ original_command 2>&1 | bun ccbof-filter.js; _bof=${PIPESTATUS[0]}; (exit $_bof)
 
 ## Filter transformations
 
-1.  **Git file mode lines** -- strips `create mode`, `delete mode`, `copy mode`,
-    `rename`, `mode change` lines from commit output
-2.  **Git transport progress** -- strips `Enumerating objects`, `Counting objects`,
-    `Compressing objects`, `Writing objects`, `Total`, `Resolving deltas`,
-    `Unpacking objects`, and their `remote:` prefixed variants
-3.  **Long line truncation** -- lines over 500 characters are truncated with
-    `... [N chars]` marker
-4.  **Consecutive duplicate collapsing** -- 3+ identical consecutive lines become
-    `line (x6)` notation
-5.  **Trailing whitespace** -- spaces and tabs at end of lines are removed
+1. **Git file mode lines** -- strips `create mode`, `delete mode`, `copy mode`,
+   `rename`, `mode change` lines from commit output
+2. **Git transport progress** -- strips `Enumerating objects`, `Counting objects`,
+   `Compressing objects`, `Writing objects`, `Total`, `Resolving deltas`,
+   `Unpacking objects`, and their `remote:` prefixed variants
+3. **Long line truncation** -- lines over 500 characters are truncated with
+   `... [N chars]` marker
+4. **Consecutive duplicate collapsing** -- 3+ identical consecutive lines become
+   `line (x6)` notation
+5. **Trailing whitespace** -- spaces and tabs at end of lines are removed
 
 ## Denylist
 

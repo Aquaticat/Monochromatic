@@ -48,11 +48,12 @@ await describe({
             await writeFile(join(tempDir, 'b.txt',), 'world',);
 
             /** Concatenated result of two files */
-            const result = await cat([join(tempDir, 'a.txt',), join(tempDir, 'b.txt',),],);
+            const result = await cat([join(tempDir, 'a.txt',),
+              join(tempDir, 'b.txt',),],);
             expect(result,).toBe('hello\nworld',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'returns single file content when array has one element',
           fn: async () => {
@@ -64,7 +65,7 @@ await describe({
             expect(result,).toBe('solo',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'auto-expands glob patterns within the array',
           fn: async () => {
@@ -78,7 +79,7 @@ await describe({
             expect(result.split('\n',).toSorted(),).toEqual(['one', 'two',].toSorted(),);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'handles mix of literal paths and globs',
           fn: async () => {
@@ -94,7 +95,7 @@ await describe({
             expect(result,).toContain('fixed',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'preserves file content exactly (no trimming)',
           fn: async () => {
@@ -107,7 +108,7 @@ await describe({
             expect(result,).toBe(content,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'handles empty file',
           fn: async () => {
@@ -118,7 +119,7 @@ await describe({
             expect(result,).toBe('',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'tracks read paths in the tracker',
           fn: async () => {
@@ -130,9 +131,9 @@ await describe({
             expect(reads.size,).toBeGreaterThan(0,);
             await teardown(tempDir,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion cat(string[]) -- array mode
 
@@ -156,7 +157,7 @@ await describe({
             expect(contents,).toEqual(['content1', 'content2',],);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'returns empty array when glob matches nothing',
           fn: async () => {
@@ -166,7 +167,7 @@ await describe({
             expect(results,).toHaveLength(0,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'includes the matched file path in each result',
           fn: async () => {
@@ -178,7 +179,7 @@ await describe({
             expect(results[0]?.path,).toContain('named.ts',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'tracks each matched file in the tracker',
           fn: async () => {
@@ -191,7 +192,7 @@ await describe({
             expect(reads.size,).toBe(2,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'matches files in nested directories',
           fn: async () => {
@@ -207,10 +208,9 @@ await describe({
             expect(results.length,).toBe(2,);
             await teardown(tempDir,);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion cat(string) -- glob mode
   ],
 },);

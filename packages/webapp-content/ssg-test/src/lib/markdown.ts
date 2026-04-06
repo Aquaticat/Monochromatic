@@ -61,7 +61,9 @@ export function createProcessor(): Processor<Root, Root, Root, Root, string> {
     .use(remarkParse,)
     .use(remarkMdx,)
     .use(remarkGfm,)
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-argument) -- remarkAlert types are incompatible with unified's Preset overload
     .use(remarkAlert,)
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-argument) -- remarkSectionize lacks proper unified type exports
     .use(remarkSectionize,)
     // Content is trusted filesystem input authored by the site owner,
     // not user-submitted data, so allowing raw HTML is safe here.

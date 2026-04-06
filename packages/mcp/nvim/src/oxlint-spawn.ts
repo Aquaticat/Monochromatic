@@ -32,6 +32,12 @@ const OXLINT_TIMEOUT_MS = 10_000;
  * @param typeAware - Whether to pass `--type-aware`.
  *
  * @returns Diagnostics grouped by absolute file path.
+ *
+ * @example
+ * ```ts
+ * const diagnostics = await spawnOxlint({ cwd: '/project', files: ['/project/src/index.ts'], typeAware: false });
+ * // Map { '/project/src/index.ts' => [{ message: '...', severity: 'warning', ... }] }
+ * ```
  */
 export async function spawnOxlint({
   cwd,
@@ -53,7 +59,10 @@ export async function spawnOxlint({
     const result = await spawn(
       'oxlint',
       args,
-      { cwd, timeout: OXLINT_TIMEOUT_MS, },
+      {
+        cwd,
+        timeout: OXLINT_TIMEOUT_MS,
+      },
     );
     const { stdout, } = result;
 

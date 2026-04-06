@@ -73,7 +73,10 @@ export type MutableDesktopEntry = {
 export function expandEscapes({ s, }: { s: string; },): string {
   return s.replaceAll(
     /\\(.)/g,
-    function replaceEscape(_match, char: string,) {
+    function replaceEscape(
+      _match,
+      char: string,
+    ) {
       return ESCAPE_MAP[char] ?? char;
     },
   );

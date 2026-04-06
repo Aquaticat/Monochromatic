@@ -15,6 +15,11 @@ import { prettyDate, } from './pretty-date.ts';
  * @param post - post data to render
  *
  * @returns HTML string for the post card
+ *
+ * @example
+ * ```ts
+ * const html = postCard(post);
+ * ```
  */
 export function postCard(post: Post,): string {
   const tagItems = post.data.tags.map(function renderTag(tag,) {

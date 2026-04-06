@@ -41,6 +41,7 @@ on CPUs without AVX support.
 QEMU's default CPU model does not expose AVX.
 
 Symptoms:
+
 - Exit code 137 (OOM kill) on any `bun -e` command
 - `bun --version` works fine (no JIT needed)
 - Alpine image gives a clear crash report: "CPU lacks AVX support"
@@ -55,6 +56,7 @@ The `--hostname` flag is not recognized by the static server mode
 (bun treats it as a file path argument: `error: File not found "0.0.0.0"`).
 
 Fix: use `Bun.serve()` inline with explicit `hostname: '0.0.0.0'`:
+
 ```sh
 bun -e "Bun.serve({port:3000,hostname:'0.0.0.0',fetch(r){...}})"
 ```

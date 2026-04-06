@@ -77,6 +77,13 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
  * Finds all comments before something and returns both allComments and something.
  *
  * @returns remaining content after comments and accumulated comment value
+ *
+ * @example
+ * ```ts
+ * const result = startsWithComment({ value: '// note\n42' as FragmentStringJsonc });
+ * // result.remainingContent === '42'
+ * // result.comment === { type: 'inline', commentValue: ' note' }
+ * ```
  */
 export function startsWithComment<const Value extends StringJsonc | FragmentStringJsonc,>(
   {
@@ -123,7 +130,10 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     const commentPart: Jsonc.Comment = {
       type: 'inline',
       commentValue: trimmed
-        .slice('//'.length, newlinePosition,),
+        .slice(
+          '//'.length,
+          newlinePosition,
+        ),
     };
     const mergedComments = mergeComments({
       value: context?.comment,

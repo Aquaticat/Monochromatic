@@ -11,19 +11,23 @@
  * Browser backends log a warning through the tagged logger on first use.
  */
 
+import {
+  $ as tagged,
+} from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
+// oxlint-disable-next-line import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMonorepoRoot runs
 import { dirname, } from './index.ts';
-import { $ as tagged, } from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
 
 /**
  * Filesystem read function abstraction.
  * Returns file content as a string, or `undefined` when the file does not exist.
  */
-type ReadFileFn = (path: string) => Promise<string | undefined>;
+type ReadFileFn = (path: string,) => Promise<string | undefined>;
 
 /** Cached filesystem backend, resolved once on first call. */
-let cachedReadFile: ReadFileFn | undefined;
+let cachedReadFile: ReadFileFn | undefined = undefined;
 
-const l = tagged({ tag: 'findMonorepoRoot', });
+/** Tagged logger for monorepo root discovery diagnostics. */
+const l = tagged({ tag: 'findMonorepoRoot', },);
 
 //region Filesystem backend resolution
 
@@ -38,12 +42,14 @@ async function resolveNodeReadFile(): Promise<ReadFileFn> {
 
   return async function nodeReadFile(path: string,): Promise<string | undefined> {
     try {
-      return await readFile(path, 'utf8',);
+      return await readFile(
+        path,
+        'utf8',
+      );
     }
     catch (error: unknown) {
-      if (Error.isError(error,) && 'code' in error && error.code === 'ENOENT') {
+      if (Error.isError(error,) && 'code' in error && error.code === 'ENOENT')
         return undefined;
-      }
       throw error;
     }
   };
@@ -57,13 +63,14 @@ async function resolveNodeReadFile(): Promise<ReadFileFn> {
  */
 async function resolveOpfsReadFile(): Promise<ReadFileFn> {
   const { readTextFile, } = await import('happy-opfs');
-  l.warn('using OPFS for monorepo root discovery -- mise.toml must exist in OPFS to be found',);
+  l.warn(
+    'using OPFS for monorepo root discovery -- mise.toml must exist in OPFS to be found',
+  );
 
   return async function opfsReadFile(path: string,): Promise<string | undefined> {
     const result = await readTextFile(path,);
-    if (result.isOk()) {
+    if (result.isOk())
       return result.unwrap();
-    }
     return undefined;
   };
 }
@@ -77,8 +84,8 @@ async function resolveOpfsReadFile(): Promise<ReadFileFn> {
 function resolveEmptyReadFile(): ReadFileFn {
   l.warn('no filesystem available for monorepo root discovery -- search will fail',);
 
-  return async function emptyReadFile(): Promise<undefined> {
-    return undefined;
+  return function emptyReadFile(): Promise<undefined> {
+    return Promise.resolve(undefined,);
   };
 }
 
@@ -89,9 +96,8 @@ function resolveEmptyReadFile(): ReadFileFn {
  * @returns filesystem read function for the current runtime
  */
 async function resolveReadFile(): Promise<ReadFileFn> {
-  if (cachedReadFile !== undefined) {
+  if (cachedReadFile !== undefined)
     return cachedReadFile;
-  }
 
   // Node/Bun: process.versions.node is set
   /* oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined */
@@ -129,10 +135,11 @@ const MONOREPO_SECTION_MARKER = '\n[monorepo]\n';
  * for a `mise.toml` containing a `[monorepo]` section.
  *
  * @param cwd - starting directory for upward search
+ *
  * @param readFile - filesystem read function
  *
  * @returns absolute path to the directory containing the monorepo `mise.toml`,
- *          or `undefined` if not found
+ * or `undefined` if not found
  */
 async function walkUp({
   cwd,
@@ -145,15 +152,14 @@ async function walkUp({
 
   // oxlint-disable-next-line no-constant-condition -- terminates when dirname(dir) === dir (filesystem root)
   while (true) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential directory walk requires awaiting each level
     const content = await readFile(`${dir}/mise.toml`,);
-    if (content !== undefined && content.includes(MONOREPO_SECTION_MARKER,)) {
+    if (content !== undefined && content.includes(MONOREPO_SECTION_MARKER,))
       return dir;
-    }
 
     const parent = dirname(dir,);
-    if (parent === dir) {
+    if (parent === dir)
       return undefined;
-    }
     dir = parent;
   }
 }
@@ -176,12 +182,11 @@ async function walkUp({
  *
  * Browser backends log a warning on first use.
  *
- * @param options - named parameter object
- * @param options.cwd - starting directory for upward search (defaults to `process.cwd()`)
+ * @param cwd - starting directory for upward search (defaults to `process.cwd()`)
  *
  * @returns absolute path to the monorepo root
  *
- * @throws {Error} when no ancestor directory contains a `mise.toml` with `[monorepo]`
+ * @throws when no ancestor directory contains a `mise.toml` with `[monorepo]`
  *
  * @example
  * ```ts
@@ -194,12 +199,15 @@ async function walkUp({
  * ```
  */
 export async function findMonorepoRoot(
-  { cwd, }: { cwd?: string } = {},
+  { cwd, }: { cwd?: string; } = {},
 ): Promise<string> {
   /* oxlint-disable-next-line typescript/no-unnecessary-condition -- process may be undefined in browser */
   const startDir = cwd ?? (typeof process !== 'undefined' ? process.cwd() : '/');
   const readFile = await resolveReadFile();
-  const rawRoot = await walkUp({ cwd: startDir, readFile, },);
+  const rawRoot = await walkUp({
+    cwd: startDir,
+    readFile,
+  },);
 
   if (rawRoot === undefined) {
     throw new Error(
@@ -213,7 +221,10 @@ export async function findMonorepoRoot(
    * the symlink path breaks `readlink -f` resolution.
    */
   if (rawRoot.startsWith('/home/',)) {
-    return rawRoot.replace('/home/', '/var/home/',);
+    return rawRoot.replace(
+      '/home/',
+      '/var/home/',
+    );
   }
 
   return rawRoot;

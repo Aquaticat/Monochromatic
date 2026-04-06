@@ -21,7 +21,7 @@ const VERTICAL_OFFSET = 8;
  */
 export class HoverPopup extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Content container for the hover text. */
   #content: HTMLDivElement | null = null;

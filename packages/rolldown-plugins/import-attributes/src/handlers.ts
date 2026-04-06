@@ -29,6 +29,11 @@ export type AttributeTypeHandler = (content: string, id: string,) => string;
  * @param content - Raw file content
  *
  * @returns JavaScript module that default-exports the content string
+ *
+ * @example
+ * ```ts
+ * textHandler('SELECT 1'); // 'export default "SELECT 1";'
+ * ```
  */
 export function textHandler(content: string,): string {
   return `export default ${JSON.stringify(content,)};`;

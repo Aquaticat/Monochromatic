@@ -34,7 +34,7 @@ const DESC_FONT_SIZE_PX = 15;
 const LOCATION_MIN_HEIGHT = 3;
 
 /** Inbox-specific styles for task children, controls, and location options. */
-export const inboxStyles = [
+export const inboxStyles: string = [
   css({
     rule: '.task-children',
     decls: {

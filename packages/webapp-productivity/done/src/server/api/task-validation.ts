@@ -11,6 +11,11 @@
  * @param value - Value to check
  *
  * @returns True when value is a non-null object
+ *
+ * @example
+ * ```ts
+ * if (!isRecord(body)) return null;
+ * ```
  */
 export function isRecord(value: unknown,): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -22,6 +27,11 @@ export function isRecord(value: unknown,): value is Record<string, unknown> {
  * @param value - Raw input that may be an array
  *
  * @returns Parsed array, or `null` when the input is not an array
+ *
+ * @example
+ * ```ts
+ * const tags = parseStringArray(body.tags); // ['shopping', 'errands'] or null
+ * ```
  */
 export function parseStringArray(value: unknown,): string[] | null {
   if (!Array.isArray(value,))
@@ -47,6 +57,11 @@ export function parseStringArray(value: unknown,): string[] | null {
  * @param validValues - Set of recognized enum strings
  *
  * @returns Validated enum value, null, or undefined
+ *
+ * @example
+ * ```ts
+ * const priority = parseEnumValue<TaskPriority>(body.priority, validPriorities);
+ * ```
  */
 export function parseEnumValue<T extends string,>(
   value: unknown,

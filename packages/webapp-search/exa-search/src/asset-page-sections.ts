@@ -4,6 +4,11 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * Builds the status section with metrics, processing, success, and error indicators.
  *
  * @returns HTML string for the status `<section>`
+ *
+ * @example
+ * ```ts
+ * const statusHtml = buildStatusSection();
+ * ```
  */
 export function buildStatusSection(): string {
   return h({
@@ -70,6 +75,11 @@ export function buildStatusSection(): string {
  * Builds the search form inside a `<search>` landmark element.
  *
  * @returns HTML string for the search form
+ *
+ * @example
+ * ```ts
+ * const formHtml = buildSearchForm();
+ * ```
  */
 export function buildSearchForm(): string {
   return h({

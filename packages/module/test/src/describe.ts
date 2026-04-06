@@ -1,11 +1,13 @@
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { $ as defaultLogger, } from '@monochromatic-dev/module-es/logger';
-import type { $ as Logger, } from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
+import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import type {
+  $ as Logger,
+} from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 
 import pLimit from 'p-limit';
 
-import type { ItResult, } from './it.ts';
 import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
+import type { ItResult, } from './it.ts';
 
 /**
  * Result returned by a completed suite, mirroring {@link ItResult}.
@@ -90,6 +92,17 @@ export type DescribeOptions = {
 };
 
 /**
+ * Resolves a child entry to a promise, calling thunks to start execution.
+ *
+ * @param child - Promise or thunk
+ *
+ * @returns started promise
+ */
+function startChild(child: DescribeChild,): Promise<DescribeResult | ItResult> {
+  return typeof child === 'function' ? child() : child;
+}
+
+/**
  * Defines and immediately executes a test suite.
  *
  * Children run concurrently via `Promise.allSettled` by default,
@@ -149,7 +162,7 @@ export async function describe({
       l: baseLogger,
     },);
 
-  if (skip) {
+  if (skip !== false) {
     const reason = typeof skip === 'string' ? `: ${skip}` : '';
     l.info(`SKIP suite${name ? ` "${name}"` : ''}${reason}`,);
     return { name, };
@@ -163,21 +176,10 @@ export async function describe({
   if (name !== '') {
     const concurrencyLabel = isSequential
       ? ' (sequential)'
-      : isUnbounded
+      : (isUnbounded
         ? ' (unbounded)'
-        : ` (concurrency: ${String(concurrency,)})`;
+        : ` (concurrency: ${String(concurrency,)})`);
     l.debug(`start${concurrencyLabel}`,);
-  }
-
-  /**
-   * Resolves a child entry to a promise, calling thunks to start execution.
-   *
-   * @param child - Promise or thunk
-   *
-   * @returns started promise
-   */
-  function startChild(child: DescribeChild,): Promise<DescribeResult | ItResult> {
-    return typeof child === 'function' ? child() : child;
   }
 
   /**
@@ -186,18 +188,26 @@ export async function describe({
    *
    * @returns array of settled results matching `Promise.allSettled` format
    */
-  async function runSequential(): Promise<PromiseSettledResult<DescribeResult | ItResult>[]> {
+  async function runSequential(): Promise<
+    PromiseSettledResult<DescribeResult | ItResult>[]
+  > {
     const results: PromiseSettledResult<DescribeResult | ItResult>[] = [];
 
     for (const child of children) {
       try {
         // oxlint-disable-next-line no-await-in-loop -- sequential execution requires awaiting each child before starting the next
         const value = await startChild(child,);
-        results.push({ status: 'fulfilled', value, },);
+        results.push({
+          status: 'fulfilled',
+          value,
+        },);
       }
       catch (reason) {
         // oxlint-disable-next-line no-unsafe-type-assertion -- PromiseSettledResult requires reason typed as any
-        results.push({ status: 'rejected', reason, } as PromiseRejectedResult,);
+        results.push({
+          status: 'rejected',
+          reason,
+        } as PromiseRejectedResult,);
       }
     }
 
@@ -212,18 +222,23 @@ export async function describe({
    * @throws Error wrapping child failures when any child rejects
    */
   async function runOnce(runLabel: string,): Promise<void> {
-    let settleAll: Promise<PromiseSettledResult<DescribeResult | ItResult>[]>;
+    let settleAll: Promise<PromiseSettledResult<DescribeResult | ItResult>[]> =
+      runSequential();
 
-    if (isSequential) {
+    if (isSequential)
       settleAll = runSequential();
-    }
     else if (isUnbounded) {
-      settleAll = Promise.allSettled(children.map(startChild,),);
+      settleAll = Promise.allSettled(children.map(function mapChild(child,) {
+        return startChild(child,);
+      },),);
     }
     else {
       const limit = pLimit(concurrency,);
       settleAll = Promise.allSettled(children.map(function limitChild(child,) {
-        return limit(startChild, child,);
+        return limit(
+          startChild,
+          child,
+        );
       },),);
     }
 
@@ -242,19 +257,19 @@ export async function describe({
     const logSuccess = name === '' ? l.debug : l.info;
 
     for (const result of settled) {
-      if (result.status === 'fulfilled') {
+      if (result.status === 'fulfilled')
         logSuccess(`${result.value.name} <- ${name || '(root)'}${runLabel}`,);
-      }
       else {
-        const childName = result.reason instanceof Error ? result.reason.message : '(unknown)';
+        const childName = result.reason instanceof Error
+          ? result.reason.message
+          : '(unknown)';
         l.error(`${childName} <- ${name || '(root)'}${runLabel}`,);
         errors.push(result.reason,);
       }
     }
 
-    if (errors.length === 0) {
+    if (errors.length === 0)
       return;
-    }
 
     const cause = errors.length === 1
       ? errors[0]
@@ -263,9 +278,8 @@ export async function describe({
         `${String(errors.length,)} children failed in suite "${name || '(root)'}"`,
       );
 
-    if (name === '') {
+    if (name === '')
       throw cause;
-    }
 
     throw new Error(
       name,
@@ -276,7 +290,9 @@ export async function describe({
   const totalRuns = 1 + repeats;
 
   for (let run = 0; run < totalRuns; run += 1) {
-    const runLabel = totalRuns > 1 ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]` : '';
+    const runLabel = totalRuns > 1
+      ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]`
+      : '';
     // oxlint-disable-next-line no-await-in-loop -- sequential suite repetitions must run one at a time
     await runOnce(runLabel,);
   }

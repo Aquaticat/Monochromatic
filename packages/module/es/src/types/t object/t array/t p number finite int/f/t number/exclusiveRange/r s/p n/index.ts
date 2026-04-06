@@ -5,6 +5,12 @@ import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
  * Useful for probing numeric string boundaries without off-by-one errors at edges.
  *
  * @returns array of branded Int values in the exclusive range
+ *
+ * @example
+ * ```ts
+ * $({ startExclusive: 0, endExclusive: 4 }); // [1, 2, 3]
+ * $({ startExclusive: 5, endExclusive: 5 }); // []
+ * ```
  */
 export function $(
   {
@@ -24,7 +30,10 @@ export function $(
     ? []
     : Array.from(
       { length: end - start + 1, },
-      function offset(_, index,) {
+      function offset(
+        _,
+        index,
+      ) {
         return start + index;
       },
     )) as Int[];

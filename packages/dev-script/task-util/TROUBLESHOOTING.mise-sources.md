@@ -12,14 +12,14 @@ Source: [`src/task/task_source_checker.rs`][checker] in the mise repo.
 
 `sources_are_fresh` runs two checks in sequence:
 
-1.  **Metadata hash** (default) or **content hash** (opt-in via
-    `task.source_freshness_hash_contents = true`).
-    The default hashes `(path, file_size)` pairs.
-    If the stored hash differs from the current hash, the task is stale
-    ([line 149][L149]).
+1. **Metadata hash** (default) or **content hash** (opt-in via
+   `task.source_freshness_hash_contents = true`).
+   The default hashes `(path, file_size)` pairs.
+   If the stored hash differs from the current hash, the task is stale
+   ([line 149][L149]).
 
-2.  **Mtime comparison**: `max(source mtimes)` vs `max(output mtimes)`.
-    If sources are newer, the task is stale ([lines 166--175][L166]).
+2. **Mtime comparison**: `max(source mtimes)` vs `max(output mtimes)`.
+   If sources are newer, the task is stale ([lines 166--175][L166]).
 
 [L149]: https://github.com/jdx/mise/blob/main/src/task/task_source_checker.rs#L149
 [L166]: https://github.com/jdx/mise/blob/main/src/task/task_source_checker.rs#L166

@@ -10,6 +10,11 @@ import { renderPage, } from './layout.ts';
  * Renders the settings page with placeholder configuration options.
  *
  * @returns HTML response for the settings page
+ *
+ * @example
+ * ```ts
+ * const response = settingsPage();
+ * ```
  */
 export function settingsPage(): Response {
   return renderPage({

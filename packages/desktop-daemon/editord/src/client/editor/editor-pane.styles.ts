@@ -6,7 +6,6 @@
  */
 
 import {
-  hCss as $,
   cssCh,
   cssCommaList,
   cssInt,
@@ -15,6 +14,7 @@ import {
   cssPercent,
   cssRem,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { HIGHLIGHT_STYLES, } from '../highlight/styles.ts';

@@ -10,7 +10,10 @@
  * infrastructure that cannot be meaningfully split further.
  */
 
-import { getStrokes, } from './drawing.ts';
+import {
+  getStrokes,
+  type StrokeData,
+} from './drawing.ts';
 import {
   LETTER_HEIGHT,
   LETTER_WIDTH,
@@ -53,6 +56,11 @@ export type ExportDeps = {
  * regardless of the viewport's rendered page size.
  *
  * @returns width and height as `cw` and `ch`
+ *
+ * @example
+ * ```ts
+ * const { cw, ch } = getExportSize();
+ * ```
  */
 export function getExportSize(): {
   cw: number;
@@ -73,6 +81,11 @@ export function getExportSize(): {
  * @param container - page element (coordinate reference)
  *
  * @returns width and height as `cw` and `ch`
+ *
+ * @example
+ * ```ts
+ * const { cw, ch } = getRenderedSize(container);
+ * ```
  */
 export function getRenderedSize(
   container: HTMLDivElement,
@@ -209,7 +222,7 @@ export async function renderBaseCanvas({
 }: {
   container: HTMLDivElement;
   overlay: HTMLDivElement;
-  strokes?: readonly import('./drawing.ts').StrokeData[];
+  strokes?: readonly StrokeData[];
   imageScale?: number;
 },): Promise<{
   canvas: OffscreenCanvas;

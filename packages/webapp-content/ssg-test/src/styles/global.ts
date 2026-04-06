@@ -5,10 +5,10 @@
  * All colors reference CSS custom properties defined in `tokens.ts`.
  */
 import {
-  hCss as $,
   cssCommaList,
   cssRem,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
@@ -22,6 +22,11 @@ import {
  * Box-sizing reset and base body styles.
  *
  * @returns CSS string for reset rules
+ *
+ * @example
+ * ```ts
+ * const css = resetStyles();
+ * ```
  */
 export function resetStyles(): string {
   return [
@@ -34,7 +39,11 @@ export function resetStyles(): string {
       decls: {
         'margin-block': 0,
         'margin-inline': 0,
-        'font-family': cssCommaList(['Inter', 'system-ui', 'sans-serif',],),
+        'font-family': cssCommaList([
+          'Inter',
+          'system-ui',
+          'sans-serif',
+        ],),
         'line-height': LINE_HEIGHT,
         color: cssVar('color-fg',),
         'background-color': cssVar('color-bg',),
@@ -48,6 +57,11 @@ export function resetStyles(): string {
  * Content area layout constraints.
  *
  * @returns CSS string for layout rules
+ *
+ * @example
+ * ```ts
+ * const css = layoutStyles();
+ * ```
  */
 export function layoutStyles(): string {
   return $({
@@ -65,6 +79,11 @@ export function layoutStyles(): string {
  * Base typography for headings, links, and code blocks.
  *
  * @returns CSS string for typography rules
+ *
+ * @example
+ * ```ts
+ * const css = typographyStyles();
+ * ```
  */
 export function typographyStyles(): string {
   return [
@@ -78,7 +97,12 @@ export function typographyStyles(): string {
     },),
     $({
       rule: 'code',
-      decls: { 'font-family': cssCommaList(['"Monaspace Neon"', 'monospace',],), },
+      decls: {
+        'font-family': cssCommaList([
+          '"Monaspace Neon"',
+          'monospace',
+        ],),
+      },
     },),
     $({
       rule: 'pre',

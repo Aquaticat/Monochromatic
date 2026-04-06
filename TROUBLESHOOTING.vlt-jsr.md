@@ -49,26 +49,25 @@ In `src/package-info/src/index.ts`:
 
 ```typescript
 // Line 601-608: isSingle branch uses version-specific endpoint exclusively
-const mani =
-  spec.range?.isSingle ?
-    await this.#registryManifestRequest(spec, options)  // /<pkg>/<version>
+const mani = spec.range?.isSingle
+  ? await this.#registryManifestRequest(spec, options,) // /<pkg>/<version>
   : pickManifest(
-      await this.packument(f, options),                 // /<pkg> (full)
-      spec,
-      options,
-    )
+    await this.packument(f, options,), // /<pkg> (full)
+    spec,
+    options,
+  );
 ```
 
 ```typescript
 // Line 407: Constructs the version-specific URL
-const pakuURL = new URL(`${name}/${version}`, registry)
+const pakuURL = new URL(`${name}/${version}`, registry,);
 
 // Line 413-423: Throws immediately on non-200, no fallback
 if (response.statusCode !== 200) {
-  throw this.#resolveError(spec, options, "failed to fetch manifest", {
+  throw this.#resolveError(spec, options, 'failed to fetch manifest', {
     url: pakuURL,
     response,
-  })
+  },);
 }
 ```
 
@@ -101,10 +100,10 @@ Even when you DO configure it, Bug 2 (the version-specific 404) blocks the insta
 if (response.statusCode !== 200) {
   // Fall back to full packument for registries that don't support /<pkg>/<version>
   return pickManifest(
-    await this.packument(spec.final, options),
+    await this.packument(spec.final, options,),
     spec,
     options,
-  )
+  );
 }
 ```
 

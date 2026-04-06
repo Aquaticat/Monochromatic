@@ -66,7 +66,15 @@ export function $(value: unknown,): TypeOf {
     const float = !Number.isInteger(myValue,);
     return [
       typeOf,
-      { NaN: [false, { sign, float, },], },
+      {
+        NaN: [
+          false,
+          {
+            sign,
+            float,
+          },
+        ],
+      },
     ];
   }
 
@@ -83,17 +91,22 @@ export function $(value: unknown,): TypeOf {
     return [
       typeOf,
       {
-        empty: [false, { char: myValue
-            .length !== 1
-          ? false
-          : [
-            true,
-            /\p{Upper}/v.test(myValue,)
-              ? 'uppercaseLetter'
-              : (/\p{Lower}/v.test(myValue,)
-                ? 'lowercaseLetter'
-                : 'nonLetter'),
-          ], },],
+        empty: [
+          false,
+          {
+            char: myValue
+                .length !== 1
+              ? false
+              : [
+                true,
+                /\p{Upper}/v.test(myValue,)
+                  ? 'uppercaseLetter'
+                  : (/\p{Lower}/v.test(myValue,)
+                    ? 'lowercaseLetter'
+                    : 'nonLetter'),
+              ],
+          },
+        ],
       },
     ];
   }
@@ -104,25 +117,37 @@ export function $(value: unknown,): TypeOf {
     if (prototypeString === '[object Function]') {
       return [
         typeOf,
-        { async: false, generator: false, },
+        {
+          async: false,
+          generator: false,
+        },
       ];
     }
     if (prototypeString === '[object AsyncFunction]') {
       return [
         typeOf,
-        { async: true, generator: false, },
+        {
+          async: true,
+          generator: false,
+        },
       ];
     }
     if (prototypeString === '[object GeneratorFunction]') {
       return [
         typeOf,
-        { async: false, generator: true, },
+        {
+          async: false,
+          generator: true,
+        },
       ];
     }
     if (prototypeString === '[object AsyncGeneratorFunction]') {
       return [
         typeOf,
-        { async: true, generator: true, },
+        {
+          async: true,
+          generator: true,
+        },
       ];
     }
   }
@@ -171,7 +196,12 @@ export function $(value: unknown,): TypeOf {
       const regexp = value as RegExp;
       return [
         typeOf,
-        { prototype: ['RegExp', { global: regexp.global, },], },
+        {
+          prototype: [
+            'RegExp',
+            { global: regexp.global, },
+          ],
+        },
       ];
     }
 
@@ -182,19 +212,28 @@ export function $(value: unknown,): TypeOf {
     return [
       typeOf,
       {
-        prototype: ['Object', {
-          iterable: typeof (
-              // @ts-expect-error -- Might be Async Iterable
-              myValue[Symbol.asyncIterator]
-            ) === 'function'
-            ? [true, { async: true, },]
-            : (typeof (
-                // @ts-expect-error -- Might be Iterable
-                myValue[Symbol.iterator]
+        prototype: [
+          'Object',
+          {
+            iterable: typeof (
+                // @ts-expect-error -- Might be Async Iterable
+                myValue[Symbol.asyncIterator]
               ) === 'function'
-              ? [true, { async: false, },]
-              : false),
-        },],
+              ? [
+                true,
+                { async: true, },
+              ]
+              : (typeof (
+                  // @ts-expect-error -- Might be Iterable
+                  myValue[Symbol.iterator]
+                ) === 'function'
+                ? [
+                  true,
+                  { async: false, },
+                ]
+                : false),
+          },
+        ],
       },
     ];
   }

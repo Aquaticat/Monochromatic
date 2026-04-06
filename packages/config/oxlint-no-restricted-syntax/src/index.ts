@@ -15,7 +15,6 @@ import {
 } from './rules/no-disable-no-non-null-assertion.ts';
 import { noDisableNoPromiseCatch, } from './rules/no-disable-no-promise-catch.ts';
 import { noDisableNoPromiseFinally, } from './rules/no-disable-no-promise-finally.ts';
-import { noDisableNoRegexpExec, } from './rules/no-disable-no-regexp-exec.ts';
 import { noDisableNoRestParams, } from './rules/no-disable-no-rest-params.ts';
 import { noDisableNoSwitch, } from './rules/no-disable-no-switch.ts';
 import { noDisableNoTrimLeftRight, } from './rules/no-disable-no-trim-left-right.ts';
@@ -24,6 +23,7 @@ import { noDisableNoUselessReturn, } from './rules/no-disable-no-useless-return.
 import {
   noDisableNoVariableFunctionExpression,
 } from './rules/no-disable-no-variable-function-expression.ts';
+import { noDisablePreferRegexpExec, } from './rules/no-disable-prefer-regexp-exec.ts';
 import {
   noDisableRequireDestructuredParams,
 } from './rules/no-disable-require-destructured-params.ts';
@@ -34,7 +34,6 @@ import { noForIn, } from './rules/no-for-in.ts';
 import { noHasownproperty, } from './rules/no-hasownproperty.ts';
 import { noPromiseCatch, } from './rules/no-promise-catch.ts';
 import { noPromiseFinally, } from './rules/no-promise-finally.ts';
-import { noRegexpExec, } from './rules/no-regexp-exec.ts';
 import { noRestParams, } from './rules/no-rest-params.ts';
 import { noSwitch, } from './rules/no-switch.ts';
 import { noTrimLeftRight, } from './rules/no-trim-left-right.ts';
@@ -78,7 +77,6 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-hasownproperty': noHasownproperty,
     'no-promise-catch': noPromiseCatch,
     'no-promise-finally': noPromiseFinally,
-    'no-regexp-exec': noRegexpExec,
     'no-rest-params': noRestParams,
     'no-switch': noSwitch,
     'no-trim-left-right': noTrimLeftRight,
@@ -97,7 +95,6 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-disable-no-misused-promises': noDisableNoMisusedPromises,
     'no-disable-no-promise-catch': noDisableNoPromiseCatch,
     'no-disable-no-promise-finally': noDisableNoPromiseFinally,
-    'no-disable-no-regexp-exec': noDisableNoRegexpExec,
     'no-disable-no-rest-params': noDisableNoRestParams,
     'no-disable-no-switch': noDisableNoSwitch,
     'no-disable-no-trim-left-right': noDisableNoTrimLeftRight,
@@ -105,6 +102,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-disable-no-useless-return': noDisableNoUselessReturn,
     'no-disable-no-variable-function-expression': noDisableNoVariableFunctionExpression,
     'no-disable-no-non-null-assertion': noDisableNoNonNullAssertion,
+    'no-disable-prefer-regexp-exec': noDisablePreferRegexpExec,
     'no-disable-require-destructured-params': noDisableRequireDestructuredParams,
     'no-disable-require-returns': noDisableRequireReturns,
     'no-disable-require-tsdoc': noDisableRequireTsdoc,

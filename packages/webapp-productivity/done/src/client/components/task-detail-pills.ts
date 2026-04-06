@@ -3,9 +3,7 @@
  *
  * Extracted from task-detail.ts to keep each file under the line-count limit.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 import { formatRunningTrackedTime, } from '../lib/format-tracked-time.ts';
 
@@ -31,6 +29,11 @@ export type PillDatum = {
  * @param complexity - Current complexity value
  *
  * @returns Array of pill descriptors
+ *
+ * @example
+ * ```ts
+ * const pills = buildPillData({ task, tags, locations, priority, complexity });
+ * ```
  */
 export function buildPillData(
   {
@@ -99,6 +102,11 @@ export function buildPillData(
  * @param autofilled - Set of field names that were autofilled by AI
  *
  * @returns Array of pill span elements
+ *
+ * @example
+ * ```ts
+ * const elements = buildPillElements({ pills, loading: false, autofilled: new Set() });
+ * ```
  */
 export function buildPillElements(
   {

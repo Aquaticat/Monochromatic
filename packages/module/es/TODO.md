@@ -11,6 +11,7 @@
 This directory contains detailed improvement plans for building the most comprehensive functional programming utilities library (`@monochromatic-dev/module-es`) for TypeScript.
 
 ### Quick Links
+
 - [**Export Fixes**](TODO.exports-fixes.md) - Critical TypeScript compilation errors
 - [**API Refactors**](TODO.api-refactors.md) - Major breaking changes (logger params, named params, type testing)
 - [**Missing Implementations**](TODO.missing-implementations.md) - Comprehensive utility function roadmap
@@ -28,29 +29,29 @@ This directory contains detailed improvement plans for building the most compreh
 
 ### Library Completeness Analysis
 
-| Category | Current | Target | Gap | Priority |
-|----------|---------|--------|-----|----------|
-| **Object Utilities** | 1 | 30+ | 🔴 Critical Gap | Critical |
-| **Date/Time Utilities** | 0 | 25+ | 🔴 Missing Entirely | High |
-| **Math Utilities** | 5 | 25+ | 🔴 Major Gap | High |
-| **Async Iterables** | 5 | 30+ | 🔴 Major Gap | Critical |
-| **Array Utilities** | 12 | 50+ | 🟡 Significant Gap | High |
-| **String Utilities** | 20 | 40+ | 🟡 Moderate Gap | Normal |
-| **Validation Framework** | 5 | 30+ | 🔴 Major Gap | High |
-| **Collection Utilities** | 8 | 25+ | 🟡 Significant Gap | Normal |
-| **Stream Processing** | 0 | 20+ | 🔴 Missing Entirely | Normal |
-| **Parser Utilities** | 0 | 15+ | 🔴 Missing Entirely | Low |
-| **Crypto Utilities** | 2 | 15+ | 🟡 Significant Gap | Normal |
-| **Network Utilities** | 0 | 15+ | 🔴 Missing Entirely | Normal |
-| **Geometry Utilities** | 0 | 20+ | 🔴 Missing Entirely | Low |
-| **Color Utilities** | 0 | 15+ | 🔴 Missing Entirely | Low |
-| **Tree/Graph Utilities** | 1 | 15+ | 🔴 Major Gap | Low |
-| **Lens/Optics** | 0 | 10+ | 🔴 Missing Entirely | Low |
-| **Binary Data** | 0 | 10+ | 🔴 Missing Entirely | Low |
-| **Type-Level Programming** | 15 | 40+ | 🟡 Moderate Gap | Normal |
-| **Functional Patterns** | 25 | 40+ | 🟡 Moderate Gap | Normal |
-| **Error Handling** | 25 | 30+ | 🟢 Nearly Complete | Low |
-| **Boolean Operations** | 5 | 8+ | 🟢 Good Coverage | Low |
+| Category                   | Current | Target | Gap                 | Priority |
+| -------------------------- | ------- | ------ | ------------------- | -------- |
+| **Object Utilities**       | 1       | 30+    | 🔴 Critical Gap     | Critical |
+| **Date/Time Utilities**    | 0       | 25+    | 🔴 Missing Entirely | High     |
+| **Math Utilities**         | 5       | 25+    | 🔴 Major Gap        | High     |
+| **Async Iterables**        | 5       | 30+    | 🔴 Major Gap        | Critical |
+| **Array Utilities**        | 12      | 50+    | 🟡 Significant Gap  | High     |
+| **String Utilities**       | 20      | 40+    | 🟡 Moderate Gap     | Normal   |
+| **Validation Framework**   | 5       | 30+    | 🔴 Major Gap        | High     |
+| **Collection Utilities**   | 8       | 25+    | 🟡 Significant Gap  | Normal   |
+| **Stream Processing**      | 0       | 20+    | 🔴 Missing Entirely | Normal   |
+| **Parser Utilities**       | 0       | 15+    | 🔴 Missing Entirely | Low      |
+| **Crypto Utilities**       | 2       | 15+    | 🟡 Significant Gap  | Normal   |
+| **Network Utilities**      | 0       | 15+    | 🔴 Missing Entirely | Normal   |
+| **Geometry Utilities**     | 0       | 20+    | 🔴 Missing Entirely | Low      |
+| **Color Utilities**        | 0       | 15+    | 🔴 Missing Entirely | Low      |
+| **Tree/Graph Utilities**   | 1       | 15+    | 🔴 Major Gap        | Low      |
+| **Lens/Optics**            | 0       | 10+    | 🔴 Missing Entirely | Low      |
+| **Binary Data**            | 0       | 10+    | 🔴 Missing Entirely | Low      |
+| **Type-Level Programming** | 15      | 40+    | 🟡 Moderate Gap     | Normal   |
+| **Functional Patterns**    | 25      | 40+    | 🟡 Moderate Gap     | Normal   |
+| **Error Handling**         | 25      | 30+    | 🟢 Nearly Complete  | Low      |
+| **Boolean Operations**     | 5       | 8+     | 🟢 Good Coverage    | Low      |
 
 **Current Total**: ~150 functions
 **Target Total**: 500+ functions
@@ -59,6 +60,7 @@ This directory contains detailed improvement plans for building the most compreh
 ### Priority Overview for Complete Vision
 
 ### 🔴 Critical Priority (Foundational)
+
 **Essential changes that enable all other development**
 
 1. **Export Fixes** → [Export Fixes Todo](TODO.exports-fixes.md#critical-export-issues)
@@ -82,6 +84,7 @@ This directory contains detailed improvement plans for building the most compreh
    - **Target**: 30+ functions (currently have 5)
 
 ### 🟠 High Priority (Core Functionality)
+
 **Major categories needed for comprehensive utility coverage**
 
 1. **Date/Time Utilities** → [Missing Implementations Todo](TODO.missing-implementations.md#datetime-utilities-completely-missing)
@@ -102,6 +105,7 @@ This directory contains detailed improvement plans for building the most compreh
    - **Target**: 50+ functions (currently have 12)
 
 ### 🟡 Normal Priority (Comprehensive Coverage)
+
 **Important categories for complete utility coverage**
 
 1. **String Utilities Expansion** → [Missing Implementations Todo](TODO.missing-implementations.md#text-processing-new-category)
@@ -125,6 +129,7 @@ This directory contains detailed improvement plans for building the most compreh
    - **Target**: 20+ functions (currently have 0)
 
 ### 🟢 Low Priority (Specialized Domains)
+
 **Advanced and specialized utility categories**
 
 1. **Geometry Utilities** → [Missing Implementations Todo](TODO.missing-implementations.md#geometry-utilities-new-category)
@@ -152,76 +157,93 @@ This directory contains detailed improvement plans for building the most compreh
 ## Implementation Roadmap to Completeness
 
 ### Year 1: Complete API Refactor + Foundation (Months 1-12)
+
 **Goal**: Complete major breaking changes, then build comprehensive foundation**
 
 #### Q1: API Refactoring (Months 1-3) - BREAKING CHANGES
+
 **Critical: All existing functions must be refactored before new development**
 
 **Month 1: Logger Parameter Integration (ALL functions affected)**
+
 - Week 1: Export fixes to resolve compilation errors
 - Week 2: Design logger integration patterns and utilities
 - Week 3-4: Add logger parameters to all 150+ existing functions
 
 **Month 2: Named Parameter Refactoring (Major breaking change)**
+
 - Week 1-2: Convert all functions with 3+ parameters to named parameter syntax
 - Week 3: Update all usage sites and test files
 - Week 4: Update documentation and create migration guide
 
 **Month 3: Type Testing Infrastructure (Quality foundation)**
+
 - Week 1-2: Create comprehensive type testing for all type utilities
 - Week 3: Add type testing infrastructure and patterns
 - Week 4: Validate all type inference and create type safety benchmarks
 
 #### Q2: Foundation Building (Months 4-6) - 100+ New Functions
+
 **Build core categories with new API patterns**
 
 **Month 4: Object Utilities with New API (35+ functions)**
+
 - Week 1-2: Implement complete object utility ecosystem (pick, omit, merge)
 - Week 3: Object transformation and analysis functions
 - Week 4: Object path operations and validation
 
 **Month 5: Async Iterator Ecosystem (30+ functions)**
+
 - Week 1-2: Core async iteration with logger integration
 - Week 3: Advanced async patterns with named parameters
 - Week 4: Async stream basics and combination utilities
 
 **Month 6: Date/Time Mastery (25+ functions)**
+
 - Week 1-2: Date parsing, formatting, arithmetic with logging
 - Week 3: Timezone utilities with comprehensive parameter objects
 - Week 4: Date validation and query functions
 
 #### Q3: Core Expansion (Months 7-9) - 100+ Functions
+
 **Complete essential categories with new API standards**
 
 **Month 7: Mathematical Excellence (25+ functions)**
+
 - Week 1-2: Statistical functions with named parameters
 - Week 3: Geometric math and random generation
 - Week 4: Advanced mathematical operations
 
 **Month 8: Array Utilities Completion (40+ functions)**
+
 - Week 1-2: Advanced array algorithms (shuffle, unique, flatten)
 - Week 3: Array set operations with named parameters
 - Week 4: Array transformation and analysis functions
 
 **Month 9: Validation Framework (30+ functions)**
+
 - Week 1-2: String validation with comprehensive logging
 - Week 3: Numeric and type validation with named parameters
 - Week 4: Schema validation and complex object validation
 
 #### Q4: Modern Features (Months 10-12) - 100+ Functions
+
 **Add modern web development utilities**
 
 **Month 10: Network and String Processing (35+ functions)**
+
 - Week 1-2: URL manipulation and HTTP utilities
 - Week 3: Advanced string processing with logging
 - Week 4: Query string and network protocol utilities
 
 **Month 11: Collection and Stream Processing (30+ functions)**
+
 - Week 1-2: Advanced Set and Map operations
 - Week 3: Stream processing with async logging
 - Week 4: Specialized collections with comprehensive APIs
 
 **Month 12: Security and Performance (35+ functions)**
+
 - Week 1-2: Cryptographic utilities with secure logging
 - Week 3: Performance optimization for all 400+ functions
 - Week 4: Security validation and comprehensive testing
@@ -230,36 +252,36 @@ This directory contains detailed improvement plans for building the most compreh
 
 ### Current State Analysis
 
-| Category | Functions | Implementation | Testing | Documentation | Completeness |
-|----------|-----------|---------------|---------|---------------|--------------|
-| **Any Utilities** | 8/10 | 🟢 Good | 🟡 Partial | 🟡 Needs Work | 80% |
-| **Array Utilities** | 12/50+ | 🔴 Major Gap | 🟡 Partial | 🟡 Needs Work | 25% |
-| **Boolean Utilities** | 5/8 | 🟢 Good | 🟢 Excellent | 🟢 Good | 85% |
-| **Error Utilities** | 25/30 | 🟢 Excellent | 🟢 Good | 🟢 Good | 90% |
-| **Function Utilities** | 20/40 | 🟡 Partial | 🟢 Good | 🟡 Needs Work | 50% |
-| **Iterable Utilities** | 25/60+ | 🟡 Partial | 🟡 Partial | 🟡 Needs Work | 40% |
-| **Numeric Utilities** | 15/25 | 🟢 Good | 🟢 Good | 🟢 Good | 70% |
-| **String Utilities** | 20/40+ | 🟡 Partial | 🟢 Good | 🟡 Needs Work | 50% |
-| **Object Utilities** | 1/30+ | 🔴 Critical Gap | 🔴 N/A | 🔴 N/A | 3% |
-| **Date Utilities** | 0/25+ | 🔴 Missing | 🔴 N/A | 🔴 N/A | 0% |
-| **Math Utilities** | 5/25+ | 🔴 Major Gap | 🟡 Partial | 🔴 Missing | 20% |
-| **Collections** | 8/25+ | 🔴 Major Gap | 🟡 Partial | 🟡 Partial | 30% |
-| **Async Patterns** | 5/30+ | 🔴 Major Gap | 🟡 Partial | 🔴 Missing | 15% |
-| **Validation** | 5/30+ | 🔴 Major Gap | 🟡 Partial | 🔴 Missing | 15% |
-| **Network** | 0/15+ | 🔴 Missing | 🔴 N/A | 🔴 N/A | 0% |
-| **Crypto** | 2/15+ | 🔴 Major Gap | 🟡 Partial | 🔴 Missing | 10% |
-| **Stream** | 0/20+ | 🔴 Missing | 🔴 N/A | 🔴 N/A | 0% |
-| **Geometry** | 0/20+ | 🔴 Missing | 🔴 N/A | 🔴 N/A | 0% |
-| **Color** | 0/15+ | 🔴 Missing | 🔴 N/A | 🔴 N/A | 0% |
-| **Tree/Graph** | 1/15+ | 🔴 Major Gap | 🔴 Missing | 🔴 Missing | 5% |
+| Category               | Functions | Implementation  | Testing      | Documentation | Completeness |
+| ---------------------- | --------- | --------------- | ------------ | ------------- | ------------ |
+| **Any Utilities**      | 8/10      | 🟢 Good         | 🟡 Partial   | 🟡 Needs Work | 80%          |
+| **Array Utilities**    | 12/50+    | 🔴 Major Gap    | 🟡 Partial   | 🟡 Needs Work | 25%          |
+| **Boolean Utilities**  | 5/8       | 🟢 Good         | 🟢 Excellent | 🟢 Good       | 85%          |
+| **Error Utilities**    | 25/30     | 🟢 Excellent    | 🟢 Good      | 🟢 Good       | 90%          |
+| **Function Utilities** | 20/40     | 🟡 Partial      | 🟢 Good      | 🟡 Needs Work | 50%          |
+| **Iterable Utilities** | 25/60+    | 🟡 Partial      | 🟡 Partial   | 🟡 Needs Work | 40%          |
+| **Numeric Utilities**  | 15/25     | 🟢 Good         | 🟢 Good      | 🟢 Good       | 70%          |
+| **String Utilities**   | 20/40+    | 🟡 Partial      | 🟢 Good      | 🟡 Needs Work | 50%          |
+| **Object Utilities**   | 1/30+     | 🔴 Critical Gap | 🔴 N/A       | 🔴 N/A        | 3%           |
+| **Date Utilities**     | 0/25+     | 🔴 Missing      | 🔴 N/A       | 🔴 N/A        | 0%           |
+| **Math Utilities**     | 5/25+     | 🔴 Major Gap    | 🟡 Partial   | 🔴 Missing    | 20%          |
+| **Collections**        | 8/25+     | 🔴 Major Gap    | 🟡 Partial   | 🟡 Partial    | 30%          |
+| **Async Patterns**     | 5/30+     | 🔴 Major Gap    | 🟡 Partial   | 🔴 Missing    | 15%          |
+| **Validation**         | 5/30+     | 🔴 Major Gap    | 🟡 Partial   | 🔴 Missing    | 15%          |
+| **Network**            | 0/15+     | 🔴 Missing      | 🔴 N/A       | 🔴 N/A        | 0%           |
+| **Crypto**             | 2/15+     | 🔴 Major Gap    | 🟡 Partial   | 🔴 Missing    | 10%          |
+| **Stream**             | 0/20+     | 🔴 Missing      | 🔴 N/A       | 🔴 N/A        | 0%           |
+| **Geometry**           | 0/20+     | 🔴 Missing      | 🔴 N/A       | 🔴 N/A        | 0%           |
+| **Color**              | 0/15+     | 🔴 Missing      | 🔴 N/A       | 🔴 N/A        | 0%           |
+| **Tree/Graph**         | 1/15+     | 🔴 Major Gap    | 🔴 Missing   | 🔴 Missing    | 5%           |
 
 **Overall Completion**: ~150/500+ functions = **30%**
 
 ### Target State (Complete Vision)
 
-| Category | Functions | Implementation | Testing | Documentation | Completeness |
-|----------|-----------|---------------|---------|---------------|--------------|
-| **All Categories** | 500+ | 🟢 Complete | 🟢 95%+ Coverage | 🟢 Comprehensive | 100% |
+| Category           | Functions | Implementation | Testing          | Documentation    | Completeness |
+| ------------------ | --------- | -------------- | ---------------- | ---------------- | ------------ |
+| **All Categories** | 500+      | 🟢 Complete    | 🟢 95%+ Coverage | 🟢 Comprehensive | 100%         |
 
 **Target**: Become the definitive TypeScript functional programming library
 
@@ -268,15 +290,18 @@ This directory contains detailed improvement plans for building the most compreh
 ## Cross-Package Impact (Updated Vision)
 
 ### Build System Dependencies
+
 - **Export fixes** directly impact → [Build System Todo](../../TODO.build-system.md#missing-export-issues)
 - **Massive implementation scope** requires → [Performance Todo](../../TODO.performance.md#build-performance) optimization
 
 ### Ecosystem Impact
+
 - **Complete utility coverage** transforms → [CLI Tools Todo](../../TODO.cli-tools.md#advanced-development-tools)
 - **Comprehensive validation** enables → [Security Todo](../../TODO.security.md#input-validation-and-sanitization)
 - **Advanced async patterns** improve → [Performance Todo](../../TODO.performance.md#async-performance)
 
 ### Developer Experience Revolution
+
 - **500+ utilities** eliminate need for external utility libraries
 - **Complete type safety** transforms TypeScript development experience
 - **Universal patterns** establish consistent functional programming practices
@@ -286,151 +311,185 @@ This directory contains detailed improvement plans for building the most compreh
 ## Ambitious Implementation Roadmap
 
 ### Year 1: Complete API Refactor + Foundation (Months 1-12)
+
 **Goal**: Complete major breaking changes, then build comprehensive foundation**
 
 #### Q1: API Refactoring (Months 1-3) - BREAKING CHANGES
+
 **Critical: All existing functions must be refactored before new development**
 
 **Month 1: Logger Parameter Integration (ALL functions affected)**
+
 - Week 1: Export fixes to resolve compilation errors
 - Week 2: Design logger integration patterns and utilities
 - Week 3-4: Add logger parameters to all 150+ existing functions
 
 **Month 2: Named Parameter Refactoring (Major breaking change)**
+
 - Week 1-2: Convert all functions with 3+ parameters to named parameter syntax
 - Week 3: Update all usage sites and test files
 - Week 4: Update documentation and create migration guide
 
 **Month 3: Type Testing Infrastructure (Quality foundation)**
+
 - Week 1-2: Create comprehensive type testing for all type utilities
 - Week 3: Add type testing infrastructure and patterns
 - Week 4: Validate all type inference and create type safety benchmarks
 
 #### Q2: Foundation Building (Months 4-6) - 100+ New Functions
+
 **Build core categories with new API patterns**
 
 **Month 4: Object Utilities with New API (35+ functions)**
+
 - Week 1-2: Implement complete object utility ecosystem (pick, omit, merge)
 - Week 3: Object transformation and analysis functions
 - Week 4: Object path operations and validation
 
 **Month 5: Async Iterator Ecosystem (30+ functions)**
+
 - Week 1-2: Core async iteration with logger integration
 - Week 3: Advanced async patterns with named parameters
 - Week 4: Async stream basics and combination utilities
 
 **Month 6: Date/Time Mastery (25+ functions)**
+
 - Week 1-2: Date parsing, formatting, arithmetic with logging
 - Week 3: Timezone utilities with comprehensive parameter objects
 - Week 4: Date validation and query functions
 
 #### Q3: Core Expansion (Months 7-9) - 100+ Functions
+
 **Complete essential categories with new API standards**
 
 **Month 7: Mathematical Excellence (25+ functions)**
+
 - Week 1-2: Statistical functions with named parameters
 - Week 3: Geometric math and random generation
 - Week 4: Advanced mathematical operations
 
 **Month 8: Array Utilities Completion (40+ functions)**
+
 - Week 1-2: Advanced array algorithms (shuffle, unique, flatten)
 - Week 3: Array set operations with named parameters
 - Week 4: Array transformation and analysis functions
 
 **Month 9: Validation Framework (30+ functions)**
+
 - Week 1-2: String validation with comprehensive logging
 - Week 3: Numeric and type validation with named parameters
 - Week 4: Schema validation and complex object validation
 
 #### Q4: Modern Features (Months 10-12) - 100+ Functions
+
 **Add modern web development utilities**
 
 **Month 10: Network and String Processing (35+ functions)**
+
 - Week 1-2: URL manipulation and HTTP utilities
 - Week 3: Advanced string processing with logging
 - Week 4: Query string and network protocol utilities
 
 **Month 11: Collection and Stream Processing (30+ functions)**
+
 - Week 1-2: Advanced Set and Map operations
 - Week 3: Stream processing with async logging
 - Week 4: Specialized collections with comprehensive APIs
 
 **Month 12: Security and Performance (35+ functions)**
+
 - Week 1-2: Cryptographic utilities with secure logging
 - Week 3: Performance optimization for all 400+ functions
 - Week 4: Security validation and comprehensive testing
 
 ### Year 2: Specialized Domains (Months 13-24)
+
 **Goal**: Complete specialized domains for 100% utility coverage**
 
 #### Q1: Visual and Geometric Computing (Months 13-15) - 60+ Functions
+
 **Mathematics and graphics programming support**
 
 **Month 13: Geometry Utilities (20+ functions)**
+
 - Point, vector, and shape operations
 - Geometric calculations and transformations
 - Collision detection and spatial analysis
 
 **Month 14: Color Science (15+ functions)**
+
 - Color space conversion and manipulation
 - Color analysis and accessibility utilities
 - Color palette generation and harmony
 
 **Month 15: Advanced Mathematics (25+ functions)**
+
 - Linear algebra operations
 - Matrix manipulation and calculations
 - Mathematical modeling utilities
 
 #### Q2: Data Processing Excellence (Months 16-18) - 50+ Functions
+
 **Advanced data processing and analysis capabilities**
 
 **Month 16: Parser Utilities (15+ functions)**
+
 - Text parsing and tokenization
 - Grammar handling and parsing combinators
 - Format-specific parsers (CSV, markdown, etc.)
 
 **Month 17: Binary Data Processing (10+ functions)**
+
 - Byte array manipulation and processing
 - Bit operations and binary encoding
 - Binary protocol utilities
 
 **Month 18: Tree and Graph Algorithms (15+ functions)**
+
 - Tree traversal and manipulation
 - Graph algorithms and analysis
 - Advanced data structure operations
 
 **Month 19: Image Processing Basics (10+ functions)**
+
 - Image metadata and format detection
 - Basic image transformation utilities
 - Image analysis and processing helpers
 
 #### Q3: Advanced Abstractions (Months 19-21) - 40+ Functions
+
 **Cutting-edge functional programming patterns**
 
 **Month 20: Lens/Optics System (10+ functions)**
+
 - Functional data access and manipulation
 - Composable data transformation patterns
 - Immutable update utilities
 
 **Month 21: Advanced Monadic Patterns (15+ functions)**
+
 - Maybe, Either, IO monad implementations
 - Monad transformers and advanced abstractions
 - Functional error handling patterns
 
 **Month 22: Performance Specialization (15+ functions)**
+
 - High-performance variants of critical functions
 - Memory-efficient algorithms for large datasets
 - Performance monitoring and optimization utilities
 
 #### Q4: Ecosystem Excellence (Months 22-24) - 50+ Functions
+
 **Complete the vision with ecosystem integration**
 
 **Month 23: Developer Experience (25+ functions)**
+
 - Development and debugging utilities
 - Code generation and transformation helpers
 - Build-time utilities and optimizations
 
 **Month 24: Integration and Extension (25+ functions)**
+
 - Plugin system for extending functionality
 - Integration utilities for external libraries
 - Compatibility layers and migration utilities
@@ -440,6 +499,7 @@ This directory contains detailed improvement plans for building the most compreh
 ## Success Criteria for Complete Vision
 
 ### Quantitative Goals
+
 - [ ] **500+ utility functions** implemented across all categories
 - [ ] **95%+ test coverage** with comprehensive edge case testing
 - [ ] **100% TypeScript coverage** with excellent type inference
@@ -448,6 +508,7 @@ This directory contains detailed improvement plans for building the most compreh
 - [ ] **Universal platform support** (Node.js, browsers, Deno, Bun)
 
 ### Qualitative Goals
+
 - [ ] **Industry-leading type safety** - Best-in-class TypeScript experience
 - [ ] **Performance excellence** - Optimized algorithms throughout
 - [ ] **Developer experience leadership** - Intuitive APIs and comprehensive docs
@@ -456,6 +517,7 @@ This directory contains detailed improvement plans for building the most compreh
 - [ ] **Accessibility excellence** - All utilities support accessibility needs
 
 ### Ecosystem Impact Goals
+
 - [ ] **Eliminate external utility dependencies** - One library for all needs
 - [ ] **Establish TypeScript FP standards** - Define best practices for ecosystem
 - [ ] **Enable advanced development patterns** - Support cutting-edge development
@@ -463,6 +525,7 @@ This directory contains detailed improvement plans for building the most compreh
 - [ ] **Community adoption** - Become the definitive TypeScript FP library
 
 ### Technical Excellence Goals
+
 - [ ] **Zero breaking changes** after 1.0 - Stable API for long-term use
 - [ ] **Comprehensive documentation** - Every function comprehensively documented
 - [ ] **Educational value** - Library serves as learning resource for FP
@@ -473,6 +536,7 @@ This directory contains detailed improvement plans for building the most compreh
 ## Development Guidelines for Complete Vision
 
 ### Implementation Standards
+
 - **Pure functions only** - Absolutely no mutations or side effects
 - **Type safety excellence** - Leverage TypeScript's full power
 - **Performance optimization** - Every function optimized for common use cases
@@ -481,6 +545,7 @@ This directory contains detailed improvement plans for building the most compreh
 - **Security consciousness** - All user input validated and sanitized
 
 ### Quality Assurance Standards
+
 - **100% TSDoc coverage** - Every function comprehensively documented
 - **95%+ test coverage** - Extensive testing including edge cases
 - **Performance benchmarking** - All functions have performance characteristics documented
@@ -489,6 +554,7 @@ This directory contains detailed improvement plans for building the most compreh
 - **Cross-platform testing** - Validated on Node.js, browsers, and other runtimes
 
 ### Code Organization Principles
+
 - **Functional categories** - Clear organization by domain and use case
 - **Naming consistency** - Predictable naming patterns across all functions
 - **Composition-friendly** - Functions designed for easy composition
@@ -500,6 +566,7 @@ This directory contains detailed improvement plans for building the most compreh
 ## Notes for Ambitious Vision
 
 ### Philosophy
+
 - This package aims to be the **last utility library** any TypeScript project needs
 - **Every thinkable utility** should eventually be implemented
 - **Type safety and performance** are non-negotiable requirements
@@ -507,12 +574,14 @@ This directory contains detailed improvement plans for building the most compreh
 - **Universal compatibility** ensures maximum usefulness
 
 ### Scope Management
+
 - **Core categories first** - Prioritize utilities with broadest applicability
 - **Quality over quantity** - Every function must meet excellence standards
 - **Breaking changes avoided** - API stability essential for ecosystem adoption
 - **Community input** - User needs drive implementation priorities
 
 ### Long-term Vision
+
 - **Industry standard** - Become the definitive TypeScript FP library
 - **Educational resource** - Serve as example of excellent TypeScript and FP practices
 - **Innovation platform** - Pioneer new patterns and techniques

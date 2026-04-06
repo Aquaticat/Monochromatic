@@ -20,6 +20,13 @@ let available = true;
  * Verifies sessionStorage actually persists data.
  *
  * @returns whether sessionStorage is available and functional
+ *
+ * @example
+ * ```ts
+ * if (verify()) {
+ *   $(logRecord);
+ * }
+ * ```
  */
 export function verify(): boolean {
   if (verified)
@@ -47,6 +54,11 @@ export function verify(): boolean {
  * SessionStorage sink that writes log records to browser sessionStorage.
  *
  * @param record - log record to persist
+ *
+ * @example
+ * ```ts
+ * $({ level: 'info', message: 'user signed in', tags: ['auth'], timestamp: Date.now() });
+ * ```
  */
 export function $(record: LogRecord,): void {
   if (!available)

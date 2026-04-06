@@ -4,9 +4,7 @@
  * Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
  * Additionally runs a 1-second interval to live-update tracked-time chip text.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';
 import { api, } from './lib/api.ts';
 import { injectCSS, } from './lib/inject-css.ts';
@@ -72,7 +70,10 @@ for (const task of pageData.tasks) {
       {
         onOpen: handleOpen,
         onToggleComplete: async function handleStop(taskId,) {
-          await api(`/api/tasks/${taskId}/stop`, { method: 'POST', },);
+          await api(
+            `/api/tasks/${taskId}/stop`,
+            { method: 'POST', },
+          );
           globalThis.location.reload();
         },
       },
@@ -87,7 +88,10 @@ if (pageData.tasks.length > 0)
 setInterval(
   function updateTimers() {
     const cards = list.querySelectorAll<HTMLElement>('task-card',);
-    cards.forEach(function updateCard(card, cardIndex,) {
+    cards.forEach(function updateCard(
+      card,
+      cardIndex,
+    ) {
       const task = pageData.tasks[cardIndex];
       if (task === undefined)
         return;

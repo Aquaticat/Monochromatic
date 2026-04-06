@@ -20,7 +20,10 @@ export function mean(values: readonly number[],): number {
   if (values.length === 0)
     return 0;
   return values.reduce(
-    function accumulate(sum, value,): number {
+    function accumulate(
+      sum,
+      value,
+    ): number {
       return sum + value;
     },
     0,

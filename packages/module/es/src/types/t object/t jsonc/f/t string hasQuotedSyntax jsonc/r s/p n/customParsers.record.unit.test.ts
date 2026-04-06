@@ -26,7 +26,7 @@ await describe({
         expect(out.value.size,).toBe(0,);
         expect(out.remainingContent,).toBe('' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'empty object with inside comment merges into record-level',
@@ -38,7 +38,7 @@ await describe({
         expect(out.comment?.commentValue.trim(),).toBe('c',);
         expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
     //endregion Empty objects
 
     //region Pairs and separators -- single/multiple and trailing comma
@@ -52,7 +52,7 @@ await describe({
         expect(key.value,).toBe('"a"',);
         expect((val as Jsonc.Number).value,).toBe(1,);
       },
-    }),
+    },),
 
     it({
       name: 'multiple pairs with trailing comma and comments',
@@ -69,7 +69,7 @@ await describe({
           .toEqual([['"a"', 1,], ['"b"', 2,],],);
         expect(out.remainingContent,).toBe('X' as FragmentStringJsonc,);
       },
-    }),
+    },),
     //endregion Pairs and separators
 
     //region Nesting -- arrays and objects
@@ -88,7 +88,7 @@ await describe({
         expect(bVal.value instanceof Map,).toBe(true,);
         expect(bVal.value.size,).toBe(0,);
       },
-    }),
+    },),
     //endregion Nesting
 
     //region Comments semantics -- outside vs inside
@@ -101,7 +101,7 @@ await describe({
         },);
         expect(out.comment?.commentValue,).toBe('A',);
       },
-    }),
+    },),
 
     it({
       name: 'first key receives inside comment',
@@ -112,7 +112,7 @@ await describe({
         expect(firstKey.comment?.commentValue.trim(),).toBe('C',);
         expect(out.comment,).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'empty object merges outside and inside comments',
@@ -126,7 +126,7 @@ await describe({
         expect(out.comment?.commentValue,).toBe('A\n X ',);
         expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
     //endregion Comments semantics
 
     //region Errors -- malformed structures
@@ -137,7 +137,7 @@ await describe({
           /expected ':' after key/,
         );
       },
-    }),
+    },),
 
     it({
       name: 'missing comma between pairs',
@@ -146,7 +146,7 @@ await describe({
           /expected ',' or '}/,
         );
       },
-    }),
+    },),
     //endregion Errors
   ],
 },);

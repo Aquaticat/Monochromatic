@@ -167,6 +167,12 @@ function camelToKebab(property: string,): string {
  * @param children - child HTML strings to concatenate
  *
  * @returns well-formed HTML element string
+ *
+ * @example
+ * ```ts
+ * $({ tag: 'div', class: 'card', text: 'hello' });
+ * // '<div class="card">hello</div>'
+ * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $(
   {

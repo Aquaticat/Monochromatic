@@ -13,13 +13,13 @@ await describe({
       fn: async () => {
         expect($({ tag: 'title', text: 'My Feed', },),).toBe('<title>My Feed</title>',);
       },
-    }),
+    },),
     it({
       name: 'self-closes elements with no content',
       fn: async () => {
         expect($({ tag: 'link', },),).toBe('<link />',);
       },
-    }),
+    },),
     it({
       name: 'self-closes elements with attrs but no content',
       fn: async () => {
@@ -27,19 +27,19 @@ await describe({
           '<link href="https://example.com" />',
         );
       },
-    }),
+    },),
     it({
       name: 'does not self-close when text is provided',
       fn: async () => {
         expect($({ tag: 'name', text: '', },),).toBe('<name></name>',);
       },
-    }),
+    },),
     it({
       name: 'does not self-close when raw is provided',
       fn: async () => {
         expect($({ tag: 'content', raw: '', },),).toBe('<content></content>',);
       },
-    }),
+    },),
     it({
       name: 'does not self-close when children array is non-empty',
       fn: async () => {
@@ -47,13 +47,13 @@ await describe({
           '<items><item>a</item></items>',
         );
       },
-    }),
+    },),
     it({
       name: 'self-closes when children array is empty',
       fn: async () => {
         expect($({ tag: 'items', children: [], },),).toBe('<items />',);
       },
-    }),
+    },),
     it({
       name: 'escapes text content',
       fn: async () => {
@@ -61,7 +61,7 @@ await describe({
           '<content>x &lt; y &amp; z &gt; w</content>',
         );
       },
-    }),
+    },),
     it({
       name: 'escapes double quotes in text',
       fn: async () => {
@@ -69,7 +69,7 @@ await describe({
           '<title>say &quot;hello&quot;</title>',
         );
       },
-    }),
+    },),
     it({
       name: 'escapes single quotes (apostrophes) in text',
       fn: async () => {
@@ -77,7 +77,7 @@ await describe({
           '<title>it&apos;s</title>',
         );
       },
-    }),
+    },),
     it({
       name: 'escapes attribute values',
       fn: async () => {
@@ -85,7 +85,7 @@ await describe({
           '<link href="a&amp;b=c&lt;d" />',
         );
       },
-    }),
+    },),
     it({
       name: 'does not escape raw content',
       fn: async () => {
@@ -94,7 +94,7 @@ await describe({
           `<wrapper>${inner}</wrapper>`,
         );
       },
-    }),
+    },),
     it({
       name: 'renders multiple attributes in order',
       fn: async () => {
@@ -104,7 +104,7 @@ await describe({
         },),)
           .toBe('<entry id="1" type="post" />',);
       },
-    }),
+    },),
     it({
       name: 'renders namespaced tag names',
       fn: async () => {
@@ -112,7 +112,7 @@ await describe({
           '<atom:title>Feed</atom:title>',
         );
       },
-    }),
+    },),
     it({
       name: 'renders namespaced attributes',
       fn: async () => {
@@ -125,7 +125,7 @@ await describe({
             '<feed xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Feed</atom:title></feed>',
           );
       },
-    }),
+    },),
     it({
       name: 'concatenates text, raw, and children in order',
       fn: async () => {
@@ -137,7 +137,7 @@ await describe({
         },),)
           .toBe('<mixed>hello<b>world</b><i>!</i></mixed>',);
       },
-    }),
+    },),
     it({
       name: 'concatenates multiple children',
       fn: async () => {
@@ -151,7 +151,7 @@ await describe({
         },),)
           .toBe('<list><item>a</item><item>b</item><item>c</item></list>',);
       },
-    }),
+    },),
     it({
       name: 'handles deeply nested elements',
       fn: async () => {
@@ -168,7 +168,7 @@ await describe({
         },);
         expect(result,).toBe('<root><parent><child>leaf</child></parent></root>',);
       },
-    }),
+    },),
     it({
       name: 'handles RSS-like structure',
       fn: async () => {
@@ -196,6 +196,6 @@ await describe({
           '<rss version="2.0"><channel><title>My Blog</title><link href="https://example.com" /><item><title>First Post</title><description>Hello &lt;world&gt;</description></item></channel></rss>',
         );
       },
-    }),
+    },),
   ],
 },);

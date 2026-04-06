@@ -9,11 +9,11 @@ All computation runs locally — no data leaves the machine.
 
 ## How it works
 
-1.  **Capture** — takes a screenshot (Spectacle) and a webcam frame (ffmpeg/v4l2), downscales both via ffmpeg
-2.  **Buffer** — stores captures in a 10-minute rolling in-memory buffer so the LLM can compare across time
-3.  **Analyze** — starts a local `llama-server`, sends the buffered captures to LFM2.5-VL-1.6B, receives a PRODUCTIVE / UNPRODUCTIVE verdict
-4.  **Notify** — tracks the last 5 verdicts in a sliding window; when all 5 are UNPRODUCTIVE, fires a `notify-send` critical notification with the LLM's summary, then resets the window
-5.  **Repeat** — the llama-server is stopped between cycles to free VRAM, then the loop sleeps for 5 minutes
+1. **Capture** — takes a screenshot (Spectacle) and a webcam frame (ffmpeg/v4l2), downscales both via ffmpeg
+2. **Buffer** — stores captures in a 10-minute rolling in-memory buffer so the LLM can compare across time
+3. **Analyze** — starts a local `llama-server`, sends the buffered captures to LFM2.5-VL-1.6B, receives a PRODUCTIVE / UNPRODUCTIVE verdict
+4. **Notify** — tracks the last 5 verdicts in a sliding window; when all 5 are UNPRODUCTIVE, fires a `notify-send` critical notification with the LLM's summary, then resets the window
+5. **Repeat** — the llama-server is stopped between cycles to free VRAM, then the loop sleeps for 5 minutes
 
 ## Requirements
 
@@ -37,9 +37,9 @@ Edit the paths at the top of `src/analyze/llama.ts` to match your system:
 
 ```typescript
 // src/analyze/llama.ts
-const MODEL = "/path/to/LFM2.5-VL-1.6B-Q4_0.gguf";
-const MMPROJ = "/path/to/mmproj-LFM2.5-VL-1.6b-Q8_0.gguf";
-const LLAMA_SERVER = "/path/to/llama-server";
+const MODEL = '/path/to/LFM2.5-VL-1.6B-Q4_0.gguf';
+const MMPROJ = '/path/to/mmproj-LFM2.5-VL-1.6b-Q8_0.gguf';
+const LLAMA_SERVER = '/path/to/llama-server';
 ```
 
 Download model files from Hugging Face:

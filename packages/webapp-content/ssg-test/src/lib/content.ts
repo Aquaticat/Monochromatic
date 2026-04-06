@@ -23,6 +23,9 @@ import { sha256, } from './cache-hash.ts';
 /** Opening delimiter for YAML frontmatter blocks. */
 const FRONTMATTER_OPEN = '---';
 
+/** Unicode Byte Order Mark code point, stripped from file content before parsing. */
+const BOM = 0xFE_FF;
+
 /**
  * Parses YAML frontmatter delimited by `---` from a raw string.
  *
@@ -39,18 +42,32 @@ const FRONTMATTER_OPEN = '---';
  * // data = { title: 'Hello' }, content = 'body'
  * ```
  */
-function parseFrontmatter(raw: string,): { data: Record<string, unknown>; content: string } {
+function parseFrontmatter(
+  raw: string,
+): {
+  data: Record<string, unknown>;
+  content: string;
+} {
   /* Strip optional leading BOM. */
-  const str = raw.charCodeAt(0,) === 0xFEFF ? raw.slice(1,) : raw;
+  const str = raw.codePointAt(0,) === BOM ? raw.slice(1,) : raw;
 
   if (!str.startsWith(FRONTMATTER_OPEN,)) {
-    return { data: {}, content: str, };
+    return {
+      data: {},
+      content: str,
+    };
   }
 
   /* Skip past the opening `---` and its trailing newline. */
-  const afterOpen = str.indexOf('\n', FRONTMATTER_OPEN.length,);
+  const afterOpen = str.indexOf(
+    '\n',
+    FRONTMATTER_OPEN.length,
+  );
   if (afterOpen === -1) {
-    return { data: {}, content: str, };
+    return {
+      data: {},
+      content: str,
+    };
   }
 
   /**
@@ -61,9 +78,15 @@ function parseFrontmatter(raw: string,): { data: Record<string, unknown>; conten
   let closeStart = searchFrom;
 
   for (;;) {
-    const idx = str.indexOf(FRONTMATTER_OPEN, closeStart,);
+    const idx = str.indexOf(
+      FRONTMATTER_OPEN,
+      closeStart,
+    );
     if (idx === -1) {
-      return { data: {}, content: str, };
+      return {
+        data: {},
+        content: str,
+      };
     }
 
     /* The delimiter must be at column 0 or immediately after a newline. */
@@ -71,17 +94,22 @@ function parseFrontmatter(raw: string,): { data: Record<string, unknown>; conten
       const afterDelim = idx + FRONTMATTER_OPEN.length;
 
       /* Next char must be a newline or EOF for a valid closing fence. */
-      if (afterDelim === str.length || str[afterDelim] === '\n' || str[afterDelim] === '\r') {
-        const yamlBlock = str.slice(searchFrom, idx,);
+      if (afterDelim === str.length
+        || str[afterDelim] === '\n'
+        || str[afterDelim] === '\r')
+      {
+        const yamlBlock = str.slice(
+          searchFrom,
+          idx,
+        );
         let bodyStart = afterDelim;
-        if (str[bodyStart] === '\r') {
+        if (str[bodyStart] === '\r')
           bodyStart += 1;
-        }
-        if (str[bodyStart] === '\n') {
+        if (str[bodyStart] === '\n')
           bodyStart += 1;
-        }
 
         return {
+          // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- parseYaml returns `any`; runtime validation follows via zod schema
           data: (parseYaml(yamlBlock,) ?? {}) as Record<string, unknown>,
           content: str.slice(bodyStart,),
         };
@@ -149,6 +177,11 @@ export type Post = {
  * @returns array of parsed and validated posts
  *
  * @throws on frontmatter validation failure
+ *
+ * @example
+ * ```ts
+ * const posts = await loadContent('src/content');
+ * ```
  */
 export async function loadContent(contentDir: string,): Promise<Post[]> {
   const result = await readdir(

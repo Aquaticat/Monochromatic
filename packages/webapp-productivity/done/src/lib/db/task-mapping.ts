@@ -10,6 +10,11 @@ import type { TaskRow, } from './task-sql.ts';
  * Returns the current timestamp in ISO 8601 format for database writes.
  *
  * @returns Current ISO timestamp string
+ *
+ * @example
+ * ```ts
+ * const timestamp = nowIso(); // '2026-04-05T12:00:00.000Z'
+ * ```
  */
 export function nowIso(): string {
   return new Date().toISOString();
@@ -22,6 +27,11 @@ export function nowIso(): string {
  * @param value - Raw JSON text from a SQLite TEXT column
  *
  * @returns Parsed string array, or empty array on failure
+ *
+ * @example
+ * ```ts
+ * parseStringArray('["a","b"]'); // ['a', 'b']
+ * ```
  */
 export function parseStringArray(value: string,): string[] {
   try {
@@ -44,6 +54,11 @@ export function parseStringArray(value: string,): string[] {
  * @param values - Raw string array, or `undefined` to produce an empty result
  *
  * @returns Normalized deduplicated array
+ *
+ * @example
+ * ```ts
+ * normalizeStringArray([' a ', 'b', 'a']); // ['a', 'b']
+ * ```
  */
 export function normalizeStringArray(values: readonly string[] | undefined,): string[] {
   if (values === undefined)
@@ -64,6 +79,11 @@ export function normalizeStringArray(values: readonly string[] | undefined,): st
  * @param row - Raw database row
  *
  * @returns Mapped task object
+ *
+ * @example
+ * ```ts
+ * const task = mapTask(row);
+ * ```
  */
 export function mapTask(row: TaskRow,): Task {
   return {

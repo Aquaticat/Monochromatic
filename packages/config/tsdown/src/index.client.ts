@@ -36,7 +36,11 @@ const _default_1: UserConfig = defineConfig({
         'main',
       ],
       alias: {
-        canvg: join(import.meta.dirname, 'stubs', 'canvg.ts'),
+        canvg: join(
+          import.meta.dirname,
+          'stubs',
+          'canvg.ts',
+        ),
       },
     },
   },

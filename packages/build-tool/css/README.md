@@ -26,12 +26,12 @@ bun packages/build/css/src/index.ts src/main.css dist/bundle.css
 ### Programmatic
 
 ```ts
-import { build } from '@monochromatic-dev/build-css';
+import { build, } from '@monochromatic-dev/build-css';
 
 const css = await build({
   input: 'src/main.css',
   output: 'dist/bundle.css',
-});
+},);
 ```
 
 ## CSS syntax
@@ -90,13 +90,13 @@ The `build()` function processes standalone `.css` files on disk.
 For consumers that already have CSS text in memory -- such as web components with Shadow DOM styles defined as JavaScript strings -- use `applyMixins()`:
 
 ```ts
-import { applyMixins } from '@monochromatic-dev/build-css/ts';
-import mixinSource from './mixins.css' with { type: 'text' };
+import { applyMixins, } from '@monochromatic-dev/build-css/ts';
+import mixinSource from './mixins.css' with { type: 'text', };
 
 const expanded = applyMixins(`
   .close { @apply --reset-button; @apply --touch-target; }
   .pill  { @apply --pill; }
-`, mixinSource);
+`, mixinSource,);
 ```
 
 `applyMixins(cssText, mixinCssText)` encapsulates the full pipeline (parse mixin definitions, expand nested mixin bodies, inline `@apply` rules, serialize) and returns the expanded CSS string.
@@ -109,7 +109,7 @@ Import the provided shim before any build-css import:
 
 ```ts
 import '@monochromatic-dev/build-css/ts/process-shim';
-import { applyMixins } from '@monochromatic-dev/build-css/ts';
+import { applyMixins, } from '@monochromatic-dev/build-css/ts';
 ```
 
 ## Build pipeline
@@ -122,16 +122,16 @@ import { applyMixins } from '@monochromatic-dev/build-css/ts';
 
 ## Module structure
 
-| File | Purpose |
-|------|---------|
-| `index.ts` | CLI entry point with argument parsing |
-| `build.ts` | Orchestrates the full pipeline; exports `build()` and `applyMixins()` |
-| `import.ts` | Custom PostCSS `@import` plugin with monorepo-aware resolution |
-| `mixin.ts` | `collectMixins` and `expandApplyRules` (PostCSS walkers) |
-| `mixin-registry.ts` | Mixin storage, nested `@apply` expansion, type guards |
-| `fs.ts` | Adaptive file reader (in-memory registry with `node:fs` fallback) |
-| `fs-registry.ts` | In-memory `Map` for browser-side file storage |
-| `process-shim.ts` | Minimal `globalThis.process` shim for browser environments |
+| File                | Purpose                                                               |
+| ------------------- | --------------------------------------------------------------------- |
+| `index.ts`          | CLI entry point with argument parsing                                 |
+| `build.ts`          | Orchestrates the full pipeline; exports `build()` and `applyMixins()` |
+| `import.ts`         | Custom PostCSS `@import` plugin with monorepo-aware resolution        |
+| `mixin.ts`          | `collectMixins` and `expandApplyRules` (PostCSS walkers)              |
+| `mixin-registry.ts` | Mixin storage, nested `@apply` expansion, type guards                 |
+| `fs.ts`             | Adaptive file reader (in-memory registry with `node:fs` fallback)     |
+| `fs-registry.ts`    | In-memory `Map` for browser-side file storage                         |
+| `process-shim.ts`   | Minimal `globalThis.process` shim for browser environments            |
 
 ## Testing
 

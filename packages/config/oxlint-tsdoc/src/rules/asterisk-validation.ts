@@ -36,21 +36,35 @@ export const noMultiAsterisks: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createTsdocVisitor(
       context,
-      function noMultiHandler(_node, comment,): void {
+      function noMultiHandler(
+        _node,
+        comment,
+      ): void {
         const lines = getCommentLines(comment,);
         // Skip first line (opening) and last line (closing)
-        lines.slice(1, -1,).forEach(function checkLine(line, index,): void {
-          const trimmed = line.trimStart();
-          // After the leading *, check for immediate additional *
-          if (trimmed.startsWith('**',) && !trimmed.startsWith('*/',)) {
-            context.report({
-              loc: {
-                start: { line: comment.loc.start.line + index + 1, column: 0, },
-              },
-              messageId: 'extra',
-            },);
-          }
-        },);
+        lines
+          .slice(
+            1,
+            -1,
+          )
+          .forEach(function checkLine(
+            line,
+            index,
+          ): void {
+            const trimmed = line.trimStart();
+            // After the leading *, check for immediate additional *
+            if (trimmed.startsWith('**',) && !trimmed.startsWith('*/',)) {
+              context.report({
+                loc: {
+                  start: {
+                    line: comment.loc.start.line + index + 1,
+                    column: 0,
+                  },
+                },
+                messageId: 'extra',
+              },);
+            }
+          },);
       },
     );
   },

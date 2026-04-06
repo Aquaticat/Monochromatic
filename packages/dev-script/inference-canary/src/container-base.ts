@@ -62,9 +62,9 @@ export async function execBun(
   }
 
   try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn accepts mutable string array
     const result = await spawn(
       command,
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn accepts mutable string array
       args as string[],
       {
         timeout: options.timeout,

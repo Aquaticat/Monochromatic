@@ -3,9 +3,7 @@
  *
  * Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { SearchTask, } from '../lib/types.ts';
 import { api, } from './lib/api.ts';
 import { injectCSS, } from './lib/inject-css.ts';
@@ -54,6 +52,7 @@ const app = appElement;
 // Listen for search events from the search-bar component
 document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
   'search',
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent handler must be cast to EventListener for addEventListener
   (function handleSearch(event: CustomEvent<{ query: string; }>,) {
     const { query, } = event.detail;
     globalThis.location.href = query.length === 0
@@ -107,7 +106,10 @@ else {
           showBlockedBadge: result.isBlocked,
           onOpen: handleOpen,
           onToggleComplete: async function handleComplete(taskId,) {
-            await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
+            await api(
+              `/api/tasks/${taskId}/complete`,
+              { method: 'POST', },
+            );
             globalThis.location.reload();
           },
         },

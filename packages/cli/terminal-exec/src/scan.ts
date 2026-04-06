@@ -119,7 +119,10 @@ export async function scanEntries({ dirs, }: { dirs: readonly string[]; },): Pro
       );
       registry.set(
         id,
-        { id, path: filePath, },
+        {
+          id,
+          path: filePath,
+        },
       );
       /** Remove previous occurrence so re-adding puts it at the end (higher priority). */
       const prevIdx = allIds.indexOf(id,);

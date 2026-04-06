@@ -58,6 +58,16 @@ export type ProfilePair = {
  * @param pair - reference and composite profiles with bounds
  *
  * @returns array of measurement rows for all landmarks
+ *
+ * @example
+ * ```ts
+ * const rows = computeLandmarkMeasurements({
+ *   refProfile,
+ *   cmpProfile,
+ *   refBounds,
+ *   cmpBounds,
+ * });
+ * ```
  */
 export function computeLandmarkMeasurements(pair: ProfilePair,): MeasurementRow[] {
   const {

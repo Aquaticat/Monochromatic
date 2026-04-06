@@ -35,7 +35,12 @@ export async function shell({ name, }: { name: string; },): Promise<void> {
   try {
     await nanoSpawn(
       'virsh',
-      ['--connect', LIBVIRT_URI, 'console', fullName,],
+      [
+        '--connect',
+        LIBVIRT_URI,
+        'console',
+        fullName,
+      ],
       {
         stderr: 'inherit',
         stdin: 'inherit',

@@ -106,7 +106,10 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
       err,
     );
     return {
-      content: [{ type: 'text', text: `Error: ${message}`, },],
+      content: [{
+        type: 'text',
+        text: `Error: ${message}`,
+      },],
       isError: true,
     };
   }

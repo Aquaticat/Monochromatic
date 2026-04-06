@@ -67,6 +67,5 @@ export const correctnessRules: DummyRuleMap = {
   'eslint/no-await-in-loop': 'warn',
   'oxc/no-accumulating-spread': 'warn',
   'unicorn/prefer-set-has': 'warn',
-
   //endregion perf
 };

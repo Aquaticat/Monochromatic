@@ -1,9 +1,7 @@
 /**
  * Builds the "Suggested" section DOM for the inbox page.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   buildTaskList,
   type InboxPageData,
@@ -19,6 +17,12 @@ import {
  * @param onComplete - Callback to complete a task
  *
  * @returns Section heading element containing the suggested tasks UI
+ *
+ * @example
+ * ```ts
+ * const section = buildSuggestedSection({ pageData, onOpen: handleOpen, onComplete: handleComplete });
+ * app.prepend(section);
+ * ```
  */
 export function buildSuggestedSection({
   pageData,
@@ -32,7 +36,10 @@ export function buildSuggestedSection({
   /** Collapsible section heading for the suggested tasks block. */
   const suggestedSection = h({
     tag: 'section-heading',
-    attrs: { icon: '\u2728', label: 'Suggested', },
+    attrs: {
+      icon: '\u2728',
+      label: 'Suggested',
+    },
   },);
 
   /** Content container for the suggested tasks section. */

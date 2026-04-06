@@ -25,6 +25,7 @@ to the terminal so the user can see what Claude sees.
 ### Channels tested
 
 **`/dev/tty` (direct terminal write)**
+
 - Result: **garbled output**
 - The write reaches the terminal content area, but ink repaints over it immediately.
   The hook's output gets interleaved with ink's render pass, producing corrupted text.
@@ -34,6 +35,7 @@ to the terminal so the user can see what Claude sees.
   terminal title bar, not the content area. Arbitrary visible text does not survive.
 
 **stderr**
+
 - Result: **completely swallowed**
 - No trace of stderr output appeared in the terminal.
   ink likely captures or redirects stderr from child processes.
@@ -41,11 +43,13 @@ to the terminal so the user can see what Claude sees.
 ### Channels not tested (and why)
 
 **`systemMessage` (hook JSON output)**
+
 - The hook can return `{"systemMessage": "..."}` which Claude Code displays in its UI.
 - Not suitable for full file contents: designed for short status messages,
   likely truncated or poorly formatted for multi-hundred-line output.
 
 **`additionalContext` (hook JSON output)**
+
 - Injects text back into Claude's context window.
 - Defeats the purpose: the goal was to show content to the user
   without polluting the model's context.

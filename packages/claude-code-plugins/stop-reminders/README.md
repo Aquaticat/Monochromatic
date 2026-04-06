@@ -45,8 +45,8 @@ Add to `.claude/settings.json` or `.claude/settings.local.json`:
 ```jsonc
 {
   "hooks": {
-    "Stop": [{ "type": "command", "command": "ccsr" }]
-  }
+    "Stop": [{ "type": "command", "command": "ccsr" }],
+  },
 }
 ```
 

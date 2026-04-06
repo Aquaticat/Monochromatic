@@ -26,7 +26,7 @@ import type {
  */
 export function $(value: string,): value is BacktickSyntax {
   // get first effective (unescaped) quote
-  const firstEffectiveQuoteMatch = value.match(/(?<!\\)(?:\\\\)*["'`]/,);
+  const firstEffectiveQuoteMatch = /(?<!\\)(?:\\\\)*["'`]/.exec(value,);
 
   // assert that's a backtick
   return firstEffectiveQuoteMatch?.[0] === '`';

@@ -85,12 +85,13 @@ await describe({
       fn: async () => {
         expect(coerceArg({ arg: '42', },),).toBe(42,);
       },
-    }),
+    },),
   ],
 },);
 ```
 
 Key differences from bun:test / Jest:
+
 - Import `describe`, `it`, `expect` from `@monochromatic-dev/module-test` (not `bun:test`)
 - Use `it` (not `test`)
 - `describe` and `it` take an options object `{ name, children/fn }`, not positional `(name, callback)` arguments
@@ -138,14 +139,13 @@ Target 100% test coverage. When certain lines or branches cannot be tested (e.g.
 
 ```ts
 /* v8 ignore next -- @preserve */
-if (impossibleCondition) {
-  throw new Error('This should never happen');
-}
+if (impossibleCondition)
+  throw new Error('This should never happen',);
 
 // For multiple lines:
 /* v8 ignore next 3 -- @preserve */
 if (untestableCondition) {
-  console.error('Untestable path');
+  console.error('Untestable path',);
   return fallbackValue;
 }
 ```
@@ -170,16 +170,18 @@ await describe({
       return it({
         name: `returns true for ${String(ext,)} extension`,
         fn: async () => {
-          expect(shouldIgnoreFile(`/some/path/file${String(ext,)}`,),).toBe(true,);
+          expect(shouldIgnoreFile(`/some/path/file${String(ext,)}`,),).toBe(
+            true,
+          );
         },
-      });
+      },);
     },),
     it({
       name: 'returns false for plain .ts files',
       fn: async () => {
         expect(shouldIgnoreFile('/some/path/file.ts',),).toBe(false,);
       },
-    }),
+    },),
   ],
 },);
 ```
@@ -196,7 +198,7 @@ it({
     expect(result,).toBeDefined();
   },
   timeout: 30_000,
-})
+},);
 ```
 
 Suites also accept `timeout` which applies to all children collectively.
@@ -225,7 +227,7 @@ it({
   fn: async () => {
     throw new Error('expected',);
   },
-})
+},);
 ```
 
 ### Repeating tests (flake detection)
@@ -274,7 +276,7 @@ await describe({
       fn: async () => {
         expect(coerceArg({ arg: '42', },),).toBe(42,);
       },
-    }),
+    },),
 
     //endregion Numeric coercion
 
@@ -285,8 +287,7 @@ await describe({
       fn: async () => {
         expect(coerceArg({ arg: 'true', },),).toBe(true,);
       },
-    }),
-
+    },),
     //endregion Boolean and null coercion
   ],
 },);
@@ -302,12 +303,12 @@ Use `ctx.expect.assertions(n)` to verify exactly N assertions run:
 ```ts
 it({
   name: 'all assertions execute',
-  fn: async (ctx,) => {
+  fn: async ctx => {
     ctx.expect.assertions(2,);
     ctx.expect(await readFile(path,),).toBe('content',);
     ctx.expect(exists,).toBe(true,);
   },
-})
+},);
 ```
 
 The global `expect` also works but does not support assertion counting.
@@ -319,12 +320,12 @@ The test context provides a sinon sandbox that auto-restores after the test:
 ```ts
 it({
   name: 'logs a message',
-  fn: async (ctx,) => {
+  fn: async ctx => {
     const spy = ctx.sinon.spy(console, 'log',);
     doSomething();
     expect(spy,).toHaveBeenCalledWith('hello',);
   },
-})
+},);
 ```
 
 ## Async error assertions
@@ -345,13 +346,14 @@ it({
     let caught: unknown;
     try {
       await readConfig('/nonexistent',);
-    } catch (error) {
+    }
+    catch (error) {
       caught = error;
     }
     expect(caught,).toBeInstanceOf(ConfigError,);
     expect((caught as Error).message,).toContain('not found',);
   },
-})
+},);
 
 // Preferred: await first, assert on the resolved value
 it({
@@ -360,7 +362,7 @@ it({
     const result = await readConfig('/valid',);
     expect(result,).toHaveProperty('version', 2,);
   },
-})
+},);
 ```
 
 ## Type-level testing
@@ -380,9 +382,11 @@ await describe({
     it({
       name: 'IsArrayFixedLength',
       fn: async () => {
-        expectTypeOf<IsArrayFixedLength<[number, string]>>().toEqualTypeOf<true>();
+        expectTypeOf<IsArrayFixedLength<[number, string,]>>().toEqualTypeOf<
+          true
+        >();
       },
-    }),
+    },),
   ],
 },);
 ```
@@ -427,7 +431,7 @@ When tests intentionally violate a lint rule to verify behavior:
 
 ```ts
 // BAD: Adding data to satisfy the linter
-expect(isError(new Error('test message'),),).toBe(true,);
+expect(isError(new Error('test message',),),).toBe(true,);
 
 // GOOD: Use disable comments for intentional violations
 // oxlint-disable-next-line unicorn/error-message -- Testing error without message

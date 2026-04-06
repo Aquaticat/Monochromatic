@@ -29,7 +29,7 @@ const TITLE_FONT_SIZE = 1 + 1 / 2 / 2;
 const CHIP_GAP = 1 / 2 / 2;
 
 /** Compiled CSS string for `<task-card>` Shadow DOM. */
-export const TASK_CARD_STYLES = [
+export const TASK_CARD_STYLES: string = [
   css({
     rule: ':host',
     decls: {

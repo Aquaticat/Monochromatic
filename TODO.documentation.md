@@ -1,6 +1,7 @@
 # Documentation & UI/UX Todo
 
 ## Cross-References
+
 - [**Package Documentation**](TODO.packages.md#cross-package-improvements) - Package-specific documentation needs
 - [**Security Documentation**](TODO.security.md#security-documentation) - Security guidelines and procedures
 - [**Performance Documentation**](TODO.performance.md#monitoring--metrics) - Performance guidelines and metrics
@@ -12,11 +13,13 @@
 ### High Priority
 
 #### PlantUML Integration
+
 **Status**: Normal Priority - Content creation enhancement
 
 Add support for PlantUML diagrams in documentation.
 
 #### Enhanced Implementation Tasks
+
 - [ ] Set up PlantUML rendering pipeline
 - [ ] Create diagram template library for common patterns
 - [ ] Add automated diagram validation and testing
@@ -25,6 +28,7 @@ Add support for PlantUML diagrams in documentation.
 - [ ] Add diagram accessibility compliance
 
 #### API Documentation Automation
+
 **Status**: High Priority - Developer experience
 
 - [ ] Implement automated API documentation generation from TSDoc comments
@@ -37,14 +41,17 @@ Add support for PlantUML diagrams in documentation.
 **Cross-Reference**: See [Automation Todo](TODO.automation.md#documentation-automation) for comprehensive automation.
 
 #### Optimize SVG
+
 **Status**: Normal Priority - Performance improvement
 
 Reduce redundant attributes in PlantUML-generated SVGs:
+
 - Remove redundant height/width attributes
 - Optimize fill attributes on subelements
 - Make font-size and similar properties more accessible
 
 #### Enhanced SVG Optimization Tasks
+
 - [ ] Create automated SVG optimization pipeline
 - [ ] Add SVG accessibility improvements
 - [ ] Implement SVG compression and minification
@@ -57,12 +64,14 @@ Reduce redundant attributes in PlantUML-generated SVGs:
 ### Medium Priority
 
 #### Pre-generate Search Results Pages
+
 **Status**: Medium Priority - User experience
 
 Use pagefind or other tools to pre-generate search results pages.
 Improve search functionality with pre-generated results.
 
 #### Enhanced Search Implementation
+
 - [ ] Evaluate and implement advanced search tools (pagefind, algolia, elasticsearch)
 - [ ] Create search index optimization and maintenance
 - [ ] Add search analytics and usage tracking
@@ -71,11 +80,13 @@ Improve search functionality with pre-generated results.
 - [ ] Add search accessibility and usability improvements
 
 #### Set Default Modified Date by Git Log
+
 **Status**: Medium Priority - Content management
 
 Automatically set document modification dates from git history.
 
 #### Enhanced Git Integration
+
 - [ ] Implement comprehensive git metadata extraction
 - [ ] Add author and contributor tracking
 - [ ] Create change history visualization
@@ -84,11 +95,13 @@ Automatically set document modification dates from git history.
 - [ ] Create content maintenance scheduling
 
 #### Format MDX Files
+
 **Status**: Low Priority - Developer experience
 
 Find a way to format MDX files properly.
 
 #### Enhanced MDX Support
+
 - [ ] Research and evaluate MDX formatting tools
 - [ ] Implement MDX linting and validation
 - [ ] Add MDX component documentation generation
@@ -101,11 +114,13 @@ Find a way to format MDX files properly.
 ## Localization and Internationalization
 
 ### Multiple Localized 404 Pages
+
 **Status**: Normal Priority - User experience
 
 Create localized 404 pages for different languages and regions.
 
 #### Enhanced Localization Tasks
+
 - [ ] Design comprehensive internationalization strategy
 - [ ] Implement multi-language content management
 - [ ] Add automated translation workflow integration
@@ -114,11 +129,13 @@ Create localized 404 pages for different languages and regions.
 - [ ] Add accessibility compliance for different languages
 
 ### Automatic Translation Integration
+
 **Status**: Low Priority - Future enhancement
 
 Consider using [deepl-node](https://github.com/DeepLcom/deepl-node) for automatic translation.
 
 #### Translation Automation Tasks
+
 - [ ] Evaluate translation service providers and APIs
 - [ ] Implement translation workflow automation
 - [ ] Add translation quality assurance and validation
@@ -131,12 +148,14 @@ Consider using [deepl-node](https://github.com/DeepLcom/deepl-node) for automati
 ### Interactive Features
 
 #### Dim Sidebar on Hover
+
 **Status**: On Hold - Potentially annoying
 
 Dim sidebar (.Aside) when hovering over main content.
 Currently on hold - could be annoying for users.
 
 #### Enhanced UI/UX Research
+
 - [ ] Conduct user experience research and testing
 - [ ] Implement user feedback collection and analysis
 - [ ] Add accessibility testing and compliance validation
@@ -149,22 +168,26 @@ Currently on hold - could be annoying for users.
 ### Comment System Implementation
 
 #### Webmention Support
+
 **Status**: Medium Priority - Decentralized web
 
 Implement decentralized web mention protocol for comments.
 
 #### Giscus Integration
+
 **Status**: Medium Priority - GitHub integration
 
 Add GitHub Discussions-based commenting system.
 
 #### Pluggable Comment System
+
 **Status**: Medium Priority - Flexibility
 
 Allow defining 3rd party comment system.
 Make comment system pluggable for flexibility.
 
 #### Enhanced Comment System Tasks
+
 - [ ] Research and evaluate comment system options
 - [ ] Design comment system architecture and integration
 - [ ] Implement comment moderation and spam prevention
@@ -177,7 +200,9 @@ Make comment system pluggable for flexibility.
 ### Writing Guidelines
 
 #### Technical Documentation Style
+
 When writing technical documentation (README, philosophy, architecture docs):
+
 - Write in active voice without collective pronouns
 - State facts directly: "Astro for documentation" instead of "We chose Astro for our documentation"
 - Avoid meta-references: write "Prioritizing portability" instead of "This aligns with the project's philosophy of portability"
@@ -185,6 +210,7 @@ When writing technical documentation (README, philosophy, architecture docs):
 - Eliminate unnecessary connecting phrases and transitions
 
 #### Enhanced Documentation Guidelines
+
 - [ ] Create comprehensive style guide with examples and anti-patterns
 - [ ] Implement automated style checking and validation
 - [ ] Add documentation quality metrics and tracking
@@ -197,23 +223,27 @@ When writing technical documentation (README, philosophy, architecture docs):
 #### Markdown Conventions
 
 **Text Formatting**:
+
 - One sentence per line for better diffs and readability
-- Use **bold** for emphasis, avoid _italics_
+- Use **bold** for emphasis, avoid *italics*
 - Prefer fenced code blocks with language tags over inline code for multi-line snippets
 - Use inline code `like this` for single commands, function names, or short code
 
 **Lists**:
+
 - Use `-` for unordered lists with one space after
-- Numbered lists: pad marker to 4 characters (e.g., `1.  `, `10. `)
+- Numbered lists: pad marker to 4 characters (e.g., `1.`, `10.`)
 - Maintain consistent indentation (2 spaces for nested items)
 - Add blank lines before and after lists
 
 **Code Blocks**:
+
 - Always specify language for syntax highlighting
 - Use `bash` for shell commands, `ts` for TypeScript
 - Include file paths as comments when showing file contents
 
 **Structure**:
+
 - Use ATX-style headers (`#` not underlines)
 - Maximum header depth: 4 levels (####)
 - Add blank line before headers (except first)
@@ -222,10 +252,12 @@ When writing technical documentation (README, philosophy, architecture docs):
 ### Documentation Format Standards
 
 #### Never Use Emojis
+
 - NEVER use emojis in any content meant to be read by humans
 - Focus on clear, professional text without decorative elements
 
 #### Heading Style
+
 - NEVER use ALL CAPS for headings or emphasis in documentation
 - Use sentence case for headings
 - For emphasis, use **bold** formatting instead of capitalization
@@ -233,11 +265,13 @@ When writing technical documentation (README, philosophy, architecture docs):
 ## Content Management
 
 ### Version Control Integration
+
 - Automatically track document changes through git history
 - Use git log data for "last modified" timestamps
 - Integrate with build system for automatic updates
 
 #### Enhanced Version Control Integration
+
 - [ ] Implement comprehensive document change tracking
 - [ ] Add automated content validation and quality checking
 - [ ] Create content lifecycle management workflows
@@ -246,12 +280,14 @@ When writing technical documentation (README, philosophy, architecture docs):
 - [ ] Create content collaboration and review workflows
 
 ### Asset Optimization
+
 - Optimize images for web delivery
 - Implement responsive image loading
 - Compress and optimize SVG assets
 - Consider WebP/AVIF formats for better compression
 
 #### Enhanced Asset Management
+
 - [ ] Create automated asset optimization pipeline
 - [ ] Implement asset version control and management
 - [ ] Add asset performance monitoring and optimization
@@ -264,12 +300,14 @@ When writing technical documentation (README, philosophy, architecture docs):
 ## User Experience Research
 
 ### Accessibility
+
 - Ensure all documentation meets WCAG guidelines
 - Test with screen readers and keyboard navigation
 - Provide alternative text for all visual content
 - Maintain good color contrast ratios
 
 #### Enhanced Accessibility Implementation
+
 - [ ] Implement comprehensive accessibility testing automation
 - [ ] Create accessibility guidelines and validation workflows
 - [ ] Add accessibility performance monitoring
@@ -280,12 +318,14 @@ When writing technical documentation (README, philosophy, architecture docs):
 **Cross-Reference**: See [Security Todo](TODO.security.md#application-security) for accessibility security considerations.
 
 ### Performance
+
 - Monitor page load times for documentation sites
 - Implement efficient caching strategies
 - Optimize for mobile devices
 - Test on various network conditions
 
 #### Enhanced Performance Implementation
+
 - [ ] Create comprehensive performance monitoring for documentation
 - [ ] Implement performance optimization automation
 - [ ] Add performance regression testing for documentation
@@ -298,12 +338,14 @@ When writing technical documentation (README, philosophy, architecture docs):
 ## Future Enhancements
 
 ### Interactive Documentation
+
 - Consider implementing interactive code examples
 - Add copy-to-clipboard functionality for code blocks
 - Implement search highlighting and navigation
 - Add feedback mechanisms for documentation quality
 
 #### Enhanced Interactive Features
+
 - [ ] Create interactive tutorials and walkthroughs
 - [ ] Implement real-time code execution and testing
 - [ ] Add collaborative documentation features
@@ -312,12 +354,14 @@ When writing technical documentation (README, philosophy, architecture docs):
 - [ ] Add documentation AI assistance and recommendations
 
 ### Analytics and Insights
+
 - Track which documentation sections are most accessed
 - Identify common user paths through documentation
 - Monitor search queries to identify missing content
 - Gather user feedback on documentation helpfulness
 
 #### Enhanced Analytics Implementation
+
 - [ ] Create comprehensive documentation analytics platform
 - [ ] Implement user behavior analysis and optimization
 - [ ] Add content effectiveness measurement and improvement

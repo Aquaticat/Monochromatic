@@ -23,7 +23,7 @@ const CHIP_GAP = 1 / 2 / 2;
 const HINT_FONT_SIZE_DESKTOP = (2 + 1) / 2;
 
 /** Compiled CSS string for search page styling. */
-export const searchStyles = [
+export const searchStyles: string = [
   css({
     rule: '.search-hint',
     decls: {

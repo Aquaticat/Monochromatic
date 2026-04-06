@@ -17,6 +17,11 @@ import { i18nObject, } from '../i18n/i18n-util.ts';
  * @param lang - current language code for site name lookup
  *
  * @returns HTML string for the `<head>` element
+ *
+ * @example
+ * ```ts
+ * const head = headFragment({ title: 'Home', lang: 'en' });
+ * ```
  */
 export function headFragment(
   {

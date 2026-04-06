@@ -122,7 +122,10 @@ const parser = object({
 /** Parsed CLI arguments from process.argv */
 const args = runSync(
   parser,
-  { programName: 'task-append', help: 'option', },
+  {
+    programName: 'task-append',
+    help: 'option',
+  },
 );
 
 if (args.lines.length === 0)

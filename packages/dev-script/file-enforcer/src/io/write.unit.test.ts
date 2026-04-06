@@ -58,7 +58,7 @@ await describe({
             expect(await readFile(dest, 'utf8',),).toBe('fresh content',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'overwrites an existing file when content differs',
           fn: async () => {
@@ -69,7 +69,7 @@ await describe({
             expect(await readFile(dest, 'utf8',),).toBe('new',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'skips write when content is identical',
           fn: async () => {
@@ -81,7 +81,7 @@ await describe({
             expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'still registers dest in writes set even when skipping',
           fn: async () => {
@@ -93,7 +93,7 @@ await describe({
             expect(writes.has(resolve(dest,),),).toBe(true,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'records writeTimestamp only when content actually changes',
           fn: async () => {
@@ -110,7 +110,7 @@ await describe({
             expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'creates parent directories if they do not exist',
           fn: async () => {
@@ -120,7 +120,7 @@ await describe({
             expect(await readFile(dest, 'utf8',),).toBe('deep',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'handles empty content',
           fn: async () => {
@@ -130,7 +130,7 @@ await describe({
             expect(await readFile(dest, 'utf8',),).toBe('',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'handles content with special characters',
           fn: async () => {
@@ -141,9 +141,9 @@ await describe({
             expect(await readFile(dest, 'utf8',),).toBe(content,);
             await teardown(tempDir,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion overwrite
 
@@ -161,7 +161,7 @@ await describe({
             expect(await readFile(dest, 'utf8',),).toBe('created',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'skips writing when file already exists',
           fn: async () => {
@@ -172,7 +172,7 @@ await describe({
             expect(await readFile(dest, 'utf8',),).toBe('original',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'still registers dest as managed when skipped',
           fn: async () => {
@@ -183,7 +183,7 @@ await describe({
             expect(writes.has(resolve(dest,),),).toBe(true,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'creates parent directories for new files',
           fn: async () => {
@@ -193,9 +193,9 @@ await describe({
             expect(await readFile(dest, 'utf8',),).toBe('nested',);
             await teardown(tempDir,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion overwriteIfNotExists
 
@@ -218,11 +218,15 @@ await describe({
 
             await overwriteEach(join(tempDir, 'dest', '*.ts',), files,);
 
-            expect(await readFile(join(tempDir, 'dest', 'a.ts',), 'utf8',),).toBe('alpha',);
-            expect(await readFile(join(tempDir, 'dest', 'b.ts',), 'utf8',),).toBe('beta',);
+            expect(await readFile(join(tempDir, 'dest', 'a.ts',), 'utf8',),).toBe(
+              'alpha',
+            );
+            expect(await readFile(join(tempDir, 'dest', 'b.ts',), 'utf8',),).toBe(
+              'beta',
+            );
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'skips files whose destination content is already identical',
           fn: async () => {
@@ -245,7 +249,7 @@ await describe({
             expect(writeTimestamps.size,).toBe(0,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'handles empty file array without error',
           fn: async () => {
@@ -255,7 +259,7 @@ await describe({
             expect(writes.size,).toBe(0,);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'tracks each destination in writes set',
           fn: async () => {
@@ -272,10 +276,9 @@ await describe({
             expect(writes.size,).toBe(2,);
             await teardown(tempDir,);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion overwriteEach
   ],
 },);

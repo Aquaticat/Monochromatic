@@ -90,6 +90,14 @@ export function configureDefaultBackendsBuilder(builder: DefaultBackendsBuilder,
  * Returns the currently configured default backends builder, if any.
  *
  * @returns builder function or undefined when no platform builder has been registered
+ *
+ * @example
+ * ```ts
+ * const builder = getDefaultBackendsBuilder();
+ * if (builder !== undefined) {
+ *   const backends = await builder({ storeId: 'my-store' });
+ * }
+ * ```
  */
 export function getDefaultBackendsBuilder(): DefaultBackendsBuilder | undefined {
   return defaultBackendsBuilder;
@@ -107,6 +115,16 @@ export function getDefaultBackendsBuilder(): DefaultBackendsBuilder | undefined 
  * @param backends - storage backends to evict from
  *
  * @param logger - logger for debug output
+ *
+ * @example
+ * ```ts
+ * await evictLruEntry({
+ *   lru: lruSet,
+ *   key: 'recently-accessed-key',
+ *   backends: [primaryBackend, fallbackBackend],
+ *   logger: { debug(msg) { console.debug(msg); } },
+ * });
+ * ```
  */
 export async function evictLruEntry(
   {

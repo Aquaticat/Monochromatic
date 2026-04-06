@@ -30,7 +30,7 @@ await describe({
             expect(cmd,).toContain('bun.sh/install',);
             expect(cmd,).toContain('curl',);
           },
-        }),
+        },),
 
         it({
           name: 'deno install uses deno.land',
@@ -39,7 +39,7 @@ await describe({
             expect(cmd,).toContain('deno.land/install.sh',);
             expect(cmd,).toContain('curl',);
           },
-        }),
+        },),
       ],
     },),
 
@@ -59,7 +59,7 @@ await describe({
             },);
             expect(cmd,).toBe('$HOME/.bun/bin/bun run /workspace/test.ts',);
           },
-        }),
+        },),
 
         it({
           name: 'deno exec uses $HOME/.deno/bin/deno run --allow-all',
@@ -70,7 +70,7 @@ await describe({
             },);
             expect(cmd,).toBe('$HOME/.deno/bin/deno run --allow-all /workspace/test.ts',);
           },
-        }),
+        },),
 
         it({
           name: 'preserves absolute file paths',
@@ -81,10 +81,9 @@ await describe({
             },);
             expect(cmd,).toContain('/workspace/packages/foo/src/bar.ts',);
           },
-        }),
+        },),
       ],
     },),
-
     //endregion runtimeExecCommand
   ],
 },);

@@ -63,6 +63,12 @@ export type ParsedFlags = {
  * @param printUsageAndExit - callback to print usage and exit on errors
  *
  * @returns parsed flags and remaining positional args
+ *
+ * @example
+ * ```ts
+ * const { provider, model, remaining } = parseFlags(['--provider', 'voyage', 'a.png', 'b.png'], printUsageAndExit);
+ * // provider === 'voyage', remaining === ['a.png', 'b.png']
+ * ```
  */
 export function parseFlags(
   args: string[],

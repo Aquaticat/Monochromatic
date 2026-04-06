@@ -42,6 +42,13 @@ function getPropertyKeyName(key: ESTree.PropertyKey,): string | undefined {
  * @param node - AST expression node
  *
  * @returns string value if the node is a string literal, `undefined` otherwise
+ *
+ * @example
+ * ```ts
+ * // Given AST node for string literal "text"
+ * getStringLiteralValue(stringNode); // "text"
+ * getStringLiteralValue(identifierNode); // undefined
+ * ```
  */
 export function getStringLiteralValue(node: ESTree.Expression,): string | undefined {
   if ('value' in node && typeof node.value === 'string')

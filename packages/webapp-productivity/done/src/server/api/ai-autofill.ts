@@ -150,6 +150,11 @@ async function listAllLocations(): Promise<string[]> {
  * @param req - Incoming request with JSON body containing `title`
  *
  * @returns JSON response with inferred tags, locations, priority, and complexity
+ *
+ * @example
+ * ```ts
+ * const response = await handleAutofill(event.req);
+ * ```
  */
 export async function handleAutofill(req: Request,): Promise<Response> {
   try {

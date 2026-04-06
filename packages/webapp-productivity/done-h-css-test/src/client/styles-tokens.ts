@@ -13,7 +13,7 @@ const MIN_PADDING = 1 / 2;
 //region Primitive color tokens -- Raw color values that never change between modes.
 
 /** Raw color values that never change between light and dark modes. */
-export const primitiveTokens = css({
+export const primitiveTokens: string = css({
   rule: ':root',
   decls: {
     '--gray-dark': '#111',
@@ -47,7 +47,7 @@ export const primitiveTokens = css({
 //region Semantic color tokens -- Aliases that flip between light and dark modes.
 
 /** Semantic aliases that map to primitives, plus spacing/sizing tokens. */
-export const semanticTokens = css({
+export const semanticTokens: string = css({
   rule: ':root',
   decls: {
     '--fg': 'var(--gray-dark)',

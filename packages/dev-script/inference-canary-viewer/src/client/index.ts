@@ -15,7 +15,10 @@
  * ```
  */
 
-import type { Tree, } from '@lezer/common';
+import type {
+  Parser,
+  Tree,
+} from '@lezer/common';
 import { highlightTree, } from '@lezer/highlight';
 
 import {
@@ -30,7 +33,7 @@ import {
  *
  * @returns configured TypeScript parser instance
  */
-async function loadTsParser(): Promise<import('@lezer/common').Parser> {
+async function loadTsParser(): Promise<Parser> {
   const { parser, } = await import('@lezer/javascript');
   return parser.configure({ dialect: 'ts', },);
 }
@@ -53,9 +56,8 @@ function isTsBlock(codeElement: HTMLElement,): boolean {
   for (const cls of codeElement.classList) {
     if (cls.startsWith(LANGUAGE_PREFIX,)) {
       const lang = cls.slice(LANGUAGE_PREFIX.length,);
-      if (lang === 'ts' || lang === 'typescript') {
+      if (lang === 'ts' || lang === 'typescript')
         return true;
-      }
     }
   }
   return false;
@@ -78,7 +80,10 @@ function collectRanges(
   codeElement: HTMLElement,
 ): Map<string, Range[]> {
   /** Flattened text nodes with their start offsets within the full text. */
-  const textNodes: Array<{ node: Text; start: number }> = [];
+  const textNodes: {
+    node: Text;
+    start: number;
+  }[] = [];
   const walker = document.createTreeWalker(
     codeElement,
     NodeFilter.SHOW_TEXT,
@@ -86,12 +91,13 @@ function collectRanges(
   let offset = 0;
   let current = walker.nextNode();
   while (current !== null) {
-    const textNode = current as Text;
-    textNodes.push({
-      node: textNode,
-      start: offset,
-    },);
-    offset += textNode.length;
+    if (current instanceof Text) {
+      textNodes.push({
+        node: current,
+        start: offset,
+      },);
+      offset += current.length;
+    }
     current = walker.nextNode();
   }
 
@@ -108,9 +114,8 @@ function collectRanges(
       for (const entry of textNodes) {
         const nodeEnd = entry.start + entry.node.length;
 
-        if (entry.start >= to || nodeEnd <= from) {
+        if (entry.start >= to || nodeEnd <= from)
           continue;
-        }
 
         const rangeStart = Math.max(
           0,
@@ -161,18 +166,18 @@ function collectRanges(
  * so a single `::highlight(hl-keyword)` rule styles all keywords page-wide.
  */
 async function highlightAllCodeBlocks(): Promise<void> {
-  if (typeof CSS === 'undefined' || !('highlights' in CSS)) {
+  if (typeof CSS === 'undefined' || !('highlights' in CSS))
     return;
-  }
 
-  const codeBlocks = document.querySelectorAll('pre > code[class*="language-"]',);
+  const codeBlocks = document.querySelectorAll<HTMLElement>(
+    'pre > code[class*="language-"]',
+  );
   const tsBlocks = [...codeBlocks,].filter(function filterTs(el,) {
-    return isTsBlock(el as HTMLElement,);
+    return isTsBlock(el,);
   },);
 
-  if (tsBlocks.length === 0) {
+  if (tsBlocks.length === 0)
     return;
-  }
 
   const parser = await loadTsParser();
 
@@ -180,15 +185,14 @@ async function highlightAllCodeBlocks(): Promise<void> {
   const allRanges = new Map<string, Range[]>();
 
   for (const codeElement of tsBlocks) {
-    const text = codeElement.textContent ?? '';
-    if (text.length === 0) {
+    const text = codeElement.textContent;
+    if (text.length === 0)
       continue;
-    }
 
     const tree = parser.parse(text,);
     const blockRanges = collectRanges(
       tree,
-      codeElement as HTMLElement,
+      codeElement,
     );
 
     for (const [group, ranges,] of blockRanges) {
@@ -218,4 +222,4 @@ async function highlightAllCodeBlocks(): Promise<void> {
 
 //endregion Highlight application
 
-highlightAllCodeBlocks();
+await highlightAllCodeBlocks();

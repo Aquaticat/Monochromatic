@@ -45,6 +45,11 @@ let dragExceededThreshold = false;
  * @param currentPanX - current pan X offset to snapshot
  *
  * @param currentPanY - current pan Y offset to snapshot
+ *
+ * @example
+ * ```ts
+ * startPan({ event, currentPanX: getPanX(), currentPanY: getPanY() });
+ * ```
  */
 export function startPan({
   event,
@@ -75,6 +80,11 @@ export function startPan({
  * @param zoomLayer - element to apply CSS transform to
  *
  * @returns whether the pointer has moved enough to count as a drag
+ *
+ * @example
+ * ```ts
+ * const dragging = continuePan({ event, containerWidth: cw, containerHeight: ch, zoomLayer });
+ * ```
  */
 export function continuePan({
   event,
@@ -116,6 +126,11 @@ export function continuePan({
  * Ends a pan drag gesture.
  *
  * @returns whether the gesture was a drag (moved beyond threshold) or a click
+ *
+ * @example
+ * ```ts
+ * const wasDrag = endPan();
+ * ```
  */
 export function endPan(): boolean {
   panning = false;

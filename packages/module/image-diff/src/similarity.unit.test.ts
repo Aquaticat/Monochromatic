@@ -21,19 +21,19 @@ await describe({
             const v = [1, 0, 0,];
             expect(dotProduct(v, v,),).toBe(1,);
           },
-        }),
+        },),
         it({
           name: 'orthogonal vectors yield 0',
           fn: async () => {
             expect(dotProduct([1, 0,], [0, 1,],),).toBe(0,);
           },
-        }),
+        },),
         it({
           name: 'opposite vectors yield -1',
           fn: async () => {
             expect(dotProduct([1, 0,], [-1, 0,],),).toBe(-1,);
           },
-        }),
+        },),
         it({
           name: 'throws on length mismatch',
           fn: async () => {
@@ -42,9 +42,9 @@ await describe({
             },)
               .toThrow('Vector length mismatch',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: cosineSimilarity.name,
       children: [
@@ -53,19 +53,19 @@ await describe({
           fn: async () => {
             expect(cosineSimilarity([3, 0,], [7, 0,],),).toBeCloseTo(1, 10,);
           },
-        }),
+        },),
         it({
           name: 'orthogonal vectors yield 0',
           fn: async () => {
             expect(cosineSimilarity([1, 0,], [0, 1,],),).toBeCloseTo(0, 10,);
           },
-        }),
+        },),
         it({
           name: 'anti-parallel vectors yield -1',
           fn: async () => {
             expect(cosineSimilarity([2, 0,], [-5, 0,],),).toBeCloseTo(-1, 10,);
           },
-        }),
+        },),
         it({
           name: 'throws on zero vector',
           fn: async () => {
@@ -74,7 +74,7 @@ await describe({
             },)
               .toThrow('zero magnitude',);
           },
-        }),
+        },),
         it({
           name: 'throws on length mismatch',
           fn: async () => {
@@ -83,8 +83,8 @@ await describe({
             },)
               .toThrow('Vector length mismatch',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
   ],
 },);

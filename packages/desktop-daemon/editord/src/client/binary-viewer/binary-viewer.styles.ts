@@ -6,10 +6,10 @@
  */
 
 import {
-  hCss as $,
   cssNum,
   cssRem,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {

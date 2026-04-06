@@ -35,6 +35,11 @@ let ref: ParseValueFn;
  * Called once at module load by `customParsers.parseValue.ts`.
  *
  * @param fn - value dispatcher function
+ *
+ * @example
+ * ```ts
+ * registerParseValue(parseValueFromStart);
+ * ```
  */
 export function registerParseValue(fn: ParseValueFn,): void {
   ref = fn;
@@ -47,6 +52,13 @@ export function registerParseValue(fn: ParseValueFn,): void {
  * @param args - value fragment and optional context
  *
  * @returns parsed value node and remaining fragment
+ *
+ * @example
+ * ```ts
+ * const { parsed, remaining } = callParseValue({ value: '42, 3]' as FragmentStringJsonc });
+ * // parsed.value === 42
+ * // remaining === ', 3]'
+ * ```
  */
 export function callParseValue(
   args: {

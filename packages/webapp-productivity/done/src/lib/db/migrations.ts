@@ -90,6 +90,11 @@ const MIGRATION_FTS_BACKFILL = `
  * Executes all schema migrations (tables, indexes, FTS, triggers, backfill).
  *
  * @param database - Connected Turso database instance
+ *
+ * @example
+ * ```ts
+ * await runMigrations(database);
+ * ```
  */
 export async function runMigrations(database: Database,): Promise<void> {
   await database.exec(MIGRATION_TABLES_AND_INDEXES,);

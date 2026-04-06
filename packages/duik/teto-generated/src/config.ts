@@ -47,13 +47,13 @@ export const PALETTE = {
  * Uniform scale factor mapping the cropped front view to the 800x1200 viewBox.
  * Based on height: 1200 / 880 = 1.3636...
  */
-export const SCALE = VIEWBOX.height / FRONT_VIEW_CROP.height;
+export const SCALE: number = VIEWBOX.height / FRONT_VIEW_CROP.height;
 
 /**
  * Horizontal offset to center the scaled crop within the 800px-wide viewBox.
  * (800 - 290 * scale) / 2
  */
-export const X_OFFSET = (VIEWBOX.width - FRONT_VIEW_CROP.width * SCALE) / 2;
+export const X_OFFSET: number = (VIEWBOX.width - FRONT_VIEW_CROP.width * SCALE) / 2;
 
 /** Working directory for intermediate pipeline artifacts. */
 export const TMP_DIR = 'tmp';

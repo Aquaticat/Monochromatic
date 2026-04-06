@@ -47,9 +47,9 @@ Arguments are coerced via `JSON.parse` with a fallback to raw string:
 
 Specifiers are resolved in this order:
 
-1.  CWD `node_modules`
-2.  Monorepo root `node_modules` (walks up from CWD looking for a `package.json` with `workspaces`)
-3.  Global `node_modules` (checks common Bun and Node.js global install locations)
+1. CWD `node_modules`
+2. Monorepo root `node_modules` (walks up from CWD looking for a `package.json` with `workspaces`)
+3. Global `node_modules` (checks common Bun and Node.js global install locations)
 
 ## Error handling
 

@@ -2,5 +2,5 @@
 export type $ = {
   name: string;
   message: string;
-  cause: any;
+  cause: unknown;
 };

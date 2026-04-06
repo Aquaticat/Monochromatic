@@ -5,11 +5,11 @@
  * and minimum touch target sizing for accessible interactive elements.
  */
 import {
-  hCss as $,
   cssCalc,
   cssPercent,
   cssRem,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
@@ -25,6 +25,11 @@ import {
  * Site header bar styles.
  *
  * @returns CSS string for header rules
+ *
+ * @example
+ * ```ts
+ * const css = headerStyles();
+ * ```
  */
 export function headerStyles(): string {
   return [
@@ -67,6 +72,11 @@ export function headerStyles(): string {
  * Search popover and interactive element styles.
  *
  * @returns CSS string for search and interaction rules
+ *
+ * @example
+ * ```ts
+ * const css = searchAndInteractionStyles();
+ * ```
  */
 export function searchAndInteractionStyles(): string {
   return [

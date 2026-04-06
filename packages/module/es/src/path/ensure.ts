@@ -21,6 +21,7 @@ import {
 /** Module-scoped tagged logger. */
 const l = tagged({ tag: 'path/ensure', },);
 
+/* oxlint-disable eslint/require-await -- delegates to ensureFile/ensureDir which are async */
 /**
  * Ensures a path exists as either a file or directory, based on whether
  * the path has a file extension.
@@ -47,6 +48,7 @@ export async function ensurePath(path: string,): Promise<string> {
 
   return ensureDir(path,);
 }
+/* oxlint-enable eslint/require-await */
 
 /**
  * Ensures a directory exists and is readable/writable.
@@ -73,6 +75,7 @@ export async function ensureDir(path: string,): Promise<string> {
     l.info(`${path} already exists, checking accessibility`,);
   }
   catch (error: unknown) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime stat result checked for isDirectory before cast
     if ((error as { code?: string; }).code === 'ENOENT') {
       l.info(`${path} does not exist, creating recursively`,);
       await mkdir(
@@ -129,6 +132,7 @@ export async function ensureFile(path: string,): Promise<string> {
     l.info(`${path} already exists, checking accessibility`,);
   }
   catch (error: unknown) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime stat result checked for isFile before cast
     if ((error as { code?: string; }).code === 'ENOENT') {
       l.info(`${path} does not exist, creating`,);
       await ensureDir(parsed.dir,);

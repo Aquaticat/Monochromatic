@@ -16,7 +16,7 @@ await describe({
       fn: async () => {
         expect(inspect('hello world',),).toBe('hello world',);
       },
-    }),
+    },),
     it({
       name: 'returns a number unchanged',
       fn: async () => {
@@ -24,7 +24,7 @@ await describe({
         const result = inspect(42,);
         expect(result,).toBe(42,);
       },
-    }),
+    },),
     it({
       name: 'returns an array unchanged',
       fn: async () => {
@@ -32,7 +32,7 @@ await describe({
         const arr = [1, 2, 3,];
         expect(inspect(arr,),).toBe(arr,);
       },
-    }),
+    },),
     it({
       name: 'returns an object unchanged',
       fn: async () => {
@@ -40,42 +40,42 @@ await describe({
         const obj = { key: 'value', };
         expect(inspect(obj,),).toBe(obj,);
       },
-    }),
+    },),
     it({
       name: 'returns boolean unchanged',
       fn: async () => {
         expect(inspect(true,),).toBe(true,);
       },
-    }),
+    },),
     it({
       name: 'returns null unchanged',
       fn: async () => {
         expect(inspect(null,),).toBeNull();
       },
-    }),
+    },),
     it({
       name: 'logs string content via tagged logger',
-      fn: async ({ sinon, }) => {
+      fn: async ({ sinon, },) => {
         const infoSpy = sinon.spy(l, 'info',);
         inspect('test-content',);
         expect(infoSpy,).toHaveBeenCalledWith(
           expect.stringContaining('test-content',),
         );
       },
-    }),
+    },),
     it({
       name: 'logs non-string content as JSON',
-      fn: async ({ sinon, }) => {
+      fn: async ({ sinon, },) => {
         const infoSpy = sinon.spy(l, 'info',);
         inspect({ a: 1, },);
         /** Non-string values should be JSON-stringified in the log */
         const loggedMessage = infoSpy.args[0]?.[0] as string;
         expect(loggedMessage,).toContain('"a": 1',);
       },
-    }),
+    },),
     it({
       name: 'truncates long string content in log output',
-      fn: async ({ sinon, }) => {
+      fn: async ({ sinon, },) => {
         const infoSpy = sinon.spy(l, 'info',);
         /** Content longer than the 200-char preview limit */
         const longContent = 'x'.repeat(300,);
@@ -86,10 +86,10 @@ await describe({
         const loggedMessage = infoSpy.args[0]?.[0] as string;
         expect(loggedMessage,).toContain('...',);
       },
-    }),
+    },),
     it({
       name: 'does not truncate content exactly at preview limit',
-      fn: async ({ sinon, }) => {
+      fn: async ({ sinon, },) => {
         const infoSpy = sinon.spy(l, 'info',);
         /** Content exactly at the 200-char boundary */
         const exactContent = 'y'.repeat(200,);
@@ -98,15 +98,15 @@ await describe({
         const loggedMessage = infoSpy.args[0]?.[0] as string;
         expect(loggedMessage,).not.toContain('...',);
       },
-    }),
+    },),
     it({
       name: 'handles empty string',
-      fn: async ({ sinon, }) => {
+      fn: async ({ sinon, },) => {
         const infoSpy = sinon.spy(l, 'info',);
         expect(inspect('',),).toBe('',);
         expect(infoSpy,).toHaveBeenCalled();
       },
-    }),
+    },),
     it({
       name: 'handles GlobResult-like array',
       fn: async () => {
@@ -118,20 +118,21 @@ await describe({
         /** Should return the same array by reference */
         expect(inspect(globResults,),).toBe(globResults,);
       },
-    }),
+    },),
     it({
       name: 'truncates large JSON objects in log output',
-      fn: async ({ sinon, }) => {
+      fn: async ({ sinon, },) => {
         const infoSpy = sinon.spy(l, 'info',);
         /** Large object whose JSON is over the preview limit */
         const largeObj = Object.fromEntries(
-          Array.from({ length: 50, }, (_, idx,) => [`key${String(idx,)}`, 'x'.repeat(20,),],),
+          Array.from({ length: 50, },
+            (_, idx,) => [`key${String(idx,)}`, 'x'.repeat(20,),],),
         );
         inspect(largeObj,);
         const loggedMessage = infoSpy.args[0]?.[0] as string;
         expect(loggedMessage,).toContain('...',);
       },
-    }),
+    },),
   ],
 },);
 

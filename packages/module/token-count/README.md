@@ -29,19 +29,19 @@ Mise auto-injects values from `.env.local`.
 ### Count tokens in text
 
 ```ts
-import { countTokens } from '@monochromatic-dev/module-token-count';
+import { countTokens, } from '@monochromatic-dev/module-token-count';
 
-const result = await countTokens({ content: 'Hello, world!' });
-console.log(result.inputTokens);
+const result = await countTokens({ content: 'Hello, world!', },);
+console.log(result.inputTokens,);
 ```
 
 ### Count tokens in a file
 
 ```ts
-import { countFileTokens } from '@monochromatic-dev/module-token-count';
+import { countFileTokens, } from '@monochromatic-dev/module-token-count';
 
-const result = await countFileTokens({ filePath: './CLAUDE.md' });
-console.log(`${result.filePath}: ${result.inputTokens} tokens`);
+const result = await countFileTokens({ filePath: './CLAUDE.md', },);
+console.log(`${result.filePath}: ${result.inputTokens} tokens`,);
 ```
 
 ### Custom model
@@ -49,8 +49,8 @@ console.log(`${result.filePath}: ${result.inputTokens} tokens`);
 ```ts
 const result = await countTokens({
   content: 'Hello',
-  config: { model: 'claude-haiku-4-5' },
-});
+  config: { model: 'claude-haiku-4-5', },
+},);
 ```
 
 ## CLI
@@ -63,15 +63,15 @@ token-count --model claude-haiku-4-5 file1.md file2.md
 Output follows `wc`-style formatting (right-aligned count, path):
 
 ```
-    4700 CLAUDE.md
+4700 CLAUDE.md
 ```
 
 Multiple files include a total:
 
 ```
-    4700 CLAUDE.md
-    1200 README.md
-    5900 total
+4700 CLAUDE.md
+1200 README.md
+5900 total
 ```
 
 ## API

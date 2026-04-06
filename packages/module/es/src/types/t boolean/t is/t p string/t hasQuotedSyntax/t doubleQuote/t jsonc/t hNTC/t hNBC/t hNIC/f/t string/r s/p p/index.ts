@@ -14,6 +14,13 @@ import type {
  * @param value - string to parse as strict JSON
  *
  * @returns `true` when the string parses as valid JSON
+ *
+ * @example
+ * ```ts
+ * $('{"key": "value"}'); // true
+ * $('{"key": "value",}'); // false (trailing comma)
+ * $('not json'); // false
+ * ```
  */
 export function $(
   value: string,

@@ -1,6 +1,8 @@
-import type { UserConfig, } from 'tsdown';
 import base from '@monochromatic-dev/config-tsdown/.node.ts';
-import { defineConfig, } from 'tsdown';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
 
 /** Build configuration for bash-output-filter, including both the hook entry and the filter script. */
 const config: UserConfig = defineConfig({

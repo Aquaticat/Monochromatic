@@ -38,6 +38,11 @@ export function cssRem(n: number,): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS length string (e.g. `'1em'`)
+ *
+ * @example
+ * ```ts
+ * cssEm(1.5) // '1.5em'
+ * ```
  */
 export function cssEm(n: number,): CssValue {
   return `${n}em` as CssValue;
@@ -49,6 +54,11 @@ export function cssEm(n: number,): CssValue {
  * @param n - numeric value (e.g. `50` for `50%`)
  *
  * @returns branded CSS percentage string (e.g. `'50%'`)
+ *
+ * @example
+ * ```ts
+ * cssPercent(50) // '50%'
+ * ```
  */
 export function cssPercent(n: number,): CssValue {
   return `${n}%` as CssValue;
@@ -60,6 +70,11 @@ export function cssPercent(n: number,): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS flex string (e.g. `'1fr'`)
+ *
+ * @example
+ * ```ts
+ * cssFr(1) // '1fr'
+ * ```
  */
 export function cssFr(n: number,): CssValue {
   return `${n}fr` as CssValue;
@@ -71,6 +86,11 @@ export function cssFr(n: number,): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS length string (e.g. `'1.5lh'`)
+ *
+ * @example
+ * ```ts
+ * cssLh(1.5) // '1.5lh'
+ * ```
  */
 export function cssLh(n: number,): CssValue {
   return `${n}lh` as CssValue;
@@ -103,6 +123,11 @@ export function cssCh(n: number,): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS length string (e.g. `'100vi'`)
+ *
+ * @example
+ * ```ts
+ * cssVi(100) // '100vi'
+ * ```
  */
 export function cssVi(n: number,): CssValue {
   return `${n}vi` as CssValue;
@@ -114,6 +139,11 @@ export function cssVi(n: number,): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS length string (e.g. `'100vb'`)
+ *
+ * @example
+ * ```ts
+ * cssVb(100) // '100vb'
+ * ```
  */
 export function cssVb(n: number,): CssValue {
   return `${n}vb` as CssValue;
@@ -125,6 +155,11 @@ export function cssVb(n: number,): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS length string (e.g. `'50cqi'`)
+ *
+ * @example
+ * ```ts
+ * cssCqi(50) // '50cqi'
+ * ```
  */
 export function cssCqi(n: number,): CssValue {
   return `${n}cqi` as CssValue;
@@ -136,6 +171,11 @@ export function cssCqi(n: number,): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS length string (e.g. `'50cqb'`)
+ *
+ * @example
+ * ```ts
+ * cssCqb(50) // '50cqb'
+ * ```
  */
 export function cssCqb(n: number,): CssValue {
   return `${n}cqb` as CssValue;
@@ -196,6 +236,11 @@ export function cssDvi(n: number,): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS time string (e.g. `'0.3s'`)
+ *
+ * @example
+ * ```ts
+ * cssS(0.3) // '0.3s'
+ * ```
  */
 export function cssS(n: number,): CssValue {
   return `${n}s` as CssValue;
@@ -213,6 +258,11 @@ export function cssS(n: number,): CssValue {
  * @param n - numeric value (1 = full rotation)
  *
  * @returns branded CSS angle string (e.g. `'0.25turn'`)
+ *
+ * @example
+ * ```ts
+ * cssTurn(0.25) // '0.25turn'
+ * ```
  */
 export function cssTurn(n: number,): CssValue {
   return `${n}turn` as CssValue;
@@ -372,6 +422,11 @@ export function cssMin(...values: readonly (CssValue | string)[]): CssValue {
  * @param n - numeric value
  *
  * @returns branded CSS number string (e.g. `'0.5'`)
+ *
+ * @example
+ * ```ts
+ * cssNum(0.5) // '0.5'
+ * ```
  */
 export function cssNum(n: number,): CssValue {
   return `${n}` as CssValue;
@@ -383,6 +438,11 @@ export function cssNum(n: number,): CssValue {
  * @param n - integer value
  *
  * @returns branded CSS integer string (e.g. `'10'`)
+ *
+ * @example
+ * ```ts
+ * cssInt(10) // '10'
+ * ```
  */
 export function cssInt(n: number,): CssValue {
   return `${Math.round(n,)}` as CssValue;

@@ -198,21 +198,25 @@
 ## Implementation Priority
 
 ### Phase 1: Critical Performance (Week 1)
+
 1. **Boolean equality optimization** - Major performance impact
 2. **Function naming consistency** - Breaking changes need early implementation
 3. **Security fixes** - Input validation and sanitization
 
 ### Phase 2: Error Handling (Week 2)
+
 1. **Better error messages** across all throwing functions
 2. **Error recovery strategies** for file system operations
 3. **Type safety improvements** with better constraints
 
 ### Phase 3: API Design (Week 3)
+
 1. **Consistent parameter ordering** across similar functions
 2. **Missing overloads** for common use cases
 3. **Module organization** and file splitting
 
 ### Phase 4: Polish (Week 4)
+
 1. **Algorithm optimizations** for intersection and cycle detection
 2. **Browser compatibility** improvements and fallbacks
 3. **Code organization** cleanup and consolidation

@@ -28,7 +28,7 @@ await describe({
           { element: 'c', index: 2 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'handles empty iterables',
       fn: async () => {
@@ -41,7 +41,7 @@ await describe({
         const emptySet = await Array.fromAsync($({ myIterable: new Set(), },),);
         expect(emptySet,).toEqual([],);
       },
-    }),
+    },),
     it({
       name: 'yields characters with indices for strings',
       fn: async () => {
@@ -55,7 +55,7 @@ await describe({
           { element: 'o', index: 4 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'yields Set values with indices',
       fn: async () => {
@@ -68,7 +68,7 @@ await describe({
           { element: 30, index: 2 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'yields Map entries with indices',
       fn: async () => {
@@ -85,7 +85,7 @@ await describe({
           { element: ['key3', 'value3',], index: 2 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'handles async generators',
       fn: async () => {
@@ -104,7 +104,7 @@ await describe({
           { element: 'third', index: 2 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'handles single element iterable',
       fn: async () => {
@@ -114,7 +114,7 @@ await describe({
           { element: 'only', index: 0 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'correctly increments indices for large arrays',
       fn: async () => {
@@ -125,14 +125,15 @@ await describe({
 
         expect(result,).toHaveLength(LARGE_ARRAY_SIZE,);
         expect(result[0],).toEqual({ element: 0, index: 0 as Index, },);
-        expect(result[LARGE_ARRAY_SIZE - 1],).toEqual({ element: 99, index: 99 as Index, },);
+        expect(result[LARGE_ARRAY_SIZE - 1],).toEqual({ element: 99,
+          index: 99 as Index, },);
 
         result.forEach((item, arrayIndex,) => {
           expect(item.index,).toBe(arrayIndex as Index,);
           expect(item.element,).toBe(arrayIndex,);
         },);
       },
-    }),
+    },),
     it({
       name: 'handles generator functions as input',
       fn: async () => {
@@ -150,7 +151,7 @@ await describe({
           { element: 3, index: 2 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'type checking for index and element',
       fn: async () => {
@@ -168,6 +169,6 @@ await describe({
         expectTypeOf<IndexType>().toExtend<number>();
         expectTypeOf<ElementType>().toEqualTypeOf<1 | 2 | 3>();
       },
-    }),
+    },),
   ],
 },);

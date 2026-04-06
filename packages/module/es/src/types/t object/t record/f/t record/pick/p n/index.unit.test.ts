@@ -15,11 +15,12 @@ await describe({
       name: 'picks specified keys from object',
       fn: async () => {
         const user = { id: 1, name: 'Alice', password: 'secret', };
-        const result = $({ original: user, toPick: new Set(['id', 'name',] as const,), },);
+        const result = $({ original: user,
+          toPick: new Set(['id', 'name',] as const,), },);
 
         expect(result,).toEqual({ id: 1, name: 'Alice', },);
       },
-    }),
+    },),
 
     it({
       name: 'returns empty object when picking no keys',
@@ -29,17 +30,18 @@ await describe({
 
         expect(result,).toEqual({},);
       },
-    }),
+    },),
 
     it({
       name: 'returns full object when picking all keys',
       fn: async () => {
         const user = { id: 1, name: 'Alice', };
-        const result = $({ original: user, toPick: new Set(['id', 'name',] as const,), },);
+        const result = $({ original: user,
+          toPick: new Set(['id', 'name',] as const,), },);
 
         expect(result,).toEqual({ id: 1, name: 'Alice', },);
       },
-    }),
+    },),
 
     it({
       name: 'throws when picking non-existent key',
@@ -54,7 +56,7 @@ await describe({
         )
           .toThrow('Key not found in iterable: nonexistent',);
       },
-    }),
+    },),
 
     it({
       name: 'handles symbol keys',
@@ -65,7 +67,7 @@ await describe({
 
         expect(result,).toEqual({ [symKey]: 'hidden', },);
       },
-    }),
+    },),
 
     it({
       name: 'handles numeric keys',
@@ -75,7 +77,7 @@ await describe({
 
         expect(result,).toEqual({ 0: 'zero', 2: 'two', },);
       },
-    }),
+    },),
 
     it({
       name: 'preserves value types in result',
@@ -89,7 +91,7 @@ await describe({
         expectTypeOf(result.id,).toEqualTypeOf<1>();
         expectTypeOf(result.name,).toEqualTypeOf<'Alice'>();
       },
-    }),
+    },),
 
     it({
       name: 'type narrows correctly to Pick type',
@@ -101,7 +103,7 @@ await describe({
         expect(result,).toHaveProperty('c',);
         expect(result,).not.toHaveProperty('b',);
       },
-    }),
+    },),
 
     it({
       name: 'handles mixed key types',
@@ -113,6 +115,6 @@ await describe({
 
         expect(result,).toEqual({ str: 'string', 42: 'numeric', [symKey]: 'symbol', },);
       },
-    }),
+    },),
   ],
 },);

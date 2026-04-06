@@ -7,16 +7,17 @@
  * Results are reported through `describe`/`it` from `\@monochromatic-dev/module-test`.
  */
 
+import { $ as defaultLogger, } from '@monochromatic-dev/module-es/logger';
+import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import type {
+  $ as Logger,
+} from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 import {
   describe,
   it,
   type ItResult,
 } from '@monochromatic-dev/module-test';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
-import { $ as defaultLogger, } from '@monochromatic-dev/module-es/logger';
-import type { $ as Logger, } from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 import { resolve, } from 'node:path';
-
 
 import {
   parseOs,
@@ -29,9 +30,9 @@ import type {
   Combination,
   ExcludeEntry,
   ExcludeMatcher,
+  MatrixOptions,
   Runtime,
   UserContext,
-  MatrixOptions,
 } from './types.ts';
 
 //region Cartesian product
@@ -91,7 +92,7 @@ function generateCombinations({
  *
  * @returns whether the matcher matches the value
  */
-function testMatcher<T>({
+function testMatcher<T,>({
   matcher,
   value,
 }: {
@@ -166,9 +167,8 @@ function applyExcludes({
   readonly combinations: readonly Combination[];
   readonly excludes: readonly ExcludeEntry[];
 },): readonly Combination[] {
-  if (excludes.length === 0) {
+  if (excludes.length === 0)
     return combinations;
-  }
 
   return combinations.filter(function isNotExcluded(combination,) {
     return !excludes.some(function isExcluded(exclude,) {
@@ -205,9 +205,8 @@ function formatLabel(combination: Combination,): string {
  */
 function shortFileName(filePath: string,): string {
   const lastSlash = filePath.lastIndexOf('/',);
-  if (lastSlash === -1) {
+  if (lastSlash === -1)
     return filePath;
-  }
   return filePath.slice(lastSlash + 1,);
 }
 
@@ -236,9 +235,8 @@ function executeCombination({
 },): Promise<string> {
   const parsed = parseOs(combination.os,);
 
-  if (parsed.protocol === 'host') {
+  if (parsed.protocol === 'host')
     return runHost({ combination, },);
-  }
 
   if (parsed.protocol === 'container') {
     return runContainer({
@@ -253,6 +251,9 @@ function executeCombination({
 }
 
 //endregion Execution dispatch
+
+/** Default maximum number of concurrent combination executions. */
+const DEFAULT_CONCURRENCY = 4;
 
 /**
  * Runs test files across a cartesian product of environments.
@@ -284,9 +285,6 @@ function executeCombination({
  * });
  * ```
  */
-/** Default maximum number of concurrent combination executions. */
-const DEFAULT_CONCURRENCY = 4;
-
 export async function matrix({
   files: filesOption,
   os,
@@ -327,9 +325,8 @@ export async function matrix({
     : await discoverTestFiles(process.cwd(),);
 
   l.info(`${String(files.length,)} test file(s) discovered`,);
-  for (const file of files) {
+  for (const file of files)
     l.debug(`  ${file}`,);
-  }
   //endregion Resolve files
 
   //region Generate and filter combinations
@@ -346,7 +343,9 @@ export async function matrix({
 
   l.info(
     `${String(combinations.length,)} combination(s) `
-    + `(${String(allCombinations.length,)} total, ${String(allCombinations.length - combinations.length,)} excluded)`,
+      + `(${String(allCombinations.length,)} total, ${
+        String(allCombinations.length - combinations.length,)
+      } excluded)`,
   );
   //endregion Generate and filter combinations
 
@@ -360,9 +359,8 @@ export async function matrix({
   const fileGroups = new Map<string, Combination[]>();
   for (const combination of combinations) {
     const existing = fileGroups.get(combination.file,);
-    if (existing !== undefined) {
+    if (existing !== undefined)
       existing.push(combination,);
-    }
     else {
       fileGroups.set(
         combination.file,
@@ -392,9 +390,8 @@ export async function matrix({
                     combination,
                     monorepoRoot,
                   },);
-                  if (output !== '') {
+                  if (output !== '')
                     l.info(output,);
-                  }
                 },
               },);
             };

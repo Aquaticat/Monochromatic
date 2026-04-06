@@ -13,7 +13,7 @@ import { $ as css, } from './css.ts';
 const FULL_PERCENT = 100;
 
 /** Task list, divider, and empty-state utility styles. */
-export const utilities = [
+export const utilities: string = [
   css({
     rule: '.task-list',
     decls: {

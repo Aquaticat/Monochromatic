@@ -85,7 +85,10 @@ export async function* $<T,>({
   iterable: Iterable<T> | AsyncIterable<T>;
 },): AsyncGenerator<
   {
-    decision: 'pass' | 'fail' | ['thrown', unknown,];
+    decision: 'pass' | 'fail' | [
+      'thrown',
+      unknown,
+    ];
     item: T;
   },
   void,
@@ -106,7 +109,10 @@ export async function* $<T,>({
     }
     catch (error) {
       yield {
-        decision: ['thrown', error,],
+        decision: [
+          'thrown',
+          error,
+        ],
         item,
       };
     }

@@ -56,14 +56,14 @@ NueJS: requires less common markdown format support.
 
 Alternatives rejected:
 
-1.  **WebdriverIO**
-    - ✓ Firefox ESR support
-    - ✗ No `prefers-contrast`/`prefers-reduced-motion` emulation
-    - ✗ No Firefox user.js/Chrome flags support
-    - ✗ Host configuration breaks reproducibility
+1. **WebdriverIO**
+   - ✓ Firefox ESR support
+   - ✗ No `prefers-contrast`/`prefers-reduced-motion` emulation
+   - ✗ No Firefox user.js/Chrome flags support
+   - ✗ Host configuration breaks reproducibility
 
-1.  **Playwright standalone**
-    - ✗ No unit testing
+1. **Playwright standalone**
+   - ✗ No unit testing
 
 Vitest + Playwright: unit testing + browser automation + emulation.
 

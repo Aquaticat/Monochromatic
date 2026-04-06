@@ -137,9 +137,8 @@ export function collapseCwdPaths(line: string,): string {
         return line.slice(ALT_CWD_PREFIX.length,);
     }
   }
-  else {
-    if (line.startsWith(CWD_PREFIX,))
-      return line.slice(CWD_PREFIX.length,);
+  else if (line.startsWith(CWD_PREFIX,)) {
+    return line.slice(CWD_PREFIX.length,);
   }
   return line;
 }
@@ -192,9 +191,8 @@ export function collapseHomePaths(line: string,): string {
         return `~${line.slice(REAL_HOME_DIR.length,)}`;
     }
   }
-  else {
-    if (line.startsWith(HOME_DIR,))
-      return `~${line.slice(HOME_DIR.length,)}`;
+  else if (line.startsWith(HOME_DIR,)) {
+    return `~${line.slice(HOME_DIR.length,)}`;
   }
   return line;
 }

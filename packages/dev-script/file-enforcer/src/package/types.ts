@@ -36,7 +36,10 @@ export type PackageMapping = Partial<Record<PackageManager, string>>;
  * ['pacman', 'acpica-utils'] // available in pacman as 'acpica-utils'
  * ```
  */
-export type ManagerAvailability = PackageManager | readonly [PackageManager, string];
+export type ManagerAvailability = PackageManager | readonly [
+  PackageManager,
+  string,
+];
 
 /**
  * Object form accepted by {@link p} when the binary name or effname

@@ -5,6 +5,7 @@ import type {
 } from '../../../t/index.ts';
 
 /** Cached `appendFile` from `node:fs/promises`, set during verification. */
+// oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
 let appendFile: typeof import('node:fs/promises').appendFile | null = null;
 
 /** Path to the current log file, set during verification. */
@@ -23,6 +24,13 @@ let available = false;
  * even though the resulting exception is caught).
  *
  * @returns whether file system logging is available
+ *
+ * @example
+ * ```ts
+ * if (await verify()) {
+ *   await $(logRecord);
+ * }
+ * ```
  */
 export async function verify(): Promise<boolean> {
   if (verified)
@@ -31,7 +39,9 @@ export async function verify(): Promise<boolean> {
 
   // Guard: skip dynamic import entirely outside Node.js to avoid
   // browser console errors from attempting to fetch node: URLs
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined
   if (globalThis.process === undefined
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- process.versions may be absent in non-Node polyfills
     || globalThis.process.versions?.node === undefined)
   {
     available = false;
@@ -87,6 +97,11 @@ export async function verify(): Promise<boolean> {
  * Uses cached `appendFile` from verification -- no dynamic import needed here.
  *
  * @param record - log record to write
+ *
+ * @example
+ * ```ts
+ * await $({ level: 'error', message: 'unhandled rejection', tags: ['process'], timestamp: Date.now() });
+ * ```
  */
 export async function $(record: LogRecord,): Promise<void> {
   // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath is string|null, checking both conditions

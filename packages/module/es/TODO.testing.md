@@ -3,22 +3,24 @@
 ## Known browser test failures
 
 - [ ] `redirectingTo.browser.test.ts` fails in both Chromium and Firefox:
-  `window.moduleEs.onLoadRedirectingTo` is not a function.
-  The test harness imports `* as moduleEs` from the neutral bundle,
-  but `onLoadRedirectingTo` is not a direct named export — it is nested
-  under `deprecated.dom`. Either the test needs to access the correct path
-  or the function needs re-exporting at the top level.
+      `window.moduleEs.onLoadRedirectingTo` is not a function.
+      The test harness imports `* as moduleEs` from the neutral bundle,
+      but `onLoadRedirectingTo` is not a direct named export — it is nested
+      under `deprecated.dom`. Either the test needs to access the correct path
+      or the function needs re-exporting at the top level.
 
 ## Testing Coverage Analysis
 
 ### Type Testing Requirements (Critical)
 
 #### Universal Type Testing Requirement
+
 **Status**: Critical Priority - ALL exports need type testing
 
 **Requirement**: All functions, constants, types, and exports must have Vitest type testing with `expectTypeOf`.
 
 **Scope**: Every single export from the module requires type validation:
+
 - **150+ functions** - Parameter and return type validation
 - **50+ constants** - Type constant and value constant validation
 - **25+ type utilities** - Type-level computation validation
@@ -27,6 +29,7 @@
 #### Functions Requiring Type Testing (ALL Functions)
 
 **Any Utilities** - Type tests needed:
+
 - [ ] [`any.constant()`](src/any.constant.ts:32) - Test return function type and closure type
 - [ ] [`any.echo()`](src/any.echo.ts:26) - Test generator type and yield type
 - [ ] [`any.hasCycle()`](src/any.hasCycle.ts:56) - Test boolean return and input type handling
@@ -37,6 +40,7 @@
 - [ ] [`any.whenAsync()`](src/any.when.ts:65) - Test Promise type wrapping
 
 **Array Utilities** - Type tests needed:
+
 - [ ] [`arrayRange()`](src/array.range.ts:73) - Test number array return type
 - [ ] [`arrayRangeGen()`](src/array.range.ts:130) - Test generator type inference
 - [ ] [`arrayOf()`](src/array.of.ts:35) - Test tuple type preservation
@@ -44,18 +48,21 @@
 - [ ] All array type guards - Test type narrowing and predicate types
 
 **Boolean Utilities** - Type tests needed:
+
 - [ ] [`equal()`](src/boolean.equal.ts:174) - Test boolean return with any inputs
 - [ ] [`equalAsync()`](src/boolean.equal.ts:543) - Test Promise<boolean> return
 - [ ] [`isPrimitive()`](src/boolean.equal.ts:69) - Test type predicate functionality
 - [ ] [`BooleanNot()`](src/boolean.not.ts:23) - Test boolean return type
 
 **Error Utilities** - Type tests needed:
+
 - [ ] All assertion functions - Test void return and throwing behavior
 - [ ] All `not*OrThrow()` functions - Test type narrowing and never returns
 - [ ] [`throws()`](src/error.throws.ts:43) - Test never return type
 - [ ] [`isError()`](src/error.is.ts:32) - Test Error type predicate
 
 **Function Utilities** - Type tests needed:
+
 - [ ] [`pipe()`](src/function.pipe.ts:1329) and overloads - Test type flow through composition
 - [ ] [`piped()`](src/function.pipe.ts:280) and overloads - Test immediate composition types
 - [ ] [`pipeAsync()`](src/function.pipe.ts:815) and overloads - Test async composition types
@@ -66,17 +73,20 @@
 - [ ] All other function utilities - Test type preservation and inference
 
 **Iterable Utilities** - Type tests needed:
+
 - [ ] All sync iterable functions - Test element type preservation
 - [ ] All async iterable functions - Test async element type handling
 - [ ] All generator functions - Test yield and return types
 - [ ] All filtering functions - Test type narrowing with predicates
 
 **String Utilities** - Type tests needed:
+
 - [ ] All string validation functions - Test type predicate behavior
 - [ ] All string transformation functions - Test string return types
 - [ ] [`hashString()`](src/string.hash.ts:15) - Test Promise<string> return
 
 **Numeric Utilities** - Type tests needed:
+
 - [ ] All numeric type guards - Test type predicate functionality
 - [ ] All numeric operations - Test number/bigint type preservation
 - [ ] All validation functions - Test type narrowing behavior
@@ -84,66 +94,73 @@
 #### Constants Requiring Type Testing
 
 **Type Constants**:
+
 - [ ] **Numeric types** - [`Int`](src/numeric.type.int.ts:1), [`PositiveInt`](src/numeric.type.int.ts:1), [`NegativeInt`](src/numeric.type.int.ts:1), etc.
 - [ ] **Array types** - [`Tuple`](src/array.type.tuple.ts:17), [`ArrayFixedLength`](src/array.type.fixedLength.ts:1), etc.
 - [ ] **String types** - [`DigitString`](src/string.digits.ts:1), [`LangString`](src/string.language.ts:1), etc.
 
 **Value Constants**:
+
 - [ ] **Function constants** - [`alwaysTrue()`](src/function.always.ts:1), [`emptyFunction()`](src/function.is.ts:101)
 - [ ] **Utility constants** - Any exported constant values
 
 ### Type Testing Implementation Examples
 
 #### Function Type Testing
+
 ```typescript
 describe('Function Type Testing', () => {
   test('identity function type preservation', () => {
     // Test generic type preservation
-    expectTypeOf(identity<string>).parameter(0).toEqualTypeOf<string>();
-    expectTypeOf(identity<string>).returns.toEqualTypeOf<string>();
-    expectTypeOf(identity<number>).parameter(0).toEqualTypeOf<number>();
-    expectTypeOf(identity<number>).returns.toEqualTypeOf<number>();
+    expectTypeOf(identity<string>,).parameter(0,).toEqualTypeOf<string>();
+    expectTypeOf(identity<string>,).returns.toEqualTypeOf<string>();
+    expectTypeOf(identity<number>,).parameter(0,).toEqualTypeOf<number>();
+    expectTypeOf(identity<number>,).returns.toEqualTypeOf<number>();
 
     // Test literal type preservation
-    expectTypeOf(identity<'hello'>).returns.toEqualTypeOf<'hello'>();
+    expectTypeOf(identity<'hello'>,).returns.toEqualTypeOf<'hello'>();
   });
 
   test('type guard function behavior', () => {
-    expectTypeOf(isError).parameter(0).toEqualTypeOf<unknown>();
-    expectTypeOf(isError).returns.toEqualTypeOf<boolean>();
+    expectTypeOf(isError,).parameter(0,).toEqualTypeOf<unknown>();
+    expectTypeOf(isError,).returns.toEqualTypeOf<boolean>();
 
     // Test type predicate functionality would need runtime testing
     // but we can test the function signature types
   });
 
   test('async function type handling', () => {
-    expectTypeOf(equalAsync).parameter(0).toEqualTypeOf<any>();
-    expectTypeOf(equalAsync).parameter(1).toEqualTypeOf<any>();
-    expectTypeOf(equalAsync).returns.toEqualTypeOf<Promise<boolean>>();
+    expectTypeOf(equalAsync,).parameter(0,).toEqualTypeOf<any>();
+    expectTypeOf(equalAsync,).parameter(1,).toEqualTypeOf<any>();
+    expectTypeOf(equalAsync,).returns.toEqualTypeOf<Promise<boolean>>();
   });
 });
 ```
 
 #### Generic Function Type Testing
+
 ```typescript
 describe('Generic Function Type Testing', () => {
   test('pipe function type flow', () => {
     const result = pipe(
-      (x: number) => x.toString(),
-      (s: string) => s.length
+      (x: number,) => x.toString(),
+      (s: string,) => s.length,
     );
-    expectTypeOf(result).parameter(0).toEqualTypeOf<number>();
-    expectTypeOf(result).returns.toEqualTypeOf<number>();
+    expectTypeOf(result,).parameter(0,).toEqualTypeOf<number>();
+    expectTypeOf(result,).returns.toEqualTypeOf<number>();
   });
 
   test('array function generic preservation', () => {
-    expectTypeOf(arrayOf<1, 2, 3>).returns.toEqualTypeOf<readonly [1, 2, 3]>();
-    expectTypeOf(arrayRange).returns.toEqualTypeOf<number[]>();
+    expectTypeOf(arrayOf<1, 2, 3>,).returns.toEqualTypeOf<
+      readonly [1, 2, 3,]
+    >();
+    expectTypeOf(arrayRange,).returns.toEqualTypeOf<number[]>();
   });
 });
 ```
 
 #### Constant and Type Testing
+
 ```typescript
 describe('Type Constant Testing', () => {
   test('numeric type definitions', () => {
@@ -153,8 +170,8 @@ describe('Type Constant Testing', () => {
   });
 
   test('array type utilities', () => {
-    expectTypeOf<Tuple<[1, 2, 3]>>().toEqualTypeOf<readonly [1, 2, 3]>();
-    expectTypeOf<WithoutFirst<[1, 2, 3]>>().toEqualTypeOf<[2, 3]>();
+    expectTypeOf<Tuple<[1, 2, 3,]>>().toEqualTypeOf<readonly [1, 2, 3,]>();
+    expectTypeOf<WithoutFirst<[1, 2, 3,]>>().toEqualTypeOf<[2, 3,]>();
   });
 });
 ```
@@ -162,6 +179,7 @@ describe('Type Constant Testing', () => {
 ### Type Testing Files to Create/Enhance
 
 #### New Type Testing Files Required
+
 - [ ] **`any.type.test.ts`** - Type tests for all any utilities
 - [ ] **`array.type.test.ts`** - Type tests for all array functions and types
 - [ ] **`boolean.type.test.ts`** - Type tests for boolean operations
@@ -172,6 +190,7 @@ describe('Type Constant Testing', () => {
 - [ ] **`numeric.type.test.ts`** - Type tests for numeric functions
 
 #### Enhanced Type Testing for Complex Functions
+
 - [ ] **Function composition chains** - Test complex type inference scenarios
 - [ ] **Generic constraint validation** - Test that invalid types are rejected
 - [ ] **Overload resolution** - Test that correct overloads are selected
@@ -195,6 +214,7 @@ describe('Type Constant Testing', () => {
 **Status**: Critical - Many core functions lack test coverage
 
 #### Core Utilities Missing Tests
+
 - [ ] **[`any.echo.ts`](src/any.echo.ts:26)** - Generator that yields same value infinitely
 - [ ] **[`any.observable.ts`](src/any.observable.ts:3)** - Observable creation with change callbacks
 - [ ] **[`any.when.ts`](src/any.when.ts:24)** - Conditional execution utilities
@@ -208,6 +228,7 @@ describe('Type Constant Testing', () => {
 - [ ] **[`set.is.ts`](src/set.is.ts:27)** - Set type guards and validation
 
 #### Type-Only Files Missing Tests
+
 - [ ] **[`array.type.mapTo.ts`](src/array.type.mapTo.ts:16)** - Array mapping type utilities
 - [ ] **[`array.type.tuple.ts`](src/array.type.tuple.ts:17)** - Tuple type definitions
 - [ ] **[`array.type.withoutFirst.ts`](src/array.type.withoutFirst.ts:16)** - Array tail type utilities
@@ -215,6 +236,7 @@ describe('Type Constant Testing', () => {
 - [ ] **[`promise.type.ts`](src/promise.type.ts:1)** - Promise type utilities
 
 #### Platform-Specific Missing Tests
+
 - [ ] **[`fs.default.ts`](src/fs.default.ts:1)** - Default filesystem implementation
 - [ ] **[`fs.fs.default.ts`](src/fs.fs.default.ts:18)** - Browser filesystem polyfill
 - [ ] **[`fs.pathJoin.shared.ts`](src/fs.pathJoin.shared.ts:1)** - Shared path utilities
@@ -225,11 +247,13 @@ describe('Type Constant Testing', () => {
 - [ ] **[`string.fs.shared.ts`](src/string.fs.shared.ts:59)** - Shared string filesystem
 
 #### DOM Utilities Missing Tests
+
 - [ ] **[`dom.duplicateElement.ts`](src/dom.duplicateElement.ts:33)** - Element replication utilities
 - [ ] **[`dom.prompt.ts`](src/dom.prompt.ts:22)** - Custom prompt dialog
 - [ ] **[`dom.setCssFromParam.ts`](src/dom.setCssFromParam.ts:30)** - CSS parameter injection
 
 #### Advanced Features Missing Tests
+
 - [ ] **[`any.ReplicatingStore.ts`](src/any.ReplicatingStore.ts:201)** - Distributed storage system
 - [ ] **[`any.store.shared.ts`](src/any.store.shared.ts:8)** - Store type definitions
 - [ ] **[`deprecated.testing.ts`](src/deprecated.testing.ts:70)** - Legacy testing utilities
@@ -237,11 +261,13 @@ describe('Type Constant Testing', () => {
 - [ ] **[`indexedDb.open.ts`](src/indexedDb.open.ts:7)** - IndexedDB connection utilities
 
 #### CLI and Build Tools Missing Tests
+
 - [ ] **[`cli.append.ts`](src/cli.append.ts:36)** - File append CLI utility
 - [ ] **[`dirent.path.ts`](src/dirent.path.ts:5)** - Directory entry path utilities
 - [ ] **[`testLogger.index.ts`](src/testLogger.index.ts:1)** - Test logging utilities
 
 #### Utilities Missing Tests
+
 - [ ] **[`iterable.toString.ts`](src/iterable.toString.ts:1)** - Iterable string conversion
 - [ ] **[`iterable.trim.ts`](src/iterable.trim.ts:25)** - Iterable trimming utilities
 - [ ] **[`iterable.merge.ts`](src/iterable.merge.ts:53)** - Iterable merging (commented out?)
@@ -251,6 +277,7 @@ describe('Type Constant Testing', () => {
 Based on implementation files that have no corresponding `.unit.test.ts`:
 
 #### Essential Test Files to Create
+
 1. **`any.echo.unit.test.ts`** - Test infinite value generator
 2. **`any.observable.unit.test.ts`** - Test observable creation and change callbacks
 3. **`any.when.unit.test.ts`** - Test conditional execution utilities
@@ -264,6 +291,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 11. **`set.is.unit.test.ts`** - Test Set type guards
 
 #### Type-Level Testing Files to Create
+
 12. **`array.type.mapTo.unit.test.ts`** - Test array mapping types
 13. **`array.type.tuple.unit.test.ts`** - Test tuple type definitions
 14. **`array.type.withoutFirst.unit.test.ts`** - Test array tail types
@@ -271,6 +299,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 16. **`promise.type.unit.test.ts`** - Test promise type utilities
 
 #### Platform-Specific Test Files to Create
+
 17. **`fs.default.unit.test.ts`** - Test default filesystem
 18. **`fs.fs.default.unit.test.ts`** - Test browser filesystem polyfill
 19. **`fs.pathJoin.shared.unit.test.ts`** - Test shared path utilities
@@ -312,10 +341,12 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 ### Browser-Specific Test Files Missing
 
 #### Files That Need Browser Testing
+
 - [ ] **[`dom.redirectingTo.ts`](src/dom.redirectingTo.ts:33)** - Has browser test: ✓ [`dom.redirectingTo.browser.test.ts`](src/dom.redirectingTo.browser.test.ts:1)
 - [ ] **[`fs.ensurePath.ts`](src/fs.ensurePath.ts:17)** - Has browser test: ✓ [`fs.ensurePath.browser.test.ts`](src/fs.ensurePath.browser.test.ts:1)
 
 #### DOM Functions Needing Browser Tests
+
 - [ ] **`dom.duplicateElement.ts`** - Create `dom.duplicateElement.browser.test.ts`
 - [ ] **`dom.prompt.ts`** - Create `dom.prompt.browser.test.ts`
 - [ ] **`dom.setCssFromParam.ts`** - Create `dom.setCssFromParam.browser.test.ts`
@@ -324,9 +355,11 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 ### Performance Benchmark Files
 
 #### Files with Benchmarks
+
 - [ ] **[`promises.some.bench.ts`](src/promises.some.bench.ts:1)** - Performance benchmark exists ✓
 
 #### Functions Needing Benchmarks
+
 - [ ] **Array utilities** - [`array.range.ts`](src/array.range.ts:73) vs generator version
 - [ ] **Iteration utilities** - Sync vs async performance comparisons
 - [ ] **Function composition** - [`function.pipe.ts`](src/function.pipe.ts:19) performance with long pipelines
@@ -335,6 +368,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 ## Test Quality Issues
 
 ### Files Needing Better TSDoc in Tests
+
 **Status**: Normal Priority - Documentation in tests
 
 - [ ] **[`any.unit.test.ts`](src/any.unit.test.ts:18)** - Multiple functions, needs organization
@@ -342,6 +376,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 - [ ] **[`function.pipe.unit.test.ts`](src/function.pipe.unit.test.ts:1)** - Many overloads, needs examples
 
 ### Test Organization Issues
+
 **Status**: Normal Priority - Test maintainability
 
 - [ ] **Split combined test files** like [`any.unit.test.ts`](src/any.unit.test.ts:18)
@@ -352,6 +387,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
   - Some functions tested but not properly organized
 
 ### Test Performance Issues
+
 **Status**: Low Priority - Test efficiency
 
 - [ ] **Long-running tests** need optimization
@@ -361,6 +397,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 ## Testing Infrastructure Issues
 
 ### Missing Test Setup Files
+
 **Status**: Normal Priority - Test infrastructure
 
 - [ ] **Test fixtures** need organization and reuse
@@ -368,6 +405,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 - [ ] **Mock factories** for complex objects like `Store`
 
 ### Platform-Specific Testing
+
 **Status**: Normal Priority - Multi-platform validation
 
 - [ ] **Node.js-specific tests** for platform functions
@@ -388,21 +426,25 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 ## Implementation Priority
 
 ### Phase 1: Critical Missing Tests (Week 1)
+
 1. **Core utilities** - `any.echo`, `any.observable`, `any.when`
 2. **Type guards** - `array.is`, `map.is`, `object.is`, `set.is`
 3. **Function utilities** - `function.always`, `function.curry`, `function.ignoreExtraArgs`
 
 ### Phase 2: Platform-Specific Tests (Week 2)
+
 1. **Filesystem utilities** - All `fs.*` and `string.fs.*` functions
 2. **DOM utilities** - All `dom.*` functions with browser tests
 3. **IndexedDB utilities** - Database interaction functions
 
 ### Phase 3: Advanced Features (Week 3)
+
 1. **Storage system** - `any.ReplicatingStore` comprehensive testing
 2. **CLI utilities** - `cli.*` functions with integration tests
 3. **Build tools** - `mise.*` scripts with integration tests
 
 ### Phase 4: Test Quality (Week 4)
+
 1. **Split combined test files** into function-specific files
 2. **Add performance benchmarks** for critical functions
 3. **Enhance test documentation** and organization

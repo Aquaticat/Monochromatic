@@ -79,8 +79,8 @@ If any of these fail, or if self-consistency drops (different answers on repeate
 
 The `inference-canary` package implements a text-output self-probing approach:
 
-1.  **Canary probes**: 9 probes across 3 categories (factual, instruction, behavioral) with objective scoring functions
-2.  **Self-consistency**: each probe runs N times (default 3); consistency is tracked alongside scores
-3.  **Degradation detection**: overall score below threshold (default 0.8) flags likely degradation
-4.  **Categorical diagnosis**: per-category scores pinpoint which capabilities are affected
-5.  **Actionable output**: report includes specific weak probes and inconsistencies
+1. **Canary probes**: 9 probes across 3 categories (factual, instruction, behavioral) with objective scoring functions
+2. **Self-consistency**: each probe runs N times (default 3); consistency is tracked alongside scores
+3. **Degradation detection**: overall score below threshold (default 0.8) flags likely degradation
+4. **Categorical diagnosis**: per-category scores pinpoint which capabilities are affected
+5. **Actionable output**: report includes specific weak probes and inconsistencies

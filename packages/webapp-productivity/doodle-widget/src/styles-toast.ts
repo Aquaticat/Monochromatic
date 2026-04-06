@@ -5,12 +5,12 @@
  * toast that fades in and out.
  */
 import {
-  hCss as $,
   cssCommaList,
   cssNum,
   cssOklch,
   cssRem,
   cssS,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Toast corner radius in rem */
@@ -29,6 +29,11 @@ const TRANSITION_DURATION = 1 / 2 - 1 / (2 + 2 + 1);
  * Generates CSS rules for the zoom toast popover.
  *
  * @returns array of CSS rule strings
+ *
+ * @example
+ * ```ts
+ * const rules = renderToastStyles();
+ * ```
  */
 export function renderToastStyles(): string[] {
   return [

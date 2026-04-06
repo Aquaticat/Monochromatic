@@ -6,8 +6,8 @@
  */
 
 import {
-  hCss as $,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** CSS rules for syntax highlighting and diagnostic highlights. */

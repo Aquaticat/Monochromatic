@@ -57,6 +57,11 @@ function requireParam(
  * Registers all API routes on the given h3 application.
  *
  * @param app - h3 application instance to attach routes to
+ *
+ * @example
+ * ```ts
+ * registerApiRoutes(app);
+ * ```
  */
 export function registerApiRoutes(app: H3,): void {
   app.post(
@@ -69,15 +74,24 @@ export function registerApiRoutes(app: H3,): void {
   app.put(
     '/api/tasks/:id',
     defineHandler(function handleUpdateTaskRoute(event,) {
-      const id = requireParam(event, 'id',);
-      return handleUpdateTask(event.req, id,);
+      const id = requireParam(
+        event,
+        'id',
+      );
+      return handleUpdateTask(
+        event.req,
+        id,
+      );
     },),
   );
 
   app.delete(
     '/api/tasks/:id',
     defineHandler(function handleDeleteTaskRoute(event,) {
-      const id = requireParam(event, 'id',);
+      const id = requireParam(
+        event,
+        'id',
+      );
       return handleDeleteTask(id,);
     },),
   );
@@ -85,7 +99,10 @@ export function registerApiRoutes(app: H3,): void {
   app.post(
     '/api/tasks/:id/start',
     defineHandler(function handleStartTimerRoute(event,) {
-      const id = requireParam(event, 'id',);
+      const id = requireParam(
+        event,
+        'id',
+      );
       return handleStartTimer(id,);
     },),
   );
@@ -93,7 +110,10 @@ export function registerApiRoutes(app: H3,): void {
   app.post(
     '/api/tasks/:id/stop',
     defineHandler(function handleStopTimerRoute(event,) {
-      const id = requireParam(event, 'id',);
+      const id = requireParam(
+        event,
+        'id',
+      );
       return handleStopTimer(id,);
     },),
   );
@@ -101,7 +121,10 @@ export function registerApiRoutes(app: H3,): void {
   app.post(
     '/api/tasks/:id/complete',
     defineHandler(function handleCompleteTaskRoute(event,) {
-      const id = requireParam(event, 'id',);
+      const id = requireParam(
+        event,
+        'id',
+      );
       return handleCompleteTask(id,);
     },),
   );

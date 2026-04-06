@@ -28,6 +28,11 @@ export const HTTP_INTERNAL_ERROR = 500;
  * @param status - HTTP status code (defaults to 200)
  *
  * @returns JSON response with content-type header
+ *
+ * @example
+ * ```ts
+ * return jsonResponse({ ok: true }, 200);
+ * ```
  */
 export function jsonResponse(
   payload: unknown,

@@ -68,7 +68,10 @@ export function* $<T,>(params: {
   predicate: (item: T,) => boolean;
   iterable: Iterable<T>;
 },): Generator<{
-  decision: 'pass' | 'fail' | ['thrown', unknown,];
+  decision: 'pass' | 'fail' | [
+    'thrown',
+    unknown,
+  ];
   item: T;
 }, void, undefined> {
   const {
@@ -95,7 +98,10 @@ export function* $<T,>(params: {
     }
     catch (error) {
       yield {
-        decision: ['thrown', error,],
+        decision: [
+          'thrown',
+          error,
+        ],
         item,
       };
     }

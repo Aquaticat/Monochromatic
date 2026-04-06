@@ -47,6 +47,15 @@ export function parseArrayHeader(
  * @returns Discriminated union: `'end'` with tail after ']' or `'next'` with the next element's start
  *
  * @throws Error - When neither ',' nor ']' is found in a valid position
+ *
+ * @example
+ * ```ts
+ * const end = expectArraySeparatorOrEnd(']rest' as FragmentStringJsonc);
+ * // end === { kind: 'end', tail: 'rest' }
+ *
+ * const next = expectArraySeparatorOrEnd(', 2]' as FragmentStringJsonc);
+ * // next === { kind: 'next', tailStart: '2]' }
+ * ```
  */
 export function expectArraySeparatorOrEnd(
   value: FragmentStringJsonc,

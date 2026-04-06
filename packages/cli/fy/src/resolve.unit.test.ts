@@ -17,7 +17,7 @@ await describe({
         const result = await resolveSpecifier({ specifier: 'node:path', },);
         expect(result,).toBe('node:path',);
       },
-    }),
+    },),
 
     it({
       name: 'resolves bare built-in module names',
@@ -25,7 +25,7 @@ await describe({
         const result = await resolveSpecifier({ specifier: 'path', },);
         expect(result,).toBe('path',);
       },
-    }),
+    },),
 
     //endregion Node built-in resolution
 
@@ -37,7 +37,7 @@ await describe({
         const result = await resolveSpecifier({ specifier: 'nano-spawn', },);
         expect(result,).toContain('nano-spawn',);
       },
-    }),
+    },),
 
     //endregion Installed package resolution
 
@@ -54,7 +54,7 @@ await describe({
           .rejects
           .toThrow('Cannot resolve',);
       },
-    }),
+    },),
 
     it({
       name: 'includes search locations in error message',
@@ -63,8 +63,7 @@ await describe({
           .rejects
           .toThrow('CWD',);
       },
-    }),
-
+    },),
     //endregion Error cases
   ],
 },);

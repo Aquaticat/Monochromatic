@@ -26,6 +26,7 @@ Or from within a Claude Code session:
 ```
 
 Choose a scope:
+
 - `--scope user` — personal, all projects (`~/.claude/settings.json`)
 - `--scope project` — team-shared via version control (`.claude/settings.json`)
 - `--scope local` — gitignored, this machine only (`.claude/settings.local.json`)
@@ -106,19 +107,22 @@ claude plugin install claude-spawn@Monochromatic
 
 ### To npm
 
-1.  Remove `"private": true` from `package.json` (or publish under a scope).
-2.  Ensure `dist/` is built: `mise run //packages/claude-code-plugins/claude-spawn:build:js:node`
-3.  Publish: `npm publish`
-4.  Reference in marketplace.json:
+1. Remove `"private": true` from `package.json` (or publish under a scope).
+2. Ensure `dist/` is built: `mise run //packages/claude-code-plugins/claude-spawn:build:js:node`
+3. Publish: `npm publish`
+4. Reference in marketplace.json:
 
-    ```json
-    {
-      "name": "claude-spawn",
-      "source": { "source": "npm", "package": "@monochromatic-dev/claude-code-plugins-claude-spawn" },
-      "description": "Spawn steerable child Claude sessions with automatic result forwarding.",
-      "version": "0.0.1"
-    }
-    ```
+   ```json
+   {
+     "name": "claude-spawn",
+     "source": {
+       "source": "npm",
+       "package": "@monochromatic-dev/claude-code-plugins-claude-spawn"
+     },
+     "description": "Spawn steerable child Claude sessions with automatic result forwarding.",
+     "version": "0.0.1"
+   }
+   ```
 
 ### Validating before publishing
 

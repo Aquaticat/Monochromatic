@@ -25,9 +25,11 @@ say so when citing weaker sources.
 
 ```md
 <!-- Bad -->
+
 Kickstarter has over 20 million backers worldwide.
 
 <!-- Good -->
+
 Kickstarter reports "over 22 million people have backed a project"
 on its about page ([source](https://www.kickstarter.com/about)).
 ```
@@ -103,6 +105,7 @@ Every section should signal its source reliability to the reader:
 
 ```md
 <!-- Good: explicit quality signal -->
+
 **Data quality note:** Creator demographics below come from [6sense](https://6sense.com/...)
 and [Search Logistics](https://searchlogistics.com/...), both secondary aggregators.
 No primary demographic survey from Kickstarter exists.

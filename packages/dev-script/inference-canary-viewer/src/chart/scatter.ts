@@ -60,6 +60,12 @@ export type ScatterPoint = {
  * @param tableDisplay - column visibility options forwarded to the data table
  *
  * @returns HTML string
+ *
+ * @example
+ * ```ts
+ * const html = renderScatterChart({ points, threshold: 0.75, thresholdLabel: 'threshold: 0.75', caption: 'Score' });
+ * // '<figure class="chart-figure">...<\/figure>'
+ * ```
  */
 export function renderScatterChart({
   points,
@@ -125,7 +131,10 @@ export function renderScatterChart({
             tag: 'div',
             class: 'chart-plot',
             children: [
-              renderThresholdLine(threshold, thresholdLabel,),
+              renderThresholdLine(
+                threshold,
+                thresholdLabel,
+              ),
               pointElements,
             ],
           },),

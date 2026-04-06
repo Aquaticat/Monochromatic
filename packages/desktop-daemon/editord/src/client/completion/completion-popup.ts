@@ -24,7 +24,7 @@ const VERTICAL_OFFSET = 4;
  */
 export class CompletionPopup extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
   /** Container for the list items. */
   #list: HTMLDivElement | null = null;
   /** Currently displayed items. */

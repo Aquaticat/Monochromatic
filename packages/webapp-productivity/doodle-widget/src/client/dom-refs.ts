@@ -28,67 +28,93 @@ export function requireElement<T extends Element,>(selector: string,): T {
 }
 
 /** Canvas container element (scrollable centering viewport) */
-export const container = requireElement<HTMLDivElement>('#canvas-container',);
+export const container: HTMLDivElement = requireElement<HTMLDivElement>(
+  '#canvas-container',
+);
 
 /** Fixed letter-size page element (coordinate reference for drawing and export) */
-export const page = requireElement<HTMLDivElement>('#page',);
+export const page: HTMLDivElement = requireElement<HTMLDivElement>('#page',);
 
 /** Drawing canvas element */
-export const canvas = requireElement<HTMLCanvasElement>('#draw-canvas',);
+export const canvas: HTMLCanvasElement = requireElement<HTMLCanvasElement>(
+  '#draw-canvas',
+);
 
 /** SVG overlay element for displaying SVG backgrounds with multiply blending */
-export const svgOverlay = requireElement<HTMLDivElement>('#svg-overlay',);
+export const svgOverlay: HTMLDivElement = requireElement<HTMLDivElement>('#svg-overlay',);
 
 /** Draw tool radio input */
-export const drawRadio = requireElement<HTMLInputElement>('#tool-draw',);
+export const drawRadio: HTMLInputElement = requireElement<HTMLInputElement>(
+  '#tool-draw',
+);
 
 /** Erase tool radio input */
-export const eraseRadio = requireElement<HTMLInputElement>('#tool-erase',);
+export const eraseRadio: HTMLInputElement = requireElement<HTMLInputElement>(
+  '#tool-erase',
+);
 
 /** Zoom tool radio input */
-export const zoomRadio = requireElement<HTMLInputElement>('#tool-zoom',);
+export const zoomRadio: HTMLInputElement = requireElement<HTMLInputElement>(
+  '#tool-zoom',
+);
 
 /** Text label overlay layer */
-export const textLayer = requireElement<HTMLDivElement>('#text-layer',);
+export const textLayer: HTMLDivElement = requireElement<HTMLDivElement>('#text-layer',);
 
 /** Zoom layer wrapper for CSS transform-based zoom and pan */
-export const zoomLayer = requireElement<HTMLDivElement>('#zoom-layer',);
+export const zoomLayer: HTMLDivElement = requireElement<HTMLDivElement>('#zoom-layer',);
 
 /** Tool selection toggle group */
-export const toolToggle = requireElement<HTMLDivElement>('#tool-toggle',);
+export const toolToggle: HTMLDivElement = requireElement<HTMLDivElement>('#tool-toggle',);
 
 /** Page selection toggle group */
-export const pageToggle = requireElement<HTMLDivElement>('#page-toggle',);
+export const pageToggle: HTMLDivElement = requireElement<HTMLDivElement>('#page-toggle',);
 
 /** JSON script element holding page background SVGs */
-export const backgroundsScript = requireElement<HTMLScriptElement>('#page-backgrounds',);
+export const backgroundsScript: HTMLScriptElement = requireElement<HTMLScriptElement>(
+  '#page-backgrounds',
+);
 
 /** Undo button */
-export const undoBtn = requireElement<HTMLButtonElement>('#undo-btn',);
+export const undoBtn: HTMLButtonElement = requireElement<HTMLButtonElement>('#undo-btn',);
 
 /** Redo button */
-export const redoBtn = requireElement<HTMLButtonElement>('#redo-btn',);
+export const redoBtn: HTMLButtonElement = requireElement<HTMLButtonElement>('#redo-btn',);
 
 /** Color picker input */
-export const colorPicker = requireElement<HTMLInputElement>('#color-picker',);
+export const colorPicker: HTMLInputElement = requireElement<HTMLInputElement>(
+  '#color-picker',
+);
 
 /** Stroke width slider */
-export const sizeSlider = requireElement<HTMLInputElement>('#size-slider',);
+export const sizeSlider: HTMLInputElement = requireElement<HTMLInputElement>(
+  '#size-slider',
+);
 
 /** Clear button */
-export const clearBtn = requireElement<HTMLButtonElement>('#clear-btn',);
+export const clearBtn: HTMLButtonElement = requireElement<HTMLButtonElement>(
+  '#clear-btn',
+);
 
 /** Export button */
-export const exportBtn = requireElement<HTMLButtonElement>('#export-btn',);
+export const exportBtn: HTMLButtonElement = requireElement<HTMLButtonElement>(
+  '#export-btn',
+);
 
 /** Export format dropdown */
-export const formatSelect = requireElement<HTMLSelectElement>('#format-select',);
+export const formatSelect: HTMLSelectElement = requireElement<HTMLSelectElement>(
+  '#format-select',
+);
 
 /** Upload trigger button */
-export const uploadBtn = requireElement<HTMLButtonElement>('#upload-btn',);
+export const uploadBtn: HTMLButtonElement = requireElement<HTMLButtonElement>(
+  '#upload-btn',
+);
 
 /** Hidden file upload input */
-export const uploadInput = requireElement<HTMLInputElement>('#upload-input',);
+export const uploadInput: HTMLInputElement = requireElement<HTMLInputElement>(
+  '#upload-input',
+);
 
 /** Zoom instruction toast popover */
-export const zoomToast = requireElement<HTMLDivElement>('#zoom-toast',);
+export const zoomToast: HTMLDivElement = requireElement<HTMLDivElement>('#zoom-toast',);

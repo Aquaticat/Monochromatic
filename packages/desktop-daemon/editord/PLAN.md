@@ -85,7 +85,7 @@
 - [x] Formatting from dprint: Ctrl+Shift+F / Ctrl+Alt+L (JetBrains parity)
 - [x] Go-to-definition from tsgo: Ctrl+Click and Ctrl+B navigate to definition location
 - [x] Find references from tsgo: Ctrl+B falls back to references when already at definition;
-  single result navigates directly, multiple results show `<references-popup>`
+      single result navigates directly, multiple results show `<references-popup>`
 - [x] Graceful degradation: servers that fail to start are skipped; features degrade
 - [x] Late-init recovery: documents opened before LSP ready are re-opened after init
 
@@ -98,7 +98,7 @@
 - [x] Client: `::before` pseudo-element renders hints above code lines with pill background
 - [x] Client: line numbers moved from `::before` to `::after` to free `::before` for hints
 - [x] Client: `--line-num-offset` measured via `getComputedStyle(div, '::before').height`
-  in a follow-up rAF so line numbers align with code even when hints wrap
+      in a follow-up rAF so line numbers align with code even when hints wrap
 - [x] Client: `--inlay-indent` CSS custom property for column-aligned hint positioning
 - [x] Client: parameter hints strip trailing colon for cleaner display
 - [x] Client: severity-colored backgrounds for diagnostic messages in annotations
@@ -110,7 +110,7 @@
 - [x] `FileKind` type: `'text' | 'image' | 'audio' | 'video' | 'binary'`
 - [x] `file-kind.ts`: extension-based detection for images, audio, video; SVG excluded (editable text)
 - [x] `hex-dump.ts`: xxd-style format, 16 bytes/line, grouped as two 8-byte halves,
-  ASCII on right, truncated at 16 384 bytes with footer
+      ASCII on right, truncated at 16 384 bytes with footer
 - [x] `<binary-viewer>` web component: four modes -- `<img>`, `<audio controls>`, `<video controls>`, `<pre>` hex dump
 - [x] `fileContent` response includes `kind` field for viewer routing
 - [x] Editor pane hidden when binary viewer is active, and vice versa

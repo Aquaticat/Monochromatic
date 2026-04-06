@@ -4,9 +4,7 @@
  * Unlike other web components that live in `components/`, task-card is in `lib/`
  * because it's always created programmatically (never placed in server HTML).
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 import {
   buildChipTexts,
@@ -24,7 +22,7 @@ const MS_PER_SECOND = 1_000;
  */
 class TaskCard extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Task data to display, set via `configure()`. */
   #task: Task | null = null;
@@ -152,6 +150,12 @@ customElements.define(
  * @param options - Callbacks for open/complete interactions
  *
  * @returns Configured task-card element
+ *
+ * @example
+ * ```ts
+ * const card = createTaskCard(task, { onOpen: handleOpen, onToggleComplete: handleComplete });
+ * list.append(card);
+ * ```
  */
 export function createTaskCard(
   task: Task,
@@ -173,6 +177,12 @@ export function createTaskCard(
  * @param task - Task with optional running timer
  *
  * @returns Formatted tracked time string
+ *
+ * @example
+ * ```ts
+ * const label = formatRunningTrackedTime(task);
+ * // 'tracked: 2h 15m'
+ * ```
  */
 export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)

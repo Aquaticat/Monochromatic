@@ -10,6 +10,12 @@ import { hCss as $, } from '@monochromatic-dev/module-hyperscript/ts';
  * Generates the `:root` block with all color custom properties.
  *
  * @returns CSS string with custom property declarations
+ *
+ * @example
+ * ```ts
+ * const css = tokenStyles();
+ * // ':root { --color-fg: #1a1a1a; ... }'
+ * ```
  */
 export function tokenStyles(): string {
   return $({
@@ -44,6 +50,12 @@ export function tokenStyles(): string {
  * Swaps light color values for dark-appropriate alternatives.
  *
  * @returns CSS `@media` block string with dark color overrides
+ *
+ * @example
+ * ```ts
+ * const css = darkModeTokenStyles();
+ * // '\@media (prefers-color-scheme: dark) { :root { ... } }'
+ * ```
  */
 export function darkModeTokenStyles(): string {
   return $({

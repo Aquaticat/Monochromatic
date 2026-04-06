@@ -19,7 +19,7 @@ await describe({
 
         expect(result,).toEqual([2, 4,],);
       },
-    }),
+    },),
     it({
       name: 'returns empty when inclusion set is empty',
       fn: async () => {
@@ -28,7 +28,7 @@ await describe({
 
         expect(result,).toEqual([],);
       },
-    }),
+    },),
     it({
       name: 'returns all items when all are in inclusion set',
       fn: async () => {
@@ -38,7 +38,7 @@ await describe({
 
         expect(result,).toEqual([1, 2, 3,],);
       },
-    }),
+    },),
     it({
       name: 'handles string items',
       fn: async () => {
@@ -48,7 +48,7 @@ await describe({
 
         expect(result,).toEqual(['banana', 'cherry',],);
       },
-    }),
+    },),
     it({
       name: 'throws when toPick contains items not in the iterable',
       fn: async () => {
@@ -59,7 +59,7 @@ await describe({
           'Key not found in iterable: 4',
         );
       },
-    }),
+    },),
     it({
       name: 'does not throw when strict is false and toPick contains missing items',
       fn: async () => {
@@ -69,7 +69,7 @@ await describe({
 
         expect(result,).toEqual([2,],);
       },
-    }),
+    },),
     it({
       name: 'strict: false returns only existing items from toPick',
       fn: async () => {
@@ -79,7 +79,7 @@ await describe({
 
         expect(result,).toEqual(['banana',],);
       },
-    }),
+    },),
     it({
       name: 'strict: false with all missing keys returns empty array',
       fn: async () => {
@@ -89,7 +89,7 @@ await describe({
 
         expect(result,).toEqual([],);
       },
-    }),
+    },),
     it({
       name: 'preserves order of items from iterable',
       fn: async () => {
@@ -99,7 +99,7 @@ await describe({
 
         expect(result,).toEqual([1, 2,],);
       },
-    }),
+    },),
     it({
       name: 'works with generator iterables',
       fn: async () => {
@@ -113,6 +113,6 @@ await describe({
 
         expect(result,).toEqual([2, 3,],);
       },
-    }),
+    },),
   ],
 },);

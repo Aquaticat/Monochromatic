@@ -25,7 +25,7 @@ const FULL_DVB = 100;
 //region Resets
 
 /** Box-model reset and form element font inheritance. */
-export const resets = [
+export const resets: string = [
   css({
     rule: '*, *::before, *::after',
     decls: {
@@ -65,7 +65,7 @@ export const resets = [
 //region Layout shell
 
 /** Body, sidebar, page-wrapper, and app container layout rules. */
-export const layoutShell = [
+export const layoutShell: string = [
   css({
     rule: ':root',
     decls: { '--sidebar-basis': cssRem(SIDEBAR_BASIS,), },

@@ -9,9 +9,7 @@
  * with save/close branches, and panel open/close logic form a single cohesive
  * unit -- splitting further would scatter the lifecycle across files.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';
 import type { TaskDetail, } from './components/task-detail.ts';
 import { api, } from './lib/api.ts';
@@ -60,6 +58,12 @@ type NewTaskDialog = {
  * stacking without a blocking backdrop.
  *
  * @returns panel and fab elements ready for DOM insertion
+ *
+ * @example
+ * ```ts
+ * const { panel, fab } = createNewTaskDialog();
+ * document.body.append(panel, fab);
+ * ```
  */
 export function createNewTaskDialog(): NewTaskDialog {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail
@@ -90,8 +94,12 @@ export function createNewTaskDialog(): NewTaskDialog {
     function handleAction(event,) {
       if (!(event instanceof CustomEvent))
         throw new TypeError("Expected CustomEvent for 'action' listener",);
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
-      const { action, title, description, } = event.detail as {
+      const {
+        action,
+        title,
+        description,
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
+      } = event.detail as {
         action: string;
         title: string;
         description: string;
@@ -109,17 +117,20 @@ export function createNewTaskDialog(): NewTaskDialog {
 
         const metadata = detail.getMetadata();
         void (async function saveTask(): Promise<void> {
-          await api('/api/tasks', {
-            method: 'POST',
-            body: JSON.stringify({
-              title: trimmedTitle,
-              description: description.length === 0 ? null : description,
-              tags: metadata.tags,
-              locations: metadata.locations,
-              priority: metadata.priority,
-              complexity: metadata.complexity,
-            },),
-          },);
+          await api(
+            '/api/tasks',
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                title: trimmedTitle,
+                description: description.length === 0 ? null : description,
+                tags: metadata.tags,
+                locations: metadata.locations,
+                priority: metadata.priority,
+                complexity: metadata.complexity,
+              },),
+            },
+          );
           globalThis.location.reload();
         })();
       }

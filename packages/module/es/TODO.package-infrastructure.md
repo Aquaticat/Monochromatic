@@ -5,6 +5,7 @@
 ### Package Publishing and Distribution
 
 #### JSR Publishing Support
+
 **Status**: Normal Priority - Modern JavaScript registry
 
 - [ ] **JSR configuration optimization** - Review [`jsr.json`](jsr.json:1) configuration
@@ -14,6 +15,7 @@
 - [ ] **JSR compatibility testing** - Validate all functions work on JSR platform
 
 #### NPM Publishing Enhancement
+
 **Status**: Normal Priority - Package distribution
 
 - [ ] **Export map optimization** - Review [`package.json` exports](package.json:6) for completeness
@@ -23,6 +25,7 @@
 - [ ] **Publishing automation** - Automated semantic versioning and publishing
 
 #### Dual Build System
+
 **Status**: High Priority - Platform compatibility
 
 - [ ] **Node.js build optimization** - Optimize Node.js-specific implementations
@@ -34,9 +37,11 @@
 ### CLI Tools Integration
 
 #### Existing CLI Tools (via bin field)
+
 **Status**: Normal Priority - Development tooling
 
 Current CLI tools in [`package.json` bin field](package.json:48):
+
 - [ ] **`checkBuild`** - [`mise.checkBuild.ts`](src/mise.checkBuild.ts:1) - Enhance build validation
 - [ ] **`checkDependencies`** - [`mise.checkDependencies.ts`](src/mise.checkDependencies.ts:1) - Enhance dependency validation
 - [ ] **`checkGitHooks`** - [`mise.checkGitHooks.ts`](src/mise.checkGitHooks.ts:1) - Enhance git hook validation
@@ -48,6 +53,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **`command`** - [`cli.command.ts`](src/cli.command.ts:1) - Enhance command execution
 
 #### CLI Tool Improvements Needed
+
 - [ ] **Enhanced error handling** - Better error messages and recovery
 - [ ] **Logging integration** - Use logger parameter pattern in CLI tools
 - [ ] **Performance monitoring** - Track CLI tool execution performance
@@ -58,6 +64,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 ### Mise task system integration
 
 #### Mise integration utilities
+
 **Status**: Normal Priority - Build system tooling
 
 - [ ] **Mise task automation** - Utilities for mise task management
@@ -66,6 +73,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Mise debugging utilities** - Tools for debugging mise build issues
 
 #### Build Validation and Checking
+
 **Status**: High Priority - Build reliability
 
 - [ ] **Comprehensive build validation** - Validate all build artifacts
@@ -77,6 +85,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 ### Logging Framework Integration
 
 #### Enhanced Logging Requirements
+
 - [ ] **Logger parameter integration** - All 500+ planned functions need logger parameters
 - [ ] **Logging performance optimization** - Minimize logging overhead in utility functions
 - [ ] **Structured logging** - Consistent log format across all utilities
@@ -84,6 +93,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Platform-specific logging** - Optimize logging for Node.js vs browser environments
 
 #### Logging Patterns for Utility Library
+
 - [ ] **Pure function logging** - Logging patterns for pure utility functions
 - [ ] **Performance logging** - Optional performance tracking in utilities
 - [ ] **Error logging** - Comprehensive error logging and context
@@ -93,6 +103,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 ### External Dependencies and Integrations
 
 #### Current Dependencies
+
 **Status**: Normal Priority - Dependency management
 
 - [ ] **[`meilisearch`](package.json:91)** dependency - Document integration and usage
@@ -100,6 +111,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Development dependencies** - Audit and optimize development tooling
 
 #### External Library Integration
+
 - [ ] **Interoperability utilities** - Functions to integrate with popular libraries
 - [ ] **Adapter patterns** - Convert between library formats and our utility formats
 - [ ] **Migration utilities** - Help migrate from other utility libraries
@@ -108,6 +120,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 ### Performance Monitoring and Optimization
 
 #### Build Performance Monitoring
+
 **Status**: Normal Priority - Development experience
 
 - [ ] **Build time tracking** - Monitor compilation and build performance
@@ -116,6 +129,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Cache efficiency tracking** - Monitor build cache effectiveness
 
 #### Runtime Performance Monitoring
+
 **Status**: Normal Priority - Production performance
 
 - [ ] **Function execution tracking** - Optional performance monitoring for utilities
@@ -126,6 +140,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 ### Development Environment Integration
 
 #### IDE and Editor Support
+
 **Status**: Normal Priority - Developer experience
 
 - [ ] **TypeScript language server optimization** - Ensure fast IntelliSense
@@ -134,6 +149,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Error reporting enhancement** - Clear error messages and suggestions
 
 #### Development Tooling
+
 **Status**: High Priority - Development workflow
 
 - [ ] **Linting integration** - Custom linting rules for utility library patterns
@@ -144,6 +160,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 ### Security and Compliance
 
 #### Security Infrastructure
+
 **Status**: High Priority - Library security
 
 - [ ] **Security scanning** - Regular security audits of all utility functions
@@ -152,6 +169,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Input validation** - Comprehensive input validation across all utilities
 
 #### Compliance and Standards
+
 **Status**: Normal Priority - Industry standards
 
 - [ ] **License compliance** - Ensure all utilities comply with Apache 2.0 license
@@ -162,6 +180,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 ### Community and Ecosystem
 
 #### Community Infrastructure
+
 **Status**: Low Priority - Community building
 
 - [ ] **Contribution guidelines** - Guidelines for adding new utility functions
@@ -170,6 +189,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Community documentation** - Examples and tutorials from community
 
 #### Ecosystem Integration
+
 **Status**: Normal Priority - Framework integration
 
 - [ ] **Framework adapters** - Integration utilities for popular frameworks
@@ -180,6 +200,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 ### Documentation Infrastructure
 
 #### API Documentation
+
 **Status**: High Priority - Documentation for 500+ functions
 
 - [ ] **Automated API documentation** - Generate docs from TSDoc for all functions
@@ -188,6 +209,7 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Compatibility documentation** - Platform and browser compatibility notes
 
 #### Educational Content
+
 **Status**: Normal Priority - Learning resources
 
 - [ ] **Tutorial series** - Learn functional programming with comprehensive utilities

@@ -42,17 +42,14 @@ export async function discoverTestFiles(cwd: string,): Promise<readonly string[]
 
   const files = entries
     .filter(function isMatrixTest(entry,) {
-      if (!entry.isFile()) {
+      if (!entry.isFile())
         return false;
-      }
-      if (!entry.name.endsWith(MATRIX_TEST_SUFFIX,)) {
+      if (!entry.name.endsWith(MATRIX_TEST_SUFFIX,))
         return false;
-      }
       /** Skip node_modules and dist directories. */
       const { parentPath, } = entry;
-      if (parentPath.includes('node_modules',) || parentPath.includes('/dist/',)) {
+      if (parentPath.includes('node_modules',) || parentPath.includes('/dist/',))
         return false;
-      }
       return true;
     },)
     .map(function toAbsolutePath(entry,) {

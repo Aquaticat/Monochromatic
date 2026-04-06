@@ -5,11 +5,11 @@
  * text input elements (active and finalized).
  */
 import {
-  hCss as $,
   cssCommaList,
   cssNum,
   cssOklch,
   cssRem,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { INSET_ZERO_DECLS, } from './style-tokens.ts';
 
@@ -23,6 +23,11 @@ const TEXT_INPUT_LINE_HEIGHT = 1 + 2 / (2 + 2 + 1);
  * Generates CSS rules for the text overlay layer and text inputs.
  *
  * @returns array of CSS rule strings
+ *
+ * @example
+ * ```ts
+ * const rules = renderTextStyles();
+ * ```
  */
 export function renderTextStyles(): string[] {
   return [

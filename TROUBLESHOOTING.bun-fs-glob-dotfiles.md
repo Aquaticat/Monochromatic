@@ -9,16 +9,14 @@ when running on Bun, regardless of pattern.
 Wildcard patterns (`*`, `**/*`) and explicit dot patterns (`.*`, `.hidden`) both return empty results for dot entries.
 
 ```typescript
-import { glob } from 'node:fs/promises';
+import { glob, } from 'node:fs/promises';
 
 // Directory contains: visible, .hidden
-for await (const match of glob('/path/*')) {
-  console.log(match); // only "visible" -- .hidden is silently skipped
-}
+for await (const match of glob('/path/*',))
+  console.log(match,); // only "visible" -- .hidden is silently skipped
 
-for await (const match of glob('/path/.*')) {
-  console.log(match); // no output at all
-}
+for await (const match of glob('/path/.*',))
+  console.log(match,); // no output at all
 ```
 
 `Bun.Glob` with `dot: true` matches correctly under identical conditions.
@@ -31,10 +29,10 @@ The bridge function `mapOptions` in `src/js/internal/fs/glob.ts` builds scan opt
 ```typescript
 // src/js/internal/fs/glob.ts, lines 93-103 (Bun v1.3.10)
 return {
-    cwd: options?.cwd ?? process.cwd(),
-    followSymlinks: true,
-    onlyFiles: false,
-    exclude,
+  cwd: options?.cwd ?? process.cwd(),
+  followSymlinks: true,
+  onlyFiles: false,
+  exclude,
 };
 // ^^^ no `dot` property -- falls through to Bun.Glob default
 ```
@@ -86,11 +84,11 @@ Add `dot: true` to the `mapOptions` return in `src/js/internal/fs/glob.ts`:
 
 ```typescript
 return {
-    cwd: options?.cwd ?? process.cwd(),
-    followSymlinks: true,
-    onlyFiles: false,
-    dot: true,
-    exclude,
+  cwd: options?.cwd ?? process.cwd(),
+  followSymlinks: true,
+  onlyFiles: false,
+  dot: true,
+  exclude,
 };
 ```
 

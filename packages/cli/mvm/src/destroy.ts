@@ -36,7 +36,10 @@ async function destroyOne(
     rl,
   }: {
     name: string;
-    rl: { debug: (msg: string,) => void; info: (msg: string,) => void; };
+    rl: {
+      debug: (msg: string,) => void;
+      info: (msg: string,) => void;
+    };
   },
 ): Promise<void> {
   rl.info(`destroying VM ${name}`,);
@@ -56,7 +59,10 @@ async function destroyOne(
   );
   await rm(
     vmDir,
-    { force: true, recursive: true, },
+    {
+      force: true,
+      recursive: true,
+    },
   );
 
   rl.info(`VM ${name} destroyed`,);

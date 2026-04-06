@@ -21,6 +21,11 @@ import type {
  * @param relY - relative y position (0-1)
  *
  * @returns width in pixels at that position, or 0 if no data
+ *
+ * @example
+ * ```ts
+ * const width = widthAtRelY(profile, 0.5);
+ * ```
  */
 export function widthAtRelY(
   profile: WidthProfile,
@@ -43,6 +48,11 @@ export function widthAtRelY(
  * @param relYEnd - end of range (0-1)
  *
  * @returns maximum width and relative y position
+ *
+ * @example
+ * ```ts
+ * const { width, relY } = maxWidthInRange(profile, 0.14, 0.22);
+ * ```
  */
 export function maxWidthInRange(
   profile: WidthProfile,
@@ -80,6 +90,11 @@ export function maxWidthInRange(
  * @param relYEnd - end of range (0-1)
  *
  * @returns minimum width and relative y position
+ *
+ * @example
+ * ```ts
+ * const { width, relY } = minWidthInRange(profile, 0.25, 0.35);
+ * ```
  */
 export function minWidthInRange(
   profile: WidthProfile,
@@ -113,6 +128,12 @@ export function minWidthInRange(
  * @param profile - width profile data
  *
  * @returns top and bottom y positions (relative 0-1)
+ *
+ * @example
+ * ```ts
+ * const bounds = contentBounds(profile);
+ * console.log(bounds.top, bounds.bottom, bounds.totalHeight);
+ * ```
  */
 export function contentBounds(profile: WidthProfile,): ContentBoundsResult {
   if (profile.rows.length === 0) {
@@ -155,6 +176,11 @@ export function contentBounds(profile: WidthProfile,): ContentBoundsResult {
  * @param relContent - relative position within content (0-1)
  *
  * @returns absolute y fraction (0-1) in image coordinates
+ *
+ * @example
+ * ```ts
+ * const absY = contentToAbsY(bounds, 0.5);
+ * ```
  */
 export function contentToAbsY(
   bounds: ContentBoundsResult,
@@ -171,6 +197,11 @@ export function contentToAbsY(
  * @param refVal - reference normalized value
  *
  * @returns formatted ratio string
+ *
+ * @example
+ * ```ts
+ * const ratio = fmtRatio(0.25, 0.20);
+ * ```
  */
 export function fmtRatio(
   cmpVal: number,

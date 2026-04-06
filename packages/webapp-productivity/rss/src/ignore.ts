@@ -22,6 +22,11 @@ const l = tagged({
  * Used both for content-derived memoize salt and for link filtering.
  *
  * @returns Concatenated raw text from all ignore files, or empty string if directory is missing
+ *
+ * @example
+ * ```ts
+ * const content = await getIgnoreContent();
+ * ```
  */
 export async function getIgnoreContent(): Promise<string> {
   const innerL = tagged({
@@ -42,7 +47,10 @@ export async function getIgnoreContent(): Promise<string> {
   const contents = await mapIterableAsync(
     function readIgnoreFile(dirent: Dirent,) {
       return readFile(
-        join(dirent.parentPath, dirent.name,),
+        join(
+          dirent.parentPath,
+          dirent.name,
+        ),
         'utf8',
       );
     },
@@ -57,6 +65,11 @@ export async function getIgnoreContent(): Promise<string> {
  * @param content - Raw JSONL text from ignore files
  *
  * @returns Set of link URLs that should be excluded from rendering
+ *
+ * @example
+ * ```ts
+ * const links = parseIgnoredLinks('{"link":"https://example.com"}\n');
+ * ```
  */
 export function parseIgnoredLinks(content: string,): Set<string> {
   const innerL = tagged({

@@ -33,6 +33,12 @@ export const Y_TICKS: readonly number[] = [
  * Each tick is a `<span>` positioned at the corresponding bottom percentage.
  *
  * @returns HTML string for Y axis ticks
+ *
+ * @example
+ * ```ts
+ * const html = renderYAxis();
+ * // '<span class="tick" style="bottom:0%">0.00<\/span>\n...'
+ * ```
  */
 export function renderYAxis(): string {
   /** Percentage multiplier to convert 0-1 score to 0-100% CSS bottom offset */
@@ -59,6 +65,12 @@ export function renderYAxis(): string {
  * @param timestamps - ordered array of ISO timestamp strings corresponding to data points
  *
  * @returns HTML string for X axis ticks
+ *
+ * @example
+ * ```ts
+ * const html = renderXAxis(['2026-03-01T00:00:00Z', '2026-03-02T00:00:00Z']);
+ * // '<span class="tick" style="left:0.00%">03-01<\/span>\n...'
+ * ```
  */
 export function renderXAxis(timestamps: readonly string[],): string {
   if (timestamps.length === 0)

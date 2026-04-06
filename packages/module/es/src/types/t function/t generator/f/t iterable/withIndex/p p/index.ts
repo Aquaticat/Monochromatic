@@ -9,6 +9,13 @@ import { $ as named, } from '../p n/index.ts';
  * @param myIterable - iterable or async iterable to index
  *
  * @returns async generator yielding objects containing the element and its integer index
+ *
+ * @example
+ * ```ts
+ * for await (const { element, index } of $(['a', 'b'])) {
+ *   console.log(index, element); // 0 'a', 1 'b'
+ * }
+ * ```
  */
 export function $<const T,>(
   myIterable: MaybeAsyncIterable<T>,

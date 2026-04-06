@@ -4,7 +4,7 @@ Review date: 2026-02-17
 
 ## Current layout
 
-```
+```text
 packages/
   build/
     backup-path      @monochromatic-dev/build-backup-path
@@ -153,7 +153,7 @@ Add meaningful `description` fields to the seven packages listed above.
 
 ### Proposed final layout
 
-```
+```text
 packages/
   build-tool/
     css                          @monochromatic-dev/build-tool-css

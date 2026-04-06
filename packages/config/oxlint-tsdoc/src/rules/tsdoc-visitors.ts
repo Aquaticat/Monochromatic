@@ -140,14 +140,15 @@ export function createFunctionTsdocVisitor(
     if (result === undefined)
       return;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    const typedNode = node as Span & Record<string, unknown>;
     handler(
-      node as Span & Record<string, unknown>,
+      typedNode,
       result,
     );
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
-  return {
+  const visitor = {
     before() {
       if (shouldIgnoreFile(context.filename,))
         return false;
@@ -158,4 +159,5 @@ export function createFunctionTsdocVisitor(
     ArrowFunctionExpression: check,
     MethodDefinition: check,
   } as VisitorWithHooks;
+  return visitor;
 }

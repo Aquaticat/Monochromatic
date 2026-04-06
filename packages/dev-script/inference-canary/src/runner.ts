@@ -67,7 +67,9 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
       },);
       return [
         category,
-        mean(categoryResults.flatMap(collectScores,),),
+        mean(categoryResults.flatMap(function extractScores(result,): number[] {
+          return collectScores(result,);
+        },),),
       ];
     },),
   );
@@ -144,7 +146,9 @@ export async function runCanary(
       },),
     );
 
-    const overallScore = mean(results.flatMap(collectScores,),);
+    const overallScore = mean(results.flatMap(function extractScores(result,): number[] {
+      return collectScores(result,);
+    },),);
 
     return {
       model: mergedConfig.model,

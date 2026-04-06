@@ -17,6 +17,11 @@ import {
  * @param pageCount - number of pages for the page toggle group
  *
  * @returns toolbar HTML string
+ *
+ * @example
+ * ```ts
+ * const html = renderToolbar(2);
+ * ```
  */
 export function renderToolbar(pageCount: number,): string {
   return h({
@@ -65,12 +70,21 @@ export function renderToolbar(pageCount: number,): string {
         children: [
           h({
             tag: 'input',
-            attrs: { type: 'color', id: 'color-picker', value: '#c24e2e', },
+            attrs: {
+              type: 'color',
+              id: 'color-picker',
+              value: '#c24e2e',
+            },
           },),
           h({
             tag: 'input',
-            attrs: { type: 'range', id: 'size-slider', min: '1', max: '50',
-              value: '10', },
+            attrs: {
+              type: 'range',
+              id: 'size-slider',
+              min: '1',
+              max: '50',
+              value: '10',
+            },
           },),
         ],
       },),
@@ -80,12 +94,20 @@ export function renderToolbar(pageCount: number,): string {
         children: [
           h({
             tag: 'button',
-            attrs: { id: 'undo-btn', type: 'button', disabled: '', },
+            attrs: {
+              id: 'undo-btn',
+              type: 'button',
+              disabled: '',
+            },
             text: 'Undo',
           },),
           h({
             tag: 'button',
-            attrs: { id: 'redo-btn', type: 'button', disabled: '', },
+            attrs: {
+              id: 'redo-btn',
+              type: 'button',
+              disabled: '',
+            },
             text: 'Redo',
           },),
         ],
@@ -93,14 +115,22 @@ export function renderToolbar(pageCount: number,): string {
       renderPageToggle(pageCount,),
       h({
         tag: 'button',
-        attrs: { id: 'upload-btn', type: 'button', // Upload background button hidden by default because it's not needed for the upcoming demo.
-          hidden: '', },
+        attrs: {
+          id: 'upload-btn',
+          type: 'button',
+          // Upload background button hidden by default because it's not needed for the upcoming demo.
+          hidden: '',
+        },
         text: 'Upload background',
       },),
       h({
         tag: 'input',
-        attrs: { type: 'file', id: 'upload-input', accept: '.svg,image/svg+xml',
-          hidden: '', },
+        attrs: {
+          type: 'file',
+          id: 'upload-input',
+          accept: '.svg,image/svg+xml',
+          hidden: '',
+        },
       },),
       h({
         tag: 'div',
@@ -108,23 +138,44 @@ export function renderToolbar(pageCount: number,): string {
         children: [
           h({
             tag: 'button',
-            attrs: { id: 'export-btn', type: 'button', },
+            attrs: {
+              id: 'export-btn',
+              type: 'button',
+            },
             text: 'Export',
           },),
           h({
             tag: 'select',
             attrs: { id: 'format-select', },
             children: [
-              h({ tag: 'option', attrs: { value: 'pdf', selected: '', }, text: 'PDF', },),
-              h({ tag: 'option', attrs: { value: 'svg', }, text: 'SVG', },),
-              h({ tag: 'option', attrs: { value: 'png', }, text: 'PNG', },),
+              h({
+                tag: 'option',
+                attrs: {
+                  value: 'pdf',
+                  selected: '',
+                },
+                text: 'PDF',
+              },),
+              h({
+                tag: 'option',
+                attrs: { value: 'svg', },
+                text: 'SVG',
+              },),
+              h({
+                tag: 'option',
+                attrs: { value: 'png', },
+                text: 'PNG',
+              },),
             ],
           },),
         ],
       },),
       h({
         tag: 'button',
-        attrs: { id: 'clear-btn', type: 'button', },
+        attrs: {
+          id: 'clear-btn',
+          type: 'button',
+        },
         text: 'Clear',
       },),
     ],

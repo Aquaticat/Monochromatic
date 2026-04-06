@@ -94,7 +94,10 @@ const parser = object({
 /** Parsed CLI arguments from process.argv */
 const rawArgs = runSync(
   parser,
-  { programName: 'task-depends', help: 'option', },
+  {
+    programName: 'task-depends',
+    help: 'option',
+  },
 );
 
 /**

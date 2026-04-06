@@ -137,7 +137,7 @@ export async function expandGlob(pattern: string,): Promise<readonly string[]> {
  *
  * @example
  * ```ts
- * mirrorGlobPath('packages/*/src/*.ts', 'temp/*/src/*.ts', 'packages/foo/src/index.ts');
+ * mirrorGlobPath('packages/*​/src/*.ts', 'temp/*​/src/*.ts', 'packages/foo/src/index.ts');
  * // 'temp/foo/src/index.ts'
  * ```
  */

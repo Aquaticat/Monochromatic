@@ -44,7 +44,7 @@ await describe({
             expect(await readCached(file,),).toBe('hello',);
             await rm(dir, { recursive: true, },);
           },
-        }),
+        },),
         it({
           name: 'returns cached content on subsequent calls without re-reading',
           fn: async () => {
@@ -57,7 +57,7 @@ await describe({
             expect(await readCached(file,),).toBe('original',);
             await rm(dir, { recursive: true, },);
           },
-        }),
+        },),
         it({
           name: 'caches by absolute path',
           fn: async () => {
@@ -68,9 +68,9 @@ await describe({
             expect(readCache.has(resolve(file,),),).toBe(true,);
             await rm(dir, { recursive: true, },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: invalidatePaths.name,
       children: [
@@ -86,7 +86,7 @@ await describe({
             expect(readCache.has(resolve(file,),),).toBe(false,);
             await rm(dir, { recursive: true, },);
           },
-        }),
+        },),
         it({
           name: 're-reads file after invalidation picks up new content',
           fn: async () => {
@@ -99,7 +99,7 @@ await describe({
             expect(await readCached(file,),).toBe('v2',);
             await rm(dir, { recursive: true, },);
           },
-        }),
+        },),
         it({
           name: 'does not affect other cached entries',
           fn: async () => {
@@ -114,9 +114,9 @@ await describe({
             expect(readCache.has(resolve(fileB,),),).toBe(true,);
             await rm(dir, { recursive: true, },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: updateCache.name,
       children: [
@@ -126,7 +126,7 @@ await describe({
             updateCache('/fake/path.txt', 'injected',);
             expect(readCache.get(resolve('/fake/path.txt',),),).toBe('injected',);
           },
-        }),
+        },),
         it({
           name: 'subsequent readCached returns the updated content',
           fn: async () => {
@@ -138,8 +138,8 @@ await describe({
             expect(await readCached(file,),).toBe('written-content',);
             await rm(dir, { recursive: true, },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
   ],
 },);

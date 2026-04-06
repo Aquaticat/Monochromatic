@@ -23,49 +23,54 @@ await describe({
           fn: async () => {
             expect(isAllowedCycleWarning(
               `${WARN} There are cyclic workspace dependencies: /var/home/user/Monochromatic/packages/module/es, /var/home/user/Monochromatic/packages/module/test`,
-            ),).toBe(true,);
+            ),)
+              .toBe(true,);
           },
-        }),
+        },),
         it({
           name: 'returns true regardless of monorepo root path',
           fn: async () => {
             expect(isAllowedCycleWarning(
               `${WARN} There are cyclic workspace dependencies: /home/alice/projects/mono/packages/module/es, /home/alice/projects/mono/packages/module/test`,
-            ),).toBe(true,);
+            ),)
+              .toBe(true,);
           },
-        }),
+        },),
         it({
           name: 'returns false for unknown packages in the cycle',
           fn: async () => {
             expect(isAllowedCycleWarning(
               `${WARN} There are cyclic workspace dependencies: /var/home/user/Monochromatic/packages/foo/bar, /var/home/user/Monochromatic/packages/baz/qux`,
-            ),).toBe(false,);
+            ),)
+              .toBe(false,);
           },
-        }),
+        },),
         it({
           name: 'returns false for a mix of known and unknown packages',
           fn: async () => {
             expect(isAllowedCycleWarning(
               `${WARN} There are cyclic workspace dependencies: /var/home/user/Monochromatic/packages/module/es, /var/home/user/Monochromatic/packages/foo/bar`,
-            ),).toBe(false,);
+            ),)
+              .toBe(false,);
           },
-        }),
+        },),
         it({
           name: 'returns false for unrelated warnings',
           fn: async () => {
             expect(isAllowedCycleWarning(
               `${WARN} deprecated package: some-old-pkg@1.0.0`,
-            ),).toBe(false,);
+            ),)
+              .toBe(false,);
           },
-        }),
+        },),
         it({
           name: 'returns false for empty string',
           fn: async () => {
             expect(isAllowedCycleWarning('',),).toBe(false,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: filterPnpmOutput.name,
       children: [
@@ -76,34 +81,36 @@ await describe({
               `${WARN} There are cyclic workspace dependencies: /abs/packages/module/es, /abs/packages/module/test`,
               `${WARN} deprecated package: old-pkg@1.0.0`,
               '',
-            ].join('\n',);
+            ]
+              .join('\n',);
 
             const result = filterPnpmOutput(output,);
             expect(result,).not.toContain('cyclic workspace dependencies',);
             expect(result,).toContain('deprecated package',);
           },
-        }),
+        },),
         it({
           name: 'returns empty string for empty input',
           fn: async () => {
             expect(filterPnpmOutput('',),).toBe('',);
           },
-        }),
+        },),
         it({
           name: 'preserves all lines when no cycle warning is present',
           fn: async () => {
             const output = 'some output\nanother line\n';
             expect(filterPnpmOutput(output,),).toBe(output,);
           },
-        }),
+        },),
         it({
           name: 'does not filter unknown cycle warnings',
           fn: async () => {
-            const output = `${WARN} There are cyclic workspace dependencies: /abs/packages/foo, /abs/packages/bar\n`;
+            const output =
+              `${WARN} There are cyclic workspace dependencies: /abs/packages/foo, /abs/packages/bar\n`;
             expect(filterPnpmOutput(output,),).toBe(output,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
   ],
 },);

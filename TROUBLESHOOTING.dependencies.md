@@ -7,7 +7,7 @@
 `vlt install` fails with `Error: failed to fetch manifest` on a dependency
 whose version spec includes semver build metadata (the `+<hash>` suffix):
 
-```
+```text
 Error: failed to fetch manifest
   [cause]: {
     code: 'ERESOLVE',
@@ -62,10 +62,9 @@ preserving the `+5c265bd4` suffix from the dependency declaration.
 `src/package-info/src/index.ts:601-603`:
 
 ```ts
-const mani =
-  spec.range?.isSingle ?
-    await this.#registryManifestRequest(spec, options)
-  : pickManifest(await this.packument(f, options), spec, options)
+const mani = spec.range?.isSingle
+  ? await this.#registryManifestRequest(spec, options,)
+  : pickManifest(await this.packument(f, options,), spec, options,);
 ```
 
 A version with build metadata parses as `isSingle === true` (the `+` part is metadata,
@@ -76,9 +75,8 @@ not a range operator), so vlt takes the fast path instead of fetching the full p
 `src/package-info/src/index.ts:405-407`:
 
 ```ts
-const version =
-  hasLeadingRange ? registrySpec.slice(1) : registrySpec
-const pakuURL = new URL(`${name}/${version}`, registry)
+const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
+const pakuURL = new URL(`${name}/${version}`, registry,);
 ```
 
 `version` becomes `"1.0.0-dev.1692+5c265bd4"`.
@@ -91,7 +89,7 @@ and the npm registry does not recognize the resulting path.
 `src/graph/src/reify/extract-node.ts:57` hydrates the spec from the node's DepID:
 
 ```ts
-const spec = hydrate(node.id, node.name, options)
+const spec = hydrate(node.id, node.name, options,);
 ```
 
 The DepID is built from `mani.version` (`src/dep-id/src/browser.ts:537-542`).
@@ -147,10 +145,9 @@ before constructing the URL:
 
 ```ts
 // src/package-info/src/index.ts, inside #registryManifestRequest
-const version =
-  hasLeadingRange ? registrySpec.slice(1) : registrySpec
-const versionClean = version.replace(/\+.*$/, '')
-const pakuURL = new URL(`${name}/${versionClean}`, registry)
+const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
+const versionClean = version.replace(/\+.*$/, '',);
+const pakuURL = new URL(`${name}/${versionClean}`, registry,);
 ```
 
 A more comprehensive fix would strip build metadata in the `Spec` parser
@@ -172,20 +169,26 @@ It will turn `>=` in `package.json` into exact versions.
 ## Workspace Cycles: config-vite and module-es
 
 ### Problem
+
 After refactoring `@monochromatic-dev/config-vite` to import utility functions from `@monochromatic-dev/module-es`, pnpm warns about cyclic workspace dependencies:
-```
+
+```text
 WARN  There are cyclic workspace dependencies: /home/user/projects/Monochromatic/packages/config/vite, /home/user/projects/Monochromatic/packages/module/es
 ```
 
 ### Root Cause
+
 The circular dependency exists because:
+
 1. `config-vite` imports utility functions (`notFalsyOrThrow`, `wait`, `alwaysTrue`) from `module-es`
 2. `module-es` uses `config-vite` for its build configuration (vite.config.ts)
 
 This creates a dependency cycle in the workspace graph.
 
 ### Solution
+
 Disable pnpm's cycle detection by setting `disallowWorkspaceCycles: false` in `pnpm-workspace.yaml`:
+
 ```yaml
 disallowWorkspaceCycles: false
 ```
@@ -212,17 +215,21 @@ disallowWorkspaceCycles: false
 ### Trade-offs
 
 **Benefits**:
+
 - Cleaner code with no duplication
 - Utilities maintained in one place
 - Better adherence to single responsibility principle
 
 **Costs**:
+
 - Workspace-level circular dependency warning
 - Slightly more complex dependency graph
 - Need to document why the cycle exists
 
 ### Alternative Considered
+
 We could have kept the duplicated code to avoid the cycle, but this would:
+
 - Violate DRY principle
 - Create maintenance burden (updating utilities in multiple places)
 - Increase risk of divergence between implementations

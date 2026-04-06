@@ -21,6 +21,12 @@ import {
  * @param d - Raw record from nvim_exec_lua.
  *
  * @returns Typed Diagnostic with 1-indexed line/column.
+ *
+ * @example
+ * ```ts
+ * const diag = mapRawDiagnostic({ severity: 1, lnum: 0, col: 5, end_lnum: 0, end_col: 10, message: 'err', source: 'ts' });
+ * // diag.line === 1, diag.col === 6 (1-indexed)
+ * ```
  */
 export function mapRawDiagnostic(d: Record<string, unknown>,): Diagnostic {
   // Fields come from Neovim's Lua msgpack bridge; types are guaranteed by the Lua code above.

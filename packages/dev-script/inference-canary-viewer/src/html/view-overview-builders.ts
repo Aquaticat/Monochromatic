@@ -26,6 +26,12 @@ import type { ModelSummary, } from './view-overview-types.ts';
  * @param entries - all history entries
  *
  * @returns scatter points array
+ *
+ * @example
+ * ```ts
+ * const points = buildAllModelPoints(entries);
+ * // [{ runId: 'Sonnet 4.6-2026-03-06...', index: 0, score: 0.85, ... }]
+ * ```
  */
 export function buildAllModelPoints(
   entries: readonly ViewerEntry[],
@@ -72,6 +78,12 @@ export function buildAllModelPoints(
  * @param summaries - model summaries
  *
  * @returns HTML legend string
+ *
+ * @example
+ * ```ts
+ * const html = buildOverviewLegend(summaries);
+ * // '<div class="chart-legend">...<\/div>'
+ * ```
  */
 export function buildOverviewLegend(summaries: readonly ModelSummary[],): string {
   const items = summaries
@@ -81,9 +93,15 @@ export function buildOverviewLegend(summaries: readonly ModelSummary[],): string
         tag: 'span',
         class: 'item',
         children: [
-          iconDot(summary.model, color,),
+          iconDot(
+            summary.model,
+            color,
+          ),
           ' ',
-          h({ tag: 'span', text: summary.label, },),
+          h({
+            tag: 'span',
+            text: summary.label,
+          },),
         ],
       },);
     },)

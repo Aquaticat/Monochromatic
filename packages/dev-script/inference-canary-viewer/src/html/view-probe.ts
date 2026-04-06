@@ -26,6 +26,12 @@ import { buildProbeLegend, } from './view-probe-legend.ts';
  * @param entries - all history entries
  *
  * @returns HTML string
+ *
+ * @example
+ * ```ts
+ * const html = renderByProbe({ entries });
+ * // '<details class="probe-section">...<\/details>...'
+ * ```
  */
 export function renderByProbe({ entries, }: {
   entries: readonly ViewerEntry[];
@@ -80,9 +86,15 @@ export function renderByProbe({ entries, }: {
               h({
                 tag: 'summary',
                 children: [
-                  iconDot(openrouterId, color,),
+                  iconDot(
+                    openrouterId,
+                    color,
+                  ),
                   ' ',
-                  h({ tag: 'span', text: label, },),
+                  h({
+                    tag: 'span',
+                    text: label,
+                  },),
                 ],
               },),
               renderScatterChart({
@@ -90,7 +102,10 @@ export function renderByProbe({ entries, }: {
                 threshold: 0,
                 thresholdLabel: '',
                 caption: `${probe} - ${label}`,
-                tableDisplay: { showModel: false, showProbe: false, },
+                tableDisplay: {
+                  showModel: false,
+                  showProbe: false,
+                },
               },),
             ],
           },);

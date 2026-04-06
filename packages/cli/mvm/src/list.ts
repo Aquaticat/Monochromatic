@@ -39,7 +39,7 @@ export async function list(): Promise<readonly VmInfo[]> {
   const vms: VmInfo[] = [];
 
   for (const line of lines) {
-    const match = line.match(/\s+(?:\d+|-)\s+(\S+)\s+(.+)/,);
+    const match = /\s+(?:\d+|-)\s+(\S+)\s+(.+)/.exec(line,);
     const vmName = match?.[1];
     const vmState = match?.[2];
     if (vmName !== undefined && vmState !== undefined && vmName.startsWith(VM_PREFIX,)) {

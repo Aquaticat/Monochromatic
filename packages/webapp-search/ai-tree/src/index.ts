@@ -1,6 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { swagger, } from '@elysiajs/swagger';
-import { Elysia, } from 'elysia';
+import {
+  defineHandler,
+  H3,
+  serve,
+} from 'h3';
 import * as z from 'zod/mini';
 
 /** Pre-configured Anthropic client with extended beta features enabled. */
@@ -42,7 +45,6 @@ const stream = await anthropic
         name: 'web_search',
       },
       {
-        // @ts-expect-error -- Actually exists
         type: 'code_execution_20250522',
         name: 'code_execution',
       },
@@ -51,6 +53,7 @@ const stream = await anthropic
       role: 'user',
       content: 'How to change background color in VS Code?',
     },],
+    // @ts-expect-error -- mcp_servers not yet in SDK types
     mcp_servers: [
       {
         type: 'url',
@@ -68,17 +71,22 @@ const DEFAULT_PORT = 4_111;
 /** Parsed server port from the AI_TREE_PORT environment variable. */
 const PORT = z.coerce.number().parse(process.env.AI_TREE_PORT ?? DEFAULT_PORT,);
 
-/** Elysia HTTP server instance with Swagger documentation. */
-const app = new Elysia()
-  .use(swagger(),)
-  .get(
-    '/',
-    function handleRoot() {
-      return 'Hello Elysia';
-    },
-  )
-  .listen(PORT,);
+/** H3 application instance for the ai-tree server. */
+const app = new H3();
+
+app.get(
+  '/',
+  defineHandler(function handleRoot(): string {
+    return 'Hello h3';
+  },),
+);
+
+/** Running HTTP server instance. */
+const server = serve(
+  app,
+  { port: PORT, },
+);
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
+  `Server is running at ${server.url}`,
 );

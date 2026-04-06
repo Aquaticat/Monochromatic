@@ -80,7 +80,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'executes command and propagates failure exit code',
       fn: async () => {
@@ -102,7 +102,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'executes command with --allowFailure flag and exits with 0',
       fn: async () => {
@@ -118,7 +118,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'uses short flag -a for allowFailure',
       fn: async () => {
@@ -134,7 +134,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'preserves stdout and stderr output',
       fn: async () => {
@@ -150,20 +150,22 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'passes multiple arguments to the command',
       fn: async () => {
         const fixtures = setup();
         const { cliPath, } = fixtures;
 
-        const { stdout, } = await execAsync(`bun ${cliPath} -- echo "arg1" "arg2" "arg3"`,);
+        const { stdout, } = await execAsync(
+          `bun ${cliPath} -- echo "arg1" "arg2" "arg3"`,
+        );
 
         expect(stdout,).toContain('arg1 arg2 arg3',);
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'executes shell commands with --shell flag',
       fn: async () => {
@@ -179,7 +181,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'uses short flag -s for shell',
       fn: async () => {
@@ -192,7 +194,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'fails when no command is specified',
       fn: async () => {
@@ -211,7 +213,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'fails when only -- is provided without command',
       fn: async () => {
@@ -230,7 +232,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'propagates custom exit codes',
       fn: async () => {
@@ -247,7 +249,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'handles non-existent command',
       fn: async () => {
@@ -266,7 +268,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'handles non-existent command with allowFailure',
       fn: async () => {
@@ -281,7 +283,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'executes commands with special characters',
       fn: async () => {
@@ -295,7 +297,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'handles command termination by signal',
       skip: process.platform === 'win32',
@@ -336,7 +338,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'combines multiple flags',
       fn: async () => {
@@ -352,7 +354,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'executes command with timeout',
       fn: async () => {
@@ -367,7 +369,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'uses short flag -t for timeout',
       fn: async () => {
@@ -382,7 +384,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'timeout terminates long-running command',
       fn: async () => {
@@ -410,7 +412,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'timeout with allowFailure exits with 0',
       fn: async () => {
@@ -438,7 +440,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'command without timeout runs to completion',
       fn: async () => {
@@ -468,6 +470,6 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
   ],
-});
+},);

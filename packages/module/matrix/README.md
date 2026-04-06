@@ -7,12 +7,12 @@ using podman containers or directly on the host.
 ## Usage
 
 ```ts
-import { matrix } from '@monochromatic-dev/module-matrix';
+import { matrix, } from '@monochromatic-dev/module-matrix';
 
 await matrix({
-  os: ['container:ubuntu', 'container:fedora'],
-  user: ['root', 'user'],
-});
+  os: ['container:ubuntu', 'container:fedora',],
+  user: ['root', 'user',],
+},);
 ```
 
 This replaces manual container orchestration loops with a single function call.
@@ -68,11 +68,11 @@ For large matrices, increase or decrease `concurrency` to match available resour
 
 ```ts
 await matrix({
-  os: ['container:ubuntu', 'container:fedora', 'container:alpine'],
-  user: ['root', 'user'],
-  runtime: ['bun', 'deno'],
+  os: ['container:ubuntu', 'container:fedora', 'container:alpine',],
+  user: ['root', 'user',],
+  runtime: ['bun', 'deno',],
   concurrency: 8,
-});
+},);
 ```
 
 ## Protocols
@@ -84,10 +84,10 @@ Handles prerequisite installation, runtime installation, and user creation.
 
 ```ts
 await matrix({
-  os: ['container:ubuntu', 'container:fedora'],
-  user: ['root', 'user'],
-  runtime: ['bun'],
-});
+  os: ['container:ubuntu', 'container:fedora',],
+  user: ['root', 'user',],
+  runtime: ['bun',],
+},);
 ```
 
 ### `host:` -- direct execution
@@ -102,16 +102,18 @@ Use `exclude` to filter out inapplicable user combinations.
 
 ```ts
 await matrix({
-  os: ['host:'],
-  user: ['root', 'user'],
-  runtime: ['bun'],
+  os: ['host:',],
+  user: ['root', 'user',],
+  runtime: ['bun',],
   exclude: [
     {
       os: 'host:',
-      user: function notUser(user) { return user !== 'user'; },
+      user: function notUser(user,) {
+        return user !== 'user';
+      },
     },
   ],
-});
+},);
 ```
 
 ### Mixing protocols
@@ -120,16 +122,18 @@ Container and host entries can coexist in the same matrix:
 
 ```ts
 await matrix({
-  os: ['host:', 'container:ubuntu', 'container:fedora'],
-  user: ['root', 'user'],
-  runtime: ['bun'],
+  os: ['host:', 'container:ubuntu', 'container:fedora',],
+  user: ['root', 'user',],
+  runtime: ['bun',],
   exclude: [
     {
       os: 'host:',
-      user: function notUser(user) { return user !== 'user'; },
+      user: function notUser(user,) {
+        return user !== 'user';
+      },
     },
   ],
-});
+},);
 ```
 
 This runs 5 combinations: 1 host (user/bun) + 4 container (2 OS x 2 users).
@@ -152,19 +156,19 @@ The package manager is detected from the distro name:
 
 ### Container combinations
 
-1.  Detect package manager from distro name (fedora becomes dnf)
-2.  `podman run --rm -v ${monorepoRoot}:/workspace:Z fedora:latest sh -c "..."`
-3.  Inside the container:
-    - Install prerequisites (curl, unzip, optionally sudo and bash)
-    - If `user` context: create non-root user with passwordless sudo
-    - Install the selected runtime
-    - Execute each file with the runtime
-4.  Report pass/fail through `describe`/`it` from `module-test`
+1. Detect package manager from distro name (fedora becomes dnf)
+2. `podman run --rm -v ${monorepoRoot}:/workspace:Z fedora:latest sh -c "..."`
+3. Inside the container:
+   - Install prerequisites (curl, unzip, optionally sudo and bash)
+   - If `user` context: create non-root user with passwordless sudo
+   - Install the selected runtime
+   - Execute each file with the runtime
+4. Report pass/fail through `describe`/`it` from `module-test`
 
 ### Host combinations
 
-1.  Spawn the runtime binary with the test file path
-2.  Report pass/fail through `describe`/`it` from `module-test`
+1. Spawn the runtime binary with the test file path
+2. Report pass/fail through `describe`/`it` from `module-test`
 
 ## Errors
 
@@ -187,7 +191,7 @@ Before (218-line orchestrator):
 ```ts
 // mise.container-test.ts -- manual matrix, podman args, result collection
 const MATRIX = [
-  { image: 'ubuntu:latest', asRoot: true, preInstall: '...' },
+  { image: 'ubuntu:latest', asRoot: true, preInstall: '...', },
   // ... 4 entries with duplicated install commands
 ];
 for (const entry of MATRIX) {
@@ -198,12 +202,12 @@ for (const entry of MATRIX) {
 After:
 
 ```ts
-import { matrix } from '@monochromatic-dev/module-matrix';
+import { matrix, } from '@monochromatic-dev/module-matrix';
 
 await matrix({
-  os: ['container:ubuntu', 'container:fedora'],
-  user: ['root', 'user'],
-});
+  os: ['container:ubuntu', 'container:fedora',],
+  user: ['root', 'user',],
+},);
 ```
 
 ## Excluding combinations
@@ -212,12 +216,12 @@ await matrix({
 
 ```ts
 await matrix({
-  os: ['container:ubuntu', 'container:fedora', 'container:alpine'],
-  user: ['root', 'user'],
+  os: ['container:ubuntu', 'container:fedora', 'container:alpine',],
+  user: ['root', 'user',],
   exclude: [
-    { os: 'container:alpine', user: 'user' },
+    { os: 'container:alpine', user: 'user', },
   ],
-});
+},);
 ```
 
 This runs 5 combinations instead of 6,
@@ -230,15 +234,17 @@ that returns `true` when the combination should be excluded:
 
 ```ts
 await matrix({
-  os: ['host:', 'container:ubuntu'],
-  user: ['root', 'user'],
+  os: ['host:', 'container:ubuntu',],
+  user: ['root', 'user',],
   exclude: [
     {
       os: 'host:',
-      user: function notUser(user) { return user !== 'user'; },
+      user: function notUser(user,) {
+        return user !== 'user';
+      },
     },
   ],
-});
+},);
 ```
 
 ## Dependencies

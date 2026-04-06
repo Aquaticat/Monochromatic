@@ -46,7 +46,7 @@ const DRAWER_WIDTH = 20;
 const DRAWER_MAX_VI = 85;
 
 /** Popover panel styles and animations for `<side-drawer>`. */
-export const SIDE_DRAWER_PANEL_STYLES = [
+export const SIDE_DRAWER_PANEL_STYLES: string = [
   css({
     rule: '.panel',
     decls: {
@@ -79,11 +79,17 @@ export const SIDE_DRAWER_PANEL_STYLES = [
     children: [
       css({
         rule: 'from',
-        decls: { transform: cssTranslateX(cssPercent(NEG_FULL_PERCENT,),), opacity: 0, },
+        decls: {
+          transform: cssTranslateX(cssPercent(NEG_FULL_PERCENT,),),
+          opacity: 0,
+        },
       },),
       css({
         rule: 'to',
-        decls: { transform: cssTranslateX(cssNum(0,),), opacity: 1, },
+        decls: {
+          transform: cssTranslateX(cssNum(0,),),
+          opacity: 1,
+        },
       },),
     ],
   },),

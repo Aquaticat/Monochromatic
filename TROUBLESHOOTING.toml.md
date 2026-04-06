@@ -29,16 +29,17 @@ with no warning when context shifts:
 name = "Hammer"
 
 [[products.variants]]
-name = "small"          # variant of Hammer
+name = "small" # variant of Hammer
 
 [[products]]
-name = "Nail"           # context silently shifts -- Hammer is closed
+name = "Nail" # context silently shifts -- Hammer is closed
 
 [[products.variants]]
-name = "gold"           # variant of Nail, not Hammer
+name = "gold" # variant of Nail, not Hammer
 ```
 
 The spec states:
+
 > "Any reference to an array of tables points to the most recently defined
 > table element of the array."
 
@@ -53,9 +54,9 @@ Dotted keys implicitly create intermediate tables.
 Once created, the same table cannot be reopened with an explicit `[header]`:
 
 ```toml
-fruit.apple.color = "red"    # implicitly creates [fruit] and [fruit.apple]
+fruit.apple.color = "red" # implicitly creates [fruit] and [fruit.apple]
 
-[fruit.apple]                 # INVALID -- table already defined via dotted key
+[fruit.apple] # INVALID -- table already defined via dotted key
 taste = "sweet"
 ```
 
@@ -64,13 +65,14 @@ But adding a **sub-table** under an implicitly created table is valid:
 ```toml
 fruit.apple.color = "red"
 
-[fruit.apple.texture]         # valid -- new sub-table, not a redefinition
+[fruit.apple.texture] # valid -- new sub-table, not a redefinition
 smooth = true
 ```
 
 The asymmetry is hard to remember:
 you can extend an implicit table downward but not sideways.
 The spec says:
+
 > "Since tables cannot be defined more than once, redefining such tables
 > using a `[table]` header is not allowed. Likewise, using dotted keys to
 > redefine tables already defined in `[table]` form is not allowed."
@@ -105,8 +107,8 @@ region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 
 [prod.deploy.parameters]
-region = "us-east-1"          # must repeat
-capabilities = "CAPABILITY_IAM"  # must repeat
+region = "us-east-1" # must repeat
+capabilities = "CAPABILITY_IAM" # must repeat
 ```
 
 YAML solves this with anchors (`&default` / `*default`).

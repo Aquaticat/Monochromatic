@@ -18,22 +18,22 @@ so built artifacts are self-contained outside the monorepo.
 ```ts
 // tsdown.config.ts -- neutral build
 import base from '@monochromatic-dev/config-tsdown/.ts';
-import { defineConfig } from 'tsdown';
-export default defineConfig({ ...base, entry: ['./src/index.ts'] });
+import { defineConfig, } from 'tsdown';
+export default defineConfig({ ...base, entry: ['./src/index.ts',], },);
 ```
 
 ```ts
 // tsdown.node.config.ts -- Node.js build
 import base from '@monochromatic-dev/config-tsdown/.node.ts';
-import { defineConfig } from 'tsdown';
-export default defineConfig({ ...base, entry: ['./src/index.ts'] });
+import { defineConfig, } from 'tsdown';
+export default defineConfig({ ...base, entry: ['./src/index.ts',], },);
 ```
 
 ```ts
 // tsdown.client.config.ts -- browser client bundle
 import base from '@monochromatic-dev/config-tsdown/.client.ts';
-import { defineConfig } from 'tsdown';
-export default defineConfig({ ...base, entry: ['./src/client.ts'] });
+import { defineConfig, } from 'tsdown';
+export default defineConfig({ ...base, entry: ['./src/client.ts',], },);
 ```
 
 ## Output directories

@@ -50,6 +50,11 @@ export {
  * @returns Freshly created task
  *
  * @throws When the read-back fails
+ *
+ * @example
+ * ```ts
+ * const task = await createTask({ title: 'Buy groceries', tags: ['shopping'] });
+ * ```
  */
 export async function createTask(input: TaskCreateInput,): Promise<Task> {
   const id = crypto.randomUUID();
@@ -90,6 +95,11 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
  * @param input - Fields to update
  *
  * @returns Updated task, or `null` when not found
+ *
+ * @example
+ * ```ts
+ * const task = await updateTask('uuid-123', { title: 'Updated title' });
+ * ```
  */
 export async function updateTask(
   id: string,
@@ -138,6 +148,11 @@ export async function updateTask(
  * @param id - Task UUID
  *
  * @returns `true` when the task existed and was deleted
+ *
+ * @example
+ * ```ts
+ * const deleted = await deleteTask('uuid-123');
+ * ```
  */
 export async function deleteTask(id: string,): Promise<boolean> {
   const result = await db.prepare(SQL_DELETE_TASK,).run(id,);

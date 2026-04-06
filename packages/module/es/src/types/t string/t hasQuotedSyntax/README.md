@@ -42,7 +42,8 @@ type BacktickString = hasQuotedSyntax.backtick.type.$;
 ```ts
 // These would be considered single-quoted strings
 const singleQuoted: SingleQuotedString = "const a = 'b'" as SingleQuotedString;
-const nestedSingle: SingleQuotedString = "const obj = { key: 'value' }" as SingleQuotedString;
+const nestedSingle: SingleQuotedString =
+  "const obj = { key: 'value' }" as SingleQuotedString;
 
 // These would NOT be single-quoted strings
 // const notSingle = 'const a = "b"'; // Contains double quotes instead
@@ -53,7 +54,8 @@ const nestedSingle: SingleQuotedString = "const obj = { key: 'value' }" as Singl
 ```ts
 // These would be considered double-quoted strings
 const doubleQuoted: DoubleQuotedString = '{"a": "b"}' as DoubleQuotedString;
-const jsonLike: DoubleQuotedString = 'const obj = {"key": "value"}' as DoubleQuotedString;
+const jsonLike: DoubleQuotedString =
+  'const obj = {"key": "value"}' as DoubleQuotedString;
 
 // These would NOT be double-quoted strings
 // const notDouble = "{'a': 'b'}"; // Contains single quotes instead
@@ -64,7 +66,8 @@ const jsonLike: DoubleQuotedString = 'const obj = {"key": "value"}' as DoubleQuo
 ```ts
 // These would be considered backtick strings
 const templateLiteral: BacktickString = 'const a = `c${1}`' as BacktickString;
-const multiline: BacktickString = 'const template = `\n  Hello ${name}\n`' as BacktickString;
+const multiline: BacktickString =
+  'const template = `\n  Hello ${name}\n`' as BacktickString;
 
 // These would NOT be backtick strings
 // const notBacktick = "const a = 'b'"; // Contains single quotes instead
@@ -78,26 +81,26 @@ The branded types use the following structure:
 type hasQuotedSyntax = string & {
   __brand: {
     hasQuotedSyntax: true;
-  }
-}
+  };
+};
 
 type singleQuote = hasQuotedSyntax & {
   __brand: {
     quotesType: "'";
-  }
-}
+  };
+};
 
 type doubleQuote = hasQuotedSyntax & {
   __brand: {
     quotesType: '"';
-  }
-}
+  };
+};
 
 type backtick = hasQuotedSyntax & {
   __brand: {
     quotesType: '`';
-  }
-}
+  };
+};
 ```
 
 ## Use Cases
@@ -105,17 +108,14 @@ type backtick = hasQuotedSyntax & {
 ### Code Analysis
 
 ```ts
-function analyzeQuoteStyle(code: hasQuotedSyntax.type.$): string {
+function analyzeQuoteStyle(code: hasQuotedSyntax.type.$,): string {
   // Type-safe analysis of quoted strings in code
-  if (isDoubleQuoted(code)) {
+  if (isDoubleQuoted(code,))
     return 'Uses JSON-style double quotes';
-  }
-  if (isSingleQuoted(code)) {
+  if (isSingleQuoted(code,))
     return 'Uses single quotes';
-  }
-  if (isBacktick(code)) {
+  if (isBacktick(code,))
     return 'Uses template literals';
-  }
   return 'Mixed or unknown quote style';
 }
 ```
@@ -123,10 +123,10 @@ function analyzeQuoteStyle(code: hasQuotedSyntax.type.$): string {
 ### Template Processing
 
 ```ts
-function processTemplate(template: hasQuotedSyntax.backtick.type.$): string {
+function processTemplate(template: hasQuotedSyntax.backtick.type.$,): string {
   // Type guarantees this string contains backtick syntax
-  return template.replace(/\$\{([^}]+)\}/g, (match, expr) => {
-    return evaluateExpression(expr);
-  });
+  return template.replace(/\$\{([^}]+)\}/g, (match, expr,) => {
+    return evaluateExpression(expr,);
+  },);
 }
 ```

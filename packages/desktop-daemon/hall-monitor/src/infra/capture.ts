@@ -59,8 +59,17 @@ export async function captureScreenshot(): Promise<Buffer> {
 
   await spawn(
     'spectacle',
-    ['-f', '-b', '-n', '-o', tmp,],
-    { stdout: 'ignore', stderr: 'ignore', },
+    [
+      '-f',
+      '-b',
+      '-n',
+      '-o',
+      tmp,
+    ],
+    {
+      stdout: 'ignore',
+      stderr: 'ignore',
+    },
   );
   const proc = cpSpawn(
     FFMPEG,

@@ -18,6 +18,11 @@ type SettingRow = {
  * @param key - Setting identifier
  *
  * @returns Stored value, or `null` when the key does not exist
+ *
+ * @example
+ * ```ts
+ * const apiKey = await getSetting('openai-api-key');
+ * ```
  */
 export async function getSetting(key: string,): Promise<string | null> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns the SettingRow shape
@@ -33,6 +38,11 @@ export async function getSetting(key: string,): Promise<string | null> {
  * @param key - Setting identifier
  *
  * @param value - Text payload to store
+ *
+ * @example
+ * ```ts
+ * await setSetting('openai-api-key', 'sk-...');
+ * ```
  */
 export async function setSetting(
   key: string,
@@ -54,6 +64,11 @@ export async function setSetting(
  * @param key - Setting identifier
  *
  * @returns `true` when the key existed and was removed
+ *
+ * @example
+ * ```ts
+ * const removed = await deleteSetting('openai-api-key');
+ * ```
  */
 export async function deleteSetting(key: string,): Promise<boolean> {
   const result = await db.prepare('DELETE FROM settings WHERE key = ?',).run(key,);
@@ -64,6 +79,12 @@ export async function deleteSetting(key: string,): Promise<boolean> {
  * Returns all settings as a key-value record.
  *
  * @returns All settings as key-value pairs
+ *
+ * @example
+ * ```ts
+ * const settings = await getAllSettings();
+ * // { 'openai-api-key': 'sk-...', 'location': 'home' }
+ * ```
  */
 export async function getAllSettings(): Promise<Record<string, string>> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns SettingRow shape

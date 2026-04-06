@@ -71,9 +71,8 @@ export function runtimeExecCommand({
 },): string {
   const bin = RUNTIME_BIN[runtime];
 
-  if (runtime === 'deno') {
+  if (runtime === 'deno')
     return `${bin} run --allow-all ${filePath}`;
-  }
 
   return `${bin} run ${filePath}`;
 }

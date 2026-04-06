@@ -83,7 +83,7 @@ function extractSvgContent(filePath: string,): {
   );
 
   /** Strip the outer `<svg ...>` and `</svg>` wrapper. */
-  const innerMatch = raw.match(/<svg[^>]*>([\s\S]*)<\/svg>/i,);
+  const innerMatch = /<svg[^>]*>([\s\S]*)<\/svg>/i.exec(raw,);
   if (innerMatch === null || innerMatch[1] === undefined) {
     return {
       defs: '',

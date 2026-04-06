@@ -27,7 +27,7 @@ const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
 const FULL_PERCENT = 100;
 
 /** Compiled CSS string for `<search-bar>` Shadow DOM. */
-export const SEARCH_BAR_STYLES = [
+export const SEARCH_BAR_STYLES: string = [
   css({
     rule: ':host',
     decls: stickyBar(),

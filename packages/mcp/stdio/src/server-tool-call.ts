@@ -24,6 +24,11 @@ import type { RegisteredTool, } from './server-types.ts';
  * @param request - Request containing tool `name` and `arguments` in `params`.
  *
  * @returns Tool result wrapped in a JSON-RPC response, or an error if the tool is unknown.
+ *
+ * @example
+ * ```ts
+ * const response = await handleToolCall(toolMap, { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'get_diagnostics' } });
+ * ```
  */
 export async function handleToolCall(
   toolMap: ReadonlyMap<string, RegisteredTool>,

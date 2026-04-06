@@ -87,6 +87,11 @@ export function createTextInput({
  * @param layer - text layer div containing `.text-input` elements
  *
  * @returns array of serialized text entry data
+ *
+ * @example
+ * ```ts
+ * const data = serializeTextEntries(textLayer);
+ * ```
  */
 export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
   const inputs = layer.querySelectorAll<HTMLInputElement>('.text-input',);
@@ -113,6 +118,11 @@ export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
  * @param entries - serialized text entry data to restore
  *
  * @param layer - text layer element to append inputs to
+ *
+ * @example
+ * ```ts
+ * restoreTextEntries({ entries: savedData, layer: textLayer });
+ * ```
  */
 export function restoreTextEntries({
   entries,

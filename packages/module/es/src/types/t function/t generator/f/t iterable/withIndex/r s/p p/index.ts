@@ -8,6 +8,13 @@ import { $ as named, } from '../p n/index.ts';
  * @param myIterable - sync iterable to index
  *
  * @returns sync generator yielding objects containing the element and its integer index
+ *
+ * @example
+ * ```ts
+ * for (const { element, index } of $(['x', 'y'])) {
+ *   console.log(index, element); // 0 'x', 1 'y'
+ * }
+ * ```
  */
 export function $<const T,>(
   myIterable: Iterable<T>,

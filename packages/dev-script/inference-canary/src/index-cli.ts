@@ -41,7 +41,10 @@ const parser = object({
 /** Parsed CLI arguments from process.argv */
 const cliArgs = runSync(
   parser,
-  { programName: 'inference-canary', help: 'option', },
+  {
+    programName: 'inference-canary',
+    help: 'option',
+  },
 );
 
 /** Single-model override from --model flag (matches by label, e.g. "Opus 4.6 medium") */
@@ -79,12 +82,14 @@ export const probeFilter: ReadonlySet<string> | undefined =
   })();
 
 /** Whether to run simple probes instead of code-gen */
-export const useSimple = cliArgs.simple;
+export const useSimple: boolean = cliArgs.simple;
 
 /** Whether to include slow probes */
-export const includeSlow = cliArgs.slow;
+export const includeSlow: boolean = cliArgs.slow;
 
+/* oxlint-disable eslint/prefer-destructuring -- exported const with explicit type annotation is incompatible with destructuring in TS */
 /** Retest all models even if they have recent (less than 24h) results */
-export const { retestAll, } = cliArgs;
+export const retestAll: boolean = cliArgs.retestAll;
+/* oxlint-enable eslint/prefer-destructuring */
 
 //endregion Parsed arguments

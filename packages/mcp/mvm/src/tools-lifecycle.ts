@@ -4,7 +4,10 @@
  */
 import { list, } from '@monochromatic-dev/cli-mvm/list';
 import { update, } from '@monochromatic-dev/cli-mvm/update';
-import { defineTool, } from '@monochromatic-dev/mcp-stdio';
+import {
+  defineTool,
+  type ToolEntry,
+} from '@monochromatic-dev/mcp-stdio';
 
 import {
   errorResponse,
@@ -14,7 +17,7 @@ import {
 //region Lifecycle tools -- VM listing and template updates
 
 /** MCP tool: list all managed VMs and their state. */
-export const listTool = defineTool(
+export const listTool: ToolEntry = defineTool(
   'list_vms',
   {
     description:
@@ -31,14 +34,17 @@ export const listTool = defineTool(
         return textResponse(lines.join('\n',),);
       }
       catch (err: unknown) {
-        return errorResponse('list_vms', err,);
+        return errorResponse(
+          'list_vms',
+          err,
+        );
       }
     },
   },
 );
 
 /** MCP tool: re-download and rebuild all template images. */
-export const updateTool = defineTool(
+export const updateTool: ToolEntry = defineTool(
   'update_templates',
   {
     description:
@@ -49,7 +55,10 @@ export const updateTool = defineTool(
         return textResponse('All template images updated successfully.',);
       }
       catch (err: unknown) {
-        return errorResponse('update_templates', err,);
+        return errorResponse(
+          'update_templates',
+          err,
+        );
       }
     },
   },

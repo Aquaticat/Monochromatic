@@ -29,13 +29,24 @@ const PARSED_VOLUME = 'repology-parsed';
 const PG_VOLUME = 'repology-pgdata';
 
 /** Package directory containing the generator/ subdirectory. */
-const PKG_DIR = resolve(import.meta.dirname, '..', '..',);
+const PKG_DIR = resolve(
+  import.meta.dirname,
+  '..',
+  '..',
+);
 
 /** Output path for the generated TypeScript file. */
-const OUTPUT_PATH = resolve(PKG_DIR, 'data', 'packages.generated.ts',);
+const OUTPUT_PATH = resolve(
+  PKG_DIR,
+  'data',
+  'packages.generated.ts',
+);
 
 /** Generator context directory containing Containerfile, SQL, config. */
-const GENERATOR_DIR = resolve(PKG_DIR, 'generator',);
+const GENERATOR_DIR = resolve(
+  PKG_DIR,
+  'generator',
+);
 
 /**
  * Managers we support, keyed by the name used in our `PackageManager` type.
@@ -63,18 +74,29 @@ async function ensureImage(): Promise<void> {
   console.log('[generate-index] building container image...',);
   const token = process.env['MISE_GITHUB_TOKEN'] ?? process.env['GITHUB_TOKEN'] ?? '';
   const secretArgs = token !== ''
-    ? ['--secret', `id=github_token,env=GITHUB_TOKEN`,]
+    ? [
+      '--secret',
+      `id=github_token,env=GITHUB_TOKEN`,
+    ]
     : [];
   const env = token !== ''
-    ? { ...process.env, GITHUB_TOKEN: token, }
+    ? {
+      ...process.env,
+      GITHUB_TOKEN: token,
+    }
     : process.env;
   await spawn(
     'podman',
     [
       'build',
       ...secretArgs,
-      '-t', IMAGE_NAME,
-      '-f', resolve(GENERATOR_DIR, 'Containerfile',),
+      '-t',
+      IMAGE_NAME,
+      '-f',
+      resolve(
+        GENERATOR_DIR,
+        'Containerfile',
+      ),
       GENERATOR_DIR,
     ],
     { env, },
@@ -86,14 +108,38 @@ async function ensureImage(): Promise<void> {
  * Ensures the named podman volumes exist for persistent state.
  */
 async function ensureVolumes(): Promise<void> {
-  for (const vol of [STATE_VOLUME, PARSED_VOLUME, PG_VOLUME,]) {
-    try {
-      await spawn('podman', ['volume', 'inspect', vol,],);
-    } catch {
-      console.log(`[generate-index] creating volume: ${vol}`,);
-      await spawn('podman', ['volume', 'create', vol,],);
-    }
-  }
+  await Promise.all(
+    [
+      STATE_VOLUME,
+      PARSED_VOLUME,
+      PG_VOLUME,
+    ]
+      .map(
+        async function ensureOneVolume(vol: string,): Promise<void> {
+          try {
+            await spawn(
+              'podman',
+              [
+                'volume',
+                'inspect',
+                vol,
+              ],
+            );
+          }
+          catch {
+            console.log(`[generate-index] creating volume: ${vol}`,);
+            await spawn(
+              'podman',
+              [
+                'volume',
+                'create',
+                vol,
+              ],
+            );
+          }
+        },
+      ),
+  );
 }
 
 /**
@@ -108,10 +154,14 @@ async function runContainer(args: readonly string[],): Promise<string> {
   const result = await spawn(
     'podman',
     [
-      'run', '--rm',
-      '-v', `${STATE_VOLUME}:/state:Z`,
-      '-v', `${PARSED_VOLUME}:/parsed:Z`,
-      '-v', `${PG_VOLUME}:/var/lib/pgsql/data:Z`,
+      'run',
+      '--rm',
+      '-v',
+      `${STATE_VOLUME}:/state:Z`,
+      '-v',
+      `${PARSED_VOLUME}:/parsed:Z`,
+      '-v',
+      `${PG_VOLUME}:/var/lib/pgsql/data:Z`,
       IMAGE_NAME,
       ...args,
     ],
@@ -134,11 +184,14 @@ async function runContainer(args: readonly string[],): Promise<string> {
  * @returns Set of mise-installable tool names (lowercase)
  */
 async function loadMiseRegistry(): Promise<ReadonlySet<string>> {
-  const result = await spawn('mise', ['registry',],);
+  const result = await spawn(
+    'mise',
+    ['registry',],
+  );
   const names = new Set<string>();
   for (const line of result.stdout.split('\n',)) {
-    const name = line.split(/\s+/,)[0];
-    if (name)
+    const [name,] = line.split(/\s+/,);
+    if (name !== undefined && name !== '')
       names.add(name.toLowerCase(),);
   }
   console.log(`[generate-index] loaded ${names.size} mise registry entries`,);
@@ -212,7 +265,7 @@ type RepologyProject = {
  * @returns TypeScript source code
  */
 function generateTypeScript(projects: readonly RepologyProject[],): string {
-  const today = new Date().toISOString().split('T',)[0];
+  const [today,] = new Date().toISOString().split('T',);
   const lines: string[] = [
     '/**',
     ' * Auto-generated from Repology package metadata.',
@@ -248,7 +301,8 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
  * @returns TypeScript expression string like `p('curl')` or `p({ effname: '...', yes: [...] })`
  */
 function buildPCall(project: RepologyProject,): string {
-  const managers = Object.entries(project.repos,)
+  const managers = Object
+    .entries(project.repos,)
     .filter(function isSupported([manager,],): boolean {
       return SUPPORTED_MANAGERS.has(manager,);
     },);
@@ -273,7 +327,9 @@ function buildPCall(project: RepologyProject,): string {
     },
   );
 
-  return `p({ effname: '${escapeString(project.effname,)}', yes: [${yesEntries.join(', ',)},], },)`;
+  return `p({ effname: '${escapeString(project.effname,)}', yes: [${
+    yesEntries.join(', ',)
+  },], },)`;
 }
 
 /**
@@ -284,7 +340,15 @@ function buildPCall(project: RepologyProject,): string {
  * @returns Escaped string safe for single-quoted TypeScript literals
  */
 function escapeString(value: string,): string {
-  return value.replace(/\\/g, '\\\\',).replace(/'/g, "\\'",);
+  return value
+    .replaceAll(
+      '\\',
+      String.raw`\\`,
+    )
+    .replaceAll(
+      "'",
+      String.raw`\'`,
+    );
 }
 
 //endregion Code generation
@@ -303,7 +367,8 @@ await ensureVolumes();
 /** Step 3: Fetch and process repos (auto-inits schema on first run) */
 console.log('[generate-index] fetching and processing repos...',);
 await runContainer([
-  '--fetch', '--fetch',
+  '--fetch',
+  '--fetch',
   '--parse',
   '--database',
 ],);
@@ -312,8 +377,12 @@ await runContainer([
 console.log('[generate-index] extracting package data...',);
 /** Raw JSON output from the repology-updater extract step. */
 const rawJson = await runContainer(['--extract',],);
+/** Unparsed JSON for type-safe narrowing from any. */
+const rawParsed: unknown = JSON.parse(rawJson.trim(),);
+/* oxlint-disable typescript/no-unsafe-type-assertion -- shape validated by upstream SQL output format */
 /** Parsed Repology project entries with per-manager package names. */
-const projects = JSON.parse(rawJson.trim(),) as RepologyProject[];
+const projects = rawParsed as RepologyProject[];
+/* oxlint-enable typescript/no-unsafe-type-assertion */
 console.log(`[generate-index] extracted ${projects.length} projects from Repology`,);
 
 /** Step 6: Filter out mise-installable packages */
@@ -328,12 +397,18 @@ const filtered = projects.filter(
 );
 /** Number of packages filtered out because mise can install them directly. */
 const removedCount = projects.length - filtered.length;
-console.log(`[generate-index] ${removedCount} packages filtered (mise registry + mise backends)`,);
+console.log(
+  `[generate-index] ${removedCount} packages filtered (mise registry + mise backends)`,
+);
 console.log(`[generate-index] ${filtered.length} packages remaining`,);
 
 /** Step 7: Generate and write TypeScript */
 const source = generateTypeScript(filtered,);
-writeFileSync(OUTPUT_PATH, source, 'utf8',);
+writeFileSync(
+  OUTPUT_PATH,
+  source,
+  'utf8',
+);
 console.log(`[generate-index] wrote ${OUTPUT_PATH}`,);
 
 //endregion Main

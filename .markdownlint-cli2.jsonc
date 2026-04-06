@@ -42,13 +42,13 @@
       "full": true,
       "collapsed": true,
       "shortcut": false,
-      "url_inline": true
-    }
+      "url_inline": true,
+    },
   },
   "ignores": [
     "node_modules/**",
     "dist/**",
     ".dist/**",
-    "bak/**"
-  ]
+    "bak/**",
+  ],
 }

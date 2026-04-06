@@ -30,7 +30,7 @@ const HANDLE_HEIGHT = 1 - 1 / 2 / 2 / 2;
 const HANDLE_TURN = -(1 / 2 / 2 / 2);
 
 /** CSS rules for the search icon `.search-icon`, `.circle`, and `.handle` elements. */
-export const TOP_NAV_ICON_STYLES = [
+export const TOP_NAV_ICON_STYLES: string[] = [
   css({
     rule: '.search-icon',
     decls: {

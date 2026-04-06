@@ -1,6 +1,7 @@
 # CLI Tools & Utilities Todo
 
 ## Cross-References
+
 - [**Build System Integration**](TODO.build-system.md#package-management-improvements) - Package management tooling integration
 - [**Automation Tools**](TODO.automation.md#development-automation) - Development workflow automation
 - [**Package Development**](TODO.packages.md#build-utilities) - Build utility enhancement
@@ -10,12 +11,15 @@
 ## High Priority Tools
 
 ### `cpfd` - Copy Files From Dependencies
+
 **Status**: Deprecated -- superseded by `packages/dev-script/file-enforcer`
 
 ### `increase-version`
+
 **Status**: Deprecated -- no longer needed after monorepo adoption (no frequent npm publishes)
 
 ### `add-scripts`
+
 **Status**: Deprecated -- handled by file-enforcer and mise task templates
 
 ## Monochromatic CLI Development
@@ -39,6 +43,7 @@ endif
 ```
 
 #### Implementation Details
+
 - [ ] Design monorepo template structure
 - [ ] Implement configuration file generation
 - [ ] Add project initialization automation
@@ -72,6 +77,7 @@ endif
 ```
 
 #### Implementation Details
+
 - [ ] Create package category templates
 - [ ] Implement package structure scaffolding
 - [ ] Add package configuration automation
@@ -84,6 +90,7 @@ endif
 ## Utility Tools
 
 ### `append` util
+
 **Status**: Medium Priority
 
 Terminal append util that appends a new line to a specified file.
@@ -96,6 +103,7 @@ append "my new line1" "my new line2" --to myfile.md
 ```
 
 #### Enhanced Implementation
+
 - [ ] Add support for atomic file operations
 - [ ] Implement file locking for concurrent access
 - [ ] Add backup creation before modification
@@ -104,11 +112,13 @@ append "my new line1" "my new line2" --to myfile.md
 - [ ] Implement batch append operations
 
 ### Write my own mise MCP server
+
 **Status**: Medium Priority
 
 Create a custom MCP server for better mise integration with Claude/AI tools.
 
 #### Detailed Implementation Tasks
+
 - [ ] Design MCP server architecture for mise integration
 - [ ] Implement mise task discovery and execution tools
 - [ ] Add mise configuration manipulation tools
@@ -122,6 +132,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 ## Advanced Development Tools
 
 ### Code Generation and Scaffolding
+
 **Status**: Normal Priority - Developer productivity
 
 - [ ] Create automated component scaffolding tools
@@ -134,6 +145,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 **Cross-Reference**: See [Automation Todo](TODO.automation.md#code-generation-and-templating) for comprehensive code generation.
 
 ### Development Workflow Tools
+
 **Status**: Normal Priority - Developer experience
 
 - [ ] Create development environment validation tools
@@ -148,6 +160,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 ## Tool Development Guidelines
 
 ### Script Preferences
+
 - **NEVER write bash/shell scripts** (non-portable, unreadable, unfamiliar)
 - When scripts are needed, create TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
 - Use Bun to execute TypeScript scripts directly
@@ -160,6 +173,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 - NEVER use process.exit() - throw errors instead
 
 ### Tool Version Management
+
 - **Only pin tool versions when necessary** with clear justification
 - If pinning is required, always include comments explaining why
 - Example: `# Pin to v1.2.3 - v1.3.0 introduced breaking API changes`
@@ -167,6 +181,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 - Regularly review pinned versions to check if constraints still apply
 
 ### Security Considerations for CLI Tools
+
 **Status**: High Priority - Tool security
 
 - [ ] Implement input validation for all CLI arguments
@@ -181,11 +196,13 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 ## Grammar and Linting Tools
 
 ### Replace `vale` with `harper` or another grammar checker
+
 **Status**: Medium Priority
 
 `vale` gives `EvalSymlinks: too many links` error. Need to find a replacement.
 
 #### Investigation Tasks
+
 - [ ] Evaluate harper grammar checker capabilities and performance
 - [ ] Test alex for inclusive language checking
 - [ ] Research textlint for comprehensive text validation
@@ -196,34 +213,38 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 ## Advanced Utilities
 
 ### Pattern Matching Library
+
 **Status**: Low Priority - Experimental
 
 Build our own TypeScript pattern matching library that supports async predicates in when clauses, powered by Zod for schema validation.
 
 #### Features
+
 - Support for async predicates in `.when()` clauses
 - Zod integration for type-safe pattern validation
 - Maintain ts-pattern's excellent type inference
 - Compatible API for migration from ts-pattern
 
 #### Example API
+
 ```typescript
-import { match } from '@monochromatic-dev/module-es';
-import { z } from 'zod';
+import { match, } from '@monochromatic-dev/module-es';
+import { z, } from 'zod';
 
 // Async predicate support
-const result = await match(value)
-  .when(async (v) => await checkDatabase(v), () => 'found in db')
-  .when(z.string().email(), () => 'valid email')
+const result = await match(value,)
+  .when(async v => await checkDatabase(v,), () => 'found in db',)
+  .when(z.string().email(), () => 'valid email',)
   .otherwise(() => 'default');
 
 // Or with pre-computed async values
-const result = await match({ hasFeature: await checkFeature() })
-  .with({ hasFeature: true }, () => 'feature enabled')
+const result = await match({ hasFeature: await checkFeature(), },)
+  .with({ hasFeature: true, }, () => 'feature enabled',)
   .otherwise(() => 'feature disabled');
 ```
 
 #### Implementation Tasks
+
 - [ ] Design type-safe pattern matching API
 - [ ] Implement async predicate support
 - [ ] Add Zod schema integration
@@ -234,6 +255,7 @@ const result = await match({ hasFeature: await checkFeature() })
 **Cross-Reference**: See [Packages Todo](TODO.packages.md#async-iterator-utilities) for related async utility development.
 
 ### Development Environment Tools
+
 **Status**: Normal Priority - Environment management
 
 - [ ] Create environment consistency checking tools
@@ -246,6 +268,7 @@ const result = await match({ hasFeature: await checkFeature() })
 **Cross-Reference**: See [Development Todo](TODO.development.md#development-environment-automation) for environment automation.
 
 ### Performance and Monitoring Tools
+
 **Status**: Normal Priority - Performance optimization
 
 - [ ] Create build performance monitoring tools

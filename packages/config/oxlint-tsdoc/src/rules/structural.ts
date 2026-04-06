@@ -36,7 +36,10 @@ export const checkAlignment: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createTsdocVisitor(
       context,
-      function checkAlignmentHandler(_node, comment,): void {
+      function checkAlignmentHandler(
+        _node,
+        comment,
+      ): void {
         const lines = getCommentLines(comment,);
         if (lines.length < 2)
           return;
@@ -45,7 +48,10 @@ export const checkAlignment: CreateOnceRule = {
         // comment.loc.start.column is the column of `/*`, so `*` alignment is column + 1
         const expectedIndent = comment.loc.start.column + 1;
 
-        lines.slice(1,).forEach(function checkLine(line, index,): void {
+        lines.slice(1,).forEach(function checkLine(
+          line,
+          index,
+        ): void {
           const trimmed = line.trimStart();
           if (trimmed.length === 0)
             return;
@@ -55,11 +61,16 @@ export const checkAlignment: CreateOnceRule = {
           if (actualIndent !== expectedIndent) {
             context.report({
               loc: {
-                start: { line: comment.loc.start.line + index + 1,
-                  column: actualIndent, },
+                start: {
+                  line: comment.loc.start.line + index + 1,
+                  column: actualIndent,
+                },
               },
               messageId: 'misaligned',
-              data: { expected: String(expectedIndent,), actual: String(actualIndent,), },
+              data: {
+                expected: String(expectedIndent,),
+                actual: String(actualIndent,),
+              },
             },);
           }
         },);
@@ -88,7 +99,10 @@ export const multilineBlocks: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createTsdocVisitor(
       context,
-      function multilineHandler(_node, comment,): void {
+      function multilineHandler(
+        _node,
+        comment,
+      ): void {
         const lines = getCommentLines(comment,);
         /** Minimum line count for a proper multiline comment: opener, content, closer. */
         const minMultilineLines = 3;
@@ -96,8 +110,12 @@ export const multilineBlocks: CreateOnceRule = {
         if (lines.length >= minMultilineLines)
           return;
         // Single-line comment containing a tag should be multiline
-        if (comment.value.includes('@',))
-          context.report({ node: comment, messageId: 'singleLine', },);
+        if (comment.value.includes('@',)) {
+          context.report({
+            node: comment,
+            messageId: 'singleLine',
+          },);
+        }
       },
     );
   },

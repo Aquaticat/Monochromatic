@@ -41,6 +41,11 @@ l.debug(`fetch interval: ${String(FETCH_INTERVAL_MS,)}ms`,);
  * causing fetch results to be reused until the window advances.
  *
  * @returns String representation of the current time bucket
+ *
+ * @example
+ * ```ts
+ * const salt = getFetchSalt();
+ * ```
  */
 export function getFetchSalt(): string {
   return String(Math.floor(Date.now() / FETCH_INTERVAL_MS,),);

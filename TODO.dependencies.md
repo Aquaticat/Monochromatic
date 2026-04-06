@@ -13,9 +13,10 @@ This causes TypeScript errors when using these exported functions.
 
 **Action needed**: Contribute a PR to the @eslint/config-helpers repository to add eslint as a peer dependency.
 
-**Repository**: Likely part of the ESLint monorepo at https://github.com/eslint/eslint
+**Repository**: Likely part of the ESLint monorepo at <https://github.com/eslint/eslint>
 
 **Expected fix**: Add to their package.json:
+
 ```json
 {
   "peerDependencies": {

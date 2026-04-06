@@ -273,6 +273,18 @@ export function validateNoTrailingContent(
  * @param customParserFn - Custom parser for JSONC features
  *
  * @returns Parsed JSONC value with comments preserved
+ *
+ * @example
+ * ```ts
+ * const context = startsWithComment({ value: '[1, 2]' as FragmentStringJsonc });
+ * const result = parseWithFallback({
+ *   value: context.remainingContent,
+ *   context,
+ *   containerType: 'array',
+ *   tryFastPathFn: tryArrayFastPath,
+ *   customParserFn: customParserForArray,
+ * });
+ * ```
  */
 export function parseWithFallback({
   value,

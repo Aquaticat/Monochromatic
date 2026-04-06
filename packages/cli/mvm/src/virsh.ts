@@ -30,7 +30,11 @@ import { spawn, } from './spawn.ts';
 export function virsh({ args, }: { args: readonly string[]; },): Promise<string> {
   return spawn({
     command: 'virsh',
-    args: ['--connect', LIBVIRT_URI, ...args,],
+    args: [
+      '--connect',
+      LIBVIRT_URI,
+      ...args,
+    ],
   },);
 }
 

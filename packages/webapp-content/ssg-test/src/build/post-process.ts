@@ -27,6 +27,11 @@ import { DIST, } from './write-page.ts';
  * installed in all environments.
  *
  * @param l - parent logger for tagged output
+ *
+ * @example
+ * ```ts
+ * await postProcess({ l: rootLogger });
+ * ```
  */
 export async function postProcess(
   { l: parentLogger, }: { l: Logger; },

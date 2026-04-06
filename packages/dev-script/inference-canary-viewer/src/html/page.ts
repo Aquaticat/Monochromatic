@@ -14,6 +14,12 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * @param title - page title
  *
  * @returns complete HTML document string
+ *
+ * @example
+ * ```ts
+ * const html = renderPage({ body: '<p>Hello<\/p>', title: 'Dashboard' });
+ * // '<!DOCTYPE html>\n<html lang="en">...<\/html>'
+ * ```
  */
 export function renderPage({
   body,
@@ -36,12 +42,17 @@ export function renderPage({
             },),
             h({
               tag: 'meta',
-              attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', },
+              attrs: {
+                name: 'viewport',
+                content: 'width=device-width, initial-scale=1',
+              },
             },),
             h({
               tag: 'meta',
-              attrs: { name: 'color-scheme', content: 'light dark', },
+              attrs: {
+                name: 'color-scheme',
+                content: 'light dark',
+              },
             },),
             h({
               tag: 'title',
@@ -53,11 +64,17 @@ export function renderPage({
             },),
             h({
               tag: 'link',
-              attrs: { rel: 'stylesheet', href: 'style.css', },
+              attrs: {
+                rel: 'stylesheet',
+                href: 'style.css',
+              },
             },),
             h({
               tag: 'script',
-              attrs: { type: 'module', src: 'client/index.js', },
+              attrs: {
+                type: 'module',
+                src: 'client/index.js',
+              },
             },),
           ],
         },),

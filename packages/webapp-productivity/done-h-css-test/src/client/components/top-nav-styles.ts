@@ -37,7 +37,7 @@ const LINE_WIDTH = 1 + 1 / 2 + 1 / 2 / 2;
 const LINE_HEIGHT = 1 / 2 / 2;
 
 /** Compiled CSS string for `<top-nav>` Shadow DOM. */
-export const TOP_NAV_STYLES = [
+export const TOP_NAV_STYLES: string = [
   css({
     rule: ':host',
     decls: {

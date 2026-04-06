@@ -19,7 +19,14 @@ import { execSync, } from 'node:child_process';
 function run(cmd: string,): string {
   return execSync(
     cmd,
-    { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
+    {
+      encoding: 'utf8',
+      stdio: [
+        'pipe',
+        'pipe',
+        'pipe',
+      ],
+    },
   )
     .trim();
 }
@@ -60,6 +67,18 @@ export type PrepareSilhouettesResult = {
  * @param params - preparation configuration
  *
  * @returns paths to generated silhouette images
+ *
+ * @example
+ * ```ts
+ * const result = prepareSilhouettes({
+ *   refImage: '/path/to/reference.jpg',
+ *   compositeSvg: '/path/to/composite.svg',
+ *   refCrop: { width: 290, height: 880, x: 1440, y: 60 },
+ *   normHeight: 1000,
+ *   tmpDir: '/tmp/work',
+ * });
+ * console.log(result.refSilhouette, result.cmpSilhouette);
+ * ```
  */
 export function prepareSilhouettes(
   params: PrepareSilhouettesParams,

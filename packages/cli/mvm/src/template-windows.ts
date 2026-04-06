@@ -219,7 +219,12 @@ async function guestExecWait({
         execute: 'guest-exec',
         arguments: {
           path: 'powershell.exe',
-          arg: ['-NoProfile', '-NonInteractive', '-Command', command,],
+          arg: [
+            '-NoProfile',
+            '-NonInteractive',
+            '-Command',
+            command,
+          ],
           'capture-output': true,
         },
       },),
@@ -243,13 +248,19 @@ async function guestExecWait({
     },);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
     const status = (JSON
-      .parse(statusResult,) as { return: { exited: boolean; exitcode?: number; }; })
+      .parse(statusResult,) as { return: {
+        exited: boolean;
+        exitcode?: number;
+      }; })
       .return;
     if (status.exited)
       return status.exitcode ?? 0;
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling with setTimeout
     await new Promise(function pollDelay(resolve,) {
-      setTimeout(resolve, GUEST_EXEC_POLL_MS,);
+      setTimeout(
+        resolve,
+        GUEST_EXEC_POLL_MS,
+      );
     },);
   }
 }
@@ -284,17 +295,27 @@ async function guestFilePush({
       fullName,
       JSON.stringify({
         execute: 'guest-file-open',
-        arguments: { path: guestPath, mode: 'wb', },
+        arguments: {
+          path: guestPath,
+          mode: 'wb',
+        },
       },),
     ],
   },);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
   const handle = (JSON.parse(openResult,) as { return: number; }).return;
 
+  /** 48 KB in bytes. */
+  const RAW_CHUNK_KB = 48;
+  /** Bytes per kilobyte. */
+  const BYTES_PER_KB = 1_024;
   /** Write in 48 KB raw chunks (~65 KB base64, fits within virsh CLI arg limits). */
-  const RAW_CHUNK = 48 * 1024;
+  const RAW_CHUNK = RAW_CHUNK_KB * BYTES_PER_KB;
   for (let offset = 0; offset < data.length; offset += RAW_CHUNK) {
-    const chunk = data.subarray(offset, offset + RAW_CHUNK,);
+    const chunk = data.subarray(
+      offset,
+      offset + RAW_CHUNK,
+    );
     const b64 = Buffer.from(chunk,).toString('base64',);
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial file transfer
     await virsh({
@@ -303,7 +324,10 @@ async function guestFilePush({
         fullName,
         JSON.stringify({
           execute: 'guest-file-write',
-          arguments: { handle, 'buf-b64': b64, },
+          arguments: {
+            handle,
+            'buf-b64': b64,
+          },
         },),
       ],
     },);
@@ -362,9 +386,11 @@ async function installVirtioFs({
   rl.info('installing VirtIO guest tools MSI for VirtioFsSvc...',);
   await guestExecWait({
     command: [
-      '$vd = Get-ChildItem -Path D:\\,E:\\,F:\\,G:\\ -Directory -Filter viostor -ErrorAction SilentlyContinue | Select-Object -First 1',
+      String
+        .raw`$vd = Get-ChildItem -Path D:\,E:\,F:\,G:\ -Directory -Filter viostor -ErrorAction SilentlyContinue | Select-Object -First 1`,
       'if ($vd) { $gt = Join-Path $vd.Parent.FullName virtio-win-gt-x64.msi',
-      'Start-Process msiexec -ArgumentList /i,$gt,/qn,/norestart,/log,C:\\gt-install.log -Wait }',
+      String
+        .raw`Start-Process msiexec -ArgumentList /i,$gt,/qn,/norestart,/log,C:\gt-install.log -Wait }`,
     ]
       .join('; ',),
   },);

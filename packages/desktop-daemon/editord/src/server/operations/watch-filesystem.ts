@@ -44,22 +44,22 @@ export type FsChangeEvent = {
  */
 export class DirWatcher {
   /** Active watchers keyed by directory path. */
-  #watchers = new Map<string, FSWatcher>();
+  readonly #watchers = new Map<string, FSWatcher>();
 
   /** Pending debounced events keyed by full path of the changed entry. */
-  #pending = new Map<string, {
+  readonly #pending = new Map<string, {
     timer: ReturnType<typeof setTimeout>;
     eventType: string;
   }>();
 
   /** Paths suppressed from emitting events (e.g. after a self-save). */
-  #suppressed = new Set<string>();
+  readonly #suppressed = new Set<string>();
 
   /** Callback invoked for each resolved change event. */
-  #onChange: (event: FsChangeEvent,) => void;
+  readonly #onChange: (event: FsChangeEvent,) => void;
 
   /** Tagged logger. */
-  #l: Logger;
+  readonly #l: Logger;
 
   /**
    * @param onChange - callback invoked for each debounced, filtered change event

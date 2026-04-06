@@ -4,7 +4,7 @@
 
 ### Symptoms
 
-```
+```bash
 error: GET https://npm.jsr.io/@jsr%2fzod__zod - 502
 error: zod@catalog: failed to resolve
 ```

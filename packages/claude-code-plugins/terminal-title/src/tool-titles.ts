@@ -41,28 +41,58 @@ const CORE_TOOL_TITLES: Record<string, ToolTitleEntry> = {
   },
   Read: {
     extract: field('file_path',),
-    format: pathFormat({ pre: 'Reading', post: 'Read', },),
-    fallback: { pre: 'Reading file', post: 'Read file', },
+    format: pathFormat({
+      pre: 'Reading',
+      post: 'Read',
+    },),
+    fallback: {
+      pre: 'Reading file',
+      post: 'Read file',
+    },
   },
   Edit: {
     extract: field('file_path',),
-    format: pathFormat({ pre: 'Editing', post: 'Edited', },),
-    fallback: { pre: 'Editing file', post: 'Edited file', },
+    format: pathFormat({
+      pre: 'Editing',
+      post: 'Edited',
+    },),
+    fallback: {
+      pre: 'Editing file',
+      post: 'Edited file',
+    },
   },
   Write: {
     extract: field('file_path',),
-    format: pathFormat({ pre: 'Writing', post: 'Wrote', },),
-    fallback: { pre: 'Writing file', post: 'Wrote file', },
+    format: pathFormat({
+      pre: 'Writing',
+      post: 'Wrote',
+    },),
+    fallback: {
+      pre: 'Writing file',
+      post: 'Wrote file',
+    },
   },
   Grep: {
     extract: field('pattern',),
-    format: quotedFormat({ pre: 'Searching', post: 'Searched', },),
-    fallback: { pre: 'Searching', post: 'Searched', },
+    format: quotedFormat({
+      pre: 'Searching',
+      post: 'Searched',
+    },),
+    fallback: {
+      pre: 'Searching',
+      post: 'Searched',
+    },
   },
   Glob: {
     extract: field('pattern',),
-    format: quotedFormat({ pre: 'Finding', post: 'Found', },),
-    fallback: { pre: 'Finding files', post: 'Found files', },
+    format: quotedFormat({
+      pre: 'Finding',
+      post: 'Found',
+    },),
+    fallback: {
+      pre: 'Finding files',
+      post: 'Found files',
+    },
   },
   Agent: {
     extract: field('description',),

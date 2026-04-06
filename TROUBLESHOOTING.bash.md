@@ -57,4 +57,3 @@ cmd 2>&1
 ```
 
 This is what worked for verifying the `buildAndTest` task's execution order.
-

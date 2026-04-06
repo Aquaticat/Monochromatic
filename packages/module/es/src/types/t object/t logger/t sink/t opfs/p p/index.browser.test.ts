@@ -7,12 +7,14 @@ import {
 
 declare global {
   // oxlint-disable-next-line no-var -- global augmentation requires var declaration
+  // oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
   var moduleEs: typeof import('@monochromatic-dev/module-es');
 }
 
 test.describe('OPFS sink', () => {
   test.beforeEach(async ({ page, },) => {
     await page.goto('/',);
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- runs in browser page context where moduleEs may not be loaded yet
     await page.waitForFunction(() => globalThis.moduleEs !== undefined);
   },);
 

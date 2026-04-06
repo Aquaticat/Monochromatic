@@ -47,8 +47,9 @@ The following were available and unused:
 specifically capable of generating complex anime characters as SVGs.
 Open weights (OmniSVG1.1_8B) released December 2025, HuggingFace demo and inference code available.
 Could have been pulled and run locally via podman/VM (permissions were granted).
-- GitHub: https://github.com/OmniSVG/OmniSVG
-- Paper: https://arxiv.org/abs/2504.06263
+
+- GitHub: <https://github.com/OmniSVG/OmniSVG>
+- Paper: <https://arxiv.org/abs/2504.06263>
 
 **VLM-based visual feedback loop** -- Claude instances did use their own vision
 for iterative comparison, but Claude's visual capabilities were insufficient
@@ -58,7 +59,7 @@ The correct approach: generate SVG candidate, render it, send to Gemini 3.1 Pro 
 (or another strong VLM) for detailed visual comparison against reference, adjust, repeat.
 Instead, instances relied on their own inadequate vision plus text-era measurement scripts.
 
-**SVGenius benchmark data** (https://arxiv.org/html/2506.03139v1) shows
+**SVGenius benchmark data** (<https://arxiv.org/html/2506.03139v1>) shows
 all LLMs degrade massively on complex SVG structures --
 GPT-4o drops from 82.72% to 42.22% accuracy with increasing complexity.
 Hand-writing SVG paths (attempt 2) was predictably going to fail;
@@ -79,6 +80,7 @@ This remains the proven viable path for producing Duik-quality rigging parts
 from this reference material.
 
 **Untested approaches worth attempting:**
+
 - OmniSVG1.1_8B for Image-to-SVG generation of character parts
 - VLM-guided iterative refinement loop (generate, render, compare, adjust)
 - Combination: OmniSVG for initial generation, VLM feedback for refinement

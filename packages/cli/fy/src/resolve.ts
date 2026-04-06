@@ -1,11 +1,11 @@
 import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
+import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
 import {
   l,
   tagged,
 } from './log.ts';
-import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
 
 /**
  * Attempts to resolve a bare specifier from a given base directory.
@@ -147,7 +147,7 @@ export async function resolveSpecifier(
   //endregion CWD resolution
 
   //region Monorepo root resolution
-  let monorepoRoot: string | undefined;
+  let monorepoRoot: string | undefined = undefined;
   try {
     monorepoRoot = await findMonorepoRoot({ cwd, },);
     if (monorepoRoot !== cwd) {
@@ -171,7 +171,10 @@ export async function resolveSpecifier(
     rl.info(`trying global: ${globalDir}`,);
     const fromGlobal = resolveFrom({
       specifier,
-      baseDir: join(globalDir, '..',),
+      baseDir: join(
+        globalDir,
+        '..',
+      ),
     },);
     if (fromGlobal !== undefined)
       return fromGlobal;

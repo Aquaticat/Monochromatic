@@ -20,7 +20,7 @@ await describe({
         expect(typeof $.error,).toBe('function',);
         expect(typeof $.fatal,).toBe('function',);
       },
-    }),
+    },),
 
     it({
       name: 'trace method accepts string message',
@@ -31,7 +31,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'debug method accepts string message',
@@ -42,7 +42,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'info method accepts string message',
@@ -53,7 +53,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'warn method accepts string message',
@@ -64,7 +64,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'error method accepts string message',
@@ -75,7 +75,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'fatal method accepts string message',
@@ -86,7 +86,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'logs with empty string message',
@@ -97,7 +97,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'logs with unicode message',
@@ -108,7 +108,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'logs with multiline message',
@@ -119,7 +119,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'logs with special characters',
@@ -130,7 +130,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'logs with JSON-like content',
@@ -141,7 +141,7 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'handles rapid successive logs',
@@ -154,6 +154,6 @@ await describe({
           .not
           .toThrow();
       },
-    }),
+    },),
   ],
 },);

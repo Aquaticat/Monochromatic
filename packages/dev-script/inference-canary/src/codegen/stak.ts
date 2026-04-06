@@ -8,12 +8,12 @@
  * Performance is a direct multiplier with no cap -- a slow implementation degrades
  * the full score proportionally, not just a small fraction of it.
  */
+import type { Probe, } from '../probes.ts';
 import {
   CODEGEN_EXPECTED_OUTPUT,
   CODEGEN_TEST_INPUT,
   PERF_TEST_INPUT,
 } from '../stak/test-cases.ts';
-import type { Probe, } from '../probes.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** Number of correctness checks in the Stak codegen scoring function */

@@ -1,5 +1,4 @@
 import {
-  hCss as $,
   cssCompounded,
   type CssDeclarations,
   cssNum,
@@ -7,6 +6,7 @@ import {
   cssRem,
   type CssValue,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   describe,
@@ -22,23 +22,24 @@ await describe({
     it({
       name: 'creates a simple rule with declarations',
       fn: async () => {
-        expect($({ rule: '.card', decls: { display: 'flex', gap: cssRem(1,), }, },),).toBe(
-          '.card{display:flex;gap:1rem}',
-        );
+        expect($({ rule: '.card', decls: { display: 'flex', gap: cssRem(1,), }, },),)
+          .toBe(
+            '.card{display:flex;gap:1rem}',
+          );
       },
-    }),
+    },),
     it({
       name: 'creates a rule with no declarations',
       fn: async () => {
         expect($({ rule: '.empty', },),).toBe('.empty{}',);
       },
-    }),
+    },),
     it({
       name: 'creates a rule with a single declaration',
       fn: async () => {
         expect($({ rule: 'body', decls: { margin: '0', }, },),).toBe('body{margin:0}',);
       },
-    }),
+    },),
     it({
       name: 'preserves CSS custom property names',
       fn: async () => {
@@ -46,7 +47,7 @@ await describe({
           ':root{--color-fg:oklch(0.2 0 0)}',
         );
       },
-    }),
+    },),
     it({
       name: 'handles complex selectors',
       fn: async () => {
@@ -57,7 +58,7 @@ await describe({
             '.card > .title:first-child{font-weight:bold}',
           );
       },
-    }),
+    },),
 
     //endregion
 
@@ -75,7 +76,7 @@ await describe({
         },),)
           .toBe('.card{display:flex;&:hover{opacity:0.8}}',);
       },
-    }),
+    },),
     it({
       name: 'nests multiple children',
       fn: async () => {
@@ -83,16 +84,18 @@ await describe({
           rule: '.btn',
           decls: { padding: '0.5rem' as CssValue, },
           children: [
-            $({ rule: '&:hover',
-              decls: { 'background-color': cssOklch({ l: 0.45, c: 0.31, h: 264, },), }, },),
-            $({ rule: '&:focus-visible', decls: { outline: '2px solid' as CssValue, }, },),
+            $({ rule: '&:hover', decls: {
+              'background-color': cssOklch({ l: 0.45, c: 0.31, h: 264, },),
+            }, },),
+            $({ rule: '&:focus-visible',
+              decls: { outline: '2px solid' as CssValue, }, },),
           ],
         },),)
           .toBe(
             '.btn{padding:0.5rem;&:hover{background-color:oklch(0.45 0.31 264)}&:focus-visible{outline:2px solid}}',
           );
       },
-    }),
+    },),
     it({
       name: 'nests children without parent declarations',
       fn: async () => {
@@ -104,7 +107,7 @@ await describe({
         },),)
           .toBe('.wrapper{& > *{flex:1}}',);
       },
-    }),
+    },),
     it({
       name: 'deeply nests rules',
       fn: async () => {
@@ -121,7 +124,7 @@ await describe({
         },),)
           .toBe('.a{& .b{& .c{color:var(--fg)}}}',);
       },
-    }),
+    },),
 
     //endregion
 
@@ -139,7 +142,7 @@ await describe({
         },),)
           .toBe('@media (prefers-color-scheme: dark){:root{--color-fg:oklch(0.9 0 0)}}',);
       },
-    }),
+    },),
     it({
       name: 'creates a layer block with rules',
       fn: async () => {
@@ -152,7 +155,7 @@ await describe({
         },),)
           .toBe('@layer components{.btn{display:inline-flex}}',);
       },
-    }),
+    },),
     it({
       name: 'creates a scope block',
       fn: async () => {
@@ -165,7 +168,7 @@ await describe({
         },),)
           .toBe('@scope (.card){.title{font-size:1.5rem}}',);
       },
-    }),
+    },),
     it({
       name: 'nests at-rules inside at-rules',
       fn: async () => {
@@ -184,7 +187,7 @@ await describe({
         },),)
           .toBe('@layer theme{@media (prefers-color-scheme: dark){:root{--bg:black}}}',);
       },
-    }),
+    },),
 
     //endregion
 
@@ -202,9 +205,11 @@ await describe({
             'initial-value': 'black',
           },
         },),)
-          .toBe('@property --color-fg{syntax:"<color>";inherits:true;initial-value:black}',);
+          .toBe(
+            '@property --color-fg{syntax:"<color>";inherits:true;initial-value:black}',
+          );
       },
-    }),
+    },),
     it({
       name: 'creates a @font-face rule',
       fn: async () => {
@@ -220,7 +225,7 @@ await describe({
             '@font-face{font-family:"Aquaticat";src:url("aquaticat.woff2") format("woff2");font-display:swap}',
           );
       },
-    }),
+    },),
     it({
       name: 'creates a @counter-style rule',
       fn: async () => {
@@ -231,7 +236,7 @@ await describe({
         },),)
           .toBe('@counter-style dash{system:cyclic;symbols:"–";suffix:" "}',);
       },
-    }),
+    },),
 
     //endregion
 
@@ -244,13 +249,13 @@ await describe({
           '@layer tokens, base, components;',
         );
       },
-    }),
+    },),
     it({
       name: 'creates a @charset statement',
       fn: async () => {
         expect($({ at: 'charset', params: '"UTF-8"', },),).toBe('@charset "UTF-8";',);
       },
-    }),
+    },),
     it({
       name: 'creates an @import statement',
       fn: async () => {
@@ -258,7 +263,7 @@ await describe({
           '@import url("reset.css");',
         );
       },
-    }),
+    },),
     it({
       name: 'creates an @import with layer',
       fn: async () => {
@@ -266,21 +271,22 @@ await describe({
           '@import url("theme.css") layer(theme);',
         );
       },
-    }),
+    },),
     it({
       name: 'creates a @namespace statement',
       fn: async () => {
-        expect($({ at: 'namespace', params: 'url("http://www.w3.org/1999/xhtml")', },),).toBe(
-          '@namespace url("http://www.w3.org/1999/xhtml");',
-        );
+        expect($({ at: 'namespace', params: 'url("http://www.w3.org/1999/xhtml")', },),)
+          .toBe(
+            '@namespace url("http://www.w3.org/1999/xhtml");',
+          );
       },
-    }),
+    },),
     it({
       name: 'creates an at-rule with no params',
       fn: async () => {
         expect($({ at: 'layer', },),).toBe('@layer;',);
       },
-    }),
+    },),
 
     //endregion
 
@@ -293,7 +299,7 @@ await describe({
           '.card{display:flex;gap:1rem}',
         );
       },
-    }),
+    },),
     it({
       name: 'injects raw CSS inside an at-rule',
       fn: async () => {
@@ -304,7 +310,7 @@ await describe({
         },),)
           .toBe('@media (width >= 768px){.sidebar{display:block}}',);
       },
-    }),
+    },),
 
     //endregion
 
@@ -314,14 +320,16 @@ await describe({
       name: 'composes declarations via object spread',
       fn: async () => {
         function flexCenter(): CssDeclarations {
-          return { display: 'flex', 'align-items': 'center', 'justify-content': 'center', };
+          return { display: 'flex', 'align-items': 'center',
+            'justify-content': 'center', };
         }
 
-        expect($({ rule: '.hero', decls: { ...flexCenter(), gap: cssRem(2,), }, },),).toBe(
-          '.hero{display:flex;align-items:center;justify-content:center;gap:2rem}',
-        );
+        expect($({ rule: '.hero', decls: { ...flexCenter(), gap: cssRem(2,), }, },),)
+          .toBe(
+            '.hero{display:flex;align-items:center;justify-content:center;gap:2rem}',
+          );
       },
-    }),
+    },),
     it({
       name: 'composes parameterized declarations',
       fn: async () => {
@@ -340,7 +348,7 @@ await describe({
             '.btn{min-inline-size:44px;min-block-size:44px;cursor:pointer}',
           );
       },
-    }),
+    },),
 
     //endregion
 
@@ -380,7 +388,7 @@ await describe({
           '@layer tokens{:root{--color-fg:oklch(0.2 0 0);--color-bg:oklch(0.98 0 0);--gap-md:1rem}@media (prefers-color-scheme: dark){:root{--color-fg:oklch(0.9 0 0);--color-bg:oklch(0.1 0 0)}}}',
         );
       },
-    }),
+    },),
     it({
       name: 'generates a component with nested hover and focus',
       fn: async () => {
@@ -398,7 +406,8 @@ await describe({
                 cssOklch({ l: 0, c: 0, h: 0, a: 0.1, },),],),
             }, },),
             $({ rule: '&:focus-visible', decls: {
-              outline: cssCompounded(['2px' as CssValue, 'solid', cssVar('color-accent',),],),
+              outline: cssCompounded(['2px' as CssValue, 'solid',
+                cssVar('color-accent',),],),
             }, },),
             $({ rule: '& > .title',
               decls: { 'font-size': cssRem(1.25,), 'font-weight': 600, }, },),
@@ -408,8 +417,7 @@ await describe({
           '.card{display:flex;flex-direction:column;gap:var(--gap-md);border-radius:0.5rem;&:hover{box-shadow:0 2px 8px oklch(0 0 0 / 0.1)}&:focus-visible{outline:2px solid var(--color-accent)}& > .title{font-size:1.25rem;font-weight:600}}',
         );
       },
-    }),
-
+    },),
     //endregion
   ],
 },);

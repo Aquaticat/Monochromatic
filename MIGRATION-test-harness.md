@@ -21,17 +21,17 @@ test package. The original plan had three layers;
 layer 1 is preserved below as historical context,
 layers 2 (matrix runner) and 3 (benchmarking) are preserved below as historical context.
 
-1.  ~~**Unit adapter** -- runtime-neutral re-exports of `bun:test` / `node:test` primitives
-    so 83 `*.unit.test.ts` files decouple from a specific runtime.~~
-    **Completed** as `@monochromatic-dev/module-test` with chai + sinon.
-2.  ~~**Matrix runner** -- `@monochromatic-dev/module-matrix`,
-    a separate package that runs files across a cartesian product of
-    OS (container/VM) × user context × JS runtime environments.
-    Abstracts away podman lifecycle, prerequisite installation, and runtime setup.~~
-    **Completed.** Container test orchestrator migrated to `matrix()` call.
-3.  ~~**Benchmark utilities** -- adopt `mitata` with `@mitata/counters` for micro-benchmarks,
-    replacing the hand-rolled `measure()` / `measureAsync()` in `file-enforcer-perf`.~~
-    **Completed.** `perf.bench.test.ts` uses `mitata` directly.
+1. ~~**Unit adapter** -- runtime-neutral re-exports of `bun:test` / `node:test` primitives
+   so 83 `*.unit.test.ts` files decouple from a specific runtime.~~
+   **Completed** as `@monochromatic-dev/module-test` with chai + sinon.
+2. ~~**Matrix runner** -- `@monochromatic-dev/module-matrix`,
+   a separate package that runs files across a cartesian product of
+   OS (container/VM) × user context × JS runtime environments.
+   Abstracts away podman lifecycle, prerequisite installation, and runtime setup.~~
+   **Completed.** Container test orchestrator migrated to `matrix()` call.
+3. ~~**Benchmark utilities** -- adopt `mitata` with `@mitata/counters` for micro-benchmarks,
+   replacing the hand-rolled `measure()` / `measureAsync()` in `file-enforcer-perf`.~~
+   **Completed.** `perf.bench.test.ts` uses `mitata` directly.
 
 ## Motivation
 
@@ -99,34 +99,34 @@ user creation, workspace mounting, execution, result collection).
 **API:**
 
 ```ts
-import { matrix } from '@monochromatic-dev/module-matrix';
+import { matrix, } from '@monochromatic-dev/module-matrix';
 
 await matrix({
   // Files to execute inside each environment.
   // Self-executing scripts run with the selected runtime.
   // Defaults to discovering *.unit.matrix.test.ts in the calling package.
-  files: ['./src/package/ensure-package.unit.matrix.test.ts'],
+  files: ['./src/package/ensure-package.unit.matrix.test.ts',],
 
   // Environments. Protocol prefix selects the backend.
   // container: → podman (MVP)
   // vm: → mvm (future, not in MVP)
-  os: ['container:ubuntu', 'container:fedora'],
+  os: ['container:ubuntu', 'container:fedora',],
 
   // User contexts. Defaults to ['root'].
-  user: ['root', 'user'],
+  user: ['root', 'user',],
 
   // JS runtimes to install and execute files with. Defaults to ['bun'].
-  runtime: ['bun', 'deno'],
+  runtime: ['bun', 'deno',],
 
   // Exclude specific combinations from the cartesian product.
   // Each entry is a partial match -- all specified fields must match to exclude.
   exclude: [
-    { os: 'container:fedora', runtime: 'deno' },  // deno + fedora has known issues
+    { os: 'container:fedora', runtime: 'deno', }, // deno + fedora has known issues
   ],
 
   // Set to 1 for sequential execution. Default 4 (concurrent).
   concurrency: 4,
-});
+},);
 ```
 
 **Cartesian product:** `files × os × user × runtime`, minus `exclude` matches.
@@ -135,14 +135,14 @@ For the example above (without excludes): 1 file × 2 OS × 2 users × 2 runtime
 
 **What the package handles per combination** (e.g. `container:fedora` × `user` × `deno`):
 
-1.  Detect package manager from OS name (ubuntu → apt, fedora → dnf, alpine → apk)
-2.  `podman run --rm -v ${monorepoRoot}:/workspace:Z fedora:latest sh -c "..."`
-3.  Inside the container:
-    - Install prerequisites (curl, unzip, sudo — derived from package manager)
-    - If `user` context: create non-root user with passwordless sudo
-    - Install the selected runtime (bun or deno)
-    - Execute each file with the runtime
-4.  Throw on non-zero exit (collected by `describe`/`it` from `module-test`)
+1. Detect package manager from OS name (ubuntu → apt, fedora → dnf, alpine → apk)
+2. `podman run --rm -v ${monorepoRoot}:/workspace:Z fedora:latest sh -c "..."`
+3. Inside the container:
+   - Install prerequisites (curl, unzip, sudo — derived from package manager)
+   - If `user` context: create non-root user with passwordless sudo
+   - Install the selected runtime (bun or deno)
+   - Execute each file with the runtime
+4. Throw on non-zero exit (collected by `describe`/`it` from `module-test`)
 
 **File naming convention:**
 Inner files are named `*.unit.matrix.test.ts`.
@@ -152,12 +152,12 @@ Matrix test orchestrators discover them via the `files` option or default glob.
 **Consumer example** (`mise.container-test.ts` after migration):
 
 ```ts
-import { matrix } from '@monochromatic-dev/module-matrix';
+import { matrix, } from '@monochromatic-dev/module-matrix';
 
 await matrix({
-  os: ['container:ubuntu', 'container:fedora'],
-  user: ['root', 'user'],
-});
+  os: ['container:ubuntu', 'container:fedora',],
+  user: ['root', 'user',],
+},);
 ```
 
 This replaces the entire 218-line orchestrator.
@@ -187,28 +187,36 @@ Not in MVP -- the `os` parser recognizes the prefix but throws
 Consumers import `mitata` and `@mitata/counters` directly:
 
 ```ts
-import { bench, boxplot, run, summary } from 'mitata';
+import {
+  bench,
+  boxplot,
+  run,
+  summary,
+} from 'mitata';
 
 summary(function globSummary() {
   bench('glob expansion', async function globBench() {
-    await glob('**/*.ts');
-  });
+    await glob('**/*.ts',);
+  },);
 
   bench('glob expansion (deep)', async function deepGlobBench() {
-    await glob('pkg-*/lib/deep/nested/very/deep/module.ts');
-  });
-});
+    await glob('pkg-*/lib/deep/nested/very/deep/module.ts',);
+  },);
+},);
 
 boxplot(function globBoxplot() {
   bench('mirrorGlobPath', function mirrorBench() {
-    mirrorGlobPath('packages/*/src/*.ts', 'output/*/lib/*.ts', 'packages/pkg-00/src/index.ts');
-  }).range('iterations', 1, 1024);
-});
+    mirrorGlobPath('packages/*/src/*.ts', 'output/*/lib/*.ts',
+      'packages/pkg-00/src/index.ts',);
+  },)
+    .range('iterations', 1, 1024,);
+},);
 
 await run();
 ```
 
 `mitata` provides:
+
 - Auto-detected high-resolution timing (`Bun.nanoseconds()` on Bun, `process.hrtime.bigint()` on Node)
 - Dead-code elimination detection (warns when a benchmark is within 1.42x of a noop baseline)
 - GC-aware measurement (forces GC before runs, optionally tracks GC time separately)
@@ -244,22 +252,22 @@ Implemented as `@monochromatic-dev/module-test` at `packages/module/test/`.
 
 ### ~~Step 6: create module-matrix and migrate container tests~~ (completed)
 
-1.  Created `packages/module/matrix/` with the `matrix()` API
-2.  Renamed `ensure-package.container-test.ts` → `ensure-package.unit.matrix.test.ts`
-    and rewrote its `boolean[]` + summary pattern to use `describe`/`it` from `module-test`
-3.  Replaced `mise.container-test.ts` (173 lines) with a ~10-line call to `matrix()`:
+1. Created `packages/module/matrix/` with the `matrix()` API
+2. Renamed `ensure-package.container-test.ts` → `ensure-package.unit.matrix.test.ts`
+   and rewrote its `boolean[]` + summary pattern to use `describe`/`it` from `module-test`
+3. Replaced `mise.container-test.ts` (173 lines) with a ~10-line call to `matrix()`:
 
-    ```ts
-    import { matrix } from '@monochromatic-dev/module-matrix';
+   ```ts
+   import { matrix, } from '@monochromatic-dev/module-matrix';
 
-    await matrix({
-      os: ['container:ubuntu', 'container:fedora'],
-      user: ['root', 'user'],
-    });
-    ```
+   await matrix({
+     os: ['container:ubuntu', 'container:fedora',],
+     user: ['root', 'user',],
+   },);
+   ```
 
-4.  Removed `buildCommand`, `runEntry`, `MatrixEntry`, monorepo root detection,
-    and result collection from the orchestrator -- all handled by the package
+4. Removed `buildCommand`, `runEntry`, `MatrixEntry`, monorepo root detection,
+   and result collection from the orchestrator -- all handled by the package
 
 ### ~~Step 7: migrate benchmarks to mitata (1 file)~~ (completed)
 
@@ -270,22 +278,22 @@ and hand-rolled `measure()` / `measureAsync()`. Benchmarks grouped with
 
 ### Step 8: verify
 
-1.  Run `mise run buildAndTest` to confirm all unit tests still pass.
-2.  Run the matrix to confirm container test migration:
-    `mise run //packages/dev-script/file-enforcer:test:container`
-3.  Run the benchmark to confirm mitata integration:
-    `mise run //packages/test-fixture/file-enforcer-perf:perf:micro`
+1. Run `mise run buildAndTest` to confirm all unit tests still pass.
+2. Run the matrix to confirm container test migration:
+   `mise run //packages/dev-script/file-enforcer:test:container`
+3. Run the benchmark to confirm mitata integration:
+   `mise run //packages/test-fixture/file-enforcer-perf:perf:micro`
 
 ## Dependencies (remaining)
 
-| Dependency | Source | Purpose | Consumer |
-|---|---|---|---|
-| `mitata` | npm | Micro-benchmark harness (12KB, zero deps) | file-enforcer-perf devDependency |
-| `@mitata/counters` | npm | Optional hardware perf counters (Zig NAPI) | file-enforcer-perf devDependency |
-| `nano-spawn` | npm | Podman process execution | module-matrix dependency |
-| `find-up` | npm | Monorepo root detection | module-matrix dependency |
-| `@monochromatic-dev/module-test` | workspace | describe/it for execution and reporting | module-matrix dependency |
-| `@monochromatic-dev/module-es` | workspace | Tagged logger | module-matrix dependency |
+| Dependency                       | Source    | Purpose                                    | Consumer                         |
+| -------------------------------- | --------- | ------------------------------------------ | -------------------------------- |
+| `mitata`                         | npm       | Micro-benchmark harness (12KB, zero deps)  | file-enforcer-perf devDependency |
+| `@mitata/counters`               | npm       | Optional hardware perf counters (Zig NAPI) | file-enforcer-perf devDependency |
+| `nano-spawn`                     | npm       | Podman process execution                   | module-matrix dependency         |
+| `find-up`                        | npm       | Monorepo root detection                    | module-matrix dependency         |
+| `@monochromatic-dev/module-test` | workspace | describe/it for execution and reporting    | module-matrix dependency         |
+| `@monochromatic-dev/module-es`   | workspace | Tagged logger                              | module-matrix dependency         |
 
 ## Remaining files affected
 

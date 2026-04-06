@@ -47,7 +47,10 @@ export const requireReturns: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function requireReturnsHandler(node, result,): void {
+      function requireReturnsHandler(
+        node,
+        result,
+      ): void {
         if (!functionReturnsValue(node,))
           return;
         if (result.docComment.returnsBlock === undefined) {
@@ -82,7 +85,10 @@ export const requireReturnsCheck: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function requireReturnsCheckHandler(node, result,): void {
+      function requireReturnsCheckHandler(
+        node,
+        result,
+      ): void {
         if (!functionReturnsValue(node,)
           && result.docComment.returnsBlock !== undefined)
         {

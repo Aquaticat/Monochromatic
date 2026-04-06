@@ -16,6 +16,12 @@
 import { matrix, } from '@monochromatic-dev/module-matrix';
 
 await matrix({
-  os: ['container:ubuntu', 'container:fedora',],
-  user: ['root', 'user',],
+  os: [
+    'container:ubuntu',
+    'container:fedora',
+  ],
+  user: [
+    'root',
+    'user',
+  ],
 },);

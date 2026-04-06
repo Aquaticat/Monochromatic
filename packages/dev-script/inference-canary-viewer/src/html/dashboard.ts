@@ -18,6 +18,12 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * @param overlaysHtml - all run detail overlays (rendered outside the views)
  *
  * @returns dashboard HTML string
+ *
+ * @example
+ * ```ts
+ * const html = renderDashboard({ overviewHtml, byModelHtml, byProbeHtml, overlaysHtml });
+ * // '<nav class="view-switcher">...<\/nav>\n...'
+ * ```
  */
 export function renderDashboard(
   {

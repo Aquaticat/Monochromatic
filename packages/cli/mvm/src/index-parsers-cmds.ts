@@ -75,11 +75,24 @@ const commandToken = string({ metavar: 'COMMAND', },);
 export const createCmd: SubcommandParser = command(
   'create',
   map(
-    object({ name: argument(name,), from: fromOption, image: imageOption, },),
+    object({
+      name: argument(name,),
+      from: fromOption,
+      image: imageOption,
+    },),
     function toCreateArgs(
-      v: { name: string; from: string | undefined; image: string | undefined; },
+      v: {
+        name: string;
+        from: string | undefined;
+        image: string | undefined;
+      },
     ): MvmArgs {
-      return { cmd: 'create', from: v.from, image: v.image, name: v.name, };
+      return {
+        cmd: 'create',
+        from: v.from,
+        image: v.image,
+        name: v.name,
+      };
     },
   ),
   { brief: message`Create and start a new VM`, },
@@ -91,7 +104,10 @@ export const shellCmd: SubcommandParser = command(
   map(
     object({ name: argument(name,), },),
     function toShellArgs(v: { name: string; },): MvmArgs {
-      return { cmd: 'shell', ...v, };
+      return {
+        cmd: 'shell',
+        ...v,
+      };
     },
   ),
   { brief: message`Open a serial console to a running VM`, },
@@ -172,9 +188,19 @@ export const rmCmd: SubcommandParser = command(
 export const execCmd: SubcommandParser = command(
   'exec',
   map(
-    object({ name: argument(name,), args: multiple(argument(commandToken,),), },),
-    function toExecArgs(v: { name: string; args: readonly string[]; },): MvmArgs {
-      return { cmd: 'exec', name: v.name, command: v.args.join(' ',), };
+    object({
+      name: argument(name,),
+      args: multiple(argument(commandToken,),),
+    },),
+    function toExecArgs(v: {
+      name: string;
+      args: readonly string[];
+    },): MvmArgs {
+      return {
+        cmd: 'exec',
+        name: v.name,
+        command: v.args.join(' ',),
+      };
     },
   ),
   { brief: message`Run a command inside a named VM via guest agent`, },
@@ -189,9 +215,16 @@ export const runCmd: SubcommandParser = command(
       args: multiple(argument(commandToken,),),
     },),
     function toRunArgs(
-      v: { from: string | undefined; args: readonly string[]; },
+      v: {
+        from: string | undefined;
+        args: readonly string[];
+      },
     ): MvmArgs {
-      return { cmd: 'run', command: v.args.join(' ',), from: v.from, };
+      return {
+        cmd: 'run',
+        command: v.args.join(' ',),
+        from: v.from,
+      };
     },
   ),
   { brief: message`Create an ephemeral VM, run a command, then destroy it`, },
@@ -222,7 +255,11 @@ export const pushCmd: SubcommandParser = command(
       guestPath: argument(path,),
     },),
     function toPushArgs(
-      v: { name: string; hostPath: string; guestPath: string; },
+      v: {
+        name: string;
+        hostPath: string;
+        guestPath: string;
+      },
     ): MvmArgs {
       return {
         cmd: 'push',
@@ -245,7 +282,11 @@ export const pullCmd: SubcommandParser = command(
       hostPath: argument(path,),
     },),
     function toPullArgs(
-      v: { name: string; guestPath: string; hostPath: string; },
+      v: {
+        name: string;
+        guestPath: string;
+        hostPath: string;
+      },
     ): MvmArgs {
       return {
         cmd: 'pull',

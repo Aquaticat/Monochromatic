@@ -67,8 +67,15 @@ export type MvmArgs =
 
 //endregion Result types
 
-// oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
-/** Combined top-level parser across all subcommands */
+/* oxlint-disable typescript-eslint/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown */
+/**
+ * Combined top-level parser across all subcommands.
+ *
+ * @example
+ * ```ts
+ * const result = parser.parse(process.argv.slice(2,),);
+ * ```
+ */
 export const parser: Parser<'sync', MvmArgs, any> = or(
   createCmd,
   shellCmd,
@@ -82,3 +89,4 @@ export const parser: Parser<'sync', MvmArgs, any> = or(
   pushCmd,
   pullCmd,
 );
+/* oxlint-enable typescript-eslint/no-explicit-any */

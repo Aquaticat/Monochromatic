@@ -45,12 +45,12 @@ With SSR off the table, Vapor's beta status becomes less concerning -- client-on
 
 Checked Done's spec against what frameworks provide:
 
-| Framework feature | Done's actual need |
-|---|---|
-| **Reactivity** | One `setInterval(1000)` for timer display. Everything else is user-initiated (tap -> fetch -> re-render). |
-| **Routing** | 5 screens. A `switch` on `pathname` covers it. Task details and search are overlays, may not even need routes. |
+| Framework feature     | Done's actual need                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Reactivity**        | One `setInterval(1000)` for timer display. Everything else is user-initiated (tap -> fetch -> re-render).                             |
+| **Routing**           | 5 screens. A `switch` on `pathname` covers it. Task details and search are overlays, may not even need routes.                        |
 | **Client-side state** | All state lives in server SQLite. Client state is: one timer tick number, "is section collapsed" booleans, "is overlay open" boolean. |
-| **Component model** | 5 screens, maybe 3-4 reusable elements (task card, chip editor, collapsible section, FAB). |
+| **Component model**   | 5 screens, maybe 3-4 reusable elements (task card, chip editor, collapsible section, FAB).                                            |
 
 No reactive state graph, no complex routing, no client-side store. A framework solves problems Done doesn't have.
 

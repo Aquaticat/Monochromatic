@@ -120,7 +120,8 @@ export function buildPerLineFix({
 
   /** Scan forward from last item to find the closing bracket. */
   let closePos = -1;
-  for (let i = lastRange[1]; i < sourceText.length; i++) {
+  const [, lastRangeEnd,] = lastRange;
+  for (let i = lastRangeEnd; i < sourceText.length; i++) {
     if (sourceText.charAt(i,) === bracketPair.close) {
       closePos = i;
       break;
@@ -146,7 +147,7 @@ export function buildPerLineFix({
     lineStart,
     openPos,
   );
-  const baseIndent = linePrefix.match(/^(\s*)/,)?.[1] ?? '';
+  const baseIndent = /^(\s*)/.exec(linePrefix,)?.[1] ?? '';
   const childIndent = `${baseIndent}  `;
 
   /** Extract each item's source text, stripping any existing trailing delimiter. */

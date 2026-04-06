@@ -138,7 +138,10 @@ export function domainXml(
       children: [
         h({
           tag: 'driver',
-          attrs: { name: 'qemu', type: 'qcow2', },
+          attrs: {
+            name: 'qemu',
+            type: 'qcow2',
+          },
         },),
         h({
           tag: 'source',
@@ -146,7 +149,10 @@ export function domainXml(
         },),
         h({
           tag: 'target',
-          attrs: { dev: diskDev, bus: diskBus, },
+          attrs: {
+            dev: diskDev,
+            bus: diskBus,
+          },
         },),
       ],
     },),
@@ -164,7 +170,10 @@ export function domainXml(
         children: [
           h({
             tag: 'driver',
-            attrs: { name: 'qemu', type: 'raw', },
+            attrs: {
+              name: 'qemu',
+              type: 'raw',
+            },
           },),
           h({
             tag: 'source',
@@ -172,7 +181,10 @@ export function domainXml(
           },),
           h({
             tag: 'target',
-            attrs: { dev: 'sdb', bus: 'sata', },
+            attrs: {
+              dev: 'sdb',
+              bus: 'sata',
+            },
           },),
           h({ tag: 'readonly', },),
         ],

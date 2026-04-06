@@ -29,6 +29,7 @@ const pnpmArgs = process.argv.slice(2,);
  * Filters output and writes to the given stream if non-empty after filtering.
  *
  * @param raw - raw pnpm output
+ *
  * @param stream - target writable stream
  *
  * @example
@@ -36,21 +37,31 @@ const pnpmArgs = process.argv.slice(2,);
  * writeFiltered('some output\n', process.stdout);
  * ```
  */
-function writeFiltered(raw: string, stream: NodeJS.WriteStream,): void {
-  if (raw.length === 0) {
+function writeFiltered(
+  raw: string,
+  stream: NodeJS.WriteStream,
+): void {
+  if (raw.length === 0)
     return;
-  }
   const filtered = filterPnpmOutput(raw,);
-  if (filtered.length > 0) {
+  if (filtered.length > 0)
     stream.write(filtered,);
-  }
 }
 
 try {
-  const result = await spawn('pnpm', [...pnpmArgs,],);
+  const result = await spawn(
+    'pnpm',
+    [...pnpmArgs,],
+  );
 
-  writeFiltered(result.stdout, process.stdout,);
-  writeFiltered(result.stderr, process.stderr,);
+  writeFiltered(
+    result.stdout,
+    process.stdout,
+  );
+  writeFiltered(
+    result.stderr,
+    process.stderr,
+  );
 }
 catch (error) {
   if (error !== null && typeof error === 'object' && 'exitCode' in error) {
@@ -62,8 +73,14 @@ catch (error) {
       signalName?: string;
     };
 
-    writeFiltered(subprocessError.stdout ?? '', process.stdout,);
-    writeFiltered(subprocessError.stderr ?? '', process.stderr,);
+    writeFiltered(
+      subprocessError.stdout ?? '',
+      process.stdout,
+    );
+    writeFiltered(
+      subprocessError.stderr ?? '',
+      process.stderr,
+    );
 
     process.exitCode = subprocessError.exitCode ?? 1;
 

@@ -95,10 +95,22 @@ export async function ensureFavicons(
   const manifest = JSON.stringify(
     {
       icons: [
-        { src: '/icon-192.png', type: 'image/png', sizes: '192x192', },
-        { src: '/icon-512.png', type: 'image/png', sizes: '512x512', },
-        { src: '/icon-mask.png', type: 'image/png', sizes: '512x512',
-          purpose: 'maskable', },
+        {
+          src: '/icon-192.png',
+          type: 'image/png',
+          sizes: '192x192',
+        },
+        {
+          src: '/icon-512.png',
+          type: 'image/png',
+          sizes: '512x512',
+        },
+        {
+          src: '/icon-mask.png',
+          type: 'image/png',
+          sizes: '512x512',
+          purpose: 'maskable',
+        },
       ],
     },
     undefined,
@@ -107,27 +119,45 @@ export async function ensureFavicons(
 
   await Promise.all([
     writeFile(
-      join(PUBLIC, 'favicon.ico',),
+      join(
+        PUBLIC,
+        'favicon.ico',
+      ),
       createIco({ pngData: png32, },),
     ),
     writeFile(
-      join(PUBLIC, 'apple-touch-icon.png',),
+      join(
+        PUBLIC,
+        'apple-touch-icon.png',
+      ),
       appleTouchIcon,
     ),
     writeFile(
-      join(PUBLIC, 'icon-192.png',),
+      join(
+        PUBLIC,
+        'icon-192.png',
+      ),
       png192,
     ),
     writeFile(
-      join(PUBLIC, 'icon-512.png',),
+      join(
+        PUBLIC,
+        'icon-512.png',
+      ),
       png512,
     ),
     writeFile(
-      join(PUBLIC, 'icon-mask.png',),
+      join(
+        PUBLIC,
+        'icon-mask.png',
+      ),
       maskableIcon,
     ),
     writeFile(
-      join(PUBLIC, 'manifest.webmanifest',),
+      join(
+        PUBLIC,
+        'manifest.webmanifest',
+      ),
       manifest,
       'utf8',
     ),

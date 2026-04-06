@@ -42,6 +42,11 @@ const priorities = new Set<string>([
  * @param req - Incoming request with JSON body
  *
  * @returns 201 with the created task, or 400/500 on validation/server error
+ *
+ * @example
+ * ```ts
+ * const response = await handleCreateTask(event.req);
+ * ```
  */
 export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
@@ -96,6 +101,11 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
  * @param id - Task UUID from the route parameter
  *
  * @returns 200 with updated task, 400 on bad payload, 404 when missing
+ *
+ * @example
+ * ```ts
+ * const response = await handleUpdateTask(event.req, 'uuid-123');
+ * ```
  */
 export async function handleUpdateTask(
   req: Request,
@@ -137,6 +147,11 @@ export async function handleUpdateTask(
  * @param id - Task UUID from the route parameter
  *
  * @returns 200 on success, 404 when the task does not exist
+ *
+ * @example
+ * ```ts
+ * const response = await handleDeleteTask('uuid-123');
+ * ```
  */
 export async function handleDeleteTask(id: string,): Promise<Response> {
   const deleted = await deleteTask(id,);

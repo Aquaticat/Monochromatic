@@ -136,7 +136,7 @@ export function isNodeModulesDiagnostic(line: string,): boolean {
  * ```
  */
 export function isContinuationLine(line: string,): boolean {
-  return line.length > 0 && (line[0] === ' ' || line[0] === '\t');
+  return line.length > 0 && (line.startsWith(' ',) || line.startsWith('\t',));
 }
 
 //endregion Diagnostic line detection

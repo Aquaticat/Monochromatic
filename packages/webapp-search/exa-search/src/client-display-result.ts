@@ -24,6 +24,11 @@ type SearchContents = {
  * @param result - Exa search result with text, summary, and highlights content
  *
  * @param resultIndex - Zero-based index of this result in the search results array
+ *
+ * @example
+ * ```ts
+ * displayResult(document.querySelectorAll('.result'), searchResult, 0);
+ * ```
  */
 export function displayResult(
   resultArticles: HTMLCollection,

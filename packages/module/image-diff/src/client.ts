@@ -109,6 +109,12 @@ export async function embedBatch(
  * @param config - client configuration (provider, API key, model)
  *
  * @returns similarity, distance, and both embedding vectors (no description)
+ *
+ * @example
+ * ```ts
+ * const result = await compareEmbeddings('a.png', 'b.png', { provider: 'voyage' });
+ * // result.similarity, result.distance, result.embeddings
+ * ```
  */
 export async function compareEmbeddings(
   imageA: ImageInput,
@@ -123,7 +129,10 @@ export async function compareEmbeddings(
   rl.debug(`comparing embeddings via ${provider}`,);
 
   const { embeddings, } = await getProvider(provider,).embedBatch(
-    [imageA, imageB,],
+    [
+      imageA,
+      imageB,
+    ],
     config,
   );
   const [embeddingA, embeddingB,] = embeddings;

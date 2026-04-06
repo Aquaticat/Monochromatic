@@ -28,6 +28,11 @@ import { writePage, } from './write-page.ts';
  * @param renderedContent - map of `lang/name` to rendered HTML
  *
  * @param l - parent logger for tagged output
+ *
+ * @example
+ * ```ts
+ * await generatePages({ posts, renderedContent, l: rootLogger });
+ * ```
  */
 export async function generatePages(
   {

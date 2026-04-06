@@ -309,7 +309,7 @@ async function bootHyperv(name: string,): Promise<void> {
  */
 export function parseMemoryToBytes(memory: string,): number {
   /** Regex match for number + unit suffix. */
-  const match = memory.match(/^(\d+)\s*([GM])$/i,);
+  const match = /^(\d+)\s*([GM])$/i.exec(memory,);
   if (match === null) {
     throw new Error(
       `invalid memory format: "${memory}" (expected e.g. "4G" or "2048M")`,

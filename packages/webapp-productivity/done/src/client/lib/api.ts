@@ -19,6 +19,11 @@ const HTTP_NO_CONTENT = 204;
  * @param options - Optional fetch request configuration
  *
  * @returns Parsed JSON response body, or undefined for 204 responses
+ *
+ * @example
+ * ```ts
+ * const task = await api<Task>('/api/tasks/uuid-123');
+ * ```
  */
 export async function api<TResponse = unknown,>(
   path: string,

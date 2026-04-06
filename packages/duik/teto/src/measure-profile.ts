@@ -30,7 +30,14 @@ export type {
 function run(cmd: string,): string {
   return execSync(
     cmd,
-    { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
+    {
+      encoding: 'utf8',
+      stdio: [
+        'pipe',
+        'pipe',
+        'pipe',
+      ],
+    },
   )
     .trim();
 }
@@ -46,6 +53,12 @@ function run(cmd: string,): string {
  * @param tmpDir - temporary directory for intermediate PGM dump
  *
  * @returns object with dimensions and per-row width data
+ *
+ * @example
+ * ```ts
+ * const profile = measureWidthProfile('/tmp/silhouette.png', '/tmp/work');
+ * console.log(profile.imageWidth, profile.imageHeight, profile.rows.length);
+ * ```
  */
 export function measureWidthProfile(
   imagePath: string,

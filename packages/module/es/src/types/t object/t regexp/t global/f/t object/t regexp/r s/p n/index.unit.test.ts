@@ -20,7 +20,7 @@ await describe({
         expect(result.global,).toBe(true,);
         expect(result.source,).toBe('test',);
       },
-    }),
+    },),
 
     it({
       name: 'adds global flag to regexp with existing flags',
@@ -33,7 +33,7 @@ await describe({
         expect(result.ignoreCase,).toBe(true,);
         expect(result.source,).toBe('test',);
       },
-    }),
+    },),
 
     it({
       name: 'preserves global flag if already present',
@@ -45,7 +45,7 @@ await describe({
         expect(result.global,).toBe(true,);
         expect(result.source,).toBe('test',);
       },
-    }),
+    },),
 
     it({
       name: 'preserves global flag with multiple existing flags',
@@ -59,7 +59,7 @@ await describe({
         expect(result.multiline,).toBe(true,);
         expect(result.source,).toBe('test',);
       },
-    }),
+    },),
 
     it({
       name: 'works with complex regex patterns',
@@ -72,7 +72,7 @@ await describe({
         expect(result.test('abc',),).toBe(true,);
         expect(result.test('123',),).toBe(false,);
       },
-    }),
+    },),
 
     it({
       name: 'works with special characters in pattern',
@@ -83,7 +83,7 @@ await describe({
         expect(result.flags,).toBe('g',);
         expect(result.source,).toBe(String.raw`[$()*+.?[\\\]^{|}]`,);
       },
-    }),
+    },),
 
     it({
       name: 'works with unicode characters',
@@ -96,7 +96,7 @@ await describe({
         expect(result.source,).toBe(String.raw`Hello \u4E16\u754C`,);
         expect(result.test('Hello 世界',),).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'works with escaped characters',
@@ -107,7 +107,7 @@ await describe({
         expect(result.flags,).toBe('g',);
         expect(result.source,).toBe(String.raw`\d+\.\d+`,);
       },
-    }),
+    },),
 
     it({
       name: 'returns new RegExp instance',
@@ -118,7 +118,7 @@ await describe({
         expect(result,).not.toBe(original,);
         expect(result,).toBeInstanceOf(RegExp,);
       },
-    }),
+    },),
 
     it({
       name: 'new regexp works with exec for multiple matches',
@@ -138,7 +138,7 @@ await describe({
         expect(matches[1]?.[0],).toBe('world',);
         expect(matches[2]?.[0],).toBe('test',);
       },
-    }),
+    },),
 
     it({
       name: 'new regexp works with matchAll',
@@ -154,7 +154,7 @@ await describe({
         expect(matches[1]?.[0],).toBe('456',);
         expect(matches[2]?.[0],).toBe('789',);
       },
-    }),
+    },),
 
     it({
       name: 'with dotAll flag (s)',
@@ -165,7 +165,7 @@ await describe({
         expect(result.flags,).toBe('gs',);
         expect(result.dotAll,).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'with sticky flag (y)',
@@ -176,7 +176,7 @@ await describe({
         expect(result.flags,).toBe('gy',);
         expect(result.sticky,).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'with unicode flag (u)',
@@ -187,7 +187,7 @@ await describe({
         expect(result.flags,).toBe('gu',);
         expect(result.unicode,).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'empty regex gets global flag',
@@ -198,7 +198,7 @@ await describe({
         expect(result.flags,).toBe('g',);
         expect(result.source,).toBe('(?:)',);
       },
-    }),
+    },),
 
     it({
       name: 'works with alternation patterns',
@@ -215,7 +215,7 @@ await describe({
         result.lastIndex = 0;
         expect(result.test('fish',),).toBe(false,);
       },
-    }),
+    },),
 
     it({
       name: 'works with capturing groups',
@@ -230,7 +230,7 @@ await describe({
         expect(match?.[2],).toBe('12',);
         expect(match?.[3],).toBe('25',);
       },
-    }),
+    },),
 
     it({
       name: 'works with lookaheads',
@@ -241,7 +241,7 @@ await describe({
         expect(result.flags,).toBe('g',);
         expect(result.source,).toBe(String.raw`\w+(?=\s)`,);
       },
-    }),
+    },),
 
     it({
       name: 'works with lookbehinds',
@@ -252,6 +252,6 @@ await describe({
         expect(result.flags,).toBe('g',);
         expect(result.source,).toBe(String.raw`(?<=\s)\w+`,);
       },
-    }),
+    },),
   ],
 },);

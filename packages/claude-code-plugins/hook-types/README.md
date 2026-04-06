@@ -6,16 +6,19 @@ sourced from the [official hooks reference](https://docs.anthropic.com/en/docs/c
 ## Usage
 
 ```ts
-import type { HookInput, PreToolUseInput } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type {
+  HookInput,
+  PreToolUseInput,
+} from '@monochromatic-dev/claude-code-plugins-hook-types';
 
-const event = JSON.parse(raw) as HookInput;
+const event = JSON.parse(raw,) as HookInput;
 
 switch (event.hook_event_name) {
   case 'PreToolUse':
-    console.log(event.tool_name, event.tool_input);
+    console.log(event.tool_name, event.tool_input,);
     break;
   case 'Stop':
-    console.log(event.stop_hook_active);
+    console.log(event.stop_hook_active,);
     break;
 }
 ```

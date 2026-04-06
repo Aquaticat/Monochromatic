@@ -22,7 +22,7 @@ import type {
 export { PACKAGE_DIR, } from './paths.ts';
 
 /** Root directory for all lint artifacts, gitignored via the package .gitignore. */
-export const LINT_DIR = join(
+export const LINT_DIR: string = join(
   PACKAGE_DIR,
   'src',
   'canary-lint',
@@ -171,8 +171,15 @@ export async function writeLintFile(
       'utf8',
     ),
     writeFile(
-      join(lintDir, 'meta.json',),
-      JSON.stringify(meta, null, 2,),
+      join(
+        lintDir,
+        'meta.json',
+      ),
+      JSON.stringify(
+        meta,
+        null,
+        2,
+      ),
       'utf8',
     ),
   ],);
@@ -212,12 +219,22 @@ export async function writeEnrichedArtifact(
   );
   await Promise.all([
     writeFile(
-      join(dir, 'meta.json',),
-      JSON.stringify(enriched, null, 2,),
+      join(
+        dir,
+        'meta.json',
+      ),
+      JSON.stringify(
+        enriched,
+        null,
+        2,
+      ),
       'utf8',
     ),
     writeFile(
-      join(dir, 'response.txt',),
+      join(
+        dir,
+        'response.txt',
+      ),
       rawResponse,
       'utf8',
     ),
@@ -249,8 +266,15 @@ export async function writeFailureArtifact(meta: FailureArtifactMeta,): Promise<
     { recursive: true, },
   );
   await writeFile(
-    join(dir, 'meta.json',),
-    JSON.stringify(meta, null, 2,),
+    join(
+      dir,
+      'meta.json',
+    ),
+    JSON.stringify(
+      meta,
+      null,
+      2,
+    ),
     'utf8',
   );
 }

@@ -21,7 +21,14 @@ function emit(
   // Fire-and-forget: ignore spawn errors to avoid blocking the main flow
   void spawn(
     'logger',
-    ['-t', 'hall-monitor', '-p', `user.${priority}`, '--', message,],
+    [
+      '-t',
+      'hall-monitor',
+      '-p',
+      `user.${priority}`,
+      '--',
+      message,
+    ],
   );
 }
 
@@ -86,13 +93,13 @@ function logError(msg: string,): void {
  */
 export const log: {
   /** Log at debug priority. */
-  debug: (msg: string) => void;
+  debug: (msg: string,) => void;
   /** Log at info priority. */
-  info: (msg: string) => void;
+  info: (msg: string,) => void;
   /** Log at warning priority. */
-  warn: (msg: string) => void;
+  warn: (msg: string,) => void;
   /** Log at err priority. */
-  error: (msg: string) => void;
+  error: (msg: string,) => void;
 } = {
   debug: logDebug,
   info: logInfo,

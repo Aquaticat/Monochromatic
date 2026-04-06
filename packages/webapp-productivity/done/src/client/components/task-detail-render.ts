@@ -5,9 +5,7 @@
  * description textarea, attach/photo actions, pills container, and
  * action button row (delegated to task-detail-render-actions.ts).
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 import {
   attachActionHandler,
@@ -36,6 +34,11 @@ export type RenderResult = {
  * @param host - Host element for dispatching custom events
  *
  * @returns References to title and description inputs
+ *
+ * @example
+ * ```ts
+ * const { titleInput } = renderTaskDetail({ shadow, task, mode: 'edit', host: this });
+ * ```
  */
 export function renderTaskDetail(
   {

@@ -151,6 +151,11 @@ function transformPathD(
  * @param factor - horizontal narrowing factor
  *
  * @returns transformed SVG content
+ *
+ * @example
+ * ```ts
+ * const narrowed = transformSvg(svgContent, 0.85);
+ * ```
  */
 export function transformSvg(
   svgContent: string,
@@ -161,32 +166,64 @@ export function transformSvg(
   /** Transform path d attributes. */
   result = result.replaceAll(
     /\bd="([^"]+)"/g,
-    function transformD(_match, d: string,) {
-      return `d="${transformPathD(d, factor,)}"`;
+    function transformD(
+      _match,
+      d: string,
+    ) {
+      return `d="${
+        transformPathD(
+          d,
+          factor,
+        )
+      }"`;
     },
   );
 
   /** Transform x1 attributes (line elements). */
   result = result.replaceAll(
     /\bx1="([-\d.]+)"/g,
-    function transformX1(_match, v: string,) {
-      return `x1="${narrowX(Number.parseFloat(v,), factor,)}"`;
+    function transformX1(
+      _match,
+      v: string,
+    ) {
+      return `x1="${
+        narrowX(
+          Number.parseFloat(v,),
+          factor,
+        )
+      }"`;
     },
   );
 
   /** Transform x2 attributes. */
   result = result.replaceAll(
     /\bx2="([-\d.]+)"/g,
-    function transformX2(_match, v: string,) {
-      return `x2="${narrowX(Number.parseFloat(v,), factor,)}"`;
+    function transformX2(
+      _match,
+      v: string,
+    ) {
+      return `x2="${
+        narrowX(
+          Number.parseFloat(v,),
+          factor,
+        )
+      }"`;
     },
   );
 
   /** Transform cx attributes (circle elements). */
   result = result.replaceAll(
     /\bcx="([-\d.]+)"/g,
-    function transformCx(_match, v: string,) {
-      return `cx="${narrowX(Number.parseFloat(v,), factor,)}"`;
+    function transformCx(
+      _match,
+      v: string,
+    ) {
+      return `cx="${
+        narrowX(
+          Number.parseFloat(v,),
+          factor,
+        )
+      }"`;
     },
   );
 
@@ -197,8 +234,16 @@ export function transformSvg(
    */
   result = result.replaceAll(
     /\bx="([-\d.]+)"/g,
-    function transformX(_match, v: string,) {
-      return `x="${narrowX(Number.parseFloat(v,), factor,)}"`;
+    function transformX(
+      _match,
+      v: string,
+    ) {
+      return `x="${
+        narrowX(
+          Number.parseFloat(v,),
+          factor,
+        )
+      }"`;
     },
   );
 

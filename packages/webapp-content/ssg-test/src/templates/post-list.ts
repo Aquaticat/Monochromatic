@@ -14,6 +14,11 @@ import { postCard, } from './post-card.ts';
  * @param posts - posts to display
  *
  * @returns HTML string for the post list
+ *
+ * @example
+ * ```ts
+ * const html = postList(posts);
+ * ```
  */
 export function postList(posts: readonly Post[],): string {
   return h({

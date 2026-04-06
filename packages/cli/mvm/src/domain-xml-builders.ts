@@ -39,7 +39,10 @@ export function hypervFeatures(): string {
       },),
       h({
         tag: 'spinlocks',
-        attrs: { state: 'on', retries: '8191', },
+        attrs: {
+          state: 'on',
+          retries: '8191',
+        },
       },),
     ],
   },);
@@ -72,11 +75,17 @@ export function clockElement(osFamily: OsFamily,): string {
       children: [
         h({
           tag: 'timer',
-          attrs: { name: 'hypervclock', present: 'yes', },
+          attrs: {
+            name: 'hypervclock',
+            present: 'yes',
+          },
         },),
         h({
           tag: 'timer',
-          attrs: { name: 'hpet', present: 'no', },
+          attrs: {
+            name: 'hpet',
+            present: 'no',
+          },
         },),
       ],
     },);
@@ -133,7 +142,10 @@ export function ideCdromDevices(
       children: [
         h({
           tag: 'driver',
-          attrs: { name: 'qemu', type: 'raw', },
+          attrs: {
+            name: 'qemu',
+            type: 'raw',
+          },
         },),
         h({
           tag: 'source',
@@ -141,7 +153,10 @@ export function ideCdromDevices(
         },),
         h({
           tag: 'target',
-          attrs: { dev: devName, bus: 'ide', },
+          attrs: {
+            dev: devName,
+            bus: 'ide',
+          },
         },),
         h({ tag: 'readonly', },),
       ],
@@ -188,7 +203,10 @@ export function commonDevices(osFamily: OsFamily,): readonly string[] {
       children: [
         h({
           tag: 'target',
-          attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0', },
+          attrs: {
+            type: 'virtio',
+            name: 'org.qemu.guest_agent.0',
+          },
         },),
       ],
     },),
@@ -209,7 +227,10 @@ export function commonDevices(osFamily: OsFamily,): readonly string[] {
       children: [
         h({
           tag: 'target',
-          attrs: { type: 'serial', port: '0', },
+          attrs: {
+            type: 'serial',
+            port: '0',
+          },
         },),
       ],
     },),
@@ -224,7 +245,10 @@ export function commonDevices(osFamily: OsFamily,): readonly string[] {
         children: [
           h({
             tag: 'model',
-            attrs: { type: 'vga', vram: '16384', },
+            attrs: {
+              type: 'vga',
+              vram: '16384',
+            },
           },),
         ],
       },),

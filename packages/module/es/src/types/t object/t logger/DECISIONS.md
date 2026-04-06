@@ -32,7 +32,7 @@ Generic stringify produces output that is either too verbose or too lossy;
 callers end up formatting the string themselves anyway.
 
 **Template literals cover the common case.**
-`` l.info(`status ${code} for ${url}`) `` gives the caller full control
+``l.info(`status ${code} for ${url}`)`` gives the caller full control
 over formatting without any serialization machinery in the logger.
 
 **String-only keeps the type surface clean.**

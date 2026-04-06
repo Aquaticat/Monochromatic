@@ -48,3 +48,34 @@ export function sendJson(
 ): void {
   peer.send(JSON.stringify(message,),);
 }
+
+/**
+ * Sends an empty result when no LSP manager is available.
+ * Avoids repeating the null-check + empty-response pattern for each feature.
+ *
+ * @param peer - WebSocket peer to reply to
+ *
+ * @param message - pre-built empty result message
+ *
+ * @returns always true (message handled)
+ *
+ * @example
+ * ```ts
+ * return replyEmpty({ peer, message: { type: 'hoverResult', id: '1', contents: '' }, });
+ * ```
+ */
+export function replyEmpty(
+  {
+    peer,
+    message,
+  }: {
+    peer: Peer;
+    message: Record<string, unknown>;
+  },
+): true {
+  sendJson({
+    peer,
+    message,
+  },);
+  return true;
+}

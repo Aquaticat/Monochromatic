@@ -5,6 +5,7 @@
 ### Branch Strategy
 
 **Branch Structure**:
+
 - `main` - Protected production-ready branch
   - All code in main should be stable and deployable
   - Direct pushes are prevented via branch protection rules
@@ -19,6 +20,7 @@
 #### Working on Dev Branch
 
 **Standard workflow**:
+
 ```bash
 # Switch to dev branch
 git checkout dev
@@ -37,6 +39,7 @@ git push origin dev
 #### Creating Pull Requests to Main
 
 **When ready to release changes to main**:
+
 ```bash
 # Ensure dev is up to date
 git checkout dev
@@ -52,6 +55,7 @@ gh pr create --base main --head dev --title "Release: description" --body "Chang
 #### Feature Branch Workflow (Optional)
 
 For larger features or experimental work:
+
 ```bash
 # Create feature branch from dev
 git checkout dev
@@ -72,6 +76,7 @@ gh pr create --base dev --head feature/my-feature --title "feat: my feature" --b
 ### Branch Protection Configuration
 
 **Main branch protection rules** (configured in GitHub web UI):
+
 1. Navigate to: Repository Settings → Branches
 2. Add branch protection rule for `main`
 3. Enable: "Require a pull request before merging"
@@ -86,6 +91,7 @@ gh pr create --base dev --head feature/my-feature --title "feat: my feature" --b
 ### Initial Setup Commands
 
 **Create dev branch** (one-time setup):
+
 ```bash
 # Create dev branch from current main
 git checkout main
@@ -95,6 +101,7 @@ git push -u origin dev
 ```
 
 **Switch default branch** (optional, via GitHub web UI):
+
 1. Go to: Repository Settings → General → Default branch
 2. Change from `main` to `dev`
 3. This makes `dev` the default for new clones and PRs
@@ -102,7 +109,9 @@ git push -u origin dev
 ### Common Scenarios
 
 #### Hotfix to Main
+
 For critical production fixes:
+
 ```bash
 # Create hotfix branch from main
 git checkout main
@@ -125,7 +134,9 @@ git push origin dev
 ```
 
 #### Sync Dev with Main
+
 If main has changes that dev needs:
+
 ```bash
 git checkout dev
 git pull origin dev
@@ -136,15 +147,18 @@ git push origin dev
 ### Troubleshooting
 
 **Cannot push to main**:
-```
+
+```bash
 remote: error: GH006: Protected branch update failed
 ```
+
 This is expected. Create a PR instead of pushing directly.
 
 **PR shows too many commits**:
 Ensure you're comparing the right branches (dev → main, not feature → main).
 
 **Merge conflicts**:
+
 ```bash
 # Pull latest from both branches
 git checkout dev
@@ -160,6 +174,7 @@ git push origin dev
 ## IDE and Editor Configuration
 
 ### IDE Integration Improvements
+
 1. **Set up IDE integration**:
    - Configure format-on-save for all developers
    - Ensure TypeScript language server is properly configured
@@ -170,11 +185,13 @@ git push origin dev
 ### Performance Monitoring
 
 #### File Operation Performance
+
 - Monitor file watching performance
 - Benchmark development server startup times
 - Track hot reload performance
 
 #### Development Server Optimization
+
 - Optimize Vite development server configuration
 - Configure efficient file watching patterns
 - Set up proper caching strategies
@@ -183,13 +200,16 @@ git push origin dev
 ### Environment Validation
 
 #### Setup Validation Scripts
+
 - **validateSetup task**: Successfully implemented to help diagnose environment issues
 - **Validation scripts**: checkTools, checkDependencies, checkBuild, checkGitHooks are working correctly
 
 #### Fresh Clone Verification
+
 Ensure that fresh clones of the repository work correctly when users follow the setup instructions in README.md.
 
 **Current Setup Instructions Being Tested**:
+
 ```bash
 # Run project setup and build
 mise run prepareAndBuild
@@ -198,11 +218,13 @@ mise run prepareAndBuild
 ### Development Workflow Improvements
 
 #### Hot Reload and File Watching
+
 - Optimize file watching patterns for better performance
 - Configure proper excludes for node_modules and build outputs
 - Monitor CPU usage during development
 
 #### Development Server Configuration
+
 - Configure efficient development server settings
 - Set up proper proxy configurations for API calls
 - Implement efficient static asset serving
@@ -211,10 +233,12 @@ mise run prepareAndBuild
 ## Container and Virtualization
 
 ### Docker Integration
+
 - Configure proper volume mounts for development
 - Optimize container startup times
 
 ### Development Container Configuration
+
 - Consider implementing dev containers for consistent environments
 - Configure proper tool installations in containers
 - Set up efficient bind mounts and caching
@@ -223,12 +247,14 @@ mise run prepareAndBuild
 ## Environment Variables and Configuration
 
 ### Configuration Management
+
 - Implement proper environment variable management
 - Set up development vs production configuration
 - Configure secure handling of sensitive data
 - Implement configuration validation
 
 ### Tool Configuration
+
 - Standardize tool configurations across the team
 - Version control all necessary configuration files
 - Document required environment setup
@@ -237,11 +263,13 @@ mise run prepareAndBuild
 ## Platform-Specific Considerations
 
 ### Linux (Primary Platform)
+
 - Native Fedora development environment
 - Ensure all tooling works with current Fedora packages
 - Monitor performance characteristics on native Linux
 
 ### macOS Support
+
 - Test and document macOS development setup
 - Ensure tool compatibility across platforms
 - Provide platform-specific installation instructions
@@ -249,12 +277,14 @@ mise run prepareAndBuild
 ## Future Enhancements
 
 ### Development Environment Automation
+
 - Create automated environment setup scripts
 - Implement environment consistency checks
 - Automate tool installation and configuration
 - Provide environment troubleshooting guides
 
 ### Performance Monitoring
+
 - Implement development metrics collection
 - Monitor build performance over time
 - Track development server response times

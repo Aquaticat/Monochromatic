@@ -56,7 +56,10 @@ export async function execContainer(
   const result = await execBun(
     CONTAINER_RUNTIME,
     containerArgs,
-    { timeout: timeoutMs, signal, },
+    {
+      timeout: timeoutMs,
+      signal,
+    },
   );
 
   if (result.exitCode !== 0 || result.killed) {

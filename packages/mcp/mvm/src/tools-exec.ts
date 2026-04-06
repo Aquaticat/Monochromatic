@@ -4,7 +4,10 @@
  */
 import { exec, } from '@monochromatic-dev/cli-mvm/exec';
 import { run, } from '@monochromatic-dev/cli-mvm/run';
-import { defineTool, } from '@monochromatic-dev/mcp-stdio';
+import {
+  defineTool,
+  type ToolEntry,
+} from '@monochromatic-dev/mcp-stdio';
 
 import {
   errorResponse,
@@ -15,7 +18,7 @@ import {
 //region Execution tools -- run commands inside VMs
 
 /** MCP tool: execute a command inside a named running VM. */
-export const execTool = defineTool(
+export const execTool: ToolEntry = defineTool(
   'exec_in_vm',
   {
     description:
@@ -23,29 +26,43 @@ export const execTool = defineTool(
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'VM name to execute in', },
-        command: { type: 'string',
+        name: {
+          type: 'string',
+          description: 'VM name to execute in',
+        },
+        command: {
+          type: 'string',
           description:
-            'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)', },
+            'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)',
+        },
       },
-      required: ['name', 'command',],
+      required: [
+        'name',
+        'command',
+      ],
     },
     handler: async function handleExecInVm(args,) {
       const name = String(args.name,);
       const command = String(args.command,);
       try {
-        const result = await exec({ command, name, },);
+        const result = await exec({
+          command,
+          name,
+        },);
         return textResponse(formatExecResult(result,),);
       }
       catch (err: unknown) {
-        return errorResponse('exec_in_vm', err,);
+        return errorResponse(
+          'exec_in_vm',
+          err,
+        );
       }
     },
   },
 );
 
 /** MCP tool: create an ephemeral VM, run a command, then destroy it. */
-export const runTool = defineTool(
+export const runTool: ToolEntry = defineTool(
   'run_in_vm',
   {
     description:
@@ -53,12 +70,16 @@ export const runTool = defineTool(
     inputSchema: {
       type: 'object',
       properties: {
-        command: { type: 'string',
+        command: {
+          type: 'string',
           description:
-            'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)', },
-        from: { type: 'string',
+            'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)',
+        },
+        from: {
+          type: 'string',
           description:
-            'Clone from this existing VM name instead of creating fresh. Use list_vms to see available names (e.g. "win-01", not "windows").', },
+            'Clone from this existing VM name instead of creating fresh. Use list_vms to see available names (e.g. "win-01", not "windows").',
+        },
       },
       required: ['command',],
     },
@@ -66,11 +87,17 @@ export const runTool = defineTool(
       const command = String(args.command,);
       const from = typeof args.from === 'string' ? args.from : undefined;
       try {
-        const result = await run({ command, from, },);
+        const result = await run({
+          command,
+          from,
+        },);
         return textResponse(formatExecResult(result,),);
       }
       catch (err: unknown) {
-        return errorResponse('run_in_vm', err,);
+        return errorResponse(
+          'run_in_vm',
+          err,
+        );
       }
     },
   },

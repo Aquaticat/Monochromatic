@@ -115,7 +115,7 @@ export async function cycle(): Promise<void> {
     await stopLlama();
 
     const verdict = parseVerdict(result,);
-    /* oxlint-disable-next-line no-magic-numbers -- sliding window indices 1..4 */
+    /* oxlint-disable no-magic-numbers -- sliding window indices 1..4 */
     decisions = [
       decisions[1],
       decisions[2],
@@ -123,6 +123,7 @@ export async function cycle(): Promise<void> {
       decisions[4],
       verdict,
     ];
+    /* oxlint-enable no-magic-numbers */
     const streakCount = decisions
       .filter(function checkUnproductive(d,) {
         return isUnproductive(d,);

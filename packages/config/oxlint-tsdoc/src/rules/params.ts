@@ -60,13 +60,19 @@ export const checkParamNames: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function checkParamNamesHandler(node, result,): void {
+      function checkParamNamesHandler(
+        node,
+        result,
+      ): void {
         const paramNames = extractParamNames(node,);
         const docParamNames = extractDocParamNames(result.docComment,);
         const destructuredNames = extractDestructuredParamNames(node,);
 
         // Check each documented param exists in the function signature
-        docParamNames.forEach(function checkDocParam(docName, index,): void {
+        docParamNames.forEach(function checkDocParam(
+          docName,
+          index,
+        ): void {
           // Allow @param tags that match destructured property names
           if (destructuredNames.has(docName,))
             return;
@@ -92,7 +98,10 @@ export const checkParamNames: CreateOnceRule = {
             context.report({
               node: result.comment,
               messageId: 'mismatch',
-              data: { docName, paramName: correspondingParam, },
+              data: {
+                docName,
+                paramName: correspondingParam,
+              },
             },);
           }
         },);
@@ -132,7 +141,10 @@ export const requireParam: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function requireParamHandler(node, result,): void {
+      function requireParamHandler(
+        node,
+        result,
+      ): void {
         const paramNames = extractParamNames(node,);
         const docParamNames = new Set(extractDocParamNames(result.docComment,),);
 

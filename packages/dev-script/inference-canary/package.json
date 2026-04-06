@@ -22,5 +22,6 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/dev-script/inference-canary"
   },
+  "private": true,
   "sideEffects": true
 }

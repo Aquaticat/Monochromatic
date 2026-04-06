@@ -156,23 +156,23 @@ await describe({
             const diagnostics = await lint('valid/already-per-line.ts',);
             expect(diagnostics,).toEqual([],);
           },
-        }),
+        },),
         it({
           name: 'single-item constructs produce no violations',
           fn: async () => {
             const diagnostics = await lint('valid/single-item.ts',);
             expect(diagnostics,).toEqual([],);
           },
-        }),
+        },),
         it({
           name: 'empty constructs produce no violations',
           fn: async () => {
             const diagnostics = await lint('valid/empty-constructs.ts',);
             expect(diagnostics,).toEqual([],);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion Valid fixtures
 
@@ -188,9 +188,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(param-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'argument-per-line',
       children: [
@@ -201,9 +201,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(argument-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'array-element-per-line',
       children: [
@@ -214,9 +214,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(array-element-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'object-property-per-line',
       children: [
@@ -227,9 +227,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(object-property-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'import-per-line',
       children: [
@@ -240,9 +240,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(import-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'export-per-line',
       children: [
@@ -253,9 +253,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(export-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'type-property-per-line',
       children: [
@@ -266,9 +266,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(type-property-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'tuple-per-line',
       children: [
@@ -279,9 +279,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(tuple-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'destructure-per-line',
       children: [
@@ -292,9 +292,9 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(destructure-per-line)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion Invalid fixtures
 
@@ -349,7 +349,7 @@ await describe({
 
             cleanupFile(fixableCopy,);
           },
-        }),
+        },),
         it({
           name: '--fix preserves trailing commas',
           fn: async () => {
@@ -392,7 +392,7 @@ await describe({
 
             cleanupFile(trailingCopy,);
           },
-        }),
+        },),
         it({
           name: '--fix places each item on its own line',
           fn: async () => {
@@ -442,10 +442,9 @@ await describe({
 
             cleanupFile(fixableCopy,);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion Autofix tests
   ],
 },);

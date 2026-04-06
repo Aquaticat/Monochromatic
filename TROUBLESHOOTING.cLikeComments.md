@@ -30,7 +30,7 @@ This is not a bug in our parser -- it matches the behavior of every
 C-family language (JavaScript, TypeScript, C, C++, Java, Rust, Go, CSS).
 From `customParsers.startsWithComment.ts` line 40:
 
-```
+```text
 // Because in all languages, */ upon first found after starting a block comment,
 // auto becomes end marker of block comment.
 ```
@@ -77,7 +77,7 @@ If a block comment must contain `*/`, use multiple line comments instead:
 // some config
 // this line has */ in it
 // more config
-{"key": "value"}
+{ "key": "value" }
 ```
 
 Line comments (`//`) have no nesting limitations and can contain

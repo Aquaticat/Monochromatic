@@ -26,6 +26,12 @@ export type ParsedArtifact = {
  * @param meta - artifact metadata to check
  *
  * @returns true when the metadata includes score (enriched form)
+ *
+ * @example
+ * ```ts
+ * isEnriched({ model: 'm', label: 'M', probe: 'p', timestamp: 't', pass: 'initial' }); // false
+ * isEnriched({ model: 'm', label: 'M', probe: 'p', timestamp: 't', pass: 'initial', score: 0.9 }); // true
+ * ```
  */
 export function isEnriched(meta: ArtifactMeta,): meta is EnrichedArtifactMeta {
   return 'score' in meta;
@@ -68,6 +74,12 @@ export function probeKey(
  * @param fix - fix pass artifact (undefined when no fix ran)
  *
  * @returns probe detail for the overlay renderer
+ *
+ * @example
+ * ```ts
+ * const detail = buildProbeDetail({ enriched: meta, fixEnriched: undefined, artifact, fix: undefined });
+ * // { score: 0.85, pass2Score: undefined, reasoning: '...', ... }
+ * ```
  */
 export function buildProbeDetail({
   enriched,

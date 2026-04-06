@@ -180,7 +180,10 @@ export async function $<
    */
   function memoized(
     this: void,
-    { args, salt, }: MemoizedCallOptions<TArgs>,
+    {
+      args,
+      salt,
+    }: MemoizedCallOptions<TArgs>,
   ): Promise<TReturn> {
     const cacheKey = buildCacheKey(
       keyFn(...args,),

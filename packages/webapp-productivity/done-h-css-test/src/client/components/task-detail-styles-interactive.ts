@@ -28,7 +28,7 @@ const PILL_GAP = 1 / 2 / 2;
 const BTN_ROW_GAP = 1 / 2;
 
 /** Pill, button row, and shadow DOM global styles for `<task-detail>`. */
-export const TASK_DETAIL_INTERACTIVE_STYLES = [
+export const TASK_DETAIL_INTERACTIVE_STYLES: string = [
   css({
     rule: '.pills',
     decls: {
@@ -54,7 +54,10 @@ export const TASK_DETAIL_INTERACTIVE_STYLES = [
     children: [
       css({
         rule: '&[data-autofilled]',
-        decls: { 'border-color': cssVar('red-fg',), color: cssVar('red-fg',), },
+        decls: {
+          'border-color': cssVar('red-fg',),
+          color: cssVar('red-fg',),
+        },
       },),
       css({
         rule: '&[data-loading]',

@@ -55,13 +55,13 @@ A per-image template with qemu-guest-agent pre-installed is baked on first use
 
 To use an image not in the built-in registry:
 
-1.  Boot your image manually (via virt-manager, raw qemu, or any other method)
-2.  Install `qemu-guest-agent` inside the guest and enable it to start on boot --
-    mvm relies on the guest agent for command execution via `mvm exec`
-3.  Shut down the guest cleanly
-4.  Place the resulting qcow2 disk image in `~/.local/share/mvm/images/` with a descriptive name
-    (e.g. `my-custom.qcow2`)
-5.  Create VMs from it with `mvm create --image my-custom dev-01`
+1. Boot your image manually (via virt-manager, raw qemu, or any other method)
+2. Install `qemu-guest-agent` inside the guest and enable it to start on boot --
+   mvm relies on the guest agent for command execution via `mvm exec`
+3. Shut down the guest cleanly
+4. Place the resulting qcow2 disk image in `~/.local/share/mvm/images/` with a descriptive name
+   (e.g. `my-custom.qcow2`)
+5. Create VMs from it with `mvm create --image my-custom dev-01`
 
 mvm uses the custom template as a qcow2 backing file directly, skipping the
 download-and-template-bake pipeline. The cloud-init seed defaults to `root`

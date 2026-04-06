@@ -1,32 +1,29 @@
-[tasks.build]
-extends = "build"
+# No lint tasks -- this package contains deprecated Vite code
+# that is excluded from the monorepo lint pipeline.
 
-[tasks.'build:js']
-extends = "build:js"
+# [tasks.build]
+# extends = "build"
 
-# [tasks.'build:js:browser']
-# run = "tsdown"
+# [tasks.'build:js']
+# extends = "build:js"
 
-[tasks.'build:js:node']
-extends = "build:js:node"
+# [tasks.'build:js:node']
+# extends = "build:js:node"
 
-[tasks."watch:build"]
-extends = "watch:build"
+# [tasks."watch:build"]
+# extends = "watch:build"
 
-[tasks."watch:build:js"]
-extends = "watch:build:js"
+# [tasks."watch:build:js"]
+# extends = "watch:build:js"
 
-# [tasks."watch:build:js:browser"]
-# run = "tsdown --watch"
+# [tasks."watch:build:js:node"]
+# extends = "watch:build:js:node"
 
-[tasks."watch:build:js:node"]
-extends = "watch:build:js:node"
+# [tasks.lint]
+# extends = "lint"
 
-[tasks.lint]
-extends = "lint"
+# [tasks."lint:oxlint"]
+# extends = "lint:oxlint"
 
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
-
-[tasks."lint:types"]
-extends = "lint:types"
+# [tasks."lint:types"]
+# extends = "lint:types"

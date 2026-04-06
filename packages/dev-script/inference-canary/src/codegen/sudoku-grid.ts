@@ -17,7 +17,10 @@ const BOX_SIZE = 3;
 /** Column indices [0..8] for functional iteration over grid columns */
 const COLUMN_INDICES = Array.from(
   { length: GRID_SIZE, },
-  function indexFromOffset(_, idx,): number {
+  function indexFromOffset(
+    _,
+    idx,
+  ): number {
     return idx;
   },
 );

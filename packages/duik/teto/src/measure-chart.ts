@@ -33,7 +33,14 @@ import type {
 function run(cmd: string,): string {
   return execSync(
     cmd,
-    { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
+    {
+      encoding: 'utf8',
+      stdio: [
+        'pipe',
+        'pipe',
+        'pipe',
+      ],
+    },
   )
     .trim();
 }
@@ -59,6 +66,17 @@ export type WidthProfileOutputParams = {
  * and an SVG chart with blue (reference) and red (composite) polylines.
  *
  * @param params - profiles, bounds, and output directory
+ *
+ * @example
+ * ```ts
+ * generateWidthProfileOutput({
+ *   refProfile,
+ *   cmpProfile,
+ *   refBounds,
+ *   cmpBounds,
+ *   tmpDir: '/tmp/work',
+ * });
+ * ```
  */
 export function generateWidthProfileOutput(params: WidthProfileOutputParams,): void {
   const {

@@ -24,6 +24,11 @@ const LONG_PRESS_MS = 500;
  * Attaches zoom-specific pointer and keyboard handlers to the canvas.
  *
  * @param deps - shared state and element references
+ *
+ * @example
+ * ```ts
+ * setupZoomPointerHandlers(deps);
+ * ```
  */
 export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   const {
@@ -68,26 +73,36 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       /** Prevent iOS Safari from cancelling the pointer sequence via native gesture recognition */
       event.preventDefault();
       canvas.setPointerCapture(event.pointerId,);
-      startPan({ event, currentPanX: getPanX(), currentPanY: getPanY(), },);
+      startPan({
+        event,
+        currentPanX: getPanX(),
+        currentPanY: getPanY(),
+      },);
       downEvent = event;
       longPressFired = false;
       clearLongPress();
-      longPressTimer = setTimeout(function fireLongPress(): void {
-        longPressFired = true;
-        longPressTimer = null;
-        if (downEvent === null)
-          return;
-        const containerRect = page.getBoundingClientRect();
-        const { cw, ch, } = getCanvasSize();
-        zoomAt({
-          screenX: downEvent.clientX - containerRect.left,
-          screenY: downEvent.clientY - containerRect.top,
-          direction: 'out',
-          containerWidth: cw,
-          containerHeight: ch,
-          zoomLayer,
-        },);
-      }, LONG_PRESS_MS,);
+      longPressTimer = setTimeout(
+        function fireLongPress(): void {
+          longPressFired = true;
+          longPressTimer = null;
+          if (downEvent === null)
+            return;
+          const containerRect = page.getBoundingClientRect();
+          const {
+            cw,
+            ch,
+          } = getCanvasSize();
+          zoomAt({
+            screenX: downEvent.clientX - containerRect.left,
+            screenY: downEvent.clientY - containerRect.top,
+            direction: 'out',
+            containerWidth: cw,
+            containerHeight: ch,
+            zoomLayer,
+          },);
+        },
+        LONG_PRESS_MS,
+      );
     },
   );
 
@@ -96,9 +111,16 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
     function handleZoomPointerMove(event: PointerEvent,): void {
       if (getToolMode() !== 'zoom')
         return;
-      const { cw, ch, } = getCanvasSize();
-      const dragging = continuePan({ event, containerWidth: cw, containerHeight: ch,
-        zoomLayer, },);
+      const {
+        cw,
+        ch,
+      } = getCanvasSize();
+      const dragging = continuePan({
+        event,
+        containerWidth: cw,
+        containerHeight: ch,
+        zoomLayer,
+      },);
       if (dragging) {
         clearLongPress();
         setZoomCursor('move',);
@@ -115,7 +137,10 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       const wasDrag = endPan();
       if (!wasDrag && !longPressFired) {
         const containerRect = page.getBoundingClientRect();
-        const { cw, ch, } = getCanvasSize();
+        const {
+          cw,
+          ch,
+        } = getCanvasSize();
         zoomAt({
           screenX: event.clientX - containerRect.left,
           screenY: event.clientY - containerRect.top,

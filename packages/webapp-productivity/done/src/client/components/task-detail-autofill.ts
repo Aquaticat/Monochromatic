@@ -37,7 +37,7 @@ export type AutofillCallbacks = {
  */
 export class AutofillController {
   /** Tracks which fields were filled by the AI. */
-  autofilled = new Set<string>();
+  autofilled: Set<string> = new Set<string>();
 
   /** Whether an autofill request is currently in flight. */
   loading = false;
@@ -49,7 +49,7 @@ export class AutofillController {
   #abort: AbortController | null = null;
 
   /** Host callbacks for state and display updates. */
-  #callbacks: AutofillCallbacks;
+  readonly #callbacks: AutofillCallbacks;
 
   /**
    * @param callbacks - Host component callbacks

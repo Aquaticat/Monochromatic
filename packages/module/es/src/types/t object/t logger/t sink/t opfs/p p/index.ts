@@ -17,6 +17,13 @@ let available = false;
  * Verifies OPFS is available and can write/read data.
  *
  * @returns whether OPFS logging is available
+ *
+ * @example
+ * ```ts
+ * if (await verify()) {
+ *   await $(logRecord);
+ * }
+ * ```
  */
 export async function verify(): Promise<boolean> {
   if (verified)
@@ -58,6 +65,11 @@ export async function verify(): Promise<boolean> {
  * OPFS sink that writes log records to Origin Private File System.
  *
  * @param record - log record to write
+ *
+ * @example
+ * ```ts
+ * await $({ level: 'warn', message: 'quota nearing limit', tags: ['storage'], timestamp: Date.now() });
+ * ```
  */
 export async function $(record: LogRecord,): Promise<void> {
   if (!available || !writable)

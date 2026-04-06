@@ -2,11 +2,14 @@
 # but per-package tasks run oxlint from within the package directory where
 # CWD-relative paths no longer contain "test-fixture/".
 
-[tasks.lint]
-extends = "lint"
+# lint and lint:types commented out -- test fixtures contain intentionally
+# invalid code that triggers TS errors by design.
 
-[tasks."lint:types"]
-extends = "lint:types"
+# [tasks.lint]
+# extends = "lint"
+
+# [tasks."lint:types"]
+# extends = "lint:types"
 
 [tasks."lint-fixture"]
 description = "Lint fixture files with all stylistic rules enabled (for plugin validation)"

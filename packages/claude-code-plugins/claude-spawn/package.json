@@ -19,6 +19,7 @@
       "url": "https://claude.ai"
     }
   ],
+  "private": true,
   "sideEffects": true,
   "dependencies": {
     "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",

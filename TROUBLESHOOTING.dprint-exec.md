@@ -16,18 +16,18 @@ annotation that multi-plugin chaining produces.
 dprint's plugin name resolution has two paths
 (source: `crates/dprint/src/plugins/name_resolution.rs:54-88`):
 
-1.  **Associations path** (lines 57-64):
-    iterates all plugins with `associations` globs,
-    collects every match into a vector, and returns the full list.
-    This is the only path that enables multi-plugin chaining.
+1. **Associations path** (lines 57-64):
+   iterates all plugins with `associations` globs,
+   collects every match into a vector, and returns the full list.
+   This is the only path that enables multi-plugin chaining.
 
-2.  **Extension fallback** (lines 77-84):
-    when no association matches, looks up the file extension and
-    returns the **first** plugin that registered that extension.
-    The loop body returns a single-element vector immediately:
-    ```rust
-    return vec![plugin_name.clone()];
-    ```
+2. **Extension fallback** (lines 77-84):
+   when no association matches, looks up the file extension and
+   returns the **first** plugin that registered that extension.
+   The loop body returns a single-element vector immediately:
+   ```rust
+   return vec![plugin_name.clone()];
+   ```
 
 When multiple plugins claim the same extension (e.g. malva and exec both claim `.css`),
 the extension fallback picks whichever plugin was registered first -- determined by the
@@ -75,12 +75,14 @@ The fix is to list **all** extensions the plugin handles in its associations:
 
 Run `dprint fmt --log-level debug <file>` and look for the plugin count annotation.
 Single-plugin formatting prints:
-```
+
+```text
 Formatted file: path/to/file.css in 0ms
 ```
 
 Multi-plugin chaining prints:
-```
+
+```text
 Formatted file: path/to/file.css in 0ms (Plugin 1/2)
 Formatted file: path/to/file.css in 312ms (Plugin 2/2)
 ```
@@ -99,7 +101,8 @@ then stylelint and oxlint in parallel as separate processes.
 ### Problem
 
 Configuring `oxlint --fix {{file_path}}` with `"stdin": false` in exec causes:
-```
+
+```text
 Error formatting path/to/file.ts. Message: Child process exited with code 1:
 ```
 
@@ -114,11 +117,11 @@ The result is still read from **stdout** regardless of the stdin setting.
 
 The format flow in `handler.rs:162-253`:
 
-1.  Spawns the command with `stdin: Stdio::null()` and `stdout: Stdio::piped()`
-2.  Captures the command's stdout as formatted content
-3.  Waits for the child process to exit
-4.  If exit code is 0: returns captured stdout as the new file content
-5.  If exit code is non-zero: returns an error, discarding everything
+1. Spawns the command with `stdin: Stdio::null()` and `stdout: Stdio::piped()`
+2. Captures the command's stdout as formatted content
+3. Waits for the child process to exit
+4. If exit code is 0: returns captured stdout as the new file content
+5. If exit code is non-zero: returns an error, discarding everything
 
 This creates three incompatibilities with `oxlint --fix`:
 
@@ -130,6 +133,7 @@ file content, corrupting the file.
 **Incompatibility 2: exit code semantics.**
 oxlint exits 1 when any unfixable errors remain, even after successfully auto-fixing others.
 The exec plugin requires exit code 0 (`handler.rs:299-314`):
+
 ```rust
 if exit_status.success() {
     return Ok(ok_text);
@@ -203,7 +207,14 @@ for each exec command, even though the referenced files exist:
 ```json
 {
   "executable": "pnpm",
-  "args": ["exec", "stylelint", "--fix", "--stdin", "--stdin-filename", "{{file_path}}"],
+  "args": [
+    "exec",
+    "stylelint",
+    "--fix",
+    "--stdin",
+    "--stdin-filename",
+    "{{file_path}}"
+  ],
   "cwd": "/path/to/repo",
   "cacheKeyFilesHash": null
 }
@@ -215,6 +226,7 @@ This is expected behavior, not a bug.
 
 During config resolution (`configuration.rs:153-156`), each command's hash is
 extracted via `.take()` and collected into a separate vector:
+
 ```rust
 if let Some(cache_key_files_hash) = command_config.cache_key_files_hash.take() {
     cache_key_file_hashes.push(cache_key_files_hash);
@@ -225,6 +237,7 @@ if let Some(cache_key_files_hash) = command_config.cache_key_files_hash.take() {
 always shows `null`.
 The individual hashes are combined into the **global** `cacheKey` at the top of
 the exec config section:
+
 ```json
 {
   "cacheKey": "a6c9dbc6...",

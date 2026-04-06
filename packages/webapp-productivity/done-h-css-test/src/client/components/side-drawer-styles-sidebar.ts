@@ -21,7 +21,7 @@ const DESKTOP_BREAKPOINT = '48rem';
 const FULL_PERCENT = 100;
 
 /** Compiled CSS rules for the `<side-drawer>` inline sidebar. */
-export const SIDE_DRAWER_SIDEBAR_STYLES = [
+export const SIDE_DRAWER_SIDEBAR_STYLES: string[] = [
   css({
     rule: '.sidebar',
     decls: {

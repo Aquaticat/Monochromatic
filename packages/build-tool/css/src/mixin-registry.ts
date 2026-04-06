@@ -95,8 +95,14 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
   }
 
   return nodes.reduce<ChildNode[]>(
-    function accumulate(result, node,) {
-      return accumulateExpandedNode(result, node,);
+    function accumulate(
+      result,
+      node,
+    ) {
+      return accumulateExpandedNode(
+        result,
+        node,
+      );
     },
     [],
   );

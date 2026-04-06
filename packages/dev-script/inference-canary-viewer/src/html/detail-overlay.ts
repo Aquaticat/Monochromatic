@@ -26,6 +26,12 @@ import { renderProbeOverlay, } from './overlay-probe.ts';
  * @param probeDetails - per-probe enriched data keyed by composite key
  *
  * @returns HTML string containing all overlay sections
+ *
+ * @example
+ * ```ts
+ * const html = await renderAllOverlays({ entries, probeDetails });
+ * // '<div class="detail-popover" popover="auto" ...>...<\/div>\n...'
+ * ```
  */
 export async function renderAllOverlays({
   entries,

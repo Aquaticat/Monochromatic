@@ -20,7 +20,7 @@ await describe({
             const result = await exec('echo', ['hello',],);
             expect(result.trim(),).toBe('hello',);
           },
-        }),
+        },),
         it({
           name: 'passes multiple arguments to the command',
           fn: async () => {
@@ -28,7 +28,7 @@ await describe({
             const result = await exec('echo', ['hello', 'world',],);
             expect(result.trim(),).toBe('hello world',);
           },
-        }),
+        },),
         it({
           name: 'throws on non-zero exit code',
           fn: async () => {
@@ -37,7 +37,7 @@ await describe({
               'Command failed with exit code 1: false',
             );
           },
-        }),
+        },),
         it({
           name: 'includes stderr in the error message',
           fn: async () => {
@@ -48,7 +48,7 @@ await describe({
               .rejects
               .toThrow('error-msg',);
           },
-        }),
+        },),
         it({
           name: 'handles command with no arguments',
           fn: async () => {
@@ -56,7 +56,7 @@ await describe({
             const result = await exec('true',);
             expect(result,).toBe('',);
           },
-        }),
+        },),
         it({
           name: 'preserves newlines in stdout',
           fn: async () => {
@@ -64,7 +64,7 @@ await describe({
             const result = await exec('printf', [String.raw`line1\nline2\nline3`,],);
             expect(result,).toBe('line1\nline2\nline3',);
           },
-        }),
+        },),
         it({
           name: 'handles large stdout output',
           fn: async () => {
@@ -74,9 +74,9 @@ await describe({
             const lineCount = 1_000;
             expect(result.trim().split('\n',).length,).toBe(lineCount,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion exec (direct)
 
@@ -95,7 +95,7 @@ await describe({
             ],);
             expect(result.trim(),).toBe('first',);
           },
-        }),
+        },),
         it({
           name: 'skips entries whose predicate fails',
           fn: async () => {
@@ -106,7 +106,7 @@ await describe({
             ],);
             expect(result.trim(),).toBe('matched',);
           },
-        }),
+        },),
         it({
           name: 'supports command with no arguments',
           fn: async () => {
@@ -116,7 +116,7 @@ await describe({
             ],);
             expect(result,).toBe('',);
           },
-        }),
+        },),
         it({
           name: 'supports predicate with arguments',
           fn: async () => {
@@ -126,7 +126,7 @@ await describe({
             ],);
             expect(result.trim(),).toBe('found',);
           },
-        }),
+        },),
         it({
           name: 'throws PlatformMatchError when no predicate matches',
           fn: async () => {
@@ -140,7 +140,7 @@ await describe({
               .rejects
               .toThrow('No platform predicate matched',);
           },
-        }),
+        },),
         it({
           name: 'error message includes tested predicates',
           fn: async () => {
@@ -154,7 +154,7 @@ await describe({
               .rejects
               .toThrow('nonexistent-check-1',);
           },
-        }),
+        },),
         it({
           name: 'throws when matched command fails',
           fn: async () => {
@@ -167,7 +167,7 @@ await describe({
               .rejects
               .toThrow('Command failed',);
           },
-        }),
+        },),
         it({
           name: 'supports nested PlatformCommands as command value',
           fn: async () => {
@@ -181,7 +181,7 @@ await describe({
             ],);
             expect(result.trim(),).toBe('inner-matched',);
           },
-        }),
+        },),
         it({
           name: 'nested PlatformCommands throws when no inner predicate matches',
           fn: async () => {
@@ -197,10 +197,9 @@ await describe({
               .rejects
               .toThrow('No platform predicate matched',);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion exec (platform-aware)
   ],
 },);

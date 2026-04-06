@@ -1,6 +1,4 @@
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
 /** Shadow DOM styles for the `\<search-bar\>` component. */
@@ -57,7 +55,7 @@ function onBackClick(): void {
  */
 class SearchBar extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -120,13 +118,21 @@ class SearchBar extends HTMLElement {
       'input',
       function onInput(this: SearchBar,): void {
         clearTimeout(timeout,);
-        timeout = setTimeout(function dispatchSearch(this: SearchBar,): void {
-          this.dispatchEvent(
-            new CustomEvent('search', { detail: { query: input.value.trim(), },
-              bubbles: true, },),
-          );
-        }
-          .bind(this,), SEARCH_DEBOUNCE_MS,);
+        timeout = setTimeout(
+          function dispatchSearch(this: SearchBar,): void {
+            this.dispatchEvent(
+              new CustomEvent(
+                'search',
+                {
+                  detail: { query: input.value.trim(), },
+                  bubbles: true,
+                },
+              ),
+            );
+          }
+            .bind(this,),
+          SEARCH_DEBOUNCE_MS,
+        );
       }
         .bind(this,),
     );

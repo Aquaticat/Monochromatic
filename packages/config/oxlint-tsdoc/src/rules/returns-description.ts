@@ -48,7 +48,10 @@ export const requireReturnsDescription: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function requireReturnsDescHandler(_node, result,): void {
+      function requireReturnsDescHandler(
+        _node,
+        result,
+      ): void {
         const { returnsBlock, } = result.docComment;
         if (returnsBlock === undefined)
           return;

@@ -57,7 +57,12 @@ const css = renderStyles();
 
 /** Client-side canvas drawing and background management script, pre-bundled by tsdown */
 const js = await readFile(
-  join(PACKAGE_DIR, 'dist', 'client', 'main.js',),
+  join(
+    PACKAGE_DIR,
+    'dist',
+    'client',
+    'main.js',
+  ),
   'utf8',
 );
 
@@ -73,7 +78,10 @@ await mkdir(
   { recursive: true, },
 );
 await writeFile(
-  join(DIST_DIR, 'index.html',),
+  join(
+    DIST_DIR,
+    'index.html',
+  ),
   html,
   'utf8',
 );

@@ -42,7 +42,7 @@ await describe({
             )
               .toBe('dist/index.ts',);
           },
-        }),
+        },),
         it({
           name: 'substitutes multiple wildcards positionally',
           fn: async () => {
@@ -52,7 +52,7 @@ await describe({
             )
               .toBe('output/foo/lib/bar.ts',);
           },
-        }),
+        },),
         it({
           name: 'handles wildcards capturing multi-character segments',
           fn: async () => {
@@ -61,7 +61,7 @@ await describe({
             )
               .toBe('x/long-segment-name/y',);
           },
-        }),
+        },),
         it({
           name: 'handles pattern with no wildcards (literal copy)',
           fn: async () => {
@@ -70,7 +70,7 @@ await describe({
             )
               .toBe('other/path.ts',);
           },
-        }),
+        },),
         it({
           name: 'throws when wildcard counts differ between source and dest',
           fn: async () => {
@@ -78,23 +78,25 @@ await describe({
               'Wildcard count mismatch',
             );
           },
-        }),
+        },),
         it({
           name: 'throws when source path does not match source pattern prefix',
           fn: async () => {
-            expect(() => mirrorGlobPath('src/*.ts', 'dist/*.ts', 'lib/index.ts',)).toThrow(
-              'does not match pattern',
-            );
+            expect(() => mirrorGlobPath('src/*.ts', 'dist/*.ts', 'lib/index.ts',))
+              .toThrow(
+                'does not match pattern',
+              );
           },
-        }),
+        },),
         it({
           name: 'throws when source path does not match source pattern suffix',
           fn: async () => {
-            expect(() => mirrorGlobPath('src/*.ts', 'dist/*.ts', 'src/index.js',)).toThrow(
-              'does not match pattern',
-            );
+            expect(() => mirrorGlobPath('src/*.ts', 'dist/*.ts', 'src/index.js',))
+              .toThrow(
+                'does not match pattern',
+              );
           },
-        }),
+        },),
         it({
           name: 'handles wildcard capturing empty string',
           fn: async () => {
@@ -104,7 +106,7 @@ await describe({
             )
               .toBe('out/-suffix.ts',);
           },
-        }),
+        },),
         it({
           name: 'handles wildcard at the very start of pattern',
           fn: async () => {
@@ -113,7 +115,7 @@ await describe({
             )
               .toBe('readme.md',);
           },
-        }),
+        },),
         it({
           name: 'handles wildcard at the very end of pattern',
           fn: async () => {
@@ -122,7 +124,7 @@ await describe({
             )
               .toBe('output-data',);
           },
-        }),
+        },),
         it({
           name: 'handles adjacent wildcards in source and dest',
           fn: async () => {
@@ -131,9 +133,9 @@ await describe({
             )
               .toBe('b/dir/file.ext',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion mirrorGlobPath
 
@@ -157,7 +159,7 @@ await describe({
             );
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'returns empty array when nothing matches',
           fn: async () => {
@@ -167,7 +169,7 @@ await describe({
             expect(matches,).toEqual([],);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'includes dot-files when dot option is enabled',
           fn: async () => {
@@ -182,7 +184,7 @@ await describe({
             expect(filenames,).toContain('.hidden',);
             await teardown(tempDir,);
           },
-        }),
+        },),
         it({
           name: 'matches files in nested directories with double-star',
           fn: async () => {
@@ -198,10 +200,9 @@ await describe({
             expect(matches.length,).toBe(2,);
             await teardown(tempDir,);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion expandGlob
   ],
 },);

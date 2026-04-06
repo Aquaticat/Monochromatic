@@ -13,7 +13,7 @@ import { SIDE_DRAWER_SIDEBAR_STYLES, } from './side-drawer-styles-sidebar.ts';
 const FULL_PERCENT = 100;
 
 /** Compiled CSS string for `<side-drawer>` Shadow DOM. */
-export const SIDE_DRAWER_STYLES = [
+export const SIDE_DRAWER_STYLES: string = [
   css({
     rule: ':host',
     decls: { display: 'block', },

@@ -40,13 +40,20 @@ export const checkAccess: CreateOnceRule = {
 
     return createTsdocVisitor(
       context,
-      function checkAccessHandler(_node, comment,): void {
+      function checkAccessHandler(
+        _node,
+        comment,
+      ): void {
         const found: string[] = [];
         const text = comment.value;
         accessTags.forEach(function findTag(tag,): void {
           // Match tag at word boundary to avoid false positives
+          const escapedTag = tag.replace(
+            '@',
+            String.raw`\@`,
+          );
           const pattern = new RegExp(
-            String.raw`(?:^|\s)${tag.replace('@', String.raw`\@`,)}(?:\s|$|\*)`,
+            String.raw`(?:^|\s)${escapedTag}(?:\s|$|\*)`,
           );
           if (pattern.test(text,))
             found.push(tag,);

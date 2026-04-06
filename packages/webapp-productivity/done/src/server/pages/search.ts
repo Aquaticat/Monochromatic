@@ -7,9 +7,7 @@
  *
  * Client entry: `/dist/client/search.js` (src/client/search.ts)
  */
-import {
-  hHtml as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   listAllTags,
   searchTasks,
@@ -22,6 +20,11 @@ import { serializePageData, } from './layout.ts';
  * @param url - Request URL (the `q` search param contains the query)
  *
  * @returns HTML response for the search page
+ *
+ * @example
+ * ```ts
+ * const response = await searchPage(new URL('https://example.com/search?q=test'));
+ * ```
  */
 export async function searchPage(url: URL,): Promise<Response> {
   const query = url.searchParams.get('q',) ?? '';
@@ -49,8 +52,10 @@ ${
             },),
             h({
               tag: 'meta',
-              attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', },
+              attrs: {
+                name: 'viewport',
+                content: 'width=device-width, initial-scale=1',
+              },
             },),
             h({
               tag: 'title',
@@ -81,12 +86,18 @@ ${
             },),
             h({
               tag: 'script',
-              attrs: { type: 'application/json', id: 'page-data', },
+              attrs: {
+                type: 'application/json',
+                id: 'page-data',
+              },
               html: serializePageData(pageData,),
             },),
             h({
               tag: 'script',
-              attrs: { type: 'module', src: '/dist/client/search.js', },
+              attrs: {
+                type: 'module',
+                src: '/dist/client/search.js',
+              },
             },),
           ],
         },),

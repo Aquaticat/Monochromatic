@@ -12,9 +12,9 @@ This package provides objective, reproducible probes that establish a baseline f
 Each probe asks a model to write a single-file TypeScript CLI that solves a non-trivial problem.
 The generated code is:
 
-1.  Executed in a locked-down podman container (no network, read-only FS, 256MB memory, 15s timeout)
-2.  Linted with the monorepo's oxlint config
-3.  Type-checked with tsgo under the monorepo's strict tsconfig
+1. Executed in a locked-down podman container (no network, read-only FS, 256MB memory, 15s timeout)
+2. Linted with the monorepo's oxlint config
+3. Type-checked with tsgo under the monorepo's strict tsconfig
 
 Scoring combines three dimensions:
 

@@ -23,6 +23,13 @@ export type ModelSummary = {
  * @param summary - model summary to check
  *
  * @returns "failed", "degraded", or empty string for healthy models
+ *
+ * @example
+ * ```ts
+ * statusLevel({ failed: true, degraded: false } as ModelSummary); // "failed"
+ * statusLevel({ failed: false, degraded: true } as ModelSummary); // "degraded"
+ * statusLevel({ failed: false, degraded: false } as ModelSummary); // ""
+ * ```
  */
 export function statusLevel(summary: ModelSummary,): string {
   if (summary.failed)

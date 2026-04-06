@@ -22,12 +22,12 @@ Runs these cleanup steps in parallel on every session startup or resume:
         "hooks": [
           {
             "type": "command",
-            "command": "ccssh"
-          }
-        ]
-      }
-    ]
-  }
+            "command": "ccssh",
+          },
+        ],
+      },
+    ],
+  },
 }
 ```
 

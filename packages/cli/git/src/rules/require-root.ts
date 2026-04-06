@@ -54,14 +54,14 @@ const GLOBAL_CONFIG_FLAGS: ReadonlySet<string> = new Set([
  * // always passes -- clone is exempt
  * ```
  */
-export async function requireRoot(args: readonly string[]): Promise<readonly string[]> {
+export async function requireRoot(args: readonly string[],): Promise<readonly string[]> {
   /** Tagged logger for the require-root rule. */
   const rl = tagged({
     tag: requireRoot.name,
     l,
   },);
 
-  const [subcommand] = args;
+  const [subcommand,] = args;
 
   if (subcommand === undefined || EXEMPT_SUBCOMMANDS.has(subcommand,)) {
     rl.debug(`exempt subcommand: ${subcommand ?? '(none)'}`,);

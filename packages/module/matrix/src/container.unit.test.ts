@@ -30,7 +30,7 @@ await describe({
             expect(result.protocol,).toBe('container',);
             expect(result.distro,).toBe('ubuntu',);
           },
-        }),
+        },),
 
         it({
           name: 'parses container:fedora:39 preserving tag in distro',
@@ -39,7 +39,7 @@ await describe({
             expect(result.protocol,).toBe('container',);
             expect(result.distro,).toBe('fedora:39',);
           },
-        }),
+        },),
 
         it({
           name: 'parses host: with empty distro',
@@ -48,7 +48,7 @@ await describe({
             expect(result.protocol,).toBe('host',);
             expect(result.distro,).toBe('',);
           },
-        }),
+        },),
 
         it({
           name: 'parses vm: protocol',
@@ -57,25 +57,27 @@ await describe({
             expect(result.protocol,).toBe('vm',);
             expect(result.distro,).toBe('fedora',);
           },
-        }),
+        },),
 
         it({
           name: 'throws on missing protocol prefix',
           fn: async () => {
             expect(function noProtocol() {
               parseOs('ubuntu',);
-            },).toThrow('must have a protocol prefix',);
+            },)
+              .toThrow('must have a protocol prefix',);
           },
-        }),
+        },),
 
         it({
           name: 'throws on unknown protocol',
           fn: async () => {
             expect(function unknownProtocol() {
               parseOs('docker:ubuntu',);
-            },).toThrow('Unknown protocol "docker"',);
+            },)
+              .toThrow('Unknown protocol "docker"',);
           },
-        }),
+        },),
       ],
     },),
 
@@ -107,7 +109,7 @@ await describe({
             expect(cmd,).not.toContain('sudo -u',);
             expect(cmd,).not.toContain('run-test.sh',);
           },
-        }),
+        },),
 
         it({
           name: 'non-root user writes heredoc script and uses sudo -u',
@@ -127,7 +129,7 @@ await describe({
             expect(cmd,).toContain('useradd',);
             expect(cmd,).toContain('NOPASSWD',);
           },
-        }),
+        },),
 
         it({
           name: 'converts host path to /workspace container path',
@@ -145,7 +147,7 @@ await describe({
             expect(cmd,).toContain('/workspace/packages/bar/src/test.ts',);
             expect(cmd,).not.toContain('/repo/root',);
           },
-        }),
+        },),
 
         it({
           name: 'uses dnf for fedora',
@@ -162,7 +164,7 @@ await describe({
 
             expect(cmd,).toContain('dnf install',);
           },
-        }),
+        },),
 
         it({
           name: 'uses apk for alpine',
@@ -180,7 +182,7 @@ await describe({
             expect(cmd,).toContain('apk add',);
             expect(cmd,).toContain('.deno/bin/deno',);
           },
-        }),
+        },),
 
         it({
           name: 'alpine non-root uses adduser -D instead of useradd',
@@ -198,7 +200,7 @@ await describe({
             expect(cmd,).toContain('adduser -D testuser',);
             expect(cmd,).not.toContain('useradd',);
           },
-        }),
+        },),
 
         it({
           name: 'deno exec includes --allow-all flag',
@@ -215,7 +217,7 @@ await describe({
 
             expect(cmd,).toContain('--allow-all',);
           },
-        }),
+        },),
 
         it({
           name: 'non-root heredoc includes cd /workspace',
@@ -232,7 +234,7 @@ await describe({
 
             expect(cmd,).toContain('cd /workspace',);
           },
-        }),
+        },),
 
         it({
           name: 'root command includes cd /workspace',
@@ -249,10 +251,9 @@ await describe({
 
             expect(cmd,).toContain('cd /workspace',);
           },
-        }),
+        },),
       ],
     },),
-
     //endregion buildContainerCommand
   ],
 },);

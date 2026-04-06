@@ -29,4 +29,6 @@ export const CSV_PERF_INPUT: string = await readDataFile('csv-perf-input.txt',);
 export const EXPR_PERF_INPUT: string = await readDataFile('expr-perf-input.txt',);
 
 /** Large CSS with 20 mixins and 500 rule blocks using @apply */
-export const CSS_MIXIN_PERF_INPUT: string = await readDataFile('css-mixin-perf-input.txt',);
+export const CSS_MIXIN_PERF_INPUT: string = await readDataFile(
+  'css-mixin-perf-input.txt',
+);

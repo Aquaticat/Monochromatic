@@ -49,8 +49,15 @@ export type VmsyncArgs =
 
 //endregion Result types
 
-// oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
-/** Combined top-level parser across all subcommands. */
+/* oxlint-disable typescript-eslint/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown */
+/**
+ * Combined top-level parser across all subcommands.
+ *
+ * @example
+ * ```ts
+ * const result = parser.parse(process.argv.slice(2,),);
+ * ```
+ */
 export const parser: Parser<'sync', VmsyncArgs, any> = or(
   importCmd,
   bootCmd,
@@ -59,3 +66,4 @@ export const parser: Parser<'sync', VmsyncArgs, any> = or(
   listCmd,
   configCmd,
 );
+/* oxlint-enable typescript-eslint/no-explicit-any */

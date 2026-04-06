@@ -18,6 +18,11 @@ let hideTimer: ReturnType<typeof setTimeout> | null = null;
  * No-op if the toast element is missing (graceful degradation).
  *
  * @param toast - popover element to show
+ *
+ * @example
+ * ```ts
+ * showZoomToast(document.getElementById('zoom-toast'));
+ * ```
  */
 export function showZoomToast(toast: HTMLElement,): void {
   if (hideTimer !== null) {

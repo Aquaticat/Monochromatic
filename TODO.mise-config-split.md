@@ -35,6 +35,7 @@ Move everything between `#region tasks` and `#endregion tasks` (lines 205-528)
 into `mise-tasks.toml` using the **task-only format** (no `[tasks]` prefix).
 
 The included file format differs from `mise.toml`:
+
 - Top-level keys are task names directly (not nested under `[tasks]`)
 - Sections like `[tasks."test:unit"]` become `["test:unit"]`
 - `[tasks."lint".env]` becomes `["lint".env]`
@@ -49,7 +50,10 @@ run = "mise '//packages/...:build'"
 
 [tasks."lint"]
 description = "Lint"
-run = ["mise '//packages/...:lint'", { tasks = ["lint:dprint", "lint:stylelint"] }]
+run = [
+  "mise '//packages/...:lint'",
+  { tasks = ["lint:dprint", "lint:stylelint"] },
+]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
 ```
@@ -62,7 +66,10 @@ run = "mise '//packages/...:build'"
 
 ["lint"]
 description = "Lint"
-run = ["mise '//packages/...:lint'", { tasks = ["lint:dprint", "lint:stylelint"] }]
+run = [
+  "mise '//packages/...:lint'",
+  { tasks = ["lint:dprint", "lint:stylelint"] },
+]
 ["lint".env]
 OXLINT_THREADS = "1"
 ```
@@ -88,13 +95,13 @@ These stay because they are not tasks or because included files cannot define th
 
 ## Open questions
 
-1.  **Do `vars` resolve in included task TOML files?**
-    Tasks like `[try]` use `{{vars.fanout}}` which is defined in `[vars]` in the root `mise.toml`.
-    If included files cannot reference vars from the parent config, the fanout-based tasks must stay in `mise.toml`.
+1. **Do `vars` resolve in included task TOML files?**
+   Tasks like `[try]` use `{{vars.fanout}}` which is defined in `[vars]` in the root `mise.toml`.
+   If included files cannot reference vars from the parent config, the fanout-based tasks must stay in `mise.toml`.
 
-2.  **Can `task_templates` live in included files?**
-    If yes, those ~50 lines could move too.
-    If no (likely, since templates are not tasks), they stay in `mise.toml`.
+2. **Can `task_templates` live in included files?**
+   If yes, those ~50 lines could move too.
+   If no (likely, since templates are not tasks), they stay in `mise.toml`.
 
-3.  **File naming**: `mise-tasks.toml` vs `tasks.toml` vs `mise/tasks.toml`.
-    `mise-tasks.toml` is unambiguous at root level; `tasks.toml` is shorter but generic.
+3. **File naming**: `mise-tasks.toml` vs `tasks.toml` vs `mise/tasks.toml`.
+   `mise-tasks.toml` is unambiguous at root level; `tasks.toml` is shorter but generic.

@@ -111,23 +111,23 @@ await describe({
             const diagnostics = await lint('valid/documented-declarations.ts',);
             expect(diagnostics,).toEqual([],);
           },
-        }),
+        },),
         it({
           name: 'complete TSDoc with params, returns, yields produce no violations',
           fn: async () => {
             const diagnostics = await lint('valid/complete-tsdoc.ts',);
             expect(diagnostics,).toEqual([],);
           },
-        }),
+        },),
         it({
           name: '.test.ts files are ignored by tsdoc rules',
           fn: async () => {
             const diagnostics = await lint('valid/ignored-extensions.test.ts',);
             expect(diagnostics,).toEqual([],);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion Valid fixtures
 
@@ -154,9 +154,9 @@ await describe({
             // function, arrow, class, type, interface, enum, const = at least 7
             expect(requireTsdocCount,).toBeGreaterThanOrEqual(7,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'structural rules',
       children: [
@@ -171,9 +171,9 @@ await describe({
             expect(rules,).toContain('tsdoc(tag-lines)',);
             expect(rules,).toContain('tsdoc(empty-tags)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'tag validation rules',
       children: [
@@ -187,7 +187,7 @@ await describe({
             expect(rules,).toContain('tsdoc(check-access)',);
             expect(rules,).toContain('tsdoc(no-types)',);
           },
-        }),
+        },),
         it({
           name: 'reports specific JSDoc-only tags',
           fn: async () => {
@@ -219,9 +219,9 @@ await describe({
             },),)
               .toBe(true,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'param rules',
       children: [
@@ -235,9 +235,9 @@ await describe({
             expect(rules,).toContain('tsdoc(require-param)',);
             expect(rules,).toContain('tsdoc(require-param-description)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'returns rules',
       children: [
@@ -251,9 +251,9 @@ await describe({
             expect(rules,).toContain('tsdoc(require-returns-check)',);
             expect(rules,).toContain('tsdoc(require-returns-description)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'yields rules',
       children: [
@@ -266,9 +266,9 @@ await describe({
             expect(rules,).toContain('tsdoc(require-yields)',);
             expect(rules,).toContain('tsdoc(require-yields-check)',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'require-example',
@@ -289,7 +289,7 @@ await describe({
             // add (direct), greet (specifier), negate (default), double (const direct), shout (const specifier)
             expect(requireExampleDiags.length,).toBeGreaterThanOrEqual(5,);
           },
-        }),
+        },),
         it({
           name: 'does not report on functions with @example or exempt tags',
           fn: async () => {
@@ -301,10 +301,9 @@ await describe({
             );
             expect(requireExampleDiags,).toEqual([],);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion Invalid fixtures
   ],
 },);

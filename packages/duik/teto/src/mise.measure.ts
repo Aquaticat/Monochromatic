@@ -57,7 +57,12 @@ const NORM_HEIGHT = 1_000;
 /** Always rebuild composite first. */
 console.error('--- Rebuilding composite ---',);
 execSync(
-  `bun run ${join(import.meta.dirname, 'mise.build-composite.ts',)}`,
+  `bun run ${
+    join(
+      import.meta.dirname,
+      'mise.build-composite.ts',
+    )
+  }`,
   {
     stdio: 'inherit',
   },

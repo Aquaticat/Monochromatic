@@ -13,6 +13,11 @@
 import type { FilePosition, } from '../../protocol.ts';
 import type { LspClient, } from './lsp-client.ts';
 import {
+  type PrepareRenameResult,
+  requestPrepareRename,
+  requestRename,
+} from './lsp-features-rename.ts';
+import {
   requestCompletion,
   requestFormat,
   requestGotoDefinition,
@@ -21,11 +26,6 @@ import {
   requestReferences,
   requestSelectionRange,
 } from './lsp-features.ts';
-import {
-  type PrepareRenameResult,
-  requestPrepareRename,
-  requestRename,
-} from './lsp-features-rename.ts';
 import type { LspPool, } from './lsp-pool.ts';
 import type {
   LspCompletionItem,

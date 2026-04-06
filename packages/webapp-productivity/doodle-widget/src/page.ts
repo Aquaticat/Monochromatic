@@ -64,6 +64,11 @@ function renderCanvasContainer(): string {
  * @param svgBackgrounds - processed SVG background strings, one per page
  *
  * @returns complete HTML document string
+ *
+ * @example
+ * ```ts
+ * const html = renderPage({ css: 'body {}', js: 'console.log("ok")', svgBackgrounds: [] });
+ * ```
  */
 export function renderPage(
   {
@@ -99,12 +104,17 @@ export function renderPage(
             },),
             h({
               tag: 'meta',
-              attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', },
+              attrs: {
+                name: 'viewport',
+                content: 'width=device-width, initial-scale=1',
+              },
             },),
             h({
               tag: 'meta',
-              attrs: { name: 'color-scheme', content: 'light', },
+              attrs: {
+                name: 'color-scheme',
+                content: 'light',
+              },
             },),
             h({
               tag: 'title',

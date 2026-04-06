@@ -42,6 +42,11 @@ const TEXT_FINALIZED_EVENT = 'textfinalized';
  * Sets the text layer container element.
  *
  * @param layer - div element that holds text overlays
+ *
+ * @example
+ * ```ts
+ * setTextLayer(document.querySelector('.text-layer'));
+ * ```
  */
 export function setTextLayer(layer: HTMLDivElement,): void {
   layerElement = layer;
@@ -51,6 +56,11 @@ export function setTextLayer(layer: HTMLDivElement,): void {
  * Finalizes the active input: makes it readonly if it has content,
  * removes it if empty. Dispatches a `textfinalized` custom event
  * on the text layer when content is kept.
+ *
+ * @example
+ * ```ts
+ * finalizeActiveInput();
+ * ```
  */
 export function finalizeActiveInput(): void {
   if (activeInput === null)
@@ -76,6 +86,11 @@ export function finalizeActiveInput(): void {
  * Finalizes any previously active input first.
  *
  * @param position - normalized [0..1] coordinate for placement
+ *
+ * @example
+ * ```ts
+ * placeTextInput([0.5, 0.5]);
+ * ```
  */
 export function placeTextInput(position: NormalizedPoint,): void {
   finalizeActiveInput();
@@ -124,6 +139,11 @@ export function placeTextInput(position: NormalizedPoint,): void {
 
 /**
  * Discards the active input without keeping it.
+ *
+ * @example
+ * ```ts
+ * discardActiveInput();
+ * ```
  */
 export function discardActiveInput(): void {
   if (activeInput !== null) {
@@ -134,6 +154,11 @@ export function discardActiveInput(): void {
 
 /**
  * Removes all text entries and discards any active input.
+ *
+ * @example
+ * ```ts
+ * clearTextEntries();
+ * ```
  */
 export function clearTextEntries(): void {
   discardActiveInput();

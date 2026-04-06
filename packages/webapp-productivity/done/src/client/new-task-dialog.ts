@@ -9,9 +9,7 @@
  * with save/close branches, and panel open/close logic form a single cohesive
  * unit -- splitting further would scatter the lifecycle across files.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';
 import type { TaskDetail, } from './components/task-detail.ts';
 import { api, } from './lib/api.ts';
@@ -57,6 +55,12 @@ type NewTaskDialog = {
  * stacking without a blocking backdrop.
  *
  * @returns panel and fab elements ready for DOM insertion
+ *
+ * @example
+ * ```ts
+ * const { panel, fab } = createNewTaskDialog();
+ * document.body.append(panel, fab);
+ * ```
  */
 export function createNewTaskDialog(): NewTaskDialog {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
@@ -85,16 +89,21 @@ export function createNewTaskDialog(): NewTaskDialog {
   detail.addEventListener(
     'action',
     function onAction(event,) {
-      void (async function onActionAsync() {
+      void (async function onActionAsync(): Promise<void> {
         try {
           if (!(event instanceof CustomEvent))
             throw new TypeError("Expected CustomEvent for 'action' listener",);
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
-          const { action, title, description, } = event.detail as {
+          /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload */
+          const {
+            action,
+            title,
+            description,
+          } = event.detail as {
             action: string;
             title: string;
             description: string;
           };
+          /* oxlint-enable typescript/no-unsafe-type-assertion */
 
           if (action === 'close') {
             closePanel();
@@ -107,22 +116,28 @@ export function createNewTaskDialog(): NewTaskDialog {
               return;
 
             const metadata = detail.getMetadata();
-            await api('/api/tasks', {
-              method: 'POST',
-              body: JSON.stringify({
-                title: trimmedTitle,
-                description: description.length === 0 ? null : description,
-                tags: metadata.tags,
-                locations: metadata.locations,
-                priority: metadata.priority,
-                complexity: metadata.complexity,
-              },),
-            },);
+            await api(
+              '/api/tasks',
+              {
+                method: 'POST',
+                body: JSON.stringify({
+                  title: trimmedTitle,
+                  description: description.length === 0 ? null : description,
+                  tags: metadata.tags,
+                  locations: metadata.locations,
+                  priority: metadata.priority,
+                  complexity: metadata.complexity,
+                },),
+              },
+            );
             globalThis.location.reload();
           }
         }
         catch (error: unknown) {
-          console.error('new task action handler failed', error,);
+          console.error(
+            'new task action handler failed',
+            error,
+          );
         }
       })();
     },

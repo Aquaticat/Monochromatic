@@ -14,7 +14,8 @@ await describe({
       name: 'p (string shorthand)',
       children: [
         it({
-          name: 'sets bin, check, effname, null available, and empty overrides from a single name',
+          name:
+            'sets bin, check, effname, null available, and empty overrides from a single name',
           fn: async () => {
             const entry = p('curl',);
             expect(entry.bin,).toBe('curl',);
@@ -23,16 +24,16 @@ await describe({
             expect(entry.available,).toBeNull();
             expect(entry.overrides,).toEqual({},);
           },
-        }),
+        },),
         it({
           name: 'produces a frozen overrides object',
           fn: async () => {
             const entry = p('tmux',);
             expect(Object.isFrozen(entry.overrides,),).toBe(true,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion String shorthand
 
@@ -48,7 +49,7 @@ await describe({
             expect(entry.bin,).toBe('wget',);
             expect(entry.effname,).toBe('wget',);
           },
-        }),
+        },),
         it({
           name: 'uses explicit bin when provided',
           fn: async () => {
@@ -56,7 +57,7 @@ await describe({
             expect(entry.bin,).toBe('rg',);
             expect(entry.effname,).toBe('ripgrep',);
           },
-        }),
+        },),
         it({
           name: 'sets available to null when yes is omitted',
           fn: async () => {
@@ -64,37 +65,37 @@ await describe({
             expect(entry.available,).toBeNull();
             expect(entry.overrides,).toEqual({},);
           },
-        }),
+        },),
         it({
           name: 'handles spec with no overrides',
           fn: async () => {
             const entry = p({ bin: 'rg', effname: 'ripgrep', },);
             expect(entry.overrides,).toEqual({},);
           },
-        }),
+        },),
         it({
           name: 'uses custom check flag when provided',
           fn: async () => {
             const entry = p({ bin: 'openssl', check: 'version', effname: 'openssl', },);
             expect(entry.check,).toBe('version',);
           },
-        }),
+        },),
         it({
           name: 'defaults check to --version when omitted',
           fn: async () => {
             const entry = p({ bin: 'rg', effname: 'ripgrep', },);
             expect(entry.check,).toBe('--version',);
           },
-        }),
+        },),
         it({
           name: 'produces a frozen overrides object',
           fn: async () => {
             const entry = p({ effname: 'wget', },);
             expect(Object.isFrozen(entry.overrides,),).toBe(true,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion Object spec without yes
 
@@ -113,7 +114,7 @@ await describe({
             expect(entry.available?.has('brew',),).toBe(true,);
             expect(entry.available?.has('pacman',),).toBe(false,);
           },
-        }),
+        },),
         it({
           name: 'extracts overrides from tuples in yes',
           fn: async () => {
@@ -133,28 +134,28 @@ await describe({
               pacman: 'acpica-utils',
             },);
           },
-        }),
+        },),
         it({
           name: 'bare manager names produce no overrides',
           fn: async () => {
             const entry = p({ effname: 'tmux', yes: ['apt', 'dnf',], },);
             expect(entry.overrides,).toEqual({},);
           },
-        }),
+        },),
         it({
           name: 'freezes available set',
           fn: async () => {
             const entry = p({ effname: 'curl', yes: ['apt',], },);
             expect(Object.isFrozen(entry.available,),).toBe(true,);
           },
-        }),
+        },),
         it({
           name: 'freezes overrides from yes tuples',
           fn: async () => {
             const entry = p({ effname: 'acpica', yes: [['dnf', 'acpica-tools',],], },);
             expect(Object.isFrozen(entry.overrides,),).toBe(true,);
           },
-        }),
+        },),
         it({
           name: 'empty yes array produces empty available set',
           fn: async () => {
@@ -162,7 +163,7 @@ await describe({
             expect(entry.available,).not.toBeNull();
             expect(entry.available?.size,).toBe(0,);
           },
-        }),
+        },),
         it({
           name: 'combines bin, check, and yes',
           fn: async () => {
@@ -179,10 +180,9 @@ await describe({
             expect(entry.available?.has('brew',),).toBe(true,);
             expect(entry.overrides,).toEqual({ brew: 'ripgrep', },);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion Object spec with yes
   ],
 },);

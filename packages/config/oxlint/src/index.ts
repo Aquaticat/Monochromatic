@@ -67,7 +67,10 @@ const config: OxlintConfig = defineConfig({
     new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-tsdoc',),).pathname,
 
     // Banned syntax patterns that oxlint's built-in rules can't express.
-    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-no-restricted-syntax',),).pathname,
+    new URL(
+      import.meta.resolve('@monochromatic-dev/config-oxlint-no-restricted-syntax',),
+    )
+      .pathname,
 
     // One-item-per-line formatting enforcement for all multi-element constructs.
     new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-stylistic',),).pathname,

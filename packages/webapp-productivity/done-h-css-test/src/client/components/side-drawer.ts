@@ -5,9 +5,7 @@
  * component is narrow, and a popover panel opened by the hamburger menu
  * when the component is full-width (stacked).
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   buildCloseButton,
   buildHeader,
@@ -25,7 +23,7 @@ class SideDrawer extends HTMLElement {
   static observedAttributes = ['open',];
 
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Reference to the popover panel element, set after first render. */
   #panel: HTMLDivElement | null = null;

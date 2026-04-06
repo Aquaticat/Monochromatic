@@ -22,7 +22,8 @@ Total packages: 629 (626 libraries, 3 frameworks).
 ### Dependency chains for flagged packages
 
 **`picomatch@2.3.2` -- transitive via stylelint (dev-only):**
-```
+
+```text
 stylelint -> micromatch -> picomatch@2.3.2
 stylelint -> globby -> fast-glob -> micromatch
 ```
@@ -51,17 +52,20 @@ in `node_modules/.bin`. Dev-only dependency.
 
 ### Informational findings
 
-**Potential vulnerabilities (2 packages) -- behavioral risk, not CVEs**
+#### Potential vulnerabilities (2 packages) -- behavioral risk, not CVEs
+
 - `picomatch@2.3.2` -- ReDoS via unconstrained regex from user-supplied globs; transitive via stylelint; dev-only
 - `openai@6.33.0` -- unsigned tarball download in `migrate` subcommand; direct dep; dev-only
 
-**Unpopular packages (4)**
+#### Unpopular packages (4)
+
 - `lezer-toml@1.0.0` -- direct dep of `packages/desktop-daemon/editord`; niche Lezer grammar for TOML
 - `@mitata/counters@0.0.8` -- direct dep of `packages/test-fixture/file-enforcer-perf`; companion to mitata benchmarking
 - `@tursodatabase/database-darwin-arm64@0.5.3` -- transitive platform binary for turso
 - `@tursodatabase/database-win32-x64-msvc@0.5.3` -- transitive platform binary for turso
 
-**Unmaintained (>3 years without updates, 34 packages)**
+#### Unmaintained (>3 years without updates, 34 packages)
+
 - argparse, json-schema-traverse, fast-deep-equal, inherits, resolve-from, is-extglob, shebang-command, normalize-path, safe-buffer, to-regex-range, string_decoder, util-deprecate, extend, kind-of, require-from-string, merge2, run-parallel, queue-microtask, is-number, text-hex, lodash.truncate, astral-regex, cssesc, is-plain-object, global-modules, globjoin, svg-tags, tree-kill, enabled, fn.name, kuler, one-time, tiny-inflate, outdent
 
 All 34 are transitive dependencies except `outdent@0.8.0` (direct, aliased as `@cspotcode/outdent`).
@@ -75,7 +79,7 @@ Behavioral indicators are visible on the Socket dashboard but not in the CSV exp
 
 ---
 
-# Dependency Source Code Audit
+## Dependency Source Code Audit
 
 ## Excluded from Auditing
 
@@ -85,7 +89,6 @@ Dependencies excluded from full source code audit, with rationale.
 
 - **postcss** — Used by stylelint and CSS build pipeline
 - **tinyglobby** — Used by tsdown and other build tooling
-
 
 ### Trusted / Pre-Vetted
 
@@ -138,7 +141,7 @@ Dependencies excluded from full source code audit, with rationale.
 - **Version:** 1.4.7
 - **Date:** 2026-03-03
 - **Verdict:** Acceptable
-- **Notes:**  Elysia's source code is straightforward framework code with no "funny business." It has solid security hygiene (prototype
+- **Notes:** Elysia's source code is straightforward framework code with no "funny business." It has solid security hygiene (prototype
   pollution guards, timing-safe crypto, strict mode), legitimate use of dynamic code generation for performance, and zero data
   collection or exfiltration mechanisms.
 
@@ -166,16 +169,16 @@ Dependencies excluded from full source code audit, with rationale.
   reputable dependencies. Both libraries demonstrate above-average code quality: strict TypeScript configurations, comprehensive
   test suites, thorough JSDoc documentation, consistent input validation, and no use of eval, dynamic code execution, install
   scripts, or obfuscated code. No data exfiltration, telemetry, or hidden functionality was detected. The only minor concern is the
-   single-author bus factor across the @happy-ts ecosystem, which is common for focused open-source utilities and does not
+  single-author bus factor across the @happy-ts ecosystem, which is common for focused open-source utilities and does not
   constitute a blocking risk.
 
 ### smol-toml
 
-- **Notes:**  well-engineered, zero-runtime-dependency TOML parser/serializer with ~1,300 lines of TypeScript source. The audit
+- **Notes:** well-engineered, zero-runtime-dependency TOML parser/serializer with ~1,300 lines of TypeScript source. The audit
   found no suspicious code — no network calls, telemetry, eval, environment variable access, or postinstall scripts. Security is
   handled proactively: prototype pollution is mitigated via Object.defineProperty, all regexes are anchored and ReDoS-safe, and
   recursive depth is capped at 1000 to prevent stack overflows. CI/CD follows best practices with SHA-pinned GitHub Actions and npm
-   provenance publishing. The test suite covers parsing, serialization, error reporting, and DoS protection. One minor concern:
+  provenance publishing. The test suite covers parsing, serialization, error reporting, and DoS protection. One minor concern:
   skipVoid uses recursion per comment line, which could theoretically overflow on pathologically large inputs, but this is
   low-severity. With ~7M weekly npm downloads and BSD-3-Clause licensing, this library is production-ready and safe to adopt.
 

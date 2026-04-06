@@ -8,7 +8,7 @@ Issues with client-side bundling, tree-shaking, and Node.js code leaking into br
 
 A browser console shows errors like:
 
-```
+```text
 Access to script at 'node:fs/promises' from origin 'http://localhost:4400'
 has been blocked by CORS policy: Cross origin requests are only supported
 for protocol schemes: chrome, chrome-extension, chrome-untrusted, data,
@@ -61,12 +61,13 @@ that runs **before** the `import()` call:
 
 ```typescript
 if (typeof globalThis.process === 'undefined'
-  || typeof globalThis.process.versions?.node === 'undefined') {
+  || typeof globalThis.process.versions?.node === 'undefined')
+{
   return false;
 }
 
 // Only reached in Node.js
-const { appendFile } = await import('node:fs/promises');
+const { appendFile, } = await import('node:fs/promises');
 ```
 
 This prevents the browser from ever attempting the `node:` fetch.

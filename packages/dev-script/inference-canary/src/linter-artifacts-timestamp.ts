@@ -19,7 +19,7 @@ const SECONDS_PER_MINUTE = 60;
 const MS_PER_SECOND = 1_000;
 
 /** 24 hours in milliseconds */
-export const TWENTY_FOUR_HOURS_MS = HOURS_PER_DAY
+export const TWENTY_FOUR_HOURS_MS: number = HOURS_PER_DAY
   * MINUTES_PER_HOUR
   * SECONDS_PER_MINUTE
   * MS_PER_SECOND;
@@ -47,7 +47,7 @@ export type RecentArtifactScan = {
  * // groups: { probe: 'csv-rfc4180', pass: 'initial', timestamp: '2026-03-06T12-00-00.000Z' }
  * ```
  */
-export const ARTIFACT_DIR_PATTERN =
+export const ARTIFACT_DIR_PATTERN: RegExp =
   /^(?<probe>.+)-(?<pass>initial|fix)-(?<timestamp>\d{4}-.+)$/;
 
 /**
@@ -60,7 +60,7 @@ export const ARTIFACT_DIR_PATTERN =
  * // groups: { timestamp: '2026-03-06T12-00-00.000Z' }
  * ```
  */
-export const FAILURE_DIR_PATTERN = /^failure-(?<timestamp>\d{4}-.+)$/;
+export const FAILURE_DIR_PATTERN: RegExp = /^failure-(?<timestamp>\d{4}-.+)$/;
 
 /**
  * Restores an ISO timestamp from its filesystem-safe slug form.

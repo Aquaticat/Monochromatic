@@ -18,7 +18,7 @@ await describe({
         expect(store.backends.length,).toBe(1,);
         expect(store.lossyForCircular,).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'creates a store with custom storeId',
@@ -26,7 +26,7 @@ await describe({
         const store = await $({ storeId: 'test-store', },);
         expect(store.storeId,).toBe('test-store',);
       },
-    }),
+    },),
 
     it({
       name: 'set and get round-trips a value',
@@ -36,7 +36,7 @@ await describe({
         const result = await store.get<{ value: number; }>('key1',);
         expect(result,).toEqual({ value: 42, },);
       },
-    }),
+    },),
 
     it({
       name: 'get returns undefined for missing keys',
@@ -45,7 +45,7 @@ await describe({
         const result = await store.get('nonexistent',);
         expect(result,).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'delete removes an entry',
@@ -56,7 +56,7 @@ await describe({
         await store.delete('to-delete',);
         expect(await store.get('to-delete',),).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'clear removes all entries',
@@ -68,7 +68,7 @@ await describe({
         expect(await store.get('a',),).toBeUndefined();
         expect(await store.get('b',),).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'set returns the store for chaining',
@@ -77,7 +77,7 @@ await describe({
         const returned = await store.set('k', 'v',);
         expect(returned,).toBe(store,);
       },
-    }),
+    },),
 
     it({
       name: 'handles multiple backends with consensus',
@@ -96,7 +96,7 @@ await describe({
         const result = await store.get<string>('shared',);
         expect(result,).toBe('hello',);
       },
-    }),
+    },),
 
     it({
       name: 'heals divergent backends to majority value',
@@ -121,7 +121,7 @@ await describe({
         // backend2 should be healed
         expect(backend2.get('key',),).toBe(correctSerialized,);
       },
-    }),
+    },),
 
     it({
       name: 'throws TypeError for cyclic value when lossyForCircular is false',
@@ -132,7 +132,7 @@ await describe({
 
         await expect(store.set('cyc', circular,),).rejects.toThrow(TypeError,);
       },
-    }),
+    },),
 
     it({
       name: 'stores decycled value when lossyForCircular is true',
@@ -146,7 +146,7 @@ await describe({
         expect(result,).toBeDefined();
         expect(result?.data,).toBe('test',);
       },
-    }),
+    },),
 
     it({
       name: 'handles primitive values',
@@ -162,7 +162,7 @@ await describe({
         expect(await store.get<boolean>('bool',),).toBe(true,);
         expect(await store.get<null>('null',),).toBeNull();
       },
-    }),
+    },),
 
     it({
       name: 'handles arrays and nested objects',
@@ -172,7 +172,7 @@ await describe({
         await store.set('complex', complex,);
         expect(await store.get<typeof complex>('complex',),).toEqual(complex,);
       },
-    }),
+    },),
 
     it({
       name: 'LRU eviction removes oldest entry at capacity',
@@ -190,7 +190,7 @@ await describe({
         expect(await store.get('a',),).toBeUndefined();
         expect(await store.get('d',),).toBeDefined();
       },
-    }),
+    },),
 
     it({
       name: 'LRU access refreshes entry position',
@@ -212,7 +212,7 @@ await describe({
         expect(await store.get('a',),).toBeDefined();
         expect(await store.get('b',),).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'LRU delete removes key from eviction tracking',
@@ -234,7 +234,7 @@ await describe({
         expect(await store.get('c',),).toBeDefined();
         expect(await store.get('d',),).toBeDefined();
       },
-    }),
+    },),
 
     it({
       name: 'LRU clear resets eviction tracking',
@@ -255,7 +255,7 @@ await describe({
         expect(await store.get('c',),).toBeDefined();
         expect(await store.get('d',),).toBeDefined();
       },
-    }),
+    },),
 
     it({
       name: 'no eviction by default',
@@ -270,6 +270,6 @@ await describe({
         expect(await store.get('a',),).toBeDefined();
         expect(await store.get('e',),).toBeDefined();
       },
-    }),
+    },),
   ],
 },);

@@ -53,6 +53,11 @@ export type UndoHandlerDeps = {
  *
  * @returns `pushSnapshot` to call after state-changing actions,
  *   `updateUndoButtons` to refresh button disabled state
+ *
+ * @example
+ * ```ts
+ * const { pushSnapshot, updateUndoButtons } = setupUndoHandlers(deps);
+ * ```
  */
 export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   pushSnapshot: () => void;

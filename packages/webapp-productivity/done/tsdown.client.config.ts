@@ -2,7 +2,10 @@ import base from '@monochromatic-dev/config-tsdown/.client.ts';
 import {
   importAttributesPlugin,
 } from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
-import { defineConfig, } from 'tsdown';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
 
 /**
  * Client-side browser bundle config for the Done productivity app.
@@ -10,7 +13,7 @@ import { defineConfig, } from 'tsdown';
  * Uses the import-attributes plugin so client code can import
  * pre-built CSS via `with { type: 'text' }`.
  */
-export default defineConfig({
+const config: UserConfig = defineConfig({
   ...base,
   entry: [
     './src/client/inbox.ts',
@@ -21,3 +24,4 @@ export default defineConfig({
   ],
   plugins: [importAttributesPlugin(),],
 },);
+export default config;

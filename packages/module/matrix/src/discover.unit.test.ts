@@ -8,9 +8,13 @@
  * @module
  */
 
-import { mkdir, rm, writeFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  mkdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
 
 import {
   describe,
@@ -78,7 +82,7 @@ await describe({
         expect(files[0],).toContain('bar.unit.matrix.test.ts',);
         expect(files[1],).toContain('foo.unit.matrix.test.ts',);
       },
-    }),
+    },),
 
     it({
       name: 'skips node_modules directories',
@@ -99,7 +103,7 @@ await describe({
         expect(files.length,).toBe(1,);
         expect(files[0],).toContain('visible',);
       },
-    }),
+    },),
 
     it({
       name: 'skips dist directories',
@@ -120,7 +124,7 @@ await describe({
         expect(files.length,).toBe(1,);
         expect(files[0],).toContain('visible',);
       },
-    }),
+    },),
 
     it({
       name: 'finds files in subdirectories recursively',
@@ -137,7 +141,7 @@ await describe({
         expect(files.length,).toBe(1,);
         expect(files[0],).toContain('deep.unit.matrix.test.ts',);
       },
-    }),
+    },),
 
     it({
       name: 'throws when no test files found',
@@ -162,7 +166,7 @@ await describe({
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain('No matrix test files',);
       },
-    }),
+    },),
 
     it({
       name: 'returns sorted absolute paths',
@@ -186,16 +190,15 @@ await describe({
         expect(files.length,).toBe(3,);
 
         /** Paths should be absolute. */
-        for (const file of files) {
-          expect(file.startsWith('/'),).toBe(true,);
-        }
+        for (const file of files)
+          expect(file.startsWith('/',),).toBe(true,);
 
         /** Should be sorted lexicographically. */
         expect(files[0],).toContain('a.unit.matrix.test.ts',);
         expect(files[1],).toContain('m.unit.matrix.test.ts',);
         expect(files[2],).toContain('z.unit.matrix.test.ts',);
       },
-    }),
+    },),
 
     it({
       name: 'ignores non-.ts files with similar names',
@@ -219,6 +222,6 @@ await describe({
         expect(files.length,).toBe(1,);
         expect(files[0],).toContain('baz',);
       },
-    }),
+    },),
   ],
 },);

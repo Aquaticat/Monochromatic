@@ -65,16 +65,16 @@ iOS Safari defaults touch listeners to passive.
 
 ```ts
 canvas.addEventListener('touchstart',
-  function handleTouchStart(event: TouchEvent): void {
+  function handleTouchStart(event: TouchEvent,): void {
     if (shouldSuppressNativeGestures())
       event.preventDefault();
-  }, { passive: false });
+  }, { passive: false, },);
 
 canvas.addEventListener('touchmove',
-  function handleTouchMove(event: TouchEvent): void {
+  function handleTouchMove(event: TouchEvent,): void {
     if (shouldSuppressNativeGestures())
       event.preventDefault();
-  }, { passive: false });
+  }, { passive: false, },);
 ```
 
 Guard the `preventDefault()` behind a condition (e.g. active tool mode)
@@ -87,11 +87,11 @@ Prevents iOS from canceling the pointer event sequence after `pointerdown` fires
 
 ```ts
 canvas.addEventListener('pointerdown',
-  function handlePointerDown(event: PointerEvent): void {
+  function handlePointerDown(event: PointerEvent,): void {
     event.preventDefault();
-    canvas.setPointerCapture(event.pointerId);
+    canvas.setPointerCapture(event.pointerId,);
     // ... gesture logic
-  });
+  },);
 ```
 
 ### 3. `-webkit-touch-callout: none` CSS
@@ -103,8 +103,8 @@ system callout instead.
 
 ```css
 #my-canvas {
-  touch-action: none;               /* still set -- works on every other browser */
-  -webkit-touch-callout: none;      /* iOS long-press menu suppression */
+  touch-action: none; /* still set -- works on every other browser */
+  -webkit-touch-callout: none; /* iOS long-press menu suppression */
 }
 ```
 

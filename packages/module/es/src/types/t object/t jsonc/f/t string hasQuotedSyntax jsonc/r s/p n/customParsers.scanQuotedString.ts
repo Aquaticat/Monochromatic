@@ -51,6 +51,14 @@ function findTerminatingQuote(
  * This avoids GC pressure while preserving pure behaviour and API.
  *
  * @returns consumed fragment, parsed string value, and remaining tail
+ *
+ * @example
+ * ```ts
+ * const result = scanQuotedString({ value: '"hello" world' as FragmentStringJsonc });
+ * // result.consumed === '"hello"'
+ * // result.parsed.value === '"hello"'
+ * // result.remaining === ' world'
+ * ```
  */
 export function scanQuotedString(
   { value, }: { value: FragmentStringJsonc | StringJsonc; },

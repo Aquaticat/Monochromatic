@@ -28,6 +28,11 @@ import {
  * @param id - Task UUID
  *
  * @returns Mapped task, or `null` when the ID does not exist
+ *
+ * @example
+ * ```ts
+ * const task = await getTaskById('abc-123');
+ * ```
  */
 export async function getTaskById(id: string,): Promise<Task | null> {
   const taskRow = await getTaskRowById(id,);
@@ -38,6 +43,11 @@ export async function getTaskById(id: string,): Promise<Task | null> {
  * Lists inbox tasks that have no blockers, newest first.
  *
  * @returns Unblocked inbox tasks sorted by creation date
+ *
+ * @example
+ * ```ts
+ * const tasks = await listInboxUnblockedTasks();
+ * ```
  */
 export async function listInboxUnblockedTasks(): Promise<Task[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
@@ -51,6 +61,11 @@ export async function listInboxUnblockedTasks(): Promise<Task[]> {
  * Lists inbox tasks that are blocked, paired with each blocker ID for nesting.
  *
  * @returns Blocked task links with blocker IDs
+ *
+ * @example
+ * ```ts
+ * const links = await listBlockedInboxTasks();
+ * ```
  */
 export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow with blocker_id join column
@@ -69,6 +84,11 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
  * Lists tasks with active timers (`status = 'in_progress'`), most recently updated first.
  *
  * @returns In-progress tasks sorted by update date
+ *
+ * @example
+ * ```ts
+ * const running = await listInProgressTasks();
+ * ```
  */
 export async function listInProgressTasks(): Promise<Task[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
@@ -84,6 +104,11 @@ export async function listInProgressTasks(): Promise<Task[]> {
  * @param taskId - Task to exclude (the task being edited)
  *
  * @returns Available tasks for blocker selection
+ *
+ * @example
+ * ```ts
+ * const candidates = await listTasksForBlockerPicker('current-task-id');
+ * ```
  */
 export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
@@ -97,6 +122,12 @@ export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]
  * Collects all unique tags across every task, sorted alphabetically.
  *
  * @returns Sorted array of unique tag strings
+ *
+ * @example
+ * ```ts
+ * const tags = await listAllTags();
+ * // ['errand', 'home', 'work']
+ * ```
  */
 export async function listAllTags(): Promise<string[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns rows with tag column
@@ -113,6 +144,11 @@ export async function listAllTags(): Promise<string[]> {
  * @param searchQuery - User-entered search string
  *
  * @returns Matching tasks with blocked status
+ *
+ * @example
+ * ```ts
+ * const results = await searchTasks('groceries');
+ * ```
  */
 export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
   const normalizedSearchQuery = searchQuery.trim();

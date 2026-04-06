@@ -27,7 +27,13 @@ const GHCR_TAG = 'ghcr.io/aquaticat/monochromatic-dev:latest';
 const MONOREPO_ROOT = await findMonorepoRoot();
 
 /** Path to the cosign private key for image signing. */
-const COSIGN_KEY = join(MONOREPO_ROOT, 'packages', 'config', 'cosign', 'cosign.key');
+const COSIGN_KEY = join(
+  MONOREPO_ROOT,
+  'packages',
+  'config',
+  'cosign',
+  'cosign.key',
+);
 
 /**
  * Spawns a command with inherited stdio so output streams to the terminal in real time.
@@ -44,24 +50,52 @@ const COSIGN_KEY = join(MONOREPO_ROOT, 'packages', 'config', 'cosign', 'cosign.k
  * ```
  */
 async function run(
-  { cmd, args }: { cmd: string; args: readonly string[] },
+  {
+    cmd,
+    args,
+  }: {
+    cmd: string;
+    args: readonly string[];
+  },
 ): Promise<void> {
-  const child = nodeSpawn(cmd, [...args], { stdio: 'inherit' });
-  const [code] = await once(child, 'close') as [number];
-  if (code !== 0) {
-    throw new Error(`${cmd} exited with code ${String(code)}`);
-  }
+  const child = nodeSpawn(
+    cmd,
+    [...args,],
+    { stdio: 'inherit', },
+  );
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- node:events once() returns Promise<any[]>; close event always passes [code: number | null, signal: string | null]
+  const [code,] = await once(
+    child,
+    'close',
+  );
+  if (code !== 0)
+    throw new Error(`${cmd} exited with code ${String(code,)}`,);
 }
 
 /**
  * Tags the local image for GHCR and pushes it.
  */
 async function pushImage(): Promise<void> {
-  console.log(`[vm-builder] tagging ${IMAGE_TAG} as ${GHCR_TAG}...`);
-  await run({ cmd: 'sudo', args: ['podman', 'tag', IMAGE_TAG, GHCR_TAG] });
+  console.log(`[vm-builder] tagging ${IMAGE_TAG} as ${GHCR_TAG}...`,);
+  await run({
+    cmd: 'sudo',
+    args: [
+      'podman',
+      'tag',
+      IMAGE_TAG,
+      GHCR_TAG,
+    ],
+  },);
 
-  console.log(`[vm-builder] pushing ${GHCR_TAG}...`);
-  await run({ cmd: 'sudo', args: ['podman', 'push', GHCR_TAG] });
+  console.log(`[vm-builder] pushing ${GHCR_TAG}...`,);
+  await run({
+    cmd: 'sudo',
+    args: [
+      'podman',
+      'push',
+      GHCR_TAG,
+    ],
+  },);
 }
 
 /**
@@ -69,20 +103,23 @@ async function pushImage(): Promise<void> {
  * The signature is stored as an OCI artifact in the same GHCR repository.
  */
 async function signImage(): Promise<void> {
-  console.log('[vm-builder] signing image with cosign...');
+  console.log('[vm-builder] signing image with cosign...',);
   await run({
     cmd: 'sudo',
     args: [
-      'env', 'COSIGN_PASSWORD=',
-      'cosign', 'sign',
-      '--key', COSIGN_KEY,
+      'env',
+      'COSIGN_PASSWORD=',
+      'cosign',
+      'sign',
+      '--key',
+      COSIGN_KEY,
       '--tlog-upload=false',
       GHCR_TAG,
     ],
-  });
+  },);
 }
 
 await pushImage();
 await signImage();
 
-console.log(`[vm-builder] pushed and signed ${GHCR_TAG}`);
+console.log(`[vm-builder] pushed and signed ${GHCR_TAG}`,);

@@ -22,10 +22,12 @@ await describe({
 
         const SECTOR_SIZE = 2_048;
         const pvdOffset = 16 * SECTOR_SIZE;
-        const signature = new TextDecoder().decode(iso.slice(pvdOffset + 1, pvdOffset + 6,),);
+        const signature = new TextDecoder().decode(
+          iso.slice(pvdOffset + 1, pvdOffset + 6,),
+        );
         expect(signature,).toBe('CD001',);
       },
-    }),
+    },),
 
     it({
       name: 'sets volume identifier from volumeId parameter',
@@ -40,10 +42,12 @@ await describe({
 
         const SECTOR_SIZE = 2_048;
         const pvdOffset = 16 * SECTOR_SIZE;
-        const volId = new TextDecoder().decode(iso.slice(pvdOffset + 40, pvdOffset + 46,),);
+        const volId = new TextDecoder().decode(
+          iso.slice(pvdOffset + 40, pvdOffset + 46,),
+        );
         expect(volId,).toBe('cidata',);
       },
-    }),
+    },),
 
     it({
       name: 'includes terminator descriptor at sector 17',
@@ -60,7 +64,7 @@ await describe({
         const sig = new TextDecoder().decode(iso.slice(vdstOffset + 1, vdstOffset + 6,),);
         expect(sig,).toBe('CD001',);
       },
-    }),
+    },),
 
     it({
       name: 'embeds file data at expected sectors',
@@ -79,7 +83,7 @@ await describe({
         );
         expect(extracted,).toBe(content,);
       },
-    }),
+    },),
 
     it({
       name: 'handles multiple files',
@@ -87,7 +91,8 @@ await describe({
         const encoder = new TextEncoder();
         const iso = createIso({
           files: [
-            { data: encoder.encode('#cloud-config\nhostname: test\n',), name: 'user-data', },
+            { data: encoder.encode('#cloud-config\nhostname: test\n',),
+              name: 'user-data', },
             { data: encoder.encode('instance-id: test\n',), name: 'meta-data', },
           ],
           volumeId: 'cidata',
@@ -97,6 +102,6 @@ await describe({
         /** Two files at sectors 21 and 22, so total is 23 sectors. */
         expect(iso.length,).toBe(23 * SECTOR_SIZE,);
       },
-    }),
+    },),
   ],
 },);

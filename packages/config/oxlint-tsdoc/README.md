@@ -15,10 +15,10 @@ Reference the package in `oxlint.config.ts`:
 
 ```typescript
 // oxlint.config.ts
-import { defineConfig } from 'oxlint';
+import { defineConfig, } from 'oxlint';
 export default defineConfig({
-  jsPlugins: ['@monochromatic-dev/config-oxlint-tsdoc'],
-});
+  jsPlugins: ['@monochromatic-dev/config-oxlint-tsdoc',],
+},);
 ```
 
 All rules are enabled by default at `"warn"` severity with `recommended: true`.

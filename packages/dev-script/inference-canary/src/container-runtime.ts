@@ -98,6 +98,6 @@ function detectRuntime(): string {
 }
 
 /** Resolved container runtime binary name, detected at module load time */
-export const CONTAINER_RUNTIME = detectRuntime();
+export const CONTAINER_RUNTIME: string = detectRuntime();
 
 //endregion Runtime detection

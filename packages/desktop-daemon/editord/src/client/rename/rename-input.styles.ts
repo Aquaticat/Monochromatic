@@ -3,10 +3,10 @@
  */
 
 import {
-  hCss as $,
   cssNum,
   cssRem,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
@@ -18,6 +18,9 @@ import {
 
 /** Padding inside the input field in rem. */
 const INPUT_PADDING = 1 / (2 * 2);
+
+/** Z-index for the rename input overlay, above other fixed-position elements. */
+const OVERLAY_Z_INDEX = 1_000;
 
 /** Shadow DOM styles for the rename input. */
 export const STYLES = [
@@ -31,7 +34,7 @@ export const STYLES = [
       'border-radius': cssRem(POPUP_BORDER_RADIUS,),
       ...POPUP_BORDER_DECLS,
       position: 'fixed',
-      'z-index': cssNum(1000,),
+      'z-index': cssNum(OVERLAY_Z_INDEX,),
     },
   },),
   $({

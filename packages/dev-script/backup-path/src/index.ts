@@ -20,7 +20,10 @@ import {
  */
 const path = runSync(
   argument(string(),),
-  { programName: 'backup-path', help: 'option', },
+  {
+    programName: 'backup-path',
+    help: 'option',
+  },
 );
 
 console.log(`Backing up ${path}`,);
@@ -35,7 +38,11 @@ await mkdir(join(
 ),);
 await cp(
   path,
-  join('bak', now, basename(path,),),
+  join(
+    'bak',
+    now,
+    basename(path,),
+  ),
   {
     recursive: true,
     errorOnExist: true,

@@ -38,7 +38,16 @@ description: |
 
 model: sonnet
 color: cyan
-tools: ["Read", "Grep", "Glob", "Bash", "WebFetch", "WebSearch", "mcp__claude_ai_linkup__linkup-search", "mcp__claude_ai_linkup__linkup-fetch"]
+tools: [
+  'Read',
+  'Grep',
+  'Glob',
+  'Bash',
+  'WebFetch',
+  'WebSearch',
+  'mcp__claude_ai_linkup__linkup-search',
+  'mcp__claude_ai_linkup__linkup-fetch',
+]
 ---
 
 You are a research agent specializing in accurate, source-backed investigation.

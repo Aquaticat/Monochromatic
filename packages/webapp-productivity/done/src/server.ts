@@ -115,7 +115,12 @@ app.get(
 app.get(
   '/tasks/:id',
   defineHandler(function handleTaskDetails(event,) {
-    return taskDetailsPage(requireParam(event, 'id',),);
+    return taskDetailsPage(
+      requireParam(
+        event,
+        'id',
+      ),
+    );
   },),
 );
 app.get(
@@ -140,31 +145,57 @@ app.post(
 app.put(
   '/api/tasks/:id',
   defineHandler(function handleUpdateTaskRoute(event,) {
-    return handleUpdateTask(event.req, requireParam(event, 'id',),);
+    return handleUpdateTask(
+      event.req,
+      requireParam(
+        event,
+        'id',
+      ),
+    );
   },),
 );
 app.delete(
   '/api/tasks/:id',
   defineHandler(function handleDeleteTaskRoute(event,) {
-    return handleDeleteTask(requireParam(event, 'id',),);
+    return handleDeleteTask(
+      requireParam(
+        event,
+        'id',
+      ),
+    );
   },),
 );
 app.post(
   '/api/tasks/:id/start',
   defineHandler(function handleStartTimerRoute(event,) {
-    return handleStartTimer(requireParam(event, 'id',),);
+    return handleStartTimer(
+      requireParam(
+        event,
+        'id',
+      ),
+    );
   },),
 );
 app.post(
   '/api/tasks/:id/stop',
   defineHandler(function handleStopTimerRoute(event,) {
-    return handleStopTimer(requireParam(event, 'id',),);
+    return handleStopTimer(
+      requireParam(
+        event,
+        'id',
+      ),
+    );
   },),
 );
 app.post(
   '/api/tasks/:id/complete',
   defineHandler(function handleCompleteTaskRoute(event,) {
-    return handleCompleteTask(requireParam(event, 'id',),);
+    return handleCompleteTask(
+      requireParam(
+        event,
+        'id',
+      ),
+    );
   },),
 );
 app.post(

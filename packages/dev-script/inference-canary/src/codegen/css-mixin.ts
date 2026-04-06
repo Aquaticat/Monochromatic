@@ -5,14 +5,15 @@
  * and @apply rules. CSS native mixins are new enough that models won't have canned solutions,
  * making this a strong signal of genuine reasoning ability.
  */
+import type {
+  Probe,
+  ScoreContext,
+} from '../probes.ts';
 import { CSS_MIXIN_TEST_CSS, } from './css-mixin-test-css.ts';
 import { CSS_MIXIN_PERF_INPUT, } from './perf-test-data/index.ts';
-import type { Probe, } from '../probes.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 import { verifyCssMixin, } from './css-mixin-verify.ts';
-
-import type { ScoreContext, } from '../probes.ts';
 
 /**
  * Tracks whether the most recent score() call detected regex usage, keyed by model ID.

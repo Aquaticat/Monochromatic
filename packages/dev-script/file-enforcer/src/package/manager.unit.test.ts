@@ -27,7 +27,7 @@ await describe({
             /** Every CI and dev machine has at least one package manager */
             expect(manager,).not.toBeNull();
           },
-        }),
+        },),
         it({
           name: 'caches the result across calls',
           fn: async () => {
@@ -36,9 +36,9 @@ await describe({
             const second = await detectManager();
             expect(first,).toBe(second,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion detectManager
 
@@ -54,16 +54,18 @@ await describe({
             const exists = await binaryExists('ls',);
             expect(exists,).toBe(true,);
           },
-        }),
+        },),
         it({
           name: 'returns false for a binary that does not exist',
           fn: async () => {
-            const exists = await binaryExists('nonexistent-binary-that-should-not-exist-42',);
+            const exists = await binaryExists(
+              'nonexistent-binary-that-should-not-exist-42',
+            );
             expect(exists,).toBe(false,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion binaryExists
 
@@ -79,7 +81,7 @@ await describe({
             const result = isRoot();
             expect(typeof result,).toBe('boolean',);
           },
-        }),
+        },),
         it({
           name: 'caches the result across calls',
           fn: async () => {
@@ -88,10 +90,9 @@ await describe({
             const second = isRoot();
             expect(first,).toBe(second,);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion isRoot
   ],
 },);

@@ -125,7 +125,7 @@ export function buildParamFix(
     lineStart,
     openParen,
   );
-  const baseIndent = linePrefix.match(/^(\s*)/,)?.[1] ?? '';
+  const baseIndent = /^(\s*)/.exec(linePrefix,)?.[1] ?? '';
   const childIndent = `${baseIndent}  `;
 
   const paramTexts = params.map(

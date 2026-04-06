@@ -1,9 +1,12 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
-import { $ as createObservable, } from '@monochromatic-dev/module-es/create-observable';
+// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments, eslint/prefer-destructuring -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
+import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
+import {
+  $ as createObservable,
+  type Observable,
+} from '@monochromatic-dev/module-es/create-observable';
 import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
-import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 import { Exa, } from 'exa-js';
 import * as z from 'zod/mini';
 
@@ -16,16 +19,7 @@ export const baseUrl = 'https://exa.aquati.cat/api/proxy';
  * DOM elements and reactive state for the search interface.
  * Bindings are resolved eagerly at module load via `querySelector` assertions.
  */
-export const {
-  searchForm,
-  costDollarsSpan,
-  resultsSection,
-  exa,
-  numResultsInput,
-  numTotalSearchesSpan,
-  changeApiKeyButton,
-  processingParagraph,
-} = {
+const bindings = {
   exa: createObservable(
     await (async function createExaExtra(): Promise<[
       Exa,
@@ -34,13 +28,19 @@ export const {
       const apiKey = await z
         .pipe(
           z
-            .pipe(z.nullable(z.uuid(),), z.transform(async function promptSet(val,) {
-              if (val)
-                return val;
-              const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
-              localStorage.setItem('exaApiKey', inputApiKey,);
-              return inputApiKey;
-            },),),
+            .pipe(
+              z.nullable(z.uuid(),),
+              z.transform(async function promptSet(val,) {
+                if (val)
+                  return val;
+                const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
+                localStorage.setItem(
+                  'exaApiKey',
+                  inputApiKey,
+                );
+                return inputApiKey;
+              },),
+            ),
           z.uuid(),
         )
         .parseAsync(localStorage.getItem('exaApiKey',),);
@@ -83,17 +83,38 @@ export const {
   ),
 };
 
+/** Exa SDK client wrapped in an observable for reactive API key changes. */
+export const exa: Observable<[
+  Exa,
+  { apiKey: string; },
+]> = bindings.exa;
+
+/** Search form element. */
+export const searchForm: HTMLFormElement = bindings.searchForm;
+
+/** Processing status paragraph. */
+export const processingParagraph: HTMLParagraphElement = bindings.processingParagraph;
+
+/** Cost display span element. */
+export const costDollarsSpan: HTMLSpanElement = bindings.costDollarsSpan;
+
+/** Number of results input element. */
+export const numResultsInput: HTMLInputElement = bindings.numResultsInput;
+
+/** Results section container. */
+export const resultsSection: HTMLElement = bindings.resultsSection;
+
+/** Total searches count display span. */
+export const numTotalSearchesSpan: HTMLSpanElement = bindings.numTotalSearchesSpan;
+
+/** API key change button. */
+export const changeApiKeyButton: HTMLButtonElement = bindings.changeApiKeyButton;
+
 /**
  * Derived DOM elements and reactive counters that depend on the first binding group.
  * Includes the search input, result template, range constraints, and persisted counters.
  */
-export const {
-  searchInput,
-  firstResult,
-  exaMaxResults,
-  numTotalSearches,
-  numResults,
-} = {
+const derived = {
   searchInput: notNullishOrThrow(
     searchForm.querySelector<HTMLInputElement>('input',),
   ),
@@ -125,6 +146,21 @@ export const {
     },
   ),
 };
+
+/** Search text input element. */
+export const searchInput: HTMLInputElement = derived.searchInput;
+
+/** First result element used as template for cloning. */
+export const firstResult: HTMLElement = derived.firstResult;
+
+/** Maximum number of results from the input range constraint. */
+export const exaMaxResults: number = derived.exaMaxResults;
+
+/** Observable counter tracking total searches performed. */
+export const numTotalSearches: Observable<number> = derived.numTotalSearches;
+
+/** Observable counter tracking requested number of results. */
+export const numResults: Observable<number> = derived.numResults;
 
 // TODO: Use logic of replicating element inside fetch result to avoid errors on subsequent searches.
 replicateElementAsContentOf(

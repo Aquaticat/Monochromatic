@@ -71,8 +71,13 @@ export type { ObjectsMergeRules, } from './rules.ts';
   const result: Record<string, unknown> = {};
 
   // Process each property
-  for (const key of allKeys)
-    result[key] = resolveProperty(key, objs, rules,);
+  for (const key of allKeys) {
+    result[key] = resolveProperty(
+      key,
+      objs,
+      rules,
+    );
+  }
 
   return result;
 }
@@ -81,8 +86,11 @@ export type { ObjectsMergeRules, } from './rules.ts';
  * Resolves a single property across all objects.
  *
  * @param key - Property key to resolve
+ *
  * @param objs - Source objects
+ *
  * @param rules - Conflict resolution rules
+ *
  * @returns Resolved value for the property
  */
 function resolveProperty(
@@ -106,8 +114,12 @@ function resolveProperty(
     const existing = valuesByType.get(valueType,);
     if (existing !== undefined)
       existing.push(value,);
-    else
-      valuesByType.set(valueType, [value,],);
+    else {
+      valuesByType.set(
+        valueType,
+        [value,],
+      );
+    }
   }
 
   // Reject mixed types for the same property
@@ -120,7 +132,7 @@ function resolveProperty(
   }
 
   const entries = [...valuesByType.entries(),];
-  const firstEntry = entries[0];
+  const [firstEntry,] = entries;
   if (firstEntry === undefined)
     return undefined;
 
@@ -130,7 +142,7 @@ function resolveProperty(
     return values[0];
 
   // Check for consensus using structuredClone round-trip for deep equality
-  const firstValue = values[0];
+  const [firstValue,] = values;
   const allEqual = values.every(function checkEqual(value,) {
     try {
       const clonedFirst = structuredClone(firstValue,);
@@ -155,9 +167,9 @@ function resolveProperty(
     );
   }
 
-  // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion, typescript/no-unsafe-assignment -- values array type depends on runtime typeof check
   return rule({
     key,
+    // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion, typescript/no-unsafe-assignment -- values array type depends on runtime typeof check
     values: values as any,
   },);
 }

@@ -37,6 +37,13 @@ import {
  * @param importerSourceCache - cache to avoid re-reading the same file
  *
  * @returns attribute type string if found and supported, `undefined` otherwise
+ *
+ * @example
+ * ```ts
+ * const cache = new Map<string, string>();
+ * scanImporterForAttribute('./sample.sql', '/project/src/main.ts', cache);
+ * // 'text' if main.ts contains: import x from './sample.sql' with { type: 'text' }
+ * ```
  */
 export function scanImporterForAttribute(
   specifier: string,

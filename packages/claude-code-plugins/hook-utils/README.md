@@ -10,13 +10,19 @@ Shared I/O utilities for Claude Code hook plugins.
 ## Usage
 
 ```ts
-import { readStdin, writeOutput } from '@monochromatic-dev/claude-code-plugins-hook-utils'
-import type { StopInput, StopOutput } from '@monochromatic-dev/claude-code-plugins-hook-types'
+import type {
+  StopInput,
+  StopOutput,
+} from '@monochromatic-dev/claude-code-plugins-hook-types';
+import {
+  readStdin,
+  writeOutput,
+} from '@monochromatic-dev/claude-code-plugins-hook-utils';
 
-const event = JSON.parse(await readStdin()) as StopInput
+const event = JSON.parse(await readStdin(),) as StopInput;
 
-const output: StopOutput = { decision: 'block', reason: 'Investigate first' }
-writeOutput(output)
+const output: StopOutput = { decision: 'block', reason: 'Investigate first', };
+writeOutput(output,);
 ```
 
 ## Installation

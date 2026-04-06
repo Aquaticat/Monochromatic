@@ -91,866 +91,934 @@ await describe({
     describe({
       name: 'task-depends file-based staleness',
       children: [
-    it({
-      name: 'runs command when no output files exist',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+        it({
+          name: 'runs command when no output files exist',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'runs command when sources are newer than outputs',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'runs command when sources are newer than outputs',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        touch(join(outDir, 'a.js',), 5_000,);
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(outDir, 'a.js',), 5_000,);
+            touch(join(srcDir, 'a.ts',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'skips command when outputs are newer than sources',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'skips command when outputs are newer than sources',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',), 5_000,);
-        touch(join(outDir, 'a.js',),);
+            touch(join(srcDir, 'a.ts',), 5_000,);
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'verbose flag logs staleness reason',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'verbose flag logs staleness reason',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        const { stderr, } = await execAsync(
-          `bun ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            const { stderr, } = await execAsync(
+              `bun ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(stderr,).toContain('[task-depends]',);
-        expect(stderr,).toContain('stale',);
+            expect(stderr,).toContain('[task-depends]',);
+            expect(stderr,).toContain('stale',);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'verbose flag logs up-to-date message when skipping',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'verbose flag logs up-to-date message when skipping',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',), 5_000,);
-        touch(join(outDir, 'a.js',),);
+            touch(join(srcDir, 'a.ts',), 5_000,);
+            touch(join(outDir, 'a.js',),);
 
-        const { stderr, } = await execAsync(
-          `bun ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            const { stderr, } = await execAsync(
+              `bun ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(stderr,).toContain('fresh',);
+            expect(stderr,).toContain('fresh',);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'accepts multiple --sources globs',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, testDir, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'accepts multiple --sources globs',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, testDir, srcDir, outDir, markerPath, } = fixtures;
 
-        const libDir = join(testDir, 'lib',);
-        mkdirSync(libDir, { recursive: true, },);
-        touch(join(srcDir, 'a.ts',),);
-        touch(join(libDir, 'b.ts',),);
+            const libDir = join(testDir, 'lib',);
+            mkdirSync(libDir, { recursive: true, },);
+            touch(join(srcDir, 'a.ts',),);
+            touch(join(libDir, 'b.ts',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -s "${libDir}/**" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -s "${libDir}/**" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'accepts multiple --outputs globs',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, testDir, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'accepts multiple --outputs globs',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, testDir, srcDir, outDir, markerPath, } = fixtures;
 
-        const dist2Dir = join(testDir, 'dist2',);
-        mkdirSync(dist2Dir, { recursive: true, },);
-        touch(join(srcDir, 'a.ts',), 5_000,);
-        touch(join(outDir, 'a.js',),);
-        touch(join(dist2Dir, 'b.js',),);
+            const dist2Dir = join(testDir, 'dist2',);
+            mkdirSync(dist2Dir, { recursive: true, },);
+            touch(join(srcDir, 'a.ts',), 5_000,);
+            touch(join(outDir, 'a.js',),);
+            touch(join(dist2Dir, 'b.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "${dist2Dir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "${dist2Dir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'runs when source files exist but no output files match',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'runs when source files exist but no output files match',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'skips when source glob matches nothing and output files exist',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'skips when source glob matches nothing and output files exist',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        // Empty source glob → no timestamps → sourceTime = -Infinity → fresh
-        // Use srcDir (exists) with a non-matching extension to avoid ENOENT on missing dirs
-        touch(join(outDir, 'a.js',),);
+            // Empty source glob → no timestamps → sourceTime = -Infinity → fresh
+            // Use srcDir (exists) with a non-matching extension to avoid ENOENT on missing dirs
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**/*.xyz" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**/*.xyz" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends sh: output with Infinity/-Infinity',
       children: [
-    it({
-      name: 'runs command when sh: output returns -Infinity (missing)',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+        it({
+          name: 'runs command when sh: output returns -Infinity (missing)',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'skips command when sh: output returns Infinity (exists)',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'skips command when sh: output returns Infinity (exists)',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'newest strategy hides -Infinity when mixed with Infinity',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'newest strategy hides -Infinity when mixed with Infinity',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        // With default newest: Math.max(Infinity, -Infinity) = Infinity → fresh
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            // With default newest: Math.max(Infinity, -Infinity) = Infinity → fresh
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'oldest strategy catches -Infinity in mixed outputs',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'oldest strategy catches -Infinity in mixed outputs',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        // With oldest: Math.min(Infinity, -Infinity) = -Infinity → stale
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo 0" --output-time-strategy oldest -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            // With oldest: Math.min(Infinity, -Infinity) = -Infinity → stale
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo 0" --output-time-strategy oldest -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'skips when all sh: outputs return Infinity',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'skips when all sh: outputs return Infinity',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -o "sh:echo Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo -Infinity" -o "sh:echo Infinity" -o "sh:echo Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'verbose flag logs resolved timestamp',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'verbose flag logs resolved timestamp',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        const { stderr, } = await execAsync(
-          `bun ${cliPath} -v -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            const { stderr, } = await execAsync(
+              `bun ${cliPath} -v -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(stderr,).toContain('Infinity',);
-        expect(stderr,).toContain('-Infinity',);
+            expect(stderr,).toContain('Infinity',);
+            expect(stderr,).toContain('-Infinity',);
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends sh: source with Infinity/-Infinity',
       children: [
-    it({
-      name: 'runs when sh: source returns Infinity (dirty)',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+        it({
+          name: 'runs when sh: source returns Infinity (dirty)',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        touch(join(outDir, 'a.js',),);
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo Infinity" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo Infinity" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'skips when sh: source returns -Infinity (clean)',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'skips when sh: source returns -Infinity (clean)',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        touch(join(outDir, 'a.js',),);
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo -Infinity" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo -Infinity" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends sh: timestamp output',
       children: [
-    it({
-      name: 'uses unix epoch seconds from sh: command stdout',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+        it({
+          name: 'uses unix epoch seconds from sh: command stdout',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        // Source returns a timestamp far in the future (year 2040)
-        // Output files are from now -- source is newer → stale
-        touch(join(outDir, 'a.js',),);
+            // Source returns a timestamp far in the future (year 2040)
+            // Output files are from now -- source is newer → stale
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo 2208988800" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'uses unix epoch milliseconds from sh: command stdout',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'uses unix epoch milliseconds from sh: command stdout',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        // Source returns a timestamp far in the future (year 2040, in ms)
-        touch(join(outDir, 'a.js',),);
+            // Source returns a timestamp far in the future (year 2040, in ms)
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo 2208988800000" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo 2208988800000" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'uses ISO 8601 date from sh: command stdout',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'uses ISO 8601 date from sh: command stdout',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        // Source returns a date far in the future
-        touch(join(outDir, 'a.js',),);
+            // Source returns a date far in the future
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo 2040-01-01T00:00:00Z" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo 2040-01-01T00:00:00Z" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'skips when sh: timestamp is older than outputs',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'skips when sh: timestamp is older than outputs',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        // Source returns a very old timestamp (year 2000)
-        touch(join(outDir, 'a.js',),);
+            // Source returns a very old timestamp (year 2000)
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo 946684800" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo 946684800" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'uses timestamp from sh: output command',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'uses timestamp from sh: output command',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, markerPath, } = fixtures;
 
-        // Output returns a very old timestamp → older than sources → stale
-        touch(join(srcDir, 'a.ts',),);
+            // Output returns a very old timestamp → older than sources → stale
+            touch(join(srcDir, 'a.ts',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends sh: command errors',
       children: [
-    it({
-      name: 'throws when sh: command fails with non-zero exit',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+        it({
+          name: 'throws when sh: command fails with non-zero exit',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        await expect(
-          execAsync(
-            `bun ${cliPath} -s "sh:exit 1" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-          ),
-        )
-          .rejects
-          .toThrow();
+            await expect(
+              execAsync(
+                `bun ${cliPath} -s "sh:exit 1" -o "${outDir}/**" -- ${
+                  writeMarkerCmd(markerPath,)
+                }`,
+              ),
+            )
+              .rejects
+              .toThrow();
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'throws when sh: command returns unparseable output',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'throws when sh: command returns unparseable output',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        await expect(
-          execAsync(
-            `bun ${cliPath} -o "sh:echo hello" -- ${writeMarkerCmd(markerPath,)}`,
-          ),
-        )
-          .rejects
-          .toThrow();
+            await expect(
+              execAsync(
+                `bun ${cliPath} -o "sh:echo hello" -- ${writeMarkerCmd(markerPath,)}`,
+              ),
+            )
+              .rejects
+              .toThrow();
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'throws when sh: command returns empty output',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'throws when sh: command returns empty output',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        await expect(
-          execAsync(
-            `bun ${cliPath} -o "sh:echo" -- ${writeMarkerCmd(markerPath,)}`,
-          ),
-        )
-          .rejects
-          .toThrow();
+            await expect(
+              execAsync(
+                `bun ${cliPath} -o "sh:echo" -- ${writeMarkerCmd(markerPath,)}`,
+              ),
+            )
+              .rejects
+              .toThrow();
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends time strategies',
       children: [
-    it({
-      name: 'source-time-strategy oldest uses minimum source timestamp',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+        it({
+          name: 'source-time-strategy oldest uses minimum source timestamp',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        // Two sources: one very old (epoch), one very new (now)
-        // With oldest: min picks the old one → old > new output → false → fresh
-        touch(join(outDir, 'a.js',),);
+            // Two sources: one very old (epoch), one very new (now)
+            // With oldest: min picks the old one → old > new output → false → fresh
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} --source-time-strategy oldest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} --source-time-strategy oldest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'source-time-strategy newest uses maximum source timestamp',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'source-time-strategy newest uses maximum source timestamp',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        // Same sources as above, but with newest: max picks the new one → new > output → stale
-        touch(join(outDir, 'a.js',),);
+            // Same sources as above, but with newest: max picks the new one → new > output → stale
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} --source-time-strategy newest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} --source-time-strategy newest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'output-time-strategy oldest catches missing output in mixed list',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'output-time-strategy oldest catches missing output in mixed list',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        // File output exists (fresh) + sh: output is -Infinity (missing)
-        // With oldest: min picks -Infinity → source > -Infinity → stale
-        touch(join(srcDir, 'a.ts',),);
-        touch(join(outDir, 'a.js',),);
+            // File output exists (fresh) + sh: output is -Infinity (missing)
+            // With oldest: min picks -Infinity → source > -Infinity → stale
+            touch(join(srcDir, 'a.ts',),);
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} --output-time-strategy oldest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} --output-time-strategy oldest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'output-time-strategy newest hides missing output in mixed list',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'output-time-strategy newest hides missing output in mixed list',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        // Same setup but with newest: max picks the real mtime → source (old) < output → fresh
-        touch(join(srcDir, 'a.ts',), 5_000,);
-        touch(join(outDir, 'a.js',),);
+            // Same setup but with newest: max picks the real mtime → source (old) < output → fresh
+            touch(join(srcDir, 'a.ts',), 5_000,);
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} --output-time-strategy newest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} --output-time-strategy newest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'rejects invalid strategy value',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'rejects invalid strategy value',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, } = fixtures;
 
-        await expect(
-          execAsync(
-            `bun ${cliPath} --source-time-strategy invalid -s "${srcDir}/**" -o "${outDir}/**" -- echo test`,
-          ),
-        )
-          .rejects
-          .toThrow();
+            await expect(
+              execAsync(
+                `bun ${cliPath} --source-time-strategy invalid -s "${srcDir}/**" -o "${outDir}/**" -- echo test`,
+              ),
+            )
+              .rejects
+              .toThrow();
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'sh: strategy receives timestamps via stdin and returns aggregated value',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'sh: strategy receives timestamps via stdin and returns aggregated value',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        // Custom strategy using sort -n | head -1 (minimum, like oldest)
-        // Two sources: year 2000 (946684800s) and year 2040 (2208988800s)
-        // Strategy receives parsed ms values, picks minimum (year 2000) → older than output → fresh
-        touch(join(outDir, 'a.js',),);
+            // Custom strategy using sort -n | head -1 (minimum, like oldest)
+            // Two sources: year 2000 (946684800s) and year 2040 (2208988800s)
+            // Strategy receives parsed ms values, picks minimum (year 2000) → older than output → fresh
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} --source-time-strategy "sh:sort -n | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} --source-time-strategy "sh:sort -n | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'sh: strategy can use sort -rn for maximum (newest)',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'sh: strategy can use sort -rn for maximum (newest)',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, outDir, markerPath, } = fixtures;
 
-        // Custom strategy using sort -rn | head -1 (maximum, like newest)
-        // Max picks year 2040 → newer than output → stale
-        touch(join(outDir, 'a.js',),);
+            // Custom strategy using sort -rn | head -1 (maximum, like newest)
+            // Max picks year 2040 → newer than output → stale
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} --source-time-strategy "sh:sort -rn | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} --source-time-strategy "sh:sort -rn | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'accepts sh: prefix for output-time-strategy',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'accepts sh: prefix for output-time-strategy',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, markerPath, } = fixtures;
 
-        // Custom output strategy: sort -n picks minimum → -Infinity dominates → stale
-        touch(join(srcDir, 'a.ts',),);
+            // Custom output strategy: sort -n picks minimum → -Infinity dominates → stale
+            touch(join(srcDir, 'a.ts',),);
 
-        await execAsync(
-          `bun ${cliPath} --output-time-strategy "sh:sort -n | head -1" -s "${srcDir}/**" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} --output-time-strategy "sh:sort -n | head -1" -s "${srcDir}/**" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends no sources behavior',
       children: [
-    it({
-      name: 'skips when no -s flags and output returns Infinity',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+        it({
+          name: 'skips when no -s flags and output returns Infinity',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        // No sources → sourceTime = -Infinity → -Infinity > Infinity → false → fresh
-        await execAsync(
-          `bun ${cliPath} -o "sh:echo Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            // No sources → sourceTime = -Infinity → -Infinity > Infinity → false → fresh
+            await execAsync(
+              `bun ${cliPath} -o "sh:echo Infinity" -- ${writeMarkerCmd(markerPath,)}`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'skips when no -s flags and output returns -Infinity',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'skips when no -s flags and output returns -Infinity',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        // No sources → sourceTime = -Infinity → -Infinity > -Infinity → false → fresh
-        await execAsync(
-          `bun ${cliPath} -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            // No sources → sourceTime = -Infinity → -Infinity > -Infinity → false → fresh
+            await execAsync(
+              `bun ${cliPath} -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'runs with explicit Infinity source and -Infinity output',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'runs with explicit Infinity source and -Infinity output',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, markerPath, } = fixtures;
 
-        // Explicit "always dirty" source pattern for gate checks
-        await execAsync(
-          `bun ${cliPath} -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            // Explicit "always dirty" source pattern for gate checks
+            await execAsync(
+              `bun ${cliPath} -s "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends combined file and sh: checks',
       children: [
-    it({
-      name: 'runs when file sources are newer and sh: output is Infinity',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, markerPath, } = fixtures;
+        it({
+          name: 'runs when file sources are newer and sh: output is Infinity',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, markerPath, } = fixtures;
 
-        // Source is now, output sh: returns Infinity → source_mtime > Infinity → false → fresh
-        // This is correct: Infinity means "output exists and is infinitely fresh"
-        touch(join(srcDir, 'a.ts',),);
+            // Source is now, output sh: returns Infinity → source_mtime > Infinity → false → fresh
+            // This is correct: Infinity means "output exists and is infinitely fresh"
+            touch(join(srcDir, 'a.ts',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'runs when file sources are newer and sh: output returns old timestamp',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'runs when file sources are newer and sh: output returns old timestamp',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, markerPath, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(true,);
+            expect(existsSync(markerPath,),).toBe(true,);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'skips when both file and sh: checks are fresh',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, markerPath, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'skips when both file and sh: checks are fresh',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',), 5_000,);
-        touch(join(outDir, 'a.js',),);
+            touch(join(srcDir, 'a.ts',), 5_000,);
+            touch(join(outDir, 'a.js',),);
 
-        await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo Infinity" -- ${writeMarkerCmd(markerPath,)}`,
-        );
+            await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo Infinity" -- ${
+                writeMarkerCmd(markerPath,)
+              }`,
+            );
 
-        expect(existsSync(markerPath,),).toBe(false,);
+            expect(existsSync(markerPath,),).toBe(false,);
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends output collapsing',
       children: [
-    it({
-      name: 'hides stdout on successful command execution',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, } = fixtures;
+        it({
+          name: 'hides stdout on successful command execution',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        const { stdout, } = await execAsync(
-          `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- echo HIDDEN_OUTPUT`,
-        );
+            const { stdout, } = await execAsync(
+              `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- echo HIDDEN_OUTPUT`,
+            );
 
-        expect(stdout,).not.toContain('HIDDEN_OUTPUT',);
+            expect(stdout,).not.toContain('HIDDEN_OUTPUT',);
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'shows stdout on failed command execution',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'shows stdout on failed command execution',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        try {
-          await execAsync(
-            `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "console.log('VISIBLE_OUTPUT'); process.exit(1)"`,
-          );
-          expect(true,).toBe(false,);
-        }
-        catch (error) {
-          const execError = error as { stdout: string; stderr: string; };
-          expect(execError.stdout,).toContain('VISIBLE_OUTPUT',);
-        }
+            try {
+              await execAsync(
+                `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "console.log('VISIBLE_OUTPUT'); process.exit(1)"`,
+              );
+              expect(true,).toBe(false,);
+            }
+            catch (error) {
+              const execError = error as { stdout: string; stderr: string; };
+              expect(execError.stdout,).toContain('VISIBLE_OUTPUT',);
+            }
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'shows stderr on failed command execution',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'shows stderr on failed command execution',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        try {
-          await execAsync(
-            `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "console.error('ERROR_OUTPUT'); process.exit(1)"`,
-          );
-          expect(true,).toBe(false,);
-        }
-        catch (error) {
-          const execError = error as { stdout: string; stderr: string; };
-          expect(execError.stderr,).toContain('ERROR_OUTPUT',);
-        }
+            try {
+              await execAsync(
+                `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "console.error('ERROR_OUTPUT'); process.exit(1)"`,
+              );
+              expect(true,).toBe(false,);
+            }
+            catch (error) {
+              const execError = error as { stdout: string; stderr: string; };
+              expect(execError.stderr,).toContain('ERROR_OUTPUT',);
+            }
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'task-depends error handling',
       children: [
-    it({
-      name: 'propagates command failure exit code',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, } = fixtures;
+        it({
+          name: 'propagates command failure exit code',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        await expect(
-          execAsync(
-            `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(42)"`,
-          ),
-        )
-          .rejects
-          .toThrow();
+            await expect(
+              execAsync(
+                `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(42)"`,
+              ),
+            )
+              .rejects
+              .toThrow();
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'allowFailure flag suppresses command failure',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'allowFailure flag suppresses command failure',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, } = fixtures;
 
-        touch(join(srcDir, 'a.ts',),);
+            touch(join(srcDir, 'a.ts',),);
 
-        const result = await execAsync(
-          `bun ${cliPath} -a -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(1)"`,
-        );
+            const result = await execAsync(
+              `bun ${cliPath} -a -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(1)"`,
+            );
 
-        expect(result,).toBeDefined();
+            expect(result,).toBeDefined();
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'fails when no -o provided',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'fails when no -o provided',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, } = fixtures;
 
-        await expect(
-          execAsync(`bun ${cliPath} -s "${srcDir}/**" -- echo test`,),
-        )
-          .rejects
-          .toThrow();
+            await expect(
+              execAsync(`bun ${cliPath} -s "${srcDir}/**" -- echo test`,),
+            )
+              .rejects
+              .toThrow();
 
-        teardown(fixtures,);
-      },
-    }),
-    it({
-      name: 'fails when no command provided',
-      fn: async () => {
-        const fixtures = setup();
-        const { cliPath, srcDir, outDir, } = fixtures;
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'fails when no command provided',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, srcDir, outDir, } = fixtures;
 
-        await expect(
-          execAsync(`bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**"`,),
-        )
-          .rejects
-          .toThrow();
+            await expect(
+              execAsync(`bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**"`,),
+            )
+              .rejects
+              .toThrow();
 
-        teardown(fixtures,);
-      },
-    }),
+            teardown(fixtures,);
+          },
+        },),
       ],
-    }),
+    },),
   ],
-});
+},);

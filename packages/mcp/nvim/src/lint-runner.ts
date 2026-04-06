@@ -75,7 +75,9 @@ export async function runOxlint(
     'oxlint.config.ts',
   );
   if (configDir === null) {
-    console.error('[mcp-nvim] Could not find oxlint.config.ts in any ancestor directory',);
+    console.error(
+      '[mcp-nvim] Could not find oxlint.config.ts in any ancestor directory',
+    );
     return {
       diagnostics: new Map(),
       notes: [],

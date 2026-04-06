@@ -2,8 +2,6 @@ import {
   cssCalc,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-hyperscript/ts';
-import {
   hDom as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from '../css.ts';
@@ -69,7 +67,7 @@ const STYLES = [
  */
 class SettingGroup extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -89,7 +87,11 @@ class SettingGroup extends HTMLElement {
         tag: 'button',
         attrs: { part: 'action', },
         children: [
-          h({ tag: 'slot', attrs: { name: 'action', }, text: 'connect?', },),
+          h({
+            tag: 'slot',
+            attrs: { name: 'action', },
+            text: 'connect?',
+          },),
         ],
       },)
       : h({

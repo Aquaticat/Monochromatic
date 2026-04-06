@@ -53,7 +53,10 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
     async [Symbol.asyncDispose](): Promise<void> {
       await rm(
         path,
-        { recursive: true, force: true, },
+        {
+          recursive: true,
+          force: true,
+        },
       );
     },
   };
@@ -93,7 +96,10 @@ export async function runInContainer(
   const stagingDir = stagingResource.path;
 
   await writeFile(
-    join(stagingDir, 'canary.ts',),
+    join(
+      stagingDir,
+      'canary.ts',
+    ),
     source,
     'utf8',
   );
@@ -105,7 +111,10 @@ export async function runInContainer(
 
   if (stdinData !== undefined) {
     await writeFile(
-      join(stagingDir, 'stdin.txt',),
+      join(
+        stagingDir,
+        'stdin.txt',
+      ),
       stdinData,
       'utf8',
     );

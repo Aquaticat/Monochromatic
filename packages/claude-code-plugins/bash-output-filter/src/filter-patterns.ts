@@ -139,7 +139,8 @@ export const ALT_CWD_PREFIX: string = (function resolveAltCwdPrefix(): string {
  *  mode change 100644 => 100755 scripts/run.sh
  * ```
  */
-export const GIT_FILE_MODE_PATTERN: RegExp = /^ (create|delete|copy|rename|mode change) mode /;
+export const GIT_FILE_MODE_PATTERN: RegExp =
+  /^ (create|delete|copy|rename|mode change) mode /;
 
 /**
  * Patterns matching git transport progress lines from push/pull/fetch/clone.

@@ -38,7 +38,10 @@ const parser = object({
 /** Parsed CLI arguments */
 const args = runSync(
   parser,
-  { programName: 'token-count', help: 'option', },
+  {
+    programName: 'token-count',
+    help: 'option',
+  },
 );
 
 if (args.files.length === 0)
@@ -64,7 +67,10 @@ for (const result of results)
 
 if (results.length > 1) {
   const total = results.reduce(
-    function sumTokens(sum, r,) {
+    function sumTokens(
+      sum,
+      r,
+    ) {
       return sum + r.inputTokens;
     },
     0,

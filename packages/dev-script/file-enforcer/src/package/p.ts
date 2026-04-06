@@ -76,7 +76,10 @@ function buildFromSpec(spec: PackageSpec,): PackageEntry {
 
   const result = yes !== undefined
     ? parseYes(yes,)
-    : { available: null as ReadonlySet<PackageManager> | null, overrides: Object.freeze({},), };
+    : {
+      available: null as ReadonlySet<PackageManager> | null,
+      overrides: Object.freeze({},),
+    };
 
   return {
     available: result.available,
@@ -95,16 +98,21 @@ function buildFromSpec(spec: PackageSpec,): PackageEntry {
  *
  * @returns Availability set and per-manager name overrides extracted from tuples
  */
-function parseYes(yes: readonly (PackageManager | readonly [PackageManager, string])[],): {
+function parseYes(
+  yes: readonly (PackageManager | readonly [
+    PackageManager,
+    string,
+  ])[],
+): {
   readonly available: ReadonlySet<PackageManager>;
   readonly overrides: Readonly<Record<string, string>>;
 } {
   const available = new Set<PackageManager>();
   const overrides: Record<string, string> = {};
   for (const entry of yes) {
-    if (typeof entry === 'string') {
+    if (typeof entry === 'string')
       available.add(entry,);
-    } else {
+    else {
       const [manager, packageName,] = entry;
       available.add(manager,);
       overrides[manager] = packageName;

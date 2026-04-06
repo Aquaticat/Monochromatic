@@ -44,9 +44,12 @@ export function collectMixins(root: Root,): void {
       if (!node.nodes || node.nodes.length === 0)
         throw new Error('mixin definition must include body',);
       else {
-        mixins.set(mixinName, node.nodes.map(function cloneChild(child,) {
-          return child.clone();
-        },),);
+        mixins.set(
+          mixinName,
+          node.nodes.map(function cloneChild(child,) {
+            return child.clone();
+          },),
+        );
         node.remove();
       }
     },

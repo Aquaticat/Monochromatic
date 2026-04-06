@@ -2,9 +2,7 @@
  * `\<top-nav\>` -- sticky navigation bar with hamburger menu, page heading, and search link.
  * Dispatches a `menu-open` composed event when the hamburger is clicked.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { TOP_NAV_STYLES, } from './top-nav-styles.ts';
 
 /**
@@ -12,7 +10,7 @@ import { TOP_NAV_STYLES, } from './top-nav-styles.ts';
  */
 class TopNav extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -58,7 +56,10 @@ class TopNav extends HTMLElement {
             this.dispatchEvent(
               new CustomEvent(
                 'menu-open',
-                { bubbles: true, composed: true, },
+                {
+                  bubbles: true,
+                  composed: true,
+                },
               ),
             );
           }

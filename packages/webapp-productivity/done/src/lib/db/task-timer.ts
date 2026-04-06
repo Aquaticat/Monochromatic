@@ -42,6 +42,11 @@ export type CompleteTaskResult = {
  * @param id - Task UUID
  *
  * @returns Updated task, or `null` when not found
+ *
+ * @example
+ * ```ts
+ * const task = await startTaskTimer('uuid-123');
+ * ```
  */
 export async function startTaskTimer(id: string,): Promise<Task | null> {
   const timestamp = nowIso();
@@ -59,6 +64,11 @@ export async function startTaskTimer(id: string,): Promise<Task | null> {
  * @param id - Task UUID
  *
  * @returns Updated task, or `null` when not found
+ *
+ * @example
+ * ```ts
+ * const task = await stopTaskTimer('uuid-123');
+ * ```
  */
 export async function stopTaskTimer(id: string,): Promise<Task | null> {
   const currentTask = await getTaskById(id,);
@@ -88,6 +98,12 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
  * @param id - Task UUID
  *
  * @returns Completion result with blocker information
+ *
+ * @example
+ * ```ts
+ * const result = await completeTask('uuid-123');
+ * if (!result.completed) console.error('Blocked by', result.blockedBy);
+ * ```
  */
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   const currentTask = await getTaskById(id,);

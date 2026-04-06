@@ -9,6 +9,11 @@ import type {
  * @param _locale - target locale code (unused until custom formatters are added)
  *
  * @returns empty formatters object
+ *
+ * @example
+ * ```ts
+ * const formatters = initFormatters('en');
+ * ```
  */
 export function initFormatters(_locale: Locales,): Formatters {
   const formatters: Formatters = {};

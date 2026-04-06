@@ -140,9 +140,9 @@ await describe({
             expect(result.embedding.length,).toBeGreaterThan(0,);
             expect(result.usage.totalTokens,).toBeGreaterThan(0,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'embedBatch (voyage)',
       children: [
@@ -162,9 +162,9 @@ await describe({
             expect(first.length,).toBeGreaterThan(0,);
             expect(second.length,).toBeGreaterThan(0,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'compare (voyage)',
       children: [
@@ -179,7 +179,7 @@ await describe({
             expect(result.similarity,).toBeGreaterThan(0.99,);
             expect(result.distance,).toBeLessThan(0.01,);
           },
-        }),
+        },),
         it({
           name: 'different-colored images have lower similarity',
           fn: async () => {
@@ -193,9 +193,9 @@ await describe({
             expect(result.distance,).toBeGreaterThan(0,);
             expect(result.embeddingA.length,).toBe(result.embeddingB.length,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion Single-provider tests (Voyage)
 
@@ -212,9 +212,9 @@ await describe({
 
             expect(result.embedding.length,).toBeGreaterThan(0,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'embedBatch (gemini)',
       children: [
@@ -234,9 +234,9 @@ await describe({
             expect(first.length,).toBeGreaterThan(0,);
             expect(second.length,).toBeGreaterThan(0,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: 'compare (gemini)',
       children: [
@@ -251,7 +251,7 @@ await describe({
             expect(result.similarity,).toBeGreaterThan(0.99,);
             expect(result.distance,).toBeLessThan(0.01,);
           },
-        }),
+        },),
         it({
           name: 'different-colored images have lower similarity',
           fn: async () => {
@@ -265,9 +265,9 @@ await describe({
             expect(result.distance,).toBeGreaterThan(0,);
             expect(result.embeddingA.length,).toBe(result.embeddingB.length,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion Single-provider tests (Gemini)
 
@@ -295,9 +295,9 @@ await describe({
               expect(entry.result.embeddingA.length,).toBeGreaterThan(0,);
             }
           },
-        }),
+        },),
       ],
-    }),
+    },),
     describe({
       name: embedAll.name,
       children: [
@@ -311,10 +311,9 @@ await describe({
             for (const entry of results)
               expect(entry.result.embedding.length,).toBeGreaterThan(0,);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion Multi-provider tests
   ],
 },);

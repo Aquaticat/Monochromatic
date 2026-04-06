@@ -6,9 +6,9 @@
  * This module only provides layout and element-specific overrides.
  */
 import {
-  hCss as $,
   cssNum,
   cssRem,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Color picker square size */

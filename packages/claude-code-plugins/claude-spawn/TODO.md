@@ -79,6 +79,7 @@ which Claude Code reads on startup.
 Base: `fedora:latest`
 
 Packages:
+
 - `sway`, `foot`, `wtype` (Wayland stack)
 - `mesa-dri-drivers` (software OpenGL for `WLR_RENDERER_ALLOW_SOFTWARE`)
 - `nodejs`, `npm` (Claude Code runtime)
@@ -87,23 +88,24 @@ Packages:
 - `git`, `procps-ng` (hook reads `/proc/{pid}/status`)
 
 Config:
+
 - Minimal sway config (no bar, no wallpaper, no idle)
 - `echo "foot.desktop" > ~/.config/xdg-terminals.list`
 
 ### Test flow
 
-1.  Start sway (headless, software-rendered)
-2.  Wait for sway readiness: poll `swaymsg -t get_version`
-3.  Install plugin via marketplace:
-    `claude plugin marketplace add Aquaticat/Monochromatic`
-    `claude plugin install claude-spawn@Monochromatic --scope user`
-4.  Launch foot with claude: `swaymsg exec "foot -e claude"`
-5.  Wait for Claude readiness: poll terminal buffer content for the input prompt indicator
-6.  Type prompt via `wtype -d <ms>`: `spawn-claude "say exactly SPAWN_E2E_OK"`
-7.  Press Enter: `wtype -k Return`
-8.  Wait for child completion: poll `~/.claude/spawn-results/spawns/` for `.reported` files
-    or use a generous fixed timeout
-9.  Refocus parent foot window: `swaymsg` (child foot window steals focus on spawn)
+1. Start sway (headless, software-rendered)
+2. Wait for sway readiness: poll `swaymsg -t get_version`
+3. Install plugin via marketplace:
+   `claude plugin marketplace add Aquaticat/Monochromatic`
+   `claude plugin install claude-spawn@Monochromatic --scope user`
+4. Launch foot with claude: `swaymsg exec "foot -e claude"`
+5. Wait for Claude readiness: poll terminal buffer content for the input prompt indicator
+6. Type prompt via `wtype -d <ms>`: `spawn-claude "say exactly SPAWN_E2E_OK"`
+7. Press Enter: `wtype -k Return`
+8. Wait for child completion: poll `~/.claude/spawn-results/spawns/` for `.reported` files
+   or use a generous fixed timeout
+9. Refocus parent foot window: `swaymsg` (child foot window steals focus on spawn)
 10. Type verification prompt: instruct Claude to write a marker file if it received
     the spawn result via system-reminder
 11. Press Enter
@@ -134,15 +136,17 @@ so the workflow must run **after** the commit is pushed.
 This means the test always runs against the pushed commit, not a local build.
 
 Steps:
-1.  Checkout (for Containerfile and orchestrator script)
-2.  Build container image
-3.  Run e2e test container with secrets:
-    - `CLAUDE_CODE_TEST_CLAUDE_API_KEY` -- Anthropic API key for Claude sessions
-    - `ANTHROPIC_API_KEY` -- same key, forwarded as the env var Claude Code reads
+
+1. Checkout (for Containerfile and orchestrator script)
+2. Build container image
+3. Run e2e test container with secrets:
+   - `CLAUDE_CODE_TEST_CLAUDE_API_KEY` -- Anthropic API key for Claude sessions
+   - `ANTHROPIC_API_KEY` -- same key, forwarded as the env var Claude Code reads
 
 ### Known footguns
 
 **Compositor and display:**
+
 - sway requires a config file or errors on startup; need a minimal `~/.config/sway/config`
 - sway refuses to start as root; container needs a non-root user or `--unsupported-gpu` flag
 - `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` must be set correctly for foot and wtype
@@ -151,12 +155,14 @@ Steps:
   to find a software renderer
 
 **Input automation:**
+
 - `wtype` sends to the **focused** window; when the child spawns a second foot window,
   focus shifts; need `swaymsg` to refocus the parent window before typing step 8
 - `wtype` needs inter-keystroke delay (`-d` flag) to avoid dropped characters
 - Special characters in prompts (quotes, backslashes) need escaping for `wtype`
 
 **Marketplace plugin installation:**
+
 - `claude plugin marketplace add` and `claude plugin install` are CLI commands
   that run outside a session; unclear if they work non-interactively (no TTY)
 - The marketplace fetches from GitHub; the test container needs network access
@@ -168,6 +174,7 @@ Steps:
   in the built hook handler
 
 **Claude Code TUI:**
+
 - First-run flow: TOS acceptance, telemetry opt-in, onboarding wizard;
   need env vars or flags to skip these in a fresh container
 - Bash tool permission prompts: Claude asks for sandbox bypass permission when
@@ -178,6 +185,7 @@ Steps:
   the test cannot rely on session exit as a completion signal
 
 **Timing and coordination:**
+
 - Child session startup and API response time are variable;
   generous timeouts required (60-120 seconds for child completion)
 - The parent must make at least one tool call after the child completes
@@ -186,6 +194,7 @@ Steps:
   blocking delivers the result, but the parent continues (does not exit)
 
 **Process lifecycle:**
+
 - Container `podman run --rm` destroys everything on exit;
   test must extract results before the container dies
 - Multiple foot windows exist simultaneously (parent + child);
@@ -208,19 +217,19 @@ Inherently flaky due to LLM non-compliance with verification prompts.
 
 ### Open questions
 
-1.  What is Claude Code's exact first-run flow?
-    Can it be skipped with env vars or CLI flags?
-2.  Does `claude plugin marketplace add` + `claude plugin install` work
-    non-interactively (no TTY, no prompts)?
-    If it prompts for confirmation, need to pipe `yes` or find a `--yes` flag.
-3.  Does sway's `--unsupported-gpu` flag allow running as root in a container,
-    or is a non-root user required?
-4.  Can `wtype` target a specific sway window by `app_id` rather than the focused window?
-5.  What is the most reliable way to detect "Claude is ready for input"
-    by polling terminal buffer content?
-    Candidates: `swaymsg` IPC to read buffer, tmux `capture-pane` as intermediary,
-    or screen capture + OCR (heavyweight)
-6.  Does the marketplace install pull the plugin source at the current HEAD
-    of the default branch, or a tagged release?
-    If HEAD, the test always matches the pushed commit.
-    If tagged, the workflow needs to create/update a tag before installing.
+1. What is Claude Code's exact first-run flow?
+   Can it be skipped with env vars or CLI flags?
+2. Does `claude plugin marketplace add` + `claude plugin install` work
+   non-interactively (no TTY, no prompts)?
+   If it prompts for confirmation, need to pipe `yes` or find a `--yes` flag.
+3. Does sway's `--unsupported-gpu` flag allow running as root in a container,
+   or is a non-root user required?
+4. Can `wtype` target a specific sway window by `app_id` rather than the focused window?
+5. What is the most reliable way to detect "Claude is ready for input"
+   by polling terminal buffer content?
+   Candidates: `swaymsg` IPC to read buffer, tmux `capture-pane` as intermediary,
+   or screen capture + OCR (heavyweight)
+6. Does the marketplace install pull the plugin source at the current HEAD
+   of the default branch, or a tagged release?
+   If HEAD, the test always matches the pushed commit.
+   If tagged, the workflow needs to create/update a tag before installing.

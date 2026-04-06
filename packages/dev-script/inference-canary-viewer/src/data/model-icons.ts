@@ -64,7 +64,7 @@ function parseSvg(raw: string,): {
   viewBox: string;
   inner: string;
 } {
-  const viewBoxMatch = raw.match(/viewBox="([^"]+)"/,);
+  const viewBoxMatch = /viewBox="([^"]+)"/.exec(raw,);
   const viewBox = viewBoxMatch?.[1] ?? '0 0 24 24';
   const inner = raw
     .replace(
@@ -103,7 +103,10 @@ function extractDefs(inner: string,): {
   let defs = '';
   const content = inner.replaceAll(
     /<defs>([\s\S]*?)<\/defs>/g,
-    function extractDef(_match, defsContent: string,) {
+    function extractDef(
+      _match,
+      defsContent: string,
+    ) {
       defs += defsContent;
       return '';
     },
@@ -139,7 +142,12 @@ const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
     } = extractDefs(inner,);
     return [
       vendor,
-      { id: `icon-${vendor}`, viewBox, inner: content, defs, },
+      {
+        id: `icon-${vendor}`,
+        viewBox,
+        inner: content,
+        defs,
+      },
     ];
   },),
 );
@@ -227,7 +235,10 @@ export function iconDot(
   return h({
     tag: 'span',
     class: 'color-swatch',
-    attrs: { 'data-shape': 'icon', 'data-vendor': vendor, },
+    attrs: {
+      'data-shape': 'icon',
+      'data-vendor': vendor,
+    },
     html: useRef(symbol.id,),
   },);
 }

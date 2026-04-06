@@ -5,6 +5,7 @@ Build an intelligent auto-commit system with debouncing and AI-generated commit 
 ## Problem Statement and Motivation
 
 ### Current Approach (Broken Workflow)
+
 The current development workflow suffers from a fundamental commit discipline problem:
 
 1. **Extended Development Sessions**: Work for hours/days/weeks without committing
@@ -15,6 +16,7 @@ The current development workflow suffers from a fundamental commit discipline pr
 6. **Code Review Impossibility**: Massive commits are impossible to review effectively
 
 ### Specific Pain Points
+
 - **Decision Fatigue**: "Should I commit now?" paralysis prevents regular commits
 - **Message Crafting Overhead**: The mental energy required to write good commit messages
 - **Context Switching**: Interrupting flow state to commit feels disruptive
@@ -22,6 +24,7 @@ The current development workflow suffers from a fundamental commit discipline pr
 - **Fear of Noise**: Concern that frequent commits will pollute the Git history
 
 ### Why AI Auto-Commits Are The Solution
+
 This approach addresses the core psychological and workflow barriers:
 
 1. **Eliminates Decision Fatigue**: No manual "should I commit?" decisions
@@ -32,6 +35,7 @@ This approach addresses the core psychological and workflow barriers:
 6. **Upgrade Path**: Provides foundation for gradually improving commit quality
 
 ### Expected Outcomes
+
 - **90% Reduction** in "forgot what changes" commits
 - **Automated Backup System** preventing work loss from crashes/mistakes
 - **Browsable Development Timeline** instead of archaeological mega-commits
@@ -40,6 +44,7 @@ This approach addresses the core psychological and workflow barriers:
 - **Foundation for Better Practices** as commit habits improve over time
 
 ### Success Metrics
+
 - Average commit size drops from 500+ lines to <100 lines
 - Time between commits drops from days/weeks to minutes/hours
 - Commit messages contain actual semantic information about changes
@@ -49,6 +54,7 @@ This approach addresses the core psychological and workflow barriers:
 ## Current State Analysis
 
 ### Existing Git Habits
+
 - **Frequency**: Commits happen every few days to weeks
 - **Size**: Typically 300-1000+ line changes across multiple files
 - **Messages**: Generic, non-descriptive ("updated stuff", "changes", "forgot what changes")
@@ -56,6 +62,7 @@ This approach addresses the core psychological and workflow barriers:
 - **Recovery**: Difficult due to large time gaps between commits
 
 ### Development Environment
+
 - **Project Structure**: Monorepo with mise task orchestration
 - **Language**: TypeScript with strict typing
 - **Tools**: VSCode, mise, Bun, existing linting/testing infrastructure
@@ -63,6 +70,7 @@ This approach addresses the core psychological and workflow barriers:
 - **Session Length**: Extended coding sessions (2-8 hours common)
 
 ### Integration Requirements
+
 - **Must Not Interrupt Flow**: Zero disruption to active development
 - **Performance**: Minimal system resource usage
 - **Reliability**: Must work consistently without manual intervention
@@ -170,18 +178,21 @@ This approach addresses the core psychological and workflow barriers:
 
 ## Technical Architecture Decisions
 
-**File Watcher Implementation**
+### File Watcher Implementation
+
 - Use Node.js with `chokidar` for cross-platform compatibility
 - Leverage existing TypeScript tooling in the project
 - Integrate with mise task system for consistency
 
-**AI Provider Strategy**
+### AI Provider Strategy
+
 - Start with GitHub Copilot CLI (already authenticated)
 - Add OpenAI API as secondary option
 - Include rule-based fallback for reliability
 - Make provider selection configurable
 
-**Storage and State**
+### Storage and State
+
 - Use simple JSON files for configuration
 - Store commit history metadata for learning
 - Maintain lightweight state between sessions

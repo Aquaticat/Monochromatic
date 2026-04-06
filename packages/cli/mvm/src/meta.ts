@@ -95,13 +95,20 @@ export async function writeVmMeta({
   );
   await writeFile(
     metaPath,
-    JSON.stringify(meta, null, 2,),
+    JSON.stringify(
+      meta,
+      null,
+      2,
+    ),
   );
   rl.debug(`wrote VM metadata to ${metaPath}`,);
 
   // Legacy compatibility: also write the image text file
   await writeFile(
-    join(vmDir, 'image',),
+    join(
+      vmDir,
+      'image',
+    ),
     image,
   );
 }
@@ -137,7 +144,10 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
   // Try meta.json first
   try {
     const content = await readFile(
-      join(vmDir, 'meta.json',),
+      join(
+        vmDir,
+        'meta.json',
+      ),
       'utf8',
     );
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted local meta.json written by writeVmMeta
@@ -153,7 +163,10 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
   let image = DEFAULT_IMAGE;
   try {
     const content = await readFile(
-      join(vmDir, 'image',),
+      join(
+        vmDir,
+        'image',
+      ),
       'utf8',
     );
     image = content.trim();

@@ -79,20 +79,20 @@ const workspaceYamlContent = readFileSync(
  *
  * @returns Map of package names to version range strings found under the `catalog:` section.
  */
-function parseCatalogFromYaml(content: string): Record<string, string> {
+function parseCatalogFromYaml(content: string,): Record<string, string> {
   const result: Record<string, string> = {};
-  const catalogMatch = content.match(/^catalog:\s*\n((?:[ \t]+.+\n)*)/m,);
-  if (catalogMatch === null) return result;
-  const catalogBlock = catalogMatch[1];
-  if (catalogBlock === undefined) return result;
+  const catalogMatch = /^catalog:\s*\n((?:[ \t]+.+\n)*)/m.exec(content,);
+  if (catalogMatch === null)
+    return result;
+  const [, catalogBlock,] = catalogMatch;
+  if (catalogBlock === undefined)
+    return result;
   const entryPattern = /^\s+"?([^":]+)"?\s*:\s*"?([^"\n]+)"?\s*$/gm;
   let match = entryPattern.exec(catalogBlock,);
   while (match !== null) {
-    const name = match[1];
-    const value = match[2];
-    if (name !== undefined && value !== undefined) {
+    const [, name, value,] = match;
+    if (name !== undefined && value !== undefined)
       result[name] = value;
-    }
     match = entryPattern.exec(catalogBlock,);
   }
   return result;
@@ -138,7 +138,10 @@ Object.entries(catalog,).forEach(function processEntry([name, value,],) {
     .map(function probeCandidate(candidate,) {
       return {
         name: candidate,
-        version: readInstalledVersion(candidate, monorepoRoot,),
+        version: readInstalledVersion(
+          candidate,
+          monorepoRoot,
+        ),
       };
     },)
     .find(function hasVersion(r,) {
@@ -189,7 +192,11 @@ else {
   const rewritten = results.reduce(
     function applyTightening(
       acc,
-      { name, oldRange, newRange, },
+      {
+        name,
+        oldRange,
+        newRange,
+      },
     ) {
       return acc
         .replace(
@@ -208,7 +215,9 @@ else {
     workspaceYamlPath,
     rewritten,
   );
-  console.info(`\nWrote ${String(results.length,)} tightened entries to pnpm-workspace.yaml.`,);
+  console.info(
+    `\nWrote ${String(results.length,)} tightened entries to pnpm-workspace.yaml.`,
+  );
 }
 
 //endregion Write results

@@ -113,7 +113,10 @@ export function splitPackageSpecifier(specifier: string,): [
       ];
     }
     return [
-      specifier.slice(0, secondSlash,),
+      specifier.slice(
+        0,
+        secondSlash,
+      ),
       `./${specifier.slice(secondSlash + 1,)}`,
     ];
   }
@@ -128,7 +131,10 @@ export function splitPackageSpecifier(specifier: string,): [
     ];
   }
   return [
-    specifier.slice(0, firstSlash,),
+    specifier.slice(
+      0,
+      firstSlash,
+    ),
     `./${specifier.slice(firstSlash + 1,)}`,
   ];
 }

@@ -12,6 +12,7 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/claude-code-plugins/session-start-housekeeping"
   },
+  "private": true,
   "sideEffects": true,
   "dependencies": {
     "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",

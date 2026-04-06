@@ -20,6 +20,7 @@ import {
 /** Module-scoped tagged logger. */
 const l = tagged({ tag: 'path/empty', },);
 
+/* oxlint-disable eslint/require-await -- delegates to emptyFile/emptyDir which are async */
 /**
  * Empties a path, choosing file or directory behavior based on
  * whether the path has a file extension.
@@ -52,6 +53,7 @@ export async function emptyPath(path: string,): Promise<string> {
 
   return emptyDir(cleanPath,);
 }
+/* oxlint-enable eslint/require-await */
 
 /**
  * Removes all entries inside a directory without removing the directory itself.
@@ -70,8 +72,14 @@ export async function emptyDir(path: string,): Promise<string> {
 
   await Promise.all(entries.map(function removeEntry(entry,): Promise<void> {
     return rm(
-      posix.join(path, entry,),
-      { recursive: true, force: true, },
+      posix.join(
+        path,
+        entry,
+      ),
+      {
+        recursive: true,
+        force: true,
+      },
     );
   },),);
 

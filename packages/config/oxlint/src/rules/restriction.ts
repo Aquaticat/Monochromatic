@@ -50,9 +50,6 @@ export const restrictionRules: DummyRuleMap = {
   // Callbacks still need a name: items.map(function getValue(item) { return item.value; }).
   'no-restricted-syntax/no-arrow-function': 'error',
 
-  // Use str.match()/str.matchAll() instead of RegExp.prototype.exec().
-  'no-restricted-syntax/no-regexp-exec': 'error',
-
   // All .catch() calls are banned. Use try/catch with async/await.
   'no-restricted-syntax/no-promise-catch': 'error',
 
@@ -88,7 +85,6 @@ export const restrictionRules: DummyRuleMap = {
   'no-restricted-syntax/no-disable-no-for-in': 'error',
   'no-restricted-syntax/no-disable-no-enum': 'error',
   'no-restricted-syntax/no-disable-no-hasownproperty': 'error',
-  'no-restricted-syntax/no-disable-no-regexp-exec': 'error',
   'no-restricted-syntax/no-disable-no-trim-left-right': 'error',
   'no-restricted-syntax/no-disable-no-promise-catch': 'error',
   'no-restricted-syntax/no-disable-no-promise-finally': 'error',
@@ -100,6 +96,7 @@ export const restrictionRules: DummyRuleMap = {
   'no-restricted-syntax/no-disable-no-non-null-assertion': 'error',
   'no-restricted-syntax/no-disable-no-useless-return': 'error',
   'no-restricted-syntax/no-disable-require-returns': 'error',
+  'no-restricted-syntax/no-disable-prefer-regexp-exec': 'error',
   //endregion no-disable
 
   // Never process.exit() -- throw errors instead.

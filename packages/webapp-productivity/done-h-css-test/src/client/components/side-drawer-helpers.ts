@@ -1,14 +1,18 @@
 /**
  * DOM building helpers for `<side-drawer>`.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Builds a nav element with the standard link set.
  *
  * @returns Navigation element with inbox, in-progress, settings, and contact links
+ *
+ * @example
+ * ```ts
+ * const nav = buildNav();
+ * shadow.append(nav);
+ * ```
  */
 export function buildNav(): HTMLElement {
   return h({
@@ -44,6 +48,11 @@ export function buildNav(): HTMLElement {
  * @param closeButton - Close button element, or null for read-only headers
  *
  * @returns Header div element
+ *
+ * @example
+ * ```ts
+ * const header = buildHeader(buildCloseButton('Close drawer'));
+ * ```
  */
 export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
   const children: HTMLElement[] = [
@@ -68,6 +77,11 @@ export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
  * @param label - Accessible aria-label for the button
  *
  * @returns Button element with SVG close icon
+ *
+ * @example
+ * ```ts
+ * const closeBtn = buildCloseButton('Close drawer');
+ * ```
  */
 export function buildCloseButton(label: string,): HTMLElement {
   const button = h({

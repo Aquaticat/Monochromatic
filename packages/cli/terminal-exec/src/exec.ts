@@ -44,7 +44,10 @@ export function execvp({ command, }: { command: readonly string[]; },): void {
   l.debug(`exec: ${executable} ${args.join(' ',)}`,);
 
   const proc = Bun.spawn(
-    [executable, ...args,],
+    [
+      executable,
+      ...args,
+    ],
     {
       stdin: 'inherit',
       stdout: 'inherit',

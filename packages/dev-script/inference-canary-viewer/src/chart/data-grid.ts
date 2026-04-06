@@ -45,8 +45,12 @@ export function renderDataGrid(
       if (row.failed) {
         timestampChildren.push(
           ' ',
-          h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', },
-            text: '(timeout)', },),
+          h({
+            tag: 'span',
+            class: 'run-status',
+            attrs: { 'data-level': 'failed', },
+            text: '(timeout)',
+          },),
         );
       }
 
@@ -61,13 +65,21 @@ export function renderDataGrid(
         else if (row.failed) {
           scoreChildren.push(
             ' ',
-            h({ tag: 'span', class: 'score-warning', text: '(fix: not run)', },),
+            h({
+              tag: 'span',
+              class: 'score-warning',
+              text: '(fix: not run)',
+            },),
           );
         }
         else {
           scoreChildren.push(
             ' ',
-            h({ tag: 'span', class: 'score-warning', text: '(fix: no data)', },),
+            h({
+              tag: 'span',
+              class: 'score-warning',
+              text: '(fix: no data)',
+            },),
           );
         }
       }

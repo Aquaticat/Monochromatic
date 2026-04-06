@@ -11,6 +11,11 @@ import { renderPage, } from './layout.ts';
  * Renders the in-progress page listing tasks with active timers.
  *
  * @returns HTML response for the in-progress page
+ *
+ * @example
+ * ```ts
+ * const response = await inProgressPage();
+ * ```
  */
 export async function inProgressPage(): Promise<Response> {
   const tasks = await listInProgressTasks();

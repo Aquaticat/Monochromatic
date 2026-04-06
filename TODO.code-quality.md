@@ -1,6 +1,7 @@
 # Code Quality & Patterns Todo
 
 ## Cross-References
+
 - [**Build System Issues**](TODO.build-system.md#missing-export-issues) - TypeScript compilation and export fixes
 - [**Security Practices**](TODO.security.md#development-security) - Secure coding guidelines and practices
 - [**Performance Patterns**](TODO.performance.md#runtime-performance) - Performance-focused coding patterns
@@ -29,6 +30,7 @@
    - Update remaining test files to use function references in describe blocks
 
 #### TypeScript Compilation Errors (New - Critical Priority)
+
 **Status**: Critical - Blocks builds
 
 Recent analysis shows critical TypeScript compilation errors that must be fixed:
@@ -46,6 +48,7 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
 **Cross-Reference**: See [Build System Todo](TODO.build-system.md#missing-export-issues) for complete list and fixes.
 
 #### Remaining Files to Fix
+
 - More test files need function references in describe blocks
 - Files with remaining `i` variables in for loops
 - Files with void expression issues in test assertions
@@ -54,9 +57,11 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
 ### Medium Priority Issues
 
 #### Test File Issues
+
 - Missing JSDoc comments in non-test files (expected for internal utilities)
 
 ### Next Steps for ESLint Cleanup
+
 1. Fix all instances of `i` variable usage with descriptive names
 2. Fix void expression errors (legitimate code issues)
 3. Update remaining test files to use function references in describe blocks
@@ -68,12 +73,14 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
 ## Completed ESLint Fixes (June 2025)
 
 ### Configuration Changes
+
 - Disable `jsdoc/tag-lines` - formatting concern, not linting
 - Disable `jsdoc/require-jsdoc` for test files
 - Add `param`, `args`, `props`, `ctx`, `var` to allowed abbreviations
 - Add documentation about never using meaningless variable names like `i`
 
 ### Code Fixes Completed
+
 - Fixed variable `i` issues in multiple files (fixture.promises.0to999.ts, fixture.generator.0to999.ts, etc.)
 - Fixed variable `e` issues in catch blocks to use `error` instead
 - Fixed void expression issues in test files
@@ -96,33 +103,34 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
 
 ```typescript
 // Create array of 100 nulls as a counter
-const polls = new Array(100).fill(null);
+const polls = new Array(100,).fill(null,);
 
 // Use findAsync where the predicate does all the work
 try {
   const completedStatus = await findAsync(
     polls,
     async () => {
-      const status = await client.tasks.getTask(task.taskUid);
-      if (!isTaskPending(status.status)) {
+      const status = await client.tasks.getTask(task.taskUid,);
+      if (!isTaskPending(status.status,))
         return status;
-      }
-      await wait(TASK_POLL_INTERVAL_MS);
+      await wait(TASK_POLL_INTERVAL_MS,);
       return false;
-    }
+    },
   );
 
   if (completedStatus) {
     if (completedStatus.status !== 'succeeded') {
-      console.error(`Task ${task.taskUid} failed:`, completedStatus.error);
+      console.error(`Task ${task.taskUid} failed:`, completedStatus.error,);
       allTasksSuccessful = false;
     }
-  } else {
-    console.error(`Task ${task.taskUid} timed out after ${TASK_TIMEOUT_MS}ms`);
+  }
+  else {
+    console.error(`Task ${task.taskUid} timed out after ${TASK_TIMEOUT_MS}ms`,);
     allTasksSuccessful = false;
   }
-} catch (error) {
-  console.error(error);
+}
+catch (error) {
+  console.error(error,);
   allTasksSuccessful = false;
 }
 ```
@@ -143,6 +151,7 @@ try {
 ### Lessons from "Do you really need..."
 
 This questioning pattern teaches:
+
 1. **Question every construct** - Each programming construct adds complexity
 2. **Prefer immutability** - Mutable variables should be eliminated when possible
 3. **Prefer declarative over imperative** - Loops can often be replaced with higher-order functions
@@ -155,6 +164,7 @@ This questioning pattern teaches:
 ## Testing Requirements and Standards
 
 ### General Testing Guidelines
+
 - Write a corresponding Vitest file that aims for 100% test coverage
 - Tests can only be run from workspace root using `mise run test`
 - To run tests for specific patterns:
@@ -164,41 +174,46 @@ This questioning pattern teaches:
 **Cross-Reference**: See [Automation Todo](TODO.automation.md#testing-automation) for comprehensive testing automation.
 
 ### Coverage Requirements
+
 If certain lines or branches can't be tested, use V8 ignore comments:
+
 ```typescript
 /* v8 ignore next -- @preserve */
-if (impossibleCondition) {
-  throw new Error('This should never happen');
-}
+if (impossibleCondition)
+  throw new Error('This should never happen',);
 
 // For multiple lines:
 /* v8 ignore next 3 -- @preserve */
 if (untestableCondition) {
-  console.error('Untestable path');
+  console.error('Untestable path',);
   return fallbackValue;
 }
 ```
 
 ### Testing Intentional Violations
+
 When tests intentionally violate a rule to verify behavior:
+
 ```typescript
 // BAD: Adding data to satisfy the linter
-expect(isError(new Error('test message'))).toBe(true);
+expect(isError(new Error('test message',),),).toBe(true,);
 
 // GOOD: Use disable comments for intentional violations
 // oxlint-disable-next-line unicorn/error-message -- Testing error without message
-expect(isError(new Error())).toBe(true);
+expect(isError(new Error(),),).toBe(true,);
 ```
 
 ## TypeScript Standards and Patterns
 
 ### Function Patterns
+
 - Always name functions. Prefer function declarations
 - Always use parentheses around arrow function parameters (even single parameter)
 - Provide explicit parameter and return types for all functions
 - Use function overloads for functions with multiple call signatures
 
 ### Variable and Immutability Standards
+
 - Prefer `const` over `let` to encourage immutability
 - Strive for immutability: avoid reassigning variables and modifying objects in place
 - **NEVER use single-letter variables** - they provide no semantic meaning
@@ -207,6 +222,7 @@ expect(isError(new Error())).toBe(true);
 - Use `satisfies` operator for type checking without widening
 
 ### Error Handling Best Practices
+
 - **NEVER use process.exit()** - throw errors instead
 - **Combine console.log/error messages into thrown errors**
 - **Use outdent for multi-line error messages**
@@ -218,16 +234,19 @@ expect(isError(new Error())).toBe(true);
 ## Linting Configuration Philosophy
 
 ### When to Fix vs Configure
+
 - **High Priority**: Fix legitimate code issues in the codebase
 - **Medium Priority**: Adjust configuration for team workflow
 - **Never**: Disable rules just to avoid fixing code
 
 ### Rule Categories
+
 1. **Code Quality Issues** - Always fix in code, not config
 2. **Style Preferences** - Can be configured for team consistency
 3. **Framework-specific** - May need configuration for specific use cases
 
 ### Testing-Specific Linting
+
 - Use disable comments for intentional rule violations in tests
 - Different rules may apply to test files vs production code
 - Document why test files need different linting rules
@@ -235,6 +254,7 @@ expect(isError(new Error())).toBe(true);
 ## Performance and Code Efficiency
 
 ### Async Programming Standards
+
 - Prefer `async/await` over explicit promise creation
 - Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(...))`
 - Avoid await in loops where logically sound
@@ -243,6 +263,7 @@ expect(isError(new Error())).toBe(true);
 **Cross-Reference**: See [Performance Todo](TODO.performance.md#async-performance) for comprehensive async optimization.
 
 ### Functional Programming Utilities
+
 - Use `piped` for synchronous function composition
 - Use `pipedAsync` for async function composition
 - Use `pipe`/`pipeAsync` for reusable function pipelines
@@ -253,12 +274,14 @@ expect(isError(new Error())).toBe(true);
 ## Code Organization Standards
 
 ### File Organization
+
 - Use `region` markers to delineate logical sections
 - Group imports in specific order (built-in, external, workspace, relative, type-only)
 - Always include file extensions in imports
 - Use absolute imports for workspace packages
 
 ### Export Patterns
+
 - Avoid `Object.assign` for extending typed objects
 - Export at the end after all object construction is complete
 - Prefer immediately invoked function expressions over mutable variables
@@ -266,6 +289,7 @@ expect(isError(new Error())).toBe(true);
 ## Security-Focused Code Quality
 
 ### Secure Coding Practices
+
 **Status**: High Priority - Security integration
 
 - [ ] Implement input validation in all user-facing functions
@@ -277,6 +301,7 @@ expect(isError(new Error())).toBe(true);
 **Cross-Reference**: See [Security Todo](TODO.security.md#secure-coding-practices) for comprehensive security guidelines.
 
 ### Dependency Security Integration
+
 - [ ] Add dependency vulnerability scanning to pre-commit hooks
 - [ ] Implement automated dependency update validation
 - [ ] Add license compliance checking
@@ -287,6 +312,7 @@ expect(isError(new Error())).toBe(true);
 ## Future Quality Improvements
 
 ### Automated Code Quality
+
 - Implement automated code review checks
 - Set up quality gates in CI/CD pipeline
 - Monitor code quality metrics over time
@@ -295,6 +321,7 @@ expect(isError(new Error())).toBe(true);
 **Cross-Reference**: See [Automation Todo](TODO.automation.md#code-quality-automation) for comprehensive automation.
 
 ### Developer Experience
+
 - Provide clear error messages for common issues
 - Document coding standards and best practices
 - Create code templates and snippets
@@ -303,6 +330,7 @@ expect(isError(new Error())).toBe(true);
 **Cross-Reference**: See [Development Todo](TODO.development.md#development-workflow-improvements) for developer experience enhancements.
 
 ### Performance Integration
+
 - [ ] Add performance-focused linting rules
 - [ ] Implement performance regression detection in code review
 - [ ] Create performance-aware coding guidelines

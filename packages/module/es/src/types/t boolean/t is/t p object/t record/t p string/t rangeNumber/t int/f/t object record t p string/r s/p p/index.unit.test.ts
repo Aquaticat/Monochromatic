@@ -37,7 +37,7 @@ await describe({
         },),)
           .toBe(true,);
       },
-    }),
+    },),
     it({
       name: 'should return false for non-integer ranges',
       fn: async () => {
@@ -59,7 +59,7 @@ await describe({
         },),)
           .toBe(false,);
       },
-    }),
+    },),
     it({
       name: 'should return false when start > end',
       fn: async () => {
@@ -75,7 +75,7 @@ await describe({
         },),)
           .toBe(false,);
       },
-    }),
+    },),
     it({
       name: 'should return false for non-number values',
       fn: async () => {
@@ -103,7 +103,7 @@ await describe({
         },),)
           .toBe(false,);
       },
-    }),
+    },),
     it({
       name: 'should return false for special numeric values',
       fn: async () => {
@@ -125,7 +125,7 @@ await describe({
         },),)
           .toBe(false,);
       },
-    }),
+    },),
     it({
       name: 'should handle edge cases at integer boundaries',
       fn: async () => {
@@ -147,6 +147,6 @@ await describe({
         },),)
           .toBe(true,);
       },
-    }),
+    },),
   ],
 },);

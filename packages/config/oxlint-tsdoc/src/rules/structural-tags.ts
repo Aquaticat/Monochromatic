@@ -39,7 +39,10 @@ export const tagLines: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createTsdocVisitor(
       context,
-      function tagLinesHandler(_node, comment,): void {
+      function tagLinesHandler(
+        _node,
+        comment,
+      ): void {
         const lines = getCommentLines(comment,);
         /** Minimum line count for a comment that can contain tag spacing issues. */
         const minContentLines = 3;
@@ -54,11 +57,23 @@ export const tagLines: CreateOnceRule = {
         const blankCommentLine = `${blankLineIndent}*`;
 
         // Check each content line (skip opener and closer)
-        const contentLines = lines.slice(1, -1,);
-        contentLines.forEach(function checkTagLine(line, index,): void {
+        const contentLines = lines.slice(
+          1,
+          -1,
+        );
+        contentLines.forEach(function checkTagLine(
+          line,
+          index,
+        ): void {
           if (index === 0)
             return;
-          const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
+          const trimmed = line
+            .trimStart()
+            .replace(
+              COMMENT_LINE_PREFIX,
+              '',
+            )
+            .trimStart();
           if (!trimmed.startsWith('@',))
             return;
           // Check if previous line is blank
@@ -67,10 +82,13 @@ export const tagLines: CreateOnceRule = {
             return;
           const prevTrimmed = prevLine
             .trimStart()
-            .replace(COMMENT_LINE_PREFIX, '',)
+            .replace(
+              COMMENT_LINE_PREFIX,
+              '',
+            )
             .trimStart();
           if (prevTrimmed.length > 0) {
-            const tagMatch = trimmed.match(/^(@\w+)/,);
+            const tagMatch = (/^(@\w+)/).exec(trimmed,);
             const tag = tagMatch !== null ? tagMatch[1] ?? '@unknown' : '@unknown';
 
             /**
@@ -81,7 +99,10 @@ export const tagLines: CreateOnceRule = {
 
             context.report({
               loc: {
-                start: { line: tagLineNumber, column: 0, },
+                start: {
+                  line: tagLineNumber,
+                  column: 0,
+                },
               },
               messageId: 'noBlankBefore',
               data: { tag, },
@@ -96,7 +117,10 @@ export const tagLines: CreateOnceRule = {
                   column: 0,
                 },);
                 return fixer.insertTextBeforeRange(
-                  [insertOffset, insertOffset,],
+                  [
+                    insertOffset,
+                    insertOffset,
+                  ],
                   `${blankCommentLine}\n`,
                 );
               },

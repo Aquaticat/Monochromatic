@@ -23,6 +23,12 @@ import {
  * Generates the complete site CSS as a single string.
  *
  * @returns concatenated CSS rules from all style modules
+ *
+ * @example
+ * ```ts
+ * const css = generateSiteCss();
+ * await writeFile('dist/styles.css', css);
+ * ```
  */
 export function generateSiteCss(): string {
   return [

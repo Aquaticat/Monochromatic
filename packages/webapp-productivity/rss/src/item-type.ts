@@ -1,18 +1,16 @@
 import type {
+  Atom,
   Opml,
-  parseAtomFeed,
-  parseRssFeed,
+  Rss,
 } from 'feedsmith';
 
 /**
  * Individual feed item with its parent feed metadata and OPML outline.
  */
 export type Item = {
-  feed: Omit<ReturnType<typeof parseRssFeed | typeof parseAtomFeed>, 'entries' | 'items'>;
+  feed: Omit<Rss.Feed<string> | Atom.Feed<string>, 'entries' | 'items'>;
   outline: Opml.Outline<string>;
-  item: NonNullable<
-    ReturnType<typeof parseRssFeed>['items'] | ReturnType<typeof parseAtomFeed>['entries']
-  >[number];
+  item: Rss.Item<string> | Atom.Entry<string>;
 };
 
 /**
@@ -20,23 +18,20 @@ export type Item = {
  * Atom entries are converted to match RSS item shape.
  */
 export type NormalizedItem = {
-  feed: Omit<ReturnType<typeof parseRssFeed>, 'items'>;
-  originalFeed?: Omit<ReturnType<typeof parseRssFeed | typeof parseAtomFeed>,
-    'entries' | 'items'>;
+  feed: Omit<Rss.Feed<string>, 'items'>;
+  originalFeed?: Omit<Rss.Feed<string> | Atom.Feed<string>, 'entries' | 'items'>;
   outline: Opml.Outline<string>;
-  item: NonNullable<ReturnType<typeof parseRssFeed>['items']>[number];
-  originalItem?: NonNullable<
-    ReturnType<typeof parseAtomFeed>['entries'] | ReturnType<typeof parseRssFeed>['items']
-  >[number];
+  item: Rss.Item<string>;
+  originalItem?: Rss.Item<string> | Atom.Entry<string>;
 };
 
 /**
  * Atom feed item narrowed to its specific types for normalization.
  */
 export type AtomItem = {
-  feed: Omit<ReturnType<typeof parseAtomFeed>, 'entries'>;
+  feed: Omit<Atom.Feed<string>, 'entries'>;
   outline: Opml.Outline<string>;
-  item: NonNullable<ReturnType<typeof parseAtomFeed>['entries']>[number];
+  item: Atom.Entry<string>;
 };
 
 /** Normalized item with an extracted publication date for sorting. */

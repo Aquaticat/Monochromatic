@@ -1,9 +1,7 @@
 /**
  * DOM building helpers for the `<task-detail>` render method.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 
 /** Options for building the task detail DOM tree. */
@@ -43,6 +41,12 @@ type RenderResult = {
  * so the caller can wire up event listeners without querying the DOM.
  *
  * @returns Elements and refs
+ *
+ * @example
+ * ```ts
+ * const { elements, refs } = buildTaskDetailTree({ task, isCreate: false, styles: [] });
+ * shadow.replaceChildren(...elements);
+ * ```
  */
 export function buildTaskDetailTree(
   {
@@ -180,6 +184,11 @@ export function buildTaskDetailTree(
 
   return {
     elements,
-    refs: { titleInput, descInput, pillsContainer, btnRow, },
+    refs: {
+      titleInput,
+      descInput,
+      pillsContainer,
+      btnRow,
+    },
   };
 }

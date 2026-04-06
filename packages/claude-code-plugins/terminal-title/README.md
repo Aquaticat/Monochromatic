@@ -1,4 +1,4 @@
-# clauce-code-plugins-terminal-title
+# claude-code-plugins-terminal-title
 
 Claude Code hook that sets the terminal tab title to reflect current activity.
 
@@ -99,7 +99,7 @@ Then add the hook to `.claude/settings.local.json`:
     "WorktreeCreate": [{ "type": "command", "command": "cctt" }],
     "WorktreeRemove": [{ "type": "command", "command": "cctt" }],
     "PreCompact": [{ "type": "command", "command": "cctt" }],
-    "SessionEnd": [{ "type": "command", "command": "cctt" }]
-  }
+    "SessionEnd": [{ "type": "command", "command": "cctt" }],
+  },
 }
 ```

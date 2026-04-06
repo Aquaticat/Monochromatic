@@ -64,6 +64,12 @@ export function formatTrackedTime(seconds: number,): string {
  * @param task - Task to build chip labels for
  *
  * @returns Array of chip label strings
+ *
+ * @example
+ * ```ts
+ * const chips = buildChipTexts(task);
+ * // ['#errand', 'tracked: 1h 30m', 'home']
+ * ```
  */
 export function buildChipTexts(task: Task,): string[] {
   const chips: string[] = [];

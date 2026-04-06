@@ -76,7 +76,10 @@ const parser = object({
 /** Parsed CLI arguments from process.argv */
 const args = runSync(
   parser,
-  { programName: 'task-command', help: 'option', },
+  {
+    programName: 'task-command',
+    help: 'option',
+  },
 );
 
 /** Destructured command and its arguments from the rest args after `--` */

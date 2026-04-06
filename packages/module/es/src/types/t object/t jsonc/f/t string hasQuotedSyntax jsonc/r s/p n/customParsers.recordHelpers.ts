@@ -48,6 +48,15 @@ export function parseRecordHeader(
  * @returns Discriminated union: `'end'` with tail after '}' or `'next'` with the next member's start
  *
  * @throws Error - When neither ',' nor '}' is found in a valid position
+ *
+ * @example
+ * ```ts
+ * const end = expectRecordSeparatorOrEnd('}rest' as FragmentStringJsonc);
+ * // end === { kind: 'end', tail: 'rest' }
+ *
+ * const next = expectRecordSeparatorOrEnd(', "b": 2}' as FragmentStringJsonc);
+ * // next === { kind: 'next', tailStart: '"b": 2}' }
+ * ```
  */
 export function expectRecordSeparatorOrEnd(
   tail: FragmentStringJsonc,
@@ -109,6 +118,13 @@ export function expectRecordSeparatorOrEnd(
  * @returns Key node with optional comment, and remaining tail after the key
  *
  * @throws Error - When the tail does not start with a quoted string
+ *
+ * @example
+ * ```ts
+ * const { keyNode, remaining } = parseRecordKey('"name": 1}' as FragmentStringJsonc);
+ * // keyNode.value === '"name"'
+ * // remaining === ': 1}'
+ * ```
  */
 export function parseRecordKey(
   tail: FragmentStringJsonc,
@@ -150,6 +166,12 @@ export function parseRecordKey(
  * @returns Tail after the ':' token
  *
  * @throws Error - When ':' is not found after consuming comments/whitespace
+ *
+ * @example
+ * ```ts
+ * const tail = expectColonAfterKey(': 42}' as FragmentStringJsonc);
+ * // tail === ' 42}'
+ * ```
  */
 export function expectColonAfterKey(
   tail: FragmentStringJsonc,

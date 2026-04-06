@@ -11,6 +11,11 @@
  * @param name - Argument name without the `--` prefix
  *
  * @returns Extracted value, or `undefined` when the argument is absent
+ *
+ * @example
+ * ```ts
+ * const port = getArgumentValue('port'); // '3000' when invoked with --port=3000
+ * ```
  */
 export function getArgumentValue(name: string,): string | undefined {
   const prefix = `--${name}=`;

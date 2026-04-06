@@ -5,6 +5,7 @@
 ### Husky to Moon Migration (June 2025)
 
 #### Completed Tasks
+
 - [x] Research Moon's VCS hooks capabilities and configuration
 - [x] Back up all package.json files with scripts to `bak/20250619_233329/`
 - [x] Remove scripts from all package.json files
@@ -16,25 +17,28 @@
 - [x] Test the new pre-commit hooks
 
 #### Migration Summary
+
 - Successfully removed Husky dependencies from package.json and pnpm-workspace.yaml
 - Configured Moon VCS hooks in `.moon/workspace.yml` with simple command list:
   ```yaml
   hooks:
     pre-commit:
-      - 'moon run :lint --affected'
-      - 'moon run :test --affected'
+    - 'moon run :lint --affected'
+    - 'moon run :test --affected'
   ```
 - Moon automatically generated the bash script and synced to `.git/hooks/pre-commit`
 - Pre-commit hook runs both linting and all tests (unit + browser) on affected files for optimal performance
 - Hook successfully prevents commits when linting errors are found
 
 #### Benefits Achieved
+
 - Native integration with Moon build system
 - Better performance using Moon's caching and affected file detection
 - Simpler configuration with no separate tool to manage
 - Consistent task definitions across build and hooks
 
 #### Follow-up Tasks Completed
+
 1. **Set up IDE integration**:
    - Configure format-on-save for all developers
    - Ensure TypeScript language server is properly configured
@@ -52,6 +56,7 @@
 ### WSL Migration - Post-Migration Tasks (June 2025)
 
 #### Completed Migration Steps
+
 1. **Install dependencies in WSL location**
 2. **Run initial setup**
 3. **Verify build system**
@@ -60,6 +65,7 @@
 6. **Clean up Windows copy**
 
 #### Migration Benefits Achieved
+
 - Native Linux moon binary (no path translation issues)
 - 10-50x faster file operations
 - Better integration with Linux tooling
@@ -70,6 +76,7 @@
 ### Pre-commit Validation Issues Fixed (June 2025)
 
 #### Critical Build Issues Resolved
+
 1. **ESLint config package not built**
    - Fixed by running `moon run config-eslint:build`
    - This was blocking all ESLint validation
@@ -85,6 +92,7 @@
      - Support Ubuntu/Debian, Fedora/RHEL, and Arch Linux with specific commands
 
 #### Resolution Results
+
 1. **Immediate**: Fix Playwright system dependencies installation
 2. **High**: Address TypeScript strict errors (blocking commits)
    - Fixed type guard functions to use `unknown` instead of `any`
@@ -103,6 +111,7 @@
 ## ESLint Configuration Cleanup (June 2025)
 
 ### Configuration Changes Completed
+
 - [x] Disable `jsdoc/tag-lines` - formatting concern, not linting
 - [x] Disable `jsdoc/require-jsdoc` for test files
 - [x] Add `param`, `args`, `props`, `ctx`, `var` to allowed abbreviations
@@ -116,6 +125,7 @@
 ### Comprehensive ESLint Fixes Session (June 2025)
 
 #### Variable `i` Issues Fixed
+
 - `fixture.promises.0to999.ts` - changed to `promiseIndex`, `batchStart`, `index`
 - `fixture.generator.0to999.ts` - changed to `value`, `delayMilliseconds`, `iteration`, `milliseconds`, `valueIndex`
 - `iterable.chunks.ts` - changed to `chunkStart`, `value`
@@ -131,23 +141,28 @@
 - `iterable.partition.ts` - changed to `item` for iterator values
 
 #### Variable `e` Issues Fixed in Catch Blocks
+
 - `moon.index-claude-mcp-logs.ts` - changed to `error` (3 occurrences)
 - `deprecated.testing.ts` - changed to `error`
 - `fs.fs.default.ts` - changed to `error`
 
 #### Void Expression Issues Fixed
+
 - `error.assert.equal.unit.test.ts` - added braces to arrow functions returning void
 - `any.constant.unit.test.ts` - stored undefined result before testing
 - `any.identity.unit.test.ts` - stored undefined result before testing
 - `any.test.ts` - stored undefined result before testing
 
 #### GlobalThis Issues Fixed
+
 - `packages/figma-plugin/css-variables/src/iframe/index.ts` - replaced window.getComputedStyle and window.parent.postMessage
 - `packages/figma-plugin/css-variables/src/frontend/index.ts` - replaced window.parent.postMessage and window.addEventListener
 - `logtape.default.ts` - replaced window.sessionStorage with globalThis.sessionStorage
 
 #### Test File Describe Blocks Updated
+
 Updated to use function references in multiple test files including:
+
 - `any.constant.unit.test.ts`, `any.echo.unit.test.ts`, `any.identity.unit.test.ts`
 - `boolean.not.unit.test.ts`, `any.typeOf.unit.test.ts`, `any.toExport.unit.test.ts`
 - `strings.join.unit.test.ts`, `promise.wait.unit.test.ts`, `result.unwrap.unit.test.ts`
@@ -160,6 +175,7 @@ Updated to use function references in multiple test files including:
 ### Fresh Clone Setup Validation (June 2025)
 
 #### Validation Scripts Implemented
+
 - **validateSetup task**: Successfully implemented to help diagnose environment issues
 - **Validation scripts**: checkTools, checkDependencies, checkBuild, checkGitHooks are working correctly
 - **baseUrl TypeScript configuration**: Has been documented in TROUBLESHOOTING.md
@@ -169,14 +185,17 @@ Updated to use function references in multiple test files including:
 ### Completed/No Action Needed
 
 #### Astro RSS Endpoint
+
 - **Status**: Fixed upstream
 - **Note**: Seems like they've fixed it, so no work needed
 
-#### LightningCSS Resolver  
+#### LightningCSS Resolver
+
 - **Status**: Switched back to postcss
 - **Note**: Holding onto this idea in case future lightningcss updates make it better than postcss
 
 #### fs-extra packageExtensions
+
 - **Status**: No longer using fs-extra
 - **Note**: Previously needed for fs-extra/universalify dependency issue, keeping for reference
 
@@ -185,18 +204,21 @@ Updated to use function references in multiple test files including:
 ### Documentation Standards Established
 
 #### Technical Writing Guidelines
+
 - Write in active voice without collective pronouns
 - State facts directly without meta-references
 - Use present tense for current state
 - Eliminate unnecessary connecting phrases
 
 #### Markdown Conventions
+
 - One sentence per line for better diffs
-- Use **bold** for emphasis, avoid _italics_
+- Use **bold** for emphasis, avoid *italics*
 - Prefer fenced code blocks with language tags
 - ATX-style headers with maximum 4 levels
 
 #### Format Standards
+
 - NEVER use emojis in documentation
 - NEVER use ALL CAPS for headings
 - Use sentence case for headings
@@ -205,6 +227,7 @@ Updated to use function references in multiple test files including:
 ### Git Commit Guidelines Established
 
 #### Conventional Commits Implementation
+
 - Follow Conventional Commits specification
 - Include ALL changes in comprehensive commit messages
 - Use proper type/scope format
@@ -224,6 +247,7 @@ Updated to use function references in multiple test files including:
 5. "Do you really need a for loop?" → Changed to recursive helper function
 
 #### Lessons Learned and Applied
+
 1. **Question every construct** - Each programming construct adds complexity
 2. **Prefer immutability** - Mutable variables should be eliminated when possible
 3. **Prefer declarative over imperative** - Loops can often be replaced with higher-order functions
@@ -234,6 +258,7 @@ Updated to use function references in multiple test files including:
 ## Priority Classifications Established
 
 ### Completed Priority System
+
 - **High Priority**: CLI tools development, Package.jsonc support and bidirectional sync
 - **Normal Priority**: Multiple localized 404 pages, PlantUML integration, SVG optimization
 - **Low Priority**: MDX formatting, Automatic translation integration, Dim sidebar on hover (on hold)
@@ -244,6 +269,7 @@ Updated to use function references in multiple test files including:
 ### Testing Requirements Established
 
 #### Test Structure Standards
+
 - Use descriptive test names that explain expected behavior
 - Group related tests using `describe` blocks
 - Use `it.each` for parameterized tests
@@ -251,6 +277,7 @@ Updated to use function references in multiple test files including:
 - Test both happy path and error scenarios
 
 #### Test File Setup Standards
+
 - Always start Vitest files with proper imports and logtape configuration
 - Use V8 ignore comments for untestable code paths
 - Write corresponding Vitest files aiming for 100% test coverage
@@ -262,6 +289,7 @@ Updated to use function references in multiple test files including:
 Historical references below reflect the tooling at the time of completion.
 
 ### Key dates and milestones
+
 - **June 19, 2025**: WSL migration completion
 - **June 2025**: Husky to Moon migration (later migrated to mise)
 - **June 2025**: Pre-commit validation fixes
@@ -271,11 +299,13 @@ Historical references below reflect the tooling at the time of completion.
 - **March 2026**: MCP stdio package initial implementation
 
 ### Important file locations
+
 - **Backup location**: `bak/20250619_233329/` (package.json backup from Husky migration)
 - **Task configuration**: `mise.toml` files in root and package directories
 - **Validation scripts**: Various mise tasks in `packages/module/es/src/`
 
 ### Current commands reference
+
 ```bash
 # Fresh clone setup
 bun install

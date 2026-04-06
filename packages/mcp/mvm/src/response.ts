@@ -71,7 +71,10 @@ export function errorResponse(
     err,
   );
   return {
-    content: [{ type: TEXT_TYPE, text: `Error: ${message}`, },],
+    content: [{
+      type: TEXT_TYPE,
+      text: `Error: ${message}`,
+    },],
     isError: true,
   };
 }

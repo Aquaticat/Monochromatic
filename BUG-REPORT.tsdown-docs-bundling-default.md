@@ -51,7 +51,7 @@ auto-externalizes production dependencies without any user configuration.
 `src/config/options.ts:96` -- `resolveOptions()` reads `package.json` from the working directory:
 
 ```typescript
-const pkg = await readPackageJson(cwd)
+const pkg = await readPackageJson(cwd,);
 ```
 
 `src/utils/package.ts:13-24` -- `readPackageJson()` uses `empathic/package` to locate
@@ -61,10 +61,11 @@ the nearest `package.json` and parses it:
 export async function readPackageJson(
   dir: string,
 ): Promise<PackageJsonWithPath | undefined> {
-  const packageJsonPath = findPackage({ cwd: dir })
-  if (!packageJsonPath) return
-  const contents = await readFile(packageJsonPath, 'utf8')
-  return { ...JSON.parse(contents), packageJsonPath }
+  const packageJsonPath = findPackage({ cwd: dir, },);
+  if (!packageJsonPath)
+    return;
+  const contents = await readFile(packageJsonPath, 'utf8',);
+  return { ...JSON.parse(contents,), packageJsonPath, };
 }
 ```
 
@@ -77,7 +78,7 @@ const config: ResolvedConfig = {
   // ...
   pkg,
   // ...
-}
+};
 ```
 
 ### Step 3: `DepsPlugin` is registered whenever `pkg` exists
@@ -87,9 +88,8 @@ const config: ResolvedConfig = {
 Since any real project has a `package.json`, this plugin is effectively always active:
 
 ```typescript
-if (config.pkg || config.deps.skipNodeModulesBundle) {
-  plugins.push(DepsPlugin(config, bundle))
-}
+if (config.pkg || config.deps.skipNodeModulesBundle)
+  plugins.push(DepsPlugin(config, bundle,),);
 ```
 
 ### Step 4: `getProductionDeps` collects all production dependency names
@@ -101,19 +101,19 @@ from `package.json`:
 /*
  * Production deps should be excluded from the bundle
  */
-function getProductionDeps(pkg: PackageJson): Set<string> {
+function getProductionDeps(pkg: PackageJson,): Set<string> {
   return new Set([
-    ...Object.keys(pkg.dependencies || {}),
-    ...Object.keys(pkg.peerDependencies || {}),
-    ...Object.keys(pkg.optionalDependencies || {}),
-  ])
+    ...Object.keys(pkg.dependencies || {},),
+    ...Object.keys(pkg.peerDependencies || {},),
+    ...Object.keys(pkg.optionalDependencies || {},),
+  ],);
 }
 ```
 
 This is called at `src/features/deps.ts:169`:
 
 ```typescript
-const deps = pkg && Array.from(getProductionDeps(pkg))
+const deps = pkg && Array.from(getProductionDeps(pkg,),);
 ```
 
 ### Step 5: every non-entry import is checked against the production deps list
@@ -127,25 +127,25 @@ async function externalStrategy(
   id: string,
   importer: string | undefined,
   resolved: ResolvedId | null,
-): Promise<boolean | [true, string] | 'absolute' | 'no-external'> {
-  if (id === shimFile) return false
+): Promise<boolean | [true, string,] | 'absolute' | 'no-external'> {
+  if (id === shimFile)
+    return false;
 
-  if (alwaysBundle?.(id, importer)) {
-    return 'no-external'
-  }
+  if (alwaysBundle?.(id, importer,))
+    return 'no-external';
 
   // ...skipNodeModulesBundle check...
 
   if (deps) {
-    if (deps.includes(id) || deps.some((dep) => id.startsWith(`${dep}/`))) {
-      const resolvedDep = await resolveDepSubpath(id, resolved)
-      return resolvedDep ? [true, resolvedDep] : true
+    if (deps.includes(id,) || deps.some(dep => id.startsWith(`${dep}/`,))) {
+      const resolvedDep = await resolveDepSubpath(id, resolved,);
+      return resolvedDep ? [true, resolvedDep,] : true;
     }
 
     // ...@types fallback for DTS...
   }
 
-  return false
+  return false;
 }
 ```
 
@@ -153,14 +153,14 @@ The `resolveId` hook at `src/features/deps.ts:173-208` calls `externalStrategy()
 and marks the module as external when it returns `true`:
 
 ```typescript
-let shouldExternal = await externalStrategy(id, importer, resolved)
+let shouldExternal = await externalStrategy(id, importer, resolved,);
 // ...
 if (shouldExternal === true || shouldExternal === 'absolute') {
   return {
     id,
     external: shouldExternal,
     moduleSideEffects,
-  }
+  };
 }
 ```
 
@@ -215,14 +215,14 @@ that would otherwise be bundled.
 
 A user reading only the FAQ would:
 
--   Set up `deps` configuration unnecessarily (it is already the default)
--   Misunderstand why their production dependencies **are not** in the output
-    (expected them to be bundled, per the FAQ)
--   Potentially add `deps.alwaysBundle` for packages that should remain external,
-    creating duplicate copies in consumer bundles
--   Use `skipNodeModulesBundle` thinking it enables externalization,
-    when it actually changes the externalization scope from "production deps only"
-    to "all `node_modules`"
+- Set up `deps` configuration unnecessarily (it is already the default)
+- Misunderstand why their production dependencies **are not** in the output
+  (expected them to be bundled, per the FAQ)
+- Potentially add `deps.alwaysBundle` for packages that should remain external,
+  creating duplicate copies in consumer bundles
+- Use `skipNodeModulesBundle` thinking it enables externalization,
+  when it actually changes the externalization scope from "production deps only"
+  to "all `node_modules`"
 
 ## Related tsdown configuration
 
@@ -251,9 +251,11 @@ The FAQ entry ["Why are my dependencies being bundled?"](https://tsdown.dev/guid
 This contradicts two other documentation pages:
 
 **Dependencies page** (`docs/options/dependencies.md:9`):
+
 > By default, `tsdown` **does not bundle dependencies** listed in your `package.json` under `dependencies`, `peerDependencies`, and `optionalDependencies`
 
 **How It Works page** (`docs/guide/how-it-works.md:30`):
+
 > `dependencies`, `peerDependencies`, and `optionalDependencies` are **externalized** -- they appear as `import` / `require` statements in the output and are not included in the bundle.
 
 ### Source code confirms the Dependencies page is correct

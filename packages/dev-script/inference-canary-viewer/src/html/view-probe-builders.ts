@@ -21,6 +21,12 @@ import type { ViewerEntry, } from '../data/viewer-types.ts';
  * @param probe - probe name to filter on
  *
  * @returns scatter points sorted by timestamp
+ *
+ * @example
+ * ```ts
+ * const points = buildCrossModelPoints(entries, 'csv-rfc4180');
+ * // [{ runId: 'Sonnet 4.6-csv-rfc4180-2026-...', score: 0.9, ... }]
+ * ```
  */
 export function buildCrossModelPoints(
   entries: readonly ViewerEntry[],
@@ -82,6 +88,12 @@ export function buildCrossModelPoints(
  * @param color - point color
  *
  * @returns scatter points for this model+probe combination
+ *
+ * @example
+ * ```ts
+ * const points = buildSingleModelPoints(entries, 'csv-rfc4180', 'Sonnet 4.6', 'anthropic/claude-sonnet-4-6', '#D97757');
+ * // [{ runId: 'Sonnet 4.6-csv-rfc4180-2026-...', score: 0.9, color: '#D97757', ... }]
+ * ```
  */
 export function buildSingleModelPoints(
   entries: readonly ViewerEntry[],

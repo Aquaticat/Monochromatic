@@ -6,7 +6,10 @@ import {
   pullFile,
   pushFile,
 } from '@monochromatic-dev/cli-mvm/file-transfer';
-import { defineTool, } from '@monochromatic-dev/mcp-stdio';
+import {
+  defineTool,
+  type ToolEntry,
+} from '@monochromatic-dev/mcp-stdio';
 
 import {
   errorResponse,
@@ -16,7 +19,7 @@ import {
 //region Transfer tools -- move files between host and guest VMs
 
 /** MCP tool: push a file from the host into a running VM. */
-export const pushTool = defineTool(
+export const pushTool: ToolEntry = defineTool(
   'push_to_vm',
   {
     description:
@@ -24,31 +27,49 @@ export const pushTool = defineTool(
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'VM name to push to', },
-        hostPath: { type: 'string',
-          description: 'Absolute or relative path on the host to read from', },
-        guestPath: { type: 'string',
-          description: 'Absolute path inside the guest to write to', },
+        name: {
+          type: 'string',
+          description: 'VM name to push to',
+        },
+        hostPath: {
+          type: 'string',
+          description: 'Absolute or relative path on the host to read from',
+        },
+        guestPath: {
+          type: 'string',
+          description: 'Absolute path inside the guest to write to',
+        },
       },
-      required: ['name', 'hostPath', 'guestPath',],
+      required: [
+        'name',
+        'hostPath',
+        'guestPath',
+      ],
     },
     handler: async function handlePushToVm(args,) {
       const name = String(args.name,);
       const hostPath = String(args.hostPath,);
       const guestPath = String(args.guestPath,);
       try {
-        await pushFile({ name, hostPath, guestPath, },);
+        await pushFile({
+          name,
+          hostPath,
+          guestPath,
+        },);
         return textResponse(`Pushed ${hostPath} -> ${guestPath} in VM ${name}`,);
       }
       catch (err: unknown) {
-        return errorResponse('push_to_vm', err,);
+        return errorResponse(
+          'push_to_vm',
+          err,
+        );
       }
     },
   },
 );
 
 /** MCP tool: pull a file from a running VM to the host. */
-export const pullTool = defineTool(
+export const pullTool: ToolEntry = defineTool(
   'pull_from_vm',
   {
     description:
@@ -56,22 +77,39 @@ export const pullTool = defineTool(
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'VM name to pull from', },
-        guestPath: { type: 'string',
-          description: 'Absolute path inside the guest to read from', },
-        hostPath: { type: 'string',
-          description: 'Absolute or relative path on the host to write to', },
+        name: {
+          type: 'string',
+          description: 'VM name to pull from',
+        },
+        guestPath: {
+          type: 'string',
+          description: 'Absolute path inside the guest to read from',
+        },
+        hostPath: {
+          type: 'string',
+          description: 'Absolute or relative path on the host to write to',
+        },
       },
-      required: ['name', 'guestPath', 'hostPath',],
+      required: [
+        'name',
+        'guestPath',
+        'hostPath',
+      ],
     },
     handler: async function handlePullFromVm(args,) {
       const name = String(args.name,);
       const guestPath = String(args.guestPath,);
       const hostPath = String(args.hostPath,);
       try {
-        const content = await pullFile({ name, guestPath, },);
+        const content = await pullFile({
+          name,
+          guestPath,
+        },);
         const { writeFile, } = await import('node:fs/promises');
-        await writeFile(hostPath, content,);
+        await writeFile(
+          hostPath,
+          content,
+        );
         return textResponse(
           `Pulled ${guestPath} -> ${hostPath} from VM ${name} (${
             String(content.length,)
@@ -79,7 +117,10 @@ export const pullTool = defineTool(
         );
       }
       catch (err: unknown) {
-        return errorResponse('pull_from_vm', err,);
+        return errorResponse(
+          'pull_from_vm',
+          err,
+        );
       }
     },
   },

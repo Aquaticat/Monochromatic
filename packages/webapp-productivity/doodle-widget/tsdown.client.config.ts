@@ -1,5 +1,8 @@
 import base from '@monochromatic-dev/config-tsdown/.client.ts';
-import { defineConfig, } from 'tsdown';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
 
 /**
  * Client-side browser bundle config for the doodle widget.
@@ -7,7 +10,7 @@ import { defineConfig, } from 'tsdown';
  * modules into a single `dist/client/main.js` for HTML embedding.
  * Always minified since the output is inlined into a self-contained HTML file.
  */
-export default defineConfig({
+const config: UserConfig = defineConfig({
   ...base,
   entry: ['./src/client/main.ts',],
   minify: {
@@ -17,3 +20,4 @@ export default defineConfig({
     codegen: true,
   },
 },);
+export default config;

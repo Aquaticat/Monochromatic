@@ -25,6 +25,12 @@ import {
  * @param thresholds - map from model label to computed threshold
  *
  * @returns HTML string
+ *
+ * @example
+ * ```ts
+ * const html = renderByModel({ entries, thresholds });
+ * // '<details class="model-section">...<\/details>...'
+ * ```
  */
 export function renderByModel({
   entries,
@@ -104,7 +110,10 @@ export function renderByModel({
                 threshold: 0,
                 thresholdLabel: '',
                 caption: `${label} - ${probe}`,
-                tableDisplay: { showModel: false, showProbe: false, },
+                tableDisplay: {
+                  showModel: false,
+                  showProbe: false,
+                },
               },),
             ],
           },);
@@ -118,9 +127,15 @@ export function renderByModel({
           h({
             tag: 'summary',
             children: [
-              iconDot(openrouterId, color,),
+              iconDot(
+                openrouterId,
+                color,
+              ),
               ' ',
-              h({ tag: 'span', text: label, },),
+              h({
+                tag: 'span',
+                text: label,
+              },),
             ],
           },),
           h({

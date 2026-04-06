@@ -16,6 +16,11 @@ import {
  * @param args - CLI arguments after "embed"
  *
  * @param printUsageAndExit - callback to print usage and exit on errors
+ *
+ * @example
+ * ```ts
+ * await handleEmbed(['image.png'], printUsageAndExit);
+ * ```
  */
 export async function handleEmbed(
   args: string[],

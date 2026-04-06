@@ -9,10 +9,10 @@ The root `oxlint.config.ts` imports and re-exports the shared config:
 
 ```typescript
 // oxlint.config.ts (monorepo root)
-import { defineConfig } from 'oxlint';
 import base from '@monochromatic-dev/config-oxlint';
+import { defineConfig, } from 'oxlint';
 
-export default defineConfig({ ...base });
+export default defineConfig({ ...base, },);
 ```
 
 Uses spread instead of `extends` because `extends` only merges rules --

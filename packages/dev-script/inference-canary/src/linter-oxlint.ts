@@ -175,7 +175,11 @@ export async function runAndParseOxlint(filePath: string,): Promise<OxlintResult
   try {
     const output = await execPromise(
       'oxlint',
-      ['--format', 'json', filePath,],
+      [
+        '--format',
+        'json',
+        filePath,
+      ],
       {
         timeout: LINT_TIMEOUT_MS,
       },

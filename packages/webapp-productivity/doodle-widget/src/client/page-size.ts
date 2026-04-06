@@ -16,7 +16,7 @@ const LETTER_WIDTH_INCHES = 8.5;
 const LETTER_HEIGHT_INCHES = 11;
 
 /** US Letter width at 96 DPI (8.5 inches * 96 px/inch = 816 px) */
-export const LETTER_WIDTH = LETTER_WIDTH_INCHES * DPI;
+export const LETTER_WIDTH: number = LETTER_WIDTH_INCHES * DPI;
 
 /** US Letter height at 96 DPI (11 inches * 96 px/inch = 1056 px) */
-export const LETTER_HEIGHT = LETTER_HEIGHT_INCHES * DPI;
+export const LETTER_HEIGHT: number = LETTER_HEIGHT_INCHES * DPI;

@@ -1,6 +1,4 @@
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
 /** Shadow DOM styles for the `\<section-heading\>` component. */
@@ -37,7 +35,7 @@ const STYLES = css(`
  */
 class SectionHeading extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Whether the section content is currently expanded. */
   #open = true;
@@ -71,13 +69,16 @@ class SectionHeading extends HTMLElement {
    * Registered as a click handler in connectedCallback.
    */
   // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-  #toggle = function toggle(this: SectionHeading,): void {
+  readonly #toggle = function toggle(this: SectionHeading,): void {
     this.#open = !this.#open;
     this.#updateToggle();
     this.dispatchEvent(
       new CustomEvent(
         'toggle',
-        { detail: { open: this.#open, }, bubbles: true, },
+        {
+          detail: { open: this.#open, },
+          bubbles: true,
+        },
       ),
     );
   }

@@ -25,6 +25,11 @@ import { pageLayout, } from '../templates/layout.ts';
  * @param renderedHtml - pre-rendered MDX HTML content (from cache or processor)
  *
  * @returns complete HTML document for the post page
+ *
+ * @example
+ * ```ts
+ * const html = postPage({ post, lang: 'en', name: 'hello', renderedHtml: '<p>Hi</p>' });
+ * ```
  */
 export function postPage(
   {

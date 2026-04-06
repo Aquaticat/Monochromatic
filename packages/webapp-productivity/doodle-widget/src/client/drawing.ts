@@ -92,6 +92,11 @@ let drawing = false;
  * @param cw - current canvas width in CSS pixels
  *
  * @param ch - current canvas height in CSS pixels
+ *
+ * @example
+ * ```ts
+ * redraw({ ctx, cw: canvas.width, ch: canvas.height });
+ * ```
  */
 export function redraw(
   {
@@ -130,6 +135,11 @@ export function redraw(
  * @param canvas - canvas element for bounding rect calculation
  *
  * @returns normalized [x, y] coordinate pair
+ *
+ * @example
+ * ```ts
+ * const point = normalizePointer({ event, canvas });
+ * ```
  */
 export function normalizePointer({
   event,
@@ -189,6 +199,11 @@ export function denormalizePoint({
  * each stroke retains its original settings.
  *
  * @param point - starting coordinate in normalized [0..1] space
+ *
+ * @example
+ * ```ts
+ * startStroke([0.5, 0.5]);
+ * ```
  */
 export function startStroke(point: NormalizedPoint,): void {
   drawing = true;
@@ -207,6 +222,11 @@ export function startStroke(point: NormalizedPoint,): void {
  *
  * @returns segment from previous to current point for incremental
  *   rendering, or null if no drawing gesture is active
+ *
+ * @example
+ * ```ts
+ * const segment = continueStroke([0.6, 0.6]);
+ * ```
  */
 export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
   if (!drawing || current === null)
@@ -223,6 +243,11 @@ export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
 
 /**
  * Ends the current drawing gesture.
+ *
+ * @example
+ * ```ts
+ * endStroke();
+ * ```
  */
 export function endStroke(): void {
   drawing = false;
@@ -231,6 +256,11 @@ export function endStroke(): void {
 
 /**
  * Clears all stored strokes.
+ *
+ * @example
+ * ```ts
+ * clearStrokes();
+ * ```
  */
 export function clearStrokes(): void {
   strokes = [];
@@ -243,6 +273,11 @@ export function clearStrokes(): void {
  * Used by page switching to restore a previously saved page's strokes.
  *
  * @param newStrokes - stroke data to set as current
+ *
+ * @example
+ * ```ts
+ * setStrokes(savedStrokes);
+ * ```
  */
 export function setStrokes(newStrokes: StrokeData[],): void {
   strokes = newStrokes;

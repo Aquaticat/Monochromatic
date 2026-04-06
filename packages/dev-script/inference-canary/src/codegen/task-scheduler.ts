@@ -7,6 +7,7 @@
  * parallelism limits. Combines topological sort, async programming, and resource
  * management -- models often get concurrency limiting wrong or deadlock.
  */
+import type { Probe, } from '../probe-types.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** A and B run in parallel (~100ms each), then C after both finish (~150ms total) */
@@ -27,7 +28,7 @@ const TOTAL_CHECKS = 4;
 /**
  * {@inheritDoc Probe}
  */
-export const taskScheduler = createCodeGenProbe({
+export const taskScheduler: Probe = createCodeGenProbe({
   name: 'task-scheduler',
   slow: true,
   testInput: TASK_TEST_INPUT,
@@ -92,7 +93,7 @@ export const taskScheduler = createCodeGenProbe({
       },);
       if (line === undefined)
         return undefined;
-      const match = line.match(/@(\d+)/,);
+      const match = /@(\d+)/.exec(line,);
       return match !== null ? Number(match[1],) : undefined;
     }
 

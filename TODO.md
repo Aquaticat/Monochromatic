@@ -17,7 +17,8 @@
 ## Priority Overview
 
 ### Critical priority
-**Immediate action required -- blocking development or production**
+
+Immediate action required -- blocking development or production.
 
 1. **Build System Reliability** → [Build System Todo](TODO.build-system.md#critical-issues)
    - Fresh clone setup problems blocking new developers
@@ -35,7 +36,8 @@
    - Type guard and validation utilities for type safety
 
 ### High priority
-**Important improvements that significantly impact developer experience**
+
+Important improvements that significantly impact developer experience.
 
 1. **Performance Optimization** → [Performance Todo](TODO.performance.md#build-performance)
    - Build system performance improvements
@@ -48,7 +50,8 @@
    - Code generation and templating for productivity
 
 ### Normal priority
-**Valuable improvements that enhance the project**
+
+Valuable improvements that enhance the project.
 
 1. **Documentation Enhancement** → [Documentation Todo](TODO.documentation.md#documentation-system-improvements)
    - PlantUML integration for architecture diagrams
@@ -66,7 +69,8 @@
    - Compliance framework implementation
 
 ### Low priority
-**Nice-to-have features and experimental improvements**
+
+Nice-to-have features and experimental improvements.
 
 1. **Advanced Features** → [Packages Todo](TODO.packages.md#cross-package-improvements)
    - Advanced utilities and specialized functionality
@@ -81,12 +85,14 @@
 ## Current Sprint Focus
 
 ### Active development (March 2026)
+
 - **MCP packages**: Building mcp-stdio and mcp-nvim → packages/mcp/
 - **Build System**: Fixing ordering issues for fresh clones → [Build System Todo](TODO.build-system.md#fresh-clone-setup-problems)
 - **Code Quality**: Completing ESLint configuration cleanup → [Code Quality Todo](TODO.code-quality.md#current-linting-issues)
 - **Security**: Establishing security fundamentals → [Security Todo](TODO.security.md#dependency-security)
 
 ### Next Sprint Candidates
+
 - **Package Development**: Expanding module library functionality → [Packages Todo](TODO.packages.md#module-library-packages-modulees)
 - **Performance**: Build system optimization → [Performance Todo](TODO.performance.md#build-performance)
 - **Documentation**: API documentation automation → [Documentation Todo](TODO.documentation.md#api-documentation)
@@ -101,5 +107,3 @@
 - MCP stdio package initial implementation (March 2026)
 
 *For detailed information on completed tasks, see [Completed Tasks](TODO.completed.md)*
-
-

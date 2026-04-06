@@ -1,6 +1,8 @@
-import type { UserConfig, } from 'tsdown';
 import base from '@monochromatic-dev/config-tsdown/.node.ts';
-import { defineConfig, } from 'tsdown';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
 
 /** Build configuration for vmsync CLI, bundling workspace and optique dependencies. */
 const config: UserConfig = defineConfig({

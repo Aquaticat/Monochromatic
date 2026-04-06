@@ -17,14 +17,22 @@
  *
  * Run: mise run //packages/dev-script/vm-builder:run
  */
-import { exec } from '@monochromatic-dev/dev-script-file-enforcer/ts';
-import { hXml as h } from '@monochromatic-dev/module-hyperscript/ts';
+import { exec, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
 import { findUp, } from 'find-up';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import { once, } from 'node:events';
-import { mkdir, writeFile, } from 'node:fs/promises';
-import { dirname, join, resolve, } from 'node:path';
+import {
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
+import {
+  dirname,
+  join,
+  resolve,
+} from 'node:path';
+
+import { generateDomainXml, } from './domain-xml.ts';
 
 /** OCI image tag produced by the podman build step. */
 const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
@@ -42,11 +50,12 @@ const VM_VCPUS = '8';
  * Absolute path to this package's root directory.
  * Found by walking up from the script's directory to find the nearest `package.json`.
  */
-const packageJson = await findUp('package.json');
-if (packageJson === undefined) {
-  throw new Error('could not find package.json for vm-builder');
-}
-const PACKAGE_DIR = resolve(dirname(packageJson));
+const packageJson = await findUp('package.json',);
+if (packageJson === undefined)
+  throw new Error('could not find package.json for vm-builder',);
+
+/** Resolved absolute path to the vm-builder package directory. */
+const PACKAGE_DIR = resolve(dirname(packageJson,),);
 
 /**
  * Absolute path to the monorepo root.
@@ -60,10 +69,17 @@ const MONOREPO_ROOT = await findMonorepoRoot();
  * Created automatically before the conversion step.
  * Gitignored -- not checked in.
  */
-const OUTPUT_DIR = join(PACKAGE_DIR, 'output');
+const OUTPUT_DIR = join(
+  PACKAGE_DIR,
+  'output',
+);
 
 /** Path to the qcow2 disk image produced by bootc-image-builder. */
-const BUILD_QCOW2_PATH = join(OUTPUT_DIR, 'qcow2', 'disk.qcow2');
+const BUILD_QCOW2_PATH = join(
+  OUTPUT_DIR,
+  'qcow2',
+  'disk.qcow2',
+);
 
 /**
  * Path where the qcow2 is copied for libvirt access.
@@ -71,7 +87,12 @@ const BUILD_QCOW2_PATH = join(OUTPUT_DIR, 'qcow2', 'disk.qcow2');
  * which allows QEMU (running in `svirt_t`) to read and write the image.
  */
 const LIBVIRT_IMAGES_DIR = '/var/lib/libvirt/images';
-const QCOW2_PATH = join(LIBVIRT_IMAGES_DIR, 'monochromatic-dev.qcow2');
+
+/** Final qcow2 path under the libvirt images directory for QEMU access. */
+const QCOW2_PATH = join(
+  LIBVIRT_IMAGES_DIR,
+  'monochromatic-dev.qcow2',
+);
 
 /** Current user login name; used to restore ownership after the privileged build step. */
 const CURRENT_USER = process.env['USER'] ?? 'user';
@@ -98,13 +119,26 @@ const LIBVIRT_URI = 'qemu:///session';
  * ```
  */
 async function run(
-  { cmd, args }: { cmd: string; args: readonly string[] },
+  {
+    cmd,
+    args,
+  }: {
+    cmd: string;
+    args: readonly string[];
+  },
 ): Promise<void> {
-  const child = nodeSpawn(cmd, [...args], { stdio: 'inherit' });
-  const [code] = await once(child, 'close') as [number];
-  if (code !== 0) {
-    throw new Error(`${cmd} exited with code ${String(code)}`);
-  }
+  const child = nodeSpawn(
+    cmd,
+    [...args,],
+    { stdio: 'inherit', },
+  );
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- node:events once() returns Promise<any[]>; close event always passes [code: number | null, signal: string | null]
+  const [code,] = await once(
+    child,
+    'close',
+  );
+  if (code !== 0)
+    throw new Error(`${cmd} exited with code ${String(code,)}`,);
 }
 
 //endregion Streaming process runner
@@ -120,17 +154,27 @@ async function run(
  * The resulting image is tagged as {@link IMAGE_TAG} in the rootful container store.
  */
 async function buildImage(): Promise<void> {
-  console.log('[vm-builder] building container image (rootful)...');
+  console.log('[vm-builder] building container image (rootful)...',);
   await run({
     cmd: 'sudo',
     args: [
-      'podman', 'build',
-      '--tag', IMAGE_TAG,
-      '--file', join(PACKAGE_DIR, 'Containerfile'),
-      '--ignorefile', join(PACKAGE_DIR, '.containerignore'),
+      'podman',
+      'build',
+      '--tag',
+      IMAGE_TAG,
+      '--file',
+      join(
+        PACKAGE_DIR,
+        'Containerfile',
+      ),
+      '--ignorefile',
+      join(
+        PACKAGE_DIR,
+        '.containerignore',
+      ),
       MONOREPO_ROOT,
     ],
-  });
+  },);
 }
 
 /**
@@ -144,23 +188,38 @@ async function buildImage(): Promise<void> {
  * Output is written to `{@link OUTPUT_DIR}/qcow2/disk.qcow2`.
  */
 async function convertToQcow2(): Promise<void> {
-  console.log('[vm-builder] converting to qcow2 with bootc-image-builder...');
-  await mkdir(OUTPUT_DIR, { recursive: true });
+  console.log('[vm-builder] converting to qcow2 with bootc-image-builder...',);
+  await mkdir(
+    OUTPUT_DIR,
+    { recursive: true, },
+  );
+  const diskConfigDir = join(
+    PACKAGE_DIR,
+    'disk_config',
+  );
   await run({
     cmd: 'sudo',
     args: [
-      'podman', 'run',
-      '--rm', '--privileged',
-      '--security-opt', 'label=type:unconfined_t',
-      '--volume', `${OUTPUT_DIR}:/output`,
-      '--volume', '/var/lib/containers/storage:/var/lib/containers/storage',
-      '--volume', `${join(PACKAGE_DIR, 'disk_config')}:/config:ro`,
+      'podman',
+      'run',
+      '--rm',
+      '--privileged',
+      '--security-opt',
+      'label=type:unconfined_t',
+      '--volume',
+      `${OUTPUT_DIR}:/output`,
+      '--volume',
+      '/var/lib/containers/storage:/var/lib/containers/storage',
+      '--volume',
+      `${diskConfigDir}:/config:ro`,
       'quay.io/centos-bootc/bootc-image-builder:latest',
-      '--type', 'qcow2',
-      '--config', '/config/disk.toml',
+      '--type',
+      'qcow2',
+      '--config',
+      '/config/disk.toml',
       IMAGE_TAG,
     ],
-  });
+  },);
 }
 
 /**
@@ -170,11 +229,16 @@ async function convertToQcow2(): Promise<void> {
  * Restoring ownership lets virt-install read the qcow2 as a normal user.
  */
 async function fixOwnership(): Promise<void> {
-  console.log('[vm-builder] restoring output ownership to current user...');
+  console.log('[vm-builder] restoring output ownership to current user...',);
   await run({
     cmd: 'sudo',
-    args: ['chown', '-R', `${CURRENT_USER}:${CURRENT_USER}`, OUTPUT_DIR],
-  });
+    args: [
+      'chown',
+      '-R',
+      `${CURRENT_USER}:${CURRENT_USER}`,
+      OUTPUT_DIR,
+    ],
+  },);
 }
 
 /**
@@ -184,98 +248,54 @@ async function fixOwnership(): Promise<void> {
  *
  * @param name - Libvirt domain name to remove
  */
-async function undefineVmIfExists(name: string): Promise<void> {
+async function undefineVmIfExists(name: string,): Promise<void> {
   try {
-    await exec('virsh', ['--connect', LIBVIRT_URI, 'dominfo', name]);
-  } catch {
+    await exec(
+      'virsh',
+      [
+        '--connect',
+        LIBVIRT_URI,
+        'dominfo',
+        name,
+      ],
+    );
+  }
+  catch {
     // Domain not defined -- nothing to remove.
     return;
   }
-  console.log(`[vm-builder] removing existing VM '${name}'...`);
-  const state = (await exec('virsh', ['--connect', LIBVIRT_URI, 'domstate', name])).trim();
-  if (state === 'running') {
-    await exec('virsh', ['--connect', LIBVIRT_URI, 'destroy', name]);
-  }
-  await exec('virsh', ['--connect', LIBVIRT_URI, 'undefine', name, '--nvram']);
-}
-
-/**
- * Generates libvirt domain XML for the dev VM.
- * Uses h-xml (same pattern as cli-mvm) with SPICE graphics + QXL video
- * for virt-manager desktop access, virtio disk and NIC, UEFI boot,
- * and host-passthrough CPU.
- *
- * @param name - Libvirt domain name
- *
- * @returns Complete libvirt domain XML string
- */
-function generateDomainXml(name: string): string {
-  return h({
-    tag: 'domain',
-    attrs: { type: 'kvm' },
-    children: [
-      h({ tag: 'name', text: name }),
-      h({ tag: 'memory', attrs: { unit: 'MiB' }, text: VM_MEMORY_MIB }),
-      h({ tag: 'vcpu', text: VM_VCPUS }),
-      h({
-        tag: 'os',
-        attrs: { firmware: 'efi' },
-        children: [
-          h({ tag: 'type', attrs: { arch: 'x86_64' }, text: 'hvm' }),
-          h({ tag: 'boot', attrs: { dev: 'hd' } }),
-        ],
-      }),
-      h({ tag: 'cpu', attrs: { mode: 'host-passthrough' } }),
-      h({
-        tag: 'features',
-        children: [h({ tag: 'acpi' })],
-      }),
-      h({ tag: 'clock', attrs: { offset: 'utc' } }),
-      h({
-        tag: 'devices',
-        children: [
-          h({
-            tag: 'disk',
-            attrs: { type: 'file', device: 'disk' },
-            children: [
-              h({ tag: 'driver', attrs: { name: 'qemu', type: 'qcow2' } }),
-              h({ tag: 'source', attrs: { file: QCOW2_PATH } }),
-              h({ tag: 'target', attrs: { dev: 'vda', bus: 'virtio' } }),
-            ],
-          }),
-          h({
-            tag: 'interface',
-            attrs: { type: 'user' },
-            children: [
-              h({ tag: 'model', attrs: { type: 'virtio' } }),
-            ],
-          }),
-          h({
-            tag: 'graphics',
-            attrs: { type: 'spice' },
-            children: [
-              h({ tag: 'listen', attrs: { type: 'none' } }),
-              h({ tag: 'gl', attrs: { enable: 'yes' } }),
-            ],
-          }),
-          h({
-            tag: 'video',
-            children: [
-              h({ tag: 'model', attrs: { type: 'virtio', heads: '1' } }),
-              h({ tag: 'acceleration', attrs: { accel3d: 'yes' } }),
-            ],
-          }),
-          h({
-            tag: 'channel',
-            attrs: { type: 'unix' },
-            children: [
-              h({ tag: 'target', attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0' } }),
-            ],
-          }),
-        ],
-      }),
+  console.log(`[vm-builder] removing existing VM '${name}'...`,);
+  const state = (await exec(
+    'virsh',
+    [
+      '--connect',
+      LIBVIRT_URI,
+      'domstate',
+      name,
     ],
-  });
+  ))
+    .trim();
+  if (state === 'running') {
+    await exec(
+      'virsh',
+      [
+        '--connect',
+        LIBVIRT_URI,
+        'destroy',
+        name,
+      ],
+    );
+  }
+  await exec(
+    'virsh',
+    [
+      '--connect',
+      LIBVIRT_URI,
+      'undefine',
+      name,
+      '--nvram',
+    ],
+  );
 }
 
 /**
@@ -286,12 +306,31 @@ function generateDomainXml(name: string): string {
  *
  * @param name - Libvirt domain name to create
  */
-async function importVm(name: string): Promise<void> {
-  console.log(`[vm-builder] importing '${name}' into libvirt...`);
-  const xml = generateDomainXml(name);
-  const xmlPath = join(OUTPUT_DIR, 'domain.xml');
-  await writeFile(xmlPath, xml);
-  await exec('virsh', ['--connect', LIBVIRT_URI, 'define', xmlPath]);
+async function importVm(name: string,): Promise<void> {
+  console.log(`[vm-builder] importing '${name}' into libvirt...`,);
+  const xml = generateDomainXml({
+    name,
+    memoryMib: VM_MEMORY_MIB,
+    vcpus: VM_VCPUS,
+    qcow2Path: QCOW2_PATH,
+  },);
+  const xmlPath = join(
+    OUTPUT_DIR,
+    'domain.xml',
+  );
+  await writeFile(
+    xmlPath,
+    xml,
+  );
+  await exec(
+    'virsh',
+    [
+      '--connect',
+      LIBVIRT_URI,
+      'define',
+      xmlPath,
+    ],
+  );
 }
 
 /**
@@ -301,17 +340,30 @@ async function importVm(name: string): Promise<void> {
  */
 async function grantFlatpakAccess(): Promise<void> {
   try {
-    await exec('flatpak', ['info', 'org.virt_manager.virt-manager']);
-  } catch {
+    await exec(
+      'flatpak',
+      [
+        'info',
+        'org.virt_manager.virt-manager',
+      ],
+    );
+  }
+  catch {
     // virt-manager is not a Flatpak -- no override needed.
     return;
   }
-  console.log('[vm-builder] granting virt-manager Flatpak access to output directory...');
-  await exec('flatpak', [
-    'override', '--user',
-    `--filesystem=${OUTPUT_DIR}`,
-    'org.virt_manager.virt-manager',
-  ]);
+  console.log(
+    '[vm-builder] granting virt-manager Flatpak access to output directory...',
+  );
+  await exec(
+    'flatpak',
+    [
+      'override',
+      '--user',
+      `--filesystem=${OUTPUT_DIR}`,
+      'org.virt_manager.virt-manager',
+    ],
+  );
 }
 
 /**
@@ -319,17 +371,33 @@ async function grantFlatpakAccess(): Promise<void> {
  * labels it `virt_image_t`, allowing QEMU to access it.
  */
 async function copyToLibvirtImages(): Promise<void> {
-  console.log(`[vm-builder] copying qcow2 to ${LIBVIRT_IMAGES_DIR}...`);
-  await run({ cmd: 'sudo', args: ['cp', BUILD_QCOW2_PATH, QCOW2_PATH] });
-  await run({ cmd: 'sudo', args: ['chown', `${CURRENT_USER}:${CURRENT_USER}`, QCOW2_PATH] });
+  console.log(`[vm-builder] copying qcow2 to ${LIBVIRT_IMAGES_DIR}...`,);
+  await run({
+    cmd: 'sudo',
+    args: [
+      'cp',
+      BUILD_QCOW2_PATH,
+      QCOW2_PATH,
+    ],
+  },);
+  await run({
+    cmd: 'sudo',
+    args: [
+      'chown',
+      `${CURRENT_USER}:${CURRENT_USER}`,
+      QCOW2_PATH,
+    ],
+  },);
 }
 
 await buildImage();
 await convertToQcow2();
 await fixOwnership();
 await copyToLibvirtImages();
-await undefineVmIfExists(VM_NAME);
-await importVm(VM_NAME);
+await undefineVmIfExists(VM_NAME,);
+await importVm(VM_NAME,);
 await grantFlatpakAccess();
 
-console.log(`[vm-builder] done. Start the VM with: virsh --connect ${LIBVIRT_URI} start ${VM_NAME}\n  or open virt-manager and double-click ${VM_NAME}`);
+console.log(
+  `[vm-builder] done. Start the VM with: virsh --connect ${LIBVIRT_URI} start ${VM_NAME}\n  or open virt-manager and double-click ${VM_NAME}`,
+);

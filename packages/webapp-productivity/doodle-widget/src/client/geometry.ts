@@ -25,6 +25,11 @@
  * @param by - segment end y in pixels
  *
  * @returns squared pixel distance from P to nearest point on AB
+ *
+ * @example
+ * ```ts
+ * const distSq = distToSegmentSq({ px: 5, py: 5, ax: 0, ay: 0, bx: 10, by: 0 });
+ * ```
  */
 export function distToSegmentSq(
   {
@@ -54,7 +59,10 @@ export function distToSegmentSq(
   /** Projection parameter clamped to [0, 1] so closest point stays on segment */
   const t = Math.max(
     0,
-    Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq,),
+    Math.min(
+      1,
+      ((px - ax) * dx + (py - ay) * dy) / lenSq,
+    ),
   );
   /** Closest point on segment */
   const cx = ax + t * dx;
@@ -103,7 +111,9 @@ function cross(
   return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
 }
 
-/** Parameter shape shared by {@link segmentsIntersect} and {@link segToSegDistSq} */
+/**
+ * Parameter shape shared by {@link segmentsIntersect} and {@link segToSegDistSq}.
+ */
 export type TwoSegments = {
   a1x: number;
   a1y: number;
@@ -140,6 +150,11 @@ export type TwoSegments = {
  * @param b2y - segment 2 end y
  *
  * @returns true when the segments properly cross each other
+ *
+ * @example
+ * ```ts
+ * segmentsIntersect({ a1x: 0, a1y: 0, a2x: 10, a2y: 10, b1x: 10, b1y: 0, b2x: 0, b2y: 10 });
+ * ```
  */
 export function segmentsIntersect(
   {
@@ -198,8 +213,8 @@ export function segmentsIntersect(
  * Computes the squared minimum distance between two line segments.
  *
  * Handles two cases:
- * 1. Segments intersect -> distance is 0
- * 2. Otherwise -> minimum of the four endpoint-to-opposite-segment distances
+ * 1. Segments intersect -- distance is 0
+ * 2. Otherwise -- minimum of the four endpoint-to-opposite-segment distances
  *
  * @param a1x - segment 1 start x
  *
@@ -218,6 +233,11 @@ export function segmentsIntersect(
  * @param b2y - segment 2 end y
  *
  * @returns squared pixel distance between the closest points on the two segments
+ *
+ * @example
+ * ```ts
+ * const distSq = segToSegDistSq({ a1x: 0, a1y: 0, a2x: 5, a2y: 0, b1x: 3, b1y: 1, b2x: 3, b2y: 5 });
+ * ```
  */
 export function segToSegDistSq(
   {
@@ -304,6 +324,11 @@ export function segToSegDistSq(
  * @param bottom - rectangle bottom edge (max y)
  *
  * @returns true when the segment crosses any edge of the rectangle
+ *
+ * @example
+ * ```ts
+ * segmentIntersectsRect({ sx: 0, sy: 0, ex: 10, ey: 10, left: 5, top: 0, right: 15, bottom: 10 });
+ * ```
  */
 export function segmentIntersectsRect(
   {

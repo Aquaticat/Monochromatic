@@ -22,7 +22,7 @@ const MENU_PADDING = 1 / 2 / 2;
 const OPTION_PADDING = 1 / 2;
 
 /** Compiled CSS string for `<focus-dropdown>` Shadow DOM. */
-export const FOCUS_DROPDOWN_STYLES = [
+export const FOCUS_DROPDOWN_STYLES: string = [
   css({
     rule: ':host',
     decls: {

@@ -40,14 +40,15 @@ function createFunctionTsdocVisitor(
     if (result === undefined)
       return;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    const typedNode = node as Span & Record<string, unknown>;
     handler(
-      node as Span & Record<string, unknown>,
+      typedNode,
       result,
     );
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
-  return {
+  const visitor = {
     before() {
       if (shouldIgnoreFile(context.filename,))
         return false;
@@ -57,6 +58,7 @@ function createFunctionTsdocVisitor(
     FunctionExpression: check,
     MethodDefinition: check,
   } as VisitorWithHooks;
+  return visitor;
 }
 
 //endregion Shared
@@ -106,7 +108,10 @@ export const requireYields: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function requireYieldsHandler(node, result,): void {
+      function requireYieldsHandler(
+        node,
+        result,
+      ): void {
         if (!isGeneratorFunction(node,))
           return;
         if (!hasYieldsTag(result,)) {
@@ -139,7 +144,10 @@ export const requireYieldsCheck: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function requireYieldsCheckHandler(node, result,): void {
+      function requireYieldsCheckHandler(
+        node,
+        result,
+      ): void {
         if (!isGeneratorFunction(node,) && hasYieldsTag(result,)) {
           context.report({
             node: result.comment,

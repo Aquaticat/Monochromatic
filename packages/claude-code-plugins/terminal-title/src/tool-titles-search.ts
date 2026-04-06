@@ -22,8 +22,14 @@ import {
 export const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
   WebSearch: {
     extract: field('query',),
-    format: quotedFormat({ pre: 'Searching', post: 'Searched', },),
-    fallback: { pre: 'Web search', post: 'Web search done', },
+    format: quotedFormat({
+      pre: 'Searching',
+      post: 'Searched',
+    },),
+    fallback: {
+      pre: 'Web search',
+      post: 'Web search done',
+    },
   },
   AskUserQuestion: {
     extract(input,): string | undefined {
@@ -77,8 +83,14 @@ export const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
   },
   NotebookEdit: {
     extract: field('notebook_path',),
-    format: pathFormat({ pre: 'Editing notebook', post: 'Edited notebook', },),
-    fallback: { pre: 'Editing notebook', post: 'Edited notebook', },
+    format: pathFormat({
+      pre: 'Editing notebook',
+      post: 'Edited notebook',
+    },),
+    fallback: {
+      pre: 'Editing notebook',
+      post: 'Edited notebook',
+    },
   },
   LSP: {
     extract: field('operation',),

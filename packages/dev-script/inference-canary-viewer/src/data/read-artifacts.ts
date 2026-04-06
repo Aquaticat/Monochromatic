@@ -85,6 +85,12 @@ async function readOptional(path: string,): Promise<string | undefined> {
  * Computes overall scores as the mean of per-probe initial-pass scores.
  *
  * @returns entries for charts/tables and per-probe details for overlays
+ *
+ * @example
+ * ```ts
+ * const { entries, probeDetails } = await readArtifacts();
+ * // entries: ViewerEntry[], probeDetails: Map<string, ProbeDetail>
+ * ```
  */
 export async function readArtifacts(): Promise<ArtifactData> {
   /** Initial-pass artifacts grouped by run key (model::timestamp) then by probe name */

@@ -68,7 +68,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'appends multiple lines as separate arguments',
       fn: async () => {
@@ -86,7 +86,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'appends multiline text with newline characters',
       fn: async () => {
@@ -104,7 +104,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'uses short flag -t for target file',
       fn: async () => {
@@ -122,7 +122,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'fails when no text is provided',
       fn: async () => {
@@ -133,7 +133,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'fails when no target file is specified',
       fn: async () => {
@@ -144,7 +144,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'fails when target file does not exist',
       fn: async () => {
@@ -158,7 +158,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'fails when file has no write permissions',
       skip: process.platform === 'win32',
@@ -187,7 +187,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'preserves existing file content',
       fn: async () => {
@@ -204,7 +204,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'handles empty string as valid input',
       fn: async () => {
@@ -218,7 +218,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'handles special characters in text',
       fn: async () => {
@@ -234,7 +234,7 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
     it({
       name: 'appends multiple times to the same file',
       fn: async () => {
@@ -252,6 +252,6 @@ await describe({
 
         teardown(fixtures,);
       },
-    }),
+    },),
   ],
-});
+},);

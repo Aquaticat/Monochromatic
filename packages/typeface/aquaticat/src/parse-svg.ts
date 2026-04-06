@@ -38,7 +38,7 @@ function attr(
   attrs: string,
   name: string,
 ): string | undefined {
-  const match = attrs.match(new RegExp(`${name}="([^"]*)"`,),);
+  const match = new RegExp(`${name}="([^"]*)"`,).exec(attrs,);
   return match?.[1];
 }
 
@@ -50,6 +50,12 @@ function attr(
  * @param svgContent - full SVG file content
  *
  * @returns array of cells in strip order (left to right)
+ *
+ * @example
+ * ```ts
+ * const cells = parseSvg(svgContent);
+ * cells[0].xOffset; // X position of first glyph cell
+ * ```
  */
 export function parseSvg(svgContent: string,): Cell[] {
   const cells: Cell[] = [];
@@ -147,6 +153,12 @@ export type SVGPathCommand =
  * @param d - SVG path data string
  *
  * @returns ordered list of path commands
+ *
+ * @example
+ * ```ts
+ * const commands = parseSvgPathD('M0 0 L10 10 Z');
+ * // [{ type: 'M', x: 0, y: 0 }, { type: 'L', x: 10, y: 10 }, { type: 'Z' }]
+ * ```
  */
 export function parseSvgPathD(d: string,): SVGPathCommand[] {
   const commands: SVGPathCommand[] = [];

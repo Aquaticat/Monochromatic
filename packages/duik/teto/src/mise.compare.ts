@@ -36,7 +36,12 @@ const TMP = '/tmp/claude-1000';
 /** Always rebuild composite first. */
 console.error('--- Rebuilding composite ---',);
 execSync(
-  `bun run ${join(import.meta.dirname, 'mise.build-composite.ts',)}`,
+  `bun run ${
+    join(
+      import.meta.dirname,
+      'mise.build-composite.ts',
+    )
+  }`,
   {
     stdio: 'inherit',
   },
@@ -73,7 +78,14 @@ const CMP = {
 function run(cmd: string,): string {
   return execSync(
     cmd,
-    { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },
+    {
+      encoding: 'utf8',
+      stdio: [
+        'pipe',
+        'pipe',
+        'pipe',
+      ],
+    },
   )
     .trim();
 }
@@ -122,7 +134,7 @@ console.error('--- Running metrics ---',);
  * @returns parsed normalized value or the raw string if parsing fails
  */
 function parseMetric(raw: string,): string {
-  const parenMatch = raw.match(/\(([\d.e+-]+)\)/,);
+  const parenMatch = /\(([\d.e+-]+)\)/.exec(raw,);
   if (parenMatch !== null && parenMatch[1] !== undefined)
     return parenMatch[1];
   return raw;

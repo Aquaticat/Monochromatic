@@ -19,12 +19,14 @@ Browser automation can see and click Figma's *chrome* (toolbars, panels, menus, 
 ### Figma MCP (REST API based)
 
 **Can do:**
+
 - Read node tree structure and metadata
 - Render specific nodes as static PNG screenshots
 - Read component properties, styles, variables
 - Access file/page metadata
 
 **Cannot do:**
+
 - Read Figma comments
 - Run or interact with prototypes
 - See prototype transitions and interaction hotspots
@@ -34,6 +36,7 @@ Browser automation can see and click Figma's *chrome* (toolbars, panels, menus, 
 ### Browser automation (BrowserOS, Playwright, etc.)
 
 **Can do:**
+
 - See and click Figma's toolbar, panels, menus
 - Navigate between pages in the sidebar
 - Open the prototype preview panel
@@ -41,6 +44,7 @@ Browser automation can see and click Figma's *chrome* (toolbars, panels, menus, 
 - Take screenshots of whatever is visible (but at whatever zoom level Figma decides)
 
 **Cannot do:**
+
 - Read any text rendered on the canvas
 - Click on specific design frames or elements
 - Zoom to a specific frame reliably
@@ -58,10 +62,10 @@ Clunky, slow, and requires manual effort -- but actually works.
 
 ### For design audits
 
-1.  Use Figma MCP for structured node data and static frame screenshots
-2.  Have the human manually screenshot specific screens, prototype flows, and comment threads
-3.  Have the human paste comment text directly into the conversation
-4.  Combine both data sources in the agent's analysis
+1. Use Figma MCP for structured node data and static frame screenshots
+2. Have the human manually screenshot specific screens, prototype flows, and comment threads
+3. Have the human paste comment text directly into the conversation
+4. Combine both data sources in the agent's analysis
 
 ### For prototype review
 

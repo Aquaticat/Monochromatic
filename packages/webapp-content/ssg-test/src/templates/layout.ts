@@ -22,6 +22,11 @@ import { headerFragment, } from './header.ts';
  * @param content - inner HTML to place between header and footer
  *
  * @returns complete HTML document string including `<!DOCTYPE html>`
+ *
+ * @example
+ * ```ts
+ * const html = pageLayout({ title: 'Home', lang: 'en', content: '<p>Hello</p>' });
+ * ```
  */
 export function pageLayout(
   {

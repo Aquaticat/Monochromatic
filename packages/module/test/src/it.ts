@@ -1,6 +1,9 @@
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
-import type { $ as Logger, } from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
+import type {
+  $ as Logger,
+} from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 
+import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 import {
   createScopedExpect,
   type ScopedExpect,
@@ -9,7 +12,6 @@ import {
   createSinon,
   type DisposableSandbox,
 } from './sinon.ts';
-import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 
 /**
  * Context passed to each test function.
@@ -137,7 +139,7 @@ export async function it({
     },)
     : tagged({ tag: name, },);
 
-  if (skip) {
+  if (skip !== false) {
     const reason = typeof skip === 'string' ? `: ${skip}` : '';
     l.info(`SKIP${reason}`,);
     return { name, };
@@ -145,12 +147,17 @@ export async function it({
 
   const [scopedExpect, tracker,] = createScopedExpect();
   await using sandbox = createSinon();
-  const ctx: TestContext = { expect: scopedExpect, sinon: sandbox, };
+  const ctx: TestContext = {
+    expect: scopedExpect,
+    sinon: sandbox,
+  };
 
   const totalRuns = 1 + repeats;
 
   for (let run = 0; run < totalRuns; run += 1) {
-    const runLabel = totalRuns > 1 ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]` : '';
+    const runLabel = totalRuns > 1
+      ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]`
+      : '';
     let threw = false;
     let caughtError: unknown = undefined;
     const runStart = performance.now();
@@ -176,13 +183,21 @@ export async function it({
 
     const failsReason = typeof fails === 'string' ? ` (${fails})` : '';
 
-    if (fails) {
+    if (fails !== false) {
       if (threw) {
-        l.info(`PASS${runLabel} — threw as expected${failsReason} (${durationMs.toFixed(0,)}ms)`,);
+        l.info(
+          `PASS${runLabel} — threw as expected${failsReason} (${
+            durationMs.toFixed(0,)
+          }ms)`,
+        );
         continue;
       }
 
-      l.error(`FAIL${runLabel} — expected to throw but passed${failsReason} (${durationMs.toFixed(0,)}ms)`,);
+      l.error(
+        `FAIL${runLabel} — expected to throw but passed${failsReason} (${
+          durationMs.toFixed(0,)
+        }ms)`,
+      );
       throw new Error(
         name,
         { cause: new Error('Expected test to throw but it passed',), },
@@ -199,15 +214,29 @@ export async function it({
 
     //region Assertion count verification
     if (tracker.expected !== null && tracker.count !== tracker.expected) {
-      l.error(`FAIL${runLabel} — expected ${String(tracker.expected,)} assertions but ${String(tracker.count,)} were called (${durationMs.toFixed(0,)}ms)`,);
+      l.error(
+        `FAIL${runLabel} — expected ${String(tracker.expected,)} assertions but ${
+          String(tracker.count,)
+        } were called (${durationMs.toFixed(0,)}ms)`,
+      );
       throw new Error(
         name,
-        { cause: new Error(`Expected ${String(tracker.expected,)} assertions, but ${String(tracker.count,)} were called`,), },
+        {
+          cause: new Error(
+            `Expected ${String(tracker.expected,)} assertions, but ${
+              String(tracker.count,)
+            } were called`,
+          ),
+        },
       );
     }
 
     if (tracker.requiresAtLeastOne && tracker.count === 0) {
-      l.error(`FAIL${runLabel} — expected at least one assertion but none were called (${durationMs.toFixed(0,)}ms)`,);
+      l.error(
+        `FAIL${runLabel} — expected at least one assertion but none were called (${
+          durationMs.toFixed(0,)
+        }ms)`,
+      );
       throw new Error(
         name,
         { cause: new Error('Expected at least one assertion to be called',), },

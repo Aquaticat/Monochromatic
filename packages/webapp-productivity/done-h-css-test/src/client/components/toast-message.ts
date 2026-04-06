@@ -4,8 +4,6 @@ import {
   cssRem,
   cssTranslateX,
   cssVar,
-} from '@monochromatic-dev/module-hyperscript/ts';
-import {
   hDom as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from '../css.ts';
@@ -58,7 +56,7 @@ const DISMISS_MS = 3_000;
  */
 class ToastMessage extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Handle for the auto-dismiss timer, or null when not scheduled. */
   #timer: ReturnType<typeof setTimeout> | null = null;
@@ -81,7 +79,14 @@ class ToastMessage extends HTMLElement {
     );
   }
 
-  /** Cancels the auto-dismiss timer when the element is removed early. */
+  /**
+   * Cancels the auto-dismiss timer when the element is removed early.
+   *
+   * @example
+   * ```ts
+   * toast.remove(); // triggers disconnectedCallback
+   * ```
+   */
   disconnectedCallback(): void {
     if (this.#timer !== null) {
       clearTimeout(this.#timer,);
@@ -116,6 +121,11 @@ customElements.define(
  * Removes any existing toast before showing the new one.
  *
  * @param message - Text to display in the toast
+ *
+ * @example
+ * ```ts
+ * showToast('Task saved successfully');
+ * ```
  */
 export function showToast(message: string,): void {
   document.querySelector<HTMLElement>('toast-message',)?.remove();

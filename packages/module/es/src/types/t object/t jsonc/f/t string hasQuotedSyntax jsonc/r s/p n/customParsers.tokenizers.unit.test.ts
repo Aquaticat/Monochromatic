@@ -41,7 +41,7 @@ await describe({
               expect(out.parsed,).toEqual({ value: false, },);
             }
           },
-        }),
+        },),
 
         it({
           name: 'prefix match stays here; boundary enforced later',
@@ -52,7 +52,7 @@ await describe({
             expect(out.consumed,).toBe('null' as FragmentStringJsonc,);
             expect(out.remaining,).toBe('y' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'returns sentinel when no literal at start',
@@ -60,9 +60,9 @@ await describe({
             const out = parseLiteralToken({ value: '[1]' as FragmentStringJsonc, },);
             expect(out,).toBe(NO_LITERAL,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion parseLiteralToken
 
     //region parseNumberToken
@@ -72,19 +72,26 @@ await describe({
         it({
           name: 'ints/decimals/exponents',
           fn: async () => {
-            expect(parseNumberToken({ value: '0, x' as FragmentStringJsonc, },).parsed,).toEqual({
-              value: 0,
-            },);
-            expect(parseNumberToken({ value: '-12.3 ]' as FragmentStringJsonc, },).parsed,).toEqual({
-              value: -12.3,
-            },);
-            expect(parseNumberToken({ value: '6.02e23,' as FragmentStringJsonc, },).parsed,).toEqual({
-              value: 6.02e23,
-            },);
+            expect(parseNumberToken({ value: '0, x' as FragmentStringJsonc, },).parsed,)
+              .toEqual({
+                value: 0,
+              },);
+            expect(
+              parseNumberToken({ value: '-12.3 ]' as FragmentStringJsonc, },).parsed,
+            )
+              .toEqual({
+                value: -12.3,
+              },);
+            expect(
+              parseNumberToken({ value: '6.02e23,' as FragmentStringJsonc, },).parsed,
+            )
+              .toEqual({
+                value: 6.02e23,
+              },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion parseNumberToken
   ],
 },);

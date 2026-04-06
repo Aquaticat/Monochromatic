@@ -16,6 +16,11 @@ import {
  * @param args - CLI arguments after "compare"
  *
  * @param printUsageAndExit - callback to print usage and exit on errors
+ *
+ * @example
+ * ```ts
+ * await handleCompare(['imageA.png', 'imageB.png'], printUsageAndExit);
+ * ```
  */
 export async function handleCompare(
   args: string[],

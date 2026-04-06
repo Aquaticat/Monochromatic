@@ -51,21 +51,21 @@ await describe({
         expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
         expect(code,).not.toContain('with',);
       },
-    }),
+    },),
     it({
       name: 'transforms dynamic import() with { with: { type: "text" } }',
       fn: async () => {
         const code = await buildFixture('entry-dynamic.ts',);
         expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
       },
-    }),
+    },),
     it({
       name: 'transforms re-export with { type: "text" }',
       fn: async () => {
         const code = await buildFixture('entry-reexport.ts',);
         expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
       },
-    }),
+    },),
     it({
       name: 'ignores imports without with clause',
       fn: async () => {
@@ -87,6 +87,6 @@ await describe({
         const { output, } = await build.generate({ format: 'esm', },);
         expect(output.length,).toBeGreaterThan(0,);
       },
-    }),
+    },),
   ],
 },);

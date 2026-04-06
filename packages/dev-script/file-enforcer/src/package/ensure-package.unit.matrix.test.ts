@@ -67,7 +67,8 @@ console.log(`[container-test] uid: ${String(process.getuid?.() ?? 'unavailable',
 //endregion Setup
 
 await describe({
-  name: 'ensurePackage (container) -- sequential: idempotent test depends on prior install, package manager locks prevent concurrent installs',
+  name:
+    'ensurePackage (container) -- sequential: idempotent test depends on prior install, package manager locks prevent concurrent installs',
   concurrency: 1,
   children: [
     //region String shorthand shape
@@ -76,27 +77,25 @@ await describe({
       name: 'tree (string shorthand)',
       fn: async () => {
         const before = await binaryExists('tree',);
-        if (before) {
+        if (before)
           return;
-        }
         await ensurePackage('tree',);
         const after = await binaryExists('tree',);
         expect(after,).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'jq (string shorthand)',
       fn: async () => {
         const before = await binaryExists('jq',);
-        if (before) {
+        if (before)
           return;
-        }
         await ensurePackage('jq',);
         const after = await binaryExists('jq',);
         expect(after,).toBe(true,);
       },
-    }),
+    },),
 
     //endregion String shorthand shape
 
@@ -106,14 +105,13 @@ await describe({
       name: 'rg (bin != effname)',
       fn: async () => {
         const before = await binaryExists('rg',);
-        if (before) {
+        if (before)
           return;
-        }
         await ensurePackage('rg',);
         const after = await binaryExists('rg',);
         expect(after,).toBe(true,);
       },
-    }),
+    },),
 
     //endregion Bin differs from effname
 
@@ -123,14 +121,13 @@ await describe({
       name: 'convert (manager override)',
       fn: async () => {
         const before = await binaryExists('convert',);
-        if (before) {
+        if (before)
           return;
-        }
         await ensurePackage('convert',);
         const after = await binaryExists('convert',);
         expect(after,).toBe(true,);
       },
-    }),
+    },),
 
     //endregion Per-manager override
 
@@ -140,14 +137,13 @@ await describe({
       name: 'strace (effname only)',
       fn: async () => {
         const before = await binaryExists('strace',);
-        if (before) {
+        if (before)
           return;
-        }
         await ensurePackage('strace',);
         const after = await binaryExists('strace',);
         expect(after,).toBe(true,);
       },
-    }),
+    },),
 
     //endregion Effname only
 
@@ -159,7 +155,7 @@ await describe({
         /** tree was installed by the earlier test case. */
         await expect(ensurePackage('tree',),).resolves.toBeUndefined();
       },
-    }),
+    },),
 
     //endregion Idempotent second call
 
@@ -178,8 +174,7 @@ await describe({
         }
         expect(caught,).toBeInstanceOf(Error,);
       },
-    }),
-
+    },),
     //endregion Unknown binary
   ],
 },);

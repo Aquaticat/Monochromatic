@@ -25,48 +25,78 @@ They are no longer in the catalog or lockfile.
 Import the appropriate configuration factory in your `vite.config.ts`.
 
 ### Library
-For standard TypeScript libraries:
-```ts
-import { getLib, type UserConfigFnObject } from '@monochromatic-dev/config-vite/.ts';
 
-export default getLib(import.meta.dirname) satisfies UserConfigFnObject;
+For standard TypeScript libraries:
+
+```ts
+import {
+  getLib,
+  type UserConfigFnObject,
+} from '@monochromatic-dev/config-vite/.ts';
+
+export default getLib(import.meta.dirname,) satisfies UserConfigFnObject;
 ```
 
 ### Frontend application
-For web applications:
-```ts
-import { getFrontend, type UserConfigFnObject } from '@monochromatic-dev/config-vite/.ts';
 
-export default getFrontend(import.meta.dirname) satisfies UserConfigFnObject;
+For web applications:
+
+```ts
+import {
+  getFrontend,
+  type UserConfigFnObject,
+} from '@monochromatic-dev/config-vite/.ts';
+
+export default getFrontend(import.meta.dirname,) satisfies UserConfigFnObject;
 ```
 
 ### Figma plugin
+
 Figma plugins require a multi-file configuration setup to handle the Backend (sandbox), Frontend (UI), and the necessary Iframe wrapper (due to Figma's security and rendering limitations).
 
 **Backend (`vite.config.backend.ts`):**
-```ts
-import { getFigmaBackend, type UserConfigFnObject } from '@monochromatic-dev/config-vite/.ts';
 
-export default getFigmaBackend(import.meta.dirname) satisfies UserConfigFnObject;
+```ts
+import {
+  getFigmaBackend,
+  type UserConfigFnObject,
+} from '@monochromatic-dev/config-vite/.ts';
+
+export default getFigmaBackend(
+  import.meta.dirname,
+) satisfies UserConfigFnObject;
 ```
 
 **Frontend (`vite.config.frontend.ts`):**
-```ts
-import { getFigmaFrontend, type UserConfigFnObject } from '@monochromatic-dev/config-vite/.ts';
 
-export default getFigmaFrontend(import.meta.dirname) satisfies UserConfigFnObject;
+```ts
+import {
+  getFigmaFrontend,
+  type UserConfigFnObject,
+} from '@monochromatic-dev/config-vite/.ts';
+
+export default getFigmaFrontend(
+  import.meta.dirname,
+) satisfies UserConfigFnObject;
 ```
 
 **Iframe (`vite.config.iframe.ts`):**
-```ts
-import { getFigmaIframe, type UserConfigFnObject } from '@monochromatic-dev/config-vite/.ts';
 
-export default getFigmaIframe(import.meta.dirname) satisfies UserConfigFnObject;
+```ts
+import {
+  getFigmaIframe,
+  type UserConfigFnObject,
+} from '@monochromatic-dev/config-vite/.ts';
+
+export default getFigmaIframe(
+  import.meta.dirname,
+) satisfies UserConfigFnObject;
 ```
 
 ## Features (historical)
 
 ### Advanced CSS processing (LightningCSS)
+
 Used LightningCSS as the transformer and minifier, configured with custom visitors:
 
 - **Custom mixins**: `@mixin` and `@apply` at the parser level
@@ -74,16 +104,19 @@ Used LightningCSS as the transformer and minifier, configured with custom visito
 - **Targeting**: Configured for the latest Firefox ESR (currently v140)
 
 ### Build configuration
+
 - **Consistent output**: All builds output to `dist/final/`
 - **Smart externalization**: Automatically externalizes Node.js built-ins (`fs`, `path`, etc.) and build tools (`vite`, `esbuild`) to prevent accidental bundling
 - **Build modes**: `production` (default), `development` (unminified), `node` (Node.js resolve conditions)
 
 ### Vitest integration
+
 - **Split execution**: Separate configurations for Unit (`*.unit.test.ts`) and Browser (`*.browser.test.ts`) tests
 - **Browser testing**: Playwright with Chromium and Firefox
 - **Coverage**: V8 provider with custom reporter, per-file thresholds, HTML/Clover/JSON reports
 
 ### Utilities and aliases
+
 - **JSON5**: Native `.json5` import support
 - **Path aliases**: `@` maps to package root, `@_` maps to `src/`
 - **Polyfills**: `__filename` and `__dirname` for browser compatibility

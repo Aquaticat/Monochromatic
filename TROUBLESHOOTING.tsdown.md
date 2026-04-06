@@ -12,12 +12,12 @@ Even a 201-line CLI plugin (`terminal-title`) takes 133ms.
 
 Measured `module-es` (483 source files, bundles workspace deps) with features toggled:
 
-| Configuration | Reported time |
-|---|---|
-| Full build (DTS + minify + target) | 367-389ms |
-| DTS only (no minify) | 365ms |
-| No DTS (minify + target) | 34-41ms |
-| No DTS, no minify | 33-36ms |
+| Configuration                      | Reported time |
+| ---------------------------------- | ------------- |
+| Full build (DTS + minify + target) | 367-389ms     |
+| DTS only (no minify)               | 365ms         |
+| No DTS (minify + target)           | 34-41ms       |
+| No DTS, no minify                  | 33-36ms       |
 
 DTS generation accounts for ~340ms of the ~380ms total.
 Minification and `firefox140` target transforms are negligible (~1ms combined).
@@ -33,11 +33,13 @@ tsdown uses [`rolldown-plugin-dts`](https://github.com/sxzz/rolldown-plugin-dts)
 This is distinct from rolldown's builtin `isolatedDeclarationPlugin`.
 
 **Builtin `isolatedDeclarationPlugin`** (Rust, parallel):
+
 - Runs OXC `IsolatedDeclarations` per-file inside the `transform_ast` hook, fully in Rust
 - Emits each `.d.ts` as a **separate asset** via `ctx.emit_file()`
 - No bundling -- output mirrors the source module graph
 
 **`rolldown-plugin-dts`** (JS plugin, what tsdown uses):
+
 - Generates `.d.ts` per-file via OXC `isolatedDeclarationSync` (a sync NAPI call into native OXC)
 - Feeds those `.d.ts` files back into rolldown as a **second bundle pass** via the `load` hook
 - Rolldown resolves imports between declarations, tree-shakes unused types,
@@ -77,13 +79,13 @@ No tsc is involved.
 
 ### Measured timeline for module-es (from debug timestamps)
 
-| Phase | Duration |
-|---|---|
-| Config loading + tsconfig resolution | ~23ms |
-| JS bundle (rolldown, Rust-side parallel) | ~48ms |
-| DTS: 483 OXC calls + 1138 import resolutions (JS event loop) | ~350ms |
-| DTS bundle finalization + dep detection | ~46ms |
-| **Total (reported by tsdown)** | **~380ms** |
+| Phase                                                        | Duration   |
+| ------------------------------------------------------------ | ---------- |
+| Config loading + tsconfig resolution                         | ~23ms      |
+| JS bundle (rolldown, Rust-side parallel)                     | ~48ms      |
+| DTS: 483 OXC calls + 1138 import resolutions (JS event loop) | ~350ms     |
+| DTS bundle finalization + dep detection                      | ~46ms      |
+| **Total (reported by tsdown)**                               | **~380ms** |
 
 ### What does not help
 

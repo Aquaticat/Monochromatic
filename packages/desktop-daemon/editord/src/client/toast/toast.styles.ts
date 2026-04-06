@@ -6,12 +6,12 @@
  */
 
 import {
-  hCss as $,
   cssNum,
   cssPercent,
   cssRem,
   cssTranslateX,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {

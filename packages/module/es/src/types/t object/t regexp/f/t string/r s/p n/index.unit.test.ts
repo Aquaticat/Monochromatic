@@ -18,7 +18,7 @@ await describe({
         expect(result.test('hello',),).toBe(true,);
         expect(result.test('hello world',),).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes period character',
@@ -28,7 +28,7 @@ await describe({
         expect(result.test('I love youX',),).toBe(false,);
         expect(result.source,).toBe(String.raw`I love you\.`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes asterisk character',
@@ -38,7 +38,7 @@ await describe({
         expect(result.test('Hellooo',),).toBe(false,);
         expect(result.source,).toBe(String.raw`Hello\*`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes plus character',
@@ -48,7 +48,7 @@ await describe({
         expect(result.test('testtt',),).toBe(false,);
         expect(result.source,).toBe(String.raw`test\+`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes question mark character',
@@ -58,7 +58,7 @@ await describe({
         expect(result.test('wha',),).toBe(false,);
         expect(result.source,).toBe(String.raw`what\?`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes caret character',
@@ -68,7 +68,7 @@ await describe({
         expect(result.test('start',),).toBe(false,);
         expect(result.source,).toBe(String.raw`\^start`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes dollar character',
@@ -78,7 +78,7 @@ await describe({
         expect(result.test('end',),).toBe(false,);
         expect(result.source,).toBe(String.raw`end\$`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes curly braces',
@@ -87,7 +87,7 @@ await describe({
         expect(result.test('{count}',),).toBe(true,);
         expect(result.source,).toBe(String.raw`\{count\}`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes square brackets',
@@ -96,7 +96,7 @@ await describe({
         expect(result.test('[array]',),).toBe(true,);
         expect(result.source,).toBe(String.raw`\[array\]`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes parentheses',
@@ -105,7 +105,7 @@ await describe({
         expect(result.test('(group)',),).toBe(true,);
         expect(result.source,).toBe(String.raw`\(group\)`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes pipe character',
@@ -115,7 +115,7 @@ await describe({
         expect(result.test('this',),).toBe(false,);
         expect(result.source,).toBe(String.raw`this\|that`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes backslash character',
@@ -124,7 +124,7 @@ await describe({
         expect(result.test(String.raw`path\to`,),).toBe(true,);
         expect(result.source,).toBe(String.raw`path\\to`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes forward slash character',
@@ -133,7 +133,7 @@ await describe({
         expect(result.test('path/to/file',),).toBe(true,);
         expect(result.source,).toBe(String.raw`path\/to\/file`,);
       },
-    }),
+    },),
 
     it({
       name: 'escapes multiple special characters',
@@ -143,7 +143,7 @@ await describe({
         expect(result.test('Hellooo',),).toBe(false,);
         expect(result.source,).toBe(String.raw`Hello\.\*`,);
       },
-    }),
+    },),
 
     it({
       name: 'handles empty string',
@@ -152,7 +152,7 @@ await describe({
         expect(result.test('',),).toBe(true,);
         expect(result.test('anything',),).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'handles string with no special characters',
@@ -162,7 +162,7 @@ await describe({
         expect(result.test('simple',),).toBe(false,);
         expect(result.source,).toBe('simple text',);
       },
-    }),
+    },),
 
     it({
       name: 'handles complex pattern with multiple escapes',
@@ -172,7 +172,7 @@ await describe({
         expect(result.test('regex: abc',),).toBe(false,);
         expect(result.source,).toBe(String.raw`regex: \^\[a-z\]\+\$`,);
       },
-    }),
+    },),
 
     it({
       name: 'handles unicode characters',
@@ -181,7 +181,7 @@ await describe({
         expect(result.test('Hello 世界',),).toBe(true,);
         expect(result.test('Hello',),).toBe(false,);
       },
-    }),
+    },),
 
     it({
       name: 'handles newlines and special whitespace',
@@ -190,7 +190,7 @@ await describe({
         expect(result.test('line1\nline2',),).toBe(true,);
         expect(result.test('line1 line2',),).toBe(false,);
       },
-    }),
+    },),
 
     it({
       name: 'handles tab characters',
@@ -199,7 +199,7 @@ await describe({
         expect(result.test('col1\tcol2',),).toBe(true,);
         expect(result.test('col1 col2',),).toBe(false,);
       },
-    }),
+    },),
 
     it({
       name: 'real-world example: file path',
@@ -208,7 +208,7 @@ await describe({
         expect(result.test('/usr/local/bin/script.sh',),).toBe(true,);
         expect(result.source,).toBe(String.raw`\/usr\/local\/bin\/script\.sh`,);
       },
-    }),
+    },),
 
     it({
       name: 'real-world example: email with special chars',
@@ -217,16 +217,18 @@ await describe({
         expect(result.test('user.name+tag@example.com',),).toBe(true,);
         expect(result.source,).toBe(String.raw`user\.name\+tag@example\.com`,);
       },
-    }),
+    },),
 
     it({
       name: 'real-world example: URL',
       fn: async () => {
         const result = $({ str: 'https://example.com/path?query=value', },);
         expect(result.test('https://example.com/path?query=value',),).toBe(true,);
-        expect(result.source,).toBe(String.raw`https:\/\/example\.com\/path\?query=value`,);
+        expect(result.source,).toBe(
+          String.raw`https:\/\/example\.com\/path\?query=value`,
+        );
       },
-    }),
+    },),
 
     it({
       name: 'real-world example: regex pattern as string',
@@ -235,7 +237,7 @@ await describe({
         expect(result.test(String.raw`^[A-Z]{3}-\d{4}$`,),).toBe(true,);
         expect(result.source,).toBe(String.raw`\^\[A-Z\]\{3\}-\\d\{4\}\$`,);
       },
-    }),
+    },),
 
     it({
       name: 'function returns RegExp instance',
@@ -245,7 +247,7 @@ await describe({
         expect(typeof result.test,).toBe('function',);
         expect(typeof result.exec,).toBe('function',);
       },
-    }),
+    },),
 
     it({
       name: 'escaped pattern matches string',
@@ -262,6 +264,6 @@ await describe({
         expect(result.test('specialchars',),).toBe(false,);
         expect(result.test('special.chars',),).toBe(false,);
       },
-    }),
+    },),
   ],
 },);

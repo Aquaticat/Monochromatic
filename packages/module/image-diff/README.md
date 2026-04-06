@@ -25,12 +25,12 @@ IMAGE_DIFF_GEMINI_API_KEY=AIza...
 Or pass them directly via config:
 
 ```ts
-import { compare } from '@monochromatic-dev/module-image-diff';
+import { compare, } from '@monochromatic-dev/module-image-diff';
 
 const result = await compare(
-  { path: './before.png' },
-  { path: './after.png' },
-  { provider: 'gemini', apiKey: 'AIza...' },
+  { path: './before.png', },
+  { path: './after.png', },
+  { provider: 'gemini', apiKey: 'AIza...', },
 );
 ```
 
@@ -39,49 +39,47 @@ const result = await compare(
 ### Compare using all providers (default)
 
 ```ts
-import { compareAll } from '@monochromatic-dev/module-image-diff';
+import { compareAll, } from '@monochromatic-dev/module-image-diff';
 
 const results = await compareAll(
-  { path: './before.png' },
-  { path: './after.png' },
+  { path: './before.png', },
+  { path: './after.png', },
 );
-for (const { provider, result } of results) {
-  console.log(`${provider}: similarity=${result.similarity}`);
-}
+for (const { provider, result, } of results)
+  console.log(`${provider}: similarity=${result.similarity}`,);
 ```
 
 ### Compare using a specific provider
 
 ```ts
-import { compare } from '@monochromatic-dev/module-image-diff';
+import { compare, } from '@monochromatic-dev/module-image-diff';
 
 const result = await compare(
-  { path: './before.png' },
-  { path: './after.png' },
-  { provider: 'gemini' },
+  { path: './before.png', },
+  { path: './after.png', },
+  { provider: 'gemini', },
 );
-console.log(`Similarity: ${result.similarity}`);
+console.log(`Similarity: ${result.similarity}`,);
 ```
 
 ### Embed a single image (all providers)
 
 ```ts
-import { embedAll } from '@monochromatic-dev/module-image-diff';
+import { embedAll, } from '@monochromatic-dev/module-image-diff';
 
-const results = await embedAll({ path: './photo.png' });
-for (const { provider, result } of results) {
-  console.log(`${provider}: ${result.embedding.length} dimensions`);
-}
+const results = await embedAll({ path: './photo.png', },);
+for (const { provider, result, } of results)
+  console.log(`${provider}: ${result.embedding.length} dimensions`,);
 ```
 
 ### Batch embed multiple images
 
 ```ts
-import { embedBatch } from '@monochromatic-dev/module-image-diff';
+import { embedBatch, } from '@monochromatic-dev/module-image-diff';
 
-const { embeddings } = await embedBatch(
-  [{ path: './a.png' }, { path: './b.png' }],
-  { provider: 'voyage' },
+const { embeddings, } = await embedBatch(
+  [{ path: './a.png', }, { path: './b.png', },],
+  { provider: 'voyage', },
 );
 ```
 
@@ -95,13 +93,16 @@ const { embeddings } = await embedBatch(
 ### Similarity utilities
 
 ```ts
-import { dotProduct, cosineSimilarity } from '@monochromatic-dev/module-image-diff';
+import {
+  cosineSimilarity,
+  dotProduct,
+} from '@monochromatic-dev/module-image-diff';
 
 // For unit-normalized embeddings (Voyage, Gemini at 3072 dims), dotProduct === cosineSimilarity
-const sim = dotProduct(embeddingA, embeddingB);
+const sim = dotProduct(embeddingA, embeddingB,);
 
 // For arbitrary vectors, use cosineSimilarity which normalizes first
-const sim2 = cosineSimilarity(vectorA, vectorB);
+const sim2 = cosineSimilarity(vectorA, vectorB,);
 ```
 
 ## CLI

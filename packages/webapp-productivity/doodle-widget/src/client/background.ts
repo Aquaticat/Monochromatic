@@ -17,6 +17,11 @@
  * @param svgMarkup - raw SVG markup to display
  *
  * @param overlay - SVG overlay element
+ *
+ * @example
+ * ```ts
+ * setSvgBackground({ svgMarkup: '<svg>...</svg>', overlay: document.getElementById('overlay') });
+ * ```
  */
 export function setSvgBackground({
   svgMarkup,

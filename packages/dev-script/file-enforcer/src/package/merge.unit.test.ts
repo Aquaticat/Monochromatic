@@ -18,7 +18,7 @@ await describe({
         const result = mergeOverrides(generated, [],);
         expect(result,).toEqual(generated,);
       },
-    }),
+    },),
     it({
       name: 'applies bin from override to matching effname',
       fn: async () => {
@@ -29,7 +29,7 @@ await describe({
         expect(result[0]?.bin,).toBe('rg',);
         expect(result[0]?.effname,).toBe('ripgrep',);
       },
-    }),
+    },),
     it({
       name: 'applies check from override to matching effname',
       fn: async () => {
@@ -39,11 +39,13 @@ await describe({
         ],);
         expect(result[0]?.check,).toBe('version',);
       },
-    }),
+    },),
     it({
       name: 'applies both bin and check overrides',
       fn: async () => {
-        const generated = [p({ effname: 'imagemagick', yes: [['dnf', 'ImageMagick',],], },),];
+        const generated = [
+          p({ effname: 'imagemagick', yes: [['dnf', 'ImageMagick',],], },),
+        ];
         const result = mergeOverrides(generated, [
           p({ bin: 'convert', check: '-version', effname: 'imagemagick', },),
         ],);
@@ -51,21 +53,25 @@ await describe({
         expect(result[0]?.check,).toBe('-version',);
         expect(result[0]?.effname,).toBe('imagemagick',);
       },
-    }),
+    },),
     it({
       name: 'preserves manager overrides from generated entry',
       fn: async () => {
-        const generated = [p({ effname: 'imagemagick', yes: [['dnf', 'ImageMagick',],], },),];
+        const generated = [
+          p({ effname: 'imagemagick', yes: [['dnf', 'ImageMagick',],], },),
+        ];
         const result = mergeOverrides(generated, [
           p({ bin: 'convert', effname: 'imagemagick', },),
         ],);
         expect(result[0]?.overrides,).toEqual({ dnf: 'ImageMagick', },);
       },
-    }),
+    },),
     it({
       name: 'preserves available set from generated entry',
       fn: async () => {
-        const generated = [p({ effname: 'imagemagick', yes: ['apt', ['dnf', 'ImageMagick',],], },),];
+        const generated = [
+          p({ effname: 'imagemagick', yes: ['apt', ['dnf', 'ImageMagick',],], },),
+        ];
         const result = mergeOverrides(generated, [
           p({ bin: 'convert', effname: 'imagemagick', },),
         ],);
@@ -73,7 +79,7 @@ await describe({
         expect(result[0]?.available?.has('dnf',),).toBe(true,);
         expect(result[0]?.available?.has('brew',),).toBe(false,);
       },
-    }),
+    },),
     it({
       name: 'leaves non-matching entries untouched',
       fn: async () => {
@@ -85,7 +91,7 @@ await describe({
         expect(result[0]?.check,).toBe('--version',);
         expect(result[1]?.bin,).toBe('rg',);
       },
-    }),
+    },),
     it({
       name: 'keeps default check when override only changes bin',
       fn: async () => {
@@ -95,7 +101,7 @@ await describe({
         ],);
         expect(result[0]?.check,).toBe('--version',);
       },
-    }),
+    },),
   ],
 },);
 

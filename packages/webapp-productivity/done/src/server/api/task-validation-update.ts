@@ -45,6 +45,12 @@ function parseStatus(value: unknown,): TaskStatus | undefined {
  * @param value - Raw parsed JSON body
  *
  * @returns Parsed update payload, or `null` when any field fails validation
+ *
+ * @example
+ * ```ts
+ * const input = parseTaskUpdateInput(await req.json());
+ * if (input === null) return badRequest();
+ * ```
  */
 export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   if (!isRecord(value,))

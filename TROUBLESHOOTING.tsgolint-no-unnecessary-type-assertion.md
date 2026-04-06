@@ -18,18 +18,21 @@ even though removing the assertion changes the inferred type.
 
 ```ts
 // notNullishOrThrow.ts
-export function notNullishOrThrow<T>(value: T | null | undefined): T {
-  if (value === null || value === undefined) throw new Error('nullish');
+export function notNullishOrThrow<T,>(value: T | null | undefined,): T {
+  if (value === null || value === undefined)
+    throw new Error('nullish',);
   return value;
 }
 
 // repro.ts
-import { notNullishOrThrow } from './notNullishOrThrow.ts';
+import { notNullishOrThrow, } from './notNullishOrThrow.ts';
 
 // oxlint reports: "This assertion is unnecessary since it does not change the type of the expression."
 // oxlint claims: "This expression already has the type 'HTMLFormElement'"
 // Actual type without assertion: Element
-const form = notNullishOrThrow(document.querySelector('.myForm')) as HTMLFormElement;
+const form = notNullishOrThrow(
+  document.querySelector('.myForm',),
+) as HTMLFormElement;
 ```
 
 Removing `as HTMLFormElement` changes the inferred type to `Element`, causing TS2339 errors
@@ -92,10 +95,14 @@ Use the generic type parameter on `querySelector` instead of a post-hoc `as` ass
 
 ```ts
 // Instead of:
-const form = notNullishOrThrow(document.querySelector('.myForm')) as HTMLFormElement;
+const form = notNullishOrThrow(
+  document.querySelector('.myForm',),
+) as HTMLFormElement;
 
 // Use:
-const form = notNullishOrThrow(document.querySelector<HTMLFormElement>('.myForm'));
+const form = notNullishOrThrow(
+  document.querySelector<HTMLFormElement>('.myForm',),
+);
 ```
 
 This gives `querySelector` the return type `HTMLFormElement | null`,
@@ -128,14 +135,17 @@ when the generic parameter appears in a union with `null` or `undefined` in the 
 **Repro**:
 
 ```ts
-function notNullishOrThrow<T>(value: T | null | undefined): T {
-  if (value === null || value === undefined) throw new Error('nullish');
+function notNullishOrThrow<T,>(value: T | null | undefined,): T {
+  if (value === null || value === undefined)
+    throw new Error('nullish',);
   return value;
 }
 
 // Flagged: "This assertion is unnecessary since it does not change the type of the expression."
 // Claims: "This expression already has the type 'HTMLFormElement'"
-const form = notNullishOrThrow(document.querySelector('.myForm')) as HTMLFormElement;
+const form = notNullishOrThrow(
+  document.querySelector('.myForm',),
+) as HTMLFormElement;
 ```
 
 **Expected**: no warning. Without the assertion, the expression type is `Element` (inferred from `querySelector`).

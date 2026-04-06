@@ -5,12 +5,12 @@
  * tag lists, and date displays.
  */
 import {
-  hCss as $,
   cssCalc,
   cssCompounded,
   cssInt,
   cssRem,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
@@ -26,6 +26,11 @@ import {
  * Post list grid and card styles.
  *
  * @returns CSS string for post display rules
+ *
+ * @example
+ * ```ts
+ * const css = postStyles();
+ * ```
  */
 export function postStyles(): string {
   return [

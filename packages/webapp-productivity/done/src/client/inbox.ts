@@ -8,9 +8,7 @@
  * 2. `readPageData()` deserializes the `\<script id="page-data"\>` JSON blob
  * 3. The script builds DOM elements via `h()` and appends them to `\<main id="app"\>`
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import styles from '../../dist/css/styles.css' with { type: 'text', };
 import type {
   BlockedTaskLink,
@@ -73,6 +71,11 @@ function openTask(taskId: string,): void {
  * Sends a complete-task API call and reloads the page on success.
  *
  * @param taskId - UUID of the task to complete
+ *
+ * @example
+ * ```ts
+ * await completeTask('uuid-123');
+ * ```
  */
 async function completeTask(taskId: string,): Promise<void> {
   await api(
@@ -103,7 +106,10 @@ function buildTaskList(
     list.append(
       createTaskCard(
         task,
-        { onOpen: openTask, onToggleComplete: completeTask, },
+        {
+          onOpen: openTask,
+          onToggleComplete: completeTask,
+        },
       ),
     );
     const childLinks = blockedTasksByBlocker[task.id] ?? [];
@@ -117,8 +123,11 @@ function buildTaskList(
           children: childLinks.map(function createBlockedCard(childLink,) {
             return createTaskCard(
               childLink.task,
-              { showBlockedBadge: true, onOpen: openTask,
-                onToggleComplete: completeTask, },
+              {
+                showBlockedBadge: true,
+                onOpen: openTask,
+                onToggleComplete: completeTask,
+              },
             );
           },),
         },),],
@@ -142,7 +151,10 @@ app.append(h({
 /** Collapsible section heading for all tasks. */
 const allSection = h({
   tag: 'section-heading',
-  attrs: { icon: '\u221E', label: 'All', },
+  attrs: {
+    icon: '\u221E',
+    label: 'All',
+  },
 },);
 allSection.append(h({
   tag: 'div',

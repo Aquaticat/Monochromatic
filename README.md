@@ -140,7 +140,7 @@ mise run //packages/webapp-productivity/done:build
 
 ## Project structure
 
-```
+```text
 packages/
   audit/                    Compliance audits (oph-common-look-and-feel)
   build-tool/               Build tooling (CSS processor)

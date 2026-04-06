@@ -19,6 +19,12 @@ import type { DiffLine, } from '../data/diff.ts';
  * @param diffLines - computed diff lines
  *
  * @returns HTML string for the diff view
+ *
+ * @example
+ * ```ts
+ * const html = renderSideBySideDiff([{ type: 'removed', content: 'old' }, { type: 'added', content: 'new' }]);
+ * // '<div class="diff-container">...<\/div>'
+ * ```
  */
 export function renderSideBySideDiff(
   diffLines: readonly DiffLine[],

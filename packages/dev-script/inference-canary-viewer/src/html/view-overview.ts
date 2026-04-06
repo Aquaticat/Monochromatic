@@ -33,6 +33,12 @@ export type { ModelSummary, } from './view-overview-types.ts';
  * @param entries - all history entries (for the combined chart)
  *
  * @returns HTML string
+ *
+ * @example
+ * ```ts
+ * const html = renderOverview({ summaries, entries });
+ * // '<div class="chart-legend">...<\/div>...<table class="overview-table">...<\/table>'
+ * ```
  */
 export function renderOverview({
   summaries,
@@ -98,9 +104,15 @@ export function renderOverview({
           h({
             tag: 'td',
             children: [
-              iconDot(summary.model, color,),
+              iconDot(
+                summary.model,
+                color,
+              ),
               ' ',
-              h({ tag: 'span', text: summary.label, },),
+              h({
+                tag: 'span',
+                text: summary.label,
+              },),
             ],
           },),
           h({
@@ -109,7 +121,10 @@ export function renderOverview({
           },),
           h({
             tag: 'td',
-            text: summary.latestTimestamp.slice(0, 10,),
+            text: summary.latestTimestamp.slice(
+              0,
+              10,
+            ),
           },),
           h({
             tag: 'td',

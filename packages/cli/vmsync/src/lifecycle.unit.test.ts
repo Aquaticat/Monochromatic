@@ -170,107 +170,104 @@ async function safeDestroy(vmName: string,): Promise<void> {
   // Pre-load nbd kernel module (needed for vmsync import UEFI validation)
   await execInVm(VM, 'sudo modprobe nbd max_part=0',);
 
-  try {
-    await describe({
-      name: 'vmsync lifecycle (Linux)',
-      children: [
-        // All assertions in a single test to guarantee sequential execution.
-        // bunfig.toml sets concurrentTestGlob which runs tests in parallel;
-        // these commands have ordering dependencies (import before status, etc.).
-        it({
-          name: 'full CLI lifecycle',
-          fn: async () => {
-            //region --help
-            const help = await execInVm(VM, `${VMSYNC} --help`,);
-            expect(help,).toContain('vmsync',);
-            expect(help,).toContain('import',);
-            expect(help,).toContain('boot',);
-            expect(help,).toContain('sync',);
-            expect(help,).toContain('status',);
-            expect(help,).toContain('list',);
-            expect(help,).toContain('config',);
-            //endregion --help
+  await using _cleanup = { [Symbol.asyncDispose]: () => safeDestroy(VM,), };
+  await describe({
+    name: 'vmsync lifecycle (Linux)',
+    children: [
+      // All assertions in a single test to guarantee sequential execution.
+      // bunfig.toml sets concurrentTestGlob which runs tests in parallel;
+      // these commands have ordering dependencies (import before status, etc.).
+      it({
+        name: 'full CLI lifecycle',
+        fn: async () => {
+          //region --help
+          const help = await execInVm(VM, `${VMSYNC} --help`,);
+          expect(help,).toContain('vmsync',);
+          expect(help,).toContain('import',);
+          expect(help,).toContain('boot',);
+          expect(help,).toContain('sync',);
+          expect(help,).toContain('status',);
+          expect(help,).toContain('list',);
+          expect(help,).toContain('config',);
+          //endregion --help
 
-            //region list (empty)
-            const emptyList = await execInVm(VM, `${VMSYNC} list`,);
-            expect(emptyList,).toContain('no managed VMs',);
-            //endregion list (empty)
+          //region list (empty)
+          const emptyList = await execInVm(VM, `${VMSYNC} list`,);
+          expect(emptyList,).toContain('no managed VMs',);
+          //endregion list (empty)
 
-            //region Create test UEFI image
-            await execInVm(
-              VM,
-              [
-                'qemu-img create -f raw /tmp/test-uefi.raw 512M',
-                'printf "g\\nn\\n1\\n2048\\n+100M\\nt\\n1\\nw\\n" | fdisk /tmp/test-uefi.raw',
-                'qemu-img convert -f raw -O qcow2 /tmp/test-uefi.raw /tmp/test-uefi.qcow2',
-              ]
-                .join(' && ',),
-            );
-            //endregion Create test UEFI image
+          //region Create test UEFI image
+          await execInVm(
+            VM,
+            [
+              'qemu-img create -f raw /tmp/test-uefi.raw 512M',
+              String
+                .raw`printf "g\nn\n1\n2048\n+100M\nt\n1\nw\n" | fdisk /tmp/test-uefi.raw`,
+              'qemu-img convert -f raw -O qcow2 /tmp/test-uefi.raw /tmp/test-uefi.qcow2',
+            ]
+              .join(' && ',),
+          );
+          //endregion Create test UEFI image
 
-            //region import --name
-            const importOutput = await execInVm(
-              VM,
-              `${VMSYNC} import /tmp/test-uefi.qcow2 --name test-vm`,
-            );
-            expect(importOutput,).toContain('imported "test-vm"',);
-            //endregion import --name
+          //region import --name
+          const importOutput = await execInVm(
+            VM,
+            `${VMSYNC} import /tmp/test-uefi.qcow2 --name test-vm`,
+          );
+          expect(importOutput,).toContain('imported "test-vm"',);
+          //endregion import --name
 
-            //region list (populated)
-            const populatedList = await execInVm(VM, `${VMSYNC} list`,);
-            expect(populatedList,).toContain('test-vm',);
-            expect(populatedList,).toContain('synced',);
-            //endregion list (populated)
+          //region list (populated)
+          const populatedList = await execInVm(VM, `${VMSYNC} list`,);
+          expect(populatedList,).toContain('test-vm',);
+          expect(populatedList,).toContain('synced',);
+          //endregion list (populated)
 
-            //region status
-            const status = await execInVm(VM, `${VMSYNC} status test-vm`,);
-            expect(status,).toContain('name:       test-vm',);
-            expect(status,).toContain('synced:     true',);
-            expect(status,).toContain('last boot:  never',);
-            expect(status,).toContain('qcow2 hash: sha256:',);
-            expect(status,).toContain('vhdx hash:  sha256:',);
-            //endregion status
+          //region status
+          const status = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          expect(status,).toContain('name:       test-vm',);
+          expect(status,).toContain('synced:     true',);
+          expect(status,).toContain('last boot:  never',);
+          expect(status,).toContain('qcow2 hash: sha256:',);
+          expect(status,).toContain('vhdx hash:  sha256:',);
+          //endregion status
 
-            //region config update
-            const configOutput = await execInVm(
-              VM,
-              `${VMSYNC} config test-vm --memory 8G --cpus 8`,
-            );
-            expect(configOutput,).toContain('memory=8G',);
-            expect(configOutput,).toContain('cpus=8',);
+          //region config update
+          const configOutput = await execInVm(
+            VM,
+            `${VMSYNC} config test-vm --memory 8G --cpus 8`,
+          );
+          expect(configOutput,).toContain('memory=8G',);
+          expect(configOutput,).toContain('cpus=8',);
 
-            const statusAfterConfig = await execInVm(VM, `${VMSYNC} status test-vm`,);
-            expect(statusAfterConfig,).toContain('memory:     8G',);
-            expect(statusAfterConfig,).toContain('cpus:       8',);
-            //endregion config update
+          const statusAfterConfig = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          expect(statusAfterConfig,).toContain('memory:     8G',);
+          expect(statusAfterConfig,).toContain('cpus:       8',);
+          //endregion config update
 
-            //region config partial update (memory only, cpus preserved)
-            await execInVm(VM, `${VMSYNC} config test-vm --memory 2G`,);
-            const statusAfterPartial = await execInVm(VM, `${VMSYNC} status test-vm`,);
-            expect(statusAfterPartial,).toContain('memory:     2G',);
-            expect(statusAfterPartial,).toContain('cpus:       8',);
-            //endregion config partial update
+          //region config partial update (memory only, cpus preserved)
+          await execInVm(VM, `${VMSYNC} config test-vm --memory 2G`,);
+          const statusAfterPartial = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          expect(statusAfterPartial,).toContain('memory:     2G',);
+          expect(statusAfterPartial,).toContain('cpus:       8',);
+          //endregion config partial update
 
-            //region import with auto-derived name
-            const autoNameOutput = await execInVm(
-              VM,
-              `${VMSYNC} import /tmp/test-uefi.qcow2`,
-            );
-            expect(autoNameOutput,).toContain('imported "test-uefi"',);
-            //endregion import with auto-derived name
+          //region import with auto-derived name
+          const autoNameOutput = await execInVm(
+            VM,
+            `${VMSYNC} import /tmp/test-uefi.qcow2`,
+          );
+          expect(autoNameOutput,).toContain('imported "test-uefi"',);
+          //endregion import with auto-derived name
 
-            //region sync (already synced)
-            const syncOutput = await execInVm(VM, `${VMSYNC} sync test-vm`,);
-            expect(syncOutput,).toContain('already synced',);
-            //endregion sync (already synced)
-          },
-        }),
-      ],
-    },);
-  }
-  finally {
-    await safeDestroy(VM,);
-  }
+          //region sync (already synced)
+          const syncOutput = await execInVm(VM, `${VMSYNC} sync test-vm`,);
+          expect(syncOutput,).toContain('already synced',);
+          //endregion sync (already synced)
+        },
+      },),
+    ],
+  },);
 }
 
 //endregion Linux lifecycle tests
@@ -285,10 +282,10 @@ async function safeDestroy(vmName: string,): Promise<void> {
    * Guest path to vmsync bundle on the virtiofs mount.
    * VirtioFsSvc maps the `mvm-shared` virtiofs tag to `Z:` by default.
    */
-  const BUNDLE = 'Z:\\index.mjs';
+  const BUNDLE = String.raw`Z:\index.mjs`;
 
   /** Full path to mise binary installed at test runtime. */
-  const MISE_BIN = 'C:\\Users\\Administrator\\.local\\bin\\mise.exe';
+  const MISE_BIN = String.raw`C:\Users\Administrator\.local\bin\mise.exe`;
 
   /**
    * PowerShell preamble to activate mise-managed bun.
@@ -317,8 +314,10 @@ async function safeDestroy(vmName: string,): Promise<void> {
     VM,
     [
       '$ProgressPreference = "SilentlyContinue"',
-      'Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "$env:TEMP\\vc_redist.x64.exe"',
-      'Start-Process -FilePath "$env:TEMP\\vc_redist.x64.exe" -ArgumentList "/install","/quiet","/norestart" -Wait',
+      String
+        .raw`Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "$env:TEMP\vc_redist.x64.exe"`,
+      String
+        .raw`Start-Process -FilePath "$env:TEMP\vc_redist.x64.exe" -ArgumentList "/install","/quiet","/norestart" -Wait`,
     ]
       .join('; ',),
     EXEC_TIMEOUT_MS,
@@ -331,16 +330,19 @@ async function safeDestroy(vmName: string,): Promise<void> {
     VM,
     [
       '$ProgressPreference = "SilentlyContinue"',
-      '$env:HOME = "C:\\Users\\Administrator"',
-      '$dir = "C:\\Users\\Administrator\\.local\\bin"',
+      String.raw`$env:HOME = "C:\Users\Administrator"`,
+      String.raw`$dir = "C:\Users\Administrator\.local\bin"`,
       'New-Item -ItemType Directory -Path $dir -Force | Out-Null',
       '$r = Invoke-WebRequest -Uri "https://github.com/jdx/mise/releases/latest" -MaximumRedirection 0 -UseBasicParsing -ErrorAction SilentlyContinue',
       '$version = ($r.Headers.Location -split "/tag/")[1]',
       '$url = "https://github.com/jdx/mise/releases/download/$version/mise-$version-windows-x64.zip"',
-      'Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\\mise.zip" -UseBasicParsing',
-      'Expand-Archive -Path "$env:TEMP\\mise.zip" -DestinationPath "$env:TEMP\\mise" -Force',
-      'Copy-Item "$env:TEMP\\mise\\mise\\bin\\mise.exe" (Join-Path $dir "mise.exe") -Force',
-      'Remove-Item "$env:TEMP\\mise.zip","$env:TEMP\\mise" -Recurse -Force',
+      String
+        .raw`Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\mise.zip" -UseBasicParsing`,
+      String
+        .raw`Expand-Archive -Path "$env:TEMP\mise.zip" -DestinationPath "$env:TEMP\mise" -Force`,
+      String
+        .raw`Copy-Item "$env:TEMP\mise\mise\bin\mise.exe" (Join-Path $dir "mise.exe") -Force`,
+      String.raw`Remove-Item "$env:TEMP\mise.zip","$env:TEMP\mise" -Recurse -Force`,
     ]
       .join('; ',),
     EXEC_TIMEOUT_MS,
@@ -355,109 +357,105 @@ async function safeDestroy(vmName: string,): Promise<void> {
     EXEC_TIMEOUT_MS,
   );
 
-  try {
-    await describe({
-      name: 'vmsync lifecycle (Windows)',
-      children: [
-        it({
-          name: 'full CLI lifecycle',
-          fn: async () => {
-            //region --help
-            const help = await execInVm(VM, `${VMSYNC} --help`,);
-            expect(help,).toContain('vmsync',);
-            expect(help,).toContain('import',);
-            expect(help,).toContain('boot',);
-            expect(help,).toContain('sync',);
-            expect(help,).toContain('status',);
-            expect(help,).toContain('list',);
-            expect(help,).toContain('config',);
-            //endregion --help
+  await using _cleanup = { [Symbol.asyncDispose]: () => safeDestroy(VM,), };
+  await describe({
+    name: 'vmsync lifecycle (Windows)',
+    children: [
+      it({
+        name: 'full CLI lifecycle',
+        fn: async () => {
+          //region --help
+          const help = await execInVm(VM, `${VMSYNC} --help`,);
+          expect(help,).toContain('vmsync',);
+          expect(help,).toContain('import',);
+          expect(help,).toContain('boot',);
+          expect(help,).toContain('sync',);
+          expect(help,).toContain('status',);
+          expect(help,).toContain('list',);
+          expect(help,).toContain('config',);
+          //endregion --help
 
-            //region list (empty)
-            const emptyList = await execInVm(VM, `${VMSYNC} list`,);
-            expect(emptyList,).toContain('no managed VMs',);
-            //endregion list (empty)
+          //region list (empty)
+          const emptyList = await execInVm(VM, `${VMSYNC} list`,);
+          expect(emptyList,).toContain('no managed VMs',);
+          //endregion list (empty)
 
-            //region Create config manually (Windows lacks qemu-nbd for full import)
-            // Uses newline joins because PowerShell hash literals (@{}) require
-            // actual newlines between entries, not semicolons.
-            await execInVm(
-              VM,
-              [
-                '$dir = "$env:USERPROFILE\\.local\\share\\vmsync\\test-vm"',
-                'New-Item -ItemType Directory -Path $dir -Force | Out-Null',
-                '$config = @{',
-                '  name = "test-vm"',
-                '  importedFrom = "C:\\test.qcow2"',
-                '  importedAt = "2026-01-01T00:00:00Z"',
-                '  diskSizeBytes = 536870912',
-                '  boot = @{ memory = "4G"; cpus = 4 }',
-                '  state = @{',
-                '    synced = $true',
-                '    checksums = @{ qcow2 = "sha256:aaa"; vhdx = "sha256:bbb" }',
-                '  }',
-                '} | ConvertTo-Json -Depth 4',
-                'Set-Content -Path "$dir\\vmsync.jsonc" -Value $config',
-              ]
-                .join('\n',),
-            );
-            //endregion Create config manually
+          //region Create config manually (Windows lacks qemu-nbd for full import)
+          // Uses newline joins because PowerShell hash literals (@{}) require
+          // actual newlines between entries, not semicolons.
+          await execInVm(
+            VM,
+            [
+              String.raw`$dir = "$env:USERPROFILE\.local\share\vmsync\test-vm"`,
+              'New-Item -ItemType Directory -Path $dir -Force | Out-Null',
+              '$config = @{',
+              '  name = "test-vm"',
+              String.raw`  importedFrom = "C:\test.qcow2"`,
+              '  importedAt = "2026-01-01T00:00:00Z"',
+              '  diskSizeBytes = 536870912',
+              '  boot = @{ memory = "4G"; cpus = 4 }',
+              '  state = @{',
+              '    synced = $true',
+              '    checksums = @{ qcow2 = "sha256:aaa"; vhdx = "sha256:bbb" }',
+              '  }',
+              '} | ConvertTo-Json -Depth 4',
+              String.raw`Set-Content -Path "$dir\vmsync.jsonc" -Value $config`,
+            ]
+              .join('\n',),
+          );
+          //endregion Create config manually
 
-            //region list (populated)
-            const populatedList = await execInVm(VM, `${VMSYNC} list`,);
-            expect(populatedList,).toContain('test-vm',);
-            expect(populatedList,).toContain('synced',);
-            //endregion list (populated)
+          //region list (populated)
+          const populatedList = await execInVm(VM, `${VMSYNC} list`,);
+          expect(populatedList,).toContain('test-vm',);
+          expect(populatedList,).toContain('synced',);
+          //endregion list (populated)
 
-            //region status
-            const status = await execInVm(VM, `${VMSYNC} status test-vm`,);
-            expect(status,).toContain('name:       test-vm',);
-            expect(status,).toContain('synced:     true',);
-            expect(status,).toContain('last boot:  never',);
-            expect(status,).toContain('memory:     4G',);
-            expect(status,).toContain('cpus:       4',);
-            //endregion status
+          //region status
+          const status = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          expect(status,).toContain('name:       test-vm',);
+          expect(status,).toContain('synced:     true',);
+          expect(status,).toContain('last boot:  never',);
+          expect(status,).toContain('memory:     4G',);
+          expect(status,).toContain('cpus:       4',);
+          //endregion status
 
-            //region config update
-            const configOutput = await execInVm(
-              VM,
-              `${VMSYNC} config test-vm --memory 16G --cpus 16`,
-            );
-            expect(configOutput,).toContain('memory=16G',);
-            expect(configOutput,).toContain('cpus=16',);
+          //region config update
+          const configOutput = await execInVm(
+            VM,
+            `${VMSYNC} config test-vm --memory 16G --cpus 16`,
+          );
+          expect(configOutput,).toContain('memory=16G',);
+          expect(configOutput,).toContain('cpus=16',);
 
-            const statusAfterConfig = await execInVm(VM, `${VMSYNC} status test-vm`,);
-            expect(statusAfterConfig,).toContain('memory:     16G',);
-            expect(statusAfterConfig,).toContain('cpus:       16',);
-            //endregion config update
+          const statusAfterConfig = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          expect(statusAfterConfig,).toContain('memory:     16G',);
+          expect(statusAfterConfig,).toContain('cpus:       16',);
+          //endregion config update
 
-            //region config partial update (cpus only, memory preserved)
-            await execInVm(VM, `${VMSYNC} config test-vm --cpus 8`,);
-            const statusAfterPartial = await execInVm(VM, `${VMSYNC} status test-vm`,);
-            expect(statusAfterPartial,).toContain('memory:     16G',);
-            expect(statusAfterPartial,).toContain('cpus:       8',);
-            //endregion config partial update
+          //region config partial update (cpus only, memory preserved)
+          await execInVm(VM, `${VMSYNC} config test-vm --cpus 8`,);
+          const statusAfterPartial = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          expect(statusAfterPartial,).toContain('memory:     16G',);
+          expect(statusAfterPartial,).toContain('cpus:       8',);
+          //endregion config partial update
 
-            //region sync (already synced)
-            const syncOutput = await execInVm(VM, `${VMSYNC} sync test-vm`,);
-            expect(syncOutput,).toContain('already synced',);
-            //endregion sync (already synced)
+          //region sync (already synced)
+          const syncOutput = await execInVm(VM, `${VMSYNC} sync test-vm`,);
+          expect(syncOutput,).toContain('already synced',);
+          //endregion sync (already synced)
 
-            //region detectHypervisor returns hyperv on Windows
-            const statusCheck = await execInVm(VM, `${VMSYNC} status test-vm`,);
-            // The VM was never booted, last boot is "never" (hypervisor detection
-            // only runs during boot, not status -- but the binary runs on Windows,
-            // confirming cross-platform compatibility)
-            expect(statusCheck,).toContain('last boot:  never',);
-            //endregion detectHypervisor
-          },
-        }),
-      ],
-    },);
-  }
-  finally {
-    await safeDestroy(VM,);
-  }
+          //region detectHypervisor returns hyperv on Windows
+          const statusCheck = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          // The VM was never booted, last boot is "never" (hypervisor detection
+          // only runs during boot, not status -- but the binary runs on Windows,
+          // confirming cross-platform compatibility)
+          expect(statusCheck,).toContain('last boot:  never',);
+          //endregion detectHypervisor
+        },
+      },),
+    ],
+  },);
 }
 
 //endregion Windows lifecycle tests

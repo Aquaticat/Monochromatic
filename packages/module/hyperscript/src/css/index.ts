@@ -111,6 +111,12 @@ export {
  * @param options - style rule or at-rule configuration
  *
  * @returns CSS string
+ *
+ * @example
+ * ```ts
+ * $({ rule: '.card', decls: { display: 'flex' } });
+ * // '.card{display:flex}'
+ * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $(
   options: CssOptions,

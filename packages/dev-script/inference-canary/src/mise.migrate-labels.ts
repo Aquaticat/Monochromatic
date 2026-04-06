@@ -97,7 +97,11 @@ for (const modelDir of modelDirs) {
       // oxlint-disable-next-line no-await-in-loop -- must finish writing before renaming the parent directory
       await writeFile(
         metaPath,
-        JSON.stringify(meta, null, 2,),
+        JSON.stringify(
+          meta,
+          null,
+          2,
+        ),
         'utf8',
       );
       console.log(`  updated: ${modelDir}/${subdir}/meta.json`,);

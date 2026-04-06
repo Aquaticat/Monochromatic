@@ -12,7 +12,10 @@ export type {
   TestContext,
 } from './it.ts';
 
-export { expect, createScopedExpect, } from './expect.ts';
+export {
+  createScopedExpect,
+  expect,
+} from './expect.ts';
 export type {
   AssertionTracker,
   AsyncMatcherSet,

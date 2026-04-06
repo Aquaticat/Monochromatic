@@ -23,6 +23,11 @@ import {
  * @param id - Task UUID from the route parameter
  *
  * @returns 200 with updated task, or 404 when not found
+ *
+ * @example
+ * ```ts
+ * const response = await handleStartTimer('uuid-123');
+ * ```
  */
 export async function handleStartTimer(id: string,): Promise<Response> {
   const task = await startTaskTimer(id,);
@@ -41,6 +46,11 @@ export async function handleStartTimer(id: string,): Promise<Response> {
  * @param id - Task UUID from the route parameter
  *
  * @returns 200 with updated task, or 404 when not found
+ *
+ * @example
+ * ```ts
+ * const response = await handleStopTimer('uuid-123');
+ * ```
  */
 export async function handleStopTimer(id: string,): Promise<Response> {
   const task = await stopTaskTimer(id,);
@@ -59,6 +69,11 @@ export async function handleStopTimer(id: string,): Promise<Response> {
  * @param id - Task UUID from the route parameter
  *
  * @returns 200 on success, 404 when missing, 409 when blocked
+ *
+ * @example
+ * ```ts
+ * const response = await handleCompleteTask('uuid-123');
+ * ```
  */
 export async function handleCompleteTask(id: string,): Promise<Response> {
   const result = await completeTask(id,);
@@ -70,7 +85,10 @@ export async function handleCompleteTask(id: string,): Promise<Response> {
   }
   if (!result.completed) {
     return jsonResponse(
-      { error: 'Task is blocked', blockedBy: result.blockedBy, },
+      {
+        error: 'Task is blocked',
+        blockedBy: result.blockedBy,
+      },
       HTTP_CONFLICT,
     );
   }

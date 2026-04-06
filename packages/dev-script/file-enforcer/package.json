@@ -33,5 +33,6 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/dev-script/file-enforcer"
   },
+  "private": true,
   "sideEffects": false
 }

@@ -54,14 +54,29 @@ export const emptyTags: CreateOnceRule = {
 
     return createTsdocVisitor(
       context,
-      function emptyTagsHandler(_node, comment,): void {
+      function emptyTagsHandler(
+        _node,
+        comment,
+      ): void {
         const lines = getCommentLines(comment,);
-        lines.forEach(function checkLine(line, index,): void {
-          const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
-          const tagMatch = trimmed.match(/^(@\w+)\s+(.+)/,);
+        lines.forEach(function checkLine(
+          line,
+          index,
+        ): void {
+          const trimmed = line
+            .trimStart()
+            .replace(
+              COMMENT_LINE_PREFIX,
+              '',
+            )
+            .trimStart();
+          const tagMatch = (/^(@\w+)\s+(.+)/).exec(trimmed,);
           if (tagMatch === null)
             return;
-          const { 1: tag, 2: rest, } = tagMatch;
+          const {
+            1: tag,
+            2: rest,
+          } = tagMatch;
           if (tag !== undefined
             && modifierTags.has(tag,)
             && rest !== undefined
@@ -69,7 +84,10 @@ export const emptyTags: CreateOnceRule = {
           {
             context.report({
               loc: {
-                start: { line: comment.loc.start.line + index, column: 0, },
+                start: {
+                  line: comment.loc.start.line + index,
+                  column: 0,
+                },
               },
               messageId: 'nonEmpty',
               data: { tag, },

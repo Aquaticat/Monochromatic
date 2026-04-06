@@ -11,14 +11,15 @@ Affected patterns:
 
 ```typescript
 // Breaking from a streaming response
-const response = await fetch(url);
+const response = await fetch(url,);
 for await (const chunk of response.body!) {
   // process chunk
   break; // process hangs here -- Bun keeps the HTTP connection alive
 }
 
 // OpenAI SDK streaming (uses fetch internally)
-const stream = await client.chat.completions.create({ model, messages, stream: true });
+const stream = await client.chat.completions.create({ model, messages,
+  stream: true, },);
 for await (const chunk of stream) {
   // process chunk
 }
@@ -30,8 +31,8 @@ for await (const chunk of stream) {
 Bun's `FetchTasklet` maintains a `poll_ref` that keeps the JS event loop alive while a fetch request is in progress.
 The ref is set when the fetch starts (`poll_ref.ref()`) and only cleared when:
 
-1.  The HTTP thread receives the complete response (`is_done == true` in `onProgressUpdate`)
-2.  `ignoreRemainingResponseBody()` is called (e.g., when the `Response` object is GC'd without body consumption)
+1. The HTTP thread receives the complete response (`is_done == true` in `onProgressUpdate`)
+2. `ignoreRemainingResponseBody()` is called (e.g., when the `Response` object is GC'd without body consumption)
 
 **The bug:** calling `ReadableStream.cancel()` on the response body (which happens when breaking from `for await`,
 calling `reader.cancel()`, or `stream.cancel()`) does **not** propagate to the HTTP layer.
@@ -68,10 +69,10 @@ import whyIsNodeRunning from 'why-is-node-running';
 
 const WATCHDOG_TIMEOUT_SECONDS = 5;
 const watchdog = setTimeout(() => {
-  console.error('process did not exit naturally, dumping active handles:');
+  console.error('process did not exit naturally, dumping active handles:',);
   whyIsNodeRunning();
-  process.exit(0);
-}, WATCHDOG_TIMEOUT_SECONDS * 1000);
+  process.exit(0,);
+}, WATCHDOG_TIMEOUT_SECONDS * 1000,);
 watchdog.unref(); // the watchdog itself must not prevent exit
 ```
 
@@ -85,7 +86,7 @@ and tears down the HTTP connection directly:
 
 ```typescript
 const controller = new AbortController();
-const response = await fetch(url, { signal: controller.signal });
+const response = await fetch(url, { signal: controller.signal, },);
 for await (const chunk of response.body!) {
   // process chunk
 }
@@ -97,13 +98,13 @@ but aborting after successful completion produces an `AbortError` that must be c
 
 ## Alternative transports that avoid the bug
 
-| Transport | Uses fetch ReadableStream | Affected |
-|---|---|---|
-| SSE via fetch (OpenRouter, OpenAI default) | Yes | Yes |
-| HTTP chunked via fetch | Yes | Yes |
-| WebSocket via `ws` (OpenAI Responses API only) | No | No |
-| WebSocket via Bun native | No | No |
-| undici fetch (bypasses Bun's native fetch) | Unclear -- Bun polyfills Node APIs | Untested |
+| Transport                                      | Uses fetch ReadableStream          | Affected |
+| ---------------------------------------------- | ---------------------------------- | -------- |
+| SSE via fetch (OpenRouter, OpenAI default)     | Yes                                | Yes      |
+| HTTP chunked via fetch                         | Yes                                | Yes      |
+| WebSocket via `ws` (OpenAI Responses API only) | No                                 | No       |
+| WebSocket via Bun native                       | No                                 | No       |
+| undici fetch (bypasses Bun's native fetch)     | Unclear -- Bun polyfills Node APIs | Untested |
 
 OpenRouter's Responses API (`/api/v1/responses`) supports `stream: true` but returns SSE over HTTP POST --
 the same fetch ReadableStream path as Chat Completions. No WebSocket transport is available.

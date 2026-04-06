@@ -12,6 +12,13 @@ import type {
  * @param value - record to validate as a numeric range
  *
  * @returns `true` when both bounds are numbers and start does not exceed end
+ *
+ * @example
+ * ```ts
+ * $({ startInclusive: 1, endInclusive: 10 }); // true
+ * $({ startInclusive: 10, endInclusive: 1 }); // false
+ * $({ startInclusive: 'a', endInclusive: 5 }); // false
+ * ```
  */
 export function $(value: StringUnknownRecord,): value is RangeNumber {
   const {

@@ -26,6 +26,11 @@ const l = tagged({
  * @param options - Contains the async function that returns the rendered HTML body
  *
  * @returns Response containing the complete HTML document
+ *
+ * @example
+ * ```ts
+ * const response = await serveIndex({ getHtmlBody: async () => '<p>feeds</p>' });
+ * ```
  */
 export async function serveIndex(options: {
   getHtmlBody: () => Promise<string>;
@@ -53,6 +58,14 @@ export async function serveIndex(options: {
  * @param request - Incoming request with JSON body containing a `link` property
  *
  * @returns Response with file stats after appending
+ *
+ * @example
+ * ```ts
+ * const response = await ignore(new Request('http://localhost', {
+ *   method: 'POST',
+ *   body: '{"link":"https://example.com"}',
+ * }));
+ * ```
  */
 export async function ignore(request: Request,): Promise<Response> {
   const innerL = tagged({

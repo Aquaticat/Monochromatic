@@ -8,7 +8,10 @@ import {
   destroy,
   destroyAll,
 } from '@monochromatic-dev/cli-mvm/destroy';
-import { defineTool, } from '@monochromatic-dev/mcp-stdio';
+import {
+  defineTool,
+  type ToolEntry,
+} from '@monochromatic-dev/mcp-stdio';
 
 import {
   errorResponse,
@@ -18,7 +21,7 @@ import {
 //region Mutation tools -- VM creation and destruction
 
 /** MCP tool: create a new VM, optionally cloned from an existing one. */
-export const createTool = defineTool(
+export const createTool: ToolEntry = defineTool(
   'create_vm',
   {
     description:
@@ -26,13 +29,19 @@ export const createTool = defineTool(
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string',
-          description: 'VM name (alphanumeric, hyphens, underscores)', },
-        from: { type: 'string',
-          description: 'Clone from this existing VM instead of creating fresh', },
-        image: { type: 'string',
+        name: {
+          type: 'string',
+          description: 'VM name (alphanumeric, hyphens, underscores)',
+        },
+        from: {
+          type: 'string',
+          description: 'Clone from this existing VM instead of creating fresh',
+        },
+        image: {
+          type: 'string',
           description:
-            'Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name', },
+            'Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name',
+        },
       },
       required: ['name',],
     },
@@ -42,22 +51,31 @@ export const createTool = defineTool(
       const image = typeof args.image === 'string' ? args.image : undefined;
       try {
         await (from !== undefined
-          ? clone({ destination: name, source: from, },)
-          : create({ image, name, },));
+          ? clone({
+            destination: name,
+            source: from,
+          },)
+          : create({
+            image,
+            name,
+          },));
         const suffix = from !== undefined ? ` (cloned from ${from})` : '';
         return textResponse(
           `VM ${name} created${suffix} and started. Use exec_in_vm to run commands inside it.`,
         );
       }
       catch (err: unknown) {
-        return errorResponse('create_vm', err,);
+        return errorResponse(
+          'create_vm',
+          err,
+        );
       }
     },
   },
 );
 
 /** MCP tool: destroy VMs by name or all at once. */
-export const destroyTool = defineTool(
+export const destroyTool: ToolEntry = defineTool(
   'destroy_vm',
   {
     description:
@@ -65,10 +83,14 @@ export const destroyTool = defineTool(
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string',
-          description: 'VM name to destroy (mutually exclusive with all)', },
-        all: { type: 'boolean',
-          description: 'Destroy every managed VM (mutually exclusive with name)', },
+        name: {
+          type: 'string',
+          description: 'VM name to destroy (mutually exclusive with all)',
+        },
+        all: {
+          type: 'boolean',
+          description: 'Destroy every managed VM (mutually exclusive with name)',
+        },
       },
     },
     handler: async function handleDestroyVm(args,) {
@@ -84,13 +106,18 @@ export const destroyTool = defineTool(
           return textResponse(`VM ${name} destroyed.`,);
         }
         return {
-          content: [{ type: 'text' as const,
-            text: 'Error: provide either `name` or `all: true`.', },],
+          content: [{
+            type: 'text' as const,
+            text: 'Error: provide either `name` or `all: true`.',
+          },],
           isError: true as const,
         };
       }
       catch (err: unknown) {
-        return errorResponse('destroy_vm', err,);
+        return errorResponse(
+          'destroy_vm',
+          err,
+        );
       }
     },
   },

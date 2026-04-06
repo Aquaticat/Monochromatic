@@ -21,7 +21,7 @@ await describe({
         // oxlint-disable-next-line unicorn/prefer-bigint-literals -- testing
         expect(isBigint(BigInt('123456789012345678901234567890',),),).toBe(true,);
       },
-    }),
+    },),
     it({
       name: 'returns false for non-bigint values',
       fn: async () => {
@@ -43,6 +43,6 @@ await describe({
         expect(isBigint(true,),).toBe(false,);
         expect(isBigint(false,),).toBe(false,);
       },
-    }),
+    },),
   ],
 },);

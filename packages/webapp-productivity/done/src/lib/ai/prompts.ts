@@ -23,6 +23,11 @@ import type { ChatMessage, } from './client.ts';
  * @param existingLocations - Locations already used in the database
  *
  * @returns Chat messages ready for {@link chatCompletion}
+ *
+ * @example
+ * ```ts
+ * const messages = buildAutofillMessages('Buy groceries', existingTags, existingLocations);
+ * ```
  */
 export function buildAutofillMessages(
   title: string,
@@ -80,6 +85,11 @@ For consistency, prefer these existing locations when applicable: ${
  * @param focusDirective - Free-text focus instruction, or null
  *
  * @returns Chat messages ready for {@link chatCompletion}
+ *
+ * @example
+ * ```ts
+ * const messages = buildSuggestionMessages(tasks, 'Home', 'Quick wins only');
+ * ```
  */
 export function buildSuggestionMessages(
   tasks: readonly {

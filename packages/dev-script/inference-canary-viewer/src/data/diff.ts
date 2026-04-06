@@ -43,7 +43,14 @@ export async function computeDiff({
   try {
     const result = await spawn(
       'git',
-      ['diff', '--no-index', '--unified=99999', '--no-color', initialPath, fixPath,],
+      [
+        'diff',
+        '--no-index',
+        '--unified=99999',
+        '--no-color',
+        initialPath,
+        fixPath,
+      ],
     );
     ({ stdout, } = result);
   }

@@ -19,26 +19,30 @@ the MCP initialization handshake,
 
 ```ts
 // packages/mcp/my-server/src/index.ts
-import { createMcpServer, defineTool, serve } from "@monochromatic-dev/mcp-stdio";
+import {
+  createMcpServer,
+  defineTool,
+  serve,
+} from '@monochromatic-dev/mcp-stdio';
 
 const server = createMcpServer(
-  { name: "my-server", version: "0.1.0" },
+  { name: 'my-server', version: '0.1.0', },
   [
-    defineTool("greet", {
-      description: "Greets by name.",
+    defineTool('greet', {
+      description: 'Greets by name.',
       inputSchema: {
-        type: "object",
-        properties: { name: { type: "string" } },
-        required: ["name"],
+        type: 'object',
+        properties: { name: { type: 'string', }, },
+        required: ['name',],
       },
-      handler: async (args) => ({
-        content: [{ type: "text", text: `Hello, ${args.name}!` }],
+      handler: async args => ({
+        content: [{ type: 'text', text: `Hello, ${args.name}!`, },],
       }),
-    }),
+    },),
   ],
 );
 
-await serve(server);
+await serve(server,);
 ```
 
 ## Protocol coverage

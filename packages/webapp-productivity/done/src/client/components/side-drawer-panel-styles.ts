@@ -9,7 +9,7 @@
 const PANEL_Z_INDEX = 100;
 
 /** CSS for the popover panel portion of `\<side-drawer\>`. */
-export const SIDE_DRAWER_PANEL_STYLES = `
+export const SIDE_DRAWER_PANEL_STYLES: string = `
   .panel {
     position: fixed;
     inset: 0;

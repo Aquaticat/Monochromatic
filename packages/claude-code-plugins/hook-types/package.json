@@ -12,6 +12,7 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/claude-code-plugins/hook-types"
   },
+  "private": true,
   "sideEffects": false,
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*"

@@ -23,7 +23,7 @@ await describe({
             const result = $({ value: '' as FragmentStringJsonc, },);
             expect(result,).toEqual({ remainingContent: '' as FragmentStringJsonc, },);
           },
-        }),
+        },),
 
         it({
           name: 'whitespace-only returns empty remaining content after trimming',
@@ -31,7 +31,7 @@ await describe({
             const result = $({ value: '   \n\t  ' as FragmentStringJsonc, },);
             expect(result,).toEqual({ remainingContent: '' as FragmentStringJsonc, },);
           },
-        }),
+        },),
 
         it({
           name: 'direct JSON object with no comments',
@@ -39,7 +39,7 @@ await describe({
             const result = $({ value: '{}' as FragmentStringJsonc, },);
             expect(result,).toEqual({ remainingContent: '{}' as FragmentStringJsonc, },);
           },
-        }),
+        },),
 
         it({
           name: 'direct JSON array with no comments',
@@ -47,15 +47,17 @@ await describe({
             const result = $({ value: '[]' as FragmentStringJsonc, },);
             expect(result,).toEqual({ remainingContent: '[]' as FragmentStringJsonc, },);
           },
-        }),
+        },),
 
         it({
           name: 'direct JSON string with no comments',
           fn: async () => {
             const result = $({ value: '"hello"' as FragmentStringJsonc, },);
-            expect(result,).toEqual({ remainingContent: '"hello"' as FragmentStringJsonc, },);
+            expect(result,).toEqual({
+              remainingContent: '"hello"' as FragmentStringJsonc,
+            },);
           },
-        }),
+        },),
 
         it({
           name: 'direct JSON number with no comments',
@@ -63,23 +65,27 @@ await describe({
             const result = $({ value: '123' as FragmentStringJsonc, },);
             expect(result,).toEqual({ remainingContent: '123' as FragmentStringJsonc, },);
           },
-        }),
+        },),
 
         it({
           name: 'direct JSON boolean with no comments',
           fn: async () => {
             const result = $({ value: 'true' as FragmentStringJsonc, },);
-            expect(result,).toEqual({ remainingContent: 'true' as FragmentStringJsonc, },);
+            expect(result,).toEqual({
+              remainingContent: 'true' as FragmentStringJsonc,
+            },);
           },
-        }),
+        },),
 
         it({
           name: 'direct JSON null with no comments',
           fn: async () => {
             const result = $({ value: 'null' as FragmentStringJsonc, },);
-            expect(result,).toEqual({ remainingContent: 'null' as FragmentStringJsonc, },);
+            expect(result,).toEqual({
+              remainingContent: 'null' as FragmentStringJsonc,
+            },);
           },
-        }),
+        },),
 
         it({
           name: 'JSON with leading whitespace no comments returns trimmed',
@@ -87,9 +93,9 @@ await describe({
             const result = $({ value: '   \n  {}' as FragmentStringJsonc, },);
             expect(result,).toEqual({ remainingContent: '{}' as FragmentStringJsonc, },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'single inline comment scenarios',
@@ -106,12 +112,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'multiple inline comments processed recursively',
           fn: async () => {
-            const result = $({ value: '// first\n// second\n{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '// first\n// second\n{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -120,7 +128,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'region marker comment',
@@ -134,7 +142,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'endregion marker comment',
@@ -148,7 +156,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'inline comment with special characters',
@@ -164,12 +172,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'inline comment with leading whitespace preserved',
           fn: async () => {
-            const result = $({ value: '//    spaced comment   \n{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '//    spaced comment   \n{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -178,7 +188,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'inline comment without newline treats rest as comment (end-of-input)',
@@ -194,7 +204,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'inline comment with empty comment value',
@@ -208,9 +218,9 @@ await describe({
               },
             },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'single block comment scenarios',
@@ -227,7 +237,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'multi-line block comment',
@@ -243,7 +253,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'empty block comment',
@@ -257,13 +267,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'block comment with special characters and unicode',
           fn: async () => {
             const result = $({
-              value: '/* block with émojis 🚀 and unicode 测试 */{}' as FragmentStringJsonc,
+              value:
+                '/* block with émojis 🚀 and unicode 测试 */{}' as FragmentStringJsonc,
             },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
@@ -273,7 +284,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'block comment with quote-like content (LIMITATION TEST)',
@@ -291,12 +302,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'block comment with leading whitespace preserved',
           fn: async () => {
-            const result = $({ value: '/*    spaced content   */{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '/*    spaced content   */{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -305,19 +318,20 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'throws error for unterminated block comment',
           fn: async () => {
             expect(() =>
               $({
-                value: '/* unterminated block comment no star slash' as FragmentStringJsonc,
+                value:
+                  '/* unterminated block comment no star slash' as FragmentStringJsonc,
               },)
             )
               .toThrow(/incomplete block comment is not jsonc/,);
           },
-        }),
+        },),
 
         it({
           name: 'throws error for empty unterminated block comment',
@@ -326,9 +340,9 @@ await describe({
               /incomplete block comment is not jsonc/,
             );
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'multiple sequential comments scenarios',
@@ -336,7 +350,9 @@ await describe({
         it({
           name: 'multiple block comments merged',
           fn: async () => {
-            const result = $({ value: '/* first */\n/* second */{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '/* first */\n/* second */{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -345,12 +361,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'mixed inline and block comments',
           fn: async () => {
-            const result = $({ value: '// inline\n/* block */{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '// inline\n/* block */{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -359,12 +377,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'block then inline comments become mixed type',
           fn: async () => {
-            const result = $({ value: '/* block */\n// inline\n{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '/* block */\n// inline\n{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -373,7 +393,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'complex three-comment chain',
@@ -391,9 +411,9 @@ await describe({
               },
             },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'context accumulation scenarios',
@@ -418,7 +438,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'comments merged with existing block context',
@@ -440,7 +460,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'inline comment merged with existing mixed context preserves mixed',
@@ -462,7 +482,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'no existing context preserves original comment type',
@@ -479,9 +499,9 @@ await describe({
               },
             },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'complex block comment logic scenarios',
@@ -499,7 +519,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'multi-line block comment detection',
@@ -515,16 +535,18 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
-          name: 'block comment with /* marks Star Slash that appears in line comment (should be ignored)',
+          name:
+            'block comment with /* marks Star Slash that appears in line comment (should be ignored)',
           skip: true,
           fn: async () => {
             // THE AI WAS WRONG, RIGHT NOW THE IMPLEMENTATION IS CORRECT
             // The */ in the // line should be ignored, the real */ is after the line
             const result = $({
-              value: '/*\ncomment\n// has */ here\nstill comment\n*/{}' as FragmentStringJsonc,
+              value:
+                '/*\ncomment\n// has */ here\nstill comment\n*/{}' as FragmentStringJsonc,
             },);
             // KNOWN LIMITATION: This complex case doesn't work as expected currently
             // The function stops at the first */ it finds, even if it's in a line comment
@@ -536,7 +558,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'block comment with multiple line comments containing */',
@@ -558,13 +580,15 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'block comment position calculation accuracy',
           fn: async () => {
             // Test that the position calculation works correctly with preceding whitespace
-            const result = $({ value: '   /*  content  */   {}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '   /*  content  */   {}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -573,9 +597,9 @@ await describe({
               },
             },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'whitespace handling scenarios',
@@ -592,12 +616,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'leading whitespace before block comment',
           fn: async () => {
-            const result = $({ value: '\t \n /* comment */\n{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '\t \n /* comment */\n{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -606,12 +632,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'trailing whitespace after comments',
           fn: async () => {
-            const result = $({ value: '// comment\n   \t   \n{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '// comment\n   \t   \n{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -620,12 +648,14 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'mixed tab and space whitespace',
           fn: async () => {
-            const result = $({ value: '\t // mixed\twhitespace\n{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '\t // mixed\twhitespace\n{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -634,9 +664,9 @@ await describe({
               },
             },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'edge cases and limitations',
@@ -654,13 +684,15 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'very long block comment',
           fn: async () => {
             const longComment = 'b'.repeat(1_000,);
-            const result = $({ value: `/* ${longComment} */{}` as FragmentStringJsonc, },);
+            const result = $({
+              value: `/* ${longComment} */{}` as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -669,7 +701,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'comment with JSON-like content inside',
@@ -686,10 +718,11 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
-          name: 'block comment terminates at first */ regardless of quotes (per JSONC spec)',
+          name:
+            'block comment terminates at first */ regardless of quotes (per JSONC spec)',
           fn: async () => {
             // In JSONC, */ always terminates a block comment — quotes have no special meaning inside comments
             const result = $({
@@ -700,12 +733,14 @@ await describe({
             expect(result.comment?.type,).toBe('block',);
             expect(result.comment?.commentValue,).toBe(' text with "quoted ',);
           },
-        }),
+        },),
 
         it({
           name: 'comments with newline characters inside',
           fn: async () => {
-            const result = $({ value: '/* line1\nline2\nline3 */{}' as FragmentStringJsonc, },);
+            const result = $({
+              value: '/* line1\nline2\nline3 */{}' as FragmentStringJsonc,
+            },);
             expect(result,).toEqual({
               remainingContent: '{}' as FragmentStringJsonc,
               comment: {
@@ -714,7 +749,7 @@ await describe({
               },
             },);
           },
-        }),
+        },),
 
         it({
           name: 'comment delimiters inside comment content',
@@ -731,9 +766,9 @@ await describe({
               },
             },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     describe({
       name: 'type preservation scenarios',
@@ -746,7 +781,7 @@ await describe({
             // Type should include remainingContent as StringJsonc
             expect(result.remainingContent,).toBe('{}' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'FragmentStringJsonc type preservation',
@@ -756,8 +791,8 @@ await describe({
             // Type should include remainingContent as FragmentStringJsonc
             expect(result.remainingContent,).toBe('[]' as FragmentStringJsonc,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
   ],
 },);

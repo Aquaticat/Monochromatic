@@ -6,7 +6,7 @@ h-css is a string-returning function that constructs CSS from declarative option
 Same pattern as h-xml and h-html — call `$()` with named parameters, get a string back.
 
 ```ts
-$({ rule: '.card', decls: { display: 'flex', gap: '1rem' } })
+$({ rule: '.card', decls: { display: 'flex', gap: '1rem', }, },);
 // '.card{display:flex;gap:1rem}'
 ```
 
@@ -53,7 +53,8 @@ Composition uses object spread:
 
 ```ts
 function buttonOutlined(): CssDeclarations {
-  return { ...flexCenter(), ...minTouchTarget(), gap: '0.5rem', cursor: 'pointer' };
+  return { ...flexCenter(), ...minTouchTarget(), gap: '0.5rem',
+    cursor: 'pointer', };
 }
 ```
 
@@ -86,9 +87,9 @@ $({
   at: 'media',
   params: '(prefers-color-scheme: dark)',
   children: [
-    $({ rule: ':root', decls: { '--color-fg': 'oklch(0.9 0 0)' } }),
+    $({ rule: ':root', decls: { '--color-fg': 'oklch(0.9 0 0)', }, },),
   ],
-})
+},);
 ```
 
 No `var()` fallbacks — the token system guarantees every custom property is defined.

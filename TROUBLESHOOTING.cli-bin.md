@@ -5,7 +5,7 @@
 Running a CLI tool installed via `node_modules/.bin/` hangs indefinitely,
 flooding stderr with messages like:
 
-```
+```text
 import: unable to grab mouse '': Resource temporarily unavailable @ error/xwindow.c/XSelectWindow/9351
 import: unable to read X window image '': Success @ error/xwindow.c/XImportImage/4961
 import: missing an image filename `node:util' @ error/import.c/ImportImageCommand/1289
@@ -30,7 +30,7 @@ Add a shebang line as the first line of the CLI entry point:
 
 ```typescript
 #!/usr/bin/env bun
-import { parseArgs } from 'node:util';
+import { parseArgs, } from 'node:util';
 // ...
 ```
 

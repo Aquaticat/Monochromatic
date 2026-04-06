@@ -135,7 +135,10 @@ export const requireExample: CreateOnceRule = {
      * Deferred checks for functions that may be exported via specifier lists.
      * Maps declaration name to the AST node and its TSDoc comment.
      */
-    const functionNodes = new Map<string, { node: Span; comment: Comment; }>();
+    const functionNodes = new Map<string, {
+      node: Span;
+      comment: Comment;
+    }>();
 
     /** Names exported via `export { name }` specifier lists. */
     const specifierExportedNames = new Set<string>();
@@ -147,7 +150,10 @@ export const requireExample: CreateOnceRule = {
      *
      * @param comment - TSDoc comment AST node for error location
      */
-    function reportMissingExample(node: Span, comment: Comment,): void {
+    function reportMissingExample(
+      node: Span,
+      comment: Comment,
+    ): void {
       const result = parseTsdocForNode(
         node,
         context,
@@ -189,7 +195,13 @@ export const requireExample: CreateOnceRule = {
       // Defer: might be exported via `export { name }` seen later
       const name = extractNodeName(node,);
       if (name !== 'anonymous') {
-        functionNodes.set(name, { node, comment, },);
+        functionNodes.set(
+          name,
+          {
+            node,
+            comment,
+          },
+        );
       }
     }
 
@@ -209,7 +221,7 @@ export const requireExample: CreateOnceRule = {
       if (declarations === undefined || declarations.length === 0)
         return;
 
-      const decl = declarations[0];
+      const [decl,] = declarations;
       if (decl === undefined)
         return;
 
@@ -240,7 +252,13 @@ export const requireExample: CreateOnceRule = {
       // Defer for specifier-list exports
       const name = extractNodeName(node,);
       if (name !== 'anonymous') {
-        functionNodes.set(name, { node, comment, },);
+        functionNodes.set(
+          name,
+          {
+            node,
+            comment,
+          },
+        );
       }
     }
 
@@ -264,9 +282,8 @@ export const requireExample: CreateOnceRule = {
         for (const spec of specifiers) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const local = spec.local as Record<string, unknown> | undefined;
-          if (local !== undefined && typeof local.name === 'string') {
+          if (local !== undefined && typeof local.name === 'string')
             specifierExportedNames.add(local.name,);
-          }
         }
       },
       after(): void {

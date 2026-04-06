@@ -16,6 +16,12 @@ import { formatNumber, } from './overlay-meta.ts';
  * @param config - runner configuration snapshot
  *
  * @returns HTML `<details>` element
+ *
+ * @example
+ * ```ts
+ * const html = renderConfig(config);
+ * // '<details class="collapsible-section">...<\/details>'
+ * ```
  */
 export function renderConfig(config: ConfigSnapshot,): string {
   return h({

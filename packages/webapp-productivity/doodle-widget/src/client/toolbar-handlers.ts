@@ -81,6 +81,11 @@ type ToolbarHandlerDeps = {
  * Attaches event listeners for all toolbar controls.
  *
  * @param deps - toolbar elements and shared state accessors
+ *
+ * @example
+ * ```ts
+ * setupToolbarHandlers(deps);
+ * ```
  */
 export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   const {
@@ -118,10 +123,18 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   clearBtn.addEventListener(
     'click',
     function handleClear(): void {
-      const { cw, ch, } = getCanvasSize();
+      const {
+        cw,
+        ch,
+      } = getCanvasSize();
       clearStrokes();
       clearTextEntries();
-      ctx.clearRect(0, 0, cw, ch,);
+      ctx.clearRect(
+        0,
+        0,
+        cw,
+        ch,
+      );
       pushSnapshot();
     },
   );
@@ -133,8 +146,12 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
       const format = formatSelect.value;
       if (!isExportFormat(format,))
         return;
-      void EXPORTERS[format]({ container: page, overlay: svgOverlay, drawCanvas,
-        textLayer, },);
+      void EXPORTERS[format]({
+        container: page,
+        overlay: svgOverlay,
+        drawCanvas,
+        textLayer,
+      },);
     },
   );
 

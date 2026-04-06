@@ -11,6 +11,12 @@ import type {
  * @param value - Object to check
  *
  * @returns True if the object is a RangeNumberInt with integer bounds
+ *
+ * @example
+ * ```ts
+ * $({ startInclusive: 1, endInclusive: 10 }); // true
+ * $({ startInclusive: 1.5, endInclusive: 10 }); // false (non-integer)
+ * ```
  */
 export function $(value: RangeNumber,): value is RangeNumberInt {
   const {

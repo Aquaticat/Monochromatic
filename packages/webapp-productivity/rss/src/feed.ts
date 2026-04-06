@@ -2,9 +2,11 @@
 import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import {
+  type Atom,
   type Opml,
   parseAtomFeed,
   parseRssFeed,
+  type Rss,
 } from 'feedsmith';
 import * as z from 'zod/mini';
 import { l as parentLogger, } from './log.ts';
@@ -21,7 +23,7 @@ const l = tagged({
  * Combines the feed content with source information for display.
  */
 export type FeedWOutline = {
-  feed: ReturnType<typeof parseRssFeed | typeof parseAtomFeed>;
+  feed: Rss.Feed<string> | Atom.Feed<string>;
   outline: Opml.Outline<string>;
 };
 
@@ -136,11 +138,11 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
   } = feedWOutline;
   if (outline.type === 'atom') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
-    const atomFeed = feed as ReturnType<typeof parseAtomFeed>;
+    const atomFeed = feed as Atom.Feed<string>;
     return z.coerce.date().parse(atomFeed.updated ?? new Date(0,),);
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
-  const rssFeed = feed as ReturnType<typeof parseRssFeed>;
+  const rssFeed = feed as Rss.Feed<string>;
   return z.coerce.date().parse(rssFeed.pubDate ?? new Date(0,),);
 }
 

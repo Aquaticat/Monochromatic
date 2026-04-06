@@ -30,7 +30,7 @@
  * });
  * ```
  */
-export async function $<T>({
+export async function $<T,>({
   promise,
   ms,
   label,
@@ -43,9 +43,8 @@ export async function $<T>({
 
   using _cleanup = {
     [Symbol.dispose](): void {
-      if (timer !== undefined) {
+      if (timer !== undefined)
         clearTimeout(timer,);
-      }
     },
   };
 

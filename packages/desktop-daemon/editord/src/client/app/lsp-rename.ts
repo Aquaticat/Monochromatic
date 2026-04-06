@@ -161,8 +161,14 @@ export async function performRename({
         path: string;
         edits: {
           range: {
-            start: { line: number; character: number; };
-            end: { line: number; character: number; };
+            start: {
+              line: number;
+              character: number;
+            };
+            end: {
+              line: number;
+              character: number;
+            };
           };
           newText: string;
         }[];
@@ -176,13 +182,15 @@ export async function performRename({
       },
     );
 
-    if (currentFileEdits !== undefined && currentFileEdits.edits.length > 0) {
+    if (currentFileEdits !== undefined && currentFileEdits.edits.length > 0)
       editorPane.applyTextEdits(currentFileEdits.edits,);
-    }
 
     const totalFiles = result.edits.length;
     const totalEdits = result.edits.reduce(
-      function countEdits(sum, fileEdit,) {
+      function countEdits(
+        sum,
+        fileEdit,
+      ) {
         return sum + fileEdit.edits.length;
       },
       0,

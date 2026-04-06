@@ -3,6 +3,7 @@
 ## Critical Export Issues
 
 ### Missing Exports in `iterable.is.ts`
+
 **Status**: Critical - Blocking TypeScript compilation
 
 The following exports are referenced by other modules but missing from [`iterable.is.ts`](src/iterable.is.ts:1):
@@ -33,6 +34,7 @@ The following exports are referenced by other modules but missing from [`iterabl
   - [`cli.command.ts`](src/cli.command.ts:27)
 
 ### Missing Exports in `numeric.type.int.ts`
+
 **Status**: Critical - Type naming inconsistency
 
 - [ ] **`isPositiveInt` vs `PositiveInt`** - Referenced in:
@@ -40,6 +42,7 @@ The following exports are referenced by other modules but missing from [`iterabl
   - Verify correct export name and fix references
 
 ### Missing Functions
+
 **Status**: Critical - Undefined functions
 
 - [ ] **`getRandomId`** - Referenced in:
@@ -48,6 +51,7 @@ The following exports are referenced by other modules but missing from [`iterabl
   - Need to implement or import this function
 
 ### Module Export Consistency Issues
+
 **Status**: High Priority - Module resolution
 
 - [ ] **`isInt` vs `Int`** in module exports:
@@ -61,17 +65,20 @@ The following exports are referenced by other modules but missing from [`iterabl
 ## Implementation Plan
 
 ### Phase 1: Add Missing Exports (1-2 hours)
+
 1. **Audit `iterable.is.ts`** and add all missing exports
 2. **Check `numeric.type.int.ts`** for correct export names
 3. **Update `index.ts`** to export any missing functions
 4. **Verify all import statements** resolve correctly
 
 ### Phase 2: Implement Missing Functions (2-4 hours)
+
 1. **Implement `getRandomId`** function or identify correct import source
 2. **Fix type constraint issues** in test files
 3. **Resolve pattern matcher type compatibility**
 
 ### Phase 3: Validation (30 minutes)
+
 1. **Run TypeScript compilation** to verify all errors resolved
 2. **Run tests** to ensure no regression
 3. **Update exports in `index.ts`** if needed

@@ -24,6 +24,11 @@ const MS_PER_SECOND = 1_000;
  * @param seconds - Non-negative duration in seconds
  *
  * @returns Formatted duration string
+ *
+ * @example
+ * ```ts
+ * formatTrackedTime(5400); // '1h30min0s'
+ * ```
  */
 export function formatTrackedTime(seconds: number,): string {
   const totalSeconds = Math.max(
@@ -58,6 +63,11 @@ export function formatTrackedTime(seconds: number,): string {
  * @param task - Task with optional running timer
  *
  * @returns Formatted duration string
+ *
+ * @example
+ * ```ts
+ * const display = formatRunningTrackedTime(task);
+ * ```
  */
 export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)

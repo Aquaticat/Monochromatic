@@ -5,9 +5,7 @@
  * The search page's HTML shell (rendered inline by the server, not via renderPage)
  * places a `\<search-bar\>` above `\<main id="app"\>` instead of a `\<top-nav\>`.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import styles from '../../dist/css/styles.css' with { type: 'text', };
 import type { SearchTask, } from '../lib/types.ts';
 import { api, } from './lib/api.ts';
@@ -111,7 +109,10 @@ else {
           showBlockedBadge: result.isBlocked,
           onOpen: openTask,
           onToggleComplete: async function completeTask(taskId,): Promise<void> {
-            await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
+            await api(
+              `/api/tasks/${taskId}/complete`,
+              { method: 'POST', },
+            );
             globalThis.location.reload();
           },
         },

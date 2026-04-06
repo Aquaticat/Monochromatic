@@ -23,10 +23,9 @@ import {
  * // => ['push', '--no-atomic', 'origin', 'main'] (unchanged)
  * ```
  */
-export function atomicPush(args: readonly string[]): readonly string[] {
-  if (args[0] !== 'push') {
+export function atomicPush(args: readonly string[],): readonly string[] {
+  if (args[0] !== 'push')
     return args;
-  }
 
   /** Tagged logger for the atomic-push rule. */
   const rl = tagged({

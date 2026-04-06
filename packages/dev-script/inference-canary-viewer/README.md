@@ -41,12 +41,12 @@ Probe overlays include:
 
 ### Data pipeline
 
-1.  Reads `meta.json`, `canary.ts`, and `response.txt` from each artifact directory under `src/canary-lint/`
-2.  Groups initial-pass and fix-pass artifacts by run key (`label::timestamp`)
-3.  Computes per-probe scores and overall score (mean of initial-pass probe scores)
-4.  Calculates per-model degradation thresholds (mean - 2 * stddev, floored at 0.3, minimum 3 samples)
-5.  Renders HTML via the `h()` builder from `module-es`
-6.  Builds CSS via `build-tool-css` and writes both files to `dist/final/`
+1. Reads `meta.json`, `canary.ts`, and `response.txt` from each artifact directory under `src/canary-lint/`
+2. Groups initial-pass and fix-pass artifacts by run key (`label::timestamp`)
+3. Computes per-probe scores and overall score (mean of initial-pass probe scores)
+4. Calculates per-model degradation thresholds (mean - 2 * stddev, floored at 0.3, minimum 3 samples)
+5. Renders HTML via the `h()` builder from `module-es`
+6. Builds CSS via `build-tool-css` and writes both files to `dist/final/`
 
 ## Usage
 

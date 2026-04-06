@@ -52,7 +52,7 @@ and installs successfully.
 vlt constructs `https://registry.npmjs.org/@optique/core/1.0.0-dev.1692+5c265bd4`,
 which returns 404, and throws:
 
-```
+```text
 Error: failed to fetch manifest
   [cause]: {
     code: 'ERESOLVE',
@@ -91,7 +91,7 @@ The bug spans two files in the vltpkg/vltpkg monorepo:
 `src/spec/src/browser.ts:644`:
 
 ```ts
-this.registrySpec = this.bareSpec
+this.registrySpec = this.bareSpec;
 ```
 
 When `bareSpec` is `"1.0.0-dev.1692+5c265bd4"`, `registrySpec` retains the `+` suffix.
@@ -101,9 +101,8 @@ When `bareSpec` is `"1.0.0-dev.1692+5c265bd4"`, `registrySpec` retains the `+` s
 `src/package-info/src/index.ts:405-407`:
 
 ```ts
-const version =
-  hasLeadingRange ? registrySpec.slice(1) : registrySpec
-const pakuURL = new URL(`${name}/${version}`, registry)
+const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
+const pakuURL = new URL(`${name}/${version}`, registry,);
 ```
 
 `version` is `"1.0.0-dev.1692+5c265bd4"`. The `new URL()` call preserves `+` literally
@@ -114,10 +113,9 @@ in the path component. The npm registry does not serve versions at paths contain
 `src/package-info/src/index.ts:601-603`:
 
 ```ts
-const mani =
-  spec.range?.isSingle ?
-    await this.#registryManifestRequest(spec, options)
-  : pickManifest(await this.packument(f, options), spec, options)
+const mani = spec.range?.isSingle
+  ? await this.#registryManifestRequest(spec, options,)
+  : pickManifest(await this.packument(f, options,), spec, options,);
 ```
 
 Version specs with build metadata parse as `isSingle === true`, triggering the
@@ -130,17 +128,16 @@ packument path, which fetches by package name only and is not affected.
 
 ```ts
 // src/package-info/src/index.ts
-const version =
-  hasLeadingRange ? registrySpec.slice(1) : registrySpec
-const versionClean = version.replace(/\+.*$/, '')
-const pakuURL = new URL(`${name}/${versionClean}`, registry)
+const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
+const versionClean = version.replace(/\+.*$/, '',);
+const pakuURL = new URL(`${name}/${versionClean}`, registry,);
 ```
 
 **Option B -- strip in Spec parser (comprehensive, prevents downstream issues):**
 
 ```ts
 // src/spec/src/browser.ts:644
-this.registrySpec = this.bareSpec.replace(/\+.*$/, '')
+this.registrySpec = this.bareSpec.replace(/\+.*$/, '',);
 ```
 
 Option B is more comprehensive but changes the Spec's stored value,
@@ -148,6 +145,7 @@ which could affect lockfile serialization or other consumers that rely on
 the full semver string. Option A is safer as a first fix.
 
 Both options align with SemVer 2.0.0 spec items 10-11:
+
 > "Build metadata MUST be ignored when determining version precedence."
 
 The `conventionalRegistryTarball` getter (which constructs the guessed tarball URL)
@@ -170,4 +168,4 @@ before making registry requests.
 - vlt: 1.0.0-rc.24
 - Node.js: v25.9.0
 - OS: Linux 6.17.7-ba29.fc43.x86_64 (Fedora/Bazzite)
-- Registry: https://registry.npmjs.org/
+- Registry: <https://registry.npmjs.org/>

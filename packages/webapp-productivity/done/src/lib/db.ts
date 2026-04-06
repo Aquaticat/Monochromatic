@@ -70,7 +70,7 @@ const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
 /** Open Turso database connection used by all data-access modules. */
-const db = await connect(
+const db: Database = await connect(
   databasePath,
   { experimental: ['triggers',], },
 );

@@ -90,6 +90,12 @@ function hasBlock(options: AtRuleOptions,): boolean {
  * @param children - nested child rules
  *
  * @returns CSS rule string (e.g. `'.card{display:flex}'`)
+ *
+ * @example
+ * ```ts
+ * buildRule({ rule: '.card', decls: { display: 'flex' } });
+ * // '.card{display:flex}'
+ * ```
  */
 export function buildRule(
   {
@@ -135,6 +141,12 @@ export function buildRule(
  * @param options - at-rule configuration with keyword, params, and optional block content
  *
  * @returns CSS at-rule string
+ *
+ * @example
+ * ```ts
+ * buildAtRule({ at: 'layer', params: 'tokens' });
+ * // '\@layer tokens;'
+ * ```
  */
 export function buildAtRule(
   options: AtRuleOptions,

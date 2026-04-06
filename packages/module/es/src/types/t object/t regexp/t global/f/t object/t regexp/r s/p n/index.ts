@@ -18,6 +18,7 @@ import type { $ as Global, } from '../../../../../t/index.ts';
  * ```
  */
 export function $({ regexp, }: { regexp: RegExp; },): Global {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RegExp with 'g' flag added satisfies the Global branded type
   return new RegExp(
     regexp.source,
     regexp.flags.includes('g',) ? regexp.flags : `${regexp.flags}g`,

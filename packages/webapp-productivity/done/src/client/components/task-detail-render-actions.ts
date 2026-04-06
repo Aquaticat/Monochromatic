@@ -4,9 +4,7 @@
  * Extracted from task-detail-render.ts to keep each file
  * under the line-count limit.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 
 /**
@@ -17,6 +15,12 @@ import type { Task, } from '../../lib/types.ts';
  * @param isCreate - Whether the detail panel is in create mode
  *
  * @returns Button row element
+ *
+ * @example
+ * ```ts
+ * const row = buildActionButtonRow({ task, isCreate: false });
+ * shadow.append(row);
+ * ```
  */
 export function buildActionButtonRow(
   {
@@ -83,6 +87,11 @@ export function buildActionButtonRow(
  * @param titleInput - Title input whose value is included in the event detail
  *
  * @param descInput - Description textarea whose value is included in the event detail
+ *
+ * @example
+ * ```ts
+ * attachActionHandler({ shadow, host, titleInput, descInput });
+ * ```
  */
 export function attachActionHandler(
   {
@@ -108,14 +117,19 @@ export function attachActionHandler(
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- closest returns HTMLElement with dataset
       const { action, } = (button as HTMLElement).dataset;
 
-      host.dispatchEvent(new CustomEvent('action', {
-        bubbles: true,
-        detail: {
-          action,
-          title: titleInput.value,
-          description: descInput.value,
-        },
-      },),);
+      host.dispatchEvent(
+        new CustomEvent(
+          'action',
+          {
+            bubbles: true,
+            detail: {
+              action,
+              title: titleInput.value,
+              description: descInput.value,
+            },
+          },
+        ),
+      );
     },
   );
 }

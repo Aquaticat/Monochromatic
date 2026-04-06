@@ -107,7 +107,9 @@ export function eraseStrokesAt({
     let prevStrokePy = 0;
 
     for (let i = 0; i < stroke.points.length; i++) {
-      const p = stroke.points[i]!;
+      const p = stroke.points[i];
+      if (p === undefined)
+        continue;
       /** Stroke point in pixel space */
       const {
         px,

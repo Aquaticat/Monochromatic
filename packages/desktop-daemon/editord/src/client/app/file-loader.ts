@@ -6,9 +6,9 @@
  */
 
 import type { FileKind, } from '../../../protocol.ts';
+import { FILE_SIZE_WARNING_THRESHOLD, } from '../../constants.ts';
 import type { BinaryViewer, } from '../binary-viewer/binary-viewer.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
-import { FILE_SIZE_WARNING_THRESHOLD, } from '../../constants.ts';
 import { getParserForPath, } from '../highlight/languages.ts';
 import {
   l as rootLogger,

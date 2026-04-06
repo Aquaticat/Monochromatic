@@ -125,11 +125,13 @@
 ### Platform-Specific Documentation Gaps
 
 #### Node.js Platform Functions
+
 - [ ] **[`fs.fs.node.ts`](src/fs.fs.node.ts:1)** - Node.js filesystem functions
   - Missing TSDoc for all exported functions
   - Need Node.js-specific examples and platform limitations
 
 #### Browser Platform Functions
+
 - [ ] **[`fs.fs.default.ts`](src/fs.fs.default.ts:18)** - Browser filesystem polyfill
   - [`getFsPromises()`](src/fs.fs.default.ts:18) - Missing complete documentation
   - Document browser limitations and fallback behavior
@@ -157,25 +159,31 @@
 ### Functions Not Following TSDoc Standards
 
 #### Parameter Documentation Issues
+
 **Status**: High Priority - Consistency
 
 Functions with poor parameter documentation:
+
 - [ ] Review all functions for parameter descriptions following the rule: "Avoid `the`, `a`, `an` in `@param` descriptions"
 - [ ] Ensure parameter descriptions add context beyond just repeating the name
 - [ ] Fix parameter descriptions that just restate the parameter name
 
 #### Return Value Documentation Issues
+
 **Status**: Normal Priority - Clarity
 
 Functions missing meaningful return value documentation:
+
 - [ ] Add meaningful `@returns` descriptions that explain what the return value represents
 - [ ] For async functions, document the resolved value, not just "Promise"
 - [ ] Document special return values (null, undefined, empty arrays, etc.)
 
 #### Missing Example Documentation
+
 **Status**: Normal Priority - Developer experience
 
 Functions that need `@example` tags with practical usage:
+
 - [ ] All type guard functions - show type narrowing in action
 - [ ] Complex utility functions - show real-world usage scenarios
 - [ ] Async functions - show proper await usage and error handling
@@ -184,6 +192,7 @@ Functions that need `@example` tags with practical usage:
 ### Complex Functions Needing Comprehensive Documentation
 
 #### Advanced Features
+
 - [ ] **[`any.ReplicatingStore.ts`](src/any.ReplicatingStore.ts:201)** - Entire class needs documentation:
   - Class-level documentation explaining distributed storage concept
   - Method-level documentation for all public methods
@@ -196,6 +205,7 @@ Functions that need `@example` tags with practical usage:
   - Document migration path from deprecated functions
 
 #### Mathematical and Algorithmic Functions
+
 - [ ] **[`numeric.add.ts`](src/numeric.add.ts:34)** - Addition utilities:
   - Document mathematical properties and associativity
   - Add examples with different numeric types
@@ -206,6 +216,7 @@ Functions that need `@example` tags with practical usage:
 ### Inconsistent Documentation Patterns
 
 #### Format Inconsistencies
+
 **Status**: Normal Priority - Standardization
 
 - [ ] **Inconsistent example formatting** across functions
@@ -213,6 +224,7 @@ Functions that need `@example` tags with practical usage:
 - [ ] **Inconsistent return value descriptions** - some detailed, others minimal
 
 #### Missing Cross-References
+
 **Status**: Low Priority - Navigation
 
 - [ ] **Related function references** missing in TSDoc
@@ -222,6 +234,7 @@ Functions that need `@example` tags with practical usage:
 ### Advanced Documentation Features
 
 #### Missing Specialized Tags
+
 **Status**: Low Priority - Enhanced developer experience
 
 - [ ] **`@since` tags** for version information
@@ -243,21 +256,25 @@ Functions that need `@example` tags with practical usage:
 ## Implementation Priority
 
 ### Phase 1: Critical Functions (Week 1)
+
 1. **Core utilities missing documentation** - `any.echo`, `function.always`, `object.is`
 2. **Type guards** - All `is*()` functions in various modules
 3. **Platform-specific functions** - DOM, filesystem, logging functions
 
-### Phase 2: Complex Features (Week 2)  
+### Phase 2: Complex Features (Week 2)
+
 1. **Advanced classes** - `any.ReplicatingStore` comprehensive documentation
 2. **Complex algorithms** - `boolean.equal`, `any.toExport`, CSS parsing functions
 3. **Async patterns** - All async functions with proper async documentation
 
 ### Phase 3: Enhancement (Week 3)
+
 1. **Add missing examples** to all functions lacking `@example` tags
 2. **Improve parameter descriptions** to add meaningful context
 3. **Add performance notes** for computationally intensive functions
 
 ### Phase 4: Polish (Week 4)
+
 1. **Cross-reference related functions** with see-also documentation
 2. **Add version information** where relevant
 3. **Standardize documentation format** across all functions

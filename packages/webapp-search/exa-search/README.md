@@ -20,6 +20,7 @@ mise run exa-search:js
 ```
 
 This creates a self-contained HTML file at:
+
 ```
 packages/site/exa-search/dist/final/js/index.html
 ```
@@ -44,6 +45,7 @@ The API key is stored in your browser's localStorage for convenience. You can ch
 ## Configuration
 
 The build uses the `getFrontend` configuration from `@monochromatic-dev/config-vite`, which:
+
 - Bundles all JavaScript and CSS inline
 - Includes the `viteSingleFile` plugin for creating self-contained HTML
 - Uses the unprefixed frontend configuration to avoid subdirectory nesting in output
@@ -51,6 +53,7 @@ The build uses the `getFrontend` configuration from `@monochromatic-dev/config-v
 ## Development
 
 The source files are organized as:
+
 - `index.html` - Main HTML structure (at package root)
 - `src/index.ts` - TypeScript logic for API integration and UI updates
 - `src/index.css` - Styling with dark/light mode support

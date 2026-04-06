@@ -1,9 +1,7 @@
 /**
  * Pill element builder for the `<task-detail>` web component.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 import { formatRunningTrackedTime, } from '../lib/task-card.ts';
 import type { MetadataState, } from './task-detail-types.ts';
@@ -12,6 +10,12 @@ import type { MetadataState, } from './task-detail-types.ts';
  * Builds pill elements from current metadata state and autofill status.
  *
  * @returns Array of pill span elements
+ *
+ * @example
+ * ```ts
+ * const pills = buildPillElements({ task, metadata, autofillLoading: false, autofilled: true });
+ * container.replaceChildren(...pills);
+ * ```
  */
 export function buildPillElements({
   task,

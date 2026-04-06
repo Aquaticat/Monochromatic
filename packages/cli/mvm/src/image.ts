@@ -194,7 +194,7 @@ export async function ensureWinFsp(): Promise<string> {
   if (location === null)
     throw new Error('failed to resolve latest WinFsp release',);
   /** Version tag from the redirect URL (e.g. "v2.1"). */
-  const version = location.split('/tag/',)[1];
+  const [, version,] = location.split('/tag/',);
   if (version === undefined)
     throw new Error(`unexpected redirect URL: ${location}`,);
 
@@ -210,7 +210,10 @@ export async function ensureWinFsp(): Promise<string> {
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- GitHub API response
   const release = await releaseResponse.json() as {
-    assets: { name: string; browser_download_url: string; }[];
+    assets: {
+      name: string;
+      browser_download_url: string;
+    }[];
   };
   const msiAsset = release.assets.find(function findMsi(a,) {
     return a.name.endsWith('.msi',) && !a.name.includes('tests',);
@@ -283,7 +286,7 @@ export async function ensureMiseWindows(): Promise<string> {
   if (location === null)
     throw new Error('failed to resolve latest mise release',);
   /** Version tag from the redirect URL (e.g. "v2026.3.17"). */
-  const version = location.split('/tag/',)[1];
+  const [, version,] = location.split('/tag/',);
   if (version === undefined)
     throw new Error(`unexpected redirect URL: ${location}`,);
 
@@ -300,7 +303,10 @@ export async function ensureMiseWindows(): Promise<string> {
   }
 
   /** Write zip to disk, extract mise.exe, clean up the zip. */
-  const zipPath = join(IMAGES_DIR, 'mise-windows-x64.zip',);
+  const zipPath = join(
+    IMAGES_DIR,
+    'mise-windows-x64.zip',
+  );
   await fsWriteFile(
     zipPath,
     new Uint8Array(await zipResponse.arrayBuffer(),),

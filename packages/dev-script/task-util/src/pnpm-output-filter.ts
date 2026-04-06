@@ -66,24 +66,23 @@ const CYCLE_WARNING_PREFIX = '\u2009WARN\u2009 There are cyclic workspace depend
  * ```
  */
 export function isAllowedCycleWarning(line: string,): boolean {
-  if (!line.includes(CYCLE_WARNING_PREFIX,)) {
+  if (!line.includes(CYCLE_WARNING_PREFIX,))
     return false;
-  }
 
-  const afterPrefix = line.slice(line.indexOf(CYCLE_WARNING_PREFIX,) + CYCLE_WARNING_PREFIX.length,);
+  const afterPrefix = line.slice(
+    line.indexOf(CYCLE_WARNING_PREFIX,) + CYCLE_WARNING_PREFIX.length,
+  );
   const paths = afterPrefix.split(', ',);
 
   return paths.length > 0 && paths.every(function checkPath(rawPath,) {
     const trimmed = rawPath.trim();
-    if (trimmed.length === 0) {
+    if (trimmed.length === 0)
       return false;
-    }
     // Strip everything up to and including the first `packages/` occurrence
     // to normalize absolute paths from any monorepo root location.
     const packagesIndex = trimmed.indexOf('packages/',);
-    if (packagesIndex < 0) {
+    if (packagesIndex === -1)
       return false;
-    }
     const relativePath = trimmed.slice(packagesIndex,);
     return ALLOWED_CYCLE_PACKAGES.has(relativePath,);
   },);
@@ -103,9 +102,8 @@ export function isAllowedCycleWarning(line: string,): boolean {
  * ```
  */
 export function filterPnpmOutput(output: string,): string {
-  if (output.length === 0) {
+  if (output.length === 0)
     return '';
-  }
 
   const lines = output.split('\n',);
   const kept = lines.filter(function keepLine(line,) {

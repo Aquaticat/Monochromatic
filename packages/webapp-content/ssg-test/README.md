@@ -7,15 +7,15 @@ Converts MDX content into flat HTML pages served by Caddy with clean URLs.
 
 The build pipeline runs as a single Bun script (`src/build.ts`) that:
 
-1.  Loads MDX files from `src/content/{lang}/` and validates frontmatter with Zod
-2.  Processes changed files through a remark/rehype pipeline (with SHA-256 content caching)
-3.  Pre-computes syntax highlight ranges via `rehype-highlight` (Lezer parsers, build-only)
-4.  Generates HTML pages from h-html templates
-5.  Generates CSS from h-css declarations
-6.  Generates RSS feeds per language via feedsmith
-7.  Copies static assets from `public/`
-8.  Minifies HTML with rehype-preset-minify
-9.  Compresses output with zstd
+1. Loads MDX files from `src/content/{lang}/` and validates frontmatter with Zod
+2. Processes changed files through a remark/rehype pipeline (with SHA-256 content caching)
+3. Pre-computes syntax highlight ranges via `rehype-highlight` (Lezer parsers, build-only)
+4. Generates HTML pages from h-html templates
+5. Generates CSS from h-css declarations
+6. Generates RSS feeds per language via feedsmith
+7. Copies static assets from `public/`
+8. Minifies HTML with rehype-preset-minify
+9. Compresses output with zstd
 
 ## Commands
 

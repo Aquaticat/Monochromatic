@@ -96,6 +96,11 @@ export function parseOs(os: string,): ParsedOs {
  * @param monorepoRoot - Absolute path to the monorepo root on the host
  *
  * @returns shell command string for `sh -c`
+ *
+ * @example
+ * ```ts
+ * buildContainerCommand({ combination: { file: '/test.ts', os: 'ubuntu', user: 'root', runtime: 'bun' }, monorepoRoot: '/repo' });
+ * ```
  */
 export function buildContainerCommand({
   combination,
@@ -137,7 +142,8 @@ export function buildContainerCommand({
       'cd /workspace',
       runtimeInstall,
       execCommand,
-    ].join('\n',);
+    ]
+      .join('\n',);
 
     const parts = [
       prerequisites,
@@ -169,9 +175,8 @@ export function buildContainerCommand({
  * @returns container image reference (e.g. `'ubuntu:latest'`, `'fedora:39'`)
  */
 function resolveImage(distro: string,): string {
-  if (distro.includes(':',)) {
+  if (distro.includes(':',))
     return distro;
-  }
   return `${distro}:latest`;
 }
 
@@ -211,9 +216,8 @@ export async function runContainer({
 },): Promise<string> {
   const parsed = parseOs(combination.os,);
 
-  if (parsed.protocol === 'vm') {
+  if (parsed.protocol === 'vm')
     throw new Error('vm: protocol not yet implemented',);
-  }
 
   const image = resolveImage(parsed.distro,);
   const command = buildContainerCommand({
@@ -235,9 +239,8 @@ export async function runContainer({
     ],
   );
 
-  if (result.stderr !== '') {
+  if (result.stderr !== '')
     console.error(result.stderr,);
-  }
 
   return result.stdout;
 }

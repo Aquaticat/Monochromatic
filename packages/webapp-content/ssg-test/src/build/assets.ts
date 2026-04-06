@@ -38,6 +38,11 @@ import {
  * @param contentDir - content source directory path
  *
  * @param l - parent logger for tagged output
+ *
+ * @example
+ * ```ts
+ * await generateAssets({ posts, siteUrl: 'https://example.com', contentDir: 'src/content', l: rootLogger });
+ * ```
  */
 export async function generateAssets(
   {
@@ -84,13 +89,19 @@ export async function generateAssets(
     ...contentResult.files.map(function contentTargetDir(filePath,) {
       return join(
         DIST,
-        dirname(relative(contentDir, filePath,),),
+        dirname(relative(
+          contentDir,
+          filePath,
+        ),),
       );
     },),
     ...publicResult.files.map(function publicTargetDir(filePath,) {
       return join(
         DIST,
-        dirname(relative('public', filePath,),),
+        dirname(relative(
+          'public',
+          filePath,
+        ),),
       );
     },),
   ];
@@ -108,13 +119,25 @@ export async function generateAssets(
     ...contentResult.files.map(function copyContentFile(filePath,) {
       return copyFile(
         filePath,
-        join(DIST, relative(contentDir, filePath,),),
+        join(
+          DIST,
+          relative(
+            contentDir,
+            filePath,
+          ),
+        ),
       );
     },),
     ...publicResult.files.map(function copyPublicFile(filePath,) {
       return copyFile(
         filePath,
-        join(DIST, relative('public', filePath,),),
+        join(
+          DIST,
+          relative(
+            'public',
+            filePath,
+          ),
+        ),
       );
     },),
   ];

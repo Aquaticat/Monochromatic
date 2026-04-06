@@ -17,7 +17,7 @@ await describe({
         const result = await evaluatePredicate(['true',],);
         expect(result,).toBe(true,);
       },
-    }),
+    },),
     it({
       name: 'returns false for a command that exits non-zero',
       fn: async () => {
@@ -25,7 +25,7 @@ await describe({
         const result = await evaluatePredicate(['false',],);
         expect(result,).toBe(false,);
       },
-    }),
+    },),
     it({
       name: 'passes arguments to the command',
       fn: async () => {
@@ -33,7 +33,7 @@ await describe({
         const result = await evaluatePredicate(['ls', '/dev/null',],);
         expect(result,).toBe(true,);
       },
-    }),
+    },),
     it({
       name: 'returns false for a nonexistent command',
       fn: async () => {
@@ -41,7 +41,7 @@ await describe({
         const result = await evaluatePredicate(['nonexistent-command-abc123',],);
         expect(result,).toBe(false,);
       },
-    }),
+    },),
   ],
 },);
 

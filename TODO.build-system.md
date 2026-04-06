@@ -1,6 +1,7 @@
 # Build System & Package Management Todo
 
 ## Cross-References
+
 - [**Code Quality Issues**](TODO.code-quality.md#current-linting-issues) - Related linting and TypeScript fixes
 - [**Performance Optimization**](TODO.performance.md#build-performance) - Build system performance improvements
 - [**Automation**](TODO.automation.md#cicd-pipeline) - CI/CD pipeline integration
@@ -9,6 +10,7 @@
 ## Critical Issues
 
 ### Fresh Clone Setup Problems
+
 **Status**: High Priority - Blocking new developers
 
 The current setup process fails for fresh clones due to build order issues:
@@ -23,14 +25,18 @@ The current setup process fails for fresh clones due to build order issues:
    - Workaround: Building vite config packages first helps
 
 #### Recommended Fix
+
 Add explicit dependencies to ensure proper sequencing in `mise.toml`:
+
 ```toml
 [tasks."build:js"]
 dependencies = ["build:bunInstall"]
 ```
 
 #### Current Workaround Setup Instructions
+
 Users should run:
+
 ```bash
 # 1. Setup and build with mise
 mise run prepare
@@ -45,6 +51,7 @@ mise run build
    - Cannot find module 'astro:content' (Astro's virtual module)
 
 ### Missing Export Issues (New - High Priority)
+
 **Status**: Critical - TypeScript compilation errors
 
 From recent analysis, multiple files have missing export issues:
@@ -84,14 +91,17 @@ From recent analysis, multiple files have missing export issues:
 ### High Priority
 
 #### Generate `package.json` from `package.jsonc`
+
 Make it bidirectional update to keep both files in sync.
 
 **Cross-Reference**: See [CLI Tools Todo](TODO.cli-tools.md#high-priority-tools) for related tooling.
 
 #### Write `package.jsonc` support
+
 Add JSON with Comments support for package configuration.
 
 #### Fix Module Import/Export Consistency
+
 **Status**: High Priority - Build reliability
 
 - [ ] Audit all packages for consistent import/export patterns
@@ -105,12 +115,15 @@ Add JSON with Comments support for package configuration.
 ### Medium Priority
 
 #### Migrate from execa to native node child_process exec
+
 Remove external dependency and use Node.js built-in functionality.
 
 #### Submit `packageExtensions` upstream
+
 Previously needed for fs-extra/universalify dependency issue (no longer using fs-extra, but keeping for reference).
 
 #### Package Dependency Optimization
+
 **Status**: Medium Priority - Build efficiency
 
 - [ ] Analyze and optimize package dependency graphs
@@ -124,10 +137,12 @@ Previously needed for fs-extra/universalify dependency issue (no longer using fs
 ## Framework Updates
 
 ### Completed/No Action Needed
+
 - **Astro RSS endpoint**: Seems like they've fixed it upstream
 - **lightningCSS resolver**: Switched back to postcss
 
 ### Low Priority
+
 - **Find a way to format MDX**: Priority low, investigating solutions
 
 **Cross-Reference**: See [Documentation Todo](TODO.documentation.md#format-mdx-files) for MDX formatting details.
@@ -135,10 +150,12 @@ Previously needed for fs-extra/universalify dependency issue (no longer using fs
 ## Validation and Testing
 
 ### Setup Validation
+
 - **validateSetup task**: Successfully implemented to help diagnose environment issues
 - **Validation scripts**: checkTools, checkDependencies, checkBuild, checkGitHooks are working correctly
 
 ### Enhanced Validation (New)
+
 **Status**: Normal Priority - Development reliability
 
 - [ ] Add comprehensive TypeScript configuration validation
@@ -150,6 +167,7 @@ Previously needed for fs-extra/universalify dependency issue (no longer using fs
 **Cross-Reference**: See [Development Todo](TODO.development.md#environment-validation) for environment validation details.
 
 ### Testing Commands
+
 All builds and tasks are managed by mise. Essential commands:
 
 ```bash
@@ -170,6 +188,7 @@ mise run buildAndTest
 ```
 
 ### Performance Monitoring
+
 **Status**: Normal Priority - Build optimization
 
 - [ ] Add build time tracking and analysis
@@ -185,6 +204,7 @@ mise run buildAndTest
 ### High Priority
 
 #### Task Dependency Optimization
+
 - [ ] Review and optimize all mise task dependencies
 - [ ] Eliminate unnecessary task blocking
 - [ ] Implement efficient task parallelization
@@ -192,6 +212,7 @@ mise run buildAndTest
 - [ ] Create task dependency visualization
 
 #### Mise Workspace Configuration
+
 - [ ] Optimize mise workspace settings for performance
 - [ ] Add comprehensive mise configuration validation
 - [ ] Implement mise configuration best practices
@@ -201,6 +222,7 @@ mise run buildAndTest
 ### Medium Priority
 
 #### Advanced Mise Features
+
 - [ ] Optimize mise task organization across packages
 - [ ] Implement mise metric collection and analysis
 - [ ] Add mise configuration automation
@@ -210,6 +232,7 @@ mise run buildAndTest
 ## Integration with Other Systems
 
 ### CI/CD Integration
+
 **Status**: High Priority - Production deployment
 
 - [ ] Optimize mise integration with GitHub Actions
@@ -221,6 +244,7 @@ mise run buildAndTest
 **Cross-Reference**: See [Automation Todo](TODO.automation.md#cicd-pipeline) for comprehensive CI/CD improvements.
 
 ### Development Tool Integration
+
 **Status**: Normal Priority - Developer experience
 
 - [ ] Enhance IDE integration with mise tasks

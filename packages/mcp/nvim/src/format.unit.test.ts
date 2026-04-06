@@ -29,7 +29,7 @@ await describe({
           'ERROR 10:5 [typescript 2345] Type mismatch',
         );
       },
-    }),
+    },),
     it({
       name: 'formats diagnostic with source but no code',
       fn: async () => {
@@ -43,7 +43,7 @@ await describe({
         };
         expect(formatDiagnostic(diagnostic,),).toBe('WARN 3:1 [eslint] Unused variable',);
       },
-    }),
+    },),
     it({
       name: 'formats diagnostic without source',
       fn: async () => {
@@ -57,7 +57,7 @@ await describe({
         };
         expect(formatDiagnostic(diagnostic,),).toBe('INFO 1:1 Some info',);
       },
-    }),
+    },),
     it({
       name: 'formats diagnostic without source but with code (code is ignored)',
       fn: async () => {
@@ -71,7 +71,7 @@ await describe({
         };
         expect(formatDiagnostic(diagnostic,),).toBe('HINT 20:15 Consider refactoring',);
       },
-    }),
+    },),
     it({
       name: 'applies indent prefix',
       fn: async () => {
@@ -87,7 +87,7 @@ await describe({
           '  ERROR 5:3 [ts 1000] Missing semicolon',
         );
       },
-    }),
+    },),
     it({
       name: 'defaults indent to empty string',
       fn: async () => {
@@ -102,7 +102,7 @@ await describe({
         const result = formatDiagnostic(diagnostic,);
         expect(result.startsWith('WARN',),).toBe(true,);
       },
-    }),
+    },),
     it({
       name: 'handles string code',
       fn: async () => {
@@ -118,7 +118,7 @@ await describe({
           'ERROR 7:12 [oxlint no-unused-vars] Variable is unused',
         );
       },
-    }),
+    },),
     it({
       name: 'handles zero-based line and column',
       fn: async () => {
@@ -132,8 +132,8 @@ await describe({
         };
         expect(formatDiagnostic(diagnostic,),).toBe('ERROR 0:0 At origin',);
       },
-    }),
+    },),
   ],
-});
+},);
 
 //endregion formatDiagnostic

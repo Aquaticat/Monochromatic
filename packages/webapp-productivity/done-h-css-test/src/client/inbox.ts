@@ -3,9 +3,7 @@
  *
  * Loaded by the browser as `<script type="module" src="/dist/client/inbox.js">`.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   buildTaskList,
   type InboxPageData,
@@ -89,7 +87,10 @@ app.append(h({
 /** Collapsible section heading for the "All" tasks block. */
 const allSection = h({
   tag: 'section-heading',
-  attrs: { icon: '\u221E', label: 'All', },
+  attrs: {
+    icon: '\u221E',
+    label: 'All',
+  },
 },);
 
 /** Content container for the all tasks section. */

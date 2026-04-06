@@ -25,7 +25,7 @@ await describe({
         expect(out.value,).toEqual([],);
         expect(out.remainingContent,).toBe('' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'empty array with leading comment',
@@ -36,7 +36,7 @@ await describe({
         expect(out.comment?.type,).toBe('block',);
         expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
     //endregion Empty arrays
 
     //region Primitives and separators -- single/multiple numbers and trailing comma
@@ -48,7 +48,7 @@ await describe({
         expect(out.value[0],).toEqual({ value: 1, },);
         expect(out.remainingContent,).toBe('' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'multiple numbers',
@@ -56,7 +56,7 @@ await describe({
         const out = $({ value: '[1, 2, 3]' as FragmentStringJsonc, },);
         expect((out.value as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2, 3,],);
       },
-    }),
+    },),
 
     it({
       name: 'trailing comma with comments',
@@ -65,7 +65,7 @@ await describe({
         expect((out.value as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2,],);
         expect(out.remainingContent,).toBe('X' as FragmentStringJsonc,);
       },
-    }),
+    },),
     //endregion Primitives and separators
 
     //region Strings and escapes -- ensure quoted parsing cooperates
@@ -77,7 +77,7 @@ await describe({
         expect((out.value[0] as Jsonc.String).value,).toBe(String.raw`"a\"b"`,);
         expect((out.value[1] as Jsonc.String).value,).toBe('"c"',);
       },
-    }),
+    },),
     //endregion Strings and escapes
 
     //region Nested arrays -- delegate inner arrays
@@ -92,7 +92,7 @@ await describe({
         expect(inner1[0],).toEqual({ value: 1, },);
         expect(inner2.map(v => v.value),).toEqual([2, 3,],);
       },
-    }),
+    },),
     //endregion Nested arrays
 
     //region Errors -- malformed separators
@@ -103,14 +103,14 @@ await describe({
           /expected ',' or ']'/,
         );
       },
-    }),
+    },),
 
     it({
       name: 'dangling comma without closing bracket',
       fn: async () => {
         expect(() => $({ value: '[1, 2,' as FragmentStringJsonc, },)).toThrow();
       },
-    }),
+    },),
     //endregion Errors
 
     //region Array-level vs first-item comments -- semantics for outside/inside comments
@@ -126,7 +126,7 @@ await describe({
         expect(out.comment?.commentValue,).toBe('A',);
         expect((out.value[0] as Jsonc.Value).comment,).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'first element receives inside comment (non-empty array)',
@@ -136,7 +136,7 @@ await describe({
         expect((out.value[0] as Jsonc.Value).comment?.type,).toBe('block',);
         expect((out.value[0] as Jsonc.Value).comment?.commentValue.trim(),).toBe('C',);
       },
-    }),
+    },),
 
     it({
       name: 'both outside (array) and inside (first item) comments preserved',
@@ -148,7 +148,7 @@ await describe({
         expect(out.comment?.commentValue,).toBe('A',);
         expect((out.value[0] as Jsonc.Value).comment?.commentValue.trim(),).toBe('C',);
       },
-    }),
+    },),
 
     it({
       name: 'empty array merges inside comment into array-level',
@@ -159,7 +159,7 @@ await describe({
         expect(out.comment?.commentValue.trim(),).toBe('X',);
         expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'empty array merges outside and inside comments',
@@ -173,7 +173,7 @@ await describe({
         expect(out.comment?.commentValue,).toBe('A\n X ',);
         expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
     //endregion Array-level vs first-item comments
   ],
 },);

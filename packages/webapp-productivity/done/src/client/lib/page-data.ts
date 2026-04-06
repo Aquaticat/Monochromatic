@@ -7,6 +7,11 @@
  * deserializes them here to build the UI without an additional fetch.
  *
  * @returns Parsed page data of the requested type
+ *
+ * @example
+ * ```ts
+ * const data = readPageData<InboxPageData>();
+ * ```
  */
 export function readPageData<TData,>(): TData {
   const element = document.querySelector<HTMLScriptElement>('#page-data',);

@@ -192,7 +192,12 @@ export function createIso({
     iso,
     view,
     pvd + L.PVD_ROOT_DIR_RECORD_OFFSET,
-    { isDir: true, name: '\u0000', sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
+    {
+      isDir: true,
+      name: '\u0000',
+      sector: L.ROOT_DIRECTORY_SECTOR,
+      size: rootDirSize,
+    },
   );
   L.writeTimestamp17(
     iso,
@@ -227,8 +232,14 @@ export function createIso({
 
   //region Path tables (sectors 18 LE, 19 BE)
   for (const [ptSector, le,] of [
-    [L.PATH_TABLE_LE_SECTOR, true,],
-    [L.PATH_TABLE_BE_SECTOR, false,],
+    [
+      L.PATH_TABLE_LE_SECTOR,
+      true,
+    ],
+    [
+      L.PATH_TABLE_BE_SECTOR,
+      false,
+    ],
   ] as const) {
     const pt = ptSector * L.SECTOR_SIZE;
     iso[pt] = 1;
@@ -251,13 +262,23 @@ export function createIso({
     iso,
     view,
     pos,
-    { isDir: true, name: '\u0000', sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
+    {
+      isDir: true,
+      name: '\u0000',
+      sector: L.ROOT_DIRECTORY_SECTOR,
+      size: rootDirSize,
+    },
   );
   pos += writeDirEntry(
     iso,
     view,
     pos,
-    { isDir: true, name: '\u0001', sector: L.ROOT_DIRECTORY_SECTOR, size: rootDirSize, },
+    {
+      isDir: true,
+      name: '\u0001',
+      sector: L.ROOT_DIRECTORY_SECTOR,
+      size: rootDirSize,
+    },
   );
 
   for (const entry of entries) {

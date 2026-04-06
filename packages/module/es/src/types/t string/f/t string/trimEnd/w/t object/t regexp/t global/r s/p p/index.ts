@@ -9,6 +9,11 @@ import { $ as named, } from '../p n/index.ts';
  * @param trimmer - global regex pattern to remove from the end
  *
  * @returns trimmed string
+ *
+ * @example
+ * ```ts
+ * $('hello...', /\./g); // 'hello'
+ * ```
  */
 export function $(
   str: string,

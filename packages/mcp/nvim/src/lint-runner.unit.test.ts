@@ -49,7 +49,7 @@ await describe({
           },
         ],);
       },
-    }),
+    },),
     it({
       name: 'maps warning severity to WARN',
       fn: async () => {
@@ -75,7 +75,7 @@ await describe({
         const diags = result.get('/tmp/src/foo.ts',);
         expect(diags?.[0]?.severity,).toBe('WARN',);
       },
-    }),
+    },),
     it({
       name: 'handles unknown severity gracefully',
       fn: async () => {
@@ -100,7 +100,7 @@ await describe({
         const result = parseOxlintOutput(output, '/tmp',);
         expect(result.get('/tmp/a.ts',)?.[0]?.severity,).toBe('UNKNOWN(info)',);
       },
-    }),
+    },),
     it({
       name: 'groups multiple diagnostics by file path',
       fn: async () => {
@@ -144,7 +144,7 @@ await describe({
         expect(result.get('/project/src/a.ts',),).toHaveLength(2,);
         expect(result.get('/project/src/b.ts',),).toHaveLength(1,);
       },
-    }),
+    },),
     it({
       name: 'skips diagnostics with no labels',
       fn: async () => {
@@ -169,7 +169,7 @@ await describe({
         const result = parseOxlintOutput(output, '/tmp',);
         expect(result.size,).toBe(0,);
       },
-    }),
+    },),
     it({
       name: 'returns empty map for zero diagnostics',
       fn: async () => {
@@ -184,7 +184,7 @@ await describe({
         const result = parseOxlintOutput(output, '/tmp',);
         expect(result.size,).toBe(0,);
       },
-    }),
+    },),
     it({
       name: 'resolves relative filenames against cwd',
       fn: async () => {
@@ -210,7 +210,7 @@ await describe({
         expect(result.has('/project/packages/other/file.ts',),).toBe(true,);
         expect(result.has('/project/packages/foo/../other/file.ts',),).toBe(false,);
       },
-    }),
+    },),
     it({
       name: 'appends help text to message when present',
       fn: async () => {
@@ -238,7 +238,7 @@ await describe({
           'Empty exports do nothing in module files (help: Remove this empty export.)',
         );
       },
-    }),
+    },),
     it({
       name: 'does not append help suffix when help is absent',
       fn: async () => {
@@ -261,9 +261,11 @@ await describe({
         };
 
         const result = parseOxlintOutput(output, '/tmp',);
-        expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe('Missing TSDoc comment.',);
+        expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe(
+          'Missing TSDoc comment.',
+        );
       },
-    }),
+    },),
     it({
       name: 'does not append help suffix when help is empty string',
       fn: async () => {
@@ -289,7 +291,7 @@ await describe({
         const result = parseOxlintOutput(output, '/tmp',);
         expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe('Some error.',);
       },
-    }),
+    },),
     it({
       name: 'always sets source to oxlint',
       fn: async () => {
@@ -314,8 +316,8 @@ await describe({
         const result = parseOxlintOutput(output, '/tmp',);
         expect(result.get('/tmp/x.ts',)?.[0]?.source,).toBe('oxlint',);
       },
-    }),
+    },),
   ],
-});
+},);
 
 //endregion parseOxlintOutput

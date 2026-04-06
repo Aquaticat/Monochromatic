@@ -3,9 +3,7 @@
  *
  * Extracted from task-card.ts to keep each file under the line-count limit.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 import { formatRunningTrackedTime, } from './format-tracked-time.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
@@ -26,6 +24,12 @@ export type TaskCardOptions = {
  * @param task - Task whose metadata to extract
  *
  * @returns Array of chip label strings
+ *
+ * @example
+ * ```ts
+ * const chips = buildChipTexts(task);
+ * // ['# shopping, errands', 'tracked: 1h30min0s', 'priority: high']
+ * ```
  */
 export function buildChipTexts(task: Task,): string[] {
   const chips: string[] = [];
@@ -57,6 +61,11 @@ export function buildChipTexts(task: Task,): string[] {
  * @param task - Task data to display
  *
  * @param options - Callbacks and display flags
+ *
+ * @example
+ * ```ts
+ * renderTaskCardContent({ shadow, task, options: { onOpen: openTask } });
+ * ```
  */
 export function renderTaskCardContent(
   {
@@ -106,10 +115,11 @@ export function renderTaskCardContent(
           on: {
             click: function onCheckboxClick(event,): void {
               event.stopPropagation();
-              if (options.onToggleComplete !== undefined) {
-                void (async function onCheckboxClickAsync() {
+              const { onToggleComplete, } = options;
+              if (onToggleComplete !== undefined) {
+                void (async function onCheckboxClickAsync(): Promise<void> {
                   try {
-                    await options.onToggleComplete(task.id,);
+                    await onToggleComplete(task.id,);
                   }
                   catch (error: unknown) {
                     console.error(

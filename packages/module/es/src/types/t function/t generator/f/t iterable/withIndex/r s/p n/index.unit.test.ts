@@ -27,7 +27,7 @@ await describe({
           { element: 'c', index: 2 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'yields elements with their indices for strings',
       fn: async () => {
@@ -41,7 +41,7 @@ await describe({
           { element: 'o', index: 4 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'yields elements with their indices for numbers',
       fn: async () => {
@@ -53,7 +53,7 @@ await describe({
           { element: 30, index: 2 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'yields nothing for empty iterable',
       fn: async () => {
@@ -61,7 +61,7 @@ await describe({
 
         expect(result,).toEqual([],);
       },
-    }),
+    },),
     it({
       name: 'works with Set',
       fn: async () => {
@@ -73,7 +73,7 @@ await describe({
           { element: 'z', index: 2 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'works with Map',
       fn: async () => {
@@ -85,7 +85,7 @@ await describe({
           { element: ['key2', 'value2',], index: 1 as Index, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'lazy evaluation - generator only iterates when consumed',
       fn: async () => {
@@ -116,6 +116,6 @@ await describe({
         const done = gen.next();
         expect(done.done,).toBe(true,);
       },
-    }),
+    },),
   ],
 },);

@@ -25,7 +25,7 @@ import {
  */
 export class BinaryViewer extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Creates the shadow DOM and injects component styles. */
   constructor() {

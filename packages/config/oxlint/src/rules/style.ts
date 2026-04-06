@@ -198,6 +198,5 @@ export const styleRules: DummyRuleMap = {
     'warn',
     { number: { minimumDigits: 0, }, },
   ],
-
   //endregion style
 };

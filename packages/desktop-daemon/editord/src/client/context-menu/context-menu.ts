@@ -44,13 +44,13 @@ function handlePopoverToggle(event: Event,): void {
  */
 export class ContextMenu {
   /** Invisible anchor div positioned at the click point. */
-  #anchor: HTMLDivElement;
+  readonly #anchor: HTMLDivElement;
 
   /** Popover element, or null when hidden. */
   #popup: HTMLDivElement | null = null;
 
   /** Callback fired when the popover is dismissed by the browser. */
-  #onToggleBound: (event: Event,) => void;
+  readonly #onToggleBound: (event: Event,) => void;
 
   /** Initializes the invisible anchor div and popover toggle handler. */
   constructor() {

@@ -66,9 +66,8 @@ This means TypeScript discriminated union narrowing does not work:
 
 ```ts
 // Does NOT narrow -- "Literal" is not a discriminant in the declared union
-if (node.source.type === 'Literal') {
+if (node.source.type === 'Literal')
   node.source.value; // TypeScript error: 'value' does not exist on type 'Expression'
-}
 
 // Workaround: use runtime typeof checks
 if ('value' in node && typeof node.value === 'string') {
@@ -129,10 +128,10 @@ export default defineConfig({
   platform: 'neutral',
   inputOptions: {
     resolve: {
-      mainFields: ['module', 'main'],
+      mainFields: ['module', 'main',],
     },
   },
-});
+},);
 ```
 
 **What does not work**:
@@ -194,12 +193,12 @@ and any other `node:` subpath export.
 
 ```ts
 // Before -- breaks under platform: 'neutral'
-import { parse } from 'node:path/posix';
-parse(somePath);
+import { parse, } from 'node:path/posix';
+parse(somePath,);
 
 // After -- resolves on all platforms
-import { posix } from 'node:path';
-posix.parse(somePath);
+import { posix, } from 'node:path';
+posix.parse(somePath,);
 ```
 
 For code that must also run in browsers (where `node:path` does not exist),

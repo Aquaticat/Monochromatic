@@ -59,7 +59,10 @@ function splitGlob(pattern: string,): readonly [
   }
 
   return [
-    resolve(staticPrefix.slice(0, lastSep,),),
+    resolve(staticPrefix.slice(
+      0,
+      lastSep,
+    ),),
     pattern.slice(lastSep + 1,),
   ];
 }

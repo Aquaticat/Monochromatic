@@ -7,6 +7,7 @@
  */
 
 import type { ContextAction, } from '../file-tree/file-tree.ts';
+import { showFixedToast, } from '../toast/toast.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /**
@@ -80,5 +81,36 @@ export async function dispatchFsAction({
       type: 'openInDefaultApp',
       path: action.path,
     },);
+  }
+}
+
+/**
+ * Dispatches a filesystem context action with error handling.
+ * Wraps {@link dispatchFsAction} and shows a toast on failure.
+ *
+ * @param action - context menu action to dispatch
+ *
+ * @param ws - WebSocket client
+ *
+ * @example
+ * ```ts
+ * await dispatchContextAction({ action: { kind: 'delete', path: '/tmp/old' }, ws, });
+ * ```
+ */
+export async function dispatchContextAction({
+  action,
+  ws,
+}: {
+  action: ContextAction;
+  ws: EditorWsClient;
+},): Promise<void> {
+  try {
+    await dispatchFsAction({
+      action,
+      ws,
+    },);
+  }
+  catch (error) {
+    showFixedToast({ message: `Action failed: ${String(error,)}`, },);
   }
 }

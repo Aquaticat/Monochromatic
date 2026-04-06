@@ -81,7 +81,7 @@ function detectVerbose(): boolean {
   try {
     // Browser DevTools already provides log-level filtering,
     // so suppressing debug/trace at the logger level is redundant.
-    if (typeof window !== 'undefined')
+    if ('window' in globalThis)
       return true;
   }
   catch {
@@ -111,6 +111,13 @@ const LEVEL_TO_CONSOLE: Record<string,
  * Verifies console is available and methods don't throw.
  *
  * @returns whether console logging is available
+ *
+ * @example
+ * ```ts
+ * if (verify()) {
+ *   $(logRecord);
+ * }
+ * ```
  */
 export function verify(): boolean {
   if (verified)
@@ -149,6 +156,11 @@ export function verify(): boolean {
  * `import.meta.env.DEBUG === 'true'`, or browser environment).
  *
  * @param record - log record to write
+ *
+ * @example
+ * ```ts
+ * $({ level: 'info', message: 'server started', tags: ['http'], timestamp: Date.now() });
+ * ```
  */
 export function $(record: LogRecord,): void {
   if (!available)

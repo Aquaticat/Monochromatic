@@ -26,7 +26,7 @@ import type {
  */
 export function $(value: string,): value is SingleQuotedSyntax {
   // get first effective (unescaped) quote
-  const firstEffectiveQuoteMatch = value.match(/(?<!\\)(?:\\\\)*["'`]/,);
+  const firstEffectiveQuoteMatch = /(?<!\\)(?:\\\\)*["'`]/.exec(value,);
 
   // assert that's a single quote
   return firstEffectiveQuoteMatch?.[0] === "'";

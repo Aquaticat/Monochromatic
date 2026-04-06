@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-magic-numbers -- power-of-two probe sequence is self-documenting */
 /** Power-of-two probe lengths used for binary-search-style length testing. */
 export const numberLengthsToTestFirst = [
   1,
@@ -6,13 +7,14 @@ export const numberLengthsToTestFirst = [
   8,
   16,
 ] as const;
+/* oxlint-enable eslint/no-magic-numbers */
 
 /**
  * Build probe lengths list prefixed with the upper bound, then ascending candidates up to that bound.
  *
- * @param params - Upper bound and available probe lengths
- * @param params.lengthUpperBound - Maximum probe length to include
- * @param params.lengths - Available probe lengths in ascending order
+ * @param lengthUpperBound - Maximum probe length to include
+ *
+ * @param lengths - Available probe lengths in ascending order
  *
  * @returns Array of probe lengths starting with upper bound, followed by ascending candidates
  *

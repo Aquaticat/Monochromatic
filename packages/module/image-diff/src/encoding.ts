@@ -200,7 +200,7 @@ export function parseDataUri(dataUri: string,): {
   mimeType: string;
   data: string;
 } {
-  const match = dataUri.match(/^data:([^;]+);base64,(.+)$/,);
+  const match = /^data:([^;]+);base64,(.+)$/.exec(dataUri,);
   if (match === null || match[1] === undefined || match[2] === undefined) {
     throw new Error(
       `Invalid data URI format: expected "data:<mime>;base64,<data>", got "${

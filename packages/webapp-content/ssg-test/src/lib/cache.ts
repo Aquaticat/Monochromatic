@@ -71,6 +71,11 @@ const CACHE_PATH = '.cache/build-manifest.json';
  * @param l - logger for cache read errors
  *
  * @returns parsed and validated manifest, or `undefined` on any failure
+ *
+ * @example
+ * ```ts
+ * const manifest = await readCache({ l: logger });
+ * ```
  */
 export async function readCache(
   { l, }: { l: Logger; },
@@ -101,6 +106,11 @@ export async function readCache(
  * Writes the build manifest to disk, creating the `.cache/` directory if needed.
  *
  * @param manifest - build manifest to persist
+ *
+ * @example
+ * ```ts
+ * await writeCache(manifest);
+ * ```
  */
 export async function writeCache(manifest: BuildManifest,): Promise<void> {
   await mkdir(
@@ -109,7 +119,11 @@ export async function writeCache(manifest: BuildManifest,): Promise<void> {
   );
   await writeFile(
     CACHE_PATH,
-    JSON.stringify(manifest, undefined, 2,),
+    JSON.stringify(
+      manifest,
+      undefined,
+      2,
+    ),
     'utf8',
   );
 }
@@ -128,6 +142,11 @@ export async function writeCache(manifest: BuildManifest,): Promise<void> {
  * @param contentHash - SHA-256 of the current file contents
  *
  * @returns cached entry if the content hash matches, otherwise `undefined`
+ *
+ * @example
+ * ```ts
+ * const entry = getCachedEntry({ manifest, filePath: 'en/hello.mdx', contentHash: hash });
+ * ```
  */
 export function getCachedEntry(
   {
@@ -163,6 +182,11 @@ export function getCachedEntry(
  * @param frontmatter - validated frontmatter data
  *
  * @returns cache entry ready for insertion into the manifest
+ *
+ * @example
+ * ```ts
+ * const entry = createCacheEntry({ contentHash: hash, html: '<p>Hello</p>', frontmatter: data });
+ * ```
  */
 export function createCacheEntry(
   {
@@ -190,6 +214,11 @@ export function createCacheEntry(
  * @param entries - record of file paths to cache entries
  *
  * @returns new build manifest
+ *
+ * @example
+ * ```ts
+ * const manifest = buildManifest({ pipelineHash: hash, entries });
+ * ```
  */
 export function buildManifest(
   {

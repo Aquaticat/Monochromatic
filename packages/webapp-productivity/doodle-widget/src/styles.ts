@@ -4,13 +4,13 @@
  * Uses h-css for type-safe CSS generation with strict property validation.
  */
 import {
-  hCss as $,
   cssCalc,
   cssCqb,
   cssCqi,
   cssMin,
   cssNum,
   cssOklch,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   BG_VIEWPORT,
@@ -19,6 +19,8 @@ import {
   FULL_PERCENT,
   INSET_ZERO_DECLS,
   LETTER_ASPECT_RATIO,
+  LETTER_HEIGHT_IN,
+  LETTER_WIDTH_IN,
   PAGE_FRAME_COLOR,
   VIEWPORT_PADDING,
 } from './style-tokens.ts';
@@ -30,6 +32,11 @@ import { renderToolbarStyles, } from './styles-toolbar.ts';
  * Generates the complete CSS stylesheet for the doodle widget.
  *
  * @returns minified CSS string
+ *
+ * @example
+ * ```ts
+ * const css = renderStyles();
+ * ```
  */
 export function renderStyles(): string {
   return [
@@ -75,7 +82,11 @@ export function renderStyles(): string {
         'margin-inline': 'auto',
         'inline-size': cssMin(
           cssCqi(100,),
-          cssCalc(`${cssCqb(100,)} * ${String(8.5,)} / ${String(11,)}`,),
+          cssCalc(
+            `${cssCqb(100,)} * ${String(LETTER_WIDTH_IN,)} / ${
+              String(LETTER_HEIGHT_IN,)
+            }`,
+          ),
         ),
         'aspect-ratio': LETTER_ASPECT_RATIO,
         'background-color': cssOklch({

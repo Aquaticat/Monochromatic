@@ -1,6 +1,4 @@
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
 /** Z-index for the floating action button above page content. */
@@ -45,7 +43,7 @@ const STYLES = css(`
  */
 class FabButton extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {

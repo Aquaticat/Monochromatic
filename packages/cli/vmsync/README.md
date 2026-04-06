@@ -100,7 +100,7 @@ Hyper-V checkpoint-based differencing (`.avhdx`) for incremental sync is a futur
   // Boot settings (shared across hypervisors)
   "boot": {
     "memory": "4G",
-    "cpus": 4
+    "cpus": 4,
   },
 
   // Managed by the CLI -- do not edit manually
@@ -110,8 +110,8 @@ Hyper-V checkpoint-based differencing (`.avhdx`) for incremental sync is a futur
     "synced": true,
     "checksums": {
       "qcow2": "sha256:abc...",
-      "vhdx": "sha256:def..."
-    }
-  }
+      "vhdx": "sha256:def...",
+    },
+  },
 }
 ```

@@ -37,7 +37,7 @@ export class AutofillManager {
   loading = false;
 
   /** Set of field names that were populated by the last autofill response. */
-  autofilled = new Set<string>();
+  autofilled: Set<string> = new Set<string>();
 
   /** Clears all pending state -- call on reconfigure. */
   reset(): void {
@@ -80,6 +80,11 @@ export class AutofillManager {
   /**
    * Sends an autofill request and merges results into empty metadata fields.
    * Abortable: a new request cancels any in-flight one.
+   *
+   * @example
+   * ```ts
+   * await this.#fetch({ title: 'Buy groceries', metadata, onUpdate, });
+   * ```
    */
   async #fetch({
     title,

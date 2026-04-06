@@ -6,7 +6,7 @@ with KDE Plasma layered on top via a custom Containerfile.
 
 ## Architecture
 
-```
+```text
 ucore-hci (immutable, rpm-ostree, Fedora CoreOS base)
   + KDE Plasma, SDDM (baked into custom image)
   + system dev packages (baked into custom image)
@@ -22,8 +22,8 @@ ucore-hci (immutable, rpm-ostree, Fedora CoreOS base)
 
 Two artifacts define the entire environment:
 
-1.  **Custom container image** (Containerfile + build.sh) -- OS layer, rarely changes
-2.  **First-login provisioner** (file-enforcer config in this monorepo) -- user layer, changes often
+1. **Custom container image** (Containerfile + build.sh) -- OS layer, rarely changes
+2. **First-login provisioner** (file-enforcer config in this monorepo) -- user layer, changes often
 
 ## Decisions made
 
@@ -88,24 +88,29 @@ Run via: `mise run //packages/dev-script/vm-builder:run`
 All packages below are installed and verified in the Containerfile.
 
 KDE Plasma desktop (full `plasma-workspace` meta-package):
+
 - [x] `plasma-workspace`, `sddm`, `konsole`, `dolphin`, `virt-manager`
 - [x] `graphical.target` set as default (symlink in `/usr/lib/systemd/system/`,
-  not `/etc/` -- ostree discards `/etc/` symlinks during deployment)
+      not `/etc/` -- ostree discards `/etc/` symlinks during deployment)
 - [x] SDDM enabled via symlink in `graphical.target.wants/`
 - [x] SDDM auto-login configured for user `user`
 
 Browser + password manager:
+
 - [x] LibreWolf repo (`https://repo.librewolf.net/librewolf.repo` -- domain changed from `rpm.librewolf.net` in 2026)
 - [x] `librewolf`, `keepassxc`
 
 Terminal:
+
 - [x] Ghostty COPR repo (scottames/ghostty)
 - [x] `ghostty`
 
 Dev tools (system-level, mise handles the rest):
+
 - [x] `helix`, `strace`, `inotify-tools`, `python3-devel`, `potrace`, `msitools`
 
 Infrastructure:
+
 - [x] `mise` installed as user `user` at `~/.local/bin/mise`
 - [x] User account `user` with password `password`, `wheel` group, passwordless sudo
 - [x] Dotfiles baked into image from `packages/config/dotfiles/` (ghostty, mise configs)
@@ -121,6 +126,7 @@ Infrastructure:
 - [ ] Verify all installed apps launch (ghostty, librewolf, keepassxc, helix)
 
 Implementation notes discovered during build:
+
 - qcow2 must be copied to `/var/lib/libvirt/images/` for SELinux `virt_image_t` context
   (files in `$HOME` have `user_home_t` which QEMU's `svirt_t` domain cannot read)
 - `getenforce` returns "Disabled" inside the Claude Code sandbox but SELinux is actually enforcing on the host
@@ -134,6 +140,7 @@ Implementation notes discovered during build:
 **Decision:** rely on host OS full-disk encryption instead of per-image encryption.
 
 Research findings (March 2026):
+
 - **ZFS native encryption**: not supported at any layer.
   osbuild has zero ZFS stages (`mkfs` stages: ext4, xfs, btrfs, fat only).
   bootc's `Filesystem` enum has three variants: Xfs, Ext4, Btrfs.
@@ -181,8 +188,8 @@ Runs as user after first login. Idempotent (safe to re-run).
 - [x] ~~Copy dotfiles~~ -- baked into image at build time via Containerfile COPY
 - [ ] Run `mise install` via `exec()` (installs all tools from monorepo config)
 - [ ] Install flatpaks via `flatpak install --user -y`:
-  Flatseal, Fastmail, Gear Lever, KColorChooser, KeePassXC,
-  Nextcloud, OBS, RustDesk, Ungoogled Chromium
+      Flatseal, Fastmail, Gear Lever, KColorChooser, KeePassXC,
+      Nextcloud, OBS, RustDesk, Ungoogled Chromium
 
 ### Provisioner trigger sequence
 
@@ -234,7 +241,7 @@ No image rebuild needed -- just re-run the provisioner in the existing VM.
 - [x] Custom image repo: `packages/dev-script/vm-builder/` in this monorepo
 - [x] ~~KDE Plasma package set~~ -- `plasma-workspace` meta-package (full desktop)
 - [x] ~~Which flatpaks?~~ -- Flatseal, Fastmail, Gear Lever, KColorChooser, KeePassXC,
-  Nextcloud, OBS, RustDesk, Ungoogled Chromium
+      Nextcloud, OBS, RustDesk, Ungoogled Chromium
 - [x] ~~Disk encryption~~ -- host-level FDE only (ZFS/LUKS/qcow2-LUKS all ruled out; see Phase 1)
 - [x] ~~Nvim repo~~ -- nvim deprecated by editord
 - [x] ~~Cosign key setup~~ -- key pair at `packages/config/cosign/`, signing step in build-and-import.ts

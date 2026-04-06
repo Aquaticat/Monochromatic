@@ -3,9 +3,7 @@
  * Reads initial value from the `value` attribute and dispatches `change`
  * events with `{ value }` when a preset is selected.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { FOCUS_DROPDOWN_STYLES, } from './focus-dropdown-styles.ts';
 
 /** Available focus preset labels. */
@@ -22,7 +20,7 @@ const DEFAULT_PRESETS = [
  */
 class FocusDropdown extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Currently selected preset value. */
   #value: string;
@@ -60,7 +58,10 @@ class FocusDropdown extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent(
         'change',
-        { bubbles: true, detail: { value: preset, }, },
+        {
+          bubbles: true,
+          detail: { value: preset, },
+        },
       ),
     );
   }

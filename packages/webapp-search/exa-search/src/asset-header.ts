@@ -4,6 +4,11 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * Builds the page header with logo and nav controls.
  *
  * @returns HTML string for the `<header>`
+ *
+ * @example
+ * ```ts
+ * const headerHtml = buildHeader();
+ * ```
  */
 export function buildHeader(): string {
   return h({

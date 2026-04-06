@@ -7,12 +7,12 @@
  */
 
 import {
-  hCss as $,
   cssCompounded,
   cssInt,
   cssPercent,
   cssRem,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { MONO_FONT_FAMILY, } from './tokens.ts';

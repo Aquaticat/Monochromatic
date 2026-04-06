@@ -18,7 +18,7 @@ run = "bun packages/fixture/file-enforcer-perf/src/run-constrained.ts"
 description = "Remove performance benchmark fixture files"
 run = "rm -rf ($env.TMPDIR? | default '/tmp' | path join 'file-enforcer-perf')"
 
-# lint:oxlint omitted -- see BUGREPORT.oxlint-ignorePatterns-cwd.md
+# lint:oxlint omitted -- see BUG-REPORT.oxlint-ignorePatterns-cwd.md
 
 [tasks.lint]
 extends = "lint"

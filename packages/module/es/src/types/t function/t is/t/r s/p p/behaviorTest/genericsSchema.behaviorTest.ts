@@ -1,4 +1,19 @@
-// oxlint-disable no-unused-vars -- testing
+// oxlint-disable eslint/no-unused-vars -- behavioral test verifies type narrowing, not runtime usage
+// oxlint-disable eslint/no-unused-expressions -- property accesses verify type narrowing at compile time
+// oxlint-disable typescript/no-unsafe-type-assertion -- intentional `as any` and `as Type` casts test guard behavior with varied input types
+// oxlint-disable typescript/no-explicit-any -- any-typed test inputs verify guard behavior with untyped values
+// oxlint-disable typescript/no-unsafe-member-access -- accessing members on any-typed values is part of the behavioral test
+// oxlint-disable typescript/no-unsafe-assignment -- assigning any-typed results is part of the behavioral test
+// oxlint-disable typescript/no-unsafe-call -- calling functions on any-typed values is part of the behavioral test
+// oxlint-disable typescript/no-unnecessary-condition -- guards on pre-validated values test runtime path, not logical necessity
+// oxlint-disable typescript/no-confusing-void-expression -- void returns from IIFEs are intentional for behavioral tests
+// oxlint-disable eslint/no-magic-numbers -- numeric literals in test data are self-documenting
+// oxlint-disable eslint/max-lines -- behavioral test matrix requires exhaustive coverage across all guard patterns
+// oxlint-disable unicorn/prefer-number-properties -- isNaN used intentionally in test data
+// oxlint-disable stylistic/argument-per-line -- compact test data definitions are more readable on single lines
+// oxlint-disable stylistic/object-property-per-line -- compact test data definitions are more readable on single lines
+// oxlint-disable stylistic/type-property-per-line -- compact inline type annotations in test data
+// oxlint-disable typescript/explicit-function-return-type -- test IIFEs use void return implicitly
 /**
  * Generic Schema typeguard behavioral test matrix
  *
@@ -10,21 +25,28 @@
  */
 
 import type { Promisable, } from 'type-fest';
-import { $ as wait, } from '../../../../../../t object/t promise/f/t number/wait/r a/p p/index.ts';
+import {
+  $ as wait,
+} from '../../../../../../t object/t promise/f/t number/wait/r a/p p/index.ts';
 
 //region Real Generic Schema Type Definitions
+
+/** Schema that parses Input to Output, returning synchronously or asynchronously. */
 type RealSchema<Input = unknown, Output = Input,> = {
   readonly parse: (value: Input,) => Promisable<Output>;
 };
 
+/** Schema that always parses Input to Output synchronously. */
 type RealSchemaSync<Input = unknown, Output = Input,> = {
   readonly parse: (value: Input,) => Output;
 };
 
+/** Schema that parses Input to Output via an explicit async method. */
 type RealSchemaAsync<Input = unknown, Output = Input,> = {
   readonly parseAsync: (value: Input,) => Promisable<Output>;
 };
 
+/** Union of sync and async schema variants for flexible parsing. */
 type RealMaybeAsyncSchema<Input = unknown, Output = Input,> =
   | RealSchema<Input, Output>
   | RealSchemaAsync<Input, Output>;
@@ -33,7 +55,11 @@ type RealMaybeAsyncSchema<Input = unknown, Output = Input,> =
 //region Real Generic Guard Pattern Implementations
 
 /**
- * Unknown Pattern - Industry standard, accepts anything, narrows to base type
+ * Unknown Pattern - Industry standard, accepts anything, narrows to base type.
+ *
+ * @param value - candidate to check for schema shape
+ *
+ * @returns `true` when value has a callable `parse` property
  */
 function isRealSchema_Unknown(value: unknown,): value is RealSchema {
   if (value === null)
@@ -46,7 +72,11 @@ function isRealSchema_Unknown(value: unknown,): value is RealSchema {
 }
 
 /**
- * Generic Pattern - Preserves input structure, best for type preservation
+ * Generic Pattern - Preserves input structure, best for type preservation.
+ *
+ * @param value - candidate to check, preserving its original type through const generics
+ *
+ * @returns `true` when value has a callable `parse` property
  */
 function isRealSchema_Generic<const MyValue = unknown,>(
   value: MyValue,
@@ -64,7 +94,11 @@ function isRealSchema_Generic<const MyValue = unknown,>(
 }
 
 /**
- * Typed Pattern - Compile-time safety, requires exact type match
+ * Typed Pattern - Compile-time safety, requires exact type match.
+ *
+ * @param value - schema instance with known Input/Output types
+ *
+ * @returns `true` when value has a callable `parse` property
  */
 function isRealSchema_Typed<Input = unknown, Output = Input,>(
   value: RealSchema<Input, Output>,
@@ -79,7 +113,11 @@ function isRealSchema_Typed<Input = unknown, Output = Input,>(
 }
 
 /**
- * Generic Extends Pattern - Compile-time safety with inheritance support
+ * Generic Extends Pattern - Compile-time safety with inheritance support.
+ *
+ * @param value - schema instance constrained to RealSchema subtypes
+ *
+ * @returns `true` when value has a callable `parse` property
  */
 function isRealSchema_GenericExtends<
   const T extends RealSchema = RealSchema,
@@ -96,7 +134,11 @@ function isRealSchema_GenericExtends<
 }
 
 /**
- * Generic Extends with Inference - Most sophisticated pattern
+ * Generic Extends with Inference - Most sophisticated pattern.
+ *
+ * @param value - schema instance constrained to RealSchema subtypes with inferred Input/Output
+ *
+ * @returns `true` when value has a callable `parse` property
  */
 function isRealSchema_GenericExtendsInfer<
   const T extends RealSchema = RealSchema,
@@ -116,7 +158,11 @@ function isRealSchema_GenericExtendsInfer<
 }
 
 /**
- * Generic Extends Direct - Preserves exact input type structure without type intersection
+ * Generic Extends Direct - Preserves exact input type structure without type intersection.
+ *
+ * @param value - schema instance constrained to RealSchema subtypes with explicit Input/Output
+ *
+ * @returns `true` when value has a callable `parse` property
  */
 function isRealSchema_GenericExtendsDirect<
   const Input = unknown,
@@ -135,7 +181,11 @@ function isRealSchema_GenericExtendsDirect<
 }
 
 /**
- * Async Schema Guards
+ * Async Schema Guards - Unknown pattern for async schemas.
+ *
+ * @param value - candidate to check for async schema shape
+ *
+ * @returns `true` when value has a callable `parseAsync` property
  */
 function isRealSchemaAsync_Unknown(value: unknown,): value is RealSchemaAsync {
   if (value === null)
@@ -147,6 +197,13 @@ function isRealSchemaAsync_Unknown(value: unknown,): value is RealSchemaAsync {
   return typeof value.parseAsync === 'function';
 }
 
+/**
+ * Async Generic Pattern - Preserves input structure for async schemas.
+ *
+ * @param value - candidate to check, preserving its original type through const generics
+ *
+ * @returns `true` when value has a callable `parseAsync` property
+ */
 function isRealSchemaAsync_Generic<const MyValue = unknown,>(
   value: MyValue,
 ): value is MyValue extends RealSchemaAsync<infer MyInput, infer MyOutput>
@@ -162,6 +219,13 @@ function isRealSchemaAsync_Generic<const MyValue = unknown,>(
   return typeof (value as any).parseAsync === 'function';
 }
 
+/**
+ * Async Generic Extends Pattern - Compile-time safety for async schemas.
+ *
+ * @param value - async schema instance constrained to RealSchemaAsync subtypes
+ *
+ * @returns `true` when value has a callable `parseAsync` property
+ */
 function isRealSchemaAsync_GenericExtends<
   const T extends RealSchemaAsync = RealSchemaAsync,
 >(
@@ -177,12 +241,23 @@ function isRealSchemaAsync_GenericExtends<
 }
 
 /**
- * MaybeAsyncSchema Guards
+ * MaybeAsyncSchema Unknown Guard - checks for either sync or async parse method.
+ *
+ * @param value - candidate to check for sync or async schema shape
+ *
+ * @returns `true` when value has a callable `parse` or `parseAsync` property
  */
 function isRealMaybeAsyncSchema_Unknown(value: unknown,): value is RealMaybeAsyncSchema {
   return isRealSchema_Unknown(value,) || isRealSchemaAsync_Unknown(value,);
 }
 
+/**
+ * MaybeAsyncSchema Generic Guard - preserves type through union narrowing.
+ *
+ * @param value - candidate to check, preserving its original type
+ *
+ * @returns `true` when value matches sync or async schema shape
+ */
 function isRealMaybeAsyncSchema_Generic<const MyValue = unknown,>(
   value: MyValue,
 ): value is MyValue extends RealMaybeAsyncSchema<infer MyInput, infer MyOutput>
@@ -192,6 +267,13 @@ function isRealMaybeAsyncSchema_Generic<const MyValue = unknown,>(
   return isRealSchema_Generic(value,) || isRealSchemaAsync_Generic(value,);
 }
 
+/**
+ * MaybeAsyncSchema Generic Extends Guard - compile-time safety with union support.
+ *
+ * @param value - schema instance constrained to RealMaybeAsyncSchema subtypes
+ *
+ * @returns `true` when value has a callable `parse` or `parseAsync` property
+ */
 function isRealMaybeAsyncSchema_GenericExtends<
   const T extends RealMaybeAsyncSchema = RealMaybeAsyncSchema,
 >(
@@ -213,55 +295,75 @@ function isRealMaybeAsyncSchema_GenericExtends<
 //endregion Real Generic Guard Pattern Implementations
 
 //region Real Generic Test Domain Types
+
+/** Validated user domain object with numeric age. */
 type User = {
   readonly name: string;
   readonly age: number;
 };
 
+/** Raw user input where age arrives as a string before parsing. */
 type UserInput = {
   readonly name: string;
   readonly age: string; // String input, number output
 };
 
+/** Product domain object with id, price, and category. */
 type Product = {
   readonly id: string;
   readonly price: number;
   readonly category: string;
 };
 
-// Specific generic schema types for testing
+/** Schema transforming string input to numeric output. */
 type StringToNumberSchema = RealSchema<string, number>;
+
+/** Schema transforming raw UserInput to validated User. */
 type UserTransformSchema = RealSchema<UserInput, User>;
+
+/** Synchronous schema validating User objects. */
 type UserValidationSchema = RealSchemaSync<User, User>;
+
+/** Asynchronous schema transforming UserInput to User. */
 type AsyncUserSchema = RealSchemaAsync<UserInput, User>;
+
+/** Schema parsing unknown input into Product. */
 type ProductSchema = RealSchema<unknown, Product>;
 
-// Schemas with additional properties (for type preservation testing)
+/** Schema with additional weight and priority metadata for type preservation testing. */
 type WeightedStringSchema = RealSchema<string, number> & {
   readonly weight: number;
   readonly priority: 'high' | 'low';
 };
 
+/** Schema with naming metadata for type preservation testing. */
 type NamedUserSchema = RealSchema<UserInput, User> & {
   readonly schemaName: string;
   readonly version: number;
 };
 
+/** Schema with versioning metadata for type preservation testing. */
 type VersionedProductSchema = RealSchema<unknown, Product> & {
   readonly apiVersion: string;
   readonly lastUpdated: Date;
 };
 
-// Complex generic constraint scenarios
+/** Schema that brands its output with a `__validated` tag. */
 type BrandedSchema<T,> = RealSchema<T, T & { readonly __validated: true; }> & {
   readonly __brand: 'validated';
 };
 
-type ConditionalSchema<T extends string,> = T extends `user-${infer U}`
-  ? RealSchema<T, { readonly userId: U; readonly type: 'user'; }>
-  : RealSchema<T, { readonly data: T; readonly type: 'generic'; }>;
+/** Conditional schema type that infers different outputs based on string template matching. */
+type ConditionalSchema<T extends string,> = T extends `user-${infer U}` ? RealSchema<T, {
+    readonly userId: U;
+    readonly type: 'user';
+  }>
+  : RealSchema<T, {
+    readonly data: T;
+    readonly type: 'generic';
+  }>;
 
-// Multiple constraint schemas
+/** Schema with additional validator and transformer methods. */
 type ValidatedTransformSchema<Input, Output,> = RealSchema<Input, Output> & {
   readonly validator: (input: Input,) => boolean;
   readonly transformer: (input: Input,) => Output;
@@ -269,21 +371,27 @@ type ValidatedTransformSchema<Input, Output,> = RealSchema<Input, Output> & {
 //endregion Real Generic Test Domain Types
 
 //region Real Generic Test Values
+
+/** Collection of schema instances with various generic constraints for behavioral testing. */
 const realGenericTestValues = {
   // Basic generic schemas with specific Input/Output types
   stringToNumberSchema: {
-    parse: (value: string,) => Number.parseInt(value, 10,),
+    parse(value: string,) {
+      return Number.parseInt(value, 10,);
+    },
   } as StringToNumberSchema,
 
   userTransformSchema: {
-    parse: (user: UserInput,) => ({
-      name: user.name,
-      age: Number.parseInt(user.age, 10,),
-    }),
+    parse(user: UserInput,) {
+      return {
+        name: user.name,
+        age: Number.parseInt(user.age, 10,),
+      };
+    },
   } as UserTransformSchema,
 
   userValidationSchema: {
-    parse: (user: User,) => {
+    parse(user: User,) {
       if (user.age < 0)
         throw new Error('Invalid age',);
       return user;
@@ -291,7 +399,7 @@ const realGenericTestValues = {
   } as UserValidationSchema,
 
   asyncUserSchema: {
-    parseAsync: async (user: UserInput,) => {
+    async parseAsync(user: UserInput,) {
       await wait(1,);
       return {
         name: user.name,
@@ -301,78 +409,100 @@ const realGenericTestValues = {
   } as AsyncUserSchema,
 
   productSchema: {
-    parse: (value: unknown,) => ({
-      id: String(value,),
-      price: 0,
-      category: 'unknown',
-    }),
+    parse(value: unknown,) {
+      return {
+        id: String(value,),
+        price: 0,
+        category: 'unknown',
+      };
+    },
   } as ProductSchema,
 
   // Schemas with additional properties for type preservation testing
   weightedStringSchema: {
-    parse: (value: string,) => value.length,
+    parse(value: string,) {
+      return value.length;
+    },
     weight: 100,
     priority: 'high' as const,
   } as WeightedStringSchema,
 
   namedUserSchema: {
-    parse: (user: UserInput,) => ({
-      name: user.name,
-      age: Number.parseInt(user.age, 10,),
-    }),
+    parse(user: UserInput,) {
+      return {
+        name: user.name,
+        age: Number.parseInt(user.age, 10,),
+      };
+    },
     schemaName: 'UserTransform',
     version: 1,
   } as NamedUserSchema,
 
   versionedProductSchema: {
-    parse: (value: unknown,) => ({
-      id: String(value,),
-      price: 0,
-      category: 'versioned',
-    }),
+    parse(value: unknown,) {
+      return {
+        id: String(value,),
+        price: 0,
+        category: 'versioned',
+      };
+    },
     apiVersion: '2.1.0',
     lastUpdated: new Date(),
   } as VersionedProductSchema,
 
   // Branded schema
   brandedStringSchema: {
-    parse: (value: string,) =>
-      Object.assign(value, { __validated: true, },) as string & {
+    parse(value: string,) {
+      return Object.assign(value, { __validated: true, },) as string & {
         readonly __validated: true;
-      },
+      };
+    },
     __brand: 'validated' as const,
   } as BrandedSchema<string>,
 
   // Validated transform schema
   validatedTransformSchema: {
-    parse: (value: string,) => Number.parseInt(value, 10,),
-    validator: (input: string,) => !isNaN(Number.parseInt(input, 10,),),
-    transformer: (input: string,) => Number.parseInt(input, 10,),
+    parse(value: string,) {
+      return Number.parseInt(value, 10,);
+    },
+    validator(input: string,) {
+      return !Number.isNaN(Number.parseInt(input, 10,),);
+    },
+    transformer(input: string,) {
+      return Number.parseInt(input, 10,);
+    },
   } as ValidatedTransformSchema<string, number>,
 
   // Async with Promise return type
   promiseReturningSchema: {
-    parse: (value: string,) => Promise.resolve(value.length,),
+    parse(value: string,) {
+      return Promise.resolve(value.length,);
+    },
   } as RealSchema<string, Promise<number>>,
 
   // Schema that returns Promisable (could be sync or async)
   promisableSchema: {
-    parse: (value: string,) =>
-      Math.random() > 0.5
+    parse(value: string,) {
+      return Math.random() > 0.5
         ? value.length
-        : Promise.resolve(value.length,),
+        : Promise.resolve(value.length,);
+    },
   } as RealSchema<string, Promisable<number>>,
 
   // Union and intersection with real generics
   unionGenericSchema: ({
-    parse: (user: UserInput,) => ({
-      name: user.name,
-      age: Number.parseInt(user.age, 10,),
-    }),
+    parse(user: UserInput,) {
+      return {
+        name: user.name,
+        age: Number.parseInt(user.age, 10,),
+      };
+    },
   } as UserTransformSchema | string),
 
   intersectionGenericSchema: {
-    parse: (value: string,) => Number.parseInt(value, 10,),
+    parse(value: string,) {
+      return Number.parseInt(value, 10,);
+    },
     extraProp: true,
     metadata: { version: '2.0', },
   } as StringToNumberSchema & {
@@ -382,18 +512,22 @@ const realGenericTestValues = {
 
   // Edge cases with real generics
   unknownGenericValue: {
-    parse: (user: UserInput,) => ({
-      name: user.name,
-      age: Number.parseInt(user.age, 10,),
-    }),
+    parse(user: UserInput,) {
+      return {
+        name: user.name,
+        age: Number.parseInt(user.age, 10,),
+      };
+    },
     weight: 100,
   } as unknown,
 
   anyGenericValue: {
-    parse: (user: UserInput,) => ({
-      name: user.name,
-      age: Number.parseInt(user.age, 10,),
-    }),
+    parse(user: UserInput,) {
+      return {
+        name: user.name,
+        age: Number.parseInt(user.age, 10,),
+      };
+    },
     extraData: { complex: 'structure', },
   } as any,
 
@@ -417,7 +551,8 @@ const realGenericTestValues = {
  * Reveals complete TypeScript behavior with Input/Output type preservation
  */
 
-const testRealGenericStringToNumber = (function testRealGenericStringToNumber() {
+/** Tests all guard patterns against StringToNumberSchema with Input/Output preservation. */
+const testRealGenericStringToNumber = (function testRealGenericStringToNumber(): void {
   const value = realGenericTestValues.stringToNumberSchema;
 
   // Unknown Pattern
@@ -478,7 +613,8 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber() 
   }
 })();
 
-const testRealGenericWeightedString = (function testRealGenericWeightedString() {
+/** Tests all guard patterns against WeightedStringSchema with additional property preservation. */
+const testRealGenericWeightedString = (function testRealGenericWeightedString(): void {
   const value = realGenericTestValues.weightedStringSchema;
 
   // Unknown Pattern
@@ -551,7 +687,8 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString() 
   // to demonstrate what happens inside the if block
 })();
 
-const testRealGenericNamedUser = (function testRealGenericNamedUser() {
+/** Tests all guard patterns against NamedUserSchema with transformation and naming metadata. */
+const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
   const value = realGenericTestValues.namedUserSchema;
 
   // Test all patterns against complex generic transformation schema
@@ -567,7 +704,10 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser() {
     value.version; // Should preserve additional property
 
     // Type-safe usage with preserved generic constraints
-    const userInput: UserInput = { name: 'John', age: '25', };
+    const userInput: UserInput = {
+      name: 'John',
+      age: '25',
+    };
     const user = value.parse(userInput,); // Should return User type
   }
 
@@ -580,7 +720,10 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser() {
     value.version; // Should preserve additional property
 
     // Full type safety with generic extends
-    const result = value.parse({ name: 'Jane', age: '30', },);
+    const result = value.parse({
+      name: 'Jane',
+      age: '30',
+    },);
   }
 
   // @ts-expect-error -- NamedUserSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
@@ -592,7 +735,10 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser() {
     value.version; // Should preserve with inference
 
     // Maximum type safety with inference
-    const result = value.parse({ name: 'Bob', age: '35', },);
+    const result = value.parse({
+      name: 'Bob',
+      age: '35',
+    },);
   }
 
   // @ts-expect-error -- NamedUserSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
@@ -604,11 +750,15 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser() {
     value.version; // Should preserve with inference, original structure
 
     // Maximum type safety with inference and preserved input structure
-    const result = value.parse({ name: 'Charlie', age: '42', },);
+    const result = value.parse({
+      name: 'Charlie',
+      age: '42',
+    },);
   }
 })();
 
-const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants() {
+/** Tests async and maybe-async guard patterns against sync and async schema variants. */
+const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): void {
   const asyncSchema = realGenericTestValues.asyncUserSchema;
 
   // Test async schema guards
@@ -621,7 +771,10 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants() {
     asyncSchema.parseAsync; // Should preserve UserInput -> User types
 
     // Type-safe async usage
-    const asyncResult = asyncSchema.parseAsync({ name: 'Alice', age: '28', },);
+    const asyncResult = asyncSchema.parseAsync({
+      name: 'Alice',
+      age: '28',
+    },);
     // asyncResult should be Promise<User> or Promisable<User>
   }
 
@@ -633,7 +786,10 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants() {
   )) {
     asyncSchema.parseAsync; // Full type preservation with extends
 
-    const result = asyncSchema.parseAsync({ name: 'Charlie', age: '40', },);
+    const result = asyncSchema.parseAsync({
+      name: 'Charlie',
+      age: '40',
+    },);
   }
 
   // Test MaybeAsyncSchema guards
@@ -648,7 +804,10 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants() {
     // Should preserve specific types through union
     flexibleSchema.parse; // Available with preserved UserInput -> User types
 
-    const result = flexibleSchema.parse({ name: 'David', age: '45', },);
+    const result = flexibleSchema.parse({
+      name: 'David',
+      age: '45',
+    },);
   }
 
   // @ts-expect-error -- UserTransformSchema is not assignable to RealMaybeAsyncSchema (demonstrates compile-time safety)
@@ -659,27 +818,35 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants() {
   )) {
     flexibleSchema.parse; // Full type preservation through union with extends
 
-    const result = flexibleSchema.parse({ name: 'Eve', age: '50', },);
+    const result = flexibleSchema.parse({
+      name: 'Eve',
+      age: '50',
+    },);
   }
 
   // Test with actual async schema
-  if (isRealMaybeAsyncSchema_Unknown(asyncSchema,)) {
+  if (isRealMaybeAsyncSchema_Unknown(asyncSchema,)
+    && 'parseAsync' in asyncSchema)
+  {
     // Should work with async schemas through union
-    if ('parseAsync' in asyncSchema)
-      asyncSchema.parseAsync; // Available for async schemas
+    asyncSchema.parseAsync; // Available for async schemas
   }
 
-  if (isRealMaybeAsyncSchema_Generic(asyncSchema,)) {
+  if (isRealMaybeAsyncSchema_Generic(asyncSchema,)
+    && 'parseAsync' in asyncSchema)
+  {
     // Type discrimination needed for union
-    if ('parseAsync' in asyncSchema) {
-      asyncSchema.parseAsync; // Available with preserved types
+    asyncSchema.parseAsync; // Available with preserved types
 
-      const result = asyncSchema.parseAsync({ name: 'Frank', age: '55', },);
-    }
+    const result = asyncSchema.parseAsync({
+      name: 'Frank',
+      age: '55',
+    },);
   }
 })();
 
-const testRealGenericEdgeCases = (function testRealGenericEdgeCases() {
+/** Tests guard patterns against edge cases: unknown, any, union, intersection, and invalid inputs. */
+const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
   // Unknown value with schema properties
   const unknownValue = realGenericTestValues.unknownGenericValue;
 
@@ -710,7 +877,10 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases() {
     anyValue.extraData; // Generic pattern preserves any better
 
     // Any input allows any usage patterns
-    const result1 = anyValue.parse({ name: 'Any', age: '999', },);
+    const result1 = anyValue.parse({
+      name: 'Any',
+      age: '999',
+    },);
     const result2 = anyValue.parse('anything',);
   }
 
@@ -733,7 +903,10 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases() {
     unionValue.parse; // Should preserve UserInput -> User through union narrowing
 
     // Type-safe usage after union narrowing
-    const result = unionValue.parse({ name: 'Union', age: '123', },);
+    const result = unionValue.parse({
+      name: 'Union',
+      age: '123',
+    },);
   }
 
   // Intersection with generic schema
@@ -768,166 +941,172 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases() {
   }
 })();
 
-const testRealGenericPromisableBehavior = (function testRealGenericPromisableBehavior() {
-  // Promise returning schema
-  const promiseSchema = realGenericTestValues.promiseReturningSchema;
+/** Tests guard patterns against Promise and Promisable return type schemas. */
+const testRealGenericPromisableBehavior =
+  (function testRealGenericPromisableBehavior(): void {
+    // Promise returning schema
+    const promiseSchema = realGenericTestValues.promiseReturningSchema;
 
-  if (isRealSchema_Unknown(promiseSchema,)) {
-    const result = promiseSchema.parse('test' as any,); // Loses Input/Output constraints
-    // Result type is unknown, loses Promise<number> information
-  }
-
-  if (isRealSchema_Generic(promiseSchema,)) {
-    const result = promiseSchema.parse('test',); // Should be Promise<number>
-    // Type-safe promise handling
-    // const awaited = await result; // Should be number
-  }
-
-  // @ts-expect-error -- RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  isRealSchema_GenericExtends(promiseSchema,);
-
-  if (isRealSchema_GenericExtends(promiseSchema as RealSchema & typeof promiseSchema,)) {
-    const result = promiseSchema.parse('extends',); // Full type preservation
-    // Result should maintain Promise<number> type
-  }
-
-  // @ts-expect-error -- RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  isRealSchema_GenericExtendsDirect(promiseSchema,);
-
-  if (isRealSchema_GenericExtendsDirect(
-    promiseSchema as RealSchema & typeof promiseSchema,
-  )) {
-    const result = promiseSchema.parse('non-intersection',); // Full type preservation without intersection
-    // Result should maintain Promise<number> type with original structure preserved
-  }
-
-  // Promisable returning schema
-  const { promisableSchema, } = realGenericTestValues;
-
-  if (isRealSchema_Generic(promisableSchema,)) {
-    const result = promisableSchema.parse('test',); // Should be Promisable<number>
-    // Both sync and async handling possible with proper typing
-    if (result instanceof Promise) {
-      // await result; // Async path - result is Promise<number>
+    if (isRealSchema_Unknown(promiseSchema,)) {
+      const result = promiseSchema.parse('test' as any,); // Loses Input/Output constraints
+      // Result type is unknown, loses Promise<number> information
     }
-    else {
-      // result; // Sync path - result is number
+
+    if (isRealSchema_Generic(promiseSchema,)) {
+      const result = promiseSchema.parse('test',); // Should be Promise<number>
+      // Type-safe promise handling
+      // const awaited = await result; // Should be number
     }
-  }
 
-  // @ts-expect-error -- RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  isRealSchema_GenericExtends(promisableSchema,);
+    // @ts-expect-error -- RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+    isRealSchema_GenericExtends(promiseSchema,);
 
-  if (isRealSchema_GenericExtends(
-    promisableSchema as RealSchema & typeof promisableSchema,
-  )) {
-    const result = promisableSchema.parse('promisable',); // Full Promisable<number> preservation
-
-    // Type-safe conditional handling
-    const isPromise = result instanceof Promise;
-    if (isPromise) {
-      // Handle Promise<number>
+    if (isRealSchema_GenericExtends(
+      promiseSchema as RealSchema & typeof promiseSchema,
+    )) {
+      const result = promiseSchema.parse('extends',); // Full type preservation
+      // Result should maintain Promise<number> type
     }
-    else {
-      // Handle number
+
+    // @ts-expect-error -- RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+    isRealSchema_GenericExtendsDirect(promiseSchema,);
+
+    if (isRealSchema_GenericExtendsDirect(
+      promiseSchema as RealSchema & typeof promiseSchema,
+    )) {
+      const result = promiseSchema.parse('non-intersection',); // Full type preservation without intersection
+      // Result should maintain Promise<number> type with original structure preserved
     }
-  }
 
-  // @ts-expect-error -- RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  isRealSchema_GenericExtendsDirect(promisableSchema,);
+    // Promisable returning schema
+    const { promisableSchema, } = realGenericTestValues;
 
-  if (isRealSchema_GenericExtendsDirect(
-    promisableSchema as RealSchema & typeof promisableSchema,
-  )) {
-    const result = promisableSchema.parse('promisable-non-intersection',); // Full Promisable<number> preservation without intersection
-
-    // Type-safe conditional handling with preserved input structure
-    const isPromise = result instanceof Promise;
-    if (isPromise) {
-      // Handle Promise<number>
+    if (isRealSchema_Generic(promisableSchema,)) {
+      const result = promisableSchema.parse('test',); // Should be Promisable<number>
+      // Both sync and async handling possible with proper typing
+      if (result instanceof Promise) {
+        // await result; // Async path - result is Promise<number>
+      }
+      else {
+        // result; // Sync path - result is number
+      }
     }
-    else {
-      // Handle number
+
+    // @ts-expect-error -- RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+    isRealSchema_GenericExtends(promisableSchema,);
+
+    if (isRealSchema_GenericExtends(
+      promisableSchema as RealSchema & typeof promisableSchema,
+    )) {
+      const result = promisableSchema.parse('promisable',); // Full Promisable<number> preservation
+
+      // Type-safe conditional handling
+      const isPromise = result instanceof Promise;
+      if (isPromise) {
+        // Handle Promise<number>
+      }
+      else {
+        // Handle number
+      }
     }
-  }
-})();
 
-const testRealGenericComplexConstraints = (function testRealGenericComplexConstraints() {
-  // Branded schema testing
-  const brandedSchema = realGenericTestValues.brandedStringSchema;
+    // @ts-expect-error -- RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+    isRealSchema_GenericExtendsDirect(promisableSchema,);
 
-  if (isRealSchema_Generic(brandedSchema,)) {
-    brandedSchema.parse; // Should preserve string -> (string & { __validated: true })
-    brandedSchema.__brand; // Should preserve brand property
+    if (isRealSchema_GenericExtendsDirect(
+      promisableSchema as RealSchema & typeof promisableSchema,
+    )) {
+      const result = promisableSchema.parse('promisable-non-intersection',); // Full Promisable<number> preservation without intersection
 
-    const result = brandedSchema.parse('validate me',); // Complex constraint preserved
-  }
-
-  // Validated transform schema
-  const validatedSchema = realGenericTestValues.validatedTransformSchema;
-
-  if (isRealSchema_Generic(validatedSchema,)) {
-    validatedSchema.parse; // Should preserve string -> number
-    validatedSchema.validator; // Should preserve additional method
-    validatedSchema.transformer; // Should preserve additional method
-
-    // Full functionality preserved
-    const isValid = validatedSchema.validator('123',);
-    if (isValid) {
-      const result = validatedSchema.parse('123',);
-      const transformed = validatedSchema.transformer('123',);
+      // Type-safe conditional handling with preserved input structure
+      const isPromise = result instanceof Promise;
+      if (isPromise) {
+        // Handle Promise<number>
+      }
+      else {
+        // Handle number
+      }
     }
-  }
+  })();
 
-  // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
-  isRealSchema_GenericExtends(validatedSchema,);
+/** Tests guard patterns against branded, validated, and versioned schema constraints. */
+const testRealGenericComplexConstraints =
+  (function testRealGenericComplexConstraints(): void {
+    // Branded schema testing
+    const brandedSchema = realGenericTestValues.brandedStringSchema;
 
-  if (isRealSchema_GenericExtends(
-    validatedSchema as RealSchema & typeof validatedSchema,
-  )) {
-    validatedSchema.parse; // Full constraint preservation
-    validatedSchema.validator; // Method preserved
-    validatedSchema.transformer; // Method preserved
+    if (isRealSchema_Generic(brandedSchema,)) {
+      brandedSchema.parse; // Should preserve string -> (string & { __validated: true })
+      brandedSchema.__brand; // Should preserve brand property
 
-    // Type-safe complex usage
-    const input = '456';
-    if (validatedSchema.validator(input,)) {
-      const parsed = validatedSchema.parse(input,);
-      const transformed = validatedSchema.transformer(input,);
+      const result = brandedSchema.parse('validate me',); // Complex constraint preserved
     }
-  }
 
-  // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
-  isRealSchema_GenericExtendsDirect(validatedSchema,);
+    // Validated transform schema
+    const validatedSchema = realGenericTestValues.validatedTransformSchema;
 
-  if (isRealSchema_GenericExtendsDirect(
-    validatedSchema as RealSchema & typeof validatedSchema,
-  )) {
-    validatedSchema.parse; // Full constraint preservation without intersection
-    validatedSchema.validator; // Method preserved in original structure
-    validatedSchema.transformer; // Method preserved in original structure
+    if (isRealSchema_Generic(validatedSchema,)) {
+      validatedSchema.parse; // Should preserve string -> number
+      validatedSchema.validator; // Should preserve additional method
+      validatedSchema.transformer; // Should preserve additional method
 
-    // Type-safe complex usage with preserved input structure
-    const input = '789';
-    if (validatedSchema.validator(input,)) {
-      const parsed = validatedSchema.parse(input,);
-      const transformed = validatedSchema.transformer(input,);
+      // Full functionality preserved
+      const isValid = validatedSchema.validator('123',);
+      if (isValid) {
+        const result = validatedSchema.parse('123',);
+        const transformed = validatedSchema.transformer('123',);
+      }
     }
-  }
 
-  // Versioned product schema
-  const versionedSchema = realGenericTestValues.versionedProductSchema;
+    // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
+    isRealSchema_GenericExtends(validatedSchema,);
 
-  if (isRealSchema_Generic(versionedSchema,)) {
-    versionedSchema.parse; // Should preserve unknown -> Product
-    versionedSchema.apiVersion; // Should preserve version info
-    versionedSchema.lastUpdated; // Should preserve timestamp
+    if (isRealSchema_GenericExtends(
+      validatedSchema as RealSchema & typeof validatedSchema,
+    )) {
+      validatedSchema.parse; // Full constraint preservation
+      validatedSchema.validator; // Method preserved
+      validatedSchema.transformer; // Method preserved
 
-    const product = versionedSchema.parse('some data',);
-    const version = versionedSchema.apiVersion;
-    const updated = versionedSchema.lastUpdated;
-  }
-})();
+      // Type-safe complex usage
+      const input = '456';
+      if (validatedSchema.validator(input,)) {
+        const parsed = validatedSchema.parse(input,);
+        const transformed = validatedSchema.transformer(input,);
+      }
+    }
+
+    // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
+    isRealSchema_GenericExtendsDirect(validatedSchema,);
+
+    if (isRealSchema_GenericExtendsDirect(
+      validatedSchema as RealSchema & typeof validatedSchema,
+    )) {
+      validatedSchema.parse; // Full constraint preservation without intersection
+      validatedSchema.validator; // Method preserved in original structure
+      validatedSchema.transformer; // Method preserved in original structure
+
+      // Type-safe complex usage with preserved input structure
+      const input = '789';
+      if (validatedSchema.validator(input,)) {
+        const parsed = validatedSchema.parse(input,);
+        const transformed = validatedSchema.transformer(input,);
+      }
+    }
+
+    // Versioned product schema
+    const versionedSchema = realGenericTestValues.versionedProductSchema;
+
+    if (isRealSchema_Generic(versionedSchema,)) {
+      versionedSchema.parse; // Should preserve unknown -> Product
+      versionedSchema.apiVersion; // Should preserve version info
+      versionedSchema.lastUpdated; // Should preserve timestamp
+
+      const product = versionedSchema.parse('some data',);
+      const version = versionedSchema.apiVersion;
+      const updated = versionedSchema.lastUpdated;
+    }
+  })();
 //endregion Real Generic Behavioral Tests
 
 //region Comprehensive Generic Analysis Matrix

@@ -31,7 +31,7 @@ Skip categories that do not apply to the language or change.
 const lastItem = items[items.length];
 
 // Good
-const lastItem = items.at(-1);
+const lastItem = items.at(-1,);
 ```
 
 ```ts
@@ -47,14 +47,16 @@ for (const item of items) { ... }
 
 ```ts
 // Bad -- flag as BLOCKER
-function getUser(id: string): User {
-  const user = users.find((candidate) => candidate.id === id);
+function getUser(id: string,): User {
+  const user = users.find(candidate => candidate.id === id);
   return user; // may be undefined
 }
 
 // Good
-function getUser(id: string): User {
-  return notNullishOrThrow(users.find(function matchesId(candidate) { return candidate.id === id; }));
+function getUser(id: string,): User {
+  return notNullishOrThrow(users.find(function matchesId(candidate,) {
+    return candidate.id === id;
+  },),);
 }
 ```
 
@@ -64,12 +66,12 @@ function getUser(id: string): User {
 // Bad -- flag as WARNING: shared mutable state with concurrent access
 const cache: Map<string, Data> = new Map();
 
-async function getData(key: string): Promise<Data> {
-  if (!cache.has(key)) {
-    const data = await fetchData(key);
-    cache.set(key, data); // another call may have set it while awaiting
+async function getData(key: string,): Promise<Data> {
+  if (!cache.has(key,)) {
+    const data = await fetchData(key,);
+    cache.set(key, data,); // another call may have set it while awaiting
   }
-  return notNullishOrThrow(cache.get(key));
+  return notNullishOrThrow(cache.get(key,),);
 }
 ```
 
@@ -78,17 +80,19 @@ async function getData(key: string): Promise<Data> {
 ```ts
 // Bad -- flag as WARNING: swallowed exception
 try {
-  await saveRecord(record);
-} catch {
+  await saveRecord(record,);
+}
+catch {
   // silently ignored
 }
 
 // Good
 try {
-  await saveRecord(record);
-} catch (error) {
-  console.error('Failed to save record:', error);
-  throw new Error('Failed to save record', { cause: error });
+  await saveRecord(record,);
+}
+catch (error) {
+  console.error('Failed to save record:', error,);
+  throw new Error('Failed to save record', { cause: error, },);
 }
 ```
 
@@ -106,13 +110,13 @@ try {
 
 ```ts
 // Bad -- flag as WARNING
-function parseConfig(raw: string) {
-  return JSON.parse(raw);
+function parseConfig(raw: string,) {
+  return JSON.parse(raw,);
 }
 
 // Good
-function parseConfig(raw: string): Config {
-  return JSON.parse(raw) as Config;
+function parseConfig(raw: string,): Config {
+  return JSON.parse(raw,) as Config;
 }
 ```
 
@@ -156,13 +160,13 @@ function parseVersion({ version }: { version: SemVer }): VersionInfo { ... }
 
 ```ts
 // Bad -- flag as WARNING: as widens the type
-const config = { host: 'localhost', port: 8080 } as ServerConfig;
+const config = { host: 'localhost', port: 8080, } as ServerConfig;
 
 // Good -- explicit type annotation on the variable when possible
-const config: ServerConfig = { host: 'localhost', port: 8080 };
+const config: ServerConfig = { host: 'localhost', port: 8080, };
 
 // Good -- satisfies when direct annotation is not possible (e.g. exported configs)
-export default { host: 'localhost', port: 8080 } satisfies ServerConfig;
+export default { host: 'localhost', port: 8080, } satisfies ServerConfig;
 ```
 
 #### Symbol union narrowing
@@ -173,20 +177,23 @@ Flag code that compares a value to a specific symbol and assumes the else branch
 // Anti-pattern -- flag as BLOCKER
 if (out === NO_LITERAL) {
   // handle sentinel
-} else {
+}
+else {
   // BUG: else may still be a symbol from the union
-  use(out.parsed);
+  use(out.parsed,);
 }
 
 // Correct pattern
 if (typeof out === 'symbol') {
   if (out === NO_LITERAL) {
     // handle sentinel
-  } else {
-    throw new Error(`Unexpected symbol: ${String(out)}`);
   }
-} else {
-  use(out.parsed);
+  else {
+    throw new Error(`Unexpected symbol: ${String(out,)}`,);
+  }
+}
+else {
+  use(out.parsed,);
 }
 ```
 
@@ -196,16 +203,18 @@ Flag missing `const` or `readonly` modifiers:
 
 ```ts
 // Bad -- flag as WARNING
-function processItems<T extends { id: string }>(items: T[]): T[]
+function processItems<T extends { id: string; },>(items: T[],): T[];
 
 // Good
-function processItems<const T extends { id: string }>(items: readonly T[]): readonly T[]
+function processItems<const T extends { id: string; },>(
+  items: readonly T[],
+): readonly T[];
 
 // Bad -- flag as WARNING
-function myFn<const T>(myArr: T[]): T[]
+function myFn<const T,>(myArr: T[],): T[];
 
 // Good
-function myFn<const T>(myArr: readonly T[]): T[]
+function myFn<const T,>(myArr: readonly T[],): T[];
 ```
 
 Flag non-descriptive generic names:
@@ -232,11 +241,11 @@ Flag function expressions assigned to variables:
 
 ```ts
 // Bad -- flag as WARNING
-const greet = function greet(name: string): void { };
-const greet = function(name: string): void { };
+const greet = function greet(name: string,): void {};
+const greet = function(name: string,): void {};
 
 // Good -- use a function declaration
-function greet(name: string): void { }
+function greet(name: string,): void {}
 ```
 
 #### Named parameters
@@ -245,13 +254,15 @@ Flag any function declaration or named arrow function with 2+ positional paramet
 
 ```ts
 // Bad -- flag as WARNING
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
+function clamp(value: number, min: number, max: number,): number {
+  return Math.max(min, Math.min(max, value,),);
 }
 
 // Good
-function clamp({ value, min, max }: { value: number; min: number; max: number }): number {
-  return Math.max(min, Math.min(max, value));
+function clamp(
+  { value, min, max, }: { value: number; min: number; max: number; },
+): number {
+  return Math.max(min, Math.min(max, value,),);
 }
 ```
 
@@ -267,14 +278,14 @@ Callbacks passed to external APIs are exempt because the caller dictates the sig
 
 ```ts
 // OK -- signature dictated by Array.prototype.map
-const doubled = items.map(function doubleByIndex(item, index) {
-  return multiply({ value: item, by: index });
-});
+const doubled = items.map(function doubleByIndex(item, index,) {
+  return multiply({ value: item, by: index, },);
+},);
 
 // OK -- signature dictated by Array.prototype.sort
-const sorted = items.sort(function byPriority(left, right) {
+const sorted = items.sort(function byPriority(left, right,) {
   return left.priority - right.priority;
-});
+},);
 ```
 
 #### No use before declaration
@@ -333,12 +344,13 @@ const baseUrl = 'https://api.example.com';
 ```ts
 // Bad -- flag as WARNING: accumulator mutated via let
 let total = 0;
-for (const item of items) {
+for (const item of items)
   total += item.price;
-}
 
 // Good
-const total = items.reduce(function addPrice(sum, item) { return sum + item.price; }, 0);
+const total = items.reduce(function addPrice(sum, item,) {
+  return sum + item.price;
+}, 0,);
 ```
 
 #### Magic numbers and strings
@@ -365,15 +377,13 @@ const FONT_SIZE = (16 - 2 - 1) / 16;
 
 ```ts
 // Bad -- flag as WARNING
-for (let index = 0; index < items.length; index++) {
-  process(items[index]);
-}
+for (let index = 0; index < items.length; index++)
+  process(items[index],);
 
 // Good (when functional patterns do not apply)
 // Iteration is unavoidable because process() has side effects
-for (const item of items) {
-  process(item);
-}
+for (const item of items)
+  process(item,);
 ```
 
 #### Functional over imperative
@@ -384,15 +394,18 @@ Flag imperative patterns when functional alternatives exist:
 // Bad -- flag as WARNING
 let results = [];
 for (let i = 0; i < items.length; i++) {
-  if (items[i].isActive) {
-    results.push(items[i].value * 2);
-  }
+  if (items[i].isActive)
+    results.push(items[i].value * 2,);
 }
 
 // Good
 const results = items
-  .filter(function isActive(item) { return item.isActive; })
-  .map(function doubleValue(item) { return item.value * 2; });
+  .filter(function isActive(item,) {
+    return item.isActive;
+  },)
+  .map(function doubleValue(item,) {
+    return item.value * 2;
+  },);
 ```
 
 #### Object iteration
@@ -402,19 +415,20 @@ Flag `for...in` loops on objects:
 ```ts
 // Bad -- flag as WARNING
 for (const key in obj) {
-  if (Object.prototype.hasOwnProperty.call(obj, key)) {
-    result[key] = process(obj[key]);
-  }
+  if (Object.prototype.hasOwnProperty.call(obj, key,))
+    result[key] = process(obj[key],);
 }
 
 // Good
-Object.entries(obj).forEach(function applyProcess([key, value]) {
-  result[key] = process(value);
-});
+Object.entries(obj,).forEach(function applyProcess([key, value,],) {
+  result[key] = process(value,);
+},);
 
 // Good (for transformations)
 const result = Object.fromEntries(
-  Object.entries(obj).map(function processEntry([key, value]) { return [key, process(value)]; })
+  Object.entries(obj,).map(function processEntry([key, value,],) {
+    return [key, process(value,),];
+  },),
 );
 ```
 
@@ -430,13 +444,13 @@ When the logic is a pure mapping from key to value, a `Record` is more declarati
 // Bad -- flag as WARNING: switch statement
 switch (toolName) {
   case 'Read': {
-    return `Reading ${shortPath(filePath)}`;
+    return `Reading ${shortPath(filePath,)}`;
   }
   case 'Edit': {
-    return `Editing ${shortPath(filePath)}`;
+    return `Editing ${shortPath(filePath,)}`;
   }
   case 'Bash': {
-    return `Running ${shortCommand(command)}`;
+    return `Running ${shortCommand(command,)}`;
   }
   default: {
     return toolName;
@@ -444,25 +458,30 @@ switch (toolName) {
 }
 
 // Good -- if/else for branching with logic
-if (toolName === 'Read') {
-  return `Reading ${shortPath(filePath)}`;
-} else if (toolName === 'Edit') {
-  return `Editing ${shortPath(filePath)}`;
-} else if (toolName === 'Bash') {
-  return `Running ${shortCommand(command)}`;
-} else {
+if (toolName === 'Read')
+  return `Reading ${shortPath(filePath,)}`;
+else if (toolName === 'Edit')
+  return `Editing ${shortPath(filePath,)}`;
+else if (toolName === 'Bash')
+  return `Running ${shortCommand(command,)}`;
+else
   return toolName;
-}
 
 // Good -- Record lookup for pure mappings
-const TOOL_LABELS: Record<string, (input: ToolInput) => string> = {
-  Read: function readLabel({ filePath }) { return `Reading ${shortPath(filePath)}`; },
-  Edit: function editLabel({ filePath }) { return `Editing ${shortPath(filePath)}`; },
-  Bash: function bashLabel({ command }) { return `Running ${shortCommand(command)}`; },
+const TOOL_LABELS: Record<string, (input: ToolInput,) => string> = {
+  Read: function readLabel({ filePath, },) {
+    return `Reading ${shortPath(filePath,)}`;
+  },
+  Edit: function editLabel({ filePath, },) {
+    return `Editing ${shortPath(filePath,)}`;
+  },
+  Bash: function bashLabel({ command, },) {
+    return `Running ${shortCommand(command,)}`;
+  },
 };
 
 const labelFn = TOOL_LABELS[toolName];
-return labelFn !== undefined ? labelFn(input) : toolName;
+return labelFn !== undefined ? labelFn(input,) : toolName;
 ```
 
 #### Naming extracted concepts
@@ -510,36 +529,37 @@ items.forEach(function processItem(item, itemIndex) { ... })
 const apiKey = 'sk-live-abc123def456';
 
 // Good
-const apiKey = notNullishOrThrow(process.env['API_KEY']);
+const apiKey = notNullishOrThrow(process.env['API_KEY'],);
 ```
 
 #### Unsanitized user input
 
 ```ts
 // Bad -- flag as BLOCKER: shell injection
-const output = execSync(`grep ${userQuery} /var/log/app.log`);
+const output = execSync(`grep ${userQuery} /var/log/app.log`,);
 
 // Good
-const output = execSync('grep', [userQuery, '/var/log/app.log']);
+const output = execSync('grep', [userQuery, '/var/log/app.log',],);
 ```
 
 ```ts
 // Bad -- flag as BLOCKER: SQL injection
-const rows = db.query(`SELECT * FROM users WHERE name = '${name}'`);
+const rows = db.query(`SELECT * FROM users WHERE name = '${name}'`,);
 
 // Good
-const rows = db.query('SELECT * FROM users WHERE name = ?', [name]);
+const rows = db.query('SELECT * FROM users WHERE name = ?', [name,],);
 ```
 
 #### Secrets in logs
 
 ```ts
 // Bad -- flag as BLOCKER
-console.log('Authenticating with token:', token);
+console.log('Authenticating with token:', token,);
 
 // Good
 const tokenPrefixLength = 4;
-console.log('Authenticating with token:', token.slice(0, tokenPrefixLength) + '...');
+console.log('Authenticating with token:',
+  token.slice(0, tokenPrefixLength,) + '...',);
 ```
 
 ### Naming and readability
@@ -558,6 +578,7 @@ Embed comments inside template literals using the `${''}` trick.
 Do not use target-language comments (XML, HTML, etc.) or move the comment outside the template.
 
 Reasons:
+
 - Target-language comments require context switching between JS and the target language
 - Editors cannot properly highlight target-language comments inside JS template literals
 - Target-language comment syntax is easy to get wrong or forget across different languages
@@ -581,9 +602,8 @@ const xml = `
 const xml = `
   <os><type arch='x86_64'>hvm</type></os>
   ${
-    // Bun requires AVX
-    ''
-  }
+  // Bun requires AVX
+  ''}
   <cpu mode='host-passthrough'/>
 `;
 ```
@@ -643,18 +663,18 @@ Flag unescaped `*/` inside TSDoc blocks:
 ```ts
 // Bad -- flag as WARNING
 function loadConfig(): Promise<Config> {
-  return readFile('config.json', 'utf8')
-    .then((raw) => JSON.parse(raw) as Config)
-    .catch((error) => {
-      console.error('Failed:', error);
+  return readFile('config.json', 'utf8',)
+    .then(raw => JSON.parse(raw,) as Config)
+    .catch(error => {
+      console.error('Failed:', error,);
       throw error;
-    });
+    },);
 }
 
 // Good
 async function loadConfig(): Promise<Config> {
-  const raw = await readFile('config.json', 'utf8');
-  return JSON.parse(raw) as Config;
+  const raw = await readFile('config.json', 'utf8',);
+  return JSON.parse(raw,) as Config;
 }
 ```
 
@@ -663,17 +683,17 @@ async function loadConfig(): Promise<Config> {
 ```ts
 // Bad -- flag as WARNING: sequential when concurrency is possible
 for (const url of urls) {
-  const response = await fetch(url);
-  results.push(await response.json());
+  const response = await fetch(url,);
+  results.push(await response.json(),);
 }
 
 // Good
-async function fetchJson(url: string): Promise<unknown> {
-  const response = await fetch(url);
+async function fetchJson(url: string,): Promise<unknown> {
+  const response = await fetch(url,);
   return response.json();
 }
 
-const results = await Promise.all(urls.map(fetchJson));
+const results = await Promise.all(urls.map(fetchJson,),);
 ```
 
 #### Manual promise creation
@@ -682,12 +702,14 @@ Flag explicit `new Promise` when utilities exist:
 
 ```ts
 // Bad -- flag as WARNING
-function delay(ms) {
-  return new Promise(function resolveAfterDelay(resolve) { setTimeout(resolve, ms); });
+function delay(ms,) {
+  return new Promise(function resolveAfterDelay(resolve,) {
+    setTimeout(resolve, ms,);
+  },);
 }
 
 // Good
-import { wait } from '@monochromatic-dev/module-es';
+import { wait, } from '@monochromatic-dev/module-es';
 // Use wait(ms) directly
 ```
 
@@ -703,21 +725,21 @@ import { wait } from '@monochromatic-dev/module-es';
 
 ```ts
 // Bad -- flag as WARNING: ungrouped, missing extension, default import, missing import type
+import { readFile, } from 'node:fs/promises';
+import { z, } from 'zod';
 import config from './config';
-import { readFile } from 'node:fs/promises';
-import { z } from 'zod';
-import { Config } from './types';
+import { Config, } from './types';
 
 // Good
-import { readFile } from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 
-import { z } from 'zod';
+import { z, } from 'zod';
 
-import { parseConfig } from '@monochromatic-dev/module-es';
+import { parseConfig, } from '@monochromatic-dev/module-es';
 
-import { loadSettings } from './config.ts';
+import { loadSettings, } from './config.ts';
 
-import type { Config } from './types.ts';
+import type { Config, } from './types.ts';
 ```
 
 ### Error handling
@@ -737,14 +759,15 @@ import type { Config } from './types.ts';
 // Bad -- flag as WARNING
 const handle = openResource();
 try {
-  await process(handle);
-} finally {
+  await process(handle,);
+}
+finally {
   handle.close();
 }
 
 // Good
 await using handle = openResource();
-await process(handle);
+await process(handle,);
 ```
 
 #### No `process.exit()`
@@ -752,14 +775,13 @@ await process(handle);
 ```ts
 // Bad -- flag as WARNING
 if (!isValid) {
-  console.error('Invalid input');
-  process.exit(1);
+  console.error('Invalid input',);
+  process.exit(1,);
 }
 
 // Good
-if (!isValid) {
-  throw new Error('Invalid input');
-}
+if (!isValid)
+  throw new Error('Invalid input',);
 ```
 
 #### `outdent` for multi-line error messages
@@ -767,19 +789,19 @@ if (!isValid) {
 ```ts
 // Bad -- flag as NIT
 throw new Error(
-  'Failed to process record.\n' +
-  `Expected type: ${expectedType}\n` +
-  `Received type: ${receivedType}`
+  'Failed to process record.\n'
+    + `Expected type: ${expectedType}\n`
+    + `Received type: ${receivedType}`,
 );
 
 // Good
-import { outdent } from '@cspotcode/outdent';
+import { outdent, } from '@cspotcode/outdent';
 
 throw new Error(outdent`
   Failed to process record.
   Expected type: ${expectedType}
   Received type: ${receivedType}
-`);
+`,);
 ```
 
 #### Custom error classes
@@ -790,8 +812,8 @@ class ValidationError extends Error {
     message: string,
     public readonly field: string,
   ) {
-    super(message);
-    this.name = "ValidationError";
+    super(message,);
+    this.name = 'ValidationError';
   }
 }
 ```
@@ -799,18 +821,17 @@ class ValidationError extends Error {
 #### Type guards
 
 ```ts
-function isString(value: unknown): value is string {
-  return typeof value === "string";
+function isString(value: unknown,): value is string {
+  return typeof value === 'string';
 }
 ```
 
 #### Assertion functions
 
 ```ts
-function assertIsString(value: unknown): asserts value is string {
-  if (typeof value !== "string") {
-    throw new TypeError("Expected string");
-  }
+function assertIsString(value: unknown,): asserts value is string {
+  if (typeof value !== 'string')
+    throw new TypeError('Expected string',);
 }
 ```
 
@@ -821,8 +842,8 @@ function assertIsString(value: unknown): asserts value is string {
 const value = possiblyUndefined!;
 
 // Good
-import { notNullishOrThrow } from '@monochromatic-dev/module-es';
-const value = notNullishOrThrow(possiblyUndefined);
+import { notNullishOrThrow, } from '@monochromatic-dev/module-es';
+const value = notNullishOrThrow(possiblyUndefined,);
 ```
 
 #### Silent error handling
@@ -848,10 +869,12 @@ Flag silently discarded unexpected states:
 
 ```ts
 // Bad -- flag as BLOCKER
-if (!(event instanceof CustomEvent)) return;
+if (!(event instanceof CustomEvent))
+  return;
 
 // Good
-if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent");
+if (!(event instanceof CustomEvent))
+  throw new TypeError('Expected CustomEvent',);
 ```
 
 ### Markdown quality
@@ -861,17 +884,19 @@ if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent")
 
 #### Tables to lists
 
-````md
+```md
 <!-- Bad -- flag as WARNING -->
-| Name   | Type   | Default |
-|--------|--------|---------|
-| host   | string | localhost |
-| port   | number | 8080    |
+
+| Name | Type   | Default   |
+| ---- | ------ | --------- |
+| host | string | localhost |
+| port | number | 8080      |
 
 <!-- Good -->
+
 - host -- `string`, default `localhost`
 - port -- `number`, default `8080`
-````
+```
 
 ### Testing gaps
 
@@ -1004,7 +1029,9 @@ button {
 .card {
   & .header {
     & .title {
-      & span { color: var(--accent-fg); }
+      & span {
+        color: var(--accent-fg);
+      }
     }
   }
 }
@@ -1012,7 +1039,9 @@ button {
 /* Good -- max 3 levels */
 .card {
   .title {
-    & span { color: var(--accent-fg); }
+    & span {
+      color: var(--accent-fg);
+    }
   }
 }
 ```
@@ -1065,10 +1094,16 @@ border-color: var(--error-fg);
 
 ```css
 /* Bad */
-.pill--loading { opacity: 0.5; }
+.pill--loading {
+  opacity: 0.5;
+}
 
 /* Good */
-.pill { &[data-loading] { opacity: 0.5; } }
+.pill {
+  &[data-loading] {
+    opacity: 0.5;
+  }
+}
 ```
 
 ### Logging
@@ -1085,34 +1120,36 @@ border-color: var(--error-fg);
 export const l: Logger = $;
 
 // Good
-export const l: Logger = tagged({ tag: 'rss' });
+export const l: Logger = tagged({ tag: 'rss', },);
 ```
 
 #### Manual tag in message string
 
 ```ts
 // Bad -- flag as WARNING: manual tag prefix
-l.info("[cycle] capture complete");
+l.info('[cycle] capture complete',);
 
 // Good
-const l = tagged({ tag: 'cycle', l: parentLogger });
-l.info("capture complete");
+const l = tagged({ tag: 'cycle', l: parentLogger, },);
+l.info('capture complete',);
 ```
 
 #### Shallow tagging
 
 ```ts
 // Bad -- flag as NIT: logger not re-tagged for sub-function
-function processItem({ item, l }: { item: Item; l: Logger }): void {
-  l.info('processing');
-  transformItem({ item, l });
+function processItem({ item, l, }: { item: Item; l: Logger; },): void {
+  l.info('processing',);
+  transformItem({ item, l, },);
 }
 
 // Good -- deep tagging
-function processItem({ item, l: parentLogger }: { item: Item; l: Logger }): void {
-  const l = tagged({ tag: processItem.name, l: parentLogger });
-  l.info('processing');
-  transformItem({ item, l });
+function processItem(
+  { item, l: parentLogger, }: { item: Item; l: Logger; },
+): void {
+  const l = tagged({ tag: processItem.name, l: parentLogger, },);
+  l.info('processing',);
+  transformItem({ item, l, },);
 }
 ```
 
@@ -1128,14 +1165,14 @@ function processItem({ item, l: parentLogger }: { item: Item; l: Logger }): void
 // Bad -- flag as WARNING
 async function main(): Promise<void> {
   const data = await loadData();
-  console.log(data);
+  console.log(data,);
 }
 
 main();
 
 // Good
 const data = await loadData();
-console.log(data);
+console.log(data,);
 ```
 
 ## Region markers
@@ -1145,11 +1182,11 @@ Flag missing `//region`/`//endregion` markers on substantial code blocks:
 ```ts
 //region User Authentication Logic -- Handles user login, registration, and session management
 
-function loginUser(credentials: UserCredentials): UserSession {
+function loginUser(credentials: UserCredentials,): UserSession {
   return {} as UserSession;
 }
 
-function registerUser(details: UserDetails): UserProfile {
+function registerUser(details: UserDetails,): UserProfile {
   return {} as UserProfile;
 }
 

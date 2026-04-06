@@ -10,30 +10,31 @@
  * and `./trim.ts`.
  */
 
+import {
+  dirnameFallback,
+  joinFallback,
+  resolveFallback,
+} from './fallbacks.ts';
+
 export {
   emptyDir,
   emptyFile,
   emptyPath,
   removeEmptyFilesInDir,
 } from './empty.ts';
-export { findMonorepoRoot, } from './find-monorepo-root.ts';
 export {
   ensureDir,
   ensureFile,
   ensurePath,
 } from './ensure.ts';
+// oxlint-disable-next-line import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMonorepoRoot runs
+export { findMonorepoRoot, } from './find-monorepo-root.ts';
 export {
   trimLeadingSlash,
   trimTrailingSlash,
 } from './trim.ts';
 
 //region Node delegation -- use real node:path/posix when the runtime has it
-
-import {
-  dirnameFallback,
-  joinFallback,
-  resolveFallback,
-} from './fallbacks.ts';
 
 /**
  * Whether the runtime provides Node-compatible path APIs.
@@ -94,6 +95,12 @@ export function dirname(filePath: string,): string {
  * @param filePath - Path to check
  *
  * @returns True when the path starts with `/`
+ *
+ * @example
+ * ```ts
+ * isAbsolute('/foo/bar'); // true
+ * isAbsolute('foo/bar');  // false
+ * ```
  */
 export function isAbsolute(filePath: string,): boolean {
   if (nodePath !== undefined)

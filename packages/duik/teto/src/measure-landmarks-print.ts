@@ -24,6 +24,12 @@ import type { ProfilePair, } from './measure-landmarks.ts';
  * Prints the landmark measurement comparison table to stderr.
  *
  * @param measurements - computed measurement rows from computeLandmarkMeasurements
+ *
+ * @example
+ * ```ts
+ * const rows = computeLandmarkMeasurements(pair);
+ * printMeasurementTable(rows);
+ * ```
  */
 export function printMeasurementTable(measurements: MeasurementRow[],): void {
   console.error('Landmark         relY   refW   cmpW   ratio  diff',);
@@ -49,6 +55,16 @@ export function printMeasurementTable(measurements: MeasurementRow[],): void {
  * for both reference and composite, normalized to content height.
  *
  * @param pair - reference and composite profiles with bounds
+ *
+ * @example
+ * ```ts
+ * printKeyProportions({
+ *   refProfile,
+ *   cmpProfile,
+ *   refBounds,
+ *   cmpBounds,
+ * });
+ * ```
  */
 export function printKeyProportions(pair: ProfilePair,): void {
   const {
@@ -61,53 +77,101 @@ export function printKeyProportions(pair: ProfilePair,): void {
   /** Maximum width in the reference shoulder region (y 0.14-0.22). */
   const shoulderRef = maxWidthInRange(
     refProfile,
-    contentToAbsY(refBounds, 0.14,),
-    contentToAbsY(refBounds, 0.22,),
+    contentToAbsY(
+      refBounds,
+      0.14,
+    ),
+    contentToAbsY(
+      refBounds,
+      0.22,
+    ),
   );
   /** Maximum width in the composite shoulder region (y 0.14-0.22). */
   const shoulderCmp = maxWidthInRange(
     cmpProfile,
-    contentToAbsY(cmpBounds, 0.14,),
-    contentToAbsY(cmpBounds, 0.22,),
+    contentToAbsY(
+      cmpBounds,
+      0.14,
+    ),
+    contentToAbsY(
+      cmpBounds,
+      0.22,
+    ),
   );
 
   /** Minimum width in the reference waist region (y 0.25-0.35). */
   const waistRef = minWidthInRange(
     refProfile,
-    contentToAbsY(refBounds, 0.25,),
-    contentToAbsY(refBounds, 0.35,),
+    contentToAbsY(
+      refBounds,
+      0.25,
+    ),
+    contentToAbsY(
+      refBounds,
+      0.35,
+    ),
   );
   /** Minimum width in the composite waist region (y 0.25-0.35). */
   const waistCmp = minWidthInRange(
     cmpProfile,
-    contentToAbsY(cmpBounds, 0.25,),
-    contentToAbsY(cmpBounds, 0.35,),
+    contentToAbsY(
+      cmpBounds,
+      0.25,
+    ),
+    contentToAbsY(
+      cmpBounds,
+      0.35,
+    ),
   );
 
   /** Maximum width in the reference hip/skirt region (y 0.34-0.48). */
   const hipRef = maxWidthInRange(
     refProfile,
-    contentToAbsY(refBounds, 0.34,),
-    contentToAbsY(refBounds, 0.48,),
+    contentToAbsY(
+      refBounds,
+      0.34,
+    ),
+    contentToAbsY(
+      refBounds,
+      0.48,
+    ),
   );
   /** Maximum width in the composite hip/skirt region (y 0.34-0.48). */
   const hipCmp = maxWidthInRange(
     cmpProfile,
-    contentToAbsY(cmpBounds, 0.34,),
-    contentToAbsY(cmpBounds, 0.48,),
+    contentToAbsY(
+      cmpBounds,
+      0.34,
+    ),
+    contentToAbsY(
+      cmpBounds,
+      0.48,
+    ),
   );
 
   /** Maximum width in the reference head region (y 0-0.1). */
   const headRef = maxWidthInRange(
     refProfile,
-    contentToAbsY(refBounds, 0,),
-    contentToAbsY(refBounds, 0.1,),
+    contentToAbsY(
+      refBounds,
+      0,
+    ),
+    contentToAbsY(
+      refBounds,
+      0.1,
+    ),
   );
   /** Maximum width in the composite head region (y 0-0.1). */
   const headCmp = maxWidthInRange(
     cmpProfile,
-    contentToAbsY(cmpBounds, 0,),
-    contentToAbsY(cmpBounds, 0.1,),
+    contentToAbsY(
+      cmpBounds,
+      0,
+    ),
+    contentToAbsY(
+      cmpBounds,
+      0.1,
+    ),
   );
 
   console.error('Key proportions (normalized to content height):',);

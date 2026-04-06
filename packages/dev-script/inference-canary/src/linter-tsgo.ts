@@ -73,7 +73,11 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
     );
     const output = await execPromise(
       'tsgo',
-      ['--noEmit', '-p', canaryTsconfig,],
+      [
+        '--noEmit',
+        '-p',
+        canaryTsconfig,
+      ],
       {
         timeout: LINT_TIMEOUT_MS,
       },

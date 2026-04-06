@@ -6,6 +6,12 @@ import type { $, } from '../../../../t iterable/t/index.ts';
  * @param iterable - iterable to convert
  *
  * @returns array of elements from the iterable
+ *
+ * @example
+ * ```ts
+ * $(new Set([1, 2, 3])); // [1, 2, 3]
+ * $([4, 5]); // [4, 5] (passed through)
+ * ```
  */
 export function $<const MyIterable extends $,>(
   iterable: MyIterable,

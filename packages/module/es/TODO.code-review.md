@@ -87,8 +87,8 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
   - `t boolean/t is/t p object/t iterable/f/t any/r s/p p/index.ts:44` (no comment)
   - `t boolean/t is/t p object/t iterable/f/t any/r a/p p/index.ts:5` (no comment)
   - `t boolean/t is/t p object/t thenable/f/t any/r s/p p/index.ts:47` (no comment)
-  Compared to `t object/t array/f/t number/t int/range/r s/p p/index.ts` which correctly has eslint-disable comments.
-  Suggested action: add eslint-disable comments or justification for each `as any` cast.
+    Compared to `t object/t array/f/t number/t int/range/r s/p p/index.ts` which correctly has eslint-disable comments.
+    Suggested action: add eslint-disable comments or justification for each `as any` cast.
 
 ### NON-ACTIONABLE
 

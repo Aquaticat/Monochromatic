@@ -21,7 +21,7 @@ import type {
  */
 class TaskDetail extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Current task data and display configuration, or `null` before configure. */
   #data: TaskDetailData | null = null;
@@ -38,7 +38,7 @@ class TaskDetail extends HTMLElement {
   };
 
   /** Debounced AI autofill manager. */
-  #autofill = new AutofillManager();
+  readonly #autofill = new AutofillManager();
 
   /** Initializes the shadow root. */
   constructor() {
@@ -147,11 +147,19 @@ class TaskDetail extends HTMLElement {
         if (button === null)
           return;
         const { action, } = button.dataset;
-        dispatchFn(new CustomEvent('action', {
-          bubbles: true,
-          detail: { action, title: refs.titleInput.value,
-            description: refs.descInput.value, },
-        },),);
+        dispatchFn(
+          new CustomEvent(
+            'action',
+            {
+              bubbles: true,
+              detail: {
+                action,
+                title: refs.titleInput.value,
+                description: refs.descInput.value,
+              },
+            },
+          ),
+        );
       },
     );
   }

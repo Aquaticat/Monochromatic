@@ -16,7 +16,12 @@ export default {
 
     'at-rule-no-unknown': [
       true,
-      { ignoreAtRules: ['mixin', 'apply',], },
+      {
+        ignoreAtRules: [
+          'mixin',
+          'apply',
+        ],
+      },
     ],
 
     /*'declaration-property-value-no-unknown': [true, {
@@ -130,7 +135,11 @@ export default {
     'value-keyword-case': [
       'lower',
       {
-        ignoreProperties: ['font-family', '/^--/', 'initial-value',],
+        ignoreProperties: [
+          'font-family',
+          '/^--/',
+          'initial-value',
+        ],
       },
     ],
 
@@ -141,7 +150,10 @@ export default {
     'declaration-empty-line-before': [
       'always',
       {
-        except: ['after-comment', 'first-nested',],
+        except: [
+          'after-comment',
+          'first-nested',
+        ],
       },
     ],
 

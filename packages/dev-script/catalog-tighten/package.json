@@ -15,5 +15,6 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/dev-script/catalog-tighten"
   },
+  "private": true,
   "sideEffects": true
 }

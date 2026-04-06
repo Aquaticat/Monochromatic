@@ -2,9 +2,7 @@
  * `<toggle-switch>` -- boolean toggle with animated thumb.
  * Reflects state via the `on` attribute and dispatches a `change` event on toggle.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { TOGGLE_SWITCH_STYLES, } from './toggle-switch-styles.ts';
 
 /** `<toggle-switch>` web component. */
@@ -13,7 +11,7 @@ class ToggleSwitch extends HTMLElement {
   static observedAttributes = ['on',];
 
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -70,7 +68,7 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /** Bound click handler that toggles state and dispatches a `change` event. */
-  #handleClick = this.#onHandleClick.bind(this,);
+  readonly #handleClick = this.#onHandleClick.bind(this,);
 
   /** Toggles state and dispatches a change event. */
   #onHandleClick(): void {
@@ -78,7 +76,10 @@ class ToggleSwitch extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent(
         'change',
-        { detail: { on: this.on, }, bubbles: true, },
+        {
+          detail: { on: this.on, },
+          bubbles: true,
+        },
       ),
     );
   }

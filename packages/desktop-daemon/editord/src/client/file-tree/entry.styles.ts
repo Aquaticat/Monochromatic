@@ -7,11 +7,11 @@
  */
 
 import {
-  hCss as $,
   cssCommaList,
   cssNum,
   cssRem,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Vertical padding for entry labels and summaries in `rem`: 0.125 = 1 / (2 * 2 * 2). */

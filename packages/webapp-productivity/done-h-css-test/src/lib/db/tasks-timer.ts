@@ -22,6 +22,11 @@ import {
  * @param id - Task UUID
  *
  * @returns Updated task, or `null` when the ID does not exist
+ *
+ * @example
+ * ```ts
+ * const task = await startTaskTimer('abc-123');
+ * ```
  */
 export async function startTaskTimer(id: string,): Promise<Task | null> {
   const timestamp = nowIso();
@@ -40,6 +45,11 @@ export async function startTaskTimer(id: string,): Promise<Task | null> {
  * @param id - Task UUID
  *
  * @returns Updated task, or `null` when the ID does not exist
+ *
+ * @example
+ * ```ts
+ * const task = await stopTaskTimer('abc-123');
+ * ```
  */
 export async function stopTaskTimer(id: string,): Promise<Task | null> {
   const currentTask = await getTaskById(id,);
@@ -73,6 +83,11 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
  * @param id - Task UUID
  *
  * @returns Completion result with blocker information
+ *
+ * @example
+ * ```ts
+ * const result = await completeTask('abc-123');
+ * ```
  */
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   const currentTask = await getTaskById(id,);

@@ -15,7 +15,7 @@ await describe({
       fn: async () => {
         expect(typeof verify,).toBe('function',);
       },
-    }),
+    },),
 
     it({
       name: 'verify returns boolean or promise',
@@ -24,14 +24,14 @@ await describe({
         const resolved = result instanceof Promise ? await result : result;
         expect(typeof resolved,).toBe('boolean',);
       },
-    }),
+    },),
 
     it({
       name: 'sink function exists and is callable',
       fn: async () => {
         expect(typeof $,).toBe('function',);
       },
-    }),
+    },),
 
     it({
       name: 'sink accepts valid LogRecord',
@@ -48,7 +48,7 @@ await describe({
         // Should not throw even if file is unavailable
         await Promise.resolve($(record,),);
       },
-    }),
+    },),
 
     it({
       name: 'sink handles all log levels',
@@ -67,7 +67,7 @@ await describe({
           await Promise.resolve($(record,),);
         }
       },
-    }),
+    },),
 
     it({
       name: 'sink handles unicode in message',
@@ -82,7 +82,7 @@ await describe({
 
         await Promise.resolve($(record,),);
       },
-    }),
+    },),
 
     it({
       name: 'sink handles empty message',
@@ -97,7 +97,7 @@ await describe({
 
         await Promise.resolve($(record,),);
       },
-    }),
+    },),
 
     it({
       name: 'sink handles JSON in message',
@@ -112,6 +112,6 @@ await describe({
 
         await Promise.resolve($(record,),);
       },
-    }),
+    },),
   ],
 },);

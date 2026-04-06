@@ -45,14 +45,10 @@ export function parseRange(value: string,): ParsedRange | undefined {
   const match = RANGE_RE.exec(value,);
   if (match === null)
     return undefined;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex named groups are guaranteed by RANGE_RE pattern
-  const {
-    prefix,
-    version,
-  } = match.groups as {
-    prefix: string;
-    version: string;
-  };
+  const prefix = match.groups?.['prefix'];
+  const version = match.groups?.['version'];
+  if (prefix === undefined || version === undefined)
+    return undefined;
   return {
     prefix,
     version,

@@ -18,7 +18,7 @@ await describe({
         expect(store.backends.length,).toBe(1,);
         expect(store.lossyForCircular,).toBe(true,);
       },
-    }),
+    },),
 
     it({
       name: 'creates a store with custom storeId',
@@ -26,7 +26,7 @@ await describe({
         const store = $({ storeId: 'test-sync-store', },);
         expect(store.storeId,).toBe('test-sync-store',);
       },
-    }),
+    },),
 
     it({
       name: 'set and get round-trips a value',
@@ -36,7 +36,7 @@ await describe({
         const result = store.get<{ value: number; }>('key1',);
         expect(result,).toEqual({ value: 42, },);
       },
-    }),
+    },),
 
     it({
       name: 'get returns undefined for missing keys',
@@ -45,7 +45,7 @@ await describe({
         const result = store.get('nonexistent',);
         expect(result,).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'delete removes an entry',
@@ -56,7 +56,7 @@ await describe({
         store.delete('to-delete',);
         expect(store.get('to-delete',),).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'clear removes all entries',
@@ -68,7 +68,7 @@ await describe({
         expect(store.get('a',),).toBeUndefined();
         expect(store.get('b',),).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'set returns the store for chaining',
@@ -77,7 +77,7 @@ await describe({
         const returned = store.set('k', 'v',);
         expect(returned,).toBe(store,);
       },
-    }),
+    },),
 
     it({
       name: 'size reflects number of entries',
@@ -93,7 +93,7 @@ await describe({
         store.clear();
         expect(store.size,).toBe(0,);
       },
-    }),
+    },),
 
     it({
       name: 'handles multiple backends with consensus',
@@ -112,7 +112,7 @@ await describe({
         const result = store.get<string>('shared',);
         expect(result,).toBe('hello',);
       },
-    }),
+    },),
 
     it({
       name: 'heals divergent backends to majority value',
@@ -137,7 +137,7 @@ await describe({
         // backend2 should be healed
         expect(backend2.get('key',),).toBe(correctSerialized,);
       },
-    }),
+    },),
 
     it({
       name: 'throws TypeError for cyclic value when lossyForCircular is false',
@@ -148,7 +148,7 @@ await describe({
 
         expect(() => store.set('cyc', circular,)).toThrow(TypeError,);
       },
-    }),
+    },),
 
     it({
       name: 'stores decycled value when lossyForCircular is true',
@@ -162,7 +162,7 @@ await describe({
         expect(result,).toBeDefined();
         expect(result?.data,).toBe('test',);
       },
-    }),
+    },),
 
     it({
       name: 'handles primitive values',
@@ -178,7 +178,7 @@ await describe({
         expect(store.get<boolean>('bool',),).toBe(true,);
         expect(store.get<null>('null',),).toBeNull();
       },
-    }),
+    },),
 
     it({
       name: 'handles arrays and nested objects',
@@ -188,7 +188,7 @@ await describe({
         store.set('complex', complex,);
         expect(store.get<typeof complex>('complex',),).toEqual(complex,);
       },
-    }),
+    },),
 
     it({
       name: 'LRU eviction removes oldest entry at capacity',
@@ -208,7 +208,7 @@ await describe({
         expect(store.get('a',),).toBeUndefined();
         expect(store.get('d',),).toBeDefined();
       },
-    }),
+    },),
 
     it({
       name: 'LRU access refreshes entry position',
@@ -230,7 +230,7 @@ await describe({
         expect(store.get('a',),).toBeDefined();
         expect(store.get('b',),).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'LRU delete removes key from eviction tracking',
@@ -252,7 +252,7 @@ await describe({
         expect(store.get('c',),).toBeDefined();
         expect(store.get('d',),).toBeDefined();
       },
-    }),
+    },),
 
     it({
       name: 'LRU clear resets eviction tracking',
@@ -271,7 +271,7 @@ await describe({
         store.set('d', 4,);
         expect(store.size,).toBe(2,);
       },
-    }),
+    },),
 
     it({
       name: 'no eviction by default',
@@ -285,7 +285,7 @@ await describe({
         store.set('e', 5,);
         expect(store.size,).toBe(5,);
       },
-    }),
+    },),
 
     it({
       name: 'all operations are synchronous',
@@ -303,6 +303,6 @@ await describe({
         store.delete('k',);
         store.clear();
       },
-    }),
+    },),
   ],
 },);

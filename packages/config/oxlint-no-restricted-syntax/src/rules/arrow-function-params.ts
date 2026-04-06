@@ -48,7 +48,7 @@ export function extractParamsText(
   /** Skip `async ` prefix if present. */
   let start = 0;
   if (node.async) {
-    const asyncMatch = fullText.match(/^async\s+/,);
+    const asyncMatch = /^async\s+/.exec(fullText,);
     if (asyncMatch !== null)
       start = asyncMatch[0].length;
   }

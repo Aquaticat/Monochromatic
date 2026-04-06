@@ -19,7 +19,7 @@ The bug is a shell quoting error in Claude Code's eval chain.
 
 Claude Code wraps user commands in a nested eval:
 
-```
+```bash
 eval "source $SNAPSHOT && shopt -u extglob || true && eval \"$USER_CMD\" \< /dev/null && pwd -P >| /tmp/cwd-XXX"
 ```
 
@@ -37,6 +37,7 @@ on the eval command.
 6. `< /dev/null` is parsed as a redirect on `cat` (the last simple command in the pipeline)
 
 In `execute_disk_command()` (execute_cmd.c:5770), the child process for `cat`:
+
 1. `do_piping()` at line 5870 correctly sets fd 0 to the pipe read end via `dup2(pipe_in, 0)`
 2. `do_redirections()` at line 5884 applies the `< /dev/null` redirect, overwriting fd 0 with `/dev/null`
 
@@ -90,7 +91,7 @@ hello
 
 Strace of the broken case inside the sandbox showed the exact sequence:
 
-```
+```text
 # cat child process:
 dup2(3, 0) = 0         # do_piping: fd 0 = pipe read end
 close(3) = 0
@@ -102,7 +103,7 @@ execve("/usr/bin/cat")  # cat reads from /dev/null, gets EOF
 
 Strace of the working case (`; true`):
 
-```
+```bash
 # cat child process:
 dup2(3, 0) = 0         # do_piping: fd 0 = pipe read end
 close(3) = 0
@@ -118,14 +119,16 @@ Extracted JS via `tweakcc unpack` from the compiled binary at
 
 ```javascript
 // Minified names: H = command, $ = shouldRedirect, ID = shellQuote
-function oAD(H, $ = true) {
-  if (zyA(H) || N61(H)) {           // heredoc or multiline string
-    let L = `'${H.replace(/'/g, `'"'"'`)}'`;
-    if (zyA(H)) return L;
-    return $ ? `${L} < /dev/null` : L;  // ← correct: unquoted <
+function oAD(H, $ = true,) {
+  if (zyA(H,) || N61(H,)) { // heredoc or multiline string
+    let L = `'${H.replace(/'/g, `'"'"'`,)}'`;
+    if (zyA(H,))
+      return L;
+    return $ ? `${L} < /dev/null` : L; // ← correct: unquoted <
   }
-  if ($) return ID([H, "<", "/dev/null"]);  // ← BUG: < is shell-quoted as literal
-  return ID([H]);
+  if ($)
+    return ID([H, '<', '/dev/null',],); // ← BUG: < is shell-quoted as literal
+  return ID([H,],);
 }
 ```
 
@@ -136,13 +139,14 @@ The `<` becomes a literal argument `'<'`, not a redirect operator.
 ### `HLD` -- pipe-aware redirect insertion (the correct path, but not used in sandbox)
 
 ```javascript
-function HLD(H) {
+function HLD(H,) {
   // parse command tokens, find first pipe operator
-  let D = S61(L);  // index of first |
-  if (D <= 0) return odH(H);  // fallback
+  let D = S61(L,); // index of first |
+  if (D <= 0)
+    return odH(H,); // fallback
   // Insert < /dev/null BEFORE the pipe, not after
-  let f = [...eAD(L, 0, D), "< /dev/null", ...eAD(L, D, L.length)];
-  return ID([f.join(" ")]);
+  let f = [...eAD(L, 0, D,), '< /dev/null', ...eAD(L, D, L.length,),];
+  return ID([f.join(' ',),],);
 }
 ```
 
@@ -152,11 +156,11 @@ But it is **gated on `!q.useSandbox`**:
 ### Call site -- the sandbox gate
 
 ```javascript
-Y = sAD(f);                      // replace NUL with /dev/null
-O = aAD(Y);                      // check if redirect is needed
-X = oAD(Y, O);                   // default: broken shell-quoting
-if (!q.useSandbox && Y.includes("|") && O)
-  X = HLD(Y);                    // correct pipe handling — ONLY outside sandbox
+Y = sAD(f,); // replace NUL with /dev/null
+O = aAD(Y,); // check if redirect is needed
+X = oAD(Y, O,); // default: broken shell-quoting
+if (!q.useSandbox && Y.includes('|',) && O)
+  X = HLD(Y,); // correct pipe handling — ONLY outside sandbox
 ```
 
 Inside the sandbox (`q.useSandbox === true`), `HLD` is never called.
@@ -165,8 +169,8 @@ The `oAD` path is always used, which shell-quotes `<` as a literal argument.
 ### `odH` -- fallback for complex commands (works correctly)
 
 ```javascript
-function odH(H) {
-  return ID([H]) + " < /dev/null";   // concatenates unquoted < /dev/null
+function odH(H,) {
+  return ID([H,],) + ' < /dev/null'; // concatenates unquoted < /dev/null
 }
 ```
 
@@ -176,14 +180,14 @@ This path works because `< /dev/null` is appended as raw text outside `ID()`.
 ### Final assembly
 
 ```javascript
-j.push(`eval ${X}`);
-j.push(`pwd -P >| ${z}`);
-let G = j.join(" && ");
+j.push(`eval ${X}`,);
+j.push(`pwd -P >| ${z}`,);
+let G = j.join(' && ',);
 ```
 
 Producing for the broken case:
 
-```
+```text
 source '/snapshot' && shopt ... && eval 'echo hello | cat' '<' '/dev/null' && pwd -P >| /tmp/cwd
 ```
 
@@ -226,7 +230,8 @@ which appends it to the last simple command in the chain.
 User command: `rg -l 'pattern' --type ts && cat results.txt`
 
 After eval joins its arguments:
-```
+
+```bash
 rg -l 'pattern' --type ts && cat results.txt < /dev/null
 ```
 

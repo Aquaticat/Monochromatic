@@ -22,7 +22,7 @@ await describe({
 
         expect(await memoized({ args: [5,], salt: 'v1', },),).toBe(10,);
       },
-    }),
+    },),
     it({
       name: 'returns cached value on subsequent calls',
       fn: async () => {
@@ -37,7 +37,7 @@ await describe({
         expect(await memoized({ args: [5,], salt: 'v1', },),).toBe(10,);
         expect(callCount,).toBe(1,);
       },
-    }),
+    },),
     it({
       name: 'deduplicates concurrent in-flight calls',
       fn: async () => {
@@ -59,7 +59,7 @@ await describe({
         expect(result2,).toBe(10,);
         expect(callCount,).toBe(1,);
       },
-    }),
+    },),
     it({
       name: 'evicts cache entry on rejection and retries',
       fn: async () => {
@@ -80,7 +80,7 @@ await describe({
         expect(result,).toBe(10,);
         expect(callCount,).toBe(2,);
       },
-    }),
+    },),
     it({
       name: 'different salt recomputes for same args',
       fn: async () => {
@@ -97,7 +97,7 @@ await describe({
         expect(await memoized({ args: [1,], salt: 'b', },),).toBe(1,);
         expect(callCount,).toBe(2,);
       },
-    }),
+    },),
     it({
       name: '.clear() empties the cache',
       fn: async () => {
@@ -114,7 +114,7 @@ await describe({
         await memoized({ args: [1,], salt: 'v1', },);
         expect(callCount,).toBe(2,);
       },
-    }),
+    },),
     it({
       name: '.delete() removes a specific entry',
       fn: async () => {
@@ -131,7 +131,7 @@ await describe({
         await memoized({ args: [1,], salt: 'v1', },);
         expect(callCount,).toBe(2,);
       },
-    }),
+    },),
     it({
       name: '.store provides access to the underlying Store',
       fn: async () => {
@@ -141,7 +141,7 @@ await describe({
         expect(memoized.store,).toBeDefined();
         expect(memoized.store.storeId,).toBeDefined();
       },
-    }),
+    },),
     it({
       name: 'different args produce separate cache entries',
       fn: async () => {
@@ -156,7 +156,7 @@ await describe({
         expect(await memoized({ args: [2,], salt: 'v1', },),).toBe(4,);
         expect(callCount,).toBe(2,);
       },
-    }),
+    },),
     it({
       name: 'LRU eviction at capacity',
       fn: async () => {
@@ -179,6 +179,6 @@ await describe({
         await memoized({ args: [1,], salt: 'v1', },);
         expect(callCount,).toBe(1,);
       },
-    }),
+    },),
   ],
 },);

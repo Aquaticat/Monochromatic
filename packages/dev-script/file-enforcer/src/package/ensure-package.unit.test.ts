@@ -35,7 +35,7 @@ await describe({
               .not
               .toThrow();
           },
-        }),
+        },),
         it({
           name: 'replaces previously registered entries',
           fn: async () => {
@@ -43,9 +43,9 @@ await describe({
             registerPackages([p('tmux',),],);
             /** No assertion needed beyond not throwing; index rebuild is lazy */
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion registerPackages
 
@@ -61,16 +61,16 @@ await describe({
             /** `ls` exists on every POSIX system */
             await expect(ensurePackage('ls',),).resolves.toBeUndefined();
           },
-        }),
+        },),
         it({
           name: 'returns immediately for `true`',
           fn: async () => {
             registerPackages([],);
             await expect(ensurePackage('true',),).resolves.toBeUndefined();
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion ensurePackage (already installed)
 
@@ -88,10 +88,9 @@ await describe({
             ],);
             await expect(ensurePackage('ls',),).resolves.toBeUndefined();
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion Index lookup
   ],
 },);

@@ -58,6 +58,11 @@ let currentIndex = 0;
  * @param backgrounds - processed SVG markup strings, one per page
  *
  * @param overlay - SVG overlay element to set initial background
+ *
+ * @example
+ * ```ts
+ * initPages({ backgrounds: ['<svg>...</svg>'], overlay: svgOverlay });
+ * ```
  */
 export function initPages({
   backgrounds,
@@ -85,6 +90,11 @@ export function initPages({
  * Returns the zero-based index of the active page.
  *
  * @returns current page index
+ *
+ * @example
+ * ```ts
+ * const index = getCurrentPageIndex();
+ * ```
  */
 export function getCurrentPageIndex(): number {
   return currentIndex;
@@ -133,6 +143,11 @@ function saveCurrentPage({
  * @param overlay - SVG overlay element
  *
  * @param textLayer - text layer element
+ *
+ * @example
+ * ```ts
+ * switchToPage({ index: 1, ctx, cw, ch, overlay: svgOverlay, textLayer });
+ * ```
  */
 export function switchToPage({
   index,

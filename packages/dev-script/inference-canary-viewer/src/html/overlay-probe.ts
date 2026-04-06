@@ -33,6 +33,12 @@ import {
  * @param detail - enriched probe detail (may be undefined for missing artifacts)
  *
  * @returns HTML string
+ *
+ * @example
+ * ```ts
+ * const html = await renderProbeOverlay({ id: 'Sonnet-csv-2026', entry, probe: 'csv-rfc4180', detail });
+ * // '<div class="detail-popover" popover="auto" id="run-Sonnet-csv-2026">...<\/div>'
+ * ```
  */
 export async function renderProbeOverlay({
   id,

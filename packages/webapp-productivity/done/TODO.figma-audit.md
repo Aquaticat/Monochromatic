@@ -1,6 +1,7 @@
 # Figma audit: implementation vs design
 
 Comparing the current implementation against the Figma wireframes:
+
 - **Draft 3 tablet** (node 514-5446)
 - **Draft 2 phone** (node 205-2193)
 
@@ -15,6 +16,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: the drawer renders "Firstname" as plain text with no avatar icon or dropdown caret. Nav links are text-only (no icons). The structure is otherwise correct (inline sidebar on tablet, popover on phone), but the visual richness is missing.
 
 **Suggestions**:
+
 - Add the profile avatar icon (the filled-person Material icon) before the name
 - Add the dropdown caret after the name
 - Add Material icons before each nav link (Inbox, In Progress, Settings, Contact)
@@ -26,6 +28,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: matches the two-mode behavior correctly (hamburger hidden on tablet, shown on phone). The search icon is a custom CSS shape. Title centers on mobile but already aligns left on tablet. The bottom border on tablet mode is present.
 
 **Suggestions**:
+
 - The implementation is close. Consider using an actual SVG magnifying-glass icon to match Figma more precisely, though the CSS-drawn version is acceptable.
 
 ## Inbox page
@@ -36,6 +39,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: uses a `<section-heading>` component with a text emoji icon and Unicode triangles for the toggle indicator. "My location" and "My focus" controls are stacked vertically in all viewports (never side-by-side). The autodetect toggle is a text button with a `<toggle-switch>`. Location chips exist but are basic text.
 
 **Suggestions**:
+
 - On tablet, lay out "My location" and "My focus" side by side (the implementation currently stacks them at all widths)
 - Replace the Unicode triangle toggle (up/down) with an SVG chevron to match Figma
 - Add a pin/location icon to the location chip ("Walmart")
@@ -46,6 +50,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: checkbox and title row matches. Metadata chips are rendered as plain text spans with no icons (just text like `# shopping`, `tracked: 0s`, `where: Walmart`). The tags chip uses a muted red color. No icons before chip text.
 
 **Suggestions**:
+
 - Add small inline icons (SVG or Material symbol) before each metadata chip to match Figma
 - The `# tag` chip color (muted red) already matches
 
@@ -66,6 +71,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: matches. The FAB is a circular button with `+` text, fixed bottom-right.
 
 **Suggestions**:
+
 - None; the FAB matches well.
 
 ## In-progress page
@@ -82,6 +88,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: uses `<setting-group>` components. The labels and descriptions match. Calendar connect is rendered with `mode="button"`. Toggle switches are present for the other two.
 
 **Suggestions**:
+
 - Add the sync icon to the calendar connect row
 - Verify the toggle-switch visual (rounded pill shape) matches Figma precisely
 
@@ -104,6 +111,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: does not show a results heading. Task cards appear directly. The heading showing the search term is missing.
 
 **Suggestions**:
+
 - Add a heading at the top of search results showing the current query (e.g. `#shopping`)
 
 ## Task details panel
@@ -117,6 +125,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: structurally matches. The close button uses an SVG X. The header layout matches. Action buttons say "Attach file" and "Take photo" but lack the icons. Metadata pills are present but without icon prefixes (same as task cards).
 
 **Suggestions**:
+
 - Add icons to the "Attach file" (paperclip) and "Take photo" (camera) buttons
 - Add icon prefixes to the metadata pills (same as task card chip icons)
 - In create mode, the header says "New task" and the save button says "Create" -- this matches Figma's "Task details" heading but the Figma design always shows "Task details" regardless of mode. Decide whether to unify or keep the distinction.
@@ -127,6 +136,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: uses `Inter, system-ui, sans-serif`. Font sizes match the Figma proportions (title 1.25rem, heading 1.5rem, chips 1rem).
 
 **Suggestions**:
+
 - Typography is already aligned. No changes needed.
 
 ## Color and theming
@@ -135,6 +145,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 - **Implementation**: uses CSS custom properties (`--fg`, `--bg`, `--red-fg` etc.) with dark mode support via `prefers-color-scheme`. The light-mode colors visually match Figma.
 
 **Suggestions**:
+
 - Colors are well-matched. No changes needed.
 
 ## Summary of highest-impact gaps

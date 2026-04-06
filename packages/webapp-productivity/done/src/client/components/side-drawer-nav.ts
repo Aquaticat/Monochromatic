@@ -4,14 +4,18 @@
  * Pure functions that construct `\<nav\>`, `\<header\>`, and close-button elements.
  * Used by both the inline sidebar and popover panel trees.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Builds a nav element with the standard link set.
  *
  * @returns Navigation element with app links
+ *
+ * @example
+ * ```ts
+ * const nav = buildNav();
+ * sidebar.append(nav);
+ * ```
  */
 export function buildNav(): HTMLElement {
   return h({
@@ -47,6 +51,11 @@ export function buildNav(): HTMLElement {
  * @param closeButton - Close button element, or null for inline sidebar
  *
  * @returns Header element
+ *
+ * @example
+ * ```ts
+ * const header = buildHeader(closeButton);
+ * ```
  */
 export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
   const children: HTMLElement[] = [
@@ -71,6 +80,11 @@ export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
  * @param label - Accessible label for the button
  *
  * @returns Close button element
+ *
+ * @example
+ * ```ts
+ * const button = buildCloseButton('Close menu');
+ * ```
  */
 export function buildCloseButton(label: string,): HTMLElement {
   const button = h({

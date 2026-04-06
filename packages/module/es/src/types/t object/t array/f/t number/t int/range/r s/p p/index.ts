@@ -86,7 +86,10 @@ export function $<const Length extends number,>(
   // oxlint-disable typescript/no-unsafe-return, typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- branded tuple return type requires cast
   return Array.from(
     { length, },
-    function getIndex(_, index,) {
+    function getIndex(
+      _,
+      index,
+    ) {
       return index;
     },
   ) as any;

@@ -9,7 +9,7 @@
 const PILL_BORDER_RADIUS_REM = 62.5;
 
 /** Search-specific styles for hints, tag chips, and responsive layout. */
-export const searchStyles = `
+export const searchStyles: string = `
 .search-hint {
   color: var(--fg-weaker);
   font-size: 1rem;

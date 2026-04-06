@@ -6,14 +6,20 @@
  */
 
 import {
-  hCss as $,
   cssVar,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Generates `::highlight()` CSS rules for all syntax highlight groups.
  *
  * @returns CSS string with `::highlight(hl-*)` rules
+ *
+ * @example
+ * ```ts
+ * const css = highlightStyles();
+ * // '::highlight(hl-keyword) { color: var(--hl-keyword); } ...'
+ * ```
  */
 export function highlightStyles(): string {
   return [

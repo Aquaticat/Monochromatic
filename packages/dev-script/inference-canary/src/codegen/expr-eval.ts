@@ -5,8 +5,8 @@
  * with correct operator precedence and parentheses. Models frequently get precedence
  * wrong or fail on nested parentheses.
  */
-import { EXPR_PERF_INPUT, } from './perf-test-data/index.ts';
 import type { Probe, } from '../probes.ts';
+import { EXPR_PERF_INPUT, } from './perf-test-data/index.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** Test input covering precedence, parentheses, negation, and floats */

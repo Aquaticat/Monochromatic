@@ -42,7 +42,7 @@ const DOUBLE_SHIFT_THRESHOLD_MS = 400;
 /** `<search-overlay>` — self-contained modal search dialog. */
 export class SearchOverlay extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
   /** Modal dialog element containing the search UI. */
   #dialog: HTMLDialogElement | null = null;
   /** Text input element for the search query. */
@@ -62,7 +62,7 @@ export class SearchOverlay extends HTMLElement {
   /** True if a non-Shift key was pressed between two Shift releases. */
   #interveningKey = false;
   /** Mutable debounce state shared across search invocations. */
-  #searchState: SearchState = {
+  readonly #searchState: SearchState = {
     debouncedSearch: null,
     searchGeneration: 0,
   };

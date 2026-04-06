@@ -16,6 +16,12 @@ import type { Post, } from './content.ts';
  * @param posts - all loaded posts
  *
  * @returns record mapping language codes to their posts
+ *
+ * @example
+ * ```ts
+ * const byLang = groupByLang(posts);
+ * // { en: [...], fr: [...] }
+ * ```
  */
 export function groupByLang(posts: readonly Post[],): Record<string, Post[]> {
   return Object.fromEntries(
@@ -34,6 +40,12 @@ export function groupByLang(posts: readonly Post[],): Record<string, Post[]> {
  * @param posts - all loaded posts
  *
  * @returns record mapping post names to all language variants
+ *
+ * @example
+ * ```ts
+ * const byName = groupByName(posts);
+ * // { 'hello-world': [enPost, frPost] }
+ * ```
  */
 export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
   return Object.fromEntries(
@@ -56,6 +68,12 @@ export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
  * @param posts - all loaded posts
  *
  * @returns deduplicated array of tag strings
+ *
+ * @example
+ * ```ts
+ * const tags = allTags(posts);
+ * // ['typescript', 'css', 'web']
+ * ```
  */
 export function allTags(posts: readonly Post[],): string[] {
   return [...new Set(posts.flatMap(function getTags(post,) {
@@ -69,6 +87,12 @@ export function allTags(posts: readonly Post[],): string[] {
  * @param posts - all loaded posts
  *
  * @returns record mapping tags to posts containing that tag
+ *
+ * @example
+ * ```ts
+ * const byTag = groupByTag(posts);
+ * // { typescript: [...], css: [...] }
+ * ```
  */
 export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
   const tags = allTags(posts,);
@@ -90,6 +114,12 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
  * @param posts - all loaded posts
  *
  * @returns nested record of lang \> tag \> posts
+ *
+ * @example
+ * ```ts
+ * const grouped = groupByLangThenTag(posts);
+ * // { en: { typescript: [...], css: [...] }, fr: { ... } }
+ * ```
  */
 export function groupByLangThenTag(
   posts: readonly Post[],

@@ -3,8 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
-import type { SubprocessError, } from 'nano-spawn';
-import spawn from 'nano-spawn';
+import spawn, { type SubprocessError, } from 'nano-spawn';
 
 /** Prefix emitted by the tagged logger on info-level lines */
 const LOG_PREFIX = '[info]';
@@ -82,7 +81,7 @@ await describe({
         expect(result.stdout.trim(),).toBe('/tmp/test',);
         expect(result.exitCode,).toBe(0,);
       },
-    }),
+    },),
 
     it({
       name: 'calls node:path basename with ext argument',
@@ -93,7 +92,7 @@ await describe({
         expect(result.stdout.trim(),).toBe('foo',);
         expect(result.exitCode,).toBe(0,);
       },
-    }),
+    },),
 
     it({
       name: 'coerces numeric arguments for arithmetic',
@@ -102,7 +101,7 @@ await describe({
         expect(result.stdout.trim(),).toBe('/a/b',);
         expect(result.exitCode,).toBe(0,);
       },
-    }),
+    },),
 
     //endregion Function calls
 
@@ -115,7 +114,7 @@ await describe({
         expect(result.stdout.trim(),).toBe('/',);
         expect(result.exitCode,).toBe(0,);
       },
-    }),
+    },),
 
     it({
       name: 'prints delimiter export value',
@@ -124,7 +123,7 @@ await describe({
         expect(result.stdout.trim(),).toBe(':',);
         expect(result.exitCode,).toBe(0,);
       },
-    }),
+    },),
 
     //endregion Non-function exports
 
@@ -139,7 +138,7 @@ await describe({
         expect(result.stdout,).toBe('1',);
         expect(result.exitCode,).toBe(0,);
       },
-    }),
+    },),
 
     it({
       name: 'calls default export function and prints its return value',
@@ -150,7 +149,7 @@ await describe({
         expect(result.stdout,).toBe('1',);
         expect(result.exitCode,).toBe(0,);
       },
-    }),
+    },),
 
     //endregion Default export
 
@@ -164,7 +163,7 @@ await describe({
         expect(result.stderr,).toContain('not found',);
         expect(result.stderr,).toContain('Available exports',);
       },
-    }),
+    },),
 
     it({
       name: 'errors when non-function export receives arguments',
@@ -173,7 +172,7 @@ await describe({
         expect(result.exitCode,).not.toBe(0,);
         expect(result.stderr,).toContain('not a function',);
       },
-    }),
+    },),
 
     it({
       name: 'errors when specifier cannot be resolved',
@@ -182,7 +181,7 @@ await describe({
         expect(result.exitCode,).not.toBe(0,);
         expect(result.stderr,).toContain('Cannot resolve',);
       },
-    }),
+    },),
 
     //endregion Error cases
 
@@ -196,7 +195,7 @@ await describe({
         expect(result.stdout,).toContain('SPECIFIER',);
         expect(result.stdout,).toContain('EXPORT',);
       },
-    }),
+    },),
 
     //endregion Help
 
@@ -208,7 +207,7 @@ await describe({
         const result = await runCliFy({ args: [], },);
         expect(result.exitCode,).not.toBe(0,);
       },
-    }),
+    },),
 
     it({
       name: 'errors when only specifier provided',
@@ -216,8 +215,7 @@ await describe({
         const result = await runCliFy({ args: ['node:path',], },);
         expect(result.exitCode,).not.toBe(0,);
       },
-    }),
-
+    },),
     //endregion Missing arguments
   ],
 },);

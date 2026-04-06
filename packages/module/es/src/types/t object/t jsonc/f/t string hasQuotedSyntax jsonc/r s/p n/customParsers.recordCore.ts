@@ -28,6 +28,13 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
  * @param tail - Tail after the ':' token
  *
  * @returns Value node with optional comment, and remaining tail after the value
+ *
+ * @example
+ * ```ts
+ * const { valueNode, remaining } = parseRecordValue(' 42, "b": 2}' as FragmentStringJsonc);
+ * // valueNode.value === 42
+ * // remaining === ', "b": 2}'
+ * ```
  */
 export function parseRecordValue(
   tail: FragmentStringJsonc,
@@ -63,11 +70,22 @@ export function parseRecordValue(
  * @param tail - Tail at the start of a member (may have leading comment)
  *
  * @returns Entry tuple [key, value] and remaining tail after the value
+ *
+ * @example
+ * ```ts
+ * const { entry, remaining } = parseOneRecordMember('"a": 1}' as FragmentStringJsonc);
+ * // entry[0].value === '"a"'
+ * // entry[1].value === 1
+ * // remaining === '}'
+ * ```
  */
 export function parseOneRecordMember(
   tail: FragmentStringJsonc,
 ): {
-  entry: [Jsonc.RecordKey, Jsonc.Value,];
+  entry: [
+    Jsonc.RecordKey,
+    Jsonc.Value,
+  ];
   remaining: FragmentStringJsonc;
 } {
   const {
@@ -80,7 +98,10 @@ export function parseOneRecordMember(
     remaining,
   } = parseRecordValue(afterColon,);
   return {
-    entry: [keyNode, valueNode,],
+    entry: [
+      keyNode,
+      valueNode,
+    ],
     remaining,
   };
 }
@@ -95,6 +116,13 @@ export function parseOneRecordMember(
  * @param entries - Accumulated entries; treated immutably during recursion
  *
  * @returns Entries parsed up to '}' and the remaining tail after the closing brace
+ *
+ * @example
+ * ```ts
+ * const { entries, tail } = parseRecordMembers('"a": 1, "b": 2}rest' as FragmentStringJsonc);
+ * // entries.length === 2
+ * // tail === 'rest'
+ * ```
  */
 export function parseRecordMembers(
   tail: FragmentStringJsonc,
@@ -103,7 +131,10 @@ export function parseRecordMembers(
     Jsonc.Value,
   ][] = [],
 ): {
-  entries: readonly [Jsonc.RecordKey, Jsonc.Value,][];
+  entries: readonly [
+    Jsonc.RecordKey,
+    Jsonc.Value,
+  ][];
   tail: FragmentStringJsonc;
 } {
   /** Leading comments at member start; check for closing brace. */
@@ -153,6 +184,13 @@ export function parseRecordMembers(
  * @param context - Optional value base used for comment propagation
  *
  * @returns Parsed record node and `remainingContent` after the closing '}'
+ *
+ * @example
+ * ```ts
+ * const result = customParserForRecord({ value: '{"a": 1}' as FragmentStringJsonc });
+ * // result.value is a Map with entry ["a", 1]
+ * // result.remainingContent === ''
+ * ```
  */
 export function customParserForRecord(
   {

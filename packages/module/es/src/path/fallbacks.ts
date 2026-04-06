@@ -12,6 +12,12 @@
  * @param filePath - Raw path to normalize
  *
  * @returns Normalized path
+ *
+ * @example
+ * ```ts
+ * normalize('/foo/bar//baz/./qux/../quux'); // '/foo/bar/baz/quux'
+ * normalize('');                             // '.'
+ * ```
  */
 export function normalize(filePath: string,): string {
   if (filePath === '')
@@ -66,6 +72,13 @@ export function normalize(filePath: string,): string {
  * @param filePath - POSIX path
  *
  * @returns Parent directory path
+ *
+ * @example
+ * ```ts
+ * dirnameFallback('/foo/bar/baz.ts'); // '/foo/bar'
+ * dirnameFallback('/foo/bar/');       // '/foo'
+ * dirnameFallback('');                // '.'
+ * ```
  */
 export function dirnameFallback(filePath: string,): string {
   if (filePath === '')
@@ -108,6 +121,13 @@ export function dirnameFallback(filePath: string,): string {
  * @param segments - Path segments to join
  *
  * @returns Joined and normalized path
+ *
+ * @example
+ * ```ts
+ * joinFallback('foo', 'bar', 'baz');   // 'foo/bar/baz'
+ * joinFallback('/root', '../sibling'); // '/sibling'
+ * joinFallback();                      // '.'
+ * ```
  */
 export function joinFallback(...segments: string[]): string {
   if (segments.length === 0)
@@ -133,6 +153,12 @@ export function joinFallback(...segments: string[]): string {
  * @param segments - Path segments to resolve
  *
  * @returns Absolute, normalized path
+ *
+ * @example
+ * ```ts
+ * resolveFallback('/foo', 'bar', './baz'); // '/foo/bar/baz'
+ * resolveFallback('foo', 'bar');           // `${cwd}/foo/bar`
+ * ```
  */
 export function resolveFallback(...segments: string[]): string {
   /** Accumulated path built right-to-left */

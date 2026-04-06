@@ -12,6 +12,11 @@ import { readFile, } from 'node:fs/promises';
  * @param input - string to hash
  *
  * @returns hex-encoded SHA-256 digest
+ *
+ * @example
+ * ```ts
+ * const hash = sha256('hello world');
+ * ```
  */
 export function sha256(input: string,): string {
   return createHash('sha256',).update(input,).digest('hex',);
@@ -26,6 +31,11 @@ export function sha256(input: string,): string {
  * @param pipelineSourcePath - path to the pipeline config source
  *
  * @returns hex-encoded SHA-256 digest of the pipeline source
+ *
+ * @example
+ * ```ts
+ * const hash = await computePipelineHash('src/lib/markdown.ts');
+ * ```
  */
 export async function computePipelineHash(
   pipelineSourcePath: string,

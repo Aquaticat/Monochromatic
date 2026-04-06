@@ -14,25 +14,27 @@ This plugin bridges the gap.
 
 ```ts
 // tsdown.node.config.ts
-import { importAttributesPlugin } from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
-import { defineConfig } from 'tsdown';
+import {
+  importAttributesPlugin,
+} from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
+import { defineConfig, } from 'tsdown';
 
 export default defineConfig({
-  plugins: [importAttributesPlugin()],
-});
+  plugins: [importAttributesPlugin(),],
+},);
 ```
 
 Source files can then use import attributes:
 
 ```ts
 // Static import
-import query from './schema.sql' with { type: 'text' };
+import query from './schema.sql' with { type: 'text', };
 
 // Re-export
-export { default as query } from './schema.sql' with { type: 'text' };
+export { default as query, } from './schema.sql' with { type: 'text', };
 
 // Dynamic import
-const mod = await import('./schema.sql', { with: { type: 'text' } });
+const mod = await import('./schema.sql', { with: { type: 'text', }, });
 ```
 
 All three forms produce a module whose default export is the file content as a string.
@@ -46,14 +48,14 @@ All three forms produce a module whose default export is the file content as a s
 The plugin uses two mechanisms to intercept imports before rolldown tries to parse
 non-JavaScript files:
 
-1.  **`transform` hook** -- rewrites `with { type: '...' }` clauses into query parameters
-    on the specifier (e.g. `'./file.sql?__importattr=text'`).
-    Handles static imports and re-exports reliably.
+1. **`transform` hook** -- rewrites `with { type: '...' }` clauses into query parameters
+   on the specifier (e.g. `'./file.sql?__importattr=text'`).
+   Handles static imports and re-exports reliably.
 
-2.  **`resolveId` hook** -- for dynamic imports, rolldown's Rust scanner discovers
-    dependencies from the original AST before `transform` runs.
-    The plugin reads the importer's source to detect the attribute clause
-    and tags the resolved ID with the appropriate query parameter.
+2. **`resolveId` hook** -- for dynamic imports, rolldown's Rust scanner discovers
+   dependencies from the original AST before `transform` runs.
+   The plugin reads the importer's source to detect the attribute clause
+   and tags the resolved ID with the appropriate query parameter.
 
 The `load` hook then intercepts tagged IDs, reads the file,
 and returns the handler's output as a JavaScript module.

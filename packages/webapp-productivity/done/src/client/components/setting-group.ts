@@ -1,6 +1,4 @@
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the toggle-switch custom element
 import './toggle-switch.ts';
@@ -41,7 +39,7 @@ const STYLES = css(`
  */
 class SettingGroup extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -61,7 +59,11 @@ class SettingGroup extends HTMLElement {
         tag: 'button',
         attrs: { part: 'action', },
         children: [
-          h({ tag: 'slot', attrs: { name: 'action', }, text: 'connect?', },),
+          h({
+            tag: 'slot',
+            attrs: { name: 'action', },
+            text: 'connect?',
+          },),
         ],
       },)
       : h({

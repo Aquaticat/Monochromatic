@@ -43,6 +43,11 @@ let histories: PageHistory[] = [];
  * Each page starts with a single empty snapshot at index 0.
  *
  * @param pageCount - number of pages to create history for
+ *
+ * @example
+ * ```ts
+ * initHistory(2);
+ * ```
  */
 export function initHistory(pageCount: number,): void {
   /** Shared initial empty snapshot */
@@ -67,6 +72,11 @@ export function initHistory(pageCount: number,): void {
  * @param pageIndex - page to push state for
  *
  * @param snapshot - captured state after the completed action
+ *
+ * @example
+ * ```ts
+ * pushSnapshot({ pageIndex: 0, snapshot: { strokes: [], textEntries: [] } });
+ * ```
  */
 export function pushSnapshot({
   pageIndex,
@@ -99,6 +109,11 @@ export function pushSnapshot({
  * @param pageIndex - page to undo on
  *
  * @returns snapshot to restore, or null if at the beginning
+ *
+ * @example
+ * ```ts
+ * const snapshot = undo(0);
+ * ```
  */
 export function undo(pageIndex: number,): Snapshot | null {
   const history = histories[pageIndex];
@@ -114,6 +129,11 @@ export function undo(pageIndex: number,): Snapshot | null {
  * @param pageIndex - page to redo on
  *
  * @returns snapshot to restore, or null if at the end
+ *
+ * @example
+ * ```ts
+ * const snapshot = redo(0);
+ * ```
  */
 export function redo(pageIndex: number,): Snapshot | null {
   const history = histories[pageIndex];
@@ -129,6 +149,11 @@ export function redo(pageIndex: number,): Snapshot | null {
  * @param pageIndex - page to check
  *
  * @returns `true` if there is at least one prior state
+ *
+ * @example
+ * ```ts
+ * if (canUndo(0)) undo(0);
+ * ```
  */
 export function canUndo(pageIndex: number,): boolean {
   const history = histories[pageIndex];
@@ -141,6 +166,11 @@ export function canUndo(pageIndex: number,): boolean {
  * @param pageIndex - page to check
  *
  * @returns `true` if there is at least one forward state
+ *
+ * @example
+ * ```ts
+ * if (canRedo(0)) redo(0);
+ * ```
  */
 export function canRedo(pageIndex: number,): boolean {
   const history = histories[pageIndex];

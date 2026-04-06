@@ -21,15 +21,15 @@ import type {
  * if there were overlapping prefixes (there are not currently).
  */
 const DISTRO_MANAGER_MAP: Record<string, PackageManager> = {
-  'ubuntu': 'apt',
-  'debian': 'apt',
-  'fedora': 'dnf',
-  'centos': 'dnf',
-  'rhel': 'dnf',
-  'rocky': 'dnf',
-  'alma': 'dnf',
-  'alpine': 'apk',
-  'arch': 'pacman',
+  ubuntu: 'apt',
+  debian: 'apt',
+  fedora: 'dnf',
+  centos: 'dnf',
+  rhel: 'dnf',
+  rocky: 'dnf',
+  alma: 'dnf',
+  alpine: 'apk',
+  arch: 'pacman',
 };
 
 /**
@@ -57,14 +57,13 @@ export function detectPackageManager(distro: string,): PackageManager {
     : distro;
 
   for (const [prefix, manager,] of Object.entries(DISTRO_MANAGER_MAP,)) {
-    if (baseName === prefix) {
+    if (baseName === prefix)
       return manager;
-    }
   }
 
   throw new Error(
     `Unknown distro "${distro}" -- cannot determine package manager. `
-    + `Known distros: ${Object.keys(DISTRO_MANAGER_MAP,).join(', ',)}`,
+      + `Known distros: ${Object.keys(DISTRO_MANAGER_MAP,).join(', ',)}`,
   );
 }
 
@@ -155,9 +154,8 @@ export function userCreationCommand({
   readonly manager: PackageManager;
   readonly user: UserContext;
 },): string {
-  if (user === 'root') {
+  if (user === 'root')
     return '';
-  }
 
   /**
    * Alpine uses BusyBox `adduser` which requires `-D` for non-interactive mode.

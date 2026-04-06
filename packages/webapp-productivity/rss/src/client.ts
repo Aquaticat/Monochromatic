@@ -55,7 +55,11 @@ function addScrollEvents(scrollOptions: {
     function onIntersect(entries,) {
       const [entry,] = entries;
       if (!entry) {
-        console.error(`empty entries for observer`, entries, observer,);
+        console.error(
+          `empty entries for observer`,
+          entries,
+          observer,
+        );
         return;
       }
       const ratio = entry.intersectionRatio;
@@ -105,7 +109,7 @@ elements.forEach(function bindScrollIgnore(element,) {
   element.addEventListener(
     'scrolledOut',
     function onScrolledOut() {
-      void (async function onScrolledOutAsync() {
+      void (async function onScrolledOutAsync(): Promise<void> {
         try {
           console.error('scrolledOut',);
           const metadata = notNullishOrThrow(
@@ -119,12 +123,18 @@ elements.forEach(function bindScrollIgnore(element,) {
             ? { link: anchor.href, }
             : { metadataOuterHtml: metadata.outerHTML, };
 
-          const response = await fetch(`/api/ignore/new`, {
-            method: 'POST',
-            body: JSON.stringify(body,),
-          },);
+          const response = await fetch(
+            `/api/ignore/new`,
+            {
+              method: 'POST',
+              body: JSON.stringify(body,),
+            },
+          );
           if (!response.ok) {
-            console.error(`ignore request failed`, response,);
+            console.error(
+              `ignore request failed`,
+              response,
+            );
             return;
           }
           const text = await response.text();
@@ -132,7 +142,10 @@ elements.forEach(function bindScrollIgnore(element,) {
           element.dataset.ignored = '';
         }
         catch (error: unknown) {
-          console.error(`scrolledOut handler failed`, error,);
+          console.error(
+            `scrolledOut handler failed`,
+            error,
+          );
         }
       })();
     },

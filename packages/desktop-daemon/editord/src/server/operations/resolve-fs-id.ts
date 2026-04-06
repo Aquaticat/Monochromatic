@@ -63,7 +63,7 @@ function windowsFsId({ path, }: { path: string; },): string {
       encoding: 'utf8',
     },
   );
-  const match = output.match(/Serial Number is\s+(\S+)/i,);
+  const match = /Serial Number is\s+(\S+)/i.exec(output,);
   if (match === null)
     throw new Error(`failed to parse volume serial from: ${output}`,);
   return match[1] ?? '';

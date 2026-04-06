@@ -46,28 +46,28 @@ export const LSP_FEATURE_TIMEOUT_MS = 10_000;
  */
 export class LspClient {
   /** Child process handle. */
-  #proc: ChildProcess;
+  readonly #proc: ChildProcess;
 
   /** Map of pending requests keyed by JSON-RPC ID. */
-  #pending = new Map<number, PendingLspRequest>();
+  readonly #pending = new Map<number, PendingLspRequest>();
 
   /** Counter for generating unique JSON-RPC request IDs. */
   #nextId = 0;
 
   /** Display name for logging (e.g. "oxlint", "tsgo", "dprint"). */
-  #name: string;
+  readonly #name: string;
 
   /** Tagged logger for this LSP client. */
-  #l: Logger;
+  readonly #l: Logger;
 
   /** Callback for server-initiated notifications. */
-  #onNotification: (event: {
+  readonly #onNotification: (event: {
     method: string;
     params: unknown;
   },) => void;
 
   /** Callback invoked when the process exits. */
-  #onExit: (event: {
+  readonly #onExit: (event: {
     unexpected: boolean;
     code: number | null;
     recentStderr: string;
@@ -172,14 +172,14 @@ export class LspClient {
       },
     );
     /** Maximum bytes kept in the rolling stderr buffer. */
-    const STDERR_BUFFER_LIMIT = 4096;
+    const STDERR_BUFFER_LIMIT = 4_096;
     const client = this;
     this.#proc.stderr?.on(
       'data',
       function handleStderr(chunk: Buffer,) {
         const text = chunk.toString('utf8',).trimEnd();
         clientLog.error(`stderr: ${text}`,);
-        client.#stderrBuffer += text + '\n';
+        client.#stderrBuffer += `${text}\n`;
         if (client.#stderrBuffer.length > STDERR_BUFFER_LIMIT)
           client.#stderrBuffer = client.#stderrBuffer.slice(-STDERR_BUFFER_LIMIT,);
       },

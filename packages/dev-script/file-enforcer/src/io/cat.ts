@@ -103,10 +103,10 @@ export async function cat(
     input.map(
       function expandOnePath(
         path: string,
-      ): Promise<readonly string[]> | readonly string[] {
+      ): Promise<readonly string[]> {
         if (GLOB_CHARS.test(path,))
           return expandGlob(path,);
-        return [path,];
+        return Promise.resolve([path,],);
       },
     ),
   );

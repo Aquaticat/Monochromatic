@@ -145,7 +145,10 @@ export function wireLsp(
    * actual rename. Captures the cursor position at initiation time so the
    * rename request uses the correct symbol location.
    */
-  let renamePosition: { line: number; character: number; } | null = null;
+  let renamePosition: {
+    line: number;
+    character: number;
+  } | null = null;
 
   renameInput.addEventListener(
     'rename-confirm',

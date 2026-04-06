@@ -1,328 +1,43 @@
-import {
-  expect as chaiExpect,
-  use,
-} from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+/**
+ * Jest-style `expect` function with asymmetric matchers and scoped assertion tracking.
+ *
+ * @module
+ */
+
 import {
   match as sinonMatch,
   type SinonMatcher,
-  type SinonSpy,
 } from 'sinon';
-import sinonChai from 'sinon-chai';
 
-// oxlint-disable-next-line no-unsafe-call -- chai plugin registration is untyped
-use(chaiAsPromised,);
-// oxlint-disable-next-line no-unsafe-call -- chai plugin registration is untyped
-use(sinonChai,);
+import {
+  buildMatchers,
+  chaiExpect,
+  type MatcherSet,
+} from './expect-matchers.ts';
 
-//region Matcher set builder
+export type { MatcherSet, } from './expect-matchers.ts';
 
 /**
- * Jest-style matcher methods backed by a chai Assertion instance.
- * Each method delegates to the corresponding chai assertion.
+ * Async versions of Jest-style matchers for promise-based assertions.
+ * Each method returns a Promise that resolves on success or rejects on failure.
+ * Used by `expect(promise).rejects` and `expect(promise).resolves`.
  */
-export type MatcherSet = {
-  toBe: (expected: unknown,) => void;
-  toBeCloseTo: (
-    expected: number,
-    precision?: number,
-  ) => void;
-  toBeDefined: () => void;
-  toBeFalsy: () => void;
-  toBeGreaterThan: (expected: number,) => void;
-  toBeGreaterThanOrEqual: (expected: number,) => void;
-  toBeInstanceOf: (expected: abstract new (...args: never) => unknown,) => void;
-  toBeLessThan: (expected: number,) => void;
-  toBeLessThanOrEqual: (expected: number,) => void;
-  toBeNaN: () => void;
-  toBeNull: () => void;
-  toBeTruthy: () => void;
-  toBeTypeOf: (expected: 'bigint' | 'boolean' | 'function' | 'number' | 'object' | 'string' | 'symbol' | 'undefined',) => void;
-  toBeUndefined: () => void;
-  toContain: (expected: unknown,) => void;
-  toContainEqual: (expected: unknown,) => void;
-  toEqual: (expected: unknown,) => void;
-  toHaveBeenCalled: () => void;
-  toHaveBeenCalledExactlyOnceWith: (...args: readonly unknown[]) => void;
-  toHaveBeenCalledTimes: (count: number,) => void;
-  toHaveBeenCalledWith: (...args: readonly unknown[]) => void;
-  toHaveBeenLastCalledWith: (...args: readonly unknown[]) => void;
-  toHaveBeenNthCalledWith: (n: number, ...args: readonly unknown[]) => void;
-  toHaveLength: (expected: number,) => void;
-  toHaveProperty: (
-    path: string,
-    value?: unknown,
-  ) => void;
-  toHaveReturned: () => void;
-  toHaveReturnedTimes: (count: number,) => void;
-  toHaveReturnedWith: (expected: unknown,) => void;
-  toHaveLastReturnedWith: (expected: unknown,) => void;
-  toHaveNthReturnedWith: (n: number, expected: unknown,) => void;
-  toMatch: (expected: string | RegExp,) => void;
-  toMatchObject: (expected: Record<string, unknown>,) => void;
-  toSatisfy: (predicate: (value: unknown,) => boolean,) => void;
-  toStrictEqual: (expected: unknown,) => void;
-  toThrow: (expected?: string | RegExp | (abstract new (...args: never) => unknown),) => void;
+export type AsyncMatcherSet = {
+  [K in keyof MatcherSet]: (...args: Parameters<MatcherSet[K]>) => Promise<void>;
 };
 
-/**
- * Builds a Jest-style matcher set from a chai Assertion instance.
- *
- * @param a - Chai assertion (may have `.not` flag set)
- *
- * @param actual - Raw value being asserted on, passed through for matchers that need direct access
- *
- * @returns object with Jest-compatible matcher methods
- */
-function buildMatchers(a: Chai.Assertion, actual: unknown,): MatcherSet {
-  return {
-    toBe: function toBe(expected: unknown,): void {
-
-      a.to.equal(expected,);
-    },
-
-    toEqual: function toEqual(expected: unknown,): void {
-
-      a.to.deep.equal(expected,);
-    },
-
-    toContain: function toContain(expected: unknown,): void {
-
-      a.to.include(expected,);
-    },
-
-    toContainEqual: function toContainEqual(expected: unknown,): void {
-
-      a.to.deep.include(expected,);
-    },
-
-    toThrow: function toThrow(expected?: string | RegExp | (abstract new (...args: never) => unknown),): void {
-      if (expected !== undefined) {
-  
-        // oxlint-disable-next-line no-unsafe-type-assertion -- chai's throw() accepts string|RegExp|ErrorConstructor but the union type doesn't narrow cleanly
-        a.to.throw(expected as Parameters<typeof a.to.throw>[0],);
-      }
-      else {
-  
-        a.to.throw();
-      }
-    },
-
-    toBeCloseTo: function toBeCloseTo(
-      expected: number,
-      precision: number = 2,
-    ): void {
-      const HALF = 1 / 2;
-      // oxlint-disable-next-line prefer-exponentiation-operator -- Math.pow is clearer here with a variable exponent
-      const delta = Math.pow(
-        10,
-        -precision,
-      ) * HALF;
-
-      a.to.be.closeTo(
-        expected,
-        delta,
-      );
-    },
-
-    toBeGreaterThan: function toBeGreaterThan(expected: number,): void {
-
-      a.to.be.above(expected,);
-    },
-
-    toBeGreaterThanOrEqual: function toBeGreaterThanOrEqual(expected: number,): void {
-
-      a.to.be.at.least(expected,);
-    },
-
-    toBeLessThan: function toBeLessThan(expected: number,): void {
-
-      a.to.be.below(expected,);
-    },
-
-    toBeLessThanOrEqual: function toBeLessThanOrEqual(expected: number,): void {
-
-      a.to.be.at.most(expected,);
-    },
-
-    toBeDefined: function toBeDefined(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.not.be.undefined;
-    },
-
-    toBeUndefined: function toBeUndefined(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.be.undefined;
-    },
-
-    toBeNaN: function toBeNaN(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.be.NaN;
-    },
-
-    toBeNull: function toBeNull(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.be.null;
-    },
-
-    toBeTruthy: function toBeTruthy(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.be.ok;
-    },
-
-    toBeFalsy: function toBeFalsy(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.not.be.ok;
-    },
-
-    toBeTypeOf: function toBeTypeOf(expected: 'bigint' | 'boolean' | 'function' | 'number' | 'object' | 'string' | 'symbol' | 'undefined',): void {
-
-      a.to.be.a(expected,);
-    },
-
-    toHaveLength: function toHaveLength(expected: number,): void {
-
-      a.to.have.lengthOf(expected,);
-    },
-
-    toHaveProperty: function toHaveProperty(
-      path: string,
-      value?: unknown,
-    ): void {
-      if (value !== undefined) {
-  
-        a.to.have.nested.property(
-          path,
-          value,
-        );
-      }
-      else {
-  
-        a.to.have.nested.property(path,);
-      }
-    },
-
-    toMatch: function toMatch(expected: string | RegExp,): void {
-
-      a.to.match(expected instanceof RegExp ? expected : new RegExp(expected,),);
-    },
-
-    toMatchObject: function toMatchObject(expected: Record<string, unknown>,): void {
-
-      a.to.deep.include(expected,);
-    },
-
-    toBeInstanceOf: function toBeInstanceOf(expected: abstract new (...args: never) => unknown,): void {
-
-      a.to.be.instanceOf(expected,);
-    },
-
-    toSatisfy: function toSatisfy(predicate: (value: unknown,) => boolean,): void {
-      // Wrap predicate result in a new chai assertion that inherits the `not` flag from `a`.
-      // `a.to.satisfy` exists in chai but its typing is poor; using `equal(true)` on predicate output is equivalent.
-      a.to.satisfy(predicate,);
-    },
-
-    toStrictEqual: function toStrictEqual(expected: unknown,): void {
-
-      a.to.deep.equal(expected,);
-    },
-
-    //region sinon-chai matchers
-
-    toHaveBeenCalled: function toHaveBeenCalled(): void {
-      // oxlint-disable-next-line no-unused-expressions -- sinon-chai property assertion
-      a.to.have.been.called;
-    },
-
-    toHaveBeenCalledExactlyOnceWith: function toHaveBeenCalledExactlyOnceWith(...args: readonly unknown[]): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
-      const spy = actual as SinonSpy;
-
-      chaiExpect(spy.callCount, 'expected spy to have been called exactly once',).to.equal(1,);
-      chaiExpect(spy.firstCall.args,).to.deep.equal([...args,],);
-    },
-
-    toHaveBeenCalledTimes: function toHaveBeenCalledTimes(count: number,): void {
-
-      a.to.have.callCount(count,);
-    },
-
-    toHaveBeenCalledWith: function toHaveBeenCalledWith(...args: readonly unknown[]): void {
-
-      a.to.have.been.calledWith(...args,);
-    },
-
-    toHaveBeenLastCalledWith: function toHaveBeenLastCalledWith(...args: readonly unknown[]): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy with lastCall property
-      const spy = actual as SinonSpy;
-      const lastCall = spy.lastCall;
-
-      chaiExpect(lastCall, 'expected spy to have been called at least once',).to.not.equal(null,);
-      chaiExpect(lastCall.args,).to.deep.equal([...args,],);
-    },
-
-    toHaveBeenNthCalledWith: function toHaveBeenNthCalledWith(n: number, ...args: readonly unknown[]): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy with getCall method
-      const spy = actual as SinonSpy;
-      const nthCall = spy.getCall(n - 1,);
-
-      chaiExpect(nthCall, `expected spy to have been called at least ${String(n,)} times`,).to.not.equal(null,);
-      chaiExpect(nthCall.args,).to.deep.equal([...args,],);
-    },
-
-    toHaveReturned: function toHaveReturned(): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
-      const spy = actual as SinonSpy;
-      const hasReturned = spy.getCalls().some(function didReturn(call,) {
-        return call.exception === undefined;
-      },);
-
-      chaiExpect(hasReturned, 'expected spy to have returned at least once',).to.equal(true,);
-    },
-
-    toHaveReturnedTimes: function toHaveReturnedTimes(count: number,): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
-      const spy = actual as SinonSpy;
-      const returnCount = spy.getCalls().filter(function didReturn(call,) {
-        return call.exception === undefined;
-      },).length;
-
-      chaiExpect(returnCount, `expected spy to have returned ${String(count,)} times`,).to.equal(count,);
-    },
-
-    toHaveReturnedWith: function toHaveReturnedWith(expected: unknown,): void {
-
-      a.to.have.returned(expected,);
-    },
-
-    toHaveLastReturnedWith: function toHaveLastReturnedWith(expected: unknown,): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
-      const spy = actual as SinonSpy;
-      const lastCall = spy.lastCall;
-
-      chaiExpect(lastCall, 'expected spy to have been called at least once',).to.not.equal(null,);
-      chaiExpect(lastCall.returnValue,).to.deep.equal(expected,);
-    },
-
-    toHaveNthReturnedWith: function toHaveNthReturnedWith(n: number, expected: unknown,): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
-      const spy = actual as SinonSpy;
-      const nthCall = spy.getCall(n - 1,);
-
-      chaiExpect(nthCall, `expected spy to have been called at least ${String(n,)} times`,).to.not.equal(null,);
-      chaiExpect(nthCall.returnValue,).to.deep.equal(expected,);
-    },
-
-    //endregion sinon-chai matchers
-  };
-}
-
+/* oxlint-disable no-unsafe-type-assertion -- literal array matches MatcherSet keys by construction */
 /**
  * Static list of matcher method names, extracted once to avoid
- * creating a throwaway chai assertion on every `buildAsyncMatchers` call.
+ * creating a throwaway chai assertion on every async matcher wrapping call.
+ *
+ * @example
+ * ```ts
+ * for (const key of MATCHER_KEYS) {
+ *   // iterate all matcher names
+ * }
+ * ```
  */
-// oxlint-disable-next-line no-unsafe-type-assertion -- literal array matches MatcherSet keys by construction
 const MATCHER_KEYS = [
   'toBe',
   'toEqual',
@@ -360,19 +75,9 @@ const MATCHER_KEYS = [
   'toHaveLastReturnedWith',
   'toHaveNthReturnedWith',
 ] as const satisfies readonly (keyof MatcherSet)[];
+/* oxlint-enable no-unsafe-type-assertion */
 
-//endregion Matcher set builder
-
-//region Async matcher set builder
-
-/**
- * Async versions of Jest-style matchers for promise-based assertions.
- * Each method returns a Promise that resolves on success or rejects on failure.
- * Used by `expect(promise).rejects` and `expect(promise).resolves`.
- */
-export type AsyncMatcherSet = {
-  [K in keyof MatcherSet]: (...args: Parameters<MatcherSet[K]>) => Promise<void>;
-};
+//region Async matcher builders
 
 /**
  * Wraps a sync `MatcherSet` builder into an async one by awaiting a value
@@ -391,10 +96,17 @@ function buildAsyncMatchers(getValue: () => Promise<unknown>,): AsyncMatcherSet 
    *
    * @returns async function with the same signature
    */
-  function wrapMatcher<K extends keyof MatcherSet>(key: K,): (...args: Parameters<MatcherSet[K]>) => Promise<void> {
-    return async function wrappedMatcher(...args: Parameters<MatcherSet[K]>): Promise<void> {
+  function wrapMatcher<K extends keyof MatcherSet,>(
+    key: K,
+  ): (...args: Parameters<MatcherSet[K]>) => Promise<void> {
+    return async function wrappedMatcher(
+      ...args: Parameters<MatcherSet[K]>
+    ): Promise<void> {
       const value = await getValue();
-      const matchers = buildMatchers(chaiExpect(value,), value,);
+      const matchers = buildMatchers(
+        chaiExpect(value,),
+        value,
+      );
       // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- args are typed by MatcherSet[K]; cast needed for dynamic dispatch
       (matchers[key] as (...a: readonly unknown[]) => void)(...args,);
     };
@@ -446,7 +158,7 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
   const matchers = buildAsyncMatchers(getRejection,);
 
   matchers.toThrow = async function rejectsToThrow(
-    expected?: string | RegExp | (abstract new (...args: never) => unknown),
+    expected?: string | RegExp | (abstract new(...args: never) => unknown),
   ): Promise<void> {
     const error = await getRejection();
     if (expected === undefined) {
@@ -490,7 +202,7 @@ function buildResolvesMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
   return buildAsyncMatchers(getResolution,);
 }
 
-//endregion Async matcher set builder
+//endregion Async matcher builders
 
 //region expect function
 
@@ -526,7 +238,7 @@ type ExpectStatic = {
    *
    * @returns sinon matcher that checks `instanceof`
    */
-  any: (ctor: abstract new (...args: never) => unknown,) => SinonMatcher;
+  any: (ctor: abstract new(...args: never) => unknown,) => SinonMatcher;
   /**
    * Matches any array that contains all elements of the given array, in any order.
    *
@@ -589,9 +301,15 @@ type Expect = ((actual: unknown,) => ExpectResult) & ExpectStatic;
  */
 function expectImpl(actual: unknown,): ExpectResult {
   return {
-    ...buildMatchers(chaiExpect(actual,), actual,),
+    ...buildMatchers(
+      chaiExpect(actual,),
+      actual,
+    ),
 
-    not: buildMatchers(chaiExpect(actual,).not, actual,),
+    not: buildMatchers(
+      chaiExpect(actual,).not,
+      actual,
+    ),
     // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern
     rejects: buildRejectsMatchers(actual as Promise<unknown>,),
     // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern
@@ -649,7 +367,9 @@ expectImpl.stringMatching = function stringMatching(pattern: RegExp,): SinonMatc
  * expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
  * ```
  */
-expectImpl.objectContaining = function objectContaining(obj: Record<string, unknown>,): SinonMatcher {
+expectImpl.objectContaining = function objectContaining(
+  obj: Record<string, unknown>,
+): SinonMatcher {
   return sinonMatch(obj,);
 };
 
@@ -679,7 +399,9 @@ expectImpl.anything = function anything(): SinonMatcher {
  * expect(spy).toHaveBeenCalledWith(expect.any(Error));
  * ```
  */
-expectImpl.any = function any(ctor: abstract new (...args: never) => unknown,): SinonMatcher {
+expectImpl.any = function any(
+  ctor: abstract new(...args: never) => unknown,
+): SinonMatcher {
   return sinonMatch.instanceOf(ctor,);
 };
 
@@ -696,12 +418,13 @@ expectImpl.any = function any(ctor: abstract new (...args: never) => unknown,): 
  * expect(spy).toHaveBeenCalledWith(expect.arrayContaining([1, 2]));
  * ```
  */
-expectImpl.arrayContaining = function arrayContaining(arr: readonly unknown[],): SinonMatcher {
+expectImpl.arrayContaining = function arrayContaining(
+  arr: readonly unknown[],
+): SinonMatcher {
   return sinonMatch(
     function matchArrayContaining(actual: unknown,): boolean {
-      if (!Array.isArray(actual,)) {
+      if (!Array.isArray(actual,))
         return false;
-      }
       return arr.every(function isContained(item,) {
         return actual.includes(item,);
       },);
@@ -756,7 +479,10 @@ export type ScopedExpect = Expect & {
  *
  * @returns new matcher set that counts calls
  */
-function wrapMatchersWithCounter(matchers: MatcherSet, tracker: AssertionTracker,): MatcherSet {
+function wrapMatchersWithCounter(
+  matchers: MatcherSet,
+  tracker: AssertionTracker,
+): MatcherSet {
   const wrapped = {} as Record<string, (...args: readonly unknown[]) => unknown>;
 
   for (const key of MATCHER_KEYS) {
@@ -781,12 +507,17 @@ function wrapMatchersWithCounter(matchers: MatcherSet, tracker: AssertionTracker
  *
  * @returns new async matcher set that counts calls
  */
-function wrapAsyncMatchersWithCounter(matchers: AsyncMatcherSet, tracker: AssertionTracker,): AsyncMatcherSet {
+function wrapAsyncMatchersWithCounter(
+  matchers: AsyncMatcherSet,
+  tracker: AssertionTracker,
+): AsyncMatcherSet {
   const wrapped = {} as Record<string, (...args: readonly unknown[]) => Promise<unknown>>;
 
   for (const key of MATCHER_KEYS) {
     const original = matchers[key];
-    wrapped[key] = async function countedAsyncMatcher(...args: readonly unknown[]): Promise<unknown> {
+    wrapped[key] = async function countedAsyncMatcher(
+      ...args: readonly unknown[]
+    ): Promise<unknown> {
       tracker.count += 1;
       // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- dynamic dispatch over AsyncMatcherSet methods requires cast
       return await (original as (...a: readonly unknown[]) => Promise<unknown>)(...args,);
@@ -811,7 +542,10 @@ function wrapAsyncMatchersWithCounter(matchers: AsyncMatcherSet, tracker: Assert
  * // after test: check tracker.count === tracker.expected
  * ```
  */
-export function createScopedExpect(): readonly [ScopedExpect, AssertionTracker] {
+export function createScopedExpect(): readonly [
+  ScopedExpect,
+  AssertionTracker,
+] {
   const tracker: AssertionTracker = {
     count: 0,
     expected: null,
@@ -828,10 +562,22 @@ export function createScopedExpect(): readonly [ScopedExpect, AssertionTracker] 
   function scopedExpectImpl(actual: unknown,): ExpectResult {
     const original = expectImpl(actual,);
     return {
-      ...wrapMatchersWithCounter(original, tracker,),
-      not: wrapMatchersWithCounter(original.not, tracker,),
-      rejects: wrapAsyncMatchersWithCounter(original.rejects, tracker,),
-      resolves: wrapAsyncMatchersWithCounter(original.resolves, tracker,),
+      ...wrapMatchersWithCounter(
+        original,
+        tracker,
+      ),
+      not: wrapMatchersWithCounter(
+        original.not,
+        tracker,
+      ),
+      rejects: wrapAsyncMatchersWithCounter(
+        original.rejects,
+        tracker,
+      ),
+      resolves: wrapAsyncMatchersWithCounter(
+        original.resolves,
+        tracker,
+      ),
     };
   }
 
@@ -852,7 +598,10 @@ export function createScopedExpect(): readonly [ScopedExpect, AssertionTracker] 
   scopedExpectImpl.arrayContaining = expectImpl.arrayContaining;
 
   // oxlint-disable-next-line no-unsafe-type-assertion -- scopedExpectImpl satisfies ScopedExpect by construction
-  return [scopedExpectImpl as ScopedExpect, tracker,] as const;
+  return [
+    scopedExpectImpl as ScopedExpect,
+    tracker,
+  ] as const;
 }
 
 //endregion Scoped expect with assertion tracking

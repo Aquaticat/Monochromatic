@@ -23,7 +23,7 @@ await describe({
             const [first,] = MANAGERS.keys();
             expect(first,).toBe('brew',);
           },
-        }),
+        },),
         it({
           name: 'contains every PackageManager variant',
           fn: async () => {
@@ -42,7 +42,7 @@ await describe({
               expect(MANAGERS.has(name,),).toBe(true,);
             expect(MANAGERS.size,).toBe(expected.length,);
           },
-        }),
+        },),
         it({
           name: 'every entry has non-empty check, search, and install arrays',
           fn: async () => {
@@ -71,9 +71,9 @@ await describe({
               expect(def.search.includes('{pkg}',),).toBe(true,);
             }
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion MANAGERS ordering
 
@@ -87,17 +87,16 @@ await describe({
           fn: async () => {
             expect(MANAGER_KEYS.size,).toBe(MANAGERS.size,);
           },
-        }),
+        },),
         it({
           name: 'contains every key from MANAGERS',
           fn: async () => {
             for (const name of MANAGERS.keys())
               expect(MANAGER_KEYS.has(name,),).toBe(true,);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion MANAGER_KEYS
   ],
 },);

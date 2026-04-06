@@ -7,7 +7,7 @@
 import { $ as css, } from './css.ts';
 
 /** Dark mode overrides -- swaps foreground/background primitives. */
-export const darkMode = css({
+export const darkMode: string = css({
   at: 'media',
   params: '(prefers-color-scheme: dark)',
   children: [

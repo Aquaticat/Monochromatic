@@ -27,6 +27,7 @@ The Done app never sees unauthenticated requests.
 User IDs are opaque (ULIDs), not user-chosen names -- no abuse vector for offensive URLs.
 
 Auth security considerations:
+
 - Password hashing via `Bun.password` uses argon2id (constant-time verification)
 - Sessions are server-side lookup tokens (random 32-byte hex IDs stored in `orchestrator.db`), not signed JWTs -- no crypto to get wrong
 - Session cookies: `HttpOnly` + `Secure` + `SameSite=Strict`, cookie `Path` set to `/u/<user-id>/`
@@ -258,10 +259,12 @@ Two services:
 2. **llama-cpp** -- CPU-only `ghcr.io/ggml-org/llama.cpp:server` image. Shared AI inference for all users.
 
 Named volumes:
+
 - `done-data` -- `/data/<user-id>/done.db` per user (mounted in orchestrator)
 - `llama-models` -- Cached model files at `/root/.cache/llama.cpp` (persists auto-downloaded models across container restarts)
 
 Environment variables (configured in Coolify):
+
 - `DOMAIN` -- Public domain (e.g., `done.app`)
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` -- SMTP provider credentials
 - `CHAT_COMPLETIONS_URL` -- Full URL for llama.cpp's OpenAI-compatible chat completions endpoint (defaults to `http://llama-cpp:8080/v1/chat/completions`)

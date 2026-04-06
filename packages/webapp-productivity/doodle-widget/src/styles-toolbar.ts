@@ -7,8 +7,8 @@
  * {@link renderToolbarControlStyles} and {@link renderToggleGroupStyles}.
  */
 import {
-  hCss as $,
   cssOklch,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   BG_CONTROL,
@@ -90,16 +90,14 @@ export function renderToolbarStyles(): string[] {
     },),
 
     $({
-      rule: `${
-        CONTROL_SELECTOR
-          .split(', ',)
-          .map(
-            function addHover(sel,): string {
-              return `${sel}:hover`;
-            },
-          )
-          .join(', ',)
-      }`,
+      rule: CONTROL_SELECTOR
+        .split(', ',)
+        .map(
+          function addHover(sel,): string {
+            return `${sel}:hover`;
+          },
+        )
+        .join(', ',),
       decls: { 'background-color': BG_CONTROL_HOVER, },
     },),
 

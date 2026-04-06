@@ -90,7 +90,7 @@ function buildImageEntry(
  */
 export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
   const upper = result.toUpperCase();
-  const match = upper.match(/VERDICT:\s*(PRODUCTIVE|UNPRODUCTIVE)/,);
+  const match = /VERDICT:\s*(PRODUCTIVE|UNPRODUCTIVE)/.exec(upper,);
   if (match !== null) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex capture group matches the union exactly
     return match[1] as 'PRODUCTIVE' | 'UNPRODUCTIVE';

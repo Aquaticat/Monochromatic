@@ -209,7 +209,8 @@ export const NORMAL_CHECKS = 4;
  * Stdin for --all mode: 3 puzzles (2-solution + many-solution + unsolvable).
  * Tests exact enumeration, many-solution enumeration, and unsolvable rejection under --all.
  */
-export const ALL_INPUT: string = [TWO_SOLUTION, MANY_SOLUTION, UNSOLVABLE_BOX,].join('\n\n',)
+export const ALL_INPUT: string =
+  [TWO_SOLUTION, MANY_SOLUTION, UNSOLVABLE_BOX,].join('\n\n',)
   + '\n';
 
 /** Number of independent correctness checks in --all mode */

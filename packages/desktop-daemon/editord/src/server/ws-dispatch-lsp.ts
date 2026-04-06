@@ -11,45 +11,19 @@ import type {
   TextEdit,
 } from '../protocol.ts';
 import type { LspManager, } from './lsp/lsp-manager.ts';
-import { applyWorkspaceEdit, } from './operations/apply-workspace-edit.ts';
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import type { DirWatcher, } from './operations/watch-filesystem.ts';
 import {
   extractHoverContent,
   toWireCompletionItems,
   toWireInlayHints,
-  toWireSelectionRange,
 } from './ws-conversions.ts';
+import { dispatchLspFeatureMessage, } from './ws-dispatch-lsp-features.ts';
 import {
   type Peer,
+  replyEmpty,
   sendJson,
 } from './ws-send.ts';
-
-/**
- * Sends an empty result when no LSP manager is available.
- * Avoids repeating the null-check + empty-response pattern for each feature.
- *
- * @param peer - WebSocket peer to reply to
- *
- * @param message - pre-built empty result message
- *
- * @returns always true (message handled)
- */
-function replyEmpty(
-  {
-    peer,
-    message,
-  }: {
-    peer: Peer;
-    message: Record<string, unknown>;
-  },
-): true {
-  sendJson({
-    peer,
-    message,
-  },);
-  return true;
-}
 
 /**
  * Dispatches LSP-related client messages to the appropriate handler.
@@ -228,183 +202,9 @@ export async function dispatchLspMessage(
     },);
     return true;
   }
-  if (parsed.type === 'gotoDefinition') {
-    if (lspManager === null) {
-      return replyEmpty({
-        peer,
-        message: {
-          type: 'definitionResult',
-          id: parsed.id,
-          path: '',
-          line: 0,
-          character: 0,
-        },
-      },);
-    }
-    const def = await lspManager.gotoDefinition({
-      path: parsed.path,
-      line: parsed.line,
-      character: parsed.character,
-    },);
-    if (def === null) {
-      sendJson({
-        peer,
-        message: {
-          type: 'definitionResult',
-          id: parsed.id,
-          path: '',
-          line: 0,
-          character: 0,
-        },
-      },);
-      return true;
-    }
-    sendJson({
-      peer,
-      message: {
-        type: 'definitionResult',
-        id: parsed.id,
-        path: def.path,
-        line: def.line,
-        character: def.character,
-      },
-    },);
-    return true;
-  }
-  if (parsed.type === 'findReferences') {
-    if (lspManager === null) {
-      return replyEmpty({
-        peer,
-        message: {
-          type: 'referencesResult',
-          id: parsed.id,
-          locations: [],
-        },
-      },);
-    }
-    const locations = await lspManager.references({
-      path: parsed.path,
-      line: parsed.line,
-      character: parsed.character,
-    },);
-    sendJson({
-      peer,
-      message: {
-        type: 'referencesResult',
-        id: parsed.id,
-        locations,
-      },
-    },);
-    return true;
-  }
-  if (parsed.type === 'selectionRange') {
-    if (lspManager === null) {
-      return replyEmpty({
-        peer,
-        message: {
-          type: 'selectionRangeResult',
-          id: parsed.id,
-          ranges: [],
-        },
-      },);
-    }
-    const lspRanges = await lspManager.selectionRange({
-      path: parsed.path,
-      positions: parsed.positions,
-    },);
-    const ranges = lspRanges.map(function convertRange(r,) {
-      return toWireSelectionRange({ lspRange: r, },);
-    },);
-    sendJson({
-      peer,
-      message: {
-        type: 'selectionRangeResult',
-        id: parsed.id,
-        ranges,
-      },
-    },);
-    return true;
-  }
-  if (parsed.type === 'prepareRename') {
-    if (lspManager === null) {
-      return replyEmpty({
-        peer,
-        message: {
-          type: 'prepareRenameResult',
-          id: parsed.id,
-          canRename: false,
-        },
-      },);
-    }
-    const result = await lspManager.prepareRename({
-      path: parsed.path,
-      line: parsed.line,
-      character: parsed.character,
-    },);
-    if (result === null) {
-      sendJson({
-        peer,
-        message: {
-          type: 'prepareRenameResult',
-          id: parsed.id,
-          canRename: false,
-        },
-      },);
-      return true;
-    }
-    sendJson({
-      peer,
-      message: {
-        type: 'prepareRenameResult',
-        id: parsed.id,
-        canRename: true,
-        range: result.range,
-        placeholder: result.placeholder,
-      },
-    },);
-    return true;
-  }
-  if (parsed.type === 'rename') {
-    if (lspManager === null) {
-      return replyEmpty({
-        peer,
-        message: {
-          type: 'renameResult',
-          id: parsed.id,
-          edits: [],
-        },
-      },);
-    }
-    const workspaceEdit = await lspManager.rename({
-      path: parsed.path,
-      line: parsed.line,
-      character: parsed.character,
-      newName: parsed.newName,
-    },);
-    if (workspaceEdit === null) {
-      sendJson({
-        peer,
-        message: {
-          type: 'renameResult',
-          id: parsed.id,
-          edits: [],
-        },
-      },);
-      return true;
-    }
-    const fileEdits = await applyWorkspaceEdit({
-      workspaceEdit,
-      currentFilePath: parsed.path,
-    },);
-    sendJson({
-      peer,
-      message: {
-        type: 'renameResult',
-        id: parsed.id,
-        edits: fileEdits,
-      },
-    },);
-    return true;
-  }
-  return false;
+  return dispatchLspFeatureMessage({
+    peer,
+    parsed,
+    lspManager,
+  },);
 }

@@ -21,6 +21,7 @@ import {
   type WireDiagnostic,
 } from './diagnostic-store.ts';
 import type { DocumentState, } from './document-sync.ts';
+import type { PrepareRenameResult, } from './lsp-features-rename.ts';
 import {
   managerDidChange,
   managerDidClose,
@@ -28,7 +29,6 @@ import {
   managerDidSave,
   routeNotification,
 } from './lsp-manager-lifecycle.ts';
-import type { PrepareRenameResult, } from './lsp-features-rename.ts';
 import {
   managerCompletion,
   managerFormat,
@@ -189,7 +189,11 @@ export function createLspManager({
   }
 
   return {
-    didOpen({ path, text, size, },) {
+    didOpen({
+      path,
+      text,
+      size,
+    },) {
       if (size > FILE_SIZE_WARNING_THRESHOLD) {
         managerLog.info(`skipping LSP for large file (${String(size,)} bytes): ${path}`,);
         return Promise.resolve();

@@ -27,8 +27,8 @@ This plugin provides individual rules for each banned syntax pattern instead.
 
 ```typescript
 // oxlint.config.ts
-import { defineConfig } from 'oxlint';
+import { defineConfig, } from 'oxlint';
 export default defineConfig({
-  jsPlugins: ['@monochromatic-dev/config-oxlint-no-restricted-syntax'],
-});
+  jsPlugins: ['@monochromatic-dev/config-oxlint-no-restricted-syntax',],
+},);
 ```

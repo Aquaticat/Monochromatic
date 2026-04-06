@@ -17,6 +17,12 @@ import type { ViewerEntry, } from '../data/viewer-types.ts';
  * @param entries - history entries (to extract unique models)
  *
  * @returns HTML string for the legend
+ *
+ * @example
+ * ```ts
+ * const html = buildProbeLegend(entries);
+ * // '<div class="chart-legend">...<\/div>'
+ * ```
  */
 export function buildProbeLegend(
   entries: readonly ViewerEntry[],
@@ -39,9 +45,15 @@ export function buildProbeLegend(
         tag: 'span',
         class: 'item',
         children: [
-          iconDot(openrouterId, color,),
+          iconDot(
+            openrouterId,
+            color,
+          ),
           ' ',
-          h({ tag: 'span', text: label, },),
+          h({
+            tag: 'span',
+            text: label,
+          },),
         ],
       },);
     },)

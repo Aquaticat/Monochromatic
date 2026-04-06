@@ -44,7 +44,7 @@ const DESC_PADDING = 1 / 2;
 const TEXTAREA_MIN_HEIGHT = 4.5;
 
 /** Compiled CSS string for `<task-detail>` Shadow DOM. */
-export const TASK_DETAIL_STYLES = [
+export const TASK_DETAIL_STYLES: string = [
   css({
     rule: ':host',
     decls: {

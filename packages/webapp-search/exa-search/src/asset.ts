@@ -55,8 +55,10 @@ export const indexHtml: string = [
           },),
           h({
             tag: 'meta',
-            attrs: { name: 'viewport',
-              content: 'width=device-width, initial-scale=1.0', },
+            attrs: {
+              name: 'viewport',
+              content: 'width=device-width, initial-scale=1.0',
+            },
           },),
           h({
             tag: 'title',

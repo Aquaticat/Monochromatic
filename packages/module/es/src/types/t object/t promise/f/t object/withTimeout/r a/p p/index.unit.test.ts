@@ -34,7 +34,7 @@ await describe({
 
         expect(result,).toBe(EXPECTED,);
       },
-    }),
+    },),
 
     it({
       name: 'rejects with descriptive message on timeout',
@@ -56,6 +56,6 @@ await describe({
           `Timed out after ${String(TIMEOUT,)}ms: timeout-label`,
         );
       },
-    }),
+    },),
   ],
 },);

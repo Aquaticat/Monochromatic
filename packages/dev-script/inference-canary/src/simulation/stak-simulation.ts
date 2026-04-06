@@ -41,7 +41,10 @@ async function readInterpreterSource(): Promise<string> {
   const sources = await Promise.all(
     files.map(function readSourceFile(relativePath,): Promise<string> {
       return readFile(
-        new URL(relativePath, import.meta.url,),
+        new URL(
+          relativePath,
+          import.meta.url,
+        ),
         'utf8',
       );
     },),

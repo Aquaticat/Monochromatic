@@ -21,6 +21,11 @@ import { postList, } from '../templates/post-list.ts';
  * @param posts - posts filtered to this language
  *
  * @returns complete HTML document for the language landing page
+ *
+ * @example
+ * ```ts
+ * const html = langPage({ lang: 'en', posts: englishPosts });
+ * ```
  */
 export function langPage(
   {
@@ -37,7 +42,10 @@ export function langPage(
   const content = [
     h({
       tag: 'main',
-      children: [h({ tag: 'h1', text: title, },),],
+      children: [h({
+        tag: 'h1',
+        text: title,
+      },),],
     },),
     h({
       tag: 'aside',

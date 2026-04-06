@@ -13,7 +13,7 @@ mise watch -w src/server --no-meta -J @src/server/content-changed.jaq -r -- star
 
 Debug output shows the actual command:
 
-```
+```toml
 DEBUG $ watchexec --restart --watch src/server -- /home/user/.local/bin/mise run start:server
 ```
 
@@ -98,14 +98,14 @@ any(.tags[] | select(.kind == "path" and .filetype == "file"); .absolute as $p |
 
 **Behavior matrix:**
 
-| Event | `--no-meta` | Content-hash filter | Result |
-|---|---|---|---|
-| `touch` (mtime only) | Suppressed | -- | No restart |
-| `chmod` (perms only) | Suppressed | -- | No restart |
-| Write identical content | Passes | Hash matches stored | No restart |
-| Write different content | Passes | Hash differs | **Restart** |
-| `git checkout` (revert) | Passes | Hash differs from modified | **Restart** |
-| New file created | Passes | No stored hash (first-seen) | No restart |
+| Event                   | `--no-meta` | Content-hash filter         | Result      |
+| ----------------------- | ----------- | --------------------------- | ----------- |
+| `touch` (mtime only)    | Suppressed  | --                          | No restart  |
+| `chmod` (perms only)    | Suppressed  | --                          | No restart  |
+| Write identical content | Passes      | Hash matches stored         | No restart  |
+| Write different content | Passes      | Hash differs                | **Restart** |
+| `git checkout` (revert) | Passes      | Hash differs from modified  | **Restart** |
+| New file created        | Passes      | No stored hash (first-seen) | No restart  |
 
 ### Constraints
 
@@ -172,7 +172,7 @@ because the previous server process still holds the port.
 
 When the inner command is `mise run start:server`, the process tree is:
 
-```
+```text
 watchexec → mise → nu (nushell) → bun src/server/index.ts
 ```
 
@@ -184,7 +184,7 @@ The bun process orphans and keeps the port bound.
 
 Run `bun` directly as the inner command so watchexec's SIGTERM reaches it:
 
-```
+```text
 watchexec -w src/server -r -- bun src/server/index.ts
 ```
 

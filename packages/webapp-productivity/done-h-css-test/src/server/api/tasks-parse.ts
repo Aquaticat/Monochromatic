@@ -17,6 +17,13 @@ const priorities = new Set<string>(TASK_PRIORITIES,);
  * @param value - Value to check
  *
  * @returns True when value is a non-null object
+ *
+ * @example
+ * ```ts
+ * if (isRecord(body)) {
+ *   const title = body['title'];
+ * }
+ * ```
  */
 export function isRecord(value: unknown,): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -28,6 +35,11 @@ export function isRecord(value: unknown,): value is Record<string, unknown> {
  * @param value - Raw input that may be an array
  *
  * @returns Parsed array, or `null` when the input is not an array
+ *
+ * @example
+ * ```ts
+ * const tags = parseStringArray(body['tags']);
+ * ```
  */
 export function parseStringArray(value: unknown,): string[] | null {
   if (!Array.isArray(value,))
@@ -55,6 +67,11 @@ export function parseStringArray(value: unknown,): string[] | null {
  * @param validValues - Set of recognized enum strings
  *
  * @returns Validated enum value, null, or undefined
+ *
+ * @example
+ * ```ts
+ * const priority = parseEnumValue<TaskPriority>(body['priority'], getPriorities());
+ * ```
  */
 export function parseEnumValue<T extends string,>(
   value: unknown,
@@ -74,6 +91,11 @@ export function parseEnumValue<T extends string,>(
  * Returns the recognized priority/complexity values set for use by API handlers.
  *
  * @returns Set of recognized priority strings
+ *
+ * @example
+ * ```ts
+ * const validPriorities = getPriorities();
+ * ```
  */
 export function getPriorities(): Set<string> {
   return priorities;

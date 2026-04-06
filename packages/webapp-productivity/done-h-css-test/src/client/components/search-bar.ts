@@ -2,9 +2,7 @@
  * `<search-bar>` -- sticky bar with a back button and debounced search input.
  * Dispatches a `search` event with `{ query }` after the debounce delay.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { SEARCH_BAR_STYLES, } from './search-bar-styles.ts';
 
 /** Debounce delay for search input in milliseconds */
@@ -18,7 +16,7 @@ function handleBack(): void {
 /** Sticky search bar with a back button and debounced search input. */
 class SearchBar extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -79,12 +77,20 @@ class SearchBar extends HTMLElement {
       'input',
       function handleInput(): void {
         clearTimeout(timeout,);
-        timeout = setTimeout(function emitSearch(): void {
-          dispatchFn(
-            new CustomEvent('search', { detail: { query: input.value.trim(), },
-              bubbles: true, },),
-          );
-        }, SEARCH_DEBOUNCE_MS,);
+        timeout = setTimeout(
+          function emitSearch(): void {
+            dispatchFn(
+              new CustomEvent(
+                'search',
+                {
+                  detail: { query: input.value.trim(), },
+                  bubbles: true,
+                },
+              ),
+            );
+          },
+          SEARCH_DEBOUNCE_MS,
+        );
       },
     );
 

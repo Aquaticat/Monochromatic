@@ -48,7 +48,7 @@ export type { DirEntry, };
 /** `<file-tree>` — directory tree sidebar with `<tree-dir-entry>` toggles. */
 export class FileTree extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
   /** Container div for tree entries. */
   #tree: HTMLDivElement | null = null;
   /** Last focused element for resolving `selectedDir`. */
@@ -56,7 +56,7 @@ export class FileTree extends HTMLElement {
   /** Absolute root directory path. */
   #rootPath = '';
   /** Shared mutable state for data fetching and caching. */
-  #state: FileTreeState;
+  readonly #state: FileTreeState;
   /** Context menu component for right-click actions. */
   #contextMenu: ContextMenu | null = null;
   /** Callback invoked when a context menu action is selected. */

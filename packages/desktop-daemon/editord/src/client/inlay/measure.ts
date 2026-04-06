@@ -105,7 +105,10 @@ export function interSpacesForGap({
 
   const targetPx = charPos * cachedMonoW;
   const rowPx = cachedCtx.measureText(rowText,).width;
-  const gap = Math.max(0, Math.round((targetPx - rowPx) / cachedInterSpW,),);
+  const gap = Math.max(
+    0,
+    Math.round((targetPx - rowPx) / cachedInterSpW,),
+  );
   return gap;
 }
 

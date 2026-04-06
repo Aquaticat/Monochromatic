@@ -1,9 +1,7 @@
 /**
  * DOM building helpers for the Inbox page.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type {
   BlockedTaskLink,
   Task,
@@ -24,6 +22,12 @@ export type InboxPageData = {
  * Builds a task list with optional blocked-child nesting.
  *
  * @returns UL element containing task cards with nested blocker children
+ *
+ * @example
+ * ```ts
+ * const list = buildTaskList({ tasks, blockedTasksByBlocker, onOpen, onToggleComplete });
+ * app.append(list);
+ * ```
  */
 export function buildTaskList(
   {
@@ -46,7 +50,10 @@ export function buildTaskList(
   for (const task of tasks) {
     list.append(createTaskCard(
       task,
-      { onOpen, onToggleComplete, },
+      {
+        onOpen,
+        onToggleComplete,
+      },
     ),);
 
     const childLinks = blockedTasksByBlocker[task.id] ?? [];
@@ -62,7 +69,11 @@ export function buildTaskList(
               children: childLinks.map(function buildBlockedCard(childLink,) {
                 return createTaskCard(
                   childLink.task,
-                  { showBlockedBadge: true, onOpen, onToggleComplete, },
+                  {
+                    showBlockedBadge: true,
+                    onOpen,
+                    onToggleComplete,
+                  },
                 );
               },),
             },),

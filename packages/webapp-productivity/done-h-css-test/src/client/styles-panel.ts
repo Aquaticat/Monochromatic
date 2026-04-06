@@ -43,7 +43,7 @@ const EASE_X2 = 0.2;
 const SHADOW_ALPHA = 0.2;
 
 /** Keyframe animation and fixed-position styles for the new-task slide-up panel. */
-export const newTaskPanel = [
+export const newTaskPanel: string = [
   css({
     at: 'keyframes',
     params: 'fab-to-surface',
@@ -95,7 +95,12 @@ export const newTaskPanel = [
         0,
         cssRem(-(1 / 2 / 2),),
         cssRem(1,),
-        cssOklch({ l: 0, c: 0, h: 0, a: SHADOW_ALPHA, },),
+        cssOklch({
+          l: 0,
+          c: 0,
+          h: 0,
+          a: SHADOW_ALPHA,
+        },),
       ],),
       'transform-origin': cssCompounded([
         'bottom',

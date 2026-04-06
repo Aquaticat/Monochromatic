@@ -2,8 +2,6 @@ import {
   cssInt,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-hyperscript/ts';
-import {
   hDom as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from '../css.ts';
@@ -73,7 +71,7 @@ const STYLES = [
  */
 class SectionHeading extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Whether the section content is expanded. */
   #open = true;
@@ -103,7 +101,7 @@ class SectionHeading extends HTMLElement {
   }
 
   /** Bound toggle handler that collapses/expands and dispatches a `toggle` event. */
-  #toggle = this.#onToggle.bind(this,);
+  readonly #toggle = this.#onToggle.bind(this,);
 
   /** Toggles the open state and dispatches a `toggle` event. */
   #onToggle(): void {
@@ -112,12 +110,22 @@ class SectionHeading extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent(
         'toggle',
-        { detail: { open: this.#open, }, bubbles: true, },
+        {
+          detail: { open: this.#open, },
+          bubbles: true,
+        },
       ),
     );
   }
 
-  /** Updates the toggle indicator and content visibility. */
+  /**
+   * Updates the toggle indicator and content visibility.
+   *
+   * @example
+   * ```ts
+   * this.#updateToggle();
+   * ```
+   */
   #updateToggle(): void {
     const toggle = this.#shadow.querySelector<HTMLElement>('.toggle',);
     if (toggle instanceof HTMLElement)

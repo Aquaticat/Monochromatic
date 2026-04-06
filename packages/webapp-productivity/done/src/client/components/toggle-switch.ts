@@ -1,6 +1,4 @@
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
 /** Shadow DOM styles for the `\<toggle-switch\>` component. */
@@ -56,7 +54,7 @@ class ToggleSwitch extends HTMLElement {
   static observedAttributes = ['on',];
 
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -117,12 +115,15 @@ class ToggleSwitch extends HTMLElement {
    * Registered as a click handler in connectedCallback.
    */
   // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-  #handleClick = function handleClick(this: ToggleSwitch,): void {
+  readonly #handleClick = function handleClick(this: ToggleSwitch,): void {
     this.on = !this.on;
     this.dispatchEvent(
       new CustomEvent(
         'change',
-        { detail: { on: this.on, }, bubbles: true, },
+        {
+          detail: { on: this.on, },
+          bubbles: true,
+        },
       ),
     );
   }

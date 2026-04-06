@@ -102,14 +102,14 @@ before `convertSourceImage`. This is a real bug, not test-specific.
 
 ## Key files
 
-| File | Purpose |
-|------|---------|
-| `packages/cli/vmsync/src/config.unit.test.ts` | Pure function unit tests |
-| `packages/cli/vmsync/src/boot.unit.test.ts` | parseMemoryToBytes tests |
-| `packages/cli/vmsync/src/import.unit.test.ts` | nameFromPath tests |
+| File                                             | Purpose                       |
+| ------------------------------------------------ | ----------------------------- |
+| `packages/cli/vmsync/src/config.unit.test.ts`    | Pure function unit tests      |
+| `packages/cli/vmsync/src/boot.unit.test.ts`      | parseMemoryToBytes tests      |
+| `packages/cli/vmsync/src/import.unit.test.ts`    | nameFromPath tests            |
 | `packages/cli/vmsync/src/lifecycle.unit.test.ts` | Linux + Windows e2e lifecycle |
-| `packages/cli/vmsync/tsdown.node.config.ts` | Bundle config |
-| `packages/cli/vmsync/mise.toml` | Task definitions |
-| `packages/cli/mvm/src/file-transfer.ts` | virtiofs push/pull |
-| `packages/cli/mvm/src/domain-xml.ts` | virtiofs XML generation |
-| `packages/cli/mvm/src/autounattend-virtio.ts` | viofs driver addition |
+| `packages/cli/vmsync/tsdown.node.config.ts`      | Bundle config                 |
+| `packages/cli/vmsync/mise.toml`                  | Task definitions              |
+| `packages/cli/mvm/src/file-transfer.ts`          | virtiofs push/pull            |
+| `packages/cli/mvm/src/domain-xml.ts`             | virtiofs XML generation       |
+| `packages/cli/mvm/src/autounattend-virtio.ts`    | viofs driver addition         |

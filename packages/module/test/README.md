@@ -80,13 +80,13 @@ await describe({
     describe({
       name: 'suite A',
       children: [/* ... */],
-    }),
+    },),
     describe({
       name: 'suite B',
       children: [/* ... */],
-    }),
+    },),
   ],
-});
+},);
 ```
 
 Multiple top-level `await describe(...)` calls break test completeness:
@@ -166,10 +166,10 @@ Re-exported from the [`expect-type`](https://www.npmjs.com/package/expect-type) 
 Compile-time type-level assertions with zero runtime cost.
 
 ```ts
-import { expectTypeOf } from '@monochromatic-dev/module-test';
+import { expectTypeOf, } from '@monochromatic-dev/module-test';
 
 expectTypeOf<string>().toEqualTypeOf<string>();
-expectTypeOf({ a: 1 }).toHaveProperty('a');
+expectTypeOf({ a: 1, },).toHaveProperty('a',);
 expectTypeOf<() => void>().toBeFunction();
 ```
 
@@ -179,7 +179,11 @@ expectTypeOf<() => void>().toBeFunction();
 
 ```ts
 // math.unit.test.ts
-import { describe, it, expect } from '@monochromatic-dev/module-test';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
 
 await describe({
   name: '',
@@ -187,59 +191,59 @@ await describe({
     it({
       name: 'adds two numbers',
       fn: async () => {
-        expect(1 + 2).toBe(3);
+        expect(1 + 2,).toBe(3,);
       },
-    }),
+    },),
     it({
       name: 'deep-equals objects',
       fn: async () => {
-        expect({ a: 1, b: [2, 3] }).toEqual({ a: 1, b: [2, 3] });
+        expect({ a: 1, b: [2, 3,], },).toEqual({ a: 1, b: [2, 3,], },);
       },
-    }),
+    },),
     it({
       name: 'checks types and truthiness',
       fn: async () => {
-        expect(null).toBeNull();
-        expect(undefined).toBeUndefined();
-        expect(1).toBeDefined();
-        expect(1).toBeTruthy();
-        expect(0).toBeFalsy();
-        expect(Number.NaN).toBeNaN();
-        expect(new TypeError('x')).toBeInstanceOf(Error);
+        expect(null,).toBeNull();
+        expect(undefined,).toBeUndefined();
+        expect(1,).toBeDefined();
+        expect(1,).toBeTruthy();
+        expect(0,).toBeFalsy();
+        expect(Number.NaN,).toBeNaN();
+        expect(new TypeError('x',),).toBeInstanceOf(Error,);
       },
-    }),
+    },),
     it({
       name: 'numeric comparisons',
       fn: async () => {
-        expect(5).toBeGreaterThan(3);
-        expect(5).toBeGreaterThanOrEqual(5);
-        expect(3).toBeLessThan(5);
-        expect(5).toBeLessThanOrEqual(5);
-        expect(0.1 + 0.2).toBeCloseTo(0.3);
+        expect(5,).toBeGreaterThan(3,);
+        expect(5,).toBeGreaterThanOrEqual(5,);
+        expect(3,).toBeLessThan(5,);
+        expect(5,).toBeLessThanOrEqual(5,);
+        expect(0.1 + 0.2,).toBeCloseTo(0.3,);
       },
-    }),
+    },),
     it({
       name: 'strings and collections',
       fn: async () => {
-        expect('hello world').toMatch(/world/);
-        expect('hello world').toContain('world');
-        expect([1, 2, 3]).toContain(2);
-        expect([1, 2, 3]).toHaveLength(3);
-        expect({ a: 1 }).toHaveProperty('a', 1);
-        expect({ a: 1, b: 2, c: 3 }).toMatchObject({ a: 1, b: 2 });
+        expect('hello world',).toMatch(/world/,);
+        expect('hello world',).toContain('world',);
+        expect([1, 2, 3,],).toContain(2,);
+        expect([1, 2, 3,],).toHaveLength(3,);
+        expect({ a: 1, },).toHaveProperty('a', 1,);
+        expect({ a: 1, b: 2, c: 3, },).toMatchObject({ a: 1, b: 2, },);
       },
-    }),
+    },),
   ],
   timeout: 5000,
-});
+},);
 ```
 
 ### Negation with `not`
 
 ```ts
-expect(1).not.toBe(2);
-expect([1, 2, 3]).not.toContain(4);
-expect(1).not.toBeUndefined();
+expect(1,).not.toBe(2,);
+expect([1, 2, 3,],).not.toContain(4,);
+expect(1,).not.toBeUndefined();
 ```
 
 ### Error assertions with `toThrow`
@@ -248,12 +252,24 @@ expect(1).not.toBeUndefined();
 it({
   name: 'catches errors',
   fn: async () => {
-    expect(() => { throw new Error('boom'); }).toThrow();
-    expect(() => { throw new Error('boom'); }).toThrow('boom');
-    expect(() => { throw new Error('boom'); }).toThrow(/boo/);
-    expect(() => { throw new TypeError('x'); }).toThrow(TypeError);
+    expect(() => {
+      throw new Error('boom',);
+    },)
+      .toThrow();
+    expect(() => {
+      throw new Error('boom',);
+    },)
+      .toThrow('boom',);
+    expect(() => {
+      throw new Error('boom',);
+    },)
+      .toThrow(/boo/,);
+    expect(() => {
+      throw new TypeError('x',);
+    },)
+      .toThrow(TypeError,);
   },
-});
+},);
 ```
 
 ### Async error assertions
@@ -269,23 +285,24 @@ it({
   fn: async () => {
     let caught: unknown;
     try {
-      await parseConfig('/nonexistent');
-    } catch (error) {
+      await parseConfig('/nonexistent',);
+    }
+    catch (error) {
       caught = error;
     }
-    expect(caught).toBeInstanceOf(ConfigError);
-    expect((caught as Error).message).toContain('not found');
+    expect(caught,).toBeInstanceOf(ConfigError,);
+    expect((caught as Error).message,).toContain('not found',);
   },
-});
+},);
 
 // Preferred: await first, assert on the resolved value
 it({
   name: 'resolves to the parsed config',
   fn: async () => {
-    const result = await parseConfig('/valid/path');
-    expect(result).toHaveProperty('version', 2);
+    const result = await parseConfig('/valid/path',);
+    expect(result,).toHaveProperty('version', 2,);
   },
-});
+},);
 ```
 
 **Why not `.rejects`/`.resolves`?**
@@ -310,7 +327,7 @@ it({
   fn: async () => {
     // never runs; logs "SKIP: waiting for upstream fix #123"
   },
-});
+},);
 ```
 
 ### Repeating tests for flakiness detection
@@ -322,9 +339,9 @@ it({
   fn: async () => {
     // runs 5 times total (1 + 4 repeats), labeled [run 1/5] through [run 5/5]
     // stops on first failure
-    expect(Math.random()).toBeLessThan(1);
+    expect(Math.random(),).toBeLessThan(1,);
   },
-});
+},);
 ```
 
 ### Expected failures with `fails`
@@ -335,9 +352,9 @@ it({
   fails: 'parser bug #456',
   fn: async () => {
     // logs "PASS — threw as expected (parser bug #456)"
-    throw new Error('expected to break');
+    throw new Error('expected to break',);
   },
-});
+},);
 ```
 
 ### Nested suites
@@ -349,11 +366,11 @@ await describe({
     describe({
       name: 'inner',
       children: [
-        it({ name: 'deep test', fn: async () => expect(true).toBeTruthy() }),
+        it({ name: 'deep test', fn: async () => expect(true,).toBeTruthy(), },),
       ],
-    }),
+    },),
   ],
-});
+},);
 ```
 
 ### Concurrency control
@@ -369,22 +386,24 @@ await describe({
   name: 'database migration -- migrations depend on previous state',
   concurrency: 1,
   children: [
-    () => it({
-      name: 'creates table',
-      fn: async () => {
-        await db.exec('CREATE TABLE users (id INTEGER PRIMARY KEY)');
-        expect(await db.tableExists('users')).toBe(true);
-      },
-    }),
-    () => it({
-      name: 'inserts row',
-      fn: async () => {
-        await db.exec("INSERT INTO users (id) VALUES (1)");
-        expect(await db.count('users')).toBe(1);
-      },
-    }),
+    () =>
+      it({
+        name: 'creates table',
+        fn: async () => {
+          await db.exec('CREATE TABLE users (id INTEGER PRIMARY KEY)',);
+          expect(await db.tableExists('users',),).toBe(true,);
+        },
+      },),
+    () =>
+      it({
+        name: 'inserts row',
+        fn: async () => {
+          await db.exec('INSERT INTO users (id) VALUES (1)',);
+          expect(await db.count('users',),).toBe(1,);
+        },
+      },),
   ],
-});
+},);
 ```
 
 **Bounded** (`concurrency: 3`) -- caps simultaneous children via `p-limit`:
@@ -393,16 +412,15 @@ await describe({
 await describe({
   name: 'rate-limited API calls',
   concurrency: 3,
-  children: Array.from({ length: 10 }, (_, index) =>
-    () => it({
+  children: Array.from({ length: 10, }, (_, index,) => () =>
+    it({
       name: `request ${index}`,
       fn: async () => {
-        const res = await fetch(`/api/item/${index}`);
-        expect(res.status).toBe(200);
+        const res = await fetch(`/api/item/${index}`,);
+        expect(res.status,).toBe(200,);
       },
-    }),
-  ),
-});
+    },),),
+},);
 ```
 
 **Unbounded** (`concurrency: Infinity`) -- raw `Promise.allSettled`, no `p-limit` overhead:
@@ -412,7 +430,7 @@ await describe({
   name: 'unbounded parallelism',
   concurrency: Infinity,
   children: tests,
-});
+},);
 ```
 
 ### Parameterized tests
@@ -421,23 +439,23 @@ Use `.map()` over test data to generate `it` calls.
 
 ```ts
 const cases = [
-  { input: 0, expected: 1 },
-  { input: 1, expected: 1 },
-  { input: 5, expected: 120 },
-  { input: 10, expected: 3628800 },
+  { input: 0, expected: 1, },
+  { input: 1, expected: 1, },
+  { input: 5, expected: 120, },
+  { input: 10, expected: 3628800, },
 ];
 
 await describe({
   name: '',
-  children: cases.map(({ input, expected }) =>
+  children: cases.map(({ input, expected, },) =>
     it({
       name: `factorial(${input}) = ${expected}`,
       fn: async () => {
-        expect(factorial(input)).toBe(expected);
+        expect(factorial(input,),).toBe(expected,);
       },
-    }),
+    },)
   ),
-});
+},);
 ```
 
 ### Todo tests
@@ -449,21 +467,21 @@ it({
   name: 'TODO: handle edge case with empty input',
   skip: true,
   fn: async () => {},
-});
+},);
 ```
 
 ### Custom predicates with `toSatisfy`
 
 ```ts
-expect(42).toSatisfy((n) => typeof n === 'number' && n > 0);
-expect('hello').not.toSatisfy((s) => typeof s === 'number');
+expect(42,).toSatisfy(n => typeof n === 'number' && n > 0);
+expect('hello',).not.toSatisfy(s => typeof s === 'number');
 ```
 
 ### Deep equality in arrays with `toContainEqual`
 
 ```ts
-const users = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }];
-expect(users).toContainEqual({ id: 1, name: 'Alice' });
+const users = [{ id: 1, name: 'Alice', }, { id: 2, name: 'Bob', },];
+expect(users,).toContainEqual({ id: 1, name: 'Alice', },);
 ```
 
 ### Fake timers
@@ -473,17 +491,17 @@ Sinon's fake timer API is available through the context's `sinon` sandbox.
 ```ts
 it({
   name: 'debounce fires after delay',
-  fn: async ({ sinon, expect }) => {
+  fn: async ({ sinon, expect, },) => {
     const clock = sinon.useFakeTimers();
     const callback = sinon.spy();
 
-    debounce(callback, 100)();
-    expect(callback).not.toHaveBeenCalled();
+    debounce(callback, 100,)();
+    expect(callback,).not.toHaveBeenCalled();
 
-    clock.tick(100);
-    expect(callback).toHaveBeenCalledTimes(1);
+    clock.tick(100,);
+    expect(callback,).toHaveBeenCalledTimes(1,);
   },
-});
+},);
 ```
 
 ### Assertion counting with scoped `expect`
@@ -495,25 +513,24 @@ the right number of assertions ran -- prevents silently passing async tests.
 ```ts
 it({
   name: 'catches all async branches',
-  fn: async ({ expect }) => {
-    expect.assertions(2);
+  fn: async ({ expect, },) => {
+    expect.assertions(2,);
 
     const result = await fetchData();
-    expect(result.status).toBe(200);
-    expect(result.body).toBeDefined();
+    expect(result.status,).toBe(200,);
+    expect(result.body,).toBeDefined();
   },
-});
+},);
 
 it({
   name: 'at least one assertion runs',
-  fn: async ({ expect }) => {
+  fn: async ({ expect, },) => {
     expect.hasAssertions();
 
-    if (featureEnabled) {
-      expect(getFeature()).toBeTruthy();
-    }
+    if (featureEnabled)
+      expect(getFeature(),).toBeTruthy();
   },
-});
+},);
 ```
 
 The global `expect` (imported directly) works for tests that do not need assertion counting.
@@ -522,11 +539,11 @@ The scoped `expect` supports all the same matchers and asymmetric matchers.
 ### Type-level assertions
 
 ```ts
-import { expectTypeOf } from '@monochromatic-dev/module-test';
+import { expectTypeOf, } from '@monochromatic-dev/module-test';
 
 expectTypeOf<string>().toEqualTypeOf<string>();
 expectTypeOf<string>().not.toEqualTypeOf<number>();
-expectTypeOf({ a: 1, b: 'hello' }).toHaveProperty('a');
+expectTypeOf({ a: 1, b: 'hello', },).toHaveProperty('a',);
 expectTypeOf<() => string>().returns.toBeString();
 ```
 
@@ -541,7 +558,7 @@ For **per-test** setup/teardown, call functions at the start and end of each `fn
 ```ts
 async function beforeEach() {
   await db.clear();
-  await db.seed({ users: [{ id: 1, name: 'Alice' }] });
+  await db.seed({ users: [{ id: 1, name: 'Alice', },], },);
 }
 
 async function afterEach() {
@@ -555,22 +572,22 @@ await describe({
       name: 'finds user by id',
       fn: async () => {
         await beforeEach();
-        const user = await findUser(1);
-        expect(user).toHaveProperty('name', 'Alice');
+        const user = await findUser(1,);
+        expect(user,).toHaveProperty('name', 'Alice',);
         await afterEach();
       },
-    }),
+    },),
     it({
       name: 'returns undefined for missing user',
       fn: async () => {
         await beforeEach();
-        const user = await findUser(999);
-        expect(user).toBeUndefined();
+        const user = await findUser(999,);
+        expect(user,).toBeUndefined();
         await afterEach();
       },
-    }),
+    },),
   ],
-});
+},);
 ```
 
 For **suite-level** setup/teardown, use top-level statements before and after `describe`:
@@ -584,12 +601,12 @@ await describe({
     it({
       name: 'returns 200',
       fn: async () => {
-        const res = await fetch(server.url);
-        expect(res.status).toBe(200);
+        const res = await fetch(server.url,);
+        expect(res.status,).toBe(200,);
       },
-    }),
+    },),
   ],
-});
+},);
 
 await server.close();
 ```
@@ -599,39 +616,43 @@ await server.close();
 The `sinon` sandbox from `TestContext` auto-restores after each test.
 
 ```ts
-import { describe, expect, it } from '@monochromatic-dev/module-test';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
 
 await describe({
   name: 'mocking',
   children: [
     it({
       name: 'stubs a method',
-      fn: async ({ sinon }) => {
-        const obj = { greet: (_name: string): string => 'hi' };
-        const stub = sinon.stub(obj, 'greet').returns('hello');
+      fn: async ({ sinon, },) => {
+        const obj = { greet: (_name: string,): string => 'hi', };
+        const stub = sinon.stub(obj, 'greet',).returns('hello',);
 
-        obj.greet('world');
+        obj.greet('world',);
 
-        expect(stub).toHaveBeenCalled();
-        expect(stub).toHaveBeenCalledTimes(1);
-        expect(stub).toHaveBeenCalledWith('world');
-        expect(stub).toHaveReturnedWith('hello');
+        expect(stub,).toHaveBeenCalled();
+        expect(stub,).toHaveBeenCalledTimes(1,);
+        expect(stub,).toHaveBeenCalledWith('world',);
+        expect(stub,).toHaveReturnedWith('hello',);
       },
-    }),
+    },),
     it({
       name: 'spy without changing behavior',
-      fn: async ({ sinon }) => {
-        const obj = { getValue: (): number => 42 };
-        const spy = sinon.spy(obj, 'getValue');
+      fn: async ({ sinon, },) => {
+        const obj = { getValue: (): number => 42, };
+        const spy = sinon.spy(obj, 'getValue',);
 
         obj.getValue();
 
-        expect(spy).toHaveBeenCalled();
-        expect(spy).toHaveReturnedWith(42);
+        expect(spy,).toHaveBeenCalled();
+        expect(spy,).toHaveReturnedWith(42,);
       },
-    }),
+    },),
   ],
-});
+},);
 ```
 
 ### Asymmetric matchers
@@ -641,22 +662,22 @@ Used inside `toHaveBeenCalledWith` to match arguments partially.
 ```ts
 it({
   name: 'partial argument matching',
-  fn: async ({ sinon }) => {
+  fn: async ({ sinon, },) => {
     const spy = sinon.spy();
-    spy('hello world', { id: 1, name: 'test' }, [1, 2, 3]);
+    spy('hello world', { id: 1, name: 'test', }, [1, 2, 3,],);
 
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining('hello'),
-      expect.objectContaining({ id: 1 }),
-      expect.arrayContaining([1, 3]),
+    expect(spy,).toHaveBeenCalledWith(
+      expect.stringContaining('hello',),
+      expect.objectContaining({ id: 1, },),
+      expect.arrayContaining([1, 3,],),
     );
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringMatching(/^hello/),
+    expect(spy,).toHaveBeenCalledWith(
+      expect.stringMatching(/^hello/,),
       expect.anything(),
-      expect.any(Array),
+      expect.any(Array,),
     );
   },
-});
+},);
 ```
 
 ## Vitest parity
@@ -910,7 +931,7 @@ the Jest-style `expect` API is the single assertion interface.
 Chai is a direct dependency, so users who want `assert` can import it directly:
 
 ```ts
-import { assert } from 'chai';
+import { assert, } from 'chai';
 ```
 
 ## Concurrency model comparison

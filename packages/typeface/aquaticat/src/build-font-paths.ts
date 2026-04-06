@@ -82,6 +82,11 @@ export function computeLocalXBounds(
  * @param cellX - X offset of the cell in SVG coordinates
  *
  * @param xShift - horizontal shift to apply for proportional spacing
+ *
+ * @example
+ * ```ts
+ * addFilledPath(otPath, commands, cellX, xShift);
+ * ```
  */
 export function addFilledPath(
   otPath: opentype.Path,

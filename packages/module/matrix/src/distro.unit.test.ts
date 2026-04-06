@@ -30,79 +30,80 @@ await describe({
           fn: async () => {
             expect(detectPackageManager('ubuntu',),).toBe('apt',);
           },
-        }),
+        },),
 
         it({
           name: 'debian resolves to apt',
           fn: async () => {
             expect(detectPackageManager('debian',),).toBe('apt',);
           },
-        }),
+        },),
 
         it({
           name: 'fedora resolves to dnf',
           fn: async () => {
             expect(detectPackageManager('fedora',),).toBe('dnf',);
           },
-        }),
+        },),
 
         it({
           name: 'centos resolves to dnf',
           fn: async () => {
             expect(detectPackageManager('centos',),).toBe('dnf',);
           },
-        }),
+        },),
 
         it({
           name: 'rhel resolves to dnf',
           fn: async () => {
             expect(detectPackageManager('rhel',),).toBe('dnf',);
           },
-        }),
+        },),
 
         it({
           name: 'rocky resolves to dnf',
           fn: async () => {
             expect(detectPackageManager('rocky',),).toBe('dnf',);
           },
-        }),
+        },),
 
         it({
           name: 'alma resolves to dnf',
           fn: async () => {
             expect(detectPackageManager('alma',),).toBe('dnf',);
           },
-        }),
+        },),
 
         it({
           name: 'alpine resolves to apk',
           fn: async () => {
             expect(detectPackageManager('alpine',),).toBe('apk',);
           },
-        }),
+        },),
 
         it({
           name: 'arch resolves to pacman',
           fn: async () => {
             expect(detectPackageManager('arch',),).toBe('pacman',);
           },
-        }),
+        },),
 
         it({
           name: 'strips tag suffix before lookup',
           fn: async () => {
             expect(detectPackageManager('fedora:39',),).toBe('dnf',);
           },
-        }),
+        },),
 
         it({
           name: 'throws on unknown distro',
           fn: async () => {
             expect(function unknownDistro() {
               detectPackageManager('gentoo',);
-            },).toThrow('Unknown distro "gentoo"',);
+            },)
+              .toThrow('Unknown distro "gentoo"',);
           },
-        }),
+        },),
       ],
     },),
 
@@ -124,7 +125,7 @@ await describe({
             expect(cmd,).toContain('unzip',);
             expect(cmd,).not.toContain('sudo',);
           },
-        }),
+        },),
 
         it({
           name: 'apt non-root installs sudo',
@@ -135,7 +136,7 @@ await describe({
             },);
             expect(cmd,).toContain('sudo',);
           },
-        }),
+        },),
 
         it({
           name: 'dnf root uses dnf install',
@@ -146,7 +147,7 @@ await describe({
             },);
             expect(cmd,).toMatch(/^dnf install/,);
           },
-        }),
+        },),
 
         it({
           name: 'apk root uses apk add',
@@ -158,7 +159,7 @@ await describe({
             expect(cmd,).toMatch(/^apk add/,);
             expect(cmd,).toContain('bash',);
           },
-        }),
+        },),
 
         it({
           name: 'pacman root uses pacman -Sy',
@@ -169,7 +170,7 @@ await describe({
             },);
             expect(cmd,).toMatch(/^pacman -Sy/,);
           },
-        }),
+        },),
 
         it({
           name: 'dnf non-root includes sudo',
@@ -180,7 +181,7 @@ await describe({
             },);
             expect(cmd,).toContain('sudo',);
           },
-        }),
+        },),
 
         it({
           name: 'apk non-root includes sudo',
@@ -191,7 +192,7 @@ await describe({
             },);
             expect(cmd,).toContain('sudo',);
           },
-        }),
+        },),
 
         it({
           name: 'pacman non-root includes sudo',
@@ -202,7 +203,7 @@ await describe({
             },);
             expect(cmd,).toContain('sudo',);
           },
-        }),
+        },),
       ],
     },),
 
@@ -219,9 +220,10 @@ await describe({
             expect(userCreationCommand({
               manager: 'apt',
               user: 'root',
-            },),).toBe('',);
+            },),)
+              .toBe('',);
           },
-        }),
+        },),
 
         it({
           name: 'non-root with apt uses useradd',
@@ -233,7 +235,7 @@ await describe({
             expect(cmd,).toContain('useradd -m testuser',);
             expect(cmd,).toContain('NOPASSWD:ALL',);
           },
-        }),
+        },),
 
         it({
           name: 'non-root with dnf uses useradd',
@@ -244,7 +246,7 @@ await describe({
             },);
             expect(cmd,).toContain('useradd -m testuser',);
           },
-        }),
+        },),
 
         it({
           name: 'non-root with apk uses adduser -D',
@@ -256,7 +258,7 @@ await describe({
             expect(cmd,).toContain('adduser -D testuser',);
             expect(cmd,).toContain('NOPASSWD:ALL',);
           },
-        }),
+        },),
 
         it({
           name: 'non-root with pacman uses useradd',
@@ -267,10 +269,9 @@ await describe({
             },);
             expect(cmd,).toContain('useradd -m testuser',);
           },
-        }),
+        },),
       ],
     },),
-
     //endregion userCreationCommand
   ],
 },);

@@ -17,9 +17,12 @@ Generic file-sync GitHub Actions exist, but they target cross-repo sync and lack
 Create a `file-enforcer.config.ts` at the monorepo root:
 
 ```ts
-import { cat, overwrite } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+import {
+  cat,
+  overwrite,
+} from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
-await overwrite('./CLAUDE.md', await cat(['./AGENTS.md']));
+await overwrite('./CLAUDE.md', await cat(['./AGENTS.md',],),);
 ```
 
 Run it directly or through the CLI:
@@ -70,14 +73,14 @@ Predicates are direct commands (no shell involved); exit code 0 means the predic
 Tuples are evaluated top-to-bottom; the first match wins.
 
 ```ts
-import { exec } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+import { exec, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
 // Install git via the first available package manager
 const output = await exec([
-  [['mise', '--version'],    ['mise', 'use', 'git']],
-  [['brew', '--version'],    ['brew', 'install', 'git']],
-  [['dnf', '--version'],     ['dnf', 'install', 'git']],
-]);
+  [['mise', '--version',], ['mise', 'use', 'git',],],
+  [['brew', '--version',], ['brew', 'install', 'git',],],
+  [['dnf', '--version',], ['dnf', 'install', 'git',],],
+],);
 ```
 
 ### Checking tool capabilities
@@ -87,12 +90,12 @@ Use `evaluatePredicate()` to combine multiple checks:
 
 ```ts
 // Can mise manage git at all?
-const hasMise = await evaluatePredicate(['mise', '--version']);
-const miseCanManageGit = hasMise && await evaluatePredicate(['mise', 'registry', 'git']);
+const hasMise = await evaluatePredicate(['mise', '--version',],);
+const miseCanManageGit = hasMise
+  && await evaluatePredicate(['mise', 'registry', 'git',],);
 
-if (miseCanManageGit) {
-  await exec('mise', ['use', 'git']);
-}
+if (miseCanManageGit)
+  await exec('mise', ['use', 'git',],);
 ```
 
 ### Reusable predicates
@@ -100,10 +103,10 @@ if (miseCanManageGit) {
 Define predicates as constants to share across multiple `exec()` calls:
 
 ```ts
-const HAS_MISE = ['mise', '--version'] as const;
+const HAS_MISE = ['mise', '--version',] as const;
 
-await exec([[HAS_MISE, ['mise', 'exec', '--', 'git', 'pull']]]);
-await exec([[HAS_MISE, ['mise', 'exec', '--', 'git', 'status']]]);
+await exec([[HAS_MISE, ['mise', 'exec', '--', 'git', 'pull',],],],);
+await exec([[HAS_MISE, ['mise', 'exec', '--', 'git', 'status',],],],);
 ```
 
 ### Manual dispatch with `evaluatePredicate()`
@@ -111,17 +114,18 @@ await exec([[HAS_MISE, ['mise', 'exec', '--', 'git', 'status']]]);
 For complex logic that doesn't fit the tuple pattern, use `evaluatePredicate()` directly:
 
 ```ts
-import { evaluatePredicate, exec } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+import {
+  evaluatePredicate,
+  exec,
+} from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
-const hasMise = await evaluatePredicate(['mise', '--version']);
-const hasBrew = await evaluatePredicate(['brew', '--version']);
+const hasMise = await evaluatePredicate(['mise', '--version',],);
+const hasBrew = await evaluatePredicate(['brew', '--version',],);
 
-if (hasMise) {
-  await exec('mise', ['use', 'git']);
-}
-if (hasBrew) {
-  await exec('brew', ['install', 'git']);
-}
+if (hasMise)
+  await exec('mise', ['use', 'git',],);
+if (hasBrew)
+  await exec('brew', ['install', 'git',],);
 ```
 
 ### Nested platform dispatch
@@ -131,12 +135,14 @@ The first element of the inner array being an array (not a string) triggers recu
 
 ```ts
 await exec([
-  [['mise', '--version'], [
-    [['mise', 'where', 'python@3.12'], ['mise', 'exec', 'python@3.12', '--', 'script.py']],
-    [['mise', 'where', 'python@3.11'], ['mise', 'exec', 'python@3.11', '--', 'script.py']],
-  ]],
-  [['python3', '--version'], ['python3', 'script.py']],
-]);
+  [['mise', '--version',], [
+    [['mise', 'where', 'python@3.12',], ['mise', 'exec', 'python@3.12', '--',
+      'script.py',],],
+    [['mise', 'where', 'python@3.11',], ['mise', 'exec', 'python@3.11', '--',
+      'script.py',],],
+  ],],
+  [['python3', '--version',], ['python3', 'script.py',],],
+],);
 ```
 
 Nested command literals require `as const` to satisfy the recursive type.
@@ -144,14 +150,16 @@ Extract them into a typed constant to keep the call site readable:
 
 ```ts
 const miseDispatch = [
-  [['mise', 'where', 'python@3.12'], ['mise', 'exec', 'python@3.12', '--', 'script.py']],
-  [['mise', 'where', 'python@3.11'], ['mise', 'exec', 'python@3.11', '--', 'script.py']],
+  [['mise', 'where', 'python@3.12',], ['mise', 'exec', 'python@3.12', '--',
+    'script.py',],],
+  [['mise', 'where', 'python@3.11',], ['mise', 'exec', 'python@3.11', '--',
+    'script.py',],],
 ] as const;
 
 await exec([
-  [['mise', '--version'], miseDispatch],
-  [['python3', '--version'], ['python3', 'script.py']],
-]);
+  [['mise', '--version',], miseDispatch,],
+  [['python3', '--version',], ['python3', 'script.py',],],
+],);
 ```
 
 ### Negation via noop fallthrough
@@ -161,18 +169,17 @@ To express "if X is NOT available, do Y", match the positive case with a noop co
 
 ```ts
 await exec([
-  [['python3', '--version'], ['true']],         // python found → noop
-  [['true'],                 installPython],     // fallthrough → install
-]);
+  [['python3', '--version',], ['true',],], // python found → noop
+  [['true',], installPython,], // fallthrough → install
+],);
 ```
 
 For complex negation logic, use `evaluatePredicate()` with control flow instead:
 
 ```ts
-const hasPython = await evaluatePredicate(['python3', '--version']);
-if (!hasPython) {
-  await exec('apt-get', ['install', '--yes', 'python3']);
-}
+const hasPython = await evaluatePredicate(['python3', '--version',],);
+if (!hasPython)
+  await exec('apt-get', ['install', '--yes', 'python3',],);
 ```
 
 ## Package management
@@ -184,13 +191,18 @@ Designed for packages that mise cannot manage (system libraries, servers, deskto
 ### Basic usage
 
 ```ts
-import { packages } from '@monochromatic-dev/dev-script-file-enforcer/data/packages.ts';
-import { ensurePackage, registerPackages } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+import {
+  packages,
+} from '@monochromatic-dev/dev-script-file-enforcer/data/packages.ts';
+import {
+  ensurePackage,
+  registerPackages,
+} from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
-registerPackages(packages);
+registerPackages(packages,);
 
-await ensurePackage('curl');   // already installed → noop
-await ensurePackage('rg');     // not found → installs ripgrep via detected manager
+await ensurePackage('curl',); // already installed → noop
+await ensurePackage('rg',); // not found → installs ripgrep via detected manager
 ```
 
 ### How it works
@@ -207,10 +219,10 @@ await ensurePackage('rg');     // not found → installs ripgrep via detected ma
 The index ships as TypeScript source using the `p()` builder:
 
 ```ts
-p('curl')                                     // binary = effname = package name everywhere
-p({ bin: 'rg', effname: 'ripgrep' })          // binary differs from package name
-p({ effname: 'wget', winget: 'JernejSimoncic.Wget' })  // per-manager override
-p({ bin: 'openssl', check: 'version', effname: 'openssl' })  // custom existence check
+p('curl',); // binary = effname = package name everywhere
+p({ bin: 'rg', effname: 'ripgrep', },); // binary differs from package name
+p({ effname: 'wget', winget: 'JernejSimoncic.Wget', },); // per-manager override
+p({ bin: 'openssl', check: 'version', effname: 'openssl', },); // custom existence check
 ```
 
 The index is split into two files:
@@ -224,17 +236,17 @@ The index is split into two files:
 
 ### Supported package managers
 
-| Manager  | Detection            | Search                  | Install                                    | Privilege |
-|----------|----------------------|-------------------------|--------------------------------------------|-----------|
-| apt      | `apt-get --version`  | `apt-cache show`        | `apt-get install --yes`                    | sudo      |
-| dnf      | `dnf --version`      | `dnf info`              | `dnf install --assumeyes`                  | sudo      |
-| pacman   | `pacman --version`   | `pacman -Si`            | `pacman -S --noconfirm`                    | sudo      |
-| apk      | `apk --version`      | `apk info --description`| `apk add`                                  | sudo      |
-| zypper   | `zypper --version`   | `zypper info`           | `zypper install --non-interactive`         | sudo      |
-| brew     | `brew --version`     | `brew info`             | `brew install`                             | user      |
-| winget   | `winget --version`   | `winget show --exact`   | `winget install --id --exact`              | user      |
-| scoop    | `scoop --version`    | `scoop info`            | `scoop install`                            | user      |
-| choco    | `choco --version`    | `choco info`            | `choco install --yes`                      | admin     |
+| Manager | Detection           | Search                   | Install                            | Privilege |
+| ------- | ------------------- | ------------------------ | ---------------------------------- | --------- |
+| apt     | `apt-get --version` | `apt-cache show`         | `apt-get install --yes`            | sudo      |
+| dnf     | `dnf --version`     | `dnf info`               | `dnf install --assumeyes`          | sudo      |
+| pacman  | `pacman --version`  | `pacman -Si`             | `pacman -S --noconfirm`            | sudo      |
+| apk     | `apk --version`     | `apk info --description` | `apk add`                          | sudo      |
+| zypper  | `zypper --version`  | `zypper info`            | `zypper install --non-interactive` | sudo      |
+| brew    | `brew --version`    | `brew info`              | `brew install`                     | user      |
+| winget  | `winget --version`  | `winget show --exact`    | `winget install --id --exact`      | user      |
+| scoop   | `scoop --version`   | `scoop info`             | `scoop install`                    | user      |
+| choco   | `choco --version`   | `choco info`             | `choco install --yes`              | admin     |
 
 Privilege escalation is auto-detected: `sudo` is prepended for managers that need root,
 skipped when already running as root (UID 0 / container context).

@@ -70,8 +70,14 @@ export function combinedScore(
   // Sum lint penalties with per-rule cap
   const lintPenalty = [...lint.perRulePenalty.values(),]
     .reduce(
-      function capAndSum(sum, uncapped,): number {
-        return sum + Math.min(uncapped, MAX_PENALTY_PER_RULE,);
+      function capAndSum(
+        sum,
+        uncapped,
+      ): number {
+        return sum + Math.min(
+          uncapped,
+          MAX_PENALTY_PER_RULE,
+        );
       },
       0,
     );

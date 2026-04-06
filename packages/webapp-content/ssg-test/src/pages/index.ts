@@ -17,6 +17,11 @@ import { pageLayout, } from '../templates/layout.ts';
  * @param langs - available language codes
  *
  * @returns complete HTML document for the root index
+ *
+ * @example
+ * ```ts
+ * const html = indexPage(['en', 'fr']);
+ * ```
  */
 export function indexPage(langs: readonly string[],): string {
   /** Page title composed from all language translations of "choose a language". */

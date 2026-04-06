@@ -22,7 +22,7 @@ await describe({
         },);
         expect(result.name,).toBe('inner-test',);
       },
-    }),
+    },),
 
     it({
       name: 'wraps failure with name and cause',
@@ -38,7 +38,7 @@ await describe({
         await expect(rejection,).rejects.toHaveProperty('message', 'failing-test',);
         await expect(rejection,).rejects.toHaveProperty('cause', original,);
       },
-    }),
+    },),
 
     it({
       name: 'respects timeout',
@@ -47,15 +47,16 @@ await describe({
         const TIMEOUT = 50;
         const rejection = it({
           name: 'slow-test',
-          fn: async () => new Promise((resolve,) => {
-            setTimeout(resolve, DELAY,);
-          },),
+          fn: async () =>
+            new Promise(resolve => {
+              setTimeout(resolve, DELAY,);
+            },),
           timeout: TIMEOUT,
         },);
         await expect(rejection,).rejects.toBeInstanceOf(Error,);
         await expect(rejection,).rejects.toHaveProperty('message', 'slow-test',);
       },
-    }),
+    },),
 
     //region skip
 
@@ -73,7 +74,7 @@ await describe({
         expect(result.name,).toBe('skipped-test',);
         expect(ran,).toBe(false,);
       },
-    }),
+    },),
 
     //endregion skip
 
@@ -94,7 +95,7 @@ await describe({
         },);
         expect(count,).toBe(EXPECTED_RUNS,);
       },
-    }),
+    },),
 
     it({
       name: 'repeats stops on first failure',
@@ -106,15 +107,14 @@ await describe({
           repeats: REPEATS,
           fn: async () => {
             count += 1;
-            if (count === 2) {
+            if (count === 2)
               throw new Error('boom',);
-            }
           },
         },);
         await expect(rejection,).rejects.toBeInstanceOf(Error,);
         expect(count,).toBe(2,);
       },
-    }),
+    },),
 
     //endregion repeats
 
@@ -132,7 +132,7 @@ await describe({
         },);
         expect(result.name,).toBe('expected-failure',);
       },
-    }),
+    },),
 
     it({
       name: 'fails treats passing test as failure',
@@ -145,7 +145,7 @@ await describe({
         await expect(rejection,).rejects.toBeInstanceOf(Error,);
         await expect(rejection,).rejects.toHaveProperty('message', 'unexpected-pass',);
       },
-    }),
+    },),
 
     it({
       name: 'fails with repeats requires every run to throw',
@@ -164,8 +164,7 @@ await describe({
         },);
         expect(count,).toBe(EXPECTED_RUNS,);
       },
-    }),
-
+    },),
     //endregion fails
   ],
 },);

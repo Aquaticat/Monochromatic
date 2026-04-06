@@ -1,9 +1,7 @@
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import type {
   Atom,
-  Opml,
-  parseAtomFeed,
-  parseRssFeed,
+  Rss,
 } from 'feedsmith';
 import * as z from 'zod/mini';
 import type { FeedWOutline, } from './feed.ts';
@@ -81,7 +79,7 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
     }: FeedWOutline,): Item[] {
       if (outline.type === 'atom') {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
-        const atomFeed = feed as ReturnType<typeof parseAtomFeed>;
+        const atomFeed = feed as Atom.Feed<string>;
         const {
           entries,
           ...feedWithoutEntries
@@ -100,7 +98,7 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
         },);
       }
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
-      const rssFeed = feed as ReturnType<typeof parseRssFeed>;
+      const rssFeed = feed as Rss.Feed<string>;
       const {
         items,
         ...feedWithoutItems
@@ -145,9 +143,9 @@ function getNormalizedItem(item: Item,): NormalizedItem {
   } = atomItem.feed;
   const newFeed: Record<string, string> = {};
   if (title !== undefined)
-    newFeed.title = title;
+    newFeed.title = title.value;
   if (subtitle !== undefined)
-    newFeed.subtitle = subtitle;
+    newFeed.subtitle = subtitle.value;
 
   const atomEntry = atomItem.item;
   const link = atomEntry.links?.at(0,);

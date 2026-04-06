@@ -9,7 +9,10 @@
  *
  * The default export (`db`) is the open Database instance used by `lib/db/tasks.ts`.
  */
-import { connect, } from '@tursodatabase/database';
+import {
+  connect,
+  type Database,
+} from '@tursodatabase/database';
 import { mkdirSync, } from 'node:fs';
 import { dirname, } from 'node:path';
 import { getArgumentValue, } from './args.ts';
@@ -65,7 +68,7 @@ const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
 /** Open SQLite database connection with WAL mode and foreign keys. */
-const db = await connect(
+const db: Database = await connect(
   databasePath,
   { experimental: ['triggers',], },
 );

@@ -95,10 +95,21 @@ export const PAGE_FRAME_COLOR: CssValue = cssOklch({
   h: 0,
 },);
 
+/** Eight, used for US Letter width base */
+const EIGHT = 2 * 2 * 2;
+
+/** US Letter width in inches (8.5) */
+export const LETTER_WIDTH_IN: number = EIGHT + HALF;
+
+/** US Letter height in inches */
+export const LETTER_HEIGHT_IN = 11;
+
+/* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- branded CssValue requires assertion from template string */
 /** US Letter aspect ratio (8.5 / 11) for CSS `aspect-ratio` */
-export const LETTER_ASPECT_RATIO: CssValue = `${String(8.5,)} / ${
-  String(11,)
-}` as CssValue;
+export const LETTER_ASPECT_RATIO: CssValue = `${String(LETTER_WIDTH_IN,)} / ${
+  String(LETTER_HEIGHT_IN,)
+}` satisfies string as CssValue;
+/* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
 /** Padding around the page inside the viewport */
 export const VIEWPORT_PADDING: CssValue = cssRem(1,);
@@ -136,26 +147,26 @@ export const BG_TOGGLE_CHECKED_HOVER: CssValue = cssOklch({
 },);
 
 /** Solid border on both block and inline axes */
-export const BORDER_SOLID_DECLS = {
+export const BORDER_SOLID_DECLS: CssDeclarations = {
   'border-block-style': 'solid',
   'border-block-color': BORDER_COLOR,
   'border-block-width': BORDER_WIDTH,
   'border-inline-style': 'solid',
   'border-inline-color': BORDER_COLOR,
   'border-inline-width': BORDER_WIDTH,
-} as const satisfies CssDeclarations;
+};
 
 /** Toolbar and control font stack */
-export const TOOLBAR_FONT_DECLS = {
+export const TOOLBAR_FONT_DECLS: CssDeclarations = {
   'font-family': 'sans-serif',
   'font-size': cssRem(1,),
-} as const satisfies CssDeclarations;
+};
 
 /** Absolute positioning filling parent via zero insets */
-export const INSET_ZERO_DECLS = {
+export const INSET_ZERO_DECLS: CssDeclarations = {
   position: 'absolute',
   'inset-block': cssNum(0,),
   'inset-inline': cssNum(0,),
-} as const satisfies CssDeclarations;
+};
 
 //endregion Shared declaration fragments

@@ -73,7 +73,11 @@ const thresholds = new Map<string, number>(
   uniqueLabels.map(function buildThreshold(label,) {
     return [
       label,
-      computeThreshold(label, entries,).threshold,
+      computeThreshold(
+        label,
+        entries,
+      )
+        .threshold,
     ];
   },),
 );
@@ -158,13 +162,22 @@ await mkdir(
 /** Destructured CSS build result; HTML write result is discarded. */
 const [, cssResult,] = await Promise.all([
   writeFile(
-    join(DIST_DIR, 'index.html',),
+    join(
+      DIST_DIR,
+      'index.html',
+    ),
     pageHtml,
     'utf8',
   ),
   buildCss({
-    input: join(CSS_DIR, 'index.css',),
-    output: join(DIST_DIR, 'style.css',),
+    input: join(
+      CSS_DIR,
+      'index.css',
+    ),
+    output: join(
+      DIST_DIR,
+      'style.css',
+    ),
   },),
 ],);
 

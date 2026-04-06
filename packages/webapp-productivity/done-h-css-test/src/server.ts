@@ -87,7 +87,10 @@ app.get(
 app.get(
   '/tasks/:id',
   defineHandler(function handleTaskDetails(event,) {
-    const id = getRouterParam(event, 'id',);
+    const id = getRouterParam(
+      event,
+      'id',
+    );
     if (id === undefined)
       throw new Error('missing route parameter: id',);
     return taskDetailsPage(id,);
@@ -120,23 +123,39 @@ registerApiRoutes(app,);
 app.get(
   '/dist/client/**',
   defineHandler(function handleStaticAsset(event,) {
-    return serveStatic(event, {
-      getContents: function readContents(id,) {
-        return readFile(join('.', id,),);
+    return serveStatic(
+      event,
+      {
+        getContents: function readContents(id,) {
+          return readFile(
+            join(
+              '.',
+              id,
+            ),
+          );
+        },
+        getMeta: async function getMetadata(id,) {
+          let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
+          try {
+            stats = await stat(
+              join(
+                '.',
+                id,
+              ),
+            );
+          }
+          catch {
+            return;
+          }
+          if (!stats.isFile())
+            return;
+          return {
+            size: stats.size,
+            mtime: stats.mtimeMs,
+          };
+        },
       },
-      getMeta: async function getMetadata(id,) {
-        let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
-        try {
-          stats = await stat(join('.', id,),);
-        }
-        catch {
-          return;
-        }
-        if (!stats.isFile())
-          return;
-        return { size: stats.size, mtime: stats.mtimeMs, };
-      },
-    },);
+    );
   },),
 );
 

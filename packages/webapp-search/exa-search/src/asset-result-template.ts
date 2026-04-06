@@ -4,6 +4,12 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * Builds the search result template element rendered once and cloned by client JS.
  *
  * @returns HTML string for a single result `<li>` with all sub-elements
+ *
+ * @example
+ * ```ts
+ * const html = buildResultTemplate();
+ * document.querySelector('.results')!.innerHTML = html;
+ * ```
  */
 export function buildResultTemplate(): string {
   return h({
@@ -18,7 +24,10 @@ export function buildResultTemplate(): string {
           h({
             tag: 'img',
             class: 'result__favicon',
-            attrs: { src: '', alt: '', },
+            attrs: {
+              src: '',
+              alt: '',
+            },
           },),
           h({
             tag: 'h2',
@@ -88,7 +97,10 @@ export function buildResultTemplate(): string {
           h({
             tag: 'img',
             class: 'result__image',
-            attrs: { src: '', alt: '', },
+            attrs: {
+              src: '',
+              alt: '',
+            },
           },),
         ],
       },),

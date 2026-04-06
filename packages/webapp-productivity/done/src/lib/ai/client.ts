@@ -119,6 +119,12 @@ export type ChatCompletionResult =
  * @param options - Messages, temperature, and format controls
  *
  * @returns Completion text on success, or a descriptive error string
+ *
+ * @example
+ * ```ts
+ * const result = await chatCompletion({ messages, temperature: 0 });
+ * if (result.ok) console.log(result.content);
+ * ```
  */
 export async function chatCompletion(
   options: ChatCompletionOptions,

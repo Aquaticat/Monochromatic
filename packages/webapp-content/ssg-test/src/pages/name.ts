@@ -20,6 +20,11 @@ import { pageLayout, } from '../templates/layout.ts';
  * @param posts - all language variants of this post
  *
  * @returns complete HTML document listing available translations
+ *
+ * @example
+ * ```ts
+ * const html = namePage({ name: 'hello-world', posts });
+ * ```
  */
 export function namePage(
   {

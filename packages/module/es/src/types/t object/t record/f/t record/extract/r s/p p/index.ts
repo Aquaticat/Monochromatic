@@ -55,5 +55,8 @@ import { $ as pick, } from '../../../pick/p p/index.ts';
   if (extractedSet.size === 0)
     throw new TypeError('Extracted iterable cannot be empty',);
 
-  return pick(obj, extractedSet,);
+  return pick(
+    obj,
+    extractedSet,
+  );
 }

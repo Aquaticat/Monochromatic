@@ -35,6 +35,15 @@ import {
  * @param id - module ID (filename) for the parser
  *
  * @returns transformed code object, or `null` if no attributes were found
+ *
+ * @example
+ * ```ts
+ * const result = transformImportAttributes(
+ *   "import x from './file.sql' with { type: 'text' }",
+ *   'main.ts',
+ * );
+ * // result.code: "import x from './file.sql?attr=text'"
+ * ```
  */
 export function transformImportAttributes(
   code: string,

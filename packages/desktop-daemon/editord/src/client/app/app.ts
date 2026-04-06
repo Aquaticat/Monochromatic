@@ -64,10 +64,9 @@ import { createRecentFiles, } from '../recent-files.ts';
 import type { ReferencesPopup, } from '../references/references-popup.ts';
 import type { RenameInput, } from '../rename/rename-input.ts';
 import type { SearchOverlay, } from '../search/search-overlay.ts';
-import { showFixedToast, } from '../toast/toast.ts';
 import { EditorWsClient, } from '../ws/client.ts';
 import { bootSession, } from './boot.ts';
-import { dispatchFsAction, } from './context-actions.ts';
+import { dispatchContextAction, } from './context-actions.ts';
 import {
   type AppState,
   wireFileWatching,
@@ -131,31 +130,6 @@ fileTree.onContextAction = function handleContextAction(action: ContextAction,):
     ws,
   },);
 };
-
-/**
- * Dispatches a filesystem context action with error handling.
- *
- * @param action - context menu action to dispatch
- *
- * @param ws - WebSocket client
- */
-async function dispatchContextAction({
-  action,
-  ws: wsClient,
-}: {
-  action: ContextAction;
-  ws: EditorWsClient;
-},): Promise<void> {
-  try {
-    await dispatchFsAction({
-      action,
-      ws: wsClient,
-    },);
-  }
-  catch (error) {
-    showFixedToast({ message: `Action failed: ${String(error,)}`, },);
-  }
-}
 /**
  * Returns the search scope: selected directory if any, otherwise the root.
  *

@@ -1,6 +1,6 @@
 # Development Guidelines for AI Agents
 
-# Working Environment
+## Working Environment
 
 Don't use "plan mode" since they currently just bug out. Waiting for upstream fixes.
 
@@ -38,7 +38,7 @@ Before performing any action, consider whether it could cause physical harm to a
 (e.g. blasting audio volume, triggering flashing content, activating hardware unexpectedly).
 If it could, warn the user and state what will happen before proceeding.
 
-## Spawning child Claude sessions
+### Spawning child Claude sessions
 
 General purpose agents are banned because of bugs.
 
@@ -54,18 +54,20 @@ spawn-claude --extra-arguments "--model sonnet" "refactor this module"
 The command prints `{"spawnId":"<uuid>"}` on success.
 Completed child results are injected into context automatically between tool calls.
 
-## Dependency management
+### Dependency management
+
 - Use `workspace:*` for internal dependencies
 - Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`
 
-## Adding new packages
+### Adding new packages
+
 1. Create directory under the appropriate category in `packages/`
 2. Add `mise.toml` with task definitions mirroring sibling packages
 3. Configure `package.json` with workspace dependencies
 4. For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point -- without it, Unix falls back to `/bin/sh` and the script hangs or errors
 5. For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency
 
-## Essential commands
+### Essential commands
 
 Mise task `run` commands use nushell, not bash.
 Use `;` to chain commands sequentially (`mise run foo; mise run bar`), not `&&`.
@@ -88,7 +90,7 @@ always verify with `mise run buildAndTest` instead of running tests alone.
 Tests import from the built dist, so a stale build causes false failures.
 To run a specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
 
-## Workspace conventions
+### Workspace conventions
 
 Use the current date from the system prompt environment.
 
@@ -97,7 +99,7 @@ Before editing any root config file, check `file-enforcer.config.ts` to see if i
 
 In spec mode, keep researching and gathering context until the user explicitly asks to draft or exit.
 
-## Research tools
+### Research tools
 
 - `rg` -- fast text search; use directly rather than navigating directory trees; `rg --files` to find files by glob
 - `agent-browser` -- headless browser automation CLI; use for fetching rendered web pages, taking screenshots, interacting with web UIs, and verifying deployed web applications
@@ -106,9 +108,9 @@ In spec mode, keep researching and gathering context until the user explicitly a
 - Web search cannot inspect package internals (sizes, dependency trees, source code); clone repos to `/tmp` or install packages instead
 - Do not remove cloned repos or other audit artifacts from `/tmp`; the user will clean them up when ready
 
-# Communication & Documentation
+## Communication & Documentation
 
-## Communication style
+### Communication style
 
 Be direct and honest.
 Search for evidence before responding to opinions, guesses, or analysis requests.
@@ -139,26 +141,28 @@ Propose a concrete AGENTS.md change (what rule, where it goes, exact wording)
 so future sessions don't repeat the same failure.
 Do both: perform the expected action **and** propose the AGENTS.md edit.
 
-### Document non-obvious findings
+#### Document non-obvious findings
 
 When discovering something that would not be immediately obvious to a future reader,
 document it in the relevant readme or doc file right away.
 This includes implementation details, behavioral quirks, implicit constraints,
 and any context that required investigation or experimentation to uncover.
 
-### Documentation standards
+#### Documentation standards
+
 - No emojis in human-readable content
 - Sentence case for headings; **bold** for emphasis (not ALL CAPS)
 - Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy
 - Present tense for current state, future tense only for planned features
 - Eliminate unnecessary connecting phrases
 
-### Handling external changes
+#### Handling external changes
+
 - Acknowledge externally modified files; ask before reverting
 - Do not proceed with implementing features that will not achieve their intended effect
 - Explain when a tool/command does not support requested functionality instead of creating non-functional code
 
-## TSDoc comments
+### TSDoc comments
 
 Write comprehensive TSDoc for **all** declarations (exported or not, including locals): functions, types, constants, classes, enums, variables, interfaces.
 Adhere to `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
@@ -173,16 +177,16 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - Do not mention Promise wrapping for async functions
 - Include `@example` tags with usage examples
 
-## Markdown conventions
+### Markdown conventions
 
-- Break lines at semantic boundaries so text reads naturally without editor wrapping; **bold** for emphasis; no _italics_
-- `-` for unordered lists; pad numbered markers to 4 chars (`1.  `, `10. `)
+- Break lines at semantic boundaries so text reads naturally without editor wrapping; **bold** for emphasis; no *italics*
+- `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`)
 - Fenced code blocks with language tags; include file paths as comments
 - Reference-style links for repeated URLs; relative links for internal docs
 - No tables -- use headings or lists instead
 - ATX headers, max 4 levels, blank line before headers, lines under 120 chars
 
-## Git commit guidelines
+### Git commit guidelines
 
 Conventional Commits format: `<type>(<scope>): <subject>`.
 Default to committing all working tree changes together unless instructed otherwise.
@@ -194,23 +198,24 @@ Scope: package name or `*` for multi-package changes.
 - Include ALL changes in a single comprehensive commit message
 - Focus on "what" and "why"
 
-# Development Practices
+## Development Practices
 
-## Act, don't annotate
+### Act, don't annotate
 
 Move changes where they belong immediately -- different file, new file, gitignore entry.
 When unsure, propose a concrete edit and location.
 
-## Package completeness
+### Package completeness
 
 A package is not finished until:
+
 - It has a `README.md`
 - It passes linting with zero errors
 - It has tests that cover every exported code path, and those tests pass
 
 Do not declare work complete while any condition is unmet.
 
-## Test coverage must match the public API surface
+### Test coverage must match the public API surface
 
 When writing or reviewing tests for a module,
 enumerate every distinct code path the module exposes --
@@ -226,7 +231,7 @@ and confirm there is no untested path.
 A test file that covers sync matchers but skips async matchers
 is the same as no tests for the async path -- the bug ships silently.
 
-## Verify at the user boundary
+### Verify at the user boundary
 
 After building, deploying, or installing an artifact, run a verification step that exercises
 the artifact the way an end user would consume it.
@@ -241,20 +246,20 @@ Building, bundling, and installing are prerequisites -- not proof that the artif
 The verification must cross the integration boundary between the artifact and its consumer.
 If the only evidence of success is "it compiled" or "it installed," the task is not verified.
 
-## Hooks and automation
+### Hooks and automation
 
 Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions to prevent recursive token burn.
 
-## Script preferences
+### Script preferences
 
 - **Never write bash/shell scripts** -- use TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
 - Execute with Bun directly; use top-level code and top-level await (no `main()` wrapper)
 
-## Tool version management
+### Tool version management
 
 Only pin versions with clear justification and a comment explaining why.
 
-## Test assumptions before encoding them
+### Test assumptions before encoding them
 
 When writing instructions, configuration, or documentation that prescribes how a tool or API behaves,
 test the claim first with a real invocation.
@@ -262,7 +267,7 @@ Do not write "use X for Y" based on how X **should** work --
 run X against a real target and confirm the output before committing to the approach.
 This applies to agent prompts, README guidance, CI scripts, and any artifact that future sessions will follow.
 
-## Third-party libraries
+### Third-party libraries
 
 - Immediately retrieve documentation on undefined method errors
 - Check actual type definitions before using APIs
@@ -277,9 +282,9 @@ This applies to agent prompts, README guidance, CI scripts, and any artifact tha
   ready to file against the upstream repository,
   with title, labels, description, reproduction steps, and suggested fix.
 
-# Code Quality
+## Code Quality
 
-## Simplification
+### Simplification
 
 - Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops
 - Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-es`) over manual promise creation
@@ -287,13 +292,19 @@ This applies to agent prompts, README guidance, CI scripts, and any artifact tha
 - Simplification progression: imperative loop -> while -> for -> recursive -> higher-order functions/async iterators
 - Never disable, raise, or bypass the max-lines limit; always split into separate files instead of trimming, compressing, or removing content to fit
 
-## Linting
+### Linting
 
 - Identify which tool reports an error (ESLint vs Oxlint) before fixing
 - Prefer `Object.entries` and functional methods over `for...in`
 - Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
+- Block-level `/* oxlint-disable rule */` must wrap tightly around the offending code.
+  The correct order when a declaration has TSDoc is:
+  `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */`.
+  The disable goes **before** the TSDoc so the TSDoc remains the immediately preceding comment.
+  The enable goes on the **very next line** after the declaration (or closing `);`/`}`) -- never at end-of-file
+  or many lines later. Leaving a disable open longer than necessary silences unrelated violations.
 
-## Logging
+### Logging
 
 Log extensively by default: function entry points, branch decisions, error paths, async lifecycle events.
 Never remove logging to "clean up" -- treat logging as permanent infrastructure.
@@ -306,11 +317,11 @@ Exception: raw `console` is allowed when precise control over terminal output is
 - Compose tags deeply -- when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it
 - Never embed tags manually in message strings (e.g. `l.info("[cycle] done")`) -- use the `tagged` wrapper instead
 
-## Security
+### Security
 
 No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissive CORS/permissions, or secrets in logs.
 
-## CSS best practices
+### CSS best practices
 
 - Use native platform features: `<dialog>`, Popover API, CSS nesting, `@layer`, `@scope`, container queries
 - Browser baseline: Firefox ESR 140 (June 2025); see `PHILOSOPHY.browser-support.md`
@@ -324,7 +335,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Native CSS nesting; shallow depth (3 levels max)
 - Data attributes for state/variant styling instead of BEM modifiers
 
-# TypeScript Standards
+## TypeScript Standards
 
 - Adhere to ESLint, Oxlint, dprint configurations
 - Use `//region`/`//endregion` markers with purpose and explanation for logical code sections
@@ -340,7 +351,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Export immediately at declaration; avoid `Object.assign` for extending typed objects
 - Throw and return early; use overloads (most specific first)
 
-## Type system
+### Type system
 
 - Explicit parameter and return types; `type` over `interface`; `Record` for maps
 - Avoid generic `Function` type; avoid unused/optional params in `Generator<T>`/`AsyncGenerator<T>`
@@ -352,7 +363,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - TypeScript does not propagate `const` narrowing into **function declarations** (both tsc and tsgo); `checker.ts:31181-31192` only extends flow analysis across `FunctionExpression`, `ArrowFunction`, and method/accessor closures because declarations are hoisted and could be called before the narrowing guard. Fix: use a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check
 - Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures
 
-## Variables and values
+### Variables and values
 
 - `const` over `let`; comment any deviation from immutability
 - Remove unused variables or prefix with underscore (`_unusedVar`)
@@ -362,7 +373,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - `satisfies` for type checking without widening; separate destructuring blocks for dependent values
 - Magic literals as named `const` (exception: `-2` through `2`); for fractional values, compose from exempt range: `HALF = 1 / 2`, `QUARTER = HALF / 2`, `THREE_QUARTERS = HALF + QUARTER`
 
-## Programming patterns
+### Programming patterns
 
 - `async`/`await` only; no `.then()`/`.catch()`/`.finally()`; no explicit `new Promise`
 - `Promise.all()` for concurrent ops; `Promise.allSettled()` when all results needed; `AbortController` for cancellation
@@ -375,7 +386,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - No `switch` statements -- use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value
 - Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`
 
-# Architecture Decisions
+## Architecture Decisions
 
 - Root `package.json` may depend on workspace packages; root configs import by package name
 - Switch from config-as-data to TypeScript when config needs logic (`if`, `map`, `await`)

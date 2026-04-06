@@ -4,7 +4,7 @@
 import { css, } from '../css.ts';
 
 /** Shadow DOM styles for `\<top-nav\>` -- hamburger, heading, search icon, responsive layout. */
-export const TOP_NAV_STYLES = css(`
+export const TOP_NAV_STYLES: string = css(`
   :host {
     @apply --sticky-bar;
     justify-content: center;

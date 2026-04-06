@@ -36,7 +36,9 @@ const VERSION_SUBCOMMANDS: ReadonlySet<string> = new Set([
  * Rules applied in sequence. Each rule may transform args or throw to reject.
  * Order matters: root check runs first (fail fast), then arg transforms.
  */
-const RULES: readonly ((args: readonly string[]) => readonly string[] | Promise<readonly string[]>)[] = [
+const RULES: readonly ((
+  args: readonly string[],
+) => readonly string[] | Promise<readonly string[]>)[] = [
   requireRoot,
   atomicPush,
 ];
@@ -69,14 +71,16 @@ try {
     { stdio: 'inherit', },
   );
 
-  if (processedArgs.length > 0 && processedArgs[0] !== undefined && VERSION_SUBCOMMANDS.has(processedArgs[0],)) {
+  if (processedArgs.length > 0
+    && processedArgs[0] !== undefined
+    && VERSION_SUBCOMMANDS.has(processedArgs[0],))
+  {
     console.log('cli-git wrapper (require-root, atomic-push)',);
   }
 }
 catch (error) {
-  if (error instanceof SubprocessError) {
+  if (error instanceof SubprocessError)
     process.exitCode = error.exitCode ?? 1;
-  }
   else if (error instanceof Error) {
     console.error(error.message,);
     process.exitCode = 1;

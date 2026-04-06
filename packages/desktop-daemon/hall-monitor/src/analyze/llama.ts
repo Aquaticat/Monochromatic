@@ -108,7 +108,10 @@ export async function stop(): Promise<void> {
   try {
     await spawn(
       'pkill',
-      ['-f', `llama-server.*--port ${PORT}`,],
+      [
+        '-f',
+        `llama-server.*--port ${PORT}`,
+      ],
     );
   }
   catch {
@@ -147,7 +150,11 @@ export async function forceCleanup(): Promise<void> {
   try {
     await spawn(
       'pkill',
-      ['-9', '-f', `llama-server.*--port ${PORT}`,],
+      [
+        '-9',
+        '-f',
+        `llama-server.*--port ${PORT}`,
+      ],
     );
   }
   catch {

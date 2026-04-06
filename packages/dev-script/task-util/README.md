@@ -160,6 +160,7 @@ Empty globs contribute no timestamps — the aggregation strategy returns `-Infi
 ("no information"), which means empty sources never trigger and empty outputs always trigger.
 
 **`sh:` commands** must output a parseable timestamp on stdout:
+
 - `Infinity` or `-Infinity` (gate pattern: exists/missing)
 - Unix epoch seconds or milliseconds
 - ISO 8601 date string
@@ -168,6 +169,7 @@ Non-zero exit codes throw an error. To handle command failures gracefully,
 use the shell gate pattern: `sh:command && echo Infinity || echo -Infinity`.
 
 **Aggregation strategies** reduce multiple timestamps per side to one value:
+
 - `newest` (default): `Math.max` — any new source or any fresh output dominates
 - `oldest`: `Math.min` — catches the oldest/missing item in mixed lists
 - `mean`: arithmetic mean of all timestamps

@@ -5,22 +5,37 @@ export type $ =
   /** Represents the `bigint` primitive type with sign information */
   | [
     'bigint',
-    { sign: 0 | 'negative' | 'positive'; },
+    {
+      sign: 0 | 'negative' | 'positive';
+    },
   ]
   /** Represents the `boolean` primitive type with truthiness information */
   | [
     'boolean',
-    { true: boolean; },
+    {
+      true: boolean;
+    },
   ]
   /** Represents function types with generator and async flags */
   | [
     'function',
-    { generator: boolean; async: boolean; },
+    {
+      generator: boolean;
+      async: boolean;
+    },
   ]
   /** Represents the `number` primitive type with sign and float information */
   | [
     'number',
-    { NaN: true | [false, { sign: 0 | 'negative' | 'positive'; float: boolean; },]; },
+    {
+      NaN: true | [
+        false,
+        {
+          sign: 0 | 'negative' | 'positive';
+          float: boolean;
+        },
+      ];
+    },
   ]
   /** Represents object types with prototype information */
   | [
@@ -44,7 +59,17 @@ export type $ =
         // '[object Object]'
         // > Object.prototype.toString.call({a: 1})
         // '[object Object]'
-        | ['Object', { iterable: false | [true, { async: boolean; },]; },]
+        | [
+          'Object',
+          {
+            iterable: false | [
+              true,
+              {
+                async: boolean;
+              },
+            ];
+          },
+        ]
         /** Represents Date objects */
         // > Object.prototype.toString.call(new Date())
         // '[object Date]'
@@ -64,15 +89,30 @@ export type $ =
         /** Represents RegExp objects with global flag */
         // > Object.prototype.toString.call(new RegExp())
         // '[object RegExp]'
-        | ['RegExp', { global: boolean; },];
+        | [
+          'RegExp',
+          {
+            global: boolean;
+          },
+        ];
     },
   ]
   /** Represents string types with emptiness and character information */
   | [
     'string',
     | { empty: true; }
-    | { empty: [false, { char:
-      | false
-      | [true, 'uppercaseLetter' | 'lowercaseLetter' | 'nonLetter',]; },]; },
+    | {
+      empty: [
+        false,
+        {
+          char:
+            | false
+            | [
+              true,
+              'uppercaseLetter' | 'lowercaseLetter' | 'nonLetter',
+            ];
+        },
+      ];
+    },
   ]
   | 'symbol';

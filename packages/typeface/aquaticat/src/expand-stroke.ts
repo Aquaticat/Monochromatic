@@ -50,6 +50,12 @@ function lineIntersection(
  * @param offset - signed offset distance (positive = outward, negative = inward)
  *
  * @returns new polygon vertices at the requested offset
+ *
+ * @example
+ * ```ts
+ * const square: [number, number][] = [[0, 0], [10, 0], [10, 10], [0, 10]];
+ * const expanded = offsetPolygon(square, 2);
+ * ```
  */
 export function offsetPolygon(
   vertices: readonly Point[],

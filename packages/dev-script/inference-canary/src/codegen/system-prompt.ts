@@ -32,7 +32,10 @@ const MONOREPO_ROOT = new URL(
  */
 async function readConfig(relativePath: string,): Promise<string> {
   return await readFile(
-    join(MONOREPO_ROOT, relativePath,),
+    join(
+      MONOREPO_ROOT,
+      relativePath,
+    ),
     'utf8',
   );
 }
@@ -74,5 +77,5 @@ async function buildSystemPrompt(): Promise<string> {
  * System prompt built at module load time via top-level await.
  * Contains the full project configs so the model knows exactly what rules apply.
  */
-export const CODE_GEN_SYSTEM = await buildSystemPrompt();
+export const CODE_GEN_SYSTEM: string = await buildSystemPrompt();
 l.info(`system prompt loaded (${String(CODE_GEN_SYSTEM.length,)} chars)`,);

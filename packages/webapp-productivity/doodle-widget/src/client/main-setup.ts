@@ -53,6 +53,11 @@ export type WidgetDeps = {
  * Initializes page state, handler wiring, and observers.
  *
  * @param deps - all DOM elements and state accessors
+ *
+ * @example
+ * ```ts
+ * setupWidget(deps);
+ * ```
  */
 export function setupWidget(deps: WidgetDeps,): void {
   const {
@@ -144,9 +149,18 @@ export function setupWidget(deps: WidgetDeps,): void {
       if (!(target instanceof HTMLInputElement))
         return;
       resetZoom(zoomLayer,);
-      const { cw, ch, } = getCanvasSize();
-      switchToPage({ index: Number(target.value,), ctx, cw, ch, overlay: svgOverlay,
-        textLayer, },);
+      const {
+        cw,
+        ch,
+      } = getCanvasSize();
+      switchToPage({
+        index: Number(target.value,),
+        ctx,
+        cw,
+        ch,
+        overlay: svgOverlay,
+        textLayer,
+      },);
       updateUndoButtons();
     },
   );

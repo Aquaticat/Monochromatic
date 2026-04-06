@@ -7,9 +7,7 @@
  *
  * Client entry: `/dist/client/task-details.js` (src/client/task-details.ts)
  */
-import {
-  hHtml as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   getTaskById,
   listTasksForBlockerPicker,
@@ -22,6 +20,11 @@ import { serializePageData, } from './layout.ts';
  * @param taskId - Task UUID from the route parameter
  *
  * @returns HTML response, or 404 when the task does not exist
+ *
+ * @example
+ * ```ts
+ * const response = await taskDetailsPage('uuid-123');
+ * ```
  */
 export async function taskDetailsPage(taskId: string,): Promise<Response> {
   const task = await getTaskById(taskId,);
@@ -83,8 +86,10 @@ ${
             },),
             h({
               tag: 'meta',
-              attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', },
+              attrs: {
+                name: 'viewport',
+                content: 'width=device-width, initial-scale=1',
+              },
             },),
             h({
               tag: 'title',
@@ -111,12 +116,18 @@ ${
             },),
             h({
               tag: 'script',
-              attrs: { type: 'application/json', id: 'page-data', },
+              attrs: {
+                type: 'application/json',
+                id: 'page-data',
+              },
               html: serializePageData(pageData,),
             },),
             h({
               tag: 'script',
-              attrs: { type: 'module', src: '/dist/client/task-details.js', },
+              attrs: {
+                type: 'module',
+                src: '/dist/client/task-details.js',
+              },
             },),
           ],
         },),

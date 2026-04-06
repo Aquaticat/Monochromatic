@@ -6,6 +6,12 @@
  * This avoids a network request for the CSS -- it's inlined in the JS bundle.
  *
  * @param css - Compiled CSS text to inject
+ *
+ * @example
+ * ```ts
+ * import styles from '../../dist/css/styles.css' with { type: 'text' };
+ * injectCSS(styles);
+ * ```
  */
 export function injectCSS(css: string,): void {
   const styleElement = document.createElement('style',);

@@ -30,10 +30,10 @@ Add to `.claude/settings.json`:
   "hooks": {
     "PreToolUse": [
       {
-        "hooks": [{ "type": "command", "command": "ccgr" }]
-      }
-    ]
-  }
+        "hooks": [{ "type": "command", "command": "ccgr" }],
+      },
+    ],
+  },
 }
 ```
 

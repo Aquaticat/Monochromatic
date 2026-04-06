@@ -11,11 +11,12 @@ await describe({
     it({
       name: 'returns a valid UUID v4 format',
       fn: async () => {
-        const uuidV4Regex = /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
+        const uuidV4Regex =
+          /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
         const uuid = $({},);
         expect(uuid,).toMatch(uuidV4Regex,);
       },
-    }),
+    },),
 
     it({
       name: 'generates different UUIDs on multiple calls',
@@ -24,16 +25,17 @@ await describe({
         const uuid2 = $({},);
         expect(uuid1,).not.toBe(uuid2,);
       },
-    }),
+    },),
 
     it({
       name: 'accepts empty object parameter',
       fn: async () => {
-        const uuidV4Regex = /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
+        const uuidV4Regex =
+          /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
         const uuid = $({},);
         expect(uuid,).toMatch(uuidV4Regex,);
       },
-    }),
+    },),
 
     it({
       name: 'generates unique UUIDs across multiple calls',
@@ -46,7 +48,7 @@ await describe({
 
         expect(uuids.size,).toBe(callCount,);
       },
-    }),
+    },),
 
     it({
       name: 'UUID version is always 4',
@@ -58,7 +60,7 @@ await describe({
           expect(versionChar,).toBe('4',);
         },);
       },
-    }),
+    },),
 
     it({
       name: 'UUID variant is correct (8, 9, a, or b at position 19)',
@@ -71,7 +73,7 @@ await describe({
           expect(validVariants,).toContain(variantChar.toLowerCase(),);
         },);
       },
-    }),
+    },),
 
     it({
       name: 'produces lowercase UUIDs',
@@ -79,7 +81,7 @@ await describe({
         const uuid = $({},);
         expect(uuid,).toBe(uuid.toLowerCase(),);
       },
-    }),
+    },),
 
     it({
       name: 'produces 36 character string (32 hex + 4 dashes)',
@@ -88,6 +90,6 @@ await describe({
         expect(uuid,).toHaveLength(36,);
         expect(uuid.split('-',),).toHaveLength(5,);
       },
-    }),
+    },),
   ],
 },);

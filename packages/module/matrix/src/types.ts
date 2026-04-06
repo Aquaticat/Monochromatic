@@ -87,7 +87,7 @@ export type Runtime = 'bun' | 'deno';
  * - String: exact match against the combination value
  * - Function: predicate that returns `true` when the combination should be excluded
  */
-export type ExcludeMatcher<T> = T | ((value: T,) => boolean);
+export type ExcludeMatcher<T,> = T | ((value: T,) => boolean);
 
 /**
  * Partial match for excluding combinations from the cartesian product.

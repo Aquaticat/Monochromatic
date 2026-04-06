@@ -9,17 +9,17 @@ Two alternative PMs are evaluated: **vlt** and **Yarn ZPM** (Yarn 6).
 - **vlt** — new PM from npm's original creators (Izs, Darcy, Ruyadorno, Luke Karrys). Beta since November 2024. Security-first two-phase install model. No overrides support.
 - **Yarn ZPM** — Rust rewrite of Yarn Berry, developed at `yarnpkg/zpm`. Public preview since January 2026. Carries forward Yarn's mature workspace/catalog/resolutions features.
 
-| Feature | Bun (current) | vlt | Yarn ZPM |
-|---|---|---|---|
-| `workspace:*` | Yes | Yes | Yes |
-| `catalog:` protocol | Yes | Yes | Yes (Yarn invented it) |
-| Named catalogs | Yes | Yes | Yes |
-| Overrides/resolutions | Yes | **No** | Yes |
-| Script control | `trustedDependencies` | Two-phase install | Not documented yet |
-| JSR registry scoping | `bunfig.toml` | `vlt.json` registries | `.yarnrc.yml` scopes |
-| Lockfile | `bun.lock` | `vlt-lock.json` | `yarn.lock` |
-| Stability | Production | Beta | Public preview |
-| Stewardship | Oven (Bun) | npm veterans | Yarn team |
+| Feature               | Bun (current)         | vlt                   | Yarn ZPM               |
+| --------------------- | --------------------- | --------------------- | ---------------------- |
+| `workspace:*`         | Yes                   | Yes                   | Yes                    |
+| `catalog:` protocol   | Yes                   | Yes                   | Yes (Yarn invented it) |
+| Named catalogs        | Yes                   | Yes                   | Yes                    |
+| Overrides/resolutions | Yes                   | **No**                | Yes                    |
+| Script control        | `trustedDependencies` | Two-phase install     | Not documented yet     |
+| JSR registry scoping  | `bunfig.toml`         | `vlt.json` registries | `.yarnrc.yml` scopes   |
+| Lockfile              | `bun.lock`            | `vlt-lock.json`       | `yarn.lock`            |
+| Stability             | Production            | Beta                  | Public preview         |
+| Stewardship           | Oven (Bun)            | npm veterans          | Yarn team              |
 
 ### Recommendation
 
@@ -36,7 +36,7 @@ Both are pre-stable. The shared prerequisite is step 1 (removing stale overrides
 Drop overrides that existed for the Vite era.
 These are no longer needed since Vite and Astro are deprecated in this project:
 
-```
+```text
 astro
 esbuild (verify — still used as trustedDependency, but override may be redundant)
 rollup
@@ -122,7 +122,7 @@ Bun uses `install.scopes.jsr` in `bunfig.toml` to route `@jsr/*` packages.
 vlt uses named registries in `vlt.json`.
 The 4 JSR-aliased catalog entries use the `npm:@jsr/` prefix pattern:
 
-```
+```text
 @cspotcode/outdent  -> npm:@jsr/cspotcode__outdent@*
 @optique/core       -> npm:@jsr/optique__core@*
 @optique/run        -> npm:@jsr/optique__run@*
@@ -136,9 +136,9 @@ If not, use vlt's package alias syntax: `"@cspotcode/outdent": "jsr:cspotcode__o
 
 Replace Bun PM invocations in `mise.toml`:
 
-| Current | New |
-|---|---|
-| `bun install` | `vlt install && vlt build` |
+| Current                        | New                                                             |
+| ------------------------------ | --------------------------------------------------------------- |
+| `bun install`                  | `vlt install && vlt build`                                      |
 | `bun pm cache rm; bun install` | `vlt install && vlt build` (vlt has no cache rm equivalent yet) |
 
 The `prepare:bun:bun` task and `fix:jsr` task in root `mise.toml` need updating.
@@ -224,15 +224,15 @@ nodeLinker: node-modules
 
 npmScopes:
   jsr:
-    npmRegistryServer: "https://npm.jsr.io"
+    npmRegistryServer: 'https://npm.jsr.io'
 
 catalogs:
   default:
-    "@microsoft/tsdoc": ">=0.16.0"
-    typescript: ">=6.0.1-rc"
+    '@microsoft/tsdoc': '>=0.16.0'
+    typescript: '>=6.0.1-rc'
     # ... (full catalog migrated from package.json workspaces.catalog)
   legacy:
-    vite: "^5.4.0"
+    vite: '^5.4.0'
 ```
 
 **Catalog migration notes**:
@@ -263,9 +263,9 @@ The `npm:@jsr/` prefix pattern in catalog entries is supported by Yarn's `npm:` 
 
 Replace Bun PM invocations in `mise.toml`:
 
-| Current | New |
-|---|---|
-| `bun install` | `yarn install` |
+| Current                        | New                                |
+| ------------------------------ | ---------------------------------- |
+| `bun install`                  | `yarn install`                     |
 | `bun pm cache rm; bun install` | `yarn cache clean && yarn install` |
 
 The `prepare:bun:bun` task and `fix:jsr` task in root `mise.toml` need updating.

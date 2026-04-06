@@ -9,7 +9,8 @@
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
     "zod": "catalog:",
-    "@anthropic-ai/sdk": "catalog:"
+    "@anthropic-ai/sdk": "catalog:",
+    "h3": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

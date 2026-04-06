@@ -10,9 +10,7 @@
  * Some pages (search, task-details) render their own HTML inline instead of calling `renderPage`,
  * because they need a different shell structure (e.g. search-bar replaces top-nav).
  */
-import {
-  hHtml as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Configuration for rendering a page with the standard HTML shell. */
 type LayoutOptions = {
@@ -33,6 +31,11 @@ type LayoutOptions = {
  * @param data - Arbitrary data to serialize as JSON
  *
  * @returns Escaped JSON string safe for embedding in HTML
+ *
+ * @example
+ * ```ts
+ * const json = serializePageData({ key: 'value' });
+ * ```
  */
 export function serializePageData(data: unknown,): string {
   return JSON.stringify(data,).replaceAll(
@@ -53,6 +56,11 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  * @param options - Page title, heading, script path, and serialized data
  *
  * @returns HTML response with the rendered page
+ *
+ * @example
+ * ```ts
+ * return renderPage({ title: 'Inbox - Done', heading: 'Inbox', entryScriptPath: '/dist/client/inbox.js', pageData: {} });
+ * ```
  */
 export function renderPage(options: LayoutOptions,): Response {
   const topNav = options.hideTopNav === true
@@ -77,8 +85,10 @@ ${
             },),
             h({
               tag: 'meta',
-              attrs: { name: 'viewport',
-                content: 'width=device-width, initial-scale=1', },
+              attrs: {
+                name: 'viewport',
+                content: 'width=device-width, initial-scale=1',
+              },
             },),
             h({
               tag: 'title',
@@ -106,12 +116,18 @@ ${
             },),
             h({
               tag: 'script',
-              attrs: { type: 'application/json', id: 'page-data', },
+              attrs: {
+                type: 'application/json',
+                id: 'page-data',
+              },
               html: serializePageData(options.pageData,),
             },),
             h({
               tag: 'script',
-              attrs: { type: 'module', src: options.entryScriptPath, },
+              attrs: {
+                type: 'module',
+                src: options.entryScriptPath,
+              },
             },),
             h({
               tag: 'script',

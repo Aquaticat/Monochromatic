@@ -15,6 +15,12 @@ import type {
  * @param result - Payload for the `result` field.
  *
  * @returns Formatted JSON-RPC response.
+ *
+ * @example
+ * ```ts
+ * respondSuccess(1, { tools: [] });
+ * // { jsonrpc: '2.0', id: 1, result: { tools: [] } }
+ * ```
  */
 export function respondSuccess(
   id: JsonRpcRequest['id'],
@@ -37,6 +43,12 @@ export function respondSuccess(
  * @param message - Human-readable error description.
  *
  * @returns Formatted JSON-RPC error response.
+ *
+ * @example
+ * ```ts
+ * respondError(1, -32601, 'Method not found');
+ * // { jsonrpc: '2.0', id: 1, error: { code: -32601, message: 'Method not found' } }
+ * ```
  */
 export function respondError(
   id: JsonRpcRequest['id'],
@@ -46,7 +58,10 @@ export function respondError(
   return {
     jsonrpc: '2.0',
     id,
-    error: { code, message, },
+    error: {
+      code,
+      message,
+    },
   };
 }
 
@@ -56,6 +71,12 @@ export function respondError(
  * @param notification - Inbound notification (consumed but not acted upon).
  *
  * @returns Always `undefined` since notifications produce no response.
+ *
+ * @example
+ * ```ts
+ * handleNotification({ jsonrpc: '2.0', method: 'notifications/initialized' });
+ * // undefined
+ * ```
  */
 export function handleNotification(notification: JsonRpcNotification,): undefined {
   if (notification.method !== 'notifications/initialized')

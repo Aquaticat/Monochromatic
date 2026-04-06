@@ -14,6 +14,13 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * @param label - descriptive label (e.g. "threshold: 0.42")
  *
  * @returns HTML string for the threshold line, or empty string if threshold is 0
+ *
+ * @example
+ * ```ts
+ * renderThresholdLine(0.75, 'threshold: 0.75');
+ * // '<div class="chart-threshold" style="bottom:75%">...<\/div>'
+ * renderThresholdLine(0, ''); // ''
+ * ```
  */
 export function renderThresholdLine(
   threshold: number,

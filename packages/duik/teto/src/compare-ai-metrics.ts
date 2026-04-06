@@ -15,6 +15,14 @@
  * @param refPath - path to reference image
  *
  * @param cmpPath - path to composite image
+ *
+ * @example
+ * ```ts
+ * await runAiMetrics({
+ *   refPath: '/tmp/reference.png',
+ *   cmpPath: '/tmp/composite.png',
+ * });
+ * ```
  */
 export async function runAiMetrics(
   {

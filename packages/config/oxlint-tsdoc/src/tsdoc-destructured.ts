@@ -62,8 +62,9 @@ function collectDestructuredNames(
   if (pattern.type === 'AssignmentPattern') {
     // `{ a = defaultValue }` -- unwrap to the left side
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    const left = pattern.left as Record<string, unknown>;
     collectDestructuredNames(
-      pattern.left as Record<string, unknown>,
+      left,
       names,
     );
     return;
@@ -71,16 +72,18 @@ function collectDestructuredNames(
   if (pattern.type === 'RestElement') {
     // `...rest` inside destructuring
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    const argument = pattern.argument as Record<string, unknown>;
     collectDestructuredNames(
-      pattern.argument as Record<string, unknown>,
+      argument,
       names,
     );
     return;
   }
   if (pattern.type === 'TSParameterProperty') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    const parameter = pattern.parameter as Record<string, unknown>;
     collectDestructuredNames(
-      pattern.parameter as Record<string, unknown>,
+      parameter,
       names,
     );
     return;

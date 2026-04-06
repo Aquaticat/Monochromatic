@@ -1,26 +1,44 @@
+// oxlint-disable eslint/no-unused-vars -- behavioral test verifies type narrowing, not runtime usage
+// oxlint-disable eslint/no-unused-expressions -- property accesses verify type narrowing at compile time
+// oxlint-disable typescript/no-unsafe-type-assertion -- intentional `as any` and `as Type` casts test guard behavior
+// oxlint-disable typescript/no-explicit-any -- any-typed test inputs verify guard behavior with untyped values
+// oxlint-disable typescript/no-unsafe-member-access -- accessing members on any-typed values is part of the behavioral test
+// oxlint-disable typescript/no-unsafe-assignment -- assigning any-typed results is part of the behavioral test
+// oxlint-disable typescript/no-unsafe-call -- calling functions on any-typed values is part of the behavioral test
+// oxlint-disable typescript/no-unsafe-argument -- passing any-typed arguments is part of the behavioral test
+// oxlint-disable typescript/no-unnecessary-condition -- guards on pre-validated values test runtime path
+// oxlint-disable typescript/no-confusing-void-expression -- void returns from IIFEs are intentional
+// oxlint-disable eslint/no-magic-numbers -- numeric literals in test data are self-documenting
+// oxlint-disable stylistic/object-property-per-line -- compact test data on single lines
+// oxlint-disable stylistic/array-element-per-line -- compact test data on single lines
 /**
- * Simplified Schema typeguard behavioral test matrix
+ * Simplified Schema typeguard behavioral test matrix.
  *
  * Tests different typeguard implementation patterns against simplified Schema types
  * to establish baseline behavioral understanding before moving to complex generics.
  *
  * This is a BEHAVIORAL TEST FILE - not unit tests. All code demonstrates compile-time
- * and runtime behavior through TypeScript type checking and intentional @ts-expect-error markers.
+ * and runtime behavior through TypeScript type checking and intentional `@ts-expect-error` markers.
  */
 
 //region Simplified Type Definitions
+
+/** Base schema with a parse method accepting and returning unknown. */
 type Schema = {
   readonly parse: (value: unknown,) => unknown;
 };
 
+/** Schema with an additional numeric weight property. */
 type SchemaWithWeight = Schema & {
   readonly weight: number;
 };
 
+/** Schema with an additional string name property. */
 type NamedSchema = Schema & {
   readonly name: string;
 };
 
+/** Schema combining weight, name, and version properties. */
 type ComplexSchema = SchemaWithWeight & {
   readonly name: string;
   readonly version: number;
@@ -28,6 +46,14 @@ type ComplexSchema = SchemaWithWeight & {
 //endregion Simplified Type Definitions
 
 //region Simplified Guard Patterns
+
+/**
+ * Unknown pattern - accepts anything, narrows to base Schema type.
+ *
+ * @param value - candidate to check for schema shape
+ *
+ * @returns `true` when value has a callable `parse` property
+ */
 function isSchema_Unknown(value: unknown,): value is Schema {
   if (value === null)
     return false;
@@ -38,6 +64,13 @@ function isSchema_Unknown(value: unknown,): value is Schema {
   return typeof value.parse === 'function';
 }
 
+/**
+ * Generic pattern - preserves input structure through const generics.
+ *
+ * @param value - candidate to check, preserving its original type
+ *
+ * @returns `true` when value has a callable `parse` property
+ */
 function isSchema_Generic<const MyValue = unknown,>(
   value: MyValue,
 ): value is MyValue extends Schema ? (MyValue & Schema)
@@ -52,6 +85,13 @@ function isSchema_Generic<const MyValue = unknown,>(
   return typeof (value as any).parse === 'function';
 }
 
+/**
+ * Typed pattern - requires exact Schema type at call site.
+ *
+ * @param value - schema instance already typed as Schema
+ *
+ * @returns `true` when value has a callable `parse` property
+ */
 function isSchema_Typed(value: Schema,): value is Schema {
   if (value === null)
     return false;
@@ -62,6 +102,13 @@ function isSchema_Typed(value: Schema,): value is Schema {
   return typeof value.parse === 'function';
 }
 
+/**
+ * Generic extends pattern - compile-time safety with inheritance support.
+ *
+ * @param value - schema instance constrained to Schema subtypes
+ *
+ * @returns `true` when value has a callable `parse` property
+ */
 function isSchema_GenericExtends<const T extends Schema = Schema,>(
   value: T,
 ): value is T {
@@ -76,36 +123,62 @@ function isSchema_GenericExtends<const T extends Schema = Schema,>(
 //endregion Simplified Guard Patterns
 
 //region Simplified Test Values
+
+/** Collection of schema instances with various type constraints for behavioral testing. */
 const simplifiedTestValues = {
   // Properly typed schemas - should preserve properties
-  schemaWithWeight: { parse: (x: unknown,) => x, weight: 100, } as SchemaWithWeight,
-  namedSchema: { parse: (x: unknown,) => x, name: 'test', } as NamedSchema,
+  schemaWithWeight: { parse(x: unknown,) {
+    return x;
+  }, weight: 100, } as SchemaWithWeight,
+  namedSchema: { parse(x: unknown,) {
+    return x;
+  }, name: 'test', } as NamedSchema,
   complexSchema: {
-    parse: (x: unknown,) => x,
+    parse(x: unknown,) {
+      return x;
+    },
     weight: 100,
     name: 'complex',
     version: 1,
   } as ComplexSchema,
 
   // Loosely typed - test type narrowing behavior
-  unknownValue: { parse: (x: unknown,) => x, weight: 100, } as unknown,
-  anyValue: { parse: (x: unknown,) => x, weight: 100, } as any,
+  unknownValue: { parse(x: unknown,) {
+    return x;
+  }, weight: 100, } as unknown,
+  anyValue: { parse(x: unknown,) {
+    return x;
+  }, weight: 100, } as any,
 
   // Union types - test compile-time safety and narrowing
-  unionWithString: ({ parse: (x: unknown,) => x, } as Schema | string),
-  unionWithNull: ({ parse: (x: unknown,) => x, } as Schema | null),
-  unionWithNumber: ({ parse: (x: unknown,) => x, } as Schema | number),
-  unionThreeWay: ({ parse: (x: unknown,) => x, weight: 50, } as Schema | string | number),
+  unionWithString: ({ parse(x: unknown,) {
+    return x;
+  }, } as Schema | string),
+  unionWithNull: ({ parse(x: unknown,) {
+    return x;
+  }, } as Schema | null),
+  unionWithNumber: ({ parse(x: unknown,) {
+    return x;
+  }, } as Schema | number),
+  unionThreeWay: ({ parse(x: unknown,) {
+    return x;
+  }, weight: 50, } as Schema | string | number),
 
   // Complex type combinations
-  intersectionType: { parse: (x: unknown,) => x, extraProp: true, } as Schema & {
+  intersectionType: { parse(x: unknown,) {
+    return x;
+  }, extraProp: true, } as Schema & {
     extraProp: boolean;
   },
-  brandedSchema: { parse: (x: unknown,) => x, weight: 100, } as SchemaWithWeight & {
+  brandedSchema: { parse(x: unknown,) {
+    return x;
+  }, weight: 100, } as SchemaWithWeight & {
     __brand: 'test';
   },
   nestedIntersection: {
-    parse: (x: unknown,) => x,
+    parse(x: unknown,) {
+      return x;
+    },
     weight: 100,
     metadata: { version: '1.0', },
   } as SchemaWithWeight & { metadata: { version: string; }; },
@@ -119,15 +192,28 @@ const simplifiedTestValues = {
 
   // Edge cases
   schemaWithWrongParse: { parse: 'not a function', weight: 100, },
-  objectWithParse: { parse: (x: unknown,) => x, extraStuff: [1, 2, 3,], },
-  functionValue: ((x: unknown,) => x) as ((x: unknown,) => unknown),
-  conditionalSchema:
-    ({ parse: (x: unknown,) => x, } as true extends true ? Schema : never),
+  objectWithParse: {
+    parse(x: unknown,): unknown {
+      return x;
+    },
+    extraStuff: [
+      1,
+      2,
+      3,
+    ],
+  },
+  functionValue: (function parseIdentity(x: unknown,): unknown {
+    return x;
+  }) as ((x: unknown,) => unknown),
+  conditionalSchema: ({ parse(x: unknown,) {
+    return x;
+  }, } as true extends true ? Schema : never),
 };
 //endregion Simplified Test Values
 
 //region Simplified Behavioral Tests
-const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight() {
+/** Tests all guard patterns against SchemaWithWeight for property preservation. */
+const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight(): void {
   const value = simplifiedTestValues.schemaWithWeight;
 
   // Unknown guard
@@ -155,7 +241,8 @@ const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight(
   }
 })();
 
-const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema() {
+/** Tests all guard patterns against NamedSchema for name property preservation. */
+const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema(): void {
   const value = simplifiedTestValues.namedSchema;
 
   // Unknown guard
@@ -183,7 +270,8 @@ const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema() {
   }
 })();
 
-const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema() {
+/** Tests all guard patterns against ComplexSchema for multi-property preservation. */
+const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema(): void {
   const value = simplifiedTestValues.complexSchema;
 
   // Unknown guard
@@ -219,7 +307,8 @@ const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema() {
   }
 })();
 
-const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue() {
+/** Tests guard patterns against unknown-typed value for narrowing behavior. */
+const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue(): void {
   const value = simplifiedTestValues.unknownValue;
 
   // Unknown guard
@@ -246,7 +335,8 @@ const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue() {
   isSchema_GenericExtends(value,);
 })();
 
-const testSimplifiedAnyValue = (function testSimplifiedAnyValue() {
+/** Tests guard patterns against any-typed value for type preservation. */
+const testSimplifiedAnyValue = (function testSimplifiedAnyValue(): void {
   const value = simplifiedTestValues.anyValue;
 
   // Unknown guard
@@ -276,7 +366,8 @@ const testSimplifiedAnyValue = (function testSimplifiedAnyValue() {
   }
 })();
 
-const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes() {
+/** Tests guard patterns against union types for compile-time safety. */
+const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes(): void {
   // Union with string
   const { unionWithString, } = simplifiedTestValues;
 
@@ -312,35 +403,38 @@ const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes() {
   }
 })();
 
-const testSimplifiedIntersectionTypes = (function testSimplifiedIntersectionTypes() {
-  const intersectionValue = simplifiedTestValues.intersectionType;
+/** Tests guard patterns against intersection types for property preservation. */
+const testSimplifiedIntersectionTypes =
+  (function testSimplifiedIntersectionTypes(): void {
+    const intersectionValue = simplifiedTestValues.intersectionType;
 
-  // Unknown guard
-  if (isSchema_Unknown(intersectionValue,)) {
-    intersectionValue.parse('test',);
-    intersectionValue.extraProp; // Should preserve
-  }
+    // Unknown guard
+    if (isSchema_Unknown(intersectionValue,)) {
+      intersectionValue.parse('test',);
+      intersectionValue.extraProp; // Should preserve
+    }
 
-  // Generic guard
-  if (isSchema_Generic(intersectionValue,)) {
-    intersectionValue.parse('test',);
-    intersectionValue.extraProp; // Should preserve
-  }
+    // Generic guard
+    if (isSchema_Generic(intersectionValue,)) {
+      intersectionValue.parse('test',);
+      intersectionValue.extraProp; // Should preserve
+    }
 
-  // Typed guard
-  if (isSchema_Typed(intersectionValue,)) {
-    intersectionValue.parse('test',);
-    intersectionValue.extraProp; // Should preserve
-  }
+    // Typed guard
+    if (isSchema_Typed(intersectionValue,)) {
+      intersectionValue.parse('test',);
+      intersectionValue.extraProp; // Should preserve
+    }
 
-  // Generic extends guard
-  if (isSchema_GenericExtends(intersectionValue,)) {
-    intersectionValue.parse('test',);
-    intersectionValue.extraProp; // Should preserve
-  }
-})();
+    // Generic extends guard
+    if (isSchema_GenericExtends(intersectionValue,)) {
+      intersectionValue.parse('test',);
+      intersectionValue.extraProp; // Should preserve
+    }
+  })();
 
-const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases() {
+/** Tests guard patterns against edge cases: invalid schemas, nulls, and untyped objects. */
+const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases(): void {
   // Invalid schemas
   const { notASchema, } = simplifiedTestValues;
 

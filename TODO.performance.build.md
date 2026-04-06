@@ -5,6 +5,7 @@
 ### High Priority
 
 #### Mise task system optimization
+
 **Status**: High Priority - Developer experience
 
 - [ ] Profile mise task execution times and identify bottlenecks
@@ -15,6 +16,7 @@
 - [ ] Reduce cold build times for fresh clones
 
 #### TypeScript Compilation Performance
+
 **Status**: High Priority - Daily development impact
 
 - [ ] Implement TypeScript project references across all packages
@@ -25,6 +27,7 @@
 - [ ] Add TypeScript compilation parallelization
 
 #### Vite Build Optimization
+
 **Status**: Normal Priority - Build tools
 
 - [ ] Optimize Vite build configurations for different package types
@@ -37,6 +40,7 @@
 ### Medium Priority
 
 #### Package Build Dependencies
+
 - [ ] Optimize package build order to reduce blocking
 - [ ] Implement smarter dependency resolution
 - [ ] Add build artifact sharing between packages
@@ -45,6 +49,7 @@
 - [ ] Implement build result validation
 
 #### Development Server Performance
+
 - [ ] Optimize development server startup times
 - [ ] Implement efficient file watching
 - [ ] Add development server resource usage monitoring

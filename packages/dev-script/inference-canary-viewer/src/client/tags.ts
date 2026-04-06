@@ -8,8 +8,8 @@
  * Mirrors the mapping used by ssg-test and editord for visual consistency.
  */
 
-import type { Highlighter, } from '@lezer/highlight';
 import {
+  type Highlighter,
   tagHighlighter,
   tags,
 } from '@lezer/highlight';

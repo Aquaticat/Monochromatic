@@ -2,8 +2,6 @@ import {
   cssInt,
   cssRem,
   cssVar,
-} from '@monochromatic-dev/module-hyperscript/ts';
-import {
   hDom as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from '../css.ts';
@@ -71,7 +69,7 @@ const STYLES = [
  */
 class FabButton extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Initializes the shadow root. */
   constructor() {

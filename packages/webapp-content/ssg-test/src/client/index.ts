@@ -100,9 +100,8 @@ function createRangesFromPairs({
 
   for (const pair of encoded.split(';',)) {
     const dashIndex = pair.indexOf('-',);
-    if (dashIndex === -1) {
+    if (dashIndex === -1)
       continue;
-    }
 
     const fromStr = pair.slice(
       0,
@@ -115,9 +114,8 @@ function createRangesFromPairs({
     for (const entry of textEntries) {
       const nodeEnd = entry.start + entry.node.length;
 
-      if (entry.start >= to || nodeEnd <= from) {
+      if (entry.start >= to || nodeEnd <= from)
         continue;
-      }
 
       const rangeStart = Math.max(
         0,
@@ -159,9 +157,8 @@ function createRangesFromPairs({
  * so a single `::highlight(hl-keyword)` rule styles all keywords site-wide.
  */
 function highlightAllCodeBlocks(): void {
-  if (typeof CSS === 'undefined' || !('highlights' in CSS)) {
+  if (typeof CSS === 'undefined' || !('highlights' in CSS))
     return;
-  }
 
   const codeBlocks = document.querySelectorAll<HTMLElement>('pre > code',);
 
@@ -173,17 +170,15 @@ function highlightAllCodeBlocks(): void {
 
     for (const group of HIGHLIGHT_GROUPS) {
       const encoded = codeElement.getAttribute(`data-hl-${group}`,);
-      if (encoded === null || encoded.length === 0) {
+      if (encoded === null || encoded.length === 0)
         continue;
-      }
 
       const ranges = createRangesFromPairs({
         textEntries,
         encoded,
       },);
-      if (ranges.length === 0) {
+      if (ranges.length === 0)
         continue;
-      }
 
       let existing = allRanges.get(group,);
       if (existing === undefined) {

@@ -11,11 +11,11 @@ through a multi-step image processing pipeline.
 reference.jpg → crop → segment → trace → assemble → composite
 ```
 
-1.  **crop** -- extract the front view from the 3-view reference sheet using ImageMagick
-2.  **segment** -- generate per-part binary masks via color matching + spatial bounding boxes
-3.  **trace** -- convert masks to SVG paths with potrace (runs in a container)
-4.  **assemble** -- transform traced paths into the 800x1200 viewBox, apply fill colors
-5.  **composite** -- stack all parts in layer order into a single preview SVG
+1. **crop** -- extract the front view from the 3-view reference sheet using ImageMagick
+2. **segment** -- generate per-part binary masks via color matching + spatial bounding boxes
+3. **trace** -- convert masks to SVG paths with potrace (runs in a container)
+4. **assemble** -- transform traced paths into the 800x1200 viewBox, apply fill colors
+5. **composite** -- stack all parts in layer order into a single preview SVG
 
 ## Usage
 

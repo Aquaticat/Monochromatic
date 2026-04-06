@@ -32,7 +32,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'clean object with leading comments',
@@ -47,9 +47,9 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Basic parsing with comments
 
     //region Fast-path optimization
@@ -68,7 +68,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'object with boundary trailing comma uses fast-path',
@@ -82,7 +82,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'array with leading comment and trailing comma',
@@ -97,7 +97,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'object with leading comment and trailing comma',
@@ -112,12 +112,13 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'nested structures with trailing comma',
           fn: async () => {
-            const input = '{"items": [1, 2, 3], "config": {"debug": true}, }' as StringJsonc;
+            const input =
+              '{"items": [1, 2, 3], "config": {"debug": true}, }' as StringJsonc;
             const result = $({ value: input, },);
 
             if ('json' in result) {
@@ -130,9 +131,9 @@ await describe({
               throw new Error('Expected fast-path PlainJson result',);
             }
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Fast-path optimization
 
     //region Custom parser fallback
@@ -154,7 +155,7 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
 
         it({
           name: 'object with internal comments forces custom parser',
@@ -171,7 +172,7 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
 
         it({
           name: 'array with inline comment after value',
@@ -191,7 +192,7 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
 
         it({
           name: 'object with inline comments',
@@ -210,7 +211,7 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
 
         it({
           name: 'array with multiple trailing commas needs custom parser',
@@ -220,9 +221,9 @@ await describe({
             // This should throw or be handled by custom parser
             expect(() => $({ value: input, },)).toThrow();
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Custom parser fallback
 
     //region Complex nested structures
@@ -255,7 +256,7 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
 
         it({
           name: 'array of objects with comments',
@@ -275,7 +276,7 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
 
         it({
           name: 'mixed nesting with trailing commas',
@@ -300,9 +301,9 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Complex nested structures
 
     //region Error cases
@@ -318,7 +319,7 @@ await describe({
               'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
             );
           },
-        }),
+        },),
 
         it({
           name: 'number at start throws',
@@ -329,7 +330,7 @@ await describe({
               'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
             );
           },
-        }),
+        },),
 
         it({
           name: 'string at start throws',
@@ -340,7 +341,7 @@ await describe({
               'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
             );
           },
-        }),
+        },),
 
         it({
           name: 'trailing content after array throws',
@@ -351,7 +352,7 @@ await describe({
               'unexpected trailing content after array',
             );
           },
-        }),
+        },),
 
         it({
           name: 'trailing content after object throws',
@@ -362,7 +363,7 @@ await describe({
               'unexpected trailing content after object',
             );
           },
-        }),
+        },),
 
         it({
           name: 'comment then trailing content after array throws',
@@ -373,7 +374,7 @@ await describe({
               'unexpected trailing content after array',
             );
           },
-        }),
+        },),
 
         it({
           name: 'comment then trailing content after object throws',
@@ -384,9 +385,9 @@ await describe({
               'unexpected trailing content after object',
             );
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Error cases
 
     //region Edge cases
@@ -404,7 +405,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'empty object',
@@ -417,7 +418,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'only whitespace before array',
@@ -430,7 +431,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'only whitespace before object',
@@ -443,7 +444,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'multiple leading comments',
@@ -460,7 +461,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'only comments after structure',
@@ -484,9 +485,9 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Edge cases
 
     //region Integration with re-exported parsers
@@ -508,7 +509,7 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
 
         it({
           name: 'uses customParserForRecord internally',
@@ -525,7 +526,7 @@ await describe({
               throw new Error('Expected custom parser result with value property',);
             }
           },
-        }),
+        },),
 
         it({
           name: 'uses startsWithComment for leading comments',
@@ -536,7 +537,7 @@ await describe({
             // Verify comment was extracted
             expect(result.comment?.commentValue,).toContain('Test',);
           },
-        }),
+        },),
 
         it({
           name: 'validates with validateNoTrailingContent',
@@ -546,9 +547,9 @@ await describe({
             // Validation should catch trailing content
             expect(() => $({ value: input, },)).toThrow('unexpected trailing content',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Integration with re-exported parsers
 
     //region Trailing comma boundary detection
@@ -566,7 +567,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'trailing comma with newline before bracket',
@@ -580,7 +581,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'trailing comma with whitespace before brace',
@@ -593,7 +594,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'trailing comma with newline before brace',
@@ -607,7 +608,7 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
 
         it({
           name: 'non-trailing comma in middle of array',
@@ -621,9 +622,9 @@ await describe({
             else
               throw new Error('Expected fast-path PlainJson result',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Trailing comma boundary detection
 
     //region Type preservation
@@ -641,7 +642,7 @@ await describe({
             else
               expect(Array.isArray(result.value,),).toBe(true,);
           },
-        }),
+        },),
 
         it({
           name: 'object result has correct type',
@@ -654,7 +655,7 @@ await describe({
             else
               expect(result.value instanceof Map,).toBe(true,);
           },
-        }),
+        },),
 
         it({
           name: 'preserves boolean values',
@@ -665,7 +666,7 @@ await describe({
             if ('json' in result)
               expect(result.json,).toEqual({ active: true, disabled: false, },);
           },
-        }),
+        },),
 
         it({
           name: 'preserves null values',
@@ -676,7 +677,7 @@ await describe({
             if ('json' in result)
               expect(result.json,).toEqual({ value: null, },);
           },
-        }),
+        },),
 
         it({
           name: 'preserves number types',
@@ -687,9 +688,9 @@ await describe({
             if ('json' in result)
               expect(result.json,).toEqual({ int: 42, float: 3.14, exp: 1e5, },);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion Type preservation
   ],
 },);

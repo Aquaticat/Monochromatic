@@ -60,14 +60,22 @@ function fixScoreCell(
     return h({
       tag: 'td',
       children: [
-        h({ tag: 'span', class: 'missing-data-label', text: '(not run)', },),
+        h({
+          tag: 'span',
+          class: 'missing-data-label',
+          text: '(not run)',
+        },),
       ],
     },);
   }
   return h({
     tag: 'td',
     children: [
-      h({ tag: 'span', class: 'missing-data-label', text: '(data error)', },),
+      h({
+        tag: 'span',
+        class: 'missing-data-label',
+        text: '(data error)',
+      },),
     ],
   },);
 }
@@ -89,6 +97,12 @@ function fixScoreCell(
  * @param options - column visibility overrides
  *
  * @returns HTML string
+ *
+ * @example
+ * ```ts
+ * const html = renderDataTable(rows, 'Score history', { showModel: true, showProbe: false });
+ * // '<table class="chart-data-table">...<\/table>'
+ * ```
  */
 export function renderDataTable(
   rows: readonly TableRow[],

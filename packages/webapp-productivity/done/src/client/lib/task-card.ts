@@ -17,7 +17,7 @@ export { formatRunningTrackedTime, } from './format-tracked-time.ts';
 /** `\<task-card\>` -- displays a task as a clickable card with checkbox, title, and metadata chips. */
 class TaskCard extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Currently displayed task, or null before configuration. */
   #task: Task | null = null;
@@ -91,6 +91,12 @@ customElements.define(
  * @param options - Callbacks for open/complete interactions
  *
  * @returns Configured TaskCard element
+ *
+ * @example
+ * ```ts
+ * const card = createTaskCard(task, { onOpen: openTask });
+ * list.append(card);
+ * ```
  */
 export function createTaskCard(
   task: Task,

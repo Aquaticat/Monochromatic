@@ -19,7 +19,7 @@ when oxlint is invoked from a subdirectory with `-c` pointing to a config elsewh
 
 ## Minimal reproduction
 
-```
+```text
 repo/
   .oxlintrc.json          # { "ignorePatterns": ["**/test-fixture/**"] }
   packages/

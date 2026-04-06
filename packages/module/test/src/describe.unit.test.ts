@@ -24,7 +24,7 @@ await describe({
         },);
         expect(result.name,).toBe('inner-suite',);
       },
-    }),
+    },),
 
     it({
       name: 'runs children concurrently',
@@ -38,23 +38,25 @@ await describe({
           children: [
             it({
               name: 'child-a',
-              fn: async () => new Promise((resolve,) => {
-                setTimeout(resolve, DELAY,);
-              },),
-            }),
+              fn: async () =>
+                new Promise(resolve => {
+                  setTimeout(resolve, DELAY,);
+                },),
+            },),
             it({
               name: 'child-b',
-              fn: async () => new Promise((resolve,) => {
-                setTimeout(resolve, DELAY,);
-              },),
-            }),
+              fn: async () =>
+                new Promise(resolve => {
+                  setTimeout(resolve, DELAY,);
+                },),
+            },),
           ],
         },);
 
         const elapsed = performance.now() - start;
         expect(elapsed,).toBeLessThan(MAX_SEQUENTIAL,);
       },
-    }),
+    },),
 
     it({
       name: 'wraps single child failure',
@@ -67,13 +69,13 @@ await describe({
               fn: async () => {
                 throw new Error('boom',);
               },
-            }),
+            },),
           ],
         },);
         await expect(rejection,).rejects.toBeInstanceOf(Error,);
         await expect(rejection,).rejects.toHaveProperty('message', 'failing-suite',);
       },
-    }),
+    },),
 
     it({
       name: 'wraps multiple child failures in AggregateError',
@@ -86,19 +88,19 @@ await describe({
               fn: async () => {
                 throw new Error('one',);
               },
-            }),
+            },),
             it({
               name: 'bad-2',
               fn: async () => {
                 throw new Error('two',);
               },
-            }),
+            },),
           ],
         },);
         await expect(rejection,).rejects.toBeInstanceOf(Error,);
         await expect(rejection,).rejects.toHaveProperty('message', 'multi-fail-suite',);
       },
-    }),
+    },),
 
     it({
       name: 'empty name re-throws cause directly',
@@ -111,13 +113,13 @@ await describe({
               fn: async () => {
                 throw new Error('direct',);
               },
-            }),
+            },),
           ],
         },);
         await expect(rejection,).rejects.toBeInstanceOf(Error,);
         await expect(rejection,).rejects.toHaveProperty('message', 'bad',);
       },
-    }),
+    },),
 
     it({
       name: 'limits concurrency to the given value',
@@ -136,31 +138,32 @@ await describe({
          * @returns thunk returning a promise that resolves after DELAY
          */
         function makeChild(index: number,) {
-          return () => it({
-            name: `limited-${String(index,)}`,
-            fn: async () => {
-              active += 1;
-              if (active > peak) {
-                peak = active;
-              }
+          return () =>
+            it({
+              name: `limited-${String(index,)}`,
+              fn: async () => {
+                active += 1;
+                if (active > peak)
+                  peak = active;
 
-              await new Promise((resolve,) => {
-                setTimeout(resolve, DELAY,);
-              },);
-              active -= 1;
-            },
-          },);
+                await new Promise(resolve => {
+                  setTimeout(resolve, DELAY,);
+                },);
+                active -= 1;
+              },
+            },);
         }
 
         await describe({
           name: 'concurrency-suite',
           concurrency: 2,
-          children: Array.from({ length: CHILD_COUNT, }, (_, index,) => makeChild(index,),),
+          children: Array.from({ length: CHILD_COUNT, },
+            (_, index,) => makeChild(index,),),
         },);
 
         expect(peak,).toBe(2,);
       },
-    }),
+    },),
 
     it({
       name: 'respects suite timeout',
@@ -172,15 +175,16 @@ await describe({
           children: [
             it({
               name: 'slow',
-              fn: async () => new Promise((resolve,) => {
-                setTimeout(resolve, DELAY,);
-              },),
-            }),
+              fn: async () =>
+                new Promise(resolve => {
+                  setTimeout(resolve, DELAY,);
+                },),
+            },),
           ],
           timeout: TIMEOUT,
         },);
         await expect(rejection,).rejects.toBeInstanceOf(Error,);
       },
-    }),
+    },),
   ],
 },);

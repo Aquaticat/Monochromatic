@@ -21,6 +21,6 @@ Custom geometric typeface. Regular weight, uppercase only (A--Q, X--Z).
 @import '@monochromatic-dev/typeface-aquaticat/aquaticat.css';
 
 h1 {
-  font-family: "Aquaticat", sans-serif;
+  font-family: 'Aquaticat', sans-serif;
 }
 ```

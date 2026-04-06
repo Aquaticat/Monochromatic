@@ -16,6 +16,7 @@ parent.child.grandchild.ts
 ```
 
 The naming directly reflects which modules can depend on which:
+
 - **Parent can depend on child** (downward dependencies allowed)
 - **Siblings cannot depend on each other** (lateral dependencies forbidden)
 - **Child cannot depend on parent** (upward dependencies forbidden)
@@ -25,6 +26,7 @@ The naming directly reflects which modules can depend on which:
 ### Allowed dependencies
 
 **Downward dependencies (parent → child)**:
+
 - `index.ts` can import from `customParsers.ts` or `fastPath.ts`
 - `customParsers.ts` can import from `customParsers.startsWithComment.ts`
 - `customParsers.startsWithComment.ts` can import from `customParsers.startsWithComment.mergeComments.ts`
@@ -32,10 +34,12 @@ The naming directly reflects which modules can depend on which:
 ### Forbidden dependencies
 
 **Lateral dependencies (sibling ↔ sibling)**:
+
 - `customParsers.tokenizers.ts` CANNOT import from `customParsers.arrayHelpers.ts`
 - `fastPath.ts` CANNOT import from `customParsers.ts` (they are siblings under `index.ts`)
 
 **Upward dependencies (child → parent)**:
+
 - `customParsers.startsWithComment.ts` CANNOT import from `customParsers.ts`
 - `customParsers.ts` CANNOT import from `index.ts`
 
@@ -62,6 +66,7 @@ index.ts (164 lines)
 When functions have mutual recursion (function A calls B, function B calls A), they MUST be kept in the same file to avoid circular imports.
 
 In this codebase:
+
 - `parseValueFromStart()` ↔ `customParserForArray()` ↔ `parseArrayElements()`
 - `parseValueFromStart()` ↔ `customParserForRecord()` ↔ `parseRecordMembers()`
 

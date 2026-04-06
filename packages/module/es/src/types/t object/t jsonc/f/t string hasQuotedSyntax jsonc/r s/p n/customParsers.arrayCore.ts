@@ -27,6 +27,13 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
  * @param items - Collected items so far; treated immutably during recursion
  *
  * @returns Items parsed up to ']' and the remaining tail after the closing bracket
+ *
+ * @example
+ * ```ts
+ * const { items, tail } = parseArrayElements('1, 2]rest' as FragmentStringJsonc);
+ * // items.length === 2
+ * // tail === 'rest'
+ * ```
  */
 export function parseArrayElements(
   tail: FragmentStringJsonc,
@@ -59,13 +66,19 @@ export function parseArrayElements(
   const decision = expectArraySeparatorOrEnd(remaining,);
   if (decision.kind === 'end') {
     return {
-      items: [...items, parsed,],
+      items: [
+        ...items,
+        parsed,
+      ],
       tail: decision.tail,
     };
   }
   return parseArrayElements(
     decision.tailStart,
-    [...items, parsed,],
+    [
+      ...items,
+      parsed,
+    ],
   );
 }
 //endregion Array elements

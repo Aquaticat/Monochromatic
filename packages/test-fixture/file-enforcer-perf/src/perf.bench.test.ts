@@ -120,8 +120,7 @@ await Promise.all(
       'deep',
     );
     await mkdir(deepDir, { recursive: true, },);
-    await writeFile(join(deepDir, 'module.ts',),
-      `deep-content-${String(dirIndex,)}`,);
+    await writeFile(join(deepDir, 'module.ts',), `deep-content-${String(dirIndex,)}`,);
   },),
 );
 
@@ -225,7 +224,8 @@ boxplot(function mirrorGlobPathBoxplot() {
       'packages/pkg-00/src/index.ts',
     );
     do_not_optimize(result,);
-  },).range('iterations', 1, 1024,);
+  },)
+    .range('iterations', 1, 1024,);
 },);
 //endregion
 
@@ -239,9 +239,11 @@ summary(function globVariationBenchmarks() {
   },);
 
   bench('5 overlapping globs across 20 dirs', async function overlapGlobBench() {
-    const results = await Promise.all(overlapPatterns.map(function expandPattern(pattern,) {
-      return expandGlob(pattern,);
-    },),);
+    const results = await Promise.all(
+      overlapPatterns.map(function expandPattern(pattern,) {
+        return expandGlob(pattern,);
+      },),
+    );
     do_not_optimize(results,);
   },);
 },);

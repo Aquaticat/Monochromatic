@@ -6,6 +6,11 @@
  * @param concatWith - separator string to place between elements
  *
  * @returns single string with elements separated by the given separator
+ *
+ * @example
+ * ```ts
+ * $({ strings: ['a', 'b', 'c'], concatWith: '-' }); // 'a-b-c'
+ * ```
  */
 export function $(
   {

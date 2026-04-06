@@ -35,7 +35,7 @@ export type ExtractResult = {
  * ```
  */
 export function tryExtractCode(response: string,): ExtractResult {
-  const closedFence = response.match(/```(?:typescript|ts)?\n([\s\S]*?)```/,);
+  const closedFence = /```(?:typescript|ts)?\n([\s\S]*?)```/.exec(response,);
   if (closedFence !== null && closedFence[1] !== undefined) {
     return {
       source: closedFence[1],
@@ -43,7 +43,7 @@ export function tryExtractCode(response: string,): ExtractResult {
     };
   }
 
-  const openFence = response.match(/```(?:typescript|ts)?\n([\s\S]*)/,);
+  const openFence = /```(?:typescript|ts)?\n([\s\S]*)/.exec(response,);
   if (openFence !== null && openFence[1] !== undefined) {
     return {
       source: openFence[1],

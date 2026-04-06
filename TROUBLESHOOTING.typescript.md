@@ -3,13 +3,17 @@
 ## TypeScript Path Warnings with dprint
 
 ### Problem
+
 You see warnings when running dprint or other tools:
+
 ```txt
 warn: Non-relative path "packages/config/eslint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
 ```
 
 ### Solution
+
 Set `baseUrl` to `"./"` in your root `tsconfig.json`:
+
 ```json
 {
   "compilerOptions": {
@@ -21,11 +25,13 @@ Set `baseUrl` to `"./"` in your root `tsconfig.json`:
 This tells TypeScript to resolve non-relative paths from the project root, which is necessary when using path mappings in a monorepo structure.
 
 ### Note
+
 Setting `baseUrl` may or may not completely resolve the warnings, but it helps TypeScript understand that non-relative paths in the `paths` mapping should be resolved from the project root.
 
 ## Type Predicate Assignment Errors
 
 ### Problem
+
 You encounter TypeScript error TS2677: "A type predicate's type must be assignable to its parameter's type" when using complex conditional types in type predicates:
 
 ```ts
@@ -33,28 +39,31 @@ export function maybeAsyncSchemaIsSchemaAsync<
   const MyMaybeAsyncSchema extends MaybeAsyncSchema = MaybeAsyncSchema,
 >(
   maybeAsyncSchema: MyMaybeAsyncSchema,
-): maybeAsyncSchema is MyMaybeAsyncSchema extends SchemaAsync<infer Input, infer Output>
-  ? SchemaAsync<Input, Output>
-  : Schema & MyMaybeAsyncSchema  // TS2677 error here
+): maybeAsyncSchema is MyMaybeAsyncSchema extends
+  SchemaAsync<infer Input, infer Output> ? SchemaAsync<Input, Output>
+  : Schema & MyMaybeAsyncSchema // TS2677 error here
 {
   return ('parseAsync' in maybeAsyncSchema);
 }
 ```
 
 ### Root Cause
+
 TypeScript cannot verify that complex conditional types in type predicates are assignable to the parameter type.
 The compiler struggles with conditional types that depend on generic parameters, especially when trying to preserve the original type information.
 
 ### Solution
+
 Use intersection types instead of conditional types in the type predicate:
 
 ```ts
 export function maybeAsyncSchemaIsSchemaAsync<const Input = unknown,
   const Output = unknown,
-  const MyMaybeAsyncSchema extends MaybeAsyncSchema<Input, Output> = MaybeAsyncSchema<
-    Input,
-    Output
-  >,>(
+  const MyMaybeAsyncSchema extends MaybeAsyncSchema<Input, Output> =
+    MaybeAsyncSchema<
+      Input,
+      Output
+    >,>(
   maybeAsyncSchema: MyMaybeAsyncSchema,
 ): maybeAsyncSchema is SchemaAsync<Input, Output> & MyMaybeAsyncSchema {
   return ('parseAsync' in maybeAsyncSchema);
@@ -62,25 +71,31 @@ export function maybeAsyncSchemaIsSchemaAsync<const Input = unknown,
 ```
 
 ### Why This Works
+
 - The intersection type `SchemaAsync<Input, Output> & MyMaybeAsyncSchema` is always assignable to `MyMaybeAsyncSchema` (since it includes it)
 - It preserves the specific type information of the input parameter
 - It avoids the conditional type complexity that TypeScript cannot verify
 - The type guard remains useful for narrowing types in calling code
 
 ### Common Pitfall to Avoid
+
 Don't simplify by removing generic parameters entirely:
+
 ```ts
 // BAD: Loses type precision
-function maybeAsyncSchemaIsSchemaAsync<Input, Output>(
+function maybeAsyncSchemaIsSchemaAsync<Input, Output,>(
   maybeAsyncSchema: MaybeAsyncSchema<Input, Output>,
-): maybeAsyncSchema is SchemaAsync<Input, Output>
+): maybeAsyncSchema is SchemaAsync<Input, Output>;
 ```
+
 This throws away the specific schema type information, making the type guard less useful for preserving types in calling code.
 
 ## JSX.IntrinsicElements Missing in Astro MDX Files
 
 ### Problem
+
 In VS Code, MDX files in Astro projects show TypeScript error ts-plugin(7026):
+
 ```txt
 JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists.
 ```
@@ -88,15 +103,18 @@ JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElement
 This affects HTML elements like `<abbr>`, `<sub>`, `<sup>`, `<kbd>`, `<mark>`, etc. in MDX content.
 
 ### Root Cause
+
 The `@types/mdx` package expects a global `JSX.IntrinsicElements` interface, which is normally provided by `@types/react`.
 Astro defines its JSX types under `astroHTML.JSX` namespace, not the global `JSX` namespace.
 
 From the MDX documentation:
+
 > "For types to work, the `JSX` namespace must be typed. This is done by installing and using the types of your framework, such as `@types/react`."
 
 This creates an incompatibility when using MDX with Astro without React.
 
 ### Solution
+
 Create `src/env.d.ts` in your Astro project that bridges the namespaces:
 
 ```ts
@@ -111,11 +129,13 @@ declare namespace JSX {
 This maps Astro's JSX types to the global namespace that `@types/mdx` expects.
 
 ### Note
+
 - This is an IDE/editor type-checking issue; `skipLibCheck: true` in tsconfig prevents this from blocking builds
 - Each Astro project using MDX with TypeScript needs this `env.d.ts` file
 - The Astro-generated `.astro/types.d.ts` includes `astro/client` but doesn't bridge to the global `JSX` namespace
 
 ### References
+
 - [Astro GitHub Issue #5061](https://github.com/withastro/astro/issues/5061)
 - [MDX Getting Started - Types](https://mdxjs.com/docs/getting-started/#types)
 - [Astro TypeScript - Extending global types](https://docs.astro.build/en/guides/typescript/#extending-global-types)
@@ -163,22 +183,21 @@ A `const` variable narrowed by a null check before a function declaration
 still reports the nullable type inside the function body:
 
 ```ts
-const el = document.querySelector<HTMLDivElement>('#app');
-if (el === null) {
-  throw new Error('missing');
-}
+const el = document.querySelector<HTMLDivElement>('#app',);
+if (el === null)
+  throw new Error('missing',);
 
 // TS18047: 'el' is possibly 'null'.
 function setup(): void {
-  console.log(el.clientWidth);
+  console.log(el.clientWidth,);
 }
 ```
 
 Replacing the function declaration with a function expression or arrow eliminates the error:
 
 ```ts
-const setup = function (): void {
-  console.log(el.clientWidth); // OK
+const setup = function(): void {
+  console.log(el.clientWidth,); // OK
 };
 ```
 
@@ -191,16 +210,17 @@ The `while` loop in `checker.ts` (around line 31181 in the tsc 6.0 source) check
 ```ts
 // checker.ts — getTypeOfSymbolAtLocation, inner narrowing loop
 while (
-    flowContainer !== declarationContainer && (
-        flowContainer.kind === SyntaxKind.FunctionExpression ||
-        flowContainer.kind === SyntaxKind.ArrowFunction ||
-        isObjectLiteralOrClassExpressionMethodOrAccessor(flowContainer)
-    ) && (
-        isConstantVariable(localOrExportSymbol) && type !== autoArrayType ||
-        isParameterOrMutableLocalVariable(localOrExportSymbol) && isPastLastAssignment(localOrExportSymbol, node)
-    )
+  flowContainer !== declarationContainer && (
+    flowContainer.kind === SyntaxKind.FunctionExpression
+    || flowContainer.kind === SyntaxKind.ArrowFunction
+    || isObjectLiteralOrClassExpressionMethodOrAccessor(flowContainer,)
+  ) && (
+    isConstantVariable(localOrExportSymbol,) && type !== autoArrayType
+    || isParameterOrMutableLocalVariable(localOrExportSymbol,)
+      && isPastLastAssignment(localOrExportSymbol, node,)
+  )
 ) {
-    flowContainer = getControlFlowContainer(flowContainer);
+  flowContainer = getControlFlowContainer(flowContainer,);
 }
 ```
 
@@ -209,15 +229,16 @@ Function declarations are hoisted,
 so a call site can appear **before** the narrowing guard in source order:
 
 ```ts
-const el = document.querySelector<HTMLDivElement>('#app');
+const el = document.querySelector<HTMLDivElement>('#app',);
 
 setup(); // runs before the null check below
 
-if (el === null) { throw new Error('missing'); }
+if (el === null)
+  throw new Error('missing',);
 
 function setup(): void {
   // el is genuinely nullable here at runtime
-  console.log(el.clientWidth);
+  console.log(el.clientWidth,);
 }
 ```
 
@@ -236,18 +257,17 @@ The return type carries the narrowed type into all callers
 regardless of declaration kind:
 
 ```ts
-function requireElement<T extends Element>(selector: string): T {
-  const element = document.querySelector<T>(selector);
-  if (element === null) {
-    throw new Error(`Missing required element: ${selector}`);
-  }
+function requireElement<T extends Element,>(selector: string,): T {
+  const element = document.querySelector<T>(selector,);
+  if (element === null)
+    throw new Error(`Missing required element: ${selector}`,);
   return element;
 }
 
-const el = requireElement<HTMLDivElement>('#app');
+const el = requireElement<HTMLDivElement>('#app',);
 // el is HTMLDivElement (non-null) everywhere
 function setup(): void {
-  console.log(el.clientWidth); // OK
+  console.log(el.clientWidth,); // OK
 }
 ```
 
@@ -257,14 +277,13 @@ The explicit annotation becomes the variable's declared type,
 which is non-null regardless of closure context:
 
 ```ts
-const maybeEl = document.querySelector<HTMLDivElement>('#app');
-if (maybeEl === null) {
-  throw new Error('missing');
-}
+const maybeEl = document.querySelector<HTMLDivElement>('#app',);
+if (maybeEl === null)
+  throw new Error('missing',);
 const el: HTMLDivElement = maybeEl;
 
 function setup(): void {
-  console.log(el.clientWidth); // OK
+  console.log(el.clientWidth,); // OK
 }
 ```
 
@@ -363,13 +382,12 @@ which TypeScript cannot prove:
 
 ```ts
 // schemas.ts:2087-2088 — TS2532 here
-const nonaborted = results.filter((r) => !util.aborted(r));
-if (nonaborted.length === 1) {
-    final.value = nonaborted[0].value; // Object is possibly 'undefined'
-}
+const nonaborted = results.filter(r => !util.aborted(r,));
+if (nonaborted.length === 1)
+  final.value = nonaborted[0].value; // Object is possibly 'undefined'
 
 // util.ts:930 — TS2345 here
-binaryString += String.fromCharCode(bytes[i]); // Argument of type 'number | undefined'
+binaryString += String.fromCharCode(bytes[i],); // Argument of type 'number | undefined'
 ```
 
 ### TypeScript team's position
@@ -399,6 +417,7 @@ the `lint:types` mise task wraps `tsgo --build`
 in a script that filters out diagnostics originating from `node_modules` paths.
 
 The wrapper:
+
 1. Runs `tsgo --build` (or `tsgo --build --noEmit`, etc.) with all original arguments
 2. Captures stdout/stderr line by line
 3. Drops any line whose file path contains `/node_modules/`
@@ -406,6 +425,7 @@ The wrapper:
 5. Preserves the exit code: exits non-zero only if non-`node_modules` errors remain
 
 This is the least invasive option because:
+
 - It does not modify `node_modules` (unlike `bun patch`)
 - It does not sacrifice type safety (unlike `declare module` with `any`)
 - It does not introduce version-drift risk (unlike installing npm zod alongside JSR zod)
@@ -475,6 +495,7 @@ All source references below are from commit `c0703e66` of `microsoft/typescript-
 **Step 1: `diskFile.Kind()` returns `ScriptKindUnknown` for `.svg`.**
 
 `internal/project/overlayfs.go:100-102`:
+
 ```go
 func (f *diskFile) Kind() core.ScriptKind {
 	return core.GetScriptKindFromFileName(f.fileName)
@@ -482,6 +503,7 @@ func (f *diskFile) Kind() core.ScriptKind {
 ```
 
 `internal/core/core.go:512-529` — the switch only handles TS/JS/JSON extensions:
+
 ```go
 func GetScriptKindFromFileName(fileName string) ScriptKind {
 	dotPos := strings.LastIndex(fileName, ".")
@@ -506,6 +528,7 @@ func GetScriptKindFromFileName(fileName string) ScriptKind {
 **Step 2: `compilerHost.GetSourceFile` passes `Unknown` to the parse cache without checking.**
 
 `internal/project/compilerhost.go:95-102`:
+
 ```go
 func (c *compilerHost) GetSourceFile(opts ast.SourceFileParseOptions) *ast.SourceFile {
 	c.ensureAlive()
@@ -520,6 +543,7 @@ func (c *compilerHost) GetSourceFile(opts ast.SourceFileParseOptions) *ast.Sourc
 **Step 3: the parse cache calls `parser.ParseSourceFile` with `ScriptKindUnknown`.**
 
 `internal/project/parsecache.go:30-38`:
+
 ```go
 func NewParseCache(options RefCountCacheOptions) *ParseCache {
 	return NewRefCountCache(
@@ -538,6 +562,7 @@ func NewParseCache(options RefCountCacheOptions) *ParseCache {
 **Step 4: the parser panics.**
 
 `internal/parser/parser.go:288-291`:
+
 ```go
 func (p *Parser) initializeState(opts ast.SourceFileParseOptions, sourceText string, scriptKind core.ScriptKind) {
 	if scriptKind == core.ScriptKindUnknown {
@@ -548,6 +573,7 @@ func (p *Parser) initializeState(opts ast.SourceFileParseOptions, sourceText str
 **The extension guard in the file loader exists but is bypassed.**
 
 `internal/compiler/filesparser.go:68-95` has a guard in `parseTask.load()`:
+
 ```go
 if tspath.HasExtension(t.normalizedFilePath) {
 	compilerOptions := loader.opts.Config.CompilerOptions()
@@ -592,6 +618,7 @@ which passes the `ScriptKindUnknown` to the parser (step 4).
 
 The `matchFiles` function (`internal/vfs/vfsmatch/vfsmatch.go:604-606`) checks extensions
 during directory scanning:
+
 ```go
 for _, file := range entries.Files {
 	if len(v.extensions) > 0 && !tspath.FileExtensionIsOneOf(file, v.extensions) {
@@ -611,18 +638,18 @@ without checking `isSupportedExtension` first.
 The crash is triggered by editord forwarding non-source files to tsgo.
 Two distinct paths lead to the panic:
 
-1.  **Spawn trigger** -- when a non-source file is the first file opened
-    for a project root, `pool.resolve({ type: 'tsgo' })` spawns tsgo
-    with that file as the trigger. tsgo adds the file to the project
-    during initialization and panics on the unsupported extension.
+1. **Spawn trigger** -- when a non-source file is the first file opened
+   for a project root, `pool.resolve({ type: 'tsgo' })` spawns tsgo
+   with that file as the trigger. tsgo adds the file to the project
+   during initialization and panics on the unsupported extension.
 
-2.  **Reuse + feature request** -- when tsgo is already running
-    (spawned earlier from a `.ts` file), and a non-source file is opened,
-    feature request handlers (`withClient` for hover, inlayHints, etc.)
-    call `pool.resolve()` which returns the existing client.
-    The handler sends the request with the non-source file's URI.
-    tsgo creates an inferred project for the unknown file,
-    which triggers parsing and the ScriptKind panic.
+2. **Reuse + feature request** -- when tsgo is already running
+   (spawned earlier from a `.ts` file), and a non-source file is opened,
+   feature request handlers (`withClient` for hover, inlayHints, etc.)
+   call `pool.resolve()` which returns the existing client.
+   The handler sends the request with the non-source file's URI.
+   tsgo creates an inferred project for the unknown file,
+   which triggers parsing and the ScriptKind panic.
 
 tsgo does NOT crash from its own directory scanning --
 `include`/`exclude` patterns work correctly during normal project loading
@@ -671,13 +698,13 @@ Verified to work for `tsgo --build` but does not prevent the LSP crash.
 
 Two earlier approaches failed because they only gated part of the problem:
 
-1.  **Filtering only in `resolveAll`** --
-    feature request handlers call `pool.resolve()` directly via `withClient`,
-    bypassing the `resolveAll` include filter entirely.
-2.  **Filtering only before spawning in `resolve()`** --
-    returning an existing tsgo client for a non-source file is just as
-    dangerous as spawning a new one: the feature request sends the file URI
-    to tsgo, which creates an inferred project and panics.
+1. **Filtering only in `resolveAll`** --
+   feature request handlers call `pool.resolve()` directly via `withClient`,
+   bypassing the `resolveAll` include filter entirely.
+2. **Filtering only before spawning in `resolve()`** --
+   returning an existing tsgo client for a non-source file is just as
+   dangerous as spawning a new one: the feature request sends the file URI
+   to tsgo, which creates an inferred project and panics.
 
 **Fixed** by checking tsconfig includes as the very first step in `resolve()`
 for tsgo, before both pool cache lookup and spawn.
@@ -714,7 +741,7 @@ Ready to file against [microsoft/typescript-go](https://github.com/microsoft/typ
 
 **Body:**
 
-```markdown
+````markdown
 ## Bug Report
 
 ### Summary
@@ -737,6 +764,8 @@ with `ScriptKindUnknown` and panics in `parser.initializeState`.
      "include": ["src/**/*.ts"]
    }
    ```
+````
+
 2. Add `src/index.ts` (any valid TypeScript file)
 3. Add `architecture.svg` (any SVG file) in the same directory
 4. Start `tsgo --lsp --stdio` and send an `initialize` request
@@ -744,11 +773,12 @@ with `ScriptKindUnknown` and panics in `parser.initializeState`.
 5. Open `src/index.ts` via `textDocument/didOpen`
 
 tsgo panics with:
-```
+
+```bash
 panic: ScriptKind must be specified when parsing source file: /path/to/architecture.svg
 ```
 
-### Root cause
+### Root cause analysis
 
 `compilerHost.GetSourceFile` (`internal/project/compilerhost.go:95-102`)
 passes `fh.Kind()` to the parse cache without checking for `ScriptKindUnknown`.
@@ -796,11 +826,12 @@ This is consistent with how the CLI's file loader handles unsupported extensions
 - #2669 / #2679 -- same crash fixed in the completions code path
 - denoland/deno#31423 -- CSS imports causing the same panic
 - neovim/nvim-lspconfig#4018 -- filetype mismatch in LSP
-```
 
+```text
 ## Related Documentation
 
 - [ESLint Configuration](./TROUBLESHOOTING.eslint.md) - ESLint and TypeScript parser issues
 - [VSCode](./TROUBLESHOOTING.vscode.md) - VSCode extension configuration for TypeScript tools
 - [Toolchain](./TROUBLESHOOTING.toolchain.md) - Build tools and toolchain management
 - [Stylelint](./TROUBLESHOOTING.stylelint.md) - CSS linting configuration issues
+```

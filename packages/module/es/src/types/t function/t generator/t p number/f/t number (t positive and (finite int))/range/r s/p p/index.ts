@@ -7,6 +7,11 @@ import { $ as named, } from '../p n/index.ts';
  * @param length - positive integer count of values to yield
  *
  * @returns generator yielding consecutive non-negative integers
+ *
+ * @example
+ * ```ts
+ * [...$(5)]; // [0, 1, 2, 3, 4]
+ * ```
  */
 export function $(
   length: Int & Positive,

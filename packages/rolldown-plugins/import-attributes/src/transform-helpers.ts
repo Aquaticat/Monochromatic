@@ -12,6 +12,11 @@ import { ATTR_QUERY_KEY, } from './patterns.ts';
 
 /**
  * Source string replacement with start/end byte offsets.
+ *
+ * @example
+ * ```ts
+ * const r: Replacement = { start: 10, end: 20, text: "'./file.sql?attr=text'" };
+ * ```
  */
 export type Replacement = {
   readonly start: number;
@@ -88,6 +93,12 @@ function findWithClauseEnd(
  * @param code - full source code
  *
  * @param replacements - mutable array to push replacements into
+ *
+ * @example
+ * ```ts
+ * const replacements: Replacement[] = [];
+ * collectStaticReplacements(node.source, node.attributes, 'text', code, replacements);
+ * ```
  */
 export function collectStaticReplacements(
   source: ESTree.StringLiteral,

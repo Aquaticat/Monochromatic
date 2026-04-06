@@ -51,28 +51,28 @@ await describe({
           fn: async () => {
             expect(stripAnsi('\u001B[31merror\u001B[0m',),).toBe('error',);
           },
-        }),
+        },),
         it({
           name: 'removes multiple color codes',
           fn: async () => {
             expect(stripAnsi('\u001B[1;31mx\u001B[0m \u001B[33mwarning\u001B[0m',),)
               .toBe('x warning',);
           },
-        }),
+        },),
         it({
           name: 'returns plain text unchanged',
           fn: async () => {
             expect(stripAnsi('no colors here',),).toBe('no colors here',);
           },
-        }),
+        },),
         it({
           name: 'handles empty string',
           fn: async () => {
             expect(stripAnsi('',),).toBe('',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion stripAnsi
 
@@ -89,7 +89,7 @@ await describe({
             ),)
               .toBe('no-misused-promises',);
           },
-        }),
+        },),
         it({
           name: 'extracts from warning diagnostic header',
           fn: async () => {
@@ -98,7 +98,7 @@ await describe({
             ),)
               .toBe('no-magic-numbers',);
           },
-        }),
+        },),
         it({
           name: 'extracts from unicorn plugin format',
           fn: async () => {
@@ -107,7 +107,7 @@ await describe({
             ),)
               .toBe('no-process-exit',);
           },
-        }),
+        },),
         it({
           name: 'extracts from custom plugin format',
           fn: async () => {
@@ -116,7 +116,7 @@ await describe({
             ),)
               .toBe('no-arrow-function',);
           },
-        }),
+        },),
         it({
           name: 'extracts with ANSI codes present',
           fn: async () => {
@@ -125,34 +125,34 @@ await describe({
             ),)
               .toBe('no-misused-promises',);
           },
-        }),
+        },),
         it({
           name: 'returns null for context lines',
           fn: async () => {
             expect(extractRuleName('  92 |   const form = document.querySelector();',),)
               .toBeNull();
           },
-        }),
+        },),
         it({
           name: 'returns null for blank lines',
           fn: async () => {
             expect(extractRuleName('',),).toBeNull();
           },
-        }),
+        },),
         it({
           name: 'returns null for box-drawing lines',
           fn: async () => {
             expect(extractRuleName('   ,-[src/client.ts:93:30]',),).toBeNull();
           },
-        }),
+        },),
         it({
           name: 'returns null for help lines',
           fn: async () => {
             expect(extractRuleName('  help: Expected void return type.',),).toBeNull();
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion extractRuleName
 
@@ -166,28 +166,30 @@ await describe({
           fn: async () => {
             expect(isHelpLine('  help: Expected void return type.',),).toBe(true,);
           },
-        }),
+        },),
         it({
           name: 'detects help line with ANSI codes',
           fn: async () => {
             expect(isHelpLine('  \u001B[36mhelp:\u001B[0m Expected void return type.',),)
               .toBe(true,);
           },
-        }),
+        },),
         it({
           name: 'rejects diagnostic header',
           fn: async () => {
-            expect(isHelpLine('  x typescript-eslint(no-misused-promises): ...',),).toBe(false,);
+            expect(isHelpLine('  x typescript-eslint(no-misused-promises): ...',),).toBe(
+              false,
+            );
           },
-        }),
+        },),
         it({
           name: 'rejects context line',
           fn: async () => {
             expect(isHelpLine('  92 |   const form = ...',),).toBe(false,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion isHelpLine
 
@@ -202,9 +204,9 @@ await describe({
             expect(formatGuidanceLine('Fix the issue.',),)
               .toBe('  note: Fix the issue.',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
 
     //endregion formatGuidanceLine
 
@@ -239,7 +241,7 @@ await describe({
             const noteIdx = result.indexOf('note:',);
             expect(noteIdx,).toBeGreaterThan(helpIdx,);
           },
-        }),
+        },),
         it({
           name: 'injects guidance before blank line when no help line exists',
           fn: async () => {
@@ -265,7 +267,7 @@ await describe({
             );
             expect(lines[noteLine + 1],).toBe('',);
           },
-        }),
+        },),
         it({
           name: 'does not inject guidance for unmatched rules',
           fn: async () => {
@@ -286,7 +288,7 @@ await describe({
             expect(result,).not.toContain('note:',);
             expect(result,).toBe(input,);
           },
-        }),
+        },),
         it({
           name: 'handles multiple diagnostics with mixed matching',
           fn: async () => {
@@ -325,21 +327,22 @@ await describe({
             expect(noteOccurrences,).toBe(1,);
             expect(result,).toContain(RULE_GUIDANCE['no-misused-promises'] ?? '',);
           },
-        }),
+        },),
         it({
           name: 'handles empty output',
           fn: async () => {
             expect(augmentOxlintOutput('',),).toBe('',);
           },
-        }),
+        },),
         it({
           name: 'handles output with no diagnostics',
           fn: async () => {
-            const input = 'Finished in 42ms on 150 files with 300 rules using 8 threads.\n';
+            const input =
+              'Finished in 42ms on 150 files with 300 rules using 8 threads.\n';
 
             expect(augmentOxlintOutput(input,),).toBe(input,);
           },
-        }),
+        },),
         it({
           name: 'handles trailing diagnostic without blank line',
           fn: async () => {
@@ -357,7 +360,7 @@ await describe({
 
             expect(result,).toContain(`  note: ${RULE_GUIDANCE['no-misused-promises']}`,);
           },
-        }),
+        },),
         it({
           name: 'preserves ANSI codes in output while still matching',
           fn: async () => {
@@ -378,10 +381,9 @@ await describe({
             // Guidance injected
             expect(result,).toContain('note:',);
           },
-        }),
+        },),
       ],
-    }),
-
+    },),
     //endregion augmentOxlintOutput
   ],
-});
+},);

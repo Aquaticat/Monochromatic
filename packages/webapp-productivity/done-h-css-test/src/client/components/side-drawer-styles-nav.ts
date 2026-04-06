@@ -40,7 +40,7 @@ const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
 const HEADER_HEIGHT = 4;
 
 /** Compiled CSS rules for shared `<side-drawer>` navigation elements. */
-export const SIDE_DRAWER_NAV_STYLES = [
+export const SIDE_DRAWER_NAV_STYLES: string[] = [
   css({
     rule: '.divider',
     decls: {
@@ -108,7 +108,10 @@ export const SIDE_DRAWER_NAV_STYLES = [
       },),
       css({
         rule: '& svg',
-        decls: { 'inline-size': cssRem(2,), 'block-size': cssRem(2,), },
+        decls: {
+          'inline-size': cssRem(2,),
+          'block-size': cssRem(2,),
+        },
       },),
     ],
   },),

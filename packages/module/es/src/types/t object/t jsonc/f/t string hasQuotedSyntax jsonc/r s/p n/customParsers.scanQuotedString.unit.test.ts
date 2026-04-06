@@ -23,7 +23,7 @@ await describe({
         expect(out.parsed.value,).toBe('"x"',);
         expect(out.remaining,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'escaped quote inside string (odd backslash run escapes)',
@@ -33,7 +33,7 @@ await describe({
         expect(out.consumed,).toBe(String.raw`"a \" b"` as FragmentStringJsonc,);
         expect(out.remaining,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'even backslash run before quote closes the string',
@@ -43,17 +43,19 @@ await describe({
         expect(out.consumed.endsWith('"',),).toBe(true,);
         expect(out.remaining,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'odd backslash run before quote escapes; later quote terminates',
       fn: async () => {
         const input = (`"a ${'\\'.repeat(3,)}" more"TAIL`) as FragmentStringJsonc; // a \\\" more"
         const out = $({ value: input, },);
-        expect(out.consumed,).toBe(`"a ${'\\'.repeat(3,)}" more"` as FragmentStringJsonc,);
+        expect(out.consumed,).toBe(
+          `"a ${'\\'.repeat(3,)}" more"` as FragmentStringJsonc,
+        );
         expect(out.remaining,).toBe('TAIL' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'unicode and common escapes inside string',
@@ -63,15 +65,17 @@ await describe({
         expect(out.consumed,).toBe(String.raw`"\u0041\n\t"` as FragmentStringJsonc,);
         expect(out.remaining,).toBe('END' as FragmentStringJsonc,);
       },
-    }),
+    },),
 
     it({
       name: 'throws on unterminated string',
       fn: async () => {
         const input = '"abc' as FragmentStringJsonc;
-        expect(() => $({ value: input, },)).toThrow(/malformed jsonc, unterminated string/,);
+        expect(() => $({ value: input, },)).toThrow(
+          /malformed jsonc, unterminated string/,
+        );
       },
-    }),
+    },),
 
     it({
       name: 'throws when input does not start with a quote',
@@ -81,6 +85,6 @@ await describe({
           /expected a double quote to start a JSON string/,
         );
       },
-    }),
+    },),
   ],
 },);

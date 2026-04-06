@@ -13,7 +13,6 @@ import {
 await describe({
   name: 'expect',
   children: [
-
     //region toBe (strict equality)
 
     it({
@@ -25,7 +24,7 @@ await describe({
         expect(null,).toBe(null,);
         expect(undefined,).toBe(undefined,);
       },
-    }),
+    },),
 
     it({
       name: 'toBe fails for different object references',
@@ -35,7 +34,7 @@ await describe({
         const b = { x: 1, };
         expect(a,).toBe(b,);
       },
-    }),
+    },),
 
     it({
       name: 'toBe passes for same object reference',
@@ -43,7 +42,7 @@ await describe({
         const obj = { x: 1, };
         expect(obj,).toBe(obj,);
       },
-    }),
+    },),
 
     //endregion toBe (strict equality)
 
@@ -54,14 +53,14 @@ await describe({
       fn: async () => {
         expect({ a: 1, b: [2, 3,], },).toEqual({ a: 1, b: [2, 3,], },);
       },
-    }),
+    },),
 
     it({
       name: 'toEqual passes for nested structures',
       fn: async () => {
         expect({ a: { b: { c: 1, }, }, },).toEqual({ a: { b: { c: 1, }, }, },);
       },
-    }),
+    },),
 
     //endregion toEqual (deep equality)
 
@@ -72,14 +71,14 @@ await describe({
       fn: async () => {
         expect([1, 2, 3,],).toContain(2,);
       },
-    }),
+    },),
 
     it({
       name: 'toContain passes for substring',
       fn: async () => {
         expect('hello world',).toContain('world',);
       },
-    }),
+    },),
 
     //endregion toContain
 
@@ -90,36 +89,40 @@ await describe({
       fn: async () => {
         expect(() => {
           throw new Error('boom',);
-        },).toThrow();
+        },)
+          .toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'toThrow matches error message',
       fn: async () => {
         expect(() => {
           throw new Error('specific error',);
-        },).toThrow('specific error',);
+        },)
+          .toThrow('specific error',);
       },
-    }),
+    },),
 
     it({
       name: 'toThrow matches error class',
       fn: async () => {
         expect(() => {
           throw new TypeError('type issue',);
-        },).toThrow(TypeError,);
+        },)
+          .toThrow(TypeError,);
       },
-    }),
+    },),
 
     it({
       name: 'toThrow matches regex',
       fn: async () => {
         expect(() => {
           throw new Error('something went wrong',);
-        },).toThrow(/went wrong/,);
+        },)
+          .toThrow(/went wrong/,);
       },
-    }),
+    },),
 
     //endregion toThrow
 
@@ -130,7 +133,7 @@ await describe({
       fn: async () => {
         expect(5,).toBeGreaterThan(3,);
       },
-    }),
+    },),
 
     it({
       name: 'toBeGreaterThanOrEqual works',
@@ -138,14 +141,14 @@ await describe({
         expect(5,).toBeGreaterThanOrEqual(5,);
         expect(6,).toBeGreaterThanOrEqual(5,);
       },
-    }),
+    },),
 
     it({
       name: 'toBeLessThan works',
       fn: async () => {
         expect(3,).toBeLessThan(5,);
       },
-    }),
+    },),
 
     it({
       name: 'toBeLessThanOrEqual works',
@@ -153,14 +156,14 @@ await describe({
         expect(5,).toBeLessThanOrEqual(5,);
         expect(4,).toBeLessThanOrEqual(5,);
       },
-    }),
+    },),
 
     it({
       name: 'toBeCloseTo works with default precision',
       fn: async () => {
         expect(0.1 + 0.2,).toBeCloseTo(0.3,);
       },
-    }),
+    },),
 
     it({
       name: 'toBeCloseTo works with custom precision',
@@ -168,7 +171,7 @@ await describe({
         expect(1.005,).toBeCloseTo(1, 0,);
         expect(1.005,).toBeCloseTo(1.01, 1,);
       },
-    }),
+    },),
 
     //endregion Numeric comparisons
 
@@ -179,14 +182,14 @@ await describe({
       fn: async () => {
         expect(undefined,).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'toBeNull works',
       fn: async () => {
         expect(null,).toBeNull();
       },
-    }),
+    },),
 
     it({
       name: 'toBeTruthy works',
@@ -195,7 +198,7 @@ await describe({
         expect('yes',).toBeTruthy();
         expect({},).toBeTruthy();
       },
-    }),
+    },),
 
     it({
       name: 'toBeFalsy works',
@@ -205,7 +208,7 @@ await describe({
         expect(null,).toBeFalsy();
         expect(undefined,).toBeFalsy();
       },
-    }),
+    },),
 
     it({
       name: 'toBeInstanceOf works',
@@ -213,7 +216,7 @@ await describe({
         expect(new Error('test',),).toBeInstanceOf(Error,);
         expect(new TypeError('test',),).toBeInstanceOf(Error,);
       },
-    }),
+    },),
 
     it({
       name: 'toBeDefined works',
@@ -222,7 +225,7 @@ await describe({
         expect('hello',).toBeDefined();
         expect(null,).toBeDefined();
       },
-    }),
+    },),
 
     it({
       name: 'toBeDefined fails for undefined',
@@ -230,14 +233,14 @@ await describe({
       fn: async () => {
         expect(undefined,).toBeDefined();
       },
-    }),
+    },),
 
     it({
       name: 'toBeNaN works',
       fn: async () => {
         expect(Number.NaN,).toBeNaN();
       },
-    }),
+    },),
 
     it({
       name: 'toBeNaN fails for numbers',
@@ -245,7 +248,7 @@ await describe({
       fn: async () => {
         expect(42,).toBeNaN();
       },
-    }),
+    },),
 
     //endregion Type checks
 
@@ -257,42 +260,42 @@ await describe({
         expect([1, 2, 3,],).toHaveLength(3,);
         expect('hello',).toHaveLength(5,);
       },
-    }),
+    },),
 
     it({
       name: 'toHaveProperty works without value',
       fn: async () => {
         expect({ a: 1, },).toHaveProperty('a',);
       },
-    }),
+    },),
 
     it({
       name: 'toHaveProperty works with value',
       fn: async () => {
         expect({ a: 1, },).toHaveProperty('a', 1,);
       },
-    }),
+    },),
 
     it({
       name: 'toMatch works with regex',
       fn: async () => {
         expect('hello world',).toMatch(/world/,);
       },
-    }),
+    },),
 
     it({
       name: 'toMatch works with string',
       fn: async () => {
         expect('hello world',).toMatch('world',);
       },
-    }),
+    },),
 
     it({
       name: 'toMatchObject works',
       fn: async () => {
         expect({ a: 1, b: 2, c: 3, },).toMatchObject({ a: 1, b: 2, },);
       },
-    }),
+    },),
 
     //endregion Collection matchers
 
@@ -303,21 +306,21 @@ await describe({
       fn: async () => {
         expect(1,).not.toBe(2,);
       },
-    }),
+    },),
 
     it({
       name: 'not.toBeUndefined works',
       fn: async () => {
         expect(1,).not.toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'not.toContain works',
       fn: async () => {
         expect([1, 2, 3,],).not.toContain(4,);
       },
-    }),
+    },),
 
     //endregion not (negation)
 
@@ -328,7 +331,7 @@ await describe({
       fn: async () => {
         await expect(Promise.reject(new Error('boom',),),).rejects.toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'rejects.toThrow matches error message string',
@@ -337,7 +340,7 @@ await describe({
           'specific',
         );
       },
-    }),
+    },),
 
     it({
       name: 'rejects.toThrow matches regex',
@@ -346,7 +349,7 @@ await describe({
           /code \d+ failed/,
         );
       },
-    }),
+    },),
 
     it({
       name: 'rejects.toThrow matches error class',
@@ -355,7 +358,7 @@ await describe({
           TypeError,
         );
       },
-    }),
+    },),
 
     it({
       name: 'rejects.toThrow fails on message mismatch',
@@ -365,7 +368,7 @@ await describe({
           'completely different',
         );
       },
-    }),
+    },),
 
     it({
       name: 'rejects.toThrow fails when promise resolves',
@@ -373,7 +376,7 @@ await describe({
       fn: async () => {
         await expect(Promise.resolve('ok',),).rejects.toThrow();
       },
-    }),
+    },),
 
     it({
       name: 'rejects.toBeInstanceOf works',
@@ -382,7 +385,7 @@ await describe({
           TypeError,
         );
       },
-    }),
+    },),
 
     it({
       name: 'rejects.toHaveProperty checks error properties',
@@ -392,7 +395,7 @@ await describe({
           'msg',
         );
       },
-    }),
+    },),
 
     //endregion rejects
 
@@ -403,22 +406,21 @@ await describe({
       fn: async () => {
         await expect(Promise.resolve(42,),).resolves.toBe(42,);
       },
-    }),
+    },),
 
     it({
       name: 'resolves.toEqual works for deep equality',
       fn: async () => {
         await expect(Promise.resolve({ a: 1, },),).resolves.toEqual({ a: 1, },);
       },
-    }),
+    },),
 
     it({
       name: 'resolves.toContain works for substrings',
       fn: async () => {
         await expect(Promise.resolve('hello world',),).resolves.toContain('world',);
       },
-    }),
-
+    },),
     //endregion resolves
   ],
 },);

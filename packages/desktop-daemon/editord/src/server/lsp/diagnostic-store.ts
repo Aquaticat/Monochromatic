@@ -43,10 +43,10 @@ export type DiagnosticsHandler = (
  */
 export class DiagnosticStore {
   /** Diagnostics keyed by URI, then by source name. */
-  #store = new Map<string, Map<string, LspDiagnostic[]>>();
+  readonly #store = new Map<string, Map<string, LspDiagnostic[]>>();
 
   /** Callback to push merged diagnostics to the WebSocket client. */
-  #onDiagnostics: DiagnosticsHandler;
+  readonly #onDiagnostics: DiagnosticsHandler;
 
   /**
    * @param onDiagnostics - callback invoked with merged diagnostics whenever a source updates

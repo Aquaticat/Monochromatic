@@ -37,6 +37,11 @@ const SEARCH_ICON = [
  * @param lang - current language code for localized text and links
  *
  * @returns HTML string for the `<header>` element
+ *
+ * @example
+ * ```ts
+ * const html = headerFragment('en');
+ * ```
  */
 export function headerFragment(lang: Locales,): string {
   const t = i18nObject(lang,);
@@ -50,7 +55,10 @@ export function headerFragment(lang: Locales,): string {
         children: [
           h({
             tag: 'img',
-            attrs: { src: '/favicon.svg', alt: 'avatar', },
+            attrs: {
+              src: '/favicon.svg',
+              alt: 'avatar',
+            },
           },),
           h({
             tag: 'span',

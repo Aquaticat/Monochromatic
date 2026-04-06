@@ -95,12 +95,10 @@ const LANGUAGE_PREFIX = 'language-';
  * @returns concatenated text of all descendant text nodes
  */
 function extractText(node: ElementContent,): string {
-  if (node.type === 'text') {
+  if (node.type === 'text')
     return node.value;
-  }
-  if ('children' in node) {
+  if ('children' in node)
     return node.children.map(extractText,).join('',);
-  }
   return '';
 }
 
@@ -113,14 +111,12 @@ function extractText(node: ElementContent,): string {
  */
 function getLanguage(codeElement: Element,): string | undefined {
   const { className, } = codeElement.properties;
-  if (!Array.isArray(className,)) {
+  if (!Array.isArray(className,))
     return undefined;
-  }
   for (const cls of className) {
     const name = String(cls,);
-    if (name.startsWith(LANGUAGE_PREFIX,)) {
+    if (name.startsWith(LANGUAGE_PREFIX,))
       return name.slice(LANGUAGE_PREFIX.length,);
-    }
   }
   return undefined;
 }
@@ -175,9 +171,8 @@ function annotateCodeBlock({
 
   for (const group of HIGHLIGHT_GROUPS) {
     const pairs = pairsByGroup.get(group,);
-    if (pairs !== undefined && pairs.length > 0) {
+    if (pairs !== undefined && pairs.length > 0)
       codeElement.properties[`data-hl-${group}`] = pairs.join(';',);
-    }
   }
 }
 
@@ -188,9 +183,8 @@ function annotateCodeBlock({
  */
 function visitNode(node: Root | Element,): void {
   for (const child of node.children) {
-    if (child.type !== 'element') {
+    if (child.type !== 'element')
       continue;
-    }
 
     if (child.tagName === 'pre') {
       const [firstChild,] = child.children;

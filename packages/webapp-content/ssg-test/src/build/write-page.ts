@@ -19,6 +19,11 @@ export const DIST = 'dist';
  * @param relativePath - path relative to dist/
  *
  * @param content - file content to write
+ *
+ * @example
+ * ```ts
+ * await writePage({ relativePath: 'index.html', content: '<html>...</html>' });
+ * ```
  */
 export async function writePage(
   {
@@ -34,7 +39,10 @@ export async function writePage(
     relativePath,
   );
   await mkdir(
-    join(fullPath, '..',),
+    join(
+      fullPath,
+      '..',
+    ),
     { recursive: true, },
   );
   await writeFile(

@@ -99,8 +99,12 @@ export async function managerDidChange({
   path: string;
   text: string;
 },): Promise<void> {
-  if (!isTracked({ path, documents, },))
+  if (!isTracked({
+    path,
+    documents,
+  },)) {
     return;
+  }
   syncChange({
     path,
     text,
@@ -132,8 +136,12 @@ export async function managerDidSave({
   documents: Map<string, DocumentState>;
   path: string;
 },): Promise<void> {
-  if (!isTracked({ path, documents, },))
+  if (!isTracked({
+    path,
+    documents,
+  },)) {
     return;
+  }
   syncSave({
     path,
     documents,

@@ -72,15 +72,15 @@ type CrashState = {
 /** Lazily creates and caches LSP clients per `(type, projectRoot)`. */
 export class LspPool {
   /** Pool: `"type:root"` → client creation promise. */
-  #pool = new Map<string, Promise<LspClient | null>>();
+  readonly #pool = new Map<string, Promise<LspClient | null>>();
   /** Crash tracking per pool key for exponential backoff. */
-  #crashes = new Map<string, CrashState>();
+  readonly #crashes = new Map<string, CrashState>();
   /** Tagged logger. */
-  #l: Logger;
+  readonly #l: Logger;
   /** Highest directory to search for config files (file tree root). */
-  #ceiling: string;
+  readonly #ceiling: string;
   /** Callback for server-initiated notifications. */
-  #onNotification: (event: {
+  readonly #onNotification: (event: {
     source: string;
     method: string;
     params: unknown;
@@ -162,13 +162,17 @@ export class LspPool {
     },);
     const existing = this.#pool.get(key,);
     if (existing !== undefined) {
-      this.#l.info(`${type} resolve: reusing existing client for ${root} (trigger: ${filePath})`,);
+      this.#l.info(
+        `${type} resolve: reusing existing client for ${root} (trigger: ${filePath})`,
+      );
       return existing;
     }
     if (this.#isInBackoff({ key, },))
       return Promise.resolve(null,);
 
-    this.#l.info(`${type} resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
+    this.#l.info(
+      `${type} resolve: spawning NEW client for ${root} (trigger: ${filePath})`,
+    );
     const promise = this.#spawnWithCrashRecovery({
       type,
       root,
@@ -221,7 +225,9 @@ export class LspPool {
     },);
     const existing = this.#pool.get(key,);
     if (existing !== undefined) {
-      this.#l.info(`tsgo resolve: reusing existing client for ${root} (trigger: ${filePath})`,);
+      this.#l.info(
+        `tsgo resolve: reusing existing client for ${root} (trigger: ${filePath})`,
+      );
       return existing;
     }
     if (this.#isInBackoff({ key, },))

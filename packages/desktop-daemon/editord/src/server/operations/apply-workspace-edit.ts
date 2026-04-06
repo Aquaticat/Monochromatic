@@ -68,8 +68,11 @@ function applyEditsToString({
   edits: TextEdit[];
 },): string {
   /** Sort edits in reverse document order (end of file first). */
-  const sorted = [...edits,].sort(
-    function compareReverse(a, b,) {
+  const sorted = edits.toSorted(
+    function compareReverse(
+      a,
+      b,
+    ) {
       const lineDiff = b.range.start.line - a.range.start.line;
       if (lineDiff !== 0)
         return lineDiff;
@@ -89,9 +92,61 @@ function applyEditsToString({
       line: edit.range.end.line,
       character: edit.range.end.character,
     },);
-    result = result.slice(0, start,) + edit.newText + result.slice(end,);
+    result = result.slice(
+      0,
+      start,
+    ) + edit.newText + result.slice(end,);
   }
   return result;
+}
+
+/**
+ * Applies a workspace edit to files on disk.
+ * Writes all affected files except the currently open one (which the client
+ * updates in its buffer). Returns edits grouped by path for the client.
+ *
+ * @param workspaceEdit - LSP workspace edit with URI-keyed changes
+ *
+ * @param currentFilePath - path of the file currently open in the editor
+ *   (edits for this file are returned but not written to disk)
+ *
+ * @returns edits grouped by file path
+ *
+ * @example
+ * ```ts
+ * const fileEdits = await applyWorkspaceEdit({
+ *   workspaceEdit: { changes: { 'file:///src/utils.ts': [{ range, newText: 'renamed' }] } },
+ *   currentFilePath: '/home/user/project/src/main.ts',
+ * });
+ * ```
+ */
+/**
+ * Reads a file, applies text edits, and writes the result back.
+ *
+ * @param filePath - absolute file path
+ *
+ * @param wireEdits - edits to apply
+ */
+async function applyEditsToFile({
+  filePath,
+  wireEdits,
+}: {
+  filePath: string;
+  wireEdits: TextEdit[];
+},): Promise<void> {
+  const content = await readFile(
+    filePath,
+    'utf8',
+  );
+  const modified = applyEditsToString({
+    text: content,
+    edits: wireEdits,
+  },);
+  await writeFile(
+    filePath,
+    modified,
+    'utf8',
+  );
 }
 
 /**
@@ -121,11 +176,12 @@ export async function applyWorkspaceEdit({
   workspaceEdit: LspWorkspaceEdit;
   currentFilePath: string;
 },): Promise<WorkspaceFileEdit[]> {
-  const changes = workspaceEdit.changes;
+  const { changes, } = workspaceEdit;
   if (changes === undefined)
     return [];
 
   const result: WorkspaceFileEdit[] = [];
+  const writePromises: Promise<void>[] = [];
 
   for (const uri of Object.keys(changes,)) {
     const lspEdits = changes[uri];
@@ -151,13 +207,12 @@ export async function applyWorkspaceEdit({
     if (filePath === currentFilePath)
       continue;
 
-    const content = await readFile(filePath, 'utf8',);
-    const modified = applyEditsToString({
-      text: content,
-      edits: wireEdits,
-    },);
-    await writeFile(filePath, modified, 'utf8',);
+    writePromises.push(applyEditsToFile({
+      filePath,
+      wireEdits,
+    },),);
   }
 
+  await Promise.all(writePromises,);
   return result;
 }

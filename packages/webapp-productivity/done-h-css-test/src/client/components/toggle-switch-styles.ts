@@ -32,7 +32,7 @@ const NEG_HALF_PERCENT = -50;
 const THUMB_TRANSITION_S = 0.15;
 
 /** Compiled CSS string for `<toggle-switch>` Shadow DOM. */
-export const TOGGLE_SWITCH_STYLES = [
+export const TOGGLE_SWITCH_STYLES: string = [
   css({
     rule: ':host',
     decls: {

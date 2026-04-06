@@ -48,6 +48,11 @@ export function getStrokeColor(): string {
  * Sets the active stroke color for subsequent strokes.
  *
  * @param color - CSS color string (hex for color picker compatibility)
+ *
+ * @example
+ * ```ts
+ * setStrokeColor('#ff0000');
+ * ```
  */
 export function setStrokeColor(color: string,): void {
   activeColor = color;
@@ -72,6 +77,11 @@ export function getStrokeWidth(): number {
  * Sets the active stroke width for subsequent strokes.
  *
  * @param width - width in CSS pixels
+ *
+ * @example
+ * ```ts
+ * setStrokeWidth(5);
+ * ```
  */
 export function setStrokeWidth(width: number,): void {
   activeWidth = width;

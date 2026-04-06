@@ -8,6 +8,11 @@ import { $ as named, } from '../p n/index.ts';
  * @param concatWith - separator string
  *
  * @returns single string with elements separated by the given separator
+ *
+ * @example
+ * ```ts
+ * $(['a', 'b', 'c'], ', '); // 'a, b, c'
+ * ```
  */
 export function $(
   strings: string[],

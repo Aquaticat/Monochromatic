@@ -14,12 +14,12 @@ The package provides two entry points:
 
 Both expose the same named exports:
 
-| Export | Returns | Environment | Description |
-| --- | --- | --- | --- |
-| `hHtml` | `string` | Any JS runtime | Server-side HTML with automatic XSS escaping |
-| `hCss` | `string` | Any JS runtime | CSS rules and at-rules with strict property/value types via `csstype` |
-| `hDom` | `HTMLElement` | Browser only | Live DOM elements via `document.createElement` |
-| `hXml` | `string` | Any JS runtime | Well-formed XML with namespace support and self-closing tags |
+| Export  | Returns       | Environment    | Description                                                           |
+| ------- | ------------- | -------------- | --------------------------------------------------------------------- |
+| `hHtml` | `string`      | Any JS runtime | Server-side HTML with automatic XSS escaping                          |
+| `hCss`  | `string`      | Any JS runtime | CSS rules and at-rules with strict property/value types via `csstype` |
+| `hDom`  | `HTMLElement` | Browser only   | Live DOM elements via `document.createElement`                        |
+| `hXml`  | `string`      | Any JS runtime | Well-formed XML with namespace support and self-closing tags          |
 
 All `css*` value constructors (`cssRem`, `cssVar`, `cssOklch`, etc.) are also
 top-level named exports.
@@ -28,30 +28,44 @@ top-level named exports.
 
 ```ts
 // TypeScript source (workspace)
-import { hHtml, hCss, cssRem, cssVar } from '@monochromatic-dev/module-hyperscript/ts';
+import {
+  cssRem,
+  cssVar,
+  hCss,
+  hHtml,
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 // Built JavaScript (external consumers)
-import { hHtml, hCss, cssRem, cssVar } from '@monochromatic-dev/module-hyperscript';
+import {
+  cssRem,
+  cssVar,
+  hCss,
+  hHtml,
+} from '@monochromatic-dev/module-hyperscript';
 ```
 
 ```ts
-import { hHtml as h } from '@monochromatic-dev/module-hyperscript/ts';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 const card = h({
   tag: 'div',
   class: 'card',
-  children: [h({ tag: 'p', text: 'hello' })],
-});
+  children: [h({ tag: 'p', text: 'hello', },),],
+},);
 // '<div class="card"><p>hello</p></div>'
 ```
 
 ```ts
-import { hCss as $, cssRem, cssVar } from '@monochromatic-dev/module-hyperscript/ts';
+import {
+  cssRem,
+  cssVar,
+  hCss as $,
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 const styles = $({
   rule: '.card',
-  decls: { display: 'flex', gap: cssRem(1), color: cssVar('fg') },
-});
+  decls: { display: 'flex', gap: cssRem(1,), color: cssVar('fg',), },
+},);
 // '.card{display:flex;gap:1rem;color:var(--fg)}'
 ```
 

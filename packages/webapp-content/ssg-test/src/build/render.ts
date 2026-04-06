@@ -26,6 +26,11 @@ const RENDER_DENSITY = 384;
  * @param size - target width and height in pixels
  *
  * @returns PNG buffer
+ *
+ * @example
+ * ```ts
+ * const png = await renderPng({ size: 32 });
+ * ```
  */
 export function renderPng({ size, }: { size: number; },): Promise<Buffer> {
   return sharp(
@@ -48,6 +53,11 @@ export function renderPng({ size, }: { size: number; },): Promise<Buffer> {
  * @param canvasSize - final output dimensions
  *
  * @returns PNG buffer with content centered on colored background
+ *
+ * @example
+ * ```ts
+ * const png = await renderPadded({ contentSize: 140, canvasSize: 180 });
+ * ```
  */
 export async function renderPadded(
   {

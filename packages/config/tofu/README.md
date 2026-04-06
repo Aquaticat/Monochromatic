@@ -5,6 +5,7 @@ OpenTofu configuration for managing Hetzner Cloud firewalls with dynamic IP rang
 ## Overview
 
 Manages firewall rules on Hetzner Cloud, with support for:
+
 - Dynamic IP range fetching from multiple sources (Cloudflare, CloudFront, Fastly, GitHub, YouTube, etc.)
 - ASN-based IP lookups via ipinfo.io
 - CIDR block summarization to reduce rule counts
@@ -16,6 +17,7 @@ Manages firewall rules on Hetzner Cloud, with support for:
 
 TypeScript script that fetches and caches IP ranges for a specific ASN from ipinfo.io.
 Features:
+
 - Streaming JSON parsing with minimal memory usage
 - 30-day cache for fetched data
 - Graceful fallback to expired cache on failure
@@ -23,6 +25,7 @@ Features:
 ### `hetzner.tf`
 
 Main Terraform configuration that:
+
 - Fetches IP ranges from multiple CDN APIs (Cloudflare, CloudFront, Fastly, GitHub, Coolify, YouTube)
 - Looks up ASNs (Ubuntu, home ISP) via external data source
 - Aggregates and summarizes IP blocks to minimize firewall rules
@@ -30,7 +33,7 @@ Main Terraform configuration that:
 
 ## Setup
 
-1.  Copy `hetzner.auto.tfvars.example` to `hetzner.auto.tfvars` and fill in your tokens and home ISP ASN:
+1. Copy `hetzner.auto.tfvars.example` to `hetzner.auto.tfvars` and fill in your tokens and home ISP ASN:
 
 ```hcl
 hcloud_token  = "your_hetzner_api_token"
@@ -38,19 +41,19 @@ ipinfo_token  = "your_ipinfo_token"
 home_isp_asns = { home = "AS12345" }
 ```
 
-2.  Create `.env.local` with:
+2. Create `.env.local` with:
 
 ```bash
 IPINFO_TOKEN=your_ipinfo_token
 ```
 
-3.  Install dependencies:
+3. Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-4.  Initialize and apply:
+4. Initialize and apply:
 
 ```bash
 terraform init
@@ -77,6 +80,7 @@ terraform apply
 ## IP sources
 
 The configuration aggregates IPs from:
+
 - Cloudflare (via API)
 - CloudFront (via AWS API)
 - Fastly (via API)
@@ -89,6 +93,7 @@ The configuration aggregates IPs from:
 ## Local-only files
 
 The following are gitignored and must be created manually:
+
 - `*.auto.tfvars` -- API tokens and home ISP ASN
 - `.env.local` -- ipinfo token for fetch_ips.ts
 - `cache_*.json` -- ASN lookup caches

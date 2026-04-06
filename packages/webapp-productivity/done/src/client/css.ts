@@ -25,6 +25,11 @@ import mixinSource from './mixins.css' with { type: 'text', };
  * @param raw - CSS string containing \@apply references
  *
  * @returns Expanded CSS with all \@apply rules replaced by mixin bodies
+ *
+ * @example
+ * ```ts
+ * const styles = css(':host { \@apply --flex-column; }');
+ * ```
  */
 export function css(raw: string,): string {
   return applyMixins(

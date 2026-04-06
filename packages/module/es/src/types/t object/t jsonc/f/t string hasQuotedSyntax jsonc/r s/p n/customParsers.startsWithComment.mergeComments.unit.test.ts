@@ -15,7 +15,7 @@ await describe({
       fn: async () => {
         expect($({},),).toBeUndefined();
       },
-    }),
+    },),
 
     it({
       name: 'only first comment defined returns first comment',
@@ -24,7 +24,7 @@ await describe({
         const result = $({ value: comment, },);
         expect(result,).toEqual(comment,);
       },
-    }),
+    },),
 
     it({
       name: 'only second comment defined returns second comment',
@@ -33,7 +33,7 @@ await describe({
         const result = $({ value2: comment, },);
         expect(result,).toEqual(comment,);
       },
-    }),
+    },),
 
     it({
       name: 'both inline comments merge to inline type',
@@ -47,7 +47,7 @@ await describe({
           commentValue: 'First inline\nSecond inline',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'both block comments merge to block type',
@@ -61,7 +61,7 @@ await describe({
           commentValue: 'First block\nSecond block',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'inline + block comments merge to mixed type',
@@ -75,7 +75,7 @@ await describe({
           commentValue: 'Inline comment\nBlock comment',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'block + inline comments merge to mixed type',
@@ -89,7 +89,7 @@ await describe({
           commentValue: 'Block comment\nInline comment',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'preserves whitespace in comment values',
@@ -105,7 +105,7 @@ await describe({
           commentValue: '  Comment with leading space  \n  Comment with Trailing space  ',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'handles empty comment values',
@@ -119,7 +119,7 @@ await describe({
           commentValue: '\nNon-empty comment',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'handles multiline comments',
@@ -133,12 +133,13 @@ await describe({
           commentValue: 'Line 1\nLine 2\nLine 3\nLine 4',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'preserves comment-like delimiters in values',
       fn: async () => {
-        const first = { type: 'inline' as const, commentValue: '// This is region marker', };
+        const first = { type: 'inline' as const,
+          commentValue: '// This is region marker', };
         const second = { type: 'block' as const,
           commentValue: '/* This has block markers */', };
         const result = $({ value: first, value2: second, },);
@@ -148,7 +149,7 @@ await describe({
           commentValue: '// This is region marker\n/* This has block markers */',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'handles special characters and unicode',
@@ -163,7 +164,7 @@ await describe({
           commentValue: 'Comment with émojis 🚀 and sp€ci@l chars\n另一个评论',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'handles very long comment values',
@@ -178,7 +179,7 @@ await describe({
           commentValue: `${longComment}\n${'B'.repeat(1_000,)}`,
         },);
       },
-    }),
+    },),
 
     it({
       name: 'when first is undefined, returns second comment unchanged',
@@ -188,7 +189,7 @@ await describe({
 
         expect(result,).toEqual(second,);
       },
-    }),
+    },),
 
     it({
       name: 'when second is undefined, returns first comment unchanged',
@@ -198,7 +199,7 @@ await describe({
 
         expect(result,).toEqual(first,);
       },
-    }),
+    },),
 
     it({
       name: 'mixed type comment (already mixed) preserves type when merging with inline',
@@ -212,7 +213,7 @@ await describe({
           commentValue: 'Already mixed\nAdding inline',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'mixed type comment (already mixed) preserves type when merging with block',
@@ -226,7 +227,7 @@ await describe({
           commentValue: 'Already mixed\nAdding block',
         },);
       },
-    }),
+    },),
 
     it({
       name: 'handles comments with existing newlines properly',
@@ -242,6 +243,6 @@ await describe({
           commentValue: 'First\nwith\nexisting\nnewlines\nSecond\nalso\nhas\nnewlines',
         },);
       },
-    }),
+    },),
   ],
 },);

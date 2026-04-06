@@ -7,6 +7,7 @@
  * models often fail to propagate constraints through 3x3 boxes or omit the unsolvable
  * code path entirely. The `--all` flag tests exhaustive search vs early-exit behavior.
  */
+import type { Probe, } from '../probe-types.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 import {
   ALL_INPUT,
@@ -70,7 +71,7 @@ const PROMPT = [
 /**
  * {@inheritDoc Probe}
  */
-export const sudokuSolver = createCodeGenProbe({
+export const sudokuSolver: Probe = createCodeGenProbe({
   name: 'sudoku-solver',
   testInput: NORMAL_INPUT,
   prompt: PROMPT,

@@ -89,7 +89,7 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
           expect(result,).toContain('font-weight: bold',);
           await cleanup();
         },
-      }),
+      },),
 
       it({
         name: 'writes output file to disk',
@@ -103,7 +103,7 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
           expect(written,).toContain('--primary: rebeccapurple',);
           await cleanup();
         },
-      }),
+      },),
 
       it({
         name: 'expands nested mixin references in build output',
@@ -120,7 +120,7 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
           expect(nestedCardMatch,).toContain('display: flex',);
           await cleanup();
         },
-      }),
+      },),
     ],
   },);
 },);
@@ -148,7 +148,7 @@ await describe({
             expect(root.toString().trim(),).toBe('',);
             await cleanup();
           },
-        }),
+        },),
 
         it({
           name: 'throws on bodyless @mixin (definitions require content)',
@@ -163,7 +163,7 @@ await describe({
               .toThrow('mixin definition must include body',);
             await cleanup();
           },
-        }),
+        },),
 
         it({
           name: 'throws on mixed definition followed by bodyless invocation',
@@ -180,7 +180,7 @@ await describe({
               .toThrow('mixin definition must include body',);
             await cleanup();
           },
-        }),
+        },),
 
         it({
           name: 'throws on @mixin with empty name',
@@ -193,7 +193,7 @@ await describe({
               .toThrow('@mixin requires a name',);
             await cleanup();
           },
-        }),
+        },),
       ],
     },),
 
@@ -217,7 +217,7 @@ await describe({
             expect(output,).toContain('align-items: center',);
             await cleanup();
           },
-        }),
+        },),
 
         it({
           name: 'throws on unknown mixin reference',
@@ -230,7 +230,7 @@ await describe({
               .toThrow('Unknown mixin: --nonexistent',);
             await cleanup();
           },
-        }),
+        },),
 
         it({
           name: 'throws on @apply without a name',
@@ -243,7 +243,7 @@ await describe({
               .toThrow('Mixin name is required',);
             await cleanup();
           },
-        }),
+        },),
 
         it({
           name: 'removes @apply for empty mixin',
@@ -258,7 +258,7 @@ await describe({
             expect(output,).toContain('color: red',);
             await cleanup();
           },
-        }),
+        },),
       ],
     },),
 
@@ -283,7 +283,7 @@ await describe({
             expect(outerStr,).toContain('display: flex',);
             await cleanup();
           },
-        }),
+        },),
 
         it({
           name: 'handles deeply nested references',
@@ -299,7 +299,7 @@ await describe({
             expect(cStr,).toContain('color: red',);
             await cleanup();
           },
-        }),
+        },),
       ],
     },),
 
@@ -308,7 +308,6 @@ await describe({
     //region build (integration)
 
     ...integrationChildren,
-
     //endregion build (integration)
   ],
 },);

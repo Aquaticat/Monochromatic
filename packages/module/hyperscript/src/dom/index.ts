@@ -105,6 +105,12 @@ type HOptions<TTag extends string,> = {
  * @param children - child nodes or strings to append
  *
  * @returns created HTML element matching the tag
+ *
+ * @example
+ * ```ts
+ * $({ tag: 'div', class: 'card', text: 'hello' });
+ * // <div class="card">hello</div>
+ * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $<const TTag extends string,>(
   {
@@ -149,9 +155,9 @@ type HOptions<TTag extends string,> = {
 
   if (on !== undefined) {
     for (const [eventName, handler,] of Object.entries(on,)) {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event handler union cast to EventListener for addEventListener
       element.addEventListener(
         eventName,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event handler union cast to EventListener for addEventListener
         handler as EventListener,
       );
     }

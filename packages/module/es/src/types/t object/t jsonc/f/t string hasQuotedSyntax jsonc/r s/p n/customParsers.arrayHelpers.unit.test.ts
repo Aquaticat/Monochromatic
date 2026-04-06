@@ -29,29 +29,33 @@ await describe({
               throw new Error('expected end',);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'trailing comma then end',
           fn: async () => {
-            const out = expectArraySeparatorOrEnd(', /* c */ ]TAIL' as FragmentStringJsonc,);
+            const out = expectArraySeparatorOrEnd(
+              ', /* c */ ]TAIL' as FragmentStringJsonc,
+            );
             if (out.kind !== 'end')
               throw new Error('expected end',);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'next element start',
           fn: async () => {
-            const out = expectArraySeparatorOrEnd(', /* c */ 2, x' as FragmentStringJsonc,);
+            const out = expectArraySeparatorOrEnd(
+              ', /* c */ 2, x' as FragmentStringJsonc,
+            );
             if (out.kind !== 'next')
               throw new Error('expected next',);
             expect(out.tailStart.startsWith('2',),).toBe(true,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion expectArraySeparatorOrEnd
 
     //region parseArrayElements
@@ -65,25 +69,29 @@ await describe({
             expect(out.items,).toEqual([{ value: 1, },],);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'multi with comments and trailing comma',
           fn: async () => {
-            const out = parseArrayElements('1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc,);
+            const out = parseArrayElements(
+              '1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc,
+            );
             expect((out.items as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2,],);
             expect(out.tail,).toBe('X' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'invalid: identifier right after literal (boundary handled by separator)',
           fn: async () => {
-            expect(() => parseArrayElements('nullY]' as FragmentStringJsonc,)).toThrow(/expected ',' or ']'/,);
+            expect(() => parseArrayElements('nullY]' as FragmentStringJsonc,)).toThrow(
+              /expected ',' or ']'/,
+            );
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion parseArrayElements
   ],
 },);

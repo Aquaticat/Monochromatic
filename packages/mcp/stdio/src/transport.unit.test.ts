@@ -81,14 +81,16 @@ await describe({
         const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1,
           result: { tools: [], }, };
         const server = mockServer(serverResponse,);
-        const input = stdinFromMessages(['{"jsonrpc":"2.0","id":1,"method":"tools/list"}',],);
+        const input = stdinFromMessages([
+          '{"jsonrpc":"2.0","id":1,"method":"tools/list"}',
+        ],);
         const { writer, lines, } = collectingWriter();
 
         await serve(server, input, writer,);
 
         expect(lines,).toEqual([JSON.stringify(serverResponse,),],);
       },
-    }),
+    },),
     it({
       name: 'skips blank lines without sending them to server',
       fn: async () => {
@@ -102,7 +104,7 @@ await describe({
 
         expect(lines,).toHaveLength(1,);
       },
-    }),
+    },),
     it({
       name: 'returns parse error for invalid JSON',
       fn: async () => {
@@ -118,7 +120,7 @@ await describe({
           JSON_RPC_PARSE_ERROR,
         );
       },
-    }),
+    },),
     it({
       name: 'returns parse error for valid JSON that is not a JSON-RPC message',
       fn: async () => {
@@ -134,7 +136,7 @@ await describe({
           JSON_RPC_PARSE_ERROR,
         );
       },
-    }),
+    },),
     it({
       name: 'does not write response for notifications',
       fn: async () => {
@@ -148,7 +150,7 @@ await describe({
 
         expect(lines,).toHaveLength(0,);
       },
-    }),
+    },),
     it({
       name: 'handles multiple messages in sequence',
       fn: async () => {
@@ -171,7 +173,7 @@ await describe({
 
         expect(lines,).toHaveLength(3,);
       },
-    }),
+    },),
     it({
       name: 'continues processing after encountering invalid JSON',
       fn: async () => {
@@ -188,8 +190,8 @@ await describe({
         // One parse error response + one valid response.
         expect(lines,).toHaveLength(2,);
       },
-    }),
+    },),
   ],
-});
+},);
 
 //endregion serve

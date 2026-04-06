@@ -30,6 +30,12 @@ import type {
  * @param failures - whole-model failure metadata
  *
  * @returns assembled viewer data
+ *
+ * @example
+ * ```ts
+ * const { entries, probeDetails } = buildViewerData(initialByRun, fixByRun, failures);
+ * // entries: ViewerEntry[], probeDetails: Map<string, ProbeDetail>
+ * ```
  */
 export function buildViewerData(
   initialByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>,
@@ -71,7 +77,11 @@ export function buildViewerData(
       }
 
       probeDetails.set(
-        probeKey(label, probeName, timestamp,),
+        probeKey(
+          label,
+          probeName,
+          timestamp,
+        ),
         buildProbeDetail({
           enriched,
           fixEnriched,
@@ -84,7 +94,10 @@ export function buildViewerData(
     const scores = Object.values(probeScores,);
     const overallScore = scores.length > 0
       ? scores.reduce(
-        function addScore(sum, score,) {
+        function addScore(
+          sum,
+          score,
+        ) {
           return sum + score;
         },
         0,

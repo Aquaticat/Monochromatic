@@ -37,7 +37,7 @@ export type {
  */
 export class ReferencesPopup extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
   /** Container for the list items. */
   #list: HTMLDivElement | null = null;
   /** Currently displayed locations. */
@@ -45,7 +45,7 @@ export class ReferencesPopup extends HTMLElement {
   /** Index of the selected item (-1 = none). */
   #selectedIndex = -1;
   /** Invisible anchor div positioned at the editor cursor. */
-  #anchor: HTMLDivElement;
+  readonly #anchor: HTMLDivElement;
 
   /** Initializes the shadow root and creates the anchor div. */
   constructor() {

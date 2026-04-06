@@ -4,8 +4,8 @@
  * Full RFC 4180 CSV parsing including escaped quotes, multiline fields, and mixed
  * line endings. Hard because most models get the escaped-quote-within-quoted-field case wrong.
  */
-import { CSV_PERF_INPUT, } from './perf-test-data/index.ts';
 import type { Probe, } from '../probes.ts';
+import { CSV_PERF_INPUT, } from './perf-test-data/index.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** Test input covering the hardest RFC 4180 edge cases */

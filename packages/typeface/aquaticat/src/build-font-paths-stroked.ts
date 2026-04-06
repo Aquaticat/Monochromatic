@@ -26,6 +26,11 @@ import type { SVGPathCommand, } from './parse-svg.ts';
  * @param cellX - X offset of the cell in SVG coordinates
  *
  * @param xShift - horizontal shift to apply for proportional spacing
+ *
+ * @example
+ * ```ts
+ * addStrokedPath(otPath, commands, 2, cellX, xShift);
+ * ```
  */
 export function addStrokedPath(
   otPath: opentype.Path,

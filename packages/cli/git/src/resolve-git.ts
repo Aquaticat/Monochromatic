@@ -3,9 +3,7 @@ import {
   access,
   readFile,
 } from 'node:fs/promises';
-import {
-  join,
-} from 'node:path';
+import { join, } from 'node:path';
 
 import {
   l,
@@ -28,9 +26,12 @@ const PACKAGE_NAME = '@monochromatic-dev/cli-git';
  *
  * @returns `true` if the candidate is a shim for this package.
  */
-async function isShimForSelf(candidatePath: string): Promise<boolean> {
+async function isShimForSelf(candidatePath: string,): Promise<boolean> {
   try {
-    const content = await readFile(candidatePath, 'utf8',);
+    const content = await readFile(
+      candidatePath,
+      'utf8',
+    );
     return content.includes(PACKAGE_NAME,);
   }
   catch {

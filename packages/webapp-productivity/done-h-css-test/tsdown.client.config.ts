@@ -1,12 +1,15 @@
 import base from '@monochromatic-dev/config-tsdown/.client.ts';
-import { defineConfig, } from 'tsdown';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
 
 /**
  * Client-side browser bundle config for the Done h-css test variant.
  * Bundles five page entry points into `dist/client/*.js`.
  * No import-attributes plugin needed: h-css generates styles at runtime.
  */
-export default defineConfig({
+const config: UserConfig = defineConfig({
   ...base,
   entry: [
     './src/client/inbox.ts',
@@ -16,3 +19,4 @@ export default defineConfig({
     './src/client/settings.ts',
   ],
 },);
+export default config;

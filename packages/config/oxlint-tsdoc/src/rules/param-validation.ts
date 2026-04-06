@@ -35,7 +35,10 @@ export const requireParamName: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function requireParamNameHandler(_node, result,): void {
+      function requireParamNameHandler(
+        _node,
+        result,
+      ): void {
         result.docComment.params.blocks.forEach(function checkBlock(block,): void {
           if (block.parameterName.trim().length === 0) {
             context.report({
@@ -81,7 +84,10 @@ export const requireParamDescription: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createFunctionTsdocVisitor(
       context,
-      function requireParamDescHandler(_node, result,): void {
+      function requireParamDescHandler(
+        _node,
+        result,
+      ): void {
         result.docComment.params.blocks.forEach(function checkBlock(block,): void {
           if (!PlainTextEmitter.hasAnyTextContent(block.content,)) {
             context.report({

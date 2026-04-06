@@ -30,6 +30,11 @@ export type { ToolMode, } from './pointer-handler-deps.ts';
  * handlers to the canvas for draw, erase, and text tools.
  *
  * @param deps - shared state and element references
+ *
+ * @example
+ * ```ts
+ * setupPointerHandlers(deps);
+ * ```
  */
 export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   const {
@@ -60,25 +65,49 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       if (mode === 'text') {
         /** Suppress default focus-management so the created input keeps focus */
         event.preventDefault();
-        placeTextInput(normalizePointer({ event, canvas, },),);
+        placeTextInput(normalizePointer({
+          event,
+          canvas,
+        },),);
         return;
       }
 
       canvas.setPointerCapture(event.pointerId,);
-      const { cw, ch, } = getCanvasSize();
-      const point = normalizePointer({ event, canvas, },);
+      const {
+        cw,
+        ch,
+      } = getCanvasSize();
+      const point = normalizePointer({
+        event,
+        canvas,
+      },);
 
       if (mode === 'erase') {
         erasing = true;
         erasedInGesture = false;
         prevErasePoint = null;
-        const strokeErased = eraseStrokesAt({ point, previousPoint: null, cw, ch, },);
-        const textErased = eraseTextAt({ point, previousPoint: null, cw, ch,
-          textLayer, },);
+        const strokeErased = eraseStrokesAt({
+          point,
+          previousPoint: null,
+          cw,
+          ch,
+        },);
+        const textErased = eraseTextAt({
+          point,
+          previousPoint: null,
+          cw,
+          ch,
+          textLayer,
+        },);
         if (strokeErased || textErased)
           erasedInGesture = true;
-        if (strokeErased)
-          redraw({ ctx, cw, ch, },);
+        if (strokeErased) {
+          redraw({
+            ctx,
+            cw,
+            ch,
+          },);
+        }
         prevErasePoint = point;
         return;
       }
@@ -94,20 +123,40 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       if (mode === 'zoom' || mode === 'text')
         return;
 
-      const { cw, ch, } = getCanvasSize();
-      const point = normalizePointer({ event, canvas, },);
+      const {
+        cw,
+        ch,
+      } = getCanvasSize();
+      const point = normalizePointer({
+        event,
+        canvas,
+      },);
 
       if (mode === 'erase') {
         if (!erasing)
           return;
-        const strokeErased = eraseStrokesAt({ point, previousPoint: prevErasePoint, cw,
-          ch, },);
-        const textErased = eraseTextAt({ point, previousPoint: prevErasePoint, cw, ch,
-          textLayer, },);
+        const strokeErased = eraseStrokesAt({
+          point,
+          previousPoint: prevErasePoint,
+          cw,
+          ch,
+        },);
+        const textErased = eraseTextAt({
+          point,
+          previousPoint: prevErasePoint,
+          cw,
+          ch,
+          textLayer,
+        },);
         if (strokeErased || textErased)
           erasedInGesture = true;
-        if (strokeErased)
-          redraw({ ctx, cw, ch, },);
+        if (strokeErased) {
+          redraw({
+            ctx,
+            cw,
+            ch,
+          },);
+        }
         prevErasePoint = point;
         return;
       }
@@ -121,8 +170,14 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
-      ctx.moveTo(segment.from[0] * cw, segment.from[1] * ch,);
-      ctx.lineTo(segment.to[0] * cw, segment.to[1] * ch,);
+      ctx.moveTo(
+        segment.from[0] * cw,
+        segment.from[1] * ch,
+      );
+      ctx.lineTo(
+        segment.to[0] * cw,
+        segment.to[1] * ch,
+      );
       ctx.stroke();
     },
   );

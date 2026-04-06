@@ -68,14 +68,14 @@ libvirt, KVM, virsh, virt-install, cockpit-machines, podman, ZFS, tailscale.
 
 Advantages over the alternatives:
 
--  **Well-documented**: dedicated [GitHub repo][ucore-repo] with issues, releases, examples
--  **HCI stack pre-integrated**: libvirt/KVM for nested virtualization,
-   podman for containers, ZFS for storage, cockpit for web management
--  **Fedora CoreOS base**: immutable, rpm-ostree, automatic staged updates,
-   Ignition/Butane for declarative first-boot provisioning
--  **Minimal**: server image with no desktop, no gaming stack, no bloat
--  **Additive**: KDE Plasma is layered on top via the Containerfile,
-   adding only the packages we choose
+- **Well-documented**: dedicated [GitHub repo][ucore-repo] with issues, releases, examples
+- **HCI stack pre-integrated**: libvirt/KVM for nested virtualization,
+  podman for containers, ZFS for storage, cockpit for web management
+- **Fedora CoreOS base**: immutable, rpm-ostree, automatic staged updates,
+  Ignition/Butane for declarative first-boot provisioning
+- **Minimal**: server image with no desktop, no gaming stack, no bloat
+- **Additive**: KDE Plasma is layered on top via the Containerfile,
+  adding only the packages we choose
 
 [ucore-repo]: https://github.com/ublue-os/ucore
 
@@ -95,27 +95,27 @@ where every installed package was an explicit choice.
 Baking everything into one container image was the initial approach.
 It fails for several reasons:
 
--  **Cargo builds are slow**: `cargo:coreutils` (with unix features),
-   `cargo:fd-find`, `cargo:fastmod`, `cargo:llmfit` --
-   each compiles from source in the Containerfile.
-   First build takes 30-60 minutes.
-   Any change to the mise config layer invalidates the cache and rebuilds everything.
--  **Image size explodes**: system packages + Rust toolchain + Node + Bun + Deno +
-   llama.cpp + all cargo-installed tools = 15-20+ GB image before conversion.
--  **Iteration is painful**: change one dotfile, rebuild the container,
-   re-run bootc-image-builder (rootful podman, slow).
-   10+ minute feedback loop for a config tweak.
--  **Wrong abstraction boundary**: Containerfiles are good for OS composition
-   (swap packages, enable services). User-level dev environments
-   (mise toolchains, editor configs, dotfiles) are a different problem
-   that changes at a different cadence.
+- **Cargo builds are slow**: `cargo:coreutils` (with unix features),
+  `cargo:fd-find`, `cargo:fastmod`, `cargo:llmfit` --
+  each compiles from source in the Containerfile.
+  First build takes 30-60 minutes.
+  Any change to the mise config layer invalidates the cache and rebuilds everything.
+- **Image size explodes**: system packages + Rust toolchain + Node + Bun + Deno +
+  llama.cpp + all cargo-installed tools = 15-20+ GB image before conversion.
+- **Iteration is painful**: change one dotfile, rebuild the container,
+  re-run bootc-image-builder (rootful podman, slow).
+  10+ minute feedback loop for a config tweak.
+- **Wrong abstraction boundary**: Containerfiles are good for OS composition
+  (swap packages, enable services). User-level dev environments
+  (mise toolchains, editor configs, dotfiles) are a different problem
+  that changes at a different cadence.
 
 The two-layer split:
 
-| Layer | What | Changes | Rebuild cost |
-|---|---|---|---|
-| Container image | OS, KDE, system packages, mise binary, user account | Rarely | ~10 min build + convert |
-| First-login provisioner | mise toolchains, dotfiles, ghostty, librewolf | Often | ~5 min run |
+| Layer                   | What                                                | Changes | Rebuild cost            |
+| ----------------------- | --------------------------------------------------- | ------- | ----------------------- |
+| Container image         | OS, KDE, system packages, mise binary, user account | Rarely  | ~10 min build + convert |
+| First-login provisioner | mise toolchains, dotfiles, ghostty, librewolf       | Often   | ~5 min run              |
 
 User-level changes never trigger an image rebuild.
 Image changes never require re-provisioning user tools.
@@ -126,13 +126,13 @@ The monorepo already has [file-enforcer](packages/dev-script/file-enforcer/) --
 a declarative TypeScript tool for syncing derived files.
 Its primitives map directly to provisioner needs:
 
-| file-enforcer primitive | Provisioner use |
-|---|---|
-| `exec()` | Clone repos, run `mise install`, install flatpaks |
-| `overwrite()` / `overwriteEach()` | Place dotfiles into `~/.config/` |
-| `cat()` | Read dotfile sources |
-| Content-based write skipping | Idempotent re-runs for free |
-| Platform-aware `exec()` dispatch | Cross-platform if needed later |
+| file-enforcer primitive           | Provisioner use                                   |
+| --------------------------------- | ------------------------------------------------- |
+| `exec()`                          | Clone repos, run `mise install`, install flatpaks |
+| `overwrite()` / `overwriteEach()` | Place dotfiles into `~/.config/`                  |
+| `cat()`                           | Read dotfile sources                              |
+| Content-based write skipping      | Idempotent re-runs for free                       |
+| Platform-aware `exec()` dispatch  | Cross-platform if needed later                    |
 
 Writing the provisioner as a file-enforcer config
 reuses existing infrastructure instead of inventing a new tool.
@@ -162,16 +162,16 @@ the setup portable across hypervisors.
 The original plan was to install ghostty as an AppImage in the first-login provisioner.
 The scottames/ghostty COPR provides an official RPM for Fedora, which is a better fit:
 
--  **Immutable OS alignment**: an RPM baked into the container image is managed by rpm-ostree
-   and updated atomically; an AppImage in `~/Applications/` is invisible to the OS and
-   requires a separate update mechanism (`appimaged`, AM/AppMan, or a manual download script)
--  **No AppImage runtime dependency**: AppImages require FUSE or `--appimage-extract-and-run`;
-   neither is guaranteed in a fresh ucore-hci image
--  **Simpler provisioner**: ghostty moves from Phase 2 (first-login) to Phase 1 (image),
-   removing three provisioner tasks and one open question
--  **COPR risk is acceptable**: scottames/ghostty is a single-package COPR maintained by the
-   same person consistently; unlike Terra (which repackages upstream software), this COPR
-   tracks ghostty releases directly
+- **Immutable OS alignment**: an RPM baked into the container image is managed by rpm-ostree
+  and updated atomically; an AppImage in `~/Applications/` is invisible to the OS and
+  requires a separate update mechanism (`appimaged`, AM/AppMan, or a manual download script)
+- **No AppImage runtime dependency**: AppImages require FUSE or `--appimage-extract-and-run`;
+  neither is guaranteed in a fresh ucore-hci image
+- **Simpler provisioner**: ghostty moves from Phase 2 (first-login) to Phase 1 (image),
+  removing three provisioner tasks and one open question
+- **COPR risk is acceptable**: scottames/ghostty is a single-package COPR maintained by the
+  same person consistently; unlike Terra (which repackages upstream software), this COPR
+  tracks ghostty releases directly
 
 ## Why virt-manager is a native RPM, not Flatpak
 
@@ -239,12 +239,12 @@ Copying an SSH key from a USB stick takes another 30 seconds.
 
 Every alternative adds complexity without proportional benefit:
 
--  **Encrypted vaults (age/sops)**: tooling complexity,
-   a master password to remember, vault file to keep synced
--  **Virtiofs injection from host**: couples the provisioner to a specific hypervisor,
-   kills portability
--  **Automated auth flows**: fragile, break when APIs change,
-   still need initial credentials bootstrapped somehow
+- **Encrypted vaults (age/sops)**: tooling complexity,
+  a master password to remember, vault file to keep synced
+- **Virtiofs injection from host**: couples the provisioner to a specific hypervisor,
+  kills portability
+- **Automated auth flows**: fragile, break when APIs change,
+  still need initial credentials bootstrapped somehow
 
 The manual approach has zero infrastructure,
 works on any machine, and secrets never touch a repo or disk image.
@@ -255,14 +255,14 @@ GitHub Actions for building the container image was considered
 (the [image-template][image-template] repo includes workflows for this).
 Rejected because:
 
--  **Slow**: building a desktop image with KDE + dev tools on CI runners
-   is slow and resource-constrained
--  **Storage risk**: large container images and disk artifacts
-   stored on GitHub consume quota and risk account restrictions
--  **Testing impossible**: verifying KDE starts, SDDM works,
-   podman runs inside the image requires a hypervisor, not a CI runner
--  **Unnecessary**: this is a private dev environment for one person,
-   not a distribution. Local builds with `podman build` + `bootc-image-builder` suffice.
+- **Slow**: building a desktop image with KDE + dev tools on CI runners
+  is slow and resource-constrained
+- **Storage risk**: large container images and disk artifacts
+  stored on GitHub consume quota and risk account restrictions
+- **Testing impossible**: verifying KDE starts, SDDM works,
+  podman runs inside the image requires a hypervisor, not a CI runner
+- **Unnecessary**: this is a private dev environment for one person,
+  not a distribution. Local builds with `podman build` + `bootc-image-builder` suffice.
 
 [image-template]: https://github.com/ublue-os/image-template
 
@@ -271,13 +271,13 @@ Rejected because:
 Systemd user services with "done" flag files and `.bash_profile` hooks
 add indirection and debugging pain.
 
--  Flag file pattern is fragile:
-   what if you want to re-run after updating the script?
-   Now you need to know to delete the flag.
--  `.bash_profile` triggers on every login, needs guard logic,
-   can interfere with non-interactive sessions.
--  Systemd user services run before the user's shell is ready,
-   complicating interactive auth steps.
+- Flag file pattern is fragile:
+  what if you want to re-run after updating the script?
+  Now you need to know to delete the flag.
+- `.bash_profile` triggers on every login, needs guard logic,
+  can interfere with non-interactive sessions.
+- Systemd user services run before the user's shell is ready,
+  complicating interactive auth steps.
 
 Manual trigger (`bun setup-dev.config.ts`) costs one command typed once.
 You see the output, you can ctrl-c if something breaks,

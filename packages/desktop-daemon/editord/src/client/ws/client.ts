@@ -67,7 +67,7 @@ export class EditorWsClient {
   #ws: WebSocket;
 
   /** Map of pending requests keyed by request ID. */
-  #pending = new Map<string, PendingRequest>();
+  readonly #pending = new Map<string, PendingRequest>();
 
   /** Counter for generating unique request IDs. */
   #nextId = 0;
@@ -99,7 +99,7 @@ export class EditorWsClient {
   ready: Promise<void>;
 
   /** WebSocket URL for reconnection. */
-  #wsUrl: string;
+  readonly #wsUrl: string;
 
   /** Current reconnect delay in milliseconds; reset on successful connection. */
   #reconnectDelay = RECONNECT_BASE_MS;

@@ -85,11 +85,17 @@ export const checkTagNames: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return createTsdocVisitor(
       context,
-      function checkTagNamesHandler(_node, comment,): void {
+      function checkTagNamesHandler(
+        _node,
+        comment,
+      ): void {
         const lines = comment.value.split('\n',);
         let insideCodeFence = false;
 
-        lines.forEach(function checkLine(line, index,): void {
+        lines.forEach(function checkLine(
+          line,
+          index,
+        ): void {
           // Track fenced code block boundaries to skip tag scanning inside them
           if (CODE_FENCE_PATTERN.test(line,)) {
             insideCodeFence = !insideCodeFence;
@@ -108,16 +114,25 @@ export const checkTagNames: CreateOnceRule = {
             if (suggestion !== undefined) {
               context.report({
                 loc: {
-                  start: { line: comment.loc.start.line + index, column: 0, },
+                  start: {
+                    line: comment.loc.start.line + index,
+                    column: 0,
+                  },
                 },
                 messageId: 'jsdocOnly',
-                data: { tag, suggestion, },
+                data: {
+                  tag,
+                  suggestion,
+                },
               },);
             }
             else if (!VALID_TSDOC_TAGS.has(tag,)) {
               context.report({
                 loc: {
-                  start: { line: comment.loc.start.line + index, column: 0, },
+                  start: {
+                    line: comment.loc.start.line + index,
+                    column: 0,
+                  },
                 },
                 messageId: 'unknown',
                 data: { tag, },

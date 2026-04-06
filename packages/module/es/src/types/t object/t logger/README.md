@@ -7,10 +7,10 @@ without a configuration step.
 ## Usage
 
 ```ts
-import { $ as tagged } from '@monochromatic-dev/module-es/tagged';
+import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 
-const l = tagged({ tag: 'http' });
-l.info('server started on port 3000');
+const l = tagged({ tag: 'http', },);
+l.info('server started on port 3000',);
 // console output: [info] [2026-03-11T...] [http] server started on port 3000
 ```
 
@@ -19,18 +19,18 @@ l.info('server started on port 3000');
 Pass a parent logger via the `l` parameter to build hierarchical prefixes:
 
 ```ts
-const l = tagged({ tag: 'http' });
-const rl = tagged({ tag: 'retry', l });
-rl.warn('attempt 3 failed');
+const l = tagged({ tag: 'http', },);
+const rl = tagged({ tag: 'retry', l, },);
+rl.warn('attempt 3 failed',);
 // [warn] [...] [retry] [http] attempt 3 failed
 ```
 
 Convention: use `myFn.name` as the tag so prefixes stay in sync with refactors.
 
 ```ts
-function handleRequest({ l }: { l: Logger }): void {
-  const rl = tagged({ tag: handleRequest.name, l });
-  rl.info('received');
+function handleRequest({ l, }: { l: Logger; },): void {
+  const rl = tagged({ tag: handleRequest.name, l, },);
+  rl.info('received',);
 }
 ```
 
@@ -39,9 +39,9 @@ function handleRequest({ l }: { l: Logger }): void {
 Import the singleton directly when tags are not needed:
 
 ```ts
-import { $ as logger } from '@monochromatic-dev/module-es/logger';
+import { $ as logger, } from '@monochromatic-dev/module-es/logger';
 
-logger.error('unexpected shutdown');
+logger.error('unexpected shutdown',);
 ```
 
 ## Log levels
@@ -53,7 +53,7 @@ The caller owns serialization -- template literals cover the common case
 and keep the logger free of stringify opinions.
 
 ```ts
-l.info(`status ${code} for ${url}`);
+l.info(`status ${code} for ${url}`,);
 ```
 
 The console sink silences `debug` and `trace` by default in non-browser environments.
@@ -86,7 +86,7 @@ Every sink receives a `LogRecord`:
 
 ```ts
 type LogRecord = {
-  level: Level;     // 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+  level: Level; // 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
   message: string;
   timestamp: number; // Date.now()
 };

@@ -31,7 +31,7 @@ await describe({
           { decision: 'fail', item: 5, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'yields items with thrown decision tuple when predicate throws',
       fn: async () => {
@@ -65,7 +65,7 @@ await describe({
         );
         expect(results[2],).toEqual({ decision: 'pass', item: '3', },);
       },
-    }),
+    },),
     it({
       name: 'handles empty iterables',
       fn: async () => {
@@ -80,7 +80,7 @@ await describe({
 
         expect(results,).toEqual([],);
       },
-    }),
+    },),
     it({
       name: 'handles all items passing',
       fn: async () => {
@@ -100,7 +100,7 @@ await describe({
           { decision: 'pass', item: 6, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'handles all items failing',
       fn: async () => {
@@ -120,7 +120,7 @@ await describe({
           { decision: 'fail', item: 5, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'handles all items throwing',
       fn: async () => {
@@ -153,7 +153,7 @@ await describe({
           expect((decision[1] as Error).message,).toBe('Invalid',);
         }
       },
-    }),
+    },),
     it({
       name: 'preserves item type information',
       fn: async () => {
@@ -177,7 +177,7 @@ await describe({
           { decision: 'pass', item: { id: 2, name: 'Bob', }, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'works with generator iterables',
       fn: async () => {
@@ -202,7 +202,7 @@ await describe({
           { decision: 'fail', item: 3, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'works with Set iterables',
       fn: async () => {
@@ -223,7 +223,7 @@ await describe({
           { decision: 'pass', item: 4, },
         ],);
       },
-    }),
+    },),
     it({
       name: 'captures different error types in thrown decision tuple',
       fn: async () => {
@@ -254,7 +254,7 @@ await describe({
         expect(errorDecision[1],).toBe(customError,);
         expect(results[2],).toEqual({ decision: 'pass', item: 3, },);
       },
-    }),
+    },),
     it({
       name: 'captures non-Error thrown values in decision tuple',
       fn: async () => {
@@ -287,6 +287,6 @@ await describe({
         expect(strDecision[1],).toBe(thrownValue,);
         expect(results[2],).toEqual({ decision: 'pass', item: 3, },);
       },
-    }),
+    },),
   ],
 },);

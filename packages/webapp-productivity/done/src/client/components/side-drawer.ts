@@ -9,9 +9,7 @@
  * Visibility is governed entirely by a CSS container query on the
  * wrapper element -- no viewport media queries, no JS resize observers.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   buildCloseButton,
   buildHeader,
@@ -33,7 +31,7 @@ class SideDrawer extends HTMLElement {
   static observedAttributes = ['open',];
 
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Reference to the popover panel element, null until first render. */
   #panel: HTMLDivElement | null = null;
@@ -78,6 +76,7 @@ class SideDrawer extends HTMLElement {
 
     this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener(
       'click',
+      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
       function closeDrawer(this: SideDrawer,): void {
         this.open = false;
       }
@@ -85,10 +84,13 @@ class SideDrawer extends HTMLElement {
     );
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
-    // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
     this.#panel.addEventListener(
       'click',
-      function lightDismiss(this: SideDrawer, event: Event,): void {
+      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+      function lightDismiss(
+        this: SideDrawer,
+        event: Event,
+      ): void {
         if (event.target === this.#panel)
           this.open = false;
       }

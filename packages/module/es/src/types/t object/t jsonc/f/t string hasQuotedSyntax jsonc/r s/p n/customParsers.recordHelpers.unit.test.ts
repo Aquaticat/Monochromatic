@@ -35,7 +35,7 @@ await describe({
             expect(out.recordComment,).toBeUndefined();
             expect(out.tail,).toBe(' "a":1}TAIL' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'with context comment',
@@ -47,9 +47,9 @@ await describe({
             expect(out.recordComment?.type,).toBe('block',);
             expect(out.recordComment?.commentValue,).toBe('RC',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion parseRecordHeader
 
     //region expectRecordSeparatorOrEnd
@@ -64,29 +64,33 @@ await describe({
               throw new Error('expected end',);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'trailing comma then end',
           fn: async () => {
-            const out = expectRecordSeparatorOrEnd(', /* c */ }TAIL' as FragmentStringJsonc,);
+            const out = expectRecordSeparatorOrEnd(
+              ', /* c */ }TAIL' as FragmentStringJsonc,
+            );
             if (out.kind !== 'end')
               throw new Error('expected end',);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'next member start',
           fn: async () => {
-            const out = expectRecordSeparatorOrEnd(', /* c */ "b": 2' as FragmentStringJsonc,);
+            const out = expectRecordSeparatorOrEnd(
+              ', /* c */ "b": 2' as FragmentStringJsonc,
+            );
             if (out.kind !== 'next')
               throw new Error('expected next',);
             expect(out.tailStart.startsWith('"b"',),).toBe(true,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion expectRecordSeparatorOrEnd
 
     //region parseRecordKey
@@ -101,17 +105,19 @@ await describe({
             expect(out.keyNode.comment,).toBeUndefined();
             expect(out.remaining,).toBe(': 1' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'key with leading comment',
           fn: async () => {
-            const out = parseRecordKey('/* key comment */ "x": true' as FragmentStringJsonc,);
+            const out = parseRecordKey(
+              '/* key comment */ "x": true' as FragmentStringJsonc,
+            );
             expect(out.keyNode.value,).toBe('"x"',);
             expect(out.keyNode.comment?.type,).toBe('block',);
             expect(out.keyNode.comment?.commentValue.trim(),).toBe('key comment',);
           },
-        }),
+        },),
 
         it({
           name: 'error on non-quoted key',
@@ -120,9 +126,9 @@ await describe({
               /expected quoted key/,
             );
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion parseRecordKey
 
     //region expectColonAfterKey
@@ -135,7 +141,7 @@ await describe({
             const out = expectColonAfterKey(': 1' as FragmentStringJsonc,);
             expect(out,).toBe(' 1' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'colon with surrounding whitespace/comments',
@@ -143,16 +149,18 @@ await describe({
             const out = expectColonAfterKey(' /* c */ : 1' as FragmentStringJsonc,);
             expect(out,).toBe(' 1' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'error when colon missing',
           fn: async () => {
-            expect(() => expectColonAfterKey(' 1' as FragmentStringJsonc,)).toThrow(/expected ':' after key/,);
+            expect(() => expectColonAfterKey(' 1' as FragmentStringJsonc,)).toThrow(
+              /expected ':' after key/,
+            );
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion expectColonAfterKey
 
     //region parseRecordValue
@@ -166,18 +174,20 @@ await describe({
             expect((out.valueNode as Jsonc.Number).value,).toBe(42,);
             expect(out.remaining,).toBe(', "b"' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'value with leading comment',
           fn: async () => {
-            const out = parseRecordValue(' /* val comment */ "text"}' as FragmentStringJsonc,);
+            const out = parseRecordValue(
+              ' /* val comment */ "text"}' as FragmentStringJsonc,
+            );
             expect((out.valueNode as Jsonc.String).value,).toBe('"text"',);
             expect(out.valueNode.comment?.type,).toBe('block',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion parseRecordValue
 
     //region parseOneRecordMember
@@ -193,20 +203,22 @@ await describe({
             expect((val as Jsonc.Number).value,).toBe(1,);
             expect(out.remaining,).toBe(', "b"' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'with comments on key and value',
           fn: async () => {
-            const out = parseOneRecordMember('/* k */ "x": /* v */ 99}' as FragmentStringJsonc,);
+            const out = parseOneRecordMember(
+              '/* k */ "x": /* v */ 99}' as FragmentStringJsonc,
+            );
             const [key, val,] = out.entry;
             expect(key.comment?.commentValue.trim(),).toBe('k',);
             expect((val as Jsonc.Number).value,).toBe(99,);
             expect(val.comment?.commentValue.trim(),).toBe('v',);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion parseOneRecordMember
 
     //region parseRecordMembers
@@ -223,19 +235,22 @@ await describe({
             expect(val.value,).toBe(1,);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'multiple members with trailing comma',
           fn: async () => {
-            const out = parseRecordMembers('"a": 1, /* c */ "b": 2, }X' as FragmentStringJsonc,);
-            expect(out.entries,).toHaveLength(2,);
-            expect(out.entries.map(([k, v,],) => [k.value, (v as Jsonc.Number).value,]),).toEqual(
-              [['"a"', 1,], ['"b"', 2,],],
+            const out = parseRecordMembers(
+              '"a": 1, /* c */ "b": 2, }X' as FragmentStringJsonc,
             );
+            expect(out.entries,).toHaveLength(2,);
+            expect(out.entries.map(([k, v,],) => [k.value, (v as Jsonc.Number).value,]),)
+              .toEqual(
+                [['"a"', 1,], ['"b"', 2,],],
+              );
             expect(out.tail,).toBe('X' as FragmentStringJsonc,);
           },
-        }),
+        },),
 
         it({
           name: 'immediate closing brace',
@@ -244,9 +259,9 @@ await describe({
             expect(out.entries,).toHaveLength(0,);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },
-        }),
+        },),
       ],
-    }),
+    },),
     //endregion parseRecordMembers
   ],
 },);

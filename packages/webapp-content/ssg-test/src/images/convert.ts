@@ -36,6 +36,13 @@ function isNodeError(error: unknown,): error is Error & { code: string; } {
  * @param l - optional logger for unexpected access errors
  *
  * @returns `true` if accessible, `false` on any access error
+ *
+ * @example
+ * ```ts
+ * if (await fileExists('image.png')) {
+ *   // file is accessible
+ * }
+ * ```
  */
 export async function fileExists(
   filePath: string,
@@ -63,6 +70,11 @@ export async function fileExists(
  * @param inputPath - path to the source raster image
  *
  * @param outputPath - path for the AVIF output
+ *
+ * @example
+ * ```ts
+ * await convertToAvif({ inputPath: 'photo.png', outputPath: 'photo.avif' });
+ * ```
  */
 export async function convertToAvif(
   {
@@ -92,6 +104,11 @@ export async function convertToAvif(
  * @param l - logger for conversion progress messages
  *
  * @returns `true` if a conversion was performed, `false` if skipped
+ *
+ * @example
+ * ```ts
+ * const converted = await maybeConvert({ filePath: 'photo.png', avifPath: 'photo.avif', l: logger });
+ * ```
  */
 export async function maybeConvert(
   {

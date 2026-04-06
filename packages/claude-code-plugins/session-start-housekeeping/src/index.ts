@@ -86,7 +86,10 @@ async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
       removals.push(
         rm(
           `${workspaceRoot}/${finalDir}/${artifact}`,
-          { recursive: true, force: true, },
+          {
+            recursive: true,
+            force: true,
+          },
         ),
       );
     }

@@ -3,10 +3,10 @@
  */
 
 import {
-  hCss as $,
   cssNum,
   cssPercent,
   cssRem,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {

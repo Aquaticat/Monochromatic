@@ -49,7 +49,7 @@ import { applyEditsToText, } from './text-edits.ts';
 /** `<editor-pane>` — contenteditable text editor component. */
 export class EditorPane extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
   /** The contenteditable container element. */
   #editor: HTMLDivElement | null = null;
   /** Lezer parser for the current file's language. */

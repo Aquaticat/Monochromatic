@@ -4,9 +4,7 @@
  * Builds the collapsible "Suggested" section with location autodetect
  * toggle, focus preset dropdown, and the suggested task list.
  */
-import {
-  hDom as h,
-} from '@monochromatic-dev/module-hyperscript/ts';
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type {
   BlockedTaskLink,
   Task,
@@ -22,6 +20,12 @@ import type {
  * @param buildTaskList - Function to build a task list element
  *
  * @returns Suggested section element ready for DOM insertion
+ *
+ * @example
+ * ```ts
+ * const section = buildSuggestedSection({ suggestedTasks, blockedTasksByBlocker, buildTaskList });
+ * app.append(section);
+ * ```
  */
 export function buildSuggestedSection(
   {
@@ -38,7 +42,10 @@ export function buildSuggestedSection(
   /** Collapsible section heading for suggested tasks. */
   const suggestedSection = h({
     tag: 'section-heading',
-    attrs: { icon: '\u2728', label: 'Suggested', },
+    attrs: {
+      icon: '\u2728',
+      label: 'Suggested',
+    },
   },);
 
   /** Content container for the suggested tasks section. */

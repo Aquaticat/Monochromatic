@@ -18,6 +18,12 @@ import type { CurrentFile, } from './nvim-types.ts';
  * @param files - Current file metadata from all Neovim instances.
  *
  * @returns Caveat string or empty string when no buffers are modified.
+ *
+ * @example
+ * ```ts
+ * modifiedCaveat([{ path: '/tmp/a.ts', filetype: 'typescript', modified: true }]);
+ * // 'buffer has unsaved changes; CLI lint results reflect the saved file, not the current buffer: /tmp/a.ts'
+ * ```
  */
 export function modifiedCaveat(files: readonly CurrentFile[],): string {
   const modifiedPaths = files
@@ -46,6 +52,12 @@ export function modifiedCaveat(files: readonly CurrentFile[],): string {
  * @param notes - Array of note strings to join.
  *
  * @returns Formatted notes block or empty string when no notes.
+ *
+ * @example
+ * ```ts
+ * formatNotes(['unsaved changes', 'stale index']);
+ * // '\n\n(note: unsaved changes)\n(note: stale index)'
+ * ```
  */
 export function formatNotes(notes: readonly string[],): string {
   if (notes.length === 0)
@@ -64,6 +76,12 @@ export function formatNotes(notes: readonly string[],): string {
  * @param files - Current file metadata from all instances.
  *
  * @returns Multi-line header string.
+ *
+ * @example
+ * ```ts
+ * buildHeader([{ path: '/tmp/a.ts', filetype: 'typescript', modified: false }]);
+ * // 'path: /tmp/a.ts\nfiletype: typescript\nmodified: false'
+ * ```
  */
 export function buildHeader(files: readonly CurrentFile[],): string {
   const [firstFile,] = files;

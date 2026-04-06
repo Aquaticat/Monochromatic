@@ -41,6 +41,7 @@ Without these, the agent must judge severity from first principles on every find
 which produces inconsistent output -- the same pattern flagged as WARNING in one review and NIT in the next.
 
 The annotations encode project-specific severity decisions:
+
 - Non-null assertions (`!`) are BLOCKER because `notNullishOrThrow` exists and is always available
 - Missing explicit return types are WARNING, not NIT, because inference failures propagate silently
 - Single-letter variables are WARNING in loops but exempt in math formulas

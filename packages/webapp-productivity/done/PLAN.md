@@ -33,76 +33,87 @@ The server entry point (validated in bun-test):
 // src/server.ts -- entry point for each user's Done instance
 // Pipeline: build-css -> Bun.build() -> Bun.serve().
 // In dev (bun --watch), server restarts on any file change -> full rebuild is automatic.
-import { build as buildCSS } from "@monochromatic-dev/build-css/ts";
-import "./lib/db";
-import { inboxPage } from "./server/pages/inbox";
-import { inProgressPage } from "./server/pages/in-progress";
-import { taskDetailsPage } from "./server/pages/task-details";
-import { searchPage } from "./server/pages/search";
-import { settingsPage } from "./server/pages/settings";
-import { handleCreateTask, handleUpdateTask, handleDeleteTask } from "./server/api/tasks";
-import { handleStartTimer, handleStopTimer, handleCompleteTask } from "./server/api/timer";
+import { build as buildCSS, } from '@monochromatic-dev/build-css/ts';
+import './lib/db';
+import {
+  handleCreateTask,
+  handleDeleteTask,
+  handleUpdateTask,
+} from './server/api/tasks';
+import {
+  handleCompleteTask,
+  handleStartTimer,
+  handleStopTimer,
+} from './server/api/timer';
+import { inProgressPage, } from './server/pages/in-progress';
+import { inboxPage, } from './server/pages/inbox';
+import { searchPage, } from './server/pages/search';
+import { settingsPage, } from './server/pages/settings';
+import { taskDetailsPage, } from './server/pages/task-details';
 // ... other API imports
 
 // Step 1: Process CSS -- resolves @import, expands @mixin/@apply into plain CSS.
 await buildCSS({
-  input: "./src/client/styles.css",
-  output: "./dist/client/styles.css",
-});
+  input: './src/client/styles.css',
+  output: './dist/client/styles.css',
+},);
 
 // Step 2: Bundle client TS -- imports the processed CSS as text string.
 const buildResult = await Bun.build({
   entrypoints: [
-    "./src/client/inbox.ts",
-    "./src/client/in-progress.ts",
-    "./src/client/task-details.ts",
-    "./src/client/search.ts",
-    "./src/client/settings.ts",
+    './src/client/inbox.ts',
+    './src/client/in-progress.ts',
+    './src/client/task-details.ts',
+    './src/client/search.ts',
+    './src/client/settings.ts',
   ],
-  outdir: "./dist/client",
-  target: "browser",
-  minify: process.env.NODE_ENV === "production",
-});
+  outdir: './dist/client',
+  target: 'browser',
+  minify: process.env.NODE_ENV === 'production',
+},);
 
 if (!buildResult.success) {
-  console.error("Client build failed:", buildResult.logs);
-  process.exit(1);
+  console.error('Client build failed:', buildResult.logs,);
+  process.exit(1,);
 }
 
 // Step 3: Serve. Bun's built-in router handles :param parsing and per-method dispatch.
 // No separate router.ts needed -- routes are declarative, type-safe, SIMD-accelerated.
 Bun.serve({
-  port: Number(process.env.PORT) || 3000,
+  port: Number(process.env.PORT,) || 3000,
   routes: {
     // Page routes -- return HTML with embedded data + script tag
-    "/": () => inboxPage(),
-    "/in-progress": () => inProgressPage(),
-    "/tasks/:id": (req) => taskDetailsPage(req.params.id),
-    "/search": (req) => searchPage(new URL(req.url)),
-    "/settings": () => settingsPage(),
+    '/': () => inboxPage(),
+    '/in-progress': () => inProgressPage(),
+    '/tasks/:id': req => taskDetailsPage(req.params.id,),
+    '/search': req => searchPage(new URL(req.url,),),
+    '/settings': () => settingsPage(),
 
     // API routes -- per-method dispatch, typed params
-    "/api/tasks": { POST: (req) => handleCreateTask(req) },
-    "/api/tasks/:id": {
-      PUT: (req) => handleUpdateTask(req, req.params.id),
-      DELETE: (req) => handleDeleteTask(req.params.id),
+    '/api/tasks': { POST: req => handleCreateTask(req,), },
+    '/api/tasks/:id': {
+      PUT: req => handleUpdateTask(req, req.params.id,),
+      DELETE: req => handleDeleteTask(req.params.id,),
     },
-    "/api/tasks/:id/start": { POST: (req) => handleStartTimer(req.params.id) },
-    "/api/tasks/:id/stop": { POST: (req) => handleStopTimer(req.params.id) },
-    "/api/tasks/:id/complete": { POST: (req) => handleCompleteTask(req.params.id) },
+    '/api/tasks/:id/start': { POST: req => handleStartTimer(req.params.id,), },
+    '/api/tasks/:id/stop': { POST: req => handleStopTimer(req.params.id,), },
+    '/api/tasks/:id/complete': {
+      POST: req => handleCompleteTask(req.params.id,),
+    },
     // ... ai, attachments, settings, sync routes
   },
   // Fallback: static assets from build output, or 404.
   // Bun.file() auto-detects Content-Type from file extension.
-  async fetch(req) {
-    const path = new URL(req.url).pathname;
-    if (path.startsWith("/dist/client/")) {
-      const file = Bun.file(`.${path}`);
-      if (await file.exists()) return new Response(file);
+  async fetch(req,) {
+    const path = new URL(req.url,).pathname;
+    if (path.startsWith('/dist/client/',)) {
+      const file = Bun.file(`.${path}`,);
+      if (await file.exists())
+        return new Response(file,);
     }
-    return new Response("Not found", { status: 404 });
+    return new Response('Not found', { status: 404, },);
   },
-});
+},);
 ```
 
 ### Page rendering pattern
@@ -112,8 +123,8 @@ Each page handler queries the DB, serializes the data into a JSON script tag, an
 ```ts
 // src/server/pages/inbox.ts
 export async function inboxPage(): Promise<Response> {
-  const tasks = await getInboxTasks(db);
-  const settings = await getAllSettings(db);
+  const tasks = await getInboxTasks(db,);
+  const settings = await getAllSettings(db,);
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -123,14 +134,16 @@ export async function inboxPage(): Promise<Response> {
   <title>Inbox - Done</title>
 </head>
 <body>
-  <script type="application/json" id="page-data">${JSON.stringify({ tasks, settings })}</script>
+  <script type="application/json" id="page-data">${
+    JSON.stringify({ tasks, settings, },)
+  }</script>
   <script type="module" src="/dist/client/inbox.js"></script>
 </body>
 </html>`;
 
   return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
+    headers: { 'Content-Type': 'text/html; charset=utf-8', },
+  },);
 }
 ```
 
@@ -139,21 +152,21 @@ Client-side (CSS injection validated in bun-test):
 ```ts
 // src/client/inbox.ts
 // CSS is imported as a text string by Bun.build(), injected into <head> at runtime.
-import styles from "../dist/client/styles.css" with { type: "text" };
-import { injectCSS } from "./lib/inject-css";
-injectCSS(styles);
+import styles from '../dist/client/styles.css' with { type: 'text', };
+import { injectCSS, } from './lib/inject-css';
+injectCSS(styles,);
 
 // Reads server-embedded data, builds DOM. No fetch on load.
-const data = JSON.parse(document.getElementById("page-data")!.textContent!);
-buildInboxScreen(data.tasks, data.settings);
+const data = JSON.parse(document.getElementById('page-data',)!.textContent!,);
+buildInboxScreen(data.tasks, data.settings,);
 ```
 
 ```ts
 // src/client/lib/inject-css.ts -- 3 lines, validated in bun-test
-export function injectCSS(css: string): void {
-  const style = document.createElement("style");
+export function injectCSS(css: string,): void {
+  const style = document.createElement('style',);
   style.textContent = css;
-  document.head.appendChild(style);
+  document.head.appendChild(style,);
 }
 ```
 
@@ -330,20 +343,23 @@ ORDER BY rank;
 // libsql API: client.execute({ sql, args }) returns { rows, columns, rowsAffected }
 
 // Reading: parse the JSON string from SQLite into a JS array
-const result = await client.execute({ sql: 'SELECT * FROM tasks WHERE id = ?', args: [taskId] });
+const result = await client.execute({ sql: 'SELECT * FROM tasks WHERE id = ?',
+  args: [taskId,], },);
 const task = result.rows[0];
-const tags: string[] = JSON.parse(task.tags as string);       // '["shopping"]' -> ['shopping']
-const locations: string[] = JSON.parse(task.locations as string);
+const tags: string[] = JSON.parse(task.tags as string,); // '["shopping"]' -> ['shopping']
+const locations: string[] = JSON.parse(task.locations as string,);
 
 // Writing: stringify the JS array back to JSON for SQLite
-await client.execute({ sql: 'UPDATE tasks SET tags = ? WHERE id = ?', args: [JSON.stringify(['shopping', 'errands']), taskId] });
+await client.execute({ sql: 'UPDATE tasks SET tags = ? WHERE id = ?',
+  args: [JSON.stringify(['shopping', 'errands',],), taskId,], },);
 
 // Querying tasks that contain a specific tag (uses SQLite JSON functions):
 // json_each() expands a JSON array into rows, so we can match individual elements.
 const tagResult = await client.execute({
-  sql: 'SELECT tasks.* FROM tasks, json_each(tasks.tags) AS tag WHERE tag.value = ?',
-  args: ['shopping'],
-});
+  sql:
+    'SELECT tasks.* FROM tasks, json_each(tasks.tags) AS tag WHERE tag.value = ?',
+  args: ['shopping',],
+},);
 const tasksWithTag = tagResult.rows;
 ```
 
@@ -357,8 +373,8 @@ await client.execute({
             status = 'in_progress',
             updated_at = datetime('now')
         WHERE id = ?`,
-  args: [taskId],
-});
+  args: [taskId,],
+},);
 
 // Stop timer: calculate elapsed seconds, add to cumulative total, clear the timestamp
 await client.execute({
@@ -370,8 +386,8 @@ await client.execute({
             status = 'inbox',
             updated_at = datetime('now')
         WHERE id = ?`,
-  args: [taskId],
-});
+  args: [taskId,],
+},);
 
 // Read current elapsed time for display (without stopping):
 // In the page handler, return both tracked_time and timer_started_at.
@@ -392,18 +408,22 @@ const result = await client.execute({
         ) AS blocker
         JOIN tasks ON tasks.id = blocker.value
         WHERE tasks.status != 'done'`,
-  args: [taskId],
-});
+  args: [taskId,],
+},);
 
 if (result.rows.length > 0) {
-  return new Response(JSON.stringify({ error: 'Task is blocked', blockedBy: result.rows }), {
-    status: 409,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({ error: 'Task is blocked', blockedBy: result.rows, },),
+    {
+      status: 409,
+      headers: { 'Content-Type': 'application/json', },
+    },
+  );
 }
 
 // If no active blockers, proceed with completion
-await client.execute({ sql: 'DELETE FROM tasks WHERE id = ?', args: [taskId] });
+await client.execute({ sql: 'DELETE FROM tasks WHERE id = ?',
+  args: [taskId,], },);
 ```
 
 ### How to query tasks with nested blocked children
@@ -411,9 +431,10 @@ await client.execute({ sql: 'DELETE FROM tasks WHERE id = ?', args: [taskId] });
 ```ts
 // Fetch top-level (unblocked) inbox tasks for "All" section
 const topLevel = await client.execute({
-  sql: `SELECT * FROM tasks WHERE status = 'inbox' AND blocked_by = '[]' ORDER BY created_at DESC`,
+  sql:
+    `SELECT * FROM tasks WHERE status = 'inbox' AND blocked_by = '[]' ORDER BY created_at DESC`,
   args: [],
-});
+},);
 
 // Batched: fetch ALL blocked inbox tasks and their blocker IDs in one query
 // Group by blocker on the client side (avoids N+1)
@@ -422,7 +443,7 @@ const blocked = await client.execute({
         FROM tasks, json_each(tasks.blocked_by) AS blocker
         WHERE tasks.status = 'inbox' AND tasks.blocked_by != '[]'`,
   args: [],
-});
+},);
 
 // Search always includes blocked tasks (with a badge)
 const searchResults = await client.execute({
@@ -432,8 +453,8 @@ const searchResults = await client.execute({
         JOIN tasks ON tasks.rowid = tasks_fts.rowid
         WHERE tasks_fts MATCH ?
         ORDER BY rank`,
-  args: [query],
-});
+  args: [query,],
+},);
 ```
 
 ### How reminder scheduling works
@@ -446,15 +467,16 @@ const searchResults = await client.execute({
 // sends emails, then removes the fired reminder from the array.
 
 const dueResult = await client.execute({
-  sql: `SELECT tasks.id, tasks.title, tasks.description, reminder.value AS reminder_time
+  sql:
+    `SELECT tasks.id, tasks.title, tasks.description, reminder.value AS reminder_time
         FROM tasks, json_each(tasks.reminders) AS reminder
         WHERE reminder.value <= datetime('now')
           AND tasks.status != 'done'`,
   args: [],
-});
+},);
 
 for (const row of dueResult.rows) {
-  await sendReminderEmail(row);
+  await sendReminderEmail(row,);
 
   // Remove the fired reminder from the JSON array
   await client.execute({
@@ -466,8 +488,8 @@ for (const row of dueResult.rows) {
           ),
           updated_at = datetime('now')
           WHERE id = ?`,
-    args: [row.reminder_time, row.id],
-  });
+    args: [row.reminder_time, row.id,],
+  },);
 }
 ```
 
@@ -478,39 +500,43 @@ for (const row of dueResult.rows) {
 // This runs once per day on a schedule (e.g., setTimeout loop or Bun cron).
 // BLOBs (attachments.data) and the raw .db file are EXCLUDED to stay within SMTP size limits.
 
-import { SmtpTransport } from '@upyo/smtp';
-import { createMessage } from '@upyo/core';
+import { createMessage, } from '@upyo/core';
+import { SmtpTransport, } from '@upyo/smtp';
 
 // @upyo/smtp actual API: host/port/secure/auth (not hostname/username/password)
 const transport = new SmtpTransport({
   host: SMTP_HOST,
-  port: Number(SMTP_PORT),
+  port: Number(SMTP_PORT,),
   secure: true,
-  auth: { user: SMTP_USER, pass: SMTP_PASS },
-});
+  auth: { user: SMTP_USER, pass: SMTP_PASS, },
+},);
 
-const tasks = await client.execute({ sql: 'SELECT * FROM tasks', args: [] });
+const tasks = await client.execute({ sql: 'SELECT * FROM tasks', args: [], },);
 const attachments = await client.execute({
   sql: 'SELECT id, task_id, filename, mime_type, created_at FROM attachments',
   args: [],
-});
-const settings = await client.execute({ sql: 'SELECT * FROM settings', args: [] });
+},);
+const settings = await client.execute({ sql: 'SELECT * FROM settings',
+  args: [], },);
 
 const jsonBackup = JSON.stringify({
-  tasks: tasks.rows, attachments: attachments.rows, settings: settings.rows,
-}, null, 2);
+  tasks: tasks.rows,
+  attachments: attachments.rows,
+  settings: settings.rows,
+}, null, 2,);
 
 // @upyo/core actual API: content.text (not bare text), returns receipt with .successful
 const message = createMessage({
   from: SMTP_FROM,
   to: userEmail,
-  subject: `Done - Daily Backup - ${new Date().toISOString().slice(0, 10)}`,
-  content: { text: 'Your daily Done database backup is attached.' },
-  attachments: [{ filename: 'done-backup.json', content: new TextEncoder().encode(jsonBackup) }],
-});
+  subject: `Done - Daily Backup - ${new Date().toISOString().slice(0, 10,)}`,
+  content: { text: 'Your daily Done database backup is attached.', },
+  attachments: [{ filename: 'done-backup.json',
+    content: new TextEncoder().encode(jsonBackup,), },],
+},);
 
 // Fire and forget -- if SMTP fails, that's the provider's problem
-const receipt = await transport.send(message).catch(console.error);
+const receipt = await transport.send(message,).catch(console.error,);
 await transport.close();
 ```
 
@@ -576,14 +602,14 @@ No form actions or progressive enhancement. Client-side `fetch()` to API routes,
 
 ```ts
 // Client-side: create a task
-const res = await fetch("/api/tasks", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ title, tags, locations }),
-});
+const res = await fetch('/api/tasks', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', },
+  body: JSON.stringify({ title, tags, locations, },),
+},);
 if (!res.ok) {
   const err = await res.json();
-  showToast(err.error);
+  showToast(err.error,);
   return;
 }
 // Navigate to refresh data (full page load -- simple, no client-side state to sync)
@@ -592,21 +618,21 @@ window.location.reload();
 
 ```ts
 // Server-side: API handler
-export async function handleCreateTask(req: Request): Promise<Response> {
+export async function handleCreateTask(req: Request,): Promise<Response> {
   const body = await req.json();
   // validate with zod-mini
-  const parsed = TaskCreateSchema.safeParse(body);
+  const parsed = TaskCreateSchema.safeParse(body,);
   if (!parsed.success) {
-    return new Response(JSON.stringify({ error: parsed.error.message }), {
+    return new Response(JSON.stringify({ error: parsed.error.message, },), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { 'Content-Type': 'application/json', },
+    },);
   }
-  const task = await createTask(db, parsed.data);
-  return new Response(JSON.stringify(task), {
+  const task = await createTask(db, parsed.data,);
+  return new Response(JSON.stringify(task,), {
     status: 201,
-    headers: { "Content-Type": "application/json" },
-  });
+    headers: { 'Content-Type': 'application/json', },
+  },);
 }
 ```
 
@@ -617,15 +643,15 @@ Happy-path only for competition. All errors echo to the user in a toast.
 ```ts
 // Client-side: src/client/lib/api.ts
 // Wraps fetch with error handling -- all API calls go through this.
-export async function api(path: string, options?: RequestInit): Promise<any> {
+export async function api(path: string, options?: RequestInit,): Promise<any> {
   const res = await fetch(path, {
     ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
-  });
+    headers: { 'Content-Type': 'application/json', ...options?.headers, },
+  },);
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Request failed" }));
-    showToast(err.error || "Something went wrong");
-    throw new Error(err.error);
+    const err = await res.json().catch(() => ({ error: 'Request failed', }));
+    showToast(err.error || 'Something went wrong',);
+    throw new Error(err.error,);
   }
   return res.json();
 }
@@ -635,11 +661,12 @@ export async function api(path: string, options?: RequestInit): Promise<any> {
 // Server-side: all API handlers catch errors and return JSON
 try {
   // ... handler logic
-} catch (e) {
-  return new Response(JSON.stringify({ error: String(e) }), {
+}
+catch (e) {
+  return new Response(JSON.stringify({ error: String(e,), },), {
     status: 500,
-    headers: { "Content-Type": "application/json" },
-  });
+    headers: { 'Content-Type': 'application/json', },
+  },);
 }
 ```
 
@@ -695,49 +722,53 @@ Cookie: session=<session-id>; Path=/u/<user-id>/; HttpOnly; Secure; SameSite=Str
 
 ```ts
 // Main request handler -- Bun.serve() in the orchestrator process
-function handleRequest(req: Request): Response | Promise<Response> {
-  const url = new URL(req.url);
+function handleRequest(req: Request,): Response | Promise<Response> {
+  const url = new URL(req.url,);
   const path = url.pathname;
 
   // 1. Public routes (no auth required)
-  if (path === '/register') return handleRegister(req);
-  if (path === '/login') return handleLogin(req);
-  if (path === '/verify') return handleEmailVerification(req);
-  if (path === '/') return Response.redirect('/login');
+  if (path === '/register')
+    return handleRegister(req,);
+  if (path === '/login')
+    return handleLogin(req,);
+  if (path === '/verify')
+    return handleEmailVerification(req,);
+  if (path === '/')
+    return Response.redirect('/login',);
 
   // 2. Extract user-id from path: /u/<user-id>/...
-  const match = path.match(/^\/u\/([A-Z0-9]{26})\//);  // ULID is 26 chars
-  if (!match) return new Response('Not found', { status: 404 });
+  const match = path.match(/^\/u\/([A-Z0-9]{26})\//,); // ULID is 26 chars
+  if (!match)
+    return new Response('Not found', { status: 404, },);
   const pathUserId = match[1];
 
   // 3. Validate session cookie
-  const sessionId = parseCookie(req.headers.get('cookie'), 'session');
-  if (!sessionId) return Response.redirect('/login');
+  const sessionId = parseCookie(req.headers.get('cookie',), 'session',);
+  if (!sessionId)
+    return Response.redirect('/login',);
 
-  const session = await lookupSession(sessionId);  // DB query
-  if (!session || new Date(session.expires_at) < new Date()) {
-    return Response.redirect('/login');
-  }
+  const session = await lookupSession(sessionId,); // DB query
+  if (!session || new Date(session.expires_at,) < new Date())
+    return Response.redirect('/login',);
 
   // 4. Path ACL: session user must match path user
-  if (session.user_id !== pathUserId) {
-    return new Response('Forbidden', { status: 403 });
-  }
+  if (session.user_id !== pathUserId)
+    return new Response('Forbidden', { status: 403, },);
 
   // 5. Ensure user process is running
-  const proc = await ensureProcessRunning(pathUserId);  // spawn if needed
+  const proc = await ensureProcessRunning(pathUserId,); // spawn if needed
 
   // 6. Update last-request timestamp (fire and forget)
-  updateLastRequest(pathUserId);
+  updateLastRequest(pathUserId,);
 
   // 7. Proxy to user's process, stripping /u/<user-id> prefix
-  const stripped = path.replace(`/u/${pathUserId}`, '') || '/';
+  const stripped = path.replace(`/u/${pathUserId}`, '',) || '/';
   const proxyUrl = `http://localhost:${proc.port}${stripped}${url.search}`;
   return fetch(proxyUrl, {
     method: req.method,
     headers: req.headers,
     body: req.body,
-  });
+  },);
 }
 ```
 
@@ -747,30 +778,50 @@ The orchestrator serves plain HTML pages for auth flows.
 Minimal styling -- these are functional forms, not the app itself.
 
 **Registration (`/register`):**
+
 ```html
-<form method="POST" action="/register">
+<form
+  method='POST'
+  action='/register'>
   <h1>Create your Done account</h1>
-  <label>Email <input type="email" name="email" required></label>
-  <label>Password <input type="password" name="password" required minlength="8"></label>
-  <button type="submit">Register</button>
+  <label>Email <input
+      type='email'
+      name='email'
+      required></label>
+  <label>Password <input
+      type='password'
+      name='password'
+      required
+      minlength='8'></label>
+  <button type='submit'>Register</button>
   <!-- On error, re-render page with error message in a <p class="error"> -->
   <!-- On success, show "Check your email for verification link" -->
 </form>
 ```
 
 **Login (`/login`):**
+
 ```html
-<form method="POST" action="/login">
+<form
+  method='POST'
+  action='/login'>
   <h1>Log in to Done</h1>
-  <label>Email <input type="email" name="email" required></label>
-  <label>Password <input type="password" name="password" required></label>
-  <button type="submit">Log in</button>
+  <label>Email <input
+      type='email'
+      name='email'
+      required></label>
+  <label>Password <input
+      type='password'
+      name='password'
+      required></label>
+  <button type='submit'>Log in</button>
   <!-- Same error for wrong email and wrong password: "Invalid email or password" -->
   <!-- On success, Set-Cookie + redirect to /u/<user-id>/ -->
 </form>
 ```
 
 **Email verification (`/verify?token=<token>`):**
+
 - GET request with token query param
 - Look up token in `users` table, set `email_verified = 1`, null the token
 - On success: redirect to `/login` with "Email verified" message
@@ -783,12 +834,14 @@ Our prompts are simple (infer tags from a title, rank tasks by context) -- not h
 Speed matters more than capability here because autofill runs on every keystroke (debounced).
 
 **Primary choice: Qwen3-1.7B (Q4_K_M quantization)**
+
 - ~1.2GB RAM, good structured JSON output (community-validated with Ollama JSON schema constraints)
 - Use **non-thinking mode** (`/no_think` or temperature=0) for fast autofill without chain-of-thought overhead
 - Official GGUF from Qwen team: `Qwen/Qwen3-1.7B-GGUF`
 - llama.cpp auto-downloads: `--hf-repo Qwen/Qwen3-1.7B-GGUF --hf-file Qwen3-1.7B-Q4_K_M.gguf --ctx-size 4096`
 
 **Fallback: LFM2.5-1.2B-Instruct (GGUF)**
+
 - Under 1GB RAM, 239 tok/s on AMD CPU -- remarkably fast
 - IFEval 86.23% (instruction following) is strong for its size
 - Official GGUF: `llama-cli -hf LiquidAI/LFM2.5-1.2B-Instruct-GGUF`
@@ -799,6 +852,7 @@ Both support the OpenAI-compatible `/v1/chat/completions` endpoint in llama.cpp 
 ### AI prompt templates (reference for day 4)
 
 **Autofill prompt (4.2):**
+
 ```
 System: You are a task metadata assistant. Given a task title, infer metadata.
 Return ONLY valid JSON matching this schema, no other text:
@@ -822,6 +876,7 @@ set splitSuggestion with the reason and proposed sub-task titles.
 ```
 
 **Suggestion ranking prompt (5.1):**
+
 ```
 System: You are a task prioritization assistant. Given a list of tasks and the user's
 current context, return the task IDs ranked by what the user should do next.
@@ -845,6 +900,7 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 ### UI specifications (reference for day 2)
 
 **Fonts and icons:**
+
 - Body text: Inter
 - Monospace (tracked time, code): JetBrains Mono
 - Icons: Google Material Symbols (outline style, variable weight)
@@ -861,6 +917,7 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
   - Focus icon: `psychology`
 
 **Inbox screen layout (from Figma):**
+
 - Top bar: hamburger (left), "Inbox" title (center), search icon (right)
 - **Suggested** section (collapsible, default open, ephemeral state):
   - Section header: sparkle icon + "Suggested" + collapse triangle
@@ -877,15 +934,18 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
   - All unblocked inbox tasks, chronological
 
 **Task card layout:**
+
 - Checkbox (left) + title text (wraps to 2 lines max)
 - Metadata chips row below title: `# tag`, `timer: Xs`, `where: Place` -- horizontal scroll on overflow, no wrapping
 - Tapping the card navigates to task details; tapping the checkbox completes the task
 
 **FAB (floating action button):**
+
 - Bottom-right, black circle with white `+` icon
 - Opens new task creation (inline or overlay -- TBD based on other screen designs)
 
 **Color palette:**
+
 - Monochrome: black text on white background
 - Accent: muted red/brown for tags (`# shopping` text color)
 - No shadows, no gradients, no border-radius on cards -- deliberately bare-bones
@@ -1045,10 +1105,10 @@ Coolify's reverse proxy handles HTTPS termination -- the orchestrator only liste
 
 **Services:**
 
-| Service | Image | Purpose |
-| --- | --- | --- |
-| `orchestrator` | Custom (Bun + app code) | Auth, reverse proxy, process management |
-| `llama-cpp` | `ghcr.io/ggml-org/llama.cpp:server` (CPU) | Shared AI inference, OpenAI-compatible API |
+| Service        | Image                                     | Purpose                                    |
+| -------------- | ----------------------------------------- | ------------------------------------------ |
+| `orchestrator` | Custom (Bun + app code)                   | Auth, reverse proxy, process management    |
+| `llama-cpp`    | `ghcr.io/ggml-org/llama.cpp:server` (CPU) | Shared AI inference, OpenAI-compatible API |
 
 The orchestrator container spawns per-user Bun processes as child processes within itself (not separate containers).
 Each child process runs `Bun.build()` at startup to bundle client assets -- no separate build step in the Dockerfile.
@@ -1082,36 +1142,36 @@ services:
         ENV NODE_ENV=production
         CMD ["bun", "run", "orchestrator/src/index.ts"]
     ports:
-      - "127.0.0.1:3000:3000"
+    - '127.0.0.1:3000:3000'
     volumes:
-      - done-data:/data
+    - done-data:/data
     environment:
-      - SMTP_HOST
-      - SMTP_PORT
-      - SMTP_USER
-      - SMTP_PASS
-      - SMTP_FROM
-      - CHAT_COMPLETIONS_URL=http://llama-cpp:8080/v1/chat/completions
-      - PORT_RANGE_START=3100
-      - PORT_RANGE_END=3999
+    - SMTP_HOST
+    - SMTP_PORT
+    - SMTP_USER
+    - SMTP_PASS
+    - SMTP_FROM
+    - CHAT_COMPLETIONS_URL=http://llama-cpp:8080/v1/chat/completions
+    - PORT_RANGE_START=3100
+    - PORT_RANGE_END=3999
     depends_on:
-      - llama-cpp
+    - llama-cpp
 
   llama-cpp:
     image: ghcr.io/ggml-org/llama.cpp:server
     command:
-      - "--host"
-      - "0.0.0.0"
-      - "--port"
-      - "8080"
-      - "--hf-repo"
-      - "Qwen/Qwen3-1.7B-GGUF"
-      - "--hf-file"
-      - "Qwen3-1.7B-Q4_K_M.gguf"
-      - "--ctx-size"
-      - "4096"
+    - '--host'
+    - '0.0.0.0'
+    - '--port'
+    - '8080'
+    - '--hf-repo'
+    - 'Qwen/Qwen3-1.7B-GGUF'
+    - '--hf-file'
+    - 'Qwen3-1.7B-Q4_K_M.gguf'
+    - '--ctx-size'
+    - '4096'
     volumes:
-      - llama-models:/root/.cache/llama.cpp
+    - llama-models:/root/.cache/llama.cpp
 
 volumes:
   done-data:
@@ -1192,64 +1252,72 @@ Read-only inbound for MVP. Outbound writes deferred post-competition.
 A throwaway flashcard app was built pre-competition to validate the architecture.
 These patterns are confirmed working -- no surprises expected during implementation.
 
-| Pattern | Status | Notes |
-| --- | --- | --- |
-| build-css -> Bun.build() -> Bun.serve() pipeline | **validated** | Runs at startup, restarts cleanly with `bun --watch` |
-| Bun.serve() `routes` with `:param` and per-method dispatch | **validated** | Type-safe params, SIMD-accelerated, replaces hand-written router |
-| Embedded JSON (`<script type="application/json">`) | **validated** | Client reads with `JSON.parse(el.textContent)` |
-| CSS-as-text-import (Bun.build() inlines CSS strings) | **validated** | `import styles from "..." with { type: "text" }` works |
-| @mixin/@apply via @monochromatic-dev/build-css | **validated** | LightningCSS + PostCSS expansion, oxc-resolver works under Bun |
-| Custom elements | **validated** | `<flash-card>` with shadow DOM, attributes, events |
-| zod validation on API routes | **validated** | Schema validation with error messages |
-| fetch() mutations + window.location.reload() | **validated** | Simple mutation pattern, no client-side state sync |
-| bun:sqlite in-memory DB | **validated** | CRUD, foreign keys, WAL mode |
-| Bun.file() auto Content-Type | **validated** | No manual content-type mapping needed |
-| Static imports for DB + route handlers | **validated** | Dynamic imports unnecessary -- top-level await ensures build completes first |
+| Pattern                                                    | Status        | Notes                                                                        |
+| ---------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------- |
+| build-css -> Bun.build() -> Bun.serve() pipeline           | **validated** | Runs at startup, restarts cleanly with `bun --watch`                         |
+| Bun.serve() `routes` with `:param` and per-method dispatch | **validated** | Type-safe params, SIMD-accelerated, replaces hand-written router             |
+| Embedded JSON (`<script type="application/json">`)         | **validated** | Client reads with `JSON.parse(el.textContent)`                               |
+| CSS-as-text-import (Bun.build() inlines CSS strings)       | **validated** | `import styles from "..." with { type: "text" }` works                       |
+| @mixin/@apply via @monochromatic-dev/build-css             | **validated** | LightningCSS + PostCSS expansion, oxc-resolver works under Bun               |
+| Custom elements                                            | **validated** | `<flash-card>` with shadow DOM, attributes, events                           |
+| zod validation on API routes                               | **validated** | Schema validation with error messages                                        |
+| fetch() mutations + window.location.reload()               | **validated** | Simple mutation pattern, no client-side state sync                           |
+| bun:sqlite in-memory DB                                    | **validated** | CRUD, foreign keys, WAL mode                                                 |
+| Bun.file() auto Content-Type                               | **validated** | No manual content-type mapping needed                                        |
+| Static imports for DB + route handlers                     | **validated** | Dynamic imports unnecessary -- top-level await ensures build completes first |
 
 ### Not yet tested (verify early in implementation)
 
-| Pattern | Risk | Mitigation |
-| --- | --- | --- |
-| FTS5 full-text search | low | Standard SQLite extension, well-documented |
-| llama.cpp HTTP client + structured JSON output | medium | Test on day 4 with real model before wiring UI |
-| File/BLOB attachments in SQLite | low | Standard bun:sqlite, deferred feature anyway |
-| 5 client entrypoints (vs 2 tested) | low | Bun.build() is fast, linear scaling expected |
-| setInterval timer tick on client | low | Standard browser API, trivial to test |
-| @upyo/smtp email sending | medium | External dependency, test with real SMTP early |
-| Orchestrator multi-process spawning | high | Most complex untested piece -- budget extra time on day 5 |
+| Pattern                                        | Risk   | Mitigation                                                |
+| ---------------------------------------------- | ------ | --------------------------------------------------------- |
+| FTS5 full-text search                          | low    | Standard SQLite extension, well-documented                |
+| llama.cpp HTTP client + structured JSON output | medium | Test on day 4 with real model before wiring UI            |
+| File/BLOB attachments in SQLite                | low    | Standard bun:sqlite, deferred feature anyway              |
+| 5 client entrypoints (vs 2 tested)             | low    | Bun.build() is fast, linear scaling expected              |
+| setInterval timer tick on client               | low    | Standard browser API, trivial to test                     |
+| @upyo/smtp email sending                       | medium | External dependency, test with real SMTP early            |
+| Orchestrator multi-process spawning            | high   | Most complex untested piece -- budget extra time on day 5 |
 
 ## Risk areas
 
 ### AI autofill latency (typing feels sluggish)
+
 - Debounce 500ms, show loading indicator, make all fields manually editable
 - llama.cpp latency depends on hardware -- test early, adjust model size if needed
 
 ### GitHub sync complexity (two-way is hard)
+
 - Start with one-way import, add write-back as stretch
 
 ### Timer accuracy across timezones
+
 - Store all timestamps as UTC, compute display client-side
 
 ### No full offline mode
+
 - App requires connectivity for all actions; show "offline" banner when disconnected
 - Avoids the massive complexity of local write queue + sync-on-reconnect
 
 ### llama.cpp resource contention
+
 - Shared instance serving multiple users could bottleneck on concurrent requests
 - Rate limiting per process helps; queue depth monitoring would be ideal
 - For competition scale (few users), this is fine
 
 ### BLOB attachments bloat the database
+
 - A few photos can make the `.db` file large
 - Daily backup email excludes BLOBs intentionally
 - For competition MVP this is acceptable; long-term, move attachments to filesystem
 
 ### Orchestrator complexity underestimated
+
 - Process management, auth, reverse proxy, and registration flow are non-trivial -- but simpler than configuring Caddy + AuthCrunch
 - Cold-start wake-on-request adds latency; users may see a brief loading page
 - Mitigation: keep the orchestrator minimal for MVP (no graceful suspension, just kill + respawn), test registration flow early on day 5
 
 ### Blocked-tasks N+1 query
+
 - Fetching dependents per visible task is N+1; batch into one query:
 
 ```sql
@@ -1262,6 +1330,7 @@ WHERE tasks.status = 'inbox'
 ```
 
 ### Bun.build() startup time
+
 - Validated in bun-test: 2 entrypoints build in <100ms. 5 should be similar.
 - For competition, the simple always-rebuild approach is confirmed fine.
 

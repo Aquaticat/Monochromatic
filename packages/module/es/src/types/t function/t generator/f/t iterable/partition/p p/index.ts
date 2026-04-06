@@ -56,7 +56,10 @@ export async function* $<T,>(
   iterable: Iterable<T> | AsyncIterable<T>,
 ): AsyncGenerator<
   {
-    decision: 'pass' | 'fail' | ['thrown', unknown,];
+    decision: 'pass' | 'fail' | [
+      'thrown',
+      unknown,
+    ];
     item: T;
   },
   void,

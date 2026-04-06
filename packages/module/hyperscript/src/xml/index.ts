@@ -124,6 +124,12 @@ type XmlOptions = {
  * @param children - child XML strings to concatenate
  *
  * @returns well-formed XML element string
+ *
+ * @example
+ * ```ts
+ * $({ tag: 'item', attrs: { id: '1' }, text: 'hello' });
+ * // '<item id="1">hello</item>'
+ * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $(
   {

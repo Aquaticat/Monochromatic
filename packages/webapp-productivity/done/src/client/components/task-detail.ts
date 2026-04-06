@@ -22,7 +22,7 @@ import type {
  */
 class TaskDetail extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Current task configuration data. */
   #data: TaskDetailData | null = null;
@@ -43,7 +43,7 @@ class TaskDetail extends HTMLElement {
   #complexity: TaskComplexity | null = null;
 
   /** Autofill controller managing debounced AI requests. */
-  #autofill: AutofillController;
+  readonly #autofill: AutofillController;
 
   /** Initializes the shadow root and autofill controller. */
   constructor() {
@@ -69,8 +69,12 @@ class TaskDetail extends HTMLElement {
         .bind(this,),
       setState: function setState(
         this: TaskDetail,
-        update: { tags?: string[]; locations?: string[]; priority?: string | null;
-          complexity?: string | null; },
+        update: {
+          tags?: string[];
+          locations?: string[];
+          priority?: string | null;
+          complexity?: string | null;
+        },
       ): void {
         if (update.tags !== undefined)
           this.#tags = update.tags as string[];

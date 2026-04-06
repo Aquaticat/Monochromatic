@@ -5,6 +5,8 @@
  * used by SVG, PDF, and PNG exporters.
  */
 
+import type { TextEntryData, } from './text-page.ts';
+
 //region Constants
 
 /** Font size for text inputs in rem, matching `.text-input` CSS */
@@ -210,7 +212,7 @@ export function readTextEntries({ textLayer, }: {
  * ```
  */
 export function textEntriesToExport(
-  serialized: readonly import('./text-page.ts').TextEntryData[],
+  serialized: readonly TextEntryData[],
 ): ExportTextEntry[] {
   return resolveExportEntries(
     serialized.map(function toRaw(entry,): RawEntryFields {

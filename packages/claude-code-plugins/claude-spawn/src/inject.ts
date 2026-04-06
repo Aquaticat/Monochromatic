@@ -105,7 +105,10 @@ function checkCompletedChildren(
     );
     const reportedPath = join(
       SPAWNS_DIR,
-      filename.replace(/\.json$/, '.reported',),
+      filename.replace(
+        /\.json$/,
+        '.reported',
+      ),
     );
 
     try {

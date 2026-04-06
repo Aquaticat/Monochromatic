@@ -22,7 +22,7 @@ const VERTICAL_OFFSET = 4;
  */
 export class RenameInput extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
-  #shadow: ShadowRoot;
+  readonly #shadow: ShadowRoot;
 
   /** Text input element. */
   #input: HTMLInputElement | null = null;

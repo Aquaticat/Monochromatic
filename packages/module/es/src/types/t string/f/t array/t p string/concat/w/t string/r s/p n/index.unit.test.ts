@@ -20,7 +20,7 @@ await describe({
             'Hello, World',
           );
       },
-    }),
+    },),
 
     it({
       name: 'joins three strings with a separator',
@@ -32,28 +32,28 @@ await describe({
             'a-b-c',
           );
       },
-    }),
+    },),
 
     it({
       name: 'empty array returns empty string',
       fn: async () => {
         expect($({ strings: [], concatWith: ',', },),).toBe('',);
       },
-    }),
+    },),
 
     it({
       name: 'single element array returns that element',
       fn: async () => {
         expect($({ strings: ['single',], concatWith: ',', },),).toBe('single',);
       },
-    }),
+    },),
 
     it({
       name: 'empty string separator joins without separator',
       fn: async () => {
         expect($({ strings: ['a', 'b', 'c',], concatWith: '', },),).toBe('abc',);
       },
-    }),
+    },),
 
     it({
       name: 'single character separator',
@@ -62,7 +62,7 @@ await describe({
           'one two three',
         );
       },
-    }),
+    },),
 
     it({
       name: 'multi-character separator',
@@ -74,21 +74,21 @@ await describe({
             'first - second - third',
           );
       },
-    }),
+    },),
 
     it({
       name: 'whitespace separator',
       fn: async () => {
         expect($({ strings: ['1', '2', '3',], concatWith: '  ', },),).toBe('1  2  3',);
       },
-    }),
+    },),
 
     it({
       name: 'special characters as separators',
       fn: async () => {
         expect($({ strings: ['a', 'b', 'c',], concatWith: '|||', },),).toBe('a|||b|||c',);
       },
-    }),
+    },),
 
     it({
       name: 'newline as separator',
@@ -97,7 +97,7 @@ await describe({
           'line1\nline2\nline3',
         );
       },
-    }),
+    },),
 
     it({
       name: 'tab as separator',
@@ -106,14 +106,14 @@ await describe({
           'col1\tcol2\tcol3',
         );
       },
-    }),
+    },),
 
     it({
       name: 'handles empty strings in the array',
       fn: async () => {
         expect($({ strings: ['a', '', 'c',], concatWith: ',', },),).toBe('a,,c',);
       },
-    }),
+    },),
 
     it({
       name: 'handles multiple empty strings',
@@ -125,7 +125,7 @@ await describe({
             '--',
           );
       },
-    }),
+    },),
 
     it({
       name: 'handles strings with spaces',
@@ -137,7 +137,7 @@ await describe({
             'foo bar, baz qux',
           );
       },
-    }),
+    },),
 
     it({
       name: 'handles unicode characters',
@@ -149,14 +149,14 @@ await describe({
             '世界 你好 世界',
           );
       },
-    }),
+    },),
 
     it({
       name: 'handles emoji characters',
       fn: async () => {
         expect($({ strings: ['🚀', '🌟', '✨',], concatWith: ' ', },),).toBe('🚀 🌟 ✨',);
       },
-    }),
+    },),
 
     it({
       name: 'handles special regex characters as strings',
@@ -168,14 +168,14 @@ await describe({
             'test.*|pattern+|more?',
           );
       },
-    }),
+    },),
 
     it({
       name: 'handles numbers in array',
       fn: async () => {
         expect($({ strings: ['1', '2', '3',], concatWith: '-', },),).toBe('1-2-3',);
       },
-    }),
+    },),
 
     it({
       name: 'handles mixed content',
@@ -187,7 +187,7 @@ await describe({
             'Hello 123 World',
           );
       },
-    }),
+    },),
 
     it({
       name: 'handles very long arrays efficiently',
@@ -198,7 +198,7 @@ await describe({
         expect(result,).toContain('item50,',);
         expect(result,).toContain(',item99',);
       },
-    }),
+    },),
 
     it({
       name: 'handles very long strings',
@@ -208,7 +208,7 @@ await describe({
         const result = $({ strings: [longString1, longString2,], concatWith: '|', },);
         expect(result,).toBe(`${longString1}|${longString2}`,);
       },
-    }),
+    },),
 
     it({
       name: 'handles dot separator',
@@ -217,7 +217,7 @@ await describe({
           'com.example.www',
         );
       },
-    }),
+    },),
 
     it({
       name: 'handles slash separator',
@@ -226,7 +226,7 @@ await describe({
           'home/user/documents',
         );
       },
-    }),
+    },),
 
     it({
       name: 'handles backslash separator',
@@ -235,7 +235,7 @@ await describe({
           String.raw`C:\Users\Documents`,
         );
       },
-    }),
+    },),
 
     it({
       name: 'handles colon separator',
@@ -247,7 +247,7 @@ await describe({
             'key:value:extra',
           );
       },
-    }),
+    },),
 
     it({
       name: 'handles semicolon separator',
@@ -259,14 +259,14 @@ await describe({
             'red;green;blue',
           );
       },
-    }),
+    },),
 
     it({
       name: 'handles pipe separator',
       fn: async () => {
         expect($({ strings: ['A', 'B', 'C',], concatWith: '|', },),).toBe('A|B|C',);
       },
-    }),
+    },),
 
     it({
       name: 'handles ampersand separator',
@@ -275,7 +275,7 @@ await describe({
           'foo&bar&baz',
         );
       },
-    }),
+    },),
 
     it({
       name: 'handles dash separator',
@@ -284,7 +284,7 @@ await describe({
           'first-second-third',
         );
       },
-    }),
+    },),
 
     it({
       name: 'handles underscore separator',
@@ -296,13 +296,13 @@ await describe({
             'variable_name_here',
           );
       },
-    }),
+    },),
 
     it({
       name: 'handles equals sign separator',
       fn: async () => {
         expect($({ strings: ['key', 'value',], concatWith: '=', },),).toBe('key=value',);
       },
-    }),
+    },),
   ],
 },);
