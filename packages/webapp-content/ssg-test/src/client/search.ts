@@ -273,7 +273,6 @@ function renderResults(results: readonly PagefindResultData[],): void {
     },)
     .join('',);
 
-  resultsList.setAttribute('data-open', '',);
   input.setAttribute('aria-expanded', 'true',);
   input.removeAttribute('aria-activedescendant',);
 }
@@ -286,7 +285,6 @@ function hideResults(): void {
     return;
 
   activeIndex = -1;
-  resultsList.removeAttribute('data-open',);
   resultsList.innerHTML = '';
 
   if (input !== null) {

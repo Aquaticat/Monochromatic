@@ -273,7 +273,7 @@ export function searchAndInteractionStyles(): string {
       },
     },),
     $({
-      rule: '.search-results[data-open]',
+      rule: '.search-results:not(:empty)',
       decls: {
         display: 'block',
       },
