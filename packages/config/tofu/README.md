@@ -90,6 +90,32 @@ The configuration aggregates IPs from:
 - Coolify (via API)
 - Various static IPs (LetsEncrypt, pCloud, Linkup, Resend, OpenRouter, etc.)
 
+## Caddy
+
+The server runs a custom Caddy build with plugins via xcaddy.
+Rebuild when upgrading Caddy or changing the plugin set:
+
+```bash
+xcaddy build v2.11.2 \
+  --with github.com/mholt/caddy-l4 \
+  --with github.com/caddyserver/cache-handler \
+  --with github.com/darkweak/storages/otter/caddy \
+  --with github.com/greenpau/caddy-security \
+  --with github.com/mholt/caddy-ratelimit \
+  --with github.com/mholt/caddy-webdav
+```
+
+Provides these Caddy modules:
+
+- `github.com/mholt/caddy-l4` -- all `layer4.*`, `caddy.listeners.layer4`, `tls.handshake_match.alpn`
+- `github.com/caddyserver/cache-handler` -- `http.handlers.cache`, `admin.api.souin`
+- `github.com/darkweak/storages/otter/caddy` -- `storages.cache.otter`
+- `github.com/greenpau/caddy-security` -- `security`, `http.authentication.providers.authorizer`, `http.handlers.authenticator`
+- `github.com/mholt/caddy-ratelimit` -- `http.handlers.rate_limit`
+- `github.com/mholt/caddy-webdav` -- `http.handlers.webdav`
+
+Verify after building: `./caddy list-modules` and `./caddy version`.
+
 ## Local-only files
 
 The following are gitignored and must be created manually:
