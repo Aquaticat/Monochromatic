@@ -6,6 +6,7 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
+import { renderAttribution, } from './page-attribution.ts';
 import { renderToolbar, } from './page-toolbar.ts';
 
 /**
@@ -63,11 +64,13 @@ function renderCanvasContainer(): string {
  *
  * @param svgBackgrounds - processed SVG background strings, one per page
  *
+ * @param sourceUrl - browsable URL to the package source code on GitHub
+ *
  * @returns complete HTML document string
  *
  * @example
  * ```ts
- * const html = renderPage({ css: 'body {}', js: 'console.log("ok")', svgBackgrounds: [] });
+ * const html = renderPage({ css: 'body {}', js: 'console.log("ok")', svgBackgrounds: [], sourceUrl: 'https://github.com/...' });
  * ```
  */
 export function renderPage(
@@ -75,10 +78,12 @@ export function renderPage(
     css,
     js,
     svgBackgrounds,
+    sourceUrl,
   }: {
     css: string;
     js: string;
     svgBackgrounds: readonly string[];
+    sourceUrl: string;
   },
 ): string {
   /**
@@ -135,6 +140,7 @@ export function renderPage(
               children: [
                 renderToolbar(svgBackgrounds.length,),
                 renderCanvasContainer(),
+                renderAttribution(sourceUrl,),
               ],
             },),
             h({

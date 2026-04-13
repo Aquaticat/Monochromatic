@@ -21,6 +21,7 @@ import pageSvg1 from './assets/output_1.svg' with { type: 'text', };
 import pageSvg2 from './assets/output_2.svg' with { type: 'text', };
 
 import { renderPage, } from './page.ts';
+import { resolveSourceUrl, } from './source-url.ts';
 import { renderStyles, } from './styles.ts';
 
 export {};
@@ -66,11 +67,15 @@ const js = await readFile(
   'utf8',
 );
 
+/** Source code URL resolved from git remote and package.json */
+const sourceUrl = await resolveSourceUrl(PACKAGE_DIR,);
+
 /** Complete self-contained HTML document */
 const html = renderPage({
   css,
   js,
   svgBackgrounds,
+  sourceUrl,
 },);
 
 await mkdir(
