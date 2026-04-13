@@ -116,6 +116,24 @@ Provides these Caddy modules:
 
 Verify after building: `./caddy list-modules` and `./caddy version`.
 
+## SSH authentication
+
+The server uses key-only root authentication with no root password set.
+Coolify connects exclusively via SSH key (stored in Coolify's dashboard under **Security > Private Keys**),
+and `sshd_config` enforces this with:
+
+```
+PermitRootLogin prohibit-password
+PubkeyAuthentication yes
+PasswordAuthentication no
+```
+
+This eliminates brute-force password attacks entirely.
+SSH access is further restricted at the firewall level to home ISP and Coolify IP ranges only (see `hetzner.tf`, port 22 rule).
+
+For emergency access without the SSH key, use Hetzner Cloud Console's **Rescue** tab to boot a rescue system
+and reset credentials or mount the filesystem.
+
 ## Local-only files
 
 The following are gitignored and must be created manually:
