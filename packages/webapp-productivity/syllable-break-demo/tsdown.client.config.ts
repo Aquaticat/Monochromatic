@@ -1,0 +1,23 @@
+import base from '@monochromatic-dev/config-tsdown/.client.ts';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
+
+/**
+ * Client-side browser bundle config for the syllable break demo.
+ * Bundles the hyphenation library and UI logic into a single `dist/client/main.js`
+ * for HTML embedding.
+ */
+const config: UserConfig = defineConfig({
+  ...base,
+  entry: ['./src/client/main.ts',],
+  deps: {
+    ...base.deps,
+    alwaysBundle: [
+      ...(Array.isArray(base.deps?.alwaysBundle) ? base.deps.alwaysBundle : []),
+      /^hyphen/,
+    ],
+  },
+},);
+export default config;

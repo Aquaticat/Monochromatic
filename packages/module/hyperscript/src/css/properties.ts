@@ -64,6 +64,7 @@ type IdentifierProperties =
   | 'counter-increment'
   | 'counter-reset'
   | 'counter-set'
+  | 'hyphenate-character'
   | 'position-anchor';
 
 //endregion
