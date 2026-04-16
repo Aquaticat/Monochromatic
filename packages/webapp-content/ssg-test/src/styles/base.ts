@@ -1,22 +1,23 @@
 /**
  * Site CSS orchestrator.
  *
- * Composes all style modules into a single CSS string for the build.
+ * Composes all style modules — both pure-style files and
+ * colocated component CSS — into a single CSS string for the build.
  */
-import { footerStyles, } from './footer.ts';
+import * as pageContent from '../components/page-content.ts';
+import * as postCard from '../components/post-card.ts';
+import * as postList from '../components/post-list.ts';
+import * as siteFooter from '../components/site-footer.ts';
+import * as siteHeader from '../components/site-header.ts';
+import * as siteSearch from '../components/site-search.ts';
+import * as themeToggle from '../components/theme-toggle.ts';
 import {
-  layoutStyles,
+  interactionStyles,
   resetStyles,
   typographyStyles,
 } from './global.ts';
-import {
-  headerStyles,
-  searchAndInteractionStyles,
-  themeToggleStyles,
-} from './header.ts';
 import { highlightStyles, } from './highlight.ts';
 import { iconFontStyles, } from './icons.ts';
-import { postStyles, } from './posts.ts';
 import {
   darkModeTokenStyles,
   inverseTokenStyles,
@@ -41,14 +42,16 @@ export function generateSiteCss(): string {
     darkModeTokenStyles(),
     inverseTokenStyles(),
     resetStyles(),
-    layoutStyles(),
     typographyStyles(),
+    interactionStyles(),
     highlightStyles(),
-    headerStyles(),
-    postStyles(),
-    searchAndInteractionStyles(),
-    themeToggleStyles(),
-    footerStyles(),
+    pageContent.css(),
+    siteHeader.css(),
+    themeToggle.css(),
+    siteSearch.css(),
+    postList.css(),
+    postCard.css(),
+    siteFooter.css(),
   ]
     .join('\n',);
 }

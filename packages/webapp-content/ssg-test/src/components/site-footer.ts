@@ -1,9 +1,10 @@
 /**
- * Footer newsticker animation styles.
+ * Site footer with rolling newsticker.
  *
- * A CSS-only vertical ticker that scrolls through quotes one line at
- * a time. The footer clips to a single line height (`1lh`) and the
- * inner track translates upward on a looping keyframe animation.
+ * Colocates the CSS animation, keyframe generation, ticker quotes,
+ * and HTML template in a single `<site-footer>` custom element.
+ * The footer clips to a single line height and the inner track
+ * animates vertically to reveal each quote in sequence.
  */
 import {
   cssLh,
@@ -12,12 +13,32 @@ import {
   cssTranslateY,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-import { TICKER_QUOTES, } from '../templates/ticker-quotes.ts';
+//region Ticker quotes
 
-//region Constants
+/**
+ * Ticker quotes displayed one at a time in the footer.
+ *
+ * @example
+ * ```ts
+ * TICKER_QUOTES.length // 6
+ * ```
+ */
+const TICKER_QUOTES = [
+  'flavor text flavored flavorless',
+  'sloppiest sloppy slop',
+  'drinking drinks may make drinkers drunk',
+  'programmable blogging program programmed for blogging',
+  'ErrorError: ErrorError in erroring Error to ErrorError',
+  'pipeline operator stuck in pipeline',
+] as const;
 
-/** Number of quotes in the ticker, derived from the shared quotes array. */
+//endregion Ticker quotes
+
+//region Animation constants
+
+/** Number of quotes in the ticker. */
 const QUOTE_COUNT = TICKER_QUOTES.length;
 
 /**
@@ -53,7 +74,7 @@ const SCROLL_DURATION = 0.5;
  */
 const TOTAL_DURATION = QUOTE_COUNT * (HOLD_DURATION + SCROLL_DURATION);
 
-//endregion
+//endregion Animation constants
 
 //region Keyframe generation
 
@@ -114,24 +135,24 @@ function tickerKeyframeStops(): string[] {
   return stops;
 }
 
-//endregion
+//endregion Keyframe generation
 
-//region Main export
+//region CSS
 
 /**
  * Footer and ticker track styles with scroll animation.
  *
- * @returns CSS string for footer rules and `@keyframes ticker-scroll`
+ * @returns CSS string for the `<site-footer>` element
  *
  * @example
  * ```ts
- * const css = footerStyles();
+ * const styles = css();
  * ```
  */
-export function footerStyles(): string {
+export function css(): string {
   return [
     $({
-      rule: 'footer',
+      rule: 'site-footer footer',
       decls: {
         'overflow-block': 'clip',
         'block-size': cssLh(1,),
@@ -147,7 +168,7 @@ export function footerStyles(): string {
       ],
     },),
     $({
-      rule: '.ticker-track',
+      rule: 'site-footer .ticker-track',
       decls: {
         'animation-name': 'ticker-scroll',
         'animation-duration': cssS(TOTAL_DURATION,),
@@ -164,4 +185,45 @@ export function footerStyles(): string {
     .join('\n',);
 }
 
-//endregion
+//endregion CSS
+
+//region HTML
+
+/**
+ * Renders the site footer with a rolling newsticker.
+ *
+ * The footer clips to a single line height and the inner track
+ * animates vertically to reveal each quote in sequence.
+ *
+ * @returns HTML string for the `<site-footer>` element
+ *
+ * @example
+ * ```ts
+ * const markup = html();
+ * ```
+ */
+export function html(): string {
+  return h({
+    tag: 'site-footer',
+    attrs: { 'data-is': '', },
+    children: [
+      h({
+        tag: 'footer',
+        children: [
+          h({
+            tag: 'div',
+            class: 'ticker-track',
+            children: TICKER_QUOTES.map(function tickerLine(quote,) {
+              return h({
+                tag: 'p',
+                text: quote,
+              },);
+            },),
+          },),
+        ],
+      },),
+    ],
+  },);
+}
+
+//endregion HTML

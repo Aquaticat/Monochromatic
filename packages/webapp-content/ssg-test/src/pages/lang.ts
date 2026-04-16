@@ -11,7 +11,7 @@ import { i18nObject, } from '../i18n/i18n-util.ts';
 
 import type { Post, } from '../lib/content.ts';
 import { pageLayout, } from '../templates/layout.ts';
-import { postList, } from '../templates/post-list.ts';
+import { html as postListHtml, } from '../components/post-list.ts';
 
 /**
  * Generates the language landing page HTML.
@@ -43,20 +43,19 @@ export function langPage(
   const t = i18nObject(lang,);
   const title = t.siteDescription();
 
-  const content = [
-    h({
-      tag: 'main',
-      children: [h({
+  const content = h({
+    tag: 'main',
+    children: [
+      h({
         tag: 'h1',
         text: title,
-      },),],
-    },),
-    h({
-      tag: 'aside',
-      html: postList(posts,),
-    },),
-  ]
-    .join('',);
+      },),
+      h({
+        tag: 'section',
+        html: postListHtml(posts,),
+      },),
+    ],
+  },);
 
   return pageLayout({
     title,

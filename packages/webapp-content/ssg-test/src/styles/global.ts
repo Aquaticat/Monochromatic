@@ -1,10 +1,11 @@
 /**
- * Global reset, layout, and typography styles.
+ * Global reset, typography, and interaction styles.
  *
  * Base rules that apply site-wide before any component styles.
  * All colors reference CSS custom properties defined in `tokens.ts`.
  */
 import {
+  cssCalc,
   cssCommaList,
   cssPercent,
   cssRem,
@@ -13,10 +14,11 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
+  BORDER_WIDTH_REM,
   GAP,
   GAP_SMALL,
   LINE_HEIGHT,
-  MAX_WIDTH,
+  TOUCH_TARGET,
 } from './constants.ts';
 
 /**
@@ -34,6 +36,10 @@ export function resetStyles(): string {
     $({
       rule: '*, *::before, *::after',
       decls: { 'box-sizing': 'border-box', },
+    },),
+    $({
+      rule: '[data-is]',
+      decls: { display: 'contents', },
     },),
     $({
       rule: 'body',
@@ -56,28 +62,6 @@ export function resetStyles(): string {
     },),
   ]
     .join('\n',);
-}
-
-/**
- * Content area layout constraints.
- *
- * @returns CSS string for layout rules
- *
- * @example
- * ```ts
- * const css = layoutStyles();
- * ```
- */
-export function layoutStyles(): string {
-  return $({
-    rule: '.between_header_footer',
-    decls: {
-      'max-inline-size': cssRem(MAX_WIDTH,),
-      'margin-inline': 'auto',
-      'padding-inline': cssRem(GAP,),
-      'padding-block': cssRem(GAP,),
-    },
-  },);
 }
 
 /**
@@ -119,6 +103,42 @@ export function typographyStyles(): string {
         'overflow-x': 'auto',
         'border-radius': cssRem(GAP_SMALL,),
         'background-color': cssVar('color-code-bg',),
+      },
+    },),
+  ]
+    .join('\n',);
+}
+
+/**
+ * Global interactive element styles.
+ *
+ * Minimum touch targets for links and `:focus-visible` outlines
+ * for all focusable elements. Applies site-wide, not scoped
+ * to any single component.
+ *
+ * @returns CSS string for interaction rules
+ *
+ * @example
+ * ```ts
+ * const css = interactionStyles();
+ * ```
+ */
+export function interactionStyles(): string {
+  return [
+    $({
+      rule: 'a',
+      decls: {
+        'min-inline-size': cssRem(TOUCH_TARGET,),
+        'min-block-size': cssRem(TOUCH_TARGET,),
+      },
+    },),
+    $({
+      rule: ':focus-visible',
+      decls: {
+        'outline-color': cssVar('color-focus-ring',),
+        'outline-style': 'solid',
+        'outline-width': cssCalc(BORDER_WIDTH_REM,),
+        'outline-offset': cssCalc(BORDER_WIDTH_REM,),
       },
     },),
   ]

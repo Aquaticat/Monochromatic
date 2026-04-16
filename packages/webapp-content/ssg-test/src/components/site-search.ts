@@ -1,138 +1,38 @@
 /**
- * Header bar, theme toggle, and interactive element styles.
+ * Expanding search input and results dropdown component.
  *
- * Includes the site header, theme inverse toggle, search popover,
- * `:focus-visible` outlines, and minimum touch target sizing for
- * accessible interactive elements.
+ * The input is icon-sized by default with a Material Symbols `search`
+ * icon centered over it. On `:focus` the input expands, reveals
+ * placeholder text, and shifts the icon to the inline-start edge.
+ * The results dropdown positions absolutely below the search wrapper.
+ *
+ * Internal class names (`.search-icon`, `.search-input`, `.search-results`,
+ * `.search-title`, `.search-excerpt`) are scoped to this file's CSS.
+ * The `.search-title` and `.search-excerpt` classes are also generated
+ * in client-side innerHTML by `src/client/search.ts`.
  */
 import {
   cssCalc,
   cssCommaList,
   cssInt,
-  type CssValue,
   cssRem,
   cssS,
   cssVar,
+  type CssValue,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
+import type { TranslationFunctions, } from '../i18n/i18n-types.ts';
 import {
   BORDER_WIDTH_REM,
   FONT_SIZE_SMALL,
   GAP,
   GAP_SMALL,
   TOUCH_TARGET,
-} from './constants.ts';
+} from '../styles/constants.ts';
 
-/**
- * Site header bar styles.
- *
- * @returns CSS string for header rules
- *
- * @example
- * ```ts
- * const css = headerStyles();
- * ```
- */
-export function headerStyles(): string {
-  return [
-    $({
-      rule: 'header',
-      decls: {
-        display: 'flex',
-        'align-items': 'center',
-        'justify-content': 'space-between',
-        'padding-block': cssRem(GAP,),
-        'padding-inline': cssRem(GAP,),
-        'border-block-end-style': 'solid',
-        'border-block-end-width': cssCalc(BORDER_WIDTH_REM,),
-        'border-block-end-color': cssVar('color-border',),
-      },
-    },),
-    $({
-      rule: '.brand',
-      decls: {
-        display: 'flex',
-        'align-items': 'center',
-        gap: cssRem(GAP_SMALL,),
-        'text-decoration-line': 'none',
-        color: 'inherit',
-        'font-weight': 600,
-      },
-      children: [
-        $({
-          rule: '& img',
-          decls: {
-            'inline-size': cssRem(2,),
-            'block-size': cssRem(2,),
-          },
-        },),
-      ],
-    },),
-    $({
-      rule: 'nav',
-      decls: {
-        display: 'flex',
-        'align-items': 'center',
-        gap: cssRem(GAP_SMALL,),
-      },
-    },),
-  ]
-    .join('\n',);
-}
-
-/**
- * Theme toggle checkbox-as-button styles.
- *
- * The real checkbox is visually hidden but remains focusable.
- * The adjacent label acts as the visible toggle, displaying
- * a Material Symbols `invert_colors` icon.
- *
- * @returns CSS string for theme toggle rules
- *
- * @example
- * ```ts
- * const css = themeToggleStyles();
- * ```
- */
-export function themeToggleStyles(): string {
-  return [
-    $({
-      rule: '.theme-toggle-input',
-      decls: {
-        position: 'absolute',
-        'inline-size': cssCalc(BORDER_WIDTH_REM,),
-        'block-size': cssCalc(BORDER_WIDTH_REM,),
-        overflow: 'hidden',
-        clip: 'rect(0 0 0 0)',
-        'white-space': 'nowrap',
-      },
-      children: [
-        $({
-          rule: '&:focus-visible + .theme-toggle',
-          decls: {
-            'outline-color': cssVar('color-focus-ring',),
-            'outline-style': 'solid',
-            'outline-width': cssCalc(BORDER_WIDTH_REM,),
-            'outline-offset': cssCalc(BORDER_WIDTH_REM,),
-          },
-        },),
-      ],
-    },),
-    $({
-      rule: '.theme-toggle',
-      decls: {
-        display: 'inline-flex',
-        'align-items': 'center',
-        'justify-content': 'center',
-        'min-inline-size': cssRem(TOUCH_TARGET,),
-        'min-block-size': cssRem(TOUCH_TARGET,),
-        cursor: 'pointer',
-      },
-    },),
-  ]
-    .join('\n',);
-}
+//region Constants
 
 /** Collapsed search input size in rem (matches touch target). */
 const SEARCH_COLLAPSED = TOUCH_TARGET;
@@ -143,25 +43,24 @@ const SEARCH_EXPANDED = 16;
 /** Transition duration for the search input expand/collapse. */
 const SEARCH_TRANSITION = cssS(0.25,);
 
+//endregion Constants
+
+//region CSS
+
 /**
- * Expanding search input and results dropdown styles.
+ * Search input, icon overlay, and results dropdown styles.
  *
- * The input is icon-sized by default with a Material Symbols `search`
- * icon centered over it. On `:focus` the input expands, reveals
- * placeholder text, and shifts the icon to the inline-start edge.
- * The results dropdown positions absolutely below the search wrapper.
- *
- * @returns CSS string for search input and results rules
+ * @returns CSS string for the `<site-search>` element
  *
  * @example
  * ```ts
- * const css = searchAndInteractionStyles();
+ * const styles = css();
  * ```
  */
-export function searchAndInteractionStyles(): string {
+export function css(): string {
   return [
     $({
-      rule: '.site-search',
+      rule: 'site-search search',
       decls: {
         position: 'relative',
         display: 'inline-flex',
@@ -169,7 +68,7 @@ export function searchAndInteractionStyles(): string {
       },
     },),
     $({
-      rule: '.search-icon',
+      rule: 'site-search .search-icon',
       decls: {
         position: 'absolute',
         inset: '0',
@@ -184,7 +83,7 @@ export function searchAndInteractionStyles(): string {
       },
     },),
     $({
-      rule: '.search-input',
+      rule: 'site-search .search-input',
       decls: {
         'inline-size': cssRem(SEARCH_COLLAPSED,),
         'block-size': cssRem(SEARCH_COLLAPSED,),
@@ -250,7 +149,7 @@ export function searchAndInteractionStyles(): string {
       ],
     },),
     $({
-      rule: '.search-results',
+      rule: 'site-search .search-results',
       decls: {
         position: 'absolute',
         inset: `${cssRem(SEARCH_COLLAPSED,)} 0 auto auto`,
@@ -324,22 +223,74 @@ export function searchAndInteractionStyles(): string {
         },),
       ],
     },),
-    $({
-      rule: 'a',
-      decls: {
-        'min-inline-size': cssRem(TOUCH_TARGET,),
-        'min-block-size': cssRem(TOUCH_TARGET,),
-      },
-    },),
-    $({
-      rule: ':focus-visible',
-      decls: {
-        'outline-color': cssVar('color-focus-ring',),
-        'outline-style': 'solid',
-        'outline-width': cssCalc(BORDER_WIDTH_REM,),
-        'outline-offset': cssCalc(BORDER_WIDTH_REM,),
-      },
-    },),
   ]
     .join('\n',);
 }
+
+//endregion CSS
+
+//region HTML
+
+/**
+ * Renders the expanding search input with results dropdown
+ * as a `<site-search>` custom element.
+ *
+ * The `<search>` landmark wraps an `<input type="search">` that collapses
+ * to icon size when unfocused, with a Material Symbols `search` icon
+ * overlaid via absolute positioning, and an empty `<ul>` for Pagefind
+ * results populated client-side.
+ *
+ * @param t - translation functions for localized placeholder text
+ *
+ * @returns HTML string for the search widget
+ *
+ * @example
+ * ```ts
+ * const markup = html(t);
+ * ```
+ */
+export function html(t: TranslationFunctions,): string {
+  return h({
+    tag: 'site-search',
+    attrs: { 'data-is': '', },
+    children: [
+      h({
+        tag: 'search',
+        children: [
+          h({
+            tag: 'input',
+            attrs: {
+              type: 'search',
+              id: 'search-input',
+              placeholder: t.searchPlaceholder(),
+              autocomplete: 'off',
+              role: 'combobox',
+              'aria-label': t.searchPlaceholder(),
+              'aria-controls': 'search-results',
+              'aria-expanded': 'false',
+              'aria-autocomplete': 'list',
+            },
+            class: 'search-input',
+          },),
+          h({
+            tag: 'span',
+            class: 'material-symbols-outlined search-icon',
+            attrs: { 'aria-hidden': 'true', },
+            text: 'search',
+          },),
+          h({
+            tag: 'ul',
+            attrs: {
+              id: 'search-results',
+              role: 'listbox',
+              'aria-label': t.searchPlaceholder(),
+            },
+            class: 'search-results',
+          },),
+        ],
+      },),
+    ],
+  },);
+}
+
+//endregion HTML

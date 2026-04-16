@@ -11,7 +11,7 @@ import { i18nObject, } from '../i18n/i18n-util.ts';
 
 import type { Post, } from '../lib/content.ts';
 import { pageLayout, } from '../templates/layout.ts';
-import { postList, } from '../templates/post-list.ts';
+import { html as postListHtml, } from '../components/post-list.ts';
 
 /**
  * Generates a page listing all posts with a specific tag in one language.
@@ -61,7 +61,7 @@ export function tagPage(
       },),
       h({
         tag: 'section',
-        html: postList(posts,),
+        html: postListHtml(posts,),
       },),
     ],
   },);

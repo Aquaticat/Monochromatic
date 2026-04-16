@@ -1,17 +1,18 @@
 /**
  * Full page layout template.
  *
- * Composes `<head>`, `<header>`, and page-specific content into a
- * complete HTML document. All markup generated via h-html — no raw
- * HTML strings or template files.
+ * Composes `<head>`, `<site-header>`, `<page-content>`, and `<site-footer>`
+ * into a complete HTML document. All markup generated via h-html and
+ * colocated component render functions — no raw HTML strings or template files.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
+import { html as pageContentHtml, } from '../components/page-content.ts';
+import { html as siteFooterHtml, } from '../components/site-footer.ts';
+import { html as siteHeaderHtml, } from '../components/site-header.ts';
 import type { Locales, } from '../i18n/i18n-types.ts';
 
-import { footerFragment, } from './footer.ts';
 import { headFragment, } from './head.ts';
-import { headerFragment, } from './header.ts';
 
 /**
  * Renders a complete HTML document with the standard site shell.
@@ -72,14 +73,12 @@ export function pageLayout(
         h({
           tag: 'body',
           children: [
-            headerFragment(lang,),
-            h({
-              tag: 'div',
-              class: 'between_header_footer',
-              attrs: searchable ? { 'data-pagefind-body': '', } : {},
-              html: content,
+            siteHeaderHtml(lang,),
+            pageContentHtml({
+              content,
+              searchable,
             },),
-            footerFragment(),
+            siteFooterHtml(),
           ],
         },),
       ],

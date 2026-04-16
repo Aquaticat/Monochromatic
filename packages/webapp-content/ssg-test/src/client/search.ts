@@ -313,7 +313,7 @@ if (input !== null && resultsList !== null) {
   document.addEventListener('click', function onDocumentClick(event,) {
     // oxlint-disable-next-line no-unsafe-type-assertion -- EventTarget is always a Node in click handlers
     const target = event.target as Node;
-    const searchContainer = input.closest('.site-search',);
+    const searchContainer = input.closest('site-search',);
     if (searchContainer !== null && !searchContainer.contains(target,))
       hideResults();
   },);

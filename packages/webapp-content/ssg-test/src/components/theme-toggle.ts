@@ -1,0 +1,133 @@
+/**
+ * Theme toggle component.
+ *
+ * A checkbox styled as a button that inverts the site color scheme.
+ * The real checkbox is visually hidden but remains focusable.
+ * The adjacent label acts as the visible toggle, displaying
+ * a Material Symbols `invert_colors` icon.
+ *
+ * **Cross-component dependency**: the checkbox uses `id="theme-toggle"`,
+ * which `tokens.ts` references via `:root:has(#theme-toggle:checked)`
+ * to flip light/dark tokens. Changing this ID requires updating
+ * `tokens.ts` as well.
+ */
+import {
+  cssCalc,
+  cssRem,
+  cssVar,
+  hCss as $,
+} from '@monochromatic-dev/module-hyperscript/ts';
+import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
+
+import type { TranslationFunctions, } from '../i18n/i18n-types.ts';
+import {
+  BORDER_WIDTH_REM,
+  TOUCH_TARGET,
+} from '../styles/constants.ts';
+
+/**
+ * Material Symbols ligature name for the theme toggle icon.
+ *
+ * Uses `invert_colors` — a single icon that represents both light
+ * and dark modes, replacing the previous sun/moon SVG pair.
+ */
+const THEME_ICON = 'invert_colors';
+
+//region CSS
+
+/**
+ * Theme toggle checkbox-as-button styles.
+ *
+ * @returns CSS string for the `<theme-toggle>` element
+ *
+ * @example
+ * ```ts
+ * const styles = css();
+ * ```
+ */
+export function css(): string {
+  return [
+    $({
+      rule: 'theme-toggle input',
+      decls: {
+        position: 'absolute',
+        'inline-size': cssCalc(BORDER_WIDTH_REM,),
+        'block-size': cssCalc(BORDER_WIDTH_REM,),
+        overflow: 'hidden',
+        clip: 'rect(0 0 0 0)',
+        'white-space': 'nowrap',
+      },
+      children: [
+        $({
+          rule: '&:focus-visible + label',
+          decls: {
+            'outline-color': cssVar('color-focus-ring',),
+            'outline-style': 'solid',
+            'outline-width': cssCalc(BORDER_WIDTH_REM,),
+            'outline-offset': cssCalc(BORDER_WIDTH_REM,),
+          },
+        },),
+      ],
+    },),
+    $({
+      rule: 'theme-toggle label',
+      decls: {
+        display: 'inline-flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        'min-inline-size': cssRem(TOUCH_TARGET,),
+        'min-block-size': cssRem(TOUCH_TARGET,),
+        cursor: 'pointer',
+      },
+    },),
+  ]
+    .join('\n',);
+}
+
+//endregion CSS
+
+//region HTML
+
+/**
+ * Renders the theme toggle as a `<theme-toggle>` custom element.
+ *
+ * @param t - translation functions for the aria-label
+ *
+ * @returns HTML string for the theme toggle
+ *
+ * @example
+ * ```ts
+ * const markup = html(t);
+ * ```
+ */
+export function html(t: TranslationFunctions,): string {
+  return h({
+    tag: 'theme-toggle',
+    attrs: { 'data-is': '', },
+    children: [
+      h({
+        tag: 'input',
+        attrs: {
+          type: 'checkbox',
+          id: 'theme-toggle',
+        },
+      },),
+      h({
+        tag: 'label',
+        attrs: {
+          for: 'theme-toggle',
+          'aria-label': t.themeToggle(),
+        },
+        children: [
+          h({
+            tag: 'span',
+            class: 'material-symbols-outlined',
+            text: THEME_ICON,
+          },),
+        ],
+      },),
+    ],
+  },);
+}
+
+//endregion HTML
