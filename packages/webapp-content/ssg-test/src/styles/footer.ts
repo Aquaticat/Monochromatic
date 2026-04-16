@@ -137,12 +137,14 @@ export function footerStyles(): string {
         'block-size': cssLh(1,),
         'text-align': 'center',
       },
-    },),
-    $({
-      rule: 'footer p',
-      decls: {
-        'margin-block': 0,
-      },
+      children: [
+        $({
+          rule: '& p',
+          decls: {
+            'margin-block': 0,
+          },
+        },),
+      ],
     },),
     $({
       rule: '.ticker-track',

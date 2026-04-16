@@ -15,7 +15,7 @@ export const LINE_HEIGHT = 1.6;
 export const GAP = 1;
 
 /** Small gap in rem. */
-export const GAP_SMALL = 1 / 2;
+export const GAP_SMALL: number = 1 / 2;
 
 /** Border width in rem, equivalent to 1px at default font size. */
 export const BORDER_WIDTH_REM = 'calc(1 / 16 * 1rem)';

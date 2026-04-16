@@ -8,7 +8,10 @@
 import {
   cssCalc,
   cssCommaList,
+  cssInt,
+  type CssValue,
   cssRem,
+  cssS,
   cssVar,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
@@ -56,13 +59,15 @@ export function headerStyles(): string {
         color: 'inherit',
         'font-weight': 600,
       },
-    },),
-    $({
-      rule: '.brand img',
-      decls: {
-        'inline-size': cssRem(2,),
-        'block-size': cssRem(2,),
-      },
+      children: [
+        $({
+          rule: '& img',
+          decls: {
+            'inline-size': cssRem(2,),
+            'block-size': cssRem(2,),
+          },
+        },),
+      ],
     },),
     $({
       rule: 'nav',
@@ -102,6 +107,17 @@ export function themeToggleStyles(): string {
         clip: 'rect(0 0 0 0)',
         'white-space': 'nowrap',
       },
+      children: [
+        $({
+          rule: '&:focus-visible + .theme-toggle',
+          decls: {
+            'outline-color': cssVar('color-focus-ring',),
+            'outline-style': 'solid',
+            'outline-width': cssCalc(BORDER_WIDTH_REM,),
+            'outline-offset': cssCalc(BORDER_WIDTH_REM,),
+          },
+        },),
+      ],
     },),
     $({
       rule: '.theme-toggle',
@@ -112,15 +128,6 @@ export function themeToggleStyles(): string {
         'min-inline-size': cssRem(TOUCH_TARGET,),
         'min-block-size': cssRem(TOUCH_TARGET,),
         cursor: 'pointer',
-      },
-    },),
-    $({
-      rule: '.theme-toggle-input:focus-visible + .theme-toggle',
-      decls: {
-        'outline-color': cssVar('color-focus-ring',),
-        'outline-style': 'solid',
-        'outline-width': cssCalc(BORDER_WIDTH_REM,),
-        'outline-offset': cssCalc(BORDER_WIDTH_REM,),
       },
     },),
   ]
@@ -134,7 +141,7 @@ const SEARCH_COLLAPSED = TOUCH_TARGET;
 const SEARCH_EXPANDED = 16;
 
 /** Transition duration for the search input expand/collapse. */
-const SEARCH_TRANSITION = '0.25s';
+const SEARCH_TRANSITION = cssS(0.25,);
 
 /**
  * Expanding search input and results dropdown styles.
@@ -170,17 +177,10 @@ export function searchAndInteractionStyles(): string {
         'align-items': 'center',
         'justify-content': 'center',
         'pointer-events': 'none',
-        color: cssVar('color-muted',),
-        'transition-property': 'justify-content',
+        // oxlint-disable-next-line no-unsafe-type-assertion -- StrictValue<TransitionProperty> rejects individual property names
+        'transition-property': 'justify-content' as CssValue,
         'transition-duration': SEARCH_TRANSITION,
         'transition-timing-function': 'ease-out',
-      },
-    },),
-    $({
-      rule: '.search-input:focus ~ .search-icon',
-      decls: {
-        'justify-content': 'start',
-        'padding-inline-start': cssRem(GAP_SMALL,),
       },
     },),
     $({
@@ -188,8 +188,8 @@ export function searchAndInteractionStyles(): string {
       decls: {
         'inline-size': cssRem(SEARCH_COLLAPSED,),
         'block-size': cssRem(SEARCH_COLLAPSED,),
-        'padding-block': 0,
-        'padding-inline': 0,
+        'padding-block': cssInt(0,),
+        'padding-inline': cssInt(0,),
         'border-style': 'solid',
         'border-width': cssCalc(BORDER_WIDTH_REM,),
         'border-color': 'transparent',
@@ -208,36 +208,46 @@ export function searchAndInteractionStyles(): string {
         'transition-duration': SEARCH_TRANSITION,
         'transition-timing-function': 'ease-out',
       },
-    },),
-    $({
-      rule: '.search-input:focus',
-      decls: {
-        color: 'inherit',
-        'inline-size': cssRem(SEARCH_EXPANDED,),
-        'padding-inline-start': cssRem(2.5,),
-        'padding-inline-end': cssRem(GAP_SMALL,),
-        'border-color': cssVar('color-border',),
-        'background-color': cssVar('color-bg',),
-        cursor: 'text',
-        'outline-color': cssVar('color-focus-ring',),
-        'outline-style': 'solid',
-        'outline-width': cssCalc(BORDER_WIDTH_REM,),
-        'outline-offset': cssCalc(BORDER_WIDTH_REM,),
-      },
-    },),
-    $({
-      rule: '.search-input::placeholder',
-      decls: {
-        color: 'transparent',
-        'transition-property': 'color',
-        'transition-duration': SEARCH_TRANSITION,
-      },
-    },),
-    $({
-      rule: '.search-input:focus::placeholder',
-      decls: {
-        color: cssVar('color-muted',),
-      },
+      children: [
+        $({
+          rule: '&:focus',
+          decls: {
+            color: 'inherit',
+            'inline-size': cssRem(SEARCH_EXPANDED,),
+            'padding-inline-start': cssRem(2.5,),
+            'padding-inline-end': cssRem(GAP_SMALL,),
+            'border-color': cssVar('color-border',),
+            'background-color': cssVar('color-bg',),
+            cursor: 'text',
+            'outline-color': cssVar('color-focus-ring',),
+            'outline-style': 'solid',
+            'outline-width': cssCalc(BORDER_WIDTH_REM,),
+            'outline-offset': cssCalc(BORDER_WIDTH_REM,),
+          },
+        },),
+        $({
+          rule: '&::placeholder',
+          decls: {
+            color: 'transparent',
+            // oxlint-disable-next-line no-unsafe-type-assertion -- StrictValue<TransitionProperty> rejects individual property names
+            'transition-property': 'color' as CssValue,
+            'transition-duration': SEARCH_TRANSITION,
+          },
+        },),
+        $({
+          rule: '&:focus::placeholder',
+          decls: {
+            color: cssVar('color-muted',),
+          },
+        },),
+        $({
+          rule: '&:focus ~ .search-icon',
+          decls: {
+            'justify-content': 'start',
+            'padding-inline-start': cssRem(GAP_SMALL,),
+          },
+        },),
+      ],
     },),
     $({
       rule: '.search-results',
@@ -247,17 +257,18 @@ export function searchAndInteractionStyles(): string {
         'min-inline-size': cssRem(SEARCH_EXPANDED,),
         'max-block-size': cssRem(24,),
         'overflow-y': 'auto',
-        'margin-block': 0,
+        'margin-block': cssInt(0,),
         'padding-block': cssRem(GAP_SMALL,),
-        'padding-inline': 0,
+        'padding-inline': cssInt(0,),
         'list-style-type': 'none',
         'background-color': cssVar('color-bg',),
         'border-style': 'solid',
         'border-width': cssCalc(BORDER_WIDTH_REM,),
         'border-color': cssVar('color-border',),
         'border-radius': cssRem(GAP_SMALL,),
-        'box-shadow': `0 ${cssRem(GAP_SMALL,)} ${cssRem(GAP,)} rgba(0, 0, 0, 0.1)`,
-        'z-index': '10',
+        // oxlint-disable-next-line no-unsafe-type-assertion -- template literal produces valid box-shadow but doesn't narrow to StrictValue
+        'box-shadow': `0 ${cssRem(GAP_SMALL,)} ${cssRem(GAP,)} rgba(0, 0, 0, 0.1)` as CssValue,
+        'z-index': 10,
       },
       children: [
         $({
@@ -292,7 +303,7 @@ export function searchAndInteractionStyles(): string {
         $({
           rule: '.search-title',
           decls: {
-            'font-weight': '600',
+            'font-weight': 600,
           },
         },),
         $({
@@ -308,7 +319,7 @@ export function searchAndInteractionStyles(): string {
           decls: {
             'background-color': 'transparent',
             color: cssVar('color-link',),
-            'font-weight': '600',
+            'font-weight': 600,
           },
         },),
       ],

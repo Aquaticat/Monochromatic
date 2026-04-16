@@ -9,6 +9,7 @@
  * the editor and the published site.
  */
 
+import type { Highlighter, } from '@lezer/highlight';
 import {
   tagHighlighter,
   tags,
@@ -31,7 +32,7 @@ export {
  * Markdown and HTML tags map to groups that reuse color variables:
  * headings get their own color, links get blue, emphasis/strong get gold.
  */
-export const ssgHighlighter = tagHighlighter([
+export const ssgHighlighter: Highlighter = tagHighlighter([
   //region Code tags (JS/TS, JSON, CSS, YAML)
   {
     tag: [

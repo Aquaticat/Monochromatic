@@ -3,12 +3,16 @@
  *
  * Uses `::highlight(hl-<group>)` pseudo-elements styled by
  * `--hl-<group>` custom properties defined in `tokens.ts`.
+ * Rules are generated from the shared `HIGHLIGHT_GROUPS` array
+ * so adding a new group automatically creates its CSS rule.
  */
 
 import {
   cssVar,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
+
+import { HIGHLIGHT_GROUPS, } from '../client/highlight-groups.ts';
 
 /**
  * Generates `::highlight()` CSS rules for all syntax highlight groups.
@@ -22,50 +26,14 @@ import {
  * ```
  */
 export function highlightStyles(): string {
-  return [
-    $({
-      rule: '::highlight(hl-keyword)',
-      decls: { color: cssVar('hl-keyword',), },
-    },),
-    $({
-      rule: '::highlight(hl-string)',
-      decls: { color: cssVar('hl-string',), },
-    },),
-    $({
-      rule: '::highlight(hl-comment)',
-      decls: { color: cssVar('hl-comment',), },
-    },),
-    $({
-      rule: '::highlight(hl-number)',
-      decls: { color: cssVar('hl-number',), },
-    },),
-    $({
-      rule: '::highlight(hl-type)',
-      decls: { color: cssVar('hl-type',), },
-    },),
-    $({
-      rule: '::highlight(hl-function)',
-      decls: { color: cssVar('hl-function',), },
-    },),
-    $({
-      rule: '::highlight(hl-property)',
-      decls: { color: cssVar('hl-property',), },
-    },),
-    $({
-      rule: '::highlight(hl-heading)',
-      decls: { color: cssVar('hl-heading',), },
-    },),
-    $({
-      rule: '::highlight(hl-link)',
-      decls: {
-        color: cssVar('hl-link',),
-        'text-decoration': 'underline',
-      },
-    },),
-    $({
-      rule: '::highlight(hl-emphasis)',
-      decls: { color: cssVar('hl-emphasis',), },
-    },),
-  ]
+  return HIGHLIGHT_GROUPS
+    .map(function highlightRule(group,) {
+      return $({
+        rule: `::highlight(hl-${group})`,
+        decls: group === 'link'
+          ? { color: cssVar(`hl-${group}`,), 'text-decoration-line': 'underline', }
+          : { color: cssVar(`hl-${group}`,), },
+      },);
+    },)
     .join('',);
 }

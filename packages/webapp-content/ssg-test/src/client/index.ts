@@ -59,8 +59,39 @@ function collectTextNodes(element: HTMLElement,): TextEntry[] {
 }
 
 /**
+ * Finds the index of the first text entry whose end offset exceeds `from`
+ * using binary search over the sorted `textEntries` array.
+ *
+ * @param textEntries - sorted text nodes with cumulative offsets
+ *
+ * @param from - character offset to search for
+ *
+ * @returns index of the first potentially overlapping text entry
+ */
+function findFirstOverlap(
+  textEntries: readonly TextEntry[],
+  from: number,
+): number {
+  let lo = 0;
+  let hi = textEntries.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    const entry = textEntries[mid]!;
+    if (entry.start + entry.node.length <= from) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+  return lo;
+}
+
+/**
  * Creates DOM Range objects from encoded offset pairs, mapping character
  * offsets to the appropriate text nodes within the code element.
+ *
+ * Uses binary search to find the first overlapping text node for each
+ * pair, then scans forward only through overlapping nodes.
  *
  * @param textEntries - pre-collected text nodes with cumulative offsets
  *
@@ -90,11 +121,15 @@ function createRangesFromPairs({
     const from = Number(fromStr,);
     const to = Number(toStr,);
 
-    for (const entry of textEntries) {
-      const nodeEnd = entry.start + entry.node.length;
+    const startIdx = findFirstOverlap(
+      textEntries,
+      from,
+    );
 
-      if (entry.start >= to || nodeEnd <= from)
-        continue;
+    for (let i = startIdx; i < textEntries.length; i++) {
+      const entry = textEntries[i]!;
+      if (entry.start >= to)
+        break;
 
       const rangeStart = Math.max(
         0,

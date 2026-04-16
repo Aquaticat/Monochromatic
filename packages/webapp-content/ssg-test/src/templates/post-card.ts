@@ -29,7 +29,7 @@ export function postCard(post: Post,): string {
       children: [
         h({
           tag: 'a',
-          attrs: { href: `#tag__${tag}`, },
+          attrs: { href: `/${post.lang}/tag/${tag}`, },
           text: tag,
         },),
       ],

@@ -21,6 +21,9 @@ import readdir from 'tiny-readdir-glob';
 import { parse as parseYaml, } from 'yaml';
 import * as z from 'zod/mini';
 
+import type { Locales, } from '../i18n/i18n-types.ts';
+import { isLocale, } from '../i18n/i18n-util.ts';
+
 import { sha256, } from './cache-hash.ts';
 
 //region Frontmatter
@@ -136,7 +139,29 @@ function parseFrontmatter(
  * objects (from YAML parsing) and ISO date strings (from
  * JSON-serialized cache entries).
  */
-export const postFrontmatterSchema = z.object({
+/** Validated frontmatter fields for a blog post. */
+export type PostFrontmatter = {
+  title: string;
+  description: string;
+  published: Date;
+  updated: Date;
+  tags: string[];
+};
+
+/**
+ * Zod schema for MDX post frontmatter validation.
+ *
+ * Uses `z.coerce.date()` so the same schema handles both native `Date`
+ * objects (from YAML parsing) and ISO date strings (from
+ * JSON-serialized cache entries).
+ */
+export const postFrontmatterSchema: z.ZodObject<{
+  title: z.ZodString;
+  description: z.ZodString;
+  published: z.ZodPipe<z.ZodUnknown, z.ZodDate>;
+  updated: z.ZodPipe<z.ZodUnknown, z.ZodDate>;
+  tags: z.ZodArray<z.ZodString>;
+}> = z.object({
   title: z.string(),
   description: z.string(),
   published: z.coerce.date(),
@@ -144,17 +169,14 @@ export const postFrontmatterSchema = z.object({
   tags: z.array(z.string(),),
 },);
 
-/** Validated frontmatter fields for a blog post. */
-export type PostFrontmatter = z.infer<typeof postFrontmatterSchema>;
-
 //endregion Schema
 
 //region Types
 
 /** Blog post with parsed frontmatter and extracted path metadata. */
 export type Post = {
-  /** Two-letter language code derived from parent directory name. */
-  lang: string;
+  /** Two-letter language code derived from parent directory name, validated against known locales. */
+  lang: Locales;
   /** Post slug derived from filename without extension. */
   name: string;
   /** Validated frontmatter data. */
@@ -205,7 +227,13 @@ export async function loadContent(contentDir: string,): Promise<Post[]> {
       content: body,
     } = parseFrontmatter(raw,);
     const data = postFrontmatterSchema.parse(rawData,);
-    const lang = basename(dirname(filePath,),);
+    const rawLang = basename(dirname(filePath,),);
+    if (!isLocale(rawLang,)) {
+      throw new Error(
+        `Unknown locale "${rawLang}" for ${filePath}. Expected one of the configured locales.`,
+      );
+    }
+    const lang: Locales = rawLang;
     const name = basename(
       filePath,
       '.mdx',

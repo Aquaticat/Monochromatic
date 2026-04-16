@@ -11,6 +11,11 @@
  * <span class="material-symbols-outlined">invert_colors</span>
  * ```
  */
+import {
+  type CssValue,
+  cssRem,
+  hCss as $,
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
  * Generates the `@font-face` declaration and `.material-symbols-outlined`
@@ -28,34 +33,36 @@
  */
 export function iconFontStyles(): string {
   return [
-    [
-      '@font-face {',
-      "  font-family: 'Material Symbols Outlined';",
-      '  font-style: normal;',
-      '  font-weight: 100 700;',
-      '  font-display: block;',
-      "  src: url('/materialSymbols.woff2') format('woff2');",
-      '}',
-    ]
-      .join('\n',),
-    [
-      '.material-symbols-outlined {',
-      "  font-family: 'Material Symbols Outlined';",
-      '  font-weight: normal;',
-      '  font-style: normal;',
-      '  font-size: 1.25rem;',
-      '  line-height: 1;',
-      '  letter-spacing: normal;',
-      '  text-transform: none;',
-      '  display: inline-block;',
-      '  white-space: nowrap;',
-      '  word-wrap: normal;',
-      '  direction: ltr;',
-      "  -webkit-font-feature-settings: 'liga';",
-      '  -webkit-font-smoothing: antialiased;',
-      '}',
-    ]
-      .join('\n',),
+    $({
+      at: 'font-face',
+      decls: {
+        'font-family': "'Material Symbols Outlined'",
+        'font-style': 'normal',
+        'font-weight': '100 700',
+        'font-display': 'block',
+        src: "url('/materialSymbols.woff2') format('woff2')",
+      },
+    },),
+    /* oxlint-disable no-unsafe-type-assertion -- icon utility class mixes standard keywords with vendor-prefixed values that lack branded constructors */
+    $({
+      rule: '.material-symbols-outlined',
+      decls: {
+        'font-family': "'Material Symbols Outlined'" as CssValue,
+        'font-weight': 'normal' as CssValue,
+        'font-style': 'normal' as CssValue,
+        'font-size': cssRem(1.25,),
+        'line-height': '1' as CssValue,
+        'letter-spacing': 'normal' as CssValue,
+        'text-transform': 'none' as CssValue,
+        display: 'inline-block',
+        'white-space': 'nowrap',
+        'overflow-wrap': 'normal' as CssValue,
+        direction: 'ltr',
+        '-webkit-font-feature-settings': "'liga'" as CssValue,
+        '-webkit-font-smoothing': 'antialiased' as CssValue,
+      },
+    },),
+    /* oxlint-enable no-unsafe-type-assertion */
   ]
     .join('\n',);
 }

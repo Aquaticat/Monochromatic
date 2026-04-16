@@ -1,34 +1,89 @@
 # statusline
 
-Minimal Claude Code status line showing model effort level, context window token usage, and API rate limit warnings.
+Claude Code status line showing a context-aware activity word, model name, effort level,
+context window token usage, and API rate limit warnings.
 
 ## What it displays
 
-A fixed-width token counter plus rate limit indicators that appear only when approaching limits.
+An activity word extracted from conversation context,
+followed by model info and a fixed-width token counter.
+Rate limit indicators appear only when approaching limits.
 
 **Normal usage** (rate limits comfortable):
 
 ```
-Opus     51,045/1,000,000
+Searching    Opus     51,045/1,000,000
 ```
 
 **Approaching a limit** (session window at 72% used, 28% remaining):
 
 ```
-Opus     51,045/1,000,000    28% left (1h23m)
+Refactoring    Opus     51,045/1,000,000    28% left (1h23m)
 ```
 
 **Both tiers constrained**:
 
 ```
-Opus     51,045/1,000,000    28% left (1h23m) · 12% left (3d2h)
+Compiling    Opus     51,045/1,000,000    28% left (1h23m) · 12% left (3d2h)
 ```
 
 The token counter is always 7 characters wide (`TTT,OOO` format) so the display never shifts.
 
+## Activity word
+
+Replaces Claude Code's built-in spinner verbs, which pick random words from a flat list
+with no relation to what Claude is actually doing
+([anthropics/claude-code#33057](https://github.com/anthropics/claude-code/issues/33057)).
+
+The statusline extracts a gerund from the last 8KB of the session transcript instead.
+Since Claude's prose naturally contains gerunds that describe its current activity
+("Let me search for...", "I'll try refactoring..."),
+the displayed word reflects what Claude was most recently talking about.
+
+### How it works
+
+1. The statusline JSON payload includes `transcript_path`
+2. `openAsBlob` reads only the final 8KB of the transcript (no full-file load)
+3. A regex finds all words matching `\b[a-z]+-?[a-z]*ing\b` (including hyphenated compounds)
+4. A noise filter removes non-activity words (pronouns, prepositions, adjectives, phase-implying verbs)
+5. The last surviving match is capitalized and displayed
+6. Falls back to "Thinking" when no gerund is found or the transcript is unavailable
+
+### Noise filter categories
+
+- **Phase-implying** -- "beginning", "completing", "finishing", "stopping";
+  sound wrong at arbitrary points in processing
+- **Too generic** -- "asking", "doing", "getting", "making", "working";
+  uninformative as status words
+- **Pronouns/determiners** -- "something", "nothing", "anything", "everything"
+- **Prepositions/conjunctions** -- "according", "during", "including", "regarding"
+- **Adjectives** -- "interesting", "existing", "surprising", "confusing"
+- **Not gerunds** -- "string", "king", "ring", "spring"; root contains "-ing"
+- **Common filler verbs** -- "being", "needing", "using", "thinking"
+
+### Required settings
+
+Disable the built-in spinner verbs and tips so they don't compete with the statusline word:
+
+```json
+{
+  "spinnerVerbs": { "mode": "replace", "verbs": [] },
+  "spinnerTipsEnabled": false
+}
+```
+
+### Limitations
+
+- The transcript is scanned as a raw string, not parsed as JSONL.
+  Gerunds from any source (assistant text, tool output, user messages)
+  can appear. In practice, assistant prose dominates the tail of the transcript.
+- The word reflects the most recent gerund in the last 8KB,
+  which may lag behind the current activity by one or more tool calls.
+- At the start of a session (empty transcript), the fallback "Thinking" is shown.
+
 ## Model name
 
-The model family name (Opus, Sonnet, Haiku) is shown at the start.
+The model family name (Opus, Sonnet, Haiku) is shown after the activity word.
 Version and context size are stripped when they match the current defaults:
 
 - **Opus** -- latest 4.6, default 1M context
@@ -47,7 +102,7 @@ When the effort level is below "high" (the default), a yellow symbol appears aft
 - **high** -- no indicator (default, nothing extra shown)
 - **max** -- `Opus ◉`
 
-The symbols match Claude Code's built-in effort indicators (○ ◐ ● ◉).
+The symbols match Claude Code's built-in effort indicators.
 
 The effort level is read from `~/.claude/settings.json` (`effortLevel` field)
 because the statusline JSON payload does not include it yet
@@ -104,9 +159,10 @@ These data sources can reference different API calls until the next assistant re
 Claude Code debounces statusline script invocations at 300ms.
 This is built into Claude Code itself and cannot be configured from the script side.
 
-## Dependencies
+## Runtime
 
-- [Bun](https://bun.sh/) runtime
+Uses `node:fs`, `node:fs/promises`, and `node:stream/consumers` only.
+No runtime-specific APIs -- works with Bun, Node, or Deno.
 
 ## Installation
 
@@ -117,6 +173,8 @@ Add to `~/.claude/settings.json`:
   "statusLine": {
     "type": "command",
     "command": "bun /path/to/statusline.ts"
-  }
+  },
+  "spinnerVerbs": { "mode": "replace", "verbs": [""] },
+  "spinnerTipsEnabled": false
 }
 ```

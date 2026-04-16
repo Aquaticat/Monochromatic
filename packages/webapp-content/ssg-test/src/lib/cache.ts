@@ -18,7 +18,10 @@ import { dirname, } from 'node:path';
 
 import * as z from 'zod/mini';
 
-import { postFrontmatterSchema, } from './content.ts';
+import {
+  type PostFrontmatter,
+  postFrontmatterSchema,
+} from './content.ts';
 import type { Logger, } from './types.ts';
 
 // File justification: 164 lines -- schema definitions, I/O, and lookup form a
@@ -31,27 +34,41 @@ export {
 
 //region Schema and types
 
+/** Per-file cache entry with content hash and pre-rendered HTML. */
+export type CacheEntry = {
+  contentHash: string;
+  html: string;
+  frontmatter: PostFrontmatter;
+};
+
 /** Zod schema for a single cache entry. */
-const cacheEntrySchema = z.object({
+const cacheEntrySchema: z.ZodObject<{
+  contentHash: z.ZodString;
+  html: z.ZodString;
+  frontmatter: typeof postFrontmatterSchema;
+}> = z.object({
   contentHash: z.string(),
   html: z.string(),
   frontmatter: postFrontmatterSchema,
 },);
 
-/** Per-file cache entry with content hash and pre-rendered HTML. */
-export type CacheEntry = z.infer<typeof cacheEntrySchema>;
+/** On-disk cache structure at `.cache/build-manifest.json`. */
+export type BuildManifest = {
+  pipelineHash: string;
+  content: Record<string, CacheEntry>;
+};
 
 /** Zod schema for the on-disk build manifest. */
-const buildManifestSchema = z.object({
+const buildManifestSchema: z.ZodObject<{
+  pipelineHash: z.ZodString;
+  content: z.ZodRecord<z.ZodString, typeof cacheEntrySchema>;
+}> = z.object({
   pipelineHash: z.string(),
   content: z.record(
     z.string(),
     cacheEntrySchema,
   ),
 },);
-
-/** On-disk cache structure at `.cache/build-manifest.json`. */
-export type BuildManifest = z.infer<typeof buildManifestSchema>;
 
 //endregion Schema and types
 

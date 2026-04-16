@@ -57,50 +57,54 @@ export function postStyles(): string {
         'border-color': cssVar('color-border',),
         'border-radius': cssRem(GAP_SMALL,),
       },
-    },),
-    $({
-      rule: '.Post .overlay',
-      decls: {
-        position: 'absolute',
-        inset: cssInt(0,),
-        'font-size': cssInt(0,),
-        'text-decoration-line': 'none',
-      },
-    },),
-    $({
-      rule: '.Post h2',
-      decls: {
-        'margin-block-start': 0,
-        'margin-block-end': cssRem(GAP_SMALL,),
-        'font-size': cssRem(FONT_SIZE_H2,),
-      },
-    },),
-    $({
-      rule: '.Post .description',
-      decls: {
-        'margin-block': 0,
-        color: cssVar('color-muted',),
-      },
-    },),
-    $({
-      rule: '.Post .tags',
-      decls: {
-        display: 'flex',
-        gap: cssRem(GAP_SMALL,),
-        'list-style-type': 'none',
-        'padding-inline-start': 0,
-        'flex-wrap': 'wrap',
-      },
+      children: [
+        $({
+          rule: '& .overlay',
+          decls: {
+            position: 'absolute',
+            inset: cssInt(0,),
+            'font-size': cssInt(0,),
+            'text-decoration-line': 'none',
+          },
+        },),
+        $({
+          rule: '& h2',
+          decls: {
+            'margin-block-start': 0,
+            'margin-block-end': cssRem(GAP_SMALL,),
+            'font-size': cssRem(FONT_SIZE_H2,),
+          },
+        },),
+        $({
+          rule: '& .description',
+          decls: {
+            'margin-block': 0,
+            color: cssVar('color-muted',),
+          },
+        },),
+        $({
+          rule: '& .tags',
+          decls: {
+            position: 'relative',
+            'z-index': 1,
+            display: 'flex',
+            gap: cssRem(GAP_SMALL,),
+            'list-style-type': 'none',
+            'padding-inline-start': 0,
+            'flex-wrap': 'wrap',
+          },
+        },),
+        $({
+          rule: '& .date',
+          decls: {
+            'font-size': cssRem(FONT_SIZE_SMALL,),
+            color: cssVar('color-subtle',),
+          },
+        },),
+      ],
     },),
     $({
       rule: '.Post__tag',
-      decls: {
-        'font-size': cssRem(FONT_SIZE_SMALL,),
-        color: cssVar('color-subtle',),
-      },
-    },),
-    $({
-      rule: '.Post .date',
       decls: {
         'font-size': cssRem(FONT_SIZE_SMALL,),
         color: cssVar('color-subtle',),

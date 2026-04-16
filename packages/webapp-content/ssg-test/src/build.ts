@@ -23,7 +23,9 @@ import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { generateAssets, } from './build/assets.ts';
 import { ensureFavicons, } from './build/favicon.ts';
 import { generatePages, } from './build/pages.ts';
+import type { Locales, } from './i18n/i18n-types.ts';
 import { loadAllLocales, } from './i18n/i18n-util.sync.ts';
+import { groupByLang, } from './lib/content-group.ts';
 import {
   buildManifest,
   computePipelineFingerprint,
@@ -152,18 +154,27 @@ const cacheHits = processResults
 
 l.info(`processed ${posts.length - cacheHits} files, ${cacheHits} from cache`,);
 
+/** Posts grouped by locale, computed once for both page and asset generation. */
+const byLang = groupByLang(posts,);
+
+/** Valid locale codes present in the loaded content. */
+const validLangs = Object.keys(byLang,) as Locales[];
+
 await ensureFavicons({ l, },);
 await Promise.all([
   generatePages({
     posts,
     renderedContent,
     siteUrl: SITE_URL,
+    byLang,
+    validLangs,
     l,
   },),
   generateAssets({
-    posts,
     siteUrl: SITE_URL,
     contentDir: CONTENT_DIR,
+    byLang,
+    validLangs,
     l,
   },),
 ],);

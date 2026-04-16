@@ -1,14 +1,19 @@
 import base from '@monochromatic-dev/config-tsdown/.client.ts';
-import { defineConfig, } from 'tsdown';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
 
 /**
  * Client-side browser bundle config for the SSG.
  * Bundles all client-side scripts (syntax highlighting, etc.)
  * into `dist/client/index.js`.
  */
-export default defineConfig({
+const config: UserConfig = defineConfig({
   ...base,
   entry: [
     './src/client/index.ts',
   ],
 },);
+
+export default config;

@@ -1,20 +1,23 @@
 #!/usr/bin/env bun
 
 /**
- * Wrapper for `tsgo` that filters out diagnostics originating from `node_modules`.
+ * Wrapper for `tsgo` that filters out diagnostics from known false-positive sources.
  *
- * JSR packages ship `.ts` source files instead of `.d.ts` declarations.
- * TypeScript's resolver prefers `.ts` siblings over `.js` exports,
- * and `skipLibCheck` only covers `.d.ts` files.
- * This causes `tsgo --build` to type-check JSR package source
- * under the consumer's tsconfig, producing false positives.
+ * Suppressed sources:
+ * - `node_modules`: JSR packages ship `.ts` source files instead of `.d.ts` declarations.
+ *   TypeScript's resolver prefers `.ts` siblings over `.js` exports,
+ *   and `skipLibCheck` only covers `.d.ts` files.
+ *   This causes `tsgo --build` to type-check JSR package source
+ *   under the consumer's tsconfig, producing false positives.
+ * - Auto-generated typesafe-i18n files (`i18n/i18n-*.ts`): these violate
+ *   `--isolatedDeclarations` and carry "manual changes will be overwritten" headers.
  *
  * This wrapper:
  * 1. Runs `tsgo` with all provided arguments (defaults to `--build` if none given)
  * 2. Captures stdout/stderr
- * 3. Drops diagnostic lines whose file path contains `/node_modules/`
+ * 3. Drops diagnostic lines from suppressed sources
  * 4. Drops continuation lines (indented lines following a dropped diagnostic)
- * 5. Exits non-zero only if non-`node_modules` errors remain
+ * 5. Exits non-zero only if non-suppressed errors remain
  *
  * See `TROUBLESHOOTING.typescript.md` section
  * "JSR packages ship `.ts` source files that `skipLibCheck` cannot skip"
@@ -118,6 +121,54 @@ export function isNodeModulesDiagnostic(line: string,): boolean {
 }
 
 /**
+ * Tests whether a diagnostic line originates from auto-generated i18n files.
+ *
+ * typesafe-i18n generates `i18n-types.ts`, `i18n-util.ts`, and `i18n-util.async.ts`
+ * with patterns that violate `--isolatedDeclarations`. These files carry
+ * "Any manual changes will be overwritten" headers, so fixing them is futile.
+ *
+ * @param line - single diagnostic line of tsgo output
+ *
+ * @returns true when the file path matches an auto-generated i18n file
+ *
+ * @example
+ * ```ts
+ * isI18nGeneratedDiagnostic('src/i18n/i18n-types.ts(4,7): error TS9010: ...');
+ * // true
+ * isI18nGeneratedDiagnostic('src/i18n/en/index.ts(4,7): error TS9010: ...');
+ * // false
+ * ```
+ */
+export function isI18nGeneratedDiagnostic(line: string,): boolean {
+  return /[\\/]i18n[\\/]/.test(line,);
+}
+
+/**
+ * Tests whether a diagnostic line should be suppressed.
+ *
+ * Suppresses diagnostics from `node_modules` (JSR `.ts` source leaking
+ * through `skipLibCheck`) and auto-generated typesafe-i18n files
+ * (which violate `--isolatedDeclarations` and cannot be manually fixed).
+ *
+ * @param line - single diagnostic line of tsgo output
+ *
+ * @returns true when the diagnostic should be filtered out
+ *
+ * @example
+ * ```ts
+ * isSuppressedDiagnostic('node_modules/.bun/zod/src/index.ts(1,1): error TS2532: ...');
+ * // true
+ * isSuppressedDiagnostic('src/i18n/i18n-util.ts(24,14): error TS9010: ...');
+ * // true
+ * isSuppressedDiagnostic('src/app.ts(5,3): error TS2304: ...');
+ * // false
+ * ```
+ */
+export function isSuppressedDiagnostic(line: string,): boolean {
+  return isNodeModulesDiagnostic(line,) || isI18nGeneratedDiagnostic(line,);
+}
+
+/**
  * Tests whether a line is a continuation of a previous diagnostic.
  *
  * Continuation lines start with whitespace and carry indented context
@@ -144,20 +195,24 @@ export function isContinuationLine(line: string,): boolean {
 //region Output filtering
 
 /**
- * Filters tsgo output to remove diagnostics originating from `node_modules`.
+ * Filters tsgo output to remove suppressed diagnostics.
+ *
+ * Suppressed sources: `node_modules` (JSR `.ts` leaking through `skipLibCheck`)
+ * and auto-generated typesafe-i18n files (`i18n-types.ts`, `i18n-util.ts`, etc.).
  *
  * Removes both the diagnostic line itself and any continuation lines
  * that follow it (indented lines providing additional type error context).
  *
  * @param output - raw tsgo stdout or stderr content
  *
- * @returns object with filtered output and whether any non-`node_modules` errors remain
+ * @returns object with filtered output and whether any non-suppressed errors remain
  *
  * @example
  * ```ts
  * const result = filterTsgoOutput([
  *   'node_modules/.bun/zod/src/index.ts(1,1): error TS2532: Object is possibly undefined.',
  *   '  Type "string" is not assignable.',
+ *   'src/i18n/i18n-util.ts(24,14): error TS9010: Variable must have an explicit type annotation.',
  *   'src/app.ts(5,3): error TS2304: Cannot find name "foo".',
  * ].join('\n'));
  * // result.filtered === 'src/app.ts(5,3): error TS2304: Cannot find name "foo".'
@@ -182,7 +237,7 @@ export function filterTsgoOutput(output: string,): {
 
   for (const line of lines) {
     if (isDiagnosticLine(line,)) {
-      if (isNodeModulesDiagnostic(line,)) {
+      if (isSuppressedDiagnostic(line,)) {
         // Drop this diagnostic and mark that following continuation lines should be dropped
         droppingContinuation = true;
       }
@@ -261,7 +316,7 @@ catch (error) {
         process.stderr.write('\n',);
     }
 
-    // Exit non-zero only if non-node_modules errors remain
+    // Exit non-zero only if non-suppressed errors remain
     if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
       process.exitCode = subprocessError.exitCode ?? 1;
 

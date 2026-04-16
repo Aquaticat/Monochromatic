@@ -24,7 +24,6 @@
  */
 import { createHash, } from 'node:crypto';
 import {
-  access,
   readFile,
   rename,
   unlink,
@@ -128,46 +127,24 @@ function insertHash(
 //region Phase 1 -- fingerprint leaf assets
 
 /**
- * Fingerprints all leaf assets in dist (files with no outgoing references to other hashable assets).
+ * Fingerprints all leaf assets (files with no outgoing references to other hashable assets).
  *
- * Excludes HTML, CSS (handled in phase 2), pagefind output, manifest, robots, RSS, and MDX source files.
- *
- * @param distDir - path to the dist output directory
+ * @param files - pre-filtered file paths to fingerprint
  *
  * @returns replacement map of original basenames to hashed basenames
  *
  * @example
  * ```ts
- * const replacements = await fingerprintLeafAssets({ distDir: 'dist' });
+ * const replacements = await fingerprintLeafAssets({ files: leafAssetFiles });
  * // Map { 'inter.woff2' => 'inter.a1b2c3d4ef.woff2', ... }
  * ```
  */
 async function fingerprintLeafAssets(
-  { distDir, }: { distDir: string; },
+  { files, }: { files: readonly string[]; },
 ): Promise<Map<string, string>> {
-  const result = await readdir(`${distDir}/**/*`, {
-    ignore: [
-      /\.html$/,
-      /styles\.css$/,
-      /pagefind\//,
-      /node_modules\//,
-      /\/\.[^/]+\//,
-      /final\//,
-      /manifest\.webmanifest$/,
-      /robots\.txt$/,
-      /rss\.xml$/,
-      /\.mdx$/,
-      /\.tsbuildinfo$/,
-      /\.jsonl$/,
-      STALE_HASH_PATTERN,
-      STALE_HASH_ZST_PATTERN,
-      /\.zst$/,
-    ],
-  },);
-
   const replacements = new Map<string, string>();
 
-  await Promise.all(result.files.map(async function fingerprintFile(filePath,) {
+  await Promise.all(files.map(async function fingerprintFile(filePath,) {
     const content = await readFile(filePath,);
     const hash = sha256Buffer(content,);
     const original = basename(filePath,);
@@ -227,18 +204,20 @@ async function fingerprintCss(
     'styles.css',
   );
 
+  let cssContent: string;
   try {
-    await access(cssPath,);
+    cssContent = await readFile(
+      cssPath,
+      'utf8',
+    );
   }
-  catch {
-    l.info('styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',);
-    return;
+  catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      l.info('styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',);
+      return;
+    }
+    throw error;
   }
-
-  let cssContent = await readFile(
-    cssPath,
-    'utf8',
-  );
 
   for (const [original, hashed,] of replacements) {
     cssContent = cssContent.replaceAll(
@@ -338,22 +317,16 @@ async function rewriteReferences(
  * including `.zst` compressed companions, to prevent accumulation
  * across rebuilds.
  *
- * @param distDir - path to the dist output directory
+ * @param staleFiles - file paths matching the stale fingerprint pattern
  *
  * @example
  * ```ts
- * await cleanStaleFingerprints({ distDir: 'dist' });
+ * await cleanStaleFingerprints({ staleFiles: [...] });
  * ```
  */
 async function cleanStaleFingerprints(
-  { distDir, }: { distDir: string; },
+  { staleFiles, }: { staleFiles: readonly string[]; },
 ): Promise<void> {
-  const result = await readdir(`${distDir}/**/*`,);
-  const staleFiles = result.files.filter(function isStale(filePath,) {
-    const name = basename(filePath,);
-    return STALE_HASH_PATTERN.test(name,) || STALE_HASH_ZST_PATTERN.test(name,);
-  },);
-
   if (staleFiles.length > 0) {
     await Promise.all(staleFiles.map(function deleteStale(filePath,) {
       return unlink(filePath,);
@@ -368,9 +341,47 @@ async function cleanStaleFingerprints(
 
 l.info('starting',);
 
-await cleanStaleFingerprints({ distDir: DIST, },);
+/** Single scan of dist, partitioned into stale fingerprinted files and leaf assets. */
+const fullScan = await readdir(`${DIST}/**/*`,);
 
-const replacements = await fingerprintLeafAssets({ distDir: DIST, },);
+/** Previously fingerprinted files to clean up before re-fingerprinting. */
+const staleFiles = fullScan.files.filter(function isStale(filePath,) {
+  const name = basename(filePath,);
+  return STALE_HASH_PATTERN.test(name,) || STALE_HASH_ZST_PATTERN.test(name,);
+},);
+
+await cleanStaleFingerprints({ staleFiles, },);
+
+/** Patterns to exclude from leaf asset fingerprinting. */
+const LEAF_EXCLUDES = [
+  /\.html$/,
+  /styles\.css$/,
+  /pagefind\//,
+  /node_modules\//,
+  /\/\.[^/]+\//,
+  /final\//,
+  /manifest\.webmanifest$/,
+  /robots\.txt$/,
+  /rss\.xml$/,
+  /\.mdx$/,
+  /\.tsbuildinfo$/,
+  /\.jsonl$/,
+  /\.zst$/,
+];
+
+/** Leaf assets eligible for fingerprinting (excludes HTML, CSS, pagefind, etc.). */
+const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
+  const name = basename(filePath,);
+  if (STALE_HASH_PATTERN.test(name,) || STALE_HASH_ZST_PATTERN.test(name,))
+    return false;
+  return !LEAF_EXCLUDES.some(function matchesExclude(pattern,) {
+    return pattern.test(filePath,);
+  },);
+},);
+
+const replacements = await fingerprintLeafAssets({
+  files: leafAssetFiles,
+},);
 l.info(`phase 1: fingerprinted ${replacements.size} leaf assets`,);
 
 await fingerprintCss({

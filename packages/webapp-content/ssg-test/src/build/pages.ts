@@ -6,11 +6,11 @@
  */
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 
-import { isLocale, } from '../i18n/i18n-util.ts';
+import type { Locales, } from '../i18n/i18n-types.ts';
 
 import {
-  groupByLang,
   groupByName,
+  groupByTag,
 } from '../lib/content-group.ts';
 import type { Post, } from '../lib/content.ts';
 import type { Logger, } from '../lib/types.ts';
@@ -18,6 +18,7 @@ import { indexPage, } from '../pages/index.ts';
 import { langPage, } from '../pages/lang.ts';
 import { namePage, } from '../pages/name.ts';
 import { postPage, } from '../pages/post.ts';
+import { tagPage, } from '../pages/tag.ts';
 import { writePage, } from './write-page.ts';
 
 /**
@@ -29,11 +30,15 @@ import { writePage, } from './write-page.ts';
  *
  * @param siteUrl - base URL for canonical link construction
  *
+ * @param byLang - posts grouped by locale (pre-computed by build orchestrator)
+ *
+ * @param validLangs - locale codes present in the content
+ *
  * @param l - parent logger for tagged output
  *
  * @example
  * ```ts
- * await generatePages({ posts, renderedContent, siteUrl: 'https://example.com', l: rootLogger });
+ * await generatePages({ posts, renderedContent, siteUrl: 'https://example.com', byLang, validLangs, l: rootLogger });
  * ```
  */
 export async function generatePages(
@@ -41,11 +46,15 @@ export async function generatePages(
     posts,
     renderedContent,
     siteUrl,
+    byLang,
+    validLangs,
     l: parentLogger,
   }: {
     posts: readonly Post[];
     renderedContent: ReadonlyMap<string, string>;
     siteUrl: string;
+    byLang: Partial<Record<Locales, Post[]>>;
+    validLangs: readonly Locales[];
     l: Logger;
   },
 ): Promise<void> {
@@ -53,23 +62,20 @@ export async function generatePages(
     tag: generatePages.name,
     l: parentLogger,
   },);
-  const byLang = groupByLang(posts,);
   const byName = groupByName(posts,);
-  const langs = Object.keys(byLang,).filter(function filterLocale(key,) {
-    return isLocale(key,);
-  },);
   const names = Object.keys(byName,);
 
   const writes = [
     writePage({
       relativePath: 'index.html',
       content: indexPage({
-        langs,
+        langs: validLangs,
         canonicalUrl: `${siteUrl}/`,
       },),
     },),
-    ...langs.flatMap(function langWrites(lang,) {
+    ...validLangs.flatMap(function langWrites(lang,) {
       const langPosts = byLang[lang] ?? [];
+      const langTags = groupByTag(langPosts,);
       return [
         writePage({
           relativePath: `${lang}/index.html`,
@@ -92,6 +98,17 @@ export async function generatePages(
               name,
               renderedHtml: html,
               canonicalUrl: `${siteUrl}/${lang}/${name}`,
+            },),
+          },);
+        },),
+        ...Object.entries(langTags,).map(function tagWrite([tag, tagPosts,],) {
+          return writePage({
+            relativePath: `${lang}/tag/${tag}.html`,
+            content: tagPage({
+              tag,
+              lang,
+              posts: tagPosts,
+              canonicalUrl: `${siteUrl}/${lang}/tag/${tag}`,
             },),
           },);
         },),

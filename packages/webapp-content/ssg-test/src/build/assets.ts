@@ -16,9 +16,8 @@ import {
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import readdir from 'tiny-readdir-glob';
 
-import { isLocale, } from '../i18n/i18n-util.ts';
+import type { Locales, } from '../i18n/i18n-types.ts';
 
-import { groupByLang, } from '../lib/content-group.ts';
 import type { Post, } from '../lib/content.ts';
 import { generateLanguageRss, } from '../lib/rss.ts';
 import type { Logger, } from '../lib/types.ts';
@@ -31,29 +30,33 @@ import {
 /**
  * Generates CSS, RSS feeds, and copies static assets to dist.
  *
- * @param posts - all loaded posts for RSS generation
- *
  * @param siteUrl - base URL for RSS feed links
  *
  * @param contentDir - content source directory path
+ *
+ * @param byLang - posts grouped by locale (pre-computed by build orchestrator)
+ *
+ * @param validLangs - locale codes present in the content
  *
  * @param l - parent logger for tagged output
  *
  * @example
  * ```ts
- * await generateAssets({ posts, siteUrl: 'https://example.com', contentDir: 'src/content', l: rootLogger });
+ * await generateAssets({ siteUrl: 'https://example.com', contentDir: 'src/content', byLang, validLangs, l: rootLogger });
  * ```
  */
 export async function generateAssets(
   {
-    posts,
     siteUrl,
     contentDir,
+    byLang,
+    validLangs,
     l: parentLogger,
   }: {
-    posts: readonly Post[];
     siteUrl: string;
     contentDir: string;
+    byLang: Partial<Record<Locales, Post[]>>;
+    validLangs: readonly Locales[];
     l: Logger;
   },
 ): Promise<void> {
@@ -61,11 +64,7 @@ export async function generateAssets(
     tag: generateAssets.name,
     l: parentLogger,
   },);
-  const byLang = groupByLang(posts,);
 
-  const validLangs = Object.keys(byLang,).filter(function filterLocale(key,) {
-    return isLocale(key,);
-  },);
   const rssWrites = validLangs.map(function writeRss(lang,) {
     const langPosts = byLang[lang] ?? [];
     const rssXml = generateLanguageRss({
@@ -79,70 +78,66 @@ export async function generateAssets(
     },);
   },);
 
+  /**
+   * Copies all files from a source directory into dist, preserving relative structure.
+   * Creates target directories before copying.
+   *
+   * @param sourceDir - base directory to copy from
+   *
+   * @param files - absolute file paths to copy
+   *
+   * @returns promise that resolves when all files are copied
+   */
+  async function copyTreeToDist({
+    sourceDir,
+    files,
+  }: {
+    sourceDir: string;
+    files: readonly string[];
+  },): Promise<void> {
+    const targetDirs = [...new Set(
+      files.map(function targetDir(filePath,) {
+        return join(
+          DIST,
+          dirname(relative(
+            sourceDir,
+            filePath,
+          ),),
+        );
+      },),
+    ),];
+
+    await Promise.all(
+      targetDirs.map(function ensureDir(dir,) {
+        return mkdir(
+          dir,
+          { recursive: true, },
+        );
+      },),
+    );
+
+    await Promise.all(
+      files.map(function copyOneFile(filePath,) {
+        return copyFile(
+          filePath,
+          join(
+            DIST,
+            relative(
+              sourceDir,
+              filePath,
+            ),
+          ),
+        );
+      },),
+    );
+  }
+
   // Copies all content files (including MDX source) to dist intentionally,
   // so readers can inspect the original source of any post.
   const [contentResult, publicResult,] = await Promise.all([
     readdir(`${contentDir}/**/*`,),
     readdir('public/**/*',),
   ],);
-
-  /** All target directories that need to exist before copying files. */
-  const allTargetDirs = [
-    ...contentResult.files.map(function contentTargetDir(filePath,) {
-      return join(
-        DIST,
-        dirname(relative(
-          contentDir,
-          filePath,
-        ),),
-      );
-    },),
-    ...publicResult.files.map(function publicTargetDir(filePath,) {
-      return join(
-        DIST,
-        dirname(relative(
-          'public',
-          filePath,
-        ),),
-      );
-    },),
-  ];
-
-  await Promise.all(
-    [...new Set(allTargetDirs,),].map(function ensureDir(dir,) {
-      return mkdir(
-        dir,
-        { recursive: true, },
-      );
-    },),
-  );
-
-  const copies = [
-    ...contentResult.files.map(function copyContentFile(filePath,) {
-      return copyFile(
-        filePath,
-        join(
-          DIST,
-          relative(
-            contentDir,
-            filePath,
-          ),
-        ),
-      );
-    },),
-    ...publicResult.files.map(function copyPublicFile(filePath,) {
-      return copyFile(
-        filePath,
-        join(
-          DIST,
-          relative(
-            'public',
-            filePath,
-          ),
-        ),
-      );
-    },),
-  ];
 
   /** robots.txt allowing all crawlers with sitemap references. */
   const robotsTxt = [
@@ -165,7 +160,14 @@ export async function generateAssets(
       content: robotsTxt,
     },),
     ...rssWrites,
-    ...copies,
+    copyTreeToDist({
+      sourceDir: contentDir,
+      files: contentResult.files,
+    },),
+    copyTreeToDist({
+      sourceDir: 'public',
+      files: publicResult.files,
+    },),
   ],);
 
   l.info('generated CSS, RSS, robots.txt, and static assets',);

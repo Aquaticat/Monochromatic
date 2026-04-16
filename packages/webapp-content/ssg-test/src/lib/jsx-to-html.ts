@@ -176,6 +176,6 @@ export function jsx(
  * Identical to {@link jsx} for static rendering -- the `s` variant exists
  * in React/Preact for reconciliation optimizations that do not apply here.
  */
-export const jsxs = jsx;
+export const jsxs: typeof jsx = jsx;
 
 //endregion Public API -- JSX runtime exports

@@ -18,6 +18,7 @@ import type {
 import { clearHighlights, } from '../highlight/highlighter.ts';
 import { getPositionFromPoint, } from '../position-from-point.ts';
 import type { EditorPosition, } from '../position.ts';
+import { createAutoIndentHandler, } from './auto-indent.ts';
 import {
   getCursorPosition,
   getCursorRect,
@@ -81,6 +82,10 @@ export class EditorPane extends HTMLElement {
     this.#editor.addEventListener(
       'input',
       this.#scheduleHighlight.bind(this,),
+    );
+    this.#editor.addEventListener(
+      'input',
+      createAutoIndentHandler({ editor: this.#editor, shadow: this.#shadow, },),
     );
     this.#mutationObserver = new MutationObserver(this.#onMutation.bind(this,),);
     this.#mutationObserver.observe(

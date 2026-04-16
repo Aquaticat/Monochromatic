@@ -95,10 +95,12 @@ export function typographyStyles(): string {
     $({
       rule: 'a',
       decls: { color: cssVar('color-link',), },
-    },),
-    $({
-      rule: 'a:visited',
-      decls: { color: cssVar('color-link-visited',), },
+      children: [
+        $({
+          rule: '&:visited',
+          decls: { color: cssVar('color-link-visited',), },
+        },),
+      ],
     },),
     $({
       rule: 'code',

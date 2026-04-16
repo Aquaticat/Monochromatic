@@ -6,6 +6,8 @@
  */
 // File justification: 104 lines -- grouping functions share the same type
 // and patterns; splitting by-lang/by-name from by-tag would break cohesion.
+import type { Locales, } from '../i18n/i18n-types.ts';
+
 import type { Post, } from './content.ts';
 
 //region By language and name
@@ -23,7 +25,7 @@ import type { Post, } from './content.ts';
  * // { en: [...], fr: [...] }
  * ```
  */
-export function groupByLang(posts: readonly Post[],): Record<string, Post[]> {
+export function groupByLang(posts: readonly Post[],): Partial<Record<Locales, Post[]>> {
   return Object.fromEntries(
     Map.groupBy(
       posts,
@@ -111,6 +113,10 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
 /**
  * Groups posts first by language, then by tag within each language.
  *
+ * Uses per-language tag sets so each language only contains tags
+ * that actually have posts in that language, avoiding empty arrays
+ * for tags that only exist in other languages.
+ *
  * @param posts - all loaded posts
  *
  * @returns nested record of lang \> tag \> posts
@@ -118,29 +124,19 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
  * @example
  * ```ts
  * const grouped = groupByLangThenTag(posts);
- * // { en: { typescript: [...], css: [...] }, fr: { ... } }
+ * // { en: { typescript: [...], css: [...] }, zh: { ... } }
  * ```
  */
 export function groupByLangThenTag(
   posts: readonly Post[],
-): Record<string, Record<string, Post[]>> {
+): Partial<Record<Locales, Record<string, Post[]>>> {
   const byLang = groupByLang(posts,);
-  const tags = allTags(posts,);
 
   return Object.fromEntries(
     Object.entries(byLang,).map(function langEntry([lang, langPosts,],) {
       return [
         lang,
-        Object.fromEntries(
-          tags.map(function tagEntry(tag,) {
-            return [
-              tag,
-              langPosts.filter(function hasTag(post,) {
-                return post.data.tags.includes(tag,);
-              },),
-            ];
-          },),
-        ),
+        groupByTag(langPosts,),
       ];
     },),
   );
