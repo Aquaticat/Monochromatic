@@ -6,3 +6,4 @@
  * create a `.ts` file in this directory and add an `export` line here.
  */
 export { Alert, } from './Alert.ts';
+export { Question, } from './question.ts';

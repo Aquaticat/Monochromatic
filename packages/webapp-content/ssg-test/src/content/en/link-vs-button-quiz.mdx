@@ -1,0 +1,552 @@
+---
+title: "Link vs Button — 20 Tricky Questions"
+description: "Twenty scenarios where choosing between <a> and <button> is harder than it looks. Pick an option to see the answer and why."
+published: 2026-04-16
+updated: 2026-04-16
+tags:
+  - "accessibility"
+  - "html"
+  - "interactive"
+---
+
+Pick the option you'd reach for. The explanation reveals as soon as you click. If the pick is wrong, the correct one also reveals.
+
+<Question
+  scenario={<>A "Sign out" option in the top navigation bar.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Implemented as <code>{`<a href="/logout">`}</code> it creates a CSRF vulnerability — any page can silently sign users out with <code>{`<img src="/logout">`}</code>. Sign-out must not be reachable via a GET.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Sign-out is a destructive action that should trigger a POST or DELETE, not a GET. The redirect to the login page afterward is a consequence, not the destination.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Duplicating the control doesn't fix the underlying problem — as long as a link variant exists, the CSRF vector exists. Pick one primitive and use it correctly.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>Sign-out is a real action the user triggers. One of the listed primitives applies; the only question is which.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The HTTP-verb and CSRF constraints don't depend on context. This is one of the rare cases with a single correct answer.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Shuffle" toggle in a music player that randomizes playback order.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>No navigation, no URL change — a link is the wrong primitive for a persistent on/off state.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A plain <code>{`<button>`}</code> without <code>aria-pressed</code> can't communicate whether shuffle is currently on. Close, but incomplete.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Only one control toggles the state; doubling up confuses assistive tech.</>,
+    },
+    {
+      label: <>Neither</>,
+      correct: true,
+      explanation: <>Shuffle is a persistent on/off state — it should be a <code>{`<input type="checkbox">`}</code> styled as a button, or a <code>{`<button>`}</code> with <code>aria-pressed</code>. Plain link or button hides the state.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The on/off semantics are always present for a shuffle toggle; the right primitive doesn't depend on surrounding context.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Name" column header in a data table that sorts rows when clicked.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Defensible only if your app puts sort order in the URL (<code>?sort=name&amp;dir=asc</code>). Otherwise there's no destination.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Sorting transforms the current view — no navigation, no URL change. Put a <code>{`<button>`}</code> inside the <code>{`<th>`}</code>, and set <code>aria-sort</code> on the <code>{`<th>`}</code> to communicate sort state.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One clickable region per column header is the expected affordance.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>Sorting is an action triggered by the user — it has to be one of the interactive primitives.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>If the URL carries the sort state, a link becomes defensible — but the default, no-URL case is button.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Learn more about our pricing" option next to a plan selector on a signup form.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Right if the control navigates to <code>/pricing</code>. Wrong if it opens a popover in place.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>Right if it opens a tooltip or popover. Wrong if the destination is a separate page.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Unnecessary duplication — a single control, correctly chosen, is enough.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>The user interacts with something; one of the two primitives applies.</>,
+    },
+    {
+      label: <>Depends</>,
+      correct: true,
+      explanation: <>Entirely on what it does. In-place popover → button; navigation to <code>/pricing</code> → link. "Learn more" is notoriously ambiguous — a better label like "Show pricing details" or "View full pricing" signals the behavior before you click.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Continue to payment" option at the bottom of the delivery address step in a multi-step checkout.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>A link can't submit the current step's form data. Right-click → open in new tab would abandon the user's input.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Even though it feels like moving forward, it's submitting the current step before proceeding. The URL changing afterward is a consequence of the action — the same logic as any form submission.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One submit per step; multiple controls pointing at the same action invite accidental double-submits.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>It's the primary CTA of the step — it has to be an interactive primitive.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Multi-step forms always submit state before advancing; the primitive doesn't vary with context.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>An entire product card wrapped in <code>{`<a href="/product/42">`}</code> with a "Save for later" button inside it.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Linking the whole card seems natural, but the "Save" button inside it makes the markup invalid.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>The Save action needs a button, but wrapping it inside an <code>{`<a>`}</code> breaks the spec regardless.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>They're both needed — but nesting them in a single element is what's invalid.</>,
+    },
+    {
+      label: <>Neither</>,
+      correct: true,
+      explanation: <>Nesting interactive elements inside other interactive elements is invalid HTML — browsers repair the DOM unpredictably and screen readers behave inconsistently. The fix is the stretched-link pattern: link the card title, then use a CSS <code>::after</code> pseudo-element with <code>position: absolute; inset: 0</code> to make the whole card clickable. The button sits on top via z-order and stays independently operable.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The HTML spec forbids nesting interactive elements in all cases — no context makes it valid.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Back to top" control that scrolls the user to the top of a long page.</>}
+  options={[
+    {
+      label: <>Link</>,
+      correct: true,
+      explanation: <><code>{`<a href="#top">`}</code> works without JavaScript, navigates to a URL fragment, and screen readers announce it as a link. <code>#top</code> is a special fragment browsers recognize even without a matching element <code>id</code>.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button would need <code>window.scrollTo()</code> in JavaScript — reinventing something the browser already does for free.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One control is all the user expects; redundant options create noise.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>Scrolling to a page fragment is navigation within the document — the link primitive applies natively.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Fragments always work; the answer doesn't change with context.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Clear form" option that resets all fields to empty.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>No URL change, no navigation — a link is wrong for a local action.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <><code>{`<button type="reset">`}</code> is built into HTML — no JavaScript needed. That said, the real answer is: don't build it at all. It sits next to Submit, users accidentally click it, lose their work, and are furious. If you must have it, position it far from Submit and make it visually subdued.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One reset per form; multiple reset controls just multiply the chance of accidental use.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>It's an action; the button primitive is a direct fit.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Reset semantics are identical regardless of the form's content or layout.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A tab interface switching between "Overview", "Reviews", and "Specs" panels — with no URL changes.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Without URLs there's nothing to link to. If tabs were URL-addressable (each tab loads <code>#reviews</code>), links with <code>role="tab"</code> would be defensible.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Pure UI panel switching with no navigation uses the ARIA tab pattern: <code>role="tablist"</code> on the container, <code>role="tab"</code> on buttons, <code>role="tabpanel"</code> on the panels, and <code>aria-selected</code> on the active tab.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A tab is one control per panel; mixing primitives within the list confuses screen reader users.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>Tabs are interactive — one of the primitives applies.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Once the scenario stipulates "no URL changes" the answer is fixed — button is correct.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A top-level nav item ("Products") that navigates to <code>/products</code> AND expands a dropdown submenu on click.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>A link alone can't toggle the submenu without invoking JavaScript and overriding the native click semantics.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button alone has no destination URL — right-click → open in new tab can't work.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      correct: true,
+      explanation: <>A single element can't be both a link and a button — two distinct functions need two controls. Split them: the text "Products" as a link to <code>/products</code>, and a separate chevron <code>{`<button aria-expanded="false">`}</code> for toggling the submenu. This is what GOV.UK and the ARIA Authoring Practices Guide recommend.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>Both functions are real user needs; something has to handle each.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The mixed behavior always needs splitting; no context collapses it back to one control.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A video player's progress bar that lets you click or drag to scrub to a timestamp.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Not navigation — and there's no discrete set of destinations to link to.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button is discrete-action. Scrubbing is continuous along an axis — wrong primitive.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Neither primitive fits, so combining them doesn't help.</>,
+    },
+    {
+      label: <>Neither</>,
+      correct: true,
+      explanation: <>It's a slider. Use <code>{`<input type="range">`}</code> or <code>role="slider"</code> with <code>aria-valuemin</code>, <code>aria-valuemax</code>, <code>aria-valuenow</code>, and critically <code>aria-valuetext="2 minutes 34 seconds"</code>. Raw numbers in <code>aria-valuenow</code> mean nothing to a screen reader user; the human-readable label is what matters.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Scrubbing is always a continuous range control regardless of the surrounding player layout.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A language selector in the footer: EN · FR · DE.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Right if each language maps to a real URL (<code>/fr</code>, <code>/de</code>). Users can share or bookmark the localized URL.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>Right if the language is purely client-side state with no URL change. Many SPAs take this route — often wrongly.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A single control per language is what the interface calls for.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>The user is picking a language — it has to be interactive.</>,
+    },
+    {
+      label: <>Depends</>,
+      correct: true,
+      explanation: <>On implementation. Per-language URLs → links (shareable, bookmarkable). Purely client-side state → buttons (or a <code>{`<select>`}</code>). Many SPAs pick the latter without URL support, which is the wrong call.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Delete account" option at the bottom of a settings page.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Same CSRF exposure as sign-out — a GET-addressable destructive action is never safe.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Destructive action — same doctrine as sign-out. Should trigger a DELETE, not a GET. Flow: button → confirmation modal → confirm → DELETE. The confirmation lives in the modal, not on a separate page; taking users away from settings just to say "are you sure?" is unnecessary friction.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Only one delete control; duplicating a destructive primitive is how accidents happen.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>Account deletion is a real action the user triggers — one of the primitives applies.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The HTTP verb and CSRF constraints are the same regardless of surrounding UI.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>An <code>{`<a>`}</code> element with no <code>href</code> attribute.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>It's only a link when <code>href</code> is present. Without it, it's not focusable and has no implicit <code>link</code> role.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>It's an anchor element, not a button — adding <code>tabindex="0"</code> and an <code>onclick</code> is the anti-pattern the HTML spec warns against.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Neither primitive applies to an inert anchor.</>,
+    },
+    {
+      label: <>Neither</>,
+      correct: true,
+      explanation: <>An anchor without <code>href</code> is not focusable by keyboard, has no implicit <code>link</code> role, and behaves like a <code>{`<span>`}</code>. It's a placeholder element — common in old templating systems. It becomes a link only when <code>href</code> is present.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The missing <code>href</code> makes the element inert, full stop. No surrounding context revives it.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A filter chip ("Shoes") that narrows search results and updates the URL to <code>?category=shoes</code>.</>}
+  options={[
+    {
+      label: <>Link</>,
+      correct: true,
+      explanation: <>The filtered state is URL-addressable, shareable, and bookmarkable. Right-click → open in new tab should work. Same pattern as pagination — each state is a real destination. Many e-commerce sites get this wrong by using JavaScript with no URL updates, breaking the back button and preventing sharing.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button would swallow the URL change and lose shareability — the scenario explicitly specifies the URL updates.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One control per filter; duplication just clutters the UI.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>It's a navigation action — one of the primitives applies.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The scenario nails down URL behavior, which resolves the ambiguity in favor of link.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A filter chip ("In stock only") that filters a product list client-side with no URL change.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Nothing to link to — the state never reaches the URL.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>No URL, no navigation — it's toggling a UI state. Use a button with <code>aria-pressed="true/false"</code> to communicate the current filter state. Consider whether the lack of URL support is intentional: if users might want to share or bookmark a filtered view, adding URL state is worth the effort.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A single toggle per filter is what the interface implies.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>It's an interactive toggle — one of the primitives applies.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The "no URL change" constraint in the scenario pins the answer down to button.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Copy link" option that copies the current URL to the clipboard.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>No navigation and no destination — a link is the wrong primitive for a pure side-effect action.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Pure action — no navigation, no persistent state. <code>navigator.clipboard.writeText()</code> does the work; a button triggers it. A nice touch is temporarily changing the label to "Copied!" after success — still button territory.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One control to copy; duplicating just adds noise.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>It's a user-triggered action; the button primitive is a direct fit.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>Copying to the clipboard is the same action everywhere — no context flips the primitive.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>The current page item in a breadcrumb trail: Home › Products › <u>Laptops</u>.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Linking the current page to itself is redundant and confusing — the user is already there.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>Not interactive — clicking the current-page breadcrumb shouldn't do anything.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>Neither primitive fits; combining them doesn't help.</>,
+    },
+    {
+      label: <>Neither</>,
+      correct: true,
+      explanation: <>The current page in a breadcrumb shouldn't be a link — use a <code>{`<span>`}</code> or <code>{`<li>`}</code> with <code>aria-current="page"</code>, which screen readers announce as the current location. The other breadcrumb items are links; the last one is not.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>"Current page" always means "non-interactive" regardless of breadcrumb depth or styling.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A "Skip to main content" option visually hidden at the very top of the page.</>}
+  options={[
+    {
+      label: <>Link</>,
+      correct: true,
+      explanation: <><code>{`<a href="#main">Skip to main content</a>`}</code> navigates to a page fragment, requires no JavaScript, and is a critical accessibility feature for keyboard users who would otherwise Tab through every nav item on every page load. It should be the very first focusable element in the DOM, and visible on focus even if hidden at rest.</>,
+    },
+    {
+      label: <>Button</>,
+      explanation: <>A button would reinvent fragment navigation with JavaScript — something the browser already does natively.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A single skip link is the convention; duplication just confuses keyboard users.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>Skip links are real, recommended navigation — the link primitive is exactly the right fit.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The pattern is identical on every page; context doesn't change the answer.</>,
+    },
+  ]}
+/>
+
+<Question
+  scenario={<>A notification bell icon in the top nav that opens a dropdown list of recent notifications.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>No URL — the dropdown is a UI change, not navigation.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>Triggers a UI change, no navigation. Needs <code>aria-expanded="false/true"</code> to communicate dropdown state, and <code>aria-label="Notifications"</code> since it's icon-only. A common mistake is omitting <code>aria-expanded</code>, leaving screen reader users with no way to know whether the dropdown is open.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>One trigger for one dropdown; multiple controls for the same disclosure create noise.</>,
+    },
+    {
+      label: <>Neither</>,
+      explanation: <>The bell is interactive — the button primitive is a direct fit.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>A disclosure trigger for an in-page dropdown is always a button, regardless of icon or position.</>,
+    },
+  ]}
+/>
