@@ -31,13 +31,17 @@ import {
 export function css(): string {
   return $({
     rule: 'page-content',
-    decls: {
-      display: 'block',
-      'max-inline-size': cssRem(MAX_WIDTH,),
-      'margin-inline': 'auto',
-      'padding-inline': cssRem(GAP,),
-      'padding-block': cssRem(GAP,),
-    },
+    children: [
+      $({
+        rule: '> main',
+        decls: {
+          'max-inline-size': cssRem(MAX_WIDTH,),
+          'margin-inline': 'auto',
+          'padding-inline': cssRem(GAP,),
+          'padding-block': cssRem(GAP,),
+        },
+      },),
+    ],
   },);
 }
 

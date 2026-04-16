@@ -39,9 +39,10 @@ export function css(): string {
         'grid-template-columns': cssCompounded([
           `repeat(auto-fit, minmax(${cssRem(POST_GRID_MIN,)}, 1fr))`,
         ],),
-        gap: cssRem(GAP,),
+        gap: cssRem(2,),
         'list-style-type': 'none',
         'padding-inline-start': 0,
+                
       },
     },),
   ]

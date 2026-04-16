@@ -364,6 +364,8 @@ const NOISE_GERUNDS = new Set([
   'purring',
   'hatching',
   'purring-hatching',
+  'beaming',
+  'hidden-beaming',
 ],);
 
 /** Minimum word length to consider as a gerund candidate. */

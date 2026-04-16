@@ -3,10 +3,9 @@
  *
  * Renders a single multiple-choice question with CSS-only state reveal.
  * Each option is a radio input. When the user picks any option, the
- * explanation for that option appears; if the pick was wrong, the
- * correct option's explanation also reveals and its label is underlined.
- * No JavaScript — all state lives in the `:checked` attribute of
- * the native radio inputs.
+ * explanation for that option appears. Picks are never locked — the
+ * user can change their answer at any time. No JavaScript — all state
+ * lives in the `:checked` attribute of the native radio inputs.
  *
  * Designed to be reusable across quizzes: variable option count, no
  * hardcoded A–E letter scheme. Labels and explanations accept full
@@ -353,13 +352,6 @@ export function css(): string {
       },
     },),
     $({
-      rule:
-        'quiz-question:has(input:checked:not([data-correct])) .option:has(input[data-correct]) .explanation',
-      decls: {
-        display: 'block',
-      },
-    },),
-    $({
       rule: 'quiz-question input:checked[data-correct] + label',
       decls: {
         color: cssVar('quiz-ok',),
@@ -371,14 +363,6 @@ export function css(): string {
       decls: {
         color: cssVar('quiz-err',),
         'font-weight': EMPHASIS_WEIGHT,
-      },
-    },),
-    $({
-      rule:
-        'quiz-question:has(input:checked:not([data-correct])) input[data-correct] + label',
-      decls: {
-        color: cssVar('quiz-ok',),
-        'text-decoration-line': 'underline',
       },
     },),
   ]

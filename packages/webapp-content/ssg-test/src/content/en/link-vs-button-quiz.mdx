@@ -9,7 +9,9 @@ tags:
   - "interactive"
 ---
 
-Pick the option you'd reach for. The explanation reveals as soon as you click. If the pick is wrong, the correct one also reveals.
+`<a>` and `<button>` look interchangeable — both are clickable, both can run JavaScript, both can be styled to look like whichever the designer prefers. The actual choice between them is a semantic and security decision, not a visual one: `<a>` means "go somewhere I can bookmark and share," `<button>` means "do something right now on this page." Get it wrong and you break the back button, break middle-click, break screen readers, or — worst case — open a CSRF hole that lets any page on the internet trigger destructive actions against your users.
+
+The 20 scenarios below are the ones that trip people up. Some have a clean right answer; some come down to how the feature actually behaves at runtime, not how it looks in a mockup. Pick what you'd reach for — the explanation reveals as soon as you click, and you can change your pick at any time.
 
 <Question
   scenario={<>A "Sign out" option in the top navigation bar.</>}
