@@ -144,14 +144,29 @@ export async function generateAssets(
     },),
   ];
 
+  /** robots.txt allowing all crawlers with sitemap references. */
+  const robotsTxt = [
+    'User-agent: *',
+    'Allow: /',
+    '',
+    ...validLangs.map(function sitemapEntry(lang,) {
+      return `Sitemap: ${siteUrl}/${lang}/rss.xml`;
+    },),
+    '',
+  ].join('\n',);
+
   await Promise.all([
     writePage({
       relativePath: 'styles.css',
       content: generateSiteCss(),
     },),
+    writePage({
+      relativePath: 'robots.txt',
+      content: robotsTxt,
+    },),
     ...rssWrites,
     ...copies,
   ],);
 
-  l.info('generated CSS, RSS, and static assets',);
+  l.info('generated CSS, RSS, robots.txt, and static assets',);
 }

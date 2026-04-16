@@ -1,10 +1,13 @@
 /**
  * Hashing utilities for the build cache.
  *
- * Provides SHA-256 content hashing for cache invalidation.
+ * Provides SHA-256 content hashing and mtime-based fingerprinting
+ * for cache invalidation.
  */
 import { createHash, } from 'node:crypto';
-import { readFile, } from 'node:fs/promises';
+import { stat, } from 'node:fs/promises';
+
+import readdir from 'tiny-readdir-glob';
 
 /**
  * Computes a SHA-256 hex digest of a string.
@@ -23,60 +26,35 @@ export function sha256(input: string,): string {
 }
 
 /**
- * Computes the pipeline hash by hashing the markdown.ts source file.
+ * Computes a fingerprint from file mtimes for all files matching a glob pattern.
  *
- * When this hash changes, all cached content entries are invalidated
- * because the processing pipeline configuration has changed.
+ * When any matched file is modified (mtime changes), added, or removed,
+ * all cached content entries are invalidated.
+ * Uses `stat()` calls instead of reading file contents,
+ * avoiding file I/O and hashing overhead entirely.
  *
- * @param pipelineSourcePath - path to the pipeline config source
+ * @param glob - glob pattern matching pipeline source files
  *
- * @returns hex-encoded SHA-256 digest of the pipeline source
- *
- * @example
- * ```ts
- * const hash = await computePipelineHash('src/lib/markdown.ts');
- * ```
- */
-export async function computePipelineHash(
-  pipelineSourcePath: string,
-): Promise<string> {
-  const source = await readFile(
-    pipelineSourcePath,
-    'utf8',
-  );
-  return sha256(source,);
-}
-
-/**
- * Computes a combined pipeline hash from multiple source files.
- *
- * When any source file changes, all cached content entries are invalidated.
- * File contents are joined with NUL bytes to prevent accidental collisions
- * between files whose contents could be split differently.
- *
- * @param pipelineSourcePaths - paths to all pipeline-affecting source files
- *
- * @returns hex-encoded SHA-256 digest of the combined sources
+ * @returns fingerprint string encoding file count and max mtime
  *
  * @example
  * ```ts
- * const hash = await computePipelineHashMulti([
- *   'src/lib/markdown.ts',
- *   'src/lib/rehype-highlight.ts',
- *   'src/client/tags.ts',
- * ]);
+ * const fingerprint = await computePipelineFingerprint('src/{lib,components,client}/**\/*.ts');
  * ```
  */
-export async function computePipelineHashMulti(
-  pipelineSourcePaths: readonly string[],
+export async function computePipelineFingerprint(
+  glob: string,
 ): Promise<string> {
-  const sources = await Promise.all(
-    pipelineSourcePaths.map(function readSource(path,) {
-      return readFile(
-        path,
-        'utf8',
-      );
+  const result = await readdir(glob,);
+  const paths = result.files;
+  const mtimes = await Promise.all(
+    paths.map(async function getMtime(path,) {
+      const stats = await stat(path,);
+      return stats.mtimeMs;
     },),
   );
-  return sha256(sources.join('\0',),);
+  const maxMtime = mtimes.length > 0
+    ? Math.max(...mtimes,)
+    : 0;
+  return `${paths.length}:${maxMtime}`;
 }

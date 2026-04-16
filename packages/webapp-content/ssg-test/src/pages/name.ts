@@ -19,20 +19,28 @@ import { pageLayout, } from '../templates/layout.ts';
  *
  * @param posts - all language variants of this post
  *
+ * @param canonicalUrl - full canonical URL for this page
+ *
  * @returns complete HTML document listing available translations
  *
  * @example
  * ```ts
- * const html = namePage({ name: 'hello-world', posts });
+ * const html = namePage({
+ *   name: 'hello-world',
+ *   posts,
+ *   canonicalUrl: 'https://aquati.cat/hello-world',
+ * });
  * ```
  */
 export function namePage(
   {
     name,
     posts,
+    canonicalUrl,
   }: {
     name: string;
     posts: readonly Post[];
+    canonicalUrl: string;
   },
 ): string {
   const content = h({
@@ -66,9 +74,16 @@ export function namePage(
     ? firstPost.lang
     : 'en';
 
+  /** Use the first post's description when available, otherwise the slug name. */
+  const description = firstPost !== undefined
+    ? firstPost.data.description
+    : name;
+
   return pageLayout({
     title: name,
     lang,
     content,
+    description,
+    canonicalUrl,
   },);
 }

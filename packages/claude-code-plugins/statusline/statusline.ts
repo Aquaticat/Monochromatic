@@ -1,9 +1,16 @@
-#!/usr/bin/env bun
-
 /**
- * Claude Code statusline displaying model name, effort level, context window usage, and rate limit warnings.
- * Reads JSON from stdin and `~/.claude/settings.json`, writes ANSI-colored status text to stdout.
+ * Claude Code statusline displaying a context-aware activity word, model name,
+ * effort level, context window usage, and rate limit warnings.
+ *
+ * Reads JSON from stdin (which includes `transcript_path`) and `~/.claude/settings.json`.
+ * Extracts a gerund from the most recent assistant text in the transcript
+ * so the statusline shows what Claude is contextually doing instead of a random word.
+ * Writes ANSI-colored status text to stdout.
  */
+
+import { openAsBlob, } from 'node:fs';
+import { readFile, } from 'node:fs/promises';
+import { text, } from 'node:stream/consumers';
 
 //region ANSI escape helpers
 
@@ -23,6 +30,7 @@ function color(code: string, text: string,): string {
 //region Types for the statusline JSON payload
 
 type StatuslineInput = {
+  transcript_path?: string;
   model?: {
     id?: string;
     display_name?: string;
@@ -198,8 +206,8 @@ async function readEffortIndicator(): Promise<string> {
   try {
     const home = process.env['HOME'] ?? '';
     const settingsPath = `${home}/.claude/settings.json`;
-    const file = Bun.file(settingsPath,);
-    const settings: { effortLevel?: string; } = await file.json();
+    const raw = await readFile(settingsPath, 'utf8',);
+    const settings: { effortLevel?: string; } = JSON.parse(raw,);
     const level = settings.effortLevel ?? 'high';
     return EFFORT_SYMBOLS[level] ?? '';
   }
@@ -210,12 +218,112 @@ async function readEffortIndicator(): Promise<string> {
 
 //endregion
 
+//region Activity word -- gerund extraction from transcript
+
+/**
+ * Words ending in "-ing" that are not meaningful activity verbs.
+ * Includes phase-implying verbs, generic fillers, pronouns,
+ * prepositions, adjectives, and words where "-ing" is part of the root.
+ */
+const NOISE_GERUNDS = new Set([
+  // Phase-implying (sound wrong at arbitrary points)
+  'beginning', 'completing', 'continuing', 'ending',
+  'finishing', 'starting', 'stopping',
+  // Too generic
+  'asking', 'calling', 'coming', 'doing', 'getting', 'giving',
+  'going', 'having', 'keeping', 'knowing', 'letting', 'looking',
+  'making', 'meaning', 'putting', 'saying', 'seeing', 'showing',
+  'telling', 'trying', 'turning', 'wanting', 'working',
+  // Pronouns and determiners
+  'anything', 'everything', 'nothing', 'something', 'thing',
+  // Prepositions and conjunctions
+  'according', 'assuming', 'concerning', 'considering', 'depending',
+  'during', 'excluding', 'following', 'including', 'providing',
+  'regarding', 'supposing',
+  // Adjectives
+  'amazing', 'annoying', 'boring', 'confusing', 'corresponding',
+  'exciting', 'existing', 'frustrating', 'interesting', 'missing',
+  'outstanding', 'overwhelming', 'remaining', 'surprising',
+  'surrounding', 'underlying',
+  // Not gerunds (root contains "-ing")
+  'bring', 'cling', 'fling', 'king', 'ring', 'sing',
+  'sling', 'spring', 'sting', 'string', 'swing', 'wing', 'wring',
+  // Common filler verbs
+  'being', 'needing', 'running', 'thinking', 'using',
+],);
+
+/** Minimum word length to consider as a gerund candidate. */
+const MIN_GERUND_LENGTH = 5;
+
+/** Matches words ending in "-ing", including hyphenated compounds like "tree-shaking". */
+const GERUND_PATTERN = /\b[a-z]+-?[a-z]*ing\b/g;
+
+/** Number of bytes to read from the end of the transcript. */
+const TAIL_BYTES = 8192;
+
+/**
+ * Find the last meaningful gerund in a string.
+ *
+ * @param text - Any text to scan (raw transcript, prose, JSON -- gerunds survive regardless).
+ * @returns Capitalized gerund, or `undefined` if none found.
+ *
+ * @example findGerundInText("Let me start searching for the file") // "Searching"
+ * @example findGerundInText("I'll try compiling and then testing") // "Testing"
+ */
+function findGerundInText(text: string,): string | undefined {
+  const matches = text.toLowerCase().match(GERUND_PATTERN,) ?? [];
+  const candidates = matches
+    .filter(function isLongEnough(w,) { return w.length >= MIN_GERUND_LENGTH; },)
+    .filter(function isNotNoise(w,) { return !NOISE_GERUNDS.has(w,); },);
+
+  if (candidates.length === 0) {
+    return undefined;
+  }
+
+  const last = candidates[candidates.length - 1];
+  /* oxlint-disable-next-line typescript/no-non-null-assertion -- length check guarantees element */
+  return last!.charAt(0,).toUpperCase() + last!.slice(1,);
+}
+
+/**
+ * Extract a context-aware activity word from the transcript.
+ * Reads the last {@link TAIL_BYTES} of the transcript as a raw string
+ * and finds the last gerund in it. No JSON parsing needed --
+ * gerunds in assistant prose survive the JSONL wrapping.
+ * Falls back to "Thinking".
+ *
+ * @param transcriptPath - Path to the session transcript JSONL.
+ * @returns Capitalized activity word.
+ */
+async function readActivityWord(transcriptPath: string | undefined,): Promise<string> {
+  if (!transcriptPath) {
+    return 'Thinking';
+  }
+
+  try {
+    const blob = await openAsBlob(transcriptPath,);
+    const start = Math.max(0, blob.size - TAIL_BYTES,);
+    const tail = await blob.slice(start, blob.size,).text();
+    return findGerundInText(tail,) ?? 'Thinking';
+  }
+  catch {
+    return 'Thinking';
+  }
+}
+
+//endregion
+
 //region Main
 
-const input: StatuslineInput = await Bun.stdin.json();
+/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON from Claude Code statusline dispatch */
+const input = JSON.parse(await text(process.stdin,),) as StatuslineInput;
 
 const SEP = '    ';
 const segments: string[] = [];
+
+// Activity word (context-aware, extracted from transcript)
+const activityWord = await readActivityWord(input.transcript_path,);
+segments.push(activityWord,);
 
 // Model name + effort level
 const displayName = input.model?.display_name;

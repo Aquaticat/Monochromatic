@@ -22,11 +22,23 @@ import { headerFragment, } from './header.ts';
  *
  * @param content - inner HTML to place between header and footer
  *
+ * @param description - page-specific meta description
+ *
+ * @param canonicalUrl - full canonical URL for this page
+ *
+ * @param searchable - whether pagefind should index this page's content
+ *
  * @returns complete HTML document string including `<!DOCTYPE html>`
  *
  * @example
  * ```ts
- * const html = pageLayout({ title: 'Home', lang: 'en', content: '<p>Hello</p>' });
+ * const html = pageLayout({
+ *   title: 'Home',
+ *   lang: 'en',
+ *   content: '<p>Hello</p>',
+ *   description: 'Welcome',
+ *   canonicalUrl: 'https://aquati.cat/en/',
+ * });
  * ```
  */
 export function pageLayout(
@@ -34,10 +46,16 @@ export function pageLayout(
     title,
     lang,
     content,
+    description,
+    canonicalUrl,
+    searchable = false,
   }: {
     title: string;
     lang: Locales;
     content: string;
+    description: string;
+    canonicalUrl: string;
+    searchable?: boolean;
   },
 ): string {
   return `<!DOCTYPE html>\n${
@@ -48,6 +66,8 @@ export function pageLayout(
         headFragment({
           title,
           lang,
+          description,
+          canonicalUrl,
         },),
         h({
           tag: 'body',
@@ -56,7 +76,7 @@ export function pageLayout(
             h({
               tag: 'div',
               class: 'between_header_footer',
-              attrs: { 'data-pagefind-body': '', },
+              attrs: searchable ? { 'data-pagefind-body': '', } : {},
               html: content,
             },),
             footerFragment(),

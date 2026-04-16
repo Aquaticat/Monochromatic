@@ -20,20 +20,24 @@ import { postList, } from '../templates/post-list.ts';
  *
  * @param posts - posts filtered to this language
  *
+ * @param canonicalUrl - full canonical URL for this page
+ *
  * @returns complete HTML document for the language landing page
  *
  * @example
  * ```ts
- * const html = langPage({ lang: 'en', posts: englishPosts });
+ * const html = langPage({ lang: 'en', posts: englishPosts, canonicalUrl: 'https://aquati.cat/en/' });
  * ```
  */
 export function langPage(
   {
     lang,
     posts,
+    canonicalUrl,
   }: {
     lang: Locales;
     posts: readonly Post[];
+    canonicalUrl: string;
   },
 ): string {
   const t = i18nObject(lang,);
@@ -58,5 +62,7 @@ export function langPage(
     title,
     lang,
     content,
+    description: t.siteDescription(),
+    canonicalUrl,
   },);
 }

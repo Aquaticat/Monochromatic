@@ -8,7 +8,7 @@
  * 4. Generate CSS via h-css
  * 5. Generate RSS feeds per language
  * 6. Copy static assets from public/
- * 7. Post-process: HTML minification + zstd compression
+ * 7. Post-process: zstd compression
  *
  * Run via `mise run build:site` or `bun src/build.ts`.
  */
@@ -23,18 +23,17 @@ import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { generateAssets, } from './build/assets.ts';
 import { ensureFavicons, } from './build/favicon.ts';
 import { generatePages, } from './build/pages.ts';
-import { postProcess, } from './build/post-process.ts';
 import { loadAllLocales, } from './i18n/i18n-util.sync.ts';
 import {
   buildManifest,
-  computePipelineHashMulti,
+  computePipelineFingerprint,
   createCacheEntry,
   getCachedEntry,
   readCache,
   writeCache,
 } from './lib/cache.ts';
 import { loadContent, } from './lib/content.ts';
-import { createProcessor, } from './lib/markdown.ts';
+import { renderMdx, } from './lib/markdown.ts';
 
 // File justification: 120 lines -- linear pipeline script; splitting the
 // orchestration across multiple files would scatter the build sequence.
@@ -57,14 +56,10 @@ const SITE_URL = 'https://aquati.cat';
 const CONTENT_DIR = 'src/content';
 
 /**
- * Pipeline source paths for cache invalidation.
- * Changes to any of these files invalidate all cached content entries.
+ * Glob matching all pipeline source files for cache invalidation.
+ * Changes to any matched file invalidate all cached content entries.
  */
-const PIPELINE_SOURCES = [
-  'src/lib/markdown.ts',
-  'src/lib/rehype-highlight.ts',
-  'src/client/tags.ts',
-] as const;
+const PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts';
 
 //region Build orchestration -- loads content, processes MDX, generates pages and assets
 
@@ -74,7 +69,7 @@ l.info('starting',);
 const [posts, cache, pipelineHash,] = await Promise.all([
   loadContent(CONTENT_DIR,),
   readCache({ l, },),
-  computePipelineHashMulti(PIPELINE_SOURCES,),
+  computePipelineFingerprint(PIPELINE_GLOB,),
 ],);
 
 l.info(`loaded ${posts.length} posts`,);
@@ -86,9 +81,6 @@ if (pipelineChanged)
 
 /** Cache to use for lookups; `undefined` forces full reprocessing on pipeline change. */
 const effectiveCache = pipelineChanged ? undefined : cache;
-
-/** Configured unified processor for MDX-to-HTML conversion. */
-const processor = createProcessor();
 
 /** Results from processing each post: rendered HTML and cache entry. */
 const processResults = await Promise.all(posts.map(async function processPost(post,) {
@@ -111,8 +103,7 @@ const processResults = await Promise.all(posts.map(async function processPost(po
     };
   }
 
-  const result = await processor.process(post.body,);
-  const html = String(result,);
+  const html = await renderMdx(post.body,);
   const entry = createCacheEntry({
     contentHash: post.contentHash,
     html,
@@ -166,6 +157,7 @@ await Promise.all([
   generatePages({
     posts,
     renderedContent,
+    siteUrl: SITE_URL,
     l,
   },),
   generateAssets({
@@ -175,8 +167,6 @@ await Promise.all([
     l,
   },),
 ],);
-await postProcess({ l, },);
-
 await writeCache(buildManifest({
   pipelineHash,
   entries: cacheEntries,

@@ -1,0 +1,91 @@
+---
+title: "Process and reflection"
+description: "An overview of my design thinking, decision-making, and problem-solving approach across projects."
+published: 2026-04-16
+updated: 2026-04-16
+tags:
+  - "portfolio"
+  - "process"
+---
+
+## How I work
+
+My process sits at the intersection of design and engineering.
+I approach every project with the same core cycle:
+research, structure, iterate, build, and reflect.
+
+## Research before assumptions
+
+I start every project by gathering evidence rather than relying on intuition alone.
+For [MagicBread.ca](/en/portfolio-magicbread),
+this meant visiting real bakeries and analyzing their online presence
+before making any design decisions.
+For [DONE](/en/portfolio-done), it meant studying existing to-do applications
+to understand where they create friction instead of reducing it.
+
+Research isn't a phase that ends -- it runs parallel to design and development.
+When I encounter unexpected behaviour from a tool or library,
+I trace the source code rather than guessing at a workaround.
+This habit carries over from my open-source work on [Monochromatic](/en/portfolio-monochromatic),
+where I regularly clone upstream repositories to understand
+exactly why something behaves the way it does.
+
+## Structured thinking
+
+I rely heavily on structured artifacts to make thinking visible:
+
+- **Personas and creative briefs** ground design decisions in real user needs
+  rather than personal preference
+- **Flow diagrams** expose complexity early, before it becomes expensive to change
+- **Moodboards** establish visual direction through curated references
+  rather than ad-hoc aesthetic choices
+- **Wireframes at multiple fidelities** let me validate structure
+  before investing in visual polish
+
+In [DONE](/en/portfolio-done), the full progression from
+brainstorming through personas, moodboards, flow diagrams,
+lo-fi wireframes, hi-fi wireframes, and a pitch presentation
+demonstrates this layered approach.
+
+## Iterative refinement
+
+No design survives first contact with implementation.
+The [Monochromatic design file](/en/design-file) for this website
+shows significant divergence from the original Figma mockup --
+not because the design was wrong, but because building it revealed
+constraints and opportunities that the mockup couldn't anticipate.
+
+I treat this gap as valuable signal rather than failure.
+Each iteration teaches something about the problem space
+that feeds back into better future decisions.
+
+## Cross-disciplinary problem-solving
+
+Working across design and engineering gives me perspective that
+purely design-focused or purely engineering-focused practitioners miss:
+
+- **Design informs code** -- Understanding visual hierarchy and spacing
+  leads to cleaner CSS architecture. The OKLCH colour system in Monochromatic
+  exists because I needed perceptually uniform colour transitions across themes.
+- **Code informs design** -- Knowing what's technically feasible
+  prevents designing interactions that are expensive to build.
+  The build-time syntax highlighting in Monochromatic achieves
+  a 99.4% reduction in client-side JavaScript because I designed
+  the rendering pipeline around the CSS Custom Highlight API
+  from the start.
+
+## Decision-making principles
+
+Across projects, a few principles consistently guide my decisions:
+
+- **Simplicity is earned, not assumed** --
+  Start with the simplest approach, add complexity only when evidence demands it
+- **Constraints are creative fuel** --
+  A single-location bakery, a one-person monorepo, a to-do app that refuses feature bloat --
+  deliberate constraints produce more focused work
+- **Document non-obvious findings** --
+  If something required investigation to understand,
+  write it down so the next person (or future self) doesn't repeat the work
+- **Verify at the user boundary** --
+  Building something is not the same as confirming it works.
+  Test the artifact the way a real user encounters it

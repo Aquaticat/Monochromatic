@@ -25,8 +25,7 @@ import type { Logger, } from './types.ts';
 // cohesive cache API; splitting into 3+ sub-40-line files adds indirection
 // without improving navigability.
 export {
-  computePipelineHash,
-  computePipelineHashMulti,
+  computePipelineFingerprint,
   sha256,
 } from './cache-hash.ts';
 

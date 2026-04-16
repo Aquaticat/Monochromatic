@@ -7,6 +7,7 @@
  */
 import {
   cssCalc,
+  cssCommaList,
   cssRem,
   cssVar,
   hCss as $,
@@ -79,8 +80,8 @@ export function headerStyles(): string {
  * Theme toggle checkbox-as-button styles.
  *
  * The real checkbox is visually hidden but remains focusable.
- * The adjacent label acts as the visible toggle with icon swap
- * driven by `:checked + label` selectors.
+ * The adjacent label acts as the visible toggle, displaying
+ * a Material Symbols `invert_colors` icon.
  *
  * @returns CSS string for theme toggle rules
  *
@@ -122,43 +123,9 @@ export function themeToggleStyles(): string {
         'outline-offset': cssCalc(BORDER_WIDTH_REM,),
       },
     },),
-    $({
-      rule: '.theme-toggle .icon-dark',
-      decls: {
-        display: 'none',
-      },
-    },),
-    $({
-      rule: '.theme-toggle-input:checked + .theme-toggle .icon-light',
-      decls: {
-        display: 'none',
-      },
-    },),
-    $({
-      rule: '.theme-toggle-input:checked + .theme-toggle .icon-dark',
-      decls: {
-        display: 'inline',
-      },
-    },),
   ]
     .join('\n',);
 }
-
-/**
- * Search icon as a data URI for the collapsed input background.
- *
- * Uses `currentColor` equivalent (#666 for light, works in both modes via
- * the CSS custom property override on the input itself).
- * Encoded inline to avoid an extra network request for a 200-byte icon.
- */
-const SEARCH_ICON_URI = [
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'",
-  " viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M18.74 19.09",
-  ' l-4.71-4.71M16.83 9.33A6.67 6.67 0 1 1 3.5 9.33',
-  " a6.67 6.67 0 0 1 13.33 0z'",
-  " stroke='%23888' stroke-width='2'/%3E%3C/svg%3E\")",
-]
-  .join('',);
 
 /** Collapsed search input size in rem (matches touch target). */
 const SEARCH_COLLAPSED = TOUCH_TARGET;
@@ -172,8 +139,8 @@ const SEARCH_TRANSITION = '0.25s';
 /**
  * Expanding search input and results dropdown styles.
  *
- * The input is icon-sized by default with the magnifying glass as a
- * centered background image. On `:focus` it expands, reveals
+ * The input is icon-sized by default with a Material Symbols `search`
+ * icon centered over it. On `:focus` the input expands, reveals
  * placeholder text, and shifts the icon to the inline-start edge.
  * The results dropdown positions absolutely below the search wrapper.
  *
@@ -195,6 +162,28 @@ export function searchAndInteractionStyles(): string {
       },
     },),
     $({
+      rule: '.search-icon',
+      decls: {
+        position: 'absolute',
+        inset: '0',
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        'pointer-events': 'none',
+        color: cssVar('color-muted',),
+        'transition-property': 'justify-content',
+        'transition-duration': SEARCH_TRANSITION,
+        'transition-timing-function': 'ease-out',
+      },
+    },),
+    $({
+      rule: '.search-input:focus ~ .search-icon',
+      decls: {
+        'justify-content': 'start',
+        'padding-inline-start': cssRem(GAP_SMALL,),
+      },
+    },),
+    $({
       rule: '.search-input',
       decls: {
         'inline-size': cssRem(SEARCH_COLLAPSED,),
@@ -206,15 +195,16 @@ export function searchAndInteractionStyles(): string {
         'border-color': 'transparent',
         'border-radius': cssRem(SEARCH_COLLAPSED / 2,),
         'background-color': 'transparent',
-        'background-image': SEARCH_ICON_URI,
-        'background-repeat': 'no-repeat',
-        'background-position': 'center',
-        'background-size': cssRem(1.25,),
-        color: cssVar('color-fg',),
+        color: 'transparent',
         'font-size': cssRem(1,),
         cursor: 'pointer',
-        'transition-property':
-          'inline-size, padding-inline, border-color, background-color, background-position',
+        'transition-property': cssCommaList([
+          'inline-size',
+          'padding-inline',
+          'border-color',
+          'background-color',
+          'color',
+        ],),
         'transition-duration': SEARCH_TRANSITION,
         'transition-timing-function': 'ease-out',
       },
@@ -222,13 +212,12 @@ export function searchAndInteractionStyles(): string {
     $({
       rule: '.search-input:focus',
       decls: {
+        color: 'inherit',
         'inline-size': cssRem(SEARCH_EXPANDED,),
         'padding-inline-start': cssRem(2.5,),
         'padding-inline-end': cssRem(GAP_SMALL,),
         'border-color': cssVar('color-border',),
         'background-color': cssVar('color-bg',),
-        'background-position': `${cssRem(GAP_SMALL,)} center`,
-        'background-size': cssRem(1,),
         cursor: 'text',
         'outline-color': cssVar('color-focus-ring',),
         'outline-style': 'solid',

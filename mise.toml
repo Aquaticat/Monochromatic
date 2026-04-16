@@ -26,7 +26,7 @@ config_roots = [
 bun = "latest"
 
 # Package manager
-"npm:pnpm" = "11.0.0-beta.6"
+"npm:pnpm" = "11.0.0-rc.1"
 
 # aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
 "cargo:fd-find" = "latest"
@@ -535,6 +535,8 @@ run = "rm -rf node_modules; task-pnpm install"
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
 "node_modules/.bin",
+"packages/duik/teto-generated/node_modules/.bin",
+"packages/duik/teto/node_modules/.bin",
 "packages/rolldown-plugins/import-attributes/node_modules/.bin",
 "packages/desktop-daemon/editord/node_modules/.bin",
 "packages/typeface/aquaticat/node_modules/.bin",

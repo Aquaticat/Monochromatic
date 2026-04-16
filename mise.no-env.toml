@@ -25,7 +25,7 @@ config_roots = [
 bun = "latest"
 
 # Package manager
-"npm:pnpm" = "11.0.0-beta.6"
+"npm:pnpm" = "11.0.0-rc.1"
 
 # aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
 "cargo:fd-find" = "latest"

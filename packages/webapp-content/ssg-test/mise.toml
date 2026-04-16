@@ -2,12 +2,14 @@
 "npm:pagefind" = "latest"
 
 [tasks.build]
-description = "Build SSG pipeline: i18n + client JS in parallel, then site, then search index"
-run = """
-mise run build:i18n ::: build:js:client
-mise run build:site
-mise run build:search
-"""
+description = "Build SSG pipeline: i18n + client JS, then site, then search index, then compress"
+run = [
+  { tasks = ["build:i18n", "build:js:client"] },
+  { tasks = ["build:site"] },
+  { tasks = ["build:search"] },
+  { tasks = ["build:fingerprint"] },
+  { tasks = ["build:compress"] },
+]
 
 [tasks."build:i18n"]
 description = "Generate typesafe-i18n types from locale files"
@@ -27,6 +29,14 @@ run = "rm -rf .cache; bun src/build.ts"
 [tasks."build:search"]
 description = "Generate Pagefind search index from built HTML"
 run = "pagefind --site dist"
+
+[tasks."build:fingerprint"]
+description = "Add content hashes to asset filenames and rewrite references"
+run = "bun src/build/fingerprint.ts"
+
+[tasks."build:compress"]
+description = "Compress dist/ with zstd"
+run = "zstd -z -f --no-check -T0 --exclude-compressed --no-content-size -r --adapt dist"
 
 [tasks.dev]
 description = "Build then serve dist/ with Caddy, rebuilding on source changes"

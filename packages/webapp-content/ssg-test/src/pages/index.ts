@@ -16,14 +16,25 @@ import { pageLayout, } from '../templates/layout.ts';
  *
  * @param langs - available language codes
  *
+ * @param canonicalUrl - full canonical URL for this page
+ *
  * @returns complete HTML document for the root index
  *
  * @example
  * ```ts
- * const html = indexPage(['en', 'fr']);
+ * const html = indexPage({ langs: ['en', 'fr'], canonicalUrl: 'https://aquati.cat/' });
  * ```
  */
-export function indexPage(langs: readonly string[],): string {
+export function indexPage(
+  {
+    langs,
+    canonicalUrl,
+  }: {
+    langs: readonly string[];
+    canonicalUrl: string;
+  },
+): string {
+  const t = i18nObject('en',);
   /** Page title composed from all language translations of "choose a language". */
   const title = locales
     .map(function capitalize(locale,) {
@@ -59,5 +70,7 @@ export function indexPage(langs: readonly string[],): string {
     title,
     lang: 'en',
     content,
+    description: t.siteDescription(),
+    canonicalUrl,
   },);
 }

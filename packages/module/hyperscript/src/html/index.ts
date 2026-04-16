@@ -61,8 +61,8 @@
  * ```
  */
 
-/** HTML void elements that must not have a closing tag */
-const VOID_ELEMENTS = new Set([
+/** HTML void elements that must not have a closing tag. */
+export const VOID_ELEMENTS: Set<string> = new Set([
   'area',
   'base',
   'br',
@@ -86,7 +86,7 @@ const VOID_ELEMENTS = new Set([
  *
  * @returns HTML-safe escaped string
  */
-function escapeHtml(raw: string,): string {
+export function escapeHtml(raw: string,): string {
   return raw
     .replaceAll(
       '&',

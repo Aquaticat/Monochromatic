@@ -15,6 +15,7 @@ import {
   themeToggleStyles,
 } from './header.ts';
 import { highlightStyles, } from './highlight.ts';
+import { iconFontStyles, } from './icons.ts';
 import { postStyles, } from './posts.ts';
 import {
   darkModeTokenStyles,
@@ -35,6 +36,7 @@ import {
  */
 export function generateSiteCss(): string {
   return [
+    iconFontStyles(),
     tokenStyles(),
     darkModeTokenStyles(),
     inverseTokenStyles(),

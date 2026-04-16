@@ -1,7 +1,18 @@
 # Claude Code status words
 
-The current words shown as status in Claude Code are too boring.
-I propose:
+**Status: abandoned.** The `spinnerVerbs` setting is purely cosmetic --
+words are picked randomly from the list, not based on what Claude is actually doing.
+This has always been the case; there was never a Haiku call or context-aware selection.
+See [anthropics/claude-code#33057](https://github.com/anthropics/claude-code/issues/33057)
+for the open feature request asking for context-aware verbs.
+
+The inaccuracy feels worse now because the built-in list expanded
+from ~56 generic verbs ("Thinking", "Working") to ~185 whimsical ones ("Sparkling", "Blooping").
+Generic words never feel wrong; specific words like "Completing" clash with random selection.
+
+No amount of curation fixes a random pick from a flat list.
+The lists below make the spinner more interesting to read,
+but the inaccuracy problem requires changes to Claude Code itself.
 
 [contents](./TODO.claude-code-words.contents.txt)
 
@@ -19,6 +30,30 @@ exploiting — unethical abuse/taking unfair advantage
 hexing — casting a harmful curse
 scheming — plotting with malicious intent
 tattling — informing/snitching on others
+```
+
+### Slang/jokes
+
+Words that are tech-culture in-jokes rather than real technical verbs; they read as trying too hard to be clever.
+
+```txt
+bikeshedding — slang for arguing over trivial details
+cargo-culting — slang for copying without understanding
+dogfooding — slang for using your own product
+rubberducking — slang for explaining code to an inanimate object
+yak-shaving — slang for endless prerequisite tasks
+```
+
+### Metaphors with no tech meaning
+
+Words that are physical-world metaphors without an actual technical definition;
+same exclusion reasoning as maritime, agricultural, and mystical terms.
+
+```txt
+crystallizing — physical chemistry metaphor
+percolating — coffee/fluid dynamics metaphor
+siphoning — fluid transfer metaphor
+unraveling — textile metaphor
 ```
 
 ### Irrelevant

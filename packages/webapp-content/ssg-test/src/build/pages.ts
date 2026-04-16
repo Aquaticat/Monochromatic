@@ -27,21 +27,25 @@ import { writePage, } from './write-page.ts';
  *
  * @param renderedContent - map of `lang/name` to rendered HTML
  *
+ * @param siteUrl - base URL for canonical link construction
+ *
  * @param l - parent logger for tagged output
  *
  * @example
  * ```ts
- * await generatePages({ posts, renderedContent, l: rootLogger });
+ * await generatePages({ posts, renderedContent, siteUrl: 'https://example.com', l: rootLogger });
  * ```
  */
 export async function generatePages(
   {
     posts,
     renderedContent,
+    siteUrl,
     l: parentLogger,
   }: {
     posts: readonly Post[];
     renderedContent: ReadonlyMap<string, string>;
+    siteUrl: string;
     l: Logger;
   },
 ): Promise<void> {
@@ -59,7 +63,10 @@ export async function generatePages(
   const writes = [
     writePage({
       relativePath: 'index.html',
-      content: indexPage(langs,),
+      content: indexPage({
+        langs,
+        canonicalUrl: `${siteUrl}/`,
+      },),
     },),
     ...langs.flatMap(function langWrites(lang,) {
       const langPosts = byLang[lang] ?? [];
@@ -69,6 +76,7 @@ export async function generatePages(
           content: langPage({
             lang,
             posts: langPosts,
+            canonicalUrl: `${siteUrl}/${lang}/`,
           },),
         },),
         ...names.map(function postWrite(name,) {
@@ -83,6 +91,7 @@ export async function generatePages(
               lang,
               name,
               renderedHtml: html,
+              canonicalUrl: `${siteUrl}/${lang}/${name}`,
             },),
           },);
         },),
@@ -95,6 +104,7 @@ export async function generatePages(
         content: namePage({
           name,
           posts: namePosts,
+          canonicalUrl: `${siteUrl}/${name}`,
         },),
       },);
     },),

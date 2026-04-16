@@ -61,7 +61,11 @@ export { $ as hDom, } from './dom/index.ts';
 
 //region h-html
 
-export { $ as hHtml, } from './html/index.ts';
+export {
+  $ as hHtml,
+  escapeHtml,
+  VOID_ELEMENTS,
+} from './html/index.ts';
 
 //endregion
 

@@ -24,11 +24,19 @@ import { pageLayout, } from '../templates/layout.ts';
  *
  * @param renderedHtml - pre-rendered MDX HTML content (from cache or processor)
  *
+ * @param canonicalUrl - full canonical URL for this page
+ *
  * @returns complete HTML document for the post page
  *
  * @example
  * ```ts
- * const html = postPage({ post, lang: 'en', name: 'hello', renderedHtml: '<p>Hi</p>' });
+ * const html = postPage({
+ *   post,
+ *   lang: 'en',
+ *   name: 'hello',
+ *   renderedHtml: '<p>Hi</p>',
+ *   canonicalUrl: 'https://aquati.cat/en/hello',
+ * });
  * ```
  */
 export function postPage(
@@ -37,17 +45,20 @@ export function postPage(
     lang,
     name,
     renderedHtml,
+    canonicalUrl,
   }: {
     post: Post | undefined;
     lang: Locales;
     name: string;
     renderedHtml: string | undefined;
+    canonicalUrl: string;
   },
 ): string {
   if (post === undefined || renderedHtml === undefined) {
     return postNotFoundPage({
       lang,
       name,
+      canonicalUrl,
     },);
   }
 
@@ -69,6 +80,9 @@ export function postPage(
     title: post.data.title,
     lang,
     content,
+    description: post.data.description,
+    canonicalUrl,
+    searchable: true,
   },);
 }
 
@@ -79,15 +93,19 @@ export function postPage(
  *
  * @param name - post slug name for the language chooser link
  *
+ * @param canonicalUrl - full canonical URL for this page
+ *
  * @returns complete HTML document with redirect link
  */
 function postNotFoundPage(
   {
     lang,
     name,
+    canonicalUrl,
   }: {
     lang: Locales;
     name: string;
+    canonicalUrl: string;
   },
 ): string {
   const t = i18nObject(lang,);
@@ -118,5 +136,7 @@ function postNotFoundPage(
     title,
     lang,
     content,
+    description: t.postNotInLang(),
+    canonicalUrl,
   },);
 }

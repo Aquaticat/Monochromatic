@@ -15,35 +15,12 @@ import type {
 import { i18nObject, } from '../i18n/i18n-util.ts';
 
 /**
- * Sun icon SVG markup for the light mode indicator.
+ * Material Symbols ligature name for the theme toggle icon.
  *
- * Shown when the theme is not inverted (default state).
- * Uses `currentColor` stroke to inherit the text color.
+ * Uses `invert_colors` — a single icon that represents both light
+ * and dark modes, replacing the previous sun/moon SVG pair.
  */
-const SUN_ICON = [
-  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">',
-  '<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>',
-  '<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41',
-  'M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"',
-  ' stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-  '</svg>',
-]
-  .join('',);
-
-/**
- * Moon icon SVG markup for the dark mode indicator.
- *
- * Shown when the theme is inverted (checked state).
- * Uses `currentColor` stroke to inherit the text color.
- */
-const MOON_ICON = [
-  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">',
-  '<path d="M21 12.79A9 9 0 1 1 11.21 3',
-  ' 7 7 0 0 0 21 12.79z"',
-  ' stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
-  '</svg>',
-]
-  .join('',);
+const THEME_ICON = 'invert_colors';
 
 /**
  * Renders the site header with brand link, theme toggle, and expanding search input.
@@ -106,13 +83,8 @@ export function headerFragment(lang: Locales,): string {
             children: [
               h({
                 tag: 'span',
-                class: 'icon-light',
-                html: SUN_ICON,
-              },),
-              h({
-                tag: 'span',
-                class: 'icon-dark',
-                html: MOON_ICON,
+                class: 'material-symbols-outlined',
+                text: THEME_ICON,
               },),
             ],
           },),
@@ -126,9 +98,10 @@ export function headerFragment(lang: Locales,): string {
 /**
  * Renders the expanding search input with results dropdown.
  *
- * The `<search>` landmark wraps an `<input type="search">` styled as an
- * icon when unfocused (via a background SVG of the search magnifying glass)
- * and an empty `<ul>` for Pagefind results populated client-side.
+ * The `<search>` landmark wraps an `<input type="search">` that collapses
+ * to icon size when unfocused, with a Material Symbols `search` icon
+ * overlaid via absolute positioning, and an empty `<ul>` for Pagefind
+ * results populated client-side.
  *
  * @param t - translation functions for localized placeholder text
  *
@@ -153,6 +126,12 @@ function searchInput(t: TranslationFunctions,): string {
           'aria-autocomplete': 'list',
         },
         class: 'search-input',
+      },),
+      h({
+        tag: 'span',
+        class: 'material-symbols-outlined search-icon',
+        attrs: { 'aria-hidden': 'true', },
+        text: 'search',
       },),
       h({
         tag: 'ul',

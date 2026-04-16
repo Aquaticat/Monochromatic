@@ -1,0 +1,69 @@
+---
+title: "Monochromatic -- Open-Source Design System and Monorepo"
+description: "Lead maintainer of a TypeScript monorepo ecosystem: CSS design system, functional utilities library, configuration presets, and developer tooling."
+published: 2026-04-16
+updated: 2026-04-16
+tags:
+  - "portfolio"
+  - "development"
+  - "design"
+  - "open-source"
+---
+
+## Overview
+
+Monochromatic is an open-source TypeScript monorepo ecosystem
+that I have maintained since 2023.
+It comprises a CSS design system, functional utilities library,
+Vite/Astro configuration presets, a Figma plugin,
+and the static site generator powering this very website.
+
+[View on GitHub](https://github.com/Aquaticat/Monochromatic)
+
+## My role and contributions
+
+I am the **lead maintainer and sole architect**, responsible for:
+
+- **Architecture** -- Designing the monorepo structure, package boundaries,
+  and dependency graph across dozens of packages
+- **CSS design system** -- Building a token-based design system with OKLCH colours,
+  logical properties, and light/dark mode support
+- **Utilities library** -- Functional TypeScript utilities for common patterns
+- **Configuration presets** -- Shareable configs for Vite, Astro, ESLint, and TypeScript
+- **CI/CD** -- Architecting CI pipelines and npm publishing workflows
+- **Documentation** -- Writing documentation with Astro
+- **Code quality** -- Enforcing standards via ESLint, TypeScript strict mode,
+  and automated testing
+- **Static site generator** -- Building the SSG that powers aquati.cat,
+  featuring incremental builds, MDX processing, i18n, and build-time
+  syntax highlighting with the CSS Custom Highlight API
+
+## Technical highlights
+
+- **Monorepo tooling** -- pnpm workspaces, mise task runner,
+  workspace-protocol dependencies
+- **Build-time syntax highlighting** -- Lezer parsers run at build time;
+  only pre-computed character offsets ship to the browser,
+  achieving a 99.4% reduction in client-side JavaScript
+- **Incremental builds** -- SHA-256 content hashing with a manifest-based cache
+  skips re-processing unchanged files
+- **Type-safe i18n** -- typesafe-i18n for compile-time translation safety
+- **OKLCH colour system** -- CSS custom properties with perceptually uniform
+  colour spaces for consistent light and dark themes
+
+![Monochromatic website homepage](../monochromatic-homepage.avif)
+
+[View the design file in Figma](https://www.figma.com/design/OGK2sZvJFuPIYDSqUPmWJq/aquati.cat?node-id=0-1&t=ciYLA06JdiSO4xSE-1)
+
+## Skills and tools demonstrated
+
+- TypeScript and JavaScript
+- Monorepo architecture (pnpm workspaces)
+- CSS design systems and custom properties
+- Static site generation
+- Vite and Astro
+- CI/CD and npm publishing
+- ESLint and code quality tooling
+- Figma plugin development
+- Technical documentation
+- Open-source project maintenance

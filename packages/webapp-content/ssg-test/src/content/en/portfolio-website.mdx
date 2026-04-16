@@ -1,0 +1,98 @@
+---
+title: "Portfolio Website"
+description: "A responsive portfolio site built with Bootstrap, custom SCSS, Vite, and Bun. Features AVIF image optimization, responsive srcset, and print stylesheet."
+published: 2026-04-16
+updated: 2026-04-16
+tags:
+  - "portfolio"
+  - "development"
+---
+
+## Overview
+
+A responsive portfolio website built as an academic project
+at Algonquin College in 2025.
+The project demonstrates front-end development skills
+with modern tooling and performance optimization.
+
+[View on GitHub](https://github.com/Aquaticat/portfolio)
+
+## My role and contributions
+
+I was the **sole developer**, responsible for:
+
+- **Development** -- Built the site with Bootstrap, custom SCSS variables,
+  Vite, and Bun
+- **Image optimization** -- Converted all images to AVIF format
+  with responsive `srcset` for different viewport sizes
+- **Print support** -- Added a print stylesheet using the Gutenberg CSS library
+- **Deployment** -- Deployed to GitHub Pages
+
+## Technical highlights
+
+- **Bootstrap with custom SCSS** -- Extended Bootstrap's default theme
+  with custom variables for a personalized look
+  while maintaining the framework's responsive grid
+- **Vite and Bun** -- Modern build tooling for fast development
+  and optimized production bundles
+- **AVIF image optimization** -- All raster images converted to AVIF,
+  reducing file sizes while maintaining visual quality
+- **Responsive srcset** -- Images serve appropriately sized variants
+  based on the visitor's viewport
+- **Print stylesheet** -- Gutenberg CSS library ensures the portfolio
+  prints cleanly for physical copies
+
+![Portfolio website homepage](../portfolio-website-homepage.avif)
+
+[View the design file in Figma](https://www.figma.com/design/PLACEHOLDER_PORTFOLIO)
+
+## Lessons learned
+
+<Alert data-type="warning">
+
+Never use Bootstrap in production.
+
+</Alert>
+
+Bootstrap has components, but many aspects of them cannot be customized
+with CSS variables.
+The official recommendation is to add utility classes to those components,
+which diminishes the benefits of using components in the first place.
+
+Bootstrap prompts a utility-class-based approach,
+yet it lacks many basic utility classes
+-- for example, `backdrop-filter: blur(...)` --
+forcing users to add them through the utility API.
+That API is itself very limited:
+it does not allow adding two CSS properties inside one utility class.
+
+**Don't be afraid of diving into the source code.**
+It is the only way to understand why Bootstrap does what it does.
+Working through it gave me an appreciation for the engineers
+who built and maintain the framework,
+even as I concluded it was the wrong tool for my project.
+
+Cascade Layers can help with overriding Bootstrap styles,
+but reading the source is unavoidable sometimes,
+especially with `!important` scattered throughout.
+
+<Alert data-type="tip">
+
+Prefer a real static site generator.
+Vite serves all HTML files without extra configuration,
+but does not build them without a workaround.
+A real SSG handles all of this automatically.
+
+</Alert>
+
+## Skills and tools demonstrated
+
+- HTML and CSS / SCSS
+- Bootstrap framework customization
+- Vite build tooling
+- Bun runtime
+- Image optimization (AVIF, srcset)
+- Responsive web design
+- Print stylesheet design
+- GitHub Pages deployment
+- Git version control
