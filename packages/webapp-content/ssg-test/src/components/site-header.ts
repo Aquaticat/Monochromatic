@@ -10,8 +10,8 @@ import {
   cssRem,
   cssVar,
   hCss as $,
+  hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
-import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
 import { i18nObject, } from '../i18n/i18n-util.ts';

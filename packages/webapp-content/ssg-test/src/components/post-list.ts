@@ -8,8 +8,8 @@ import {
   cssCompounded,
   cssRem,
   hCss as $,
+  hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
-import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Post, } from '../lib/content.ts';
 import {

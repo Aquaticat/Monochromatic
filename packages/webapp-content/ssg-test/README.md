@@ -81,6 +81,7 @@ HTML (entry points), MDX source files, `pagefind/` (manages its own hashing),
 `robots.txt`, RSS feeds, `manifest.webmanifest` (rewritten but not renamed, since PWA expects a stable URL).
 
 **Cache headers** (configured in `Caddyfile`):
+
 - Fingerprinted assets: `Cache-Control: public, max-age=31536000, immutable`
 - HTML: `Cache-Control: no-cache` (revalidate with ETag every request)
 

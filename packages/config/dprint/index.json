@@ -9,7 +9,9 @@
     "**/dist/**/*.*",
     "**/.dist/**/*.*",
     "**/bak/**/*.*",
-    "**/.astro/**/*.*"
+    "**/.astro/**/*.*",
+    "**/pnpm-lock.yaml",
+    "**/src/i18n/**"
   ],
   "lineWidth": 90,
   "useTabs": false,

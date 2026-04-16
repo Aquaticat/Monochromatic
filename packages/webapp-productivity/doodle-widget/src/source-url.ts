@@ -26,11 +26,34 @@ const FALLBACK_DIRECTORY = 'packages/webapp-productivity/doodle-widget';
 async function resolveRepoUrl(): Promise<string> {
   try {
     const repoRoot = await findMonorepoRoot();
-    const result = await spawn('git', ['remote', 'get-url', 'origin',], { cwd: repoRoot, },);
-    return result.output.trim().replace(/\.git$/, '',);
-  } catch {
+    const result = await spawn(
+      'git',
+      [
+        'remote',
+        'get-url',
+        'origin',
+      ],
+      { cwd: repoRoot, },
+    );
+    return result.output.trim().replace(
+      /\.git$/,
+      '',
+    );
+  }
+  catch {
     return FALLBACK_REPO_URL;
   }
+}
+
+/**
+ * Type guard that narrows `unknown` to a string-keyed record.
+ *
+ * @param value - value to check
+ *
+ * @returns true when {@link value} is a plain object (non-null, non-array)
+ */
+function isRecord(value: unknown,): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 
 /**
@@ -42,16 +65,28 @@ async function resolveRepoUrl(): Promise<string> {
  */
 async function resolveDirectory(packageDir: string,): Promise<string> {
   try {
-    const raw = await readFile(join(packageDir, 'package.json',), 'utf8',);
-    const pkg = JSON.parse(raw,) as Record<string, unknown>;
-    const repo = pkg.repository as Record<string, unknown> | undefined;
+    const raw = await readFile(
+      join(
+        packageDir,
+        'package.json',
+      ),
+      'utf8',
+    );
+    const parsed: unknown = JSON.parse(raw,);
+    if (!isRecord(parsed,))
+      return FALLBACK_DIRECTORY;
 
-    if (typeof repo?.directory === 'string') {
-      return repo.directory;
-    }
+    const { repository, } = parsed;
+    if (!isRecord(repository,))
+      return FALLBACK_DIRECTORY;
 
-    return FALLBACK_DIRECTORY;
-  } catch {
+    const { directory, } = repository;
+    if (typeof directory !== 'string')
+      return FALLBACK_DIRECTORY;
+
+    return directory;
+  }
+  catch {
     return FALLBACK_DIRECTORY;
   }
 }

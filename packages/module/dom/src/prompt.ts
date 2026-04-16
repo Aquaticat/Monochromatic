@@ -66,46 +66,58 @@ export async function prompt(
     document.body.append(dialog,);
 
     // Handle form submission
-    form.addEventListener('submit', event => {
-      event.preventDefault();
-      dialog.returnValue = input.value;
-      dialog.close();
-    },);
+    form.addEventListener(
+      'submit',
+      event => {
+        event.preventDefault();
+        dialog.returnValue = input.value;
+        dialog.close();
+      },
+    );
 
     // Handle cancel button
-    cancelButton.addEventListener('click', () => {
-      dialog.returnValue = '';
-      dialog.close();
-    },);
+    cancelButton.addEventListener(
+      'click',
+      () => {
+        dialog.returnValue = '';
+        dialog.close();
+      },
+    );
 
     // Handle dialog close (ESC key or other close methods)
-    dialog.addEventListener('close', () => {
-      // Get the return value (empty string means cancelled)
-      const result = dialog.returnValue || null;
+    dialog.addEventListener(
+      'close',
+      () => {
+        // Get the return value (empty string means cancelled)
+        const result = dialog.returnValue || null;
 
-      // Clean up
-      dialog.remove();
+        // Clean up
+        dialog.remove();
 
-      // Resolve the promise
-      resolve(result === '' ? null : result,);
-    },);
+        // Resolve the promise
+        resolve(result === '' ? null : result,);
+      },
+    );
 
     // Handle backdrop click
-    dialog.addEventListener('click', event => {
-      // Check if click was on the backdrop (dialog element itself, not its children)
-      if (event.target === dialog) {
-        const rect = dialog.getBoundingClientRect();
-        const clickedInDialog = event.clientX >= rect.left
-          && event.clientX <= rect.right
-          && event.clientY >= rect.top
-          && event.clientY <= rect.bottom;
+    dialog.addEventListener(
+      'click',
+      event => {
+        // Check if click was on the backdrop (dialog element itself, not its children)
+        if (event.target === dialog) {
+          const rect = dialog.getBoundingClientRect();
+          const clickedInDialog = event.clientX >= rect.left
+            && event.clientX <= rect.right
+            && event.clientY >= rect.top
+            && event.clientY <= rect.bottom;
 
-        if (!clickedInDialog) {
-          dialog.returnValue = '';
-          dialog.close();
+          if (!clickedInDialog) {
+            dialog.returnValue = '';
+            dialog.close();
+          }
         }
-      }
-    },);
+      },
+    );
 
     // Show the dialog
     dialog.showModal();

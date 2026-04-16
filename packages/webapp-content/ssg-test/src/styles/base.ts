@@ -12,6 +12,7 @@ import * as siteHeader from '../components/site-header.ts';
 import * as siteSearch from '../components/site-search.ts';
 import * as themeToggle from '../components/theme-toggle.ts';
 import {
+  fontFaceStyles,
   interactionStyles,
   resetStyles,
   typographyStyles,
@@ -37,6 +38,7 @@ import {
  */
 export function generateSiteCss(): string {
   return [
+    fontFaceStyles(),
     iconFontStyles(),
     tokenStyles(),
     darkModeTokenStyles(),

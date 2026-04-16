@@ -15,7 +15,7 @@ const config: UserConfig = defineConfig({
   deps: {
     ...base.deps,
     alwaysBundle: [
-      ...(Array.isArray(base.deps?.alwaysBundle) ? base.deps.alwaysBundle : []),
+      ...(Array.isArray(base.deps?.alwaysBundle,) ? base.deps.alwaysBundle : []),
       /^hyphen/,
     ],
   },

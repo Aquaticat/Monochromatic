@@ -50,7 +50,10 @@ const js = await readFile(
 );
 
 /** Complete self-contained HTML document */
-const html = renderPage({ css, js, },);
+const html = renderPage({
+  css,
+  js,
+},);
 
 await mkdir(
   DIST_DIR,

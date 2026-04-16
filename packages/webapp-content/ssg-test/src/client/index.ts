@@ -17,7 +17,12 @@
  * ```
  */
 
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+
 import { HIGHLIGHT_GROUPS, } from './highlight-groups.ts';
+// oxlint-disable-next-line no-unassigned-import -- side-effect import: registers DOM event listeners for the search widget on module load
 import './search.ts';
 
 export {}; // eslint module boundary marker
@@ -76,12 +81,11 @@ function findFirstOverlap(
   let hi = textEntries.length;
   while (lo < hi) {
     const mid = (lo + hi) >>> 1;
-    const entry = textEntries[mid]!;
-    if (entry.start + entry.node.length <= from) {
+    const entry = notNullishOrThrow(textEntries[mid],);
+    if (entry.start + entry.node.length <= from)
       lo = mid + 1;
-    } else {
+    else
       hi = mid;
-    }
   }
   return lo;
 }
@@ -127,7 +131,7 @@ function createRangesFromPairs({
     );
 
     for (let i = startIdx; i < textEntries.length; i++) {
-      const entry = textEntries[i]!;
+      const entry = notNullishOrThrow(textEntries[i],);
       if (entry.start >= to)
         break;
 

@@ -9,9 +9,9 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Locales, } from '../i18n/i18n-types.ts';
 import { i18nObject, } from '../i18n/i18n-util.ts';
 
+import { html as postListHtml, } from '../components/post-list.ts';
 import type { Post, } from '../lib/content.ts';
 import { pageLayout, } from '../templates/layout.ts';
-import { html as postListHtml, } from '../components/post-list.ts';
 
 /**
  * Generates a page listing all posts with a specific tag in one language.

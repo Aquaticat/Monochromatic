@@ -34,12 +34,12 @@ export const correctnessRules: DummyRuleMap = {
   // See TROUBLESHOOTING.tsgolint-no-unnecessary-type-assertion.md
   'typescript/no-unnecessary-type-assertion': 'off',
 
-  // Nursery rule: not enabled by category, must be listed explicitly.
-  // Matches ESLint's @typescript-eslint/no-unnecessary-condition config.
-  'typescript/no-unnecessary-condition': [
-    'error',
-    { allowConstantLoopConditions: 'only-allowed-literals', },
-  ],
+  // Disabled: oxlint's type-aware analysis produces false positives on DOM types
+  // (e.g. flags `Element.textContent ?? ''` as unnecessary even though textContent
+  // is `string | null` per spec) and its auto-fix would silently strip defensive
+  // null checks, causing runtime crashes. The rule has no per-rule fix-disable
+  // option, so the whole rule is turned off.
+  'typescript/no-unnecessary-condition': 'off',
 
   //region correctness
 

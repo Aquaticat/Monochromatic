@@ -85,7 +85,10 @@ export class EditorPane extends HTMLElement {
     );
     this.#editor.addEventListener(
       'input',
-      createAutoIndentHandler({ editor: this.#editor, shadow: this.#shadow, },),
+      createAutoIndentHandler({
+        editor: this.#editor,
+        shadow: this.#shadow,
+      },),
     );
     this.#mutationObserver = new MutationObserver(this.#onMutation.bind(this,),);
     this.#mutationObserver.observe(

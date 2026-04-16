@@ -85,8 +85,6 @@ export async function generateAssets(
    * @param sourceDir - base directory to copy from
    *
    * @param files - absolute file paths to copy
-   *
-   * @returns promise that resolves when all files are copied
    */
   async function copyTreeToDist({
     sourceDir,
@@ -148,7 +146,8 @@ export async function generateAssets(
       return `Sitemap: ${siteUrl}/${lang}/rss.xml`;
     },),
     '',
-  ].join('\n',);
+  ]
+    .join('\n',);
 
   await Promise.all([
     writePage({

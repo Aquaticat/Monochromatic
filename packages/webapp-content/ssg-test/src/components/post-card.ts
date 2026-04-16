@@ -8,20 +8,17 @@
  * are scoped to this file.
  */
 import {
-  cssCalc,
   cssInt,
   cssRem,
   cssVar,
   hCss as $,
+  hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
-import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Post, } from '../lib/content.ts';
 import {
-  BORDER_WIDTH_REM,
   FONT_SIZE_H2,
   FONT_SIZE_SMALL,
-  GAP,
   GAP_SMALL,
 } from '../styles/constants.ts';
 import { prettyDate, } from '../templates/pretty-date.ts';
@@ -44,12 +41,6 @@ export function css(): string {
       rule: 'post-card li',
       decls: {
         position: 'relative',
-        'padding-block': cssRem(GAP,),
-        'padding-inline': cssRem(GAP,),
-        'border-style': 'solid',
-        'border-width': cssCalc(BORDER_WIDTH_REM,),
-        'border-color': cssVar('color-border',),
-        'border-radius': cssRem(GAP_SMALL,),
       },
       children: [
         $({

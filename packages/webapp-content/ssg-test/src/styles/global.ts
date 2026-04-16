@@ -22,6 +22,56 @@ import {
 } from './constants.ts';
 
 /**
+ * `@font-face` declarations for self-hosted text and code fonts.
+ *
+ * Inter (normal + italic) is the body typeface; Monaspace Neon is
+ * the monospace typeface for `<code>` and `<pre>` blocks.
+ * All three are variable-weight woff2 files served from the site root.
+ *
+ * @returns CSS string with three `@font-face` rules
+ *
+ * @example
+ * ```ts
+ * const css = fontFaceStyles();
+ * ```
+ */
+export function fontFaceStyles(): string {
+  return [
+    $({
+      at: 'font-face',
+      decls: {
+        'font-family': "'Inter'",
+        'font-style': 'normal',
+        'font-weight': '100 900',
+        'font-display': 'swap',
+        src: "url('/inter.woff2') format('woff2')",
+      },
+    },),
+    $({
+      at: 'font-face',
+      decls: {
+        'font-family': "'Inter'",
+        'font-style': 'italic',
+        'font-weight': '100 900',
+        'font-display': 'swap',
+        src: "url('/interItalic.woff2') format('woff2')",
+      },
+    },),
+    $({
+      at: 'font-face',
+      decls: {
+        'font-family': "'Monaspace Neon'",
+        'font-style': 'normal',
+        'font-weight': '100 900',
+        'font-display': 'swap',
+        src: "url('/monaspaceNeon.woff2') format('woff2')",
+      },
+    },),
+  ]
+    .join('\n',);
+}
+
+/**
  * Box-sizing reset and base body styles.
  *
  * @returns CSS string for reset rules
@@ -130,6 +180,14 @@ export function interactionStyles(): string {
       decls: {
         'min-inline-size': cssRem(TOUCH_TARGET,),
         'min-block-size': cssRem(TOUCH_TARGET,),
+      },
+    },),
+    $({
+      rule:
+        ':where(p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, figcaption, dd, dt, cite, caption, summary) a',
+      decls: {
+        'min-inline-size': 'revert',
+        'min-block-size': 'revert',
       },
     },),
     $({

@@ -18,7 +18,7 @@ export const GAP = 1;
 export const GAP_SMALL: number = 1 / 2;
 
 /** Border width in rem, equivalent to 1px at default font size. */
-export const BORDER_WIDTH_REM = 'calc(1 / 16 * 1rem)';
+export const BORDER_WIDTH_REM = '1 / 16 * 1rem';
 
 /** Minimum interactive touch target size in rem (48px equivalent). */
 export const TOUCH_TARGET = 3;

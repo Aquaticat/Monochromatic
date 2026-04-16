@@ -31,7 +31,7 @@ import {
 //region Types
 
 /** Wrapper distinguishing rendered HTML from raw text in the JSX tree. */
-export type SafeHtml = { readonly html: string };
+export type SafeHtml = { readonly html: string; };
 
 //endregion Types
 
@@ -61,6 +61,19 @@ function isSafeHtml(value: unknown,): value is SafeHtml {
 }
 
 /**
+ * Checks whether a JSX prop value is a `dangerouslySetInnerHTML` payload.
+ *
+ * @param value - prop value to test
+ *
+ * @returns `true` if value has the `{ __html: string }` shape
+ */
+function isDangerousHtml(value: unknown,): value is { readonly __html: string; } {
+  if (value === null || typeof value !== 'object' || !('__html' in value))
+    return false;
+  return typeof value.__html === 'string';
+}
+
+/**
  * Recursively renders a child value to an HTML string.
  *
  * - `SafeHtml` objects pass through (already rendered by a `jsx` call)
@@ -75,11 +88,21 @@ function isSafeHtml(value: unknown,): value is SafeHtml {
  * @returns HTML string
  */
 function renderChild(child: unknown,): string {
-  if (child === null || child === undefined || typeof child === 'boolean') return '';
-  if (isSafeHtml(child,)) return child.html;
-  if (typeof child === 'string') return escapeHtml(child,);
-  if (typeof child === 'number') return String(child,);
-  if (Array.isArray(child,)) return child.map(renderChild,).join('',);
+  if (child === null || child === undefined || typeof child === 'boolean')
+    return '';
+  if (isSafeHtml(child,))
+    return child.html;
+  if (typeof child === 'string')
+    return escapeHtml(child,);
+  if (typeof child === 'number')
+    return String(child,);
+  if (Array.isArray(child,)) {
+    return child
+      .map(function renderArrayChild(c: unknown,): string {
+        return renderChild(c,);
+      },)
+      .join('',);
+  }
   return '';
 }
 
@@ -97,13 +120,22 @@ function renderChild(child: unknown,): string {
 function renderAttrs(props: Record<string, unknown>,): string {
   let result = '';
   for (const [key, value,] of Object.entries(props,)) {
-    if (key === 'children' || key === 'dangerouslySetInnerHTML') continue;
-    if (value === null || value === undefined || value === false) continue;
+    if (key === 'children' || key === 'dangerouslySetInnerHTML')
+      continue;
+    if (value === null || value === undefined || value === false)
+      continue;
     const name = PROP_TO_ATTR[key] ?? key;
-    if (value === true) {
+    if (value === true)
       result += ` ${name}`;
-    } else {
-      result += ` ${name}="${escapeHtml(String(value,),)}"`;
+    else if (typeof value === 'object')
+      result += ` ${name}="${escapeHtml(JSON.stringify(value,) ?? '',)}"`;
+    else if (typeof value === 'string')
+      result += ` ${name}="${escapeHtml(value,)}"`;
+    else if (typeof value === 'number'
+      || typeof value === 'bigint'
+      || typeof value === 'symbol')
+    {
+      result += ` ${name}="${escapeHtml(value.toString(),)}"`;
     }
   }
   return result;
@@ -121,8 +153,13 @@ function renderAttrs(props: Record<string, unknown>,): string {
  * @param props - props containing children
  *
  * @returns rendered children as `SafeHtml`
+ *
+ * @example
+ * ```ts
+ * Fragment({ children: ['a', 'b', 'c'] }); // { html: 'abc' }
+ * ```
  */
-export function Fragment(props: { children?: unknown },): SafeHtml {
+export function Fragment(props: { children?: unknown; },): SafeHtml {
   return { html: renderChild(props.children,), };
 }
 
@@ -136,7 +173,9 @@ export function Fragment(props: { children?: unknown },): SafeHtml {
  * are rendered to an HTML string.
  *
  * @param type - element tag name or component function
+ *
  * @param props - JSX props including `children`
+ *
  * @param _key - reconciliation key (ignored for static rendering)
  *
  * @returns rendered HTML wrapped in `SafeHtml`
@@ -148,23 +187,20 @@ export function Fragment(props: { children?: unknown },): SafeHtml {
  * ```
  */
 export function jsx(
-  type: string | ((props: Record<string, unknown>) => SafeHtml),
+  type: string | ((props: Record<string, unknown>,) => SafeHtml),
   props: Record<string, unknown>,
   _key?: string,
 ): SafeHtml {
-  if (typeof type === 'function') {
+  if (typeof type === 'function')
     return type(props,);
-  }
 
   const attrs = renderAttrs(props,);
 
-  if (VOID_ELEMENTS.has(type,)) {
+  if (VOID_ELEMENTS.has(type,))
     return { html: `<${type}${attrs}>`, };
-  }
 
-  const inner = props.dangerouslySetInnerHTML !== null
-      && props.dangerouslySetInnerHTML !== undefined
-    ? (props.dangerouslySetInnerHTML as { __html: string }).__html
+  const inner = isDangerousHtml(props.dangerouslySetInnerHTML,)
+    ? props.dangerouslySetInnerHTML.__html
     : renderChild(props.children,);
 
   return { html: `<${type}${attrs}>${inner}</${type}>`, };

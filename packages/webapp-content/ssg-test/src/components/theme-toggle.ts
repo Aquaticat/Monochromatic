@@ -13,17 +13,13 @@
  */
 import {
   cssCalc,
-  cssRem,
   cssVar,
   hCss as $,
+  hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
-import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { TranslationFunctions, } from '../i18n/i18n-types.ts';
-import {
-  BORDER_WIDTH_REM,
-  TOUCH_TARGET,
-} from '../styles/constants.ts';
+import { BORDER_WIDTH_REM, } from '../styles/constants.ts';
 
 /**
  * Material Symbols ligature name for the theme toggle icon.
@@ -75,8 +71,6 @@ export function css(): string {
         display: 'inline-flex',
         'align-items': 'center',
         'justify-content': 'center',
-        'min-inline-size': cssRem(TOUCH_TARGET,),
-        'min-block-size': cssRem(TOUCH_TARGET,),
         cursor: 'pointer',
       },
     },),

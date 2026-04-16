@@ -19,13 +19,19 @@ type AlertType = 'caution' | 'important' | 'note' | 'tip' | 'warning';
 /**
  * Renders an alert callout as a semantic blockquote.
  *
- * @param props - component props
- * @param props.data-type - alert type: `note`, `tip`, `important`, `warning`, or `caution`
- * @param props.children - alert content
+ * @param props - component props with `data-type` (alert kind: `note`, `tip`, `important`, `warning`, or `caution`) and `children` (alert content)
  *
  * @returns rendered alert HTML
+ *
+ * @example
+ * ```ts
+ * Alert({ 'data-type': 'note', children: 'Heads up.' });
+ * ```
  */
-export function Alert(props: { 'children': unknown; 'data-type': AlertType },): SafeHtml {
+export function Alert(props: {
+  children: unknown;
+  'data-type': AlertType;
+},): SafeHtml {
   return jsx(
     'blockquote',
     {
@@ -34,4 +40,3 @@ export function Alert(props: { 'children': unknown; 'data-type': AlertType },): 
     },
   );
 }
-

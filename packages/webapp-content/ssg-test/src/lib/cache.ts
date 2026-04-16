@@ -49,6 +49,7 @@ const cacheEntrySchema: z.ZodObject<{
 }> = z.object({
   contentHash: z.string(),
   html: z.string(),
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- `postFrontmatterSchema` is a typed `ZodObject` re-exported from another module; oxlint can't follow the cross-module zod type chain
   frontmatter: postFrontmatterSchema,
 },);
 
@@ -101,7 +102,11 @@ export async function readCache(
       CACHE_PATH,
       'utf8',
     );
-    return buildManifestSchema.parse(JSON.parse(raw,),);
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-return) -- zod/mini's `z.parse` return type doesn't propagate through oxlint's type-aware analysis; the function signature pins the narrow return type
+    return z.parse(
+      buildManifestSchema,
+      JSON.parse(raw,),
+    );
   }
   catch (error) {
     // ENOENT is expected on first build; everything else is worth logging

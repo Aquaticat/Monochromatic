@@ -23,9 +23,8 @@ import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { generateAssets, } from './build/assets.ts';
 import { ensureFavicons, } from './build/favicon.ts';
 import { generatePages, } from './build/pages.ts';
-import type { Locales, } from './i18n/i18n-types.ts';
 import { loadAllLocales, } from './i18n/i18n-util.sync.ts';
-import { groupByLang, } from './lib/content-group.ts';
+import { isLocale, } from './i18n/i18n-util.ts';
 import {
   buildManifest,
   computePipelineFingerprint,
@@ -34,6 +33,7 @@ import {
   readCache,
   writeCache,
 } from './lib/cache.ts';
+import { groupByLang, } from './lib/content-group.ts';
 import { loadContent, } from './lib/content.ts';
 import { renderMdx, } from './lib/markdown.ts';
 
@@ -158,7 +158,9 @@ l.info(`processed ${posts.length - cacheHits} files, ${cacheHits} from cache`,);
 const byLang = groupByLang(posts,);
 
 /** Valid locale codes present in the loaded content. */
-const validLangs = Object.keys(byLang,) as Locales[];
+const validLangs = Object.keys(byLang,).filter(function keepLocale(name,) {
+  return isLocale(name,);
+},);
 
 await ensureFavicons({ l, },);
 await Promise.all([

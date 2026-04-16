@@ -5,26 +5,42 @@
  * ZWS-based syllable breaking, CSS hyphens: auto, and plain overflow-wrap.
  */
 import {
-  hCss as $,
   cssCh,
   cssCommaList,
   cssNum,
   cssOklch,
   cssPercent,
   cssRem,
+  hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Muted text for descriptions and secondary content. */
-const COLOR_MUTED = cssOklch({ l: 0.42, c: 0, h: 0, },);
+const COLOR_MUTED = cssOklch({
+  l: 0.42,
+  c: 0,
+  h: 0,
+},);
 
 /** Lighter muted text for code previews. */
-const COLOR_MUTED_LIGHT = cssOklch({ l: 0.48, c: 0, h: 0, },);
+const COLOR_MUTED_LIGHT = cssOklch({
+  l: 0.48,
+  c: 0,
+  h: 0,
+},);
 
 /** Faint text for notes and annotations. */
-const COLOR_FAINT = cssOklch({ l: 0.6, c: 0, h: 0, },);
+const COLOR_FAINT = cssOklch({
+  l: 0.6,
+  c: 0,
+  h: 0,
+},);
 
 /** Outline color for the output container. */
-const COLOR_OUTLINE = cssOklch({ l: 0.63, c: 0.26, h: 25, },);
+const COLOR_OUTLINE = cssOklch({
+  l: 0.63,
+  c: 0.26,
+  h: 25,
+},);
 
 /**
  * Generates the complete CSS stylesheet for the syllable break demo.
@@ -50,27 +66,30 @@ export function renderStyles(): string {
     $({
       rule: 'body',
       decls: {
-        'font-family': cssCommaList(['system-ui', 'sans-serif',],),
+        'font-family': cssCommaList([
+          'system-ui',
+          'sans-serif',
+        ],),
         'padding-block': cssRem(2,),
         'padding-inline': cssRem(2,),
-        'max-inline-size': cssRem(60,),
+        'max-inline-size': cssRem(10 * (2 * 2 + 2),),
         'margin-inline': 'auto',
-        'line-height': cssNum(1.5,),
+        'line-height': cssNum(1 + 1 / 2,),
       },
     },),
 
     $({
       rule: 'h1',
       decls: {
-        'font-size': cssRem(1.5,),
-        'margin-block-end': cssRem(0.5,),
+        'font-size': cssRem(1 + 1 / 2,),
+        'margin-block-end': cssRem(1 / 2,),
       },
     },),
 
     $({
       rule: '.description',
       decls: {
-        'margin-block-end': cssRem(1.5,),
+        'margin-block-end': cssRem(1 + 1 / 2,),
         color: COLOR_MUTED,
       },
     },),
@@ -78,10 +97,10 @@ export function renderStyles(): string {
     $({
       rule: '.controls',
       decls: {
-        'margin-block-end': cssRem(1.5,),
+        'margin-block-end': cssRem(1 + 1 / 2,),
         display: 'flex',
         'flex-direction': 'column',
-        gap: cssRem(0.75,),
+        gap: cssRem(1 / 2 + 1 / 2 / 2,),
       },
     },),
 
@@ -89,11 +108,11 @@ export function renderStyles(): string {
       rule: 'textarea',
       decls: {
         'inline-size': cssPercent(100,),
-        'min-block-size': cssRem(4,),
+        'min-block-size': cssRem(2 * 2,),
         'font-family': 'inherit',
         'font-size': 'inherit',
-        'padding-block': cssRem(0.5,),
-        'padding-inline': cssRem(0.5,),
+        'padding-block': cssRem(1 / 2,),
+        'padding-inline': cssRem(1 / 2,),
       },
     },),
 
@@ -102,7 +121,7 @@ export function renderStyles(): string {
       decls: {
         display: 'flex',
         'align-items': 'center',
-        gap: cssRem(0.75,),
+        gap: cssRem(1 / 2 + 1 / 2 / 2,),
       },
     },),
 
@@ -116,7 +135,7 @@ export function renderStyles(): string {
     $({
       rule: '.processed-preview',
       decls: {
-        'font-size': cssRem(0.875,),
+        'font-size': cssRem(1 - 1 / 2 / 2 / 2,),
         color: COLOR_MUTED_LIGHT,
         'font-family': 'monospace',
         'word-break': 'break-all',
@@ -143,16 +162,16 @@ export function renderStyles(): string {
       rule: '.column h2',
       decls: {
         'font-size': cssRem(1,),
-        'margin-block-end': cssRem(0.5,),
+        'margin-block-end': cssRem(1 / 2,),
       },
     },),
 
     $({
       rule: '.column p.note',
       decls: {
-        'font-size': cssRem(0.75,),
+        'font-size': cssRem(1 / 2 + 1 / 2 / 2,),
         color: COLOR_FAINT,
-        'margin-block-end': cssRem(0.5,),
+        'margin-block-end': cssRem(1 / 2,),
       },
     },),
 
@@ -161,11 +180,11 @@ export function renderStyles(): string {
       decls: {
         'outline-style': 'solid',
         'outline-color': COLOR_OUTLINE,
-        'outline-width': cssRem(0.0625,),
+        'outline-width': cssRem(1 / 16,),
         'inline-size': cssCh(10,),
         'font-size': cssRem(1,),
-        'padding-block': cssRem(0.25,),
-        'padding-inline': cssRem(0.25,),
+        'padding-block': cssRem(1 / 2 / 2,),
+        'padding-inline': cssRem(1 / 2 / 2,),
         'overflow-wrap': 'break-word',
       },
     },),

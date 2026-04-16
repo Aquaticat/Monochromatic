@@ -19,11 +19,11 @@ import remarkSectionize from 'remark-sectionize';
 
 import * as mdxComponents from '../components/index.ts';
 
-import type { SafeHtml, } from './jsx-to-html.ts';
 import {
   Fragment,
   jsx,
   jsxs,
+  type SafeHtml,
 } from './jsx-to-html.ts';
 import rehypeHighlight from './rehype-highlight.ts';
 
@@ -68,11 +68,14 @@ export async function renderMdx(body: string,): Promise<string> {
         remarkSectionize,
       ],
       rehypePlugins: [
-        [rehypeSlug, {
-          enableCustomId: true,
-          maintainCase: true,
-          removeAccents: true,
-        },],
+        [
+          rehypeSlug,
+          {
+            enableCustomId: true,
+            maintainCase: true,
+            removeAccents: true,
+          },
+        ],
         rehypeAutolinkHeadings,
         rehypeHighlight,
       ],
@@ -82,5 +85,7 @@ export async function renderMdx(body: string,): Promise<string> {
     },
   );
 
-  return (MDXContent({},) as SafeHtml).html;
+  // oxlint-disable-next-line new-cap, typescript-eslint(no-unsafe-type-assertion) -- `MDXContent` is named by `@mdx-js/mdx` evaluate (we don't control the name); the cast narrows the runtime-known `SafeHtml` shape produced by our JSX runtime
+  const result = MDXContent({},) as SafeHtml;
+  return result.html;
 }

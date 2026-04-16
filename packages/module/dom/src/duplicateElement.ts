@@ -3,7 +3,9 @@
  * Any other sibling elements will be removed.
  *
  * @param templateElement - Reference to element
+ *
  * @param targetCount - Desired number of cloned elements to become the new children of the parent. A count of 0 will remove all children.
+ *
  * @example
  * ```html
  * <!-- Initial DOM -->
@@ -27,9 +29,10 @@
  * </div>
  * ```
  */
-export function replicateElementAsParentContent(templateElement: HTMLElement,
-  targetCount: number,): void
-{
+export function replicateElementAsParentContent(
+  templateElement: HTMLElement,
+  targetCount: number,
+): void {
   // Get the parent of the template element.
   const parent = templateElement.parentElement;
 
@@ -55,6 +58,7 @@ export function replicateElementAsParentContent(templateElement: HTMLElement,
  * Deep clones a DOM node, preserving all descendants and attributes.
  *
  * @param element - Node to clone
+ *
  * @returns Deep clone of the node with the same type
  */
 export function deepCloneNode<const T extends Node,>(element: T,): T {
@@ -65,12 +69,16 @@ export function deepCloneNode<const T extends Node,>(element: T,): T {
  * Replaces a target parent element's content with clones of a template element.
  *
  * @param templateElement - Element to clone
+ *
  * @param parentElement - Parent element whose children will be replaced
+ *
  * @param targetCount - Number of clones to insert
  */
-export function replicateElementAsContentOf(templateElement: HTMLElement,
-  parentElement: HTMLElement, targetCount: number,): void
-{
+export function replicateElementAsContentOf(
+  templateElement: HTMLElement,
+  parentElement: HTMLElement,
+  targetCount: number,
+): void {
   const clones = Array.from(
     { length: targetCount, },
     function wrapper() {

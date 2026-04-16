@@ -17,11 +17,11 @@ import {
   cssInt,
   cssRem,
   cssS,
-  cssVar,
   type CssValue,
+  cssVar,
   hCss as $,
+  hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
-import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { TranslationFunctions, } from '../i18n/i18n-types.ts';
 import {
@@ -41,7 +41,7 @@ const SEARCH_COLLAPSED = TOUCH_TARGET;
 const SEARCH_EXPANDED = 16;
 
 /** Transition duration for the search input expand/collapse. */
-const SEARCH_TRANSITION = cssS(0.25,);
+const SEARCH_TRANSITION = cssS(1 / 2 / 2,);
 
 //endregion Constants
 
@@ -113,7 +113,7 @@ export function css(): string {
           decls: {
             color: 'inherit',
             'inline-size': cssRem(SEARCH_EXPANDED,),
-            'padding-inline-start': cssRem(2.5,),
+            'padding-inline-start': cssRem(2 + 1 / 2,),
             'padding-inline-end': cssRem(GAP_SMALL,),
             'border-color': cssVar('color-border',),
             'background-color': cssVar('color-bg',),
@@ -154,7 +154,7 @@ export function css(): string {
         position: 'absolute',
         inset: `${cssRem(SEARCH_COLLAPSED,)} 0 auto auto`,
         'min-inline-size': cssRem(SEARCH_EXPANDED,),
-        'max-block-size': cssRem(24,),
+        'max-block-size': cssRem(16 + 2 * 2 * 2,),
         'overflow-y': 'auto',
         'margin-block': cssInt(0,),
         'padding-block': cssRem(GAP_SMALL,),
@@ -166,7 +166,9 @@ export function css(): string {
         'border-color': cssVar('color-border',),
         'border-radius': cssRem(GAP_SMALL,),
         // oxlint-disable-next-line no-unsafe-type-assertion -- template literal produces valid box-shadow but doesn't narrow to StrictValue
-        'box-shadow': `0 ${cssRem(GAP_SMALL,)} ${cssRem(GAP,)} rgba(0, 0, 0, 0.1)` as CssValue,
+        'box-shadow': `0 ${cssRem(GAP_SMALL,)} ${
+          cssRem(GAP,)
+        } rgba(0, 0, 0, 0.1)` as CssValue,
         'z-index': 10,
       },
       children: [

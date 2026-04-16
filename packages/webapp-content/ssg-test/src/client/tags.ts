@@ -9,8 +9,8 @@
  * the editor and the published site.
  */
 
-import type { Highlighter, } from '@lezer/highlight';
 import {
+  type Highlighter,
   tagHighlighter,
   tags,
 } from '@lezer/highlight';

@@ -24,8 +24,8 @@ import {
   PAGE_FRAME_COLOR,
   VIEWPORT_PADDING,
 } from './style-tokens.ts';
-import { renderTextStyles, } from './styles-text.ts';
 import { renderAttributionStyles, } from './styles-attribution.ts';
+import { renderTextStyles, } from './styles-text.ts';
 import { renderToastStyles, } from './styles-toast.ts';
 import { renderToolbarStyles, } from './styles-toolbar.ts';
 

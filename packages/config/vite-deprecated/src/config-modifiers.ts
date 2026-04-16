@@ -62,7 +62,12 @@ function withNodeResolveConditions(
     config,
     {
       resolve: {
-        conditions: ['node', 'module', 'import', 'default',],
+        conditions: [
+          'node',
+          'module',
+          'import',
+          'default',
+        ],
       },
       build: {
         lib: {
@@ -129,8 +134,14 @@ function createModeConfig(
 
     // Apply mode-specific transformations using reduce for immutability
     const config = modes.reduce(
-      function applyMode(currentConfig, currentMode,) {
-        return applyModeTransform(currentConfig, currentMode,);
+      function applyMode(
+        currentConfig,
+        currentMode,
+      ) {
+        return applyModeTransform(
+          currentConfig,
+          currentMode,
+        );
       },
       sharedFactory(configDir,),
     );

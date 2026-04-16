@@ -14,14 +14,17 @@ import { text, } from 'node:stream/consumers';
 
 //region ANSI escape helpers
 
-const RESET = '\x1b[0m';
-const RED = '\x1b[31m';
-const GREEN = '\x1b[32m';
-const YELLOW = '\x1b[33m';
-const MAGENTA = '\x1b[35m';
-const WHITE = '\x1b[37m';
+const RESET = '\u001b[0m';
+const RED = '\x1B[31m';
+const GREEN = '\x1B[32m';
+const YELLOW = '\x1B[33m';
+const MAGENTA = '\x1B[35m';
+const WHITE = '\x1B[37m';
 
-function color(code: string, text: string,): string {
+function color(
+  code: string,
+  text: string,
+): string {
   return `${code}${text}${RESET}`;
 }
 
@@ -60,12 +63,23 @@ type RateLimitTier = {
 //region Model display name
 
 /** Latest versions and default context sizes per model family. */
-const MODEL_DEFAULTS: Record<string, { latestVersion: string; defaultContext: string; }> =
-  {
-    Opus: { latestVersion: '4.6', defaultContext: '1M', },
-    Sonnet: { latestVersion: '4.6', defaultContext: '200K', },
-    Haiku: { latestVersion: '4.5', defaultContext: '200K', },
-  };
+const MODEL_DEFAULTS: Record<string, {
+  latestVersion: string;
+  defaultContext: string;
+}> = {
+  Opus: {
+    latestVersion: '4.7',
+    defaultContext: '1M',
+  },
+  Sonnet: {
+    latestVersion: '4.6',
+    defaultContext: '200K',
+  },
+  Haiku: {
+    latestVersion: '4.5',
+    defaultContext: '200K',
+  },
+};
 
 const DISPLAY_NAME_RE =
   /^(?<family>[A-Za-z]+)(?: (?<version>\d+\.\d+))?(?: \((?<context>\S+) context\))?$/;
@@ -74,7 +88,9 @@ const DISPLAY_NAME_RE =
  * Parse "Opus 4.6 (1M context)" and strip parts that match current defaults.
  *
  * @example formatModelDisplay("Opus 4.6 (1M context)") // "Opus"
+ *
  * @example formatModelDisplay("Sonnet 4.6 (1M context)") // "Sonnet (1M)"
+ *
  * @example formatModelDisplay("Opus 4.5 (200K context)") // "Opus 4.5 (200K)"
  */
 function formatModelDisplay(raw: string,): string {
@@ -82,7 +98,11 @@ function formatModelDisplay(raw: string,): string {
   if (!match?.groups)
     return raw;
 
-  const { family, version, context, } = match.groups;
+  const {
+    family,
+    version,
+    context,
+  } = match.groups;
   const defaults = MODEL_DEFAULTS[family];
   let result = family;
 
@@ -99,12 +119,12 @@ function formatModelDisplay(raw: string,): string {
 //region Relative time formatting
 
 const SECONDS_PER_MINUTE = 60;
-const SECONDS_PER_HOUR = 3600;
-const SECONDS_PER_DAY = 86400;
+const SECONDS_PER_HOUR = 3_600;
+const SECONDS_PER_DAY = 86_400;
 
 /** Format epoch seconds as a relative duration like "1h23m" or "3d2h". */
 function formatRelativeTime(resetsAt: number,): string {
-  const diff = resetsAt - Math.floor(Date.now() / 1000,);
+  const diff = resetsAt - Math.floor(Date.now() / 1_000,);
 
   if (diff <= 0)
     return 'now';
@@ -146,11 +166,16 @@ function formatRateLimit(tier: RateLimitTier | undefined,): string {
   const timeLeft = formatRelativeTime(tier.resets_at,);
   const rateColor = remaining <= CRITICAL_THRESHOLD
     ? RED
-    : remaining <= CAUTION_THRESHOLD
-    ? YELLOW
-    : GREEN;
+    : (remaining <= CAUTION_THRESHOLD
+      ? YELLOW
+      : GREEN);
 
-  return `${color(rateColor, `${remaining}% left`,)} (${timeLeft})`;
+  return `${
+    color(
+      rateColor,
+      `${remaining}% left`,
+    )
+  } (${timeLeft})`;
 }
 
 //endregion
@@ -160,13 +185,19 @@ function formatRateLimit(tier: RateLimitTier | undefined,): string {
 const CONTEXT_THRESHOLD_WHITE = 900_000;
 const CONTEXT_THRESHOLD_MAGENTA = 200_000;
 const CONTEXT_THRESHOLD_YELLOW = 100_000;
-const THOUSANDS = 1000;
+const THOUSANDS = 1_000;
 
 /** Format used/total token counter with color based on usage level. */
-function formatContextWindow(used: number, total: number,): string {
+function formatContextWindow(
+  used: number,
+  total: number,
+): string {
   const usedFmt = used >= THOUSANDS
     ? `${String(Math.floor(used / THOUSANDS,),).padStart(3,)},${
-      String(used % THOUSANDS,).padStart(3, '0',)
+      String(used % THOUSANDS,).padStart(
+        3,
+        '0',
+      )
     }`
     : String(used,).padStart(7,);
 
@@ -181,7 +212,12 @@ function formatContextWindow(used: number, total: number,): string {
     : '';
 
   return contextColor
-    ? `${color(contextColor, usedFmt,)}/${totalFmt}`
+    ? `${
+      color(
+        contextColor,
+        usedFmt,
+      )
+    }/${totalFmt}`
     : `${usedFmt}/${totalFmt}`;
 }
 
@@ -206,7 +242,10 @@ async function readEffortIndicator(): Promise<string> {
   try {
     const home = process.env['HOME'] ?? '';
     const settingsPath = `${home}/.claude/settings.json`;
-    const raw = await readFile(settingsPath, 'utf8',);
+    const raw = await readFile(
+      settingsPath,
+      'utf8',
+    );
     const settings: { effortLevel?: string; } = JSON.parse(raw,);
     const level = settings.effortLevel ?? 'high';
     return EFFORT_SYMBOLS[level] ?? '';
@@ -227,29 +266,104 @@ async function readEffortIndicator(): Promise<string> {
  */
 const NOISE_GERUNDS = new Set([
   // Phase-implying (sound wrong at arbitrary points)
-  'beginning', 'completing', 'continuing', 'ending',
-  'finishing', 'starting', 'stopping',
+  'beginning',
+  'completing',
+  'continuing',
+  'ending',
+  'finishing',
+  'starting',
+  'stopping',
+  'waiting',
+  'pending',
   // Too generic
-  'asking', 'calling', 'coming', 'doing', 'getting', 'giving',
-  'going', 'having', 'keeping', 'knowing', 'letting', 'looking',
-  'making', 'meaning', 'putting', 'saying', 'seeing', 'showing',
-  'telling', 'trying', 'turning', 'wanting', 'working',
+  'asking',
+  'calling',
+  'coming',
+  'doing',
+  'getting',
+  'giving',
+  'going',
+  'having',
+  'keeping',
+  'knowing',
+  'letting',
+  'looking',
+  'making',
+  'meaning',
+  'putting',
+  'saying',
+  'seeing',
+  'showing',
+  'telling',
+  'trying',
+  'turning',
+  'wanting',
+  'working',
   // Pronouns and determiners
-  'anything', 'everything', 'nothing', 'something', 'thing',
+  'anything',
+  'everything',
+  'nothing',
+  'something',
+  'thing',
   // Prepositions and conjunctions
-  'according', 'assuming', 'concerning', 'considering', 'depending',
-  'during', 'excluding', 'following', 'including', 'providing',
-  'regarding', 'supposing',
+  'according',
+  'assuming',
+  'concerning',
+  'considering',
+  'depending',
+  'during',
+  'excluding',
+  'following',
+  'including',
+  'providing',
+  'regarding',
+  'supposing',
   // Adjectives
-  'amazing', 'annoying', 'boring', 'confusing', 'corresponding',
-  'exciting', 'existing', 'frustrating', 'interesting', 'missing',
-  'outstanding', 'overwhelming', 'remaining', 'surprising',
-  'surrounding', 'underlying',
+  'amazing',
+  'annoying',
+  'boring',
+  'confusing',
+  'corresponding',
+  'exciting',
+  'existing',
+  'frustrating',
+  'interesting',
+  'missing',
+  'lint-missing',
+  'outstanding',
+  'overwhelming',
+  'remaining',
+  'surprising',
+  'surrounding',
+  'underlying',
   // Not gerunds (root contains "-ing")
-  'bring', 'cling', 'fling', 'king', 'ring', 'sing',
-  'sling', 'spring', 'sting', 'string', 'swing', 'wing', 'wring',
+  'bring',
+  'cling',
+  'fling',
+  'king',
+  'ring',
+  'sing',
+  'sling',
+  'spring',
+  'sting',
+  'string',
+  'swing',
+  'wing',
+  'wring',
   // Common filler verbs
-  'being', 'needing', 'running', 'thinking', 'using',
+  'being',
+  'needing',
+  'running',
+  'thinking',
+  'using',
+  // Strays inserted by Claude Code
+  'quizzical-crafting',
+  'crafting',
+  'wild-nibbling',
+  'nibbling',
+  'purring',
+  'hatching',
+  'purring-hatching',
 ],);
 
 /** Minimum word length to consider as a gerund candidate. */
@@ -259,28 +373,33 @@ const MIN_GERUND_LENGTH = 5;
 const GERUND_PATTERN = /\b[a-z]+-?[a-z]*ing\b/g;
 
 /** Number of bytes to read from the end of the transcript. */
-const TAIL_BYTES = 8192;
+const TAIL_BYTES = 8_192;
 
 /**
  * Find the last meaningful gerund in a string.
  *
  * @param text - Any text to scan (raw transcript, prose, JSON -- gerunds survive regardless).
+ *
  * @returns Capitalized gerund, or `undefined` if none found.
  *
  * @example findGerundInText("Let me start searching for the file") // "Searching"
+ *
  * @example findGerundInText("I'll try compiling and then testing") // "Testing"
  */
 function findGerundInText(text: string,): string | undefined {
   const matches = text.toLowerCase().match(GERUND_PATTERN,) ?? [];
   const candidates = matches
-    .filter(function isLongEnough(w,) { return w.length >= MIN_GERUND_LENGTH; },)
-    .filter(function isNotNoise(w,) { return !NOISE_GERUNDS.has(w,); },);
+    .filter(function isLongEnough(w,) {
+      return w.length >= MIN_GERUND_LENGTH;
+    },)
+    .filter(function isNotNoise(w,) {
+      return !NOISE_GERUNDS.has(w,);
+    },);
 
-  if (candidates.length === 0) {
+  if (candidates.length === 0)
     return undefined;
-  }
 
-  const last = candidates[candidates.length - 1];
+  const last = candidates.at(-1,);
   /* oxlint-disable-next-line typescript/no-non-null-assertion -- length check guarantees element */
   return last!.charAt(0,).toUpperCase() + last!.slice(1,);
 }
@@ -290,24 +409,32 @@ function findGerundInText(text: string,): string | undefined {
  * Reads the last {@link TAIL_BYTES} of the transcript as a raw string
  * and finds the last gerund in it. No JSON parsing needed --
  * gerunds in assistant prose survive the JSONL wrapping.
- * Falls back to "Thinking".
+ * Falls back to "".
  *
  * @param transcriptPath - Path to the session transcript JSONL.
+ *
  * @returns Capitalized activity word.
  */
 async function readActivityWord(transcriptPath: string | undefined,): Promise<string> {
-  if (!transcriptPath) {
-    return 'Thinking';
-  }
+  if (!transcriptPath)
+    return '';
 
   try {
     const blob = await openAsBlob(transcriptPath,);
-    const start = Math.max(0, blob.size - TAIL_BYTES,);
-    const tail = await blob.slice(start, blob.size,).text();
-    return findGerundInText(tail,) ?? 'Thinking';
+    const start = Math.max(
+      0,
+      blob.size - TAIL_BYTES,
+    );
+    const tail = await blob
+      .slice(
+        start,
+        blob.size,
+      )
+      .text();
+    return findGerundInText(tail,) ?? '';
   }
   catch {
-    return 'Thinking';
+    return '';
   }
 }
 
@@ -330,7 +457,14 @@ const displayName = input.model?.display_name;
 const effortIndicator = await readEffortIndicator();
 if (displayName) {
   const model = formatModelDisplay(displayName,);
-  segments.push(effortIndicator ? `${model} ${color(YELLOW, effortIndicator,)}` : model,);
+  segments.push(effortIndicator
+    ? `${model} ${
+      color(
+        YELLOW,
+        effortIndicator,
+      )
+    }`
+    : model,);
 }
 
 // Context window
@@ -341,8 +475,12 @@ const used = (usage?.input_tokens ?? 0)
   + (usage?.cache_read_input_tokens ?? 0)
   + (usage?.output_tokens ?? 0);
 
-if (used > 0 && total > 0)
-  segments.push(formatContextWindow(used, total,),);
+if (used > 0 && total > 0) {
+  segments.push(formatContextWindow(
+    used,
+    total,
+  ),);
+}
 
 // Rate limits (only visible when approaching limits)
 const fiveHour = formatRateLimit(input.rate_limits?.five_hour,);

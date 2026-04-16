@@ -92,7 +92,7 @@ async function discoverRuleModules(): Promise<string[]> {
         ),
       );
     },)
-    .sort();
+    .toSorted();
 }
 
 /**
@@ -114,7 +114,10 @@ async function buildSystemPrompt(): Promise<string> {
   ],);
 
   const ruleModuleSections = ruleModulePaths.map(
-    function formatRuleModule(path, index,): string {
+    function formatRuleModule(
+      path,
+      index,
+    ): string {
       return `=== ${path} ===\n${ruleModules[index]}`;
     },
   );

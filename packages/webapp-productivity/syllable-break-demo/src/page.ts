@@ -174,7 +174,13 @@ function renderColumns(): string {
  * ```
  */
 export function renderPage(
-  { css, js, }: { css: string; js: string },
+  {
+    css,
+    js,
+  }: {
+    css: string;
+    js: string;
+  },
 ): string {
   return `<!DOCTYPE html>\n${
     h({

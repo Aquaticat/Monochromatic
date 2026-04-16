@@ -119,7 +119,7 @@ Approximately 10 functions across these files:
 ### `site.config.ts` content
 
 ```typescript
-import { defineConfig } from '@monochromatic-dev/ssg';
+import { defineConfig, } from '@monochromatic-dev/ssg';
 
 export default defineConfig({
   url: 'https://aquati.cat',
@@ -149,9 +149,9 @@ export default defineConfig({
   ],
   favicon: {
     source: 'public/favicon.svg',
-    backgroundColor: { r: 45, g: 27, b: 78 },
+    backgroundColor: { r: 45, g: 27, b: 78, },
   },
-});
+},);
 ```
 
 ## Phase 4: Rename and restructure the SSG package

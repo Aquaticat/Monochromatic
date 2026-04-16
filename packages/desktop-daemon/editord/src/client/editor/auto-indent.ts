@@ -11,7 +11,11 @@ import { getCursorPosition, } from './cursor.ts';
 import { INDENT_UNIT, } from './text-resolve.ts';
 
 /** Characters that trigger an extra indent level on the next line. */
-const OPENING_BRACKETS = new Set(['{', '(', '[',],);
+const OPENING_BRACKETS = new Set([
+  '{',
+  '(',
+  '[',
+],);
 
 /**
  * Computes the indentation string for a newly created line.

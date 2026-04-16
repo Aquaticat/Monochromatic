@@ -55,8 +55,6 @@ async function mirrorSkills(): Promise<void> {
   ],);
 }
 
-
-
 await Promise.all([
   // CLAUDE.md must literally contain AGENTS.md content (Claude Code's @include is unreliable)
   overwrite(

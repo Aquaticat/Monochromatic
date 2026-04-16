@@ -79,17 +79,17 @@ const DEBOUNCE_MS = 200;
 //region DOM references
 
 /** Search text input element. */
-const input = document.getElementById('search-input',);
+const input = document.querySelector<HTMLInputElement>('#search-input',);
 
 /** Results dropdown list element. */
-const resultsList = document.getElementById('search-results',);
+const resultsList = document.querySelector<HTMLUListElement>('#search-results',);
 
 //endregion DOM references
 
 //region Pagefind lifecycle
 
 /** Cached Pagefind API instance, loaded once on first focus. */
-let pagefindApi: PagefindApi | undefined;
+let pagefindApi: PagefindApi | undefined = undefined;
 
 /** Whether a Pagefind load attempt has already been made. */
 let loadAttempted = false;
@@ -127,7 +127,10 @@ async function loadPagefind(): Promise<PagefindApi | undefined> {
     return api;
   }
   catch (error) {
-    console.warn('Pagefind search index not available:', error,);
+    console.warn(
+      'Pagefind search index not available:',
+      error,
+    );
     return undefined;
   }
 }
@@ -174,7 +177,10 @@ async function executeSearch(query: string,): Promise<void> {
     return;
   }
 
-  const topResults = response.results.slice(0, MAX_RESULTS,);
+  const topResults = response.results.slice(
+    0,
+    MAX_RESULTS,
+  );
   const loaded = await Promise.all(
     topResults.map(function loadResultData(result,) {
       return result.data();
@@ -206,16 +212,20 @@ function setActiveOption(index: number,): void {
 
   const options = resultsList.querySelectorAll<HTMLElement>('[role="option"]',);
 
-  if (activeIndex >= 0 && activeIndex < options.length)
-    options[activeIndex]!.removeAttribute('data-active',);
+  const previous = options[activeIndex];
+  if (previous !== undefined)
+    delete previous.dataset.active;
 
   activeIndex = index;
 
-  if (activeIndex >= 0 && activeIndex < options.length) {
-    const option = options[activeIndex]!;
-    option.setAttribute('data-active', '',);
+  const option = options[activeIndex];
+  if (option !== undefined) {
+    option.dataset.active = '';
     option.scrollIntoView({ block: 'nearest', },);
-    input.setAttribute('aria-activedescendant', option.id,);
+    input.setAttribute(
+      'aria-activedescendant',
+      option.id,
+    );
   }
   else {
     input.removeAttribute('aria-activedescendant',);
@@ -236,10 +246,22 @@ function setActiveOption(index: number,): void {
  */
 function escapeHtml(text: string,): string {
   return text
-    .replaceAll('&', '&amp;',)
-    .replaceAll('<', '&lt;',)
-    .replaceAll('>', '&gt;',)
-    .replaceAll('"', '&quot;',);
+    .replaceAll(
+      '&',
+      '&amp;',
+    )
+    .replaceAll(
+      '<',
+      '&lt;',
+    )
+    .replaceAll(
+      '>',
+      '&gt;',
+    )
+    .replaceAll(
+      '"',
+      '&quot;',
+    );
 }
 
 /**
@@ -259,7 +281,10 @@ function renderResults(results: readonly PagefindResultData[],): void {
   activeIndex = -1;
 
   resultsList.innerHTML = results
-    .map(function resultToListItem(result, index,) {
+    .map(function resultToListItem(
+      result,
+      index,
+    ) {
       const title = escapeHtml(result.meta.title ?? result.url,);
       const url = escapeHtml(result.url,);
       return [
@@ -274,7 +299,10 @@ function renderResults(results: readonly PagefindResultData[],): void {
     },)
     .join('',);
 
-  input.setAttribute('aria-expanded', 'true',);
+  input.setAttribute(
+    'aria-expanded',
+    'true',
+  );
   input.removeAttribute('aria-activedescendant',);
 }
 
@@ -289,7 +317,10 @@ function hideResults(): void {
   resultsList.innerHTML = '';
 
   if (input !== null) {
-    input.setAttribute('aria-expanded', 'false',);
+    input.setAttribute(
+      'aria-expanded',
+      'false',
+    );
     input.removeAttribute('aria-activedescendant',);
   }
 }
@@ -299,60 +330,73 @@ function hideResults(): void {
 //region Event binding
 
 if (input !== null && resultsList !== null) {
-  input.addEventListener('focus', function onSearchFocus() {
-    loadPagefind();
-  }, { once: true, },);
+  input.addEventListener(
+    'focus',
+    function onSearchFocus() {
+      void loadPagefind();
+    },
+    { once: true, },
+  );
 
-  input.addEventListener('input', function onSearchInput(event,) {
-    // oxlint-disable-next-line no-unsafe-type-assertion -- EventTarget is the input element
-    const target = event.target as HTMLInputElement;
-    executeSearch(target.value,);
-  },);
+  input.addEventListener(
+    'input',
+    function onSearchInput(event,) {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- EventTarget is the input element
+      const target = event.target as HTMLInputElement;
+      void executeSearch(target.value,);
+    },
+  );
 
   // Close results when clicking outside the search widget
-  document.addEventListener('click', function onDocumentClick(event,) {
-    // oxlint-disable-next-line no-unsafe-type-assertion -- EventTarget is always a Node in click handlers
-    const target = event.target as Node;
-    const searchContainer = input.closest('site-search',);
-    if (searchContainer !== null && !searchContainer.contains(target,))
-      hideResults();
-  },);
+  document.addEventListener(
+    'click',
+    function onDocumentClick(event,) {
+      // oxlint-disable-next-line no-unsafe-type-assertion -- EventTarget is always a Node in click handlers
+      const target = event.target as Node;
+      const searchContainer = input.closest<HTMLElement>('site-search',);
+      if (searchContainer !== null && !searchContainer.contains(target,))
+        hideResults();
+    },
+  );
 
-  input.addEventListener('keydown', function onSearchKeydown(event,) {
-    const options = resultsList.querySelectorAll('[role="option"]',);
-    const count = options.length;
+  input.addEventListener(
+    'keydown',
+    function onSearchKeydown(event,) {
+      const options = resultsList.querySelectorAll<HTMLElement>('[role="option"]',);
+      const count = options.length;
 
-    if (event.key === 'Escape') {
-      hideResults();
-      input.blur();
-      return;
-    }
-
-    if (count === 0)
-      return;
-
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      setActiveOption(activeIndex < count - 1 ? activeIndex + 1 : 0,);
-      return;
-    }
-
-    if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      setActiveOption(activeIndex > 0 ? activeIndex - 1 : count - 1,);
-      return;
-    }
-
-    if (event.key === 'Enter' && activeIndex >= 0 && activeIndex < count) {
-      event.preventDefault();
-      const option = options[activeIndex];
-      if (option !== undefined) {
-        const url = option.getAttribute('data-url',);
-        if (url !== null)
-          window.location.href = url;
+      if (event.key === 'Escape') {
+        hideResults();
+        input.blur();
+        return;
       }
-    }
-  },);
+
+      if (count === 0)
+        return;
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setActiveOption(activeIndex < count - 1 ? activeIndex + 1 : 0,);
+        return;
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setActiveOption(activeIndex > 0 ? activeIndex - 1 : count - 1,);
+        return;
+      }
+
+      if (event.key === 'Enter' && activeIndex >= 0 && activeIndex < count) {
+        event.preventDefault();
+        const option = options[activeIndex];
+        if (option !== undefined) {
+          const { url, } = option.dataset;
+          if (url !== undefined)
+            globalThis.location.href = url;
+        }
+      }
+    },
+  );
 }
 
 //endregion Event binding

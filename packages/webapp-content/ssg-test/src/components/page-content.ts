@@ -8,8 +8,8 @@
 import {
   cssRem,
   hCss as $,
+  hHtml as h,
 } from '@monochromatic-dev/module-hyperscript/ts';
-import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   GAP,
@@ -71,7 +71,10 @@ export function html(
   return h({
     tag: 'page-content',
     attrs: searchable
-      ? { 'data-is': '', 'data-pagefind-body': '', }
+      ? {
+        'data-is': '',
+        'data-pagefind-body': '',
+      }
       : { 'data-is': '', },
     html: content,
   },);

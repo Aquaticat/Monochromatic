@@ -31,7 +31,10 @@ export function highlightStyles(): string {
       return $({
         rule: `::highlight(hl-${group})`,
         decls: group === 'link'
-          ? { color: cssVar(`hl-${group}`,), 'text-decoration-line': 'underline', }
+          ? {
+            color: cssVar(`hl-${group}`,),
+            'text-decoration-line': 'underline',
+          }
           : { color: cssVar(`hl-${group}`,), },
       },);
     },)

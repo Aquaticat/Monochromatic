@@ -226,7 +226,11 @@ export async function loadContent(contentDir: string,): Promise<Post[]> {
       data: rawData,
       content: body,
     } = parseFrontmatter(raw,);
-    const data = postFrontmatterSchema.parse(rawData,);
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- zod/mini's `z.parse` return type doesn't propagate through oxlint's type-aware analysis; the explicit `PostFrontmatter` annotation is the actual narrow type
+    const data: PostFrontmatter = z.parse(
+      postFrontmatterSchema,
+      rawData,
+    );
     const rawLang = basename(dirname(filePath,),);
     if (!isLocale(rawLang,)) {
       throw new Error(
@@ -249,7 +253,10 @@ export async function loadContent(contentDir: string,): Promise<Post[]> {
     };
   },),);
 
-  return posts.toSorted(function byUpdatedDesc(a, b,) {
+  return posts.toSorted(function byUpdatedDesc(
+    a,
+    b,
+  ) {
     return b.data.updated.getTime() - a.data.updated.getTime();
   },);
 }

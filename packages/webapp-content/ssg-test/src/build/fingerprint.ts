@@ -115,11 +115,24 @@ function insertHash(
 ): string {
   const lastDot = name.lastIndexOf('.',);
   if (lastDot === -1) {
-    return `${name}.${hash.slice(0, HASH_LENGTH,)}`;
+    return `${name}.${
+      hash.slice(
+        0,
+        HASH_LENGTH,
+      )
+    }`;
   }
-  const stem = name.slice(0, lastDot,);
+  const stem = name.slice(
+    0,
+    lastDot,
+  );
   const ext = name.slice(lastDot,);
-  return `${stem}.${hash.slice(0, HASH_LENGTH,)}${ext}`;
+  return `${stem}.${
+    hash.slice(
+      0,
+      HASH_LENGTH,
+    )
+  }${ext}`;
 }
 
 //endregion Helper functions
@@ -204,21 +217,34 @@ async function fingerprintCss(
     'styles.css',
   );
 
-  let cssContent: string;
-  try {
-    cssContent = await readFile(
-      cssPath,
-      'utf8',
-    );
-  }
-  catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      l.info('styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',);
-      return;
+  /**
+   * Reads the CSS file, returning `undefined` when missing (already fingerprinted).
+   *
+   * @returns CSS file contents, or `undefined` when the file does not exist
+   */
+  async function readCss(): Promise<string | undefined> {
+    try {
+      return await readFile(
+        cssPath,
+        'utf8',
+      );
     }
-    throw error;
+    catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        l.info(
+          'styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',
+        );
+        return undefined;
+      }
+      throw error;
+    }
   }
 
+  const initialCss = await readCss();
+  if (initialCss === undefined)
+    return;
+
+  let cssContent = initialCss;
   for (const [original, hashed,] of replacements) {
     cssContent = cssContent.replaceAll(
       original,
@@ -379,6 +405,7 @@ const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
   },);
 },);
 
+/** Map from original leaf asset basename to its content-hashed counterpart, populated in phase 1 and consumed by every subsequent fingerprint phase. */
 const replacements = await fingerprintLeafAssets({
   files: leafAssetFiles,
 },);

@@ -14,8 +14,8 @@ import { i18nObject, } from '../i18n/i18n-util.ts';
  * Renders the `<head>` element with meta, title, and stylesheet link.
  *
  * Elements are ordered per Capo.js priorities for optimal browser parsing:
- * pragma directives (11: charset, viewport) > title (10) > stylesheet (4)
- * > preload (3) > module script (2) > other meta/links (0).
+ * pragma directives (11: charset, viewport) \> title (10) \> stylesheet (4)
+ * \> preload (3) \> module script (2) \> other meta/links (0).
  *
  * @param title - page-specific title (prepended to site name)
  *

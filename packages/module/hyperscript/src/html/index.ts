@@ -62,7 +62,7 @@
  */
 
 /** HTML void elements that must not have a closing tag. */
-export const VOID_ELEMENTS: Set<string> = new Set([
+export const VOID_ELEMENTS: Set<string> = new Set<string>([
   'area',
   'base',
   'br',
@@ -85,6 +85,12 @@ export const VOID_ELEMENTS: Set<string> = new Set([
  * @param raw - unescaped string
  *
  * @returns HTML-safe escaped string
+ *
+ * @example
+ * ```ts
+ * escapeHtml('<script>alert("xss")</script>');
+ * // '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+ * ```
  */
 export function escapeHtml(raw: string,): string {
   return raw

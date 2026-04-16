@@ -12,8 +12,8 @@
  * ```
  */
 import {
-  type CssValue,
   cssRem,
+  type CssValue,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -39,27 +39,21 @@ export function iconFontStyles(): string {
         'font-family': "'Material Symbols Outlined'",
         'font-style': 'normal',
         'font-weight': '100 700',
-        'font-display': 'block',
+        'font-display': 'swap',
         src: "url('/materialSymbols.woff2') format('woff2')",
       },
     },),
-    /* oxlint-disable no-unsafe-type-assertion -- icon utility class mixes standard keywords with vendor-prefixed values that lack branded constructors */
+    /* oxlint-disable no-unsafe-type-assertion -- icon utility class mixes standard keywords with values that lack branded constructors */
     $({
       rule: '.material-symbols-outlined',
       decls: {
         'font-family': "'Material Symbols Outlined'" as CssValue,
         'font-weight': 'normal' as CssValue,
         'font-style': 'normal' as CssValue,
-        'font-size': cssRem(1.25,),
+        'font-size': cssRem(1 + 1 / 2 / 2,),
         'line-height': '1' as CssValue,
-        'letter-spacing': 'normal' as CssValue,
-        'text-transform': 'none' as CssValue,
         display: 'inline-block',
         'white-space': 'nowrap',
-        'overflow-wrap': 'normal' as CssValue,
-        direction: 'ltr',
-        '-webkit-font-feature-settings': "'liga'" as CssValue,
-        '-webkit-font-smoothing': 'antialiased' as CssValue,
       },
     },),
     /* oxlint-enable no-unsafe-type-assertion */

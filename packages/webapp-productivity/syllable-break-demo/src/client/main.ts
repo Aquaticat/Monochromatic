@@ -27,8 +27,11 @@ const ZWS = '\u200B';
  * // 'ex\u200Btra\u200Bor\u200Bdi\u200Bnary'
  * ```
  */
-function insertBreakOpportunities(text: string): string {
-  return hyphenateSync(text, { hyphenChar: ZWS, },);
+function insertBreakOpportunities(text: string,): string {
+  return hyphenateSync(
+    text,
+    { hyphenChar: ZWS, },
+  );
 }
 
 /**
@@ -36,26 +39,26 @@ function insertBreakOpportunities(text: string): string {
  *
  * @param text - raw user input
  */
-function updateOutputs(text: string): void {
+function updateOutputs(text: string,): void {
   const processed = insertBreakOpportunities(text,);
 
-  const zwsOutput = document.getElementById('output-zws',);
-  const hyphensAutoOutput = document.getElementById('output-hyphens-auto',);
-  const plainOutput = document.getElementById('output-plain',);
-  const processedDisplay = document.getElementById('processed-text',);
+  const zwsOutput = document.querySelector<HTMLElement>('#output-zws',);
+  const hyphensAutoOutput = document.querySelector<HTMLElement>('#output-hyphens-auto',);
+  const plainOutput = document.querySelector<HTMLElement>('#output-plain',);
+  const processedDisplay = document.querySelector<HTMLElement>('#processed-text',);
 
-  if (zwsOutput) {
+  if (zwsOutput)
     zwsOutput.textContent = processed;
-  }
-  if (hyphensAutoOutput) {
+  if (hyphensAutoOutput)
     hyphensAutoOutput.textContent = text;
-  }
-  if (plainOutput) {
+  if (plainOutput)
     plainOutput.textContent = text;
-  }
   if (processedDisplay) {
     /** Show the zero-width spaces as visible markers for debugging */
-    processedDisplay.textContent = processed.replaceAll(ZWS, '\u00B7',);
+    processedDisplay.textContent = processed.replaceAll(
+      ZWS,
+      '\u00B7',
+    );
   }
 }
 
@@ -63,39 +66,50 @@ function updateOutputs(text: string): void {
  * Reads the width slider value and applies it to all output containers.
  */
 function updateWidth(): void {
-  const slider = document.getElementById('width-slider',) as HTMLInputElement | null;
-  const widthLabel = document.getElementById('width-label',);
-  if (!slider) return;
+  const slider = document.querySelector<HTMLInputElement>('#width-slider',);
+  const widthLabel = document.querySelector<HTMLElement>('#width-label',);
+  if (!slider)
+    return;
 
   const value = `${slider.value}ch`;
-  for (const id of ['output-zws', 'output-hyphens-auto', 'output-plain',]) {
-    const el = document.getElementById(id,);
-    if (el) {
+  for (const id of [
+    'output-zws',
+    'output-hyphens-auto',
+    'output-plain',
+  ]) {
+    const el = document.querySelector<HTMLElement>(`#${id}`,);
+    if (el)
       el.style.inlineSize = value;
-    }
   }
-  if (widthLabel) {
+  if (widthLabel)
     widthLabel.textContent = value;
-  }
 }
 
 /** Default sample text demonstrating scientific terminology that CSS hyphens: auto may not cover. */
 const DEFAULT_TEXT = 'Ribulose-1,5-bisphosphate carboxylase/oxygenase';
 
-const textarea = document.getElementById('input-text',) as HTMLTextAreaElement | null;
-const slider = document.getElementById('width-slider',) as HTMLInputElement | null;
+/** Input textarea where the user types or pastes the text to process. */
+const textarea = document.querySelector<HTMLTextAreaElement>('#input-text',);
+/** Range slider that adjusts the width of the output containers. */
+const slider = document.querySelector<HTMLInputElement>('#width-slider',);
 
 if (textarea) {
   textarea.value = DEFAULT_TEXT;
-  textarea.addEventListener('input', function handleInput(): void {
-    updateOutputs(textarea.value,);
-  },);
+  textarea.addEventListener(
+    'input',
+    function handleInput(): void {
+      updateOutputs(textarea.value,);
+    },
+  );
 }
 
 if (slider) {
-  slider.addEventListener('input', function handleSlider(): void {
-    updateWidth();
-  },);
+  slider.addEventListener(
+    'input',
+    function handleSlider(): void {
+      updateWidth();
+    },
+  );
 }
 
 updateOutputs(DEFAULT_TEXT,);
