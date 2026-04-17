@@ -14,19 +14,20 @@ import {
   hCss as $,
 } from "@monochromatic-dev/module-hyperscript/ts";
 
-import { GAP_SMALL } from "../styles/constants.ts";
+import { icon } from "../lib/icons/icon.ts";
 import { jsx, type SafeHtml } from "../lib/jsx-to-html.ts";
+import { GAP_SMALL } from "../styles/constants.ts";
 
 /** Valid alert type identifiers. */
 type AlertType = "caution" | "important" | "note" | "tip" | "warning";
 
-/** Material Symbols icon name per alert type. */
+/** Material Symbols PUA codepoint per alert type (resolved at import time from ligature names). */
 const ALERT_ICONS: Record<AlertType, string> = {
-  caution: "report",
-  important: "priority_high",
-  note: "info",
-  tip: "lightbulb",
-  warning: "warning",
+  caution: icon("report"),
+  important: icon("priority_high"),
+  note: icon("info"),
+  tip: icon("lightbulb"),
+  warning: icon("warning"),
 };
 
 /** Human-readable label per alert type. */

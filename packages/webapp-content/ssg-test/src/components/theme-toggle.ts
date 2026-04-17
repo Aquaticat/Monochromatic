@@ -19,15 +19,18 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { TranslationFunctions, } from '../i18n/i18n-types.ts';
+import { icon, } from '../lib/icons/icon.ts';
 import { BORDER_WIDTH_REM, } from '../styles/constants.ts';
 
 /**
- * Material Symbols ligature name for the theme toggle icon.
+ * Material Symbols PUA codepoint for the theme toggle icon.
  *
  * Uses `invert_colors` — a single icon that represents both light
- * and dark modes, replacing the previous sun/moon SVG pair.
+ * and dark modes, replacing the previous sun/moon SVG pair. The
+ * literal icon name is kept in the `icon('...')` call so the
+ * subset-fonts source scan can pick it up.
  */
-const THEME_ICON = 'invert_colors';
+const THEME_ICON = icon('invert_colors',);
 
 //region CSS
 

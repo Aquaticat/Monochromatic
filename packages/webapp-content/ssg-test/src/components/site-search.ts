@@ -24,6 +24,7 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { TranslationFunctions, } from '../i18n/i18n-types.ts';
+import { icon, } from '../lib/icons/icon.ts';
 import {
   BORDER_WIDTH_REM,
   FONT_SIZE_SMALL,
@@ -278,7 +279,7 @@ export function html(t: TranslationFunctions,): string {
             tag: 'span',
             class: 'material-symbols-outlined search-icon',
             attrs: { 'aria-hidden': 'true', },
-            text: 'search',
+            text: icon('search',),
           },),
           h({
             tag: 'ul',

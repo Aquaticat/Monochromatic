@@ -20,6 +20,8 @@ The build pipeline runs as a sequence of mise tasks (`mise run build`):
 - `mise run build:site:clean` -- site generation from scratch (clears `.cache/`)
 - `mise run build:fingerprint` -- asset fingerprinting only (requires prior `build:site`)
 - `mise run dev` -- full build, then serve with Caddy and rebuild on source changes
+- `mise run format` -- run every format task (fonts + images)
+- `mise run format:fonts` -- re-subset `fonts-source/*.woff2` into `public/`
 - `mise run format:images` -- convert raster images to AVIF
 
 ## Content authoring
@@ -105,6 +107,64 @@ When committing an AVIF source by hand, encode with `yuv420p` chroma subsampling
 `winter-tree.avif` was originally shipped at `yuv444p` quality 100 and was 2.2 MB
 for a 2048x1365 image; re-encoding at CRF 28 yuv420p produced a 385 KB file with no
 visible quality loss.
+
+## Fonts
+
+Four variable woff2 fonts ship with the site:
+
+- `inter.woff2` + `interItalic.woff2` -- body text
+- `monaspaceNeon.woff2` -- code blocks
+- `materialSymbols.woff2` -- icon font
+
+The full upstream files live in `fonts-source/` (committed, not copied to
+`dist/`). `mise run format:fonts` reads each upstream file, scans
+`src/**/*.{ts,mdx,md}` for the characters actually in use, subsets with
+`subset-font` (harfbuzz WASM), and writes the result to `public/` where
+`build:site` picks it up as a regular static asset. Variable axes
+(`wght`, `opsz`, `FILL`, `GRAD`) are preserved.
+
+Subsetting is **not** part of `build`. It takes a few seconds and its input
+(source files + upstream fonts) changes infrequently, so it is a format
+task run on demand. Re-run `format:fonts` when:
+
+- you add an `icon('name')` call for a new Material Symbols icon
+- you add non-ASCII characters (e.g. CJK) to MDX content or i18n strings
+  that need to render in Inter or Inter Italic
+- you replace an upstream font in `fonts-source/`
+
+The subsetted `public/*.woff2` files are the artifacts the site ships and
+are committed alongside source.
+
+### Material Symbols
+
+Icons render by **PUA codepoint**, not by ligature. A site-local helper
+at `src/lib/icons/icon.ts` resolves a ligature name (e.g. `'info'`) to
+the single-codepoint string it maps to in the upstream Material Symbols
+codepoints table (`src/lib/icons/material-symbols-outlined.codepoints`,
+one `name hex` pair per line):
+
+```ts
+import { icon, } from '../lib/icons/icon.ts';
+
+h({
+  tag: 'span',
+  class: 'material-symbols-outlined',
+  text: icon('info',),
+});
+```
+
+Rendering by codepoint (rather than letting the browser shape a ligature
+from the icon name) is what makes tight subsetting possible: harfbuzz's
+layout closure would otherwise retain every icon whose name can be
+spelled from the letters present in source, which is essentially the
+whole font. With PUA codepoints as input, only the specific glyphs
+requested are retained -- the subsetted icon font is a few KB regardless
+of how many icons the upstream font provides.
+
+`format:fonts` enumerates icons in use by scanning source for the
+literal pattern `icon('NAME')`. Keep call-site arguments as string
+literals (never `icon(variable)`) so the regex picks them up. An
+unknown icon name throws at `format:fonts` time.
 
 ## Asset fingerprinting
 

@@ -2,7 +2,7 @@
 "npm:pagefind" = "latest"
 
 [tasks.build]
-description = "Build SSG pipeline: clean, i18n + client JS, then site, then search index, then compress"
+description = "Build SSG pipeline: clean, i18n + client JS, then site, then search index, fingerprint, compress"
 run = [
   { tasks = ["build:clean"] },
   { tasks = ["build:i18n", "build:js:client"] },
@@ -61,9 +61,22 @@ run = "caddy run --config Caddyfile"
 description = "Generate favicon files from SVG source if missing"
 run = "bun src/build/favicon.ts"
 
+[tasks.format]
+description = "Run all format tasks: fonts, images. Run manually when source changes affect either."
+run = [{ tasks = ["format:fonts", "format:images"] }]
+
+[tasks."format:fonts"]
+description = "Subset fonts-source/*.woff2 to public/*.woff2 based on glyph usage in src/. Slow (~5s); run manually."
+run = "bun src/build/subset-fonts.ts"
+
 [tasks."format:images"]
 description = "Convert non-AVIF raster images to AVIF counterparts"
 run = "bun src/images/format.ts"
+
+[tasks."audit:weight"]
+description = "Report per-page transfer size (min, max, mean, median) for dist/"
+dir = "{{config_root}}"
+run = "mise run //:page:weight -- {{config_root}}/dist"
 
 [tasks.lint]
 extends = "lint"

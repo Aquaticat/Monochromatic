@@ -518,6 +518,15 @@ bun packages/dev-script/catalog-tighten/src/index.ts ...$args
 
 #endregion Catalog Tighten
 
+#region Page Weight -- audit per-page transfer size (min, max, mean, median) across HTML in a dist directory
+
+[tasks."page:weight"]
+description = "Report per-page transfer size (min, max, mean, median) for a dist directory"
+usage = 'arg "<dist>" help="Path to the dist directory containing HTML files"'
+run = "bun packages/dev-script/page-weight/src/index.ts $env.usage_dist"
+
+#endregion Page Weight
+
 #region Fix Tasks -- workarounds for upstream bugs
 
 [tasks."fix:reinstall"]
