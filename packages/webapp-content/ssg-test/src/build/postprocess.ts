@@ -386,7 +386,10 @@ async function cleanStaleFingerprints(
  * overlap with fingerprint phases 1 and 2 (leaf-asset renaming + CSS
  * rewriting) which never touch HTML.
  *
- * Non-zero exit throws; stdout/stderr stream to this process.
+ * Each stdout line is forwarded through the tagged logger at info level
+ * so pagefind's section headers, index counts, and timing reach the build
+ * log. stderr lines are forwarded at warn level (pagefind emits `Note:`
+ * diagnostics and hard errors there). Non-zero exit throws.
  *
  * @param distDir - path to the dist output directory to index
  *
@@ -398,14 +401,31 @@ async function cleanStaleFingerprints(
 async function runPagefind(
   { distDir, }: { distDir: string; },
 ): Promise<void> {
-  await spawn(
+  const pl = tagged({
+    tag: 'pagefind',
+    l,
+  },);
+  const subprocess = spawn(
     'pagefind',
     [
       '--site',
       distDir,
     ],
   );
-  l.info('pagefind: indexed',);
+  await Promise.all([
+    (async function forwardStdout() {
+      for await (const line of subprocess.stdout) {
+        pl.info(line,);
+      }
+    })(),
+    (async function forwardStderr() {
+      for await (const line of subprocess.stderr) {
+        pl.warn(line,);
+      }
+    })(),
+    subprocess,
+  ],);
+  pl.info('indexed',);
 }
 
 //endregion Pagefind
