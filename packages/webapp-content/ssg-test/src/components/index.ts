@@ -14,4 +14,5 @@
  * raw HTML element strings.
  */
 export { CalloutAlert, } from './callout-alert.ts';
-export { QuizQuestion, } from './quiz-question.ts';
+export { QuestionCheckbox, } from './question-checkbox.ts';
+export { QuestionRadio, } from './question-radio.ts';

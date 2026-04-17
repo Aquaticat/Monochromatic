@@ -1,5 +1,5 @@
 /**
- * MDX quiz question component.
+ * MDX single-correct quiz question component.
  *
  * Renders a single multiple-choice question with CSS-only state reveal.
  * Each option is a radio input. When the user picks any option, the
@@ -13,7 +13,7 @@
  *
  * @example
  * ```mdx
- * <quiz-question
+ * <question-radio
  *   scenario={<>A "Sign out" button in the top nav.</>}
  *   options={[
  *     { label: <>Link</>, explanation: <>Would be CSRF-vulnerable.</> },
@@ -35,7 +35,7 @@ import { jsx, type SafeHtml } from "../lib/jsx-to-html.ts";
 
 //region Types
 
-/** One answer choice in a {@link QuizQuestion}. */
+/** One answer choice in a {@link QuestionRadio}. */
 export type QuestionOption = {
   /** Visible text on the radio's label; full MDX/JSX supported. */
   readonly label: SafeHtml | string;
@@ -47,7 +47,7 @@ export type QuestionOption = {
   readonly correct?: boolean;
 };
 
-/** Props for {@link QuizQuestion}. */
+/** Props for {@link QuestionRadio}. */
 type QuestionProps = {
   /** Scenario prose shown above the options; full MDX/JSX supported. */
   readonly scenario: SafeHtml | string;
@@ -203,13 +203,13 @@ function renderOption(qId: string, idx: number, opt: QuestionOption): SafeHtml {
  *
  * @param props - question props
  *
- * @returns rendered `<quiz-question>` element
+ * @returns rendered `<question-radio>` element
  *
  * @throws if the option count or correct-flag count is invalid
  *
  * @example
  * ```ts
- * QuizQuestion({
+ * QuestionRadio({
  *   scenario: 'Pick one.',
  *   options: [
  *     { label: 'A', explanation: 'because' },
@@ -218,10 +218,10 @@ function renderOption(qId: string, idx: number, opt: QuestionOption): SafeHtml {
  * });
  * ```
  */
-export function QuizQuestion(props: QuestionProps): SafeHtml {
+export function QuestionRadio(props: QuestionProps): SafeHtml {
   validate(props);
   const qId = deriveQuestionId(props);
-  return jsx("quiz-question", {
+  return jsx("question-radio", {
     "data-is": "",
     children: [
       jsx("p", {
@@ -261,7 +261,7 @@ const FULL_ROW = 100;
 /**
  * Structural and state-reveal styles for the quiz question component.
  *
- * Scoped entirely under `quiz-question`. Uses `:has()` and adjacent-sibling
+ * Scoped entirely under `question-radio`. Uses `:has()` and adjacent-sibling
  * selectors to show and color explanations based on radio `:checked` state
  * without any JavaScript. Correct/wrong hues derive via `color-mix()` from
  * existing link tokens, so the quiz flips with the site's dark-mode toggle
@@ -276,7 +276,7 @@ const FULL_ROW = 100;
  */
 export function css(): string {
   return $({
-    rule: "quiz-question",
+    rule: "question-radio",
     decls: {
       display: "block",
       "margin-block": cssRem(GAP),

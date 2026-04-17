@@ -8,7 +8,8 @@ import * as calloutAlert from '../components/callout-alert.ts';
 import * as pageContent from '../components/page-content.ts';
 import * as postCard from '../components/post-card.ts';
 import * as postList from '../components/post-list.ts';
-import * as quizQuestion from '../components/quiz-question.ts';
+import * as questionCheckbox from '../components/question-checkbox.ts';
+import * as questionRadio from '../components/question-radio.ts';
 import * as siteFooter from '../components/site-footer.ts';
 import * as siteHeader from '../components/site-header.ts';
 import * as siteSearch from '../components/site-search.ts';
@@ -56,7 +57,8 @@ export function generateSiteCss(): string {
     siteSearch.css(),
     postList.css(),
     postCard.css(),
-    quizQuestion.css(),
+    questionRadio.css(),
+    questionCheckbox.css(),
     siteFooter.css(),
   ]
     .join('\n',);
