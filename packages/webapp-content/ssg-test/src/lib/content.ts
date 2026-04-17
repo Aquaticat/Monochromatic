@@ -321,8 +321,18 @@ export function attachDates(
     };
   });
 
-  return posts.toSorted(function byUpdatedDesc(a, b) {
-    return b.data.updated.getTime() - a.data.updated.getTime();
+  /* Two posts often share an `updated` timestamp because a single commit
+   * (e.g., a monorepo-wide formatting sweep) touched multiple files with
+   * the same author date. Fall back to `published` desc, then to `name`,
+   * so the order stays stable and meaningful across builds. */
+  return posts.toSorted(function byUpdatedThenPublishedThenName(a, b) {
+    const updatedDelta = b.data.updated.getTime() - a.data.updated.getTime();
+    if (updatedDelta !== 0)
+      return updatedDelta;
+    const publishedDelta = b.data.published.getTime() - a.data.published.getTime();
+    if (publishedDelta !== 0)
+      return publishedDelta;
+    return a.name.localeCompare(b.name);
   });
 }
 
