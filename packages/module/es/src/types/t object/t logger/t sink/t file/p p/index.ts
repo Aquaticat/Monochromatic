@@ -1,4 +1,12 @@
 import type {
+  stat as Stat,
+} from 'node:fs/promises';
+import type {
+  dirname as Dirname,
+  join as Join,
+} from 'node:path';
+
+import type {
   LogRecord,
   Sink,
   Verify,
@@ -11,32 +19,92 @@ let appendFile: typeof import('node:fs/promises').appendFile | null = null;
 /** Path to the current log file, set during verification. */
 let filePath: string | null = null;
 
-/** Caches verification result to avoid repeated checks. */
-let verified = false;
+/**
+ * Cached verification promise so concurrent callers all wait on the same
+ * async work. Without this, a caller arriving between "start verification"
+ * and "verification resolves" would see the initial `available = false`
+ * because a naive `verified` flag gets set synchronously at entry.
+ */
+let verifyPromise: Promise<boolean> | null = null;
 
 /** Whether file system backend is available for logging. */
 let available = false;
 
 /**
- * Verifies file system is available (Node.js) and can write/read data.
- * Short-circuits in non-Node environments to prevent browsers from
- * attempting to fetch `node:` protocol URLs (which triggers CORS errors
- * even though the resulting exception is caught).
+ * Walks up from `cwd` to find the nearest ancestor directory containing a
+ * `node_modules` subdirectory, returning that subdirectory's absolute path.
  *
- * @returns whether file system logging is available
+ * Using find-up rather than cwd-relative placement keeps log directories
+ * anchored to the project the caller actually belongs to. Without this,
+ * scripts invoked from build output (e.g. `dist/`) or other stray cwds
+ * would create `node_modules/.monochromatic/` inside those trees, polluting
+ * shipped artifacts.
+ *
+ * Exported primarily so `index.unit.test.ts` can exercise both the hit
+ * and miss paths directly with an injected `stat`.
+ *
+ * @param cwd - starting directory for the upward search
+ *
+ * @param stat - `node:fs/promises` stat (injected so the dynamic
+ * import stays in one place)
+ *
+ * @param dirname - `node:path` dirname
+ *
+ * @param join - `node:path` join
+ *
+ * @returns absolute path to the nearest ancestor `node_modules`, or
+ * `undefined` when no ancestor contains one
  *
  * @example
  * ```ts
- * if (await verify()) {
- *   await $(logRecord);
- * }
+ * const dir = await findNodeModulesUp({ cwd: process.cwd(), stat, dirname, join });
  * ```
  */
-export async function verify(): Promise<boolean> {
-  if (verified)
-    return available;
-  verified = true;
+export async function findNodeModulesUp(
+  {
+    cwd,
+    stat,
+    dirname,
+    join,
+  }: {
+    cwd: string;
+    stat: typeof Stat;
+    dirname: typeof Dirname;
+    join: typeof Join;
+  },
+): Promise<string | undefined> {
+  let dir = cwd;
 
+  // oxlint-disable-next-line no-constant-condition -- terminates when dirname(dir) === dir (filesystem root)
+  while (true) {
+    const candidate = join(
+      dir,
+      'node_modules',
+    );
+    try {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- sequential walk-up requires awaiting each level
+      const entry = await stat(candidate,);
+      if (entry.isDirectory())
+        return candidate;
+    }
+    catch {
+      /* ENOENT or similar -- keep walking up */
+    }
+    const parent = dirname(dir,);
+    if (parent === dir)
+      return undefined;
+    dir = parent;
+  }
+}
+
+/**
+ * Actual verification work, invoked exactly once via the memoized
+ * `verifyPromise`. All concurrent callers of `verify()` share this
+ * single promise, so `available` is only observed after it settles.
+ *
+ * @returns whether file system logging is available
+ */
+async function runVerify(): Promise<boolean> {
   // Guard: skip dynamic import entirely outside Node.js to avoid
   // browser console errors from attempting to fetch node: URLs
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined
@@ -51,12 +119,33 @@ export async function verify(): Promise<boolean> {
   try {
     // Dynamic import for Node.js modules -- cache appendFile for use in $()
     const fs = await import('node:fs/promises');
-    const { join, } = await import('node:path');
+    const {
+      dirname,
+      join,
+    } = await import('node:path');
 
     ({ appendFile, } = fs);
 
+    const nodeModulesDir = await findNodeModulesUp({
+      cwd: process.cwd(),
+      stat: fs.stat,
+      dirname,
+      join,
+    },);
+
+    if (nodeModulesDir === undefined) {
+      // Unexpected in a Node environment: the process is running JS,
+      // which almost always means there is a node_modules upward.
+      // Surface this so a silently-missing file sink is diagnosable.
+      console.warn(
+        `logger fs sink disabled: no ancestor node_modules found from cwd ${process.cwd()}`,
+      );
+      available = false;
+      return false;
+    }
+
     const LOG_DIR = join(
-      'node_modules',
+      nodeModulesDir,
       '.monochromatic',
     );
     await fs.mkdir(
@@ -93,7 +182,35 @@ export async function verify(): Promise<boolean> {
 }
 
 /**
- * File sink that writes log records to node_modules/.monochromatic/.
+ * Verifies file system is available (Node.js) and can write/read data.
+ * Short-circuits in non-Node environments to prevent browsers from
+ * attempting to fetch `node:` protocol URLs (which triggers CORS errors
+ * even though the resulting exception is caught).
+ *
+ * Memoized: concurrent calls share a single in-flight verification,
+ * preventing a race where a second caller saw `available = false`
+ * before the first call settled.
+ *
+ * @returns whether file system logging is available
+ *
+ * @example
+ * ```ts
+ * if (await verify()) {
+ *   await $(logRecord);
+ * }
+ * ```
+ */
+export function verify(): Promise<boolean> {
+  if (verifyPromise !== null)
+    return verifyPromise;
+
+  verifyPromise = runVerify();
+  return verifyPromise;
+}
+
+/**
+ * File sink that writes log records to the nearest ancestor
+ * `node_modules/.monochromatic/` (resolved once during verification).
  * Uses cached `appendFile` from verification -- no dynamic import needed here.
  *
  * @param record - log record to write

@@ -68,8 +68,13 @@ Availability is verified once at module load; sinks that fail verification are s
 
 - **console** -- formats as `[level] [ISO timestamp] message`;
   maps levels to corresponding `console.*` methods
-- **file** -- Node.js only; appends JSONL records to `node_modules/.monochromatic/{timestamp}.log.jsonl`
-  via `node:fs/promises`
+- **file** -- Node.js only; walks up from `process.cwd()` to the nearest
+  ancestor `node_modules/`, then appends JSONL records to
+  `<that dir>/node_modules/.monochromatic/{timestamp}.log.jsonl` via
+  `node:fs/promises`. When no ancestor `node_modules/` exists, the sink
+  is marked unavailable rather than creating one at cwd -- this prevents
+  stray log directories from landing inside build output or other
+  non-project trees when a script is invoked from an unexpected cwd
 - **OPFS** -- browser only; appends JSONL records to Origin Private File System;
   keeps a `FileSystemWritableFileStream` open for the session
 - **sessionStorage** -- browser only; stores JSONL records under `monochromatic.log.{n}` keys

@@ -2,14 +2,19 @@
 "npm:pagefind" = "latest"
 
 [tasks.build]
-description = "Build SSG pipeline: i18n + client JS, then site, then search index, then compress"
+description = "Build SSG pipeline: clean, i18n + client JS, then site, then search index, then compress"
 run = [
+  { tasks = ["build:clean"] },
   { tasks = ["build:i18n", "build:js:client"] },
   { tasks = ["build:site"] },
   { tasks = ["build:search"] },
   { tasks = ["build:fingerprint"] },
   { tasks = ["build:compress"] },
 ]
+
+[tasks."build:clean"]
+description = "Remove dist/ before rebuild so stale artifacts (e.g. logs or editor state accidentally written with cwd=dist) never get packaged by build:compress"
+run = "rm -rf dist"
 
 [tasks."build:i18n"]
 description = "Generate typesafe-i18n types from locale files"
