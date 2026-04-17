@@ -1,7 +1,6 @@
 import type {
   LogRecord,
   Sink,
-  Verify,
 } from '../../../t/index.ts';
 
 /** Writable stream to the OPFS log file, kept open for performance. */
@@ -62,16 +61,11 @@ export async function verify(): Promise<boolean> {
 }
 
 /**
- * OPFS sink that writes log records to Origin Private File System.
+ * Writes a single record as a JSONL line to the OPFS stream.
  *
  * @param record - log record to write
- *
- * @example
- * ```ts
- * await $({ level: 'warn', message: 'quota nearing limit', tags: ['storage'], timestamp: Date.now() });
- * ```
  */
-export async function $(record: LogRecord,): Promise<void> {
+async function write(record: LogRecord,): Promise<void> {
   if (!available || !writable)
     return;
 
@@ -82,3 +76,17 @@ export async function $(record: LogRecord,): Promise<void> {
     // Silently fail
   }
 }
+
+/**
+ * OPFS sink that writes log records to Origin Private File System.
+ * No `flush` hook: each `write` awaits the underlying stream write, so
+ * ordering is already guaranteed at the record boundary.
+ *
+ * @example
+ * ```ts
+ * await $.write({ level: 'warn', message: 'quota nearing limit', timestamp: Date.now() });
+ * ```
+ */
+export const $: Sink = {
+  write,
+};

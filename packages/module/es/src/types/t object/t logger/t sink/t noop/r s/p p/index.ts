@@ -1,7 +1,6 @@
 import type {
   LogRecord,
   Sink,
-  Verify,
 } from '../../../../t/index.ts';
 
 /**
@@ -19,15 +18,23 @@ export function verify(): boolean {
 }
 
 /**
- * Noop sink that discards all log records.
+ * Discards a log record. Matches the `Sink['write']` signature.
  *
  * @param _record - log record to discard
+ */
+function write(_record: LogRecord,): void {
+  // Intentionally empty - discards all logs
+}
+
+/**
+ * Noop sink that discards all log records. Exposes no `flush` because
+ * there is nothing to drain.
  *
  * @example
  * ```ts
- * $({ level: 'debug', message: 'discarded', tags: [], timestamp: Date.now() }); // no-op
+ * $.write({ level: 'debug', message: 'discarded', timestamp: Date.now() }); // no-op
  * ```
  */
-export function $(_record: LogRecord,): void {
-  // Intentionally empty - discards all logs
-}
+export const $: Sink = {
+  write,
+};

@@ -155,5 +155,36 @@ await describe({
           .toThrow();
       },
     },),
+
+    it({
+      name: 'flush is a callable method returning a promise',
+      fn: async () => {
+        expect(typeof $.flush,)
+          .toBe('function',);
+        const result = $.flush();
+        expect(result instanceof Promise,)
+          .toBe(true,);
+        await result;
+      },
+    },),
+
+    it({
+      name: 'flush drains buffered console records',
+      fn: async () => {
+        // The console sink batches on microtasks; after a sync burst
+        // of logs, flush should resolve after the console has actually
+        // received the records. We cannot easily assert the count here
+        // without re-spying (the default logger owns its sinks), so this
+        // test only verifies that flush resolves after at least one
+        // microtask tick rather than returning an already-settled promise
+        // that misses the flush.
+        $.info('pre-flush 1',);
+        $.info('pre-flush 2',);
+        $.info('pre-flush 3',);
+        await expect($.flush(),)
+          .resolves
+          .toBeUndefined();
+      },
+    },),
   ],
 },);

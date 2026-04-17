@@ -93,10 +93,6 @@ async function initialize(): Promise<void> {
 const initPromise: Promise<void> = initialize();
 
 /**
- * Creates a logging method for the specified severity level.
- * @param level - Log severity level for messages from this method
- */
-/**
  * Marks a sink entry as failed and recalculates global availability.
  *
  * @param entry - Sink entry that encountered an error
@@ -134,7 +130,7 @@ function createMethod(level: Level,): (message: string,) => void {
 
     available.forEach(function writeToSink(entry,) {
       try {
-        const result = entry.sink(record,);
+        const result = entry.sink.write(record,);
         if (result instanceof Promise) {
           // Fire-and-forget: awaiting would make the logger blocking
           // oxlint-disable-next-line promise/prefer-await-to-then -- intentional fire-and-forget
@@ -158,6 +154,36 @@ function createMethod(level: Level,): (message: string,) => void {
 }
 
 /**
+ * Drains buffered records in every available sink that exposes its own
+ * `flush` hook. Resolves once all hooks have settled. Per-sink failures
+ * are isolated: a rejecting `flush` marks that sink unavailable and does
+ * not fail the aggregate.
+ *
+ * Safe to call when no sink buffers -- resolves immediately.
+ *
+ * @example
+ * ```ts
+ * l.error('crash');
+ * await l.flush(); // ensures the error is visible before the next step
+ * ```
+ */
+async function flushAll(): Promise<void> {
+  await Promise.all(
+    sinkEntries.map(async function runFlush(entry,) {
+      const sinkFlush = entry.sink.flush;
+      if (entry.available !== true || typeof sinkFlush !== 'function')
+        return;
+      try {
+        await sinkFlush();
+      }
+      catch {
+        markFailed(entry,);
+      }
+    },),
+  );
+}
+
+/**
  * Multi-sink logger that writes to all available backends.
  * Throws if no backends are available at initialization or if all fail.
  */
@@ -165,6 +191,7 @@ export const $: Logger = {
   debug: createMethod('debug',),
   error: createMethod('error',),
   fatal: createMethod('fatal',),
+  flush: flushAll,
   info: createMethod('info',),
   trace: createMethod('trace',),
   warn: createMethod('warn',),

@@ -49,7 +49,7 @@ test.describe('sessionStorage sink', () => {
     const typeofSink = await page.evaluate(() => {
       const { $, } =
         globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
-      return typeof $;
+      return typeof $.write;
     },);
     expect(typeofSink,).toBe('function',);
   });
@@ -65,7 +65,7 @@ test.describe('sessionStorage sink', () => {
         timestamp: Date.now(),
       };
       try {
-        $(record,);
+        void $.write(record,);
         return true;
       }
       catch {
@@ -88,7 +88,7 @@ test.describe('sessionStorage sink', () => {
           timestamp: Date.now(),
         };
         try {
-          $(record,);
+          void $.write(record,);
         }
         catch {
           return false;
@@ -110,7 +110,7 @@ test.describe('sessionStorage sink', () => {
         timestamp: Date.now(),
       };
       try {
-        $(record,);
+        void $.write(record,);
         return true;
       }
       catch {
@@ -131,7 +131,7 @@ test.describe('sessionStorage sink', () => {
         timestamp: Date.now(),
       };
       try {
-        $(record,);
+        void $.write(record,);
         return true;
       }
       catch {
@@ -152,7 +152,7 @@ test.describe('sessionStorage sink', () => {
         timestamp: Date.now(),
       };
       try {
-        $(record,);
+        void $.write(record,);
         return true;
       }
       catch {
@@ -188,7 +188,7 @@ test.describe('sessionStorage sink', () => {
         timestamp: Date.now(),
       };
 
-      $(record,);
+      void $.write(record,);
 
       // Find the written record
       const currentStorageLength = globalThis.sessionStorage.length;

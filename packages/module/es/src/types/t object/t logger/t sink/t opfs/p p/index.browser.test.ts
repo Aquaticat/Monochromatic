@@ -47,7 +47,7 @@ test.describe('OPFS sink', () => {
   test('sink function exists and is callable', async ({ page, },) => {
     const typeofSink = await page.evaluate(() => {
       const { $, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
-      return typeof $;
+      return typeof $.write;
     },);
     expect(typeofSink,).toBe('function',);
   });
@@ -62,7 +62,7 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
         return true;
       }
       catch {
@@ -84,7 +84,7 @@ test.describe('OPFS sink', () => {
           timestamp: Date.now(),
         };
         try {
-          await Promise.resolve($(record,),);
+          await Promise.resolve($.write(record,),);
         }
         catch {
           return false;
@@ -105,7 +105,7 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
         return true;
       }
       catch {
@@ -125,7 +125,7 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
         return true;
       }
       catch {
@@ -145,7 +145,7 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
         return true;
       }
       catch {
@@ -165,7 +165,7 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
         return true;
       }
       catch {

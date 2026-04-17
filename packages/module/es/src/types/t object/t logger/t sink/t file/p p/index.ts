@@ -9,7 +9,6 @@ import type {
 import type {
   LogRecord,
   Sink,
-  Verify,
 } from '../../../t/index.ts';
 
 /** Cached `appendFile` from `node:fs/promises`, set during verification. */
@@ -209,18 +208,11 @@ export function verify(): Promise<boolean> {
 }
 
 /**
- * File sink that writes log records to the nearest ancestor
- * `node_modules/.monochromatic/` (resolved once during verification).
- * Uses cached `appendFile` from verification -- no dynamic import needed here.
+ * Writes a single record as a JSONL line to the resolved log file.
  *
  * @param record - log record to write
- *
- * @example
- * ```ts
- * await $({ level: 'error', message: 'unhandled rejection', tags: ['process'], timestamp: Date.now() });
- * ```
  */
-export async function $(record: LogRecord,): Promise<void> {
+async function write(record: LogRecord,): Promise<void> {
   // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath is string|null, checking both conditions
   if (!available || !filePath || !appendFile)
     return;
@@ -241,3 +233,18 @@ export async function $(record: LogRecord,): Promise<void> {
     );
   }
 }
+
+/**
+ * File sink that writes log records to the nearest ancestor
+ * `node_modules/.monochromatic/` (resolved once during verification).
+ * No `flush` hook: each `write` awaits `appendFile` directly, so there
+ * is no buffered state to drain.
+ *
+ * @example
+ * ```ts
+ * await $.write({ level: 'error', message: 'unhandled rejection', timestamp: Date.now() });
+ * ```
+ */
+export const $: Sink = {
+  write,
+};

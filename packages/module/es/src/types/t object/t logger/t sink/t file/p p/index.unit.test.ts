@@ -106,9 +106,9 @@ await describe({
     },),
 
     it({
-      name: 'sink function exists and is callable',
+      name: 'sink exposes a callable write method',
       fn: async () => {
-        expect(typeof $,).toBe('function',);
+        expect(typeof $.write,).toBe('function',);
       },
     },),
 
@@ -125,7 +125,7 @@ await describe({
         };
 
         // Should not throw even if file is unavailable
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
       },
     },),
 
@@ -143,7 +143,7 @@ await describe({
             timestamp: Date.now(),
           };
           // oxlint-disable-next-line no-await-in-loop -- Ensuring each level works sequentially
-          await Promise.resolve($(record,),);
+          await Promise.resolve($.write(record,),);
         }
       },
     },),
@@ -159,7 +159,7 @@ await describe({
           timestamp: Date.now(),
         };
 
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
       },
     },),
 
@@ -174,7 +174,7 @@ await describe({
           timestamp: Date.now(),
         };
 
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
       },
     },),
 
@@ -189,7 +189,7 @@ await describe({
           timestamp: Date.now(),
         };
 
-        await Promise.resolve($(record,),);
+        await Promise.resolve($.write(record,),);
       },
     },),
   ],

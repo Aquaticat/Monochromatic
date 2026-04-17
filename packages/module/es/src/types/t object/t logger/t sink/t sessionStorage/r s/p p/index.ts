@@ -1,7 +1,6 @@
 import type {
   LogRecord,
   Sink,
-  Verify,
 } from '../../../../t/index.ts';
 
 /** Prefix for sessionStorage keys to namespace log entries. */
@@ -51,16 +50,11 @@ export function verify(): boolean {
 }
 
 /**
- * SessionStorage sink that writes log records to browser sessionStorage.
+ * Persists a log record to sessionStorage under a counter-incremented key.
  *
  * @param record - log record to persist
- *
- * @example
- * ```ts
- * $({ level: 'info', message: 'user signed in', tags: ['auth'], timestamp: Date.now() });
- * ```
  */
-export function $(record: LogRecord,): void {
+function write(record: LogRecord,): void {
   if (!available)
     return;
 
@@ -75,3 +69,16 @@ export function $(record: LogRecord,): void {
     // Silently fail if storage is full or unavailable
   }
 }
+
+/**
+ * SessionStorage sink that writes log records to browser sessionStorage.
+ * Writes are synchronous, so no `flush` hook is needed.
+ *
+ * @example
+ * ```ts
+ * $.write({ level: 'info', message: 'user signed in', timestamp: Date.now() });
+ * ```
+ */
+export const $: Sink = {
+  write,
+};

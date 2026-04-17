@@ -51,6 +51,9 @@ export function $({
     fatal: function fatal(message: string,): void {
       l.fatal(`${prefix}${message}`,);
     },
+    flush: function flush(): Promise<void> {
+      return l.flush();
+    },
     info: function info(message: string,): void {
       l.info(`${prefix}${message}`,);
     },

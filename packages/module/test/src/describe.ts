@@ -222,25 +222,35 @@ export async function describe({
    * @throws Error wrapping child failures when any child rejects
    */
   async function runOnce(runLabel: string,): Promise<void> {
-    let settleAll: Promise<PromiseSettledResult<DescribeResult | ItResult>[]> =
-      runSequential();
-
-    if (isSequential)
-      settleAll = runSequential();
-    else if (isUnbounded) {
-      settleAll = Promise.allSettled(children.map(function mapChild(child,) {
-        return startChild(child,);
-      },),);
-    }
-    else {
-      const limit = pLimit(concurrency,);
-      settleAll = Promise.allSettled(children.map(function limitChild(child,) {
-        return limit(
-          startChild,
-          child,
-        );
-      },),);
-    }
+    // History: until 2026-04, this block initialized `settleAll = runSequential()`
+    // at declaration, then reassigned it inside `if (isSequential)`. That double-
+    // ran children when they were thunks: the initial call invoked each thunk
+    // once, and the reassignment invoked each thunk again, launching every test
+    // twice. With Promise children the reassignment only re-awaited the same
+    // already-resolved promises, so the bug was invisible until a test suite
+    // used thunks (e.g. to let `concurrency: 1` actually sequence execution of
+    // tests that share mutable module state, since `it(...)` returns an
+    // in-flight Promise and cannot be sequenced any other way). Initializing
+    // via conditional expression eliminates the duplicate invocation and also
+    // satisfies oxlint's `init-declarations` rule (no uninitialized `let`).
+    const settleAll: Promise<PromiseSettledResult<DescribeResult | ItResult>[]> =
+      isSequential
+        ? runSequential()
+        : (isUnbounded
+          ? Promise.allSettled(children.map(function mapChild(child,) {
+            return startChild(child,);
+          },),)
+          : (function runLimited(): Promise<
+            PromiseSettledResult<DescribeResult | ItResult>[]
+          > {
+            const limit = pLimit(concurrency,);
+            return Promise.allSettled(children.map(function limitChild(child,) {
+              return limit(
+                startChild,
+                child,
+              );
+            },),);
+          }()));
 
     const withTimeoutApplied = timeout !== undefined
       ? withTimeout({
