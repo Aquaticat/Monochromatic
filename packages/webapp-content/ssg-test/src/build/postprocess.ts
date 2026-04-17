@@ -1,26 +1,36 @@
 /**
- * Content-hash fingerprinting for static assets.
+ * Post-processing stage: pagefind indexing + content-hash fingerprinting.
  *
- * Post-processes `dist/` after the full build (site + pagefind)
- * to rename assets with content hashes and rewrite references
- * in HTML, CSS, and `manifest.webmanifest`.
+ * Orchestrates two independent post-site operations so they overlap
+ * wherever they can:
  *
- * Three dependency-ordered phases (order matters because CSS references fonts):
+ * - `pagefind --site dist/` reads every `dist/**\/*.html` and writes its
+ *   index to `dist/pagefind/`.
+ * - Fingerprinting renames asset files with content hashes and rewrites
+ *   references in HTML, CSS, and `manifest.webmanifest`.
+ *
+ * Fingerprinting has three dependency-ordered phases (CSS references fonts):
  * 1. Hash leaf assets (images, fonts, JS, PDFs, favicons) -- no outgoing references
  * 2. Rewrite CSS font `url()` with hashed names from phase 1, then hash the CSS
  * 3. Rewrite all HTML files and `manifest.webmanifest` with the complete replacement map
  *
- * Phase 3 uses basename-level `replaceAll` rather than HTML parsing.
- * This works because the h-html template system produces predictable output,
- * and basename replacement handles both absolute (`/inter.woff2`) and
- * relative (`../glass-collection.avif`) paths uniformly.
+ * Phases 1 and 2 touch binary leaf assets and `styles.css` -- disjoint
+ * from the HTML pagefind reads. Those phases run **concurrently with
+ * pagefind** via `Promise.all`. Phase 3 modifies the same HTML files
+ * pagefind reads, so it runs **after** pagefind completes.
  *
- * Excluded: HTML (entry points), pagefind (manages own hashing), MDX source files,
- * `robots.txt`, RSS feeds, `manifest.webmanifest` (rewritten but not renamed).
- * Also excludes `node_modules/`, hidden directories, and build artifacts
+ * Phase 3 uses basename-level `replaceAll` rather than HTML parsing.
+ * This works because the h-html template system produces predictable
+ * output, and basename replacement handles both absolute (`/inter.woff2`)
+ * and relative (`../glass-collection.avif`) paths uniformly.
+ *
+ * Excluded from fingerprinting: HTML (entry points), `pagefind/` (manages
+ * its own hashing), MDX source files, `robots.txt`, RSS feeds,
+ * `manifest.webmanifest` (rewritten but not renamed). Also excludes
+ * `node_modules/`, hidden directories, and build artifacts
  * (`*.tsbuildinfo`, `*.jsonl`) that may exist inside `dist/`.
  *
- * Run via `mise run build:fingerprint` or `bun src/build/fingerprint.ts`.
+ * Run via `mise run build:postprocess` or `bun src/build/postprocess.ts`.
  */
 import { createHash, } from 'node:crypto';
 import {
@@ -40,6 +50,7 @@ import {
   initPromise,
 } from '@monochromatic-dev/module-es/logger';
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import spawn from 'nano-spawn';
 import readdir from 'tiny-readdir-glob';
 
 import { sha256, } from '../lib/cache-hash.ts';
@@ -50,9 +61,9 @@ export {}; // eslint module boundary marker
 
 await initPromise;
 
-/** Tagged logger for the fingerprint pipeline. */
+/** Tagged logger for the postprocess pipeline. */
 const l = tagged({
-  tag: 'fingerprint',
+  tag: 'postprocess',
   l: $,
 },);
 
@@ -363,6 +374,42 @@ async function cleanStaleFingerprints(
 
 //endregion Stale cleanup
 
+//region Pagefind
+
+/**
+ * Runs `pagefind --site <distDir>` as a child process.
+ *
+ * Pagefind reads every `<distDir>/**\/*.html`, extracts indexable text,
+ * and writes its index into `<distDir>/pagefind/`. It does not touch
+ * any asset hrefs in HTML (those live in `<link>`/`<script>`/`<img>`,
+ * which are not part of pagefind's indexed text), so it can safely
+ * overlap with fingerprint phases 1 and 2 (leaf-asset renaming + CSS
+ * rewriting) which never touch HTML.
+ *
+ * Non-zero exit throws; stdout/stderr stream to this process.
+ *
+ * @param distDir - path to the dist output directory to index
+ *
+ * @example
+ * ```ts
+ * await runPagefind({ distDir: DIST });
+ * ```
+ */
+async function runPagefind(
+  { distDir, }: { distDir: string; },
+): Promise<void> {
+  await spawn(
+    'pagefind',
+    [
+      '--site',
+      distDir,
+    ],
+  );
+  l.info('pagefind: indexed',);
+}
+
+//endregion Pagefind
+
 //region Main pipeline
 
 l.info('starting',);
@@ -405,17 +452,45 @@ const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
   },);
 },);
 
-/** Map from original leaf asset basename to its content-hashed counterpart, populated in phase 1 and consumed by every subsequent fingerprint phase. */
-const replacements = await fingerprintLeafAssets({
-  files: leafAssetFiles,
-},);
-l.info(`phase 1: fingerprinted ${replacements.size} leaf assets`,);
+/**
+ * Runs fingerprint phases 1 and 2 together: hash leaf assets, then
+ * rewrite and hash `styles.css`. Returns the replacements map so phase
+ * 3 can consume it.
+ *
+ * Split out so it can be awaited in a `Promise.all` with `runPagefind`
+ * -- neither branch touches HTML, so they race on disjoint files.
+ *
+ * @returns basename → hashed-basename map covering every hashed asset
+ *
+ * @example
+ * ```ts
+ * const replacements = await fingerprintAssets();
+ * ```
+ */
+async function fingerprintAssets(): Promise<Map<string, string>> {
+  const replacements = await fingerprintLeafAssets({
+    files: leafAssetFiles,
+  },);
+  l.info(`phase 1: fingerprinted ${replacements.size} leaf assets`,);
 
-await fingerprintCss({
-  distDir: DIST,
-  replacements,
-},);
-l.info('phase 2: fingerprinted CSS',);
+  await fingerprintCss({
+    distDir: DIST,
+    replacements,
+  },);
+  l.info('phase 2: fingerprinted CSS',);
+
+  return replacements;
+}
+
+/**
+ * Phases 1+2 (fingerprint leaf assets + CSS) run in parallel with
+ * pagefind. Phase 3 (HTML rewrite) is sequenced strictly after both
+ * because it modifies the same HTML files pagefind is reading.
+ */
+const [replacements,] = await Promise.all([
+  fingerprintAssets(),
+  runPagefind({ distDir: DIST, },),
+],);
 
 await rewriteReferences({
   distDir: DIST,

@@ -2,13 +2,12 @@
 "npm:pagefind" = "latest"
 
 [tasks.build]
-description = "Build SSG pipeline: clean, i18n + client JS, then site, then search index, fingerprint, compress"
+description = "Build SSG pipeline: clean, i18n + client JS, then site, then postprocess (pagefind + fingerprint), compress"
 run = [
   { tasks = ["build:clean"] },
   { tasks = ["build:i18n", "build:js:client"] },
   { tasks = ["build:site"] },
-  { tasks = ["build:search"] },
-  { tasks = ["build:fingerprint"] },
+  { tasks = ["build:postprocess"] },
   { tasks = ["build:compress"] },
 ]
 
@@ -35,9 +34,9 @@ run = "rm -rf .cache; bun src/build.ts"
 description = "Generate Pagefind search index from built HTML"
 run = "pagefind --site dist"
 
-[tasks."build:fingerprint"]
-description = "Add content hashes to asset filenames and rewrite references"
-run = "bun src/build/fingerprint.ts"
+[tasks."build:postprocess"]
+description = "Run pagefind and content-hash assets (pagefind runs in parallel with phases 1+2 of fingerprinting)"
+run = "bun src/build/postprocess.ts"
 
 [tasks."build:compress"]
 description = "Compress dist/ with zstd"

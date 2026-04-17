@@ -9,16 +9,16 @@ The build pipeline runs as a sequence of mise tasks (`mise run build`):
 
 1. **i18n + client JS** (`build:i18n`, `build:js:client`) -- generate typesafe-i18n types and bundle client-side scripts via tsdown
 2. **Site generation** (`build:site` / `src/build.ts`) -- loads MDX from `src/content/{lang}/`, validates frontmatter with Zod, processes changed files through a remark/rehype pipeline (with SHA-256 content caching), pre-computes syntax highlight ranges via Lezer, generates HTML pages from h-html templates, generates CSS from h-css declarations, generates RSS feeds per language via feedsmith, copies static assets from `public/`
-3. **Search index** (`build:search`) -- generates Pagefind search index from built HTML
-4. **Asset fingerprinting** (`build:fingerprint` / `src/build/fingerprint.ts`) -- renames static assets with content hashes and rewrites references in HTML, CSS, and manifest
-5. **Compression** (`build:compress`) -- compresses `dist/` with zstd
+3. **Post-processing** (`build:postprocess` / `src/build/postprocess.ts`) -- pagefind indexes `dist/` in parallel with fingerprint phases 1+2 (leaf assets + CSS); phase 3 (HTML reference rewriting) runs after both complete
+4. **Compression** (`build:compress`) -- compresses `dist/` with zstd
 
 ## Commands
 
-- `mise run build` -- full pipeline (i18n, client JS, site, search, fingerprint, compress)
-- `mise run build:site` -- site generation only (no fingerprinting or compression)
+- `mise run build` -- full pipeline (i18n, client JS, site, postprocess, compress)
+- `mise run build:site` -- site generation only (no postprocess or compression)
 - `mise run build:site:clean` -- site generation from scratch (clears `.cache/`)
-- `mise run build:fingerprint` -- asset fingerprinting only (requires prior `build:site`)
+- `mise run build:postprocess` -- pagefind + asset fingerprinting (requires prior `build:site`)
+- `mise run build:search` -- pagefind indexing only (requires prior `build:site`; standalone task for manual re-indexing)
 - `mise run dev` -- full build, then serve with Caddy and rebuild on source changes
 - `mise run format` -- run every format task (fonts + images)
 - `mise run format:fonts` -- re-subset `fonts-source/*.woff2` into `public/`
@@ -172,7 +172,7 @@ All static assets in `dist/` are renamed with a 10-character content hash
 before their extension (e.g. `styles.f1da372f3a.css`, `inter.693b77d4f3.woff2`).
 References in HTML, CSS, and `manifest.webmanifest` are rewritten to match.
 
-This runs as a post-processing step (`src/build/fingerprint.ts`) in three phases
+This runs as a post-processing step (`src/build/postprocess.ts`) in three phases
 to respect the dependency chain between assets:
 
 1. **Leaf assets** -- images, fonts, JS, PDFs, favicons (no outgoing references to other hashable assets)
