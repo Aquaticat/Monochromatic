@@ -88,6 +88,24 @@ a 99.4% net reduction in total transfer size for syntax highlighting.
 Built files go to `dist/` as flat HTML with Caddy `try_files` providing clean URLs.
 Cache manifest lives at `.cache/build-manifest.json`.
 
+## Images
+
+Each photo lives under `src/content/` as a raster source paired with an AVIF counterpart
+of the same basename. `mise run format:images` scans for any raster format sharp can decode
+(PNG, JPEG, TIFF, WebP, GIF, HEIC, JXL, JP2, PPM, PFM, EXR, HDR; see `RASTER_GLOB` in
+`src/images/format.ts`) and generates missing AVIFs via `src/images/convert.ts`.
+
+Both the source raster and its AVIF are copied to `dist/` and fingerprinted independently.
+Pages reference the AVIF for transfer efficiency; the source stays reachable under
+its fingerprinted URL so readers who want the original
+(for download, print, or closer inspection) can retrieve it directly.
+
+When committing an AVIF source by hand, encode with `yuv420p` chroma subsampling.
+`yuv444p` balloons file size with no perceivable benefit for photographic content --
+`winter-tree.avif` was originally shipped at `yuv444p` quality 100 and was 2.2 MB
+for a 2048x1365 image; re-encoding at CRF 28 yuv420p produced a 385 KB file with no
+visible quality loss.
+
 ## Asset fingerprinting
 
 All static assets in `dist/` are renamed with a 10-character content hash
