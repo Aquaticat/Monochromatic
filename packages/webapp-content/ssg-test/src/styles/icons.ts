@@ -1,10 +1,19 @@
 /**
  * Material Symbols icon font `@font-face` and utility class.
  *
- * Self-hosted woff2 subsetted to `invert_colors` and `search` via
- * the Google Fonts `icon_names` parameter. The full variable font
- * axes (opsz, wght, FILL, GRAD) are preserved so icons can be
+ * Self-hosted woff2 subsetted via the Google Fonts `icon_names`
+ * parameter. Current glyphs: `info`, `invert_colors`, `lightbulb`,
+ * `priority_high`, `report`, `search`, `warning`. The full variable
+ * font axes (opsz, wght, FILL, GRAD) are preserved so icons can be
  * tuned per context.
+ *
+ * To add an icon: append its name to the `icon_names` list below,
+ * fetch the CSS with a modern browser User-Agent, download the
+ * linked woff2, and replace `public/materialSymbols.woff2`.
+ *
+ * ```
+ * https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=info,invert_colors,lightbulb,priority_high,report,search,warning
+ * ```
  *
  * @example
  * ```html

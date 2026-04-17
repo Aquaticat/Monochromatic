@@ -13,7 +13,7 @@
  *
  * @example
  * ```mdx
- * <Question
+ * <quiz-question
  *   scenario={<>A "Sign out" button in the top nav.</>}
  *   options={[
  *     { label: <>Link</>, explanation: <>Would be CSRF-vulnerable.</> },
@@ -41,7 +41,7 @@ import {
 
 //region Types
 
-/** One answer choice in a {@link Question}. */
+/** One answer choice in a {@link QuizQuestion}. */
 export type QuestionOption = {
   /** Visible text on the radio's label; full MDX/JSX supported. */
   readonly label: SafeHtml | string;
@@ -53,7 +53,7 @@ export type QuestionOption = {
   readonly correct?: boolean;
 };
 
-/** Props for {@link Question}. */
+/** Props for {@link QuizQuestion}. */
 type QuestionProps = {
   /** Scenario prose shown above the options; full MDX/JSX supported. */
   readonly scenario: SafeHtml | string;
@@ -215,7 +215,7 @@ function renderOption(qId: string, idx: number, opt: QuestionOption,): SafeHtml 
  *
  * @example
  * ```ts
- * Question({
+ * QuizQuestion({
  *   scenario: 'Pick one.',
  *   options: [
  *     { label: 'A', explanation: 'because' },
@@ -224,7 +224,7 @@ function renderOption(qId: string, idx: number, opt: QuestionOption,): SafeHtml 
  * });
  * ```
  */
-export function Question(props: QuestionProps,): SafeHtml {
+export function QuizQuestion(props: QuestionProps,): SafeHtml {
   validate(props,);
   const qId = deriveQuestionId(props,);
   return jsx('quiz-question', {
@@ -281,92 +281,87 @@ const FULL_ROW = 100;
  * ```
  */
 export function css(): string {
-  return [
-    $({
-      rule: 'quiz-question',
-      decls: {
-        display: 'block',
-        'margin-block': cssRem(GAP,),
-        '--quiz-ok':
-          `color-mix(in oklch, ${cssVar('color-link',)} ${COLOR_MIX_RATIO}, ${cssVar('color-fg',)})`,
-        '--quiz-err':
-          `color-mix(in oklch, ${cssVar('color-link-visited',)} ${COLOR_MIX_RATIO}, ${cssVar('color-fg',)})`,
-      },
-    },),
-    $({
-      rule: 'quiz-question fieldset',
-      decls: {
-        'border-inline-start-width': 0,
-        'border-inline-end-width': 0,
-        'border-block-start-width': 0,
-        'border-block-end-width': 0,
-        'padding-inline': 0,
-        'padding-block': 0,
-        'margin-inline': 0,
-        'margin-block': 0,
-      },
-    },),
-    $({
-      rule: 'quiz-question .scenario',
-      decls: {
-        'margin-block-end': cssRem(GAP_SMALL,),
-        'font-weight': EMPHASIS_WEIGHT,
-      },
-    },),
-    $({
-      rule: 'quiz-question .option',
-      decls: {
-        display: 'flex',
-        'flex-wrap': 'wrap',
-        'align-items': 'baseline',
-        gap: cssRem(GAP_SMALL,),
-        'margin-block': cssRem(GAP_SMALL,),
-      },
-    },),
-    $({
-      rule: 'quiz-question .option input',
-      decls: {
-        'flex-shrink': 0,
-      },
-    },),
-    $({
-      rule: 'quiz-question .option label',
-      decls: {
-        cursor: 'pointer',
-      },
-    },),
-    $({
-      rule: 'quiz-question .option .explanation',
-      decls: {
-        display: 'none',
-        'flex-basis': cssPercent(FULL_ROW,),
-        'margin-inline-start': cssRem(GAP,),
-        color: cssVar('color-muted',),
-        'font-size': cssEm(EXPLANATION_FONT_SIZE_EM,),
-      },
-    },),
-    $({
-      rule: 'quiz-question .option:has(input:checked) .explanation',
-      decls: {
-        display: 'block',
-      },
-    },),
-    $({
-      rule: 'quiz-question input:checked[data-correct] + label',
-      decls: {
-        color: cssVar('quiz-ok',),
-        'font-weight': EMPHASIS_WEIGHT,
-      },
-    },),
-    $({
-      rule: 'quiz-question input:checked:not([data-correct]) + label',
-      decls: {
-        color: cssVar('quiz-err',),
-        'font-weight': EMPHASIS_WEIGHT,
-      },
-    },),
-  ]
-    .join('\n',);
+  return $({
+    rule: 'quiz-question',
+    decls: {
+      display: 'block',
+      'margin-block': cssRem(GAP,),
+      '--quiz-ok':
+        `color-mix(in oklch, ${cssVar('color-link',)} ${COLOR_MIX_RATIO}, ${cssVar('color-fg',)})`,
+      '--quiz-err':
+        `color-mix(in oklch, ${cssVar('color-link-visited',)} ${COLOR_MIX_RATIO}, ${cssVar('color-fg',)})`,
+    },
+    children: [
+      $({
+        rule: 'fieldset',
+        decls: {
+          'border-inline-start-width': 0,
+          'border-inline-end-width': 0,
+          'border-block-start-width': 0,
+          'border-block-end-width': 0,
+          'padding-inline': 0,
+          'padding-block': 0,
+          'margin-inline': 0,
+          'margin-block': 0,
+        },
+      },),
+      $({
+        rule: '.scenario',
+        decls: {
+          'margin-block-end': cssRem(GAP_SMALL,),
+          'font-weight': EMPHASIS_WEIGHT,
+        },
+      },),
+      $({
+        rule: '.option',
+        decls: {
+          display: 'flex',
+          'flex-wrap': 'wrap',
+          'align-items': 'baseline',
+          gap: cssRem(GAP_SMALL,),
+          'margin-block': cssRem(GAP_SMALL,),
+        },
+        children: [
+          $({
+            rule: 'input',
+            decls: { 'flex-shrink': 0, },
+          },),
+          $({
+            rule: 'label',
+            decls: { cursor: 'pointer', },
+          },),
+          $({
+            rule: '.explanation',
+            decls: {
+              display: 'none',
+              'flex-basis': cssPercent(FULL_ROW,),
+              'margin-inline-start': cssRem(GAP,),
+              color: cssVar('color-muted',),
+              'font-size': cssEm(EXPLANATION_FONT_SIZE_EM,),
+            },
+          },),
+          $({
+            rule: '&:has(input:checked) .explanation',
+            decls: { display: 'block', },
+          },),
+        ],
+      },),
+      $({
+        rule: 'input:checked[data-correct] + label',
+        decls: {
+          color: cssVar('quiz-ok',),
+          'font-weight': EMPHASIS_WEIGHT,
+        },
+      },),
+      $({
+        rule: 'input:checked:not([data-correct]) + label',
+        decls: {
+          color: cssVar('quiz-err',),
+          'font-weight': EMPHASIS_WEIGHT,
+        },
+      },),
+    ],
+  },);
 }
 
 //endregion CSS

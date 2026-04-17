@@ -48,11 +48,11 @@ I was the **sole developer**, responsible for:
 
 ## Lessons learned
 
-<Alert data-type="warning">
+<CalloutAlert data-type="warning">
 
 Never use Bootstrap in production.
 
-</Alert>
+</CalloutAlert>
 
 Bootstrap has components, but many aspects of them cannot be customized
 with CSS variables.
@@ -66,11 +66,11 @@ forcing users to add them through the utility API.
 That API is itself very limited:
 it does not allow adding two CSS properties inside one utility class.
 
-<Alert data-type="note">
+<CalloutAlert data-type="note">
 
 Don't be afraid of diving into the source code.
 
-</Alert>
+</CalloutAlert>
 
 It is the only way to understand why Bootstrap does what it does.
 Working through it gave me an appreciation for the engineers
@@ -81,14 +81,14 @@ Cascade Layers can help with overriding Bootstrap styles,
 but reading the source is unavoidable sometimes,
 especially with `!important` scattered throughout.
 
-<Alert data-type="tip">
+<CalloutAlert data-type="tip">
 
 Prefer a real static site generator.
 Vite serves all HTML files without extra configuration,
 but does not build them without a workaround.
 A real SSG handles all of this automatically.
 
-</Alert>
+</CalloutAlert>
 
 ## Skills and tools demonstrated
 

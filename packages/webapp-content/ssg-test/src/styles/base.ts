@@ -4,10 +4,11 @@
  * Composes all style modules — both pure-style files and
  * colocated component CSS — into a single CSS string for the build.
  */
+import * as calloutAlert from '../components/callout-alert.ts';
 import * as pageContent from '../components/page-content.ts';
 import * as postCard from '../components/post-card.ts';
 import * as postList from '../components/post-list.ts';
-import * as question from '../components/question.ts';
+import * as quizQuestion from '../components/quiz-question.ts';
 import * as siteFooter from '../components/site-footer.ts';
 import * as siteHeader from '../components/site-header.ts';
 import * as siteSearch from '../components/site-search.ts';
@@ -49,12 +50,13 @@ export function generateSiteCss(): string {
     interactionStyles(),
     highlightStyles(),
     pageContent.css(),
+    calloutAlert.css(),
     siteHeader.css(),
     themeToggle.css(),
     siteSearch.css(),
     postList.css(),
     postCard.css(),
-    question.css(),
+    quizQuestion.css(),
     siteFooter.css(),
   ]
     .join('\n',);
