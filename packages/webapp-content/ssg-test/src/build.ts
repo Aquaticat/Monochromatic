@@ -34,7 +34,15 @@ import {
   writeCache,
 } from './lib/cache.ts';
 import { groupByLang, } from './lib/content-group.ts';
-import { loadContent, } from './lib/content.ts';
+import {
+  attachDates,
+  loadContent,
+  type ResolvedDates,
+} from './lib/content.ts';
+import {
+  getPostDates,
+  resolveGitDatesContext,
+} from './lib/git-dates.ts';
 import { renderMdx, } from './lib/markdown.ts';
 
 // File justification: 120 lines -- linear pipeline script; splitting the
@@ -67,14 +75,15 @@ const PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts';
 
 l.info('starting',);
 
-/** Loaded posts, cached manifest, and pipeline hash fetched concurrently. */
-const [posts, cache, pipelineHash,] = await Promise.all([
+/** Loaded posts, cached manifest, pipeline hash, and git-dates context fetched concurrently. */
+const [loadedPosts, cache, pipelineHash, gitCtx,] = await Promise.all([
   loadContent(CONTENT_DIR,),
   readCache({ l, },),
   computePipelineFingerprint(PIPELINE_GLOB,),
+  resolveGitDatesContext(),
 ],);
 
-l.info(`loaded ${posts.length} posts`,);
+l.info(`loaded ${loadedPosts.length} posts`,);
 
 /** Whether the processing pipeline source has changed since last build. */
 const pipelineChanged = cache?.pipelineHash !== pipelineHash;
@@ -83,6 +92,57 @@ if (pipelineChanged)
 
 /** Cache to use for lookups; `undefined` forces full reprocessing on pipeline change. */
 const effectiveCache = pipelineChanged ? undefined : cache;
+
+/**
+ * Whether cached git-derived dates can be reused without re-probing.
+ * Safe when HEAD is unchanged since the cache was written and the pipeline
+ * has not changed (pipeline change already invalidates all cache entries).
+ */
+const gitDatesReusable = !pipelineChanged && cache?.headSha === gitCtx.headSha;
+
+/** Map from absolute file path to resolved publication/update dates. */
+const datesByFilePath = new Map<string, ResolvedDates>();
+
+await Promise.all(loadedPosts.map(async function resolveDates(post,) {
+  const cacheKey = relative(
+    '.',
+    post.filePath,
+  );
+  if (gitDatesReusable) {
+    const cached = getCachedEntry({
+      manifest: effectiveCache,
+      filePath: cacheKey,
+      contentHash: post.contentHash,
+    },);
+    if (cached !== undefined) {
+      datesByFilePath.set(
+        post.filePath,
+        {
+          published: cached.frontmatter.published,
+          updated: cached.frontmatter.updated,
+        },
+      );
+      return;
+    }
+  }
+
+  const dates = await getPostDates({
+    filePath: post.filePath,
+    isShallow: gitCtx.isShallow,
+    githubSlug: gitCtx.githubSlug,
+    l,
+  },);
+  datesByFilePath.set(
+    post.filePath,
+    dates,
+  );
+},),);
+
+/** Fully-resolved posts with `published`/`updated` attached, sorted by updated desc. */
+const posts = attachDates({
+  loadedPosts,
+  datesByFilePath,
+},);
 
 /** Results from processing each post: rendered HTML and cache entry. */
 const processResults = await Promise.all(posts.map(async function processPost(post,) {
@@ -97,10 +157,22 @@ const processResults = await Promise.all(posts.map(async function processPost(po
   },);
 
   if (cached !== undefined) {
+    /* Reuse rendered HTML; overlay freshly-resolved dates onto cached frontmatter
+     * so downstream consumers see dates consistent with the current HEAD even
+     * when `gitDatesReusable` was false. */
+    const entry = {
+      contentHash: cached.contentHash,
+      html: cached.html,
+      frontmatter: {
+        ...cached.frontmatter,
+        published: post.data.published,
+        updated: post.data.updated,
+      },
+    };
     return {
       contentKey: `${post.lang}/${post.name}`,
       cacheKey,
-      entry: cached,
+      entry,
       fromCache: true,
     };
   }
@@ -182,6 +254,7 @@ await Promise.all([
 ],);
 await writeCache(buildManifest({
   pipelineHash,
+  headSha: gitCtx.headSha,
   entries: cacheEntries,
 },),);
 l.info('done',);

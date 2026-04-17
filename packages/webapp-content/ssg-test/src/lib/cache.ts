@@ -56,15 +56,24 @@ const cacheEntrySchema: z.ZodObject<{
 /** On-disk cache structure at `.cache/build-manifest.json`. */
 export type BuildManifest = {
   pipelineHash: string;
+  /**
+   * HEAD commit SHA captured when this manifest was written.
+   * Used to validate cached git-derived publication/update dates:
+   * when the current HEAD matches, cached dates are reusable without
+   * re-probing git. When HEAD has moved, dates are re-derived.
+   */
+  headSha: string;
   content: Record<string, CacheEntry>;
 };
 
 /** Zod schema for the on-disk build manifest. */
 const buildManifestSchema: z.ZodObject<{
   pipelineHash: z.ZodString;
+  headSha: z.ZodString;
   content: z.ZodRecord<z.ZodString, typeof cacheEntrySchema>;
 }> = z.object({
   pipelineHash: z.string(),
+  headSha: z.string(),
   content: z.record(
     z.string(),
     cacheEntrySchema,
@@ -232,26 +241,31 @@ export function createCacheEntry(
  *
  * @param pipelineHash - current pipeline configuration hash
  *
+ * @param headSha - HEAD commit SHA to persist for git-date reuse
+ *
  * @param entries - record of file paths to cache entries
  *
  * @returns new build manifest
  *
  * @example
  * ```ts
- * const manifest = buildManifest({ pipelineHash: hash, entries });
+ * const manifest = buildManifest({ pipelineHash, headSha, entries });
  * ```
  */
 export function buildManifest(
   {
     pipelineHash,
+    headSha,
     entries,
   }: {
     pipelineHash: string;
+    headSha: string;
     entries: Record<string, CacheEntry>;
   },
 ): BuildManifest {
   return {
     pipelineHash,
+    headSha,
     content: entries,
   };
 }

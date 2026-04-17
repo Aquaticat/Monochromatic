@@ -30,8 +30,6 @@ Add `.mdx` files under `src/content/{lang}/` with YAML frontmatter:
 ---
 title: Post Title
 description: Short description
-published: 2025-01-01
-updated: 2025-01-15
 tags:
   - design
   - photography
@@ -40,6 +38,37 @@ tags:
 
 The filename becomes the URL slug.
 The parent directory name becomes the language code.
+
+### Publication and update dates
+
+`published` and `updated` are **not** authored in frontmatter.
+They are derived from git history at build time in `src/lib/git-dates.ts`:
+
+- `published` -- author date of the oldest commit that touched the file (`git log --follow --reverse`)
+- `updated` -- author date of the newest commit that touched the file (`git log --follow`)
+
+Both queries use `--follow` so renames preserve the original publication date.
+Every commit touching the file bumps `updated`, including trivial edits;
+there is no opt-out.
+
+**Fallbacks**
+
+- Untracked or uncommitted files fall back to file mtime for both dates.
+  This keeps dev previews of new posts rendering without git history.
+- Authoring a post without committing is undefined behavior --
+  published dates in dev previews will jump to the commit timestamp on first commit.
+- Shallow clones (common in CI) lack the oldest commits needed for `published`.
+  When `git rev-parse --is-shallow-repository` reports `true`,
+  the oldest commit is fetched via the GitHub REST API through `gh api`
+  (requires `gh` auth and an `origin` remote on github.com).
+  `updated` still comes from local git because the tip is always present.
+
+**Caching**
+
+Resolved dates are persisted in `.cache/build-manifest.json` alongside
+the current `HEAD` commit SHA. On the next build, if `HEAD` has not moved,
+cached dates are reused without re-spawning `git log`. When `HEAD` has moved,
+dates are re-derived for every post.
 
 ## Syntax highlighting
 
