@@ -178,3 +178,14 @@ Add to `~/.claude/settings.json`:
   "spinnerTipsEnabled": false
 }
 ```
+
+### Why this is not a Claude Code plugin
+
+Claude Code plugins cannot contribute a `statusLine`.
+The plugins-reference "File locations" table states that a plugin's bundled `settings.json`
+supports only the `agent` and `subagentStatusLine` keys --
+`statusLine` is user-scope only and must live in `~/.claude/settings.json`.
+`subagentStatusLine` is a separate feature (it formats rows in the subagent panel)
+and is not a substitute for the main status line.
+That is why this directory has no `.claude-plugin/plugin.json`
+and is not listed in the repo's `marketplace.json`.
