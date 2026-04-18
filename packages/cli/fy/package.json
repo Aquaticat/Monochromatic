@@ -15,6 +15,7 @@
     "nano-spawn": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"

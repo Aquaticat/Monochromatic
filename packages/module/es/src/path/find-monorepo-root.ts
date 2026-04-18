@@ -11,9 +11,7 @@
  * Browser backends log a warning through the tagged logger on first use.
  */
 
-import {
-  $ as tagged,
-} from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 // oxlint-disable-next-line import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMonorepoRoot runs
 import { dirname, } from './index.ts';
 

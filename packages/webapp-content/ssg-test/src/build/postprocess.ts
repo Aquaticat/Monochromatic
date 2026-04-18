@@ -46,10 +46,10 @@ import {
 } from 'node:path';
 
 import {
-  $,
   initPromise,
-} from '@monochromatic-dev/module-es/logger';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+  logger,
+} from '@monochromatic-dev/module-logger/logger';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import spawn from 'nano-spawn';
 import readdir from 'tiny-readdir-glob';
 
@@ -64,7 +64,7 @@ await initPromise;
 /** Tagged logger for the postprocess pipeline. */
 const l = tagged({
   tag: 'postprocess',
-  l: $,
+  l: logger,
 },);
 
 /** Number of hex characters to use from the SHA-256 digest. */

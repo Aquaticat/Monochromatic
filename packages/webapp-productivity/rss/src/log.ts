@@ -1,11 +1,9 @@
 import {
-  $,
   initPromise,
-} from '@monochromatic-dev/module-es/logger';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
-import type {
-  $ as Logger,
-} from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
+  logger,
+} from '@monochromatic-dev/module-logger/logger';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 await initPromise;
 
@@ -18,5 +16,5 @@ await initPromise;
  */
 export const l: Logger = tagged({
   tag: 'rss',
-  l: $,
+  l: logger,
 },);

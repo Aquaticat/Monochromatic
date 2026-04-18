@@ -1,5 +1,5 @@
 import { $ as memoizeAsync, } from '@monochromatic-dev/module-es/memoize-async';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import {
   defineHandler,
   getRouterParam,

@@ -19,6 +19,7 @@
     "src"
   ],
   "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "chai": "catalog:",
     "expect-type": "catalog:",

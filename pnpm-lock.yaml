@@ -534,6 +534,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
@@ -559,6 +562,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       find-up:
         specifier: 'catalog:'
         version: 8.0.0
@@ -584,6 +590,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
@@ -609,6 +618,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -625,6 +637,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
@@ -638,6 +653,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
@@ -819,6 +837,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       crossws:
         specifier: 'catalog:'
         version: 0.4.4(srvx@0.11.15)
@@ -900,6 +921,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       dot-prop:
         specifier: 'catalog:'
         version: 10.1.0
@@ -934,6 +958,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
@@ -1154,6 +1181,9 @@ importers:
 
   packages/module/es:
     dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
       happy-opfs:
         specifier: 'catalog:'
         version: 2.0.2
@@ -1242,6 +1272,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -1291,6 +1324,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
@@ -1319,6 +1355,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
       chai:
         specifier: 'catalog:'
         version: 6.2.2
@@ -1371,6 +1410,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../es
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
@@ -1505,6 +1547,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       feedsmith:
         specifier: 'catalog:'
         version: 3.0.0-next.6
@@ -1692,6 +1737,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       feedsmith:
         specifier: 'catalog:'
         version: 3.0.0-next.6
@@ -1779,6 +1827,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
       exa-js:
         specifier: 'catalog:'
         version: 2.11.0

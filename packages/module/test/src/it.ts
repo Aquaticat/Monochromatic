@@ -1,7 +1,5 @@
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
-import type {
-  $ as Logger,
-} from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 import {

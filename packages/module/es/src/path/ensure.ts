@@ -14,9 +14,8 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { posix, } from 'node:path';
-import {
-  $ as tagged,
-} from '../types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts';
+
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
 /** Module-scoped tagged logger. */
 const l = tagged({ tag: 'path/ensure', },);

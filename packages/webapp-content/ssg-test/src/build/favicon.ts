@@ -9,7 +9,7 @@
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
 import { fileExists, } from '../images/convert.ts';
 import type { Logger, } from '../lib/types.ts';
@@ -171,7 +171,7 @@ if (import.meta.main) {
   const {
     $: logger,
     initPromise,
-  } = await import('@monochromatic-dev/module-es/logger');
+  } = await import('@monochromatic-dev/module-logger/logger');
   await initPromise;
   await ensureFavicons({ l: logger, },);
 }

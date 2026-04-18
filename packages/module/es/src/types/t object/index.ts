@@ -4,7 +4,6 @@ export * as errorLike from './t errorLike/index.ts';
 export * as globalThis from './t globalThis/index.ts';
 export * as iterable from './t iterable/index.ts';
 export * as jsonc from './t jsonc/index.ts';
-export * as logger from './t logger/index.ts';
 export * as map from './t map/index.ts';
 export * as nonNull from './t nonNull/index.ts';
 export * as null from './t null/index.ts';

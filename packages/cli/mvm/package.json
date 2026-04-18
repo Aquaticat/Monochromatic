@@ -26,6 +26,7 @@
     "@types/bun": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "nano-spawn": "catalog:",

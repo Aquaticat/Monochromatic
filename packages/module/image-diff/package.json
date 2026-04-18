@@ -13,7 +13,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@monochromatic-dev/module-es": "workspace:*"
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

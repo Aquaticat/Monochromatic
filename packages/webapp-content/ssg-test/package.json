@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@mdx-js/mdx": "catalog:",
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "feedsmith": "catalog:",

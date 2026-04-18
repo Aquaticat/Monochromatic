@@ -1,8 +1,6 @@
-import { $ as defaultLogger, } from '@monochromatic-dev/module-es/logger';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
-import type {
-  $ as Logger,
-} from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
+import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 import pLimit from 'p-limit';
 

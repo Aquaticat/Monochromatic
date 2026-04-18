@@ -1,4 +1,4 @@
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import type {
   Atom,
   Rss,

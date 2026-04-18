@@ -17,10 +17,10 @@ import {
 import readdir from 'tiny-readdir-glob';
 
 import {
-  $,
   initPromise,
-} from '@monochromatic-dev/module-es/logger';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+  logger,
+} from '@monochromatic-dev/module-logger/logger';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
 import { maybeConvert, } from './convert.ts';
 
@@ -31,7 +31,7 @@ await initPromise;
 /** Tagged logger for the image format conversion subsystem. */
 const l = tagged({
   tag: 'format:images',
-  l: $,
+  l: logger,
 },);
 
 /**

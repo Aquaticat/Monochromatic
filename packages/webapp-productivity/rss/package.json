@@ -7,6 +7,7 @@
   "license": "LGPL-3.0-or-later",
   "type": "module",
   "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "h3": "catalog:",

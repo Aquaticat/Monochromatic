@@ -15,10 +15,10 @@
 import { relative, } from 'node:path';
 
 import {
-  $,
   initPromise,
-} from '@monochromatic-dev/module-es/logger';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+  logger,
+} from '@monochromatic-dev/module-logger/logger';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
 import { generateAssets, } from './build/assets.ts';
 import { ensureFavicons, } from './build/favicon.ts';
@@ -56,7 +56,7 @@ loadAllLocales();
 /** Tagged logger for the build pipeline. */
 const l = tagged({
   tag: 'build',
-  l: $,
+  l: logger,
 },);
 
 /** Site base URL for RSS feed links. */

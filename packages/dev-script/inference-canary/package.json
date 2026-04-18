@@ -10,6 +10,7 @@
     "why-is-node-running": "^3.2.2"
   },
   "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",

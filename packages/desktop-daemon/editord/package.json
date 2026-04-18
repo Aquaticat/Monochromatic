@@ -18,6 +18,7 @@
     "lezer-json5": "catalog:",
     "lezer-toml": "catalog:",
     "@monochromatic-dev/cli-terminal-exec": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "crossws": "catalog:",

@@ -21,6 +21,7 @@
     "@types/bun": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "dot-prop": "catalog:",
     "find-up": "catalog:",

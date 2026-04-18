@@ -1,5 +1,5 @@
 import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import type { Dirent, } from 'node:fs';
 import {
   readdir,

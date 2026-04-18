@@ -29,10 +29,10 @@ import {
 import { join, } from 'node:path';
 
 import {
-  $,
   initPromise,
-} from '@monochromatic-dev/module-es/logger';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+  logger,
+} from '@monochromatic-dev/module-logger/logger';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import subsetFont from 'subset-font';
 import readdir from 'tiny-readdir-glob';
 
@@ -45,7 +45,7 @@ await initPromise;
 /** Tagged logger for the subset-fonts pipeline. */
 const l = tagged({
   tag: 'subset-fonts',
-  l: $,
+  l: logger,
 },);
 
 /** Source files scanned for every charset pass. */
