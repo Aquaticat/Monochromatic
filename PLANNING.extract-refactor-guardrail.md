@@ -76,17 +76,19 @@ Empirically verified in this repo (pnpm 11.0.0-rc.1):
 
 ### `:lint` task timings
 
-Measured on warm tsbuildinfo cache:
+Repo deletes `.tsbuildinfo` on every `tsgo` invocation, so every measurement is
+cold-run. No warm/cold variance to reason about.
 
--   Single package (`module/es` or `ssg-test`): ~1.2s wall. The repo uses
-    `tsgo --build` (not stock `tsc`), which is why it's this fast.
+-   Single package (`module/es` or `ssg-test`): ~1.2s wall. `tsgo --build`
+    (not stock `tsc`) is why it's this fast from cold.
 -   Full workspace `mise run lint`: ~12s for the TS portion, ~15s total
     including root-level dprint / stylelint / markdownlint. All 73 packages
     currently lint clean (exit 0, zero warnings or errors) — no pre-existing
     false-positive noise to filter.
 
 Running `:lint` on `module/es + 39 dependents` in parallel is well under the 12s
-full-workspace number. Perf is not a blocker.
+full-workspace number. Perf is not a blocker, and there's no hidden slow-path on
+the first invocation of the session.
 
 ## Open question (unanswered)
 
