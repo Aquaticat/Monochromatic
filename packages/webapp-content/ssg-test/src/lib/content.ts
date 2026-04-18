@@ -11,25 +11,28 @@
  * unsafe loading), which is both a security concern and unnecessary for trusted
  * YAML-only frontmatter.
  */
-import { readFile } from "node:fs/promises";
-import { basename, dirname } from "node:path";
+import { readFile, } from 'node:fs/promises';
+import {
+  basename,
+  dirname,
+} from 'node:path';
 
-import readdir from "tiny-readdir-glob";
-import { parse as parseYaml } from "yaml";
-import * as z from "zod/mini";
+import readdir from 'tiny-readdir-glob';
+import { parse as parseYaml, } from 'yaml';
+import * as z from 'zod/mini';
 
-import type { Locales } from "../i18n/i18n-types.ts";
-import { isLocale } from "../i18n/i18n-util.ts";
+import type { Locales, } from '../i18n/i18n-types.ts';
+import { isLocale, } from '../i18n/i18n-util.ts';
 
-import { sha256 } from "./cache-hash.ts";
+import { sha256, } from './cache-hash.ts';
 
 //region Frontmatter
 
 /** Opening delimiter for YAML frontmatter blocks. */
-const FRONTMATTER_OPEN = "---";
+const FRONTMATTER_OPEN = '---';
 
 /** Unicode Byte Order Mark code point, stripped from file content before parsing. */
-const BOM = 0xfe_ff;
+const BOM = 0xFE_FF;
 
 /**
  * Parses YAML frontmatter delimited by `---` from a raw string.
@@ -47,14 +50,14 @@ const BOM = 0xfe_ff;
  * // data = { title: 'Hello' }, content = 'body'
  * ```
  */
-function parseFrontmatter(raw: string): {
+function parseFrontmatter(raw: string,): {
   data: Record<string, unknown>;
   content: string;
 } {
   /* Strip optional leading BOM. */
-  const str = raw.codePointAt(0) === BOM ? raw.slice(1) : raw;
+  const str = raw.codePointAt(0,) === BOM ? raw.slice(1,) : raw;
 
-  if (!str.startsWith(FRONTMATTER_OPEN)) {
+  if (!str.startsWith(FRONTMATTER_OPEN,)) {
     return {
       data: {},
       content: str,
@@ -62,7 +65,10 @@ function parseFrontmatter(raw: string): {
   }
 
   /* Skip past the opening `---` and its trailing newline. */
-  const afterOpen = str.indexOf("\n", FRONTMATTER_OPEN.length);
+  const afterOpen = str.indexOf(
+    '\n',
+    FRONTMATTER_OPEN.length,
+  );
   if (afterOpen === -1) {
     return {
       data: {},
@@ -78,7 +84,10 @@ function parseFrontmatter(raw: string): {
   let closeStart = searchFrom;
 
   for (;;) {
-    const idx = str.indexOf(FRONTMATTER_OPEN, closeStart);
+    const idx = str.indexOf(
+      FRONTMATTER_OPEN,
+      closeStart,
+    );
     if (idx === -1) {
       return {
         data: {},
@@ -87,24 +96,29 @@ function parseFrontmatter(raw: string): {
     }
 
     /* The delimiter must be at column 0 or immediately after a newline. */
-    if (idx === 0 || str[idx - 1] === "\n") {
+    if (idx === 0 || str[idx - 1] === '\n') {
       const afterDelim = idx + FRONTMATTER_OPEN.length;
 
       /* Next char must be a newline or EOF for a valid closing fence. */
       if (
-        afterDelim === str.length ||
-        str[afterDelim] === "\n" ||
-        str[afterDelim] === "\r"
+        afterDelim === str.length
+        || str[afterDelim] === '\n'
+        || str[afterDelim] === '\r'
       ) {
-        const yamlBlock = str.slice(searchFrom, idx);
+        const yamlBlock = str.slice(
+          searchFrom,
+          idx,
+        );
         let bodyStart = afterDelim;
-        if (str[bodyStart] === "\r") bodyStart += 1;
-        if (str[bodyStart] === "\n") bodyStart += 1;
+        if (str[bodyStart] === '\r')
+          bodyStart += 1;
+        if (str[bodyStart] === '\n')
+          bodyStart += 1;
 
         return {
           // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- parseYaml returns `any`; runtime validation follows via zod schema
-          data: (parseYaml(yamlBlock) ?? {}) as Record<string, unknown>,
-          content: str.slice(bodyStart),
+          data: (parseYaml(yamlBlock,) ?? {}) as Record<string, unknown>,
+          content: str.slice(bodyStart,),
         };
       }
     }
@@ -127,8 +141,8 @@ function parseFrontmatter(raw: string): {
 export const postFileFrontmatterSchema: z.ZodMiniObject = z.object({
   title: z.string(),
   description: z.string(),
-  tags: z.array(z.string()),
-});
+  tags: z.array(z.string(),),
+},);
 
 /**
  * Zod schema for the fully-resolved post frontmatter used downstream
@@ -142,10 +156,10 @@ export const postFileFrontmatterSchema: z.ZodMiniObject = z.object({
 export const postFrontmatterSchema: z.ZodMiniObject = z.object({
   title: z.string(),
   description: z.string(),
-  tags: z.array(z.string()),
+  tags: z.array(z.string(),),
   published: z.coerce.date(),
   updated: z.coerce.date(),
-});
+},);
 
 //endregion Schema
 
@@ -225,28 +239,37 @@ export type Post = {
  * const loaded = await loadContent('src/content');
  * ```
  */
-export async function loadContent(contentDir: string): Promise<LoadedPost[]> {
-  const result = await readdir(`${contentDir}/**/*.mdx`);
+export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
+  const result = await readdir(`${contentDir}/**/*.mdx`,);
   const filePaths = result.files;
 
   return Promise.all(
-    filePaths.map(async function parsePost(filePath) {
-      const raw = await readFile(filePath, "utf8");
-      const contentHash = sha256(raw);
-      const { data: rawData, content: body } = parseFrontmatter(raw);
+    filePaths.map(async function parsePost(filePath,) {
+      const raw = await readFile(
+        filePath,
+        'utf8',
+      );
+      const contentHash = sha256(raw,);
+      const {
+        data: rawData,
+        content: body,
+      } = parseFrontmatter(raw,);
       // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- `postFileFrontmatterSchema` is annotated as the loose `z.ZodMiniObject`; the runtime-validated shape matches LoadedPost['fileData']
       const fileData = z.parse(
         postFileFrontmatterSchema,
         rawData,
       ) as LoadedPost['fileData'];
-      const rawLang = basename(dirname(filePath));
-      if (!isLocale(rawLang)) {
+      const rawLang = basename(dirname(filePath,),);
+      if (!isLocale(rawLang,)) {
         throw new Error(
           `Unknown locale "${rawLang}" for ${filePath}. Expected one of the configured locales.`,
         );
       }
       const lang: Locales = rawLang;
-      const name = basename(filePath, ".mdx");
+      const name = basename(
+        filePath,
+        '.mdx',
+      );
 
       return {
         lang,
@@ -256,7 +279,7 @@ export async function loadContent(contentDir: string): Promise<LoadedPost[]> {
         filePath,
         contentHash,
       };
-    }),
+    },),
   );
 }
 
@@ -298,8 +321,8 @@ export function attachDates(
     datesByFilePath: ReadonlyMap<string, ResolvedDates>;
   },
 ): Post[] {
-  const posts: Post[] = loadedPosts.map(function toPost(lp) {
-    const dates = datesByFilePath.get(lp.filePath);
+  const posts: Post[] = loadedPosts.map(function toPost(lp,) {
+    const dates = datesByFilePath.get(lp.filePath,);
     if (dates === undefined) {
       throw new Error(
         `Missing resolved dates for ${lp.filePath}. Caller must populate datesByFilePath for every loaded post.`,
@@ -319,21 +342,24 @@ export function attachDates(
       filePath: lp.filePath,
       contentHash: lp.contentHash,
     };
-  });
+  },);
 
   /* Two posts often share an `updated` timestamp because a single commit
    * (e.g., a monorepo-wide formatting sweep) touched multiple files with
    * the same author date. Fall back to `published` desc, then to `name`,
    * so the order stays stable and meaningful across builds. */
-  return posts.toSorted(function byUpdatedThenPublishedThenName(a, b) {
+  return posts.toSorted(function byUpdatedThenPublishedThenName(
+    a,
+    b,
+  ) {
     const updatedDelta = b.data.updated.getTime() - a.data.updated.getTime();
     if (updatedDelta !== 0)
       return updatedDelta;
     const publishedDelta = b.data.published.getTime() - a.data.published.getTime();
     if (publishedDelta !== 0)
       return publishedDelta;
-    return a.name.localeCompare(b.name);
-  });
+    return a.name.localeCompare(b.name,);
+  },);
 }
 
 //endregion Loading

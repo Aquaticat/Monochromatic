@@ -1,6 +1,4 @@
-import {
-  stat,
-} from 'node:fs/promises';
+import { stat, } from 'node:fs/promises';
 import {
   dirname,
   join,
@@ -51,7 +49,8 @@ await describe({
     },),
 
     it({
-      name: 'verify reports availability when running in a package with ancestor node_modules',
+      name:
+        'verify reports availability when running in a package with ancestor node_modules',
       fn: async () => {
         // Tests run from within the monorepo, so an ancestor node_modules
         // always exists. Availability proves find-up located it AND that

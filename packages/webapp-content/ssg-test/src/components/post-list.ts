@@ -42,7 +42,6 @@ export function css(): string {
         gap: cssRem(2,),
         'list-style-type': 'none',
         'padding-inline-start': 0,
-                
       },
     },),
   ]

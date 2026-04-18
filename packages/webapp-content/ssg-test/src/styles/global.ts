@@ -11,7 +11,7 @@ import {
   cssRem,
   cssVar,
   hCss as $,
-} from "@monochromatic-dev/module-hyperscript/ts";
+} from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
   BORDER_WIDTH_REM,
@@ -19,7 +19,7 @@ import {
   GAP_SMALL,
   LINE_HEIGHT,
   TOUCH_TARGET,
-} from "./constants.ts";
+} from './constants.ts';
 
 /**
  * `@font-face` declarations for self-hosted text and code fonts.
@@ -38,36 +38,37 @@ import {
 export function fontFaceStyles(): string {
   return [
     $({
-      at: "font-face",
+      at: 'font-face',
       decls: {
-        "font-family": "'Inter'",
-        "font-style": "normal",
-        "font-weight": "100 900",
-        "font-display": "swap",
+        'font-family': "'Inter'",
+        'font-style': 'normal',
+        'font-weight': '100 900',
+        'font-display': 'swap',
         src: "url('/inter.woff2') format('woff2')",
       },
-    }),
+    },),
     $({
-      at: "font-face",
+      at: 'font-face',
       decls: {
-        "font-family": "'Inter'",
-        "font-style": "italic",
-        "font-weight": "100 900",
-        "font-display": "swap",
+        'font-family': "'Inter'",
+        'font-style': 'italic',
+        'font-weight': '100 900',
+        'font-display': 'swap',
         src: "url('/interItalic.woff2') format('woff2')",
       },
-    }),
+    },),
     $({
-      at: "font-face",
+      at: 'font-face',
       decls: {
-        "font-family": "'Monaspace Neon'",
-        "font-style": "normal",
-        "font-weight": "100 900",
-        "font-display": "swap",
+        'font-family': "'Monaspace Neon'",
+        'font-style': 'normal',
+        'font-weight': '100 900',
+        'font-display': 'swap',
         src: "url('/monaspaceNeon.woff2') format('woff2')",
       },
-    }),
-  ].join("\n");
+    },),
+  ]
+    .join('\n',);
 }
 
 /**
@@ -83,35 +84,40 @@ export function fontFaceStyles(): string {
 export function resetStyles(): string {
   return [
     $({
-      rule: "*, *::before, *::after",
-      decls: { "box-sizing": "border-box" },
-    }),
+      rule: '*, *::before, *::after',
+      decls: { 'box-sizing': 'border-box', },
+    },),
     $({
-      rule: ":where([data-is])",
-      decls: { display: "contents" },
-    }),
+      rule: ':where([data-is])',
+      decls: { display: 'contents', },
+    },),
     $({
-      rule: "body",
+      rule: 'body',
       decls: {
-        "margin-block": 0,
-        "margin-inline": 0,
-        "font-family": cssCommaList(["Inter", "system-ui", "sans-serif"]),
-        "line-height": LINE_HEIGHT,
-        color: cssVar("color-fg"),
-        "background-color": cssVar("color-bg"),
+        'margin-block': 0,
+        'margin-inline': 0,
+        'font-family': cssCommaList([
+          'Inter',
+          'system-ui',
+          'sans-serif',
+        ],),
+        'line-height': LINE_HEIGHT,
+        color: cssVar('color-fg',),
+        'background-color': cssVar('color-bg',),
       },
-    }),
+    },),
     $({
-      rule: "blockquote",
+      rule: 'blockquote',
       decls: {
-        "margin-inline": 0,
+        'margin-inline': 0,
       },
-    }),
+    },),
     $({
-      rule: "img",
-      decls: { "max-inline-size": cssPercent(100) },
-    }),
-  ].join("\n");
+      rule: 'img',
+      decls: { 'max-inline-size': cssPercent(100,), },
+    },),
+  ]
+    .join('\n',);
 }
 
 /**
@@ -127,41 +133,45 @@ export function resetStyles(): string {
 export function typographyStyles(): string {
   return [
     $({
-      rule: "a",
-      decls: { color: cssVar("color-link") },
+      rule: 'a',
+      decls: { color: cssVar('color-link',), },
       children: [
         $({
-          rule: "&:visited",
-          decls: { color: cssVar("color-link-visited") },
-        }),
+          rule: '&:visited',
+          decls: { color: cssVar('color-link-visited',), },
+        },),
       ],
-    }),
+    },),
     $({
-      rule: "code",
+      rule: 'code',
       decls: {
-        "font-family": cssCommaList(['"Monaspace Neon"', "monospace"]),
+        'font-family': cssCommaList([
+          '"Monaspace Neon"',
+          'monospace',
+        ],),
       },
-    }),
+    },),
     $({
-      rule: "pre",
+      rule: 'pre',
       decls: {
-        "padding-block": cssRem(GAP),
-        "padding-inline": cssRem(GAP),
-        "overflow-x": "auto",
-        "border-radius": cssRem(GAP_SMALL),
-        "background-color": cssVar("color-code-bg"),
+        'padding-block': cssRem(GAP,),
+        'padding-inline': cssRem(GAP,),
+        'overflow-x': 'auto',
+        'border-radius': cssRem(GAP_SMALL,),
+        'background-color': cssVar('color-code-bg',),
       },
-    }),
+    },),
     $({
-      rule: "blockquote",
+      rule: 'blockquote',
       decls: {
-        "border-inline-start-color": cssVar("color-border"),
-        "border-inline-start-width": cssRem(1 / 16),
-        "border-inline-start-style": "solid",
-        "padding-inline-start": cssRem(GAP),
+        'border-inline-start-color': cssVar('color-border',),
+        'border-inline-start-width': cssRem(1 / 16,),
+        'border-inline-start-style': 'solid',
+        'padding-inline-start': cssRem(GAP,),
       },
-    }),
-  ].join("\n");
+    },),
+  ]
+    .join('\n',);
 }
 
 /**
@@ -181,27 +191,29 @@ export function typographyStyles(): string {
 export function interactionStyles(): string {
   return [
     $({
-      rule: "a",
+      rule: 'a',
       decls: {
-        "min-inline-size": cssRem(TOUCH_TARGET),
-        "min-block-size": cssRem(TOUCH_TARGET),
+        'min-inline-size': cssRem(TOUCH_TARGET,),
+        'min-block-size': cssRem(TOUCH_TARGET,),
       },
-    }),
+    },),
     $({
-      rule: ":where(p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, figcaption, dd, dt, cite, caption, summary) a",
+      rule:
+        ':where(p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, figcaption, dd, dt, cite, caption, summary) a',
       decls: {
-        "min-inline-size": "revert",
-        "min-block-size": "revert",
+        'min-inline-size': 'revert',
+        'min-block-size': 'revert',
       },
-    }),
+    },),
     $({
-      rule: ":focus-visible",
+      rule: ':focus-visible',
       decls: {
-        "outline-color": cssVar("color-focus-ring"),
-        "outline-style": "solid",
-        "outline-width": cssCalc(BORDER_WIDTH_REM),
-        "outline-offset": cssCalc(BORDER_WIDTH_REM),
+        'outline-color': cssVar('color-focus-ring',),
+        'outline-style': 'solid',
+        'outline-width': cssCalc(BORDER_WIDTH_REM,),
+        'outline-offset': cssCalc(BORDER_WIDTH_REM,),
       },
-    }),
-  ].join("\n");
+    },),
+  ]
+    .join('\n',);
 }

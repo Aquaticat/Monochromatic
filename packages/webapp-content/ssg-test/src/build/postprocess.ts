@@ -413,15 +413,13 @@ async function runPagefind(
     ],
   );
   await Promise.all([
-    (async function forwardStdout() {
-      for await (const line of subprocess.stdout) {
+    (async function forwardStdout(): Promise<void> {
+      for await (const line of subprocess.stdout)
         pl.info(line,);
-      }
     })(),
-    (async function forwardStderr() {
-      for await (const line of subprocess.stderr) {
+    (async function forwardStderr(): Promise<void> {
+      for await (const line of subprocess.stderr)
         pl.warn(line,);
-      }
     })(),
     subprocess,
   ],);

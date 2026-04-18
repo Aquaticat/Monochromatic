@@ -169,7 +169,7 @@ export async function ensureFavicons(
 //region Standalone execution -- allows running via `mise run generate:favicons`
 if (import.meta.main) {
   const {
-    $: logger,
+    logger,
     initPromise,
   } = await import('@monochromatic-dev/module-logger/logger');
   await initPromise;

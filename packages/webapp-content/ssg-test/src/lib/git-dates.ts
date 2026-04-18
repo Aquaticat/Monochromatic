@@ -34,7 +34,7 @@ const run = promisify(execFile,);
  * Cached repository root for the current process.
  * Resolved lazily via `findRepoRoot` on the first git-dates invocation.
  */
-let cachedRepoRoot: string | undefined;
+let cachedRepoRoot: string | undefined = undefined;
 
 /**
  * Walks up from the current working directory searching for `.git`.
@@ -60,7 +60,11 @@ async function findRepoRoot(): Promise<string> {
   let dir = resolve(process.cwd(),);
   for (;;) {
     try {
-      await access(join(dir, '.git',),);
+      // oxlint-disable-next-line no-await-in-loop -- sequential filesystem walk; each iteration's path depends on prior await
+      await access(join(
+        dir,
+        '.git',
+      ),);
       cachedRepoRoot = dir;
       return dir;
     }
@@ -79,6 +83,9 @@ async function findRepoRoot(): Promise<string> {
 //endregion Repository root resolution
 
 //region Helpers
+
+/** Maximum stdout/stderr capture size in bytes for spawned commands (10 MiB). */
+const MAX_CAPTURE_BUFFER_BYTES = 10_485_760;
 
 /** Result of running a git (or gh) command with stdout captured as UTF-8. */
 type CommandResult = {
@@ -112,10 +119,10 @@ async function runCapture(
 ): Promise<CommandResult> {
   const result = await run(
     cmd,
-    args as string[],
+    [...args,],
     {
       encoding: 'utf8',
-      maxBuffer: 10 * 1024 * 1024,
+      maxBuffer: MAX_CAPTURE_BUFFER_BYTES,
       cwd,
     },
   );
@@ -362,7 +369,11 @@ async function ghApiFirstCommitDate(
   /** Flat list of commits across all returned pages. */
   const commits: GhCommit[] = raw.includes('][',)
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- JSON.parse returns any; shape is validated by the access below
-    ? (raw.split('][',).flatMap(function parseChunk(chunk, i, arr,) {
+    ? (raw.split('][',).flatMap(function parseChunk(
+      chunk,
+      i,
+      arr,
+    ) {
       const prefix = i === 0 ? '' : '[';
       const suffix = i === arr.length - 1 ? '' : ']';
       // oxlint-disable-next-line typescript-eslint(no-unsafe-return) -- see above
@@ -436,7 +447,7 @@ export async function getPostDates(
   /** Newest-first list of author dates for every commit touching the file. */
   const localHistory = await gitLogDates({ filePath, },);
   /** Author date of the most recent commit, if any. */
-  const latestIso: string | undefined = localHistory[0];
+  const [latestIso,]: readonly (string | undefined)[] = localHistory;
   /**
    * Author date of the oldest commit from local history.
    * Shallow clones omit the true first commit, so this value is unreliable
@@ -480,7 +491,9 @@ export async function getPostDates(
   if (latestIso === undefined)
     missing.push('updated',);
   l.info(
-    `git history incomplete for ${filePath} (missing ${missing.join(', ',)}); falling back to file mtime for missing fields`,
+    `git history incomplete for ${filePath} (missing ${
+      missing.join(', ',)
+    }); falling back to file mtime for missing fields`,
   );
   return {
     published: publishedIso !== undefined ? new Date(publishedIso,) : mtime,

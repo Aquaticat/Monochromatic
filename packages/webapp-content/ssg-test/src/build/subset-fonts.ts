@@ -112,18 +112,16 @@ async function collectBodyCharset(
 ): Promise<string> {
   const chars = new Set<string>();
 
-  for (let cp = ASCII_PRINTABLE_MIN; cp <= ASCII_PRINTABLE_MAX; cp += 1) {
+  for (let cp = ASCII_PRINTABLE_MIN; cp <= ASCII_PRINTABLE_MAX; cp += 1)
     chars.add(String.fromCodePoint(cp,),);
-  }
 
   await Promise.all(sourceFiles.map(async function scanFile(filePath,) {
     const text = await readFile(
       filePath,
       'utf8',
     );
-    for (const ch of text) {
+    for (const ch of text)
       chars.add(ch,);
-    }
   },),);
 
   return [...chars,].join('',);
@@ -177,7 +175,9 @@ async function collectIconCodepoints(
         '',
       );
     for (const match of stripped.matchAll(ICON_CALL_REGEX,)) {
-      names.add(match[1]!,);
+      const [, captured,] = match;
+      if (captured !== undefined)
+        names.add(captured,);
     }
   },),);
 
@@ -192,7 +192,7 @@ async function collectIconCodepoints(
     codepoints.push(codepoint,);
   }
 
-  l.info(`icons in use: ${[...names,].sort().join(', ',)}`,);
+  l.info(`icons in use: ${[...names,].toSorted().join(', ',)}`,);
 
   return codepoints.join('',);
 }
@@ -246,7 +246,7 @@ async function subsetOne(
     basename,
   );
 
-  let input: Buffer;
+  let input: Buffer = Buffer.alloc(0,);
   try {
     input = await readFile(inputPath,);
   }
@@ -285,7 +285,9 @@ async function subsetOne(
 
 l.info('starting',);
 
+/** Result of scanning the source glob (file list, directory list, etc.). */
 const scan = await readdir(SOURCE_GLOB,);
+/** Source file paths discovered by the scan, used as input for charset extraction. */
 const sourceFiles = scan.files;
 l.info(`scanning ${sourceFiles.length} source files`,);
 

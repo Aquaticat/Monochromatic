@@ -132,7 +132,7 @@ monorepo_root = "{{config_root}}"
 fanout = """
 let p = $env.MISE_TASK_NAME + ":"
 let d = ($p | split row ":" | length)
-let c = (mise tasks --all --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) })
+let c = (mise tasks --all --hidden --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) })
 if ($c | is-empty) { error make { msg: $"no child tasks for ($env.MISE_TASK_NAME)" } } else { mise run ...($c | reduce -f [] { |it, acc| if ($acc | is-empty) { [$it] } else { ($acc | append ":::" | append $it) } }) }
 """
 

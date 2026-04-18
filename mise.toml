@@ -133,7 +133,7 @@ monorepo_root = "{{config_root}}"
 fanout = """
 let p = $env.MISE_TASK_NAME + ":"
 let d = ($p | split row ":" | length)
-let c = (mise tasks --all --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) })
+let c = (mise tasks --all --hidden --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) })
 if ($c | is-empty) { error make { msg: $"no child tasks for ($env.MISE_TASK_NAME)" } } else { mise run ...($c | reduce -f [] { |it, acc| if ($acc | is-empty) { [$it] } else { ($acc | append ":::" | append $it) } }) }
 """
 
@@ -543,18 +543,18 @@ run = "rm -rf node_modules; task-pnpm install"
 # https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
-"node_modules/.bin",
-"packages/duik/teto-generated/node_modules/.bin",
-"packages/duik/teto/node_modules/.bin",
-"packages/rolldown-plugins/import-attributes/node_modules/.bin",
-"packages/desktop-daemon/editord/node_modules/.bin",
-"packages/typeface/aquaticat/node_modules/.bin",
-"packages/webapp-search/ai-tree/node_modules/.bin",
-"packages/webapp-productivity/done/node_modules/.bin",
-"packages/webapp-content/ssg-test/node_modules/.bin",
-"packages/mcp/mvm/node_modules/.bin",
-"packages/mcp/nvim/node_modules/.bin",
-"packages/dev-script/inference-canary-viewer/node_modules/.bin",
-"packages/dev-script/inference-canary/node_modules/.bin",
-"packages/module/token-count/node_modules/.bin"
+  "node_modules/.bin",
+  "packages/duik/teto-generated/node_modules/.bin",
+  "packages/duik/teto/node_modules/.bin",
+  "packages/rolldown-plugins/import-attributes/node_modules/.bin",
+  "packages/desktop-daemon/editord/node_modules/.bin",
+  "packages/typeface/aquaticat/node_modules/.bin",
+  "packages/webapp-search/ai-tree/node_modules/.bin",
+  "packages/webapp-productivity/done/node_modules/.bin",
+  "packages/webapp-content/ssg-test/node_modules/.bin",
+  "packages/mcp/mvm/node_modules/.bin",
+  "packages/mcp/nvim/node_modules/.bin",
+  "packages/dev-script/inference-canary-viewer/node_modules/.bin",
+  "packages/dev-script/inference-canary/node_modules/.bin",
+  "packages/module/token-count/node_modules/.bin",
 ]

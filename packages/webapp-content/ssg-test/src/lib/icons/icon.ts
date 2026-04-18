@@ -41,8 +41,7 @@ import { ICON_CODEPOINTS, } from './codepoints.ts';
  */
 export function icon(name: string,): string {
   const codepoint = ICON_CODEPOINTS[name];
-  if (codepoint === undefined) {
+  if (codepoint === undefined)
     throw new Error(`Unknown Material Symbols Outlined icon: ${name}`,);
-  }
   return codepoint;
 }

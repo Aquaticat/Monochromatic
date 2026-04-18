@@ -12,31 +12,34 @@ import {
   cssRem,
   cssVar,
   hCss as $,
-} from "@monochromatic-dev/module-hyperscript/ts";
+} from '@monochromatic-dev/module-hyperscript/ts';
 
-import { icon } from "../lib/icons/icon.ts";
-import { jsx, type SafeHtml } from "../lib/jsx-to-html.ts";
-import { GAP_SMALL } from "../styles/constants.ts";
+import { icon, } from '../lib/icons/icon.ts';
+import {
+  jsx,
+  type SafeHtml,
+} from '../lib/jsx-to-html.ts';
+import { GAP_SMALL, } from '../styles/constants.ts';
 
 /** Valid alert type identifiers. */
-type AlertType = "caution" | "important" | "note" | "tip" | "warning";
+type AlertType = 'caution' | 'important' | 'note' | 'tip' | 'warning';
 
 /** Material Symbols PUA codepoint per alert type (resolved at import time from ligature names). */
 const ALERT_ICONS: Record<AlertType, string> = {
-  caution: icon("report"),
-  important: icon("priority_high"),
-  note: icon("info"),
-  tip: icon("lightbulb"),
-  warning: icon("warning"),
+  caution: icon('report',),
+  important: icon('priority_high',),
+  note: icon('info',),
+  tip: icon('lightbulb',),
+  warning: icon('warning',),
 };
 
 /** Human-readable label per alert type. */
 const ALERT_LABELS: Record<AlertType, string> = {
-  caution: "Caution",
-  important: "Important",
-  note: "Note",
-  tip: "Tip",
-  warning: "Warning",
+  caution: 'Caution',
+  important: 'Important',
+  note: 'Note',
+  tip: 'Tip',
+  warning: 'Warning',
 };
 
 /**
@@ -53,31 +56,52 @@ const ALERT_LABELS: Record<AlertType, string> = {
  */
 export function CalloutAlert(props: {
   children: unknown;
-  "data-type": AlertType;
-}): SafeHtml {
-  const type = props["data-type"];
-  const indicator = jsx("alert-indicator", {
-    "data-is": true,
-    children: [
-      jsx("span", {
-        className: "material-symbols-outlined",
-        children: ALERT_ICONS[type],
-      }),
-      jsx("span", { children: ALERT_LABELS[type] }),
-    ],
-  });
-  const content = jsx("alert-content", {
-    "data-is": true,
-    children: props.children,
-  });
-  const blockquote = jsx("blockquote", {
-    "data-type": type,
-    children: [indicator, content],
-  });
-  return jsx("callout-alert", {
-    "data-is": true,
-    children: [blockquote],
-  });
+  'data-type': AlertType;
+},): SafeHtml {
+  const type = props['data-type'];
+  const indicator = jsx(
+    'alert-indicator',
+    {
+      'data-is': true,
+      children: [
+        jsx(
+          'span',
+          {
+            className: 'material-symbols-outlined',
+            children: ALERT_ICONS[type],
+          },
+        ),
+        jsx(
+          'span',
+          { children: ALERT_LABELS[type], },
+        ),
+      ],
+    },
+  );
+  const content = jsx(
+    'alert-content',
+    {
+      'data-is': true,
+      children: props.children,
+    },
+  );
+  const blockquote = jsx(
+    'blockquote',
+    {
+      'data-type': type,
+      children: [
+        indicator,
+        content,
+      ],
+    },
+  );
+  return jsx(
+    'callout-alert',
+    {
+      'data-is': true,
+      children: [blockquote,],
+    },
+  );
 }
 
 //region CSS
@@ -98,8 +122,8 @@ const INDICATOR_WEIGHT = 600;
  *
  * @returns `color-mix()` CSS expression blending the token toward `color-fg`
  */
-function accent(token: string): string {
-  return `color-mix(in oklch, ${cssVar(token)} 65%, ${cssVar("color-fg")})`;
+function accent(token: string,): string {
+  return `color-mix(in oklch, ${cssVar(token,)} 65%, ${cssVar('color-fg',)})`;
 }
 
 /**
@@ -120,14 +144,15 @@ function accent(token: string): string {
 export function css(): string {
   return [
     $({
-      rule: "alert-indicator",
+      rule: 'alert-indicator',
       decls: {
-        display: "flex",
-        "align-items": "center",
-        gap: cssRem(GAP_SMALL),
+        display: 'flex',
+        'align-items': 'center',
+        gap: cssRem(GAP_SMALL,),
       },
-    }),
-  ].join("\n");
+    },),
+  ]
+    .join('\n',);
 }
 
 //endregion CSS

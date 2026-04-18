@@ -36,7 +36,9 @@ app.all(
     if (pathname.startsWith('/dist/module-logger/',)) {
       const contentType = mimeTypes[extname(pathname,)] ?? 'application/octet-stream';
       return new Response(
-        await readFile(`packages/module/logger/dist/${pathname.slice('/dist/module-logger/'.length)}`,),
+        await readFile(
+          `packages/module/logger/dist/${pathname.slice('/dist/module-logger/'.length,)}`,
+        ),
         {
           headers: { 'content-type': contentType, },
         },

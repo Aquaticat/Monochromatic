@@ -22,12 +22,12 @@ advertises `Accept-Encoding: zstd`.
 ## Asset discovery
 
 - **HTML**: `<link href>`, `<script src>`, `<img src/srcset>`, `<iframe src>`,
-    `<embed src>`, `<object data>`, `<audio src>`, `<video src>`, `<use href>` / `<use xlink:href>`
+  `<embed src>`, `<object data>`, `<audio src>`, `<video src>`, `<use href>` / `<use xlink:href>`
 - **`<picture>` / `<video>` / `<audio>`**: the first child `<source>` is treated
-    as the canonical pick (browsers stop at the first matching `<source>`)
+  as the canonical pick (browsers stop at the first matching `<source>`)
 - **`<img srcset>`**: first candidate URL
 - **CSS**: `url(...)` references in linked stylesheets **and** inline `<style>` blocks,
-    with `@import` chains followed recursively
+  with `@import` chains followed recursively
 
 ## Skipped
 

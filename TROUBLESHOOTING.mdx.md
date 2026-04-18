@@ -14,13 +14,19 @@ with its attributes copied verbatim.
 Example output when the bug manifests:
 
 ```html
-<callout-alert data-type="warning"><p>Never use Bootstrap in production.</p></callout-alert>
+<callout-alert data-type='warning'><p>
+    Never use Bootstrap in production.
+  </p></callout-alert>
 ```
 
 Expected output (if the component function had been invoked):
 
 ```html
-<callout-alert data-is><blockquote data-type="warning"><alert-indicator data-is>...</alert-indicator><alert-content data-is><p>...</p></alert-content></blockquote></callout-alert>
+<callout-alert data-is><blockquote data-type='warning'>
+    <alert-indicator data-is>...</alert-indicator><alert-content data-is><p>
+        ...
+      </p></alert-content>
+  </blockquote></callout-alert>
 ```
 
 ### Minimal reproduction
@@ -38,19 +44,19 @@ Relevant fragment of the compile output:
 
 ```js
 const _components = {
-  h1: "h1",
-  ...props.components
-}, {Foo} = _components;
+    h1: 'h1',
+    ...props.components,
+  }, { Foo, } = _components;
 // ...
 return _jsxs(_Fragment, {
-  children: [_jsx(_components.h1, {          // markdown  -> lookup
-    children: "Hi"
-  }), "\n", _jsx("callout-alert", {          // explicit JSX -> literal string
-    children: "text"
-  }), "\n", _jsx(Foo, {                      // capitalized -> component reference
-    children: "x"
-  })]
-});
+  children: [_jsx(_components.h1, { // markdown  -> lookup
+    children: 'Hi',
+  },), '\n', _jsx('callout-alert', { // explicit JSX -> literal string
+    children: 'text',
+  },), '\n', _jsx(Foo, { // capitalized -> component reference
+    children: 'x',
+  },),],
+},);
 ```
 
 Three tag shapes, three different emission rules.
@@ -62,41 +68,41 @@ so the jsx runtime renders it as a plain HTML element.
 
 MDX intentionally distinguishes three JSX shapes in `recma-jsx-rewrite`:
 
-1.  Capitalized identifier (`<Foo>`): treated as a component reference.
-2.  Explicit lowercase JSX written by the author (`<callout-alert>`): preserved as a literal tag name; no components lookup.
-3.  Tags generated from markdown (`# x` -> `<h1>`): rewritten to look up `_components.h1`.
+1. Capitalized identifier (`<Foo>`): treated as a component reference.
+2. Explicit lowercase JSX written by the author (`<callout-alert>`): preserved as a literal tag name; no components lookup.
+3. Tags generated from markdown (`# x` -> `<h1>`): rewritten to look up `_components.h1`.
 
 The discriminator is the `data._mdxExplicitJsx` flag set during the remark phase.
 
 Source trace (paths relative to the installed `@mdx-js/mdx@3.1.1` package):
 
 - `lib/plugin/remark-mark-and-unravel.js:88-94` sets `data._mdxExplicitJsx = true`
-    on every `mdxJsxFlowElement` and `mdxJsxTextElement` node:
+  on every `mdxJsxFlowElement` and `mdxJsxTextElement` node:
 
-    ```js
-    if (
-      node.type === 'mdxJsxFlowElement' ||
-      node.type === 'mdxJsxTextElement'
-    ) {
-      const data = node.data || (node.data = {})
-      data._mdxExplicitJsx = true
-    }
-    ```
+  ```js
+  if (
+    node.type === 'mdxJsxFlowElement'
+    || node.type === 'mdxJsxTextElement'
+  ) {
+    const data = node.data || (node.data = {});
+    data._mdxExplicitJsx = true;
+  }
+  ```
 
 - `lib/plugin/recma-jsx-rewrite.js:160` treats any JSX whose tag is a valid identifier
-    and does not start with a lowercase letter as a component
-    (so `<Foo>`, `<$foo>`, `<_bar>` bind to a destructured reference).
+  and does not start with a lowercase letter as a component
+  (so `<Foo>`, `<$foo>`, `<_bar>` bind to a destructured reference).
 
 - `lib/plugin/recma-jsx-rewrite.js:177-180` is the branch that fires for author-written
-    lowercase hyphenated JSX, and its body is an explanatory comment only:
+  lowercase hyphenated JSX, and its body is an explanatory comment only:
 
-    ```js
-    } else if (node.data && node.data._mdxExplicitJsx) {
-      // Do not turn explicit JSX into components from `_components`.
-      // As in, a given `h1` component is used for `# heading` (next case),
-      // but not for `<h1>heading</h1>`.
-    }
-    ```
+  ```js
+  } else if (node.data && node.data._mdxExplicitJsx) {
+    // Do not turn explicit JSX into components from `_components`.
+    // As in, a given `h1` component is used for `# heading` (next case),
+    // but not for `<h1>heading</h1>`.
+  }
+  ```
 
 The fall-through `else` on the same file (lines 181-210) is what rewrites markdown-generated
 lowercase tags (which lack `_mdxExplicitJsx`) into `_components.tagname` lookups.
@@ -163,9 +169,8 @@ and makes the transformation invisible at the MDX source level:
 
 ```ts
 function mdxJsx(type, props, key,) {
-  if (typeof type === 'string' && type in components) {
+  if (typeof type === 'string' && type in components)
     return jsx(components[type], props, key,);
-  }
   return jsx(type, props, key,);
 }
 ```

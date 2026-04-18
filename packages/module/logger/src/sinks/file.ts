@@ -1,6 +1,4 @@
-import type {
-  stat as Stat,
-} from 'node:fs/promises';
+import type { stat as Stat, } from 'node:fs/promises';
 import type {
   dirname as Dirname,
   join as Join,

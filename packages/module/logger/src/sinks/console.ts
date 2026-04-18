@@ -115,14 +115,15 @@ function getVerbose(): boolean {
  * that replace `console.info` etc. after module load still see their
  * replacement when the sink flushes.
  */
-const LEVEL_TO_CONSOLE_METHOD: Record<Level, 'debug' | 'error' | 'info' | 'trace' | 'warn'> = {
-  debug: 'debug',
-  error: 'error',
-  fatal: 'error',
-  info: 'info',
-  trace: 'trace',
-  warn: 'warn',
-};
+const LEVEL_TO_CONSOLE_METHOD: Record<Level,
+  'debug' | 'error' | 'info' | 'trace' | 'warn'> = {
+    debug: 'debug',
+    error: 'error',
+    fatal: 'error',
+    info: 'info',
+    trace: 'trace',
+    warn: 'warn',
+  };
 
 /**
  * Formats a single log record into the display string used by console output.
@@ -185,11 +186,12 @@ function emitRun(
   try {
     const method = LEVEL_TO_CONSOLE_METHOD[level];
     const consoleFn = console[method];
-    if (typeof consoleFn === 'function')
+    if (typeof consoleFn === 'function') {
       consoleFn.call(
         console,
         text,
       );
+    }
   }
   catch {
     // Silently fail if console throws

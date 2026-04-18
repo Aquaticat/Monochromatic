@@ -28,6 +28,7 @@ import { fileURLToPath, } from 'node:url';
 /** Absolute directory of this module, used to locate the sibling codepoints file. */
 const HERE = dirname(fileURLToPath(import.meta.url,),);
 
+/** Raw text contents of the upstream `codepoints` file. */
 const raw = readFileSync(
   join(
     HERE,
@@ -51,11 +52,17 @@ const HEX_RADIX = 16;
  * parseLine('info e88e'); // ['info', '\ue88e']
  * ```
  */
-function parseLine(line: string,): readonly [string, string,] {
+function parseLine(line: string,): readonly [
+  string,
+  string,
+] {
   const [name, hex,] = line.split(' ',);
   return [
     name ?? '',
-    String.fromCodePoint(Number.parseInt(hex ?? '0', HEX_RADIX,),),
+    String.fromCodePoint(Number.parseInt(
+      hex ?? '0',
+      HEX_RADIX,
+    ),),
   ] as const;
 }
 
@@ -65,5 +72,7 @@ export const ICON_CODEPOINTS: Readonly<Record<string, string>> = Object
     raw
       .trim()
       .split('\n',)
-      .map(parseLine,),
+      .map(function parseEachLine(line,) {
+        return parseLine(line,);
+      },),
   );

@@ -1,9 +1,9 @@
 import decircular from 'decircular';
 
+import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
 import {
   $ as hasCycle,
 } from '../../../../../../t boolean/f/t unknown/hasCycle/r s/p p/index.ts';
-import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
 import type { Serializer, } from '../../../../../../t object/t store/t/index.ts';
 
 /** Max characters for value previews in log messages. */

@@ -1,9 +1,9 @@
 import superjson from 'superjson';
 
+import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
 import {
   $ as serializeValue,
 } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
-import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
 import { resolveConsensus, } from '../../../../consensus.ts';
 import { healBackendsSync, } from '../../../../heal.ts';
 import { createLruKeySet, } from '../../../../lruKeySet.ts';

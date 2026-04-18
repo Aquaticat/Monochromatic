@@ -150,7 +150,7 @@ h({
   tag: 'span',
   class: 'material-symbols-outlined',
   text: icon('info',),
-});
+},);
 ```
 
 Rendering by codepoint (rather than letting the browser shape a ligature

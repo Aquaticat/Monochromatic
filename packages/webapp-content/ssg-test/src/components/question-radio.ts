@@ -28,14 +28,22 @@ import {
   cssRem,
   cssVar,
   hCss as $,
-} from "@monochromatic-dev/module-hyperscript/ts";
+} from '@monochromatic-dev/module-hyperscript/ts';
 
-import { GAP, GAP_SMALL } from "../styles/constants.ts";
-import { jsx, type SafeHtml } from "../lib/jsx-to-html.ts";
+import {
+  jsx,
+  type SafeHtml,
+} from '../lib/jsx-to-html.ts';
+import {
+  GAP,
+  GAP_SMALL,
+} from '../styles/constants.ts';
 
 //region Types
 
-/** One answer choice in a {@link QuestionRadio}. */
+/**
+ * One answer choice in a {@link QuestionRadio}.
+ */
 export type QuestionOption = {
   /** Visible text on the radio's label; full MDX/JSX supported. */
   readonly label: SafeHtml | string;
@@ -47,7 +55,9 @@ export type QuestionOption = {
   readonly correct?: boolean;
 };
 
-/** Props for {@link QuestionRadio}. */
+/**
+ * Props for {@link QuestionRadio}.
+ */
 type QuestionProps = {
   /** Scenario prose shown above the options; full MDX/JSX supported. */
   readonly scenario: SafeHtml | string;
@@ -61,7 +71,7 @@ type QuestionProps = {
 //region ID derivation
 
 /** FNV-1a 32-bit hash offset basis. */
-const FNV_OFFSET_32 = 0x81_1c_9d_c5;
+const FNV_OFFSET_32 = 0x81_1C_9D_C5;
 
 /** FNV-1a 32-bit hash prime. */
 const FNV_PRIME_32 = 0x01_00_01_93;
@@ -84,13 +94,19 @@ const HEX_RADIX = 16;
  * fnv1a32('hello'); // '4f9f2cab'
  * ```
  */
-function fnv1a32(input: string): string {
+function fnv1a32(input: string,): string {
   let hash = FNV_OFFSET_32;
   for (let i = 0; i < input.length; i++) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, FNV_PRIME_32);
+    hash ^= input.codePointAt(i,) ?? 0;
+    hash = Math.imul(
+      hash,
+      FNV_PRIME_32,
+    );
   }
-  return (hash >>> 0).toString(HEX_RADIX).padStart(HEX_DIGITS_32, "0");
+  return (Math.trunc(hash,)).toString(HEX_RADIX,).padStart(
+    HEX_DIGITS_32,
+    '0',
+  );
 }
 
 /**
@@ -100,8 +116,8 @@ function fnv1a32(input: string): string {
  *
  * @returns underlying string for hashing
  */
-function toHtmlString(value: SafeHtml | string): string {
-  return typeof value === "string" ? value : value.html;
+function toHtmlString(value: SafeHtml | string,): string {
+  return typeof value === 'string' ? value : value.html;
 }
 
 /**
@@ -115,13 +131,13 @@ function toHtmlString(value: SafeHtml | string): string {
  *
  * @returns 8-digit hex ID suitable for `name="q-{id}"` input grouping
  */
-function deriveQuestionId(props: QuestionProps): string {
-  const parts = [toHtmlString(props.scenario)];
+function deriveQuestionId(props: QuestionProps,): string {
+  const parts = [toHtmlString(props.scenario,),];
   for (const opt of props.options) {
-    parts.push(toHtmlString(opt.label));
-    parts.push(opt.correct === true ? "1" : "0");
+    parts.push(toHtmlString(opt.label,),);
+    parts.push(opt.correct === true ? '1' : '0',);
   }
-  return fnv1a32(parts.join("\u0000"));
+  return fnv1a32(parts.join('\u0000',),);
 }
 
 //endregion ID derivation
@@ -141,15 +157,18 @@ const REQUIRED_CORRECT_COUNT = 1;
  *
  * @throws if option count is below {@link MIN_OPTIONS} or the correct-flag count is not {@link REQUIRED_CORRECT_COUNT}
  */
-function validate(props: QuestionProps): void {
+function validate(props: QuestionProps,): void {
   if (props.options.length < MIN_OPTIONS) {
     throw new Error(
       `Question needs at least ${MIN_OPTIONS} options; got ${props.options.length}.`,
     );
   }
-  const correctCount = props.options.filter(function isCorrect(o) {
-    return o.correct === true;
-  }).length;
+  const correctCount = props
+    .options
+    .filter(function isCorrect(o,) {
+      return o.correct === true;
+    },)
+    .length;
   if (correctCount !== REQUIRED_CORRECT_COUNT) {
     throw new Error(
       `Question needs exactly ${REQUIRED_CORRECT_COUNT} correct option; got ${correctCount}.`,
@@ -172,30 +191,45 @@ function validate(props: QuestionProps): void {
  *
  * @returns rendered option fragment
  */
-function renderOption(qId: string, idx: number, opt: QuestionOption): SafeHtml {
+function renderOption(
+  qId: string,
+  idx: number,
+  opt: QuestionOption,
+): SafeHtml {
   const inputId = `q-${qId}-${idx}`;
   const inputProps: Record<string, unknown> = {
-    type: "radio",
+    type: 'radio',
     name: `q-${qId}`,
     id: inputId,
   };
-  if (opt.correct === true) {
-    inputProps["data-correct"] = "";
-  }
-  return jsx("div", {
-    className: "option",
-    children: [
-      jsx("input", inputProps),
-      jsx("label", {
-        htmlFor: inputId,
-        children: opt.label,
-      }),
-      jsx("div", {
-        className: "explanation",
-        children: opt.explanation,
-      }),
-    ],
-  });
+  if (opt.correct === true)
+    inputProps['data-correct'] = '';
+  return jsx(
+    'div',
+    {
+      className: 'option',
+      children: [
+        jsx(
+          'input',
+          inputProps,
+        ),
+        jsx(
+          'label',
+          {
+            htmlFor: inputId,
+            children: opt.label,
+          },
+        ),
+        jsx(
+          'div',
+          {
+            className: 'explanation',
+            children: opt.explanation,
+          },
+        ),
+      ],
+    },
+  );
 }
 
 /**
@@ -218,23 +252,39 @@ function renderOption(qId: string, idx: number, opt: QuestionOption): SafeHtml {
  * });
  * ```
  */
-export function QuestionRadio(props: QuestionProps): SafeHtml {
-  validate(props);
-  const qId = deriveQuestionId(props);
-  return jsx("question-radio", {
-    "data-is": "",
-    children: [
-      jsx("p", {
-        className: "scenario",
-        children: props.scenario,
-      }),
-      jsx("fieldset", {
-        children: props.options.map(function mapOption(opt, idx) {
-          return renderOption(qId, idx, opt);
-        }),
-      }),
-    ],
-  });
+export function QuestionRadio(props: QuestionProps,): SafeHtml {
+  validate(props,);
+  const qId = deriveQuestionId(props,);
+  return jsx(
+    'question-radio',
+    {
+      'data-is': '',
+      children: [
+        jsx(
+          'p',
+          {
+            className: 'scenario',
+            children: props.scenario,
+          },
+        ),
+        jsx(
+          'fieldset',
+          {
+            children: props.options.map(function mapOption(
+              opt,
+              idx,
+            ) {
+              return renderOption(
+                qId,
+                idx,
+                opt,
+              );
+            },),
+          },
+        ),
+      ],
+    },
+  );
 }
 
 //endregion Render
@@ -242,7 +292,7 @@ export function QuestionRadio(props: QuestionProps): SafeHtml {
 //region CSS
 
 /** Mix ratio for deriving ok/err colors from existing link tokens (percentage toward fg). */
-const COLOR_MIX_RATIO = "65%";
+const COLOR_MIX_RATIO = '65%';
 
 /**
  * Emphasis font-weight for the chosen and revealed labels.
@@ -276,71 +326,71 @@ const FULL_ROW = 100;
  */
 export function css(): string {
   return $({
-    rule: "question-radio",
+    rule: 'question-radio',
     decls: {
-      display: "block",
-      "margin-block": cssRem(GAP),
-      "--quiz-ok": `green`,
-      "--quiz-err": `red`,
+      display: 'block',
+      'margin-block': cssRem(GAP,),
+      '--quiz-ok': `green`,
+      '--quiz-err': `red`,
     },
     children: [
       $({
-        rule: ".scenario",
+        rule: '.scenario',
         decls: {
-          "margin-block-end": cssRem(GAP_SMALL),
-          "font-weight": EMPHASIS_WEIGHT,
+          'margin-block-end': cssRem(GAP_SMALL,),
+          'font-weight': EMPHASIS_WEIGHT,
         },
-      }),
+      },),
       $({
-        rule: ".option",
+        rule: '.option',
         decls: {
-          display: "flex",
-          "flex-wrap": "wrap",
-          "align-items": "baseline",
-          gap: cssRem(GAP_SMALL),
-          "margin-block": cssRem(GAP_SMALL),
+          display: 'flex',
+          'flex-wrap': 'wrap',
+          'align-items': 'baseline',
+          gap: cssRem(GAP_SMALL,),
+          'margin-block': cssRem(GAP_SMALL,),
         },
         children: [
           $({
-            rule: "input",
-            decls: { "flex-shrink": 0 },
-          }),
+            rule: 'input',
+            decls: { 'flex-shrink': 0, },
+          },),
           $({
-            rule: "label",
-            decls: { cursor: "pointer" },
-          }),
+            rule: 'label',
+            decls: { cursor: 'pointer', },
+          },),
           $({
-            rule: ".explanation",
+            rule: '.explanation',
             decls: {
-              display: "none",
-              "flex-basis": cssPercent(FULL_ROW),
-              "margin-inline-start": cssRem(GAP),
-              color: cssVar("color-muted"),
-              "font-size": cssEm(EXPLANATION_FONT_SIZE_EM),
+              display: 'none',
+              'flex-basis': cssPercent(FULL_ROW,),
+              'margin-inline-start': cssRem(GAP,),
+              color: cssVar('color-muted',),
+              'font-size': cssEm(EXPLANATION_FONT_SIZE_EM,),
             },
-          }),
+          },),
           $({
-            rule: "&:has(input:checked) .explanation",
-            decls: { display: "block" },
-          }),
+            rule: '&:has(input:checked) .explanation',
+            decls: { display: 'block', },
+          },),
         ],
-      }),
+      },),
       $({
-        rule: "input:checked[data-correct] + label",
+        rule: 'input:checked[data-correct] + label',
         decls: {
-          color: cssVar("quiz-ok"),
-          "font-weight": EMPHASIS_WEIGHT,
+          color: cssVar('quiz-ok',),
+          'font-weight': EMPHASIS_WEIGHT,
         },
-      }),
+      },),
       $({
-        rule: "input:checked:not([data-correct]) + label",
+        rule: 'input:checked:not([data-correct]) + label',
         decls: {
-          color: cssVar("quiz-err"),
-          "font-weight": EMPHASIS_WEIGHT,
+          color: cssVar('quiz-err',),
+          'font-weight': EMPHASIS_WEIGHT,
         },
-      }),
+      },),
     ],
-  });
+  },);
 }
 
 //endregion CSS
