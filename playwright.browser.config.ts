@@ -4,8 +4,11 @@ import {
 } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './packages/module/es/src',
-  testMatch: '**/*.browser.test.ts',
+  testDir: './packages',
+  testMatch: [
+    'module/es/src/**/*.browser.test.ts',
+    'module/logger/src/**/*.browser.test.ts',
+  ],
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   reporter: [

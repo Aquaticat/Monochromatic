@@ -1,0 +1,14 @@
+export {
+  initPromise,
+  logger,
+} from './logger.ts';
+export * as sinks from './sinks/index.ts';
+export { tagged, } from './tagged.ts';
+export type {
+  Level,
+  Logger,
+  LogRecord,
+  Sink,
+  SinkFlush,
+  Verify,
+} from './types.ts';
