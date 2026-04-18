@@ -47,6 +47,8 @@ tools: [
   'WebSearch',
   'mcp__claude_ai_linkup__linkup-search',
   'mcp__claude_ai_linkup__linkup-fetch',
+  'mcp__linkup__linkup-search',
+  'mcp__linkup__linkup-fetch',
 ]
 ---
 

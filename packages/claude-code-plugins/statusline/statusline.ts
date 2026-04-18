@@ -272,6 +272,8 @@ const NOISE_GERUNDS = new Set([
   "turning",
   "wanting",
   "working",
+  "reading",
+  "searching",
   // Pronouns and determiners
   "anything",
   "everything",
@@ -323,6 +325,7 @@ const NOISE_GERUNDS = new Set([
   "swing",
   "wing",
   "wring",
+  "sibling",
   // Common filler verbs
   "being",
   "needing",
@@ -340,6 +343,7 @@ const NOISE_GERUNDS = new Set([
   "beaming",
   "hidden-beaming",
   "nnothing",
+  "nstring",
 ]);
 
 /** Minimum word length to consider as a gerund candidate. */
@@ -413,21 +417,18 @@ async function readActivityWord(
 const input = JSON.parse(await text(process.stdin)) as StatuslineInput;
 
 const SEP = "    ";
-const segments: string[] = [];
-
-// Activity word (context-aware, extracted from transcript)
-const activityWord = await readActivityWord(input.transcript_path);
-segments.push(activityWord);
 
 // Model name + effort level
 const displayName = input.model?.display_name;
 const effortIndicator = await readEffortIndicator();
-if (displayName) {
-  const model = formatModelDisplay(displayName);
-  segments.push(
-    effortIndicator ? `${model} ${color(YELLOW, effortIndicator)}` : model,
-  );
-}
+const modelSegment = displayName
+  ? (function formatModel() {
+      const model = formatModelDisplay(displayName);
+      return effortIndicator
+        ? `${model} ${color(YELLOW, effortIndicator)}`
+        : model;
+    })()
+  : "";
 
 // Context window
 const usage = input.context_window?.current_usage;
@@ -437,19 +438,26 @@ const used =
   (usage?.cache_creation_input_tokens ?? 0) +
   (usage?.cache_read_input_tokens ?? 0) +
   (usage?.output_tokens ?? 0);
-
-if (used > 0 && total > 0) {
-  segments.push(formatContextWindow(used, total));
-}
+const contextSegment =
+  used > 0 && total > 0 ? formatContextWindow(used, total) : "";
 
 // Rate limits (only visible when approaching limits)
 const fiveHour = formatRateLimit(input.rate_limits?.five_hour);
 const sevenDay = formatRateLimit(input.rate_limits?.seven_day);
+const rateSegment =
+  fiveHour && sevenDay
+    ? `${fiveHour} · ${sevenDay}`
+    : fiveHour || sevenDay || "";
 
-if (fiveHour && sevenDay) segments.push(`${fiveHour} · ${sevenDay}`);
-else if (fiveHour) segments.push(fiveHour);
-else if (sevenDay) segments.push(sevenDay);
+// Activity word (context-aware, extracted from transcript)
+const activityWord = await readActivityWord(input.transcript_path);
 
-if (segments.length > 0) console.log(segments.join(SEP));
+const line = [modelSegment, contextSegment, rateSegment, activityWord]
+  .filter(function isNonEmpty(s) {
+    return s.length > 0;
+  })
+  .join(SEP);
+
+if (line.length > 0) console.log(line);
 
 //endregion
