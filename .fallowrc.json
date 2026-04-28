@@ -1,0 +1,106 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "src/index.{ts,tsx,js,jsx}",
+    "src/main.{ts,tsx,js,jsx}",
+    "**/mise.*.ts",
+    "**/tsdown.*.config.{ts,js,cjs,mjs}",
+    "**/src/cli.ts",
+    "oxlint.config.ts",
+    "oxlint-require-tsdoc.ts",
+    "file-enforcer.config.ts",
+    "playwright.*.config.ts",
+    "vitest.config.ts",
+    "vitest.workspace.ts",
+    "packages/build-tool/css/src/index.ts",
+    "packages/claude-code-plugins/bash-output-filter/src/filter.ts",
+    "packages/claude-code-plugins/bash-output-filter/src/index.ts",
+    "packages/claude-code-plugins/claude-spawn/src/index.ts",
+    "packages/claude-code-plugins/guardrail/src/index.ts",
+    "packages/claude-code-plugins/session-start-housekeeping/src/index.ts",
+    "packages/claude-code-plugins/stop-reminders/src/index.ts",
+    "packages/claude-code-plugins/terminal-title/src/index.ts",
+    "packages/cli/git/src/index.ts",
+    "packages/cli/vmsync/src/index.ts",
+    "packages/config/vite-deprecated/src/index.ts",
+    "packages/desktop-daemon/editord/src/client/app/app.ts",
+    "packages/dev-script/backup-path/src/index.ts",
+    "packages/dev-script/file-enforcer/src/index.ts",
+    "packages/dev-script/inference-canary-viewer/src/client/index.ts",
+    "packages/module/es/src/index.ts",
+    "packages/module/es/src/index.ts",
+    "packages/module/logger/src/index.ts",
+    "packages/module/logger/src/index.ts",
+    "packages/module/matrix/src/index.ts",
+    "packages/module/test/src/index.ts",
+    "packages/rolldown-plugins/import-attributes/src/index.ts",
+    "packages/webapp-content/ssg-test/src/client/index.ts",
+    "packages/webapp-productivity/done-h-css-test/src/client/in-progress.ts",
+    "packages/webapp-productivity/done-h-css-test/src/client/inbox.ts",
+    "packages/webapp-productivity/done-h-css-test/src/client/search.ts",
+    "packages/webapp-productivity/done-h-css-test/src/client/settings.ts",
+    "packages/webapp-productivity/done-h-css-test/src/client/task-details.ts",
+    "packages/webapp-productivity/done/src/client/in-progress.ts",
+    "packages/webapp-productivity/done/src/client/inbox.ts",
+    "packages/webapp-productivity/done/src/client/search.ts",
+    "packages/webapp-productivity/done/src/client/settings.ts",
+    "packages/webapp-productivity/done/src/client/task-details.ts",
+    "packages/webapp-productivity/doodle-widget/src/client/main.ts",
+    "packages/webapp-productivity/rss/src/client.ts",
+    "packages/webapp-productivity/syllable-break-demo/src/client/main.ts",
+    "packages/webapp-search/ai-tree/src/index.ts",
+    "packages/webapp-search/exa-search/src/client.ts"
+  ],
+  "dynamicallyLoaded": [
+    "packages/desktop-daemon/editord/src/client/**/*.ts",
+    "packages/dev-script/inference-canary-viewer/src/client/**/*.ts",
+    "packages/webapp-content/ssg-test/src/client/**/*.ts",
+    "packages/webapp-productivity/done/src/client/**/*.ts",
+    "packages/webapp-productivity/done-h-css-test/src/client/**/*.ts",
+    "packages/webapp-productivity/doodle-widget/src/client/**/*.ts",
+    "packages/webapp-search/exa-search/src/client*.ts",
+    "**/*.css",
+    "**/*.html"
+  ],
+  "ignorePatterns": [
+    "**/*.generated.ts",
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/.fallow/**",
+    "packages/dev-script/file-enforcer/data/packages.generated.ts",
+    "packages/duik/teto-generated/**"
+  ],
+  "workspaces": {
+    "packages": [
+      "packages/*/*"
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "packages/test-fixture/**"
+      ],
+      "rules": {
+        "unused-exports": "off",
+        "unused-files": "off",
+        "unused-types": "off",
+        "duplicate-exports": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/module/es/src/types/**"
+      ],
+      "rules": {
+        "duplicate-exports": "off",
+        "unused-exports": "off",
+        "unused-files": "off"
+      }
+    }
+  ],
+  "rules": {
+    "unused-dependencies": "warn",
+    "circular-dependencies": "off",
+    "unresolved-imports": "off"
+  }
+}
