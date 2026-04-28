@@ -77,6 +77,13 @@ The WebGL wall: why AI agents cannot meaningfully automate Figma through browser
 - No automated solution exists for prototype review or comment extraction
 - Workarounds require human-in-the-loop screenshotting
 
+### [pi-safeguard](TROUBLESHOOTING.pi-safeguard.md)
+
+Security guardrail false positives and judge model selection:
+
+- `pathSignals` flags every file as a system path when home is under `/var/home/` (Fedora, NixOS)
+- pi-budget-model fails to find a judge model when the active model is the latest major version
+
 ### [C-Like Comment Syntax](TROUBLESHOOTING.cLikeComments.md)
 
 Issues with C-style comment syntax that affect multiple programming languages:
@@ -155,6 +162,7 @@ For common issues:
 - **Figma automation not working?** → [The WebGL wall](TROUBLESHOOTING.figma-browser-automation.md)
 - **CORS errors for `node:` imports in browser?** → [node: protocol in bundles](TROUBLESHOOTING.bundling.md#node-protocol-imports-cause-cors-errors-in-browser-bundles)
 - **CLI hangs with ImageMagick errors?** → [Missing shebang](TROUBLESHOOTING.cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
+- **pi-safeguard blocks every file?** → [pathSignals false positive on /var/home](TROUBLESHOOTING.pi-safeguard.md#pi-safeguard-flags-every-file-under-varhome-as-a-system-path)
 - **Touch gestures broken on iPhone?** → [iOS Safari touch-action betrayal](TROUBLESHOOTING.ios-safari-touch.md)
 - **dprint exec plugin not running?** → [Plugin silently does nothing](TROUBLESHOOTING.dprint-exec.md#exec-plugin-silently-does-nothing)
 - **Dev server restarts on every save?** → [mise watch flag dropping + content-hash filter](TROUBLESHOOTING.mise-watch.md)

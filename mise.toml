@@ -543,18 +543,18 @@ run = "rm -rf node_modules; task-pnpm install"
 # https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
-  "node_modules/.bin",
-  "packages/duik/teto-generated/node_modules/.bin",
-  "packages/duik/teto/node_modules/.bin",
-  "packages/rolldown-plugins/import-attributes/node_modules/.bin",
-  "packages/desktop-daemon/editord/node_modules/.bin",
-  "packages/typeface/aquaticat/node_modules/.bin",
-  "packages/webapp-search/ai-tree/node_modules/.bin",
-  "packages/webapp-productivity/done/node_modules/.bin",
-  "packages/webapp-content/ssg-test/node_modules/.bin",
-  "packages/mcp/mvm/node_modules/.bin",
-  "packages/mcp/nvim/node_modules/.bin",
-  "packages/dev-script/inference-canary-viewer/node_modules/.bin",
-  "packages/dev-script/inference-canary/node_modules/.bin",
-  "packages/module/token-count/node_modules/.bin",
+"node_modules/.bin",
+"packages/duik/teto-generated/node_modules/.bin",
+"packages/duik/teto/node_modules/.bin",
+"packages/rolldown-plugins/import-attributes/node_modules/.bin",
+"packages/desktop-daemon/editord/node_modules/.bin",
+"packages/typeface/aquaticat/node_modules/.bin",
+"packages/webapp-search/ai-tree/node_modules/.bin",
+"packages/webapp-productivity/done/node_modules/.bin",
+"packages/webapp-content/ssg-test/node_modules/.bin",
+"packages/mcp/mvm/node_modules/.bin",
+"packages/mcp/nvim/node_modules/.bin",
+"packages/dev-script/inference-canary-viewer/node_modules/.bin",
+"packages/dev-script/inference-canary/node_modules/.bin",
+"packages/module/token-count/node_modules/.bin"
 ]

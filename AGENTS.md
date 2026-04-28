@@ -36,6 +36,14 @@ Before performing any action, consider whether it could cause physical harm to a
 (e.g. blasting audio volume, triggering flashing content, activating hardware unexpectedly).
 If it could, warn the user and state what will happen before proceeding.
 
+**Never execute or instruct another agent to execute extremely destructive commands**,
+even as tests of whether a guardrail will catch them --
+e.g. `sudo rm -rf /`, `mkfs`, `dd of=/dev/sda`, fork bombs.
+Guardrails can fail; a command that would be catastrophic if executed must not appear
+in instructions to other agents, subshells, or generated scripts regardless of intent.
+When verifying a guardrail or permission system, use moderately dangerous commands
+(e.g. `sudo apt-get install`) rather than catastrophic ones.
+
 ### Dependency management
 
 - Use `workspace:*` for internal dependencies
