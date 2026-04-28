@@ -94,10 +94,13 @@ export function scheduleInlayAnnotations({
       hints,
       diagnostics,
     },);
-    /** Measure ::before heights after layout to set line number offsets. */
-    requestAnimationFrame(function measureAfterLayout() {
-      measureInlayOffsets({ editor, },);
-    },);
+    /**
+     * Measure `::before` heights in the same frame.
+     * `getComputedStyle` forces a synchronous layout to resolve the
+     * post-mutation height, so a follow-up rAF is unnecessary and only
+     * causes line numbers to render misaligned for one extra frame.
+     */
+    measureInlayOffsets({ editor, },);
   },);
 }
 

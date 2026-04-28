@@ -98,6 +98,35 @@ export function getTextContent({ editor, }: { editor: HTMLDivElement; },): strin
     .join('\n',);
 }
 
+/**
+ * Reads the text of a single line by its 0-based index.
+ *
+ * @param editor - contenteditable container element
+ *
+ * @param line - 0-based line index
+ *
+ * @returns text content of the line, or null when out of range
+ *
+ * @example
+ * ```ts
+ * const text = getLineText({ editor: editor, line: 0, });
+ * ```
+ */
+export function getLineText({
+  editor,
+  line,
+}: {
+  editor: HTMLDivElement;
+  line: number;
+},): string | null {
+  const child = editor.children[line];
+  if (child === undefined)
+    return null;
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec
+  const t = child.textContent ?? '';
+  return t === '\n' ? '' : t;
+}
+
 //endregion Text content
 
 //region Scrolling

@@ -17,6 +17,12 @@ import {
 /** Vertical offset from the cursor in pixels. */
 const VERTICAL_OFFSET = 4;
 
+/** Editor cursor position when the popup was shown. */
+type ShownAt = {
+  line: number;
+  character: number;
+};
+
 /**
  * `<completion-popup>` -- language server autocompletion dropdown.
  *
@@ -31,6 +37,8 @@ export class CompletionPopup extends HTMLElement {
   #items: CompletionItem[] = [];
   /** Index of the selected item (-1 = none). */
   #selectedIndex = -1;
+  /** Cursor position captured at the latest `show()`; null while hidden. */
+  #shownAt: ShownAt | null = null;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -62,15 +70,18 @@ export class CompletionPopup extends HTMLElement {
     items,
     x,
     y,
+    cursor,
   }: {
     items: CompletionItem[];
     x: number;
     y: number;
+    cursor: ShownAt;
   },): void {
     if (this.#list === null || items.length === 0)
       return;
     this.#items = items;
     this.#selectedIndex = 0;
+    this.#shownAt = cursor;
     this.#list.replaceChildren(...renderItems({ items, },),);
     this.style.setProperty(
       'inset-inline-start',
@@ -90,6 +101,16 @@ export class CompletionPopup extends HTMLElement {
       this.hidePopover();
     this.#items = [];
     this.#selectedIndex = -1;
+    this.#shownAt = null;
+  }
+
+  /**
+   * Cursor position captured the last time `show()` was called.
+   *
+   * @returns position when visible, null when hidden
+   */
+  get shownAt(): ShownAt | null {
+    return this.#shownAt;
   }
 
   /**

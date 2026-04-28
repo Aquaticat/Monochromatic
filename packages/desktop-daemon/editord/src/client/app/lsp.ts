@@ -18,6 +18,7 @@ import {
 } from './lsp-actions.ts';
 import {
   requestCompletions,
+  wireCompletionDismiss,
   wireCompletionTrigger,
 } from './lsp-completions.ts';
 import { performGotoAtCursor, } from './lsp-goto-cursor.ts';
@@ -118,6 +119,10 @@ export function wireLsp(
         getCurrentFilePath,
       },);
     },
+  },);
+  wireCompletionDismiss({
+    completionPopup,
+    editorPane,
   },);
   wireGotoDefinition({
     ws,

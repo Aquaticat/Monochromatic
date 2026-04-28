@@ -45,7 +45,10 @@ import {
   scheduleInlayAnnotations,
   scheduleInlayMeasure,
 } from './scheduling.ts';
-import { applyEditsToText, } from './text-edits.ts';
+import {
+  applyEditsToText,
+  mapCursorThroughEdits,
+} from './text-edits.ts';
 
 /** `<editor-pane>` — contenteditable text editor component. */
 export class EditorPane extends HTMLElement {
@@ -222,10 +225,22 @@ export class EditorPane extends HTMLElement {
   applyTextEdits(edits: TextEdit[],): void {
     if (this.#editor === null || edits.length === 0)
       return;
-    this.setText(applyEditsToText({
-      text: this.getText(),
+    /** Capture cursor before setText replaces every line div. */
+    const cursorBefore = this.getCursorPosition();
+    const original = this.getText();
+    const updated = applyEditsToText({
+      text: original,
       edits,
-    },),);
+    },);
+    this.setText(updated,);
+    if (cursorBefore !== null) {
+      this.restoreCursor(mapCursorThroughEdits({
+        cursor: cursorBefore,
+        edits,
+        originalText: original,
+        newText: updated,
+      },),);
+    }
   }
 
   //endregion Diagnostics and hints

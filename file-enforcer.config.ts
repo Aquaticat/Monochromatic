@@ -60,6 +60,23 @@ await Promise.all([
   overwrite(
     './CLAUDE.md',
     `Generated from AGENTS.md by file-enforcer.
+    
+    ### Spawning child Claude sessions
+
+General purpose agents are banned because of bugs.
+
+Use \`spawn-claude\` outside sandbox to launch steerable child Claude Code sessions in visible terminal windows.
+The child session runs independently; results are forwarded back to the parent automatically via hooks.
+
+\`\`\`bash
+spawn-claude "implement feature X"
+spawn-claude --cwd /some/path "fix the bug in module Y"
+spawn-claude --extra-arguments "--model sonnet" "refactor this module"
+\`\`\`
+
+The command prints \`{"spawnId":"<uuid>"}\` on success.
+Completed child results are injected into context automatically between tool calls.
+
 ${await cat(['./AGENTS.md',],)}`,
   ),
 

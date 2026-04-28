@@ -2,7 +2,9 @@
  * Text edit application for the contenteditable editor.
  *
  * Applies formatting edits from the language server by sorting
- * bottom-to-top and splicing line content.
+ * bottom-to-top and splicing line content. Also maps cursor
+ * positions through edit sets so the cursor survives formatting
+ * and rename operations.
  */
 
 import type { TextEdit, } from '../../../protocol.ts';
@@ -55,4 +57,192 @@ export function applyEditsToText({
   }
 
   return lines.join('\n',);
+}
+
+/**
+ * Converts a `(line, character)` coordinate into a single byte-agnostic
+ * character offset within the joined-by-newline text.
+ *
+ * @param position - 0-based line and character coordinates
+ *
+ * @param lines - text split by `'\n'`
+ *
+ * @returns absolute character offset
+ *
+ * @example
+ * ```ts
+ * const offset = positionToOffset({ position: { line: 1, character: 1, }, lines: ['ab', 'cd',], });
+ * // offset === 4 (text 'ab\ncd', line 1 starts at offset 3, +1 = 4)
+ * ```
+ */
+function positionToOffset({
+  position,
+  lines,
+}: {
+  position: {
+    line: number;
+    character: number;
+  };
+  lines: readonly string[];
+},): number {
+  return lines.slice(
+    0,
+    position.line,
+  )
+    .reduce(
+      function addLineLength(
+        sum,
+        line,
+      ) {
+        return sum + line.length + 1;
+      },
+      0,
+    )
+    + position.character;
+}
+
+/**
+ * Converts an absolute character offset back into `(line, character)`
+ * coordinates. Offsets past the end clamp to the last character.
+ *
+ * @param offset - absolute character offset
+ *
+ * @param lines - text split by `'\n'`
+ *
+ * @returns 0-based line and character coordinates
+ *
+ * @example
+ * ```ts
+ * const pos = offsetToPosition({ offset: 4, lines: ['ab', 'cd',], });
+ * // pos === { line: 1, character: 1, }
+ * ```
+ */
+function offsetToPosition({
+  offset,
+  lines,
+}: {
+  offset: number;
+  lines: readonly string[];
+},): {
+  line: number;
+  character: number;
+} {
+  /** Accumulator for offset remaining as we walk the lines. */
+  let remaining = offset;
+  for (const [line, lineText,] of lines.entries()) {
+    const lineLen = lineText.length;
+    if (remaining <= lineLen) {
+      return {
+        line,
+        character: remaining,
+      };
+    }
+    remaining -= lineLen + 1;
+  }
+  const lastLine = Math.max(
+    0,
+    lines.length - 1,
+  );
+  return {
+    line: lastLine,
+    character: lines[lastLine]?.length ?? 0,
+  };
+}
+
+/**
+ * Maps a cursor position through a set of text edits, returning the
+ * equivalent position in the post-edit text. Used to keep the cursor
+ * stable across formatting and rename operations that replace the
+ * entire DOM via `setText`.
+ *
+ * Cases handled:
+ * - Edit fully before cursor: cursor shifts by the edit's length delta.
+ * - Edit at or after cursor: cursor is unaffected; remaining edits skipped.
+ * - Cursor strictly inside edit: cursor lands at the end of the edit's
+ *   replacement text, matching standard editor convention for replaced ranges.
+ *
+ * @param cursor - 0-based cursor position in the original text
+ *
+ * @param edits - text edits being applied (positions in original text)
+ *
+ * @param originalText - editor text before edits are applied
+ *
+ * @param newText - editor text after edits have been applied
+ *
+ * @returns 0-based cursor position in the post-edit text
+ *
+ * @example
+ * ```ts
+ * const restored = mapCursorThroughEdits({
+ *   cursor: { line: 0, character: 4, },
+ *   edits: [{ range: { start: { line: 0, character: 0, }, end: { line: 0, character: 3, }, }, newText: 'barbaz', },],
+ *   originalText: 'foo bar',
+ *   newText: 'barbaz bar',
+ * },);
+ * // restored === { line: 0, character: 7, }
+ * ```
+ */
+export function mapCursorThroughEdits({
+  cursor,
+  edits,
+  originalText,
+  newText,
+}: {
+  cursor: {
+    line: number;
+    character: number;
+  };
+  edits: TextEdit[];
+  originalText: string;
+  newText: string;
+},): {
+  line: number;
+  character: number;
+} {
+  const originalLines = originalText.split('\n',);
+  const cursorOffset = positionToOffset({
+    position: cursor,
+    lines: originalLines,
+  },);
+
+  /** Sort top-to-bottom so accumulated offset shift remains valid as we iterate. */
+  const sorted = edits.toSorted(function compareEditsForward(
+    a,
+    b,
+  ) {
+    const lineDiff = a.range.start.line - b.range.start.line;
+    return lineDiff !== 0 ? lineDiff : a.range.start.character - b.range.start.character;
+  },);
+
+  /** Running delta `newOffset - originalOffset` accumulated across edits. */
+  let shift = 0;
+
+  for (const edit of sorted) {
+    const editStart = positionToOffset({
+      position: edit.range.start,
+      lines: originalLines,
+    },);
+    const editEnd = positionToOffset({
+      position: edit.range.end,
+      lines: originalLines,
+    },);
+
+    if (editEnd <= cursorOffset) {
+      shift += edit.newText.length - (editEnd - editStart);
+    }
+    else if (editStart < cursorOffset) {
+      /** Cursor is inside this edit; clamp to end of replacement text. */
+      shift += editStart + edit.newText.length - cursorOffset;
+      break;
+    }
+    else {
+      break;
+    }
+  }
+
+  const newLines = newText.split('\n',);
+  return offsetToPosition({
+    offset: cursorOffset + shift,
+    lines: newLines,
+  },);
 }
