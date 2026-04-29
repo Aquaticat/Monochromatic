@@ -267,6 +267,27 @@ await describe({
           },
         }),
         it({
+          name: "reads negative varfloat (-1.0)",
+          fn: async () => {
+            const reader = new BinaryReader(new Uint8Array([0x7f, 0x01, 0x00, 0x00]));
+            expect(reader.readVarFloat()).toBeCloseTo(-1.0, 5);
+          },
+        }),
+        it({
+          name: "reads fractional varfloat (0.5)",
+          fn: async () => {
+            const reader = new BinaryReader(new Uint8Array([0x7e, 0x00, 0x00, 0x00]));
+            expect(reader.readVarFloat()).toBeCloseTo(0.5, 5);
+          },
+        }),
+        it({
+          name: "reads small varfloat (0.125)",
+          fn: async () => {
+            const reader = new BinaryReader(new Uint8Array([0x7c, 0x00, 0x00, 0x00]));
+            expect(reader.readVarFloat()).toBeCloseTo(0.125, 5);
+          },
+        }),
+        it({
           name: "reads null-terminated string",
           fn: async () => {
             const encoded = new TextEncoder().encode("hello\0");
