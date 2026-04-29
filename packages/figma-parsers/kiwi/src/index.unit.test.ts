@@ -12,6 +12,9 @@ import {
   decodeStruct,
   decodeValue,
   resolveTypeName,
+  parseCanvasHeader,
+  parseMetaJson,
+  parseFigmaFile,
   type KiwiSchema,
   type KiwiStruct,
 } from "./index.ts";
@@ -563,6 +566,149 @@ await describe({
             const guid = nc.guid as Record<string, unknown>;
             expect(guid.sessionID).toBe(0);
             expect(guid.localID).toBe(5);
+          },
+        }),
+      ],
+    }),
+    // endregion
+
+    // region parseCanvasHeader
+    describe({
+      name: parseCanvasHeader.name,
+      children: [
+        it({
+          name: "parses fig magic",
+          fn: async () => {
+            const header = new Uint8Array([
+              0x66, 0x69, 0x67, 0x2d, 0x6b, 0x69, 0x77, 0x69, 0x65, 0x00, // "fig-kiwie\0"
+              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // reserved
+            ]);
+            const result = parseCanvasHeader(header);
+            expect(result.fileType).toBe("fig");
+          },
+        }),
+        it({
+          name: "parses deck magic",
+          fn: async () => {
+            const header = new Uint8Array([
+              0x66, 0x69, 0x67, 0x2d, 0x64, 0x65, 0x63, 0x6b, 0x65, 0x00, // "fig-decke\0"
+              0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ]);
+            const result = parseCanvasHeader(header);
+            expect(result.fileType).toBe("deck");
+          },
+        }),
+        it({
+          name: "parses jam magic",
+          fn: async () => {
+            const header = new Uint8Array([
+              0x66, 0x69, 0x67, 0x2d, 0x6a, 0x61, 0x6d, 0x2e, 0x65, 0x00, // "fig-jam.e\0"
+              0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ]);
+            const result = parseCanvasHeader(header);
+            expect(result.fileType).toBe("jam");
+          },
+        }),
+        it({
+          name: "throws on unknown magic",
+          fn: async () => {
+            const header = new Uint8Array([
+              0x58, 0x59, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            ]);
+            expect(function callWithBadMagic() {
+              parseCanvasHeader(header);
+            }).toThrow("Unknown canvas.fig magic");
+          },
+        }),
+        it({
+          name: "throws on too-short header",
+          fn: async () => {
+            expect(function callWithShortData() {
+              parseCanvasHeader(new Uint8Array(8));
+            }).toThrow("too short");
+          },
+        }),
+      ],
+    }),
+    // endregion
+
+    // region parseMetaJson
+    describe({
+      name: parseMetaJson.name,
+      children: [
+        it({
+          name: "parses client_meta fields",
+          fn: async () => {
+            const json = JSON.stringify({
+              client_meta: {
+                background_color: { r: 0.5, g: 0.6, b: 0.7, a: 1.0 },
+                thumbnail_size: { width: 800, height: 600 },
+                render_coordinates: { x: 0, y: 0, width: 1024, height: 768 },
+              },
+              file_name: "test-design",
+              exported_at: "2025-01-01T00:00:00Z",
+              developer_related_links: [],
+            });
+            const bytes = new TextEncoder().encode(json);
+            const meta = parseMetaJson(bytes);
+            expect(meta.fileName).toBe("test-design");
+            expect(meta.backgroundColor.r).toBeCloseTo(0.5, 5);
+            expect(meta.thumbnailSize.width).toBe(800);
+            expect(meta.renderCoordinates.width).toBe(1024);
+          },
+        }),
+        it({
+          name: "uses defaults for missing fields",
+          fn: async () => {
+            const json = JSON.stringify({});
+            const bytes = new TextEncoder().encode(json);
+            const meta = parseMetaJson(bytes);
+            expect(meta.fileName).toBe("");
+            expect(meta.exportedAt).toBe("");
+          },
+        }),
+      ],
+    }),
+    // endregion
+
+    // region Integration: parseFigmaFile
+    describe({
+      name: "integration: parseFigmaFile",
+      children: [
+        it({
+          name: "parses a .fig file end-to-end",
+          timeout: 30_000,
+          fn: async () => {
+            const path = "/home/user/Nextcloud/Text/Reference/Figma export/Color palette - base.fig";
+            const file = await parseFigmaFile(path);
+            expect(file.fileType).toBe("fig");
+            expect(file.schema.definitions.length).toBeGreaterThan(0);
+            expect(file.document).not.toBeNull();
+            expect(file.document!.type).toBe("MessageType.NODE_CHANGES");
+            const nodeChanges = file.document!.nodeChanges as Record<string, unknown>[];
+            expect(nodeChanges.length).toBeGreaterThan(0);
+            expect(nodeChanges[0]!.type).toBe("NodeType.DOCUMENT");
+          },
+        }),
+        it({
+          name: "parses a .deck file end-to-end",
+          timeout: 30_000,
+          fn: async () => {
+            const path = "/home/user/Nextcloud/Text/Reference/Figma export/MTM6162-040 participation 2 cover.deck";
+            const file = await parseFigmaFile(path);
+            expect(file.fileType).toBe("deck");
+            expect(file.document).not.toBeNull();
+          },
+        }),
+        it({
+          name: "parses a .jam file end-to-end",
+          timeout: 30_000,
+          fn: async () => {
+            const path = "/home/user/Nextcloud/Text/Reference/Figma export/Todo app - Brainstorming.jam";
+            const file = await parseFigmaFile(path);
+            expect(file.fileType).toBe("jam");
+            expect(file.document).not.toBeNull();
           },
         }),
       ],
