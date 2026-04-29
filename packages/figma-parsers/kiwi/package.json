@@ -1,0 +1,51 @@
+{
+  "name": "@monochromatic-dev/figma-kiwi",
+  "version": "0.1.0",
+  "description": "Parser for Figma's Kiwi binary schema and document format. Decodes .fig, .deck, and .jam exported files.",
+  "type": "module",
+  "module": "dist/final/neutral/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/final/neutral/index.d.mts",
+      "node": "./dist/final/node/index.mjs",
+      "default": "./dist/final/neutral/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "files": [
+    "dist/final",
+    "src"
+  ],
+  "keywords": [
+    "figma",
+    "kiwi",
+    "parser",
+    "binary",
+    "schema",
+    "fig-file",
+    "deck-file",
+    "jam-file"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/figma-parsers/kiwi"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*"
+  }
+}
