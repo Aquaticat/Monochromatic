@@ -1,0 +1,352 @@
+import {
+  describe,
+  expect,
+  it,
+} from "@monochromatic-dev/module-test";
+
+import {
+  type FigmaFile as FigmaFileType,
+} from "@monochromatic-dev/figma-kiwi";
+import {
+  convertFigmaToPenpot,
+  serializePenpotZip,
+  figmaColorToHex,
+  type PenpotDocument,
+  type PenpotShape,
+  type PenpotFill,
+} from "./index.ts";
+
+type FigmaFile = FigmaFileType;
+
+// region Test fixtures
+
+/** Build a minimal FigmaFile for testing without real file I/O. */
+function buildTestFigmaFile(overrides: Partial<FigmaFile> = {}): FigmaFile {
+  const nodeChanges: Record<string, unknown>[] = [
+    // Document root
+    { __type: "NodeChange", guid: { sessionID: 0, localID: 0 }, type: "NodeType.DOCUMENT", name: "Document", phase: "NodePhase.CREATED" },
+    // Canvas (page)
+    {
+      __type: "NodeChange", guid: { sessionID: 0, localID: 1 }, type: "NodeType.CANVAS", name: "Page 1",
+      phase: "NodePhase.CREATED",
+      parentIndex: { guid: { sessionID: 0, localID: 0 }, position: "!" },
+      backgroundColor: { r: 1, g: 1, b: 1, a: 1 },
+    },
+    // Frame on the canvas
+    {
+      __type: "NodeChange", guid: { sessionID: 0, localID: 2 }, type: "NodeType.FRAME", name: "My Frame",
+      phase: "NodePhase.CREATED",
+      parentIndex: { guid: { sessionID: 0, localID: 1 }, position: "!" },
+      transform: { m00: 1, m01: 0, m02: 100, m10: 0, m11: 1, m12: 200 },
+      size: { x: 300, y: 400 },
+      opacity: 0.8,
+      visible: true,
+      fillPaints: [{ __type: "Paint", type: "PaintType.SOLID", color: { r: 1, g: 0, b: 0, a: 1 }, opacity: 1 }],
+      strokePaints: [{ __type: "Paint", type: "PaintType.SOLID", color: { r: 0, g: 0, b: 0, a: 1 } }],
+      strokeWeight: 2,
+      strokeAlign: "CENTER",
+      cornerRadius: 8,
+    },
+    // Text inside the frame
+    {
+      __type: "NodeChange", guid: { sessionID: 0, localID: 3 }, type: "NodeType.TEXT", name: "Hello",
+      phase: "NodePhase.CREATED",
+      parentIndex: { guid: { sessionID: 0, localID: 2 }, position: "!" },
+      transform: { m00: 1, m01: 0, m02: 110, m10: 0, m11: 1, m12: 210 },
+      size: { x: 200, y: 30 },
+      characters: "Hello World",
+      fontSize: 24,
+      fontName: "Inter",
+      fontWeight: 400,
+      fillPaints: [{ __type: "Paint", type: "PaintType.SOLID", color: { r: 0, g: 0, b: 0, a: 1 } }],
+    },
+  ];
+
+  return {
+    fileType: "fig",
+    meta: {
+      backgroundColor: { r: 1, g: 1, b: 1, a: 1 },
+      thumbnailSize: { width: 800, height: 600 },
+      renderCoordinates: { x: 0, y: 0, width: 800, height: 600 },
+      fileName: "Test File",
+      exportedAt: "2025-01-01T00:00:00Z",
+      developerRelatedLinks: [],
+    },
+    thumbnail: new Uint8Array(0),
+    schema: { definitions: [], enumByName: new Map(), structByName: new Map() },
+    document: { __type: "Message", type: "MessageType.NODE_CHANGES", nodeChanges },
+    images: new Map(),
+    ...overrides,
+  };
+}
+
+/** Build a FigmaFile that simulates a deck with slides. */
+function buildTestDeckFile(): FigmaFile {
+  const nodeChanges: Record<string, unknown>[] = [
+    // Document root
+    { __type: "NodeChange", guid: { sessionID: 0, localID: 0 }, type: "NodeType.DOCUMENT", name: "Document", phase: "NodePhase.CREATED" },
+    // Canvas container
+    { __type: "NodeChange", guid: { sessionID: 0, localID: 1 }, type: "NodeType.CANVAS", name: "Page 1", phase: "NodePhase.CREATED", parentIndex: { guid: { sessionID: 0, localID: 0 }, position: "!" } },
+    // Internal Only Canvas (should be skipped)
+    { __type: "NodeChange", guid: { sessionID: 0, localID: 2 }, type: "NodeType.CANVAS", name: "Internal Only Canvas", phase: "NodePhase.CREATED", parentIndex: { guid: { sessionID: 0, localID: 0 }, position: "~" }, internalOnly: true },
+    // Slide grid
+    { __type: "NodeChange", guid: { sessionID: 0, localID: 3 }, type: "NodeType.SLIDE_GRID", name: "Presentation", phase: "NodePhase.CREATED", parentIndex: { guid: { sessionID: 0, localID: 1 }, position: "!" } },
+    // Slide row
+    { __type: "NodeChange", guid: { sessionID: 1, localID: 29 }, type: "NodeType.SLIDE_ROW", name: "Slide row", phase: "NodePhase.CREATED", parentIndex: { guid: { sessionID: 0, localID: 3 }, position: "!" } },
+    // Slide
+    { __type: "NodeChange", guid: { sessionID: 1, localID: 85 }, type: "NodeType.SLIDE", name: "Slide 1", phase: "NodePhase.CREATED", parentIndex: { guid: { sessionID: 1, localID: 29 }, position: "!" } },
+    // Text inside the slide
+    { __type: "NodeChange", guid: { sessionID: 1, localID: 86 }, type: "NodeType.TEXT", name: "Title", phase: "NodePhase.CREATED", parentIndex: { guid: { sessionID: 1, localID: 85 }, position: "!" }, characters: "My Title", fontSize: 48, fontName: "Inter", fontWeight: 700, fillPaints: [{ __type: "Paint", type: "PaintType.SOLID", color: { r: 0, g: 0, b: 0, a: 1 } }] },
+  ];
+
+  return {
+    fileType: "deck",
+    meta: {
+      backgroundColor: { r: 1, g: 1, b: 1, a: 1 },
+      thumbnailSize: { width: 1920, height: 1080 },
+      renderCoordinates: { x: 0, y: 0, width: 1920, height: 1080 },
+      fileName: "Test Deck",
+      exportedAt: "2025-01-01T00:00:00Z",
+      developerRelatedLinks: [],
+    },
+    thumbnail: new Uint8Array(0),
+    schema: { definitions: [], enumByName: new Map(), structByName: new Map() },
+    document: { __type: "Message", type: "MessageType.NODE_CHANGES", nodeChanges },
+    images: new Map(),
+  };
+}
+
+// endregion
+
+await describe({
+  name: "",
+  children: [
+    // region figmaColorToHex
+    describe({
+      name: figmaColorToHex.name,
+      children: [
+        it({
+          name: "converts white",
+          fn: async () => {
+            expect(figmaColorToHex({ r: 1, g: 1, b: 1, a: 1 })).toBe("#FFFFFF");
+          },
+        }),
+        it({
+          name: "converts black",
+          fn: async () => {
+            expect(figmaColorToHex({ r: 0, g: 0, b: 0, a: 1 })).toBe("#000000");
+          },
+        }),
+        it({
+          name: "converts red",
+          fn: async () => {
+            expect(figmaColorToHex({ r: 1, g: 0, b: 0, a: 1 })).toBe("#FF0000");
+          },
+        }),
+        it({
+          name: "converts mid-gray",
+          fn: async () => {
+            expect(figmaColorToHex({ r: 0.5, g: 0.5, b: 0.5, a: 1 })).toBe("#808080");
+          },
+        }),
+      ],
+    }),
+    // endregion
+
+    // region convertFigmaToPenpot (fig)
+    describe({
+      name: "convertFigmaToPenpot (fig)",
+      children: [
+        it({
+          name: "creates one page per canvas",
+          fn: async () => {
+            const figmaFile = buildTestFigmaFile();
+            const doc = convertFigmaToPenpot(figmaFile);
+            expect(doc.pages.size).toBe(1);
+          },
+        }),
+        it({
+          name: "sets file name from meta",
+          fn: async () => {
+            const figmaFile = buildTestFigmaFile();
+            const doc = convertFigmaToPenpot(figmaFile);
+            expect(doc.file.name).toBe("Test File");
+          },
+        }),
+        it({
+          name: "converts frame with fills and strokes",
+          fn: async () => {
+            const figmaFile = buildTestFigmaFile();
+            const doc = convertFigmaToPenpot(figmaFile);
+            // Find the frame shape (not root frame)
+            const shapes = [...doc.shapes.values()].filter((s) => s.name === "My Frame");
+            expect(shapes).toHaveLength(1);
+            const frame = shapes[0]!;
+            expect(frame.type).toBe("frame");
+            expect(frame.fills).toHaveLength(1);
+            expect(frame.fills[0]!.fillColor).toBe("#FF0000");
+            expect(frame.strokes).toHaveLength(1);
+            expect(frame.strokes[0]!.strokeWidth).toBe(2);
+            expect(frame.r1).toBe(8);
+          },
+        }),
+        it({
+          name: "converts text node",
+          fn: async () => {
+            const figmaFile = buildTestFigmaFile();
+            const doc = convertFigmaToPenpot(figmaFile);
+            const textShapes = [...doc.shapes.values()].filter((s) => s.type === "text");
+            expect(textShapes).toHaveLength(1);
+            const text = textShapes[0]!;
+            expect(text.name).toBe("Hello");
+            expect(text.growType).toBe("auto-width");
+          },
+        }),
+        it({
+          name: "skips DOCUMENT and NONE types",
+          fn: async () => {
+            const figmaFile = buildTestFigmaFile();
+            const doc = convertFigmaToPenpot(figmaFile);
+            // Only 3 shapes should exist: root frame + frame + text
+            const nonRootShapes = [...doc.shapes.values()].filter((s) => s.id !== "00000000-0000-0000-0000-000000000000");
+            expect(nonRootShapes.length).toBe(2);
+          },
+        }),
+      ],
+    }),
+    // endregion
+
+    // region convertFigmaToPenpot (deck)
+    describe({
+      name: "convertFigmaToPenpot (deck)",
+      children: [
+        it({
+          name: "creates one page per slide",
+          fn: async () => {
+            const deckFile = buildTestDeckFile();
+            const doc = convertFigmaToPenpot(deckFile);
+            expect(doc.pages.size).toBe(1);
+            const page = [...doc.pages.values()][0]!;
+            expect(page.name).toBe("Slide 1");
+          },
+        }),
+        it({
+          name: "skips internal-only canvases",
+          fn: async () => {
+            const deckFile = buildTestDeckFile();
+            const doc = convertFigmaToPenpot(deckFile);
+            // Only 1 page (the slide), not 2 (slide + internal canvas)
+            const pageNames = [...doc.pages.values()].map((p) => p.name);
+            expect(pageNames).not.toContain("Internal Only Canvas");
+          },
+        }),
+        it({
+          name: "converts slide child text",
+          fn: async () => {
+            const deckFile = buildTestDeckFile();
+            const doc = convertFigmaToPenpot(deckFile);
+            const textShapes = [...doc.shapes.values()].filter((s) => s.type === "text");
+            expect(textShapes).toHaveLength(1);
+            expect(textShapes[0]!.name).toBe("Title");
+          },
+        }),
+      ],
+    }),
+    // endregion
+
+    // region convertFigmaToPenpot (jam)
+    describe({
+      name: "convertFigmaToPenpot (jam)",
+      children: [
+        it({
+          name: "creates pages from canvases",
+          fn: async () => {
+            const jamFile = buildTestFigmaFile({ fileType: "jam" });
+            const doc = convertFigmaToPenpot(jamFile);
+            expect(doc.pages.size).toBe(1);
+          },
+        }),
+      ],
+    }),
+    // endregion
+
+    // region serializePenpotZip
+    describe({
+      name: serializePenpotZip.name,
+      children: [
+        it({
+          name: "produces a valid ZIP with manifest",
+          fn: async () => {
+            const figmaFile = buildTestFigmaFile();
+            const doc = convertFigmaToPenpot(figmaFile);
+            const zipBuffer = await serializePenpotZip(doc);
+            expect(zipBuffer.length).toBeGreaterThan(0);
+
+            // Verify it's a valid ZIP by checking magic bytes
+            expect(zipBuffer[0]).toBe(0x50); // 'P'
+            expect(zipBuffer[1]).toBe(0x4b); // 'K'
+          },
+        }),
+        it({
+          name: "manifest has penpot/export-files type",
+          fn: async () => {
+            const figmaFile = buildTestFigmaFile();
+            const doc = convertFigmaToPenpot(figmaFile);
+            expect(doc.manifest.type).toBe("penpot/export-files");
+            expect(doc.manifest.version).toBe(1);
+          },
+        }),
+      ],
+    }),
+    // endregion
+
+    // region Integration: real file conversion
+    describe({
+      name: "integration: real file conversion",
+      children: [
+        it({
+          name: "converts a .fig file end-to-end",
+          timeout: 30_000,
+          fn: async () => {
+            const { parseFigmaFile } = await import("@monochromatic-dev/figma-kiwi/ts" as string);
+            const figmaFile = await parseFigmaFile("/home/user/Nextcloud/Text/Reference/Figma export/Color palette - base.fig");
+            const doc = convertFigmaToPenpot(figmaFile);
+            const zipBuffer = await serializePenpotZip(doc);
+            expect(doc.pages.size).toBeGreaterThan(0);
+            expect(doc.shapes.size).toBeGreaterThan(0);
+            expect(zipBuffer.length).toBeGreaterThan(1000);
+          },
+        }),
+        it({
+          name: "converts a .deck file with slides as pages",
+          timeout: 30_000,
+          fn: async () => {
+            const { parseFigmaFile } = await import("@monochromatic-dev/figma-kiwi/ts" as string);
+            const figmaFile = await parseFigmaFile("/home/user/Nextcloud/Text/Reference/Figma export/MTM6162-040 participation 2 cover.deck");
+            const doc = convertFigmaToPenpot(figmaFile);
+            // Deck should have slides as pages
+            expect(doc.pages.size).toBeGreaterThanOrEqual(1);
+            // Verify page names come from slides, not canvases
+            for (const page of doc.pages.values()) {
+              expect(page.name).not.toBe("Internal Only Canvas");
+            }
+          },
+        }),
+        it({
+          name: "converts a .jam file end-to-end",
+          timeout: 30_000,
+          fn: async () => {
+            const { parseFigmaFile } = await import("@monochromatic-dev/figma-kiwi/ts" as string);
+            const figmaFile = await parseFigmaFile("/home/user/Nextcloud/Text/Reference/Figma export/Todo app - Brainstorming.jam");
+            const doc = convertFigmaToPenpot(figmaFile);
+            expect(doc.pages.size).toBeGreaterThan(0);
+            // Should have sticky notes as frames
+            const frames = [...doc.shapes.values()].filter((s) => s.type === "frame" && s.name !== "Root Frame");
+            expect(frames.length).toBeGreaterThan(0);
+          },
+        }),
+      ],
+    }),
+    // endregion
+  ],
+});

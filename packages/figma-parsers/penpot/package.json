@@ -1,0 +1,29 @@
+{
+  "name": "@monochromatic-dev/figma-to-penpot",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/final/neutral/index.mjs",
+      "types": "./dist/final/types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:js": "tsdown",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "@monochromatic-dev/figma-kiwi": "workspace:*",
+    "jszip": "3.10.1"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "0.0.5",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "25.6.0",
+    "@types/jszip": "3.4.1"
+  }
+}
