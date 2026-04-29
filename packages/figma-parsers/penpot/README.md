@@ -65,6 +65,41 @@ bun packages/figma-parsers/penpot/scripts/convert.ts input.fig [output.penpot]
 Nodes with no Penpot equivalent (DOCUMENT, NONE, NODE, SLIDE_GRID,
 SLIDE_ROW, VARIABLE, VARIABLE_SET) are skipped.
 
+## Verification
+
+The converter's output has been structurally verified against a
+reference Penpot file (Teto.penpot, 1934 entries, Penpot 2.14.3 export).
+
+Conformance checks:
+
+- **ZIP structure**: matches `manifest.json` → `files/{id}.json` →
+  `files/{id}/pages/{pageId}.json` → `files/{id}/pages/{pageId}/{shapeId}.json`
+- **Manifest**: `type: "penpot/export-files"`, `version: 1`,
+  `referer: "penpot"`, `files` array with `id`, `name`, `features`
+- **Page JSON**: `id`, `name`, `background` (hex), `index`
+- **Shape JSON**: all core keys present (`id`, `name`, `type`, `x`, `y`,
+  `width`, `height`, `rotation`, `selrect`, `points`, `transform`,
+  `transformInverse`, `parentId`, `frameId`, `flipX`, `flipY`, `fills`,
+  `strokes`, `pageId`)
+- **Root frame**: zero UUID, 0.01x0.01 dimensions, identity transform
+- **frameId convention**: frames reference parent frame (not self),
+  matching Penpot's behavior where frameId == parentId for frame shapes
+
+Differences from reference (minor, not expected to block import):
+
+- Missing optional fields: `hideInViewer`, `r1`-`r4` (border radii),
+  `shapeRef`, `touched`, `shadow`
+- Missing `components/` and `media/` directories (no component or
+  image support yet)
+- Extra fields not in reference: `showContent`, `proportion`,
+  `proportionLock`
+
+Browser import was not completed due to Penpot's lack of a direct file
+upload API accessible from automated tools (no CDP file input support,
+httpOnly session cookies prevent curl-based import, and the browser
+file dialog is not automatable from CDP). The structural verification
+above provides confidence the format is correct.
+
 ## Limitations
 
 - Gradient fills and image fills are not yet converted (only solid fills)
