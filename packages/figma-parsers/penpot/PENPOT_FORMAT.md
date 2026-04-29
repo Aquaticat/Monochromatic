@@ -69,6 +69,7 @@ Contains file-level metadata (not the actual design data):
 ```
 
 Key fields from source (`schema:file` in `common/src/app/common/types/file.cljc`):
+
 - `id`, `name`, `revn`, `vern`, `created-at`, `modified-at`, `deleted-at`
 - `project-id`, `team-id`, `is-shared`, `has-media-trimmed`
 - `data` (optional - the actual design data, not stored in file JSON)
@@ -86,6 +87,7 @@ Key fields from source (`schema:file` in `common/src/app/common/types/file.cljc`
 ```
 
 From source (`schema:page` in `common/src/app/common/types/page.cljc`):
+
 - `id`, `name`, `background` (hex color string)
 - Optional: `flows`, `options`
 
@@ -100,16 +102,42 @@ Each shape is a separate JSON file. This is the core data model.
   "id": "uuid",
   "name": "Shape Name",
   "type": "frame|group|bool|rect|path|text|circle|svg-raw|image",
-  "x": 0, "y": 0, "width": 100, "height": 100,
+  "x": 0,
+  "y": 0,
+  "width": 100,
+  "height": 100,
   "rotation": 0,
-  "selrect": { "x": 0, "y": 0, "width": 100, "height": 100, "x1": 0, "y1": 0, "x2": 100, "y2": 100 },
-  "points": [{ "x": 0, "y": 0 }, { "x": 100, "y": 0 }, { "x": 100, "y": 100 }, { "x": 0, "y": 100 }],
+  "selrect": {
+    "x": 0,
+    "y": 0,
+    "width": 100,
+    "height": 100,
+    "x1": 0,
+    "y1": 0,
+    "x2": 100,
+    "y2": 100
+  },
+  "points": [
+    { "x": 0, "y": 0 },
+    { "x": 100, "y": 0 },
+    { "x": 100, "y": 100 },
+    { "x": 0, "y": 100 }
+  ],
   "transform": { "a": 1.0, "b": 0.0, "c": 0.0, "d": 1.0, "e": 0.0, "f": 0.0 },
-  "transformInverse": { "a": 1.0, "b": 0.0, "c": 0.0, "d": 1.0, "e": 0.0, "f": 0.0 },
+  "transformInverse": {
+    "a": 1.0,
+    "b": 0.0,
+    "c": 0.0,
+    "d": 1.0,
+    "e": 0.0,
+    "f": 0.0
+  },
   "parentId": "uuid",
   "frameId": "uuid",
-  "flipX": null, "flipY": null,
-  "proportion": 1, "proportionLock": false,
+  "flipX": null,
+  "flipY": null,
+  "proportion": 1,
+  "proportionLock": false,
   "opacity": 1.0,
   "fills": [],
   "strokes": [],
@@ -192,11 +220,13 @@ Each shape is a separate JSON file. This is the core data model.
 ### Transform matrix
 
 2D affine transform as `{a, b, c, d, e, f}`:
+
 ```
 | a c e |
 | b d f |
 | 0 0 1 |
 ```
+
 Identity = `{a:1, b:0, c:0, d:1, e:0, f:0}`
 
 ### Constraints
@@ -243,6 +273,7 @@ but this is stripped to just the above fields in the export file JSON.
 ## Storage Objects (`objects/`)
 
 Binary assets (images, fonts) stored as two files:
+
 1. `objects/{id}.json` - metadata: `{id, size, contentType, bucket, hash}`
 2. `objects/{id}.{ext}` - the actual binary data (png, jpg, svg, woff, woff2, ttf, otf)
 
@@ -264,19 +295,25 @@ The `bucket` is one of the valid storage buckets (e.g., "file-object-thumbnail",
 ## Design Tokens (`files/{fileId}/tokens.json`)
 
 Standard DTCG format:
+
 ```json
 {
   "Global": {
     "tokenName": { "$value": "#05ce78", "$type": "color", "$description": "" }
   },
   "$themes": [],
-  "$metadata": { "tokenSetOrder": ["Global"], "activeThemes": [], "activeSets": ["Global"] }
+  "$metadata": {
+    "tokenSetOrder": ["Global"],
+    "activeThemes": [],
+    "activeSets": ["Global"]
+  }
 }
 ```
 
 ## Color Library (`files/{fileId}/colors/{colorId}.json`)
 
 Not present in the sample file. From source (`schema:library-color`):
+
 - `id`, `name`, `path`, `color` (hex), `opacity`
 - Optional gradient fields
 - `file-id`, `created-at`, `modified-at`
@@ -284,6 +321,7 @@ Not present in the sample file. From source (`schema:library-color`):
 ## Typography Library (`files/{fileId}/typographies/{typographyId}.json`)
 
 Not present in the sample file. From source (`schema:typography`):
+
 - `id`, `name`, `path`, `font-id`, `font-family`, `font-variant-id`
 - `font-size`, `font-weight`, `font-style`, `line-height`, `letter-spacing`
 - `text-transform`, `text-decoration`
@@ -310,22 +348,26 @@ Internally Penpot uses kebab-case: `:parent-id`, `:frame-id`, `:fill-color`, etc
 ## Conversion strategy
 
 ### .fig files (design)
+
 Each CANVAS node becomes a Penpot page. CANVAS nodes named
 "Internal Only Canvas" (with `internalOnly: true`) are skipped.
 Child frames, groups, text, paths, etc. become Penpot shapes.
 
 ### .deck files (presentations)
+
 Each SLIDE node becomes a Penpot page. The CANVAS, SLIDE_GRID,
 and SLIDE_ROW structural nodes are skipped (they are just
 Figma-internal containers). A deck with 10 slides produces
 10 Penpot pages.
 
 ### .jam files (whiteboards)
+
 Same as .fig: each CANVAS becomes a page. STICKY notes are
 converted as frames (Penpot has no sticky note type).
 SECTION, VECTOR, and ROUNDED_RECTANGLE nodes map normally.
 
 ### Paint type resolution
+
 Figma Paint objects have both `__type` (schema type name, e.g. "Paint")
 and `type` (enum value, e.g. "PaintType.SOLID"). Always check `type`
 first for the paint variant, not `__type`.

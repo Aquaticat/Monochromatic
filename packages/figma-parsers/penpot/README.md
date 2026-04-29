@@ -15,27 +15,30 @@ into Penpot binfile-v3 format: a ZIP archive of JSON files following the
 ## Usage
 
 ```ts
-import { parseFigmaFile } from "@monochromatic-dev/figma-kiwi";
-import { convertFigmaToPenpot, serializePenpotZip } from "@monochromatic-dev/figma-to-penpot";
-import { writeFile } from "node:fs/promises";
+import { parseFigmaFile, } from '@monochromatic-dev/figma-kiwi';
+import {
+  convertFigmaToPenpot,
+  serializePenpotZip,
+} from '@monochromatic-dev/figma-to-penpot';
+import { writeFile, } from 'node:fs/promises';
 
 // Parse the Figma file
-const figmaFile = await parseFigmaFile("input.fig");
+const figmaFile = await parseFigmaFile('input.fig',);
 
 // Convert to Penpot data model
-const penpotDoc = convertFigmaToPenpot(figmaFile, { fileName: "My Design" });
+const penpotDoc = convertFigmaToPenpot(figmaFile, { fileName: 'My Design', },);
 
 // Serialize to .penpot ZIP
-const zipBuffer = await serializePenpotZip(penpotDoc);
+const zipBuffer = await serializePenpotZip(penpotDoc,);
 
 // Write to file
-await writeFile("output.penpot", zipBuffer);
+await writeFile('output.penpot', zipBuffer,);
 ```
 
 Or use the convenience function that combines conversion and serialization:
 
 ```ts
-const zipBuffer = await figmaToPenpot(figmaFile, "output.penpot");
+const zipBuffer = await figmaToPenpot(figmaFile, 'output.penpot',);
 ```
 
 ## CLI
@@ -46,18 +49,18 @@ bun packages/figma-parsers/penpot/scripts/convert.ts input.fig [output.penpot]
 
 ## Type mapping
 
-| Figma NodeType | Penpot shape type |
-|---|---|
-| CANVAS | frame (becomes page) |
-| FRAME / SECTION / STICKY | frame |
-| GROUP | group |
-| SLIDE (deck) | frame (becomes page) |
-| TEXT | text |
-| ROUNDED_RECTANGLE / RECTANGLE | rect |
-| ELLIPSE | circle |
-| VECTOR / LINE / STAR / POLYGON | path |
-| BOOLEAN_OPERATION | bool |
-| SYMBOL / INSTANCE / COMPONENT | frame |
+| Figma NodeType                 | Penpot shape type    |
+| ------------------------------ | -------------------- |
+| CANVAS                         | frame (becomes page) |
+| FRAME / SECTION / STICKY       | frame                |
+| GROUP                          | group                |
+| SLIDE (deck)                   | frame (becomes page) |
+| TEXT                           | text                 |
+| ROUNDED_RECTANGLE / RECTANGLE  | rect                 |
+| ELLIPSE                        | circle               |
+| VECTOR / LINE / STAR / POLYGON | path                 |
+| BOOLEAN_OPERATION              | bool                 |
+| SYMBOL / INSTANCE / COMPONENT  | frame                |
 
 Nodes with no Penpot equivalent (DOCUMENT, NONE, NODE, SLIDE_GRID,
 SLIDE_ROW, VARIABLE, VARIABLE_SET) are skipped.
