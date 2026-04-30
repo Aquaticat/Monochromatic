@@ -18,14 +18,14 @@ All three formats share the same ZIP-based container:
 ## Usage
 
 ```typescript
-import { parseFigmaFile } from "@monochromatic-dev/figma-kiwi";
+import { parseFigmaFile, } from '@monochromatic-dev/figma-kiwi';
 
-const file = await parseFigmaFile("/path/to/design.fig");
+const file = await parseFigmaFile('/path/to/design.fig',);
 
-console.log(file.fileType); // "fig" | "deck" | "jam"
-console.log(file.meta.fileName);
-console.log(file.document?.nodeChanges?.length);
-console.log(file.images.size);
+console.log(file.fileType,); // "fig" | "deck" | "jam"
+console.log(file.meta.fileName,);
+console.log(file.document?.nodeChanges?.length,);
+console.log(file.images.size,);
 ```
 
 ## Decoded document structure

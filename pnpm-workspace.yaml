@@ -1,49 +1,19 @@
 packages:
 - 'packages/*/*'
 
-autoInstallPeers: false
-childConcurrency: 16
-dedupeDirectDeps: true
-hoist: false
-hoistWorkspacePackages: false
-linkWorkspacePackages: true
-managePackageManagerVersions: false
-nodeLinker: isolated
-packageImportMethod: hardlink
-preferWorkspacePackages: true
-resolutionMode: highest
-resolvePeersFromWorkspaceRoot: false
-savePrefix: ''
-saveWorkspaceProtocol: false
-shellEmulator: false
-strictPeerDependencies: true
-
-supportedArchitectures:
-  os:
-  - darwin
-  - linux
-  - current
-  cpu:
-  - x64
-  - arm64
-  - current
-  libc:
-  - glibc
-  - musl
-  - current
-
 allowBuilds:
+  '@vscode/ripgrep': set this to true or false
   core-js: false
+  koffi: set this to true or false
+  protobufjs: set this to true or false
   sharp: true
 
-overrides:
-  'jspdf>canvg': '-'
+autoInstallPeers: false
 
 catalog:
   '@anthropic-ai/sdk': '>=0.73.0'
   '@cspotcode/outdent': 'npm:outdent@>=0.8.0'
   '@csstools/css-tokenizer': '>=4.0.0'
-  '@mdx-js/mdx': '>=3.1.0'
   '@lezer/common': '>=1.2.0'
   '@lezer/css': '>=1.3.0'
   '@lezer/highlight': '>=1.2.0'
@@ -53,7 +23,11 @@ catalog:
   '@lezer/rust': '>=1.0.0'
   '@lezer/xml': '>=1.0.0'
   '@lezer/yaml': '>=1.0.0'
+  '@mariozechner/pi-coding-agent': '>=0.70.6'
+  '@mdx-js/mdx': '>=3.1.0'
   '@microsoft/tsdoc': '>=0.16.0'
+  '@mitata/counters': '>=0.0.8'
+  '@morphllm/morphsdk': '>=0.2.167'
   '@optique/core': '>=1.0.0-dev.0'
   '@optique/run': '>=1.0.0-dev.0'
   '@oxlint/plugins': '*'
@@ -62,6 +36,7 @@ catalog:
   '@tursodatabase/database': '>=0.5.1'
   '@types/bun': '>=1.3.8'
   '@types/chai': '>=5.2.3'
+  '@types/chai-as-promised': '>=8.0.2'
   '@types/hast': '>=3.0.4'
   '@types/hyphen': '>=1.14.0'
   '@types/mdx': '>=2.0.13'
@@ -69,21 +44,19 @@ catalog:
   '@types/sinon-chai': '>=4.0.0'
   '@typescript/native-preview': '>=7.0.0-dev.20260313.1'
   '@ungap/structured-clone': '>=1.3.0'
+  'browserslist': '>=4.28.1'
   'chai': '>=6.2.2'
   'chai-as-promised': '>=8.0.2'
-  '@types/chai-as-promised': '>=8.0.2'
-  'browserslist': '>=4.28.1'
   'crossws': '>=0.4.4'
   'csstype': '>=3.2.3'
   'decircular': '>=1.0.0'
   'dot-prop': '>=10.1.0'
   'exa-js': '>=2.3.0'
-  'expect-type': '>=1.3.0'
   'execa': '>=9.6.1'
+  'expect-type': '>=1.3.0'
   'feedsmith': '>=3.0.0-next.4'
   'file-type': '>=21.3.0'
   'find-up': '>=8.0.0'
-  'yaml': '>=2.8.0'
   'h3': '>=2.0.1-rc.16'
   'happy-dom': '>=20.5.0'
   'happy-opfs': '>=2.0.2'
@@ -95,7 +68,6 @@ catalog:
   'memfs': '>=4.17.2'
   'micromark': '>=4.0.2'
   'mitata': '>=1.0.34'
-  '@mitata/counters': '>=0.0.8'
   'nano-spawn': '>=2.0.0'
   'neovim': '>=5.4.0'
   'openai': '>=6.22.0'
@@ -105,10 +77,11 @@ catalog:
   'oxlint': '>=1.55.0'
   'oxlint-tsgolint': '>=0.16.0'
   'p-limit': '>=7.3.0'
-  'preact': '>=10.26.0'
-  'preact-render-to-string': '>=6.5.0'
+  'pdfjs-dist': '>=4.0.0'
   'postcss': '>=8.5.6'
   'postcss-html': '>=1.8.1'
+  'preact': '>=10.26.0'
+  'preact-render-to-string': '>=6.5.0'
   'rehype-autolink-headings': '>=7.1.0'
   'rehype-parse': '>=9.0.1'
   'rehype-slug-custom-id': '>=2.0.0'
@@ -140,4 +113,37 @@ catalog:
   'typescript': '>=6.0.1-rc'
   'unified': '>=11.0.5'
   'watcher': '>=2.3.1'
+  'yaml': '>=2.8.0'
   'zod': '>=4.3.6'
+childConcurrency: 16
+dedupeDirectDeps: true
+hoist: false
+hoistWorkspacePackages: false
+linkWorkspacePackages: true
+managePackageManagerVersions: false
+nodeLinker: isolated
+
+overrides:
+  'jspdf>canvg': '-'
+packageImportMethod: hardlink
+preferWorkspacePackages: true
+resolutionMode: highest
+resolvePeersFromWorkspaceRoot: false
+savePrefix: ''
+saveWorkspaceProtocol: false
+shellEmulator: false
+strictPeerDependencies: true
+
+supportedArchitectures:
+  cpu:
+  - x64
+  - arm64
+  - current
+  libc:
+  - glibc
+  - musl
+  - current
+  os:
+  - darwin
+  - linux
+  - current

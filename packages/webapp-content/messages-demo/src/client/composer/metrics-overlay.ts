@@ -1,0 +1,267 @@
+/**
+ * Compile-pipeline metrics overlay.
+ *
+ * Mounted by `composer.ts` only when the URL carries `?debug=1`. The
+ * overlay is a small fixed-position panel that displays the live
+ * snapshot of the worker's `metrics` channel: median + p99 compile
+ * time, max PUT-queue depth, wasted-PUT count, and the most recent
+ * tier-2 \-\> tier-3 transition time.
+ *
+ * The samples come from two sources:
+ *
+ * - Worker `metrics` messages, emitted at the end of every compile
+ *   pass. The aggregator keeps a rolling buffer of the last
+ *   `SAMPLE_BUFFER` compile times so the overlay stays responsive
+ *   under long sessions.
+ * - The `recordTransition` helper, called from `promoteToTier3`
+ *   immediately after the buffer flush.
+ */
+
+import {
+  median,
+  percentile,
+  PERCENTILE_99,
+} from './metrics-stats.ts';
+import type {
+  CompilePipelineMetrics,
+  ComposerState,
+} from './state.ts';
+
+/** Maximum number of compile samples to retain in the rolling buffer. */
+const SAMPLE_BUFFER = 200;
+
+/**
+ * Empty metrics snapshot used to seed `state.metrics` when the
+ * overlay mounts.
+ *
+ * @returns fresh zeroed snapshot
+ */
+function emptyMetrics(): CompilePipelineMetrics {
+  return {
+    compileMsMedian: 0,
+    compileMsP99: 0,
+    compileSamples: 0,
+    putQueueDepthMax: 0,
+    wastedPuts: 0,
+    transitionMs: null,
+  };
+}
+
+/**
+ * Renders one row of the overlay as an HTML fragment.
+ *
+ * @param label - row label shown on the left
+ *
+ * @param value - value shown on the right
+ *
+ * @returns innerHTML fragment
+ */
+function row(
+  label: string,
+  value: string,
+): string {
+  return `<div class="composer-metrics-row"><span>${label}</span><span>${value}</span></div>`;
+}
+
+/**
+ * Builds the overlay DOM and returns a function that re-renders it
+ * from the latest `state.metrics` snapshot.
+ *
+ * @param input - parent element to mount under and shared state
+ *
+ * @returns render callback
+ *
+ * @example
+ * ```ts
+ * const render = mountMetricsOverlay({ parent: document.body, state });
+ * ```
+ */
+function mountMetricsOverlay(
+  input: {
+    parent: HTMLElement;
+    state: ComposerState;
+  },
+): () => void {
+  const overlay = document.createElement('div',);
+  overlay.className = 'composer-metrics-overlay';
+  overlay.dataset['testid'] = 'metrics-overlay';
+  input.parent.append(overlay,);
+  return function render(): void {
+    const m = input.state.metrics ?? emptyMetrics();
+    overlay.innerHTML = `${row(
+      'compile p50',
+      `${m.compileMsMedian.toFixed(1,)} ms`,
+    )}${row(
+      'compile p99',
+      `${m.compileMsP99.toFixed(1,)} ms`,
+    )}${row(
+      'samples',
+      String(m.compileSamples,),
+    )}${row(
+      'put queue max',
+      String(m.putQueueDepthMax,),
+    )}${row(
+      'wasted puts',
+      String(m.wastedPuts,),
+    )}${row(
+      'transition',
+      m.transitionMs === null
+        ? 'n/a'
+        : `${m.transitionMs.toFixed(1,)} ms`,
+    )}`;
+  };
+}
+
+/** Folded shape of the worker `metrics` payload after type narrowing. */
+type WorkerMetricsPayload = {
+  compileMs?: readonly unknown[];
+  maxPutQueueDepth?: unknown;
+  wastedPuts?: unknown;
+};
+
+/**
+ * Narrows `data` to a worker `metrics` payload, returning `null`
+ * when the shape does not match.
+ *
+ * @param data - inbound message data
+ *
+ * @returns the payload, or null when unrelated
+ */
+function asMetricsPayload(data: unknown,): WorkerMetricsPayload | null {
+  if (typeof data !== 'object' || data === null || !('kind' in data))
+    return null;
+  const message: { kind: unknown; } = data;
+  if (message.kind !== 'metrics')
+    return null;
+  // Narrow to the optional-fields shape; the worker emits a stricter
+  // type, but we accept anything structurally compatible.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- structural narrowing
+  return data as WorkerMetricsPayload;
+}
+
+/**
+ * Folds payload counts (queue depth max, wasted puts) into the
+ * snapshot. Compile-time samples are buffered separately by the
+ * caller.
+ *
+ * @param input - current snapshot + payload
+ *
+ * @returns next snapshot
+ */
+function foldCounters(
+  input: {
+    current: CompilePipelineMetrics;
+    payload: WorkerMetricsPayload;
+  },
+): CompilePipelineMetrics {
+  let next = input.current;
+  if (typeof input.payload.maxPutQueueDepth === 'number') {
+    next = {
+      ...next,
+      putQueueDepthMax: Math.max(
+        next.putQueueDepthMax,
+        input.payload.maxPutQueueDepth,
+      ),
+    };
+  }
+  if (typeof input.payload.wastedPuts === 'number') {
+    next = {
+      ...next,
+      wastedPuts: next.wastedPuts + input.payload.wastedPuts,
+    };
+  }
+  return next;
+}
+
+/**
+ * Attaches the metrics overlay and seeds `state.metrics`. Returns
+ * helpers the composer holds onto for the worker / promotion sites
+ * to call into.
+ *
+ * @param input - parent element and shared state
+ *
+ * @returns helpers to feed worker metrics and transition timings
+ *
+ * @example
+ * ```ts
+ * const overlay = attachMetricsOverlay({ parent: document.body, state });
+ * worker.addEventListener('message', e => overlay.onWorkerMessage(e.data));
+ * ```
+ */
+export function attachMetricsOverlay(
+  input: {
+    parent: HTMLElement;
+    state: ComposerState;
+  },
+): {
+  /**
+   * Folds a worker `metrics` message into the rolling sample buffer
+   * and re-renders. Other message kinds are ignored.
+   */
+  onWorkerMessage: (data: unknown,) => void;
+  /** Records one tier 2 -\> 3 transition wall-clock time. */
+  recordTransition: (ms: number,) => void;
+} {
+  input.state.metrics = emptyMetrics();
+  const samples: number[] = [];
+  const render = mountMetricsOverlay({
+    parent: input.parent,
+    state: input.state,
+  },);
+  render();
+
+  /** Recomputes derived stats from the rolling buffer and re-renders. */
+  function refresh(): void {
+    if (input.state.metrics === null)
+      return;
+    const sorted = samples.toSorted(function asc(
+      a,
+      b,
+    ) {
+      return a - b;
+    },);
+    input.state.metrics = {
+      ...input.state.metrics,
+      compileMsMedian: median(sorted,),
+      compileMsP99: percentile({
+        sortedAsc: sorted,
+        p: PERCENTILE_99,
+      },),
+      compileSamples: samples.length,
+    };
+    render();
+  }
+
+  return {
+    onWorkerMessage(data,) {
+      const payload = asMetricsPayload(data,);
+      if (payload === null)
+        return;
+      if (Array.isArray(payload.compileMs,)) {
+        for (const sample of payload.compileMs) {
+          if (typeof sample !== 'number')
+            continue;
+          samples.push(sample,);
+          if (samples.length > SAMPLE_BUFFER)
+            samples.shift();
+        }
+      }
+      if (input.state.metrics !== null) {
+        input.state.metrics = foldCounters({
+          current: input.state.metrics,
+          payload,
+        },);
+      }
+      refresh();
+    },
+    recordTransition(ms,) {
+      if (input.state.metrics === null)
+        return;
+      input.state.metrics = {
+        ...input.state.metrics,
+        transitionMs: ms,
+      };
+      render();
+    },
+  };
+}

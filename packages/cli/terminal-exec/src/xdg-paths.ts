@@ -37,10 +37,10 @@ const l = tagged({
 export function configPaths(
   { desktops, }: { desktops: readonly string[]; },
 ): readonly string[] {
-  const home = Bun.env['HOME'] ?? '/tmp';
-  const configHome = Bun.env['XDG_CONFIG_HOME'] ?? `${home}/.config`;
-  const configDirs = (Bun.env['XDG_CONFIG_DIRS'] ?? '/etc/xdg').split(':',);
-  const dataDirs = (Bun.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(
+  const home = process.env['HOME'] ?? '/tmp';
+  const configHome = process.env['XDG_CONFIG_HOME'] ?? `${home}/.config`;
+  const configDirs = (process.env['XDG_CONFIG_DIRS'] ?? '/etc/xdg').split(':',);
+  const dataDirs = (process.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(
     ':',
   );
 
@@ -83,9 +83,9 @@ export function configPaths(
  * ```
  */
 export function applicationDirs(): readonly string[] {
-  const home = Bun.env['HOME'] ?? '/tmp';
-  const dataHome = Bun.env['XDG_DATA_HOME'] ?? `${home}/.local/share`;
-  const dataDirs = (Bun.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(
+  const home = process.env['HOME'] ?? '/tmp';
+  const dataHome = process.env['XDG_DATA_HOME'] ?? `${home}/.local/share`;
+  const dataDirs = (process.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(
     ':',
   );
 
@@ -117,7 +117,7 @@ export function applicationDirs(): readonly string[] {
  * ```
  */
 export function currentDesktops(): readonly string[] {
-  const raw = Bun.env['XDG_CURRENT_DESKTOP'] ?? '';
+  const raw = process.env['XDG_CURRENT_DESKTOP'] ?? '';
   return raw
     .split(':',)
     .filter(function nonEmpty(s,) {

@@ -1,1 +1,1 @@
-export { default } from '@monochromatic-dev/config-tsdown/.ts';
+export { default, } from '@monochromatic-dev/config-tsdown/.ts';

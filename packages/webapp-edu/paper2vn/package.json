@@ -1,0 +1,25 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/webapp-edu-paper2vn",
+  "description": "Self-contained HTML web app that turns academic papers into visual-novel-style lectures narrated by a configurable persona, with BYO-key LLM providers and Web Speech voice playback",
+  "type": "module",
+  "main": "src/build.ts",
+  "version": "0.0.1",
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
+    "pdfjs-dist": "catalog:",
+    "typesafe-i18n": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/webapp-edu/paper2vn"
+  },
+  "sideEffects": true
+}

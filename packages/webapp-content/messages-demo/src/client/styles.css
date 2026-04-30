@@ -1,0 +1,355 @@
+/*
+ * Deliberately minimal styling -- system font, generous spacing,
+ * no theming. Goal is legibility, not visual identity.
+ */
+
+:root {
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  line-height: 1.5;
+
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+
+  padding-block-end: 12rem;
+
+  font-size: 1rem;
+}
+
+.site-header {
+  padding-block: 1rem;
+
+  padding-inline: 1.5rem;
+
+  border-block-end: 1px solid currentcolor;
+}
+
+.site-title {
+  font-weight: bold;
+
+  text-decoration: none;
+
+  color: inherit;
+}
+
+.feed-main {
+  max-inline-size: 48rem;
+
+  margin-inline: auto;
+
+  padding-inline: 1.5rem;
+
+  padding-block: 2rem;
+}
+
+.feed-card {
+  border-block-end: 1px solid currentcolor;
+
+  padding-block: 1rem;
+}
+
+.card-meta {
+  display: flex;
+
+  gap: 0.75rem;
+
+  font-size: 0.875rem;
+
+  opacity: 0.75;
+
+  margin-block-end: 0.5rem;
+}
+
+.card-preview {
+  margin-block: 0.25rem;
+
+  white-space: pre-wrap;
+}
+
+.card-actions {
+  margin-block-start: 0.5rem;
+
+  font-size: 0.875rem;
+}
+
+.feed-pagination {
+  margin-block-start: 2rem;
+
+  text-align: center;
+}
+
+.empty-state {
+  padding-block: 4rem;
+
+  text-align: center;
+
+  opacity: 0.75;
+}
+
+.message-article {
+  padding-block: 1rem;
+}
+
+.message-meta {
+  display: flex;
+
+  gap: 0.75rem;
+
+  font-size: 0.875rem;
+
+  margin-block-end: 1rem;
+
+  opacity: 0.75;
+}
+
+.chunk-nav {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  font-size: 0.875rem;
+
+  margin-block: 1rem;
+
+  padding-block: 0.5rem;
+
+  border-block: 1px solid currentcolor;
+}
+
+.chunk-nav .disabled {
+  opacity: 0.4;
+}
+
+.message-body {
+  padding-block: 1rem;
+}
+
+.message-body pre {
+  overflow-x: auto;
+
+  padding: 0.75rem;
+
+  background-color: rgb(127 127 127 / 10%);
+
+  border-radius: 0.25rem;
+}
+
+.message-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  font-size: 0.875rem;
+}
+
+.composer-footer {
+  position: fixed;
+
+  inset-block-end: 0;
+
+  inset-inline: 0;
+
+  padding: 0.75rem 1.5rem;
+
+  background-color: Canvas;
+
+  border-block-start: 1px solid currentcolor;
+
+  z-index: 10;
+}
+
+.composer {
+  display: grid;
+
+  grid-template-columns: auto 1fr auto;
+
+  gap: 0.5rem;
+
+  align-items: stretch;
+
+  max-inline-size: 48rem;
+
+  margin-inline: auto;
+}
+
+.composer-identity {
+  font: inherit;
+
+  padding: 0.5rem;
+}
+
+.composer-body {
+  font: inherit;
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  font-size: 0.875rem;
+
+  padding: 0.5rem;
+
+  min-block-size: 3rem;
+
+  max-block-size: 16rem;
+
+  resize: vertical;
+}
+
+.composer-send {
+  font: inherit;
+
+  padding-inline: 1rem;
+}
+
+.composer-status {
+  font-size: 0.75rem;
+
+  opacity: 0.75;
+
+  text-align: end;
+
+  margin-block-start: 0.25rem;
+}
+
+.composer-volatile-badge {
+  display: inline-block;
+
+  margin-inline-start: 0.5rem;
+
+  padding-inline: 0.5rem;
+
+  border: 1px solid currentcolor;
+
+  border-radius: 0.25rem;
+
+  font-size: 0.75rem;
+}
+
+/* Compile-pipeline metrics overlay: visible only when ?debug=1 is set on
+   the URL. Fixed-position so it stays visible while the user types. */
+.composer-metrics-overlay {
+  position: fixed;
+
+  inset-block-end: 0.5rem;
+
+  inset-inline-end: 0.5rem;
+
+  min-inline-size: 14rem;
+
+  padding-block: 0.5rem;
+
+  padding-inline: 0.75rem;
+
+  border: 1px solid currentcolor;
+
+  border-radius: 0.25rem;
+
+  background-color: var(--color-bg, #fff);
+
+  font-size: 0.75rem;
+
+  font-family: ui-monospace, monospace;
+
+  z-index: 1000;
+}
+
+.composer-metrics-row {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 1rem;
+}
+
+.edit-shell {
+  padding-block: 2rem;
+}
+
+.edit-meta {
+  font-size: 0.875rem;
+
+  opacity: 0.75;
+}
+
+/* Tier-3 chunk-paginated editor: prev/next nav + single-chunk surface. */
+.composer.tier-3 .composer-body {
+  min-block-size: 8rem;
+
+  max-block-size: 24rem;
+}
+
+/* Custom editor host: the worker-backed editor mounts here in place of
+   the textarea when `?editor=custom` is active. */
+.composer-body--custom {
+  display: block;
+
+  overflow: auto;
+
+  font: inherit;
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  font-size: 0.875rem;
+
+  border: 1px solid currentcolor;
+
+  padding: 0.5rem;
+
+  min-block-size: 3rem;
+
+  max-block-size: 16rem;
+
+  white-space: pre;
+}
+
+.ce-host {
+  position: relative;
+
+  inline-size: 100%;
+}
+
+.ce-spacer {
+  position: relative;
+
+  inline-size: 100%;
+}
+
+.ce-surface {
+  position: relative;
+
+  inline-size: 100%;
+
+  outline: none;
+}
+
+.ce-line {
+  font-family: inherit;
+
+  font-size: inherit;
+
+  line-height: inherit;
+
+  white-space: pre;
+}
+
+.composer-chunk-nav {
+  display: flex;
+
+  gap: 0.5rem;
+
+  align-items: center;
+
+  font-size: 0.75rem;
+
+  margin-block-end: 0.25rem;
+
+  grid-column: 1 / -1;
+}
+
+.composer-chunk-nav button {
+  font: inherit;
+
+  padding-inline: 0.5rem;
+}

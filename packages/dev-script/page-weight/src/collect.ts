@@ -38,7 +38,10 @@ export type PageWeight = {
  * @returns file contents as a string
  */
 function readText(absolutePath: string,): Promise<string> {
-  return readFile(absolutePath, 'utf8',);
+  return readFile(
+    absolutePath,
+    'utf8',
+  );
 }
 
 /**
@@ -164,7 +167,10 @@ export async function weighPage(
   const assets: string[] = [htmlPath,];
 
   const htmlSource = await readText(htmlPath,);
-  const { urls, inlineStyles, } = extractHtmlRefs(htmlSource,);
+  const {
+    urls,
+    inlineStyles,
+  } = extractHtmlRefs(htmlSource,);
 
   for (const ref of urls) {
     const resolved = resolveReference({

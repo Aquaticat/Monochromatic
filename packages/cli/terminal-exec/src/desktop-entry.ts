@@ -6,6 +6,7 @@
  * @module
  */
 
+import { readFile, } from 'node:fs/promises';
 import { applyKey, } from './desktop-entry-apply.ts';
 import {
   createEmptyEntry,
@@ -43,11 +44,17 @@ const l = tagged({
 export async function parseDesktopEntry(
   { path, }: { path: string; },
 ): Promise<DesktopEntry | null> {
-  const file = Bun.file(path,);
-  if (!await file.exists())
+  let text = '';
+  try {
+    text = await readFile(
+      path,
+      'utf8',
+    );
+  }
+  catch {
     return null;
+  }
 
-  const text = await file.text();
   const result = createEmptyEntry();
 
   let inDesktopEntry = false;

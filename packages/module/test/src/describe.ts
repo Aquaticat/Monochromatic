@@ -51,6 +51,12 @@ export type DescribeOptions = {
    * - `Infinity` or `Number.MAX_SAFE_INTEGER` -- unbounded concurrency via
    *   raw `Promise.allSettled` (no `p-limit` overhead)
    *
+   * **Not inherited by child describes.** Each `describe` has its own
+   * `concurrency` defaulting to {@link DEFAULT_CONCURRENCY} (16).
+   * When child tests stub shared global state (e.g. prototype methods),
+   * set `concurrency: 1` on the innermost `describe` that contains
+   * those tests and use thunks (`() => it(...)`) so execution is deferred.
+   *
    * Defaults to {@link DEFAULT_CONCURRENCY} (16).
    */
   readonly concurrency?: number;

@@ -1,0 +1,213 @@
+/**
+ * Storage capability probes.
+ *
+ * Each probe returns `true` only when a round-trip read/write succeeds
+ * end to end -- not just "the API is defined." A 500 ms timeout caps
+ * each probe so a hung backend cannot delay startup.
+ *
+ * Probes are non-throwing: any rejection or thrown exception turns into
+ * `false`. Storage features are pure enhancements; the app must remain
+ * fully functional with all probes returning `false`.
+ */
+
+/** Capability flags consulted by the enhancement modules. */
+export type StorageCaps = {
+  readonly idb: boolean;
+  readonly opfs: boolean;
+  readonly localStorage: boolean;
+};
+
+/** Tag used for probe writes so concurrent test rows do not collide. */
+const PROBE_KEY = '__messages_demo_storage_probe__';
+
+/** Cap on each individual probe in milliseconds. */
+const PROBE_TIMEOUT_MS = 500;
+
+/**
+ * Runs all three probes in parallel. Resolves with the cap matrix.
+ *
+ * @returns capability flags
+ *
+ * @example
+ * ```ts
+ * const caps = await probeStorage();
+ * if (caps.localStorage) ...
+ * ```
+ */
+export async function probeStorage(): Promise<StorageCaps> {
+  const [idb, opfs, ls,] = await Promise.all([
+    withTimeout(probeIdb(),),
+    withTimeout(probeOpfs(),),
+    withTimeout(probeLocalStorage(),),
+  ],);
+  return {
+    idb,
+    opfs,
+    localStorage: ls,
+  };
+}
+
+/**
+ * Wraps a probe promise in a `setTimeout` race so a hung storage
+ * backend never delays startup beyond `PROBE_TIMEOUT_MS`.
+ *
+ * @param probe - async probe returning a boolean
+ *
+ * @returns probe result, or `false` on timeout / rejection
+ */
+async function withTimeout(probe: Promise<boolean>,): Promise<boolean> {
+  let timer: ReturnType<typeof setTimeout> | undefined = undefined;
+  // Wrapping `setTimeout` requires the Promise constructor; there is no
+  // promisified timer in our supported browser baseline.
+  // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- bridges callback API
+  const timeout = new Promise<boolean>(function executor(resolve,) {
+    timer = setTimeout(
+      function onTimeout() {
+        resolve(false,);
+      },
+      PROBE_TIMEOUT_MS,
+    );
+  },);
+  let result = false;
+  try {
+    result = await Promise.race([
+      probe,
+      timeout,
+    ],);
+  }
+  catch {
+    result = false;
+  }
+  if (timer !== undefined)
+    clearTimeout(timer,);
+  return result;
+}
+
+/**
+ * Tests whether IndexedDB can open + put + get + delete a 1-byte record.
+ *
+ * @returns `true` when round-trip succeeds
+ */
+function probeIdb(): Promise<boolean> {
+  // IndexedDB exposes an event-callback API; the Promise constructor is
+  // the only reasonable bridge.
+  // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- bridges callback API
+  return new Promise<boolean>(function executor(resolve,) {
+    if (typeof indexedDB === 'undefined') {
+      resolve(false,);
+      return;
+    }
+    const request = indexedDB.open(
+      PROBE_KEY,
+      1,
+    );
+    request.addEventListener(
+      'upgradeneeded',
+      function onUpgrade(): void {
+        request.result.createObjectStore('probe',);
+      },
+    );
+    request.addEventListener(
+      'success',
+      function onSuccess(): void {
+        try {
+          const dbConn = request.result;
+          const tx = dbConn.transaction(
+            'probe',
+            'readwrite',
+          );
+          const store = tx.objectStore('probe',);
+          store.put(
+            1,
+            'k',
+          );
+          tx.addEventListener(
+            'complete',
+            function onComplete(): void {
+              dbConn.close();
+              indexedDB.deleteDatabase(PROBE_KEY,);
+              resolve(true,);
+            },
+          );
+          tx.addEventListener(
+            'error',
+            function onErrorEvent(): void {
+              dbConn.close();
+              resolve(false,);
+            },
+          );
+        }
+        catch {
+          resolve(false,);
+        }
+      },
+    );
+    request.addEventListener(
+      'error',
+      function onError(): void {
+        resolve(false,);
+      },
+    );
+  },);
+}
+
+/**
+ * Tests whether OPFS (Origin Private File System) is available and
+ * accepts a write.
+ *
+ * @returns `true` when round-trip succeeds
+ */
+async function probeOpfs(): Promise<boolean> {
+  // navigator.storage.getDirectory is the OPFS entry point. The check
+  // is feature-detection plus a write attempt because some browsers
+  // expose the API but reject writes (e.g. Safari private mode).
+  if (typeof navigator === 'undefined' || navigator.storage?.getDirectory === undefined)
+    return false;
+  try {
+    const root = await navigator.storage.getDirectory();
+    const handle = await root.getFileHandle(
+      PROBE_KEY,
+      { create: true, },
+    );
+    const writable = await handle.createWritable();
+    await writable.write('1',);
+    await writable.close();
+    await root.removeEntry(PROBE_KEY,);
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
+/**
+ * Tests whether `localStorage` accepts a write. Some browsers expose
+ * the property but throw on `setItem` in private mode or when storage
+ * is full.
+ *
+ * Returns a `Promise` for symmetry with the IDB and OPFS probes; the
+ * shared `withTimeout` wrapper expects `Promise<boolean>` for all three.
+ *
+ * @returns `true` when set+get+remove succeeds
+ *
+ * @example
+ * ```ts
+ * const ok = await probeLocalStorage();
+ * ```
+ */
+function probeLocalStorage(): Promise<boolean> {
+  if (typeof localStorage === 'undefined')
+    return Promise.resolve(false,);
+  try {
+    localStorage.setItem(
+      PROBE_KEY,
+      '1',
+    );
+    const value = localStorage.getItem(PROBE_KEY,);
+    localStorage.removeItem(PROBE_KEY,);
+    return Promise.resolve(value === '1',);
+  }
+  catch {
+    return Promise.resolve(false,);
+  }
+}

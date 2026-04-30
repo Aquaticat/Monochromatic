@@ -177,6 +177,19 @@ export async function it({
       caughtError = error;
     }
 
+    // Restore sandbox before proceeding to assertion checks
+    // or the next repeat run. This ensures stubs are cleaned up
+    // before `it()` resolves its promise, which is important
+    // when a parent `describe` uses `concurrency: 1` with thunks
+    // — the parent awaits each `it()` promise, so the sandbox
+    // must be restored before that await resolves.
+    // Without this, sandbox.restore() only runs via `await using`
+    // disposal after `it()` returns, which is too late for
+    // sequential parents that start the next child immediately.
+    // Note: this does NOT fix concurrent tests that stub shared
+    // global state — those must use `concurrency: 1` with thunks.
+    sandbox.restore();
+
     const durationMs = performance.now() - runStart;
 
     const failsReason = typeof fails === 'string' ? ` (${fails})` : '';

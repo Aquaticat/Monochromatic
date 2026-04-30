@@ -5,6 +5,7 @@
  * @module
  */
 
+import { readFile, } from 'node:fs/promises';
 import {
   l as parentLogger,
   tagged,
@@ -55,14 +56,19 @@ export async function parseConfigFiles(
   const execArgDefaults = new Map<string, string>();
 
   for (const path of paths) {
-    const file = Bun.file(path,);
-    /* oxlint-disable-next-line no-await-in-loop -- sequential: config files override in priority order */
-    if (!await file.exists())
+    let text = '';
+    try {
+      /* oxlint-disable-next-line no-await-in-loop -- sequential: config files override in priority order */
+      text = await readFile(
+        path,
+        'utf8',
+      );
+    }
+    catch {
       continue;
+    }
 
     l.debug(`reading config '${path}'`,);
-    /* oxlint-disable-next-line no-await-in-loop -- sequential: config files override in priority order */
-    const text = await file.text();
 
     for (const rawLine of text.split('\n',)) {
       const line = rawLine.trim();

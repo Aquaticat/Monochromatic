@@ -5,6 +5,7 @@
  * @module
  */
 
+import { readFile, } from 'node:fs/promises';
 import {
   l as parentLogger,
   tagged,
@@ -30,17 +31,21 @@ const l = tagged({
  * ```
  */
 export async function kdeTerminalService(): Promise<string | null> {
-  const home = Bun.env['HOME'] ?? '/tmp';
-  const configHome = Bun.env['XDG_CONFIG_HOME'] ?? `${home}/.config`;
+  const home = process.env['HOME'] ?? '/tmp';
+  const configHome = process.env['XDG_CONFIG_HOME'] ?? `${home}/config`;
   const path = `${configHome}/kdeglobals`;
 
-  const file = Bun.file(path,);
-  if (!await file.exists()) {
+  let text = '';
+  try {
+    text = await readFile(
+      path,
+      'utf8',
+    );
+  }
+  catch {
     l.debug('kdeglobals not found',);
     return null;
   }
-
-  const text = await file.text();
 
   for (const rawLine of text.split('\n',)) {
     const line = rawLine.trim();

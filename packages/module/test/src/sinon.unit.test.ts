@@ -10,6 +10,22 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
+//region Shared prototype stub target
+
+/**
+ * Toy class whose prototype methods serve as safe stub targets
+ * for concurrent-isolation tests. Using a synthetic class avoids
+ * stubbing real third-party prototypes, which can leak into other
+ * test suites if a sandbox restore is missed.
+ */
+class Greeter {
+  greet(_name: string,): string {
+    return 'hi';
+  }
+}
+
+//endregion
+
 await describe({
   name: 'sinon via context',
   children: [
@@ -113,5 +129,44 @@ await describe({
         expect(spy,).toHaveReturnedWith(RETURN_VALUE,);
       },
     },),
+  ],
+},);
+
+await describe({
+  name: 'sinon prototype stub isolation',
+  // Sequential execution required — tests stub the same
+  // prototype method and would fail under concurrent execution
+  // because sinon refuses to wrap an already-wrapped method.
+  concurrency: 1,
+  children: [
+    () =>
+      it({
+        name: 'restores prototype stub before next test resolves (first test)',
+        fn: async ({ sinon, },) => {
+          sinon.stub(Greeter.prototype, 'greet',).returns('stubbed-a',);
+          const instance = new Greeter();
+          expect(instance.greet('x',),).toBe('stubbed-a',);
+        },
+      },),
+    () =>
+      it({
+        name: 'restores prototype stub before next test resolves (second test)',
+        fn: async ({ sinon, },) => {
+          // If the previous test's sandbox was not restored
+          // before this test started, this stub call would
+          // throw "Attempted to wrap greet which is already wrapped"
+          sinon.stub(Greeter.prototype, 'greet',).returns('stubbed-b',);
+          const instance = new Greeter();
+          expect(instance.greet('y',),).toBe('stubbed-b',);
+        },
+      },),
+    () =>
+      it({
+        name: 'prototype is restored to original after all stub tests',
+        fn: async () => {
+          const instance = new Greeter();
+          expect(instance.greet('z',),).toBe('hi',);
+        },
+      },),
   ],
 },);

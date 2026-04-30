@@ -14,14 +14,17 @@ import { text, } from 'node:stream/consumers';
 
 //region ANSI escape helpers
 
-const RESET = '\u001b[0m';
-const RED = '\x1B[31m';
-const GREEN = '\x1B[32m';
-const YELLOW = '\x1B[33m';
-const MAGENTA = '\x1B[35m';
-const WHITE = '\x1B[37m';
+const RESET = '\u001B[0m';
+const RED = '\u001B[31m';
+const GREEN = '\u001B[32m';
+const YELLOW = '\u001B[33m';
+const MAGENTA = '\u001B[35m';
+const WHITE = '\u001B[37m';
 
-function color(code: string, text: string,): string {
+function color(
+  code: string,
+  text: string,
+): string {
   return `${code}${text}${RESET}`;
 }
 
@@ -98,7 +101,11 @@ function formatModelDisplay(raw: string,): string {
   if (!match?.groups)
     return raw;
 
-  const { family, version, context, } = match.groups;
+  const {
+    family,
+    version,
+    context,
+  } = match.groups;
   const defaults = MODEL_DEFAULTS[family];
   let result = family;
 
@@ -162,11 +169,16 @@ function formatRateLimit(tier: RateLimitTier | undefined,): string {
   const timeLeft = formatRelativeTime(tier.resets_at,);
   const rateColor = remaining <= CRITICAL_THRESHOLD
     ? RED
-    : remaining <= CAUTION_THRESHOLD
-    ? YELLOW
-    : GREEN;
+    : (remaining <= CAUTION_THRESHOLD
+      ? YELLOW
+      : GREEN);
 
-  return `${color(rateColor, `${remaining}% left`,)} (${timeLeft})`;
+  return `${
+    color(
+      rateColor,
+      `${remaining}% left`,
+    )
+  } (${timeLeft})`;
 }
 
 //endregion
@@ -179,13 +191,19 @@ const CONTEXT_THRESHOLD_YELLOW = 100_000;
 const THOUSANDS = 1_000;
 
 /** Format used/total token counter with color based on usage level. */
-function formatContextWindow(used: number, total: number,): string {
+function formatContextWindow(
+  used: number,
+  total: number,
+): string {
   const usedFmt = used >= THOUSANDS
     ? `${String(Math.floor(used / THOUSANDS,),).padStart(3,)},${
       String(
         used % THOUSANDS,
       )
-        .padStart(3, '0',)
+        .padStart(
+          3,
+          '0',
+        )
     }`
     : String(used,).padStart(7,);
 
@@ -200,7 +218,12 @@ function formatContextWindow(used: number, total: number,): string {
     : '';
 
   return contextColor
-    ? `${color(contextColor, usedFmt,)}/${totalFmt}`
+    ? `${
+      color(
+        contextColor,
+        usedFmt,
+      )
+    }/${totalFmt}`
     : `${usedFmt}/${totalFmt}`;
 }
 
@@ -225,7 +248,10 @@ async function readEffortIndicator(): Promise<string> {
   try {
     const home = process.env['HOME'] ?? '';
     const settingsPath = `${home}/.claude/settings.json`;
-    const raw = await readFile(settingsPath, 'utf8',);
+    const raw = await readFile(
+      settingsPath,
+      'utf8',
+    );
     const settings: { effortLevel?: string; } = JSON.parse(raw,);
     const level = settings.effortLevel ?? 'high';
     return EFFORT_SYMBOLS[level] ?? '';
@@ -410,8 +436,16 @@ async function readActivityWord(
 
   try {
     const blob = await openAsBlob(transcriptPath,);
-    const start = Math.max(0, blob.size - TAIL_BYTES,);
-    const tail = await blob.slice(start, blob.size,).text();
+    const start = Math.max(
+      0,
+      blob.size - TAIL_BYTES,
+    );
+    const tail = await blob
+      .slice(
+        start,
+        blob.size,
+      )
+      .text();
     return findGerundInText(tail,) ?? '';
   }
   catch {
@@ -435,7 +469,12 @@ const modelSegment = displayName
   ? (function formatModel() {
     const model = formatModelDisplay(displayName,);
     return effortIndicator
-      ? `${model} ${color(YELLOW, effortIndicator,)}`
+      ? `${model} ${
+        color(
+          YELLOW,
+          effortIndicator,
+        )
+      }`
       : model;
   })()
   : '';
@@ -447,7 +486,12 @@ const used = (usage?.input_tokens ?? 0)
   + (usage?.cache_creation_input_tokens ?? 0)
   + (usage?.cache_read_input_tokens ?? 0)
   + (usage?.output_tokens ?? 0);
-const contextSegment = used > 0 && total > 0 ? formatContextWindow(used, total,) : '';
+const contextSegment = used > 0 && total > 0
+  ? formatContextWindow(
+    used,
+    total,
+  )
+  : '';
 
 // Rate limits (only visible when approaching limits)
 const fiveHour = formatRateLimit(input.rate_limits?.five_hour,);
@@ -459,7 +503,12 @@ const rateSegment = fiveHour && sevenDay
 // Activity word (context-aware, extracted from transcript)
 const activityWord = await readActivityWord(input.transcript_path,);
 
-const line = [modelSegment, contextSegment, rateSegment, activityWord,]
+const line = [
+  modelSegment,
+  contextSegment,
+  rateSegment,
+  activityWord,
+]
   .filter(function isNonEmpty(s,) {
     return s.length > 0;
   },)

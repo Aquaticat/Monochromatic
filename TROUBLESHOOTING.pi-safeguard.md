@@ -31,14 +31,19 @@ pi -p "Read README.md"
 resolved file path falls under a system prefix:
 
 ```typescript
-const SYSTEM_PREFIXES = ["/etc", "/usr", "/var", "/boot", "/sys", "/proc", "/dev", "/sbin", "/lib"];
+const SYSTEM_PREFIXES = ['/etc', '/usr', '/var', '/boot', '/sys', '/proc',
+  '/dev', '/sbin', '/lib',];
 
-function pathSignals(filePath, ctx) {
-  const resolved = resolvePath(filePath, ctx.cwd);
-  if (!isUnder(resolved, ctx.cwd)) return true;   // outside cwd -- flag
-  if (isHomeDotfile(resolved, ctx.home)) return true; // dotfile in $HOME -- flag
-  if (isSystemPath(resolved)) return true;         // system path -- flag
-  if (SECRET_PATH_PATTERN.test(filePath)) return true; // secret file -- flag
+function pathSignals(filePath, ctx,) {
+  const resolved = resolvePath(filePath, ctx.cwd,);
+  if (!isUnder(resolved, ctx.cwd,))
+    return true; // outside cwd -- flag
+  if (isHomeDotfile(resolved, ctx.home,))
+    return true; // dotfile in $HOME -- flag
+  if (isSystemPath(resolved,))
+    return true; // system path -- flag
+  if (SECRET_PATH_PATTERN.test(filePath,))
+    return true; // secret file -- flag
   return false;
 }
 ```
@@ -73,17 +78,21 @@ In the compiled dist at
 delete the line:
 
 ```javascript
-  if (isSystemPath(resolved)) return true;
+if (isSystemPath(resolved,))
+  return true;
 ```
 
 The corrected `pathSignals` function:
 
 ```javascript
-function pathSignals(filePath, ctx) {
-  const resolved = resolvePath(filePath, ctx.cwd);
-  if (!isUnder(resolved, ctx.cwd)) return true;
-  if (isHomeDotfile(resolved, ctx.home)) return true;
-  if (SECRET_PATH_PATTERN.test(filePath)) return true;
+function pathSignals(filePath, ctx,) {
+  const resolved = resolvePath(filePath, ctx.cwd,);
+  if (!isUnder(resolved, ctx.cwd,))
+    return true;
+  if (isHomeDotfile(resolved, ctx.home,))
+    return true;
+  if (SECRET_PATH_PATTERN.test(filePath,))
+    return true;
   return false;
 }
 ```
@@ -192,3 +201,193 @@ input and uses it as the judge.
   using a cheaper model.
 - Setting `strategy: "any-provider"` -- unless other providers have API
   keys configured, there are no candidates to find.
+
+---
+
+## pi-budget-model crashes on `ModelRegistry.getApiKey` — every flagged action requires manual approval
+
+**Date**: 2026-04-28
+**pi-safeguard version**: 2.0.1
+**pi-budget-model version**: 1.0.1
+**pi-coding-agent version**: 0.70.6
+**Upstream source**: [mgabor3141/yapp](https://github.com/mgabor3141/yapp), `packages/budget-model/src/index.ts`
+
+### Problem
+
+Every flagged action shows "No judge model available — manual approval
+required" regardless of the judge model configuration. Setting
+`majorVersions: 0` or `strategy: "any-provider"` has no effect. The
+judge is never reached.
+
+### Minimal reproduction
+
+```bash
+# Any action that triggers the safeguard flagger (e.g. a bash command
+# containing "sudo"):
+pi -p "run sudo apt update"
+# Result: "No judge model available — manual approval required."
+```
+
+### Root cause
+
+`pi-budget-model` 1.0.1 calls `ctx.modelRegistry.getApiKey(model)` at
+four locations in its compiled dist:
+
+```javascript
+// pi-budget-model/dist/index.js, lines 81, 113, 128, 156
+const apiKey = await ctx.modelRegistry.getApiKey(candidate,);
+```
+
+The `ModelRegistry` class in `@mariozechner/pi-coding-agent` 0.70.6
+**does not have** a `getApiKey(model)` method. It was replaced by
+`getApiKeyAndHeaders(model)`, which returns a structured result:
+
+```typescript
+// ModelRegistry methods in pi-coding-agent 0.70.6:
+getApiKeyAndHeaders(model: Model<Api>): Promise<ResolvedRequestAuth>;
+getApiKeyForProvider(provider: string): Promise<string | undefined>;
+```
+
+`ResolvedRequestAuth` is a discriminated union:
+
+```typescript
+{ ok: true; apiKey?: string; headers?: Record<string, string> }
+| { ok: false; error: string }
+```
+
+When `findBudgetModel` reaches the first `getApiKey` call, it throws:
+
+```
+TypeError: ctx.modelRegistry.getApiKey is not a function
+```
+
+Pi-safeguard's `evaluate` function catches **all** errors with a bare
+`catch` block:
+
+```javascript
+// pi-safeguard/dist/index.js
+async function evaluate(pi, ctx, config, systemPrompt, action, batchContext,
+  flowVerdicts,)
+{
+  let judge;
+  try {
+    judge = await resolveJudgeModel(ctx, config,);
+  }
+  catch {
+    return askUser(pi, ctx, action,
+      'No judge model available — manual approval required.',);
+  }
+  // ...
+}
+```
+
+The TypeError is silently swallowed. The user sees the generic
+"No judge model available" message with no indication that the real
+problem is a missing method, not a missing model.
+
+Exact source locations:
+
+- `packages/budget-model/src/index.ts` -- four calls to
+  `ctx.modelRegistry.getApiKey(model)`
+- `@mariozechner/pi-coding-agent` `core/model-registry.ts` --
+  `ModelRegistry` class has `getApiKeyAndHeaders` and
+  `getApiKeyForProvider` but no `getApiKey`
+- `packages/safeguard/src/index.ts` -- bare `catch` block in
+  `evaluate` that swallows the TypeError
+
+### Fix
+
+**Option A**: Monkey-patch `ModelRegistry.prototype` to add the missing
+method. Add this to the pi-safeguard dist so it runs before
+`findBudgetModel` is called:
+
+```javascript
+// Add to pi-safeguard/dist/index.js, before the first use of findBudgetModel
+import { ModelRegistry, } from '@mariozechner/pi-coding-agent';
+if (!ModelRegistry.prototype.getApiKey) {
+  ModelRegistry.prototype.getApiKey = async function(model,) {
+    const result = await this.getApiKeyAndHeaders(model,);
+    if (!result.ok)
+      return undefined;
+    return result.apiKey;
+  };
+}
+```
+
+**Option B**: Edit the pi-budget-model dist to call
+`getApiKeyAndHeaders` instead. Replace all four occurrences of:
+
+```javascript
+const apiKey = await ctx.modelRegistry.getApiKey(candidate,);
+```
+
+with:
+
+```javascript
+const apiKey = (await ctx.modelRegistry.getApiKeyAndHeaders(candidate,)).apiKey;
+```
+
+(and similarly for the other three call sites that use `model` instead
+of `candidate`).
+
+**Caveat**: Both patches are lost when `pi update` reinstalls
+pi-safeguard. Re-apply after updating, or install from a forked version.
+
+### What does not work
+
+- Setting `majorVersions: 0` -- the code crashes before reaching the
+  version filtering logic. The method does not exist regardless of
+  config.
+- Setting `strategy: "any-provider"` -- same crash, different code
+  path (the `getApiKey` calls in `findAnyProvider` and
+  `resolveModelOverride` are also broken).
+- Setting `modelOverride` to pin a specific judge model -- this calls
+  `getApiKey` in `resolveModelOverride`, which also crashes.
+- Configuring `judgeModel.instructions` -- the judge is never called;
+  the crash happens during model resolution.
+
+### Why the existing `majorVersions: 0` workaround from the previous section does not help
+
+The `majorVersions: 0` workaround targets a different (earlier) bug
+where the budget selector excluded older major versions. That fix is
+correct for its specific scenario, but it cannot help here because
+the `getApiKey` TypeError crashes the function **before** the version
+filtering logic runs. The `majorVersions` setting is never evaluated.
+
+### Draft upstream issue
+
+**Title**: `pi-budget-model` calls `ModelRegistry.getApiKey()` which no longer exists in pi-coding-agent 0.70.6
+
+**Labels**: bug
+
+**Description**:
+
+`pi-budget-model` 1.0.1 calls `ctx.modelRegistry.getApiKey(model)` at
+four locations, but `ModelRegistry` in `@mariozechner/pi-coding-agent`
+0.70.6 only has `getApiKeyAndHeaders(model)` and
+`getApiKeyForProvider(provider)`. The `getApiKey(model)` method was
+removed (or renamed) without a compatibility shim.
+
+This causes a `TypeError: ctx.modelRegistry.getApiKey is not a function`
+that is silently caught by pi-safeguard's bare `catch` block in
+`evaluate`, surfacing as the generic "No judge model available" message
+with no diagnostic detail.
+
+Every flagged action requires manual approval, regardless of
+configuration. The `majorVersions`, `costRatio`, `strategy`, and
+`modelOverride` settings are all unreachable.
+
+**Reproduction**:
+
+1. Install pi-safeguard 2.0.1 (which depends on pi-budget-model 1.0.1)
+2. Use any model that triggers the safeguard flagger
+3. Expected: judge model is selected and evaluates the action
+4. Actual: "No judge model available — manual approval required."
+
+**Suggested fix**:
+
+Replace `ctx.modelRegistry.getApiKey(model)` calls with
+`ctx.modelRegistry.getApiKeyAndHeaders(model)` and extract the API key
+from the structured result. Alternatively, add a `getApiKey(model)`
+compatibility method to `ModelRegistry` that wraps
+`getApiKeyAndHeaders`.

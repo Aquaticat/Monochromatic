@@ -52,7 +52,7 @@ for each definition:
 ### Primitives (8 types, same as stock Kiwi)
 
 | ~index | type_raw | Type   |
-|--------|----------|--------|
+| ------ | -------- | ------ |
 | 0      | -1       | bool   |
 | 1      | -2       | byte   |
 | 2      | -3       | int    |
@@ -94,6 +94,7 @@ difference -- type is unused for enum fields anyway. The rest matches exactly.
 ### VarFloat encoding detail
 
 The varfloat format stores float32 values compactly:
+
 - Zero uses 1 byte instead of 4.
 - The exponent is moved to the first byte so small absolute values
   (common in UI coordinates) may compress better.
@@ -105,6 +106,7 @@ The varfloat format stores float32 values compactly:
 
 The document data is a `Message` struct with tagged fields.
 For exported files, it typically contains:
+
 - tag 1: type = MessageType.NODE_CHANGES (1)
 - tag 2: sessionID = 0
 - tag 3: ackID = 0
@@ -116,6 +118,7 @@ NodeChange is a MESSAGE (tagged, terminated by 0). It has 565 fields
 but most are absent in any given node. Only non-default fields are encoded.
 
 Key fields (by tag):
+
 - tag 1: guid (GUID struct -- inline sessionID + localID varuints)
 - tag 2: phase (NodePhase enum)
 - tag 3: parentIndex (ParentIndex struct -- inline GUID + position string)
@@ -129,6 +132,7 @@ Key fields (by tag):
 ### ParentIndex encoding
 
 ParentIndex is a STRUCT (all fields present in order):
+
 1. guid: GUID struct (sessionID varuint + localID varuint, inline)
 2. position: string (null-terminated, encodes child ordinal within parent)
 
@@ -138,6 +142,7 @@ The position string uses a custom encoding where "!" = first child,
 ### GUID encoding
 
 GUID is a STRUCT (all fields present in order):
+
 1. sessionID: uint (varuint)
 2. localID: uint (varuint)
 
@@ -172,12 +177,12 @@ and nodeChanges are typically present.
 
 All three file types decoded 100%:
 
-| File | Type | Doc bytes | Nodes | Decoded |
-|------|------|-----------|-------|---------|
-| Color palette - base.fig | fig | 2,779 | 8 | 100% |
-| ScholarCopilot.fig | fig | 3,718,268 | 2,976 | 100% |
-| MTM6162-040 participation 2 cover.deck | deck | 114,358 | 59 | 100% |
-| Todo app - Brainstorming.jam | jam | 621,850 | 58 | 100% |
+| File                                   | Type | Doc bytes | Nodes | Decoded |
+| -------------------------------------- | ---- | --------- | ----- | ------- |
+| Color palette - base.fig               | fig  | 2,779     | 8     | 100%    |
+| ScholarCopilot.fig                     | fig  | 3,718,268 | 2,976 | 100%    |
+| MTM6162-040 participation 2 cover.deck | deck | 114,358   | 59    | 100%    |
+| Todo app - Brainstorming.jam           | jam  | 621,850   | 58    | 100%    |
 
 ## Research files
 

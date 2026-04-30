@@ -382,3 +382,17 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Switch from config-as-data to TypeScript when config needs logic (`if`, `map`, `await`)
 - Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture
 - Nested calls (`c(b(a()))`) over method chaining to keep functions self-contained
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues via `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+No context files — agents read fresh code on every probe. See `docs/agents/domain.md`.

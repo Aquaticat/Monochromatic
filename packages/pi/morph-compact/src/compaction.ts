@@ -1,0 +1,249 @@
+/**
+ * Morph Compact API client and compression ratio logic.
+ */
+
+import {
+  type CompactionResult,
+  convertToLlm,
+  serializeConversation,
+  type SessionBeforeCompactEvent,
+} from '@mariozechner/pi-coding-agent';
+import { CompactClient, } from '@morphllm/morphsdk/tools/compact';
+import {
+  computeFileLists,
+  formatFileOperations,
+} from './file-tracking.ts';
+import {
+  buildMorphInput,
+  extractLatestQuery,
+  wrapMorphOutput,
+} from './formatting.ts';
+import type {
+  MorphCompactionAttempt,
+  MorphCompactionDetails,
+} from './types.ts';
+
+//region Compression ratio constants
+
+/** Maximum query length sent to Morph (avoids oversized prompts). */
+const MAX_QUERY_LENGTH = 500;
+
+/** Default compaction timeout in milliseconds. */
+const COMPACTION_TIMEOUT_MS = 120_000;
+
+/**
+ * Compression ratio when context pressure is critical (\>80% window).
+ *
+ * Ratios are higher than traditional summarization because Morph Compact
+ * is deletion-based at 33K tok/s — re-triggering compaction is fast enough
+ * that aggressive pruning is unnecessary. Preserving more context per cycle
+ * reduces drift between compaction rounds, keeping the model's working
+ * memory closer to the full conversation.
+ */
+const RATIO_CRITICAL = 0.3;
+
+/**
+ * Compression ratio when context pressure is high (\>60% window).
+ *
+ * See {@link RATIO_CRITICAL} for rationale on higher ratios.
+ */
+const RATIO_HIGH = 0.4;
+
+/**
+ * Compression ratio when context pressure is moderate.
+ *
+ * See {@link RATIO_CRITICAL} for rationale on higher ratios.
+ */
+const RATIO_MODERATE = 0.5;
+
+/** Context usage threshold for critical compression. */
+const THRESHOLD_CRITICAL = 0.8;
+
+/** Context usage threshold for high compression. */
+const THRESHOLD_HIGH = 0.6;
+
+//endregion
+
+//region Compression ratio selection
+
+/**
+ * Choose compression ratio based on context pressure.
+ * Higher pressure means more aggressive deletion.
+ *
+ * @param contextUsage - current context token usage and window size
+ *
+ * @returns compression ratio between 0.3 and 0.5
+ *
+ * @example
+ * ```typescript
+ * chooseCompressionRatio({ tokens: 90000, contextWindow: 100000 })
+ * // Returns 0.3 (critical pressure)
+ * ```
+ */
+export function chooseCompressionRatio(
+  contextUsage?: {
+    tokens: number | null;
+    contextWindow: number;
+  },
+): number {
+  if (contextUsage === undefined || contextUsage.tokens === null)
+    return RATIO_HIGH;
+  const fraction = contextUsage.tokens / contextUsage.contextWindow;
+  if (fraction > THRESHOLD_CRITICAL)
+    return RATIO_CRITICAL;
+  if (fraction > THRESHOLD_HIGH)
+    return RATIO_HIGH;
+  return RATIO_MODERATE;
+}
+
+//endregion
+
+//region Compaction attempt
+
+/**
+ * Attempt Morph Compact compaction.
+ * Returns `{ kind: "success", result }` on success, or `{ kind: "fallback" }`
+ * when pi's default compaction should be used instead.
+ *
+ * @param event - the session_before_compact event
+ *
+ * @param contextUsage - current context usage for adaptive compression ratio
+ *
+ * @param apiKey - Morph API key (from env or mcp.json fallback)
+ *
+ * @returns compaction attempt result
+ *
+ * @example
+ * ```typescript
+ * const attempt = await attemptMorphCompaction(event, ctx.getContextUsage(), apiKey);
+ * if (attempt.kind === "success") {
+ *   return { compaction: attempt.result };
+ * }
+ * ```
+ */
+export async function attemptMorphCompaction(
+  event: SessionBeforeCompactEvent,
+  contextUsage?: {
+    tokens: number | null;
+    contextWindow: number;
+  },
+  apiKey?: string,
+): Promise<MorphCompactionAttempt> {
+  const {
+    preparation,
+    branchEntries,
+    customInstructions,
+    signal,
+  } = event;
+  const {
+    messagesToSummarize,
+    turnPrefixMessages,
+    previousSummary,
+    tokensBefore,
+    firstKeptEntryId,
+    fileOps,
+  } = preparation;
+
+  const allMessages = [
+    ...messagesToSummarize,
+    ...turnPrefixMessages,
+  ];
+
+  // When there are no new messages but a previous summary exists,
+  // Morph can still re-compress the previous summary to save space.
+  // The index.ts handler already cancels when both are empty.
+  if (allMessages.length === 0 && previousSummary === undefined)
+    return { kind: 'fallback', };
+
+  const conversationText = allMessages.length > 0
+    ? serializeConversation(convertToLlm(allMessages,),)
+    : '';
+  const input = buildMorphInput(
+    conversationText,
+    previousSummary,
+  );
+  if (input.trim() === '')
+    return { kind: 'fallback', };
+
+  const query = extractLatestQuery(
+    branchEntries,
+    customInstructions,
+  )
+    .slice(
+      0,
+      MAX_QUERY_LENGTH,
+    );
+  const ratio = chooseCompressionRatio(contextUsage,);
+
+  if (signal.aborted)
+    return { kind: 'fallback', };
+
+  // Combined signal: respects user cancel + hard timeout
+  AbortSignal.any([
+    signal,
+    AbortSignal.timeout(COMPACTION_TIMEOUT_MS,),
+  ],);
+
+  const client = new CompactClient(
+    apiKey !== undefined
+      ? { morphApiKey: apiKey, }
+      : undefined,
+  );
+  const result = await client.compact({
+    input,
+    query,
+    compressionRatio: ratio,
+    preserveRecent: 0,
+    includeMarkers: true,
+    includeLineRanges: true,
+  },);
+
+  const output = result.output?.trim();
+  if (output === undefined || output === '')
+    return { kind: 'fallback', };
+
+  const {
+    readFiles,
+    modifiedFiles,
+  } = computeFileLists(fileOps,);
+  const summary = `${wrapMorphOutput(output,)}${
+    formatFileOperations(
+      readFiles,
+      modifiedFiles,
+    )
+  }`;
+
+  const morphUsage = result.usage !== undefined
+    ? {
+      inputTokens: result.usage.input_tokens,
+      outputTokens: result.usage.output_tokens,
+      compressionRatio: result.usage.compression_ratio,
+      processingTimeMs: result.usage.processing_time_ms,
+    }
+    : undefined;
+
+  const details: MorphCompactionDetails = {
+    backend: 'morph',
+    version: 1,
+    query,
+    compressionRatio: ratio,
+    ...(morphUsage !== undefined ? { morphUsage, } : {}),
+    compactedLineRanges: result.messages?.[0]?.compacted_line_ranges ?? [],
+    readFiles,
+    modifiedFiles,
+  };
+
+  const compactionResult: CompactionResult<MorphCompactionDetails> = {
+    summary,
+    firstKeptEntryId,
+    tokensBefore,
+    details,
+  };
+
+  return {
+    kind: 'success',
+    result: compactionResult,
+  };
+}
+
+//endregion

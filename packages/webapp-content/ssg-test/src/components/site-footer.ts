@@ -45,7 +45,7 @@ const TICKER_QUOTES = [
   // Viral video -- Exotic Black TV cleaning a Himalayan marmot with a paint roller (2025)
   'Marmots can be cleaned with paint rollers.',
   // Phil Karlton -- There are only two hard things in Computer Science: cache invalidation and naming things.
-  'There are only 10 hard problems in computer science: cache invalidation, naming things, and off by one.'
+  'There are only 10 hard problems in computer science: cache invalidation, naming things, and off by one.',
 ] as const;
 
 //endregion Ticker quotes

@@ -106,7 +106,10 @@ export function summarize(sample: readonly number[],): Stats {
   if (sample.length === 0)
     throw new Error('cannot summarize an empty sample',);
   const sorted = sample.toSorted(ascending,);
-  const sum = sorted.reduce(add, 0,);
+  const sum = sorted.reduce(
+    add,
+    0,
+  );
   return {
     count: sorted.length,
     min: notNullishOrThrow(sorted[0],),

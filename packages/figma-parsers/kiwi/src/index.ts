@@ -18,53 +18,62 @@
 // region Schema types
 
 /** Kiwi primitive type names, indexed by their inverted type code. */
-const KIWI_PRIMITIVES = ["bool", "byte", "int", "uint", "float", "string", "int64", "uint64"] as const;
+const KIWI_PRIMITIVES = [
+  'bool',
+  'byte',
+  'int',
+  'uint',
+  'float',
+  'string',
+  'int64',
+  'uint64',
+] as const;
 
 /** Kiwi primitive type name union. */
 type KiwiPrimitiveName = (typeof KIWI_PRIMITIVES)[number];
 
 /** Kind of type definition in a Kiwi schema. */
-type KiwiDefinitionKind = "ENUM" | "STRUCT" | "MESSAGE";
+type KiwiDefinitionKind = 'ENUM' | 'STRUCT' | 'MESSAGE';
 
 /** An enum definition in the Kiwi schema. */
-interface KiwiEnumField {
+type KiwiEnumField = {
   name: string;
   type: never;
   isArray: boolean;
   value: number;
-}
+};
 
 /** A field within a struct or message definition. */
-interface KiwiStructField {
+type KiwiStructField = {
   name: string;
   type: number;
   isArray: boolean;
   value: number;
-}
+};
 
 /** An enum definition. */
-interface KiwiEnum {
-  kind: "ENUM";
+type KiwiEnum = {
+  kind: 'ENUM';
   name: string;
   fields: KiwiEnumField[];
-}
+};
 
 /** A struct or message definition. */
-interface KiwiStruct {
-  kind: "STRUCT" | "MESSAGE";
+type KiwiStruct = {
+  kind: 'STRUCT' | 'MESSAGE';
   name: string;
   fields: KiwiStructField[];
-}
+};
 
 /** A type definition in the Kiwi schema. */
 type KiwiDefinition = KiwiEnum | KiwiStruct;
 
 /** A fully parsed Kiwi schema. */
-interface KiwiSchema {
+type KiwiSchema = {
   definitions: KiwiDefinition[];
   enumByName: Map<string, KiwiEnum>;
   structByName: Map<string, KiwiStruct>;
-}
+};
 
 // endregion
 
@@ -84,7 +93,10 @@ class BinaryReader {
   data: Uint8Array;
   pos: number;
 
-  constructor(data: Uint8Array, pos = 0) {
+  constructor(
+    data: Uint8Array,
+    pos = 0,
+  ) {
     this.data = data;
     this.pos = pos;
   }
@@ -111,11 +123,10 @@ class BinaryReader {
     while (this.pos < this.data.length) {
       const byte = this.data[this.pos]!;
       this.pos += 1;
-      result |= (byte & 0x7f) << shift;
+      result |= (byte & 0x7F) << shift;
       shift += 7;
-      if ((byte & 0x80) === 0) {
+      if ((byte & 0x80) === 0)
         break;
-      }
     }
     return result >>> 0;
   }
@@ -128,9 +139,8 @@ class BinaryReader {
    */
   readVarInt(): number {
     const raw = this.readVarUint();
-    if (raw & 1) {
+    if (raw & 1)
       return ~(raw >>> 1);
-    }
     return raw >>> 1;
   }
 
@@ -165,9 +175,16 @@ class BinaryReader {
     const bits = ((rawBits << 23) | (rawBits >>> 9)) >>> 0;
 
     // Reinterpret as float32
-    const view = new DataView(new ArrayBuffer(4));
-    view.setUint32(0, bits, true);
-    return view.getFloat32(0, true);
+    const view = new DataView(new ArrayBuffer(4,),);
+    view.setUint32(
+      0,
+      bits,
+      true,
+    );
+    return view.getFloat32(
+      0,
+      true,
+    );
   }
 
   /**
@@ -178,10 +195,12 @@ class BinaryReader {
    */
   readString(): string {
     let end = this.pos;
-    while (end < this.data.length && this.data[end] !== 0) {
+    while (end < this.data.length && this.data[end] !== 0)
       end += 1;
-    }
-    const s = new TextDecoder("utf-8").decode(this.data.subarray(this.pos, end));
+    const s = new TextDecoder('utf-8',).decode(this.data.subarray(
+      this.pos,
+      end,
+    ),);
     this.pos = end + 1;
     return s;
   }
@@ -193,14 +212,24 @@ class BinaryReader {
 
   /** Read a little-endian uint32. */
   readUint32LE(): number {
-    const view = new DataView(this.data.buffer, this.data.byteOffset + this.pos, 4);
+    const view = new DataView(
+      this.data.buffer,
+      this.data.byteOffset + this.pos,
+      4,
+    );
     this.pos += 4;
-    return view.getUint32(0, true);
+    return view.getUint32(
+      0,
+      true,
+    );
   }
 
   /** Read a fixed number of raw bytes. */
-  readBytes(count: number): Uint8Array {
-    const result = this.data.subarray(this.pos, this.pos + count);
+  readBytes(count: number,): Uint8Array {
+    const result = this.data.subarray(
+      this.pos,
+      this.pos + count,
+    );
     this.pos += count;
     return result;
   }
@@ -217,19 +246,23 @@ class BinaryReader {
  * Non-negative type codes reference schema definitions by index.
  *
  * @param typeCode - Type varint from a field definition
+ *
  * @param schema - Parsed schema for resolving references
+ *
  * @returns Human-readable type name
  */
-function resolveTypeName(typeCode: number, schema: KiwiSchema): string {
+function resolveTypeName(
+  typeCode: number,
+  schema: KiwiSchema,
+): string {
   if (typeCode < 0) {
     const primIdx = ~typeCode;
     return primIdx < KIWI_PRIMITIVES.length
       ? KIWI_PRIMITIVES[primIdx]!
       : `prim[${primIdx}]`;
   }
-  if (typeCode < schema.definitions.length) {
+  if (typeCode < schema.definitions.length)
     return schema.definitions[typeCode]!.name;
-  }
   return `ref[${typeCode}]`;
 }
 
@@ -252,10 +285,11 @@ function resolveTypeName(typeCode: number, schema: KiwiSchema): string {
  * ```
  *
  * @param data - Raw decompressed schema bytes
+ *
  * @returns Parsed schema with all definitions
  */
-function parseKiwiSchema(data: Uint8Array): KiwiSchema {
-  const reader = new BinaryReader(data);
+function parseKiwiSchema(data: Uint8Array,): KiwiSchema {
+  const reader = new BinaryReader(data,);
 
   const definitionCount = reader.readVarUint();
   const definitions: KiwiDefinition[] = [];
@@ -267,13 +301,19 @@ function parseKiwiSchema(data: Uint8Array): KiwiSchema {
     const kindByte = reader.readByte();
     const fieldCount = reader.readVarUint();
 
-    const kindNames: KiwiDefinitionKind[] = ["ENUM", "STRUCT", "MESSAGE"];
+    const kindNames: KiwiDefinitionKind[] = [
+      'ENUM',
+      'STRUCT',
+      'MESSAGE',
+    ];
     const kind = kindNames[kindByte];
     if (!kind) {
-      throw new Error(`Unknown Kiwi definition kind ${kindByte} for "${name}" at offset ${reader.pos}`);
+      throw new Error(
+        `Unknown Kiwi definition kind ${kindByte} for "${name}" at offset ${reader.pos}`,
+      );
     }
 
-    if (kind === "ENUM") {
+    if (kind === 'ENUM') {
       const fields: KiwiEnumField[] = [];
       for (let j = 0; j < fieldCount; j++) {
         const fieldName = reader.readString();
@@ -281,27 +321,56 @@ function parseKiwiSchema(data: Uint8Array): KiwiSchema {
         reader.readVarInt(); // type (unused for enums)
         reader.readByte(); // isArray (unused for enums)
         const value = reader.readVarUint();
-        fields.push({ name: fieldName, type: null as never, isArray: false, value });
+        fields.push({
+          name: fieldName,
+          type: null as never,
+          isArray: false,
+          value,
+        },);
       }
-      const def: KiwiEnum = { kind: "ENUM", name, fields };
-      definitions.push(def);
-      enumByName.set(name, def);
-    } else {
+      const def: KiwiEnum = {
+        kind: 'ENUM',
+        name,
+        fields,
+      };
+      definitions.push(def,);
+      enumByName.set(
+        name,
+        def,
+      );
+    }
+    else {
       const fields: KiwiStructField[] = [];
       for (let j = 0; j < fieldCount; j++) {
         const fieldName = reader.readString();
         const fieldType = reader.readVarInt();
         const isArray = (reader.readByte() & 1) === 1;
         const value = reader.readVarUint();
-        fields.push({ name: fieldName, type: fieldType, isArray, value });
+        fields.push({
+          name: fieldName,
+          type: fieldType,
+          isArray,
+          value,
+        },);
       }
-      const def: KiwiStruct = { kind: kind as "STRUCT" | "MESSAGE", name, fields };
-      definitions.push(def);
-      structByName.set(name, def);
+      const def: KiwiStruct = {
+        kind: kind as 'STRUCT' | 'MESSAGE',
+        name,
+        fields,
+      };
+      definitions.push(def,);
+      structByName.set(
+        name,
+        def,
+      );
     }
   }
 
-  return { definitions, enumByName, structByName };
+  return {
+    definitions,
+    enumByName,
+    structByName,
+  };
 }
 
 // endregion
@@ -328,9 +397,13 @@ type KiwiDecodedValue =
  * Decode a single value from a binary reader given its type code.
  *
  * @param reader - Binary reader positioned at the value
+ *
  * @param schema - Parsed schema for resolving type references
+ *
  * @param typeCode - Type varint from the field definition
+ *
  * @param depth - Recursion depth limit
+ *
  * @returns Decoded JavaScript value
  */
 function decodeValue(
@@ -339,9 +412,8 @@ function decodeValue(
   typeCode: number,
   depth: number,
 ): KiwiDecodedValue {
-  if (depth > 20) {
+  if (depth > 20)
     return null;
-  }
 
   // Primitive type
   if (typeCode < 0) {
@@ -369,23 +441,32 @@ function decodeValue(
   }
 
   // Schema definition reference
-  if (typeCode >= schema.definitions.length) {
+  if (typeCode >= schema.definitions.length)
     return null;
-  }
   const def = schema.definitions[typeCode]!;
 
-  if (def.kind === "ENUM") {
+  if (def.kind === 'ENUM') {
     const value = reader.readVarUint();
-    const enumField = def.fields.find((f) => f.value === value);
+    const enumField = def.fields.find(f => f.value === value);
     return enumField ? `${def.name}.${enumField.name}` : `${def.name}(${value})`;
   }
 
-  if (def.kind === "STRUCT") {
-    return decodeStruct(reader, schema, def, depth + 1);
+  if (def.kind === 'STRUCT') {
+    return decodeStruct(
+      reader,
+      schema,
+      def,
+      depth + 1,
+    );
   }
 
   // MESSAGE
-  return decodeMessage(reader, schema, def, depth + 1);
+  return decodeMessage(
+    reader,
+    schema,
+    def,
+    depth + 1,
+  );
 }
 
 /**
@@ -395,9 +476,13 @@ function decodeValue(
  * terminators. Each field value is read sequentially.
  *
  * @param reader - Binary reader positioned at the struct start
+ *
  * @param schema - Parsed schema
+ *
  * @param def - Struct definition
+ *
  * @param depth - Recursion depth
+ *
  * @returns Decoded struct as a plain object
  */
 function decodeStruct(
@@ -406,7 +491,7 @@ function decodeStruct(
   def: KiwiStruct,
   depth: number,
 ): Record<string, unknown> {
-  const result: Record<string, unknown> = { __type: def.name };
+  const result: Record<string, unknown> = { __type: def.name, };
 
   for (const field of def.fields) {
     if (reader.eof) {
@@ -418,11 +503,22 @@ function decodeStruct(
       const count = reader.readVarUint();
       const items: KiwiDecodedValue[] = [];
       for (let i = 0; i < count; i++) {
-        items.push(decodeValue(reader, schema, field.type, depth));
+        items.push(decodeValue(
+          reader,
+          schema,
+          field.type,
+          depth,
+        ),);
       }
       result[field.name] = items;
-    } else {
-      result[field.name] = decodeValue(reader, schema, field.type, depth);
+    }
+    else {
+      result[field.name] = decodeValue(
+        reader,
+        schema,
+        field.type,
+        depth,
+      );
     }
   }
 
@@ -437,9 +533,13 @@ function decodeStruct(
  * fields are encoded; absent fields default to their type's zero value.
  *
  * @param reader - Binary reader positioned at the message start
+ *
  * @param schema - Parsed schema
+ *
  * @param def - Message definition
+ *
  * @param depth - Recursion depth
+ *
  * @returns Decoded message as a plain object
  */
 function decodeMessage(
@@ -448,33 +548,47 @@ function decodeMessage(
   def: KiwiStruct,
   depth: number,
 ): Record<string, unknown> {
-  const result: Record<string, unknown> = { __type: def.name };
+  const result: Record<string, unknown> = { __type: def.name, };
 
   // Build tag -> field lookup
   const fieldByTag = new Map<number, KiwiStructField>();
   for (const field of def.fields) {
-    fieldByTag.set(field.value, field);
+    fieldByTag.set(
+      field.value,
+      field,
+    );
   }
 
   while (!reader.eof) {
     const tag = reader.readVarUint();
-    if (tag === 0) {
+    if (tag === 0)
       break;
-    }
 
-    const field = fieldByTag.get(tag);
+    const field = fieldByTag.get(tag,);
     if (field) {
       if (field.isArray) {
         const count = reader.readVarUint();
         const items: KiwiDecodedValue[] = [];
         for (let i = 0; i < count; i++) {
-          items.push(decodeValue(reader, schema, field.type, depth));
+          items.push(decodeValue(
+            reader,
+            schema,
+            field.type,
+            depth,
+          ),);
         }
         result[field.name] = items;
-      } else {
-        result[field.name] = decodeValue(reader, schema, field.type, depth);
       }
-    } else {
+      else {
+        result[field.name] = decodeValue(
+          reader,
+          schema,
+          field.type,
+          depth,
+        );
+      }
+    }
+    else {
       // Unknown tag -- cannot skip without knowing the type.
       // Since we have the full schema, this should not happen.
       break;
@@ -491,21 +605,29 @@ function decodeMessage(
  * node changes that represent the complete scene graph.
  *
  * @param documentData - Raw decompressed document bytes
+ *
  * @param schema - Parsed Kiwi schema
+ *
  * @returns Decoded document as a plain object
  */
-function decodeDocument(documentData: Uint8Array, schema: KiwiSchema): Record<string, unknown> | null {
-  if (documentData.length === 0) {
+function decodeDocument(
+  documentData: Uint8Array,
+  schema: KiwiSchema,
+): Record<string, unknown> | null {
+  if (documentData.length === 0)
     return null;
-  }
 
-  const reader = new BinaryReader(documentData);
-  const messageDef = schema.structByName.get("Message");
-  if (!messageDef) {
-    throw new Error("Message definition not found in schema");
-  }
+  const reader = new BinaryReader(documentData,);
+  const messageDef = schema.structByName.get('Message',);
+  if (!messageDef)
+    throw new Error('Message definition not found in schema',);
 
-  return decodeMessage(reader, schema, messageDef, 0);
+  return decodeMessage(
+    reader,
+    schema,
+    messageDef,
+    0,
+  );
 }
 
 // endregion
@@ -516,13 +638,13 @@ function decodeDocument(documentData: Uint8Array, schema: KiwiSchema): Record<st
  * Magic bytes at the start of canvas.fig for each Figma file type.
  */
 const CANVAS_FIG_MAGIC = {
-  fig: "fig-kiwie",
-  deck: "fig-decke",
-  jam: "fig-jam.e",
+  fig: 'fig-kiwie',
+  deck: 'fig-decke',
+  jam: 'fig-jam.e',
 } as const;
 
 /** Set of valid magic byte strings. */
-const VALID_MAGICS = new Set<string>(Object.values(CANVAS_FIG_MAGIC));
+const VALID_MAGICS = new Set<string>(Object.values(CANVAS_FIG_MAGIC,),);
 
 /** Byte offset where the deflate-compressed schema starts in canvas.fig. */
 const CANVAS_HEADER_SIZE = 16;
@@ -532,27 +654,40 @@ const CANVAS_HEADER_SIZE = 16;
 // region File format types
 
 /** The type of Figma file, determined by the canvas.fig magic bytes. */
-type FigmaFileType = "fig" | "deck" | "jam";
+type FigmaFileType = 'fig' | 'deck' | 'jam';
 
 /** Metadata extracted from meta.json inside the ZIP archive. */
-interface FigmaMeta {
-  backgroundColor: { r: number; g: number; b: number; a: number };
-  thumbnailSize: { width: number; height: number };
-  renderCoordinates: { x: number; y: number; width: number; height: number };
+type FigmaMeta = {
+  backgroundColor: {
+    r: number;
+    g: number;
+    b: number;
+    a: number
+  };
+  thumbnailSize: {
+    width: number;
+    height: number
+  };
+  renderCoordinates: {
+    x: number;
+    y: number;
+    width: number;
+    height: number
+  };
   fileName: string;
   exportedAt: string;
   developerRelatedLinks: unknown[];
-}
+};
 
 /** A fully decoded Figma file with all its components. */
-interface FigmaFile {
+type FigmaFile = {
   fileType: FigmaFileType;
   meta: FigmaMeta;
   thumbnail: Uint8Array;
   schema: KiwiSchema;
   document: Record<string, unknown> | null;
   images: Map<string, Uint8Array>;
-}
+};
 
 // endregion
 
@@ -566,33 +701,47 @@ interface FigmaFile {
  *   bytes 10-15: reserved (zeros in known files)
  *
  * @param data - Raw canvas.fig bytes (at least 16)
+ *
  * @returns File type and reserved bytes
  */
-function parseCanvasHeader(data: Uint8Array): { fileType: FigmaFileType; reserved: Uint8Array } {
+function parseCanvasHeader(
+  data: Uint8Array,
+): {
+  fileType: FigmaFileType;
+  reserved: Uint8Array;
+} {
   if (data.length < CANVAS_HEADER_SIZE) {
-    throw new Error(`canvas.fig header too short: ${data.length} bytes (need ${CANVAS_HEADER_SIZE})`);
+    throw new Error(
+      `canvas.fig header too short: ${data.length} bytes (need ${CANVAS_HEADER_SIZE})`,
+    );
   }
 
   // Find null terminator within first 10 bytes
   let magicLen = 0;
-  while (magicLen < 10 && data[magicLen] !== 0) {
+  while (magicLen < 10 && data[magicLen] !== 0)
     magicLen++;
-  }
-  const magic = new TextDecoder("ascii").decode(data.subarray(0, magicLen));
+  const magic = new TextDecoder('ascii',).decode(data.subarray(
+    0,
+    magicLen,
+  ),);
 
-  if (!VALID_MAGICS.has(magic)) {
-    throw new Error(`Unknown canvas.fig magic: "${magic}"`);
-  }
+  if (!VALID_MAGICS.has(magic,))
+    throw new Error(`Unknown canvas.fig magic: "${magic}"`,);
 
-  const fileType: FigmaFileType =
-    magic === CANVAS_FIG_MAGIC.fig
-      ? "fig"
-      : magic === CANVAS_FIG_MAGIC.deck
-        ? "deck"
-        : "jam";
+  const fileType: FigmaFileType = magic === CANVAS_FIG_MAGIC.fig
+    ? 'fig'
+    : (magic === CANVAS_FIG_MAGIC.deck
+      ? 'deck'
+      : 'jam');
 
-  const reserved = data.subarray(magicLen + 1, CANVAS_HEADER_SIZE);
-  return { fileType, reserved };
+  const reserved = data.subarray(
+    magicLen + 1,
+    CANVAS_HEADER_SIZE,
+  );
+  return {
+    fileType,
+    reserved,
+  };
 }
 
 // endregion
@@ -609,17 +758,23 @@ function parseCanvasHeader(data: Uint8Array): { fileType: FigmaFileType; reserve
  *      followed by a zstd-compressed stream containing document data
  *
  * @param canvasData - Raw bytes of canvas.fig
+ *
  * @returns Parsed file type, schema bytes, and document bytes
  */
-async function parseCanvasFig(canvasData: Uint8Array): Promise<{
+async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
   fileType: FigmaFileType;
   schemaBytes: Uint8Array;
   documentBytes: Uint8Array;
 }> {
-  const { fileType } = parseCanvasHeader(canvasData);
+  const { fileType, } = parseCanvasHeader(canvasData,);
 
   // Search for zstd frame magic in the raw data
-  const zstdMagic = new Uint8Array([0x28, 0xb5, 0x2f, 0xfd]);
+  const zstdMagic = new Uint8Array([
+    0x28,
+    0xB5,
+    0x2F,
+    0xFD,
+  ],);
   let zstdOffset = -1;
   for (let i = CANVAS_HEADER_SIZE; i < canvasData.length - 4; i++) {
     if (
@@ -634,47 +789,79 @@ async function parseCanvasFig(canvasData: Uint8Array): Promise<{
   }
 
   // Decompress the schema (deflate stream between header and zstd data)
-  const { inflateRawSync } = await import("node:zlib");
-  const compressedAfterHeader = canvasData.subarray(CANVAS_HEADER_SIZE, zstdOffset >= 0 ? zstdOffset - 4 : undefined);
+  const { inflateRawSync, } = await import('node:zlib');
+  const compressedAfterHeader = canvasData.subarray(
+    CANVAS_HEADER_SIZE,
+    zstdOffset >= 0 ? zstdOffset - 4 : undefined,
+  );
 
   // Use streaming inflate to handle the deflate stream boundary correctly
   // inflateRawSync may fail if there's trailing non-deflate data
   let schemaBytes: Uint8Array;
   try {
-    schemaBytes = new Uint8Array(inflateRawSync(Buffer.from(compressedAfterHeader)));
-  } catch {
+    schemaBytes = new Uint8Array(inflateRawSync(Buffer.from(compressedAfterHeader,),),);
+  }
+  catch {
     // If inflateRawSync fails, try with a streaming approach
-    const { createInflateRaw } = await import("node:zlib");
+    const { createInflateRaw, } = await import('node:zlib');
     const inflater = createInflateRaw();
     const chunks: Buffer[] = [];
-    await new Promise<void>((resolve, reject) => {
-      inflater.on("data", (chunk: Buffer) => chunks.push(chunk));
-      inflater.on("end", resolve);
-      inflater.on("error", (err: Error) => {
-        if (err.message.includes("unexpected end")) {
-          resolve();
-        } else {
-          reject(err);
-        }
-      });
-      inflater.write(Buffer.from(compressedAfterHeader));
+    await new Promise<void>((
+      resolve,
+      reject,
+    ) => {
+      inflater.on(
+        'data',
+        (chunk: Buffer,) => chunks.push(chunk,),
+      );
+      inflater.on(
+        'end',
+        resolve,
+      );
+      inflater.on(
+        'error',
+        (err: Error,) => {
+          if (err.message.includes('unexpected end',))
+            resolve();
+          else
+            reject(err,);
+        },
+      );
+      inflater.write(Buffer.from(compressedAfterHeader,),);
       inflater.end();
-    });
-    schemaBytes = new Uint8Array(Buffer.concat(chunks));
+    },);
+    schemaBytes = new Uint8Array(Buffer.concat(chunks,),);
   }
 
   // Decompress the document data (zstd)
   let documentBytes: Uint8Array;
   if (zstdOffset >= 0) {
     const sizePrefixOffset = zstdOffset - 4;
-    const zstdSize = new DataView(canvasData.buffer, canvasData.byteOffset + sizePrefixOffset, 4).getUint32(0, true);
-    const zstdData = canvasData.subarray(zstdOffset, zstdOffset + zstdSize);
-    documentBytes = await decompressZstd(zstdData);
-  } else {
-    documentBytes = new Uint8Array(0);
+    const zstdSize = new DataView(
+      canvasData.buffer,
+      canvasData
+        .byteOffset + sizePrefixOffset,
+      4,
+    )
+      .getUint32(
+        0,
+        true,
+      );
+    const zstdData = canvasData.subarray(
+      zstdOffset,
+      zstdOffset + zstdSize,
+    );
+    documentBytes = await decompressZstd(zstdData,);
+  }
+  else {
+    documentBytes = new Uint8Array(0,);
   }
 
-  return { fileType, schemaBytes, documentBytes };
+  return {
+    fileType,
+    schemaBytes,
+    documentBytes,
+  };
 }
 
 /**
@@ -684,35 +871,66 @@ async function parseCanvasFig(canvasData: Uint8Array): Promise<{
  * spawning the `zstd` CLI tool.
  *
  * @param data - Zstd-compressed bytes
+ *
  * @returns Decompressed bytes
  */
-async function decompressZstd(data: Uint8Array): Promise<Uint8Array> {
+async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
   // Try native zstd module
   try {
-    const { decompress } = await import("@bokuwatch/zstd" as string);
-    return new Uint8Array(decompress(Buffer.from(data)));
-  } catch {
+    const { decompress, } = await import('@bokuwatch/zstd' as string);
+    return new Uint8Array(decompress(Buffer.from(data,),),);
+  }
+  catch {
     // Fall through to CLI
   }
 
   // Fallback: use zstd CLI
-  const { execFile } = await import("node:child_process");
-  const { promisify } = await import("node:util");
-  const execFileAsync = promisify(execFile);
-  const { writeFileSync, readFileSync, unlinkSync } = await import("node:fs");
-  const { join } = await import("node:path");
-  const tmpDir = await import("node:os").then((m) => m.tmpdir());
+  const { execFile, } = await import('node:child_process');
+  const { promisify, } = await import('node:util');
+  const execFileAsync = promisify(execFile,);
+  const {
+    writeFileSync,
+    readFileSync,
+    unlinkSync,
+  } = await import('node:fs');
+  const { join, } = await import('node:path');
+  const tmpDir = await import('node:os').then(m => m.tmpdir());
   const id = Date.now();
-  const tmpIn = join(tmpDir, `figma-kiwi-${id}.zst`);
-  const tmpOut = join(tmpDir, `figma-kiwi-${id}.bin`);
+  const tmpIn = join(
+    tmpDir,
+    `figma-kiwi-${id}.zst`,
+  );
+  const tmpOut = join(
+    tmpDir,
+    `figma-kiwi-${id}.bin`,
+  );
 
   try {
-    writeFileSync(tmpIn, data);
-    await execFileAsync("zstd", ["-d", tmpIn, "-o", tmpOut, "-f"]);
-    return new Uint8Array(readFileSync(tmpOut));
-  } finally {
-    try { unlinkSync(tmpIn); } catch { /* ignore */ }
-    try { unlinkSync(tmpOut); } catch { /* ignore */ }
+    writeFileSync(
+      tmpIn,
+      data,
+    );
+    await execFileAsync(
+      'zstd',
+      [
+        '-d',
+        tmpIn,
+        '-o',
+        tmpOut,
+        '-f',
+      ],
+    );
+    return new Uint8Array(readFileSync(tmpOut,),);
+  }
+  finally {
+    try {
+      unlinkSync(tmpIn,);
+    }
+    catch { /* ignore */ }
+    try {
+      unlinkSync(tmpOut,);
+    }
+    catch { /* ignore */ }
   }
 }
 
@@ -724,10 +942,11 @@ async function decompressZstd(data: Uint8Array): Promise<Uint8Array> {
  * Parse the meta.json content from a Figma export ZIP.
  *
  * @param jsonBytes - Raw bytes of meta.json
+ *
  * @returns Parsed metadata
  */
-function parseMetaJson(jsonBytes: Uint8Array): FigmaMeta {
-  const json = JSON.parse(new TextDecoder("utf-8").decode(jsonBytes));
+function parseMetaJson(jsonBytes: Uint8Array,): FigmaMeta {
+  const json = JSON.parse(new TextDecoder('utf-8',).decode(jsonBytes,),);
   const cm = json.client_meta ?? {};
   return {
     backgroundColor: {
@@ -746,8 +965,8 @@ function parseMetaJson(jsonBytes: Uint8Array): FigmaMeta {
       width: cm.render_coordinates?.width ?? 0,
       height: cm.render_coordinates?.height ?? 0,
     },
-    fileName: json.file_name ?? "",
-    exportedAt: json.exported_at ?? "",
+    fileName: json.file_name ?? '',
+    exportedAt: json.exported_at ?? '',
     developerRelatedLinks: json.developer_related_links ?? [],
   };
 }
@@ -763,73 +982,131 @@ function parseMetaJson(jsonBytes: Uint8Array): FigmaMeta {
  * and deflated entries found in Figma export files.
  *
  * @param buffer - Raw ZIP file content
+ *
  * @returns Map from entry name to decompressed content
  */
-async function extractZipEntries(buffer: Uint8Array): Promise<Map<string, Uint8Array>> {
+async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8Array>> {
   const entries = new Map<string, Uint8Array>();
-  const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  const view = new DataView(
+    buffer.buffer,
+    buffer.byteOffset,
+    buffer.byteLength,
+  );
 
   // Find end of central directory record
   let eocdOffset = -1;
   for (let i = buffer.length - 22; i >= 0; i--) {
-    if (view.getUint32(i, true) === 0x06054b50) {
+    if (view.getUint32(
+      i,
+      true,
+    ) === 0x06_05_4B_50) {
       eocdOffset = i;
       break;
     }
   }
 
-  if (eocdOffset === -1) {
-    throw new Error("Cannot find ZIP end of central directory");
-  }
+  if (eocdOffset === -1)
+    throw new Error('Cannot find ZIP end of central directory',);
 
-  const centralDirOffset = view.getUint32(eocdOffset + 16, true);
-  const centralDirEntries = view.getUint16(eocdOffset + 10, true);
+  const centralDirOffset = view.getUint32(
+    eocdOffset + 16,
+    true,
+  );
+  const centralDirEntries = view.getUint16(
+    eocdOffset + 10,
+    true,
+  );
 
   let offset = centralDirOffset;
   for (let i = 0; i < centralDirEntries; i++) {
-    const sig = view.getUint32(offset, true);
-    if (sig !== 0x02014b50) {
-      throw new Error(`Invalid central directory entry signature at offset ${offset}`);
-    }
+    const sig = view.getUint32(
+      offset,
+      true,
+    );
+    if (sig !== 0x02_01_4B_50)
+      throw new Error(`Invalid central directory entry signature at offset ${offset}`,);
 
-    const compressionMethod = view.getUint16(offset + 10, true);
-    const compressedSize = view.getUint32(offset + 20, true);
-    const uncompressedSize = view.getUint32(offset + 24, true);
-    const fileNameLength = view.getUint16(offset + 28, true);
-    const extraLength = view.getUint16(offset + 30, true);
-    const commentLength = view.getUint16(offset + 32, true);
-    const localHeaderOffset = view.getUint32(offset + 42, true);
+    const compressionMethod = view.getUint16(
+      offset + 10,
+      true,
+    );
+    const compressedSize = view.getUint32(
+      offset + 20,
+      true,
+    );
+    const uncompressedSize = view.getUint32(
+      offset + 24,
+      true,
+    );
+    const fileNameLength = view.getUint16(
+      offset + 28,
+      true,
+    );
+    const extraLength = view.getUint16(
+      offset + 30,
+      true,
+    );
+    const commentLength = view.getUint16(
+      offset + 32,
+      true,
+    );
+    const localHeaderOffset = view.getUint32(
+      offset + 42,
+      true,
+    );
 
-    const fileName = new TextDecoder("ascii").decode(
-      buffer.subarray(offset + 46, offset + 46 + fileNameLength),
+    const fileName = new TextDecoder('ascii',).decode(
+      buffer.subarray(
+        offset + 46,
+        offset + 46 + fileNameLength,
+      ),
     );
 
     // Parse local file header
-    const localSig = view.getUint32(localHeaderOffset, true);
-    if (localSig !== 0x04034b50) {
-      throw new Error(`Invalid local file header at offset ${localHeaderOffset}`);
-    }
+    const localSig = view.getUint32(
+      localHeaderOffset,
+      true,
+    );
+    if (localSig !== 0x04_03_4B_50)
+      throw new Error(`Invalid local file header at offset ${localHeaderOffset}`,);
 
-    const localFileNameLen = view.getUint16(localHeaderOffset + 26, true);
-    const localExtraLen = view.getUint16(localHeaderOffset + 28, true);
+    const localFileNameLen = view.getUint16(
+      localHeaderOffset + 26,
+      true,
+    );
+    const localExtraLen = view.getUint16(
+      localHeaderOffset + 28,
+      true,
+    );
     const dataOffset = localHeaderOffset + 30 + localFileNameLen + localExtraLen;
-    const compressedData = buffer.subarray(dataOffset, dataOffset + compressedSize);
+    const compressedData = buffer.subarray(
+      dataOffset,
+      dataOffset + compressedSize,
+    );
 
     let content: Uint8Array;
-    if (compressionMethod === 0) {
-      content = new Uint8Array(compressedData);
-    } else if (compressionMethod === 8) {
-      const { inflateRawSync } = await import("node:zlib");
-      content = new Uint8Array(inflateRawSync(Buffer.from(compressedData)));
-    } else {
-      throw new Error(`Unsupported ZIP compression method ${compressionMethod} for "${fileName}"`);
+    if (compressionMethod === 0)
+      content = new Uint8Array(compressedData,);
+    else if (compressionMethod === 8) {
+      const { inflateRawSync, } = await import('node:zlib');
+      content = new Uint8Array(inflateRawSync(Buffer.from(compressedData,),),);
+    }
+    else {
+      throw new Error(
+        `Unsupported ZIP compression method ${compressionMethod} for "${fileName}"`,
+      );
     }
 
     if (content.length !== uncompressedSize) {
-      throw new Error(`Size mismatch for "${fileName}": expected ${uncompressedSize}, got ${content.length}`);
+      throw new Error(
+        `Size mismatch for "${fileName}": expected ${uncompressedSize}, got ${content.length}`,
+      );
     }
 
-    entries.set(fileName, content);
+    entries.set(
+      fileName,
+      content,
+    );
     offset += 46 + fileNameLength + extraLength + commentLength;
   }
 
@@ -850,44 +1127,63 @@ async function extractZipEntries(buffer: Uint8Array): Promise<Map<string, Uint8A
  * - images/: Referenced image assets (SHA-1 hash filenames)
  *
  * @param filePathOrBuffer - Path to the file or its raw content
+ *
  * @returns Fully parsed Figma file with decoded schema and document
  */
-async function parseFigmaFile(filePathOrBuffer: string | Uint8Array): Promise<FigmaFile> {
+async function parseFigmaFile(
+  filePathOrBuffer: string | Uint8Array,
+): Promise<FigmaFile> {
   let rawBuffer: Uint8Array;
-  if (typeof filePathOrBuffer === "string") {
-    const { readFile } = await import("node:fs/promises");
-    rawBuffer = new Uint8Array(await readFile(filePathOrBuffer));
-  } else {
+  if (typeof filePathOrBuffer === 'string') {
+    const { readFile, } = await import('node:fs/promises');
+    rawBuffer = new Uint8Array(await readFile(filePathOrBuffer,),);
+  }
+  else {
     rawBuffer = filePathOrBuffer;
   }
 
-  const zipEntries = await extractZipEntries(rawBuffer);
+  const zipEntries = await extractZipEntries(rawBuffer,);
 
-  const canvasFig = zipEntries.get("canvas.fig");
-  if (!canvasFig) {
-    throw new Error("Missing canvas.fig in Figma export file");
-  }
+  const canvasFig = zipEntries.get('canvas.fig',);
+  if (!canvasFig)
+    throw new Error('Missing canvas.fig in Figma export file',);
 
-  const metaJson = zipEntries.get("meta.json");
-  if (!metaJson) {
-    throw new Error("Missing meta.json in Figma export file");
-  }
+  const metaJson = zipEntries.get('meta.json',);
+  if (!metaJson)
+    throw new Error('Missing meta.json in Figma export file',);
 
-  const thumbnail = zipEntries.get("thumbnail.png") ?? new Uint8Array(0);
+  const thumbnail = zipEntries.get('thumbnail.png',) ?? new Uint8Array(0,);
 
   const images = new Map<string, Uint8Array>();
-  for (const [name, data] of zipEntries) {
-    if (name.startsWith("images/")) {
-      images.set(name.slice("images/".length), data);
+  for (const [name, data,] of zipEntries) {
+    if (name.startsWith('images/',)) {
+      images.set(
+        name.slice('images/'.length,),
+        data,
+      );
     }
   }
 
-  const { fileType, schemaBytes, documentBytes } = await parseCanvasFig(canvasFig);
-  const schema = parseKiwiSchema(schemaBytes);
-  const meta = parseMetaJson(metaJson);
-  const document = decodeDocument(documentBytes, schema);
+  const {
+    fileType,
+    schemaBytes,
+    documentBytes,
+  } = await parseCanvasFig(canvasFig,);
+  const schema = parseKiwiSchema(schemaBytes,);
+  const meta = parseMetaJson(metaJson,);
+  const document = decodeDocument(
+    documentBytes,
+    schema,
+  );
 
-  return { fileType, meta, thumbnail, schema, document, images };
+  return {
+    fileType,
+    meta,
+    thumbnail,
+    schema,
+    document,
+    images,
+  };
 }
 
 // endregion
@@ -895,34 +1191,34 @@ async function parseFigmaFile(filePathOrBuffer: string | Uint8Array): Promise<Fi
 // region Exports
 
 export {
-  type FigmaFile,
-  type FigmaFileType,
-  type FigmaMeta,
-  type KiwiDefinition,
-  type KiwiEnum,
-  type KiwiSchema,
-  type KiwiStruct,
-  type KiwiStructField,
-  type KiwiEnumField,
-  type KiwiDecodedValue,
-  type KiwiPrimitiveName,
-  type KiwiDefinitionKind,
   BinaryReader,
-  parseCanvasHeader,
-  parseCanvasFig,
-  parseFigmaFile,
-  parseKiwiSchema,
-  parseMetaJson,
+  CANVAS_FIG_MAGIC,
+  CANVAS_HEADER_SIZE,
   decodeDocument,
   decodeMessage,
   decodeStruct,
   decodeValue,
-  resolveTypeName,
-  extractZipEntries,
   decompressZstd,
-  CANVAS_FIG_MAGIC,
-  CANVAS_HEADER_SIZE,
+  extractZipEntries,
+  type FigmaFile,
+  type FigmaFileType,
+  type FigmaMeta,
   KIWI_PRIMITIVES,
+  type KiwiDecodedValue,
+  type KiwiDefinition,
+  type KiwiDefinitionKind,
+  type KiwiEnum,
+  type KiwiEnumField,
+  type KiwiPrimitiveName,
+  type KiwiSchema,
+  type KiwiStruct,
+  type KiwiStructField,
+  parseCanvasFig,
+  parseCanvasHeader,
+  parseFigmaFile,
+  parseKiwiSchema,
+  parseMetaJson,
+  resolveTypeName,
 };
 
 // endregion

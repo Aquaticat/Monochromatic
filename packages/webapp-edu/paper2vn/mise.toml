@@ -1,0 +1,50 @@
+[tasks.build]
+description = "Bundle client JS then generate self-contained HTML"
+run = "mise run build:js:client; bun src/build.ts"
+
+[tasks.smoke]
+description = "Live-LLM end-to-end smoke test (requires OPENROUTER_API_KEY)"
+depends = ["build"]
+run = "bun src/smoke.ts"
+
+# E2e UI tests in real browsers (Chromium + Firefox) via Playwright.
+# The live-LLM tier inside the test file skips automatically when no
+# API key is in scope; this task does not pass keys through, so all
+# live-LLM tests skip.
+#
+# `dir = "{{vars.monorepo_root}}"` runs the inner mise call from the
+# repo root so the root `test:e2e` task's `$env.PWD` is correct (it
+# uses PWD as the podman volume mount root). `{{config_root}}` here
+# would resolve to the package directory, which would mount the wrong
+# tree.
+[tasks."test:e2e"]
+description = "E2e UI tests via Playwright (live LLM tier skips without key)"
+depends = ["build"]
+dir = "{{vars.monorepo_root}}"
+run = "mise run //:test:e2e -- packages/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts"
+
+# Same suite as test:e2e but with the OpenRouter env vars threaded
+# through podman so the live-LLM tier runs against a real model. The
+# root `test:e2e` task does not pass env vars to the container, so this
+# task inlines its own podman invocation with explicit `-e` flags.
+# Mise auto-injects PAPER2VN_OPENROUTER_API_KEY from `.env.local` at
+# the repo root.
+[tasks."test:e2e:llm"]
+description = "E2e tests with live LLM round-trip (requires PAPER2VN_OPENROUTER_API_KEY)"
+depends = ["build", "//:prepare:playwright"]
+dir = "{{vars.monorepo_root}}"
+run = """
+podman run --rm -v $"($env.PWD):/work:Z" -w /work -e PAPER2VN_OPENROUTER_API_KEY -e OPENROUTER_API_KEY -e PAPER2VN_OPENROUTER_MODEL monochromatic-playwright bunx playwright test --config playwright.e2e.config.ts packages/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts
+"""
+
+[tasks."build:js:client"]
+extends = "build:js:client"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks.'lint:types']
+extends = "lint:types"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"

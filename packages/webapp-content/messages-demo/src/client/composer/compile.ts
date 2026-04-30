@@ -1,0 +1,171 @@
+/**
+ * Markdown -> HTML compile paths.
+ *
+ * Two implementations:
+ *
+ * - `compileInline` runs `micromark` on the main thread. Used by tier-1
+ *   sends and the tier-3 single-chunk save path.
+ * - `compileViaWorker` lazily spawns the composer worker and asks it to
+ *   compile the body. Used by tier 2.
+ */
+
+import {
+  extractPreview,
+  renderChunks,
+} from '../../lib/markdown-stream.ts';
+import type {
+  Compiled,
+  ComposerState,
+  WorkerOut,
+} from './state.ts';
+
+/** Maximum length of the message preview, in characters. */
+const PREVIEW_MAX_LENGTH = 200;
+
+/**
+ * Compiles markdown to HTML on the main thread. Used by tier-1 and
+ * tier-3 single-chunk paths where we know the input is small enough to
+ * compile without the worker.
+ *
+ * @param body - markdown source
+ *
+ * @returns compiled aggregates
+ *
+ * @example
+ * ```ts
+ * const compiled = compileInline('# hi');
+ * ```
+ */
+export function compileInline(body: string,): Compiled {
+  const chunks: {
+    md: string;
+    html: string;
+    charCount: number;
+  }[] = [];
+  let charCount = 0;
+  let firstMd = '';
+  let html = '';
+  for (const chunk of renderChunks(body,)) {
+    if (chunks.length === 0)
+      firstMd = chunk.md;
+    chunks.push({
+      md: chunk.md,
+      html: chunk.html,
+      charCount: chunk.charCount,
+    },);
+    charCount += chunk.charCount;
+    html += chunk.html;
+  }
+  return {
+    html,
+    chunkCount: chunks.length,
+    charCount,
+    preview: extractPreview(
+      firstMd,
+      PREVIEW_MAX_LENGTH,
+    ),
+    chunks,
+  };
+}
+
+/**
+ * Spawns (lazily) the composer worker and asks it to compile the body
+ * locally without uploading. The composer then PUTs each chunk itself
+ * using the data the worker returned. Used by tier 2.
+ *
+ * @param input - body and shared composer state
+ *
+ * @returns compiled aggregates returned by the worker
+ *
+ * @example
+ * ```ts
+ * const compiled = await compileViaWorker({ body, state });
+ * ```
+ */
+export function compileViaWorker(
+  input: {
+    body: string;
+    state: ComposerState;
+  },
+): Promise<Compiled> {
+  // The worker uses a postMessage event-callback API; the Promise
+  // constructor is the only reasonable bridge to async/await.
+  // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- bridges callback API
+  return new Promise(function executor(
+    resolve,
+    reject,
+  ) {
+    input.state.worker ??= new Worker(
+      new URL(
+        'composer.worker.js',
+        import.meta.url,
+      ),
+      { type: 'module', },
+    );
+    const { worker, } = input.state;
+    // Pipe every worker message through the metrics hooks (when the
+    // overlay is mounted). The hook discriminates on `kind` and only
+    // folds `metrics` payloads, so non-metrics messages are no-ops.
+    const { metricsHooks, } = input.state;
+    if (metricsHooks !== null) {
+      worker.addEventListener(
+        'message',
+        function tee(event: MessageEvent<unknown>,): void {
+          metricsHooks.onWorkerMessage(event.data,);
+        },
+      );
+    }
+    /**
+     * Routes worker messages: resolve on `done`, reject on `error`,
+     * detach the listener after either terminal event.
+     *
+     * @param event - worker message event
+     *
+     * @example
+     * ```ts
+     * worker.addEventListener('message', onMessage);
+     * ```
+     */
+    function onMessage(event: MessageEvent<WorkerOut>,): void {
+      const { data, } = event;
+      if (data.kind === 'done') {
+        worker.removeEventListener(
+          'message',
+          onMessage,
+        );
+        resolve({
+          html: '',
+          chunkCount: data.chunkCount,
+          charCount: data.charCount,
+          preview: data.preview,
+          chunks: data.chunks?.map(function copy(chunk,) {
+            return {
+              md: chunk.md,
+              html: chunk.html,
+              charCount: chunk.charCount,
+            };
+          },) ?? [],
+        },);
+      }
+      else if (data.kind === 'error') {
+        worker.removeEventListener(
+          'message',
+          onMessage,
+        );
+        reject(new Error(data.message,),);
+      }
+    }
+    worker.addEventListener(
+      'message',
+      onMessage,
+    );
+    // Worker.postMessage does not accept targetOrigin (only Window does);
+    // the rule fires on every postMessage call regardless.
+    /* oxlint-disable eslint-plugin-unicorn/require-post-message-target-origin -- Worker channel */
+    worker.postMessage({
+      kind: 'compile-only',
+      body: input.body,
+    },);
+    /* oxlint-enable eslint-plugin-unicorn/require-post-message-target-origin */
+  },);
+}

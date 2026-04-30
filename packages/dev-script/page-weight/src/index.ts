@@ -149,7 +149,10 @@ if (distArg === undefined) {
 const root = resolve(distArg,);
 
 /** Discover every `.html` file inside the dist root. */
-const found = await readdir('**/*.html', { cwd: root, },);
+const found = await readdir(
+  '**/*.html',
+  { cwd: root, },
+);
 if (found.files.length === 0) {
   console.error(`no HTML files under ${root}`,);
   process.exitCode = EXIT_USAGE;

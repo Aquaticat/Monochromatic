@@ -1,0 +1,413 @@
+/**
+ * Composer state machine.
+ *
+ * Replaces the server-rendered `<form>` with a JS-driven workflow:
+ *
+ * - **send**: create draft -> compile + PUT chunks -> finalize -> redirect
+ * - **edit**: load existing chunks, present them, accept changes, finalise
+ *   the new draft via `/api/messages/:id/edit`
+ *
+ * Tier system (see plan section 2):
+ *
+ * - tier 1 (< 8 KB single block): main thread compiles, three sequential
+ *   network calls on send
+ * - tier 2 (8 KB – 1 MB): worker compiles, batch upload on send
+ * - tier 3 (> 1 MB): chunk-paginated; the editor surface only ever
+ *   holds one chunk's source markdown
+ *
+ * Promotion across tiers is one-way and triggered by the running body
+ * size after a 500 ms idle.
+ */
+
+import { createChunkCache, } from './chunk-cache.ts';
+import {
+  appendStatusElement,
+  appendVolatileBadge,
+  fetchChunkCount,
+  fetchHeadDraftId,
+  getIdentity,
+  parseEditId,
+  postCreateDraft,
+  randomId,
+  setStatus,
+  writeBody,
+} from './composer/helpers.ts';
+import { attachMetricsOverlay, } from './composer/metrics-overlay.ts';
+import { mountCustomEditor, } from './composer/mount-custom-editor.ts';
+import { promoteToTier3, } from './composer/promote.ts';
+import { handleSend, } from './composer/send.ts';
+import type { ComposerState, } from './composer/state.ts';
+import {
+  loadChunkIntoEditor,
+  setupTier3Nav,
+} from './composer/tier3.ts';
+import {
+  loadIdentity,
+  saveIdentity,
+} from './identity-store.ts';
+import { createOutbox, } from './outbox.ts';
+import {
+  probeStorage,
+  type StorageCaps,
+} from './storage-probe.ts';
+
+/** One kibibyte in bytes. */
+const BYTES_PER_KIB = 1_024;
+
+/** Tier-2 threshold in kibibytes. */
+const TIER_2_THRESHOLD_KIB = 8;
+
+/** Tier-3 threshold in kibibytes. */
+const TIER_3_THRESHOLD_KIB = 1_024;
+
+/** Body-size threshold (chars) to promote from tier 1 to tier 2. */
+export const TIER_2_THRESHOLD: number = TIER_2_THRESHOLD_KIB * BYTES_PER_KIB;
+
+/** Body-size threshold (chars) to promote from tier 2 to tier 3. */
+export const TIER_3_THRESHOLD: number = TIER_3_THRESHOLD_KIB * BYTES_PER_KIB;
+
+/** Idle delay before tier promotion fires, in milliseconds. */
+const TIER_DEBOUNCE_MS = 500;
+
+/** Outcome of a single tier-promotion check. */
+export type TierTransition =
+  | { readonly kind: 'none'; }
+  | { readonly kind: 'to-tier-2'; }
+  | { readonly kind: 'to-tier-3'; };
+
+/**
+ * Pure decision: given the current tier and observed signals, what
+ * transition (if any) should fire on the next promotion-check tick?
+ *
+ * Rules:
+ *
+ * - tier 1 promotes to tier 2 when `length >= TIER_2_THRESHOLD`.
+ * - tier 2 promotes to tier 3 when `length >= TIER_3_THRESHOLD`,
+ *   `tier3Active` is false, and we are not in edit mode.
+ * - All other states return `none`. Promotion is one-way: tier-3 stays
+ *   tier-3 even if the body shrinks back below the threshold.
+ *
+ * @param input - current tier + size + mode signals
+ *
+ * @returns transition to apply
+ *
+ * @example
+ * ```ts
+ * decideTierTransition({ tier: 1, length: 9000, tier3Active: false, inEditMode: false });
+ * // { kind: 'to-tier-2' }
+ * ```
+ */
+export function decideTierTransition(
+  input: {
+    /* oxlint-disable eslint/no-magic-numbers -- tier discriminant union */
+    tier: 1 | 2 | 3;
+    /* oxlint-enable eslint/no-magic-numbers */
+    length: number;
+    tier3Active: boolean;
+    inEditMode: boolean;
+  },
+): TierTransition {
+  if (input.tier === 1 && input.length >= TIER_2_THRESHOLD)
+    return { kind: 'to-tier-2', };
+  if (
+    input.tier === 2
+    && input.length >= TIER_3_THRESHOLD
+    && !input.tier3Active
+    && !input.inEditMode
+  ) {
+    return { kind: 'to-tier-3', };
+  }
+  return { kind: 'none', };
+}
+
+/** Decimal radix for `parseInt`. */
+const DECIMAL_RADIX = 10;
+
+/**
+ * Bootstraps the composer. Idempotent: if called multiple times on the
+ * same form element it returns the same instance.
+ *
+ * @param form - server-rendered composer form
+ *
+ * @param caps - storage capability flags from `probeStorage`
+ *
+ * @example
+ * ```ts
+ * await attachComposer(form, await probeStorage());
+ * ```
+ */
+export async function attachComposer(
+  form: HTMLFormElement,
+  caps: StorageCaps,
+): Promise<void> {
+  if (form.dataset['composerAttached'] === '1')
+    return;
+  form.dataset['composerAttached'] = '1';
+
+  const select = form.querySelector<HTMLSelectElement>('.composer-identity',);
+  const textarea = form.querySelector<HTMLTextAreaElement>('.composer-body',);
+  const sendBtn = form.querySelector<HTMLButtonElement>('.composer-send',);
+  if (select === null || textarea === null || sendBtn === null)
+    return;
+
+  // Restore persisted identity if we have one.
+  const persisted = loadIdentity(caps.localStorage,);
+  if (persisted !== null && [...select.options,].some(function isPersisted(option,) {
+    return option.value === persisted;
+  },)) {
+    select.value = persisted;
+  }
+
+  select.addEventListener(
+    'change',
+    function onIdentityChange() {
+      saveIdentity(
+        select.value,
+        caps.localStorage,
+      );
+    },
+  );
+
+  const [outbox, cache,] = await Promise.all([
+    createOutbox({ idbAvailable: caps.idb, },),
+    createChunkCache({
+      caps: {
+        opfs: caps.opfs,
+        idb: caps.idb,
+      },
+    },),
+  ],);
+
+  const state: ComposerState = {
+    /* oxlint-disable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion -- tier discriminant cast */
+    tier: Number.parseInt(
+      form.dataset['initialTier'] ?? '1',
+      DECIMAL_RADIX,
+    ) as 1 | 2 | 3,
+    /* oxlint-enable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion */
+    worker: null,
+    caps,
+    editMessageId: parseEditId(form.dataset['editMessageId'],),
+    outbox,
+    cache,
+    metrics: null,
+    metricsHooks: null,
+    tier3: null,
+    editor: null,
+  };
+
+  // Mount the metrics overlay before any worker spawns so we don't
+  // miss the first compile pass. Only when `?debug=1`.
+  const debug = new URLSearchParams(globalThis.location.search,).get('debug',) === '1';
+  if (debug) {
+    const overlay = attachMetricsOverlay({
+      parent: form,
+      state,
+    },);
+    state.metricsHooks = overlay;
+  }
+
+  if (!caps.localStorage || !caps.idb)
+    appendVolatileBadge(form,);
+
+  const status = appendStatusElement(form,);
+
+  // Custom editor opt-in via `?editor=custom`. The textarea stays in
+  // the DOM (visually hidden) so every existing read of
+  // `textarea.value` still works; the editor mirrors its text into
+  // the textarea on every change.
+  const wantCustom = new URLSearchParams(globalThis.location.search,).get('editor',)
+    === 'custom';
+  if (wantCustom) {
+    await mountCustomEditor({
+      form,
+      textarea,
+      state,
+    },);
+  }
+
+  if (state.editMessageId !== null) {
+    await loadExistingChunksForEdit({
+      form,
+      textarea,
+      state,
+      status,
+    },);
+  }
+
+  textarea.addEventListener(
+    'input',
+    function onInput() {
+      queueTierPromotionCheck({
+        state,
+        textarea,
+        form,
+        status,
+      },);
+    },
+  );
+
+  textarea.addEventListener(
+    'keydown',
+    function onKeydown(event,) {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        event.preventDefault();
+        sendBtn.click();
+      }
+    },
+  );
+
+  form.addEventListener(
+    'submit',
+    function onSubmit(event,) {
+      event.preventDefault();
+      void handleSend({
+        form,
+        textarea,
+        select,
+        sendBtn,
+        state,
+        status,
+      },);
+    },
+  );
+}
+
+/**
+ * Loads the markdown for an existing message into the editor when the
+ * composer is mounted in edit mode. For tier-3 messages we set up the
+ * chunk-paginated UI instead of concatenating all chunks.
+ *
+ * @param input - form, textarea, state, status element
+ */
+async function loadExistingChunksForEdit(
+  input: {
+    form: HTMLFormElement;
+    textarea: HTMLTextAreaElement;
+    state: ComposerState;
+    status: HTMLElement;
+  },
+): Promise<void> {
+  if (input.state.editMessageId === null)
+    return;
+  const messageId = input.state.editMessageId;
+  // oxlint-disable-next-line eslint/no-magic-numbers -- tier discriminant
+  if (input.state.tier === 3) {
+    const chunkCount = await fetchChunkCount(messageId,);
+    const newDraftId = randomId();
+    await postCreateDraft({
+      id: newDraftId,
+      userId: getIdentity(input.form,),
+      parentId: await fetchHeadDraftId(messageId,),
+    },);
+    input.state.tier3 = {
+      currentSeq: 0,
+      chunkCount,
+      newDraftId,
+      localChunks: null,
+    };
+    setupTier3Nav({
+      ...input,
+      messageId,
+    },);
+    await loadChunkIntoEditor({
+      state: input.state,
+      messageId,
+      seq: 0,
+      textarea: input.textarea,
+    },);
+    setStatus(
+      input.status,
+      `editing chunk 1 of ${String(chunkCount,)}`,
+    );
+    return;
+  }
+  const chunkCount = await fetchChunkCount(messageId,);
+  // Sequential fetches keep ordering deterministic for streaming
+  // assembly; the textarea concatenates parts in seq order.
+  /* eslint-disable no-await-in-loop */
+  const parts: string[] = [];
+  for (let seq = 0; seq < chunkCount; seq += 1) {
+    const response = await fetch(`/m/${String(messageId,)}/c/${String(seq,)}/md`,);
+    if (!response.ok)
+      throw new Error(`failed to load chunk ${String(seq,)}`,);
+    parts.push(await response.text(),);
+  }
+  /* eslint-enable no-await-in-loop */
+  writeBody({
+    state: input.state,
+    textarea: input.textarea,
+    text: parts.join('',),
+  },);
+  setStatus(
+    input.status,
+    'editing message',
+  );
+}
+
+/** Pending promotion-check timer; null when no check is queued. */
+let promotionTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Schedules a tier promotion check after a short idle. Promotes between
+ * tiers based on the body length after a 500 ms idle. One-way: tier-3
+ * stays tier-3.
+ *
+ * @param input - state, textarea, form, status element
+ */
+function queueTierPromotionCheck(
+  input: {
+    state: ComposerState;
+    textarea: HTMLTextAreaElement;
+    form: HTMLFormElement;
+    status: HTMLElement;
+  },
+): void {
+  if (promotionTimer !== null)
+    clearTimeout(promotionTimer,);
+  promotionTimer = setTimeout(
+    function onIdle() {
+      promotionTimer = null;
+      const transition = decideTierTransition({
+        tier: input.state.tier,
+        length: input.textarea.value.length,
+        tier3Active: input.state.tier3 !== null,
+        inEditMode: input.state.editMessageId !== null,
+      },);
+      if (transition.kind === 'to-tier-2') {
+        input.state.tier = 2;
+        setStatus(
+          input.status,
+          'tier 2 (worker)',
+        );
+        // Fall through: a single tick can't double-jump to tier 3 because
+        // the decision was made on the pre-transition `tier` value.
+      }
+      if (transition.kind === 'to-tier-3')
+        void promoteToTier3(input,);
+    },
+    TIER_DEBOUNCE_MS,
+  );
+}
+
+/** Re-export the entry function so the lazy import is type-safe. */
+export const init: typeof attachComposer = attachComposer;
+
+/**
+ * Boots the composer on the first user interaction. Run from `index.ts`.
+ *
+ * @example
+ * ```ts
+ * await bootstrap();
+ * ```
+ */
+export async function bootstrap(): Promise<void> {
+  const form = document.querySelector<HTMLFormElement>('#composer',);
+  if (form === null)
+    return;
+  const caps = await probeStorage();
+  await attachComposer(
+    form,
+    caps,
+  );
+}

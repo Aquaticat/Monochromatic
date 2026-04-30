@@ -58,6 +58,14 @@ Use thunks with `concurrency: 1` to guarantee execution order.
   - `2`..`Number.MAX_SAFE_INTEGER - 1` -- bounded concurrency via [`p-limit`](https://www.npmjs.com/package/p-limit)
   - `Infinity` or `Number.MAX_SAFE_INTEGER` -- unbounded concurrency via raw `Promise.allSettled`, no `p-limit` overhead
 
+  **Not inherited by child describes.** Each `describe` defaults to 16 independently
+  of its parent's `concurrency` setting. When child tests stub shared global state
+  (e.g. prototype methods, module-level variables), set `concurrency: 1` on the
+  innermost `describe` that contains those tests and use thunks (`() => it(...)`)
+  so execution is deferred. Concurrent tests that stub the same target fail with
+  `"Attempted to wrap X which is already wrapped"` because sinon refuses to
+  wrap a method that another concurrent test's sandbox has already wrapped.
+
   Children passed as bare promises are already running when the suite starts,
   so the limit only gates thunks that have not yet been invoked --
   pass thunks (arrow functions returning promises) to get accurate concurrency control
@@ -615,13 +623,46 @@ await server.close();
 
 The `sinon` sandbox from `TestContext` auto-restores after each test.
 
-```ts
-import {
-  describe,
-  expect,
-  it,
-} from '@monochromatic-dev/module-test';
+**Stubbing shared global state requires sequential execution.**
+When tests stub prototype methods or module-level variables
+(`sinon.stub(SomeClass.prototype, 'method')`),
+the stub affects all code running in the process -- including concurrent tests.
+Sinon refuses to wrap an already-wrapped method, throwing
+`"Attempted to wrap X which is already wrapped"`.
+To avoid this, use `concurrency: 1` with thunks on the `describe`
+that contains those tests:
 
+```ts
+await describe({
+  name: 'service with HTTP stubs',
+  concurrency: 1,
+  children: [
+    () =>
+      it({
+        name: 'handles success',
+        fn: async ({ sinon, },) => {
+          sinon.stub(HttpClient.prototype, 'fetch',).resolves({ ok: true, },);
+          // ...
+        },
+      },),
+    () =>
+      it({
+        name: 'handles failure',
+        fn: async ({ sinon, },) => {
+          sinon.stub(HttpClient.prototype, 'fetch',).rejects(
+            new Error('network',),
+          );
+          // ...
+        },
+      },),
+  ],
+},);
+```
+
+Stubbing **local** objects (created within the test) is safe at any concurrency --
+each test has its own object, so stubs never overlap.
+
+```ts
 await describe({
   name: 'mocking',
   children: [

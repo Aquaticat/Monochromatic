@@ -10,7 +10,7 @@
 #
 # The version tag MUST match the @playwright/test version in bun.lock.
 # Find available tags: https://mcr.microsoft.com/v2/playwright/tags/list
-FROM mcr.microsoft.com/playwright:v1.58.2
+FROM mcr.microsoft.com/playwright:v1.59.1-noble
 
 RUN apt-get update && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
 

@@ -28,6 +28,13 @@ const _default_1: UserConfig = defineConfig({
       /^find-up$/,
       /^nano-spawn$/,
     ],
+    neverBundle: [
+      // Pi extension peer deps — provided by the pi runtime at load time.
+      // Bundling them duplicates the pi API and causes CJS/ESM
+      // "exports is not defined" errors.
+      '@mariozechner/pi-coding-agent',
+      'typebox',
+    ],
   },
   minify: {
     compress: true,

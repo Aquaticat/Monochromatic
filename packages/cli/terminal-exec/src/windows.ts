@@ -6,6 +6,10 @@
  */
 
 import {
+  delimiter,
+  resolve,
+} from 'node:path';
+import {
   l as parentLogger,
   tagged,
 } from './log.ts';
@@ -18,6 +22,35 @@ const l = tagged({
 },);
 
 /**
+ * Cross-runtime `which` for Windows.
+ * Resolves an executable by searching directories in `$PATH`.
+ *
+ * @param name - Executable name to find.
+ *
+ * @returns Absolute path if found, or `null`.
+ */
+async function which(name: string,): Promise<string | null> {
+  const { access, } = await import('node:fs/promises');
+  const pathEnv = process.env['PATH'] ?? '';
+  const dirs = pathEnv.split(delimiter,);
+  for (const dir of dirs) {
+    const candidate = resolve(
+      dir,
+      name,
+    );
+    try {
+      /* oxlint-disable-next-line no-await-in-loop -- sequential PATH walk must check one dir at a time */
+      await access(candidate,);
+      return candidate;
+    }
+    catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+/**
  * Resolves the terminal emulator on Windows.
  *
  * Resolution order:
@@ -28,12 +61,12 @@ const l = tagged({
  *
  * @example
  * ```ts
- * const terminal = resolveWindowsTerminal()
+ * const terminal = await resolveWindowsTerminal()
  * // terminal.execTokens === ['wt.exe'] or ['cmd.exe']
  * ```
  */
-export function resolveWindowsTerminal(): ResolvedTerminal {
-  if (Bun.which('wt.exe',) !== null) {
+export async function resolveWindowsTerminal(): Promise<ResolvedTerminal> {
+  if (await which('wt.exe',) !== null) {
     l.debug('found Windows Terminal (wt.exe)',);
     return {
       entryId: 'wt.exe',

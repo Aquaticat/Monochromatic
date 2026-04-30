@@ -5,6 +5,14 @@
  * @module
  */
 
+import {
+  access,
+  stat,
+} from 'node:fs/promises';
+import {
+  delimiter,
+  resolve,
+} from 'node:path';
 import type { DesktopEntry, } from './desktop-entry.ts';
 import {
   l as parentLogger,
@@ -19,16 +27,51 @@ const l = tagged({
 },);
 
 /**
- * Checks if an executable exists in `$PATH` using Bun's `which`.
+ * Checks if an executable exists in `$PATH` using platform-native resolution.
  *
  * @param name - Executable name or absolute path.
  *
  * @returns `true` if the executable is found.
  */
-function executableExists({ name, }: { name: string; },): boolean {
-  if (name.startsWith('/',))
-    return Bun.file(name,).size > 0;
-  return Bun.which(name,) !== null;
+async function executableExists({ name, }: { name: string; },): Promise<boolean> {
+  if (name.startsWith('/',)) {
+    try {
+      await stat(name,);
+      return true;
+    }
+    catch {
+      return false;
+    }
+  }
+  return await which(name,) !== null;
+}
+
+/**
+ * Cross-runtime `which` implementation.
+ * Resolves an executable name by searching directories in `$PATH`.
+ *
+ * @param name - Executable name to find.
+ *
+ * @returns Absolute path if found, or `null`.
+ */
+async function which(name: string,): Promise<string | null> {
+  const pathEnv = process.env['PATH'] ?? '';
+  const dirs = pathEnv.split(delimiter,);
+  for (const dir of dirs) {
+    const candidate = resolve(
+      dir,
+      name,
+    );
+    try {
+      /* oxlint-disable-next-line no-await-in-loop -- sequential PATH walk must check one dir at a time */
+      await access(candidate,);
+      return candidate;
+    }
+    catch {
+      continue;
+    }
+  }
+  return null;
 }
 
 /**
@@ -72,7 +115,7 @@ export type ValidatedEntry = {
  * });
  * ```
  */
-export function validateEntry({
+export async function validateEntry({
   entry,
   entryId,
   desktops,
@@ -84,7 +127,7 @@ export function validateEntry({
   desktops: readonly string[];
   isFallback: boolean;
   execArgDefault: string;
-},): ValidatedEntry | null {
+},): Promise<ValidatedEntry | null> {
   if (!entry.isTerminal) {
     l.debug(`${entryId}: not a TerminalEmulator`,);
     return null;
@@ -118,7 +161,7 @@ export function validateEntry({
   }
   //endregion
 
-  if (entry.tryExec.length > 0 && !executableExists({ name: entry.tryExec, },)) {
+  if (entry.tryExec.length > 0 && !await executableExists({ name: entry.tryExec, },)) {
     l.debug(`${entryId}: TryExec '${entry.tryExec}' not found`,);
     return null;
   }
@@ -132,7 +175,7 @@ export function validateEntry({
   const [firstToken,] = execTokens;
   if (firstToken === undefined)
     throw new Error('unreachable — length checked above',);
-  if (!executableExists({ name: firstToken, },)) {
+  if (!await executableExists({ name: firstToken, },)) {
     l.debug(`${entryId}: Exec[0] '${firstToken}' not found in PATH`,);
     return null;
   }

@@ -85,10 +85,11 @@ function positionToOffset({
   };
   lines: readonly string[];
 },): number {
-  return lines.slice(
-    0,
-    position.line,
-  )
+  return lines
+    .slice(
+      0,
+      position.line,
+    )
     .reduce(
       function addLineLength(
         sum,
@@ -227,9 +228,8 @@ export function mapCursorThroughEdits({
       lines: originalLines,
     },);
 
-    if (editEnd <= cursorOffset) {
+    if (editEnd <= cursorOffset)
       shift += edit.newText.length - (editEnd - editStart);
-    }
     else if (editStart < cursorOffset) {
       /** Cursor is inside this edit; clamp to end of replacement text. */
       shift += editStart + edit.newText.length - cursorOffset;

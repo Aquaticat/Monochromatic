@@ -51,7 +51,7 @@ function isInsideStringLiteral({
   line: string;
   character: number;
 },): boolean {
-  let active: '"' | '\'' | '`' | null = null;
+  let active: '"' | "'" | '`' | null = null;
   let i = 0;
   while (i < character) {
     const ch = line[i];
@@ -60,7 +60,7 @@ function isInsideStringLiteral({
       continue;
     }
     if (active === null) {
-      if (ch === '"' || ch === '\'' || ch === '`')
+      if (ch === '"' || ch === "'" || ch === '`')
         active = ch;
     }
     else if (ch === active) {

@@ -60,10 +60,19 @@ export function resolveReference(
 
   const absoluteRoot = pathResolve(root,);
   const resolved = isAbsolute(trimmed,)
-    ? pathResolve(absoluteRoot, `.${trimmed}`,)
-    : pathResolve(dirname(fromFile,), trimmed,);
+    ? pathResolve(
+      absoluteRoot,
+      `.${trimmed}`,
+    )
+    : pathResolve(
+      dirname(fromFile,),
+      trimmed,
+    );
 
-  const relativeToRoot = relative(absoluteRoot, resolved,);
+  const relativeToRoot = relative(
+    absoluteRoot,
+    resolved,
+  );
   if (relativeToRoot.startsWith('..',) || isAbsolute(relativeToRoot,))
     return null;
   return resolved;
