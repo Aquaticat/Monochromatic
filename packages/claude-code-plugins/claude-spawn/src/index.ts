@@ -1,183 +1,26 @@
 #!/usr/bin/env bun
 
 /**
- * Claude Code hook handler for the claude-spawn plugin.
+ * Claude Code multi-event hook entry point for the claude-spawn plugin.
  *
- * A single binary that handles all hook events:
- * - **SessionStart**: writes PID-to-session mapping; claims spawn ownership;
- *   auto-symlinks `spawn-claude` CLI
- * - **Stop**: updates child's `lastMessage` (child sessions); **consumes** completed
- *   children by blocking with reason text (parent sessions)
- * - **SessionEnd**: no-op (kept for future use)
- * - **PreToolUse/PostToolUse/PostToolUseFailure**: **consumes** completed children
- *   via `additionalContext` — confirmed working in Claude Code v2.1.76;
- *   first hook to fire after child completion delivers
+ * Thin shim -- handler logic, parser, writer, the SessionStart helper, and the
+ * spawn-state coordination modules live in
+ * `@monochromatic-dev/claude-code-plugins-source/handlers/claude-spawn`.
+ * This file exists so the standard tsdown build produces an installable plugin
+ * entry at `dist/final/node/index.mjs` for Claude Code's marketplace install.
  *
  * @module
  */
 
 import {
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
-import { join, } from 'node:path';
+  claudeSpawnHandler,
+  claudeSpawnParser,
+  claudeSpawnWriter,
+} from '@monochromatic-dev/claude-code-plugins-source/handlers/claude-spawn';
+import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
 
-import type {
-  HookInput,
-  HookOutputBase,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
-import { readStdin, } from '@monochromatic-dev/claude-code-plugins-hook-utils';
-
-import { handleSessionStart, } from './hook-session-start.ts';
-import { checkCompletedChildren, } from './inject.ts';
-import {
-  SPAWNS_DIR,
-  type SpawnState,
-} from './paths.ts';
-
-export {};
-
-//region Stdin
-
-/** Raw JSON string read from stdin containing the hook event payload. */
-const raw = await readStdin();
-
-/** Parsed hook event payload deserialized from stdin. */
-/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
-const event = JSON.parse(raw,) as HookInput;
-
-//endregion
-
-//region SessionStart — delegated to hook-session-start.ts
-
-if (event.hook_event_name === 'SessionStart') {
-  const output = handleSessionStart({
-    sessionId: event.session_id,
-    transcriptPath: event.transcript_path,
-    hookDir: import.meta.dir,
-  },);
-  process.stdout.write(output,);
-
-  //endregion
-
-  //region Stop — update child lastMessage; consume via blocking reason on parent
-}
-else if (event.hook_event_name === 'Stop') {
-  /** Spawn identifier from the environment, present only in child sessions. */
-  const spawnId = process.env.CLAUDE_SPAWN_ID;
-
-  if (spawnId !== undefined && event.last_assistant_message !== undefined) {
-    /** Path to this child's spawn state JSON file. */
-    const filePath = join(
-      SPAWNS_DIR,
-      `${spawnId}.json`,
-    );
-
-    try {
-      /** Raw JSON content of the existing spawn state file. */
-      const existing = readFileSync(
-        filePath,
-        'utf8',
-      );
-      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
-      const state = JSON.parse(existing,) as SpawnState;
-
-      /**
-       * Only update if this session owns the spawn file.
-       * Sessions with stale `CLAUDE_SPAWN_ID` env vars will have a different
-       * `session_id` than the one registered by the genuine child's SessionStart.
-       */
-      if (state.sessionId === event.session_id) {
-        const updated: SpawnState = {
-          ...state,
-          lastMessage: event.last_assistant_message,
-          status: 'stopped',
-        };
-        writeFileSync(
-          filePath,
-          JSON.stringify(updated,),
-        );
-      }
-    }
-    catch {
-      /** File missing (already `.reported`) or unreadable — skip. */
-    }
-  }
-
-  /**
-   * On parent sessions: consume completed children by blocking with reason text.
-   * The `reason` field is reliably delivered to Claude as feedback.
-   * Skip when `stop_hook_active` is true to prevent infinite block loops.
-   */
-  if (!event.stop_hook_active) {
-    const context = checkCompletedChildren({
-      parentSessionId: event.session_id,
-      consume: true,
-    },);
-
-    if (context !== null) {
-      /** Block the stop and deliver spawn results as the reason. */
-      const output = {
-        decision: 'block' as const,
-        reason: context,
-      };
-      process.stdout.write(JSON.stringify(output,),);
-      /* Return early — do not emit empty pass-through. */
-      process.exit(0,);
-    }
-  }
-
-  /** Pass-through: no completed children or already in a stop-hook continuation. */
-  const output: HookOutputBase = {};
-  process.stdout.write(JSON.stringify(output,),);
-
-  //endregion
-
-  //region SessionEnd — no-op (status already set by Stop hook)
-}
-else if (event.hook_event_name === 'SessionEnd') {
-  /** Empty pass-through output for the session end event. */
-  const output: HookOutputBase = {};
-  process.stdout.write(JSON.stringify(output,),);
-
-  //endregion
-
-  //region Other hooks — consuming additionalContext injection
-}
-else {
-  /**
-   * Consuming read: checks for completed children and renames files to `.reported`.
-   *
-   * `additionalContext` via `hookSpecificOutput` is confirmed working for
-   * PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, SessionStart,
-   * Setup, and SubagentStart in Claude Code v2.1.76 source (switch at ~10039418
-   * in unpacked JS). **Notification** is missing from the switch — context is
-   * silently dropped despite being documented.
-   *
-   * The first hook to fire after a child completes will consume and deliver.
-   * UserPromptSubmit (stdout) and Stop (blocking reason) provide redundant
-   * delivery paths if `additionalContext` is ever broken for plugin hooks.
-   */
-  const context = checkCompletedChildren({
-    parentSessionId: event.session_id,
-    consume: true,
-  },);
-
-  if (context !== null) {
-    /** Hook output carrying completed child results as additional context (best-effort). */
-    const output = {
-      hookSpecificOutput: {
-        hookEventName: event.hook_event_name,
-        additionalContext: context,
-      },
-    };
-    process.stdout.write(JSON.stringify(output,),);
-  }
-  else {
-    /** Empty pass-through output when no children have completed. */
-    const output: HookOutputBase = {};
-    process.stdout.write(JSON.stringify(output,),);
-  }
-}
-
-//endregion
+await runHookPlugin({
+  parser: claudeSpawnParser,
+  handler: claudeSpawnHandler,
+  writer: claudeSpawnWriter,
+},);

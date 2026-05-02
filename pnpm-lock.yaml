@@ -290,9 +290,15 @@ importers:
       '@monochromatic-dev/claude-code-plugins-guardrail':
         specifier: workspace:*
         version: link:packages/claude-code-plugins/guardrail
+      '@monochromatic-dev/claude-code-plugins-prompt-time':
+        specifier: workspace:*
+        version: link:packages/claude-code-plugins/prompt-time
       '@monochromatic-dev/claude-code-plugins-session-start-housekeeping':
         specifier: workspace:*
         version: link:packages/claude-code-plugins/session-start-housekeeping
+      '@monochromatic-dev/claude-code-plugins-source':
+        specifier: workspace:*
+        version: link:packages/claude-code-plugins/source
       '@monochromatic-dev/claude-code-plugins-stop-reminders':
         specifier: workspace:*
         version: link:packages/claude-code-plugins/stop-reminders
@@ -417,18 +423,9 @@ importers:
 
   packages/claude-code-plugins/claude-spawn:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-hook-types':
+      '@monochromatic-dev/claude-code-plugins-source':
         specifier: workspace:*
-        version: link:../hook-types
-      '@monochromatic-dev/claude-code-plugins-hook-utils':
-        specifier: workspace:*
-        version: link:../hook-utils
-      '@optique/core':
-        specifier: 'catalog:'
-        version: 1.0.0-dev.1692
-      '@optique/run':
-        specifier: 'catalog:'
-        version: 1.0.0-dev.1692
+        version: link:../source
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -462,12 +459,15 @@ importers:
         specifier: workspace:*
         version: link:../../config/typescript
 
-  packages/claude-code-plugins/hook-utils:
+  packages/claude-code-plugins/prompt-time:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-hook-types':
+      '@monochromatic-dev/claude-code-plugins-source':
         specifier: workspace:*
-        version: link:../hook-types
+        version: link:../source
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
@@ -496,6 +496,12 @@ importers:
       '@monochromatic-dev/claude-code-plugins-hook-types':
         specifier: workspace:*
         version: link:../hook-types
+      '@optique/core':
+        specifier: 'catalog:'
+        version: 1.0.0-dev.1692
+      '@optique/run':
+        specifier: 'catalog:'
+        version: 1.0.0-dev.1692
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*

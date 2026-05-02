@@ -1,0 +1,20 @@
+{
+  "name": "prompt-time",
+  "description": "Injects the current local system time into Claude's context as <time>HH:MM</time> on every user prompt.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Aquaticat"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/node/index.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

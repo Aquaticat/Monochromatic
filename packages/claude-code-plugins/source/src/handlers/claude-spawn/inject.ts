@@ -3,8 +3,9 @@
  * and returns context text for the parent.
  *
  * Called from hook handlers with two modes:
- * - **Consuming** (`consume: true`): renames `.json` to `.reported`, preventing future reads.
- *   Used by all delivery hooks — first one to fire wins.
+ * - **Consuming** (`consume: true`): renames `.json` to `.reported`,
+ *   preventing future reads. Used by all delivery hooks -- first one to
+ *   fire wins.
  * - **Non-consuming** (`consume: false`): reads but does not rename.
  *   Reserved for diagnostic or observability use cases where the result
  *   should remain available for a consuming hook to pick up later.
@@ -27,13 +28,13 @@ import {
 /**
  * Formats a completed spawn state into a human-readable context string.
  *
- * @param state - Spawn state to format.
+ * @param state - spawn state to format
  *
- * @returns Multi-line context string describing the completed child session.
+ * @returns multi-line context string describing completed child session
  *
  * @example
  * ```ts
- * const text = formatSpawnResult(state)
+ * const text = formatSpawnResult(state);
  * // "Spawned Claude session completed (spawnId: abc-123):\n..."
  * ```
  */
@@ -50,30 +51,26 @@ function formatSpawnResult(state: SpawnState,): string {
 }
 
 /**
- * Scans the spawns directory for children of the given session
- * that have stopped and not yet been reported.
+ * Scans the spawns directory for children of the given session that have
+ * stopped and not yet been reported.
  *
- * When `consume` is true, atomically renames `{spawnId}.json` to `{spawnId}.reported`
- * to prevent duplicate injection across concurrent hook invocations.
- * When `consume` is false, reads the state without renaming — callers should
- * treat the result as best-effort since the file may be consumed by a later
- * reliable hook invocation.
+ * When `consume` is true, atomically renames `{spawnId}.json` to
+ * `{spawnId}.reported` to prevent duplicate injection across concurrent hook
+ * invocations. When `consume` is false, reads the state without renaming --
+ * callers should treat the result as best-effort since the file may be
+ * consumed by a later reliable hook invocation.
  *
- * @param parentSessionId - Session identifier of the calling session.
+ * @param parentSessionId - session identifier of calling session
  *
- * @param consume - Whether to rename matched files to `.reported`.
- *   Use `true` from reliable delivery hooks (UserPromptSubmit, Stop),
- *   `false` from best-effort hooks (PreToolUse, PostToolUse, etc.).
+ * @param consume - whether to rename matched files to `.reported`. Use `true`
+ *   from reliable delivery hooks (UserPromptSubmit, Stop), `false` from
+ *   best-effort hooks (PreToolUse, PostToolUse, etc.).
  *
- * @returns Combined context string, or `null` if nothing to report.
+ * @returns combined context string, or `null` if nothing to report
  *
  * @example
  * ```ts
- * // Reliable hook — consume the results
- * const context = checkCompletedChildren({ parentSessionId: 'abc-123', consume: true })
- *
- * // Best-effort hook — read without consuming
- * const context = checkCompletedChildren({ parentSessionId: 'abc-123', consume: false })
+ * const context = checkCompletedChildren({ parentSessionId: 'abc', consume: true });
  * ```
  */
 function checkCompletedChildren(
@@ -99,23 +96,14 @@ function checkCompletedChildren(
     if (!filename.endsWith('.json',))
       continue;
 
-    const filePath = join(
-      SPAWNS_DIR,
-      filename,
-    );
+    const filePath = join(SPAWNS_DIR, filename,);
     const reportedPath = join(
       SPAWNS_DIR,
-      filename.replace(
-        /\.json$/,
-        '.reported',
-      ),
+      filename.replace(/\.json$/, '.reported',),
     );
 
     try {
-      const raw = readFileSync(
-        filePath,
-        'utf8',
-      );
+      const raw = readFileSync(filePath, 'utf8',);
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own hooks */
       const state = JSON.parse(raw,) as SpawnState;
 
@@ -125,20 +113,15 @@ function checkCompletedChildren(
       if (state.status !== 'stopped')
         continue;
 
-      //region Consume: atomic rename to prevent double reliable injection
       if (consume) {
         try {
-          renameSync(
-            filePath,
-            reportedPath,
-          );
+          renameSync(filePath, reportedPath,);
         }
         catch {
           /** Another hook invocation already renamed this file. */
           continue;
         }
       }
-      //endregion
 
       results.push(formatSpawnResult(state,),);
     }

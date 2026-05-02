@@ -1,23 +1,17 @@
 {
   "license": "LGPL-3.0-or-later",
-  "name": "@monochromatic-dev/claude-code-plugins-claude-spawn",
-  "description": "Claude Code plugin that spawns steerable child Claude sessions in terminal windows with automatic result forwarding via hooks.",
+  "name": "@monochromatic-dev/claude-code-plugins-prompt-time",
+  "description": "Claude Code UserPromptSubmit hook that injects the current local system time into Claude's context as <time>HH:MM</time>.",
   "type": "module",
   "bin": {
-    "cccs": "./dist/final/node/index.mjs"
+    "ccpt": "./dist/final/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/claude-code-plugins/claude-spawn"
+    "directory": "packages/claude-code-plugins/prompt-time"
   },
-  "contributors": [
-    {
-      "name": "Claude (Anthropic)",
-      "url": "https://claude.ai"
-    }
-  ],
   "private": true,
   "sideEffects": true,
   "dependencies": {

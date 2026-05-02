@@ -14,7 +14,6 @@ packages/claude-code-plugins/
       test-fixtures/hook-events/       Shared hook-event fixtures (per handler)
     package.json                       Exports `./runtime` and `./handlers/{plugin}`
   hook-types/                          Canonical hook-protocol type definitions
-  hook-utils/                          Deprecated; deleted in the final phase of consolidation
   {plugin}/                            One per Claude Code plugin in marketplace.json
     .claude-plugin/plugin.json         Hand-maintained plugin manifest (hooks config, name, etc.)
     src/index.ts                       Four-line shim; imports handler from source and runs it
@@ -95,20 +94,22 @@ source package:
 
 ### Migration order
 
-1. session-start-housekeeping -- single event, single file, simplest.
-2. stop-reminders -- single event, multi-file logic.
-3. bash-output-filter -- single event, multi-file logic.
-4. terminal-title -- multi-event, multi-file logic.
+1. session-start-housekeeping -- single event, single file, simplest. **Done.**
+2. stop-reminders -- single event, multi-file logic. **Done.**
+3. bash-output-filter -- single event, multi-file logic. **Done.**
+4. terminal-title -- multi-event, multi-file logic. **Done.**
 5. claude-spawn -- six events plus the user-facing `spawn-claude` CLI bin.
-   The CLI bin should be added to the source package's `bin` field so users get
-   it on PATH after `pnpm install`.
+   CLI bin lives in source's `bin` field; the per-plugin keeps a four-line
+   `src/cli.ts` shim so the SessionStart hook's auto-symlink target
+   (`${PLUGIN_ROOT}/src/cli.ts`) still resolves for marketplace installs.
+   Root `package.json` lists the source package as a devDependency so its
+   bin hoists to `node_modules/.bin/spawn-claude`. **Done.**
 6. research-agent -- not a hook handler; ships only an agent definition. Its
-   directory stays as-is; no shim or handler module needed. Update the source
-   package's `bin` if any CLI is involved.
+   directory stays as-is; no shim or handler module needed. **No work needed.**
 
-After all six are ported and only the source package consumes
-`hook-utils`, delete `hook-utils` and absorb its `readStdin` and `writeOutput`
-implementations into `source/src/runtime/handler-runtime.ts` (already done).
+`hook-utils` deleted. The runtime in
+`source/src/runtime/handler-runtime.ts` absorbs the equivalent
+`readStdin`/`writeOutput` logic.
 
 ## ADR -- per-plugin tsdown wrappers, not multi-entry from source
 

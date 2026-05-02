@@ -58,6 +58,14 @@
       "tags": ["spawn", "subagent", "terminal", "mcp", "hooks"]
     },
     {
+      "name": "prompt-time",
+      "source": "./packages/claude-code-plugins/prompt-time",
+      "description": "Injects the current local system time into Claude's context as <time>HH:MM</time> on every user prompt.",
+      "version": "0.0.1",
+      "category": "productivity",
+      "tags": ["time", "context", "user-prompt-submit", "hooks"]
+    },
+    {
       "name": "research-agent",
       "source": "./packages/claude-code-plugins/research-agent",
       "description": "Provides a research subagent with anti-hallucination guardrails for investigating external projects, GitHub discussions, and technical questions.",

@@ -1,10 +1,8 @@
 /**
  * Session identity resolution for the spawn-claude CLI.
  *
- * Finds the calling Claude session by walking the process tree
- * or falling back to the most recently modified PID coordination file.
- *
- * Extracted from `cli.ts` to keep each module under the 100-line limit.
+ * Finds the calling Claude session by walking the process tree or falling
+ * back to the most recently modified PID coordination file.
  *
  * @module
  */
@@ -22,16 +20,16 @@ import {
 } from './paths.ts';
 
 /**
- * Walks up the process tree from the current process to find the
- * Claude session identity by checking each ancestor PID against
- * the `.by-pid/` coordination directory.
+ * Walks up the process tree from the current process to find the Claude
+ * session identity by checking each ancestor PID against the `.by-pid/`
+ * coordination directory.
  *
  * When invoked via Bash tool, the process tree is:
- *   Claude → [sandbox?] → shell → spawn-claude
- * The SessionStart hook writes `.by-pid/{claudePid}`, so we walk
- * up until we find a matching PID file.
+ *   Claude -> [sandbox?] -> shell -> spawn-claude
+ * The SessionStart hook writes `.by-pid/{claudePid}`, so we walk up until we
+ * find a matching PID file.
  *
- * @returns Session identity of the calling Claude instance, or `null` if not found.
+ * @returns session identity of calling Claude instance, or `null` if not found
  *
  * @example
  * ```ts
@@ -39,27 +37,19 @@ import {
  * if (identity !== null) console.log(identity.sessionId);
  * ```
  */
-export function findByProcessTree(): PidMapping | null {
+function findByProcessTree(): PidMapping | null {
   let pid = process.ppid;
 
-  // Walk up the process tree, checking each ancestor PID.
-  // Stop at PID 1 (init) to avoid infinite loops.
   while (pid > 1) {
-    const pidFilePath = join(
-      BY_PID_DIR,
-      String(pid,),
-    );
+    const pidFilePath = join(BY_PID_DIR, String(pid,),);
 
     try {
-      const raw = readFileSync(
-        pidFilePath,
-        'utf8',
-      );
+      const raw = readFileSync(pidFilePath, 'utf8',);
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
       return JSON.parse(raw,) as PidMapping;
     }
     catch {
-      // No coordination file for this PID — walk up to its parent.
+      // No coordination file for this PID -- walk up to its parent.
     }
 
     try {
@@ -80,7 +70,7 @@ export function findByProcessTree(): PidMapping | null {
       );
     }
     catch {
-      // Cannot read /proc — platform limitation or process already exited.
+      // Cannot read /proc -- platform limitation or process already exited.
       return null;
     }
   }
@@ -91,11 +81,11 @@ export function findByProcessTree(): PidMapping | null {
 /**
  * Scans all `.by-pid/` files and returns the most recently written one.
  *
- * Fallback for when the process tree walk fails, which happens inside
- * the Bash tool sandbox (separate PID namespace, so host PIDs from
- * `.by-pid/` don't appear in `/proc`).
+ * Fallback for when the process tree walk fails, which happens inside the
+ * Bash tool sandbox (separate PID namespace, so host PIDs from `.by-pid/`
+ * don't appear in `/proc`).
  *
- * @returns Session identity from the most recently modified PID file, or `null` if none exist.
+ * @returns session identity from most recent PID file, or `null` if none exist
  *
  * @example
  * ```ts
@@ -103,7 +93,7 @@ export function findByProcessTree(): PidMapping | null {
  * if (identity !== null) console.log(identity.sessionId);
  * ```
  */
-export function findByMostRecent(): PidMapping | null {
+function findByMostRecent(): PidMapping | null {
   let entries: string[] = [];
 
   try {
@@ -113,31 +103,19 @@ export function findByMostRecent(): PidMapping | null {
     return null;
   }
 
-  let newest: {
-    mapping: PidMapping;
-    mtime: number;
-  } | null = null;
+  let newest: { mapping: PidMapping; mtime: number; } | null = null;
 
   for (const filename of entries) {
-    const filePath = join(
-      BY_PID_DIR,
-      filename,
-    );
+    const filePath = join(BY_PID_DIR, filename,);
 
     try {
       const mtime = statSync(filePath,).mtimeMs;
-      const raw = readFileSync(
-        filePath,
-        'utf8',
-      );
+      const raw = readFileSync(filePath, 'utf8',);
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
       const mapping = JSON.parse(raw,) as PidMapping;
 
       if (newest === null || mtime > newest.mtime) {
-        newest = {
-          mapping,
-          mtime,
-        };
+        newest = { mapping, mtime, };
       }
     }
     catch {
@@ -151,11 +129,11 @@ export function findByMostRecent(): PidMapping | null {
 /**
  * Finds the calling Claude session identity.
  *
- * Tries the process tree walk first (precise, works outside sandbox),
- * then falls back to the most recently modified `.by-pid/` file
- * (works inside sandbox where PIDs don't match the host namespace).
+ * Tries the process tree walk first (precise, works outside sandbox), then
+ * falls back to the most recently modified `.by-pid/` file (works inside
+ * sandbox where PIDs don't match the host namespace).
  *
- * @returns Session identity, or `null` if no coordination files exist.
+ * @returns session identity, or `null` if no coordination files exist
  *
  * @example
  * ```ts
@@ -163,6 +141,12 @@ export function findByMostRecent(): PidMapping | null {
  * if (identity === null) throw new Error('No Claude session found');
  * ```
  */
-export function findCallingSession(): PidMapping | null {
+function findCallingSession(): PidMapping | null {
   return findByProcessTree() ?? findByMostRecent();
 }
+
+export {
+  findByMostRecent,
+  findByProcessTree,
+  findCallingSession,
+};

@@ -10,7 +10,13 @@
     "./handlers/stop-reminders": "./src/handlers/stop-reminders/index.ts",
     "./handlers/bash-output-filter": "./src/handlers/bash-output-filter/index.ts",
     "./handlers/bash-output-filter/filter": "./src/handlers/bash-output-filter/filter.ts",
-    "./handlers/terminal-title": "./src/handlers/terminal-title/index.ts"
+    "./handlers/terminal-title": "./src/handlers/terminal-title/index.ts",
+    "./handlers/claude-spawn": "./src/handlers/claude-spawn/index.ts",
+    "./handlers/prompt-time": "./src/handlers/prompt-time.ts",
+    "./cli/spawn-claude": "./src/cli/spawn-claude.ts"
+  },
+  "bin": {
+    "spawn-claude": "./src/cli/spawn-claude.ts"
   },
   "version": "0.0.1",
   "repository": {
@@ -21,7 +27,9 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*"
+    "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
+    "@optique/core": "catalog:",
+    "@optique/run": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
