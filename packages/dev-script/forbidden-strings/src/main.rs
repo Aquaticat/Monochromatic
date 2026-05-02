@@ -7,13 +7,14 @@
 // TODO:     crate (`regex-automata::dfa::dense::DFA::to_bytes`). Trigger: when
 // TODO:     startup-only time goes back over ~100ms after P1+P2 land.
 
-// What:     `mod git;` declares a child module whose source lives in
-//           `git.rs` (sibling to this file). `mod` is Rust's module
+// What:     `mod walk;` declares a child module whose source lives in
+//           `walk.rs` (sibling to this file). `mod` is Rust's module
 //           system: it does NOT import names; it simply tells the
 //           compiler "this file/module exists, compile it". Names
-//           referenced via `crate::git::xxx` afterward.
+//           referenced via `crate::walk::xxx` afterward.
 // Why:      We split the binary into four files so each unit is
-//           focused: `git.rs` for the `git ls-files` wrapper.
+//           focused: `walk.rs` for the working-tree walker that
+//           respects `.gitignore`.
 // TS map:   Closer to a tsconfig file's "include" entry than to an
 //           `import`. The actual `import` happens via the `use` lines
 //           below.
@@ -26,9 +27,9 @@
 // // No equivalent. Closest: TypeScript automatically picks up files
 // // in `include` paths; Rust requires explicit `mod` declarations.
 // ```
-mod git;
 mod rules;
 mod scan;
+mod walk;
 
 // What:     `use std::env;` imports the std `env` module so we can
 //           reference `env::args` / `env::var`.
@@ -91,20 +92,20 @@ use std::process::ExitCode;
 // ```
 use rayon::prelude::*;
 
-// What:     `use crate::git::list_tracked_files;` re-exports the named
-//           function from the sibling module under a short alias for
-//           local use. `crate::` is the absolute root of this crate.
-// Why:      We call `list_tracked_files()` once when `--all` mode is
-//           selected.
-// TS map:   `import { listTrackedFiles } from "./git";`.
+// What:     `use crate::walk::list_files;` re-exports the named function
+//           from the sibling module under a short alias for local use.
+//           `crate::` is the absolute root of this crate.
+// Why:      We call `list_files(".")` once when `--all` mode is
+//           selected to enumerate every scannable file.
+// TS map:   `import { listFiles } from "./walk";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { listTrackedFiles } from "./git";
+// import { listFiles } from "./walk";
 // ```
-use crate::git::list_tracked_files;
 use crate::rules::load_ruleset;
 use crate::scan::scan_content;
+use crate::walk::list_files;
 
 // What:     `fn main() -> ExitCode` is the program entry point. `ExitCode`
 //           becomes the OS exit status when `main` returns.
@@ -169,7 +170,7 @@ fn main() -> ExitCode {
     };
 
     if all {
-        match list_tracked_files() {
+        match list_files(".") {
             Ok(f) => files = f,
             Err(e) => {
                 eprintln!("forbidden-strings: {}", e);
