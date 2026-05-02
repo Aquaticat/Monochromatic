@@ -1,0 +1,107 @@
+import type {
+  BashToolInput,
+  PreToolUseInput,
+  PreToolUseOutput,
+} from '@monochromatic-dev/claude-code-plugins-hook-types';
+import {
+  isAllowed,
+  shouldSkip,
+} from './validation.ts';
+
+/**
+ * Type guard that narrows a generic tool input to `BashToolInput`.
+ *
+ * @param input - tool input to check
+ *
+ * @returns `true` when `input` has a string `command` property
+ */
+function isBashToolInput(input: Record<string, unknown>,): input is BashToolInput {
+  return typeof input.command === 'string';
+}
+
+/**
+ * Output union returned by the bash-output-filter handler. Either a
+ * pass-through `{}` (when the command is non-Bash, malformed, disallowed, or
+ * skipped) or a `PreToolUseOutput` carrying a rewritten `updatedInput.command`
+ * that pipes the original command through the filter script.
+ */
+type BashOutputFilterOutput = PreToolUseOutput | Record<string, never>;
+
+/**
+ * Rewrites the Bash command to pipe its merged stdout/stderr through the
+ * filter script. The filter script lives next to the bundled hook entry --
+ * `import.meta.dirname` resolves at runtime to the bundle's directory,
+ * which is `dist/final/node/`, where `filter.mjs` is a sibling output of
+ * the same multi-entry tsdown build.
+ *
+ * Decision tree:
+ *
+ * 1. **Tool gate** -- non-Bash tools or malformed Bash inputs return `{}`.
+ * 2. **Allowlist** -- commands not matching the safe-prefix allowlist return `{}`.
+ * 3. **Denylist** -- commands matching any skip pattern (binary tools, redirects,
+ *    background processes, command substitutions, shell builtins) return `{}`.
+ * 4. **Rewrite** -- the surviving command becomes:
+ *    `set -o pipefail && <cmd> 2>&1 | bun <filterPath> && true`.
+ *    The trailing `&& true` absorbs the sandbox's `< /dev/null` append (see
+ *    `bash-output-filter/TROUBLESHOOTING.md`) and lets pipefail surface the
+ *    original command's exit code while keeping the filter's exit code (always 0)
+ *    out of the way.
+ *
+ * @param event - parsed PreToolUse event from Claude Code
+ *
+ * @returns rewritten output when the command should be filtered, otherwise `{}`
+ */
+function bashOutputFilterHandler(event: PreToolUseInput,): BashOutputFilterOutput {
+  if (event.tool_name !== 'Bash' || !isBashToolInput(event.tool_input,))
+    return {};
+
+  const bashInput = event.tool_input;
+
+  if (!isAllowed(bashInput.command,) || shouldSkip(bashInput.command,))
+    return {};
+
+  const isBuilt = import.meta.url.endsWith('.mjs',);
+  const filterPath = isBuilt
+    ? `${import.meta.dirname}/filter.mjs`
+    : `${import.meta.dirname}/filter.ts`;
+
+  const wrappedCommand =
+    `set -o pipefail && ${bashInput.command} 2>&1 | bun ${filterPath} && true`;
+
+  return {
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      updatedInput: {
+        ...bashInput,
+        command: wrappedCommand,
+      },
+    },
+  };
+}
+
+/**
+ * Parses raw stdin as a `PreToolUseInput`.
+ *
+ * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ */
+/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
+function bashOutputFilterParser(raw: string,): PreToolUseInput {
+  return JSON.parse(raw,) as PreToolUseInput;
+}
+
+/**
+ * Serializes the bash-output-filter output for stdout.
+ *
+ * No trailing newline -- matches Claude Code's wire convention.
+ */
+function bashOutputFilterWriter(output: BashOutputFilterOutput,): string {
+  return JSON.stringify(output,);
+}
+
+export type { BashOutputFilterOutput, };
+
+export {
+  bashOutputFilterHandler,
+  bashOutputFilterParser,
+  bashOutputFilterWriter,
+};

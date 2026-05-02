@@ -401,12 +401,9 @@ importers:
 
   packages/claude-code-plugins/bash-output-filter:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-hook-types':
+      '@monochromatic-dev/claude-code-plugins-source':
         specifier: workspace:*
-        version: link:../hook-types
-      '@monochromatic-dev/claude-code-plugins-hook-utils':
-        specifier: workspace:*
-        version: link:../hook-utils
+        version: link:../source
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -445,12 +442,9 @@ importers:
 
   packages/claude-code-plugins/guardrail:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-hook-types':
+      '@monochromatic-dev/claude-code-plugins-source':
         specifier: workspace:*
-        version: link:../hook-types
-      '@monochromatic-dev/claude-code-plugins-hook-utils':
-        specifier: workspace:*
-        version: link:../hook-utils
+        version: link:../source
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -483,12 +477,9 @@ importers:
 
   packages/claude-code-plugins/session-start-housekeeping:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-hook-types':
+      '@monochromatic-dev/claude-code-plugins-source':
         specifier: workspace:*
-        version: link:../hook-types
-      '@monochromatic-dev/claude-code-plugins-hook-utils':
-        specifier: workspace:*
-        version: link:../hook-utils
+        version: link:../source
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -500,14 +491,27 @@ importers:
         specifier: 'catalog:'
         version: 1.3.11
 
-  packages/claude-code-plugins/stop-reminders:
+  packages/claude-code-plugins/source:
     dependencies:
       '@monochromatic-dev/claude-code-plugins-hook-types':
         specifier: workspace:*
         version: link:../hook-types
-      '@monochromatic-dev/claude-code-plugins-hook-utils':
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
         specifier: workspace:*
-        version: link:../hook-utils
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+
+  packages/claude-code-plugins/stop-reminders:
+    dependencies:
+      '@monochromatic-dev/claude-code-plugins-source':
+        specifier: workspace:*
+        version: link:../source
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
@@ -521,12 +525,9 @@ importers:
 
   packages/claude-code-plugins/terminal-title:
     dependencies:
-      '@monochromatic-dev/claude-code-plugins-hook-types':
+      '@monochromatic-dev/claude-code-plugins-source':
         specifier: workspace:*
-        version: link:../hook-types
-      '@monochromatic-dev/claude-code-plugins-hook-utils':
-        specifier: workspace:*
-        version: link:../hook-utils
+        version: link:../source
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*

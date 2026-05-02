@@ -1,0 +1,11 @@
+[tasks.lint]
+extends = "lint"
+
+[tasks.'lint:types']
+extends = "lint:types"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."test:unit"]
+run = "glob '**/*.unit.test.ts' | par-each { |file| bun $file }"

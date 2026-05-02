@@ -15,8 +15,7 @@
   "private": true,
   "sideEffects": true,
   "dependencies": {
-    "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
-    "@monochromatic-dev/claude-code-plugins-hook-utils": "workspace:*"
+    "@monochromatic-dev/claude-code-plugins-source": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

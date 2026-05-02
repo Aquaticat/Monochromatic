@@ -12,177 +12,62 @@
  * pi's keepRecentTokens budget), cancels the compaction instead of
  * falling through to pi's default summarizer, which produces empty
  * "(none)" summaries in this case.
+ *
+ * For the `/morph-compact` command, compressed context is passed to the
+ * new pi session via a tiered IPC fallback to avoid exceeding the OS
+ * argument length limit:
+ *
+ * 1. Argv (text ≤ 100KB) — simplest, zero cleanup
+ * 2. Temp file — one write, one read, one delete
+ * 3. Unix domain socket — avoids data on disk, fallback for full /tmp
+ * 4. TCP localhost — zero filesystem dependency, final fallback
  */
 
 import type {
-  CompactionResult,
   ExtensionAPI,
   ExtensionCommandContext,
-  SessionBeforeCompactEvent,
+  ExtensionContext,
+  SessionStartEvent,
 } from '@mariozechner/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
 import {
   resetApiKeyCache,
   resolveMorphApiKey,
 } from './api-key.ts';
-import { attemptMorphCompaction, } from './compaction.ts';
+import {
+  handleBeforeCompact,
+  resetMissingKeyWarning,
+} from './compaction-handler.ts';
 import { compressBranch, } from './compress-branch.ts';
-import type { MorphCompactionDetails, } from './types.ts';
+import {
+  handleSessionStartInject,
+  launchWithLargeContext,
+  MAX_COMPRESSED_ARG_BYTES,
+} from './ipc-launch.ts';
 
 //region Session state
 
-/** One-time warning per session when Morph API key is missing. */
-let warnedMissingKey = false;
+/**
+ * Module-level reference to the pi extension API.
+ *
+ * Stored here so the `session_start` handler can call
+ * `pi.getFlag()` and `pi.sendUserMessage()` without
+ * receiving the API as a parameter.
+ */
+let extensionApi: ExtensionAPI | null = null;
 
 //endregion
 
 //region Event handlers
 
 /**
- * Handle the `session_before_compact` event.
- * Checks preconditions, attempts Morph compaction, and either
- * returns the compaction result, cancels the compaction, or
- * returns `undefined` to fall through to pi's default summarization.
- *
- * Compaction is cancelled (not fallen through) when the session is
- * too small to compact — all messages fit within pi's keepRecentTokens
- * budget, leaving messagesToSummarize empty. Pi's default summarizer
- * produces useless empty "(none)" summaries in this case, so we cancel
- * to avoid polluting the session with blank compaction entries.
- *
- * @param event - the session_before_compact event
- *
- * @param ctx - extension context with UI and context usage access
- *
- * @returns compaction result, cancellation, or undefined to fall through
- *
- * @example
- * ```typescript
- * pi.on("session_before_compact", handleBeforeCompact);
- * ```
- */
-async function handleBeforeCompact(
-  event: SessionBeforeCompactEvent,
-  ctx: {
-    getContextUsage(): {
-      tokens: number | null;
-      contextWindow: number;
-    } | undefined;
-    ui: {
-      notify(
-        message: string,
-        type?: 'info' | 'warning' | 'error',
-      ): void;
-    };
-  },
-): Promise<
-  | { compaction: CompactionResult<MorphCompactionDetails>; }
-  | { cancel: true; }
-  | undefined
-> {
-  // Resolve API key from env var or ~/.pi/agent/mcp.json fallback
-  const apiKey = await resolveMorphApiKey();
-  if (apiKey === undefined) {
-    if (!warnedMissingKey) {
-      warnedMissingKey = true;
-      ctx.ui.notify(
-        'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json) — Morph Compact disabled, using pi default compaction',
-        'warning',
-      );
-    }
-    return undefined;
-  }
-
-  // Split-turn compactions stay on pi's built-in compactor.
-  // Morph is deletion-based, not a summarizer, so it can't produce
-  // a coherent turn prefix summary.
-  if (event.preparation.isSplitTurn)
-    return undefined;
-
-  // Already cancelled — don't start an API call
-  if (event.signal.aborted)
-    return undefined;
-
-  const {
-    messagesToSummarize,
-    turnPrefixMessages,
-    previousSummary,
-  } = event.preparation;
-
-  // When there are no messages to summarize and no previous summary
-  // to re-compress, the session is too small to compact. Cancel
-  // instead of falling through — pi's default summarizer produces
-  // empty "(none)" summaries when given no messages, polluting the
-  // session with useless compaction entries.
-  const hasMessages = messagesToSummarize.length > 0
-    || turnPrefixMessages.length > 0;
-  if (!hasMessages && previousSummary === undefined) {
-    ctx.ui.notify(
-      'Morph Compact: nothing to compact — session too small',
-      'warning',
-    );
-    return { cancel: true, };
-  }
-
-  const msgCount = messagesToSummarize.length
-    + turnPrefixMessages.length;
-  ctx.ui.notify(
-    `Morph Compact: compressing ${msgCount} messages (${event.preparation.tokensBefore.toLocaleString()} tokens)...`,
-    'info',
-  );
-
-  try {
-    const attempt = await attemptMorphCompaction(
-      event,
-      ctx.getContextUsage(),
-      apiKey,
-    );
-
-    if (attempt.kind === 'fallback')
-      return undefined;
-
-    const { result, } = attempt;
-
-    // Notify success
-    if (!event.signal.aborted) {
-      const morphUsage = result.details?.morphUsage;
-      const reductionPct = morphUsage?.compressionRatio !== undefined
-          && morphUsage.compressionRatio !== 0
-        ? Math.round(
-          (1 - morphUsage.compressionRatio) * 100,
-        )
-        : 0;
-      const inTokens = morphUsage?.inputTokens?.toLocaleString() ?? '?';
-      const outTokens = morphUsage?.outputTokens?.toLocaleString() ?? '?';
-      const ms = morphUsage?.processingTimeMs?.toLocaleString() ?? '?';
-      ctx.ui.notify(
-        `Morph Compact: ${reductionPct}% reduction (${inTokens} → ${outTokens} tokens) in ${ms}ms`,
-        'info',
-      );
-    }
-
-    return { compaction: result, };
-  }
-  catch (error) {
-    if (event.signal.aborted)
-      return undefined;
-
-    const message = error instanceof Error
-      ? error.message
-      : 'Unknown Morph compaction error';
-    ctx.ui.notify(
-      `Morph Compact failed: ${message} — falling back to pi default`,
-      'error',
-    );
-    return undefined;
-  }
-}
-
-/**
  * Handle the `/morph-compact` command.
  * Compresses the session context read-only via the Morph Compact API
- * and launches a new terminal running pi with the compressed context
- * as a positional message argument. The main session is never modified.
+ * and launches a new terminal running pi with the compressed context.
+ *
+ * When the compressed text exceeds {@link MAX_COMPRESSED_ARG_BYTES},
+ * falls back through IPC tiers in order: temp file, Unix domain
+ * socket, TCP localhost.
  *
  * @param args - optional custom instructions for compression focus
  *
@@ -221,13 +106,23 @@ async function handleMorphCompactCommand(
       customInstructions,
     },);
 
-    await launchTerminal({
-      dir: ctx.cwd,
-      command: [
-        'pi',
+    // Tier 1: argv — simplest path, zero cleanup
+    // oxlint-disable-next-line eslint-plugin-unicorn/prefer-ternary -- branching on async calls is clearer with if/else
+    if (compressedText.length <= MAX_COMPRESSED_ARG_BYTES) {
+      await launchTerminal({
+        dir: ctx.cwd,
+        command: [
+          'pi',
+          compressedText,
+        ],
+      },);
+    }
+    else {
+      await launchWithLargeContext(
+        ctx.cwd,
         compressedText,
-      ],
-    },);
+      );
+    }
 
     ctx.ui.notify(
       'Morph Compact: launched new session in a separate terminal',
@@ -247,10 +142,28 @@ async function handleMorphCompactCommand(
 
 /**
  * Handle the `session_start` event.
- * Resets per-session state.
+ *
+ * Reads compressed context from whichever IPC channel is active
+ * (checked in priority order: file → Unix socket → TCP) and
+ * injects it as a user message. Then resets per-session state.
+ *
+ * @param event - the session_start event
+ *
+ * @param ctx - extension context
  */
-function handleSessionStart(): void {
-  warnedMissingKey = false;
+async function handleSessionStart(
+  event: SessionStartEvent,
+  ctx: ExtensionContext,
+): Promise<void> {
+  if (extensionApi !== null) {
+    await handleSessionStartInject(
+      extensionApi,
+      event,
+      ctx,
+    );
+  }
+
+  resetMissingKeyWarning();
   resetApiKeyCache();
 }
 
@@ -274,6 +187,30 @@ function handleSessionStart(): void {
 export default function morphCompact(
   pi: ExtensionAPI,
 ): void {
+  extensionApi = pi;
+
+  pi.registerFlag(
+    'morph-compact-file',
+    {
+      description: 'Temp file path for receiving compressed context (internal)',
+      type: 'string',
+    },
+  );
+  pi.registerFlag(
+    'morph-compact-socket',
+    {
+      description: 'Unix socket path for receiving compressed context (internal)',
+      type: 'string',
+    },
+  );
+  pi.registerFlag(
+    'morph-compact-tcp',
+    {
+      description: 'TCP address (host:port) for receiving compressed context (internal)',
+      type: 'string',
+    },
+  );
+
   pi.on(
     'session_before_compact',
     handleBeforeCompact,

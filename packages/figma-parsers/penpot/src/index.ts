@@ -1297,15 +1297,10 @@ function convertNode(
 function convertTextContent(nc: Record<string, unknown>,): Record<string, unknown> {
   // Build a minimal Penpot text content tree from Figma text data
   const fontSize = typeof nc.fontSize === 'number' ? nc.fontSize : 16;
-  const fontFamily = typeof nc.fontName === 'string' ? nc.fontName : 'Inter';
+  const fontFamily = typeof nc.fontName === 'string' ? nc.fontName : 'Source Sans 3';
   const fontWeight = typeof nc.fontWeight === 'number' ? String(nc.fontWeight,) : '400';
   const textContent = typeof nc.characters === 'string' ? nc.characters : '';
-  const fontId = `gfont-${
-    fontFamily.toLowerCase().replaceAll(
-      /\s+/g,
-      '-',
-    )
-  }`;
+  const fontId = 'sourcesanspro';
   const fontVariantId = fontWeight;
 
   // Build fills from the node's fills (already converted)

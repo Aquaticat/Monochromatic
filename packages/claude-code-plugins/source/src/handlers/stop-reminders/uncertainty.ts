@@ -58,9 +58,9 @@ const UNCERTAINTY_PATTERNS: readonly RegExp[] = [
  * Strips fenced code blocks from text to avoid matching uncertainty words inside code.
  * Matches triple-backtick blocks with optional language tags.
  *
- * @param text - Raw message text that may contain fenced code blocks.
+ * @param text - raw message text that may contain fenced code blocks
  *
- * @returns Text with all fenced code blocks replaced by empty strings.
+ * @returns text with all fenced code blocks replaced by empty strings
  *
  * @example
  * ```ts
@@ -69,18 +69,15 @@ const UNCERTAINTY_PATTERNS: readonly RegExp[] = [
  * ```
  */
 function stripCodeBlocks(text: string,): string {
-  return text.replaceAll(
-    /```[\s\S]*?```/g,
-    '',
-  );
+  return text.replaceAll(/```[\s\S]*?```/g, '',);
 }
 
 /**
  * Strips inline code spans from text to avoid matching uncertainty words inside code.
  *
- * @param text - Text that may contain inline code spans.
+ * @param text - text that may contain inline code spans
  *
- * @returns Text with all inline code spans replaced by empty strings.
+ * @returns text with all inline code spans replaced by empty strings
  *
  * @example
  * ```ts
@@ -89,19 +86,16 @@ function stripCodeBlocks(text: string,): string {
  * ```
  */
 function stripInlineCode(text: string,): string {
-  return text.replaceAll(
-    /`[^`]+`/g,
-    '',
-  );
+  return text.replaceAll(/`[^`]+`/g, '',);
 }
 
 /**
  * Strips quoted lines (blockquotes) from text to avoid matching uncertainty words
  * that Claude is quoting from source material.
  *
- * @param text - Text that may contain markdown blockquotes.
+ * @param text - text that may contain markdown blockquotes
  *
- * @returns Text with all blockquote lines removed.
+ * @returns text with all blockquote lines removed
  *
  * @example
  * ```ts
@@ -110,22 +104,18 @@ function stripInlineCode(text: string,): string {
  * ```
  */
 function stripBlockquotes(text: string,): string {
-  return text.replaceAll(
-    /^>.*$/gm,
-    '',
-  );
+  return text.replaceAll(/^>.*$/gm, '',);
 }
 
 /**
  * Strips inline quoted strings (both double and single quotes) from text
  * to avoid matching uncertainty words that Claude is quoting verbatim.
  *
- * Handles both `"quoted"` and `'quoted'` styles.
- * Does not match across newlines to avoid stripping multi-line content.
+ * Handles both `"quoted"` and `'quoted'` styles. Does not match across newlines.
  *
- * @param text - Text that may contain inline quoted strings.
+ * @param text - text that may contain inline quoted strings
  *
- * @returns Text with all inline quoted strings replaced by empty strings.
+ * @returns text with all inline quoted strings replaced by empty strings
  *
  * @example
  * ```ts
@@ -135,14 +125,8 @@ function stripBlockquotes(text: string,): string {
  */
 function stripQuotedStrings(text: string,): string {
   return text
-    .replaceAll(
-      /"[^"\n]+"/g,
-      '',
-    )
-    .replaceAll(
-      /'[^'\n]+'/g,
-      '',
-    );
+    .replaceAll(/"[^"\n]+"/g, '',)
+    .replaceAll(/'[^'\n]+'/g, '',);
 }
 
 /**
@@ -153,13 +137,13 @@ function stripQuotedStrings(text: string,): string {
  * Stripping order matters: fenced code blocks first (largest spans),
  * then inline code, then blockquotes, then quoted strings.
  *
- * @param text - Raw assistant message text.
+ * @param text - raw assistant message text
  *
- * @returns Cleaned text ready for pattern matching.
+ * @returns cleaned text ready for pattern matching
  *
  * @example
  * ```ts
- * const prose = stripNonProseRegions('Look at ```js\nmaybe()\n``` and "perhaps"')
+ * const prose = stripNonProseRegions('Look at ```js\nmaybe()\n``` and "perhaps"');
  * ```
  */
 function stripNonProseRegions(text: string,): string {
@@ -192,13 +176,13 @@ type QuestionMatch = {
 /**
  * Scans prose text for the first uncertainty marker match.
  *
- * @param prose - Text with code blocks and quotes already stripped.
+ * @param prose - text with code blocks and quotes already stripped
  *
- * @returns Match details if uncertain language was found, `undefined` otherwise.
+ * @returns match details if uncertain language was found, `undefined` otherwise
  *
  * @example
  * ```ts
- * const match = findUncertainty('This probably works')
+ * const match = findUncertainty('This probably works');
  * // => { phrase: 'probably', pattern: /.../ }
  * ```
  */
@@ -206,10 +190,7 @@ function findUncertainty(prose: string,): UncertaintyMatch | undefined {
   for (const pattern of UNCERTAINTY_PATTERNS) {
     const match = pattern.exec(prose,);
     if (match !== null) {
-      return {
-        phrase: match[0],
-        pattern,
-      };
+      return { phrase: match[0], pattern, };
     }
   }
   return undefined;
@@ -225,25 +206,19 @@ const TRAILING_QUESTION_SCAN_LENGTH = 500;
  * directed at the user (not rhetorical questions buried in explanations).
  * Skips sentences that start with common rhetorical/conditional patterns.
  *
- * @param prose - Text with code blocks and quotes already stripped.
+ * @param prose - text with code blocks and quotes already stripped
  *
- * @returns Match details if a trailing question was found, `undefined` otherwise.
+ * @returns match details if a trailing question was found, `undefined` otherwise
  *
  * @example
  * ```ts
- * const match = findTrailingQuestion('I finished the refactor. Want me to run the tests?')
- * // =\> \{ sentence: 'Want me to run the tests?' \}
+ * const match = findTrailingQuestion('I finished the refactor. Want me to run the tests?');
+ * // => { sentence: 'Want me to run the tests?' }
  * ```
  */
 function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
-  /** Only scan the tail of the message where user-directed questions appear. */
   const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH,);
 
-  /**
-   * Match sentences ending with `?`.
-   * Captures from the start of a sentence (after `.`, `!`, `?`, or start of string)
-   * through to the `?`.
-   */
   const questionPattern = /(?:^|[.!?]\s+)([A-Z][^.!?]*\?)\s*$/;
   const match = questionPattern.exec(tail,);
 
@@ -252,10 +227,6 @@ function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
 
   const sentence = match[1] ?? match[0];
 
-  /**
-   * Skip rhetorical or conditional questions that are not directed at the user.
-   * These patterns introduce hypothetical or explanatory contexts.
-   */
   const rhetoricalPrefixes = [
     /^what if\b/i,
     /^why does\b/i,

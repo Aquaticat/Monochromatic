@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/ccssh.js"
+            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/node/index.mjs"
           }
         ]
       }
