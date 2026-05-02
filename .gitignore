@@ -40,6 +40,9 @@ package-lock.json
 
 *.local.json
 
+# Contains forbidden literals and regex patterns.
+/betterleaks.toml
+
 # Contains secrets.
 .mcp.json
 
