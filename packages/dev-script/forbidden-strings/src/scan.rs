@@ -12,18 +12,36 @@
 // ```
 use rayon::prelude::*;
 
-// What:     `use crate::rules::RuleSet;` imports the `RuleSet` type from
-//           the sibling `rules.rs` module. `crate::` is the absolute-
-//           import root within this crate (similar to a TS path-alias
-//           pointing at the project root).
-// Why:      `scan_content` takes `&RuleSet` to know what to scan for.
-// TS map:   `import type { RuleSet } from "./rules";`.
+// What:     `use std::collections::BTreeSet;` imports an ordered set
+//           backed by a balanced binary tree. Insertions and lookups
+//           are O(log n). `BTreeSet<usize>` here holds rule positions
+//           that need full `find_all` after the AC pass.
+// Why:      `BTreeSet` deduplicates rule positions encountered via
+//           multiple AC hits AND iterates in sorted order, giving
+//           deterministic per-file output ordering.
+// TS map:   `new Set<number>()` -- TS sets keep insertion order; the
+//           Rust BTreeSet equivalent in TS would sort manually.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import type { RuleSet } from "./rules";
+// const seenRulePositions = new Set<number>();
 // ```
-use crate::rules::RuleSet;
+use std::collections::BTreeSet;
+
+// What:     `use crate::rules::{AcMeta, RuleSet};` imports both the
+//           top-level rules container and the per-AC-pattern metadata
+//           tag from the sibling `rules.rs` module. `{...}` is a list
+//           import.
+// Why:      `scan_content` dispatches on `AcMeta` to decide whether an
+//           AC hit emits a literal-rule violation directly or queues a
+//           regex rule for full evaluation.
+// TS map:   `import { AcMeta, type RuleSet } from "./rules";`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { AcMeta, type RuleSet } from "./rules";
+// ```
+use crate::rules::{AcMeta, RuleSet};
 
 // What:     `pub fn is_likely_binary(content: &[u8]) -> bool` takes a
 //           borrowed byte slice and returns `true` if a NUL byte appears
@@ -158,65 +176,128 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
         return hits;
     }
 
-    // Literal bucket via Aho-Corasick. AC's `find_iter` returns matches
-    // tagged with the matching pattern's id, so we get the rule index
-    // for free without a per-rule second pass.
+    // What:     `let mut prefix_matched: BTreeSet<usize> = BTreeSet::new();`
+    //           accumulates indices into `rs.regex_rules` whose
+    //           required-literal prefix was hit by the unified AC pass.
+    //           BTreeSet dedupes (a prefix may appear many times in one
+    //           file) and iterates in sorted order.
+    // Why:      In the 99%-clean case this set stays empty and no
+    //           resharp `find_all` runs. When the AC pass DOES fire a
+    //           prefix hit, we run `find_all` exactly once per matching
+    //           rule -- not once per AC hit position.
+    // TS map:   `const prefixMatched = new Set<number>();`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const prefixMatched = new Set<number>();
+    // ```
+    let mut prefix_matched: BTreeSet<usize> = BTreeSet::new();
+
+    // Unified AC: scans for literal rules AND required-literal prefixes
+    // of regex rules in a single linear pass. AC's Standard match kind
+    // exposes `find_overlapping_iter` so a longer literal at the same
+    // position as a shorter regex-prefix doesn't suppress the prefix
+    // hit -- without overlapping, a regex rule whose prefix coincides
+    // with a literal rule's full text would never trigger.
     if let Some(ac) = &rs.ac {
-        // What:     `for m in ac.find_iter(content) { ... }` consumes
-        //           the iterator yielded by `find_iter`. `m` is a
-        //           `Match` value with `.pattern()`, `.start()`,
-        //           `.end()` accessors.
-        // Why:      One linear scan of `content` finds every literal-
-        //           rule hit at SIMD speed (Teddy on x86).
-        // TS map:   `for (const m of ac.findIter(content)) { ... }`.
+        // What:     `for m in ac.find_overlapping_iter(content) { ... }`
+        //           iterates EVERY (pattern, position) pair in the
+        //           content where a pattern matches, regardless of
+        //           overlap. `m.pattern().as_usize()` is the AC-internal
+        //           id assigned at build time, used here to index
+        //           `rs.ac_meta`.
+        // Why:      We need both literal-rule emissions AND regex-prefix
+        //           queueing to fire from the same scan pass.
+        // TS map:   `for (const m of ac.findOverlappingIter(content)) { ... }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // for (const m of ac.findIter(content)) {
-        //   const ruleIdx = rs.literalIndices[m.pattern];
-        //   ...
+        // for (const m of ac.findOverlappingIter(content)) {
+        //   const meta = rs.acMeta[m.pattern];
+        //   if (meta.kind === "literal") {
+        //     hits.push(formatHit(path, ..., meta.idx));
+        //   } else {
+        //     prefixMatched.add(meta.rulePos);
+        //   }
         // }
         // ```
-        for m in ac.find_iter(content) {
+        for m in ac.find_overlapping_iter(content) {
             let pid = m.pattern().as_usize();
-            let rule_idx = rs.literal_indices[pid];
-            let (line, col_start) = line_and_col(content, m.start());
-            let end = end_in_line(content, m.start(), m.end());
-            let (_, col_end) =
-                line_and_col(content, if end > 0 { end - 1 } else { 0 });
-            hits.push(format_hit(path, line, col_start, col_end, rule_idx));
+            match &rs.ac_meta[pid] {
+                AcMeta::Literal { idx } => {
+                    let (line, col_start) = line_and_col(content, m.start());
+                    let end = end_in_line(content, m.start(), m.end());
+                    let (_, col_end) =
+                        line_and_col(content, if end > 0 { end - 1 } else { 0 });
+                    hits.push(format_hit(path, line, col_start, col_end, *idx));
+                }
+                AcMeta::RegexPrefix { rule_pos } => {
+                    prefix_matched.insert(*rule_pos);
+                }
+            }
         }
     }
 
-    // Regex bucket. The combined-over-regex-bucket Regex acts as a
-    // fast gate; only when SOMETHING in the regex bucket might match
-    // do we fan out per-rule. The fan-out itself is parallel because
-    // each rule has its own mutex (different locks => real concurrency).
-    if let Some(combined) = &rs.regex_combined {
-        if combined.is_match(content).unwrap_or(false) {
-            // What:     `rs.regex_rules.par_iter().flat_map_iter(|rr| { ... }).collect::<Vec<String>>()`
-            //           parallelizes per-rule scans. `flat_map_iter`
-            //           takes a closure returning a sequential
-            //           iterator (an owned `Vec` here) and concatenates
-            //           the sequences across threads. `collect()`
-            //           materializes into a flat `Vec`.
-            // Why:      Each `find_all` is independent and CPU-bound.
-            //           After P1 (literals -> AC) the regex bucket is
-            //           usually small, so this is a minor multiplier
-            //           rather than a primary win -- but free given
-            //           rayon is already a dep.
-            // TS map:   `(await Promise.all(rs.regexRules.map(async (rr) => { ... }))).flat()`.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const regexHits = (await Promise.all(
-            //   rs.regexRules.map((rr) => scanOneRule(rr, content, path))
-            // )).flat();
-            // ```
+    // For each regex rule whose prefix fired, run its full `find_all`.
+    // `prefix_matched` is small (typically 0 in 99% of files; on a
+    // matching file, just the few rules whose literal prefix appeared).
+    if !prefix_matched.is_empty() {
+        // What:     `prefix_matched.iter().copied().collect::<Vec<usize>>()`
+        //           materializes the BTreeSet into a Vec so we can
+        //           parallelize over it with rayon. `copied()` turns
+        //           the iterator of `&usize` into one of `usize`.
+        // Why:      `BTreeSet::par_iter` exists but emits `&usize`
+        //           which is harder to thread through closures than
+        //           owned values; the materialize-and-par_iter pattern
+        //           keeps the closure simple.
+        // TS map:   `[...prefixMatched]` -- arrays parallelize via
+        //           Promise.all.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const positions = [...prefixMatched];
+        // const regexHits = (await Promise.all(
+        //   positions.map((pos) => scanOneRule(rs.regexRules[pos], content, path))
+        // )).flat();
+        // ```
+        let positions: Vec<usize> = prefix_matched.iter().copied().collect();
+        let regex_hits: Vec<String> = positions
+            .par_iter()
+            .flat_map_iter(|&pos| {
+                let rr = &rs.regex_rules[pos];
+                let mut local: Vec<String> = Vec::new();
+                if let Ok(matches) = rr.re.find_all(content) {
+                    for m in matches {
+                        if m.start == m.end {
+                            continue;
+                        }
+                        let (line, col_start) = line_and_col(content, m.start);
+                        let end = end_in_line(content, m.start, m.end);
+                        let (_, col_end) =
+                            line_and_col(content, if end > 0 { end - 1 } else { 0 });
+                        local.push(format_hit(path, line, col_start, col_end, rr.idx));
+                    }
+                }
+                local
+            })
+            .collect();
+        hits.extend(regex_hits);
+    }
+
+    // Residual bucket: regex rules whose required-literal could NOT be
+    // extracted (pure character classes, alternations starting with
+    // operators, etc.). They use the old combined-regex gate -- but
+    // only over their own small subset, so the combined regex is much
+    // smaller than the historic "all regex rules" gate. When every
+    // regex rule has an extractable prefix, `residual_combined` is
+    // `None` and the resharp lazy-DFA never runs on the hot path.
+    if let Some(residual) = &rs.residual_combined {
+        if residual.is_match(content).unwrap_or(false) {
             let regex_hits: Vec<String> = rs
-                .regex_rules
+                .residual_positions
                 .par_iter()
-                .flat_map_iter(|rr| {
+                .flat_map_iter(|&pos| {
+                    let rr = &rs.regex_rules[pos];
                     let mut local: Vec<String> = Vec::new();
                     if let Ok(matches) = rr.re.find_all(content) {
                         for m in matches {
