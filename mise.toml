@@ -77,6 +77,11 @@ deno = "latest"
 "npm:socket" = "latest"
 "aqua:betterleaks/betterleaks" = "latest"
 
+# Git hook runner (forbidden-strings enforcement, see TODO.forbidden-strings.md)
+"aqua:jdx/hk" = "latest"
+# Pkl: hk's config language
+"aqua:apple/pkl" = "latest"
+
 [settings]
 env_shell_expand = false
 
@@ -544,19 +549,27 @@ run = "rm -rf node_modules; task-pnpm install"
 # https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
-  "node_modules/.bin",
-  "packages/pi/morph-compact/node_modules/.bin",
-  "packages/duik/teto-generated/node_modules/.bin",
-  "packages/duik/teto/node_modules/.bin",
-  "packages/rolldown-plugins/import-attributes/node_modules/.bin",
-  "packages/desktop-daemon/editord/node_modules/.bin",
-  "packages/typeface/aquaticat/node_modules/.bin",
-  "packages/webapp-search/ai-tree/node_modules/.bin",
-  "packages/webapp-productivity/done/node_modules/.bin",
-  "packages/webapp-content/ssg-test/node_modules/.bin",
-  "packages/mcp/mvm/node_modules/.bin",
-  "packages/mcp/nvim/node_modules/.bin",
-  "packages/dev-script/inference-canary-viewer/node_modules/.bin",
-  "packages/dev-script/inference-canary/node_modules/.bin",
-  "packages/module/token-count/node_modules/.bin",
+"node_modules/.bin",
+"packages/webapp-edu/paper2vn/node_modules/.bin",
+"packages/pi/terminal-title/node_modules/.bin",
+"packages/pi/morph-compact/node_modules/.bin",
+"packages/rolldown-plugins/import-attributes/node_modules/.bin",
+"packages/claude-code-plugins/prompt-time/node_modules/.bin",
+"packages/claude-code-plugins/terminal-title/node_modules/.bin",
+"packages/claude-code-plugins/stop-reminders/node_modules/.bin",
+"packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
+"packages/claude-code-plugins/claude-spawn/node_modules/.bin",
+"packages/claude-code-plugins/bash-output-filter/node_modules/.bin",
+"packages/claude-code-plugins/guardrail/node_modules/.bin",
+"packages/desktop-daemon/editord/node_modules/.bin",
+"packages/typeface/aquaticat/node_modules/.bin",
+"packages/webapp-search/ai-tree/node_modules/.bin",
+"packages/webapp-productivity/done/node_modules/.bin",
+"packages/webapp-content/messages-demo/node_modules/.bin",
+"packages/webapp-content/ssg-test/node_modules/.bin",
+"packages/mcp/mvm/node_modules/.bin",
+"packages/mcp/nvim/node_modules/.bin",
+"packages/dev-script/inference-canary-viewer/node_modules/.bin",
+"packages/dev-script/inference-canary/node_modules/.bin",
+"packages/module/token-count/node_modules/.bin"
 ]

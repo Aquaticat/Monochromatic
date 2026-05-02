@@ -42,6 +42,12 @@ package-lock.json
 
 # Contains forbidden literals and regex patterns.
 /betterleaks.toml
+/forbidden-strings.local.txt
+# Cargo build output for the forbidden-strings scanner.
+# Cargo.lock IS committed for the binary crate (reproducible builds catch
+# upstream supply-chain tampering). The unignore lives near the bottom of
+# this file so it overrides the global *.lock pattern below.
+packages/dev-script/forbidden-strings/target/
 
 # Contains secrets.
 .mcp.json
@@ -336,3 +342,8 @@ packages/dev-script/vm-builder/output/
 /hooks
 /objects
 /refs
+
+# forbidden-strings: re-include files hidden by global *.local.* / *.lock.
+# These must appear AFTER the global patterns to take effect.
+!/forbidden-strings.local.example.txt
+!/packages/dev-script/forbidden-strings/Cargo.lock

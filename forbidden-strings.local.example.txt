@@ -1,0 +1,17 @@
+# forbidden-strings deny-list (template).
+#
+# Copy this file to `forbidden-strings.local.txt` and add real rules.
+# That filename is gitignored; this example file is committed.
+#
+# Format:
+#   - Bare line                = case-sensitive literal substring
+#   - /PATTERN/FLAGS           = regex (FLAGS = lowercase letters, e.g. `i`)
+#   - Lines starting with `#`  = comment
+#   - Empty lines              = ignored
+#
+# A literal that itself looks like /.../flags must be expressed as a regex
+# (escape the slashes), e.g. ban literal `/etc/passwd` as:
+#   /\/etc\/passwd/
+
+# Placeholder rule to make the file non-empty (matches nothing real).
+PLACEHOLDER_DOES_NOT_EXIST_IN_THIS_REPO_XX

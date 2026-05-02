@@ -29,13 +29,36 @@ Out of scope:
 - Already-committed history -- requires a separate `git filter-repo` operation and force-push,
   out of scope here
 
-## Decision: hk + custom TypeScript scanner with plain-text out-of-band deny-list
+## Performance budget
+
+The scanner runs on every commit (locally) and every PR (CI),
+so its overhead bounds how often contributors will tolerate it
+before reaching for `--no-verify`.
+
+Concrete budget for this repo:
+
+- Tracked corpus: **~12.4 MB across 2688 files**, ~200k lines
+- Expected rule set: **~1k rules** mixing literals and regexes,
+  some of which would be catastrophic-backtracking shaped under a backtracking engine
+- **Full-repo scan budget: under 5s wall time, latest snapshot only**
+  (history scanning is out of scope, see threat model)
+- Pre-commit hot path (changed files only): under 500 ms
+- Required throughput floor: ~2.5 MB/s sustained;
+  target ~10× headroom (~25 MB/s) so future repo growth doesn't ratchet us back
+
+These numbers eliminate any solution with significant per-invocation startup cost
+or per-file constant overhead --
+1k rules and 2.7k files multiply small constants into seconds.
+
+## Decision: hk + Rust scanner using resharp with plain-text out-of-band deny-list
 
 Adopt **hk** (`https://hk.jdx.dev/`, `jdx/hk`) as the git hook runner
-and implement the deny-list as a small TypeScript step invoked via `bun`.
+and implement the deny-list as a small **Rust binary** built on
+[**resharp**](https://github.com/ieviev/resharp) (RE#),
+a derivative-based, automata-backed regex engine with linear-time matching.
 The deny-list contents live in a `.gitignore`'d **plain-text** file
 each contributor maintains locally;
-only the scanner code, the loader, and an example template are committed.
+only the scanner crate, the loader, and an example template are committed.
 
 The deny-list file format is one rule per line, with two forms:
 
@@ -55,6 +78,8 @@ Lines starting with `#` are ignored as comments.
 A literal that itself matches the shape `^/.+/[a-z]*$` must be expressed as a regex
 (e.g. ban `/etc/passwd` literally with `/\/etc\/passwd/`).
 There is no other syntax -- the format is deliberately minimal.
+Internally the loader escapes literals as regex source before feeding resharp,
+so the engine sees a single uniform input.
 
 ### Why hk over alternatives
 
@@ -62,33 +87,71 @@ There is no other syntax -- the format is deliberately minimal.
   hk is by the mise author; this repo is mise-heavy.
   Single mental model, single maintainer ecosystem, unified `mise use` install path.
 - **Generic step model.**
-  hk steps run arbitrary shell commands; a `bun run` invocation is first-class,
-  honoring the AGENTS.md "no bash scripts; use TypeScript files" rule.
+  hk steps run arbitrary shell commands; invoking a Rust binary is first-class
+  (mise installs the binary; hk shells out).
 - **One config powers local and CI.**
   `hk run pre-commit` locally, `hk check --from-ref origin/main` in CI.
   No duplicated rule definitions across husky and a GitHub Action.
 - **Production-ready.**
   `v1.44.3` released 2026-04-30, ~800 stars, active.
 
+### Why resharp over alternatives
+
+- **Linear-time matching.**
+  Derivative/automata-based, no backtracking.
+  A 1k-rule mix that includes catastrophic-backtracking shapes
+  cannot exhibit catastrophic behavior under resharp by construction.
+- **Combined-pattern matching is the architectural fit.**
+  All 1k rules can be compiled into one alternation and matched in a single pass over each file,
+  which is what the perf budget requires --
+  a per-rule loop with 1k rules × 2.7k files × any non-trivial constant misses 5s.
+- **Native Rust binary.**
+  Eliminates the runtime/startup overhead that breaks the budget for hosted-language scanners
+  (see "Why not betterleaks" below).
+- **Maintained and live.**
+  MIT, ~110 stars, by ieviev; pushed within days of this writing.
+  The intersection/complement primitives are bonus expressivity we don't strictly need,
+  but they let future rule composition stay declarative.
+
 ### Why not the alternatives
 
+- **betterleaks (gitleaks fork)** -- evaluated and rejected on perf.
+  Has the right config story (`BETTERLEAKS_CONFIG` and `BETTERLEAKS_CONFIG_TOML` env vars
+  load rules out-of-band; `--redact=100` suppresses matched values from output)
+  and is actively maintained (`v1.1.2` 2026-04-08, by gitleaks' original creator).
+  But measured against this repo with 1k rules and `keywords` prefilters,
+  full-tree scans run **far over the 5s budget**;
+  even a stdin scan of one small file warm is ~250ms,
+  which is process startup + 1k-rule TOML parse before any matching.
+  Aho-Corasick prefilter and re2 regex engine help but don't recover the budget.
+  Also lacks native `.gitignore` (only `.gitleaksignore`),
+  forcing an `xargs git ls-files` shape that interacts with file-target config-handling bugs
+  (issues #85, #87 still open as of writing).
+- **gitleaks + custom rules** -- same perf concerns as betterleaks plus
+  the canonical pattern stores patterns in a TOML file in the repo;
+  out-of-band is possible but cuts against the tool's grain.
 - **git-secrets** -- AWS Labs project, last tag in 2020, no CI story without scripting it yourself.
   Rules live in opaque `git config` entries (good for the out-of-band requirement)
-  but the project is effectively unmaintained and ergonomics are poor for a multi-package monorepo.
-- **gitleaks + custom rules** -- well-maintained and widely used,
-  but the canonical pattern stores patterns in a TOML file in the repo.
-  Storing patterns out-of-band is possible (`--config`-from-stdin, fetched at runtime)
-  but cuts against the tool's grain.
+  but the project is effectively unmaintained.
 - **trufflehog** -- custom regex detectors require a `keywords` filter,
   not a clean deny-list. Designed for credential scanning, not literal blocking.
 - **secretlint with `@secretlint/secretlint-rule-pattern`** -- works,
-  but pulls a JS-ecosystem secret-scanning framework for one rule type.
+  but pulls a JS-ecosystem secret-scanning framework for one rule type
+  and inherits Node startup overhead.
+- **TypeScript scanner with `aho-corasick` + `re2-wasm`** -- viable on smaller repos
+  but on this one's corpus + rule budget the WASM regex engine is the bottleneck;
+  Bun startup + WASM init + per-file overhead × 2.7k files exceeds the budget.
+  Native code is the structural fix.
+- **RE2 directly (without resharp)** -- linear-time same as resharp.
+  Reasonable alternative; resharp's edge is the combined-pattern construction
+  and intersection/complement primitives for future rule composition.
+  Picking resharp is a soft preference; if resharp throughput disappoints in practice,
+  swapping to RE2 is mechanical.
 - **GitHub native push protection / custom patterns** --
   custom patterns require GitHub Secret Protection (paid),
   unavailable on free public repos owned by individuals.
 - **Native git hook + `grep` script** --
-  AGENTS.md prohibits bash scripts; would need to be rewritten in TS anyway,
-  at which point hk gives the same result with better ergonomics.
+  AGENTS.md prohibits bash scripts; perf is fine for small rule sets but degrades with 1k rules.
 - **`pre-commit/pre-commit-hooks` (Python pre-commit framework)** --
   no built-in or popular community hook for arbitrary forbidden-words enforcement.
   Pulls a Python tool into a Bun/mise repo; tool-family mismatch.
@@ -126,38 +189,70 @@ This means CI enforces whatever the secret holds, even if a contributor's local 
 ### Files to add (committed)
 
 - `hk.pkl` -- hk configuration; one `pre-commit` step invoking the scanner
-- `scripts/scan-forbidden.ts` -- Bun TypeScript scanner; reads staged blobs,
-  parses `forbidden-strings.local.txt`, exits non-zero on hit
+- `packages/dev-script/forbidden-strings/` -- Rust crate (Cargo.toml, src/main.rs);
+  binary name `forbidden-strings`, depends on the `resharp` crate plus a TOML parser
+- `packages/dev-script/forbidden-strings/mise.toml` -- per-package build task
+  (`cargo build --release`) and install task that drops the binary on PATH
 - `forbidden-strings.local.example.txt` -- placeholder template a contributor copies
   to `forbidden-strings.local.txt` on first setup;
   contains only an obviously-fake placeholder line
 - `.github/workflows/forbidden-strings.yml` -- CI mirror; materializes the deny-list
-  from a repository secret, then calls `hk check --from-ref origin/main`
-- `mise.toml` (root) addition under `[tools]` -- pin `hk` and `pkl` versions
+  from a repository secret, builds the scanner once (cached), then calls
+  `hk check --from-ref origin/main`
 
 ### Files to modify
 
 - `.gitignore` -- add `forbidden-strings.local.txt`
-- `.husky/pre-commit` -- replace the existing `yarn run -T -B monochromatic precommit` line
-  with `hk run pre-commit` (or chain hk before the existing task,
-  pending review of what `monochromatic precommit` still does)
+- Root `mise.toml` -- pin `hk` and `pkl`.
+  `rust = "latest"` is already pinned and is enough;
+  resharp is a library dependency declared in the scanner crate's `Cargo.toml`,
+  not a `cargo:` tool (mise's `cargo:` backend installs binaries, not libraries).
+  The scanner binary itself is built via the package's mise tasks rather than installed as a tool
+- Local git-hook wiring -- handled by `hk install --global` (recommended; one-time per machine,
+  Git 2.54+; the hook is a no-op in repos without `hk.pkl`) or `hk install` per-repo.
+  hk replaces husky entirely; no `.husky/pre-commit` edit is needed
 - Branch protection on `main` (configured outside the repo on GitHub)
   to require the new CI check to pass before merge
 
 ### Scanner design
 
-The scanner must read the **staged blob**, not the working-tree file,
-so an unstaged edit cannot bypass or false-trigger the check.
-On startup the scanner parses `forbidden-strings.local.txt` line-by-line:
-empty lines and `#` comments are skipped;
-a line matching `^/.+/[a-z]*$` is compiled as a regex with the trailing letters as flags;
-every other non-empty line is a case-sensitive literal substring rule.
-For each path passed in:
+The scanner is a single-binary Rust CLI.
+Invocation shape: `forbidden-strings --rules <path> [--all] [FILE...]`.
 
-1. Runs `git show :PATH` to get the staged content
-2. For each parsed rule, applies the literal `String#includes` or compiled regex
-3. Reports `path:line:start-col..end-col` for every hit, plus a stable rule index (1-based)
-4. Exits `1` if any rule fired, `0` otherwise
+On startup:
+
+1. Parse the rules file (`--rules` arg, or `FORBIDDEN_STRINGS_RULES` env) line-by-line:
+   empty lines and `#` comments are skipped;
+   a line matching `^/.+/[a-z]*$` is parsed as a regex with the trailing letters as flags;
+   every other non-empty line is a case-sensitive literal,
+   escaped to regex source for engine input.
+   Each rule retains its 1-based index from input order.
+2. Build a single combined automaton via resharp from the union of all rule sources.
+   Compile cost is paid once per invocation.
+3. Resolve the file list:
+   in `--all` mode the binary calls `git ls-files -z` itself and reads the result;
+   otherwise it scans the file paths passed as positional arguments.
+   The scanner reads each path from the **working tree** via plain FS reads,
+   not the git index.
+   This is strictly better than staged-blob reads for the threat model:
+   any forbidden term that lands on disk is flagged immediately,
+   even if not yet staged --
+   so a term sitting in an unstaged hunk gets surfaced now rather than slipping through
+   on a future `git add .`.
+   Reading 12.4 MB of tracked content into RAM is sub-millisecond on modern SSDs;
+   any `git cat-file --batch` approach loses to plain reads by orders of magnitude.
+   Loading via mmap or buffered reads is an implementation detail.
+
+   The only residual imprecision is the inverse case --
+   stage a forbidden term, then edit the working tree to remove it,
+   commit before the next scan --
+   which requires deliberate sequencing and falls under the obfuscation cases
+   the threat model already accepts as out of scope.
+4. For each file, run the combined automaton over the content in one pass,
+   collect all match offsets and the originating rule index.
+5. For each hit, report `path:line:start-col..end-col` plus the opaque rule index
+   on stderr, one finding per line.
+6. Exit `1` if any rule fired, `0` otherwise.
 
 Columns are 1-based code-unit offsets within the matched line.
 The range is inclusive on both ends; for a hit at column 14 spanning four characters,
@@ -171,6 +266,17 @@ The column range leaks only the length of the match,
 which is an accepted tradeoff for editor-jumpable output.
 A contributor wanting to know which rule fired looks up the index against their local file.
 
+#### Combined-automaton blowup fallback
+
+A pathological union of arbitrary regexes can blow up the combined-automaton state count.
+resharp's derivative-based construction is more resilient than classical NFA->DFA
+but is not immune.
+If a real rule set triggers a state-count explosion or measurable slowdown,
+fall back to two-stage matching:
+build an Aho-Corasick automaton over the rules' literal anchors (literals + regex `keywords`),
+and only invoke the full regex on files where the AC stage hits.
+This is a v1.1 optimization; v1 trusts the unified automaton and measures.
+
 ### Pkl configuration sketch
 
 ```pkl
@@ -180,7 +286,7 @@ hooks {
   ["pre-commit"] {
     steps {
       ["forbidden-strings"] {
-        check = "bun run scripts/scan-forbidden.ts {{files}}"
+        check = "forbidden-strings --rules ${FORBIDDEN_STRINGS_RULES:-forbidden-strings.local.txt} {{files}}"
       }
     }
   }
@@ -195,10 +301,12 @@ hooks {
 A single GitHub Actions job on pull_request and push to main:
 
 1. Checkout with full history (`fetch-depth: 0`) so `--from-ref` works
-2. Materialize `forbidden-strings.local.txt` from a repo secret
+2. Install mise, run `mise install` to get hk and the Rust toolchain
+3. Build the scanner with `mise run //packages/dev-script/forbidden-strings:build`
+   (cache `target/` keyed on `Cargo.lock` to keep CI fast)
+4. Materialize `forbidden-strings.local.txt` from a repo secret
    (e.g. `secrets.FORBIDDEN_STRINGS_LIST`) -- the secret holds the full plain-text deny-list
-3. Install mise, run `mise install` to get hk and bun
-4. `hk check --from-ref origin/main` -- runs the same steps the local hook runs,
+5. `hk check --from-ref origin/main` -- runs the same steps the local hook runs,
    scoped to the changed files in the PR
 
 The workflow YAML must not echo the secret.
@@ -216,9 +324,16 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
 - **Obfuscation defeats literal scanning.**
   Anyone who wants to bypass can split the string, encode it, or use Unicode lookalikes.
   Deny-lists work for accident prevention only.
-- **`{{files}}` passes working-tree paths.**
-  The scanner must read the staged blob via `git show :PATH` to scan the actual content
-  that would be committed. Trusting the working tree is the most common bug in this pattern.
+- **Working-tree reads, not staged blobs.**
+  The scanner reads files from the filesystem rather than the git index.
+  This is the strict-default for the threat model:
+  any forbidden term on disk is surfaced immediately, even if currently unstaged,
+  so contributors deal with it now rather than discovering it on the next `git add .`.
+  The only residual imprecision is the inverse case
+  (stage a term, then edit the working tree to remove it, commit before re-scanning),
+  which requires deliberate sequencing and is the same category as the obfuscation cases
+  the threat model already concedes as out of scope.
+  In CI the checked-out tree is the content being committed, so the distinction is moot.
 - **Already-committed instances of forbidden strings remain in history.**
   Searching with `git log -S` and GitHub search will still surface them.
   Cleanup requires `git filter-repo` and a force-push -- a separate, destructive operation
@@ -230,9 +345,16 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
 - **Pkl is a new config language for this repo.**
   Reviewers will need a one-time orientation;
   pinning the Pkl version via `mise` mitigates surprise.
-- **Performance.**
-  Reading every staged blob via `git show` per commit is fine for normal PR sizes
-  but could become noticeable on large refactors.
+- **Rust toolchain becomes a build-time dependency.**
+  `mise.toml` already pins `rust = "latest"`,
+  so the cost is bounded; CI must cache `target/` keyed on `Cargo.lock`
+  or first-run build time will dominate.
+- **Combined-automaton state-count blowup.**
+  resharp handles 1k mixed rules well in the expected case,
+  but a pathological rule combination can explode automaton size.
+  Mitigation: AC-prefilter fallback (see Scanner design).
+  Detection: instrument the scanner to log build time and state count
+  in `--verbose` mode so a slow rule addition is noticed at edit time.
 - **Failure messages must be redacted.**
   Printing the matched substring or surrounding lines in error output
   turns a CI log into a leak surface;
@@ -241,17 +363,29 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
 
 ## Rollout
 
-1. Land hk + the scanner with the loader pointing at a `.local.txt` file that contains
+1. Land the Rust crate at `packages/dev-script/forbidden-strings/`
+   with the loader pointing at a `.local.txt` file that contains
    only an obviously-fake placeholder rule.
-   Verify the local hook fires and the CI job runs green on a no-op PR.
-2. Configure the GitHub Actions secret holding the real plain-text deny-list.
-   Confirm CI fails on a test PR introducing a deny-listed term.
-3. Distribute the real `forbidden-strings.local.txt` to each contributor via a private channel.
-4. Enable branch protection on `main` to require the CI check.
-5. Document the workflow for adding a new forbidden string in `docs/agents/forbidden-strings.md`
+   Verify a `cargo build --release` and that the binary runs end-to-end
+   on a synthetic input that exercises a literal hit, a regex hit, and a no-hit file.
+2. Benchmark the v0 scanner against the full tracked corpus
+   with a synthetic 1k-rule set
+   (700 literals, 200 normal regexes, 100 catastrophic-shape regexes;
+   resharp's automata-based engine handles all three classes in linear time).
+   Confirm full-repo wall time is well under the 5s budget;
+   if the combined automaton blows up, gate the regex stage behind an AC literal prefilter.
+3. Land hk wired to invoke the binary,
+   verify the local hook fires and the CI job runs green on a no-op PR.
+4. Configure the GitHub Actions secret holding the real plain-text deny-list.
+   Confirm CI fails on a test PR introducing a deny-listed term
+   and that the failure log contains only `path:line:cols` plus rule index, never the term itself.
+5. Distribute the real `forbidden-strings.local.txt` to each contributor via a private channel.
+6. Enable branch protection on `main` to require the CI check.
+7. Document the workflow for adding a new forbidden string in `docs/agents/forbidden-strings.md`
    (or extend an existing agent doc):
    how to update the local file, how to update the CI secret,
-   and how to format new rules.
+   how to format new rules,
+   and how to interpret the opaque rule index in failure messages.
 
 ## Open questions
 
@@ -269,10 +403,10 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
   hk supports a `commit-msg` hook;
   do we want the deny-list to fire there too?
   Default: yes, since commit messages are committed and historical.
-- **Interaction with the existing `.husky/pre-commit`.**
-  Current line is `yarn run -T -B monochromatic precommit`,
-  which appears stale (the repo uses pnpm).
-  Confirm whether that command still runs anything; if not, replace outright.
+- **Husky retirement.**
+  hk supplants husky; the existing `.husky/pre-commit` (currently a single comment line)
+  becomes dead weight once `hk install --global` is in place.
+  Decide whether to delete `.husky/` entirely as a follow-up.
 - **History cleanup policy.**
   Should we run a history search for each new rule before adding it,
   to know whether existing history already contains the term?
@@ -288,6 +422,13 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
 ## Prior art consulted
 
 - hk: `https://hk.jdx.dev/`, `https://github.com/jdx/hk`
+- resharp (RE#): `https://github.com/ieviev/resharp`
+  (Rust, automata-based regex with intersection/complement; the chosen engine)
+- betterleaks: `https://github.com/betterleaks/betterleaks`
+  (gitleaks fork by gitleaks' original creator;
+  has out-of-band config via `BETTERLEAKS_CONFIG`/`BETTERLEAKS_CONFIG_TOML`
+  and `--redact=100` for safe output;
+  rejected on perf, see "Why not the alternatives")
 - gitleaks: `https://github.com/gitleaks/gitleaks` (custom rules supported, well-maintained)
 - git-secrets: `https://github.com/awslabs/git-secrets` (stale, last tag 2020)
 - trufflehog: `https://github.com/trufflesecurity/trufflehog`

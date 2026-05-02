@@ -1,0 +1,63 @@
+name: forbidden-strings
+
+on:
+  pull_request:
+    branches: ['main']
+  merge_group:
+    branches: ['main']
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install mise
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
+
+      - name: Cache cargo registry + scanner build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/dev-script/forbidden-strings/target
+          key: forbidden-strings-${{ runner.os }}-${{ hashFiles('packages/dev-script/forbidden-strings/Cargo.toml') }}
+
+      - name: Build forbidden-strings
+        run: mise run //packages/dev-script/forbidden-strings:build
+
+      - name: Materialize deny-list from secret
+        env:
+          FORBIDDEN_STRINGS_LIST: ${{ secrets.FORBIDDEN_STRINGS_LIST }}
+        run: |
+          if [ -z "$FORBIDDEN_STRINGS_LIST" ]; then
+            echo "::warning::FORBIDDEN_STRINGS_LIST secret not set; skipping scan."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          printenv FORBIDDEN_STRINGS_LIST > forbidden-strings.local.txt
+        id: materialize
+
+      - name: Run hk check (changed files only)
+        if: steps.materialize.outputs.skip != 'true'
+        run: |
+          mise exec -- hk check --from-ref origin/main
+
+      - name: Run forbidden-strings full-tree scan (push to main only)
+        if: github.event_name == 'push' && steps.materialize.outputs.skip != 'true'
+        run: |
+          packages/dev-script/forbidden-strings/target/release/forbidden-strings \
+            --rules forbidden-strings.local.txt \
+            --all

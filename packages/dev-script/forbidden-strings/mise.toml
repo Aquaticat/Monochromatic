@@ -1,0 +1,19 @@
+[tasks.build]
+description = "Build the forbidden-strings binary in release mode"
+run = "cargo build --release"
+
+[tasks."build:debug"]
+description = "Build the forbidden-strings binary in debug mode"
+run = "cargo build"
+
+[tasks.lint]
+description = "cargo check (no codegen)"
+run = "cargo check"
+
+[tasks."lint:clippy"]
+description = "Run clippy"
+run = "cargo clippy --release -- -D warnings"
+
+[tasks.test]
+description = "cargo test"
+run = "cargo test --release"

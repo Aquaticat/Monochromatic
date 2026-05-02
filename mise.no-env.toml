@@ -76,6 +76,11 @@ deno = "latest"
 "npm:socket" = "latest"
 "aqua:betterleaks/betterleaks" = "latest"
 
+# Git hook runner (forbidden-strings enforcement, see TODO.forbidden-strings.md)
+"aqua:jdx/hk" = "latest"
+# Pkl: hk's config language
+"aqua:apple/pkl" = "latest"
+
 [settings]
 env_shell_expand = false
 
