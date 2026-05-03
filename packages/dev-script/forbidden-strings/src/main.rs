@@ -29,6 +29,7 @@
 // ```
 mod rules;
 mod scan;
+mod scan_format;
 mod walk;
 
 // What:     `use std::env;` imports the std `env` module so we can
@@ -138,7 +139,12 @@ use crate::walk::list_files;
 //               provenance bundled under `data/`; it contains example
 //               literals (e.g. `AIza...` GCP-key shapes used by an
 //               allowlist) that the ported rules detect.
-//           Skip all four basenames unconditionally so `--all` runs
+//             - `port-betterleaks-relaxations.ts` holds the regex-source
+//               strings used during the upstream port (e.g. mongodb
+//               connection-string shape, sourcegraph token form). These
+//               are the rule definitions in TypeScript form; the same
+//               self-match risk applies as for the example-rules file.
+//           Skip all five basenames unconditionally so `--all` runs
 //           don't fire on the scanner's own infrastructure.
 // TS map:   `function isSkippedFile(path: string): boolean { return [...names].includes(basename(path)); }`.
 //
@@ -150,7 +156,8 @@ use crate::walk::list_files;
 //   return name === "forbidden-strings.local.example.txt"
 //       || name === "forbidden-strings.local.txt"
 //       || name === "forbidden-strings.append.local.txt"
-//       || name === "betterleaks-default-config.toml";
+//       || name === "betterleaks-default-config.toml"
+//       || name === "port-betterleaks-relaxations.ts";
 // }
 // ```
 fn is_skipped_file(path: &str) -> bool {
@@ -164,6 +171,7 @@ fn is_skipped_file(path: &str) -> bool {
             | "forbidden-strings.local.txt"
             | "forbidden-strings.append.local.txt"
             | "betterleaks-default-config.toml"
+            | "port-betterleaks-relaxations.ts"
     )
 }
 
