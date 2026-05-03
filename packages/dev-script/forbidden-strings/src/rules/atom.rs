@@ -154,6 +154,11 @@ pub(super) fn walk_literal_bytes<'a>(
 //           scope (e.g. L135 `(?-i:[Mm]eraki|MERAKI)` -> drains to cs
 //           AC under `Meraki`/`meraki`/`MERAKI`).
 // TS map:   `function skipAtomWithExtract(s: string, ci: boolean): { remainder: string; extracted: Array<{sub:string; ci:boolean}> | null } | null`.
+//
+// Clippy lint suppressed: the return tuple's two-level Option/Vec/tuple is
+// the natural shape (remainder slice + optional list of (substring, ci)
+// pairs); aliasing it to a `type Extracted<'a>` would only rename the noise.
+#[allow(clippy::type_complexity)]
 pub(super) fn skip_atom_with_extract(
     s: &str,
     ci: bool,

@@ -144,6 +144,13 @@ pub const SUBSTRING_THRESHOLD: usize = 7;
 //   | { kind: "single"; rulePos: number }
 //   | { kind: "combined"; gate: Regex; positions: number[] };
 // ```
+//
+// Clippy lint suppressed: `Combined` carries a `CompiledRegex` whose
+// resharp arm is ~3.3 KiB; `Single` is 8 bytes. Boxing the gate would
+// add an indirection on the per-shard `is_match` call inside
+// `scan_content`'s residual loop. Residual count is tiny (currently 4)
+// so the size asymmetry costs at most a few KiB total.
+#[allow(clippy::large_enum_variant)]
 pub enum ResidualShard {
     Single { rule_pos: usize },
     Combined { gate: CompiledRegex, positions: Vec<usize> },

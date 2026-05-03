@@ -183,9 +183,7 @@ fn split_top_level_alternations(s: &str) -> Vec<&str> {
             continue;
         }
         if c == b')' {
-            if depth > 0 {
-                depth -= 1;
-            }
+            depth = depth.saturating_sub(1);
             i += 1;
             continue;
         }

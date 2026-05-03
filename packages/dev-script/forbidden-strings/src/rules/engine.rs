@@ -64,6 +64,13 @@ use regex::bytes::Regex as PlainRegex;
 //   | { kind: "resharp"; re: Regex }
 //   | { kind: "plain"; re: PlainRegex };
 // ```
+//
+// Clippy lint suppressed: `Resharp` carries a 3.3 KiB inner DFA struct,
+// while `Plain` is 32 bytes. Boxing the Resharp arm would add a heap
+// indirection on every `find_all`/`is_match` (the hot path), regressing
+// scan throughput. The size asymmetry is acceptable -- a few hundred
+// `RegexRule` values is a one-time per-process cost.
+#[allow(clippy::large_enum_variant)]
 pub enum CompiledRegex {
     Resharp(Regex),
     Plain(PlainRegex),
