@@ -15,7 +15,7 @@ import {
 } from './tool-titles.ts';
 
 /** Prefix prepended to every terminal title for visual identification. */
-const TITLE_PREFIX = '✳';
+const TITLE_PREFIX = 'π';
 
 /** Maximum total title length including prefix. */
 const MAX_TITLE_LENGTH = 60;
