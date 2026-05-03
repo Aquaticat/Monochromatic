@@ -161,10 +161,19 @@ use crate::walk::list_files;
 // }
 // ```
 fn is_skipped_file(path: &str) -> bool {
-    let basename = std::path::Path::new(path)
-        .file_name()
-        .and_then(|s| s.to_str())
-        .unwrap_or("");
+    // What:     `path.rsplit('/').next().unwrap_or(path)` walks the
+    //           string from the END until it hits the first `/`,
+    //           returning the suffix after that `/` (or the whole
+    //           string when no `/` is present). Substantially faster
+    //           than `Path::new(path).file_name()`, which iterates
+    //           through every path component to reach the last one.
+    // Why:      `is_skipped_file` is called for every file in the
+    //           working tree (~2700 calls on Mono `--all`). The
+    //           Path-based basename extraction was a measurable
+    //           fraction of the total wall time when scan dropped
+    //           to ~37 ms via unicode(false). `rsplit` is one
+    //           memchr-style pass over the basename suffix only.
+    let basename = path.rsplit('/').next().unwrap_or(path);
     matches!(
         basename,
         "forbidden-strings.local.example.txt"
