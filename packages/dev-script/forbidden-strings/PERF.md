@@ -6,27 +6,60 @@ against the binary built from this package's `src/`.
 
 ## Last benched
 
-**2026-05-02 (post-betterleaks-port + post-CI-AC-bucket + post-walker-fixes)**,
+**2026-05-03 (post-hybrid-engine + post-source-split + post-greedy-combine)**,
 with `hyperfine 1.20.0`. Binary: `target/release/forbidden-strings` built
 with `mise run //packages/dev-script/forbidden-strings:build`.
 
-The "realistic" ruleset is now the betterleaks-port baseline: 259 regex
+The "realistic" ruleset is the betterleaks-port baseline: 259 regex
 rules + 3 literals (851 total lines). **This is a different workload from the
 previous "realistic = 17 rules" bench at the bottom of this document; the
 two are not comparable.** Numbers from the prior 17-rule corpus are kept
 under "Pre-betterleaks-port baseline" for regression detection only.
 
-The current numbers reflect the substring extractor's case-insensitive AC
-bucket (handles `(?i)` rules), `(?:literal)` group recursion, escape-fix
-for `\_`/`\=`/etc., and alternation-soundness fix in the walker. See
-`## Architecture summary` for what shipped.
+The current numbers reflect the hybrid engine (`CompiledRegex::{Resharp,Plain}`
+in `src/rules/engine.rs` -- 257 of 259 rules compile via the standard `regex`
+crate, ~100x faster than resharp; 2 rules use resharp's set-algebra
+operators), the file-split refactor (every source file under 500 lines),
+and greedy combine-partition for residual shards (see Architecture summary).
 
-### Realistic ruleset (259 rules, betterleaks port) on Monochromatic, 5 runs
+### Realistic ruleset (259 rules, betterleaks port) on Monochromatic, 15 runs
+
+```text
+--all              641.2 ms ± 19.6 ms    (user 4137.3 ms, sys 884.4 ms)
+```
+
+Range 596.6 ms .. 662.8 ms. Effective parallelism = ~6.5x cores.
+
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`):
+
+```text
+phase 0 read_rules_file:           0.0 ms
+phase 1 classify+regex_compile:    ~440 ms  (hybrid engine: 257 plain + 2 resharp)
+phase 2 extract_gating_substrings: ~0.3 ms
+phase 3 ac_build:                  ~0.4 ms
+phase 4 residual_shards:           ~0.0 ms  (4 residuals, below greedy threshold)
+```
+
+Bucket distribution:
+
+```text
+ac_cs_lit=0
+ac_cs_regex_prefix=157           (case-sensitive AC; substring-extracted from regex rules)
+ac_ci_regex_prefix=171           (case-insensitive AC; substring-extracted from regex rules)
+residual=4 (in 4 single shards)  (L114 beamer, L251 facebook, L769 twitch, L796 vercel-ai)
+regex_rules_total=259
+```
+
+### Superseded -- 2026-05-02 (pre-hybrid-engine)
 
 ```text
 startup-only       3.86 s ± 0.15 s    (user 29.65 s, sys 2.37 s)
 --all              6.98 s ± 0.96 s    (user 33.99 s, sys 2.76 s)
 ```
+
+The hybrid-engine commit (6fef4529) cut Mono `--all` 4.5x (6.98 s -> 663 ms);
+the split refactor and greedy partition added are no-op on perf
+(641 ms post-split is within 1 sigma of 663 ms pre-split).
 
 ### Realistic ruleset on Linux kernel (94k files, 1.5 GiB), 3 runs per shard size
 
@@ -161,13 +194,31 @@ Shipped optimisations in load order:
   ci; merging into the outer accumulator would require multi-ci
   tracking). Rules whose only required substring lives inside a scoped
   flag group land in residual.
-- **Sharded residual gate.** Rules with no AC-extractable substring are
-  sharded across combined-alternation Regex gates.
-  `rules.rs::build_residual_shards` parallel-builds shards via rayon
-  (`par_chunks`) and tries-and-halves on parse failure (resharp's
-  HIR-translator cliff is content-dependent; empirically ~1722 patterns
-  for the synthetic `_RESID_` shape, but the betterleaks-shape 40-rule
-  bucket fails at any size > 1).
+- **Hybrid engine (`CompiledRegex::{Resharp, Plain}`).** Each rule
+  compiles via the standard `regex` crate when its source contains no
+  set-algebra operators (`A&B` intersection, `~(A)` complement, class-
+  level `[A&&B]` / `[A~~B]`). Rules using set-algebra fall back to
+  resharp. The combined gate for residual shards picks the engine per
+  chunk via `uses_set_algebra`, a shallow string scan over the chunk's
+  rules. On the betterleaks corpus this routes 257 of 259 rules to
+  the regex crate; phase 1 (classify + per-rule compile) drops from
+  ~2 s on resharp-only to ~440 ms on hybrid. Live in
+  `src/rules/engine.rs`.
+- **Greedy combine-partition for residual shards.**
+  `src/rules/shards.rs::build_residual_shards` now uses divide-and-
+  conquer: try compiling all positions into one combined-alternation
+  gate; on success emit one Combined shard; on failure split in half
+  and recurse via `rayon::join`. Bottom-out at len=1 emits a Single
+  shard reusing the Phase-2a-compiled per-rule regex (no fresh
+  Regex::new). Threshold guard `GREEDY_COMBINE_THRESHOLD=16`: below
+  it, all positions are emitted as Singles directly. The threshold
+  is bench-derived on Mono's 4-residual case, where each rule has a
+  strong literal-prefix anchor (`SK`, `Q~`, `\d{15,16}`, `hvs.`) that
+  the regex crate accelerates with memchr/Teddy; combined into one
+  gate, that optimisation is lost and per-byte scan cost rises
+  ~24 us per file (+86 ms across 2700 files). For larger residual
+  buckets where individual rules already lack a usable literal
+  prefix, the trade flips and Combined wins.
 
 Two corpora were used:
 
