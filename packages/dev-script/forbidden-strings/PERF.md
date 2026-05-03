@@ -6,7 +6,7 @@ against the binary built from this package's `src/`.
 
 ## Last benched
 
-**2026-05-03 (post-hybrid-engine + post-source-split + post-greedy-combine)**,
+**2026-05-03 (post-unicode-off + post-greedy-combine + post-source-split)**,
 with `hyperfine 1.20.0`. Binary: `target/release/forbidden-strings` built
 with `mise run //packages/dev-script/forbidden-strings:build`.
 
@@ -19,22 +19,25 @@ under "Pre-betterleaks-port baseline" for regression detection only.
 The current numbers reflect the hybrid engine (`CompiledRegex::{Resharp,Plain}`
 in `src/rules/engine.rs` -- 257 of 259 rules compile via the standard `regex`
 crate, ~100x faster than resharp; 2 rules use resharp's set-algebra
-operators), the file-split refactor (every source file under 500 lines),
-and greedy combine-partition for residual shards (see Architecture summary).
+operators), the regex-crate `unicode(false)` mode with try-and-fallback
+to `unicode(true)` for rules that need unicode-property classes (a 17x
+wall-time win on its own), the file-split refactor (every source file
+under 500 lines), and greedy combine-partition for residual shards (see
+Architecture summary).
 
 ### Realistic ruleset (259 rules, betterleaks port) on Monochromatic, 15 runs
 
 ```text
---all              641.2 ms ± 19.6 ms    (user 4137.3 ms, sys 884.4 ms)
+--all              37.2 ms ± 3.6 ms    (user 239.4 ms, sys 71.8 ms)
 ```
 
-Range 596.6 ms .. 662.8 ms. Effective parallelism = ~6.5x cores.
+Range 30.9 ms .. 43.5 ms. Effective parallelism = ~6.4x cores.
 
 Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`):
 
 ```text
 phase 0 read_rules_file:           0.0 ms
-phase 1 classify+regex_compile:    ~440 ms  (hybrid engine: 257 plain + 2 resharp)
+phase 1 classify+regex_compile:    ~5 ms    (unicode-off plain + 2 resharp)
 phase 2 extract_gating_substrings: ~0.3 ms
 phase 3 ac_build:                  ~0.4 ms
 phase 4 residual_shards:           ~0.0 ms  (4 residuals, below greedy threshold)
@@ -49,6 +52,21 @@ ac_ci_regex_prefix=171           (case-insensitive AC; substring-extracted from 
 residual=4 (in 4 single shards)  (L114 beamer, L251 facebook, L769 twitch, L796 vercel-ai)
 regex_rules_total=259
 ```
+
+### Superseded -- 2026-05-03 morning (pre-unicode-off)
+
+```text
+--all              641.2 ms ± 19.6 ms    (user 4137.3 ms, sys 884.4 ms)
+```
+
+The unicode-off compile cut Mono `--all` 17x (641 ms -> 37 ms). Phase 1
+dropped from ~440 ms to ~5 ms (90x faster) because the regex-crate
+compile no longer pays for unicode-aware case-folding tables and
+codepoint-range expansion. Per-byte scan also benefits: smaller DFAs
+and no unicode bookkeeping on the hot path. Soundness preserved by
+the try-unicode-off-then-on fallback in `src/rules.rs::compile_plain_rule`
+(rules with `\p{...}`, multi-byte chars in `[...]`, or `(?u)` flag
+fall through to unicode-on).
 
 ### Superseded -- 2026-05-02 (pre-hybrid-engine)
 
@@ -204,6 +222,20 @@ Shipped optimisations in load order:
   the regex crate; phase 1 (classify + per-rule compile) drops from
   ~2 s on resharp-only to ~440 ms on hybrid. Live in
   `src/rules/engine.rs`.
+- **Unicode-off compile with try-and-fallback.** Each non-set-algebra
+  rule compiles first with `unicode(false)`; on failure the loader
+  retries with `unicode(true)`. Disabling unicode strips case-folding
+  tables, codepoint-range expansion, and unicode-aware `\b`/`\d`/`\w`
+  semantics from the compile and per-byte scan. Bench-verified 90x
+  Phase 1 speedup AND 17x Mono `--all` wall-time speedup (641 ms ->
+  37 ms). Soundness preserved: rules using unicode-property classes
+  (`\p{Han}`, etc.), multi-byte chars inside `[...]` classes, or the
+  `(?u)` flag transparently fall through to unicode-on. Literal
+  multi-byte UTF-8 sequences in the regex source compile fine in
+  bytes-mode without unicode -- the parser treats them as the matching
+  byte sequence -- so they take the fast path. Lives in
+  `src/rules.rs::compile_plain_rule` and the matching combined-gate
+  fallback in `src/rules/shards.rs::try_compile_combined`.
 - **Greedy combine-partition for residual shards.**
   `src/rules/shards.rs::build_residual_shards` now uses divide-and-
   conquer: try compiling all positions into one combined-alternation
