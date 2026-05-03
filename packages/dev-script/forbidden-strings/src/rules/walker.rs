@@ -78,15 +78,87 @@ pub(super) fn extract_scope(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
 // }
 // ```
 fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
+    // What:     `let mut s = s;`. Shadows the parameter `s: &str`
+    //           with a NEW mutable binding of the same type, allowing
+    //           us to reassign `s` to a tail slice as the walker
+    //           advances. The original parameter binding was
+    //           immutable; this `let mut` rebinding gives us mutability
+    //           without changing the underlying borrow.
+    // Why:      The walker repeatedly trims the head of `s` as it
+    //           consumes atoms; we need to be able to write `s = rest;`.
+    // TS map:   `let s = sParam;` (TS lets us reassign function args
+    //           directly; Rust requires explicit re-binding).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let s = sParam;
+    // ```
     let mut s = s;
     let mut best: Vec<(String, bool)> = Vec::new();
     let mut best_score: usize = 0;
+    // What:     `let mut current_lit = String::new();`. Empty owned
+    //           `String` that will hold the literal characters being
+    //           accumulated by `walk_literal_bytes`. `String::new()`
+    //           is the empty-string constructor (no allocation until
+    //           the first push).
+    // Why:      Buffer for the run of literal characters at the
+    //           current walker position.
+    // TS map:   `let currentLit = "";`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let currentLit = "";
+    // ```
     let mut current_lit = String::new();
     loop {
+        // What:     `walk_literal_bytes(s, &mut current_lit, &mut s)`.
+        //           `&mut current_lit` is a MUTABLE BORROW: we lend
+        //           the owned `String` to the callee with permission
+        //           to modify it. Same with `&mut s` -- a mutable
+        //           borrow of the binding `s` itself, so the callee
+        //           can reassign `s` to point at the un-walked tail.
+        //           Plain `s` (no `&`) on the first arg is a copy of
+        //           the `&str` (cheap; `&str` is `Copy`).
+        // Why:      Have the walker append literal bytes into our
+        //           buffer and advance `s` past them in one call.
+        // TS map:   `walkLiteralBytes(s, currentLit, sRef);` -- TS
+        //           passes objects by reference naturally; Rust
+        //           requires explicit `&mut`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const result = walkLiteralBytes(s);
+        // currentLit += result.consumed;
+        // s = result.remainder;
+        // ```
         walk_literal_bytes(s, &mut current_lit, &mut s);
         if !current_lit.is_empty() {
             let score = current_lit.len();
             if score > best_score {
+                // What:     `best = vec![(std::mem::take(&mut current_lit), ci)];`.
+                //           - `vec![...]` is a macro that builds a
+                //             `Vec` from a list of elements.
+                //           - `std::mem::take(&mut current_lit)`
+                //             swaps `current_lit` for its DEFAULT
+                //             value (empty `String`) and returns the
+                //             ORIGINAL contents to us. This is the
+                //             Rust idiom for "move out of a borrowed
+                //             location while leaving it valid". It
+                //             avoids cloning while satisfying the
+                //             borrow checker (we're not allowed to
+                //             move out of `&mut`-borrowed memory
+                //             without leaving something there).
+                // Why:      Reset the buffer for the next round
+                //           AND hand the just-collected literal into
+                //           the new `best` vector in one move,
+                //           without an extra allocation.
+                // TS map:   `best = [[currentLit, ci]]; currentLit = "";`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // best = [[currentLit, ci]];
+                // currentLit = "";
+                // ```
                 best = vec![(std::mem::take(&mut current_lit), ci)];
                 best_score = score;
             } else {

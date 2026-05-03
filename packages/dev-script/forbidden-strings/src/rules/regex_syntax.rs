@@ -19,6 +19,20 @@
 // }
 // ```
 pub(super) fn group_body_start(s: &str) -> Option<usize> {
+    // What:     `let bytes = s.as_bytes();`. Borrowed `&[u8]` view of
+    //           `s`'s UTF-8 bytes. No allocation. `b'('` is a byte
+    //           literal -- the `b` prefix on a char literal makes it a
+    //           `u8` value (here 0x28, ASCII '('), not a Unicode `char`.
+    // Why:      Byte indexing is cheaper than char iteration for the
+    //           ASCII-only sentinel checks.
+    // TS map:   No 1:1 -- TS strings are UTF-16 with no `&[u8]` view;
+    //           the closest is `s.charCodeAt(i)`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const code = (i: number) => s.charCodeAt(i);
+    // if (s.length === 0 || s[0] !== "(") return null;
+    // ```
     let bytes = s.as_bytes();
     if bytes.is_empty() || bytes[0] != b'(' {
         return None;
@@ -30,6 +44,23 @@ pub(super) fn group_body_start(s: &str) -> Option<usize> {
         return Some(3);
     }
     if bytes.len() >= 4 && bytes[2] == b'P' && bytes[3] == b'<' {
+        // What:     `let close = s[4..].find('>')?;`. `s[4..]` is a
+        //           range slice from byte 4 to the end (borrowed `&str`).
+        //           `.find('>')` returns `Option<usize>` -- the byte
+        //           offset of the first `>` in that sub-slice, or None.
+        //           Trailing `?` operator: unwraps `Some(v)` to `v`,
+        //           or early-returns `None` from THIS function if the
+        //           result was `None`.
+        // Why:      Locate the closing `>` of the `(?P<name>` capture
+        //           opener; absence means malformed input -> abort.
+        // TS map:   `const close = s.indexOf(">", 4); if (close === -1) return null;`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const close = s.indexOf(">", 4);
+        // if (close === -1) return null;
+        // return close + 1;
+        // ```
         let close = s[4..].find('>')?;
         return Some(4 + close + 1);
     }
@@ -129,9 +160,37 @@ pub(super) fn skip_any_quantifier(s: &str) -> &str {
     if bytes.is_empty() {
         return s;
     }
+    // What:     `matches!(bytes[0], b'+' | b'?' | b'*')`. The
+    //           `matches!` macro returns `true` if its first arg
+    //           matches any of the patterns on the right (separated
+    //           by `|`). Here it's a tidy alternative to writing
+    //           `bytes[0] == b'+' || bytes[0] == b'?' || bytes[0] == b'*'`.
+    //           Byte literals `b'+'` etc. are `u8` values (ASCII
+    //           codepoints).
+    // Why:      Quick membership test against the simple-quantifier
+    //           characters.
+    // TS map:   `["+", "?", "*"].includes(s[0])`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (s[0] === "+" || s[0] === "?" || s[0] === "*") { ... }
+    // ```
     if matches!(bytes[0], b'+' | b'?' | b'*') {
         // Tail `?` (lazy) is OK to also skip; e.g. `++?`
         if bytes.len() >= 2 && bytes[1] == b'?' {
+            // What:     `return &s[2..];`. Borrowed sub-slice from
+            //           byte 2 to end. `&` re-borrows; the returned
+            //           `&str` shares the input's lifetime, so the
+            //           caller cannot keep the result past `s`'s
+            //           validity.
+            // Why:      Hand back the tail past `++?` (two-byte
+            //           lazy quantifier) to the caller.
+            // TS map:   `return s.slice(2);`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return s.slice(2);
+            // ```
             return &s[2..];
         }
         return &s[1..];
@@ -178,6 +237,35 @@ pub(super) fn quantifier_is_required(s: &str) -> bool {
     if bytes[0] == b'{' {
         if let Some(close) = s.find('}') {
             let inner = &s[1..close];
+            // What:     `inner.split(',').next().and_then(|n| n.trim().parse::<u32>().ok()).unwrap_or(0)`.
+            //           - `.split(',')` returns a lazy iterator of
+            //             `&str` segments split by `,`.
+            //           - `.next()` returns the FIRST segment as
+            //             `Option<&str>`.
+            //           - `.and_then(closure)` is "monadic bind" on
+            //             `Option`: if the option is `Some(n)`, run
+            //             `closure(n)` whose return type is also
+            //             `Option<U>`; if `None`, short-circuit.
+            //           - Inside the closure: `.trim()` strips
+            //             whitespace; `.parse::<u32>()` returns
+            //             `Result<u32, ParseIntError>` -- the
+            //             `::<u32>` turbofish disambiguates the target
+            //             integer type. `.ok()` converts `Result` ->
+            //             `Option`, dropping the error.
+            //           - `.unwrap_or(0)` extracts the inner `u32` or
+            //             substitutes `0` if anything along the chain
+            //             produced `None`. Sibling: `unwrap()` would
+            //             PANIC on `None`; `unwrap_or_default()` would
+            //             use `u32::default()` which is also `0`.
+            // Why:      `{N,M}` and `{N,}` and `{N}` all start with
+            //           an integer; we want it parsed for the lower
+            //           bound check.
+            // TS map:   `const firstNum = parseInt(inner.split(",")[0]?.trim() ?? "0", 10) || 0;`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const firstNum = parseInt((inner.split(",")[0] ?? "0").trim(), 10) || 0;
+            // ```
             let first_num = inner
                 .split(',')
                 .next()

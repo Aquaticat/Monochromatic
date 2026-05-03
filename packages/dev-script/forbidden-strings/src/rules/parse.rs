@@ -48,13 +48,52 @@ pub enum ParsedRule {
 // }
 // ```
 pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
+    // What:     `let trimmed = line.trim();`. `&str::trim` returns a
+    //           BORROWED `&str` slice with leading/trailing ASCII
+    //           whitespace removed -- it does not allocate; the new
+    //           slice points into the same backing memory as `line`,
+    //           with adjusted start/length.
+    // Why:      Whitespace-only lines and indentation should not
+    //           influence rule parsing.
+    // TS map:   `const trimmed = line.trim();`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const trimmed = line.trim();
+    // ```
     let trimmed = line.trim();
     if trimmed.is_empty() {
+        // What:     `return None;`. `None` is the absent variant of
+        //           `Option`. As an early-return statement (with `;`),
+        //           it ends the function with the `None` value.
+        // Why:      Skip blank lines.
+        // TS map:   `return null;`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return null;
+        // ```
         return None;
     }
     if trimmed.starts_with('#') {
         return None;
     }
+    // What:     `let bytes = trimmed.as_bytes();`. `&str::as_bytes`
+    //           returns a BORROWED `&[u8]` view of the same memory --
+    //           UTF-8-encoded bytes. No allocation, no copy. Sibling:
+    //           `trimmed.chars()` would iterate decoded `char` values
+    //           (Unicode scalars); we want raw bytes for cheap byte-
+    //           level comparisons.
+    // Why:      Byte indexing is faster than char iteration for the
+    //           ASCII-only sentinel checks below (`b'/'`, `b'#'`).
+    // TS map:   `const bytes = new TextEncoder().encode(trimmed);` (close
+    //           in spirit; TS strings don't expose the underlying buffer
+    //           directly).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const bytes = new TextEncoder().encode(trimmed);
+    // ```
     let bytes = trimmed.as_bytes();
     if bytes.len() >= 2 && bytes[0] == b'/' {
         // What:     `if let Some(last) = trimmed.rfind('/') { ... }` is
@@ -72,21 +111,117 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
         // ```
         if let Some(last) = trimmed.rfind('/') {
             if last > 0 {
+                // What:     `let pattern = &trimmed[1..last];`. Range
+                //           indexing `[start..end]` on `&str` returns a
+                //           BORROWED `&str` sub-slice (start inclusive,
+                //           end exclusive). The leading `&` is the
+                //           borrow operator. Sibling: `trimmed[1..last].to_string()`
+                //           would allocate a new owned `String`; we
+                //           don't need ownership, so a borrow is cheaper.
+                // Why:      Extract the regex body between the leading
+                //           and trailing `/`.
+                // TS map:   `const pattern = trimmed.slice(1, last);`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const pattern = trimmed.slice(1, last);
+                // const flags = trimmed.slice(last + 1);
+                // ```
                 let pattern = &trimmed[1..last];
                 let flags = &trimmed[last + 1..];
+                // What:     `flags.chars().all(|c| c.is_ascii_lowercase())`.
+                //           `.chars()` decodes the `&str` into a
+                //           lazy iterator of `char` values (Unicode
+                //           scalars). `.all(closure)` returns `true`
+                //           if EVERY element satisfies the closure
+                //           (or the iterator was empty). The `|c|`
+                //           syntax is Rust's closure form (TS arrow
+                //           `(c) => ...`).
+                // Why:      Validate that the trailing flags portion
+                //           is exactly `[a-z]*` -- anything else means
+                //           this isn't a regex rule and should fall
+                //           through to literal handling.
+                // TS map:   `const flagsOk = /^[a-z]*$/.test(flags);`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const flagsOk = /^[a-z]*$/.test(flags);
+                // ```
                 let flags_ok = flags.chars().all(|c| c.is_ascii_lowercase());
                 if flags_ok {
+                    // What:     `let mut out = String::new();`.
+                    //           `String::new()` is the empty-`String`
+                    //           constructor; the result is a heap-
+                    //           allocated growable UTF-8 buffer that
+                    //           OWNS its bytes. `mut` lets us push
+                    //           characters onto it. Sibling: `&str`
+                    //           cannot grow; we need owned mutable
+                    //           string capacity.
+                    // Why:      We need a fresh string to assemble the
+                    //           regex source `(?flags)pattern`.
+                    // TS map:   `let out = "";`.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // let out = "";
+                    // ```
                     let mut out = String::new();
                     if !flags.is_empty() {
+                        // What:     `out.push_str(...)` and `out.push(c)`.
+                        //           `push_str` appends a `&str` slice
+                        //           to the owned string; `push` appends
+                        //           a single `char`. Both grow the
+                        //           backing buffer if needed.
+                        // Why:      Build the resharp inline-flags
+                        //           prefix `(?flags)` followed by the
+                        //           pattern body.
+                        // TS map:   `out += "(?" + flags + ")";`.
+                        //
+                        // In TS you'd write (pseudocode):
+                        // ```ts
+                        // out += "(?" + flags + ")";
+                        // ```
                         out.push_str("(?");
                         out.push_str(flags);
                         out.push(')');
                     }
                     out.push_str(pattern);
+                    // What:     `return Some(ParsedRule::Regex(out));`.
+                    //           `Some(...)` is the present variant of
+                    //           `Option`; `ParsedRule::Regex(out)`
+                    //           constructs the `Regex` variant of the
+                    //           enum, MOVING ownership of `out` into
+                    //           the variant payload (we no longer have
+                    //           access to `out` after this).
+                    // Why:      Hand the parsed regex source back as
+                    //           "yes, this line is a regex rule".
+                    // TS map:   `return { kind: "regex", src: out };`.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // return { kind: "regex", src: out };
+                    // ```
                     return Some(ParsedRule::Regex(out));
                 }
             }
         }
     }
+    // What:     `Some(ParsedRule::Literal(trimmed.to_string()))` --
+    //           function tail expression (no `;`), so its value
+    //           returns from the function. `Some(...)` wraps into
+    //           `Option`; `ParsedRule::Literal(...)` constructs the
+    //           literal variant; `trimmed.to_string()` allocates a
+    //           fresh OWNED `String` from the borrowed `&str` so
+    //           the returned `ParsedRule` doesn't borrow from
+    //           `line` (which would force the caller to keep `line`
+    //           alive).
+    // Why:      Default classification: any non-blank, non-comment
+    //           line that isn't a regex pattern is a literal substring.
+    // TS map:   `return { kind: "literal", text: trimmed };`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return { kind: "literal", text: trimmed };
+    // ```
     Some(ParsedRule::Literal(trimmed.to_string()))
 }

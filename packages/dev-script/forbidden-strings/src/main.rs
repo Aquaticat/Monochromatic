@@ -210,19 +210,153 @@ fn is_skipped_file(path: &str) -> bool {
 // process.exit(await main());
 // ```
 fn main() -> ExitCode {
+    // What:     `let args: Vec<String> = env::args().skip(1).collect();`
+    //           reads command-line arguments. `env::args()` returns an
+    //           iterator of `String`s where index 0 is the program name
+    //           ("forbidden-strings"); `.skip(1)` drops it; `.collect()`
+    //           materializes the remainder into a `Vec<String>`. The
+    //           explicit `Vec<String>` annotation tells `.collect()` what
+    //           container to build (without it, the collect call is
+    //           ambiguous). Sibling type to consider: `Vec<&str>` would
+    //           BORROW the args, but `env::args()` already yields owned
+    //           `String`s -- borrowing is not an option here.
+    // Why:      We need the user's actual flags/files; the program name
+    //           is irrelevant.
+    // TS map:   `const args = process.argv.slice(2);`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const args: string[] = process.argv.slice(2);
+    // ```
     let args: Vec<String> = env::args().skip(1).collect();
+
+    // What:     `let mut rules_path: Option<String> = env::var("...").ok();`
+    //           reads an environment variable. `env::var` returns
+    //           `Result<String, VarError>` (Err if unset); `.ok()` converts
+    //           it into `Option<String>` -- `Some(value)` if set, `None`
+    //           otherwise. The `mut` lets us reassign `rules_path` later if
+    //           `--rules` overrides. Sibling type: `Option<&str>` would
+    //           need the env value to live somewhere else; `String` is
+    //           owned so it can outlive any function call.
+    // Why:      Initial source for the rules-file path; `--rules` flag
+    //           takes precedence and overwrites this.
+    // TS map:   `let rulesPath: string | undefined = process.env.FORBIDDEN_STRINGS_RULES;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let rulesPath: string | undefined = process.env.FORBIDDEN_STRINGS_RULES;
+    // ```
     let mut rules_path: Option<String> = env::var("FORBIDDEN_STRINGS_RULES").ok();
+
+    // What:     `let mut all = false;` declares a mutable boolean. No
+    //           type annotation needed -- the literal `false` infers `bool`.
+    // Why:      Tracks whether `--all` was passed; we toggle it to true
+    //           when we encounter the flag.
+    // TS map:   `let all = false;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let all = false;
+    // ```
     let mut all = false;
+
+    // What:     `let mut files: Vec<String> = Vec::new();` allocates an
+    //           empty growable, owned vector of `String`. `Vec::new()` is
+    //           the empty-vector constructor; the explicit type annotation
+    //           tells the compiler the element type since the empty
+    //           constructor cannot infer it. Sibling: `Vec<&str>` cannot
+    //           hold values that outlive the source; we want owned data.
+    // Why:      Accumulates positional file arguments as we parse argv.
+    // TS map:   `const files: string[] = [];`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const files: string[] = [];
+    // ```
     let mut files: Vec<String> = Vec::new();
+
+    // What:     `let mut i: usize = 0;` declares a mutable index counter.
+    //           `usize` is the unsigned integer wide enough to address any
+    //           byte in memory on this platform (32 bits on 32-bit OS,
+    //           64 bits on 64-bit OS). Siblings the reader might expect:
+    //           `u32`, `u64`, `i32`, `i64`. Why `usize` not `u64`? Every
+    //           std API that takes a "size" or "index" wants `usize`;
+    //           mixing widths forces casts.
+    // Why:      Manual index lets us advance by 2 (consume `--rules` plus
+    //           its value) inside the loop body.
+    // TS map:   `let i = 0;` (TS has only one number type).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let i = 0;
+    // ```
     let mut i: usize = 0;
+
+    // What:     `while i < args.len() { ... }` is a basic conditional loop.
+    //           No iterator, no syntactic sugar -- just "keep going while
+    //           condition holds". `args.len()` returns the vector's length
+    //           as `usize`.
+    // Why:      We need manual index control to consume `--rules` plus
+    //           its argument together; a `for arg in &args` loop cannot
+    //           skip ahead.
+    // TS map:   `while (i < args.length) { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // while (i < args.length) { ... }
+    // ```
     while i < args.len() {
+        // What:     `let a = &args[i];` borrows the i-th element. `&` is
+        //           Rust's "borrow" operator: it gives a read-only
+        //           reference to the value without taking ownership; the
+        //           original vector still owns the `String`. Without `&`,
+        //           Rust would try to MOVE the `String` out of the vector,
+        //           which is illegal because `Vec<String>` does not
+        //           support hole-poking moves.
+        // Why:      We want to inspect the arg's contents (compare to
+        //           "--rules", etc.) without consuming it.
+        // TS map:   `const a = args[i];` -- TS has no ownership system,
+        //           so reading is always implicitly "borrowing".
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const a = args[i];
+        // ```
         let a = &args[i];
         if a == "--rules" {
             i += 1;
             if i >= args.len() {
                 eprintln!("--rules needs an argument");
+                // What:     `return ExitCode::from(2);` early-exits `main`
+                //           with exit status 2. `ExitCode::from(u8)` is a
+                //           constructor that wraps a raw byte into the
+                //           typed wrapper.
+                // Why:      Convention: 0 = success, 1 = violation,
+                //           2 = usage / config error.
+                // TS map:   `process.exit(2);`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // process.exit(2);
+                // ```
                 return ExitCode::from(2);
             }
+            // What:     `rules_path = Some(args[i].clone());` reassigns
+            //           the `Option<String>` variable. `Some(...)` wraps
+            //           a value into the present variant of `Option`;
+            //           `args[i].clone()` deep-copies the indexed `String`
+            //           so the assignment OWNS its bytes (we cannot move
+            //           out of a Vec, and a borrow would tie `rules_path`
+            //           to `args`'s lifetime).
+            // Why:      Capture the argument that follows `--rules` as
+            //           our authoritative rules path.
+            // TS map:   `rulesPath = args[i];` -- TS strings are GC'd, no
+            //           clone needed.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // rulesPath = args[i];
+            // ```
             rules_path = Some(args[i].clone());
         } else if a == "--all" {
             all = true;
@@ -313,8 +447,31 @@ fn main() -> ExitCode {
             eprintln!("unknown flag {}", a);
             return ExitCode::from(2);
         } else {
+            // What:     `files.push(a.clone())`. `a` is a `&String`
+            //           (borrowed); `.clone()` deep-copies the `String`
+            //           so the new owned copy can be moved into the
+            //           vector. We cannot push the borrow itself --
+            //           `Vec<String>` requires owned `String`s and the
+            //           borrow's lifetime would not outlive `args`.
+            // Why:      Stash the positional file argument for later
+            //           scanning.
+            // TS map:   `files.push(a);` -- TS strings are GC'd; no clone.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // files.push(a);
+            // ```
             files.push(a.clone());
         }
+        // What:     `i += 1;` advances to the next argv slot. Plain
+        //           integer increment; no Rust-specific magic.
+        // Why:      Move past the just-consumed flag/value.
+        // TS map:   `i += 1;`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // i += 1;
+        // ```
         i += 1;
     }
 
@@ -362,6 +519,24 @@ fn main() -> ExitCode {
             || if all { Some(list_files(".")) } else { None },
         );
 
+    // What:     `let ruleset = match ruleset_result { Ok(r) => r, Err(e) => { ...; return ... } };`
+    //           is a `match` expression destructuring a `Result<RuleSet, String>`.
+    //           `Ok(r)` binds the success payload to local `r` and
+    //           "evaluates" the arm to that value; `Err(e)` binds the
+    //           failure payload, prints it, and early-returns from
+    //           `main`. The match expression as a whole evaluates to
+    //           the `Ok` arm's value; assigning it to `ruleset` gives us
+    //           a plain `RuleSet` to use below (no more wrapper).
+    // Why:      Unwrap the `Result` while presenting a friendly error to
+    //           the user instead of a panic.
+    // TS map:   `try { ruleset = await loadRuleset(...); } catch (e) { console.error(...); process.exit(2); }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let ruleset: RuleSet;
+    // try { ruleset = rulesetResult; }
+    // catch (e) { console.error(`forbidden-strings: ${e}`); process.exit(2); }
+    // ```
     let ruleset = match ruleset_result {
         Ok(r) => r,
         Err(e) => {
@@ -398,6 +573,24 @@ fn main() -> ExitCode {
         }
     }
 
+    // What:     `if let Some(listed) = listed_result { match listed { ... } }`.
+    //           One-arm pattern match: enter the block ONLY when
+    //           `listed_result` is `Some`, binding the inner
+    //           `Result<Vec<String>, String>` to `listed`. Inside, a
+    //           regular `match` extracts `Ok` (replace `files` with the
+    //           walker's output) or `Err` (print, exit 2).
+    // Why:      `listed_result` is `Some(...)` only when `--all` was
+    //           passed; otherwise `None` and we skip silently, leaving
+    //           `files` set to whatever came from positional args.
+    // TS map:   `if (listedResult) { try { files = listedResult; } catch (e) { ... } }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (listedResult !== null) {
+    //   try { files = listedResult; }
+    //   catch (e) { console.error(`forbidden-strings: ${e}`); process.exit(2); }
+    // }
+    // ```
     if let Some(listed) = listed_result {
         match listed {
             Ok(f) => files = f,
@@ -463,7 +656,47 @@ fn main() -> ExitCode {
             if is_skipped_file(p) {
                 return Vec::new();
             }
+            // What:     `let content = fs::read(p).unwrap_or_default();`.
+            //           `fs::read` returns `Result<Vec<u8>, io::Error>`
+            //           (the file's raw bytes or an I/O error).
+            //           `.unwrap_or_default()` extracts the `Ok` value or
+            //           substitutes `Vec::<u8>::default()` (the empty
+            //           vec) and SILENTLY DROPS the error. The implicit
+            //           inferred type is `Vec<u8>`. Sibling pattern:
+            //           `fs::read_to_string` returns `Result<String, _>`
+            //           but requires UTF-8 -- we want raw bytes here
+            //           because rules scan binary files too.
+            // Why:      A file we can't read (permissions, vanished,
+            //           etc.) becomes "empty content" and the scan
+            //           pass produces zero hits for it. Crashing the
+            //           whole walk on one unreadable file is worse.
+            // TS map:   `try { content = await readFile(p); } catch { content = new Uint8Array(); }`.
+            // Gotcha:   `.unwrap_or_default()` SILENTLY discards the
+            //           `io::Error`. We accept that here because the
+            //           per-file scan is best-effort.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // let content: Uint8Array;
+            // try { content = await readFile(p); } catch { content = new Uint8Array(); }
+            // return scanContent(p, content, ruleset);
+            // ```
             let content = fs::read(p).unwrap_or_default();
+            // What:     `scan_content(p, &content, &ruleset)` is a function
+            //           call. `&content` and `&ruleset` are BORROW
+            //           expressions: we lend the vec and ruleset to the
+            //           callee read-only. The callee returns a fresh
+            //           `Vec<String>` of hits which becomes this closure's
+            //           tail expression (no `;` -> implicit return).
+            // Why:      Hand the just-read bytes to the scanner; the
+            //           returned hits become this closure's contribution
+            //           to the parallel-flat_map output.
+            // TS map:   `return scanContent(p, content, ruleset);`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return scanContent(p, content, ruleset);
+            // ```
             scan_content(p, &content, &ruleset)
         })
         .collect();
@@ -484,6 +717,21 @@ fn main() -> ExitCode {
         let _ = writeln!(handle, "{}", h);
     }
 
+    // What:     `if hits.is_empty() { ExitCode::SUCCESS } else { ExitCode::from(1) }`.
+    //           This is an `if`-as-EXPRESSION (not statement) with no
+    //           trailing `;`: its value becomes the function's return.
+    //           `ExitCode::SUCCESS` is the typed constant for status 0;
+    //           `ExitCode::from(1)` constructs the wrapper for status 1.
+    //           Sibling: `ExitCode::FAILURE` is `from(1)` -- we use the
+    //           explicit form to be explicit about "violation" semantics.
+    // Why:      No hits = clean exit; one or more hits = "violation"
+    //           exit so CI marks the run as failed.
+    // TS map:   `return hits.length === 0 ? 0 : 1;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return hits.length === 0 ? 0 : 1;
+    // ```
     if hits.is_empty() {
         ExitCode::SUCCESS
     } else {

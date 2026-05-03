@@ -154,15 +154,75 @@ use resharp::Regex;
 // }
 // ```
 fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String> {
+    // What:     `if let Ok(re) = builder.build() { ... }` is a one-arm
+    //           pattern match against `Result<Regex, Error>`. The block
+    //           runs ONLY when `build()` returned `Ok`, binding the
+    //           inner `Regex` to local `re`. The `Err` arm is implicit:
+    //           when build fails, we fall through past the `if`.
+    //           `RegexBuilder::new(src)` starts a fluent builder;
+    //           `.unicode(false)` flips off unicode-aware semantics for
+    //           speed; `.size_limit` / `.dfa_size_limit` raise the
+    //           internal NFA/DFA caps from 10 MiB to 256 MiB so rules
+    //           with large bounded repetitions (e.g. `[\w-]{138,300}`)
+    //           still compile.
+    // Why:      Try the fast path first; if the rule needs unicode
+    //           features the build fails fast (parse error, no DFA built)
+    //           and we fall through to the unicode-on retry below.
+    // TS map:   `try { return new Regex(src, { unicode: false, ... }); } catch { /* fall through */ }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try {
+    //   const re = buildRegex(src, { unicode: false, sizeLimit: 256 * 1024 * 1024 });
+    //   return { idx, re: { kind: "plain", re } };
+    // } catch { /* try unicode mode */ }
+    // ```
     if let Ok(re) = regex::bytes::RegexBuilder::new(src)
         .unicode(false)
         .size_limit(256 * 1024 * 1024)
         .dfa_size_limit(256 * 1024 * 1024)
         .build()
     {
+        // What:     `return Ok(RegexRule { idx, re: CompiledRegex::Plain(re) });`
+        //           early-returns the success variant. `Ok(...)` wraps
+        //           into the success arm of `Result`. `RegexRule { ... }`
+        //           is a struct literal -- field-init shorthand `idx` is
+        //           Rust sugar for `idx: idx`. `CompiledRegex::Plain(re)`
+        //           constructs the `Plain` variant of the `CompiledRegex`
+        //           enum, wrapping the just-compiled `regex::bytes::Regex`.
+        // Why:      Hand the freshly compiled rule back to the caller as
+        //           a success result.
+        // TS map:   `return { idx, re: { kind: "plain", re } };` (with
+        //           throwing-style errors instead of `Result`).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return { idx, re: { kind: "plain", re } };
+        // ```
         return Ok(RegexRule { idx, re: CompiledRegex::Plain(re) });
     }
     // Fall back to unicode-aware mode for rules with unicode features.
+    // What:     `builder.build().map(|re| ...).map_err(|e| ...)` is a
+    //           method chain on `Result`. `.map(closure)` transforms the
+    //           `Ok` payload via the closure; `.map_err(closure)`
+    //           transforms the `Err` payload. The result is still a
+    //           `Result`, but with the success type now `RegexRule` and
+    //           the error type now `String`. The `|re|` and `|e|` syntax
+    //           is Rust's closure form (TS arrow `(re) => ...`).
+    // Why:      We want the success path to produce a `RegexRule` and
+    //           the failure path to produce a human-readable error string
+    //           with the rule's line index for diagnostics.
+    // TS map:   `try { return { ok: true, value: { idx, re: ... } }; } catch (e) { return { ok: false, error: ... } }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try {
+    //   const re = buildRegex(src, { unicode: true, sizeLimit: 256 * 1024 * 1024 });
+    //   return { idx, re: { kind: "plain", re } };
+    // } catch (e) {
+    //   throw new Error(`rule on line ${idx} (regex): ${e}`);
+    // }
+    // ```
     regex::bytes::RegexBuilder::new(src)
         .unicode(true)
         .size_limit(256 * 1024 * 1024)
@@ -205,16 +265,90 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
         t_phase = now;
     };
 
+    // What:     `fs::read_to_string(path).map_err(|e| ...)?`. `read_to_string`
+    //           returns `Result<String, io::Error>`. `.map_err(closure)`
+    //           transforms the error type from `io::Error` into our
+    //           `String` error type via `format!`. The trailing `?`
+    //           operator UNWRAPS the success value or PROPAGATES the
+    //           error: if `Result` is `Ok(v)`, `?` evaluates to `v`;
+    //           if `Err(e)`, the function early-returns `Err(e)` from
+    //           THIS function. `?` is Rust's "throw the error if any"
+    //           operator (only legal when the surrounding function
+    //           returns a compatible `Result`).
+    // Why:      Slurp the rules file into memory; on I/O failure,
+    //           surface a friendly message and abort the load.
+    // TS map:   `const content = await readFile(path, "utf8").catch(e => { throw new Error(`read rules ${path}: ${e}`); });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let content: string;
+    // try { content = await readFile(path, "utf8"); }
+    // catch (e) { throw new Error(`read rules ${path}: ${e}`); }
+    // ```
     let content = fs::read_to_string(path)
         .map_err(|e| format!("read rules {}: {}", path, e))?;
     phase("0 read_rules_file");
 
     // Phase 1: sequential classification. Cheap (string ops only).
+    // What:     `let mut literal_specs: Vec<(usize, String)> = Vec::new();`
+    //           allocates an empty growable vector of TUPLES. `(usize,
+    //           String)` is an anonymous tuple type -- a fixed-size,
+    //           positional product of a `usize` and an owned `String`.
+    //           Sibling: `Vec<RuleSpec>` would use a named struct;
+    //           we use a tuple here because the two fields are always
+    //           accessed together and never need named accessors.
+    // Why:      Pair each rule's line index with its literal text for
+    //           later AC building; line index is needed for diagnostics.
+    // TS map:   `const literalSpecs: Array<[number, string]> = [];`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const literalSpecs: Array<[number, string]> = [];
+    // const regexSpecs: Array<[number, string]> = [];
+    // ```
     let mut literal_specs: Vec<(usize, String)> = Vec::new();
     let mut regex_specs: Vec<(usize, String)> = Vec::new();
     let mut line_idx: usize = 0;
+    // What:     `for line in content.lines() { ... }` iterates the
+    //           string by lines. `content.lines()` returns an iterator
+    //           of `&str` slices, each one a borrowed view into
+    //           `content` with no trailing `\n`. Inside the loop, `line`
+    //           is `&str`; we don't take ownership.
+    // Why:      Process the rules file one line at a time, classifying
+    //           each into the literal bucket, the regex bucket, or
+    //           ignored (blank/comment).
+    // TS map:   `for (const line of content.split("\n")) { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const line of content.split("\n")) {
+    //   lineIdx += 1;
+    //   const parsed = parseRuleSource(line);
+    //   if (parsed?.kind === "literal") literalSpecs.push([lineIdx, parsed.text]);
+    //   else if (parsed?.kind === "regex") regexSpecs.push([lineIdx, parsed.src]);
+    // }
+    // ```
     for line in content.lines() {
         line_idx += 1;
+        // What:     `match parse_rule_source(line) { Some(ParsedRule::Literal(lit)) => ..., Some(ParsedRule::Regex(src)) => ..., None => {} }`.
+        //           A nested pattern match: the outer `Some(...)`
+        //           extracts the present variant of `Option<ParsedRule>`,
+        //           and inside that the nested `ParsedRule::Literal(lit)`
+        //           or `ParsedRule::Regex(src)` extracts the enum
+        //           variant's payload into a fresh local. The `None =>
+        //           {}` arm is required for completeness -- Rust matches
+        //           must be exhaustive -- and produces no work (empty
+        //           block).
+        // Why:      Route each parsed line to its destination bucket;
+        //           drop unparseable / blank / comment lines silently.
+        // TS map:   `if (parsed?.kind === "literal") ...; else if (parsed?.kind === "regex") ...;`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const parsed = parseRuleSource(line);
+        // if (parsed?.kind === "literal") literalSpecs.push([lineIdx, parsed.text]);
+        // else if (parsed?.kind === "regex") regexSpecs.push([lineIdx, parsed.src]);
+        // ```
         match parse_rule_source(line) {
             Some(ParsedRule::Literal(lit)) => literal_specs.push((line_idx, lit)),
             Some(ParsedRule::Regex(src)) => regex_specs.push((line_idx, src)),
@@ -223,6 +357,22 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     }
 
     if literal_specs.is_empty() && regex_specs.is_empty() {
+        // What:     `Err("no rules loaded".to_string())`. `Err(...)` is
+        //           the failure variant of `Result`; the literal
+        //           `"no rules loaded"` is `&'static str` (a borrowed
+        //           slice of the binary's read-only string table).
+        //           `.to_string()` allocates a fresh OWNED `String`
+        //           copy. Sibling: `&str` would not satisfy the
+        //           function's `Result<_, String>` signature -- the
+        //           caller may keep the error past our stack frame.
+        // Why:      Empty rules file is a configuration error; surface
+        //           it instead of silently scanning nothing.
+        // TS map:   `throw new Error("no rules loaded");`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // throw new Error("no rules loaded");
+        // ```
         return Err("no rules loaded".to_string());
     }
 
@@ -242,6 +392,36 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     // default 10 MiB cap. 256 MiB has room for any realistic
     // secret-detection pattern in practice; this is RAM, not disk,
     // so the cap is per-process and disposed when the scanner exits.
+    // What:     `regex_specs.par_iter().map(|(idx, src)| { ... }).collect::<Result<Vec<_>, _>>()?`.
+    //           Step by step:
+    //           - `.par_iter()` borrows the vec as a parallel iterator
+    //             (rayon work-stealing across cores).
+    //           - `.map(|(idx, src)| { ... })` runs the closure on each
+    //             element. The closure params destructure the
+    //             `&(usize, String)` tuple into `idx: &usize` and
+    //             `src: &String`. The closure returns
+    //             `Result<RegexRule, String>` per element.
+    //           - `.collect::<Result<Vec<_>, _>>()` materializes back
+    //             into a SINGLE `Result`: either `Ok(Vec<RegexRule>)`
+    //             with every per-element success, OR the FIRST `Err`
+    //             encountered (short-circuit). The turbofish `::<...>`
+    //             tells `collect` the target type since otherwise the
+    //             call is ambiguous; `Vec<_>` lets the inner type infer.
+    //           - The trailing `?` unwraps `Ok` or propagates `Err`.
+    // Why:      Compile every regex rule in parallel and bubble up the
+    //           first compile failure as a single error.
+    // TS map:   `const regexRules = await Promise.all(regexSpecs.map(([idx, src]) => uses_set_algebra(src) ? Regex.new(src) : compilePlainRule(src, idx)));`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const regexRules: RegexRule[] = await Promise.all(regexSpecs.map(([idx, src]) => {
+    //   if (usesSetAlgebra(src)) {
+    //     try { return { idx, re: { kind: "resharp", re: new Regex(src) } }; }
+    //     catch (e) { throw new Error(`rule on line ${idx} (resharp): ${e}`); }
+    //   }
+    //   return compilePlainRule(src, idx);
+    // }));
+    // ```
     let regex_rules: Vec<RegexRule> = regex_specs
         .par_iter()
         .map(|(idx, src)| {
@@ -374,6 +554,28 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     // extractable prefix. If every regex rule had a prefix, this is
     // empty -- and `residual_combined` becomes `None`, removing the
     // resharp lazy-DFA pass from the per-file hot path entirely.
+    // What:     `regex_prefixes.iter().enumerate().filter_map(|(pos, p)| ... ).collect()`.
+    //           - `.iter()` is a SEQUENTIAL borrowed iterator (no rayon).
+    //           - `.enumerate()` adapts each item `&Option<...>` into a
+    //             `(usize, &Option<...>)` pair where the `usize` is the
+    //             0-based position.
+    //           - `.filter_map(closure)` is "filter + map at once": the
+    //             closure returns `Option<usize>`; `Some(v)` keeps `v`,
+    //             `None` drops the element. We test `p.is_none()` and
+    //             keep the position when the prefix-extraction returned
+    //             None (= residual).
+    //           - `.collect()` materialises into `Vec<usize>` (the
+    //             explicit type annotation guides the inference).
+    // Why:      We need a list of regex_rules indices whose required
+    //           prefix could not be extracted; those become residual
+    //           shards.
+    // TS map:   `const residualPositions = regexPrefixes.flatMap((p, pos) => p === null ? [pos] : []);`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const residualPositions: number[] = [];
+    // regexPrefixes.forEach((p, pos) => { if (p === null) residualPositions.push(pos); });
+    // ```
     let residual_positions: Vec<usize> = regex_prefixes
         .iter()
         .enumerate()
@@ -389,8 +591,37 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     // pattern-count constant in resharp). The right architecture is
     // therefore runtime-adaptive sharding rather than a hardcoded shard
     // size.
+    // What:     `build_residual_shards(&residual_positions, &regex_specs)?`.
+    //           Two BORROW arguments (`&...`) -- we lend the slices
+    //           read-only, the callee doesn't take ownership. The `?`
+    //           operator unwraps the returned `Result<Vec<ResidualShard>, String>`:
+    //           `Ok(v)` becomes the bound value, `Err(e)` early-returns
+    //           from `load_ruleset` with that error.
+    // Why:      Compute the sharded residual gates from the positions
+    //           that didn't make it onto the AC fast path; surface any
+    //           shard-build failure to the caller.
+    // TS map:   `const residualShards = await buildResidualShards(residualPositions, regexSpecs);`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const residualShards = buildResidualShards(residualPositions, regexSpecs);
+    // ```
     let residual_shards = build_residual_shards(&residual_positions, &regex_specs)?;
     phase("4 residual_shards");
 
+    // What:     `Ok(RuleSet { ac, ac_meta, ac_ci, ac_meta_ci, regex_rules, residual_shards })`
+    //           constructs the success variant of `Result`, wrapping a
+    //           freshly built `RuleSet`. The struct literal uses
+    //           field-init shorthand: each name is both the field
+    //           name AND the local variable name, so `ac` is sugar for
+    //           `ac: ac`. No trailing `;` -- this is the function's
+    //           tail expression, so its value becomes the return.
+    // Why:      Hand the assembled ruleset back to the caller.
+    // TS map:   `return { ac, acMeta, acCi, acMetaCi, regexRules, residualShards };`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return { ac, acMeta, acCi, acMetaCi, regexRules, residualShards };
+    // ```
     Ok(RuleSet { ac, ac_meta, ac_ci, ac_meta_ci, regex_rules, residual_shards })
 }
