@@ -50,6 +50,12 @@ These numbers eliminate any solution with significant per-invocation startup cos
 or per-file constant overhead --
 1k rules and 2.7k files multiply small constants into seconds.
 
+Measured performance against the shipped binary lives in
+`packages/dev-script/forbidden-strings/PERF.md`.
+As of 2026-05-02 the implementation is ~300x under the full-repo budget,
+so the budgets above describe upper bounds the design honors with comfortable headroom,
+not targets the implementation is striving toward.
+
 ## Decision: hk + Rust scanner using resharp with plain-text out-of-band deny-list
 
 Adopt **hk** (`https://hk.jdx.dev/`, `jdx/hk`) as the git hook runner

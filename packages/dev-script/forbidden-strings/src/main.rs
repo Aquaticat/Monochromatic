@@ -43,8 +43,13 @@ mod walk;
 use std::env;
 
 // What:     `use std::fs;` imports the filesystem module for `fs::read`
-//           inside the parallel-I/O Phase A.
-// Why:      We slurp every input file into memory up front.
+//           inside the per-thread fused read+scan loop.
+// Why:      We slurp every input file into memory and scan it.
+//           `fs::read` is empirically faster than `mmap`-based access
+//           on this workload (many small files; per-file VMA setup
+//           cost dominates the saved alloc) -- the E2 mmap experiment
+//           regressed wall time by 35% on Mono and 43% on the Linux
+//           kernel. See PERF.md "Mmap experiment (rejected)".
 // TS map:   `import * as fs from "node:fs";`.
 //
 // In TS you'd write (pseudocode):
@@ -107,6 +112,61 @@ use crate::rules::load_ruleset;
 use crate::scan::scan_content;
 use crate::walk::list_files;
 
+// What:     `fn is_skipped_file(path: &str) -> bool` returns true when
+//           the file's basename is one of the scanner's own rule
+//           inputs or the upstream-vendored source TOML.
+//           `Path::new(path).file_name()` returns `Option<&OsStr>` (the
+//           last path component, or None for paths ending in `..` or
+//           `/`); `.and_then(|s| s.to_str())` lifts that into
+//           `Option<&str>` if it's valid UTF-8; `.unwrap_or("")` falls
+//           back to the empty string when both prior calls returned
+//           `None`. `matches!` is a macro that returns `true` if the
+//           value matches any one of the listed literal patterns.
+// Why:      The scanner reads its rule file then walks the working
+//           tree. Several files in the working tree ARE the rule
+//           definitions themselves (or their upstream source). If any
+//           of them end up in the scanned set, every rule that matches
+//           a literal in its own definition would self-match.
+//           Specifically:
+//             - `forbidden-strings.local.example.txt` (committed)
+//               contains rules like `/bedrock-api-key-...{base64}/`
+//               whose body is a literal substring of the rule itself.
+//             - `forbidden-strings.local.txt` is the runtime rule file.
+//             - `forbidden-strings.append.local.txt` is the per-repo
+//               additions file.
+//             - `betterleaks-default-config.toml` is the upstream
+//               provenance bundled under `data/`; it contains example
+//               literals (e.g. `AIza...` GCP-key shapes used by an
+//               allowlist) that the ported rules detect.
+//           Skip all four basenames unconditionally so `--all` runs
+//           don't fire on the scanner's own infrastructure.
+// TS map:   `function isSkippedFile(path: string): boolean { return [...names].includes(basename(path)); }`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { basename } from "node:path";
+// function isSkippedFile(path: string): boolean {
+//   const name = basename(path);
+//   return name === "forbidden-strings.local.example.txt"
+//       || name === "forbidden-strings.local.txt"
+//       || name === "forbidden-strings.append.local.txt"
+//       || name === "betterleaks-default-config.toml";
+// }
+// ```
+fn is_skipped_file(path: &str) -> bool {
+    let basename = std::path::Path::new(path)
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("");
+    matches!(
+        basename,
+        "forbidden-strings.local.example.txt"
+            | "forbidden-strings.local.txt"
+            | "forbidden-strings.append.local.txt"
+            | "betterleaks-default-config.toml"
+    )
+}
+
 // What:     `fn main() -> ExitCode` is the program entry point. `ExitCode`
 //           becomes the OS exit status when `main` returns.
 // Why:      Coordinate arg parsing, ruleset loading, two-phase parallel
@@ -142,9 +202,89 @@ fn main() -> ExitCode {
         } else if a == "--all" {
             all = true;
         } else if a == "--help" || a == "-h" {
-            println!("forbidden-strings --rules <path> [--all] [FILE...]");
+            // What:     `concat!` is a compile-time macro joining string
+            //           literals into a single `&'static str`. The `!`
+            //           marks it as a macro call, not a function call.
+            //           `env!("CARGO_PKG_VERSION")` reads `version` from
+            //           Cargo.toml at compile time and inlines it as a
+            //           string literal.
+            // Why:      Print a single static help string with the version
+            //           baked in, no runtime allocation, no formatter.
+            // TS map:   The TS analogue is template-literal concatenation
+            //           plus `process.env.npm_package_version` (read at
+            //           build time via a bundler define), but TS has no
+            //           macro system -- the closest mental model is
+            //           "compiled-in string template".
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const VERSION = process.env.npm_package_version!;
+            // const HELP = `forbidden-strings ${VERSION}\n...`;
+            // console.log(HELP);
+            // ```
+            println!(
+                "{}",
+                concat!(
+                    "forbidden-strings ", env!("CARGO_PKG_VERSION"), "\n",
+                    "Linear-time deny-list scanner for Git repos.\n",
+                    "\n",
+                    "USAGE:\n",
+                    "    forbidden-strings [--rules <PATH>] [--all] [FILE...]\n",
+                    "\n",
+                    "FLAGS:\n",
+                    "    --rules <PATH>    Path to the rule file (one rule per line).\n",
+                    "                      Overrides FORBIDDEN_STRINGS_RULES.\n",
+                    "                      Default: ./forbidden-strings.local.txt\n",
+                    "    --all             Scan every git-tracked file under cwd.\n",
+                    "                      Respects .gitignore via `git ls-files`.\n",
+                    "    -h, --help        Print this help and exit.\n",
+                    "    -V, --version     Print version and exit.\n",
+                    "\n",
+                    "ENV:\n",
+                    "    FORBIDDEN_STRINGS_RULES    Default rules path; --rules wins if both are set.\n",
+                    "                               If unset, falls back to ./forbidden-strings.local.txt\n",
+                    "\n",
+                    "EXIT CODES:\n",
+                    "    0    No violations.\n",
+                    "    1    One or more violations (printed to stderr, redacted).\n",
+                    "    2    Usage error or rule-file error.\n",
+                    "\n",
+                    "EXAMPLES:\n",
+                    "    # Scan a few files\n",
+                    "    forbidden-strings --rules ./rules.txt src/main.ts README.md\n",
+                    "\n",
+                    "    # Scan the whole working tree\n",
+                    "    FORBIDDEN_STRINGS_RULES=./rules.txt forbidden-strings --all\n",
+                    "\n",
+                    "RULE FORMAT:\n",
+                    "    Bare line              -> case-sensitive literal substring\n",
+                    "    /PATTERN/FLAGS         -> regex (resharp; supports A&B, ~(A))\n",
+                    "    # ...                  -> comment\n",
+                    "    Empty line             -> skipped\n",
+                    "\n",
+                    "OUTPUT:\n",
+                    "    PATH:LINE:COL_START..COL_END rule=N    (matched substring is NEVER printed)\n",
+                    "\n",
+                    "See README.md for set-algebra rule examples and CI integration.\n",
+                ),
+            );
             return ExitCode::SUCCESS;
-        } else if a.starts_with("--") {
+        } else if a == "--version" || a == "-V" {
+            // What:     Same `concat!` + `env!` trick: compile-time string
+            //           literal, no runtime cost. `env!` panics at compile
+            //           time if `CARGO_PKG_VERSION` is unset, which is
+            //           impossible inside a Cargo build.
+            // Why:      Match `cargo`/`rustc` convention -- `--version`
+            //           prints `<name> <semver>` on stdout.
+            // TS map:   `console.log(`forbidden-strings ${VERSION}`)`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // console.log(`forbidden-strings ${VERSION}`);
+            // ```
+            println!("forbidden-strings {}", env!("CARGO_PKG_VERSION"));
+            return ExitCode::SUCCESS;
+        } else if a.starts_with("--") || a.starts_with("-") && a.len() > 1 {
             eprintln!("unknown flag {}", a);
             return ExitCode::from(2);
         } else {
@@ -153,13 +293,21 @@ fn main() -> ExitCode {
         i += 1;
     }
 
-    let rules_path = match rules_path {
-        Some(p) => p,
-        None => {
-            eprintln!("missing --rules or FORBIDDEN_STRINGS_RULES");
-            return ExitCode::from(2);
-        }
-    };
+    // What:     `unwrap_or_else(|| ...)` returns the inner `Some` value or
+    //           runs the closure to produce a fallback. The closure body
+    //           is a string literal converted to `String` via `.to_string()`.
+    // Why:      Default the rules path to `forbidden-strings.local.txt` in
+    //           cwd when neither `--rules` nor `FORBIDDEN_STRINGS_RULES`
+    //           is set, matching the conventional filename. The loader
+    //           emits a clear "file not found" error if the default
+    //           doesn't exist; we don't pre-check and shadow that error.
+    // TS map:   `rulesPath ?? "forbidden-strings.local.txt"`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const finalRulesPath = rulesPath ?? "forbidden-strings.local.txt";
+    // ```
+    let rules_path = rules_path.unwrap_or_else(|| "forbidden-strings.local.txt".to_string());
 
     // Run `load_ruleset` and `list_files` concurrently when --all is
     // set: rules loading is CPU-bound (regex compile + AC build);
@@ -197,6 +345,26 @@ fn main() -> ExitCode {
         }
     };
 
+    if env::var("FORBIDDEN_STRINGS_DEBUG_BUCKETS").is_ok() {
+        let ac_cs_pat = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rules::AcMeta::RegexPrefix { .. })).count();
+        let ac_cs_lit = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rules::AcMeta::Literal { .. })).count();
+        let ac_ci_pat = ruleset.ac_meta_ci.len();
+        let residual_count: usize = ruleset.residual_shards.iter().map(|s| s.positions.len()).sum();
+        let shard_count = ruleset.residual_shards.len();
+        eprintln!(
+            "forbidden-strings buckets: ac_cs_lit={} ac_cs_regex_prefix={} ac_ci_regex_prefix={} residual={} (in {} shards) regex_rules_total={}",
+            ac_cs_lit, ac_cs_pat, ac_ci_pat, residual_count, shard_count, ruleset.regex_rules.len(),
+        );
+        if env::var("FORBIDDEN_STRINGS_DEBUG_RESIDUAL_LIST").is_ok() {
+            for shard in &ruleset.residual_shards {
+                for &pos in &shard.positions {
+                    let r = &ruleset.regex_rules[pos];
+                    eprintln!("residual rule line={}", r.idx);
+                }
+            }
+        }
+    }
+
     if let Some(listed) = listed_result {
         match listed {
             Ok(f) => files = f,
@@ -207,7 +375,8 @@ fn main() -> ExitCode {
         }
     }
 
-    // Fused read+scan: each rayon thread reads one file's bytes and
+    // Fused read+scan: each rayon thread maps one file's bytes
+    // (via mmap; falls back to `fs::read` if mmap fails) and
     // immediately scans them. The two-phase split that used to live
     // here (Phase A reads, Phase B scans) traded cache locality for
     // a clean separation but produced no measurable speedup -- after
@@ -215,23 +384,52 @@ fn main() -> ExitCode {
     // discard within tens of microseconds. Fusing keeps each file's
     // bytes hot in L1/L2 across the read->scan boundary instead of
     // risking eviction during the materialize-then-iterate round trip.
-    // What:     `files.par_iter().flat_map_iter(|p| { let c = ...; scan_content(p, &c, &rs) }).collect::<Vec<String>>()`
-    //           runs read+scan as one rayon work unit per file. The
-    //           closure's local `Vec<u8>` lives only until the scan
-    //           finishes for that file; rayon work-steals across cores.
-    // Why:      Single pass over the file list, no intermediate Vec of
-    //           (path, content) pairs, no second `par_iter` setup cost.
-    // TS map:   `(await Promise.all(files.map(async (p) => scanContent(p, await fs.promises.readFile(p), rs)))).flat()`.
+    // What:     `files.par_iter().flat_map_iter(|p| { try mmap(p); scan_content(p, &bytes, &rs) }).collect::<Vec<String>>()`
+    //           runs map+scan as one rayon work unit per file. The
+    //           closure's `Mmap` (or `Vec<u8>` fallback) lives only
+    //           until the scan finishes for that file; rayon
+    //           work-steals across cores.
+    // Why:      Mmap saves the alloc + memcpy that `fs::read` does.
+    //           On a hot page cache, that's measurable on `--all`;
+    //           on a cold cache, MADV_SEQUENTIAL lets the kernel
+    //           readahead-pipeline files. Fallback to `fs::read`
+    //           handles the cases mmap can't (empty files, /proc
+    //           entries, character devices).
+    // TS map:   `(await Promise.all(files.map(async (p) => scanContent(p, await readFileFastest(p), rs)))).flat()`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const hits = (await Promise.all(
-    //   files.map(async (p) => scanContent(p, await fs.promises.readFile(p), ruleset))
+    //   files.map(async (p) => scanContent(p, await readFileFastest(p), ruleset))
     // )).flat();
     // ```
     let hits: Vec<String> = files
         .par_iter()
         .flat_map_iter(|p| {
+            // What:     `if is_skipped_file(p) { return Vec::new(); }`
+            //           early-returns an empty `Vec<String>` when the
+            //           file matches the scanner's own rule-file
+            //           naming. `Vec::new()` is the empty vector
+            //           constructor; returning it produces zero hits
+            //           for this file. The closure's overall return
+            //           type is `Vec<String>` (matching what
+            //           `scan_content` returns), so the empty-vector
+            //           early return is type-compatible with the
+            //           normal-path return.
+            // Why:      The example file (committed) and the runtime
+            //           rules file would self-match if scanned (their
+            //           regex bodies contain the very literals they
+            //           detect). Skip them unconditionally so `--all`
+            //           runs are clean.
+            // TS map:   `if (isSkippedFile(p)) return [];`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (isSkippedFile(p)) return [];
+            // ```
+            if is_skipped_file(p) {
+                return Vec::new();
+            }
             let content = fs::read(p).unwrap_or_default();
             scan_content(p, &content, &ruleset)
         })

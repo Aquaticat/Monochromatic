@@ -1,10 +1,12 @@
 amends "package://github.com/jdx/hk/releases/download/v1.44.3/hk@1.44.3#/Config.pkl"
 
-local rulesPath = read?("env:FORBIDDEN_STRINGS_RULES") ?? "forbidden-strings.local.txt"
 local binPath = "packages/dev-script/forbidden-strings/target/release/forbidden-strings"
 
+// The binary resolves rules in order: --rules flag, FORBIDDEN_STRINGS_RULES
+// env var, then ./forbidden-strings.local.txt in cwd. hk inherits the env,
+// so setting FORBIDDEN_STRINGS_RULES upstream (e.g. in CI) Just Works.
 local forbiddenStrings = new Step {
-  check = "\(binPath) --rules \(rulesPath) {{files}}"
+  check = "\(binPath) {{files}}"
 }
 
 hooks {
