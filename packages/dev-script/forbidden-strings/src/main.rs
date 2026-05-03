@@ -51,6 +51,14 @@ use std::env;
 //           cost dominates the saved alloc) -- the E2 mmap experiment
 //           regressed wall time by 35% on Mono and 43% on the Linux
 //           kernel. See PERF.md "Mmap experiment (rejected)".
+//           Thread-local scratch buffers were also tried 2026-05-03;
+//           rayon's nested-parallelism work-stealing (scan_content
+//           uses inner par_iter via prefix-matched and combined-
+//           shard fan-out) re-entered the outer flat_map_iter on
+//           the SAME thread while the buffer was borrowed,
+//           triggering a `RefCell already borrowed` panic. The
+//           per-file alloc cost is dwarfed by the unicode-mode
+//           speedup; not worth the re-entrancy hazard.
 // TS map:   `import * as fs from "node:fs";`.
 //
 // In TS you'd write (pseudocode):
