@@ -353,19 +353,35 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
 // Why:      The AC gate is meant to skip work on no-match files. A
 //           1-byte "prefix" matches almost everywhere, queueing the
 //           full regex `find_all` for nothing.
-// TS map:   `const MIN_PREFIX_LEN = 4;`.
+// TS map:   `const MIN_PREFIX_LEN = 3;`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const MIN_PREFIX_LEN = 4;
+// const MIN_PREFIX_LEN = 3;
 // ```
-const MIN_PREFIX_LEN: usize = 4;
+// 2026-05-03: lowered from 4 -> 3 after bench. Drains 13 of 28 residual
+// rules whose leading literal is exactly 3 chars (`xox`, `pat`, `sat`,
+// `ghu`/`ghs`, `r8_`, `hf_`, `SG.`, `EAA`, `.ey`, `A3-`, `A3T`). The
+// trade-off is more spurious AC fires for files containing those 3-byte
+// substrings (e.g. `xox` appears in code as substrings of `xxxoxxx`),
+// each fire enqueues a `find_all` -- but `find_all` on a clean file is
+// 5-10 us per rule, and these 3-byte substrings are rare in non-secret
+// content. Net win: ~13 fewer unconditional residual scans per file,
+// and the AC build / per-file scan cost grows negligibly. Two-byte
+// prefixes (`SK`, `s.`) are NOT drained because they're common enough in
+// real code (`static`, `sk`, `s.something`) that the spurious-AC-fire
+// cost exceeds the residual-scan saving.
+const MIN_PREFIX_LEN: usize = 3;
 
-// What:     `pub fn extract_gating_substrings(src: &str) -> Option<(Vec<String>, bool)>`
-//           returns a Vec of substrings such that ANY successful regex
-//           match must contain AT LEAST ONE of them, plus a single ci
-//           flag for the whole rule (set when a leading `(?i)` was
-//           stripped). Returns `None` if the regex cannot be soundly
+// What:     `pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>>`
+//           returns a Vec of (substring, ci) pairs such that ANY successful
+//           regex match must contain AT LEAST ONE of them. The `ci` flag
+//           is per-substring -- determined by the scoped-flag context
+//           active at the point of extraction. A `(?i:body)` scope
+//           tags its substrings ci=true; a `(?-i:body)` scope tags
+//           them ci=false; absent flag context inherits from the
+//           outer rule's leading `(?i)` strip (default false).
+//           Returns `None` if the regex cannot be soundly
 //           gated -- e.g. a top-level alternation where one branch has
 //           no required substring at all, or the longest substring per
 //           branch falls below `MIN_PREFIX_LEN`.
@@ -379,18 +395,19 @@ const MIN_PREFIX_LEN: usize = 4;
 //           fires if any AC pattern in its set matches" semantics
 //           drains alternation-shape rules out of the residual gate
 //           and onto the AC fast path. PERF.md "Open opportunities".
-// TS map:   `function extractGatingSubstrings(src: string): { subs: string[]; ci: boolean } | null`.
+// TS map:   `function extractGatingSubstrings(src: string): Array<{ sub: string; ci: boolean }> | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function extractGatingSubstrings(src: string): { subs: string[]; ci: boolean } | null {
-//   // 1. Strip leading `(?flags)`; record `ci`.
+// function extractGatingSubstrings(src: string): Array<{ sub: string; ci: boolean }> | null {
+//   // 1. Strip leading `(?flags)`; record `ci` as the outer-scope context.
 //   // 2. Strip leading anchors `^`, `\b`, `\A`.
-//   // 3. Recurse via extractScope on the remainder, splitting top-level `|`.
+//   // 3. Recurse via extractScope on the remainder, threading `ci` through
+//   //    so scoped-flag groups can override it for their bodies.
 //   // 4. Reject if any returned substring is shorter than MIN_PREFIX_LEN.
 // }
 // ```
-pub fn extract_gating_substrings(src: &str) -> Option<(Vec<String>, bool)> {
+pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
     let mut s = src;
     let mut ci = false;
 
@@ -508,7 +525,7 @@ pub fn extract_gating_substrings(src: &str) -> Option<(Vec<String>, bool)> {
     // if (subs.some((p) => p.length < MIN_PREFIX_LEN)) return null;
     // return { subs, ci };
     // ```
-    let subs = extract_scope(s)?;
+    let subs = extract_scope(s, ci)?;
     if subs.is_empty() {
         return None;
     }
@@ -524,22 +541,23 @@ pub fn extract_gating_substrings(src: &str) -> Option<(Vec<String>, bool)> {
     // Why:      Better to let resharp handle the whole rule than to
     //           emit an AC pattern that fires constantly while still
     //           missing matches.
-    // TS map:   `if (subs.some((p) => p.length < MIN_PREFIX_LEN)) return null;`.
+    // TS map:   `if (subs.some((p) => p.sub.length < MIN_PREFIX_LEN)) return null;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (subs.some((p) => p.length < MIN_PREFIX_LEN)) return null;
+    // if (subs.some((p) => p.sub.length < MIN_PREFIX_LEN)) return null;
     // ```
-    if subs.iter().any(|p| p.len() < MIN_PREFIX_LEN) {
+    if subs.iter().any(|(p, _)| p.len() < MIN_PREFIX_LEN) {
         return None;
     }
-    Some((subs, ci))
+    Some(subs)
 }
 
-// What:     `fn extract_scope(s: &str) -> Option<Vec<String>>` splits
-//           `s` on top-level `|` (respecting paren depth, character
+// What:     `fn extract_scope(s: &str, ci: bool) -> Option<Vec<(String, bool)>>`
+//           splits `s` on top-level `|` (respecting paren depth, character
 //           classes, and `\X` escapes) and returns the union of each
-//           branch's required-substring set. Returns `None` if any
+//           branch's required-substring set, each tagged with the
+//           ci context active when extracted. Returns `None` if any
 //           branch's `extract_branch` returns None -- soundness demands
 //           that every branch be covered by at least one registered
 //           substring. A branch with no required content (e.g. `.*`,
@@ -550,27 +568,28 @@ pub fn extract_gating_substrings(src: &str) -> Option<(Vec<String>, bool)> {
 //           AND from inside a group body via `skip_atom_with_extract`'s
 //           recursion. The body of `(?:foo|bar)` has its own top-level
 //           alternation; calling `extract_scope` on it splits "foo|bar"
-//           and returns ["foo", "bar"].
-// TS map:   `function extractScope(s: string): string[] | null`.
+//           and returns [("foo", ci), ("bar", ci)] inheriting the
+//           caller's ci context.
+// TS map:   `function extractScope(s: string, ci: boolean): Array<{ sub: string; ci: boolean }> | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function extractScope(s: string): string[] | null {
+// function extractScope(s: string, ci: boolean): Array<{ sub: string; ci: boolean }> | null {
 //   const branches = splitTopLevelAlternations(s);
-//   const out: string[] = [];
+//   const out: Array<{ sub: string; ci: boolean }> = [];
 //   for (const branch of branches) {
-//     const branchSubs = extractBranch(branch);
+//     const branchSubs = extractBranch(branch, ci);
 //     if (branchSubs === null) return null;
 //     out.push(...branchSubs);
 //   }
 //   return out;
 // }
 // ```
-fn extract_scope(s: &str) -> Option<Vec<String>> {
+fn extract_scope(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
     let branches = split_top_level_alternations(s);
-    let mut out: Vec<String> = Vec::new();
+    let mut out: Vec<(String, bool)> = Vec::new();
     for branch in branches {
-        let branch_subs = extract_branch(branch)?;
+        let branch_subs = extract_branch(branch, ci)?;
         out.extend(branch_subs);
     }
     if out.is_empty() {
@@ -579,37 +598,41 @@ fn extract_scope(s: &str) -> Option<Vec<String>> {
     Some(out)
 }
 
-// What:     `fn extract_branch(s: &str) -> Option<Vec<String>>` walks
-//           one branch (no top-level `|`), returning the BEST candidate
+// What:     `fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>>`
+//           walks one branch (no top-level `|`), returning the BEST candidate
 //           gating set. A "candidate" is either a single literal run
-//           (e.g. "keyword") or the multi-substring set returned by a
-//           required group's body (e.g. ["foo", "bar"] from `(?:foo|bar)`).
-//           "Best" is the most-selective: highest minimum substring
-//           length across the candidate's elements.
+//           (e.g. ("keyword", ci)) or the multi-substring set returned
+//           by a required group's body (e.g. [("foo", ci), ("bar", ci)]
+//           from `(?:foo|bar)`). "Best" is the most-selective: highest
+//           minimum substring length across the candidate's elements.
+//           The `ci` parameter is the scoped-flag context; `current_lit`
+//           literals walked at this level inherit it. A scoped-flag
+//           group inside the branch may yield substrings tagged with a
+//           different ci -- those carry their own per-substring ci.
 // Why:      A single branch may have multiple required structures in
 //           sequence (`prefix(?:foo|bar)suffix`). The walker only needs
 //           ONE of them as the rule's gate -- pick the most selective
 //           to minimise spurious AC fires. Choosing the longest single
 //           literal beats a low-min alternation; choosing a long-min
 //           alternation beats a short literal.
-// TS map:   `function extractBranch(s: string): string[] | null`.
+// TS map:   `function extractBranch(s: string, ci: boolean): Array<{ sub: string; ci: boolean }> | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function extractBranch(s: string): string[] | null {
-//   let best: string[] = [];
+// function extractBranch(s: string, ci: boolean): Array<{ sub: string; ci: boolean }> | null {
+//   let best: Array<{ sub: string; ci: boolean }> = [];
 //   let bestScore = 0;
 //   let current = "";
 //   while (s.length > 0) {
-//     // walk literals into current; pick best between current-as-singleton and prior best
-//     // skip atom (class/group/escape); recurse into group body via extractScope
+//     // walk literals into current at outer ci; pick best between current-as-singleton and prior best
+//     // skip atom (class/group/escape); recurse into group body via extractScope with appropriate ci
 //   }
 //   return best.length > 0 ? best : null;
 // }
 // ```
-fn extract_branch(s: &str) -> Option<Vec<String>> {
+fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
     let mut s = s;
-    let mut best: Vec<String> = Vec::new();
+    let mut best: Vec<(String, bool)> = Vec::new();
     let mut best_score: usize = 0;
     let mut current_lit = String::new();
     loop {
@@ -617,7 +640,7 @@ fn extract_branch(s: &str) -> Option<Vec<String>> {
         if !current_lit.is_empty() {
             let score = current_lit.len();
             if score > best_score {
-                best = vec![std::mem::take(&mut current_lit)];
+                best = vec![(std::mem::take(&mut current_lit), ci)];
                 best_score = score;
             } else {
                 current_lit.clear();
@@ -643,10 +666,10 @@ fn extract_branch(s: &str) -> Option<Vec<String>> {
         if s.starts_with('|') {
             break;
         }
-        if let Some((rest, contribution)) = skip_atom_with_extract(s) {
+        if let Some((rest, contribution)) = skip_atom_with_extract(s, ci) {
             s = rest;
             if let Some(candidate) = contribution {
-                let score = candidate.iter().map(|x| x.len()).min().unwrap_or(0);
+                let score = candidate.iter().map(|(x, _)| x.len()).min().unwrap_or(0);
                 if score > best_score {
                     best = candidate;
                     best_score = score;
@@ -834,22 +857,30 @@ fn walk_literal_bytes<'a>(input: &'a str, out: &mut String, remainder: &mut &'a 
     *remainder = &input[i..];
 }
 
-// What:     `fn skip_atom_with_extract(s) -> Option<(&str, Option<Vec<String>>)>`
+// What:     `fn skip_atom_with_extract(s, ci) -> Option<(&str, Option<Vec<(String, bool)>>)>`
 //           recognizes one head atom, advances past it AND its
-//           quantifier, and optionally returns a Vec of substrings
-//           extracted from a `(?:body)` / `(body)` group whose body's
-//           recursive `extract_scope` returned `Some`. Returns `None`
-//           only when the head is not a recognised atom (so the outer
-//           walker should stop).
+//           quantifier, and optionally returns a Vec of (substring, ci)
+//           pairs extracted from a `(?:body)` / `(body)` / `(?flags:body)`
+//           group whose body's recursive `extract_scope` returned
+//           `Some`. Returns `None` only when the head is not a
+//           recognised atom (so the outer walker should stop).
 //
 //           Recognised heads:
 //           - `[ ... ]<quantifier>` (character class with any quantifier)
 //           - `\d|\w|\s|\D|\W|\S<quantifier>` (perl-class escape with any quantifier)
-//           - `(?: body )<quantifier>` and `( body )<quantifier>`
+//           - `(?: body )<quantifier>` and `( body )<quantifier>`:
 //             non-capturing or capturing group; recurses via
-//             `extract_scope` into body to pull out a required-substring
-//             set (which may include multiple alternatives if the body
-//             is itself an alternation).
+//             `extract_scope` into body with the SAME ci as the caller
+//             (no flag change at this scope).
+//           - `(?flags)`: inline flag group, no body. Transparent atom,
+//             no extraction.
+//           - `(?flags:body)<quantifier>`: scoped flag group. Computes
+//             the body's effective ci by applying `i` / `-i` flags to
+//             the caller's ci, then recurses into body via
+//             `extract_scope` with the new ci. Each substring extracted
+//             from the body is tagged with the body's effective ci, so
+//             a scoped `(?-i:foo)` inside an outer `(?i)` correctly
+//             registers `foo` in the case-sensitive AC bucket.
 //
 //           A REQUIRED quantifier is `+`, `{N}`, `{N,}`, or `{N,M}`
 //           with N>=1, or absence of quantifier. Optional quantifiers
@@ -859,17 +890,15 @@ fn walk_literal_bytes<'a>(input: &'a str, out: &mut String, remainder: &mut &'a 
 //           body may match zero times).
 // Why:      Multi-substring contribution from a group body is the key
 //           win: `(?:foo|bar)keyword` -- the `(?:...)` body returns
-//           ["foo", "bar"], an alternation gate. The walker compares
-//           that against "keyword" and picks whichever is more
-//           selective for THIS branch's best-candidate slot. PERF.md
-//           "multi-substring AC gating per rule".
-// TS map:   `function skipAtomWithExtract(s: string): { remainder: string; extracted: string[] | null } | null`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function skipAtomWithExtract(s: string): { remainder: string; extracted: string[] | null } | null { /* ... */ }
-// ```
-fn skip_atom_with_extract(s: &str) -> Option<(&str, Option<Vec<String>>)> {
+//           [("foo", ci), ("bar", ci)], an alternation gate. The walker
+//           compares that against "keyword" and picks whichever is
+//           more selective for THIS branch's best-candidate slot.
+//           Scoped-flag handling drains betterleaks-shape rules whose
+//           required keyword sits inside a `(?-i:...)` or `(?i:...)`
+//           scope (e.g. L135 `(?-i:[Mm]eraki|MERAKI)` -> drains to cs
+//           AC under `Meraki`/`meraki`/`MERAKI`).
+// TS map:   `function skipAtomWithExtract(s: string, ci: boolean): { remainder: string; extracted: Array<{sub:string; ci:boolean}> | null } | null`.
+fn skip_atom_with_extract(s: &str, ci: bool) -> Option<(&str, Option<Vec<(String, bool)>>)> {
     let bytes = s.as_bytes();
     if bytes.is_empty() {
         return None;
@@ -941,18 +970,41 @@ fn skip_atom_with_extract(s: &str) -> Option<(&str, Option<Vec<String>>)> {
                 return Some((&s[j + 1..], None));
             }
             // Scoped `(?flags:body)` -- non-zero flag run followed by
-            // `:`. The body's flag context may invert outer ci, so we
-            // can't safely merge the body's required substring into
-            // the outer's accumulator. Skip without extraction; the
-            // rule may land in residual if its only required substring
-            // lives inside such a scope. The few rules using this form
-            // (~5% of the betterleaks corpus) are the cost of keeping
-            // ci as a single bool per rule.
+            // `:`. Compute the body's effective ci by applying the
+            // flag chars to the caller's ci. Standard PCRE/regex_syntax
+            // semantics: a `-` divides set-flags from clear-flags;
+            // `i` sets case-insensitive, `-i` clears it. Other flags
+            // (`s`, `m`, `x`, `U`) don't affect ci tracking and are
+            // ignored for the gate purpose. We then recurse into the
+            // body via `extract_scope` with body_ci, so each substring
+            // extracted from the body is tagged with the body's
+            // effective ci. This drains residual rules whose required
+            // keyword lives inside a `(?-i:...)` or `(?i:...)` scope.
             if j > 2 && j < bytes.len() && bytes[j] == b':' {
+                let flags = &s[2..j];
+                let mut body_ci = ci;
+                let mut after_dash = false;
+                for fc in flags.bytes() {
+                    if fc == b'-' {
+                        after_dash = true;
+                        continue;
+                    }
+                    if fc == b'i' {
+                        body_ci = !after_dash;
+                    }
+                }
                 let close_idx = find_matching_close_paren(s)?;
+                let body_start = j + 1;
+                let body = &s[body_start..close_idx];
                 let after = &s[close_idx + 1..];
                 let after_quant = skip_any_quantifier(after);
-                return Some((after_quant, None));
+                let quant_required = quantifier_is_required(after);
+                let extraction = if quant_required {
+                    extract_scope(body, body_ci)
+                } else {
+                    None
+                };
+                return Some((after_quant, extraction));
             }
         }
 
@@ -980,7 +1032,7 @@ fn skip_atom_with_extract(s: &str) -> Option<(&str, Option<Vec<String>>)> {
         // extracted = quantRequired ? extractScope(body) : null;
         // ```
         let extraction = if quant_required {
-            extract_scope(body)
+            extract_scope(body, ci)
         } else {
             None
         };
@@ -1356,7 +1408,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     // ```ts
     // const gating = regexSpecs.map(([, src]) => extractGatingSubstrings(src));
     // ```
-    let regex_prefixes: Vec<Option<(Vec<String>, bool)>> = regex_specs
+    let regex_prefixes: Vec<Option<Vec<(String, bool)>>> = regex_specs
         .iter()
         .map(|(_, src)| extract_gating_substrings(src))
         .collect();
@@ -1477,14 +1529,12 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     // }
     // ```
     for (rule_pos, pre) in regex_prefixes.iter().enumerate() {
-        if let Some((subs, ci)) = pre {
-            if *ci {
-                for sub in subs {
+        if let Some(subs) = pre {
+            for (sub, ci) in subs {
+                if *ci {
                     ac_patterns_ci.push(sub.as_str());
                     ac_meta_ci.push(AcMeta::RegexPrefix { rule_pos });
-                }
-            } else {
-                for sub in subs {
+                } else {
                     ac_patterns.push(sub.as_str());
                     ac_meta.push(AcMeta::RegexPrefix { rule_pos });
                 }
