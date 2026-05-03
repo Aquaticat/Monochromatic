@@ -92,7 +92,7 @@ use memchr::memchr_iter;
 // ```ts
 // import { isWordByte, AcMeta, type RuleSet } from "./rules";
 // ```
-use crate::rules::{is_word_byte, AcMeta, RuleSet};
+use crate::rules::{is_word_byte, AcMeta, ResidualShard, RuleSet};
 
 // What:     `pub fn is_likely_binary(content: &[u8]) -> bool` takes a
 //           borrowed byte slice and returns `true` if a NUL byte appears
@@ -519,24 +519,27 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
         hits.extend(regex_hits);
     }
 
-    // Residual bucket: regex rules whose required-literal could NOT be
-    // extracted (pure character classes, alternations starting with
-    // operators, etc.). The bucket is sharded so that a single shard's
-    // combined-alternation Regex stays under resharp's parse cliff (see
-    // `rules.rs::build_residual_shards`). On the hot path each shard's
-    // gate runs a single `is_match` per file; on a true match we
-    // par-iterate that shard's `positions` for the per-rule `find_all`.
-    // When every regex rule has an extractable substring, `residual_shards`
-    // is empty and resharp never runs on the hot path.
+    // Residual bucket: regex rules whose gating substrings could NOT be
+    // extracted. Sharded so each shard's combined-alternation Regex
+    // stays under resharp's parse/algebra cliff (see
+    // `rules.rs::build_residual_shards`). The shard variants:
+    //
+    // - `Single { rule_pos }`: the rule's own Regex IS the gate -- skip
+    //   the redundant gate.is_match and call find_all directly on the
+    //   rule's compiled Regex from `regex_rules`. find_all on a clean
+    //   file is similar cost to is_match; on a matching file it's the
+    //   work we'd do anyway. Net: ~half the per-file scan cost vs the
+    //   original "gate.is_match then rule.find_all" pair.
+    //
+    // - `Combined { gate, positions }`: keep the gate.is_match short-
+    //   circuit so a multi-rule shard fans out to find_all only when
+    //   the gate fires, saving N-1 is_match probes.
     for shard in &rs.residual_shards {
-        if shard.gate.is_match(content).unwrap_or(false) {
-            let regex_hits: Vec<String> = shard
-                .positions
-                .par_iter()
-                .flat_map_iter(|&pos| {
-                    let rr = &rs.regex_rules[pos];
-                    let mut local: Vec<String> = Vec::new();
-                    if let Ok(matches) = rr.re.find_all(content) {
+        match shard {
+            ResidualShard::Single { rule_pos } => {
+                let rr = &rs.regex_rules[*rule_pos];
+                if let Ok(matches) = rr.re.find_all(content) {
+                    if !matches.is_empty() {
                         let li = line_index.get_or_init(|| build_line_index(content));
                         for m in matches {
                             if m.start == m.end {
@@ -548,13 +551,39 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                                 li,
                                 if end > 0 { end - 1 } else { 0 },
                             );
-                            local.push(format_hit(path, line, col_start, col_end, rr.idx));
+                            hits.push(format_hit(path, line, col_start, col_end, rr.idx));
                         }
                     }
-                    local
-                })
-                .collect();
-            hits.extend(regex_hits);
+                }
+            }
+            ResidualShard::Combined { gate, positions } => {
+                if gate.is_match(content).unwrap_or(false) {
+                    let regex_hits: Vec<String> = positions
+                        .par_iter()
+                        .flat_map_iter(|&pos| {
+                            let rr = &rs.regex_rules[pos];
+                            let mut local: Vec<String> = Vec::new();
+                            if let Ok(matches) = rr.re.find_all(content) {
+                                let li = line_index.get_or_init(|| build_line_index(content));
+                                for m in matches {
+                                    if m.start == m.end {
+                                        continue;
+                                    }
+                                    let (line, col_start) = line_and_col_indexed(li, m.start);
+                                    let end = end_in_line_indexed(li, m.start, m.end);
+                                    let (_, col_end) = line_and_col_indexed(
+                                        li,
+                                        if end > 0 { end - 1 } else { 0 },
+                                    );
+                                    local.push(format_hit(path, line, col_start, col_end, rr.idx));
+                                }
+                            }
+                            local
+                        })
+                        .collect();
+                    hits.extend(regex_hits);
+                }
+            }
         }
     }
 

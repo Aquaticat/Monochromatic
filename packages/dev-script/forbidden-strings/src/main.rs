@@ -349,15 +349,23 @@ fn main() -> ExitCode {
         let ac_cs_pat = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rules::AcMeta::RegexPrefix { .. })).count();
         let ac_cs_lit = ruleset.ac_meta.iter().filter(|m| matches!(m, crate::rules::AcMeta::Literal { .. })).count();
         let ac_ci_pat = ruleset.ac_meta_ci.len();
-        let residual_count: usize = ruleset.residual_shards.iter().map(|s| s.positions.len()).sum();
-        let shard_count = ruleset.residual_shards.len();
+        let residual_count: usize = ruleset.residual_shards.iter().map(|s| match s {
+            crate::rules::ResidualShard::Single { .. } => 1,
+            crate::rules::ResidualShard::Combined { positions, .. } => positions.len(),
+        }).sum();
+        let single_shard_count = ruleset.residual_shards.iter().filter(|s| matches!(s, crate::rules::ResidualShard::Single { .. })).count();
+        let combined_shard_count = ruleset.residual_shards.len() - single_shard_count;
         eprintln!(
-            "forbidden-strings buckets: ac_cs_lit={} ac_cs_regex_prefix={} ac_ci_regex_prefix={} residual={} (in {} shards) regex_rules_total={}",
-            ac_cs_lit, ac_cs_pat, ac_ci_pat, residual_count, shard_count, ruleset.regex_rules.len(),
+            "forbidden-strings buckets: ac_cs_lit={} ac_cs_regex_prefix={} ac_ci_regex_prefix={} residual={} (in {} single + {} combined shards) regex_rules_total={}",
+            ac_cs_lit, ac_cs_pat, ac_ci_pat, residual_count, single_shard_count, combined_shard_count, ruleset.regex_rules.len(),
         );
         if env::var("FORBIDDEN_STRINGS_DEBUG_RESIDUAL_LIST").is_ok() {
             for shard in &ruleset.residual_shards {
-                for &pos in &shard.positions {
+                let positions: Vec<usize> = match shard {
+                    crate::rules::ResidualShard::Single { rule_pos } => vec![*rule_pos],
+                    crate::rules::ResidualShard::Combined { positions, .. } => positions.clone(),
+                };
+                for pos in positions {
                     let r = &ruleset.regex_rules[pos];
                     eprintln!("residual rule line={}", r.idx);
                 }

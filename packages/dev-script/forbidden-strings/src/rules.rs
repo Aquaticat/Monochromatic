@@ -211,30 +211,36 @@ pub const SUBSTRING_THRESHOLD: usize = 7;
 //   residualPositions: number[];
 // };
 // ```
-// What:     `pub struct ResidualShard { pub gate: Regex, pub positions: Vec<usize> }`
-//           pairs one combined-alternation Regex (the shard's gate) with
-//           the list of `regex_rules` indices it covers. Multiple shards
-//           together cover the full residual bucket.
-// Why:      Resharp's HIR translator (via `regex_syntax::hir::translate`)
-//           rejects sufficiently large alternations with
-//           `UnsupportedResharpRegex` -- bisect on the synthetic
-//           `[a-z]{4}_RESID_..._[A-Za-z0-9]{12}` shape found the cliff
-//           at 1722-1725 patterns; the cliff varies with rule content
-//           because translation cost depends on inner AST shape, not on
-//           a fixed pattern-count constant. Sharding the bucket and
-//           building one Regex per shard means a workload with arbitrary
-//           residual count loads successfully; on `is_match`-true we
-//           still know exactly which subset of rules might match (the
-//           shard's `positions`).
-// TS map:   `type ResidualShard = { gate: Regex; positions: number[] };`.
+// What:     `pub enum ResidualShard { Single { rule_pos }, Combined { gate, positions } }`
+//           is the residual-gate node. `Single` references a single
+//           regex_rule by position -- no separate gate Regex is
+//           compiled; the rule's own Regex from `regex_rules` is used
+//           directly when scanning. `Combined` holds a multi-rule
+//           combined-alternation gate plus the rule positions it covers.
+// Why:      At shard_size=1, the "gate" is identical to the rule's own
+//           Regex -- compiling them as separate Regex instances doubles
+//           the parser+algebra cost (Phase 2e ~485ms on the betterleaks
+//           corpus where 28 rules can't combine and all end up at size=1)
+//           AND doubles the per-file scan cost (one is_match through
+//           the gate, then a separate find_all through the rule).
+//           The Single variant collapses both: skip Phase 2e compile,
+//           and call `rule.re.find_all` directly without a redundant
+//           gate.is_match. The Combined variant retains the
+//           combined-alternation optimisation when resharp's parser+
+//           algebra accept the combined form (which happens whenever
+//           the chunk's rules don't trigger lookaround-related
+//           UnsupportedPattern errors).
+// TS map:   `type ResidualShard = { kind: "single"; rulePos: number } | { kind: "combined"; gate: Regex; positions: number[] };`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type ResidualShard = { gate: Regex; positions: number[] };
+// type ResidualShard =
+//   | { kind: "single"; rulePos: number }
+//   | { kind: "combined"; gate: Regex; positions: number[] };
 // ```
-pub struct ResidualShard {
-    pub gate: Regex,
-    pub positions: Vec<usize>,
+pub enum ResidualShard {
+    Single { rule_pos: usize },
+    Combined { gate: Regex, positions: Vec<usize> },
 }
 
 pub struct RuleSet {
@@ -355,30 +361,36 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
 // ```
 const MIN_PREFIX_LEN: usize = 4;
 
-// What:     `pub fn extract_required_prefix(src: &str) -> Option<String>`
-//           returns the longest leading byte sequence of a regex source
-//           that MUST appear at the start of every match. Returns
-//           `None` if no prefix of at least `MIN_PREFIX_LEN` can be
-//           extracted, or if the regex is case-insensitive (because the
-//           AC index is case-sensitive). The walker is conservative:
-//           it stops at the first character it can't prove is literal.
-// Why:      Regex rules whose source starts with literal bytes (e.g.
-//           `sk_live_[A-Z0-9]{20}` -> `sk_live_`) can be pre-filtered
-//           by an AC scan. Files where the prefix never appears cannot
-//           contain a regex match, so we skip the slow resharp pass
-//           entirely on those files.
-// TS map:   `function extractRequiredPrefix(src: string): string | null`.
+// What:     `pub fn extract_gating_substrings(src: &str) -> Option<(Vec<String>, bool)>`
+//           returns a Vec of substrings such that ANY successful regex
+//           match must contain AT LEAST ONE of them, plus a single ci
+//           flag for the whole rule (set when a leading `(?i)` was
+//           stripped). Returns `None` if the regex cannot be soundly
+//           gated -- e.g. a top-level alternation where one branch has
+//           no required substring at all, or the longest substring per
+//           branch falls below `MIN_PREFIX_LEN`.
+// Why:      The previous "single longest required prefix" walker missed
+//           the betterleaks rule shape `(?i)[\w.-]{0,50}(?:cohere|CO_API_KEY)...`,
+//           where the body of a required group is itself a literal
+//           alternation. With multi-substring gating, EACH alternation
+//           branch contributes its own AC pattern; all of them are
+//           registered against the SAME `rule_pos`. AC firing for any
+//           one of them queues the rule's full `find_all`. The "rule
+//           fires if any AC pattern in its set matches" semantics
+//           drains alternation-shape rules out of the residual gate
+//           and onto the AC fast path. PERF.md "Open opportunities".
+// TS map:   `function extractGatingSubstrings(src: string): { subs: string[]; ci: boolean } | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function extractRequiredPrefix(src: string): string | null {
-//   // Skip leading "(?flags)" group; bail if `i` is set.
-//   // Skip leading anchors `^`, `\b`, `\A`.
-//   // Walk literal bytes; stop at first metacharacter.
-//   // Return null if shorter than MIN_PREFIX_LEN.
+// function extractGatingSubstrings(src: string): { subs: string[]; ci: boolean } | null {
+//   // 1. Strip leading `(?flags)`; record `ci`.
+//   // 2. Strip leading anchors `^`, `\b`, `\A`.
+//   // 3. Recurse via extractScope on the remainder, splitting top-level `|`.
+//   // 4. Reject if any returned substring is shorter than MIN_PREFIX_LEN.
 // }
 // ```
-pub fn extract_required_prefix(src: &str) -> Option<(String, bool)> {
+pub fn extract_gating_substrings(src: &str) -> Option<(Vec<String>, bool)> {
     let mut s = src;
     let mut ci = false;
 
@@ -477,112 +489,244 @@ pub fn extract_required_prefix(src: &str) -> Option<(String, bool)> {
     //   else { out += c; i += 1; }
     // }
     // ```
-    // What:     The outer loop alternates between accumulating literal
-    //           bytes and skipping a "required-but-non-literal" structure
-    //           at the head. A required-but-non-literal structure is
-    //           something whose presence is mandatory in any match (so
-    //           the literal that follows it is *also* mandatory) but
-    //           that contributes no fixed bytes itself: a character
-    //           class with a required quantifier (`[a-z]{4}`, `\d+`),
-    //           or an escape-class with a required quantifier
-    //           (`\w{8}`, `\s+`). After each successful skip the loop
-    //           re-enters literal accumulation against the remainder.
-    // Why:      Pure leading-prefix extraction misses common rule shapes
-    //           like `[a-z]{4}_RESID_<tag>_[A-Za-z0-9]{12}` where the
-    //           rule starts with a character class. The substring
-    //           `_RESID_<tag>_` is still mandatory in every match
-    //           (`[a-z]{4}` matches exactly 4 chars; nothing optional in
-    //           between). Putting that substring into the AC index lets
-    //           the rule ride the AC fast path, with its own per-rule
-    //           `Mutex<RegexInner>` -- removing the
-    //           `residual_combined`-mutex contention on the hot path.
-    //           See PERF.md: in the 10k-rule + 10% residual benchmark
-    //           the residual gate's contention drops parallelism from
-    //           9.5x to 4.2x cores; routing those rules onto AC instead
-    //           of a shared combined Regex restores ~9-10x parallelism.
-    // TS map:   No equivalent.
+    // What:     `extract_scope(s)` is the workhorse that splits any
+    //           top-level alternation in `s` into branches and recurses.
+    //           Each branch returns its best required-substring set;
+    //           branches are concatenated (AC fires the rule if ANY of
+    //           the union appears).
+    // Why:      Top-level wrapper handles the once-per-rule concerns
+    //           (flag-group strip, anchor strip, MIN_PREFIX_LEN filter).
+    //           The actual walk lives in `extract_scope` so it can
+    //           recurse from inside a group body without re-stripping
+    //           outer-only constructs.
+    // TS map:   `const subs = extractScope(s); if (!subs) return null;`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // // outer: walk literals -> skip char-class -> repeat
+    // const subs = extractScope(s);
+    // if (subs === null) return null;
+    // if (subs.some((p) => p.length < MIN_PREFIX_LEN)) return null;
+    // return { subs, ci };
     // ```
-    let mut best = String::new();
-    let mut current = String::new();
+    let subs = extract_scope(s)?;
+    if subs.is_empty() {
+        return None;
+    }
+    // What:     Soundness rule: if ANY substring in the gate set is
+    //           below `MIN_PREFIX_LEN`, drop the rule into residual.
+    //           A short substring fires AC too often, defeating the
+    //           gate's purpose; AND because the alternation needs to
+    //           be COVERED entirely (one substring per branch), we
+    //           cannot just filter out the short ones -- doing so
+    //           would leave that branch ungated, breaking the
+    //           soundness contract that any successful match contains
+    //           at least one registered substring.
+    // Why:      Better to let resharp handle the whole rule than to
+    //           emit an AC pattern that fires constantly while still
+    //           missing matches.
+    // TS map:   `if (subs.some((p) => p.length < MIN_PREFIX_LEN)) return null;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (subs.some((p) => p.length < MIN_PREFIX_LEN)) return null;
+    // ```
+    if subs.iter().any(|p| p.len() < MIN_PREFIX_LEN) {
+        return None;
+    }
+    Some((subs, ci))
+}
+
+// What:     `fn extract_scope(s: &str) -> Option<Vec<String>>` splits
+//           `s` on top-level `|` (respecting paren depth, character
+//           classes, and `\X` escapes) and returns the union of each
+//           branch's required-substring set. Returns `None` if any
+//           branch's `extract_branch` returns None -- soundness demands
+//           that every branch be covered by at least one registered
+//           substring. A branch with no required content (e.g. `.*`,
+//           `(?:foo)?`) cannot be gated, so the whole alternation
+//           cannot be gated.
+// Why:      Top-level alternation handling lives here so it can be
+//           reached BOTH from the outer wrapper (`extract_gating_substrings`)
+//           AND from inside a group body via `skip_atom_with_extract`'s
+//           recursion. The body of `(?:foo|bar)` has its own top-level
+//           alternation; calling `extract_scope` on it splits "foo|bar"
+//           and returns ["foo", "bar"].
+// TS map:   `function extractScope(s: string): string[] | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function extractScope(s: string): string[] | null {
+//   const branches = splitTopLevelAlternations(s);
+//   const out: string[] = [];
+//   for (const branch of branches) {
+//     const branchSubs = extractBranch(branch);
+//     if (branchSubs === null) return null;
+//     out.push(...branchSubs);
+//   }
+//   return out;
+// }
+// ```
+fn extract_scope(s: &str) -> Option<Vec<String>> {
+    let branches = split_top_level_alternations(s);
+    let mut out: Vec<String> = Vec::new();
+    for branch in branches {
+        let branch_subs = extract_branch(branch)?;
+        out.extend(branch_subs);
+    }
+    if out.is_empty() {
+        return None;
+    }
+    Some(out)
+}
+
+// What:     `fn extract_branch(s: &str) -> Option<Vec<String>>` walks
+//           one branch (no top-level `|`), returning the BEST candidate
+//           gating set. A "candidate" is either a single literal run
+//           (e.g. "keyword") or the multi-substring set returned by a
+//           required group's body (e.g. ["foo", "bar"] from `(?:foo|bar)`).
+//           "Best" is the most-selective: highest minimum substring
+//           length across the candidate's elements.
+// Why:      A single branch may have multiple required structures in
+//           sequence (`prefix(?:foo|bar)suffix`). The walker only needs
+//           ONE of them as the rule's gate -- pick the most selective
+//           to minimise spurious AC fires. Choosing the longest single
+//           literal beats a low-min alternation; choosing a long-min
+//           alternation beats a short literal.
+// TS map:   `function extractBranch(s: string): string[] | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function extractBranch(s: string): string[] | null {
+//   let best: string[] = [];
+//   let bestScore = 0;
+//   let current = "";
+//   while (s.length > 0) {
+//     // walk literals into current; pick best between current-as-singleton and prior best
+//     // skip atom (class/group/escape); recurse into group body via extractScope
+//   }
+//   return best.length > 0 ? best : null;
+// }
+// ```
+fn extract_branch(s: &str) -> Option<Vec<String>> {
+    let mut s = s;
+    let mut best: Vec<String> = Vec::new();
+    let mut best_score: usize = 0;
+    let mut current_lit = String::new();
     loop {
-        walk_literal_bytes(s, &mut current, &mut s);
-        if current.len() > best.len() {
-            best = std::mem::take(&mut current);
-        } else {
-            current.clear();
+        walk_literal_bytes(s, &mut current_lit, &mut s);
+        if !current_lit.is_empty() {
+            let score = current_lit.len();
+            if score > best_score {
+                best = vec![std::mem::take(&mut current_lit)];
+                best_score = score;
+            } else {
+                current_lit.clear();
+            }
         }
-        // What:     If the walker stopped because the remainder begins
-        //           with a top-level alternation `|`, the substring
-        //           accumulated above is NOT required -- it could be
-        //           the other branch instead. Return `None` so the
-        //           rule routes onto the residual gate where the full
-        //           regex semantics apply. We do NOT rely on best
-        //           being the longer/shorter branch's contents; both
-        //           are equally invalid as a required substring.
-        // Why:      Soundness fix. Without this, a rule like
-        //           `/foobar|barfoo/` would extract "foobar" and
-        //           AC-gate on it, missing files that contain only
-        //           "barfoo". The same hazard applies to body-level
-        //           alternation handled inside the recursion: when
-        //           `extract_required_prefix` is called on the body
-        //           of `(?:foo|bar)`, this same check fires and we
-        //           return None, so the parent skip_atom contributes
-        //           nothing.
-        // TS map:   `if (s.startsWith("|")) return null;`.
+        if s.is_empty() {
+            break;
+        }
+        // What:     A `|` here means top-level alternation in the parent
+        //           scope -- the caller already split on it, so seeing
+        //           `|` at this depth means our walker tried to recurse
+        //           below an unrecognised structure. Stop the branch
+        //           walk; the best candidate so far is what we have.
+        // Why:      Don't consume across the `|` -- doing so would
+        //           splice two branches' content into one fake "best",
+        //           breaking soundness on patterns like `foobar|barfoo`.
+        // TS map:   `if (s[0] === "|") break;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (s.startsWith("|")) return null;
+        // if (s[0] === "|") break;
         // ```
         if s.starts_with('|') {
-            return None;
+            break;
         }
-        // What:     `skip_atom_with_extract(s)` returns a tuple of
-        //           `(remainder, optional_extracted_substring)`. The
-        //           extracted substring is `Some(content)` only for
-        //           required `(?:...)` / `(...)` groups whose body
-        //           reduces to a literal substring -- e.g. `(?:adafruit)`
-        //           contributes `"adafruit"`. Optional groups
-        //           (`(?:...)?`, `(?:...)*`, `(?:...){0,N}`) and
-        //           non-literal-contributing atoms (character classes,
-        //           `\d`/`\w`/`\s`) return `None` for the extraction
-        //           field but still advance `s` past the atom so the
-        //           outer loop continues.
-        // Why:      The betterleaks rule shape has `(?i)[\w.-]{0,50}(?:KEYWORD)...`;
-        //           after stripping `(?i)` and skipping the optional
-        //           class, the next required atom is the non-capturing
-        //           group whose literal body IS the keyword. Extracting
-        //           the body's literal lets the rule's required
-        //           substring ride the AC fast path.
-        // TS map:   `const { remainder, extracted } = skipAtomWithExtract(s);`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const r = skipAtomWithExtract(s);
-        // if (r === null) break;
-        // s = r.remainder;
-        // if (r.extracted && r.extracted.length > best.length) best = r.extracted;
-        // ```
         if let Some((rest, contribution)) = skip_atom_with_extract(s) {
             s = rest;
-            if let Some(extracted) = contribution {
-                if extracted.len() > best.len() {
-                    best = extracted;
+            if let Some(candidate) = contribution {
+                let score = candidate.iter().map(|x| x.len()).min().unwrap_or(0);
+                if score > best_score {
+                    best = candidate;
+                    best_score = score;
                 }
             }
             continue;
         }
         break;
     }
-
-    if best.len() < MIN_PREFIX_LEN {
+    if best.is_empty() {
         return None;
     }
-    Some((best, ci))
+    Some(best)
+}
+
+// What:     `fn split_top_level_alternations(s: &str) -> Vec<&str>`
+//           returns slices of `s` separated by `|` characters at
+//           depth 0 (i.e. NOT inside a `(...)` group, NOT inside a
+//           `[...]` character class, and NOT escaped as `\|`). The
+//           slices share `s`'s lifetime -- no allocation per branch.
+// Why:      Cannot just call `s.split('|')` because:
+//           - `|` inside `[a|b]` is a literal character.
+//           - `|` inside `(foo|bar)` is alternation at depth 1, which
+//             is the GROUP's responsibility, not the outer scope's.
+//           - `\|` is an escaped pipe (literal `|`).
+// TS map:   `function splitTopLevelAlternations(s: string): string[]`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function splitTopLevelAlternations(s: string): string[] {
+//   // Walk bytes, tracking paren depth + class membership.
+//   // Push slice on each unescaped depth-0 `|` outside a class.
+// }
+// ```
+fn split_top_level_alternations(s: &str) -> Vec<&str> {
+    let bytes = s.as_bytes();
+    let mut out: Vec<&str> = Vec::new();
+    let mut start: usize = 0;
+    let mut depth: usize = 0;
+    let mut in_class = false;
+    let mut i: usize = 0;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if c == b'\\' {
+            // Escape: skip 2 bytes (regardless of class membership).
+            i += 2;
+            continue;
+        }
+        if !in_class && c == b'[' {
+            in_class = true;
+            i += 1;
+            continue;
+        }
+        if in_class {
+            if c == b']' {
+                in_class = false;
+            }
+            i += 1;
+            continue;
+        }
+        if c == b'(' {
+            depth += 1;
+            i += 1;
+            continue;
+        }
+        if c == b')' {
+            if depth > 0 {
+                depth -= 1;
+            }
+            i += 1;
+            continue;
+        }
+        if c == b'|' && depth == 0 {
+            out.push(&s[start..i]);
+            start = i + 1;
+        }
+        i += 1;
+    }
+    out.push(&s[start..]);
+    out
 }
 
 // What:     `fn walk_literal_bytes(input, out, remainder)` walks `input`
@@ -690,40 +834,42 @@ fn walk_literal_bytes<'a>(input: &'a str, out: &mut String, remainder: &mut &'a 
     *remainder = &input[i..];
 }
 
-// What:     `fn skip_atom_with_extract(s) -> Option<(&str, Option<String>)>`
+// What:     `fn skip_atom_with_extract(s) -> Option<(&str, Option<Vec<String>>)>`
 //           recognizes one head atom, advances past it AND its
-//           quantifier, and optionally returns a literal substring
-//           extracted from a `(?:body)` / `(body)` group whose body
-//           reduces to a literal. Returns `None` only when the head is
-//           not a recognised atom (so the outer walker should stop).
+//           quantifier, and optionally returns a Vec of substrings
+//           extracted from a `(?:body)` / `(body)` group whose body's
+//           recursive `extract_scope` returned `Some`. Returns `None`
+//           only when the head is not a recognised atom (so the outer
+//           walker should stop).
 //
 //           Recognised heads:
 //           - `[ ... ]<quantifier>` (character class with any quantifier)
 //           - `\d|\w|\s|\D|\W|\S<quantifier>` (perl-class escape with any quantifier)
 //           - `(?: body )<quantifier>` and `( body )<quantifier>`
-//             non-capturing or capturing group; recurses into body to
-//             try to pull out a required literal substring.
+//             non-capturing or capturing group; recurses via
+//             `extract_scope` into body to pull out a required-substring
+//             set (which may include multiple alternatives if the body
+//             is itself an alternation).
 //
 //           A REQUIRED quantifier is `+`, `{N}`, `{N,}`, or `{N,M}`
 //           with N>=1, or absence of quantifier. Optional quantifiers
 //           (`?`, `*`, `{0}`, `{0,N}`, `{0,}`) are still recognised so
 //           the walker advances past them; their group body never
-//           contributes a literal even if it is one (because the body
-//           may match zero times).
-// Why:      Lets the walker continue past optional structures it used
-//           to bail on (`{0,50}`, `(?:foo)?`) and pull out body
-//           literals from non-capturing groups (`(?:adafruit)`). The
-//           combined effect on the betterleaks ruleset: 162 `(?i)...`
-//           rules whose substring is `(?:KEYWORD)` mid-body now reach
-//           the AC fast path instead of dumping into the residual
-//           combined-regex gate.
-// TS map:   `function skipAtomWithExtract(s: string): { remainder: string; extracted: string | null } | null`.
+//           contributes a substring even if it has one (because the
+//           body may match zero times).
+// Why:      Multi-substring contribution from a group body is the key
+//           win: `(?:foo|bar)keyword` -- the `(?:...)` body returns
+//           ["foo", "bar"], an alternation gate. The walker compares
+//           that against "keyword" and picks whichever is more
+//           selective for THIS branch's best-candidate slot. PERF.md
+//           "multi-substring AC gating per rule".
+// TS map:   `function skipAtomWithExtract(s: string): { remainder: string; extracted: string[] | null } | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function skipAtomWithExtract(s: string): { remainder: string; extracted: string | null } | null { /* ... */ }
+// function skipAtomWithExtract(s: string): { remainder: string; extracted: string[] | null } | null { /* ... */ }
 // ```
-fn skip_atom_with_extract(s: &str) -> Option<(&str, Option<String>)> {
+fn skip_atom_with_extract(s: &str) -> Option<(&str, Option<Vec<String>>)> {
     let bytes = s.as_bytes();
     if bytes.is_empty() {
         return None;
@@ -816,24 +962,25 @@ fn skip_atom_with_extract(s: &str) -> Option<(&str, Option<String>)> {
         let after = &s[close_idx + 1..];
         let after_quant = skip_any_quantifier(after);
         let quant_required = quantifier_is_required(after);
-        // Recurse only if the group is required. Optional groups
-        // contribute nothing to the required-substring set.
+        // What:     Recurse via `extract_scope` (NOT the outer wrapper)
+        //           because the group body is NOT a top-level scope --
+        //           it doesn't strip leading `(?flags)` or anchors.
+        //           `extract_scope` does the work that's also done at
+        //           top level: split on top-level alternation `|` and
+        //           gather each branch's required-substring set.
+        // Why:      Calling `extract_gating_substrings` here would
+        //           re-strip leading `(?flags)` from the body, which is
+        //           wrong: the body's flags belong to its OWN scope and
+        //           are already in effect for the body's content. The
+        //           outer wrapper only runs once per rule, at the top.
+        // TS map:   `extracted = quantRequired ? extractScope(body) : null;`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // extracted = quantRequired ? extractScope(body) : null;
+        // ```
         let extraction = if quant_required {
-            // Recurse, then forget the ci flag -- the outer walker has
-            // its own ci scope. If the body contained an inline `(?i)`
-            // changing ci mid-walk, the recursive result's ci flag
-            // refers to that inner scope; we conservatively use the
-            // body's extracted substring only when ci matches the
-            // outer scope. Since `extract_required_prefix` here always
-            // returns ci=false for bodies that didn't carry their own
-            // `(?i)`, and we never propagate the outer ci into the
-            // recursion (we don't have it here), we accept the body's
-            // result as-is and let the literal-prefix mismatch fall
-            // out at the AC dispatch layer. In practice the betterleaks
-            // shape has `(?i)` AT THE TOP and bodies are flag-free, so
-            // the body's recursive ci is always `false` and is
-            // overridden by the outer's `ci` field on the way out.
-            extract_required_prefix(body).map(|(text, _ci)| text)
+            extract_scope(body)
         } else {
             None
         };
@@ -1105,8 +1252,41 @@ fn skip_class_body(s: &str) -> Option<&str> {
 // }
 // ```
 pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
+    // What:     `let timing = std::env::var("FORBIDDEN_STRINGS_DEBUG_TIMING").is_ok();`
+    //           reads an env var ONCE; subsequent phase boundaries log
+    //           elapsed wall time when this is true. The closure
+    //           `now` captures `t_phase` so we get per-phase deltas
+    //           rather than absolute times since program start.
+    // Why:      Bench-driven optimisation needs per-phase visibility.
+    //           Without it, "startup is 3 s" tells us nothing about
+    //           which phase to attack. Env-gated so the production
+    //           hot path pays nothing.
+    // TS map:   `const timing = !!process.env.FORBIDDEN_STRINGS_DEBUG_TIMING;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const timing = !!process.env.FORBIDDEN_STRINGS_DEBUG_TIMING;
+    // let tPhase = performance.now();
+    // const phase = (label: string) => {
+    //   if (!timing) return;
+    //   const now = performance.now();
+    //   console.error(`load_ruleset phase ${label}: ${(now - tPhase).toFixed(1)}ms`);
+    //   tPhase = now;
+    // };
+    // ```
+    let timing = std::env::var("FORBIDDEN_STRINGS_DEBUG_TIMING").is_ok();
+    let mut t_phase = std::time::Instant::now();
+    let mut phase = |label: &str| {
+        if !timing { return; }
+        let now = std::time::Instant::now();
+        let dt = now.duration_since(t_phase).as_secs_f64() * 1000.0;
+        eprintln!("load_ruleset phase {}: {:.1}ms", label, dt);
+        t_phase = now;
+    };
+
     let content = fs::read_to_string(path)
         .map_err(|e| format!("read rules {}: {}", path, e))?;
+    phase("0 read_rules_file");
 
     // Phase 1: sequential classification. Cheap (string ops only).
     let mut literal_specs: Vec<(usize, String)> = Vec::new();
@@ -1155,29 +1335,32 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
                 .map_err(|e| format!("rule on line {}: {:?}", idx, e))
         })
         .collect::<Result<Vec<_>, _>>()?;
+    phase("1 classify+regex_compile");
 
-    // Phase 2b: extract a required-literal prefix from each regex rule
-    // where possible. Rules with an extractable prefix go into the
-    // unified AC index; rules without one fall back to a residual
-    // resharp gate covering only that small subset.
-    // What:     `regex_specs.iter().map(|(_, src)| extract_required_prefix(src)).collect()`
-    //           runs the extractor over each regex source string and
-    //           collects the per-rule `Option<String>`. We do this
-    //           sequentially because string-walking 1k short strings
-    //           takes microseconds and parallelism overhead would lose.
-    // Why:      Per-rule prefix is the input to building the unified AC;
-    //           we need every rule's result before we can decide which
-    //           bucket each goes into.
-    // TS map:   `regexSpecs.map(([, src]) => extractRequiredPrefix(src))`.
+    // Phase 2b: extract a Vec of gating substrings from each regex rule
+    // where possible. Rules with an extractable set go into the unified
+    // AC index (each substring is its own AC pattern, all mapped to the
+    // same rule_pos in metadata). Rules whose extraction returns `None`
+    // fall back to a residual resharp gate covering only that small
+    // subset.
+    // What:     `Vec<Option<(Vec<String>, bool)>>` -- per regex rule, an
+    //           Option of (substring set, ci flag). The set's elements
+    //           are OR-related: AC firing for ANY one of them queues
+    //           this rule's `find_all`. The ci flag applies uniformly
+    //           to all substrings in the set (per-rule, not per-substring).
+    // Why:      Multi-substring gating drains alternation-shape rules
+    //           (`(?:foo|bar)keyword`) out of residual.
+    // TS map:   `regexSpecs.map(([, src]) => extractGatingSubstrings(src))`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const prefixes = regexSpecs.map(([, src]) => extractRequiredPrefix(src));
+    // const gating = regexSpecs.map(([, src]) => extractGatingSubstrings(src));
     // ```
-    let regex_prefixes: Vec<Option<(String, bool)>> = regex_specs
+    let regex_prefixes: Vec<Option<(Vec<String>, bool)>> = regex_specs
         .iter()
-        .map(|(_, src)| extract_required_prefix(src))
+        .map(|(_, src)| extract_gating_substrings(src))
         .collect();
+    phase("2 extract_gating_substrings");
 
     // Phase 2c: build the unified AC pattern list. Order matters --
     // pattern ids are assigned in input order, so `ac_meta[i]` must
@@ -1268,14 +1451,43 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
             && lit.as_bytes().last().copied().is_some_and(is_word_byte);
         ac_meta.push(AcMeta::Literal { idx: *line_idx, bound_left, bound_right });
     }
+    // What:     For each regex rule with an extractable set, push EVERY
+    //           substring as its own AC pattern, all mapped to the same
+    //           `rule_pos`. AC firing for any of them dedups via
+    //           `prefix_matched.insert(rule_pos)` in scan.rs and runs
+    //           `find_all` exactly once per rule per file.
+    // Why:      OR-gate semantics: any substring in the set is a valid
+    //           gate for this rule. Registering them all-mapped-to-the-
+    //           same-rule_pos lets AC's linear-time scan cover all the
+    //           branches without per-rule fanout.
+    // TS map:   `for (const sub of subs) { acPatterns.push(sub); acMeta.push({ kind: "regexPrefix", rulePos }); }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (let rulePos = 0; rulePos < regexPrefixes.length; rulePos++) {
+    //   const entry = regexPrefixes[rulePos];
+    //   if (!entry) continue;
+    //   const { subs, ci } = entry;
+    //   const dest = ci ? acPatternsCi : acPatterns;
+    //   const meta = ci ? acMetaCi : acMeta;
+    //   for (const s of subs) {
+    //     dest.push(s);
+    //     meta.push({ kind: "regexPrefix", rulePos });
+    //   }
+    // }
+    // ```
     for (rule_pos, pre) in regex_prefixes.iter().enumerate() {
-        if let Some((p, ci)) = pre {
+        if let Some((subs, ci)) = pre {
             if *ci {
-                ac_patterns_ci.push(p.as_str());
-                ac_meta_ci.push(AcMeta::RegexPrefix { rule_pos });
+                for sub in subs {
+                    ac_patterns_ci.push(sub.as_str());
+                    ac_meta_ci.push(AcMeta::RegexPrefix { rule_pos });
+                }
             } else {
-                ac_patterns.push(p.as_str());
-                ac_meta.push(AcMeta::RegexPrefix { rule_pos });
+                for sub in subs {
+                    ac_patterns.push(sub.as_str());
+                    ac_meta.push(AcMeta::RegexPrefix { rule_pos });
+                }
             }
         }
     }
@@ -1328,6 +1540,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
                 .map_err(|e| format!("ac-ci build: {}", e))?,
         )
     };
+    phase("3 ac_build");
 
     // Phase 2d: build the residual gate over regex rules WITHOUT an
     // extractable prefix. If every regex rule had a prefix, this is
@@ -1362,6 +1575,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     // therefore runtime-adaptive sharding rather than a hardcoded shard
     // size.
     let residual_shards = build_residual_shards(&residual_positions, &regex_specs)?;
+    phase("4 residual_shards");
 
     Ok(RuleSet { ac, ac_meta, ac_ci, ac_meta_ci, regex_rules, residual_shards })
 }
@@ -1400,12 +1614,31 @@ fn build_residual_shards(
     if positions.is_empty() {
         return Ok(Vec::new());
     }
+    let timing = std::env::var("FORBIDDEN_STRINGS_DEBUG_TIMING").is_ok();
     let mut shard_size: usize = INITIAL_SHARD_SIZE;
     let mut last_err: Option<String> = None;
     while shard_size >= 1 {
-        match try_build_shards(positions, regex_specs, shard_size) {
-            Ok(shards) => return Ok(shards),
+        let t = std::time::Instant::now();
+        let result = try_build_shards(positions, regex_specs, shard_size);
+        let dt = t.elapsed().as_secs_f64() * 1000.0;
+        let n_chunks = positions.len().div_ceil(shard_size);
+        match result {
+            Ok(shards) => {
+                if timing {
+                    eprintln!(
+                        "  try shard_size={} ({} chunks): SUCCESS in {:.1}ms",
+                        shard_size, n_chunks, dt,
+                    );
+                }
+                return Ok(shards);
+            }
             Err(e) => {
+                if timing {
+                    eprintln!(
+                        "  try shard_size={} ({} chunks): FAIL in {:.1}ms err={}",
+                        shard_size, n_chunks, dt, e,
+                    );
+                }
                 last_err = Some(e);
                 if shard_size == 1 {
                     break;
@@ -1467,9 +1700,34 @@ fn try_build_shards(
     //   chunked(positions, shardSize).map(chunk => buildShard(chunk))
     // );
     // ```
+    // What:     For chunks of size 1, emit `ResidualShard::Single` with
+    //           just the rule position. The rule's compiled Regex
+    //           already lives in `regex_rules` (Phase 2a) and the
+    //           scanner reuses it directly; building a separate gate
+    //           here would compile the same pattern AGAIN (parser +
+    //           algebra + lazy DFA setup), doubling Phase 2e cost.
+    //           For chunks of size > 1, build the combined-alternation
+    //           gate as before.
+    // Why:      The redundant single-rule gate is the dominant Phase 2e
+    //           cost on the betterleaks corpus: 28 single-rule shards
+    //           × ~17ms per Regex::new = ~485ms. Eliminating it makes
+    //           Phase 2e a near-zero-cost step for the size=1 success
+    //           path. Combined chunks (when resharp accepts the union)
+    //           still need a fresh Regex::new because the combined
+    //           regex IS new -- not stored anywhere else.
+    // TS map:   `chunk.length === 1 ? { kind: "single", rulePos: chunk[0] } : { kind: "combined", gate: new Regex(combined), positions: [...chunk] }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (chunk.length === 1) return { kind: "single", rulePos: chunk[0] };
+    // // else build combined gate
+    // ```
     let shards: Vec<ResidualShard> = positions
         .par_chunks(shard_size)
-        .map(|chunk| {
+        .map(|chunk| -> Result<ResidualShard, String> {
+            if chunk.len() == 1 {
+                return Ok(ResidualShard::Single { rule_pos: chunk[0] });
+            }
             let mut combined = String::new();
             for (i, &rule_pos) in chunk.iter().enumerate() {
                 if i > 0 {
@@ -1487,7 +1745,7 @@ fn try_build_shards(
                     e
                 )
             })?;
-            Ok(ResidualShard { gate, positions: chunk.to_vec() })
+            Ok(ResidualShard::Combined { gate, positions: chunk.to_vec() })
         })
         .collect::<Result<Vec<_>, String>>()?;
     Ok(shards)
@@ -1524,4 +1782,4 @@ fn try_build_shards(
 // ```ts
 // const INITIAL_SHARD_SIZE = 1;
 // ```
-const INITIAL_SHARD_SIZE: usize = 256;
+const INITIAL_SHARD_SIZE: usize = 1;
