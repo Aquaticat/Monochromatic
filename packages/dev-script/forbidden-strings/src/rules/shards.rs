@@ -226,7 +226,20 @@ fn try_compile_combined(
     if any_set_algebra {
         Regex::new(&combined).ok().map(CompiledRegex::Resharp)
     } else {
+        // Try unicode-off for the speedup; fall back to unicode-on if
+        // any rule in the chunk requires unicode semantics (e.g.
+        // `\p{...}`, multi-byte chars in `[...]` classes). Mirrors
+        // the per-rule compile in `rules.rs::compile_plain_rule`.
+        if let Ok(re) = regex::bytes::RegexBuilder::new(&combined)
+            .unicode(false)
+            .size_limit(256 * 1024 * 1024)
+            .dfa_size_limit(256 * 1024 * 1024)
+            .build()
+        {
+            return Some(CompiledRegex::Plain(re));
+        }
         regex::bytes::RegexBuilder::new(&combined)
+            .unicode(true)
             .size_limit(256 * 1024 * 1024)
             .dfa_size_limit(256 * 1024 * 1024)
             .build()

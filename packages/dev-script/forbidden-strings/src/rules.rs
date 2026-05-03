@@ -122,6 +122,56 @@ use resharp::Regex;
 //   ...
 // }
 // ```
+// What:     `fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String>`
+//           compiles a non-set-algebra rule via the `regex` crate, trying
+//           `unicode(false)` first for the speedup and falling back to
+//           `unicode(true)` only when the rule actually needs unicode-
+//           aware semantics (Unicode property classes, multi-byte chars
+//           inside character classes, the `(?u)` flag, etc.).
+// Why:      Disabling unicode is ~90x faster on Phase 1 compile and
+//           gives smaller DFAs that scan faster, but a rule using
+//           unicode features must compile correctly. Literal multi-
+//           byte UTF-8 sequences in the regex source compile fine
+//           in bytes mode without unicode -- the parser treats them
+//           as the matching byte sequence -- so they take the
+//           unicode-off fast path. Rules with unicode-property
+//           classes or multi-byte chars inside `[...]` fall back.
+//           Try-and-fallback is robust to any future rule shape:
+//           ASCII rules and ones with bare-literal unicode get the
+//           speedup, rules with unicode-property features get correct
+//           semantics, and the rule author does not have to annotate
+//           which is which.
+// TS map:   `function compilePlainRule(src: string, idx: number): RegexRule | Error`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function compilePlainRule(src: string, idx: number): RegexRule {
+//   try {
+//     return { idx, re: { kind: "plain", re: regex(src, { unicode: false }) } };
+//   } catch {
+//     return { idx, re: { kind: "plain", re: regex(src, { unicode: true }) } };
+//   }
+// }
+// ```
+fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String> {
+    if let Ok(re) = regex::bytes::RegexBuilder::new(src)
+        .unicode(false)
+        .size_limit(256 * 1024 * 1024)
+        .dfa_size_limit(256 * 1024 * 1024)
+        .build()
+    {
+        return Ok(RegexRule { idx, re: CompiledRegex::Plain(re) });
+    }
+    // Fall back to unicode-aware mode for rules with unicode features.
+    regex::bytes::RegexBuilder::new(src)
+        .unicode(true)
+        .size_limit(256 * 1024 * 1024)
+        .dfa_size_limit(256 * 1024 * 1024)
+        .build()
+        .map(|re| RegexRule { idx, re: CompiledRegex::Plain(re) })
+        .map_err(|e| format!("rule on line {} (regex): {:?}", idx, e))
+}
+
 pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     // What:     `let timing = std::env::var("FORBIDDEN_STRINGS_DEBUG_TIMING").is_ok();`
     //           reads an env var ONCE; subsequent phase boundaries log
@@ -200,36 +250,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
                     .map(|re| RegexRule { idx: *idx, re: CompiledRegex::Resharp(re) })
                     .map_err(|e| format!("rule on line {} (resharp): {:?}", idx, e))
             } else {
-                // What:     `.unicode(false)` switches the `regex` crate
-                //           into ASCII-only mode for this builder. `\w` /
-                //           `\d` / `\s` / `\b` become ASCII-only ranges
-                //           (`[A-Za-z0-9_]`, `[0-9]`, `[ \t\n\r]`,
-                //           between word/non-word as ASCII). Character
-                //           ranges like `[a-z]` are byte ranges
-                //           (0x61-0x7A) instead of unicode codepoint
-                //           ranges with case-folding tables. Unicode-
-                //           class shortcuts like `\p{L}` are rejected
-                //           at compile time.
-                // Why:      Every secret-detection rule in this corpus
-                //           targets ASCII token shapes; `grep
-                //           '\\p\\{\\|\\u\\{\\|(\\?u' rules.txt`
-                //           returns 0 matches. Disabling unicode mode
-                //           strips the unicode-handling layers from
-                //           both compile and per-byte scan, cutting
-                //           ~30% off Phase 1 and shrinking each rule's
-                //           DFA. Soundness is preserved because no
-                //           rule depends on unicode-aware semantics.
-                //           If a future rule DOES need unicode (e.g.
-                //           `\\p{L}`), the build will fail at load
-                //           time with a clear error -- safe failure
-                //           mode.
-                regex::bytes::RegexBuilder::new(src)
-                    .unicode(false)
-                    .size_limit(256 * 1024 * 1024)
-                    .dfa_size_limit(256 * 1024 * 1024)
-                    .build()
-                    .map(|re| RegexRule { idx: *idx, re: CompiledRegex::Plain(re) })
-                    .map_err(|e| format!("rule on line {} (regex): {:?}", idx, e))
+                compile_plain_rule(src, *idx)
             }
         })
         .collect::<Result<Vec<_>, _>>()?;
