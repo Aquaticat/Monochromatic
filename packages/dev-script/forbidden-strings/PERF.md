@@ -53,6 +53,49 @@ residual=4 (in 4 single shards)  (L114 beamer, L251 facebook, L769 twitch, L796 
 regex_rules_total=259
 ```
 
+### Linux kernel corpus (93,694 files, 1799.2 MiB tracked bytes)
+
+Startup-only, 30 runs each:
+
+```text
+example ruleset (851 rules)        8.5 ms ± 0.8 ms    (user 35.8 ms, sys 11.9 ms)
+synth-1k ruleset (1000 rules)      9.0 ms ± 0.6 ms    (user 18.0 ms, sys 32.9 ms)
+```
+
+`--all` (full corpus walk + scan), 5 runs each:
+
+```text
+example ruleset    (851 rules; 4 residuals)   2153 ms ± 367 ms   (user 22.5 s, sys 0.9 s, 10.5x parallelism, ~836 MiB/s wall)
+runtime ruleset    (860 rules; 4 residuals)   2012 ms ± 336 ms   (user 22.7 s, sys 0.9 s, 11.3x parallelism, ~894 MiB/s wall)
+synth-residual-20  (20 hard residuals)        640  ms ±  55 ms   (user  5.9 s, sys 0.8 s,  9.2x parallelism, ~2.8 GiB/s wall)
+synth-1000-0pct    (1000 rules; 0 residuals)  139  ms ±   9 ms   (user 0.55 s, sys 0.8 s,  4.0x parallelism, ~12.9 GiB/s wall)
+```
+
+Observations:
+
+- The production-shape ~2 s headline is bounded by **4 betterleaks-shape
+  residuals** (L114 beamer, L251 facebook, L769 twitch, L796 vercel-ai)
+  each running per-rule `find_all` across 1.8 GiB. Linux kernel source
+  triggers many false-positive prefix hits on these rules
+  (`SK`, `Q~`, `\d{15,16}`, `hvs.`), so the regex crate's literal-prefix
+  fast path runs on the prefixes but the full regex is then evaluated
+  on every prefix hit. With 4 rules × 1.8 GiB workload distributed
+  over 10.5x cores, the floor is the regex engine's per-byte throughput
+  on the captured prefix-hit windows.
+- The synth-residual-20 case is **faster than the 4-residual production
+  case** despite having 5x more residual rules. The synthetic residuals
+  use `_RESID_<tag>_` substrings that fire rarely on real source, so
+  the residual-bucket combined gate triggers per-rule scans only on a
+  handful of files. The production residuals have shorter, more common
+  prefixes that fire on hundreds of files.
+- The 0-residual case (synth-1000-0pct) shows the no-residual ceiling:
+  12.9 GiB/s end-to-end on the Linux corpus, single-AC-pass dominated.
+- Per-byte slowdown vs Mono: Mono `--all` is 37 ms over 21.4 MiB
+  (~580 MiB/s), Linux `--all` is ~2 s over 1799 MiB (~900 MiB/s).
+  Linux is faster per-byte because fixed setup amortizes over more
+  files and the AC + regex hot path benefits from longer contiguous
+  scans per file.
+
 ### Superseded -- 2026-05-03 morning (pre-unicode-off)
 
 ```text
