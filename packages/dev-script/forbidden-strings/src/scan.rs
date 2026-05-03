@@ -557,7 +557,7 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                 }
             }
             ResidualShard::Combined { gate, positions } => {
-                if gate.is_match(content).unwrap_or(false) {
+                if gate.is_match(content) {
                     let regex_hits: Vec<String> = positions
                         .par_iter()
                         .flat_map_iter(|&pos| {
