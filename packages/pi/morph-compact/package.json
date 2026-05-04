@@ -23,9 +23,6 @@
     "dist/final",
     "src"
   ],
-  "dependencies": {
-    "@morphllm/morphsdk": "catalog:"
-  },
   "peerDependencies": {
     "@mariozechner/pi-coding-agent": "*",
     "typebox": "*"

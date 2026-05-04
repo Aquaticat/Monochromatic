@@ -19,7 +19,7 @@ import {
   type SessionEntry,
   type SessionMessageEntry,
 } from '@mariozechner/pi-coding-agent';
-import { CompactClient, } from '@morphllm/morphsdk/tools/compact';
+import { MorphCompactClient, } from './morph-client.ts';
 import { chooseCompressionRatio, } from './compaction.ts';
 import {
   buildMorphInput,
@@ -183,7 +183,7 @@ export async function compressBranch(
   );
   const ratio = chooseCompressionRatio(contextUsage,);
 
-  const client = new CompactClient({
+  const client = new MorphCompactClient({
     morphApiKey: apiKey,
   },);
   const result = await client.compact({

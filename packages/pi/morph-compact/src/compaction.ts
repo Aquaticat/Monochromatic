@@ -8,7 +8,7 @@ import {
   serializeConversation,
   type SessionBeforeCompactEvent,
 } from '@mariozechner/pi-coding-agent';
-import { CompactClient, } from '@morphllm/morphsdk/tools/compact';
+import { MorphCompactClient, } from './morph-client.ts';
 import {
   computeFileLists,
   formatFileOperations,
@@ -179,12 +179,12 @@ export async function attemptMorphCompaction(
     return { kind: 'fallback', };
 
   // Combined signal: respects user cancel + hard timeout
-  AbortSignal.any([
+  const combinedSignal = AbortSignal.any([
     signal,
     AbortSignal.timeout(COMPACTION_TIMEOUT_MS,),
   ],);
 
-  const client = new CompactClient(
+  const client = new MorphCompactClient(
     apiKey !== undefined
       ? { morphApiKey: apiKey, }
       : undefined,
@@ -196,6 +196,7 @@ export async function attemptMorphCompaction(
     preserveRecent: 0,
     includeMarkers: true,
     includeLineRanges: true,
+    signal: combinedSignal,
   },);
 
   const output = result.output?.trim();

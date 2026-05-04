@@ -2,7 +2,7 @@
  * Tests for {@link compressBranch}.
  *
  * Uses sequential execution because all tests stub
- * {@link CompactClient.prototype.compact} and would conflict
+ * {@link MorphCompactClient.prototype.compact} and would conflict
  * if run concurrently.
  *
  * @module
@@ -18,7 +18,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
-import { CompactClient, } from '@morphllm/morphsdk/tools/compact';
+import { MorphCompactClient, } from './morph-client.ts';
 import { compressBranch, } from './compress-branch.ts';
 
 //region Test helpers
@@ -127,7 +127,7 @@ await describe({
   children: [
     describe({
       name: compressBranch.name,
-      // Sequential execution required — tests stub CompactClient.prototype.compact
+      // Sequential execution required — tests stub MorphCompactClient.prototype.compact
       // and would fail under concurrent execution because sinon refuses to
       // wrap an already-wrapped method.
       concurrency: 1,
@@ -167,7 +167,7 @@ await describe({
             fn: async ({ sinon, },) => {
               const compactStub = sinon
                 .stub(
-                  CompactClient.prototype,
+                  MorphCompactClient.prototype,
                   'compact',
                 )
                 .resolves(
@@ -208,7 +208,7 @@ await describe({
             fn: async ({ sinon, },) => {
               const compactStub = sinon
                 .stub(
-                  CompactClient.prototype,
+                  MorphCompactClient.prototype,
                   'compact',
                 )
                 .resolves(
@@ -245,7 +245,7 @@ await describe({
             fn: async ({ sinon, },) => {
               const compactStub = sinon
                 .stub(
-                  CompactClient.prototype,
+                  MorphCompactClient.prototype,
                   'compact',
                 )
                 .resolves(
@@ -284,7 +284,7 @@ await describe({
             fn: async ({ sinon, },) => {
               sinon
                 .stub(
-                  CompactClient.prototype,
+                  MorphCompactClient.prototype,
                   'compact',
                 )
                 .resolves(
@@ -314,7 +314,7 @@ await describe({
             fn: async ({ sinon, },) => {
               const compactStub = sinon
                 .stub(
-                  CompactClient.prototype,
+                  MorphCompactClient.prototype,
                   'compact',
                 )
                 .resolves(
@@ -356,7 +356,7 @@ await describe({
             fn: async ({ sinon, },) => {
               const compactStub = sinon
                 .stub(
-                  CompactClient.prototype,
+                  MorphCompactClient.prototype,
                   'compact',
                 )
                 .resolves(

@@ -92,7 +92,7 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
  * ```typescript
  * const key = await resolveMorphApiKey();
  * if (key !== undefined) {
- *   const client = new CompactClient({ morphApiKey: key });
+ *   const client = new MorphCompactClient({ morphApiKey: key });
  * }
  * ```
  */
