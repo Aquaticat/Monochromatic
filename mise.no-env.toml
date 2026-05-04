@@ -64,8 +64,12 @@ cargo-binstall = "latest"
 # Compression
 "github:facebook/zstd" = "latest"
 
-# AI inference server for local development (packages/webapp-productivity/done)
-"github:ggml-org/llama.cpp" = "latest"
+# AI inference server for local development (packages/webapp-productivity/done).
+# Pinned (not "latest") because llama.cpp's release pipeline tags before the
+# Linux build finishes uploading, so any "latest" install run during that
+# window fails to find a ubuntu-x64 asset. Bump manually after verifying the
+# target tag has all 28 assets (including llama-bNNNN-bin-ubuntu-x64.tar.gz).
+"github:ggml-org/llama.cpp" = "b9019"
 
 opentofu = "latest"
 hcloud = "latest"

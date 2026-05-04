@@ -20,11 +20,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install mise
+      - name: Set up mise (skip auto-install of all tools)
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
         with:
-          install: true
+          install: false
           cache: true
+
+      - name: Install only the tools this workflow needs
+        # The root mise.toml lists ~25 tools (including llama.cpp, which
+        # intermittently lacks a Linux release at install time). This scan
+        # only needs rust (for the cargo build), hk (the runner), and pkl
+        # (hk's config language).
+        run: mise install rust 'aqua:jdx/hk' 'aqua:apple/pkl'
 
       - name: Cache cargo registry + scanner build
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
