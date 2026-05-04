@@ -141,6 +141,7 @@ and any context that required investigation or experimentation to uncover.
 #### Documentation standards
 
 - No emojis in human-readable content
+- No em-dashes (`—`) or en-dashes (`–`); they're informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges
 - Sentence case for headings; **bold** for emphasis (not ALL CAPS)
 - Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy
 - Present tense for current state, future tense only for planned features
@@ -395,4 +396,4 @@ Five canonical roles with default label strings. See `docs/agents/triage-labels.
 
 ### Domain docs
 
-No context files — agents read fresh code on every probe. See `docs/agents/domain.md`.
+No context files: agents read fresh code on every probe. See `docs/agents/domain.md`.
