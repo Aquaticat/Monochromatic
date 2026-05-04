@@ -134,9 +134,12 @@ async function runVerify(): Promise<boolean> {
       // Unexpected in a Node environment: the process is running JS,
       // which almost always means there is a node_modules upward.
       // Surface this so a silently-missing file sink is diagnosable.
-      console.warn(
-        `logger fs sink disabled: no ancestor node_modules found from cwd ${process.cwd()}`,
-      );
+      // UPDATE: Will cause noise when the thing being ran is a bin,
+      // and running for a different language ecosystem.
+      // Disabled by default.
+      // console.warn(
+      //   `logger fs sink disabled: no ancestor node_modules found from cwd ${process.cwd()}`,
+      // );
       available = false;
       return false;
     }
