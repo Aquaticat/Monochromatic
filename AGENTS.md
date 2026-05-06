@@ -1,104 +1,8 @@
 # Development Guidelines for AI Agents
 
-## Working Environment
+This document is organized by moment of decision, not by topic. When you reach a particular point in the work (about to respond, about to run a command, about to edit code, about to declare done), the corresponding section contains every rule that applies. Cross-cutting reference material (workspace conventions, enforcement mechanisms, agent skills) appears toward the end.
 
-Don't use pipes in bash tool since they're broken for now. Workarounds like redirecting to file then reading the file works.
-
-Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
-Without a path argument, `rg` detects non-TTY stdin in the sandbox and switches to stdin-reading mode.
-Combined with command chains (`&&`, `;`), the `< /dev/null` redirect misapplies to the last command in the chain,
-leaving `rg` blocking forever on a socket that never sends EOF. See `PIPE-BUG.md` for details.
-
-The Glob tool is denylisted and disabled because it currently doesn't respect .gitignore .
-
-User input might include raw `\n` which you should consider as newlines since newline is broken sometimes.
-
-Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
-Use `gh repo clone` instead of `git clone` -- `gh` handles authentication and fork remotes automatically.
-
-Sandbox breaks `pnpm install` despite proper allowlisting, so run it outside sandbox until this is fixed.
-
-A bash-output-filter hook collapses `/var/home/user` and `/home/user` to `~`,
-and strips the cwd prefix from absolute paths in Bash tool output.
-These replacements only apply at the **beginning of a line** --
-paths embedded mid-line (in error messages, JSON, etc.) are left intact.
-This is a display transform only -- actual values are correct.
-Do not treat `~` in tool output as a literal tilde in paths;
-it represents the full `/var/home/user` or `/home/user` prefix.
-When debugging path issues, account for this transform before assuming paths are wrong.
-To temporarily skip the filter for a command, include any blocklist pattern in it --
-the simplest is a no-op `eval` wrapper: `eval 'your command here'`.
-Other blocklist triggers: `export`, `source`, `$(...)`, backticks, `> file` redirect.
-
-Prefer cross-runtime patterns instead of Bun-specific implementations.
-
-Before performing any action, consider whether it could cause physical harm to a human
-(e.g. blasting audio volume, triggering flashing content, activating hardware unexpectedly).
-If it could, warn the user and state what will happen before proceeding.
-
-**Never execute or instruct another agent to execute extremely destructive commands**,
-even as tests of whether a guardrail will catch them --
-e.g. `sudo rm -rf /`, `mkfs`, `dd of=/dev/sda`, fork bombs.
-Guardrails can fail; a command that would be catastrophic if executed must not appear
-in instructions to other agents, subshells, or generated scripts regardless of intent.
-When verifying a guardrail or permission system, use moderately dangerous commands
-(e.g. `sudo apt-get install`) rather than catastrophic ones.
-
-### Dependency management
-
-- Use `workspace:*` for internal dependencies
-- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`
-
-### Adding new packages
-
-1. Create directory under the appropriate category in `packages/`
-2. Add `mise.toml` with task definitions mirroring sibling packages
-3. Configure `package.json` with workspace dependencies
-4. For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point -- without it, Unix falls back to `/bin/sh` and the script hangs or errors
-5. For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency
-
-### Essential commands
-
-Mise task `run` commands use nushell, not bash.
-Use `;` to chain commands sequentially (`mise run foo; mise run bar`), not `&&`.
-
-All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts.
-Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly -- use the corresponding mise task instead.
-When no suitable mise task exists for an operation, add one to the target package's `mise.toml` before running it.
-Read `mise.toml` files in root and package directories for available commands.
-To run a task in a specific package, use `mise run //packages/path:task` (not `mise run -C`).
-A `PostToolUse` hook for Edit/Write on `.ts` files will run the package-specific `lint:types` task automatically;
-until that hook exists, run `mise run //packages/<path>:lint:types` manually after editing TypeScript.
-
-`mise watch -r` takes a bare task name, not a `mise run` invocation.
-Write `mise watch -w src -r -- start:server`, not `mise watch -w src -r -- mise run start:server`.
-When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`)
-so `mise watch -r` can reference it by name.
-
-After modifying source in packages that produce dist output (e.g. `module-es`),
-always verify with `mise run buildAndTest` instead of running tests alone.
-Tests import from the built dist, so a stale build causes false failures.
-To run a specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
-
-### Workspace conventions
-
-Use the current date from the system prompt environment.
-
-Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer.
-Before editing any root config file, check `file-enforcer.config.ts` to see if it is a managed output -- if so, edit the source file instead and run file-enforcer.
-
-In spec mode, keep researching and gathering context until the user explicitly asks to draft or exit.
-
-### Research tools
-
-- `rg` -- fast text search; use directly rather than navigating directory trees; `rg --files` to find files by glob
-- `agent-browser` -- headless browser automation CLI; use for fetching rendered web pages, taking screenshots, interacting with web UIs, and verifying deployed web applications
-- `FetchUrl` -- fetch documentation sites, npm pages, GitHub READMEs; raw source is still useful when docs are incomplete
-- `gh` -- query GitHub for issues, PRs, release notes, and repository metadata
-- Web search cannot inspect package internals (sizes, dependency trees, source code); clone repos to `/tmp` or install packages instead
-- Do not remove cloned repos or other audit artifacts from `/tmp`; the user will clean them up when ready
-
-## Communication & Documentation
+## Before responding to the user
 
 ### Communication style
 
@@ -131,7 +35,9 @@ Propose a concrete AGENTS.md change (what rule, where it goes, exact wording)
 so future sessions don't repeat the same failure.
 Do both: perform the expected action **and** propose the AGENTS.md edit.
 
-#### Pre-response checklist
+When proposing the edit, also check whether existing rules can be merged, sharpened, or removed. The "I was expecting you to..." mechanism is monotonic by default (every unmet expectation adds rules), which leads to unbounded growth. Counteract it: if a new rule duplicates or overlaps an existing one, merge instead of appending. If an existing rule has been overtaken by a sharper version, remove the older rule. AGENTS.md should grow only when no existing rule covers the failure mode.
+
+### Pre-response checklist
 
 Before sending any response with substantive claims, run through these checks. Each one corresponds to a failure mode that has shipped wrong answers in past sessions.
 
@@ -139,10 +45,12 @@ Before sending any response with substantive claims, run through these checks. E
 2. Did you describe how an external tool works without reading its source? Clone and read, or label the claim as recall-from-training.
 3. Did you estimate the difficulty of a fix you have not built? Drop the estimate.
 4. Did you use a hedge phrase ("probably", "maybe", "likely", "most likely", "I think", "should be", "fairly", "roughly") without backing? Verify or remove the hedge.
-5. Did you assume a fact about the user's environment (codebase size, dependency choice, deployment target, team size, performance constraints)? Ask or measure first.
-6. Did you cite a file path or line number? If yes, verify it exists; if you described source behavior without one, add the citation.
+5. Did you assume a measurable fact about the user's environment (codebase size, dependency tree, build time, file contents)? Measure it; do not ask.
+6. Did you assume a non-measurable preference (which approach the user prefers, what they value)? Ask; do not assume a default.
+7. Did you cite a file path or line number? If yes, verify it exists; if you described source behavior without one, add the citation.
+8. Did you make a confident factual claim without naming what backs it? Either name the verification step inline ("verified by reading X.ts:42") or downgrade to a labeled guess.
 
-#### Measure before you characterize
+### Measure before you characterize
 
 Never apply a quantitative adjective to anything in the user's environment without running a measurement command first. This includes "small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant".
 
@@ -154,15 +62,20 @@ Examples of the required measurement:
 - Dependency count: `pnpm ls --depth=0` or count entries in `package.json`
 - Fix complexity: read the source code path that would change
 
-If you cannot run the measurement command yourself, ask the user. Never guess and never characterize without a number behind the adjective.
+Run the measurement yourself. The agent has the tools; using them is the agent's job, not the user's. Do not ask the user "how big is your codebase?" when `tokei` runs in a second. An employee who pushes measurable questions back at their boss is doing the wrong job.
 
-#### Ask before assuming user-environment facts
+### Ask only for non-measurable facts
 
-When your answer depends on a fact about the user's setup that you have not measured, either measure it directly or ask. Never assume a default and proceed. Wrong assumptions about the user's situation produce confidently-wrong answers, which damage trust more than a one-line clarification request would.
+When your answer depends on a non-measurable fact about the user (preferences, design intent, authorization, decisions between approaches that have real tradeoffs), ask. Do not assume defaults. Wrong assumptions about preferences produce confidently-wrong recommendations, which damage trust more than a one-line clarification would.
 
-This rule fires whenever you catch yourself thinking "for a project like this..." or "in a typical setup..." -- the assumption hidden in those phrases needs verification.
+Distinguish carefully between the two cases:
 
-#### Hedge phrases that signal a skipped step
+- Measurable: codebase size, build time, file count, dependency tree, test count, performance numbers, configuration values, file contents. **Measure these.** Asking is the wrong move.
+- Non-measurable: which of two valid approaches the user prefers, whether they want a particular feature, whether they authorize a destructive action, what they value (depth vs governance, speed vs clarity). **Ask these.** Assuming is the wrong move.
+
+The failure mode in both directions: asking the user something you could have measured (lazy, wastes their time), or assuming something you should have asked (confidently wrong, damages trust). This rule fires whenever you catch yourself thinking "for a project like this..." or "in a typical setup..." -- the assumption hidden in those phrases is either measurable (go measure it) or a preference (go ask).
+
+### Hedge phrases that signal a skipped step
 
 These phrases are usually evidence that a research step was skipped. Do not write them; do the step instead.
 
@@ -178,115 +91,84 @@ These phrases are usually evidence that a research step was skipped. Do not writ
 
 The `ccsr` stop hook catches some of these phrases at response-send time and rejects the turn. Internal self-catch is faster than the hook because it lets you fix the problem before sending.
 
-#### Document non-obvious findings
+**Exception: genuine uncertainty.** When the honest answer is "I do not know and the question is genuinely under-determined after investigation," state that explicitly. Name what you did investigate and what specifically is unresolved. The antipattern this rule targets is hedging as a substitute for research, not hedging as an honest report of remaining uncertainty after research is complete. "I read X.ts:42 and the type can be either A or B depending on a runtime branch I cannot determine statically" is not a hedge; "the fix is probably small" without reading anything is.
+
+### Name the verification step
+
+Confident factual claims about the user's environment, an external tool's behavior, or source code must be paired with the verification that backs them. State the evidence inline:
+
+- "the bug is in `ci.py:851` (read the source)"
+- "the codebase has 158k TS LOC across 1,903 files (`tokei` output above)"
+- "express 4.x is supported (verified by reading the package's README at the cloned repo)"
+
+Confident-but-unbacked claims are the failure mode this catches. They read identically to verified claims, so the user cannot tell which to trust until something breaks. If you cannot name what backs a claim, downgrade to a labeled guess ("I have not verified this, but my reading-from-training is...") or do the verification.
+
+### Document non-obvious findings
 
 When discovering something that would not be immediately obvious to a future reader,
 document it in the relevant readme or doc file right away.
 This includes implementation details, behavioral quirks, implicit constraints,
 and any context that required investigation or experimentation to uncover.
 
-#### Documentation standards
+### Research tools
 
-- No emojis in human-readable content
-- No em-dashes (`—`) or en-dashes (`–`); they're informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges
-- Sentence case for headings; **bold** for emphasis (not ALL CAPS)
-- Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy
-- Present tense for current state, future tense only for planned features
-- Eliminate unnecessary connecting phrases
+- `rg` -- fast text search; use directly rather than navigating directory trees; `rg --files` to find files by glob
+- `agent-browser` -- headless browser automation CLI; use for fetching rendered web pages, taking screenshots, interacting with web UIs, and verifying deployed web applications
+- `FetchUrl` -- fetch documentation sites, npm pages, GitHub READMEs; raw source is still useful when docs are incomplete
+- `gh` -- query GitHub for issues, PRs, release notes, and repository metadata
+- Web search cannot inspect package internals (sizes, dependency trees, source code); clone repos to `/tmp` or install packages instead
+- Do not remove cloned repos or other audit artifacts from `/tmp`; the user will clean them up when ready
 
-#### Handling external changes
+## Before running a command
 
-- Acknowledge externally modified files; ask before reverting
-- Do not proceed with implementing features that will not achieve their intended effect
-- Explain when a tool/command does not support requested functionality instead of creating non-functional code
+Pipes in the Bash tool are unreliable; the Claude Code issue tracking the bug has been open without response and is treated as wontfix. Workarounds: redirect to a file then read the file.
 
-### TSDoc comments
+Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
+Without a path argument, `rg` detects non-TTY stdin in the sandbox and switches to stdin-reading mode.
+Combined with command chains (`&&`, `;`), the `< /dev/null` redirect misapplies to the last command in the chain,
+leaving `rg` blocking forever on a socket that never sends EOF. See `PIPE-BUG.md` for details.
 
-Write comprehensive TSDoc for **all** declarations (exported or not, including locals): functions, types, constants, classes, enums, variables, interfaces.
-Adhere to `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
-Use `{@inheritDoc originalFn}` for non-async wrappers.
+The Glob tool is denylisted and disabled because it does not respect .gitignore. This is unlikely to change.
 
-- Use `${ // comment \n '' }` to embed comments inside template literals; do not use target-language comments or move the comment outside the template
-- TSDoc (`/** */`) for declarations only; use `//` or `/* */` for statements, control flow, imports, returns
-- TSDoc must directly precede a declaration, not a statement
-- Comments on their own line above code, never inline after code
-- Escape `*/` as `*\\/` inside TSDoc blocks
-- Avoid `the`/`a`/`an` in `@param`/`@returns`; explain **why**, not **what**
-- Do not mention Promise wrapping for async functions
-- Include `@example` tags with usage examples
+Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
+Use `gh repo clone` instead of `git clone` -- `gh` handles authentication and fork remotes automatically.
 
-### Markdown conventions
+Sandbox breaks `pnpm install` despite proper allowlisting; run it outside sandbox. Claude Code has marked this wontfix.
 
-- Break lines at semantic boundaries so text reads naturally without editor wrapping; **bold** for emphasis; no *italics*
-- `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`)
-- Fenced code blocks with language tags; include file paths as comments
-- Reference-style links for repeated URLs; relative links for internal docs
-- No tables -- use headings or lists instead
-- ATX headers, max 4 levels, blank line before headers, lines under 120 chars
+### Bash output path collapse
 
-### Git commit guidelines
+Rule: do not treat `~` in Bash tool output as a literal tilde. It is a display substitution for `/var/home/user` or `/home/user` applied by the `bash-output-filter` hook, plus stripping of the current cwd prefix.
 
-Conventional Commits format: `<type>(<scope>): <subject>`.
-Default to committing all working tree changes together unless instructed otherwise.
+Why: the substitution makes Bash output more readable. It applies only at the start of a line, so paths embedded inside JSON or error messages are unaffected. The actual filesystem values are unchanged; this is display-only. When debugging a path issue, account for the transform before concluding the path is wrong.
 
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-Scope: package name or `*` for multi-package changes.
+Workaround: to skip the filter for one command, include any blocklist trigger. The simplest is `eval 'your command here'`. Other triggers: `export`, `source`, `$(...)`, backticks, `> file` redirect.
 
-- Group related changes by type; be specific about what changed
-- Include ALL changes in a single comprehensive commit message
-- Focus on "what" and "why"
+### Physical-harm consideration
 
-## Development Practices
+Before performing any action, consider whether it could cause physical harm to a human
+(e.g. blasting audio volume, triggering flashing content, activating hardware unexpectedly).
+If it could, warn the user and state what will happen before proceeding.
+
+### Destructive command ban
+
+**Never execute or instruct another agent to execute extremely destructive commands**,
+even as tests of whether a guardrail will catch them --
+e.g. `sudo rm -rf /`, `mkfs`, `dd of=/dev/sda`, fork bombs.
+Guardrails can fail; a command that would be catastrophic if executed must not appear
+in instructions to other agents, subshells, or generated scripts regardless of intent.
+When verifying a guardrail or permission system, use moderately dangerous commands
+(e.g. `sudo apt-get install`) rather than catastrophic ones.
+
+## Before editing code
 
 ### Act, don't annotate
 
 Move changes where they belong immediately -- different file, new file, gitignore entry.
 When unsure, propose a concrete edit and location.
 
-### Package completeness
+### Cross-runtime preference
 
-A package is not finished until:
-
-- It has a `README.md`
-- It passes linting with zero errors
-- It has tests that cover every exported code path, and those tests pass
-
-Do not declare work complete while any condition is unmet.
-
-### Test coverage must match the public API surface
-
-When writing or reviewing tests for a module,
-enumerate every distinct code path the module exposes --
-not just the obvious happy path.
-If the implementation has separate branches for sync vs async,
-string vs object, direct vs delegated,
-each branch needs its own test.
-
-"Tests exist and pass" is not evidence of completeness.
-Before declaring a test file done,
-compare the test names against the implementation's branches
-and confirm there is no untested path.
-A test file that covers sync matchers but skips async matchers
-is the same as no tests for the async path -- the bug ships silently.
-
-### Verify at the user boundary
-
-After building, deploying, or installing an artifact, run a verification step that exercises
-the artifact the way an end user would consume it.
-Building, bundling, and installing are prerequisites -- not proof that the artifact works.
-
-- Server: confirm it serves correct responses, not just that it starts
-- CLI tool: run a real command and check the output
-- Hook/plugin: trigger it through the host application, not just by piping test input directly
-- Library: import and call it from a consuming project, not just compile it
-- Web page: fetch the served HTML and confirm content renders
-
-The verification must cross the integration boundary between the artifact and its consumer.
-If the only evidence of success is "it compiled" or "it installed," the task is not verified.
-
-### Hooks and automation
-
-Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions to prevent recursive token burn.
+Prefer cross-runtime patterns instead of Bun-specific implementations.
 
 ### Script preferences
 
@@ -297,30 +179,9 @@ Add explicit guards (transcript size check, env var flag, session type filter) t
 
 Only pin versions with clear justification and a comment explaining why.
 
-### Test assumptions before encoding them
+### Hooks and automation
 
-When writing instructions, configuration, or documentation that prescribes how a tool or API behaves,
-test the claim first with a real invocation.
-Do not write "use X for Y" based on how X **should** work --
-run X against a real target and confirm the output before committing to the approach.
-This applies to agent prompts, README guidance, CI scripts, and any artifact that future sessions will follow.
-
-### Third-party libraries
-
-- Immediately retrieve documentation on undefined method errors
-- Check actual type definitions before using APIs
-- Pay attention to CLI tool command patterns across examples; test the simplest case first
-- Never modify files in cloned third-party repositories -- use configuration, env vars, or wrapper scripts
-- When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its source and read the relevant code path. This applies whether you encountered the bug yourself, are summarizing a tracker issue without diagnosis, or are estimating how hard a fix would be. A linked issue without diagnosis is not evidence the bug is undiagnosable; it is evidence nobody has diagnosed it yet, and the next investigator can be you. "No public diagnosis exists" is never a valid stopping point when the source is open. When citing a finding from cloned source, quote the file path, line number, and the relevant code excerpt so the user can verify your reasoning
-- After investigating, write a detailed entry in the appropriate `TROUBLESHOOTING.*.md` file covering: minimal repro, root cause with exact source locations, verified solutions, and what does not work
-- When documenting an upstream bug or documentation error,
-  always include an exact source code trace (file paths, line numbers, code snippets)
-  that proves the claim -- never assert "the source does X" without showing the code path.
-  Also include a draft GitHub issue at the end of the document,
-  ready to file against the upstream repository,
-  with title, labels, description, reproduction steps, and suggested fix.
-
-## Code Quality
+Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions to prevent recursive token burn.
 
 ### Simplification
 
@@ -373,7 +234,22 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Native CSS nesting; shallow depth (3 levels max)
 - Data attributes for state/variant styling instead of BEM modifiers
 
-## TypeScript Standards
+### TSDoc comments
+
+Write comprehensive TSDoc for **all** declarations (exported or not, including locals): functions, types, constants, classes, enums, variables, interfaces.
+Adhere to `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
+Use `{@inheritDoc originalFn}` for non-async wrappers.
+
+- Use `${ // comment \n '' }` to embed comments inside template literals; do not use target-language comments or move the comment outside the template
+- TSDoc (`/** */`) for declarations only; use `//` or `/* */` for statements, control flow, imports, returns
+- TSDoc must directly precede a declaration, not a statement
+- Comments on their own line above code, never inline after code
+- Escape `*/` as `*\\/` inside TSDoc blocks
+- Avoid `the`/`a`/`an` in `@param`/`@returns`; explain **why**, not **what**
+- Do not mention Promise wrapping for async functions
+- Include `@example` tags with usage examples
+
+### TypeScript standards
 
 - Adhere to ESLint, Oxlint, dprint configurations
 - Use `//region`/`//endregion` markers with purpose and explanation for logical code sections
@@ -398,7 +274,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - `const` generic parameters; `readonly` array parameters; meaningful constraint names (e.g. `TData`)
 - Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types
 - Use assertion functions (`asserts value is T`) for runtime type narrowing
-- TypeScript does not propagate `const` narrowing into **function declarations** (both tsc and tsgo); `checker.ts:31181-31192` only extends flow analysis across `FunctionExpression`, `ArrowFunction`, and method/accessor closures because declarations are hoisted and could be called before the narrowing guard. Fix: use a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check
+- TypeScript does not propagate `const` narrowing into **function declarations** (both tsc and tsgo); the compiler only extends flow analysis across `FunctionExpression`, `ArrowFunction`, and method/accessor closures, because declarations are hoisted and could be called before the narrowing guard. Fix: use a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check
 - Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures
 
 ### Variables and values
@@ -424,12 +300,174 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - No `switch` statements -- use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value
 - Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`
 
-## Architecture Decisions
+## Before declaring work complete
+
+### Package completeness
+
+A package is not finished until:
+
+- It has a `README.md`
+- It passes linting with zero errors
+- It has tests that cover every exported code path, and those tests pass
+
+Do not declare work complete while any condition is unmet.
+
+### Test coverage must match the public API surface
+
+When writing or reviewing tests for a module,
+enumerate every distinct code path the module exposes --
+not just the obvious happy path.
+If the implementation has separate branches for sync vs async,
+string vs object, direct vs delegated,
+each branch needs its own test.
+
+"Tests exist and pass" is not evidence of completeness.
+Before declaring a test file done,
+compare the test names against the implementation's branches
+and confirm there is no untested path.
+A test file that covers sync matchers but skips async matchers
+is the same as no tests for the async path -- the bug ships silently.
+
+### Verify at the user boundary
+
+After building, deploying, or installing an artifact, run a verification step that exercises
+the artifact the way an end user would consume it.
+Building, bundling, and installing are prerequisites -- not proof that the artifact works.
+
+- Server: confirm it serves correct responses, not just that it starts
+- CLI tool: run a real command and check the output
+- Hook/plugin: trigger it through the host application, not just by piping test input directly
+- Library: import and call it from a consuming project, not just compile it
+- Web page: fetch the served HTML and confirm content renders
+
+The verification must cross the integration boundary between the artifact and its consumer.
+If the only evidence of success is "it compiled" or "it installed," the task is not verified.
+
+### Test assumptions before encoding them
+
+When writing instructions, configuration, or documentation that prescribes how a tool or API behaves,
+test the claim first with a real invocation.
+Do not write "use X for Y" based on how X **should** work --
+run X against a real target and confirm the output before committing to the approach.
+This applies to agent prompts, README guidance, CI scripts, and any artifact that future sessions will follow.
+
+## When investigating problems
+
+### Third-party libraries
+
+- Immediately retrieve documentation on undefined method errors
+- Check actual type definitions before using APIs
+- Pay attention to CLI tool command patterns across examples; test the simplest case first
+- Never modify files in cloned third-party repositories -- use configuration, env vars, or wrapper scripts
+- When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its source and read the relevant code path. This applies whether you encountered the bug yourself, are summarizing a tracker issue without diagnosis, or are estimating how hard a fix would be. A linked issue without diagnosis is not evidence the bug is undiagnosable; it is evidence nobody has diagnosed it yet, and the next investigator can be you. "No public diagnosis exists" is never a valid stopping point when the source is open. When citing a finding from cloned source, quote the file path, line number, and the relevant code excerpt so the user can verify your reasoning
+- After investigating, write a detailed entry in the appropriate `TROUBLESHOOTING.*.md` file covering: minimal repro, root cause with exact source locations, verified solutions, and what does not work
+- When documenting an upstream bug or documentation error,
+  always include an exact source code trace (file paths, line numbers, code snippets)
+  that proves the claim -- never assert "the source does X" without showing the code path.
+  Also include a draft GitHub issue at the end of the document,
+  ready to file against the upstream repository,
+  with title, labels, description, reproduction steps, and suggested fix.
+
+## When committing or documenting
+
+### Documentation standards
+
+- No emojis in human-readable content
+- No em-dashes (`—`) or en-dashes (`–`); they're informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges
+- Sentence case for headings; **bold** for emphasis (not ALL CAPS)
+- Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy
+- Present tense for current state, future tense only for planned features
+- Eliminate unnecessary connecting phrases
+
+### Markdown conventions
+
+- Break lines at semantic boundaries so text reads naturally without editor wrapping; **bold** for emphasis; no *italics*
+- `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`)
+- Fenced code blocks with language tags; include file paths as comments
+- Reference-style links for repeated URLs; relative links for internal docs
+- No tables -- use headings or lists instead
+- ATX headers, max 4 levels, blank line before headers, lines under 120 chars
+
+### Handling external changes
+
+- Acknowledge externally modified files; ask before reverting
+- Do not proceed with implementing features that will not achieve their intended effect
+- Explain when a tool/command does not support requested functionality instead of creating non-functional code
+
+### Git commit guidelines
+
+Conventional Commits format: `<type>(<scope>): <subject>`.
+Default to committing all working tree changes together unless instructed otherwise.
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+Scope: package name or `*` for multi-package changes.
+
+- Group related changes by type; be specific about what changed
+- Include ALL changes in a single comprehensive commit message
+- Focus on "what" and "why"
+
+## When working with the workspace
+
+### Dependency management
+
+- Use `workspace:*` for internal dependencies
+- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`
+
+### Adding new packages
+
+1. Create directory under the appropriate category in `packages/`
+2. Add `mise.toml` with task definitions mirroring sibling packages
+3. Configure `package.json` with workspace dependencies
+4. For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point -- without it, Unix falls back to `/bin/sh` and the script hangs or errors
+5. For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency
+
+### Essential commands
+
+Mise task `run` commands use nushell, not bash.
+Use `;` to chain commands sequentially (`mise run foo; mise run bar`), not `&&`.
+
+All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts.
+Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly -- use the corresponding mise task instead.
+When no suitable mise task exists for an operation, add one to the target package's `mise.toml` before running it.
+Read `mise.toml` files in root and package directories for available commands.
+To run a task in a specific package, use `mise run //packages/path:task` (not `mise run -C`).
+There is no `PostToolUse` lint:types hook yet. Run `mise run //packages/<path>:lint:types` manually after editing TypeScript. The hook is on the roadmap but at least a month out.
+
+`mise watch -r` takes a bare task name, not a `mise run` invocation.
+Write `mise watch -w src -r -- start:server`, not `mise watch -w src -r -- mise run start:server`.
+When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`)
+so `mise watch -r` can reference it by name.
+
+After modifying source in packages that produce dist output (e.g. `module-es`),
+always verify with `mise run buildAndTest` instead of running tests alone.
+Tests import from the built dist, so a stale build causes false failures.
+To run a specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
+
+### Workspace conventions
+
+Use the current date from the system prompt environment.
+
+Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer.
+Before editing any root config file, check `file-enforcer.config.ts` to see if it is a managed output -- if so, edit the source file instead and run file-enforcer.
+
+In spec mode (also called plan mode or pause mode), keep researching and gathering context until the user explicitly asks to draft or exit.
+
+## Architecture decisions
 
 - Root `package.json` may depend on workspace packages; root configs import by package name
 - Switch from config-as-data to TypeScript when config needs logic (`if`, `map`, `await`)
 - Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture
 - Nested calls (`c(b(a()))`) over method chaining to keep functions self-contained
+
+## Enforcement mechanisms
+
+Several hooks act on agent output and may block or modify actions. Knowing what each catches lets you avoid surprise rejections.
+
+- **`ccsr` stop hook** -- inspects the assistant response at send time and rejects turns containing certain hedge phrases ("probably", "maybe", "likely", "most likely", "I think", "should be", and similar). Rejection returns the message to you with feedback. To avoid: run the pre-response checklist and the hedge-phrases self-catch before sending. The hook also flags responses that end in a question to the user without using the `AskUserQuestion` tool.
+- **`bash-output-filter` hook** -- transforms Bash tool output (see "Bash output path collapse" above). Display only; does not modify actions. Triggers a bypass when the command contains `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
+- **`forbidden-strings` CI scan** -- runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; the scanner source is `packages/dev-script/forbidden-strings/`.
+
+A `PostToolUse` lint:types hook is on the roadmap but not yet implemented; for now, type-checking is manual (see "Essential commands" -> mise run lint:types).
 
 ## Agent skills
 
