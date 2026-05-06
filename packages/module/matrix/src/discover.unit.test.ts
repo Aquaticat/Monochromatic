@@ -10,6 +10,7 @@
 
 import {
   mkdir,
+  mkdtemp,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -45,12 +46,9 @@ type TempDir = {
  * @returns disposable temp directory handle
  */
 async function createTempDir(id: string,): Promise<TempDir> {
-  const path = join(
-    tmpdir(),
-    `${TEST_DIR_PREFIX}-${id}-${String(Date.now(),)}`,
+  const path = await mkdtemp(
+    join(tmpdir(), `${TEST_DIR_PREFIX}-${id}-`,),
   );
-
-  await mkdir(path, { recursive: true, },);
 
   return {
     path,
