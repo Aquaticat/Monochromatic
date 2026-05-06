@@ -161,6 +161,16 @@ When verifying a guardrail or permission system, use moderately dangerous comman
 
 ## Before editing code
 
+### Match action scope to the request verb
+
+Decision verbs ("decide", "evaluate", "assess", "review", "audit", "triage", "look at", "analyze", "investigate") request a deliberation. The deliverable is the answer; do not also apply the fixes the answer implies. Action verbs ("fix", "implement", "apply", "do", "change", "add", "remove", "update", "refactor") authorize the action.
+
+"Decide which security alerts we can fix immediately" is a triage request -- the deliverable is the categorized list. Applying the fixes is a separate decision the user has not yet made; surface a concrete proposal and wait for green-light.
+
+This holds in Auto Mode. Auto Mode's "prefer action over planning" applies to executing the requested action, not to expanding scope beyond what was requested. Auto Mode is not authorization to act on adjacent decisions the user has not made.
+
+When the verb is ambiguous, default to the narrower interpretation and propose the broader action explicitly.
+
 ### Act, don't annotate
 
 Move changes where they belong immediately -- different file, new file, gitignore entry.
