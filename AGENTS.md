@@ -131,6 +131,53 @@ Propose a concrete AGENTS.md change (what rule, where it goes, exact wording)
 so future sessions don't repeat the same failure.
 Do both: perform the expected action **and** propose the AGENTS.md edit.
 
+#### Pre-response checklist
+
+Before sending any response with substantive claims, run through these checks. Each one corresponds to a failure mode that has shipped wrong answers in past sessions.
+
+1. Did you make a quantitative claim (size, speed, complexity, difficulty, duration) without measuring? Measure or rephrase as a guess.
+2. Did you describe how an external tool works without reading its source? Clone and read, or label the claim as recall-from-training.
+3. Did you estimate the difficulty of a fix you have not built? Drop the estimate.
+4. Did you use a hedge phrase ("probably", "maybe", "likely", "most likely", "I think", "should be", "fairly", "roughly") without backing? Verify or remove the hedge.
+5. Did you assume a fact about the user's environment (codebase size, dependency choice, deployment target, team size, performance constraints)? Ask or measure first.
+6. Did you cite a file path or line number? If yes, verify it exists; if you described source behavior without one, add the citation.
+
+#### Measure before you characterize
+
+Never apply a quantitative adjective to anything in the user's environment without running a measurement command first. This includes "small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant".
+
+Examples of the required measurement:
+
+- Codebase size: `tokei` or `find . -name '*.ts' | xargs wc -l`
+- Build time: `time mise run build`
+- Test count: count test files or run with reporter
+- Dependency count: `pnpm ls --depth=0` or count entries in `package.json`
+- Fix complexity: read the source code path that would change
+
+If you cannot run the measurement command yourself, ask the user. Never guess and never characterize without a number behind the adjective.
+
+#### Ask before assuming user-environment facts
+
+When your answer depends on a fact about the user's setup that you have not measured, either measure it directly or ask. Never assume a default and proceed. Wrong assumptions about the user's situation produce confidently-wrong answers, which damage trust more than a one-line clarification request would.
+
+This rule fires whenever you catch yourself thinking "for a project like this..." or "in a typical setup..." -- the assumption hidden in those phrases needs verification.
+
+#### Hedge phrases that signal a skipped step
+
+These phrases are usually evidence that a research step was skipped. Do not write them; do the step instead.
+
+- "probably small/large/fast/slow" -- run the measurement
+- "the fix is probably small" -- read the source code path or drop the estimate
+- "I think it's a..." -- verify or explicitly label as a guess
+- "the most likely cause is..." -- reproduce or list candidates without ranking
+- "for a small codebase like yours" -- run `tokei` first
+- "this is a tractable PR" -- drop "tractable" or actually build the fix
+- "should be straightforward" -- drop "straightforward" or test the path
+- "no public diagnosis exists" used as a stopping point -- clone the source and diagnose it yourself
+- "an afternoon" or any other duration estimate -- only valid if you have built a similar fix in this codebase before; otherwise drop
+
+The `ccsr` stop hook catches some of these phrases at response-send time and rejects the turn. Internal self-catch is faster than the hook because it lets you fix the problem before sending.
+
 #### Document non-obvious findings
 
 When discovering something that would not be immediately obvious to a future reader,
@@ -264,7 +311,7 @@ This applies to agent prompts, README guidance, CI scripts, and any artifact tha
 - Check actual type definitions before using APIs
 - Pay attention to CLI tool command patterns across examples; test the simplest case first
 - Never modify files in cloned third-party repositories -- use configuration, env vars, or wrapper scripts
-- When encountering unexpected behavior from an external tool, clone its source and trace the exact code path to pinpoint the root cause before assuming a limitation or working around it
+- When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its source and read the relevant code path. This applies whether you encountered the bug yourself, are summarizing a tracker issue without diagnosis, or are estimating how hard a fix would be. A linked issue without diagnosis is not evidence the bug is undiagnosable; it is evidence nobody has diagnosed it yet, and the next investigator can be you. "No public diagnosis exists" is never a valid stopping point when the source is open. When citing a finding from cloned source, quote the file path, line number, and the relevant code excerpt so the user can verify your reasoning
 - After investigating, write a detailed entry in the appropriate `TROUBLESHOOTING.*.md` file covering: minimal repro, root cause with exact source locations, verified solutions, and what does not work
 - When documenting an upstream bug or documentation error,
   always include an exact source code trace (file paths, line numbers, code snippets)
