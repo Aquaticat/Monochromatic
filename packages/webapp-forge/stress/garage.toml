@@ -1,0 +1,35 @@
+# Single-node Garage configuration for stress tests.
+#
+# All paths are container-internal and persist via the volumes declared
+# in `garage.Dockerfile`. The `rpc_secret` is a fixed test value -- this
+# config is for ephemeral test containers only and must not be reused
+# in production.
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "sqlite"
+
+# `none` means single-node with no replication, the right setting for
+# the stress harness which only needs throughput, not durability.
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+rpc_secret = "0000000000000000000000000000000000000000000000000000000000000000"
+
+bootstrap_peers = []
+
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "[::]:3900"
+root_domain = ".s3.garage"
+
+[s3_web]
+bind_addr = "[::]:3902"
+root_domain = ".web.garage"
+index = "index.html"
+
+[admin]
+api_bind_addr = "[::]:3903"
+admin_token = "test-admin-token"
+metrics_token = "test-metrics-token"

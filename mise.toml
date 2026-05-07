@@ -26,7 +26,10 @@ config_roots = [
 bun = "latest"
 
 # Package manager
-"npm:pnpm" = "11.0.0-rc.1"
+# Pinned to major 11 instead of "latest" because pnpm has not promoted v11 to the npm `latest` dist-tag
+# (latest = 10.33.4, latest-11 = 11.0.6). Using "latest" can also briefly resolve to a pre-release if
+# upstream tags one as latest, after which mise refuses to walk back since 11.0.0-rc.1 > 10.33.4 by semver.
+"npm:pnpm" = "11"
 
 # aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
 "cargo:fd-find" = "latest"
@@ -545,6 +548,37 @@ description = "Clean reinstall to work around registry or resolution issues"
 run = "rm -rf node_modules; task-pnpm install"
 
 #endregion Fix Tasks
+
+#region Forge -- shortcuts to webapp-forge package tasks
+
+[tasks."forge:dev"]
+description = "Start the forge server in watch mode against in-memory storage + libSQL"
+run = "mise run //packages/webapp-forge/server:dev"
+
+[tasks."forge:seed"]
+description = "Seed synthetic forge data; --repos=N --users=N --seed=N --out=path"
+usage = 'arg "[args]" var=#true help="Forwarded to seed CLI"'
+run = """
+let args = ($env.usage_args? | default '' | split row ' ' | where {|p| $p != ''})
+bun packages/webapp-forge/seed/src/cli.ts ...$args
+"""
+
+[tasks."forge:stress"]
+description = "Run a forge stress scenario; --scenario=hot-repo|bursty-comment|wide-service|force-push (or all)"
+usage = 'arg "[args]" var=#true help="Forwarded to stress CLI"'
+run = """
+let args = ($env.usage_args? | default '' | split row ' ' | where {|p| $p != ''})
+bun packages/webapp-forge/stress/src/cli.ts ...$args
+"""
+
+[tasks."prepare:garage"]
+description = "Build and start a single-node Garage S3-compatible test container (replaces archived MinIO)"
+run = """
+task-depends -s "sh:echo Infinity" -o "sh:podman image exists monochromatic-garage && echo Infinity || echo -Infinity" -- podman build -t monochromatic-garage -f packages/webapp-forge/stress/garage.Dockerfile .
+podman run --rm -d --name monochromatic-garage-running -p 3900:3900 -p 3901:3901 -p 3903:3903 -v garage-data:/var/lib/garage -v garage-creds:/secrets monochromatic-garage
+"""
+
+#endregion Forge
 
 #endregion tasks
 

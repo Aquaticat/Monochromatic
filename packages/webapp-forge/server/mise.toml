@@ -1,0 +1,25 @@
+[tasks."start:server"]
+hide = true
+description = "Run the h3 forge server (used by dev:server under mise watch)"
+run = "bun src/index.ts"
+
+[tasks."dev:server"]
+description = "Start the forge server in watch mode"
+run = "mise watch -w src -r -- start:server"
+
+[tasks."dev"]
+description = "Start the forge server in watch mode against in-memory storage + libSQL"
+run = "mise run dev:server"
+
+[tasks.test]
+extends = "test"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+hide = true
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"

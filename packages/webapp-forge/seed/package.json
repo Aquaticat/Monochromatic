@@ -1,0 +1,23 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/webapp-forge-seed",
+  "description": "Synthetic-data generator for the webapp-forge stack. Mulberry32-RNG-driven users, repos, labels, issues, and comments with a long-tail size distribution.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./ts/*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/webapp-forge-server": "workspace:*",
+    "@tursodatabase/database": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

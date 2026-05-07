@@ -1,0 +1,25 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/webapp-forge-server",
+  "description": "GitHub-alternative forge: smart-HTTP git server, rebuild-on-write fragment cache, libSQL-backed event log, and an HTML fragment renderer pipeline.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./ts/*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@tursodatabase/database": "catalog:",
+    "aws4fetch": "catalog:",
+    "h3": "catalog:",
+    "p-limit": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}
