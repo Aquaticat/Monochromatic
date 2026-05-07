@@ -1,91 +1,68 @@
-# Phase 2 deferred work
+# Phase 2 status
 
 Phase 2 of the plan at `~/.claude/plans/let-s-put-our-effort-valiant-hopper.md`
-shipped in two parts. This file documents the items that did **not** ship in
-the first session and the constraints the next session needs to address.
+is largely complete. This file tracks what shipped, what remains, and the
+constraints around the remaining work.
 
 ## What shipped
 
+### Forge surface (queries, fragments, dispatcher, storage, stress)
+
 - Phase 2 schema (`orgs`, `repo_members`, `milestones`, `issue_assignees`,
-  `issue_milestone`, `prs`, `reviews`, `mention_index`) and queries; tests
-  green, migrations applied at boot.
-- S3 storage adapter (`aws4fetch`) implementing the `Storage` interface; round-trip
-  tested against an in-process fake fetch client.
-- Phase 2 fragment renderers (`pr-detail`, `review-thread`, `merge-status`,
-  `comment`); each pure, with XSS escape and dispatcher tests.
+  `issue_milestone`, `prs`, `reviews`, `mention_index`) and queries.
+- Fragment renderers for the four issue/PR surfaces: `pr-detail`,
+  `review-thread`, `merge-status`, `comment`. Each pure, with XSS escape
+  and dispatcher tests.
 - Dependency-graph extensions for `pr.opened`, `pr.merged`, `pr.closed`,
   `review.submitted`, `push`, and the standalone `comment.created` fragment.
 - Dispatcher event-kind expansion plus `commentId` payload extraction so the
   standalone-comment branch is wired end-to-end.
+- S3 storage adapter (`aws4fetch`) implementing the `Storage` interface;
+  round-trip tested against an in-process fake fetch client.
 - Garage Dockerfile + auto-init entrypoint + `prepare:garage` mise task.
 - Seed extension (`generate-phase2.ts`, `generate-phase2-prs.ts`,
   `generate-phase2-helpers.ts`) covering milestones, PRs, reviews, assignees,
   members.
-- `wide-service` stress scenario (single-writer over many sparse repos).
+- Stress scenarios `wide-service` (single-writer over many sparse repos) and
+  `force-push` (commit `feece259`).
 
-## What did not ship
+### Git smart-HTTP protocol (commit `41869e43`)
 
-### Git smart-HTTP protocol (task #16)
+The protocol layer ships in `src/git/`:
 
-Spike findings live in `packages/webapp-forge/server/TROUBLESHOOTING.isomorphic-git.md`.
-The spike confirmed isomorphic-git ships everything except sideband `mux`,
-`parseReceivePackRequest`, `writeReceivePackResponse`, and
-`writeUploadPackResponse` -- roughly 150 LOC of vendored wire code.
+- `pkt-line.ts` -- pkt-line frame encode/decode.
+- `pack-protocol.ts` + `pack-protocol-writers.ts` -- vendored
+  `parseUploadPackBody`, `parseReceivePackBody`,
+  `writeUploadPackResponse`, `writeReceivePackResponse`.
+- `iso-server.ts`, `iso-server-refs.ts`, `iso-server-walk.ts`,
+  `iso-server-advertisement.ts` -- ref read/write, pack assembly from the
+  isomorphic-git object store, pack apply on receive.
+- `lib/git-config.ts` -- `WEBAPP_FORGE_GITDIR_ROOT` env helper; default
+  is a per-process scratch dir under `os.tmpdir()`.
+- Routes: `info/refs`, `git-upload-pack`, `git-receive-pack` mounted in
+  `src/server/routes/git.ts`.
+- `isomorphic-git` added to the catalog at the same commit (avoids the
+  dead-dep noise the spike doc warned about).
 
-The next session needs:
+### Better Auth
 
-1. Decide the filesystem strategy. The spike doc lists two viable options
-   (real local scratch dir vs libSQL-backed virtual fs); the choice is currently
-   listed as "decision pending."
-2. Pick a default for `WEBAPP_FORGE_GITDIR_ROOT` and add the env-read helper
-   (e.g. `lib/git-config.ts`) before writing any pack-protocol code.
-3. Implement the four vendored wire helpers in `src/git/pack-protocol.ts`.
-4. Implement `iso-server.ts` (ref read/write, pack assembly from object store, pack
-   apply on receive) backed by isomorphic-git's `_pack`, `_readObject`, `_writeObject`,
-   `GitRefManager`, and `GitPackIndex.fromPack` primitives.
-5. Add the three routes: `info/refs`, `git-upload-pack`, `git-receive-pack`.
-6. Add an integration test that runs `git clone http://localhost:3000/x/y.git` and
-   `git push` against a freshly seeded repo. The plan's verification step calls
-   for round-tripping a 5 MB binary blob and a 100-ref batched push, so include
-   those.
-7. Add `isomorphic-git` to the catalog (deferred this session because dead deps
-   are noise; add it at the same commit as the protocol implementation).
-
-The git fragments (`file-tree`, `blob`, `diff`) ride on this work because their
-source data is git objects. Their fragment-key encoders are already in place
-(`fileTreeKey`, `blobKey`, `diffKey` in `worker/fragment-keys.ts`) so adding
-the renderers is mechanical once `iso-server.ts` exists.
-
-### Better Auth (task #15) -- shipped end-to-end
-
-The user picked option (a) "drop our users, adopt Better Auth's user model"
-and elected the `username` plugin to preserve the `@handle` UX.
-
-Auth surface (shipped in the first session):
-
-- Catalog deps for `better-auth`, `kysely`, `@libsql/client`, `@libsql/kysely-libsql`.
-- Migration `0003_better_auth.sql` adding `user`, `session`, `account`,
+- Migration `0003_better_auth.sql` adds `user`, `session`, `account`, and
   `verification` tables (with username plugin columns on `user`).
-- `lib/auth.ts` constructing the Better Auth instance against the same SQLite
-  file via the Kysely libsql dialect; `routes/auth.ts` mounting the combined
-  auth route table at `ALL /api/auth/**`.
-- End-to-end verified inside a podman container: sign-up, sign-in by email,
-  and sign-in by username all return 200 with valid tokens.
-
-Data-plane cutover (shipped in the second session):
-
-- Queries refactor: `data/queries/user-repo.ts` and `data/queries/membership.ts`
-  read from the Better Auth `user` table. SELECT aliases `username AS login`;
-  the `User` row converts `createdAt` ISO strings to ms epoch in JS so the
-  shape stays numeric and renderers do not change. `insertUser` writes to
-  `user` with synthesised `name`, `email`, `emailVerified=0`, `username`,
+- `lib/auth.ts` constructs the Better Auth instance against the same
+  SQLite file via the Kysely libsql dialect; `routes/auth.ts` mounts the
+  combined auth route table at `ALL /api/auth/**`.
+- Plugins wired: `username()` only. Email/password is enabled via the
+  base config (`emailAndPassword.enabled = true`).
+- Migration `0004_drop_users.sql` performs the destructive cutover: drops
+  every legacy table referencing `users(id)` and recreates them with
+  `REFERENCES user(id)`. Guarded in `data/db.ts` by inspecting `repos.sql`
+  for the post-cutover FK signature so it runs at most once per database.
+- Queries in `data/queries/user-repo.ts` and `data/queries/membership.ts`
+  read from the Better Auth `user` table. SELECT aliases `username AS
+  login`; the `User` row converts `createdAt` ISO strings to ms epoch in
+  JS so the shape stays numeric and renderers do not change. `insertUser`
+  writes synthesised `name`, `email`, `emailVerified=0`, `username`,
   `displayUsername`, and ISO `createdAt`/`updatedAt`.
-- Migration `0004_drop_users.sql`: destructive cutover that drops every
-  legacy table referencing `users(id)` and recreates them with
-  `REFERENCES user(id)`. Guarded in `data/db.ts` by inspecting
-  `repos.sql` for the post-cutover FK signature so it runs at most once
-  per database (subsequent boots skip the destructive section and
-  preserve data).
 - Session middleware: `requireActor` resolves the actor from
   `auth.api.getSession({ headers })`. The legacy `X-Forge-User: <login>`
   header is honoured as a non-production fallback so seed-driven smoke
@@ -93,56 +70,75 @@ Data-plane cutover (shipped in the second session):
   it and a missing session yields 401.
 - `/api/me/delta?path=...` per-viewer JSON delta. Returns
   `{ actor, path, authored: { issues, comments }, permissions: { canClose, canLabel } }`.
-  Recognises `/owner/repo/issues/N` and `/owner/repo/issues` paths; other
-  paths receive an empty payload so the contract stays stable.
+  Recognises `/owner/repo/issues/N` and `/owner/repo/issues` paths;
+  other paths receive an empty payload so the contract stays stable.
   Permissions are derived from `repo_members.role` (write roles:
   `owner`, `maintainer`); a repo owner identified by
   `repos.owner_id == actor.id` is also treated as a writer regardless
-  of whether they hold an explicit `repo_members` row.
+  of whether they hold an explicit `repo_members` row (commit
+  `eceaa259`).
 
-The `as unknown as Auth` cast in `lib/auth.ts` is required because Better
-Auth's deeply-inferred `Auth<TConfig>` is structurally a subtype of the
-public `Auth` interface but its plugin tuple is invariant under
+The `as unknown as Auth` cast in `lib/auth.ts` is required because
+Better Auth's deeply-inferred `Auth<TConfig>` is structurally a subtype
+of the public `Auth` interface but its plugin tuple is invariant under
 `isolatedDeclarations`. Documented inline.
 
-Known follow-up (not strictly required for the cutover to work):
+End-to-end verified inside a podman container: sign-up, sign-in by
+email, and sign-in by username all return 200 with valid tokens.
+
+## What remains
+
+### Git object fragments (file tree, blob, diff)
+
+The plan calls for `file-tree`, `blob`, and `diff` fragment renderers
+alongside the four that shipped. None exist yet; only their fragment-key
+encoders (`fileTreeKey`, `blobKey`, `diffKey` in
+`worker/fragment-keys.ts:174,195,216`) are in place. Implementation is
+mechanical now that `iso-server.ts` exists -- the renderers read git
+objects via the iso-server primitives and produce JSX the same way the
+issue/PR fragments do.
+
+### Magic-link auth
+
+The plan lists "Better Auth: email/password, sessions, magic links" --
+email/password and sessions ship; the magic-link plugin is not wired.
+Adding it is `import { magicLink } from 'better-auth/plugins'` plus a
+`sendMagicLink` callback (transport TBD: SMTP / SES / log-only for dev).
+
+### Real-CLI git protocol verification
+
+Current tests (`pkt-line.unit.test.ts`, `pack-protocol.unit.test.ts`,
+`iso-server.unit.test.ts`, `routes/git.unit.test.ts`) cover wire framing
+and small in-process roundtrips through h3's `app.fetch()`. The plan's
+verification step calls for a real `git clone` / `git push` from the
+system CLI against a freshly seeded repo, including a 5 MB binary blob
+and a 100-ref batched push. Neither test exists. Adding requires
+spawning a real `git` subprocess pointed at a `serve()`-bound port.
+
+### Known follow-up (not blocking)
 
 - The dev-only `X-Forge-User` escape exists in `routes/helpers.ts` and
   `routes/me.ts`. Once tests are migrated to use Better Auth sessions,
   the fallback can be removed.
 
-## Verification of what shipped
+## Verification snapshot
 
-`mise run //packages/webapp-forge/server:lint:oxlint` (and `:lint:types`),
-same for `seed` and `stress`: all clean.
+Lint clean: `mise run //packages/webapp-forge/server:lint:oxlint` and
+`:lint:types`, same for `seed` and `stress`.
 
-15 unit-test files pass with 76 total cases:
-
-```text
-- server:    9 files / 53 tests
-- seed:      1 file  /  6 tests
-- stress:    --      / scenarios run via CLI
-
-Includes: storage adapter round-trips (memory + S3 fake), write-buffer
-contracts, dispatcher Phase 1 + Phase 2, dependency-graph map, all 6 fragment
-renderers (XSS + structure), Phase 2 queries (orgs / membership / milestones /
-PRs / reviews / mentions), and the deterministic RNG.
-```
-
-Stress runs:
+Tests pass via the new `test:unit` task (commit `16a01b22` fixed the
+fanout discovery so `mise run //packages/webapp-forge/<pkg>:test`
+actually executes the suite):
 
 ```text
-| scenario       | duration ms | events | p50 ms | p99 ms | violations |
-| hot-repo       | 1025        | 10     | 2      | 3      | none       |
-| bursty-comment | 1007        | 10     | 1      | 2      | none       |
-| wide-service   | 1011        | 10     | 1      | 1      | none       |
+- server: 18 unit-test files / 101 PASS / 0 FAIL
+- seed:   1  unit-test file  / 6   PASS / 0 FAIL
+- stress: 0  unit-test files (CLI scenarios only)
 ```
 
-Seed CLI smoke (using Phase 2 resources):
-
-```text
-bun packages/webapp-forge/seed/src/cli.ts --repos=2 --users=5 \
-    --max-issues-per-repo=3 --seed=7
-# users=5 repos=2 labels=8 issues=5 comments=15
-# milestones=5 prs=6 reviews=13 assignees=7 members=5
-```
+Server coverage spans storage adapters (memory + S3 fake), write-buffer
+contracts, dispatcher Phase 1 + Phase 2, dependency-graph map, all six
+issue/PR fragment renderers (XSS + structure), Phase 2 queries (orgs,
+membership, milestones, PRs, reviews, mentions), the deterministic RNG,
+the git smart-HTTP wire framing (pkt-line, pack-protocol, iso-server,
+routes), and provisioning helpers.
