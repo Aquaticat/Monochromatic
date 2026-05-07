@@ -31,6 +31,9 @@ const { burstyComment, } = await import('./scenarios/bursty-comment.ts');
 /** Phase 2 scenario: many sparse repos, parallel writers. */
 const { wideService, } = await import('./scenarios/wide-service.ts');
 
+/** Phase 2 scenario: force-push iterations against the smart-HTTP receive-pack code path. */
+const { forcePush, } = await import('./scenarios/force-push.ts');
+
 /** Tagged logger scoped to the stress CLI. */
 const l = tagged({
   tag: 'stress',
@@ -42,6 +45,7 @@ const SCENARIOS: readonly Scenario[] = [
   hotRepo,
   burstyComment,
   wideService,
+  forcePush,
 ];
 
 /**

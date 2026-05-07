@@ -9,6 +9,7 @@
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/webapp-forge-seed": "workspace:*",
     "@monochromatic-dev/webapp-forge-server": "workspace:*",
+    "isomorphic-git": "catalog:",
     "mitata": "catalog:"
   },
   "devDependencies": {

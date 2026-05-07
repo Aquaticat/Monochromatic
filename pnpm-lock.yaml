@@ -1892,6 +1892,9 @@ importers:
       '@monochromatic-dev/webapp-forge-server':
         specifier: workspace:*
         version: link:../server
+      isomorphic-git:
+        specifier: 'catalog:'
+        version: 1.37.6
       mitata:
         specifier: 'catalog:'
         version: 1.0.34
