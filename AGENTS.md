@@ -49,6 +49,7 @@ Before sending any response with substantive claims, run through these checks. E
 6. Did you assume a non-measurable preference (which approach the user prefers, what they value)? Ask; do not assume a default.
 7. Did you cite a file path or line number? If yes, verify it exists; if you described source behavior without one, add the citation.
 8. Did you make a confident factual claim without naming what backs it? Either name the verification step inline ("verified by reading X.ts:42") or downgrade to a labeled guess.
+9. Did you claim a tool cannot do something? Check whether tool composition (e.g. Bash + shell utility) bridges the gap; refuse only after trying.
 
 ### Measure before you characterize
 
@@ -92,6 +93,21 @@ These phrases are usually evidence that a research step was skipped. Do not writ
 The `ccsr` stop hook catches some of these phrases at response-send time and rejects the turn. Internal self-catch is faster than the hook because it lets you fix the problem before sending.
 
 **Exception: genuine uncertainty.** When the honest answer is "I do not know and the question is genuinely under-determined after investigation," state that explicitly. Name what you did investigate and what specifically is unresolved. The antipattern this rule targets is hedging as a substitute for research, not hedging as an honest report of remaining uncertainty after research is complete. "I read X.ts:42 and the type can be either A or B depending on a runtime branch I cannot determine statically" is not a hedge; "the fix is probably small" without reading anything is.
+
+### Before claiming inability
+
+A statement like "I cannot read this file format" or "my tools do not support that operation"
+is a capability claim about your tool set as a whole, not about Read or Bash individually.
+Bash plus shell utilities (`ffmpeg`, `pandoc`, `magick`, `pdftotext`, `jq`, and many others)
+compose with Read into a wider capability than any single tool exposes.
+Before refusing on tool-capability grounds, try a bridging path:
+convert the input to a format your tools accept,
+decompose the operation into steps your tools support,
+or run the file through a shell utility and read its output.
+
+Refuse only after attempting a bridge and confirming no path exists.
+State the bridges you tried; an unconsidered refusal looks identical to a real obstacle,
+and the user cannot tell which is which without prompting.
 
 ### Name the verification step
 
@@ -148,6 +164,31 @@ Workaround: to skip the filter for one command, include any blocklist trigger. T
 Before performing any action, consider whether it could cause physical harm to a human
 (e.g. blasting audio volume, triggering flashing content, activating hardware unexpectedly).
 If it could, warn the user and state what will happen before proceeding.
+
+### Resource-exhaustion isolation
+
+Always run commands that might crash or exhaust the host system in a performance-limited
+container or VM, never directly on the host. The "may exhaust the host" set is broader than
+the destructive-command set: it covers anything that allocates a lot of memory, spawns many
+processes, opens many file descriptors, runs unbounded loops, or otherwise consumes resources
+without a tight upper bound. Examples:
+
+- stress harnesses and load generators (e.g. `mise run //:forge:stress`, `mise run //:test`
+  with thousands of cases, k6/wrk runs)
+- builds that fan out across many packages without concurrency caps
+- benchmarks that allocate large blobs or fork many workers (`bun bench`, `mitata` runs)
+- scenarios that loop over `git.packObjects` / `git.indexPack` or other heavy isomorphic-git ops
+- subprocess fan-outs with no `--writers=` / `--concurrency=` ceiling
+- anything that imports a server runtime that opens libSQL, warms caches, or schedules timers
+  in a tight loop
+
+Use `podman run --memory=2g --cpus=2 --rm -v $PWD:/work -w /work <image>` for container
+isolation, or the `mvm` CLI for VM isolation. State the bounds explicitly in the command
+(memory cap, cpu cap, timeout) so the host stays usable if the workload misbehaves.
+
+If the user requests one of these directly, propose the containerised invocation and confirm
+before running. Do not assume past authorisation transfers across commands; each heavy run
+needs an isolated environment.
 
 ### Destructive command ban
 
