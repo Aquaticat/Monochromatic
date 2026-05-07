@@ -61,6 +61,20 @@ which looks like a freebie -- but this is intentional.
 They give a nonzero baseline to models that score nothing on code-gen probes,
 and even strong models occasionally fail them, so they still carry signal.
 
+### Numeric precision
+
+Scores are stored as raw IEEE 754 doubles with no rounding.
+Probe ratios like `13/20` are exact in decimal but not in binary,
+and accumulation in `mean()` (`src/math.ts`) and `combinedScore()` (`src/codegen/scoring.ts`)
+can shift the final value by a few ULPs.
+The same `13/20` may serialize as `0.65` in one entry and `0.6499999999999999` in another,
+depending on the order arithmetic was performed.
+
+This is intentional: the viewer rounds to two decimals at display
+(`src/runner-probe-core.ts`, `src/report-model.ts`),
+and the pass/fail thresholds (0.7 WARN, 0.9 PASS) have margins large enough that ULP-level drift is irrelevant.
+Comparators that consume scores directly should use tolerance, not equality.
+
 ## Probes
 
 ### Code-gen probes

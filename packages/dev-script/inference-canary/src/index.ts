@@ -15,6 +15,13 @@
  * Environment (read from .env.local via mise):
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
+// Side-effecting import: writes a record to `_invocation-log.jsonl` at the
+// package root before any other code runs. Captures process tree, exe path,
+// argv, cwd, and env hash so future "who invoked the canary?" investigations
+// can be answered by reading one file. Must stay first.
+// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- intentional side-effect import; module records provenance at top-level
+import './invocation-log.ts';
+
 import whyIsNodeRunning from 'why-is-node-running';
 import {
   includeSlow,

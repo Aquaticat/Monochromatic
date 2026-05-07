@@ -1,0 +1,294 @@
+/**
+ * Invocation provenance log for the inference canary.
+ *
+ * Imported as the first module in `index.ts` so it runs before any other
+ * side-effecting code. Records process tree, executable path, working directory,
+ * command-line arguments, and a hash of environment variables (with secret-named
+ * values redacted) at startup.
+ *
+ * Output: `<package-root>/_invocation-log.jsonl`, one JSON record per invocation.
+ *
+ * This exists to answer "who triggered this canary run?" when an invocation is
+ * unexpected. The April mystery, where a canary run had no identifiable trigger
+ * across crontab, systemd, scheduled tasks, hooks, and session transcripts,
+ * motivated this addition.
+ *
+ * Failure mode: every individual /proc read is wrapped in a helper that returns
+ * `null` on error. A partial record (with `null` exe or empty parentChain) is
+ * more useful than an exception that prevents canary startup. The outermost
+ * write is also wrapped so a write error never breaks the run.
+ *
+ * @example Reading the log to attribute a recent invocation
+ *
+ * ```sh
+ * tail -1 packages/dev-script/inference-canary/_invocation-log.jsonl | jq .
+ * ```
+ */
+import { createHash, } from 'node:crypto';
+import {
+  appendFileSync,
+  readFileSync,
+  readlinkSync,
+} from 'node:fs';
+import { join, } from 'node:path';
+
+import { PACKAGE_DIR, } from './paths.ts';
+
+/** A single frame in the parent-process chain walked from /proc. */
+type ProcessFrame = {
+  /** Process ID at this level of the chain. */
+  readonly pid: number;
+  /** Resolved /proc/PID/exe symlink (e.g. /usr/bin/bun); null if unreadable. */
+  readonly exe: string | null;
+  /** Space-separated argv from /proc/PID/cmdline; empty when unreadable. */
+  readonly cmdline: string;
+  /** Parent PID parsed from /proc/PID/status; 0 at root or when unreadable. */
+  readonly ppid: number;
+};
+
+/** Full invocation provenance record written as one JSONL line. */
+type InvocationRecord = {
+  /** ISO 8601 UTC timestamp at startup. */
+  readonly timestamp: string;
+  /** This process's PID. */
+  readonly pid: number;
+  /** This process's parent PID. */
+  readonly ppid: number;
+  /** Resolved /proc/self/exe symlink; null if unreadable. */
+  readonly exe: string | null;
+  /** Working directory at startup. */
+  readonly cwd: string;
+  /** Full argv as launched. */
+  readonly argv: readonly string[];
+  /** sha256 of sorted env entries; secret-named keys hash length only. */
+  readonly envHash: string;
+  /** Parent chain walked from `ppid` until pid 1, unreadable, or depth limit. */
+  readonly parentChain: readonly ProcessFrame[];
+};
+
+/** Pattern matching env var keys whose values must not be hashed verbatim. */
+const SECRET_KEY_PATTERN = /KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIAL/i;
+
+/** Maximum depth to walk the parent chain before giving up. */
+const PARENT_CHAIN_MAX_DEPTH = 32;
+
+/**
+ * Read a /proc file as UTF-8. Returns null on any error so callers can fall
+ * through to writing a partial record instead of throwing during startup.
+ *
+ * @param pid - Process ID whose /proc directory to read from
+ *
+ * @param name - File name within /proc/PID/ (e.g. `status`, `cmdline`)
+ *
+ * @returns File contents, or null when unreadable
+ */
+function readProcFile(
+  {
+    pid,
+    name,
+  }: {
+    pid: number;
+    name: string;
+  },
+): string | null {
+  try {
+    return readFileSync(
+      `/proc/${String(pid,)}/${name}`,
+      'utf8',
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve a /proc symlink. Returns null on any error so callers can fall
+ * through to writing a partial record instead of throwing during startup.
+ *
+ * @param pid - Process ID whose /proc directory to read from
+ *
+ * @param name - Symlink name within /proc/PID/ (e.g. `exe`)
+ *
+ * @returns Symlink target, or null when unreadable
+ */
+function readProcLink(
+  {
+    pid,
+    name,
+  }: {
+    pid: number;
+    name: string;
+  },
+): string | null {
+  try {
+    return readlinkSync(`/proc/${String(pid,)}/${name}`,);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Parse the PPid line from /proc/PID/status content.
+ *
+ * @param statusContent - Raw status file contents, or null when unreadable
+ *
+ * @returns Parsed parent PID, or 0 when not present or unparseable
+ */
+function parsePpid(statusContent: string | null,): number {
+  if (statusContent === null)
+    return 0;
+  const ppidLine = statusContent
+    .split('\n',)
+    .find(function isPpidLine(line,): boolean {
+      return line.startsWith('PPid:',);
+    },);
+  if (ppidLine === undefined)
+    return 0;
+  const num = Number.parseInt(
+    ppidLine.slice('PPid:'.length,).trim(),
+    10,
+  );
+  return Number.isNaN(num,) ? 0 : num;
+}
+
+/**
+ * Read a single process frame from /proc.
+ *
+ * @param pid - Process ID to read
+ *
+ * @returns Process frame, or null when the process is gone or unreadable
+ */
+function readProcessFrame(pid: number,): ProcessFrame | null {
+  const status = readProcFile({
+    pid,
+    name: 'status',
+  },);
+  if (status === null)
+    return null;
+  const cmdlineRaw = readProcFile({
+    pid,
+    name: 'cmdline',
+  },) ?? '';
+  const cmdline = cmdlineRaw
+    .replaceAll(
+      '\0',
+      ' ',
+    )
+    .trimEnd();
+  const exe = readProcLink({
+    pid,
+    name: 'exe',
+  },);
+  const ppid = parsePpid(status,);
+  return {
+    pid,
+    exe,
+    cmdline,
+    ppid,
+  };
+}
+
+/**
+ * Walk the parent process chain from a starting PID. Stops at pid 1, when a
+ * frame is unreadable, when ppid==pid (cycle), or after `remaining` reaches 0.
+ *
+ * @param pid - Starting PID (typically `process.ppid`)
+ *
+ * @param remaining - Frames left to walk before stopping
+ *
+ * @returns Array of frames from `pid` toward init
+ */
+function walkParentChain(
+  {
+    pid,
+    remaining,
+  }: {
+    pid: number;
+    remaining: number;
+  },
+): ProcessFrame[] {
+  if (remaining <= 0)
+    return [];
+  const frame = readProcessFrame(pid,);
+  if (frame === null)
+    return [];
+  if (frame.ppid === 0 || frame.ppid === pid)
+    return [frame,];
+  return [
+    frame,
+    ...walkParentChain({
+      pid: frame.ppid,
+      remaining: remaining - 1,
+    },),
+  ];
+}
+
+/**
+ * Compute sha256 over sorted environment entries. Values for keys matching
+ * `SECRET_KEY_PATTERN` are replaced with a length marker so the hash differs
+ * when a secret value changes but the secret itself never enters the hash input.
+ *
+ * @param env - Environment to hash, typically `process.env`
+ *
+ * @returns `sha256:<hex>` digest string
+ */
+function hashEnvironment(env: NodeJS.ProcessEnv,): string {
+  const lines = Object.keys(env,)
+    .toSorted()
+    .map(function envLine(key,): string {
+      const value = env[key] ?? '';
+      return SECRET_KEY_PATTERN.test(key,)
+        ? `${key}=<len:${String(value.length,)}>\n`
+        : `${key}=${value}\n`;
+    },);
+  const hash = createHash('sha256',);
+  hash.update(lines.join('',),);
+  return `sha256:${hash.digest('hex',)}`;
+}
+
+/**
+ * Build the full invocation provenance record.
+ *
+ * @returns Record assembled from process state and /proc reads
+ */
+function buildRecord(): InvocationRecord {
+  return {
+    timestamp: new Date().toISOString(),
+    pid: process.pid,
+    ppid: process.ppid,
+    exe: readProcLink({
+      pid: process.pid,
+      name: 'exe',
+    },),
+    cwd: process.cwd(),
+    argv: [...process.argv,],
+    envHash: hashEnvironment(process.env,),
+    parentChain: walkParentChain({
+      pid: process.ppid,
+      remaining: PARENT_CHAIN_MAX_DEPTH,
+    },),
+  };
+}
+
+/** Path to the JSONL log file at the package root. */
+const logPath = join(
+  PACKAGE_DIR,
+  '_invocation-log.jsonl',
+);
+
+try {
+  const record = buildRecord();
+  appendFileSync(
+    logPath,
+    `${JSON.stringify(record,)}\n`,
+  );
+} catch (error) {
+  // Provenance logging is diagnostic-only; never break canary startup over it.
+  // The tagged logger from log.ts is not yet initialized at this import point,
+  // so console.error is the correct surface here.
+  // oxlint-disable-next-line no-console -- startup-time fallback before tagged logger init
+  console.error(
+    'canary invocation-log write failed:',
+    error,
+  );
+}
