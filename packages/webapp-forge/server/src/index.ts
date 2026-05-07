@@ -32,6 +32,7 @@ import {
   writeBuffer,
 } from './server/runtime.ts';
 import {
+  authHandler,
   createCommentHandler,
   createIssueHandler,
   filterListHandler,
@@ -123,6 +124,15 @@ app.post(
 app.post(
   '/:owner/:repo/git-receive-pack',
   gitReceivePackHandler,
+);
+
+//endregion
+
+//region Auth routes
+
+app.all(
+  '/api/auth/**',
+  authHandler,
 );
 
 //endregion

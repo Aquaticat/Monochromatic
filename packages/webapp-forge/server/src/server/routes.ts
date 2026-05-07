@@ -1,5 +1,5 @@
 /**
- * Barrel re-export for all Phase 1 route handlers.
+ * Barrel re-export for route handlers.
  *
  * Routes:
  *
@@ -9,9 +9,11 @@
  * - `POST /api/repos/:owner/:repo/issues` -- create issue
  * - `POST /api/repos/:owner/:repo/issues/:number/comments` -- add comment
  * - `POST /api/repos/:owner/:repo/issues/:number/labels/:label` -- attach label
+ * - `ALL  /api/auth/**` -- Better Auth handler (sign-up, sign-in, sessions)
  *
- * Auth in Phase 1 is a single `X-Forge-User: <login>` header. The user
- * must already exist (the seed CLI creates the demo set).
+ * Phase 1's `X-Forge-User: <login>` header is still honoured for unauthenticated
+ * write paths so the existing seed + tests stay green; Better Auth becomes the
+ * source of truth once the queries and seed cut over to the new schema.
  */
 
 export {
@@ -31,6 +33,8 @@ export {
   gitReceivePackHandler,
   gitUploadPackHandler,
 } from './routes/git.ts';
+
+export { authHandler, } from './routes/auth.ts';
 
 export {
   provisionRepo,
