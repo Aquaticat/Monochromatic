@@ -27,6 +27,12 @@ export {
 } from './routes/write.ts';
 
 export {
+  gitInfoRefsHandler,
+  gitReceivePackHandler,
+  gitUploadPackHandler,
+} from './routes/git.ts';
+
+export {
   provisionRepo,
   provisionUser,
   type ProvisionRepoRow,

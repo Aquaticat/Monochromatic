@@ -35,6 +35,9 @@ import {
   createCommentHandler,
   createIssueHandler,
   filterListHandler,
+  gitInfoRefsHandler,
+  gitReceivePackHandler,
+  gitUploadPackHandler,
   issueDetailHandler,
   labelIssueHandler,
   rawFragmentHandler,
@@ -103,6 +106,23 @@ app.post(
 app.post(
   '/api/repos/:owner/:repo/issues/:number/labels/:label',
   labelIssueHandler,
+);
+
+//endregion
+
+//region Git smart-HTTP routes
+
+app.get(
+  '/:owner/:repo/info/refs',
+  gitInfoRefsHandler,
+);
+app.post(
+  '/:owner/:repo/git-upload-pack',
+  gitUploadPackHandler,
+);
+app.post(
+  '/:owner/:repo/git-receive-pack',
+  gitReceivePackHandler,
 );
 
 //endregion

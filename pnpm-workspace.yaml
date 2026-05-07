@@ -62,6 +62,7 @@ catalog:
   'happy-opfs': '>=2.0.2'
   'happy-rusty': '>=1.9.1'
   'hyphen': '>=1.14.1'
+  'isomorphic-git': '>=1.27.0'
   'jspdf': '>=2.5.2'
   'lezer-json5': '>=2.0.0'
   'lezer-toml': '>=1.0.0'
