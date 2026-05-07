@@ -40,7 +40,11 @@ const JSON_HEADERS = {
   'cache-control': 'private, no-store',
 } as const;
 
-/** Roles that grant write-action permissions on a repo. */
+/**
+ * Roles in `repo_members` that grant write-action permissions on a
+ * repo. Repo owners (matched via `repos.owner_id`) are also treated as
+ * writers regardless of whether they hold an explicit membership row.
+ */
 const WRITE_ROLES = new Set<string>([
   'owner',
   'maintainer',
@@ -220,7 +224,9 @@ async function buildIssueDetailDelta(row: {
     repoId: repo.id,
     userId: row.actor.id,
   },);
-  const isWriter = membership !== undefined && WRITE_ROLES.has(membership.role,);
+  const isOwner = repo.owner_id === row.actor.id;
+  const isWriter = isOwner
+    || (membership !== undefined && WRITE_ROLES.has(membership.role,));
   const isAuthor = issue.author_id === row.actor.id;
   return {
     actor: row.actor,
@@ -273,7 +279,9 @@ async function buildFilterListDelta(row: {
     repoId: repo.id,
     userId: row.actor.id,
   },);
-  const isWriter = membership !== undefined && WRITE_ROLES.has(membership.role,);
+  const isOwner = repo.owner_id === row.actor.id;
+  const isWriter = isOwner
+    || (membership !== undefined && WRITE_ROLES.has(membership.role,));
   return {
     actor: row.actor,
     path: row.path,

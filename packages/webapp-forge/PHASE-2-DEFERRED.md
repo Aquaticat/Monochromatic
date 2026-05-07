@@ -96,21 +96,17 @@ Data-plane cutover (shipped in the second session):
   Recognises `/owner/repo/issues/N` and `/owner/repo/issues` paths; other
   paths receive an empty payload so the contract stays stable.
   Permissions are derived from `repo_members.role` (write roles:
-  `owner`, `maintainer`).
+  `owner`, `maintainer`); a repo owner identified by
+  `repos.owner_id == actor.id` is also treated as a writer regardless
+  of whether they hold an explicit `repo_members` row.
 
 The `as unknown as Auth` cast in `lib/auth.ts` is required because Better
 Auth's deeply-inferred `Auth<TConfig>` is structurally a subtype of the
 public `Auth` interface but its plugin tuple is invariant under
 `isolatedDeclarations`. Documented inline.
 
-Known follow-ups (not strictly required for the cutover to work):
+Known follow-up (not strictly required for the cutover to work):
 
-- `repos.owner_id` confers implicit owner authority but the delta
-  endpoint reads role only from `repo_members`. A repo owner without a
-  `repo_members(role='owner')` entry currently sees `canClose=false`,
-  `canLabel=false`. Either grant the owner an implicit row in seed, or
-  treat `repos.owner_id == actor.id` as a permission source in
-  `routes/me.ts`.
 - The dev-only `X-Forge-User` escape exists in `routes/helpers.ts` and
   `routes/me.ts`. Once tests are migrated to use Better Auth sessions,
   the fallback can be removed.
