@@ -44,6 +44,24 @@ The protocol layer ships in `src/git/`:
 - `isomorphic-git` added to the catalog at the same commit (avoids the
   dead-dep noise the spike doc warned about).
 
+Real-CLI verification (`server/src/server/routes/git.cli.unit.test.ts`)
+spawns `/usr/bin/git` against a `serve()`-bound port and exercises the
+plan's three scenarios end-to-end:
+
+- Tiny-file clone roundtrip (push then clone elsewhere, contents diff).
+- 5 MiB binary blob roundtrip (byte-for-byte equality after pack apply).
+- 100-ref batched push (single `git push --all`, verified via
+  `git ls-remote`).
+
+The test surfaced one protocol bug that in-process `app.fetch()` could
+not catch: `writeReceivePackResponse` advertised `side-band-64k` in
+the receive-pack capabilities advertisement but emitted the report
+unwrapped, which the system git CLI rejected with
+`send-pack: protocol error: bad band #117`. Fix wraps the
+`unpack ok` / `ok <ref>` report on sideband channel 1 when the client
+negotiated `side-band` or `side-band-64k`, and an outer flush-pkt
+terminates the stream.
+
 ### Better Auth
 
 - Migration `0003_better_auth.sql` adds `user`, `session`, `account`, and
@@ -105,16 +123,6 @@ email/password and sessions ship; the magic-link plugin is not wired.
 Adding it is `import { magicLink } from 'better-auth/plugins'` plus a
 `sendMagicLink` callback (transport TBD: SMTP / SES / log-only for dev).
 
-### Real-CLI git protocol verification
-
-Current tests (`pkt-line.unit.test.ts`, `pack-protocol.unit.test.ts`,
-`iso-server.unit.test.ts`, `routes/git.unit.test.ts`) cover wire framing
-and small in-process roundtrips through h3's `app.fetch()`. The plan's
-verification step calls for a real `git clone` / `git push` from the
-system CLI against a freshly seeded repo, including a 5 MB binary blob
-and a 100-ref batched push. Neither test exists. Adding requires
-spawning a real `git` subprocess pointed at a `serve()`-bound port.
-
 ### Known follow-up (not blocking)
 
 - The dev-only `X-Forge-User` escape exists in `routes/helpers.ts` and
@@ -131,7 +139,7 @@ fanout discovery so `mise run //packages/webapp-forge/<pkg>:test`
 actually executes the suite):
 
 ```text
-- server: 18 unit-test files / 101 PASS / 0 FAIL
+- server: 19 unit-test files / 105 PASS / 0 FAIL
 - seed:   1  unit-test file  / 6   PASS / 0 FAIL
 - stress: 0  unit-test files (CLI scenarios only)
 ```
@@ -141,4 +149,4 @@ contracts, dispatcher Phase 1 + Phase 2, dependency-graph map, all six
 issue/PR fragment renderers (XSS + structure), Phase 2 queries (orgs,
 membership, milestones, PRs, reviews, mentions), the deterministic RNG,
 the git smart-HTTP wire framing (pkt-line, pack-protocol, iso-server,
-routes), and provisioning helpers.
+routes) and the real-CLI roundtrip suite, and provisioning helpers.

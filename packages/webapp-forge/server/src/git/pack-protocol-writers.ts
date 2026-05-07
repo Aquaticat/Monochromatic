@@ -145,14 +145,24 @@ export function writeUploadPackResponse(row: {
 /**
  * Builds a `git-receive-pack` status report.
  *
- * Layout:
+ * Layout (no sideband):
  *
  * 1. `PKT-LINE("unpack ok\n")` or `PKT-LINE("unpack <error>\n")`
  * 2. Per ref: `PKT-LINE("ok <ref>\n")` or `PKT-LINE("ng <ref> <reason>\n")`
  * 3. flush-pkt
  *
- * If sideband was negotiated, the entire status report is emitted on
- * channel 1 (data); the caller is responsible for sideband-multiplexing.
+ * Layout (sideband / sideband-64k requested by client):
+ *
+ * 1. The bytes of the no-sideband layout above are concatenated into
+ *    one buffer
+ * 2. {@link multiplexSideband} emits them as one or more pkt-lines on
+ *    channel 1 (data)
+ * 3. An outer flush-pkt terminates the sideband stream
+ *
+ * The system git CLI requires the wrapped form whenever it sees
+ * `side-band` or `side-band-64k` in the negotiated capabilities; an
+ * unwrapped report is parsed as raw sideband bytes and rejected with
+ * `protocol error: bad band #<n>`.
  *
  * @param row - inputs
  *
@@ -163,6 +173,8 @@ export function writeUploadPackResponse(row: {
  * const chunks = writeReceivePackResponse({
  *   unpackOk: true,
  *   refResults: [{ refName: 'refs/heads/main', ok: true }],
+ *   useSideBand: true,
+ *   useSideBand64k: true,
  * });
  * ```
  */
@@ -170,21 +182,46 @@ export function writeReceivePackResponse(row: {
   unpackOk: boolean;
   unpackError?: string;
   refResults: readonly RefUpdateResult[];
+  /** Whether the client negotiated `side-band` or `side-band-64k`. */
+  useSideBand?: boolean;
+  /** Whether the client negotiated `side-band-64k` specifically. */
+  useSideBand64k?: boolean;
 },): Uint8Array[] {
-  const out: Uint8Array[] = [
+  const report: Uint8Array[] = [
     row.unpackOk
       ? encodePkt('unpack ok\n',)
       : encodePkt(`unpack ${row.unpackError ?? 'failed'}\n`,),
   ];
   for (const result of row.refResults) {
     if (result.ok) {
-      out.push(encodePkt(`ok ${result.refName}\n`,),);
+      report.push(encodePkt(`ok ${result.refName}\n`,),);
     } else {
-      out.push(encodePkt(`ng ${result.refName} ${result.error ?? 'failed'}\n`,),);
+      report.push(encodePkt(`ng ${result.refName} ${result.error ?? 'failed'}\n`,),);
     }
   }
-  out.push(flushPkt(),);
-  return out;
+  report.push(flushPkt(),);
+  if (row.useSideBand !== true)
+    return report;
+  let total = 0;
+  for (const chunk of report)
+    total += chunk.byteLength;
+  const flat = new Uint8Array(total,);
+  let cursor = 0;
+  for (const chunk of report) {
+    flat.set(
+      chunk,
+      cursor,
+    );
+    cursor += chunk.byteLength;
+  }
+  return [
+    ...multiplexSideband({
+      payload: flat,
+      channel: SIDEBAND_CHANNEL_PACK,
+      useSideBand64k: row.useSideBand64k === true,
+    },),
+    flushPkt(),
+  ];
 }
 
 /** Sideband channel constants exported for tests and `iso-server.ts`. */

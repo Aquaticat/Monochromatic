@@ -308,6 +308,35 @@ await describe({
             expect(text.includes('unpack corrupt pack\n',),).toBe(true,);
           },
         },),
+        () => it({
+          name: 'wraps the report on sideband channel 1 when client negotiated side-band-64k',
+          async fn() {
+            await Promise.resolve();
+            const chunks = writeReceivePackResponse({
+              unpackOk: true,
+              refResults: [
+                {
+                  refName: 'refs/heads/main',
+                  ok: true,
+                },
+              ],
+              useSideBand: true,
+              useSideBand64k: true,
+            },);
+            const flat = concat(chunks,);
+            // Outer flush-pkt terminates the sideband stream: last 4 bytes are "0000".
+            const tail = new TextDecoder().decode(flat.subarray(flat.byteLength - 4,),);
+            expect(tail,).toBe('0000',);
+            // First pkt-line: 4 hex bytes of length, then 0x01 channel marker.
+            const firstChannelByteIndex = 4;
+            expect(flat[firstChannelByteIndex],).toBe(0x01,);
+            // The wrapped payload still contains the literal report bytes;
+            // sideband only inserts a 1-byte channel marker per pkt-line.
+            const inner = new TextDecoder().decode(flat,);
+            expect(inner.includes('unpack ok\n',),).toBe(true,);
+            expect(inner.includes('ok refs/heads/main\n',),).toBe(true,);
+          },
+        },),
       ],
     },),
   ],

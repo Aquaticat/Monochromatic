@@ -117,11 +117,15 @@ export async function handleUploadPack(row: RepoArgs & { body: Uint8Array, },): 
 export async function handleReceivePack(row: RepoArgs & { body: Uint8Array, },): Promise<ReceivePackOutcome> {
   const gitdir = await ensureRepoExists(row,);
   const request = parseReceivePackBody(row.body,);
+  const useSideBand64k = request.capabilities.includes('side-band-64k',);
+  const useSideBand = useSideBand64k || request.capabilities.includes('side-band',);
   if (request.triplets.length === 0) {
     return {
       body: concatChunks(writeReceivePackResponse({
         unpackOk: true,
         refResults: [],
+        useSideBand,
+        useSideBand64k,
       },),),
       applied: [],
     };
@@ -178,11 +182,15 @@ export async function handleReceivePack(row: RepoArgs & { body: Uint8Array, },):
     ? {
       unpackOk,
       refResults,
+      useSideBand,
+      useSideBand64k,
     }
     : {
       unpackOk,
       unpackError,
       refResults,
+      useSideBand,
+      useSideBand64k,
     },),);
   return {
     body,
