@@ -56,30 +56,50 @@ source data is git objects. Their fragment-key encoders are already in place
 (`fileTreeKey`, `blobKey`, `diffKey` in `worker/fragment-keys.ts`) so adding
 the renderers is mechanical once `iso-server.ts` exists.
 
-### Better Auth (task #15)
+### Better Auth (task #15) -- auth surface shipped, data-plane cutover deferred
 
-The plan calls for Better Auth as the source of truth for users and sessions
-with our `repos.owner_id` joined to its `user.id`. The schema reconciliation is
-an open user-decision: drop our `users(id, login, email, password_hash, created_at)`
-in favour of Better Auth's, extend ours and join, or run a bridge table.
+The user picked option (a) "drop our users, adopt Better Auth's user model"
+and elected the `username` plugin to preserve the `@handle` UX.
 
-Next session steps:
+What shipped:
 
-1. Surface the schema-reconciliation question to the user (it is a design
-   preference, not a measurable fact).
-2. Add `better-auth` to the catalog when the implementation lands (deferred for
-   the same dead-deps reason as `isomorphic-git`).
-3. Apply Better Auth's migrations alongside `0002_phase2.sql` (its own file --
-   per the advisor's checkpoint discipline rule, do not co-mingle with our
-   schema additions).
-4. Wire route middleware to enforce session checks and add a per-user JSON
-   delta endpoint (`/api/me/delta?path=...`).
+- Catalog deps for `better-auth`, `kysely`, `@libsql/client`, `@libsql/kysely-libsql`.
+- Migration `0003_better_auth.sql` adding `user`, `session`, `account`,
+  `verification` tables (with username plugin columns on `user`) ALONGSIDE
+  the legacy `users` table.
+- `lib/auth.ts` constructing the Better Auth instance against the same SQLite
+  file via the Kysely libsql dialect; `routes/auth.ts` mounting the combined
+  auth route table at `ALL /api/auth/**`.
+- End-to-end verified inside a podman container: sign-up, sign-in by email,
+  and sign-in by username all return 200 with valid tokens.
 
-### `force-push` stress scenario (task #18 partial)
+What did not ship -- the data-plane cutover. The Better Auth surface is live
+but every existing query, render path, and seed flow still reads/writes the
+legacy `users` table. The cutover requires:
 
-Depends on the git protocol. The scenario asserts "only affected blob/diff
-fragments rebuild" after a force-push event; without git, we cannot generate the
-push event with realistic blob set. Land it together with task #16.
+1. Queries refactor: `data/queries/user-repo.ts` and `data/queries/membership.ts`
+   read `users.login`, `users.created_at`, and insert `password_hash`. Migrate
+   to `user.username`, `user.createdAt`, and drop password_hash inserts (Better
+   Auth stores credentials in `account.password`).
+2. Renderers + helpers: `worker/render.ts`, `worker/render-phase2.ts`,
+   `server/routes/helpers.ts`, `server/routes/provisioning.ts` consume `.login`
+   from row results. Decide whether to alias as `login` at the SQL boundary
+   (minimal-diff) or rename consistently to `.username` (consistent surface).
+3. Seed refactor: `webapp-forge-seed` writes `users` rows directly. Switch
+   to inserting `user` rows (no `account` row needed -- seed users do not
+   sign in via Better Auth).
+4. Migration `0004_drop_users.sql`: a destructive cutover that drops
+   `mention_index`, `reviews`, `repo_members`, `issue_assignees`, `issues`,
+   `comments`, `repos`, then `users` (FK dependency order), recreates the
+   first seven with `REFERENCES user(id)`. Dev-only DB so no data preserved.
+5. Middleware: enforce session checks on write routes. Replace the
+   `X-Forge-User: <login>` header path with `auth.api.getSession({...})`.
+6. `/api/me/delta?path=...` per-user JSON endpoint.
+
+The `as unknown as Auth` cast in `lib/auth.ts` is required because Better
+Auth's deeply-inferred `Auth<TConfig>` is structurally a subtype of the
+public `Auth` interface but its plugin tuple is invariant under
+`isolatedDeclarations`. Documented inline.
 
 ## Verification of what shipped
 

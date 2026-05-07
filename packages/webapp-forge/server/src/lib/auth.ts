@@ -11,6 +11,13 @@
  * file as `data/db.ts`. Both libraries open separate connections; SQLite
  * WAL mode (set by `data/db.ts`) handles concurrent access.
  *
+ * Caveat for tests using `DB_PATH=:memory:`: each connection gets its
+ * own in-memory database. `@tursodatabase/database` and Better Auth's
+ * libsql client cannot see each other's data in that mode. Tests that
+ * exercise auth flows must use a file-backed DB (e.g. `mkdtemp` +
+ * `--db=/tmp/forge-test-${id}.db`) so both libraries share a SQLite
+ * file.
+ *
  * Required env: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`. A deterministic
  * dev fallback exists for local development; production must override.
  */
