@@ -21,6 +21,7 @@ import {
 } from '@tursodatabase/database';
 import migration0001 from './migrations/0001_initial.sql' with { type: 'text', };
 import migration0002 from './migrations/0002_phase2.sql' with { type: 'text', };
+import migration0003 from './migrations/0003_better_auth.sql' with { type: 'text', };
 
 import { mkdirSync, } from 'node:fs';
 import { dirname, } from 'node:path';
@@ -88,6 +89,7 @@ await db.exec('PRAGMA foreign_keys = ON',);
 
 await db.exec(migration0001,);
 await db.exec(migration0002,);
+await db.exec(migration0003,);
 
 export default db;
 

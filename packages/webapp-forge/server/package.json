@@ -8,13 +8,17 @@
     "./ts/*": "./src/*.ts"
   },
   "dependencies": {
+    "@libsql/client": "catalog:",
+    "@libsql/kysely-libsql": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@tursodatabase/database": "catalog:",
     "aws4fetch": "catalog:",
+    "better-auth": "catalog:",
     "h3": "catalog:",
     "isomorphic-git": "catalog:",
+    "kysely": "catalog:",
     "p-limit": "catalog:"
   },
   "devDependencies": {

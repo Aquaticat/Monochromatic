@@ -1,13 +1,15 @@
--- Cumulative schema for the webapp-forge stack (Phase 1 + Phase 2).
+-- Cumulative schema for the webapp-forge stack (Phase 1 + Phase 2 + Better Auth).
 --
 -- Idempotent: every CREATE has IF NOT EXISTS so this DDL is safe to run on every boot.
--- See `migrations/0001_initial.sql` and `migrations/0002_phase2.sql` for the
--- canonical migrations applied at boot.
+-- See `migrations/0001_initial.sql`, `migrations/0002_phase2.sql`, and
+-- `migrations/0003_better_auth.sql` for the canonical migrations applied at boot.
 --
 -- Phase 1 covers: users, repos, issues, comments, labels, issue_labels, events,
 -- fragment_index, sequences.
 -- Phase 2 adds: orgs, repo_members, milestones, issue_assignees, issue_milestone,
 -- prs, reviews, mention_index.
+-- Better Auth adds: user, session, account, verification (alongside the legacy
+-- `users` table; cutover lands in a follow-up migration).
 
 CREATE TABLE IF NOT EXISTS users (
   id            TEXT PRIMARY KEY,
@@ -196,3 +198,61 @@ CREATE TABLE IF NOT EXISTS mention_index (
 
 CREATE INDEX IF NOT EXISTS mention_index_fragment
   ON mention_index(fragment_key, user_id);
+
+-- Better Auth tables follow. The username plugin contributes
+-- `user.username` and `user.displayUsername`; everything else is
+-- the Better Auth core schema for SQLite (see `0003_better_auth.sql`).
+
+CREATE TABLE IF NOT EXISTS user (
+  id              text NOT NULL PRIMARY KEY,
+  name            text NOT NULL,
+  email           text NOT NULL UNIQUE,
+  emailVerified   integer NOT NULL,
+  image           text,
+  createdAt       date NOT NULL,
+  updatedAt       date NOT NULL,
+  username        text UNIQUE,
+  displayUsername text
+);
+
+CREATE TABLE IF NOT EXISTS session (
+  id        text NOT NULL PRIMARY KEY,
+  expiresAt date NOT NULL,
+  token     text NOT NULL UNIQUE,
+  createdAt date NOT NULL,
+  updatedAt date NOT NULL,
+  ipAddress text,
+  userAgent text,
+  userId    text NOT NULL REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS session_userId_idx ON session(userId);
+
+CREATE TABLE IF NOT EXISTS account (
+  id                    text NOT NULL PRIMARY KEY,
+  accountId             text NOT NULL,
+  providerId            text NOT NULL,
+  userId                text NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  accessToken           text,
+  refreshToken          text,
+  idToken               text,
+  accessTokenExpiresAt  date,
+  refreshTokenExpiresAt date,
+  scope                 text,
+  password              text,
+  createdAt             date NOT NULL,
+  updatedAt             date NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS account_userId_idx ON account(userId);
+
+CREATE TABLE IF NOT EXISTS verification (
+  id         text NOT NULL PRIMARY KEY,
+  identifier text NOT NULL,
+  value      text NOT NULL,
+  expiresAt  date NOT NULL,
+  createdAt  date NOT NULL,
+  updatedAt  date NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS verification_identifier_idx ON verification(identifier);
