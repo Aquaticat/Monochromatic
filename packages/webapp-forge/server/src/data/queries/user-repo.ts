@@ -1,9 +1,18 @@
 /**
  * Read/write helpers for users, repos, and labels.
  *
+ * After the Better Auth cutover, `User` rows live in the `user` table
+ * (Better Auth schema). The legacy `users.login` column is mapped to
+ * `user.username`, and `users.created_at` (INTEGER ms epoch) is mapped
+ * to `user.createdAt` (ISO 8601 string per Better Auth's SQLite
+ * adapter, which writes `Date.toISOString()` because
+ * `supportsDates: false` for SQLite). SELECTs alias `username AS login`
+ * and convert `createdAt` ISO back to ms in JS so the `User` row shape
+ * stays numeric and renderers do not change.
+ *
  * No event-log writes here; these tables only feed the surface that the
  * dispatcher renders, and a stale read of the user/repo/label catalog
- * is acceptable in Phase 1.
+ * is acceptable.
  */
 
 import {
@@ -17,8 +26,48 @@ import type {
   User,
 } from './types.ts';
 
+/** Raw row shape returned by SELECTs against the Better Auth `user` table. */
+type UserRow = {
+  readonly id: string;
+  readonly login: string | null;
+  readonly email: string;
+  readonly createdAt: string;
+};
+
 /**
- * Inserts a user. Idempotent on `id` collision.
+ * Converts a raw `user` row into the {@link User} shape with ms epoch.
+ *
+ * `username` falls back to `id` for any row missing one (Better Auth
+ * users created without the username plugin path).
+ *
+ * @param row - raw row from SELECT
+ *
+ * @returns user with `login: string` and `created_at: number`
+ *
+ * @example
+ * ```ts
+ * const user = toUser(row);
+ * ```
+ */
+function toUser(row: UserRow,): User {
+  return {
+    id: row.id,
+    login: row.login ?? row.id,
+    email: row.email,
+    created_at: new Date(row.createdAt,).getTime(),
+  };
+}
+
+/**
+ * Inserts a user into the Better Auth `user` table. Idempotent on `id`
+ * collision.
+ *
+ * The Better Auth schema requires `name` (NOT NULL), `email`
+ * (NOT NULL UNIQUE), `emailVerified` (NOT NULL), `createdAt`
+ * (NOT NULL ISO 8601), `updatedAt` (NOT NULL ISO 8601). Defaults:
+ * `name` and `username` derive from `login`; `email` synthesises a
+ * `${login}@forge.test` address when not provided; `emailVerified` is
+ * `0` (false); `updatedAt` mirrors `createdAt`.
  *
  * @param row - user fields
  *
@@ -33,13 +82,19 @@ export async function insertUser(row: {
   email?: string | null;
   createdAt: number;
 },): Promise<void> {
+  const createdAtIso = new Date(row.createdAt,).toISOString();
+  const email = row.email ?? `${row.login}@forge.test`;
   await run(
-    'INSERT OR IGNORE INTO users(id, login, email, password_hash, created_at) VALUES (?, ?, ?, NULL, ?)',
+    `INSERT OR IGNORE INTO user(id, name, email, emailVerified, createdAt, updatedAt, username, displayUsername)
+     VALUES (?, ?, ?, 0, ?, ?, ?, ?)`,
     [
       row.id,
       row.login,
-      row.email ?? null,
-      row.createdAt,
+      email,
+      createdAtIso,
+      createdAtIso,
+      row.login,
+      row.login,
     ],
   );
 }
@@ -113,16 +168,17 @@ export async function insertLabel(row: {
  * ```
  */
 export async function getUser(id: string,): Promise<User | undefined> {
-  return await get<User>(
-    'SELECT id, login, email, created_at FROM users WHERE id = ?',
+  const row = await get<UserRow>(
+    'SELECT id, username AS login, email, createdAt FROM user WHERE id = ?',
     [id,],
   );
+  return row === undefined ? undefined : toUser(row,);
 }
 
 /**
- * Loads the user row for a given login.
+ * Loads the user row for a given login (Better Auth `username`).
  *
- * @param login - user login
+ * @param login - user login (matched against `user.username`)
  *
  * @returns user row or `undefined`
  *
@@ -132,10 +188,11 @@ export async function getUser(id: string,): Promise<User | undefined> {
  * ```
  */
 export async function getUserByLogin(login: string,): Promise<User | undefined> {
-  return await get<User>(
-    'SELECT id, login, email, created_at FROM users WHERE login = ?',
+  const row = await get<UserRow>(
+    'SELECT id, username AS login, email, createdAt FROM user WHERE username = ?',
     [login,],
   );
+  return row === undefined ? undefined : toUser(row,);
 }
 
 /**
@@ -175,8 +232,8 @@ export async function getRepoByOwnerLogin(row: {
 },): Promise<Repo | undefined> {
   return await get<Repo>(
     `SELECT r.* FROM repos r
-     JOIN users u ON u.id = r.owner_id
-     WHERE u.login = ? AND r.name = ?`,
+     JOIN user u ON u.id = r.owner_id
+     WHERE u.username = ? AND r.name = ?`,
     [
       row.ownerLogin,
       row.name,

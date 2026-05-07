@@ -41,6 +41,7 @@ import {
   gitUploadPackHandler,
   issueDetailHandler,
   labelIssueHandler,
+  meDeltaHandler,
   rawFragmentHandler,
 } from './server/routes.ts';
 
@@ -133,6 +134,15 @@ app.post(
 app.all(
   '/api/auth/**',
   authHandler,
+);
+
+//endregion
+
+//region Per-viewer delta route
+
+app.get(
+  '/api/me/delta',
+  meDeltaHandler,
 );
 
 //endregion

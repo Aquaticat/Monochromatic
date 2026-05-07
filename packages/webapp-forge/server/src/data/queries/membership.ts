@@ -158,6 +158,10 @@ export async function unassignUserFromIssue(row: {
 /**
  * Lists every assignee user for an issue, joined to user metadata.
  *
+ * Reads from the Better Auth `user` table; aliases `username AS login`
+ * and converts `createdAt` ISO 8601 to ms epoch in JS so the returned
+ * rows match the {@link User} shape.
+ *
  * @param issueId - issue id
  *
  * @returns user rows in alphabetical login order
@@ -168,12 +172,25 @@ export async function unassignUserFromIssue(row: {
  * ```
  */
 export async function listIssueAssignees(issueId: string,): Promise<User[]> {
-  return await all<User>(
-    `SELECT u.id, u.login, u.email, u.created_at
-     FROM users u
+  const rows = await all<{
+    readonly id: string;
+    readonly login: string | null;
+    readonly email: string;
+    readonly createdAt: string;
+  }>(
+    `SELECT u.id, u.username AS login, u.email, u.createdAt
+     FROM user u
      JOIN issue_assignees ia ON ia.user_id = u.id
      WHERE ia.issue_id = ?
-     ORDER BY u.login ASC`,
+     ORDER BY u.username ASC`,
     [issueId,],
   );
+  return rows.map(function rowToUser(row,) {
+    return {
+      id: row.id,
+      login: row.login ?? row.id,
+      email: row.email,
+      created_at: new Date(row.createdAt,).getTime(),
+    };
+  },);
 }

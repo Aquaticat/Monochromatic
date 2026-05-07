@@ -56,50 +56,64 @@ source data is git objects. Their fragment-key encoders are already in place
 (`fileTreeKey`, `blobKey`, `diffKey` in `worker/fragment-keys.ts`) so adding
 the renderers is mechanical once `iso-server.ts` exists.
 
-### Better Auth (task #15) -- auth surface shipped, data-plane cutover deferred
+### Better Auth (task #15) -- shipped end-to-end
 
 The user picked option (a) "drop our users, adopt Better Auth's user model"
 and elected the `username` plugin to preserve the `@handle` UX.
 
-What shipped:
+Auth surface (shipped in the first session):
 
 - Catalog deps for `better-auth`, `kysely`, `@libsql/client`, `@libsql/kysely-libsql`.
 - Migration `0003_better_auth.sql` adding `user`, `session`, `account`,
-  `verification` tables (with username plugin columns on `user`) ALONGSIDE
-  the legacy `users` table.
+  `verification` tables (with username plugin columns on `user`).
 - `lib/auth.ts` constructing the Better Auth instance against the same SQLite
   file via the Kysely libsql dialect; `routes/auth.ts` mounting the combined
   auth route table at `ALL /api/auth/**`.
 - End-to-end verified inside a podman container: sign-up, sign-in by email,
   and sign-in by username all return 200 with valid tokens.
 
-What did not ship -- the data-plane cutover. The Better Auth surface is live
-but every existing query, render path, and seed flow still reads/writes the
-legacy `users` table. The cutover requires:
+Data-plane cutover (shipped in the second session):
 
-1. Queries refactor: `data/queries/user-repo.ts` and `data/queries/membership.ts`
-   read `users.login`, `users.created_at`, and insert `password_hash`. Migrate
-   to `user.username`, `user.createdAt`, and drop password_hash inserts (Better
-   Auth stores credentials in `account.password`).
-2. Renderers + helpers: `worker/render.ts`, `worker/render-phase2.ts`,
-   `server/routes/helpers.ts`, `server/routes/provisioning.ts` consume `.login`
-   from row results. Decide whether to alias as `login` at the SQL boundary
-   (minimal-diff) or rename consistently to `.username` (consistent surface).
-3. Seed refactor: `webapp-forge-seed` writes `users` rows directly. Switch
-   to inserting `user` rows (no `account` row needed -- seed users do not
-   sign in via Better Auth).
-4. Migration `0004_drop_users.sql`: a destructive cutover that drops
-   `mention_index`, `reviews`, `repo_members`, `issue_assignees`, `issues`,
-   `comments`, `repos`, then `users` (FK dependency order), recreates the
-   first seven with `REFERENCES user(id)`. Dev-only DB so no data preserved.
-5. Middleware: enforce session checks on write routes. Replace the
-   `X-Forge-User: <login>` header path with `auth.api.getSession({...})`.
-6. `/api/me/delta?path=...` per-user JSON endpoint.
+- Queries refactor: `data/queries/user-repo.ts` and `data/queries/membership.ts`
+  read from the Better Auth `user` table. SELECT aliases `username AS login`;
+  the `User` row converts `createdAt` ISO strings to ms epoch in JS so the
+  shape stays numeric and renderers do not change. `insertUser` writes to
+  `user` with synthesised `name`, `email`, `emailVerified=0`, `username`,
+  `displayUsername`, and ISO `createdAt`/`updatedAt`.
+- Migration `0004_drop_users.sql`: destructive cutover that drops every
+  legacy table referencing `users(id)` and recreates them with
+  `REFERENCES user(id)`. Guarded in `data/db.ts` by inspecting
+  `repos.sql` for the post-cutover FK signature so it runs at most once
+  per database (subsequent boots skip the destructive section and
+  preserve data).
+- Session middleware: `requireActor` resolves the actor from
+  `auth.api.getSession({ headers })`. The legacy `X-Forge-User: <login>`
+  header is honoured as a non-production fallback so seed-driven smoke
+  tests keep working; production (`NODE_ENV === 'production'`) ignores
+  it and a missing session yields 401.
+- `/api/me/delta?path=...` per-viewer JSON delta. Returns
+  `{ actor, path, authored: { issues, comments }, permissions: { canClose, canLabel } }`.
+  Recognises `/owner/repo/issues/N` and `/owner/repo/issues` paths; other
+  paths receive an empty payload so the contract stays stable.
+  Permissions are derived from `repo_members.role` (write roles:
+  `owner`, `maintainer`).
 
 The `as unknown as Auth` cast in `lib/auth.ts` is required because Better
 Auth's deeply-inferred `Auth<TConfig>` is structurally a subtype of the
 public `Auth` interface but its plugin tuple is invariant under
 `isolatedDeclarations`. Documented inline.
+
+Known follow-ups (not strictly required for the cutover to work):
+
+- `repos.owner_id` confers implicit owner authority but the delta
+  endpoint reads role only from `repo_members`. A repo owner without a
+  `repo_members(role='owner')` entry currently sees `canClose=false`,
+  `canLabel=false`. Either grant the owner an implicit row in seed, or
+  treat `repos.owner_id == actor.id` as a permission source in
+  `routes/me.ts`.
+- The dev-only `X-Forge-User` escape exists in `routes/helpers.ts` and
+  `routes/me.ts`. Once tests are migrated to use Better Auth sessions,
+  the fallback can be removed.
 
 ## Verification of what shipped
 

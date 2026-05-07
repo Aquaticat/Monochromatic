@@ -1,13 +1,18 @@
 /**
- * Shared helpers used by every Phase 1 route handler.
+ * Shared helpers used by every route handler.
  *
- * Auth in Phase 1 is a single `X-Forge-User: <login>` header. The user
- * must already exist (the seed CLI creates the demo set).
+ * Auth resolves the actor from a Better Auth session (`auth.api.getSession`)
+ * over the request headers; in non-production environments a legacy
+ * `X-Forge-User: <login>` header is honoured as a fallback so seed-driven
+ * smoke tests and dev tooling that predate the cutover keep working.
+ * Production must use Better Auth: when `NODE_ENV === 'production'` the
+ * header escape is ignored and a missing session yields 401.
  */
 
 import { HTTPError, } from 'h3';
 
 import { getUserByLogin, } from '../../data/queries.ts';
+import { auth, } from '../../lib/auth.ts';
 import {
   HTTP_BAD_REQUEST,
   HTTP_UNAUTHORIZED,
@@ -67,9 +72,15 @@ export type Actor = {
 };
 
 /**
- * Reads the `X-Forge-User` header or throws a 401.
+ * Resolves the actor identity from a Better Auth session, falling back
+ * to the legacy `X-Forge-User: <login>` header in non-production
+ * environments so seed-driven smoke tests keep working during the
+ * cutover.
  *
- * @param event - h3 event whose request headers carry the actor login
+ * Throws 401 when no session is present and the dev-only header escape
+ * is unavailable (production) or unset.
+ *
+ * @param event - h3 event whose request carries auth headers
  *
  * @returns resolved actor identity
  *
@@ -79,11 +90,28 @@ export type Actor = {
  * ```
  */
 export async function requireActor(event: ActorEvent,): Promise<Actor> {
+  const session = await auth.api.getSession({ headers: event.req.headers, },);
+  if (session !== null) {
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- Better Auth's session.user shape includes the username plugin's optional `username` field, which the framework's typed surface omits at this entry point */
+    /** Username from the Better Auth session, when the username plugin is configured. */
+    const sessionUsername = (session.user as { username?: string | null; }).username;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    return {
+      id: session.user.id,
+      login: sessionUsername ?? session.user.id,
+    };
+  }
+  if (process.env.NODE_ENV === 'production') {
+    throw new HTTPError({
+      status: HTTP_UNAUTHORIZED,
+      message: 'no session',
+    },);
+  }
   const login = event.req.headers.get('x-forge-user',);
   if (login === null || login === '') {
     throw new HTTPError({
       status: HTTP_UNAUTHORIZED,
-      message: 'missing X-Forge-User header',
+      message: 'no session and missing X-Forge-User dev header',
     },);
   }
   const user = await getUserByLogin(login,);

@@ -22,6 +22,7 @@ import {
 import migration0001 from './migrations/0001_initial.sql' with { type: 'text', };
 import migration0002 from './migrations/0002_phase2.sql' with { type: 'text', };
 import migration0003 from './migrations/0003_better_auth.sql' with { type: 'text', };
+import migration0004 from './migrations/0004_drop_users.sql' with { type: 'text', };
 
 import { mkdirSync, } from 'node:fs';
 import { dirname, } from 'node:path';
@@ -90,6 +91,39 @@ await db.exec('PRAGMA foreign_keys = ON',);
 await db.exec(migration0001,);
 await db.exec(migration0002,);
 await db.exec(migration0003,);
+
+/**
+ * Detects whether the destructive 0004 cutover has already run by
+ * inspecting the schema text of the `repos` table.
+ *
+ * Pre-cutover repos carry the FK to the legacy `users` table;
+ * post-cutover repos carry the FK to Better Auth's `user` table.
+ * The legacy `users` table itself cannot serve as the sentinel because
+ * 0001 re-creates it on every boot via `CREATE TABLE IF NOT EXISTS`,
+ * so the cutover would wipe data on every subsequent boot if guarded
+ * by users-exists alone. SQLite normalises the FK syntax with a space
+ * before the column list, so the substring match uses only the
+ * table-name portion to remain robust against whitespace normalisation.
+ */
+const reposSchemaStmt = db.prepare(
+  'SELECT sql AS s FROM sqlite_master WHERE type = ? AND name = ?',
+);
+
+/* oxlint-disable typescript/no-unsafe-type-assertion -- libSQL prepared statement returns a typed row */
+
+/** Schema text of the current `repos` table, or `undefined` on a fresh DB. */
+const reposSchemaRow = await reposSchemaStmt.get(
+  'table',
+  'repos',
+) as { s: string; } | undefined;
+/* oxlint-enable typescript/no-unsafe-type-assertion */
+
+if (
+  reposSchemaRow === undefined
+  || reposSchemaRow.s.includes('REFERENCES users',)
+) {
+  await db.exec(migration0004,);
+}
 
 export default db;
 
