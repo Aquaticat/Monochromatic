@@ -14,6 +14,19 @@ run = "mise run dev:server"
 [tasks.test]
 extends = "test"
 
+[tasks."test:unit"]
+hide = true
+description = "Run unit tests"
+usage = 'arg "[args]" var=#true help="Test file paths to run (when provided, only those files run)"'
+run = """
+let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
+if ($args | is-empty) {
+  glob "**/*.unit.test.ts" | where { not ($in | str contains "/deprecated/") } | par-each { |file| bun $file }
+} else {
+  $args | par-each { |file| bun $file }
+}
+"""
+
 [tasks.lint]
 extends = "lint"
 
