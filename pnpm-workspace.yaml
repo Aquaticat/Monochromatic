@@ -25,7 +25,7 @@ catalog:
   '@lezer/yaml': '>=1.0.0'
   '@libsql/client': '>=0.17.3'
   '@libsql/kysely-libsql': '>=0.4.1'
-  '@mariozechner/pi-coding-agent': '>=0.73.0'
+  '@earendil-works/pi-coding-agent': '>=0.74.0'
   '@mdx-js/mdx': '>=3.1.0'
   '@microsoft/tsdoc': '>=0.16.0'
   '@mitata/counters': '>=0.0.8'
@@ -43,7 +43,7 @@ catalog:
   '@types/mdx': '>=2.0.13'
   '@types/sinon': '>=21.0.1'
   '@types/sinon-chai': '>=4.0.0'
-  '@typescript/native-preview': '>=7.0.0-dev.20260313.1'
+  '@typescript/native-preview': '>=7.0.0-dev.20260421.2'
   '@ungap/structured-clone': '>=1.3.0'
   'aws4fetch': '>=1.0.20'
   'better-auth': '>=1.6.9'
@@ -134,6 +134,41 @@ overrides:
   '@anthropic-ai/sdk': '>=0.91.1'
   'fast-xml-parser': '>=5.7.0'
   'postcss': '>=8.5.10'
+  # The @earendil-works/pi-* packages are used type-only by
+  # packages/pi/{morph-compact,terminal-title}; their runtime closures
+  # (AWS SDK, Mistral SDK, chalk, marked, etc.) are not loaded by anything
+  # we run from this workspace. Drop them so pnpm install stays lean.
+  # See packages/pi/morph-compact/src/pi-utils.ts for the local
+  # re-implementation of the only two runtime helpers we used.
+  '@earendil-works/pi-ai>@aws-sdk/client-bedrock-runtime': '-'
+  '@earendil-works/pi-ai>@mistralai/mistralai': '-'
+  '@earendil-works/pi-ai>chalk': '-'
+  '@earendil-works/pi-ai>partial-json': '-'
+  '@earendil-works/pi-ai>proxy-agent': '-'
+  '@earendil-works/pi-ai>undici': '-'
+  '@earendil-works/pi-ai>zod-to-json-schema': '-'
+  '@earendil-works/pi-coding-agent>@mariozechner/clipboard': '-'
+  '@earendil-works/pi-coding-agent>chalk': '-'
+  '@earendil-works/pi-coding-agent>cli-highlight': '-'
+  '@earendil-works/pi-coding-agent>diff': '-'
+  '@earendil-works/pi-coding-agent>extract-zip': '-'
+  '@earendil-works/pi-coding-agent>file-type': '-'
+  '@earendil-works/pi-coding-agent>glob': '-'
+  '@earendil-works/pi-coding-agent>hosted-git-info': '-'
+  '@earendil-works/pi-coding-agent>ignore': '-'
+  '@earendil-works/pi-coding-agent>jiti': '-'
+  '@earendil-works/pi-coding-agent>marked': '-'
+  '@earendil-works/pi-coding-agent>minimatch': '-'
+  '@earendil-works/pi-coding-agent>proper-lockfile': '-'
+  '@earendil-works/pi-coding-agent>strip-ansi': '-'
+  '@earendil-works/pi-coding-agent>undici': '-'
+  '@earendil-works/pi-coding-agent>uuid': '-'
+  '@earendil-works/pi-coding-agent>yaml': '-'
+  '@earendil-works/pi-tui>chalk': '-'
+  '@earendil-works/pi-tui>get-east-asian-width': '-'
+  '@earendil-works/pi-tui>koffi': '-'
+  '@earendil-works/pi-tui>marked': '-'
+  '@earendil-works/pi-tui>mime-types': '-'
 packageImportMethod: hardlink
 preferWorkspacePackages: true
 resolutionMode: highest

@@ -10,7 +10,7 @@ import type {
   ExtensionAPI,
   SessionShutdownEvent,
   SessionStartEvent,
-} from '@mariozechner/pi-coding-agent';
+} from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,

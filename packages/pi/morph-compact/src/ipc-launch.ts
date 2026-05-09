@@ -12,7 +12,7 @@ import type {
   ExtensionAPI,
   SessionStartEvent,
   ExtensionContext,
-} from '@mariozechner/pi-coding-agent';
+} from '@earendil-works/pi-coding-agent';
 import {
   rmSync,
   unlinkSync,

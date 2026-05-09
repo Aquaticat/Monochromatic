@@ -10,6 +10,8 @@
 
 import type { FigmaFile, } from '@monochromatic-dev/figma-kiwi';
 
+import { ZipWriter, } from '@monochromatic-dev/module-zip-writer';
+
 // region Types
 
 /** UUID v4 string. */
@@ -1364,11 +1366,10 @@ function convertTextContent(nc: Record<string, unknown>,): Record<string, unknow
  * @returns ZIP file as Uint8Array
  */
 async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
-  const { default: JSZip, } = await import('jszip');
-  const zip = new JSZip();
+  const zip = new ZipWriter();
 
   // manifest.json
-  zip.file(
+  zip.add(
     'manifest.json',
     JSON.stringify(
       doc.manifest,
@@ -1379,7 +1380,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
   // File metadata
   const fileId = doc.file.id;
-  zip.file(
+  zip.add(
     `files/${fileId}.json`,
     JSON.stringify(
       doc.file,
@@ -1391,7 +1392,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
   // Pages
   for (const [, page,] of doc.pages) {
     const pageDir = `files/${fileId}/pages/${page.id}`;
-    zip.file(
+    zip.add(
       `${pageDir}.json`,
       JSON.stringify(
         page,
@@ -1409,7 +1410,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
         null,
         2,
       );
-      zip.file(
+      zip.add(
         `${pageDir}/${rootFrameId}.json`,
         shapeJson,
       );
@@ -1418,7 +1419,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
     // Shapes for this page
     for (const [shapeId, shape,] of doc.shapes) {
       if (shape.pageId === page.id && shapeId !== rootFrameId) {
-        zip.file(
+        zip.add(
           `${pageDir}/${shapeId}.json`,
           JSON.stringify(
             shape,
@@ -1432,7 +1433,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
   // Media objects
   for (const [mediaId, mediaObj,] of doc.media) {
-    zip.file(
+    zip.add(
       `files/${fileId}/media/${mediaId}.json`,
       JSON
         .stringify(
@@ -1448,7 +1449,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
     meta,
     data,
   },] of doc.storageObjects) {
-    zip.file(
+    zip.add(
       `objects/${objectId}.json`,
       JSON.stringify(
         meta,
@@ -1457,7 +1458,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
       ),
     );
     const ext = mtypeToExtension(meta.contentType,);
-    zip.file(
+    zip.add(
       `objects/${objectId}${ext}`,
       data,
     );
@@ -1465,7 +1466,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
   // Components
   for (const [compId, compData,] of doc.components) {
-    zip.file(
+    zip.add(
       `files/${fileId}/components/${compId}.json`,
       JSON
         .stringify(
@@ -1478,7 +1479,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
   // Colors
   for (const [colorId, colorData,] of doc.colors) {
-    zip.file(
+    zip.add(
       `files/${fileId}/colors/${colorId}.json`,
       JSON
         .stringify(
@@ -1491,7 +1492,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
   // Typographies
   for (const [typoId, typoData,] of doc.typographies) {
-    zip.file(
+    zip.add(
       `files/${fileId}/typographies/${typoId}.json`,
       JSON
         .stringify(
@@ -1504,7 +1505,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
   // Tokens
   if (doc.tokens) {
-    zip.file(
+    zip.add(
       `files/${fileId}/tokens.json`,
       JSON.stringify(
         doc.tokens,
@@ -1516,7 +1517,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
   // Thumbnails
   for (const thumb of doc.thumbnails) {
-    zip.file(
+    zip.add(
       thumb.path,
       JSON.stringify(
         thumb.data,
@@ -1526,7 +1527,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
     );
   }
 
-  return new Uint8Array(await zip.generateAsync({ type: 'uint8array', },),);
+  return zip.build();
 }
 
 /** Map MIME type to file extension. */

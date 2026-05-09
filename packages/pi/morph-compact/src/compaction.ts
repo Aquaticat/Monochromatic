@@ -2,12 +2,14 @@
  * Morph Compact API client and compression ratio logic.
  */
 
+import type {
+  CompactionResult,
+  SessionBeforeCompactEvent,
+} from '@earendil-works/pi-coding-agent';
 import {
-  type CompactionResult,
   convertToLlm,
   serializeConversation,
-  type SessionBeforeCompactEvent,
-} from '@mariozechner/pi-coding-agent';
+} from './pi-utils.ts';
 import { MorphCompactClient, } from './morph-client.ts';
 import {
   computeFileLists,

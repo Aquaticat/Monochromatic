@@ -2,7 +2,7 @@
 
 **Date**: 2026-04-28
 **pi version**: 0.70.6
-**Upstream source**: [mariozechner/pi-coding-agent](https://github.com/mariozechner/pi-coding-agent), `src/core/compaction/compaction.ts`
+**Upstream source**: [earendil-works/pi-coding-agent](https://github.com/earendil-works/pi-coding-agent), `src/core/compaction/compaction.ts`
 
 ## Problem
 

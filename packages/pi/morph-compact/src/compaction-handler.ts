@@ -11,7 +11,7 @@
 import type {
   CompactionResult,
   SessionBeforeCompactEvent,
-} from '@mariozechner/pi-coding-agent';
+} from '@earendil-works/pi-coding-agent';
 import { resolveMorphApiKey, } from './api-key.ts';
 import { attemptMorphCompaction, } from './compaction.ts';
 import type { MorphCompactionDetails, } from './types.ts';

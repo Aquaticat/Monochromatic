@@ -32,7 +32,7 @@ const _default_1: UserConfig = defineConfig({
       // Pi extension peer deps — provided by the pi runtime at load time.
       // Bundling them duplicates the pi API and causes CJS/ESM
       // "exports is not defined" errors.
-      '@mariozechner/pi-coding-agent',
+      '@earendil-works/pi-coding-agent',
       'typebox',
     ],
   },

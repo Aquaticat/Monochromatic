@@ -10,5 +10,5 @@ export const noDisableMaxLines: CreateOnceRule = banDisableRule({
   ruleId: 'eslint/max-lines',
   description: 'Disallow disabling max-lines. Split the file into smaller modules.',
   message:
-    'Disabling max-lines is not allowed. 200 lines (excluding blanks and comments) is generous enough that splitting is always feasible. Extract helpers, types, or constants into separate modules. Tests, fixtures, and config files are already exempt.',
+    'Disabling max-lines is not allowed. 300 lines (excluding blanks and comments) is generous enough that splitting is always feasible. Extract helpers, types, or constants into separate modules. Tests, fixtures, and config files are already exempt.',
 },);

@@ -24,7 +24,7 @@ import type {
   ExtensionAPI,
   SessionShutdownEvent,
   SessionStartEvent,
-} from '@mariozechner/pi-coding-agent';
+} from '@earendil-works/pi-coding-agent';
 import { titleForEvent, } from './title-builder.ts';
 
 /** Minimal context shape needed by all event handlers — just `ui.setTitle()`. */

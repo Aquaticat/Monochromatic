@@ -2,7 +2,7 @@
  * Types for Morph Compact pi extension.
  */
 
-import type { CompactionResult, } from '@mariozechner/pi-coding-agent';
+import type { CompactionResult, } from '@earendil-works/pi-coding-agent';
 
 /** Metadata stored in the CompactionEntry details field. */
 export type MorphCompactionDetails = {

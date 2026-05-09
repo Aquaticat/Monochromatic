@@ -11,14 +11,16 @@
  * which is unavailable outside it. The new session starts fresh without it.
  */
 
+import type {
+  CompactionEntry,
+  ContextUsage,
+  SessionEntry,
+  SessionMessageEntry,
+} from '@earendil-works/pi-coding-agent';
 import {
-  type CompactionEntry,
-  type ContextUsage,
   convertToLlm,
   serializeConversation,
-  type SessionEntry,
-  type SessionMessageEntry,
-} from '@mariozechner/pi-coding-agent';
+} from './pi-utils.ts';
 import { MorphCompactClient, } from './morph-client.ts';
 import { chooseCompressionRatio, } from './compaction.ts';
 import {

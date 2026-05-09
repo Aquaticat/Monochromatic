@@ -588,12 +588,11 @@ podman run --rm -d --name monochromatic-garage-running -p 3900:3900 -p 3901:3901
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
 "node_modules/.bin",
+"packages/webapp-forge/stress/node_modules/.bin",
 "packages/webapp-forge/server/node_modules/.bin",
 "packages/webapp-edu/paper2vn/node_modules/.bin",
 "packages/pi/terminal-title/node_modules/.bin",
 "packages/pi/morph-compact/node_modules/.bin",
-"packages/duik/teto-generated/node_modules/.bin",
-"packages/duik/teto/node_modules/.bin",
 "packages/rolldown-plugins/import-attributes/node_modules/.bin",
 "packages/claude-code-plugins/prompt-time/node_modules/.bin",
 "packages/claude-code-plugins/terminal-title/node_modules/.bin",

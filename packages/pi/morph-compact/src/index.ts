@@ -28,7 +28,7 @@ import type {
   ExtensionCommandContext,
   ExtensionContext,
   SessionStartEvent,
-} from '@mariozechner/pi-coding-agent';
+} from '@earendil-works/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
 import {
   resetApiKeyCache,

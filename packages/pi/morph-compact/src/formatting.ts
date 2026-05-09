@@ -5,7 +5,7 @@
 import type {
   SessionEntry,
   SessionMessageEntry,
-} from '@mariozechner/pi-coding-agent';
+} from '@earendil-works/pi-coding-agent';
 
 //region Text content extraction
 

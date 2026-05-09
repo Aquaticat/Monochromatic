@@ -30,10 +30,18 @@ for the diagnostic code, check tool documentation, or run the tool directly --
 before writing an explanation.
 
 When the user says "I was expecting you to..." or similar unmet-expectation feedback,
+**or when you yourself notice mid-conversation a failure mode future sessions would
+benefit from avoiding**,
 treat it as a documentation gap.
 Propose a concrete AGENTS.md change (what rule, where it goes, exact wording)
 so future sessions don't repeat the same failure.
 Do both: perform the expected action **and** propose the AGENTS.md edit.
+
+Never substitute "I'll keep it in mind", "adding to my mental list", or any
+similar promise to your future self. Sessions have no memory between them.
+A rule that should persist must be encoded in AGENTS.md (or a skill, or a
+hook); otherwise it does not exist at all. The cue to draft the edit is
+exactly the moment you catch yourself wanting to "remember next time."
 
 When proposing the edit, also check whether existing rules can be merged, sharpened, or removed. The "I was expecting you to..." mechanism is monotonic by default (every unmet expectation adds rules), which leads to unbounded growth. Counteract it: if a new rule duplicates or overlaps an existing one, merge instead of appending. If an existing rule has been overtaken by a sharper version, remove the older rule. AGENTS.md should grow only when no existing rule covers the failure mode.
 
@@ -74,7 +82,7 @@ Distinguish carefully between the two cases:
 - Measurable: codebase size, build time, file count, dependency tree, test count, performance numbers, configuration values, file contents. **Measure these.** Asking is the wrong move.
 - Non-measurable: which of two valid approaches the user prefers, whether they want a particular feature, whether they authorize a destructive action, what they value (depth vs governance, speed vs clarity). **Ask these.** Assuming is the wrong move.
 
-The failure mode in both directions: asking the user something you could have measured (lazy, wastes their time), or assuming something you should have asked (confidently wrong, damages trust). This rule fires whenever you catch yourself thinking "for a project like this..." or "in a typical setup..." -- the assumption hidden in those phrases is either measurable (go measure it) or a preference (go ask).
+The failure mode in three directions: asking the user something you could have measured (lazy, wastes their time), assuming something you should have asked (confidently wrong, damages trust), or asking permission for a next step the conversation already authorized ("want me to also check X?" when the user has been pushing for thoroughness -- just check). This rule fires whenever you catch yourself thinking "for a project like this..." or "in a typical setup..." -- the assumption hidden in those phrases is either measurable (go measure it) or a preference (go ask).
 
 ### Hedge phrases that signal a skipped step
 
@@ -93,6 +101,75 @@ These phrases are usually evidence that a research step was skipped. Do not writ
 The `ccsr` stop hook catches some of these phrases at response-send time and rejects the turn. Internal self-catch is faster than the hook because it lets you fix the problem before sending.
 
 **Exception: genuine uncertainty.** When the honest answer is "I do not know and the question is genuinely under-determined after investigation," state that explicitly. Name what you did investigate and what specifically is unresolved. The antipattern this rule targets is hedging as a substitute for research, not hedging as an honest report of remaining uncertainty after research is complete. "I read X.ts:42 and the type can be either A or B depending on a runtime branch I cannot determine statically" is not a hedge; "the fix is probably small" without reading anything is.
+
+### Exhaust evidence layers when assessing system usage
+
+When the user asks "should we use X better?" or "are we taking advantage of X?",
+walk through every evidence layer before recommending. Each layer can flip the
+conclusion, so stopping early produces vacuum-sealed answers. The layers:
+
+1. **The tool itself** -- usage volume, configuration, what is actually being used.
+2. **Parallel systems** -- where the same need is met outside the tool
+   (markdown roadmaps standing in for issue trackers, ad-hoc scripts standing in
+   for build systems, manual checks standing in for CI).
+3. **Content of those parallel systems** -- not just file counts but what is inside.
+   A 40-file TODO directory can be a structured roadmap or a dumping ground;
+   the recommendation is opposite for each.
+4. **Inline annotations in code** -- TODO/FIXME/HACK comments, deprecation markers,
+   workaround comments. Zero is a signal (discipline -- but verify the search ran;
+   see "Treat null search results as suspicious"); thousands is a signal (debt).
+5. **Suppressions and exceptions** -- lint disables, type-error suppressions,
+   skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
+6. **Stated policies in code or config** -- comments declaring intent
+   ("X is tracked via Y, not Z") that may or may not be followed in practice.
+
+Report findings at each layer before drawing the conclusion. A recommendation
+given after only checking layer 1 is not a recommendation; it is a guess shaped
+by the limited surface you happened to look at.
+
+### Vet vendor recommendations across problem layers
+
+Before starting layer research, identify the **context-fork questions** --
+facts about the user's deployment, role, or constraints that would push the
+recommendation in completely different directions if answered differently.
+Common examples: primary delivery vs backup/secondary, personal/hobby vs
+business-critical, self-hosted origin vs serverless, free-only vs
+willing-to-pay, geography or compliance constraints. If any is unspecified
+and the answer would change the candidate set itself (not just rank within
+it), ask using AskUserQuestion first. One clarifying turn is far cheaper
+than researching the wrong tree and restarting from scratch.
+
+Once context is established, complete every layer of due diligence before
+naming the candidate. A recommendation built on one or two layers ("they
+have a free plan and no layoffs") collapses the moment the user checks
+Trustpilot. The required layers, all of them, before any candidate name
+reaches the response:
+
+1.  **Layoffs and headcount** -- past 24 months. TechCrunch tracker, Crunchbase,
+    Glassdoor.
+2.  **Customer reviews** -- Trustpilot, G2, Capterra. Look specifically for
+    account-suspension patterns, billing-automation horror stories, and
+    support-quality complaints.
+3.  **Recent outages** -- past 12 months. Official status page plus an
+    aggregator (statusgator, isdown).
+4.  **Funding and business model** -- bootstrapped vs VC vs PE; recent M&A
+    activity or offers received. Affects how much shareholder pressure exists
+    to extract from existing customers.
+5.  **Signup-friction signals** -- email-domain blocks, KYC, geography blocks.
+    These correlate with heavy-handed automation that produces post-signup
+    account-policy issues.
+6.  **Security and abuse history** -- breaches, phishing-host reputation,
+    abuse-report responsiveness.
+
+Report findings inline with the recommendation. Do not lead with the candidate
+name and bury concerns in trailing caveats; the user reads the lede and skips
+the caveats. Every concerning signal goes next to the candidate, not in a
+footnote.
+
+A recommendation made after checking only "do they satisfy the constraints"
+is not a recommendation; it is a guess. The user catches the gap when they
+sign up and discover the problem themselves -- which is the failure mode this
+rule eliminates.
 
 ### Before claiming inability
 
@@ -118,6 +195,25 @@ Confident factual claims about the user's environment, an external tool's behavi
 - "express 4.x is supported (verified by reading the package's README at the cloned repo)"
 
 Confident-but-unbacked claims are the failure mode this catches. They read identically to verified claims, so the user cannot tell which to trust until something breaks. If you cannot name what backs a claim, downgrade to a labeled guess ("I have not verified this, but my reading-from-training is...") or do the verification.
+
+### Treat null search results as suspicious
+
+A search returning zero matches is two claims, not one: (a) the search ran
+correctly, and (b) nothing matched. Before reporting a zero result as a finding,
+verify (a). Common silent-failure modes:
+
+- Invalid `--type` argument (e.g. `rg --type tsx` -- `tsx` is not a registered
+  ripgrep type; the `ts` type already covers `*.tsx`)
+- Wrong path or glob that excludes the intended files
+- `2>/dev/null` masking the actual error message
+- Stale or empty target directory
+- Stdin-reading mode triggered by missing path argument (see "Before running a command")
+
+A non-zero result self-validates; a zero result does not. Run a sanity-check
+invocation (different pattern, broader glob, or remove the stderr-suppression)
+before claiming "no matches exist." If the original command was the right shape,
+the sanity check confirms it cheaply; if it was wrong, you catch the failure
+before it becomes a published finding.
 
 ### Document non-obvious findings
 
@@ -240,11 +336,28 @@ Add explicit guards (transcript size check, env var flag, session type filter) t
 - Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-es`) over manual promise creation
 - Extract and name concepts; start simple, refactor to complexity only when necessary
 - Simplification progression: imperative loop -> while -> for -> recursive -> higher-order functions/async iterators
-- Never disable, raise, or bypass the max-lines limit; always split into separate files instead of trimming, compressing, or removing content to fit
+- Never disable, raise, bypass, or work around the max-lines limit.
+  Remediate by splitting: re-export from `index.ts`;
+  move helpers to siblings (e.g. `crc32.ts`, `headers.ts`),
+  constants to `constants.ts`, types to `types.ts`.
+  Pattern: `packages/module/hyperscript/src/index.ts` (76 lines, pure re-exports),
+  `packages/module/image-diff/src/index.ts` (75 lines, pure re-exports).
+  Forbidden workarounds (each violates another rule):
+  compressing function arguments to one line,
+  joining multi-line statements, removing TSDoc,
+  removing `//region` markers, joining declarations.
+  If you find yourself reformatting to reduce line count,
+  stop -- the fix lives in another file.
 
 ### Linting
 
 - Identify which tool reports an error (ESLint vs Oxlint) before fixing
+- Never violate one rule to satisfy another.
+  Lint rules form a single shape: code that satisfies all of them.
+  When two rules appear to conflict, the remediation is structural (split, extract, rename),
+  never reformatting one rule's surface to silence another.
+  The signal you are violating-to-satisfy: you are about to undo something the autofix
+  or AGENTS.md prescribed (e.g. compressing arguments back onto one line to fit max-lines).
 - Prefer `Object.entries` and functional methods over `for...in`
 - Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
 - Block-level `/* oxlint-disable rule */` must wrap tightly around the offending code.

@@ -238,7 +238,7 @@ four locations in its compiled dist:
 const apiKey = await ctx.modelRegistry.getApiKey(candidate,);
 ```
 
-The `ModelRegistry` class in `@mariozechner/pi-coding-agent` 0.70.6
+The `ModelRegistry` class in `@earendil-works/pi-coding-agent` 0.70.6
 **does not have** a `getApiKey(model)` method. It was replaced by
 `getApiKeyAndHeaders(model)`, which returns a structured result:
 
@@ -289,7 +289,7 @@ Exact source locations:
 
 - `packages/budget-model/src/index.ts` -- four calls to
   `ctx.modelRegistry.getApiKey(model)`
-- `@mariozechner/pi-coding-agent` `core/model-registry.ts` --
+- `@earendil-works/pi-coding-agent` `core/model-registry.ts` --
   `ModelRegistry` class has `getApiKeyAndHeaders` and
   `getApiKeyForProvider` but no `getApiKey`
 - `packages/safeguard/src/index.ts` -- bare `catch` block in
@@ -303,7 +303,7 @@ method. Add this to the pi-safeguard dist so it runs before
 
 ```javascript
 // Add to pi-safeguard/dist/index.js, before the first use of findBudgetModel
-import { ModelRegistry, } from '@mariozechner/pi-coding-agent';
+import { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 if (!ModelRegistry.prototype.getApiKey) {
   ModelRegistry.prototype.getApiKey = async function(model,) {
     const result = await this.getApiKeyAndHeaders(model,);
@@ -363,7 +363,7 @@ filtering logic runs. The `majorVersions` setting is never evaluated.
 **Description**:
 
 `pi-budget-model` 1.0.1 calls `ctx.modelRegistry.getApiKey(model)` at
-four locations, but `ModelRegistry` in `@mariozechner/pi-coding-agent`
+four locations, but `ModelRegistry` in `@earendil-works/pi-coding-agent`
 0.70.6 only has `getApiKeyAndHeaders(model)` and
 `getApiKeyForProvider(provider)`. The `getApiKey(model)` method was
 removed (or renamed) without a compatibility shim.

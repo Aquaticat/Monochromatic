@@ -1,4 +1,4 @@
-import type { FileOperations, } from '@mariozechner/pi-coding-agent';
+import type { FileOperations, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,

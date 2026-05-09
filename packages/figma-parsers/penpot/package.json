@@ -17,13 +17,12 @@
   },
   "dependencies": {
     "@monochromatic-dev/figma-kiwi": "workspace:*",
-    "jszip": "3.10.1"
+    "@monochromatic-dev/module-zip-writer": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "0.0.5",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/node": "25.6.0",
-    "@types/jszip": "3.4.1"
+    "@types/node": "25.6.0"
   }
 }

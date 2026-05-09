@@ -3,7 +3,7 @@
  * Reimplemented because pi doesn't export computeFileLists or formatFileOperations.
  */
 
-import type { FileOperations, } from '@mariozechner/pi-coding-agent';
+import type { FileOperations, } from '@earendil-works/pi-coding-agent';
 
 /**
  * Derive read/modified file lists from cumulative file operations.
