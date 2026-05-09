@@ -171,6 +171,42 @@ is not a recommendation; it is a guess. The user catches the gap when they
 sign up and discover the problem themselves -- which is the failure mode this
 rule eliminates.
 
+### Constraint-fit before stack-fit, tool-fit before first-principles
+
+When the user states a hard performance, scale, latency, or compatibility
+constraint, let the constraint pick the technology, not the surrounding
+monorepo or your familiarity with one stack. Greenfield projects in particular:
+the existing stack is a soft preference, not a constraint. The phrases "since
+you're already using X" or "to match your stack" in your reasoning are evidence
+this rule has fired and you are about to violate it.
+
+When the problem class has existing tools designed for it, surface those tools
+before proposing a hand-rolled solution. For graphics, rendering, or many-entity
+work, name game engines (Bevy, Godot, Unreal). For databases, name existing
+engines. For collaboration, name CRDT libraries (Yjs, Automerge). Build from
+scratch only when an existing tool's constraints conflict with stated
+requirements, and state the conflict explicitly.
+
+Remediation when proposing a technology choice: name at least two alternatives
+and give concrete reasons (not "doesn't fit"; cite the specific incompatibility)
+for not picking each. Maintain a decision document in the repo
+(`docs/decisions/<project>.md` or co-located with the package) that captures
+the rejected alternatives and the reasons. Future sessions read this; without
+it, the same rejected paths get re-proposed and the user has to push back
+again.
+
+Signal you are about to violate this rule:
+
+- proposing a technology without having listed alternatives;
+- skipping the decision-doc update after the user picks among them;
+- silent anchoring: defaulting to a tool, language, or framework without
+  having written the default down for inspection.
+  The verbalized form ("since you're already using X") is the easy case to
+  catch. The silent form is the common failure mode: the assumption never
+  reaches the response, so neither you nor the user can see it. The remedy
+  is to write the candidate set explicitly before picking, even when one
+  option feels obvious.
+
 ### Before claiming inability
 
 A statement like "I cannot read this file format" or "my tools do not support that operation"
