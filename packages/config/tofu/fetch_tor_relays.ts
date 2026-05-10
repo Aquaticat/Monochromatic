@@ -75,7 +75,7 @@ async function run() {
       );
     }
     else {
-      process.exit(1,);
+      throw new Error('fetch failed and no cached fallback available',);
     }
   }
 }

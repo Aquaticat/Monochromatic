@@ -11,10 +11,8 @@ import { json, } from 'node:stream/consumers';
 const input = await json(process.stdin,) as Record<string, string>;
 const TARGET_ASN = input.asn?.toUpperCase();
 
-if (!TARGET_ASN) {
-  console.error('No ASN provided',);
-  process.exit(1,);
-}
+if (!TARGET_ASN)
+  throw new Error('No ASN provided',);
 
 const CACHE_FILE = join(
   import.meta.dirname,
@@ -92,7 +90,7 @@ async function run() {
       );
     }
     else {
-      process.exit(1,);
+      throw new Error('fetch failed and no cached fallback available',);
     }
   }
 }
