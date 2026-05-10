@@ -14,6 +14,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import { tagged, } from "@monochromatic-dev/module-logger/tagged";
 import {
   type BatchEntry,
   type BudgetModel,
@@ -31,6 +32,13 @@ import {
   updateWidget,
   askUser,
 } from "./ask-user.ts";
+import { l as parentLogger, } from "./log.ts";
+
+/** Tagged logger for the evaluate module. */
+const l = tagged({
+  tag: "evaluate",
+  l: parentLogger,
+},);
 
 /**
  * Evaluate a flagged action through the judge pipeline.
@@ -77,16 +85,22 @@ async function evaluate(
   block: true;
   reason: string
 } | undefined> {
+  const innerL = tagged({
+    tag: evaluate.name,
+    l,
+  },);
+  innerL.debug(`evaluating action: ${action}`,);
+
   let judge: BudgetModel | undefined = undefined;
   try {
     judge = await resolveJudgeModel(
       ctx,
-      config
+      config,
     );
   }
   catch (err) {
-    console.error(
-      `auto-mode: judge model resolution failed: ${err instanceof Error ? err.message : String(err)}`,
+    innerL.error(
+      `judge model resolution failed: ${err instanceof Error ? err.message : String(err,)}`,
     );
     return askUser(
       pi,
@@ -122,14 +136,15 @@ async function evaluate(
     );
 
     if (verdict.verdict === "approve") {
+      innerL.info(`approve: ${verdict.reason}`,);
       flowVerdicts.push({
         action,
         verdict: "approved",
         reason: verdict.reason,
-      });
+      },);
       updateWidget(
         ctx,
-        flowVerdicts
+        flowVerdicts,
       );
       pi.appendEntry(
         VERDICT_ENTRY_TYPE,
@@ -143,14 +158,15 @@ async function evaluate(
     }
 
     if (verdict.verdict === "deny") {
+      innerL.warn(`deny: ${verdict.reason}`,);
       flowVerdicts.push({
         action,
         verdict: "denied",
         reason: verdict.reason,
-      });
+      },);
       updateWidget(
         ctx,
-        flowVerdicts
+        flowVerdicts,
       );
       pi.appendEntry(
         VERDICT_ENTRY_TYPE,
@@ -166,6 +182,7 @@ async function evaluate(
       };
     }
 
+    innerL.info(`ask: ${verdict.reason}`,);
     return askUser(
       pi,
       ctx,
@@ -174,7 +191,8 @@ async function evaluate(
     );
   }
   catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    const msg = err instanceof Error ? err.message : String(err,);
+    innerL.error(`judge error: ${msg}`,);
     return askUser(
       pi,
       ctx,

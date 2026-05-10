@@ -15,6 +15,7 @@ import type {
   ToolCallEvent,
   ToolCallEventResult,
 } from "@earendil-works/pi-coding-agent";
+import { tagged, } from "@monochromatic-dev/module-logger/tagged";
 import { Type, } from "typebox";
 import {
   loadMergedConfig,
@@ -35,6 +36,13 @@ import {
   isRelevantTool,
 } from "./tool-helpers.ts";
 import { evaluate, } from "./evaluate.ts";
+import { l as parentLogger, } from "./log.ts";
+
+/** Tagged logger for the auto-mode entry point. */
+const l = tagged({
+  tag: "index",
+  l: parentLogger,
+},);
 
 /**
  * Auto-mode pi extension.
@@ -53,11 +61,19 @@ import { evaluate, } from "./evaluate.ts";
 export default function autoMode(
   pi: ExtensionAPI,
 ): void {
-  const config = loadMergedConfig(process.cwd());
+  const innerL = tagged({
+    tag: autoMode.name,
+    l,
+  },);
+  const config = loadMergedConfig(process.cwd(),);
 
-  if (!config.enabled) return;
+  if (!config.enabled) {
+    innerL.debug("auto-mode disabled in config; not registering handlers",);
+    return;
+  }
 
-  const systemPrompt = buildSystemPrompt(config);
+  innerL.info("auto-mode active; registering handlers",);
+  const systemPrompt = buildSystemPrompt(config,);
 
   //region /guard command
 

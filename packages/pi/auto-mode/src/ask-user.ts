@@ -12,11 +12,19 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import { tagged, } from "@monochromatic-dev/module-logger/tagged";
 import {
   type VerdictData,
   VERDICT_ENTRY_TYPE,
 } from "./types.ts";
 import { DEFAULT_DENY_GUIDANCE, } from "./system-prompt.ts";
+import { l as parentLogger, } from "./log.ts";
+
+/** Tagged logger for the ask-user module. */
+const l = tagged({
+  tag: "ask-user",
+  l: parentLogger,
+},);
 
 /**
  * Prompt the user to approve or deny an action.
@@ -45,9 +53,15 @@ async function askUser(
   explanation: string,
 ): Promise<{
   block: true;
-  reason: string
+  reason: string;
 } | undefined> {
+  const innerL = tagged({
+    tag: askUser.name,
+    l,
+  },);
+
   if (!ctx.hasUI) {
+    innerL.warn(`no UI for action: ${action}; auto-denying (fail-closed)`,);
     pi.appendEntry(
       VERDICT_ENTRY_TYPE,
       {
@@ -58,10 +72,11 @@ async function askUser(
     );
     return {
       block: true,
-      reason: DEFAULT_DENY_GUIDANCE
+      reason: DEFAULT_DENY_GUIDANCE,
     };
   }
 
+  innerL.debug(`prompting user for action: ${action}`,);
   const lines = [
     "Command needs approval. Agent's explanation:",
     `> ${explanation}`,
@@ -69,15 +84,16 @@ async function askUser(
     action,
   ];
   const choice = await ctx.ui.select(
-    lines.join("\n"),
+    lines.join("\n",),
     [
       "Allow",
       "Deny",
-      "Stop"
+      "Stop",
     ],
   );
 
   if (choice === "Allow") {
+    innerL.info(`user-approve: ${action}`,);
     pi.appendEntry(
       VERDICT_ENTRY_TYPE,
       {
@@ -90,6 +106,7 @@ async function askUser(
   }
 
   if (choice === "Stop") {
+    innerL.info(`user-stop: ${action}`,);
     pi.appendEntry(
       VERDICT_ENTRY_TYPE,
       {
@@ -105,6 +122,7 @@ async function askUser(
     };
   }
 
+  innerL.info(`user-deny: ${action}`,);
   pi.appendEntry(
     VERDICT_ENTRY_TYPE,
     {
@@ -115,7 +133,7 @@ async function askUser(
   );
   return {
     block: true,
-    reason: DEFAULT_DENY_GUIDANCE
+    reason: DEFAULT_DENY_GUIDANCE,
   };
 }
 

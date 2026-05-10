@@ -11,6 +11,14 @@ import type {
   Model,
 } from "@earendil-works/pi-ai";
 import type { ExtensionContext, } from "@earendil-works/pi-coding-agent";
+import { tagged, } from "@monochromatic-dev/module-logger/tagged";
+import { l as parentLogger, } from "./log.ts";
+
+/** Tagged logger for the budget-model-auth module. */
+const l = tagged({
+  tag: "budget-model-auth",
+  l: parentLogger,
+},);
 
 //region Candidate type
 
@@ -159,8 +167,14 @@ async function resolveAuth(
     return auth;
   }
   catch (err) {
-    console.error(
-      `auto-mode: getApiKeyAndHeaders failed for ${String(model.provider)}/${model.id}: ${err instanceof Error ? err.message : String(err)}`,
+    const innerL = tagged({
+      tag: resolveAuth.name,
+      l,
+    },);
+    innerL.error(
+      `getApiKeyAndHeaders failed for ${String(model.provider,)}/${model.id}: ${
+        err instanceof Error ? err.message : String(err,)
+      }`,
     );
     return null;
   }

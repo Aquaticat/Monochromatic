@@ -17,6 +17,7 @@ import {
   type SimpleStreamOptions,
   type ToolCall,
 } from "@earendil-works/pi-ai";
+import { tagged, } from "@monochromatic-dev/module-logger/tagged";
 import type {
   BatchEntry,
   BudgetModelAuth,
@@ -26,6 +27,13 @@ import {
   VERDICT_TOOL,
   toolChoiceForApi,
 } from "./judge-tool.ts";
+import { l as parentLogger, } from "./log.ts";
+
+/** Tagged logger for the judge module. */
+const l = tagged({
+  tag: "judge",
+  l: parentLogger,
+},);
 
 //region Public API
 
@@ -73,6 +81,12 @@ async function callJudge(
   systemPrompt: string,
   batchContext: BatchEntry[] | undefined,
 ): Promise<Verdict> {
+  const innerL = tagged({
+    tag: callJudge.name,
+    l,
+  },);
+  innerL.debug(`calling ${String(model.provider,)}/${model.id} for action: ${action}`,);
+
   const userContent = buildUserContent(
     action,
     cwd,
@@ -244,9 +258,13 @@ async function collectToolCall(
   }
 
   if (textContent !== "") {
-    console.error(
-      'auto-mode judge: text-fallback fired (model returned text instead of calling render_verdict tool); '
-      + 'this indicates the provider ignored toolChoice',
+    const innerL = tagged({
+      tag: collectToolCall.name,
+      l,
+    },);
+    innerL.error(
+      "text-fallback fired (model returned text instead of calling render_verdict tool); "
+      + "this indicates the provider ignored toolChoice",
     );
     return extractJsonVerdict(textContent,);
   }

@@ -9,6 +9,7 @@
 
 import { readFileSync, } from "node:fs";
 import { join, } from "node:path";
+import { tagged, } from "@monochromatic-dev/module-logger/tagged";
 import * as v from "valibot";
 import type {
   CommandMatcher,
@@ -20,6 +21,13 @@ import {
   ProjectConfigSchema,
   type ProjectConfig,
 } from "./config-schemas.ts";
+import { l as parentLogger, } from "./log.ts";
+
+/** Tagged logger for the config module. */
+const l = tagged({
+  tag: "config",
+  l: parentLogger,
+},);
 
 //region Public API
 
@@ -40,8 +48,16 @@ import {
 function loadMergedConfig(
   cwd: string,
 ): MergedConfig {
+  const innerL = tagged({
+    tag: loadMergedConfig.name,
+    l,
+  },);
+  innerL.debug(`loading config for cwd: ${cwd}`,);
   const global = loadGlobalConfig();
-  const project = loadProjectConfig(cwd);
+  const project = loadProjectConfig(cwd,);
+  innerL.debug(
+    `loaded global=${String(true,)} project=${String(project !== undefined,)} enabled=${String(global.enabled,)}`,
+  );
 
   const commands: CommandMatcher[] = [...global.commands];
   const patternStrs = [...global.patterns];
