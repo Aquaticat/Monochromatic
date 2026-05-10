@@ -130,9 +130,11 @@ Confident factual claims about the user's environment, an external tool, or sour
 
 Confident-but-unbacked claims read identically to verified ones; the user cannot tell which to trust until something breaks. If you cannot name what backs a claim, downgrade to a labeled guess ("I have not verified this, but my reading-from-training is...") or do the verification.
 
-### Treat null search results as suspicious
+### Treat search results as suspicious until you've verified the shape
 
-A zero-match result is two claims: (a) the search ran correctly, (b) nothing matched. Verify (a) before reporting. Common silent-failure modes:
+Every search result carries two claims: (a) the search ran correctly, (b) the lines you're seeing are the matches. Both can fail silently.
+
+**Zero-match silent failures:**
 
 - Invalid `--type` argument (e.g. `rg --type tsx`, where `tsx` is not a registered ripgrep type; the `ts` type already covers `*.tsx`)
 - Wrong path or glob excluding the intended files
@@ -140,7 +142,14 @@ A zero-match result is two claims: (a) the search ran correctly, (b) nothing mat
 - Stale or empty target directory
 - Stdin-reading mode triggered by missing path argument (see "Before running a command")
 
-A non-zero result self-validates; a zero result does not. Run a sanity-check (different pattern, broader glob, or remove the stderr-suppression) before claiming "no matches exist." If the original shape was right, the sanity-check confirms cheaply; if wrong, you catch the failure before publishing.
+**Non-zero-match silent failures (same shape, opposite direction):**
+
+- `head -N` truncating before later files have a chance; one noisy file can consume the cap and bury everything alphabetically later. Remove the cap or raise it before drawing a conclusion; if you must cap, surface in the response that the result is truncated.
+- Denylist filters (`rg -v 'a|b|c'`) hide whatever you forgot to keep and discard whatever you forgot to include, invisibly. Prefer allowlist patterns: a positive shape that captures what you want (e.g. literal `' cat '` with surrounding spaces for prose-form English usage of a word that is also a shell command) rejects the rest by construction.
+- `-l` (filenames only) hides the context needed to tell real matches from noise. Default to full lines; switch to `-l` only after you've confirmed the noise cost is concrete.
+- Narrow `--type` on the first pass feels thorough but skips matches in unexpected file kinds. Widen first; narrow only after the wide scan was already clean.
+
+A non-zero result does not self-validate any more than a zero result does. Run a sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
 
 ### Document non-obvious findings
 
