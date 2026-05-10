@@ -44,7 +44,7 @@ const VAR_HOME_CTX: SignalContext = {
 await describe({
   name: "pathSignals",
   children: [
-    //region Under cwd — not flagged
+    //region Under cwd: not flagged
 
     it({
       name: "does not flag path under cwd",
@@ -56,7 +56,7 @@ await describe({
     it({
       name: "does not flag /var/home/user/project/file under cwd (the fix)",
       fn: async () => {
-        // This was a false positive in upstream — isSystemPath flagged /var
+        // This was a false positive in upstream: isSystemPath flagged /var
         // but the path is under cwd
         expect(pathSignals("/var/home/user/project/file", VAR_HOME_CTX,)).toBe(false,);
       },
@@ -64,7 +64,7 @@ await describe({
 
     //endregion
 
-    //region Outside cwd — flagged
+    //region Outside cwd: flagged
 
     it({
       name: "flags path outside cwd",
@@ -82,7 +82,7 @@ await describe({
 
     //endregion
 
-    //region Home dotfile — flagged
+    //region Home dotfile: flagged
 
     it({
       name: "flags home dotfile",
@@ -93,7 +93,7 @@ await describe({
 
     //endregion
 
-    //region Secret path patterns — flagged
+    //region Secret path patterns: flagged
 
     it({
       name: "flags .env path",

@@ -34,7 +34,7 @@ const VerdictEnum = StringEnum(VERDICT_VALUES);
 const VERDICT_TOOL: Tool = {
   name: "render_verdict",
   description:
-    "Submit your verdict on whether the action should proceed. You MUST call this tool — do not respond with text.",
+    "Submit your verdict on whether the action should proceed. You MUST call this tool; do not respond with text.",
   parameters: {
     type: "object",
     properties: {

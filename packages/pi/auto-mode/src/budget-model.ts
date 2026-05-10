@@ -2,8 +2,8 @@
  * Budget model: auto-select the cheapest available judge model.
  *
  * Two strategies:
- * - `"same-provider"` (default) — cheapest in the active provider
- * - `"any-provider"` — cheapest across ALL providers with an API key
+ * - `"same-provider"` (default): cheapest in the active provider
+ * - `"any-provider"`: cheapest across ALL providers with an API key
  *
  * @module
  */
@@ -186,7 +186,7 @@ async function findSameProvider(
       activeProvider,
     );
     throw new NoBudgetModelError(
-      `cheapest model in ${activeProvider} is $${cheapestCandidate.cost.input}/M input — not significantly cheaper than active model ($${activeModel.cost.input}/M input)`,
+      `cheapest model in ${activeProvider} is $${cheapestCandidate.cost.input}/M input; not significantly cheaper than active model ($${activeModel.cost.input}/M input)`,
       {
         sameProvider,
         cheapestOverall: await lazyCheapestOverall()
@@ -279,7 +279,7 @@ async function findAnyProvider(
 
   if (cheapestCost >= activeModel.cost.input * costRatio) {
     throw new NoBudgetModelError(
-      `cheapest model across all providers is $${cheapestCost}/M input — not significantly cheaper than active model ($${activeModel.cost.input}/M input)`,
+      `cheapest model across all providers is $${cheapestCost}/M input; not significantly cheaper than active model ($${activeModel.cost.input}/M input)`,
     );
   }
 
@@ -306,7 +306,7 @@ async function findAnyProvider(
 //region Model override
 
 /**
- * Resolve a model override — skip auto-selection entirely.
+ * Resolve a model override: skip auto-selection entirely.
  *
  * @param ctx - extension context
  *

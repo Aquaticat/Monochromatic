@@ -51,10 +51,10 @@ Flagger and judge are strictly separated: the flagger never provides reasons, th
 
 ## Commands
 
-- `/guard <directive>` — add a session-scoped trust directive
-- `/guard reset` — clear all trust directives
-- `/guard` — list active trust directives
+- `/guard <directive>`: add a session-scoped trust directive
+- `/guard reset`: clear all trust directives
+- `/guard`: list active trust directives
 
 ## Tools
 
-- `propose_trust` — request permission for something the guardrail blocked
+- `propose_trust`: request permission for something the guardrail blocked

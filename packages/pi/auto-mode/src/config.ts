@@ -251,7 +251,7 @@ function compilePatterns(
       }
       catch (err) {
         throw new Error(
-          `auto-mode: invalid regex in ${label} patterns: "${p}" — ${err instanceof Error ? err.message : String(err)}`,
+          `auto-mode: invalid regex in ${label} patterns: "${p}": ${err instanceof Error ? err.message : String(err)}`,
           { cause: err },
         );
       }

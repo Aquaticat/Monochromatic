@@ -91,7 +91,7 @@ function getFilePath(
 /**
  * Describe the tool action for the judge.
  *
- * No signal/reason annotations — the judge forms its own assessment.
+ * No signal/reason annotations; the judge forms its own assessment.
  *
  * @param event - the tool call event
  *
@@ -153,7 +153,7 @@ function describeAction(
 /**
  * Check if a tool could be used for circumvention.
  *
- * Checked after a denial — all relevant tools are re-flagged
+ * Checked after a denial: all relevant tools are re-flagged
  * to detect circumvention attempts across turn boundaries.
  *
  * @param event - the tool call event

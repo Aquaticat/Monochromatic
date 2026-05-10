@@ -89,7 +89,7 @@ async function evaluate(
       pi,
       ctx,
       action,
-      "No judge model available — manual approval required.",
+      "No judge model available; manual approval required.",
     );
   }
 
@@ -98,7 +98,7 @@ async function evaluate(
       pi,
       ctx,
       action,
-      "No judge model available — manual approval required.",
+      "No judge model available; manual approval required.",
     );
   }
 

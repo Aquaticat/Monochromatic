@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic-dev/pi-auto-mode",
-  "description": "LLM-as-judge guardrail for pi — replaces pi-safeguard with fixed path handling and structured-output judge",
+  "description": "LLM-as-judge guardrail for pi: replaces pi-safeguard with fixed path handling and structured-output judge",
   "type": "module",
   "private": true,
   "version": "0.0.1",
