@@ -35,29 +35,24 @@ hyphens, `--watch`, `user-facing`, and ASCII `--` separators passed through clea
 
 ### ASCII regex rules
 
-Key insight: any `&` or `~(` outside a character class
-triggers the resharp engine path
-(`packages/dev-script/forbidden-strings/src/rules/engine.rs:193` `uses_set_algebra`).
-Resharp supports lookarounds and set algebra;
-the rust `regex` crate (default path) does not.
-
 Two regex rules verified to match em-dash shapes
 while skipping high-confidence legitimate uses:
 
 ```
-/[a-z]--[a-z]&_*/
+/[a-z]--[a-z]/
 /^.*[a-z] -- [a-z].*$&~(.*npm.*)&~(.*git.*)/
 ```
 
-Rule 1 catches `word--word` (no surrounding spaces).
+Rule 1 catches `word--word` (no surrounding spaces),
+routed to the rust `regex` crate (no set-algebra operators present).
+Consuming the boundary letters in the match span is fine
+since the goal is detection, not precise span isolation.
+
 Rule 2 catches ` -- ` between alphabetic words
 on lines that do not contain `npm` or `git`.
-
-The `&_*` suffix on rule 1 is a no-op intersection (intersect with "any string")
-that exists solely to route the rule through resharp.
-Without it, the rule routes to the rust `regex` crate
-which rejects lookarounds with
-`look-around, including look-ahead and look-behind, is not supported`.
+The `&` and `~()` operators route this rule through resharp
+(`packages/dev-script/forbidden-strings/src/rules/engine.rs:193` `uses_set_algebra`),
+which supports the set-algebra needed for the line-level complements.
 
 ### Self-match safety for ASCII
 
@@ -92,18 +87,21 @@ Top hit files:
 
 ## What does not work
 
-### Lookarounds without set-algebra trigger
+### Lookarounds in plain rules
 
-Plain regex with lookarounds fails:
+The rust `regex` crate does not support lookarounds.
+Rules using `(?<=...)`, `(?=...)`, etc. without any `&` or `~(`
+fail at compile time with
+`look-around, including look-ahead and look-behind, is not supported`.
 
-```
-/(?<=[a-z]) -- (?=[a-z])/
-```
-
-Error: `look-around, including look-ahead and look-behind, is not supported`.
-The rule was routed to the rust `regex` crate
-because no `&` or `~(` was present.
-Workaround: append `&_*` to force the resharp path.
+The em-dash patterns documented above do not need lookarounds:
+consuming the boundary letters via `[a-z] -- [a-z]` is sufficient
+because the goal is to flag the violation, not to bracket the precise dash bytes.
+If a future rule does need lookarounds (for example,
+to disambiguate based on surrounding context without consuming it),
+include `&_*` to route the rule through resharp,
+which supports lookarounds compiled directly into the automaton
+(`/tmp/resharp/docs/syntax.md:193-209`).
 
 ### Resharp algebra ceiling
 
@@ -118,7 +116,7 @@ Examples that failed during investigation:
 ```
 
 The exact threshold is unmeasured.
-Workaround: split exclusions across multiple rules.
+See "Exclusion list expansion" below for working approaches.
 
 ### Sub-span exclusion vs anchored matching
 
@@ -175,25 +173,28 @@ Not implemented.
 
 Rule 2's exclusion list currently has only `npm` and `git`
 due to the algebra ceiling.
-Expand by splitting into multiple rules,
-each handling a different exclusion category:
+Splitting exclusions across multiple rules does not help:
+multiple rules combine via union (any rule firing flags the line),
+which makes detection more permissive, not more restrictive.
+
+Two viable paths:
+
+1. Hand-pick a smaller, high-impact exclusion set per rule
+   that fits within the algebra ceiling.
+   Iterate against the corpus, classify each false positive,
+   keep only the exclusions that retire the most false positives.
+2. Pre-process the corpus before scanning:
+   strip fenced code blocks, strip markdown URL anchors,
+   strip inline backtick spans.
+   Requires scanner code changes
+   (a pre-pass between file read and rule application).
+
+Categories of false positive observed in the empirical scan:
 
 - markdown anchor links (lines containing `](` or `#`)
 - inline code (lines with backticks)
 - toolchain commands (`mise`, `bun`, `pnpm`, `yarn`, `cargo`, `deno`, `node`, `hk`, `gh`, `jq`)
 - shell builtins (`cp`, `mv`, `rm`, `cat`, `echo`, `exec`, `find`, `ls`, `cd`)
-
-Each as its own rule line keyed off ` -- ` core
-plus a single complement.
-Aggregate effect: the union over all rules
-catches the em-dash pattern unless any one of the exclusions matches.
-Wait, that is wrong: separate rules each fire when their LHS matches,
-so splitting rules makes them more permissive (logical OR of matches),
-not more restrictive (logical AND).
-Need a different decomposition: either accept the algebra ceiling
-and hand-pick a smaller exclusion subset,
-or pre-process the corpus (strip code blocks, strip URL anchors)
-before feeding to the scanner.
 
 ### Single-dash case (` - ` em-dash)
 
