@@ -9,7 +9,7 @@ name = "forbidden-strings"
 path = "src/main.rs"
 
 [dependencies]
-resharp = "0.5"
+resharp = "0.5.2"
 regex = "1"
 aho-corasick = "1"
 rayon = "1"
