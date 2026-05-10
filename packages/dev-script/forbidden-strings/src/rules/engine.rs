@@ -250,3 +250,222 @@ pub fn requires_resharp(src: &str) -> bool {
     }
     false
 }
+
+// What:     `const TROUBLESHOOT_REF: &str = "...";` is a compile-time
+//           constant pointing readers from a runtime error message to
+//           the long-form troubleshooting doc. `&str` here is a
+//           reference into the binary's read-only string table -- no
+//           allocation, no per-call cost.
+// Why:      Centralise the doc reference so renaming or moving the
+//           file updates one site, not five. Every message returned by
+//           `lookaround_in_complement` ends with this constant.
+// TS map:   `const TROUBLESHOOT_REF = "...";`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const TROUBLESHOOT_REF = "See TROUBLESHOOTING.resharp.md for workarounds.";
+// ```
+const TROUBLESHOOT_REF: &str = "See TROUBLESHOOTING.resharp.md for workarounds.";
+
+// What:     `pub fn lookaround_in_complement(src: &str) -> Option<String>`
+//           returns `Some(reason)` when `src` contains a `~(...)` whose
+//           body holds an atom that resharp 0.5.x cannot handle, and
+//           `None` otherwise. The detected atoms are:
+//             - `\b` (rewritten to a lookaround pair, then refused by
+//               the reverse pass at `resharp-algebra/src/lib.rs:2234`)
+//             - `\B` (parser falls through to the generic assertion
+//               handler at `resharp-parser/src/lib.rs:1419-1424` and
+//               rejects at parse time)
+//             - unescaped `^` or `$` (rewritten to lookaround in
+//               default-multiline mode at
+//               `resharp-parser/src/lib.rs:1425-1441`, then refused)
+//             - user-explicit lookaround `(?=`, `(?!`, `(?<=`, `(?<!`
+//               (refused by the same reverse-pass arm)
+//           The function tracks paren depth via a stack of "is this
+//           open paren a complement-open" flags so we can recognise
+//           when the matching close exits the complement. Character
+//           class interiors `[...]` are skipped because inside a class
+//           those bytes are literal, not the structural metacharacters.
+// Why:      Catch the failure shape before the rule reaches
+//           `resharp::Regex::new`, so the user gets an actionable
+//           message that names the surface trigger ("complement body
+//           contains \b") instead of resharp's opaque rendering
+//           ("unsupported lookaround pattern" or
+//           "UnsupportedResharpRegex"), which the user must reverse-
+//           engineer back to their own input.
+// TS map:   `function lookaroundInComplement(src: string): string | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function lookaroundInComplement(src: string): string | null {
+//   // walk bytes; for each position, track:
+//   //   inClass: are we inside `[...]`?
+//   //   parenStack: bool[] -- true means the open paren was `~(`
+//   // inside a complement (any `true` in the stack) and outside a class,
+//   // reject \b, \B, ^, $, (?=, (?!, (?<=, (?<!.
+// }
+// ```
+pub fn lookaround_in_complement(src: &str) -> Option<String> {
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    let mut in_class = false;
+    // What:     `let mut paren_stack: Vec<bool> = Vec::new();`. A growable
+    //           vector of `bool`. Each entry records the kind of an
+    //           unclosed open paren -- `true` if the opener was `~(`,
+    //           `false` for any other `(` (including non-capturing
+    //           `(?:`, named `(?P<...>`, inline flags `(?i)`). On `)`
+    //           we pop the top; tracking complement-ness depth-aware
+    //           lets nested constructs like `~(.*(?:foo).*)` correctly
+    //           identify the `~(` as the complement while the inner
+    //           `(?:foo)` close does not exit the complement.
+    // Why:      Without per-open kind tracking we cannot tell whether
+    //           a `)` closes a complement or a regular group, so we
+    //           cannot bound the complement body.
+    // TS map:   `const parenStack: boolean[] = [];`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const parenStack: boolean[] = [];
+    // ```
+    let mut paren_stack: Vec<bool> = Vec::new();
+    while i < bytes.len() {
+        let c = bytes[i];
+        // What:     `if c == b'\\' { ... }` handles regex escape
+        //           sequences. The trigger atoms `\b` and `\B` ARE
+        //           escape sequences, so we check the escapee byte
+        //           BEFORE skipping past the pair. Outside a complement
+        //           or inside a class, `\b` is literal-ish and we just
+        //           skip the two bytes.
+        // Why:      The trigger is the escape sequence itself, not the
+        //           backslash. Treating `\\` as "skip 2" would let us
+        //           miss `\b` and `\B` entirely.
+        // TS map:   `if (c === 0x5c) { ... }` (0x5c = `\`).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (c === '\\'.charCodeAt(0)) {
+        //   if (inComplement && !inClass && i + 1 < bytes.length) {
+        //     const e = bytes[i + 1];
+        //     if (e === 'b') return msgWordBoundary();
+        //     if (e === 'B') return msgNotWordBoundary();
+        //   }
+        //   i += 2; continue;
+        // }
+        // ```
+        if c == b'\\' {
+            let in_complement = !in_class && paren_stack.iter().any(|&k| k);
+            if in_complement && i + 1 < bytes.len() {
+                match bytes[i + 1] {
+                    b'b' => {
+                        return Some(format!(
+                            "complement body contains \\b; resharp 0.5.x rewrites it to an internal lookaround which the reverse pass refuses. Replace with \\W (consumes a char on each side) or literal whitespace, or move the boundary check outside the complement. {}",
+                            TROUBLESHOOT_REF
+                        ));
+                    }
+                    b'B' => {
+                        return Some(format!(
+                            "complement body contains \\B; resharp 0.5.x rejects it at parse time when its neighbours are unclassifiable. Restructure the rule to avoid \\B inside the complement. {}",
+                            TROUBLESHOOT_REF
+                        ));
+                    }
+                    _ => {}
+                }
+            }
+            i += 2;
+            continue;
+        }
+        if !in_class && c == b'[' {
+            in_class = true;
+            i += 1;
+            continue;
+        }
+        if in_class && c == b']' {
+            in_class = false;
+            i += 1;
+            continue;
+        }
+        if !in_class {
+            // What:     `let in_complement = paren_stack.iter().any(|&k| k);`
+            //           returns `true` when ANY entry in the paren
+            //           stack is a complement-open. Equivalent to
+            //           "we are nested inside at least one `~(`".
+            //           `.iter()` borrows the vec; `.any(closure)`
+            //           short-circuits on the first match.
+            // Why:      A `^` inside a regular group nested inside a
+            //           complement (`~(foo(.|\n)*^bar)`) is still
+            //           "inside the complement" for resharp's purposes;
+            //           the rewrite happens regardless of intermediate
+            //           non-complement parens.
+            // TS map:   `const inComplement = parenStack.some(Boolean);`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const inComplement = parenStack.some(Boolean);
+            // ```
+            let in_complement = paren_stack.iter().any(|&k| k);
+            if in_complement {
+                if c == b'^' {
+                    return Some(format!(
+                        "complement body contains ^; resharp 0.5.x rewrites it to a lookbehind in default-multiline mode, which the reverse pass refuses. Use \\A for whole-content start-anchor semantics, or move the anchor outside the complement. {}",
+                        TROUBLESHOOT_REF
+                    ));
+                }
+                if c == b'$' {
+                    return Some(format!(
+                        "complement body contains $; resharp 0.5.x rewrites it to a lookahead in default-multiline mode, which the reverse pass refuses. Use \\z for whole-content end-anchor semantics, or move the anchor outside the complement. {}",
+                        TROUBLESHOOT_REF
+                    ));
+                }
+                if c == b'(' && i + 2 < bytes.len() && bytes[i + 1] == b'?' {
+                    let after = bytes[i + 2];
+                    if after == b'=' || after == b'!' {
+                        return Some(format!(
+                            "complement body contains a lookahead (?{}; the reverse pass refuses complement-of-lookaround. Lift the lookaround outside the complement. {}",
+                            after as char, TROUBLESHOOT_REF
+                        ));
+                    }
+                    if after == b'<'
+                        && i + 3 < bytes.len()
+                        && (bytes[i + 3] == b'=' || bytes[i + 3] == b'!')
+                    {
+                        return Some(format!(
+                            "complement body contains a lookbehind (?<{}; the reverse pass refuses complement-of-lookaround. Lift the lookaround outside the complement. {}",
+                            bytes[i + 3] as char, TROUBLESHOOT_REF
+                        ));
+                    }
+                }
+            }
+            // What:     Push/pop the paren stack. Order matters: detect
+            //           `~(` BEFORE the bare-`(` arm, otherwise the `~`
+            //           and `(` would be pushed independently and we
+            //           would miscount.
+            // Why:      Maintain accurate complement-depth tracking
+            //           across nested groups.
+            // TS map:   The same push/pop pattern in JS.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (c === '~' && bytes[i+1] === '(') { parenStack.push(true); i += 2; continue; }
+            // if (c === '(') { parenStack.push(false); i += 1; continue; }
+            // if (c === ')') { parenStack.pop(); i += 1; continue; }
+            // ```
+            if c == b'~' && i + 1 < bytes.len() && bytes[i + 1] == b'(' {
+                paren_stack.push(true);
+                i += 2;
+                continue;
+            }
+            if c == b'(' {
+                paren_stack.push(false);
+                i += 1;
+                continue;
+            }
+            if c == b')' {
+                paren_stack.pop();
+                i += 1;
+                continue;
+            }
+        }
+        i += 1;
+    }
+    None
+}

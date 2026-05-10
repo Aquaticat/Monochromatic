@@ -234,3 +234,224 @@ fn plain_literal_does_not_trigger() {
 fn plain_regex_no_lookaround_does_not_trigger() {
     run_case(&Case { pattern: r"hvb\.[\w-]{138,300}", expected: false });
 }
+
+// What:     Tests for `super::engine::lookaround_in_complement`. The
+//           function rejects patterns that would make resharp 0.5.x
+//           fail at compile time inside a `~(...)` body; this section
+//           covers every documented failing shape plus the boundary
+//           cases (escaped triggers, class interiors, anchors outside
+//           any complement) where the function MUST stay quiet.
+// Why:      Regression net. The doc enumerates each shape; each one
+//           gets a matching unit test so a future change that misses
+//           a category fails loudly. Positive (rejected) and negative
+//           (accepted) tests live next to each other so reading the
+//           file gives a sense of the function's contract.
+// TS map:   `describe("lookaroundInComplement", () => { ... })`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// describe("lookaroundInComplement", () => { ... });
+// ```
+use super::engine::lookaround_in_complement;
+
+// What:     `fn assert_rejected(pattern: &str, expect_substr: &str)`
+//           checks that the function returns `Some(msg)` and that
+//           `msg` contains the expected fragment naming the trigger.
+//           Substring assert (not equality) is intentional: it lets
+//           the message wording evolve without breaking tests while
+//           still verifying the trigger name reaches the user.
+// Why:      Catch both regressions: missing the rejection entirely,
+//           and rejecting with a wrong trigger name.
+// TS map:   `function assertRejected(pattern: string, substr: string)`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function assertRejected(pattern: string, substr: string) {
+//   const r = lookaroundInComplement(pattern);
+//   expect(r).not.toBeNull();
+//   expect(r).toContain(substr);
+// }
+// ```
+fn assert_rejected(pattern: &str, expect_substr: &str) {
+    let actual = lookaround_in_complement(pattern);
+    match actual {
+        Some(msg) => assert!(
+            msg.contains(expect_substr),
+            "lookaround_in_complement({:?}) returned message that did not contain {:?}: {}",
+            pattern, expect_substr, msg
+        ),
+        None => panic!(
+            "lookaround_in_complement({:?}) returned None; expected Some(_) containing {:?}",
+            pattern, expect_substr
+        ),
+    }
+}
+
+fn assert_accepted(pattern: &str) {
+    let actual = lookaround_in_complement(pattern);
+    assert!(
+        actual.is_none(),
+        "lookaround_in_complement({:?}) = {:?}; expected None",
+        pattern, actual
+    );
+}
+
+#[test]
+fn complement_with_word_boundary_rejected() {
+    assert_rejected(r"em&~(.*\bword\b.*)", r"\b");
+}
+
+#[test]
+fn complement_with_not_word_boundary_rejected() {
+    assert_rejected(r"em&~(.*\B.*)", r"\B");
+}
+
+#[test]
+fn complement_with_caret_rejected() {
+    assert_rejected(r"em&~(^foo$)", "^");
+}
+
+#[test]
+fn complement_with_dollar_rejected() {
+    assert_rejected(r"em&~(foo$)", "$");
+}
+
+#[test]
+fn complement_with_explicit_lookahead_rejected() {
+    assert_rejected(r"em&~((?=foo).*)", "lookahead");
+}
+
+#[test]
+fn complement_with_explicit_neg_lookahead_rejected() {
+    assert_rejected(r"em&~((?!foo).*)", "lookahead");
+}
+
+#[test]
+fn complement_with_explicit_lookbehind_rejected() {
+    assert_rejected(r"em&~((?<=foo).*)", "lookbehind");
+}
+
+#[test]
+fn complement_with_explicit_neg_lookbehind_rejected() {
+    assert_rejected(r"em&~((?<!foo).*)", "lookbehind");
+}
+
+#[test]
+fn second_of_two_complements_rejected() {
+    // What:     Two chained complements; only the second contains the
+    //           trigger. The guard must still flag the rule.
+    // Why:      Confirms the paren-stack tracking pops correctly so the
+    //           second complement's depth is recognised.
+    // TS map:   `assertRejected("em&~(.*foo.*)&~(.*\\bword\\b.*)", "\\b");`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // assertRejected("em&~(.*foo.*)&~(.*\\bword\\b.*)", "\\b");
+    // ```
+    assert_rejected(r"em&~(.*foo.*)&~(.*\bword\b.*)", r"\b");
+}
+
+#[test]
+fn nested_group_inside_complement_with_boundary_rejected() {
+    // What:     `\b` lives inside a non-capturing group nested inside
+    //           the complement. Still "inside the complement" for
+    //           resharp's purposes.
+    // Why:      Confirms `in_complement` reflects "any `true` in the
+    //           paren stack" rather than just "topmost".
+    // TS map:   `assertRejected("em&~((?:foo|\\bword\\b).*)", "\\b");`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // assertRejected("em&~((?:foo|\\bword\\b).*)", "\\b");
+    // ```
+    assert_rejected(r"em&~((?:foo|\bword\b).*)", r"\b");
+}
+
+#[test]
+fn boundary_outside_any_complement_accepted() {
+    assert_accepted(r"\bem\b&_*&~(.*foo.*)");
+}
+
+#[test]
+fn text_anchors_inside_complement_accepted() {
+    // What:     `\A` and `\z` route to `NodeId::BEGIN` / `NodeId::END`
+    //           directly without the lookaround rewrite (see doc step 1).
+    //           Inside a complement, they compile cleanly.
+    // Why:      Guard must NOT reject these; otherwise we mask the only
+    //           workaround the doc recommends for whole-content anchors.
+    // TS map:   `assertAccepted("em&~(\\Afoo\\z)");`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // assertAccepted("em&~(\\Afoo\\z)");
+    // ```
+    assert_accepted(r"em&~(\Afoo\z)");
+}
+
+#[test]
+fn caret_in_class_inside_complement_accepted() {
+    // What:     `[^abc]` is a negated character class. The `^` is the
+    //           class-negation operator, not the line-anchor; resharp
+    //           does not rewrite it to a lookaround.
+    // Why:      Guard must skip class interiors so it does not misfire
+    //           on every negated class inside any complement.
+    // TS map:   `assertAccepted("em&~([^abc].*)");`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // assertAccepted("em&~([^abc].*)");
+    // ```
+    assert_accepted(r"em&~([^abc].*)");
+}
+
+#[test]
+fn dollar_in_class_inside_complement_accepted() {
+    assert_accepted(r"em&~([$].*)");
+}
+
+#[test]
+fn escaped_backslash_b_inside_complement_accepted() {
+    // What:     `\\b` in the rule source is a literal backslash followed
+    //           by `b`. The escape walker consumes the first backslash
+    //           as the escape, then the second one starts a new escape
+    //           whose escapee is `b` -- but the rule semantically is
+    //           NOT `\b`; the rule source `\\b` means "match literal
+    //           backslash, then literal b". The escape walker correctly
+    //           skips past the doubled backslash without seeing `\b`.
+    // Why:      Guard must distinguish "the regex source contains \b"
+    //           from "the regex source contains a literal backslash
+    //           followed by b".
+    // TS map:   `assertAccepted("em&~(\\\\b.*)");`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // assertAccepted("em&~(\\\\b.*)");
+    // ```
+    assert_accepted(r"em&~(\\b.*)");
+}
+
+#[test]
+fn plain_set_algebra_without_triggers_accepted() {
+    assert_accepted(r"BUILD_[0-9]{6}&~(BUILD_000000)");
+}
+
+#[test]
+fn rule_without_complement_accepted_even_with_lookaround() {
+    // What:     Lookarounds outside any `~(...)` body compile cleanly
+    //           in resharp 0.5.x; the restriction is complement-of-
+    //           lookaround specifically.
+    // Why:      Guard must not reject the prose-em-dash pattern
+    //           verified in `prose_em_dash_pattern_triggers`.
+    // TS map:   `assertAccepted("(?<=[a-z]) -- (?=[a-z])");`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // assertAccepted("(?<=[a-z]) -- (?=[a-z])");
+    // ```
+    assert_accepted(r"(?<=[a-z]) -- (?=[a-z])");
+}
+
+#[test]
+fn plain_literal_accepted() {
+    assert_accepted("AKIA1234567890ABCDEF");
+}

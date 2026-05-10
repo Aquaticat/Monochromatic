@@ -61,7 +61,7 @@ mod extract_tests;
 // ```ts
 // export { CompiledRegex, ScanMatch, requiresResharp } from "./rules/engine";
 // ```
-pub use engine::{requires_resharp, CompiledRegex};
+pub use engine::{lookaround_in_complement, requires_resharp, CompiledRegex};
 pub use extract::extract_gating_substrings;
 pub use parse::{parse_rule_source, ParsedRule};
 pub use shards::build_residual_shards;
@@ -453,6 +453,37 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
         .par_iter()
         .map(|(idx, src)| {
             if requires_resharp(src) {
+                // What:     Pre-flight check before handing the rule to
+                //           resharp. `lookaround_in_complement` returns
+                //           `Some(reason)` when the source contains a
+                //           `~(...)` whose body holds a known-broken
+                //           atom (`\b`, `\B`, `^`, `$`, or a user-
+                //           explicit lookaround). Resharp 0.5.x rejects
+                //           every such shape with one of two opaque
+                //           error variants; this guard converts the
+                //           opaque rejection into an actionable message
+                //           that names the surface trigger and points
+                //           at the troubleshooting doc.
+                // Why:      Without this guard, the user gets either
+                //           `Algebra(UnsupportedPattern)` (rendered as
+                //           "unsupported lookaround pattern", with no
+                //           hint at the actual offending byte) or
+                //           `Parse(UnsupportedResharpRegex)` (no hint
+                //           at the offending shape either). Both
+                //           variants force the user to reverse-engineer
+                //           their own input against the resharp source.
+                //           Diagnosing at our boundary saves that round-
+                //           trip.
+                // TS map:   `const reason = lookaroundInComplement(src); if (reason) return { ok: false, error: ... };`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const reason = lookaroundInComplement(src);
+                // if (reason) return { ok: false, error: `rule on line ${idx} (resharp): ${reason}` };
+                // ```
+                if let Some(reason) = lookaround_in_complement(src) {
+                    return Err(format!("rule on line {} (resharp): {}", idx, reason));
+                }
                 Regex::new(src)
                     .map(|re| RegexRule { idx: *idx, re: CompiledRegex::Resharp(re) })
                     .map_err(|e| format!("rule on line {} (resharp): {:?}", idx, e))

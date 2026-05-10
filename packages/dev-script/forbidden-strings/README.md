@@ -171,6 +171,39 @@ emoji) gates correctly against file content holding the same bytes; a walker tha
 mojibake'd those bytes during extraction would silently disable the rule by registering
 a pattern AC could never match.
 
+#### Complement-body limitations (resharp 0.5.x)
+
+Resharp 0.5.x cannot reverse a complement whose body contains a lookaround. The
+parser rewrites several surface atoms to internal lookarounds, so the following
+shapes fail at compile time:
+
+- `\b` inside a `~(...)` body. Rewritten to negative-lookahead /
+  negative-lookbehind by the parser, then refused. Workaround: replace `\b` with
+  `\W` (consumes a character on each side) or with literal whitespace, or move
+  the boundary check outside the complement.
+- `\B` inside a `~(...)` body. Refused at parse time when the neighbours are
+  unclassifiable. No in-place rewrite; restructure the rule.
+- Unescaped `^` or `$` inside a `~(...)` body. Rewritten to lookbehind /
+  lookahead in default-multiline mode and then refused. Workaround: use `\A` /
+  `\z` for whole-content anchors, or move the anchor outside the complement.
+  Inline `(?-m)` and group-scoped `(?-m:^foo$)` do NOT propagate into the
+  complement body, so neither works as a workaround in resharp 0.5.x.
+- User-explicit lookarounds (`(?=`, `(?!`, `(?<=`, `(?<!`) inside a `~(...)`
+  body. Refused for the same reason as the rewritten cases. Lift the lookaround
+  outside the complement.
+
+`forbidden-strings` detects every shape above at rule load time and reports the
+specific trigger:
+
+```
+forbidden-strings: rule on line 42 (resharp): complement body contains \b;
+resharp 0.5.x rewrites it to an internal lookaround which the reverse pass
+refuses. Replace with \W ... See TROUBLESHOOTING.resharp.md for workarounds.
+```
+
+The doc at `TROUBLESHOOTING.resharp.md` in the repository root has the full
+trace, more workarounds, and the upstream-issue draft.
+
 ### Supported regex flags
 
 The flag string accepts these lowercase letters, applied via resharp's inline-flag group:
