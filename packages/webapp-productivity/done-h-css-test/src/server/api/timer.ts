@@ -7,19 +7,16 @@
  *   POST /api/tasks/:id/complete -\> handleCompleteTask
  */
 import {
+  HTTP_CONFLICT,
+  HTTP_NOT_FOUND,
+  HTTP_OK,
+} from '@monochromatic-dev/module-numeric-const';
+
+import {
   completeTask,
   startTaskTimer,
   stopTaskTimer,
 } from '../../lib/db/tasks.ts';
-
-/** HTTP status code for successful responses. */
-const HTTP_OK = 200;
-
-/** HTTP status code for not found. */
-const HTTP_NOT_FOUND = 404;
-
-/** HTTP status code for conflict (blocked task). */
-const HTTP_CONFLICT = 409;
 
 /**
  * Wraps a payload in a JSON `Response` with the correct content type.

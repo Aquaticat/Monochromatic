@@ -22,8 +22,7 @@ import {
   handleStopTimer,
 } from './server/api/timer.ts';
 
-/** HTTP status code for bad requests. */
-const HTTP_BAD_REQUEST = 400;
+import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-numeric-const';
 
 /**
  * Extracts a required route parameter, throwing 400 if missing.

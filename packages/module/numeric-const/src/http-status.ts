@@ -52,6 +52,21 @@ export const HTTP_NO_CONTENT = 204;
 
 //endregion 2xx Success
 
+//region 3xx Redirection
+
+/**
+ * 304 Not Modified. The cached representation is still valid; the client
+ * should reuse it. Sent in response to a conditional GET.
+ *
+ * @example
+ * ```ts
+ * if (matches(req, etag,)) return new Response(null, { status: HTTP_NOT_MODIFIED, },);
+ * ```
+ */
+export const HTTP_NOT_MODIFIED = 304;
+
+//endregion 3xx Redirection
+
 //region 4xx Client errors
 
 /**
@@ -74,6 +89,17 @@ export const HTTP_BAD_REQUEST = 400;
  * ```
  */
 export const HTTP_UNAUTHORIZED = 401;
+
+/**
+ * 403 Forbidden. The server understood the request but refuses to authorise
+ * it. Distinct from 401: re-authenticating will not help.
+ *
+ * @example
+ * ```ts
+ * return new Response('not yours', { status: HTTP_FORBIDDEN, },);
+ * ```
+ */
+export const HTTP_FORBIDDEN = 403;
 
 /**
  * 404 Not Found. The server cannot find the requested resource.

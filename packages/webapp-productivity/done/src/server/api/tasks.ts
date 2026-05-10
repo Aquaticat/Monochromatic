@@ -18,7 +18,7 @@ import type { TaskPriority, } from '../../lib/types.ts';
 import {
   HTTP_BAD_REQUEST,
   HTTP_CREATED,
-  HTTP_INTERNAL_ERROR,
+  HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
   jsonResponse,
 } from './http-utils.ts';
@@ -88,7 +88,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
   catch (error) {
     return jsonResponse(
       { error: String(error,), },
-      HTTP_INTERNAL_ERROR,
+      HTTP_INTERNAL_SERVER_ERROR,
     );
   }
 }
@@ -136,7 +136,7 @@ export async function handleUpdateTask(
   catch (error) {
     return jsonResponse(
       { error: String(error,), },
-      HTTP_INTERNAL_ERROR,
+      HTTP_INTERNAL_SERVER_ERROR,
     );
   }
 }

@@ -4,12 +4,11 @@
  *
  * Automatically sets `Content-Type: application/json` and shows a toast on error.
  */
+import { HTTP_NO_CONTENT, } from '@monochromatic-dev/module-numeric-const';
+
 import { showToast, } from '../components/toast-message.ts';
 
 export { showToast, };
-
-/** HTTP status code indicating no content in response body. */
-const HTTP_NO_CONTENT = 204;
 
 /**
  * Sends a fetch request to a JSON API endpoint with standard headers and error handling.

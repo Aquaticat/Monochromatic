@@ -7,6 +7,14 @@
  *   DELETE /api/tasks/:id   -> handleDeleteTask
  */
 import {
+  HTTP_BAD_REQUEST,
+  HTTP_CREATED,
+  HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_NOT_FOUND,
+  HTTP_OK,
+} from '@monochromatic-dev/module-numeric-const';
+
+import {
   createTask,
   deleteTask,
   updateTask,
@@ -19,21 +27,6 @@ import {
   parseEnumValue,
   parseStringArray,
 } from './tasks-parse.ts';
-
-/** HTTP status code for successful responses. */
-const HTTP_OK = 200;
-
-/** HTTP status code for resource creation. */
-const HTTP_CREATED = 201;
-
-/** HTTP status code for bad requests. */
-const HTTP_BAD_REQUEST = 400;
-
-/** HTTP status code for not found. */
-const HTTP_NOT_FOUND = 404;
-
-/** HTTP status code for internal server errors. */
-const HTTP_INTERNAL_ERROR = 500;
 
 /**
  * Wraps a payload in a JSON `Response` with the correct content type.
@@ -107,7 +100,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
   catch (error) {
     return jsonResponse(
       { error: String(error,), },
-      HTTP_INTERNAL_ERROR,
+      HTTP_INTERNAL_SERVER_ERROR,
     );
   }
 }
@@ -156,7 +149,7 @@ export async function handleUpdateTask(
   catch (error) {
     return jsonResponse(
       { error: String(error,), },
-      HTTP_INTERNAL_ERROR,
+      HTTP_INTERNAL_SERVER_ERROR,
     );
   }
 }

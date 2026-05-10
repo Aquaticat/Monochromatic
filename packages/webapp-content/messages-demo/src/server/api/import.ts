@@ -30,7 +30,7 @@ import {
 import {
   HTTP_BAD_REQUEST,
   HTTP_CREATED,
-  HTTP_INTERNAL_ERROR,
+  HTTP_INTERNAL_SERVER_ERROR,
   HTTP_PAYLOAD_TOO_LARGE,
 } from '../../lib/http.ts';
 import {
@@ -192,7 +192,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     },);
     if (messageId === null) {
       throw new HTTPError({
-        status: HTTP_INTERNAL_ERROR,
+        status: HTTP_INTERNAL_SERVER_ERROR,
         message: 'finalize returned null',
       },);
     }

@@ -27,7 +27,7 @@ import {
 } from '../../lib/etag.ts';
 import {
   HTTP_GONE,
-  HTTP_INTERNAL_ERROR,
+  HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
   HTTP_NOT_MODIFIED,
   HTTP_OK,
@@ -179,7 +179,7 @@ export async function renderMessageChunk(
       return new Response(
         'chunk not found',
         {
-          status: HTTP_INTERNAL_ERROR,
+          status: HTTP_INTERNAL_SERVER_ERROR,
           headers: { 'Cache-Control': 'no-store', },
         },
       );

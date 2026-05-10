@@ -1,30 +1,18 @@
 /**
- * HTTP status code constants used by routes and clients.
+ * HTTP status code re-exports.
  *
- * Defined as named constants so call sites stay readable.
- * Mirrors the pattern from `packages/webapp-content/messages-demo/src/lib/http.ts`.
+ * Re-exports the spec-defined codes from
+ * `@monochromatic-dev/module-numeric-const` so route and client imports
+ * keep this module's familiar import path.
  */
 
-/** Successful request. */
-export const HTTP_OK = 200;
-
-/** Resource created. */
-export const HTTP_CREATED = 201;
-
-/** No body returned but request succeeded. */
-export const HTTP_NO_CONTENT = 204;
-
-/** Client supplied invalid input. */
-export const HTTP_BAD_REQUEST = 400;
-
-/** Caller is not authenticated for the requested action. */
-export const HTTP_UNAUTHORIZED = 401;
-
-/** Resource does not exist. */
-export const HTTP_NOT_FOUND = 404;
-
-/** Conflict with current state (e.g. duplicate insert). */
-export const HTTP_CONFLICT = 409;
-
-/** Server-side failure. */
-export const HTTP_INTERNAL_SERVER_ERROR = 500;
+export {
+  HTTP_BAD_REQUEST,
+  HTTP_CONFLICT,
+  HTTP_CREATED,
+  HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_NO_CONTENT,
+  HTTP_NOT_FOUND,
+  HTTP_OK,
+  HTTP_UNAUTHORIZED,
+} from '@monochromatic-dev/module-numeric-const';

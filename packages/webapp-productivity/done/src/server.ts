@@ -9,6 +9,7 @@
  * Client JS bundles are built separately via `mise run build:js:client` (tsdown).
  */
 import { build as buildCSS, } from '@monochromatic-dev/build-tool-css/ts';
+import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-numeric-const';
 import {
   defineHandler,
   getRouterParam,
@@ -39,9 +40,6 @@ import { staticHandler, } from './server/static.ts';
 
 /** Default HTTP port when neither `--port=` nor `PORT` env var is provided. */
 const DEFAULT_PORT = 3_000;
-
-/** HTTP status code for bad requests. */
-const HTTP_BAD_REQUEST = 400;
 
 /** Radix for decimal integer parsing. */
 const DECIMAL_RADIX = 10;

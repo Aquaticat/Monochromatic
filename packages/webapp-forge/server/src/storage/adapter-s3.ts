@@ -16,6 +16,10 @@
  * (`?`, `&`, `#`, `+`, etc.) round-trip safely.
  */
 
+import {
+  HTTP_NOT_FOUND,
+  HTTP_OK,
+} from '@monochromatic-dev/module-numeric-const';
 import pLimit from 'p-limit';
 
 import type {
@@ -65,12 +69,6 @@ const DEFAULT_PUT_BATCH_CONCURRENCY = 64;
 
 /** ListObjectsV2 page size cap (S3 max). */
 const LIST_PAGE_SIZE = 1_000;
-
-/** HTTP status code: not found. */
-const HTTP_NOT_FOUND = 404;
-
-/** HTTP status code: success threshold (200 to 299 inclusive). */
-const HTTP_OK = 200;
 
 /** HTTP status code: redirect threshold (300 and above). */
 const HTTP_REDIRECT = 300;

@@ -14,9 +14,11 @@ import {
   HTTP_BAD_REQUEST,
   HTTP_CONFLICT,
   HTTP_CREATED,
+  HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NO_CONTENT,
   HTTP_NOT_FOUND,
+  HTTP_NOT_MODIFIED,
   HTTP_OK,
   HTTP_UNAUTHORIZED,
 } from './http-status.ts';
@@ -33,10 +35,17 @@ await describe({
       },
     },),
     it({
+      name: '3xx redirection codes match RFC 9110',
+      fn: async () => {
+        expect(HTTP_NOT_MODIFIED,).toBe(304,);
+      },
+    },),
+    it({
       name: '4xx client error codes match RFC 9110',
       fn: async () => {
         expect(HTTP_BAD_REQUEST,).toBe(400,);
         expect(HTTP_UNAUTHORIZED,).toBe(401,);
+        expect(HTTP_FORBIDDEN,).toBe(403,);
         expect(HTTP_NOT_FOUND,).toBe(404,);
         expect(HTTP_CONFLICT,).toBe(409,);
       },

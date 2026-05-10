@@ -19,7 +19,7 @@ import {
 } from '../../lib/etag.ts';
 import {
   HTTP_GONE,
-  HTTP_INTERNAL_ERROR,
+  HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
   HTTP_NOT_MODIFIED,
   HTTP_OK,
@@ -190,7 +190,7 @@ async function renderChunkData(
     return new Response(
       null,
       {
-        status: HTTP_INTERNAL_ERROR,
+        status: HTTP_INTERNAL_SERVER_ERROR,
         headers: { 'Cache-Control': 'no-store', },
       },
     );
