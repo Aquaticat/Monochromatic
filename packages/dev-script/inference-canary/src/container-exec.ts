@@ -2,6 +2,8 @@
  * Low-level container execution: runs a command in the container runtime and
  * returns structured output including stdout, stderr, exit code, and timeout status.
  */
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import { execBun, } from './container-base.ts';
 import {
   CONTAINER_RUNTIME,
@@ -46,8 +48,6 @@ export async function execContainer(
   containerArgs: readonly string[],
   signal?: AbortSignal,
 ): Promise<ContainerResult> {
-  /** Milliseconds per second for timeout computation */
-  const MS_PER_SECOND = 1_000;
   /** Maximum stderr characters to include in error log */
   const STDERR_PREVIEW_LENGTH = 200;
   /** Total host-side timeout: container limit plus a buffer for startup/teardown */

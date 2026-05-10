@@ -1,3 +1,5 @@
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import type { CaptureSet, } from './analyze/memory.ts';
 
 import { API_URL, } from './analyze/llama.ts';
@@ -188,9 +190,6 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
     const text = await res.text();
     throw new Error(`LLM API error ${res.status}: ${text}`,);
   }
-
-  /** Milliseconds per second, for elapsed time formatting. */
-  const MS_PER_SECOND = 1_000;
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
   const data = (await res.json()) as CompletionResponse;
