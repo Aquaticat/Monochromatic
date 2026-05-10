@@ -35,13 +35,15 @@ import {
  * Uses forced `tool_choice` to guarantee a machine-readable
  * response from the render_verdict tool.
  *
- * @param model - the budget model to call
+ * @param model - budget model to call
  *
- * @param _auth - unused auth (model registry handles auth)
+ * @param auth - optional API key and headers forwarded to the stream
+ *   when set; the model registry already handles auth, so most callers
+ *   leave these undefined
  *
  * @param action - description of the action being evaluated
  *
- * @param cwd - the agent's working directory
+ * @param cwd - agent's working directory
  *
  * @param recentContext - recent session activity summary
  *
@@ -49,11 +51,11 @@ import {
  *
  * @param timeoutMs - maximum time to wait for a response
  *
- * @param systemPrompt - the judge system prompt
+ * @param systemPrompt - judge system prompt
  *
  * @param batchContext - other tool calls in the same batch
  *
- * @returns the judge's verdict
+ * @returns judge's verdict
  *
  * @example
  * ```typescript
@@ -62,7 +64,7 @@ import {
  */
 async function callJudge(
   model: Model<Api>,
-  _auth: BudgetModelAuth,
+  auth: BudgetModelAuth,
   action: string,
   cwd: string,
   recentContext: string,
@@ -96,11 +98,11 @@ async function callJudge(
   const opts: Record<string, unknown> = {
     signal: controller.signal,
   };
-  if (_auth.apiKey !== undefined) {
-    opts.apiKey = _auth.apiKey;
+  if (auth.apiKey !== undefined) {
+    opts.apiKey = auth.apiKey;
   }
-  if (_auth.headers !== undefined) {
-    opts.headers = _auth.headers;
+  if (auth.headers !== undefined) {
+    opts.headers = auth.headers;
   }
   opts.toolChoice = toolChoiceForApi(String(model.api));
 

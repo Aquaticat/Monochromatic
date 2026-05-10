@@ -9,25 +9,36 @@
  * @module
  */
 
+import type {
+  AssistantMessageEvent,
+  ToolCall,
+} from "@earendil-works/pi-ai";
 import type { Verdict, } from "./types.ts";
 
 //region Stream collection
 
-/* oxlint-disable typescript/no-unsafe-type-assertion -- untyped stream events require assertions */
 /**
  * Collect tool call arguments from a model stream.
  *
- * Uses the pi-ai event protocol: `toolcall_start`/`toolcall_delta`/`toolcall_end`.
- * The final `toolcall_end` event carries the complete `ToolCall` with
- * parsed `name` and `arguments`.
+ * Uses the pi-ai event protocol: `toolcall_end` carries the complete
+ * `ToolCall` with parsed `name` and `arguments`.
  *
  * Falls back to parsing text content if no tool call was emitted
  * (some providers or model configs may ignore `toolChoice` and
- * return free-text JSON instead).
+ * return free-text JSON instead). The fallback path logs to stderr
+ * so an operator can see the contract violation.
  *
- * @param stream - the model event stream
+ * pi-ai's `text_end.content` is the cumulative text for one content
+ * block, not a delta. With multiple text blocks, contents are
+ * concatenated; `text_delta` events are ignored to avoid
+ * double-counting.
  *
- * @returns the parsed tool call arguments object
+ * @param stream - model event stream
+ *
+ * @returns parsed tool call arguments object
+ *
+ * @throws when the stream produces neither a `render_verdict` tool
+ *   call nor parseable text content
  *
  * @example
  * ```typescript
@@ -36,43 +47,36 @@ import type { Verdict, } from "./types.ts";
  * ```
  */
 async function collectToolCall(
-  stream: AsyncIterable<unknown>,
+  stream: AsyncIterable<AssistantMessageEvent>,
 ): Promise<Record<string, string>> {
-  let toolCall: Record<string, unknown> | undefined = undefined;
+  let toolCall: ToolCall | undefined = undefined;
   let textContent = "";
 
   for await (const event of stream) {
-    const evt = event as Record<string, unknown>;
-    const type = evt.type as string | undefined;
-
-    if (type === "toolcall_end") {
-      toolCall = evt.toolCall as Record<string, unknown> | undefined;
+    if (event.type === "toolcall_end") {
+      ({ toolCall, } = event);
     }
 
-    if (type === "text_delta") {
-      const delta = evt.delta as string | undefined;
-      if (delta !== undefined) textContent += delta;
-    }
-
-    if (type === "text_end") {
-      const content = evt.content as string | undefined;
-      if (content !== undefined) textContent = content;
+    if (event.type === "text_end") {
+      textContent += event.content;
     }
   }
 
   if (toolCall !== undefined) {
-    const fnName = (toolCall.name as string | undefined) ?? "";
-    if (fnName !== "render_verdict") {
+    if (toolCall.name !== "render_verdict") {
       throw new Error(
-        `Judge called unexpected tool: "${fnName}" instead of "render_verdict"`,
+        `Judge called unexpected tool: "${toolCall.name}" instead of "render_verdict"`,
       );
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolCall.arguments is `unknown` from pi-ai; the schema enforces shape
     return toolCall.arguments as Record<string, string>;
   }
 
-  // Fallback: model returned text instead of a tool call.
-  // Try to extract a JSON verdict from the text content.
   if (textContent !== "") {
+    console.error(
+      'auto-mode judge: text-fallback fired (model returned text instead of calling render_verdict tool); '
+      + 'this indicates the provider ignored toolChoice',
+    );
     return extractJsonVerdict(textContent);
   }
 
@@ -80,7 +84,6 @@ async function collectToolCall(
     'Judge did not call any tool (expected "render_verdict")',
   );
 }
-/* oxlint-enable typescript/no-unsafe-type-assertion */
 //endregion
 
 //region Text fallback
@@ -91,20 +94,36 @@ const JUDGE_TEXT_ERROR_LIMIT = 200;
 /**
  * Extract a JSON verdict from free-text model output.
  *
- * Searches for the first `{...}` block and parses it as
- * verdict arguments. This fallback handles models that
- * ignore `toolChoice` and respond with text instead.
+ * Tries `JSON.parse(text)` first, then falls back to scanning for the
+ * first balanced `{...}` block. Balanced scanning ignores braces inside
+ * string literals (so a `"reason"` field containing `{` does not skew
+ * the boundaries).
  *
- * @param text - the model's text output
+ * @param text - model's text output
  *
  * @returns parsed verdict arguments
+ *
+ * @throws when no parseable JSON object is found in the text
+ *
+ * @example
+ * ```typescript
+ * extractJsonVerdict('{"verdict":"approve"}'); // { verdict: "approve" }
+ * extractJsonVerdict('preface {"verdict":"deny"} suffix'); // { verdict: "deny" }
+ * ```
  */
 function extractJsonVerdict(
   text: string,
 ): Record<string, string> {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start === -1 || end <= start) {
+  try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
+    return JSON.parse(text,) as Record<string, string>;
+  }
+  catch {
+    /* Fall through to balanced-brace scan. */
+  }
+
+  const block = findBalancedJsonObject(text,);
+  if (block === undefined) {
     throw new Error(
       `Judge returned text without JSON verdict: ${text.slice(
         0,
@@ -113,10 +132,57 @@ function extractJsonVerdict(
     );
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
-  return JSON.parse(text.slice(
-    start,
-    end + 1,
-  )) as Record<string, string>;
+  return JSON.parse(block,) as Record<string, string>;
+}
+
+/**
+ * Find the first balanced `{...}` block in a string, ignoring braces
+ * inside string literals.
+ *
+ * Tracks string state and escapes so a `"text with } inside"` field
+ * does not terminate the scan early.
+ *
+ * @param text - string to scan
+ *
+ * @returns the matched block including delimiters, or `undefined` when no
+ *   balanced object is found
+ */
+function findBalancedJsonObject(text: string,): string | undefined {
+  const start = text.indexOf("{",);
+  if (start === -1) return undefined;
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (inString) {
+      if (ch === "\\") escape = true;
+      else if (ch === "\"") inString = false;
+      continue;
+    }
+    if (ch === "\"") {
+      inString = true;
+      continue;
+    }
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        return text.slice(
+          start,
+          i + 1,
+        );
+      }
+    }
+  }
+  return undefined;
 }
 
 //endregion
@@ -166,5 +232,6 @@ function parseVerdict(
 
 export {
   collectToolCall,
+  extractJsonVerdict,
   parseVerdict,
 };
