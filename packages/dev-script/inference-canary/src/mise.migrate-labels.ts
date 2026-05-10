@@ -45,8 +45,6 @@ try {
 }
 catch {
   console.log('No canary-lint directory found, nothing to migrate.',);
-  process.exitCode = 0;
-  throw new Error('No canary-lint directory',);
 }
 
 for (const modelDir of modelDirs) {
