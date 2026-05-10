@@ -10,7 +10,8 @@ and their ASCII substitutes (`-`, `--`) when used as em-dashes in prose.
 ## Status
 
 Feasibility confirmed for both unicode characters and the ASCII `--` shape.
-Open work: exclusion-list expansion against the resharp algebra ceiling,
+Open work: exclusion-list expansion using the literal-space workaround
+for `\b` inside complement bodies (see revised "Resharp HIR limits" below),
 self-match handling for the unicode case, single-dash (` - `) handling.
 
 ## What works
@@ -51,8 +52,12 @@ since the goal is detection, not precise span isolation.
 Rule 2 catches ` -- ` between alphabetic words
 on lines that do not contain `npm` or `git`.
 The `&` and `~()` operators route this rule through resharp
-(`packages/dev-script/forbidden-strings/src/rules/engine.rs:193` `uses_set_algebra`),
+(`packages/dev-script/forbidden-strings/src/rules/engine.rs:204` `requires_resharp`),
 which supports the set-algebra needed for the line-level complements.
+Since commit `67e844df`, the same routing predicate also detects
+lookaround openers (`(?=`, `(?!`, `(?<=`, `(?<!`), so rules whose only
+resharp-only feature is a lookaround compile cleanly without needing
+`&_*` as a routing hint.
 
 ### Self-match safety for ASCII
 
@@ -87,36 +92,42 @@ Top hit files:
 
 ## What does not work
 
-### Lookarounds in plain rules
+### Resharp HIR limits inside `~(...)` complement bodies
 
-The rust `regex` crate does not support lookarounds.
-Rules using `(?<=...)`, `(?=...)`, etc. without any `&` or `~(`
-fail at compile time with
-`look-around, including look-ahead and look-behind, is not supported`.
+The compile-time failure that earlier drafts of this document
+attributed to "alternation count" or "seven chained complements"
+is actually a feature restriction: resharp's HIR translator rejects
+word-boundary assertions (`\b`, `\B`) and text/line anchors (`^`, `$`)
+when they appear inside a complement body, returning
+`Algebra(UnsupportedPattern)` at compile time.
 
-The em-dash patterns documented above do not need lookarounds:
-consuming the boundary letters via `[a-z] -- [a-z]` is sufficient
-because the goal is to flag the violation, not to bracket the precise dash bytes.
-If a future rule does need lookarounds (for example,
-to disambiguate based on surrounding context without consuming it),
-include `&_*` to route the rule through resharp,
-which supports lookarounds compiled directly into the automaton
-(`/tmp/resharp/docs/syntax.md:193-209`).
+Verified 2026-05-10 by sweeping rules through the release binary:
 
-### Resharp algebra ceiling
+- single `~(.*(w0|w1|...|wN).*)` with simple bodies: 500 alternatives compile cleanly
+- chained `&~(.*w0.*)&~(.*w1.*)&...&~(.*wN.*)`: 500 chains compile cleanly
+- `~(.*\bnpm\b.*)` with any alternative count (including 1): fails
+- `~(.*\B.*)`, `~(^foo$)`: fails
+- `\bnpm\b&_*&~(.*foo.*)` (the `\b` is outside the complement): compiles cleanly
+- `(?=foo\b)bar`, `(?<=[a-z])foo` (lookarounds with non-anchor bodies): compile cleanly
+- `(?=^foo)bar`, `(?<=\b)foo`: fail
 
-Chained complements with multi-element alternations
-or seven or more chained `~()` complements
-trigger `Algebra(UnsupportedPattern)` at compile time.
-Examples that failed during investigation:
+The two patterns that earlier failed:
 
 ```
-/(?<=[a-z]) -- (?=[a-z])&_*&~(.*\b(npm|bun|pnpm|yarn|deno|node|mise|hk|gh|cargo|git|jq|sed|grep|rg|cp|mv|rm|cat|echo|exec|sudo|find|ls|cd|chmod|chown|tar|zip|curl|wget|rsync|ssh|scp|test|forbidden-strings)\b.*)/
+/(?<=[a-z]) -- (?=[a-z])&_*&~(.*\b(npm|bun|...|forbidden-strings)\b.*)/
 /^.*[a-z] -- [a-z].*$&~(.*[`].*)&~(.*npm.*)&~(.*bun.*)&~(.*git.*)&~(.*mise.*)&~(.*cargo.*)&~(.*gh\b.*)/
 ```
 
-The exact threshold is unmeasured.
-See "Exclusion list expansion" below for working approaches.
+both compile cleanly once `\b` is removed from the complement bodies.
+The 35-alternative count and the 7-chain count were unrelated to the failures.
+
+Workaround for token-boundary matching: replace `\bnpm\b` with ` npm `
+(literal whitespace) inside complement bodies.
+Verified: `~(.*(\bnpm\b|\bgit\b).*)` fails;
+`~(.* (npm|git) .*)` succeeds.
+Tradeoff: tokens at start or end of line are not bordered by literal space
+and would slip through.
+Acceptable for prose scans where excluded toolchain names appear mid-line.
 
 ### Sub-span exclusion vs anchored matching
 
@@ -171,23 +182,33 @@ Not implemented.
 
 ### Exclusion list expansion
 
-Rule 2's exclusion list currently has only `npm` and `git`
-due to the algebra ceiling.
+Rule 2's exclusion list currently has only `npm` and `git`.
+The earlier framing blamed an "algebra ceiling" on alternation count;
+the actual blocker (see "Resharp HIR limits inside `~(...)` complement bodies"
+above) was `\b` inside the complement, not size.
 Splitting exclusions across multiple rules does not help:
 multiple rules combine via union (any rule firing flags the line),
 which makes detection more permissive, not more restrictive.
 
-Two viable paths:
+Three viable paths:
 
-1. Hand-pick a smaller, high-impact exclusion set per rule
-   that fits within the algebra ceiling.
-   Iterate against the corpus, classify each false positive,
-   keep only the exclusions that retire the most false positives.
+1. Use the literal-space workaround for the toolchain exclusion list.
+   `~(.* (npm|bun|pnpm|yarn|deno|node|mise|hk|gh|cargo|git|jq|...) .*)`
+   compiles cleanly at sizes well beyond the 35-element original list
+   (no measured ceiling up to 500 alternatives).
+   Tradeoff: misses tokens at start or end of line; revisit on a
+   sampled corpus to confirm the lost coverage is small.
 2. Pre-process the corpus before scanning:
    strip fenced code blocks, strip markdown URL anchors,
    strip inline backtick spans.
    Requires scanner code changes
    (a pre-pass between file read and rule application).
+3. Hand-pick a smaller, high-impact exclusion set per rule.
+   Iterate against the corpus, classify each false positive,
+   keep only the exclusions that retire the most false positives.
+   Still useful even with path 1 available, because some false-positive
+   classes (markdown anchors, inline backticks) are not toolchain names
+   and need their own exclusion shape.
 
 Categories of false positive observed in the empirical scan:
 
