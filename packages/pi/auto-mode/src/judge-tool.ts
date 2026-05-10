@@ -1,7 +1,10 @@
 /**
- * Judge tool definition and provider-specific tool choice.
+ * `render_verdict` tool definition plus provider-specific
+ * `tool_choice` mapping.
  *
- * Extracted from judge.ts to stay within the line limit.
+ * The schema and the toolChoice helper are tested standalone in
+ * `judge.unit.test.ts`, so they live separately from the streaming
+ * machinery in `judge.ts` (which wires the model call together).
  *
  * @module
  */

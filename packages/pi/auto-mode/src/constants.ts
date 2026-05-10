@@ -1,11 +1,32 @@
 /**
- * Command and set constants for signal detection.
+ * Constants shared across the auto-mode package.
  *
- * Centralizes all constant sets used by the flagger so
- * the main signals module stays within the line limit.
+ * - Command sets and patterns used by the flagger
+ *   (privilege, mutating, network, env-dump, interpreter, etc.)
+ * - Context-builder limits used by `context.ts`
+ *   (max tools, user-message truncation lengths, bash detail length)
  *
  * @module
  */
+
+//region Context builder limits
+
+/** Maximum number of tool calls included in judge context. */
+export const MAX_CONTEXT_TOOLS = 8;
+
+/** Maximum length of user message text in judge context. */
+export const USER_MSG_MAX = 300;
+
+/** Head portion of truncated user messages. */
+export const USER_MSG_HEAD = 150;
+
+/** Tail portion of truncated user messages. */
+export const USER_MSG_TAIL = 100;
+
+/** Maximum length of bash detail in context. */
+export const BASH_DETAIL_LEN = 50;
+
+//endregion
 
 //region Privilege commands
 

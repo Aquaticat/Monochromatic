@@ -14,13 +14,15 @@ import {
   compilePatterns,
 } from "./config.ts";
 import {
-  BASE_SYSTEM_PROMPT,
   BASH_DETAIL_LEN,
-  DEFAULT_DENY_GUIDANCE,
   MAX_CONTEXT_TOOLS,
   USER_MSG_HEAD,
   USER_MSG_MAX,
   USER_MSG_TAIL,
+} from "./constants.ts";
+import {
+  BASE_SYSTEM_PROMPT,
+  DEFAULT_DENY_GUIDANCE,
   buildSystemPrompt,
 } from "./system-prompt.ts";
 

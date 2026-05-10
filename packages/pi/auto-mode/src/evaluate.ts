@@ -1,8 +1,11 @@
 /**
- * Evaluate pipeline: judge call and user interaction.
+ * Evaluate pipeline: judge call, verdict handling, user interaction.
  *
- * Extracted from index.ts to stay within the line limit.
- * Contains the evaluate function and its helpers.
+ * Sits between the flagger (`signals.ts`/`tool-helpers.ts`) and the
+ * UI (`ask-user.ts`). Resolves a budget judge model, calls the judge,
+ * and translates the structured verdict into either an allow, a
+ * block, or a user prompt. Records each verdict as a session entry
+ * and updates the auto-mode widget.
  *
  * @module
  */

@@ -1,7 +1,9 @@
 /**
  * Model version extraction and comparison helpers.
  *
- * Extracted from budget-model.ts to stay within the line limit.
+ * Walks model IDs, extracts a normalized "major version" token,
+ * and ranks models so the budget-model strategies can find the
+ * cheapest entry within the active model's major-version family.
  *
  * @module
  */

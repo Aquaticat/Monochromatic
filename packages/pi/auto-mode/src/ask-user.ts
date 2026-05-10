@@ -1,8 +1,9 @@
 /**
  * User interaction and widget updates.
  *
- * Extracted from evaluate.ts to stay within the line limit.
- * Contains askUser and updateWidget.
+ * Owns the UI side of the evaluate pipeline: prompts the user via the
+ * extension's UI when the judge returns "ask", and renders the
+ * accumulated verdicts in a widget for the active flow.
  *
  * @module
  */

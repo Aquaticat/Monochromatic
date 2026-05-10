@@ -22,7 +22,7 @@ import {
   USER_MSG_HEAD,
   USER_MSG_MAX,
   USER_MSG_TAIL,
-} from "./system-prompt.ts";
+} from "./constants.ts";
 import {
   isCustomEntry,
   type VerdictData,

@@ -1,7 +1,7 @@
 /**
- * Budget model error class.
- *
- * Extracted from budget-model.ts to stay within the line limit.
+ * Budget model auth resolution and the `NoBudgetModelError` reporting
+ * type. Exports the candidate-finder helpers used by the same- and
+ * any-provider strategies in `budget-model.ts`.
  *
  * @module
  */

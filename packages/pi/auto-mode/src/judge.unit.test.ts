@@ -13,7 +13,7 @@ import {
   collectToolCall,
   extractJsonVerdict,
   parseVerdict,
-} from "./judge-stream.ts";
+} from "./judge.ts";
 import {
   toolChoiceForApi,
   VERDICT_TOOL,

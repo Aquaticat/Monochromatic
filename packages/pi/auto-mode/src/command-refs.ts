@@ -1,7 +1,12 @@
 /**
  * Command reference extraction and path heuristics.
  *
- * Extracted from command-parser.ts to stay within the line limit.
+ * Two helpers used at parse time and at flag time:
+ * - `extractParamRefs`: pre-scan a raw command for `$VAR`/`${VAR}`
+ *   references that shell-quote may otherwise drop.
+ * - `looksLikePath`: cheap predicate for "is this token a path?",
+ *   used by both `command-parser` (to associate operands with a
+ *   command) and `signals` (to decide whether a path-signal applies).
  *
  * @module
  */

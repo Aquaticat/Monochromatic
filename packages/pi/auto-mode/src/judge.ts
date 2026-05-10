@@ -1,8 +1,10 @@
 /**
  * LLM-as-judge for tool call evaluation.
  *
- * Calls a budget model with forced tool-calling to get
- * a structured approve/deny/ask verdict.
+ * Calls a budget model with forced tool-calling, collects the
+ * resulting `render_verdict` tool call (or falls back to parsing
+ * free-text JSON when a provider ignores `toolChoice`), and
+ * converts the raw arguments into a structured Verdict.
  *
  * @module
  */
@@ -10,8 +12,10 @@
 import {
   streamSimple,
   type Api,
+  type AssistantMessageEvent,
   type Model,
   type SimpleStreamOptions,
+  type ToolCall,
 } from "@earendil-works/pi-ai";
 import type {
   BatchEntry,
@@ -22,10 +26,6 @@ import {
   VERDICT_TOOL,
   toolChoiceForApi,
 } from "./judge-tool.ts";
-import {
-  collectToolCall,
-  parseVerdict,
-} from "./judge-stream.ts";
 
 //region Public API
 
@@ -104,20 +104,21 @@ async function callJudge(
   if (auth.headers !== undefined) {
     opts.headers = auth.headers;
   }
-  opts.toolChoice = toolChoiceForApi(String(model.api));
+  opts.toolChoice = toolChoiceForApi(String(model.api,),);
 
   const stream = streamSimple(
     model,
     {
       systemPrompt,
       messages,
-      tools: [VERDICT_TOOL],
+      tools: [VERDICT_TOOL,],
     },
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- streamSimple's options shape is widened by toolChoice key
     opts as SimpleStreamOptions,
   );
 
-  const result = await collectToolCall(stream);
-  return parseVerdict(result);
+  const result = await collectToolCall(stream,);
+  return parseVerdict(result,);
 }
 
 //endregion
@@ -129,7 +130,7 @@ async function callJudge(
  *
  * @param action - description of the action
  *
- * @param cwd - the working directory
+ * @param cwd - working directory
  *
  * @param recentContext - recent session activity
  *
@@ -158,7 +159,7 @@ function buildUserContent(
       "User trust directives for this session:",
     );
     for (const directive of trustDirectives) {
-      lines.push(`  - ${directive}`);
+      lines.push(`  - ${directive}`,);
     }
   }
 
@@ -176,11 +177,227 @@ function buildUserContent(
       "Other actions in this batch:",
     );
     for (const entry of batchContext) {
-      lines.push(`  - ${entry.action} → ${entry.verdict}`);
+      lines.push(`  - ${entry.action} -> ${entry.verdict}`,);
     }
   }
 
-  return lines.join("\n");
+  return lines.join("\n",);
+}
+
+//endregion
+
+//region Stream collection
+
+/**
+ * Collect tool call arguments from a model stream.
+ *
+ * Uses the pi-ai event protocol: `toolcall_end` carries the complete
+ * `ToolCall` with parsed `name` and `arguments`.
+ *
+ * Falls back to parsing text content if no tool call was emitted
+ * (some providers or model configs may ignore `toolChoice` and
+ * return free-text JSON instead). The fallback path logs to stderr
+ * so an operator can see the contract violation.
+ *
+ * pi-ai's `text_end.content` is the cumulative text for one content
+ * block, not a delta. With multiple text blocks, contents are
+ * concatenated; `text_delta` events are ignored to avoid
+ * double-counting.
+ *
+ * @param stream - model event stream
+ *
+ * @returns parsed tool call arguments object
+ *
+ * @throws when the stream produces neither a `render_verdict` tool
+ *   call nor parseable text content
+ *
+ * @example
+ * ```typescript
+ * const args = await collectToolCall(stream);
+ * // args = { verdict: "approve", reason: "safe", guidance: "" }
+ * ```
+ */
+async function collectToolCall(
+  stream: AsyncIterable<AssistantMessageEvent>,
+): Promise<Record<string, string>> {
+  let toolCall: ToolCall | undefined = undefined;
+  let textContent = "";
+
+  for await (const event of stream) {
+    if (event.type === "toolcall_end") {
+      ({ toolCall, } = event);
+    }
+
+    if (event.type === "text_end") {
+      textContent += event.content;
+    }
+  }
+
+  if (toolCall !== undefined) {
+    if (toolCall.name !== "render_verdict") {
+      throw new Error(
+        `Judge called unexpected tool: "${toolCall.name}" instead of "render_verdict"`,
+      );
+    }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolCall.arguments is `unknown` from pi-ai; the schema enforces shape
+    return toolCall.arguments as Record<string, string>;
+  }
+
+  if (textContent !== "") {
+    console.error(
+      'auto-mode judge: text-fallback fired (model returned text instead of calling render_verdict tool); '
+      + 'this indicates the provider ignored toolChoice',
+    );
+    return extractJsonVerdict(textContent,);
+  }
+
+  throw new Error(
+    'Judge did not call any tool (expected "render_verdict")',
+  );
+}
+
+//endregion
+
+//region Text fallback
+
+/** Maximum characters of judge text to include in error messages. */
+const JUDGE_TEXT_ERROR_LIMIT = 200;
+
+/**
+ * Extract a JSON verdict from free-text model output.
+ *
+ * Tries `JSON.parse(text)` first, then falls back to scanning for the
+ * first balanced `{...}` block. Balanced scanning ignores braces inside
+ * string literals (so a `"reason"` field containing `{` does not skew
+ * the boundaries).
+ *
+ * @param text - model's text output
+ *
+ * @returns parsed verdict arguments
+ *
+ * @throws when no parseable JSON object is found in the text
+ *
+ * @example
+ * ```typescript
+ * extractJsonVerdict('{"verdict":"approve"}'); // { verdict: "approve" }
+ * extractJsonVerdict('preface {"verdict":"deny"} suffix'); // { verdict: "deny" }
+ * ```
+ */
+function extractJsonVerdict(
+  text: string,
+): Record<string, string> {
+  try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
+    return JSON.parse(text,) as Record<string, string>;
+  }
+  catch {
+    /* Fall through to balanced-brace scan. */
+  }
+
+  const block = findBalancedJsonObject(text,);
+  if (block === undefined) {
+    throw new Error(
+      `Judge returned text without JSON verdict: ${text.slice(
+        0,
+        JUDGE_TEXT_ERROR_LIMIT,
+      )}`,
+    );
+  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
+  return JSON.parse(block,) as Record<string, string>;
+}
+
+/**
+ * Find the first balanced `{...}` block in a string, ignoring braces
+ * inside string literals.
+ *
+ * Tracks string state and escapes so a `"text with } inside"` field
+ * does not terminate the scan early.
+ *
+ * @param text - string to scan
+ *
+ * @returns matched block including delimiters, or `undefined` when no
+ *   balanced object is found
+ */
+function findBalancedJsonObject(text: string,): string | undefined {
+  const start = text.indexOf("{",);
+  if (start === -1) return undefined;
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (inString) {
+      if (ch === "\\") escape = true;
+      else if (ch === "\"") inString = false;
+      continue;
+    }
+    if (ch === "\"") {
+      inString = true;
+      continue;
+    }
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        return text.slice(
+          start,
+          i + 1,
+        );
+      }
+    }
+  }
+  return undefined;
+}
+
+//endregion
+
+//region Verdict parsing
+
+/**
+ * Parse raw tool call arguments into a Verdict.
+ *
+ * @param args - raw tool call arguments
+ *
+ * @returns structured verdict
+ *
+ * @example
+ * ```typescript
+ * parseVerdict({ verdict: "deny", reason: "dangerous", guidance: "Use propose_trust" });
+ * // => { verdict: "deny", reason: "dangerous", guidance: "Use propose_trust" }
+ * ```
+ */
+function parseVerdict(
+  args: Record<string, string>,
+): Verdict {
+  const verdict = args.verdict ?? "ask";
+  const reason = args.reason ?? "";
+  const guidance = args.guidance ?? "";
+
+  if (
+    verdict !== "approve"
+    && verdict !== "deny"
+    && verdict !== "ask"
+  ) {
+    return {
+      verdict: "ask",
+      reason: `Judge returned unexpected verdict: "${verdict}". ${reason}`,
+      guidance: "",
+    };
+  }
+
+  return {
+    verdict,
+    reason,
+    guidance,
+  };
 }
 
 //endregion
@@ -194,7 +411,7 @@ function buildUserContent(
  *
  * @param onTimeout - callback when the timeout fires
  *
- * @returns a disposable object
+ * @returns disposable object
  */
 function disposableTimeout(
   ms: number,
@@ -202,13 +419,18 @@ function disposableTimeout(
 ): Disposable {
   const id = setTimeout(
     onTimeout,
-    ms
+    ms,
   );
   return {
-    [Symbol.dispose]() { clearTimeout(id); },
+    [Symbol.dispose]() { clearTimeout(id,); },
   };
 }
 
 //endregion
 
-export { callJudge, };
+export {
+  callJudge,
+  collectToolCall,
+  extractJsonVerdict,
+  parseVerdict,
+};

@@ -1,9 +1,10 @@
 /**
- * Content and text signal detection.
+ * Content-based and text-based signal detection.
  *
- * Extracted from signals.ts to stay within the line limit.
- * Contains contentSignals, textSignals, and their pattern
- * dependencies.
+ * Owns the regex panel that flags secrets in payload bodies
+ * (`contentSignals`) and dangerous keywords in free text
+ * (`textSignals`), plus the user-configured pattern check that
+ * augments the built-in panel with project-specific terms.
  *
  * @module
  */

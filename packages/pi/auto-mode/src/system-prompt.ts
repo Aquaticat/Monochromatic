@@ -1,25 +1,10 @@
 /**
- * Judge system prompt and shared constants.
- *
- * Extracted from config.ts to stay within the line limit.
+ * Judge system prompt: the base instructions sent to the judge model
+ * plus the helper that appends user/project instructions, and the
+ * default deny guidance shown to the agent when an action is blocked.
  *
  * @module
  */
-
-/** Maximum number of tool calls included in judge context. */
-const MAX_CONTEXT_TOOLS = 8;
-
-/** Maximum length of user message text in judge context. */
-const USER_MSG_MAX = 300;
-
-/** Head portion of truncated user messages. */
-const USER_MSG_HEAD = 150;
-
-/** Tail portion of truncated user messages. */
-const USER_MSG_TAIL = 100;
-
-/** Maximum length of bash detail in context. */
-const BASH_DETAIL_LEN = 50;
 
 /**
  * Default guidance sent to the agent on deny.
@@ -108,11 +93,6 @@ function buildSystemPrompt(
 
 export {
   BASE_SYSTEM_PROMPT,
-  BASH_DETAIL_LEN,
   DEFAULT_DENY_GUIDANCE,
-  MAX_CONTEXT_TOOLS,
-  USER_MSG_HEAD,
-  USER_MSG_MAX,
-  USER_MSG_TAIL,
   buildSystemPrompt,
 };

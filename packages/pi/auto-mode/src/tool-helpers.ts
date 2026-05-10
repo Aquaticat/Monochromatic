@@ -1,9 +1,13 @@
 /**
- * Tool call event helpers.
+ * ToolCallEvent introspection helpers.
  *
- * Extracted from signals.ts to stay within the line limit.
- * Contains extractToolText, getFilePath, describeAction,
- * and isRelevantTool.
+ * Adapters between pi-coding-agent's `ToolCallEvent` discriminated
+ * union and the strings the rest of auto-mode uses:
+ * - `extractToolText`: pull the textual payload out of write/edit.
+ * - `getFilePath`: pull the path out of read/write/edit/grep.
+ * - `describeAction`: render a short human description used in
+ *   judge prompts and trust prompts.
+ * - `isRelevantTool`: predicate for circumvention re-flagging.
  *
  * @module
  */

@@ -1,8 +1,15 @@
 /**
- * Path-related signal functions.
+ * Path-based signal detection.
  *
- * Extracted from signals.ts to stay within the line limit.
- * Contains pathSignals, resolvePath, isUnder, isHomeDotfile.
+ * Owns the path-handling lobe of the flagger:
+ * - `pathSignals`: top-level "should this path be flagged?" check.
+ * - `resolvePath`/`isUnder`/`isHomeDotfile`: helpers used by
+ *   `pathSignals` and the bash-parser to make path comparisons
+ *   that respect `~` expansion, cwd containment, and home dotfiles.
+ *
+ * Path logic stays separate from content/text logic
+ * (`content-signals.ts`) and tool-event introspection
+ * (`tool-helpers.ts`) so each lobe can change independently.
  *
  * @module
  */
