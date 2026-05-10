@@ -375,7 +375,71 @@ lift `\bword\b` out of `~(...)` and place it in the main concatenation:
   the `^`/`$` rewrite happens at AST translation, before the group's flag
   scope is applied to its children's positional semantics.
 
-## Draft upstream issue
+## Draft upstream issue (DO NOT FILE without an architectural prototype)
+
+### Why we do not file this upstream
+
+This repo's policy is to report an issue upstream only when ALL of the
+following hold: we are absolutely sure it is the upstream's fault, they
+can fix it, they are supporting the use case, they are likely to fix it,
+and we have already prototyped a minimal fix compatible with their
+architecture. Every reported issue that does not satisfy all five is
+treated as a publicity incident.
+
+Walking the five constraints against the resharp complement-of-lookaround
+restriction:
+
+1. **Is it really upstream's fault?** Mostly no. The restriction is
+   architectural. Brzozowski-style symbolic derivatives do not compose
+   naturally with position-sensitive constraints under reversal; this
+   doc's "Why this restriction exists" section spells out the algebraic
+   reason. The default-multiline `^`/`$` rewrite and the `\b` to
+   lookaround rewrite are defensible parser choices that interact badly
+   with the architectural restriction; the badness lives in the
+   interaction, not in any single decision. The only narrow surface-
+   quality grievance is the generic "unsupported lookaround pattern"
+   string not naming the trigger, but that is wording, not behaviour.
+
+2. **Can upstream fix it?** Partially. Positive-lookaround reverse cases
+   are tractable via De Morgan body inversion; negative-lookaround
+   reverse cases require preserving position-sensitive match-set
+   semantics through the complement structure, which is non-trivial work
+   touching the algebraic core. Not a 1-line change.
+
+3. **Are they supporting this use case?** No documented signal. The
+   crate's stated value proposition is "high-performance regex engine
+   with intersection and complement operations." Lookarounds-in-
+   complement sits at the intersection of two features that compose
+   poorly; no upstream doc, example, or test shows the combination as
+   expected to work.
+
+4. **Will they likely fix it?** Upstream signal points the other way.
+   Commit `e9676b4 2026-04-19 rejecting unsupported patterns, more
+   tests` shows the project scoping DOWN what is supported; commit
+   `b256ea8 2026-04-24 rewrite negative lookaheads on construction`
+   moved lookaround handling in a different direction (construction-
+   time rewrites). The 0.5.1 to 0.5.2 delta was orthogonal (streaming/
+   seeking, platform builds, prefix-engine bugfix). No movement on
+   complement-of-lookaround in the visible history.
+
+5. **Have we prototyped a minimal fix?** No. The "Suggested fix"
+   section below is speculative design with no code, no correctness
+   argument, no test against any nontrivial rule set.
+
+We fail constraints 1, 4, and 5 clearly; 2 and 3 are equivocal at best.
+The decision is to NOT file upstream.
+
+The consumer-side workaround is implemented in `forbidden-strings` as a
+parse-time guard (`engine::lookaround_in_complement`) that rejects every
+failing shape with a named-trigger error pointing to this doc. That
+solves the user-facing problem at our boundary, where it actually
+matters for us. The draft below is kept as a reference in case the
+underlying situation changes (e.g., upstream announces complement-of-
+lookaround as supported, or someone in the project lands a prototype
+fix and asks for community testing). Re-evaluating the five constraints
+must precede any filing.
+
+### Draft (do not file as-is)
 
 Title: `Algebra(UnsupportedPattern)` for `\b`, `\B`, `^`, `$` inside
 complement bodies; error string ("unsupported lookaround pattern") does
