@@ -1,6 +1,6 @@
 use resharp::Regex;
 
-use super::engine::{uses_set_algebra, CompiledRegex};
+use super::engine::{requires_resharp, CompiledRegex};
 use super::types::ResidualShard;
 
 // What:     `pub fn build_residual_shards(positions, regex_specs) -> Result<Vec<ResidualShard>, String>`
@@ -189,7 +189,7 @@ fn greedy_combine(
 //           builds a combined-alternation source for `chunk` (joining
 //           each rule's regex source with `|`, wrapping each in parens),
 //           dispatches to resharp or regex via the same hybrid-engine
-//           rule used for individual rules (`uses_set_algebra` shallow
+//           rule used for individual rules (`requires_resharp` shallow
 //           string scan), and returns the compiled gate or `None` on
 //           parse/algebra/HIR-translator failure.
 // Why:      The combined alternation can fail on resharp when the union
@@ -220,10 +220,10 @@ fn try_compile_combined(
         combined.push_str(&regex_specs[rule_pos].1);
         combined.push(')');
     }
-    let any_set_algebra = chunk
+    let any_requires_resharp = chunk
         .iter()
-        .any(|&rp| uses_set_algebra(&regex_specs[rp].1));
-    if any_set_algebra {
+        .any(|&rp| requires_resharp(&regex_specs[rp].1));
+    if any_requires_resharp {
         Regex::new(&combined).ok().map(CompiledRegex::Resharp)
     } else {
         // Try unicode-off for the speedup; fall back to unicode-on if

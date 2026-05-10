@@ -46,6 +46,8 @@ mod walker;
 #[cfg(test)]
 mod atom_tests;
 #[cfg(test)]
+mod engine_tests;
+#[cfg(test)]
 mod extract_tests;
 
 // What:     Public surface re-exports so external callers (`scan.rs`,
@@ -57,9 +59,9 @@ mod extract_tests;
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// export { CompiledRegex, ScanMatch, usesSetAlgebra } from "./rules/engine";
+// export { CompiledRegex, ScanMatch, requiresResharp } from "./rules/engine";
 // ```
-pub use engine::{uses_set_algebra, CompiledRegex};
+pub use engine::{requires_resharp, CompiledRegex};
 pub use extract::extract_gating_substrings;
 pub use parse::{parse_rule_source, ParsedRule};
 pub use shards::build_residual_shards;
@@ -118,7 +120,7 @@ use rayon::prelude::*;
 //           on rules that use set-algebra; rules without set-algebra
 //           go through the `regex` crate via `CompiledRegex::Plain`.
 // Why:      Hybrid engine dispatch: this module owns the per-rule
-//           routing decision via `uses_set_algebra`.
+//           routing decision via `requires_resharp`.
 // TS map:   `import { Regex } from "resharp";`.
 //
 // In TS you'd write (pseudocode):
@@ -403,11 +405,12 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     // Phase 2a: parallel-compile the regex bucket. Each `Regex::new`
     // call is independent (its own algebra/parser pass plus a fresh
     // `Mutex<RegexInner>`), so rayon's work-stealing fits perfectly.
-    // Hybrid engine dispatch: rules without resharp set-algebra
-    // (`A&B` / `~(A)`) compile via the `regex` crate (~100x faster
-    // than resharp on equivalent patterns); rules WITH set-algebra
-    // stay on resharp. The classification is a shallow string scan
-    // (`uses_set_algebra`) -- no parser invocation -- so the
+    // Hybrid engine dispatch: rules without resharp-only features
+    // (set-algebra `A&B` / `~(A)`, lookarounds `(?=` / `(?!` / `(?<=` /
+    // `(?<!`) compile via the `regex` crate (~100x faster than resharp
+    // on equivalent patterns); rules WITH any of those features stay
+    // on resharp. The classification is a shallow string scan
+    // (`requires_resharp`) -- no parser invocation -- so the
     // dispatch itself is essentially free.
     //
     // The regex builder bumps size_limit / dfa_size_limit because
@@ -434,12 +437,12 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     //           - The trailing `?` unwraps `Ok` or propagates `Err`.
     // Why:      Compile every regex rule in parallel and bubble up the
     //           first compile failure as a single error.
-    // TS map:   `const regexRules = await Promise.all(regexSpecs.map(([idx, src]) => uses_set_algebra(src) ? Regex.new(src) : compilePlainRule(src, idx)));`.
+    // TS map:   `const regexRules = await Promise.all(regexSpecs.map(([idx, src]) => requires_resharp(src) ? Regex.new(src) : compilePlainRule(src, idx)));`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const regexRules: RegexRule[] = await Promise.all(regexSpecs.map(([idx, src]) => {
-    //   if (usesSetAlgebra(src)) {
+    //   if (requiresResharp(src)) {
     //     try { return { idx, re: { kind: "resharp", re: new Regex(src) } }; }
     //     catch (e) { throw new Error(`rule on line ${idx} (resharp): ${e}`); }
     //   }
@@ -449,7 +452,7 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     let regex_rules: Vec<RegexRule> = regex_specs
         .par_iter()
         .map(|(idx, src)| {
-            if uses_set_algebra(src) {
+            if requires_resharp(src) {
                 Regex::new(src)
                     .map(|re| RegexRule { idx: *idx, re: CompiledRegex::Resharp(re) })
                     .map_err(|e| format!("rule on line {} (resharp): {:?}", idx, e))
