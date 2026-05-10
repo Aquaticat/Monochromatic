@@ -169,7 +169,9 @@ export function renderPrDetail(data: PrDetailData,): SafeHtml {
                       {
                         className: 'forge-pr-changes-requested',
                         'data-count': String(data.changesRequestedCount,),
-                        children: `${String(data.changesRequestedCount,)} changes requested`,
+                        children: `${
+                          String(data.changesRequestedCount,)
+                        } changes requested`,
                       },
                     ),
                   ],

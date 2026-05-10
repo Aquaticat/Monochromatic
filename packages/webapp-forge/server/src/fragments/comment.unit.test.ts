@@ -17,11 +17,11 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'renderComment',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'sets the permalink anchor id to comment-<id>',
           async fn() {
             await Promise.resolve();
@@ -35,7 +35,7 @@ await describe({
             expect(html.includes('data-comment-id="c1"',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'renders author and body',
           async fn() {
             await Promise.resolve();
@@ -49,7 +49,7 @@ await describe({
             expect(html.includes('A reply',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'escapes XSS payloads in body and author',
           async fn() {
             await Promise.resolve();

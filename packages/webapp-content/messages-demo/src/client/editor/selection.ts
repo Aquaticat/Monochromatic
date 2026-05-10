@@ -209,7 +209,7 @@ export function mountSelection(
     target: { offset: number; },
   ): {
     node: Node;
-    offset: number
+    offset: number;
   } | null {
     let cursor = 0;
     const lines = [

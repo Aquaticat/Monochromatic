@@ -15,61 +15,61 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (full history)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          fetch-depth: 0
+    - name: Checkout (full history)
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 0
 
-      - name: Set up mise (skip auto-install of all tools)
-        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
-        with:
-          install: false
-          cache: true
+    - name: Set up mise (skip auto-install of all tools)
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        install: false
+        cache: true
 
-      - name: Install only the tools this workflow needs
-        # The root mise.toml lists ~25 tools (including llama.cpp, which
-        # intermittently lacks a Linux release at install time). This scan
-        # only needs rust (for the cargo build), hk (the runner), and pkl
-        # (hk's config language).
-        run: mise install rust 'aqua:jdx/hk' 'aqua:apple/pkl'
+    - name: Install only the tools this workflow needs
+      # The root mise.toml lists ~25 tools (including llama.cpp, which
+      # intermittently lacks a Linux release at install time). This scan
+      # only needs rust (for the cargo build), hk (the runner), and pkl
+      # (hk's config language).
+      run: mise install rust 'aqua:jdx/hk' 'aqua:apple/pkl'
 
-      - name: Cache cargo registry + scanner build
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            packages/dev-script/forbidden-strings/target
-          key: forbidden-strings-${{ runner.os }}-${{ hashFiles('packages/dev-script/forbidden-strings/Cargo.toml') }}
+    - name: Cache cargo registry + scanner build
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          packages/dev-script/forbidden-strings/target
+        key: forbidden-strings-${{ runner.os }}-${{ hashFiles('packages/dev-script/forbidden-strings/Cargo.toml') }}
 
-      - name: Build forbidden-strings
-        run: mise run //packages/dev-script/forbidden-strings:build
+    - name: Build forbidden-strings
+      run: mise run //packages/dev-script/forbidden-strings:build
 
-      - name: Materialize deny-list
-        # Mirror the local file-enforcer composition: always seed from the
-        # committed baseline (betterleaks port, not sensitive), then append
-        # the per-repo secret if one is configured. This keeps the baseline
-        # credential scan running even when no secret exists, while still
-        # honoring the design that puts repo-specific literals out-of-band.
-        # Use printenv (not shell interpolation) so the secret bytes are
-        # never expanded into a logged command line.
-        env:
-          FORBIDDEN_STRINGS_LIST: ${{ secrets.FORBIDDEN_STRINGS_LIST }}
-        run: |
-          cp forbidden-strings.local.example.txt forbidden-strings.local.txt
-          if [ -n "$FORBIDDEN_STRINGS_LIST" ]; then
-            printenv FORBIDDEN_STRINGS_LIST >> forbidden-strings.local.txt
-          else
-            echo "::notice::FORBIDDEN_STRINGS_LIST secret not set; baseline-only scan."
-          fi
+    - name: Materialize deny-list
+      # Mirror the local file-enforcer composition: always seed from the
+      # committed baseline (betterleaks port, not sensitive), then append
+      # the per-repo secret if one is configured. This keeps the baseline
+      # credential scan running even when no secret exists, while still
+      # honoring the design that puts repo-specific literals out-of-band.
+      # Use printenv (not shell interpolation) so the secret bytes are
+      # never expanded into a logged command line.
+      env:
+        FORBIDDEN_STRINGS_LIST: ${{ secrets.FORBIDDEN_STRINGS_LIST }}
+      run: |
+        cp forbidden-strings.local.example.txt forbidden-strings.local.txt
+        if [ -n "$FORBIDDEN_STRINGS_LIST" ]; then
+          printenv FORBIDDEN_STRINGS_LIST >> forbidden-strings.local.txt
+        else
+          echo "::notice::FORBIDDEN_STRINGS_LIST secret not set; baseline-only scan."
+        fi
 
-      - name: Run hk check (changed files only)
-        run: |
-          mise exec -- hk check --from-ref origin/main
+    - name: Run hk check (changed files only)
+      run: |
+        mise exec -- hk check --from-ref origin/main
 
-      - name: Run forbidden-strings full-tree scan (push to main only)
-        if: github.event_name == 'push'
-        run: |
-          packages/dev-script/forbidden-strings/target/release/forbidden-strings \
-            --rules forbidden-strings.local.txt \
-            --all
+    - name: Run forbidden-strings full-tree scan (push to main only)
+      if: github.event_name == 'push'
+      run: |
+        packages/dev-script/forbidden-strings/target/release/forbidden-strings \
+          --rules forbidden-strings.local.txt \
+          --all

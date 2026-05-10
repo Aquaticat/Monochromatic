@@ -32,7 +32,9 @@ import {
 const TOOL_TITLES: Record<string, ToolTitleEntry> = {
   bash: {
     extract: field('command',),
-    format(v,) { return shortCommand(v,); },
+    format(v,) {
+      return shortCommand(v,);
+    },
     fallback: {
       pre: 'Running command',
       post: 'Ran command',
@@ -106,10 +108,6 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
   },
 };
 
-export {
-  TOOL_TITLES,
-};
+export { TOOL_TITLES, };
 
-export type {
-  ToolTitleEntry,
-};
+export type { ToolTitleEntry, };

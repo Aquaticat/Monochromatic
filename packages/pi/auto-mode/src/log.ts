@@ -12,9 +12,9 @@
 import {
   initPromise,
   logger,
-} from "@monochromatic-dev/module-logger/logger";
-import { tagged, } from "@monochromatic-dev/module-logger/tagged";
-import type { Logger, } from "@monochromatic-dev/module-logger/types";
+} from '@monochromatic-dev/module-logger/logger';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 await initPromise;
 
@@ -22,6 +22,6 @@ await initPromise;
  * Root tagged logger; sub-modules compose deeper tags via {@link tagged}.
  */
 export const l: Logger = tagged({
-  tag: "auto-mode",
+  tag: 'auto-mode',
   l: logger,
 },);

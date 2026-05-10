@@ -74,15 +74,17 @@ Fix:
 
 - Isolate state per test: create fresh state inside each `fn`.
 - Use `concurrency: 1` on the describe when shared state is unavoidable.
-  Pass children as thunks so execution is actually deferred:
+  Children are lazy descriptors and dispatched by the parent, so no thunk
+  wrapping is needed; the parent's effective concurrency is inherited by
+  nested describes:
 
 ```ts
 describe({
   name: 'shared resource -- tests mutate shared cache',
   concurrency: 1,
   children: [
-    () => it({ name: 'first', fn: async () => { ... } }),
-    () => it({ name: 'second', fn: async () => { ... } }),
+    it({ name: 'first', fn: async () => { ... } }),
+    it({ name: 'second', fn: async () => { ... } }),
   ],
 })
 ```

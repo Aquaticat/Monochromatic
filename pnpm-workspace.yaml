@@ -1,5 +1,5 @@
 packages:
-  - 'packages/*/*'
+- 'packages/*/*'
 
 allowBuilds:
   '@vscode/ripgrep': set this to true or false
@@ -180,14 +180,14 @@ strictPeerDependencies: true
 
 supportedArchitectures:
   cpu:
-    - x64
-    - arm64
-    - current
+  - x64
+  - arm64
+  - current
   libc:
-    - glibc
-    - musl
-    - current
+  - glibc
+  - musl
+  - current
   os:
-    - darwin
-    - linux
-    - current
+  - darwin
+  - linux
+  - current

@@ -17,7 +17,10 @@ import type {
  * ```
  */
 function pad2(n: number,): string {
-  return n.toString().padStart(2, '0',);
+  return n.toString().padStart(
+    2,
+    '0',
+  );
 }
 
 /**

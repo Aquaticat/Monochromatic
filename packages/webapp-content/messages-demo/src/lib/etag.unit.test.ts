@@ -22,7 +22,8 @@ await describe({
             expect(etagForChunk({
               revision: 3,
               chunkIndex: 7,
-            },),).toBe('"r3-7"',);
+            },),)
+              .toBe('"r3-7"',);
           },
         },),
 
@@ -43,10 +44,12 @@ await describe({
             expect(etagForChunk({
               revision: 1,
               chunkIndex: 2,
-            },),).not.toBe(etagForChunk({
-              revision: 2,
-              chunkIndex: 1,
-            },),);
+            },),)
+              .not
+              .toBe(etagForChunk({
+                revision: 2,
+                chunkIndex: 1,
+              },),);
           },
         },),
       ],
@@ -61,7 +64,8 @@ await describe({
             expect(etagForFeed({
               maxId: 1_042,
               maxUpdatedAt: 1_714_080_000_000,
-            },),).toBe('"f1042-1714080000000"',);
+            },),)
+              .toBe('"f1042-1714080000000"',);
           },
         },),
 
@@ -71,7 +75,8 @@ await describe({
             expect(etagForFeed({
               maxId: 0,
               maxUpdatedAt: 0,
-            },),).toBe('"f0-0"',);
+            },),)
+              .toBe('"f0-0"',);
           },
         },),
       ],
@@ -90,7 +95,8 @@ await describe({
             expect(matches(
               etag,
               etag,
-            ),).toBe(true,);
+            ),)
+              .toBe(true,);
           },
         },),
 
@@ -100,7 +106,8 @@ await describe({
             expect(matches(
               null,
               '"r3-7"',
-            ),).toBe(false,);
+            ),)
+              .toBe(false,);
           },
         },),
 
@@ -110,7 +117,8 @@ await describe({
             expect(matches(
               undefined,
               '"r3-7"',
-            ),).toBe(false,);
+            ),)
+              .toBe(false,);
           },
         },),
 
@@ -120,7 +128,8 @@ await describe({
             expect(matches(
               '"r2-7"',
               '"r3-7"',
-            ),).toBe(false,);
+            ),)
+              .toBe(false,);
           },
         },),
 
@@ -130,7 +139,8 @@ await describe({
             expect(matches(
               '"r1-0", "r2-0", "r3-7"',
               '"r3-7"',
-            ),).toBe(true,);
+            ),)
+              .toBe(true,);
           },
         },),
 
@@ -140,7 +150,8 @@ await describe({
             expect(matches(
               '"r1-0", "r2-0"',
               '"r3-7"',
-            ),).toBe(false,);
+            ),)
+              .toBe(false,);
           },
         },),
 
@@ -150,7 +161,8 @@ await describe({
             expect(matches(
               'W/"r3-7"',
               '"r3-7"',
-            ),).toBe(false,);
+            ),)
+              .toBe(false,);
           },
         },),
       ],

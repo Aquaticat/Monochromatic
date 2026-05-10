@@ -122,7 +122,9 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
   while (offset < data.byteLength) {
     if (data.byteLength - offset < PKT_LEN_BYTES) {
       throw new Error(
-        `pkt-line decode: trailing ${String(data.byteLength - offset,)} bytes too short for length prefix`,
+        `pkt-line decode: trailing ${
+          String(data.byteLength - offset,)
+        } bytes too short for length prefix`,
       );
     }
     const lengthSlice = data.subarray(

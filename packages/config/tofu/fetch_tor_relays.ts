@@ -41,14 +41,19 @@ async function run() {
   // existing port-443 outbound posture.
   try {
     const response = await fetch(URL,);
-    const data = await response.json() as { relays: { or_addresses: string[], }[], };
+    const data = await response.json() as { relays: { or_addresses: string[]; }[]; };
 
     const ips: string[] = [];
     for (const relay of data.relays) {
       for (const addr of relay.or_addresses) {
         if (addr.startsWith('[',) && addr.endsWith(']:443',)) {
           // IPv6: [2001:db8::1]:443
-          ips.push(`${addr.slice(1, addr.indexOf(']',),)}/128`,);
+          ips.push(`${
+            addr.slice(
+              1,
+              addr.indexOf(']',),
+            )
+          }/128`,);
         }
         else if (addr.endsWith(':443',) && !addr.startsWith('[',)) {
           // IPv4: 1.2.3.4:443

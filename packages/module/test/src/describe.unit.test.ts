@@ -126,19 +126,14 @@ await describe({
       fn: async () => {
         const DELAY = 50;
         const CHILD_COUNT = 4;
+        const EXPECTED_PEAK = 2;
         let peak = 0;
         let active = 0;
 
-        /**
-         * Creates a thunk that tracks concurrent active count
-         * while sleeping for DELAY ms.
-         *
-         * @param index - Child index used for naming
-         *
-         * @returns thunk returning a promise that resolves after DELAY
-         */
-        function makeChild(index: number,) {
-          return () =>
+        await describe({
+          name: 'concurrency-suite',
+          concurrency: EXPECTED_PEAK,
+          children: Array.from({ length: CHILD_COUNT, }, (_, index,) =>
             it({
               name: `limited-${String(index,)}`,
               fn: async () => {
@@ -151,19 +146,91 @@ await describe({
                 },);
                 active -= 1;
               },
-            },);
-        }
-
-        await describe({
-          name: 'concurrency-suite',
-          concurrency: 2,
-          children: Array.from({ length: CHILD_COUNT, },
-            (_, index,) => makeChild(index,),),
+            },),),
         },);
 
-        expect(peak,).toBe(2,);
+        expect(peak,).toBe(EXPECTED_PEAK,);
       },
     },),
+
+    //region inheritance
+
+    it({
+      name: 'nested describe inherits parent concurrency',
+      fn: async () => {
+        const DELAY = 30;
+        const CHILD_COUNT = 4;
+        const EXPECTED_PEAK = 1;
+        let peak = 0;
+        let active = 0;
+
+        await describe({
+          name: 'outer-sequential',
+          concurrency: 1,
+          children: [
+            describe({
+              name: 'inner-without-override',
+              children: Array.from({ length: CHILD_COUNT, }, (_, index,) =>
+                it({
+                  name: `inherited-${String(index,)}`,
+                  fn: async () => {
+                    active += 1;
+                    if (active > peak)
+                      peak = active;
+
+                    await new Promise(resolve => {
+                      setTimeout(resolve, DELAY,);
+                    },);
+                    active -= 1;
+                  },
+                },),),
+            },),
+          ],
+        },);
+
+        expect(peak,).toBe(EXPECTED_PEAK,);
+      },
+    },),
+
+    it({
+      name: 'nested describe overrides inherited concurrency',
+      fn: async () => {
+        const DELAY = 30;
+        const CHILD_COUNT = 4;
+        const EXPECTED_PEAK = 4;
+        let peak = 0;
+        let active = 0;
+
+        await describe({
+          name: 'outer-sequential-override',
+          concurrency: 1,
+          children: [
+            describe({
+              name: 'inner-unbounded',
+              concurrency: Number.POSITIVE_INFINITY,
+              children: Array.from({ length: CHILD_COUNT, }, (_, index,) =>
+                it({
+                  name: `overridden-${String(index,)}`,
+                  fn: async () => {
+                    active += 1;
+                    if (active > peak)
+                      peak = active;
+
+                    await new Promise(resolve => {
+                      setTimeout(resolve, DELAY,);
+                    },);
+                    active -= 1;
+                  },
+                },),),
+            },),
+          ],
+        },);
+
+        expect(peak,).toBe(EXPECTED_PEAK,);
+      },
+    },),
+
+    //endregion inheritance
 
     it({
       name: 'respects suite timeout',

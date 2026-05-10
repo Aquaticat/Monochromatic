@@ -43,7 +43,7 @@ export { meDeltaHandler, } from './routes/me.ts';
 
 export {
   provisionRepo,
-  provisionUser,
   type ProvisionRepoRow,
+  provisionUser,
   type ProvisionUserRow,
 } from './routes/provisioning.ts';

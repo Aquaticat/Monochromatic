@@ -11,15 +11,15 @@
 import type {
   Api,
   Model,
-} from "@earendil-works/pi-ai";
+} from '@earendil-works/pi-ai';
 
 //region Custom entry types
 
 /** Discriminator for trust-directive session entries. */
-const TRUST_ENTRY_TYPE = "auto-mode:trust";
+const TRUST_ENTRY_TYPE = 'auto-mode:trust';
 
 /** Discriminator for verdict session entries. */
-const VERDICT_ENTRY_TYPE = "auto-mode:verdict";
+const VERDICT_ENTRY_TYPE = 'auto-mode:verdict';
 
 //endregion
 
@@ -36,11 +36,11 @@ type VerdictData = {
   action: string;
   /** Judge or user decision. */
   verdict:
-    | "approve"
-    | "deny"
-    | "ask"
-    | "user-approve"
-    | "user-deny";
+    | 'approve'
+    | 'deny'
+    | 'ask'
+    | 'user-approve'
+    | 'user-deny';
   /** Reasoning or context. */
   reason: string;
 };
@@ -52,7 +52,7 @@ type VerdictData = {
  * produce `VerdictData` directly.
  */
 type Verdict = {
-  verdict: "approve" | "deny" | "ask";
+  verdict: 'approve' | 'deny' | 'ask';
   reason: string;
   /** Guidance sent to the agent on deny. */
   guidance: string;
@@ -81,15 +81,15 @@ type Verdict = {
  * }
  * ```
  */
-function isCustomEntry<T>(
+function isCustomEntry<T,>(
   entry: {
     type: string;
-    data?: unknown
+    data?: unknown;
   },
   entryType: string,
 ): entry is {
   type: string;
-  data: T
+  data: T;
 } {
   return entry.type === entryType;
 }
@@ -159,7 +159,7 @@ type BudgetModel = {
 };
 
 /** Strategy for finding a budget model. */
-type ModelStrategy = "same-provider" | "any-provider";
+type ModelStrategy = 'same-provider' | 'any-provider';
 
 /**
  * Pinned-model override for the judge.

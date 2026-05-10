@@ -54,10 +54,12 @@ function truncate(
 ): string {
   if (value.length <= maxLength)
     return value;
-  return `${value.slice(
-    0,
-    maxLength - 1,
-  )}…`;
+  return `${
+    value.slice(
+      0,
+      maxLength - 1,
+    )
+  }…`;
 }
 
 /**
@@ -168,10 +170,12 @@ function quotedFormat(
     v: string,
     tense: 'pre' | 'post',
   ) {
-    return `${labels[tense]} "${truncate(
-      v,
-      MAX_PATTERN_LENGTH,
-    )}"`;
+    return `${labels[tense]} "${
+      truncate(
+        v,
+        MAX_PATTERN_LENGTH,
+      )
+    }"`;
   };
 }
 

@@ -51,7 +51,11 @@ type Writer<TOutput,> = (output: TOutput,) => string;
  * ```
  */
 async function runHookPlugin<TInput, TOutput,>(
-  { parser, handler, writer, }: {
+  {
+    parser,
+    handler,
+    writer,
+  }: {
     parser: Parser<TInput>;
     handler: HookHandler<TInput, TOutput>;
     writer: Writer<TOutput>;

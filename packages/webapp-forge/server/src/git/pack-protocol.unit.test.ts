@@ -18,10 +18,6 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import {
-  encodePkt,
-  flushPkt,
-} from './pkt-line.ts';
-import {
   multiplexSideband,
   parseReceivePackBody,
   parseUploadPackBody,
@@ -29,6 +25,10 @@ import {
   writeReceivePackResponse,
   writeUploadPackResponse,
 } from './pack-protocol.ts';
+import {
+  encodePkt,
+  flushPkt,
+} from './pkt-line.ts';
 
 /** OID of the canonical empty git tree, used to fabricate test triplets. */
 const EMPTY_TREE_OID = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
@@ -74,11 +74,11 @@ await describe({
   name: 'pack-protocol',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'parseUploadPackBody',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'extracts wants and capabilities from the first line',
           async fn() {
             await Promise.resolve();
@@ -100,7 +100,7 @@ await describe({
             expect(result.done,).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'extracts haves',
           async fn() {
             await Promise.resolve();
@@ -117,15 +117,16 @@ await describe({
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'parseReceivePackBody',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'extracts triplets and capabilities; treats trailing bytes as packfile',
           async fn() {
             await Promise.resolve();
-            const triplet1 = `${EMPTY_TREE_OID} ${ANOTHER_OID} refs/heads/main\0report-status side-band-64k\n`;
+            const triplet1 =
+              `${EMPTY_TREE_OID} ${ANOTHER_OID} refs/heads/main\0report-status side-band-64k\n`;
             const triplet2 = `${ANOTHER_OID} ${EMPTY_TREE_OID} refs/heads/feat\n`;
             const fakePack = new TextEncoder().encode('PACK_DATA',);
             const body = concat([
@@ -154,7 +155,7 @@ await describe({
             expect(new TextDecoder().decode(result.packfile,),).toBe('PACK_DATA',);
           },
         },),
-        () => it({
+        it({
           name: 'returns empty triplets when only flush-pkt is present',
           async fn() {
             await Promise.resolve();
@@ -164,7 +165,7 @@ await describe({
             expect(result.packfile.byteLength,).toBe(0,);
           },
         },),
-        () => it({
+        it({
           name: 'throws on missing flush-pkt',
           async fn() {
             await Promise.resolve();
@@ -173,20 +174,23 @@ await describe({
             );
             expect(function attemptParse() {
               parseReceivePackBody(body,);
-            },).toThrow();
+            },)
+              .toThrow();
           },
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'multiplexSideband',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'wraps payload in sideband-64k chunks at spec ceiling',
           async fn() {
             await Promise.resolve();
-            const payload = new Uint8Array(SIDEBAND_CHUNK_SIZE * SIDEBAND_CHUNKS_TO_PROVOKE,);
+            const payload = new Uint8Array(
+              SIDEBAND_CHUNK_SIZE * SIDEBAND_CHUNKS_TO_PROVOKE,
+            );
             payload.fill(0x42,);
             const chunks = multiplexSideband({
               payload,
@@ -200,7 +204,7 @@ await describe({
             }
           },
         },),
-        () => it({
+        it({
           name: 'returns one chunk for tiny payloads',
           async fn() {
             await Promise.resolve();
@@ -220,11 +224,11 @@ await describe({
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'writeUploadPackResponse',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'emits NAK then sideband-multiplexed pack data when sideband requested',
           async fn() {
             await Promise.resolve();
@@ -241,7 +245,7 @@ await describe({
             expect(text.endsWith('0000',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'emits raw pack after NAK when sideband not requested',
           async fn() {
             await Promise.resolve();
@@ -258,11 +262,11 @@ await describe({
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'writeReceivePackResponse',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'emits unpack ok + per-ref status + flush',
           async fn() {
             await Promise.resolve();
@@ -288,7 +292,7 @@ await describe({
             expect(text.endsWith('0000',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'emits unpack <error> when unpackOk is false',
           async fn() {
             await Promise.resolve();
@@ -308,8 +312,9 @@ await describe({
             expect(text.includes('unpack corrupt pack\n',),).toBe(true,);
           },
         },),
-        () => it({
-          name: 'wraps the report on sideband channel 1 when client negotiated side-band-64k',
+        it({
+          name:
+            'wraps the report on sideband channel 1 when client negotiated side-band-64k',
           async fn() {
             await Promise.resolve();
             const chunks = writeReceivePackResponse({

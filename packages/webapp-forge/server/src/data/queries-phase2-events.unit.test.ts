@@ -75,11 +75,11 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'pull requests',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'createPullRequestWithEvent inserts issue + pr + emits pr.opened',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();
@@ -114,7 +114,7 @@ await describe({
             expect(last?.resource_id,).toBe(issueId,);
           },
         },),
-        () => it({
+        it({
           name: 'pushPullRequestHead updates head_sha + emits push event',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();
@@ -152,11 +152,11 @@ await describe({
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'reviews',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'submitReviewWithEvent inserts review + emits review.submitted',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();
@@ -198,7 +198,7 @@ await describe({
             expect(last?.kind,).toBe('review.submitted',);
           },
         },),
-        () => it({
+        it({
           name: 'insertReview is idempotent on duplicate id (no event)',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();
@@ -244,11 +244,11 @@ await describe({
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'mention index',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'add + list + remove',
           async fn() {
             const userIdA = uniqueId('m',);
@@ -286,7 +286,7 @@ await describe({
             expect(fragmentsAfter.length,).toBe(0,);
           },
         },),
-        () => it({
+        it({
           name: 'replaceMentionsForFragment swaps the set atomically',
           async fn() {
             const userIdA = uniqueId('rm',);

@@ -30,7 +30,10 @@ const TITLE_PREFIX = '✳';
  * @returns descriptive title like "Reading index.ts" (pre) or "Read index.ts" (post)
  */
 function titleForTool(event: PreToolUseInput | PostToolUseInput,): string {
-  const { tool_name: toolName, tool_input: input, } = event;
+  const {
+    tool_name: toolName,
+    tool_input: input,
+  } = event;
   const tense = event.hook_event_name === 'PreToolUse' ? 'pre' : 'post';
   const entry = TOOL_TITLES[toolName];
   if (entry === undefined)
@@ -38,7 +41,10 @@ function titleForTool(event: PreToolUseInput | PostToolUseInput,): string {
   const value = entry.extract(input,);
   if (value === undefined)
     return entry.fallback[tense];
-  return entry.format(value, tense,);
+  return entry.format(
+    value,
+    tense,
+  );
 }
 
 /** Filename portion of an absolute or relative path. */
@@ -102,9 +108,17 @@ function titleForEvent(hookEvent: HookInput,): string {
  */
 function setTerminalTitle(title: string,): void {
   try {
-    const fd = openSync('/dev/tty', 'w',);
-    using _cleanup = { [Symbol.dispose](): void { closeSync(fd,); }, };
-    writeSync(fd, `]0;${title}`,);
+    const fd = openSync(
+      '/dev/tty',
+      'w',
+    );
+    using _cleanup = { [Symbol.dispose](): void {
+      closeSync(fd,);
+    }, };
+    writeSync(
+      fd,
+      `]0;${title}`,
+    );
   }
   catch {
     /* /dev/tty unavailable: running inside sandbox or non-interactive context. */
@@ -127,7 +141,10 @@ type TerminalTitleOutput = void;
  */
 function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
   const title = titleForEvent(event,);
-  setTerminalTitle(truncate(`${TITLE_PREFIX} ${title}`, MAX_TITLE_LENGTH,),);
+  setTerminalTitle(truncate(
+    `${TITLE_PREFIX} ${title}`,
+    MAX_TITLE_LENGTH,
+  ),);
 }
 
 /**

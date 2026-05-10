@@ -106,19 +106,19 @@ shell expansion in the latter can leak the value to the log even with GitHub's m
 One rule per line. Two shapes:
 
 - A bare line is a case-sensitive literal. Match semantics depend on length:
-    - **Length below 7 bytes**: conditional word-boundary check (`grep -w` semantics).
-      A boundary is required at any end whose edge byte is a word character (`[A-Za-z0-9_]`);
-      the file context on that side must be either start/end of file or a non-word byte.
-      So a short alpha-only acronym matches a standalone occurrence in normal prose but
-      does **not** match coincidentally as a substring of a longer identifier or inside
-      random base64 noise. Path-shaped literals like `/etc/passwd` still match inside
-      `cat /etc/passwd` because the leading `/` is non-word so no left-side boundary
-      is enforced.
-    - **Length 7 bytes or more**: pure case-sensitive substring match, no boundary check.
-      A long literal matches anywhere it appears, including glued mid-identifier.
-      Distinctiveness from sheer length makes coincidental substring match negligible.
-      If a phrase exists in two written forms (with and without internal whitespace),
-      add both as separate rules so each matches its respective form.
+  - **Length below 7 bytes**: conditional word-boundary check (`grep -w` semantics).
+    A boundary is required at any end whose edge byte is a word character (`[A-Za-z0-9_]`);
+    the file context on that side must be either start/end of file or a non-word byte.
+    So a short alpha-only acronym matches a standalone occurrence in normal prose but
+    does **not** match coincidentally as a substring of a longer identifier or inside
+    random base64 noise. Path-shaped literals like `/etc/passwd` still match inside
+    `cat /etc/passwd` because the leading `/` is non-word so no left-side boundary
+    is enforced.
+  - **Length 7 bytes or more**: pure case-sensitive substring match, no boundary check.
+    A long literal matches anywhere it appears, including glued mid-identifier.
+    Distinctiveness from sheer length makes coincidental substring match negligible.
+    If a phrase exists in two written forms (with and without internal whitespace),
+    add both as separate rules so each matches its respective form.
 - A line of the shape `/PATTERN/FLAGS` is a regex. The first `/` and last `/` delimit the pattern;
   `FLAGS` is zero or more lowercase letters and is rewritten to a resharp inline-flag prefix
   (e.g. `/foo/i` becomes `(?i)foo`). Use this form to opt into substring-anywhere semantics

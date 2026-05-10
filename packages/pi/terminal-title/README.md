@@ -30,26 +30,26 @@ Subscribes to pi agent lifecycle events and updates the terminal window/tab titl
 
 **Event → title mapping:**
 
-| Event | Title example |
-| ----- | ------------- |
-| `tool_execution_start` | `✳ Reading index.ts` |
-| `tool_execution_end` | `✳ Read index.ts` |
-| `session_start` | `✳ Session startup` |
-| `session_shutdown` | `✳ Session ended` |
-| `agent_end` | `✳ Stopped` |
-| `before_agent_start` | `✳ Refactor the auth module` |
+| Event                  | Title example                |
+| ---------------------- | ---------------------------- |
+| `tool_execution_start` | `✳ Reading index.ts`         |
+| `tool_execution_end`   | `✳ Read index.ts`            |
+| `session_start`        | `✳ Session startup`          |
+| `session_shutdown`     | `✳ Session ended`            |
+| `agent_end`            | `✳ Stopped`                  |
+| `before_agent_start`   | `✳ Refactor the auth module` |
 
 **Tool registry:**
 
-| Tool | Pre title | Post title |
-| ---- | --------- | ---------- |
-| `bash` | `✳ npm test` | `✳ npm test` |
-| `read` | `✳ Reading index.ts` | `✳ Read index.ts` |
-| `edit` | `✳ Editing config.ts` | `✳ Edited config.ts` |
-| `write` | `✳ Writing output.ts` | `✳ Wrote output.ts` |
-| `grep` | `✳ Searching "TODO"` | `✳ Searched "TODO"` |
-| `find` | `✳ Finding "*.ts"` | `✳ Found "*.ts"` |
-| `ls` | `✳ Listing src` | `✳ Listed src` |
+| Tool    | Pre title             | Post title           |
+| ------- | --------------------- | -------------------- |
+| `bash`  | `✳ npm test`          | `✳ npm test`         |
+| `read`  | `✳ Reading index.ts`  | `✳ Read index.ts`    |
+| `edit`  | `✳ Editing config.ts` | `✳ Edited config.ts` |
+| `write` | `✳ Writing output.ts` | `✳ Wrote output.ts`  |
+| `grep`  | `✳ Searching "TODO"`  | `✳ Searched "TODO"`  |
+| `find`  | `✳ Finding "*.ts"`    | `✳ Found "*.ts"`     |
+| `ls`    | `✳ Listing src`       | `✳ Listed src`       |
 
 Custom/MCP tools that are not in the registry display generically:
 `✳ Running mcp__weather` / `✳ Ran mcp__weather`

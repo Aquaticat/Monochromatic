@@ -95,25 +95,25 @@ await describe({
         it({
           name: 'returns string value when present',
           fn: async () => {
-            expect(stringField({ path: '/foo.ts' }, 'path',),).toBe('/foo.ts',);
+            expect(stringField({ path: '/foo.ts', }, 'path',),).toBe('/foo.ts',);
           },
         },),
         it({
           name: 'returns undefined for missing key',
           fn: async () => {
-            expect(stringField({ path: '/foo.ts' }, 'missing',),).toBe(undefined,);
+            expect(stringField({ path: '/foo.ts', }, 'missing',),).toBe(undefined,);
           },
         },),
         it({
           name: 'returns undefined for non-string value',
           fn: async () => {
-            expect(stringField({ count: 42 }, 'count',),).toBe(undefined,);
+            expect(stringField({ count: 42, }, 'count',),).toBe(undefined,);
           },
         },),
         it({
           name: 'returns undefined for null value',
           fn: async () => {
-            expect(stringField({ path: null }, 'path',),).toBe(undefined,);
+            expect(stringField({ path: null, }, 'path',),).toBe(undefined,);
           },
         },),
       ],
@@ -130,14 +130,14 @@ await describe({
           name: 'creates extractor for named field',
           fn: async () => {
             const extractPath = field('path',);
-            expect(extractPath({ path: '/foo.ts' },),).toBe('/foo.ts',);
+            expect(extractPath({ path: '/foo.ts', },),).toBe('/foo.ts',);
           },
         },),
         it({
           name: 'returns undefined when field is absent',
           fn: async () => {
             const extractPath = field('path',);
-            expect(extractPath({ other: 'value' },),).toBe(undefined,);
+            expect(extractPath({ other: 'value', },),).toBe(undefined,);
           },
         },),
       ],
@@ -275,7 +275,6 @@ await describe({
         },),
       ],
     },),
-
     //endregion shortCommand
   ],
 },);

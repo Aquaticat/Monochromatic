@@ -1252,30 +1252,30 @@ Read-only inbound for MVP. Outbound writes deferred post-competition.
 A throwaway flashcard app was built pre-competition to validate the architecture.
 These patterns are confirmed working; no surprises expected during implementation.
 
-| Pattern                                                    | Status        | Notes                                                                        |
-| ---------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------- |
-| build-css -> Bun.build() -> Bun.serve() pipeline           | **validated** | Runs at startup, restarts cleanly with `bun --watch`                         |
-| Bun.serve() `routes` with `:param` and per-method dispatch | **validated** | Type-safe params, SIMD-accelerated, replaces hand-written router             |
-| Embedded JSON (`<script type="application/json">`)         | **validated** | Client reads with `JSON.parse(el.textContent)`                               |
-| CSS-as-text-import (Bun.build() inlines CSS strings)       | **validated** | `import styles from "..." with { type: "text" }` works                       |
-| @mixin/@apply via @monochromatic-dev/build-css             | **validated** | LightningCSS + PostCSS expansion, oxc-resolver works under Bun               |
-| Custom elements                                            | **validated** | `<flash-card>` with shadow DOM, attributes, events                           |
-| zod validation on API routes                               | **validated** | Schema validation with error messages                                        |
-| fetch() mutations + window.location.reload()               | **validated** | Simple mutation pattern, no client-side state sync                           |
-| bun:sqlite in-memory DB                                    | **validated** | CRUD, foreign keys, WAL mode                                                 |
-| Bun.file() auto Content-Type                               | **validated** | No manual content-type mapping needed                                        |
+| Pattern                                                    | Status        | Notes                                                                      |
+| ---------------------------------------------------------- | ------------- | -------------------------------------------------------------------------- |
+| build-css -> Bun.build() -> Bun.serve() pipeline           | **validated** | Runs at startup, restarts cleanly with `bun --watch`                       |
+| Bun.serve() `routes` with `:param` and per-method dispatch | **validated** | Type-safe params, SIMD-accelerated, replaces hand-written router           |
+| Embedded JSON (`<script type="application/json">`)         | **validated** | Client reads with `JSON.parse(el.textContent)`                             |
+| CSS-as-text-import (Bun.build() inlines CSS strings)       | **validated** | `import styles from "..." with { type: "text" }` works                     |
+| @mixin/@apply via @monochromatic-dev/build-css             | **validated** | LightningCSS + PostCSS expansion, oxc-resolver works under Bun             |
+| Custom elements                                            | **validated** | `<flash-card>` with shadow DOM, attributes, events                         |
+| zod validation on API routes                               | **validated** | Schema validation with error messages                                      |
+| fetch() mutations + window.location.reload()               | **validated** | Simple mutation pattern, no client-side state sync                         |
+| bun:sqlite in-memory DB                                    | **validated** | CRUD, foreign keys, WAL mode                                               |
+| Bun.file() auto Content-Type                               | **validated** | No manual content-type mapping needed                                      |
 | Static imports for DB + route handlers                     | **validated** | Dynamic imports unnecessary; top-level await ensures build completes first |
 
 ### Not yet tested (verify early in implementation)
 
-| Pattern                                        | Risk   | Mitigation                                                |
-| ---------------------------------------------- | ------ | --------------------------------------------------------- |
-| FTS5 full-text search                          | low    | Standard SQLite extension, well-documented                |
-| llama.cpp HTTP client + structured JSON output | medium | Test on day 4 with real model before wiring UI            |
-| File/BLOB attachments in SQLite                | low    | Standard bun:sqlite, deferred feature anyway              |
-| 5 client entrypoints (vs 2 tested)             | low    | Bun.build() is fast, linear scaling expected              |
-| setInterval timer tick on client               | low    | Standard browser API, trivial to test                     |
-| @upyo/smtp email sending                       | medium | External dependency, test with real SMTP early            |
+| Pattern                                        | Risk   | Mitigation                                              |
+| ---------------------------------------------- | ------ | ------------------------------------------------------- |
+| FTS5 full-text search                          | low    | Standard SQLite extension, well-documented              |
+| llama.cpp HTTP client + structured JSON output | medium | Test on day 4 with real model before wiring UI          |
+| File/BLOB attachments in SQLite                | low    | Standard bun:sqlite, deferred feature anyway            |
+| 5 client entrypoints (vs 2 tested)             | low    | Bun.build() is fast, linear scaling expected            |
+| setInterval timer tick on client               | low    | Standard browser API, trivial to test                   |
+| @upyo/smtp email sending                       | medium | External dependency, test with real SMTP early          |
 | Orchestrator multi-process spawning            | high   | Most complex untested piece; budget extra time on day 5 |
 
 ## Risk areas

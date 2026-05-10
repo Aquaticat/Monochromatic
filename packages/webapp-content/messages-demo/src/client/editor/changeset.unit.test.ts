@@ -28,7 +28,8 @@ await describe({
                 insert: 'x',
               },
               before: 'ab',
-            },),).toBe('xab',);
+            },),)
+              .toBe('xab',);
           },
         },),
 
@@ -42,7 +43,8 @@ await describe({
                 insert: 'x',
               },
               before: 'ab',
-            },),).toBe('abx',);
+            },),)
+              .toBe('abx',);
           },
         },),
 
@@ -56,7 +58,8 @@ await describe({
                 insert: 'XYZ',
               },
               before: 'abcde',
-            },),).toBe('aXYZe',);
+            },),)
+              .toBe('aXYZe',);
           },
         },),
 
@@ -70,7 +73,8 @@ await describe({
                 insert: '',
               },
               before: 'abcde',
-            },),).toBe('ade',);
+            },),)
+              .toBe('ade',);
           },
         },),
 
@@ -115,7 +119,8 @@ await describe({
             expect(applyChangeset({
               changeset: inv,
               before: after,
-            },),).toBe(before,);
+            },),)
+              .toBe(before,);
           },
         },),
 
@@ -197,7 +202,8 @@ await describe({
                 insert: 'X',
               },
               offset: 3,
-            },),).toBe(3,);
+            },),)
+              .toBe(3,);
           },
         },),
 
@@ -211,7 +217,8 @@ await describe({
                 insert: 'XY',
               },
               offset: 7,
-            },),).toBe(7,);
+            },),)
+              .toBe(7,);
             // boundaries
             expect(mapOffsetThroughChangeset({
               changeset: {
@@ -220,7 +227,8 @@ await describe({
                 insert: 'XY',
               },
               offset: 5,
-            },),).toBe(5,);
+            },),)
+              .toBe(5,);
             expect(mapOffsetThroughChangeset({
               changeset: {
                 from: 5,
@@ -228,7 +236,8 @@ await describe({
                 insert: 'XY',
               },
               offset: 10,
-            },),).toBe(7,);
+            },),)
+              .toBe(7,);
           },
         },),
 
@@ -243,7 +252,8 @@ await describe({
                 insert: 'XYZ',
               },
               offset: 6,
-            },),).toBe(7,);
+            },),)
+              .toBe(7,);
             // Negative delta: pure delete.
             expect(mapOffsetThroughChangeset({
               changeset: {
@@ -252,7 +262,8 @@ await describe({
                 insert: '',
               },
               offset: 8,
-            },),).toBe(5,);
+            },),)
+              .toBe(5,);
           },
         },),
       ],
@@ -393,7 +404,8 @@ await describe({
             expect(applyChangeset({
               changeset: composed,
               before,
-            },),).toBe(after2,);
+            },),)
+              .toBe(after2,);
           },
         },),
       ],

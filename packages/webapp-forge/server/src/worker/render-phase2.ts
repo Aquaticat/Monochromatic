@@ -18,8 +18,8 @@ import {
 } from '../data/queries.ts';
 import { renderComment, } from '../fragments/comment.ts';
 import {
-  renderMergeStatus,
   type MergeableState,
+  renderMergeStatus,
 } from '../fragments/merge-status.ts';
 import { renderPrDetail, } from '../fragments/pr-detail.ts';
 import { renderReviewThread, } from '../fragments/review-thread.ts';
@@ -62,7 +62,9 @@ const DEFAULT_REQUIRED_APPROVALS = 1;
  * const result = await tryRenderPhase2('prs/r1/i1/detail');
  * ```
  */
-export async function tryRenderPhase2(fragmentKey: string,): Promise<RenderResult | null> {
+export async function tryRenderPhase2(
+  fragmentKey: string,
+): Promise<RenderResult | null> {
   const prDetailMatch = PR_DETAIL_PATTERN.exec(fragmentKey,);
   if (prDetailMatch !== null) {
     const issueId = prDetailMatch.at(2,);

@@ -9,10 +9,6 @@ import {
 } from '@monochromatic-dev/webapp-forge-server/ts/data/queries';
 
 import {
-  rngInt,
-  rngPick,
-} from './rng.ts';
-import {
   synthesizeBody,
   synthesizeTitle,
 } from './content.ts';
@@ -21,6 +17,10 @@ import {
   fakeSha,
   PR_NUMBER_BASE,
 } from './generate-phase2-helpers.ts';
+import {
+  rngInt,
+  rngPick,
+} from './rng.ts';
 
 /** Recognised review states (and their relative weights for sampling). */
 const REVIEW_STATES: readonly string[] = [

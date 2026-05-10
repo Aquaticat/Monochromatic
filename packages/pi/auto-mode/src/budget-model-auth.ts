@@ -9,14 +9,14 @@
 import type {
   Api,
   Model,
-} from "@earendil-works/pi-ai";
-import type { ExtensionContext, } from "@earendil-works/pi-coding-agent";
-import { tagged, } from "@monochromatic-dev/module-logger/tagged";
-import { l as parentLogger, } from "./log.ts";
+} from '@earendil-works/pi-ai';
+import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for the budget-model-auth module. */
 const l = tagged({
-  tag: "budget-model-auth",
+  tag: 'budget-model-auth',
   l: parentLogger,
 },);
 
@@ -74,9 +74,9 @@ class NoBudgetModelError extends Error {
       );
     }
     if (
-      candidates.cheapestOverall !== undefined &&
-      candidates.cheapestOverall !== null &&
-      candidates.cheapestOverall.hasApiKey
+      candidates.cheapestOverall !== undefined
+      && candidates.cheapestOverall !== null
+      && candidates.cheapestOverall.hasApiKey
     ) {
       const c = candidates.cheapestOverall;
       lines.push(
@@ -84,11 +84,11 @@ class NoBudgetModelError extends Error {
       );
     }
     lines.push(
-      "To fix: configure a model explicitly in the extension settings, or switch to a provider with cheaper models.",
+      'To fix: configure a model explicitly in the extension settings, or switch to a provider with cheaper models.',
     );
 
-    super(lines.join("\n",),);
-    this.name = "NoBudgetModelError";
+    super(lines.join('\n',),);
+    this.name = 'NoBudgetModelError';
     this.reason = reason;
     this.sameProvider = candidates.sameProvider ?? null;
     this.cheapestOverall = candidates.cheapestOverall ?? null;
@@ -125,7 +125,7 @@ function toCandidate(
     modelId: model.id,
     costInput: model.cost.input,
     costOutput: model.cost.output,
-    hasApiKey: ctx.modelRegistry.hasConfiguredAuth(model),
+    hasApiKey: ctx.modelRegistry.hasConfiguredAuth(model,),
   };
 }
 
@@ -150,17 +150,20 @@ async function resolveAuth(
   model: Model<Api>,
 ): Promise<{
   apiKey?: string;
-  headers?: Record<string, string>
+  headers?: Record<string, string>;
 } | null> {
   try {
-    const result = await ctx.modelRegistry.getApiKeyAndHeaders(model);
-    if (!result.ok) return null;
+    const result = await ctx.modelRegistry.getApiKeyAndHeaders(model,);
+    if (!result.ok)
+      return null;
     const auth: {
       apiKey?: string;
-      headers?: Record<string, string>
+      headers?: Record<string, string>;
     } = {};
-    if (result.apiKey !== undefined) auth.apiKey = result.apiKey;
-    if (result.headers !== undefined) auth.headers = result.headers;
+    if (result.apiKey !== undefined)
+      auth.apiKey = result.apiKey;
+    if (result.headers !== undefined)
+      auth.headers = result.headers;
     return auth;
   }
   catch (err) {
@@ -198,52 +201,56 @@ async function findCheapestCandidate(
   allModels: Model<Api>[],
   majorVersions: number,
 ): Promise<ModelCandidate | null> {
-  const { findCheapestInMajorVersions, } = await import("./budget-model-version.ts");
+  const { findCheapestInMajorVersions, } = await import('./budget-model-version.ts');
   const byProvider = new Map<string, Model<Api>[]>();
   for (const m of allModels) {
-    const p = String(m.provider);
-    if (!byProvider.has(p)) byProvider.set(
-      p,
-      []
-    );
-    const list = byProvider.get(p);
-    if (list !== undefined) list.push(m);
+    const p = String(m.provider,);
+    if (!byProvider.has(p,)) {
+      byProvider.set(
+        p,
+        [],
+      );
+    }
+    const list = byProvider.get(p,);
+    if (list !== undefined)
+      list.push(m,);
   }
 
   let best: {
     model: Model<Api>;
-    provider: string
+    provider: string;
   } | null = null;
-  for (const [provider, models] of byProvider) {
+  for (const [provider, models,] of byProvider) {
     const candidates = findCheapestInMajorVersions(
       models,
-      majorVersions
+      majorVersions,
     );
-    const [firstCandidate] = candidates;
+    const [firstCandidate,] = candidates;
     if (
-      firstCandidate !== undefined &&
-      (best === null || firstCandidate.cost.input < best.model.cost.input)
+      firstCandidate !== undefined
+      && (best === null || firstCandidate.cost.input < best.model.cost.input)
     ) {
       best = {
         model: firstCandidate,
-        provider
+        provider,
       };
     }
   }
 
-  if (best === null) return null;
+  if (best === null)
+    return null;
   return toCandidate(
     ctx,
     best.model,
-    best.provider
+    best.provider,
   );
 }
 
 //endregion
 
 export {
-  NoBudgetModelError,
   findCheapestCandidate,
+  NoBudgetModelError,
   resolveAuth,
   toCandidate,
 };

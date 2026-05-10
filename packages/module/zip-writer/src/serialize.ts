@@ -58,9 +58,8 @@ function computeOffsets(
   }
   const cdStart = cursor;
   let cdSize = 0;
-  for (const { entry, } of positioned) {
+  for (const { entry, } of positioned)
     cdSize += CDH_FIXED_SIZE + entry.nameBytes.length;
-  }
   const totalSize = cdStart + cdSize + EOCD_FIXED_SIZE;
   if (cdStart > MAX_UINT32 || cdSize > MAX_UINT32 || totalSize > MAX_UINT32) {
     throw new Error(
@@ -216,8 +215,7 @@ export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8
     startOffset: cdEnd,
   },);
 
-  if (eocdEnd !== totalSize) {
+  if (eocdEnd !== totalSize)
     throw new Error(`zip-writer: internal write mismatch (${eocdEnd} / ${totalSize})`,);
-  }
   return buffer;
 }

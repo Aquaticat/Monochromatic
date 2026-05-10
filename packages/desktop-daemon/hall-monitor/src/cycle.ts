@@ -38,7 +38,6 @@ type DecisionWindow = [
   Decision,
 ];
 
-
 /** Rolling window of recent verdicts, initialized as all productive. */
 let decisions: DecisionWindow = [
   'PRODUCTIVE',

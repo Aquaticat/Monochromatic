@@ -8,9 +8,9 @@ and throughput targets.
 
 ## Scenarios
 
-| Scenario | Setup | Driver | Invariants |
-| --- | --- | --- | --- |
-| `hot-repo` | one repo, 10K issues | mitata-paced bursts of `comment.created` | rebuild p99 < 5s; zero stale fragments after drain |
+| Scenario         | Setup                | Driver                                   | Invariants                                                                                |
+| ---------------- | -------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `hot-repo`       | one repo, 10K issues | mitata-paced bursts of `comment.created` | rebuild p99 < 5s; zero stale fragments after drain                                        |
 | `bursty-comment` | one issue, 60s burst | sustained 167 evts/sec on the same issue | detail-fragment rebuild count <= 60 (1/sec debounce); final fragment matches ground truth |
 
 Phase 2 adds `wide-service` and `force-push`. Phase 3 adds `cross-cutting-rename` and `filter-fanout`.

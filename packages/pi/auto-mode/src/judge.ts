@@ -10,28 +10,28 @@
  */
 
 import {
-  streamSimple,
   type Api,
   type AssistantMessageEvent,
   type Model,
   type SimpleStreamOptions,
+  streamSimple,
   type ToolCall,
-} from "@earendil-works/pi-ai";
-import { tagged, } from "@monochromatic-dev/module-logger/tagged";
+} from '@earendil-works/pi-ai';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import {
+  toolChoiceForApi,
+  VERDICT_TOOL,
+} from './judge-tool.ts';
+import { l as parentLogger, } from './log.ts';
 import type {
   BatchEntry,
   BudgetModelAuth,
   Verdict,
-} from "./types.ts";
-import {
-  VERDICT_TOOL,
-  toolChoiceForApi,
-} from "./judge-tool.ts";
-import { l as parentLogger, } from "./log.ts";
+} from './types.ts';
 
 /** Tagged logger for the judge module. */
 const l = tagged({
-  tag: "judge",
+  tag: 'judge',
   l: parentLogger,
 },);
 
@@ -97,7 +97,7 @@ async function callJudge(
 
   const messages = [
     {
-      role: "user" as const,
+      role: 'user' as const,
       content: userContent,
       timestamp: Date.now(),
     },
@@ -106,18 +106,18 @@ async function callJudge(
   const controller = new AbortController();
   using _timer = disposableTimeout(
     timeoutMs,
-    function onTimeout() { controller.abort(); },
+    function onTimeout() {
+      controller.abort();
+    },
   );
 
   const opts: Record<string, unknown> = {
     signal: controller.signal,
   };
-  if (auth.apiKey !== undefined) {
+  if (auth.apiKey !== undefined)
     opts.apiKey = auth.apiKey;
-  }
-  if (auth.headers !== undefined) {
+  if (auth.headers !== undefined)
     opts.headers = auth.headers;
-  }
   opts.toolChoice = toolChoiceForApi(String(model.api,),);
 
   const stream = streamSimple(
@@ -163,39 +163,37 @@ function buildUserContent(
 ): string {
   const lines: string[] = [
     `Working directory: ${cwd}`,
-    "",
+    '',
     `Action: ${action}`,
   ];
 
   if (trustDirectives.length > 0) {
     lines.push(
-      "",
-      "User trust directives for this session:",
+      '',
+      'User trust directives for this session:',
     );
-    for (const directive of trustDirectives) {
+    for (const directive of trustDirectives)
       lines.push(`  - ${directive}`,);
-    }
   }
 
-  if (recentContext !== "") {
+  if (recentContext !== '') {
     lines.push(
-      "",
-      "Recent activity:",
+      '',
+      'Recent activity:',
       recentContext,
     );
   }
 
   if (batchContext !== undefined && batchContext.length > 0) {
     lines.push(
-      "",
-      "Other actions in this batch:",
+      '',
+      'Other actions in this batch:',
     );
-    for (const entry of batchContext) {
+    for (const entry of batchContext)
       lines.push(`  - ${entry.action} -> ${entry.verdict}`,);
-    }
   }
 
-  return lines.join("\n",);
+  return lines.join('\n',);
 }
 
 //endregion
@@ -235,20 +233,18 @@ async function collectToolCall(
   stream: AsyncIterable<AssistantMessageEvent>,
 ): Promise<Record<string, string>> {
   let toolCall: ToolCall | undefined = undefined;
-  let textContent = "";
+  let textContent = '';
 
   for await (const event of stream) {
-    if (event.type === "toolcall_end") {
+    if (event.type === 'toolcall_end')
       ({ toolCall, } = event);
-    }
 
-    if (event.type === "text_end") {
+    if (event.type === 'text_end')
       textContent += event.content;
-    }
   }
 
   if (toolCall !== undefined) {
-    if (toolCall.name !== "render_verdict") {
+    if (toolCall.name !== 'render_verdict') {
       throw new Error(
         `Judge called unexpected tool: "${toolCall.name}" instead of "render_verdict"`,
       );
@@ -257,14 +253,14 @@ async function collectToolCall(
     return toolCall.arguments as Record<string, string>;
   }
 
-  if (textContent !== "") {
+  if (textContent !== '') {
     const innerL = tagged({
       tag: collectToolCall.name,
       l,
     },);
     innerL.error(
-      "text-fallback fired (model returned text instead of calling render_verdict tool); "
-      + "this indicates the provider ignored toolChoice",
+      'text-fallback fired (model returned text instead of calling render_verdict tool); '
+        + 'this indicates the provider ignored toolChoice',
     );
     return extractJsonVerdict(textContent,);
   }
@@ -315,10 +311,12 @@ function extractJsonVerdict(
   const block = findBalancedJsonObject(text,);
   if (block === undefined) {
     throw new Error(
-      `Judge returned text without JSON verdict: ${text.slice(
-        0,
-        JUDGE_TEXT_ERROR_LIMIT,
-      )}`,
+      `Judge returned text without JSON verdict: ${
+        text.slice(
+          0,
+          JUDGE_TEXT_ERROR_LIMIT,
+        )
+      }`,
     );
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
@@ -338,8 +336,9 @@ function extractJsonVerdict(
  *   balanced object is found
  */
 function findBalancedJsonObject(text: string,): string | undefined {
-  const start = text.indexOf("{",);
-  if (start === -1) return undefined;
+  const start = text.indexOf('{',);
+  if (start === -1)
+    return undefined;
 
   let depth = 0;
   let inString = false;
@@ -353,16 +352,19 @@ function findBalancedJsonObject(text: string,): string | undefined {
       continue;
     }
     if (inString) {
-      if (ch === "\\") escape = true;
-      else if (ch === "\"") inString = false;
+      if (ch === '\\')
+        escape = true;
+      else if (ch === '"')
+        inString = false;
       continue;
     }
-    if (ch === "\"") {
+    if (ch === '"') {
       inString = true;
       continue;
     }
-    if (ch === "{") depth++;
-    else if (ch === "}") {
+    if (ch === '{')
+      depth++;
+    else if (ch === '}') {
       depth--;
       if (depth === 0) {
         return text.slice(
@@ -395,19 +397,19 @@ function findBalancedJsonObject(text: string,): string | undefined {
 function parseVerdict(
   args: Record<string, string>,
 ): Verdict {
-  const verdict = args.verdict ?? "ask";
-  const reason = args.reason ?? "";
-  const guidance = args.guidance ?? "";
+  const verdict = args.verdict ?? 'ask';
+  const reason = args.reason ?? '';
+  const guidance = args.guidance ?? '';
 
   if (
-    verdict !== "approve"
-    && verdict !== "deny"
-    && verdict !== "ask"
+    verdict !== 'approve'
+    && verdict !== 'deny'
+    && verdict !== 'ask'
   ) {
     return {
-      verdict: "ask",
+      verdict: 'ask',
       reason: `Judge returned unexpected verdict: "${verdict}". ${reason}`,
-      guidance: "",
+      guidance: '',
     };
   }
 
@@ -440,7 +442,9 @@ function disposableTimeout(
     ms,
   );
   return {
-    [Symbol.dispose]() { clearTimeout(id,); },
+    [Symbol.dispose]() {
+      clearTimeout(id,);
+    },
   };
 }
 

@@ -85,7 +85,7 @@ export function attachInput(
     const selection = input.selection.get();
     if (selection !== null)
       return selection;
-    const {length} = input.getMirror();
+    const { length, } = input.getMirror();
     return {
       from: length,
       to: length,
@@ -126,7 +126,7 @@ export function attachInput(
       },);
       return;
     }
-    const {length} = input.getMirror();
+    const { length, } = input.getMirror();
     if (range.from >= length)
       return;
     emit({

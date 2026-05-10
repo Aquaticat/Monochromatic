@@ -252,14 +252,17 @@ describe({
   name: 'ordered operations',
   concurrency: 1,
   children: [
-    () => it({ name: 'step 1', fn: async () => { ... } }),
-    () => it({ name: 'step 2', fn: async () => { ... } }),
+    it({ name: 'step 1', fn: async () => { ... } }),
+    it({ name: 'step 2', fn: async () => { ... } }),
   ],
 })
 ```
 
-When `concurrency: 1`, children should be **thunks** (arrow-wrapped)
-so execution is actually deferred until the previous child settles.
+Children are lazy descriptors and do not run until the parent dispatches
+them, so `concurrency: 1` sequences execution without any wrapping. The
+parent's effective concurrency is inherited by nested describes that
+don't set their own, so a single `concurrency: 1` at the top sequences
+all descendants.
 
 ### Region markers
 

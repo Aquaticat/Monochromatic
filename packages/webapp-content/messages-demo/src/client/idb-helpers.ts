@@ -33,14 +33,14 @@ export function idbRequestResult<T,>(request: IDBRequest<T>,): Promise<T> {
     request.addEventListener(
       'success',
       function onSuccess(): void {
-      resolve(request.result,);
-    },
+        resolve(request.result,);
+      },
     );
     request.addEventListener(
       'error',
       function onError(): void {
-      reject(request.error ?? new Error('IDB request failed',),);
-    },
+        reject(request.error ?? new Error('IDB request failed',),);
+      },
     );
   },);
 }
@@ -67,14 +67,14 @@ export function idbTransactionDone(tx: IDBTransaction,): Promise<void> {
     tx.addEventListener(
       'complete',
       function onComplete(): void {
-      resolve();
-    },
+        resolve();
+      },
     );
     tx.addEventListener(
       'error',
       function onError(): void {
-      reject(tx.error ?? new Error('IDB transaction failed',),);
-    },
+        reject(tx.error ?? new Error('IDB transaction failed',),);
+      },
     );
   },);
 }
@@ -117,20 +117,20 @@ export function idbOpen(
     request.addEventListener(
       'upgradeneeded',
       function onUpgrade(): void {
-      input.onUpgrade(request.result,);
-    },
+        input.onUpgrade(request.result,);
+      },
     );
     request.addEventListener(
       'success',
       function onSuccess(): void {
-      resolve(request.result,);
-    },
+        resolve(request.result,);
+      },
     );
     request.addEventListener(
       'error',
       function onError(): void {
-      reject(request.error ?? new Error('IDB open failed',),);
-    },
+        reject(request.error ?? new Error('IDB open failed',),);
+      },
     );
   },);
 }

@@ -101,7 +101,8 @@ function createFakeServer(): FakeServer {
 
     const u = new URL(url,);
     const path = u.pathname.replace(`/${FAKE_BUCKET}/`, '',);
-    const isList = u.pathname === `/${FAKE_BUCKET}` && u.searchParams.get('list-type',) === '2';
+    const isList = u.pathname === `/${FAKE_BUCKET}`
+      && u.searchParams.get('list-type',) === '2';
 
     if (isList) {
       const prefix = u.searchParams.get('prefix',) ?? '';
@@ -115,10 +116,13 @@ function createFakeServer(): FakeServer {
         ) {
           return a < b ? -1 : 1;
         },);
-      const xmlContents = matched.map(function entry(k,) {
-        return `<Contents><Key>${k}</Key></Contents>`;
-      },).join('',);
-      const xml = `<?xml version="1.0"?><ListBucketResult><IsTruncated>false</IsTruncated>${xmlContents}</ListBucketResult>`;
+      const xmlContents = matched
+        .map(function entry(k,) {
+          return `<Contents><Key>${k}</Key></Contents>`;
+        },)
+        .join('',);
+      const xml =
+        `<?xml version="1.0"?><ListBucketResult><IsTruncated>false</IsTruncated>${xmlContents}</ListBucketResult>`;
       return new Response(xml, {
         status: STATUS_OK,
         headers: { 'content-type': 'application/xml', },
@@ -167,11 +171,11 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'encodeS3Key',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'preserves slashes and encodes special characters',
           async fn() {
             await Promise.resolve();
@@ -182,11 +186,11 @@ await describe({
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'createS3Storage',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'put + get round-trip',
           async fn() {
             const fake = createFakeServer();
@@ -205,7 +209,7 @@ await describe({
             expect(new TextDecoder().decode(fetched,),).toBe('hello',);
           },
         },),
-        () => it({
+        it({
           name: 'get returns undefined for unknown key',
           async fn() {
             const fake = createFakeServer();
@@ -218,7 +222,7 @@ await describe({
             expect(fetched,).toBe(undefined,);
           },
         },),
-        () => it({
+        it({
           name: 'putBatch issues parallel PUTs',
           async fn() {
             const fake = createFakeServer();
@@ -250,7 +254,7 @@ await describe({
             expect(new TextDecoder().decode(c,),).toBe('C',);
           },
         },),
-        () => it({
+        it({
           name: 'delete is idempotent for unknown key',
           async fn() {
             const fake = createFakeServer();
@@ -264,7 +268,7 @@ await describe({
             expect(value,).toBe(undefined,);
           },
         },),
-        () => it({
+        it({
           name: 'list returns sorted keys with prefix filter',
           async fn() {
             const fake = createFakeServer();
@@ -302,7 +306,7 @@ await describe({
             ],);
           },
         },),
-        () => it({
+        it({
           name: 'put encodes special characters in the key path',
           async fn() {
             const fake = createFakeServer();

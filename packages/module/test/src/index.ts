@@ -5,6 +5,8 @@ export type {
   DescribeResult,
 } from './describe.ts';
 
+export type { TestDescriptor, } from './descriptor.ts';
+
 export { it, } from './it.ts';
 export type {
   ItOptions,

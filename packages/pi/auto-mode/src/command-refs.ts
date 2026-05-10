@@ -35,25 +35,23 @@ function extractParamRefs(
 
   // Match ${VAR} references
   const bracedPattern = /\$\{([A-Za-z_][A-Za-z0-9_]*)\}/g;
-  let bracedMatch: RegExpExecArray | null = bracedPattern.exec(cmd);
+  let bracedMatch: RegExpExecArray | null = bracedPattern.exec(cmd,);
   while (bracedMatch !== null) {
-    if (bracedMatch[1] !== undefined) {
-      refs.push(bracedMatch[1]);
-    }
-    bracedMatch = bracedPattern.exec(cmd);
+    if (bracedMatch[1] !== undefined)
+      refs.push(bracedMatch[1],);
+    bracedMatch = bracedPattern.exec(cmd,);
   }
 
   // Match $VAR references (not preceded by $ and not followed by { or ()
   const simplePattern = /(?<!\$)\$([A-Za-z_][A-Za-z0-9_]*)(?![{(])/g;
-  let simpleMatch: RegExpExecArray | null = simplePattern.exec(cmd);
+  let simpleMatch: RegExpExecArray | null = simplePattern.exec(cmd,);
   while (simpleMatch !== null) {
-    if (simpleMatch[1] !== undefined) {
-      refs.push(simpleMatch[1]);
-    }
-    simpleMatch = simplePattern.exec(cmd);
+    if (simpleMatch[1] !== undefined)
+      refs.push(simpleMatch[1],);
+    simpleMatch = simplePattern.exec(cmd,);
   }
 
-  return [...new Set(refs)];
+  return [...new Set(refs,),];
 }
 
 //endregion
@@ -80,12 +78,12 @@ function looksLikePath(
   s: string,
 ): boolean {
   return (
-    s.startsWith("/") ||
-    s.startsWith("./") ||
-    s.startsWith("../") ||
-    s.startsWith("~") ||
-    s.includes("/") ||
-    s.startsWith(".")
+    s.startsWith('/',)
+    || s.startsWith('./',)
+    || s.startsWith('../',)
+    || s.startsWith('~',)
+    || s.includes('/',)
+    || s.startsWith('.',)
   );
 }
 

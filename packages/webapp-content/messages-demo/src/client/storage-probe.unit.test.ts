@@ -69,109 +69,103 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () =>
-      describe({
-        name: probeStorage.name,
-        concurrency: 1,
-        children: [
-          () =>
-            it({
-              name: 'returns all-false in a Bun env without browser storage globals',
-              fn: async () => {
-                const caps = await probeStorage();
-                expect(caps.idb,).toBe(false,);
-                expect(caps.opfs,).toBe(false,);
-                expect(caps.localStorage,).toBe(false,);
-              },
-            },),
+    describe({
+      name: probeStorage.name,
+      concurrency: 1,
+      children: [
+        it({
+          name: 'returns all-false in a Bun env without browser storage globals',
+          fn: async () => {
+            const caps = await probeStorage();
+            expect(caps.idb,).toBe(false,);
+            expect(caps.opfs,).toBe(false,);
+            expect(caps.localStorage,).toBe(false,);
+          },
+        },),
 
-          () =>
-            it({
-              name: 'returns localStorage=true when a working stub is installed',
-              fn: async () => {
-                const store = new Map<string, string>();
-                using _ = stubLocalStorage({
-                  setItem(
-                    key,
-                    value,
-                  ) {
-                    store.set(
-                      key,
-                      value,
-                    );
-                  },
-                  getItem(key,) {
-                    return store.get(key,) ?? null;
-                  },
-                  removeItem(key,) {
-                    store.delete(key,);
-                  },
-                },);
-                const caps = await probeStorage();
-                expect(caps.localStorage,).toBe(true,);
+        it({
+          name: 'returns localStorage=true when a working stub is installed',
+          fn: async () => {
+            const store = new Map<string, string>();
+            using _ = stubLocalStorage({
+              setItem(
+                key,
+                value,
+              ) {
+                store.set(
+                  key,
+                  value,
+                );
               },
-            },),
+              getItem(key,) {
+                return store.get(key,) ?? null;
+              },
+              removeItem(key,) {
+                store.delete(key,);
+              },
+            },);
+            const caps = await probeStorage();
+            expect(caps.localStorage,).toBe(true,);
+          },
+        },),
 
-          () =>
-            it({
-              name: 'returns localStorage=false when setItem throws (private mode)',
-              fn: async () => {
-                using _ = stubLocalStorage({
-                  setItem() {
-                    throw new Error('quota exceeded',);
-                  },
-                  getItem() {
-                    return null;
-                  },
-                  removeItem() {},
-                },);
-                const caps = await probeStorage();
-                expect(caps.localStorage,).toBe(false,);
+        it({
+          name: 'returns localStorage=false when setItem throws (private mode)',
+          fn: async () => {
+            using _ = stubLocalStorage({
+              setItem() {
+                throw new Error('quota exceeded',);
               },
-            },),
+              getItem() {
+                return null;
+              },
+              removeItem() {},
+            },);
+            const caps = await probeStorage();
+            expect(caps.localStorage,).toBe(false,);
+          },
+        },),
 
-          () =>
-            it({
-              name: 'returns localStorage=false when getItem returns the wrong value',
-              fn: async () => {
-                using _ = stubLocalStorage({
-                  setItem() {},
-                  getItem() {
-                    return 'wrong';
-                  },
-                  removeItem() {},
-                },);
-                const caps = await probeStorage();
-                expect(caps.localStorage,).toBe(false,);
+        it({
+          name: 'returns localStorage=false when getItem returns the wrong value',
+          fn: async () => {
+            using _ = stubLocalStorage({
+              setItem() {},
+              getItem() {
+                return 'wrong';
               },
-            },),
+              removeItem() {},
+            },);
+            const caps = await probeStorage();
+            expect(caps.localStorage,).toBe(false,);
+          },
+        },),
 
-          () =>
-            it({
-              name: 'never throws even when storage globals throw',
-              fn: async () => {
-                using _ = stubLocalStorage({
-                  setItem(): never {
-                    throw new Error('boom',);
-                  },
-                  getItem(): never {
-                    throw new Error('boom',);
-                  },
-                  removeItem(): never {
-                    throw new Error('boom',);
-                  },
-                },);
-                let caught: unknown = null;
-                try {
-                  await probeStorage();
-                }
-                catch (error) {
-                  caught = error;
-                }
-                expect(caught,).toBeNull();
+        it({
+          name: 'never throws even when storage globals throw',
+          fn: async () => {
+            using _ = stubLocalStorage({
+              setItem(): never {
+                throw new Error('boom',);
               },
-            },),
-        ],
-      },),
+              getItem(): never {
+                throw new Error('boom',);
+              },
+              removeItem(): never {
+                throw new Error('boom',);
+              },
+            },);
+            let caught: unknown = null;
+            try {
+              await probeStorage();
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(caught,).toBeNull();
+          },
+        },),
+      ],
+    },),
   ],
 },);

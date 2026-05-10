@@ -58,7 +58,10 @@ function shouldStripLine(line: string,): boolean {
 function collapseRepeatedChars(line: string,): string {
   return line.replaceAll(
     /([^\w\s])\1{9,}/g,
-    function collapseRun(match, char: string,) {
+    function collapseRun(
+      match,
+      char: string,
+    ) {
       return `${char.repeat(MAX_REPEATED_CHARS,)} (x${match.length})`;
     },
   );
@@ -147,7 +150,12 @@ function collapseHomePaths(line: string,): string {
 function truncateLine(line: string,): string {
   if (line.length <= MAX_LINE_LENGTH)
     return line;
-  return `${line.slice(0, MAX_LINE_LENGTH,)}... [${line.length} chars]`;
+  return `${
+    line.slice(
+      0,
+      MAX_LINE_LENGTH,
+    )
+  }... [${line.length} chars]`;
 }
 
 //endregion
@@ -159,11 +167,21 @@ function truncateLine(line: string,): string {
  * {@link DEDUP_THRESHOLD}+ identical lines to `line (xN)`.
  *
  * @param result - accumulator array to push onto
+ *
  * @param line - repeated line content
+ *
  * @param count - how many consecutive times `line` appeared
  */
 function flushRepeated(
-  { result, line, count, }: { result: string[]; line: string; count: number; },
+  {
+    result,
+    line,
+    count,
+  }: {
+    result: string[];
+    line: string;
+    count: number;
+  },
 ): void {
   if (count === 0)
     return;

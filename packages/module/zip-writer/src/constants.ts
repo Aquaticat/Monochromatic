@@ -88,7 +88,8 @@ const EXTERNAL_ATTRS_MODE_SHIFT = 16;
  * Default Unix file mode shifted into the upper 16 bits of the external
  * file attributes field. APPNOTE 4.4.15.
  */
-export const UNIX_FILE_MODE_DEFAULT: number = DEFAULT_FILE_MODE << EXTERNAL_ATTRS_MODE_SHIFT;
+export const UNIX_FILE_MODE_DEFAULT: number = DEFAULT_FILE_MODE
+  << EXTERNAL_ATTRS_MODE_SHIFT;
 
 // endregion
 

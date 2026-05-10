@@ -13,8 +13,8 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import {
-  renderPrDetail,
   type PrDetailData,
+  renderPrDetail,
 } from './pr-detail.ts';
 
 const baseData: PrDetailData = {
@@ -38,11 +38,11 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'renderPrDetail',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'emits state, mergeable, and PR number on the root element',
           async fn() {
             await Promise.resolve();
@@ -52,7 +52,7 @@ await describe({
             expect(html.includes('data-pr-number="42"',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'renders base + head refs and head SHA',
           async fn() {
             await Promise.resolve();
@@ -62,7 +62,7 @@ await describe({
             expect(html.includes('abcdef0123456789',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'escapes XSS payloads in title, body, and refs',
           async fn() {
             await Promise.resolve();
@@ -78,7 +78,7 @@ await describe({
             expect(html.includes('&lt;script&gt;',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'shows review-summary counts',
           async fn() {
             await Promise.resolve();

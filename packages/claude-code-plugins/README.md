@@ -51,7 +51,9 @@ import {
   guardrailParser,
   guardrailWriter,
 } from '@monochromatic-dev/claude-code-plugins-source/handlers/guardrail';
-import { runHookPlugin, } from '@monochromatic-dev/claude-code-plugins-source/runtime';
+import {
+  runHookPlugin,
+} from '@monochromatic-dev/claude-code-plugins-source/runtime';
 
 await runHookPlugin({
   parser: guardrailParser,

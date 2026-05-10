@@ -54,10 +54,11 @@ function summarize(data: MergeStatusData,): string {
     return 'Merge conflicts must be resolved before merging.';
   if (data.changesRequestedCount > 0)
     return 'Changes have been requested; address them before merging.';
-  if (data.approvedCount < data.requiredApprovals)
+  if (data.approvedCount < data.requiredApprovals) {
     return `Needs ${
       String(data.requiredApprovals - data.approvedCount,)
     } more approval(s) before merging.`;
+  }
   if (data.mergeable === 'clean')
     return 'Ready to merge.';
   return 'Mergeability is being computed.';

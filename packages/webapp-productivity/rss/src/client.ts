@@ -115,13 +115,15 @@ elements.forEach(function bindScrollIgnore(element,) {
             metadata.querySelector<HTMLAnchorElement>('.feed__link',),
           );
 
-          const body: Record<string, string> = v.safeParse(
-            v.pipe(
-              v.string(),
-              v.url(),
-            ),
-            anchor.href,
-          ).success
+          const body: Record<string, string> = v
+              .safeParse(
+                v.pipe(
+                  v.string(),
+                  v.url(),
+                ),
+                anchor.href,
+              )
+              .success
             ? { link: anchor.href, }
             : { metadataOuterHtml: metadata.outerHTML, };
 

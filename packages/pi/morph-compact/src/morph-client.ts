@@ -215,8 +215,8 @@ export class MorphApiError extends Error {
   }: {
     status: number;
     body: string;
-  }) {
-    super(`Morph compact API error ${status}: ${body}`);
+  },) {
+    super(`Morph compact API error ${status}: ${body}`,);
     this.name = 'MorphApiError';
     this.status = status;
     this.body = body;
@@ -234,7 +234,7 @@ export class MorphApiError extends Error {
 export class MorphInvalidInputError extends Error {
   /** Build error with fixed user-facing message. */
   constructor() {
-    super("Either 'input' or 'messages' must be provided");
+    super("Either 'input' or 'messages' must be provided",);
     this.name = 'MorphInvalidInputError';
   }
 }
@@ -261,12 +261,14 @@ function resolveApiKey({
   explicit,
 }: {
   explicit?: string | undefined;
-}): string {
-  if (explicit !== undefined && explicit !== '') return explicit;
+},): string {
+  if (explicit !== undefined && explicit !== '')
+    return explicit;
   const envKey = typeof process !== 'undefined'
     ? process.env['MORPH_API_KEY']
     : undefined;
-  if (envKey !== undefined && envKey !== '') return envKey;
+  if (envKey !== undefined && envKey !== '')
+    return envKey;
   throw new MorphApiKeyMissingError();
 }
 
@@ -284,7 +286,7 @@ function resolveApiKey({
  * const body = buildRequestBody({ input: 'text', query: 'q' });
  * ```
  */
-function buildRequestBody(input: CompactInput): Record<string, unknown> {
+function buildRequestBody(input: CompactInput,): Record<string, unknown> {
   const body: Record<string, unknown> = {
     compression_ratio: input.compressionRatio ?? DEFAULT_COMPRESSION_RATIO,
     preserve_recent: input.preserveRecent ?? DEFAULT_PRESERVE_RECENT,
@@ -292,7 +294,8 @@ function buildRequestBody(input: CompactInput): Record<string, unknown> {
     include_line_ranges: input.includeLineRanges ?? true,
     include_markers: input.includeMarkers ?? true,
   };
-  if (input.query !== undefined) body['query'] = input.query;
+  if (input.query !== undefined)
+    body['query'] = input.query;
   if (input.messages !== undefined) {
     body['messages'] = input.messages;
     return body;
@@ -301,7 +304,7 @@ function buildRequestBody(input: CompactInput): Record<string, unknown> {
     body['input'] = input.input;
     return body;
   }
-  if (Array.isArray(input.input)) {
+  if (Array.isArray(input.input,)) {
     body['messages'] = input.input;
     return body;
   }
@@ -329,13 +332,14 @@ function buildSignal({
 }: {
   caller?: AbortSignal | undefined;
   timeoutMs: number;
-}): AbortSignal {
-  const timeout = AbortSignal.timeout(timeoutMs);
-  if (caller === undefined) return timeout;
+},): AbortSignal {
+  const timeout = AbortSignal.timeout(timeoutMs,);
+  if (caller === undefined)
+    return timeout;
   return AbortSignal.any([
     caller,
     timeout,
-  ]);
+  ],);
 }
 
 //endregion
@@ -382,7 +386,7 @@ export class MorphCompactClient {
    * const client = new MorphCompactClient({ morphApiKey: 'sk-...' });
    * ```
    */
-  constructor(config: CompactConfig = {}) {
+  constructor(config: CompactConfig = {},) {
     this.#config = {
       morphApiKey: config.morphApiKey,
       morphApiUrl: config.morphApiUrl ?? DEFAULT_API_URL,
@@ -408,14 +412,14 @@ export class MorphCompactClient {
    * const result = await client.compact({ input: 'long text', query: 'auth' });
    * ```
    */
-  async compact(input: CompactInput): Promise<CompactResult> {
-    const apiKey = resolveApiKey({ explicit: this.#config.morphApiKey });
+  async compact(input: CompactInput,): Promise<CompactResult> {
+    const apiKey = resolveApiKey({ explicit: this.#config.morphApiKey, },);
     const url = `${this.#config.morphApiUrl}/v1/compact`;
-    const body = buildRequestBody(input);
+    const body = buildRequestBody(input,);
     const signal = buildSignal({
       caller: input.signal,
       timeoutMs: this.#config.timeout,
-    });
+    },);
     const response = await fetch(
       url,
       {

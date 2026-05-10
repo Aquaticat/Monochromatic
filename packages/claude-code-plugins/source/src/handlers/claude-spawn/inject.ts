@@ -96,14 +96,23 @@ function checkCompletedChildren(
     if (!filename.endsWith('.json',))
       continue;
 
-    const filePath = join(SPAWNS_DIR, filename,);
+    const filePath = join(
+      SPAWNS_DIR,
+      filename,
+    );
     const reportedPath = join(
       SPAWNS_DIR,
-      filename.replace(/\.json$/, '.reported',),
+      filename.replace(
+        /\.json$/,
+        '.reported',
+      ),
     );
 
     try {
-      const raw = readFileSync(filePath, 'utf8',);
+      const raw = readFileSync(
+        filePath,
+        'utf8',
+      );
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own hooks */
       const state = JSON.parse(raw,) as SpawnState;
 
@@ -115,7 +124,10 @@ function checkCompletedChildren(
 
       if (consume) {
         try {
-          renameSync(filePath, reportedPath,);
+          renameSync(
+            filePath,
+            reportedPath,
+          );
         }
         catch {
           /** Another hook invocation already renamed this file. */

@@ -18,11 +18,11 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'renderMergeStatus',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'reports conflicts when mergeable === conflicts',
           async fn() {
             await Promise.resolve();
@@ -37,7 +37,7 @@ await describe({
             expect(html.includes('data-mergeable="conflicts"',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'reports changes-requested when blocking reviews exist',
           async fn() {
             await Promise.resolve();
@@ -51,7 +51,7 @@ await describe({
             expect(html.includes('Changes have been requested',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'reports approval shortfall',
           async fn() {
             await Promise.resolve();
@@ -65,7 +65,7 @@ await describe({
             expect(html.includes('Needs 2 more approval',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'reports ready-to-merge when state is clean and approvals met',
           async fn() {
             await Promise.resolve();
@@ -79,7 +79,7 @@ await describe({
             expect(html.includes('Ready to merge.',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'reports computing-mergeability when state is unknown and no blockers',
           async fn() {
             await Promise.resolve();

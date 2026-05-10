@@ -12,7 +12,7 @@ and their ASCII substitutes (`-`, `--`) when used as em-dashes in prose.
 Feasibility confirmed for both unicode characters and the ASCII `--` shape.
 Open work: exclusion-list expansion using the literal-space workaround
 for `\b` inside complement bodies (see revised "Resharp HIR limits" below),
-self-match handling for the unicode case, single-dash (` - `) handling.
+self-match handling for the unicode case, single-dash (`-`) handling.
 
 ## What works
 
@@ -49,7 +49,7 @@ routed to the rust `regex` crate (no set-algebra operators present).
 Consuming the boundary letters in the match span is fine
 since the goal is detection, not precise span isolation.
 
-Rule 2 catches ` -- ` between alphabetic words
+Rule 2 catches `--` between alphabetic words
 on lines that do not contain `npm` or `git`.
 The `&` and `~()` operators route this rule through resharp
 (`packages/dev-script/forbidden-strings/src/rules/engine.rs:204` `requires_resharp`),
@@ -62,7 +62,7 @@ resharp-only feature is a lookaround compile cleanly without needing
 ### Self-match safety for ASCII
 
 The regex rule sources (`[a-z]--[a-z]` etc.)
-do not contain ` -- ` or `--` between literal letters;
+do not contain `--` or `--` between literal letters;
 the bracket characters break the pattern.
 Confirmed: scanning these rules against themselves produces no hits.
 This is an advantage over literal form for the ASCII case.
@@ -121,7 +121,7 @@ The two patterns that earlier failed:
 both compile cleanly once `\b` is removed from the complement bodies.
 The 35-alternative count and the 7-chain count were unrelated to the failures.
 
-Workaround for token-boundary matching: replace `\bnpm\b` with ` npm `
+Workaround for token-boundary matching: replace `\bnpm\b` with `npm`
 (literal whitespace) inside complement bodies.
 Verified: `~(.*(\bnpm\b|\bgit\b).*)` fails;
 `~(.* (npm|git) .*)` succeeds.
@@ -142,7 +142,7 @@ Anchors (`^...$`) force the match to span an entire line.
 
 ### Code-block awareness
 
-Regex cannot track ` ``` ` fence state across lines without backreferences
+Regex cannot track `` ``` `` fence state across lines without backreferences
 (resharp does not support backreferences either).
 Em-dashes inside fenced code blocks are flagged
 unless the line happens to contain a command name in the exclusion list.
@@ -217,9 +217,9 @@ Categories of false positive observed in the empirical scan:
 - toolchain commands (`mise`, `bun`, `pnpm`, `yarn`, `cargo`, `deno`, `node`, `hk`, `gh`, `jq`)
 - shell builtins (`cp`, `mv`, `rm`, `cat`, `echo`, `exec`, `find`, `ls`, `cd`)
 
-### Single-dash case (` - ` em-dash)
+### Single-dash case (`-` em-dash)
 
-The audit reports 625 occurrences of ` - ` used as em-dash.
+The audit reports 625 occurrences of `-` used as em-dash.
 Higher false-positive rate due to subtraction (`a - b`),
 negative numbers (`-5`),
 date ranges (`2024 - 2026`).

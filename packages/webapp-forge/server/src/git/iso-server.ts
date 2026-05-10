@@ -14,8 +14,8 @@
  * `WEBAPP_FORGE_GITDIR_ROOT` are the source of truth.
  */
 
-import { readFile, } from 'node:fs/promises';
 import nodeFs from 'node:fs';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- the package re-exports ESM as a wildcard namespace
@@ -23,18 +23,18 @@ import { join, } from 'node:path';
 import * as git from 'isomorphic-git';
 
 import {
+  applyRefUpdate,
+  ensureRepoExists,
+  indexPackData,
+} from './iso-server-refs.ts';
+import { collectReachable, } from './iso-server-walk.ts';
+import {
   parseReceivePackBody,
   parseUploadPackBody,
   type RefUpdateTriplet,
   writeReceivePackResponse,
   writeUploadPackResponse,
 } from './pack-protocol.ts';
-import { collectReachable, } from './iso-server-walk.ts';
-import {
-  applyRefUpdate,
-  ensureRepoExists,
-  indexPackData,
-} from './iso-server-refs.ts';
 
 export { buildInfoRefsAdvertisement, } from './iso-server-advertisement.ts';
 export { ensureRepoExists, } from './iso-server-refs.ts';
@@ -72,7 +72,9 @@ export type ReceivePackOutcome = {
  * const body = await handleUploadPack({ owner, repo, body: requestBody });
  * ```
  */
-export async function handleUploadPack(row: RepoArgs & { body: Uint8Array, },): Promise<Uint8Array> {
+export async function handleUploadPack(
+  row: RepoArgs & { body: Uint8Array; },
+): Promise<Uint8Array> {
   const gitdir = await ensureRepoExists(row,);
   const request = parseUploadPackBody(row.body,);
   const useSideBand64k = request.capabilities.includes('side-band-64k',);
@@ -114,7 +116,9 @@ export async function handleUploadPack(row: RepoArgs & { body: Uint8Array, },): 
  * const { body, applied } = await handleReceivePack({ owner, repo, body: requestBody });
  * ```
  */
-export async function handleReceivePack(row: RepoArgs & { body: Uint8Array, },): Promise<ReceivePackOutcome> {
+export async function handleReceivePack(
+  row: RepoArgs & { body: Uint8Array; },
+): Promise<ReceivePackOutcome> {
   const gitdir = await ensureRepoExists(row,);
   const request = parseReceivePackBody(row.body,);
   const useSideBand64k = request.capabilities.includes('side-band-64k',);
@@ -138,7 +142,8 @@ export async function handleReceivePack(row: RepoArgs & { body: Uint8Array, },):
         gitdir,
         packBytes: request.packfile,
       },);
-    } catch (err: unknown) {
+    }
+    catch (err: unknown) {
       unpackOk = false;
       unpackError = err instanceof Error ? err.message : 'index failed';
     }
@@ -169,7 +174,8 @@ export async function handleReceivePack(row: RepoArgs & { body: Uint8Array, },):
       if (result.ok)
         applied.push(triplet,);
     }
-  } else {
+  }
+  else {
     for (const triplet of request.triplets) {
       refResults.push({
         refName: triplet.refName,
@@ -211,7 +217,9 @@ export async function handleReceivePack(row: RepoArgs & { body: Uint8Array, },):
  * const sha = await getRef({ owner, repo, ref: 'refs/heads/main' });
  * ```
  */
-export async function getRef(row: RepoArgs & { ref: string, },): Promise<string | undefined> {
+export async function getRef(
+  row: RepoArgs & { ref: string; },
+): Promise<string | undefined> {
   const gitdir = await ensureRepoExists(row,);
   try {
     return await git.resolveRef({
@@ -219,7 +227,8 @@ export async function getRef(row: RepoArgs & { ref: string, },): Promise<string 
       gitdir,
       ref: row.ref,
     },);
-  } catch {
+  }
+  catch {
     return undefined;
   }
 }
@@ -236,7 +245,9 @@ export async function getRef(row: RepoArgs & { ref: string, },): Promise<string 
  * const heads = await listRefs({ owner, repo, filepath: 'refs/heads' });
  * ```
  */
-export async function listRefs(row: RepoArgs & { filepath: string, },): Promise<readonly string[]> {
+export async function listRefs(
+  row: RepoArgs & { filepath: string; },
+): Promise<readonly string[]> {
   const gitdir = await ensureRepoExists(row,);
   return git.listRefs({
     fs: nodeFs,
@@ -258,7 +269,9 @@ export async function listRefs(row: RepoArgs & { filepath: string, },): Promise<
  * const bytes = await readLooseObjectBytes({ owner, repo, oid });
  * ```
  */
-export async function readLooseObjectBytes(row: RepoArgs & { oid: string, },): Promise<Uint8Array> {
+export async function readLooseObjectBytes(
+  row: RepoArgs & { oid: string; },
+): Promise<Uint8Array> {
   const gitdir = await ensureRepoExists(row,);
   const path = join(
     gitdir,

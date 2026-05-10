@@ -14,9 +14,9 @@
  * @module
  */
 
-import * as nodePath from "node:path";
-import type { SignalContext, } from "./types.ts";
-import { SECRET_PATH_PATTERN, } from "./constants.ts";
+import * as nodePath from 'node:path';
+import { SECRET_PATH_PATTERN, } from './constants.ts';
+import type { SignalContext, } from './types.ts';
 
 /**
  * Check if a file path should trigger flagging.
@@ -49,15 +49,20 @@ function pathSignals(
 
   if (!isUnder(
     resolved,
-    ctx.cwd
-  )) return true;
+    ctx.cwd,
+  )) {
+    return true;
+  }
 
   if (isHomeDotfile(
     resolved,
-    ctx.home
-  )) return true;
+    ctx.home,
+  )) {
+    return true;
+  }
 
-  if (SECRET_PATH_PATTERN.test(filePath)) return true;
+  if (SECRET_PATH_PATTERN.test(filePath,))
+    return true;
 
   return false;
 }
@@ -80,12 +85,12 @@ function resolvePath(
   filePath: string,
   cwd: string,
 ): string {
-  if (filePath.startsWith("~")) {
+  if (filePath.startsWith('~',)) {
     return nodePath.resolve(
-      process.env.HOME ?? "/home",
-      filePath.slice(1).replace(
+      process.env.HOME ?? '/home',
+      filePath.slice(1,).replace(
         /^\//,
-        "",
+        '',
       ),
     );
   }
@@ -114,8 +119,8 @@ function isUnder(
   resolved: string,
   dir: string,
 ): boolean {
-  const norm = dir.endsWith("/") ? dir : `${dir}/`;
-  return resolved === dir || resolved.startsWith(norm);
+  const norm = dir.endsWith('/',) ? dir : `${dir}/`;
+  return resolved === dir || resolved.startsWith(norm,);
 }
 
 /**
@@ -139,14 +144,16 @@ function isHomeDotfile(
 ): boolean {
   if (!isUnder(
     resolved,
-    home
-  )) return false;
-  const relative = resolved.slice(home.length).replace(
+    home,
+  )) {
+    return false;
+  }
+  const relative = resolved.slice(home.length,).replace(
     /^\//,
-    "",
+    '',
   );
-  const [first = ""] = relative.split("/");
-  return first.startsWith(".");
+  const [first = '',] = relative.split('/',);
+  return first.startsWith('.',);
 }
 
 export {

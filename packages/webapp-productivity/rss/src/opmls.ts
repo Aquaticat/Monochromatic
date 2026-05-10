@@ -39,8 +39,10 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
       v.check(
         function isFileUrl(s,) {
           const u = new URL(s,);
-          if (!u.protocol.includes('file',)) return false;
-          if (DOT_ENV_PATH !== undefined) return s.length > 0;
+          if (!u.protocol.includes('file',))
+            return false;
+          if (DOT_ENV_PATH !== undefined)
+            return s.length > 0;
           return /^file:\/{3}/.test(s,);
         },
         'Invalid file URL',

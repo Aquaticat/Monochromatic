@@ -17,17 +17,17 @@ import type {
   SessionEntry,
   SessionMessageEntry,
 } from '@earendil-works/pi-coding-agent';
-import {
-  convertToLlm,
-  serializeConversation,
-} from './pi-utils.ts';
-import { MorphCompactClient, } from './morph-client.ts';
 import { chooseCompressionRatio, } from './compaction.ts';
 import {
   buildMorphInput,
   extractLatestQuery,
   wrapMorphOutput,
 } from './formatting.ts';
+import { MorphCompactClient, } from './morph-client.ts';
+import {
+  convertToLlm,
+  serializeConversation,
+} from './pi-utils.ts';
 
 //region Types
 

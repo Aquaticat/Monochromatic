@@ -15,6 +15,10 @@ import {
 } from '@monochromatic-dev/webapp-forge-server/ts/data/queries';
 
 import {
+  synthesizeBody,
+  synthesizeTitle,
+} from './content.ts';
+import {
   sampleCommentCount,
   sampleIssueCount,
 } from './distributions.ts';
@@ -22,10 +26,6 @@ import {
   rngInt,
   rngPick,
 } from './rng.ts';
-import {
-  synthesizeBody,
-  synthesizeTitle,
-} from './content.ts';
 
 /** A single entry in the default label palette. */
 type DefaultLabel = {
@@ -376,4 +376,3 @@ export async function seedIssuesForRepo(row: {
     issueIds,
   };
 }
-

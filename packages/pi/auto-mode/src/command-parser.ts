@@ -8,17 +8,17 @@
  */
 
 import {
-  type ParseEntry,
   parse,
-} from "shell-quote";
-import type {
-  BashAnalysis,
-  CommandInfo,
-} from "./types.ts";
+  type ParseEntry,
+} from 'shell-quote';
 import {
   extractParamRefs,
   looksLikePath,
-} from "./command-refs.ts";
+} from './command-refs.ts';
+import type {
+  BashAnalysis,
+  CommandInfo,
+} from './types.ts';
 
 //region Public API
 
@@ -49,11 +49,11 @@ function analyzeBashCommand(
     allParamRefs: [],
   };
 
-  const preScanRefs = extractParamRefs(cmd);
+  const preScanRefs = extractParamRefs(cmd,);
 
   let entries: ParseEntry[] = [];
   try {
-    entries = parse(cmd);
+    entries = parse(cmd,);
   }
   catch {
     return {
@@ -69,31 +69,32 @@ function analyzeBashCommand(
   let nextIsRedirectTarget = false;
 
   for (const entry of entries) {
-    if (typeof entry === "string") {
+    if (typeof entry === 'string') {
       if (nextIsRedirectTarget) {
-        currentRedirectTargets.push(entry);
+        currentRedirectTargets.push(entry,);
         nextIsRedirectTarget = false;
         continue;
       }
-      currentArgs.push(entry);
+      currentArgs.push(entry,);
       continue;
     }
 
-    if (!("op" in entry)) continue;
-    const {op} = entry;
+    if (!('op' in entry))
+      continue;
+    const { op, } = entry;
 
     if (
-      op === ">" ||
-      op === ">>" ||
-      op === "<" ||
-      op === ">&" ||
-      op === "|&"
+      op === '>'
+      || op === '>>'
+      || op === '<'
+      || op === '>&'
+      || op === '|&'
     ) {
       nextIsRedirectTarget = true;
       continue;
     }
 
-    if (op === "|") {
+    if (op === '|') {
       isPipeline = true;
       flushCurrentCommand(
         commands,
@@ -107,7 +108,7 @@ function analyzeBashCommand(
       continue;
     }
 
-    if (op === "&&" || op === "||" || op === ";" || op === "&") {
+    if (op === '&&' || op === '||' || op === ';' || op === '&') {
       flushCurrentCommand(
         commands,
         currentArgs,
@@ -120,7 +121,7 @@ function analyzeBashCommand(
       continue;
     }
 
-    if (op === "<(") {
+    if (op === '<(') {
       /* Process substitution: shell-quote emits the inner command as
          a separate `<(...)` op token. We intentionally skip pushing
          it to `currentRedirectTargets` because that field is for file
@@ -132,8 +133,8 @@ function analyzeBashCommand(
       continue;
     }
 
-    if (op === "(" || op === ")" || op === ";;") {
-      if (op === ";;") {
+    if (op === '(' || op === ')' || op === ';;') {
+      if (op === ';;') {
         flushCurrentCommand(
           commands,
           currentArgs,
@@ -156,22 +157,23 @@ function analyzeBashCommand(
   );
 
   const allFiles = commands.flatMap(
-    function collectFiles(c) {
+    function collectFiles(c,) {
       return [
-        ...c.args.filter(looksLikePath),
-        ...c.redirectTargets
+        ...c.args.filter(looksLikePath,),
+        ...c.redirectTargets,
       ];
     },
   );
   const allParamRefs = [...new Set(
     commands.flatMap(
-      function collectRefs(c) { return c.paramRefs; },
+      function collectRefs(c,) {
+        return c.paramRefs;
+      },
     ),
-  )];
+  ),];
 
-  if (allParamRefs.length === 0 && preScanRefs.length > 0) {
-    allParamRefs.push(...preScanRefs);
-  }
+  if (allParamRefs.length === 0 && preScanRefs.length > 0)
+    allParamRefs.push(...preScanRefs,);
 
   return {
     parsed: true,
@@ -203,16 +205,17 @@ function flushCurrentCommand(
   redirectTargets: string[],
   paramRefs: string[],
 ): void {
-  if (args.length === 0 && redirectTargets.length === 0) return;
+  if (args.length === 0 && redirectTargets.length === 0)
+    return;
 
-  const [name = "", ...cmdArgs] = args;
+  const [name = '', ...cmdArgs] = args;
 
   commands.push({
     name,
     args: cmdArgs,
     redirectTargets,
-    paramRefs: [...paramRefs],
-  });
+    paramRefs: [...paramRefs,],
+  },);
 }
 
 //endregion

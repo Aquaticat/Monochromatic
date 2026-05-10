@@ -217,13 +217,12 @@ export function parseUploadPackBody(body: Uint8Array,): UploadPackRequest {
     }
     if (value === undefined || value === '')
       continue;
-    if (key === 'want') {
+    if (key === 'want')
       wants.push(value,);
-    } else if (key === 'have') {
+    else if (key === 'have')
       haves.push(value,);
-    } else if (key === 'shallow') {
+    else if (key === 'shallow')
       shallows.push(value,);
-    }
   }
   return {
     capabilities,

@@ -89,8 +89,7 @@ const ALT_CWD_PREFIX: string = (function resolveAltCwdPrefix(): string {
  * Patterns matching git commit per-file mode lines. These repeat once per file
  * and carry no information the model needs.
  */
-const GIT_FILE_MODE_PATTERN: RegExp =
-  /^ (create|delete|copy|rename|mode change) mode /;
+const GIT_FILE_MODE_PATTERN: RegExp = /^ (create|delete|copy|rename|mode change) mode /;
 
 /**
  * Patterns matching git transport progress lines from push/pull/fetch/clone.

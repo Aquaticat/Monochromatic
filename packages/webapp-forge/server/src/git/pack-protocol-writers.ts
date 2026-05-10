@@ -193,11 +193,10 @@ export function writeReceivePackResponse(row: {
       : encodePkt(`unpack ${row.unpackError ?? 'failed'}\n`,),
   ];
   for (const result of row.refResults) {
-    if (result.ok) {
+    if (result.ok)
       report.push(encodePkt(`ok ${result.refName}\n`,),);
-    } else {
+    else
       report.push(encodePkt(`ng ${result.refName} ${result.error ?? 'failed'}\n`,),);
-    }
   }
   report.push(flushPkt(),);
   if (row.useSideBand !== true)

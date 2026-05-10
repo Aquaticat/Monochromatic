@@ -49,26 +49,25 @@ so they stay out of default output.
 Use empty-name describe as the top-level wrapper;
 the filename already reveals what is being tested.
 
-Children can be promises (eager, start immediately) or thunks (deferred).
-Use thunks with `concurrency: 1` to guarantee execution order.
+Children are lazy {@link TestDescriptor} values from nested `describe` or `it`
+calls; they do not run until the parent suite dispatches them. Sequential,
+bounded, and unbounded modes all work without wrapping children in thunks.
 
-- **`concurrency`** (`number`, default `16`) -- maximum number of children running at the same time.
+- **`concurrency`** (`number`, default `16` at the root) -- maximum number of children running at the same time.
   The implementation adapts to the value:
   - `1` -- sequential execution via `for...of` loop, no `p-limit` overhead
   - `2`..`Number.MAX_SAFE_INTEGER - 1` -- bounded concurrency via [`p-limit`](https://www.npmjs.com/package/p-limit)
   - `Infinity` or `Number.MAX_SAFE_INTEGER` -- unbounded concurrency via raw `Promise.allSettled`, no `p-limit` overhead
 
-  **Not inherited by child describes.** Each `describe` defaults to 16 independently
-  of its parent's `concurrency` setting. When child tests stub shared global state
-  (e.g. prototype methods, module-level variables), set `concurrency: 1` on the
-  innermost `describe` that contains those tests and use thunks (`() => it(...)`)
-  so execution is deferred. Concurrent tests that stub the same target fail with
-  `"Attempted to wrap X which is already wrapped"` because sinon refuses to
-  wrap a method that another concurrent test's sandbox has already wrapped.
-
-  Children passed as bare promises are already running when the suite starts,
-  so the limit only gates thunks that have not yet been invoked;
-  pass thunks (arrow functions returning promises) to get accurate concurrency control
+  **Inherited by child describes.** A nested `describe` without its own
+  `concurrency` inherits the parent's effective value, so setting
+  `concurrency: 1` once at the top sequences all descendants. When child tests
+  stub shared global state (e.g. prototype methods, module-level variables),
+  set `concurrency: 1` on the outermost `describe` that contains those tests;
+  the inheritance carries through. Concurrent tests that stub the same target
+  fail with `"Attempted to wrap X which is already wrapped"` because sinon
+  refuses to wrap a method that another concurrent test's sandbox has already
+  wrapped.
 - **`skip`** (`boolean | string`, default `false`) -- skips the entire suite without running any children;
   a string is logged as the reason
 - **`repeats`** (default `0`) -- number of additional runs of the entire suite;
@@ -384,8 +383,9 @@ await describe({
 ### Concurrency control
 
 The `concurrency` option controls how many children run at the same time.
-Children must be thunks for the limit to take effect;
-bare promises are already running when the suite starts.
+Children are lazy descriptors and do not start until the parent dispatches
+them, so the limit takes effect uniformly regardless of how the children
+were constructed.
 
 **Sequential** (`concurrency: 1`) -- runs children one at a time via `for...of`:
 
@@ -394,22 +394,20 @@ await describe({
   name: 'database migration -- migrations depend on previous state',
   concurrency: 1,
   children: [
-    () =>
-      it({
-        name: 'creates table',
-        fn: async () => {
-          await db.exec('CREATE TABLE users (id INTEGER PRIMARY KEY)',);
-          expect(await db.tableExists('users',),).toBe(true,);
-        },
-      },),
-    () =>
-      it({
-        name: 'inserts row',
-        fn: async () => {
-          await db.exec('INSERT INTO users (id) VALUES (1)',);
-          expect(await db.count('users',),).toBe(1,);
-        },
-      },),
+    it({
+      name: 'creates table',
+      fn: async () => {
+        await db.exec('CREATE TABLE users (id INTEGER PRIMARY KEY)',);
+        expect(await db.tableExists('users',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'inserts row',
+      fn: async () => {
+        await db.exec('INSERT INTO users (id) VALUES (1)',);
+        expect(await db.count('users',),).toBe(1,);
+      },
+    },),
   ],
 },);
 ```
@@ -420,14 +418,14 @@ await describe({
 await describe({
   name: 'rate-limited API calls',
   concurrency: 3,
-  children: Array.from({ length: 10, }, (_, index,) => () =>
+  children: Array.from({ length: 10, }, (_, index,) =>
     it({
       name: `request ${index}`,
       fn: async () => {
         const res = await fetch(`/api/item/${index}`,);
         expect(res.status,).toBe(200,);
       },
-    },),),
+    },)),
 },);
 ```
 
@@ -629,32 +627,31 @@ When tests stub prototype methods or module-level variables
 the stub affects all code running in the process, including concurrent tests.
 Sinon refuses to wrap an already-wrapped method, throwing
 `"Attempted to wrap X which is already wrapped"`.
-To avoid this, use `concurrency: 1` with thunks on the `describe`
-that contains those tests:
+To avoid this, set `concurrency: 1` on the `describe` that contains those
+tests; children are lazy descriptors and the parent dispatches them one at a
+time:
 
 ```ts
 await describe({
   name: 'service with HTTP stubs',
   concurrency: 1,
   children: [
-    () =>
-      it({
-        name: 'handles success',
-        fn: async ({ sinon, },) => {
-          sinon.stub(HttpClient.prototype, 'fetch',).resolves({ ok: true, },);
-          // ...
-        },
-      },),
-    () =>
-      it({
-        name: 'handles failure',
-        fn: async ({ sinon, },) => {
-          sinon.stub(HttpClient.prototype, 'fetch',).rejects(
-            new Error('network',),
-          );
-          // ...
-        },
-      },),
+    it({
+      name: 'handles success',
+      fn: async ({ sinon, },) => {
+        sinon.stub(HttpClient.prototype, 'fetch',).resolves({ ok: true, },);
+        // ...
+      },
+    },),
+    it({
+      name: 'handles failure',
+      fn: async ({ sinon, },) => {
+        sinon.stub(HttpClient.prototype, 'fetch',).rejects(
+          new Error('network',),
+        );
+        // ...
+      },
+    },),
   ],
 },);
 ```
@@ -750,7 +747,7 @@ or **omitted** (intentional gap with rationale).
 - `describe.skipIf` / `describe.runIf` -- same pattern with the `skip` option
 - `test.each(cases)` / `test.for(cases)` -- `cases.map(c => it({ name: ..., fn: ... }))` passed as `children`
 - `describe.each` / `describe.for` -- same `.map()` pattern with `describe`
-- `test.concurrent` -- default behavior; all `it` calls start immediately when passed as promises
+- `test.concurrent` -- default behavior; all `it` descriptors dispatch through the parent's concurrency limit
 - Vitest `maxConcurrency` config -- `describe({ concurrency: n })` per suite; see "Concurrency model comparison" below
 - `describe.timeout` -- `describe({ timeout: ms })`
 - `test.timeout` -- `it({ timeout: ms })`
@@ -985,9 +982,10 @@ The differences are in scope, defaults, and error handling.
 Vitest uses a single global semaphore per worker (`maxConcurrency`, default 5).
 All concurrent suites in a file share that one limiter;
 3 concurrent suites each with 5 tests still only run 5 tests at a time total.
-This harness uses a **per-suite** limiter via `p-limit`.
-Each `describe` gets its own independent cap (default 16),
-so nested concurrent suites run their children independently.
+This harness uses a **per-suite** limiter via `p-limit`, and the effective
+limit is inherited by nested describes that don't set their own. The root
+defaults to 16; setting `concurrency: 1` once at the top sequences all
+descendants.
 
 **Default mode.**
 Vitest runs tests **sequentially** within a file unless

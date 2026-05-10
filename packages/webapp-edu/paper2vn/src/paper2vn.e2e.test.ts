@@ -72,11 +72,11 @@ type Seed = {
     label: string;
     paperTitle: string;
     paperText: string;
-    chapters: Array<{
+    chapters: {
       title: string;
       summary: string;
-      dialogue: Array<{ text: string; pose?: 'neutral' | 'thinking' | 'happy'; }>;
-    }>;
+      dialogue: { text: string; pose?: 'neutral' | 'thinking' | 'happy'; }[];
+    }[];
     chapterIndex?: number;
     beatIndex?: number;
   }[];

@@ -133,11 +133,9 @@ const summary = await seedDataset({
 },);
 
 l.info(
-  `seed complete users=${String(summary.users,)} repos=${
-    String(summary.repos,)
-  } labels=${String(summary.labels,)} issues=${
-    String(summary.issues,)
-  } comments=${String(summary.comments,)} milestones=${
+  `seed complete users=${String(summary.users,)} repos=${String(summary.repos,)} labels=${
+    String(summary.labels,)
+  } issues=${String(summary.issues,)} comments=${String(summary.comments,)} milestones=${
     String(summary.milestones,)
   } prs=${String(summary.prs,)} reviews=${String(summary.reviews,)}`,
 );

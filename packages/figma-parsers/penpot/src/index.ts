@@ -240,7 +240,7 @@ type PenpotDocument = {
   media: Map<Uuid, PenpotMedia>;
   storageObjects: Map<Uuid, {
     meta: PenpotStorageObject;
-    data: Uint8Array
+    data: Uint8Array;
   }>;
   components: Map<Uuid, Record<string, unknown>>;
   colors: Map<Uuid, Record<string, unknown>>;
@@ -248,7 +248,7 @@ type PenpotDocument = {
   tokens: Record<string, unknown> | null;
   thumbnails: {
     path: string;
-    data: Record<string, unknown>
+    data: Record<string, unknown>;
   }[];
 };
 
@@ -265,12 +265,12 @@ type ConvertOptions = {
 // region Constants
 
 const IDENTITY_TRANSFORM: PenpotTransform = {
-  a: 1.0,
-  b: 0.0,
-  c: 0.0,
-  d: 1.0,
-  e: 0.0,
-  f: 0.0,
+  a: 1,
+  b: 0,
+  c: 0,
+  d: 1,
+  e: 0,
+  f: 0,
 };
 
 const DEFAULT_FEATURES = [
@@ -348,38 +348,38 @@ function nextUuid(): Uuid {
       );
     }
     const a = h(
-      c & 0xFFFFFFFF,
+      c & 0xFF_FF_FF_FF,
       8,
     );
     const b = h(
-      (c >> 32) & 0xff_ff,
+      (c >> 32) & 0xFF_FF,
       4,
     );
     return `${a}-${b}-4${
       h(
-        c & 0xFFF,
+        c & 0xF_FF,
         3,
       )
         .slice(-3,)
     }-8${
       h(
-        c & 0xFFF,
+        c & 0xF_FF,
         3,
       )
         .slice(-3,)
     }-${
       h(
-        c & 0xFFFF,
+        c & 0xFF_FF,
         4,
       )
     }${
       h(
-        (c >> 4) & 0xFFFF,
+        (c >> 4) & 0xFF_FF,
         4,
       )
     }${
       h(
-        (c >> 8) & 0xFFFF,
+        (c >> 8) & 0xFF_FF,
         4,
       )
     }`
@@ -412,25 +412,25 @@ function guidToUuid(
     8,
   );
   const b = h(
-    (lid >>> 16) & 0xff_ff,
+    (lid >>> 16) & 0xFF_FF,
     4,
   );
   const c = `4${
     h(
-      (lid >>> 4) & 0xf_ff,
+      (lid >>> 4) & 0xF_FF,
       3,
     )
   }`;
   const yNibble = ((lid & 0xF) | 0x8).toString(16,);
   const d = `${yNibble}${
     h(
-      (sid >>> 16) & 0xFFF,
+      (sid >>> 16) & 0xF_FF,
       3,
     )
   }`;
   const e = `${
     h(
-      sid & 0xFFFF,
+      sid & 0xFF_FF,
       4,
     )
   }${

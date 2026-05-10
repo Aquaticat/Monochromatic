@@ -4,9 +4,21 @@
  */
 
 export {
+  synthesizeBody,
+  synthesizeTitle,
+} from './content.ts';
+export {
   seedDataset,
   type SeedSummary,
 } from './dataset.ts';
+export {
+  sampleCommentCount,
+  sampleIssueCount,
+} from './distributions.ts';
+export {
+  type Phase2RepoSeedResult,
+  seedPhase2ForRepo,
+} from './generate-phase2.ts';
 export {
   seedIssuesForRepo,
   seedLabels,
@@ -14,19 +26,7 @@ export {
   seedUsers,
 } from './generate.ts';
 export {
-  seedPhase2ForRepo,
-  type Phase2RepoSeedResult,
-} from './generate-phase2.ts';
-export {
   rng,
   rngInt,
   rngPick,
 } from './rng.ts';
-export {
-  sampleCommentCount,
-  sampleIssueCount,
-} from './distributions.ts';
-export {
-  synthesizeBody,
-  synthesizeTitle,
-} from './content.ts';

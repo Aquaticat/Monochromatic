@@ -11,20 +11,20 @@
 
 import {
   StringEnum,
-  type TSchema,
   type Tool,
-} from "@earendil-works/pi-ai";
+  type TSchema,
+} from '@earendil-works/pi-ai';
 
 /** Verdict values for the judge tool. */
 const VERDICT_VALUES = [
-  "approve",
-  "deny",
-  "ask",
+  'approve',
+  'deny',
+  'ask',
 ] as const;
 
 /** Schema for the verdict string enum. */
 // oxlint-disable-next-line new-cap -- pi-ai API naming convention
-const VerdictEnum = StringEnum(VERDICT_VALUES);
+const VerdictEnum = StringEnum(VERDICT_VALUES,);
 
 /**
  * Tool definition for the structured-output judge.
@@ -35,11 +35,11 @@ const VerdictEnum = StringEnum(VERDICT_VALUES);
  * Shape matches `Tool` from pi-ai: `name`, `description`, `parameters`.
  */
 const VERDICT_TOOL: Tool = {
-  name: "render_verdict",
+  name: 'render_verdict',
   description:
-    "Submit your verdict on whether the action should proceed. You MUST call this tool; do not respond with text.",
+    'Submit your verdict on whether the action should proceed. You MUST call this tool; do not respond with text.',
   parameters: {
-    type: "object",
+    type: 'object',
     properties: {
       verdict: {
         description:
@@ -47,19 +47,19 @@ const VERDICT_TOOL: Tool = {
         ...VerdictEnum,
       },
       reason: {
-        type: "string",
-        description: "Brief explanation of your reasoning",
+        type: 'string',
+        description: 'Brief explanation of your reasoning',
       },
       guidance: {
-        type: "string",
+        type: 'string',
         description:
           'Actionable guidance for the agent when verdict is "deny" (ignored for approve/ask)',
       },
     },
     required: [
-      "verdict",
-      "reason",
-      "guidance"
+      'verdict',
+      'reason',
+      'guidance',
     ],
   } as TSchema,
 };
@@ -86,25 +86,25 @@ const VERDICT_TOOL: Tool = {
 function toolChoiceForApi(
   api: string,
 ): Record<string, string> | string {
-  if (api === "anthropic-messages") {
+  if (api === 'anthropic-messages') {
     return {
-      type: "tool",
-      name: "render_verdict",
+      type: 'tool',
+      name: 'render_verdict',
     };
   }
   if (
-    api === "openai-completions" ||
-    api === "openai-responses" ||
-    api === "azure-openai-responses" ||
-    api === "openai-codex-responses"
+    api === 'openai-completions'
+    || api === 'openai-responses'
+    || api === 'azure-openai-responses'
+    || api === 'openai-codex-responses'
   ) {
-    return "required";
+    return 'required';
   }
-  return "any";
+  return 'any';
 }
 
 export {
+  toolChoiceForApi,
   VERDICT_TOOL,
   VERDICT_VALUES,
-  toolChoiceForApi,
 };

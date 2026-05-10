@@ -15,11 +15,11 @@ import { join, } from 'node:path';
 
 import { H3, } from 'h3';
 
+import { ZERO_OID, } from '../../git/iso-server-refs.ts';
 import {
   encodePkt,
   flushPkt,
 } from '../../git/pkt-line.ts';
-import { ZERO_OID, } from '../../git/iso-server-refs.ts';
 
 import {
   gitInfoRefsHandler,
@@ -67,8 +67,9 @@ await describe({
   name: 'routes/git',
   concurrency: 1,
   children: [
-    () => it({
-      name: 'info/refs?service=git-upload-pack returns the advertisement for an empty repo',
+    it({
+      name:
+        'info/refs?service=git-upload-pack returns the advertisement for an empty repo',
       async fn() {
         const app = await buildApp();
         const response = await app.fetch(new Request(
@@ -80,7 +81,7 @@ await describe({
         expect(text.includes(`${ZERO_OID} capabilities^{}`,),).toBe(true,);
       },
     },),
-    () => it({
+    it({
       name: 'info/refs?service=git-receive-pack returns the receive-pack advertisement',
       async fn() {
         const app = await buildApp();
@@ -93,7 +94,7 @@ await describe({
         expect(text.includes('report-status',),).toBe(true,);
       },
     },),
-    () => it({
+    it({
       name: 'git-upload-pack returns NAK when the want set is empty',
       async fn() {
         const app = await buildApp();
@@ -111,7 +112,7 @@ await describe({
         expect(text.startsWith('0008NAK\n',),).toBe(true,);
       },
     },),
-    () => it({
+    it({
       name: 'git-receive-pack handles a triplet-only request without a packfile',
       async fn() {
         const app = await buildApp();
@@ -129,7 +130,7 @@ await describe({
         expect(text.includes('unpack ok\n',),).toBe(true,);
       },
     },),
-    () => it({
+    it({
       name: 'rejects URLs whose repo path does not end in .git',
       async fn() {
         const app = await buildApp();
@@ -139,7 +140,7 @@ await describe({
         expect(response.status,).not.toBe(STATUS_OK,);
       },
     },),
-    () => it({
+    it({
       name: 'rejects unknown service values',
       async fn() {
         const app = await buildApp();
@@ -149,12 +150,14 @@ await describe({
         expect(response.status,).not.toBe(STATUS_OK,);
       },
     },),
-    () => it({
+    it({
       name: 'sample triplet body wraps with encodePkt and is parsed by the route',
       async fn() {
         const app = await buildApp();
         const triplet = `${ZERO_OID} ${ZERO_OID} refs/heads/probe\0report-status\n`;
-        const body = new Uint8Array(encodePkt(triplet,).byteLength + flushPkt().byteLength,);
+        const body = new Uint8Array(
+          encodePkt(triplet,).byteLength + flushPkt().byteLength,
+        );
         const t = encodePkt(triplet,);
         body.set(
           t,

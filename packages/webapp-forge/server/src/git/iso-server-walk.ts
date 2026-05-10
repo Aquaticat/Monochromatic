@@ -98,7 +98,8 @@ async function markReachable(row: {
         gitdir: row.gitdir,
         oid,
       },);
-    } catch {
+    }
+    catch {
       // Not a commit; assume it's already covered as a tree or blob via earlier walk.
       continue;
     }
@@ -144,7 +145,8 @@ async function markTree(row: {
     if (entry.type === 'blob') {
       if (!row.bag.has(entry.oid,) && !row.excluded.has(entry.oid,))
         row.bag.add(entry.oid,);
-    } else if (entry.type === 'tree') {
+    }
+    else if (entry.type === 'tree') {
       // oxlint-disable-next-line no-await-in-loop -- recursion via shared state
       await markTree({
         gitdir: row.gitdir,

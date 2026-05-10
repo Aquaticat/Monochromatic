@@ -88,27 +88,39 @@ function mountMetricsOverlay(
   input.parent.append(overlay,);
   return function render(): void {
     const m = input.state.metrics ?? emptyMetrics();
-    overlay.innerHTML = `${row(
-      'compile p50',
-      `${m.compileMsMedian.toFixed(1,)} ms`,
-    )}${row(
-      'compile p99',
-      `${m.compileMsP99.toFixed(1,)} ms`,
-    )}${row(
-      'samples',
-      String(m.compileSamples,),
-    )}${row(
-      'put queue max',
-      String(m.putQueueDepthMax,),
-    )}${row(
-      'wasted puts',
-      String(m.wastedPuts,),
-    )}${row(
-      'transition',
-      m.transitionMs === null
-        ? 'n/a'
-        : `${m.transitionMs.toFixed(1,)} ms`,
-    )}`;
+    overlay.innerHTML = `${
+      row(
+        'compile p50',
+        `${m.compileMsMedian.toFixed(1,)} ms`,
+      )
+    }${
+      row(
+        'compile p99',
+        `${m.compileMsP99.toFixed(1,)} ms`,
+      )
+    }${
+      row(
+        'samples',
+        String(m.compileSamples,),
+      )
+    }${
+      row(
+        'put queue max',
+        String(m.putQueueDepthMax,),
+      )
+    }${
+      row(
+        'wasted puts',
+        String(m.wastedPuts,),
+      )
+    }${
+      row(
+        'transition',
+        m.transitionMs === null
+          ? 'n/a'
+          : `${m.transitionMs.toFixed(1,)} ms`,
+      )
+    }`;
   };
 }
 

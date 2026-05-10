@@ -11,7 +11,7 @@
 import type {
   Api,
   Model,
-} from "@earendil-works/pi-ai";
+} from '@earendil-works/pi-ai';
 
 /**
  * Minimum digit count for a numeric token to be treated as a date
@@ -43,13 +43,16 @@ const DATE_TOKEN_DIGIT_COUNT = 8;
 function extractMajorVersion(
   id: string,
 ): number | null {
-  const tokens = id.replaceAll(
-    /[._\-:]/g,
-    " ",
-  ).split(/\s+/);
+  const tokens = id
+    .replaceAll(
+      /[._\-:]/g,
+      ' ',
+    )
+    .split(/\s+/,);
   for (const t of tokens) {
-    if (/^\d+$/.test(t,) && t.length >= DATE_TOKEN_DIGIT_COUNT) continue;
-    const match = /(\d+)/.exec(t);
+    if (/^\d+$/.test(t,) && t.length >= DATE_TOKEN_DIGIT_COUNT)
+      continue;
+    const match = /(\d+)/.exec(t,);
     if (match !== null && match[1] !== undefined) {
       return Number.parseInt(
         match[1],
@@ -75,15 +78,18 @@ function extractMajorVersion(
 function extractVersionNumbers(
   id: string,
 ): number[] {
-  const tokens = id.replaceAll(
-    /[._\-:]/g,
-    " ",
-  ).split(/\s+/);
+  const tokens = id
+    .replaceAll(
+      /[._\-:]/g,
+      ' ',
+    )
+    .split(/\s+/,);
   const nums: number[] = [];
   const EIGHT = 8;
   for (const t of tokens) {
-    if (/^\d+$/.test(t) && t.length >= EIGHT) continue;
-    const m = /(\d+)/.exec(t);
+    if (/^\d+$/.test(t,) && t.length >= EIGHT)
+      continue;
+    const m = /(\d+)/.exec(t,);
     if (m !== null && m[1] !== undefined) {
       nums.push(
         Number.parseInt(
@@ -117,15 +123,16 @@ function compareVersions(
   a: Model<Api>,
   b: Model<Api>,
 ): number {
-  const av = extractVersionNumbers(a.id);
-  const bv = extractVersionNumbers(b.id);
+  const av = extractVersionNumbers(a.id,);
+  const bv = extractVersionNumbers(b.id,);
   const maxLen = Math.max(
     av.length,
     bv.length,
   );
   for (let i = 0; i < maxLen; i++) {
     const diff = (bv[i] ?? 0) - (av[i] ?? 0);
-    if (diff !== 0) return diff;
+    if (diff !== 0)
+      return diff;
   }
   return av.length - bv.length;
 }
@@ -152,17 +159,21 @@ function findCheapestInMajorVersions(
 ): Model<Api>[] {
   const allVersions = new Set<number>();
   for (const m of models) {
-    const ver = extractMajorVersion(m.id);
-    if (ver !== null) allVersions.add(ver);
+    const ver = extractMajorVersion(m.id,);
+    if (ver !== null)
+      allVersions.add(ver,);
   }
-  const sorted = [...allVersions].toSorted(
+  const sorted = [...allVersions,].toSorted(
     function desc(
       a,
-      b
-    ) { return b - a; },
+      b,
+    ) {
+      return b - a;
+    },
   );
 
-  if (sorted.length === 0) return [];
+  if (sorted.length === 0)
+    return [];
 
   const included = majorVersions === 0
     ? sorted
@@ -170,22 +181,23 @@ function findCheapestInMajorVersions(
       0,
       majorVersions,
     );
-  const includedSet = new Set(included);
+  const includedSet = new Set(included,);
 
   const eligible = models.filter(
-    function hasVersion(m) {
-      const ver = extractMajorVersion(m.id);
-      return ver !== null && includedSet.has(ver);
+    function hasVersion(m,) {
+      const ver = extractMajorVersion(m.id,);
+      return ver !== null && includedSet.has(ver,);
     },
   );
 
   return eligible.toSorted(
     function byCost(
       a,
-      b
+      b,
     ) {
       const costDiff = a.cost.input - b.cost.input;
-      if (costDiff !== 0) return costDiff;
+      if (costDiff !== 0)
+        return costDiff;
       return compareVersions(
         a,
         b,

@@ -84,20 +84,18 @@ function getHandler(
   event: string,
 ): HandlerFn {
   const handlers = registrations.get(event,);
-  if (handlers === undefined || handlers.length === 0) {
+  if (handlers === undefined || handlers.length === 0)
     throw new Error(`No handler registered for event: ${event}`,);
-  }
   const [handler,] = handlers;
-  if (handler === undefined) {
+  if (handler === undefined)
     throw new Error(`No handler registered for event: ${event}`,);
-  }
   return handler;
 }
 
 //endregion Mock infrastructure
 
 // Dynamic import to get the default export
-const { default: terminalTitle, } = await import('./index.ts',);
+const { default: terminalTitle, } = await import('./index.ts');
 
 await describe({
   name: terminalTitle.name,
@@ -140,7 +138,7 @@ await describe({
 
         const handler = getHandler(registrations, 'tool_execution_start',);
         handler(
-          { toolName: 'bash', args: { command: 'npm test' } },
+          { toolName: 'bash', args: { command: 'npm test', }, },
           ctx,
         );
 
@@ -162,7 +160,7 @@ await describe({
 
         const handler = getHandler(registrations, 'tool_execution_end',);
         handler(
-          { toolName: 'read', result: {} },
+          { toolName: 'read', result: {}, },
           ctx,
         );
 
@@ -184,7 +182,7 @@ await describe({
 
         const handler = getHandler(registrations, 'session_start',);
         handler(
-          { type: 'session_start', reason: 'startup' } as SessionStartEvent,
+          { type: 'session_start', reason: 'startup', } as SessionStartEvent,
           ctx,
         );
 
@@ -206,7 +204,7 @@ await describe({
 
         const handler = getHandler(registrations, 'session_shutdown',);
         handler(
-          { type: 'session_shutdown', reason: 'quit' } as SessionShutdownEvent,
+          { type: 'session_shutdown', reason: 'quit', } as SessionShutdownEvent,
           ctx,
         );
 
@@ -228,7 +226,7 @@ await describe({
 
         const handler = getHandler(registrations, 'agent_end',);
         handler(
-          { type: 'agent_end', messages: [] } as AgentEndEvent,
+          { type: 'agent_end', messages: [], } as AgentEndEvent,
           ctx,
         );
 
@@ -263,7 +261,6 @@ await describe({
         expect(titles[0],).toBe('✳ Fix the auth bug',);
       },
     },),
-
     //endregion before_agent_start handler
   ],
 },);

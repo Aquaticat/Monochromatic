@@ -31,14 +31,14 @@ import {
   handleReceivePack,
   handleUploadPack,
 } from '@monochromatic-dev/webapp-forge-server/ts/git/iso-server';
+import { ZERO_OID, } from '@monochromatic-dev/webapp-forge-server/ts/git/iso-server-refs';
 import {
   encodePkt,
   flushPkt,
 } from '@monochromatic-dev/webapp-forge-server/ts/git/pkt-line';
-import { ZERO_OID, } from '@monochromatic-dev/webapp-forge-server/ts/git/iso-server-refs';
 
-import { mkdtemp, } from 'node:fs/promises';
 import nodeFs from 'node:fs';
+import { mkdtemp, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -262,7 +262,8 @@ function buildReceivePackBody(row: {
   newOid: string;
   packfile: Uint8Array;
 },): Uint8Array {
-  const triplet = `${row.oldOid} ${row.newOid} ${REF_NAME}\0report-status side-band-64k\n`;
+  const triplet =
+    `${row.oldOid} ${row.newOid} ${REF_NAME}\0report-status side-band-64k\n`;
   return concat([
     encodePkt(triplet,),
     flushPkt(),
@@ -288,7 +289,7 @@ async function waitInterval(row: {
     return;
   const sleep = Math.max(
     0,
-    Math.floor(row.intervalMs - row.elapsedMs),
+    Math.floor(row.intervalMs - row.elapsedMs,),
   );
   if (sleep > 0)
     await wait(sleep,);
@@ -387,12 +388,16 @@ async function run(): Promise<ScenarioResult> {
 
   if (p99 > P99_LATENCY_BUDGET_MS) {
     violations.push(
-      `p99 receive-pack latency exceeded ${String(P99_LATENCY_BUDGET_MS,)}ms: ${String(p99,)}ms`,
+      `p99 receive-pack latency exceeded ${String(P99_LATENCY_BUDGET_MS,)}ms: ${
+        String(p99,)
+      }ms`,
     );
   }
   if (appliedTotal !== config.burstEvents) {
     violations.push(
-      `expected ${String(config.burstEvents,)} accepted ref updates; got ${String(appliedTotal,)}`,
+      `expected ${String(config.burstEvents,)} accepted ref updates; got ${
+        String(appliedTotal,)
+      }`,
     );
   }
 

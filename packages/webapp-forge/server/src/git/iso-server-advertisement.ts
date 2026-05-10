@@ -5,14 +5,14 @@
  */
 
 import {
-  encodePkt,
-  flushPkt,
-} from './pkt-line.ts';
-import {
   ensureRepoExists,
   listAllRefs,
   ZERO_OID,
 } from './iso-server-refs.ts';
+import {
+  encodePkt,
+  flushPkt,
+} from './pkt-line.ts';
 
 /** Capabilities advertised in `info/refs?service=git-upload-pack`. */
 const UPLOAD_PACK_CAPS: readonly string[] = [
@@ -73,7 +73,8 @@ export async function buildInfoRefsAdvertisement(row: {
     // Empty-repo advertisement: zero-OID + the synthetic "capabilities^{}" ref.
     const head = `${ZERO_OID} capabilities^{}\0${caps.join(' ',)}\n`;
     chunks.push(encodePkt(head,),);
-  } else {
+  }
+  else {
     for (const [index, [refName, oid,],] of refs.entries()) {
       const line = index === 0
         ? `${oid} ${refName}\0${caps.join(' ',)}\n`

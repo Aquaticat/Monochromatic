@@ -201,7 +201,7 @@ v.parse(
     v.number(),
   ),
   process.env.PORT ?? DEFAULT_PORT,
-)
+);
 ```
 
 For `z.coerce.date()`, prefer a typed input union over `v.unknown()` to avoid
@@ -210,7 +210,9 @@ For `z.coerce.date()`, prefer a typed input union over `v.unknown()` to avoid
 ```ts
 const coerceDateSchema = v.pipe(
   v.union([v.string(), v.number(), v.date(),],),
-  v.transform(function toDate(input,) { return new Date(input,); },),
+  v.transform(function toDate(input,) {
+    return new Date(input,);
+  },),
   v.date(),
 );
 ```
@@ -229,7 +231,7 @@ v.pipe(
     },
     'Invalid HTTP(S) URL with valid domain',
   ),
-)
+);
 ```
 
 **Async pipe.** When a transform is async (e.g. prompts the user), use
@@ -240,13 +242,14 @@ await v.parseAsync(
   v.pipeAsync(
     v.nullable(v.pipe(v.string(), v.uuid(),),),
     v.transformAsync(async function promptSet(val,): Promise<string> {
-      if (val !== null) return val;
+      if (val !== null)
+        return val;
       return notNullishOrThrow(await prompt('Set api key',),);
     },),
     v.uuid(),
   ),
   localStorage.getItem('apiKey',),
-)
+);
 ```
 
 **Schema with coerced output type.** Annotate `v.GenericSchema<TInput, TOutput>`

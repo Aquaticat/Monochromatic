@@ -4,9 +4,9 @@
  */
 
 import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import spawn from 'nano-spawn';
 import { realpath, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
-import spawn from 'nano-spawn';
 
 /**
  * Canonical monorepo root path, normalized to `/var/home` on Fedora ostree
@@ -66,9 +66,8 @@ export const CPUSET_CPU = '0';
 async function detectBlockDevice({ path, }: { path: string; },): Promise<string> {
   const { stdout, } = await spawn('findmnt', ['-no', 'SOURCE', '-T', path,],);
   const sourceWithSubpath = stdout.trim();
-  if (!sourceWithSubpath) {
+  if (!sourceWithSubpath)
     throw new Error(`findmnt returned empty source for path: ${path}`,);
-  }
   const source = sourceWithSubpath.replace(/\[.*$/, '',);
   return await realpath(source,);
 }

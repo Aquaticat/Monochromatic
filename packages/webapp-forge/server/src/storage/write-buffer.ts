@@ -121,7 +121,8 @@ function detach(promise: Promise<unknown>,): void {
   void (async function ignoreErrors(): Promise<void> {
     try {
       await promise;
-    } catch {
+    }
+    catch {
       // Swallow: the next explicit flush() awaits a fresh batch and
       // surfaces persistent backend failures.
     }
@@ -205,7 +206,7 @@ export function createWriteBuffer(
     }
     const promise = storage.putBatch(items,);
     inFlight.add(promise,);
-    detach((async function trackInFlight(): Promise<void> {
+    detach(async function trackInFlight(): Promise<void> {
       using _disposeOnSettle = {
         [Symbol.dispose](): void {
           inFlight.delete(promise,);
@@ -213,7 +214,7 @@ export function createWriteBuffer(
       };
       void _disposeOnSettle;
       await promise;
-    }()),);
+    }(),);
     await promise;
   }
 

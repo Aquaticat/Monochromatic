@@ -41,8 +41,14 @@ const HOOK_DIR = import.meta.dir;
  * emits a JSON payload. The writer renders each variant verbatim.
  */
 type ClaudeSpawnOutput =
-  | { kind: 'raw'; text: string; }
-  | { kind: 'json'; payload: unknown; };
+  | {
+    kind: 'raw';
+    text: string;
+  }
+  | {
+    kind: 'json';
+    payload: unknown;
+  };
 
 /**
  * Updates a child's spawn state file when the Stop event reports a final
@@ -54,16 +60,28 @@ type ClaudeSpawnOutput =
  * @param lastMessage - text of the child's last assistant message
  */
 function updateChildOnStop(
-  { sessionId, lastMessage, }: { sessionId: string; lastMessage: string | undefined; },
+  {
+    sessionId,
+    lastMessage,
+  }: {
+    sessionId: string;
+    lastMessage: string | undefined;
+  },
 ): void {
   const spawnId = process.env.CLAUDE_SPAWN_ID;
   if (spawnId === undefined || lastMessage === undefined)
     return;
 
-  const filePath = join(SPAWNS_DIR, `${spawnId}.json`,);
+  const filePath = join(
+    SPAWNS_DIR,
+    `${spawnId}.json`,
+  );
 
   try {
-    const existing = readFileSync(filePath, 'utf8',);
+    const existing = readFileSync(
+      filePath,
+      'utf8',
+    );
     /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
     const state = JSON.parse(existing,) as SpawnState;
 
@@ -73,7 +91,10 @@ function updateChildOnStop(
         lastMessage,
         status: 'stopped',
       };
-      writeFileSync(filePath, JSON.stringify(updated,),);
+      writeFileSync(
+        filePath,
+        JSON.stringify(updated,),
+      );
     }
   }
   catch {
@@ -99,11 +120,21 @@ function stopResponse(
       parentSessionId: event.session_id,
       consume: true,
     },);
-    if (context !== null)
-      return { kind: 'json', payload: { decision: 'block', reason: context, }, };
+    if (context !== null) {
+      return {
+        kind: 'json',
+        payload: {
+          decision: 'block',
+          reason: context,
+        },
+      };
+    }
   }
   const empty: HookOutputBase = {};
-  return { kind: 'json', payload: empty, };
+  return {
+    kind: 'json',
+    payload: empty,
+  };
 }
 
 /**
@@ -119,7 +150,10 @@ function additionalContextResponse(event: HookInput,): ClaudeSpawnOutput {
   },);
   if (context === null) {
     const empty: HookOutputBase = {};
-    return { kind: 'json', payload: empty, };
+    return {
+      kind: 'json',
+      payload: empty,
+    };
   }
   return {
     kind: 'json',
@@ -147,7 +181,10 @@ function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
       transcriptPath: event.transcript_path,
       hookDir: HOOK_DIR,
     },);
-    return { kind: 'raw', text, };
+    return {
+      kind: 'raw',
+      text,
+    };
   }
   if (event.hook_event_name === 'Stop') {
     updateChildOnStop({
@@ -158,7 +195,10 @@ function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
   }
   if (event.hook_event_name === 'SessionEnd') {
     const empty: HookOutputBase = {};
-    return { kind: 'json', payload: empty, };
+    return {
+      kind: 'json',
+      payload: empty,
+    };
   }
   return additionalContextResponse(event,);
 }

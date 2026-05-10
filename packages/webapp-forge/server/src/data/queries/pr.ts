@@ -88,7 +88,9 @@ export async function getPullRequest(issueId: string,): Promise<PullRequest | un
  * const prs = await listPullRequestsByHeadSha('abc123...');
  * ```
  */
-export async function listPullRequestsByHeadSha(headSha: string,): Promise<PullRequest[]> {
+export async function listPullRequestsByHeadSha(
+  headSha: string,
+): Promise<PullRequest[]> {
   return await all<PullRequest>(
     'SELECT * FROM prs WHERE head_sha = ?',
     [headSha,],
@@ -175,7 +177,8 @@ export async function createPullRequestWithEvent(row: {
     },);
     await db.exec('COMMIT',);
     return eventId;
-  } catch (error) {
+  }
+  catch (error) {
     await db.exec('ROLLBACK',);
     throw error;
   }
@@ -234,7 +237,8 @@ export async function pushPullRequestHead(row: {
     },);
     await db.exec('COMMIT',);
     return eventId;
-  } catch (error) {
+  }
+  catch (error) {
     await db.exec('ROLLBACK',);
     throw error;
   }

@@ -101,12 +101,12 @@ type Message = UserMessage | AssistantMessage | ToolResultMessage;
  * on top via module augmentation (`bashExecution`, `custom`, `branchSummary`,
  * `compactionSummary`).
  */
-type AgentMessage
-  = | Message
-    | BashExecutionAgentMessage
-    | CustomAgentMessage
-    | BranchSummaryAgentMessage
-    | CompactionSummaryAgentMessage;
+type AgentMessage =
+  | Message
+  | BashExecutionAgentMessage
+  | CustomAgentMessage
+  | BranchSummaryAgentMessage
+  | CompactionSummaryAgentMessage;
 
 //endregion
 
@@ -118,8 +118,8 @@ type AgentMessage
  * verbatim so summaries produced here remain interchangeable with summaries
  * produced by pi's default compaction path.
  */
-const COMPACTION_SUMMARY_PREFIX
-  = 'The conversation history before this point was compacted into the following summary:\n\n<summary>\n';
+const COMPACTION_SUMMARY_PREFIX =
+  'The conversation history before this point was compacted into the following summary:\n\n<summary>\n';
 
 /**
  * Suffix paired with {@link COMPACTION_SUMMARY_PREFIX}. Matches upstream.
@@ -129,8 +129,8 @@ const COMPACTION_SUMMARY_SUFFIX = '\n</summary>';
 /**
  * Prefix for a branch-summary user message. Matches upstream.
  */
-const BRANCH_SUMMARY_PREFIX
-  = 'The following is a summary of a branch that this conversation came back from:\n\n<summary>\n';
+const BRANCH_SUMMARY_PREFIX =
+  'The following is a summary of a branch that this conversation came back from:\n\n<summary>\n';
 
 /**
  * Suffix paired with {@link BRANCH_SUMMARY_PREFIX}. Matches upstream.
@@ -143,7 +143,7 @@ const BRANCH_SUMMARY_SUFFIX = '</summary>';
  * upstream's `TOOL_RESULT_MAX_CHARS` (2000) so summaries are byte-identical to
  * what pi's default compaction would produce.
  */
-const TOOL_RESULT_MAX_CHARS = 2000;
+const TOOL_RESULT_MAX_CHARS = 2_000;
 
 //endregion
 
@@ -199,9 +199,9 @@ function bashExecutionToText(
     text += `\`\`\`\n${msg.output}\n\`\`\``;
   else
     text += '(no output)';
-  if (msg.cancelled) {
+  if (msg.cancelled)
     text += '\n\n(command cancelled)';
-  } else if (
+  else if (
     msg.exitCode !== null
     && msg.exitCode !== undefined
     && msg.exitCode !== 0
@@ -237,7 +237,12 @@ function truncateForSummary(
   if (text.length <= maxChars)
     return text;
   const truncatedChars = text.length - maxChars;
-  return `${text.slice(0, maxChars,)}\n\n[... ${truncatedChars} more characters truncated]`;
+  return `${
+    text.slice(
+      0,
+      maxChars,
+    )
+  }\n\n[... ${truncatedChars} more characters truncated]`;
 }
 
 //endregion
@@ -297,13 +302,19 @@ function toLlmMessage(
         return undefined;
       return {
         role: 'user',
-        content: [{ type: 'text', text: bashExecutionToText(m,), },],
+        content: [{
+          type: 'text',
+          text: bashExecutionToText(m,),
+        },],
         timestamp: m.timestamp,
       };
     }
     case 'custom': {
       const content = typeof m.content === 'string'
-        ? [{ type: 'text' as const, text: m.content, },]
+        ? [{
+          type: 'text' as const,
+          text: m.content,
+        },]
         : m.content;
       return {
         role: 'user',
@@ -336,9 +347,7 @@ function toLlmMessage(
     case 'toolResult':
       return m;
     default:
-      throw new Error(`convertToLlm: unhandled message role: ${
-        JSON.stringify(m,)
-      }`,);
+      throw new Error(`convertToLlm: unhandled message role: ${JSON.stringify(m,)}`,);
   }
 }
 
@@ -446,7 +455,8 @@ export function serializeConversation(
           continue;
         }
         if (block.type === 'toolCall') {
-          const argsStr = Object.entries(block.arguments,)
+          const argsStr = Object
+            .entries(block.arguments,)
             .map(function fmtArg([key, value,],) {
               return `${key}=${JSON.stringify(value,)}`;
             },)
@@ -463,7 +473,8 @@ export function serializeConversation(
       continue;
     }
     if (msg.role === 'toolResult') {
-      const content = msg.content
+      const content = msg
+        .content
         .filter(function isText(c,): c is TextContent {
           return c.type === 'text';
         },)
@@ -473,7 +484,12 @@ export function serializeConversation(
         .join('',);
       if (content) {
         parts.push(
-          `[Tool result]: ${truncateForSummary(content, TOOL_RESULT_MAX_CHARS,)}`,
+          `[Tool result]: ${
+            truncateForSummary(
+              content,
+              TOOL_RESULT_MAX_CHARS,
+            )
+          }`,
         );
       }
     }

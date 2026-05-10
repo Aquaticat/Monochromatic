@@ -39,9 +39,8 @@ type StopRemindersOutput = StopOutput | Record<string, never>;
  * @returns blocking output when reminders apply, otherwise `{}`
  */
 function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
-  if (event.stop_hook_active) {
+  if (event.stop_hook_active)
     return {};
-  }
 
   const prose = stripNonProseRegions(event.last_assistant_message ?? '',);
   const match = findUncertainty(prose,);
@@ -70,7 +69,10 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
   }
 
   if (reasons.length > 0) {
-    return { decision: 'block', reason: reasons.join(' ',), };
+    return {
+      decision: 'block',
+      reason: reasons.join(' ',),
+    };
   }
 
   return {};

@@ -13,31 +13,31 @@
 import type {
   ExtensionAPI,
   ExtensionContext,
-} from "@earendil-works/pi-coding-agent";
-import { tagged, } from "@monochromatic-dev/module-logger/tagged";
+} from '@earendil-works/pi-coding-agent';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import {
+  askUser,
+  updateWidget,
+} from './ask-user.ts';
+import {
+  buildContext,
+  getTrustDirectives,
+} from './context.ts';
+import { callJudge, } from './judge.ts';
+import { l as parentLogger, } from './log.ts';
+import type { MergedConfig, } from './signals.ts';
+import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import {
   type BatchEntry,
   type BudgetModel,
   type BudgetModelOptions,
-  type VerdictData,
   VERDICT_ENTRY_TYPE,
-} from "./types.ts";
-import { DEFAULT_DENY_GUIDANCE, } from "./system-prompt.ts";
-import type { MergedConfig, } from "./signals.ts";
-import { callJudge, } from "./judge.ts";
-import {
-  buildContext,
-  getTrustDirectives,
-} from "./context.ts";
-import {
-  updateWidget,
-  askUser,
-} from "./ask-user.ts";
-import { l as parentLogger, } from "./log.ts";
+  type VerdictData,
+} from './types.ts';
 
 /** Tagged logger for the evaluate module. */
 const l = tagged({
-  tag: "evaluate",
+  tag: 'evaluate',
   l: parentLogger,
 },);
 
@@ -80,11 +80,11 @@ async function evaluate(
   flowVerdicts: {
     action: string;
     verdict: string;
-    reason: string
+    reason: string;
   }[],
 ): Promise<{
   block: true;
-  reason: string
+  reason: string;
 } | undefined> {
   const innerL = tagged({
     tag: evaluate.name,
@@ -101,13 +101,15 @@ async function evaluate(
   }
   catch (err) {
     innerL.error(
-      `judge model resolution failed: ${err instanceof Error ? err.message : String(err,)}`,
+      `judge model resolution failed: ${
+        err instanceof Error ? err.message : String(err,)
+      }`,
     );
     return askUser(
       pi,
       ctx,
       action,
-      "No judge model available; manual approval required.",
+      'No judge model available; manual approval required.',
     );
   }
 
@@ -116,12 +118,12 @@ async function evaluate(
       pi,
       ctx,
       action,
-      "No judge model available; manual approval required.",
+      'No judge model available; manual approval required.',
     );
   }
 
-  const recentContext = buildContext(ctx);
-  const trustDirectives = getTrustDirectives(ctx);
+  const recentContext = buildContext(ctx,);
+  const trustDirectives = getTrustDirectives(ctx,);
 
   try {
     const verdict = await callJudge(
@@ -136,11 +138,11 @@ async function evaluate(
       batchContext,
     );
 
-    if (verdict.verdict === "approve") {
+    if (verdict.verdict === 'approve') {
       innerL.info(`approve: ${verdict.reason}`,);
       flowVerdicts.push({
         action,
-        verdict: "approved",
+        verdict: 'approved',
         reason: verdict.reason,
       },);
       updateWidget(
@@ -151,18 +153,18 @@ async function evaluate(
         VERDICT_ENTRY_TYPE,
         {
           action,
-          verdict: "approve",
+          verdict: 'approve',
           reason: verdict.reason,
         } satisfies VerdictData,
       );
       return undefined;
     }
 
-    if (verdict.verdict === "deny") {
+    if (verdict.verdict === 'deny') {
       innerL.warn(`deny: ${verdict.reason}`,);
       flowVerdicts.push({
         action,
-        verdict: "denied",
+        verdict: 'denied',
         reason: verdict.reason,
       },);
       updateWidget(
@@ -173,13 +175,13 @@ async function evaluate(
         VERDICT_ENTRY_TYPE,
         {
           action,
-          verdict: "deny",
+          verdict: 'deny',
           reason: verdict.reason,
         } satisfies VerdictData,
       );
       return {
         block: true,
-        reason: verdict.guidance !== "" ? verdict.guidance : DEFAULT_DENY_GUIDANCE,
+        reason: verdict.guidance !== '' ? verdict.guidance : DEFAULT_DENY_GUIDANCE,
       };
     }
 
@@ -216,10 +218,10 @@ async function resolveJudgeModel(
   ctx: ExtensionContext,
   config: MergedConfig,
 ): Promise<BudgetModel> {
-  const { findBudgetModel, } = await import("./budget-model.ts");
+  const { findBudgetModel, } = await import('./budget-model.ts');
   return findBudgetModel(
     ctx,
-    toBudgetModelOptions(config),
+    toBudgetModelOptions(config,),
   );
 }
 
@@ -238,9 +240,8 @@ function toBudgetModelOptions(
     costRatio: config.judgeModel.costRatio,
     majorVersions: config.judgeModel.majorVersions,
   };
-  if (config.judgeModel.modelOverride !== undefined) {
+  if (config.judgeModel.modelOverride !== undefined)
     opts.modelOverride = config.judgeModel.modelOverride;
-  }
   return opts;
 }
 

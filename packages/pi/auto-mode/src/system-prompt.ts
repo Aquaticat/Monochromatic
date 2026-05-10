@@ -13,7 +13,7 @@
  * just blocking with no suggestion.
  */
 const DEFAULT_DENY_GUIDANCE =
-  "This action was blocked by the security guardrail. Consider a different approach, ask the user to run the command directly, or use the propose_trust tool to request permission for this session.";
+  'This action was blocked by the security guardrail. Consider a different approach, ask the user to run the command directly, or use the propose_trust tool to request permission for this session.';
 
 /**
  * Base system prompt for the judge.
@@ -22,7 +22,8 @@ const DEFAULT_DENY_GUIDANCE =
  * detection strategy. User/project instructions are appended
  * at runtime.
  */
-const BASE_SYSTEM_PROMPT = `You are a security guardrail for an AI coding agent. You evaluate actions before they execute.
+const BASE_SYSTEM_PROMPT =
+  `You are a security guardrail for an AI coding agent. You evaluate actions before they execute.
 
 Your job: decide if the action is safe to proceed WITHOUT interrupting the user.
 
@@ -68,11 +69,11 @@ function buildSystemPrompt(
     projectInstructions?: string;
   },
 ): string {
-  const parts = [BASE_SYSTEM_PROMPT];
+  const parts = [BASE_SYSTEM_PROMPT,];
 
   if (
-    config.globalInstructions !== undefined &&
-    config.globalInstructions !== ""
+    config.globalInstructions !== undefined
+    && config.globalInstructions !== ''
   ) {
     parts.push(
       `\n\nUser instructions (global):\n${config.globalInstructions}`,
@@ -80,19 +81,19 @@ function buildSystemPrompt(
   }
 
   if (
-    config.projectInstructions !== undefined &&
-    config.projectInstructions !== ""
+    config.projectInstructions !== undefined
+    && config.projectInstructions !== ''
   ) {
     parts.push(
       `\n\nProject instructions:\n${config.projectInstructions}`,
     );
   }
 
-  return parts.join("");
+  return parts.join('',);
 }
 
 export {
   BASE_SYSTEM_PROMPT,
-  DEFAULT_DENY_GUIDANCE,
   buildSystemPrompt,
+  DEFAULT_DENY_GUIDANCE,
 };

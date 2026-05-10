@@ -108,7 +108,8 @@ await describe({
                 key: 'a',
                 body: encoder.encode('1',),
               },);
-            },).toThrow(/closed/,);
+            },)
+              .toThrow(/closed/,);
           },
         },),
         it({

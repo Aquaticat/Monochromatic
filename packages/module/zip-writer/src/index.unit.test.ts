@@ -3,7 +3,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
-import { mkdtemp, readFile, rm, writeFile, } from 'node:fs/promises';
+import {
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -45,7 +50,9 @@ async function makeTempDir(): Promise<DisposableTempDir> {
  *
  * @returns Stdout/stderr from the `unzip` invocation
  */
-async function verifyZipIntegrity(bytes: Uint8Array,): Promise<{ stdout: string; stderr: string; }> {
+async function verifyZipIntegrity(
+  bytes: Uint8Array,
+): Promise<{ stdout: string; stderr: string; }> {
   await using tempDir = await makeTempDir();
   const file = join(tempDir.path, 'test.zip',);
   await writeFile(file, bytes,);
@@ -65,7 +72,7 @@ async function listZipEntries(bytes: Uint8Array,): Promise<string[]> {
   const file = join(tempDir.path, 'test.zip',);
   await writeFile(file, bytes,);
   const { stdout, } = await spawn('unzip', ['-Z1', file,],);
-  return stdout.split('\n',).filter((line) => line.length > 0,);
+  return stdout.split('\n',).filter(line => line.length > 0);
 }
 
 /**
@@ -111,9 +118,12 @@ await describe({
           },
         },),
         it({
-          name: 'matches the "The quick brown fox jumps over the lazy dog" reference vector',
+          name:
+            'matches the "The quick brown fox jumps over the lazy dog" reference vector',
           fn: async () => {
-            const data = new TextEncoder().encode('The quick brown fox jumps over the lazy dog',);
+            const data = new TextEncoder().encode(
+              'The quick brown fox jumps over the lazy dog',
+            );
             expect(crc32(data,),).toBe(0x41_4F_A3_39,);
           },
         },),
@@ -149,35 +159,35 @@ await describe({
           name: 'rejects empty path',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add('', 'x',),).toThrow(/non-empty/,);
+            expect(() => zip.add('', 'x',)).toThrow(/non-empty/,);
           },
         },),
         it({
           name: 'rejects path with NUL byte',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add('foo\0bar', 'x',),).toThrow(/NUL/,);
+            expect(() => zip.add('foo\0bar', 'x',)).toThrow(/NUL/,);
           },
         },),
         it({
           name: 'rejects path with backslash',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add(String.raw`foo\bar`, 'x',),).toThrow(/backslash/,);
+            expect(() => zip.add(String.raw`foo\bar`, 'x',)).toThrow(/backslash/,);
           },
         },),
         it({
           name: 'rejects leading slash',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add('/foo', 'x',),).toThrow(/leading slash/,);
+            expect(() => zip.add('/foo', 'x',)).toThrow(/leading slash/,);
           },
         },),
         it({
           name: 'rejects parent-directory segment',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add('foo/../bar', 'x',),).toThrow(/parent-directory/,);
+            expect(() => zip.add('foo/../bar', 'x',)).toThrow(/parent-directory/,);
           },
         },),
         it({
@@ -185,7 +195,7 @@ await describe({
           fn: async () => {
             const zip = new ZipWriter();
             zip.add('foo', 'x',);
-            expect(() => zip.add('foo', 'y',),).toThrow(/duplicate/,);
+            expect(() => zip.add('foo', 'y',)).toThrow(/duplicate/,);
           },
         },),
       ],
@@ -260,16 +270,14 @@ await describe({
           fn: async () => {
             const zip = new ZipWriter();
             const data = new Uint8Array(1_024,);
-            for (let i = 0; i < data.length; i += 1) {
+            for (let i = 0; i < data.length; i += 1)
               data[i] = (i * 7) & 0xFF;
-            }
             zip.add('blob.bin', data,);
             const bytes = zip.build();
             const extracted = await extractFromZip(bytes, 'blob.bin',);
             expect(extracted.length,).toBe(data.length,);
-            for (let i = 0; i < data.length; i += 1) {
+            for (let i = 0; i < data.length; i += 1)
               expect(extracted[i],).toBe(data[i],);
-            }
           },
         },),
         it({
@@ -306,9 +314,8 @@ await describe({
             const ba = a.build();
             const bb = b.build();
             expect(ba.length,).toBe(bb.length,);
-            for (let i = 0; i < ba.length; i += 1) {
+            for (let i = 0; i < ba.length; i += 1)
               expect(ba[i],).toBe(bb[i],);
-            }
           },
         },),
       ],

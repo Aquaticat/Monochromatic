@@ -40,7 +40,10 @@ const zip = new ZipWriter({ modifiedAt: new Date('2024-01-01T00:00:00Z',), },);
 The CRC-32 and DOS time helpers are exported for callers that need them directly:
 
 ```ts
-import { crc32, dosDateTime, } from '@monochromatic-dev/module-zip-writer';
+import {
+  crc32,
+  dosDateTime,
+} from '@monochromatic-dev/module-zip-writer';
 ```
 
 ## Supported

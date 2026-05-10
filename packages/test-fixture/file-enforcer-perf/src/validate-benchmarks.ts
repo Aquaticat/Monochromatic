@@ -18,7 +18,6 @@ import spawn from 'nano-spawn';
 /** Pattern to extract events per second from sysbench output */
 const SYSBENCH_EVENTS_PATTERN = /events per second:\s+([\d.]+)/;
 
-
 /**
  * Runs sysbench cpu benchmark and parses events per second.
  * Falls back to -1 if sysbench is not installed.

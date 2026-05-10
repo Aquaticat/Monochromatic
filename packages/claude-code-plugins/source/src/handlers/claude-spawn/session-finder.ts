@@ -41,10 +41,16 @@ function findByProcessTree(): PidMapping | null {
   let pid = process.ppid;
 
   while (pid > 1) {
-    const pidFilePath = join(BY_PID_DIR, String(pid,),);
+    const pidFilePath = join(
+      BY_PID_DIR,
+      String(pid,),
+    );
 
     try {
-      const raw = readFileSync(pidFilePath, 'utf8',);
+      const raw = readFileSync(
+        pidFilePath,
+        'utf8',
+      );
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
       return JSON.parse(raw,) as PidMapping;
     }
@@ -103,19 +109,31 @@ function findByMostRecent(): PidMapping | null {
     return null;
   }
 
-  let newest: { mapping: PidMapping; mtime: number; } | null = null;
+  let newest: {
+    mapping: PidMapping;
+    mtime: number;
+  } | null = null;
 
   for (const filename of entries) {
-    const filePath = join(BY_PID_DIR, filename,);
+    const filePath = join(
+      BY_PID_DIR,
+      filename,
+    );
 
     try {
       const mtime = statSync(filePath,).mtimeMs;
-      const raw = readFileSync(filePath, 'utf8',);
+      const raw = readFileSync(
+        filePath,
+        'utf8',
+      );
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
       const mapping = JSON.parse(raw,) as PidMapping;
 
       if (newest === null || mtime > newest.mtime) {
-        newest = { mapping, mtime, };
+        newest = {
+          mapping,
+          mtime,
+        };
       }
     }
     catch {

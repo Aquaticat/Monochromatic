@@ -116,7 +116,8 @@ await describe({
               table,
               from: 1,
               to: 4,
-            },),).toBe('bcd',);
+            },),)
+              .toBe('bcd',);
           },
         },),
 
@@ -128,7 +129,8 @@ await describe({
               table,
               from: -5,
               to: 100,
-            },),).toBe('abc',);
+            },),)
+              .toBe('abc',);
           },
         },),
 
@@ -140,7 +142,8 @@ await describe({
               table,
               from: 2,
               to: 2,
-            },),).toBe('',);
+            },),)
+              .toBe('',);
           },
         },),
 
@@ -162,7 +165,8 @@ await describe({
               table,
               from: 1,
               to: 5,
-            },),).toBe('bCDe',);
+            },),)
+              .toBe('bCDe',);
           },
         },),
       ],
@@ -178,7 +182,8 @@ await describe({
             expect(splitAt({
               table,
               at: 0,
-            },),).toBe(0,);
+            },),)
+              .toBe(0,);
           },
         },),
 
@@ -189,7 +194,8 @@ await describe({
             expect(splitAt({
               table,
               at: 3,
-            },),).toBe(table.pieces.length,);
+            },),)
+              .toBe(table.pieces.length,);
           },
         },),
 
@@ -347,7 +353,7 @@ await describe({
           name: '5000 single-char inserts produces correct text',
           fn: async () => {
             const table = freshTable('',);
-            for (let index = 0; index < 5_000; index += 1)
+            for (let index = 0; index < 5_000; index += 1) {
               applyToTable({
                 table,
                 changeset: {
@@ -356,6 +362,7 @@ await describe({
                   insert: 'x',
                 },
               },);
+            }
             expect(table.length,).toBe(5_000,);
             expect(materialise({ table, },),).toBe('x'.repeat(5_000,),);
             // The piece count grows linearly under naive inserts; the
@@ -365,10 +372,11 @@ await describe({
         },),
 
         it({
-          name: '5000 inserts followed by collapse re-anchors to a single piece (verification 16b)',
+          name:
+            '5000 inserts followed by collapse re-anchors to a single piece (verification 16b)',
           fn: async () => {
             const table = freshTable('',);
-            for (let index = 0; index < 5_000; index += 1)
+            for (let index = 0; index < 5_000; index += 1) {
               applyToTable({
                 table,
                 changeset: {
@@ -377,6 +385,7 @@ await describe({
                   insert: 'x',
                 },
               },);
+            }
             expect(table.pieces.length,).toBeGreaterThan(1,);
             // The buffer worker's `scheduleCollapseIfNeeded` runs the
             // following two-line operation on idle when the piece count

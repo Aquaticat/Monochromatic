@@ -14,8 +14,8 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { join, } from 'node:path';
 import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
 
 //region Types
 

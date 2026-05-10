@@ -10,9 +10,10 @@
 
 import type {
   ExtensionAPI,
-  SessionStartEvent,
   ExtensionContext,
+  SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
+import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
 import {
   rmSync,
   unlinkSync,
@@ -23,14 +24,13 @@ import {
   writeCompactFile,
 } from './ipc-file.ts';
 import {
-  createOneShotSocketServer,
-  readFromUnixSocket,
-} from './ipc-socket-unix.ts';
-import {
   createOneShotTcpServer,
   readFromTcpSocket,
 } from './ipc-socket-tcp.ts';
-import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
+import {
+  createOneShotSocketServer,
+  readFromUnixSocket,
+} from './ipc-socket-unix.ts';
 
 //region Constants
 
@@ -165,7 +165,7 @@ async function injectCompactContext(
   api: ExtensionAPI,
 ): Promise<void> {
   // Tier 2: temp file
-  const filePath = api.getFlag('morph-compact-file');
+  const filePath = api.getFlag('morph-compact-file',);
   if (typeof filePath === 'string') {
     const text = readCompactFile(filePath,);
     api.sendUserMessage(text,);
@@ -186,7 +186,7 @@ async function injectCompactContext(
   }
 
   // Tier 3: Unix domain socket
-  const socketPath = api.getFlag('morph-compact-socket');
+  const socketPath = api.getFlag('morph-compact-socket',);
   if (typeof socketPath === 'string') {
     const text = await readFromUnixSocket(socketPath,);
     api.sendUserMessage(text,);
@@ -201,7 +201,7 @@ async function injectCompactContext(
   }
 
   // Tier 4: TCP localhost
-  const tcpAddress = api.getFlag('morph-compact-tcp');
+  const tcpAddress = api.getFlag('morph-compact-tcp',);
   if (typeof tcpAddress === 'string') {
     const text = await readFromTcpSocket(tcpAddress,);
     api.sendUserMessage(text,);

@@ -6,15 +6,15 @@
  */
 
 import {
-  createOneShotTcpServer,
-  readFromTcpSocket,
-  type OneShotTcpServerResult,
-} from './ipc-socket-tcp.ts';
-import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test';
+import {
+  createOneShotTcpServer,
+  type OneShotTcpServerResult,
+  readFromTcpSocket,
+} from './ipc-socket-tcp.ts';
 
 /** Disposable wrapper for one-shot TCP server cleanup. */
 class TcpServerDisposable implements Disposable {

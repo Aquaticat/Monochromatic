@@ -80,11 +80,11 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'orgs',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'insertOrg + getOrg + getOrgByName round-trip',
           async fn() {
             const orgId = uniqueId('org',);
@@ -101,7 +101,7 @@ await describe({
             expect(byId?.created_at,).toBe(100,);
           },
         },),
-        () => it({
+        it({
           name: 'insertOrg is idempotent on duplicate id',
           async fn() {
             const orgId = uniqueId('org-dup',);
@@ -121,11 +121,11 @@ await describe({
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'repo membership',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'upsert + role update + remove',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();
@@ -160,7 +160,7 @@ await describe({
             expect(removed,).toBe(undefined,);
           },
         },),
-        () => it({
+        it({
           name: 'listRepoMembers returns alphabetically by user id',
           async fn() {
             const repoId = uniqueId('mrepo',);
@@ -202,21 +202,22 @@ await describe({
             expect(members.length,).toBe(2,);
             expect([...members,].map(function pickUserId(m,) {
               return m.user_id;
-            },),).toEqual([userIdA, userIdB,].toSorted(function compareAsc(
-              a,
-              b,
-            ) {
-              return a < b ? -1 : 1;
-            },),);
+            },),)
+              .toEqual([userIdA, userIdB,].toSorted(function compareAsc(
+                a,
+                b,
+              ) {
+                return a < b ? -1 : 1;
+              },),);
           },
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'issue assignees',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'assign + list + unassign',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();
@@ -252,11 +253,11 @@ await describe({
         },),
       ],
     },),
-    () => describe({
+    describe({
       name: 'milestones',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'insert + get + listRepoMilestones + setIssueMilestone',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();

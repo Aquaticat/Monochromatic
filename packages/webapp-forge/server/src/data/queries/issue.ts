@@ -86,7 +86,8 @@ export async function createIssueWithEvent(row: {
     },);
     await db.exec('COMMIT',);
     return eventId;
-  } catch (error) {
+  }
+  catch (error) {
     await db.exec('ROLLBACK',);
     throw error;
   }
@@ -140,7 +141,8 @@ export async function labelIssueWithEvent(row: {
     },);
     await db.exec('COMMIT',);
     return eventId;
-  } catch (error) {
+  }
+  catch (error) {
     await db.exec('ROLLBACK',);
     throw error;
   }
@@ -208,7 +210,8 @@ export async function createCommentWithEvent(row: {
     },);
     await db.exec('COMMIT',);
     return eventId;
-  } catch (error) {
+  }
+  catch (error) {
     await db.exec('ROLLBACK',);
     throw error;
   }

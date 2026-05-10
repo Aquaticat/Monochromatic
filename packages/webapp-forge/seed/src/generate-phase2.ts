@@ -14,15 +14,15 @@ import {
   upsertRepoMember,
 } from '@monochromatic-dev/webapp-forge-server/ts/data/queries';
 
-import {
-  rngInt,
-  rngPick,
-} from './rng.ts';
 import { deterministicId, } from './generate-phase2-helpers.ts';
 import {
   seedPullRequestsForRepo,
   seedReviewsForPrs,
 } from './generate-phase2-prs.ts';
+import {
+  rngInt,
+  rngPick,
+} from './rng.ts';
 
 /** Allowed repo-member roles. */
 const ROLES: readonly string[] = [

@@ -125,7 +125,8 @@ function extractCommentId(payload: string,): string | undefined {
   try {
     // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
     parsed = JSON.parse(payload,);
-  } catch {
+  }
+  catch {
     return undefined;
   }
   if (parsed === null || typeof parsed !== 'object')

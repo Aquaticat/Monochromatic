@@ -12,15 +12,9 @@
 import {
   isToolCallEventType,
   type ToolCallEvent,
-} from "@earendil-works/pi-coding-agent";
-import { analyzeBashCommand, } from "./command-parser.ts";
-import { looksLikePath, } from "./command-refs.ts";
-import type {
-  BashAnalysis,
-  CommandInfo,
-  JudgeModelConfig,
-  SignalContext,
-} from "./types.ts";
+} from '@earendil-works/pi-coding-agent';
+import { analyzeBashCommand, } from './command-parser.ts';
+import { looksLikePath, } from './command-refs.ts';
 import {
   ENV_DUMP_COMMANDS,
   INTERPRETER_COMMANDS,
@@ -30,18 +24,24 @@ import {
   NETWORK_COMMANDS,
   PRIVILEGE_COMMANDS,
   SECRET_VAR_PATTERN,
-} from "./constants.ts";
-import { pathSignals, } from "./path-signals.ts";
+} from './constants.ts';
 import {
   contentSignals,
   textSignals,
-} from "./content-signals.ts";
+} from './content-signals.ts';
+import { pathSignals, } from './path-signals.ts';
 import {
   describeAction,
   extractToolText,
   getFilePath,
   isRelevantTool,
-} from "./tool-helpers.ts";
+} from './tool-helpers.ts';
+import type {
+  BashAnalysis,
+  CommandInfo,
+  JudgeModelConfig,
+  SignalContext,
+} from './types.ts';
 
 //region Public types
 
@@ -92,41 +92,48 @@ function shouldFlag(
   config?: MergedConfig,
 ): boolean {
   if (isToolCallEventType(
-    "bash",
-    event
+    'bash',
+    event,
   )) {
-    const analysis = analyzeBashCommand(event.input.command);
+    const analysis = analyzeBashCommand(event.input.command,);
     if (bashSignals(
       analysis,
       ctx,
-      config
-    )) return true;
+      config,
+    )) {
+      return true;
+    }
     if (textSignals(
       event.input.command,
-      config
-    )) return true;
+      config,
+    )) {
+      return true;
+    }
     return false;
   }
 
-  const filePath = getFilePath(event);
+  const filePath = getFilePath(event,);
   if (
-    filePath !== undefined &&
-    filePath !== "" &&
-    pathSignals(
+    filePath !== undefined
+    && filePath !== ''
+    && pathSignals(
       filePath,
-      ctx
+      ctx,
     )
   ) {
     return true;
   }
 
-  const text = extractToolText(event);
-  if (text !== undefined && text !== "") {
-    if (contentSignals(text)) return true;
+  const text = extractToolText(event,);
+  if (text !== undefined && text !== '') {
+    if (contentSignals(text,))
+      return true;
     if (textSignals(
       text,
-      config
-    )) return true;
+      config,
+    )) {
+      return true;
+    }
   }
 
   return false;
@@ -158,77 +165,105 @@ function bashSignals(
   ctx: SignalContext,
   config?: MergedConfig,
 ): boolean {
-  if (!analysis.parsed) return true;
+  if (!analysis.parsed)
+    return true;
 
   for (const cmd of analysis.commands) {
-    if (PRIVILEGE_COMMANDS.has(cmd.name)) return true;
-    if (isMutatingCommand(cmd.name) && hasFlag(
+    if (PRIVILEGE_COMMANDS.has(cmd.name,))
+      return true;
+    if (isMutatingCommand(cmd.name,) && hasFlag(
       cmd.args,
-      "r",
-      "R"
-    )) return true;
-    if (cmd.name === "rm" && hasFlag(
+      'r',
+      'R',
+    )) {
+      return true;
+    }
+    if (cmd.name === 'rm' && hasFlag(
       cmd.args,
-      "f"
-    )) return true;
-    if (hasRootTarget(cmd)) return true;
-    if (cmd.name === "chmod" && cmd.args.includes("777")) return true;
-    if (cmd.name === "chmod" && cmd.args.some(
-      function hasSetuid(a) {
-        return a.includes("u+s") || a.includes("g+s");
+      'f',
+    )) {
+      return true;
+    }
+    if (hasRootTarget(cmd,))
+      return true;
+    if (cmd.name === 'chmod' && cmd.args.includes('777',))
+      return true;
+    if (cmd.name === 'chmod' && cmd.args.some(
+      function hasSetuid(a,) {
+        return a.includes('u+s',) || a.includes('g+s',);
       },
-    )) return true;
+    )) {
+      return true;
+    }
 
-    if (cmd.name === "dd" && cmd.args.some(
-      function hasOfEquals(a) { return a.startsWith("of="); },
-    )) return true;
+    if (cmd.name === 'dd' && cmd.args.some(
+      function hasOfEquals(a,) {
+        return a.startsWith('of=',);
+      },
+    )) {
+      return true;
+    }
 
-    if (cmd.name.startsWith("mkfs")) return true;
-    if (ENV_DUMP_COMMANDS.has(cmd.name)) return true;
-    if (cmd.name === "export" && cmd.args.includes("-p")) return true;
+    if (cmd.name.startsWith('mkfs',))
+      return true;
+    if (ENV_DUMP_COMMANDS.has(cmd.name,))
+      return true;
+    if (cmd.name === 'export' && cmd.args.includes('-p',))
+      return true;
 
-    if (INTERPRETER_COMMANDS.has(cmd.name) && hasInlineCode(
+    if (INTERPRETER_COMMANDS.has(cmd.name,) && hasInlineCode(
       cmd.name,
-      cmd.args
+      cmd.args,
     )) {
       return true;
     }
 
     const files = [
-      ...cmd.args.filter(looksLikePath),
-      ...cmd.redirectTargets
+      ...cmd.args.filter(looksLikePath,),
+      ...cmd.redirectTargets,
     ];
     for (const f of files) {
       if (pathSignals(
         f,
-        ctx
-      )) return true;
+        ctx,
+      )) {
+        return true;
+      }
     }
 
     if (
-      cmd.name === "docker" &&
-      (cmd.args.includes("-e") || cmd.args.includes("--env-file"))
-    ) return true;
+      cmd.name === 'docker'
+      && (cmd.args.includes('-e',) || cmd.args.includes('--env-file',))
+    ) {
+      return true;
+    }
   }
 
-  if (hasNetworkCommand(analysis) && hasSecretParamRefs(analysis)) return true;
+  if (hasNetworkCommand(analysis,) && hasSecretParamRefs(analysis,))
+    return true;
 
   if (
-    analysis.isPipeline &&
-    hasSensitiveSource(
+    analysis.isPipeline
+    && hasSensitiveSource(
       analysis,
-      ctx
-    ) &&
-    hasNetworkCommand(analysis)
-  ) return true;
+      ctx,
+    )
+    && hasNetworkCommand(analysis,)
+  ) {
+    return true;
+  }
 
   if (analysis.isPipeline && analysis.commands.some(
-    function isEnvDump(c) { return ENV_DUMP_COMMANDS.has(c.name); },
-  )) return true;
+    function isEnvDump(c,) {
+      return ENV_DUMP_COMMANDS.has(c.name,);
+    },
+  )) {
+    return true;
+  }
 
   if (config?.commands && matchUserCommands(
     analysis,
-    config.commands
+    config.commands,
   )) {
     return true;
   }
@@ -249,7 +284,7 @@ function bashSignals(
 function isMutatingCommand(
   name: string,
 ): boolean {
-  return MUTATING_COMMANDS.has(name);
+  return MUTATING_COMMANDS.has(name,);
 }
 
 /**
@@ -275,22 +310,26 @@ function hasFlag(
 ): boolean {
   let pastEndOfOptions = false;
   return args.some(
-    function checkArg(a) {
-      if (pastEndOfOptions) return false;
-      if (a === "--") {
+    function checkArg(a,) {
+      if (pastEndOfOptions)
+        return false;
+      if (a === '--') {
         pastEndOfOptions = true;
         return false;
       }
-      if (!a.startsWith("-")) return false;
-      if (a.startsWith("--")) {
+      if (!a.startsWith('-',))
+        return false;
+      if (a.startsWith('--',)) {
         return flags.some(
-          function matchLongFlag(f) {
+          function matchLongFlag(f,) {
             return a === `--${LONG_FLAGS[f] ?? f}`;
           },
         );
       }
       return flags.some(
-        function matchShortFlag(f) { return a.includes(f); },
+        function matchShortFlag(f,) {
+          return a.includes(f,);
+        },
       );
     },
   );
@@ -303,14 +342,16 @@ function hasFlag(
  * @returns `true` if a root target is found
  */
 function hasRootTarget(
-  cmd: Pick<CommandInfo, "args" | "redirectTargets">,
+  cmd: Pick<CommandInfo, 'args' | 'redirectTargets'>,
 ): boolean {
   const allTargets = [
     ...cmd.args,
-    ...cmd.redirectTargets
+    ...cmd.redirectTargets,
   ];
   return allTargets.some(
-    function isRootPath(a) { return a === "/" || a === "/*"; },
+    function isRootPath(a,) {
+      return a === '/' || a === '/*';
+    },
   );
 }
 
@@ -327,10 +368,14 @@ function hasInlineCode(
   args: string[],
 ): boolean {
   const flags = INTERPRETER_INLINE_FLAGS[name];
-  if (flags === undefined) return false;
-  if (flags.length === 0) return true;
+  if (flags === undefined)
+    return false;
+  if (flags.length === 0)
+    return true;
   return flags.some(
-    function flagPresent(f) { return args.includes(f); },
+    function flagPresent(f,) {
+      return args.includes(f,);
+    },
   );
 }
 
@@ -344,7 +389,9 @@ function hasNetworkCommand(
   analysis: BashAnalysis,
 ): boolean {
   return analysis.commands.some(
-    function isNetworkCmd(c) { return NETWORK_COMMANDS.has(c.name); },
+    function isNetworkCmd(c,) {
+      return NETWORK_COMMANDS.has(c.name,);
+    },
   );
 }
 
@@ -358,7 +405,9 @@ function hasSecretParamRefs(
   analysis: BashAnalysis,
 ): boolean {
   return analysis.allParamRefs.some(
-    function isSecretRef(ref) { return SECRET_VAR_PATTERN.test(ref); },
+    function isSecretRef(ref,) {
+      return SECRET_VAR_PATTERN.test(ref,);
+    },
   );
 }
 
@@ -375,10 +424,12 @@ function hasSensitiveSource(
   ctx: SignalContext,
 ): boolean {
   return analysis.allFiles.some(
-    function isSensitivePath(f) { return pathSignals(
-      f,
-      ctx
-    ); },
+    function isSensitivePath(f,) {
+      return pathSignals(
+        f,
+        ctx,
+      );
+    },
   );
 }
 
@@ -407,18 +458,24 @@ function matchUserCommands(
 ): boolean {
   for (const cmd of analysis.commands) {
     for (const matcher of matchers) {
-      if (typeof matcher === "string") {
-        if (cmd.name === matcher) return true;
+      if (typeof matcher === 'string') {
+        if (cmd.name === matcher)
+          return true;
       }
       else {
-        if (cmd.name !== matcher[0]) continue;
-        const prefix = matcher.slice(1);
+        if (cmd.name !== matcher[0])
+          continue;
+        const prefix = matcher.slice(1,);
         if (prefix.every(
           function argMatches(
             sub,
-            i
-          ) { return cmd.args[i] === sub; },
-        )) return true;
+            i,
+          ) {
+            return cmd.args[i] === sub;
+          },
+        )) {
+          return true;
+        }
       }
     }
   }

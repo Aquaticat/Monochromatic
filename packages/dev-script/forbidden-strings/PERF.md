@@ -562,7 +562,7 @@ under `/tmp/claude/gen-*.ts` (Bun TypeScript).
 
 ## Engine constraint
 
-The scanner uses [resharp][] for regex matching.
+The scanner uses [resharp][resharp] for regex matching.
 Resharp is **load-bearing for the rule grammar**, not just a performance choice:
 
 - `A&B` set intersection

@@ -7,12 +7,8 @@
  * @module
  */
 
-import {
-  truncate,
-} from './formatter-utils.ts';
-import {
-  TOOL_TITLES,
-} from './tool-titles.ts';
+import { truncate, } from './formatter-utils.ts';
+import { TOOL_TITLES, } from './tool-titles.ts';
 
 /** Prefix prepended to every terminal title for visual identification. */
 const TITLE_PREFIX = 'π';
@@ -167,10 +163,10 @@ function titleForEvent(
 }
 
 export {
-  titleForEvent,
-  titleForTool,
   MAX_TITLE_LENGTH,
   TITLE_PREFIX,
+  titleForEvent,
+  titleForTool,
 };
 
 export type {

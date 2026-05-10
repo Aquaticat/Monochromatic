@@ -11,7 +11,7 @@ The webapp-forge server speaks git over HTTP only (no SSH). The protocol surface
 
 - `GET  /{owner}/{repo}.git/info/refs?service=git-upload-pack`
 - `GET  /{owner}/{repo}.git/info/refs?service=git-receive-pack`
-- `POST /{owner}/{repo}.git/git-upload-pack`  (clone, fetch)
+- `POST /{owner}/{repo}.git/git-upload-pack` (clone, fetch)
 - `POST /{owner}/{repo}.git/git-receive-pack` (push)
 
 isomorphic-git is built primarily for clients (it speaks to GitHub/etc. as a client
@@ -32,20 +32,20 @@ Cloned `isomorphic-git/isomorphic-git` (depth=1) to inspect:
 
 ## Capability matrix
 
-| Operation                                                | Status                                               | Path                                                                |
-| -------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------- |
-| Read git object (`readObject`)                           | available                                            | `internal-apis` -> `_readObject`                                    |
-| Write git object (`writeObject`)                         | available                                            | `internal-apis` -> `_writeObject`                                   |
-| Resolve ref to OID                                       | available                                            | `internal-apis` -> `GitRefManager.resolve`                          |
-| List refs                                                | available                                            | `internal-apis` -> `GitRefManager.listRefs`                         |
-| Build packfile from OID set                              | available                                            | `internal-apis` -> `_pack` (`commands/pack.js`)                     |
-| Index/apply received packfile                            | available via public API                             | `indexPack({fs, dir, gitdir, filepath})` writes `.idx` next to pack |
-| Write `info/refs` advertisement                          | available                                            | `internal-apis` -> `writeRefsAdResponse`                            |
-| Parse `git-upload-pack` request (server reads wants/haves) | available                                          | `internal-apis` -> `parseUploadPackRequest`                         |
-| Write `git-upload-pack` response (NAK + sideband pack)   | **missing on server side** (only client-side parser) | must vendor                                                         |
-| Parse `git-receive-pack` request (server reads ref updates + pack) | **missing**                                | must vendor                                                         |
-| Write `git-receive-pack` response (unpack + ref-update report) | **missing** (only client-side parser)          | must vendor                                                         |
-| Sideband multiplex (pack/progress/error onto channels 1/2/3) | **missing: `GitSideBand.mux` is commented out** at `src/models/GitSideBand.js:82` | must vendor                                                         |
+| Operation                                                          | Status                                                                            | Path                                                                |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Read git object (`readObject`)                                     | available                                                                         | `internal-apis` -> `_readObject`                                    |
+| Write git object (`writeObject`)                                   | available                                                                         | `internal-apis` -> `_writeObject`                                   |
+| Resolve ref to OID                                                 | available                                                                         | `internal-apis` -> `GitRefManager.resolve`                          |
+| List refs                                                          | available                                                                         | `internal-apis` -> `GitRefManager.listRefs`                         |
+| Build packfile from OID set                                        | available                                                                         | `internal-apis` -> `_pack` (`commands/pack.js`)                     |
+| Index/apply received packfile                                      | available via public API                                                          | `indexPack({fs, dir, gitdir, filepath})` writes `.idx` next to pack |
+| Write `info/refs` advertisement                                    | available                                                                         | `internal-apis` -> `writeRefsAdResponse`                            |
+| Parse `git-upload-pack` request (server reads wants/haves)         | available                                                                         | `internal-apis` -> `parseUploadPackRequest`                         |
+| Write `git-upload-pack` response (NAK + sideband pack)             | **missing on server side** (only client-side parser)                              | must vendor                                                         |
+| Parse `git-receive-pack` request (server reads ref updates + pack) | **missing**                                                                       | must vendor                                                         |
+| Write `git-receive-pack` response (unpack + ref-update report)     | **missing** (only client-side parser)                                             | must vendor                                                         |
+| Sideband multiplex (pack/progress/error onto channels 1/2/3)       | **missing: `GitSideBand.mux` is commented out** at `src/models/GitSideBand.js:82` | must vendor                                                         |
 
 Source citation for the missing pieces:
 

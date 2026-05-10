@@ -19,7 +19,6 @@ title = "betterleaks config"
 minVersion = "v8.25.0"
 betterleaksMinVersion = "v1.2.0"
 
-
 prefilter = '''
 matchesAny(attributes[?"path"].orValue(""), [
   r"""gitleaks\.toml""",
@@ -311,10 +310,10 @@ id = "atlassian-api-token"
 description = "Detected an Atlassian API token, posing a threat to project management and collaboration tool security and data confidentiality."
 regex = '''(?i)[\w.-]{0,50}?(?:(?-i:ATLASSIAN|[Aa]tlassian)|(?-i:CONFLUENCE|[Cc]onfluence)|(?-i:JIRA|[Jj]ira))(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{20}[a-f0-9]{4})(?:\\?['"\x60]|[\s;]|\\[nr]|$)|\b(ATATT3[A-Za-z0-9_\-=]{186})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "atlassian",
-    "confluence",
-    "jira",
-    "atatt3",
+  "atlassian",
+  "confluence",
+  "jira",
+  "atatt3",
 ]
 filter = '''
 entropy(finding["secret"]) <= 3.5
@@ -328,10 +327,10 @@ id = "authress-service-client-access-key"
 description = "Uncovered a possible Authress Service Client Access Key, which may compromise access control services and sensitive data."
 regex = '''\b((?:sc|ext|scauth|authress)_(?i)[a-z0-9]{5,30}\.[a-z0-9]{4,6}\.(?-i:acc)[_-][a-z0-9-]{10,32}\.[a-z0-9+/_=-]{30,120})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "sc_",
-    "ext_",
-    "scauth_",
-    "authress_",
+  "sc_",
+  "ext_",
+  "scauth_",
+  "authress_",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -345,11 +344,11 @@ id = "aws-access-token"
 description = "Identified an AWS access key ID paired with a secret access key, which together can provide full access to AWS services."
 regex = '''\b((?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z2-7]{16})\b'''
 keywords = [
-    "a3t",
-    "akia",
-    "asia",
-    "abia",
-    "acca",
+  "a3t",
+  "akia",
+  "asia",
+  "abia",
+  "acca",
 ]
 validate = '''
 cel.bind(r,
@@ -411,10 +410,10 @@ id = "aws-secret-access-key"
 description = "Identified an AWS secret access key, used as a component of the aws-access-token composite rule."
 regex = '''[\w.-]{0,50}?(?i:[\w.-]{0,50}?(?:secret|access|key|token)(?:[ \t\w.-]{0,20})[\s'"]{0,3})(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([A-Za-z0-9/+=]{40})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "secret",
-    "access",
-    "key",
-    "token",
+  "secret",
+  "access",
+  "key",
+  "token",
 ]
 skipReport = true
 filter = '''
@@ -571,8 +570,8 @@ id = "cloudflare-origin-ca-key"
 description = "Detected a Cloudflare Origin CA Key, potentially compromising cloud application deployments and operational security."
 regex = '''\b(v1\.0-[a-f0-9]{24}-[a-f0-9]{146})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "cloudflare",
-    "v1.0-",
+  "cloudflare",
+  "v1.0-",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -595,8 +594,8 @@ id = "cohere-api-token"
 description = "Identified a Cohere Token, posing a risk of unauthorized access to AI services and data manipulation."
 regex = '''[\w.-]{0,50}?(?i:[\w.-]{0,50}?(?:cohere|CO_API_KEY)(?:[ \t\w.-]{0,20})[\s'"]{0,3})(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-zA-Z0-9]{40})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "cohere",
-    "co_api_key",
+  "cohere",
+  "co_api_key",
 ]
 validate = '''
 cel.bind(r,
@@ -1007,8 +1006,8 @@ id = "facebook-page-access-token"
 description = "Discovered a Facebook Page Access Token, posing a risk of unauthorized access to Facebook accounts and personal data exposure."
 regex = '''\b(EAA[MC](?i)[a-z0-9]{100,})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "eaam",
-    "eaac",
+  "eaam",
+  "eaac",
 ]
 filter = '''
 entropy(finding["secret"]) <= 4.0
@@ -1062,9 +1061,9 @@ id = "figma-personal-access-header-token"
 description = "Uncovered a Figma Personal Access Token in a header, which may compromise design assets and team collaboration."
 regex = '''(?i)[\w.-]{0,50}?(?:x-figma-token|xfigmatoken|x_figma_token)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([0-9A-F]{4}-[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "x-figma-token",
-    "xfigmatoken",
-    "x_figma_token",
+  "x-figma-token",
+  "xfigmatoken",
+  "x_figma_token",
 ]
 validate = '''
 cel.bind(r,
@@ -1277,16 +1276,16 @@ id = "generic-api-key"
 description = "Detected a Generic API Key, potentially exposing access to various services and sensitive operations."
 regex = '''(?i)[\w.-]{0,50}?(?:access|auth|(?-i:[Aa]pi|API)|credential|creds|key|passw(?:or)?d|secret|token)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([\w.=-]{10,150}|[a-z0-9][a-z0-9+/]{11,}={0,3})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "access",
-    "api",
-    "auth",
-    "key",
-    "credential",
-    "creds",
-    "passwd",
-    "password",
-    "secret",
-    "token",
+  "access",
+  "api",
+  "auth",
+  "key",
+  "credential",
+  "creds",
+  "passwd",
+  "password",
+  "secret",
+  "token",
 ]
 filter = '''
 matchesAny(finding["secret"], ["^[a-zA-Z_.-]+$"])
@@ -2776,8 +2775,8 @@ id = "github-app-token"
 description = "Identified a GitHub App Token, which may compromise GitHub application integrations and source code security."
 regex = '''(?:ghu|ghs)_[0-9a-zA-Z]{36}'''
 keywords = [
-    "ghu_",
-    "ghs_",
+  "ghu_",
+  "ghs_",
 ]
 validate = '''
 cel.bind(r,
@@ -3248,8 +3247,8 @@ id = "gocardless-api-token"
 description = "Detected a GoCardless API token, potentially risking unauthorized direct debit payment operations and financial data exposure."
 regex = '''(?i)[\w.-]{0,50}?(?:gocardless)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(live_(?i)[a-z0-9\-_=]{40})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "live_",
-    "gocardless",
+  "live_",
+  "gocardless",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3333,8 +3332,8 @@ id = "harness-api-key"
 description = "Identified a Harness Access Token (PAT or SAT), risking unauthorized access to a Harness account."
 regex = '''(?:pat|sat)\.[a-zA-Z0-9_-]{22}\.[0-9a-f]{24}\.[a-zA-Z0-9]{20}'''
 keywords = [
-    "pat.",
-    "sat.",
+  "pat.",
+  "sat.",
 ]
 validate = '''
 cel.bind(r,
@@ -3375,8 +3374,8 @@ description = "Identified a HashiCorp Terraform password field, risking unauthor
 regex = '''(?i)[\w.-]{0,50}?(?:administrator_login_password|password)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}("[a-z0-9=_\-]{8,20}")(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 path = '''(?i)\.(?:tf|hcl)$'''
 keywords = [
-    "administrator_login_password",
-    "password",
+  "administrator_login_password",
+  "password",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -3499,9 +3498,9 @@ id = "intra42-client-secret"
 description = "Found a Intra42 client secret, which could lead to unauthorized access to the 42School API and sensitive data."
 regex = '''\b(s-s4t2(?:ud|af)-(?i)[abcdef0123456789]{64})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "intra",
-    "s-s4t2ud-",
-    "s-s4t2af-",
+  "intra",
+  "s-s4t2ud-",
+  "s-s4t2af-",
 ]
 filter = '''
 entropy(finding["secret"]) <= 3.0
@@ -3515,10 +3514,10 @@ id = "jfrog-api-key"
 description = "Found a JFrog API Key, posing a risk of unauthorized access to software artifact repositories and build pipelines."
 regex = '''(?i)[\w.-]{0,50}?(?:jfrog|artifactory|bintray|xray)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{73})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "jfrog",
-    "artifactory",
-    "bintray",
-    "xray",
+  "jfrog",
+  "artifactory",
+  "bintray",
+  "xray",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3529,10 +3528,10 @@ id = "jfrog-identity-token"
 description = "Discovered a JFrog Identity Token, potentially compromising access to JFrog services and sensitive software artifacts."
 regex = '''(?i)[\w.-]{0,50}?(?:jfrog|artifactory|bintray|xray)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{64})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "jfrog",
-    "artifactory",
-    "bintray",
-    "xray",
+  "jfrog",
+  "artifactory",
+  "bintray",
+  "xray",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3657,9 +3656,9 @@ id = "linkedin-client-id"
 description = "Found a LinkedIn Client ID, risking unauthorized access to LinkedIn integrations and professional data exposure."
 regex = '''(?i)[\w.-]{0,50}?(?:linked[_-]?in)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{14})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "linkedin",
-    "linked_in",
-    "linked-in",
+  "linkedin",
+  "linked_in",
+  "linked-in",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -3673,9 +3672,9 @@ id = "linkedin-client-secret"
 description = "Discovered a LinkedIn Client secret, potentially compromising LinkedIn application integrations and user data."
 regex = '''(?i)[\w.-]{0,50}?(?:linked[_-]?in)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{16})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "linkedin",
-    "linked_in",
-    "linked-in",
+  "linkedin",
+  "linked_in",
+  "linked-in",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -3689,8 +3688,8 @@ id = "lob-api-key"
 description = "Uncovered a Lob API Key, which could lead to unauthorized access to mailing and address verification services."
 regex = '''(?i)[\w.-]{0,50}?(?:lob)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}((live|test)_[a-f0-9]{35})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "test_",
-    "live_",
+  "test_",
+  "live_",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3701,9 +3700,9 @@ id = "lob-pub-api-key"
 description = "Detected a Lob Publishable API Key, posing a risk of exposing mail and print service integrations."
 regex = '''(?i)[\w.-]{0,50}?(?:lob)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}((test|live)_pub_[a-f0-9]{31})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "test_pub",
-    "live_pub",
-    "_pub",
+  "test_pub",
+  "live_pub",
+  "_pub",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3828,9 +3827,9 @@ id = "messagebird-api-token"
 description = "Found a MessageBird API token, risking unauthorized access to communication platforms and message data."
 regex = '''(?i)[\w.-]{0,50}?(?:message[_-]?bird)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{25})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "messagebird",
-    "message-bird",
-    "message_bird",
+  "messagebird",
+  "message-bird",
+  "message_bird",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3841,9 +3840,9 @@ id = "messagebird-client-id"
 description = "Discovered a MessageBird client ID, potentially compromising API integrations and sensitive communication data."
 regex = '''(?i)[\w.-]{0,50}?(?:message[_-]?bird)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "messagebird",
-    "message-bird",
-    "message_bird",
+  "messagebird",
+  "message-bird",
+  "message_bird",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3854,9 +3853,9 @@ id = "microsoft-teams-webhook"
 description = "Uncovered a Microsoft Teams Webhook, which could lead to unauthorized access to team collaboration tools and data leaks."
 regex = '''https://[a-z0-9]+\.webhook\.office\.com/webhookb2/[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}@[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}/IncomingWebhook/[a-z0-9]{32}/[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}'''
 keywords = [
-    "webhook.office.com",
-    "webhookb2",
-    "incomingwebhook",
+  "webhook.office.com",
+  "webhookb2",
+  "incomingwebhook",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3922,7 +3921,7 @@ cel.bind(r,
 '''
 [[rules.allowlists]]
 regexes = [
-    '''^mdb_sa_sk_[0-9]{40}$''',
+  '''^mdb_sa_sk_[0-9]{40}$''',
 ]
 [[rules.required]]
 id = "mongodb-atlas-service-account-id"
@@ -3936,13 +3935,13 @@ description = "Detected a MongoDB connection string with embedded credentials, p
 regex = '''\b(mongodb(?:\+srv)?://(?P<username>[!-9;-~]{3,50}):(?P<password>[!-?A-~]{3,88})@(?P<host>(?:[a-zA-Z0-9][\w.-]+|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d{1,5})?(?:,(?:[a-zA-Z0-9][\w.-]+|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d{1,5})?)*)/?(?:(?P<authdb>[\w-]+)?(?P<options>\?\w+=[\w@/.$-]+(?:&(?:amp;)?\w+=[\w@/.$-]+)*)?)?)(?:['"\s;\x60]|\\[nr]|\b|$)'''
 entropy = 4
 keywords = [
-    "mongodb://",
-    "mongodb+srv://",
+  "mongodb://",
+  "mongodb+srv://",
 ]
 [[rules.allowlists]]
 regexes = [
-    '''(?i)\bmongodb(?:\+srv)?:\/\/(?:user(?:name)?|foo):(?:pass(?:word)?|bar)(?:[^@\/]*)?@''',
-    '''(?i)\bmongodb(?:\+srv)?:\/\/[^\s'"\x60]*(?:\$\{\{[^}]+}}|\$\{[^}]+}|\$[A-Za-z_][A-Za-z0-9_]*|{{[^}]+}}|<[^>]+>|\[[^]]+])[^\s'"\x60]*''',
+  '''(?i)\bmongodb(?:\+srv)?:\/\/(?:user(?:name)?|foo):(?:pass(?:word)?|bar)(?:[^@\/]*)?@''',
+  '''(?i)\bmongodb(?:\+srv)?:\/\/[^\s'"\x60]*(?:\$\{\{[^}]+}}|\$\{[^}]+}|\$[A-Za-z_][A-Za-z0-9_]*|{{[^}]+}}|<[^>]+>|\[[^]]+])[^\s'"\x60]*''',
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -3980,9 +3979,9 @@ id = "new-relic-user-api-id"
 description = "Found a New Relic user API ID, posing a risk to application monitoring services and data integrity."
 regex = '''(?i)[\w.-]{0,50}?(?:new-relic|newrelic|new_relic)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{64})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "new-relic",
-    "newrelic",
-    "new_relic",
+  "new-relic",
+  "newrelic",
+  "new_relic",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -4056,9 +4055,9 @@ id = "nytimes-access-token"
 description = "Detected a Nytimes Access Token, risking unauthorized access to New York Times APIs and content services."
 regex = '''(?i)[\w.-]{0,50}?(?:nytimes|new-york-times,|newyorktimes)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9=_\-]{32})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "nytimes",
-    "new-york-times",
-    "newyorktimes",
+  "nytimes",
+  "new-york-times",
+  "newyorktimes",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -4310,8 +4309,8 @@ id = "planetscale-id"
 description = "Found a PlanetScale service token ID."
 regex = '''(?i)(?:pscale|planetscale)(?:.|[\n\r]){0,16}?(?:USER|ID|NAME)(?:.|[\n\r]){0,16}?([a-z0-9]{12})'''
 keywords = [
-    "pscale",
-    "planetscale",
+  "pscale",
+  "planetscale",
 ]
 skipReport = true
 filter = '''
@@ -4425,8 +4424,8 @@ id = "polymarket-private-key"
 description = "Discovered a Polymarket private key, which could allow unauthorized trading and fund transfers."
 regex = '''[\w.-]{0,50}?(?i:[\w.-]{0,50}?(?:poly.{0,20}private.{0,20}key)(?:[ \t\w.-]{0,20})[\s'"]{0,3})(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(0x[a-fA-F0-9]{64})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "private",
-    "key",
+  "private",
+  "key",
 ]
 filter = '''
 entropy(finding["secret"]) <= 3.5
@@ -4497,9 +4496,9 @@ id = "privateai-api-token"
 description = "Identified a PrivateAI Token, posing a risk of unauthorized access to AI services and data manipulation."
 regex = '''[\w.-]{0,50}?(?i:[\w.-]{0,50}?(?:private[_-]?ai)(?:[ \t\w.-]{0,20})[\s'"]{0,3})(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{32})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "privateai",
-    "private_ai",
-    "private-ai",
+  "privateai",
+  "private_ai",
+  "private-ai",
 ]
 filter = '''
 entropy(finding["secret"]) <= 3.0
@@ -4782,8 +4781,8 @@ id = "sidekiq-secret"
 description = "Discovered a Sidekiq Secret, which could lead to compromised background job processing and application data breaches."
 regex = '''(?i)[\w.-]{0,50}?(?:BUNDLE_ENTERPRISE__CONTRIBSYS__COM|BUNDLE_GEMS__CONTRIBSYS__COM)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{8}:[a-f0-9]{8})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "bundle_enterprise__contribsys__com",
-    "bundle_gems__contribsys__com",
+  "bundle_enterprise__contribsys__com",
+  "bundle_gems__contribsys__com",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -4794,8 +4793,8 @@ id = "sidekiq-sensitive-url"
 description = "Uncovered a Sidekiq Sensitive URL, potentially exposing internal job queues and sensitive operation details."
 regex = '''(?i)\bhttps?://([a-f0-9]{8}:[a-f0-9]{8})@(?:gems.contribsys.com|enterprise.contribsys.com)(?:[\/|\#|\?|:]|$)'''
 keywords = [
-    "gems.contribsys.com",
-    "enterprise.contribsys.com",
+  "gems.contribsys.com",
+  "enterprise.contribsys.com",
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -4830,8 +4829,8 @@ id = "slack-config-access-token"
 description = "Found a Slack Configuration access token, posing a risk to workspace configuration and sensitive data access."
 regex = '''(?i)xoxe.xox[bp]-\d-[A-Z0-9]{163,166}'''
 keywords = [
-    "xoxe.xoxb-",
-    "xoxe.xoxp-",
+  "xoxe.xoxb-",
+  "xoxe.xoxp-",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -4869,8 +4868,8 @@ id = "slack-legacy-token"
 description = "Detected a Slack Legacy token, risking unauthorized access to older Slack integrations and user data."
 regex = '''xox[os]-\d+-\d+-\d+-[a-fA-F\d]+'''
 keywords = [
-    "xoxo",
-    "xoxs",
+  "xoxo",
+  "xoxs",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -4884,8 +4883,8 @@ id = "slack-legacy-workspace-token"
 description = "Identified a Slack Legacy Workspace token, potentially compromising access to workspace data and legacy features."
 regex = '''xox[ar]-(?:\d-)?[0-9a-zA-Z]{8,48}'''
 keywords = [
-    "xoxa",
-    "xoxr",
+  "xoxa",
+  "xoxr",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -4923,8 +4922,8 @@ id = "slack-user-token"
 description = "Found a Slack User token, posing a risk of unauthorized user impersonation and data access within Slack workspaces."
 regex = '''xox[pe](?:-[0-9]{10,13}){3}-[a-zA-Z0-9-]{28,34}'''
 keywords = [
-    "xoxp-",
-    "xoxe-",
+  "xoxp-",
+  "xoxe-",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -4966,8 +4965,8 @@ id = "sourcegraph-access-token"
 description = "Sourcegraph is a code search and navigation engine."
 regex = '''(?i)\b(\b(sgp_(?:[a-fA-F0-9]{16}|local)_[a-fA-F0-9]{40}|sgp_[a-fA-F0-9]{40}|[a-fA-F0-9]{40})\b)(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "sgp_",
-    "sourcegraph",
+  "sgp_",
+  "sourcegraph",
 ]
 filter = '''
 entropy(finding["secret"]) <= 3.0
@@ -4981,8 +4980,8 @@ id = "square-access-token"
 description = "Detected a Square Access Token, risking unauthorized payment processing and financial transaction exposure."
 regex = '''\b((?:EAAA|sq0atp-)[\w-]{22,60})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "sq0atp-",
-    "eaaa",
+  "sq0atp-",
+  "eaaa",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -5017,12 +5016,12 @@ id = "stripe-access-token"
 description = "Found a Stripe Access Token, posing a risk to payment processing services and sensitive financial data."
 regex = '''\b((?:sk|rk)_(?:test|live|prod)_[a-zA-Z0-9]{10,99})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "sk_test",
-    "sk_live",
-    "sk_prod",
-    "rk_test",
-    "rk_live",
-    "rk_prod",
+  "sk_test",
+  "sk_live",
+  "sk_prod",
+  "rk_test",
+  "rk_live",
+  "rk_prod",
 ]
 filter = '''
 entropy(finding["secret"]) <= 2.0
@@ -5191,8 +5190,8 @@ id = "vault-service-token"
 description = "Identified a Vault Service Token, potentially compromising infrastructure security and access to sensitive credentials."
 regex = '''\b((?:hvs\.[\w-]{90,120}|s\.(?i:[a-z0-9]{24})))(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "hvs.",
-    "s.",
+  "hvs.",
+  "s.",
 ]
 filter = '''
 matchesAny(finding["secret"], [r"""s\.[A-Za-z]{24}"""])
@@ -5372,8 +5371,8 @@ id = "weights-and-biases-api-key"
 description = "Detected a Weights & Biases API Key, which may expose ML experiment tracking and model registry access to unauthorized parties."
 regex = '''(?i)[\w.-]{0,50}?(?:wandb|weightsandbiases)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{40})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = [
-    "wandb",
-    "weightsandbiases",
+  "wandb",
+  "weightsandbiases",
 ]
 validate = '''
 cel.bind(r,
@@ -5470,4 +5469,3 @@ id = "zendesk-secret-key"
 description = "Detected a Zendesk Secret Key, risking unauthorized access to customer support services and sensitive ticketing data."
 regex = '''(?i)[\w.-]{0,50}?(?:zendesk)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{40})(?:\\?['"\x60]|[\s;]|\\[nr]|$)'''
 keywords = ["zendesk"]
-

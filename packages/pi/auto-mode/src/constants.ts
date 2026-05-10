@@ -20,7 +20,7 @@
  * defaults), and by `findBudgetModel` (for the no-options call).
  */
 export const JUDGE_MODEL_DEFAULTS = {
-  strategy: "same-provider",
+  strategy: 'same-provider',
   costRatio: 0.5,
   majorVersions: 1,
 } as const;
@@ -50,11 +50,11 @@ export const BASH_DETAIL_LEN = 50;
 
 /** Commands that escalate privileges. */
 export const PRIVILEGE_COMMANDS = new Set([
-  "sudo",
-  "su",
-  "doas",
-  "pkexec",
-] as const) as Set<string>;
+  'sudo',
+  'su',
+  'doas',
+  'pkexec',
+] as const,) as Set<string>;
 
 //endregion
 
@@ -62,13 +62,13 @@ export const PRIVILEGE_COMMANDS = new Set([
 
 /** Commands that mutate the filesystem. */
 export const MUTATING_COMMANDS = new Set([
-  "rm",
-  "chmod",
-  "chown",
-  "chgrp",
-  "find",
-  "xargs",
-] as const) as Set<string>;
+  'rm',
+  'chmod',
+  'chown',
+  'chgrp',
+  'find',
+  'xargs',
+] as const,) as Set<string>;
 
 //endregion
 
@@ -76,17 +76,17 @@ export const MUTATING_COMMANDS = new Set([
 
 /** Commands that make network connections. */
 export const NETWORK_COMMANDS = new Set([
-  "curl",
-  "wget",
-  "nc",
-  "ncat",
-  "netcat",
-  "ssh",
-  "scp",
-  "rsync",
-  "ftp",
-  "sftp",
-] as const) as Set<string>;
+  'curl',
+  'wget',
+  'nc',
+  'ncat',
+  'netcat',
+  'ssh',
+  'scp',
+  'rsync',
+  'ftp',
+  'sftp',
+] as const,) as Set<string>;
 
 //endregion
 
@@ -94,10 +94,10 @@ export const NETWORK_COMMANDS = new Set([
 
 /** Commands that dump environment variables. */
 export const ENV_DUMP_COMMANDS = new Set([
-  "printenv",
-  "env",
-  "set",
-] as const) as Set<string>;
+  'printenv',
+  'env',
+  'set',
+] as const,) as Set<string>;
 
 //endregion
 
@@ -105,17 +105,17 @@ export const ENV_DUMP_COMMANDS = new Set([
 
 /** Interpreter commands that can execute inline code. */
 export const INTERPRETER_COMMANDS = new Set([
-  "eval",
-  "bash",
-  "sh",
-  "zsh",
-  "fish",
-  "python",
-  "python3",
-  "node",
-  "ruby",
-  "perl",
-] as const) as Set<string>;
+  'eval',
+  'bash',
+  'sh',
+  'zsh',
+  'fish',
+  'python',
+  'python3',
+  'node',
+  'ruby',
+  'perl',
+] as const,) as Set<string>;
 
 //endregion
 
@@ -125,32 +125,32 @@ export const INTERPRETER_COMMANDS = new Set([
 export const INTERPRETER_INLINE_FLAGS: Record<string, string[]> = {
   eval: [],
   bash: [
-    "-c",
+    '-c',
   ],
   sh: [
-    "-c",
+    '-c',
   ],
   zsh: [
-    "-c",
+    '-c',
   ],
   fish: [
-    "-c",
+    '-c',
   ],
   python: [
-    "-c",
+    '-c',
   ],
   python3: [
-    "-c",
+    '-c',
   ],
   node: [
-    "-e",
-    "--eval",
+    '-e',
+    '--eval',
   ],
   ruby: [
-    "-e",
+    '-e',
   ],
   perl: [
-    "-e",
+    '-e',
   ],
 };
 
@@ -160,9 +160,9 @@ export const INTERPRETER_INLINE_FLAGS: Record<string, string[]> = {
 
 /** Mapping from short flag characters to their long flag names. */
 export const LONG_FLAGS: Record<string, string> = {
-  r: "recursive",
-  R: "recursive",
-  f: "force",
+  r: 'recursive',
+  R: 'recursive',
+  f: 'force',
 };
 
 //endregion
@@ -224,13 +224,13 @@ export const SECRET_PATH_PATTERN: RegExp =
 
 /** Tools that could be used for circumvention after a denial. */
 export const RELEVANT_TOOLS: readonly string[] = [
-  "bash",
-  "read",
-  "write",
-  "edit",
-  "grep",
-  "find",
-  "ls",
+  'bash',
+  'read',
+  'write',
+  'edit',
+  'grep',
+  'find',
+  'ls',
 ] as const;
 
 //endregion

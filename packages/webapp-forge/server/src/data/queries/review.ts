@@ -125,7 +125,8 @@ export async function submitReviewWithEvent(row: {
     },);
     await db.exec('COMMIT',);
     return eventId;
-  } catch (error) {
+  }
+  catch (error) {
     await db.exec('ROLLBACK',);
     throw error;
   }

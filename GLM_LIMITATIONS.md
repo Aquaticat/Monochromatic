@@ -96,16 +96,17 @@ GLM typed the parameter as `AsyncIterable<unknown>`, then:
 for await (const event of stream) {
   const evt = event as Record<string, unknown>;
   const type = evt.type as string | undefined;
-  if (type === "toolcall_end") {
+  if (type === 'toolcall_end')
     toolCall = evt.toolCall as Record<string, unknown> | undefined;
-  }
-  if (type === "text_delta") {
+  if (type === 'text_delta') {
     const delta = evt.delta as string | undefined;
-    if (delta !== undefined) textContent += delta;
+    if (delta !== undefined)
+      textContent += delta;
   }
-  if (type === "text_end") {
+  if (type === 'text_end') {
     const content = evt.content as string | undefined;
-    if (content !== undefined) textContent = content;
+    if (content !== undefined)
+      textContent = content;
   }
 }
 ```
@@ -138,9 +139,10 @@ const activeModel = ctx.model as Model<Api>;
 ### `judge-stream.ts:57-60` -- text accumulator clobbered
 
 ```typescript
-if (type === "text_end") {
+if (type === 'text_end') {
   const content = evt.content as string | undefined;
-  if (content !== undefined) textContent = content;
+  if (content !== undefined)
+    textContent = content;
 }
 ```
 
@@ -149,8 +151,8 @@ Pi-ai emits one `text_start`/`text_delta*`/`text_end` group per text content blo
 ### `judge-stream.ts:105-106` -- naive JSON brace matching
 
 ```typescript
-const start = text.indexOf("{");
-const end = text.lastIndexOf("}");
+const start = text.indexOf('{',);
+const end = text.lastIndexOf('}',);
 ```
 
 Breaks on text containing two `{...}` regions or on strings inside the JSON containing `{`/`}`. A `reason` field with a brace in it skews the boundaries.
@@ -158,7 +160,7 @@ Breaks on text containing two `{...}` regions or on strings inside the JSON cont
 ### `judge.unit.test.ts:12` -- unused import
 
 ```typescript
-import { callJudge, } from "./judge.ts";
+import { callJudge, } from './judge.ts';
 ```
 
 Never called. Guaranteed `no-unused-vars` lint failure.
@@ -200,8 +202,8 @@ Across the auto-mode package, the only logs are five `console.error` calls in er
 
 `README.md`:
 
-| Aspect | pi-safeguard | pi-auto-mode |
-|--------|-------------|-------------|
+| Aspect             | pi-safeguard         | pi-auto-mode                       |
+| ------------------ | -------------------- | ---------------------------------- |
 | Verdict extraction | `parseVerdict(text)` | Read `toolCall.arguments` directly |
 
 `judge-stream.ts:73-77`:
@@ -209,9 +211,8 @@ Across the auto-mode package, the only logs are five `console.error` calls in er
 ```typescript
 // Fallback: model returned text instead of a tool call.
 // Try to extract a JSON verdict from the text content.
-if (textContent !== "") {
-  return extractJsonVerdict(textContent);
-}
+if (textContent !== '')
+  return extractJsonVerdict(textContent,);
 ```
 
 The README claims the new code reads tool arguments directly; in fact, it falls back to parsing free text exactly when the tool isn't called, the precise antipattern the README says was replaced.
@@ -245,8 +246,8 @@ Files split by line count, not by concern:
 
 ```typescript
 super(
-  lines.join("\n"),
-  { cause: undefined },
+  lines.join('\n',),
+  { cause: undefined, },
 );
 ```
 
@@ -267,8 +268,8 @@ for (const t of tokens) {
 ### `command-parser.ts:124`
 
 ```typescript
-if (op === "<(") {
-  currentRedirectTargets.push("$()");
+if (op === '<(') {
+  currentRedirectTargets.push('$()',);
   continue;
 }
 ```

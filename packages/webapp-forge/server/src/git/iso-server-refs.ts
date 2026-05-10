@@ -6,12 +6,12 @@
  */
 
 import { randomBytes, } from 'node:crypto';
+import nodeFs from 'node:fs';
 import {
   mkdir,
   unlink,
   writeFile,
 } from 'node:fs/promises';
-import nodeFs from 'node:fs';
 import { join, } from 'node:path';
 
 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- the package re-exports ESM as a wildcard namespace
@@ -95,7 +95,7 @@ const PACK_TAG_BYTES = 16;
  * const refs = await listAllRefs({ gitdir });
  * ```
  */
-export async function listAllRefs(row: { gitdir: string, },): Promise<RefPair[]> {
+export async function listAllRefs(row: { gitdir: string; },): Promise<RefPair[]> {
   const refsBelow = await git.listRefs({
     fs: nodeFs,
     gitdir: row.gitdir,
@@ -114,7 +114,8 @@ export async function listAllRefs(row: { gitdir: string, },): Promise<RefPair[]>
         gitdir: row.gitdir,
         ref: refName,
       },);
-    } catch {
+    }
+    catch {
       continue;
     }
     out.push([
@@ -171,11 +172,13 @@ export async function indexPackData(row: {
         `pack-${tag}.pack`,
       ),
     },);
-  } catch (err: unknown) {
+  }
+  catch (err: unknown) {
     // Best-effort cleanup; rethrow so the caller can report the failure.
     try {
       await unlink(packPath,);
-    } catch {
+    }
+    catch {
       // Already gone; nothing to clean up.
     }
     throw err;
@@ -218,16 +221,18 @@ export async function applyRefUpdate(row: {
       gitdir,
       ref: triplet.refName,
     },);
-  } catch {
+  }
+  catch {
     currentOid = undefined;
   }
   // Validate old-OID: caller asserts what they think the ref points at.
   // Ignore zero comparison (creating a new ref).
-  if (triplet.oldOid !== ZERO_OID && currentOid !== triplet.oldOid)
+  if (triplet.oldOid !== ZERO_OID && currentOid !== triplet.oldOid) {
     return {
       ok: false,
       error: triplet.oldOid !== currentOid ? 'fetch-first' : 'unknown',
     };
+  }
   if (triplet.newOid === ZERO_OID) {
     if (currentOid === undefined)
       return { ok: true, };
@@ -238,7 +243,8 @@ export async function applyRefUpdate(row: {
         ref: triplet.refName,
       },);
       return { ok: true, };
-    } catch (err: unknown) {
+    }
+    catch (err: unknown) {
       return {
         ok: false,
         error: err instanceof Error ? err.message : 'delete failed',
@@ -254,7 +260,8 @@ export async function applyRefUpdate(row: {
       force: true,
     },);
     return { ok: true, };
-  } catch (err: unknown) {
+  }
+  catch (err: unknown) {
     return {
       ok: false,
       error: err instanceof Error ? err.message : 'write failed',

@@ -6,14 +6,14 @@
  * @module
  */
 
-import * as v from "valibot";
+import * as v from 'valibot';
 
 //region Strategy enum
 
 /** Strategy literal values for the judge-model selection strategy. */
 const STRATEGY_VALUES = [
-  "same-provider",
-  "any-provider",
+  'same-provider',
+  'any-provider',
 ] as const;
 
 /**
@@ -23,8 +23,8 @@ type Strategy = (typeof STRATEGY_VALUES)[number];
 
 /** Record form retained for backwards-compatible callers that key by strategy name. */
 const STRATEGY_ENUM = {
-  "same-provider": "same-provider",
-  "any-provider": "any-provider",
+  'same-provider': 'same-provider',
+  'any-provider': 'any-provider',
 } as const;
 
 //endregion
@@ -132,8 +132,8 @@ export {
   STRATEGY_VALUES,
 };
 export type {
-  AutoModeConfig,
   AuthShape,
+  AutoModeConfig,
   JudgeModel,
   ModelOverride,
   ProjectConfig,

@@ -24,21 +24,22 @@
  * ```
  */
 export function validatePath(path: string,): void {
-  if (path.length === 0) {
+  if (path.length === 0)
     throw new Error('zip-writer: path must be non-empty',);
-  }
-  if (path.includes('\0',)) {
+  if (path.includes('\0',))
     throw new Error(`zip-writer: path contains NUL byte: ${JSON.stringify(path,)}`,);
-  }
-  if (path.includes('\\',)) {
+  if (path.includes('\\',))
     throw new Error(`zip-writer: backslash not allowed in path (use \`/\`): ${path}`,);
-  }
   if (path.startsWith('/',)) {
-    throw new Error(`zip-writer: leading slash not allowed (use relative paths): ${path}`,);
+    throw new Error(
+      `zip-writer: leading slash not allowed (use relative paths): ${path}`,
+    );
   }
   for (const segment of path.split('/',)) {
     if (segment === '..') {
-      throw new Error(`zip-writer: parent-directory segment \`..\` not allowed: ${path}`,);
+      throw new Error(
+        `zip-writer: parent-directory segment \`..\` not allowed: ${path}`,
+      );
     }
   }
 }

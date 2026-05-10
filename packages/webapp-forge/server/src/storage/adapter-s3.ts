@@ -91,9 +91,12 @@ const HTTP_REDIRECT = 300;
  * ```
  */
 export function encodeS3Key(key: string,): string {
-  return key.split('/',).map(function encodeSegment(segment,) {
-    return encodeURIComponent(segment,);
-  },).join('/',);
+  return key
+    .split('/',)
+    .map(function encodeSegment(segment,) {
+      return encodeURIComponent(segment,);
+    },)
+    .join('/',);
 }
 
 /**
@@ -221,7 +224,9 @@ async function throwOnError(row: {
     return;
   const body = await row.response.text();
   throw new Error(
-    `S3 ${row.operation} ${row.key} failed: ${String(row.response.status,)} ${row.response.statusText} ${body}`,
+    `S3 ${row.operation} ${row.key} failed: ${
+      String(row.response.status,)
+    } ${row.response.statusText} ${body}`,
   );
 }
 
@@ -472,7 +477,8 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
       },);
       accumulated.push(...page.keys,);
       continuationToken = page.nextToken;
-    } while (continuationToken !== undefined);
+    }
+    while (continuationToken !== undefined);
     return accumulated.toSorted(function compareAsc(
       a,
       b,

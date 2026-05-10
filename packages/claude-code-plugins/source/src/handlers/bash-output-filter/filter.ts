@@ -48,13 +48,21 @@ function filterOutput(input: string,): string {
     if (processed === prevLine && repeatCount > 0)
       repeatCount++;
     else {
-      flushRepeated({ result, line: prevLine, count: repeatCount, },);
+      flushRepeated({
+        result,
+        line: prevLine,
+        count: repeatCount,
+      },);
       prevLine = processed;
       repeatCount = 1;
     }
   }
 
-  flushRepeated({ result, line: prevLine, count: repeatCount, },);
+  flushRepeated({
+    result,
+    line: prevLine,
+    count: repeatCount,
+  },);
 
   return result.join('\n',);
 }

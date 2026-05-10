@@ -17,6 +17,7 @@ import {
   HTTP_BAD_REQUEST,
   HTTP_UNAUTHORIZED,
 } from '../../lib/http.ts';
+import type { IssueStateFacet, } from '../../worker/fragment-keys.ts';
 import { dispatchAndFlush, } from '../dispatch-and-flush.ts';
 import {
   getEventCursor,
@@ -24,7 +25,6 @@ import {
   storage,
   writeBuffer,
 } from '../runtime.ts';
-import type { IssueStateFacet, } from '../../worker/fragment-keys.ts';
 
 /**
  * Reads a route param or throws a 400 when missing.

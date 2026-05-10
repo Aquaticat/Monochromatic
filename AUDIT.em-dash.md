@@ -3,6 +3,7 @@
 Date: 2026-05-10
 
 AGENTS.md rule:
+
 > No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`)
 > when used in prose as em-dashes; all such uses are informal.
 > Use paired commas or parentheses for asides, colon for elaboration or lists,
@@ -12,12 +13,12 @@ AGENTS.md rule:
 
 ## Summary
 
-| Category | Violations | Files |
-| --- | --- | --- |
-| Em-dash (`—`) prose asides | 196 | 91 |
-| En-dash (`–`) violations | 4 | 3 |
-| ASCII `--` em-dash substitute | 1058 | 369 |
-| ASCII ` - ` em-dash substitute | 625 | 58 |
+| Category                      | Violations | Files |
+| ----------------------------- | ---------- | ----- |
+| Em-dash (`—`) prose asides    | 196        | 91    |
+| En-dash (`–`) violations      | 4          | 3     |
+| ASCII `--` em-dash substitute | 1058       | 369   |
+| ASCII `-` em-dash substitute  | 625        | 58    |
 
 **Total definite prose violations: 1883**
 
@@ -444,11 +445,11 @@ Replace with paired commas, parentheses, colon, semicolon, or period.
 - Line 12: The scenarios below are the ones that trip people up. A few have a clean right answer, a few have more than one right answer, and some come down to how the feature actually behaves
 - Line 19: explanation: <>If you write this as <code>{`<a href="/logout">`}</code>, any other website can sign your users out without them knowing. They just put <code>{`<img src="/logout">`}
 - Line 24: explanation: <>Signing out changes something important — it ends the user's session. Actions like that should send a <code>POST</code> or <code>DELETE</code> request (the HTTP meth
-- Line 28: explanation: <>You don't need two controls here. As long as one of them is a link pointing at <code>/logout</code>, the CSRF problem is still there — any other site can trigger it 
+- Line 28: explanation: <>You don't need two controls here. As long as one of them is a link pointing at <code>/logout</code>, the CSRF problem is still there — any other site can trigger it
 - Line 46: explanation: <>A link is for sending the user to a new URL. Turning shuffle on doesn't change the URL and doesn't reload the page — it just flips an on/off switch inside the player
 - Line 51: explanation: <>A <code>{`<button>`}</code> works for a toggle, but a plain button can't tell a screen reader whether shuffle is currently on or off. Add <code>{`aria-pressed="true"
 - Line 55: explanation: <>Only one control toggles shuffle. Showing two would confuse users and assistive tech — they wouldn't know which one to click or how two controls are supposed to work
-- Line 60: explanation: <>Another good fit is <code>{`<input type="checkbox">`}</code>. A checkbox is designed for exactly this kind of two-state on/off choice. You can style it to look like 
+- Line 60: explanation: <>Another good fit is <code>{`<input type="checkbox">`}</code>. A checkbox is designed for exactly this kind of two-state on/off choice. You can style it to look like
 - Line 74: explanation: <>A link sends the user somewhere — it changes the URL or jumps to a spot on the page. In this scenario the URL stays the same and the table just re-orders its existin
 - Line 79: explanation: <>Clicking the header triggers an action (sorting) that rearranges what's already on the screen. A <code>{`<button>`}</code> fits that exactly. Put the <code>{`<button
 - Line 105: explanation: <>Right if clicking opens a tooltip or popover (a small floating box of extra info) on the same page. Wrong if clicking takes the user to a separate pricing page — a b
@@ -457,7 +458,7 @@ Replace with paired commas, parentheses, colon, semicolon, or period.
 - Line 128: explanation: <>A link can't send the user's form data to the server. If they right-clicked and chose "Open in new tab," the browser would just visit the next URL without the addres
 - Line 137: explanation: <>One submit button per form step. Two buttons that both submit the same form would let the user click both by accident — and a double submit on a checkout can mean be
 - Line 159: explanation: <>A button alone can't navigate to <code>/product/42</code> — buttons have no <code>href</code>. The Save action does need a button, but we also need something to hand
-- Line 168: explanation: <>No single HTML element can both navigate to a URL and trigger a non-navigating action at the same time. You genuinely need a link element and a button element — the 
+- Line 168: explanation: <>No single HTML element can both navigate to a URL and trigger a non-navigating action at the same time. You genuinely need a link element and a button element — the
 - Line 183: explanation: <><code>{`<a href="#top">`}</code> works without any JavaScript. When the user clicks it, the browser scrolls to the top of the page because <code>#top</code> is a spe
 - ... and 34 more
 
@@ -477,11 +478,11 @@ Replace with paired commas, parentheses, colon, semicolon, or period.
 ### packages/webapp-edu/paper2vn/README.md
 
 - Line 58: The live-LLM tier inside the same file uses `test.skip(!env, reason)` so those tests skip silently here — no API key is threaded into the container.
-- Line 80: The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost of spinning up a headless browser, which makes it a good pre-commit check while developing prompts. 
+- Line 80: The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost of spinning up a headless browser, which makes it a good pre-commit check while developing prompts.
 
 ### packages/webapp-forge/server/TROUBLESHOOTING.isomorphic-git.md
 
-- Line 48: \| Sideband multiplex (pack/progress/error onto channels 1/2/3) \| **missing — `GitSideBand.mux` is commented out** at `src/models/GitSideBand.js:82` \| must vendor                   
+- Line 48: \| Sideband multiplex (pack/progress/error onto channels 1/2/3) \| **missing — `GitSideBand.mux` is commented out** at `src/models/GitSideBand.js:82` \| must vendor
 
 ### packages/webapp-forge/server/src/server/routes/git.unit.test.ts
 
@@ -685,7 +686,7 @@ Replace with proper punctuation or restructure sentence.
 
 ### TROUBLESHOOTING.bun-fetch-streaming.md
 
-- Line 107: \| undici fetch (bypasses Bun's native fetch)     \| Unclear -- Bun polyfills Node APIs \| Untested \|
+- Line 107: \| undici fetch (bypasses Bun's native fetch) \| Unclear -- Bun polyfills Node APIs \| Untested \|
 - Line 109: OpenRouter's Responses API (`/api/v1/responses`) supports `stream: true` but returns SSE over HTTP POST --
 
 ### TROUBLESHOOTING.bun-fs-glob-dotfiles.md
@@ -763,8 +764,8 @@ Replace with proper punctuation or restructure sentence.
 - Line 78: `Modify(Data(Any))` -- a real data write event -- because it cannot distinguish
 - Line 85: **Layer 1: `--no-meta`** -- suppresses `Modify(Metadata(Any))` events at the
 - Line 88: **Layer 2: `-j @content-changed.jaq`** -- a jaq filter program that compares
-- Line 103: \| `touch` (mtime only)    \| Suppressed  \| --                          \| No restart  \|
-- Line 104: \| `chmod` (perms only)    \| Suppressed  \| --                          \| No restart  \|
+- Line 103: \| `touch` (mtime only) \| Suppressed \| -- \| No restart \|
+- Line 104: \| `chmod` (perms only) \| Suppressed \| -- \| No restart \|
 - Line 129: and cannot reconnect -- every reconnect attempt fails with "unauthorized".
 
 ### TROUBLESHOOTING.oxlint.md
@@ -857,7 +858,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 11: 3. **Browser-compatible** -- the entire pipeline runs in both Node.js and browser environments (no native binary dependencies)
 - Line 13: The package uses only **PostCSS** for all CSS processing -- AST walking for `@import` inlining, `@mixin` collection, and `@apply` expansion.
 - Line 90: For consumers that already have CSS text in memory -- such as web components with Shadow DOM styles defined as JavaScript strings -- use `applyMixins()`:
-- Line 117: 1. **Resolve and bundle** -- a custom PostCSS plugin walks `@import` statements, resolves specifiers (relative paths, package.json `exports`, bare `node_modules`), and inlines the 
+- Line 117: 1. **Resolve and bundle** -- a custom PostCSS plugin walks `@import` statements, resolves specifiers (relative paths, package.json `exports`, bare `node_modules`), and inlines the
 - Line 118: 2. **Collect mixins** -- PostCSS walks the bundled AST, extracts `@mixin` definitions into a registry, removes them from the tree
 - Line 119: 3. **Expand mixin bodies** -- nested `@apply` rules inside mixin definitions are resolved via fixed-point iteration
 - Line 120: 4. **Inline `@apply`** -- remaining `@apply` rules in the document are replaced with cloned mixin body nodes
@@ -2180,7 +2181,7 @@ Replace with proper punctuation or restructure sentence.
 
 ### packages/webapp-content/messages-demo/src/client/outbox.unit.test.ts
 
-- Line 5: *   2. "IDB requested but absent" -- `idbAvailable: true` in a Bun env
+- Line 5: * 2. "IDB requested but absent" -- `idbAvailable: true` in a Bun env
 
 ### packages/webapp-content/messages-demo/src/lib/db/migrations.ts
 
@@ -2418,8 +2419,8 @@ Replace with proper punctuation or restructure sentence.
 - Line 1104: Coolify's reverse proxy handles HTTPS termination -- the orchestrator only listens on HTTP.
 - Line 1114: Each child process runs `Bun.build()` at startup to bundle client assets -- no separate build step in the Dockerfile.
 - Line 1253: These patterns are confirmed working -- no surprises expected during implementation.
-- Line 1267: \| Static imports for DB + route handlers                     \| **validated** \| Dynamic imports unnecessary -- top-level await ensures build completes first \|
-- Line 1279: \| Orchestrator multi-process spawning            \| high   \| Most complex untested piece -- budget extra time on day 5 \|
+- Line 1267: \| Static imports for DB + route handlers \| **validated** \| Dynamic imports unnecessary -- top-level await ensures build completes first \|
+- Line 1279: \| Orchestrator multi-process spawning \| high \| Most complex untested piece -- budget extra time on day 5 \|
 - Line 1342: **Core -- done:** 1.1, 1.2, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2
 - Line 1343: **Core -- partial:** 1.3 (tasks + settings done; attachments/reminders not started)
 - Line 1344: **Core -- not started:** 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
@@ -2555,8 +2556,8 @@ Replace with proper punctuation or restructure sentence.
 - Line 1104: Coolify's reverse proxy handles HTTPS termination -- the orchestrator only listens on HTTP.
 - Line 1114: Each child process runs `Bun.build()` at startup to bundle client assets -- no separate build step in the Dockerfile.
 - Line 1253: These patterns are confirmed working -- no surprises expected during implementation.
-- Line 1267: \| Static imports for DB + route handlers                     \| **validated** \| Dynamic imports unnecessary -- top-level await ensures build completes first \|
-- Line 1279: \| Orchestrator multi-process spawning            \| high   \| Most complex untested piece -- budget extra time on day 5 \|
+- Line 1267: \| Static imports for DB + route handlers \| **validated** \| Dynamic imports unnecessary -- top-level await ensures build completes first \|
+- Line 1279: \| Orchestrator multi-process spawning \| high \| Most complex untested piece -- budget extra time on day 5 \|
 - Line 1342: **Core -- done:** 1.1, 1.2, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2
 - Line 1343: **Core -- partial:** 1.3 (tasks + settings done; attachments/reminders not started)
 - Line 1344: **Core -- not started:** 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
@@ -2681,7 +2682,7 @@ Replace with proper punctuation or restructure sentence.
 
 - Line 37: //region HTML structure -- Declarative page composition via h-html
 
-## D. ASCII ` - ` em-dash substitute prose asides
+## D. ASCII `-` em-dash substitute prose asides
 
 Replace with proper punctuation or restructure sentence.
 
@@ -3032,8 +3033,8 @@ Replace with proper punctuation or restructure sentence.
 
 ### packages/dev-script/inference-canary/src/canary-lint/Nvidia Nemotron 3 Super/css-mixin-transpiler-initial-2026-03-19T17-45-20.000Z/response.txt
 
-- Line 289: //   - Take the mixin body string for applyName, and then tokenize it and expand any `@apply` inside it?
-- Line 290: //   - But we are in the middle of the input token stream. We cannot easily go back to re-tokenize the stored mixin body string.
+- Line 289: // - Take the mixin body string for applyName, and then tokenize it and expand any `@apply` inside it?
+- Line 290: // - But we are in the middle of the input token stream. We cannot easily go back to re-tokenize the stored mixin body string.
 
 ### packages/figma-parsers/penpot/PENPOT_FORMAT.md
 

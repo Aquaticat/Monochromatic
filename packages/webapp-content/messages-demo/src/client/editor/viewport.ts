@@ -134,7 +134,7 @@ export function mountViewport(
     spacer.style.minBlockSize = `${String(lineStarts.length * lineHeight,)}px`;
 
     const hostRect = input.host.getBoundingClientRect();
-    const {scrollTop} = input.host;
+    const { scrollTop, } = input.host;
     const visibleHeight = hostRect.height > 0
       ? hostRect.height
       : FALLBACK_VIEWPORT_HEIGHT_PX;

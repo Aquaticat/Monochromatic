@@ -46,8 +46,9 @@ export async function askPersona(
    * same accessor keeps these prompts immune to future i18n edits that
    * might introduce them.
    */
-  const systemMessage =
-    `${rawString('persona',)}\n\n${rawString('askInstruction',)}\n\nPaper text follows:\n---BEGIN PAPER---\n${truncated}\n---END PAPER---`;
+  const systemMessage = `${rawString('persona',)}\n\n${
+    rawString('askInstruction',)
+  }\n\nPaper text follows:\n---BEGIN PAPER---\n${truncated}\n---END PAPER---`;
   return await chat({
     messages: [
       {

@@ -9,12 +9,12 @@ name = "forbidden-strings"
 path = "src/main.rs"
 
 [dependencies]
-resharp = "0.5.2"
-regex = "1"
 aho-corasick = "1"
-rayon = "1"
 ignore = "0.4"
 memchr = "2"
+rayon = "1"
+regex = "1"
+resharp = "0.5.2"
 
 [profile.release]
 lto = true

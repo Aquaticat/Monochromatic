@@ -9,8 +9,8 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import {
-  renderFilterList,
   type FilterListData,
+  renderFilterList,
 } from './filter-list.ts';
 
 /**

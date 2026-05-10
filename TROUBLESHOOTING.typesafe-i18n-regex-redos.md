@@ -76,9 +76,9 @@ const dict = {
   bad: '{ "a": [{ "b": [{ "c": "x" }] }] }',
 };
 const LL = i18nObject('en', { en: dict, }, {}, {},);
-console.time('lookup');
+console.time('lookup',);
 LL.bad();
-console.timeEnd('lookup');
+console.timeEnd('lookup',);
 ```
 
 Run under Chrome 145 / V8: `lookup` never returns.
@@ -224,45 +224,45 @@ Decision: **keep it**, retain the `rawString` workaround.
 ### Top alternatives (for the file-this-when-it-stalls case)
 
 1. **`i18next`** with default `{{ }}` syntax.
-  Interpolation regex is `/{{(.+?)}}/g`:
-  non-greedy,
-  no nested-brace alternation,
-  and **does not match single `{` or `}` at all**.
-  Empirically 0 matches in 0.16 ms on our JSON-with-3-levels input.
-  Literal `{` needs no escaping.
-  Type safety via `i18next-resources-for-ts`
-  (less first-class than `typesafe-i18n`,
-  but workable).
-  Two historical XSS CVEs
-  (CVE-2017-16008,
-  CVE-2017-16010),
-  both fixed.
-  **Lowest-friction migration**.
+   Interpolation regex is `/{{(.+?)}}/g`:
+   non-greedy,
+   no nested-brace alternation,
+   and **does not match single `{` or `}` at all**.
+   Empirically 0 matches in 0.16 ms on our JSON-with-3-levels input.
+   Literal `{` needs no escaping.
+   Type safety via `i18next-resources-for-ts`
+   (less first-class than `typesafe-i18n`,
+   but workable).
+   Two historical XSS CVEs
+   (CVE-2017-16008,
+   CVE-2017-16010),
+   both fixed.
+   **Lowest-friction migration**.
 2. **`@lingui/core`**.
-  Translations are compiled to a token array at build time;
-  the runtime never regex-scans `{...}`.
-  Best security posture of any candidate
-  (Crowdin-backed,
-  248 contributors,
-  SLSA provenance attestations on npm,
-  smallest gzip ~2 kB).
-  Downside:
-  ICU MessageFormat requires single-quote escape for literal `{` /
-  `}`:
-  same escaping-gymnastics problem we hit with the regex,
-  just at compile time instead of runtime.
+   Translations are compiled to a token array at build time;
+   the runtime never regex-scans `{...}`.
+   Best security posture of any candidate
+   (Crowdin-backed,
+   248 contributors,
+   SLSA provenance attestations on npm,
+   smallest gzip ~2 kB).
+   Downside:
+   ICU MessageFormat requires single-quote escape for literal `{` /
+   `}`:
+   same escaping-gymnastics problem we hit with the regex,
+   just at compile time instead of runtime.
 3. **`@inlang/paraglide-js`**.
-  Only runtime that needs **zero escaping** for `{`:
-  translations are compiled to JS template literals
-  (e.g. `` `Hello ${name}` ``),
-  so the literal text never round-trips through any parser.
-  Downside:
-  heavier transitive build deps
-  (`@inlang/sdk`,
-  `@lix-js/sdk`,
-  `kysely`,
-  `sqlite-wasm-kysely`),
-  and effectively two-maintainer.
+   Only runtime that needs **zero escaping** for `{`:
+   translations are compiled to JS template literals
+   (e.g. `` `Hello ${name}` ``),
+   so the literal text never round-trips through any parser.
+   Downside:
+   heavier transitive build deps
+   (`@inlang/sdk`,
+   `@lix-js/sdk`,
+   `kysely`,
+   `sqlite-wasm-kysely`),
+   and effectively two-maintainer.
 
 ### Order if we ever switch
 
@@ -279,7 +279,7 @@ containing nested `{}` literals (engine-dependent: V8 hangs)
 
 Labels: `bug`, `parser`
 
-```md
+````md
 ## Description
 
 `REGEX_BRACKETS_SPLIT` in `parser/src/parse-rule.mts` exhibits
@@ -296,17 +296,18 @@ which is what happens on input shaped like an embedded JSON schema.
 ## Reproduction
 
 ```ts
-import { i18nObject } from 'typesafe-i18n';
+import { i18nObject, } from 'typesafe-i18n';
 
 const en = {
   bad: '{ "a": [{ "b": [{ "c": "x" }] }] }',
 };
-const LL = i18nObject('en', { en } as any, {}, {});
+const LL = i18nObject('en', { en, } as any, {}, {},);
 
-console.time('lookup');
-LL.bad();         // hangs in V8, returns immediately in JSC
-console.timeEnd('lookup');
+console.time('lookup',);
+LL.bad(); // hangs in V8, returns immediately in JSC
+console.timeEnd('lookup',);
 ```
+````
 
 Run under Chrome (or any V8-based environment, including Node) and
 the call never returns within a reasonable test timeout. Run under
@@ -335,7 +336,8 @@ reports a clearer error.
 Read the raw string from `loadedLocales[locale][key]` directly when
 the translation contains literal braces and doesn't need parameter
 interpolation. This bypasses the parser entirely.
-```
 
+```
 [typesafe-i18n]: https://github.com/ivanhofer/typesafe-i18n
 [redos]: https://en.wikipedia.org/wiki/ReDoS
+```

@@ -34,16 +34,16 @@ rather than throwing.
 
 ## Bug fixes vs upstream pi-safeguard
 
-| Aspect | pi-safeguard | pi-auto-mode |
-|--------|-------------|-------------|
-| `isSystemPath` check | Present (causes `/var/home` false positive) | Removed |
-| Budget model API | Calls removed `getApiKey()` | Calls `getApiKeyAndHeaders()` |
-| Error handling in evaluate | Bare `catch` swallows TypeErrors | Logs error, falls back to ask-user |
-| Config validation | (none in upstream) | Valibot (Standard-Schema-compatible) |
-| Budget model | Separate `pi-budget-model` package | Inlined `budget-model.ts` |
-| Bash parser | `@aliou/sh` (UNLICENSED, three gap bugs) | `shell-quote` (MIT) plus targeted extraction |
-| `--` separator | Not handled in `hasFlag()` | Handled |
-| Judge response format | Free-text JSON | Forced tool-calling, free-text JSON as logged fallback |
+| Aspect                     | pi-safeguard                                | pi-auto-mode                                           |
+| -------------------------- | ------------------------------------------- | ------------------------------------------------------ |
+| `isSystemPath` check       | Present (causes `/var/home` false positive) | Removed                                                |
+| Budget model API           | Calls removed `getApiKey()`                 | Calls `getApiKeyAndHeaders()`                          |
+| Error handling in evaluate | Bare `catch` swallows TypeErrors            | Logs error, falls back to ask-user                     |
+| Config validation          | (none in upstream)                          | Valibot (Standard-Schema-compatible)                   |
+| Budget model               | Separate `pi-budget-model` package          | Inlined `budget-model.ts`                              |
+| Bash parser                | `@aliou/sh` (UNLICENSED, three gap bugs)    | `shell-quote` (MIT) plus targeted extraction           |
+| `--` separator             | Not handled in `hasFlag()`                  | Handled                                                |
+| Judge response format      | Free-text JSON                              | Forced tool-calling, free-text JSON as logged fallback |
 
 ## Configuration
 

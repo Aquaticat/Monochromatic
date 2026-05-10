@@ -7,11 +7,11 @@
  */
 
 import { createMemoryStorage, } from '../storage/adapter-memory.ts';
+import type { Storage, } from '../storage/adapter.ts';
 import {
   createWriteBuffer,
   type WriteBuffer,
 } from '../storage/write-buffer.ts';
-import type { Storage, } from '../storage/adapter.ts';
 
 /** Process-shared storage adapter. */
 export const storage: Storage = createMemoryStorage();

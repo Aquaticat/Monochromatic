@@ -14,7 +14,8 @@ const WORD_POOL = (
   + 'incididunt ut labore magna aliqua enim minim veniam quis nostrud exercitation '
   + 'ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in '
   + 'reprehenderit voluptate velit esse cillum fugiat nulla pariatur excepteur sint'
-).split(' ',);
+)
+  .split(' ',);
 
 /** Common bug-tracker title prefixes. */
 const TITLE_PREFIXES = [

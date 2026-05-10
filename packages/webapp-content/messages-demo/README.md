@@ -87,4 +87,3 @@ The DOM- and worker-bound checks must be driven through a running browser:
 
 Both 16a and 16c require booting the server and a browser; they are not part of
 the `bun test` suite.
-

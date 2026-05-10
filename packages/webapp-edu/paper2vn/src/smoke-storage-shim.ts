@@ -44,7 +44,7 @@ if (globalThis.localStorage === undefined) {
       return store.size;
     },
     key(index,): string | null {
-      const keys = [...store.keys()];
+      const keys = [...store.keys(),];
       return keys[index] ?? null;
     },
   };

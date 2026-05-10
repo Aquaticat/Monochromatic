@@ -350,20 +350,20 @@ function idbGet(
     request.addEventListener(
       'success',
       function onSuccess(): void {
-      const raw: unknown = request.result;
-      if (raw === null || typeof raw !== 'object' || !('html' in raw)) {
-        resolve(null,);
-        return;
-      }
-      const { html, } = raw;
-      resolve(typeof html === 'string' ? html : null,);
-    },
+        const raw: unknown = request.result;
+        if (raw === null || typeof raw !== 'object' || !('html' in raw)) {
+          resolve(null,);
+          return;
+        }
+        const { html, } = raw;
+        resolve(typeof html === 'string' ? html : null,);
+      },
     );
     request.addEventListener(
       'error',
       function onError(): void {
-      reject(request.error ?? new Error('IDB get failed',),);
-    },
+        reject(request.error ?? new Error('IDB get failed',),);
+      },
     );
   },);
 }
@@ -441,21 +441,21 @@ async function evictIdbStale(
   cursorRequest.addEventListener(
     'success',
     function onCursor(): void {
-    const cursor = cursorRequest.result;
-    if (cursor === null)
-      return;
-    // IDBCursorWithValue.value is typed as any; we widen back to unknown
-    // for safe narrowing. Object destructuring would inherit the any
-    // type and trip no-unsafe-assignment.
-    // oxlint-disable-next-line eslint/prefer-destructuring -- explicit unknown widening
-    const value: unknown = cursor.value;
-    if (value !== null && typeof value === 'object' && 'revision' in value) {
-      const { revision, } = value;
-      if (typeof revision === 'number' && revision !== input.key.revision)
-        cursor.delete();
-    }
-    cursor.continue();
-  },
+      const cursor = cursorRequest.result;
+      if (cursor === null)
+        return;
+      // IDBCursorWithValue.value is typed as any; we widen back to unknown
+      // for safe narrowing. Object destructuring would inherit the any
+      // type and trip no-unsafe-assignment.
+      // oxlint-disable-next-line eslint/prefer-destructuring -- explicit unknown widening
+      const value: unknown = cursor.value;
+      if (value !== null && typeof value === 'object' && 'revision' in value) {
+        const { revision, } = value;
+        if (typeof revision === 'number' && revision !== input.key.revision)
+          cursor.delete();
+      }
+      cursor.continue();
+    },
   );
   await idbTransactionDone(tx,);
 }

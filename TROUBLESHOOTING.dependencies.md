@@ -242,4 +242,3 @@ A workspace shim package re-exporting `globalThis.DOMException`, wired via
 `overrides: { 'node-domexception': 'link:packages/shim/node-domexception' }`,
 would silence the warning without breaking runtime. Not worth the package for
 an install-time-only message; revisit if the warning ever blocks a CI gate.
-

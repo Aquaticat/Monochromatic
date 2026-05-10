@@ -54,7 +54,8 @@ const DEFAULT_BETTER_AUTH_URL = 'http://localhost:3000';
  * for production; the env var must be set there. Documented inline so
  * grep finds it during the production-readiness audit.
  */
-const DEV_BETTER_AUTH_SECRET = 'dev-only-please-set-BETTER_AUTH_SECRET-in-production-12345';
+const DEV_BETTER_AUTH_SECRET =
+  'dev-only-please-set-BETTER_AUTH_SECRET-in-production-12345';
 
 /**
  * Resolves the libsql connection URL for Better Auth's Kysely dialect.

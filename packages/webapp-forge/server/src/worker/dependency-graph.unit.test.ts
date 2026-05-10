@@ -12,15 +12,15 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import {
-  ANY_LABEL,
-  filterListKey,
-  issueDetailKey,
-} from './fragment-keys.ts';
-import {
   dependenciesFor,
   type EventInput,
   type ResolvedEventContext,
 } from './dependency-graph.ts';
+import {
+  ANY_LABEL,
+  filterListKey,
+  issueDetailKey,
+} from './fragment-keys.ts';
 
 await describe({
   name: '',
@@ -29,7 +29,8 @@ await describe({
       name: 'dependenciesFor',
       children: [
         it({
-          name: 'comment.created emits issue detail + per-label filter lists for both states',
+          name:
+            'comment.created emits issue detail + per-label filter lists for both states',
           async fn() {
             const event: EventInput = {
               kind: 'comment.created',
@@ -51,38 +52,45 @@ await describe({
             expect(keys.has(issueDetailKey({
               repoId: 'repo-1',
               issueId: 'issue-1',
-            },),),).toBe(true,);
+            },),),)
+              .toBe(true,);
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
               state: 'open',
-            },),),).toBe(true,);
+            },),),)
+              .toBe(true,);
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
               state: 'closed',
-            },),),).toBe(true,);
+            },),),)
+              .toBe(true,);
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',
               state: 'open',
-            },),),).toBe(true,);
+            },),),)
+              .toBe(true,);
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',
               state: 'closed',
-            },),),).toBe(true,);
+            },),),)
+              .toBe(true,);
             // `feat` is not on this issue, so per-issue path does not include it.
             // `issue.labeled` adds repo-wide; `comment.created` does not.
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'feat',
               state: 'open',
-            },),),).toBe(false,);
+            },),),)
+              .toBe(false,);
           },
         },),
         it({
-          name: 'issue.labeled additionally invalidates every repo label filter for the current state',
+          name:
+            'issue.labeled additionally invalidates every repo label filter for the current state',
           async fn() {
             const event: EventInput = {
               kind: 'issue.labeled',
@@ -107,7 +115,8 @@ await describe({
                 repoId: 'repo-1',
                 labelId,
                 state: 'open',
-              },),),).toBe(true,);
+              },),),)
+                .toBe(true,);
             }
           },
         },),
@@ -136,9 +145,11 @@ await describe({
               labelId: 'bug',
               state: 'open',
             },);
-            const occurrences = [...keys,].filter(function isBugOpen(k,) {
-              return k === bugOpen;
-            },).length;
+            const occurrences = [...keys,]
+              .filter(function isBugOpen(k,) {
+                return k === bugOpen;
+              },)
+              .length;
             expect(occurrences,).toBe(1,);
           },
         },),
@@ -163,13 +174,15 @@ await describe({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
               state: 'open',
-            },),),).toBe(true,);
+            },),),)
+              .toBe(true,);
             // No per-label keys.
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',
               state: 'open',
-            },),),).toBe(false,);
+            },),),)
+              .toBe(false,);
           },
         },),
         it({
@@ -196,12 +209,14 @@ await describe({
               repoId: 'repo-1',
               labelId: 'bug',
               state: 'open',
-            },),),).toBe(false,);
+            },),),)
+              .toBe(false,);
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
               state: 'open',
-            },),),).toBe(true,);
+            },),),)
+              .toBe(true,);
           },
         },),
       ],

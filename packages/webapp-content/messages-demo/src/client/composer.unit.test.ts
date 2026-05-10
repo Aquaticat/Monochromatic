@@ -32,7 +32,9 @@ await describe({
               length: TIER_2_THRESHOLD - 1,
               tier3Active: false,
               inEditMode: false,
-            },).kind,).toBe('none',);
+            },)
+              .kind,)
+              .toBe('none',);
           },
         },),
 
@@ -44,12 +46,15 @@ await describe({
               length: TIER_2_THRESHOLD,
               tier3Active: false,
               inEditMode: false,
-            },).kind,).toBe('to-tier-2',);
+            },)
+              .kind,)
+              .toBe('to-tier-2',);
           },
         },),
 
         it({
-          name: 'tier 1 jumping past the tier-3 threshold returns to-tier-2 (one step at a time)',
+          name:
+            'tier 1 jumping past the tier-3 threshold returns to-tier-2 (one step at a time)',
           fn: async () => {
             // The state machine takes one step per check; the next check
             // (after the textarea fires another input event) decides the
@@ -59,7 +64,9 @@ await describe({
               length: TIER_3_THRESHOLD + 100,
               tier3Active: false,
               inEditMode: false,
-            },).kind,).toBe('to-tier-2',);
+            },)
+              .kind,)
+              .toBe('to-tier-2',);
           },
         },),
 
@@ -71,7 +78,9 @@ await describe({
               length: TIER_3_THRESHOLD - 1,
               tier3Active: false,
               inEditMode: false,
-            },).kind,).toBe('none',);
+            },)
+              .kind,)
+              .toBe('none',);
           },
         },),
 
@@ -83,7 +92,9 @@ await describe({
               length: TIER_3_THRESHOLD,
               tier3Active: false,
               inEditMode: false,
-            },).kind,).toBe('to-tier-3',);
+            },)
+              .kind,)
+              .toBe('to-tier-3',);
           },
         },),
 
@@ -95,7 +106,9 @@ await describe({
               length: TIER_3_THRESHOLD + 100,
               tier3Active: false,
               inEditMode: true,
-            },).kind,).toBe('none',);
+            },)
+              .kind,)
+              .toBe('none',);
           },
         },),
 
@@ -107,7 +120,9 @@ await describe({
               length: TIER_3_THRESHOLD + 100,
               tier3Active: true,
               inEditMode: false,
-            },).kind,).toBe('none',);
+            },)
+              .kind,)
+              .toBe('none',);
           },
         },),
 
@@ -119,13 +134,17 @@ await describe({
               length: 0,
               tier3Active: true,
               inEditMode: false,
-            },).kind,).toBe('none',);
+            },)
+              .kind,)
+              .toBe('none',);
             expect(decideTierTransition({
               tier: 3,
               length: TIER_3_THRESHOLD * 2,
               tier3Active: true,
               inEditMode: false,
-            },).kind,).toBe('none',);
+            },)
+              .kind,)
+              .toBe('none',);
           },
         },),
 

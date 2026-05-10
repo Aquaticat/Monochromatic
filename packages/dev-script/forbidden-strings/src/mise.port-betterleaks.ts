@@ -103,12 +103,19 @@ function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
   let i = 0;
   let inClass = false;
   let classBodyStart = -1;
-  const META: ReadonlySet<string> = new Set(['~', '_', '&',],);
+  const META: ReadonlySet<string> = new Set([
+    '~',
+    '_',
+    '&',
+  ],);
   while (i < pattern.length) {
     const c = pattern[i]!;
     // Pass an escape sequence through unmodified (consumes two chars).
     if (c === '\\' && i + 1 < pattern.length) {
-      out += pattern.slice(i, i + 2,);
+      out += pattern.slice(
+        i,
+        i + 2,
+      );
       i += 2;
       continue;
     }
@@ -153,7 +160,7 @@ function pcreToResharp({ pattern, }: { pattern: string; },): string {
   // Drop named-capture syntax: `(?P<name>...)` -> `(?:...)`. Resharp
   // parses the named form but has no captures; making them non-capturing
   // is the cleanest signal of intent.
-  out = out.replace(
+  out = out.replaceAll(
     /\(\?P<[A-Za-z_][A-Za-z0-9_]*>/g,
     '(?:',
   );
@@ -164,7 +171,10 @@ function pcreToResharp({ pattern, }: { pattern: string; },): string {
   // Group-prefix forms `(?:`, `(?=`, `(?!`, `(?<=`, `(?<!` do not
   // match this pattern: the `?` there sits directly after `(`, never
   // after `* + ? }`.
-  out = out.replace(/([*+?}])\?/g, '$1',);
+  out = out.replaceAll(
+    /([*+?}])\?/g,
+    '$1',
+  );
   // Escape resharp-only meta characters (`~`, `_`, `&`) that PCRE treats
   // as literal.
   out = escapeResharpOnlyMeta({ pattern: out, },);
@@ -181,21 +191,27 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
    *  Advances `i` past the closing `'''` line. */
   function readTripleQuoted({ initial, }: { initial: string; },): string {
     // initial is the substring after `'''` on the opening line.
-    if (initial.includes('\'\'\'',)) {
-      const end = initial.indexOf('\'\'\'',);
+    if (initial.includes("'''",)) {
+      const end = initial.indexOf("'''",);
       i += 1;
-      return initial.slice(0, end,);
+      return initial.slice(
+        0,
+        end,
+      );
     }
     const parts: string[] = [initial,];
     i += 1;
-    while (i < lines.length && !lines[i]!.includes('\'\'\'',)) {
+    while (i < lines.length && !lines[i]!.includes("'''",)) {
       parts.push(lines[i]!,);
       i += 1;
     }
     if (i < lines.length) {
       const close = lines[i]!;
-      const end = close.indexOf('\'\'\'',);
-      parts.push(close.slice(0, end,),);
+      const end = close.indexOf("'''",);
+      parts.push(close.slice(
+        0,
+        end,
+      ),);
       i += 1;
     }
     return parts.join('\n',);
@@ -221,9 +237,8 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
         // and skip through their bodies.
         const subTableMatch = /^\[\[rules\.([\w]+)]]\s*$/.exec(rl,);
         if (subTableMatch !== null) {
-          if (subTableMatch[1] === 'required') {
+          if (subTableMatch[1] === 'required')
             hasRequired = true;
-          }
           i += 1;
           while (
             i < lines.length
@@ -234,9 +249,8 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
           continue;
         }
         // Top-level table marker (next `[[rules]]` or `[other]`) -- end of rule.
-        if (/^\[/.test(rl,)) {
+        if (rl.startsWith('[',))
           break;
-        }
         // Field extractors. Each consumes its own lines via `i`.
         const idM = /^id\s*=\s*"([^"]*)"/.exec(rl,);
         if (idM !== null) {
@@ -246,7 +260,10 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
         }
         const descM = /^description\s*=\s*"((?:[^"\\]|\\.)*)"/.exec(rl,);
         if (descM !== null) {
-          description = descM[1]!.replace(/\\"/g, '"',);
+          description = descM[1]!.replaceAll(
+            String.raw`\"`,
+            '"',
+          );
           i += 1;
           continue;
         }
@@ -264,7 +281,10 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
         }
         const sgM = /^secretGroup\s*=\s*(\d+)/.exec(rl,);
         if (sgM !== null) {
-          secretGroup = Number.parseInt(sgM[1]!, 10,);
+          secretGroup = Number.parseInt(
+            sgM[1]!,
+            10,
+          );
           i += 1;
           continue;
         }
@@ -301,13 +321,19 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
 const DROPPED_BY_ID: ReadonlyMap<string, string> = new Map([
   // Without the ~1000-entry word allowlist + entropy filter this rule
   // fires on practically anything labeled `key=` / `token=`.
-  ['generic-api-key', 'no-allowlist-no-entropy', ],
+  [
+    'generic-api-key',
+    'no-allowlist-no-entropy',
+  ],
   // Pattern combines `(?s:.){0,N}` scope-flag dot, four nested
   // alternation arms, and shared inner structure. Resharp's algebra
   // pass refuses with `Algebra(UnsupportedPattern)`. Upstream gates
   // this rule with a `*.ya?ml$` path filter we already lose; without
   // path scoping the rule is also low signal.
-  ['kubernetes-secret-yaml', 'algebra-unsupported', ],
+  [
+    'kubernetes-secret-yaml',
+    'algebra-unsupported',
+  ],
   // Multi-arm alternation with multiple `(?i)` toggles, single-quote
   // and double-quote variants, and four label sub-arms. Restructuring
   // into a resharp-acceptable form would lose more signal than it
@@ -315,7 +341,10 @@ const DROPPED_BY_ID: ReadonlyMap<string, string> = new Map([
   // Bearer ..."` is also covered indirectly by the per-vendor token
   // rules (github-pat, openai-api-key, etc.) firing on the bearer
   // value itself.
-  ['curl-auth-header', 'multi-arm-(?i)-not-relaxable', ],
+  [
+    'curl-auth-header',
+    'multi-arm-(?i)-not-relaxable',
+  ],
 ],);
 
 /** Render one rule as a forbidden-strings entry (comments + regex line). */
@@ -341,7 +370,7 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
   }
   if (rule.hasRequired) {
     lines.push(
-      '# NOTE: upstream requires another rule\'s match nearby ([[rules.required]]).',
+      "# NOTE: upstream requires another rule's match nearby ([[rules.required]]).",
     );
     lines.push(
       '#       Forbidden-strings cannot enforce composite proximity rules; the regex fires standalone.',
@@ -422,39 +451,66 @@ async function main(): Promise<void> {
   const here = dirname(fileURLToPath(import.meta.url,),);
   // mise.port-betterleaks.ts lives in packages/dev-script/forbidden-strings/src/.
   // Walk up four levels to land at the repo root.
-  const repoRoot = join(here, '..', '..', '..', '..',);
+  const repoRoot = join(
+    here,
+    '..',
+    '..',
+    '..',
+    '..',
+  );
   const tomlPath = join(
     here,
     '..',
     'data',
     'betterleaks-default-config.toml',
   );
-  const outPath = join(repoRoot, 'forbidden-strings.local.example.txt',);
+  const outPath = join(
+    repoRoot,
+    'forbidden-strings.local.example.txt',
+  );
 
-  const toml = await readFile(tomlPath, 'utf-8',);
+  const toml = await readFile(
+    tomlPath,
+    'utf8',
+  );
   const all = parseRules({ toml, },);
 
   const kept: RawRule[] = [];
-  const dropped: { rule: RawRule; reason: string; }[] = [];
+  const dropped: {
+    rule: RawRule;
+    reason: string;
+  }[] = [];
   for (const rule of all) {
     if (rule.skipReport) {
-      dropped.push({ rule, reason: 'skipReport', },);
+      dropped.push({
+        rule,
+        reason: 'skipReport',
+      },);
       continue;
     }
     const dropReason = DROPPED_BY_ID.get(rule.id,);
     if (dropReason !== undefined) {
-      dropped.push({ rule, reason: dropReason, },);
+      dropped.push({
+        rule,
+        reason: dropReason,
+      },);
       continue;
     }
     kept.push(rule,);
   }
 
-  const body = kept.map(function rulePass(rule,): string {
-    return renderRule({ rule, },);
-  },).join('',);
+  const body = kept
+    .map(function rulePass(rule,): string {
+      return renderRule({ rule, },);
+    },)
+    .join('',);
 
   const content = `${HEADER}${body}${FOOTER}`;
-  await writeFile(outPath, content, 'utf-8',);
+  await writeFile(
+    outPath,
+    content,
+    'utf8',
+  );
   // oxlint-disable-next-line no-console -- CLI script user-facing output
   console.log(
     `wrote ${outPath} (${kept.length} rules kept, ${dropped.length} dropped)`,
@@ -462,7 +518,10 @@ async function main(): Promise<void> {
   if (dropped.length > 0) {
     // oxlint-disable-next-line no-console -- CLI script user-facing output
     console.log('  dropped:',);
-    for (const { rule, reason, } of dropped) {
+    for (const {
+      rule,
+      reason,
+    } of dropped) {
       // oxlint-disable-next-line no-console -- CLI script user-facing output
       console.log(`    ${rule.id} (${reason})`,);
     }

@@ -98,12 +98,12 @@ but aborting after successful completion produces an `AbortError` that must be c
 
 ## Alternative transports that avoid the bug
 
-| Transport                                      | Uses fetch ReadableStream          | Affected |
-| ---------------------------------------------- | ---------------------------------- | -------- |
-| SSE via fetch (OpenRouter, OpenAI default)     | Yes                                | Yes      |
-| HTTP chunked via fetch                         | Yes                                | Yes      |
-| WebSocket via `ws` (OpenAI Responses API only) | No                                 | No       |
-| WebSocket via Bun native                       | No                                 | No       |
+| Transport                                      | Uses fetch ReadableStream        | Affected |
+| ---------------------------------------------- | -------------------------------- | -------- |
+| SSE via fetch (OpenRouter, OpenAI default)     | Yes                              | Yes      |
+| HTTP chunked via fetch                         | Yes                              | Yes      |
+| WebSocket via `ws` (OpenAI Responses API only) | No                               | No       |
+| WebSocket via Bun native                       | No                               | No       |
 | undici fetch (bypasses Bun's native fetch)     | Unclear: Bun polyfills Node APIs | Untested |
 
 OpenRouter's Responses API (`/api/v1/responses`) supports `stream: true` but returns SSE over HTTP POST,

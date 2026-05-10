@@ -16,11 +16,11 @@ import {
   listIssueIdsForFilter,
   listIssueLabels,
 } from '../data/queries.ts';
-import { renderIssueDetail, } from '../fragments/issue-detail.ts';
 import {
-  renderFilterList,
   type FilterListData,
+  renderFilterList,
 } from '../fragments/filter-list.ts';
+import { renderIssueDetail, } from '../fragments/issue-detail.ts';
 import {
   ANY_LABEL,
   type IssueStateFacet,
@@ -238,7 +238,9 @@ async function renderFilterListByKey(row: {
  * const hash = await existingContentHash('issues/r1/i1/detail');
  * ```
  */
-export async function existingContentHash(fragmentKey: string,): Promise<string | undefined> {
+export async function existingContentHash(
+  fragmentKey: string,
+): Promise<string | undefined> {
   const row = await getFragmentIndex(fragmentKey,);
   return row?.content_hash;
 }

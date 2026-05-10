@@ -13,8 +13,8 @@ import {
   BUILTIN_TEXT_PATTERNS,
   PRIVATE_KEY_PATTERN,
   SECRET_FORMAT_PATTERNS,
-} from "./constants.ts";
-import type { MergedConfig, } from "./signals.ts";
+} from './constants.ts';
+import type { MergedConfig, } from './signals.ts';
 
 /**
  * Check if text content contains secret material.
@@ -34,10 +34,12 @@ import type { MergedConfig, } from "./signals.ts";
 function contentSignals(
   text: string,
 ): boolean {
-  if (PRIVATE_KEY_PATTERN.test(text)) return true;
+  if (PRIVATE_KEY_PATTERN.test(text,))
+    return true;
 
   for (const pattern of SECRET_FORMAT_PATTERNS) {
-    if (pattern.test(text)) return true;
+    if (pattern.test(text,))
+      return true;
   }
 
   return false;
@@ -63,12 +65,14 @@ function textSignals(
   config?: MergedConfig,
 ): boolean {
   for (const pattern of BUILTIN_TEXT_PATTERNS) {
-    if (pattern.test(text)) return true;
+    if (pattern.test(text,))
+      return true;
   }
 
   if (config?.patterns) {
     for (const pattern of config.patterns) {
-      if (pattern.test(text)) return true;
+      if (pattern.test(text,))
+        return true;
     }
   }
 

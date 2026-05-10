@@ -77,11 +77,11 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'processEvent (Phase 2)',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'pr.opened rebuilds prDetail, mergeStatus, and reviewThread',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();
@@ -125,8 +125,9 @@ await describe({
             expect(reviews,).toBeDefined();
           },
         },),
-        () => it({
-          name: 'review.submitted rebuilds prDetail and reviewThread but not the reviewless mergeStatus body',
+        it({
+          name:
+            'review.submitted rebuilds prDetail and reviewThread but not the reviewless mergeStatus body',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();
             const issueId = uniqueId('pr',);
@@ -189,7 +190,7 @@ await describe({
             expect(reviewsText.includes('LGTM',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'comment.created with commentId rebuilds the standalone comment fragment',
           async fn() {
             const { userId, repoId, } = await setupUserRepo();

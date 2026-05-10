@@ -42,11 +42,12 @@ export function createMemoryStorage(): Storage {
       return Promise.resolve();
     },
     putBatch(items: readonly StoragePutItem[],): Promise<void> {
-      for (const item of items)
+      for (const item of items) {
         map.set(
           item.key,
           item.body,
         );
+      }
       return Promise.resolve();
     },
     get(key: string,): Promise<Uint8Array | undefined> {

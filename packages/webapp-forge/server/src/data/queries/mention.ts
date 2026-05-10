@@ -131,7 +131,9 @@ export async function listFragmentsMentioningUser(userId: string,): Promise<stri
  * const ids = await listUsersMentionedByFragment('issues/r1/i1/detail');
  * ```
  */
-export async function listUsersMentionedByFragment(fragmentKey: string,): Promise<string[]> {
+export async function listUsersMentionedByFragment(
+  fragmentKey: string,
+): Promise<string[]> {
   const rows = await all<{ readonly user_id: string; }>(
     'SELECT user_id FROM mention_index WHERE fragment_key = ? ORDER BY user_id ASC',
     [fragmentKey,],

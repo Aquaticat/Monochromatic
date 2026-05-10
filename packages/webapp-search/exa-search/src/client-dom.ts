@@ -34,7 +34,8 @@ const bindings = {
             ),
           ),
           v.transformAsync(async function promptSet(val,): Promise<string> {
-            if (val !== null) return val;
+            if (val !== null)
+              return val;
             const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
             localStorage.setItem(
               'exaApiKey',

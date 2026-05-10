@@ -7,27 +7,27 @@
  * @module
  */
 
-import { readFileSync, } from "node:fs";
-import { join, } from "node:path";
-import { tagged, } from "@monochromatic-dev/module-logger/tagged";
-import * as v from "valibot";
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { readFileSync, } from 'node:fs';
+import { join, } from 'node:path';
+import * as v from 'valibot';
+import {
+  type AutoModeConfig,
+  AutoModeConfigSchema,
+  type ProjectConfig,
+  ProjectConfigSchema,
+} from './config-schemas.ts';
+import { JUDGE_MODEL_DEFAULTS, } from './constants.ts';
+import { l as parentLogger, } from './log.ts';
 import type {
   CommandMatcher,
   MergedConfig,
-} from "./signals.ts";
-import {
-  AutoModeConfigSchema,
-  type AutoModeConfig,
-  ProjectConfigSchema,
-  type ProjectConfig,
-} from "./config-schemas.ts";
-import { JUDGE_MODEL_DEFAULTS, } from "./constants.ts";
-import { l as parentLogger, } from "./log.ts";
-import type { BudgetModelAuth, } from "./types.ts";
+} from './signals.ts';
+import type { BudgetModelAuth, } from './types.ts';
 
 /** Tagged logger for the config module. */
 const l = tagged({
-  tag: "config",
+  tag: 'config',
   l: parentLogger,
 },);
 
@@ -58,37 +58,36 @@ function loadMergedConfig(
   const global = loadGlobalConfig();
   const project = loadProjectConfig(cwd,);
   innerL.debug(
-    `loaded global=${String(true,)} project=${String(project !== undefined,)} enabled=${String(global.enabled,)}`,
+    `loaded global=${String(true,)} project=${String(project !== undefined,)} enabled=${
+      String(global.enabled,)
+    }`,
   );
 
-  const commands: CommandMatcher[] = [...global.commands];
-  const patternStrs = [...global.patterns];
+  const commands: CommandMatcher[] = [...global.commands,];
+  const patternStrs = [...global.patterns,];
 
   if (project !== undefined) {
-    commands.push(...project.commands);
-    patternStrs.push(...project.patterns);
+    commands.push(...project.commands,);
+    patternStrs.push(...project.patterns,);
   }
 
   const rawJudgeModel = global.judgeModel ?? { ...JUDGE_MODEL_DEFAULTS, };
 
-  const judgeModel: MergedConfig["judgeModel"] = {
+  const judgeModel: MergedConfig['judgeModel'] = {
     strategy: rawJudgeModel.strategy,
     costRatio: rawJudgeModel.costRatio,
     majorVersions: rawJudgeModel.majorVersions,
   };
 
   if (rawJudgeModel.modelOverride !== undefined) {
-    if (typeof rawJudgeModel.modelOverride === "string") {
+    if (typeof rawJudgeModel.modelOverride === 'string')
       judgeModel.modelOverride = rawJudgeModel.modelOverride;
-    }
     else {
       const auth: BudgetModelAuth = {};
-      if (rawJudgeModel.modelOverride.auth.apiKey !== undefined) {
+      if (rawJudgeModel.modelOverride.auth.apiKey !== undefined)
         auth.apiKey = rawJudgeModel.modelOverride.auth.apiKey;
-      }
-      if (rawJudgeModel.modelOverride.auth.headers !== undefined) {
+      if (rawJudgeModel.modelOverride.auth.headers !== undefined)
         auth.headers = rawJudgeModel.modelOverride.auth.headers;
-      }
       judgeModel.modelOverride = {
         model: rawJudgeModel.modelOverride.model,
         auth,
@@ -101,13 +100,13 @@ function loadMergedConfig(
     commands,
     patterns: compilePatterns(
       patternStrs,
-      project !== undefined ? "global+project" : "global",
+      project !== undefined ? 'global+project' : 'global',
     ),
-    ...(global.instructions !== undefined && global.instructions !== ""
-      ? { globalInstructions: global.instructions }
+    ...(global.instructions !== undefined && global.instructions !== ''
+      ? { globalInstructions: global.instructions, }
       : {}),
-    ...(project?.instructions !== undefined && project.instructions !== ""
-      ? { projectInstructions: project.instructions }
+    ...(project?.instructions !== undefined && project.instructions !== ''
+      ? { projectInstructions: project.instructions, }
       : {}),
     judgeModel,
     judgeTimeoutMs: global.judgeTimeoutMs,
@@ -142,11 +141,11 @@ const PROJECT_DEFAULTS: ProjectConfig = {
  */
 function globalConfigPath(): string {
   return join(
-    process.env.HOME ?? "~",
-    ".pi",
-    "agent",
-    "extensions",
-    "pi-auto-mode.json",
+    process.env.HOME ?? '~',
+    '.pi',
+    'agent',
+    'extensions',
+    'pi-auto-mode.json',
   );
 }
 
@@ -161,9 +160,9 @@ function projectConfigPath(
 ): string {
   return join(
     cwd,
-    ".pi",
-    "extensions",
-    "pi-auto-mode.json",
+    '.pi',
+    'extensions',
+    'pi-auto-mode.json',
   );
 }
 
@@ -183,19 +182,22 @@ function readJsonFile(
   try {
     return JSON.parse(readFileSync(
       path,
-      "utf8"
-    ));
+      'utf8',
+    ),);
   }
   catch (err) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Node.js error code access
-    const errCode = (err instanceof Error && "code" in err)
+    const errCode = (err instanceof Error && 'code' in err)
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Node.js error code access
       ? (err as NodeJS.ErrnoException).code
       : undefined;
-    if (errCode === "ENOENT") return undefined;
+    if (errCode === 'ENOENT')
+      return undefined;
     throw new Error(
-      `auto-mode: failed to read ${label} config at ${path}: ${err instanceof Error ? err.message : String(err)}`,
-      { cause: err },
+      `auto-mode: failed to read ${label} config at ${path}: ${
+        err instanceof Error ? err.message : String(err,)
+      }`,
+      { cause: err, },
     );
   }
 }
@@ -215,7 +217,7 @@ function readJsonFile(
  *
  * @throws when validation fails
  */
-function parseConfig<T>(
+function parseConfig<T,>(
   schema: v.GenericSchema<unknown, T>,
   raw: unknown,
   path: string,
@@ -225,9 +227,8 @@ function parseConfig<T>(
     schema,
     raw,
   );
-  if (result.success) {
+  if (result.success)
     return result.output;
-  }
   throw new Error(
     `auto-mode: invalid ${label} config at ${path}: ${JSON.stringify(result.issues,)}`,
   );
@@ -252,14 +253,16 @@ function compilePatterns(
   label: string,
 ): RegExp[] {
   return patterns.map(
-    function compilePattern(p) {
+    function compilePattern(p,) {
       try {
-        return new RegExp(p);
+        return new RegExp(p,);
       }
       catch (err) {
         throw new Error(
-          `auto-mode: invalid regex in ${label} patterns: "${p}": ${err instanceof Error ? err.message : String(err)}`,
-          { cause: err },
+          `auto-mode: invalid regex in ${label} patterns: "${p}": ${
+            err instanceof Error ? err.message : String(err,)
+          }`,
+          { cause: err, },
         );
       }
     },
@@ -278,9 +281,10 @@ function loadGlobalConfig(): AutoModeConfig {
   const path = globalConfigPath();
   const raw = readJsonFile(
     path,
-    "global"
+    'global',
   );
-  if (raw === undefined) return GLOBAL_DEFAULTS;
+  if (raw === undefined)
+    return GLOBAL_DEFAULTS;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
   const rawObj = raw as RawJson;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nested config from JSON
@@ -297,7 +301,7 @@ function loadGlobalConfig(): AutoModeConfig {
     AutoModeConfigSchema,
     merged,
     path,
-    "global",
+    'global',
   );
 }
 
@@ -313,12 +317,13 @@ function loadGlobalConfig(): AutoModeConfig {
 function loadProjectConfig(
   cwd: string,
 ): ProjectConfig | undefined {
-  const path = projectConfigPath(cwd);
+  const path = projectConfigPath(cwd,);
   const raw = readJsonFile(
     path,
-    "project"
+    'project',
   );
-  if (raw === undefined) return undefined;
+  if (raw === undefined)
+    return undefined;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
   const rawObj = raw as RawJson;
   const merged = {
@@ -329,7 +334,7 @@ function loadProjectConfig(
     ProjectConfigSchema,
     merged,
     path,
-    "project",
+    'project',
   );
 }
 

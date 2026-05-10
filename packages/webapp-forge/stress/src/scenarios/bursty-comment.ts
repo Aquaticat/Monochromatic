@@ -25,13 +25,17 @@ import {
   insertUser,
 } from '@monochromatic-dev/webapp-forge-server/ts/data/queries';
 import {
+  dispatchAndFlush,
+} from '@monochromatic-dev/webapp-forge-server/ts/server/dispatch-and-flush';
+import {
   getEventCursor,
   setEventCursor,
   storage,
   writeBuffer,
 } from '@monochromatic-dev/webapp-forge-server/ts/server/runtime';
-import { dispatchAndFlush, } from '@monochromatic-dev/webapp-forge-server/ts/server/dispatch-and-flush';
-import { issueDetailKey, } from '@monochromatic-dev/webapp-forge-server/ts/worker/fragment-keys';
+import {
+  issueDetailKey,
+} from '@monochromatic-dev/webapp-forge-server/ts/worker/fragment-keys';
 import { renderFragment, } from '@monochromatic-dev/webapp-forge-server/ts/worker/render';
 
 import { percentile, } from '../percentile.ts';
@@ -145,11 +149,12 @@ async function run(): Promise<ScenarioResult> {
     if (intervalMs > 0) {
       const sleep = Math.max(
         0,
-        Math.floor(intervalMs - (Date.now() - t0)),
+        Math.floor(intervalMs - (Date.now() - t0),),
       );
-      if (sleep > 0)
+      if (sleep > 0) {
         // oxlint-disable-next-line no-await-in-loop -- paced burst by design
         await wait(sleep,);
+      }
     }
   }
 
@@ -159,9 +164,9 @@ async function run(): Promise<ScenarioResult> {
   },);
   const expected = await renderFragment(detailKey,);
   const stored = await storage.get(detailKey,);
-  if (stored === undefined) {
+  if (stored === undefined)
     violations.push('issue detail fragment missing after burst',);
-  } else {
+  else {
     const expectedText = new TextDecoder().decode(expected.body,);
     const storedText = new TextDecoder().decode(stored,);
     if (expectedText !== storedText)

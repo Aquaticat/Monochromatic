@@ -173,10 +173,12 @@ async function startServer(): Promise<{
   const { url, } = server;
   if (url === undefined)
     throw new Error('serve(): server.url unavailable after ready()',);
-  const base = url.endsWith('/',) ? url.slice(
-    0,
-    -1,
-  ) : url;
+  const base = url.endsWith('/',)
+    ? url.slice(
+      0,
+      -1,
+    )
+    : url;
   return {
     base,
     disposable: new DisposableServer({ server, },),
@@ -282,7 +284,7 @@ await describe({
   concurrency: 1,
   timeout: DEFAULT_TEST_TIMEOUT_MS,
   children: [
-    () => it({
+    it({
       name: 'clones back a small file pushed by the system git CLI',
       timeout: DEFAULT_TEST_TIMEOUT_MS,
       async fn() {
@@ -330,7 +332,7 @@ await describe({
         expect(cloned,).toBe(payload,);
       },
     },),
-    () => it({
+    it({
       name: 'roundtrips a 5 MiB binary blob byte-for-byte',
       timeout: DEFAULT_TEST_TIMEOUT_MS,
       async fn() {
@@ -377,7 +379,7 @@ await describe({
         expect(Buffer.from(cloned,).equals(blob,),).toBe(true,);
       },
     },),
-    () => it({
+    it({
       name: 'accepts 100 ref updates in a single batched push',
       timeout: DEFAULT_TEST_TIMEOUT_MS,
       async fn() {
@@ -401,16 +403,20 @@ await describe({
         // One `update-ref --stdin` invocation creates all 100 refs
         // atomically; faster and clearer intent than 100 `git branch`
         // calls.
-        const stdinScript = `${Array.from(
-          { length: BATCH_REF_COUNT, },
-          function buildLine(_unused, index,) {
-            const ordinal = String(index + 1,).padStart(
-              BATCH_NAME_PAD,
-              '0',
-            );
-            return `create refs/heads/batch-${ordinal} ${baseSha}`;
-          },
-        ).join('\n',)}\n`;
+        const stdinScript = `${
+          Array
+            .from(
+              { length: BATCH_REF_COUNT, },
+              function buildLine(_unused, index,) {
+                const ordinal = String(index + 1,).padStart(
+                  BATCH_NAME_PAD,
+                  '0',
+                );
+                return `create refs/heads/batch-${ordinal} ${baseSha}`;
+              },
+            )
+            .join('\n',)
+        }\n`;
 
         await spawn(
           SYSTEM_GIT,

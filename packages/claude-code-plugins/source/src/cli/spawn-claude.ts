@@ -99,9 +99,14 @@ else {
   /** Extra args split on whitespace, filtering empty strings. */
   const extraArgs = (args.extraArguments ?? '')
     .split(/\s+/,)
-    .filter(function nonEmpty(s,) { return s.length > 0; },);
+    .filter(function nonEmpty(s,) {
+      return s.length > 0;
+    },);
 
-  mkdirSync(SPAWNS_DIR, { recursive: true, },);
+  mkdirSync(
+    SPAWNS_DIR,
+    { recursive: true, },
+  );
 
   /**
    * Pre-create the spawn state file before launching the child.
@@ -120,17 +125,28 @@ else {
   };
 
   writeFileSync(
-    join(SPAWNS_DIR, `${spawnId}.json`,),
+    join(
+      SPAWNS_DIR,
+      `${spawnId}.json`,
+    ),
     JSON.stringify(initialState,),
   );
 
   /** Detached child process running the spawned Claude session in a terminal window. */
   const proc = spawn(
     'terminal-exec',
-    ['--', 'claude', ...extraArgs, args.prompt,],
+    [
+      '--',
+      'claude',
+      ...extraArgs,
+      args.prompt,
+    ],
     {
       cwd,
-      env: { ...process.env, CLAUDE_SPAWN_ID: spawnId, },
+      env: {
+        ...process.env,
+        CLAUDE_SPAWN_ID: spawnId,
+      },
       detached: true,
       stdio: 'ignore',
     },

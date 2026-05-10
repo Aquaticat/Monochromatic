@@ -447,7 +447,7 @@ not mention the surface trigger
 
 Labels: `bug`, `parser`, `documentation`
 
-```md
+````md
 ## Description
 
 Patterns of the form `A&~(B)` where `B` contains `\b`, `^`, `$`, or any
@@ -495,6 +495,7 @@ let _ = Regex::new(r"em&~(.*\B.*)");
 let _ = Regex::new(r"(?=^foo)bar");
 let _ = Regex::new(r"(?<=\b)foo");
 ```
+````
 
 ```rust
 // These compile fine, demonstrating the trigger is positional, not size:
@@ -539,6 +540,7 @@ Replace `\b` with literal whitespace or `\W` inside complement bodies;
 use `\A`/`\z` in place of `^`/`$` when whole-content semantics are
 acceptable. Move boundary assertions to the match site outside the
 complement when the rule's intent permits.
-```
 
+```
 [resharp]: https://github.com/ieviev/resharp
+```

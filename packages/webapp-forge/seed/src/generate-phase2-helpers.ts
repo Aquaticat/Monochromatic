@@ -60,13 +60,16 @@ export function fakeSha(seed: number,): string {
         HEX_RADIX,
       ),
     );
-    s += next.toString(HEX_RADIX,).padStart(
-      SHA_HEX_CHUNK,
-      '0',
-    ).slice(
-      0,
-      SHA_HEX_CHUNK,
-    );
+    s += next
+      .toString(HEX_RADIX,)
+      .padStart(
+        SHA_HEX_CHUNK,
+        '0',
+      )
+      .slice(
+        0,
+        SHA_HEX_CHUNK,
+      );
   }
   return s.slice(
     0,

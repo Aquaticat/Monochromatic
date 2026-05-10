@@ -5,13 +5,13 @@
  * a single deterministic call.
  */
 
+import { seedPhase2ForRepo, } from './generate-phase2.ts';
 import {
   seedIssuesForRepo,
   seedLabels,
   seedRepos,
   seedUsers,
 } from './generate.ts';
-import { seedPhase2ForRepo, } from './generate-phase2.ts';
 
 /** Per-user seed offset to space user ids out of the repo namespace. */
 const USER_SEED_FACTOR = 1_000;

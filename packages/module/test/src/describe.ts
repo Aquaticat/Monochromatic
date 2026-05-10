@@ -5,6 +5,13 @@ import type { Logger, } from '@monochromatic-dev/module-logger/types';
 import pLimit from 'p-limit';
 
 import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
+import {
+  DEFAULT_CONCURRENCY,
+  type DescriptorContext,
+  makeDescriptor,
+  RUN_WITH_CONTEXT,
+  type TestDescriptor,
+} from './descriptor.ts';
 import type { ItResult, } from './it.ts';
 
 /**
@@ -16,18 +23,12 @@ export type DescribeResult = {
 };
 
 /**
- * Single child entry: either an already-started promise or a thunk that starts one.
- * Thunks are required for `concurrency: 1` so execution is deferred.
- * Bare promises work in all modes but are already running when passed.
+ * Single child entry: a lazy {@link TestDescriptor} from nested
+ * {@link describe} or `it` calls. Execution is dispatched by the parent
+ * suite, which calls each child's {@link RUN_WITH_CONTEXT} with the
+ * inherited execution context.
  */
-export type DescribeChild =
-  | Promise<DescribeResult | ItResult>
-  | (() => Promise<DescribeResult | ItResult>);
-
-/**
- * Default maximum number of children running at the same time.
- */
-const DEFAULT_CONCURRENCY = 16;
+export type DescribeChild = TestDescriptor<DescribeResult | ItResult>;
 
 /**
  * Options for a test suite.
@@ -38,26 +39,23 @@ export type DescribeOptions = {
    * Each child resolves with its name on success so the parent
    * can log the `child <- parent` relationship.
    *
-   * Accepts promises (eager) or thunks (deferred).
-   * Use thunks with `concurrency: 1` to guarantee execution order.
+   * Children are lazy descriptors and do not execute until the
+   * parent dispatches them.
    */
   readonly children: readonly DescribeChild[];
   /**
    * Maximum number of children running at the same time.
    *
-   * - `1` -- sequential execution via `for...of` loop; children should be thunks
-   *   so execution is deferred until the previous child settles
+   * - `1` -- sequential execution via `for...of` loop, no `p-limit` overhead
    * - `2`..`Number.MAX_SAFE_INTEGER - 1` -- bounded concurrency via `p-limit`
    * - `Infinity` or `Number.MAX_SAFE_INTEGER` -- unbounded concurrency via
    *   raw `Promise.allSettled` (no `p-limit` overhead)
    *
-   * **Not inherited by child describes.** Each `describe` has its own
-   * `concurrency` defaulting to {@link DEFAULT_CONCURRENCY} (16).
-   * When child tests stub shared global state (e.g. prototype methods),
-   * set `concurrency: 1` on the innermost `describe` that contains
-   * those tests and use thunks (`() => it(...)`) so execution is deferred.
+   * **Inherited by child describes.** A nested `describe` without its own
+   * `concurrency` inherits the parent's effective value, so setting
+   * `concurrency: 1` once at the top sequences all descendants.
    *
-   * Defaults to {@link DEFAULT_CONCURRENCY} (16).
+   * Defaults to {@link DEFAULT_CONCURRENCY} (16) at the root.
    */
   readonly concurrency?: number;
   /**
@@ -96,68 +94,34 @@ export type DescribeOptions = {
 };
 
 /**
- * Resolves a child entry to a promise, calling thunks to start execution.
+ * Executes a suite given options and an inherited context.
+ * Internal: the public {@link describe} entry point wraps this in
+ * {@link makeDescriptor} so callers receive a lazy descriptor.
  *
- * @param child - Promise or thunk
+ * @param opts - suite options
  *
- * @returns started promise
- */
-function startChild(child: DescribeChild,): Promise<DescribeResult | ItResult> {
-  return typeof child === 'function' ? child() : child;
-}
-
-/**
- * Defines and immediately executes a test suite.
- *
- * Children run concurrently via `Promise.allSettled` by default,
- * capped at `concurrency` (default 16) simultaneous children via `p-limit`.
- * Set `concurrency: 1` for sequential execution.
- * If any child rejects, describe throws an error wrapping the
- * child errors in the cause chain. Empty name skips this layer
- * in the error chain -- the child error propagates directly.
- *
- * @param name - Suite name shown in output and error cause chain
- *
- * @param children - Child promises or thunks from nested describe or it calls
- *
- * @param concurrency - Maximum concurrent children (default 16; 1 for sequential; `Infinity` for unbounded)
- *
- * @param skip - Whether to skip the entire suite
- *
- * @param repeats - Number of additional runs after the first
- *
- * @param timeout - Optional timeout in milliseconds for the entire suite
- *
- * @param l - Optional logger override
+ * @param ctx - inherited execution context (effective concurrency from parent)
  *
  * @returns suite result containing the suite name
  *
- * @throws Error with child errors as cause when any child fails.
+ * @throws Error wrapping child failures when any child rejects.
  *   Single failure: `Error(name, { cause: childError })`.
  *   Multiple failures: `Error(name, { cause: AggregateError([...]) })`.
  *   Empty name: re-throws the cause directly without wrapping.
- *
- * @example
- * ```ts
- * await describe({
- *   name: 'math',
- *   children: [
- *     it({ name: 'adds', fn: async () => expect(1 + 1).toBe(2) }),
- *     it({ name: 'subtracts', fn: async () => expect(2 - 1).toBe(1) }),
- *   ],
- *   timeout: 5000,
- * });
- * ```
  */
-export async function describe({
-  name,
-  children,
-  concurrency = DEFAULT_CONCURRENCY,
-  skip = false,
-  repeats = 0,
-  timeout,
-  l: loggerOverride,
-}: DescribeOptions,): Promise<DescribeResult> {
+async function runDescribe(
+  opts: DescribeOptions,
+  ctx: DescriptorContext,
+): Promise<DescribeResult> {
+  const {
+    name,
+    children,
+    concurrency,
+    skip = false,
+    repeats = 0,
+    timeout,
+    l: loggerOverride,
+  } = opts;
   const baseLogger = loggerOverride ?? defaultLogger;
   const l = name === ''
     ? baseLogger
@@ -172,17 +136,21 @@ export async function describe({
     return { name, };
   }
 
+  /** Effective concurrency for this suite, inheriting parent when not set. */
+  const effectiveConcurrency = concurrency ?? ctx.effectiveConcurrency;
+  /** Context passed to each child for inheritance. */
+  const childCtx: DescriptorContext = { effectiveConcurrency, };
   /** Whether concurrency is effectively unbounded. */
-  const isUnbounded = concurrency >= Number.MAX_SAFE_INTEGER;
+  const isUnbounded = effectiveConcurrency >= Number.MAX_SAFE_INTEGER;
   /** Whether children run one at a time. */
-  const isSequential = concurrency <= 1;
+  const isSequential = effectiveConcurrency <= 1;
 
   if (name !== '') {
     const concurrencyLabel = isSequential
       ? ' (sequential)'
       : (isUnbounded
         ? ' (unbounded)'
-        : ` (concurrency: ${String(concurrency,)})`);
+        : ` (concurrency: ${String(effectiveConcurrency,)})`);
     l.debug(`start${concurrencyLabel}`,);
   }
 
@@ -200,7 +168,7 @@ export async function describe({
     for (const child of children) {
       try {
         // oxlint-disable-next-line no-await-in-loop -- sequential execution requires awaiting each child before starting the next
-        const value = await startChild(child,);
+        const value = await child[RUN_WITH_CONTEXT](childCtx,);
         results.push({
           status: 'fulfilled',
           value,
@@ -221,38 +189,26 @@ export async function describe({
   /**
    * Runs one pass of the suite: starts all children, collects results, reports.
    *
-   * @param runLabel - Label suffix for repeated runs (empty string for single runs)
+   * @param runLabel - label suffix for repeated runs (empty string for single runs)
    *
    * @throws Error wrapping child failures when any child rejects
    */
   async function runOnce(runLabel: string,): Promise<void> {
-    // History: until 2026-04, this block initialized `settleAll = runSequential()`
-    // at declaration, then reassigned it inside `if (isSequential)`. That double-
-    // ran children when they were thunks: the initial call invoked each thunk
-    // once, and the reassignment invoked each thunk again, launching every test
-    // twice. With Promise children the reassignment only re-awaited the same
-    // already-resolved promises, so the bug was invisible until a test suite
-    // used thunks (e.g. to let `concurrency: 1` actually sequence execution of
-    // tests that share mutable module state, since `it(...)` returns an
-    // in-flight Promise and cannot be sequenced any other way). Initializing
-    // via conditional expression eliminates the duplicate invocation and also
-    // satisfies oxlint's `init-declarations` rule (no uninitialized `let`).
     const settleAll: Promise<PromiseSettledResult<DescribeResult | ItResult>[]> =
       isSequential
         ? runSequential()
         : (isUnbounded
           ? Promise.allSettled(children.map(function mapChild(child,) {
-            return startChild(child,);
+            return child[RUN_WITH_CONTEXT](childCtx,);
           },),)
           : (function runLimited(): Promise<
             PromiseSettledResult<DescribeResult | ItResult>[]
           > {
-            const limit = pLimit(concurrency,);
+            const limit = pLimit(effectiveConcurrency,);
             return Promise.allSettled(children.map(function limitChild(child,) {
-              return limit(
-                startChild,
-                child,
-              );
+              return limit(function dispatchChild() {
+                return child[RUN_WITH_CONTEXT](childCtx,);
+              },);
             },),);
           }()));
 
@@ -312,4 +268,45 @@ export async function describe({
   }
 
   return { name, };
+}
+
+/**
+ * Defines a test suite as a lazy {@link TestDescriptor}.
+ * Construction is synchronous and side-effect free; execution begins
+ * when the descriptor is awaited (top-level) or dispatched by a parent
+ * suite via {@link RUN_WITH_CONTEXT}.
+ *
+ * Children run concurrently via `Promise.allSettled` by default,
+ * capped at `concurrency` (default 16) simultaneous children via `p-limit`.
+ * Set `concurrency: 1` for sequential execution; nested describes inherit
+ * the parent's effective value unless they override it.
+ *
+ * @param opts - suite options
+ *
+ * @returns lazy descriptor that resolves with the suite result
+ *
+ * @throws Error with child errors as cause when any child fails.
+ *   Single failure: `Error(name, { cause: childError })`.
+ *   Multiple failures: `Error(name, { cause: AggregateError([...]) })`.
+ *   Empty name: re-throws the cause directly without wrapping.
+ *
+ * @example
+ * ```ts
+ * await describe({
+ *   name: 'math',
+ *   children: [
+ *     it({ name: 'adds', fn: async () => expect(1 + 1).toBe(2) }),
+ *     it({ name: 'subtracts', fn: async () => expect(2 - 1).toBe(1) }),
+ *   ],
+ *   timeout: 5000,
+ * });
+ * ```
+ */
+export function describe(opts: DescribeOptions,): TestDescriptor<DescribeResult> {
+  return makeDescriptor(function runDescribeWithCtx(ctx,) {
+    return runDescribe(
+      opts,
+      ctx,
+    );
+  },);
 }

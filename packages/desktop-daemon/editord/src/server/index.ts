@@ -237,7 +237,9 @@ const SHUTDOWN_MS_PER_SECOND = 1_000;
  *
  * @param opts - whether to delete the auth token file (true for SIGINT, false for SIGTERM auto-restart)
  */
-async function shutdownApp({ deleteTokens, }: { deleteTokens: boolean; },): Promise<void> {
+async function shutdownApp(
+  { deleteTokens, }: { deleteTokens: boolean; },
+): Promise<void> {
   stopTokenTouch();
   if (deleteTokens)
     deleteTokenFile();
@@ -254,7 +256,9 @@ async function shutdownApp({ deleteTokens, }: { deleteTokens: boolean; },): Prom
 function startShutdownWatchdog(): void {
   const watchdog = setTimeout(
     function shutdownWatchdogTimeout(): void {
-      httpLog.error(`shutdown timed out after ${String(SHUTDOWN_WATCHDOG_SECONDS,)}s, forcing exit`,);
+      httpLog.error(
+        `shutdown timed out after ${String(SHUTDOWN_WATCHDOG_SECONDS,)}s, forcing exit`,
+      );
       // oxlint-disable-next-line unicorn/no-process-exit -- backstop: LSP children may keep the event loop alive after shutdown
       process.exit(0,);
     },

@@ -40,8 +40,8 @@ The development machine, taken as the slowest acceptable target
 Numbers from rough calculation, to be verified in phase 0:
 
 - Bevy ECS: 1M entities × ~250 bytes/entity (Transform 64 B + GlobalTransform 64 B
-  + Aabb 24 B + NodeKind 4 B + StyleHandle 8 B + per-kind data ~32 B
-  + change-tick metadata ~40 B + archetype overhead amortized) ≈ 250 MB RAM.
+  - Aabb 24 B + NodeKind 4 B + StyleHandle 8 B + per-kind data ~32 B
+  - change-tick metadata ~40 B + archetype overhead amortized) ≈ 250 MB RAM.
 - Document geometry (paths, text glyphs, image references): variable.
   Allow ~1 GB for a typical large document.
 - BVH spatial index: 1M × ~32 bytes ≈ 32 MB RAM.
@@ -244,10 +244,10 @@ Rejected:
   Rejected in favor of Bevy because:
   (a) Rust integration is via gdext, less native than Bevy's first-class Rust support;
   (b) Godot's 2D scene tree at 1M instances requires bypassing the standard Node2D system
-      in favor of MultiMeshInstance2D,
-      which removes the scene-tree integration that is the centerpiece of Godot's framework;
+  in favor of MultiMeshInstance2D,
+  which removes the scene-tree integration that is the centerpiece of Godot's framework;
   (c) ECS aligns with the per-frame access pattern of D5
-      better than Godot's scene-tree node model.
+  better than Godot's scene-tree node model.
   Re-evaluate if Bevy proves unworkable in phase 0.
 - **Defold** (King's 2D-focused OSS engine, Apache 2.0).
   Production-proven 2D engine.
@@ -484,23 +484,23 @@ Rejected:
   Investigated as a serious candidate per user direction.
   Rejected for our use case because Graphite's design philosophy diverges:
   (a) Graphite is built around a node-graph procedural model
-      ("nondestructive editing workflow that combines layer-based compositing
-      with node-based generative design"),
-      not a Figma-style scene-tree component design;
+  ("nondestructive editing workflow that combines layer-based compositing
+  with node-based generative design"),
+  not a Figma-style scene-tree component design;
   (b) Their roadmap targets vector + raster + photo editing + motion graphics
-      + desktop publishing + VFX compositing as a generalized creative tool,
-      not a focused design tool for component-based design systems;
-  (c) Their frontend is Svelte (web tech) with a desktop wrapper crate;
-      our D1 picked true native, and adopting Graphite means inheriting
-      the webview-style stack we rejected;
-  (d) The "1M visible nodes at 60 fps p99" target is not Graphite's target;
-      they have not solved the problem we are trying to solve,
-      and contributing 1M-node Figma-style perf upstream means reshaping
-      their architecture, not adding to it.
-  Net: Graphite is a different product solving an adjacent problem.
-  Greenfield with awareness of Graphite's existence is the answer;
-  contribution back is sensible if our work produces general-purpose pieces
-  (a Vello render plugin pattern, a tile-pyramid library) that fit Graphite's needs.
+  - desktop publishing + VFX compositing as a generalized creative tool,
+    not a focused design tool for component-based design systems;
+    (c) Their frontend is Svelte (web tech) with a desktop wrapper crate;
+    our D1 picked true native, and adopting Graphite means inheriting
+    the webview-style stack we rejected;
+    (d) The "1M visible nodes at 60 fps p99" target is not Graphite's target;
+    they have not solved the problem we are trying to solve,
+    and contributing 1M-node Figma-style perf upstream means reshaping
+    their architecture, not adding to it.
+    Net: Graphite is a different product solving an adjacent problem.
+    Greenfield with awareness of Graphite's existence is the answer;
+    contribution back is sensible if our work produces general-purpose pieces
+    (a Vello render plugin pattern, a tile-pyramid library) that fit Graphite's needs.
 - **Use, fork, or contribute to OpenPencil** (MIT, AI-native, .fig file support,
   recent project as of 2026-04 to 2026-05-09;
   multiple ecosystem repos found via `gh search repos openpencil`).
@@ -518,18 +518,18 @@ Rejected:
   which makes it superficially attractive.
   Rejected because:
   (a) Inkscape's renderer is Cairo (CPU), the exact component failing our
-      perf target and the one we are rewriting; keeping Inkscape's renderer
-      defeats the project's purpose;
+  perf target and the one we are rewriting; keeping Inkscape's renderer
+  defeats the project's purpose;
   (b) The data model and UI are both C++, which D2 rules out categorically;
-      forking Inkscape and modifying it means writing C++, which is the
-      cognitive-load reason D2 exists;
+  forking Inkscape and modifying it means writing C++, which is the
+  cognitive-load reason D2 exists;
   (c) The UI is GTK, which conflicts with our winit-based native-window
-      approach (D1);
+  approach (D1);
   (d) GPL v3 license forces all code linked against Inkscape to be GPL,
-      limiting future relicensing and integration with non-GPL libraries;
+  limiting future relicensing and integration with non-GPL libraries;
   (e) After replacing the renderer, the data model, and the UI, the only
-      remaining inheritance is the file format (.svg with Inkscape extensions),
-      which is straightforward to read without forking.
+  remaining inheritance is the file format (.svg with Inkscape extensions),
+  which is straightforward to read without forking.
   Net: the time saved by forking is consumed by replacing every part we keep.
 - **Fork Krita** (KDE's raster-primary editor, GPL v3, C++, Qt).
   C++ rules it out per D2 alone.
@@ -832,12 +832,12 @@ after phase 0 wraps.
 
 When proposing a major technology change to this project:
 
-1.  Add a new D<N> section with the picked option and the rejected
-    alternatives.
-2.  State the reason for rejection per alternative concretely
-    (not "doesn't fit"; cite the specific incompatibility, license clause,
-    benchmark, or measurement).
-3.  Update earlier decisions if a downstream choice forces re-evaluation
-    (mark superseded with a pointer to the new decision; do not delete).
-4.  Reference related decisions inline (e.g. "see D4 for engine pick")
-    rather than re-explaining context.
+1. Add a new D<N> section with the picked option and the rejected
+   alternatives.
+2. State the reason for rejection per alternative concretely
+   (not "doesn't fit"; cite the specific incompatibility, license clause,
+   benchmark, or measurement).
+3. Update earlier decisions if a downstream choice forces re-evaluation
+   (mark superseded with a pointer to the new decision; do not delete).
+4. Reference related decisions inline (e.g. "see D4 for engine pick")
+   rather than re-explaining context.

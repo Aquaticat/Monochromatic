@@ -140,7 +140,9 @@ export async function processEvent(
     },);
     if (!accepted) {
       l.debug(
-        `sequence guard rejected fragment write: ${fragmentKey} eventId=${String(eventId,)}`,
+        `sequence guard rejected fragment write: ${fragmentKey} eventId=${
+          String(eventId,)
+        }`,
       );
       discarded += 1;
       continue;
@@ -150,7 +152,8 @@ export async function processEvent(
         key: fragmentKey,
         body: result.body,
       },);
-    } else {
+    }
+    else {
       // oxlint-disable-next-line no-await-in-loop -- raw adapter sink awaits per write
       await sink.put(
         fragmentKey,

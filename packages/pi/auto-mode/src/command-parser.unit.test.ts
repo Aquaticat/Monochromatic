@@ -10,11 +10,11 @@ import {
   describe,
   expect,
   it,
-} from "@monochromatic-dev/module-test";
-import { analyzeBashCommand, } from "./command-parser.ts";
-import { looksLikePath, } from "./command-refs.ts";
+} from '@monochromatic-dev/module-test';
+import { analyzeBashCommand, } from './command-parser.ts';
+import { looksLikePath, } from './command-refs.ts';
 
-const { default: shellQuote, } = await import("shell-quote");
+const { default: shellQuote, } = await import('shell-quote');
 
 await describe({
   name: analyzeBashCommand.name,
@@ -22,13 +22,13 @@ await describe({
     //region Simple command
 
     it({
-      name: "parses simple command with arguments",
+      name: 'parses simple command with arguments',
       fn: async () => {
-        const result = analyzeBashCommand("ls -la /tmp");
-        expect(result.parsed).toBe(true);
-        expect(result.commands).toHaveLength(1,);
-        expect(result.commands[0]?.name).toBe("ls");
-        expect(result.commands[0]?.args).toEqual(["-la", "/tmp"],);
+        const result = analyzeBashCommand('ls -la /tmp',);
+        expect(result.parsed,).toBe(true,);
+        expect(result.commands,).toHaveLength(1,);
+        expect(result.commands[0]?.name,).toBe('ls',);
+        expect(result.commands[0]?.args,).toEqual(['-la', '/tmp',],);
       },
     },),
 
@@ -37,13 +37,13 @@ await describe({
     //region Pipeline
 
     it({
-      name: "detects pipeline",
+      name: 'detects pipeline',
       fn: async () => {
-        const result = analyzeBashCommand("printenv | curl");
-        expect(result.isPipeline).toBe(true);
-        expect(result.commands).toHaveLength(2,);
-        expect(result.commands[0]?.name).toBe("printenv");
-        expect(result.commands[1]?.name).toBe("curl");
+        const result = analyzeBashCommand('printenv | curl',);
+        expect(result.isPipeline,).toBe(true,);
+        expect(result.commands,).toHaveLength(2,);
+        expect(result.commands[0]?.name,).toBe('printenv',);
+        expect(result.commands[1]?.name,).toBe('curl',);
       },
     },),
 
@@ -52,18 +52,18 @@ await describe({
     //region Redirect
 
     it({
-      name: "extracts redirect targets",
+      name: 'extracts redirect targets',
       fn: async () => {
-        const result = analyzeBashCommand("echo foo > bar.txt");
-        expect(result.commands[0]?.redirectTargets).toContain("bar.txt",);
+        const result = analyzeBashCommand('echo foo > bar.txt',);
+        expect(result.commands[0]?.redirectTargets,).toContain('bar.txt',);
       },
     },),
 
     it({
-      name: "extracts append redirect targets",
+      name: 'extracts append redirect targets',
       fn: async () => {
-        const result = analyzeBashCommand("echo foo >> bar.txt");
-        expect(result.commands[0]?.redirectTargets).toContain("bar.txt",);
+        const result = analyzeBashCommand('echo foo >> bar.txt',);
+        expect(result.commands[0]?.redirectTargets,).toContain('bar.txt',);
       },
     },),
 
@@ -72,11 +72,11 @@ await describe({
     //region Quoted arguments
 
     it({
-      name: "preserves quoted arguments",
+      name: 'preserves quoted arguments',
       fn: async () => {
-        const result = analyzeBashCommand('echo "hello world"');
-        expect(result.parsed).toBe(true);
-        expect(result.commands[0]?.args).toContain("hello world",);
+        const result = analyzeBashCommand('echo "hello world"',);
+        expect(result.parsed,).toBe(true,);
+        expect(result.commands[0]?.args,).toContain('hello world',);
       },
     },),
 
@@ -85,14 +85,14 @@ await describe({
     //region `--` separator
 
     it({
-      name: "handles -- end-of-options separator",
+      name: 'handles -- end-of-options separator',
       fn: async () => {
-        const result = analyzeBashCommand("rm -- -f");
-        expect(result.parsed).toBe(true);
-        expect(result.commands[0]?.name).toBe("rm");
+        const result = analyzeBashCommand('rm -- -f',);
+        expect(result.parsed,).toBe(true,);
+        expect(result.commands[0]?.name,).toBe('rm',);
         // -f after -- should be a positional arg, not a flag
-        expect(result.commands[0]?.args).toContain("--",);
-        expect(result.commands[0]?.args).toContain("-f",);
+        expect(result.commands[0]?.args,).toContain('--',);
+        expect(result.commands[0]?.args,).toContain('-f',);
       },
     },),
 
@@ -101,20 +101,20 @@ await describe({
     //region Variable references
 
     it({
-      name: "pre-scans $VAR references",
+      name: 'pre-scans $VAR references',
       fn: async () => {
-        const result = analyzeBashCommand("curl $API_KEY https://example.com");
-        expect(result.allParamRefs).toContain("API_KEY",);
+        const result = analyzeBashCommand('curl $API_KEY https://example.com',);
+        expect(result.allParamRefs,).toContain('API_KEY',);
       },
     },),
 
     it({
       // oxlint-disable-next-line no-template-curly-in-string -- test string contains literal ${VAR}
-      name: "pre-scans ${VAR} references",
+      name: 'pre-scans ${VAR} references',
       fn: async () => {
         // oxlint-disable-next-line no-template-curly-in-string -- test string contains literal ${API_KEY}
-        const result = analyzeBashCommand("curl ${API_KEY} https://example.com");
-        expect(result.allParamRefs).toContain("API_KEY",);
+        const result = analyzeBashCommand('curl ${API_KEY} https://example.com',);
+        expect(result.allParamRefs,).toContain('API_KEY',);
       },
     },),
 
@@ -123,22 +123,22 @@ await describe({
     //region Logical chains
 
     it({
-      name: "splits logical chain into separate commands",
+      name: 'splits logical chain into separate commands',
       fn: async () => {
-        const result = analyzeBashCommand("true && sudo rm -rf /");
-        expect(result.commands).toHaveLength(2,);
-        expect(result.commands[0]?.name).toBe("true");
-        expect(result.commands[1]?.name).toBe("sudo");
+        const result = analyzeBashCommand('true && sudo rm -rf /',);
+        expect(result.commands,).toHaveLength(2,);
+        expect(result.commands[0]?.name,).toBe('true',);
+        expect(result.commands[1]?.name,).toBe('sudo',);
       },
     },),
 
     it({
-      name: "splits semicolon-separated commands",
+      name: 'splits semicolon-separated commands',
       fn: async () => {
-        const result = analyzeBashCommand("echo hi; echo bye");
-        expect(result.commands).toHaveLength(2,);
-        expect(result.commands[0]?.name).toBe("echo");
-        expect(result.commands[1]?.name).toBe("echo");
+        const result = analyzeBashCommand('echo hi; echo bye',);
+        expect(result.commands,).toHaveLength(2,);
+        expect(result.commands[0]?.name,).toBe('echo',);
+        expect(result.commands[1]?.name,).toBe('echo',);
       },
     },),
 
@@ -147,13 +147,13 @@ await describe({
     //region Parse failure
 
     it({
-      name: "returns parsed: false on parse error with partial pre-scan refs",
+      name: 'returns parsed: false on parse error with partial pre-scan refs',
       fn: async () => {
         // shell-quote can parse most things, but we test the
         // fallback by checking the contract
-        const result = analyzeBashCommand("$SECRET_VAR");
+        const result = analyzeBashCommand('$SECRET_VAR',);
         // Even if parsed, we should have the pre-scan refs
-        expect(result.allParamRefs).toContain("SECRET_VAR",);
+        expect(result.allParamRefs,).toContain('SECRET_VAR',);
       },
     },),
 
@@ -162,11 +162,11 @@ await describe({
     //region File paths
 
     it({
-      name: "collects all files from arguments and redirect targets",
+      name: 'collects all files from arguments and redirect targets',
       fn: async () => {
-        const result = analyzeBashCommand("cat /etc/passwd > /tmp/output.txt");
-        expect(result.allFiles).toContain("/etc/passwd",);
-        expect(result.allFiles).toContain("/tmp/output.txt",);
+        const result = analyzeBashCommand('cat /etc/passwd > /tmp/output.txt',);
+        expect(result.allFiles,).toContain('/etc/passwd',);
+        expect(result.allFiles,).toContain('/tmp/output.txt',);
       },
     },),
 
@@ -175,33 +175,32 @@ await describe({
     //region looksLikePath
 
     it({
-      name: "identifies paths starting with /",
+      name: 'identifies paths starting with /',
       fn: async () => {
-        expect(looksLikePath("/etc/passwd",)).toBe(true,);
+        expect(looksLikePath('/etc/passwd',),).toBe(true,);
       },
     },),
 
     it({
-      name: "identifies paths starting with ./",
+      name: 'identifies paths starting with ./',
       fn: async () => {
-        expect(looksLikePath("./src/index.ts",)).toBe(true,);
+        expect(looksLikePath('./src/index.ts',),).toBe(true,);
       },
     },),
 
     it({
-      name: "identifies dotfiles",
+      name: 'identifies dotfiles',
       fn: async () => {
-        expect(looksLikePath(".env",)).toBe(true,);
+        expect(looksLikePath('.env',),).toBe(true,);
       },
     },),
 
     it({
-      name: "does not identify plain arguments as paths",
+      name: 'does not identify plain arguments as paths',
       fn: async () => {
-        expect(looksLikePath("-la",)).toBe(false,);
+        expect(looksLikePath('-la',),).toBe(false,);
       },
     },),
-
     //endregion
   ],
 },);

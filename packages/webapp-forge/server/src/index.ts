@@ -26,12 +26,6 @@ import './data/db.ts';
 import { getArgumentValue, } from './lib/args.ts';
 import { dispatchAndFlush, } from './server/dispatch-and-flush.ts';
 import {
-  getEventCursor,
-  setEventCursor,
-  storage,
-  writeBuffer,
-} from './server/runtime.ts';
-import {
   authHandler,
   createCommentHandler,
   createIssueHandler,
@@ -44,6 +38,12 @@ import {
   meDeltaHandler,
   rawFragmentHandler,
 } from './server/routes.ts';
+import {
+  getEventCursor,
+  setEventCursor,
+  storage,
+  writeBuffer,
+} from './server/runtime.ts';
 
 /** Tagged logger for the server boot. */
 const l = tagged({

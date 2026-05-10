@@ -11,18 +11,18 @@
 import type {
   ExtensionAPI,
   ExtensionContext,
-} from "@earendil-works/pi-coding-agent";
-import { tagged, } from "@monochromatic-dev/module-logger/tagged";
+} from '@earendil-works/pi-coding-agent';
+import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { l as parentLogger, } from './log.ts';
+import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import {
-  type VerdictData,
   VERDICT_ENTRY_TYPE,
-} from "./types.ts";
-import { DEFAULT_DENY_GUIDANCE, } from "./system-prompt.ts";
-import { l as parentLogger, } from "./log.ts";
+  type VerdictData,
+} from './types.ts';
 
 /** Tagged logger for the ask-user module. */
 const l = tagged({
-  tag: "ask-user",
+  tag: 'ask-user',
   l: parentLogger,
 },);
 
@@ -66,8 +66,8 @@ async function askUser(
       VERDICT_ENTRY_TYPE,
       {
         action,
-        verdict: "user-deny",
-        reason: "no UI",
+        verdict: 'user-deny',
+        reason: 'no UI',
       } satisfies VerdictData,
     );
     return {
@@ -80,45 +80,45 @@ async function askUser(
   const lines = [
     "Command needs approval. Agent's explanation:",
     `> ${explanation}`,
-    "",
+    '',
     action,
   ];
   const choice = await ctx.ui.select(
-    lines.join("\n",),
+    lines.join('\n',),
     [
-      "Allow",
-      "Deny",
-      "Stop",
+      'Allow',
+      'Deny',
+      'Stop',
     ],
   );
 
-  if (choice === "Allow") {
+  if (choice === 'Allow') {
     innerL.info(`user-approve: ${action}`,);
     pi.appendEntry(
       VERDICT_ENTRY_TYPE,
       {
         action,
-        verdict: "user-approve",
+        verdict: 'user-approve',
         reason: explanation,
       } satisfies VerdictData,
     );
     return undefined;
   }
 
-  if (choice === "Stop") {
+  if (choice === 'Stop') {
     innerL.info(`user-stop: ${action}`,);
     pi.appendEntry(
       VERDICT_ENTRY_TYPE,
       {
         action,
-        verdict: "user-deny",
-        reason: "user stopped",
+        verdict: 'user-deny',
+        reason: 'user stopped',
       } satisfies VerdictData,
     );
     ctx.abort();
     return {
       block: true,
-      reason: "The user stopped execution. Wait for their next instructions.",
+      reason: 'The user stopped execution. Wait for their next instructions.',
     };
   }
 
@@ -127,7 +127,7 @@ async function askUser(
     VERDICT_ENTRY_TYPE,
     {
       action,
-      verdict: "user-deny",
+      verdict: 'user-deny',
       reason: explanation,
     } satisfies VerdictData,
   );
@@ -154,21 +154,31 @@ function updateWidget(
   verdicts: {
     action: string;
     verdict: string;
-    reason: string
+    reason: string;
   }[],
 ): void {
-  const approved = verdicts.filter(
-    function isApproved(v) { return v.verdict === "approved"; },
-  ).length;
-  const denied = verdicts.filter(
-    function isDenied(v) { return v.verdict === "denied"; },
-  ).length;
+  const approved = verdicts
+    .filter(
+      function isApproved(v,) {
+        return v.verdict === 'approved';
+      },
+    )
+    .length;
+  const denied = verdicts
+    .filter(
+      function isDenied(v,) {
+        return v.verdict === 'denied';
+      },
+    )
+    .length;
   const parts: string[] = [];
-  if (approved > 0) parts.push(`${approved} approved`);
-  if (denied > 0) parts.push(`${denied} denied`);
+  if (approved > 0)
+    parts.push(`${approved} approved`,);
+  if (denied > 0)
+    parts.push(`${denied} denied`,);
   ctx.ui.setWidget(
-    "auto-mode",
-    [parts.join(", ")],
+    'auto-mode',
+    [parts.join(', ',),],
   );
 }
 

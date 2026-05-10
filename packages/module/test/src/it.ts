@@ -3,6 +3,10 @@ import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 import {
+  makeDescriptor,
+  type TestDescriptor,
+} from './descriptor.ts';
+import {
   createScopedExpect,
   type ScopedExpect,
 } from './expect.ts';
@@ -58,13 +62,15 @@ export type ItResult = {
 /**
  * Runs a single invocation of the test function, handling timeout if configured.
  *
- * @param fn - Test body to execute
+ * @param fn - test body to execute
  *
- * @param timeout - Optional timeout in milliseconds
+ * @param ctx - test context with scoped expect and sinon sandbox
  *
- * @param name - Test name, used as the timeout label
+ * @param timeout - optional timeout in milliseconds
+ *
+ * @param name - test name, used as the timeout label
  */
-async function runOnce({
+async function runFnOnce({
   fn,
   ctx,
   timeout,
@@ -87,49 +93,30 @@ async function runOnce({
 }
 
 /**
- * Defines and immediately executes a single test case.
+ * Executes a single test case. Internal: the public {@link it} entry
+ * point wraps this in {@link makeDescriptor} so callers receive a lazy
+ * descriptor.
  *
  * Logs `PASS name (Nms)` on success.
  * Throws `Error(name, { cause })` on failure or timeout,
  * propagating the original error as the cause.
  *
- * @param name - Human-readable test name
- *
- * @param fn - Async function that performs assertions
- *
- * @param timeout - Optional timeout in milliseconds
- *
- * @param skip - Whether to skip execution entirely
- *
- * @param repeats - Number of additional runs after the first
- *
- * @param fails - Whether the test is expected to throw
- *
- * @param l - Optional logger override from parent suite
+ * @param opts - test options
  *
  * @returns test result containing the test name
  *
  * @throws Error wrapping the original failure with the test name and cause chain
- *
- * @example
- * ```ts
- * await it({
- *   name: 'adds two numbers',
- *   fn: async () => {
- *     expect(add(1, 2)).toBe(3);
- *   },
- * });
- * ```
  */
-export async function it({
-  name,
-  fn,
-  timeout,
-  skip = false,
-  repeats = 0,
-  fails = false,
-  l: parentLogger,
-}: ItOptions,): Promise<ItResult> {
+async function runIt(opts: ItOptions,): Promise<ItResult> {
+  const {
+    name,
+    fn,
+    timeout,
+    skip = false,
+    repeats = 0,
+    fails = false,
+    l: parentLogger,
+  } = opts;
   const l = parentLogger !== undefined
     ? tagged({
       tag: name,
@@ -165,7 +152,7 @@ export async function it({
 
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential test repetitions must run one at a time
-      await runOnce({
+      await runFnOnce({
         fn,
         ctx,
         timeout,
@@ -177,17 +164,8 @@ export async function it({
       caughtError = error;
     }
 
-    // Restore sandbox before proceeding to assertion checks
-    // or the next repeat run. This ensures stubs are cleaned up
-    // before `it()` resolves its promise, which is important
-    // when a parent `describe` uses `concurrency: 1` with thunks:
-    // the parent awaits each `it()` promise, so the sandbox
-    // must be restored before that await resolves.
-    // Without this, sandbox.restore() only runs via `await using`
-    // disposal after `it()` returns, which is too late for
-    // sequential parents that start the next child immediately.
-    // Note: this does NOT fix concurrent tests that stub shared
-    // global state; those must use `concurrency: 1` with thunks.
+    // Restore stubs between repeat runs so the next iteration sees a
+    // clean sandbox; `await using` only fires at function-scope exit.
     sandbox.restore();
 
     const durationMs = performance.now() - runStart;
@@ -259,4 +237,31 @@ export async function it({
   }
 
   return { name, };
+}
+
+/**
+ * Defines a single test case as a lazy {@link TestDescriptor}.
+ * Construction is synchronous and side-effect free; execution begins
+ * when the descriptor is awaited or dispatched by a parent suite.
+ *
+ * @param opts - test options
+ *
+ * @returns lazy descriptor that resolves with the test result
+ *
+ * @throws Error wrapping the original failure with the test name and cause chain
+ *
+ * @example
+ * ```ts
+ * await it({
+ *   name: 'adds two numbers',
+ *   fn: async () => {
+ *     expect(add(1, 2)).toBe(3);
+ *   },
+ * });
+ * ```
+ */
+export function it(opts: ItOptions,): TestDescriptor<ItResult> {
+  return makeDescriptor(function runItIgnoringCtx() {
+    return runIt(opts,);
+  },);
 }

@@ -15,8 +15,8 @@
 import {
   isToolCallEventType,
   type ToolCallEvent,
-} from "@earendil-works/pi-coding-agent";
-import { RELEVANT_TOOLS, } from "./constants.ts";
+} from '@earendil-works/pi-coding-agent';
+import { RELEVANT_TOOLS, } from './constants.ts';
 
 /**
  * Extract text content from a tool call event.
@@ -34,18 +34,24 @@ function extractToolText(
   event: ToolCallEvent,
 ): string | undefined {
   if (isToolCallEventType(
-    "write",
+    'write',
     event,
   )) {
     return event.input.content;
   }
   if (isToolCallEventType(
-    "edit",
+    'edit',
     event,
   )) {
-    return event.input.edits.map(
-      function extractNewText(e) { return e.newText; },
-    ).join("\n");
+    return event
+      .input
+      .edits
+      .map(
+        function extractNewText(e,) {
+          return e.newText;
+        },
+      )
+      .join('\n',);
   }
   return undefined;
 }
@@ -66,25 +72,25 @@ function getFilePath(
   event: ToolCallEvent,
 ): string | undefined {
   if (isToolCallEventType(
-    "read",
+    'read',
     event,
   )) {
     return event.input.path;
   }
   if (isToolCallEventType(
-    "write",
+    'write',
     event,
   )) {
     return event.input.path;
   }
   if (isToolCallEventType(
-    "edit",
+    'edit',
     event,
   )) {
     return event.input.path;
   }
   if (isToolCallEventType(
-    "grep",
+    'grep',
     event,
   )) {
     return event.input.path;
@@ -110,46 +116,46 @@ function describeAction(
   event: ToolCallEvent,
 ): string {
   if (isToolCallEventType(
-    "bash",
+    'bash',
     event,
   )) {
     return `bash: ${event.input.command}`;
   }
   if (isToolCallEventType(
-    "read",
+    'read',
     event,
   )) {
     return `read ${event.input.path}`;
   }
   if (isToolCallEventType(
-    "write",
+    'write',
     event,
   )) {
     return `write ${event.input.path}`;
   }
   if (isToolCallEventType(
-    "edit",
+    'edit',
     event,
   )) {
     return `edit ${event.input.path}`;
   }
   if (isToolCallEventType(
-    "grep",
+    'grep',
     event,
   )) {
-    return `grep ${event.input.path ?? ""}`;
+    return `grep ${event.input.path ?? ''}`;
   }
   if (isToolCallEventType(
-    "find",
+    'find',
     event,
   )) {
-    return `find ${event.input.path ?? ""}`;
+    return `find ${event.input.path ?? ''}`;
   }
   if (isToolCallEventType(
-    "ls",
+    'ls',
     event,
   )) {
-    return `ls ${event.input.path ?? ""}`;
+    return `ls ${event.input.path ?? ''}`;
   }
   return event.toolName;
 }
@@ -173,7 +179,7 @@ function describeAction(
 function isRelevantTool(
   event: ToolCallEvent,
 ): boolean {
-  return RELEVANT_TOOLS.includes(event.toolName);
+  return RELEVANT_TOOLS.includes(event.toolName,);
 }
 
 export {

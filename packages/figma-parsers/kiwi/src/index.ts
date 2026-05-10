@@ -662,17 +662,17 @@ type FigmaMeta = {
     r: number;
     g: number;
     b: number;
-    a: number
+    a: number;
   };
   thumbnailSize: {
     width: number;
-    height: number
+    height: number;
   };
   renderCoordinates: {
     x: number;
     y: number;
     width: number;
-    height: number
+    height: number;
   };
   fileName: string;
   exportedAt: string;

@@ -53,12 +53,14 @@ await describe({
               seed: 1,
               lo: 5,
               hi: 5,
-            },),).toBe(5,);
+            },),)
+              .toBe(5,);
             expect(rngInt({
               seed: 1,
               lo: 5,
               hi: 3,
-            },),).toBe(5,);
+            },),)
+              .toBe(5,);
           },
         },),
         it({
@@ -85,7 +87,8 @@ await describe({
             expect(rngPick({
               seed: 1,
               items: [],
-            },),).toBeUndefined();
+            },),)
+              .toBeUndefined();
           },
         },),
         it({

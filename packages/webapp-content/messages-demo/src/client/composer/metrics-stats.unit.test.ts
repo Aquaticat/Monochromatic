@@ -55,7 +55,8 @@ await describe({
             expect(percentile({
               sortedAsc: [],
               p: PERCENTILE_99,
-            },),).toBe(0,);
+            },),)
+              .toBe(0,);
           },
         },),
 
@@ -73,7 +74,8 @@ await describe({
             expect(percentile({
               sortedAsc: samples,
               p: PERCENTILE_99,
-            },),).toBe(99,);
+            },),)
+              .toBe(99,);
           },
         },),
 
@@ -83,7 +85,8 @@ await describe({
             expect(percentile({
               sortedAsc: [1, 2, 3, 4,],
               p: 0.5,
-            },),).toBe(2,);
+            },),)
+              .toBe(2,);
           },
         },),
 
@@ -93,7 +96,8 @@ await describe({
             expect(percentile({
               sortedAsc: [10, 20, 30,],
               p: 0.01,
-            },),).toBe(10,);
+            },),)
+              .toBe(10,);
           },
         },),
       ],

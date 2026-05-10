@@ -28,9 +28,8 @@ function buildCrc32Table(): Uint32Array {
   const table = new Uint32Array(BYTE_VALUES,);
   for (let byte = 0; byte < BYTE_VALUES; byte += 1) {
     let c = byte;
-    for (let bit = 0; bit < BYTE_BITS; bit += 1) {
+    for (let bit = 0; bit < BYTE_BITS; bit += 1)
       c = (c & 1) === 1 ? CRC32_POLYNOMIAL ^ (c >>> 1) : c >>> 1;
-    }
     // `>>> 0` reinterprets the 32-bit result as unsigned. `Math.trunc` would
     // leave negative values from the signed-bitwise interpretation in place
     // and the table would store wrong values.
@@ -60,9 +59,8 @@ export function crc32(data: Uint8Array,): number {
   let c = CRC32_INIT;
   for (const byte of data) {
     const tableEntry = CRC32_TABLE[(c ^ byte) & BYTE_MASK];
-    if (tableEntry === undefined) {
+    if (tableEntry === undefined)
       throw new Error('zip-writer: CRC32 table corrupted',);
-    }
     c = tableEntry ^ (c >>> BYTE_BITS);
   }
   // See note on `>>> 0` in buildCrc32Table.

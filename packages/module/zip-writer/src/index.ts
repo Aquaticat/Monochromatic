@@ -90,9 +90,8 @@ export class ZipWriter {
     content: string | Uint8Array,
   ): void {
     validatePath(path,);
-    if (this.#entries.has(path,)) {
+    if (this.#entries.has(path,))
       throw new Error(`zip-writer: duplicate entry at \`${path}\``,);
-    }
     const nameBytes = TEXT_ENCODER.encode(path,);
     if (nameBytes.length > MAX_UINT16) {
       throw new Error(

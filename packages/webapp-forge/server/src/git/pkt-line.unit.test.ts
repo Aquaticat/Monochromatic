@@ -52,7 +52,7 @@ await describe({
   name: 'pkt-line',
   concurrency: 1,
   children: [
-    () => it({
+    it({
       name: 'encodePkt prepends 4-byte hex length',
       async fn() {
         await Promise.resolve();
@@ -60,7 +60,7 @@ await describe({
         expect(new TextDecoder().decode(result,),).toBe('0005a',);
       },
     },),
-    () => it({
+    it({
       name: 'encodePkt handles empty string',
       async fn() {
         await Promise.resolve();
@@ -68,21 +68,21 @@ await describe({
         expect(new TextDecoder().decode(result,),).toBe('0004',);
       },
     },),
-    () => it({
+    it({
       name: 'flushPkt is "0000"',
       async fn() {
         await Promise.resolve();
         expect(new TextDecoder().decode(flushPkt(),),).toBe('0000',);
       },
     },),
-    () => it({
+    it({
       name: 'delimPkt is "0001"',
       async fn() {
         await Promise.resolve();
         expect(new TextDecoder().decode(delimPkt(),),).toBe('0001',);
       },
     },),
-    () => it({
+    it({
       name: 'decode round-trips a single line',
       async fn() {
         await Promise.resolve();
@@ -95,7 +95,7 @@ await describe({
         expect(new TextDecoder().decode(first,),).toBe('hello\n',);
       },
     },),
-    () => it({
+    it({
       name: 'decode handles flush + delim sentinels',
       async fn() {
         await Promise.resolve();
@@ -111,7 +111,7 @@ await describe({
         expect(lines[3],).toBe('delim',);
       },
     },),
-    () => it({
+    it({
       name: 'decode throws on truncated body',
       async fn() {
         await Promise.resolve();
@@ -119,17 +119,19 @@ await describe({
         const truncated = new TextEncoder().encode('0010',);
         expect(function attemptDecode() {
           decodePktLines(truncated,);
-        },).toThrow();
+        },)
+          .toThrow();
       },
     },),
-    () => it({
+    it({
       name: 'decode throws on invalid length prefix',
       async fn() {
         await Promise.resolve();
         const garbage = new TextEncoder().encode('zzzz',);
         expect(function attemptDecode() {
           decodePktLines(garbage,);
-        },).toThrow();
+        },)
+          .toThrow();
       },
     },),
   ],

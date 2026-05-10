@@ -94,13 +94,16 @@ const toRun: Scenario[] = target === 'all'
 if (toRun.length === 0) {
   l.error(
     `no matching scenarios; unknown target: ${target}. Choose one of: ${
-      SCENARIOS.map(function pickName(s,) {
-        return s.name;
-      },).join(', ')
+      SCENARIOS
+        .map(function pickName(s,) {
+          return s.name;
+        },)
+        .join(', ',)
     } or 'all'.`,
   );
   process.exitCode = 1;
-} else {
+}
+else {
   /** Aggregated per-scenario results for the report. */
   const results: ScenarioResult[] = [];
   for (const scenario of toRun) {
@@ -109,9 +112,9 @@ if (toRun.length === 0) {
     const result = await scenario.run();
     results.push(result,);
     l.info(
-      `scenario ${result.scenario} done durationMs=${
-        String(result.durationMs,)
-      } p50=${String(result.p50,)} p99=${String(result.p99,)} violations=${
+      `scenario ${result.scenario} done durationMs=${String(result.durationMs,)} p50=${
+        String(result.p50,)
+      } p99=${String(result.p99,)} violations=${
         String(result.invariantViolations.length,)
       }`,
     );

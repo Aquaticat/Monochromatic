@@ -129,14 +129,15 @@ await describe({
             const blockCount = Math.ceil(
               CHUNK_TARGET_BYTES / paragraph.length,
             ) + 50;
-            const md = Array.from(
-              {
-                length: blockCount,
-              },
-              function build() {
-                return paragraph;
-              },
-            )
+            const md = Array
+              .from(
+                {
+                  length: blockCount,
+                },
+                function build() {
+                  return paragraph;
+                },
+              )
               .join('\n\n',);
             const chunks = [...renderChunks(md,),];
             expect(chunks.length,).toBeGreaterThan(1,);
@@ -146,7 +147,8 @@ await describe({
         },),
 
         it({
-          name: 'preserves order: concatenated md equals original (modulo trailing newline normalisation)',
+          name:
+            'preserves order: concatenated md equals original (modulo trailing newline normalisation)',
           fn: async () => {
             const md = 'p1\n\np2\n\np3\n';
             const chunks = [...renderChunks(md,),];
@@ -181,7 +183,8 @@ await describe({
             expect(extractPreview(
               '# Hello\n\nWorld',
               50,
-            ),).toBe('Hello World',);
+            ),)
+              .toBe('Hello World',);
           },
         },),
 
@@ -191,7 +194,8 @@ await describe({
             expect(extractPreview(
               '```\ncode\n```',
               50,
-            ),).toBe('(no text preview)',);
+            ),)
+              .toBe('(no text preview)',);
           },
         },),
 
@@ -202,7 +206,9 @@ await describe({
             expect(extractPreview(
               md,
               50,
-            ).length,).toBeLessThanOrEqual(50,);
+            )
+              .length,)
+              .toBeLessThanOrEqual(50,);
           },
         },),
 
@@ -212,7 +218,8 @@ await describe({
             expect(extractPreview(
               'see `foo()` for details',
               50,
-            ),).toBe('see for details',);
+            ),)
+              .toBe('see for details',);
           },
         },),
 
@@ -222,7 +229,8 @@ await describe({
             expect(extractPreview(
               'click [here](https://example.com) please',
               50,
-            ),).toBe('click here please',);
+            ),)
+              .toBe('click here please',);
           },
         },),
 
@@ -232,7 +240,8 @@ await describe({
             expect(extractPreview(
               '![alt](pic.png) caption',
               50,
-            ),).toBe('caption',);
+            ),)
+              .toBe('caption',);
           },
         },),
 
@@ -242,7 +251,8 @@ await describe({
             expect(extractPreview(
               'a   b\n\n\nc',
               50,
-            ),).toBe('a b c',);
+            ),)
+              .toBe('a b c',);
           },
         },),
 
@@ -252,7 +262,8 @@ await describe({
             expect(extractPreview(
               '',
               50,
-            ),).toBe('(no text preview)',);
+            ),)
+              .toBe('(no text preview)',);
           },
         },),
       ],

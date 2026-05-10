@@ -7,11 +7,6 @@ import type {
   SessionBeforeCompactEvent,
 } from '@earendil-works/pi-coding-agent';
 import {
-  convertToLlm,
-  serializeConversation,
-} from './pi-utils.ts';
-import { MorphCompactClient, } from './morph-client.ts';
-import {
   computeFileLists,
   formatFileOperations,
 } from './file-tracking.ts';
@@ -20,6 +15,11 @@ import {
   extractLatestQuery,
   wrapMorphOutput,
 } from './formatting.ts';
+import { MorphCompactClient, } from './morph-client.ts';
+import {
+  convertToLlm,
+  serializeConversation,
+} from './pi-utils.ts';
 import type {
   MorphCompactionAttempt,
   MorphCompactionDetails,

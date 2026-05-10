@@ -139,7 +139,7 @@ export async function createOneShotTcpServer(
             && typeof addrInfo !== 'string'
             && 'port' in addrInfo
           ) {
-            resolve(`${addrInfo.address}:${addrInfo.port}`);
+            resolve(`${addrInfo.address}:${addrInfo.port}`,);
           }
         },
       );

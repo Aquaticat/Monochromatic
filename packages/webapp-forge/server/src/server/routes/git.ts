@@ -19,15 +19,15 @@ import {
 } from 'h3';
 
 import {
-  buildInfoRefsAdvertisement,
-  handleReceivePack,
-  handleUploadPack,
-} from '../../git/iso-server.ts';
-import {
   getRepoByOwnerLogin,
   insertEvent,
   nextSequence,
 } from '../../data/queries.ts';
+import {
+  buildInfoRefsAdvertisement,
+  handleReceivePack,
+  handleUploadPack,
+} from '../../git/iso-server.ts';
 import {
   HTTP_BAD_REQUEST,
   HTTP_OK,

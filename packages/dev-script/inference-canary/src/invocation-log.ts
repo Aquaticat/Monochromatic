@@ -96,7 +96,8 @@ function readProcFile(
       `/proc/${String(pid,)}/${name}`,
       'utf8',
     );
-  } catch {
+  }
+  catch {
     return null;
   }
 }
@@ -122,7 +123,8 @@ function readProcLink(
 ): string | null {
   try {
     return readlinkSync(`/proc/${String(pid,)}/${name}`,);
-  } catch {
+  }
+  catch {
     return null;
   }
 }
@@ -233,7 +235,8 @@ function walkParentChain(
  * @returns `sha256:<hex>` digest string
  */
 function hashEnvironment(env: NodeJS.ProcessEnv,): string {
-  const lines = Object.keys(env,)
+  const lines = Object
+    .keys(env,)
     .toSorted()
     .map(function envLine(key,): string {
       const value = env[key] ?? '';
@@ -282,7 +285,8 @@ try {
     logPath,
     `${JSON.stringify(record,)}\n`,
   );
-} catch (error) {
+}
+catch (error) {
   // Provenance logging is diagnostic-only; never break canary startup over it.
   // The tagged logger from log.ts is not yet initialized at this import point,
   // so console.error is the correct surface here.

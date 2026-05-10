@@ -12,8 +12,8 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import {
-  renderIssueDetail,
   type IssueDetailData,
+  renderIssueDetail,
 } from './issue-detail.ts';
 
 /**

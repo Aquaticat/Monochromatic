@@ -16,14 +16,18 @@
 import { logger, } from '@monochromatic-dev/module-logger/logger';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
-import { createCommentWithEvent, } from '@monochromatic-dev/webapp-forge-server/ts/data/queries';
+import {
+  createCommentWithEvent,
+} from '@monochromatic-dev/webapp-forge-server/ts/data/queries';
+import {
+  dispatchAndFlush,
+} from '@monochromatic-dev/webapp-forge-server/ts/server/dispatch-and-flush';
 import {
   getEventCursor,
   setEventCursor,
   storage,
   writeBuffer,
 } from '@monochromatic-dev/webapp-forge-server/ts/server/runtime';
-import { dispatchAndFlush, } from '@monochromatic-dev/webapp-forge-server/ts/server/dispatch-and-flush';
 import { renderFragment, } from '@monochromatic-dev/webapp-forge-server/ts/worker/render';
 
 import { seedDataset, } from '@monochromatic-dev/webapp-forge-seed/ts/dataset';
@@ -159,7 +163,7 @@ async function waitInterval(row: {
     return;
   const sleep = Math.max(
     0,
-    Math.floor(row.intervalMs - row.elapsedMs),
+    Math.floor(row.intervalMs - row.elapsedMs,),
   );
   if (sleep > 0)
     await wait(sleep,);

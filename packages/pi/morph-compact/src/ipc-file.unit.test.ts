@@ -4,12 +4,12 @@
  * @module
  */
 
-import { existsSync, } from 'node:fs';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test';
+import { existsSync, } from 'node:fs';
 import {
   readCompactFile,
   writeCompactFile,
@@ -137,9 +137,9 @@ await describe({
         it({
           name: 'removes the temp directory after cleanup',
           fn: async () => {
-            const { filePath, cleanup } = writeCompactFile('data',);
+            const { filePath, cleanup, } = writeCompactFile('data',);
             // oxlint-disable-next-line no-restricted-syntax -- verifying cleanup behavior
-            const dir = filePath.split('/').slice(0, -1).join('/');
+            const dir = filePath.split('/',).slice(0, -1,).join('/',);
 
             expect(existsSync(filePath,),).toBe(true,);
 
@@ -152,7 +152,7 @@ await describe({
         it({
           name: 'is safe to call multiple times',
           fn: async () => {
-            const { cleanup } = writeCompactFile('data',);
+            const { cleanup, } = writeCompactFile('data',);
 
             cleanup();
             // Second call should not throw

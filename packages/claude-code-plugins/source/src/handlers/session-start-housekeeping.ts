@@ -31,7 +31,10 @@ const STALE_DIST_ARTIFACTS = [
  * ```
  */
 async function ensureDir(dirPath: string,): Promise<void> {
-  await mkdir(dirPath, { recursive: true, },);
+  await mkdir(
+    dirPath,
+    { recursive: true, },
+  );
 }
 
 /**
@@ -57,7 +60,10 @@ async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
       removals.push(
         rm(
           `${workspaceRoot}/${finalDir}/${artifact}`,
-          { recursive: true, force: true, },
+          {
+            recursive: true,
+            force: true,
+          },
         ),
       );
     }
@@ -78,7 +84,10 @@ async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
  * ```
  */
 async function removeMcpJson(workspaceRoot: string,): Promise<void> {
-  await rm(`${workspaceRoot}/.mcp.json`, { force: true, },);
+  await rm(
+    `${workspaceRoot}/.mcp.json`,
+    { force: true, },
+  );
 }
 
 /**

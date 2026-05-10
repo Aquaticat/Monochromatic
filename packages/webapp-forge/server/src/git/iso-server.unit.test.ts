@@ -10,8 +10,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
-import { mkdtemp, } from 'node:fs/promises';
 import nodeFs from 'node:fs';
+import { mkdtemp, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -19,6 +19,7 @@ import { join, } from 'node:path';
 // oxlint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
 import * as git from 'isomorphic-git';
 
+import { ZERO_OID, } from './iso-server-refs.ts';
 import {
   buildInfoRefsAdvertisement,
   ensureRepoExists,
@@ -31,7 +32,6 @@ import {
   encodePkt,
   flushPkt,
 } from './pkt-line.ts';
-import { ZERO_OID, } from './iso-server-refs.ts';
 
 /** All-zero OID used by the smart-HTTP protocol to mark a ref creation. */
 const ZERO = ZERO_OID;
@@ -171,7 +171,7 @@ await describe({
   name: 'iso-server',
   concurrency: 1,
   children: [
-    () => it({
+    it({
       name: 'ensureRepoExists creates a bare gitdir',
       async fn() {
         await freshGitdirRoot();
@@ -189,8 +189,9 @@ await describe({
         expect(headBytes.toString('utf8',).trim(),).toBe('ref: refs/heads/main',);
       },
     },),
-    () => it({
-      name: 'buildInfoRefsAdvertisement returns the empty-repo placeholder for a fresh repo',
+    it({
+      name:
+        'buildInfoRefsAdvertisement returns the empty-repo placeholder for a fresh repo',
       async fn() {
         await freshGitdirRoot();
         const body = await buildInfoRefsAdvertisement({
@@ -204,12 +205,13 @@ await describe({
         expect(text.includes(`${ZERO} capabilities^{}`,),).toBe(true,);
       },
     },),
-    () => it({
+    it({
       name: 'handleReceivePack indexes pack, updates ref, and reports ok',
       async fn() {
         await freshGitdirRoot();
         const fab = await fabricateSingleCommit();
-        const triplet = `${ZERO} ${fab.oid} refs/heads/main\0report-status side-band-64k\n`;
+        const triplet =
+          `${ZERO} ${fab.oid} refs/heads/main\0report-status side-band-64k\n`;
         const body = concat([
           encodePkt(triplet,),
           flushPkt(),
@@ -232,13 +234,14 @@ await describe({
         expect(sha,).toBe(fab.oid,);
       },
     },),
-    () => it({
+    it({
       name: 'handleUploadPack returns a packfile for a wanted OID',
       async fn() {
         await freshGitdirRoot();
         const fab = await fabricateSingleCommit();
         // Push first so the server has the data on hand.
-        const triplet = `${ZERO} ${fab.oid} refs/heads/main\0report-status side-band-64k\n`;
+        const triplet =
+          `${ZERO} ${fab.oid} refs/heads/main\0report-status side-band-64k\n`;
         await handleReceivePack({
           owner: 'alice',
           repo: 'demo',
@@ -265,7 +268,7 @@ await describe({
         expect(text.includes('PACK',),).toBe(true,);
       },
     },),
-    () => it({
+    it({
       name: 'listRefs surfaces a newly created branch',
       async fn() {
         await freshGitdirRoot();

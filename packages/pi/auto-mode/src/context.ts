@@ -9,26 +9,26 @@
  */
 
 import type {
-  ExtensionContext,
-  SessionMessageEntry,
-} from "@earendil-works/pi-coding-agent";
-import type {
   ImageContent,
   TextContent,
-} from "@earendil-works/pi-ai";
+} from '@earendil-works/pi-ai';
+import type {
+  ExtensionContext,
+  SessionMessageEntry,
+} from '@earendil-works/pi-coding-agent';
 import {
   BASH_DETAIL_LEN,
   MAX_CONTEXT_TOOLS,
   USER_MSG_HEAD,
   USER_MSG_MAX,
   USER_MSG_TAIL,
-} from "./constants.ts";
+} from './constants.ts';
 import {
   isCustomEntry,
-  type VerdictData,
   TRUST_ENTRY_TYPE,
   VERDICT_ENTRY_TYPE,
-} from "./types.ts";
+  type VerdictData,
+} from './types.ts';
 
 /**
  * Get active trust directives from the session.
@@ -51,14 +51,12 @@ function getTrustDirectives(
   for (const entry of ctx.sessionManager.getBranch()) {
     if (isCustomEntry<string | null>(
       entry,
-      TRUST_ENTRY_TYPE
+      TRUST_ENTRY_TYPE,
     )) {
-      if (entry.data === null) {
+      if (entry.data === null)
         directives.length = 0;
-      }
-      else {
-        directives.push(entry.data);
-      }
+      else
+        directives.push(entry.data,);
     }
   }
   return directives;
@@ -88,21 +86,22 @@ function buildContext(
   let userIdx = -1;
   for (let i = branch.length - 1; i >= 0; i--) {
     const item = branch[i];
-    if (item === undefined) continue;
+    if (item === undefined)
+      continue;
     if (
-      item.type === "message" &&
-      (item as SessionMessageEntry).message.role === "user"
+      item.type === 'message'
+      && (item as SessionMessageEntry).message.role === 'user'
     ) {
       userIdx = i;
       break;
     }
   }
 
-  let userLine = "";
+  let userLine = '';
   const toolLines: string[] = [];
   const pendingCalls: {
     name: string;
-    summary: string
+    summary: string;
   }[] = [];
   let pendingVerdict: VerdictData | null = null;
 
@@ -111,77 +110,80 @@ function buildContext(
     ? userIdx
     : Math.max(
       0,
-      branch.length - TWENTY
+      branch.length - TWENTY,
     );
 
   for (let i = start; i < branch.length; i++) {
     const entry = branch[i];
-    if (entry === undefined) continue;
+    if (entry === undefined)
+      continue;
 
     if (isCustomEntry<VerdictData>(
       entry,
-      VERDICT_ENTRY_TYPE
+      VERDICT_ENTRY_TYPE,
     )) {
       pendingVerdict = entry.data;
       continue;
     }
 
-    if (entry.type !== "message") continue;
+    if (entry.type !== 'message')
+      continue;
     const msg = (entry as SessionMessageEntry).message;
 
-    if (msg.role === "user") {
-      const text = extractUserText(msg.content);
-      userLine = `[user] ${abbreviate(text)}`;
+    if (msg.role === 'user') {
+      const text = extractUserText(msg.content,);
+      userLine = `[user] ${abbreviate(text,)}`;
       continue;
     }
 
-    if (msg.role === "assistant") {
+    if (msg.role === 'assistant') {
       for (const block of msg.content) {
-        if (block.type === "toolCall") {
+        if (block.type === 'toolCall') {
           pendingCalls.push({
             name: block.name,
             summary: summarizeToolCall(
               block.name,
               block.arguments,
             ),
-          });
+          },);
         }
       }
       continue;
     }
 
-    if (msg.role === "toolResult") {
+    if (msg.role === 'toolResult') {
       const call = pendingCalls.shift();
       const callStr = call?.summary ?? msg.toolName;
 
-      if (pendingVerdict !== null && pendingVerdict.verdict !== "approve") {
+      if (pendingVerdict !== null && pendingVerdict.verdict !== 'approve') {
         toolLines.push(
           `[tool] ${callStr} → ${pendingVerdict.verdict} (${pendingVerdict.reason})`,
         );
       }
       else {
-        const outcome = msg.isError ? "error" : "ok";
-        const detail = msg.toolName === "bash"
-          ? bashDetail(msg.content)
-          : "";
-        toolLines.push(`[tool] ${callStr} → ${outcome}${detail}`);
+        const outcome = msg.isError ? 'error' : 'ok';
+        const detail = msg.toolName === 'bash'
+          ? bashDetail(msg.content,)
+          : '';
+        toolLines.push(`[tool] ${callStr} → ${outcome}${detail}`,);
       }
       pendingVerdict = null;
     }
   }
 
   const lines: string[] = [];
-  if (userLine !== "") lines.push(userLine);
+  if (userLine !== '')
+    lines.push(userLine,);
   if (toolLines.length > MAX_CONTEXT_TOOLS) {
     const omitted = toolLines.length - MAX_CONTEXT_TOOLS;
-    lines.push(`[${omitted} previous tool calls omitted]`);
-    lines.push(...toolLines.slice(-MAX_CONTEXT_TOOLS));
+    lines.push(`[${omitted} previous tool calls omitted]`,);
+    lines.push(...toolLines.slice(-MAX_CONTEXT_TOOLS,),);
   }
   else {
-    lines.push(...toolLines);
+    lines.push(...toolLines,);
   }
 
-  return lines.join("\n");
+  return lines.join('\n',);
 }
 
 //region Internal helpers
@@ -196,15 +198,20 @@ function buildContext(
 function extractUserText(
   content: string | (TextContent | ImageContent)[],
 ): string {
-  if (typeof content === "string") return content;
+  if (typeof content === 'string')
+    return content;
   return content
     .filter(
-      function isText(c): c is TextContent { return c.type === "text"; },
+      function isText(c,): c is TextContent {
+        return c.type === 'text';
+      },
     )
     .map(
-      function getText(c) { return c.text; },
+      function getText(c,) {
+        return c.text;
+      },
     )
-    .join(" ");
+    .join(' ',);
 }
 
 /**
@@ -217,11 +224,14 @@ function extractUserText(
 function abbreviate(
   text: string,
 ): string {
-  if (text.length <= USER_MSG_MAX) return text;
-  return `${text.slice(
-    0,
-    USER_MSG_HEAD
-  )}…${text.slice(-USER_MSG_TAIL)}`;
+  if (text.length <= USER_MSG_MAX)
+    return text;
+  return `${
+    text.slice(
+      0,
+      USER_MSG_HEAD,
+    )
+  }…${text.slice(-USER_MSG_TAIL,)}`;
 }
 
 /**
@@ -238,18 +248,19 @@ function summarizeToolCall(
   args: Record<string, unknown>,
 ): string {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- untyped tool call arguments */
-  if (name === "bash") {
-    return `bash: ${(args.command as string | undefined) ?? ""}`;
-  }
+  if (name === 'bash')
+    return `bash: ${(args.command as string | undefined) ?? ''}`;
   if ([
-    "read",
-    "write",
-    "edit",
-    "grep",
-    "find",
-    "ls"
-  ].includes(name)) {
-    return `${name} ${(args.path as string | undefined) ?? ""}`;
+    'read',
+    'write',
+    'edit',
+    'grep',
+    'find',
+    'ls',
+  ]
+    .includes(name,))
+  {
+    return `${name} ${(args.path as string | undefined) ?? ''}`;
   }
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return name;
@@ -265,21 +276,26 @@ function summarizeToolCall(
 function bashDetail(
   content: {
     type: string;
-    text?: string
+    text?: string;
   }[],
 ): string {
   const text = content
     .filter(
-      function hasText(c) { return c.type === "text"; },
+      function hasText(c,) {
+        return c.type === 'text';
+      },
     )
     .map(
-      function getText(c) { return c.text ?? ""; },
+      function getText(c,) {
+        return c.text ?? '';
+      },
     )
-    .join("");
-  const lastLine = text.trim().split("\n").pop()?.trim() ?? "";
-  if (lastLine === "") return "";
+    .join('',);
+  const lastLine = text.trim().split('\n',).pop()?.trim() ?? '';
+  if (lastLine === '')
+    return '';
   const trimmed = lastLine.length > BASH_DETAIL_LEN
-    ? lastLine.slice(-BASH_DETAIL_LEN)
+    ? lastLine.slice(-BASH_DETAIL_LEN,)
     : lastLine;
   return ` | ${trimmed}`;
 }

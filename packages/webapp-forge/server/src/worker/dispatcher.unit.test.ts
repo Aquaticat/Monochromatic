@@ -99,159 +99,155 @@ await describe({
       name: 'processEvent',
       concurrency: 1,
       children: [
-        () =>
-          it({
-            name: 'rebuilds the issue detail fragment after a comment.created event',
-            async fn() {
-              const setup = await setupIssue();
-              const storage = createMemoryStorage();
-              // Process the issue.created event so the detail fragment exists.
-              await processEvent(
-                {
-                  kind: 'issue.created',
-                  resourceId: setup.issueId,
-                },
-                setup.issueSequence,
-                setup.issueEventId,
-                storage,
-              );
-              // Add a comment, advancing the sequence.
-              const commentId = uniqueId('comment',);
-              const commentEventId = await createCommentWithEvent({
-                id: commentId,
-                issueId: setup.issueId,
-                authorId: setup.userId,
-                body: 'A comment',
-                createdAt: Date.now(),
-              },);
-              const result = await processEvent(
-                {
-                  kind: 'comment.created',
-                  resourceId: setup.issueId,
-                },
-                2,
-                commentEventId,
-                storage,
-              );
-              expect(result.fanout > 0,).toBe(true,);
-              const detail = await storage.get(issueDetailKey({
-                repoId: setup.repoId,
-                issueId: setup.issueId,
-              },),);
-              expect(detail,).toBeDefined();
-              const text = new TextDecoder().decode(detail,);
-              expect(text.includes('A comment',),).toBe(true,);
-            },
-          },),
-        () =>
-          it({
-            name: 'discards a rebuild when the sequence guard races',
-            async fn() {
-              const setup = await setupIssue();
-              const storage = createMemoryStorage();
-              // Plant a future-dated index entry to simulate a winning race.
-              const detailKey = issueDetailKey({
-                repoId: setup.repoId,
-                issueId: setup.issueId,
-              },);
-              await upsertFragmentIndexIfNewer({
-                fragmentKey: detailKey,
-                contentHash: 'planted-hash',
-                lastBuiltAt: Date.now(),
-                sourceEventId: 999,
-                sourceEventSequence: 999,
-              },);
-              const result = await processEvent(
-                {
-                  kind: 'issue.created',
-                  resourceId: setup.issueId,
-                },
-                setup.issueSequence,
-                setup.issueEventId,
-                storage,
-              );
-              expect(result.discarded > 0,).toBe(true,);
-            },
-          },),
-        () =>
-          it({
-            name: 'skips puts when the new content hash matches the previous one',
-            async fn() {
-              const setup = await setupIssue();
-              const storage = createMemoryStorage();
-              await processEvent(
-                {
-                  kind: 'issue.created',
-                  resourceId: setup.issueId,
-                },
-                setup.issueSequence,
-                setup.issueEventId,
-                storage,
-              );
-              // Re-run the same event with a higher sequence number;
-              // the rendered output is identical, so the hash matches
-              // and every put is skipped.
-              const second = await processEvent(
-                {
-                  kind: 'issue.created',
-                  resourceId: setup.issueId,
-                },
-                setup.issueSequence + 5,
-                setup.issueEventId + 5,
-                storage,
-              );
-              expect(second.skipped,).toBe(second.fanout,);
-              expect(second.written,).toBe(0,);
-            },
-          },),
-        () =>
-          it({
-            name: 'fans out filter-list invalidations on issue.labeled',
-            async fn() {
-              const setup = await setupIssue();
-              const storage = createMemoryStorage();
-              const labelA = uniqueId('lblA',);
-              const labelB = uniqueId('lblB',);
-              await insertLabel({
-                id: labelA,
-                repoId: setup.repoId,
-                name: 'bug',
-              },);
-              await insertLabel({
-                id: labelB,
-                repoId: setup.repoId,
-                name: 'feat',
-              },);
-              const eventId = await labelIssueWithEvent({
-                issueId: setup.issueId,
-                labelId: labelA,
-                createdAt: Date.now(),
-              },);
-              const result = await processEvent(
-                {
-                  kind: 'issue.labeled',
-                  resourceId: setup.issueId,
-                },
-                2,
-                eventId,
-                storage,
-              );
-              // Detail + (any-label x 2 states) + (labelA x 2 states for "issue has labelA") + (labelA, labelB for "repo-wide on current state").
-              expect(result.fanout > 0,).toBe(true,);
-              const noFilterOpen = await storage.get(filterListKey({
-                repoId: setup.repoId,
-                labelId: ANY_LABEL,
-                state: 'open',
-              },),);
-              expect(noFilterOpen,).toBeDefined();
-              const labelBOpen = await storage.get(filterListKey({
-                repoId: setup.repoId,
-                labelId: labelB,
-                state: 'open',
-              },),);
-              expect(labelBOpen,).toBeDefined();
-            },
-          },),
+        it({
+          name: 'rebuilds the issue detail fragment after a comment.created event',
+          async fn() {
+            const setup = await setupIssue();
+            const storage = createMemoryStorage();
+            // Process the issue.created event so the detail fragment exists.
+            await processEvent(
+              {
+                kind: 'issue.created',
+                resourceId: setup.issueId,
+              },
+              setup.issueSequence,
+              setup.issueEventId,
+              storage,
+            );
+            // Add a comment, advancing the sequence.
+            const commentId = uniqueId('comment',);
+            const commentEventId = await createCommentWithEvent({
+              id: commentId,
+              issueId: setup.issueId,
+              authorId: setup.userId,
+              body: 'A comment',
+              createdAt: Date.now(),
+            },);
+            const result = await processEvent(
+              {
+                kind: 'comment.created',
+                resourceId: setup.issueId,
+              },
+              2,
+              commentEventId,
+              storage,
+            );
+            expect(result.fanout > 0,).toBe(true,);
+            const detail = await storage.get(issueDetailKey({
+              repoId: setup.repoId,
+              issueId: setup.issueId,
+            },),);
+            expect(detail,).toBeDefined();
+            const text = new TextDecoder().decode(detail,);
+            expect(text.includes('A comment',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'discards a rebuild when the sequence guard races',
+          async fn() {
+            const setup = await setupIssue();
+            const storage = createMemoryStorage();
+            // Plant a future-dated index entry to simulate a winning race.
+            const detailKey = issueDetailKey({
+              repoId: setup.repoId,
+              issueId: setup.issueId,
+            },);
+            await upsertFragmentIndexIfNewer({
+              fragmentKey: detailKey,
+              contentHash: 'planted-hash',
+              lastBuiltAt: Date.now(),
+              sourceEventId: 999,
+              sourceEventSequence: 999,
+            },);
+            const result = await processEvent(
+              {
+                kind: 'issue.created',
+                resourceId: setup.issueId,
+              },
+              setup.issueSequence,
+              setup.issueEventId,
+              storage,
+            );
+            expect(result.discarded > 0,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'skips puts when the new content hash matches the previous one',
+          async fn() {
+            const setup = await setupIssue();
+            const storage = createMemoryStorage();
+            await processEvent(
+              {
+                kind: 'issue.created',
+                resourceId: setup.issueId,
+              },
+              setup.issueSequence,
+              setup.issueEventId,
+              storage,
+            );
+            // Re-run the same event with a higher sequence number;
+            // the rendered output is identical, so the hash matches
+            // and every put is skipped.
+            const second = await processEvent(
+              {
+                kind: 'issue.created',
+                resourceId: setup.issueId,
+              },
+              setup.issueSequence + 5,
+              setup.issueEventId + 5,
+              storage,
+            );
+            expect(second.skipped,).toBe(second.fanout,);
+            expect(second.written,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'fans out filter-list invalidations on issue.labeled',
+          async fn() {
+            const setup = await setupIssue();
+            const storage = createMemoryStorage();
+            const labelA = uniqueId('lblA',);
+            const labelB = uniqueId('lblB',);
+            await insertLabel({
+              id: labelA,
+              repoId: setup.repoId,
+              name: 'bug',
+            },);
+            await insertLabel({
+              id: labelB,
+              repoId: setup.repoId,
+              name: 'feat',
+            },);
+            const eventId = await labelIssueWithEvent({
+              issueId: setup.issueId,
+              labelId: labelA,
+              createdAt: Date.now(),
+            },);
+            const result = await processEvent(
+              {
+                kind: 'issue.labeled',
+                resourceId: setup.issueId,
+              },
+              2,
+              eventId,
+              storage,
+            );
+            // Detail + (any-label x 2 states) + (labelA x 2 states for "issue has labelA") + (labelA, labelB for "repo-wide on current state").
+            expect(result.fanout > 0,).toBe(true,);
+            const noFilterOpen = await storage.get(filterListKey({
+              repoId: setup.repoId,
+              labelId: ANY_LABEL,
+              state: 'open',
+            },),);
+            expect(noFilterOpen,).toBeDefined();
+            const labelBOpen = await storage.get(filterListKey({
+              repoId: setup.repoId,
+              labelId: labelB,
+              state: 'open',
+            },),);
+            expect(labelBOpen,).toBeDefined();
+          },
+        },),
       ],
     },),
   ],

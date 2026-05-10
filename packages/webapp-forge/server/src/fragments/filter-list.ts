@@ -66,9 +66,7 @@ function issueRow(props: {
       children: jsx(
         'a',
         {
-          href: `/${props.ownerLogin}/${props.repoName}/issues/${
-            String(props.number,)
-          }`,
+          href: `/${props.ownerLogin}/${props.repoName}/issues/${String(props.number,)}`,
           children: [
             jsx(
               'span',

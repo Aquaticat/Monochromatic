@@ -31,14 +31,18 @@
 import { logger, } from '@monochromatic-dev/module-logger/logger';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
-import { createCommentWithEvent, } from '@monochromatic-dev/webapp-forge-server/ts/data/queries';
+import {
+  createCommentWithEvent,
+} from '@monochromatic-dev/webapp-forge-server/ts/data/queries';
+import {
+  dispatchAndFlush,
+} from '@monochromatic-dev/webapp-forge-server/ts/server/dispatch-and-flush';
 import {
   getEventCursor,
   setEventCursor,
   storage,
   writeBuffer,
 } from '@monochromatic-dev/webapp-forge-server/ts/server/runtime';
-import { dispatchAndFlush, } from '@monochromatic-dev/webapp-forge-server/ts/server/dispatch-and-flush';
 
 import { seedDataset, } from '@monochromatic-dev/webapp-forge-seed/ts/dataset';
 import { rngInt, } from '@monochromatic-dev/webapp-forge-seed/ts/rng';
@@ -245,11 +249,12 @@ async function runBurst(row: {
     if (row.intervalMs > 0) {
       const sleep = Math.max(
         0,
-        Math.floor(row.intervalMs - (Date.now() - t0)),
+        Math.floor(row.intervalMs - (Date.now() - t0),),
       );
-      if (sleep > 0)
+      if (sleep > 0) {
         // oxlint-disable-next-line no-await-in-loop -- pacing
         await wait(sleep,);
+      }
     }
   }
   return samples;
@@ -335,21 +340,25 @@ async function run(): Promise<ScenarioResult> {
 
   if (p99 > P99_LATENCY_BUDGET_MS) {
     violations.push(
-      `p99 rebuild latency exceeded ${String(P99_LATENCY_BUDGET_MS,)}ms: ${String(p99,)}ms`,
+      `p99 rebuild latency exceeded ${String(P99_LATENCY_BUDGET_MS,)}ms: ${
+        String(p99,)
+      }ms`,
     );
   }
   if (burstDeltaBytes > bytesCeiling) {
     violations.push(
       `bytes written during burst ${String(burstDeltaBytes,)} exceeded ceiling ${
         String(bytesCeiling,)
-      } (${String(BYTES_PER_REPO_CEILING,)} per repo * ${String(config.repoCount,)} repos)`,
+      } (${String(BYTES_PER_REPO_CEILING,)} per repo * ${
+        String(config.repoCount,)
+      } repos)`,
     );
   }
 
   l.info(
-    `wide-service complete eventCount=${
-      String(samples.length,)
-    } repos=${String(summary.repos,)}`,
+    `wide-service complete eventCount=${String(samples.length,)} repos=${
+      String(summary.repos,)
+    }`,
   );
 
   return {

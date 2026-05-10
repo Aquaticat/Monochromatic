@@ -69,7 +69,10 @@ const UNCERTAINTY_PATTERNS: readonly RegExp[] = [
  * ```
  */
 function stripCodeBlocks(text: string,): string {
-  return text.replaceAll(/```[\s\S]*?```/g, '',);
+  return text.replaceAll(
+    /```[\s\S]*?```/g,
+    '',
+  );
 }
 
 /**
@@ -86,7 +89,10 @@ function stripCodeBlocks(text: string,): string {
  * ```
  */
 function stripInlineCode(text: string,): string {
-  return text.replaceAll(/`[^`]+`/g, '',);
+  return text.replaceAll(
+    /`[^`]+`/g,
+    '',
+  );
 }
 
 /**
@@ -104,7 +110,10 @@ function stripInlineCode(text: string,): string {
  * ```
  */
 function stripBlockquotes(text: string,): string {
-  return text.replaceAll(/^>.*$/gm, '',);
+  return text.replaceAll(
+    /^>.*$/gm,
+    '',
+  );
 }
 
 /**
@@ -125,8 +134,14 @@ function stripBlockquotes(text: string,): string {
  */
 function stripQuotedStrings(text: string,): string {
   return text
-    .replaceAll(/"[^"\n]+"/g, '',)
-    .replaceAll(/'[^'\n]+'/g, '',);
+    .replaceAll(
+      /"[^"\n]+"/g,
+      '',
+    )
+    .replaceAll(
+      /'[^'\n]+'/g,
+      '',
+    );
 }
 
 /**
@@ -190,7 +205,10 @@ function findUncertainty(prose: string,): UncertaintyMatch | undefined {
   for (const pattern of UNCERTAINTY_PATTERNS) {
     const match = pattern.exec(prose,);
     if (match !== null) {
-      return { phrase: match[0], pattern, };
+      return {
+        phrase: match[0],
+        pattern,
+      };
     }
   }
   return undefined;

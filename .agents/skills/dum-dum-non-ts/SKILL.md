@@ -145,7 +145,7 @@ Lisp / Clojure):
 - The literal lead-in `In TS you'd write (pseudocode):` — always TS,
   regardless of which language the surrounding file is in. The pseudocode
   block IS the TypeScript translation; that's the whole point.
-- A fenced ` ```ts ` block (inside the language's comment syntax) holding
+- A fenced `` ```ts `` block (inside the language's comment syntax) holding
   the closest TS translation. Comments inside the block may further narrate.
 
 Comments **never** describe the next line in the target language's own
@@ -252,12 +252,12 @@ specific construct.
 Bad — no comment on the function's tail expression because "it's just
 wrapping a value":
 
-````rust
+```rust
 fn load_rules(path: &str) -> Result<Vec<Rule>, String> {
     // ... body with comments ...
     Ok(rules)
 }
-````
+```
 
 Good:
 
@@ -284,9 +284,9 @@ fn load_rules(path: &str) -> Result<Vec<Rule>, String> {
 
 Bad — `.to_string()` slipped in unexplained on a string literal:
 
-````rust
+```rust
 return Err("no rules loaded".to_string());
-````
+```
 
 Good:
 
@@ -314,12 +314,12 @@ return Err("no rules loaded".to_string());
 
 Bad — silent because "it's obviously the return":
 
-````rust
+```rust
 fn parse_rule_source(line: &str) -> Option<String> {
     // ... body ...
     Some(escape_literal(trimmed))
 }
-````
+```
 
 Good:
 
@@ -346,11 +346,11 @@ fn parse_rule_source(line: &str) -> Option<String> {
 
 Bad — silently appended to a method chain:
 
-````rust
+```rust
 if !combined.is_match(&content).unwrap_or(false) {
     return Ok(false);
 }
-````
+```
 
 Good:
 
@@ -383,16 +383,16 @@ if !combined.is_match(&content).unwrap_or(false) {
 Bad — names `usize` and `String` without saying why these and not the
 siblings:
 
-````rust
+```rust
 // What:     `struct Rule { ... }` with `index` (usize), `src` (String),
 //           `regex` (Regex).
 // Why:      We keep one Rule per forbidden-string entry.
 struct Rule { index: usize, src: String, regex: Regex }
-````
+```
 
 Good:
 
-````rust
+```rust
 // What:     `struct Rule { ... }` declares a record type with three OWNED
 //           fields:
 //           - `index: usize`. `usize` is the unsigned integer wide enough
@@ -414,7 +414,7 @@ Good:
 //           — TS has no owned/borrowed distinction (everything is GC'd),
 //           so the type-choice question doesn't arise.
 struct Rule { index: usize, src: String, regex: Regex }
-````
+```
 
 ## Anti-patterns
 

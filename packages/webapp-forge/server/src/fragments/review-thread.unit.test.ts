@@ -27,11 +27,11 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    () => describe({
+    describe({
       name: 'renderReviewThread',
       concurrency: 1,
       children: [
-        () => it({
+        it({
           name: 'renders an empty-state when no reviews exist',
           async fn() {
             await Promise.resolve();
@@ -40,7 +40,7 @@ await describe({
             expect(html.includes('data-review-count="0"',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'renders one block per review with state/author/timestamp',
           async fn() {
             await Promise.resolve();
@@ -71,7 +71,7 @@ await describe({
             expect(html.includes('please address...',),).toBe(true,);
           },
         },),
-        () => it({
+        it({
           name: 'escapes XSS payloads inside review bodies and authors',
           async fn() {
             await Promise.resolve();

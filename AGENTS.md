@@ -28,15 +28,15 @@ The cue: you are about to write "want me to also..." or "should I go ahead and..
 
 Before sending any response with substantive claims:
 
-1.  Quantitative claim (size, speed, complexity, difficulty, duration) without measuring? Measure or rephrase as a guess.
-2.  Described how an external tool works without reading its source? Clone and read, or label as recall-from-training.
-3.  Estimated the difficulty of a fix you have not built? Drop the estimate.
-4.  Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
-5.  Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents)? Measure it.
-6.  Assumed a non-measurable preference (which approach, what they value)? Ask.
-7.  Cited a file path or line number? Verify it exists. Described source behavior without one? Add the citation.
-8.  Made a confident factual claim without naming what backs it? Either name the verification step inline ("verified by reading X.ts:42") or downgrade to a labeled guess.
-9.  Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
+1. Quantitative claim (size, speed, complexity, difficulty, duration) without measuring? Measure or rephrase as a guess.
+2. Described how an external tool works without reading its source? Clone and read, or label as recall-from-training.
+3. Estimated the difficulty of a fix you have not built? Drop the estimate.
+4. Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
+5. Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents)? Measure it.
+6. Assumed a non-measurable preference (which approach, what they value)? Ask.
+7. Cited a file path or line number? Verify it exists. Described source behavior without one? Add the citation.
+8. Made a confident factual claim without naming what backs it? Either name the verification step inline ("verified by reading X.ts:42") or downgrade to a labeled guess.
+9. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
 
 ### Measure-vs-ask
 
@@ -76,12 +76,12 @@ The `ccsr` stop hook catches some of these at response-send time; internal self-
 
 For "should we use X better?" / "are we taking advantage of X?", walk every layer before recommending. Each can flip the conclusion.
 
-1.  **The tool itself**: usage volume, configuration.
-2.  **Parallel systems**: where the same need is met outside the tool (markdown roadmaps standing in for issue trackers, ad-hoc scripts for build systems, manual checks for CI).
-3.  **Content of those parallel systems**: not just file count but what is inside (a 40-file TODO directory may be a structured roadmap or a dumping ground; the recommendation is opposite).
-4.  **Inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero is a signal of discipline (but verify the search ran; see null-search rule); thousands is debt.
-5.  **Suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
-6.  **Stated policies in code or config**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
+1. **The tool itself**: usage volume, configuration.
+2. **Parallel systems**: where the same need is met outside the tool (markdown roadmaps standing in for issue trackers, ad-hoc scripts for build systems, manual checks for CI).
+3. **Content of those parallel systems**: not just file count but what is inside (a 40-file TODO directory may be a structured roadmap or a dumping ground; the recommendation is opposite).
+4. **Inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero is a signal of discipline (but verify the search ran; see null-search rule); thousands is debt.
+5. **Suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
+6. **Stated policies in code or config**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
 
 Report findings at each layer before drawing the conclusion. A recommendation given after only checking layer 1 is a guess shaped by the surface you happened to look at.
 
@@ -91,12 +91,12 @@ Before research, identify **context-fork questions**: facts about the user's dep
 
 Once context is set, complete every layer before naming any candidate:
 
-1.  **Layoffs and headcount** (24mo): TechCrunch tracker, Crunchbase, Glassdoor.
-2.  **Customer reviews**: Trustpilot, G2, Capterra. Look for account-suspension patterns, billing-automation horror stories, support-quality complaints.
-3.  **Recent outages** (12mo): official status page plus an aggregator (statusgator, isdown).
-4.  **Funding and business model**: bootstrapped vs VC vs PE; recent M&A or offers received. Affects shareholder pressure to extract from existing customers.
-5.  **Signup-friction signals**: email-domain blocks, KYC, geography blocks. Correlate with heavy-handed automation that produces post-signup account-policy issues.
-6.  **Security and abuse history**: breaches, phishing-host reputation, abuse-report responsiveness.
+1. **Layoffs and headcount** (24mo): TechCrunch tracker, Crunchbase, Glassdoor.
+2. **Customer reviews**: Trustpilot, G2, Capterra. Look for account-suspension patterns, billing-automation horror stories, support-quality complaints.
+3. **Recent outages** (12mo): official status page plus an aggregator (statusgator, isdown).
+4. **Funding and business model**: bootstrapped vs VC vs PE; recent M&A or offers received. Affects shareholder pressure to extract from existing customers.
+5. **Signup-friction signals**: email-domain blocks, KYC, geography blocks. Correlate with heavy-handed automation that produces post-signup account-policy issues.
+6. **Security and abuse history**: breaches, phishing-host reputation, abuse-report responsiveness.
 
 Report findings inline with the recommendation; do not lead with the candidate name and bury concerns in trailing caveats. A recommendation made after checking only "do they satisfy the constraints" is a guess; the user catches the gap when they sign up and discover the problem themselves.
 
@@ -422,11 +422,11 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 
 ### Adding new packages
 
-1.  Create directory under the appropriate category in `packages/`.
-2.  Add `mise.toml` with task definitions mirroring sibling packages.
-3.  Configure `package.json` with workspace dependencies.
-4.  For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
-5.  For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
+1. Create directory under the appropriate category in `packages/`.
+2. Add `mise.toml` with task definitions mirroring sibling packages.
+3. Configure `package.json` with workspace dependencies.
+4. For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
+5. For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
 
 ### Essential commands
 

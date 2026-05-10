@@ -18,8 +18,8 @@ import {
 } from 'node:path';
 
 import readdir from 'tiny-readdir-glob';
-import { parse as parseYaml, } from 'yaml';
 import * as v from 'valibot';
+import { parse as parseYaml, } from 'yaml';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
 import { isLocale, } from '../i18n/i18n-util.ts';

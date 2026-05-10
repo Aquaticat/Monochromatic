@@ -13,6 +13,8 @@
  * @module
  */
 
-import { runFilter, } from '@monochromatic-dev/claude-code-plugins-source/handlers/bash-output-filter/filter';
+import {
+  runFilter,
+} from '@monochromatic-dev/claude-code-plugins-source/handlers/bash-output-filter/filter';
 
 await runFilter();
