@@ -18,6 +18,7 @@ import { tagged, } from "@monochromatic-dev/module-logger/tagged";
 import {
   type BatchEntry,
   type BudgetModel,
+  type BudgetModelOptions,
   type VerdictData,
   VERDICT_ENTRY_TYPE,
 } from "./types.ts";
@@ -231,30 +232,8 @@ async function resolveJudgeModel(
  */
 function toBudgetModelOptions(
   config: MergedConfig,
-): {
-  modelOverride?: string | {
-    model: string;
-    auth: {
-      apiKey?: string;
-      headers?: Record<string, string>;
-    };
-  };
-  strategy: "same-provider" | "any-provider";
-  costRatio: number;
-  majorVersions: number;
-} {
-  const opts: {
-    modelOverride?: string | {
-      model: string;
-      auth: {
-        apiKey?: string;
-        headers?: Record<string, string>;
-      };
-    };
-    strategy: "same-provider" | "any-provider";
-    costRatio: number;
-    majorVersions: number;
-  } = {
+): BudgetModelOptions {
+  const opts: BudgetModelOptions = {
     strategy: config.judgeModel.strategy,
     costRatio: config.judgeModel.costRatio,
     majorVersions: config.judgeModel.majorVersions,

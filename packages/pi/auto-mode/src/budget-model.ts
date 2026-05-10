@@ -16,6 +16,8 @@ import type { ExtensionContext, } from "@earendil-works/pi-coding-agent";
 import type {
   BudgetModel,
   BudgetModelAuth,
+  BudgetModelOptions,
+  ModelOverride,
 } from "./types.ts";
 import { findCheapestInMajorVersions, } from "./budget-model-version.ts";
 import {
@@ -25,28 +27,7 @@ import {
   resolveAuth,
   toCandidate,
 } from "./budget-model-auth.ts";
-
-//region Public types
-
-/** Strategy for finding a budget model. */
-type ModelStrategy = "same-provider" | "any-provider";
-
-/** Budget model configuration options. */
-type BudgetModelOptions = {
-  /** Pin a specific model, bypassing auto-selection. */
-  modelOverride?: string | {
-    model: string;
-    auth: BudgetModelAuth;
-  };
-  /** Selection strategy. */
-  strategy: ModelStrategy;
-  /** Maximum cost ratio vs active model (0-1). */
-  costRatio: number;
-  /** How many major version families to search. */
-  majorVersions: number;
-};
-
-//endregion
+import { JUDGE_MODEL_DEFAULTS, } from "./constants.ts";
 
 //region Public API
 
@@ -75,11 +56,7 @@ async function findBudgetModel(
   ctx: ExtensionContext,
   options?: BudgetModelOptions,
 ): Promise<BudgetModel> {
-  const opts = options ?? {
-    strategy: "same-provider" as const,
-    costRatio: 0.5,
-    majorVersions: 1,
-  };
+  const opts: BudgetModelOptions = options ?? { ...JUDGE_MODEL_DEFAULTS, };
 
   if (opts.modelOverride !== undefined) {
     return await resolveModelOverride(
@@ -326,10 +303,7 @@ async function findAnyProvider(
  */
 async function resolveModelOverride(
   ctx: ExtensionContext,
-  override: string | {
-    model: string;
-    auth: BudgetModelAuth
-  },
+  override: ModelOverride,
 ): Promise<BudgetModel> {
   const modelId = typeof override === "string" ? override : override.model;
   const slashIndex = modelId.indexOf("/");
@@ -351,10 +325,14 @@ async function resolveModelOverride(
     );
   }
 
-  if (typeof override !== "string") return {
-    model,
-    auth: override.auth
-  };
+  if (typeof override !== "string") {
+    const { auth, } = override;
+    const typedAuth: BudgetModelAuth = auth;
+    return {
+      model,
+      auth: typedAuth,
+    };
+  }
 
   const auth = await resolveAuth(
     ctx,
@@ -378,4 +356,3 @@ export {
   findBudgetModel,
   NoBudgetModelError,
 };
-export type { BudgetModelOptions, };

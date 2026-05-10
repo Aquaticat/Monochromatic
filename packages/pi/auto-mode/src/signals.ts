@@ -18,6 +18,7 @@ import { looksLikePath, } from "./command-refs.ts";
 import type {
   BashAnalysis,
   CommandInfo,
+  JudgeModelConfig,
   SignalContext,
 } from "./types.ts";
 import {
@@ -59,18 +60,7 @@ export type MergedConfig = {
   patterns: RegExp[];
   globalInstructions?: string;
   projectInstructions?: string;
-  judgeModel: {
-    modelOverride?: string | {
-      model: string;
-      auth: {
-        apiKey?: string;
-        headers?: Record<string, string>;
-      };
-    };
-    strategy: "same-provider" | "any-provider";
-    costRatio: number;
-    majorVersions: number;
-  };
+  judgeModel: JudgeModelConfig;
   judgeTimeoutMs: number;
 };
 

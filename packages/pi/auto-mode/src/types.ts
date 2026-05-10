@@ -158,6 +158,42 @@ type BudgetModel = {
   auth: BudgetModelAuth;
 };
 
+/** Strategy for finding a budget model. */
+type ModelStrategy = "same-provider" | "any-provider";
+
+/**
+ * Pinned-model override for the judge.
+ *
+ * `string` selects a model by `provider/id`; the object form allows
+ * supplying explicit auth alongside the model id (used when the
+ * registry can't otherwise resolve credentials).
+ */
+type ModelOverride =
+  | string
+  | {
+    model: string;
+    auth: BudgetModelAuth;
+  };
+
+/**
+ * Configured judge-model selection.
+ *
+ * Carries either a pinned override or a strategy plus its tuning
+ * parameters. The same shape is used by `MergedConfig.judgeModel`,
+ * `BudgetModelOptions`, and the YAML/JSON config schema.
+ */
+type JudgeModelConfig = {
+  modelOverride?: ModelOverride;
+  strategy: ModelStrategy;
+  /** Maximum cost ratio vs active model (0-1). */
+  costRatio: number;
+  /** How many major version families to search. */
+  majorVersions: number;
+};
+
+/** Budget-model find options (shape used by `findBudgetModel`). */
+type BudgetModelOptions = JudgeModelConfig;
+
 //endregion
 
 //region Batch types
@@ -187,7 +223,11 @@ export type {
   BatchEntry,
   BudgetModel,
   BudgetModelAuth,
+  BudgetModelOptions,
   CommandInfo,
+  JudgeModelConfig,
+  ModelOverride,
+  ModelStrategy,
   SignalContext,
   Verdict,
   VerdictData,

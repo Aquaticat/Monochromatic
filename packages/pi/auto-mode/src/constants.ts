@@ -9,6 +9,24 @@
  * @module
  */
 
+//region Judge-model defaults
+
+/**
+ * Default judge-model selection used when no global config is set
+ * and when `findBudgetModel` is called with no options.
+ *
+ * Single source of truth: referenced by `loadMergedConfig` (for the
+ * config-file fallback), by `GLOBAL_DEFAULTS` (for the global
+ * defaults), and by `findBudgetModel` (for the no-options call).
+ */
+export const JUDGE_MODEL_DEFAULTS = {
+  strategy: "same-provider",
+  costRatio: 0.5,
+  majorVersions: 1,
+} as const;
+
+//endregion
+
 //region Context builder limits
 
 /** Maximum number of tool calls included in judge context. */

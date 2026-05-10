@@ -21,7 +21,9 @@ import {
   ProjectConfigSchema,
   type ProjectConfig,
 } from "./config-schemas.ts";
+import { JUDGE_MODEL_DEFAULTS, } from "./constants.ts";
 import { l as parentLogger, } from "./log.ts";
+import type { BudgetModelAuth, } from "./types.ts";
 
 /** Tagged logger for the config module. */
 const l = tagged({
@@ -67,11 +69,7 @@ function loadMergedConfig(
     patternStrs.push(...project.patterns);
   }
 
-  const rawJudgeModel = global.judgeModel ?? {
-    strategy: "same-provider" as const,
-    costRatio: 0.5,
-    majorVersions: 1,
-  };
+  const rawJudgeModel = global.judgeModel ?? { ...JUDGE_MODEL_DEFAULTS, };
 
   const judgeModel: MergedConfig["judgeModel"] = {
     strategy: rawJudgeModel.strategy,
@@ -84,10 +82,7 @@ function loadMergedConfig(
       judgeModel.modelOverride = rawJudgeModel.modelOverride;
     }
     else {
-      const auth: {
-        apiKey?: string;
-        headers?: Record<string, string>;
-      } = {};
+      const auth: BudgetModelAuth = {};
       if (rawJudgeModel.modelOverride.auth.apiKey !== undefined) {
         auth.apiKey = rawJudgeModel.modelOverride.auth.apiKey;
       }
@@ -128,11 +123,7 @@ const GLOBAL_DEFAULTS: AutoModeConfig = {
   enabled: true,
   commands: [],
   patterns: [],
-  judgeModel: {
-    strategy: "same-provider" as const,
-    costRatio: 0.5,
-    majorVersions: 1,
-  },
+  judgeModel: { ...JUDGE_MODEL_DEFAULTS, },
   judgeTimeoutMs: 10_000,
 };
 
