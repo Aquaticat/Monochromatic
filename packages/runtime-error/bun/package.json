@@ -5,6 +5,9 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/module-numeric-const": "workspace:*"
+  },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:"

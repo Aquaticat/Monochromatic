@@ -25,10 +25,9 @@ import {
 } from './collect.ts';
 import { summarize, } from './stats.ts';
 
-export {};
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
 
-/** Bytes per binary unit step (KiB, MiB, ...). */
-const BYTES_PER_UNIT = 1_024;
+export {};
 
 /** Human-readable binary size units, ordered by magnitude. */
 const BYTE_UNITS = [
@@ -62,8 +61,8 @@ const EXIT_MISSING_REFS = 2;
 function humanBytes(bytes: number,): string {
   let value = bytes;
   let unitIndex = 0;
-  while (value >= BYTES_PER_UNIT && unitIndex < BYTE_UNITS.length - 1) {
-    value /= BYTES_PER_UNIT;
+  while (value >= BYTES_PER_KIB && unitIndex < BYTE_UNITS.length - 1) {
+    value /= BYTES_PER_KIB;
     unitIndex += 1;
   }
   const precision = unitIndex === 0 ? 0 : 1;

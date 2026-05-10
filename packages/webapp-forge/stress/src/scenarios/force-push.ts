@@ -25,6 +25,7 @@
 
 import { logger, } from '@monochromatic-dev/module-logger/logger';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
 
 import {
   handleReceivePack,
@@ -63,14 +64,11 @@ const l = tagged({
   l: logger,
 },);
 
-/** Bytes in one kibibyte. */
-const KIB = 1_024;
-
 /** Default per-iteration blob size in kibibytes. */
 const DEFAULT_BLOB_KIB = 64;
 
 /** Default per-iteration blob size (bytes). */
-const DEFAULT_BLOB_SIZE = DEFAULT_BLOB_KIB * KIB;
+const DEFAULT_BLOB_SIZE: number = DEFAULT_BLOB_KIB * BYTES_PER_KIB;
 
 /** Default burst event count (each event = one force-push iteration). */
 const DEFAULT_BURST_EVENTS = 20;

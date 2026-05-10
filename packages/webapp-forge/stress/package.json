@@ -7,6 +7,7 @@
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-numeric-const": "workspace:*",
     "@monochromatic-dev/webapp-forge-seed": "workspace:*",
     "@monochromatic-dev/webapp-forge-server": "workspace:*",
     "isomorphic-git": "catalog:",

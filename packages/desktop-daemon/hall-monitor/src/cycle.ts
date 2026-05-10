@@ -1,3 +1,5 @@
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
+
 import {
   analyze,
   parseVerdict,
@@ -36,8 +38,6 @@ type DecisionWindow = [
   Decision,
 ];
 
-/** Bytes per kilobyte, used for human-readable size formatting. */
-const BYTES_PER_KB = 1_024;
 
 /** Rolling window of recent verdicts, initialized as all productive. */
 let decisions: DecisionWindow = [
@@ -98,8 +98,8 @@ export async function cycle(): Promise<void> {
     }
     log.debug(
       `[capture] Screenshot: ${
-        (screenshot.length / BYTES_PER_KB).toFixed(0,)
-      }KB, Webcam: ${(webcam.length / BYTES_PER_KB).toFixed(0,)}KB`,
+        (screenshot.length / BYTES_PER_KIB).toFixed(0,)
+      }KiB, Webcam: ${(webcam.length / BYTES_PER_KIB).toFixed(0,)}KiB`,
     );
 
     store({

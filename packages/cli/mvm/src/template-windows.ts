@@ -12,6 +12,8 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
+
 import { createAutounattendIso, } from './autounattend.ts';
 import {
   IMAGES_DIR,
@@ -305,12 +307,10 @@ async function guestFilePush({
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
   const handle = (JSON.parse(openResult,) as { return: number; }).return;
 
-  /** 48 KB in bytes. */
-  const RAW_CHUNK_KB = 48;
-  /** Bytes per kilobyte. */
-  const BYTES_PER_KB = 1_024;
-  /** Write in 48 KB raw chunks (~65 KB base64, fits within virsh CLI arg limits). */
-  const RAW_CHUNK = RAW_CHUNK_KB * BYTES_PER_KB;
+  /** 48 KiB in bytes. */
+  const RAW_CHUNK_KIB = 48;
+  /** Write in 48 KiB raw chunks (~65 KB base64, fits within virsh CLI arg limits). */
+  const RAW_CHUNK: number = RAW_CHUNK_KIB * BYTES_PER_KIB;
   for (let offset = 0; offset < data.length; offset += RAW_CHUNK) {
     const chunk = data.subarray(
       offset,

@@ -11,16 +11,13 @@ import { stat, } from 'node:fs/promises';
 import { Readable, } from 'node:stream';
 import { pipeline, } from 'node:stream/promises';
 
-//region Byte size formatting constants
+import {
+  BYTES_PER_GIB,
+  BYTES_PER_KIB,
+  BYTES_PER_MIB,
+} from '@monochromatic-dev/module-numeric-const';
 
-/** Bytes per kibibyte. */
-const KIB = 1_024;
-
-/** Bytes per mebibyte. */
-const MIB = KIB * KIB;
-
-/** Bytes per gibibyte. */
-const GIB = KIB * KIB * KIB;
+//region Display constants
 
 /** Multiplier for converting a ratio to a percentage. */
 const PERCENT = 100;
@@ -28,7 +25,7 @@ const PERCENT = 100;
 /** Number of trailing spaces to overwrite stale progress line characters. */
 const PROGRESS_LINE_PAD = 20;
 
-//endregion Byte size formatting constants
+//endregion Display constants
 
 /**
  * Formats a byte count as a human-readable string (e.g. "123.4 MiB").
@@ -43,11 +40,11 @@ const PROGRESS_LINE_PAD = 20;
  * ```
  */
 export function formatBytes(bytes: number,): string {
-  if (bytes >= GIB)
-    return `${(bytes / GIB).toFixed(1,)} GiB`;
-  if (bytes >= MIB)
-    return `${(bytes / MIB).toFixed(1,)} MiB`;
-  return `${(bytes / KIB).toFixed(0,)} KiB`;
+  if (bytes >= BYTES_PER_GIB)
+    return `${(bytes / BYTES_PER_GIB).toFixed(1,)} GiB`;
+  if (bytes >= BYTES_PER_MIB)
+    return `${(bytes / BYTES_PER_MIB).toFixed(1,)} MiB`;
+  return `${(bytes / BYTES_PER_KIB).toFixed(0,)} KiB`;
 }
 
 /**

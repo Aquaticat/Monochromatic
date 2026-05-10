@@ -28,6 +28,7 @@
  *   v2 first and rely on graceful fallback.
  */
 
+import { BYTES_PER_MIB, } from '@monochromatic-dev/module-numeric-const';
 import {
   describe,
   expect,
@@ -76,14 +77,8 @@ const {
 /** Absolute path to the system git binary, bypassing the workspace wrapper. */
 const SYSTEM_GIT = '/usr/bin/git';
 
-/** Bytes per kibibyte. */
-const KIB = 1_024;
-
-/** Bytes per mebibyte. */
-const MIB = KIB * KIB;
-
 /** Target size for the large-blob test (5 MiB). */
-const FIVE_MIB = 5 * MIB;
+const FIVE_MIB: number = 5 * BYTES_PER_MIB;
 
 /** Number of refs in the batched-push test. */
 const BATCH_REF_COUNT = 100;

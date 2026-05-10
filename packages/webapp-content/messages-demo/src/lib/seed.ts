@@ -23,18 +23,15 @@ import {
   putChunk,
 } from './db/drafts.ts';
 import {
+  BYTES_PER_GIB,
+  BYTES_PER_KIB,
+  BYTES_PER_MIB,
+} from '@monochromatic-dev/module-numeric-const';
+
+import {
   extractPreview,
   renderChunks,
 } from './markdown-stream.ts';
-
-/** One kibibyte in bytes. */
-const BYTES_PER_KIB = 1_024;
-
-/** One mebibyte in bytes. */
-const BYTES_PER_MIB = BYTES_PER_KIB * BYTES_PER_KIB;
-
-/** One gibibyte in bytes. */
-const BYTES_PER_GIB = BYTES_PER_MIB * BYTES_PER_KIB;
 
 /** Default `--count=` when not supplied. */
 const DEFAULT_MESSAGE_COUNT = 10_000;

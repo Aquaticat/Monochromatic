@@ -1,10 +1,6 @@
+import { BYTES_PER_MIB, } from '@monochromatic-dev/module-numeric-const';
+
 export {};
-
-/** Bytes in one kibibyte. */
-const BYTES_PER_KIB = 1_024;
-
-/** Bytes in one mebibyte. */
-const BYTES_PER_MIB = BYTES_PER_KIB * BYTES_PER_KIB;
 
 /** Number of mebibytes per allocation chunk: large enough to exhaust memory in a few iterations. */
 const CHUNK_SIZE_MIB = 256;

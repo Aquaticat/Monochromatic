@@ -12,16 +12,12 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { BYTES_PER_MIB, } from '@monochromatic-dev/module-numeric-const';
 import spawn from 'nano-spawn';
 
 /** Pattern to extract events per second from sysbench output */
 const SYSBENCH_EVENTS_PATTERN = /events per second:\s+([\d.]+)/;
 
-/** Bytes in one kilobyte */
-const BYTES_PER_KILOBYTE = 1_024;
-
-/** Bytes in one megabyte */
-const BYTES_PER_MEGABYTE = BYTES_PER_KILOBYTE * BYTES_PER_KILOBYTE;
 
 /**
  * Runs sysbench cpu benchmark and parses events per second.
@@ -127,7 +123,7 @@ export type MemoryBenchResult = {
 export function runMemoryBenchmark(allocMb: number,): MemoryBenchResult {
   /** Non-zero fill value to prevent sparse array optimizations */
   const FILL_BYTE = 42;
-  const allocBytes = allocMb * BYTES_PER_MEGABYTE;
+  const allocBytes: number = allocMb * BYTES_PER_MIB;
   const start = performance.now();
   const buffer = new Uint8Array(allocBytes,);
   buffer.fill(FILL_BYTE,);

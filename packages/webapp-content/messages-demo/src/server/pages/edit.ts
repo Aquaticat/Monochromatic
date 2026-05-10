@@ -26,11 +26,10 @@ import {
   renderSimplePage,
 } from './_layout.ts';
 
-/** One kibibyte in bytes. */
-const BYTES_PER_KIB = 1_024;
+import { BYTES_PER_MIB, } from '@monochromatic-dev/module-numeric-const';
 
 /** Tier-3 character threshold: one mebibyte. */
-const TIER_3_THRESHOLD_BYTES = BYTES_PER_KIB * BYTES_PER_KIB;
+const TIER_3_THRESHOLD_BYTES: number = BYTES_PER_MIB;
 
 /** Maximum revisions allowed per message; mirrors `messages.MAX_REVISIONS`. */
 const MAX_REVISIONS_DISPLAY = 10;

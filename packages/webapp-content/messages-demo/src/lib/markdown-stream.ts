@@ -12,10 +12,8 @@
  * specific imports so it can be bundled into the browser worker.
  */
 
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
 import { micromark, } from 'micromark';
-
-/** One kibibyte in bytes. */
-const BYTES_PER_KIB = 1_024;
 
 /** Soft chunk target in kibibytes. */
 const CHUNK_TARGET_KIB = 32;
