@@ -305,3 +305,223 @@ fn case_insensitive_em_dash_prefix_extracts_correctly() {
     // ```
     assert!(*ci, "ci flag should be true after stripping (?i)");
 }
+
+#[test]
+fn emoji_prefix_round_trips_through_aho_corasick() {
+    // What:     Same shape as `em_dash_prefix_round_trips_through_aho_corasick`
+    //           but with a 4-byte UTF-8 leading character `🔑`
+    //           (`\xf0\x9f\x94\x91`). Exercises the maximum-width
+    //           UTF-8 case end-to-end.
+    // Why:      The em-dash test covers 3-byte UTF-8; this covers
+    //           4-byte. Pre-fix, a `🔑secret` rule would have
+    //           registered 8 mojibake bytes and never matched the
+    //           file's original 4 bytes. The advisor flagged this
+    //           gap during review.
+    // TS map:   end-to-end pipeline assertion in TS would be the
+    //           same shape with `🔑` instead of `—`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("🔑secret")!;
+    // const ac = new AhoCorasick(subs.map(([s, _]) => s));
+    // const matches = [...ac.search("prefix 🔑secret suffix")];
+    // expect(matches.length).toBeGreaterThan(0);
+    // ```
+    let subs = extract_gating_substrings("🔑secret")
+        .expect("expected Some for plain literal");
+    assert_eq!(subs.len(), 1);
+    let (substring, _ci) = &subs[0];
+    assert_eq!(
+        substring.as_bytes(),
+        b"\xf0\x9f\x94\x91secret",
+        "extracted substring should preserve the original 4-byte emoji bytes"
+    );
+    let patterns: Vec<&str> = subs.iter().map(|(s, _)| s.as_str()).collect();
+    let ac = AhoCorasick::new(&patterns).expect("AC build should succeed");
+    let content = "prefix 🔑secret suffix";
+    let matches: Vec<_> = ac.find_iter(content).collect();
+    assert!(
+        !matches.is_empty(),
+        "AC should find at least one match for the 4-byte emoji prefix"
+    );
+    assert_eq!(
+        matches[0].start(),
+        7,
+        "match should start right after 'prefix ' (7 ASCII bytes)"
+    );
+}
+
+#[test]
+fn two_byte_utf8_prefix_round_trips_through_aho_corasick() {
+    // What:     2-byte UTF-8 leading char `é` (`\xc3\xa9`)
+    //           followed by `tudiant` to make a 9-byte literal
+    //           prefix. Same end-to-end shape as the em-dash and
+    //           emoji round-trip tests.
+    // Why:      Cover the 2-byte UTF-8 path. `é` is the easiest
+    //           way for a Latin-script writer to introduce a
+    //           non-ASCII rule; broken extraction here would be a
+    //           common foot-gun.
+    // TS map:   same shape as above with `étudiant`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("étudiant")!;
+    // // ... AC build + match ...
+    // ```
+    let subs = extract_gating_substrings("étudiant")
+        .expect("expected Some for plain literal");
+    assert_eq!(subs.len(), 1);
+    let (substring, _ci) = &subs[0];
+    assert_eq!(
+        substring.as_bytes(),
+        b"\xc3\xa9tudiant",
+        "extracted substring should preserve the original 2-byte e-acute bytes"
+    );
+    let patterns: Vec<&str> = subs.iter().map(|(s, _)| s.as_str()).collect();
+    let ac = AhoCorasick::new(&patterns).expect("AC build should succeed");
+    let content = "prefix étudiant suffix";
+    let matches: Vec<_> = ac.find_iter(content).collect();
+    assert!(
+        !matches.is_empty(),
+        "AC should find at least one match for the 2-byte e-acute prefix"
+    );
+    assert_eq!(
+        matches[0].start(),
+        7,
+        "match should start right after 'prefix ' (7 ASCII bytes)"
+    );
+}
+
+#[test]
+fn anchor_prefix_extracts_after_strip() {
+    // What:     `^—password` starts with the `^` line-anchor.
+    //           `extract_gating_substrings` should strip `^` and
+    //           extract `—password` from the remainder.
+    // Why:      Cover the anchor-strip code path with a non-ASCII
+    //           literal. Confirms the strip-then-walk pipeline
+    //           preserves UTF-8 bytes through both stages.
+    // TS map:   `const subs = extractGatingSubstrings("^—password")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("^—password")!;
+    // expect(subs[0].sub).toBe("—password");
+    // ```
+    let subs = extract_gating_substrings("^—password")
+        .expect("expected Some after anchor strip");
+    assert_eq!(subs.len(), 1);
+    let (substring, _ci) = &subs[0];
+    assert_eq!(
+        substring.as_bytes(),
+        b"\xe2\x80\x94password",
+        "extracted substring should preserve em-dash bytes after `^` strip"
+    );
+}
+
+#[test]
+fn short_non_ascii_prefix_rejected_by_min_prefix_len() {
+    // What:     A pattern whose extracted prefix is the single
+    //           em-dash `—` (3 UTF-8 bytes) followed by a
+    //           metacharacter `*`. Walker extracts `—` only; the
+    //           soundness filter `subs.iter().any(|(p, _)| p.len()
+    //           < MIN_PREFIX_LEN)` checks BYTE length, and `—` is
+    //           exactly 3 bytes (== MIN_PREFIX_LEN), so it passes.
+    // Why:      Documents the byte-length semantic: `MIN_PREFIX_LEN`
+    //           is bytes, not chars. A single 3-byte UTF-8 char
+    //           passes; a single 2-byte UTF-8 char does NOT.
+    //           Future maintainers might assume "chars"; this test
+    //           pins the actual behaviour. (The bug we just fixed
+    //           was upstream of this filter; once UTF-8 is correct,
+    //           `MIN_PREFIX_LEN` operates on real bytes as
+    //           intended.)
+    // TS map:   `const subs = extractGatingSubstrings("—.*")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("—.*"); // 3-byte prefix passes
+    // expect(subs).not.toBeNull();
+    // expect(subs![0].sub).toBe("—");
+    // ```
+    let subs = extract_gating_substrings("—.*")
+        .expect("3-byte em-dash prefix should pass MIN_PREFIX_LEN");
+    assert_eq!(subs.len(), 1);
+    let (substring, _ci) = &subs[0];
+    assert_eq!(substring.as_bytes(), b"\xe2\x80\x94");
+
+    // What:     Confirm the negative case: a single 2-byte char
+    //           prefix (`é`, 2 bytes) is rejected because 2 <
+    //           MIN_PREFIX_LEN (3). `assert!(result.is_none())`
+    //           checks the `Option` is `None`.
+    // Why:      Pin the byte-length semantic from the other side.
+    // TS map:   `expect(extractGatingSubstrings("é.*")).toBeNull();`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(extractGatingSubstrings("é.*")).toBeNull();
+    // ```
+    let result = extract_gating_substrings("é.*");
+    assert!(
+        result.is_none(),
+        "2-byte e-acute prefix is below MIN_PREFIX_LEN (bytes), should be None"
+    );
+}
+
+#[test]
+fn alternation_with_non_ascii_extracts_both_branches() {
+    // What:     Pattern `(?:—password|—token)` -- a non-capturing
+    //           group containing two branches separated by `|`.
+    //           Each branch starts with em-dash. The walker
+    //           recurses into the group via `skip_atom_with_extract`,
+    //           splits the body on top-level `|`, and extracts one
+    //           prefix per branch. Result should be a 2-element
+    //           Vec, both with em-dash leading bytes.
+    // Why:      Cover the multi-substring-per-rule path with
+    //           non-ASCII literals. AC fires the rule if EITHER
+    //           branch matches. Pre-fix, both branches would have
+    //           mojibake'd, so AC would never fire.
+    // TS map:   `const subs = extractGatingSubstrings("(?:—password|—token)")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?:—password|—token)")!;
+    // expect(subs.length).toBe(2);
+    // ```
+    let subs = extract_gating_substrings("(?:—password|—token)")
+        .expect("expected Some for alternation of literals");
+    assert_eq!(
+        subs.len(),
+        2,
+        "expected one substring per alternation branch"
+    );
+    assert_eq!(
+        subs[0].0.as_bytes(),
+        b"\xe2\x80\x94password",
+        "first branch should be em-dash + password"
+    );
+    assert_eq!(
+        subs[1].0.as_bytes(),
+        b"\xe2\x80\x94token",
+        "second branch should be em-dash + token"
+    );
+
+    // What:     Build AC from both substrings, search content
+    //           containing only the second branch's literal.
+    //           AC should fire on the `—token` pattern.
+    // Why:      End-to-end soundness: registering BOTH branches
+    //           means a file with only one of them still gates
+    //           correctly.
+    // TS map:   `const ac = new AhoCorasick(subs.map(([s, _]) => s));`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const ac = new AhoCorasick(subs.map(([s, _]) => s));
+    // expect([...ac.search("here is —token")].length).toBeGreaterThan(0);
+    // ```
+    let patterns: Vec<&str> = subs.iter().map(|(s, _)| s.as_str()).collect();
+    let ac = AhoCorasick::new(&patterns).expect("AC build should succeed");
+    let matches: Vec<_> = ac.find_iter("here is —token").collect();
+    assert!(
+        !matches.is_empty(),
+        "AC should fire on the second-branch literal"
+    );
+}

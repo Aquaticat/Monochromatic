@@ -400,3 +400,167 @@ fn walks_em_dash_then_metacharacter() {
         expected_out_bytes: b"\xe2\x80\x94",
     });
 }
+
+#[test]
+fn walks_two_byte_utf8_leading() {
+    // What:     Input starts with `é` (U+00E9), encoded as the
+    //           2 UTF-8 bytes `\xc3\xa9`. The walker should
+    //           consume it and the rest as literal characters.
+    // Why:      Cover the 2-byte UTF-8 path. Previously this was
+    //           the EXACT BUG SHAPE: byte `0xc3` cast to `char`
+    //           would have produced U+00C3 (`Ã`), and byte `0xa9`
+    //           would have produced U+00A9 (`(c)`-symbol). Two
+    //           wrong codepoints re-encoding to 4 mojibake bytes
+    //           instead of the original 2.
+    // TS map:   `runCase({ input: "écret", expectedOut: "écret", ... });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // runCase({ input: "écret", expectedOut: "écret",
+    //   expectedRemainder: "",
+    //   expectedOutBytes: new Uint8Array([0xc3, 0xa9, 0x63, 0x72, 0x65, 0x74]) });
+    // ```
+    run_case(&Case {
+        input: "écret",
+        expected_out: "écret",
+        expected_remainder: "",
+        expected_out_bytes: b"\xc3\xa9cret",
+    });
+}
+
+#[test]
+fn walks_four_byte_utf8_leading() {
+    // What:     Input starts with `🔑` (U+1F511, "key" emoji),
+    //           encoded as the 4 UTF-8 bytes `\xf0\x9f\x94\x91`.
+    //           The walker should consume the emoji and continue
+    //           through any literal characters that follow.
+    // Why:      Cover the 4-byte UTF-8 path (the maximum width).
+    //           Pre-fix, this would have produced 8 mojibake bytes
+    //           (each of the 4 source bytes upcasting to a separate
+    //           U+0080..U+00FF codepoint, each re-encoding to 2 UTF-8
+    //           bytes). Confirms `next.len_utf8()` advance handles
+    //           4 correctly.
+    // TS map:   `runCase({ input: "🔑secret", ... });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // runCase({ input: "🔑secret", expectedOut: "🔑secret",
+    //   expectedRemainder: "",
+    //   expectedOutBytes: new Uint8Array([0xf0, 0x9f, 0x94, 0x91, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74]) });
+    // ```
+    run_case(&Case {
+        input: "🔑secret",
+        expected_out: "🔑secret",
+        expected_remainder: "",
+        expected_out_bytes: b"\xf0\x9f\x94\x91secret",
+    });
+}
+
+#[test]
+fn walks_escaped_emoji() {
+    // What:     Input `"\\🔑rest"` -- backslash followed by the
+    //           4-byte emoji `🔑` followed by `rest`. The escape
+    //           branch should treat `\🔑` as literal `🔑` and
+    //           continue through `rest`.
+    // Why:      Stress-tests the `next.len_utf8()` advance on the
+    //           escape branch (`tail = &after_bs[next.len_utf8()..]`).
+    //           Hard-coding `2` (one byte for `\`, one byte for
+    //           `next`) would underadvance by 3 bytes here and the
+    //           next iteration's `chars.next()` would panic on a
+    //           non-char-boundary slice.
+    // TS map:   `runCase({ input: "\\🔑rest", expectedOut: "🔑rest", ... });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // runCase({ input: "\\🔑rest", expectedOut: "🔑rest",
+    //   expectedRemainder: "",
+    //   expectedOutBytes: new Uint8Array([0xf0, 0x9f, 0x94, 0x91, 0x72, 0x65, 0x73, 0x74]) });
+    // ```
+    run_case(&Case {
+        input: "\\🔑rest",
+        expected_out: "🔑rest",
+        expected_remainder: "",
+        expected_out_bytes: b"\xf0\x9f\x94\x91rest",
+    });
+}
+
+#[test]
+fn walks_empty_input() {
+    // What:     Empty input `""`. Loop guard `!tail.is_empty()`
+    //           is immediately false, so the loop body never
+    //           runs; remainder is set to `tail` (also empty).
+    // Why:      Edge case: callers may pass empty `&str` after
+    //           consuming an entire prior atom. Walker must not
+    //           panic and must leave `out` and `remainder` empty.
+    // TS map:   `runCase({ input: "", expectedOut: "", ... });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // runCase({ input: "", expectedOut: "",
+    //   expectedRemainder: "", expectedOutBytes: new Uint8Array([]) });
+    // ```
+    run_case(&Case {
+        input: "",
+        expected_out: "",
+        expected_remainder: "",
+        expected_out_bytes: b"",
+    });
+}
+
+#[test]
+fn walks_trailing_backslash() {
+    // What:     Input `"\\"` -- a lone backslash with nothing
+    //           after it. The escape branch's let-else
+    //           `let Some(next) = ... else { break; };` triggers
+    //           the break, and the remainder ends up pointing at
+    //           `\`.
+    // Why:      Corresponds to the original byte-walker's
+    //           `if i + 1 >= bytes.len() { break; }` check.
+    //           Without this branch the let-else would silently
+    //           consume the `\` and produce wrong output.
+    // TS map:   `runCase({ input: "\\", expectedOut: "",
+    //           expectedRemainder: "\\", ... });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // runCase({ input: "\\", expectedOut: "",
+    //   expectedRemainder: "\\", expectedOutBytes: new Uint8Array([]) });
+    // ```
+    run_case(&Case {
+        input: "\\",
+        expected_out: "",
+        expected_remainder: "\\",
+        expected_out_bytes: b"",
+    });
+}
+
+#[test]
+fn walks_mixed_widths_consecutive() {
+    // What:     Input `"a—é🔑z"` mixes 1-byte ASCII, 3-byte BMP,
+    //           2-byte Latin-1-supplement, 4-byte SMP, and ASCII
+    //           again. All five chars are literals; walker should
+    //           consume the whole input and produce identical
+    //           bytes.
+    // Why:      Stress-test the char-by-char advance: `tail =
+    //           chars.as_str()` after each push must land on the
+    //           correct char boundary regardless of the previous
+    //           char's width. A regression where the byte-offset
+    //           accounting drifts after one width would produce
+    //           panics or mojibake on the next char.
+    // TS map:   `runCase({ input: "a—é🔑z", expectedOut: "a—é🔑z", ... });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // runCase({ input: "a—é🔑z", expectedOut: "a—é🔑z",
+    //   expectedRemainder: "",
+    //   expectedOutBytes: new Uint8Array([
+    //     0x61, 0xe2, 0x80, 0x94, 0xc3, 0xa9, 0xf0, 0x9f, 0x94, 0x91, 0x7a,
+    //   ]) });
+    // ```
+    run_case(&Case {
+        input: "a—é🔑z",
+        expected_out: "a—é🔑z",
+        expected_remainder: "",
+        expected_out_bytes: b"a\xe2\x80\x94\xc3\xa9\xf0\x9f\x94\x91z",
+    });
+}
