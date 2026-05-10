@@ -29,7 +29,6 @@ const terminal = await resolveTerminal();
 
 if (terminal === null) {
   console.error('terminal-exec: no terminal emulator found',);
-  process.exitCode = 1;
   throw new Error(
     process.platform === 'win32'
       ? 'No terminal emulator found.'

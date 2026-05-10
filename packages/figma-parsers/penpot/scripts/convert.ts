@@ -17,7 +17,6 @@ const outputPath = process.argv[3];
 
 if (!inputPath) {
   console.error('Usage: bun scripts/convert.ts <input.fig|.deck|.jam> [output.penpot]',);
-  process.exitCode = 1;
   throw new Error('Missing input path',);
 }
 

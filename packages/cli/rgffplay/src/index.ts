@@ -222,7 +222,6 @@ const args = process.argv.slice(2,);
 if (args.length === 0) {
   console.error('Usage: rgffplay <name...>',);
   console.error('Example: rgffplay sweet devil',);
-  process.exitCode = 1;
   throw new Error('No arguments provided',);
 }
 
