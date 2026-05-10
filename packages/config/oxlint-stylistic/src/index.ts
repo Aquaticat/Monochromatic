@@ -37,7 +37,7 @@ const plugin: Plugin = eslintCompatPlugin({
     name: 'stylistic',
   },
   rules: {
-    //region Per-line rules -- enforce one item per line in multi-element constructs
+    //region Per-line rules: enforce one item per line in multi-element constructs
     'param-per-line': paramPerLine,
     'argument-per-line': argumentPerLine,
     'array-element-per-line': arrayElementPerLine,

@@ -67,7 +67,7 @@ function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
           'Blocked: general-purpose Agent calls are banned due to bugs.',
           'Use spawn-claude outside sandbox to launch steerable child Claude Code sessions instead.',
           'Example: spawn-claude "your task description here"',
-          'Specialized agent types (Explore, Plan, etc.) are allowed -- set subagent_type explicitly.',
+          'Specialized agent types (Explore, Plan, etc.) are allowed; set subagent_type explicitly.',
         ]
           .join(' ',),
       },
@@ -86,7 +86,7 @@ function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
         permissionDecisionReason: [
           `Blocked: Agent resume call (agent ID: ${resume}).`,
           'Background agents notify automatically on completion.',
-          'Do not poll or resume running agents -- wait for the notification.',
+          'Do not poll or resume running agents; wait for the notification.',
           "If you need the result now, use TaskOutput to check the agent's status.",
         ]
           .join(' ',),

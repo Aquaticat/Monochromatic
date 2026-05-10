@@ -180,14 +180,14 @@ export async function it({
     // Restore sandbox before proceeding to assertion checks
     // or the next repeat run. This ensures stubs are cleaned up
     // before `it()` resolves its promise, which is important
-    // when a parent `describe` uses `concurrency: 1` with thunks
-    // — the parent awaits each `it()` promise, so the sandbox
+    // when a parent `describe` uses `concurrency: 1` with thunks:
+    // the parent awaits each `it()` promise, so the sandbox
     // must be restored before that await resolves.
     // Without this, sandbox.restore() only runs via `await using`
     // disposal after `it()` returns, which is too late for
     // sequential parents that start the next child immediately.
     // Note: this does NOT fix concurrent tests that stub shared
-    // global state — those must use `concurrency: 1` with thunks.
+    // global state; those must use `concurrency: 1` with thunks.
     sandbox.restore();
 
     const durationMs = performance.now() - runStart;
@@ -197,7 +197,7 @@ export async function it({
     if (fails !== false) {
       if (threw) {
         l.info(
-          `PASS${runLabel} — threw as expected${failsReason} (${
+          `PASS${runLabel}: threw as expected${failsReason} (${
             durationMs.toFixed(0,)
           }ms)`,
         );
@@ -205,7 +205,7 @@ export async function it({
       }
 
       l.error(
-        `FAIL${runLabel} — expected to throw but passed${failsReason} (${
+        `FAIL${runLabel}: expected to throw but passed${failsReason} (${
           durationMs.toFixed(0,)
         }ms)`,
       );
@@ -226,7 +226,7 @@ export async function it({
     //region Assertion count verification
     if (tracker.expected !== null && tracker.count !== tracker.expected) {
       l.error(
-        `FAIL${runLabel} — expected ${String(tracker.expected,)} assertions but ${
+        `FAIL${runLabel}: expected ${String(tracker.expected,)} assertions but ${
           String(tracker.count,)
         } were called (${durationMs.toFixed(0,)}ms)`,
       );
@@ -244,7 +244,7 @@ export async function it({
 
     if (tracker.requiresAtLeastOne && tracker.count === 0) {
       l.error(
-        `FAIL${runLabel} — expected at least one assertion but none were called (${
+        `FAIL${runLabel}: expected at least one assertion but none were called (${
           durationMs.toFixed(0,)
         }ms)`,
       );

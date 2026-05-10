@@ -5,29 +5,42 @@ use super::regex_syntax::{
 use super::walker::extract_scope;
 
 // What:     `fn walk_literal_bytes(input, out, remainder)` walks `input`
-//           byte by byte, pushing literal characters into `out` and
-//           returning the un-walked tail via `remainder` (a `&mut &str`
-//           pointing into `input`'s lifetime). Stops at the first byte
-//           that introduces a non-literal regex construct.
+//           character by character (UTF-8 aware), pushing literal
+//           characters into `out` and returning the un-walked tail via
+//           `remainder` (a `&mut &str` pointing into `input`'s
+//           lifetime). Stops at the first character that introduces a
+//           non-literal regex construct.
 // Why:      Extracted from the original inline walk so it can be reused
-//           between the leading pass and the post-skip passes. Same
-//           literal-recognition rules as before: punctuation escapes
-//           (`\.`, `\*`, ...) become their literal char; metacharacters
+//           between the leading pass and the post-skip passes.
+//           Literal-recognition rules: punctuation escapes (`\.`,
+//           `\*`, ...) become their literal char; metacharacters
 //           (`. * + ? | ( [ { $ ^`) end the walk; non-punctuation
-//           escapes (`\d`, `\w`, ...) end the walk.
+//           escapes (`\d`, `\w`, ...) end the walk. Iterating by
+//           `char` (not `u8`) is required for soundness: a previous
+//           byte-by-byte version cast each `u8` to `char`, which
+//           mangled multi-byte UTF-8 sequences (em-dash `—` =
+//           `\xe2\x80\x94` became 6 mojibake bytes), producing AC
+//           gating patterns that never matched the file's original
+//           bytes and silently disabling the rule.
 // TS map:   `function walkLiteralBytes(input: string, out: string[]): { remainder: string }`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function walkLiteralBytes(input: string, out: string[]) {
-//   let i = 0;
-//   while (i < input.length) {
-//     const c = input.charCodeAt(i);
-//     if (c === 0x5c /* \\ */) { /* punctuation-escape -> push, else break */ }
-//     else if ('.*+?|([{$^'.includes(input[i])) break;
-//     else { out.push(input[i]); i += 1; }
+//   let tail = input;
+//   while (tail.length > 0) {
+//     const c = tail[0];
+//     if (c === "|") break;
+//     if (c === "\\") {
+//       const next = tail[1];
+//       if (next === undefined) break;
+//       if (/[A-Za-z0-9]/.test(next)) break;
+//       out.push(next); tail = tail.slice(2); continue;
+//     }
+//     if ('.*+?([{$^'.includes(c)) break;
+//     out.push(c); tail = tail.slice(1);
 //   }
-//   return { remainder: input.slice(i) };
+//   return { remainder: tail };
 // }
 // ```
 pub(super) fn walk_literal_bytes<'a>(
@@ -35,11 +48,61 @@ pub(super) fn walk_literal_bytes<'a>(
     out: &mut String,
     remainder: &mut &'a str,
 ) {
-    let bytes = input.as_bytes();
-    let mut i = 0usize;
-    while i < bytes.len() {
-        let c = bytes[i];
-        if c == b'|' {
+    // What:     `let mut tail: &'a str = input;`. `tail` is the
+    //           un-walked remainder, sliced off the front each
+    //           iteration. `&str` is a borrowed string slice (NOT a
+    //           `String`, which would be heap-allocated and owned).
+    //           The lifetime `'a` from the signature ensures `tail`
+    //           cannot outlive the original `input` slice.
+    // Why:      Walking by re-binding `tail = chars.as_str()` after
+    //           consuming each char is what makes this function
+    //           UTF-8 correct: `chars.as_str()` always returns a
+    //           valid char-boundary slice, so `out` only ever
+    //           receives whole UTF-8 characters.
+    // TS map:   `let tail: string = input;` -- "the rest of the
+    //           string we haven't consumed yet."
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let tail = input;
+    // ```
+    let mut tail = input;
+    while !tail.is_empty() {
+        // What:     `let mut chars = tail.chars();`. `tail.chars()`
+        //           returns a `Chars` iterator that yields one
+        //           Unicode `char` per call to `.next()`, decoded
+        //           from `tail`'s UTF-8 bytes. `mut` because
+        //           `.next()` advances internal state.
+        // Why:      Iterating by `char` (not `u8`) is the whole
+        //           soundness fix; see function-level comment above.
+        // TS map:   `for (const c of tail) { ... }` -- TS strings
+        //           iterate by code point with the iterator
+        //           protocol. UTF-16 internally, but the mental
+        //           model matches.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const chars = tail[Symbol.iterator]();
+        // ```
+        let mut chars = tail.chars();
+        // What:     `chars.next().expect("non-empty")`. `.next()` on
+        //           a `Chars` iterator returns `Option<char>`:
+        //           `Some(c)` if a char remains, `None` otherwise.
+        //           `.expect(msg)` extracts the inner `char` if
+        //           `Some`, panics with `msg` if `None`.
+        // Why:      The `while !tail.is_empty()` guard above
+        //           guarantees at least one `char` remains.
+        //           `expect` (rather than `unwrap`) leaves an audit
+        //           trail explaining why this can't be `None`.
+        // TS map:   `const c = tail[0]!;` -- the `!` non-null
+        //           assertion is the analogue.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const c = tail[0]!;
+        // ```
+        let c = chars.next().expect("non-empty");
+        if c == '|' {
             // What:     Top-level alternation `|` makes the substring
             //           on either side of `|` not required (could be
             //           the other branch instead). Force the walker
@@ -58,59 +121,167 @@ pub(super) fn walk_literal_bytes<'a>(
             // ```
             break;
         }
-        if c == b'\\' {
-            if i + 1 >= bytes.len() {
+        if c == '\\' {
+            // What:     `let after_bs: &str = chars.as_str();`.
+            //           `chars.as_str()` returns the borrowed slice
+            //           of `tail` that comes AFTER the chars already
+            //           consumed by the iterator. Since we just
+            //           consumed `\`, `after_bs` points at whatever
+            //           follows the backslash.
+            // Why:      Peek the char after `\` without re-decoding
+            //           from the front of `tail`.
+            // TS map:   `const afterBs = tail.slice(1);`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const afterBs = tail.slice(1);
+            // ```
+            let after_bs = chars.as_str();
+            // What:     `let Some(next) = after_bs.chars().next()
+            //           else { break; };` is a "let-else" binding.
+            //           If `chars().next()` returns `Some(next_char)`,
+            //           bind `next` to the inner `char` and fall
+            //           through. If `None` (empty after `\`), execute
+            //           the `else` branch -- which `break`s the outer
+            //           loop.
+            // Why:      A backslash at end-of-input is not a complete
+            //           escape; matches the original byte-walker's
+            //           "`i + 1 >= bytes.len()` -> break" check.
+            // TS map:   `const next = afterBs[0]; if (next === undefined) break;`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const next = afterBs[0];
+            // if (next === undefined) break;
+            // ```
+            let Some(next) = after_bs.chars().next() else {
                 break;
-            }
-            let next = bytes[i + 1];
+            };
             // What:     ASCII alphanumeric escapes (`\w`, `\d`, `\s`,
             //           `\b`, `\A`, `\Z`, `\n`, etc.) are SPECIAL --
-            //           they should end the walk, not contribute a
-            //           literal character. Everything else after `\`
-            //           is treated as that character literal (`\_` ->
-            //           `_`, `\=` -> `=`, `\:` -> `:`, etc.). Resharp's
-            //           grammar accepts `\X` as the literal X for any
-            //           non-special X; the walker mirrors that.
+            //           they end the walk, not contribute a literal
+            //           character. Everything else after `\` is
+            //           treated as that character literal (`\_` ->
+            //           `_`, `\=` -> `=`, `\:` -> `:`, `\—` -> `—`).
+            //           Resharp's grammar accepts `\X` as literal `X`
+            //           for any non-special `X`; the walker mirrors
+            //           that.
             // Why:      The previous allowlist of punctuation escapes
-            //           missed `\_` -- which is common in
-            //           betterleaks-shape rules (e.g. `doo\_v1\_`
-            //           pattern bodies). 25+ rules with `\_` were
-            //           falling into the residual bucket purely
-            //           because the walker bailed on `\_`.
-            // TS map:   `if (/[A-Za-z0-9]/.test(next)) break; else { out += next; i += 2; }`.
+            //           missed `\_` -- common in betterleaks-shape
+            //           rules. The non-ASCII case (`\—`) was also
+            //           silently broken under the byte-cast bug.
+            // TS map:   `if (/[A-Za-z0-9]/.test(next)) break;`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // if (/[A-Za-z0-9]/.test(next)) break;
-            // out += next; i += 2;
             // ```
             if next.is_ascii_alphanumeric() {
                 break;
             }
-            out.push(next as char);
-            i += 2;
+            // What:     `out.push(next);` appends `char` `next` to the
+            //           owned `String` `out`, encoding it as 1 to 4
+            //           UTF-8 bytes depending on `next`'s codepoint.
+            //           Was `out.push(next as char);` previously --
+            //           THAT was the bug, because `next` was a `u8`
+            //           (one UTF-8 byte) and `as char` produced a
+            //           single codepoint U+0000..U+00FF, which
+            //           mangles multi-byte sequences.
+            // Why:      Punctuation escape `\X` contributes literal
+            //           `X` to the prefix. Pushing the whole `char`
+            //           preserves original UTF-8 bytes.
+            // TS map:   `out += next;`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // out += next;
+            // ```
+            out.push(next);
+            // What:     `tail = &after_bs[next.len_utf8()..];`.
+            //           `next.len_utf8()` returns how many UTF-8
+            //           bytes `next` occupies (1 for ASCII, 2 for
+            //           Latin-1 supplements like `é`, 3 for most
+            //           BMP including em-dash `—`, 4 for emoji).
+            //           `&after_bs[N..]` is byte-slicing that
+            //           returns the subslice starting at byte index
+            //           `N`; lands on a valid char boundary because
+            //           `len_utf8()` is the exact byte count.
+            // Why:      Advance `tail` past `\next`. Hard-coding `2`
+            //           (one byte for `\`, one byte for `next`)
+            //           would re-introduce the bug: for `\—`, `next`
+            //           is 3 bytes wide, so `tail` would be sliced
+            //           mid-character, panicking on the next
+            //           iteration's `chars.next()`.
+            // TS map:   `tail = afterBs.slice(next.length);`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // tail = afterBs.slice(next.length);
+            // ```
+            tail = &after_bs[next.len_utf8()..];
             continue;
         }
-        // What:     `matches!(c, b'.' | ...)` -- match-as-expression.
-        //           Returns true when `c` is any regex metacharacter
-        //           that ends a literal run.
+        // What:     `matches!(c, '.' | '*' | ...)` -- macro that
+        //           desugars to a `match` returning `bool`. True
+        //           when `c` is any regex metacharacter that ends
+        //           a literal run.
         // Why:      These characters introduce non-literal regex
         //           constructs the walker is not equipped to handle
         //           inline; the outer `extract_required_prefix` loop
         //           may resume after them via `skip_atom_with_extract`.
-        // TS map:   `if ('.*+?([{$^'.includes(c)) break;`.
+        // TS map:   `if ('.*+?()[]{}$^'.includes(c)) break;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if ('.*+?([{$^'.includes(c)) break;
+        // if ('.*+?()[]{}$^'.includes(c)) break;
         // ```
-        if matches!(c, b'.' | b'*' | b'+' | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'$' | b'^') {
+        if matches!(c, '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '$' | '^') {
             break;
         }
-        out.push(c as char);
-        i += 1;
+        // What:     `out.push(c);` pushes `char` `c` into `out`,
+        //           re-encoding as 1 to 4 UTF-8 bytes. **This was
+        //           the OTHER bug site**: `out.push(c as char);`
+        //           where `c` was a `u8`, producing mojibake for
+        //           non-ASCII bytes.
+        // Why:      Push the literal character and keep walking.
+        // TS map:   `out += c;`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // out += c;
+        // ```
+        out.push(c);
+        // What:     `tail = chars.as_str();`. After `.next()`
+        //           consumed `c`, `chars.as_str()` is the borrowed
+        //           slice of `tail` starting at the byte
+        //           immediately past `c`'s UTF-8 encoding. O(1).
+        // Why:      Cheap advance; equivalent to
+        //           `&tail[c.len_utf8()..]` but the iterator
+        //           already tracks the offset.
+        // TS map:   `tail = tail.slice(c.length);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // tail = tail.slice(c.length);
+        // ```
+        tail = chars.as_str();
     }
-    *remainder = &input[i..];
+    // What:     `*remainder = tail;`. `*remainder` derefs the
+    //           mutable reference passed in by the caller, assigning
+    //           `tail` into whatever `&str` binding the caller owns.
+    //           Lifetime `'a` ties `tail`'s borrow to `input`'s, so
+    //           the caller's binding is statically guaranteed to be
+    //           valid.
+    // Why:      Return the un-walked remainder via the out-param,
+    //           same contract as before.
+    // TS map:   `remainderRef.value = tail;` -- TS has no native
+    //           out-params; model with a wrapper object.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // remainderRef.value = tail;
+    // ```
+    *remainder = tail;
 }
 
 // What:     `fn skip_atom_with_extract(s, ci) -> Option<(&str, Option<Vec<(String, bool)>>)>`

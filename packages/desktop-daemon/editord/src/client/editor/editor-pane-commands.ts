@@ -8,7 +8,7 @@
  * Callers (app.ts, keybinding system) invoke these `perform*` functions
  * directly with `{ pane: editorPane }` rather than calling wrapper
  * methods on the class. This avoids seven one-line delegation methods
- * on `EditorPane` that did nothing but forward `{ pane: this }` --
+ * on `EditorPane` that did nothing but forward `{ pane: this }`;
  * keeping them would push editor-pane.ts over the 300-code-line limit
  * and make the class a God-object facade for operations that already
  * live in this file.

@@ -82,7 +82,7 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
     fixturePath,
   );
 
-  // oxlint exits non-zero when violations are found -- capture stdout from the error
+  // oxlint exits non-zero when violations are found: capture stdout from the error
   let stdout: string;
   try {
     const result = await spawn(
@@ -145,7 +145,7 @@ function cleanupFile(filePath: string,): void {
 await describe({
   name: '',
   children: [
-    //region Valid fixtures -- expect zero stylistic violations
+    //region Valid fixtures: expect zero stylistic violations
 
     describe({
       name: 'valid fixtures',
@@ -176,7 +176,7 @@ await describe({
 
     //endregion Valid fixtures
 
-    //region Invalid fixtures -- expect specific violations
+    //region Invalid fixtures: expect specific violations
 
     describe({
       name: 'param-per-line',

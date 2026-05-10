@@ -2,7 +2,7 @@
  * Context menu action dispatcher for the file tree.
  *
  * Maps {@link ContextAction} variants (with already-resolved user input)
- * to WebSocket requests. No UI prompts — input collection happens
+ * to WebSocket requests. No UI prompts: input collection happens
  * in the inline prompt bar before actions reach this function.
  */
 

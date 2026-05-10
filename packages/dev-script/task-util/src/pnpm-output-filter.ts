@@ -3,7 +3,7 @@
  *
  * The monorepo has an intentional cyclic workspace dependency between
  * `packages/module/es` and `packages/module/test`.
- * pnpm lacks a per-package allowlist for cycle warnings --
+ * pnpm lacks a per-package allowlist for cycle warnings:
  * the only built-in options are `ignoreWorkspaceCycles` (all or nothing)
  * and `disallowWorkspaceCycles`.
  * These functions selectively identify and remove the known cycle warning

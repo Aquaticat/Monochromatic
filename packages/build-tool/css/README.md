@@ -6,11 +6,11 @@ CSS build tool that bundles `@import` statements across monorepo packages and pr
 
 No single CSS tool handles all three requirements at once:
 
-1. **Monorepo-aware `@import` resolution** -- PostCSS only resolves relative paths out of the box, not `node_modules` or package.json `exports`
-2. **Custom `@mixin`/`@apply` processing** -- no standard PostCSS plugin provides the mixin semantics this monorepo needs
-3. **Browser-compatible** -- the entire pipeline runs in both Node.js and browser environments (no native binary dependencies)
+1. **Monorepo-aware `@import` resolution**: PostCSS only resolves relative paths out of the box, not `node_modules` or package.json `exports`
+2. **Custom `@mixin`/`@apply` processing**: no standard PostCSS plugin provides the mixin semantics this monorepo needs
+3. **Browser-compatible**: the entire pipeline runs in both Node.js and browser environments (no native binary dependencies)
 
-The package uses only **PostCSS** for all CSS processing -- AST walking for `@import` inlining, `@mixin` collection, and `@apply` expansion.
+The package uses only **PostCSS** for all CSS processing: AST walking for `@import` inlining, `@mixin` collection, and `@apply` expansion.
 A custom `@import` plugin handles monorepo-aware resolution (package.json `exports`, `node_modules`, workspace packages).
 
 See [TROUBLESHOOTING.css-tooling.md](../../../TROUBLESHOOTING.css-tooling.md) for the full chronicle.
@@ -87,7 +87,7 @@ Imports resolve through a custom PostCSS plugin, supporting package.json `export
 ## Using mixins in JavaScript (Shadow DOM, runtime)
 
 The `build()` function processes standalone `.css` files on disk.
-For consumers that already have CSS text in memory -- such as web components with Shadow DOM styles defined as JavaScript strings -- use `applyMixins()`:
+For consumers that already have CSS text in memory (such as web components with Shadow DOM styles defined as JavaScript strings), use `applyMixins()`:
 
 ```ts
 import { applyMixins, } from '@monochromatic-dev/build-css/ts';
@@ -114,11 +114,11 @@ import { applyMixins, } from '@monochromatic-dev/build-css/ts';
 
 ## Build pipeline
 
-1. **Resolve and bundle** -- a custom PostCSS plugin walks `@import` statements, resolves specifiers (relative paths, package.json `exports`, bare `node_modules`), and inlines the resolved files
-2. **Collect mixins** -- PostCSS walks the bundled AST, extracts `@mixin` definitions into a registry, removes them from the tree
-3. **Expand mixin bodies** -- nested `@apply` rules inside mixin definitions are resolved via fixed-point iteration
-4. **Inline `@apply`** -- remaining `@apply` rules in the document are replaced with cloned mixin body nodes
-5. **Write output** -- final CSS string written to disk
+1. **Resolve and bundle**: a custom PostCSS plugin walks `@import` statements, resolves specifiers (relative paths, package.json `exports`, bare `node_modules`), and inlines the resolved files
+2. **Collect mixins**: PostCSS walks the bundled AST, extracts `@mixin` definitions into a registry, removes them from the tree
+3. **Expand mixin bodies**: nested `@apply` rules inside mixin definitions are resolved via fixed-point iteration
+4. **Inline `@apply`**: remaining `@apply` rules in the document are replaced with cloned mixin body nodes
+5. **Write output**: final CSS string written to disk
 
 ## Module structure
 

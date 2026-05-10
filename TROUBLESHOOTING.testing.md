@@ -10,7 +10,7 @@ Symptoms:
 Root cause:
 
 - `describe` propagates child failures as `Error(name, { cause })`.
-  When two sibling describes share the same `name`, the error chain is ambiguous --
+  When two sibling describes share the same `name`, the error chain is ambiguous;
   both suites wrap their errors with the same message string.
 - The harness does not merge or deduplicate suites with the same name
   (unlike bun:test's reporter), but the output becomes hard to read.

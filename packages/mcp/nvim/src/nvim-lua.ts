@@ -13,7 +13,7 @@ import {
   SEVERITY_MAP,
 } from './nvim-types.ts';
 
-//region Raw diagnostic mapping -- converts Lua msgpack output to typed Diagnostics
+//region Raw diagnostic mapping: converts Lua msgpack output to typed Diagnostics
 
 /**
  * Maps a raw msgpack diagnostic record to a typed Diagnostic.
@@ -53,7 +53,7 @@ export function mapRawDiagnostic(d: Record<string, unknown>,): Diagnostic {
 
 //endregion Raw diagnostic mapping
 
-//region Lua snippets -- shared Lua code executed via nvim_exec_lua
+//region Lua snippets: shared Lua code executed via nvim_exec_lua
 
 /** Lua code that returns diagnostics for the current buffer. */
 export const LUA_GET_CURRENT_BUF_DIAGNOSTICS = `

@@ -2,7 +2,7 @@
 
 **Objective**: Make the module/es package immediately presentable for demos/showcases within 2 weeks while avoiding major breaking changes.
 
-**Timeline**: August 16 - August 30, 2025
+**Timeline**: August 16 to August 30, 2025
 
 ## Week 1: Critical Fixes & Core Functionality
 
@@ -10,7 +10,7 @@
 
 ### Days 1-2: Fix TypeScript Compilation Errors
 
-**Status**: Critical - Blocks all development
+**Status**: Critical; blocks all development
 **Reference**: [`TODO.exports-fixes.md`](TODO.exports-fixes.md)
 
 - [ ] **Critical**: Fix missing exports in `iterable.is.ts`
@@ -26,7 +26,7 @@
 
 ### Days 3-4: Essential Function Implementation
 
-**Status**: High Priority - Common utility functions expected by users
+**Status**: High Priority; common utility functions expected by users
 **Reference**: [`TODO.missing-implementations.md`](TODO.missing-implementations.md)
 
 **Focus on 10 most essential functions only** (not 350+):
@@ -55,7 +55,7 @@
 
 ### Days 5-7: Basic Testing Coverage
 
-**Status**: High Priority - Quality assurance
+**Status**: High Priority; quality assurance
 **Reference**: [`TODO.testing.md`](TODO.testing.md)
 
 - [ ] Add comprehensive unit tests for all 10 new essential functions
@@ -71,7 +71,7 @@
 
 ### Days 8-10: Documentation Excellence
 
-**Status**: High Priority - Professional presentation
+**Status**: High Priority; professional presentation
 **Reference**: [`TODO.tsdoc-improvements.md`](TODO.tsdoc-improvements.md)
 
 - [ ] Add comprehensive TSDoc to all existing core functions (~50 functions)
@@ -86,7 +86,7 @@
 
 ### Days 11-12: README & Package Polish
 
-**Status**: Medium Priority - Marketing and usability
+**Status**: Medium Priority; marketing and usability
 
 - [ ] Update [`README.md`](README.md) to reflect **current** capabilities (not 500+ function vision)
   - [ ] Remove references to unimplemented functions
@@ -102,7 +102,7 @@
 
 ### Days 13-14: Publishing Preparation
 
-**Status**: Medium Priority - Distribution readiness
+**Status**: Medium Priority; distribution readiness
 **Reference**: [`TODO.package-infrastructure.md`](TODO.package-infrastructure.md)
 
 - [ ] Verify JSR publishing configuration works correctly
@@ -164,7 +164,7 @@
 After achieving presentability, continue with the comprehensive long-term plan documented in:
 
 - [`TODO.index.md`](TODO.md) - Master roadmap
-- [`TODO.missing-implementations.md`](TODO.missing-implementations.md) - 350+ additional functions
+- [`TODO.missing-implementations.md`](TODO.missing-implementations.md): 350+ additional functions
 - [`TODO.api-refactors.md`](TODO.api-refactors.md) - Major API improvements
 - [`TODO.governance-strategy.md`](TODO.governance-strategy.md) - Long-term strategy
 
@@ -174,5 +174,5 @@ After achieving presentability, continue with the comprehensive long-term plan d
 
 - This plan focuses on immediate presentability over long-term architectural changes
 - Major breaking changes are deliberately deferred to preserve working state
-- Focus is on quality over quantity - 10 excellent functions vs 50 mediocre ones
+- Focus is on quality over quantity: 10 excellent functions vs 50 mediocre ones
 - All changes maintain backward compatibility with existing code

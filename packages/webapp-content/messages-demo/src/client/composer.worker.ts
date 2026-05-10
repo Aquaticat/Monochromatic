@@ -307,7 +307,7 @@ async function putOneChunk(
     char_count: input.chunk.charCount,
   },);
   let lastError: unknown = undefined;
-  // Retry loop with exponential backoff -- each attempt depends on the
+  // Retry loop with exponential backoff: each attempt depends on the
   // previous one failing, so it is inherently sequential.
   /* oxlint-disable no-await-in-loop */
   for (let attempt = 0; attempt < PUT_MAX_ATTEMPTS; attempt += 1) {

@@ -18,7 +18,7 @@ import {
   textResponse,
 } from './response.ts';
 
-//region Mutation tools -- VM creation and destruction
+//region Mutation tools: VM creation and destruction
 
 /** MCP tool: create a new VM, optionally cloned from an existing one. */
 export const createTool: ToolEntry = defineTool(

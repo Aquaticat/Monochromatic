@@ -79,8 +79,7 @@ all to add a third mirror behind a working Fastly setup.
 - **Cloudflare Tunnel**: public hostname must live on a Cloudflare zone,
   collapsing into either Path 1 (move apex DNS) or Path 4 (SaaS Custom
   Hostnames).
-- **Cloudflare Pages with custom domain**: same constraint — custom
-  domain binding requires the hostname's zone on Cloudflare.
+- **Cloudflare Pages with custom domain**: same constraint (custom domain binding requires the hostname's zone on Cloudflare).
 
 ## Decision
 

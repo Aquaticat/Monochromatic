@@ -28,7 +28,7 @@ function isNodeError(error: unknown,): error is Error & { code: string; } {
 /**
  * Checks whether a file is accessible at the given path.
  *
- * Returns `false` on **any** access error, not only missing files --
+ * Returns `false` on **any** access error, not only missing files:
  * permission errors, broken symlinks, and I/O failures all yield `false`.
  *
  * @param filePath - path to check

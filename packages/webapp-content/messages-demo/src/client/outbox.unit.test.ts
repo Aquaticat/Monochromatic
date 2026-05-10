@@ -2,7 +2,7 @@
  * Tests the outbox in two modes:
  *
  *   1. In-memory (`idbAvailable: false`)
- *   2. "IDB requested but absent" -- `idbAvailable: true` in a Bun env
+ *   2. "IDB requested but absent": `idbAvailable: true` in a Bun env
  *      that has no IndexedDB. The outbox should silently fall back to
  *      in-memory rather than throw at startup.
  *

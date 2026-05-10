@@ -1,4 +1,4 @@
-// Slightly over 100 lines — splitting the type guard or expandApplyInNodes into
+// Slightly over 100 lines; splitting the type guard or expandApplyInNodes into
 // a separate file would create a circular dependency with the mixins Map.
 import type {
   AtRule,
@@ -20,12 +20,12 @@ function isAtRule(node: ChildNode,): node is AtRule {
 
 //endregion Type Guards
 
-//region Mixin Registry -- stores mixin definitions and expands nested @apply references
+//region Mixin Registry: stores mixin definitions and expands nested @apply references
 
 /**
  * Registry for mixin definitions.
  * Stored at module level because the build pipeline is single-threaded and
- * sequential — cleared at the start of each build in index.ts.
+ * sequential; cleared at the start of each build in index.ts.
  */
 export const mixins: Map<string, ChildNode[]> = new Map<string, ChildNode[]>();
 
@@ -34,7 +34,7 @@ export const mixins: Map<string, ChildNode[]> = new Map<string, ChildNode[]>();
  * Looks up each \@apply reference in the mixin registry and inlines the body.
  *
  * Uses an imperative loop with push because each node may expand into zero,
- * one, or many replacement nodes — flatMap would work but obscure the three
+ * one, or many replacement nodes; flatMap would work but obscure the three
  * distinct branches (apply-expansion, container-recursion, leaf-clone).
  *
  * @param nodes - Array of CSS nodes to process
@@ -112,7 +112,7 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
  * Expands nested \@apply rules in all mixin definitions.
  * Runs multiple passes until stable to handle deeply nested mixin references.
  *
- * Fixed-point iteration requires mutable pass tracking — each pass may reveal
+ * Fixed-point iteration requires mutable pass tracking: each pass may reveal
  * new nested \@apply rules that only become visible after a prior pass expanded
  * their parent mixin. A functional approach would need to thread state through
  * recursive calls with no clarity benefit.
@@ -137,7 +137,7 @@ export function expandMixinBodies(): void {
   while (hasChanges) {
     if (passCount >= MAX_PASSES) {
       throw new Error(
-        `Mixin expansion exceeded ${MAX_PASSES} passes — likely caused by circular @apply references between mixins`,
+        `Mixin expansion exceeded ${MAX_PASSES} passes: likely caused by circular @apply references between mixins`,
       );
     }
 

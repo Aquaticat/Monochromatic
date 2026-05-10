@@ -6,7 +6,7 @@
 
 #### Server Optimization
 
-**Status**: High Priority - Application performance
+**Status**: High priority, application performance
 
 - [ ] Optimize server resource utilization
 - [ ] Implement efficient server scaling strategies
@@ -17,7 +17,7 @@
 
 #### Network Optimization
 
-**Status**: High Priority - Latency reduction
+**Status**: High priority, latency reduction
 
 - [ ] Optimize network latency and throughput
 - [ ] Implement efficient load balancing strategies
@@ -28,7 +28,7 @@
 
 #### Container Performance
 
-**Status**: Normal Priority - Deployment efficiency
+**Status**: Normal priority, deployment efficiency
 
 - [ ] Optimize container resource usage and allocation
 - [ ] Implement efficient container orchestration

@@ -114,31 +114,31 @@ export const restrictionRules: DummyRuleMap = {
   // Ban explicit any -- use unknown instead. When any is genuinely needed, use oxlint-disable.
   'typescript/no-explicit-any': 'warn',
 
-  // No eval() or Function() constructor -- arbitrary code execution.
+  // No eval() or Function() constructor: arbitrary code execution.
   'eslint/no-eval': 'error',
 
-  // No setTimeout/setInterval with string arguments -- implied eval.
+  // No setTimeout/setInterval with string arguments: implied eval.
   'typescript/no-implied-eval': 'error',
 
-  // No new Boolean/String/Number wrapper objects -- use primitives.
+  // No new Boolean/String/Number wrapper objects: use primitives.
   'eslint/no-new-wrappers': 'error',
 
-  // No alert/confirm/prompt -- use promise-based UI alternatives.
+  // No alert/confirm/prompt: use promise-based UI alternatives.
   'eslint/no-alert': 'error',
 
   // No debugger statements in committed code.
   'eslint/no-debugger': 'error',
 
-  // No comma operator -- obscures evaluation order.
+  // No comma operator: obscures evaluation order.
   'eslint/no-sequences': 'error',
 
-  // No arguments.caller/arguments.callee -- deprecated and non-optimizable.
+  // No arguments.caller/arguments.callee: deprecated and non-optimizable.
   'eslint/no-caller': 'error',
 
-  // No labels that shadow variable names -- confusing.
+  // No labels that shadow variable names: confusing.
   'eslint/no-label-var': 'error',
 
-  // No instanceof Array -- use Array.isArray() which works across realms.
+  // No instanceof Array: use Array.isArray() which works across realms.
   'unicorn/no-instanceof-array': 'error',
   'eslint/no-empty': 'error',
   'eslint/no-empty-function': 'error',

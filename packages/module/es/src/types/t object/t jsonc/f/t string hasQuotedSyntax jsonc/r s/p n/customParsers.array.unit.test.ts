@@ -16,7 +16,7 @@ const $ =
 await describe({
   name: $.name,
   children: [
-    //region Empty arrays -- basic and with comments
+    //region Empty arrays: basic and with comments
     it({
       name: 'empty array',
       fn: async () => {
@@ -39,7 +39,7 @@ await describe({
     },),
     //endregion Empty arrays
 
-    //region Primitives and separators -- single/multiple numbers and trailing comma
+    //region Primitives and separators: single/multiple numbers and trailing comma
     it({
       name: 'single primitive number',
       fn: async () => {
@@ -68,7 +68,7 @@ await describe({
     },),
     //endregion Primitives and separators
 
-    //region Strings and escapes -- ensure quoted parsing cooperates
+    //region Strings and escapes: ensure quoted parsing cooperates
     it({
       name: 'strings with escaped quote',
       fn: async () => {
@@ -80,7 +80,7 @@ await describe({
     },),
     //endregion Strings and escapes
 
-    //region Nested arrays -- delegate inner arrays
+    //region Nested arrays: delegate inner arrays
     it({
       name: 'nested arrays',
       fn: async () => {
@@ -95,7 +95,7 @@ await describe({
     },),
     //endregion Nested arrays
 
-    //region Errors -- malformed separators
+    //region Errors: malformed separators
     it({
       name: 'missing comma between elements',
       fn: async () => {
@@ -113,7 +113,7 @@ await describe({
     },),
     //endregion Errors
 
-    //region Array-level vs first-item comments -- semantics for outside/inside comments
+    //region Array-level vs first-item comments: semantics for outside/inside comments
     it({
       name: 'array-level comment comes from outside (context)',
       fn: async () => {

@@ -76,7 +76,7 @@ export function parseLastJsonLine(output: string,): unknown {
   const lines = output.trim().split('\n',).filter(function checkNonEmpty(line,) {
     return isNonEmptyLine(line,);
   },);
-  // Walk backwards to find the JSON line -- it starts with '{'
+  // Walk backwards to find the JSON line; it starts with '{'
   // let needed: iterating from the end until valid JSON found
   for (let lineIndex = lines.length - 1; lineIndex >= 0; lineIndex--) {
     const line = lines[lineIndex];

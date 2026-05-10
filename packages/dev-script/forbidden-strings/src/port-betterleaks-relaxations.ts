@@ -17,7 +17,7 @@ export const RELAXATIONS: ReadonlyMap<string, Relaxation> = new Map([
       return r.replace(/\(\?:\^\|/g, '(?:',);
     },
   }, ],
-  // Trailing `\b` arm in `(?:[X]|...|\b)` -- resharp rejects \b as a
+  // Trailing `\b` arm in `(?:[X]|...|\b)`: resharp rejects \b as a
   // standalone alternation arm. Drop it; the other arms cover every
   // realistic terminator.
   ['perplexity-api-key', {

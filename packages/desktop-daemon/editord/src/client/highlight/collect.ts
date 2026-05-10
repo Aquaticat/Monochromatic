@@ -90,7 +90,7 @@ export function collectHighlightRanges({
 
         const lineText = lines[lineIndex];
 
-        // Skip empty lines — text node is '\n' placeholder with no visible text
+        // Skip empty lines: text node is '\n' placeholder with no visible text
         if (lineText === undefined || lineText === '')
           continue;
 

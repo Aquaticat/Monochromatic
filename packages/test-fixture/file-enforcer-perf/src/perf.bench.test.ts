@@ -151,7 +151,7 @@ const overlapPatterns = [
 ];
 //endregion
 
-//region I/O benchmarks -- glob expansion, file reading, file writing
+//region I/O benchmarks: glob expansion, file reading, file writing
 summary(function ioBenchmarks() {
   bench('expandGlob: 200 files across 20 directories', async function expandGlobBench() {
     const matches = await expandGlob(join(globDir, '**/*.ts',),);
@@ -184,7 +184,7 @@ summary(function ioBenchmarks() {
 },);
 //endregion
 
-//region Pure computation benchmarks -- string/JSON operations
+//region Pure computation benchmarks: string/JSON operations
 summary(function computeBenchmarks() {
   bench('dedup: 2000-line content with 50% duplicates', function dedupBench() {
     /** @see LINE_COUNT - number of lines in the dedup fixture */

@@ -122,7 +122,7 @@ app.append(allSection,);
 
 //endregion All section
 
-//region New-task dialog -- FAB opens a modal <dialog> with task-detail in create mode
+//region New-task dialog (FAB opens a modal <dialog> with task-detail in create mode)
 
 /** New-task dialog panel and trigger FAB button. */
 const {

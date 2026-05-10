@@ -114,7 +114,7 @@ class SideDrawer extends HTMLElement {
         tag: 'div',
         class: 'wrapper',
         children: [
-          //region Inline sidebar -- visible in sidebar mode
+          //region Inline sidebar (visible in sidebar mode)
           h({
             tag: 'aside',
             class: 'sidebar',
@@ -129,7 +129,7 @@ class SideDrawer extends HTMLElement {
           },),
           //endregion Inline sidebar
 
-          //region Popover panel -- visible via hamburger in stacked mode
+          //region Popover panel (visible via hamburger in stacked mode)
           h({
             tag: 'div',
             class: 'panel',

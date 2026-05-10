@@ -107,10 +107,10 @@ Nothing helps. The symlink simply does not get created.
 
 The configuration matrix is a minefield:
 
-- `hoist: false` - Don't hoist dependencies (good for strictness)
-- `nodeLinker: isolated` - Use isolated node_modules (good for correctness)
-- `enableGlobalVirtualStore: true` - Use global store (good for disk space)
-- `hoistWorkspacePackages: false` - Don't hoist workspace packages
+- `hoist: false`: Don't hoist dependencies (good for strictness)
+- `nodeLinker: isolated`: Use isolated node_modules (good for correctness)
+- `enableGlobalVirtualStore: true`: Use global store (good for disk space)
+- `hoistWorkspacePackages: false`: Don't hoist workspace packages
 
 Combine all of these and you get a package manager that:
 
@@ -171,9 +171,9 @@ PostCSS works fine. In isolation. The moment you put it in Vite's CSS pipeline w
 
 ### Attempt 1: PostCSS plugin in vite config
 
-Created a PostCSS plugin that handles `@mixin` and `@apply`. Tested it standalone - works perfectly.
+Created a PostCSS plugin that handles `@mixin` and `@apply`. Tested it standalone: works perfectly.
 
-Put it in Vite's `css.postcss.plugins` - works for most files.
+Put it in Vite's `css.postcss.plugins`: works for most files.
 
 Except Astro generates some CSS files through a separate SSR/client build pipeline that completely bypasses the PostCSS configuration. The result: 90% of your CSS is transformed, 10% still has raw `@apply` rules in production.
 
@@ -203,8 +203,8 @@ Vite's CSS pipeline is a black box with multiple entry points:
 
 The `css.transformer` option lets you choose between:
 
-- `postcss` (default) - uses PostCSS
-- `lightningcss` - uses LightningCSS
+- `postcss` (default): uses PostCSS
+- `lightningcss`: uses LightningCSS
 
 You cannot use both. You cannot say "use LightningCSS for minification but PostCSS for transforms". It's one or the other.
 
@@ -316,11 +316,11 @@ Translation: Check back in 2028-2030. Maybe.
 
 ## Lessons
 
-1. **Every abstraction has leaky edges** - LightningCSS is fast until you need custom at-rules with CSS variables
-2. **Package managers are not interchangeable** - pnpm's strictness creates real-world problems that npm/yarn don't have
-3. **Frameworks own their pipelines** - Astro's CSS handling is Astro's business, not yours
-4. **"Just works" never does** - Every tool that promises simplicity hides complexity
-5. **The JavaScript ecosystem is held together by duct tape** - Native ESM, TypeScript, bundlers, package managers, frameworks - they all make assumptions that conflict with each other
+1. **Every abstraction has leaky edges**: LightningCSS is fast until you need custom at-rules with CSS variables
+2. **Package managers are not interchangeable**: pnpm's strictness creates real-world problems that npm/yarn don't have
+3. **Frameworks own their pipelines**: Astro's CSS handling is Astro's business, not yours
+4. **"Just works" never does**: Every tool that promises simplicity hides complexity
+5. **The JavaScript ecosystem is held together by duct tape**: Native ESM, TypeScript, bundlers, package managers, frameworks; they all make assumptions that conflict with each other
 
 ---
 
@@ -349,4 +349,4 @@ The integration tests now exercise two distinct CSS import resolution strategies
 
 The key discovery: when a package has an `exports` field, oxc-resolver correctly refuses to resolve paths not listed in the exports map.
 A package specifier like `pkg/src/index.css` fails with `"./src/index.css" is not exported` when the package only exports `./index.css`.
-This is correct behavior, but it means testing both strategies requires two separate imported fixture packages -- one with `exports` and one without.
+This is correct behavior, but it means testing both strategies requires two separate imported fixture packages: one with `exports` and one without.

@@ -104,7 +104,7 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
         return '';
       },);
     throw new Error(
-      `anthropic: HTTP ${res.status} ${res.statusText} -- ${
+      `anthropic: HTTP ${res.status} ${res.statusText}: ${
         text.slice(
           0,
           500,

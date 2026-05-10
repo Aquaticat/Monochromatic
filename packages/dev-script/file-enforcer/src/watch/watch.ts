@@ -55,7 +55,7 @@ export function startWatching(configPath: string,): Promise<never> {
   const pendingPaths: Set<string> = new Set<string>();
   /** Protected paths that need notification, accumulated during the debounce window */
   const pendingProtected: Set<string> = new Set<string>();
-  // Debounce state -- `let` needed because the timer is replaced on each event
+  // Debounce state: `let` needed because the timer is replaced on each event
   let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
   /**
@@ -161,7 +161,7 @@ export function startWatching(configPath: string,): Promise<never> {
 
   setupWatchers();
 
-  // Block forever -- watch mode runs until the process is killed.
+  // Block forever: watch mode runs until the process is killed.
   // oxlint-disable-next-line typescript/no-empty-function -- intentional infinite block
   // oxlint-disable-next-line promise/avoid-new -- intentional infinite block requires explicit Promise
   return new Promise<never>(function neverResolve(): void {/* intentionally empty */},);

@@ -11,7 +11,7 @@ making it impossible to determine the actual execution sequence.
 This was discovered when verifying that `mise run //pkg:build` completes
 before `bun test` starts in the `buildAndTest` task.
 The build-completion lines appeared **after** test results,
-suggesting concurrent execution -- but the commands were actually sequential.
+suggesting concurrent execution, but the commands were actually sequential.
 
 ### Root cause
 

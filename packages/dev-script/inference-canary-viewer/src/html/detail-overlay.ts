@@ -2,7 +2,7 @@
  * Run detail overlay using the Popover API (`popover="auto"`).
  *
  * Clicking a scatter point button (`popovertarget="run-{id}"`) opens the
- * corresponding overlay. Light-dismiss is built in — clicking outside or
+ * corresponding overlay. Light-dismiss is built in: clicking outside or
  * pressing Escape closes the popover. No JavaScript required.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';

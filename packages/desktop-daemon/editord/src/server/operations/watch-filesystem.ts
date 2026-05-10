@@ -4,7 +4,7 @@
  * Watches individual directories (not recursive) using `fs.watch`.
  * Debounces rapid events and filters noise from temporary files.
  * Only directories explicitly registered via {@link DirWatcher.watchDir}
- * get watched — typically directories the user has expanded in the tree.
+ * get watched (typically directories the user has expanded in the tree).
  */
 
 import {

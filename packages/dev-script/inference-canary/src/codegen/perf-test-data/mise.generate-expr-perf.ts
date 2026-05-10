@@ -97,7 +97,7 @@ for (const index of Array.from({ length: EXPR_COUNT, },).keys()) {
     expressions.push(
       `${String(operandA,)} / (${String(rand(1, 50,),)} - ${String(rand(1, 50,),)})`,
     );
-    // Might or might not be zero -- compute to find out
+    // Might or might not be zero: compute to find out
     const evalStr = expressions.at(-1,);
     if (evalStr === undefined)
       throw new Error('Expression disappeared',);

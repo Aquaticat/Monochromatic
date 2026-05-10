@@ -12,7 +12,7 @@ These refactors will affect ALL functions in the library and represent major bre
 
 ### Overview
 
-**Status**: Critical Priority - Affects ALL functions
+**Status**: Critical Priority; affects ALL functions
 
 **Requirement**: All functions must take a `l: Logger` parameter for comprehensive logging support.
 
@@ -138,7 +138,7 @@ export function clamp(
 
 ### Overview
 
-**Status**: Critical Priority - Affects many function signatures
+**Status**: Critical Priority; affects many function signatures
 
 **Requirement**: All functions taking more than 2 parameters must use named parameter syntax (destructured object parameters).
 
@@ -251,7 +251,7 @@ export function complexFunction({
 
 ### Overview
 
-**Status**: Critical Priority - Quality assurance for ALL exports
+**Status**: Critical Priority; quality assurance for ALL exports
 
 **Requirement**: All functions, constants, types, and exports should be tested using type testing capabilities with `expectTypeOf`.
 
@@ -278,25 +278,25 @@ export function complexFunction({
 **Exported Constants**:
 
 - [ ] **Type constants** like [`Int`](src/numeric.type.int.ts:1), [`PositiveInt`](src/numeric.type.int.ts:1) - Test type definitions
-- [ ] **Value constants** - Test literal type inference and immutability
+- [ ] **Value constants**: Test literal type inference and immutability
 - [ ] **Function constants** like [`alwaysTrue()`](src/function.always.ts:1) - Test return type consistency
 
 #### All Type Exports Need Testing
 
 **Type Utilities** (existing requirement expanded):
 
-- [ ] **[`array.type.fixedLength.ts`](src/array.type.fixedLength.ts:1)** - Has good type testing ✓
-- [ ] **[`array.type.mapTo.ts`](src/array.type.mapTo.ts:16)** - Create comprehensive type tests
-- [ ] **[`array.type.tuple.ts`](src/array.type.tuple.ts:17)** - Create type tests
-- [ ] **[`array.type.withoutFirst.ts`](src/array.type.withoutFirst.ts:16)** - Create type tests
-- [ ] **[`iterable.type.maybe.ts`](src/iterable.type.maybe.ts:1)** - Create type tests
-- [ ] **[`promise.type.ts`](src/promise.type.ts:1)** - Create type tests
+- [ ] **[`array.type.fixedLength.ts`](src/array.type.fixedLength.ts:1)**: Has good type testing ✓
+- [ ] **[`array.type.mapTo.ts`](src/array.type.mapTo.ts:16)**: Create comprehensive type tests
+- [ ] **[`array.type.tuple.ts`](src/array.type.tuple.ts:17)**: Create type tests
+- [ ] **[`array.type.withoutFirst.ts`](src/array.type.withoutFirst.ts:16)**: Create type tests
+- [ ] **[`iterable.type.maybe.ts`](src/iterable.type.maybe.ts:1)**: Create type tests
+- [ ] **[`promise.type.ts`](src/promise.type.ts:1)**: Create type tests
 
 **Interface and Object Type Testing**:
 
 - [ ] **Store types** in [`any.store.shared.ts`](src/any.store.shared.ts:8) - Test type definitions
 - [ ] **Error assertion types** in [`error.assert.equal.type.ts`](src/error.assert.equal.type.ts:1) - Enhance existing tests
-- [ ] **Configuration object types** - Test all option object types
+- [ ] **Configuration object types**: Test all option object types
 
 ### Comprehensive Type Testing Patterns
 
@@ -488,7 +488,7 @@ describe('Generic Function Type Testing', () => {
 
 ## Cross-References
 
-- [**Missing Implementations Todo**](TODO.missing-implementations.md) - All new functions must follow these patterns
-- [**Testing Todo**](TODO.testing.md) - Testing updates required for new signatures
-- [**TSDoc Todo**](TODO.tsdoc-improvements.md) - Documentation updates for new API patterns
-- [**Main Build System**](../../TODO.build-system.md) - Build system implications of major refactors
+- [**Missing Implementations Todo**](TODO.missing-implementations.md): All new functions must follow these patterns
+- [**Testing Todo**](TODO.testing.md): Testing updates required for new signatures
+- [**TSDoc Todo**](TODO.tsdoc-improvements.md): Documentation updates for new API patterns
+- [**Main Build System**](../../TODO.build-system.md): Build system implications of major refactors

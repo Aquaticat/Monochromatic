@@ -83,7 +83,7 @@ export async function chatOpenAICompatible(
         return '';
       },);
     throw new Error(
-      `openai-compatible: HTTP ${res.status} ${res.statusText} -- ${
+      `openai-compatible: HTTP ${res.status} ${res.statusText}: ${
         text.slice(
           0,
           500,

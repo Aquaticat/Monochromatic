@@ -107,7 +107,7 @@ function setTerminalTitle(title: string,): void {
     writeSync(fd, `]0;${title}`,);
   }
   catch {
-    /* /dev/tty unavailable -- running inside sandbox or non-interactive context. */
+    /* /dev/tty unavailable: running inside sandbox or non-interactive context. */
   }
 }
 

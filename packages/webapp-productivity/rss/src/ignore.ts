@@ -15,7 +15,7 @@ const l = tagged({
   l: parentLogger,
 },);
 
-//region Ignore content loading -- Reads raw JSONL content for salt derivation and link filtering
+//region Ignore content loading: Reads raw JSONL content for salt derivation and link filtering
 
 /**
  * Reads the raw text content of all ignore JSONL files.

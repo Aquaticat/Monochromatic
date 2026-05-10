@@ -2,7 +2,7 @@
  * HTML `<head>` template.
  *
  * Renders meta tags, title, favicon link, and CSS stylesheet reference.
- * No inline CSS or large strings — styles are in a generated external file.
+ * No inline CSS or large strings; styles are in a generated external file.
  * Element order follows Capo.js recommendations for optimal browser parsing.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
@@ -56,7 +56,7 @@ export function headFragment(
   return h({
     tag: 'head',
     children: [
-      //region Capo.js priority 11 — pragma directives
+      //region Capo.js priority 11: pragma directives
       h({
         tag: 'meta',
         attrs: { charset: 'utf8', },
@@ -69,13 +69,13 @@ export function headFragment(
         },
       },),
       //endregion
-      //region Capo.js priority 10 — title
+      //region Capo.js priority 10: title
       h({
         tag: 'title',
         text: fullTitle,
       },),
       //endregion
-      //region Capo.js priority 4 — sync CSS
+      //region Capo.js priority 4: sync CSS
       h({
         tag: 'link',
         attrs: {
@@ -84,7 +84,7 @@ export function headFragment(
         },
       },),
       //endregion
-      //region Capo.js priority 3 — preload
+      //region Capo.js priority 3: preload
       h({
         tag: 'link',
         attrs: {
@@ -126,7 +126,7 @@ export function headFragment(
         },
       },),
       //endregion
-      //region Capo.js priority 2 — deferred scripts (type=module is implicitly deferred)
+      //region Capo.js priority 2: deferred scripts (type=module is implicitly deferred)
       h({
         tag: 'script',
         attrs: {
@@ -135,7 +135,7 @@ export function headFragment(
         },
       },),
       //endregion
-      //region Capo.js priority 0 — remaining meta and links
+      //region Capo.js priority 0: remaining meta and links
       h({
         tag: 'meta',
         attrs: {

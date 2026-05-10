@@ -87,7 +87,7 @@ function fixScoreCell(
  *
  * Status is shown inline: "(timeout)" is appended to the timestamp cell
  * for failed runs instead of occupying its own column.
- * Missing fix scores distinguish between failed runs ("not run" — fix was
+ * Missing fix scores distinguish between failed runs ("not run": fix was
  * never attempted) and genuine data errors ("data error").
  *
  * @param rows - data rows to render

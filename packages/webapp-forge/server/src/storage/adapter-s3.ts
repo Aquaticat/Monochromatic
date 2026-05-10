@@ -11,7 +11,7 @@
  * `fetch` method matches `aws4fetch`'s `AwsClient.fetch`. Tests pass a
  * stub; production wires `new AwsClient({...})` from `aws4fetch`.
  *
- * Path style: `${endpoint}/${bucket}/${key}`. Keys may contain `/` --
+ * Path style: `${endpoint}/${bucket}/${key}`. Keys may contain `/`:
  * each segment is `encodeURIComponent`d so reserved characters
  * (`?`, `&`, `#`, `+`, etc.) round-trip safely.
  */

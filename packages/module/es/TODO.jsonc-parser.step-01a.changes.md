@@ -1,4 +1,4 @@
-# JSONC parser – step 01a changes
+# JSONC parser: step 01a changes
 
 Date: 2025-10-24
 

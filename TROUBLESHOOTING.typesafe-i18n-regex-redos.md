@@ -5,7 +5,7 @@
 A page that uses [`typesafe-i18n`][typesafe-i18n] hangs indefinitely
 when rendering a translation whose value contains nested `{}` patterns
 (e.g. an embedded JSON schema literal).
-The hang is silent — no console error,
+The hang is silent: no console error,
 no JS exception,
 and no network activity until the regex engine times out.
 Bun (JavaScriptCore) handles the same input in microseconds,
@@ -44,8 +44,8 @@ The outer group allows arbitrary alternation between
 `[^{}]+` (non-brace text)
 and a nested `\{(?:[^{}]+)*\}` (one level of nesting).
 Both branches share the same `[^{}]+` cost,
-so on input with three or more nesting levels —
-exactly what a JSON schema string contains —
+so on input with three or more nesting levels (
+exactly what a JSON schema string contains)
 the engine explores every interleaving before declaring no match.
 
 V8 (Chrome) handles the regex via a backtracking interpreter and pins for minutes.
@@ -81,8 +81,8 @@ LL.bad();
 console.timeEnd('lookup');
 ```
 
-Run under Chrome 145 / V8 — `lookup` never returns.
-Run under Bun 1.x or SpiderMonkey — sub-millisecond.
+Run under Chrome 145 / V8: `lookup` never returns.
+Run under Bun 1.x or SpiderMonkey: sub-millisecond.
 
 The threshold is roughly three levels of nested `{}`;
 two levels stay within practical bounds even in V8.
@@ -90,7 +90,7 @@ two levels stay within practical bounds even in V8.
 ## Fix used in `paper2vn`
 
 `paper2vn` translations include `persona`, `chapterInstruction`,
-and `askInstruction` —
+and `askInstruction`:
 locale-aware system prompts that need no parameter interpolation.
 We bypass the parser entirely
 for those keys via `rawString` in `i18n/runtime.ts`:
@@ -117,7 +117,7 @@ Call sites in `client/dialogue/generator.ts` and
 The lookup is a plain object index;
 no regex evaluation runs.
 
-This works because the affected keys hold static strings —
+This works because the affected keys hold static strings:
 nothing that needs typesafe-i18n's templating machinery.
 Translation keys that *do* need parameters
 (`{name}`, plurals, formatters, ...) must keep using `LL()`.
@@ -125,7 +125,7 @@ Translation keys that *do* need parameters
 ## Alternatives we considered and rejected
 
 - **Escape every `{` in the translation as `\{`.**
-  Mechanical but voluminous —
+  Mechanical but voluminous:
   the JSON schema has dozens of braces,
   and every locale needs the same edits.
   A single missed escape silently re-introduces the hang.
@@ -135,7 +135,7 @@ Translation keys that *do* need parameters
   The split would either duplicate the natural-language part across locales
   or interleave i18n strings with hardcoded chunks.
 - **Pre-compute every translation eagerly at boot.**
-  Triggers the same regex on the same input —
+  Triggers the same regex on the same input:
   doesn't help.
 - **Switch to a different i18n library.**
   Disproportionate to one bug in one prompt;
@@ -157,7 +157,7 @@ to two call sites with a comment pointing at this doc.
   and starts producing schema-violating output
   (we observed this in early experiments).
 - Disabling minification on the client bundle.
-  Confirmed by building with `compress: false` —
+  Confirmed by building with `compress: false`:
   the hang persists,
   ruling out a minifier-induced regex change.
 
@@ -169,10 +169,10 @@ Decision: **keep it**, retain the `rawString` workaround.
 ### Why keep it
 
 - The bug is **fully contained**.
-  Only three translations have nested `{}` —
+  Only three translations have nested `{}` (
   `persona`,
   `chapterInstruction`,
-  `askInstruction` —
+  `askInstruction`)
   and all three already bypass the parser.
   Every other key
   (UI labels,
@@ -190,7 +190,7 @@ Decision: **keep it**, retain the `rawString` workaround.
   **zero CVEs / advisories ever filed**
   (GitHub Advisory DB,
   Snyk,
-  Socket — all clean as of 2026-04-29).
+  Socket, all clean as of 2026-04-29).
   The supply-chain surface is the smallest of any candidate evaluated.
 - **Migration cost is meaningful**:
   every `ll.foo()` call site across `screens/*`,
@@ -201,7 +201,7 @@ Decision: **keep it**, retain the `rawString` workaround.
 
 ### Risks we accept
 
-- No bug-fix commits have landed at `codingcommons` since the revival —
+- No bug-fix commits have landed at `codingcommons` since the revival:
   most activity is CI/release plumbing
   (release-please,
   Node 24,
@@ -224,7 +224,7 @@ Decision: **keep it**, retain the `rawString` workaround.
 ### Top alternatives (for the file-this-when-it-stalls case)
 
 1. **`i18next`** with default `{{ }}` syntax.
-  Interpolation regex is `/{{(.+?)}}/g` —
+  Interpolation regex is `/{{(.+?)}}/g`:
   non-greedy,
   no nested-brace alternation,
   and **does not match single `{` or `}` at all**.
@@ -248,7 +248,7 @@ Decision: **keep it**, retain the `rawString` workaround.
   smallest gzip ~2 kB).
   Downside:
   ICU MessageFormat requires single-quote escape for literal `{` /
-  `}` —
+  `}`:
   same escaping-gymnastics problem we hit with the regex,
   just at compile time instead of runtime.
 3. **`@inlang/paraglide-js`**.

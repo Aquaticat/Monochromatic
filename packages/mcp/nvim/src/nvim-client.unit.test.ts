@@ -9,7 +9,7 @@ import {
   SEVERITY_MAP,
 } from './nvim-client.ts';
 
-//region SEVERITY_MAP -- maps vim.diagnostic.severity codes to human-readable labels
+//region SEVERITY_MAP: maps vim.diagnostic.severity codes to human-readable labels
 
 await describe({
   name: '',
@@ -59,7 +59,7 @@ await describe({
 
     //endregion SEVERITY_MAP
 
-    //region normalizeMessage -- reformats embedded help text from LSP diagnostics
+    //region normalizeMessage: reformats embedded help text from LSP diagnostics
 
     describe({
       name: normalizeMessage.name,

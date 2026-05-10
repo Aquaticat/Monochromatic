@@ -31,7 +31,7 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
   // pdfjs has no documented `disableWorker` flag; setting `workerPort`
   // to a stub is the supported escape, but for the legacy build the
   // simplest reliable single-file path is to leave the worker
-  // unconfigured -- pdfjs falls back to a fake worker that runs on
+  // unconfigured; pdfjs falls back to a fake worker that runs on
   // the main thread when nothing is registered.
   const doc = await pdfjs
     .getDocument({

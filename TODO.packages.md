@@ -6,12 +6,12 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 ### Quick Links
 
-- [**Module Library**](#module-library-packages-modulees) - Functional programming utilities
-- [**Configuration Packages**](#configuration-packages) - Shareable tool configurations
-- [**Style Packages**](#style-packages) - CSS framework and design system
-- [**Site Packages**](#site-packages) - Applications and documentation
-- [**Figma Plugins**](#figma-plugins) - Design tool integrations
-- [**Build Utilities**](#build-utilities) - Build-time tools and scripts
+- [**Module Library**](#module-library-packages-modulees): Functional programming utilities
+- [**Configuration Packages**](#configuration-packages): Shareable tool configurations
+- [**Style Packages**](#style-packages): CSS framework and design system
+- [**Site Packages**](#site-packages): Applications and documentation
+- [**Figma Plugins**](#figma-plugins): Design tool integrations
+- [**Build Utilities**](#build-utilities): Build-time tools and scripts
 
 ---
 
@@ -21,7 +21,7 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 #### Expand Array Utilities
 
-**Status**: Normal Priority - Core library expansion
+**Status**: Normal priority, core library expansion
 
 - [ ] Add `array.shuffle()` - Random array shuffling with proper Fisher-Yates algorithm
 - [ ] Add `array.rotate()` - Rotate array elements left/right by n positions
@@ -34,7 +34,7 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 #### Async Iterator Utilities
 
-**Status**: High Priority - Missing critical functionality
+**Status**: High priority, missing critical functionality
 
 - [ ] Add `asyncIterable.map()` - Transform async iterables
 - [ ] Add `asyncIterable.filter()` - Filter async iterables
@@ -46,7 +46,7 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 #### Object Utilities
 
-**Status**: Normal Priority - Common operations
+**Status**: Normal priority, common operations
 
 - [ ] Add `object.pick()` - Select specific properties from object
 - [ ] Add `object.omit()` - Remove specific properties from object
@@ -58,7 +58,7 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 #### Date and Time Utilities
 
-**Status**: Normal Priority - Common need
+**Status**: Normal priority, common need
 
 - [ ] Add `date.format()` - Format dates with locale support
 - [ ] Add `date.parse()` - Parse dates with multiple format support
@@ -70,11 +70,11 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 #### Validation and Type Guards
 
-**Status**: High Priority - Type safety
+**Status**: High priority, type safety
 
 - [ ] Add `validate.email()` - Email validation with proper RFC compliance
-- [ ] Add `validate.url()` - URL validation with protocol options
-- [ ] Add `validate.json()` - JSON validation with schema support
+- [ ] Add `validate.url()`: URL validation with protocol options
+- [ ] Add `validate.json()`: JSON validation with schema support
 - [ ] Add `validate.range()` - Number range validation
 - [ ] Add `validate.length()` - String/array length validation
 - [ ] Add `is.plainObject()` - Check for plain objects vs class instances

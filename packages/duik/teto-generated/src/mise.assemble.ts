@@ -38,7 +38,7 @@ async function main(): Promise<void> {
   const tracedDir = `${TMP_DIR}/traced`;
   if (!existsSync(tracedDir,)) {
     throw new Error(
-      `Traced SVG directory not found: ${tracedDir} — run the trace task first`,
+      `Traced SVG directory not found: ${tracedDir}; run the trace task first`,
     );
   }
 

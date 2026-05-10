@@ -134,7 +134,7 @@ await describe({
 
 await describe({
   name: 'sinon prototype stub isolation',
-  // Sequential execution required — tests stub the same
+  // Sequential execution required: tests stub the same
   // prototype method and would fail under concurrent execution
   // because sinon refuses to wrap an already-wrapped method.
   concurrency: 1,

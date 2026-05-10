@@ -60,7 +60,7 @@ export function resolveTextPosition({
     textNode = walker.nextNode();
   }
 
-  /** Offset past end — clamp to last text node's end. */
+  /** Offset past end: clamp to last text node's end. */
   const { lastChild, } = lineDiv;
   if (lastChild !== null) {
     return {

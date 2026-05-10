@@ -34,7 +34,7 @@ export const CSS_MIXIN_TEST_CSS: string = [
   '  }',
   '}',
   '',
-  // Top-level @apply -- mixin body expands directly into the stylesheet
+  // Top-level @apply: mixin body expands directly into the stylesheet
   '@apply --reset;',
   '',
   '.card {',

@@ -56,7 +56,7 @@ function isText(node: Node,): node is Text {
 /**
  * Reads a string attribute from a hast element.
  *
- * Returns `null` for missing attributes, non-string values, or the empty string --
+ * Returns `null` for missing attributes, non-string values, or the empty string,
  * simplifying caller logic that would otherwise have to narrow the return type
  * and separately reject empty strings.
  *

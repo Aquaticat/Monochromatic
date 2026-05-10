@@ -27,7 +27,7 @@ const l = tagged({
   l: parentLogger,
 },);
 
-//region Memoized pipeline -- Pull-based feed processing with content-derived cache invalidation
+//region Memoized pipeline: Pull-based feed processing with content-derived cache invalidation
 
 /**
  * Memoized pipeline: OPML URLs -\> outlines -\> feeds -\> sorted items.
@@ -97,7 +97,7 @@ async function getHtmlBody(): Promise<string> {
 
 //endregion Memoized pipeline
 
-//region h3 application -- Maps HTTP method + path to handler functions
+//region h3 application: Maps HTTP method + path to handler functions
 
 /** h3 application instance routing HTTP requests to handlers. */
 const app = new H3();

@@ -26,7 +26,7 @@ type TextContent = {
 
 /**
  * Image content block. Matches `pi-ai`'s `ImageContent`. Image blocks are
- * dropped from the serialized text — Morph Compact runs on text only.
+ * dropped from the serialized text; Morph Compact runs on text only.
  */
 type ImageContent = {
   type: 'image';
@@ -67,7 +67,7 @@ type UserMessage = {
 
 /**
  * Assistant message in LLM-compatible form. Loosely matches `pi-ai`'s
- * `AssistantMessage` — fields beyond `role`/`content`/`timestamp` are passed
+ * `AssistantMessage`: fields beyond `role`/`content`/`timestamp` are passed
  * through verbatim by the `convertToLlm` identity branches, so we leave the
  * remainder open as `unknown` to stay forward-compatible with upstream
  * additions.
@@ -97,7 +97,7 @@ type Message = UserMessage | AssistantMessage | ToolResultMessage;
 
 /**
  * Discriminated union of every `AgentMessage` role this module handles. Wider
- * than `pi-ai`'s `Message` — covers the custom roles pi-coding-agent layers
+ * than `pi-ai`'s `Message`: covers the custom roles pi-coding-agent layers
  * on top via module augmentation (`bashExecution`, `custom`, `branchSummary`,
  * `compactionSummary`).
  */

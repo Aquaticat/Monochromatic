@@ -9,7 +9,7 @@ the rule must not appear.
 ## Goal and threat model
 
 Block accidental introduction of a small, enumerable list of forbidden literal/regex strings
-into any committed file -- source, docs, configs, commit messages.
+into any committed file: source, docs, configs, commit messages.
 The defended-against case is **slip-ups by trusted contributors**, not adversarial commits.
 Pre-commit hooks are bypassable with `--no-verify`, and trivial obfuscation
 (string concatenation, base64, lookalike Unicode) defeats literal scanning;
@@ -47,7 +47,7 @@ Concrete budget for this repo:
   target ~10× headroom (~25 MB/s) so future repo growth doesn't ratchet us back
 
 These numbers eliminate any solution with significant per-invocation startup cost
-or per-file constant overhead --
+or per-file constant overhead:
 1k rules and 2.7k files multiply small constants into seconds.
 
 Measured performance against the shipped binary lives in
@@ -83,7 +83,7 @@ Empty lines are ignored.
 Lines starting with `#` are ignored as comments.
 A literal that itself matches the shape `^/.+/[a-z]*$` must be expressed as a regex
 (e.g. ban `/etc/passwd` literally with `/\/etc\/passwd/`).
-There is no other syntax -- the format is deliberately minimal.
+There is no other syntax; the format is deliberately minimal.
 Internally the loader escapes literals as regex source before feeding resharp,
 so the engine sees a single uniform input.
 
@@ -109,7 +109,7 @@ so the engine sees a single uniform input.
   cannot exhibit catastrophic behavior under resharp by construction.
 - **Combined-pattern matching is the architectural fit.**
   All 1k rules can be compiled into one alternation and matched in a single pass over each file,
-  which is what the perf budget requires --
+  which is what the perf budget requires:
   a per-rule loop with 1k rules × 2.7k files × any non-trivial constant misses 5s.
 - **Native Rust binary.**
   Eliminates the runtime/startup overhead that breaks the budget for hosted-language scanners
@@ -153,12 +153,12 @@ so the engine sees a single uniform input.
   and intersection/complement primitives for future rule composition.
   Picking resharp is a soft preference; if resharp throughput disappoints in practice,
   swapping to RE2 is mechanical.
-- **GitHub native push protection / custom patterns** --
+- **GitHub native push protection / custom patterns**:
   custom patterns require GitHub Secret Protection (paid),
   unavailable on free public repos owned by individuals.
-- **Native git hook + `grep` script** --
+- **Native git hook + `grep` script**:
   AGENTS.md prohibits bash scripts; perf is fine for small rule sets but degrades with 1k rules.
-- **`pre-commit/pre-commit-hooks` (Python pre-commit framework)** --
+- **`pre-commit/pre-commit-hooks` (Python pre-commit framework)**:
   no built-in or popular community hook for arbitrary forbidden-words enforcement.
   Pulls a Python tool into a Bun/mise repo; tool-family mismatch.
 
@@ -242,16 +242,16 @@ On startup:
    not the git index.
    This is strictly better than staged-blob reads for the threat model:
    any forbidden term that lands on disk is flagged immediately,
-   even if not yet staged --
+   even if not yet staged,
    so a term sitting in an unstaged hunk gets surfaced now rather than slipping through
    on a future `git add .`.
    Reading 12.4 MB of tracked content into RAM is sub-millisecond on modern SSDs;
    any `git cat-file --batch` approach loses to plain reads by orders of magnitude.
    Loading via mmap or buffered reads is an implementation detail.
 
-   The only residual imprecision is the inverse case --
-   stage a forbidden term, then edit the working tree to remove it,
-   commit before the next scan --
+   The only residual imprecision is the inverse case
+   (stage a forbidden term, then edit the working tree to remove it,
+   commit before the next scan),
    which requires deliberate sequencing and falls under the obfuscation cases
    the threat model already accepts as out of scope.
 4. For each file, run the combined automaton over the content in one pass,
@@ -265,7 +265,7 @@ The range is inclusive on both ends; for a hit at column 14 spanning four charac
 the report reads `path:42:14..17`.
 
 The scanner must explicitly **not** print the matched substring,
-the rule pattern, or any surrounding line context in failure messages --
+the rule pattern, or any surrounding line context in failure messages:
 only the path, line number, column range, and the opaque rule index.
 Otherwise the failing CI log itself becomes a leak surface.
 The column range leaks only the length of the match,
@@ -342,8 +342,8 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
   In CI the checked-out tree is the content being committed, so the distinction is moot.
 - **Already-committed instances of forbidden strings remain in history.**
   Searching with `git log -S` and GitHub search will still surface them.
-  Cleanup requires `git filter-repo` and a force-push -- a separate, destructive operation
-  not in scope here.
+  Cleanup requires `git filter-repo` and a force-push (a separate, destructive operation
+  not in scope here).
 - **The deny-list grows by accretion.**
   Without periodic review, false positives accumulate
   and contributors learn to `--no-verify` reflexively.
@@ -416,7 +416,7 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
 - **History cleanup policy.**
   Should we run a history search for each new rule before adding it,
   to know whether existing history already contains the term?
-  If so, what's the policy -- block adding the rule until history is clean,
+  If so, what's the policy: block adding the rule until history is clean,
   or accept that the rule prevents future introductions only?
 - **Distribution channel for the real deny-list.**
   Per-contributor manual setup (simplest) versus a private submodule, encrypted file,

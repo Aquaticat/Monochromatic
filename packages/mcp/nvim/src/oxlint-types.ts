@@ -7,7 +7,7 @@
  * @module
  */
 
-//region Types -- oxlint JSON output shape
+//region Types: oxlint JSON output shape
 
 /**
  * Span location within a single diagnostic label.
@@ -100,7 +100,7 @@ export type OxlintJsonOutput = {
 
 //endregion Types
 
-//region Severity mapping -- oxlint lowercase to our uppercase format
+//region Severity mapping: oxlint lowercase to our uppercase format
 
 /** Maps oxlint severity strings to the uppercase format used by editor diagnostics. */
 export const OXLINT_SEVERITY_MAP: Record<string, string> = {

@@ -77,7 +77,7 @@ When `root` is the config file's parent directory (the repo root),
 the path becomes `packages/test-fixture/my-pkg/src/file.ts`,
 which correctly matches `**/test-fixture/**`.
 
-The **LSP implementation gets this right** --
+The **LSP implementation gets this right**:
 `apps/oxlint/src/lsp/server_linter.rs:225` uses `root_path` (workspace root,
 which is where the config lives) instead of CWD:
 

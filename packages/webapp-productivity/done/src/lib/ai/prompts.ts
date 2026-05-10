@@ -8,7 +8,7 @@
  */
 import type { ChatMessage, } from './client.ts';
 
-//region Autofill -- infer metadata from a task title
+//region Autofill: infer metadata from a task title
 
 /**
  * Builds the message pair for the autofill endpoint.
@@ -71,7 +71,7 @@ For consistency, prefer these existing locations when applicable: ${
 
 //endregion Autofill
 
-//region Suggestion ranking -- rank tasks by relevance to user context
+//region Suggestion ranking: rank tasks by relevance to user context
 
 /**
  * Builds the message pair for the suggestion engine.

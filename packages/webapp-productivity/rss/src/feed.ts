@@ -27,7 +27,7 @@ export type FeedWOutline = {
   outline: Opml.Outline<string>;
 };
 
-//region Feed fetching and sorting -- Retrieves feeds from URLs, parses them, and sorts by date
+//region Feed fetching and sorting: Retrieves feeds from URLs, parses them, and sorts by date
 
 /**
  * Fetches, parses, and date-sorts feeds from OPML outlines.

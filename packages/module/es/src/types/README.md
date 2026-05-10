@@ -70,40 +70,40 @@ type {return-type}/[type {sub-type}/]from/type {input-type}/[type {input-sub-typ
 
 #### 1. Return Type Category (Required)
 
-- `type string/` - Functions returning `string` or `Promise<string>`
-- `type boolean/` - Functions returning `boolean` (including type guards)
-- `type object/` - Functions returning object types
-- `type function/` - Functions returning function types
-- `type number/` - Functions returning numeric types
+- `type string/`: Functions returning `string` or `Promise<string>`
+- `type boolean/`: Functions returning `boolean` (including type guards)
+- `type object/`: Functions returning object types
+- `type function/`: Functions returning function types
+- `type number/`: Functions returning numeric types
 
 #### 2. Sub-Type Specification (Optional)
 
-- `type object/type array/` - Functions returning array objects
-- `type object/type iterable/` - Functions returning iterable objects
-- `type function/type generator/` - Functions returning generator functions
-- `type object/type array/type param string/` - `string[]`
+- `type object/type array/`: Functions returning array objects
+- `type object/type iterable/`: Functions returning iterable objects
+- `type function/type generator/`: Functions returning generator functions
+- `type object/type array/type param string/`: `string[]`
 
 #### 3. Transformation Direction (Required)
 
-- `from/` - Indicates transformation from input type to return type
+- `from/`: Indicates transformation from input type to return type
 
 #### 4. Input Type Specification (Required)
 
-- `type iterable/` - Takes iterables as input
-- `type array/` - Takes arrays as input
-- `type unknown/` - Takes unknown values as input
-- `type string/` - Takes strings as input
-- `type number/` - Takes numbers as input
+- `type iterable/`: Takes iterables as input
+- `type array/`: Takes arrays as input
+- `type unknown/`: Takes unknown values as input
+- `type string/`: Takes strings as input
+- `type number/`: Takes numbers as input
 
 #### 5. Restrictions/Constraints (Optional)
 
-- `restriction sync/` - Synchronous operations only
-- `restriction async/` - Asynchronous operations only
+- `restriction sync/`: Synchronous operations only
+- `restriction async/`: Asynchronous operations only
 
 #### 6. Parameter Style (Required)
 
-- `params positional/` - Uses positional parameters
-- `params named/` - Uses named/object parameters
+- `params positional/`: Uses positional parameters
+- `params named/`: Uses named/object parameters
 
 #### 7. Async/Sync Organization Pattern (For Functions with Multiple Variants)
 
@@ -111,13 +111,13 @@ Functions that can handle both synchronous and asynchronous operations follow a 
 
 **Top-level parameter directories** contain async implementations:
 
-- `p p/` - Async version with positional parameters, handles both sync and async predicates/iterables
-- `p n/` - Async version with named parameters, handles both sync and async predicates/iterables
+- `p p/`: Async version with positional parameters, handles both sync and async predicates/iterables
+- `p n/`: Async version with named parameters, handles both sync and async predicates/iterables
 
 **`r s/` subdirectory** contains sync-only implementations:
 
-- `r s/p p/` - Sync-only version with positional parameters, performance optimized for purely synchronous code
-- `r s/p n/` - Sync-only version with named parameters, performance optimized for purely synchronous code
+- `r s/p p/`: Sync-only version with positional parameters, performance optimized for purely synchronous code
+- `r s/p n/`: Sync-only version with named parameters, performance optimized for purely synchronous code
 
 **Example structure**:
 
@@ -1245,15 +1245,15 @@ tree types/type\ string/from/type\ array/
 
 ## Implementation Status
 
-- ✅ **Core structure** - Return-type-first organization established
-- ✅ **Type categories** - Major return types (string, boolean, object, function) structured
-- ✅ **Sub-type hierarchy** - Complex types (array, iterable, generator) organized
-- ✅ **Constraint system** - Sync/async restrictions and parameter styles implemented
-- ✅ **Concrete examples** - Real utilities documented with usage patterns
-- ✅ **Navigation system** - Search patterns and cross-references established
-- ✅ **Developer guidelines** - Comprehensive instructions for adding utilities
-- 🔄 **Migration ongoing** - Functions being moved from legacy [`src/type/`](../../../../../bak/20251014/type) structure
-- ⏳ **Full coverage** - Complete migration of all 500+ utilities planned
+- ✅ **Core structure**: Return-type-first organization established
+- ✅ **Type categories**: Major return types (string, boolean, object, function) structured
+- ✅ **Sub-type hierarchy**: Complex types (array, iterable, generator) organized
+- ✅ **Constraint system**: Sync/async restrictions and parameter styles implemented
+- ✅ **Concrete examples**: Real utilities documented with usage patterns
+- ✅ **Navigation system**: Search patterns and cross-references established
+- ✅ **Developer guidelines**: Comprehensive instructions for adding utilities
+- 🔄 **Migration ongoing**: Functions being moved from legacy [`src/type/`](../../../../../bak/20251014/type) structure
+- ⏳ **Full coverage**: Complete migration of all 500+ utilities planned
 
 This organizational system provides the precision and scalability needed for a comprehensive functional programming utilities library while maintaining intuitive navigation and clear semantic meaning.
 

@@ -10,7 +10,7 @@
  * ```
  */
 export type CountTokensConfig = {
-  /** Claude model for tokenization; defaults to `claude-sonnet-4-6`. Only selects the tokenizer -- no inference is performed. */
+  /** Claude model for tokenization; defaults to `claude-sonnet-4-6`. Only selects the tokenizer; no inference is performed. */
   readonly model?: string;
   /** Anthropic API key; falls back to `TOKEN_COUNT_CLAUDE_API_KEY`, `CLAUDE_API_KEY`, then `ANTHROPIC_API_KEY` env vars */
   readonly apiKey?: string;

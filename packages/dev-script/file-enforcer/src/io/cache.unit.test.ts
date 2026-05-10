@@ -52,7 +52,7 @@ await describe({
             const file = join(dir, 'a.txt',);
             await writeFile(file, 'original',);
             expect(await readCached(file,),).toBe('original',);
-            // Modify file on disk -- cache should still return old content
+            // Modify file on disk; cache should still return old content
             await writeFile(file, 'modified',);
             expect(await readCached(file,),).toBe('original',);
             await rm(dir, { recursive: true, },);

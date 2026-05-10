@@ -121,12 +121,12 @@ producing the "(none)" template.
 Notably, the split-turn branch already has a guard for this exact case:
 
 ```typescript
-// Line 565 — split-turn branch has a guard:
+// Line 565: split-turn branch has a guard:
 messagesToSummarize.length > 0
     ? generateSummary(messagesToSummarize, ...)
     : Promise.resolve("No prior history."),
 
-// Line 574 — non-split branch has NO guard:
+// Line 574: non-split branch has NO guard:
 summary = await generateSummary(messagesToSummarize, ...);
 ```
 
@@ -138,7 +138,7 @@ to summarize.
 
 - Returning `undefined` from a `session_before_compact` extension handler
   falls through to pi's default summarizer, which hits the same bug.
-- Setting `compressionRatio` to any value in Morph Compact does not help —
+- Setting `compressionRatio` to any value in Morph Compact does not help;
   the issue is that `messagesToSummarize` is empty before Morph is ever called.
 
 ## Verified workaround
@@ -154,7 +154,7 @@ const hasMessages = messagesToSummarize.length > 0
   || turnPrefixMessages.length > 0;
 if (!hasMessages && previousSummary === undefined) {
   ctx.ui.notify(
-    'Morph Compact: nothing to compact — session too small',
+    'Morph Compact: nothing to compact (session too small)',
     'warning',
   );
   return { cancel: true, };

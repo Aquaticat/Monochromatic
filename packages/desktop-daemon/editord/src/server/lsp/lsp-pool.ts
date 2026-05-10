@@ -118,7 +118,7 @@ export class LspPool {
    * Returns null when the server is in crash-backoff cooldown.
    *
    * For tsgo, checks the resolved tsconfig `include` patterns before
-   * spawning a new server — files outside the project's declared scope
+   * spawning a new server; files outside the project's declared scope
    * are rejected so tsgo never receives an unsupported extension as its
    * initial trigger, which would cause a ScriptKind panic.
    *
@@ -142,7 +142,7 @@ export class LspPool {
       return Promise.resolve(null,);
 
     /**
-     * For tsgo, ALWAYS check tsconfig includes — both for reuse
+     * For tsgo, ALWAYS check tsconfig includes: both for reuse
      * and new spawns. Returning an existing tsgo client for a
      * non-matching file (e.g. `.svg`) is just as dangerous as
      * spawning a new one: the feature request handler sends the

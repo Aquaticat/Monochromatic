@@ -2,10 +2,10 @@
  * Shared HTML shell used by most page handlers (inbox, in-progress, settings).
  *
  * The rendered HTML contains three mounting points that the client entry script relies on:
- * - `<main id="app">` — empty container; the client script imperatively builds its DOM here
- * - `<script id="page-data" type="application/json">` — server-serialized JSON that the client
+ * - `<main id="app">`: empty container; the client script imperatively builds its DOM here
+ * - `<script id="page-data" type="application/json">`: server-serialized JSON that the client
  *   reads via `readPageData()` (see `src/client/lib/page-data.ts`)
- * - `<script type="module" src="...">` — the per-page bundled client entry (e.g. `/dist/client/inbox.js`)
+ * - `<script type="module" src="...">`: the per-page bundled client entry (e.g. `/dist/client/inbox.js`)
  *
  * Some pages (search, task-details) render their own HTML inline instead of calling `renderPage`,
  * because they need a different shell structure (e.g. search-bar replaces top-nav).

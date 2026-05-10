@@ -3,7 +3,7 @@
  *
  * Composes `<head>`, `<site-header>`, `<page-content>`, and `<site-footer>`
  * into a complete HTML document. All markup generated via h-html and
- * colocated component render functions — no raw HTML strings or template files.
+ * colocated component render functions; no raw HTML strings or template files.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 

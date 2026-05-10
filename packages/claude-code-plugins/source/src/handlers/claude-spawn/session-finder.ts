@@ -49,7 +49,7 @@ function findByProcessTree(): PidMapping | null {
       return JSON.parse(raw,) as PidMapping;
     }
     catch {
-      // No coordination file for this PID -- walk up to its parent.
+      // No coordination file for this PID: walk up to its parent.
     }
 
     try {
@@ -70,7 +70,7 @@ function findByProcessTree(): PidMapping | null {
       );
     }
     catch {
-      // Cannot read /proc -- platform limitation or process already exited.
+      // Cannot read /proc: platform limitation or process already exited.
       return null;
     }
   }

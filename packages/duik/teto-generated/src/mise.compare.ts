@@ -37,7 +37,7 @@ async function main(): Promise<void> {
   const compositePng = `${PARTS_DIR}/_composite.png`;
   if (!existsSync(compositePng,)) {
     throw new Error(
-      `Composite PNG not found: ${compositePng} — run the composite task first`,
+      `Composite PNG not found: ${compositePng}; run the composite task first`,
     );
   }
 

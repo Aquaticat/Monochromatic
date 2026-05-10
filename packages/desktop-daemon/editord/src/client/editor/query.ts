@@ -6,7 +6,7 @@
  * exposing the underlying DOM element.
  *
  * The structural equality functions (`diagnosticsEqual`, `hintsEqual`)
- * live here because they are read-only queries over protocol types --
+ * live here because they are read-only queries over protocol types,
  * the same category as `computeDocumentRange`. Keeping them in the
  * same file that `editor-pane.ts` already imports avoids adding a
  * new import line, which matters because editor-pane.ts sits exactly

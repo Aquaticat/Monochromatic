@@ -82,7 +82,7 @@ export async function compareAll(
   /** Last settlement is the description call. */
   const descriptionSettlement = allResults.at(-1,);
   if (descriptionSettlement === undefined)
-    throw new Error('unreachable — allResults is non-empty',);
+    throw new Error('unreachable: allResults is non-empty',);
   const description = descriptionSettlement.status === 'fulfilled'
     ? descriptionSettlement.value as string | undefined
     : undefined;

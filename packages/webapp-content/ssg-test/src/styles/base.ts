@@ -1,8 +1,8 @@
 /**
  * Site CSS orchestrator.
  *
- * Composes all style modules — both pure-style files and
- * colocated component CSS — into a single CSS string for the build.
+ * Composes all style modules, both pure-style files and
+ * colocated component CSS, into a single CSS string for the build.
  */
 import * as calloutAlert from '../components/callout-alert.ts';
 import * as pageContent from '../components/page-content.ts';

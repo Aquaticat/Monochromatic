@@ -66,7 +66,7 @@ export const ollama: Provider = {
           return '';
         },);
       throw new Error(
-        `ollama: HTTP ${res.status} ${res.statusText} -- ${
+        `ollama: HTTP ${res.status} ${res.statusText}: ${
           text.slice(
             0,
             500,

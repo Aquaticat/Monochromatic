@@ -6,7 +6,7 @@ Claude Code hook that sets the terminal tab title to reflect current activity.
 
 ### Tool events
 
-Tool titles reflect tense -- present during execution (PreToolUse), past after completion (PostToolUse).
+Tool titles reflect tense: present during execution (PreToolUse), past after completion (PostToolUse).
 
 - **Bash**: Running git status
 - **Read**: Reading index.ts / Read index.ts

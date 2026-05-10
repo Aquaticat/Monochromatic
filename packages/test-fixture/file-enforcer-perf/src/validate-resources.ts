@@ -61,7 +61,7 @@ console.error(
 
 //endregion Sysbench CPU benchmark
 
-//region Serial CPU benchmark -- SHA-256 hashing, single-threaded
+//region Serial CPU benchmark: SHA-256 hashing, single-threaded
 
 /** Number of SHA-256 hashes to compute sequentially */
 const SERIAL_HASH_COUNT = 200_000;
@@ -73,7 +73,7 @@ console.error(`[validate] serial CPU: ${serialResult.ms.toFixed(1,)}ms`,);
 
 //endregion Serial CPU benchmark
 
-//region Parallel CPU benchmark -- 8 workers each computing hashes
+//region Parallel CPU benchmark: 8 workers each computing hashes
 
 /**
  * Number of parallel worker processes to spawn.
@@ -96,7 +96,7 @@ console.error(`[validate] parallel CPU: ${parallelMs.toFixed(1,)}ms`,);
 
 //endregion Parallel CPU benchmark
 
-//region Memory benchmark -- allocate and fill 256 MB
+//region Memory benchmark: allocate and fill 256 MB
 
 /** Allocation size in megabytes */
 const ALLOC_MB = 256;
@@ -108,7 +108,7 @@ console.error(`[validate] memory: ${memResult.ms.toFixed(1,)}ms`,);
 
 //endregion Memory benchmark
 
-//region IO benchmark -- write + read small files to detect throttling
+//region IO benchmark: write + read small files to detect throttling
 
 /**
  * Number of small files to write and read back for IO benchmarking.

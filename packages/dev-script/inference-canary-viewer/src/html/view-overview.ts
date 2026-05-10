@@ -65,7 +65,7 @@ export function renderOverview({
     hideTable: true,
   },);
 
-  // Summary table — status is shown inline rather than in its own column
+  // Summary table: status is shown inline rather than in its own column
   const rows = summaries
     .map(function buildRow(summary,): string {
       const color = vendorColor(summary.model,);

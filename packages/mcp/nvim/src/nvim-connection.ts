@@ -14,7 +14,7 @@ import {
 import { readdirSync, } from 'node:fs';
 import { connect, } from 'node:net';
 
-//region Connection management -- discover and cache connections to all Neovim instances
+//region Connection management: discover and cache connections to all Neovim instances
 
 /** Cached clients keyed by socket path. */
 const clients = new Map<string, NeovimClient>();

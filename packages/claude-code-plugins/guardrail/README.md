@@ -14,11 +14,11 @@ instead of waiting for automatic completion notifications.
 
 This hook denies Agent calls in two cases:
 
-1. **General-purpose blocking** -- when `subagent_type` is missing or `"general-purpose"`,
+1. **General-purpose blocking**: when `subagent_type` is missing or `"general-purpose"`,
    the call is denied with a message directing Claude to use `spawn-claude`.
    Specialized agent types (Explore, Plan, etc.) pass through.
 
-2. **Resume blocking** -- when the call includes a `resume` parameter,
+2. **Resume blocking**: when the call includes a `resume` parameter,
    it is denied with a message explaining that background agents notify automatically.
 
 ## Setup
@@ -39,4 +39,4 @@ Add to `.claude/settings.json`:
 
 ## Binary
 
-**`ccgr`** -- Claude Code GuardRail
+**`ccgr`**: Claude Code GuardRail

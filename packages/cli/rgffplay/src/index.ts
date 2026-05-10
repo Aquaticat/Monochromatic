@@ -25,7 +25,7 @@ import {
 
 export {};
 
-//region Glob pattern construction -- case-insensitive first letter per word
+//region Glob pattern construction: case-insensitive first letter per word
 
 /**
  * Converts a word's first character to a case-insensitive bracket expression.
@@ -72,7 +72,7 @@ function buildGlob(words: readonly string[],): string {
 
 //endregion Glob pattern construction
 
-//region Music directory resolution -- XDG_MUSIC_DIR or xdg-user-dir fallback
+//region Music directory resolution: XDG_MUSIC_DIR or xdg-user-dir fallback
 
 /** Tagged logger for music directory resolution. */
 const rlMusicDir = tagged({
@@ -198,7 +198,7 @@ async function findFiles({
 
 //endregion File search
 
-//region Playback -- ffplay with matched files
+//region Playback: ffplay with matched files
 
 /** Tagged logger for the playback phase. */
 const rlPlay = tagged({
@@ -208,7 +208,7 @@ const rlPlay = tagged({
 
 //endregion Playback
 
-//region Main execution -- parse args, find files, play
+//region Main execution: parse args, find files, play
 
 /** Tagged logger for the main execution flow. */
 const rl = tagged({

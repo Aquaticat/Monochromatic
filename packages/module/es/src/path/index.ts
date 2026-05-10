@@ -34,7 +34,7 @@ export {
   trimTrailingSlash,
 } from './trim.ts';
 
-//region Node delegation -- use real node:path/posix when the runtime has it
+//region Node delegation: use real node:path/posix when the runtime has it
 
 /**
  * Whether the runtime provides Node-compatible path APIs.

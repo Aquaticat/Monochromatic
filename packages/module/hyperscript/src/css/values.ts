@@ -3,7 +3,7 @@
  *
  * Replaces raw CSS value strings with type-safe constructors that prevent
  * invalid units, disallowed color functions, and named colors at the type level.
- * Every constructor returns `CssValue` — a branded string that the strict
+ * Every constructor returns `CssValue`: a branded string that the strict
  * `CssDeclarations` type accepts in any property value position.
  *
  * Constructors are prefixed with `css` to distinguish them from other functions.
@@ -12,7 +12,7 @@
 //region Branded base type
 
 /**
- * Branded CSS value — the base type returned by all value constructors.
+ * Branded CSS value: the base type returned by all value constructors.
  *
  * Property value types accept `CssValue` alongside specific keyword literals,
  * preventing raw strings like `'10px'` or `'red'` from being used directly.
@@ -52,7 +52,7 @@ export type ExtractLiteral<T,> = T extends string ? string extends T ? never
  * CSS named colors (the 148 CSS Color Level 4 keywords).
  *
  * Excluded from strict property value types to enforce the `color-named: never` rule.
- * `transparent` and `currentColor` are NOT named colors per the CSS spec — they are
+ * `transparent` and `currentColor` are NOT named colors per the CSS spec; they are
  * special color keywords and remain allowed.
  */
 export type CssNamedColor = 'aliceblue' | 'antiquewhite' | 'aqua' | 'aquamarine' | 'azure'

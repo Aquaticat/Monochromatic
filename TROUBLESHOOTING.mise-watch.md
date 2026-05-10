@@ -75,17 +75,17 @@ By default, watchexec triggers on all filesystem event types including
 though file content is unchanged.
 
 For content-preserving writes (editor saves identical bytes), the OS reports
-`Modify(Data(Any))` -- a real data write event -- because it cannot distinguish
+`Modify(Data(Any))`, a real data write event, because it cannot distinguish
 "same bytes" from "different bytes" at the kernel level.
 
 ### Solution
 
 Two layers of filtering, both applied in the `watchexec` command:
 
-**Layer 1: `--no-meta`** -- suppresses `Modify(Metadata(Any))` events at the
+**Layer 1: `--no-meta`**: suppresses `Modify(Metadata(Any))` events at the
 kernel level. Handles `touch`, `chmod`, and similar metadata-only changes.
 
-**Layer 2: `-j @content-changed.jaq`** -- a jaq filter program that compares
+**Layer 2: `-j @content-changed.jaq`**: a jaq filter program that compares
 file content hashes via watchexec's `kv_store` / `kv_fetch` builtins.
 Only passes events where the file's content hash differs from the last stored hash.
 First-seen files store their hash silently (no restart on initial scan).
@@ -126,7 +126,7 @@ any(.tags[] | select(.kind == "path" and .filetype == "file"); .absolute as $p |
 When the dev server restarts (via watchexec or manual kill+restart),
 the new instance generates a new `crypto.randomUUID()` auth token.
 The browser client has the old token embedded in its WebSocket URL
-and cannot reconnect -- every reconnect attempt fails with "unauthorized".
+and cannot reconnect; every reconnect attempt fails with "unauthorized".
 
 ### Root cause
 

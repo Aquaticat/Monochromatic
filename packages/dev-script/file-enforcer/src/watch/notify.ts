@@ -23,7 +23,7 @@ let cachedTool: NotificationTool | null | undefined = undefined;
 
 /**
  * Detects the first available desktop notification tool.
- * Result is cached for the lifetime of the process --
+ * Result is cached for the lifetime of the process:
  * available tools don't change between events.
  *
  * @returns Detected tool name, or `null` if none found

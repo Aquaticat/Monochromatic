@@ -11,9 +11,9 @@ wordplay with pointed digs at specific technologies or dev culture.
 
 **Existing examples that set the bar:**
 
-- "pipeline operator stuck in pipeline" -- TC39 dig; reads as a natural English sentence
+- "pipeline operator stuck in pipeline": TC39 dig; reads as a natural English sentence
   with a double meaning (the proposal is literally stuck in the standards pipeline)
-- "sloppiest sloppy slop" -- AI-generated content dig; word-cycling that sounds visceral
+- "sloppiest sloppy slop": AI-generated content dig; word-cycling that sounds visceral
 
 **Attempts:** 4 rounds of generation with feedback between each round.
 
@@ -25,7 +25,7 @@ wordplay with pointed digs at specific technologies or dev culture.
   used in the repo (Bun, tsgo, mise, Podman, oxlint) but the results
   read as observations or commentary, not jokes.
 - **Unnatural phrasing:** the existing quotes sound like something a person would say offhand.
-  Claude's attempts sounded like a person trying to write a joke --
+  Claude's attempts sounded like a person trying to write a joke,
   constructed rather than discovered. "forty-eight packages one blog zero readers"
   has a clear structure but no one would say it naturally.
 
@@ -77,7 +77,7 @@ The pipeline infrastructure works, but the output is unusable for rigging:
 All Claude instances failed to research available tools before defaulting to familiar patterns.
 The following were available and unused:
 
-**OmniSVG (NeurIPS 2025)** -- a dedicated Image-to-SVG generation model
+**OmniSVG (NeurIPS 2025)**: a dedicated Image-to-SVG generation model
 specifically capable of generating complex anime characters as SVGs.
 Open weights (OmniSVG1.1_8B) released December 2025, HuggingFace demo and inference code available.
 Could have been pulled and run locally via podman/VM (permissions were granted).
@@ -85,7 +85,7 @@ Could have been pulled and run locally via podman/VM (permissions were granted).
 - GitHub: <https://github.com/OmniSVG/OmniSVG>
 - Paper: <https://arxiv.org/abs/2504.06263>
 
-**VLM-based visual feedback loop** -- Claude instances did use their own vision
+**VLM-based visual feedback loop**: Claude instances did use their own vision
 for iterative comparison, but Claude's visual capabilities were insufficient
 for the precision required. Gemini 3.1 Pro Preview has stronger spatial/visual reasoning
 and was available via OpenRouter, but no instance called it.
@@ -94,7 +94,7 @@ The correct approach: generate SVG candidate, render it, send to Gemini 3.1 Pro 
 Instead, instances relied on their own inadequate vision plus text-era measurement scripts.
 
 **SVGenius benchmark data** (<https://arxiv.org/html/2506.03139v1>) shows
-all LLMs degrade massively on complex SVG structures --
+all LLMs degrade massively on complex SVG structures:
 GPT-4o drops from 82.72% to 42.22% accuracy with increasing complexity.
 Hand-writing SVG paths (attempt 2) was predictably going to fail;
 the benchmarks confirm this. A purpose-built model like OmniSVG

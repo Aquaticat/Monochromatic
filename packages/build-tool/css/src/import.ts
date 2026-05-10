@@ -74,7 +74,7 @@ function resolveSpecifier(
   }
 
   // Could be bare-local (CSS convention) or a package specifier.
-  // Try relative first — CSS treats `@import 'foo.css'` as relative.
+  // Try relative first: CSS treats `@import 'foo.css'` as relative.
   if (!isPackageSpecifier(specifier,)
     || !specifier.includes('/',) && !specifier.startsWith('@',))
   {

@@ -212,7 +212,7 @@ function buildResolvesMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
  * and `rejects`/`resolves` for promise assertions.
  */
 export type ExpectResult = MatcherSet & {
-  /** Negated matchers -- every method asserts the opposite. */
+  /** Negated matchers: every method asserts the opposite. */
   readonly not: MatcherSet;
   /** Async matchers that await rejection, then assert on the rejected value. */
   readonly rejects: AsyncMatcherSet;

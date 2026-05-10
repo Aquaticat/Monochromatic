@@ -103,7 +103,7 @@ Re-apply after updating, or install from a forked version.
 ### What does not work
 
 - Setting `judgeModel.instructions` to explain that `/var/home/user` is
-  a home directory -- the flagger sends the action to the judge regardless,
+  a home directory; the flagger sends the action to the judge regardless,
   and the judge only sees the raw action description, not why it was
   flagged. The flagger's false positive cannot be overridden by judge
   instructions.
@@ -125,8 +125,8 @@ Re-apply after updating, or install from a forked version.
 On distributions where the home directory is `/var/home/<user>`
 (e.g. Fedora with SELinux), the `isSystemPath` check in `pathSignals`
 flags every project file as a system path because `/var` is in
-`SYSTEM_PREFIXES`. This makes pi-safeguard unusable on these systems
--- every `read`, `write`, and `edit` tool call is blocked.
+`SYSTEM_PREFIXES`. This makes pi-safeguard unusable on these systems;
+every `read`, `write`, and `edit` tool call is blocked.
 
 The `isSystemPath` check is redundant for paths already confirmed to be
 under cwd (the `!isUnder` check on the prior line already flags paths
@@ -204,7 +204,7 @@ input and uses it as the judge.
 
 ---
 
-## pi-budget-model crashes on `ModelRegistry.getApiKey` — every flagged action requires manual approval
+## pi-budget-model crashes on `ModelRegistry.getApiKey`: every flagged action requires manual approval
 
 **Date**: 2026-04-28
 **pi-safeguard version**: 2.0.1
@@ -289,7 +289,7 @@ Exact source locations:
 
 - `packages/budget-model/src/index.ts` -- four calls to
   `ctx.modelRegistry.getApiKey(model)`
-- `@earendil-works/pi-coding-agent` `core/model-registry.ts` --
+- `@earendil-works/pi-coding-agent` `core/model-registry.ts`:
   `ModelRegistry` class has `getApiKeyAndHeaders` and
   `getApiKeyForProvider` but no `getApiKey`
 - `packages/safeguard/src/index.ts` -- bare `catch` block in

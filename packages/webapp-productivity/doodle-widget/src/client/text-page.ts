@@ -33,7 +33,7 @@ export type TextEntryData = {
  *
  * Sets `type`, `className`, `autocomplete`, inline position styles,
  * text color, font size, and data attributes. Does not set `value`
- * or `readOnly` — callers handle those based on context (new input
+ * or `readOnly`: callers handle those based on context (new input
  * vs. restored entry).
  *
  * @param insetInlineStart - CSS percentage string for horizontal position

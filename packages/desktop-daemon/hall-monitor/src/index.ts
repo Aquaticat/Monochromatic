@@ -76,13 +76,13 @@ async function main(): Promise<void> {
   }
 
   log.debug(
-    '[hall-monitor] Starting — capturing every 5 minutes, retaining last 10 minutes',
+    '[hall-monitor] Starting: capturing every 5 minutes, retaining last 10 minutes',
   );
   log.debug(`[hall-monitor] PID ${process.pid}, lock: abstract socket`,);
 
   await cycle();
 
-  // Not needed because we don't allow configuring interval: defense-in-depth — add a floor (e.g. Math.max(INTERVAL_MS, 60_000))
+  // Not needed because we don't allow configuring interval: defense-in-depth: add a floor (e.g. Math.max(INTERVAL_MS, 60_000))
   // so a misconfigured or zero interval cannot cause a tight spin loop.
   // oxlint-disable-next-line no-unmodified-loop-condition, typescript/no-unnecessary-condition -- running is mutated by signal handler
   while (running) {

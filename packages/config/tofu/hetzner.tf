@@ -58,6 +58,11 @@ data "external" "asn_data" {
   }
 }
 
+data "external" "tor_relays" {
+  program = ["bun", "run", "${path.module}/fetch_tor_relays.ts"]
+  query   = {}
+}
+
 data "http" "cloudflare_ips" {
   url = "https://api.cloudflare.com/client/v4/ips"
 }
@@ -320,11 +325,35 @@ locals {
     for ip in local.coolify_ips_unsanitized : ip
     if can(cidrhost(ip, 0))
   ]
+
+  tor_relay_ips = [
+    for ip in split(",", data.external.tor_relays.result.ips) : ip
+    if ip != "" && can(cidrhost(ip, 0))
+  ]
+  tor_relay_ips_v4    = [for ip in local.tor_relay_ips : ip if !strcontains(ip, ":")]
+  tor_relay_ips_v6    = [for ip in local.tor_relay_ips : ip if strcontains(ip, ":")]
+  tor_relay_v4_chunks = chunklist(local.tor_relay_ips_v4, 20)
+  tor_relay_v6_chunks = chunklist(local.tor_relay_ips_v6, 20)
+
+  tor_out_rules = flatten(concat(
+    [for i, chunk in local.tor_relay_v4_chunks : {
+      desc  = "tor v4 chunk ${i}"
+      port  = "443"
+      proto = "tcp"
+      ips   = chunk
+    }],
+    [for i, chunk in local.tor_relay_v6_chunks : {
+      desc  = "tor v6 chunk ${i}"
+      port  = "443"
+      proto = "tcp"
+      ips   = chunk
+    }]
+  ))
 }
 
 check "ip_syntax_validation" {
   assert {
-    condition     = alltrue([for ip in concat(local.cdn_ips, local.hetzner_ips, local.coolify_ips) : can(cidrhost(ip, 0))])
+    condition     = alltrue([for ip in concat(local.cdn_ips, local.hetzner_ips, local.coolify_ips, local.tor_relay_ips) : can(cidrhost(ip, 0))])
     error_message = "Typo detected in your local IP list!"
   }
 }
@@ -542,6 +571,21 @@ resource "hcloud_firewall" "tofu" {
   #   protocol        = "udp"
   #   source_ips      = ["0.0.0.0/0", "::/0"]
   # }
+
+  # Tor onion service outbound: top-N guards advertising ORPort 443,
+  # fetched dynamically from Onionoo (see fetch_tor_relays.ts).
+  # Single port keeps the per-IP-per-port effective-rule count predictable;
+  # path-spec /16 subnet diversity prevents the prior /24-sweep abuse pattern.
+  dynamic "rule" {
+    for_each = local.tor_out_rules
+    content {
+      description     = rule.value.desc
+      direction       = "out"
+      protocol        = rule.value.proto
+      port            = rule.value.port
+      destination_ips = rule.value.ips
+    }
+  }
 }
 
 resource "hcloud_firewall" "web_out" {

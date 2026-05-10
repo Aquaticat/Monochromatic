@@ -61,6 +61,20 @@ pub const MIN_PREFIX_LEN: usize = 3;
 //   // 4. Reject if any returned substring is shorter than MIN_PREFIX_LEN.
 // }
 // ```
+//
+// Soundness contract: every returned substring must be valid UTF-8
+// whose bytes match exactly what the original regex source would
+// expect to find in file content. A regex literal `—` (em-dash,
+// `\xe2\x80\x94`) MUST yield a substring whose `.as_bytes()` is
+// `[0xe2, 0x80, 0x94]` -- NOT mojibake from per-byte casts.
+// Aho-Corasick searches the file's raw bytes; if the registered
+// pattern doesn't byte-for-byte match what the regex would match,
+// the AC gate becomes a one-way trap-door: AC never fires, the
+// regex's `find_all` is never invoked, and the rule is silently
+// disabled while still appearing on the "fast path" (because a
+// non-empty extraction excludes the rule from the residual gate).
+// See `walk_literal_bytes` in `atom.rs` for the walker that must
+// uphold this contract.
 pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
     let mut s = src;
     let mut ci = false;

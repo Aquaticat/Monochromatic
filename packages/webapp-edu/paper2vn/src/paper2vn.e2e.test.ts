@@ -50,7 +50,7 @@ type ProviderId = 'openrouter' | 'openai' | 'anthropic' | 'ollama';
 
 /** Optional seed payload for `seedStorage`. */
 type Seed = {
-  /** Provider config (full or partial -- merged into defaults inside the page). */
+  /** Provider config (full or partial, merged into defaults inside the page). */
   provider?: {
     id?: ProviderId;
     model?: string;
@@ -162,7 +162,7 @@ async function seedStorage(page: Page, seed: Seed,): Promise<void> {
   );
 }
 
-//region Tier 1 -- pure UI tests
+//region Tier 1: pure UI tests
 
 test.describe('menu screen', () => {
   test('renders app name and primary buttons', async ({ page, },) => {
@@ -531,7 +531,7 @@ test.describe('lecture screen with seeded save', () => {
 
 //endregion Tier 1
 
-//region Tier 2 -- live LLM round-trip
+//region Tier 2: live LLM round-trip
 
 /**
  * API key for the live-LLM tier. Pulled from the same env vars as the

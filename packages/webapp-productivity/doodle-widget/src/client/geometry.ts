@@ -305,7 +305,7 @@ export function segToSegDistSq(
  *
  * Checks the segment against all four edges of the rectangle using
  * {@link segmentsIntersect}. Does **not** check whether either endpoint
- * is inside the rect — the caller handles that separately.
+ * is inside the rect; the caller handles that separately.
  *
  * @param sx - segment start x
  *

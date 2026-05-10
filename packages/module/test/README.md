@@ -6,7 +6,7 @@ with a runtime-neutral, self-contained alternative.
 
 ## Why not an existing framework
 
-Vitest was evaluated and rejected — it requires substantial configuration
+Vitest was evaluated and rejected; it requires substantial configuration
 and pulls in Vite's transform pipeline, adding a black-box build step
 between test source and execution.
 
@@ -18,7 +18,7 @@ No test transforms, no custom module resolution, no framework-specific globals.
 `bun:test` couples every test file to a single runtime.
 This package provides the same ergonomic API (`describe`, `it`, `expect`)
 backed by chai for assertions and sinon for mocking,
-so tests run on any JavaScript runtime that supports ESM — including browsers.
+so tests run on any JavaScript runtime that supports ESM, including browsers.
 
 ### Concurrent by default
 
@@ -26,7 +26,7 @@ Suites run children concurrently via `Promise.allSettled`.
 This is the correct default for well-isolated tests:
 sequential execution masks shared-state bugs by making pass/fail order-dependent.
 Concurrent execution surfaces these immediately.
-`Promise.allSettled` is the most portable concurrency primitive available --
+`Promise.allSettled` is the most portable concurrency primitive available;
 it works identically across Node, Bun, Deno, and browsers
 without framework-specific worker pools or process forking.
 
@@ -46,7 +46,7 @@ with `AggregateError` as cause when multiple children fail.
 Empty name makes the suite invisible in the error chain
 and downgrades success logs from `info` to `debug`
 so they stay out of default output.
-Use empty-name describe as the top-level wrapper --
+Use empty-name describe as the top-level wrapper;
 the filename already reveals what is being tested.
 
 Children can be promises (eager, start immediately) or thunks (deferred).
@@ -67,7 +67,7 @@ Use thunks with `concurrency: 1` to guarantee execution order.
   wrap a method that another concurrent test's sandbox has already wrapped.
 
   Children passed as bare promises are already running when the suite starts,
-  so the limit only gates thunks that have not yet been invoked --
+  so the limit only gates thunks that have not yet been invoked;
   pass thunks (arrow functions returning promises) to get accurate concurrency control
 - **`skip`** (`boolean | string`, default `false`) -- skips the entire suite without running any children;
   a string is logged as the reason
@@ -124,7 +124,7 @@ Executes a single test case.
 - **`expect`** -- scoped expect with assertion counting (`expect.assertions(n)`, `expect.hasAssertions()`)
 - **`sinon`** -- sinon sandbox for stubs, spies, and fake timers; auto-restores after the test.
   The sandbox is created with default config.
-  Custom `SinonSandboxConfig` is not supported --
+  Custom `SinonSandboxConfig` is not supported;
   its only useful option (`useFakeTimers`) is already callable directly via `sinon.useFakeTimers()`.
 
 The global `expect` still works for tests that do not destructure the context.
@@ -316,7 +316,7 @@ it({
 **Why not `.rejects`/`.resolves`?**
 
 - The rejected value is already unwrapped, but `.rejects.toThrow()` passes it to
-  chai's `.throw()` which expects a **function** to call -- a semantic mismatch.
+  chai's `.throw()` which expects a **function** to call, a semantic mismatch.
   The harness patches around this, but the indirection remains fragile.
 - `.resolves.toBe(x)` is strictly equivalent to `const v = await p; expect(v).toBe(x)`
   with worse stack traces.
@@ -359,7 +359,7 @@ it({
   name: 'known broken behavior',
   fails: 'parser bug #456',
   fn: async () => {
-    // logs "PASS — threw as expected (parser bug #456)"
+    // logs "PASS: threw as expected (parser bug #456)"
     throw new Error('expected to break',);
   },
 },);
@@ -384,7 +384,7 @@ await describe({
 ### Concurrency control
 
 The `concurrency` option controls how many children run at the same time.
-Children must be thunks for the limit to take effect --
+Children must be thunks for the limit to take effect;
 bare promises are already running when the suite starts.
 
 **Sequential** (`concurrency: 1`) -- runs children one at a time via `for...of`:
@@ -516,7 +516,7 @@ it({
 
 Each `it` passes a `TestContext` with a scoped `expect` to `fn`.
 Use `expect.assertions(n)` or `expect.hasAssertions()` to verify
-the right number of assertions ran -- prevents silently passing async tests.
+the right number of assertions ran; prevents silently passing async tests.
 
 ```ts
 it({
@@ -559,7 +559,7 @@ expectTypeOf<() => string>().returns.toBeString();
 
 There are no built-in lifecycle hooks.
 Define plain functions and call them explicitly.
-This keeps control flow visible -- no implicit lifecycle runs behind the scenes.
+This keeps control flow visible; no implicit lifecycle runs behind the scenes.
 
 For **per-test** setup/teardown, call functions at the start and end of each `fn`:
 
@@ -626,7 +626,7 @@ The `sinon` sandbox from `TestContext` auto-restores after each test.
 **Stubbing shared global state requires sequential execution.**
 When tests stub prototype methods or module-level variables
 (`sinon.stub(SomeClass.prototype, 'method')`),
-the stub affects all code running in the process -- including concurrent tests.
+the stub affects all code running in the process, including concurrent tests.
 Sinon refuses to wrap an already-wrapped method, throwing
 `"Attempted to wrap X which is already wrapped"`.
 To avoid this, use `concurrency: 1` with thunks on the `describe`
@@ -659,7 +659,7 @@ await describe({
 },);
 ```
 
-Stubbing **local** objects (created within the test) is safe at any concurrency --
+Stubbing **local** objects (created within the test) is safe at any concurrency;
 each test has its own object, so stubs never overlap.
 
 ```ts
@@ -759,14 +759,14 @@ or **omitted** (intentional gap with rationale).
 
 **Omitted:**
 
-- **`test.only` / `describe.only`** --
+- **`test.only` / `describe.only`**:
   everything is eager execution; there is no central runner to filter through.
   Pipe test output to `rg` to focus on a specific test name.
-- **`describe.shuffle`** --
+- **`describe.shuffle`**:
   randomizing test order is a workaround for shared-state bugs.
-  Concurrent-by-default execution already surfaces those immediately --
+  Concurrent-by-default execution already surfaces those immediately;
   if tests pass concurrently, order is irrelevant.
-- **`test.extend` / fixtures** --
+- **`test.extend` / fixtures**:
   adds a fixtures system with automatic setup/teardown.
   Plain functions called explicitly in each test serve the same purpose
   without hiding control flow.
@@ -784,7 +784,7 @@ or **omitted** (intentional gap with rationale).
 
 **Omitted:**
 
-- **`onTestFinished` / `onTestFailed`** --
+- **`onTestFinished` / `onTestFailed`**:
   use try/catch or `await using` within the test body for cleanup-on-failure patterns.
   No implicit hook system means no hidden execution order.
 
@@ -805,13 +805,13 @@ or **omitted** (intentional gap with rationale).
 
 **Omitted:**
 
-- **`toBeNullable`** --
+- **`toBeNullable`**:
   `expect(x).toSatisfy(v => v === null || v === undefined)` covers this.
   Not common enough to warrant a dedicated matcher.
-- **`toBeOneOf`** --
+- **`toBeOneOf`**:
   `expect([a, b, c]).toContain(actual)` or `toSatisfy` with `includes` achieves the same check.
 - **Snapshot matchers** (`toMatchSnapshot`, `toMatchInlineSnapshot`, `toMatchFileSnapshot`,
-  `toThrowErrorMatchingSnapshot`, `toThrowErrorMatchingInlineSnapshot`) --
+  `toThrowErrorMatchingSnapshot`, `toThrowErrorMatchingInlineSnapshot`):
   snapshot tests encode serialization format as a correctness criterion,
   causing spurious failures on whitespace, key ordering, or formatter changes.
   They discourage writing targeted assertions
@@ -835,11 +835,11 @@ or **omitted** (intentional gap with rationale).
 
 **Omitted:**
 
-- **`toHaveBeenCalledBefore` / `toHaveBeenCalledAfter`** --
+- **`toHaveBeenCalledBefore` / `toHaveBeenCalledAfter`**:
   sinon tracks `callCount` and call ordering natively;
   compare `spy.calledBefore(otherSpy)` directly in a `toSatisfy` if needed.
 - **`toHaveResolved*`** (`toHaveResolved`, `toHaveResolvedTimes`, `toHaveResolvedWith`,
-  `toHaveLastResolvedWith`, `toHaveNthResolvedWith`) --
+  `toHaveLastResolvedWith`, `toHaveNthResolvedWith`):
   async spy result tracking requires Vitest's internal mock wrapper.
   Use `await` + standard matchers on the return value instead.
 
@@ -856,17 +856,17 @@ or **omitted** (intentional gap with rationale).
 
 **Omitted:**
 
-- **`expect.closeTo`** --
+- **`expect.closeTo`**:
   our asymmetric matchers are sinon matchers, so `closeTo` would only work
-  inside `toHaveBeenCalledWith` but not inside `toEqual` --
+  inside `toHaveBeenCalledWith` but not inside `toEqual`;
   an inconsistency that would confuse users expecting Vitest behavior.
   Use `toBeCloseTo` directly for float comparisons.
-- **`expect.not.*`** (negated asymmetric matchers) --
+- **`expect.not.*`** (negated asymmetric matchers):
   `expect.not.stringContaining(...)`, `expect.not.objectContaining(...)`, etc.
   Too niche to justify the added API surface.
-- **`expect.schemaMatching`** --
+- **`expect.schemaMatching`**:
   Standard Schema v1 validation is a separate concern; validate before asserting.
-- **`expect.toBeOneOf`** (asymmetric) --
+- **`expect.toBeOneOf`** (asymmetric):
   same rationale as the regular `toBeOneOf` matcher.
 
 ### Assertion control
@@ -878,17 +878,17 @@ or **omitted** (intentional gap with rationale).
 
 **Omitted:**
 
-- **`expect.unreachable(message?)`** --
+- **`expect.unreachable(message?)`**:
   `throw new Error(message)` is equivalent and more explicit.
-- **`expect.soft`** --
+- **`expect.soft`**:
   soft assertions collect all failures instead of short-circuiting.
   Since suites already run children concurrently and report all failures
-  via `AggregateError`, the benefit is narrow --
+  via `AggregateError`, the benefit is narrow;
   it only matters within a single `it` with many assertions.
-- **`expect.poll`** --
+- **`expect.poll`**:
   retry-based assertions belong in application code (`waitFor` patterns),
   not in the assertion library.
-- **`expect.extend`** --
+- **`expect.extend`**:
   custom matchers add framework-specific API surface.
   Use `toSatisfy` with a predicate function instead.
 - **`expect.addSnapshotSerializer`** -- snapshot testing is omitted entirely
@@ -934,7 +934,7 @@ The `TestContext.sinon` sandbox auto-restores after each test.
 
 **Omitted:**
 
-- **`vi.mock` / `vi.doMock` / `vi.unmock`** (module mocking) --
+- **`vi.mock` / `vi.doMock` / `vi.unmock`** (module mocking):
   requires intercepting ESM imports via a build transform or custom loader,
   which contradicts the no-magic, no-custom-module-resolution design.
   Restructure code to accept dependencies as parameters instead.
@@ -967,7 +967,7 @@ The `TestContext.sinon` sandbox auto-restores after each test.
 ### Chai assert API
 
 Vitest re-exports the full Chai `assert` API (100+ methods).
-This package does not re-export `assert` --
+This package does not re-export `assert`;
 the Jest-style `expect` API is the single assertion interface.
 Chai is a direct dependency, so users who want `assert` can import it directly:
 
@@ -983,7 +983,7 @@ The differences are in scope, defaults, and error handling.
 
 **Scope of the concurrency limit.**
 Vitest uses a single global semaphore per worker (`maxConcurrency`, default 5).
-All concurrent suites in a file share that one limiter --
+All concurrent suites in a file share that one limiter;
 3 concurrent suites each with 5 tests still only run 5 tests at a time total.
 This harness uses a **per-suite** limiter via `p-limit`.
 Each `describe` gets its own independent cap (default 16),
@@ -992,7 +992,7 @@ so nested concurrent suites run their children independently.
 **Default mode.**
 Vitest runs tests **sequentially** within a file unless
 `test.concurrent` or `describe.concurrent` is used.
-This harness runs children **concurrently** by default --
+This harness runs children **concurrently** by default;
 sequential execution is the opt-in (`concurrency: 1`).
 
 **Dispatch primitive.**
@@ -1006,7 +1006,7 @@ making the "run all, collect all" intent explicit.
 Vitest distributes test **files** across OS-level workers
 (processes via `forks` or threads via `threads`),
 capped at `maxWorkers` (default: CPU count).
-This harness has no file-level parallelism --
+This harness has no file-level parallelism;
 everything runs in a single process.
 The test runner (`mise run ...test`) can parallelize files externally if needed.
 

@@ -94,17 +94,17 @@ source package:
 
 ### Migration order
 
-1. session-start-housekeeping -- single event, single file, simplest. **Done.**
-2. stop-reminders -- single event, multi-file logic. **Done.**
-3. bash-output-filter -- single event, multi-file logic. **Done.**
-4. terminal-title -- multi-event, multi-file logic. **Done.**
-5. claude-spawn -- six events plus the user-facing `spawn-claude` CLI bin.
+1. session-start-housekeeping: single event, single file, simplest. **Done.**
+2. stop-reminders: single event, multi-file logic. **Done.**
+3. bash-output-filter: single event, multi-file logic. **Done.**
+4. terminal-title: multi-event, multi-file logic. **Done.**
+5. claude-spawn: six events plus the user-facing `spawn-claude` CLI bin.
    CLI bin lives in source's `bin` field; the per-plugin keeps a four-line
    `src/cli.ts` shim so the SessionStart hook's auto-symlink target
    (`${PLUGIN_ROOT}/src/cli.ts`) still resolves for marketplace installs.
    Root `package.json` lists the source package as a devDependency so its
    bin hoists to `node_modules/.bin/spawn-claude`. **Done.**
-6. research-agent -- not a hook handler; ships only an agent definition. Its
+6. research-agent: not a hook handler; ships only an agent definition. Its
    directory stays as-is; no shim or handler module needed. **No work needed.**
 
 `hook-utils` deleted. The runtime in
@@ -181,8 +181,8 @@ content; the rest is mechanical scaffolding that does not drift. The N parallel
 tsdown invocations cost a few seconds of total build time, which the mise
 fanout already absorbs.
 
-The deepening that matters -- handler logic centralized in one source package,
-runtime shared across plugins, tests colocated with handlers -- is achieved
+The deepening that matters (handler logic centralized in one source package,
+runtime shared across plugins, tests colocated with handlers) is achieved
 without any of the trade-offs of options 2 or 3.
 
 ### Consequences

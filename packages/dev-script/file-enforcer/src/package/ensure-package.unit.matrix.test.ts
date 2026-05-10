@@ -35,7 +35,7 @@ import { p, } from './p.ts';
  * Each shape exercises a different code path in {@link ensurePackage}.
  */
 const TEST_PACKAGES = [
-  /** Shape: string shorthand -- binary = effname = package name everywhere */
+  /** Shape: string shorthand (binary = effname = package name everywhere) */
   p('tree',),
   p('jq',),
   /** Shape: bin differs from effname */

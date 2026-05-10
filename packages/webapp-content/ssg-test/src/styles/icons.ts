@@ -12,9 +12,9 @@
  * of a `<span class="material-symbols-outlined">`. The helper looks
  * the name up in the upstream codepoints data
  * (`src/lib/icons/material-symbols-outlined.codepoints`) and emits
- * the single-codepoint string. Rendering by codepoint -- rather
- * than by letting the browser shape a ligature from the icon name
- * -- is what makes tight subsetting possible: harfbuzz only retains
+ * the single-codepoint string. Rendering by codepoint, rather
+ * than by letting the browser shape a ligature from the icon name,
+ * is what makes tight subsetting possible: harfbuzz only retains
  * the specific glyphs whose codepoints appear in the subset text
  * and does not over-include everything spellable from the letters
  * in the name.

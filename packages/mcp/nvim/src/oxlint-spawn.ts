@@ -20,7 +20,7 @@ const OXLINT_TIMEOUT_MS = 10_000;
 
 //endregion Constants
 
-//region Process spawning -- low-level oxlint invocation
+//region Process spawning: low-level oxlint invocation
 
 /**
  * Spawns a single oxlint process and returns parsed diagnostics.

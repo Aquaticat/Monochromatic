@@ -6,7 +6,7 @@
  * a `file-select` CustomEvent with the absolute path.
  *
  * The tree coordinates data fetching and context menus via
- * event delegation — child components dispatch bubbling events
+ * event delegation: child components dispatch bubbling events
  * that the tree handles centrally.
  */
 
@@ -45,7 +45,7 @@ import type { ContextAction, } from './types.ts';
 export type { ContextAction, };
 export type { DirEntry, };
 
-/** `<file-tree>` — directory tree sidebar with `<tree-dir-entry>` toggles. */
+/** `<file-tree>`: directory tree sidebar with `<tree-dir-entry>` toggles. */
 export class FileTree extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;

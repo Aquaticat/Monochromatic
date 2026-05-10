@@ -6,7 +6,7 @@ import type {
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import type * as Jsonc from '../../../../t/index.ts';
 
-//region Value tokenizers -- Pure helpers for literals and numbers with explicit contracts
+//region Value tokenizers: Pure helpers for literals and numbers with explicit contracts
 /**
  * Sentinel indicating no JSON literal was matched at the current start position.
  *

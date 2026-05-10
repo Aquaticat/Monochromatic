@@ -3,7 +3,7 @@
  *
  * Unlike {@link attemptMorphCompaction} which operates on a
  * {@link SessionBeforeCompactEvent} during pi's automatic compaction hook,
- * this module works directly from branch entries — making it suitable for
+ * this module works directly from branch entries, making it suitable for
  * the `/morph-compact` slash command which reads the session read-only.
  *
  * File tracking XML is intentionally omitted because `computeFileLists` /
@@ -161,11 +161,11 @@ export async function compressBranch(
   // Nothing to compress at all
   if (messages.length === 0 && previousSummary === undefined) {
     throw new Error(
-      'Nothing to compress — session has no messages and no previous compaction',
+      'Nothing to compress: session has no messages and no previous compaction',
     );
   }
 
-  // No new messages since last compaction — return previous
+  // No new messages since last compaction; return previous
   // summary directly to avoid wasting Morph credits
   if (messages.length === 0 && previousSummary !== undefined)
     return previousSummary;
@@ -200,7 +200,7 @@ export async function compressBranch(
   const output = result.output?.trim();
   if (output === undefined || output === '') {
     throw new Error(
-      'Morph Compact returned empty output — compression failed',
+      'Morph Compact returned empty output: compression failed',
     );
   }
 

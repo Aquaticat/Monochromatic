@@ -7,7 +7,7 @@ The root `tsconfig.json` does not include each package's `src` directory,
 so running oxlint from the monorepo root causes type-aware rules to silently miss type information.
 
 The workaround is to run oxlint from each package independently.
-The `lint:oxlint` task template in `mise.toml` handles this automatically --
+The `lint:oxlint` task template in `mise.toml` handles this automatically;
 the root `lint:oxlint` task fans out via `mise '/packages/...:lint:oxlint'`
 so every package runs with its own `tsconfig.json` in scope.
 
@@ -21,7 +21,7 @@ This means any prefix works: `eslint/no-await-in-loop`, `@typescript-eslint/no-a
 `xyzzy/no-await-in-loop`, or just `no-await-in-loop` all suppress the same rule.
 
 For tsgo (type-aware) rules, `should_skip_diagnostic` in `tsgolint.rs` makes three separate
-`contains()` calls with bare, `typescript-eslint/`, and `@typescript-eslint/` prefixes --
+`contains()` calls with bare, `typescript-eslint/`, and `@typescript-eslint/` prefixes;
 but the bare check already matches any comment containing the rule name.
 
 **Source locations** (oxc commit checked: `main` as of 2026-03-13):

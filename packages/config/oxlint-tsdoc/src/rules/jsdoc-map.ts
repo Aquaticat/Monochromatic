@@ -20,99 +20,99 @@
 export const JSDOC_TO_TSDOC_MAP: ReadonlyMap<string, string> = new Map([
   [
     '@type',
-    'Remove @type -- TypeScript handles types.',
+    'Remove @type: TypeScript handles types.',
   ],
   [
     '@typedef',
-    'Remove @typedef -- use TypeScript type alias instead.',
+    'Remove @typedef: use TypeScript type alias instead.',
   ],
   [
     '@callback',
-    'Remove @callback -- use TypeScript type alias instead.',
+    'Remove @callback: use TypeScript type alias instead.',
   ],
   [
     '@property',
-    'Remove @property -- use TypeScript type members instead.',
+    'Remove @property: use TypeScript type members instead.',
   ],
   [
     '@prop',
-    'Remove @prop -- use TypeScript type members instead.',
+    'Remove @prop: use TypeScript type members instead.',
   ],
   [
     '@memberof',
-    'Remove @memberof -- not needed in TSDoc.',
+    'Remove @memberof: not needed in TSDoc.',
   ],
   [
     '@augments',
-    'Remove @augments -- use TypeScript extends instead.',
+    'Remove @augments: use TypeScript extends instead.',
   ],
   [
     '@extends',
-    'Remove @extends -- use TypeScript extends instead.',
+    'Remove @extends: use TypeScript extends instead.',
   ],
   [
     '@class',
-    'Remove @class -- use TypeScript class syntax instead.',
+    'Remove @class: use TypeScript class syntax instead.',
   ],
   [
     '@constructor',
-    'Remove @constructor -- use TypeScript class syntax instead.',
+    'Remove @constructor: use TypeScript class syntax instead.',
   ],
   [
     '@function',
-    'Remove @function -- not needed in TSDoc.',
+    'Remove @function: not needed in TSDoc.',
   ],
   [
     '@method',
-    'Remove @method -- not needed in TSDoc.',
+    'Remove @method: not needed in TSDoc.',
   ],
   [
     '@namespace',
-    'Remove @namespace -- use TypeScript namespace instead.',
+    'Remove @namespace: use TypeScript namespace instead.',
   ],
   [
     '@module',
-    'Remove @module -- use @packageDocumentation instead.',
+    'Remove @module: use @packageDocumentation instead.',
   ],
   [
     '@member',
-    'Remove @member -- not needed in TSDoc.',
+    'Remove @member: not needed in TSDoc.',
   ],
   [
     '@var',
-    'Remove @var -- not needed in TSDoc.',
+    'Remove @var: not needed in TSDoc.',
   ],
   [
     '@global',
-    'Remove @global -- not needed in TSDoc.',
+    'Remove @global: not needed in TSDoc.',
   ],
   [
     '@enum',
-    'Remove @enum -- use TypeScript enum instead.',
+    'Remove @enum: use TypeScript enum instead.',
   ],
   [
     '@lends',
-    'Remove @lends -- not needed in TSDoc.',
+    'Remove @lends: not needed in TSDoc.',
   ],
   [
     '@fires',
-    'Remove @fires -- not needed in TSDoc.',
+    'Remove @fires: not needed in TSDoc.',
   ],
   [
     '@listens',
-    'Remove @listens -- not needed in TSDoc.',
+    'Remove @listens: not needed in TSDoc.',
   ],
   [
     '@mixes',
-    'Remove @mixes -- not needed in TSDoc.',
+    'Remove @mixes: not needed in TSDoc.',
   ],
   [
     '@mixin',
-    'Remove @mixin -- not needed in TSDoc.',
+    'Remove @mixin: not needed in TSDoc.',
   ],
   [
     '@interface',
-    'Remove @interface -- use TypeScript interface instead.',
+    'Remove @interface: use TypeScript interface instead.',
   ],
   [
     '@return',

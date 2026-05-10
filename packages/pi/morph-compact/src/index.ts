@@ -17,10 +17,10 @@
  * new pi session via a tiered IPC fallback to avoid exceeding the OS
  * argument length limit:
  *
- * 1. Argv (text ≤ 100KB) — simplest, zero cleanup
- * 2. Temp file — one write, one read, one delete
- * 3. Unix domain socket — avoids data on disk, fallback for full /tmp
- * 4. TCP localhost — zero filesystem dependency, final fallback
+ * 1. Argv (text ≤ 100KB): simplest, zero cleanup
+ * 2. Temp file: one write, one read, one delete
+ * 3. Unix domain socket: avoids data on disk, fallback for full /tmp
+ * 4. TCP localhost: zero filesystem dependency, final fallback
  */
 
 import type {
@@ -80,7 +80,7 @@ async function handleMorphCompactCommand(
   const apiKey = await resolveMorphApiKey();
   if (apiKey === undefined) {
     ctx.ui.notify(
-      'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json) — cannot compress',
+      'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json): cannot compress',
       'warning',
     );
     return;
@@ -106,7 +106,7 @@ async function handleMorphCompactCommand(
       customInstructions,
     },);
 
-    // Tier 1: argv — simplest path, zero cleanup
+    // Tier 1: argv (simplest path, zero cleanup)
     // oxlint-disable-next-line eslint-plugin-unicorn/prefer-ternary -- branching on async calls is clearer with if/else
     if (compressedText.length <= MAX_COMPRESSED_ARG_BYTES) {
       await launchTerminal({

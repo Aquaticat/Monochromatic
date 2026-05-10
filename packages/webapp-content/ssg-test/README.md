@@ -57,7 +57,7 @@ there is no opt-out.
 
 - Untracked or uncommitted files fall back to file mtime for both dates.
   This keeps dev previews of new posts rendering without git history.
-- Authoring a post without committing is undefined behavior --
+- Authoring a post without committing is undefined behavior:
   published dates in dev previews will jump to the commit timestamp on first commit.
 - Shallow clones (common in CI) lack the oldest commits needed for `published`.
   When `git rev-parse --is-shallow-repository` reports `true`,
@@ -82,7 +82,7 @@ maps them to DOM Range objects, and registers CSS Custom Highlights.
 
 No Lezer code ships to the browser.
 The client bundle is ~1.8 KB (single file) versus ~313 KB (9 files) when parsers ran client-side.
-The `data-hl-*` attributes add ~1.1 KB compressed across all pages --
+The `data-hl-*` attributes add ~1.1 KB compressed across all pages:
 a 99.4% net reduction in total transfer size for syntax highlighting.
 
 ## Output
@@ -103,7 +103,7 @@ its fingerprinted URL so readers who want the original
 (for download, print, or closer inspection) can retrieve it directly.
 
 When committing an AVIF source by hand, encode with `yuv420p` chroma subsampling.
-`yuv444p` balloons file size with no perceivable benefit for photographic content --
+`yuv444p` balloons file size with no perceivable benefit for photographic content:
 `winter-tree.avif` was originally shipped at `yuv444p` quality 100 and was 2.2 MB
 for a 2048x1365 image; re-encoding at CRF 28 yuv420p produced a 385 KB file with no
 visible quality loss.
@@ -158,7 +158,7 @@ from the icon name) is what makes tight subsetting possible: harfbuzz's
 layout closure would otherwise retain every icon whose name can be
 spelled from the letters present in source, which is essentially the
 whole font. With PUA codepoints as input, only the specific glyphs
-requested are retained -- the subsetted icon font is a few KB regardless
+requested are retained; the subsetted icon font is a few KB regardless
 of how many icons the upstream font provides.
 
 `format:fonts` enumerates icons in use by scanning source for the
@@ -175,9 +175,9 @@ References in HTML, CSS, and `manifest.webmanifest` are rewritten to match.
 This runs as a post-processing step (`src/build/postprocess.ts`) in three phases
 to respect the dependency chain between assets:
 
-1. **Leaf assets** -- images, fonts, JS, PDFs, favicons (no outgoing references to other hashable assets)
-2. **CSS** -- rewrite font `url()` references with hashed names from phase 1, then hash the CSS itself
-3. **Reference rewriting** -- replace original basenames with hashed basenames in all HTML files and `manifest.webmanifest`
+1. **Leaf assets**: images, fonts, JS, PDFs, favicons (no outgoing references to other hashable assets)
+2. **CSS**: rewrite font `url()` references with hashed names from phase 1, then hash the CSS itself
+3. **Reference rewriting**: replace original basenames with hashed basenames in all HTML files and `manifest.webmanifest`
 
 Phase 3 uses basename-level `replaceAll` (e.g. `inter.woff2` -> `inter.693b77d4f3.woff2`),
 which handles both absolute paths (`/inter.woff2`) and relative paths (`../glass-collection.avif`)

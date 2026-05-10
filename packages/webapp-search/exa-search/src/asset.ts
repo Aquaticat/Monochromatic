@@ -34,7 +34,7 @@ const safeJs: string = js.replaceAll(
   String.raw`<\/script>`,
 );
 
-//region HTML structure -- Declarative page composition via h-html
+//region HTML structure: Declarative page composition via h-html
 
 /**
  * Complete self-contained HTML page with inlined CSS and JS.

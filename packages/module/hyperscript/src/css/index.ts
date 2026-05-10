@@ -2,8 +2,8 @@
  * String-returning hyperscript factory for CSS generation.
  *
  * Same composable pattern as `h-xml` and `h-html` but produces CSS strings.
- * Each call constructs a single node in the CSS tree — a style rule or an
- * at-rule — and returns it as a plain string. Nesting is explicit via
+ * Each call constructs a single node in the CSS tree (a style rule or an
+ * at-rule) and returns it as a plain string. Nesting is explicit via
  * `children`, mirroring native CSS nesting.
  *
  * Replaces `@mixin`/`@apply` with plain functions that return declaration
@@ -17,7 +17,7 @@
  *
  * Branded value constructors (`cssRem`, `cssVar`, `cssOklch`, etc.) replace raw
  * string values, preventing invalid units, disallowed color functions, and named
- * colors at the type level — eliminating the need for stylelint runtime checks.
+ * colors at the type level, eliminating the need for stylelint runtime checks.
  *
  * @param options - Named parameters describing the CSS construct
  * @returns CSS string

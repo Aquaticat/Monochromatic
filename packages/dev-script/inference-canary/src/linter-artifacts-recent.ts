@@ -74,7 +74,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
     }
 
     for (const dirName of artifactDirs) {
-      //region Failure artifact detection -- whole-model failures like 429 or auth errors
+      //region Failure artifact detection: whole-model failures like 429 or auth errors
       const failureMatch = FAILURE_DIR_PATTERN.exec(dirName,);
       if (failureMatch !== null && failureMatch.groups !== undefined) {
         const rawTimestamp = failureMatch.groups['timestamp'];
@@ -101,14 +101,14 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
               failedModels.add(label,);
           }
           catch {
-            // Missing or malformed meta.json -- skip
+            // Missing or malformed meta.json: skip
           }
         }
         continue;
       }
       //endregion Failure artifact detection
 
-      //region Per-probe artifact detection -- individual probe results
+      //region Per-probe artifact detection: individual probe results
       const match = ARTIFACT_DIR_PATTERN.exec(dirName,);
       if (match === null || match.groups === undefined)
         continue;

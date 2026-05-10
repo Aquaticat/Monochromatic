@@ -186,4 +186,4 @@ export default defineConfig({
 - **Phase 5** (publish prep): ~2 hours
 
 **Total**: roughly 1.5 days of focused work.
-The risk is low -- no architectural changes, just plumbing a config object through existing code.
+The risk is low: no architectural changes, just plumbing a config object through existing code.

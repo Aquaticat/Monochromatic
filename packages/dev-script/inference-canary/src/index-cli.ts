@@ -13,7 +13,7 @@ import {
 } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
 
-//region Parser definition -- defines all recognized CLI flags and their value parsers
+//region Parser definition: defines all recognized CLI flags and their value parsers
 
 /** Optique object parser covering every supported CLI flag */
 const parser = object({
@@ -36,7 +36,7 @@ const parser = object({
 
 //endregion Parser definition
 
-//region Parsed arguments -- module-level exports consumed by index.ts
+//region Parsed arguments: module-level exports consumed by index.ts
 
 /** Parsed CLI arguments from process.argv */
 const cliArgs = runSync(

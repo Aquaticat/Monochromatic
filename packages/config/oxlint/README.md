@@ -15,7 +15,7 @@ import { defineConfig, } from 'oxlint';
 export default defineConfig({ ...base, },);
 ```
 
-Uses spread instead of `extends` because `extends` only merges rules --
+Uses spread instead of `extends` because `extends` only merges rules:
 top-level fields like `categories`, `env`, `ignorePatterns`, `overrides`,
 and `plugins` are not inherited through `extends`.
 

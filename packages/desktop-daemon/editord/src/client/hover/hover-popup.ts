@@ -14,7 +14,7 @@ import { STYLES, } from './hover-popup.styles.ts';
 const VERTICAL_OFFSET = 8;
 
 /**
- * `<hover-popup>` — floating tooltip for language server hover info.
+ * `<hover-popup>`: floating tooltip for language server hover info.
  *
  * Shows type information, documentation, or diagnostic messages
  * at a specified screen position. Controlled via `show()` and `hide()`.

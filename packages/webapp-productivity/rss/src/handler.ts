@@ -18,7 +18,7 @@ const l = tagged({
   l: parentLogger,
 },);
 
-//region HTTP handlers -- Serve rendered HTML and persist ignored items
+//region HTTP handlers: Serve rendered HTML and persist ignored items
 
 /**
  * Serves the full rendered HTML page with inlined assets and feed body.

@@ -12,7 +12,7 @@ const SYSTEM_PROMPT =
 
 RULES FOR DECLARING UNPRODUCTIVE:
 1. ENTERTAINMENT: Any non-music entertainment visible = UNPRODUCTIVE. This includes: YouTube videos, Twitch, gaming, social media (Twitter/X, Reddit, Instagram, TikTok, Facebook), news browsing, streaming sites, memes, comics. Music players (Spotify, YouTube Music, etc.) are ALLOWED and do NOT count as entertainment.
-2. DISTRACTION (webcam): Assume user is looking at the screen unless — user is holding/using a phone, head down sleeping, or chair is empty. Looking at the ceiling or the wall doesn't count as distraction.
+2. DISTRACTION (webcam): Assume user is looking at the screen unless user is holding/using a phone, head down sleeping, or chair is empty. Looking at the ceiling or the wall doesn't count as distraction.
 3. STAGNATION: If multiple captures are provided and the screen content has NOT meaningfully changed between them (same windows, same scroll position, same text), the user is pretending to work = UNPRODUCTIVE.
 
 PRODUCTIVE means: actively coding, writing, reading documentation, using work tools, communicating in work chats, designing, or similar focused work activity.

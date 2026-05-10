@@ -4,7 +4,7 @@
 
 Modern features without workarounds:
 
-1. **CSS Container Queries** - `@container` and container units
+1. **CSS Container Queries**: `@container` and container units
 1. **`:has()` selector**
 1. **CSS Nesting**
 1. **`content-visibility`**

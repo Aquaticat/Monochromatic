@@ -38,7 +38,7 @@ function splitGlob(
   const metaIndex = pattern.search(GLOB_META,);
 
   if (metaIndex === -1) {
-    // No wildcards -- treat entire pattern as a literal path
+    // No wildcards: treat entire pattern as a literal path
     return [
       resolve(pattern,),
       '',
@@ -77,7 +77,7 @@ function splitGlob(
 
 /**
  * Expands a glob pattern against the filesystem and returns matched file paths.
- * Returned paths preserve the prefix format of the input pattern --
+ * Returned paths preserve the prefix format of the input pattern:
  * relative patterns produce relative paths, absolute patterns produce absolute paths.
  * Uses `tiny-readdir-glob` (backed by zeptomatch) for matching,
  * which always includes dot files without configuration.
@@ -165,7 +165,7 @@ export function mirrorGlobPath(
 
   /** Values captured from each wildcard position in the source path */
   const captured: string[] = [];
-  // Walk the source path, peeling off fixed prefixes to isolate wildcard captures --
+  // Walk the source path, peeling off fixed prefixes to isolate wildcard captures;
   // let needed because remainder shrinks with each iteration
   let remainder = sourcePath;
   for (let partIndex = 0; partIndex < sourceParts.length; partIndex++) {

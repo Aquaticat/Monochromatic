@@ -25,7 +25,7 @@ import { BORDER_WIDTH_REM, } from '../styles/constants.ts';
 /**
  * Material Symbols PUA codepoint for the theme toggle icon.
  *
- * Uses `invert_colors` — a single icon that represents both light
+ * Uses `invert_colors`: a single icon that represents both light
  * and dark modes, replacing the previous sun/moon SVG pair. The
  * literal icon name is kept in the `icon('...')` call so the
  * subset-fonts source scan can pick it up.

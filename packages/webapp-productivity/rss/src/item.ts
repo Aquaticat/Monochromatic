@@ -21,7 +21,7 @@ const l = tagged({
   l: parentLogger,
 },);
 
-//region Item extraction and normalization -- Converts feed entries to a uniform dated format
+//region Item extraction and normalization: Converts feed entries to a uniform dated format
 
 /**
  * Extracts, normalizes, dates, and sorts all items from sorted feeds.

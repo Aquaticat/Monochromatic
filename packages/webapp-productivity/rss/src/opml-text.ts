@@ -22,7 +22,7 @@ const l = tagged({
   l: parentLogger,
 },);
 
-//region OPML text fetching -- Retrieves raw OPML content from HTTP and file URLs
+//region OPML text fetching: Retrieves raw OPML content from HTTP and file URLs
 
 /**
  * Fetches OPML file contents from all configured source URLs.

@@ -6,7 +6,7 @@
 
 #### Mise task system optimization
 
-**Status**: High Priority - Developer experience
+**Status**: High priority, developer experience
 
 - [ ] Profile mise task execution times and identify bottlenecks
 - [ ] Optimize mise task dependencies to reduce unnecessary work
@@ -17,7 +17,7 @@
 
 #### TypeScript Compilation Performance
 
-**Status**: High Priority - Daily development impact
+**Status**: High priority, daily development impact
 
 - [ ] Implement TypeScript project references across all packages
 - [ ] Add TypeScript incremental compilation
@@ -28,7 +28,7 @@
 
 #### tsdown Build Optimization
 
-**Status**: Normal Priority - Build tools
+**Status**: Normal priority, build tools
 
 - [ ] Add bundle analysis and optimization
 

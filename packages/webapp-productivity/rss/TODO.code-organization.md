@@ -27,8 +27,8 @@ src/
 
 - [ ] 2.1.1.1 Create `feed.types.ts` - Feed-related interfaces
 - [ ] 2.1.1.2 Create `item.types.ts` - Item interfaces
-- [ ] 2.1.1.3 Create `outline.types.ts` - OPML/Outline types
-- [ ] 2.1.1.4 Create `api.types.ts` - API request/response types
+- [ ] 2.1.1.3 Create `outline.types.ts`: OPML/Outline types
+- [ ] 2.1.1.4 Create `api.types.ts`: API request/response types
 - [ ] 2.1.1.5 Create `config.types.ts` - Configuration interfaces
 - [ ] 2.1.1.6 Move all interfaces from existing files
 
@@ -116,7 +116,7 @@ Create proper error hierarchy:
 
 #### 2.6.2 Dependency classification
 
-- [ ] 2.6.2.1 Move `"elysia"` from devDependencies to dependencies in [package.json](packages/site/rss/package.json:23) — it is used at runtime via [new Elysia()](packages/site/rss/src/index.ts:110).
+- [ ] 2.6.2.1 Move `"elysia"` from devDependencies to dependencies in [package.json](packages/site/rss/package.json:23); it is used at runtime via [new Elysia()](packages/site/rss/src/index.ts:110).
 - [ ] 2.6.2.2 Audit remaining runtime imports and ensure they live under `dependencies` (e.g., `"happy-dom"`, `"watcher"`) in [package.json](packages/site/rss/package.json:9).
 
 #### 2.6.3 Import style consistency

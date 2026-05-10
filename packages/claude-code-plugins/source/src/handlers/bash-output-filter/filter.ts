@@ -77,7 +77,7 @@ async function runFilter(): Promise<void> {
       process.stdout.write(fallback,);
     }
     catch {
-      /* stdin already consumed or unavailable -- nothing to pass through */
+      /* stdin already consumed or unavailable: nothing to pass through */
     }
   }
 }

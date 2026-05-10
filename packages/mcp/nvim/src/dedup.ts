@@ -1,6 +1,6 @@
 import type { Diagnostic, } from './nvim-types.ts';
 
-//region Dedup key -- builds a string key for comparing diagnostics across sources
+//region Dedup key: builds a string key for comparing diagnostics across sources
 
 /**
  * Builds a deduplication key for a diagnostic.
@@ -25,7 +25,7 @@ export function dedupKey(diagnostic: Diagnostic,): string {
 
 //endregion Dedup key
 
-//region Public API -- merge and deduplicate diagnostics
+//region Public API: merge and deduplicate diagnostics
 
 /**
  * Removes duplicate diagnostics from a single array.

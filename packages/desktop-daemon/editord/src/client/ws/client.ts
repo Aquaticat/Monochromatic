@@ -155,7 +155,7 @@ export class EditorWsClient {
   /**
    * Sends a typed request and waits for the correlated response.
    *
-   * @param message - client message (without `id` — it is auto-generated)
+   * @param message - client message (without `id`; it is auto-generated)
    *
    * @returns server response message
    *
@@ -236,7 +236,7 @@ export class EditorWsClient {
     if (data.type === 'connected')
       return;
 
-    // Push notifications — no request ID
+    // Push notifications: no request ID
     if (data.type === 'fileChanged') {
       this.onFileChanged?.({
         path: data.path,

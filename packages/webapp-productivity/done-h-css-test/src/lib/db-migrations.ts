@@ -5,7 +5,7 @@
  */
 import type { Database, } from '@tursodatabase/database';
 
-//region Migration SQL -- separated for readability; executed once at startup
+//region Migration SQL: separated for readability; executed once at startup
 
 /** Core tables, indexes, and CHECK constraints. */
 const MIGRATION_TABLES_AND_INDEXES = `

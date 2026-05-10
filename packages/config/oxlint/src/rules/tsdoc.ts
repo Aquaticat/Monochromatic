@@ -41,7 +41,7 @@ export const tsdocRules: DummyRuleMap = {
   // Unescaped *\/ inside comment content must be written as *\/.
   'tsdoc/escape-inline-tags': 'error',
 
-  // Only TSDoc-standard tags allowed. Unescaped @ in prose is flagged -- escape as \@.
+  // Only TSDoc-standard tags allowed. Unescaped @ in prose is flagged: escape as \@.
   'tsdoc/check-tag-names': 'error',
 
   // No conflicting access modifiers (e.g. @public and @internal together).
@@ -50,7 +50,7 @@ export const tsdocRules: DummyRuleMap = {
   // TSDoc syntax must parse without errors (malformed inline tags, broken links, etc.).
   'tsdoc/valid-types': 'warn',
 
-  // No JSDoc-style {Type} annotations in TSDoc -- TypeScript handles types.
+  // No JSDoc-style {Type} annotations in TSDoc: TypeScript handles types.
   'tsdoc/no-types': 'error',
 
   // @param names must match the function signature.

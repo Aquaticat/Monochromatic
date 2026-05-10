@@ -263,7 +263,7 @@ async function readEffortIndicator(): Promise<string> {
 
 //endregion
 
-//region Activity word -- gerund extraction from transcript
+//region Activity word: gerund extraction from transcript
 
 /**
  * Words ending in "-ing" that are not meaningful activity verbs.
@@ -420,7 +420,7 @@ function findGerundInText(text: string,): string | undefined {
 /**
  * Extract a context-aware activity word from the transcript.
  * Reads the last {@link TAIL_BYTES} of the transcript as a raw string
- * and finds the last gerund in it. No JSON parsing needed --
+ * and finds the last gerund in it. No JSON parsing needed:
  * gerunds in assistant prose survive the JSONL wrapping.
  * Falls back to "".
  *

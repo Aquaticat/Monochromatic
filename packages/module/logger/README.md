@@ -1,7 +1,7 @@
 # module-logger
 
 Zero-config multi-sink logger with tagged composition.
-Works immediately at import -- auto-discovers available backends for the current runtime
+Works immediately at import: auto-discovers available backends for the current runtime
 without a configuration step.
 
 ## Usage
@@ -49,7 +49,7 @@ logger.error('unexpected shutdown',);
 Six levels, each mapping to a dedicated method: `trace`, `debug`, `info`, `warn`, `error`, `fatal`.
 
 All methods accept a single `string` argument.
-The caller owns serialization -- template literals cover the common case
+The caller owns serialization; template literals cover the common case
 and keep the logger free of stringify opinions.
 
 ```ts
@@ -72,7 +72,7 @@ Availability is verified once at module load; sinks that fail verification are s
   ancestor `node_modules/`, then appends JSONL records to
   `<that dir>/node_modules/.monochromatic/{timestamp}.log.jsonl` via
   `node:fs/promises`. When no ancestor `node_modules/` exists, the sink
-  is marked unavailable rather than creating one at cwd -- this prevents
+  is marked unavailable rather than creating one at cwd; this prevents
   stray log directories from landing inside build output or other
   non-project trees when a script is invoked from an unexpected cwd
 - **OPFS** -- browser only; appends JSONL records to Origin Private File System;
@@ -82,7 +82,7 @@ Availability is verified once at module load; sinks that fail verification are s
 - **noop** -- discards all records; useful for testing
 
 Sinks can be sync or async.
-Async sinks are fire-and-forget -- the log call never blocks the caller.
+Async sinks are fire-and-forget; the log call never blocks the caller.
 If a sink throws or its promise rejects, it is marked unavailable and excluded from future calls.
 
 ## Log record format

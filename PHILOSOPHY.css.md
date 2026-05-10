@@ -3,7 +3,7 @@
 ## h-css: hyperscript-style CSS generation
 
 h-css is a string-returning function that constructs CSS from declarative options objects.
-Same pattern as h-xml and h-html — call `$()` with named parameters, get a string back.
+Same pattern as h-xml and h-html: call `$()` with named parameters, get a string back.
 
 ```ts
 $({ rule: '.card', decls: { display: 'flex', gap: '1rem', }, },);
@@ -13,7 +13,7 @@ $({ rule: '.card', decls: { display: 'flex', gap: '1rem', }, },);
 ### Why not template literals
 
 Template literals in CSS-in-JS (Lit's `css`, styled-components, Emotion) treat CSS as opaque strings.
-Editors see them as plain text — no property name autocomplete, no value validation, no type checking.
+Editors see them as plain text: no property name autocomplete, no value validation, no type checking.
 Composition requires string interpolation, which breaks structure and makes refactoring fragile.
 
 h-css uses object keys for property names and object values for property values.
@@ -27,13 +27,13 @@ External CSS files (CSS Modules, vanilla-extract, Tailwind, UnoCSS) generate sty
 that attach to the document's global scope.
 Shadow DOM encapsulation prevents these global stylesheets from reaching shadow roots.
 Injecting external CSS into each shadow root requires either duplicating the file content
-or using `adoptedStyleSheets` with constructable stylesheets — both add machinery
+or using `adoptedStyleSheets` with constructable stylesheets. Both add machinery
 that h-css eliminates by generating CSS strings directly where they're needed.
 
 ### Why not runtime CSS-in-JS
 
 Runtime CSS-in-JS libraries (Emotion, styled-components, Goober) inject styles into `<style>` elements
-at runtime in the browser — the browser parses JavaScript, generates CSS strings, creates DOM elements,
+at runtime in the browser: the browser parses JavaScript, generates CSS strings, creates DOM elements,
 and inserts them into the document.
 h-css generates the same CSS strings at build time (or SSR time) as part of the JS bundle.
 The browser receives pre-built CSS strings that need no generation step.
@@ -44,7 +44,7 @@ PostCSS and Lightning CSS process `.css` files through a build pipeline with cus
 (`@mixin`, `@apply`, nesting transforms, vendor prefixes).
 This adds a build dependency, a separate compilation step, and a custom syntax that editors
 may not fully support.
-h-css needs no build step — it's a pure function that runs wherever TypeScript runs.
+h-css needs no build step: it's a pure function that runs wherever TypeScript runs.
 
 ## Mixins as functions
 
@@ -60,7 +60,7 @@ function buttonOutlined(): CssDeclarations {
 
 Advantages over CSS `@mixin`/`@apply`:
 
-- **Parameterized**: `focusOutline({ offset: '0.25rem' })` — function arguments replace mixin variables
+- **Parameterized**: `focusOutline({ offset: '0.25rem' })` (function arguments replace mixin variables)
 - **Type-checked**: return type `CssDeclarations` ensures property names and values are valid CSS
 - **Composable**: object spread merges declarations; later properties override earlier ones
 - **Refactorable**: rename a mixin function and TypeScript reports every call site
@@ -92,4 +92,4 @@ $({
 },);
 ```
 
-No `var()` fallbacks — the token system guarantees every custom property is defined.
+No `var()` fallbacks: the token system guarantees every custom property is defined.

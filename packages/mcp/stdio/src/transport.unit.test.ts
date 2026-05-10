@@ -15,7 +15,7 @@ import {
 
 import type { McpServerHandle, } from './server-types.ts';
 
-//region helpers -- test doubles for stdin/stdout and server handle
+//region helpers: test doubles for stdin/stdout and server handle
 
 /**
  * Creates a ReadableStream from newline-delimited messages.

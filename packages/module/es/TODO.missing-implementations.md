@@ -10,38 +10,38 @@
 
 ### Object Utilities (Completely Missing - Critical Gap)
 
-**Status**: Critical Priority - Fundamental data manipulation
+**Status**: Critical Priority: Fundamental data manipulation
 
 **Core Object Operations**:
 
-- [ ] **`object.pick(keys, obj)`** - Select specific properties with type safety
-- [ ] **`object.omit(keys, obj)`** - Remove specific properties with type safety
-- [ ] **`object.merge(obj1, obj2, ...objs)`** - Deep merge objects with conflict resolution
-- [ ] **`object.assign(target, ...sources)`** - Shallow merge with proper typing
-- [ ] **`object.clone(obj)`** - Deep clone objects immutably
-- [ ] **`object.freeze(obj)`** - Deep freeze objects recursively
-- [ ] **`object.seal(obj)`** - Deep seal objects recursively
+- [ ] **`object.pick(keys, obj)`**: Select specific properties with type safety
+- [ ] **`object.omit(keys, obj)`**: Remove specific properties with type safety
+- [ ] **`object.merge(obj1, obj2, ...objs)`**: Deep merge objects with conflict resolution
+- [ ] **`object.assign(target, ...sources)`**: Shallow merge with proper typing
+- [ ] **`object.clone(obj)`**: Deep clone objects immutably
+- [ ] **`object.freeze(obj)`**: Deep freeze objects recursively
+- [ ] **`object.seal(obj)`**: Deep seal objects recursively
 
 **Object Transformation**:
 
-- [ ] **`object.map(fn, obj)`** - Transform object values with mapping function
-- [ ] **`object.mapKeys(fn, obj)`** - Transform object keys with mapping function
-- [ ] **`object.filter(predicate, obj)`** - Filter object properties by predicate
-- [ ] **`object.filterKeys(predicate, obj)`** - Filter object properties by key predicate
-- [ ] **`object.reduce(fn, initial, obj)`** - Reduce object to single value
-- [ ] **`object.transform(transformer, obj)`** - Transform keys and values simultaneously
+- [ ] **`object.map(fn, obj)`**: Transform object values with mapping function
+- [ ] **`object.mapKeys(fn, obj)`**: Transform object keys with mapping function
+- [ ] **`object.filter(predicate, obj)`**: Filter object properties by predicate
+- [ ] **`object.filterKeys(predicate, obj)`**: Filter object properties by key predicate
+- [ ] **`object.reduce(fn, initial, obj)`**: Reduce object to single value
+- [ ] **`object.transform(transformer, obj)`**: Transform keys and values simultaneously
 
 **Object Structure Operations**:
 
-- [ ] **`object.flatten(obj, separator?)`** - Flatten nested objects to dot notation
-- [ ] **`object.unflatten(obj, separator?)`** - Convert dot notation back to nested
-- [ ] **`object.invert(obj)`** - Swap keys and values with proper typing
-- [ ] **`object.groupBy(fn, obj)`** - Group object properties by grouping function
-- [ ] **`object.partition(predicate, obj)`** - Split object into two based on predicate
+- [ ] **`object.flatten(obj, separator?)`**: Flatten nested objects to dot notation
+- [ ] **`object.unflatten(obj, separator?)`**: Convert dot notation back to nested
+- [ ] **`object.invert(obj)`**: Swap keys and values with proper typing
+- [ ] **`object.groupBy(fn, obj)`**: Group object properties by grouping function
+- [ ] **`object.partition(predicate, obj)`**: Split object into two based on predicate
 
 **Object Analysis**:
 
-- [ ] **`object.isEmpty(obj)`** - Type-safe empty object checking
+- [ ] **`object.isEmpty(obj)`**: Type-safe empty object checking
 - [ ] **`object.size(obj)`** - Get enumerable property count
 - [ ] **`object.depth(obj)`** - Calculate maximum nesting depth
 - [ ] **`object.paths(obj)`** - Get all property paths as arrays

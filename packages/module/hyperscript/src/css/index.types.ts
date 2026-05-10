@@ -37,13 +37,13 @@ type AtRuleDeclsMap = {
  */
 type TypedAtRuleOptions = {
   [K in keyof AtRuleDeclsMap]: {
-    /** At-rule name — narrows `decls` to the matching descriptor type */
+    /** At-rule name: narrows `decls` to the matching descriptor type */
     at: K;
     /** At-rule prelude/parameters (e.g. `'--color-fg'` for `@property`) */
     params?: string;
     /** At-rule descriptors with editor intellisense per at-rule type */
     decls?: AtRuleDeclsMap[K];
-    /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
+    /** Raw CSS string to inject inside the block (NOT escaped; caller responsible) */
     raw?: string;
     /** Nested rules or at-rules inside this block */
     children?: readonly string[];
@@ -63,13 +63,13 @@ type UntypedAtRuleName = Exclude<StrictAtRuleName, keyof AtRuleDeclsMap>;
  * and `(string & {})` as an escape hatch for non-standard at-rule names.
  */
 type UntypedAtRuleOptions = {
-  /** At-rule name — standard names get autocomplete, arbitrary strings accepted via `(string & {})` */
+  /** At-rule name: standard names get autocomplete, arbitrary strings accepted via `(string & {})` */
   at: UntypedAtRuleName | (string & {});
   /** At-rule prelude/parameters (e.g. `'(prefers-color-scheme: dark)'` for `@media`) */
   params?: string;
   /** At-rule descriptor declarations (untyped for at-rules without csstype descriptors) */
   decls?: Record<string, string>;
-  /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
+  /** Raw CSS string to inject inside the block (NOT escaped; caller responsible) */
   raw?: string;
   /** Nested rules or at-rules inside this block */
   children?: readonly string[];
@@ -79,9 +79,9 @@ type UntypedAtRuleOptions = {
  * Options for a CSS at-rule.
  *
  * At-rules come in three forms:
- * - **Block with children**: `@media (...) { rules }` — provide `children`
- * - **Block with declarations**: `@property --x { syntax: ... }` — provide `decls`
- * - **Statement**: `@layer tokens;` — omit both `decls` and `children`
+ * - **Block with children**: `@media (...) { rules }`, provide `children`
+ * - **Block with declarations**: `@property --x { syntax: ... }`, provide `decls`
+ * - **Statement**: `@layer tokens;`, omit both `decls` and `children`
  *
  * For at-rules with csstype descriptor interfaces (`font-face`, `property`,
  * `counter-style`, `page`, `view-transition`),
@@ -98,9 +98,9 @@ export type AtRuleOptions = TypedAtRuleOptions | UntypedAtRuleOptions;
 export type RuleOptions = {
   /** CSS selector (e.g. `'.card'`, `'&:hover'`, `':root'`) */
   rule: string;
-  /** CSS declarations — strict property names, strict values, custom properties */
+  /** CSS declarations: strict property names, strict values, custom properties */
   decls?: StrictCssDeclarations;
-  /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
+  /** Raw CSS string to inject inside the block (NOT escaped; caller responsible) */
   raw?: string;
   /** Nested rules or at-rules inside this block */
   children?: readonly string[];

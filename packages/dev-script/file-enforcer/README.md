@@ -1,7 +1,7 @@
 # file-enforcer
 
 Declarative TypeScript tool for keeping derived files in sync across a monorepo.
-Uses direct async function calls instead of a descriptor/engine pattern -- each call reads and writes immediately.
+Uses direct async function calls instead of a descriptor/engine pattern; each call reads and writes immediately.
 
 ## Motivation
 

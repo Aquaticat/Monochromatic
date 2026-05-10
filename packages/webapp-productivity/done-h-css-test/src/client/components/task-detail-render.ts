@@ -56,7 +56,7 @@ export function buildTaskDetailTree(
   }: RenderOptions,
 ): RenderResult {
   // Close button uses innerHTML for SVG because h() creates HTML-namespace
-  // elements -- SVG requires the SVG namespace.
+  // elements: SVG requires the SVG namespace.
   const closeButton = h({
     tag: 'button',
     class: 'close',

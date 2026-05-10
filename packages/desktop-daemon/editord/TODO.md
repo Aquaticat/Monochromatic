@@ -2,10 +2,10 @@
 
 ## Search (resolved)
 
-- ~~**scoping search to last focused directory**~~ --
+- ~~**scoping search to last focused directory**~~:
   fixed by tracking `#lastFocused` via `focusin` on the shadow root
   instead of relying on `activeElement` (which goes null when the overlay steals focus)
-- ~~**Escape requires two presses to close search overlay**~~ --
+- ~~**Escape requires two presses to close search overlay**~~:
   the browser swallows the first Escape keydown entirely (no JS event fires,
   not even a capture-phase listener on the `<dialog>`) and only blurs the `<input>`.
   Fixed by closing the overlay on input `blur` when `relatedTarget` is null

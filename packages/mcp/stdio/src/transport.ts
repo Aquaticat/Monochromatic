@@ -9,7 +9,7 @@ import { readLines, } from './line-reader.ts';
 
 import type { McpServerHandle, } from './server-types.ts';
 
-//region Output writer abstraction -- supports both Bun FileSink and standard WritableStream
+//region Output writer abstraction: supports both Bun FileSink and standard WritableStream
 
 /**
  * Minimal writer interface for stdout output.
@@ -50,7 +50,7 @@ function processStdoutWriter(): StdoutWriter {
 
 //endregion
 
-//region Stdio message loop -- reads stdin lines, validates, dispatches, writes responses
+//region Stdio message loop: reads stdin lines, validates, dispatches, writes responses
 
 /**
  * Connects an MCP server handle to stdin/stdout using newline-delimited JSON-RPC.
@@ -152,7 +152,7 @@ export async function serve(
 
 //endregion
 
-//region Message serialization -- writes JSON-RPC responses to stdout
+//region Message serialization: writes JSON-RPC responses to stdout
 
 /**
  * Writes a JSON-RPC message as a newline-terminated UTF-8 string to the output stream.

@@ -2,23 +2,23 @@
 
 ## Quick Links to Specialized Todo Lists
 
-- [**Build System & Package Management**](TODO.build-system.md) - mise, TypeScript, dependencies
-- [**CLI Tools & Utilities**](TODO.cli-tools.md) - Custom tools and automation scripts
-- [**Documentation & UI/UX**](TODO.documentation.md) - Content, design, and user experience
-- [**Development Environment**](TODO.development.md) - Tooling, setup
-- [**Code Quality & Patterns**](TODO.code-quality.md) - Linting, testing, best practices
-- [**Package-Specific Improvements**](TODO.packages.md) - Module library, config packages, style framework
-- [**Security & Infrastructure**](TODO.security.md) - Application security, deployment hardening
-- [**Performance & Optimization**](TODO.performance.md) - Build performance, runtime optimization
-- [**Automation & DevOps**](TODO.automation.md) - CI/CD, development automation, release management
-- [**VM Dev Environment**](TODO.vm-dev-environment.md) - Portable immutable VM image ([rationale](PHILOSOPHY.vm-dev-environment.md))
-- [**Completed Tasks**](TODO.completed.md) - Reference for finished work
+- [**Build System & Package Management**](TODO.build-system.md): mise, TypeScript, dependencies
+- [**CLI Tools & Utilities**](TODO.cli-tools.md): Custom tools and automation scripts
+- [**Documentation & UI/UX**](TODO.documentation.md): Content, design, and user experience
+- [**Development Environment**](TODO.development.md): Tooling, setup
+- [**Code Quality & Patterns**](TODO.code-quality.md): Linting, testing, best practices
+- [**Package-Specific Improvements**](TODO.packages.md): Module library, config packages, style framework
+- [**Security & Infrastructure**](TODO.security.md): Application security, deployment hardening
+- [**Performance & Optimization**](TODO.performance.md): Build performance, runtime optimization
+- [**Automation & DevOps**](TODO.automation.md): CI/CD, development automation, release management
+- [**VM Dev Environment**](TODO.vm-dev-environment.md): Portable immutable VM image ([rationale](PHILOSOPHY.vm-dev-environment.md))
+- [**Completed Tasks**](TODO.completed.md): Reference for finished work
 
 ## Priority Overview
 
 ### Critical priority
 
-Immediate action required -- blocking development or production.
+Immediate action required: blocking development or production.
 
 1. **Build System Reliability** → [Build System Todo](TODO.build-system.md#critical-issues)
    - Fresh clone setup problems blocking new developers

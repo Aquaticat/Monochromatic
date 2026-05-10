@@ -25,11 +25,11 @@ Run: `mise run //packages/cli/vmsync:test:e2e`
 
 The Windows `describe` block is written in `lifecycle.unit.test.ts` but needs:
 
-1. **mise in the Windows template** -- the current approach embeds `mise.exe` in the autounattend ISO,
+1. **mise in the Windows template**: the current approach embeds `mise.exe` in the autounattend ISO,
    but the ISO9660 generator may not handle the ~15 MB binary well, and the guest agent timeout
    suggests the Windows installation itself may be affected.
 
-2. **Simpler alternative: install mise at test runtime** -- since we're dropping winget,
+2. **Simpler alternative: install mise at test runtime**: since we're dropping winget,
    the Windows beforeAll should:
    - Create the VM (`mvm create vmsync-e2e-win --image windows`)
    - Push the vmsync bundle via virtiofs
@@ -45,7 +45,7 @@ The Windows `describe` block is written in `lifecycle.unit.test.ts` but needs:
    The version URL needs resolution (no `latest` shortcut; use GitHub API redirect).
    Or just use `gh release download` pattern.
 
-3. **VirtioFsSvc drive mapping** -- the Windows test assumes virtiofs maps to `Z:\`.
+3. **VirtioFsSvc drive mapping**: the Windows test assumes virtiofs maps to `Z:\`.
    VirtioFsSvc maps virtiofs tags to drive letters. The tag is `mvm-shared`.
    Need to verify the actual drive letter after the template is rebuilt with the viofs driver.
    The viofs driver was added to `VIRTIO_DRIVER_DIRS` in `autounattend-virtio.ts`

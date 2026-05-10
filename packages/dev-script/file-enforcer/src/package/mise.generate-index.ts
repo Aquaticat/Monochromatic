@@ -269,7 +269,7 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
   const lines: string[] = [
     '/**',
     ' * Auto-generated from Repology package metadata.',
-    ' * Do not edit manually -- run the index generator to rebuild.',
+    ' * Do not edit manually: run the index generator to rebuild.',
     ' *',
     ` * Generated: ${today}`,
     ` * Entries: ${projects.length}`,

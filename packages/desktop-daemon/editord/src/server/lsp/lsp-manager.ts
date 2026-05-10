@@ -63,7 +63,7 @@ export type LspManager = {
   /**
    * Notifies LSP servers that a file was opened.
    * Files exceeding {@link FILE_SIZE_WARNING_THRESHOLD} are silently
-   * skipped — no document is registered, so all subsequent operations
+   * skipped; no document is registered, so all subsequent operations
    * (didChange, hover, completions, etc.) become no-ops for that path.
    */
   didOpen(opts: {

@@ -11,7 +11,7 @@ import { requireRoot, } from './rules/require-root.ts';
 
 export {};
 
-//region Rule pipeline -- validate and transform args before forwarding to real git
+//region Rule pipeline: validate and transform args before forwarding to real git
 
 /** Tagged logger for the main entry point. */
 const rl = tagged({
@@ -45,7 +45,7 @@ const RULES: readonly ((
 
 //endregion Rule pipeline
 
-//region Execution -- resolve real git, apply rules, spawn
+//region Execution: resolve real git, apply rules, spawn
 
 try {
   /** Final arguments after all rules have been applied. */

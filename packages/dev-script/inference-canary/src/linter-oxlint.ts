@@ -17,7 +17,7 @@ import {
   tagged,
 } from './log.ts';
 
-//region Types -- oxlint JSON output shape and the parsed result type returned to callers
+//region Types: oxlint JSON output shape and the parsed result type returned to callers
 
 /** Shape of a single oxlint diagnostic in JSON output */
 type OxlintDiagnostic = {
@@ -155,7 +155,7 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
 
 //endregion Parsing
 
-//region Runner -- spawns oxlint, handles non-zero exits (oxlint exits 1 on violations), returns OxlintResult
+//region Runner: spawns oxlint, handles non-zero exits (oxlint exits 1 on violations), returns OxlintResult
 
 /**
  * Runs oxlint --format json on a file, returns parsed severity breakdown.

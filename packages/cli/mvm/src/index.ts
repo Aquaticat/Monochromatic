@@ -21,7 +21,7 @@ import { update, } from './update.ts';
 
 export {};
 
-//region Verbose flag -- stripped before parsing; logger detects it from raw process.argv at import time
+//region Verbose flag: stripped before parsing; logger detects it from raw process.argv at import time
 
 /**
  * Flags consumed by infrastructure (logger) rather than the argument parser.
@@ -61,7 +61,7 @@ const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
 
 //endregion Verbose flag
 
-//region Dispatch -- parse argv and route to the appropriate handler
+//region Dispatch: parse argv and route to the appropriate handler
 
 /** Parsed CLI result from process.argv */
 const args = runSync(

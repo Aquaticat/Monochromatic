@@ -6,7 +6,7 @@
 
 #### Code Splitting
 
-**Status**: Normal Priority - Application performance
+**Status**: Normal priority, application performance
 
 - [ ] Implement route-based code splitting for web applications
 - [ ] Add dynamic imports for large dependencies
@@ -17,7 +17,7 @@
 
 #### Tree Shaking
 
-**Status**: Normal Priority - Bundle size
+**Status**: Normal priority, bundle size
 
 - [ ] Optimize library exports for better tree shaking
 - [ ] Identify and eliminate dead code
@@ -28,7 +28,7 @@
 
 #### Asset Optimization
 
-**Status**: Normal Priority - Load performance
+**Status**: Normal priority, load performance
 
 - [ ] Implement efficient image optimization and formats
 - [ ] Add font optimization and loading strategies

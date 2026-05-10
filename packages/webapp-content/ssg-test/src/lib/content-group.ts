@@ -4,7 +4,7 @@
  * Provides functions to organize posts by language, slug name, and tag.
  * Used by the build pipeline to generate per-language and per-tag pages.
  */
-// File justification: 104 lines -- grouping functions share the same type
+// File justification: 104 lines; grouping functions share the same type
 // and patterns; splitting by-lang/by-name from by-tag would break cohesion.
 import type { Locales, } from '../i18n/i18n-types.ts';
 

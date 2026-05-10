@@ -14,7 +14,7 @@ import {
   textResponse,
 } from './response.ts';
 
-//region Lifecycle tools -- VM listing and template updates
+//region Lifecycle tools: VM listing and template updates
 
 /** MCP tool: list all managed VMs and their state. */
 export const listTool: ToolEntry = defineTool(

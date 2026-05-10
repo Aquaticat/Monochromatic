@@ -724,7 +724,7 @@ await describe({
           name:
             'block comment terminates at first */ regardless of quotes (per JSONC spec)',
           fn: async () => {
-            // In JSONC, */ always terminates a block comment — quotes have no special meaning inside comments
+            // In JSONC, */ always terminates a block comment; quotes have no special meaning inside comments
             const result = $({
               value: '/* text with "quoted */ inside" */{}' as FragmentStringJsonc,
             },);

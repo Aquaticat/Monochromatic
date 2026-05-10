@@ -16,4 +16,4 @@ as a reference for building new pages that conform to the site's existing visual
 ## Viewing
 
 Open `src/index.html` directly in a browser.
-All screenshots are embedded as base64 AVIF data URIs -- no server required.
+All screenshots are embedded as base64 AVIF data URIs: no server required.

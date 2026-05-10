@@ -3,7 +3,7 @@
 A linear-time deny-list scanner for Git repos, designed for the case where the rules themselves are sensitive.
 
 Most secret-scanning tools (gitleaks, trufflehog, secretlint) ship rules in committed config files and rely on `keywords` prefilters.
-That breaks down when the forbidden literals would themselves leak if committed --
+That breaks down when the forbidden literals would themselves leak if committed:
 a customer name, a partner identifier, an internal codename, a pre-disclosure project name.
 `forbidden-strings` keeps the rule file out of the repo entirely,
 accepts it via env var or `--rules`,
@@ -31,10 +31,10 @@ and never prints the matched substring in failure output.
 ## When to pick something else
 
 If the rule set can ship in the repo and set-algebra is unnecessary, gitleaks or betterleaks
-is probably a better fit -- larger ecosystem, SARIF output, GitHub-native code-scanning upload,
+is probably a better fit: larger ecosystem, SARIF output, GitHub-native code-scanning upload,
 allowlist files keyed on path globs.
 The niche `forbidden-strings` fills is "rules that cannot be committed AND the rule grammar
-needs operators PCRE doesn't have" -- pick it when one of those two is the binding constraint.
+needs operators PCRE doesn't have"; pick it when one of those two is the binding constraint.
 
 ## Build
 
@@ -98,7 +98,7 @@ the workflow YAML never echoes the secret value:
   run: hk check --from-ref origin/main
 ```
 
-Pipe via `printenv > file` rather than interpolating the secret into a `run:` block --
+Pipe via `printenv > file` rather than interpolating the secret into a `run:` block;
 shell expansion in the latter can leak the value to the log even with GitHub's masking.
 
 ## Rule file format
@@ -131,7 +131,7 @@ The 7-byte threshold for word-bounded vs substring-anywhere comes from a coincid
 calculation: a length-L literal in a case-sensitive alphabet of size A scanned over N random
 bytes has expected coincidence count ~= N * A^(-L). At L = 7, in 1 GB of dense base64 (A = 64)
 or random alphanumeric (A = 62) noise, the expected coincidence per rule is ~2.3e-4 and
-~3.0e-4 respectively -- comfortably under 1 across realistic repo sizes and noise types.
+~3.0e-4 respectively, comfortably under 1 across realistic repo sizes and noise types.
 At L = 6 the same calculation gives ~0.015 / ~0.019, which becomes borderline once a repo
 has multiple GB of dense content or 100+ deny-list rules. See `SUBSTRING_THRESHOLD` in
 `src/rules.rs` for the threshold constant and derivation.
@@ -149,7 +149,7 @@ Resharp extends standard regex with two top-level set operators that pure-PCRE e
 - `A&B` -- intersection: matches strings matched by both `A` and `B`
 - `~(A)` -- complement: matches strings that do NOT match `A`
 
-Combined, these express "match X but not Y" without lookaround. Example -- ban any
+Combined, these express "match X but not Y" without lookaround. Example: ban any
 five-digit key except the all-zeros placeholder:
 
 ```
@@ -164,7 +164,12 @@ The scanner extracts a leading literal prefix from each regex rule and folds it 
 shared Aho-Corasick gate so the regex engine only runs on files that contain the prefix.
 A pattern that starts with literal bytes (`key_[0-9]{5}&~(...)` extracts `key_`) stays on
 the fast path. A pattern that starts with `~(...)` or another metacharacter falls into a
-smaller residual gate -- still correct, just slower per file.
+smaller residual gate, still correct, just slower per file.
+Extracted prefixes preserve the regex source's original UTF-8 bytes verbatim, so a rule
+whose leading literal contains non-ASCII characters (em-dash `—`, smart quotes, ellipsis,
+emoji) gates correctly against file content holding the same bytes; a walker that
+mojibake'd those bytes during extraction would silently disable the rule by registering
+a pattern AC could never match.
 
 ### Supported regex flags
 
@@ -192,7 +197,7 @@ PATH:LINE:COL_START..COL_END rule=N
 
 Columns are 1-based byte offsets within the matched line.
 **The matched substring is never printed.** Only the path, line number, column range,
-and the opaque rule index appear in failure output -- otherwise a failing CI log
+and the opaque rule index appear in failure output; otherwise a failing CI log
 becomes a leak surface. A contributor wanting to know which rule fired looks up the
 index against their local rule file.
 

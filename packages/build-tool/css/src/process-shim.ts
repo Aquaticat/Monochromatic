@@ -5,7 +5,7 @@
  * `process.cwd()` without `typeof` guards. This module must be imported
  * before any code that depends on `process` (e.g. postcss, node:path polyfill).
  *
- * Side-effect-only import — sets `globalThis.process` if missing.
+ * Side-effect-only import: sets `globalThis.process` if missing.
  */
 /**
  * Returns the root directory as the current working directory.

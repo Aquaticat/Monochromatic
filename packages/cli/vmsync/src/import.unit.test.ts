@@ -6,7 +6,7 @@ import {
 
 import { nameFromPath, } from './import.ts';
 
-//region nameFromPath -- derives VM names from image file paths
+//region nameFromPath: derives VM names from image file paths
 
 await describe({
   name: nameFromPath.name,

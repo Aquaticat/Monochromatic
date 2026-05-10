@@ -51,7 +51,7 @@ The convention `@monochromatic-dev/<category>-<name>` is used for most packages,
 - **`@monochromatic-dev/bun-test`** -- missing category prefix
 - **`@monochromatic-dev/ensure-dependencies`** -- missing `build-` prefix
 - **`@monochromatic-dev/nvim-mcp`** -- missing category prefix
-- **`test-css-*` packages** -- use `test-` prefix instead of matching their directory category
+- **`test-css-*` packages**: use `test-` prefix instead of matching their directory category
 
 ### Misplaced packages
 

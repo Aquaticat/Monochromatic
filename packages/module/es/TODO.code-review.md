@@ -10,7 +10,7 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
 
 ### BLOCKER
 
-- `t object/t logger/f/t never/r s/p p/index.ts:100` - Uses `.catch()` callback pattern which is banned by project rules ("No `.then()`, `.catch()`, `.finally()`").
+- `t object/t logger/f/t never/r s/p p/index.ts:100`: Uses `.catch()` callback pattern which is banned by project rules ("No `.then()`, `.catch()`, `.finally()`").
   `result.catch(() => { ... })` should be restructured to use `async`/`await` with `try`/`catch`.
   Suggested action: make `createMethod` return an `async` function or fire-and-forget with a helper that uses `try`/`catch`.
 
@@ -27,9 +27,9 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
   Suggested action: add TSDoc explaining the async iterable-to-array conversion.
 
 - Multiple files exceed 100 lines without a justification comment at the top:
-  - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.ts` (331 lines) - has a comment about mutual recursion but not an explicit justification for exceeding the limit
-  - `path/index.ts` (241 lines) - no justification comment
-  - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/fastPath.ts` (239 lines) - no justification comment
+  - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.ts` (331 lines): has a comment about mutual recursion but not an explicit justification for exceeding the limit
+  - `path/index.ts` (241 lines): no justification comment
+  - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/fastPath.ts` (239 lines): no justification comment
   - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/index.ts` (164 lines)
   - `t string/t html/f/t string jsx/r s/p n/index.ts` (157 lines)
   - `t string/f/t any/export/r s/p p/index.ts` (156 lines)
@@ -47,11 +47,11 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
   The logger sinks are a special case (they **are** the logging infrastructure), but the file sink and OPFS sink catch blocks silently swallow errors with `// Silently fail` comments.
   Suggested action: at minimum, set the `available` flag to `false` in the sink `$` function catch blocks (already done in the orchestrator, but not in individual sinks), or use `console.error` as a last-resort fallback.
 
-- `t never/f/t never/onLoadRedirectingTo/r s/p p/index.ts` - Silently does nothing if no anchor element is found. Per project rules: "Never silently discard unexpected states."
+- `t never/f/t never/onLoadRedirectingTo/r s/p p/index.ts`: Silently does nothing if no anchor element is found. Per project rules: "Never silently discard unexpected states."
   If this function is called, it should be because a redirect is expected. Finding no target element likely indicates a bug.
   Suggested action: throw an error or at minimum `console.warn` when no `.redirectingTo` anchor is found, or document that silent no-op is intentional.
 
-- `t object/t promise/f/t number/wait/r a/p p/index.ts:43` - TSDoc `@example` block uses `.then()` pattern which contradicts project rules.
+- `t object/t promise/f/t number/wait/r a/p p/index.ts:43`: TSDoc `@example` block uses `.then()` pattern which contradicts project rules.
   Suggested action: rewrite the example to use `async`/`await`.
 
 - Test coverage gap: 32 test files for 114 files with exports (roughly 28% coverage by file count).
@@ -63,20 +63,20 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
 - `src/index.ts` only re-exports `types`. The `path` module is not re-exported from the package entry point.
   Suggested action: consider re-exporting `path` if it is intended for consumer use, or document why it is excluded.
 
-- `t object/t logger/t sink/t file/p p/index.ts` - Writes log files to `node_modules/.monochromatic/` which is unconventional and will be wiped on `npm install`.
+- `t object/t logger/t sink/t file/p p/index.ts`: Writes log files to `node_modules/.monochromatic/` which is unconventional and will be wiped on `npm install`.
   Suggested action: consider using a `.cache` or `data` directory, or document this design choice.
 
-- `t never/f/t any/throws/r s/p n/index.ts` - Return type is `void` but function always throws.
+- `t never/f/t any/throws/r s/p n/index.ts`: Return type is `void` but function always throws.
   The return type should be `never` for accurate type narrowing.
   Suggested action: change return type from `void` to `never`.
 
-- `t object/t logger/t sink/t sessionStorage/r s/p p/index.ts:43` - `lineCounter++` uses postfix increment which is a mutation without justification.
+- `t object/t logger/t sink/t sessionStorage/r s/p p/index.ts:43`: `lineCounter++` uses postfix increment which is a mutation without justification.
   Suggested action: add a brief comment explaining why mutable state is needed here.
 
-- `customParsers.ts:101` - `['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].some(...)` could be simplified.
+- `customParsers.ts:101`: `['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].some(...)` could be simplified.
   Suggested action: use a regex or charCode range check for cleaner digit detection.
 
-- `path/index.ts` - The `dirnameFallback` function uses a `for` loop with `let charIndex` and mutable `lastSlash`.
+- `path/index.ts`: The `dirnameFallback` function uses a `for` loop with `let charIndex` and mutable `lastSlash`.
   The mutable variables lack justification comments.
   Suggested action: add brief justification comments for the `let` bindings.
 

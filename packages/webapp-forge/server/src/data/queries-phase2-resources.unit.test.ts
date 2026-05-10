@@ -295,7 +295,7 @@ await describe({
             const cleared = await getIssueMilestoneId(issueId,);
             expect(cleared,).toBe(undefined,);
 
-            // Guard against unused import warning -- exercise insertLabel here too
+            // Guard against unused import warning; exercise insertLabel here too
             const labelId = uniqueId('lbl',);
             await insertLabel({
               id: labelId,

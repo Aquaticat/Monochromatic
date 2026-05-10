@@ -33,7 +33,7 @@ export type {
   FileDiagnostics,
 } from './nvim-types.ts';
 
-//region Public API -- query diagnostics and file info across all Neovim instances
+//region Public API: query diagnostics and file info across all Neovim instances
 
 /**
  * Returns diagnostics for the current buffer from each Neovim instance.

@@ -1,7 +1,7 @@
 /**
  * CSS value constructor functions that produce branded {@link CssValue} strings.
  *
- * Each constructor returns a `CssValue` — a branded string that the strict
+ * Each constructor returns a `CssValue`: a branded string that the strict
  * `CssDeclarations` type accepts in any property value position.
  */
 
@@ -14,7 +14,7 @@ import type { CssValue, } from './values.ts';
 /**
  * Creates a `rem` length value.
  *
- * `rem` is the primary length unit — relative to root font size, predictable across contexts.
+ * `rem` is the primary length unit: relative to root font size, predictable across contexts.
  *
  * @param n - numeric value
  *
@@ -33,7 +33,7 @@ export function cssRem(n: number,): CssValue {
 /**
  * Creates an `em` length value.
  *
- * `em` is relative to the element's font size — use for font-relative spacing.
+ * `em` is relative to the element's font size; use for font-relative spacing.
  *
  * @param n - numeric value
  *
@@ -99,7 +99,7 @@ export function cssLh(n: number,): CssValue {
 /**
  * Creates a `ch` character-width length value.
  *
- * `ch` is the advance width of the `0` glyph in the element's font —
+ * `ch` is the advance width of the `0` glyph in the element's font;
  * use for sizing relative to monospace character cells (gutter widths,
  * tab stops, column counts).
  *
@@ -275,7 +275,7 @@ export function cssTurn(n: number,): CssValue {
 /**
  * Creates an `oklch()` color value.
  *
- * `oklch()` is the primary color function — perceptually uniform, wide gamut.
+ * `oklch()` is the primary color function: perceptually uniform, wide gamut.
  * All other color functions (`rgb`, `hsl`, `hwb`, `lab`, `lch`, `oklab`) are banned.
  *
  * @param l - lightness (0 to 1)
@@ -328,13 +328,13 @@ export function cssOklch(
  *
  * @param h - hue channel expression, defaults to `'h'` (passthrough)
  *
- * @param a - alpha expression (e.g. `'25%'`, `'0.5'`, optional — omitted means no alpha override)
+ * @param a - alpha expression (e.g. `'25%'`, `'0.5'`, optional; omitted means no alpha override)
  *
  * @returns branded CSS color string (e.g. `'oklch(from var(--primary) l c h / 25%)'`)
  *
  * @example
  * ```ts
- * // Only override alpha — l, c, h pass through from the origin
+ * // Only override alpha; l, c, h pass through from the origin
  * cssOklchFrom({ from: cssVar('primary'), a: '25%' })
  * // 'oklch(from var(--primary) l c h / 25%)'
  *
@@ -425,7 +425,7 @@ export function cssVar(name: string,): CssValue {
 /**
  * Creates a `calc()` expression.
  *
- * Accepts a raw expression string — use other constructors inside template literals
+ * Accepts a raw expression string; use other constructors inside template literals
  * for the operands, then wrap with `cssCalc()`.
  *
  * @param expr - calc expression (e.g. `'1rem + 2rem'`, `'100% - 3rem'`)
@@ -620,7 +620,7 @@ export function cssCubicBezier(values: readonly number[],): CssValue {
 /**
  * Creates a comma-separated CSS value list.
  *
- * Joins items with `, ` — use for multi-value properties like `font-family`,
+ * Joins items with `, `: use for multi-value properties like `font-family`,
  * `transition-property`, `animation-name` (multiple), or `background-image`.
  *
  * @param values - list items (branded CSS values or plain identifier strings)
@@ -643,7 +643,7 @@ export function cssCommaList(values: readonly (CssValue | string)[],): CssValue 
 /**
  * Creates a space-separated compound CSS value.
  *
- * Joins items with ` ` — use for multi-part values like `box-shadow`,
+ * Joins items with ` `: use for multi-part values like `box-shadow`,
  * `transform-origin`, `grid-template`, or any property that takes
  * space-separated components.
  *

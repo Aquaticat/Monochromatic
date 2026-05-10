@@ -176,7 +176,7 @@ await describe({
         // Access 1 to refresh it
         memoized({ args: [1,], salt: 'v1', },);
 
-        // Now add 4 -- should evict 2 (oldest after refresh), not 1
+        // Now add 4; should evict 2 (oldest after refresh), not 1
         memoized({ args: [4,], salt: 'v1', },);
         expect(memoized.store.get('1:v1',),).toBeDefined();
         expect(memoized.store.get('2:v1',),).toBeUndefined();

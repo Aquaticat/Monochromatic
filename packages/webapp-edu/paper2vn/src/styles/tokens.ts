@@ -58,7 +58,7 @@ export const FULL_PERCENT: CssValue = cssPercent(WHOLE,);
 /** Bold weight */
 export const FONT_WEIGHT_BOLD: CssValue = cssNum(BOLD,);
 
-/** Quarter rem -- smallest spacing unit */
+/** Quarter rem: smallest spacing unit */
 export const SPACE_QUARTER: CssValue = cssRem(QUARTER,);
 
 /** Half rem */
@@ -76,16 +76,16 @@ export const SPACE_TWO: CssValue = cssRem(2,);
 /** Touch-target minimum size */
 export const TOUCH_TARGET: CssValue = cssRem(TOUCH_TARGET_REM,);
 
-/** Border radius -- subtle */
+/** Border radius: subtle */
 export const RADIUS_SMALL: CssValue = cssRem(QUARTER,);
 
-/** Border radius -- pill / rounded */
+/** Border radius: pill / rounded */
 export const RADIUS_LARGE: CssValue = cssRem(1,);
 
 /** Half of full block (used for dialogue box max-block-size) */
 export const HALF_DVB: CssValue = cssCalc(`${cssDvb(WHOLE,)} * ${HALF}`,);
 
-/** Eighth rem -- shadow offset */
+/** Eighth rem: shadow offset */
 export const SHADOW_OFFSET: CssValue = cssRem(EIGHTH,);
 
 //endregion

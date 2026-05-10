@@ -62,7 +62,7 @@ async function resolveNodeReadFile(): Promise<ReadFileFn> {
 async function resolveOpfsReadFile(): Promise<ReadFileFn> {
   const { readTextFile, } = await import('happy-opfs');
   l.warn(
-    'using OPFS for monorepo root discovery -- mise.toml must exist in OPFS to be found',
+    'using OPFS for monorepo root discovery: mise.toml must exist in OPFS to be found',
   );
 
   return async function opfsReadFile(path: string,): Promise<string | undefined> {
@@ -80,7 +80,7 @@ async function resolveOpfsReadFile(): Promise<ReadFileFn> {
  * @returns stub read function
  */
 function resolveEmptyReadFile(): ReadFileFn {
-  l.warn('no filesystem available for monorepo root discovery -- search will fail',);
+  l.warn('no filesystem available for monorepo root discovery; search will fail',);
 
   return function emptyReadFile(): Promise<undefined> {
     return Promise.resolve(undefined,);
@@ -113,7 +113,7 @@ async function resolveReadFile(): Promise<ReadFileFn> {
     }
   }
   catch {
-    /* happy-opfs import failed -- fall through to empty stub */
+    /* happy-opfs import failed; fall through to empty stub */
   }
 
   // No filesystem available

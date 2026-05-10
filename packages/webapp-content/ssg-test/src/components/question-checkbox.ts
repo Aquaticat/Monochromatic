@@ -5,7 +5,7 @@
  * CSS-only state reveal. Each option is an independent checkbox; the
  * user can toggle any combination. When an option is checked, its
  * explanation appears and the label turns green if the option is
- * correct or red if it is wrong. No JavaScript — all state lives in
+ * correct or red if it is wrong. No JavaScript; all state lives in
  * the `:checked` attribute of the native checkbox inputs.
  *
  * Use this variant when the lesson is "pick every option that applies"

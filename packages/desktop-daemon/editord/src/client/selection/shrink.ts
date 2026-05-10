@@ -101,7 +101,7 @@ export async function doShrinkSelection({
       );
     }
     else {
-      /** No smaller range — collapse to cursor. */
+      /** No smaller range: collapse to cursor. */
       editorPane.restoreCursor({
         line: pos.line,
         character: pos.character,

@@ -2,7 +2,7 @@
 
 import type { ToolEntry, } from './server-types.ts';
 
-//region defineTool -- convenience for declaring tool entries
+//region defineTool: convenience for declaring tool entries
 
 /**
  * Declares a named tool entry for passing to {@link createMcpServer}.

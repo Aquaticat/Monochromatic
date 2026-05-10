@@ -84,7 +84,7 @@ for (const task of pageData.tasks) {
 if (pageData.tasks.length > 0)
   app.append(list,);
 
-// Live timer updates -- correlate each card with its task by DOM order
+// Live timer updates: correlate each card with its task by DOM order
 setInterval(
   function updateTimers() {
     const cards = list.querySelectorAll<HTMLElement>('task-card',);

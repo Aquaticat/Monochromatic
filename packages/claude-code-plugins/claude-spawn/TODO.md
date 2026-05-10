@@ -209,7 +209,7 @@ The optimistic 3-5 day estimate assumes everything works on first try.
 In practice, each layer (sway in container, CC first-run, buffer polling,
 marketplace install, wtype focus management) is independently capable of
 burning a full day. Debugging requires push-to-CI round-trips with no
-screen to look at — need `grim` screenshot capture for remote debugging,
+screen to look at: need `grim` screenshot capture for remote debugging,
 which is yet another component.
 
 **Per-run cost**: $0.05-0.10 (parent: 3-5 tool calls, child: 1 response).

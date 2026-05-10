@@ -12,7 +12,7 @@ import {
   tagged,
 } from './log.ts';
 
-//region Configuration -- timeout, image tag, and buffer size shared by container-exec.ts
+//region Configuration: timeout, image tag, and buffer size shared by container-exec.ts
 
 /** Container execution timeout in seconds */
 export const CONTAINER_TIMEOUT_SECONDS = 15;
@@ -26,7 +26,7 @@ export const CONTAINER_IMAGE = 'docker.io/oven/bun:1.3';
 
 //endregion Configuration
 
-//region Runtime detection -- uses `which` to locate executables on PATH
+//region Runtime detection: uses `which` to locate executables on PATH
 
 /**
  * Lookup command for finding executables on PATH.

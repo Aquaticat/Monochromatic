@@ -16,7 +16,7 @@ import { promisify, } from 'node:util';
 
 const execAsync = promisify(exec,);
 
-//region Fixture Setup -- temp directory with controllable source and output files
+//region Fixture Setup: temp directory with controllable source and output files
 
 function setup() {
   const testFileDir = import.meta.dirname;
@@ -440,7 +440,7 @@ await describe({
             const { cliPath, outDir, markerPath, } = fixtures;
 
             // Source returns a timestamp far in the future (year 2040)
-            // Output files are from now -- source is newer → stale
+            // Output files are from now; source is newer → stale
             touch(join(outDir, 'a.js',),);
 
             await execAsync(

@@ -1,6 +1,6 @@
 import type { $ as Is, } from '@_/types/t function/t is/t/r s/p p/index.ts';
 
-//region General String Types -- General utility string types
+//region General String Types: General utility string types
 
 //endregion General String Types
 

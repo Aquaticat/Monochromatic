@@ -151,7 +151,7 @@ export type FsChangeType = 'created' | 'modified' | 'deleted';
 
 //endregion Filesystem change types
 
-//region Re-exports — message types split to stay under max-lines
+//region Re-exports: message types split to stay under max-lines
 
 export type {
   ClientMessage,

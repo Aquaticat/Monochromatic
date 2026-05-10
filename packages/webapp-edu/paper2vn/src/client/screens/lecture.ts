@@ -50,7 +50,7 @@ type Cancel = () => void;
  */
 type TimerId = ReturnType<typeof setTimeout>;
 
-/** Beat-runtime state -- kept on the screen instance. */
+/** Beat-runtime state (kept on the screen instance). */
 type Runtime = {
   /** Whether auto-advance is on. */
   auto: boolean;
@@ -360,7 +360,7 @@ function mount(root: HTMLElement,): void {
       void showCurrentBeat();
       return;
     }
-    // End of paper -- park on the last beat.
+    // End of paper. Park on the last beat.
     persistActiveSave();
   }
 

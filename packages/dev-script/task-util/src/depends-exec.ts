@@ -46,7 +46,7 @@ export type ExecuteOptions = {
 
 //endregion Types
 
-//region Execution -- run command with collapsed output
+//region Execution: run command with collapsed output
 
 /**
  * Executes a command, capturing its output. Shows output only on failure.

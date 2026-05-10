@@ -71,7 +71,7 @@ const QCOW2_PATH = join(
   'monochromatic-dev.qcow2',
 );
 
-/** libvirt session URI -- no sudo needed. */
+/** libvirt session URI: no sudo needed. */
 const LIBVIRT_URI = 'qemu:///session';
 
 /**

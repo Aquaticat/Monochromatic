@@ -22,7 +22,7 @@ Measured `module-es` (483 source files, bundles workspace deps) with features to
 DTS generation accounts for ~340ms of the ~380ms total.
 Minification and `firefox140` target transforms are negligible (~1ms combined).
 
-For `terminal-title` (8 DTS source files): 55ms with DTS, 22ms without -- ~33ms DTS overhead.
+For `terminal-title` (8 DTS source files): 55ms with DTS, 22ms without (~33ms DTS overhead).
 
 The benchmark disables every expensive feature: `dts` defaults to false, `minify: false`, `target: false`,
 `skipNodeModulesBundle: true`, and it uses the programmatic API (no CLI startup).
@@ -63,7 +63,7 @@ the DTS bundling pass has inherent overhead:
 2. **Import resolution fanout.**
    For `module-es`: 483 DTS source files produce 1138 cross-file DTS import resolutions.
    Each resolution goes through the JS-side resolver plugin.
-   Rolldown discovers imports incrementally -- each layer of the dependency graph
+   Rolldown discovers imports incrementally: each layer of the dependency graph
    must resolve before the next layer is discovered.
 
 3. **Bundle linking.**
@@ -71,7 +71,7 @@ the DTS bundling pass has inherent overhead:
    on the DTS module graph to produce the final bundled output.
 
 Verified via `DEBUG='rolldown-plugin-dts:*'` output:
-the resolved options confirm `oxc: { stripInternal: false, sourcemap: false }` --
+the resolved options confirm `oxc: { stripInternal: false, sourcemap: false }`:
 OXC is auto-enabled because `tsconfig.json` has `isolatedDeclarations: true`
 (detected at [`rolldown-plugin-dts` options.ts line 944](https://github.com/sxzz/rolldown-plugin-dts):
 `oxc ??= !!(compilerOptions?.isolatedDeclarations && !vue && !tsgo && !tsMacro)`).

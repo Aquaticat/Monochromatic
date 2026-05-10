@@ -1,7 +1,7 @@
 # Performance
 
 Measured wall-clock budget for the `forbidden-strings` scanner.
-Numbers below are not aspirational targets -- they are reproducible measurements
+Numbers below are not aspirational targets; they are reproducible measurements
 against the binary built from this package's `src/`.
 
 ## Last benched
@@ -100,8 +100,8 @@ worth pursuing?" was investigated. The conclusion: **production-shape
 rulesets are at the practical floor on Linux scale**, bounded by rule-
 grammar realities (false-positive rate of literal anchors against kernel
 source), memory bandwidth (AC fast path), and the regex engine's
-per-byte throughput on betterleaks-shape patterns. Mono -- the actual
-CI workload -- is at 37 ms, ~14x under any reasonable budget.
+per-byte throughput on betterleaks-shape patterns. Mono (the actual
+CI workload) is at 37 ms, ~14x under any reasonable budget.
 
 ### The 4 production residuals: source-pattern analysis
 
@@ -221,13 +221,13 @@ is small," which is what we have.
 
 The hot path runs **two** Aho-Corasick `find_overlapping_iter` passes per file:
 
-1. **Case-sensitive AC** -- emits user-authored literal-rule hits AND queues
+1. **Case-sensitive AC**: emits user-authored literal-rule hits AND queues
    regex-rule prefix matches whose required substring is case-sensitive
-   (e.g. `\b(p8e-(?i)[a-z0-9]{32})` -- the leading `p8e-` is case-sensitive).
-2. **Case-insensitive AC** (`AhoCorasickBuilder::ascii_case_insensitive(true)`) --
+   (e.g. `\b(p8e-(?i)[a-z0-9]{32})`: the leading `p8e-` is case-sensitive).
+2. **Case-insensitive AC** (`AhoCorasickBuilder::ascii_case_insensitive(true)`):
    queues regex-rule prefix matches whose required substring is case-insensitive
    (e.g. the betterleaks shape `(?i)[\w.-]{0,50}(?:adafruit)...` puts `adafruit`
-   here). Literal rules NEVER live in this bucket -- user literals are always
+   here). Literal rules NEVER live in this bucket; user literals are always
    case-sensitive.
 
 Shipped optimisations in load order:
@@ -274,8 +274,8 @@ Shipped optimisations in load order:
   (`\p{Han}`, etc.), multi-byte chars inside `[...]` classes, or the
   `(?u)` flag transparently fall through to unicode-on. Literal
   multi-byte UTF-8 sequences in the regex source compile fine in
-  bytes-mode without unicode -- the parser treats them as the matching
-  byte sequence -- so they take the fast path. Lives in
+  bytes-mode without unicode: the parser treats them as the matching
+  byte sequence, so they take the fast path. Lives in
   `src/rules.rs::compile_plain_rule` and the matching combined-gate
   fallback in `src/rules/shards.rs::try_compile_combined`.
 - **Greedy combine-partition for residual shards.**
@@ -458,7 +458,7 @@ and is now a small fraction of overall runtime.
 Betterleaks is the upstream source for the ported rule corpus (see
 `src/mise.port-betterleaks.ts`). Measuring against it is informative
 because both tools scan for secrets, but the comparison is not a
-horse race -- the tools serve different use cases and the numbers
+horse race; the tools serve different use cases and the numbers
 reflect architectural choices, not engine quality in the abstract.
 
 **Betterleaks v1.1.2**, Go binary, RE2 engine, Aho-Corasick keyword
@@ -499,7 +499,7 @@ betterleaks ~0.3 GB/s.
 
 ### Why the gap widens on monorepos
 
-Betterleaks `dir` walks the entire directory tree -- it does not respect
+Betterleaks `dir` walks the entire directory tree; it does not respect
 `.gitignore`. On the Monochromatic monorepo (which contains
 `node_modules/`, `dist/`, `target/`, etc.), this means scanning 4.28 GB
 of content instead of the 21 MiB of git-tracked source:
@@ -510,7 +510,7 @@ betterleaks         dir              86.5 s   (full tree walk; 4.28 GB)
 ```
 
 Wall-clock ratio: **~2000x**. The ratio is dominated by the 200x data
-volume difference, not the engine -- but the data volume difference is
+volume difference, not the engine; but the data volume difference is
 real and user-observable. Forbidden-strings uses `git ls-files` (via the
 `ignore` crate's parallel walker, which honours `.gitignore`) so it
 skips generated and vendored content by design. Betterleaks' `git`
@@ -616,7 +616,7 @@ cd /path/to/monochromatic && time betterleaks dir .
 ## When to re-bench
 
 Re-run the commands above and append a dated block to **Last benched** /
-**Results** (do not overwrite -- regressions need history) when **any** of:
+**Results** (do not overwrite: regressions need history) when **any** of:
 
 - A change touches `src/main.rs` (file dispatch / parallelism), `src/scan.rs`
   (per-file scan logic), or `src/rules.rs` (rule loading and bucketing)
@@ -630,7 +630,7 @@ If none of the above hold, the numbers in this file are still trustworthy.
 
 The deferred opportunity catalog (extension/size pre-filter, chunked-concat,
 bucketed alternation) lives in `~/.claude/plans/dapper-coalescing-horizon.md`.
-Do not re-derive that analysis on every session -- read the plan, then decide.
+Do not re-derive that analysis on every session: read the plan, then decide.
 
 Items already resolved in this code base:
 

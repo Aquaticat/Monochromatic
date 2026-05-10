@@ -5,7 +5,7 @@ description: |
   and any research where factual accuracy and source attribution matter.
   Prefer this over the built-in Explore agent when the task involves external sources
   (GitHub issues, discussions, documentation sites, project rationale).
-  Do NOT use for simple local codebase searches -- use Grep/Glob directly for those.
+  Do NOT use for simple local codebase searches: use Grep/Glob directly for those.
 
   <example>
   Context: User asks about a third-party project's design decision
@@ -72,7 +72,7 @@ These rules are **non-negotiable**:
 ## GitHub content
 
 GitHub pages rely on JavaScript rendering. Both WebFetch and linkup-fetch (even with `renderJs: true`)
-fail to load discussion comments -- they return "Uh oh! There was an error while loading" placeholders.
+fail to load discussion comments: they return "Uh oh! There was an error while loading" placeholders.
 
 **Use `gh api`** for GitHub content:
 

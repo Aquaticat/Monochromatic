@@ -37,7 +37,7 @@ const COMPACTION_TIMEOUT_MS = 120_000;
  * Compression ratio when context pressure is critical (\>80% window).
  *
  * Ratios are higher than traditional summarization because Morph Compact
- * is deletion-based at 33K tok/s — re-triggering compaction is fast enough
+ * is deletion-based at 33K tok/s; re-triggering compaction is fast enough
  * that aggressive pruning is unnecessary. Preserving more context per cycle
  * reduces drift between compaction rounds, keeping the model's working
  * memory closer to the full conversation.

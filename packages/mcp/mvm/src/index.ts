@@ -27,7 +27,7 @@ import {
 
 export {};
 
-//region Server setup -- create and serve the MCP server
+//region Server setup: create and serve the MCP server
 
 /** MCP server instance exposing mvm operations as tools. */
 const server = createMcpServer(

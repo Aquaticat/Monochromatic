@@ -28,7 +28,7 @@ const echoTool: ToolEntry = {
   }),
 };
 
-//region defineTool -- bundles name with tool entry options
+//region defineTool: bundles name with tool entry options
 
 await describe({
   name: '',
@@ -75,12 +75,12 @@ await describe({
 
     //endregion defineTool
 
-    //region createMcpServer -- builds immutable server and dispatches messages
+    //region createMcpServer: builds immutable server and dispatches messages
 
     describe({
       name: createMcpServer.name,
       children: [
-        //region initialize -- returns server identity and capabilities
+        //region initialize: returns server identity and capabilities
 
         describe({
           name: 'initialize',
@@ -119,7 +119,7 @@ await describe({
 
         //endregion initialize
 
-        //region ping -- responds with empty object
+        //region ping: responds with empty object
 
         describe({
           name: 'ping',
@@ -139,7 +139,7 @@ await describe({
 
         //endregion ping
 
-        //region tools/list -- returns registered tool definitions
+        //region tools/list: returns registered tool definitions
 
         describe({
           name: 'tools/list',
@@ -227,7 +227,7 @@ await describe({
 
         //endregion tools/list
 
-        //region tools/call -- dispatches to registered tool handlers
+        //region tools/call: dispatches to registered tool handlers
 
         describe({
           name: 'tools/call',
@@ -416,7 +416,7 @@ await describe({
 
         //endregion tools/call
 
-        //region unknown method -- returns method not found error
+        //region unknown method: returns method not found error
 
         describe({
           name: 'unknown method',
@@ -439,7 +439,7 @@ await describe({
 
         //endregion unknown method
 
-        //region notifications -- returns undefined for notifications
+        //region notifications: returns undefined for notifications
 
         describe({
           name: 'notifications',

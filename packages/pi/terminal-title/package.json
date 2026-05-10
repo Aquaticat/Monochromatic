@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic-dev/pi-terminal-title",
-  "description": "Terminal tab title extension for pi — shows current tool, session state, and user prompt in the terminal window title",
+  "description": "Terminal tab title extension for pi: shows current tool, session state, and user prompt in the terminal window title",
   "type": "module",
   "private": true,
   "version": "0.0.1",

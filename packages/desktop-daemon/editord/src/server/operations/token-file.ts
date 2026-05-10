@@ -5,7 +5,7 @@
  * a new one spawns within milliseconds. This module writes the auth
  * token to a file in `$TMPDIR` and keeps its mtime fresh (every 1s).
  * On startup, if the token file exists and its mtime is within
- * {@link FRESHNESS_THRESHOLD_MS} of now, the token is reused --
+ * {@link FRESHNESS_THRESHOLD_MS} of now, the token is reused,
  * meaning the client's existing WebSocket URL stays valid across
  * the restart. Cold starts (stale or missing file) generate a fresh token.
  *
@@ -35,7 +35,7 @@ import {
 
 /**
  * Maximum age of the token file's mtime (in milliseconds) for it
- * to be considered "fresh" -- i.e. left by a process that was alive
+ * to be considered "fresh", i.e. left by a process that was alive
  * very recently (auto-restart). Anything older is treated as stale.
  */
 const FRESHNESS_THRESHOLD_MS = 3_000;

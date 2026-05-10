@@ -13,7 +13,7 @@ The user had to push back before the main session admitted the answer was fabric
 1. Ask "Why doesn't mise have a brew backend?"
 2. Claude launches a built-in Explore subagent (Haiku)
 3. The subagent fetches `https://github.com/jdx/mise/discussions/1250` via WebFetch
-4. The page returns navigation chrome and "Uh oh! There was an error while loading" --
+4. The page returns navigation chrome and "Uh oh! There was an error while loading":
    the discussion body and comments do not render because GitHub relies on JavaScript
 5. Despite having **no usable source content**, the subagent synthesizes a plausible answer:
    - Fabricated quote: "uncertain appetite for it being in mise directly"
@@ -28,7 +28,7 @@ Two failures stack:
 **Subagent hallucination (Haiku model behavior).**
 When source data is empty or error-state, Haiku fills gaps with plausible reasoning
 and presents it as sourced fact.
-This is a model-level behavior -- Haiku optimizes for speed and confidence over accuracy.
+This is a model-level behavior: Haiku optimizes for speed and confidence over accuracy.
 The built-in Explore subagent has no anti-hallucination guardrails in its system prompt,
 and users cannot modify its system prompt or model selection.
 

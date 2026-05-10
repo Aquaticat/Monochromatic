@@ -30,7 +30,7 @@ export type DisallowedProperties =
   // Deprecated / non-standard
   | 'clip'
   | 'font-smooth'
-  // Shorthand properties — always use longhand
+  // Shorthand properties: always use longhand
   | 'animation'
   | 'background'
   | 'border'
@@ -61,7 +61,7 @@ export type DisallowedProperties =
   | 'scroll-timeline'
   | 'transition'
   | 'view-timeline'
-  // Non-logical dimension properties — use inline-size / block-size equivalents
+  // Non-logical dimension properties: use inline-size / block-size equivalents
   | 'width'
   | 'height'
   | 'min-width'
@@ -70,7 +70,7 @@ export type DisallowedProperties =
   | 'max-height'
   | 'contain-intrinsic-width'
   | 'contain-intrinsic-height'
-  // Non-logical direction properties — use logical equivalents
+  // Non-logical direction properties: use logical equivalents
   | 'top'
   | 'left'
   | 'right'

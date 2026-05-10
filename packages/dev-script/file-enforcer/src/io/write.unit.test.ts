@@ -106,7 +106,7 @@ await describe({
 
             resetWriteTimestamps();
             await overwrite(dest, 'new content',);
-            /** Same content now -- should NOT record timestamp */
+            /** Same content now: should NOT record timestamp */
             expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
             await teardown(tempDir,);
           },

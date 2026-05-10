@@ -4,55 +4,55 @@
 
 ### Missing Exports in `iterable.is.ts`
 
-**Status**: Critical - Blocking TypeScript compilation
+**Status**: Critical: Blocking TypeScript compilation
 
 The following exports are referenced by other modules but missing from [`iterable.is.ts`](src/iterable.is.ts:1):
 
-- [ ] **`isEmptyArray`** - Referenced in:
+- [ ] **`isEmptyArray`**: Referenced in:
   - [`iterable.reduce.ts`](src/iterable.reduce.ts:1)
   - [`error.throw.ts`](src/error.throw.ts:7)
 
-- [ ] **`isAsyncGenerator`** - Referenced in:
+- [ ] **`isAsyncGenerator`**: Referenced in:
   - [`boolean.equal.ts`](src/boolean.equal.ts:3)
 
-- [ ] **`isGenerator`** - Referenced in:
+- [ ] **`isGenerator`**: Referenced in:
   - [`boolean.equal.ts`](src/boolean.equal.ts:5)
 
-- [ ] **`isMap`** - Referenced in:
+- [ ] **`isMap`**: Referenced in:
   - [`boolean.equal.ts`](src/boolean.equal.ts:6)
 
-- [ ] **`isArray`** - Referenced in:
+- [ ] **`isArray`**: Referenced in:
   - [`promises.some.ts`](src/promises.some.ts:3)
 
-- [ ] **`isArrayEmpty`** - Referenced in:
+- [ ] **`isArrayEmpty`**: Referenced in:
   - [`iterables.intersection.ts`](src/iterables.intersection.ts:4)
 
-- [ ] **`isArrayOfLength1`** - Referenced in:
+- [ ] **`isArrayOfLength1`**: Referenced in:
   - [`iterables.intersection.ts`](src/iterables.intersection.ts:5)
 
-- [ ] **`arrayIsNonEmpty`** - Referenced in:
+- [ ] **`arrayIsNonEmpty`**: Referenced in:
   - [`cli.command.ts`](src/cli.command.ts:27)
 
 ### Missing Exports in `numeric.type.int.ts`
 
-**Status**: Critical - Type naming inconsistency
+**Status**: Critical: Type naming inconsistency
 
-- [ ] **`isPositiveInt` vs `PositiveInt`** - Referenced in:
+- [ ] **`isPositiveInt` vs `PositiveInt`**: Referenced in:
   - [`numeric.range.ts`](src/numeric.range.ts:7) expects `isPositiveInt` but export may be `PositiveInt`
   - Verify correct export name and fix references
 
 ### Missing Functions
 
-**Status**: Critical - Undefined functions
+**Status**: Critical: Undefined functions
 
-- [ ] **`getRandomId`** - Referenced in:
+- [ ] **`getRandomId`**: Referenced in:
   - [`any.ReplicatingStore.ts`](src/any.ReplicatingStore.ts:250)
   - [`any.ReplicatingStore.ts`](src/any.ReplicatingStore.ts:274)
   - Need to implement or import this function
 
 ### Module Export Consistency Issues
 
-**Status**: High Priority - Module resolution
+**Status**: High Priority: Module resolution
 
 - [ ] **`isInt` vs `Int`** in module exports:
   - [`numeric.is.unit.test.ts`](src/numeric.is.unit.test.ts:6) expects `isInt` but may be exported as `Int`
@@ -94,5 +94,5 @@ The following exports are referenced by other modules but missing from [`iterabl
 
 ## Cross-References
 
-- [**Build System Todo**](../../TODO.build-system.md#missing-export-issues) - Related TypeScript compilation fixes
-- [**Code Quality Todo**](../../TODO.code-quality.md#typescript-compilation-errors) - TypeScript error resolution
+- [**Build System Todo**](../../TODO.build-system.md#missing-export-issues): Related TypeScript compilation fixes
+- [**Code Quality Todo**](../../TODO.code-quality.md#typescript-compilation-errors): TypeScript error resolution

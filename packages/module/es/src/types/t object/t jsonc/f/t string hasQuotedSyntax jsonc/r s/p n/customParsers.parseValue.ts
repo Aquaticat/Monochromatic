@@ -1,5 +1,5 @@
 /**
- * JSONC value dispatcher — the entry point for parsing a single JSONC value.
+ * JSONC value dispatcher: the entry point for parsing a single JSONC value.
  *
  * MUTUALLY RECURSIVE with array and record core parsers via the dispatch module.
  * Registers itself with {@link registerParseValue} at module load.
@@ -19,7 +19,7 @@ import {
   parseNumberToken,
 } from './customParsers.tokenizers.ts';
 
-//region Value dispatcher -- Single entry to parse one value from the start (MUTUALLY RECURSIVE)
+//region Value dispatcher: Single entry to parse one value from the start (MUTUALLY RECURSIVE)
 /**
  * Parse a single JSONC value from the current position, delegating to container parsers and propagating `context.comment`.
  *

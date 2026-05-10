@@ -51,7 +51,7 @@ import { match, } from 'ts-pattern';
 
 export {};
 
-//region Parser definition -- defines CLI flags and rest arguments after --
+//region Parser definition: defines CLI flags and rest arguments after --
 
 /** Optique parser for the task-command CLI */
 const parser = object({

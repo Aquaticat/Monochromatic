@@ -2,7 +2,7 @@
 
 // Don't test fixtures.
 
-//region Promise Test Fixtures -- Provides an array of 1000 promises with progressive timing delays for testing asynchronous operations, concurrent processing, and performance characteristics
+//region Promise Test Fixtures: Provides an array of 1000 promises with progressive timing delays for testing asynchronous operations, concurrent processing, and performance characteristics
 
 /**
  * Array of 1000 promises that resolve to consecutive integers from 0 to 999 with progressive delays.

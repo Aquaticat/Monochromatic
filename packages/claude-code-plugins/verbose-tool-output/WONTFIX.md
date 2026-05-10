@@ -79,7 +79,7 @@ not a bug that can be worked around from a hook.
 
 An upstream change to Claude Code's renderer that optionally displays
 tool output inline, controlled by a setting or verbosity level.
-The data is already present in the conversation -- only the renderer suppresses it.
+The data is already present in the conversation; only the renderer suppresses it.
 
 ## Original plan (preserved for reference)
 

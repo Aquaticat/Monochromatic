@@ -50,8 +50,8 @@
    - Make these CI checks required for merging
 
 3. **Create convenience commands**:
-   - `moon run precommit` - manually run all pre-commit checks
-   - `moon run validate` - run format + build + test for thorough local validation
+   - `moon run precommit`: manually run all pre-commit checks
+   - `moon run validate`: run format + build + test for thorough local validation
 
 ### WSL Migration - Post-Migration Tasks (June 2025)
 
@@ -107,7 +107,7 @@
 
 ### Configuration Changes Completed
 
-- [x] Disable `jsdoc/tag-lines` - formatting concern, not linting
+- [x] Disable `jsdoc/tag-lines`: formatting concern, not linting
 - [x] Disable `jsdoc/require-jsdoc` for test files
 - [x] Add `param`, `args`, `props`, `ctx`, `var` to allowed abbreviations
 - [x] Update test files to use function references in describe blocks (partial)
@@ -121,38 +121,38 @@
 
 #### Variable `i` Issues Fixed
 
-- `fixture.promises.0to999.ts` - changed to `promiseIndex`, `batchStart`, `index`
-- `fixture.generator.0to999.ts` - changed to `value`, `delayMilliseconds`, `iteration`, `milliseconds`, `valueIndex`
-- `iterable.chunks.ts` - changed to `chunkStart`, `value`
-- `iterable.entries.ts` - changed to `value`, `index`
-- `iterables.intersection.ts` - changed to `value`
-- `moon.index-claude-user-messages.ts` - changed to `batchStart`
-- `logtape.shared.ts` - changed to `messageIndex`
-- `any.echo.unit.test.ts` - changed to `iteration`
-- `function.memoize.ts` - changed to `argIndex`
-- `iterable.take.unit.test.ts` - changed to `value`
-- `promises.some.bench.ts` - changed to `index` in Array.from callbacks
-- `fixture.index.ts` - changed to `index` in Array.from callbacks
-- `iterable.partition.ts` - changed to `item` for iterator values
+- `fixture.promises.0to999.ts`: changed to `promiseIndex`, `batchStart`, `index`
+- `fixture.generator.0to999.ts`: changed to `value`, `delayMilliseconds`, `iteration`, `milliseconds`, `valueIndex`
+- `iterable.chunks.ts`: changed to `chunkStart`, `value`
+- `iterable.entries.ts`: changed to `value`, `index`
+- `iterables.intersection.ts`: changed to `value`
+- `moon.index-claude-user-messages.ts`: changed to `batchStart`
+- `logtape.shared.ts`: changed to `messageIndex`
+- `any.echo.unit.test.ts`: changed to `iteration`
+- `function.memoize.ts`: changed to `argIndex`
+- `iterable.take.unit.test.ts`: changed to `value`
+- `promises.some.bench.ts`: changed to `index` in Array.from callbacks
+- `fixture.index.ts`: changed to `index` in Array.from callbacks
+- `iterable.partition.ts`: changed to `item` for iterator values
 
 #### Variable `e` Issues Fixed in Catch Blocks
 
-- `moon.index-claude-mcp-logs.ts` - changed to `error` (3 occurrences)
-- `deprecated.testing.ts` - changed to `error`
-- `fs.fs.default.ts` - changed to `error`
+- `moon.index-claude-mcp-logs.ts`: changed to `error` (3 occurrences)
+- `deprecated.testing.ts`: changed to `error`
+- `fs.fs.default.ts`: changed to `error`
 
 #### Void Expression Issues Fixed
 
-- `error.assert.equal.unit.test.ts` - added braces to arrow functions returning void
-- `any.constant.unit.test.ts` - stored undefined result before testing
-- `any.identity.unit.test.ts` - stored undefined result before testing
-- `any.test.ts` - stored undefined result before testing
+- `error.assert.equal.unit.test.ts`: added braces to arrow functions returning void
+- `any.constant.unit.test.ts`: stored undefined result before testing
+- `any.identity.unit.test.ts`: stored undefined result before testing
+- `any.test.ts`: stored undefined result before testing
 
 #### GlobalThis Issues Fixed
 
-- `packages/figma-plugin/css-variables/src/iframe/index.ts` - replaced window.getComputedStyle and window.parent.postMessage
-- `packages/figma-plugin/css-variables/src/frontend/index.ts` - replaced window.parent.postMessage and window.addEventListener
-- `logtape.default.ts` - replaced window.sessionStorage with globalThis.sessionStorage
+- `packages/figma-plugin/css-variables/src/iframe/index.ts`: replaced window.getComputedStyle and window.parent.postMessage
+- `packages/figma-plugin/css-variables/src/frontend/index.ts`: replaced window.parent.postMessage and window.addEventListener
+- `logtape.default.ts`: replaced window.sessionStorage with globalThis.sessionStorage
 
 #### Test File Describe Blocks Updated
 
@@ -243,12 +243,12 @@ Updated to use function references in multiple test files including:
 
 #### Lessons Learned and Applied
 
-1. **Question every construct** - Each programming construct adds complexity
-2. **Prefer immutability** - Mutable variables should be eliminated when possible
-3. **Prefer declarative over imperative** - Loops can often be replaced with higher-order functions
-4. **Extract and name concepts** - Helper functions like `isTaskPending` improve readability
-5. **Think functionally first** - There's often a functional solution that's cleaner
-6. **Simplify progressively** - Don't stop at the first working solution
+1. **Question every construct**: Each programming construct adds complexity
+2. **Prefer immutability**: Mutable variables should be eliminated when possible
+3. **Prefer declarative over imperative**: Loops can often be replaced with higher-order functions
+4. **Extract and name concepts**: Helper functions like `isTaskPending` improve readability
+5. **Think functionally first**: There's often a functional solution that's cleaner
+6. **Simplify progressively**: Don't stop at the first working solution
 
 ## Priority Classifications Established
 

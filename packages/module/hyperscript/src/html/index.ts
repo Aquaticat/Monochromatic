@@ -22,7 +22,7 @@
  * @param options.tag - HTML tag name
  * @param options.class - CSS class name(s)
  * @param options.text - Text content (HTML-escaped automatically)
- * @param options.html - Raw inner HTML (NOT escaped — caller is responsible for safety)
+ * @param options.html - Raw inner HTML (NOT escaped; caller is responsible for safety)
  * @param options.attrs - Record of attributes (values are HTML-escaped)
  * @param options.style - Record of inline style properties
  * @param options.children - Child HTML strings to concatenate inside the element

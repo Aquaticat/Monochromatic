@@ -100,7 +100,7 @@ export function createAutoIndentHandler({
       // and Blink's Editor.cpp suggests separate execCommand calls create separate undo
       // entries (each CompositeEditCommand registers its own UndoStep). Despite this,
       // Chromium empirically groups the native insertParagraph and this execCommand
-      // into a single undo entry -- one Ctrl+Z undoes both. The grouping mechanism
+      // into a single undo entry: one Ctrl+Z undoes both. The grouping mechanism
       // is undocumented; it may be TypingCommand consolidation or user-gesture scoping.
       // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text while preserving the browser's native undo stack
       document.execCommand(

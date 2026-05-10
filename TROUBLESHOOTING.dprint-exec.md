@@ -8,7 +8,7 @@ The `exec` section in a dprint config defines commands to run after formatting,
 but the commands never execute.
 No errors appear in normal output.
 Debug logging (`dprint fmt --log-level debug`) shows the exec plugin instance is created
-but never formats any file -- the `"Formatted file"` log entry lacks the `(Plugin N/M)`
+but never formats any file; the `"Formatted file"` log entry lacks the `(Plugin N/M)`
 annotation that multi-plugin chaining produces.
 
 ### Root cause
@@ -30,8 +30,8 @@ dprint's plugin name resolution has two paths
    ```
 
 When multiple plugins claim the same extension (e.g. malva and exec both claim `.css`),
-the extension fallback picks whichever plugin was registered first -- determined by the
-order in the `plugins` array.
+the extension fallback picks whichever plugin was registered first (determined by the
+order in the `plugins` array).
 The exec plugin always loses because it is listed last.
 
 ### Solution
@@ -62,7 +62,7 @@ When a plugin has associations that are **include-only** (no negation patterns),
 the `is_not_associations_excluded` guard (`name_resolution.rs:90-96`) rejects
 any file that matches the plugin by extension but **not** by association.
 This means adding `"associations": ["**/*.css"]` to malva would silently **break**
-formatting for `.scss`, `.less`, and `.sass` files -- malva would refuse to handle them
+formatting for `.scss`, `.less`, and `.sass` files; malva would refuse to handle them
 because they match its extensions but not its associations.
 
 The fix is to list **all** extensions the plugin handles in its associations:
@@ -147,7 +147,7 @@ There is no option to accept non-zero exit codes.
 When multiple plugins chain (e.g., typescript formatter then exec),
 dprint passes the in-memory formatted result from the previous plugin to the next.
 But in file mode, the command receives a `{{file_path}}` that still points to the
-**original on-disk content** -- it never sees the previous plugin's output.
+**original on-disk content**; it never sees the previous plugin's output.
 This means the typescript formatter's changes are invisible to oxlint.
 
 ### What does not work
@@ -183,7 +183,7 @@ Running type-aware from the root would silently miss type information.
 
 A proper fix would require per-package fan-out
 (like the `lint:oxlint` task template does via `mise '//packages/...:lint:oxlint'`),
-but adding that complexity to the format pipeline is not worth the marginal gain --
+but adding that complexity to the format pipeline is not worth the marginal gain;
 type-aware auto-fixable rules are rare, and the lint task already catches them.
 
 ### Tools that work with exec

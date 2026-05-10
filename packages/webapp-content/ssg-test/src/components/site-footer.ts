@@ -26,25 +26,25 @@ import {
  * ```
  */
 const TICKER_QUOTES = [
-  // Cookie Clicker -- the game's newsticker has this news
+  // Cookie Clicker: the game's newsticker has this news
   'flavor text flavored flavorless',
-  // AI slop -- "slop" as slang for low-effort AI-generated content
+  // AI slop: "slop" as slang for low-effort AI-generated content
   'sloppiest sloppy slop',
   // Original tautology in the style of government warning labels
   'drinking drinks may make drinkers drunk',
-  // SpongeBob -- the Krusty Krab training video: "the finest dining establishment ever established for dining"
+  // SpongeBob, the Krusty Krab training video: "the finest dining establishment ever established for dining"
   'programmable blogging program programmed for blogging',
-  // Recursive error message -- an error handler that errors while handling errors
+  // Recursive error message: an error handler that errors while handling errors
   'ErrorError: ErrorError in erroring Error to ErrorError',
-  // TC39 pipeline operator proposal -- stuck in the standardization pipeline since 2017
+  // TC39 pipeline operator proposal: stuck in the standardization pipeline since 2017
   'pipeline operator stuck in pipeline',
-  // Mafumafu -- "すーぱーぬこになれんかった" (Super Nuko ni Narenkatta, 2019)
+  // Mafumafu: "すーぱーぬこになれんかった" (Super Nuko ni Narenkatta, 2019)
   `I wasn't able to become a super cat after all.`,
-  // Francis Bacon -- "Of Studies" (1597), with the literal food reading swapped in
+  // Francis Bacon: "Of Studies" (1597), with the literal food reading swapped in
   'Bacon: Some ... are to be tasted, others to be swallowed, and some few to be chewed and digested.',
-  // Viral video -- Exotic Black TV cleaning a Himalayan marmot with a paint roller (2025)
+  // Viral video: Exotic Black TV cleaning a Himalayan marmot with a paint roller (2025)
   'Marmots can be cleaned with paint rollers.',
-  // Phil Karlton -- There are only two hard things in Computer Science: cache invalidation and naming things.
+  // Phil Karlton: "There are only two hard things in Computer Science: cache invalidation and naming things."
   'There are only 10 hard problems in computer science: cache invalidation, naming things, and off by one.',
 ] as const;
 

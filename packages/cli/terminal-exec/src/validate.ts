@@ -174,7 +174,7 @@ export async function validateEntry({
 
   const [firstToken,] = execTokens;
   if (firstToken === undefined)
-    throw new Error('unreachable — length checked above',);
+    throw new Error('unreachable: length checked above',);
   if (!await executableExists({ name: firstToken, },)) {
     l.debug(`${entryId}: Exec[0] '${firstToken}' not found in PATH`,);
     return null;

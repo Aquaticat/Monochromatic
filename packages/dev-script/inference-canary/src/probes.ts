@@ -18,7 +18,7 @@ export type {
   ScoreContext,
 } from './probe-types.ts';
 
-//region Simple probes -- cheap text-only checks, disabled by default
+//region Simple probes: cheap text-only checks, disabled by default
 
 /** Checks basic arithmetic that should never fail */
 const simpleArithmetic: Probe = {
@@ -48,7 +48,7 @@ const simpleFormat: Probe = {
   },
 };
 
-/** Checks JSON output compliance -- degraded models often break structure */
+/** Checks JSON output compliance; degraded models often break structure */
 const simpleJson: Probe = {
   name: 'json-output',
   category: 'simple',

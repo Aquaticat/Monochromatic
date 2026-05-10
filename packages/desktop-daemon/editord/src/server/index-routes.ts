@@ -68,7 +68,7 @@ export function registerRoutes({
 
   //endregion HTML entry point
 
-  //region Static asset serving — built client bundles from dist/client/
+  //region Static asset serving: built client bundles from dist/client/
 
   app.get(
     '/dist/client/**',
@@ -116,7 +116,7 @@ export function registerRoutes({
 
   //endregion Static asset serving
 
-  //region Raw file serving — media files via HTTP for native browser rendering
+  //region Raw file serving: media files via HTTP for native browser rendering
 
   app.get(
     '/_raw',

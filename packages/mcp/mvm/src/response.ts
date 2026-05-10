@@ -3,7 +3,7 @@
  * @module
  */
 
-//region Types -- response shape definitions
+//region Types: response shape definitions
 
 /** Single text content item in an MCP response. */
 type TextContent = {
@@ -22,7 +22,7 @@ type ErrorResponse = {
 
 //endregion Types
 
-//region Response builders -- construct MCP-compliant response objects
+//region Response builders: construct MCP-compliant response objects
 
 /** Literal type constant for text content items. */
 const TEXT_TYPE = 'text' as const;

@@ -124,7 +124,7 @@ export async function shutdownVm({ name, }: { name: string; },): Promise<void> {
   }
   catch {
     // Guest agent often disconnects before sending a response during shutdown.
-    // This is expected behavior -- the VM is shutting down.
+    // This is expected behavior: the VM is shutting down.
     rl.debug('guest agent disconnected during shutdown (expected)',);
   }
 }

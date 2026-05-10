@@ -18,7 +18,7 @@ const lockLog = tagged({
   l,
 },);
 
-//region Keyboard Lock API type augmentation -- not yet in lib.dom.d.ts
+//region Keyboard Lock API type augmentation (not yet in lib.dom.d.ts)
 
 /** Keyboard Lock API surface on the Keyboard interface. */
 type KeyboardWithLock = {

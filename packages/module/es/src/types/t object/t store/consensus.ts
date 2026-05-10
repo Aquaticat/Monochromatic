@@ -1,6 +1,6 @@
 // Not extracted to the types tree: the consensus API is shaped around
-// BackendResult with string values and numeric priority tiers -- store
-// vocabulary. The concept (majority vote over prioritized sources) is general,
+// BackendResult with string values and numeric priority tiers (store
+// vocabulary). The concept (majority vote over prioritized sources) is general,
 // but generalizing the API without a second consumer would be speculative.
 
 /**

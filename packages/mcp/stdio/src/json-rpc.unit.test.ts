@@ -12,7 +12,7 @@ import {
   JSON_RPC_PARSE_ERROR,
 } from './json-rpc.ts';
 
-//region isJsonRpcMessage -- validates minimum JSON-RPC 2.0 shape
+//region isJsonRpcMessage: validates minimum JSON-RPC 2.0 shape
 
 await describe({
   name: '',
@@ -109,7 +109,7 @@ await describe({
 
     //endregion isJsonRpcMessage
 
-    //region error code constants -- verify expected values
+    //region error code constants: verify expected values
 
     describe({
       name: 'error code constants',

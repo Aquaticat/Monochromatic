@@ -24,7 +24,7 @@ import {
 } from './content.ts';
 import type { Logger, } from './types.ts';
 
-// File justification: 164 lines -- schema definitions, I/O, and lookup form a
+// File justification: 164 lines; schema definitions, I/O, and lookup form a
 // cohesive cache API; splitting into 3+ sub-40-line files adds indirection
 // without improving navigability.
 export {

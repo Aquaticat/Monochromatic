@@ -120,7 +120,7 @@ Libraries that likely should declare `sideEffects: false` (module/es, module/hyp
 Packages use a mix of `main`, `module`, `exports`, and `bin` with no consistent pattern
 for similar package types:
 
-**Config packages** -- mixed approaches:
+**Config packages**: mixed approaches:
 
 - `config/dprint`: `main` + `module` (no `exports`)
 - `config/stylelint`: `exports` + `main` + `module`
@@ -128,18 +128,18 @@ for similar package types:
 - `config/oxlint*`: `exports` only
 - `config/tofu`, `config/cosign`, `config/dotfiles`: none
 
-**Module packages** -- mixed approaches:
+**Module packages**: mixed approaches:
 
 - `module/es`: `exports` + `module` (no `main`)
 - `module/dom`: `exports` only
 - `module/test`: `exports` + `module`
 
-**CLI packages** -- reasonably consistent (`main` + `bin`), except:
+**CLI packages**: reasonably consistent (`main` + `bin`), except:
 
 - `cli/mvm`, `cli/terminal-exec`, `cli/vmsync`: `exports` + `main` + `bin`
 - `cli/fy`, `cli/rgffplay`, `cli/git`: `main` + `bin` (no `exports`)
 
-**Dev-script packages** -- inconsistent:
+**Dev-script packages**: inconsistent:
 
 - `dev-script/file-enforcer`, `dev-script/backup-path`: `exports` + `main` + `module`
 - `dev-script/inference-canary`, `dev-script/catalog-tighten`: `main` only
@@ -184,7 +184,7 @@ but one file breaks the pattern:
 ### TODO subtopic separator
 
 Uses dots for hierarchy (`TODO.performance.build.md`)
-and hyphens within slugs (`TODO.ai-auto-commit.md`), consistent with TROUBLESHOOTING --
+and hyphens within slugs (`TODO.ai-auto-commit.md`), consistent with TROUBLESHOOTING,
 except `TODO.package-structure.md` vs `TODO.packages.md` (inconsistent plural/singular).
 
 ### MIGRATION / LESSONS-LEARNED separators

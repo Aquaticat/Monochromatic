@@ -221,7 +221,7 @@ export function resolvePackage(
 
   // Direct file path fallback: resolve subpath relative to package directory
   if (subpath !== '.') {
-    // subpath starts with './' — strip it for join
+    // subpath starts with './': strip it for join
     /** Relative portion after stripping leading ./ */
     const relativePart = subpath.startsWith('./',) ? subpath.slice(2,) : subpath;
     /** Absolute path from direct file reference */

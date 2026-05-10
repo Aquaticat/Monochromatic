@@ -9,7 +9,7 @@
 
 import type { CurrentFile, } from './nvim-types.ts';
 
-//region Helper functions -- build response text for tool handlers
+//region Helper functions: build response text for tool handlers
 
 /**
  * Builds a caveat note when any current buffer has unsaved changes.

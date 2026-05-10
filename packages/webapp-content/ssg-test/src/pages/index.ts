@@ -1,5 +1,5 @@
 /**
- * Root index page — language picker.
+ * Root index page: language picker.
  *
  * Renders a list of available languages linking to their landing pages.
  */

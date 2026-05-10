@@ -5,7 +5,7 @@
  */
 import type { Probe, } from './probes.ts';
 
-//region Shared branded types -- template-literal types used across runner, models, server-time, and artifacts
+//region Shared branded types: template-literal types used across runner, models, server-time, and artifacts
 
 /**
  * ISO 8601 timestamp string, e.g. "2026-02-23T12:00:00.000Z".
@@ -28,7 +28,7 @@ export type {
 } from './runner-config.ts';
 export { defaultConfig, } from './runner-config.ts';
 
-//region Message and timing types -- chat message shape and streaming timing breakdown used by runner-stream.ts
+//region Message and timing types: chat message shape and streaming timing breakdown used by runner-stream.ts
 
 /** Chat completions message shape */
 export type ChatMessage = {
@@ -93,7 +93,7 @@ export type ConfigSnapshot = {
 
 //endregion Message and timing types
 
-//region Probe and report result types -- ProbeResult (per-probe) and CanaryReport (per-model) returned by runCanary
+//region Probe and report result types: ProbeResult (per-probe) and CanaryReport (per-model) returned by runCanary
 
 /** Result of a single probe execution */
 export type ProbeResult = {

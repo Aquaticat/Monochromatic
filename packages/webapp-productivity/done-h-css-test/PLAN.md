@@ -179,7 +179,7 @@ export function injectCSS(css: string,): void {
 - (0.5h) Verify migration runs cleanly on a fresh `.db` file, test FTS5 triggers manually
 
 libsql is SQLite-compatible, so all standard SQLite features work.
-The schema below is the complete initial migration -- run it once on first startup.
+The schema below is the complete initial migration: run it once on first startup.
 
 ```sql
 -- ============================================================
@@ -706,7 +706,7 @@ CREATE INDEX idx_sessions_expires ON sessions(expires_at);
 ### Session cookie format
 
 The session cookie is a simple lookup token, not a signed JWT.
-The `sessions` table is the source of truth -- no crypto to get wrong.
+The `sessions` table is the source of truth: no crypto to get wrong.
 
 ```
 Cookie: session=<session-id>; Path=/u/<user-id>/; HttpOnly; Secure; SameSite=Strict
@@ -775,7 +775,7 @@ function handleRequest(req: Request,): Response | Promise<Response> {
 ### Registration and login page sketches
 
 The orchestrator serves plain HTML pages for auth flows.
-Minimal styling -- these are functional forms, not the app itself.
+Minimal styling: these are functional forms, not the app itself.
 
 **Registration (`/register`):**
 
@@ -1072,7 +1072,7 @@ Two-day gap (Sat-Sun) before this session. Budget time for context recovery.
 
 The orchestrator is a standalone Bun/TypeScript process that manages the entire multi-tenant lifecycle.
 It lives at `packages/site/done/orchestrator/` with its own entry point.
-It handles auth, reverse proxy, and process management -- no Caddy or AuthCrunch needed.
+It handles auth, reverse proxy, and process management: no Caddy or AuthCrunch needed.
 Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on HTTP (port 3000).
 
 **7.1a Registration and login (~1.5h)**
@@ -1101,7 +1101,7 @@ Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on H
 
 The entire stack deploys as a single `docker-compose.yml` at `packages/site/done/docker-compose.yml`.
 Coolify picks it up and manages the deployment.
-Coolify's reverse proxy handles HTTPS termination -- the orchestrator only listens on HTTP.
+Coolify's reverse proxy handles HTTPS termination: the orchestrator only listens on HTTP.
 
 **Services:**
 
@@ -1111,7 +1111,7 @@ Coolify's reverse proxy handles HTTPS termination -- the orchestrator only liste
 | `llama-cpp`    | `ghcr.io/ggml-org/llama.cpp:server` (CPU) | Shared AI inference, OpenAI-compatible API |
 
 The orchestrator container spawns per-user Bun processes as child processes within itself (not separate containers).
-Each child process runs `Bun.build()` at startup to bundle client assets -- no separate build step in the Dockerfile.
+Each child process runs `Bun.build()` at startup to bundle client assets: no separate build step in the Dockerfile.
 User data lives on a named volume mounted at `/data/` inside the orchestrator container.
 The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.db` on startup) -- no external config files to manage.
 
@@ -1250,7 +1250,7 @@ Read-only inbound for MVP. Outbound writes deferred post-competition.
 ## Validated by bun-test (packages/site/bun-test)
 
 A throwaway flashcard app was built pre-competition to validate the architecture.
-These patterns are confirmed working -- no surprises expected during implementation.
+These patterns are confirmed working: no surprises expected during implementation.
 
 | Pattern                                                    | Status        | Notes                                                                        |
 | ---------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------- |
@@ -1264,7 +1264,7 @@ These patterns are confirmed working -- no surprises expected during implementat
 | fetch() mutations + window.location.reload()               | **validated** | Simple mutation pattern, no client-side state sync                           |
 | bun:sqlite in-memory DB                                    | **validated** | CRUD, foreign keys, WAL mode                                                 |
 | Bun.file() auto Content-Type                               | **validated** | No manual content-type mapping needed                                        |
-| Static imports for DB + route handlers                     | **validated** | Dynamic imports unnecessary -- top-level await ensures build completes first |
+| Static imports for DB + route handlers                     | **validated** | Dynamic imports unnecessary: top-level await ensures build completes first |
 
 ### Not yet tested (verify early in implementation)
 
@@ -1276,7 +1276,7 @@ These patterns are confirmed working -- no surprises expected during implementat
 | 5 client entrypoints (vs 2 tested)             | low    | Bun.build() is fast, linear scaling expected              |
 | setInterval timer tick on client               | low    | Standard browser API, trivial to test                     |
 | @upyo/smtp email sending                       | medium | External dependency, test with real SMTP early            |
-| Orchestrator multi-process spawning            | high   | Most complex untested piece -- budget extra time on day 5 |
+| Orchestrator multi-process spawning            | high   | Most complex untested piece: budget extra time on day 5 |
 
 ## Risk areas
 
@@ -1339,9 +1339,9 @@ WHERE tasks.status = 'inbox'
 Items without a marker are implicitly highest priority and form the 20h core plan.
 Marked items are built if time allows, in descending priority order.
 
-**Core -- done:** 1.1, 1.2, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2
-**Core -- partial:** 1.3 (tasks + settings done; attachments/reminders not started)
-**Core -- not started:** 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
+**Core (done):** 1.1, 1.2, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2
+**Core (partial):** 1.3 (tasks + settings done; attachments/reminders not started)
+**Core (not started):** 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
 Note: Dockerfile simplified (no framework build step) -- single stage, Bun runs TS directly.
 
 **`priority:medium` -- done:** 3.3 (blocking UI)

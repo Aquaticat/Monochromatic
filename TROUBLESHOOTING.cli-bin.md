@@ -21,7 +21,7 @@ On headless systems or when the display is unavailable, each invocation blocks o
 causing the script to hang or produce a wall of errors.
 
 The `bun run <file>` invocation works fine because Bun handles the file directly
-regardless of shebang — the problem only manifests when running through the
+regardless of shebang; the problem only manifests when running through the
 `node_modules/.bin/` symlink, which the OS executes directly.
 
 ### Solution
@@ -42,7 +42,7 @@ bun install
 
 ### Cross-platform notes
 
-The shebang is a Unix mechanism — Windows ignores it entirely.
+The shebang is a Unix mechanism; Windows ignores it entirely.
 On Windows, package managers (npm, bun, pnpm) generate `.cmd` and `.ps1` wrapper scripts
 that invoke the runtime directly, so the shebang is never read.
 Both mechanisms are needed for full cross-platform support:
@@ -50,4 +50,4 @@ Both mechanisms are needed for full cross-platform support:
 - **Unix**: shebang tells the OS which runtime to use
 - **Windows**: generated `.cmd` wrapper invokes the runtime, shebang is ignored
 
-This means adding a shebang never breaks Windows — it is purely additive.
+This means adding a shebang never breaks Windows: it is purely additive.

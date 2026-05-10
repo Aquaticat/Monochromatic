@@ -26,10 +26,10 @@ import { PARSERS, } from './language-parsers.ts';
  * @example
  * ```ts
  * const parser = getParserForPath({ path: 'app.ts' });
- * // parser !== null — TypeScript is supported
+ * // parser !== null: TypeScript is supported
  *
  * const noParser = getParserForPath({ path: 'data.csv' });
- * // noParser === null — CSV is not supported
+ * // noParser === null: CSV is not supported
  * ```
  */
 export function getParserForPath({ path, }: { path: string; },): Parser | null {

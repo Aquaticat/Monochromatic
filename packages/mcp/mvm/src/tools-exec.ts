@@ -15,7 +15,7 @@ import {
   textResponse,
 } from './response.ts';
 
-//region Execution tools -- run commands inside VMs
+//region Execution tools: run commands inside VMs
 
 /** MCP tool: execute a command inside a named running VM. */
 export const execTool: ToolEntry = defineTool(

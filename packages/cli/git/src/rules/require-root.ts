@@ -73,7 +73,7 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
       return GLOBAL_CONFIG_FLAGS.has(arg,);
     },);
     if (hasGlobalFlag) {
-      rl.debug('config with global/system/list flag -- exempt',);
+      rl.debug('config with global/system/list flag: exempt',);
       return args;
     }
   }

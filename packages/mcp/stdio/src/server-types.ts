@@ -11,7 +11,7 @@ import type {
   JsonRpcOutbound,
 } from './json-rpc.ts';
 
-//region Tool entry -- pairs a name with its options for immutable registration
+//region Tool entry: pairs a name with its options for immutable registration
 
 /**
  * Named tool entry passed to {@link createMcpServer}.
@@ -35,7 +35,7 @@ export type ToolEntry = {
 
 //endregion
 
-//region Registered tool -- internal representation after normalization
+//region Registered tool: internal representation after normalization
 
 /**
  * Registered tool combining its wire-format definition with the runtime handler.
@@ -56,7 +56,7 @@ export type RegisteredTool = {
 
 //endregion
 
-//region Server configuration -- identity passed during initialization
+//region Server configuration: identity passed during initialization
 
 /**
  * Configuration for creating an MCP server.
@@ -73,7 +73,7 @@ export type McpServerConfig = {
 
 //endregion
 
-//region Server handle -- returned by createMcpServer
+//region Server handle: returned by createMcpServer
 
 /**
  * Immutable MCP server handle exposing only the message dispatch function.

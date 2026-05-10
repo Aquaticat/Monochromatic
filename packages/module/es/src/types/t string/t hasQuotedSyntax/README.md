@@ -15,13 +15,13 @@ The `hasQuotedSyntax` type utility provides a type-safe way to distinguish betwe
 
 ### Base Type
 
-- **`hasQuotedSyntax`** - A branded string type indicating the presence of quoted syntax
+- **`hasQuotedSyntax`**: A branded string type indicating the presence of quoted syntax
 
 ### Specific Quote Types
 
-- **`singleQuote`** - Strings containing single quotes (`'`)
-- **`doubleQuote`** - Strings containing double quotes (`"`)
-- **`backtick`** - Strings containing backticks/template literals (`` ` ``)
+- **`singleQuote`**: Strings containing single quotes (`'`)
+- **`doubleQuote`**: Strings containing double quotes (`"`)
+- **`backtick`**: Strings containing backticks/template literals (`` ` ``)
 
 ## Usage
 

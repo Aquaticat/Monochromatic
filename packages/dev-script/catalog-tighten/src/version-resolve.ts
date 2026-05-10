@@ -116,7 +116,7 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
     }
   }
   catch {
-    // packages/ dir not found -- return empty
+    // packages/ dir not found: return empty
   }
 
   workspaceRootsCache = roots;

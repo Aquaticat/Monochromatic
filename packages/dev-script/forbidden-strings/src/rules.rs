@@ -24,6 +24,30 @@ mod shards;
 mod types;
 mod walker;
 
+// What:     `#[cfg(test)] mod atom_tests;` and `#[cfg(test)] mod
+//           extract_tests;` declare two sibling submodules that ONLY
+//           compile when running `cargo test`. The `#[cfg(test)]`
+//           attribute is a conditional-compilation gate -- equivalent
+//           to `#ifdef TEST` in C.
+// Why:      Tests for `pub(super)` items (e.g. `atom::walk_literal_bytes`)
+//           must live in a sibling module under `rules/` because they
+//           need the parent-module visibility. Splitting tests into
+//           their own files (rather than inline `#[cfg(test)] mod tests`
+//           inside `atom.rs`) keeps the production source small and
+//           lets the test files use their own dum-dum-non-ts comment
+//           density without bloating the production file.
+// TS map:   `if (process.env.NODE_ENV === 'test') { require("./atom_tests"); }`
+//           in spirit, but Rust handles it at compile time.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // No 1:1 -- TS test files are typically compiled separately.
+// ```
+#[cfg(test)]
+mod atom_tests;
+#[cfg(test)]
+mod extract_tests;
+
 // What:     Public surface re-exports so external callers (`scan.rs`,
 //           `main.rs`) can keep using `crate::rules::Foo` without
 //           knowing which submodule actually defines `Foo`.

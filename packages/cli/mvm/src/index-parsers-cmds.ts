@@ -36,7 +36,7 @@ import type { MvmArgs, } from './index-parsers.ts';
 // oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
 type SubcommandParser = Parser<'sync', MvmArgs, any>;
 
-//region Shared value parsers -- reusable metavar-labeled string parsers
+//region Shared value parsers: reusable metavar-labeled string parsers
 
 /** Value parser for VM name arguments, displayed as NAME in help */
 const name = string({ metavar: 'NAME', },);

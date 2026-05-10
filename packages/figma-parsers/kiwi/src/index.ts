@@ -589,7 +589,7 @@ function decodeMessage(
       }
     }
     else {
-      // Unknown tag -- cannot skip without knowing the type.
+      // Unknown tag: cannot skip without knowing the type.
       // Since we have the full schema, this should not happen.
       break;
     }

@@ -3,7 +3,7 @@
 ## The problem
 
 AI agents cannot meaningfully interact with Figma designs through browser automation tools (BrowserOS, Playwright, Puppeteer, etc.).
-The design canvas is rendered entirely in WebGL -- there is no DOM representation of frames, layers, text, or interactive elements inside the canvas.
+The design canvas is rendered entirely in WebGL; there is no DOM representation of frames, layers, text, or interactive elements inside the canvas.
 Browser automation can see and click Figma's *chrome* (toolbars, panels, menus, layer names) but is completely blind to the actual design content.
 
 ## What this means in practice
@@ -56,7 +56,7 @@ Browser automation can see and click Figma's *chrome* (toolbars, panels, menus, 
 
 **Best current option for full context.**
 The human navigates to the relevant frame, and the agent analyzes the screenshot visually.
-Clunky, slow, and requires manual effort -- but actually works.
+Clunky, slow, and requires manual effort, but actually works.
 
 ## Workarounds
 
@@ -79,7 +79,7 @@ The human must copy-paste comment text or screenshot comment threads.
 
 ## Root cause
 
-Figma chose WebGL for performance -- rendering thousands of vector objects in the DOM would be unusable.
+Figma chose WebGL for performance: rendering thousands of vector objects in the DOM would be unusable.
 This is the correct engineering decision for a design tool, but it makes the application opaque to every accessibility and automation API that depends on DOM structure.
 Figma's own accessibility features (screen reader mode) provide limited text alternatives, but these are not sufficient for design review automation.
 

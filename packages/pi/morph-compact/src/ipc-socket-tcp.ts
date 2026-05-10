@@ -24,7 +24,7 @@ const SERVER_IDLE_TIMEOUT_MS = 30_000;
 /** Milliseconds before a client read attempt times out. */
 const CLIENT_READ_TIMEOUT_MS = 10_000;
 
-/** Loopback address — no remote access. */
+/** Loopback address (no remote access). */
 const LOCALHOST = '127.0.0.1';
 
 //endregion
@@ -112,7 +112,7 @@ export async function createOneShotTcpServer(
           );
           socket.end();
 
-          // Close server after writing — one-shot
+          // Close server after writing (one-shot)
           queueMicrotask(close,);
         },
       );

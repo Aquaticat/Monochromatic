@@ -154,7 +154,7 @@ the rendered DOM element is the hyphenated custom element because the function e
 **Re-exporting under a string key.**
 `export { CalloutAlert as 'callout-alert', } from './callout-alert.ts'`
 combined with `import * as mdxComponents from './index.ts'` does not fix it.
-The problem is not that `_components['callout-alert']` is missing --
+The problem is not that `_components['callout-alert']` is missing;
 it is that MDX never emits that lookup for explicit JSX in the first place.
 
 **Providing `providerImportSource`.**

@@ -109,7 +109,7 @@ await compileCss();
 
 if (!existsSync('./dist/client/index.js',)) {
   l.warn(
-    'dist/client/index.js missing -- run `mise run build:js:client` to enable the composer',
+    'dist/client/index.js missing: run `mise run build:js:client` to enable the composer',
   );
 }
 

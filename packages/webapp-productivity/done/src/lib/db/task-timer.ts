@@ -26,7 +26,7 @@ export type BlockerSummary = {
   blockerTitle: string;
 };
 
-/** Outcome of a `completeTask()` call -- carries blockers when completion is refused. */
+/** Outcome of a `completeTask()` call: carries blockers when completion is refused. */
 export type CompleteTaskResult = {
   /** Whether the task was successfully completed and deleted. */
   completed: boolean;

@@ -134,7 +134,7 @@ Files to update:
 - [ ] 3.4.3 `client.ts` - Poll interval
 - [ ] 3.4.4 `feed.ts` - Fetch timeout
 - [ ] 3.4.5 `ignore.ts` - File paths
-- [ ] 3.4.6 `opmls.ts` - OPML path
+- [ ] 3.4.6 `opmls.ts`: OPML path
 
 ### 3.5 Configuration Documentation
 

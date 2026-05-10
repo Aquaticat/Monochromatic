@@ -19,7 +19,7 @@ import {
   type OxlintJsonOutput,
 } from './oxlint-types.ts';
 
-//region Directory walking -- find config files by walking up the filesystem
+//region Directory walking: find config files by walking up the filesystem
 
 /**
  * Walks up from a starting directory to find a file by name.
@@ -58,7 +58,7 @@ export function findAncestorWithFile(
 
 //endregion Directory walking
 
-//region Parsing -- convert oxlint JSON diagnostics to our Diagnostic type
+//region Parsing: convert oxlint JSON diagnostics to our Diagnostic type
 
 /**
  * Converts a parsed oxlint JSON output into grouped diagnostics keyed by absolute file path.

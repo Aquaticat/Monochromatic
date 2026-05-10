@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic-dev/pi-morph-compact",
-  "description": "Morph Compact integration for pi — replaces default compaction with line-deletion compression at 33K tok/s",
+  "description": "Morph Compact integration for pi: replaces default compaction with line-deletion compression at 33K tok/s",
   "type": "module",
   "private": true,
   "version": "0.0.1",

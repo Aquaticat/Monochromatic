@@ -3,7 +3,7 @@
 // type guard that validates them form a single cohesive unit; splitting would scatter
 // tightly-coupled definitions that are always imported together.
 
-//region JSON-RPC 2.0 base types -- foundation for all MCP message exchange
+//region JSON-RPC 2.0 base types: foundation for all MCP message exchange
 
 /** Unique request identifier. MCP uses integer or string ids per JSON-RPC 2.0. */
 export type JsonRpcId = number | string;
@@ -108,7 +108,7 @@ export type JsonRpcInbound = JsonRpcRequest | JsonRpcNotification;
 
 //endregion
 
-//region Standard JSON-RPC error codes -- used for protocol-level failures
+//region Standard JSON-RPC error codes: used for protocol-level failures
 
 /** Method does not exist or is not available. */
 export const JSON_RPC_METHOD_NOT_FOUND = -32_601;
@@ -124,7 +124,7 @@ export const JSON_RPC_PARSE_ERROR = -32_700;
 
 //endregion
 
-//region Message validation -- type guard for untrusted JSON parsed from stdin
+//region Message validation: type guard for untrusted JSON parsed from stdin
 
 /**
  * Validates that a parsed JSON value has the minimum shape of a JSON-RPC 2.0 message.

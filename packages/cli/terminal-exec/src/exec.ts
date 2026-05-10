@@ -38,7 +38,7 @@ export function execvp({ command, }: { command: readonly string[]; },): void {
 
   const [executable,] = command;
   if (executable === undefined)
-    throw new Error('execvp: unreachable — length checked above',);
+    throw new Error('execvp: unreachable (length checked above)',);
   const args = command.slice(1,);
 
   l.debug(`exec: ${executable} ${args.join(' ',)}`,);

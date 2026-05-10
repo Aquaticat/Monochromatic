@@ -94,7 +94,7 @@ export async function buildFixPromptImpl(
   if (customized !== undefined)
     return `${customized}\n\n${perfDiag}\n\nFix all the issues including the performance problem above. Output ONLY the complete fixed TypeScript source in a single fenced code block.`;
 
-  // No lint/runtime issues but perf is slow -- create a standalone perf fix prompt
+  // No lint/runtime issues but perf is slow: create a standalone perf fix prompt
   return [
     'Here is your code from the previous response:',
     '',

@@ -5,7 +5,7 @@
  * (with `${configDir}` substitution and `extends` chain applied),
  * then checks file paths against the resolved glob patterns using
  * `path.matchesGlob`. This prevents editord from sending files to
- * tsgo that fall outside the project's declared include scope --
+ * tsgo that fall outside the project's declared include scope,
  * a defense against tsgo panicking on non-source files it discovers
  * during project loading.
  */
@@ -103,7 +103,7 @@ export async function resolveTsconfigIncludes({
   }
   catch (error) {
     l.error(`failed to resolve tsconfig includes for ${root}: ${String(error,)}`,);
-    /** Return empty array on failure -- caller should allow the file through as a safe fallback. */
+    /** Return empty array on failure; caller should allow the file through as a safe fallback. */
     return [];
   }
 }

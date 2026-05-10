@@ -9,7 +9,7 @@ import {
   type FormattableDiagnostic,
 } from './format.ts';
 
-//region formatDiagnostic -- formats a diagnostic into a human-readable line
+//region formatDiagnostic: formats a diagnostic into a human-readable line
 
 await describe({
   name: formatDiagnostic.name,

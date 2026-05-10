@@ -117,7 +117,7 @@ Instead of "72% used, resets at 4pm," the status line shows "28% left (1h23m)."
 This answers the natural question: "How much can I do before it refills?"
 
 Indicators only appear when remaining capacity drops to 50% or below.
-When everything is comfortable, nothing extra is shown -- no news is good news.
+When everything is comfortable, nothing extra is shown; no news is good news.
 
 Two tiers are tracked from the statusline JSON payload:
 
@@ -162,7 +162,7 @@ This is built into Claude Code itself and cannot be configured from the script s
 ## Runtime
 
 Uses `node:fs`, `node:fs/promises`, and `node:stream/consumers` only.
-No runtime-specific APIs -- works with Bun, Node, or Deno.
+No runtime-specific APIs: works with Bun, Node, or Deno.
 
 ## Installation
 
@@ -183,7 +183,7 @@ Add to `~/.claude/settings.json`:
 
 Claude Code plugins cannot contribute a `statusLine`.
 The plugins-reference "File locations" table states that a plugin's bundled `settings.json`
-supports only the `agent` and `subagentStatusLine` keys --
+supports only the `agent` and `subagentStatusLine` keys;
 `statusLine` is user-scope only and must live in `~/.claude/settings.json`.
 `subagentStatusLine` is a separate feature (it formats rows in the subagent panel)
 and is not a substitute for the main status line.

@@ -55,7 +55,7 @@ export async function computeDiff({
     ({ stdout, } = result);
   }
   catch (error: unknown) {
-    // Exit code 1 means files differ -- expected behavior
+    // Exit code 1 means files differ (expected behavior)
     if (typeof error === 'object' && error !== null && 'stdout' in error)
       stdout = String(error.stdout,);
   }

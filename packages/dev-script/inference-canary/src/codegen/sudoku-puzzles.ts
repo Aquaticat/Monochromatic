@@ -9,7 +9,7 @@
  * to make the expected behavior verifiable by inspection.
  */
 
-//region Normal mode puzzles -- solvable, two unsolvable variants, multi-solution
+//region Normal mode puzzles: solvable, two unsolvable variants, multi-solution
 
 /** Classic solvable puzzle (Wikipedia example, 30 clues, unique solution) */
 export const SOLVABLE: string = [
@@ -109,7 +109,7 @@ export const MULTI_CLUES: readonly (readonly number[])[] = [
 
 //endregion Normal mode puzzles
 
-//region --all mode puzzles -- exact enumeration, many-solution, unsolvable
+//region --all mode puzzles: exact enumeration, many-solution, unsolvable
 
 /**
  * Puzzle with exactly 2 solutions for --all mode testing.
@@ -193,7 +193,7 @@ export const MIN_MANY_SOLUTIONS = 2;
 
 //endregion --all mode puzzles
 
-//region Assembled inputs -- stdin strings combining puzzles for each mode
+//region Assembled inputs: stdin strings combining puzzles for each mode
 
 /**
  * Stdin for normal mode: 4 puzzles separated by blank lines.

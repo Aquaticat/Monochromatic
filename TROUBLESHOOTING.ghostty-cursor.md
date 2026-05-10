@@ -18,7 +18,7 @@ Claude Code does not use the real terminal cursor for its input area.
 On mount, Ink (the React-based terminal UI framework) hides the terminal cursor
 with `\x1b[?25l` and never re-shows it during the session.
 Instead, the text input component renders a **visual cursor** using Chalk's
-`inverse` modifier — an inverse-video space character that always appears
+`inverse` modifier, an inverse-video space character that always appears
 as a solid block regardless of terminal cursor settings.
 
 Source locations in the extracted bundle (`claude-code-2.1.75.js`):
@@ -34,11 +34,11 @@ shell integration's `PS1` hook) restores the bar shape.
 
 ### What does not work
 
-- **`cursor-style = bar` in Ghostty config** — correctly sets the terminal default,
+- **`cursor-style = bar` in Ghostty config**: correctly sets the terminal default,
   but Claude Code hides the real cursor and renders its own
-- **`\e[0 q` from `PS0` preexec hook** — correctly resets shape to config default
+- **`\e[0 q` from `PS0` preexec hook**: correctly resets shape to config default
   before Claude Code starts, but the shape is irrelevant because the cursor is hidden
-- **`Se` / `Ss` terminfo capabilities** — Claude Code does not use terminfo for
+- **`Se` / `Ss` terminfo capabilities**: Claude Code does not use terminfo for
   cursor style; it hardcodes inverse-video rendering
 
 ### Verified behavior

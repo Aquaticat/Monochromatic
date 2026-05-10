@@ -1,7 +1,7 @@
 # tsdown documentation inconsistency: default dependency bundling behavior
 
 **tsdown version:** 0.9+ (current as of 2026-04-04)
-**Severity:** documentation contradiction -- misleads users about default behavior
+**Severity:** documentation contradiction (misleads users about default behavior)
 **Upstream:** [rolldown/tsdown](https://github.com/rolldown/tsdown)
 **Commit tested:** [`9471001`](https://github.com/rolldown/tsdown/commit/9471001)
 
@@ -207,7 +207,7 @@ rather than tsdown's actual smart-default behavior.
 The FAQ also recommends `deps.skipNodeModulesBundle` as the fix,
 which is a **stricter** option that externalizes all `node_modules` imports
 regardless of whether they are in `package.json`.
-The actual default behavior already externalizes production deps --
+The actual default behavior already externalizes production deps;
 `skipNodeModulesBundle` goes further by also externalizing `devDependencies`
 that would otherwise be bundled.
 
@@ -260,13 +260,13 @@ This contradicts two other documentation pages:
 
 ### Source code confirms the Dependencies page is correct
 
-`DepsPlugin` (`src/features/deps.ts`) is registered whenever a `package.json` exists (`src/features/rolldown.ts:115-117`). On initialization, `getProductionDeps()` (`src/features/deps.ts:415-421`) collects all names from `dependencies`, `peerDependencies`, and `optionalDependencies`. The `externalStrategy()` function (`src/features/deps.ts:316-319`) then marks any import matching those names as external -- no user configuration required.
+`DepsPlugin` (`src/features/deps.ts`) is registered whenever a `package.json` exists (`src/features/rolldown.ts:115-117`). On initialization, `getProductionDeps()` (`src/features/deps.ts:415-421`) collects all names from `dependencies`, `peerDependencies`, and `optionalDependencies`. The `externalStrategy()` function (`src/features/deps.ts:316-319`) then marks any import matching those names as external, no user configuration required.
 
 Additionally, when `deps.onlyBundle` is not set (the default), the `generateBundle` hook (`src/features/deps.ts:275-284`) emits a warning if any `node_modules` dependencies end up bundled. A tool that bundles everything by default would not warn about bundling.
 
 ### The FAQ also recommends a stricter-than-necessary fix
 
-The FAQ suggests `deps.skipNodeModulesBundle: true` as the solution, which externalizes **all** `node_modules` imports (including `devDependencies`). The actual default already externalizes production deps. Users following the FAQ would unknowingly switch from "externalize production deps, bundle devDeps" to "externalize everything from node_modules" -- a meaningful behavioral change.
+The FAQ suggests `deps.skipNodeModulesBundle: true` as the solution, which externalizes **all** `node_modules` imports (including `devDependencies`). The actual default already externalizes production deps. Users following the FAQ would unknowingly switch from "externalize production deps, bundle devDeps" to "externalize everything from node_modules", a meaningful behavioral change.
 
 ### Suggested fix
 

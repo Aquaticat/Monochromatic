@@ -13,11 +13,11 @@ No Neovim plugin required.
 
 ## Tools
 
-**get_diagnostics** --
+**get_diagnostics**:
 Returns the current buffer's absolute path, filetype, modified status,
 and all LSP diagnostics (severity, line, column, message, source, code).
 
-**get_all_diagnostics** --
+**get_all_diagnostics**:
 Returns LSP diagnostics across all open buffers, grouped by file path.
 
 ## Configuration

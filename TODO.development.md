@@ -6,11 +6,11 @@
 
 **Branch Structure**:
 
-- `main` - Protected production-ready branch
+- `main`: Protected production-ready branch
   - All code in main should be stable and deployable
   - Direct pushes are prevented via branch protection rules
   - Changes only land here via pull requests from `dev`
-- `dev` - Active development branch
+- `dev`: Active development branch
   - Default branch for all development work
   - All new features and fixes go here first
   - Regularly merged to `main` via pull requests

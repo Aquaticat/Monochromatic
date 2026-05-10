@@ -97,7 +97,7 @@ const QCOW2_PATH = join(
 /** Current user login name; used to restore ownership after the privileged build step. */
 const CURRENT_USER = process.env['USER'] ?? 'user';
 
-/** libvirt session URI -- connects to the user's QEMU/KVM daemon (no sudo needed). */
+/** libvirt session URI: connects to the user's QEMU/KVM daemon (no sudo needed). */
 const LIBVIRT_URI = 'qemu:///session';
 
 //region Streaming process runner
@@ -261,7 +261,7 @@ async function undefineVmIfExists(name: string,): Promise<void> {
     );
   }
   catch {
-    // Domain not defined -- nothing to remove.
+    // Domain not defined; nothing to remove.
     return;
   }
   console.log(`[vm-builder] removing existing VM '${name}'...`,);
@@ -349,7 +349,7 @@ async function grantFlatpakAccess(): Promise<void> {
     );
   }
   catch {
-    // virt-manager is not a Flatpak -- no override needed.
+    // virt-manager is not a Flatpak; no override needed.
     return;
   }
   console.log(

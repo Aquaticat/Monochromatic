@@ -24,7 +24,7 @@ canvas.fig data. The 4 bytes immediately before the magic are the LE size prefix
 ## Schema binary format (STOCK KIWI, VERIFIED)
 
 Figma uses the stock Kiwi binary schema format from evanw/kiwi.
-There is NO custom header -- the first bytes `AF 04` are simply the
+There is NO custom header: the first bytes `AF 04` are simply the
 varuint encoding of the definition count (559).
 
 ```
@@ -66,7 +66,7 @@ for each definition:
 
 In stock Kiwi, enum fields have type=null which zigzag-encodes as varint(-1).
 In Figma's schema, enum fields have type=0 (varint 0). This is a minor
-difference -- type is unused for enum fields anyway. The rest matches exactly.
+difference (type is unused for enum fields anyway). The rest matches exactly.
 
 ## Document data encoding (FULLY DECODED, VERIFIED)
 

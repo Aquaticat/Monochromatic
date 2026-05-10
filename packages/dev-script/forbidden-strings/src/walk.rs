@@ -5,7 +5,7 @@
 // Why:      `--all` mode walks the working tree to enumerate every file
 //           we should scan; `WalkBuilder` does this in parallel and
 //           respects `.gitignore` semantics (including `!` negations).
-// TS map:   `import { WalkBuilder } from "<some npm package>"` — there
+// TS map:   `import { WalkBuilder } from "<some npm package>"`; there
 //           is no direct TS analogue; closest is `globby` or
 //           `fast-glob` with `gitignore: true`.
 //
@@ -43,7 +43,7 @@ use ignore::WalkState;
 //           `Arc<Mutex<...>>`: `Arc` to share across threads, `Mutex`
 //           to serialize push operations.
 // TS map:   No 1:1 equivalent. Mentally: a JS `Array` shared between
-//           workers via SharedArrayBuffer + an Atomics lock — except
+//           workers via SharedArrayBuffer + an Atomics lock, except
 //           the Rust version is type-checked end to end.
 // Gotcha:   `Arc::clone(&x)` is cheap (atomic increment), NOT a deep
 //           copy. The pointee is the same `Mutex<Vec>`.
@@ -97,7 +97,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     //           .filter_entry(...).build_parallel()` configures and
     //           builds a parallel walker.
     //             - `hidden(false)`: include dotfiles (`.github/`,
-    //               `.gitignore`, etc.) — git tracks these, so we
+    //               `.gitignore`, etc.): git tracks these, so we
     //               must scan them.
     //             - `ignore(false)`: do NOT honor `.ignore` files
     //               (used by tools like `scc`); the repo's `.ignore`
@@ -117,7 +117,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     //           an in-process walk. On this repo the parallel walker
     //           is ~9x faster than the subprocess; the walker also
     //           drops the runtime dependency on `git` being on PATH.
-    // TS map:   The whole block is a builder chain — closest TS analogue
+    // TS map:   The whole block is a builder chain; closest TS analogue
     //           is fast-glob/globby with options object, then a
     //           `forEach` over results.
     //
@@ -163,7 +163,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     //               or quitting; we don't need them.)
     // Why:      Kicks off the parallel walk and accumulates file
     //           paths into the shared `Vec`.
-    // TS map:   `walker.run((entry) => { handle(entry); })` —
+    // TS map:   `walker.run((entry) => { handle(entry); })`,
     //           closest mental model is a worker pool's per-worker
     //           handler factory.
     // Gotcha:   The OUTER closure is called once PER WORKER THREAD
@@ -265,7 +265,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
                 //           end of statement, releasing the lock.
                 // Why:      Serialize the per-thread push into the
                 //           shared `Vec`.
-                // TS map:   `files.push(s);` — TS doesn't have to
+                // TS map:   `files.push(s);`; TS doesn't have to
                 //           lock because Node is single-threaded.
                 // Gotcha:   `unwrap()` on `lock()` panics if a prior
                 //           holder panicked while holding the lock

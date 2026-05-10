@@ -45,7 +45,7 @@ import {
 } from './lib/git-dates.ts';
 import { renderMdx, } from './lib/markdown.ts';
 
-// File justification: 120 lines -- linear pipeline script; splitting the
+// File justification: 120 lines: linear pipeline script; splitting the
 // orchestration across multiple files would scatter the build sequence.
 export {}; // module boundary marker
 
@@ -71,7 +71,7 @@ const CONTENT_DIR = 'src/content';
  */
 const PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts';
 
-//region Build orchestration -- loads content, processes MDX, generates pages and assets
+//region Build orchestration: loads content, processes MDX, generates pages and assets
 
 l.info('starting',);
 

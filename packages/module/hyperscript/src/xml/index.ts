@@ -4,7 +4,7 @@
  * Same API shape as the HTML `h()` (`t string/t html/.../$`) but produces
  * well-formed XML instead of HTML. Key differences from `h-html`:
  *
- * - No void elements — childless elements self-close (`<tag />`)
+ * - No void elements: childless elements self-close (`<tag />`)
  * - No `class` or `style` shortcuts (HTML/CSS concepts, not XML)
  * - Supports XML namespace prefixes in tag names and attributes
  *
@@ -14,7 +14,7 @@
  * @param options - Named parameters describing the element
  * @param options.tag - XML tag name, may include namespace prefix (e.g. `'atom:link'`)
  * @param options.text - Text content (XML-escaped automatically)
- * @param options.raw - Raw inner XML (NOT escaped — caller is responsible for well-formedness)
+ * @param options.raw - Raw inner XML (NOT escaped; caller is responsible for well-formedness)
  * @param options.attrs - Record of attributes (values are XML-escaped)
  * @param options.children - Child XML strings to concatenate inside the element
  * @returns XML string
@@ -91,7 +91,7 @@ function escapeXml(raw: string,): string {
 /**
  * Named parameters for XML element creation.
  *
- * Intentionally omits `class`, `style`, and event listeners — those are
+ * Intentionally omits `class`, `style`, and event listeners; those are
  * HTML/DOM concepts with no meaning in generic XML.
  */
 type XmlOptions = {
@@ -99,7 +99,7 @@ type XmlOptions = {
   tag: string;
   /** Text content (XML-escaped automatically) */
   text?: string;
-  /** Raw inner XML (NOT escaped — caller is responsible for well-formedness) */
+  /** Raw inner XML (NOT escaped; caller is responsible for well-formedness) */
   raw?: string;
   /** Attributes set as key="value" pairs (values are XML-escaped) */
   attrs?: Record<string, string>;
@@ -148,7 +148,7 @@ type XmlOptions = {
   }
 
   //region Self-closing check
-  // XML has no void elements — instead, childless elements self-close.
+  // XML has no void elements; instead, childless elements self-close.
   const hasContent = text !== undefined
     || raw !== undefined
     || (children !== undefined && children.length > 0);

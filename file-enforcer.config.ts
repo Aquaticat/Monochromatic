@@ -56,7 +56,7 @@ async function generateForbiddenStringsRules(): Promise<void> {
   // Seed the append file (gitignored) with a comment header only; the
   // file is the place developers add per-repo deny-list literals (e.g.
   // codenames, customer names) that must not be committed. We never
-  // write a literal into this committed config -- otherwise the
+  // write a literal into this committed config; otherwise the
   // scanner would self-match against the seed string here.
   await overwriteIfNotExists(
     './forbidden-strings.append.local.txt',

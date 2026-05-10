@@ -124,7 +124,7 @@ packument path, which fetches by package name only and is not affected.
 
 ## Suggested fix
 
-**Option A -- strip in `#registryManifestRequest` (minimal, targeted):**
+**Option A: strip in `#registryManifestRequest` (minimal, targeted):**
 
 ```ts
 // src/package-info/src/index.ts
@@ -133,7 +133,7 @@ const versionClean = version.replace(/\+.*$/, '',);
 const pakuURL = new URL(`${name}/${versionClean}`, registry,);
 ```
 
-**Option B -- strip in Spec parser (comprehensive, prevents downstream issues):**
+**Option B: strip in Spec parser (comprehensive, prevents downstream issues):**
 
 ```ts
 // src/spec/src/browser.ts:644
@@ -156,7 +156,7 @@ has the same issue and would also need patching if Option A is chosen.
 npm has stripped `+<build>` from version strings at publish time since 2014
 (npm/npm#6379). The public npm registry has zero packages with build metadata
 in version keys. The trigger requires a package that pins a dependency specifier
-to an exact version with build metadata -- dependency specifier strings are
+to an exact version with build metadata; dependency specifier strings are
 not stripped by `npm publish`, only the `version` field is. The `@optique` project
 does this because its release toolchain writes `+<git-sha>` into both fields.
 

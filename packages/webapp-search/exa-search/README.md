@@ -46,6 +46,6 @@ The API key is stored in your browser's localStorage for convenience. You can ch
 
 The source files are organized as:
 
-- `index.html` - Main HTML structure (at package root)
-- `src/index.ts` - TypeScript logic for API integration and UI updates
-- `src/index.css` - Styling with dark/light mode support
+- `index.html`: Main HTML structure (at package root)
+- `src/index.ts`: TypeScript logic for API integration and UI updates
+- `src/index.css`: Styling with dark/light mode support

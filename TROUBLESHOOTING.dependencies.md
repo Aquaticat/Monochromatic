@@ -17,7 +17,7 @@ Error: failed to fetch manifest
 ```
 
 Restoring the lockfile does not help.
-Graph modifiers (`"modifiers"` in `vlt.json`) do not help either --
+Graph modifiers (`"modifiers"` in `vlt.json`) do not help either;
 the failing code path runs during node extraction, which bypasses modifier logic.
 
 ### Root cause
@@ -32,7 +32,7 @@ The npm registry strips `+<build>` from the **version key** at publish time
 (`npm publish` has done this since 2014, per npm/npm#6379),
 but dependency **specifier strings** pass through unmodified.
 
-This is extremely rare -- npm stripping `+` from versions means the public registry
+This is extremely rare: npm stripping `+` from versions means the public registry
 has zero packages with build metadata in version keys. The `@optique` project
 is an outlier because its toolchain writes `+<git-sha>` into both the version field
 and cross-package dependency pinning before publish.
@@ -52,12 +52,12 @@ before constructing the per-version manifest URL.
 
 All paths in this section are relative to the **vltpkg/vltpkg** monorepo.
 
-**Entry point -- dependency spec parsing:**
+**Entry point: dependency spec parsing:**
 
 `src/spec/src/browser.ts:644` sets `registrySpec = bareSpec` verbatim,
 preserving the `+5c265bd4` suffix from the dependency declaration.
 
-**Trigger -- single-version fast path:**
+**Trigger: single-version fast path:**
 
 `src/package-info/src/index.ts:601-603`:
 
@@ -70,7 +70,7 @@ const mani = spec.range?.isSingle
 A version with build metadata parses as `isSingle === true` (the `+` part is metadata,
 not a range operator), so vlt takes the fast path instead of fetching the full packument.
 
-**Failure -- URL construction:**
+**Failure: URL construction:**
 
 `src/package-info/src/index.ts:405-407`:
 
@@ -80,11 +80,11 @@ const pakuURL = new URL(`${name}/${version}`, registry,);
 ```
 
 `version` becomes `"1.0.0-dev.1692+5c265bd4"`.
-In URL semantics, `+` is not a path-safe character --
+In URL semantics, `+` is not a path-safe character;
 `new URL()` preserves it literally rather than encoding it,
 and the npm registry does not recognize the resulting path.
 
-**Second trigger -- extraction bypass of modifiers:**
+**Second trigger: extraction bypass of modifiers:**
 
 `src/graph/src/reify/extract-node.ts:57` hydrates the spec from the node's DepID:
 
@@ -100,7 +100,7 @@ But when the manifest comes from a dependency declaration that includes build me
 the spec flows through `fetchManifestsForDeps` (`src/graph/src/ideal/append-nodes.ts:590`)
 where `Spec.parse(name, bareSpec, options)` preserves the `+` suffix.
 Graph modifiers apply at lines 271-288 of the same file but are scoped
-to the graph-building phase -- the extraction code path at `extract-node.ts`
+to the graph-building phase; the extraction code path at `extract-node.ts`
 creates specs independently and does not consult modifiers.
 
 ### Why this was never reported before
@@ -109,7 +109,7 @@ npm has stripped `+<build>` from version strings at publish time since 2014.
 Across thousands of checked packages (semver, typescript, react, electron, webpack,
 lodash, express, next, vue, angular, prettier, rollup, esbuild, etc.),
 zero have build metadata in any version key or dependency specifier on the public registry.
-The vlt issue tracker (vltpkg/vltpkg) has no reports matching this pattern --
+The vlt issue tracker (vltpkg/vltpkg) has no reports matching this pattern;
 existing "failed to fetch manifest" issues (#1534, #1263, #260) all have different causes.
 
 The trigger requires a package that pins a dependency to an **exact version
@@ -133,7 +133,7 @@ Viable alternatives until vlt is patched:
 
 - **Pin to a version of `@optique/*` that does not use build metadata**
   (if one exists)
-- **Use a different package manager** (npm, pnpm, yarn) for installs --
+- **Use a different package manager** (npm, pnpm, yarn) for installs;
   all three strip build metadata before making registry requests
 - **Ask the `@optique` maintainer** to stop publishing dependency specs
   with build metadata suffixes

@@ -2,11 +2,11 @@
 
 ## Cross-References
 
-- [**Build System Issues**](TODO.build-system.md#missing-export-issues) - TypeScript compilation and export fixes
-- [**Security Practices**](TODO.security.md#development-security) - Secure coding guidelines and practices
-- [**Performance Patterns**](TODO.performance.md#runtime-performance) - Performance-focused coding patterns
-- [**Package Standards**](TODO.packages.md#cross-package-improvements) - Cross-package coding standards
-- [**Automation Tools**](TODO.automation.md#code-quality-automation) - Automated code quality improvements
+- [**Build System Issues**](TODO.build-system.md#missing-export-issues): TypeScript compilation and export fixes
+- [**Security Practices**](TODO.security.md#development-security): Secure coding guidelines and practices
+- [**Performance Patterns**](TODO.performance.md#runtime-performance): Performance-focused coding patterns
+- [**Package Standards**](TODO.packages.md#cross-package-improvements): Cross-package coding standards
+- [**Automation Tools**](TODO.automation.md#code-quality-automation): Automated code quality improvements
 
 ## Current Linting Issues
 
@@ -16,12 +16,12 @@
 
 1. **Variable abbreviations** (~135 total occurrences, down from 147)
    - Use descriptive names instead of abbreviations
-   - **NEVER use single-letter variables like `i`, `j`, `k`** - they provide no semantic meaning
+   - **NEVER use single-letter variables like `i`, `j`, `k`**: they provide no semantic meaning
    - Exception: Mathematical formulas where single letters have established meaning
 
 #### TypeScript Compilation Errors (New - Critical Priority)
 
-**Status**: Critical - Blocks builds
+**Status**: Critical (blocks builds)
 
 Recent analysis shows critical TypeScript compilation errors that must be fixed:
 
@@ -122,12 +122,12 @@ catch (error) {
 
 This questioning pattern teaches:
 
-1. **Question every construct** - Each programming construct adds complexity
-2. **Prefer immutability** - Mutable variables should be eliminated when possible
-3. **Prefer declarative over imperative** - Loops can often be replaced with higher-order functions
-4. **Extract and name concepts** - Helper functions like `isTaskPending` improve readability
-5. **Think functionally first** - There's often a functional solution that's cleaner
-6. **Simplify progressively** - Don't stop at the first working solution
+1. **Question every construct**: Each programming construct adds complexity
+2. **Prefer immutability**: Mutable variables should be eliminated when possible
+3. **Prefer declarative over imperative**: Loops can often be replaced with higher-order functions
+4. **Extract and name concepts**: Helper functions like `isTaskPending` improve readability
+5. **Think functionally first**: There's often a functional solution that's cleaner
+6. **Simplify progressively**: Don't stop at the first working solution
 
 **Cross-Reference**: See [Performance Todo](TODO.performance.md#javascript-performance) for performance-focused patterns.
 
@@ -186,14 +186,14 @@ expect(isError(new Error(),),).toBe(true,);
 
 - Prefer `const` over `let` to encourage immutability
 - Strive for immutability: avoid reassigning variables and modifying objects in place
-- **NEVER use single-letter variables** - they provide no semantic meaning
+- **NEVER use single-letter variables**: they provide no semantic meaning
 - **Prefer functional approaches over imperative loops**
 - Remove unused variables or prefix them with underscore
 - Use `satisfies` operator for type checking without widening
 
 ### Error Handling Best Practices
 
-- **NEVER use process.exit()** - throw errors instead
+- **NEVER use process.exit()**: throw errors instead
 - **Combine console.log/error messages into thrown errors**
 - **Use outdent for multi-line error messages**
 - **Always log errors in catch blocks**
@@ -211,9 +211,9 @@ expect(isError(new Error(),),).toBe(true,);
 
 ### Rule Categories
 
-1. **Code Quality Issues** - Always fix in code, not config
-2. **Style Preferences** - Can be configured for team consistency
-3. **Framework-specific** - May need configuration for specific use cases
+1. **Code Quality Issues**: Always fix in code, not config
+2. **Style Preferences**: Can be configured for team consistency
+3. **Framework-specific**: May need configuration for specific use cases
 
 ### Testing-Specific Linting
 
@@ -260,7 +260,7 @@ expect(isError(new Error(),),).toBe(true,);
 
 ### Secure Coding Practices
 
-**Status**: High Priority - Security integration
+**Status**: High Priority (security integration)
 
 - [ ] Implement input validation in all user-facing functions
 - [ ] Add proper error handling without information disclosure

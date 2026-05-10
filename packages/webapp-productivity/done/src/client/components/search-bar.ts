@@ -89,7 +89,7 @@ class SearchBar extends HTMLElement {
     const query = this.getAttribute('value',) ?? '';
 
     // SVG back arrow built via innerHTML on a container because h() targets
-    // HTMLElement creation -- SVG elements require the SVG namespace.
+    // HTMLElement creation; SVG elements require the SVG namespace.
     const backButton = h({
       tag: 'button',
       class: 'back',

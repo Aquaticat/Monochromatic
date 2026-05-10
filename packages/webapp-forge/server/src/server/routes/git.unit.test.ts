@@ -174,7 +174,7 @@ await describe({
         expect(response.status,).toBe(STATUS_OK,);
         const text = await response.text();
         expect(text.includes('unpack ok\n',),).toBe(true,);
-        // The triplet has zero/zero — that's a no-op delete-when-not-present.
+        // The triplet has zero/zero: that's a no-op delete-when-not-present.
         // Either ok or ng response is acceptable; the wire shape matters.
         expect(text.includes('refs/heads/probe',),).toBe(true,);
       },

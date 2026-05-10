@@ -50,7 +50,7 @@ const SCAN_DIRS = [
   'public',
 ];
 
-//region Top-level conversion pipeline -- scans directories and converts raster images to AVIF
+//region Top-level conversion pipeline: scans directories and converts raster images to AVIF
 
 l.info('scanning for raster images',);
 

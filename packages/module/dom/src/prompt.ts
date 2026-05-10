@@ -1,4 +1,4 @@
-// Prompt Dialog Polyfill -- Drop-in replacement for window.prompt using dialog element
+// Prompt Dialog Polyfill: Drop-in replacement for window.prompt using dialog element
 
 /**
  * Creates a modern prompt dialog using the HTML dialog element.

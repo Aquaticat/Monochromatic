@@ -1,6 +1,6 @@
 # pi-morph-compact
 
-Morph Compact integration for pi — replaces default LLM summarization with line-deletion compression at 33K tok/s.
+Morph Compact integration for pi: replaces default LLM summarization with line-deletion compression at 33K tok/s.
 
 ## Setup
 
@@ -12,7 +12,7 @@ export MORPH_API_KEY="sk-your-key-here"
 
 Get a key from [morphllm.com](https://morphllm.com).
 
-If the env var is not set, the extension reads the key from `~/.pi/agent/mcp.json` —
+If the env var is not set, the extension reads the key from `~/.pi/agent/mcp.json`:
 any MCP server entry with `env.MORPH_API_KEY` is used. This is convenient when
 the Morph MCP server is already configured.
 
@@ -44,26 +44,26 @@ When pi's context window fills up and compaction triggers, this extension interc
 
 **Key differences from default compaction:**
 
-- Morph uses line deletion, not summarization — it removes irrelevant lines from the serialized conversation while keeping exact excerpts
+- Morph uses line deletion, not summarization: it removes irrelevant lines from the serialized conversation while keeping exact excerpts
 - Output is wrapped in `<morph-compacted-history>` tags with an explanatory header so the LLM understands the format
 - Previous compaction context is preserved via `<keepContext>` tags
 - File tracking (`<read-files>`, `<modified-files>`) is appended to the Morph output
 
 **Fallback behavior:**
 
-- Missing `MORPH_API_KEY` — warns once per session, falls through to pi default
-- Split-turn compactions — always uses pi default (Morph can't produce coherent turn prefix summaries)
-- API errors — notifies and falls through to pi default
+- Missing `MORPH_API_KEY`: warns once per session, falls through to pi default
+- Split-turn compactions: always uses pi default (Morph can't produce coherent turn prefix summaries)
+- API errors: notifies and falls through to pi default
 
 ## Adaptive compression
 
 Compression ratio adjusts based on context pressure. Ratios are deliberately
 higher than traditional summarization would use for two reasons:
 
-1. **Speed** — Morph Compact runs at 33K tok/s, so re-triggering compaction is
+1. **Speed**: Morph Compact runs at 33K tok/s, so re-triggering compaction is
    nearly instant. There is no penalty for keeping more context and compacting
    again sooner.
-2. **Drift reduction** — every compaction cycle loses some information. Preserving
+2. **Drift reduction**: every compaction cycle loses some information. Preserving
    more context per cycle keeps the model's working memory closer to the full
    conversation, reducing accumulated drift across repeated compactions.
 
@@ -75,7 +75,7 @@ higher than traditional summarization would use for two reasons:
 
 ## Commands
 
-- `/morph-compact` — trigger compaction manually (optionally with custom instructions)
+- `/morph-compact`: trigger compaction manually (optionally with custom instructions)
 
 ## Source structure
 

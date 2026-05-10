@@ -148,7 +148,7 @@ export const styleRules: DummyRuleMap = {
   'import/no-named-export': 'off',
   'import/no-namespace': 'off',
 
-  //region stylistic -- one-item-per-line enforcement
+  //region stylistic: one-item-per-line enforcement
   'stylistic/param-per-line': 'warn',
   'stylistic/argument-per-line': 'warn',
   'stylistic/array-element-per-line': 'warn',

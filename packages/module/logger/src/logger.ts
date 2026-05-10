@@ -88,7 +88,7 @@ async function initialize(): Promise<void> {
     throw new Error('No logging backends available',);
 }
 
-/** Eager initialization promise -- throws at module load if no backends available. */
+/** Eager initialization promise: throws at module load if no backends available. */
 // oxlint-disable-next-line unicorn/prefer-top-level-await -- fire-and-forget initialization, not awaited
 const initPromise: Promise<void> = initialize();
 

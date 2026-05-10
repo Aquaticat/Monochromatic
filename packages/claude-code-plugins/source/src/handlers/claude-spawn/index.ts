@@ -77,7 +77,7 @@ function updateChildOnStop(
     }
   }
   catch {
-    /** File missing (already `.reported`) or unreadable -- skip. */
+    /** File missing (already `.reported`) or unreadable: skip. */
   }
 }
 

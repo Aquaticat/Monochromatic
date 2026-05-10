@@ -48,7 +48,7 @@ const PACKAGES_PER_GROUP = 4;
 /** Total concat groups (5 groups * 4 packages = 20 packages covered) */
 const CONCAT_GROUP_COUNT = 5;
 
-//region All rules -- single Promise.all to minimize CFS yield points
+//region All rules: single Promise.all to minimize CFS yield points
 
 /** Glob mirror configurations: source subdirectory + filename */
 const MIRROR_CONFIGS = [
@@ -157,22 +157,22 @@ async function mirrorDeepFiles(): Promise<void> {
 }
 
 await Promise.all([
-  // Concat rules -- combine readme.md from groups of 4 packages
+  // Concat rules: combine readme.md from groups of 4 packages
   ...Array.from({ length: CONCAT_GROUP_COUNT, }, concatGroup,),
 
-  // Glob mirror rules -- mirror lib and type files across packages
+  // Glob mirror rules: mirror lib and type files across packages
   ...MIRROR_CONFIGS.map(function runMirror(config,) {
     return mirrorConfig(config,);
   },),
 
-  // GetProperty extractions -- parse JSON and extract nested values
+  // GetProperty extractions: parse JSON and extract nested values
   extractName(),
   extractFeatures(),
 
-  // Dedup -- combine all 20 readmes and remove duplicate lines
+  // Dedup: combine all 20 readmes and remove duplicate lines
   dedupAllReadmes(),
 
-  // Deep glob -- mirror 6-level nested files
+  // Deep glob: mirror 6-level nested files
   mirrorDeepFiles(),
 ],);
 

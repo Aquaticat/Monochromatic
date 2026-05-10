@@ -33,7 +33,7 @@ from a server image and adding things.
 
 **Fedora Kinoite**: the obvious immutable KDE choice, but poor documentation,
 no dedicated GitHub repo, and includes default desktop packages we do not want.
-Also inherits Fedora's third-party repo fragility --
+Also inherits Fedora's third-party repo fragility:
 Terra (developer.fyralabs.com/terra) lagged behind a Fedora release,
 blocking work for hours at billable rates.
 
@@ -42,12 +42,12 @@ In practice: still alpha after years, single maintainer ("sfalken"),
 officially listed as experimental.
 Aeon (the GNOME variant) is more mature but still only Release Candidate.
 Kalpa strongly discourages RPM installs via transactional-update,
-pushing everything to Flatpak -- which conflicts with installing
+pushing everything to Flatpak, which conflicts with installing
 system-level dev tools as packages.
 
 **Alpine Linux**: musl libc as a forcing function for portable choices is appealing.
 Smallest base image, fastest package manager, no third-party repo dependency.
-Disqualified by the lack of transactional package management --
+Disqualified by the lack of transactional package management:
 `apk add` mutates the root directly with no staging, rollback, or atomic application.
 No mechanism equivalent to `rpm-ostree install` (stage for next boot).
 
@@ -55,8 +55,8 @@ No mechanism equivalent to `rpm-ostree install` (stage for next boot).
 Viable as a base but would need the same KDE layering as ucore-hci,
 without ucore's pre-built HCI stack.
 
-**NixOS**: the most declaratively pure option --
-entire OS defined in a single Nix expression.
+**NixOS**: the most declaratively pure option.
+Entire OS defined in a single Nix expression.
 Rejected due to concerns about security posture
 (historically slow CVE response, world-readable Nix store,
 community security practices).
@@ -96,7 +96,7 @@ Baking everything into one container image was the initial approach.
 It fails for several reasons:
 
 - **Cargo builds are slow**: `cargo:coreutils` (with unix features),
-  `cargo:fd-find`, `cargo:fastmod`, `cargo:llmfit` --
+  `cargo:fd-find`, `cargo:fastmod`, `cargo:llmfit`:
   each compiles from source in the Containerfile.
   First build takes 30-60 minutes.
   Any change to the mise config layer invalidates the cache and rebuilds everything.
@@ -122,7 +122,7 @@ Image changes never require re-provisioning user tools.
 
 ## Why file-enforcer for the provisioner
 
-The monorepo already has [file-enforcer](packages/dev-script/file-enforcer/) --
+The monorepo already has [file-enforcer](packages/dev-script/file-enforcer/):
 a declarative TypeScript tool for syncing derived files.
 Its primitives map directly to provisioner needs:
 
@@ -144,7 +144,7 @@ both available after `mise install`.
 ucore-hci ships ZFS. Adding LUKS below ZFS would mean two separate encryption layers:
 LUKS for block-level FDE, then ZFS on top.
 ZFS native encryption handles FDE within the same layer that manages snapshots,
-send/receive, and compression -- encrypted data stays encrypted in snapshots and
+send/receive, and compression; encrypted data stays encrypted in snapshots and
 during `zfs send` replication without a separate key-management ceremony.
 
 ZFS native encryption also provides per-dataset granularity: swap and `/tmp` datasets
@@ -154,7 +154,7 @@ not kernel modules).
 
 Key management is a passphrase prompt at boot (`keyformat=passphrase`).
 The VM is started manually from a hypervisor console, so a prompt is not disruptive.
-No TPM or auto-unlock mechanism -- avoids vTPM device requirements and keeps
+No TPM or auto-unlock mechanism: avoids vTPM device requirements and keeps
 the setup portable across hypervisors.
 
 ## Why ghostty is a COPR RPM, not an AppImage
@@ -176,7 +176,7 @@ The scottames/ghostty COPR provides an official RPM for Fedora, which is a bette
 ## Why virt-manager is a native RPM, not Flatpak
 
 virt-manager communicates with libvirtd via a Unix socket (`/var/run/libvirt/libvirt-sock`).
-Flatpak sandboxing blocks direct socket access by default --
+Flatpak sandboxing blocks direct socket access by default:
 a Flatpak virt-manager cannot reach the host libvirtd without manual Flatseal overrides,
 which defeats the goal of a zero-touch provisioned environment.
 
@@ -191,16 +191,16 @@ without a provisioner step.
 KeePassXC's browser integration communicates with LibreWolf
 via native messaging (a Unix socket / D-Bus path between the browser extension
 and the desktop application).
-Flatpak sandboxing breaks this path --
+Flatpak sandboxing breaks this path:
 a Flatpak LibreWolf cannot reach a native KeePassXC, and vice versa.
 Both applications must be native RPMs for the integration to work.
 
 LibreWolf is not in Fedora's official repos,
 so the Containerfile adds the [LibreWolf RPM repo][librewolf-repo] at build time.
 This is a third-party repo dependency, but a qualitatively different risk than Terra.
-Terra is a third-party repo packaging other people's software (third-party of third-party) --
+Terra is a third-party repo packaging other people's software (third-party of third-party):
 when Fedora releases, Terra maintainers must rebuild packages they do not control.
-LibreWolf's repo is maintained by the LibreWolf project itself (first-party of third-party) --
+LibreWolf's repo is maintained by the LibreWolf project itself (first-party of third-party):
 they control both the software and the packaging, so releases are never blocked
 by an intermediary catching up. In practice, LibreWolf's repo has never lagged behind.
 

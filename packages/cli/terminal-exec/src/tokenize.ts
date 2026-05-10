@@ -80,7 +80,7 @@ export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] |
       if (ch === '\\' && i + 1 < exec.length) {
         const next = exec[i + 1];
         if (next === undefined)
-          break; // unreachable — length checked above
+          break; // unreachable (length checked above)
         if (next === '"' || next === '`' || next === '$' || next === '\\') {
           current += next;
           i += 2;
@@ -116,7 +116,7 @@ export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] |
     if (ch === '%' && i + 1 < exec.length) {
       const next = exec[i + 1];
       if (next === undefined)
-        break; // unreachable — length checked above
+        break; // unreachable (length checked above)
       if (next === '%') {
         current += '%';
         i += 2;

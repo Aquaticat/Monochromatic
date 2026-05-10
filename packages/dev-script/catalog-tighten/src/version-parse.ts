@@ -122,12 +122,12 @@ export function isStrictlyGreater(
   if (iPat !== cPat)
     return iPat > cPat;
 
-  // Same major.minor.patch -- compare prerelease
+  // Same major.minor.patch: compare prerelease
   // No prerelease > any prerelease (release is "greater" than prerelease of same triple)
   if (cPre !== '' && iPre === '')
     return true;
   if (cPre === '' && iPre !== '') {
-    // Installed is a prerelease of the same triple -- not greater
+    // Installed is a prerelease of the same triple; not greater
     return false;
   }
   // Both have prerelease or both have none

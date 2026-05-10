@@ -40,7 +40,7 @@ references (`#id`) do not contribute to transfer weight and are omitted.
 bun packages/dev-script/page-weight/src/index.ts path/to/dist
 ```
 
-The script accepts any dist directory -- use it against any SSG output,
+The script accepts any dist directory: use it against any SSG output,
 not just this repo's.
 
 ## Output

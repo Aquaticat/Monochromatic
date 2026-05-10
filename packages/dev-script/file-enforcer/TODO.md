@@ -18,7 +18,7 @@
   Rapid burst edits (e.g., `git checkout` touching many files) may trigger multiple re-runs.
   A smarter strategy: accumulate events during debounce, then invalidate all changed paths in one batch re-run.
 - The watch loop blocks forever with `new Promise<never>(() => {})`.
-  No graceful shutdown on SIGINT/SIGTERM -- open file watchers and AbortControllers are never cleaned up.
+  No graceful shutdown on SIGINT/SIGTERM; open file watchers and AbortControllers are never cleaned up.
   Add signal handling for clean shutdown.
 
 ## Write-protection notifications
@@ -33,7 +33,7 @@
   The current in-memory cache makes full re-runs fast (~2ms warm), so this is low priority.
 - No dry-run mode.
   Adding `--dry-run` would require switching to a descriptor pattern or wrapping write functions with a no-op.
-  The current direct execution model was chosen explicitly to avoid this complexity -- add only if there is a real use case.
+  The current direct execution model was chosen explicitly to avoid this complexity; add only if there is a real use case.
 
 ## CLI
 

@@ -11,20 +11,20 @@ Each user runs their own instance, provisioned automatically on registration.
 
 ### Authentication and instance lifecycle
 
-The orchestrator handles everything: auth, reverse proxy, and process management -- no Caddy or AuthCrunch needed.
+The orchestrator handles everything: auth, reverse proxy, and process management. No Caddy or AuthCrunch needed.
 Coolify's own reverse proxy terminates HTTPS upstream, so the orchestrator only listens on HTTP internally.
-Path-based routing (`done.app/u/<user-id>/`) instead of subdomains -- avoids DNS API calls on registration, offensive subdomain risk, wildcard cert complexity, and registrar rate limits.
+Path-based routing (`done.app/u/<user-id>/`) instead of subdomains: avoids DNS API calls on registration, offensive subdomain risk, wildcard cert complexity, and registrar rate limits.
 
 1. User registers with email on the orchestrator's own registration page, verified via SMTP (through `@upyo/smtp`)
 2. Orchestrator hashes password with `Bun.password` (argon2id), stores user record in `orchestrator.db`
 3. On login, orchestrator verifies password, creates a session row in `orchestrator.db` with a random 32-byte hex token, sets cookie (`HttpOnly` / `SameSite=Strict` / `Secure`, scoped to `/u/<user-id>/`)
 4. Orchestrator spawns a new **SvelteKit-on-Bun process** (`bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`)
-5. On every request to `/u/<user-id>/*`, orchestrator validates the session cookie and checks that the session's user-id matches the path -- then reverse-proxies to `localhost:$PORT`, stripping the `/u/<user-id>` prefix
+5. On every request to `/u/<user-id>/*`, orchestrator validates the session cookie and checks that the session's user-id matches the path, then reverse-proxies to `localhost:$PORT`, stripping the `/u/<user-id>` prefix
 6. Unauthenticated requests get redirected to the login page; wrong-user requests get 403
 7. The orchestrator **suspends idle instances** (kill + respawn on next request) and **wakes them on URL access** (cold-start pattern)
 
 The Done app never sees unauthenticated requests.
-User IDs are opaque (ULIDs), not user-chosen names -- no abuse vector for offensive URLs.
+User IDs are opaque (ULIDs), not user-chosen names: no abuse vector for offensive URLs.
 
 Auth security considerations:
 
@@ -36,7 +36,7 @@ Auth security considerations:
 - New session ID generated on every login (no session fixation)
 
 The AI is self-hosted via llama.cpp, giving full control over the model and eliminating provider ban risk from user content.
-It does not just organize tasks -- it actively surfaces the right task at the right time and place.
+It does not just organize tasks; it actively surfaces the right task at the right time and place.
 
 ## Tech stack
 
@@ -66,8 +66,8 @@ Full task list, unfiltered.
 ### In progress
 
 Live dashboard of tasks the user has started tracking.
-All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided `timerStartedAt` timestamp -- no polling or SSE needed for display.
-Tasks blocked by other tasks are **not shown in Suggestions or All** -- they appear only nested/indented under the tasks blocking them (in any view where the blocker is visible). This makes circular dependencies harmless by design: cycled tasks simply vanish from top-level lists. Search always returns blocked tasks (with a "blocked" badge) so nothing is truly lost.
+All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided `timerStartedAt` timestamp: no polling or SSE needed for display.
+Tasks blocked by other tasks are **not shown in Suggestions or All**; they appear only nested/indented under the tasks blocking them (in any view where the blocker is visible). This makes circular dependencies harmless by design: cycled tasks simply vanish from top-level lists. Search always returns blocked tasks (with a "blocked" badge) so nothing is truly lost.
 
 ### Task details (overlay)
 
@@ -104,24 +104,24 @@ Navigation menu: Inbox, In Progress, Settings.
 
 ### Notification shade
 
-System-level notification display (not implemented in app -- defers to OS/browser push notifications via PWA).
+System-level notification display (not implemented in app: defers to OS/browser push notifications via PWA).
 
 ## Email notifications (via `@upyo/smtp`)
 
 All email (verification, reminders, backups) goes through a generic SMTP transport configured by the operator.
-If the SMTP provider has issues, that's the provider's problem -- the app fires and forgets.
+If the SMTP provider has issues, that's the provider's problem; the app fires and forgets.
 
 ### Reminder emails
 
 When a task has reminders configured, the server sends an email at the scheduled time.
-This is the primary notification mechanism -- more reliable than browser push since the app may be suspended.
+This is the primary notification mechanism: more reliable than browser push since the app may be suspended.
 
 ### Daily database backup email
 
 Once daily, the server exports the user's task data as JSON and emails it to them.
 Attachment BLOBs (photos, files) are **excluded** from the backup email to stay within SMTP size limits.
-The raw `.db` file is also excluded for the same reason -- only the JSON export (tasks, settings, attachment metadata) is sent.
-This is a caution-first data safety measure -- if the instance dies, the user has a recent export.
+The raw `.db` file is also excluded for the same reason: only the JSON export (tasks, settings, attachment metadata) is sent.
+This is a caution-first data safety measure: if the instance dies, the user has a recent export.
 
 ## Task model
 
@@ -204,7 +204,7 @@ External metadata is preserved in `sourceMeta` for round-trip fidelity.
 ### Codebase TODO sync (read-only inbound for MVP)
 
 Scan TODO/FIXME/HACK comments from configured repos and import them as tasks.
-Outbound writes (modifying source files) are deferred post-competition -- too risky to auto-edit a user's codebase in week 1.
+Outbound writes (modifying source files) are deferred post-competition: too risky to auto-edit a user's codebase in week 1.
 
 - **Inbound**: Parse `TODO`, `FIXME`, `HACK` comments from configured repos/directories. Create tasks with file path, line number, and surrounding context in description. `source: "codebase"`, `sourceId` encodes `repo:file:line`.
 - **Re-scan**: Periodic or webhook-triggered re-scan detects new TODOs, resolved TODOs (comment removed externally -> task marked done), and moved TODOs (file/line changed -> `sourceId` updated).
@@ -243,7 +243,7 @@ The orchestrator reverse-proxies `done.app/u/<user-id>/*` to the user's SvelteKi
 SvelteKit's `base` path stays as the default `/` (it's a build-time config, can't vary per user).
 This works because SvelteKit generates relative links (e.g., `./settings`, `../[id]`) which resolve correctly from the browser's `/u/<user-id>/` URL.
 Each user process gets `ORIGIN=https://done.app` so SvelteKit can construct absolute URLs for redirects.
-No separate API layer, no CORS, no client-side fetch() for basic CRUD -- forms submit natively, SvelteKit enhances with client-side navigation.
+No separate API layer, no CORS, no client-side fetch() for basic CRUD; forms submit natively, SvelteKit enhances with client-side navigation.
 
 ### AI rate limiting
 
@@ -252,11 +252,11 @@ Each Bun process enforces a simple in-memory rate limit on AI proxy calls (e.g.,
 ### Docker Compose deployment (Coolify)
 
 The entire stack ships as a `docker-compose.yml` deployable on Coolify.
-Coolify's own reverse proxy handles HTTPS termination -- the orchestrator only listens on HTTP.
+Coolify's own reverse proxy handles HTTPS termination: the orchestrator only listens on HTTP.
 Two services:
 
-1. **orchestrator** -- Bun image with the built SvelteKit app and orchestrator code. Listens on port 3000 (HTTP). Handles registration, login, session validation, path ACL enforcement, and HTTP reverse proxy to user processes. Spawns per-user Bun processes as child processes within the same container.
-2. **llama-cpp** -- CPU-only `ghcr.io/ggml-org/llama.cpp:server` image. Shared AI inference for all users.
+1. **orchestrator**: Bun image with the built SvelteKit app and orchestrator code. Listens on port 3000 (HTTP). Handles registration, login, session validation, path ACL enforcement, and HTTP reverse proxy to user processes. Spawns per-user Bun processes as child processes within the same container.
+2. **llama-cpp**: CPU-only `ghcr.io/ggml-org/llama.cpp:server` image. Shared AI inference for all users.
 
 Named volumes:
 
@@ -273,4 +273,4 @@ Environment variables (configured in Coolify):
 ### FTS5 rowid note
 
 libsql uses TEXT primary keys (ULIDs), so `rowid` is SQLite's implicit auto-assigned integer, not the ULID.
-FTS5 search queries JOIN on `tasks.rowid`, not `tasks.id`. This is correct but easy to confuse -- be careful in implementation.
+FTS5 search queries JOIN on `tasks.rowid`, not `tasks.id`. This is correct but easy to confuse: be careful in implementation.

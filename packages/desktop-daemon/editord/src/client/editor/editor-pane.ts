@@ -50,7 +50,7 @@ import {
   mapCursorThroughEdits,
 } from './text-edits.ts';
 
-/** `<editor-pane>` — contenteditable text editor component. */
+/** `<editor-pane>`: contenteditable text editor component. */
 export class EditorPane extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
@@ -418,7 +418,7 @@ export class EditorPane extends HTMLElement {
 
   //region Internal
 
-  /** MutationObserver callback — dispatches `contentchange` on any editor DOM mutation. */
+  /** MutationObserver callback: dispatches `contentchange` on any editor DOM mutation. */
   #onMutation(): void {
     this.dispatchEvent(
       new CustomEvent(

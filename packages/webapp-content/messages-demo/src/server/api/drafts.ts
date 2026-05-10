@@ -299,7 +299,7 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
   },
 );
 
-//region Local validation helpers -- thin wrappers, no library
+//region Local validation helpers: thin wrappers, no library
 
 /**
  * Type-guard for plain object bodies. Rejects arrays and `null`.

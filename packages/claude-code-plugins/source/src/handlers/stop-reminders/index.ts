@@ -56,7 +56,7 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
       'Always research thoroughly before responding.',
       'If you have already investigated and the uncertainty is genuinely warranted,',
       'say so explicitly and continue with your response.',
-      'This may be a false positive -- use your judgement.',
+      'This may be a false positive; use your judgement.',
     );
   }
 

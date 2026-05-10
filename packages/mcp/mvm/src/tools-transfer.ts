@@ -16,7 +16,7 @@ import {
   textResponse,
 } from './response.ts';
 
-//region Transfer tools -- move files between host and guest VMs
+//region Transfer tools: move files between host and guest VMs
 
 /** MCP tool: push a file from the host into a running VM. */
 export const pushTool: ToolEntry = defineTool(

@@ -85,7 +85,7 @@ export async function findNodeModulesUp(
         return candidate;
     }
     catch {
-      /* ENOENT or similar -- keep walking up */
+      /* ENOENT or similar; keep walking up */
     }
     const parent = dirname(dir,);
     if (parent === dir)
@@ -114,7 +114,7 @@ async function runVerify(): Promise<boolean> {
   }
 
   try {
-    // Dynamic import for Node.js modules -- cache appendFile for use in fileSink.write
+    // Dynamic import for Node.js modules: cache appendFile for use in fileSink.write
     const fs = await import('node:fs/promises');
     const {
       dirname,

@@ -43,7 +43,7 @@ export async function exec(
  *
  * @returns Stdout output from the matched command
  *
- * @throws When no predicate matches — includes all tested predicates in the message
+ * @throws When no predicate matches: includes all tested predicates in the message
  *
  * @throws When the matched command exits with a non-zero code
  *

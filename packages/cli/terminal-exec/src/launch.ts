@@ -98,7 +98,7 @@ export async function launchTerminal({
       'error',
       reject,
     );
-    /** Resolve on next tick -- if spawn failed, the error event fires synchronously. */
+    /** Resolve on next tick: if spawn failed, the error event fires synchronously. */
     queueMicrotask(resolve,);
   },);
 }

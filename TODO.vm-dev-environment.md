@@ -60,7 +60,7 @@ Two artifacts define the entire environment:
 - **plasma-workspace meta-package**: full KDE desktop set rather than minimal plasma-desktop,
   since ucore-hci is a server base with no desktop components
 - **Provisioner in vm-builder**: `src/provision.ts` alongside `build-and-import.ts`,
-  not a separate package -- the provisioner is small enough to colocate
+  not a separate package: the provisioner is small enough to colocate
 - **Nvim deprecated by editord**: no nvim config clone needed in the provisioner
 - **Skip Ignition/Butane**: everything is baked into the image or handled by the provisioner;
   Ignition adds no value beyond what the Containerfile already provides
@@ -233,7 +233,7 @@ Examples: new system package, display manager config, kernel module.
 
 **User-level changes** (frequent): edit provisioner or dotfiles, re-run provisioner.
 Examples: new mise tool, editor config change, new dotfile.
-No image rebuild needed -- just re-run the provisioner in the existing VM.
+No image rebuild needed: just re-run the provisioner in the existing VM.
 
 ## Open questions
 

@@ -5,7 +5,7 @@ import spawn from 'nano-spawn';
 /**
  * Direct command with arguments, executed as `spawn(cmd, args)`.
  * Exit code 0 = match, non-zero = no match.
- * No shell involved — fully cross-platform.
+ * No shell involved; fully cross-platform.
  *
  * @example
  * ```ts
@@ -19,7 +19,7 @@ export type Predicate = readonly string[];
  * Command to execute when a predicate matches.
  *
  * - **Array of strings**: `[cmd, ...args]` tuple.
- * - **{@link PlatformCommands}**: nested platform dispatch — evaluated recursively.
+ * - **{@link PlatformCommands}**: nested platform dispatch, evaluated recursively.
  *
  * Disambiguation at runtime: if the first element of the array is itself an array,
  * it is treated as nested {@link PlatformCommands}. Otherwise it is a `[cmd, ...args]` tuple.

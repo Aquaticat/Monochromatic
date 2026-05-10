@@ -3,11 +3,11 @@
  * where `node:path` is unavailable.
  */
 
-//region normalize -- resolve `.` and `..`, collapse slashes
+//region normalize: resolve `.` and `..`, collapse slashes
 
 /**
  * Normalizes a path by resolving `.` and `..` segments and collapsing
- * consecutive slashes. Does not resolve against cwd — just cleans the string.
+ * consecutive slashes. Does not resolve against cwd; just cleans the string.
  *
  * @param filePath - Raw path to normalize
  *
@@ -64,7 +64,7 @@ export function normalize(filePath: string,): string {
 
 //endregion normalize
 
-//region dirnameFallback -- browser fallback for dirname
+//region dirnameFallback: browser fallback for dirname
 
 /**
  * Browser fallback for {@link dirname}.
@@ -113,7 +113,7 @@ export function dirnameFallback(filePath: string,): string {
 
 //endregion dirnameFallback
 
-//region joinFallback -- browser fallback for join
+//region joinFallback: browser fallback for join
 
 /**
  * Browser fallback for {@link join}.
@@ -145,7 +145,7 @@ export function joinFallback(...segments: string[]): string {
 
 //endregion joinFallback
 
-//region resolveFallback -- browser fallback for resolve
+//region resolveFallback: browser fallback for resolve
 
 /**
  * Browser fallback for {@link resolve}.
@@ -182,7 +182,7 @@ export function resolveFallback(...segments: string[]): string {
 
   // If still not absolute, prepend cwd (unavailable in browser, default to '/')
   if (!resolvedAbsolute) {
-    /** Current working directory — falls back to `/` in browser */
+    /** Current working directory (falls back to `/` in browser) */
     const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function'
       ? process.cwd()
       : '/';

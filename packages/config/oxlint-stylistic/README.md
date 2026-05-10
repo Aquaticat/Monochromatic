@@ -35,14 +35,14 @@ export default defineConfig({
 
 ## Design decisions
 
-**Union/intersection types excluded** -- a `union-per-line` rule was prototyped but dropped.
+**Union/intersection types excluded**: a `union-per-line` rule was prototyped but dropped.
 Inline type assertions like `Span & Record<string, unknown>` and `T | null | undefined`
 generated too much noise to be worth enforcing.
 
-**Minimum 2 items** -- single-item constructs are never flagged.
+**Minimum 2 items**: single-item constructs are never flagged.
 An array with one element or a function with one parameter stays on one line.
 
-**Shared implementation** -- all rules delegate to `checkItemsPerLine` in the utility layer.
+**Shared implementation**: all rules delegate to `checkItemsPerLine` in the utility layer.
 Each rule's visitor only extracts the relevant container and items from the AST,
 keeping rule files minimal.
 

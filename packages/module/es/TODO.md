@@ -12,16 +12,16 @@ This directory contains detailed improvement plans for building the most compreh
 
 ### Quick Links
 
-- [**Export Fixes**](TODO.exports-fixes.md) - Critical TypeScript compilation errors
-- [**API Refactors**](TODO.api-refactors.md) - Major breaking changes (logger params, named params, type testing)
-- [**Missing Implementations**](TODO.missing-implementations.md) - Comprehensive utility function roadmap
-- [**Testing Coverage**](TODO.testing.md) - Test files and coverage improvements
-- [**TSDoc Documentation**](TODO.tsdoc-improvements.md) - Documentation and example improvements
-- [**Function Improvements**](TODO.improvements.md) - Performance, security, and API improvements
-- [**Package Infrastructure**](TODO.package-infrastructure.md) - Publishing, distribution, CLI tools, logging
-- [**Ecosystem Integration**](TODO.ecosystem-integration.md) - Framework integration, migration, compatibility
-- [**Governance Strategy**](TODO.governance-strategy.md) - Long-term strategy and risk management
-- [**Development Workflow**](TODO.development-workflow.md) - Development process and team coordination
+- [**Export Fixes**](TODO.exports-fixes.md): Critical TypeScript compilation errors
+- [**API Refactors**](TODO.api-refactors.md): Major breaking changes (logger params, named params, type testing)
+- [**Missing Implementations**](TODO.missing-implementations.md): Comprehensive utility function roadmap
+- [**Testing Coverage**](TODO.testing.md): Test files and coverage improvements
+- [**TSDoc Documentation**](TODO.tsdoc-improvements.md): Documentation and example improvements
+- [**Function Improvements**](TODO.improvements.md): Performance, security, and API improvements
+- [**Package Infrastructure**](TODO.package-infrastructure.md): Publishing, distribution, CLI tools, logging
+- [**Ecosystem Integration**](TODO.ecosystem-integration.md): Framework integration, migration, compatibility
+- [**Governance Strategy**](TODO.governance-strategy.md): Long-term strategy and risk management
+- [**Development Workflow**](TODO.development-workflow.md): Development process and team coordination
 
 ---
 
@@ -509,19 +509,19 @@ This directory contains detailed improvement plans for building the most compreh
 
 ### Qualitative Goals
 
-- [ ] **Industry-leading type safety** - Best-in-class TypeScript experience
-- [ ] **Performance excellence** - Optimized algorithms throughout
-- [ ] **Developer experience leadership** - Intuitive APIs and comprehensive docs
-- [ ] **Functional programming completeness** - Every pattern and utility available
-- [ ] **Security by default** - All user input properly validated and sanitized
-- [ ] **Accessibility excellence** - All utilities support accessibility needs
+- [ ] **Industry-leading type safety**: Best-in-class TypeScript experience
+- [ ] **Performance excellence**: Optimized algorithms throughout
+- [ ] **Developer experience leadership**: Intuitive APIs and comprehensive docs
+- [ ] **Functional programming completeness**: Every pattern and utility available
+- [ ] **Security by default**: All user input properly validated and sanitized
+- [ ] **Accessibility excellence**: All utilities support accessibility needs
 
 ### Ecosystem Impact Goals
 
-- [ ] **Eliminate external utility dependencies** - One library for all needs
-- [ ] **Establish TypeScript FP standards** - Define best practices for ecosystem
-- [ ] **Enable advanced development patterns** - Support cutting-edge development
-- [ ] **Performance benchmark leadership** - Fastest and most efficient implementations
+- [ ] **Eliminate external utility dependencies**: One library for all needs
+- [ ] **Establish TypeScript FP standards**: Define best practices for ecosystem
+- [ ] **Enable advanced development patterns**: Support cutting-edge development
+- [ ] **Performance benchmark leadership**: Fastest and most efficient implementations
 - [ ] **Community adoption** - Become the definitive TypeScript FP library
 
 ### Technical Excellence Goals

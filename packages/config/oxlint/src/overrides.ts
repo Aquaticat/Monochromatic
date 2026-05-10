@@ -63,12 +63,12 @@ const astroOverride = {
 const declarationOverride = {
   files: ['**/*.d.{ts,mts,cts}',],
   rules: {
-    //region import -- Declaration files are ambient; module-system rules don't apply.
+    //region import: Declaration files are ambient; module-system rules don't apply.
     'import/unambiguous': 'off',
     'import/no-commonjs': 'off',
     //endregion import
 
-    //region typescript -- Declaration files describe external shapes that violate source conventions.
+    //region typescript: Declaration files describe external shapes that violate source conventions.
     // Declaration merging requires `interface`, not `type`.
     'typescript/consistent-type-definitions': 'off',
     // `declare namespace` is standard in ambient declarations.
@@ -83,7 +83,7 @@ const declarationOverride = {
     'typescript/no-explicit-any': 'off',
     //endregion typescript
 
-    //region eslint -- No runtime code exists in declaration files.
+    //region eslint: No runtime code exists in declaration files.
     // `declare var` is standard for global augmentation.
     'eslint/no-var': 'off',
     // Numeric literal types are not magic numbers.
@@ -92,7 +92,7 @@ const declarationOverride = {
     'eslint/max-classes-per-file': 'off',
     //endregion eslint
 
-    //region no-restricted-syntax -- External API signatures don't follow source conventions.
+    //region no-restricted-syntax: External API signatures don't follow source conventions.
     // External APIs describe enums with `declare enum`.
     'no-restricted-syntax/no-enum': 'off',
     // External function signatures may use rest parameters.
@@ -101,7 +101,7 @@ const declarationOverride = {
     'no-restricted-syntax/require-destructured-params': 'off',
     //endregion no-restricted-syntax
 
-    //region tsdoc -- Ambient declarations are often trivial stubs.
+    //region tsdoc: Ambient declarations are often trivial stubs.
     'tsdoc/require-tsdoc': 'off',
     'tsdoc/require-param': 'off',
     'tsdoc/require-returns': 'off',

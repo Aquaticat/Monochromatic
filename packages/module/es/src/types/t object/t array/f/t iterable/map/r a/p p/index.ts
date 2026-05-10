@@ -35,7 +35,7 @@ export async function $<T, R,>(
   iterable: AsyncIterable<T> | Iterable<T>,
 ): Promise<R[]> {
   // Each `fn` call starts executing immediately (promises are eager, not lazy).
-  // `Promise.all` only collects already-running results — it does not "activate" them.
+  // `Promise.all` only collects already-running results; it does not "activate" them.
   // `Array.fromAsync` is not suitable here: it awaits each mapped value sequentially,
   // which would serialize the work and lose concurrency.
   const promises: Promise<R>[] = [];

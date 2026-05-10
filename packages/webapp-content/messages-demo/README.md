@@ -65,7 +65,7 @@ the in-memory portions of the plan's verification checklist:
   `editor/buffer-table.unit.test.ts` runs 5 000 single-character inserts and asserts
   the explicit collapse step (`resetTable + materialise`) re-anchors the table to a
   single piece without losing data. The worker's idle-triggered `setTimeout`
-  cooldown that drives this in production is not exercised here -- only the underlying
+  cooldown that drives this in production is not exercised here; only the underlying
   primitive is.
 - The compile-pipeline aggregation primitives (`median`, `percentile`) are covered
   by `composer/metrics-stats.unit.test.ts`.

@@ -45,7 +45,7 @@ Cloned `isomorphic-git/isomorphic-git` (depth=1) to inspect:
 | Write `git-upload-pack` response (NAK + sideband pack)   | **missing on server side** (only client-side parser) | must vendor                                                         |
 | Parse `git-receive-pack` request (server reads ref updates + pack) | **missing**                                | must vendor                                                         |
 | Write `git-receive-pack` response (unpack + ref-update report) | **missing** (only client-side parser)          | must vendor                                                         |
-| Sideband multiplex (pack/progress/error onto channels 1/2/3) | **missing — `GitSideBand.mux` is commented out** at `src/models/GitSideBand.js:82` | must vendor                                                         |
+| Sideband multiplex (pack/progress/error onto channels 1/2/3) | **missing: `GitSideBand.mux` is commented out** at `src/models/GitSideBand.js:82` | must vendor                                                         |
 
 Source citation for the missing pieces:
 

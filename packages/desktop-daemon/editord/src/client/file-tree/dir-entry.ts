@@ -6,7 +6,7 @@
  * directly in the parent's flex layout.
  *
  * Dispatches `dir-open` when expanded and `show-context` on right-click.
- * Does not manage data fetching — the parent `<file-tree>` handles that
+ * Does not manage data fetching; the parent `<file-tree>` handles that
  * via event delegation.
  */
 
@@ -44,7 +44,7 @@ function suppressContextMenu(event: Event,): void {
 }
 
 /**
- * `<tree-dir-entry>` — directory entry with native `<details>` toggle.
+ * `<tree-dir-entry>`: directory entry with native `<details>` toggle.
  *
  * @example
  * ```ts

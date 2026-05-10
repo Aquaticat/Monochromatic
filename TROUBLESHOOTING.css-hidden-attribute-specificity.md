@@ -38,7 +38,7 @@ $({
 
 ## Why not `!important`?
 
-Project conventions ban `!important`. Source-order ordering achieves the same outcome with the natural cascade and stays maintainable -- a future contributor reading the stylesheet top-down sees layout rules first, then the late `[hidden]` reset.
+Project conventions ban `!important`. Source-order ordering achieves the same outcome with the natural cascade and stays maintainable: a future contributor reading the stylesheet top-down sees layout rules first, then the late `[hidden]` reset.
 
 ## Why not CSS layers?
 

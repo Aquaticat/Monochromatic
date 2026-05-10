@@ -8,7 +8,7 @@ import {
   type BuildOptions,
 } from './index.ts';
 
-//region CLI -- parses args and runs the build
+//region CLI: parses args and runs the build
 
 /**
  * Optique parser for the CSS build tool CLI.

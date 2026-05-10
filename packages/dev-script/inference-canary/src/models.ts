@@ -8,7 +8,7 @@
 import type { OpenRouterModelId, } from './runner-types.ts';
 import type { VerbosityLevel, } from './runner.ts';
 
-//region Model config type -- per-model overrides for verbosity and display label
+//region Model config type: per-model overrides for verbosity and display label
 
 /** Per-model configuration for canary probes */
 export type ModelConfig = {
@@ -28,11 +28,11 @@ export type ModelConfig = {
 
 //endregion Model config type
 
-//region Model registry -- the canonical list of models tested by default; add/remove models here
+//region Model registry: the canonical list of models tested by default; add/remove models here
 
 /** All models to test in parallel */
 export const models: readonly ModelConfig[] = [
-  // Claude 4.6 models use adaptive effort -- even at "low", the model decides how much to
+  // Claude 4.6 models use adaptive effort: even at "low", the model decides how much to
   // think based on problem difficulty. Scoring poorly on hard probes at low effort is the
   // model's own calibration failure, not a testing artifact.
   {
@@ -104,8 +104,8 @@ export const models: readonly ModelConfig[] = [
   // OpenAI models dropped 2026-02-28. OpenAI signed a classified-network contract with the
   // Pentagon hours after Anthropic was designated a supply chain risk for refusing to allow
   // its models to be used for mass surveillance and autonomous weapons. OpenAI claims its
-  // contract includes similar red lines, but the opportunistic timing -- stepping in as a
-  // replacement the same day a competitor was punished for holding firm -- does not inspire
+  // contract includes similar red lines, but the opportunistic timing (stepping in as a
+  // replacement the same day a competitor was punished for holding firm) does not inspire
   // confidence in those commitments. Not spending money on their API until this shakes out.
   // { openrouterId: 'openai/gpt-5.2', label: 'GPT 5.2', verbosity: 'low', },
 ] as const;

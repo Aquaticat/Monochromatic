@@ -124,7 +124,7 @@ export async function generateChapters(
         0,
         PAPER_TEXT_BUDGET,
       )
-    }\n\n[TRUNCATED -- ${paperText.length} total chars]`
+    }\n\n[TRUNCATED: ${paperText.length} total chars]`
     : paperText;
   /*
    * `rawString` instead of `ll.persona()` / `ll.chapterInstruction()`:

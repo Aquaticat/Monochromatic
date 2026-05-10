@@ -12,7 +12,7 @@ import {
   vmDir,
 } from './config.ts';
 
-//region validateName -- rejects unsafe VM names, accepts safe ones
+//region validateName: rejects unsafe VM names, accepts safe ones
 
 await describe({
   name: '',
@@ -138,7 +138,7 @@ await describe({
 
     //endregion validateName
 
-    //region stripJsoncComments -- removes comments while preserving string content
+    //region stripJsoncComments: removes comments while preserving string content
 
     describe({
       name: stripJsoncComments.name,
@@ -249,7 +249,7 @@ await describe({
 
     //endregion stripJsoncComments
 
-    //region vmDir / vmConfigPath -- path construction from VM name
+    //region vmDir / vmConfigPath: path construction from VM name
 
     describe({
       name: vmDir.name,
@@ -286,7 +286,7 @@ await describe({
 
     //endregion vmDir / vmConfigPath
 
-    //region detectHypervisor -- platform-based hypervisor detection
+    //region detectHypervisor: platform-based hypervisor detection
 
     describe({
       name: detectHypervisor.name,

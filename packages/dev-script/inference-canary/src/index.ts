@@ -41,7 +41,7 @@ import {
   simulationProbes,
 } from './probes.ts';
 
-//region API key resolution -- validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
+//region API key resolution: validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
 
 /** OpenRouter API key from environment, required for all inference calls. */
 const apiKey = process.env['INFERENCE_VALIDATION_OPENROUTER_API_KEY'];
@@ -50,7 +50,7 @@ if (apiKey === undefined || apiKey === '')
 
 //endregion API key resolution
 
-//region Model selection -- resolves the set of models to test and which probes to skip from recent artifacts
+//region Model selection: resolves the set of models to test and which probes to skip from recent artifacts
 
 /** Models selected for this run based on CLI flags. */
 const selectedModels = selectModels();
@@ -67,7 +67,7 @@ const {
 
 //endregion Model selection
 
-//region Execution -- selects probe tier (simple/fast/slow), runs canary, throws on degradation
+//region Execution: selects probe tier (simple/fast/slow), runs canary, throws on degradation
 
 if (selectedModels.length === 0)
   l.info('no models selected for testing.',);

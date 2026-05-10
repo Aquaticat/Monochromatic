@@ -22,6 +22,17 @@ Features:
 - 30-day cache for fetched data
 - Graceful fallback to expired cache on failure
 
+### `fetch_tor_relays.ts`
+
+TypeScript script that fetches the top Tor guard relays from Onionoo and emits
+their `ORPort 443` IPs as `/32` and `/128` CIDRs.
+Features:
+
+- Filter to `ORPort 443` only, so the firewall rules use a single port and the per-IP-per-port effective-rule count stays predictable
+- 1-hour cache (the Tor guard set rotates on a different cadence than ASN data)
+- Graceful fallback to expired cache on failure
+- Used by the `tor_out_rules` block to populate `hcloud_firewall.tofu` outbound rules without consuming a fresh firewall slot
+
 ### `hetzner.tf`
 
 Main Terraform configuration that:
@@ -76,6 +87,7 @@ terraform apply
 - DHCP (67-68)
 - DNS to Hetzner (53)
 - HTTPS TCP/UDP to CDN IPs (chunked to respect rule limits)
+- HTTPS TCP (443) to top Tor guards by consensus weight, filtered to ORPort 443 (for the v3 onion service)
 
 ## IP sources
 
@@ -88,6 +100,7 @@ The configuration aggregates IPs from:
 - Ubuntu (ASN AS41231)
 - YouTube (via GitHub repo)
 - Coolify (via API)
+- Tor guards advertising ORPort 443 (via Onionoo, refreshed hourly)
 - Various static IPs (LetsEncrypt, pCloud, Linkup, Resend, OpenRouter, etc.)
 
 ## Caddy

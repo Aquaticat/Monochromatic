@@ -2,11 +2,11 @@
 
 ## Cross-References
 
-- [**Package Documentation**](TODO.packages.md#cross-package-improvements) - Package-specific documentation needs
-- [**Security Documentation**](TODO.security.md#security-documentation) - Security guidelines and procedures
-- [**Performance Documentation**](TODO.performance.md#monitoring--metrics) - Performance guidelines and metrics
-- [**Automation Documentation**](TODO.automation.md#documentation-automation) - Automated documentation generation
-- [**Build System Documentation**](TODO.build-system.md#mise-configuration-enhancements) - Build system and tooling documentation
+- [**Package Documentation**](TODO.packages.md#cross-package-improvements): Package-specific documentation needs
+- [**Security Documentation**](TODO.security.md#security-documentation): Security guidelines and procedures
+- [**Performance Documentation**](TODO.performance.md#monitoring--metrics): Performance guidelines and metrics
+- [**Automation Documentation**](TODO.automation.md#documentation-automation): Automated documentation generation
+- [**Build System Documentation**](TODO.build-system.md#mise-configuration-enhancements): Build system and tooling documentation
 
 ## Documentation System Improvements
 
@@ -14,7 +14,7 @@
 
 #### PlantUML Integration
 
-**Status**: Normal Priority - Content creation enhancement
+**Status**: Normal Priority (content creation enhancement)
 
 Add support for PlantUML diagrams in documentation.
 
@@ -29,7 +29,7 @@ Add support for PlantUML diagrams in documentation.
 
 #### API Documentation Automation
 
-**Status**: High Priority - Developer experience
+**Status**: High Priority (developer experience)
 
 - [ ] Implement automated API documentation generation from TSDoc comments
 - [ ] Create interactive API documentation with live examples
@@ -42,7 +42,7 @@ Add support for PlantUML diagrams in documentation.
 
 #### Optimize SVG
 
-**Status**: Normal Priority - Performance improvement
+**Status**: Normal Priority (performance improvement)
 
 Reduce redundant attributes in PlantUML-generated SVGs:
 
@@ -65,7 +65,7 @@ Reduce redundant attributes in PlantUML-generated SVGs:
 
 #### Pre-generate Search Results Pages
 
-**Status**: Medium Priority - User experience
+**Status**: Medium Priority (user experience)
 
 Use pagefind or other tools to pre-generate search results pages.
 Improve search functionality with pre-generated results.
@@ -81,7 +81,7 @@ Improve search functionality with pre-generated results.
 
 #### Set Default Modified Date by Git Log
 
-**Status**: Medium Priority - Content management
+**Status**: Medium Priority (content management)
 
 Automatically set document modification dates from git history.
 
@@ -96,7 +96,7 @@ Automatically set document modification dates from git history.
 
 #### Format MDX Files
 
-**Status**: Low Priority - Developer experience
+**Status**: Low Priority (developer experience)
 
 Find a way to format MDX files properly.
 
@@ -115,7 +115,7 @@ Find a way to format MDX files properly.
 
 ### Multiple Localized 404 Pages
 
-**Status**: Normal Priority - User experience
+**Status**: Normal Priority (user experience)
 
 Create localized 404 pages for different languages and regions.
 
@@ -130,7 +130,7 @@ Create localized 404 pages for different languages and regions.
 
 ### Automatic Translation Integration
 
-**Status**: Low Priority - Future enhancement
+**Status**: Low Priority (future enhancement)
 
 Consider using [deepl-node](https://github.com/DeepLcom/deepl-node) for automatic translation.
 
@@ -149,10 +149,10 @@ Consider using [deepl-node](https://github.com/DeepLcom/deepl-node) for automati
 
 #### Dim Sidebar on Hover
 
-**Status**: On Hold - Potentially annoying
+**Status**: On Hold (potentially annoying)
 
 Dim sidebar (.Aside) when hovering over main content.
-Currently on hold - could be annoying for users.
+Currently on hold; could be annoying for users.
 
 #### Enhanced UI/UX Research
 
@@ -169,19 +169,19 @@ Currently on hold - could be annoying for users.
 
 #### Webmention Support
 
-**Status**: Medium Priority - Decentralized web
+**Status**: Medium Priority (decentralized web)
 
 Implement decentralized web mention protocol for comments.
 
 #### Giscus Integration
 
-**Status**: Medium Priority - GitHub integration
+**Status**: Medium Priority (GitHub integration)
 
 Add GitHub Discussions-based commenting system.
 
 #### Pluggable Comment System
 
-**Status**: Medium Priority - Flexibility
+**Status**: Medium Priority (flexibility)
 
 Allow defining 3rd party comment system.
 Make comment system pluggable for flexibility.

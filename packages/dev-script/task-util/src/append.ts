@@ -105,7 +105,7 @@ async function appendLinesToFile(
   );
 }
 
-//region Parser definition -- required --to option and variadic positional text lines
+//region Parser definition: required --to option and variadic positional text lines
 
 /** Optique parser for the task-append CLI */
 const parser = object({

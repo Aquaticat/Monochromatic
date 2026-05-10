@@ -8,7 +8,7 @@ with file-reading conveniences and an optique-based CLI.
 **No inference costs.**
 This uses the dedicated token counting endpoint (`POST /v1/messages/count_tokens`),
 not the messages endpoint.
-Content is never sent to a model for generation --
+Content is never sent to a model for generation:
 the API only runs the tokenizer and returns a count.
 The `model` parameter is required by the API to select the correct tokenizer,
 but all current Claude models share the same tokenizer so the choice has no effect on the result.

@@ -12,7 +12,7 @@ and renders a self-contained HTML dashboard with an external CSS stylesheet.
 The output is static HTML with a small client-side script for syntax highlighting.
 View switching uses native `<details>` elements with CSS `:has()` to hide non-open siblings.
 Run detail overlays use the Popover API (`popover="auto"` + `popovertarget`) for light-dismiss behavior.
-Syntax highlighting uses the CSS Custom Highlight API via Lezer tokenization --
+Syntax highlighting uses the CSS Custom Highlight API via Lezer tokenization;
 code blocks degrade gracefully to unstyled monospace text when JavaScript is disabled
 or the Highlight API is unavailable.
 

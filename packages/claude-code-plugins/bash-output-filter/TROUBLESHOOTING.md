@@ -28,7 +28,7 @@ bash: command not found: }
 
 **Cause:**
 the sandbox appears to split `;`-separated segments and evaluate them independently.
-`{` alone is not a valid command -- it must be parsed as part of `{ ...; }` compound syntax,
+`{` alone is not a valid command: it must be parsed as part of `{ ...; }` compound syntax,
 which requires the shell to see the entire construct as one unit.
 
 ### Constraint 2: shell state does not persist across `;` boundaries
@@ -50,7 +50,7 @@ The variable `_bof` receives a non-numeric value from a different evaluation con
 and `exit "$_bof"` fails.
 
 Removing the intermediate variable (`(exit $PIPESTATUS)` directly) has the same
-root cause -- `$PIPESTATUS` is still evaluated across a `;` boundary.
+root cause: `$PIPESTATUS` is still evaluated across a `;` boundary.
 
 ### Constraint 3: `bash -c` adds a quoting layer that corrupts special characters
 
@@ -170,6 +170,6 @@ set -o pipefail && git pull && git push 2>&1 | bun filter && true
 Parsed as: `set -o pipefail && git pull && (git push 2>&1 | bun filter) && true`
 
 Only `git push`'s output is filtered.
-This is the same behavior as the original approach and all subsequent attempts --
+This is the same behavior as the original approach and all subsequent attempts:
 filtering the full chain would require grouping constructs (`{ }` or `()`),
 which the sandbox does not support.

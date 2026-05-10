@@ -91,13 +91,13 @@ function handleSessionStart({
       const state = JSON.parse(raw,) as SpawnState;
 
       if (state.sessionId === '') {
-        /** Genuine child -- claim ownership by filling in session identity. */
+        /** Genuine child: claim ownership by filling in session identity. */
         const updated: SpawnState = { ...state, sessionId, transcriptPath, };
         writeFileSync(jsonPath, JSON.stringify(updated,),);
       }
     }
     catch {
-      /** File missing (stale env, already `.reported`) or unreadable -- skip. */
+      /** File missing (stale env, already `.reported`) or unreadable: skip. */
     }
   }
 
@@ -110,7 +110,7 @@ function handleSessionStart({
     cliOnPath = true;
   }
   catch {
-    // Not on PATH -- attempt auto-setup.
+    // Not on PATH: attempt auto-setup.
   }
 
   if (!cliOnPath) {

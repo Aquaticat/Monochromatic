@@ -87,7 +87,7 @@ export async function requestPrepareRename({
     };
   }
 
-  /** Plain Range response — extract the symbol text from the range as placeholder. */
+  /** Plain Range response: extract the symbol text from the range as placeholder. */
   if ('start' in raw && 'end' in raw) {
     return {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by start/end check

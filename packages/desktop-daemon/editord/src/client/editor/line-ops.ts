@@ -37,7 +37,7 @@ export function deleteLineAt({
 } {
   const { children, } = editor;
   if (children.length <= 1) {
-    /** Single line — clear it instead of removing. */
+    /** Single line: clear it instead of removing. */
     const [only,] = children;
     if (only !== undefined)
       only.textContent = '\n';

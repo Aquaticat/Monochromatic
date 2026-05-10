@@ -115,7 +115,7 @@ async function loadPagefind(): Promise<PagefindApi | undefined> {
   try {
     // Dynamic import from the build-generated Pagefind bundle.
     // This path is created by `pagefind --site dist` and cannot be
-    // resolved at bundle time -- it must be a runtime import.
+    // resolved at bundle time; it must be a runtime import.
     // oxlint-disable-next-line no-unsafe-type-assertion -- Pagefind JS API shape is untyped
     const api = await import(
       /* webpackIgnore: true */

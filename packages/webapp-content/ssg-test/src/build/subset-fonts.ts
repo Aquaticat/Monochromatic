@@ -96,7 +96,7 @@ const LINE_COMMENT_REGEX = /\/\/[^\n]*/g;
  * This is **not** used for Material Symbols because passing every
  * ASCII letter to a ligature-based icon font triggers harfbuzz's
  * layout closure to retain every icon ligature formable from those
- * letters — i.e. almost the entire font. See {@link collectIconLigatures}.
+ * letters, i.e. almost the entire font. See {@link collectIconLigatures}.
  *
  * @param sourceFiles - pre-scanned list of source file paths
  *
@@ -140,7 +140,7 @@ async function collectBodyCharset(
  * as input (rather than ligature letter inputs), no icon ligatures are
  * reachable through GSUB closure, so none are over-retained.
  *
- * Unknown icon names are fatal — a typo in `icon('foo')` should fail
+ * Unknown icon names are fatal: a typo in `icon('foo')` should fail
  * the build rather than silently ship a font missing the glyph.
  *
  * @param sourceFiles - pre-scanned list of source file paths

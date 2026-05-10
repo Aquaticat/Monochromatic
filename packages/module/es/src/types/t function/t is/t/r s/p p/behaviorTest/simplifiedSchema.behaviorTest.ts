@@ -461,7 +461,7 @@ const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases(): void {
 
   if (isSchema_Unknown(objWithParse,)) {
     objWithParse.parse('test',); // Should work
-    objWithParse.extraStuff; // Preserved -- Unknown pattern now retains original properties
+    objWithParse.extraStuff; // Preserved; Unknown pattern now retains original properties
   }
 
   if (isSchema_Generic(objWithParse,)) {

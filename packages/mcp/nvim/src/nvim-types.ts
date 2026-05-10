@@ -7,7 +7,7 @@
  * @module
  */
 
-//region Severity mapping -- vim.diagnostic.severity codes to human-readable labels
+//region Severity mapping: vim.diagnostic.severity codes to human-readable labels
 
 /** Maps vim.diagnostic.severity integer codes to uppercase labels. */
 export const SEVERITY_MAP: Record<number, string> = {
@@ -19,7 +19,7 @@ export const SEVERITY_MAP: Record<number, string> = {
 
 //endregion Severity mapping
 
-//region Types -- diagnostic and file metadata shapes
+//region Types: diagnostic and file metadata shapes
 
 /**
  * Single diagnostic from a Neovim buffer.

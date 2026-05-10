@@ -767,7 +767,7 @@ function convertFigmaToPenpot(
     nc: Record<string, unknown>;
   }[] = [];
   if (isDeck) {
-    // For decks, find all SLIDE nodes — each becomes a page
+    // For decks, find all SLIDE nodes: each becomes a page
     for (const nc of nodeChanges) {
       const nodeType = String(nc.type ?? '',);
       if (nodeType === 'NodeType.SLIDE') {
@@ -782,11 +782,11 @@ function convertFigmaToPenpot(
     }
   }
   else {
-    // For fig/jam, find all CANVAS nodes — each becomes a page
+    // For fig/jam, find all CANVAS nodes: each becomes a page
     for (const nc of nodeChanges) {
       const nodeType = String(nc.type ?? '',);
       if (nodeType === 'NodeType.CANVAS') {
-        // Skip "Internal Only Canvas" — it's a Figma internal canvas
+        // Skip "Internal Only Canvas": it's a Figma internal canvas
         const name = String(nc.name ?? '',);
         const internalOnly = nc.internalOnly === true || nc.editInfo != null;
         if (internalOnly && name.toLowerCase().includes('internal',))

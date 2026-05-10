@@ -82,9 +82,9 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 ## Settings page
 
 - **Figma**: three setting rows visible:
-  1. "System calendar" -- a connect/disconnect button-style row with a sync icon and descriptive text
-  2. "Data privacy" -- a toggle switch beside the title, with description text below
-  3. "Dark theme" -- a toggle switch beside the title, with description text below
+  1. "System calendar": a connect/disconnect button-style row with a sync icon and descriptive text
+  2. "Data privacy": a toggle switch beside the title, with description text below
+  3. "Dark theme": a toggle switch beside the title, with description text below
 - **Implementation**: uses `<setting-group>` components. The labels and descriptions match. Calendar connect is rendered with `mode="button"`. Toggle switches are present for the other two.
 
 **Suggestions**:
@@ -128,7 +128,7 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 
 - Add icons to the "Attach file" (paperclip) and "Take photo" (camera) buttons
 - Add icon prefixes to the metadata pills (same as task card chip icons)
-- In create mode, the header says "New task" and the save button says "Create" -- this matches Figma's "Task details" heading but the Figma design always shows "Task details" regardless of mode. Decide whether to unify or keep the distinction.
+- In create mode, the header says "New task" and the save button says "Create"; this matches Figma's "Task details" heading but the Figma design always shows "Task details" regardless of mode. Decide whether to unify or keep the distinction.
 
 ## Typography and spacing
 
@@ -152,9 +152,9 @@ Figma file: `wSe7z97geCFtkFS0LZ4biq` (Hifi wireframes | todo app)
 
 Listed in rough priority order (biggest visual delta first):
 
-1. **Missing icons throughout** -- nav links, metadata chips, action buttons all lack the icons shown in Figma. This is the single biggest visual difference.
-2. **Drawer profile area** -- missing avatar icon and dropdown caret
-3. **Suggested section layout on tablet** -- "My location" and "My focus" should sit side by side, not stack
-4. **Section heading toggle** -- Unicode triangles instead of SVG chevrons
-5. **Search results heading** -- no heading showing the current query term above results
-6. **"Attach file" / "Take photo" buttons** -- missing paperclip and camera icons
+1. **Missing icons throughout**: nav links, metadata chips, action buttons all lack the icons shown in Figma. This is the single biggest visual difference.
+2. **Drawer profile area**: missing avatar icon and dropdown caret
+3. **Suggested section layout on tablet**: "My location" and "My focus" should sit side by side, not stack
+4. **Section heading toggle**: Unicode triangles instead of SVG chevrons
+5. **Search results heading**: no heading showing the current query term above results
+6. **"Attach file" / "Take photo" buttons**: missing paperclip and camera icons

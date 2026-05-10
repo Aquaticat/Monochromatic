@@ -75,7 +75,7 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
     return undefined;
   }
   catch {
-    // File doesn't exist, unreadable, or invalid JSON — not an error
+    // File doesn't exist, unreadable, or invalid JSON: not an error
     return undefined;
   }
 }

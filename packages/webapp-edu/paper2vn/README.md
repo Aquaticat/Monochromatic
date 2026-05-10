@@ -17,7 +17,7 @@ Inspired by paper2galgame; OSS, no backend, no login, no telemetry.
 
 ## Architecture
 
-Single self-contained HTML file -- the build assembles CSS, the client JavaScript bundle, the placeholder sprite pack, and i18n strings into one file you can drop on any static host or open from disk.
+Single self-contained HTML file: the build assembles CSS, the client JavaScript bundle, the placeholder sprite pack, and i18n strings into one file you can drop on any static host or open from disk.
 
 ### Inputs
 
@@ -47,7 +47,7 @@ The app prompts for an LLM provider and API key on first use. Keys live only in 
 
 Three layers cover the package, each with a separate mise task.
 
-### `test:e2e` — UI-only browser tests (default)
+### `test:e2e`: UI-only browser tests (default)
 
 ```sh
 mise run //packages/webapp-edu/paper2vn:test:e2e
@@ -55,9 +55,9 @@ mise run //packages/webapp-edu/paper2vn:test:e2e
 
 Runs `src/paper2vn.e2e.test.ts` in real Chromium and Firefox via Playwright (in podman). Covers menu rendering and navigation, locale switching, the missing-key gate, the Anthropic browser-direct warning, save listing, the lecture runtime against a seeded save, and keyboard advance. Around 30 tests; finishes in roughly 10 seconds.
 
-The live-LLM tier inside the same file uses `test.skip(!env, reason)` so those tests skip silently here — no API key is threaded into the container.
+The live-LLM tier inside the same file uses `test.skip(!env, reason)` so those tests skip silently here; no API key is threaded into the container.
 
-### `test:e2e:llm` — UI tests + live LLM round-trip
+### `test:e2e:llm`: UI tests + live LLM round-trip
 
 ```sh
 mise run //packages/webapp-edu/paper2vn:test:e2e:llm
@@ -67,7 +67,7 @@ Same suite, but the package task forwards `PAPER2VN_OPENROUTER_API_KEY` (and `OP
 
 The live tier drives the full flow: paste paper into the textarea, click Start lecture, wait for the lecture screen, assert the first dialogue beat is non-empty. Defaults to `anthropic/claude-haiku-4.5` (fast, ~6 s); override with `PAPER2VN_OPENROUTER_MODEL=<slug>` to point at a different OpenRouter model.
 
-### `smoke` — Bun-only LLM round-trip
+### `smoke`: Bun-only LLM round-trip
 
 ```sh
 PAPER2VN_OPENROUTER_API_KEY=sk-or-... mise run //packages/webapp-edu/paper2vn:smoke
@@ -77,7 +77,7 @@ Imports the page's own `dialogue/generator.ts` from Bun and calls OpenRouter dir
 
 ### Why both Bun and browser
 
-The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost of spinning up a headless browser, which makes it a good pre-commit check while developing prompts. The Playwright e2e suite is the only thing that actually verifies the page works end-to-end in the runtime users target — the prompt-build step inside the browser hit a [`typesafe-i18n` regex bug](../../../TROUBLESHOOTING.typesafe-i18n-regex-redos.md) that didn't reproduce under Bun, and the kind of bug that only shows up in the browser is the kind only the browser tests will catch.
+The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost of spinning up a headless browser, which makes it a good pre-commit check while developing prompts. The Playwright e2e suite is the only thing that actually verifies the page works end-to-end in the runtime users target; the prompt-build step inside the browser hit a [`typesafe-i18n` regex bug](../../../TROUBLESHOOTING.typesafe-i18n-regex-redos.md) that didn't reproduce under Bun, and the kind of bug that only shows up in the browser is the kind only the browser tests will catch.
 
 ### LLM providers and CORS
 
@@ -120,4 +120,4 @@ The bundled pack is a CSS-art SVG placeholder. To swap in a licensed pack, drop 
 ## License
 
 LGPL-3.0-or-later (code).
-The bundled sprite pack uses its own license -- see `src/assets/sprites/manifest.json`.
+The bundled sprite pack uses its own license: see `src/assets/sprites/manifest.json`.

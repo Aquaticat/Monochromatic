@@ -18,7 +18,7 @@ import { resolveSpecifier, } from './resolve.ts';
 
 export {};
 
-//region Arg parsing -- positional: <specifier> <export> [args...]
+//region Arg parsing: positional: <specifier> <export> [args...]
 
 /** Value parser for the import specifier, displayed as SPECIFIER in help */
 const specifierParser = string({ metavar: 'SPECIFIER', },);
@@ -64,7 +64,7 @@ const args = runSync(
 
 //endregion Arg parsing
 
-//region Main execution -- resolve, import, call, print
+//region Main execution: resolve, import, call, print
 
 /** Tagged logger for the main execution flow. */
 const rl = tagged({

@@ -130,7 +130,7 @@ Long-term goal: a collaborative design tool built entirely in TypeScript with na
 - Can DOM/SVG rendering scale to documents with 10,000+ objects, or is there a practical ceiling where the approach falls apart?
   Benchmark early.
 - Is CSS layout (flexbox/grid) sufficient as the auto-layout engine, or will edge cases require a custom solver?
-  Since rendering is DOM, using the browser's own layout engine is the simplest path -- but Figma's auto-layout has behaviors that do not map 1:1 to CSS flexbox.
+  Since rendering is DOM, using the browser's own layout engine is the simplest path, but Figma's auto-layout has behaviors that do not map 1:1 to CSS flexbox.
 - Vector networks: implement from scratch based on the 2020 blog post describing the data structure, or start with traditional Bezier paths and add vector networks later?
 - Should the document format be a single JSON blob or a normalized structure (closer to the file-per-property idea from earlier discussion)?
   Likely JSON for persistence, CRDT shared types in memory for live editing.

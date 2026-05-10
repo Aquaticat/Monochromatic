@@ -24,7 +24,7 @@ Scoring combines three dimensions:
 
 Correctness is a hard gate: anything below a perfect 1.0 zeroes the entire score.
 Code that produces the right output but has lint errors scores 0, the same as code that crashes.
-This is intentional -- a submission full of lint violations and type errors is not production-quality code,
+This is intentional: a submission full of lint violations and type errors is not production-quality code,
 regardless of whether it happens to work.
 The system prompt gives the model the exact oxlint and tsgo configs it will be graded against,
 so there is no ambiguity about what the rules are.
@@ -49,7 +49,7 @@ a probe without a fix pass contributes one.
 Geometric mean was evaluated and rejected for this use case.
 Because probes vary significantly in difficulty (stak-interpreter routinely scores 0.00
 while stak-simulation scores 1.00 for most models),
-geometric mean collapses scores toward zero -- a single hard probe tanks the entire result
+geometric mean collapses scores toward zero; a single hard probe tanks the entire result
 regardless of performance elsewhere.
 With a floor of 0.01, every model in a test run scored below 0.25 under geometric mean,
 destroying differentiation between strong and weak models.
@@ -57,7 +57,7 @@ Arithmetic mean preserves proportional contribution from each probe
 and produces scores in a range where the pass/fail thresholds (0.7 WARN, 0.9 PASS) can differentiate.
 
 Simulation probes like stak-simulation score 1.00 for most models on most days,
-which looks like a freebie -- but this is intentional.
+which looks like a freebie, but this is intentional.
 They give a nonzero baseline to models that score nothing on code-gen probes,
 and even strong models occasionally fail them, so they still carry signal.
 
@@ -89,7 +89,7 @@ Comparators that consume scores directly should use tolerance, not equality.
 
 - **stak-simulation**: gives the model the Stak interpreter source and asks it to trace five programs mentally; tests careful code reading over pattern matching
 
-Probes are intentionally hard -- a healthy model scores around 0.7-0.8, not 1.0.
+Probes are intentionally hard: a healthy model scores around 0.7-0.8, not 1.0.
 This makes subtle degradation detectable: a drop from 0.7 to 0.4 is clear signal.
 
 ## Usage
@@ -129,7 +129,7 @@ All models are tested in parallel via OpenRouter:
 
 Append-only JSONL file with one entry per model per run.
 Used for statistical threshold computation (mean - 2 * stddev).
-Gitignored -- local to each machine.
+Gitignored, local to each machine.
 
 ### `src/canary-lint/`
 

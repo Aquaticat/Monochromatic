@@ -5,7 +5,7 @@ developer tooling, and AI integrations.
 
 ## Highlights
 
-**Minimal MCP server** --
+**Minimal MCP server**:
 [`mcp-stdio`](packages/mcp/stdio/) implements the Model Context Protocol
 in 800 lines with zero runtime dependencies.
 The official `@modelcontextprotocol/sdk` pulls 5.8 MB and 17 dependencies
@@ -13,7 +13,7 @@ The official `@modelcontextprotocol/sdk` pulls 5.8 MB and 17 dependencies
 this package implements only JSON-RPC 2.0, initialization handshake,
 `tools/list`, `tools/call`, and `ping`.
 
-**Inference canary** --
+**Inference canary**:
 [`inference-canary`](packages/dev-script/inference-canary/) runs five
 code-generation probes (CSV parser, expression evaluator, CSS mixin transpiler,
 stack interpreter, task scheduler) against 8 LLM models in parallel.
@@ -23,7 +23,7 @@ correctness, lint quality (oxlint), and type safety (tsgo).
 Statistical threshold detection (mean - 2*stddev) flags model degradation
 before it affects development.
 
-**Security-audited dependency selection** --
+**Security-audited dependency selection**:
 [`AUDIT.md`](AUDIT.md) documents source-code audits with dates and verdicts
 for every non-trivial dependency.
 Framework selection rejected Elysia after discovering an RCE vulnerability chain
@@ -34,7 +34,7 @@ when AOT compilation was disabled.
 See [`PHILOSOPHY.tool-choices.md`](PHILOSOPHY.tool-choices.md) for the full
 analysis of h3 vs Elysia vs Hono.
 
-**Custom Oxlint plugins** --
+**Custom Oxlint plugins**:
 [`oxlint-tsdoc`](packages/config/oxlint-tsdoc/) enforces TSDoc correctness
 across 20+ rules with 23 fixture-based tests, replacing the slow
 eslint-plugin-jsdoc integration that previously required ESLint.
@@ -43,20 +43,20 @@ encodes 13 monorepo-specific AST rules (no arrow functions, no switch statements
 require destructured params for 2+ args) that Oxlint's lack of AST selectors
 demands as dedicated rule implementations.
 
-**Monorepo-aware CSS build tool** --
+**Monorepo-aware CSS build tool**:
 [`build-tool-css`](packages/build-tool/css/) resolves `@import` through
 `package.json` exports mappings and `node_modules`, processes custom
-`@mixin`/`@apply` syntax, and generates CSS strings for Shadow DOM injection
--- all without native binaries.
+`@mixin`/`@apply` syntax, and generates CSS strings for Shadow DOM injection,
+all without native binaries.
 
-**OpenTofu firewall automation** --
+**OpenTofu firewall automation**:
 [`config-tofu`](packages/config/tofu/) dynamically aggregates CIDR ranges
 from 7 CDN sources (Cloudflare, CloudFront, Fastly, GitHub, YouTube,
 Ubuntu ASN, Coolify), summarizes them to minimize Hetzner firewall rule count,
 and caches ASN lookups for 30 days with graceful fallback to expired cache
 on fetch failure.
 
-**Custom typeface from SVG geometry** --
+**Custom typeface from SVG geometry**:
 [`typeface-aquaticat`](packages/typeface/aquaticat/) parses a master glyph strip
 SVG, expands stroked outlines into filled contours using polygon offset math,
 assembles an OpenType font via opentype.js, and converts to WOFF2 through
@@ -178,7 +178,7 @@ packages/
 
 ## Platform support
 
-Development targets Linux (Fedora). Use WSL2 on Windows -- some tools
+Development targets Linux (Fedora). Use WSL2 on Windows: some tools
 (e.g. Zellij) have no native Windows support.
 
 ## License

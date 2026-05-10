@@ -97,7 +97,7 @@ File tree context menus use the browser's Popover API (`popover="auto"`)
 with CSS anchor positioning for placement and `position-try-fallbacks`
 for viewport edge detection.
 This avoids reimplementing dropdown positioning, z-index management,
-and click-outside dismissal -- the browser handles all three natively.
+and click-outside dismissal; the browser handles all three natively.
 Inline input items (for rename, copy, move) embed a text input
 directly in the popover, confirmed with Enter.
 
@@ -106,6 +106,6 @@ directly in the popover, confirmed with Enter.
 The `connected` handshake includes a filesystem volume identifier (`fsId`)
 derived from the OS-level filesystem UUID (Linux `stat -f`, macOS `stat -f %v`).
 This ensures localStorage keys are stable per physical volume,
-not per mount path -- remounting the same disk at a different path
+not per mount path: remounting the same disk at a different path
 preserves session state, while two different volumes mounted at the same path
 do not collide.

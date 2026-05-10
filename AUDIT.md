@@ -87,23 +87,23 @@ Dependencies excluded from full source code audit, with rationale.
 
 ### Transitive / Unavoidable
 
-- **postcss** — Used by stylelint and CSS build pipeline
-- **tinyglobby** — Used by tsdown and other build tooling
+- **postcss**: Used by stylelint and CSS build pipeline
+- **tinyglobby**: Used by tsdown and other build tooling
 
 ### Trusted / Pre-Vetted
 
-- **dprint** — Trusted native formatter; dev-only
-- **neovim** — Trusted MCP integration; dev-only
-- **@anthropic-ai/sdk** — Trusted first-party AI vendor SDK
-- **openai** — Trusted first-party AI vendor SDK
-- **zod** - Impossible to avoid.
+- **dprint**: Trusted native formatter; dev-only
+- **neovim**: Trusted MCP integration; dev-only
+- **@anthropic-ai/sdk**: Trusted first-party AI vendor SDK
+- **openai**: Trusted first-party AI vendor SDK
+- **zod**: Impossible to avoid.
 
 ### Planned for Removal
 
-- **astro** — Will be replaced with a simpler SSG
-- **@astrojs/mdx** — Will be removed with astro
-- **exa-js** — To be replaced by linkup.so
-- **`@logtape/*`** - To be replaced by our custom logger
+- **astro**: Will be replaced with a simpler SSG
+- **@astrojs/mdx**: Will be removed with astro
+- **exa-js**: To be replaced by linkup.so
+- **`@logtape/*`**: To be replaced by our custom logger
 
 ## Audited
 
@@ -117,9 +117,9 @@ Dependencies excluded from full source code audit, with rationale.
   XML entity processing disabled for parsing (`processEntities: false`), mitigating XXE/billion-laughs.
   No ReDoS-vulnerable regex.
   No `__proto__`/`constructor` key filtering in `traverseAndNormalize`, but downstream parsers build new objects with hardcoded keys so injected keys are discarded.
-  Unbounded recursion in namespace normalization is a theoretical DoS vector on deeply nested XML — mitigate with a response size limit on fetch.
+  Unbounded recursion in namespace normalization is a theoretical DoS vector on deeply nested XML. Mitigate with a response size limit on fetch.
   Generator path uses `processEntities: true` but we only use parsers.
-  `parseDate` is a no-op stub (passes strings through) — our code validates dates via Zod.
+  `parseDate` is a no-op stub (passes strings through); our code validates dates via Zod.
   Prerelease semver range means trusting a sole maintainer's `next` branch; pin if stability matters.
   Overall: clean, well-tested (3,400+ tests), well-typed codebase with no significant security issues for parse-only use on untrusted feeds.
 
@@ -156,8 +156,8 @@ Dependencies excluded from full source code audit, with rationale.
 
 - **Notes:** The lfi package (v4.1.2) should be approved for use. A thorough audit of both the GitHub source and the published npm tarball
   reveals no malicious code, no install hooks, no network calls, no filesystem access, no environment variable reads, and zero
-  runtime dependencies. The only two flagged patterns — an eval('') for CSP feature detection and a new Function() for function
-  composition optimization — are well-known, legitimate techniques with safe fallbacks. The published tarball matches the expected
+  runtime dependencies. The only two flagged patterns (an eval('') for CSP feature detection and a new Function() for function
+  composition optimization) are well-known, legitimate techniques with safe fallbacks. The published tarball matches the expected
   build output from the repository. The library is small (~21KB), purely functional, side-effect-free, and does exactly what it
   claims: lazy iteration over sync, async, and concurrent iterables.
 
@@ -175,7 +175,7 @@ Dependencies excluded from full source code audit, with rationale.
 ### smol-toml
 
 - **Notes:** well-engineered, zero-runtime-dependency TOML parser/serializer with ~1,300 lines of TypeScript source. The audit
-  found no suspicious code — no network calls, telemetry, eval, environment variable access, or postinstall scripts. Security is
+  found no suspicious code: no network calls, telemetry, eval, environment variable access, or postinstall scripts. Security is
   handled proactively: prototype pollution is mitigated via Object.defineProperty, all regexes are anchored and ReDoS-safe, and
   recursive depth is capped at 1000 to prevent stack overflows. CI/CD follows best practices with SHA-pinned GitHub Actions and npm
   provenance publishing. The test suite covers parsing, serialization, error reporting, and DoS protection. One minor concern:
@@ -186,11 +186,11 @@ Dependencies excluded from full source code audit, with rationale.
 
 - **Notes:** well-engineered, minimal TypeScript library for serializing rich JavaScript types (Date,
   Map, Set, BigInt, etc.) over JSON. The codebase is lean (~1,530 lines), strictly typed, and carries only one runtime dependency.
-  It has no install hooks, no telemetry, no network calls, and no obfuscated code — the supply chain risk is negligible. Security
+  It has no install hooks, no telemetry, no network calls, and no obfuscated code; the supply chain risk is negligible. Security
   is actively addressed: prototype pollution is explicitly blocked and tested from both serialize and deserialize vectors. Test
   coverage is strong at a roughly 1:1 test-to-code ratio with edge-case and performance regression tests. The library is actively
   maintained with recent commits and regular releases. The only minor concern is a theoretical ReDoS vector via RegExp
-  deserialization, which requires attacker control of the trusted payload — low risk in typical use. This dependency is safe to
+  deserialization, which requires attacker control of the trusted payload, low risk in typical use. This dependency is safe to
   adopt.
 
 ### happy-dom
@@ -203,13 +203,13 @@ Dependencies excluded from full source code audit, with rationale.
 
 Remaining dependencies to audit, ordered by priority.
 
-### Tier 1 — High Risk (server frameworks, untrusted input processing)
+### Tier 1: High Risk (server frameworks, untrusted input processing)
 
-### Tier 2 — Medium Risk (build pipeline, data transformation)
+### Tier 2: Medium Risk (build pipeline, data transformation)
 
 - [ ] rehype-* / remark-* / unified (content pipeline)
 
-### Tier 3 — Lower Risk (utilities, dev-only)
+### Tier 3: Lower Risk (utilities, dev-only)
 
 - [ ] type-fest
 - [ ] ts-pattern
@@ -236,9 +236,9 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] glob
 - [ ] @total-typescript/ts-reset
 - [ ] @ungap/structured-clone
-- ~~remark-lint-*~~ -- removed; replaced by markdownlint-cli2 + dprint-plugin-markdown
+- ~~remark-lint-*~~: removed; replaced by markdownlint-cli2 + dprint-plugin-markdown
 - [ ] istanbul-lib-report (dev-only)
-- ~~@shikijs/transformers~~ -- removed; replaced by CSS Custom Highlight API with Lezer parsers
+- ~~@shikijs/transformers~~: removed; replaced by CSS Custom Highlight API with Lezer parsers
 - [ ] remark-github-blockquote-alert
 - [ ] remark-sectionize
 - [ ] rehype-slug-custom-id

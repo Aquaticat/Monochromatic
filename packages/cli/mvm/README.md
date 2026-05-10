@@ -2,7 +2,7 @@
 
 Ephemeral VM manager backed by KVM/libvirt.
 Creates always-on virtual machines you can immediately shell into.
-VMs exist from creation until destruction -- no pause, stop, or snapshot lifecycle.
+VMs exist from creation until destruction; no pause, stop, or snapshot lifecycle.
 Clone replaces snapshot needs.
 
 ## Prerequisites
@@ -56,7 +56,7 @@ A per-image template with qemu-guest-agent pre-installed is baked on first use
 To use an image not in the built-in registry:
 
 1. Boot your image manually (via virt-manager, raw qemu, or any other method)
-2. Install `qemu-guest-agent` inside the guest and enable it to start on boot --
+2. Install `qemu-guest-agent` inside the guest and enable it to start on boot:
    mvm relies on the guest agent for command execution via `mvm exec`
 3. Shut down the guest cleanly
 4. Place the resulting qcow2 disk image in `~/.local/share/mvm/images/` with a descriptive name

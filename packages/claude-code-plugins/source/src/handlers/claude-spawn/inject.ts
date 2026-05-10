@@ -56,7 +56,7 @@ function formatSpawnResult(state: SpawnState,): string {
  *
  * When `consume` is true, atomically renames `{spawnId}.json` to
  * `{spawnId}.reported` to prevent duplicate injection across concurrent hook
- * invocations. When `consume` is false, reads the state without renaming --
+ * invocations. When `consume` is false, reads the state without renaming:
  * callers should treat the result as best-effort since the file may be
  * consumed by a later reliable hook invocation.
  *

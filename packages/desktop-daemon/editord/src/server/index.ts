@@ -184,7 +184,7 @@ registerRoutes({
   rootDir: ROOT_DIR,
 },);
 
-//region WebSocket — editor communication
+//region WebSocket: editor communication
 
 app.get(
   '/_ws',

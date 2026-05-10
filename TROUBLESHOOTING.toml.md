@@ -13,7 +13,7 @@ The TOML v1.0.0 spec explicitly prohibits this:
 > "Like keys, you cannot define a table more than once. Doing so is invalid."
 
 All compliant parsers (Python `tomllib`, Rust `toml`, JS `smol-toml`) reject
-duplicate table headers with a parse error. This is **not** a footgun --
+duplicate table headers with a parse error. This is **not** a footgun:
 the spec and implementations handle it correctly.
 
 The real footguns are subtler.
@@ -114,7 +114,7 @@ capabilities = "CAPABILITY_IAM" # must repeat
 YAML solves this with anchors (`&default` / `*default`).
 JSONC can solve it by switching to TypeScript when config needs logic
 (per our architecture decision in CLAUDE.md).
-TOML has no equivalent -- every value is a standalone literal.
+TOML has no equivalent: every value is a standalone literal.
 
 ## Why we chose JSONC
 

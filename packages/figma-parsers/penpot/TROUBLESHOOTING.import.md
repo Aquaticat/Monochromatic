@@ -217,7 +217,7 @@ runs in the page's own JS context.
 3. Create a Blob and File from the Uint8Array
 4. Call `fetch('/api/main/methods/import-binfile', ...)` from
    browseros_evaluate_script (this IS authenticated unlike CDP)
-5. This approach was partially implemented -- hex loading works,
+5. This approach was partially implemented: hex loading works,
    but the full upload JS was not yet tested
 
 ## Structural verification (completed)

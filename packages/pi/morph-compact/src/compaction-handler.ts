@@ -38,7 +38,7 @@ export function resetMissingKeyWarning(): void {
  * returns `undefined` to fall through to pi's default summarization.
  *
  * Compaction is cancelled (not fallen through) when the session is
- * too small to compact — all messages fit within pi's keepRecentTokens
+ * too small to compact: all messages fit within pi's keepRecentTokens
  * budget, leaving messagesToSummarize empty. Pi's default summarizer
  * produces useless empty "(none)" summaries in this case, so we cancel
  * to avoid polluting the session with blank compaction entries.
@@ -78,7 +78,7 @@ export async function handleBeforeCompact(
     if (!warnedMissingKey) {
       warnedMissingKey = true;
       ctx.ui.notify(
-        'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json) — Morph Compact disabled, using pi default compaction',
+        'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json): Morph Compact disabled, using pi default compaction',
         'warning',
       );
     }
@@ -101,7 +101,7 @@ export async function handleBeforeCompact(
     || turnPrefixMessages.length > 0;
   if (!hasMessages && previousSummary === undefined) {
     ctx.ui.notify(
-      'Morph Compact: nothing to compact — session too small',
+      'Morph Compact: nothing to compact (session too small)',
       'warning',
     );
     return { cancel: true, };
@@ -153,7 +153,7 @@ export async function handleBeforeCompact(
       ? error.message
       : 'Unknown Morph compaction error';
     ctx.ui.notify(
-      `Morph Compact failed: ${message} — falling back to pi default`,
+      `Morph Compact failed: ${message}; falling back to pi default`,
       'error',
     );
     return undefined;

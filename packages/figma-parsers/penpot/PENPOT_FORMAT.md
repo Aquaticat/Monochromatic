@@ -72,7 +72,7 @@ Key fields from source (`schema:file` in `common/src/app/common/types/file.cljc`
 
 - `id`, `name`, `revn`, `vern`, `created-at`, `modified-at`, `deleted-at`
 - `project-id`, `team-id`, `is-shared`, `has-media-trimmed`
-- `data` (optional - the actual design data, not stored in file JSON)
+- `data` (optional): the actual design data, not stored in file JSON
 - `version` (int), `features` (feature flags), `migrations` (set of strings)
 
 ## Page JSON (`files/{fileId}/pages/{pageId}.json`)
@@ -274,8 +274,8 @@ but this is stripped to just the above fields in the export file JSON.
 
 Binary assets (images, fonts) stored as two files:
 
-1. `objects/{id}.json` - metadata: `{id, size, contentType, bucket, hash}`
-2. `objects/{id}.{ext}` - the actual binary data (png, jpg, svg, woff, woff2, ttf, otf)
+1. `objects/{id}.json`: metadata: `{id, size, contentType, bucket, hash}`
+2. `objects/{id}.{ext}`: the actual binary data (png, jpg, svg, woff, woff2, ttf, otf)
 
 The `hash` field uses format `"blake2b:{hex}"`.
 The `bucket` is one of the valid storage buckets (e.g., "file-object-thumbnail", "file-media-object").
@@ -335,15 +335,15 @@ Internally Penpot uses kebab-case: `:parent-id`, `:frame-id`, `:fill-color`, etc
 
 ## Source Code References
 
-- Export: `backend/src/app/binfile/v3.clj` - `write-entry!`, `export-file`, `export-files`
-- Import: `backend/src/app/binfile/v3.clj` - `read-entry`, `import-file`, `import-storage-objects`
+- Export: `backend/src/app/binfile/v3.clj`: `write-entry!`, `export-file`, `export-files`
+- Import: `backend/src/app/binfile/v3.clj`: `read-entry`, `import-file`, `import-storage-objects`
 - Shape schema: `common/src/app/common/types/shape.cljc`
 - File schema: `common/src/app/common/types/file.cljc`
 - Page schema: `common/src/app/common/types/page.cljc`
 - Color schema: `common/src/app/common/types/color.cljc`
 - Component schema: `common/src/app/common/types/component.cljc`
-- Cleaner: `backend/src/app/binfile/cleaner.clj` - pre/post decode fixes
-- Common: `backend/src/app/binfile/common.clj` - `file-attrs`, shared utilities
+- Cleaner: `backend/src/app/binfile/cleaner.clj`: pre/post decode fixes
+- Common: `backend/src/app/binfile/common.clj`: `file-attrs`, shared utilities
 
 ## Conversion strategy
 

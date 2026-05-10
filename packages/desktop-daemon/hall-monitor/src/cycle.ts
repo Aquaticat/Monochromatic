@@ -74,10 +74,10 @@ function isUnproductive(d: Decision,): boolean {
  * ```
  */
 export async function cycle(): Promise<void> {
-  // Skip the entire cycle when the session is locked — no point capturing
+  // Skip the entire cycle when the session is locked: no point capturing
   // a lock screen, and it avoids waking the GPU for inference.
   if (await isScreenLocked()) {
-    log.debug('[cycle] Screen is locked — skipping cycle',);
+    log.debug('[cycle] Screen is locked: skipping cycle',);
     return;
   }
 
@@ -93,7 +93,7 @@ export async function cycle(): Promise<void> {
     // If the webcam image is mostly black the privacy cover is probably down;
     // skip analysis so the user isn't penalised while away.
     if (await isBlackFrame(webcam,)) {
-      log.debug('[cycle] Webcam image is black (cover down?) — skipping cycle',);
+      log.debug('[cycle] Webcam image is black (cover down?), skipping cycle',);
       return;
     }
     log.debug(

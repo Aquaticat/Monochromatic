@@ -7,7 +7,7 @@ import {
 import { parseOxlintOutput, } from './oxlint-parse.ts';
 import type { OxlintJsonOutput, } from './oxlint-types.ts';
 
-//region parseOxlintOutput -- converts oxlint JSON to grouped Diagnostic maps
+//region parseOxlintOutput: converts oxlint JSON to grouped Diagnostic maps
 
 await describe({
   name: parseOxlintOutput.name,

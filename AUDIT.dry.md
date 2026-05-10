@@ -620,11 +620,11 @@ The TROUBLESHOOTING.* tree (46 files) groups by leading segment as follows
 (all groups inspected by reading the first three lines of each file):
 
 - `bun-*` (3 files: fetch-streaming, fs-glob-dotfiles, test) plus `bundling.md`
-  (4 files in the family) - each addresses a distinct symptom; no content overlap.
-- `pi-*` (2: compaction-empty-summary, safeguard) - distinct.
-- `css-*` (2: hidden-attribute-specificity, css-tooling) - distinct.
-- `dprint*` (2: dprint, dprint-exec) - distinct.
-- `performance.*` (3: performance, performance.build, performance.logging) - distinct.
+  (4 files in the family): each addresses a distinct symptom; no content overlap.
+- `pi-*` (2: compaction-empty-summary, safeguard): distinct.
+- `css-*` (2: hidden-attribute-specificity, css-tooling): distinct.
+- `dprint*` (2: dprint, dprint-exec): distinct.
+- `performance.*` (3: performance, performance.build, performance.logging): distinct.
 
 No duplicates among TROUBLESHOOTING files at the file level. Listed as a positive
 finding so the next audit does not re-flag the prefix similarity.
@@ -1059,7 +1059,7 @@ already covered by earlier findings:
   `packages/webapp-content/messages-demo/src/lib/args.ts`") -- covered by the
   `lib/args.ts` finding.
 - `webapp-content/ssg-test/src/client/tags.ts` ("Mirrors the mapping used by editord
-  for visual consistency across surfaces") -- covered by the `HIGHLIGHT_GROUPS`
+  for visual consistency across surfaces"), covered by the `HIGHLIGHT_GROUPS`
   finding.
 
 ### Subprocess and runtime patterns
@@ -1096,7 +1096,7 @@ drive-by edit.
 - `packages/claude-code-plugins/source/src/cli/spawn-claude.ts`
 - plus more
 
-This conforms to the project rule "never `process.exit()` -- throw errors instead;
+This conforms to the project rule "never `process.exit()`: throw errors instead;
 always `console.error()` in catch blocks", so it is not a DRY violation. Listed so the
 next audit does not re-flag the pattern.
 
@@ -1216,15 +1216,15 @@ the same operation will write its own copy unless the helper is moved into a sha
 module first. Listed here so they can be folded out before the second caller appears.
 
 A few entries are duplicated across two callsites; those count as DRY violations under
-the original definition, but the resolution is the same as the single-occurrence ones --
-extract once, import everywhere -- so they are grouped here rather than split across
+the original definition, but the resolution is the same as the single-occurrence ones
+(extract once, import everywhere), so they are grouped here rather than split across
 two sections.
 
 #### `formatBytes` in one place, but generally needed everywhere
 
 `packages/cli/mvm/src/download-progress.ts:45` defines
 `formatBytes(bytes: number): string` returning a human-readable size string
-("1.0 MiB", "123 KiB"). Uses inline `KIB`/`MIB`/`GIB` constants -- the same constants
+("1.0 MiB", "123 KiB"). Uses inline `KIB`/`MIB`/`GIB` constants, the same constants
 that the audit's "Numeric and string constant duplication" section flags 13 times under
 five different names (`BYTES_PER_KIB`, `KIB`, `BYTES_PER_KB`, `BYTES_PER_UNIT`,
 `BYTES_PER_KILOBYTE`). Any package that prints sizes to a user (download progress,
@@ -1289,7 +1289,7 @@ and the unit table (G, M, K) is parsed in one place.
 
 #### `concatBytes(chunks: readonly Uint8Array[]): Uint8Array` written six times
 
-The same loop -- precompute total length, allocate once, copy each chunk in -- appears
+The same loop (precompute total length, allocate once, copy each chunk in) appears
 in six separate files (counts the implementation only, not callers):
 
 - `packages/webapp-forge/server/src/git/iso-server.ts:concatChunks`
@@ -1392,7 +1392,7 @@ script tag, client reads it back) is a generic SSR-to-client handoff convention,
 not specific to the productivity app.
 
 Suggested resolution: lift to a shared client-side utilities module (one does not
-exist yet -- create it as `packages/module/dom-utils` or similar, or add it to
+exist yet: create it as `packages/module/dom-utils` or similar, or add it to
 `module/dom` which already has DOM helpers). Both done variants import.
 
 #### `requireElement<T>(selector): T` in one place; codified in TROUBLESHOOTING.typescript.md
@@ -1412,9 +1412,9 @@ instead of showing the inline definition.
 
 Three near-identical wrappers around `mkdir(..., { recursive: true })`:
 
-- `packages/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)` --
+- `packages/dev-script/file-enforcer/src/io/write.ts:ensureDir(filePath: string)`:
   takes a file path, calls `mkdir(dirname(filePath), { recursive: true })`
-- `packages/claude-code-plugins/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)` --
+- `packages/claude-code-plugins/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)`:
   takes a directory path directly
 - `packages/webapp-content/ssg-test/src/build/assets.ts:ensureDir(dir)` -- inline
   callback inside a `Promise.all(map)` chain
@@ -1432,7 +1432,7 @@ imports.
 `packages/webapp-forge/seed/src/cli.ts:intFlag` are byte-identical implementations of
 "parse `--name=value` from `process.argv`, fall back to a default on missing or
 non-finite". The same files also each define `getFlag(name: string): string | undefined`
-to back the parsing -- the audit's existing function-level section already lists
+to back the parsing; the audit's existing function-level section already lists
 `getArgumentValue` / `getFlag` as a 5-implementation cluster.
 
 `intFlag` is a typed wrapper one layer above `getFlag` that the existing audit
@@ -1463,7 +1463,7 @@ than just consolidating the fork. The downstream value is bigger.
 
 `packages/dev-script/page-weight/src/index.ts` defines both `padLeft({text, width})`
 and `padRight({text, width})` as object-parameter wrappers around `padStart` and
-`padEnd`. The wrappers do not add behaviour -- they only re-shape the call site to
+`padEnd`. The wrappers do not add behaviour; they only re-shape the call site to
 use the codebase's "named params for >= 2 args" convention.
 
 Suggested resolution: drop the wrappers; call `text.padStart(width)` and
@@ -1471,7 +1471,7 @@ Suggested resolution: drop the wrappers; call `text.padStart(width)` and
 calls on built-ins; the rule's purpose is to make function arguments self-documenting,
 which the method form already achieves through the receiver. This is a delete-not-
 extract finding, kept in this section because it surfaced through the same
-utility-shape sweep -- the resolution is opposite (collapse into the stdlib instead
+utility-shape sweep; the resolution is opposite (collapse into the stdlib instead
 of moving to a shared module) but the source signal was the same.
 
 #### `splitGlob(pattern): [cwd, relativeGlob, ...]` written twice
@@ -1508,7 +1508,7 @@ for number utilities). Generalize to `roundTo(value, decimals)`; provide
 
 `packages/webapp-forge/server/src/storage/adapter-s3.ts:encodeS3Key` URI-encodes each
 `/`-separated segment of an S3 key while preserving the separator. Generic enough
-to belong outside the S3 adapter -- the same operation works for any path-shaped
+to belong outside the S3 adapter; the same operation works for any path-shaped
 identifier that needs URL-safe encoding (file paths, CDN keys, route segments).
 
 Suggested resolution: extract to `module/es/path` (sibling to `trim`, `ensure`,
@@ -1517,7 +1517,7 @@ Suggested resolution: extract to `module/es/path` (sibling to `trim`, `ensure`,
 #### `escapeString` in one place
 
 `packages/dev-script/file-enforcer/src/package/mise.generate-index.ts:escapeString`
-escapes `\` and `'` for embedding into single-quoted TypeScript string literals --
+escapes `\` and `'` for embedding into single-quoted TypeScript string literals,
 the canonical operation for codegen tools that emit TS source. Single caller today,
 but file-enforcer is one of several codegen tools (forbidden-strings has
 `escapeResharpOnlyMeta`; the messages-demo composer emits HTML); the next codegen
@@ -1551,7 +1551,7 @@ stays in one place.
 
 #### `cli/mvm/src/spawn.ts` and `cli/vmsync/src/spawn.ts` are near-byte-identical
 
-`spawn({command, args}): Promise<string>` -- 11-line diff between two 50-line files
+`spawn({command, args}): Promise<string>`, 11-line diff between two 50-line files
 (46 vs 52). The diff is one example string in a docblock and one log-tag rename.
 Both wrap `nano-spawn` with the codebase's tagged-logger pattern.
 
@@ -1562,7 +1562,7 @@ the function-level scan missed because the function is named `spawn` (high
 collision rate, scan dropped to noise).
 
 Suggested resolution: ship a `nanoSpawnTagged({command, args, logger}): Promise<string>`
-helper -- either as a new tiny package (e.g. `module/spawn-tagged`) or as an export
+helper: either as a new tiny package (e.g. `module/spawn-tagged`) or as an export
 from `module/logger` since the value-add over raw `nano-spawn` is purely the tagged
 log-line. Both CLI packages import.
 
@@ -1571,15 +1571,15 @@ log-line. Both CLI packages import.
 Five separate `groupBy`-shaped functions across two packages, each implementing the
 same one-pass partition-by-key with different key types and result shapes:
 
-- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByLang(posts)` --
+- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByLang(posts)`:
   delegates to `Map.groupBy`, returns `Partial<Record<Locales, Post[]>>`
-- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByName(posts)` --
+- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByName(posts)`:
   delegates to `Map.groupBy`, returns `Record<string, Post[]>`
-- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByTag(posts)` --
+- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByTag(posts)`:
   walks `allTags(posts)`, returns `Record<string, Post[]>`
-- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByLangThenTag(posts)` --
+- `packages/webapp-content/ssg-test/src/lib/content-group.ts:groupByLangThenTag(posts)`:
   composition of the previous two, returns `Partial<Record<Locales, Record<string, Post[]>>>`
-- `packages/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})` --
+- `packages/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})`:
   generic, returns `Map<number, T[]>`, hand-rolled (does not use `Map.groupBy`)
 
 The `ssg-test` quartet uses the stdlib `Map.groupBy` and just wraps it in a
@@ -1649,7 +1649,7 @@ re-exports the next level. Across the tree, several one-line barrel patterns rec
 - `export * as type from './t/index.ts';` -- 27 files
 - `export * as from from './f/index.ts';` -- 24 files
 - `export * as named from './p n/index.ts';
-  export * as positional from './p p/index.ts';` -- 16 files
+  export * as positional from './p p/index.ts';` (16 files)
 
 These are byte-identical because they encode a structural relationship in the
 directory tree (a level always has the same set of subfolders). The duplication is

@@ -10,7 +10,7 @@ const MIN_TARGET = 3;
 /** Minimum spacing padding in rem (1/2). */
 const MIN_PADDING = 1 / 2;
 
-//region Primitive color tokens -- Raw color values that never change between modes.
+//region Primitive color tokens (raw color values that never change between modes)
 
 /** Raw color values that never change between light and dark modes. */
 export const primitiveTokens: string = css({
@@ -44,7 +44,7 @@ export const primitiveTokens: string = css({
 
 //endregion Primitive color tokens
 
-//region Semantic color tokens -- Aliases that flip between light and dark modes.
+//region Semantic color tokens (aliases that flip between light and dark modes)
 
 /** Semantic aliases that map to primitives, plus spacing/sizing tokens. */
 export const semanticTokens: string = css({
@@ -84,7 +84,7 @@ export const semanticTokens: string = css({
 
 //endregion Semantic color tokens
 
-//region Dark mode -- re-exported from styles-tokens-dark.ts
+//region Dark mode (re-exported from styles-tokens-dark.ts)
 
 export { darkMode, } from './styles-tokens-dark.ts';
 

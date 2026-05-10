@@ -145,7 +145,7 @@ function chooseFormatter(timestamps: readonly string[],): (ts: string,) => strin
  * ```
  */
 function formatTime(timestamp: string,): string {
-  /** ISO format: YYYY-MM-DDTHH:MM:SS — time starts at index 11 */
+  /** ISO format: YYYY-MM-DDTHH:MM:SS, time starts at index 11 */
   const TIME_START = 11;
   const TIME_END = 16;
   if (timestamp.length < TIME_END)
@@ -179,7 +179,7 @@ function formatDate(timestamp: string,): string {
   );
   const currentYear = new Date().getFullYear().toString();
   if (datePart.startsWith(currentYear,)) {
-    // Same year: show MM-DD only — skip "YYYY-" prefix
+    // Same year: show MM-DD only; skip "YYYY-" prefix
     const YEAR_PREFIX_LENGTH = 5;
     return datePart.slice(YEAR_PREFIX_LENGTH,);
   }

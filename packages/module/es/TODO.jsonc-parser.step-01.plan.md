@@ -1,4 +1,4 @@
-# JSONC parser – step 01 plan: robust string scanning
+# JSONC parser, step 01 plan: robust string scanning
 
 Date: 2025-10-24
 

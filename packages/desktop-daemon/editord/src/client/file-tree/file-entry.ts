@@ -23,7 +23,7 @@ function suppressContextMenu(event: Event,): void {
 }
 
 /**
- * `<tree-file-entry>` — clickable file label in the tree sidebar.
+ * `<tree-file-entry>`: clickable file label in the tree sidebar.
  *
  * @example
  * ```ts

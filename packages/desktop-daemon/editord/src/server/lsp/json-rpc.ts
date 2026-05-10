@@ -56,7 +56,7 @@ export function createLspParser({
   const chunks: Buffer[] = [];
   /** Total byte length across all pending chunks. */
   let totalLength = 0;
-  /** Consolidated buffer — rebuilt from chunks only when needed for parsing. */
+  /** Consolidated buffer: rebuilt from chunks only when needed for parsing. */
   let buffer = Buffer.alloc(0,);
   let contentLength = -1;
 

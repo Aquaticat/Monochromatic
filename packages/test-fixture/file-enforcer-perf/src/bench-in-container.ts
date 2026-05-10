@@ -133,7 +133,7 @@ const coldMs = performance.now() - coldStart;
 timings.push({ label: 'cold', ms: coldMs, },);
 console.error(`[container] cold run: ${coldMs.toFixed(1,)}ms`,);
 
-// Warm runs -- content unchanged, all writes skipped.
+// Warm runs: content unchanged, all writes skipped.
 // 10 iterations provide enough samples per container; with N containers
 // running simultaneously, the aggregate dataset has N*10 warm data points.
 /** Number of warm run iterations per container */
@@ -149,7 +149,7 @@ for (let warmIndex = 0; warmIndex < WARM_RUN_COUNT; warmIndex++) {
   console.error(`[container] warm run ${String(warmIndex,)}: ${warmMs.toFixed(1,)}ms`,);
 }
 
-// 1 source changed -- modify one source file, invalidate its cache entry, re-run.
+// 1 source changed: modify one source file, invalidate its cache entry, re-run.
 // This mirrors what watch mode does: it knows exactly which file changed.
 /** Absolute path to the fixture root directory */
 const fixtureDir = join(tmpdir(), 'file-enforcer-perf',);
@@ -167,7 +167,7 @@ const srcChangedMs = performance.now() - srcChangedStart;
 timings.push({ label: 'source-changed', ms: srcChangedMs, },);
 console.error(`[container] 1 source changed: ${srcChangedMs.toFixed(1,)}ms`,);
 
-// 1 dest changed -- modify one dest file externally, invalidate its cache entry, re-run.
+// 1 dest changed: modify one dest file externally, invalidate its cache entry, re-run.
 // Simulates watch mode detecting an external edit to a managed destination.
 /** Path to the destination file modified for the dest-changed benchmark */
 const destFile = join(fixtureDir, 'dest', 'combined-0.md',);

@@ -75,7 +75,7 @@ if ('value' in node && typeof node.value === 'string') {
 }
 ```
 
-The OXC team has stated this is intentional --
+The OXC team has stated this is intentional;
 they do not aim to align `@oxc-project/types` with ESTree.
 Their recommendation is to use types from another ESTree-compatible implementation
 (e.g. Acorn or TS-ESLint) if ESTree compatibility is needed.
@@ -138,7 +138,7 @@ export default defineConfig({
 
 - Setting `resolve` at the top level of the tsdown config -- tsdown's `UserConfig`
   type does not include `resolve`, so it is silently dropped
-- Adding every transitive dependency to `deps.alwaysBundle` --
+- Adding every transitive dependency to `deps.alwaysBundle`;
   `alwaysBundle` controls whether a package is bundled vs externalized,
   but if the package cannot be **resolved** in the first place,
   it is treated as external regardless of `alwaysBundle`
@@ -174,7 +174,7 @@ On `neutral` or `browser`, `builtin_modules` is `false`,
 so the resolver never short-circuits `node:` specifiers as builtins.
 The top-level `node:path` still resolves because rolldown externalizes
 bare `node:` specifiers separately from oxc-resolver's builtin check.
-But subpath specifiers like `node:path/posix` bypass that externalization --
+But subpath specifiers like `node:path/posix` bypass that externalization;
 the resolver treats `/posix` as a filesystem path under the `node:path` package,
 tries to find it on disk, and fails.
 
@@ -215,9 +215,9 @@ This pattern is already used in `packages/module/es/src/path/index.ts`.
 
 **What does not work**:
 
-- Adding `node:path/posix` to rolldown's `external` array --
+- Adding `node:path/posix` to rolldown's `external` array;
   externalization applies after resolution, and the specifier fails during resolution
-- Setting `resolve.builtinModules` manually --
+- Setting `resolve.builtinModules` manually;
   this option is not exposed in rolldown's public `InputOptions`; it is derived
   internally from `platform`
 

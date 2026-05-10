@@ -68,7 +68,7 @@ export async function doExpandSelection({
 
     const currentSel = editorPane.getSelection();
 
-    /** No selection or collapsed — apply the innermost range. */
+    /** No selection or collapsed: apply the innermost range. */
     if (currentSel === null
       || (currentSel.startLine === currentSel.endLine
         && currentSel.startCharacter === currentSel.endCharacter))

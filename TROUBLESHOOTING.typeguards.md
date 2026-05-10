@@ -149,7 +149,7 @@ if (isGoodType(typed as unknown as GoodType & typeof typed,)) {
 
 ### Myth: "TypeScript always preserves type information"
 
-**PARTIALLY FALSE** - It depends on the input type.
+**PARTIALLY FALSE**: It depends on the input type.
 
 ```typescript
 type SchemaWithWeight = Schema & { weight: number; };
@@ -167,7 +167,7 @@ if (isSchema(unknownSchema,))
 
 ### Myth: "`any` bypasses type narrowing"
 
-**FALSE** - `any` still gets narrowed by typeguards.
+**FALSE**: `any` still gets narrowed by typeguards.
 
 ```typescript
 const anySchema: any = { parse: x => x, weight: 100, };

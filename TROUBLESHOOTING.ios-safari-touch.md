@@ -23,7 +23,7 @@ that relies on `touch-action: none` to suppress native gestures
 ## Root cause
 
 WebKit bug [133112](https://bugs.webkit.org/show_bug.cgi?id=133112) tracks `touch-action` support.
-The bug was filed in **2014** and resolved as "CONFIGURATION CHANGED" -- not "FIXED".
+The bug was filed in **2014** and resolved as "CONFIGURATION CHANGED" (not "FIXED").
 Only `touch-action: manipulation` and `touch-action: pan-y` were fully implemented.
 `touch-action: none` was added later with partial, unreliable behavior.
 
@@ -122,7 +122,7 @@ This is correct on Chromium and Gecko. It is a half-truth on WebKit.
 
 Developers write `touch-action: none`, test on desktop browsers, ship,
 and then get bug reports from every iPhone user.
-The failure is silent -- no console error, no warning, no indication that the CSS property
+The failure is silent: no console error, no warning, no indication that the CSS property
 was not fully honored. The gesture simply does not work.
 
 The WebKit team could fix this by making `touch-action: none` actually mean none.

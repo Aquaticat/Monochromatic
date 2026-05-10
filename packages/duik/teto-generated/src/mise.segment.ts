@@ -41,7 +41,7 @@ async function main(): Promise<void> {
   const inputImage = `${TMP_DIR}/front.png`;
   if (!existsSync(inputImage,)) {
     throw new Error(
-      `Cropped front view not found at ${inputImage} — run the crop task first`,
+      `Cropped front view not found at ${inputImage}; run the crop task first`,
     );
   }
 

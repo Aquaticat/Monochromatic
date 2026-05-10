@@ -14,7 +14,7 @@ import { STYLES, } from './rename-input.styles.ts';
 const VERTICAL_OFFSET = 4;
 
 /**
- * `<rename-input>` — floating input for symbol renaming.
+ * `<rename-input>`: floating input for symbol renaming.
  *
  * Shows a text input pre-filled with the current symbol name.
  * Enter confirms, Escape cancels. The component auto-focuses the input

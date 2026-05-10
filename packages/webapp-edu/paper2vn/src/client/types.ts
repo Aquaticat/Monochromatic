@@ -19,7 +19,7 @@ export type DialogueBeat = {
   pose?: Pose;
 };
 
-/** A generated chapter -- one logical section of the paper. */
+/** A generated chapter: one logical section of the paper. */
 export type Chapter = {
   /** Chapter title, displayed as a card before the first beat. */
   title: string;

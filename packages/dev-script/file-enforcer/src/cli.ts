@@ -2,7 +2,7 @@ import { findUp, } from 'find-up';
 import { l, } from './log.ts';
 import { startWatching, } from './watch/watch.ts';
 
-//region CLI entry point -- finds and imports file-enforcer.config.ts, optionally watches
+//region CLI entry point: finds and imports file-enforcer.config.ts, optionally watches
 
 /** Config file name to search for upward from cwd */
 const CONFIG_NAME = 'file-enforcer.config.ts';
@@ -26,7 +26,7 @@ if (configPath === undefined)
 
 l.info(`loading config: ${configPath}`,);
 
-// Importing the config executes it -- the config uses top-level await
+// Importing the config executes it: the config uses top-level await
 await import(configPath);
 
 if (watchMode)

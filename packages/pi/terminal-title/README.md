@@ -1,6 +1,6 @@
 # pi-terminal-title
 
-Terminal tab title extension for pi — shows current tool, session state, and user prompt in the terminal window title.
+Terminal tab title extension for pi: shows current tool, session state, and user prompt in the terminal window title.
 
 ## Installation
 
@@ -59,7 +59,7 @@ Custom/MCP tools that are not in the registry display generically:
 ```
 src/
   index.ts           # Extension entry point, event handlers
-  title-builder.ts   # titleForEvent(), titleForTool() — maps events to titles
+  title-builder.ts   # titleForEvent(), titleForTool(): maps events to titles
   tool-titles.ts     # Tool name → formatter registry (pi tool names)
   formatter-utils.ts # truncate, shortPath, field, pathFormat, quotedFormat, shortCommand
 ```

@@ -16,7 +16,7 @@ const completionsUrl = process.env.CHAT_COMPLETIONS_URL ?? DEFAULT_COMPLETIONS_U
 
 //endregion Configuration
 
-//region Rate limiter -- sliding-window counter
+//region Rate limiter: sliding-window counter
 
 /** Maximum requests allowed within the sliding window. */
 const MAX_REQUESTS_PER_WINDOW = 30;
@@ -132,7 +132,7 @@ export async function chatCompletion(
   if (isRateLimited()) {
     return {
       ok: false,
-      error: 'Rate limit exceeded -- try again in a moment',
+      error: 'Rate limit exceeded; try again in a moment',
     };
   }
 

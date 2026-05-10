@@ -20,7 +20,7 @@ import {
 } from './depends-parse.ts';
 import { resolveGlobFiles, } from './depends-resolve-glob.ts';
 
-//region Item resolution -- resolve individual items to timestamps
+//region Item resolution: resolve individual items to timestamps
 
 /**
  * Resolves a file glob to an array of file mtimes.

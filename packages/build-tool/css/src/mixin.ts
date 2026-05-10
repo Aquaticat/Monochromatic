@@ -7,7 +7,7 @@ import {
   mixins,
 } from './mixin-registry.ts';
 
-// Re-export from the registry so consumers import from mixin.ts only —
+// Re-export from the registry so consumers import from mixin.ts only:
 // mixin-registry.ts is a private implementation detail.
 export {
   expandMixinBodies,
@@ -97,7 +97,7 @@ export function expandApplyRules(root: Root,): void {
 
       if (source === undefined) {
         throw new Error(
-          `@apply ${mixinName} is missing its source location — parsed nodes should always have one, so PostCSS may have received a programmatically constructed node instead of a parsed one`,
+          `@apply ${mixinName} is missing its source location: parsed nodes should always have one, so PostCSS may have received a programmatically constructed node instead of a parsed one`,
         );
       }
 

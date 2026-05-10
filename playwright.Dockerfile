@@ -1,5 +1,5 @@
 # Named playwright.Dockerfile (not Dockerfile.playwright) because nvim-web-devicons
-# matches icons by file extension — "Dockerfile" is a recognized extension.
+# matches icons by file extension: "Dockerfile" is a recognized extension.
 #
 # Playwright test runner for immutable OSes (Bazzite, Fedora Atomic, etc.)
 # that lack apt-get for installing browser dependencies.

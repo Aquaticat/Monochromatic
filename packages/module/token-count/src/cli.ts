@@ -13,7 +13,7 @@ import { runSync, } from '@optique/run';
 
 import { countFileTokens, } from './client.ts';
 
-//region CLI -- parses args and counts tokens in files
+//region CLI: parses args and counts tokens in files
 
 /** Column width for right-aligning token counts in output. */
 const PAD_WIDTH = 8;

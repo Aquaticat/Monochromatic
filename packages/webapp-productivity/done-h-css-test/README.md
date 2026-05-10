@@ -17,11 +17,11 @@ mise run dev:site         # development (auto-restart on src/ change via mise wa
 
 Single `Bun.serve()` process handling both page routes (HTML) and API routes (JSON).
 
-1. **CSS** -- `@monochromatic-dev/build-css` resolves `@import` and expands `@mixin`/`@apply` into plain CSS
-2. **Client JS** -- tsdown bundles one entry per page (inbox, in-progress, task-details, search, settings) via `mise run build:js:client`
-3. **Server** -- `Bun.serve()` with declarative `routes` for pages and REST API; fallback handler serves static assets from `dist/client/`
-4. **Database** -- SQLite (@tursodatabase/database) with FTS5 full-text search, initialized via side-effect import at startup
-5. **Client** -- Vanilla TypeScript with custom elements; reads server-embedded JSON from `<script id="page-data">`, builds DOM imperatively
+1. **CSS**: `@monochromatic-dev/build-css` resolves `@import` and expands `@mixin`/`@apply` into plain CSS
+2. **Client JS**: tsdown bundles one entry per page (inbox, in-progress, task-details, search, settings) via `mise run build:js:client`
+3. **Server**: `Bun.serve()` with declarative `routes` for pages and REST API; fallback handler serves static assets from `dist/client/`
+4. **Database**: SQLite (@tursodatabase/database) with FTS5 full-text search, initialized via side-effect import at startup
+5. **Client**: Vanilla TypeScript with custom elements; reads server-embedded JSON from `<script id="page-data">`, builds DOM imperatively
 
 ## Monorepo dependencies
 
@@ -40,7 +40,7 @@ It was rejected because the database layer relies heavily on SQLite-specific fea
 - **`json_each()`** table-valued function for querying JSON arrays stored in columns
 - **Partial indexes** (`WHERE due_date IS NOT NULL`, etc.)
 
-Adopting Drizzle would mean writing some queries with the query builder and others as raw `sql` template escape hatches — two query styles in one codebase.
+Adopting Drizzle would mean writing some queries with the query builder and others as raw `sql` template escape hatches: two query styles in one codebase.
 That is worse than consistently using raw `@tursodatabase/database` everywhere.
 
 The current approach uses named SQL constants extracted to the top of each file, which keeps query text readable and scannable without introducing a second abstraction layer.

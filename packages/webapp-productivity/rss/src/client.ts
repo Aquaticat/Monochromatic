@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import * as v from 'valibot';
 
-//region Scroll event observer -- Tracks element visibility and dispatches custom scroll lifecycle events
+//region Scroll event observer: Tracks element visibility and dispatches custom scroll lifecycle events
 
 /** Intersection ratio threshold: one quarter visible. */
 const QUARTER_THRESHOLD = 0.25;
@@ -94,7 +94,7 @@ function addScrollEvents(scrollOptions: {
 
 //endregion Scroll event observer
 
-//region Feed element binding -- Connects scroll events to the ignore API for auto-dismissal
+//region Feed element binding: Connects scroll events to the ignore API for auto-dismissal
 
 /**
  * All feed elements on the page, bound to scroll-based ignore behavior.

@@ -1,4 +1,4 @@
-# JSONC parser – step 01a plan: reduce mutability and magic numbers in scanQuotedString
+# JSONC parser, step 01a plan: reduce mutability and magic numbers in scanQuotedString
 
 Date: 2025-10-24
 

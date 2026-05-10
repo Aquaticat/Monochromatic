@@ -5,7 +5,7 @@
 - [ ] `redirectingTo.browser.test.ts` fails in both Chromium and Firefox:
       `window.moduleEs.onLoadRedirectingTo` is not a function.
       The test harness imports `* as moduleEs` from the neutral bundle,
-      but `onLoadRedirectingTo` is not a direct named export — it is nested
+      but `onLoadRedirectingTo` is not a direct named export; it is nested
       under `deprecated.dom`. Either the test needs to access the correct path
       or the function needs re-exporting at the top level.
 
@@ -15,20 +15,20 @@
 
 #### Universal Type Testing Requirement
 
-**Status**: Critical Priority - ALL exports need type testing
+**Status**: Critical Priority: ALL exports need type testing
 
 **Requirement**: All functions, constants, types, and exports must have type testing with `expectTypeOf`.
 
 **Scope**: Every single export from the module requires type validation:
 
-- **150+ functions** - Parameter and return type validation
-- **50+ constants** - Type constant and value constant validation
-- **25+ type utilities** - Type-level computation validation
-- **All interfaces** - Object shape and property validation
+- **150+ functions**: Parameter and return type validation
+- **50+ constants**: Type constant and value constant validation
+- **25+ type utilities**: Type-level computation validation
+- **All interfaces**: Object shape and property validation
 
 #### Functions Requiring Type Testing (ALL Functions)
 
-**Any Utilities** - Type tests needed:
+**Any Utilities**: Type tests needed:
 
 - [ ] [`any.constant()`](src/any.constant.ts:32) - Test return function type and closure type
 - [ ] [`any.echo()`](src/any.echo.ts:26) - Test generator type and yield type
@@ -39,7 +39,7 @@
 - [ ] [`any.when()`](src/any.when.ts:24) - Test conditional type inference
 - [ ] [`any.whenAsync()`](src/any.when.ts:65) - Test Promise type wrapping
 
-**Array Utilities** - Type tests needed:
+**Array Utilities**: Type tests needed:
 
 - [ ] [`arrayRange()`](src/array.range.ts:73) - Test number array return type
 - [ ] [`arrayRangeGen()`](src/array.range.ts:130) - Test generator type inference
@@ -47,21 +47,21 @@
 - [ ] [`genOf()`](src/array.of.ts:84) - Test generator element type inference
 - [ ] All array type guards - Test type narrowing and predicate types
 
-**Boolean Utilities** - Type tests needed:
+**Boolean Utilities**: Type tests needed:
 
 - [ ] [`equal()`](src/boolean.equal.ts:174) - Test boolean return with any inputs
 - [ ] [`equalAsync()`](src/boolean.equal.ts:543) - Test Promise<boolean> return
 - [ ] [`isPrimitive()`](src/boolean.equal.ts:69) - Test type predicate functionality
 - [ ] [`BooleanNot()`](src/boolean.not.ts:23) - Test boolean return type
 
-**Error Utilities** - Type tests needed:
+**Error Utilities**: Type tests needed:
 
 - [ ] All assertion functions - Test void return and throwing behavior
 - [ ] All `not*OrThrow()` functions - Test type narrowing and never returns
 - [ ] [`throws()`](src/error.throws.ts:43) - Test never return type
 - [ ] [`isError()`](src/error.is.ts:32) - Test Error type predicate
 
-**Function Utilities** - Type tests needed:
+**Function Utilities**: Type tests needed:
 
 - [ ] [`pipe()`](src/function.pipe.ts:1329) and overloads - Test type flow through composition
 - [ ] [`piped()`](src/function.pipe.ts:280) and overloads - Test immediate composition types
@@ -72,20 +72,20 @@
 - [ ] [`memoize()`](src/function.memoize.ts:47) - Test function type preservation
 - [ ] All other function utilities - Test type preservation and inference
 
-**Iterable Utilities** - Type tests needed:
+**Iterable Utilities**: Type tests needed:
 
 - [ ] All sync iterable functions - Test element type preservation
 - [ ] All async iterable functions - Test async element type handling
 - [ ] All generator functions - Test yield and return types
 - [ ] All filtering functions - Test type narrowing with predicates
 
-**String Utilities** - Type tests needed:
+**String Utilities**: Type tests needed:
 
 - [ ] All string validation functions - Test type predicate behavior
 - [ ] All string transformation functions - Test string return types
 - [ ] [`hashString()`](src/string.hash.ts:15) - Test Promise<string> return
 
-**Numeric Utilities** - Type tests needed:
+**Numeric Utilities**: Type tests needed:
 
 - [ ] All numeric type guards - Test type predicate functionality
 - [ ] All numeric operations - Test number/bigint type preservation
@@ -95,14 +95,14 @@
 
 **Type Constants**:
 
-- [ ] **Numeric types** - [`Int`](src/numeric.type.int.ts:1), [`PositiveInt`](src/numeric.type.int.ts:1), [`NegativeInt`](src/numeric.type.int.ts:1), etc.
-- [ ] **Array types** - [`Tuple`](src/array.type.tuple.ts:17), [`ArrayFixedLength`](src/array.type.fixedLength.ts:1), etc.
-- [ ] **String types** - [`DigitString`](src/string.digits.ts:1), [`LangString`](src/string.language.ts:1), etc.
+- [ ] **Numeric types**: [`Int`](src/numeric.type.int.ts:1), [`PositiveInt`](src/numeric.type.int.ts:1), [`NegativeInt`](src/numeric.type.int.ts:1), etc.
+- [ ] **Array types**: [`Tuple`](src/array.type.tuple.ts:17), [`ArrayFixedLength`](src/array.type.fixedLength.ts:1), etc.
+- [ ] **String types**: [`DigitString`](src/string.digits.ts:1), [`LangString`](src/string.language.ts:1), etc.
 
 **Value Constants**:
 
-- [ ] **Function constants** - [`alwaysTrue()`](src/function.always.ts:1), [`emptyFunction()`](src/function.is.ts:101)
-- [ ] **Utility constants** - Any exported constant values
+- [ ] **Function constants**: [`alwaysTrue()`](src/function.always.ts:1), [`emptyFunction()`](src/function.is.ts:101)
+- [ ] **Utility constants**: Any exported constant values
 
 ### Type Testing Implementation Examples
 
@@ -180,8 +180,8 @@ describe('Type Constant Testing', () => {
 
 #### New Type Testing Files Required
 
-- [ ] **`any.type.test.ts`** - Type tests for all any utilities
-- [ ] **`array.type.test.ts`** - Type tests for all array functions and types
+- [ ] **`any.type.test.ts`**: Type tests for all any utilities
+- [ ] **`array.type.test.ts`**: Type tests for all array functions and types
 - [ ] **`boolean.type.test.ts`** - Type tests for boolean operations
 - [ ] **`error.type.test.ts`** - Type tests for error utilities
 - [ ] **`function.type.test.ts`** - Type tests for function utilities

@@ -2,16 +2,16 @@
 
 ## Cross-References
 
-- [**Code Quality Issues**](TODO.code-quality.md#current-linting-issues) - Related linting and TypeScript fixes
-- [**Performance Optimization**](TODO.performance.md#build-performance) - Build system performance improvements
-- [**Automation**](TODO.automation.md#cicd-pipeline) - CI/CD pipeline integration
-- [**Package Development**](TODO.packages.md#module-library-packages-modulees) - Module library build requirements
+- [**Code Quality Issues**](TODO.code-quality.md#current-linting-issues): Related linting and TypeScript fixes
+- [**Performance Optimization**](TODO.performance.md#build-performance): Build system performance improvements
+- [**Automation**](TODO.automation.md#cicd-pipeline): CI/CD pipeline integration
+- [**Package Development**](TODO.packages.md#module-library-packages-modulees): Module library build requirements
 
 ## Critical Issues
 
 ### Fresh Clone Setup Problems
 
-**Status**: High Priority - Blocking new developers
+**Status**: High Priority, Blocking new developers
 
 The current setup process fails for fresh clones due to build order issues:
 
@@ -48,7 +48,7 @@ mise run build
 
 ### Missing Export Issues (New - High Priority)
 
-**Status**: Critical - TypeScript compilation errors
+**Status**: Critical, TypeScript compilation errors
 
 From recent analysis, multiple files have missing export issues:
 
@@ -98,7 +98,7 @@ Add JSON with Comments support for package configuration.
 
 #### Fix Module Import/Export Consistency
 
-**Status**: High Priority - Build reliability
+**Status**: High Priority, Build reliability
 
 - [ ] Audit all packages for consistent import/export patterns
 - [ ] Standardize module resolution across packages
@@ -120,7 +120,7 @@ Previously needed for fs-extra/universalify dependency issue (no longer using fs
 
 #### Package Dependency Optimization
 
-**Status**: Medium Priority - Build efficiency
+**Status**: Medium Priority, Build efficiency
 
 - [ ] Analyze and optimize package dependency graphs
 - [ ] Implement smarter dependency hoisting strategies
@@ -152,7 +152,7 @@ Previously needed for fs-extra/universalify dependency issue (no longer using fs
 
 ### Enhanced Validation (New)
 
-**Status**: Normal Priority - Development reliability
+**Status**: Normal Priority, Development reliability
 
 - [ ] Add comprehensive TypeScript configuration validation
 - [ ] Implement package.json consistency checking across packages
@@ -185,7 +185,7 @@ mise run buildAndTest
 
 ### Performance Monitoring
 
-**Status**: Normal Priority - Build optimization
+**Status**: Normal Priority, Build optimization
 
 - [ ] Add build time tracking and analysis
 - [ ] Implement build performance regression detection
@@ -229,7 +229,7 @@ mise run buildAndTest
 
 ### CI/CD Integration
 
-**Status**: High Priority - Production deployment
+**Status**: High Priority, Production deployment
 
 - [ ] Optimize mise integration with GitHub Actions
 - [ ] Implement efficient CI/CD caching strategies
@@ -241,7 +241,7 @@ mise run buildAndTest
 
 ### Development Tool Integration
 
-**Status**: Normal Priority - Developer experience
+**Status**: Normal Priority, Developer experience
 
 - [ ] Enhance IDE integration with mise tasks
 - [ ] Add development server integration optimization
@@ -264,6 +264,6 @@ mise run buildAndTest
 
 ## Notes
 
-- **IMPORTANT**: Never run direct package scripts - always use `mise run` commands
+- **IMPORTANT**: Never run direct package scripts; always use `mise run` commands
 - Tests can only be run from workspace root
 - When rebuilding after configuration changes (like oxlint rules), always use `mise run build`

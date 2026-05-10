@@ -141,7 +141,7 @@ async function main(): Promise<void> {
   const masksDir = `${TMP_DIR}/masks`;
   if (!existsSync(masksDir,)) {
     throw new Error(
-      `Masks directory not found: ${masksDir} — run the segment task first`,
+      `Masks directory not found: ${masksDir}; run the segment task first`,
     );
   }
 
@@ -154,7 +154,7 @@ async function main(): Promise<void> {
   },);
 
   if (masks.length === 0)
-    throw new Error('No PGM masks found — segmentation may have failed',);
+    throw new Error('No PGM masks found: segmentation may have failed',);
 
   console.log(`  Found ${masks.length} masks`,);
 

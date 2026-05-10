@@ -20,7 +20,7 @@ import mixinSource from './mixins.css' with { type: 'text', };
  * Expands \@apply references in a CSS string using shared mixin definitions.
  *
  * Delegates to build-css's high-level applyMixins() so this module never
- * touches postcss directly — all parse/expand/serialize logic lives in one place.
+ * touches postcss directly; all parse/expand/serialize logic lives in one place.
  *
  * @param raw - CSS string containing \@apply references
  *

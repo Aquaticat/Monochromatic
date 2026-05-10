@@ -2,7 +2,7 @@
 // oxlint-disable tsdoc/valid-types -- TSDoc braces in JSONC context descriptions are intentional
 // oxlint-disable eslint/init-declarations -- conditional assignment in record parsing
 /**
- * JSONC record (object) parsing — member recursion and record container parser.
+ * JSONC record (object) parsing: member recursion and record container parser.
  *
  * MUTUALLY RECURSIVE with {@link parseValueFromStart} via the dispatch module.
  */
@@ -21,7 +21,7 @@ import {
 import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
 import { startsWithComment, } from './customParsers.startsWithComment.ts';
 
-//region Record value parsing -- Parse value with leading comment after colon (MUTUALLY RECURSIVE)
+//region Record value parsing: Parse value with leading comment after colon (MUTUALLY RECURSIVE)
 /**
  * Parse a record value with its leading comment after the colon.
  *
@@ -63,7 +63,7 @@ export function parseRecordValue(
 }
 //endregion Record value parsing
 
-//region One record member -- Compose key + colon + value for a single member (MUTUALLY RECURSIVE)
+//region One record member: Compose key + colon + value for a single member (MUTUALLY RECURSIVE)
 /**
  * Parse one complete record member (key:value pair) from the current position.
  *
@@ -107,7 +107,7 @@ export function parseOneRecordMember(
 }
 //endregion One record member
 
-//region Record members -- Recursive, immutable member parsing for records (MUTUALLY RECURSIVE)
+//region Record members: Recursive, immutable member parsing for records (MUTUALLY RECURSIVE)
 /**
  * Parse key:value members immutably, propagating comments on keys/values, and return tail after '}'.
  *

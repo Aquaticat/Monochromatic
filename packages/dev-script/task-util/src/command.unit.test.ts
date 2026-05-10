@@ -31,7 +31,7 @@ if (arg === 'fail') {
 }
 `;
 
-//region Fixture Setup -- Per-test fixtures
+//region Fixture Setup: per-test fixtures
 
 function setup() {
   const testFileDir = import.meta.dirname;

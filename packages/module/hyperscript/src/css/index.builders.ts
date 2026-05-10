@@ -22,7 +22,7 @@ export type {
 /**
  * Serializes a declarations record into a CSS declaration string.
  *
- * Accepts any declarations object — `StrictCssDeclarations`, at-rule descriptor
+ * Accepts any declarations object: `StrictCssDeclarations`, at-rule descriptor
  * interfaces, or plain `Record<string, string>`. Skips `undefined` values since
  * csstype interfaces mark all properties as optional.
  *

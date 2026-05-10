@@ -107,7 +107,7 @@ for (const modelDir of modelDirs) {
       console.log(`  updated: ${modelDir}/${subdir}/meta.json`,);
     }
     catch {
-      // Missing or malformed -- skip
+      // Missing or malformed; skip
     }
   }
 

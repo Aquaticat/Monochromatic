@@ -1,6 +1,6 @@
 # Bun `node:fs` glob silently skips dot files
 
-Status: **root cause identified** -- upstream issue filed: [oven-sh/bun#28021](https://github.com/oven-sh/bun/issues/28021)
+Status: **root cause identified**; upstream issue filed: [oven-sh/bun#28021](https://github.com/oven-sh/bun/issues/28021)
 
 ## Symptom
 
@@ -93,7 +93,7 @@ return {
 ```
 
 This aligns with Node.js behavior where explicit dot patterns match dot files.
-Wildcard exclusion of dot files is handled by minimatch/glob pattern semantics, not by the `dot` flag --
+Wildcard exclusion of dot files is handled by minimatch/glob pattern semantics, not by the `dot` flag:
 `Bun.Glob`'s `dot` flag controls whether the scanner **emits** dot entries at all,
 which is a lower level than pattern matching.
 

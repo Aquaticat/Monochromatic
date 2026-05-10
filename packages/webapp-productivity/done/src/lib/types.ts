@@ -78,7 +78,7 @@ export type SearchTask = Task & {
   isBlocked: boolean;
 };
 
-/** Payload accepted by `createTask()` -- only `title` is required; all others default. */
+/** Payload accepted by `createTask()`: only `title` is required; all others default. */
 export type TaskCreateInput = {
   title: string;
   description?: string | null;
@@ -91,7 +91,7 @@ export type TaskCreateInput = {
   blockedBy?: string[];
 };
 
-/** Partial update payload accepted by `updateTask()` -- omitted fields stay unchanged. */
+/** Partial update payload accepted by `updateTask()`: omitted fields stay unchanged. */
 export type TaskUpdateInput = {
   title?: string;
   description?: string | null;

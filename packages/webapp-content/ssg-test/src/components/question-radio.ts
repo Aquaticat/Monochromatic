@@ -3,12 +3,12 @@
  *
  * Renders a single multiple-choice question with CSS-only state reveal.
  * Each option is a radio input. When the user picks any option, the
- * explanation for that option appears. Picks are never locked — the
- * user can change their answer at any time. No JavaScript — all state
+ * explanation for that option appears. Picks are never locked; the
+ * user can change their answer at any time. No JavaScript; all state
  * lives in the `:checked` attribute of the native radio inputs.
  *
  * Designed to be reusable across quizzes: variable option count, no
- * hardcoded A–E letter scheme. Labels and explanations accept full
+ * hardcoded A to E letter scheme. Labels and explanations accept full
  * MDX/JSX fragments.
  *
  * @example
@@ -124,7 +124,7 @@ function toHtmlString(value: SafeHtml | string,): string {
  * Derives a deterministic radio-group ID from a question's content.
  *
  * Hashes the scenario, every option label, and each option's correct flag.
- * Explanations are intentionally excluded — they can be revised without
+ * Explanations are intentionally excluded; they can be revised without
  * invalidating the ID, which keeps radio group names stable across edits.
  *
  * @param props - question props

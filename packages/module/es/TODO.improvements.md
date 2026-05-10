@@ -6,30 +6,30 @@
 
 #### High Priority - Performance Impact
 
-- [ ] **[`boolean.equal.ts`](src/boolean.equal.ts:174)** - [`equal()`](src/boolean.equal.ts:174) function
+- [ ] **[`boolean.equal.ts`](src/boolean.equal.ts:174)**: [`equal()`](src/boolean.equal.ts:174) function
   - Performance issue with deep object comparison
   - Consider memoization for expensive comparisons
   - Add early exit optimizations for common cases
   - Profile performance with large nested structures
 
-- [ ] **[`any.toExport.ts`](src/any.toExport.ts:45)** - [`toExport()`](src/any.toExport.ts:45) function
+- [ ] **[`any.toExport.ts`](src/any.toExport.ts:45)**: [`toExport()`](src/any.toExport.ts:45) function
   - String concatenation performance could be improved
   - Consider using array-join pattern for large objects
   - Add streaming output for very large structures
 
-- [ ] **[`string.limitedGetComputedCss.ts`](src/string.limitedGetComputedCss.ts:533)** - CSS parsing functions
+- [ ] **[`string.limitedGetComputedCss.ts`](src/string.limitedGetComputedCss.ts:533)**: CSS parsing functions
   - Multiple passes over tokens could be optimized
   - Consider single-pass parsing where possible
   - Profile tokenization performance with large CSS values
 
 #### Medium Priority - Memory Optimization
 
-- [ ] **[`any.hasCycle.ts`](src/any.hasCycle.ts:56)** - [`hasCycle()`](src/any.hasCycle.ts:56)
+- [ ] **[`any.hasCycle.ts`](src/any.hasCycle.ts:56)**: [`hasCycle()`](src/any.hasCycle.ts:56)
   - WeakSet usage for visited tracking could be optimized
   - Consider memory-efficient cycle detection for very large objects
   - Add memory usage profiling
 
-- [ ] **[`function.memoize.ts`](src/function.memoize.ts:47)** - Memoization functions
+- [ ] **[`function.memoize.ts`](src/function.memoize.ts:47)**: Memoization functions
   - No cache size limits could cause memory leaks
   - Consider LRU cache implementation
   - Add cache eviction strategies
@@ -38,24 +38,24 @@
 
 #### High Priority - Better Error Messages
 
-- [ ] **[`error.throw.ts`](src/error.throw.ts:34)** - All `not*OrThrow()` functions
+- [ ] **[`error.throw.ts`](src/error.throw.ts:34)**: All `not*OrThrow()` functions
   - Error messages could be more descriptive
   - Add context about what was expected vs received
   - Include suggestions for common mistakes
 
-- [ ] **[`array.range.ts`](src/array.range.ts:73)** - [`arrayRange()`](src/array.range.ts:73)
+- [ ] **[`array.range.ts`](src/array.range.ts:73)**: [`arrayRange()`](src/array.range.ts:73)
   - RangeError for negative length needs better message
   - Add suggestion for valid range values
   - Include examples in error message
 
-- [ ] **[`numeric.type.int.ts`](src/numeric.type.int.ts:312)** - Type validation functions
+- [ ] **[`numeric.type.int.ts`](src/numeric.type.int.ts:312)**: Type validation functions
   - Generic "not an integer" messages need improvement
   - Add specific guidance for common non-integer types
   - Include formatting suggestions
 
 #### Medium Priority - Error Recovery
 
-- [ ] **[`fs.emptyPath.ts`](src/fs.emptyPath.ts:20)** - File system functions
+- [ ] **[`fs.emptyPath.ts`](src/fs.emptyPath.ts:20)**: File system functions
   - Add graceful error handling for permission issues
   - Provide fallback strategies for locked files
   - Include recovery suggestions in error messages
@@ -64,19 +64,19 @@
 
 #### High Priority - Type Narrowing
 
-- [ ] **[`array.is.ts`](src/array.is.ts:117)** - [`isArrayNonEmpty()`](src/array.is.ts:117)
+- [ ] **[`array.is.ts`](src/array.is.ts:117)**: [`isArrayNonEmpty()`](src/array.is.ts:117)
   - Type narrowing could be more precise
   - Consider branded types for better type safety
   - Add const assertion support
 
-- [ ] **[`iterable.is.ts`](src/iterable.is.ts:31)** - Type guard functions
+- [ ] **[`iterable.is.ts`](src/iterable.is.ts:31)**: Type guard functions
   - Missing comprehensive type guard implementations
   - Need more specific type predicates
   - Add support for const assertions
 
 #### Medium Priority - Generic Constraints
 
-- [ ] **Function composition utilities** - [`function.pipe.ts`](src/function.pipe.ts:280)
+- [ ] **Function composition utilities**: [`function.pipe.ts`](src/function.pipe.ts:280)
   - Generic constraints could be more precise
   - Consider stricter type checking for pipelines
   - Add support for branded types in pipelines
@@ -86,8 +86,8 @@
 #### High Priority - Consistency
 
 - [ ] **Function naming inconsistencies** across modules:
-  - `isArrayEmpty()` vs `isEmptyArray()` - choose consistent pattern
-  - `someIterable()` vs `iterableSome()` - standardize naming convention
+  - `isArrayEmpty()` vs `isEmptyArray()`: choose consistent pattern
+  - `someIterable()` vs `iterableSome()`: standardize naming convention
   - Review all function names for consistency
 
 - [ ] **Parameter order inconsistencies**:
@@ -107,9 +107,9 @@
 #### High Priority - Module Structure
 
 - [ ] **Large files need splitting**:
-  - [`function.pipe.ts`](src/function.pipe.ts:19) - 1500+ lines, consider splitting by arity
+  - [`function.pipe.ts`](src/function.pipe.ts:19): 1500+ lines, consider splitting by arity
   - [`boolean.equal.ts`](src/boolean.equal.ts:174) - Complex comparison logic could be modularized
-  - [`string.limitedGetComputedCss.ts`](src/string.limitedGetComputedCss.ts:533) - CSS parsing could be separate module
+  - [`string.limitedGetComputedCss.ts`](src/string.limitedGetComputedCss.ts:533): CSS parsing could be separate module
 
 - [ ] **Related functions in separate files**:
   - Array utilities scattered across multiple files
@@ -127,18 +127,18 @@
 
 #### High Priority - Algorithm Efficiency
 
-- [ ] **[`iterables.intersection.ts`](src/iterables.intersection.ts:118)** - Intersection algorithm
+- [ ] **[`iterables.intersection.ts`](src/iterables.intersection.ts:118)**: Intersection algorithm
   - O(n*m) complexity could be optimized with Set-based approach
   - Consider early termination for empty inputs
   - Profile performance with large datasets
 
-- [ ] **[`any.hasCycle.ts`](src/any.hasCycle.ts:56)** - Cycle detection
+- [ ] **[`any.hasCycle.ts`](src/any.hasCycle.ts:56)**: Cycle detection
   - DFS implementation could use iterative approach for very deep objects
   - Consider memory-efficient alternatives for large object graphs
 
 #### Medium Priority - Mathematical Precision
 
-- [ ] **[`numeric.add.ts`](src/numeric.add.ts:34)** - Numeric addition functions
+- [ ] **[`numeric.add.ts`](src/numeric.add.ts:34)**: Numeric addition functions
   - Floating-point precision considerations
   - BigInt overflow handling
   - Consider decimal.js integration for precise arithmetic
@@ -147,19 +147,19 @@
 
 #### High Priority - Input Validation
 
-- [ ] **[`any.toExport.ts`](src/any.toExport.ts:45)** - Code generation security
+- [ ] **[`any.toExport.ts`](src/any.toExport.ts:45)**: Code generation security
   - Add input sanitization for unsafe values
   - Validate against code injection patterns
   - Consider output escaping for eval safety
 
-- [ ] **[`dom.setCssFromParam.ts`](src/dom.setCssFromParam.ts:30)** - CSS injection
+- [ ] **[`dom.setCssFromParam.ts`](src/dom.setCssFromParam.ts:30)**: CSS injection
   - Add CSS value validation and sanitization
   - Prevent CSS injection attacks
   - Validate allowed properties more strictly
 
 #### Medium Priority - Data Validation
 
-- [ ] **File system functions** - Path validation
+- [ ] **File system functions**: Path validation
   - Add path traversal protection
   - Validate file paths against allowlists
   - Sanitize user-provided paths
@@ -168,12 +168,12 @@
 
 #### High Priority - Modern Web Standards
 
-- [ ] **[`dom.prompt.ts`](src/dom.prompt.ts:22)** - Dialog implementation
+- [ ] **[`dom.prompt.ts`](src/dom.prompt.ts:22)**: Dialog implementation
   - Consider using modern `<dialog>` element consistently
   - Add accessibility improvements (ARIA labels, focus management)
   - Enhance keyboard navigation support
 
-- [ ] **[`string.hash.ts`](src/string.hash.ts:15)** - Crypto API usage
+- [ ] **[`string.hash.ts`](src/string.hash.ts:15)**: Crypto API usage
   - Add fallback for environments without crypto.subtle
   - Consider polyfill for older browsers
   - Document browser support requirements
@@ -199,9 +199,9 @@
 
 ### Phase 1: Critical Performance (Week 1)
 
-1. **Boolean equality optimization** - Major performance impact
-2. **Function naming consistency** - Breaking changes need early implementation
-3. **Security fixes** - Input validation and sanitization
+1. **Boolean equality optimization**: Major performance impact
+2. **Function naming consistency**: Breaking changes need early implementation
+3. **Security fixes**: Input validation and sanitization
 
 ### Phase 2: Error Handling (Week 2)
 
@@ -223,6 +223,6 @@
 
 ## Cross-References
 
-- [**Performance Todo**](../../TODO.performance.md#javascript-performance) - Performance optimization strategies
-- [**Security Todo**](../../TODO.security.md#secure-coding-practices) - Security considerations for improvements
-- [**Code Quality Todo**](../../TODO.code-quality.md#typescript-standards-and-patterns) - Code quality standards
+- [**Performance Todo**](../../TODO.performance.md#javascript-performance): Performance optimization strategies
+- [**Security Todo**](../../TODO.security.md#secure-coding-practices): Security considerations for improvements
+- [**Code Quality Todo**](../../TODO.code-quality.md#typescript-standards-and-patterns): Code quality standards

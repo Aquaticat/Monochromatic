@@ -18,7 +18,7 @@ This agent replaces Explore for external research tasks by:
 
 The agent activates for questions about external project decisions, GitHub discussions,
 library capabilities, and other research where factual accuracy matters.
-It does **not** replace Explore for local codebase searches --
+It does **not** replace Explore for local codebase searches:
 use Grep/Glob directly for those.
 
 ## Anti-hallucination rules

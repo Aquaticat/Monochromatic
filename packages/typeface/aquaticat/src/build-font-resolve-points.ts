@@ -31,7 +31,7 @@ export function resolveAbsolutePoints(
     number,
   ][] = [];
   // Mutable cursor tracking the current pen position while replaying path commands
-  // -- let needed because M/L/H/V each update different axes of the cursor
+  // let needed because M/L/H/V each update different axes of the cursor
   let cx = 0;
   let cy = 0;
   commands.forEach(function resolveCommand(cmd,) {

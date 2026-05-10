@@ -140,5 +140,5 @@ Trip wires:
 - Path normalization: `http://example.com/a/b/../c/./d` → `http://example.com/a/c/d`
 
 Test vectors: `wpt/url/resources/urltestdata.json`
-Status: stable spec, but the IPv4 parser sub-spec is genuinely obscure -- models know about
+Status: stable spec, but the IPv4 parser sub-spec is genuinely obscure; models know about
 it but consistently get the mixed-base and condensed forms wrong.

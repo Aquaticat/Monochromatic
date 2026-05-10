@@ -323,7 +323,7 @@ await describe({
             const result = augmentOxlintOutput(input,);
             const noteOccurrences = result.split('note:',).length - 1;
 
-            // Only one note injected -- for no-misused-promises
+            // Only one note injected: for no-misused-promises
             expect(noteOccurrences,).toBe(1,);
             expect(result,).toContain(RULE_GUIDANCE['no-misused-promises'] ?? '',);
           },

@@ -4,11 +4,11 @@ Git wrapper that enforces safety rules before forwarding to the real git binary.
 
 ## Rules
 
-**Require root** -- rejects commands when the working directory is not the root
+**Require root**: rejects commands when the working directory is not the root
 of a git repository (where `.git` exists). Exempt subcommands: `init`, `clone`,
 `version`, `help`, and `config` with `--global`/`--system`/`--list`.
 
-**Atomic push** -- injects `--atomic` into `git push` commands automatically,
+**Atomic push**: injects `--atomic` into `git push` commands automatically,
 ensuring all refs update together or none do. Override with `--no-atomic`.
 
 ## How it works

@@ -39,7 +39,7 @@ vmsync config alpine --memory 8G --cpus 8
 **On Linux (KVM):**
 
 1. Creates a qcow2 overlay backed by `base.qcow2`
-2. QEMU boots from the overlay -- all writes go to the overlay, reads fall through to the base
+2. QEMU boots from the overlay; all writes go to the overlay, reads fall through to the base
 3. After shutdown, the overlay contains only changed blocks
 4. `qemu-img map` identifies which blocks were written (depth 0 in the overlay)
 5. Changed blocks are copied to `base.vhdx` via NBD block-level patching

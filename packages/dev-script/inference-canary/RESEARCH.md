@@ -37,14 +37,14 @@ This package implements the second approach.
 
 - **Emergent Introspective Awareness** (Anthropic, October 2025): concept injection experiments show Claude Opus 4/4.1 can sometimes detect and identify concepts injected directly into their neural activations.
   Succeeds only ~20% of the time, requires activation-level access (injecting known vectors into model internals), and fails silently or hallucinates at wrong injection strengths.
-  Without activation-level ground truth, asking a model "are you degraded?" falls into confabulation territory -- models can act introspective without being introspective.
+  Without activation-level ground truth, asking a model "are you degraded?" falls into confabulation territory; models can act introspective without being introspective.
   Reinforces the design choice to use objective behavioral probes rather than self-reported model state.
 
 ### Real-world degradation incidents
 
 - **August 2025**: Anthropic confirmed 56.5 hours of degraded inference from a faulty infrastructure upgrade (status.anthropic.com).
   The status page was updated only after the fact; users detected it first via behavioral changes.
-- **January 2026** (GitHub #21046): community-reported "shadow downgrade" -- laziness, context loss, constraint violations.
+- **January 2026** (GitHub #21046): community-reported "shadow downgrade": laziness, context loss, constraint violations.
 - **February 2026** (GitHub #27574): planning failures, debugging loops, introducing new bugs.
   Matches the exact behavioral pattern that prompted this package.
 
@@ -62,7 +62,7 @@ A healthy model scores 1.0 on "what is 7 * 8?" every time.
 A healthy model outputs `<<CANARY_OK>>` exactly when asked.
 A healthy model writes a function when asked to write a function, not a description of what a function would look like.
 
-If any of these fail, or if self-consistency drops (different answers on repeated runs), something is wrong -- either with the model weights being served, the quantization level, or the routing infrastructure.
+If any of these fail, or if self-consistency drops (different answers on repeated runs), something is wrong: either with the model weights being served, the quantization level, or the routing infrastructure.
 
 ## Limitations
 

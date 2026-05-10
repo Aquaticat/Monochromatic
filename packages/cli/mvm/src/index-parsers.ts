@@ -21,7 +21,7 @@ import {
   updateCmd,
 } from './index-parsers-cmds.ts';
 
-//region Result types -- discriminated union for subcommand dispatch
+//region Result types: discriminated union for subcommand dispatch
 
 /** Discriminated union of all subcommand parse results */
 export type MvmArgs =

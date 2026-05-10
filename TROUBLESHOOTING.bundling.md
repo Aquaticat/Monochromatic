@@ -24,8 +24,8 @@ but the errors are noisy and confusing.
 
 The client-side tsdown config (`config-tsdown/.client.ts`) uses
 `deps.alwaysBundle: [/^@monochromatic-dev\//]` to inline all workspace packages.
-When a workspace package contains dynamic `import('node:...')` calls --
-even inside functions guarded by try-catch --
+When a workspace package contains dynamic `import('node:...')` calls,
+even inside functions guarded by try-catch,
 the bundler preserves them in the output as dynamic imports.
 
 At runtime, the browser encounters the dynamic `import('node:fs/promises')`
@@ -35,7 +35,7 @@ and the browser logs the error to the console **before** the JavaScript
 promise rejection reaches the catch handler.
 
 The catch handler does catch the resulting JS error,
-so the application works correctly -- but the browser has already printed
+so the application works correctly, but the browser has already printed
 the network-level error to the console.
 
 Key insight: **try-catch around a dynamic `import()` catches the JavaScript error,
@@ -90,7 +90,7 @@ When writing modules that will be bundled for both Node.js and browser targets:
 
 - Guard all `node:` dynamic imports with a synchronous environment check
   (e.g. `globalThis.process.versions?.node`) before the `import()` expression
-- Do not rely on dynamic import failure as the sole browser detection mechanism --
+- Do not rely on dynamic import failure as the sole browser detection mechanism:
   it works logically but produces ugly console errors
 - Consider whether the module needs `node:` imports at all;
   if not, keep them out of the static import graph entirely

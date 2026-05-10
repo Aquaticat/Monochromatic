@@ -14,7 +14,7 @@ import {
 type AutofillRequestOptions = {
   /** Current title text from the input field. */
   title: string;
-  /** Mutable metadata state -- autofill writes directly into this object. */
+  /** Mutable metadata state: autofill writes directly into this object. */
   metadata: MetadataState;
   /** Called after autofill state changes (loading start/end, result applied). */
   onUpdate: () => void;
@@ -39,7 +39,7 @@ export class AutofillManager {
   /** Set of field names that were populated by the last autofill response. */
   autofilled: Set<string> = new Set<string>();
 
-  /** Clears all pending state -- call on reconfigure. */
+  /** Clears all pending state: call on reconfigure. */
   reset(): void {
     this.autofilled.clear();
     this.loading = false;

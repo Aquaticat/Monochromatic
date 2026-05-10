@@ -88,7 +88,7 @@ filters out diagnostics originating from `node_modules/` paths.
 
 **Incremental cache cleanup.**
 The shared tsconfig sets `composite: true`, which implies `incremental: true`.
-This is intentional — `composite` provides valuable constraints
+This is intentional; `composite` provides valuable constraints
 (rootDir defaults to the tsconfig directory, all source files must be matched by `include`,
 and `declaration` defaults to true).
 However, tsgo's `--build` mode has a cache invalidation bug
@@ -132,7 +132,7 @@ environment prerequisites like container image builds.
 **`depends` always re-runs.**
 Mise's `depends` field unconditionally re-executes every listed task on every invocation.
 A `podman build` that takes 30 seconds runs before every test, even when the image already exists.
-Mise does offer `sources`/`outputs` for staleness checking, but these only work with files --
+Mise does offer `sources`/`outputs` for staleness checking, but these only work with files;
 they cannot check whether a container image, a system package, or a running service exists.
 
 **`sources`/`outputs` is file-only.**
@@ -156,7 +156,7 @@ keeping the happy path clean.
 Everything resolves to timestamps. Stale when `strategy(sources) > strategy(outputs)`.
 
 **File globs** resolve to file modification times.
-Empty globs contribute no timestamps — the aggregation strategy returns `-Infinity`
+Empty globs contribute no timestamps; the aggregation strategy returns `-Infinity`
 ("no information"), which means empty sources never trigger and empty outputs always trigger.
 
 **`sh:` commands** must output a parseable timestamp on stdout:
@@ -170,8 +170,8 @@ use the shell gate pattern: `sh:command && echo Infinity || echo -Infinity`.
 
 **Aggregation strategies** reduce multiple timestamps per side to one value:
 
-- `newest` (default): `Math.max` — any new source or any fresh output dominates
-- `oldest`: `Math.min` — catches the oldest/missing item in mixed lists
+- `newest` (default): `Math.max`; any new source or any fresh output dominates
+- `oldest`: `Math.min`; catches the oldest/missing item in mixed lists
 - `mean`: arithmetic mean of all timestamps
 - `median`: middle value, robust to outliers
 - `sh:command`: custom shell command that receives millisecond timestamps

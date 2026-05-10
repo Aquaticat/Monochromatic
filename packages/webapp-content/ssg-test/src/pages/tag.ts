@@ -70,7 +70,7 @@ export function tagPage(
     title,
     lang,
     content,
-    description: `${t.siteDescription()} — ${tag}`,
+    description: `${t.siteDescription()}: ${tag}`,
     canonicalUrl,
   },);
 }

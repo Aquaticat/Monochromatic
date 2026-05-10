@@ -9,12 +9,12 @@ If you are reading this, you have my sympathy.
 virtiofs on Windows requires **four** separate components, installed in the correct order,
 from three different sources, none of which tell you about the others.
 
-1. **viofs kernel driver** -- from the virtio-win ISO, installed via `pnputil`
+1. **viofs kernel driver**: from the virtio-win ISO, installed via `pnputil`
 2. **VirtioFsSvc** (user-mode service) -- from `virtio-win-gt-x64.msi` on the same ISO
 3. **WinFsp** (Windows File System Proxy) -- a **separate download** from `github.com/winfsp/winfsp`,
    not included anywhere on the virtio-win ISO, not mentioned in any Red Hat documentation
    that you will find in the first 30 minutes of searching
-4. **QEMU guest agent** -- from `qemu-ga-x86_64.msi` on the virtio-win ISO,
+4. **QEMU guest agent**: from `qemu-ga-x86_64.msi` on the virtio-win ISO,
    needed so the host can actually talk to the guest to verify any of this worked
 
 None of these installers check for or install their dependencies.
@@ -60,7 +60,7 @@ inside a `<CommandLine>`, the second one may silently fail to start
 or produce no log file whatsoever.
 
 Diagnosis: if your MSI install log (`/log C:\something.log`) does not exist at all,
-`msiexec` never launched. Not "launched and failed" -- never launched.
+`msiexec` never launched. Not "launched and failed." Never launched.
 Check whether another `msiexec` is still holding the mutex from a previous install.
 
 ## The CommandLine length bomb

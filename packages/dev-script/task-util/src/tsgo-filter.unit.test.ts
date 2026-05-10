@@ -356,7 +356,7 @@ await describe({
 
             try {
               await execAsync(`bun ${cliPath} --noEmit -p ${tsconfig}`,);
-              // Should not reach here -- tsgo should fail on the type error
+              // Should not reach here; tsgo should fail on the type error
               expect(true,).toBe(false,);
             }
             catch (error: unknown) {

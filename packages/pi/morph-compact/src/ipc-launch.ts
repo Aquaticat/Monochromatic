@@ -106,7 +106,7 @@ export async function launchWithLargeContext(
     // Fall through to TCP tier
   }
 
-  // Tier 4: TCP localhost — zero filesystem dependency
+  // Tier 4: TCP localhost (zero filesystem dependency)
   const { address, } = await createOneShotTcpServer(compressedText,);
   await launchTerminal({
     dir: cwd,
@@ -180,7 +180,7 @@ async function injectCompactContext(
       );
     }
     catch {
-      // Best-effort cleanup — temp files in /tmp are ephemeral
+      // Best-effort cleanup (temp files in /tmp are ephemeral)
     }
     return;
   }

@@ -13,7 +13,7 @@ import type { Diagnostic, } from './nvim-client.ts';
 import { findAncestorWithFile, } from './oxlint-parse.ts';
 import { spawnOxlint, } from './oxlint-spawn.ts';
 
-//region Types -- lint result shape
+//region Types: lint result shape
 
 /**
  * Result from a lint run, including diagnostics and any caveat notes.
@@ -35,7 +35,7 @@ export type LintResult = {
 
 //endregion Types
 
-//region Runner -- orchestrate oxlint across file groups
+//region Runner: orchestrate oxlint across file groups
 
 /**
  * Runs oxlint on the specified files and returns parsed diagnostics.
@@ -84,7 +84,7 @@ export async function runOxlint(
     };
   }
 
-  //region Group files by tsconfig ancestor -- each group runs in its own cwd
+  //region Group files by tsconfig ancestor: each group runs in its own cwd
   const groupsByPackageRoot = new Map<string, string[]>();
   const filesWithoutTsconfig: string[] = [];
 
@@ -167,7 +167,7 @@ export async function runOxlint(
 
 //endregion Runner
 
-//region Utilities -- map merging
+//region Utilities: map merging
 
 /**
  * Merges diagnostics from a source map into a target map, mutating target in place.

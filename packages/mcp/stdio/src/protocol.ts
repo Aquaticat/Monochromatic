@@ -46,7 +46,7 @@ export type InitializeResult = {
 
 //endregion
 
-//region Tool definitions and handlers -- describes tools exposed to MCP clients
+//region Tool definitions and handlers: describes tools exposed to MCP clients
 
 /**
  * JSON Schema subset describing tool input parameters.

@@ -17,7 +17,7 @@ import { promisify, } from 'node:util';
 
 const execAsync = promisify(exec,);
 
-//region Fixture Setup -- Per-test fixtures
+//region Fixture Setup: per-test fixtures
 
 function setup() {
   const testFileDir = import.meta.dirname;
@@ -173,7 +173,7 @@ await describe({
         try {
           const { appendFile: nodeAppendFile, } = await import('node:fs/promises');
           await nodeAppendFile(testFile, 'probe',);
-          // If we get here, permissions aren't enforced — skip assertion
+          // If we get here, permissions aren't enforced; skip assertion
           teardown(fixtures,);
           return;
         }

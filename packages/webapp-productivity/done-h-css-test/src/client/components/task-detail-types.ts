@@ -50,7 +50,7 @@ export type TaskDetailData = {
   task: Task;
   /** Summaries of tasks that block this one. */
   blockerSummaries: BlockerSummary[];
-  /** Component mode -- `"create"` for new tasks, `"edit"` (default) for existing. */
+  /** Component mode: `"create"` for new tasks, `"edit"` (default) for existing. */
   mode?: TaskDetailMode;
 };
 

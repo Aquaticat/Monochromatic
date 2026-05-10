@@ -28,11 +28,11 @@ auto-cleanup or always-on linter.
   The bare-config category was eliminated on 2026-05-09 (every config now
   uses the `tsdown.<platform>.config.ts` form), so a re-run would surface
   fewer false positives in that band.
-- The unique signal is genuinely out-of-scope for oxlint by design --
+- The unique signal is genuinely out-of-scope for oxlint by design:
   oxc maintainers explicitly declined `import/no-unresolved` as inherently
   noisy and have `import/no-unused-modules` and `import/no-extraneous-dependencies`
   as low-priority TODOs (umbrella issue oxc-project/oxc#1117).
-- Without CI or PR review in this repo, integration is purely local --
+- Without CI or PR review in this repo, integration is purely local:
   a `mise` task that devs run before committing, with the current 744 findings
   baselined as accepted so future runs only surface new issues.
 
@@ -40,19 +40,19 @@ auto-cleanup or always-on linter.
 
 Four invocation modes:
 
-1. **Bare default** -- `bunx fallow` with no config
-2. **`fallow init` default** -- ran `bunx fallow init`, used the auto-generated config
-3. **Hand-tuned `.fallowrc.json`** -- a manual config that adds entry-point patterns
+1. **Bare default**: `bunx fallow` with no config
+2. **`fallow init` default**: ran `bunx fallow init`, used the auto-generated config
+3. **Hand-tuned `.fallowrc.json`**: a manual config that adds entry-point patterns
    for this repo's conventions (`mise.*.ts`, `tsdown.*.config.ts`, editord client
    modules, test-fixture overrides) and disables rules that overlap with oxlint
-4. **file-enforcer-generated config** -- the prototype on branch `fallow-wrap-prototype`,
+4. **file-enforcer-generated config**: the prototype on branch `fallow-wrap-prototype`,
    where `file-enforcer.config.ts` adds a `generateFallowConfig()` step that
    globs `packages/*/*/tsdown.*.config.ts`, extracts each config's `entry` array
    (literal arrays via regex, plus base-config re-exports inferred from the
    imported filename), and merges discovered entries into the static base
 
 Each pass was captured under `/tmp/fallow-out/`. The fallow source was
-cloned at `/tmp/fallow-clone/fallow` and inspected for plugin behavior --
+cloned at `/tmp/fallow-clone/fallow` and inspected for plugin behavior:
 specifically `crates/core/src/plugins/tsdown.rs`, which constrains the
 built-in tsdown plugin to match the bare `tsdown.config.{ts,js,cjs,mjs}`
 filename and not the variant filenames this repo uses.
@@ -86,9 +86,9 @@ Across the four invocation modes:
 The prototype's improvement over the hand-tuned config came from three sources:
 
 - Disabling `unresolved-imports` at the rule level (matches oxc's stance
-  that the rule is inherently noisy) -- dropped 47 false positives
-- Adding `unused-files: 'off'` to the override for `packages/module/es/src/types/**`
-  -- dropped 56 false positives in the deeply nested type-system barrel files
+  that the rule is inherently noisy): dropped 47 false positives
+- Adding `unused-files: 'off'` to the override for `packages/module/es/src/types/**`:
+  dropped 56 false positives in the deeply nested type-system barrel files
 - Dynamic discovery of tsdown config entries -- caught secondary entries like
   `packages/claude-code-plugins/bash-output-filter/src/filter.ts` that the
   built-in tsdown plugin missed, plus `**/src/cli.ts` as a static entry pattern
@@ -215,7 +215,7 @@ are in the package's `mise.toml`.
 The prototype handles the root `mise.toml` by adding `**/src/cli.ts` as a
 catchall entry, but does not parse package-level `mise.toml` files.
 Closing this gap would extend the generator to scan every
-`packages/*/*/mise.toml` for `bun <path>` invocations -- a future iteration.
+`packages/*/*/mise.toml` for `bun <path>` invocations, a future iteration.
 
 ### Bare `tsdown.config.ts` files
 
@@ -281,7 +281,7 @@ Limitations of the regex-based extractor:
 - `bunx fallow watch` -- re-runs analysis on file changes
 - `bunx fallow setup-hooks` -- installs a Claude Code PreToolUse hook
   gating `git commit` / `git push` on `fallow audit`
-- `bunx fallow --save-baseline foo.json` and `--baseline foo.json` --
+- `bunx fallow --save-baseline foo.json` and `--baseline foo.json`:
   fail only on **new** issues; the baseline workflow that lets a noisy
   initial state be accepted while still catching regressions
 - `bunx fallow coverage` -- runtime coverage workflow (paid feature; not tested)
@@ -326,7 +326,7 @@ Recommended shape:
   repo as of 2026-04-28 because the repo root contains empty files named
   `HEAD`, `config`, `hooks`, `objects`, and `refs`
   (gitignored but present on disk).
-  These conflict with git's ref resolution -- `git rev-parse HEAD~1`
+  These conflict with git's ref resolution: `git rev-parse HEAD~1`
   errors with `ambiguous argument 'HEAD': both revision and filename`,
   which fallow surfaces as
   `Error: could not determine changed files for base ref 'main'`.
@@ -342,7 +342,7 @@ Recommended shape:
 Reasoning:
 
 - The unique signal (cross-package clones, dead deps, unlisted deps,
-  unused class members) is real and out-of-scope for oxlint by design --
+  unused class members) is real and out-of-scope for oxlint by design:
   the oxc maintainers have declined `no-unresolved` and have
   `no-unused-modules` and `no-extraneous-dependencies` as low-priority TODOs.
 - The one-time cleanup is concrete: 4 truly dead deps, 18 unlisted

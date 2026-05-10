@@ -208,7 +208,7 @@ only for certain node kinds.
 The `while` loop in `checker.ts` (around line 31181 in the tsc 6.0 source) checks:
 
 ```ts
-// checker.ts — getTypeOfSymbolAtLocation, inner narrowing loop
+// checker.ts: getTypeOfSymbolAtLocation, inner narrowing loop
 while (
   flowContainer !== declarationContainer && (
     flowContainer.kind === SyntaxKind.FunctionExpression
@@ -289,12 +289,12 @@ function setup(): void {
 
 ### What does not work
 
-- Combining multiple null checks into one `if` guard --
+- Combining multiple null checks into one `if` guard:
   the same hoisting concern applies per-variable
 - `asserts` functions -- they narrow the **parameter**
   in the caller's flow, but the narrowed binding is still a `const`
   subject to the same closure rules
-- Adding `as HTMLDivElement` --
+- Adding `as HTMLDivElement`:
   suppresses the error but is flagged by `no-unsafe-type-assertion`
 
 ## JSR packages ship `.ts` source files that `skipLibCheck` cannot skip
@@ -312,7 +312,7 @@ node_modules/.bun/@jsr+zod__zod@4.3.6/…/src/v4/locales/he.ts(44,17): error TS1
 ```
 
 These errors appear despite `skipLibCheck: true` in tsconfig.
-The errors are all `| undefined` narrowing failures --
+The errors are all `| undefined` narrowing failures:
 the library's code is correct but was not written for `noUncheckedIndexedAccess: true`.
 
 ### Root cause
@@ -356,7 +356,7 @@ case tspath.ExtensionTs, tspath.ExtensionDts, tspath.ExtensionJs, "":
 ```
 
 The `.ts` sibling is found at step 1 and the `.js` export is never used.
-This priority order is hardcoded -- no tsconfig option changes it.
+This priority order is hardcoded: no tsconfig option changes it.
 The `extensionsTypeScript` bit is always set for regular imports
 (line 117: `state.extensions = extensionsTypeScript | extensionsJavaScript | extensionsDeclaration`).
 
@@ -381,12 +381,12 @@ Zod's code assumes the index is valid after a `.length` check,
 which TypeScript cannot prove:
 
 ```ts
-// schemas.ts:2087-2088 — TS2532 here
+// schemas.ts:2087-2088: TS2532 here
 const nonaborted = results.filter(r => !util.aborted(r,));
 if (nonaborted.length === 1)
   final.value = nonaborted[0].value; // Object is possibly 'undefined'
 
-// util.ts:930 — TS2345 here
+// util.ts:930: TS2345 here
 binaryString += String.fromCharCode(bytes[i],); // Argument of type 'number | undefined'
 ```
 
@@ -394,17 +394,17 @@ binaryString += String.fromCharCode(bytes[i],); // Argument of type 'number | un
 
 The TypeScript team has closed multiple issues about this as **"Working as Intended"**:
 
-- [microsoft/TypeScript#41883](https://github.com/microsoft/TypeScript/issues/41883) --
+- [microsoft/TypeScript#41883](https://github.com/microsoft/TypeScript/issues/41883):
   `skipLibCheck` ignored when `types` points to `.ts`.
   Ryan Cavanaugh: "skipLibCheck causes the 'check each top-level statement or declaration' step
   to not occur for `.d.ts` files. It has no other effect. It does nothing in `.ts` files."
-- [microsoft/TypeScript#44205](https://github.com/microsoft/TypeScript/issues/44205) --
+- [microsoft/TypeScript#44205](https://github.com/microsoft/TypeScript/issues/44205):
   request to not apply strict checks to `node_modules`. **Declined.**
   "The only correct path forward is to not have a .ts file in your node_modules."
-- [microsoft/TypeScript#48779](https://github.com/microsoft/TypeScript/issues/48779) --
+- [microsoft/TypeScript#48779](https://github.com/microsoft/TypeScript/issues/48779):
   `noUncheckedIndexedAccess` errors in `node_modules`.
   Closed as duplicate of #44205.
-- [microsoft/TypeScript#40426](https://github.com/microsoft/TypeScript/issues/40426) --
+- [microsoft/TypeScript#40426](https://github.com/microsoft/TypeScript/issues/40426):
   "Disable type checking for node_modules entirely."
   Still open, labeled "Awaiting More Feedback", no action.
 
@@ -457,7 +457,7 @@ if extension := tspath.TryGetExtensionFromPath(subst); extension != "" {
 ```
 
 So `"paths": { "zod": ["./typings/zod.d.ts"] }` would resolve directly to the `.d.ts`
-and `skipLibCheck` would cover it. But you need a source for the `.d.ts` types --
+and `skipLibCheck` would cover it. But you need a source for the `.d.ts` types:
 either generating them (same fragility as the patch approach)
 or installing npm zod in parallel (version drift).
 
@@ -502,7 +502,7 @@ func (f *diskFile) Kind() core.ScriptKind {
 }
 ```
 
-`internal/core/core.go:512-529` — the switch only handles TS/JS/JSON extensions:
+`internal/core/core.go:512-529` (the switch only handles TS/JS/JSON extensions):
 
 ```go
 func GetScriptKindFromFileName(fileName string) ScriptKind {
@@ -628,7 +628,7 @@ for _, file := range entries.Files {
 
 Confirmed: `tsgo --showConfig` resolves the `include` patterns correctly,
 and the SVG does not match any include pattern.
-The SVG enters the project through a path that bypasses this extension filter --
+The SVG enters the project through a path that bypasses this extension filter:
 either through the inferred project's `AllowNonTsExtensions` override,
 or through project reference resolution that feeds files directly to `compilerHost.GetSourceFile`
 without checking `isSupportedExtension` first.
@@ -638,12 +638,12 @@ without checking `isSupportedExtension` first.
 The crash is triggered by editord forwarding non-source files to tsgo.
 Two distinct paths lead to the panic:
 
-1. **Spawn trigger** -- when a non-source file is the first file opened
+1. **Spawn trigger**: when a non-source file is the first file opened
    for a project root, `pool.resolve({ type: 'tsgo' })` spawns tsgo
    with that file as the trigger. tsgo adds the file to the project
    during initialization and panics on the unsupported extension.
 
-2. **Reuse + feature request** -- when tsgo is already running
+2. **Reuse + feature request**: when tsgo is already running
    (spawned earlier from a `.ts` file), and a non-source file is opened,
    feature request handlers (`withClient` for hover, inlayHints, etc.)
    call `pool.resolve()` which returns the existing client.
@@ -651,46 +651,46 @@ Two distinct paths lead to the panic:
    tsgo creates an inferred project for the unknown file,
    which triggers parsing and the ScriptKind panic.
 
-tsgo does NOT crash from its own directory scanning --
+tsgo does NOT crash from its own directory scanning:
 `include`/`exclude` patterns work correctly during normal project loading
 from a `.ts` trigger.
 
 ### Mitigations in place
 
-**Include filter in `resolve()` gating ALL tsgo access** (`lsp-pool.ts`) --
+**Include filter in `resolve()` gating ALL tsgo access** (`lsp-pool.ts`):
 the `#resolveTsgoWithIncludeCheck` method runs the tsconfig include check
-before returning ANY tsgo client -- both reuse of existing clients and new spawns.
+before returning ANY tsgo client: both reuse of existing clients and new spawns.
 Files outside the project's declared include scope get `null`,
 so tsgo never receives a non-source file URI through any code path:
 `resolveAll` (didOpen lifecycle), `withClient` (feature requests), or direct calls.
 The resolved include patterns are cached with a 2-minute TTL
 via `resolveTsconfigIncludes` (`tsconfig-includes.ts`).
 
-**Crash recovery with ScriptKind-aware retry** (`lsp-pool.ts`, `lsp-client.ts`) --
+**Crash recovery with ScriptKind-aware retry** (`lsp-pool.ts`, `lsp-client.ts`):
 on unexpected exit, editord parses stderr for the ScriptKind panic pattern.
 For this specific crash, retry uses a flat 1 s interval (no backoff escalation)
 since the crash resolves as soon as the user navigates away from the
 non-source file. For other crashes, exponential backoff applies
 (2 s base, doubling to 60 s cap).
 
-**Base tsconfig `exclude` for non-source extensions** (`tsconfig.options.json`) --
+**Base tsconfig `exclude` for non-source extensions** (`tsconfig.options.json`):
 added as belt-and-suspenders for the CLI path.
 Verified to work for `tsgo --build` but does not prevent the LSP crash.
 
 ### What does not work
 
-- **tsconfig `include`/`exclude` patterns in LSP mode** --
+- **tsconfig `include`/`exclude` patterns in LSP mode**:
   these work for CLI `tsgo --build` and for normal project loading
   when tsgo is spawned by a `.ts` trigger,
   but do not prevent the crash when tsgo is spawned by a non-source trigger.
   The LSP's `DidOpenFile` → `ensureConfiguredProjectAndAncestorsForFile`
   likely adds the trigger file as a root file name,
   bypassing `matchFiles` extension filtering.
-- **Shadow root / symlink directory** --
+- **Shadow root / symlink directory**:
   pnpm workspace `node_modules` resolution breaks because `${configDir}`
   resolves to the shadow path and the nested `node_modules` structure
   does not contain hoisted dependencies.
-- **Restarting without any delay** --
+- **Restarting without any delay**:
   creates a crash loop; the 1 s flat retry gives time for the user
   to navigate away from the problematic file.
 
@@ -698,10 +698,10 @@ Verified to work for `tsgo --build` but does not prevent the LSP crash.
 
 Two earlier approaches failed because they only gated part of the problem:
 
-1. **Filtering only in `resolveAll`** --
+1. **Filtering only in `resolveAll`**:
    feature request handlers call `pool.resolve()` directly via `withClient`,
    bypassing the `resolveAll` include filter entirely.
-2. **Filtering only before spawning in `resolve()`** --
+2. **Filtering only before spawning in `resolve()`**:
    returning an existing tsgo client for a non-source file is just as
    dangerous as spawning a new one: the feature request sends the file URI
    to tsgo, which creates an inferred project and panics.
@@ -716,11 +716,11 @@ regardless of whether a tsgo client exists for the project root.
 - [microsoft/typescript-go PR #437](https://github.com/microsoft/typescript-go/pull/437) -- original extension guard (later bypassed)
 - [microsoft/typescript-go PR #2004](https://github.com/microsoft/typescript-go/pull/2004) -- removed "unsupported extensions" concept
 - [microsoft/typescript-go PR #1556](https://github.com/microsoft/typescript-go/pull/1556) -- improved panic message to include filename
-- [microsoft/typescript-go#2669](https://github.com/microsoft/typescript-go/issues/2669) --
+- [microsoft/typescript-go#2669](https://github.com/microsoft/typescript-go/issues/2669):
   same crash in the completions LSP path, fixed by [PR #2679](https://github.com/microsoft/typescript-go/pull/2679)
-- [denoland/deno#31423](https://github.com/denoland/deno/issues/31423) --
+- [denoland/deno#31423](https://github.com/denoland/deno/issues/31423):
   CSS imports causing the same `ScriptKind` panic
-- [neovim/nvim-lspconfig#4018](https://github.com/neovim/nvim-lspconfig/issues/4018) --
+- [neovim/nvim-lspconfig#4018](https://github.com/neovim/nvim-lspconfig/issues/4018):
   filetype mismatch triggering the same crash
 - Source commit: `c0703e66` of `microsoft/typescript-go`
 - `internal/core/core.go:512-529` -- `GetScriptKindFromFileName`

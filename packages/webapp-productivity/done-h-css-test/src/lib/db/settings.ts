@@ -33,7 +33,7 @@ export async function getSetting(key: string,): Promise<string | null> {
 }
 
 /**
- * Upserts a setting — inserts the key if absent, replaces the value if present.
+ * Upserts a setting: inserts the key if absent, replaces the value if present.
  *
  * @param key - Setting identifier
  *

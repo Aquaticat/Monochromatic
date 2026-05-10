@@ -128,7 +128,7 @@ export async function streamCompletion(
       if (delta.content !== undefined && delta.content !== null)
         chunks.push(delta.content,);
 
-      // OpenRouter surfaces reasoning via `reasoning_details` on the delta -- an array of
+      // OpenRouter surfaces reasoning via `reasoning_details` on the delta: an array of
       // objects with `type` ("reasoning.text" | "reasoning.summary" | "reasoning.encrypted")
       // and a type-specific text field (`text`, `summary`, or `data`).
       // The field is not typed in OpenAI SDK v6.22, so access it dynamically.

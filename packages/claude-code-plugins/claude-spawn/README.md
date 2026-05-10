@@ -27,9 +27,9 @@ Or from within a Claude Code session:
 
 Choose a scope:
 
-- `--scope user` — personal, all projects (`~/.claude/settings.json`)
-- `--scope project` — team-shared via version control (`.claude/settings.json`)
-- `--scope local` — gitignored, this machine only (`.claude/settings.local.json`)
+- `--scope user`: personal, all projects (`~/.claude/settings.json`)
+- `--scope project`: team-shared via version control (`.claude/settings.json`)
+- `--scope local`: gitignored, this machine only (`.claude/settings.local.json`)
 
 ### From a local directory
 
@@ -158,7 +158,7 @@ self-reports its state through the shared hook infrastructure:
   `decision: "block"` + `reason` text (parent sessions)
 - **SessionEnd**: no-op pass-through (kept for future use)
 - **PreToolUse/PostToolUse/PostToolUseFailure**: **consumes** completed children
-  and injects results via `additionalContext` — confirmed working in Claude Code v2.1.76
+  and injects results via `additionalContext` (confirmed working in Claude Code v2.1.76)
 
 Results appear in the parent at the earliest possible moment: the first tool-use
 hook to fire after child completion delivers the result.
@@ -176,10 +176,10 @@ one parent using Claude Code's `session_id` from hook event data.
 
 All coordination files live under `~/.claude/spawn-results/`:
 
-- `.by-pid/{claude_pid}` — maps Claude process PID to `{sessionId, transcriptPath}`;
+- `.by-pid/{claude_pid}`: maps Claude process PID to `{sessionId, transcriptPath}`;
   written by SessionStart hook, read by CLI via process tree walk
-- `spawns/{spawnId}.json` — spawn state for each child session
-- `spawns/{spawnId}.reported` — atomically renamed after result injection to
+- `spawns/{spawnId}.json`: spawn state for each child session
+- `spawns/{spawnId}.reported`: atomically renamed after result injection to
   prevent duplicate delivery
 
 ## Limitations

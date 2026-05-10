@@ -115,7 +115,7 @@ export function createOneShotSocketServer(
       );
       socket.end();
 
-      // Close server after writing — one-shot
+      // Close server after writing (one-shot)
       queueMicrotask(close,);
     },
   );

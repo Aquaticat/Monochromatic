@@ -17,32 +17,32 @@ This library aims to be the definitive TypeScript functional programming toolkit
 
 ### ✅ Well-Implemented Categories
 
-- **Boolean utilities** - Equality, logical operations, type predicates
-- **Error utilities** - Comprehensive error handling and assertion functions
-- **Function utilities** - Composition, memoization, currying, and functional patterns
-- **Numeric utilities** - Addition, type guards, range validation, BigInt support
-- **String utilities** - Validation, transformation, hashing, and formatting
-- **Basic array utilities** - Type guards, range generation, basic operations
+- **Boolean utilities**: Equality, logical operations, type predicates
+- **Error utilities**: Comprehensive error handling and assertion functions
+- **Function utilities**: Composition, memoization, currying, and functional patterns
+- **Numeric utilities**: Addition, type guards, range validation, BigInt support
+- **String utilities**: Validation, transformation, hashing, and formatting
+- **Basic array utilities**: Type guards, range generation, basic operations
 
 ### 🟡 Partially Implemented Categories
 
-- **Iterable utilities** - Good sync support, missing many async variants
-- **Array utilities** - Basic operations exist, missing advanced algorithms
-- **Promise utilities** - Basic support, missing advanced async patterns
-- **Type utilities** - Some type-level programming, needs expansion
+- **Iterable utilities**: Good sync support, missing many async variants
+- **Array utilities**: Basic operations exist, missing advanced algorithms
+- **Promise utilities**: Basic support, missing advanced async patterns
+- **Type utilities**: Some type-level programming, needs expansion
 
 ### 🔴 Missing Categories (Critical Gaps)
 
-- **Object utilities** - Pick, omit, merge, transform, deep operations
-- **Date/time utilities** - Parsing, formatting, arithmetic, timezone handling
-- **Math utilities** - Statistics, interpolation, geometric operations
-- **Validation utilities** - Schema validation, input sanitization
-- **Collection utilities** - Set operations, Map transformations
-- **Stream utilities** - Async stream processing and transformation
-- **Parser utilities** - Text parsing, tokenization, grammar handling
-- **Crypto utilities** - Hashing, encoding, secure random generation
-- **Network utilities** - URL manipulation, query string handling
-- **Geometry utilities** - Point, vector, shape operations
+- **Object utilities**: Pick, omit, merge, transform, deep operations
+- **Date/time utilities**: Parsing, formatting, arithmetic, timezone handling
+- **Math utilities**: Statistics, interpolation, geometric operations
+- **Validation utilities**: Schema validation, input sanitization
+- **Collection utilities**: Set operations, Map transformations
+- **Stream utilities**: Async stream processing and transformation
+- **Parser utilities**: Text parsing, tokenization, grammar handling
+- **Crypto utilities**: Hashing, encoding, secure random generation
+- **Network utilities**: URL manipulation, query string handling
+- **Geometry utilities**: Point, vector, shape operations
 - **Color utilities** - Color space conversion, manipulation
 - **Tree/graph utilities** - Tree traversal, graph algorithms
 - **Lens/optics utilities** - Functional data access and manipulation

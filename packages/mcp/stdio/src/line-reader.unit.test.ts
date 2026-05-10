@@ -6,7 +6,7 @@ import {
 
 import { readLines, } from './line-reader.ts';
 
-//region helpers -- create ReadableStream from string content
+//region helpers: create ReadableStream from string content
 
 /**
  * Creates a ReadableStream from a string, encoding it as a single UTF-8 chunk.
@@ -59,7 +59,7 @@ async function collectLines(
 
 //endregion helpers
 
-//region readLines -- async generator yielding newline-delimited lines
+//region readLines: async generator yielding newline-delimited lines
 
 await describe({
   name: readLines.name,

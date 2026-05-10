@@ -112,13 +112,13 @@ The plan calls for `file-tree`, `blob`, and `diff` fragment renderers
 alongside the four that shipped. None exist yet; only their fragment-key
 encoders (`fileTreeKey`, `blobKey`, `diffKey` in
 `worker/fragment-keys.ts:174,195,216`) are in place. Implementation is
-mechanical now that `iso-server.ts` exists -- the renderers read git
+mechanical now that `iso-server.ts` exists: the renderers read git
 objects via the iso-server primitives and produce JSX the same way the
 issue/PR fragments do.
 
 ### Magic-link auth
 
-The plan lists "Better Auth: email/password, sessions, magic links" --
+The plan lists "Better Auth: email/password, sessions, magic links":
 email/password and sessions ship; the magic-link plugin is not wired.
 Adding it is `import { magicLink } from 'better-auth/plugins'` plus a
 `sendMagicLink` callback (transport TBD: SMTP / SES / log-only for dev).

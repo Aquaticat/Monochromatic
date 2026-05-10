@@ -51,7 +51,7 @@ export function stripAnsi(text: string,): string {
 
 //endregion ANSI handling
 
-//region Rule guidance -- enhanced messages for specific lint rules
+//region Rule guidance: enhanced messages for specific lint rules
 
 /**
  * Maps oxlint rule names to enhanced guidance text.

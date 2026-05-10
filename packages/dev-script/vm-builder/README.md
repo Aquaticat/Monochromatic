@@ -23,11 +23,11 @@ mise run //packages/dev-script/vm-builder:run
 
 The script runs four steps in sequence:
 
-1. **Build** -- `podman build` produces `localhost/monochromatic-dev:latest`
+1. **Build**: `podman build` produces `localhost/monochromatic-dev:latest`
    from `Containerfile` (rootless, no sudo)
-2. **Convert** -- `bootc-image-builder` converts the image to
+2. **Convert**: `bootc-image-builder` converts the image to
    `output/qcow2/disk.qcow2` (rootful `sudo podman`, privileged)
-3. **Fix ownership** -- restores `output/` from root:root to current user
+3. **Fix ownership**: restores `output/` from root:root to current user
 4. **Import** -- `virt-install --import` registers the qcow2 as a libvirt domain
 
 After the script finishes, start the VM:

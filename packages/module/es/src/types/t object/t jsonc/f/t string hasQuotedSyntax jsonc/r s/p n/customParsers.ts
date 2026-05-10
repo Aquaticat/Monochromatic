@@ -1,5 +1,5 @@
 /**
- * Custom JSONC parsers — barrel re-exports from split modules.
+ * Custom JSONC parsers: barrel re-exports from split modules.
  *
  * The value dispatcher, array core, and record core form a mutual recursion cycle.
  * A dispatch module breaks the cycle: array/record cores call through the dispatch

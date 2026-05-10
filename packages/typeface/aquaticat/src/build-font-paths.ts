@@ -44,7 +44,7 @@ export function computeLocalXBounds(
   maxX: number;
 } {
   // Mutable accumulators narrowed across all path points
-  // -- let needed because we reduce across multiple paths and their points
+  // let needed because we reduce across multiple paths and their points
   let minX = Infinity;
   let maxX = -Infinity;
 

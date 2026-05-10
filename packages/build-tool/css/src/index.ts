@@ -28,7 +28,7 @@ export type BuildOptions = {
 
 //endregion Types
 
-//region Re-exports -- public API surface for consumers importing from build.ts
+//region Re-exports: public API surface for consumers importing from build.ts
 
 export {
   collectMixins,
@@ -96,7 +96,7 @@ export function applyMixins(
  * collect mixin definitions → expand nested mixin bodies →
  * inline \@apply rules → write output.
  *
- * Uses only PostCSS (pure JS) — no native binary dependencies.
+ * Uses only PostCSS (pure JS): no native binary dependencies.
  *
  * @param options - Build configuration
  *
@@ -146,7 +146,7 @@ export async function build(options: BuildOptions,): Promise<string> {
   /** Final CSS with all imports inlined and mixins expanded */
   const result = root.toString();
 
-  // Write output — uses dynamic import so browser callers don't pull in node:fs
+  // Write output: uses dynamic import so browser callers don't pull in node:fs
   const {
     mkdir,
     writeFile,

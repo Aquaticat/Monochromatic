@@ -18,7 +18,7 @@ JSR's npm compatibility bridge (`npm.jsr.io`) has chronic quality issues:
   (jsr-io/jsr#1323). See `TROUBLESHOOTING.jsr.md`.
 - **Transitive contamination**: npm packages published from JSR (e.g. `happy-opfs`) embed
   `@jsr/*` transitive dependencies in their `package.json`. These only resolve if the
-  package manager has JSR scope routing configured -- which most don't by default.
+  package manager has JSR scope routing configured (which most don't by default).
   This makes seemingly normal npm packages silently broken for non-JSR-aware PMs.
 
 JSR packages that have npm equivalents are referenced by their npm versions:
@@ -162,7 +162,7 @@ Rejected for scope creep:
 
 These are behind subpath exports and tree-shake away,
 but they signal a trajectory toward full-stack framework territory.
-Maintainer attention splits across HTTP routing, JSX reconciliation, and SSG --
+Maintainer attention splits across HTTP routing, JSX reconciliation, and SSG:
 concerns that belong in separate packages.
 
 Hono's TypeScript inference also slows tsserver on large apps (issues #3945, #3869)
@@ -184,7 +184,7 @@ and breaks with 3+ chained middlewares (#3587).
 ### h3 v2 stability
 
 h3 v2 is in RC (v2.0.1-rc.16 as of 2026-03-09). v1 still receives patches.
-The RC label reflects API finalization, not instability --
+The RC label reflects API finalization, not instability;
 the core is functionally complete and the underlying srvx + rou3 are production-deployed at scale.
 Nitro v3 will require h3 v2, which sets a hard timeline for stabilization.
 

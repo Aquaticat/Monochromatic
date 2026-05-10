@@ -5,27 +5,27 @@ Every 5 minutes it captures the screen and webcam,
 feeds both images to a local vision LLM ([LFM2.5-VL-1.6B] via llama.cpp),
 and sends a desktop notification after 5 consecutive unproductive cycles.
 
-All computation runs locally — no data leaves the machine.
+All computation runs locally; no data leaves the machine.
 
 ## How it works
 
-1. **Capture** — takes a screenshot (Spectacle) and a webcam frame (ffmpeg/v4l2), downscales both via ffmpeg
-2. **Buffer** — stores captures in a 10-minute rolling in-memory buffer so the LLM can compare across time
-3. **Analyze** — starts a local `llama-server`, sends the buffered captures to LFM2.5-VL-1.6B, receives a PRODUCTIVE / UNPRODUCTIVE verdict
-4. **Notify** — tracks the last 5 verdicts in a sliding window; when all 5 are UNPRODUCTIVE, fires a `notify-send` critical notification with the LLM's summary, then resets the window
-5. **Repeat** — the llama-server is stopped between cycles to free VRAM, then the loop sleeps for 5 minutes
+1. **Capture**: takes a screenshot (Spectacle) and a webcam frame (ffmpeg/v4l2), downscales both via ffmpeg
+2. **Buffer**: stores captures in a 10-minute rolling in-memory buffer so the LLM can compare across time
+3. **Analyze**: starts a local `llama-server`, sends the buffered captures to LFM2.5-VL-1.6B, receives a PRODUCTIVE / UNPRODUCTIVE verdict
+4. **Notify**: tracks the last 5 verdicts in a sliding window; when all 5 are UNPRODUCTIVE, fires a `notify-send` critical notification with the LLM's summary, then resets the window
+5. **Repeat**: the llama-server is stopped between cycles to free VRAM, then the loop sleeps for 5 minutes
 
 ## Requirements
 
-- [Bun] — runtime and bundler
-- **ffmpeg** — image capture and downscaling
-- **Spectacle** (KDE) — screenshot capture (`spectacle -f -b -n`)
-- **v4l2** webcam at `/dev/video0` — webcam capture
-- [llama.cpp] — local LLM inference (`llama-server`)
-- [LFM2.5-VL-1.6B GGUF][LFM2.5-VL-1.6B] + mmproj — vision model files
-- [distrobox] — container to run llama-server (used here for AMD GPU overrides)
-- **notify-send** — desktop notifications (libnotify)
-- **logger** — syslog logging (systemd)
+- [Bun]: runtime and bundler
+- **ffmpeg**: image capture and downscaling
+- **Spectacle** (KDE): screenshot capture (`spectacle -f -b -n`)
+- **v4l2** webcam at `/dev/video0`: webcam capture
+- [llama.cpp]: local LLM inference (`llama-server`)
+- [LFM2.5-VL-1.6B GGUF][LFM2.5-VL-1.6B] + mmproj: vision model files
+- [distrobox]: container to run llama-server (used here for AMD GPU overrides)
+- **notify-send**: desktop notifications (libnotify)
+- **logger**: syslog logging (systemd)
 
 ## Setup
 
@@ -68,7 +68,7 @@ mise run build
 
 ### Flags
 
-- `--kill-existing` — send SIGTERM (then SIGKILL) to any running instance and take over the lock
+- `--kill-existing`: send SIGTERM (then SIGKILL) to any running instance and take over the lock
 
 ### Autostart
 
@@ -85,12 +85,12 @@ Edit the `Exec` path inside the file to point to your built binary.
 All configuration lives as constants in source files.
 The main knobs:
 
-- `INTERVAL_MS` in `src/index.ts` — time between capture cycles (default: 5 min)
-- `RETENTION_MS` in `src/analyze/memory.ts` — how long captures stay in the buffer (default: 10 min)
-- `SCREENSHOT_LONG_EDGE` in `src/infra/capture.ts` — max long-edge resolution for screenshots (default: 1440 px)
-- `WEBCAM_LONG_EDGE` in `src/infra/capture.ts` — max long-edge resolution for webcam (default: 720 px)
-- `PORT` in `src/analyze/llama.ts` — port for the local llama-server (default: 8787)
-- `temperature` / `top_p` / `top_k` in `src/analyze.ts` — LLM sampling parameters (default: 0.7 / 0.8 / 20)
+- `INTERVAL_MS` in `src/index.ts`: time between capture cycles (default: 5 min)
+- `RETENTION_MS` in `src/analyze/memory.ts`: how long captures stay in the buffer (default: 10 min)
+- `SCREENSHOT_LONG_EDGE` in `src/infra/capture.ts`: max long-edge resolution for screenshots (default: 1440 px)
+- `WEBCAM_LONG_EDGE` in `src/infra/capture.ts`: max long-edge resolution for webcam (default: 720 px)
+- `PORT` in `src/analyze/llama.ts`: port for the local llama-server (default: 8787)
+- `temperature` / `top_p` / `top_k` in `src/analyze.ts`: LLM sampling parameters (default: 0.7 / 0.8 / 20)
 
 ## Logging
 

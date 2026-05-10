@@ -69,7 +69,7 @@ function resolvePort(): number {
 /** h3 application instance routing HTTP requests to handlers. */
 const app = new H3();
 
-//region Page routes -- return full HTML documents (via renderPage / inline HTML)
+//region Page routes: return full HTML documents (via renderPage / inline HTML)
 
 app.get(
   '/',
@@ -112,13 +112,13 @@ app.get(
 
 //endregion Page routes
 
-//region API routes -- return JSON
+//region API routes: return JSON
 
 registerApiRoutes(app,);
 
 //endregion API routes
 
-//region Static asset serving -- bundled JS from dist/client/
+//region Static asset serving: bundled JS from dist/client/
 
 app.get(
   '/dist/client/**',

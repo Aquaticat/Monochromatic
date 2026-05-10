@@ -50,10 +50,10 @@ export type DisallowedAtRules = 'charset' | 'font-palette-values';
  * @example
  * ```ts
  * const decls: StrictCssDeclarations = {
- *   'animation-name': 'slide-in',      // plain string — OK, user-defined identifier
- *   'counter-reset': 'line',           // plain string — OK, user-defined counter name
- *   content: 'counter(line)',          // plain string — OK, counter function reference
- *   gap: '1rem',                       // type error — must use cssRem(1)
+ *   'animation-name': 'slide-in',      // plain string, OK, user-defined identifier
+ *   'counter-reset': 'line',           // plain string, OK, user-defined counter name
+ *   content: 'counter(line)',          // plain string, OK, counter function reference
+ *   gap: '1rem',                       // type error: must use cssRem(1)
  * };
  * ```
  */
@@ -85,9 +85,9 @@ type IdentifierProperties =
  *   display: 'flex',                     // keyword literal
  *   gap: cssRem(1),                      // branded constructor
  *   'background-color': cssVar('bg'),    // branded var reference
- *   'animation-name': 'slide-in',        // plain string — identifier property
- *   width: cssRem(10),                   // type error — 'width' is disallowed
- *   color: 'red',                        // type error — named colors excluded
+ *   'animation-name': 'slide-in',        // plain string: identifier property
+ *   width: cssRem(10),                   // type error: 'width' is disallowed
+ *   color: 'red',                        // type error: named colors excluded
  * };
  * ```
  */

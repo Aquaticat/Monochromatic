@@ -135,6 +135,6 @@ hx --health   # Shows language server status
 
 ### Notes
 
-- Helix doesn't require a plugin system - language servers provide IDE features
+- Helix doesn't require a plugin system: language servers provide IDE features
 - Configuration lives in `~/.config/helix/`
 - The health check warnings about missing runtime directories are normal on fresh installs

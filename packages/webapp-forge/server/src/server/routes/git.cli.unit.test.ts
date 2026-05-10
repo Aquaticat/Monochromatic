@@ -469,7 +469,7 @@ await describe({
         },);
 
         // `ls-remote` exercises the upload-pack info/refs route just
-        // like a clone would, but without writing the pack -- it's the
+        // like a clone would, but without writing the pack; it's the
         // tightest check that all 100 refs surfaced.
         const lsRemote = await runGit({
           cwd: repo,

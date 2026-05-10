@@ -8,7 +8,7 @@
  * reading.
  *
  * Why custom: the API is three calls (`new`, `add`, `build`) and writes
- * only stored files. The write-only design has minimal attack surface --
+ * only stored files. The write-only design has minimal attack surface:
  * there is no parser, so no zip-slip, no decompression bombs, no
  * malformed-header crashes from untrusted input. Zero runtime
  * dependencies; runtime-neutral (browser, Node, Bun, Deno, Workers).

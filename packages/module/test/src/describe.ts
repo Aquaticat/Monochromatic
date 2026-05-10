@@ -67,7 +67,7 @@ export type DescribeOptions = {
   readonly l?: Logger;
   /**
    * Suite name shown in output and error cause chain.
-   * Set to empty string to make this level invisible in output --
+   * Set to empty string to make this level invisible in output;
    * the suite still groups and times its children, but adds
    * no name segment to the path. Success logs are downgraded
    * from `info` to `debug` for empty-name suites.

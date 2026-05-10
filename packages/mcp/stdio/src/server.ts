@@ -26,7 +26,7 @@ import type {
   ToolEntry,
 } from './server-types.ts';
 
-//region createMcpServer -- builds an immutable server from config and tool entries
+//region createMcpServer: builds an immutable server from config and tool entries
 
 /**
  * Creates an immutable MCP server that dispatches JSON-RPC messages.
@@ -79,7 +79,7 @@ export function createMcpServer(
     },),
   );
 
-  //region Protocol payloads -- initialization and tool listing
+  //region Protocol payloads: initialization and tool listing
 
   /**
    * Builds the `InitializeResult` payload for the initialization handshake.
@@ -112,7 +112,7 @@ export function createMcpServer(
 
   //endregion
 
-  //region Request dispatch -- routes JSON-RPC methods to handlers
+  //region Request dispatch: routes JSON-RPC methods to handlers
 
   /**
    * Routes a JSON-RPC request to the matching method handler.
@@ -165,7 +165,7 @@ export function createMcpServer(
 
   //endregion
 
-  //region Public handle -- single dispatch function exposed to the transport
+  //region Public handle: single dispatch function exposed to the transport
 
   /**
    * Dispatches a parsed JSON-RPC message to the appropriate handler.

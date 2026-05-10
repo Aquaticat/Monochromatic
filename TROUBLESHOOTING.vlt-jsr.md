@@ -71,7 +71,7 @@ if (response.statusCode !== 200) {
 }
 ```
 
-vlt already knows JSR registries are different -- it skips tarball URL guessing
+vlt already knows JSR registries are different: it skips tarball URL guessing
 for JSR at `spec/src/browser.ts:648-651`. But the equivalent carve-out is
 missing from the manifest resolution path.
 

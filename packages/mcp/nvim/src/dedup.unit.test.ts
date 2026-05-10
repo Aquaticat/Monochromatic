@@ -11,7 +11,7 @@ import {
 
 import type { Diagnostic, } from './nvim-client.ts';
 
-//region helpers -- factory for test diagnostics
+//region helpers: factory for test diagnostics
 
 /**
  * Creates a diagnostic with sensible defaults, overridable by partial input.
@@ -36,7 +36,7 @@ function makeDiag(overrides: Partial<Diagnostic> = {},): Diagnostic {
 
 //endregion helpers
 
-//region dedupDiagnostics -- merges editor and lint diagnostics with deduplication
+//region dedupDiagnostics: merges editor and lint diagnostics with deduplication
 
 await describe({
   name: '',
@@ -203,7 +203,7 @@ await describe({
 
     //endregion dedupDiagnostics
 
-    //region uniqueDiagnostics -- removes duplicates within a single array
+    //region uniqueDiagnostics: removes duplicates within a single array
 
     describe({
       name: uniqueDiagnostics.name,

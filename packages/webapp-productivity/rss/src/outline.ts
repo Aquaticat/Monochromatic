@@ -22,7 +22,7 @@ const l = tagged({
  */
 export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
 
-//region OPML parsing and outline extraction -- Converts raw XML into validated feed outline structures
+//region OPML parsing and outline extraction: Converts raw XML into validated feed outline structures
 
 /**
  * Extracts validated inner outlines with xmlUrl from raw OPML source URLs.

@@ -6,7 +6,7 @@ import {
 
 import { parseMemoryToBytes, } from './boot.ts';
 
-//region parseMemoryToBytes -- converts human-readable memory strings to byte counts
+//region parseMemoryToBytes: converts human-readable memory strings to byte counts
 
 await describe({
   name: parseMemoryToBytes.name,

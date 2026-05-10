@@ -31,7 +31,7 @@ import { verifySolutionSet, } from './sudoku-solution-set.ts';
  */
 const PARTIAL_CREDIT = 0.1;
 
-//region Normal mode verification -- 4 checks: solvable, 2x unsolvable, multi-solution single exit
+//region Normal mode verification: 4 checks: solvable, 2x unsolvable, multi-solution single exit
 
 /**
  * Verifies normal mode output against 4 puzzles.
@@ -104,7 +104,7 @@ export function verifyNormal(stdout: string,): number {
 
 //endregion Normal mode verification
 
-//region --all mode verification -- 3 checks: 2-solution exact, many-solution bounded, unsolvable
+//region --all mode verification: 3 checks: 2-solution exact, many-solution bounded, unsolvable
 
 /**
  * Verifies --all mode output against 3 puzzles: 2-solution, many-solution, and unsolvable.

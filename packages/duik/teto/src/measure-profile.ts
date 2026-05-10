@@ -76,7 +76,7 @@ export function measureWidthProfile(
     `magick "${imagePath}" -colorspace Gray -depth 8 -compress none PGM:- 2>/dev/null > "${tmpDir}/measure_dump.pgm" && echo done`,
   );
 
-  /** Read the PGM file directly -- it's a simple text format. */
+  /** Read the PGM file directly (it's a simple text format). */
   const pgmData = readFileSync(
     `${tmpDir}/measure_dump.pgm`,
     'utf8',

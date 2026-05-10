@@ -15,7 +15,7 @@
  *
  * What this scenario does **not** yet assert (Phase 3+):
  *
- * - "only affected blob/diff fragments rebuild" -- the dependency graph
+ * - "only affected blob/diff fragments rebuild": the dependency graph
  *   for repo-typed `push` events is still resolveContext-skipped today
  *   because resourceId is the repo id (not an issue id). Tightening
  *   the dep graph for repo-typed events lands with task #15+.

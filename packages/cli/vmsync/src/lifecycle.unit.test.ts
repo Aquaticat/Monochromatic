@@ -448,7 +448,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
           //region detectHypervisor returns hyperv on Windows
           const statusCheck = await execInVm(VM, `${VMSYNC} status test-vm`,);
           // The VM was never booted, last boot is "never" (hypervisor detection
-          // only runs during boot, not status -- but the binary runs on Windows,
+          // only runs during boot, not status; but the binary runs on Windows,
           // confirming cross-platform compatibility)
           expect(statusCheck,).toContain('last boot:  never',);
           //endregion detectHypervisor

@@ -80,7 +80,7 @@ export function loadDirChildren({
         );
       }
 
-      // Always verify with a fresh fetch — prefetch cache can be stale
+      // Always verify with a fresh fetch: prefetch cache can be stale
       // when files are created after the parent directory was expanded
       const entries = await (state.fetchDir?.(path,) ?? Promise.resolve([],));
 

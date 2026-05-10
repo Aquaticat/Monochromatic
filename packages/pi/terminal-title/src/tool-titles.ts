@@ -26,7 +26,7 @@ import {
  * fallbacks when extraction returns `undefined`.
  *
  * Custom/MCP tools (via `CustomToolCallEvent`) are handled generically in
- * `titleForTool()` rather than registered here — their `toolName` is dynamic
+ * `titleForTool()` rather than registered here; their `toolName` is dynamic
  * and their inputs are untyped `Record<string, unknown>`.
  */
 const TOOL_TITLES: Record<string, ToolTitleEntry> = {

@@ -2,11 +2,11 @@
 
 ## Cross-References
 
-- [**Build System Integration**](TODO.build-system.md#package-management-improvements) - Package management tooling integration
-- [**Automation Tools**](TODO.automation.md#development-automation) - Development workflow automation
-- [**Package Development**](TODO.packages.md#build-utilities) - Build utility enhancement
-- [**Performance Tools**](TODO.performance.md#build-performance) - Performance monitoring and optimization tools
-- [**Security Tools**](TODO.security.md#development-security) - Security-focused development tools
+- [**Build System Integration**](TODO.build-system.md#package-management-improvements): Package management tooling integration
+- [**Automation Tools**](TODO.automation.md#development-automation): Development workflow automation
+- [**Package Development**](TODO.packages.md#build-utilities): Build utility enhancement
+- [**Performance Tools**](TODO.performance.md#build-performance): Performance monitoring and optimization tools
+- [**Security Tools**](TODO.security.md#development-security): Security-focused development tools
 
 ## High Priority Tools
 
@@ -133,7 +133,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 
 ### Code Generation and Scaffolding
 
-**Status**: Normal Priority - Developer productivity
+**Status**: Normal Priority, Developer productivity
 
 - [ ] Create automated component scaffolding tools
 - [ ] Implement boilerplate code generation
@@ -146,7 +146,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 
 ### Development Workflow Tools
 
-**Status**: Normal Priority - Developer experience
+**Status**: Normal Priority, Developer experience
 
 - [ ] Create development environment validation tools
 - [ ] Implement automated development setup tools
@@ -170,7 +170,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
   - Good: Just write the code at the top level
   - For async operations, use top-level await: `await someAsyncOperation();`
 - Avoid exiting with 0; just let the program naturally run to the end
-- NEVER use process.exit() - throw errors instead
+- NEVER use process.exit(): throw errors instead
 
 ### Tool Version Management
 
@@ -182,7 +182,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 
 ### Security Considerations for CLI Tools
 
-**Status**: High Priority - Tool security
+**Status**: High Priority, Tool security
 
 - [ ] Implement input validation for all CLI arguments
 - [ ] Add secure file handling and path validation
@@ -214,7 +214,7 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 
 ### Pattern Matching Library
 
-**Status**: Low Priority - Experimental
+**Status**: Low Priority, Experimental
 
 Build our own TypeScript pattern matching library that supports async predicates in when clauses, powered by Zod for schema validation.
 
@@ -256,7 +256,7 @@ const result = await match({ hasFeature: await checkFeature(), },)
 
 ### Development Environment Tools
 
-**Status**: Normal Priority - Environment management
+**Status**: Normal Priority, Environment management
 
 - [ ] Create environment consistency checking tools
 - [ ] Implement development environment migration utilities
@@ -269,7 +269,7 @@ const result = await match({ hasFeature: await checkFeature(), },)
 
 ### Performance and Monitoring Tools
 
-**Status**: Normal Priority - Performance optimization
+**Status**: Normal Priority, Performance optimization
 
 - [ ] Create build performance monitoring tools
 - [ ] Implement runtime performance profiling utilities

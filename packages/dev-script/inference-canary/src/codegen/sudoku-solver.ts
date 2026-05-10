@@ -3,7 +3,7 @@
  *
  * Asks the model to generate a backtracking sudoku solver that reads puzzles from stdin,
  * outputs solved grids, rejects unsolvable puzzles, and supports a `--all` flag to
- * enumerate every valid solution. Tests both correct solving and unsolvable detection --
+ * enumerate every valid solution. Tests both correct solving and unsolvable detection;
  * models often fail to propagate constraints through 3x3 boxes or omit the unsolvable
  * code path entirely. The `--all` flag tests exhaustive search vs early-exit behavior.
  */
@@ -18,7 +18,7 @@ import {
   verifyNormal,
 } from './sudoku-solver-verify.ts';
 
-//region Prompt -- instructs the model to build a backtracking solver with --all support
+//region Prompt: instructs the model to build a backtracking solver with --all support
 
 /** Prompt lines for the sudoku solver task */
 const PROMPT = [

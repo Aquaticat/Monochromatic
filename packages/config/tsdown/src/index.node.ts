@@ -29,12 +29,12 @@ const _default_1: UserConfig = defineConfig({
       /^nano-spawn$/,
     ],
     neverBundle: [
-      // Pi extension peer deps — provided by the pi runtime at load time.
+      // Pi extension peer deps: provided by the pi runtime at load time.
       // Bundling them duplicates the pi API and causes CJS/ESM
       // "exports is not defined" errors.
       '@earendil-works/pi-coding-agent',
       'typebox',
-      // Pi AI providers — provided by the pi runtime at load time.
+      // Pi AI providers: provided by the pi runtime at load time.
       '@earendil-works/pi-ai',
     ],
   },

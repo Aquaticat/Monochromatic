@@ -3,7 +3,7 @@
  *
  * Verifies the full interaction chain: view switching, scatter point popovers,
  * probe card navigation, and collapsible detail sections. Tests run against
- * the pre-built `dist/final/index.html` — build the dashboard first.
+ * the pre-built `dist/final/index.html`; build the dashboard first.
  */
 
 import { join, } from 'node:path';

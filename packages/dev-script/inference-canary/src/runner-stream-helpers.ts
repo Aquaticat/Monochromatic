@@ -20,7 +20,7 @@ import type {
 /** Milliseconds per second for human-readable timing display */
 const MS_PER_SECOND = 1_000;
 
-//region PartialCompletionError -- thrown on stream abort, carries whatever data was collected before cancellation
+//region PartialCompletionError: thrown on stream abort, carries whatever data was collected before cancellation
 
 /**
  * Error thrown when a stream is aborted mid-response.

@@ -7,7 +7,7 @@
 
 import spawn from 'nano-spawn';
 
-/** Result of a spawned command -- never throws, callers inspect exitCode */
+/** Result of a spawned command (never throws; callers inspect exitCode) */
 export type BunExecResult = {
   readonly stdout: string;
   readonly stderr: string;

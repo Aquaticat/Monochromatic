@@ -34,12 +34,12 @@ Vue Vapor (Vue 3.6, currently beta.5 as of Jan 30 2026) addresses every Svelte c
 ### What blocks it for this project
 
 1. **SSR is beta.** Vue 3.6 SSR/hydration for Vapor is checked off on the roadmap but only in beta.5. The original plan relied heavily on SSR.
-2. **No meta-framework ready.** Nuxt 4 (stable July 2025, currently 4.3.1) does not integrate Vapor yet -- the roadmap checkbox is unchecked. `vue-i18n` has a known Vapor incompatibility (GitHub #2234). Vue Router has an open Vapor PR but isn't merged.
+2. **No meta-framework ready.** Nuxt 4 (stable July 2025, currently 4.3.1) does not integrate Vapor yet; the roadmap checkbox is unchecked. `vue-i18n` has a known Vapor incompatibility (GitHub #2234). Vue Router has an open Vapor PR but isn't merged.
 3. **No form actions pattern.** SvelteKit's `+page.server.ts` load functions + form actions + `use:enhance` have no Vue equivalent. You'd wire `fetch()` manually or build your own.
 
 ### Revised assessment after dropping SSR requirement
 
-With SSR off the table, Vapor's beta status becomes less concerning -- client-only SPA rendering is more stable than SSR/hydration. But this raised the question: if the app is a client-side SPA served from Bun, do we need a frontend framework at all?
+With SSR off the table, Vapor's beta status becomes less concerning; client-only SPA rendering is more stable than SSR/hydration. But this raised the question: if the app is a client-side SPA served from Bun, do we need a frontend framework at all?
 
 ## Do we actually need a framework?
 
@@ -95,7 +95,7 @@ If Done grows beyond competition scope (more screens, complex state, collaborati
 
 ## The broader question: what actually needs a UI framework?
 
-Done is not a simple app. It has a multi-tenant orchestrator with auth and process spawning, AI integration with structured output parsing, a task blocking dependency graph with circular dependency handling, server-authoritative timers with client-side display math, two-way GitHub sync with lossless round-trip, FTS5 full-text search, email reminders, daily backups, and Docker deployment. It's genuinely complex -- and none of that complexity lives in the UI layer.
+Done is not a simple app. It has a multi-tenant orchestrator with auth and process spawning, AI integration with structured output parsing, a task blocking dependency graph with circular dependency handling, server-authoritative timers with client-side display math, two-way GitHub sync with lossless round-trip, FTS5 full-text search, email reminders, daily backups, and Docker deployment. It's genuinely complex; none of that complexity lives in the UI layer.
 
 This prompted a harder question: if *this* app doesn't need a framework, what does?
 
@@ -103,15 +103,15 @@ This prompted a harder question: if *this* app doesn't need a framework, what do
 
 **Collaborative editors (Google Docs, Figma):** Figma wrote their own renderer on Canvas/WebGL, not a component framework. The hard problem is CRDT/OT conflict resolution, not UI reactivity. No startup should build this from scratch regardless.
 
-**Spreadsheets:** Genuine reactive dependency graph (cell A1 depends on B2 depends on C3). But the rendering is a grid -- typically a `<canvas>` or virtualized table, not a component tree. The reactive engine is the spreadsheet formula evaluator, not the UI framework.
+**Spreadsheets:** Genuine reactive dependency graph (cell A1 depends on B2 depends on C3). But the rendering is a grid: typically a `<canvas>` or virtualized table, not a component tree. The reactive engine is the spreadsheet formula evaluator, not the UI framework.
 
 **DAWs / video editors:** The rendering path is WebGL/WebGPU. A UI framework doesn't help with waveform rendering or timeline scrubbing at 60fps. These should wait for WebGPU maturity anyway.
 
-**Chat with presence:** Typing indicators, read receipts, message arrival, presence dots -- each is one or two DOM mutations on specific, known elements. New message = `container.appendChild(messageEl)`. Typing indicator = `indicator.hidden = !isTyping`. Presence = `dot.dataset.online = "true"` + CSS. Each WebSocket event maps to an independent DOM update. No dependency graph, no cascading recalculations. A `switch` statement in `onmessage` covers it. Discord and Slack use React with 500+ engineers and regularly rebuild their rendering pipeline because React's reconciliation is the performance problem at their scale.
+**Chat with presence:** Typing indicators, read receipts, message arrival, presence dots: each is one or two DOM mutations on specific, known elements. New message = `container.appendChild(messageEl)`. Typing indicator = `indicator.hidden = !isTyping`. Presence = `dot.dataset.online = "true"` + CSS. Each WebSocket event maps to an independent DOM update. No dependency graph, no cascading recalculations. A `switch` statement in `onmessage` covers it. Discord and Slack use React with 500+ engineers and regularly rebuild their rendering pipeline because React's reconciliation is the performance problem at their scale.
 
 **Gmail/Slack-scale SPAs:** Dozens of views, deep linking, split panels. But no startup should build this scope, and the ones that did (Superhuman, Linear) ended up fighting their frameworks.
 
-**Offline-first apps (Notion, Linear):** The hard part is sync and conflict resolution, not UI state. Debatable whether offline-first is the right direction at all -- it trades server simplicity for enormous client complexity. And the state container is really a local database (IndexedDB, SQLite via WASM), not a framework store.
+**Offline-first apps (Notion, Linear):** The hard part is sync and conflict resolution, not UI state. Debatable whether offline-first is the right direction at all; it trades server simplicity for enormous client complexity. And the state container is really a local database (IndexedDB, SQLite via WASM), not a framework store.
 
 **Complex undo/redo:** A version control problem. Should defer to git-like approaches (event sourcing, operation logs), not UI framework state snapshots.
 
@@ -121,11 +121,11 @@ The set of apps that genuinely need a client-side UI framework is close to empty
 
 Frameworks solve the *developer ergonomics* problem (components, templates, file-based routing, hot reload tooling) not an *architectural* problem. And the ergonomics gap is shrinking as runtimes like Bun absorb the tooling pieces (native TS, `--watch`, `Bun.build()` with tree-shaking, `Bun.serve()` with file routing).
 
-Done is strong evidence for this: an app with AI, multi-tenant orchestration, real-time timers, dependency graphs, full-text search, external sync, and email notifications -- and the UI is the simplest layer, trivially handleable with vanilla TS and platform APIs.
+Done is strong evidence for this: an app with AI, multi-tenant orchestration, real-time timers, dependency graphs, full-text search, external sync, and email notifications; the UI is the simplest layer, trivially handleable with vanilla TS and platform APIs.
 
 ### Post-competition: empirical validation
 
-The above is coherent reasoning but still speculation. After the competition, we'll rewrite Done's UI layer in multiple frameworks and compare empirically. The codebase is structured for this -- `src/lib/` (database, AI, email, sync), `orchestrator/`, and Docker setup are all framework-agnostic. Only `src/server/pages/`, `src/client/`, and the router change per framework. Planned rewrites:
+The above is coherent reasoning but still speculation. After the competition, we'll rewrite Done's UI layer in multiple frameworks and compare empirically. The codebase is structured for this: `src/lib/` (database, AI, email, sync), `orchestrator/`, and Docker setup are all framework-agnostic. Only `src/server/pages/`, `src/client/`, and the router change per framework. Planned rewrites:
 
 - Vanilla TS + Bun (competition baseline)
 - SvelteKit

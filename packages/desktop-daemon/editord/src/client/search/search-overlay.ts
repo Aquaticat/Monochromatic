@@ -39,7 +39,7 @@ const l = tagged({
 /** Maximum milliseconds between two Shift keyup events to count as a double-shift. */
 const DOUBLE_SHIFT_THRESHOLD_MS = 400;
 
-/** `<search-overlay>` — self-contained modal search dialog. */
+/** `<search-overlay>`: self-contained modal search dialog. */
 export class SearchOverlay extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;

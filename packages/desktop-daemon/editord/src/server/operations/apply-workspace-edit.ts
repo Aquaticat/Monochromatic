@@ -203,7 +203,7 @@ export async function applyWorkspaceEdit({
       edits: wireEdits,
     },);
 
-    /** Skip disk write for the current file — the client applies those edits. */
+    /** Skip disk write for the current file; the client applies those edits. */
     if (filePath === currentFilePath)
       continue;
 

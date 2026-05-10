@@ -9,7 +9,7 @@ import type * as Jsonc from '../../../../t/index.ts';
 import { scanQuotedString, } from './customParsers.scanQuotedString.ts';
 import { startsWithComment, } from './customParsers.startsWithComment.ts';
 
-//region Record header -- Consume '{' then extract record-level comment from context
+//region Record header: Consume '{' then extract record-level comment from context
 /**
  * After the opening '{', extract the record-level comment (if any) from context.
  *
@@ -39,7 +39,7 @@ export function parseRecordHeader(
 }
 //endregion Record header
 
-//region Record separators -- Determine end of record or next member start
+//region Record separators: Determine end of record or next member start
 /**
  * After a record value, consume comments/whitespace once and decide next action.
  *
@@ -109,7 +109,7 @@ export function expectRecordSeparatorOrEnd(
 }
 //endregion Record separators
 
-//region Record key parsing -- Parse a single key with its leading comment
+//region Record key parsing: Parse a single key with its leading comment
 /**
  * Parse a single record key with its leading comment.
  *
@@ -157,7 +157,7 @@ export function parseRecordKey(
 }
 //endregion Record key parsing
 
-//region Colon expectation -- Verify ':' after key
+//region Colon expectation: Verify ':' after key
 /**
  * Consume comments/whitespace after key and verify ':' is present.
  *

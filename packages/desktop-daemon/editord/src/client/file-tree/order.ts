@@ -21,7 +21,7 @@ const ORDER_BASE = 128;
  *
  * Encodes the first {@link ORDER_CHARS} lowercase characters as a
  * base-{@link ORDER_BASE} number. Directories and files are treated
- * identically — both sort alphabetically by name.
+ * identically: both sort alphabetically by name.
  *
  * @param name - entry name (not full path)
  *

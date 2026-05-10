@@ -5,7 +5,7 @@
   Region markers outline the phases: imports, pre-scan, dispatch/heuristics, and re-exports.
 */
 
-//region Imports and aliases -- External types/helpers and local aliases used by the parser
+//region Imports and aliases: External types/helpers and local aliases used by the parser
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
@@ -122,11 +122,11 @@ import {
  * - Memory-efficient parsing with comment extraction
  */
 export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
-  //region Pre-scan for comments -- Strip/record leading comments to decide how to dispatch
+  //region Pre-scan for comments: Strip/record leading comments to decide how to dispatch
   const outStartsComment = startsWithComment({ value, },);
   //endregion Pre-scan for comments
 
-  //region Top-level dispatch and heuristics -- Select array/object path; attempt simple trailing-comma fix, else fallback
+  //region Top-level dispatch and heuristics: Select array/object path; attempt simple trailing-comma fix, else fallback
   // oxlint-disable-next-line eslint/no-shadow -- inner outStartsComment parameter deliberately shadows outer for scoped dispatch
   const result = (function getResult({ outStartsComment, },): Jsonc.Value {
     // oxlint-disable-next-line eslint/no-shadow -- inner value from destructuring deliberately shadows outer parameter
@@ -151,7 +151,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
         customParserFn: customParserForRecord,
       },);
     }
-    //region Error handling -- Only arrays or objects are valid after trimming leading comments
+    //region Error handling: Only arrays or objects are valid after trimming leading comments
     throw new Error(
       'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
     );
@@ -163,7 +163,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
   return result;
 }
 
-//region Re-exports -- Surface helpers for testing and external use
+//region Re-exports: Surface helpers for testing and external use
 export * from './customParsers.ts';
 export * from './fastPath.ts';
 //endregion Re-exports

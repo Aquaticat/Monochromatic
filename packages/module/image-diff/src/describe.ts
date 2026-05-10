@@ -129,7 +129,7 @@ export async function describeImageDifference(
     l,
   },);
 
-  // Prefer the native Gemini API -- avoids the OpenRouter proxy overhead
+  // Prefer the native Gemini API: avoids the OpenRouter proxy overhead
   const geminiResult = await describeViaGemini(
     imageA,
     imageB,

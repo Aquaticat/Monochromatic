@@ -36,7 +36,7 @@ const PARTS_DIR = join(
  * boots 17% too wide, head 20% too wide.
  */
 const PART_FACTORS: Record<string, number> = {
-  /** Head 20% too wide -- gentle narrowing. */
+  /** Head 20% too wide; gentle narrowing. */
   head_face: 0.88,
   eyes: 0.88,
   mouth: 0.88,

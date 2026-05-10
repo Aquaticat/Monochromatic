@@ -11,7 +11,7 @@
  *
  * - tier 1 (< 8 KB single block): main thread compiles, three sequential
  *   network calls on send
- * - tier 2 (8 KB – 1 MB): worker compiles, batch upload on send
+ * - tier 2 (8 KB to 1 MB): worker compiles, batch upload on send
  * - tier 3 (> 1 MB): chunk-paginated; the editor surface only ever
  *   holds one chunk's source markdown
  *

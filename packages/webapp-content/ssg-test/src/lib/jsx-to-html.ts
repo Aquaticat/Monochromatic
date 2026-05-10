@@ -17,8 +17,8 @@
  * raw text children (plain strings from MDX content) are HTML-escaped,
  * while results from nested `jsx` calls (which are `SafeHtml` objects)
  * pass through unescaped. Function components (including MDX content
- * components) are called with their props and return `SafeHtml` directly --
- * no separate render pass needed.
+ * components) are called with their props and return `SafeHtml` directly.
+ * No separate render pass needed.
  *
  * Reuses `escapeHtml` and `VOID_ELEMENTS` from `@monochromatic-dev/module-hyperscript`
  * to avoid duplicating HTML generation internals.
@@ -143,7 +143,7 @@ function renderAttrs(props: Record<string, unknown>,): string {
 
 //endregion Internals
 
-//region Public API -- JSX runtime exports
+//region Public API: JSX runtime exports
 
 /**
  * Fragment component -- renders children without a wrapper element.
@@ -214,4 +214,4 @@ export function jsx(
  */
 export const jsxs: typeof jsx = jsx;
 
-//endregion Public API -- JSX runtime exports
+//endregion Public API: JSX runtime exports

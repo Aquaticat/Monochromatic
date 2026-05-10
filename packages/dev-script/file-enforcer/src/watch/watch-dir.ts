@@ -50,7 +50,7 @@ export async function watchDirectory(
       dir,
       { signal, },
     );
-    // for-await is the only way to consume an AsyncIterable from fs.watch --
+    // for-await is the only way to consume an AsyncIterable from fs.watch:
     // there is no functional alternative for an unbounded event stream.
     for await (const event of watcher) {
       if (event.filename === null)

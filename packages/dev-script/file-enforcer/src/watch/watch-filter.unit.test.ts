@@ -161,7 +161,7 @@ await describe({
             const pastOffset = 2_000;
             setWriteTimestamp({ filePath, timestamp: Date.now() - pastOffset, },);
 
-            /** Now modify the file -- its mtime will be "now", after our recorded timestamp */
+            /** Now modify the file: its mtime will be "now", after our recorded timestamp */
             await writeFile(filePath, 'externally modified',);
 
             expect(await classifyEvent('protected.md', tempDir, '/repo/config.ts',),)
@@ -186,7 +186,7 @@ await describe({
             const filePath = join(tempDir, 'skipcase.md',);
             await writeFile(filePath, 'same',);
             trackDest(filePath,);
-            // No trackWriteTime -- simulates content-based skip
+            // No trackWriteTime: simulates content-based skip
 
             expect(await classifyEvent('skipcase.md', tempDir, '/repo/config.ts',),)
               .toBe(

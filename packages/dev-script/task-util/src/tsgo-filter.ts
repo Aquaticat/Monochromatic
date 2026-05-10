@@ -273,7 +273,7 @@ const tsgoArgs = process.argv.length > 2
   ? process.argv.slice(2,)
   : ['--build',];
 
-// tsgo #2666 — stale .tsbuildinfo causes false negatives; clean before each build
+// tsgo #2666: stale .tsbuildinfo causes false negatives; clean before each build
 await removeStaleBuildInfo();
 
 try {

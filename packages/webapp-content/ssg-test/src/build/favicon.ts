@@ -166,7 +166,7 @@ export async function ensureFavicons(
   l.info('favicon files generated',);
 }
 
-//region Standalone execution -- allows running via `mise run generate:favicons`
+//region Standalone execution: allows running via `mise run generate:favicons`
 if (import.meta.main) {
   const {
     logger,

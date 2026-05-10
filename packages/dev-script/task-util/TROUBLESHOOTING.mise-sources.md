@@ -47,7 +47,7 @@ sources = ["src/**/*"]
 When `src/**` is used, the glob resolves to zero files. Mise then falls back to
 hashing only the `mise.toml` config file (which it always appends to the source
 list on [line 114][L114]). Since `mise.toml` doesn't change between runs, the
-hash always matches, and the auto-output touch file's mtime is always newer --
+hash always matches, and the auto-output touch file's mtime is always newer,
 so the task is permanently "up-to-date" regardless of actual source changes.
 
 [L114]: https://github.com/jdx/mise/blob/main/src/task/task_source_checker.rs#L114
@@ -68,7 +68,7 @@ mtimes against this touch file.
 
 The default metadata hash only covers `(path, file_size)`. If a source file is
 edited without changing its byte count, the hash stays the same. The mtime
-comparison (check 2) should still catch this -- but only if the glob patterns
+comparison (check 2) should still catch this, but only if the glob patterns
 correctly match the files. With broken `**` globs, neither check works.
 
 To handle same-size edits reliably, enable content hashing:

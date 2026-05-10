@@ -27,7 +27,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { titleForEvent, } from './title-builder.ts';
 
-/** Minimal context shape needed by all event handlers — just `ui.setTitle()`. */
+/** Minimal context shape needed by all event handlers (just `ui.setTitle()`). */
 type TitleContext = {
   ui: {
     setTitle: (title: string,) => void;
@@ -37,7 +37,7 @@ type TitleContext = {
 //region Event handlers
 
 /**
- * Handle `tool_execution_start` — set title to present tense tool activity.
+ * Handle `tool_execution_start`: set title to present tense tool activity.
  *
  * @param event - tool execution start event with toolName and args
  *
@@ -64,7 +64,7 @@ function handleToolExecutionStart(
 }
 
 /**
- * Handle `tool_execution_end` — set title to past tense tool activity.
+ * Handle `tool_execution_end`: set title to past tense tool activity.
  *
  * @param event - tool execution end event with toolName
  *
@@ -87,7 +87,7 @@ function handleToolExecutionEnd(
 }
 
 /**
- * Handle `session_start` — set title to session reason.
+ * Handle `session_start`: set title to session reason.
  *
  * @param event - session start event with reason
  *
@@ -108,7 +108,7 @@ function handleSessionStart(
 }
 
 /**
- * Handle `session_shutdown` — set title to session ended.
+ * Handle `session_shutdown`: set title to session ended.
  *
  * @param _event - session shutdown event (reason available but not shown)
  *
@@ -127,7 +127,7 @@ function handleSessionShutdown(
 }
 
 /**
- * Handle `agent_end` — set title to "Stopped".
+ * Handle `agent_end`: set title to "Stopped".
  *
  * @param _event - agent end event (messages available but not shown)
  *
@@ -146,7 +146,7 @@ function handleAgentEnd(
 }
 
 /**
- * Handle `before_agent_start` — set title to user prompt text.
+ * Handle `before_agent_start`: set title to user prompt text.
  *
  * @param event - before agent start event with prompt text
  *
@@ -177,7 +177,7 @@ function handleBeforeAgentStart(
  * title to reflect the current activity.
  *
  * Handler types for `tool_execution_start` and `tool_execution_end` are
- * inferred by the `pi.on()` overload signatures — those event types are not
+ * inferred by the `pi.on()` overload signatures; those event types are not
  * re-exported from the package's top-level index but are available via the
  * `on()` method's parameter types.
  *

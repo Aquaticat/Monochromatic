@@ -17,7 +17,7 @@ import {
 } from './media.ts';
 
 /**
- * `<binary-viewer>` — media and hex dump viewer component.
+ * `<binary-viewer>`: media and hex dump viewer component.
  *
  * Provides dedicated show methods for each supported file kind.
  * Only one content type is displayed at a time; calling any show method

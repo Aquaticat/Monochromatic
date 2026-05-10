@@ -1,6 +1,6 @@
 # Claude Code sandbox pipe breakage investigation
 
-Status: **root cause identified** -- [upstream issue filed](https://github.com/anthropics/claude-code/issues/31968)
+Status: **root cause identified**; [upstream issue filed](https://github.com/anthropics/claude-code/issues/31968)
 
 ## Summary
 
@@ -160,7 +160,7 @@ Y = sAD(f,); // replace NUL with /dev/null
 O = aAD(Y,); // check if redirect is needed
 X = oAD(Y, O,); // default: broken shell-quoting
 if (!q.useSandbox && Y.includes('|',) && O)
-  X = HLD(Y,); // correct pipe handling — ONLY outside sandbox
+  X = HLD(Y,); // correct pipe handling, ONLY outside sandbox
 ```
 
 Inside the sandbox (`q.useSandbox === true`), `HLD` is never called.
@@ -243,7 +243,7 @@ stdin-reading mode and blocks forever.
 
 Without `&&` or `;`, eval produces `rg -l 'pattern' --type ts < /dev/null`.
 The redirect applies directly to `rg`, giving it immediate EOF.
-`rg` reads nothing from stdin and exits with code 2 ("no files were searched") --
+`rg` reads nothing from stdin and exits with code 2 ("no files were searched"):
 fast, but wrong results (it searched stdin instead of the filesystem).
 
 ### Workaround
@@ -271,7 +271,7 @@ These were investigated but turned out to be irrelevant:
   (from eval joining its arguments), not propagated from eval's redirect list.
 
 - **ONESHOT fork optimization**: `should_suppress_fork()` / `can_optimize_connection()`
-  in evalstring.c. Irrelevant -- `eval` passes `SEVAL_NOOPTIMIZE`, and `can_optimize_connection`
+  in evalstring.c. Irrelevant: `eval` passes `SEVAL_NOOPTIMIZE`, and `can_optimize_connection`
   only handles `&&`/`||`/`;`, not `|`.
 
 - **`set -m` (job control)**: Investigated extensively. Not the cause.

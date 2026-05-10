@@ -53,7 +53,7 @@ export async function handleSend(
   if (body.length === 0) {
     setStatus(
       input.status,
-      'empty -- nothing to send',
+      'empty: nothing to send',
     );
     return;
   }

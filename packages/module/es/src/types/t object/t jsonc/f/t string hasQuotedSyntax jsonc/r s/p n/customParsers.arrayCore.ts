@@ -1,6 +1,6 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- JSONC parser casts string slices to branded fragment types
 /**
- * JSONC array parsing — element recursion and array container parser.
+ * JSONC array parsing: element recursion and array container parser.
  *
  * MUTUALLY RECURSIVE with {@link parseValueFromStart} via the dispatch module.
  */
@@ -18,7 +18,7 @@ import { callParseValue, } from './customParsers.dispatch.ts';
 import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
 import { startsWithComment, } from './customParsers.startsWithComment.ts';
 
-//region Array elements -- Recursive, immutable element parsing for arrays (MUTUALLY RECURSIVE)
+//region Array elements: Recursive, immutable element parsing for arrays (MUTUALLY RECURSIVE)
 /**
  * Parse one or more array elements starting from a tail, returning accumulated items and the tail after ']'.
  *
@@ -109,7 +109,7 @@ export function customParserForArray(
     context?: Jsonc.ValueBase;
   },
 ): Jsonc.Array & { remainingContent: FragmentStringJsonc; } {
-  //region Entry and comment skip -- Drop the opening '[' then consume leading comments/space
+  //region Entry and comment skip: Drop the opening '[' then consume leading comments/space
   /** Tail after stripping the opening '[' to keep pointer immutable. */
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
   /** Array-level comment from context and header tail inside brackets. */
@@ -122,7 +122,7 @@ export function customParserForArray(
   );
   //endregion Entry and comment skip
 
-  //region Empty array fast-exit -- Handle immediate closing bracket
+  //region Empty array fast-exit: Handle immediate closing bracket
   /** Leading comments/spaces directly inside '[' before first element or ']'. */
   const insideLead = startsWithComment({ value: headerTail, },);
   if (insideLead.remainingContent.startsWith(']',)) {
@@ -143,7 +143,7 @@ export function customParserForArray(
   }
   //endregion Empty array fast-exit
 
-  //region Element recursion -- Delegate to exported pure helper
+  //region Element recursion: Delegate to exported pure helper
   /** Parsed items and tail after the terminating ']'. */
   const {
     items,

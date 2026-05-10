@@ -26,7 +26,7 @@ Block comments (`/* */`) cannot nest in C-like languages.
 The closing `*/` is always the **first** `*/` after the opening `/*`,
 regardless of surrounding context (quotes, line comments, other block comments).
 
-This is not a bug in our parser -- it matches the behavior of every
+This is not a bug in our parser; it matches the behavior of every
 C-family language (JavaScript, TypeScript, C, C++, Java, Rust, Go, CSS).
 From `customParsers.startsWithComment.ts` line 40:
 
@@ -38,7 +38,7 @@ From `customParsers.startsWithComment.ts` line 40:
 The parser's `findBlockEndPosition` function
 (`customParsers.startsWithComment.ts:20-74`)
 does attempt to skip `*/` on lines containing `//`,
-but this heuristic is incomplete -- it can't distinguish between
+but this heuristic is incomplete; it can't distinguish between
 `// text */ more text` (where `*/` is inside a line comment)
 and `code */ // trailing comment` (where `*/` is real).
 
@@ -46,22 +46,22 @@ and `code */ // trailing comment` (where `*/` is real).
 
 Two test cases are skipped because of this limitation:
 
-- `customParsers.startsWithComment.unit.test.ts:396-410` --
+- `customParsers.startsWithComment.unit.test.ts:396-410`:
   block comment containing a line comment with `*/`
-- `customParsers.startsWithComment.unit.test.ts:413-428` --
+- `customParsers.startsWithComment.unit.test.ts:413-428`:
   block comment with multiple line comments containing `*/`
 
 A third test confirms the intentional behavior:
 
-- `customParsers.startsWithComment.unit.test.ts:529-538` --
+- `customParsers.startsWithComment.unit.test.ts:529-538`:
   `*/` inside quoted strings also terminates the block comment,
   because quotes have no special meaning inside comments
 
 ## Why we accepted this
 
-The subset of comment patterns that hit this edge case --
+The subset of comment patterns that hit this edge case,
 a `*/` appearing literally inside a `//` comment that itself is inside
-a `/* */` block -- is vanishingly rare in real JSONC configuration files.
+a `/* */` block, is vanishingly rare in real JSONC configuration files.
 
 Supporting it would require a full character-by-character state machine
 that tracks "inside line comment" state within block comments,

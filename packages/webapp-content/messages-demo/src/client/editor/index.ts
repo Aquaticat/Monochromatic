@@ -330,7 +330,7 @@ export function mountEditor(
 
   // Repaint the viewport on every change AND restore the cursor.
   // viewport.render replaces every line element, which invalidates
-  // the browser's selection Range -- without restoring, every
+  // the browser's selection Range; without restoring, every
   // subsequent insert would land at end-of-buffer because
   // `selection.get()` returns null and `currentRange()` falls back to
   // the buffer end. The cursor lands at the end of the just-inserted

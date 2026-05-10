@@ -30,7 +30,7 @@ function pop(stack: number[],): number {
     throw new Error('stack underflow',);
   const value = stack.pop();
   if (value === undefined)
-    throw new Error('stack underflow — unreachable',);
+    throw new Error('stack underflow (unreachable)',);
   return value;
 }
 

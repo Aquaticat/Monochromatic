@@ -57,7 +57,7 @@ const FIXTURE_CONFIG = resolve(FIXTURE_PKG, '.oxlintrc.fixture.json',);
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
   const target = resolve(FIXTURES, fixturePath,);
 
-  // oxlint exits non-zero when violations are found -- capture stdout from the error
+  // oxlint exits non-zero when violations are found: capture stdout from the error
   let stdout: string;
   try {
     const result = await spawn('oxlint', ['--format', 'json', '-c', FIXTURE_CONFIG,
@@ -100,7 +100,7 @@ function uniqueRules(diagnostics: readonly OxlintDiagnostic[],): readonly string
 await describe({
   name: '',
   children: [
-    //region Valid fixtures -- expect zero tsdoc violations
+    //region Valid fixtures: expect zero tsdoc violations
 
     describe({
       name: 'valid fixtures',
@@ -131,7 +131,7 @@ await describe({
 
     //endregion Valid fixtures
 
-    //region Invalid fixtures -- expect specific violations
+    //region Invalid fixtures: expect specific violations
 
     describe({
       name: 'require-tsdoc',

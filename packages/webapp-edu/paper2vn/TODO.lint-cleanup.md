@@ -58,7 +58,7 @@ Lift literals to named constants. Hot spots:
 
 ### stylistic -- 23 (`object-property-per-line`, `type-property-per-line`, `tuple-per-line`)
 
-Mostly auto-fixable formatting -- `dprint` should handle this once configured for the package.
+Mostly auto-fixable formatting; `dprint` should handle this once configured for the package.
 
 ### Remaining tsdoc/structural issues
 
@@ -69,8 +69,8 @@ Mostly auto-fixable formatting -- `dprint` should handle this once configured fo
 ## Suggested order
 
 1. Split `lecture.ts` and `settings.ts` to clear `max-lines` first; smaller files lint faster on iteration.
-2. Lift magic numbers to named constants -- knocks out `no-magic-numbers` and most `numeric-separators-style`.
-3. Add missing TSDoc -- volume work, but mechanical.
+2. Lift magic numbers to named constants: knocks out `no-magic-numbers` and most `numeric-separators-style`.
+3. Add missing TSDoc: volume work, but mechanical.
 4. Configure `new-cap` allowlist for typesafe-i18n factories.
 5. Fix `init-declarations` and stylistic remainder.
 

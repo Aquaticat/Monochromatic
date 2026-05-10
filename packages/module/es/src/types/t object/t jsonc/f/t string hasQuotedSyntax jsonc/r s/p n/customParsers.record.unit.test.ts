@@ -16,7 +16,7 @@ const $ =
 await describe({
   name: $.name,
   children: [
-    //region Empty objects -- basic and with comments
+    //region Empty objects: basic and with comments
     it({
       name: 'empty object',
       fn: async () => {
@@ -41,7 +41,7 @@ await describe({
     },),
     //endregion Empty objects
 
-    //region Pairs and separators -- single/multiple and trailing comma
+    //region Pairs and separators: single/multiple and trailing comma
     it({
       name: 'single pair',
       fn: async () => {
@@ -72,7 +72,7 @@ await describe({
     },),
     //endregion Pairs and separators
 
-    //region Nesting -- arrays and objects
+    //region Nesting: arrays and objects
     it({
       name: 'nested containers',
       fn: async () => {
@@ -91,7 +91,7 @@ await describe({
     },),
     //endregion Nesting
 
-    //region Comments semantics -- outside vs inside
+    //region Comments semantics: outside vs inside
     it({
       name: 'record-level comment from context',
       fn: async () => {
@@ -129,7 +129,7 @@ await describe({
     },),
     //endregion Comments semantics
 
-    //region Errors -- malformed structures
+    //region Errors: malformed structures
     it({
       name: 'missing colon after key',
       fn: async () => {

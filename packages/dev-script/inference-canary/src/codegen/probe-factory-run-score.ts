@@ -191,7 +191,7 @@ export async function scoreImpl(
 
   const { correctness: mainCorrectness, } = config.verify(result,);
 
-  // Combine main and additional run correctness via Math.min --
+  // Combine main and additional run correctness via Math.min;
   // every run must achieve perfect correctness for a non-zero final score
   /** Per-run correctness fractions from additional runs (empty when none configured) */
   const additionalCorrectnesses =

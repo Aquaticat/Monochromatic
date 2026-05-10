@@ -87,7 +87,7 @@ export function verifyCssMixin(result: ContainerResult,): { correctness: number;
     output.includes('clip-path: inset(50%)',) && output.includes('overflow: hidden',),
     // flex-center should expand into .card, .nav .link, and .hero
     flexOccurrences >= MIN_FLEX_OCCURRENCES,
-    // Later property overrides mixin property -- either both present in order or only winner kept
+    // Later property overrides mixin property: either both present in order or only winner kept
     verifyOverrideTest(output,),
   ];
 

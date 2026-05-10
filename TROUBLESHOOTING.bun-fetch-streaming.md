@@ -104,9 +104,9 @@ but aborting after successful completion produces an `AbortError` that must be c
 | HTTP chunked via fetch                         | Yes                                | Yes      |
 | WebSocket via `ws` (OpenAI Responses API only) | No                                 | No       |
 | WebSocket via Bun native                       | No                                 | No       |
-| undici fetch (bypasses Bun's native fetch)     | Unclear -- Bun polyfills Node APIs | Untested |
+| undici fetch (bypasses Bun's native fetch)     | Unclear: Bun polyfills Node APIs | Untested |
 
-OpenRouter's Responses API (`/api/v1/responses`) supports `stream: true` but returns SSE over HTTP POST --
+OpenRouter's Responses API (`/api/v1/responses`) supports `stream: true` but returns SSE over HTTP POST,
 the same fetch ReadableStream path as Chat Completions. No WebSocket transport is available.
 OpenAI's Responses API supports WebSocket via `openai/resources/responses/ws`
 (requires `ws` npm package, beta feature, header `OpenAI-Beta: responses_websockets=2026-02-06`),

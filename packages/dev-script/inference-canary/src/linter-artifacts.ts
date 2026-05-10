@@ -28,7 +28,7 @@ export const LINT_DIR: string = join(
   'canary-lint',
 );
 
-//region Artifact writing -- writes generated source and meta.json sidecar for oxlint/tsgo to consume
+//region Artifact writing: writes generated source and meta.json sidecar for oxlint/tsgo to consume
 
 /** Metadata written alongside each generated canary.ts for traceability */
 export type ArtifactMeta = {

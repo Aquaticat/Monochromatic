@@ -253,33 +253,33 @@ export function isSchema<const T extends Schema = Schema,>(
 
 ### Priority 1 - Basic Type Guards
 
-- [ ] `string.is.ts` - `isString`
-- [ ] `numeric.bigint.ts` - `isBigint`, `isNumeric`
-- [ ] `numeric.int.ts` - `isPositiveInt`, `isNegativeInt`, `isNonNegativeInt`
-- [ ] `numeric.date.ts` - `isObjectDate`
-- [ ] `object.is.ts` - `isObject`
-- [ ] `array.empty.ts` - `isEmptyArray`
-- [ ] `error.is.ts` - `isError`
+- [ ] `string.is.ts`: `isString`
+- [ ] `numeric.bigint.ts`: `isBigint`, `isNumeric`
+- [ ] `numeric.int.ts`: `isPositiveInt`, `isNegativeInt`, `isNonNegativeInt`
+- [ ] `numeric.date.ts`: `isObjectDate`
+- [ ] `object.is.ts`: `isObject`
+- [ ] `array.empty.ts`: `isEmptyArray`
+- [ ] `error.is.ts`: `isError`
 
 ### Priority 2 - Collection Type Guards
 
-- [ ] `map.is.ts` - `isMap`
-- [ ] `set.is.ts` - `isSet`, `isWeakSet`
-- [ ] `promise.is.ts` - `isPromise`
-- [ ] `iterable.is.ts` - `isIterable`
-- [ ] `generator.is.ts` - `isGenerator`, `isAsyncGenerator`
+- [ ] `map.is.ts`: `isMap`
+- [ ] `set.is.ts`: `isSet`, `isWeakSet`
+- [ ] `promise.is.ts`: `isPromise`
+- [ ] `iterable.is.ts`: `isIterable`
+- [ ] `generator.is.ts`: `isGenerator`, `isAsyncGenerator`
 
 ### Priority 3 - String Validators
 
-- [ ] `string.digits.ts` - `isDigitString`, `isNo0DigitString`, `isDigitsString`
-- [ ] `string.letters.ts` - Letter validation functions
-- [ ] `string.numbers.ts` - All numeric string validators
+- [ ] `string.digits.ts`: `isDigitString`, `isNo0DigitString`, `isDigitsString`
+- [ ] `string.letters.ts`: Letter validation functions
+- [ ] `string.numbers.ts`: All numeric string validators
 
 ### Priority 4 - Complex Types
 
-- [ ] `jsonl.basic.ts` - `isJsonl`
-- [ ] `function.is.ts` - `isAsyncFunction`, `isSyncFunction`
-- [ ] `schema.basic.ts` - Refactor to new pattern
+- [ ] `jsonl.basic.ts`: `isJsonl`
+- [ ] `function.is.ts`: `isAsyncFunction`, `isSyncFunction`
+- [ ] `schema.basic.ts`: Refactor to new pattern
 
 ## Testing Considerations
 

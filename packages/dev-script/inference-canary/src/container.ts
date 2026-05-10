@@ -27,7 +27,7 @@ import type { ContainerResult, } from './container-exec.ts';
 
 export type { ContainerResult, } from './container-exec.ts';
 
-//region Staging directory -- uses LINT_DIR instead of os.tmpdir() so all container I/O stays under one well-known tree
+//region Staging directory: uses LINT_DIR instead of os.tmpdir() so all container I/O stays under one well-known tree
 
 /**
  * Creates a staging directory under LINT_DIR that cleans itself up via `await using`.
@@ -64,7 +64,7 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
 
 //endregion Staging directory
 
-//region Public API -- runInContainer is the sole entry point for executing generated code
+//region Public API: runInContainer is the sole entry point for executing generated code
 
 /**
  * Runs a TypeScript source string inside a locked-down container.

@@ -30,7 +30,7 @@ somewhere in their source code (e.g. in an import path or comment).
 The other 78 test files contain `test` (from test imports, `it(...)`)
 but never `.test.` surrounded by dots.
 
-The spaces in directory names had no effect --
+The spaces in directory names had no effect;
 rg handles spaces in paths correctly.
 
 ### Fix
@@ -52,7 +52,7 @@ rg --glob '*.test.ts' -l 'test' packages/
 
 When debugging "rg can't find my files," the first instinct is to suspect
 path handling (spaces, special characters, symlinks).
-The actual cause -- a content pattern that doesn't match -- is invisible
+The actual cause (a content pattern that doesn't match) is invisible
 because you never see which files rg searched and rejected.
 Adding `--debug` or switching to `--files --glob` immediately reveals
 whether the issue is file discovery or content matching.

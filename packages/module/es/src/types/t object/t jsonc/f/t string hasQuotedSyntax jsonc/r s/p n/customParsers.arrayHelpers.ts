@@ -7,7 +7,7 @@ import type {
 import type * as Jsonc from '../../../../t/index.ts';
 import { startsWithComment, } from './customParsers.startsWithComment.ts';
 
-//region Array header -- Consume '[' then leading comments to capture array-level comment
+//region Array header: Consume '[' then leading comments to capture array-level comment
 /**
  * After the opening '[', compute the array-level comment (if any) and return the tail at the first element or ']'.
  *
@@ -38,7 +38,7 @@ export function parseArrayHeader(
 }
 //endregion Array header
 
-//region Array separators -- Determine end of array or next element start
+//region Array separators: Determine end of array or next element start
 /**
  * Given the raw tail after an element, consume comments/whitespace once and decide next action.
  *

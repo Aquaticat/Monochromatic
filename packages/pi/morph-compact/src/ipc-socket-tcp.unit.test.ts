@@ -108,7 +108,7 @@ await describe({
               },
             );
 
-            // Second connection should fail — server is closed
+            // Second connection should fail: server is closed
             let secondReadErrored = false;
             try {
               await readFromTcpSocket(server.address,);

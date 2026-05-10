@@ -3,7 +3,7 @@
  * the Aquaticat master glyph strip SVG exported from Figma.
  */
 
-//region Types -- data extracted from the master SVG
+//region Types: data extracted from the master SVG
 
 /** Raw path data extracted from a single SVG `<path>` element. */
 export type CellPath = {
@@ -165,7 +165,7 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
   const tokenRegex = /([MLHVZ])|(-?\d+(?:\.\d+)?)/g;
 
   // Mutable state tracking the current command letter while consuming coordinate tokens
-  // -- let needed because the regex loop reassigns on each command letter encountered
+  // let needed because the regex loop reassigns on each command letter encountered
   let currentCmd = '';
 
   // oxlint-disable-next-line no-restricted-syntax -- regex exec loop

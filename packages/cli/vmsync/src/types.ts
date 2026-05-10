@@ -14,7 +14,7 @@ export type DiskFormat = 'qcow2' | 'raw' | 'vhdx';
 
 //endregion Hypervisor detection
 
-//region VM configuration -- persisted as vmsync.jsonc
+//region VM configuration: persisted as vmsync.jsonc
 
 /** Boot settings shared across hypervisors. */
 export type BootConfig = {

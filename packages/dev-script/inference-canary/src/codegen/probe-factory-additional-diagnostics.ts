@@ -89,7 +89,7 @@ export function appendAdditionalRunDiagnostics(
   if (base !== undefined)
     return `${base}\n\n${combined}`;
 
-  // Main run was fine but additional runs failed -- build standalone prompt
+  // Main run was fine but additional runs failed: build standalone prompt
   return [
     'Your code from the previous response has issues.',
     combined,

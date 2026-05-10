@@ -58,7 +58,7 @@ function makeCompactionEntry(
   } as CompactionEntry;
 }
 
-/** Minimal params without messages — nothing to compress. */
+/** Minimal params without messages (nothing to compress). */
 function emptyParams(): {
   branchEntries: SessionEntry[];
   apiKey: string;
@@ -127,7 +127,7 @@ await describe({
   children: [
     describe({
       name: compressBranch.name,
-      // Sequential execution required — tests stub MorphCompactClient.prototype.compact
+      // Sequential execution required: tests stub MorphCompactClient.prototype.compact
       // and would fail under concurrent execution because sinon refuses to
       // wrap an already-wrapped method.
       concurrency: 1,

@@ -72,7 +72,7 @@ async function runCliFy({ args, }: { args: readonly string[]; },): Promise<{
 await describe({
   name: 'cli-fy integration',
   children: [
-    //region Function calls -- calling exported functions with arguments
+    //region Function calls: calling exported functions with arguments
 
     it({
       name: 'calls node:path join with two arguments',
@@ -105,7 +105,7 @@ await describe({
 
     //endregion Function calls
 
-    //region Non-function exports -- accessing values without calling
+    //region Non-function exports: accessing values without calling
 
     it({
       name: 'prints non-function export value when no args given',
@@ -127,7 +127,7 @@ await describe({
 
     //endregion Non-function exports
 
-    //region Default export -- accessing default export via "default" keyword
+    //region Default export: accessing default export via "default" keyword
 
     it({
       name: 'prints default export value from a local fixture',
@@ -153,7 +153,7 @@ await describe({
 
     //endregion Default export
 
-    //region Error cases -- non-existent exports, type mismatches, bad specifiers
+    //region Error cases: non-existent exports, type mismatches, bad specifiers
 
     it({
       name: 'errors when export does not exist',
@@ -185,7 +185,7 @@ await describe({
 
     //endregion Error cases
 
-    //region Help -- verifies --help output
+    //region Help: verifies --help output
 
     it({
       name: 'prints help with --help flag',
@@ -199,7 +199,7 @@ await describe({
 
     //endregion Help
 
-    //region Missing arguments -- verifies parser errors
+    //region Missing arguments: verifies parser errors
 
     it({
       name: 'errors when no arguments provided',

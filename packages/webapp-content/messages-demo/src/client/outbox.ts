@@ -182,7 +182,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
     void drain();
   }
 
-  /** Online/visibility listener -- kicks the drain when conditions improve. */
+  /** Online/visibility listener: kicks the drain when conditions improve. */
   function onOnlineOrVisible(): void {
     if (state.destroyed)
       return;

@@ -97,7 +97,7 @@ No container, no prerequisite installation, no user creation.
 The specified runtime must already be installed and available on PATH.
 
 The `user` axis still generates combinations (for labeling and matrix completeness)
-but does not affect execution -- the process runs as the current user.
+but does not affect execution; the process runs as the current user.
 Use `exclude` to filter out inapplicable user combinations.
 
 ```ts

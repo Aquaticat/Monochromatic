@@ -93,7 +93,7 @@ function transformPathD(
     }
 
     if (upperCmd === 'V') {
-      /** V takes a single y value -- don't transform. */
+      /** V takes a single y value; don't transform. */
       result.push(token,);
       paramIndex++;
       continue;

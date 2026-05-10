@@ -20,7 +20,7 @@ Smooth scrolling in existing editors is significantly worse than Neovide:
 
 editord sidesteps these issues by running the editor UI as a PWA in real Chromium (not Electron),
 using raw `contenteditable` with per-line `<div>` elements and native CSS overflow scrolling.
-The browser's compositor thread owns scroll entirely -- no `preventDefault`, no JS scroll reimplementation.
+The browser's compositor thread owns scroll entirely: no `preventDefault`, no JS scroll reimplementation.
 
 ## Architecture
 
@@ -57,7 +57,7 @@ editord (Bun + h3)              Chromium PWA
 
 **Frontend owns the canonical buffer.**
 The DOM contenteditable element is the text state.
-editord is a file I/O and search service -- no OT, no CRDT, no sync protocol.
+editord is a file I/O and search service: no OT, no CRDT, no sync protocol.
 Full text round-trips on open/save.
 
 ## Key design decisions

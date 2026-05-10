@@ -148,7 +148,7 @@ function insertHash(
 
 //endregion Helper functions
 
-//region Phase 1 -- fingerprint leaf assets
+//region Phase 1: fingerprint leaf assets
 
 /**
  * Fingerprints all leaf assets (files with no outgoing references to other hashable assets).
@@ -196,7 +196,7 @@ async function fingerprintLeafAssets(
 
 //endregion Phase 1
 
-//region Phase 2 -- fingerprint CSS
+//region Phase 2: fingerprint CSS
 
 /**
  * Rewrites font references in CSS and fingerprints the CSS file.
@@ -287,7 +287,7 @@ async function fingerprintCss(
 
 //endregion Phase 2
 
-//region Phase 3 -- rewrite references
+//region Phase 3: rewrite references
 
 /**
  * Rewrites asset references in HTML files and manifest.webmanifest.
@@ -475,8 +475,8 @@ const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
  * rewrite and hash `styles.css`. Returns the replacements map so phase
  * 3 can consume it.
  *
- * Split out so it can be awaited in a `Promise.all` with `runPagefind`
- * -- neither branch touches HTML, so they race on disjoint files.
+ * Split out so it can be awaited in a `Promise.all` with `runPagefind`;
+ * neither branch touches HTML, so they race on disjoint files.
  *
  * @returns basename → hashed-basename map covering every hashed asset
  *

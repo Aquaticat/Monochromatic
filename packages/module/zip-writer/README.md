@@ -54,10 +54,10 @@ import { crc32, dosDateTime, } from '@monochromatic-dev/module-zip-writer';
 
 ## Not supported
 
-- Compression (deflate, bzip2, LZMA, etc.) — the writer always uses STORE
+- Compression (deflate, bzip2, LZMA, etc.): the writer always uses STORE
 - Zip64 (archives over 4 GiB or with over 65 535 entries)
 - Encryption (ZipCrypto, AES)
-- Streaming output — the result is built in a single pre-allocated buffer
+- Streaming output: the result is built in a single pre-allocated buffer
 - Reading or modifying existing archives
 - Spanning, splitting, multi-volume archives
 - Data descriptors, comments, extra fields beyond the basics

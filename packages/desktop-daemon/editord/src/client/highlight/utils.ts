@@ -37,7 +37,7 @@ export function getLineTexts({ editor, }: { editor: HTMLDivElement; },): string[
  * Finds the line index containing a given text offset via binary search.
  *
  * `lineStarts` is sorted by definition (cumulative offsets), so binary search
- * reduces per-token lookup from O(L) to O(log L) — significant when the
+ * reduces per-token lookup from O(L) to O(log L), significant when the
  * highlight engine calls this for every token in the parse tree.
  *
  * @param offset - character offset in the full text
