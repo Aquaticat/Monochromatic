@@ -4,6 +4,8 @@
  * @module
  */
 
+import { BYTES_PER_GIB, } from '@monochromatic-dev/module-numeric-const';
+
 import { readConfig, } from './config.ts';
 import {
   l,
@@ -34,8 +36,7 @@ export async function showStatus(name: string,): Promise<void> {
   const config = await readConfig(name,);
 
   /** Disk size formatted in GiB. */
-  const GIB = 1_073_741_824;
-  const sizeGib = (config.diskSizeBytes / GIB).toFixed(1,);
+  const sizeGib = (config.diskSizeBytes / BYTES_PER_GIB).toFixed(1,);
 
   console.log(`name:       ${config.name}`,);
   console.log(`imported:   ${config.importedFrom}`,);

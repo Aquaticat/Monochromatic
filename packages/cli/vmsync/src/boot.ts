@@ -14,6 +14,10 @@ import { join, } from 'node:path';
 import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  BYTES_PER_GIB,
+  BYTES_PER_MIB,
+} from '@monochromatic-dev/module-numeric-const';
 
 import {
   detectHypervisor,
@@ -324,14 +328,9 @@ export function parseMemoryToBytes(memory: string,): number {
   /** Unit suffix, normalized to uppercase. */
   const unit = notNullishOrThrow(match[2],).toUpperCase();
 
-  /** Bytes per gigabyte. */
-  const GIB = 1_073_741_824;
-  /** Bytes per megabyte. */
-  const MIB = 1_048_576;
-
   return unit === 'G'
-    ? value * GIB
-    : value * MIB;
+    ? value * BYTES_PER_GIB
+    : value * BYTES_PER_MIB;
 }
 
 //endregion Memory parsing
