@@ -4,19 +4,14 @@
  * Pure functions with no component dependencies -- used by both
  * `\<task-card\>` and `\<task-detail\>` to display elapsed time.
  */
+import {
+  HOURS_PER_DAY,
+  MS_PER_SECOND,
+  SECONDS_PER_HOUR,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
+
 import type { Task, } from '../../lib/types.ts';
-
-/** Seconds per minute. */
-const SECONDS_PER_MINUTE = 60;
-
-/** Seconds per hour. */
-const SECONDS_PER_HOUR = 3_600;
-
-/** Hours per day. */
-const HOURS_PER_DAY = 24;
-
-/** Milliseconds per second. */
-const MS_PER_SECOND = 1_000;
 
 /**
  * Formats a duration in seconds as a human-readable string (e.g. "1h30min15s").

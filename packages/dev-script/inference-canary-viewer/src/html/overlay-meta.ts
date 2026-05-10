@@ -5,15 +5,13 @@
  * within popover overlays.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
 
 import type {
   ProbeDetail,
   StreamTiming,
   StreamUsage,
 } from '../data/viewer-types.ts';
-
-/** Milliseconds per second for display formatting */
-const MS_PER_SECOND = 1_000;
 
 /**
  * Formats milliseconds as a human-readable duration.

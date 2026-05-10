@@ -1,5 +1,10 @@
 import { parseArgs, } from 'node:util';
 
+import {
+  MS_PER_SECOND,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
+
 import { forceCleanup, } from './analyze/llama.ts';
 import { cycle, } from './cycle.ts';
 import {
@@ -13,12 +18,6 @@ export {};
 
 /** Minutes per cycle interval. */
 const INTERVAL_MINUTES = 5;
-
-/** Seconds per minute, used to compose time constants. */
-const SECONDS_PER_MINUTE = 60;
-
-/** Milliseconds per second, used to compose time constants. */
-const MS_PER_SECOND = 1_000;
 
 /** Interval between capture-analyze-notify cycles. */
 const INTERVAL_MS = INTERVAL_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;

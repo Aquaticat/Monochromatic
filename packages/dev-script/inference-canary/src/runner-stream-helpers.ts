@@ -4,6 +4,8 @@
  * Contains the {@link PartialCompletionError} class for abort handling,
  * and helper functions for timing display, usage parsing, and result assembly.
  */
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import {
   l,
   tagged,
@@ -16,9 +18,6 @@ import type {
   StreamTiming,
   StreamUsage,
 } from './runner-types.ts';
-
-/** Milliseconds per second for human-readable timing display */
-const MS_PER_SECOND = 1_000;
 
 //region PartialCompletionError: thrown on stream abort, carries whatever data was collected before cancellation
 

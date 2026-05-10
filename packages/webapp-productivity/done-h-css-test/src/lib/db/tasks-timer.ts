@@ -1,11 +1,12 @@
 /**
  * Task timer and completion operations.
  */
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import db from '../db.ts';
 import type { Task, } from '../types.ts';
 import {
   type CompleteTaskResult,
-  MS_PER_SECOND,
   nowIso,
 } from './tasks-helpers.ts';
 import { getTaskById, } from './tasks-queries.ts';

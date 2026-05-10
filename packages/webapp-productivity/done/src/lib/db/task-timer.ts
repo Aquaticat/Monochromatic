@@ -4,6 +4,8 @@
  * Handles start/stop timer state transitions and blocker-aware
  * task completion. Basic CRUD remains in tasks.ts.
  */
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import db from '../db.ts';
 import type { Task, } from '../types.ts';
 import { nowIso, } from './task-mapping.ts';
@@ -14,9 +16,6 @@ import {
   SQL_START_TIMER,
   SQL_STOP_TIMER,
 } from './task-sql.ts';
-
-/** Milliseconds per second, used for timer elapsed-time calculations. */
-const MS_PER_SECOND = 1_000;
 
 /** Summary of a single blocker task, used to report why completion was refused. */
 export type BlockerSummary = {

@@ -6,23 +6,10 @@
  * checks whether timestamps fall within a 24-hour recency window.
  */
 
-/** Hours in a day */
-const HOURS_PER_DAY = 24;
-
-/** Minutes per hour */
-const MINUTES_PER_HOUR = 60;
-
-/** Seconds per minute */
-const SECONDS_PER_MINUTE = 60;
-
-/** Milliseconds per second */
-const MS_PER_SECOND = 1_000;
+import { MS_PER_DAY, } from '@monochromatic-dev/module-numeric-const';
 
 /** 24 hours in milliseconds */
-export const TWENTY_FOUR_HOURS_MS: number = HOURS_PER_DAY
-  * MINUTES_PER_HOUR
-  * SECONDS_PER_MINUTE
-  * MS_PER_SECOND;
+export const TWENTY_FOUR_HOURS_MS: number = MS_PER_DAY;
 
 /**
  * Result of scanning artifact directories for recent activity.

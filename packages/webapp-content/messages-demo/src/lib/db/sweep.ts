@@ -9,23 +9,20 @@
  * message itself is being removed.
  */
 
+import {
+  HOURS_PER_DAY,
+  MS_PER_SECOND,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
+
 import db, {
   all,
   get,
   run,
 } from '../db.ts';
 
-/** Milliseconds in one second. */
-const MS_PER_SECOND = 1_000;
-
-/** Seconds in one minute. */
-const SECONDS_PER_MINUTE = 60;
-
 /** Minutes in the orphan TTL window. */
 const ORPHAN_TTL_MINUTES = 15;
-
-/** Hours in one day. */
-const HOURS_PER_DAY = 24;
 
 /** Days in the deleted-message hard-delete TTL. */
 const DELETED_TTL_DAYS = 7;

@@ -10,9 +10,6 @@ import type {
 } from '../types.ts';
 import { SQL_SELECT_TASK_BY_ID, } from './tasks-sql.ts';
 
-/** Milliseconds per second, used for timer elapsed-time calculations. */
-export const MS_PER_SECOND = 1_000;
-
 /** Raw SQLite row shape before mapping to the application-level `Task` type. */
 export type TaskRow = {
   /** Primary key UUID. */

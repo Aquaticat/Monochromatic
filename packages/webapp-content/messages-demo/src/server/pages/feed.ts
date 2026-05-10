@@ -7,6 +7,12 @@
  */
 
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
+import {
+  MS_PER_SECOND,
+  SECONDS_PER_DAY,
+  SECONDS_PER_HOUR,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
 
 import {
   feedAggregates,
@@ -202,24 +208,6 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
     html: cards,
   },) + pagination;
 }
-
-/** Milliseconds in one second. */
-const MS_PER_SECOND = 1_000;
-
-/** Seconds in one minute. */
-const SECONDS_PER_MINUTE = 60;
-
-/** Minutes in one hour. */
-const MINUTES_PER_HOUR = 60;
-
-/** Hours in one day. */
-const HOURS_PER_DAY = 24;
-
-/** Seconds in one hour. */
-const SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
-
-/** Seconds in one day. */
-const SECONDS_PER_DAY = HOURS_PER_DAY * SECONDS_PER_HOUR;
 
 /** Day count after which the formatter switches to an ISO date. */
 const ISO_DATE_THRESHOLD_DAYS = 30;

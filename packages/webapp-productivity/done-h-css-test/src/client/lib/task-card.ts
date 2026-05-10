@@ -5,6 +5,8 @@
  * because it's always created programmatically (never placed in server HTML).
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import type { Task, } from '../../lib/types.ts';
 import {
   buildChipTexts,
@@ -12,9 +14,6 @@ import {
   type TaskCardOptions,
 } from './task-card-helpers.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
-
-/** Milliseconds per second for timer elapsed calculation. */
-const MS_PER_SECOND = 1_000;
 
 /**
  * `<task-card>` -- displays a task as a clickable card with checkbox, title, and metadata chips.

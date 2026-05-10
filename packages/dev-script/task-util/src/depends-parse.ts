@@ -7,6 +7,8 @@
  * @module
  */
 
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 //region Constants
 
 /** Prefix that identifies a shell command item */
@@ -19,9 +21,6 @@ export const SH_PREFIX = 'sh:';
  * Numbers \< 1e12 are treated as seconds and multiplied by 1000.
  */
 const SECONDS_MS_BOUNDARY = 1e12;
-
-/** Multiplier for converting seconds to milliseconds */
-const MS_PER_SECOND = 1_000;
 
 //endregion Constants
 

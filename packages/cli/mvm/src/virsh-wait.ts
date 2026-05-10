@@ -7,15 +7,14 @@
  * @module
  */
 
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import { VM_PREFIX, } from './config.ts';
 import {
   l,
   tagged,
 } from './log.ts';
 import { virsh, } from './virsh.ts';
-
-/** Milliseconds per second for converting between ms and seconds in log messages. */
-const MS_PER_SECOND = 1_000;
 
 /** Milliseconds between guest agent ping attempts. */
 const AGENT_POLL_INTERVAL_MS = MS_PER_SECOND;

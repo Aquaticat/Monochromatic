@@ -1,4 +1,8 @@
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import {
+  MS_PER_SECOND,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
 import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 
@@ -10,12 +14,6 @@ const l = tagged({
 
 /** Minutes per fetch interval window. */
 const MINUTES_PER_INTERVAL = 5;
-
-/** Seconds per minute. */
-const SECONDS_PER_MINUTE = 60;
-
-/** Milliseconds per second. */
-const MS_PER_SECOND = 1_000;
 
 /** Default fetch cache interval: 5 minutes in milliseconds. */
 const DEFAULT_FETCH_INTERVAL_MS = MINUTES_PER_INTERVAL

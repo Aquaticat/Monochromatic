@@ -1,8 +1,7 @@
-/** Seconds per minute, used to compose time constants. */
-const SECONDS_PER_MINUTE = 60;
-
-/** Milliseconds per second, used to compose time constants. */
-const MS_PER_SECOND = 1_000;
+import {
+  MS_PER_SECOND,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
 
 /** How long capture sets are retained in the buffer before pruning. */
 const RETENTION_MS = 10 * SECONDS_PER_MINUTE * MS_PER_SECOND;

@@ -1,6 +1,12 @@
 /**
  * Helper functions and types for `<task-card>`.
  */
+import {
+  HOURS_PER_DAY,
+  SECONDS_PER_HOUR,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
+
 import type { Task, } from '../../lib/types.ts';
 
 /** Configuration for a `<task-card>` instance, passed via `createTaskCard`. */
@@ -12,15 +18,6 @@ export type TaskCardOptions = {
   /** Callback when the checkbox is clicked (completes the task). */
   onToggleComplete?: (taskId: string,) => Promise<void>;
 };
-
-/** Seconds in one hour. */
-const SECONDS_PER_HOUR = 3_600;
-
-/** Seconds in one minute. */
-const SECONDS_PER_MINUTE = 60;
-
-/** Hours in one day. */
-const HOURS_PER_DAY = 24;
 
 /**
  * Formats a duration in seconds as a human-readable string (e.g. "1h30min15s").

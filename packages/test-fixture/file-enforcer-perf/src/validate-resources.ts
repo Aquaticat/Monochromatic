@@ -10,6 +10,8 @@
 
 import { readFile, } from 'node:fs/promises';
 
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import {
   round1,
   runIoBenchmark,
@@ -18,9 +20,6 @@ import {
   runSerialCpuBenchmark,
   runSysbench,
 } from './validate-benchmarks.ts';
-
-/** Conversion factor from per-millisecond rate to per-second rate */
-const MS_PER_SECOND = 1_000;
 
 //region Cgroup limit detection
 

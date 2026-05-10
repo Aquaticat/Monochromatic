@@ -6,6 +6,11 @@
  * rather than throwing, so partial results from other probes can still be collected.
  */
 import {
+  MS_PER_SECOND,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
+
+import {
   l,
   tagged,
 } from './log.ts';
@@ -17,12 +22,6 @@ import type { ProbeResult, } from './runner-types.ts';
 
 /** Minutes before a probe is considered timed out */
 const PROBE_TIMEOUT_MINUTES = 5;
-
-/** Seconds per minute for timeout computation */
-const SECONDS_PER_MINUTE = 60;
-
-/** Milliseconds per second for timeout computation */
-const MS_PER_SECOND = 1_000;
 
 /** 5 minutes per probe (all consistency runs + fix pass) -- slower inference is unusable */
 const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;
