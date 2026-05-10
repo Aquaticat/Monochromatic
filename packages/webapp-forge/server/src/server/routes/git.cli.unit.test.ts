@@ -33,7 +33,6 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
-import { execFile, } from 'node:child_process';
 import { randomBytes, } from 'node:crypto';
 import {
   mkdtemp,
@@ -42,12 +41,12 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import { promisify, } from 'node:util';
 
 import {
   H3,
   serve,
 } from 'h3';
+import spawn from 'nano-spawn';
 
 /** Concrete type of the value `serve()` returns; not exported by h3 directly. */
 type ServeHandle = ReturnType<typeof serve>;
@@ -77,9 +76,6 @@ const {
 /** Absolute path to the system git binary, bypassing the workspace wrapper. */
 const SYSTEM_GIT = '/usr/bin/git';
 
-/** Promisified subprocess runner. */
-const execFileAsync = promisify(execFile,);
-
 /** Bytes per kibibyte. */
 const KIB = 1_024;
 
@@ -88,9 +84,6 @@ const MIB = KIB * KIB;
 
 /** Target size for the large-blob test (5 MiB). */
 const FIVE_MIB = 5 * MIB;
-
-/** Buffer cap for execFile stdout (16 MiB; large pushes can be chatty). */
-const STDOUT_BUFFER_CAP = 16 * MIB;
 
 /** Number of refs in the batched-push test. */
 const BATCH_REF_COUNT = 100;
@@ -211,18 +204,16 @@ async function startServer(): Promise<{
 async function runGit(row: {
   readonly cwd: string;
   readonly args: readonly string[];
-  readonly maxBuffer?: number;
 },): Promise<string> {
-  const { stdout, } = await execFileAsync(
+  const { stdout, } = await spawn(
     SYSTEM_GIT,
-    [...row.args,],
+    row.args,
     {
       cwd: row.cwd,
       env: {
         ...BASE_GIT_ENV,
         HOME: row.cwd,
       },
-      maxBuffer: row.maxBuffer ?? STDOUT_BUFFER_CAP,
     },
   );
   return stdout;
@@ -426,7 +417,7 @@ await describe({
           },
         ).join('\n',)}\n`;
 
-        const child = execFile(
+        await spawn(
           SYSTEM_GIT,
           ['update-ref', '--stdin',],
           {
@@ -435,29 +426,9 @@ await describe({
               ...BASE_GIT_ENV,
               HOME: repo,
             },
+            stdin: { string: stdinScript, },
           },
         );
-        const exitPromise = new Promise<void>(function dispatchUpdateRef(resolve, reject,) {
-          child.once(
-            'error',
-            function onSpawnError(err: Error,) {
-              reject(err,);
-            },
-          );
-          child.once(
-            'exit',
-            function onExit(code,) {
-              if (code === 0) {
-                resolve();
-              } else {
-                reject(new Error(`update-ref exited with code ${String(code,)}`,),);
-              }
-            },
-          );
-        },);
-        child.stdin?.write(stdinScript,);
-        child.stdin?.end();
-        await exitPromise;
 
         await runGit({
           cwd: repo,

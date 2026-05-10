@@ -448,6 +448,10 @@ Suggested resolution: replace the `ReturnType<typeof tagged>` with a direct impo
 
 #### `CommandResult` declared locally in ssg-test
 
+**Resolved 2026-05-10**: folded into the `nano-spawn` migration. The
+local type now reads `type CommandResult = Pick<Result, 'stdout' | 'stderr'>`
+with `Result` imported from `nano-spawn`.
+
 `packages/webapp-content/ssg-test/src/lib/git-dates.ts:31` defines a local
 `{ stdout, stderr }` type matching the public type returned by `nano-spawn`.
 
@@ -1065,6 +1069,18 @@ already covered by earlier findings:
 ### Subprocess and runtime patterns
 
 #### `nano-spawn` is the convention with four hold-outs using `promisify(execFile)`
+
+**Resolved 2026-05-10**: all four hold-outs migrated to `nano-spawn`.
+`git-dates.ts` also folds in the `CommandResult` finding (line 449) by
+typing the wrapper return as `Pick<Result, 'stdout' | 'stderr'>` from
+`nano-spawn`. The `update-ref --stdin` block in `git.cli.unit.test.ts`
+collapses from 30 lines (manual `child.stdin.write` + `exit` listener) to
+a single `spawn` call with `stdin: { string: stdinScript }`. Binary
+stdout in `zip-writer/index.unit.test.ts` (formerly `encoding: 'buffer'`)
+extracts via `unzip -o -d tempDir` then reads back, since `nano-spawn`
+returns string-only stdout. Verified by `mise run //:buildAndTest`
+against both test files; all three git CLI scenarios and all 17
+zip-writer cases pass.
 
 `nano-spawn` appears in 38 source files (verified by `rg "from 'nano-spawn'"`). Four
 files still use the `node:child_process` + `node:util` `promisify(execFile)` pattern:

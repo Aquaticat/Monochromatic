@@ -11,34 +11,25 @@
  * dates; first commit snaps both dates to commit author timestamps.
  * Authoring without committing is undefined behavior.
  */
-import { execFile, } from 'node:child_process';
 import { stat, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
-import { promisify, } from 'node:util';
+
+import spawn, { type Result, } from 'nano-spawn';
 
 import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
 
 import type { Logger, } from './types.ts';
 
-/** Promisified `execFile` for typed-stdout command execution. */
-const run = promisify(execFile,);
-
 //region Helpers
 
-/** Maximum stdout/stderr capture size in bytes for spawned commands (10 MiB). */
-const MAX_CAPTURE_BUFFER_BYTES = 10_485_760;
-
 /** Result of running a git (or gh) command with stdout captured as UTF-8. */
-type CommandResult = {
-  stdout: string;
-  stderr: string;
-};
+type CommandResult = Pick<Result, 'stdout' | 'stderr'>;
 
 /**
  * Executes a command, returning captured stdout and stderr strings.
  *
- * Wraps `promisify(execFile)` so callers see a narrow return type instead
- * of the overloaded union that leaks from node typings.
+ * Wraps `nano-spawn` so callers see a narrow return type containing only
+ * the stream fields they consume.
  *
  * @param cmd - executable name or absolute path
  *
@@ -58,18 +49,17 @@ async function runCapture(
   args: readonly string[],
   { cwd, }: { cwd?: string; } = {},
 ): Promise<CommandResult> {
-  const result = await run(
+  const {
+    stdout,
+    stderr,
+  } = await spawn(
     cmd,
-    [...args,],
-    {
-      encoding: 'utf8',
-      maxBuffer: MAX_CAPTURE_BUFFER_BYTES,
-      cwd,
-    },
+    args,
+    { cwd, },
   );
   return {
-    stdout: String(result.stdout,),
-    stderr: String(result.stderr,),
+    stdout,
+    stderr,
   };
 }
 

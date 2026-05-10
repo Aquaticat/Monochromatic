@@ -3,19 +3,17 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
-import { execFile, } from 'node:child_process';
-import { mkdtemp, rm, writeFile, } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import { promisify, } from 'node:util';
+
+import spawn from 'nano-spawn';
 
 import {
   crc32,
   dosDateTime,
   ZipWriter,
 } from './index.ts';
-
-const exec = promisify(execFile,);
 
 /** Async-disposable temp directory; cleaned up on scope exit. */
 type DisposableTempDir = {
@@ -51,7 +49,8 @@ async function verifyZipIntegrity(bytes: Uint8Array,): Promise<{ stdout: string;
   await using tempDir = await makeTempDir();
   const file = join(tempDir.path, 'test.zip',);
   await writeFile(file, bytes,);
-  return await exec('unzip', ['-tq', file,],);
+  const { stdout, stderr, } = await spawn('unzip', ['-tq', file,],);
+  return { stdout, stderr, };
 }
 
 /**
@@ -65,12 +64,15 @@ async function listZipEntries(bytes: Uint8Array,): Promise<string[]> {
   await using tempDir = await makeTempDir();
   const file = join(tempDir.path, 'test.zip',);
   await writeFile(file, bytes,);
-  const { stdout, } = await exec('unzip', ['-Z1', file,],);
-  return stdout.trim().split('\n',).filter((line) => line.length > 0,);
+  const { stdout, } = await spawn('unzip', ['-Z1', file,],);
+  return stdout.split('\n',).filter((line) => line.length > 0,);
 }
 
 /**
- * Extract a single file from a ZIP buffer using `unzip -p`.
+ * Extract a single file from a ZIP buffer.
+ *
+ * Extracts the archive to a temp directory and reads the entry as bytes,
+ * since `nano-spawn` returns string-only stdout (no `encoding: 'buffer'`).
  *
  * @param bytes - Archive bytes to extract from
  * @param path - Entry path inside the archive
@@ -84,12 +86,8 @@ async function extractFromZip(
   await using tempDir = await makeTempDir();
   const file = join(tempDir.path, 'test.zip',);
   await writeFile(file, bytes,);
-  const { stdout, } = await exec(
-    'unzip',
-    ['-p', file, path,],
-    { encoding: 'buffer', maxBuffer: 64 * 1_024 * 1_024, },
-  );
-  return new Uint8Array(stdout,);
+  await spawn('unzip', ['-o', '-d', tempDir.path, file,],);
+  return new Uint8Array(await readFile(join(tempDir.path, path,),),);
 }
 
 await describe({

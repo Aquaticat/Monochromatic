@@ -885,9 +885,7 @@ async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
   }
 
   // Fallback: use zstd CLI
-  const { execFile, } = await import('node:child_process');
-  const { promisify, } = await import('node:util');
-  const execFileAsync = promisify(execFile,);
+  const { default: spawn, } = await import('nano-spawn');
   const {
     writeFileSync,
     readFileSync,
@@ -910,7 +908,7 @@ async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
       tmpIn,
       data,
     );
-    await execFileAsync(
+    await spawn(
       'zstd',
       [
         '-d',

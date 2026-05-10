@@ -45,6 +45,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@monochromatic-dev/module-es": "workspace:*"
+    "@monochromatic-dev/module-es": "workspace:*",
+    "nano-spawn": "catalog:"
   }
 }
