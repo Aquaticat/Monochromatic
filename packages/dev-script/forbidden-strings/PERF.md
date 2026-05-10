@@ -6,6 +6,79 @@ against the binary built from this package's `src/`.
 
 ## Last benched
 
+**2026-05-10 (post-utf8-walker-fix)**, hyperfine 1.20.0, same hardware
+(AMD Ryzen 7 8700F, 16 threads). The walker fix in `src/rules/atom.rs`
+rewrites `walk_literal_bytes` to iterate by `char` rather than casting
+each `u8` to `char` (the former silently mojibake'd non-ASCII multi-byte
+UTF-8 into wrong codepoints). The fix's code path runs in
+`extract_gating_substrings` (Phase 2, the rule-load path); the per-file
+scan hot path is unchanged.
+
+### Realistic ruleset on Monochromatic, 30 runs
+
+```text
+example-startup    9.0 ms ± 0.7 ms     (user 34.5 ms, sys 13.8 ms)
+example-all       47.3 ms ± 2.9 ms     (user 277.1 ms, sys 93.7 ms)
+```
+
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 3 runs):
+
+```text
+phase 0 read_rules_file:           0.0 to 0.1 ms
+phase 1 classify+regex_compile:    3.7 to 6.1 ms
+phase 2 extract_gating_substrings: 0.2 to 0.3 ms   (unchanged from 2026-05-03)
+phase 3 ac_build:                  0.5 to 0.6 ms
+phase 4 residual_shards:           0.0 ms
+```
+
+### Comparison with 2026-05-03 baseline
+
+Both rows are Monochromatic `--all` against the same example ruleset
+(`forbidden-strings.local.example.txt`):
+
+```text
+            2026-05-03         2026-05-10         delta
+example-all 37.2 ms ± 3.6 ms   47.3 ms ± 2.9 ms   +10.1 ms (+27%)
+```
+
+The shift is **unrelated to the walker fix**:
+
+- Phase 2 (`extract_gating_substrings`, the only phase the walker fix
+  runs in) is identical at 0.2 to 0.3 ms across both benches.
+- Repo content changed between benches: tracked file count grew from
+  ~2700 to 2860 (+5%); tracked byte volume shifted from ~21 MiB to
+  19.8 MiB. New content under `packages/pi/auto-mode/src/` triggers
+  two true rule violations (rules 104 and 319 in
+  `signals.unit.test.ts`) and apparently more AC prefix-match queueing
+  that drives extra per-file `find_all` invocations.
+- Math sanity: even if the walker fix had doubled Phase 2, the absolute
+  delta would be ~0.3 ms, not 10 ms. The +10 ms must come from
+  per-file work the walker doesn't touch.
+
+The two reported hits should be triaged separately (they are
+pre-existing rule violations against pre-existing content, just newly
+visible in this bench's output).
+
+### Audit blast radius of the walker fix
+
+`rg -nP '[\xe2-\xf4]' forbidden-strings.local.txt
+forbidden-strings.append.local.txt forbidden-strings.local.example.txt
+data/betterleaks-default-config.toml` returned no non-ASCII leading
+literals in any active regex rule. The fix is preventive: future rules
+containing em-dashes, smart quotes, ellipsis, or emoji as a leading
+literal will now gate correctly through Aho-Corasick instead of
+silently dropping into the residual gate (or worse, registering a
+mojibake pattern that AC never matches).
+
+Test coverage: 22 tests in `src/rules/atom_tests.rs` and
+`src/rules/extract_tests.rs` cover 1 / 2 / 3 / 4-byte UTF-8 widths,
+the escape branch, the alternation branch, anchor strip, the
+`MIN_PREFIX_LEN` byte-length semantic, and end-to-end
+`extract -> AhoCorasick -> match` round-trips for 2-byte, 3-byte, and
+4-byte leading characters.
+
+---
+
 **2026-05-03 (post-unicode-off + post-greedy-combine + post-source-split)**,
 with `hyperfine 1.20.0`. Binary: `target/release/forbidden-strings` built
 with `mise run //packages/dev-script/forbidden-strings:build`.
