@@ -2,17 +2,22 @@
 
 ## Symptom
 
-A rule passed to [`resharp`][resharp] 0.5 (via the consumer crate
+A rule passed to [`resharp`][resharp] 0.5.x (via the consumer crate
 `forbidden-strings` 0.1.0 in this workspace, but the bug is upstream)
 fails at compile time when its complement body contains a word-boundary
-or text-anchor assertion:
+or text-anchor assertion. The compile-time error surfaces with one of
+two variants depending on which rewrite path the offending atom takes:
 
 ```
 forbidden-strings: rule on line N (resharp): Algebra(UnsupportedPattern)
+forbidden-strings: rule on line N (resharp): Parse(ParseError { kind: UnsupportedResharpRegex, ... })
 ```
 
-Resharp renders the variant as "unsupported lookaround pattern"
-(`resharp-algebra/src/lib.rs:35`).
+Resharp renders `Algebra(UnsupportedPattern)` as "unsupported lookaround
+pattern" (`resharp-algebra/src/lib.rs:35`); `UnsupportedResharpRegex` is
+emitted by the parser when an unrewritable assertion survives the boundary-
+rewriting helper. The "Verification" section below lists which surface
+patterns hit which variant.
 
 User-facing patterns that trigger the failure:
 
@@ -196,11 +201,19 @@ lookaheads without anomalous tails.
 
 ## Verification
 
-Verified 2026-05-10 against `resharp 0.5` via the forbidden-strings 0.1.0
-release binary
+Verified 2026-05-10 against `resharp 0.5.2` (crates.io checksum
+`80f2ed5c008a621ce1ab18946bdca99584ed8a6c943f64dd73f7570a23ca1eb8`,
+published 2026-05-09) via a synthetic Rust crate calling
+`resharp::Regex::new` directly on each pattern, and against `resharp 0.5.1`
+via the forbidden-strings 0.1.0 release binary
 (`packages/dev-script/forbidden-strings/target/release/forbidden-strings`).
+The `0.5.1`-to-`0.5.2` upstream delta is streaming/seeking, aarch64+wasm
+build targets, and a prefix-engine bugfix; none touch the `Kind::Compl`
+arm of `reverse`, which lives at `resharp-algebra/src/lib.rs:2234-2235`
+in 0.5.2 (previously quoted as `:2233-2239` against an earlier checkout;
+slight line drift only).
 
-Test harness:
+Test harness (binary route):
 
 ```bash
 cd /tmp
@@ -209,6 +222,31 @@ FS=/var/home/user/Monochromatic/packages/dev-script/forbidden-strings/target/rel
 echo '<rule>' > probe-rule.txt
 $FS --rules probe-rule.txt probe-input.txt
 echo "EXIT=$?"   # 0: compile + scan OK; 2: rule error
+```
+
+Test harness (synthetic crate, exact error variant):
+
+```toml
+# /tmp/resharp052-repro/Cargo.toml
+[package]
+name = "resharp052_repro"
+version = "0.0.0"
+edition = "2021"
+[dependencies]
+resharp = "=0.5.2"
+```
+
+```rust
+// /tmp/resharp052-repro/src/main.rs
+use resharp::Regex;
+fn main() {
+    for src in [r"em&~(.*\bword\b.*)", r"em&~(.*\B.*)", r"em&~((?=foo).*)"] {
+        match Regex::new(src) {
+            Ok(_)  => println!("OK    {}", src),
+            Err(e) => println!("ERR   {}\t{:?}", src, e),
+        }
+    }
+}
 ```
 
 ### Rules that compile cleanly
@@ -221,16 +259,41 @@ echo "EXIT=$?"   # 0: compile + scan OK; 2: rule error
 - 500 alternatives in a single `~(.*(w0|w1|...|w499).*)` with simple bodies
 - 500 chained `&~(.*w0.*)&~(.*w1.*)&...&~(.*w499.*)`
 
-### Rules that fail with `Algebra(UnsupportedPattern)`
+### Rules that fail with `Algebra(UnsupportedPattern)` (algebra-layer reject)
 
-- `/em&~(.*\bnpm\b.*)/`, `/em&~(.*\bnpm.*)/`, `/em&~(.*npm\b.*)/` (`\b` in complement body)
-- `/em&~(.*\B.*)/` (`\B` in complement body)
-- `/em&~(^foo$)/`, `/em&~(\Afoo$)/`, `/em&~(^foo\z)/` (line anchors in complement)
-- `/(?=^foo)bar/` (`^` at start of lookahead body, default multiline rewrite chain)
-- `/(?<=\b)foo/` (`\b` in lookbehind body without a neighbouring word-class atom)
+Patterns whose offending atom is rewritten to a lookaround by the parser
+but then refused by `reverse` at the `Kind::Compl` arm:
+
+- `/em&~(.*\bnpm\b.*)/`, `/em&~(.*\bnpm.*)/`, `/em&~(.*npm\b.*)/`
+  (`\b` in complement body, with a known word-class neighbour so the
+  boundary rewrite succeeds and produces a lookaround pair)
+- `/em&~(^foo$)/`, `/em&~(\Afoo$)/`, `/em&~(^foo\z)/`
+  (default-multiline `^`/`$` rewritten to `Lookbehind`/`Lookahead`)
+- `/em&~((?=foo).*)/`
+  (user-explicit lookahead inside complement, no `\b`/`^`/`$` involved;
+  proves the restriction is "lookaround in complement" generally, not
+  word-boundary syntax specifically)
+
+### Rules that fail with `Parse(UnsupportedResharpRegex)` (parser-layer reject)
+
+Patterns where the parser's boundary-rewriter helper cannot classify the
+atom's neighbours or the assertion sits in a lookaround body where the
+rewrite chain is wired against the surrounding flag state:
+
+- `/em&~(.*\B.*)/`
+  (`\B` between two `.*` atoms; both neighbours classify as Unknown so
+  the helper at `resharp-parser/src/lib.rs:1305-1346` falls through to
+  the generic assertion handler at `:1419-1424`, which rejects bare
+  `\B` outright)
+- `/(?=^foo)bar/`
+  (`^` at start of a lookahead body; the multiline `^`-to-lookbehind
+  rewrite at `:1425-1441` does not compose with the enclosing
+  lookahead)
+- `/(?<=\b)foo/`
+  (`\b` in a lookbehind body with no neighbouring word-class atom)
 
 The earlier "alternation count" / "seven chained complements" framing was a misdiagnosis:
-every observed failing case contained `\b`,
+every observed failing case contained a lookaround-introducing assertion in a complement or lookaround body,
 and the count axis had no measured ceiling within practical bounds.
 
 ## Verified workarounds
@@ -323,39 +386,50 @@ Labels: `bug`, `parser`, `documentation`
 ```md
 ## Description
 
-Patterns of the form `A&~(B)` where `B` contains `\b`, `\B`, `^`, or `$`
-fail at compile time with `ResharpError::UnsupportedPattern`, rendered as
-"unsupported lookaround pattern". The error message does not mention
-word boundaries or text anchors, which are the actual surface triggers.
+Patterns of the form `A&~(B)` where `B` contains `\b`, `^`, `$`, or any
+user-written lookaround fail at compile time with
+`ResharpError::UnsupportedPattern`, rendered as "unsupported lookaround
+pattern". Patterns where `B` contains `\B` (or where `\b`/`^` sit inside
+a lookaround body that the parser cannot rewrite) instead fail with a
+parse-layer `UnsupportedResharpRegex`. Neither error message names the
+surface trigger.
 
 The root cause chain:
 
 1. The parser rewrites `^`/`$` to lookbehind/lookahead in default
    multiline mode (`resharp-parser/src/lib.rs:1425-1441`).
-2. The parser rewrites `\b`/`\B` to negative-lookahead /
-   negative-lookbehind based on adjacent-atom classification
-   (`resharp-parser/src/lib.rs:1305-1346`).
+2. The parser rewrites `\b` to negative-lookahead / negative-lookbehind
+   based on adjacent-atom classification
+   (`resharp-parser/src/lib.rs:1305-1346`). When the helper cannot
+   classify a `\b` or `\B` neighbour, the assertion falls through to
+   the generic handler at `:1419-1424`, which rejects it with
+   `UnsupportedResharpRegex`.
 3. The reverse pass refuses to reverse a complement whose body contains
-   a lookaround (`resharp-algebra/src/lib.rs:2233-2236`).
+   any lookaround (`resharp-algebra/src/lib.rs:2234-2235`).
 
-The legibility issue: a user writing `em&~(.*\bnpm\b.*)` has not
-written a lookaround anywhere in the surface syntax, so the error
-"unsupported lookaround pattern" is not actionable. The user must read
-the algebra source to discover that `\b` becomes a lookaround
-internally.
+Legibility issue: a user writing `em&~(.*\bnpm\b.*)` has not written a
+lookaround anywhere in the surface syntax, so the error "unsupported
+lookaround pattern" is not actionable. A user writing
+`em&~(.*\B.*)` gets a different error variant for the same conceptual
+problem, fragmenting the symptom across two log surfaces.
 
 ## Reproduction
 
-Against `resharp 0.5`:
+Against `resharp 0.5.2`:
 
 ```rust
 use resharp::Regex;
 
-// All four fail with Err(Algebra(UnsupportedPattern))
+// These four fail with Err(Algebra(UnsupportedPattern))
 let _ = Regex::new(r"em&~(.*\bword\b.*)");
-let _ = Regex::new(r"em&~(.*\B.*)");
 let _ = Regex::new(r"em&~(^foo$)");
 let _ = Regex::new(r"em&~(\Afoo$)");
+let _ = Regex::new(r"em&~((?=foo).*)");  // user-explicit lookaround in complement
+
+// These three fail with Err(Parse(UnsupportedResharpRegex))
+let _ = Regex::new(r"em&~(.*\B.*)");
+let _ = Regex::new(r"(?=^foo)bar");
+let _ = Regex::new(r"(?<=\b)foo");
 ```
 
 ```rust
