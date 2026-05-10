@@ -2,18 +2,14 @@
 import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  HALF,
+  QUARTER,
+  THREE_QUARTERS,
+} from '@monochromatic-dev/module-numeric-const';
 import * as v from 'valibot';
 
 //region Scroll event observer: Tracks element visibility and dispatches custom scroll lifecycle events
-
-/** Intersection ratio threshold: one quarter visible. */
-const QUARTER_THRESHOLD = 0.25;
-
-/** Intersection ratio threshold: half visible. */
-const HALF_THRESHOLD = 0.5;
-
-/** Intersection ratio threshold: three quarters visible. */
-const THREE_QUARTER_THRESHOLD = 0.75;
 
 /**
  * Attaches an IntersectionObserver to an element, dispatching custom events
@@ -39,9 +35,9 @@ function addScrollEvents(scrollOptions: {
   const config: IntersectionObserverInit = {
     threshold: [
       0,
-      QUARTER_THRESHOLD,
-      HALF_THRESHOLD,
-      THREE_QUARTER_THRESHOLD,
+      QUARTER,
+      HALF,
+      THREE_QUARTERS,
       1,
     ],
     rootMargin: '0px',
@@ -80,7 +76,7 @@ function addScrollEvents(scrollOptions: {
       if (lastRatio > 0 && ratio === 0)
         element.dispatchEvent(new CustomEvent('leaveViewport',),);
 
-      if (ratio >= HALF_THRESHOLD && lastRatio < HALF_THRESHOLD)
+      if (ratio >= HALF && lastRatio < HALF)
         element.dispatchEvent(new CustomEvent('halfVisible',),);
 
       lastRatio = ratio;

@@ -14,20 +14,16 @@ import {
   cssRem,
   type CssValue,
 } from '@monochromatic-dev/module-hyperscript/ts';
+import {
+  HALF,
+  QUARTER,
+  THREE_QUARTERS,
+} from '@monochromatic-dev/module-numeric-const';
 
 //region Fractional building blocks (max-magnitude 2 per project rules)
 
-/** 1/2 */
-const HALF = 1 / 2;
-
-/** 1/4 */
-const QUARTER = HALF / 2;
-
-/** 3/4 */
-const THREE_QUARTERS = HALF + QUARTER;
-
 /** 1/8 */
-const EIGHTH = QUARTER / 2;
+const EIGHTH: number = QUARTER / 2;
 
 //endregion
 

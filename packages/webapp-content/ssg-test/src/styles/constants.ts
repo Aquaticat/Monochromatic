@@ -5,6 +5,8 @@
  * style modules. CSS custom properties live in `tokens.ts`.
  */
 
+import { HALF, } from '@monochromatic-dev/module-numeric-const';
+
 /** Maximum content width in rem. */
 export const MAX_WIDTH = 48;
 
@@ -15,7 +17,7 @@ export const LINE_HEIGHT = 1.6;
 export const GAP = 1;
 
 /** Small gap in rem. */
-export const GAP_SMALL: number = 1 / 2;
+export const GAP_SMALL: number = HALF;
 
 /** Border width in rem, equivalent to 1px at default font size. */
 export const BORDER_WIDTH_REM = '1 / 16 * 1rem';

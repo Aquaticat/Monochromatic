@@ -12,12 +12,10 @@ import {
   cssVar,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
+import { HALF, } from '@monochromatic-dev/module-numeric-const';
 
 /** Full dimension as percentage. */
 const FULL = 100;
-
-/** Half dimension for 50% border-radius (circle). */
-const HALF = 1 / 2;
 
 /** Repeat button resting opacity. */
 const REPEAT_RESTING_OPACITY = 0.8;

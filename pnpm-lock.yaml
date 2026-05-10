@@ -1831,6 +1831,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/module-numeric-const':
+        specifier: workspace:*
+        version: link:../../module/numeric-const
       feedsmith:
         specifier: 'catalog:'
         version: 3.0.0-next.6
@@ -1928,6 +1931,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/module-numeric-const':
+        specifier: workspace:*
+        version: link:../../module/numeric-const
       pdfjs-dist:
         specifier: 'catalog:'
         version: 5.7.284
@@ -2147,6 +2153,9 @@ importers:
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
+      '@monochromatic-dev/module-numeric-const':
+        specifier: workspace:*
+        version: link:../../module/numeric-const
       jspdf:
         specifier: 'catalog:'
         version: 4.2.1

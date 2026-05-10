@@ -9,15 +9,11 @@
  * coordinate conventions and formatter selection logic.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
-
-/** Half of the unit interval (0.5) */
-const HALF = 1 / 2;
-
-/** Quarter of the unit interval (0.25) */
-const QUARTER = HALF / 2;
-
-/** Three-quarters of the unit interval (0.75) */
-const THREE_QUARTERS = HALF + QUARTER;
+import {
+  HALF,
+  QUARTER,
+  THREE_QUARTERS,
+} from '@monochromatic-dev/module-numeric-const';
 
 /** Fixed Y axis tick values for score plots (0 to 1) */
 export const Y_TICKS: readonly number[] = [
