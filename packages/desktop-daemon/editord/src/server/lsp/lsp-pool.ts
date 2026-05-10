@@ -383,9 +383,9 @@ export class LspPool {
     },);
   }
 
-  /** Gracefully shuts down all pooled LSP servers. */
-  shutdown(): void {
-    shutdownAllPooled({
+  /** Gracefully shuts down all pooled LSP servers and waits for completion. */
+  async shutdown(): Promise<void> {
+    await shutdownAllPooled({
       pool: this.#pool,
       l: this.#l,
     },);

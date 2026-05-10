@@ -77,24 +77,26 @@ export async function shutdownPoolForPath({
 }
 
 /**
- * Gracefully shuts down all pooled LSP servers (fire-and-forget).
+ * Gracefully shuts down all pooled LSP servers concurrently and resolves
+ * once every client has finished its shutdown handshake.
  *
  * @param pool - the pool map to shut down
  *
  * @example
  * ```ts
- * shutdownAllPooled({ pool: new Map(), });
+ * await shutdownAllPooled({ pool: new Map(), });
  * ```
  */
-export function shutdownAllPooled({
+export async function shutdownAllPooled({
   pool,
   l,
 }: {
   pool: Map<string, Promise<LspClient | null>>;
   l: Logger;
-},): void {
-  for (const promise of pool.values()) {
-    void (async function shutdownClient(): Promise<void> {
+},): Promise<void> {
+  /** Without parallel awaits: independent LSP servers would shut down sequentially, delaying signal-handler completion. */
+  await Promise.all(
+    [...pool.values(),].map(async function shutdownClient(promise,): Promise<void> {
       try {
         const c = await promise;
         if (c !== null)
@@ -103,6 +105,6 @@ export function shutdownAllPooled({
       catch (error) {
         l.error(`LSP shutdown failed: ${String(error,)}`,);
       }
-    })();
-  }
+    },),
+  );
 }

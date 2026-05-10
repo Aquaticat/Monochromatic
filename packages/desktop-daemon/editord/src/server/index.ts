@@ -200,11 +200,13 @@ app.get(
 
 //endregion WebSocket
 
-/** Running HTTP server instance. */
-const _server = serve(
+/** Running HTTP server instance; closed on SIGINT/SIGTERM by our handler. */
+const server = serve(
   app,
   {
     port: PORT,
+    /** Disable srvx's built-in SIGINT/SIGTERM handler so our async cleanup runs first without racing it. */
+    gracefulShutdown: false,
     plugins: [
       ws({
         resolve: async function resolveWebSocketHooks(request,) {
@@ -221,34 +223,69 @@ httpLog.info(`listening on http://localhost:${String(PORT,)}?token=${AUTH_TOKEN}
 
 //region Graceful shutdown
 
+/** Seconds to wait for cleanup before assuming an LSP child has hung the event loop. */
+const SHUTDOWN_WATCHDOG_SECONDS = 5;
+
+/** Milliseconds per second for watchdog timeout computation. */
+const SHUTDOWN_MS_PER_SECOND = 1_000;
+
 /**
- * Handles SIGTERM (auto-restart from `mise watch`).
- * Stops the mtime touch interval but **keeps** the token file
- * so the next instance can reuse the same token.
+ * Performs the application-specific shutdown sequence: stops timers,
+ * releases filesystem watchers, awaits LSP child termination, and closes
+ * the HTTP/WebSocket server. Once all of these resolve, the event loop
+ * has no remaining ref'd handles and the process exits naturally.
+ *
+ * @param opts - whether to delete the auth token file (true for SIGINT, false for SIGTERM auto-restart)
  */
-function handleSigterm(): void {
+async function shutdownApp({ deleteTokens, }: { deleteTokens: boolean; },): Promise<void> {
   stopTokenTouch();
-  lspManager.shutdown();
-  process.exit(0,);
+  if (deleteTokens)
+    deleteTokenFile();
+  dirWatcher.close();
+  await lspManager.shutdown();
+  await server.close(true,);
 }
 
 /**
- * Handles SIGINT (user Ctrl+C).
- * Deletes the token file since no restart is expected.
+ * Starts a watchdog that force-exits if cleanup hasn't drained the event
+ * loop within SHUTDOWN_WATCHDOG_SECONDS. LSP child stdio pipes occasionally
+ * remain ref'd after `client.shutdown()` returns; this is the backstop.
  */
-function handleSigint(): void {
-  deleteTokenFile();
-  lspManager.shutdown();
-  process.exit(0,);
+function startShutdownWatchdog(): void {
+  const watchdog = setTimeout(
+    function shutdownWatchdogTimeout(): void {
+      httpLog.error(`shutdown timed out after ${String(SHUTDOWN_WATCHDOG_SECONDS,)}s, forcing exit`,);
+      // oxlint-disable-next-line unicorn/no-process-exit -- backstop: LSP children may keep the event loop alive after shutdown
+      process.exit(0,);
+    },
+    SHUTDOWN_WATCHDOG_SECONDS * SHUTDOWN_MS_PER_SECOND,
+  );
+  watchdog.unref();
+}
+
+/**
+ * Logs and surfaces a non-zero exit code when the async shutdown chain rejects.
+ *
+ * @param error - the rejection value from the shutdown promise
+ */
+function logShutdownError(error: unknown,): void {
+  httpLog.error(`shutdown failed: ${String(error,)}`,);
+  process.exitCode = 1;
 }
 
 process.on(
   'SIGINT',
-  handleSigint,
+  function onSigint(): void {
+    startShutdownWatchdog();
+    void shutdownApp({ deleteTokens: true, },).catch(logShutdownError,);
+  },
 );
 process.on(
   'SIGTERM',
-  handleSigterm,
+  function onSigterm(): void {
+    startShutdownWatchdog();
+    void shutdownApp({ deleteTokens: false, },).catch(logShutdownError,);
+  },
 );
 
 //endregion Graceful shutdown

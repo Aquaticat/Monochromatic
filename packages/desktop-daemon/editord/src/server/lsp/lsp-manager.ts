@@ -112,8 +112,8 @@ export type LspManager = {
     character: number;
     newName: string;
   },): Promise<LspWorkspaceEdit | null>;
-  /** Gracefully shuts down all pooled LSP servers. */
-  shutdown(): void;
+  /** Gracefully shuts down all pooled LSP servers and waits for completion. */
+  shutdown(): Promise<void>;
   /** Shuts down LSP servers whose project root covers the given path. */
   shutdownForPath(opts: { path: string; },): Promise<void>;
 };
@@ -299,8 +299,8 @@ export function createLspManager({
         ...opts,
       },);
     },
-    shutdown() {
-      pool.shutdown();
+    async shutdown(): Promise<void> {
+      await pool.shutdown();
     },
     shutdownForPath(opts,) {
       return pool.shutdownForPath(opts,);
