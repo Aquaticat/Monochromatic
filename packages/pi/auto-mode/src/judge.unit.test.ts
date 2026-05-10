@@ -9,57 +9,86 @@ import {
   expect,
   it,
 } from "@monochromatic-dev/module-test";
-import { toolChoiceForProvider, VERDICT_TOOL, } from "./judge-tool.ts";
+import { callJudge, } from "./judge.ts";
+import {
+  toolChoiceForApi,
+  VERDICT_TOOL,
+} from "./judge-tool.ts";
 
 await describe({
-  name: "toolChoiceForProvider",
+  name: "toolChoiceForApi",
   children: [
     it({
-      name: 'returns "required" for openai-completions',
+      name: 'returns forced tool object for anthropic-messages',
       fn: async () => {
-        expect(toolChoiceForProvider("openai-completions",)).toBe("required",);
+        const result = toolChoiceForApi("anthropic-messages");
+        expect(result,).toEqual({
+          type: "tool",
+          name: "render_verdict",
+        },);
       },
     },),
 
     it({
-      name: 'returns "any" for anthropic-messages',
+      name: 'returns "required" for openai-completions',
       fn: async () => {
-        expect(toolChoiceForProvider("anthropic-messages",)).toBe("any",);
+        expect(toolChoiceForApi("openai-completions"),).toBe("required",);
+      },
+    },),
+
+    it({
+      name: 'returns "required" for openai-responses',
+      fn: async () => {
+        expect(toolChoiceForApi("openai-responses"),).toBe("required",);
+      },
+    },),
+
+    it({
+      name: 'returns "required" for azure-openai-responses',
+      fn: async () => {
+        expect(toolChoiceForApi("azure-openai-responses"),).toBe("required",);
+      },
+    },),
+
+    it({
+      name: 'returns "required" for openai-codex-responses',
+      fn: async () => {
+        expect(toolChoiceForApi("openai-codex-responses"),).toBe("required",);
       },
     },),
 
     it({
       name: 'returns "any" for google-generative-ai',
       fn: async () => {
-        expect(toolChoiceForProvider("google-generative-ai",)).toBe("any",);
+        expect(toolChoiceForApi("google-generative-ai"),).toBe("any",);
       },
     },),
 
     it({
       name: 'returns "any" for google-vertex',
       fn: async () => {
-        expect(toolChoiceForProvider("google-vertex",)).toBe("any",);
+        expect(toolChoiceForApi("google-vertex"),).toBe("any",);
       },
     },),
 
     it({
       name: 'returns "any" for mistral-conversations',
       fn: async () => {
-        expect(toolChoiceForProvider("mistral-conversations",)).toBe("any",);
+        expect(toolChoiceForApi("mistral-conversations"),).toBe("any",);
       },
     },),
 
     it({
       name: 'returns "any" for bedrock-converse-stream',
       fn: async () => {
-        expect(toolChoiceForProvider("bedrock-converse-stream",)).toBe("any",);
+        expect(toolChoiceForApi("bedrock-converse-stream"),).toBe("any",);
       },
     },),
 
     it({
-      name: 'defaults to "any" for unknown providers',
+      name: 'defaults to "any" for unknown APIs',
       fn: async () => {
-        expect(toolChoiceForProvider("custom-provider",)).toBe("any",);
+        expect(toolChoiceForApi("custom-api"),).toBe("any",);
       },
     },),
   ],

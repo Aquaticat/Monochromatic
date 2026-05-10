@@ -27,10 +27,7 @@
     "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"
   },
-  "dependencies": {
-    "shell-quote": "^1.8.3",
-    "zod": "catalog:"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@earendil-works/pi-ai": "^0.74.0",
     "@earendil-works/pi-coding-agent": "catalog:",
@@ -39,6 +36,8 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
     "@types/shell-quote": "^1.7.5",
-    "typebox": "^1.1.34"
+    "shell-quote": "^1.8.3",
+    "typebox": "^1.1.34",
+    "zod": "catalog:"
   }
 }

@@ -106,6 +106,28 @@ function loadMergedConfig(
 
 //region Internal loading
 
+/** Default global config values. */
+const GLOBAL_DEFAULTS: AutoModeConfig = {
+  enabled: true,
+  commands: [],
+  patterns: [],
+  judgeModel: {
+    strategy: "same-provider" as const,
+    costRatio: 0.5,
+    majorVersions: 1,
+  },
+  judgeTimeoutMs: 10_000,
+};
+
+/** Raw JSON object from config files. */
+type RawJson = Record<string, unknown>;
+
+/** Default project config values. */
+const PROJECT_DEFAULTS: ProjectConfig = {
+  commands: [],
+  patterns: [],
+};
+
 /** Get the global config file path.
  *
  * @returns the absolute path to the global config file
@@ -238,6 +260,10 @@ function compilePatterns(
 
 /** Load global config. Returns defaults if file doesn't exist.
  *
+ * Partial config files are merged with defaults before validation,
+ * so migrating from pi-safeguard (which only set `judgeModel.majorVersions`)
+ * works without manually adding all fields.
+ *
  * @returns the parsed global config
  */
 function loadGlobalConfig(): AutoModeConfig {
@@ -245,26 +271,32 @@ function loadGlobalConfig(): AutoModeConfig {
   const raw = readJsonFile(
     path,
     "global"
-  ) ?? {
-    enabled: true,
-    commands: [],
-    patterns: [],
+  );
+  if (raw === undefined) return GLOBAL_DEFAULTS;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
+  const rawObj = raw as RawJson;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nested config from JSON
+  const rawJudgeModel = (rawObj.judgeModel as RawJson | undefined) ?? {};
+  const merged = {
+    ...GLOBAL_DEFAULTS,
+    ...rawObj,
     judgeModel: {
-      strategy: "same-provider" as const,
-      costRatio: 0.5,
-      majorVersions: 1,
+      ...GLOBAL_DEFAULTS.judgeModel,
+      ...rawJudgeModel,
     },
-    judgeTimeoutMs: 10_000,
   };
   return parseConfig(
     AutoModeConfigSchema,
-    raw,
+    merged,
     path,
     "global",
   );
 }
 
 /** Load project config from cwd.
+ *
+ * Partial project config files are merged with defaults
+ * before validation.
  *
  * @param cwd - the current working directory
  *
@@ -279,9 +311,15 @@ function loadProjectConfig(
     "project"
   );
   if (raw === undefined) return undefined;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
+  const rawObj = raw as RawJson;
+  const merged = {
+    ...PROJECT_DEFAULTS,
+    ...rawObj,
+  };
   return parseConfig(
     ProjectConfigSchema,
-    raw,
+    merged,
     path,
     "project",
   );

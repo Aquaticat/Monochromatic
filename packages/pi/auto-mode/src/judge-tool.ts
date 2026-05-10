@@ -62,34 +62,39 @@ const VERDICT_TOOL: Tool = {
 };
 
 /**
- * Get the tool_choice value for a given provider.
+ * Get the tool_choice value for a given model API.
  *
- * Provider-specific tool choice values:
- * - Anthropic: `{ type: "tool", name }` (forced tool call)
- * - OpenAI: `"required"` (forced tool call)
+ * API-specific tool choice values:
+ * - Anthropic messages: `{ type: "tool", name }` (forced tool call)
+ * - OpenAI completions / responses: `"required"` (forced tool call)
  * - Others: `"any"` (allow any tool call)
  *
- * @param provider - the model provider identifier
+ * @param api - the model API identifier (from `model.api`)
  *
- * @returns the provider-specific tool_choice value
+ * @returns the API-specific tool_choice value
  *
  * @example
  * ```typescript
- * toolChoiceForProvider("anthropic"); // { type: "tool", name: "render_verdict" }
- * toolChoiceForProvider("openai-completions"); // "required"
- * toolChoiceForProvider("google-generative-ai"); // "any"
+ * toolChoiceForApi("anthropic-messages"); // { type: "tool", name: "render_verdict" }
+ * toolChoiceForApi("openai-completions"); // "required"
+ * toolChoiceForApi("google-generative-ai"); // "any"
  * ```
  */
-function toolChoiceForProvider(
-  provider: string,
+function toolChoiceForApi(
+  api: string,
 ): Record<string, string> | string {
-  if (provider === "anthropic") {
+  if (api === "anthropic-messages") {
     return {
       type: "tool",
       name: "render_verdict",
     };
   }
-  if (provider === "openai-completions") {
+  if (
+    api === "openai-completions" ||
+    api === "openai-responses" ||
+    api === "azure-openai-responses" ||
+    api === "openai-codex-responses"
+  ) {
     return "required";
   }
   return "any";
@@ -98,5 +103,5 @@ function toolChoiceForProvider(
 export {
   VERDICT_TOOL,
   VERDICT_VALUES,
-  toolChoiceForProvider,
+  toolChoiceForApi,
 };

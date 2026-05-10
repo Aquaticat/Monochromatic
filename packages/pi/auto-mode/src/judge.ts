@@ -20,8 +20,12 @@ import type {
 } from "./types.ts";
 import {
   VERDICT_TOOL,
-  toolChoiceForProvider,
+  toolChoiceForApi,
 } from "./judge-tool.ts";
+import {
+  collectToolCall,
+  parseVerdict,
+} from "./judge-stream.ts";
 
 //region Public API
 
@@ -98,7 +102,7 @@ async function callJudge(
   if (_auth.headers !== undefined) {
     opts.headers = _auth.headers;
   }
-  opts.toolChoice = toolChoiceForProvider(String(model.provider));
+  opts.toolChoice = toolChoiceForApi(String(model.api));
 
   const stream = streamSimple(
     model,
@@ -175,89 +179,6 @@ function buildUserContent(
   }
 
   return lines.join("\n");
-}
-
-//endregion
-
-//region Stream collection
-
-/* oxlint-disable typescript/no-unsafe-type-assertion -- untyped stream events require assertions */
-/**
- * Collect tool call arguments from a model stream.
- *
- * @param stream - the model event stream
- *
- * @returns the parsed tool call arguments object
- */
-async function collectToolCall(
-  stream: AsyncIterable<unknown>,
-): Promise<Record<string, string>> {
-  let fnName = "";
-  let argsStr = "";
-
-  for await (const event of stream) {
-    const evt = event as Record<string, unknown>;
-    const type = evt.type as string | undefined;
-
-    if (type === "content_block_start") {
-      const contentBlock = evt.contentBlock as Record<string, unknown> | undefined;
-      if (contentBlock !== undefined) {
-        fnName = (contentBlock.name as string | undefined) ?? "";
-      }
-    }
-
-    if (type === "content_block_delta") {
-      const delta = evt.delta as Record<string, unknown> | undefined;
-      if (delta !== undefined) {
-        argsStr += (delta.partialJson as string | undefined) ?? (delta.text as string | undefined) ?? "";
-      }
-    }
-  }
-
-  if (fnName !== "render_verdict") {
-    throw new Error(
-      `Judge called unexpected tool: "${fnName}" instead of "render_verdict"`,
-    );
-  }
-
-  return JSON.parse(argsStr) as Record<string, string>;
-}
-/* oxlint-enable typescript/no-unsafe-type-assertion */
-//endregion
-
-//region Verdict parsing
-
-/**
- * Parse raw tool call arguments into a Verdict.
- *
- * @param args - the raw tool call arguments
- *
- * @returns a structured verdict
- */
-function parseVerdict(
-  args: Record<string, string>,
-): Verdict {
-  const verdict = args.verdict ?? "ask";
-  const reason = args.reason ?? "";
-  const guidance = args.guidance ?? "";
-
-  if (
-    verdict !== "approve" &&
-    verdict !== "deny" &&
-    verdict !== "ask"
-  ) {
-    return {
-      verdict: "ask",
-      reason: `Judge returned unexpected verdict: "${verdict}". ${reason}`,
-      guidance: "",
-    };
-  }
-
-  return {
-    verdict,
-    reason,
-    guidance,
-  };
 }
 
 //endregion

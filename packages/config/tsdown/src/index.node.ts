@@ -34,6 +34,8 @@ const _default_1: UserConfig = defineConfig({
       // "exports is not defined" errors.
       '@earendil-works/pi-coding-agent',
       'typebox',
+      // Pi AI providers — provided by the pi runtime at load time.
+      '@earendil-works/pi-ai',
     ],
   },
   minify: {
