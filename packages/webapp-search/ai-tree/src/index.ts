@@ -4,7 +4,7 @@ import {
   H3,
   serve,
 } from 'h3';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 
 /** Pre-configured Anthropic client with extended beta features enabled. */
 const anthropic = new Anthropic({
@@ -69,7 +69,14 @@ for await (const messageStreamEvent of stream)
 /** Default port when AI_TREE_PORT environment variable is not set. */
 const DEFAULT_PORT = 4_111;
 /** Parsed server port from the AI_TREE_PORT environment variable. */
-const PORT = z.coerce.number().parse(process.env.AI_TREE_PORT ?? DEFAULT_PORT,);
+const PORT = v.parse(
+  v.pipe(
+    v.unknown(),
+    v.transform(Number,),
+    v.number(),
+  ),
+  process.env.AI_TREE_PORT ?? DEFAULT_PORT,
+);
 
 /** H3 application instance for the ai-tree server. */
 const app = new H3();

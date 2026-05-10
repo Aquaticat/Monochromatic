@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { findUp, } from 'find-up';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for the opmls module. */
@@ -16,47 +16,60 @@ const l = tagged({
 export const DOT_ENV_PATH: string | undefined = await findUp('.env',);
 
 /**
- * Zod schema validating OPML source URLs.
+ * Valibot schema validating OPML source URLs.
  * Accepts `https?://` URLs with valid domain names and `file://` URLs
  * (absolute paths always; relative paths only when {@link DOT_ENV_PATH} is set).
  */
-export const OPMLS_SCHEMA: z.ZodMiniArray<
-  z.ZodMiniUnion<readonly [
-    z.ZodMiniURL,
-    z.ZodMiniURL,
-  ]>
-> = z
-  .array(z.union([
-    z.url({
-      protocol: /^https?$/,
-      hostname: z.regexes.domain,
-    },),
-    z
-      .url({
-        protocol: /file/,
-        pattern: DOT_ENV_PATH !== undefined ? /./ : /^file:\/{3}/,
-      },),
-  ],),);
+export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
+  v.union([
+    v.pipe(
+      v.string(),
+      v.url(),
+      v.check(
+        function isHttpDomainUrl(s,) {
+          const u = new URL(s,);
+          return /^https?:$/.test(u.protocol,) && v.DOMAIN_REGEX.test(u.hostname,);
+        },
+        'Invalid HTTP(S) URL with valid domain',
+      ),
+    ),
+    v.pipe(
+      v.string(),
+      v.url(),
+      v.check(
+        function isFileUrl(s,) {
+          const u = new URL(s,);
+          if (!u.protocol.includes('file',)) return false;
+          if (DOT_ENV_PATH !== undefined) return s.length > 0;
+          return /^file:\/{3}/.test(s,);
+        },
+        'Invalid file URL',
+      ),
+    ),
+  ],),
+);
 
 /**
  * Reads and validates OPML source URLs from the `OPMLS` environment variable.
  *
  * @returns Validated array of OPML source URLs
  *
- * @throws `z.ZodError` if any URL fails schema validation
+ * @throws `v.ValiError` if any URL fails schema validation
  *
  * @example
  * ```ts
  * const opmls = getOpmls();
  * ```
  */
-export function getOpmls(): z.infer<typeof OPMLS_SCHEMA> {
+export function getOpmls(): v.InferOutput<typeof OPMLS_SCHEMA> {
   const innerL = tagged({
     tag: getOpmls.name,
     l,
   },);
-  const result = OPMLS_SCHEMA
-    .parse(process.env.OPMLS?.split(',',) ?? [],);
+  const result = v.parse(
+    OPMLS_SCHEMA,
+    process.env.OPMLS?.split(',',) ?? [],
+  );
   innerL.debug(`${String(result.length,)} OPML URLs`,);
   return result;
 }

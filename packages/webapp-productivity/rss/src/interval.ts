@@ -1,5 +1,5 @@
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for the interval module. */
@@ -29,7 +29,12 @@ const DEFAULT_FETCH_INTERVAL_MS = MINUTES_PER_INTERVAL
  *
  * @see `getFetchSalt` for how this controls cache invalidation
  */
-export const FETCH_INTERVAL_MS: number = z.coerce.number().parse(
+export const FETCH_INTERVAL_MS: number = v.parse(
+  v.pipe(
+    v.unknown(),
+    v.transform(Number,),
+    v.number(),
+  ),
   process.env.RSS_FETCH_INTERVAL_MS ?? DEFAULT_FETCH_INTERVAL_MS,
 );
 

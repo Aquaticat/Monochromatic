@@ -12,7 +12,7 @@
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "h3": "catalog:",
-    "zod": "catalog:",
+    "valibot": "catalog:",
     "exa-js": "catalog:"
   },
   "devDependencies": {

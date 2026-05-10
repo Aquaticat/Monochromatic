@@ -19,7 +19,7 @@ import {
 
 import readdir from 'tiny-readdir-glob';
 import { parse as parseYaml, } from 'yaml';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
 import { isLocale, } from '../i18n/i18n-util.ts';
@@ -132,33 +132,69 @@ function parseFrontmatter(raw: string,): {
 //region Schema
 
 /**
- * Zod schema for the author-written portion of MDX post frontmatter.
+ * Valibot schema for the author-written portion of MDX post frontmatter.
  *
  * Covers only the fields the human writes in the YAML header.
  * Publication and update dates are derived from git history at build
  * time rather than stored in frontmatter; see `./git-dates.ts`.
  */
-export const postFileFrontmatterSchema: z.ZodMiniObject = z.object({
-  title: z.string(),
-  description: z.string(),
-  tags: z.array(z.string(),),
+export const postFileFrontmatterSchema: v.GenericSchema<{
+  title: string;
+  description: string;
+  tags: string[];
+}> = v.object({
+  title: v.string(),
+  description: v.string(),
+  tags: v.array(v.string(),),
 },);
 
 /**
- * Zod schema for the fully-resolved post frontmatter used downstream
+ * Coerces string, number, or Date inputs into a Date instance.
+ * Lets the same schema validate both native `Date` objects (from freshly
+ * derived dates) and ISO strings (from JSON-deserialized cache entries).
+ */
+const coerceDateSchema = v.pipe(
+  v.union([
+    v.string(),
+    v.number(),
+    v.date(),
+  ],),
+  v.transform(function toDate(input,) {
+    return new Date(input,);
+  },),
+  v.date(),
+);
+
+/**
+ * Valibot schema for the fully-resolved post frontmatter used downstream
  * (rendering, RSS, sort keys).
  *
  * Combines the author-written file schema with `published`/`updated`
- * dates resolved by `./git-dates.ts`. Uses `z.coerce.date()` so the
- * same schema validates both native `Date` objects (from freshly
- * derived dates) and ISO strings (from JSON-deserialized cache entries).
+ * dates resolved by `./git-dates.ts`. The `coerceDateSchema` accepts
+ * both native `Date` objects (from freshly derived dates) and ISO
+ * strings (from JSON-deserialized cache entries).
  */
-export const postFrontmatterSchema: z.ZodMiniObject = z.object({
-  title: z.string(),
-  description: z.string(),
-  tags: z.array(z.string(),),
-  published: z.coerce.date(),
-  updated: z.coerce.date(),
+export const postFrontmatterSchema: v.GenericSchema<
+  {
+    title: string;
+    description: string;
+    tags: string[];
+    published: string | number | Date;
+    updated: string | number | Date;
+  },
+  {
+    title: string;
+    description: string;
+    tags: string[];
+    published: Date;
+    updated: Date;
+  }
+> = v.object({
+  title: v.string(),
+  description: v.string(),
+  tags: v.array(v.string(),),
+  published: coerceDateSchema,
+  updated: coerceDateSchema,
 },);
 
 //endregion Schema
@@ -254,11 +290,10 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
         data: rawData,
         content: body,
       } = parseFrontmatter(raw,);
-      // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- `postFileFrontmatterSchema` is annotated as the loose `z.ZodMiniObject`; the runtime-validated shape matches LoadedPost['fileData']
-      const fileData = z.parse(
+      const fileData = v.parse(
         postFileFrontmatterSchema,
         rawData,
-      ) as LoadedPost['fileData'];
+      );
       const rawLang = basename(dirname(filePath,),);
       if (!isLocale(rawLang,)) {
         throw new Error(

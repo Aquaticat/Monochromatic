@@ -9,7 +9,7 @@ import {
   resolve,
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
-import type * as z from 'zod/mini';
+import type * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 import {
   DOT_ENV_PATH,
@@ -38,7 +38,7 @@ const l = tagged({
  * ```
  */
 export async function getOPMLTexts(
-  opmls: z.infer<typeof OPMLS_SCHEMA>,
+  opmls: v.InferOutput<typeof OPMLS_SCHEMA>,
 ): Promise<string[]> {
   const innerL = tagged({
     tag: getOPMLTexts.name,
@@ -47,7 +47,7 @@ export async function getOPMLTexts(
   const DISCARD = Symbol('discard',);
   const result = (await mapIterableAsync(
     async function fetchOpml(
-      opmlLink: (z.infer<typeof OPMLS_SCHEMA>)[number],
+      opmlLink: (v.InferOutput<typeof OPMLS_SCHEMA>)[number],
     ): Promise<string | typeof DISCARD> {
       if (opmlLink.startsWith('http',)) {
         const response = await fetch(opmlLink,);

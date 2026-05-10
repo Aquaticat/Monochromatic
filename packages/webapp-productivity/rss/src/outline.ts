@@ -3,7 +3,7 @@ import {
   type Opml,
   parseOpml,
 } from 'feedsmith';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 import { getOPMLTexts, } from './opml-text.ts';
 import type { OPMLS_SCHEMA, } from './opmls.ts';
@@ -38,7 +38,7 @@ export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
  * ```
  */
 export async function getOutlinesFromOpmls(
-  opmls: z.infer<typeof OPMLS_SCHEMA>,
+  opmls: v.InferOutput<typeof OPMLS_SCHEMA>,
 ): Promise<InnerOutlineWUrl[]> {
   const innerL = tagged({
     tag: getOutlinesFromOpmls.name,
@@ -62,12 +62,20 @@ export async function getOutlinesFromOpmls(
         return false;
       }
       try {
-        z
-          .url({
-            protocol: /^https?$/,
-            hostname: z.regexes.domain,
-          },)
-          .parse(xmlUrl,);
+        v.parse(
+          v.pipe(
+            v.string(),
+            v.url(),
+            v.check(
+              function isHttpDomainUrl(s,) {
+                const u = new URL(s,);
+                return /^https?:$/.test(u.protocol,) && v.DOMAIN_REGEX.test(u.hostname,);
+              },
+              'Invalid HTTP(S) URL with valid domain',
+            ),
+          ),
+          xmlUrl,
+        );
         return true;
       }
       catch (error) {

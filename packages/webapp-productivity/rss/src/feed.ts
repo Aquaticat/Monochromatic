@@ -8,7 +8,7 @@ import {
   parseRssFeed,
   type Rss,
 } from 'feedsmith';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
 
@@ -124,6 +124,19 @@ async function fetchAndParseFeeds(
   },);
 }
 
+/** Coerces string, number, or Date inputs into a Date instance. */
+const coerceDateSchema = v.pipe(
+  v.union([
+    v.string(),
+    v.number(),
+    v.date(),
+  ],),
+  v.transform(function toDate(input,) {
+    return new Date(input,);
+  },),
+  v.date(),
+);
+
 /**
  * Extracts the publication date from a feed, falling back to epoch.
  *
@@ -139,11 +152,17 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
   if (outline.type === 'atom') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
     const atomFeed = feed as Atom.Feed<string>;
-    return z.coerce.date().parse(atomFeed.updated ?? new Date(0,),);
+    return v.parse(
+      coerceDateSchema,
+      atomFeed.updated ?? new Date(0,),
+    );
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
   const rssFeed = feed as Rss.Feed<string>;
-  return z.coerce.date().parse(rssFeed.pubDate ?? new Date(0,),);
+  return v.parse(
+    coerceDateSchema,
+    rssFeed.pubDate ?? new Date(0,),
+  );
 }
 
 //endregion Feed fetching and sorting

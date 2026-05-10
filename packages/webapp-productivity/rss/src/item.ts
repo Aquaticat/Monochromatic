@@ -3,7 +3,7 @@ import type {
   Atom,
   Rss,
 } from 'feedsmith';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 import type { FeedWOutline, } from './feed.ts';
 import type {
   AtomItem,
@@ -47,7 +47,20 @@ export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
   const dated = normalized.map(function addDate(item,) {
     return {
       ...item,
-      pubDateDate: z.coerce.date().parse(item.item.pubDate ?? new Date(0,),),
+      pubDateDate: v.parse(
+        v.pipe(
+          v.union([
+            v.string(),
+            v.number(),
+            v.date(),
+          ],),
+          v.transform(function toDate(input,) {
+            return new Date(input,);
+          },),
+          v.date(),
+        ),
+        item.item.pubDate ?? new Date(0,),
+      ),
     };
   },);
   const result = dated.toSorted(function byDate(

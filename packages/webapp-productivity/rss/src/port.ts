@@ -1,4 +1,4 @@
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 
 /**
  * Default port number for the RSS server when no environment variable is set.
@@ -12,9 +12,12 @@ const DEFAULT_PORT = 4_112;
  * Can be overridden by setting the RSS_PORT environment variable.
  *
  * @see `DEFAULT_PORT` for the fallback port value
- *
- * @see `z.coerce.number` for parsing logic
  */
-export const PORT: number = z.coerce.number().parse(
+export const PORT: number = v.parse(
+  v.pipe(
+    v.unknown(),
+    v.transform(Number,),
+    v.number(),
+  ),
   process.env.RSS_PORT ?? DEFAULT_PORT,
 );

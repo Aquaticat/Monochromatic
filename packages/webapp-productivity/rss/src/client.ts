@@ -2,7 +2,7 @@
 import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 
 //region Scroll event observer -- Tracks element visibility and dispatches custom scroll lifecycle events
 
@@ -119,7 +119,13 @@ elements.forEach(function bindScrollIgnore(element,) {
             metadata.querySelector<HTMLAnchorElement>('.feed__link',),
           );
 
-          const body: Record<string, string> = z.url().safeParse(anchor.href,).success
+          const body: Record<string, string> = v.safeParse(
+            v.pipe(
+              v.string(),
+              v.url(),
+            ),
+            anchor.href,
+          ).success
             ? { link: anchor.href, }
             : { metadataOuterHtml: metadata.outerHTML, };
 

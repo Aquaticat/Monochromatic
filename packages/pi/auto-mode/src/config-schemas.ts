@@ -1,18 +1,27 @@
 /**
- * Zod/mini schema definitions for configuration.
+ * Valibot schema definitions for configuration.
  *
- * Extracted from config.ts to stay within the line limit.
- * Uses explicit `z.ZodMini*` type annotations for
- * `--isolatedDeclarations` compatibility.
+ * Uses `v.GenericSchema` annotations for `--isolatedDeclarations` compatibility.
  *
  * @module
  */
 
-import * as z from "zod/mini";
+import * as v from "valibot";
 
 //region Strategy enum
 
-/** Strategy enum values for zod/mini (Record form required by EnumLike). */
+/** Strategy literal values for the judge-model selection strategy. */
+const STRATEGY_VALUES = [
+  "same-provider",
+  "any-provider",
+] as const;
+
+/**
+ * Strategy literal type derived from {@link STRATEGY_VALUES}.
+ */
+type Strategy = (typeof STRATEGY_VALUES)[number];
+
+/** Record form retained for backwards-compatible callers that key by strategy name. */
 const STRATEGY_ENUM = {
   "same-provider": "same-provider",
   "any-provider": "any-provider",
@@ -22,110 +31,97 @@ const STRATEGY_ENUM = {
 
 //region Schemas
 
-/** Command matcher schema. */
-const CommandMatcherSchema: z.ZodMiniUnion<readonly [
-  z.ZodMiniString,
-  z.ZodMiniArray<z.ZodMiniString>,
-]> = z.union([
-  z.string(),
-  z.array(z.string()),
-]);
+/** Auth shape for a model override. */
+type AuthShape = {
+  apiKey?: string | undefined;
+  headers?: Record<string, string> | undefined;
+};
+
+/** Model override shape: either a model name string, or `{model, auth}`. */
+type ModelOverride =
+  | string
+  | {
+    model: string;
+    auth: AuthShape;
+  };
+
+/** Judge model configuration shape. */
+type JudgeModel = {
+  modelOverride?: ModelOverride | undefined;
+  strategy: Strategy;
+  costRatio: number;
+  majorVersions: number;
+};
+
+/** Auto-mode global configuration shape. */
+type AutoModeConfig = {
+  commands: (string | string[])[];
+  patterns: string[];
+  instructions?: string | undefined;
+  enabled: boolean;
+  judgeModel?: JudgeModel | undefined;
+  judgeTimeoutMs: number;
+};
+
+/**
+ * Auto-mode project configuration shape (subset of {@link AutoModeConfig}).
+ */
+type ProjectConfig = {
+  commands: (string | string[])[];
+  patterns: string[];
+  instructions?: string | undefined;
+};
+
+/** Command matcher schema: either a literal command or an array of arguments. */
+const CommandMatcherSchema: v.GenericSchema<string | string[]> = v.union([
+  v.string(),
+  v.array(v.string(),),
+],);
 
 /** Auth schema for model override. */
-const AuthSchema: z.ZodMiniObject<{
-  apiKey: z.ZodMiniOptional<z.ZodMiniString>;
-  headers: z.ZodMiniOptional<z.ZodMiniRecord<z.ZodMiniString, z.ZodMiniString>>;
-}> = z.object({
-  apiKey: z.optional(z.string()),
-  headers: z.optional(
-    z.record(
-      z.string(),
-      z.string()
+const AuthSchema: v.GenericSchema<AuthShape> = v.object({
+  apiKey: v.optional(v.string(),),
+  headers: v.optional(
+    v.record(
+      v.string(),
+      v.string(),
     ),
   ),
-});
+},);
 
 /** Model override schema. */
-const ModelOverrideSchema: z.ZodMiniUnion<readonly [
-  z.ZodMiniString,
-  z.ZodMiniObject<{
-    model: z.ZodMiniString;
-    auth: z.ZodMiniObject<{
-      apiKey: z.ZodMiniOptional<z.ZodMiniString>;
-      headers: z.ZodMiniOptional<z.ZodMiniRecord<z.ZodMiniString, z.ZodMiniString>>;
-    }>;
-  }>,
-]> = z.union([
-  z.string(),
-  z.object({
-    model: z.string(),
+const ModelOverrideSchema: v.GenericSchema<ModelOverride> = v.union([
+  v.string(),
+  v.object({
+    model: v.string(),
     auth: AuthSchema,
-  }),
-]);
+  },),
+],);
 
 /** Judge model configuration schema. */
-const JudgeModelSchema: z.ZodMiniObject<{
-  modelOverride: z.ZodMiniOptional<z.ZodMiniUnion<readonly [
-    z.ZodMiniString,
-    z.ZodMiniObject<{
-      model: z.ZodMiniString;
-      auth: z.ZodMiniObject<{
-        apiKey: z.ZodMiniOptional<z.ZodMiniString>;
-        headers: z.ZodMiniOptional<z.ZodMiniRecord<z.ZodMiniString, z.ZodMiniString>>;
-      }>;
-    }>,
-  ]>>;
-  strategy: z.ZodMiniEnum<typeof STRATEGY_ENUM>;
-  costRatio: z.ZodMiniNumber;
-  majorVersions: z.ZodMiniNumber;
-}> = z.object({
-  modelOverride: z.optional(ModelOverrideSchema),
-  strategy: z.enum(STRATEGY_ENUM),
-  costRatio: z.number(),
-  majorVersions: z.number(),
-});
-
-/** Shared config fields (commands, patterns, instructions). */
-const SharedConfigSchema: z.ZodMiniObject<{
-  commands: z.ZodMiniArray<z.ZodMiniUnion<readonly [
-    z.ZodMiniString,
-    z.ZodMiniArray<z.ZodMiniString>,
-  ]>>;
-  patterns: z.ZodMiniArray<z.ZodMiniString>;
-  instructions: z.ZodMiniOptional<z.ZodMiniString>;
-}> = z.object({
-  commands: z.array(CommandMatcherSchema),
-  patterns: z.array(z.string()),
-  instructions: z.optional(z.string()),
-});
+const JudgeModelSchema: v.GenericSchema<JudgeModel> = v.object({
+  modelOverride: v.optional(ModelOverrideSchema,),
+  strategy: v.picklist(STRATEGY_VALUES,),
+  costRatio: v.number(),
+  majorVersions: v.number(),
+},);
 
 /** Global config schema. */
-const AutoModeConfigSchema: z.ZodMiniObject<{
-  commands: z.ZodMiniArray<z.ZodMiniUnion<readonly [
-    z.ZodMiniString,
-    z.ZodMiniArray<z.ZodMiniString>,
-  ]>>;
-  patterns: z.ZodMiniArray<z.ZodMiniString>;
-  instructions: z.ZodMiniOptional<z.ZodMiniString>;
-  enabled: z.ZodMiniBoolean;
-  judgeModel: z.ZodMiniOptional<typeof JudgeModelSchema>;
-  judgeTimeoutMs: z.ZodMiniNumber;
-}> = z.object({
-  commands: z.array(CommandMatcherSchema),
-  patterns: z.array(z.string()),
-  instructions: z.optional(z.string()),
-  enabled: z.boolean(),
-  judgeModel: z.optional(JudgeModelSchema),
-  judgeTimeoutMs: z.number(),
-});
+const AutoModeConfigSchema: v.GenericSchema<AutoModeConfig> = v.object({
+  commands: v.array(CommandMatcherSchema,),
+  patterns: v.array(v.string(),),
+  instructions: v.optional(v.string(),),
+  enabled: v.boolean(),
+  judgeModel: v.optional(JudgeModelSchema,),
+  judgeTimeoutMs: v.number(),
+},);
 
 /** Project config schema. */
-const ProjectConfigSchema: typeof SharedConfigSchema = SharedConfigSchema;
-
-/** Inferred type from the global config schema. */
-type AutoModeConfig = z.infer<typeof AutoModeConfigSchema>;
-/** Inferred type from the project config schema. */
-type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
+const ProjectConfigSchema: v.GenericSchema<ProjectConfig> = v.object({
+  commands: v.array(CommandMatcherSchema,),
+  patterns: v.array(v.string(),),
+  instructions: v.optional(v.string(),),
+},);
 
 //endregion
 
@@ -133,8 +129,13 @@ export {
   AutoModeConfigSchema,
   ProjectConfigSchema,
   STRATEGY_ENUM,
+  STRATEGY_VALUES,
 };
 export type {
   AutoModeConfig,
+  AuthShape,
+  JudgeModel,
+  ModelOverride,
   ProjectConfig,
+  Strategy,
 };

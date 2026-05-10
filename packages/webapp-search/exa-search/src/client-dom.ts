@@ -8,7 +8,7 @@ import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import { Exa, } from 'exa-js';
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 
 import { replicateElementAsContentOf, } from './client-replicate-element.ts';
 
@@ -25,25 +25,27 @@ const bindings = {
       Exa,
       { apiKey: string; },
     ]> {
-      const apiKey = await z
-        .pipe(
-          z
-            .pipe(
-              z.nullable(z.uuid(),),
-              z.transform(async function promptSet(val,) {
-                if (val)
-                  return val;
-                const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
-                localStorage.setItem(
-                  'exaApiKey',
-                  inputApiKey,
-                );
-                return inputApiKey;
-              },),
+      const apiKey = await v.parseAsync(
+        v.pipeAsync(
+          v.nullable(
+            v.pipe(
+              v.string(),
+              v.uuid(),
             ),
-          z.uuid(),
-        )
-        .parseAsync(localStorage.getItem('exaApiKey',),);
+          ),
+          v.transformAsync(async function promptSet(val,): Promise<string> {
+            if (val !== null) return val;
+            const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
+            localStorage.setItem(
+              'exaApiKey',
+              inputApiKey,
+            );
+            return inputApiKey;
+          },),
+          v.uuid(),
+        ),
+        localStorage.getItem('exaApiKey',),
+      );
       const exa = new Exa(
         apiKey,
         baseUrl,
@@ -121,20 +123,37 @@ const derived = {
   firstResult: notNullishOrThrow(
     resultsSection.querySelector<HTMLElement>('.result',),
   ),
-  exaMaxResults: z.coerce.number().parse(numResultsInput.max,),
+  exaMaxResults: v.parse(
+    v.pipe(
+      v.unknown(),
+      v.transform(Number,),
+      v.number(),
+    ),
+    numResultsInput.max,
+  ),
   numTotalSearches: createObservable(
-    z
-      ._default(
-        z.coerce.number(),
-        0,
-      )
-      .parse(localStorage.getItem('numTotalSearches',),),
+    v.parse(
+      v.pipe(
+        v.unknown(),
+        v.transform(function toNumberOrZero(input,) {
+          const n = Number(input,);
+          return Number.isNaN(n,) ? 0 : n;
+        },),
+        v.number(),
+      ),
+      localStorage.getItem('numTotalSearches',),
+    ),
     function updateDisplay(val,) {
       numTotalSearchesSpan.textContent = String(val,);
     },
   ),
   numResults: createObservable(
-    z.coerce.number().parse(
+    v.parse(
+      v.pipe(
+        v.unknown(),
+        v.transform(Number,),
+        v.number(),
+      ),
       localStorage.getItem('numResults',) ?? numResultsInput.value,
     ),
     function updateStored(val,) {

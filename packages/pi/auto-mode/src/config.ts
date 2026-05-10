@@ -2,13 +2,14 @@
  * Configuration loading and merging.
  *
  * Loads global and project config files, validates them
- * against zod/mini schemas, and merges into a runtime config.
+ * against valibot schemas, and merges into a runtime config.
  *
  * @module
  */
 
 import { readFileSync, } from "node:fs";
 import { join, } from "node:path";
+import * as v from "valibot";
 import type {
   CommandMatcher,
   MergedConfig,
@@ -193,35 +194,35 @@ function readJsonFile(
 }
 
 /**
- * Parse raw config data against a zod schema.
+ * Parse raw config data against a valibot schema.
  *
- * @param schema - the zod schema to validate against
+ * @param schema - valibot schema to validate against
  *
- * @param raw - the raw data to parse
+ * @param raw - raw data to parse
  *
- * @param path - the file path (for error messages)
+ * @param path - file path (for error messages)
  *
  * @param label - human-readable label for error messages
  *
- * @returns the parsed config data
+ * @returns parsed config data
+ *
+ * @throws when validation fails
  */
 function parseConfig<T>(
-  schema: { safeParse: (data: unknown) => {
-    success: boolean;
-    data?: T;
-    error?: unknown
-  } },
+  schema: v.GenericSchema<unknown, T>,
   raw: unknown,
   path: string,
   label: string,
 ): T {
-  const result = schema.safeParse(raw);
+  const result = v.safeParse(
+    schema,
+    raw,
+  );
   if (result.success) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- zod infer requires assertion
-    return result.data as T;
+    return result.output;
   }
   throw new Error(
-    `auto-mode: invalid ${label} config at ${path}: ${JSON.stringify(result.error)}`,
+    `auto-mode: invalid ${label} config at ${path}: ${JSON.stringify(result.issues,)}`,
   );
 }
 

@@ -1,4 +1,4 @@
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 
 /**
  * Default port number for the exa-search server when no environment variable is set.
@@ -13,6 +13,11 @@ const DEFAULT_PORT = 4_115;
  *
  * @see `DEFAULT_PORT` for the fallback port value
  */
-export const PORT: number = z.coerce.number().parse(
+export const PORT: number = v.parse(
+  v.pipe(
+    v.unknown(),
+    v.transform(Number,),
+    v.number(),
+  ),
   process.env.EXA_SEARCH_PORT ?? DEFAULT_PORT,
 );

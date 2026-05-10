@@ -16,7 +16,7 @@ import {
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
-import * as z from 'zod/mini';
+import * as v from 'valibot';
 
 import {
   type PostFrontmatter,
@@ -41,15 +41,10 @@ export type CacheEntry = {
   frontmatter: PostFrontmatter;
 };
 
-/** Zod schema for a single cache entry. */
-const cacheEntrySchema: z.ZodObject<{
-  contentHash: z.ZodString;
-  html: z.ZodString;
-  frontmatter: typeof postFrontmatterSchema;
-}> = z.object({
-  contentHash: z.string(),
-  html: z.string(),
-  // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- `postFrontmatterSchema` is a typed `ZodObject` re-exported from another module; oxlint can't follow the cross-module zod type chain
+/** Valibot schema for a single cache entry. */
+const cacheEntrySchema = v.object({
+  contentHash: v.string(),
+  html: v.string(),
   frontmatter: postFrontmatterSchema,
 },);
 
@@ -66,16 +61,12 @@ export type BuildManifest = {
   content: Record<string, CacheEntry>;
 };
 
-/** Zod schema for the on-disk build manifest. */
-const buildManifestSchema: z.ZodObject<{
-  pipelineHash: z.ZodString;
-  headSha: z.ZodString;
-  content: z.ZodRecord<z.ZodString, typeof cacheEntrySchema>;
-}> = z.object({
-  pipelineHash: z.string(),
-  headSha: z.string(),
-  content: z.record(
-    z.string(),
+/** Valibot schema for the on-disk build manifest. */
+const buildManifestSchema = v.object({
+  pipelineHash: v.string(),
+  headSha: v.string(),
+  content: v.record(
+    v.string(),
     cacheEntrySchema,
   ),
 },);
@@ -111,8 +102,7 @@ export async function readCache(
       CACHE_PATH,
       'utf8',
     );
-    // oxlint-disable-next-line typescript-eslint(no-unsafe-return) -- zod/mini's `z.parse` return type doesn't propagate through oxlint's type-aware analysis; the function signature pins the narrow return type
-    return z.parse(
+    return v.parse(
       buildManifestSchema,
       JSON.parse(raw,),
     );

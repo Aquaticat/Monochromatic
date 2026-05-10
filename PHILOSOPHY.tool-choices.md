@@ -24,7 +24,7 @@ JSR's npm compatibility bridge (`npm.jsr.io`) has chronic quality issues:
 JSR packages that have npm equivalents are referenced by their npm versions:
 
 - `@optique/core`, `@optique/run` -- published to both npm and JSR (use npm `dev` tag for 1.x)
-- `zod` -- zod 4 is on npm as `zod@>=4.3.6`
+- `valibot` -- on npm as `valibot@>=1.4.0` (Standard Schema-compatible)
 - `@cspotcode/outdent` -- aliased to `outdent` on npm (same author)
 
 ### Why no GitHub deps

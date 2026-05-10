@@ -43,7 +43,6 @@
     "superjson": "catalog:",
     "decircular": "catalog:",
     "safe-stringify": "catalog:",
-    "zod": "catalog:",
     "@monochromatic-dev/module-test": "workspace:*"
   },
   "dependencies": {

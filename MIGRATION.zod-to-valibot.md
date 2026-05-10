@@ -161,31 +161,116 @@ Two `@ts-expect-error` in `string.ts` are scoped, intentional internal narrowing
 
 ## Migration approach
 
-Touch-based, no scheduled big-bang:
-
-1.  New schemas use `valibot` from today.
-1.  Files touched for other reasons get their schemas migrated in the same commit when the diff is small.
-1.  No file gets rewritten purely to migrate; that wastes review attention against zero user-visible benefit.
-1.  When the last consumer of zod is removed, drop zod from the catalog and update [`PHILOSOPHY.tool-choices.md`].
+Big-bang executed on 2026-05-10 after the touch-based plan was overtaken by the
+decision to drop zod entirely. All 14 zod consumers were migrated in a single
+commit and zod was removed from the catalog.
 
 [`PHILOSOPHY.tool-choices.md`]: ./PHILOSOPHY.tool-choices.md
 
-Current zod surface: 13 files, all on `zod/mini`.
-The mini-to-valibot mapping is mechanical:
+The zod-mini to valibot translation map below applied uniformly across the surface.
 
-- `z.parse(schema, x)` to `parse(schema, x)`
-- `z.string()` to `string()`
-- `z.object({...})` to `object({...})`
-- `z.array(s)` to `array(s)`
-- `z.union([a, b])` to `union([a, b])`
-- `z.optional(s)` to `optional(s)`
-- `z.ZodMiniObject` annotation to `v.GenericSchema<TInput, TOutput>` (the documented escape hatch under `isolatedDeclarations`),
-  or the concrete `v.ObjectSchema<...>` form when narrower inference is worth the maintenance cost
+### Mechanical mapping
 
-No wrapper layer needed.
+- `z.parse(schema, x)` to `v.parse(schema, x)`
+- `z.string()` to `v.string()`
+- `z.object({...})` to `v.object({...})`
+- `z.array(s)` to `v.array(s)`
+- `z.union([a, b])` to `v.union([a, b])`
+- `z.optional(s)` to `v.optional(s)`
+- `z.record(k, v)` to `v.record(k, v)`
+- `z.boolean()` to `v.boolean()`
+- `z.number()` to `v.number()`
+- `z.nullable(s)` to `v.nullable(s)`
+- `z.enum(RECORD)` to `v.picklist([...values])` (literal tuple, not record)
+- `z.uuid()` to `v.uuid()`
+- `z.infer<typeof S>` to `v.InferOutput<typeof S>`
+- `z.url().safeParse(x)` to `v.safeParse(v.pipe(v.string(), v.url()), x)`
+- `z.ZodMini*` annotations to `v.GenericSchema<TInput, TOutput>` (documented escape hatch
+  under `isolatedDeclarations`; loses inference detail but compiles)
+
+### Non-mechanical idioms
+
+**Coerce.** Valibot has no `coerce` namespace; build a pipe that takes `unknown`,
+transforms with the target constructor, then validates the post-transform type:
+
+```ts
+v.parse(
+  v.pipe(
+    v.unknown(),
+    v.transform(Number,),
+    v.number(),
+  ),
+  process.env.PORT ?? DEFAULT_PORT,
+)
+```
+
+For `z.coerce.date()`, prefer a typed input union over `v.unknown()` to avoid
+`no-unsafe-type-assertion` lint warnings on the transform parameter:
+
+```ts
+const coerceDateSchema = v.pipe(
+  v.union([v.string(), v.number(), v.date(),],),
+  v.transform(function toDate(input,) { return new Date(input,); },),
+  v.date(),
+);
+```
+
+**URL with constraints.** `v.url()` only validates parseability. Add a
+`v.check()` callback for protocol/host constraints:
+
+```ts
+v.pipe(
+  v.string(),
+  v.url(),
+  v.check(
+    function isHttpDomainUrl(s,) {
+      const u = new URL(s,);
+      return /^https?:$/.test(u.protocol,) && v.DOMAIN_REGEX.test(u.hostname,);
+    },
+    'Invalid HTTP(S) URL with valid domain',
+  ),
+)
+```
+
+**Async pipe.** When a transform is async (e.g. prompts the user), use
+`v.parseAsync` with `v.pipeAsync` and `v.transformAsync`:
+
+```ts
+await v.parseAsync(
+  v.pipeAsync(
+    v.nullable(v.pipe(v.string(), v.uuid(),),),
+    v.transformAsync(async function promptSet(val,): Promise<string> {
+      if (val !== null) return val;
+      return notNullishOrThrow(await prompt('Set api key',),);
+    },),
+    v.uuid(),
+  ),
+  localStorage.getItem('apiKey',),
+)
+```
+
+**Schema with coerced output type.** Annotate `v.GenericSchema<TInput, TOutput>`
+with explicit, distinct TInput and TOutput when the schema coerces (e.g. dates):
+
+```ts
+export const postFrontmatterSchema: v.GenericSchema<
+  { title: string; published: string | number | Date; },
+  { title: string; published: Date; }
+> = v.object({...});
+```
+
+**Result-shape difference.** `v.safeParse` returns `{success, output, issues}`,
+not zod's `{success, data, error}`. Update result consumers accordingly. Per
+Standard Schema #1343, both `output` and `issues` may be populated when
+validation partially succeeds; discriminate on `'issues' in result`, not
+`'output' in result`.
+
+**No `coerce` namespace, no `regexes` namespace.** Valibot exposes regex constants
+as top-level: `v.DOMAIN_REGEX`, `v.EMAIL_REGEX`, etc.
 
 ## Status updates
 
 - 2026-05-09: decision recorded.
 - 2026-05-09: due-diligence pass completed; verdict `minor concerns`; #1343 caveat documented above.
-- 2026-05-10: bootstrap complete; `valibot` `>=1.4.0` added to `pnpm-workspace.yaml` catalog so new schemas can use it from now on. No existing zod consumer migrated; touch-based approach holds.
+- 2026-05-10: bootstrap complete; `valibot` `>=1.4.0` added to `pnpm-workspace.yaml` catalog.
+- 2026-05-10: big-bang complete. 14 source files migrated (rss x8, exa-search x2, ssg-test x2, ai-tree x1, auto-mode/config-schemas x1). Five package.jsons swapped zod->valibot, two (`module/es`, `module/image-diff`) had unused zod entries dropped. zod removed from catalog. PHILOSOPHY.tool-choices.md updated. The recount note: original 13 missed `auto-mode/src/config-schemas.ts` because it imports zod with double-quoted `"zod/mini"` whereas every other consumer uses single quotes.

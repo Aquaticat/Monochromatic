@@ -8,7 +8,7 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
-    "zod": "catalog:",
+    "valibot": "catalog:",
     "@anthropic-ai/sdk": "catalog:",
     "h3": "catalog:"
   },

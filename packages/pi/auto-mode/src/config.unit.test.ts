@@ -1,7 +1,7 @@
 /**
  * Tests for configuration loading and system prompt building.
  *
- * Covers zod schema validation, config merging, regex compilation,
+ * Covers valibot schema validation, config merging, regex compilation,
  * and system prompt construction.
  */
 

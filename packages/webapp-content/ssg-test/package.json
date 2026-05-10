@@ -22,7 +22,7 @@
     "subset-font": "catalog:",
     "tiny-readdir-glob": "catalog:",
     "unified": "catalog:",
-    "zod": "catalog:"
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@lezer/common": "catalog:",
