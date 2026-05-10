@@ -89,11 +89,13 @@ async function findBudgetModel(
   }
 
   if (ctx.model === undefined || ctx.model === null) {
-    throw new NoBudgetModelError("no active model set");
+    throw new NoBudgetModelError("no active model set",);
   }
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ctx.model is Model<any> but needs Model<Api>
-  const activeModel = ctx.model as Model<Api>;
+  /* `ctx.model` is `Model<any>` from pi-coding-agent; the helpers below only
+     read `.provider` and `.cost.input`, both of which are present on every
+     Model<TApi extends Api>. No cast or coercion needed. */
+  const activeModel = ctx.model;
 
   if (opts.strategy === "any-provider") {
     return await findAnyProvider(
@@ -130,7 +132,11 @@ async function findBudgetModel(
  */
 async function findSameProvider(
   ctx: ExtensionContext,
-  activeModel: Model<Api>,
+  /* `Model<any>` matches pi-coding-agent's ctx.model type; the helpers
+     only read `.provider` and `.cost.input`, both of which are present
+     on every Model<TApi extends Api>. */
+  // oxlint-disable-next-line typescript-eslint(no-explicit-any) -- propagating pi-coding-agent's Model<any> typing
+  activeModel: Model<any>,
   costRatio: number,
   majorVersions: number,
 ): Promise<BudgetModel> {
@@ -240,7 +246,11 @@ async function findSameProvider(
  */
 async function findAnyProvider(
   ctx: ExtensionContext,
-  activeModel: Model<Api>,
+  /* `Model<any>` matches pi-coding-agent's ctx.model type; the helpers
+     only read `.provider` and `.cost.input`, both of which are present
+     on every Model<TApi extends Api>. */
+  // oxlint-disable-next-line typescript-eslint(no-explicit-any) -- propagating pi-coding-agent's Model<any> typing
+  activeModel: Model<any>,
   costRatio: number,
   majorVersions: number,
 ): Promise<BudgetModel> {

@@ -12,6 +12,8 @@
 import type {
   ExtensionAPI,
   ExtensionContext,
+  ToolCallEvent,
+  ToolCallEventResult,
 } from "@earendil-works/pi-coding-agent";
 import { Type, } from "typebox";
 import {
@@ -266,37 +268,27 @@ export default function autoMode(
   pi.on(
     "tool_call",
     function handleToolCall(
-      event: {
-        toolName: string;
-        input: Record<string, unknown>
-      },
+      event: ToolCallEvent,
       ctx: ExtensionContext,
-    ): Promise<{
-      block: true;
-      reason: string
-    } | undefined> | undefined {
+    ): Promise<ToolCallEventResult | void> | ToolCallEventResult | void {
       const signalCtx: SignalContext = {
         cwd: ctx.cwd,
         home: process.env.HOME ?? "/home",
       };
 
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolCallEvent type mismatch with event shape
       let flagged = shouldFlag(
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never for ToolCallEvent shape
-        event as never,
+        event,
         signalCtx,
         config,
       );
 
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolCallEvent type mismatch
-      if (!flagged && denialInPreviousTurn && isRelevantTool(event as never)) {
+      if (!flagged && denialInPreviousTurn && isRelevantTool(event,)) {
         flagged = true;
       }
 
       if (!flagged) return undefined;
 
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolCallEvent type mismatch
-      const action = describeAction(event as never);
+      const action = describeAction(event,);
       const batchContext = currentTurnBatch.length > 0
         ? [...currentTurnBatch]
         : undefined;
@@ -314,8 +306,8 @@ export default function autoMode(
           const verdict = result !== undefined ? "deny" : "approve";
           currentTurnBatch.push({
             action,
-            verdict
-          });
+            verdict,
+          },);
 
           if (result !== undefined) {
             denialInCurrentTurn = true;

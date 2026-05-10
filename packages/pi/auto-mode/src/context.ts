@@ -138,15 +138,11 @@ function buildContext(
     if (msg.role === "assistant") {
       for (const block of msg.content) {
         if (block.type === "toolCall") {
-          const tc = block as {
-            name: string;
-            arguments: Record<string, unknown>
-          };
           pendingCalls.push({
-            name: tc.name,
+            name: block.name,
             summary: summarizeToolCall(
-              tc.name,
-              tc.arguments
+              block.name,
+              block.arguments,
             ),
           });
         }
