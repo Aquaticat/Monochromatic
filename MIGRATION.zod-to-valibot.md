@@ -188,3 +188,4 @@ No wrapper layer needed.
 
 - 2026-05-09: decision recorded.
 - 2026-05-09: due-diligence pass completed; verdict `minor concerns`; #1343 caveat documented above.
+- 2026-05-10: bootstrap complete; `valibot` `>=1.4.0` added to `pnpm-workspace.yaml` catalog so new schemas can use it from now on. No existing zod consumer migrated; touch-based approach holds.
