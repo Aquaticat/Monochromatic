@@ -59,6 +59,62 @@ The two reported hits should be triaged separately (they are
 pre-existing rule violations against pre-existing content, just newly
 visible in this bench's output).
 
+### Linux kernel corpus, 5 runs each
+
+Fresh shallow clone of `torvalds/linux` to `/tmp/claude/linux`
+(93,697 git-tracked files, 1.48 GiB). Same binary, same example
+ruleset.
+
+```text
+linux-startup    8.9 ms ± 0.7 ms      (user 38.5 ms,   sys 10.1 ms)
+linux-all        2.250 s ± 0.253 s    (user 24.826 s,  sys 1.569 s)
+                                      11x parallelism, ~660 MiB/s wall
+```
+
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 2 runs):
+
+```text
+phase 0 read_rules_file:           0.0 to 0.1 ms
+phase 1 classify+regex_compile:    5.0 to 5.9 ms
+phase 2 extract_gating_substrings: 0.3 to 0.4 ms   (unchanged from 2026-05-03)
+phase 3 ac_build:                  0.6 to 0.7 ms
+phase 4 residual_shards:           0.0 ms
+```
+
+Comparison with 2026-05-03 baseline (same corpus, same ruleset):
+
+```text
+                  2026-05-03         2026-05-10         delta
+linux-startup     8.5 ms ± 0.8 ms    8.9 ms ± 0.7 ms    +0.4 ms (within sigma)
+linux-all         2.153 s ± 0.367 s  2.250 s ± 0.253 s  +97 ms (within sigma)
+```
+
+Both differences sit within overlapping standard deviations. The
+walker fix has no measurable impact on the Linux corpus, which is
+expected: the per-file scan path the Linux benchmark stresses is
+independent of `walk_literal_bytes` (called only in Phase 2).
+
+Two pre-existing rule violations visible in the Linux corpus:
+
+```text
+./tools/testing/selftests/sgx/sign_key.pem:1:1..31  rule=619
+./drivers/of/unittest-data/tests-phandle.dtsi:9:3..33 rule=402
+```
+
+These are kernel test fixtures matching the example ruleset; not
+introduced or affected by the walker fix.
+
+Corpus drift vs 2026-05-03 baseline:
+
+```text
+                2026-05-03      2026-05-10      delta
+file count      93,694          93,697          +3
+byte volume     1.58 GiB        1.48 GiB        -100 MiB (~6%)
+```
+
+Slight shrinkage offsets the file-count growth; net per-byte
+throughput is essentially unchanged.
+
 ### Audit blast radius of the walker fix
 
 `rg -nP '[\xe2-\xf4]' forbidden-strings.local.txt
