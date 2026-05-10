@@ -73,7 +73,9 @@ bounded, and unbounded modes all work without wrapping children in thunks.
 - **`repeats`** (default `0`) -- number of additional runs of the entire suite;
   `repeats: 2` runs the suite 3 times total
 
-Logs `childName <- suiteName` for each child result.
+Logs `childName <- suiteName` for each child result, then `(Nms)` at the suite level on success
+or `FAIL (Nms)` on failure. Empty-name suites downgrade the success duration to `debug` so they
+stay out of default output.
 
 **Only one top-level `await describe` per file.**
 When a file has multiple logical suites, wrap them in a single

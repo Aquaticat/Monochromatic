@@ -188,6 +188,9 @@ async function runDescribe(
 
   /**
    * Runs one pass of the suite: starts all children, collects results, reports.
+   * Logs per-child completion via `<-` lines, then a suite-level
+   * `(Nms)` on success or `FAIL (Nms)` on failure.
+   * Empty-name suites downgrade the success duration to `debug`.
    *
    * @param runLabel - label suffix for repeated runs (empty string for single runs)
    *
@@ -220,7 +223,9 @@ async function runDescribe(
       },)
       : settleAll;
 
+    const startTime = performance.now();
     const settled = await withTimeoutApplied;
+    const durationMs = performance.now() - startTime;
 
     const errors: unknown[] = [];
     /** Empty-name suites are invisible wrappers; downgrade success logs to debug. */
@@ -238,8 +243,13 @@ async function runDescribe(
       }
     }
 
-    if (errors.length === 0)
+    if (errors.length === 0) {
+      const labelPrefix = runLabel === '' ? '' : `${runLabel.trim()} `;
+      logSuccess(`${labelPrefix}(${durationMs.toFixed(0,)}ms)`,);
       return;
+    }
+
+    l.error(`FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,);
 
     const cause = errors.length === 1
       ? errors[0]
