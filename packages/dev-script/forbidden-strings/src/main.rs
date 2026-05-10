@@ -417,7 +417,7 @@ fn main() -> ExitCode {
                     "\n",
                     "RULE FORMAT:\n",
                     "    Bare line              -> case-sensitive literal substring\n",
-                    "    /PATTERN/FLAGS         -> regex (resharp; supports A&B, ~(A))\n",
+                    "    /PATTERN/FLAGS         -> regex (resharp; supports A&B, ~(A), (?=...), (?<=...))\n",
                     "    # ...                  -> comment\n",
                     "    Empty line             -> skipped\n",
                     "\n",
