@@ -87,10 +87,7 @@ class NoBudgetModelError extends Error {
       "To fix: configure a model explicitly in the extension settings, or switch to a provider with cheaper models.",
     );
 
-    super(
-      lines.join("\n"),
-      { cause: undefined },
-    );
+    super(lines.join("\n",),);
     this.name = "NoBudgetModelError";
     this.reason = reason;
     this.sameProvider = candidates.sameProvider ?? null;

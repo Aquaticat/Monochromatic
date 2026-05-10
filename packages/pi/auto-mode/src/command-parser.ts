@@ -121,7 +121,14 @@ function analyzeBashCommand(
     }
 
     if (op === "<(") {
-      currentRedirectTargets.push("$()");
+      /* Process substitution: shell-quote emits the inner command as
+         a separate `<(...)` op token. We intentionally skip pushing
+         it to `currentRedirectTargets` because that field is for file
+         path matching, and process substitution is not a file. The
+         operand is also dropped from the parent command's args; if a
+         future signal needs to flag process substitution as
+         suspicious, surface it via a separate field on CommandInfo
+         rather than encoding it as a literal filename string. */
       continue;
     }
 

@@ -14,6 +14,16 @@ import type {
 } from "@earendil-works/pi-ai";
 
 /**
+ * Minimum digit count for a numeric token to be treated as a date
+ * stamp rather than a version number.
+ *
+ * Tokens with this many digits or more (e.g. `20240101`, `2024-01-01`
+ * after splitting) are skipped during version extraction so dates
+ * embedded in model IDs do not clobber the version detection.
+ */
+const DATE_TOKEN_DIGIT_COUNT = 8;
+
+/**
  * Extract the major version number from a model ID.
  *
  * Finds the first digit sequence in any token, skipping
@@ -38,8 +48,7 @@ function extractMajorVersion(
     " ",
   ).split(/\s+/);
   for (const t of tokens) {
-    const EIGHT = 8;
-    if (/^\d+$/.test(t) && t.length >= EIGHT) continue;
+    if (/^\d+$/.test(t,) && t.length >= DATE_TOKEN_DIGIT_COUNT) continue;
     const match = /(\d+)/.exec(t);
     if (match !== null && match[1] !== undefined) {
       return Number.parseInt(
