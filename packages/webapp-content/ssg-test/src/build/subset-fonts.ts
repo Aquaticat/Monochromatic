@@ -38,7 +38,7 @@ import readdir from 'tiny-readdir-glob';
 
 import { ICON_CODEPOINTS, } from '../lib/icons/codepoints.ts';
 
-export {}; // eslint module boundary marker
+export {}; // module boundary marker
 
 await initPromise;
 

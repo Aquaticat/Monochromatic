@@ -57,7 +57,7 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
       MCP_CONFIG_PATH,
       'utf8',
     );
-    // eslint-disable-next-line @morph-compact/no-unsafe-type-assertion -- JSON.parse returns any; we validate shape below
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns any; we validate shape below
     const config: unknown = JSON.parse(contents,);
     if (typeof config !== 'object' || config === null)
       return undefined;

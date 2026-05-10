@@ -17,7 +17,7 @@ import { promisify, } from 'node:util';
 
 const execAsync = promisify(exec,);
 
-//region Fixture Setup -- Per-test fixtures replacing vitest test.extend
+//region Fixture Setup -- Per-test fixtures
 
 function setup() {
   const testFileDir = import.meta.dirname;

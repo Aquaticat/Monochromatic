@@ -6,10 +6,9 @@ This troubleshooting guide has been organized into focused categories for easier
 
 ### [TypeScript & Configuration](TROUBLESHOOTING.typescript.md)
 
-Issues related to TypeScript configuration, ESLint, dprint, and other development tools:
+Issues related to TypeScript configuration, dprint, and other development tools:
 
 - TypeScript path warnings with dprint
-- ESLint configuration best practices
 - Stylelint and postcss-html resolution
 - Type predicate assignment errors with complex conditional types
 
@@ -27,14 +26,6 @@ Editor installation and configuration issues:
 - VS Code development container setup
 - Helix editor installation on Debian/Ubuntu
 - Editor-specific configuration problems
-
-### [Vite Configuration](TROUBLESHOOTING.vite.md)
-
-Vite build system and configuration problems:
-
-- Build order issues with config packages
-- HTML output directory structure
-- Vite config circular dependencies
 
 ### [Dependencies & Package Management](TROUBLESHOOTING.dependencies.md)
 
@@ -154,7 +145,6 @@ For common issues:
 
 - **Slow builds?** → [Build performance](TROUBLESHOOTING.performance.build.md)
 - **Test failures not showing?** → [Duplicate describe blocks](TROUBLESHOOTING.testing.md#duplicate-describe-blocks-causing-missing-or-misattributed-test-output)
-- **Fresh clone fails?** → [Build order dependencies](TROUBLESHOOTING.vite.md#vite-config-build-order-in-mise)
 - **TypeScript path warnings?** → [dprint configuration](TROUBLESHOOTING.typescript.md#typescript-path-warnings-with-dprint)
 - **`Cannot find name` for DOM types in a non-browser package?** → [All packages must extend config-typescript/dom](TROUBLESHOOTING.typescript.md#all-packages-must-extend-config-typescriptdom)
 - **Type errors from `node_modules` JSR packages?** → [JSR `.ts` files and `skipLibCheck`](TROUBLESHOOTING.typescript.md#jsr-packages-ship-ts-source-files-that-skiplibcheck-cannot-skip)

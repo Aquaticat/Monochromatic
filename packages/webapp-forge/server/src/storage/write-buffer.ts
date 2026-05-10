@@ -200,7 +200,7 @@ export function createWriteBuffer(
     // Bound concurrency: when we have already saturated the in-flight
     // batches, await one before kicking off the next.
     while (inFlight.size >= concurrency) {
-      // eslint-disable-next-line no-await-in-loop -- explicit serialisation under saturation
+      // oxlint-disable-next-line no-await-in-loop -- explicit serialisation under saturation
       await Promise.race(inFlight,);
     }
     const promise = storage.putBatch(items,);

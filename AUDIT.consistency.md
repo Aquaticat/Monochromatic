@@ -40,7 +40,7 @@ README `# heading` lines use at least four different conventions for the same ki
 `# @monochromatic-dev/module-es`, `# @monochromatic-dev/config-oxlint`, etc.
 
 **Bare package slug (no scope):**
-`# config-dprint`, `# config-eslint-deprecated`, `# module-dom`, `# file-enforcer`, etc.
+`# config-dprint`, `# module-dom`, `# file-enforcer`, etc.
 
 **Human-readable title:**
 `# Done`, `# RSS Reader`, `# Hall Monitor`, `# Exa Search Interface`, `# Islands Black`
@@ -64,9 +64,9 @@ Packages with **blank/empty** README first lines: `config/stylelint`, `dev-scrip
 - `0.0.5` (1) -- config/typescript
 - `0.1.0` (4) -- mcp/nvim, mcp/stdio, mcp/mvm, stylesheet/monochromatic
 - `1.0.0` (2) -- webapp-productivity/rss, webapp-search/ai-tree
-- missing (15) -- config/dprint, config/stylelint, config/tsdown, config/oxlint-tsdoc,
-  config/tofu, config/oxlint-no-restricted-syntax, config/eslint-deprecated,
-  config/oxlint-stylistic, config/vite-deprecated, config/oxlint,
+- missing (13) -- config/dprint, config/stylelint, config/tsdown, config/oxlint-tsdoc,
+  config/tofu, config/oxlint-no-restricted-syntax,
+  config/oxlint-stylistic, config/oxlint,
   webapp-content/ssg-test, webapp-productivity/done, webapp-productivity/done-h-css-test,
   desktop-daemon/editord, audit/oph-common-look-and-feel
 
@@ -161,7 +161,7 @@ Task names use mixed quoting: some use `[tasks."lint:types"]` (double-quoted)
 and others use `[tasks.'lint:types']` (single-quoted) within the same codebase.
 
 4 packages with mise.toml define **zero tasks** (empty mise.toml):
-config/eslint-deprecated, test-fixture/css-imported, test-fixture/css-imported-no-exports,
+test-fixture/css-imported, test-fixture/css-imported-no-exports,
 test-fixture/css-importing, test-fixture/css-importing-filepath.
 
 ## Root-level documentation file naming

@@ -75,7 +75,7 @@ This makes dprint available system-wide but requires maintaining a separate glob
 You see warnings when running dprint:
 
 ```txt
-warn: Non-relative path "packages/config/eslint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
+warn: Non-relative path "packages/config/oxlint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
 ```
 
 ### Solution

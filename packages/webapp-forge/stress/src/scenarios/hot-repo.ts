@@ -182,9 +182,9 @@ async function countStaleFragments(violations: string[],): Promise<number> {
   const indexedKeys = await storage.list('',);
   let stale = 0;
   for (const fragmentKey of indexedKeys) {
-    // eslint-disable-next-line no-await-in-loop -- per-key serial check
+    // oxlint-disable-next-line no-await-in-loop -- per-key serial check
     const expected = await renderFragment(fragmentKey,);
-    // eslint-disable-next-line no-await-in-loop -- per-key serial check
+    // oxlint-disable-next-line no-await-in-loop -- per-key serial check
     const stored = await storage.get(fragmentKey,);
     if (stored === undefined) {
       stale += 1;
@@ -291,7 +291,7 @@ async function run(): Promise<ScenarioResult> {
     );
     const commentId = `c-burst-${String(i,)}`;
     const t0 = Date.now();
-    // eslint-disable-next-line no-await-in-loop -- paced burst by design
+    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     await createCommentWithEvent({
       id: commentId,
       issueId,
@@ -299,7 +299,7 @@ async function run(): Promise<ScenarioResult> {
       body: `burst comment ${String(i,)}`,
       createdAt: Date.now(),
     },);
-    // eslint-disable-next-line no-await-in-loop -- paced burst by design
+    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     const cursor = await dispatchAndFlush({
       afterEventId: getEventCursor(),
       storage,
@@ -308,7 +308,7 @@ async function run(): Promise<ScenarioResult> {
     setEventCursor(cursor,);
     const t1 = Date.now();
     samples.push(t1 - t0,);
-    // eslint-disable-next-line no-await-in-loop -- paced burst by design
+    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     await waitInterval({
       intervalMs,
       elapsedMs: t1 - t0,

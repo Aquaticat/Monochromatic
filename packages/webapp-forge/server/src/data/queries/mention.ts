@@ -86,7 +86,7 @@ export async function replaceMentionsForFragment(row: {
     [row.fragmentKey,],
   );
   for (const userId of row.userIds) {
-    // eslint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially over the same connection
+    // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially over the same connection
     await run(
       'INSERT OR IGNORE INTO mention_index(user_id, fragment_key) VALUES (?, ?)',
       [

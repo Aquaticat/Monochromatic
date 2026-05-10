@@ -139,9 +139,9 @@ async function sendNew(
   );
   // Sequential PUTs match the server's outbox-ack contract; parallel
   // uploads would race the highest-contiguous-seq the server returns.
-  // eslint-disable-next-line no-await-in-loop
+  // oxlint-disable-next-line no-await-in-loop
   for (const [seq, chunk,] of compiled.chunks.entries()) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await fetch(
       `/api/drafts/${encodeURIComponent(draftId,)}/chunks/${String(seq,)}`,
       {

@@ -52,7 +52,7 @@ Launches 5 podman containers simultaneously, all pinned to the same CPU core via
 
 - **CPU**: 5 containers on 1 core via `taskset -c 0` (~20% throughput each)
 - **Memory**: `--memory=1g`
-- **IO**: `--device-read/write-iops=/dev/dm-0:100`, `--device-read/write-bps=/dev/dm-0:80mb`
+- **IO**: `--device-read/write-iops=<auto-detected device>:100`, `--device-read/write-bps=<auto-detected device>:80mb` (the backing block device is resolved at runtime via `findmnt` against `MONOREPO_ROOT`, then canonicalized through any mapper symlinks; on a typical LUKS+btrfs setup this lands on `/dev/dm-0`)
 
 Validates constraints by ensuring the **peak** container sysbench score stays below the known VPS baseline of 1605 events/sec.
 Reports min, median, and max timings across all containers for each benchmark scenario.

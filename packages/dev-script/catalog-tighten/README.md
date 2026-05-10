@@ -11,8 +11,8 @@ For each entry in `workspaces.catalog`:
 2. Resolves the installed version from `node_modules` (root, then workspace packages)
 3. If installed version is strictly greater than the catalog floor, rewrites the range
 
-**Before:** `"eslint": ">=9.29.0"` (installed 10.0.0)
-**After:** `"eslint": ">=10.0.0"`
+**Before:** `"oxlint": ">=0.20.0"` (installed 0.21.0)
+**After:** `"oxlint": ">=0.21.0"`
 
 Handles `npm:` aliased JSR packages (e.g. `"npm:@jsr/zod__zod@>=4.1.8"`)
 and prerelease versions (e.g. `>=7.0.0-dev` tightened to `>=7.0.0-dev.20260206.1`).

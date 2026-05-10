@@ -57,7 +57,7 @@ import { sha256, } from '../lib/cache-hash.ts';
 
 import { DIST, } from './write-page.ts';
 
-export {}; // eslint module boundary marker
+export {}; // module boundary marker
 
 await initPromise;
 

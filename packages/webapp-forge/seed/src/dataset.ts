@@ -84,7 +84,7 @@ export async function seedDataset(row: {
   let totalMembers = 0;
   for (const [index, repoId,] of repoIds.entries()) {
     const labels = labelsByRepo.get(repoId,) ?? [];
-    // eslint-disable-next-line no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear
+    // oxlint-disable-next-line no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear
     const r = await seedIssuesForRepo({
       repoId,
       seed: repoBaseSeed + index,
@@ -98,7 +98,7 @@ export async function seedDataset(row: {
     },);
     totalIssues += r.issues;
     totalComments += r.comments;
-    // eslint-disable-next-line no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear
+    // oxlint-disable-next-line no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear
     const phase2 = await seedPhase2ForRepo({
       repoId,
       seed: repoBaseSeed + index,

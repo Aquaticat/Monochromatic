@@ -455,15 +455,15 @@ async function main(): Promise<void> {
 
   const content = `${HEADER}${body}${FOOTER}`;
   await writeFile(outPath, content, 'utf-8',);
-  // eslint-disable-next-line no-console -- CLI script user-facing output
+  // oxlint-disable-next-line no-console -- CLI script user-facing output
   console.log(
     `wrote ${outPath} (${kept.length} rules kept, ${dropped.length} dropped)`,
   );
   if (dropped.length > 0) {
-    // eslint-disable-next-line no-console -- CLI script user-facing output
+    // oxlint-disable-next-line no-console -- CLI script user-facing output
     console.log('  dropped:',);
     for (const { rule, reason, } of dropped) {
-      // eslint-disable-next-line no-console -- CLI script user-facing output
+      // oxlint-disable-next-line no-console -- CLI script user-facing output
       console.log(`    ${rule.id} (${reason})`,);
     }
   }

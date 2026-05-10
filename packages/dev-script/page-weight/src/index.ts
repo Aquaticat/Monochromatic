@@ -71,52 +71,6 @@ function humanBytes(bytes: number,): string {
 }
 
 /**
- * Pads a string to a target width on the right with spaces.
- *
- * @param text - input string
- *
- * @param width - target column width
- *
- * @returns padded string
- */
-function padRight(
-  {
-    text,
-    width,
-  }: {
-    text: string;
-    width: number;
-  },
-): string {
-  if (text.length >= width)
-    return text;
-  return `${text}${' '.repeat(width - text.length,)}`;
-}
-
-/**
- * Pads a string to a target width on the left with spaces.
- *
- * @param text - input string
- *
- * @param width - target column width
- *
- * @returns padded string
- */
-function padLeft(
-  {
-    text,
-    width,
-  }: {
-    text: string;
-    width: number;
-  },
-): string {
-  if (text.length >= width)
-    return text;
-  return `${' '.repeat(width - text.length,)}${text}`;
-}
-
-/**
  * Descending comparator on `totalBytes` used to sort the report rows.
  *
  * @param a - first row
@@ -203,35 +157,17 @@ const resourcesColumnWidth = Math.max(
 
 /** Formatted header row. */
 const header = [
-  padRight({
-    text: 'page',
-    width: pageColumnWidth,
-  },),
-  padLeft({
-    text: 'bytes',
-    width: bytesColumnWidth,
-  },),
-  padLeft({
-    text: 'assets',
-    width: resourcesColumnWidth,
-  },),
+  'page'.padEnd(pageColumnWidth,),
+  'bytes'.padStart(bytesColumnWidth,),
+  'assets'.padStart(resourcesColumnWidth,),
 ]
   .join('  ',);
 console.log(header,);
 for (const entry of sorted) {
   const row = [
-    padRight({
-      text: entry.page,
-      width: pageColumnWidth,
-    },),
-    padLeft({
-      text: humanBytes(entry.totalBytes,),
-      width: bytesColumnWidth,
-    },),
-    padLeft({
-      text: String(entry.resourceCount,),
-      width: resourcesColumnWidth,
-    },),
+    entry.page.padEnd(pageColumnWidth,),
+    humanBytes(entry.totalBytes,).padStart(bytesColumnWidth,),
+    String(entry.resourceCount,).padStart(resourcesColumnWidth,),
   ]
     .join('  ',);
   console.log(row,);

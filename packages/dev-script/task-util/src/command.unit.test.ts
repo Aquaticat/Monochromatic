@@ -31,7 +31,7 @@ if (arg === 'fail') {
 }
 `;
 
-//region Fixture Setup -- Per-test fixtures replacing vitest test.extend
+//region Fixture Setup -- Per-test fixtures
 
 function setup() {
   const testFileDir = import.meta.dirname;

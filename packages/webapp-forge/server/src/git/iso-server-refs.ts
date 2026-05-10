@@ -15,7 +15,7 @@ import nodeFs from 'node:fs';
 import { join, } from 'node:path';
 
 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- the package re-exports ESM as a wildcard namespace
-// eslint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
+// oxlint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
 import * as git from 'isomorphic-git';
 
 import { repoGitdir, } from '../lib/git-config.ts';
@@ -108,7 +108,7 @@ export async function listAllRefs(row: { gitdir: string, },): Promise<RefPair[]>
   for (const refName of refNames) {
     let oid: string | undefined = undefined;
     try {
-      // eslint-disable-next-line no-await-in-loop -- ref resolution can hit packed-refs lookup; serial is simpler than batched
+      // oxlint-disable-next-line no-await-in-loop -- ref resolution can hit packed-refs lookup; serial is simpler than batched
       oid = await git.resolveRef({
         fs: nodeFs,
         gitdir: row.gitdir,

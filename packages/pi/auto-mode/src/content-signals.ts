@@ -1,0 +1,80 @@
+/**
+ * Content and text signal detection.
+ *
+ * Extracted from signals.ts to stay within the line limit.
+ * Contains contentSignals, textSignals, and their pattern
+ * dependencies.
+ *
+ * @module
+ */
+
+import {
+  BUILTIN_TEXT_PATTERNS,
+  PRIVATE_KEY_PATTERN,
+  SECRET_FORMAT_PATTERNS,
+} from "./constants.ts";
+import type { MergedConfig, } from "./signals.ts";
+
+/**
+ * Check if text content contains secret material.
+ *
+ * Detects private key headers and known token/key formats.
+ *
+ * @param text - the text content to check
+ *
+ * @returns `true` if secret material is detected
+ *
+ * @example
+ * ```typescript
+ * contentSignals("-----BEGIN RSA PRIVATE KEY-----"); // true
+ * contentSignals("Hello, world!"); // false
+ * ```
+ */
+function contentSignals(
+  text: string,
+): boolean {
+  if (PRIVATE_KEY_PATTERN.test(text)) return true;
+
+  for (const pattern of SECRET_FORMAT_PATTERNS) {
+    if (pattern.test(text)) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Check raw text against built-in and user-configured patterns.
+ *
+ * @param text - the text to check
+ *
+ * @param config - optional merged config with user patterns
+ *
+ * @returns `true` if any pattern matches
+ *
+ * @example
+ * ```typescript
+ * textSignals("run sudo apt-get install"); // true
+ * textSignals("run apt-get install"); // false
+ * ```
+ */
+function textSignals(
+  text: string,
+  config?: MergedConfig,
+): boolean {
+  for (const pattern of BUILTIN_TEXT_PATTERNS) {
+    if (pattern.test(text)) return true;
+  }
+
+  if (config?.patterns) {
+    for (const pattern of config.patterns) {
+      if (pattern.test(text)) return true;
+    }
+  }
+
+  return false;
+}
+
+export {
+  contentSignals,
+  textSignals,
+};

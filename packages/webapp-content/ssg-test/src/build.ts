@@ -47,7 +47,7 @@ import { renderMdx, } from './lib/markdown.ts';
 
 // File justification: 120 lines -- linear pipeline script; splitting the
 // orchestration across multiple files would scatter the build sequence.
-export {}; // eslint module boundary marker
+export {}; // module boundary marker
 
 await initPromise;
 

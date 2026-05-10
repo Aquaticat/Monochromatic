@@ -26,16 +26,11 @@
 - [ ] Implement TypeScript build result caching
 - [ ] Add TypeScript compilation parallelization
 
-#### Vite Build Optimization
+#### tsdown Build Optimization
 
 **Status**: Normal Priority - Build tools
 
-- [ ] Optimize Vite build configurations for different package types
-- [ ] Implement Vite build caching strategies
 - [ ] Add bundle analysis and optimization
-- [ ] Optimize Vite development server startup
-- [ ] Implement efficient hot module replacement (HMR)
-- [ ] Add Vite plugin performance profiling
 
 ### Medium Priority
 

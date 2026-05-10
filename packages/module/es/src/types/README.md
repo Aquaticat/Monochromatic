@@ -598,8 +598,8 @@ Final: Implementation
    import {
      describe,
      expect,
-     test,
-   } from 'vitest';
+     it,
+   } from '@monochromatic-dev/module-test';
    import { $ as isValidEmail, } from './index.ts';
 
    describe('Email validation type guard', () => {
@@ -713,8 +713,8 @@ import {
   describe,
   expect,
   expectTypeOf,
-  test,
-} from 'vitest';
+  it,
+} from '@monochromatic-dev/module-test';
 import { $ as myFunction, } from './index.ts';
 
 describe('Function category: specific function', () => {
@@ -1111,8 +1111,8 @@ const _typeCheck: (input: InputType,) => OutputType = $;
    import {
      describe,
      expect,
-     test,
-   } from 'vitest';
+     it,
+   } from '@monochromatic-dev/module-test';
    ```
 
 3. **Test file location**: Place tests alongside implementations

@@ -104,7 +104,6 @@
       "**/.jj": true,
       "**/*.map": true
     },
-    "vitest.configSearchPatternInclude": "vitest.*.config.{ts,js,mjs,cjs,cts,mts}",
     "markdown.validate.enabled": true,
     "harper.dialect": "Canadian",
     "harper.markdown.IgnoreLinkTitle": true,
@@ -137,7 +136,6 @@
       "oxc.oxc-vscode",
       "stylelint.vscode-stylelint",
       "astro-build.astro-vscode",
-			"vitest.explorer",
 			"html-validate.vscode-html-validate",
 		],
 	},

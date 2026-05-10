@@ -10,7 +10,7 @@ Establish comprehensive test coverage for the RSS reader application to ensure r
 
 ### 2.1 Test Framework Setup
 
-- [ ] 2.1.1 Set up Vitest testing framework
+- [ ] 2.1.1 Set up testing framework
 - [ ] 2.1.2 Configure test coverage reporting
 - [ ] 2.1.3 Set up test watch mode for development
 - [ ] 2.1.4 Configure test environments (node, jsdom)

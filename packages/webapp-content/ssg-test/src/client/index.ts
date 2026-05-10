@@ -25,7 +25,7 @@ import { HIGHLIGHT_GROUPS, } from './highlight-groups.ts';
 // oxlint-disable-next-line no-unassigned-import -- side-effect import: registers DOM event listeners for the search widget on module load
 import './search.ts';
 
-export {}; // eslint module boundary marker
+export {}; // module boundary marker
 
 //region Offset-to-Range mapping
 

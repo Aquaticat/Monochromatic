@@ -16,13 +16,9 @@
 The current setup process fails for fresh clones due to build order issues:
 
 1. **Critical Build Order Problem**: The `js` tasks run before `bun install` completes
-   - Root cause: The `js_default` task calls `vite build` directly without ensuring dependencies are installed
-   - This causes "command not found" errors for tools like `vite` that come from node_modules
+   - Root cause: The `js_default` task calls `tsdown` directly without ensuring dependencies are installed
+   - This causes "command not found" errors for tools that come from node_modules
    - Mise allows tasks to start before their implicit dependencies are ready
-
-2. **Package Build Order Issue**: Packages depending on `@monochromatic-dev/config-vite` try to build before it's built
-   - The figma plugin packages fail because they can't resolve the vite config package
-   - Workaround: Building vite config packages first helps
 
 #### Recommended Fix
 
@@ -270,4 +266,4 @@ mise run buildAndTest
 
 - **IMPORTANT**: Never run direct package scripts - always use `mise run` commands
 - Tests can only be run from workspace root
-- When rebuilding after configuration changes (like ESLint rules), always use `mise run build`
+- When rebuilding after configuration changes (like oxlint rules), always use `mise run build`

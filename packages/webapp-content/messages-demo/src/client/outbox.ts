@@ -163,11 +163,11 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       const [head,] = state.queue;
       if (head === undefined)
         break;
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       const ack = await tryPutWithBackoff(head,);
       if (ack === null)
         break;
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       await dropAcked({
         idb: state.idb,
         queue: state.queue,
@@ -283,10 +283,10 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
     html: upload.html,
     char_count: upload.charCount,
   },);
-  // eslint-disable-next-line no-await-in-loop
+  // oxlint-disable-next-line no-await-in-loop
   for (let attempt = 0; attempt < PUT_MAX_ATTEMPTS; attempt += 1) {
     try {
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       const response = await fetch(
         url,
         {
@@ -297,13 +297,13 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
       );
       if (!response.ok)
         throw new Error(`PUT returned ${String(response.status,)}`,);
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       const parsed = await readJson<{ ack?: unknown; }>(response,);
       return typeof parsed.ack === 'number' ? parsed.ack : upload.seq;
     }
     catch {
       const delay = PUT_BACKOFF_BASE_MS * (1 << attempt);
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       await wait(delay,);
     }
   }

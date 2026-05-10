@@ -220,7 +220,7 @@ await describe({
                   },
                 );
                 for (const id of ids)
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await createDraft({
                     id,
                     userId: 'user-a',
@@ -228,7 +228,7 @@ await describe({
                   },);
                 const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
                 for (const id of ids)
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await run(
                     'UPDATE drafts SET updated_at = ? WHERE id = ?',
                     [
@@ -239,7 +239,7 @@ await describe({
                 await sweepOrphans({ userId: 'user-a', },);
                 let surviving = 0;
                 for (const id of ids)
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   surviving += (await draftExists(id,)) ? 1 : 0;
                 // SWEEP_BATCH were deleted; the rest survived.
                 expect(surviving,).toBe(ids.length - SWEEP_BATCH,);
@@ -428,13 +428,13 @@ await describe({
                 );
                 const messageIds: number[] = [];
                 for (const draftId of draftIds) {
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await createDraft({
                     id: draftId,
                     userId: 'user-a',
                     parentId: null,
                   },);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await putChunk({
                     draftId,
                     seq: 0,
@@ -444,7 +444,7 @@ await describe({
                       charCount: 1,
                     },
                   },);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   const id = await finalizeDraft({
                     draftId,
                     userId: 'user-a',
@@ -459,12 +459,12 @@ await describe({
                 // Soft-delete + backdate every candidate.
                 const stale = Date.now() - DELETED_TTL_MS - 1_000;
                 for (const id of messageIds) {
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await softDeleteMessage({
                     messageId: id,
                     userId: 'user-a',
                   },);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await run(
                     'UPDATE messages SET deleted_at = ? WHERE id = ?',
                     [
@@ -476,7 +476,7 @@ await describe({
                 await sweepDeleted();
                 let alive = 0;
                 for (const id of messageIds)
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   alive += (await messageRowExists(id,)) ? 1 : 0;
                 expect(alive,).toBe(messageIds.length - SWEEP_BATCH,);
               },

@@ -10,6 +10,8 @@
  * fully functional with all probes returning `false`.
  */
 
+import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
+
 /** Capability flags consulted by the enhancement modules. */
 export type StorageCaps = {
   readonly idb: boolean;
@@ -24,6 +26,44 @@ const PROBE_KEY = '__messages_demo_storage_probe__';
 const PROBE_TIMEOUT_MS = 500;
 
 /**
+ * Wraps a probe promise so a hung backend never delays startup beyond
+ * `PROBE_TIMEOUT_MS` and any rejection (timeout or backend error) becomes
+ * `false`. Composes with the shared `withTimeout` so the timer plumbing
+ * stays in one place.
+ *
+ * @param probe - async probe returning a boolean
+ *
+ * @param label - human-readable tag for the timeout error (logged on failure)
+ *
+ * @returns probe result, or `false` on timeout / rejection
+ *
+ * @example
+ * ```ts
+ * await capProbe({ probe: probeIdb(), label: 'idb' });
+ * ```
+ */
+async function capProbe(
+  {
+    probe,
+    label,
+  }: {
+    probe: Promise<boolean>;
+    label: string;
+  },
+): Promise<boolean> {
+  try {
+    return await withTimeout({
+      promise: probe,
+      ms: PROBE_TIMEOUT_MS,
+      label,
+    },);
+  }
+  catch {
+    return false;
+  }
+}
+
+/**
  * Runs all three probes in parallel. Resolves with the cap matrix.
  *
  * @returns capability flags
@@ -36,51 +76,24 @@ const PROBE_TIMEOUT_MS = 500;
  */
 export async function probeStorage(): Promise<StorageCaps> {
   const [idb, opfs, ls,] = await Promise.all([
-    withTimeout(probeIdb(),),
-    withTimeout(probeOpfs(),),
-    withTimeout(probeLocalStorage(),),
+    capProbe({
+      probe: probeIdb(),
+      label: 'idb',
+    },),
+    capProbe({
+      probe: probeOpfs(),
+      label: 'opfs',
+    },),
+    capProbe({
+      probe: probeLocalStorage(),
+      label: 'localStorage',
+    },),
   ],);
   return {
     idb,
     opfs,
     localStorage: ls,
   };
-}
-
-/**
- * Wraps a probe promise in a `setTimeout` race so a hung storage
- * backend never delays startup beyond `PROBE_TIMEOUT_MS`.
- *
- * @param probe - async probe returning a boolean
- *
- * @returns probe result, or `false` on timeout / rejection
- */
-async function withTimeout(probe: Promise<boolean>,): Promise<boolean> {
-  let timer: ReturnType<typeof setTimeout> | undefined = undefined;
-  // Wrapping `setTimeout` requires the Promise constructor; there is no
-  // promisified timer in our supported browser baseline.
-  // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- bridges callback API
-  const timeout = new Promise<boolean>(function executor(resolve,) {
-    timer = setTimeout(
-      function onTimeout() {
-        resolve(false,);
-      },
-      PROBE_TIMEOUT_MS,
-    );
-  },);
-  let result = false;
-  try {
-    result = await Promise.race([
-      probe,
-      timeout,
-    ],);
-  }
-  catch {
-    result = false;
-  }
-  if (timer !== undefined)
-    clearTimeout(timer,);
-  return result;
 }
 
 /**

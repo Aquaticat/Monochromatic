@@ -259,7 +259,7 @@ export async function getChunk(
   let cursor: string | null = head.draft_id;
   // Chain walk: each iteration must read the previous draft's parent_id
   // before deciding whether to keep walking. Inherently sequential.
-  /* eslint-disable no-await-in-loop */
+  /* oxlint-disable no-await-in-loop */
   while (cursor !== null) {
     const found = await get<{
       md: string;
@@ -281,7 +281,7 @@ export async function getChunk(
     );
     cursor = parentRow?.parent_id ?? null;
   }
-  /* eslint-enable no-await-in-loop */
+  /* oxlint-enable no-await-in-loop */
   return null;
 }
 

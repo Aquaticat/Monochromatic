@@ -4,7 +4,9 @@
  */
 
 import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import { realpath, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
+import spawn from 'nano-spawn';
 
 /**
  * Canonical monorepo root path, normalized to `/var/home` on Fedora ostree
@@ -44,11 +46,43 @@ export const CONTAINER_COUNT = 5;
 export const CPUSET_CPU = '0';
 
 /**
- * Block device that backs the volume mount.
- * Determined by tracing /var/home -\> LUKS dm-0 -\> nvme0n1p6 -\> nvme0n1.
- * IO throttle cgroup rules apply at the device mapper level.
+ * Resolve the canonical block device backing a filesystem path.
+ *
+ * Uses `findmnt -no SOURCE -T <path>` to discover the source device for the
+ * mount, strips any btrfs/bind subvolume suffix (e.g. `[/home]`), and
+ * canonicalizes mapper symlinks (e.g. `/dev/mapper/luks-xxx -> /dev/dm-N`)
+ * so podman's `--device-read/write` cgroup rules attach to the real
+ * device-mapper node where the kernel's IO throttle hooks live.
+ *
+ * @param root0 - Named arguments object.
+ * @param root0.path - Filesystem path whose backing device to resolve.
+ * @returns Canonical block device path (e.g. `/dev/dm-0`).
+ * @throws If `findmnt` returns no source or fails to execute.
+ *
+ * @example
+ * const device = await detectBlockDevice({ path: '/var/home/user/repo', },);
+ * // -> '/dev/dm-0'
  */
-const BLOCK_DEVICE = '/dev/dm-0';
+async function detectBlockDevice({ path, }: { path: string; },): Promise<string> {
+  const { stdout, } = await spawn('findmnt', ['-no', 'SOURCE', '-T', path,],);
+  const sourceWithSubpath = stdout.trim();
+  if (!sourceWithSubpath) {
+    throw new Error(`findmnt returned empty source for path: ${path}`,);
+  }
+  const source = sourceWithSubpath.replace(/\[.*$/, '',);
+  return await realpath(source,);
+}
+
+/**
+ * Block device that backs the volume mount, auto-detected at module load.
+ *
+ * Walks from `MONOREPO_ROOT` through `findmnt` to the source device
+ * (e.g. `/dev/mapper/luks-xxx[/home]`), strips the subvolume suffix, and
+ * canonicalizes the mapper symlink to the underlying `/dev/dm-N` node.
+ * This matches the device-mapper layer where podman's IO throttle cgroup
+ * rules attach.
+ */
+const BLOCK_DEVICE: string = await detectBlockDevice({ path: MONOREPO_ROOT, },);
 
 /**
  * HDD-like IO limits.

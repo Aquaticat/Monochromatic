@@ -61,42 +61,13 @@ duplication, file-template duplication, and miscellaneous patterns.
 
 ### Build configuration
 
-#### Three `tsdown.config.ts` files are unreferenced after the per-platform split
-
-The root `mise.no-env.toml` task templates all pass `--config <suffixed>` to `tsdown`
-(verified by reading `mise.no-env.toml`):
-
-```text
-build:js:browser  -> tsdown --config tsdown.browser.config.ts
-build:js:client   -> tsdown --config tsdown.client.config.ts
-build:js:node     -> tsdown --config tsdown.node.config.ts
-```
-
-No task template invokes bare `tsdown`. Three packages ship a `tsdown.config.ts`
-alongside both per-platform variants, making the bare-name file unreachable from any
-task:
-
-- `packages/module/es/tsdown.config.ts`
-- `packages/module/logger/tsdown.config.ts`
-- `packages/module/zip-writer/tsdown.config.ts`
-
-All three are byte-identical one-line re-exports of `@monochromatic-dev/config-tsdown/.ts`,
-already covered by the sibling `tsdown.browser.config.ts` (which re-exports the same path).
-
-Suggested resolution: delete the three `tsdown.config.ts` files.
-
-#### `packages/config/vite-deprecated/` has a redundant tsdown config pointing to the wrong base
-
-Both files in this package re-export the same node-platform base:
-
-- `packages/config/vite-deprecated/tsdown.config.ts:1` -> `@monochromatic-dev/config-tsdown/.node.ts`
-- `packages/config/vite-deprecated/tsdown.node.config.ts:1` -> `@monochromatic-dev/config-tsdown/.node.ts`
-
-`tsdown.config.ts` is unreferenced (see previous finding). `tsdown.node.config.ts` is the
-canonical filename for the node-platform task template. The bare-name file should be
-deleted.
-
 #### Three packages declare per-platform mise tasks without matching config files
+
+**Resolved 2026-05-09**: each package's bare `tsdown.config.ts` was renamed to the
+platform-suffixed form matching its declared mise tasks.
+`packages/module/hyperscript/` now has `tsdown.browser.config.ts` only;
+`packages/figma-parsers/{kiwi,penpot}/` now have both `tsdown.browser.config.ts` and
+`tsdown.node.config.ts`. `dist/final/{neutral,node}/` populates accordingly.
 
 `mise.toml` files in three packages declare `build:js:browser` and/or `build:js:node`
 task children whose root templates pass `--config tsdown.<platform>.config.ts`, but the
@@ -134,7 +105,7 @@ only in their `entry` arrays:
 - `packages/webapp-content/messages-demo/tsdown.client.config.ts`
 
 Suggested resolution: this is the third structural duplication of the same shape
-(`tsdown.config.ts`, `tsdown.node.config.ts`, `tsdown.client.config.ts`).
+(`tsdown.browser.config.ts`, `tsdown.node.config.ts`, `tsdown.client.config.ts`).
 Out of scope for a single fix, but worth noting that the per-package one-liner pattern
 multiplies linearly with package count.
 
@@ -338,6 +309,11 @@ Suggested resolution: hoist the validation form into `task-validation` shared wi
 
 #### `escapeHtml` is reimplemented in three files
 
+**Resolved 2026-05-09**: both consumer copies were deleted; the
+`messages-demo` export had no importers, and `ssg-test/client/search.ts` now
+imports `escapeHtml` from `@monochromatic-dev/module-hyperscript/ts`. Only the
+canonical source remains.
+
 - `packages/module/hyperscript/src/html/index.ts:escapeHtml` (canonical)
 - `packages/webapp-content/messages-demo/src/server/pages/_layout.ts:escapeHtml`
 - `packages/webapp-content/ssg-test/src/client/search.ts:escapeHtml`
@@ -424,6 +400,12 @@ These collapse if the `done` fork is consolidated (see fork finding above).
 
 #### `findRepoRoot` in ssg-test reimplements `findMonorepoRoot`
 
+**Resolved 2026-05-09**: `git-dates.ts` now imports `findMonorepoRoot` from
+`@monochromatic-dev/module-es/find-monorepo-root`. The local `findRepoRoot`
+function, its `cachedRepoRoot` cache, and the `access`/`dirname`/`join`
+imports were deleted; the latent ostree bug is fixed by using the shared
+helper's normalization.
+
 `packages/webapp-content/ssg-test/src/lib/git-dates.ts:56` defines `findRepoRoot()`
 walking up looking for `.git`. `packages/module/es/src/path/find-monorepo-root.ts:199`
 already exports `findMonorepoRoot` walking up looking for `mise.toml` containing
@@ -454,6 +436,10 @@ public entry point that dispatches; otherwise consolidate.
 ### Type-level duplication
 
 #### `Logger` declared with two different shapes
+
+**Resolved 2026-05-09**: `ssg-test/src/lib/types.ts` now re-exports `Logger`
+from `@monochromatic-dev/module-logger/types`; the `ReturnType<typeof tagged>`
+alias and the `tagged` import were removed.
 
 - `packages/module/logger/src/types.ts:6` (canonical, structural)
 - `packages/webapp-content/ssg-test/src/lib/types.ts` (`ReturnType<typeof tagged>`)
@@ -627,11 +613,6 @@ Already covered in the type-level section. The JSON-RPC base could host this tri
 shared definitions instead of redeclaring them.
 
 ### Documentation duplication
-
-#### `TODO.claude-code-words.contents.txt` and `TODO.claude-code-words.contents.sorted.txt` are byte-identical
-
-Both 565 lines, zero diff lines. The names imply one is sorted and the other isn't;
-in practice they are the same file. Either delete one, or sort one of them.
 
 #### TROUBLESHOOTING files share prefixes but cover distinct topics
 
@@ -1476,6 +1457,10 @@ than just consolidating the fork. The downstream value is bigger.
 
 #### `padLeft` / `padRight` thin wrappers around `String.prototype.padStart` / `padEnd` (delete, not extract)
 
+**Resolved 2026-05-09**: both wrappers were deleted from
+`packages/dev-script/page-weight/src/index.ts`; the eight call sites now use
+`text.padEnd(width)` and `text.padStart(width)` directly.
+
 `packages/dev-script/page-weight/src/index.ts` defines both `padLeft({text, width})`
 and `padRight({text, width})` as object-parameter wrappers around `padStart` and
 `padEnd`. The wrappers do not add behaviour -- they only re-shape the call site to
@@ -1543,6 +1528,13 @@ helpers. Provide `escapeForSingleQuoted` and `escapeForDoubleQuoted` variants si
 the escape sets differ.
 
 #### `withTimeout(promise)` browser variant alongside `module/es` async variant
+
+**Resolved 2026-05-09**: `storage-probe.ts` now composes with the shared
+`withTimeout` from `@monochromatic-dev/module-es/with-timeout`. A small
+`capProbe({probe, label})` helper wraps the shared utility in a try/catch so
+timeout or backend rejection still maps to `false`. The local timer wiring is
+deleted. Verified by `mise run //packages/webapp-content/messages-demo:build`
+producing the firefox140 client bundle without warnings.
 
 `packages/webapp-content/messages-demo/src/client/storage-probe.ts:withTimeout`
 implements timeout-via-`Promise.race`-with-`setTimeout`. The codebase already exports

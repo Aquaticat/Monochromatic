@@ -108,7 +108,7 @@ export async function sweepDeleted(): Promise<void> {
   // Each candidate runs in its own transaction; chain walk inside the
   // transaction is inherently sequential (each parent_id reads the
   // previous draft's row).
-  /* eslint-disable no-await-in-loop */
+  /* oxlint-disable no-await-in-loop */
   for (const candidate of candidates) {
     await db.exec('BEGIN IMMEDIATE',);
     try {
@@ -144,5 +144,5 @@ export async function sweepDeleted(): Promise<void> {
       throw error;
     }
   }
-  /* eslint-enable no-await-in-loop */
+  /* oxlint-enable no-await-in-loop */
 }

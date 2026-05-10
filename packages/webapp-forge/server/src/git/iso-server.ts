@@ -19,7 +19,7 @@ import nodeFs from 'node:fs';
 import { join, } from 'node:path';
 
 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- the package re-exports ESM as a wildcard namespace
-// eslint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
+// oxlint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
 import * as git from 'isomorphic-git';
 
 import {
@@ -151,7 +151,7 @@ export async function handleReceivePack(row: RepoArgs & { body: Uint8Array, },):
   const applied: RefUpdateTriplet[] = [];
   if (unpackOk) {
     for (const triplet of request.triplets) {
-      // eslint-disable-next-line no-await-in-loop -- ref updates are atomic per ref; sequential is correct
+      // oxlint-disable-next-line no-await-in-loop -- ref updates are atomic per ref; sequential is correct
       const result = await applyRefUpdate({
         gitdir,
         triplet,

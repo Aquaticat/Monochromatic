@@ -7,7 +7,7 @@
 You see warnings when running dprint or other tools:
 
 ```txt
-warn: Non-relative path "packages/config/eslint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
+warn: Non-relative path "packages/config/oxlint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
 ```
 
 ### Solution
@@ -830,7 +830,6 @@ This is consistent with how the CLI's file loader handles unsupported extensions
 ```text
 ## Related Documentation
 
-- [ESLint Configuration](./TROUBLESHOOTING.eslint.md) - ESLint and TypeScript parser issues
 - [VSCode](./TROUBLESHOOTING.vscode.md) - VSCode extension configuration for TypeScript tools
 - [Toolchain](./TROUBLESHOOTING.toolchain.md) - Build tools and toolchain management
 - [Stylelint](./TROUBLESHOOTING.stylelint.md) - CSS linting configuration issues

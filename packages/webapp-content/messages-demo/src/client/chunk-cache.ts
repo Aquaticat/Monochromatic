@@ -260,14 +260,14 @@ async function evictOpfsStale(
     return;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM lib lacks the iterator type
   const iterable = input.directory as unknown as AsyncIterable<FileSystemHandle>;
-  // eslint-disable-next-line no-await-in-loop
+  // oxlint-disable-next-line no-await-in-loop
   for await (const handle of iterable) {
     if (!handle.name.startsWith(messagePrefix,))
       continue;
     if (handle.name.startsWith(currentRevPrefix,))
       continue;
     try {
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       await input.directory.removeEntry(handle.name,);
     }
     catch {

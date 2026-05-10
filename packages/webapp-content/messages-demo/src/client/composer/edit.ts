@@ -65,9 +65,9 @@ export async function sendInlineEdit(
   );
   // Sequential PUTs match the server's outbox-ack contract; parallel
   // uploads would race the highest-contiguous-seq the server returns.
-  // eslint-disable-next-line no-await-in-loop
+  // oxlint-disable-next-line no-await-in-loop
   for (const [seq, chunk,] of compiled.chunks.entries()) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await fetch(
       `/api/drafts/${encodeURIComponent(newDraftId,)}/chunks/${String(seq,)}`,
       {
@@ -145,7 +145,7 @@ export async function sendTier3Edit(
   let firstMd = '';
   // Sequential inherit-walk: each step inspects the previous step's PUT
   // outcome before deciding whether to copy the next chunk.
-  /* eslint-disable no-await-in-loop */
+  /* oxlint-disable no-await-in-loop */
   for (let seq = 0; seq < totalChunks; seq += 1) {
     const newChunkResp = await fetch(
       `/api/drafts/${encodeURIComponent(input.state.tier3.newDraftId,)}/chunks/${
@@ -194,7 +194,7 @@ export async function sendTier3Edit(
       }
     }
   }
-  /* eslint-enable no-await-in-loop */
+  /* oxlint-enable no-await-in-loop */
 
   setStatus(
     input.status,

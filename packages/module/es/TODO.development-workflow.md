@@ -15,7 +15,7 @@
 - [ ] **Type design** - Design comprehensive TypeScript types and constraints
 - [ ] **Implementation** - Implement with logger parameter and named parameter patterns
 - [ ] **Runtime testing** - Create comprehensive unit tests with edge cases
-- [ ] **Type testing** - Create Vitest type tests for all type behavior
+- [ ] **Type testing** - Create type tests for all type behavior
 - [ ] **Performance testing** - Benchmark performance and optimize if needed
 - [ ] **Security review** - Security audit for functions processing user input
 - [ ] **Documentation** - Create comprehensive TSDoc with examples
@@ -109,7 +109,7 @@
 **Universal Testing Requirements**:
 
 - [ ] **Runtime testing** - Unit tests for all 500+ functions
-- [ ] **Type testing** - Vitest type tests for ALL functions, constants, and exports
+- [ ] **Type testing** - type tests for ALL functions, constants, and exports
 - [ ] **Integration testing** - Test function composition and interaction
 - [ ] **Performance testing** - Benchmark all performance-critical functions
 - [ ] **Cross-platform testing** - Test on all supported platforms

@@ -123,7 +123,7 @@ Example: "Never modify files in cloned third-party repositories -- use configura
 
 ## What was compressed (2025-02-25)
 
-AGENTS.md was reduced from 5839 words to ~1500 words.
+AGENTS.md was reduced from 5839 words to ~1500 words at the time. (As of 2026-05-09, the post-2025 monotonic regrowth had brought it back to 6672 words / 684 lines before the second compression pass; see "What was compressed (2026-05-09)" below.)
 The following categories of content were handled:
 
 ### Moved to code-review skill
@@ -186,3 +186,36 @@ Rules that are non-obvious or project-specific were retained as terse single-lin
 ### Skill file structure change
 
 Skills were moved from `.factory/skills/<name>.md` to `.factory/skills/<name>/SKILL.md` to match the expected Droid skill format.
+
+## What was compressed (2026-05-09)
+
+AGENTS.md was compressed from 6672 words / 684 lines to 5894 words / 449 lines (-12% words, -34% lines). The smaller word reduction relative to 2025-02-25 reflects a deliberately less aggressive policy: the user opted for "Moderate merge" (preserve all rules, examples, and concrete references; drop only duplicated framing prose), not the full philosophy-doc rubric.
+
+### Sub-section merges
+
+- **Pre-response checklist item 4 + "Hedge phrases that signal a skipped step"** -- single hedge-phrase list now lives in the dedicated section; checklist item 4 cross-references it. Full hedge list, the `ccsr` stop-hook reference, and the genuine-uncertainty exception clause all preserved.
+- **"Measure before you characterize" + "Ask only for non-measurable facts"** -- collapsed to "Measure-vs-ask" with two bolded sub-rules. Both example lists (measurement commands; non-measurable cases) and the three-failure-direction summary preserved. Dropped: prose framing, employee-vs-boss analogy retained inside.
+- **Pre-response checklist item 9 + "Before claiming inability"** -- checklist item 9 cross-references the dedicated section; the bridging-tools list (`ffmpeg`, `pandoc`, etc.) and "state the bridges you tried" rule kept in the dedicated section.
+- **TypeScript standards / Type system / Variables and values / Programming patterns** -- merged into one "TypeScript" section with four bolded sub-headings (Standards / Type system / Variables and values / Programming patterns). Every bullet kept; only the four `H3` headers became four `**bold**` paragraph leads.
+- **Cross-runtime / Script preferences / Tool version management / Hooks and automation** -- four single-bullet H3 sections collapsed to one "Cross-runtime and scripts" sub-section with four bullets. All rules preserved verbatim.
+- **Agent skills** trailing meta section -- three single-line H3 sub-sections (Issue tracker / Triage labels / Domain docs) flattened to a three-bullet list.
+
+### Prose tightening (highest-yield)
+
+- **Communication style** -- six paragraphs collapsed to five tighter paragraphs. Dropped: connective restatements between rule and example, "Why? Because..." scaffolding.
+- **Vet vendor recommendations** -- 43 lines to ~26 lines. Dropped: closing two paragraphs that restated the same lesson; bullet sub-explanations folded into single-line phrasing.
+- **Constraint-fit** -- 35 lines to ~22 lines. The "Signal you are about to violate this rule" elaboration kept; the "verbalized vs silent form" prose moved inline to the third bullet.
+- **Resource-exhaustion isolation** -- 24 lines to ~16 lines via paragraph compression; full six-example bullet list kept.
+- **Test coverage** and **Verify at user boundary** -- light prose tightening; all five user-boundary examples kept verbatim.
+
+### Structure note
+
+The moment-of-decision top-level structure (eight sections from "Before responding" through "Agent skills") was retained even though the user authorized "Free reorganization." That ordering encodes *when* each rule loads -- a feature called out in the document's preamble. Reorganizing into topical sections would lose load-timing information without compensating compression gain. Sub-section reorganization within each top-level section was applied freely, per the merge list above.
+
+### What was deliberately not done
+
+The PHILOSOPHY.AGENTS.md "What does not belong" rules above (drop standard-tool examples, generic rationales, code examples for self-evident rules, multi-bullet expansions of single rules, repetitive "why this matters" paragraphs) were **not applied** in this pass. The user explicitly chose "Moderate merge" over "Apply philosophy doc," meaning the philosophy-doc deletions are not precedent for this compression. Future sessions considering a third compression pass should treat the philosophy-doc deletions as a separate decision the user must opt into, not as standing authorization.
+
+The plan's proposed consolidation of `Architecture decisions` / `Enforcement mechanisms` / `Agent skills` into a single trailing section was **not applied**. The three address distinct concerns (code-organization rules; enforcement tooling that acts on agent output; skill-file pointers), and the consolidation gain (~4 lines of header overhead) does not justify topical conflation. They remain as three separate top-level sections.
+
+The line-number references in `PLANNING.extract-refactor-guardrail.md:36` (cited as `AGENTS.md:78-79`) were already stale before this rewrite, so no special accommodation was made for line-number stability. Cross-references to AGENTS.md from `docs/decisions/vector-design.md`, `TODO.forbidden-strings.md`, and `TROUBLESHOOTING.pi-compaction-empty-summary.md` are by topic, not by line, and remain valid.

@@ -12,75 +12,16 @@
  * Authoring without committing is undefined behavior.
  */
 import { execFile, } from 'node:child_process';
-import {
-  access,
-  stat,
-} from 'node:fs/promises';
-import {
-  dirname,
-  join,
-  resolve,
-} from 'node:path';
+import { stat, } from 'node:fs/promises';
+import { resolve, } from 'node:path';
 import { promisify, } from 'node:util';
+
+import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
 
 import type { Logger, } from './types.ts';
 
 /** Promisified `execFile` for typed-stdout command execution. */
 const run = promisify(execFile,);
-
-//region Repository root resolution
-
-/**
- * Cached repository root for the current process.
- * Resolved lazily via `findRepoRoot` on the first git-dates invocation.
- */
-let cachedRepoRoot: string | undefined = undefined;
-
-/**
- * Walks up from the current working directory searching for `.git`.
- *
- * Used instead of `git rev-parse --show-toplevel` because the monorepo's
- * `cli-git` wrapper refuses to execute when the cwd is not already at the
- * repository root. All subsequent git invocations in this module run with
- * `cwd` pinned to the resolved root, keeping the wrapper happy.
- *
- * @returns absolute path to the repository root
- *
- * @throws when no `.git` entry is found from the cwd up to the filesystem root
- *
- * @example
- * ```ts
- * const root = await findRepoRoot();
- * ```
- */
-async function findRepoRoot(): Promise<string> {
-  if (cachedRepoRoot !== undefined)
-    return cachedRepoRoot;
-
-  let dir = resolve(process.cwd(),);
-  for (;;) {
-    try {
-      // oxlint-disable-next-line no-await-in-loop -- sequential filesystem walk; each iteration's path depends on prior await
-      await access(join(
-        dir,
-        '.git',
-      ),);
-      cachedRepoRoot = dir;
-      return dir;
-    }
-    catch {
-      const parent = dirname(dir,);
-      if (parent === dir) {
-        throw new Error(
-          `git-dates: could not find repository root (no .git) walking up from ${process.cwd()}`,
-        );
-      }
-      dir = parent;
-    }
-  }
-}
-
-//endregion Repository root resolution
 
 //region Helpers
 
@@ -145,7 +86,7 @@ async function runCapture(
  * ```
  */
 async function runGit(args: readonly string[],): Promise<CommandResult> {
-  const root = await findRepoRoot();
+  const root = await findMonorepoRoot();
   return runCapture(
     'git',
     args,
@@ -295,7 +236,7 @@ async function gitLogDates(
  * ```
  */
 async function getRepoRelativePath(filePath: string,): Promise<string> {
-  const root = await findRepoRoot();
+  const root = await findMonorepoRoot();
   const absolute = resolve(
     process.cwd(),
     filePath,

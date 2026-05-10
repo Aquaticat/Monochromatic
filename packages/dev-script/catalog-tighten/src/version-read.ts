@@ -24,7 +24,7 @@ import { isStrictlyGreater, } from './version-parse.ts';
  *
  * @example
  * ```ts
- * readVersionFromPackageJson("/path/to/node_modules/eslint/package.json") // "10.0.0"
+ * readVersionFromPackageJson("/path/to/node_modules/oxlint/package.json") // "0.21.0"
  * ```
  */
 export function readVersionFromPackageJson(pkgJsonPath: string,): string | undefined {
@@ -48,7 +48,7 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): string | undef
  * optionally with a `+hash` dedup suffix. When multiple versions exist, returns
  * the highest by reading each candidate's `package.json`.
  *
- * @param npmName - npm package name, e.g. `"@eslint/core"` or `"chokidar"`
+ * @param npmName - npm package name, e.g. `"@oxc-project/runtime"` or `"chokidar"`
  *
  * @param monorepoRoot - absolute path to the monorepo root
  *
@@ -56,7 +56,7 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): string | undef
  *
  * @example
  * ```ts
- * readVersionFromBunStore("\@eslint/core", "/home/user/Monochromatic") // "1.1.0"
+ * readVersionFromBunStore("\@oxc-project/runtime", "/home/user/Monochromatic") // "1.1.0"
  * readVersionFromBunStore("chokidar", "/home/user/Monochromatic") // "5.0.0"
  * ```
  */

@@ -464,7 +464,7 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
     const accumulated: string[] = [];
     let continuationToken: string | undefined = undefined;
     do {
-      // eslint-disable-next-line no-await-in-loop -- pagination requires the previous token to fetch the next page
+      // oxlint-disable-next-line no-await-in-loop -- pagination requires the previous token to fetch the next page
       const page = await listOnePage({
         client: options.client,
         endpoint: options.endpoint,

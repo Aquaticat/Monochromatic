@@ -36,19 +36,11 @@ The API key is stored in your browser's localStorage for convenience. You can ch
 
 ## Technical Details
 
-- **Build system**: Vite with `vite-plugin-singlefile`
+- **Build system**: tsdown
 - **Language**: TypeScript
 - **Styling**: Pure CSS with CSS custom properties for theming
 - **No external dependencies**: Everything is bundled into the single HTML file
 - **API integration**: Direct fetch calls to Exa's search API
-
-## Configuration
-
-The build uses the `getFrontend` configuration from `@monochromatic-dev/config-vite`, which:
-
-- Bundles all JavaScript and CSS inline
-- Includes the `viteSingleFile` plugin for creating self-contained HTML
-- Uses the unprefixed frontend configuration to avoid subdirectory nesting in output
 
 ## Development
 
@@ -57,5 +49,3 @@ The source files are organized as:
 - `index.html` - Main HTML structure (at package root)
 - `src/index.ts` - TypeScript logic for API integration and UI updates
 - `src/index.css` - Styling with dark/light mode support
-
-When developing, the standard Vite dev server can be used for hot module replacement.

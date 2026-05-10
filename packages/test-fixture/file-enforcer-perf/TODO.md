@@ -24,8 +24,6 @@
 - IO throttling (`--device-read/write-iops`) only applies to IO that bypasses the page cache.
   Small files (like file-enforcer's workload) mostly hit page cache, so the IOPS limit barely affects results.
   This is realistic (VPS also benefit from page cache), but worth noting for interpretation.
-- The block device path (`/dev/dm-0`) is hardcoded for this machine's LUKS setup.
-  Auto-detect the block device backing the monorepo directory using `stat` and `/sys/block/` introspection.
 
 ## Container setup
 

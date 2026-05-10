@@ -46,26 +46,31 @@ NueJS: requires less common markdown format support.
 
 ## Linting and formatting
 
-- **Biome**: insufficient rules
-- **oxlint**: faster than ESLint
-- **ESLint**: fills oxlint gaps
+- **oxlint**: primary JS/TS linter
 - **Stylelint**: CSS-specific rules
 - **dprint**: universal formatter
 
-## Testing: Vitest + Playwright
+Rejected alternatives:
+
+- **Biome**: insufficient rules
+- **ESLint**: removed 2026-03-13 and not an adoption candidate. Oxlint covers the rules we relied on (gaps were filled by writing `@monochromatic-dev/config-oxlint-tsdoc` and `@monochromatic-dev/config-oxlint-no-restricted-syntax`), and oxlint runs orders of magnitude faster.
+
+## Testing: bun + module-test + Playwright
+
+Unit tests run on the bun runtime through the in-house `@monochromatic-dev/module-test` harness (Jest-style API on chai + sinon). Browser and end-to-end tests run on Playwright (in Podman for reproducibility).
 
 Alternatives rejected:
 
+1. **Vitest**: not an adoption candidate. Pulls in Vite's transform pipeline, which we do not want as a test-time dependency now that Vite is removed from the build path.
+
 1. **WebdriverIO**
-   - ✓ Firefox ESR support
-   - ✗ No `prefers-contrast`/`prefers-reduced-motion` emulation
-   - ✗ No Firefox user.js/Chrome flags support
-   - ✗ Host configuration breaks reproducibility
+   - Firefox ESR support
+   - No `prefers-contrast`/`prefers-reduced-motion` emulation
+   - No Firefox user.js/Chrome flags support
+   - Host configuration breaks reproducibility
 
 1. **Playwright standalone**
-   - ✗ No unit testing
-
-Vitest + Playwright: unit testing + browser automation + emulation.
+   - No unit testing
 
 ## Code search: Agentic search > Semantic search
 

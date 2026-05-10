@@ -435,7 +435,7 @@ export class MorphCompactClient {
         body: text,
       },);
     }
-    // eslint-disable-next-line @morph-compact/no-unsafe-type-assertion -- response.json() returns any; shape is the documented /v1/compact contract mirrored from morphsdk@0.2.167
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response.json() returns any; shape is the documented /v1/compact contract mirrored from morphsdk@0.2.167
     return await response.json() as CompactResult;
   }
 }

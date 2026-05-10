@@ -13,11 +13,9 @@ packages/
     time             @monochromatic-dev/build-time
   config/
     dprint           @monochromatic-dev/config-dprint
-    eslint           @monochromatic-dev/config-eslint
     stylelint        @monochromatic-dev/config-stylelint
     tsdown           @monochromatic-dev/config-tsdown
     typescript       @monochromatic-dev/config-typescript
-    vite             @monochromatic-dev/config-vite
   fixture/
     test-css-imported        @monochromatic-dev/test-css-imported
     test-css-imported-no-exports  @monochromatic-dev/test-css-imported-no-exports
@@ -85,14 +83,13 @@ These `package.json` files have empty or absent `description` fields:
 - `ai-tree`
 - `rss`
 - `config-dprint`
-- `config-eslint`
 - `config-stylelint`
 - `config-tsdown`
 
 ## Proposed categories
 
 - **`build-tool/`** -- packages that transform or compile source code as part of a build pipeline
-- **`config/`** -- shared tool configuration presets (ESLint, TypeScript, Vite, etc.)
+- **`config/`** -- shared tool configuration presets (oxlint, TypeScript, tsdown, dprint, etc.)
 - **`dev-script/`** -- standalone developer automation scripts not directly part of a build pipeline
 - **`library/`** -- reusable code meant to be imported by other packages (replaces the vague "module")
 - **`mcp/`** -- Model Context Protocol servers
@@ -159,11 +156,9 @@ packages/
     css                          @monochromatic-dev/build-tool-css
   config/
     dprint                       @monochromatic-dev/config-dprint
-    eslint                       @monochromatic-dev/config-eslint
     stylelint                    @monochromatic-dev/config-stylelint
     tsdown                       @monochromatic-dev/config-tsdown
     typescript                   @monochromatic-dev/config-typescript
-    vite-deprecated              @monochromatic-dev/config-vite-deprecated
   dev-script/
     backup-path                  @monochromatic-dev/dev-script-backup-path
     ensure-dependencies          @monochromatic-dev/dev-script-ensure-dependencies

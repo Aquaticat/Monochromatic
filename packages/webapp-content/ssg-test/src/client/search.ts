@@ -15,7 +15,7 @@
  * ```
  */
 
-export {}; // eslint module boundary marker
+import { escapeHtml, } from '@monochromatic-dev/module-hyperscript/ts';
 
 //region Types
 
@@ -235,34 +235,6 @@ function setActiveOption(index: number,): void {
 //endregion Keyboard navigation state
 
 //region Result rendering
-
-/**
- * Escapes HTML special characters to prevent injection when
- * interpolating text into `innerHTML`.
- *
- * @param text - raw text to escape
- *
- * @returns HTML-safe string
- */
-function escapeHtml(text: string,): string {
-  return text
-    .replaceAll(
-      '&',
-      '&amp;',
-    )
-    .replaceAll(
-      '<',
-      '&lt;',
-    )
-    .replaceAll(
-      '>',
-      '&gt;',
-    )
-    .replaceAll(
-      '"',
-      '&quot;',
-    );
-}
 
 /**
  * Renders loaded search results into the dropdown list.

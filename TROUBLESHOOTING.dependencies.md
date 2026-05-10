@@ -107,7 +107,7 @@ creates specs independently and does not consult modifiers.
 
 npm has stripped `+<build>` from version strings at publish time since 2014.
 Across thousands of checked packages (semver, typescript, react, electron, webpack,
-lodash, express, next, vue, angular, eslint, prettier, rollup, vite, esbuild, etc.),
+lodash, express, next, vue, angular, prettier, rollup, esbuild, etc.),
 zero have build metadata in any version key or dependency specifier on the public registry.
 The vlt issue tracker (vltpkg/vltpkg) has no reports matching this pattern --
 existing "failed to fetch manifest" issues (#1534, #1263, #260) all have different causes.
@@ -166,72 +166,80 @@ See the draft bug report in `BUG-REPORT.vlt-build-metadata.md`
 
 It will turn `>=` in `package.json` into exact versions.
 
-## Workspace Cycles: config-vite and module-es
+### `[WARN] 1 deprecated subdependencies found: node-domexception@1.0.0`
 
-### Problem
+Emitted by `pnpm install`. Install-time only; runtime is unaffected. Cannot
+be silenced without breaking runtime, and cannot be silenced by upgrading any
+direct dependency. Document and ignore.
 
-After refactoring `@monochromatic-dev/config-vite` to import utility functions from `@monochromatic-dev/module-es`, pnpm warns about cyclic workspace dependencies:
+#### Dependency chain
 
 ```text
-WARN  There are cyclic workspace dependencies: /home/user/projects/Monochromatic/packages/config/vite, /home/user/projects/Monochromatic/packages/module/es
+node-domexception@1.0.0
+└─┬ fetch-blob@3.2.0
+  ├─┬ formdata-polyfill@4.0.10
+  │ └─┬ node-fetch@3.3.2
+  │   ├─┬ @libsql/hrana-client@0.6.2 → @libsql/client → @libsql/kysely-libsql
+  │   │                              → @monochromatic-dev/webapp-forge-server
+  │   └─┬ gaxios@7.1.4 → gcp-metadata → google-auth-library → @google/genai
+  │                    → @earendil-works/pi-ai → @earendil-works/pi-coding-agent
+  │                    → @monochromatic-dev/pi-{morph-compact,terminal-title}
+  └── node-fetch@3.3.2 [deduped]
 ```
 
-### Root Cause
+`pnpm why node-domexception` reproduces this on demand.
 
-The circular dependency exists because:
+#### Why it cannot be removed
 
-1. `config-vite` imports utility functions (`notFalsyOrThrow`, `wait`, `alwaysTrue`) from `module-es`
-2. `module-es` uses `config-vite` for its build configuration (vite.config.ts)
+`fetch-blob@3.2.0/from.js:3` does `import DOMException from 'node-domexception'`
+and `from.js:86` calls `throw new DOMException(...)`.
 
-This creates a dependency cycle in the workspace graph.
+`node-fetch@3.3.2/src/index.js` and `src/utils/multipart-parser.js` both import
+from `fetch-blob/from.js`, so the import path executes at runtime whenever
+node-fetch is loaded.
 
-### Solution
+A `'fetch-blob>node-domexception': '-'` override removes the package from the
+install but leaves the static import in `fetch-blob/from.js` -- node-fetch
+crashes at module load.
 
-Disable pnpm's cycle detection by setting `disallowWorkspaceCycles: false` in `pnpm-workspace.yaml`:
+#### Why upgrading does not help
 
-```yaml
-disallowWorkspaceCycles: false
-```
+- `node-fetch@3.3.2` is the latest published v3; v4 is in beta and still
+  depends on `fetch-blob@^3.1.4`.
+- `fetch-blob@4.0.0` (latest) still declares `node-domexception: ^1.0.0`.
+- `formdata-polyfill@4.0.10` (latest) declares `fetch-blob: ^3.1.2`, pinning
+  the v3 line.
+- `@libsql/hrana-client@0.10.0` (latest) and `gaxios@7.1.4` (latest) both still
+  depend on `node-fetch@^3.3.2`. Native `fetch` migration is upstream work that
+  has not happened.
 
-### Why This Is Acceptable
+#### Why overriding to v2 does not help
 
-1. **Build-time vs Runtime**: The cycle only exists at the workspace level. At runtime:
-   - `config-vite` imports from `module-es` source files (`.ts` export)
-   - `module-es` only uses `config-vite` during build time (vite.config.ts)
-   - There's no actual runtime circular dependency
+`node-domexception@2.0.2` is also deprecated ("Use your platform's native
+DOMException instead"). Critically, v2 changed the API:
 
-2. **TypeScript Source Imports**: By importing from `@monochromatic-dev/module-es/.ts`, we bypass the need for built artifacts, avoiding the bootstrap problem where each package would need the other to be built first.
+- v1 `index.js`: `module.exports = globalThis.DOMException` (default export is
+  the constructor).
+- v2 `index.js`: side-effect-only; sets `globalThis.DOMException ??= ...` and
+  exports nothing.
 
-3. **Development Experience**: The cycle doesn't impact:
-   - Development workflow (everything works with source files)
-   - Build process (vite handles TypeScript transpilation on-the-fly)
-   - Type checking (TypeScript resolves types from source)
+v2 never assigns `module.exports`, so it stays at the CJS default `{}`. Under
+Node ESM, `import DOMException from 'node-domexception'` resolves to
+`module.exports`, i.e. `{}`. `throw new DOMException(...)` then throws
+`TypeError: DOMException is not a constructor` at runtime.
 
-4. **Code Quality**: The refactoring improved code quality by:
-   - Eliminating code duplication
-   - Following DRY principle
-   - Centralizing utility functions where they belong
+#### Why runtime is fine
 
-### Trade-offs
+v1's `index.js` ends with `module.exports = globalThis.DOMException`. On Node
+17+ and Bun, `globalThis.DOMException` is the native class, so the import
+yields the platform constructor. The deprecated package is a no-op shim at
+runtime; the deprecation message is purely an npm-registry-level annotation
+read by pnpm at install time.
 
-**Benefits**:
+#### Verified workaround paths (not applied)
 
-- Cleaner code with no duplication
-- Utilities maintained in one place
-- Better adherence to single responsibility principle
+A workspace shim package re-exporting `globalThis.DOMException`, wired via
+`overrides: { 'node-domexception': 'link:packages/shim/node-domexception' }`,
+would silence the warning without breaking runtime. Not worth the package for
+an install-time-only message; revisit if the warning ever blocks a CI gate.
 
-**Costs**:
-
-- Workspace-level circular dependency warning
-- Slightly more complex dependency graph
-- Need to document why the cycle exists
-
-### Alternative Considered
-
-We could have kept the duplicated code to avoid the cycle, but this would:
-
-- Violate DRY principle
-- Create maintenance burden (updating utilities in multiple places)
-- Increase risk of divergence between implementations
-
-The workspace cycle is a reasonable trade-off for better code organization and maintainability.

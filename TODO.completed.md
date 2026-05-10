@@ -77,11 +77,7 @@
 
 #### Critical Build Issues Resolved
 
-1. **ESLint config package not built**
-   - Fixed by running `moon run config-eslint:build`
-   - This was blocking all ESLint validation
-
-2. **Playwright system dependencies missing**
+1. **Playwright system dependencies missing**
    - Browser tests fail with: "Host system is missing dependencies to run browsers. Missing libraries: libX11-xcb.so.1"
    - Enhanced the `preparePlaywright` script to:
      - Detect OS (Linux/macOS/Windows) and Linux distribution
@@ -99,7 +95,6 @@
    - Fixed error handling in catch blocks to use `unknown`
    - Added explicit return types for Astro getStaticPaths functions
    - Fixed Symbol property access on unknown types
-   - Fixed vite config iframe path issue
    - Fixed empty test file causing test suite failures
    - **Pre-commit hook now passes!** Commits are no longer blocked
    - Remaining: Some TypeScript errors in test files (can be addressed incrementally)
@@ -108,7 +103,7 @@
 
 1. **TypeScript baseUrl Warnings**: Fixed by adding `baseUrl: "./"` to all tsconfig files (completed in commit 673787f)
 
-## ESLint Configuration Cleanup (June 2025)
+## Lint Configuration Cleanup (June 2025)
 
 ### Configuration Changes Completed
 
@@ -122,7 +117,7 @@
 - [x] Replace `window` with `globalThis` in figma plugin files
 - [x] Fix `e` variable usage in catch blocks to use `error` instead
 
-### Comprehensive ESLint Fixes Session (June 2025)
+### Comprehensive Lint Fixes Session (June 2025)
 
 #### Variable `i` Issues Fixed
 
@@ -273,14 +268,14 @@ Updated to use function references in multiple test files including:
 - Use descriptive test names that explain expected behavior
 - Group related tests using `describe` blocks
 - Use `it.each` for parameterized tests
-- Mock external dependencies using Vitest's mocking capabilities
+- Mock external dependencies using sinon (via `@monochromatic-dev/module-test`)
 - Test both happy path and error scenarios
 
 #### Test File Setup Standards
 
-- Always start Vitest files with proper imports and logtape configuration
+- Always start test files with proper imports from `@monochromatic-dev/module-test` and logtape configuration
 - Use V8 ignore comments for untestable code paths
-- Write corresponding Vitest files aiming for 100% test coverage
+- Write corresponding test files aiming for 100% test coverage
 - Tests can only be run from workspace root using `mise run test`
 
 ## Reference Information
@@ -293,7 +288,6 @@ Historical references below reflect the tooling at the time of completion.
 - **June 19, 2025**: WSL migration completion
 - **June 2025**: Husky to Moon migration (later migrated to mise)
 - **June 2025**: Pre-commit validation fixes
-- **June 2025**: ESLint configuration cleanup
 - **August 2025**: TODO file reorganization
 - **Late 2025**: Migration from Moon to mise, pnpm to Bun
 - **March 2026**: MCP stdio package initial implementation

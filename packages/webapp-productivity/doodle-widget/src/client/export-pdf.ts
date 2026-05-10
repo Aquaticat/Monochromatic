@@ -107,7 +107,7 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   /** Page height in PDF points */
   const pageH = ch * PX_TO_PT;
 
-  // eslint-disable-next-line new-cap -- jsPDF uses lowercase constructor by convention
+  // oxlint-disable-next-line new-cap -- jsPDF uses lowercase constructor by convention
   const doc = new jsPDF({
     orientation: pageW >= pageH ? 'l' : 'p',
     unit: 'pt',
@@ -128,7 +128,7 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     }
 
     /** Composited raster image for this page */
-    // eslint-disable-next-line no-await-in-loop -- pages render sequentially; each mutates the shared overlay element
+    // oxlint-disable-next-line no-await-in-loop -- pages render sequentially; each mutates the shared overlay element
     const pageCanvas = await renderPageCanvas({
       svgBackground: page.svgBackground,
       strokes: page.strokes,
@@ -137,9 +137,9 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     },);
 
     /** PNG image data as byte array for jsPDF embedding */
-    // eslint-disable-next-line no-await-in-loop -- depends on sequential page rendering above
+    // oxlint-disable-next-line no-await-in-loop -- depends on sequential page rendering above
     const blob = await pageCanvas.convertToBlob({ type: 'image/png', },);
-    // eslint-disable-next-line no-await-in-loop -- depends on sequential blob above
+    // oxlint-disable-next-line no-await-in-loop -- depends on sequential blob above
     const buffer = await blob.arrayBuffer();
     const imageData = new Uint8Array(buffer,);
     doc.addImage(

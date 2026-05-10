@@ -88,7 +88,6 @@ Nice-to-have features and experimental improvements.
 
 - **MCP packages**: Building mcp-stdio and mcp-nvim → packages/mcp/
 - **Build System**: Fixing ordering issues for fresh clones → [Build System Todo](TODO.build-system.md#fresh-clone-setup-problems)
-- **Code Quality**: Completing ESLint configuration cleanup → [Code Quality Todo](TODO.code-quality.md#current-linting-issues)
 - **Security**: Establishing security fundamentals → [Security Todo](TODO.security.md#dependency-security)
 
 ### Next Sprint Candidates
@@ -103,7 +102,6 @@ Nice-to-have features and experimental improvements.
 - Husky to mise migration (June 2025) → [Completed Tasks](TODO.completed.md)
 - Pre-commit hook implementation → [Completed Tasks](TODO.completed.md)
 - TypeScript baseUrl configuration fixes → [Completed Tasks](TODO.completed.md)
-- ESLint configuration cleanup (partial) → [Completed Tasks](TODO.completed.md)
 - MCP stdio package initial implementation (March 2026)
 
 *For detailed information on completed tasks, see [Completed Tasks](TODO.completed.md)*

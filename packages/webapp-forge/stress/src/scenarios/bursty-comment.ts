@@ -126,7 +126,7 @@ async function run(): Promise<ScenarioResult> {
 
   for (let i = 0; i < burstEvents; i += 1) {
     const t0 = Date.now();
-    // eslint-disable-next-line no-await-in-loop -- paced burst by design
+    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     await createCommentWithEvent({
       id: `c-bursty-${String(i,)}`,
       issueId: BURSTY_ISSUE_ID,
@@ -134,7 +134,7 @@ async function run(): Promise<ScenarioResult> {
       body: `bursty ${String(i,)}`,
       createdAt: Date.now(),
     },);
-    // eslint-disable-next-line no-await-in-loop -- paced burst by design
+    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     const cursor = await dispatchAndFlush({
       afterEventId: getEventCursor(),
       storage,
@@ -148,7 +148,7 @@ async function run(): Promise<ScenarioResult> {
         Math.floor(intervalMs - (Date.now() - t0)),
       );
       if (sleep > 0)
-        // eslint-disable-next-line no-await-in-loop -- paced burst by design
+        // oxlint-disable-next-line no-await-in-loop -- paced burst by design
         await wait(sleep,);
     }
   }

@@ -38,7 +38,7 @@ but have blocked it on a major release to avoid breaking the `globbyOptions` API
 Two community PRs (stylelint/stylelint#8988, stylelint/stylelint#9118) were closed without merge.
 The discussion continues in stylelint/stylelint#8051 and stylelint/stylelint#8929.
 
-`picomatch@4.0.4` (used by vite, tsdown, tinyglobby, rolldown, fdir) is a separate major version
+`picomatch@4.0.4` (used by tsdown, tinyglobby, rolldown, fdir) is a separate major version
 and was never affected by these CVEs.
 
 **`openai@6.33.0` -- direct dep of `packages/dev-script/inference-canary`:**
@@ -236,12 +236,8 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] glob
 - [ ] @total-typescript/ts-reset
 - [ ] @ungap/structured-clone
-- [ ] eslint + plugins (dev-only)
-- [ ] typescript-eslint (dev-only)
 - ~~remark-lint-*~~ -- removed; replaced by markdownlint-cli2 + dprint-plugin-markdown
-- [ ] vite-plugin-json5 (dev-only)
 - [ ] istanbul-lib-report (dev-only)
-- [ ] @vitejs/plugin-basic-ssl (dev-only)
 - ~~@shikijs/transformers~~ -- removed; replaced by CSS Custom Highlight API with Lezer parsers
 - [ ] remark-github-blockquote-alert
 - [ ] remark-sectionize

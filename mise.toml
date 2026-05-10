@@ -305,11 +305,6 @@ let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part 
 podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts --project=firefox ...$args
 """
 
-# [tasks."test:browser"]
-# hide = true
-# description = "Run browser tests"
-# run = "vitest run --config vitest.browser.config.ts"
-
 [tasks."watch:test:unit"]
 hide = true
 description = "Run unit tests in watch mode"
@@ -322,11 +317,6 @@ if ($args | is-empty) {
   $args | par-each { |file| bun --watch $file }
 }
 """
-
-# [tasks."watch:test:browser"]
-# hide = true
-# description = "Run browser tests in watch mode"
-# run = "vitest watch --config vitest.browser.config.ts"
 
 [tasks."watch:test"]
 description = "Run all tests in watch mode"

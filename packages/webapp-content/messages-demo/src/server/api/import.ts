@@ -117,7 +117,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       // Sequential PUTs preserve seq order; the chunker has no
       // forward-look so we must commit one chunk before deciding the
       // next.
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       for (const chunk of renderChunks(prefix,)) {
         if (chunk.html.length > CHUNK_HARD_CAP_BYTES) {
           throw new HTTPError({
@@ -127,7 +127,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
         }
         if (seq === 0)
           firstMd = chunk.md;
-        // eslint-disable-next-line no-await-in-loop
+        // oxlint-disable-next-line no-await-in-loop
         await putChunk({
           draftId,
           seq,
@@ -142,7 +142,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     let readError: unknown = undefined;
     try {
       // Streaming reader is inherently sequential.
-      /* eslint-disable no-await-in-loop, no-constant-condition */
+      /* oxlint-disable no-await-in-loop, no-constant-condition */
       while (true) {
         const {
           value,
@@ -156,7 +156,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
         if (pending.length > CHUNK_TARGET_BYTES * PENDING_BUFFER_MULTIPLE)
           await flushFromPending(false,);
       }
-      /* eslint-enable no-await-in-loop, no-constant-condition */
+      /* oxlint-enable no-await-in-loop, no-constant-condition */
       // Drain anything left.
       await flushFromPending(true,);
     }

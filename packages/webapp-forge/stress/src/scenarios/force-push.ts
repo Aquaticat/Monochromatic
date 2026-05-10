@@ -42,7 +42,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- the package re-exports ESM as a wildcard namespace
-// eslint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
+// oxlint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
 import * as git from 'isomorphic-git';
 
 import { percentile, } from '../percentile.ts';
@@ -334,7 +334,7 @@ async function run(): Promise<ScenarioResult> {
   let appliedTotal = 0;
 
   for (let i = 0; i < config.burstEvents; i += 1) {
-    // eslint-disable-next-line no-await-in-loop -- per-iteration sequential is by design (each push depends on the prior ref state)
+    // oxlint-disable-next-line no-await-in-loop -- per-iteration sequential is by design (each push depends on the prior ref state)
     const fab = await fabricateCommit({
       blobSize: config.blobSize,
       // Vary the blob byte each iteration so each commit oid differs.
@@ -347,7 +347,7 @@ async function run(): Promise<ScenarioResult> {
       packfile: fab.packfile,
     },);
     const t0 = Date.now();
-    // eslint-disable-next-line no-await-in-loop -- paced burst by design
+    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     const outcome = await handleReceivePack({
       owner: OWNER,
       repo: REPO,
@@ -357,7 +357,7 @@ async function run(): Promise<ScenarioResult> {
     samples.push(t1 - t0,);
     appliedTotal += outcome.applied.length;
     priorOid = fab.oid;
-    // eslint-disable-next-line no-await-in-loop -- paced burst by design
+    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     await waitInterval({
       intervalMs,
       elapsedMs: t1 - t0,

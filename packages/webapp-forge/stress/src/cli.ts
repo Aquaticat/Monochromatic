@@ -105,7 +105,7 @@ if (toRun.length === 0) {
   const results: ScenarioResult[] = [];
   for (const scenario of toRun) {
     l.info(`running scenario: ${scenario.name}`,);
-    // eslint-disable-next-line no-await-in-loop -- scenarios share the runtime; serial run by design
+    // oxlint-disable-next-line no-await-in-loop -- scenarios share the runtime; serial run by design
     const result = await scenario.run();
     results.push(result,);
     l.info(

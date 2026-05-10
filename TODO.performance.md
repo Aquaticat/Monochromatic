@@ -10,7 +10,7 @@ Build system and compilation optimization
 
 - Task Runner Build System Optimization
 - TypeScript Compilation Performance
-- Vite Build Optimization
+- tsdown Build Optimization
 - Package Build Dependencies
 - Development Server Performance
 

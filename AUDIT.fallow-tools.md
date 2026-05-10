@@ -25,6 +25,9 @@ auto-cleanup or always-on linter.
   dead deps, unlisted deps, unused class members) plus a known false-positive
   tail driven by per-package `mise.toml` task invocations and bare
   `tsdown.config.ts` files where fallow's built-in plugin does not activate.
+  The bare-config category was eliminated on 2026-05-09 (every config now
+  uses the `tsdown.<platform>.config.ts` form), so a re-run would surface
+  fewer false positives in that band.
 - The unique signal is genuinely out-of-scope for oxlint by design --
   oxc maintainers explicitly declined `import/no-unresolved` as inherently
   noisy and have `import/no-unused-modules` and `import/no-extraneous-dependencies`
@@ -116,11 +119,13 @@ The prototype's improvement over the hand-tuned config came from three sources:
 
 ### Unlisted dependencies
 
-Eighteen packages imported but not declared in any `package.json`,
-including `eslint`, `vitest`, `vite`, `typescript-eslint`, several
-`@typescript-eslint/*` and `@eslint/*` packages, `eslint-plugin-tsdoc`,
-`eslint-plugin-unicorn`, `tailwindcss`, and `outdent`.
+A handful of packages imported but not declared in any `package.json`,
+including `tailwindcss` and `outdent`.
 These resolve today via root hoisting or transitive dependencies.
+
+(The original 2026-04-28 audit listed eighteen packages including the now-removed
+ESLint and Vite toolchains. Those have been deleted from the workspace and are
+no longer findings.)
 
 ### Unused class members
 
@@ -214,6 +219,10 @@ Closing this gap would extend the generator to scan every
 
 ### Bare `tsdown.config.ts` files
 
+**Resolved 2026-05-09**: every per-package config now uses
+`tsdown.<platform>.config.ts`, so the false-positive class described below
+no longer applies. The historical finding is preserved for context.
+
 A few packages have `tsdown.config.ts` (no `.client` / `.node` infix).
 Fallow's built-in tsdown plugin should handle these natively per its
 source code, but they appear in unused-files findings, indicating the
@@ -240,7 +249,7 @@ The static base in `generateFallowConfig()` includes:
 
 - Entry patterns for `mise.*.ts`, `tsdown.*.config.{ts,js,cjs,mjs}`,
   `**/src/cli.ts`, `oxlint.config.ts`, `file-enforcer.config.ts`,
-  `playwright.*.config.ts`, `vitest.config.ts`
+  `playwright.*.config.ts`
 - `dynamicallyLoaded` patterns for `client/**/*.ts` paths in editord,
   ssg-test, doodle-widget, done, done-h-css-test, exa-search, plus
   generic `**/*.css` and `**/*.html`

@@ -15,7 +15,7 @@
 import nodeFs from 'node:fs';
 
 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- the package re-exports ESM as a wildcard namespace
-// eslint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
+// oxlint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
 import * as git from 'isomorphic-git';
 
 /**
@@ -45,7 +45,7 @@ export async function collectReachable(row: {
   const excluded = new Set<string>();
   // Mark every object reachable from haves as excluded.
   for (const haveOid of row.haves) {
-    // eslint-disable-next-line no-await-in-loop -- exclusion walk is best done one commit-tree at a time
+    // oxlint-disable-next-line no-await-in-loop -- exclusion walk is best done one commit-tree at a time
     await markReachable({
       gitdir: row.gitdir,
       oid: haveOid,
@@ -54,7 +54,7 @@ export async function collectReachable(row: {
     },);
   }
   for (const wantOid of row.wants) {
-    // eslint-disable-next-line no-await-in-loop -- per-want walks share state through `visited`/`excluded`; serial is simpler
+    // oxlint-disable-next-line no-await-in-loop -- per-want walks share state through `visited`/`excluded`; serial is simpler
     await markReachable({
       gitdir: row.gitdir,
       oid: wantOid,
@@ -92,7 +92,7 @@ async function markReachable(row: {
     row.bag.add(oid,);
     let commit: Awaited<ReturnType<typeof git.readCommit>> | undefined = undefined;
     try {
-      // eslint-disable-next-line no-await-in-loop -- BFS via mutable queue; serial reads are intentional
+      // oxlint-disable-next-line no-await-in-loop -- BFS via mutable queue; serial reads are intentional
       commit = await git.readCommit({
         fs: nodeFs,
         gitdir: row.gitdir,
@@ -104,7 +104,7 @@ async function markReachable(row: {
     }
     for (const parent of commit.commit.parent)
       queue.push(parent,);
-    // eslint-disable-next-line no-await-in-loop -- single tree walk per commit; cheaper than parallelizing
+    // oxlint-disable-next-line no-await-in-loop -- single tree walk per commit; cheaper than parallelizing
     await markTree({
       gitdir: row.gitdir,
       oid: commit.commit.tree,
@@ -145,7 +145,7 @@ async function markTree(row: {
       if (!row.bag.has(entry.oid,) && !row.excluded.has(entry.oid,))
         row.bag.add(entry.oid,);
     } else if (entry.type === 'tree') {
-      // eslint-disable-next-line no-await-in-loop -- recursion via shared state
+      // oxlint-disable-next-line no-await-in-loop -- recursion via shared state
       await markTree({
         gitdir: row.gitdir,
         oid: entry.oid,

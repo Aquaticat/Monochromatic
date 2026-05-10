@@ -147,7 +147,7 @@ packages/
   claude-code-plugins/      Claude Code IDE plugins (7 packages)
   cli/                      CLI tools (mvm -- KVM virtual machine manager)
   config/                   Shared configurations (dprint, oxlint,
-                              stylelint, tofu, tsdown, typescript, vite)
+                              stylelint, tofu, tsdown, typescript)
   desktop-daemon/           Background services (hall-monitor)
   dev-script/               Developer utilities (file-enforcer, inference-canary,
                               catalog-tighten, backup-path)
@@ -168,7 +168,7 @@ packages/
 - **Task runner**: [Mise](https://mise.jdx.dev/) with nushell for cross-platform task execution
 - **Runtime**: [Bun](https://bun.sh/) (migrating away from Bun-specific APIs toward Node.js standards)
 - **Package manager**: Bun workspaces with `catalog:` dependency management
-- **Bundler**: [tsdown](https://tsdown.dev/) (Rolldown-based, replacing Vite for library builds)
+- **Bundler**: [tsdown](https://tsdown.dev/) (Rolldown-based)
 - **Language**: TypeScript with `tsgo` for type checking
 - **Linters**: Oxlint (with custom JS plugins for TSDoc and restricted syntax), Stylelint, Harper (prose)
 - **Formatter**: dprint (orchestrates all formatters including oxlint auto-fix)

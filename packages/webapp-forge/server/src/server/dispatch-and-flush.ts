@@ -65,7 +65,7 @@ export async function dispatchAndFlush(row: {
   // expect 1-2 events; the loop terminates once `listEventsAfter`
   // returns an empty page.
   while (true) {
-    // eslint-disable-next-line no-await-in-loop -- sequential by design
+    // oxlint-disable-next-line no-await-in-loop -- sequential by design
     const events = await listEventsAfter(
       cursor,
       batchSize,
@@ -91,7 +91,7 @@ export async function dispatchAndFlush(row: {
           resourceId: eventRow.resource_id,
           commentId,
         };
-      // eslint-disable-next-line no-await-in-loop -- per-resource ordering relies on sequential dispatch
+      // oxlint-disable-next-line no-await-in-loop -- per-resource ordering relies on sequential dispatch
       await processEvent(
         event,
         eventRow.sequence_number,

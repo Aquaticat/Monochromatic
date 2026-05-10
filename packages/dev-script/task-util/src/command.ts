@@ -10,18 +10,18 @@
  * showing all output and errors to the user.
  *
  * Usage:
- *   task-command --allowFailure -- eslint --cache  # Always exits with 0
- *   task-command -- eslint --cache                 # Exits with command's exit code
+ *   task-command --allowFailure -- oxlint  # Always exits with 0
+ *   task-command -- oxlint                 # Exits with command's exit code
  *
  * The `--` separator is required to distinguish script args from command args.
  *
  * @example
  * ```bash
  * # Always exit with 0
- * task-command --allowFailure -- eslint --cache
+ * task-command --allowFailure -- oxlint
  *
  * # Exit with command's exit code
- * task-command -- eslint --cache
+ * task-command -- oxlint
  *
  * # Execute through shell
  * task-command --shell -- "echo hello && echo world"

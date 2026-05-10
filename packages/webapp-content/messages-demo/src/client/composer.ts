@@ -325,7 +325,7 @@ async function loadExistingChunksForEdit(
   const chunkCount = await fetchChunkCount(messageId,);
   // Sequential fetches keep ordering deterministic for streaming
   // assembly; the textarea concatenates parts in seq order.
-  /* eslint-disable no-await-in-loop */
+  /* oxlint-disable no-await-in-loop */
   const parts: string[] = [];
   for (let seq = 0; seq < chunkCount; seq += 1) {
     const response = await fetch(`/m/${String(messageId,)}/c/${String(seq,)}/md`,);
@@ -333,7 +333,7 @@ async function loadExistingChunksForEdit(
       throw new Error(`failed to load chunk ${String(seq,)}`,);
     parts.push(await response.text(),);
   }
-  /* eslint-enable no-await-in-loop */
+  /* oxlint-enable no-await-in-loop */
   writeBody({
     state: input.state,
     textarea: input.textarea,

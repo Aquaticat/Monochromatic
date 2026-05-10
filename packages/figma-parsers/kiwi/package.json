@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "description": "Parser for Figma's Kiwi binary schema and document format. Decodes .fig, .deck, and .jam exported files.",
   "type": "module",
-  "module": "dist/final/neutral/index.mjs",
+  "module": "dist/final/node/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/final/neutral/index.d.mts",
-      "node": "./dist/final/node/index.mjs",
-      "default": "./dist/final/neutral/index.mjs"
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
     },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"

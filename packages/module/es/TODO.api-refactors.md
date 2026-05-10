@@ -247,13 +247,13 @@ export function complexFunction({
 
 ---
 
-## 3. Type Testing with Vitest
+## 3. Type Testing with `@monochromatic-dev/module-test`
 
 ### Overview
 
 **Status**: Critical Priority - Quality assurance for ALL exports
 
-**Requirement**: All functions, constants, types, and exports should be tested using Vitest type testing capabilities with `expectTypeOf`.
+**Requirement**: All functions, constants, types, and exports should be tested using type testing capabilities with `expectTypeOf`.
 
 ### Comprehensive Type Testing Requirements
 
@@ -312,8 +312,8 @@ import {
 import {
   describe,
   expectTypeOf,
-  test,
-} from 'vitest';
+  it,
+} from '@monochromatic-dev/module-test';
 
 describe('Function Type Testing', () => {
   test('identity preserves input type exactly', () => {
@@ -461,7 +461,7 @@ describe('Generic Function Type Testing', () => {
 
 - [ ] **100% of functions** have logger parameter integration
 - [ ] **All 3+ parameter functions** use named parameter syntax
-- [ ] **All type utilities** have comprehensive Vitest type testing
+- [ ] **All type utilities** have comprehensive type testing
 - [ ] **Zero regression** in functionality after refactoring
 - [ ] **Performance maintained** or improved after changes
 - [ ] **Comprehensive documentation** updated for all signature changes

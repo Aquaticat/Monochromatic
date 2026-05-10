@@ -55,44 +55,6 @@ export function getSeedUsers(): readonly SeedUser[] {
   return seedUsers;
 }
 
-/**
- * HTML escape for inserting raw text into attribute / text positions
- * when we are not using the hyperscript factory directly. Mirrors the
- * factory's behaviour for consistency.
- *
- * @param value - text to escape
- *
- * @returns HTML-escaped string
- *
- * @example
- * ```ts
- * escapeHtml('<a>'); // '&lt;a&gt;'
- * ```
- */
-export function escapeHtml(value: string,): string {
-  return value
-    .replaceAll(
-      '&',
-      '&amp;',
-    )
-    .replaceAll(
-      '<',
-      '&lt;',
-    )
-    .replaceAll(
-      '>',
-      '&gt;',
-    )
-    .replaceAll(
-      '"',
-      '&quot;',
-    )
-    .replaceAll(
-      "'",
-      '&#39;',
-    );
-}
-
 /** Options accepted by `renderPage`. */
 type PageOptions = {
   /** Document `<title>`. */

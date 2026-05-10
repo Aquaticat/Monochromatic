@@ -86,7 +86,6 @@ const config: OxlintConfig = defineConfig({
     '**/*.cjs',
     '**/deprecated.*',
     '**/deprecated/**',
-    '**/eslint-deprecated/**',
     '**/fixture/**',
     '**/invalid/**',
     '**/test-fixture/**',

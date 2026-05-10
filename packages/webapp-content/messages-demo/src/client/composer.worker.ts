@@ -220,7 +220,7 @@ async function runCompileAndUpload(
   }
   // Sequential PUTs let the server return ack-up-to-N for the outbox to
   // drop acknowledged entries; parallel uploads would race the ack.
-  // eslint-disable-next-line no-await-in-loop
+  // oxlint-disable-next-line no-await-in-loop
   for (const chunk of chunks) {
     if (seq === 0)
       firstMd = chunk.md;
@@ -230,7 +230,7 @@ async function runCompileAndUpload(
       pendingPuts,
     );
     const putStart = performance.now();
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const ack = await putOneChunk({
       draftId: input.draftId,
       seq,
@@ -309,7 +309,7 @@ async function putOneChunk(
   let lastError: unknown = undefined;
   // Retry loop with exponential backoff -- each attempt depends on the
   // previous one failing, so it is inherently sequential.
-  /* eslint-disable no-await-in-loop */
+  /* oxlint-disable no-await-in-loop */
   for (let attempt = 0; attempt < PUT_MAX_ATTEMPTS; attempt += 1) {
     try {
       const response = await fetch(
@@ -343,7 +343,7 @@ async function putOneChunk(
       },);
     }
   }
-  /* eslint-enable no-await-in-loop */
+  /* oxlint-enable no-await-in-loop */
   throw lastError instanceof Error
     ? lastError
     : new Error('chunk PUT failed after retries',);

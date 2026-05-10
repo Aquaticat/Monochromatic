@@ -232,12 +232,12 @@ export const gitReceivePackHandler: EventHandlerWithFetch = defineHandler(
     if (repoRow !== undefined) {
       const now = Date.now();
       for (const triplet of outcome.applied) {
-        // eslint-disable-next-line no-await-in-loop -- one event row per ref; serial is intentional for ordering
+        // oxlint-disable-next-line no-await-in-loop -- one event row per ref; serial is intentional for ordering
         const sequenceNumber = await nextSequence(
           'repo',
           repoRow.id,
         );
-        // eslint-disable-next-line no-await-in-loop -- ditto: events must land in ref-update order
+        // oxlint-disable-next-line no-await-in-loop -- ditto: events must land in ref-update order
         await insertEvent({
           resourceType: 'repo',
           resourceId: repoRow.id,

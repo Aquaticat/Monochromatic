@@ -171,7 +171,7 @@ await describe({
                   parentId: null,
                 },);
                 for (const seq of [0, 1, 2,])
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await putChunk({
                     draftId: root,
                     seq,
@@ -197,13 +197,13 @@ await describe({
                 for (const [revisionOffset, editedSeq,] of editOrder.entries()) {
                   const revision = revisionOffset + 2;
                   const child = uniqueId('chain-edit',);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await createDraft({
                     id: child,
                     userId: 'user-a',
                     parentId: parent,
                   },);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await putChunk({
                     draftId: child,
                     seq: editedSeq,
@@ -213,7 +213,7 @@ await describe({
                       charCount: 5,
                     },
                   },);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   const outcome = await editMessage({
                     messageId,
                     userId: 'user-a',
@@ -324,13 +324,13 @@ await describe({
                   edit += 1
                 ) {
                   const child = uniqueId('cap-edit',);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await createDraft({
                     id: child,
                     userId: 'user-a',
                     parentId: parent,
                   },);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await putChunk({
                     draftId: child,
                     seq: 0,
@@ -340,7 +340,7 @@ await describe({
                       charCount: 4,
                     },
                   },);
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   const okOutcome = await editMessage({
                     messageId,
                     userId: 'user-a',

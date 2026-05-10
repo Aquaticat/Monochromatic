@@ -110,7 +110,7 @@ export async function seedPullRequestsForRepo(row: {
     },);
     void PR_TITLE_WORDS_LO;
     void PR_TITLE_WORDS_HI;
-    // eslint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
+    // oxlint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
     await createPullRequestWithEvent({
       issueId,
       repoId: row.repoId,
@@ -180,7 +180,7 @@ export async function seedReviewsForPrs(row: {
         lo: REVIEW_BODY_WORDS_LO,
         hi: REVIEW_BODY_WORDS_HI + 1,
       },);
-      // eslint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
+      // oxlint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
       await submitReviewWithEvent({
         id: deterministicId(
           `review-${prIssueId}`,

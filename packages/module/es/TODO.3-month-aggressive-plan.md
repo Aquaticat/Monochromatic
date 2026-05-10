@@ -93,7 +93,7 @@
 #### Stream 3: Test Infrastructure (AI Generation)
 
 - [ ] Generate comprehensive test templates for all function categories
-- [ ] Create type testing patterns using Vitest `expectTypeOf`
+- [ ] Create type testing patterns using `expectTypeOf`
 - [ ] Set up performance benchmarking test framework
 - [ ] Create cross-platform testing utilities
 
@@ -134,7 +134,7 @@
 
 ##### Week 5 (September 13-19): Universal Type Testing Implementation
 
-- [ ] Implement type testing for all existing functions using Vitest
+- [ ] Implement type testing for all existing functions using `@monochromatic-dev/module-test`
 - [ ] Add type inference tests for generic functions
 - [ ] Create type testing patterns for complex scenarios
 - [ ] Verify type safety across all refactored functions
@@ -390,7 +390,7 @@
 **Reference**: [`TODO.testing.md`](TODO.testing.md)
 
 - [ ] **Unit Tests**: AI-generated unit tests for all 500+ functions
-- [ ] **Type Tests**: Vitest type testing for all functions, constants, and exports
+- [ ] **Type Tests**: type testing for all functions, constants, and exports
 - [ ] **Integration Tests**: Cross-platform and cross-function integration tests
 - [ ] **Performance Tests**: Benchmark tests for performance-critical functions
 - [ ] **Coverage Target**: Achieve 95%+ test coverage across entire library

@@ -114,9 +114,9 @@ export async function processEvent(
   // p-limit; for Phase 1 the synchronous in-request dispatcher only
   // sees one event at a time.
   for (const fragmentKey of keys) {
-    // eslint-disable-next-line no-await-in-loop -- per-fragment serialisation by design
+    // oxlint-disable-next-line no-await-in-loop -- per-fragment serialisation by design
     const previousHash = await existingContentHash(fragmentKey,);
-    // eslint-disable-next-line no-await-in-loop -- pure-DB-read render runs sequentially in Phase 1
+    // oxlint-disable-next-line no-await-in-loop -- pure-DB-read render runs sequentially in Phase 1
     const result = await renderFragment(fragmentKey,);
     if (previousHash === result.contentHash) {
       skipped += 1;
@@ -130,7 +130,7 @@ export async function processEvent(
     // the latest state at write time. `sequenceNumber` stays in the
     // event log for telemetry; `eventId` is what the fragment_index
     // races on.
-    // eslint-disable-next-line no-await-in-loop -- sequence-guarded upsert must observe prior writes
+    // oxlint-disable-next-line no-await-in-loop -- sequence-guarded upsert must observe prior writes
     const accepted = await upsertFragmentIndexIfNewer({
       fragmentKey,
       contentHash: result.contentHash,
@@ -151,7 +151,7 @@ export async function processEvent(
         body: result.body,
       },);
     } else {
-      // eslint-disable-next-line no-await-in-loop -- raw adapter sink awaits per write
+      // oxlint-disable-next-line no-await-in-loop -- raw adapter sink awaits per write
       await sink.put(
         fragmentKey,
         result.body,

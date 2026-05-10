@@ -31,7 +31,7 @@ import {
  * @example
  * ```ts
  * resolveNpmNames("zod", "npm:\@jsr/zod__zod\@>=4.1.8") // ["zod", "\@jsr/zod__zod"]
- * resolveNpmNames("eslint", ">=9.29.0") // ["eslint"]
+ * resolveNpmNames("oxlint", ">=0.20.0") // ["oxlint"]
  * ```
  */
 export function resolveNpmNames(
@@ -139,7 +139,7 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
  *
  * @example
  * ```ts
- * readInstalledVersion("eslint", "/home/user/Monochromatic") // "10.0.0"
+ * readInstalledVersion("oxlint", "/home/user/Monochromatic") // "0.21.0"
  * ```
  */
 export function readInstalledVersion(

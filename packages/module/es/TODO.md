@@ -70,7 +70,7 @@ This directory contains detailed improvement plans for building the most compreh
 2. **API Refactors** → [API Refactors Todo](TODO.api-refactors.md#major-api-design-changes-required)
    - **Logger parameters** required for ALL functions (150+ functions affected)
    - **Named parameters** for 3+ parameter functions (major breaking change)
-   - **Type testing** with Vitest for all type utilities
+   - **Type testing** with `@monochromatic-dev/module-test` for all type utilities
    - **Major version bump required** (1.0.0 → 2.0.0)
 
 3. **Object Utilities** → [Missing Implementations Todo](TODO.missing-implementations.md#object-utilities-completely-missing)

@@ -156,7 +156,7 @@ async function seedMilestones(row: {
     hi: MAX_MILESTONES_PER_REPO + 1,
   },);
   for (let i = 0; i < count; i += 1) {
-    // eslint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
+    // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
     await insertMilestone({
       id: deterministicId(
         `milestone-${row.repoId}`,
@@ -205,7 +205,7 @@ async function seedAssigneesForIssues(row: {
         'user',
         row.userBaseSeed + userIndex,
       );
-      // eslint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
+      // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
       await assignUserToIssue({
         issueId,
         userId,
@@ -253,7 +253,7 @@ async function seedRepoMembers(row: {
       seed: row.seed + i,
       items: ROLES,
     },) ?? 'reader';
-    // eslint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
+    // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
     await upsertRepoMember({
       repoId: row.repoId,
       userId,

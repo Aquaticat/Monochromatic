@@ -17,7 +17,7 @@
 
 **Status**: Critical Priority - ALL exports need type testing
 
-**Requirement**: All functions, constants, types, and exports must have Vitest type testing with `expectTypeOf`.
+**Requirement**: All functions, constants, types, and exports must have type testing with `expectTypeOf`.
 
 **Scope**: Every single export from the module requires type validation:
 

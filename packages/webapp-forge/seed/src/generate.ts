@@ -127,7 +127,7 @@ export async function seedUsers(row: {
   baseTimestamp: number;
 },): Promise<number> {
   for (let i = 0; i < row.count; i += 1) {
-    // eslint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
+    // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
     await insertUser({
       id: deterministicId(
         'user',
@@ -175,7 +175,7 @@ export async function seedRepos(row: {
       'repo',
       row.seed + i,
     );
-    // eslint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
+    // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
     await insertRepo({
       id: repoId,
       ownerId,
@@ -221,7 +221,7 @@ export async function seedLabels(row: {
         `label-${repoId}`,
         row.seed + index,
       );
-      // eslint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
+      // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
       await insertLabel({
         id: labelId,
         repoId,
@@ -307,7 +307,7 @@ export async function seedIssuesForRepo(row: {
         hi: ISSUE_BODY_WORD_HI,
       },),
     },);
-    // eslint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
+    // oxlint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
     await createIssueWithEvent({
       id: issueId,
       repoId: row.repoId,
@@ -325,7 +325,7 @@ export async function seedIssuesForRepo(row: {
         items: row.labelIds,
       },);
       if (labelId !== undefined) {
-        // eslint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
+        // oxlint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
         await labelIssueWithEvent({
           issueId,
           labelId,
@@ -359,7 +359,7 @@ export async function seedIssuesForRepo(row: {
           hi: COMMENT_BODY_WORD_HI,
         },),
       },);
-      // eslint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
+      // oxlint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
       await createCommentWithEvent({
         id: commentId,
         issueId,

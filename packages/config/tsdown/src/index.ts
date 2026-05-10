@@ -11,8 +11,8 @@ import {
  *
  * @example
  * ```ts
- * // tsdown.config.ts
- * import base from '\@monochromatic-dev/config-tsdown';
+ * // tsdown.browser.config.ts
+ * import base from '\@monochromatic-dev/config-tsdown/.ts';
  * export default defineConfig({ ...base, entry: ['./src/index.ts'] });
  * ```
  */

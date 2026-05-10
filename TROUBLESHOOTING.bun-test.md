@@ -28,7 +28,7 @@ import {
 
 describe('suite', () => {
   test('first', () => {
-    // eslint-disable-next-line no-console -- demonstration
+    // oxlint-disable-next-line no-console -- demonstration
     console.log('from first suite',);
     expect(1,).toBe(2,);
   });
@@ -36,7 +36,7 @@ describe('suite', () => {
 
 describe('suite', () => {
   test('second', () => {
-    // eslint-disable-next-line no-console -- demonstration
+    // oxlint-disable-next-line no-console -- demonstration
     console.log('from second suite',);
     expect(1,).toBe(1,);
   });

@@ -147,7 +147,7 @@ await describe({
                 );
                 using d = await makeDisposableOutbox({ idbAvailable: false, },);
                 for (const seq of [0, 1, 2, 3,])
-                  // eslint-disable-next-line no-await-in-loop
+                  // oxlint-disable-next-line no-await-in-loop
                   await d.outbox.enqueue(sampleUpload({ seq, },),);
                 await d.outbox.flushed();
                 scoped(d.outbox.pendingCount(),).toBe(0,);

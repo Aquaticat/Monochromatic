@@ -1,2 +1,0 @@
-# No lint tasks -- this package contains deprecated ESLint code
-# that is excluded from the monorepo lint pipeline.

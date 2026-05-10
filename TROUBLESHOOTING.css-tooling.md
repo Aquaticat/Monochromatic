@@ -1,6 +1,6 @@
 # CSS tooling: A chronicle of suffering
 
-This document records the accumulated frustrations from attempting to implement a simple feature: custom `@mixin` and `@apply` CSS syntax in a monorepo.
+This document records the accumulated frustrations from attempting to implement a simple feature: custom `@mixin` and `@apply` CSS syntax in a monorepo. The Vite-era sections are kept as historical context for why the workspace settled on the in-house `build-tool-css` package; Vite itself is no longer used and is not an adoption candidate.
 
 ## The original ask
 

@@ -10,24 +10,14 @@
 
 ## Current Linting Issues
 
-### High Priority ESLint Fixes
+### High Priority Lint Fixes
 
 #### Code Quality Issues (Fix in code, not config)
 
-1. **`@typescript-eslint/no-confusing-void-expression`** (26 occurrences, down from 50)
-   - Void expressions in wrong contexts
-   - These are legitimate code issues that need fixing
-
-2. **Variable abbreviations** (~135 total occurrences, down from 147)
+1. **Variable abbreviations** (~135 total occurrences, down from 147)
    - Use descriptive names instead of abbreviations
    - **NEVER use single-letter variables like `i`, `j`, `k`** - they provide no semantic meaning
    - Exception: Mathematical formulas where single letters have established meaning
-
-3. **`@typescript-eslint/no-unsafe-return`** (51 occurrences)
-   - Unsafe any returns that need proper type annotations
-
-4. **`vitest/prefer-describe-function-title`** (down from 69 to around 30)
-   - Update remaining test files to use function references in describe blocks
 
 #### TypeScript Compilation Errors (New - Critical Priority)
 
@@ -60,32 +50,12 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
 
 - Missing JSDoc comments in non-test files (expected for internal utilities)
 
-### Next Steps for ESLint Cleanup
+### Next Steps for Lint Cleanup
 
 1. Fix all instances of `i` variable usage with descriptive names
-2. Fix void expression errors (legitimate code issues)
-3. Update remaining test files to use function references in describe blocks
-4. Replace `window` with `globalThis` throughout the codebase
-5. Address unsafe any returns with proper type annotations
+2. Replace `window` with `globalThis` throughout the codebase
 
 **Cross-Reference**: See [Automation Todo](TODO.automation.md#code-quality-automation) for automated linting improvements.
-
-## Completed ESLint Fixes (June 2025)
-
-### Configuration Changes
-
-- Disable `jsdoc/tag-lines` - formatting concern, not linting
-- Disable `jsdoc/require-jsdoc` for test files
-- Add `param`, `args`, `props`, `ctx`, `var` to allowed abbreviations
-- Add documentation about never using meaningless variable names like `i`
-
-### Code Fixes Completed
-
-- Fixed variable `i` issues in multiple files (fixture.promises.0to999.ts, fixture.generator.0to999.ts, etc.)
-- Fixed variable `e` issues in catch blocks to use `error` instead
-- Fixed void expression issues in test files
-- Replaced `window` with `globalThis` in figma plugin files
-- Updated many describe blocks to use function references
 
 ## Code Patterns and Best Practices
 
@@ -165,7 +135,7 @@ This questioning pattern teaches:
 
 ### General Testing Guidelines
 
-- Write a corresponding Vitest file that aims for 100% test coverage
+- Write a corresponding test file (using `@monochromatic-dev/module-test`) that aims for 100% test coverage
 - Tests can only be run from workspace root using `mise run test`
 - To run tests for specific patterns:
   - `mise run test:unit -- packages/module/es/src/boolean.equal.unit.test.ts`
@@ -341,7 +311,7 @@ expect(isError(new Error(),),).toBe(true,);
 ## Success Criteria
 
 - [ ] All critical TypeScript compilation errors resolved
-- [ ] ESLint violations reduced to zero for high-priority rules
+- [ ] Lint violations reduced to zero for high-priority rules
 - [ ] Automated code quality checking integrated into development workflow
 - [ ] Security-focused code patterns implemented and enforced
 - [ ] Performance-aware coding standards established and followed

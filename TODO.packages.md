@@ -101,22 +101,6 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 ## Configuration Packages
 
-### ESLint Configuration (packages/config/eslint)
-
-#### High Priority
-
-- [ ] Add React-specific ESLint rules configuration
-- [ ] Add Vue-specific ESLint rules configuration
-- [ ] Create separate config for library vs application code
-- [ ] Add configuration for different TypeScript strictness levels
-- [ ] Document all rule decisions with rationale
-
-#### Medium Priority
-
-- [ ] Add pre-commit formatting integration
-- [ ] Create ESLint plugin for monorepo-specific rules
-- [ ] Add configuration templates for common project types
-
 ### TypeScript Configuration (packages/config/typescript)
 
 #### High Priority
@@ -131,21 +115,6 @@ This file tracks improvements needed across different packages in the monorepo, 
 - [ ] Create template tsconfig files for common scenarios
 - [ ] Add TypeScript project reference examples
 - [ ] Document performance optimization settings
-
-### Vite Configuration (packages/config/vite)
-
-#### High Priority
-
-- [ ] Add development vs production optimization profiles
-- [ ] Create library build configuration templates
-- [ ] Add plugin configuration for common tools (PWA, bundle analysis)
-- [ ] Document build performance best practices
-
-#### Medium Priority
-
-- [ ] Add Vite plugin for monorepo-specific optimizations
-- [ ] Create template configurations for different project types
-- [ ] Add build visualization and analysis tools
 
 ---
 

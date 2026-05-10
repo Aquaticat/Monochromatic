@@ -272,7 +272,7 @@ async function createMessage(
   let firstMd = '';
   let chunkCount = 0;
   // Sequential PUTs are required because seq increments per iteration.
-  /* eslint-disable no-await-in-loop */
+  /* oxlint-disable no-await-in-loop */
   for (const chunk of renderChunks(input.body,)) {
     if (seq === 0)
       firstMd = chunk.md;
@@ -285,7 +285,7 @@ async function createMessage(
     seq += 1;
     chunkCount += 1;
   }
-  /* eslint-enable no-await-in-loop */
+  /* oxlint-enable no-await-in-loop */
   if (chunkCount === 0)
     throw new Error('seed produced empty body',);
   const messageId = await finalizeDraft({
@@ -345,7 +345,7 @@ export async function runSeed(): Promise<void> {
   console.log(`seeding ${String(messageCount,)} mixed-size messages...`,);
   // Sequential creation keeps stdout progress lines monotonic and avoids
   // overwhelming the SQLite WAL with concurrent writers.
-  /* eslint-disable no-await-in-loop */
+  /* oxlint-disable no-await-in-loop */
   for (let index = 0; index < messageCount; index += 1) {
     const r = rng(index,);
     // Size distribution: P50 ~500, P95 ~5 KB, P99 ~50 KB.
@@ -370,7 +370,7 @@ export async function runSeed(): Promise<void> {
     if ((index + 1) % PROGRESS_INTERVAL === 0)
       console.log(`  ${String(index + 1,)} / ${String(messageCount,)}`,);
   }
-  /* eslint-enable no-await-in-loop */
+  /* oxlint-enable no-await-in-loop */
   console.log('done',);
 }
 

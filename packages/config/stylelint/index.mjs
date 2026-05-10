@@ -106,7 +106,7 @@ export default {
     'media-feature-name-unit-allowed-list': {
       // It's @media, always use rem instead of em.
       // oxlint false positive because stylelint accept regular expressions inside strings.
-      // eslint-disable-next-line no-useless-escape
+      // oxlint-disable-next-line no-useless-escape
       '/[\w-]+/': 'rem',
     },
 

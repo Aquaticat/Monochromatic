@@ -46,7 +46,4 @@ for consistency with the config file format.
 
 ## ESLint removed (2026-03-13)
 
-ESLint was fully replaced by oxlint.
-The old config is preserved at `packages/config/eslint-deprecated/`
-with re-adoption instructions in its README.
-See [ESLint Troubleshooting](./TROUBLESHOOTING.eslint.md) for historical configuration notes.
+ESLint was fully replaced by oxlint and will not be re-adopted.

@@ -14,11 +14,11 @@ all output and errors.
 
 ```sh
 # Exit with the command's exit code
-task-command -- eslint --cache
+task-command -- oxlint
 
 # Always exit with 0 regardless of command result
-task-command --allowFailure -- eslint --cache
-task-command -a -- eslint --cache
+task-command --allowFailure -- oxlint
+task-command -a -- oxlint
 
 # Execute through the shell (enables pipes, &&, etc.)
 task-command --shell -- "echo hello && echo world"
@@ -29,7 +29,7 @@ task-command --timeout 5000 -- npm test
 task-command -t 5000 -- npm test
 
 # Combine flags
-task-command -a -s -- "eslint --cache && prettier --check ."
+task-command -a -s -- "oxlint && dprint check"
 ```
 
 The `--` separator is required to distinguish script flags from command arguments.

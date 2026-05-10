@@ -24,7 +24,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
 import { maybeConvert, } from './convert.ts';
 
-export {}; // eslint module boundary marker
+export {}; // module boundary marker
 
 await initPromise;
 

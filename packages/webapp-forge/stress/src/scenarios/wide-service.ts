@@ -233,7 +233,7 @@ async function runBurst(row: {
     },);
     const commentId = `c-wide-${String(i,)}`;
     const t0 = Date.now();
-    // eslint-disable-next-line no-await-in-loop -- paced burst by design
+    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     await createCommentWithEvent({
       id: commentId,
       issueId,
@@ -248,7 +248,7 @@ async function runBurst(row: {
         Math.floor(row.intervalMs - (Date.now() - t0)),
       );
       if (sleep > 0)
-        // eslint-disable-next-line no-await-in-loop -- pacing
+        // oxlint-disable-next-line no-await-in-loop -- pacing
         await wait(sleep,);
     }
   }
