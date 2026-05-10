@@ -525,3 +525,311 @@ fn alternation_with_non_ascii_extracts_both_branches() {
         "AC should fire on the second-branch literal"
     );
 }
+
+// What:     `#[test] fn positive_lookahead_at_start_extracts_after_body()`.
+//           Pattern `(?=foo)bar` -- positive lookahead at the head of
+//           the rule, followed by literal `bar`. Walker should skip
+//           the lookahead and extract `bar`.
+// Why:      Pre-fix the walker bailed at `(?=` (because
+//           `group_body_start` returned `None` for that opener),
+//           leaving no extracted literal and dropping the rule into
+//           the residual bucket. Post-fix the lookaround is treated
+//           as a transparent zero-width atom and the walker
+//           continues.
+// TS map:   `test("positive lookahead at start extracts after body", () => { ... });`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("positive lookahead at start extracts after body", () => {
+//   const subs = extractGatingSubstrings("(?=foo)bar")!;
+//   expect(subs.length).toBe(1);
+//   expect(subs[0].sub).toBe("bar");
+// });
+// ```
+#[test]
+fn positive_lookahead_at_start_extracts_after_body() {
+    let subs = extract_gating_substrings("(?=foo)bar")
+        .expect("expected Some after lookahead skip");
+    assert_eq!(subs.len(), 1);
+    let (substring, ci) = &subs[0];
+    assert_eq!(substring.as_bytes(), b"bar");
+    assert!(!*ci, "ci flag should be false (no (?i) prefix)");
+}
+
+#[test]
+fn negative_lookahead_at_start_extracts_after_body() {
+    // What:     `(?!foo)bar` -- negative lookahead at the head; the
+    //           regex requires `bar` to NOT have `foo` immediately
+    //           ahead, then match `bar`. AC gating only needs a byte
+    //           sequence the regex requires somewhere in the file;
+    //           `bar` is required, so it is the gate.
+    // Why:      Confirms negative-flavour lookaround skipping does
+    //           not accidentally try to register the lookaround body
+    //           (`foo`) as a required AC literal -- that would be
+    //           UNSOUND because a real match guarantees `foo` is
+    //           NOT at that position.
+    // TS map:   same shape as the positive case.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?!foo)bar")!;
+    // expect(subs[0].sub).toBe("bar");
+    // ```
+    let subs = extract_gating_substrings("(?!foo)bar")
+        .expect("expected Some after negative-lookahead skip");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(subs[0].0.as_bytes(), b"bar");
+}
+
+#[test]
+fn positive_lookbehind_at_start_extracts_after_body() {
+    // What:     `(?<=foo)bar` -- positive lookbehind at the head.
+    // Why:      Confirm the lookbehind shape (`(?<=`) is
+    //           discriminated from `(?<name>` named-capture by the
+    //           detector: bytes after `(?<` must be `=` or `!` to
+    //           qualify as lookbehind.
+    // TS map:   same shape as the positive lookahead case.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?<=foo)bar")!;
+    // expect(subs[0].sub).toBe("bar");
+    // ```
+    let subs = extract_gating_substrings("(?<=foo)bar")
+        .expect("expected Some after positive-lookbehind skip");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(subs[0].0.as_bytes(), b"bar");
+}
+
+#[test]
+fn negative_lookbehind_at_start_extracts_after_body() {
+    // What:     `(?<!foo)bar` -- negative lookbehind at the head.
+    // Why:      Cover the fourth lookaround flavour. Same soundness
+    //           note as negative lookahead: never extract the
+    //           negative-lookaround body itself.
+    // TS map:   `const subs = extractGatingSubstrings("(?<!foo)bar")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?<!foo)bar")!;
+    // expect(subs[0].sub).toBe("bar");
+    // ```
+    let subs = extract_gating_substrings("(?<!foo)bar")
+        .expect("expected Some after negative-lookbehind skip");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(subs[0].0.as_bytes(), b"bar");
+}
+
+#[test]
+fn lookahead_at_end_extracts_before_body() {
+    // What:     `foobar(?=baz)` -- lookahead at the END of the
+    //           pattern. Walker consumes `foobar` first, then sees
+    //           the lookahead and skips it; loop ends with `foobar`
+    //           as the best candidate.
+    // Why:      Even pre-fix, the walker probably extracted `foobar`
+    //           here -- it consumed literals up to the `(`, then
+    //           bailed when `skip_atom_with_extract` returned None,
+    //           but `best` was already set. Post-fix the bail
+    //           becomes a clean skip; behaviour shouldn't regress.
+    // TS map:   `const subs = extractGatingSubstrings("foobar(?=baz)")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("foobar(?=baz)")!;
+    // expect(subs[0].sub).toBe("foobar");
+    // ```
+    let subs = extract_gating_substrings("foobar(?=baz)")
+        .expect("expected Some with literal-then-lookahead");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(subs[0].0.as_bytes(), b"foobar");
+}
+
+#[test]
+fn lookahead_in_middle_extracts_best_literal() {
+    // What:     `foofoo(?=x)bar` -- literal `foofoo` (6 bytes),
+    //           lookahead, literal `bar` (3 bytes). `extract_branch`
+    //           picks the BEST single candidate within a branch
+    //           (longest score), so `foofoo` wins over `bar`.
+    // Why:      Confirm the walker continues past the lookaround
+    //           and considers the trailing literal too -- the
+    //           soundness invariant is that one required substring
+    //           per branch suffices, and longest wins for
+    //           selectivity.
+    // TS map:   `const subs = extractGatingSubstrings("foofoo(?=x)bar")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("foofoo(?=x)bar")!;
+    // expect(subs[0].sub).toBe("foofoo");
+    // ```
+    let subs = extract_gating_substrings("foofoo(?=x)bar")
+        .expect("expected Some with literal-lookahead-literal");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(
+        subs[0].0.as_bytes(),
+        b"foofoo",
+        "extract_branch should pick the longest of the two literals"
+    );
+}
+
+#[test]
+fn lookahead_in_middle_picks_longer_after_skip() {
+    // What:     `foo(?=x)barbaz` -- 3-byte literal, lookahead,
+    //           6-byte literal. Walker must continue past the
+    //           lookahead and pick `barbaz` as the more-selective
+    //           candidate (6 bytes > 3 bytes).
+    // Why:      Pre-fix the walker bailed at `(?=`, leaving `foo`
+    //           as the gate. Post-fix it skips the lookahead and
+    //           replaces `foo` with the longer trailing literal --
+    //           the whole point of the perf gap this commit closes.
+    // TS map:   `const subs = extractGatingSubstrings("foo(?=x)barbaz")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("foo(?=x)barbaz")!;
+    // expect(subs[0].sub).toBe("barbaz");
+    // ```
+    let subs = extract_gating_substrings("foo(?=x)barbaz")
+        .expect("expected Some after lookahead skip");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(
+        subs[0].0.as_bytes(),
+        b"barbaz",
+        "post-fix walker should continue past lookahead and pick the longer trailing literal"
+    );
+}
+
+#[test]
+fn prose_em_dash_pattern_extracts_middle_literal() {
+    // What:     The user's exact pattern from the bug report:
+    //           `(?<=[a-z]) -- (?=[a-z])`. Lookbehind asserts a
+    //           lowercase letter just before; lookahead asserts a
+    //           lowercase letter just after. The literal between
+    //           the two zero-width assertions is ` -- ` (space,
+    //           hyphen, hyphen, space -- 4 bytes).
+    // Why:      Headline regression: pre-fix this rule had no AC
+    //           gate and ran as a residual per-rule resharp scan.
+    //           Post-fix it must extract ` -- ` and route to the
+    //           AC prefix bucket.
+    // TS map:   `const subs = extractGatingSubstrings("(?<=[a-z]) -- (?=[a-z])")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?<=[a-z]) -- (?=[a-z])")!;
+    // expect(subs[0].sub).toBe(" -- ");
+    // ```
+    let subs = extract_gating_substrings("(?<=[a-z]) -- (?=[a-z])")
+        .expect("expected Some after lookbehind+lookahead skip");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(
+        subs[0].0.as_bytes(),
+        b" -- ",
+        "literal between the two zero-width lookarounds should be the AC gate"
+    );
+}
+
+#[test]
+fn nested_lookaround_extracts_after_outer() {
+    // What:     `(?=(?:foo|bar))baz` -- positive lookahead whose
+    //           body is itself a non-capturing group with an
+    //           internal alternation. The walker only needs to
+    //           skip the OUTER lookaround group (matching close
+    //           paren), not understand the inner structure.
+    //           `find_matching_close_paren` tracks paren depth so
+    //           the inner `)` decreases depth from 2 to 1, and the
+    //           outer `)` from 1 to 0 (returning that index).
+    // Why:      Confirm depth tracking works through the nested
+    //           group, so the walker resumes correctly at `baz`
+    //           after the outer `)`.
+    // TS map:   `const subs = extractGatingSubstrings("(?=(?:foo|bar))baz")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?=(?:foo|bar))baz")!;
+    // expect(subs[0].sub).toBe("baz");
+    // ```
+    let subs = extract_gating_substrings("(?=(?:foo|bar))baz")
+        .expect("expected Some after nested-lookaround skip");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(subs[0].0.as_bytes(), b"baz");
+}
+
+#[test]
+fn lookahead_does_not_break_named_capture_path() {
+    // What:     `(?<name>foo)bar` -- named capture group, NOT a
+    //           lookbehind. The detector must discriminate them by
+    //           the byte after `(?<`: only `=` or `!` is a
+    //           lookbehind; anything else (a name character) is a
+    //           named capture.
+    // Why:      Regression guard: a sloppy detector that treats
+    //           `(?<` as lookbehind unconditionally would break
+    //           every named-capture rule by skipping its body
+    //           instead of recursing into it. This test pins the
+    //           discriminator.
+    // TS map:   `const subs = extractGatingSubstrings("(?<name>foo)bar")!;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?<name>foo)bar")!;
+    // // Named-capture body is the required literal; recurse extracts
+    // // "foo" or the longer concat -- pin the actual current behaviour.
+    // ```
+    let subs = extract_gating_substrings("(?<name>foo)bar")
+        .expect("named-capture rule should still gate");
+    // What:     `assert!(...)` macro panics if its arg evaluates to
+    //           false. We accept either `foo` (group body) or
+    //           `foobar` (concatenated) here; the discriminator
+    //           only needs to ensure we did NOT accidentally skip
+    //           the body and end up with `bar` alone.
+    // Why:      The test isn't about which literal wins; it's
+    //           about ensuring named captures are NOT misrouted to
+    //           the lookaround skip path.
+    // TS map:   `expect(["foo", "foobar"]).toContain(subs[0].sub);`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(["foo", "foobar"]).toContain(subs[0].sub);
+    // ```
+    let extracted_bytes = subs[0].0.as_bytes();
+    assert!(
+        extracted_bytes == b"foo" || extracted_bytes == b"foobar",
+        "named-capture body should still gate; got {:?}",
+        subs[0].0
+    );
+}
+
+#[test]
+fn prose_em_dash_pattern_round_trips_through_aho_corasick() {
+    // What:     End-to-end pipeline check for the user's exact
+    //           pattern. Build AC from the extracted gate ` -- `
+    //           and search content matching the rule.
+    // Why:      Soundness invariant: registered AC pattern must
+    //           appear in any string the regex matches. ` -- ` is
+    //           a strict subset of the regex's required bytes, so
+    //           AC must fire on it.
+    // TS map:   end-to-end pipeline test in TS would be the same
+    //           shape with a JS AC port.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?<=[a-z]) -- (?=[a-z])")!;
+    // const ac = new AhoCorasick(subs.map(([s, _]) => s));
+    // const matches = [...ac.search("hello -- world")];
+    // expect(matches.length).toBeGreaterThan(0);
+    // ```
+    let subs = extract_gating_substrings("(?<=[a-z]) -- (?=[a-z])")
+        .expect("expected Some after both lookaround skips");
+    let patterns: Vec<&str> = subs.iter().map(|(s, _)| s.as_str()).collect();
+    let ac = AhoCorasick::new(&patterns).expect("AC build should succeed");
+    let content = "hello -- world";
+    let matches: Vec<_> = ac.find_iter(content).collect();
+    assert!(
+        !matches.is_empty(),
+        "AC should fire on ` -- ` for prose em-dash content"
+    );
+    assert_eq!(
+        matches[0].start(),
+        5,
+        "match should start at byte offset 5 (after `hello`)"
+    );
+}

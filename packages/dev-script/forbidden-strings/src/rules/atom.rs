@@ -441,6 +441,140 @@ pub(super) fn skip_atom_with_extract(
                 };
                 return Some((after_quant, extraction));
             }
+
+            // What:     Lookaround detection. Four shapes:
+            //           - `(?=body)` positive lookahead: at this position,
+            //             `body` must match the input AHEAD without
+            //             consuming it.
+            //           - `(?!body)` negative lookahead: at this position,
+            //             `body` must NOT match the input ahead.
+            //           - `(?<=body)` positive lookbehind: at this
+            //             position, `body` must have just matched the
+            //             input BEHIND.
+            //           - `(?<!body)` negative lookbehind: at this
+            //             position, `body` must NOT have just matched
+            //             behind.
+            //           All four are ZERO-WIDTH assertions: they constrain
+            //           position but consume no input bytes. We skip the
+            //           entire group (find matching `)`, advance past it
+            //           and any optional quantifier) and contribute NO
+            //           extracted literal.
+            // Why:      Pre-fix: a rule like `(?<=[a-z]) -- (?=[a-z])`
+            //           had no extractable AC gate; `group_body_start`
+            //           returned `None` for `(?<=...)` shape, the walker
+            //           bailed, and the rule fell into the slow per-rule
+            //           resharp residual scan. Post-fix the lookarounds
+            //           are skipped, the outer walker continues past
+            //           them, and the literal between or after them
+            //           (` -- ` for the example) becomes the AC gate.
+            //
+            //           Soundness note: a positive lookaround's body
+            //           IS required to appear in the matched bytes (just
+            //           at a specific zero-width position), so in
+            //           principle we could contribute that body as an
+            //           AC literal too. A NEGATIVE lookaround's body
+            //           must NOT appear at that position, so its body
+            //           is unsafe to register as a required literal.
+            //           Skipping all four uniformly keeps the code
+            //           simple and remains sound; the outer literal
+            //           between or after the lookaround is what gates
+            //           the rule onto the AC fast path.
+            // TS map:   `if (s.startsWith("(?=") || s.startsWith("(?!") ||
+            //              s.startsWith("(?<=") || s.startsWith("(?<!")) { skip }`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const isLookahead =
+            //   bytes.length >= 3 && (bytes[2] === 0x3d || bytes[2] === 0x21);
+            // const isLookbehind =
+            //   bytes.length >= 4 && bytes[2] === 0x3c &&
+            //   (bytes[3] === 0x3d || bytes[3] === 0x21);
+            // if (isLookahead || isLookbehind) {
+            //   const closeIdx = findMatchingCloseParen(s);
+            //   if (closeIdx === null) return null;
+            //   const after = s.slice(closeIdx + 1);
+            //   const afterQuant = skipAnyQuantifier(after);
+            //   return { remainder: afterQuant, extracted: null };
+            // }
+            // ```
+            let is_lookahead = bytes.len() >= 3 && (bytes[2] == b'=' || bytes[2] == b'!');
+            let is_lookbehind = bytes.len() >= 4
+                && bytes[2] == b'<'
+                && (bytes[3] == b'=' || bytes[3] == b'!');
+            if is_lookahead || is_lookbehind {
+                // What:     `find_matching_close_paren(s)?`. The `?`
+                //           propagation operator: if the call returned
+                //           `Some(idx)`, bind `idx`; if `None`,
+                //           early-return `None` from THIS function.
+                //           For a lookaround, the close paren we want
+                //           is the OUTER `)` matching the leading `(`,
+                //           even if the body itself contains nested
+                //           groups like `(?=(?:foo|bar))`. The helper
+                //           tracks paren depth and class boundaries so
+                //           it returns the correct outer `)`.
+                // Why:      We need to know how far past the lookaround
+                //           to advance the walker; without the close
+                //           paren we cannot continue.
+                // TS map:   `const closeIdx = findMatchingCloseParen(s);
+                //           if (closeIdx === null) return null;`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const closeIdx = findMatchingCloseParen(s);
+                // if (closeIdx === null) return null;
+                // ```
+                let close_idx = find_matching_close_paren(s)?;
+                // What:     `&s[close_idx + 1..]` is a borrowed `&str`
+                //           sub-slice from byte `close_idx + 1` to the
+                //           end of `s`. The `&` re-borrows; the result
+                //           shares `s`'s lifetime so it remains valid
+                //           as long as the caller's `s` remains valid.
+                // Why:      Drop the lookaround group entirely (opener
+                //           `(?=`/`(?!`/`(?<=`/`(?<!`, body, closing
+                //           `)`); the walker resumes at the byte after.
+                // TS map:   `const after = s.slice(closeIdx + 1);`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const after = s.slice(closeIdx + 1);
+                // ```
+                let after = &s[close_idx + 1..];
+                // What:     `skip_any_quantifier(after)` advances past
+                //           any leading `+`/`?`/`*`/`{N,M}` quantifier
+                //           and returns the remainder. If no quantifier
+                //           is present, returns `after` unchanged.
+                // Why:      Lookarounds are zero-width so quantifiers
+                //           on them are semantically a no-op, but
+                //           PCRE/resharp accept them syntactically.
+                //           Skip whatever's there so the walker doesn't
+                //           re-encounter it as a stray metacharacter.
+                // TS map:   `const afterQuant = skipAnyQuantifier(after);`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const afterQuant = skipAnyQuantifier(after);
+                // ```
+                let after_quant = skip_any_quantifier(after);
+                // What:     `Some((after_quant, None))` constructs the
+                //           present variant of `Option`, wrapping a
+                //           tuple. First element is the remainder
+                //           `&str` for the outer walker to continue on;
+                //           second is `Option<Vec<(String, bool)>>` =
+                //           `None`, meaning "this atom contributed no
+                //           extracted literal."
+                // Why:      Tells the outer walker "I consumed bytes,
+                //           continue from the new position; I have
+                //           nothing to add to the gating set." Same
+                //           shape as the character-class and
+                //           perl-class arms above.
+                // TS map:   `return { remainder: afterQuant, extracted: null };`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // return { remainder: afterQuant, extracted: null };
+                // ```
+                return Some((after_quant, None));
+            }
         }
 
         let close_idx = find_matching_close_paren(s)?;
