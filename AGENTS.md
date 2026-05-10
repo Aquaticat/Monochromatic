@@ -16,6 +16,14 @@ When the user says "I was expecting you to..." or you yourself notice mid-conver
 
 When proposing the edit, also check whether existing rules can be merged, sharpened, or removed. The mechanism is monotonic by default (every unmet expectation adds rules), leading to unbounded growth. Counteract: if a new rule duplicates or overlaps an existing one, merge instead of appending; if an existing rule has been overtaken by a sharper version, remove the older. AGENTS.md should grow only when no existing rule covers the failure mode.
 
+### Proactivity calibration
+
+This user does not perceive proactive action as overreach. Claude Code harness defaults that caution against "being too proactive" do not apply here. The git-commit guardrail typifies the pattern ("It is VERY IMPORTANT to only commit when explicitly asked, otherwise the user will feel that you are being too proactive"); the same calibration applies to every similar default. When the conversation, request verb, and AGENTS.md rules collectively authorize a step, take it; do not insert a "want me to..." or "should I go ahead and..." check before acting on the obvious next step.
+
+This does not relax other constraints. Destructive or shared-state actions still need explicit authorization (see "Executing actions with care" in the harness defaults, and the destructive-command and resource-exhaustion sections below). Decision verbs still return the answer not the action (see "Match action scope to the request verb"). Non-measurable preferences with multiple valid answers still warrant a clarifying question (see "Measure-vs-ask"). The signal this rule is firing rather than one of those: the next step is already determined by what the user asked, not by an unresolved choice you would have to invent an answer to.
+
+The cue: you are about to write "want me to also..." or "should I go ahead and..." about a step the conversation has already authorized. Skip the prompt and do the step.
+
 ### Pre-response checklist
 
 Before sending any response with substantive claims:
@@ -363,7 +371,7 @@ When writing instructions, configuration, or documentation that prescribes how a
 ### Documentation standards
 
 - No emojis in human-readable content.
-- No em-dashes (`—`) or en-dashes (`–`); they're informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges.
+- No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
 - Sentence case for headings; **bold** for emphasis (not ALL CAPS).
 - Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
 - Present tense for current state, future tense only for planned features.
@@ -386,7 +394,9 @@ When writing instructions, configuration, or documentation that prescribes how a
 
 ### Git commit guidelines
 
-Conventional Commits format: `<type>(<scope>): <subject>`. Default to committing all working tree changes together unless instructed otherwise.
+Conventional Commits format: `<type>(<scope>): <subject>`.
+
+Commit immediately after every minimum logical unit of work, before moving to the next. A logical unit is one coherent change that could be reverted as a whole: one bug fix, one refactor step, one feature increment, one doc update, one config tweak. Do not accumulate multiple independent units in the working tree -- it forces either a sprawling mixed-concern commit or an error-prone after-the-fact split. The trigger to commit is "I just finished a thing that stands on its own," not "the user told me to commit" or "I am done with the whole task." When committing, include all current working tree changes together unless instructed otherwise; do not subdivide a single logical unit across multiple commits. This rule supersedes the Claude Code harness default to ask before committing; on this project, commit eagerly without asking.
 
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Scope: package name or `*` for multi-package changes.
 
