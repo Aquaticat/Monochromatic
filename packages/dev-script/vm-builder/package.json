@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
-    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "find-up": "catalog:"
   },

@@ -1,7 +1,7 @@
 import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
-import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import {
   l,
   tagged,

@@ -3,7 +3,7 @@
  * Defines container resource limits, device paths, and tuning parameters.
  */
 
-import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import spawn from 'nano-spawn';
 import { realpath, } from 'node:fs/promises';
 import { resolve, } from 'node:path';

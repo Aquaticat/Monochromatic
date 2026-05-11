@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"
   },

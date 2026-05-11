@@ -12,7 +12,7 @@
  * - `podman login ghcr.io` completed
  * - Cosign key pair at `packages/config/cosign/`
  */
-import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import { join, } from 'node:path';

@@ -16,7 +16,7 @@ import { resolve, } from 'node:path';
 
 import spawn, { type Result, } from 'nano-spawn';
 
-import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 
 import type { Logger, } from './types.ts';
 

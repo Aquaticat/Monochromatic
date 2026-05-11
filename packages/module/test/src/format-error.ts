@@ -38,6 +38,7 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
   'module-test/dist/',
 ];
 
+// TODO: A shared `findMonorepoRoot` now lives in `@monochromatic-dev/module-fs-path`. The local heuristic stays because module-test is in module-fs-path's devDependencies (test harness), so depending on it from here would create a workspace cycle.
 /**
  * Walks up from the current working directory to the closest
  * ancestor containing `/packages/`, then returns that ancestor with

@@ -9,7 +9,7 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { findMonorepoRoot, } from '@monochromatic-dev/module-es/find-monorepo-root';
+import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import spawn from 'nano-spawn';
 
 /** Fallback base repository URL when git remote is unavailable */
