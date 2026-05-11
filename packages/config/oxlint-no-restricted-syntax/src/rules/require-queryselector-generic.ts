@@ -1,7 +1,7 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
+  ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
@@ -59,40 +59,24 @@ export const requireQueryselectorGeneric: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      CallExpression(node: Span,): void {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const callNode = node as Span & Record<string, unknown>;
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const callee = callNode['callee'] as Record<string, unknown> | null | undefined;
-        if (callee === undefined || callee === null)
+      CallExpression(node: ESTree.CallExpression,): void {
+        const { callee, } = node;
+        if (callee.type !== 'MemberExpression' || callee.computed)
           return;
-
-        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true)
+        if (callee.property.type !== 'Identifier')
           return;
-
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const property = callee['property'] as Record<string, unknown> | null | undefined;
-        if (property === undefined || property === null)
+        const methodName = callee.property.name;
+        if (!SELECTOR_METHODS.has(methodName,))
           return;
-
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const methodName = property['name'] as string | undefined;
-        if (methodName === undefined || !SELECTOR_METHODS.has(methodName,))
+        if (node.typeArguments !== null && node.typeArguments !== undefined)
           return;
-
-        /** oxc represents generic type arguments as `typeArguments` on `CallExpression`. */
-        const typeArgs = callNode['typeArguments'];
-        if (typeArgs !== undefined && typeArgs !== null)
-          return;
-
         context.report({
           node,
           messageId: 'missing',
           data: { method: methodName, },
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

@@ -16,7 +16,6 @@
     "./create-observable": "./src/types/t object/t proxy/f/t any/createObservable/r s/p p/index.ts",
     "./create-observable-async": "./src/types/t object/t proxy/f/t any/createObservable/r a/p p/index.ts",
     "./map-iterable-async": "./src/types/t object/t array/f/t iterable/map/r a/p p/index.ts",
-    "./not-nullish-or-throw": "./src/types/t any/f/t any/notNullishOrThrow/r s/p p/index.ts",
     "./memoize-async": "./src/types/t function/f/t function/memoize/r a/p n/index.ts",
     "./wait": "./src/types/t object/t promise/f/t number/wait/r a/p p/index.ts",
     "./with-timeout": "./src/types/t object/t promise/f/t object/withTimeout/r a/p p/index.ts"

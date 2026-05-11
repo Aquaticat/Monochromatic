@@ -13,8 +13,8 @@ import {
 } from 'node:path';
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 
 /**
  * Resolves a reference string to an absolute path under the dist root.
@@ -51,8 +51,8 @@ export function resolveReference(
     ref: string;
   },
 ): string | null {
-  const withoutFragment = notNullishOrThrow(ref.trim().split('#',)[0],);
-  const trimmed = notNullishOrThrow(withoutFragment.split('?',)[0],);
+  const withoutFragment = nonNullishOrThrow(ref.trim().split('#',)[0],);
+  const trimmed = nonNullishOrThrow(withoutFragment.split('?',)[0],);
   if (trimmed === '')
     return null;
   if (trimmed.startsWith('//',) || /^[a-z][a-z0-9+.-]*:/i.test(trimmed,))

@@ -6,8 +6,8 @@
  * CLI report and rarely drives action.
  */
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 
 /**
  * Aggregate description of a numeric sample.
@@ -77,9 +77,9 @@ function medianOfSorted(sorted: readonly number[],): number {
     throw new Error('cannot compute median of empty sample',);
   const mid = Math.floor(sorted.length / 2,);
   if (sorted.length % 2 === 1)
-    return notNullishOrThrow(sorted[mid],);
-  const low = notNullishOrThrow(sorted[mid - 1],);
-  const high = notNullishOrThrow(sorted[mid],);
+    return nonNullishOrThrow(sorted[mid],);
+  const low = nonNullishOrThrow(sorted[mid - 1],);
+  const high = nonNullishOrThrow(sorted[mid],);
   return (low + high) / 2;
 }
 
@@ -112,8 +112,8 @@ export function summarize(sample: readonly number[],): Stats {
   );
   return {
     count: sorted.length,
-    min: notNullishOrThrow(sorted[0],),
-    max: notNullishOrThrow(sorted.at(-1,),),
+    min: nonNullishOrThrow(sorted[0],),
+    max: nonNullishOrThrow(sorted.at(-1,),),
     mean: sum / sorted.length,
     median: medianOfSorted(sorted,),
     sum,

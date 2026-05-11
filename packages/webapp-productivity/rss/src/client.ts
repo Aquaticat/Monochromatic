@@ -1,7 +1,7 @@
 // 104 lines: scroll observer + feed binding are tightly coupled; splitting loses the shared closure context
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import {
   HALF,
   QUARTER,
@@ -108,10 +108,10 @@ elements.forEach(function bindScrollIgnore(element,) {
       void (async function onScrolledOutAsync(): Promise<void> {
         try {
           console.error('scrolledOut',);
-          const metadata = notNullishOrThrow(
+          const metadata = nonNullishOrThrow(
             element.querySelector<HTMLElement>('.feed__metadata',),
           );
-          const anchor: HTMLAnchorElement = notNullishOrThrow(
+          const anchor: HTMLAnchorElement = nonNullishOrThrow(
             metadata.querySelector<HTMLAnchorElement>('.feed__link',),
           );
 

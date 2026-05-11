@@ -1,7 +1,7 @@
 import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { readFile, } from 'node:fs/promises';
 import {
@@ -79,7 +79,7 @@ export async function getOPMLTexts(
           }
         }
         const absPath = resolve(
-          dirname(notNullishOrThrow(DOT_ENV_PATH,),),
+          dirname(nonNullishOrThrow(DOT_ENV_PATH,),),
           opmlLink
             .slice('file://'.length,),
         );

@@ -5,8 +5,8 @@
  * to collect every local asset URL the page would cause a browser to fetch.
  */
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import type {
   Element,
   Node,
@@ -97,7 +97,7 @@ function firstSrcsetUrl(srcset: string,): string | null {
   const first = srcset.split(',',)[0]?.trim();
   if (first === undefined || first === '')
     return null;
-  return notNullishOrThrow(first.split(/\s+/,)[0],);
+  return nonNullishOrThrow(first.split(/\s+/,)[0],);
 }
 
 /**

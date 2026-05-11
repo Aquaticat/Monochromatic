@@ -18,8 +18,8 @@
  */
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 
 import { HIGHLIGHT_GROUPS, } from './highlight-groups.ts';
 // oxlint-disable-next-line no-unassigned-import -- side-effect import: registers DOM event listeners for the search widget on module load
@@ -81,7 +81,7 @@ function findFirstOverlap(
   let hi = textEntries.length;
   while (lo < hi) {
     const mid = (lo + hi) >>> 1;
-    const entry = notNullishOrThrow(textEntries[mid],);
+    const entry = nonNullishOrThrow(textEntries[mid],);
     if (entry.start + entry.node.length <= from)
       lo = mid + 1;
     else
@@ -131,7 +131,7 @@ function createRangesFromPairs({
     );
 
     for (let i = startIdx; i < textEntries.length; i++) {
-      const entry = notNullishOrThrow(textEntries[i],);
+      const entry = nonNullishOrThrow(textEntries[i],);
       if (entry.start >= to)
         break;
 

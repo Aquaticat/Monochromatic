@@ -31,7 +31,9 @@ import { noDisableRequireReturns, } from './rules/no-disable-require-returns.ts'
 import { noDisableRequireTsdoc, } from './rules/no-disable-require-tsdoc.ts';
 import { noEnum, } from './rules/no-enum.ts';
 import { noForIn, } from './rules/no-for-in.ts';
+import { noFunctionRootLet, } from './rules/no-function-root-let.ts';
 import { noHasownproperty, } from './rules/no-hasownproperty.ts';
+import { noModuleRootLet, } from './rules/no-module-root-let.ts';
 import { noPromiseCatch, } from './rules/no-promise-catch.ts';
 import { noPromiseFinally, } from './rules/no-promise-finally.ts';
 import { noRestParams, } from './rules/no-rest-params.ts';
@@ -74,7 +76,9 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-arrow-function': noArrowFunction,
     'no-enum': noEnum,
     'no-for-in': noForIn,
+    'no-function-root-let': noFunctionRootLet,
     'no-hasownproperty': noHasownproperty,
+    'no-module-root-let': noModuleRootLet,
     'no-promise-catch': noPromiseCatch,
     'no-promise-finally': noPromiseFinally,
     'no-rest-params': noRestParams,

@@ -5,8 +5,8 @@ import {
   type Observable,
 } from '@monochromatic-dev/module-es/create-observable';
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import { Exa, } from 'exa-js';
 import * as v from 'valibot';
 
@@ -36,7 +36,7 @@ const bindings = {
           v.transformAsync(async function promptSet(val,): Promise<string> {
             if (val !== null)
               return val;
-            const inputApiKey = notNullishOrThrow(await prompt('Set api key',),);
+            const inputApiKey = nonNullishOrThrow(await prompt('Set api key',),);
             localStorage.setItem(
               'exaApiKey',
               inputApiKey,
@@ -63,25 +63,25 @@ const bindings = {
       );
     },
   ),
-  searchForm: notNullishOrThrow(
+  searchForm: nonNullishOrThrow(
     document.querySelector<HTMLFormElement>('.searchForm',),
   ),
-  processingParagraph: notNullishOrThrow(
+  processingParagraph: nonNullishOrThrow(
     document.querySelector<HTMLParagraphElement>('.processing',),
   ),
-  costDollarsSpan: notNullishOrThrow(
+  costDollarsSpan: nonNullishOrThrow(
     document.querySelector<HTMLSpanElement>('.costDollars',),
   ),
-  numResultsInput: notNullishOrThrow(
+  numResultsInput: nonNullishOrThrow(
     document.querySelector<HTMLInputElement>('.numResults input',),
   ),
-  resultsSection: notNullishOrThrow(
+  resultsSection: nonNullishOrThrow(
     document.querySelector<HTMLElement>('.results',),
   ),
-  numTotalSearchesSpan: notNullishOrThrow(
+  numTotalSearchesSpan: nonNullishOrThrow(
     document.querySelector<HTMLSpanElement>('.numTotalSearches',),
   ),
-  changeApiKeyButton: notNullishOrThrow(
+  changeApiKeyButton: nonNullishOrThrow(
     document.querySelector<HTMLButtonElement>('.changeApiKey',),
   ),
 };
@@ -118,10 +118,10 @@ export const changeApiKeyButton: HTMLButtonElement = bindings.changeApiKeyButton
  * Includes the search input, result template, range constraints, and persisted counters.
  */
 const derived = {
-  searchInput: notNullishOrThrow(
+  searchInput: nonNullishOrThrow(
     searchForm.querySelector<HTMLInputElement>('input',),
   ),
-  firstResult: notNullishOrThrow(
+  firstResult: nonNullishOrThrow(
     resultsSection.querySelector<HTMLElement>('.result',),
   ),
   exaMaxResults: v.parse(

@@ -30,7 +30,7 @@ export const correctnessRules: DummyRuleMap = {
   'jest/valid-title': 'off',
   //endregion jest
 
-  // False positives on generic functions with nullable params (e.g. notNullishOrThrow).
+  // False positives on generic functions with nullable params (e.g. nonNullishOrThrow).
   // See TROUBLESHOOTING.tsgolint-no-unnecessary-type-assertion.md
   'typescript/no-unnecessary-type-assertion': 'off',
 

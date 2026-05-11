@@ -16,9 +16,9 @@ extends = "lint:types"
 extends = "lint:oxlint"
 
 [tasks.'test:unit']
-run = "glob '**/*.unit.test.ts' | where { not ($in | str contains 'lifecycle') } | par-each { |file| bun $file }"
+extends = "test:unit"
 
 [tasks.'test:e2e']
 description = "Run vmsync VM lifecycle tests (creates VMs, requires KVM)"
 depends = ["build:js:node"]
-run = "bun src/lifecycle.unit.test.ts"
+run = "bun src/lifecycle.expensive.unit.test.ts"

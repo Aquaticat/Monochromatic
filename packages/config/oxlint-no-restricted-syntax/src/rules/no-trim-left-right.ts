@@ -1,7 +1,7 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
+  ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
@@ -38,25 +38,14 @@ export const noTrimLeftRight: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      CallExpression(node: Span,): void {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const callNode = node as Span & Record<string, unknown>;
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const callee = callNode['callee'] as Record<string, unknown> | null | undefined;
-        if (callee === undefined || callee === null)
+      CallExpression(node: ESTree.CallExpression,): void {
+        const { callee, } = node;
+        if (callee.type !== 'MemberExpression' || callee.computed)
           return;
-
-        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true)
+        if (callee.property.type !== 'Identifier')
           return;
-
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const property = callee['property'] as Record<string, unknown> | null | undefined;
-        if (property === undefined || property === null)
-          return;
-
-        const { name, } = property;
+        const { name, } = callee.property;
         if (name === 'trimLeft') {
           context.report({
             node,
@@ -70,6 +59,6 @@ export const noTrimLeftRight: CreateOnceRule = {
           },);
         }
       },
-    } as VisitorWithHooks;
+    };
   },
 };

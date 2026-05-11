@@ -13,8 +13,8 @@ import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 
 import {
   l,
@@ -126,12 +126,12 @@ export function stripJsoncComments(text: string,): string {
 
   while (i < text.length) {
     /** Character at the current position. */
-    const ch = notNullishOrThrow(text[i],);
+    const ch = nonNullishOrThrow(text[i],);
 
     if (inString) {
       if (ch === '\\') {
         /** Escaped character pair. */
-        const next = notNullishOrThrow(text[i + 1],);
+        const next = nonNullishOrThrow(text[i + 1],);
         result.push(
           ch,
           next,

@@ -7,13 +7,13 @@ import { banDisableRule, } from './_ban-disable-factory.ts';
  * (including `typescript/no-non-null-assertion` and
  * `typescript-eslint/no-non-null-assertion` variants).
  *
- * Use `notNullishOrThrow()` from `\@monochromatic-dev/module-es`
+ * Use `nonNullishOrThrow()` from `\@monochromatic-dev/module-or-throw`
  * or an explicit null check instead of the `!` postfix operator.
  */
 export const noDisableNoNonNullAssertion: CreateOnceRule = banDisableRule({
   ruleId: 'no-non-null-assertion',
   description:
-    'Disallow disabling no-non-null-assertion. Use notNullishOrThrow() instead.',
+    'Disallow disabling no-non-null-assertion. Use nonNullishOrThrow() instead.',
   message:
-    'Disabling no-non-null-assertion is not allowed. Use notNullishOrThrow() or an explicit null check.',
+    'Disabling no-non-null-assertion is not allowed. Use nonNullishOrThrow() or an explicit null check.',
 },);

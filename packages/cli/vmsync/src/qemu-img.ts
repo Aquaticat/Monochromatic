@@ -7,8 +7,8 @@
  */
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 
 import {
   l,
@@ -282,7 +282,7 @@ export async function checksum(imagePath: string,): Promise<string> {
       ],
     },);
     /** Second line of certutil output is the hex hash. */
-    const hash = notNullishOrThrow(
+    const hash = nonNullishOrThrow(
       raw.split('\n',)[1],
     )
       .trim();
@@ -295,7 +295,7 @@ export async function checksum(imagePath: string,): Promise<string> {
     args: [imagePath,],
   },);
   /** Hash portion before the filename separator. */
-  const hash = notNullishOrThrow(
+  const hash = nonNullishOrThrow(
     raw.split(/\s+/,)[0],
   );
   return `sha256:${hash}`;

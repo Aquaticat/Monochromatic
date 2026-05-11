@@ -6,8 +6,8 @@
  */
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 
 /** Hexadecimal radix for `toString` and `padStart`. */
 const HEX_RADIX = 16;
@@ -87,7 +87,7 @@ export function generateHexDump(
       if (i === GROUP_BOUNDARY)
         hexParts.push('',);
       if (i < chunk.length) {
-        const byte = notNullishOrThrow(chunk[i],);
+        const byte = nonNullishOrThrow(chunk[i],);
         hexParts.push(byte.toString(HEX_RADIX,).padStart(
           2,
           '0',

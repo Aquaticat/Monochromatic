@@ -54,6 +54,15 @@ Run the measurement yourself; never quantitative-adjective ("small", "large", "f
 
 Three failure directions: asking what you could measure (lazy), assuming what you should ask (confidently wrong), asking permission for a step the conversation already authorized ("want me to also check X?" when the user has been pushing for thoroughness). Trigger phrases for the assumption-when-you-should-ask form: "for a project like this...", "in a typical setup..."
 
+### Present options with pros, cons, and a personal ranking
+
+When proposing a choice between distinct options ("A, B, or C?"), give each option its own pros and cons and a fully sorted personal ranking covering every option, with the reasons that decide each adjacent pair. A flat list pushes deliberation back to the user without the comparison work the agent has already done; naming only the top pick still hides the rest of the ordering, so the user cannot tell what the agent thinks about the runners-up.
+
+- `AskUserQuestion`: each option's `description` holds its pros and cons; order the options by preference (best first) and append "(Recommended)" to the top label; in the prose around the tool call, state the full ranking (e.g. "ranking: B > A > C") with the reason for each adjacent comparison.
+- Inline prose: one short paragraph or bullet block per option with pros and cons, then a "Ranking: B > A > C, because ..." line that explains each step of the order, not just the top pick.
+
+Skip when the user asked yes/no on a single proposal or already narrowed the criteria enough that one option is determined.
+
 ### Hedge phrases that signal a skipped step
 
 Do not write these; do the step instead. (Item 4 of the pre-response checklist applies to the same phrases.)
@@ -63,6 +72,7 @@ Do not write these; do the step instead. (Item 4 of the pre-response checklist a
 - "I think it's a...": verify or label as a guess
 - "the most likely cause is...": reproduce or list candidates without ranking
 - "for a small codebase like yours": run `tokei` first
+- "better/worse than most/typical/average X": name the comparison set or drop the comparative; the qualifier sounds confident but invokes an unverified population (`<Xer> than most` and `worse/more/less than most` are hook-caught; `than typical`/`than average` rely on self-catch)
 - "this is a tractable PR": drop "tractable" or actually build the fix
 - "should be straightforward": drop "straightforward" or test the path
 - "no public diagnosis exists" used as a stopping point: clone the source and diagnose it yourself
@@ -314,7 +324,10 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 
 **Variables and values.**
 
-- `const` over `let`; comment any deviation from immutability.
+- `const` over `let`. Two hard rules enforce this:
+  - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), wrap the mutation in a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or extract a helper function ending in `return <local-binding>` (the helper-shape allowlist suppresses the report).
+  - `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-es`, or an IIFE-into-const initialization.
+  - For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
 - Remove unused variables or prefix with underscore (`_unusedVar`).
 - No single-letter variables (exception: math formulas).
 - Functional approaches over loops; `for...of` when iteration is unavoidable.
@@ -328,7 +341,7 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 - `Promise.all()` for concurrent ops; `Promise.allSettled()` when all results needed; `AbortController` for cancellation.
 - `using`/`await using` for cleanup; no `try...finally`.
 - Custom error classes; throw over error codes/null/result types; `@throws` in TSDoc.
-- `notNullishOrThrow` instead of `!` operator; `outdent` from `@cspotcode/outdent` for multi-line error messages.
+- `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator; `outdent` from `@cspotcode/outdent` for multi-line error messages.
 - Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes.
 - Never `process.exit()`: throw errors instead; always `console.error()` in catch blocks.
 - Never silently discard unexpected states; throw on unreachable branches.

@@ -20,6 +20,7 @@
  * - Conditional hedges: might be, could be, should be (when hedging rather than prescriptive)
  * - Uncertainty markers: not sure, not certain, not entirely sure, hard to say, difficult to tell
  * - Approximation markers: if I recall, if I remember, from what I recall
+ * - Comparative hedges: Xer than most, worse/more/less than most (confident-shaped comparative invoking an unverified population)
  */
 const UNCERTAINTY_PATTERNS: readonly RegExp[] = [
   /\bprobably\b/i,
@@ -48,6 +49,8 @@ const UNCERTAINTY_PATTERNS: readonly RegExp[] = [
   /\bfrom what i (?:recall|remember)\b/i,
   /\bas far as i (?:know|can tell)\b/i,
   /\blikely\b/i,
+  /\wer than most\b/i,
+  /\b(?:worse|more|less) than most\b/i,
 ];
 
 //endregion

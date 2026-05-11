@@ -20,8 +20,8 @@ import {
 } from 'node:path';
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import { findUp, } from 'find-up';
 
 import { STYLES as CTX_MENU_STYLES, } from '../context-menu/context-menu.styles.ts';
@@ -34,7 +34,7 @@ export {};
 
 /** Package root resolved by walking up to the nearest `package.json`. */
 const PACKAGE_ROOT = dirname(
-  notNullishOrThrow(await findUp(
+  nonNullishOrThrow(await findUp(
     'package.json',
     { cwd: import.meta.dirname, },
   ),),

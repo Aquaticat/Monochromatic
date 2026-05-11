@@ -40,6 +40,17 @@ export const restrictionRules: DummyRuleMap = {
   // Use Object.entries/Object.keys/Object.values instead of for...in.
   'no-restricted-syntax/no-for-in': 'error',
 
+  // `let` at function-body root leaks scope to every subsequent statement.
+  // IIFE callees and helper-function shape (ends with `return <root-binding>`)
+  // are allowlisted by AST heuristic. Initial severity is 'warn' to surface
+  // the existing footprint without blocking CI; see AUDIT.let.md.
+  'no-restricted-syntax/no-function-root-let': 'warn',
+
+  // `let` at module root is mutable across the entire module. No allowlist;
+  // use Map/WeakMap/Set, memoize() from @monochromatic-dev/module-es,
+  // or an IIFE-into-const initialization.
+  'no-restricted-syntax/no-module-root-let': 'warn',
+
   // Use using/await using for cleanup instead of try...finally.
   'no-restricted-syntax/no-try-finally': 'error',
 
@@ -102,7 +113,7 @@ export const restrictionRules: DummyRuleMap = {
   // Never process.exit() -- throw errors instead.
   'unicorn/no-process-exit': 'error',
 
-  // Ban non-null assertion (!) -- use notNullishOrThrow instead.
+  // Ban non-null assertion (!) -- use nonNullishOrThrow instead.
   'typescript/no-non-null-assertion': 'error',
 
   // Enforce import type for type-only imports.

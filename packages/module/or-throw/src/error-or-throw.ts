@@ -1,0 +1,41 @@
+/**
+ * `errorOrThrow`: assert `Error` instance, return the narrowed value or throw.
+ *
+ * @module
+ */
+
+import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
+
+/**
+ * Asserts that a value is an `Error`, returning it with non-`Error` variants
+ * removed from the type.
+ *
+ * Uses `instanceof Error`, which matches `Error` and every subclass
+ * (`TypeError`, `RangeError`, and any user-defined `class FooError extends Error`).
+ * Plain objects with a `.message` property and `Error`-shaped values from
+ * other realms are intentionally rejected; for those, use a duck-type check
+ * or `errorLike` from `module-es`.
+ *
+ * @param value - Value to assert as an `Error`
+ *
+ * @returns Same value with non-`Error` variants excluded from the type
+ *
+ * @throws Error when value is not an `Error`
+ *
+ * @example
+ * ```ts
+ * try {
+ *   doWork();
+ * }
+ * catch (caught: unknown) {
+ *   const error = errorOrThrow(caught,);
+ *   // error is Error; safe to read error.message
+ * }
+ * ```
+ */
+export function errorOrThrow<T,>(value: T,): ExtractOrUnknown<T, Error> {
+  if (!(value instanceof Error))
+    throw new Error(`Expected Error, got ${typeof value} ${String(value,)}`,);
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after instanceof
+  return value as ExtractOrUnknown<T, Error>;
+}

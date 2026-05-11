@@ -1,7 +1,7 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
+  ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
@@ -33,14 +33,13 @@ export const noEnum: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      TSEnumDeclaration(node: Span,): void {
+      TSEnumDeclaration(node: ESTree.TSEnumDeclaration,): void {
         context.report({
           node,
           messageId: 'forbidden',
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

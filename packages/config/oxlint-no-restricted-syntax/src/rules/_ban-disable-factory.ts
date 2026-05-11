@@ -1,7 +1,6 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
@@ -51,9 +50,8 @@ export function banDisableRule({
       },
     },
     createOnce(context: Context,): VisitorWithHooks {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
       return {
-        Program(_node: Span,): void {
+        Program(): void {
           context.sourceCode.getAllComments().forEach(function checkComment(comment,) {
             if (DISABLE_DIRECTIVE_PATTERN.test(comment.value,)
               && comment.value.includes(ruleId,))
@@ -65,7 +63,7 @@ export function banDisableRule({
             }
           },);
         },
-      } as VisitorWithHooks;
+      };
     },
   };
 }

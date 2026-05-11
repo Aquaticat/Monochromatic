@@ -1,7 +1,7 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
+  ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
@@ -39,14 +39,13 @@ export const noForIn: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      ForInStatement(node: Span,): void {
+      ForInStatement(node: ESTree.ForInStatement,): void {
         context.report({
           node,
           messageId: 'forbidden',
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

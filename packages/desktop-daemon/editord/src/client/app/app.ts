@@ -22,8 +22,8 @@ import '../references/references-popup.ts';
 import '../rename/rename-input.ts';
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import { createDebounced, } from '../debounce.ts';
 import { AUTO_SAVE_DEBOUNCE_MS, } from '../timing.ts';
 
@@ -85,7 +85,7 @@ const appLog = tagged({
 /** URL query parameters from the page URL. */
 const params = new URLSearchParams(globalThis.location.search,);
 /** Auth token passed by editord on startup. */
-const token = notNullishOrThrow(params.get('token',),);
+const token = nonNullishOrThrow(params.get('token',),);
 /** File path to open, passed as `?file=...` query parameter. */
 const filePath = params.get('file',);
 /** Port derived from the current page origin. */
@@ -96,7 +96,7 @@ const ws = new EditorWsClient({
   token,
 },);
 /** App container element. */
-const appElement = notNullishOrThrow(document.querySelector<HTMLElement>('#app',),);
+const appElement = nonNullishOrThrow(document.querySelector<HTMLElement>('#app',),);
 
 // oxlint-disable typescript-eslint/no-unsafe-type-assertion -- custom elements registered via define
 /** File tree sidebar component. */

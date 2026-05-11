@@ -1,8 +1,8 @@
 // oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import { Exa, } from 'exa-js';
 
 import { displayResult, } from './client-display-result.ts';
@@ -96,7 +96,7 @@ changeApiKeyButton.addEventListener(
   function onChangeApiKey() {
     void (async function promptForNewApiKey(): Promise<void> {
       try {
-        const inputApiKey = notNullishOrThrow(await prompt('Change api key',),);
+        const inputApiKey = nonNullishOrThrow(await prompt('Change api key',),);
         exa.value = [
           new Exa(
             inputApiKey,

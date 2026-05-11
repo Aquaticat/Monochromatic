@@ -20,8 +20,8 @@ import {
   type TokenURL,
 } from '@csstools/css-tokenizer';
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 
 /**
  * Tuple index of the "extra data" field in a CSS token.
@@ -95,7 +95,7 @@ function nextSemanticToken(
   },
 ): CSSToken | null {
   for (let index = startIndex; index < tokens.length; index += 1) {
-    const token = notNullishOrThrow(tokens[index],);
+    const token = nonNullishOrThrow(tokens[index],);
     if (!isTokenWhiteSpaceOrComment(token,))
       return token;
   }
@@ -132,7 +132,7 @@ export function extractCssUrls(source: string,): string[] {
   const refs = new Set<string>();
 
   for (let index = 0; index < tokens.length; index += 1) {
-    const token = notNullishOrThrow(tokens[index],);
+    const token = nonNullishOrThrow(tokens[index],);
     if (isTokenURL(token,)) {
       addIfLocal({
         target: refs,

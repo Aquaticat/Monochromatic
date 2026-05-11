@@ -1,7 +1,7 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
+  ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
@@ -45,14 +45,13 @@ export const noSwitch: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      SwitchStatement(node: Span,): void {
+      SwitchStatement(node: ESTree.SwitchStatement,): void {
         context.report({
           node,
           messageId: 'forbidden',
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

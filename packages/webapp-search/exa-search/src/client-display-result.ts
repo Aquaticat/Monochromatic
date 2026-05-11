@@ -1,7 +1,7 @@
 // oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import type {
   ContentsOptions,
   SearchResult,
@@ -35,35 +35,35 @@ export function displayResult(
   result: SearchResult<SearchContents>,
   resultIndex: number,
 ): void {
-  const currentResultArticle = notNullishOrThrow(
+  const currentResultArticle = nonNullishOrThrow(
     resultArticles[resultIndex],
   );
 
-  const favicon = notNullishOrThrow(
+  const favicon = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLImageElement>('.result__favicon',),
   );
-  const link = notNullishOrThrow(
+  const link = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLAnchorElement>('.result__link',),
   );
-  const publishedDate = notNullishOrThrow(
+  const publishedDate = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLTimeElement>('.result__publishedDate',),
   );
-  const author = notNullishOrThrow(
+  const author = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLElement>('.result__author',),
   );
-  const summary = notNullishOrThrow(
+  const summary = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLParagraphElement>('.result__summary',),
   );
-  const text = notNullishOrThrow(
+  const text = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLParagraphElement>('.result__text',),
   );
-  const highlights = notNullishOrThrow(
+  const highlights = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLUListElement>('.result__highlights',),
   );
-  const firstHighlight = notNullishOrThrow(
+  const firstHighlight = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLLIElement>('.result__highlight',),
   );
-  const image = notNullishOrThrow(
+  const image = nonNullishOrThrow(
     currentResultArticle.querySelector<HTMLImageElement>('.result__image',),
   );
 
@@ -95,7 +95,7 @@ export function displayResult(
       highlight: string,
       highlightIndex: number,
     ) {
-      const currentHighlight = notNullishOrThrow(
+      const currentHighlight = nonNullishOrThrow(
         highlights.querySelector<HTMLElement>(`:nth-child(${highlightIndex + 1})`,),
       );
       currentHighlight.textContent = highlight;

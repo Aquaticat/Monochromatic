@@ -8,8 +8,8 @@ import { readFile, } from 'node:fs/promises';
 import { extname, } from 'node:path';
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 
 import { extractCssUrls, } from './css.ts';
 import { extractHtmlRefs, } from './html.ts';
@@ -95,7 +95,7 @@ async function walkCss(
   const visited = new Set<string>();
 
   while (queue.length > 0) {
-    const cssPath = notNullishOrThrow(queue.shift(),);
+    const cssPath = nonNullishOrThrow(queue.shift(),);
     if (visited.has(cssPath,))
       continue;
     visited.add(cssPath,);

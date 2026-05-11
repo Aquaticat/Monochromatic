@@ -183,6 +183,25 @@ run = "tsdown --watch --config tsdown.node.config.ts"
 [task_templates.test]
 run = "{{vars.fanout}}"
 
+[task_templates."test:unit"]
+description = "Run *.unit.test.ts in parallel via bun (excludes /deprecated/ and *.expensive.* unless --all); pass file paths to filter"
+usage = """
+flag "--all" help="Include /deprecated/ and *.expensive.* files; cannot be combined with file paths"
+arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
+"""
+run = """
+let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
+let all = ($env.usage_all? | default '' | str trim) == 'true'
+if $all and (not ($args | is-empty)) {
+  error make { msg: "--all cannot be combined with file paths" }
+}
+let files = if ($args | is-empty) {
+  let g = (glob "**/*.unit.test.ts")
+  if $all { $g } else { $g | where { not ($in | str contains "/deprecated/") } | where { not ($in | str contains ".expensive.") } }
+} else { $args }
+$files | par-each { |file| bun $file }
+"""
+
 [task_templates."watch:test"]
 run = "{{vars.fanout}}"
 
@@ -253,17 +272,7 @@ if $args == '' {
 """
 
 [tasks."test:unit"]
-hide = true
-description = "Run unit tests"
-usage = 'arg "[args]" var=#true help="Test file paths to run (when provided, only those files run)"'
-run = """
-let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
-if ($args | is-empty) {
-  glob "**/*.unit.test.ts" | where { not ($in | str contains "/deprecated/") } | par-each { |file| bun $file }
-} else {
-  $args | par-each { |file| bun $file }
-}
-"""
+extends = "test:unit"
 
 [tasks."test:browser"]
 hide = true
@@ -584,6 +593,8 @@ _.path = [
 "packages/pi/auto-mode/node_modules/.bin",
 "packages/pi/terminal-title/node_modules/.bin",
 "packages/pi/morph-compact/node_modules/.bin",
+"packages/duik/teto-generated/node_modules/.bin",
+"packages/duik/teto/node_modules/.bin",
 "packages/rolldown-plugins/import-attributes/node_modules/.bin",
 "packages/claude-code-plugins/prompt-time/node_modules/.bin",
 "packages/claude-code-plugins/terminal-title/node_modules/.bin",

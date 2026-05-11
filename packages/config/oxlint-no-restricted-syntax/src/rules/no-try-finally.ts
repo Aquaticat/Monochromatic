@@ -1,7 +1,7 @@
 import type {
   Context,
   CreateOnceRule,
-  Span,
+  ESTree,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
@@ -43,19 +43,15 @@ export const noTryFinally: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      TryStatement(node: Span,): void {
-        /* Only report when a finalizer (finally block) is present. */
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const tryNode = node as Span & Record<string, unknown>;
-        if (tryNode['finalizer'] !== null && tryNode['finalizer'] !== undefined) {
+      TryStatement(node: ESTree.TryStatement,): void {
+        if (node.finalizer !== null) {
           context.report({
             node,
             messageId: 'forbidden',
           },);
         }
       },
-    } as VisitorWithHooks;
+    };
   },
 };

@@ -12,8 +12,8 @@ import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
-  $ as notNullishOrThrow,
-} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw';
 import {
   BYTES_PER_GIB,
   BYTES_PER_MIB,
@@ -322,11 +322,11 @@ export function parseMemoryToBytes(memory: string,): number {
 
   /** Numeric part of the memory string. */
   const value = Number.parseInt(
-    notNullishOrThrow(match[1],),
+    nonNullishOrThrow(match[1],),
     10,
   );
   /** Unit suffix, normalized to uppercase. */
-  const unit = notNullishOrThrow(match[2],).toUpperCase();
+  const unit = nonNullishOrThrow(match[2],).toUpperCase();
 
   return unit === 'G'
     ? value * BYTES_PER_GIB

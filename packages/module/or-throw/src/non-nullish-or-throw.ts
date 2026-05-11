@@ -1,8 +1,14 @@
 /**
+ * `nonNullishOrThrow`: assert non-nullish, return the narrowed value or throw.
+ *
+ * @module
+ */
+
+/**
  * Asserts that a value is not `null` or `undefined`, returning it with a narrowed type.
  *
  * Replaces the non-null assertion operator (`!`) with a runtime check that throws
- * instead of silently producing incorrect behavior.
+ * instead of silently producing incorrect behavior when the assumption fails.
  *
  * @param value - Value to assert as non-nullish
  *
@@ -13,25 +19,25 @@
  * @example
  * DOM element lookup:
  * ```ts
- * const el = $(document.querySelector('.my-element'));
+ * const el = nonNullishOrThrow(document.querySelector('.my-element',),);
  * // el is now Element, not Element | null
  * ```
  *
  * @example
  * Optional chaining replacement:
  * ```ts
- * const path: string = $(await findUp('index.html'));
+ * const path: string = nonNullishOrThrow(await findUp('index.html',),);
  * // path is string, not string | undefined
  * ```
  *
  * @example
  * Regex match groups:
  * ```ts
- * const match = text.match(/pattern/);
- * const group = $(match?.[1]);
+ * const match = text.match(/pattern/,);
+ * const group = nonNullishOrThrow(match?.[1],);
  * ```
  */
-export function $<T,>(value: T | null | undefined,): T {
+export function nonNullishOrThrow<T,>(value: T | null | undefined,): T {
   if (value === null || value === undefined)
     throw new Error(`Expected non-nullish value, got ${String(value,)}`,);
   return value;

@@ -1,38 +1,12 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-argument, typescript/no-unsafe-return, typescript/strict-boolean-expressions -- ArrowFunctionExpression parent chain is untyped; all member access is inherently unsafe
 import type {
   Context,
   CreateOnceRule,
+  ESTree,
   Fixer,
-  Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
 import { extractParamsText, } from './arrow-function-params.ts';
-
-/**
- * Minimal local type for `ArrowFunctionExpression` AST nodes.
- *
- * The full interface is defined internally by `@oxlint/plugins` but not
- * included in its public exports. This covers the properties accessed
- * by this rule.
- */
-type ArrowFunctionExpression = Span & {
-  /** AST node type discriminant. */
-  type: 'ArrowFunctionExpression';
-  /** Whether the body is a single expression (concise body). */
-  expression: boolean;
-  /** Whether the function is async. */
-  async: boolean;
-  /** Generic type parameter list, if present. */
-  typeParameters?: Span | null;
-  /** Return type annotation, if present. */
-  returnType?: Span | null;
-  /** Function body (block or expression). */
-  body: Span;
-  /** Parent AST node (VariableDeclarator, CallExpression, etc.). */
-  // oxlint-disable-next-line typescript/no-explicit-any -- parent chain is inherently untyped in oxlint plugin API
-  parent: Record<string, any>;
-};
 
 /**
  * Bans arrow function expressions in favor of named function declarations
@@ -73,9 +47,8 @@ export const noArrowFunction: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      ArrowFunctionExpression(node: ArrowFunctionExpression,): void {
+      ArrowFunctionExpression(node: ESTree.ArrowFunctionExpression,): void {
         /**
          * Only auto-fix when the arrow is the direct initializer of a variable declaration:
          * `const name = (...) => ...` or `export const name = (...) => ...`.
@@ -154,6 +127,6 @@ export const noArrowFunction: CreateOnceRule = {
           },
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };
