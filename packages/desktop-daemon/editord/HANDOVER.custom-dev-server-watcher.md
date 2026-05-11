@@ -64,9 +64,9 @@ Two orthogonal axes; conflating them muddles the comparison. Pick one from each.
 
 #### `watchman`
 
--   Cost: persistent background daemon plus a Node client library (e.g. `fb-watchman`). Installable via mise/brew like watchexec; the install cost is not the distinguishing factor.
--   Fit: overkill.
--   Notes: Meta's daemon, designed for hundreds-of-thousands-of-files repos (Facebook's hg/git monorepos). Architecturally distinct from the other entries: the chokidar / `@parcel/watcher` / `fabiospampinato/watcher` packages are npm-installed and run *in-process* with the consumer's Node/Bun process; watchexec runs as a one-shot subprocess of the dev task; watchman runs as a long-lived system daemon that processes JSON queries over a Unix socket. The daemon model is overkill for one dev task watching one `src/server/` directory. Has its own programmable filter DSL (S-expression operators: `allof`, `anyof`, `name`, `match`, `pcre`, `since`, `size`, `suffix`, `type`, documented at `watchman/website/docs/expr/`); the DSL operates over file metadata, not content, so it cannot replicate watchexec's `-j` byte-content filter either.
+-   Cost: persistent background daemon plus `fb-watchman` npm client (callback-style, version 2.0.2 on npm but actively maintained — most recent commits at `facebook/watchman` `watchman/node/` from 2024-12 modernisation pass; 2025-07 cleanup). Daemon installable via mise/brew like watchexec.
+-   Fit: would work, but not justified for this case.
+-   Notes: see "Can we just use watchman?" below for the full reasoning. Short version: watchman is architecturally a long-lived daemon designed to amortise its cost across many tools and many directories. We have one tool watching one directory. The watchman DSL is metadata-only (no content access), so the byte-identical filter still has to live in a TS hash cache. Cross-platform recursion and atomic-save handling are first-class in chokidar 5 too, so we do not gain those by switching.
 
 ### Aside: programmable filter DSL support across watchers
 
@@ -113,6 +113,36 @@ Reject unless and until the project has a documented need to consume *existing* 
 ### Recommendation
 
 **F1 (function-predicate API) + ship `contentHashFilter()` as a built-in helper.** Keep the package's extensibility surface open and let TypeScript itself be the filter language. Revisit F2 only after a second consumer materialises with a real config-file need; F3 only after that consumer specifically needs jq syntax.
+
+### Can we just use watchman?
+
+This question came up while drafting the handover. The honest answer: yes, watchman would technically work, and the package shape (watcher + hash-cache + child-process + filter) is unchanged whether the watcher dep is chokidar or `fb-watchman`. The reason chokidar wins for our case is concrete, not a hand-wave about "overkill for very large repos." Spelling it out so the planning agent does not have to re-derive it.
+
+#### What watchman offers that's real
+
+-   Cross-platform recursive watching, with all the platform-event-coalescing tricks Meta has fixed over a decade. Chokidar gives us this too (via `awaitWriteFinish` and `atomic`), but watchman's are the platform-native code paths.
+-   `watchman-make` ships in the watchman distribution for "watch and run a command" workflows. Looks like a candidate replacement for both the watcher *and* the restart driver in this handover.
+-   Multiple tools can share a single daemon's watches. If the system already runs several dev servers under watchman, adding ours is near-zero marginal cost.
+-   A programmable filter DSL (S-expression operators) that runs inside the daemon, before events cross the IPC boundary. Cheaper per-event for high firehose rates than a JS filter.
+
+#### What watchman costs
+
+-   **Persistent daemon.** `idle_reap_age_seconds` defaults to 5 days (`watchman/website/docs/config.md`). Watches are stored in a statefile and reinstated when the daemon restarts. Starting `dev:server` once leaves a watch and the daemon running across reboots until a 5-day idle window or a `watchman shutdown-server` call. For a single developer running one project, this is process state to reason about and clean up; for a system with ten projects, this is amortised infrastructure.
+-   **`fb-watchman` is callback-based** (`client.command(['watch-project', dir], (err, resp) => { ... })`). Wrapping in a Promise API is straightforward but is more glue we maintain.
+-   **`watchman-make` requires Python and `pywatchman`.** Our repo's `mise.toml` does not currently install Python tooling. Adding it for one dev task crosses an architectural line.
+-   **The DSL is metadata-only.** The byte-identical filter that motivated this whole work cannot live in watchman; it has to live in TS. So we adopt watchman *and* keep the hash cache. The DSL benefit is reduced to glob-style pre-filtering, which chokidar's `ignored` option does for free.
+-   **Cross-platform recursive is not a differentiator here.** Chokidar already abstracts FSEvents/inotify/ReadDirectoryChangesW.
+
+#### When this should be revisited
+
+The watchman calculus flips if any of these become true:
+
+-   This monorepo grows to a size where chokidar's startup cost (the per-directory recursive scan via `readdirp`) becomes noticeable. Today the watched directory is `src/server/`, tens of files; the scan cost is microseconds.
+-   A second long-lived dev server is added to the workspace, then a third. Sharing a watchman daemon across them genuinely reduces the moving parts.
+-   The repo grows to need scm-aware querying (watchman's `scm-query` integrates with hg/git and gives "what changed since this commit" semantics for free). We do not need this today.
+-   The team adopts a Python toolchain that already brings `pywatchman` in. Then `watchman-make` becomes free.
+
+None of these is true today. The recommendation stays **chokidar 5 + custom `child_process.spawn`**, but the rejection is "watchman's wins don't apply to our use case," not "watchman is bad."
 
 ### Axis 2: restart driver
 
