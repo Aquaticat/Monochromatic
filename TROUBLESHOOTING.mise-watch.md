@@ -195,3 +195,227 @@ the signal handler runs, the port is released before the new instance starts.
 
 - `watchexec -r -- mise run start:server` -- SIGTERM does not propagate
   through the `mise → nushell → bun` chain, leaving orphaned bun processes
+
+---
+
+## watchexec `-j` filter program hangs on SIGINT (Ctrl+C does not return)
+
+### Problem
+
+`mise run //packages/desktop-daemon/editord:dev` does not return to the
+terminal on Ctrl+C. Three processes survive the signal and block the
+terminal indefinitely:
+
+```text
+mise run //packages/desktop-daemon/editord:dev
+└── nu -c watchexec -w src/server --no-meta -j @src/server/content-changed.jaq -r -- bun src/server/index.ts
+    └── watchexec ...
+```
+
+`bun` and the other two parallel tasks (`watch:build:js:client`,
+`watch:build:css`) exit cleanly. `watchexec` does not. The wrapping `nu` and
+the parent `mise` wait on it, so the terminal cannot be released.
+
+Subsequent SIGINT and SIGTERM signals to the hung `watchexec` are ignored.
+Only SIGKILL kills it.
+
+### Root cause
+
+`watchexec` enters a permanent hang on SIGINT when the `-j` (filter program)
+flag is used. The bug is reproducible in isolation, with no editord plumbing:
+
+```sh
+mkdir -p /tmp/quietdir && echo "true" > /tmp/minimal.jaq
+watchexec -w /tmp/quietdir -j @/tmp/minimal.jaq -- sleep 9999
+# Press Ctrl+C
+# `[Waiting 10s for processes to exit before stopping...]` is printed
+# `sleep` exits within a second
+# `watchexec` never exits; further Ctrl+C does nothing
+```
+
+Bisection of flags confirms `-j` is the trigger. First SIGINT exits the
+following invocations cleanly:
+
+- `watchexec -w DIR -r -- CMD`
+- `watchexec -w DIR --no-meta -r -- CMD`
+
+First SIGINT hangs the following invocations:
+
+- `watchexec -w DIR -j @file.jaq -- CMD`
+- `watchexec -w DIR -j @file.jaq -r -- CMD`
+- `watchexec -w DIR --no-meta -j @file.jaq -r -- CMD` (the production form)
+
+#### Source-level trace
+
+`FilterProgs::new` in `crates/cli/src/filterer/progs.rs:66-115` (v2.5.1)
+spawns a blocking task whose only exit path is the channel closing:
+
+```rust
+let task = spawn_blocking(move || {
+    'chan: while let Some((event, sender)) = receiver.blocking_recv() {
+        // run jaq programs
+    }
+    Ok(()) as miette::Result<()>
+});
+
+tokio::spawn(async {
+    match task.await { /* log */ }
+});
+```
+
+`receiver.blocking_recv()` returns `None` only when every `Sender` is
+dropped. The matching `Sender` lives in `FilterProgs.channel`, held by
+`Arc<WatchexecFilterer>` in `Config.filterer`
+(`ChangeableFilterer = Arc<RwLock<Arc<dyn Filterer>>>`).
+
+A strong reference cycle keeps `Arc<Config>` alive past shutdown:
+
+```text
+Arc<Config>
+  .action_handler  (ChangeableFn = Arc<RwLock<Arc<dyn Fn>>>)
+    closure        registered at crates/cli/src/config.rs:206-209
+      captures     state = state.clone()  (Arc<InnerState>)
+        Arc<InnerState>
+          .watchexec  OnceLock<Arc<Watchexec>>   (state.rs:45)
+            Arc<Watchexec>
+              .config  Arc<Config>               (watchexec.rs:138-203)
+                ^─────── cycles back ────────────┘
+```
+
+`InnerState.watchexec` is set inside `run_watchexec` (`crates/cli/src/lib.rs:42-45`)
+after the closure has already captured `state`. The cycle is established
+before the first event arrives.
+
+When SIGINT fires:
+
+1. The action handler calls `quit(action)` which schedules
+   `action.quit_gracefully(stop_signal, stop_timeout)`
+   (`crates/cli/src/config.rs:298-322`).
+2. `bun` receives SIGTERM, runs its shutdown, exits.
+3. The action worker breaks out of its loop
+   (`crates/lib/src/action/worker.rs:63-86`).
+4. The main task ends and runs `tasks.shutdown().await`
+   (`crates/lib/src/watchexec.rs:191-193`), aborting the remaining async
+   workers.
+5. `wx.main().await` resolves, `run_watchexec` returns, `run` returns,
+   the async block in `main()` completes, `block_on` returns.
+6. The `tokio::runtime::Runtime` drops. Drop waits for `spawn_blocking`
+   tasks to finish naturally (they cannot be aborted).
+7. The `FilterProgs` blocking thread is still parked in
+   `receiver.blocking_recv()` because the cycle is keeping `Arc<Config>`
+   alive, which keeps `Arc<WatchexecFilterer>` alive, which keeps the
+   `Sender` alive, which keeps the channel open.
+8. The runtime never releases its threads; the process never exits.
+
+Without `-j`, no `FilterProgs` and no `spawn_blocking` task is created,
+so the runtime aborts the async tasks and exits despite the same cycle
+existing on the closure side.
+
+### Verified in
+
+- watchexec 2.5.1 linux-x64 (from mise install)
+- watchexec/watchexec HEAD at commit `9d8e3443` (post-2.5.1; both files
+  above are byte-identical to v2.5.1)
+- bun 1.3.13 linux-x64
+- mise 2026.5.0 linux-x64
+
+### Workaround
+
+Either:
+
+1. Drop `-j @src/server/content-changed.jaq` from the `dev:server` task in
+   `packages/desktop-daemon/editord/mise.toml`. Ctrl+C exits cleanly.
+   Trade-off: editor saves that produce identical file content trigger a
+   server restart, losing WebSocket connections and LSP servers. This is
+   the same regression that the "Unnecessary restarts on metadata-only or
+   same-content writes" section above was added to solve.
+2. Keep `-j` and recover the terminal manually after Ctrl+C:
+   `pkill -9 -f 'watchexec -w src/server'` from another terminal.
+
+A third option, replacing watchexec's content-hash filter with a bun-side
+hash check on startup, eliminates the dependency on `-j` but requires
+restructuring the dev loop.
+
+### What does not work
+
+- Sending a second or third SIGINT: the action handler's
+  `quit_again.fetch_add` escalation (config.rs:298-322) is gated on the
+  action worker receiving a fresh event, but the worker is already past
+  the loop, blocked on graceful-shutdown await.
+- Sending SIGTERM to the hung watchexec process: ignored for the same
+  reason. SIGKILL is the only signal that works.
+- `--stop-timeout 0`: addresses how long watchexec waits for the child
+  to exit, not the runtime shutdown wait on the blocking thread.
+- Upgrading watchexec: the relevant files (`crates/cli/src/filterer/progs.rs`,
+  `crates/cli/src/config.rs:206-209`, `crates/cli/src/state.rs:45`) are
+  byte-identical between v2.5.1 and the current HEAD.
+
+### Draft upstream issue
+
+To file against `watchexec/watchexec`:
+
+````markdown
+Title: `-j` (filter program) causes process to hang forever on SIGINT after the command exits
+
+Labels: bug
+
+#### Reproduction
+
+```sh
+mkdir -p /tmp/quietdir && echo "true" > /tmp/minimal.jaq
+watchexec -w /tmp/quietdir -j @/tmp/minimal.jaq -- sleep 9999
+```
+
+Press Ctrl+C. `[Waiting 10s for processes to exit before stopping...]` is
+printed, `sleep` exits within a second, but `watchexec` never exits.
+Further SIGINT/SIGTERM signals are ignored; only SIGKILL terminates the
+process.
+
+Without `-j`, the same invocation (`watchexec -w /tmp/quietdir -- sleep
+9999`) exits cleanly on the first SIGINT.
+
+#### Diagnosis
+
+`FilterProgs::new` in `crates/cli/src/filterer/progs.rs:66-115` spawns a
+blocking task that exits only when the channel closes:
+
+```rust
+let task = spawn_blocking(move || {
+    while let Some((event, sender)) = receiver.blocking_recv() { ... }
+    Ok(())
+});
+```
+
+The matching `Sender` lives through `Arc<WatchexecFilterer>` ->
+`Config.filterer` -> `Arc<Config>`. A reference cycle between
+`Arc<Config>`, the action-handler closure, and the captured
+`Arc<InnerState>` (which holds `OnceLock<Arc<Watchexec>>` in
+`crates/cli/src/state.rs:45` and is filled inside `run_watchexec` in
+`crates/cli/src/lib.rs:42-45`) keeps `Arc<Config>` alive past shutdown.
+The `Sender` never drops, the receiver never returns `None`, the blocking
+thread never exits, and `Runtime::drop` waits on it indefinitely.
+
+Without `-j` no blocking task is created, so the runtime exits despite
+the same cycle.
+
+#### Verified in
+
+- watchexec 2.5.1 linux-x64
+- HEAD at `9d8e3443`; the cited files are byte-identical to v2.5.1.
+
+#### Suggested fix
+
+Either break the cycle or give `FilterProgs` an explicit shutdown path:
+
+- In `crates/cli/src/config.rs:206-209`, capture `Arc::downgrade(&state)`
+  instead of `state.clone()` and upgrade inside the closure. The action
+  handler runs only while the runtime is live, so a `Weak` upgrade will
+  always succeed during normal operation, and the closure will not pin
+  `Arc<InnerState>` past shutdown.
+- Or, in `FilterProgs`, hold the `Sender` in a structure with a `Drop`
+  impl that calls `mpsc::Sender::downgrade` or sends a sentinel to break
+  out of the blocking loop. A `tokio::sync::Notify` wired into the loop
+  would also work.
+````
+
+
