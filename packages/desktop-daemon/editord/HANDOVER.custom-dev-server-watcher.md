@@ -38,23 +38,67 @@ Two orthogonal axes; conflating them muddles the comparison. Pick one from each.
 
 ### Axis 1: file watching
 
-| Option | Cost to add | Fit | Notes |
-|---|---|---|---|
-| **chokidar 5** | new workspace dep (chokidar + readdirp, both maintained by paulmillr) | strong | `atomic: true` handles rename+create atomic saves out of the box; `awaitWriteFinish` handles chunked writes; recursive watching cross-platform. Production user list spans webpack, rollup, vite, gulp. Listed in `AUDIT.md` as "to evaluate"; adopting it here clears that item. |
-| `@parcel/watcher` | new dep with native binding (prebuilt binaries per OS/arch) | viable | Native C++ via N-API; very fast; recursive native everywhere. Adds compile/install surface (prebuilds usually work but failure mode is uglier than a JS lib). Used in Parcel, Lit. |
-| `watcher` (`fabiospampinato/watcher`) | new dep, no transitive deps | acceptable | Smaller alternative to chokidar; listed in `AUDIT.md` separately from chokidar. Less production track record than chokidar. |
-| native `node:fs/promises.watch` | zero deps | viable but more code | The path `packages/dev-script/file-enforcer/src/watch/` already takes; ~150 LOC plus tests for atomic-save, debounce, hash-compare. Not a great fit for a *package* deliverable that should minimize surprise. |
-| `watchman` | external native daemon | overkill | Facebook's daemon, requires user install, separate process. Designed for very large repos. |
+#### chokidar 5 (recommended)
+
+-   Cost: new workspace dep, chokidar plus its single transitive `readdirp`, both maintained by paulmillr.
+-   Fit: strong.
+-   Notes: `atomic: true` handles rename+create atomic saves out of the box; `awaitWriteFinish` handles chunked writes; recursive watching cross-platform. Production user list spans webpack, rollup, vite, gulp. Listed in `AUDIT.md` as "to evaluate"; adopting it here clears that item.
+
+#### `@parcel/watcher`
+
+-   Cost: new dep with native binding (prebuilt binaries per OS/arch).
+-   Fit: viable.
+-   Notes: Native C++ via N-API; very fast; recursive native everywhere. Adds compile/install surface (prebuilds usually work but the failure mode is uglier than a JS lib). Used in Parcel and Lit.
+
+#### `watcher` (`fabiospampinato/watcher`)
+
+-   Cost: new dep, no transitive deps.
+-   Fit: acceptable.
+-   Notes: Smaller alternative to chokidar; listed in `AUDIT.md` separately from chokidar. Less production track record.
+
+#### native `node:fs/promises.watch`
+
+-   Cost: zero deps.
+-   Fit: viable but more code.
+-   Notes: The path `packages/dev-script/file-enforcer/src/watch/` already takes; ~150 LOC plus tests for atomic-save, debounce, hash-compare. Not a great fit for a package deliverable that should minimize surprise.
+
+#### `watchman`
+
+-   Cost: external native daemon.
+-   Fit: overkill.
+-   Notes: Facebook's daemon, requires user install, separate process. Designed for very large repos.
 
 ### Axis 2: restart driver
 
-| Option | Cost to add | Fit | Notes |
-|---|---|---|---|
-| **custom `child_process.spawn` wrapper** | ~80 LOC | strong | Direct control over signal propagation. Disqualifies the watchexec-style "SIGTERM does not reach the grandchild" failure mode by construction (one level of process tree). Tested pattern: `packages/desktop-daemon/editord/src/server/operations/spawn-detached.ts`. |
-| `nodemon` | new dep | poor | Designed to wrap Node, not Bun; assumes JS modules; no first-class content-hash filter; configuration is JSON-file-driven; restart semantics rely on Node module-cache invalidation that does not apply to Bun. |
-| `pm2` | new dep, heavy | poor | Production process manager, not a dev tool. Out of scope. |
-| `bun --watch` / `bun --hot` | zero | does not fit | (a) watches the **import graph**, not the source tree, so files not imported at startup do not trigger; (b) no content-hash filter, byte-identical writes still restart; (c) `--hot` is HMR-like (preserves state) which is the wrong semantics for a server that holds sockets/tokens; (d) `--watch` restart semantics under stdio inherit are undocumented for our config. Save the planning agent the detour. |
-| `watchexec` (current) | already installed via mise | rejected | The whole reason for this work. SIGINT hang with `-j` (analyzed in `TROUBLESHOOTING.mise-watch.md`); process-tree signal propagation problems also documented. |
+#### custom `child_process.spawn` wrapper (recommended)
+
+-   Cost: ~80 LOC.
+-   Fit: strong.
+-   Notes: Direct control over signal propagation. Disqualifies the watchexec-style "SIGTERM does not reach the grandchild" failure mode by construction (one level of process tree). Tested pattern: `packages/desktop-daemon/editord/src/server/operations/spawn-detached.ts`.
+
+#### `nodemon`
+
+-   Cost: new dep.
+-   Fit: poor.
+-   Notes: Designed to wrap Node, not Bun; assumes JS modules; no first-class content-hash filter; configuration is JSON-file-driven; restart semantics rely on Node module-cache invalidation that does not apply to Bun.
+
+#### `pm2`
+
+-   Cost: new dep, heavy.
+-   Fit: poor.
+-   Notes: Production process manager, not a dev tool. Out of scope.
+
+#### `bun --watch` / `bun --hot`
+
+-   Cost: zero.
+-   Fit: does not fit.
+-   Notes: (a) watches the **import graph**, not the source tree, so files not imported at startup do not trigger; (b) no content-hash filter, byte-identical writes still restart; (c) `--hot` is HMR-like (preserves state), which is the wrong semantics for a server that holds sockets/tokens; (d) `--watch` restart semantics under stdio inherit are undocumented for our config. Save the planning agent the detour.
+
+#### `watchexec` (current)
+
+-   Cost: already installed via mise.
+-   Fit: rejected.
+-   Notes: The whole reason for this work. SIGINT hang with `-j` (analyzed in `TROUBLESHOOTING.mise-watch.md`); process-tree signal propagation problems also documented.
 
 ### Recommendation
 
@@ -151,7 +195,7 @@ Out of scope:
 5.  `mise run //packages/dev-script/watch-restart:test:unit` passes; tests cover at minimum the five cases listed under "Unit tests" above.
 6.  `mise run //packages/desktop-daemon/editord:dev:server` starts the bun server through `watch-restart`, prints startup logs, and responds to HTTP on the configured port.
 7.  Editing any file under `src/server/` with new content triggers exactly one restart; previous bun process exits, new bun process starts on the same port (no `EADDRINUSE`).
-8.  Saving a file under `src/server/` with byte-identical content from any source (editord's own save handler *or* an external editor) produces no restart.
+8.  Saving a file under `src/server/` with byte-identical content from any source (editord's own save handler or an external editor) produces no restart.
 9.  `touch src/server/index.ts` produces no restart. The hash compare short-circuits a metadata-only event.
 10. Ctrl+C in the dev terminal exits the watcher within ~1 second. The bun child exits. The terminal prompt returns. A subsequent `mise run //packages/desktop-daemon/editord:dev:server` succeeds.
 11. `kill -TERM <pid>` against the watcher process produces the same clean shutdown.
