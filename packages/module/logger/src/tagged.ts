@@ -26,11 +26,14 @@ import type { Logger, } from './types.ts';
  *
  * @example
  * ```ts
- * // Composing tags
+ * // Composing tags: the outermost wrap (`l2` here) prepends to the message
+ * // last, so its tag ends up rightmost. The innermost wrap (`l1`) hits the
+ * // underlying logger first, so its tag is leftmost. The chain reads
+ * // root-first: outer wrap = inner tag position.
  * const l1 = tagged({ tag: 'http' });
  * const l2 = tagged({ tag: 'retry', l: l1 });
  * l2.info('attempt 3');
- * // logs: [retry] [http] attempt 3
+ * // logs: [http] [retry] attempt 3
  * ```
  */
 export function tagged({

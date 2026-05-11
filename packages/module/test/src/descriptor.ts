@@ -12,6 +12,8 @@
  * @module
  */
 
+import type { Logger, } from '@monochromatic-dev/module-logger/types';
+
 /**
  * Symbol-keyed dispatch method. Parent suites call this on each child
  * instead of awaiting `.then` directly, so the parent's effective
@@ -24,10 +26,22 @@ export const RUN_WITH_CONTEXT: unique symbol = Symbol('runWithContext',);
  * Inherited execution context. The parent suite computes its own
  * `effectiveConcurrency` and passes it to each child; the child
  * falls back to this value when its own `opts.concurrency` is unset.
+ * The parent also passes its composed tagged logger so every child's
+ * log line carries the full suite hierarchy as a tag prefix; this
+ * makes the redundant `child <- parent` enumeration lines unnecessary
+ * because the hierarchy is already encoded in every emitted message.
  */
 export type DescriptorContext = {
   /** Concurrency the parent suite settled on for its children. */
   readonly effectiveConcurrency: number;
+  /**
+   * Composed tagged logger from the parent suite. A child wraps this
+   * with its own name so the resulting tag chain reads root-first
+   * (e.g. `[outer] [inner] [test-name]`). Unset at the root entry
+   * point; an `it` or `describe` outside any parent falls back to
+   * the module-level default logger.
+   */
+  readonly parentLogger?: Logger;
 };
 
 /**

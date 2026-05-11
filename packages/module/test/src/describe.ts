@@ -12,6 +12,7 @@ import {
   RUN_WITH_CONTEXT,
   type TestDescriptor,
 } from './descriptor.ts';
+import { formatFailure, } from './format-error.ts';
 import type { ItResult, } from './it.ts';
 
 /**
@@ -104,10 +105,17 @@ export type DescribeOptions = {
  *
  * @returns suite result containing the suite name
  *
+ * On failure, emits the wrapped cause inline at `error` level
+ * (`formatErrorDeep` walks `.cause` and `AggregateError.errors`)
+ * adjacent to the `FAIL` summary, so the log stream alone is
+ * sufficient for diagnosis. The throw shape is unchanged.
+ *
  * @throws Error wrapping child failures when any child rejects.
  *   Single failure: `Error(name, { cause: childError })`.
  *   Multiple failures: `Error(name, { cause: AggregateError([...]) })`.
  *   Empty name: re-throws the cause directly without wrapping.
+ *   Timeout: re-throws the raw timeout error (no name-wrapping),
+ *   matching the pre-change behavior.
  */
 async function runDescribe(
   opts: DescribeOptions,
@@ -122,7 +130,7 @@ async function runDescribe(
     timeout,
     l: loggerOverride,
   } = opts;
-  const baseLogger = loggerOverride ?? defaultLogger;
+  const baseLogger = loggerOverride ?? ctx.parentLogger ?? defaultLogger;
   const l = name === ''
     ? baseLogger
     : tagged({
@@ -138,8 +146,17 @@ async function runDescribe(
 
   /** Effective concurrency for this suite, inheriting parent when not set. */
   const effectiveConcurrency = concurrency ?? ctx.effectiveConcurrency;
-  /** Context passed to each child for inheritance. */
-  const childCtx: DescriptorContext = { effectiveConcurrency, };
+  /**
+   * Context passed to each child for inheritance.
+   * `parentLogger` is this suite's composed tagged logger, so every
+   * descendant's log line carries the full `[outer] [inner] [test]` tag
+   * chain and the hierarchy is visible per-line without a separate
+   * `child <- parent` enumeration.
+   */
+  const childCtx: DescriptorContext = {
+    effectiveConcurrency,
+    parentLogger: l,
+  };
   /** Whether concurrency is effectively unbounded. */
   const isUnbounded = effectiveConcurrency >= Number.MAX_SAFE_INTEGER;
   /** Whether children run one at a time. */
@@ -188,9 +205,26 @@ async function runDescribe(
 
   /**
    * Runs one pass of the suite: starts all children, collects results, reports.
-   * Logs per-child completion via `<-` lines, then a suite-level
-   * `(Nms)` on success or `FAIL (Nms)` on failure.
-   * Empty-name suites downgrade the success duration to `debug`.
+   * Children emit their own `PASS` (at `debug`) and `FAIL` (at `error`) lines
+   * during execution, each carrying the full `[outer] [inner] [child]` tag
+   * chain via the inherited `childCtx.parentLogger`. After all children
+   * settle, this function emits the suite-level enumeration:
+   *
+   * - all-success: one `info` line `PASS childA, childB, ... (Nms)` listing
+   *   fulfilled children plus the suite's wall-clock duration
+   * - mixed-result: one `info` line `PASS childA, ...` listing passing
+   *   siblings (no duration), followed by an `error` `FAIL (Nms)` rollup
+   * - all-failure: only the `error` `FAIL (Nms)` rollup
+   * - empty suite (no children): one `info` line `(Nms)` with duration only
+   *
+   * On failure, the `FAIL` rollup is emitted in a single `l.error` call
+   * combined with the formatted cause chain (`formatErrorDeep`), so the
+   * tag prefix lands only on the summary and the continuation lines are
+   * untagged. Timeout failures take a separate path that emits a
+   * `FAIL: timeout (Nms)` rollup with the timeout error formatted inline.
+   *
+   * Empty-name suites downgrade the info line to `debug` so they stay out of
+   * default output; the suite still groups and times its children.
    *
    * @param runLabel - label suffix for repeated runs (empty string for single runs)
    *
@@ -224,32 +258,66 @@ async function runDescribe(
       : settleAll;
 
     const startTime = performance.now();
-    const settled = await withTimeoutApplied;
+    let settled: PromiseSettledResult<DescribeResult | ItResult>[] = [];
+    try {
+      settled = await withTimeoutApplied;
+    }
+    catch (timeoutError) {
+      /**
+       * Timeout bypasses every child-result processing line, so the
+       * failure has no inline diagnostic surface on its own. Emit one
+       * `l.error` carrying the FAIL summary fused with the formatted
+       * timeout error before re-throwing; the throw shape is preserved
+       * (raw timeout error, matching pre-change behavior).
+       */
+      const elapsedMs = performance.now() - startTime;
+      l.error(formatFailure({
+        summary: `FAIL${runLabel}: timeout (${elapsedMs.toFixed(0,)}ms)`,
+        value: timeoutError,
+      },),);
+      throw timeoutError;
+    }
     const durationMs = performance.now() - startTime;
 
     const errors: unknown[] = [];
+    const passedNames: string[] = [];
     /** Empty-name suites are invisible wrappers; downgrade success logs to debug. */
     const logSuccess = name === '' ? l.debug : l.info;
 
     for (const result of settled) {
       if (result.status === 'fulfilled')
-        logSuccess(`${result.value.name} <- ${name || '(root)'}${runLabel}`,);
-      else {
-        const childName = result.reason instanceof Error
-          ? result.reason.message
-          : '(unknown)';
-        l.error(`${childName} <- ${name || '(root)'}${runLabel}`,);
+        passedNames.push(result.value.name,);
+      else
         errors.push(result.reason,);
+    }
+
+    /**
+     * Suite-level info line listing fulfilled children's names plus
+     * duration. This is the visible-by-default carrier for the
+     * parent-children mapping now that per-test `PASS` is at `debug`:
+     * a single info line per parent enumerates which children ran
+     * under it, in array order. Mixed-result suites still emit a
+     * names list (without duration) so passing siblings remain
+     * visible alongside the error-level `FAIL` rollup.
+     */
+    const labelPrefix = runLabel === '' ? '' : `${runLabel.trim()} `;
+    if (passedNames.length > 0) {
+      if (errors.length === 0) {
+        logSuccess(
+          `PASS ${passedNames.join(', ',)} ${labelPrefix}(${
+            durationMs.toFixed(0,)
+          }ms)`,
+        );
       }
+      else
+        logSuccess(`PASS ${passedNames.join(', ',)}`,);
     }
 
     if (errors.length === 0) {
-      const labelPrefix = runLabel === '' ? '' : `${runLabel.trim()} `;
-      logSuccess(`${labelPrefix}(${durationMs.toFixed(0,)}ms)`,);
+      if (passedNames.length === 0)
+        logSuccess(`${labelPrefix}(${durationMs.toFixed(0,)}ms)`,);
       return;
     }
-
-    l.error(`FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,);
 
     const cause = errors.length === 1
       ? errors[0]
@@ -257,6 +325,11 @@ async function runDescribe(
         errors,
         `${String(errors.length,)} children failed in suite "${name || '(root)'}"`,
       );
+
+    l.error(formatFailure({
+      summary: `FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,
+      value: cause,
+    },),);
 
     if (name === '')
       throw cause;
@@ -291,6 +364,11 @@ async function runDescribe(
  * Set `concurrency: 1` for sequential execution; nested describes inherit
  * the parent's effective value unless they override it.
  *
+ * On failure, the suite emits the full cause chain inline at `error`
+ * level adjacent to the `FAIL` summary, so the log stream alone is
+ * sufficient for diagnosis. Top-level `try { await describe(...) } catch`
+ * remains supported; the throw shape is unchanged.
+ *
  * @param opts - suite options
  *
  * @returns lazy descriptor that resolves with the suite result
@@ -299,6 +377,7 @@ async function runDescribe(
  *   Single failure: `Error(name, { cause: childError })`.
  *   Multiple failures: `Error(name, { cause: AggregateError([...]) })`.
  *   Empty name: re-throws the cause directly without wrapping.
+ *   Timeout: re-throws the raw timeout error.
  *
  * @example
  * ```ts

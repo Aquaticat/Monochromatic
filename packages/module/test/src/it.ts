@@ -3,6 +3,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
 import {
+  type DescriptorContext,
   makeDescriptor,
   type TestDescriptor,
 } from './descriptor.ts';
@@ -10,6 +11,7 @@ import {
   createScopedExpect,
   type ScopedExpect,
 } from './expect.ts';
+import { formatFailure, } from './format-error.ts';
 import {
   createSinon,
   type DisposableSandbox,
@@ -97,17 +99,33 @@ async function runFnOnce({
  * point wraps this in {@link makeDescriptor} so callers receive a lazy
  * descriptor.
  *
- * Logs `PASS name (Nms)` on success.
- * Throws `Error(name, { cause })` on failure or timeout,
- * propagating the original error as the cause.
+ * Logs `PASS (Nms)` at `debug` on success, so per-test output stays
+ * out of default verbosity. The parent `describe` surfaces the
+ * fulfilled child names in a single `info` line, preserving the
+ * parent-children mapping without one info line per test. `FAIL` at
+ * `error` is always visible; `SKIP` at `info`.
+ * On failure, also emits the caught error inline at `error` level
+ * (message, stack, `.cause` chain, `AggregateError.errors`) adjacent
+ * to the `FAIL` summary, so the log stream alone is sufficient for
+ * diagnosis without depending on the runtime's unhandled-rejection
+ * printer. The throw shape is unchanged.
+ * Throws `Error(name, { cause })` on failure or timeout, propagating
+ * the original error as the cause.
  *
  * @param opts - test options
+ *
+ * @param descriptorCtx - inherited execution context. Carries the
+ *   parent suite's composed tagged logger, which this test wraps with
+ *   its own name so the resulting tag chain reads root-first.
  *
  * @returns test result containing the test name
  *
  * @throws Error wrapping the original failure with the test name and cause chain
  */
-async function runIt(opts: ItOptions,): Promise<ItResult> {
+async function runIt(
+  opts: ItOptions,
+  descriptorCtx: DescriptorContext,
+): Promise<ItResult> {
   const {
     name,
     fn,
@@ -115,12 +133,20 @@ async function runIt(opts: ItOptions,): Promise<ItResult> {
     skip = false,
     repeats = 0,
     fails = false,
-    l: parentLogger,
+    l: explicitLogger,
   } = opts;
-  const l = parentLogger !== undefined
+  /**
+   * Parent logger comes from either an explicit `opts.l` (rare, used
+   * when callers build their own logger pipeline) or the parent suite's
+   * composed tagged logger threaded through `descriptorCtx.parentLogger`.
+   * Wrapping the parent with this test's name puts the test tag rightmost
+   * so the full chain reads root-first: `[outer] [inner] [test-name] PASS`.
+   */
+  const baseLogger = explicitLogger ?? descriptorCtx.parentLogger;
+  const l = baseLogger !== undefined
     ? tagged({
       tag: name,
-      l: parentLogger,
+      l: baseLogger,
     },)
     : tagged({ tag: name, },);
 
@@ -174,7 +200,7 @@ async function runIt(opts: ItOptions,): Promise<ItResult> {
 
     if (fails !== false) {
       if (threw) {
-        l.info(
+        l.debug(
           `PASS${runLabel}: threw as expected${failsReason} (${
             durationMs.toFixed(0,)
           }ms)`,
@@ -182,19 +208,24 @@ async function runIt(opts: ItOptions,): Promise<ItResult> {
         continue;
       }
 
-      l.error(
-        `FAIL${runLabel}: expected to throw but passed${failsReason} (${
+      const failsCause = new Error('Expected test to throw but it passed',);
+      l.error(formatFailure({
+        summary: `FAIL${runLabel}: expected to throw but passed${failsReason} (${
           durationMs.toFixed(0,)
         }ms)`,
-      );
+        value: failsCause,
+      },),);
       throw new Error(
         name,
-        { cause: new Error('Expected test to throw but it passed',), },
+        { cause: failsCause, },
       );
     }
 
     if (threw) {
-      l.error(`FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,);
+      l.error(formatFailure({
+        summary: `FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,
+        value: caughtError,
+      },),);
       throw new Error(
         name,
         { cause: caughtError, },
@@ -203,37 +234,41 @@ async function runIt(opts: ItOptions,): Promise<ItResult> {
 
     //region Assertion count verification
     if (tracker.expected !== null && tracker.count !== tracker.expected) {
-      l.error(
-        `FAIL${runLabel}: expected ${String(tracker.expected,)} assertions but ${
+      const assertionCause = new Error(
+        `Expected ${String(tracker.expected,)} assertions, but ${
+          String(tracker.count,)
+        } were called`,
+      );
+      l.error(formatFailure({
+        summary: `FAIL${runLabel}: expected ${String(tracker.expected,)} assertions but ${
           String(tracker.count,)
         } were called (${durationMs.toFixed(0,)}ms)`,
-      );
+        value: assertionCause,
+      },),);
       throw new Error(
         name,
-        {
-          cause: new Error(
-            `Expected ${String(tracker.expected,)} assertions, but ${
-              String(tracker.count,)
-            } were called`,
-          ),
-        },
+        { cause: assertionCause, },
       );
     }
 
     if (tracker.requiresAtLeastOne && tracker.count === 0) {
-      l.error(
-        `FAIL${runLabel}: expected at least one assertion but none were called (${
+      const noAssertionsCause = new Error(
+        'Expected at least one assertion to be called',
+      );
+      l.error(formatFailure({
+        summary: `FAIL${runLabel}: expected at least one assertion but none were called (${
           durationMs.toFixed(0,)
         }ms)`,
-      );
+        value: noAssertionsCause,
+      },),);
       throw new Error(
         name,
-        { cause: new Error('Expected at least one assertion to be called',), },
+        { cause: noAssertionsCause, },
       );
     }
     //endregion Assertion count verification
 
-    l.info(`PASS${runLabel} (${durationMs.toFixed(0,)}ms)`,);
+    l.debug(`PASS${runLabel} (${durationMs.toFixed(0,)}ms)`,);
   }
 
   return { name, };
@@ -261,7 +296,10 @@ async function runIt(opts: ItOptions,): Promise<ItResult> {
  * ```
  */
 export function it(opts: ItOptions,): TestDescriptor<ItResult> {
-  return makeDescriptor(function runItIgnoringCtx() {
-    return runIt(opts,);
+  return makeDescriptor(function runItWithCtx(ctx,) {
+    return runIt(
+      opts,
+      ctx,
+    );
   },);
 }

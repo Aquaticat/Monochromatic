@@ -426,6 +426,40 @@ Prefer awaiting the promise first, then asserting on the result or caught error 
 `expect.stringContaining`, `expect.stringMatching`, `expect.objectContaining`,
 `expect.arrayContaining`, `expect.anything`, `expect.any`
 
+## Test output format
+
+Every log line carries the full suite hierarchy as a tag chain. The leftmost tag
+is the outermost `describe`, the rightmost tag is the current `it` (or innermost
+`describe`); empty-name suites contribute no tag.
+
+Default verbosity is compact: each `describe` emits one info-level line listing
+its fulfilled children's names. Per-test `PASS` lines are at `debug` (hidden
+unless `DEBUG=true`). Failures remain at `error` and are always visible.
+
+```
+[info]  [iso] [outer] [inner] PASS childA, childB, ... (Nms)   -- happy-path enumeration
+[info]  [iso] [outer] [inner] PASS childA                       -- mixed-result: passing siblings only
+[error] [iso] [outer] [inner] [bad] FAIL (Nms)                  -- per-test failure with full hierarchy
+[error] [iso] [outer] [inner] FAIL (Nms)                        -- suite rollup with failure
+[debug] [iso] [outer] [inner] [test-name] PASS (Nms)            -- per-test detail with DEBUG=true
+```
+
+Parent-children relationships are visible per line by default; no `DEBUG` flag
+needed. Levels:
+
+- **`info`** -- per-suite `PASS childA, childB (Nms)` enumeration line and
+  `SKIP` notices from `it`.
+- **`error`** -- `FAIL` for tests and suites; always visible regardless of
+  verbosity.
+- **`debug`** -- per-test `PASS (Nms)`, per-suite `start (concurrency: N)`
+  traces, and the rollup line for empty-name (invisible) suites. Hidden by
+  default; set `DEBUG=true` or pass `--verbose` to surface.
+
+When a failure surfaces, read the rightmost (deepest) tag plus the `FAIL` line
+to identify the failing test; walk leftward through tags to follow the suite
+nesting back to the file's top-level `describe`. The full `Error.cause` chain
+mirrors the tag chain.
+
 ## Linting test code
 
 ### Testing intentional violations

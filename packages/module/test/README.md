@@ -73,9 +73,13 @@ bounded, and unbounded modes all work without wrapping children in thunks.
 - **`repeats`** (default `0`) -- number of additional runs of the entire suite;
   `repeats: 2` runs the suite 3 times total
 
-Logs `childName <- suiteName` for each child result, then `(Nms)` at the suite level on success
-or `FAIL (Nms)` on failure. Empty-name suites downgrade the success duration to `debug` so they
-stay out of default output.
+On success, the suite emits one `info` line listing every fulfilled child's name plus the
+suite's wall-clock duration: `PASS childA, childB, ... (Nms)`. The full `[outer] [inner]`
+tag chain is in the line's prefix, so the parent-children mapping is visible at default
+verbosity. Per-test `PASS` lines are at `debug` (hidden by default; surface with
+`DEBUG=true`). On failure the suite emits a `FAIL (Nms)` line at `error`. Empty-name
+suites downgrade the success line to `debug`. See the [Output format](#output-format)
+section for the full contract.
 
 **Only one top-level `await describe` per file.**
 When a file has multiple logical suites, wrap them in a single
@@ -181,6 +185,145 @@ expectTypeOf<string>().toEqualTypeOf<string>();
 expectTypeOf({ a: 1, },).toHaveProperty('a',);
 expectTypeOf<() => void>().toBeFunction();
 ```
+
+## Output format
+
+Test output goes through `@monochromatic-dev/module-logger`. Every line carries the
+full suite hierarchy as a tag chain, so the parent-children mapping is always visible
+without a separate enumeration. The harness keeps default output compact by surfacing
+one suite-level info line per parent and demoting per-test `PASS` to `debug`.
+
+### Per-line shape
+
+```
+[level] [iso-timestamp] [outer] [inner] [child] message
+```
+
+The leftmost tag is the outermost `describe`; the rightmost tag is the current `it`
+or innermost `describe`. The chain falls out of `tagged` composition: each suite
+wraps its parent's logger with its own name, and `it` wraps that again with the
+test name. Empty-name suites contribute no tag segment.
+
+### What each level emits
+
+- **`info`** -- per-suite `[outer] [inner] PASS childA, childB, ... (Nms)` listing
+  every fulfilled child (tests and nested describes alike) plus the suite's
+  wall-clock duration. Mixed-result suites still emit a names list (without
+  duration) so passing siblings stay visible alongside the error-level FAIL
+  rollup. `SKIP` messages from `it` are also `info`. Visible by default.
+- **`error`** -- `[chain...] FAIL (Nms)` for each failing test, plus a rollup
+  `[chain...] FAIL (Nms)` for each suite that has failing children. Always visible.
+- **`debug`** -- per-test `[chain...] PASS (Nms)` for each passing test (full
+  hierarchy in the tag chain), per-suite `[chain...] start (concurrency: N)`
+  traces, and the rollup for empty-name (invisible) suites. Hidden by default;
+  enable with `DEBUG=true` or `--verbose`.
+
+### Worked example
+
+For a file laid out as:
+
+```ts
+await describe({
+  name: '',
+  children: [
+    describe({
+      name: 'math',
+      children: [
+        it({ name: 'adds', fn: async () => expect(1 + 1,).toBe(2,), },),
+        it({ name: 'subtracts', fn: async () => expect(2 - 1,).toBe(1,), },),
+      ],
+    },),
+  ],
+},);
+```
+
+a successful run prints (default verbosity):
+
+```
+[info] [...] [math] PASS adds, subtracts (2ms)
+```
+
+The empty-name root suite's enumeration goes to `debug`, so it stays silent. With
+`DEBUG=true`, per-test detail surfaces too:
+
+```
+[debug] [...] [math] start (concurrency: 16)
+[debug] [...] [math] [adds] PASS (1ms)
+[debug] [...] [math] [subtracts] PASS (1ms)
+[info]  [...] [math] PASS adds, subtracts (2ms)
+[debug] [...] PASS math (2ms)
+```
+
+A failure in `subtracts` emits (default verbosity):
+
+```
+[error] [...] [math] [subtracts] FAIL (1ms) Error: ... at fn (math.unit.test.ts:9:19) at runFnOnce (...)
+Caused by: Error: ... at otherFn (...) at ...
+[info]  [...] [math] PASS adds
+[error] [...] [math] FAIL (2ms) Error: subtracts at runIt (...) at ...
+Caused by: Error: ... at fn (math.unit.test.ts:9:19) at ...
+```
+
+The failing test's FAIL line emits during execution (from inside `runIt`), so
+it appears first. After all children settle, the parent suite emits the
+passing-siblings list (so `adds` stays visible at `info`) and then the
+suite-level `FAIL` rollup with wall-clock duration. `Error.cause` carries the
+original failure for stack-trace navigation; the `name` of each thrown `Error`
+matches the corresponding tag segment.
+
+### Inline error diagnostics
+
+Every `FAIL` summary line is fused with the caught error's first formatted
+line (header plus stack frames concatenated inline) in the same `l.error`
+call, so the whole thing fits on a single tagged line and `grep` matches by
+message, class, or frame. Subsequent `.cause` chain entries (each marked
+`Caused by:`) and `AggregateError.errors` entries (marked `[N/M]`) follow on
+the next lines, untagged because readers already know which suite or test the
+error belongs to from the summary's tag. Each suite that re-throws walks the
+chain again with its own wrapping, so a deeply nested failure appears at
+every enclosing level.
+
+The log stream alone is sufficient for diagnosis. This holds whether the
+rejection escapes uncaught (where Bun's runtime printer would also fire) or is
+caught programmatically (where the runtime printer never fires). Non-Error
+throws (`throw 'oops'`, `throw 42`, `throw null`) render as a single
+`Threw non-Error value: ...` continuation line.
+
+### Top-level `try`/`catch` is supported
+
+```ts
+try {
+  await describe({ name: 'suite', children: [/* ... */], },);
+}
+catch (e) {
+  // Custom reporter, CI integration, post-failure cleanup, etc.
+  // `e` is the wrapped `Error(name, { cause })` from the outermost suite.
+}
+```
+
+The throw contract is preserved end-to-end. Leaf failures throw
+`Error(testName, { cause: original })`; parent suites wrap their children's
+errors in `Error(suiteName, { cause })` for a single failure or
+`Error(suiteName, { cause: AggregateError(errors,) })` for multiple; the
+top-level `await` rejects with the outermost wrapping. The `.cause` chain is
+walkable programmatically, which is also why the inline log is consistent end
+to end.
+
+A consequence: at process entry where no `try`/`catch` wraps the top-level
+`await`, Bun's runtime printer dumps the cause chain again at the bottom,
+after the harness output. This duplicates content already inline-logged. The
+harness deliberately does not suppress Bun's printer because the alternatives
+each violate either the Promise contract or library isolation:
+
+- Swallow at descriptor `then`: lies to awaiters (resolves with `undefined` on
+  failure), silently discards user `onrejected` handlers, breaks `Promise.all`
+  failure visibility, hides nested-await failures inside test fns.
+- Process-wide `unhandledRejection` handler installed on import: invisible
+  global side effect that affects any non-test code in the same process.
+
+Users who find the tail dump noisy can wrap their top-level `await` in
+`try`/`catch`; the wrapped error is fully diagnostic and the runtime printer
+no longer activates.
 
 ## Usage
 
