@@ -70,14 +70,49 @@ Two orthogonal axes; conflating them muddles the comparison. Pick one from each.
 
 ### Aside: programmable filter DSL support across watchers
 
-watchexec's `-j @file.jaq` (the flag whose SIGINT hang motivated this work) is uncommon. Only two watchers in current use have a programmable filter DSL:
+watchexec's `-j` flag (the flag whose SIGINT hang motivated this work) is uncommon. Only two widely-used watchers expose a programmable filter DSL:
 
--   **watchexec**: `-j` runs a jaq program (a jq-compatible language) per event. State (a kv-store) can be threaded through, which is what enabled the original `content-changed.jaq` hash filter.
--   **watchman**: the S-expression operators listed above. Stateless per query; operates on the file index, not on content.
+-   **watchexec**: `-j` runs a jaq program (a jq-compatible language) per event. State can be threaded through a kv-store (`kv_store`, `kv_fetch`, `kv_clear`), which is what made `content-changed.jaq` possible. Custom filter definitions extend the stdlib with `file_meta`, `file_size`, `file_read(bytes)`, `file_hash`, `string | hash`, and logging primitives. The hang affects both forms (inline `-j 'program'` and file `-j @program.jaq`); see `TROUBLESHOOTING.mise-watch.md`.
+-   **watchman**: the S-expression operators listed under the watchman entry above. Stateless per query; operates on the file index, not on content.
 
 Every other watcher uses one of: glob patterns (`@parcel/watcher`'s `ignore`, `nodemon`'s `watch`/`ignore`, rollup-watch's `watch.exclude`), regex/string (chokidar's `ignored` accepts these), or a JS function callback (chokidar's `ignored` also accepts these; `fabiospampinato/watcher` similar). No JavaScript-side watcher ships a jq-language filter.
 
-Implication for the new package: we do not replicate the jaq DSL. The content-hash filter that the old `content-changed.jaq` provided becomes ~20 lines of TypeScript in the package's `hash-cache.ts`: a `Map<absolutePath, sha256hex>` plus an event-time compare. Callers that want richer filtering pass a function predicate, matching chokidar's `ignored` shape; no new language is introduced.
+### Filter API for the new package: this is a design decision, not a one-liner
+
+An earlier draft of this handover said "the hash cache becomes ~20 lines of TypeScript." That claim is unsafe: it replaces a general programmable filter with one hardcoded predicate, and the second consumer that wants a different filter shape (e.g. `watch:build:css` rebuilding only on style-token changes) would have to fork the package or extend it ad hoc. The planning agent should design the filter API deliberately, treating it as the package's main extension point.
+
+Three options, ranked from cheapest to most expensive:
+
+#### Option F1: function-predicate API (recommended starting point)
+
+Library accepts `filter: (event, ctx) => boolean | Promise<boolean>`. Callers write TypeScript. The content-hash filter ships as a built-in helper alongside the watcher:
+
+-   `contentHashFilter()` returns a predicate closed over a private `Map<absolutePath, sha256hex>`; first-seen and same-hash events return `false` (skip), hash-different events return `true` (fire).
+-   Other built-in helpers as needed: `extFilter(['.ts', '.tsx'])`, `globFilter(...)`, `composeFilters(...)`.
+
+For in-process TypeScript callers, function predicates are strictly more expressive than a DSL (you have the full language). The original jaq DSL existed because watchexec is a Rust binary and users cannot extend it without a foreign-function boundary; that boundary does not exist for us. The CLI form accepts `--filter-script <path>`: the path is loaded as a TS module and its default export is the predicate.
+
+This is the recommended starting point because it covers every use case we have evidence for (content-hash, glob, extension) without inventing language design.
+
+#### Option F2: small declarative format (compromise)
+
+Ship the predicate API plus a small declarative form for CLI use without writing a `.ts` file. Example shape (illustrative, not prescriptive):
+
+```jsonc
+{ "all": [ { "extension": [".ts", ".tsx"] }, { "contentChanged": true } ] }
+```
+
+This is purpose-built for our event shape and avoids reinventing jq. The CLI flag is something like `--filter-config <path>`. The format is a `Record` lookup keyed on operator name; adding an operator is one entry in a switch-equivalent. Worth the cost only if the planning agent identifies a second consumer that genuinely wants a config-driven filter (today only `content-hash + globs` is on the table).
+
+#### Option F3: jaq subset or full port (last resort)
+
+A subset of jaq in TypeScript. The reference Rust implementation (`01mf02/jaq`) is on the order of 10k–20k LOC across the parser, optimizer, and evaluator; a TypeScript port that matches watchexec's `--help`-documented surface (the jaq stdlib plus `file_meta`, `file_size`, `file_read`, `file_hash`, `kv_store`, `kv_fetch`, `kv_clear`, logging primitives) is a multi-week project, not a side concern. We would also inherit jaq's semantic edge cases (e.g. the "stops after outputting the first value" gotcha that watchexec's own help calls out).
+
+Reject unless and until the project has a documented need to consume *existing* jaq programs from another tool. We do not.
+
+### Recommendation
+
+**F1 (function-predicate API) + ship `contentHashFilter()` as a built-in helper.** Keep the package's extensibility surface open and let TypeScript itself be the filter language. Revisit F2 only after a second consumer materialises with a real config-file need; F3 only after that consumer specifically needs jq syntax.
 
 ### Axis 2: restart driver
 

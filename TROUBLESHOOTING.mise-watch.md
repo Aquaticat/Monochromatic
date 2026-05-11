@@ -246,6 +246,11 @@ First SIGINT hangs the following invocations:
 - `watchexec -w DIR -j @file.jaq -- CMD`
 - `watchexec -w DIR -j @file.jaq -r -- CMD`
 - `watchexec -w DIR --no-meta -j @file.jaq -r -- CMD` (the production form)
+- `watchexec -w DIR -j 'true' -- CMD` (**inline jaq form, same hang**)
+
+watchexec's `--help` documents `-j` accepts either an inline jaq expression or, if the argument starts with `@`, a path to a file containing a jaq program. The hang affects **both forms** because the cycle lives in `FilterProgs::new` (`crates/cli/src/filterer/progs.rs:66-115`), which is called whenever `-j` is present regardless of where the program comes from. Reproduced 2026-05-11 with watchexec 2.5.1: a process running `watchexec -w /tmp/x -j 'true' -- sleep 9999` survives the first SIGINT and only dies on SIGKILL.
+
+The watchexec docs (CLI `--help` and the discussions link at <https://github.com/watchexec/watchexec/discussions/592>) advertise the inline form on equal footing with `@file`. There is no documented warning that either form hangs on SIGINT. The draft upstream issue at the end of this section should call out that inline jaq is affected too, so an upstream fix covers both code paths.
 
 #### Source-level trace
 
@@ -367,15 +372,27 @@ Labels: bug
 
 #### Reproduction
 
+The hang affects both forms of `-j` (file and inline). The CLI `--help`
+documents both on equal footing; neither warns about the SIGINT issue.
+
+File form:
+
 ```sh
 mkdir -p /tmp/quietdir && echo "true" > /tmp/minimal.jaq
 watchexec -w /tmp/quietdir -j @/tmp/minimal.jaq -- sleep 9999
 ```
 
-Press Ctrl+C. `[Waiting 10s for processes to exit before stopping...]` is
-printed, `sleep` exits within a second, but `watchexec` never exits.
-Further SIGINT/SIGTERM signals are ignored; only SIGKILL terminates the
-process.
+Inline form (also hangs):
+
+```sh
+mkdir -p /tmp/quietdir
+watchexec -w /tmp/quietdir -j 'true' -- sleep 9999
+```
+
+In either case, press Ctrl+C: `[Waiting 10s for processes to exit before
+stopping...]` is printed, `sleep` exits within a second, but `watchexec`
+never exits. Further SIGINT/SIGTERM signals are ignored; only SIGKILL
+terminates the process.
 
 Without `-j`, the same invocation (`watchexec -w /tmp/quietdir -- sleep
 9999`) exits cleanly on the first SIGINT.
