@@ -110,11 +110,31 @@ If the planning agent disagrees and prefers native `fs.watch` (matching `file-en
 
 ## The hash cache stays regardless of library choice
 
-Chokidar's `atomic: true` detects `mv _tmp file` atomic saves and emits a single `change` event for them. `awaitWriteFinish` waits for chunked writes to settle before firing. **Neither suppresses byte-identical writes.** An external editor with format-on-save that produces identical output emits `change` under chokidar, under `@parcel/watcher`, and under native `fs.watch` alike.
+Chokidar's `atomic: true` detects `mv _tmp file` atomic saves and emits a single `change` event for them. `awaitWriteFinish` waits for chunked writes to settle before firing. **Neither suppresses byte-identical writes.** An external editor with format-on-save that produces identical output emits `change` under chokidar, under `@parcel/watcher`, under native `fs.watch`, under Bun's `path_watcher`, and under esbuild's polling watcher (modKey on Linux is `(inode, size, mtime_sec, mtime_nsec, mode, uid)`; mtime updates on any write, so a same-content save flips modKey and triggers re-detection; `internal/fs/fs_real.go:33-40` and the `stateFileHasModKey` branch at `internal/fs/fs_real.go:522-528`).
 
-The byte-identical case is exactly the failure mode the original watchexec `-j @content-changed.jaq` filter targeted. The replacement is a `Map<absolutePath, sha256hex>` content-hash cache: on every event, re-hash the file and compare. Different hash, restart and store. Same hash, skip silently. Deletion or first-seen, store without restart (first-seen) or trigger (deletion).
+### Why no general-purpose watcher library does this
 
-Do not remove the hash cache when adopting chokidar. The settle-detection is orthogonal.
+The pattern is established but lives at the *writer*, not the watcher. Several reference points:
+
+-   **Webpack `output.compareBeforeEmit`** (default `true`). `lib/Compiler.js` reads the destination, compares the new content to existing bytes, and skips the write when they match. The inline comment names the motivation: "to keep mtime and don't trigger watchers".
+-   **`file-enforcer/src/write.ts:overwrite()`** in this repo: same pattern, same reason.
+-   **`packages/desktop-daemon/editord/src/server/operations/save.ts`** in this repo: same pattern again, added in commit `27051b66`.
+
+The structural reason for the universal write-side / watch-side split:
+
+1.  **Cost vs benefit.** Hashing every event at watch-firehose rate costs disk I/O per event. Hashing at write-time is amortised: you were going to read or buffer the bytes anyway.
+2.  **The wrong layer.** When the writer is under your control, write-side dedup is strictly better than watch-side dedup: it saves the disk write AND the mtime touch AND prevents the event firing AND avoids the consumer-side re-hash.
+3.  **State boundary.** Watch libraries are designed stateless: they emit events, the consumer maintains state. A content-hash cache is consumer state. Watchexec's `-j` flag was exactly the experiment of pushing that state into the watcher, and the reference cycle that hangs SIGINT (`TROUBLESHOOTING.mise-watch.md`) is the kind of failure a stateless watcher does not have.
+
+Some watchers do narrow content checks at the margin (esbuild falls back to byte compare when modKey is unusable, `internal/fs/fs_real.go:530-536`; `fabiospampinato/watcher` skips the rare "same-inode-both-zero-bytes" case in `watcher_poller.ts:115`), but no widely-used watcher library suppresses byte-identical writes as a primary feature, because the writer is the better place.
+
+### Why we need it anyway
+
+editord cannot control vim or vscode. Their save handlers do not consult our `save.ts` skip. They write the same bytes; the OS reports `Modify(Data(Any))`; the kernel cannot tell "same bytes" from "different bytes". The only places where byte-equality is knowable on the event side are (a) inside a stateful watcher (re-read and hash) or (b) inside the writer (compare before write).
+
+Since (b) does not apply to external editors, the watcher must do (a). The replacement is a `Map<absolutePath, sha256hex>` content-hash cache: on every event, re-hash the file and compare. Different hash, restart and store. Same hash, skip silently. Deletion or first-seen, store without restart (first-seen) or trigger (deletion).
+
+Do not remove the hash cache when adopting chokidar. The settle-detection is orthogonal. The hash cache is the part of `watchexec -j` that we still need.
 
 ## Why standalone package
 
