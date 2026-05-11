@@ -7,6 +7,15 @@
  * commit ships a working build + tests for that module.
  */
 export {
+  Child,
+  type ChildOptions,
+  type ChildState,
+  DEFAULT_STOP_TIMEOUT_MS,
+  type ExitListener,
+  type SpawnedChildHandle,
+  type SpawnFn,
+} from './child.ts';
+export {
   DEFAULT_MAX_HASH_SIZE_BYTES,
   HashCache,
   type HashCacheOptions,

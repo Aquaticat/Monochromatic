@@ -1,0 +1,468 @@
+import { wait, } from '@monochromatic-dev/module-async-time';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { spawn as nodeSpawn, } from 'node:child_process';
+import {
+  l as defaultLogger,
+  type Logger,
+  tagged,
+} from './log.ts';
+
+/**
+ * Default grace period (ms) between SIGTERM and SIGKILL during {@link Child.stop}.
+ *
+ * 5 seconds is the watchexec default and the editord legacy value; tuned for
+ * bun servers that flush sockets and close timers synchronously on SIGTERM.
+ * Higher would make Ctrl+C feel sluggish; lower would surprise long-running
+ * graceful-shutdown handlers.
+ */
+export const DEFAULT_STOP_TIMEOUT_MS = 5_000;
+
+/**
+ * State of the {@link Child}'s underlying process.
+ *
+ * - `idle`: no child running.
+ * - `running`: child alive; `current` is defined.
+ * - `stopping`: SIGTERM dispatched, awaiting exit (with possible SIGKILL escalation).
+ *
+ * State transitions are driven by the public methods plus the `exit` listener
+ * registered in `#spawnAndTrack`: a natural (uncommanded) exit also flips
+ * `running` to `idle` so the orchestrator's next event finds a clean slate.
+ *
+ * @example
+ * ```ts
+ * if (child.state === 'idle') await child.start();
+ * ```
+ */
+export type ChildState = 'idle' | 'running' | 'stopping';
+
+/**
+ * Listener shape compatible with `ChildProcess.once('exit', ...)`.
+ *
+ * Hoisted so tests can build matching stubs without importing node's types directly,
+ * and so the {@link SpawnedChildHandle} signature stays readable.
+ *
+ * @param code - exit code if the child exited normally, `null` if it was killed
+ *
+ * @param signal - signal name if the child was killed by a signal, `null` otherwise
+ */
+export type ExitListener = (
+  code: number | null,
+  signal: NodeJS.Signals | null,
+) => void;
+
+/**
+ * Minimum surface {@link Child} requires from a spawned process.
+ *
+ * `node:child_process.ChildProcess` satisfies this via structural compatibility;
+ * tests supply an in-memory fake implementing the same shape so the state-machine
+ * tests stay deterministic instead of depending on a real OS process.
+ *
+ * Return types on `once`/`off` are `void`: callers do not chain, and a `void`
+ * declaration here accepts `ChildProcess`'s `this`-returning methods without
+ * forcing the test fake to also pretend to be chainable.
+ *
+ * @example
+ * ```ts
+ * const handle: SpawnedChildHandle = nodeSpawn('bun', ['src/server.ts'], { stdio: 'inherit', },);
+ * ```
+ */
+export type SpawnedChildHandle = {
+  /** OS process id; `undefined` only if the spawn failed before assignment. */
+  readonly pid: number | undefined;
+  /** Exit code once the process has exited; `null` while still running. */
+  readonly exitCode: number | null;
+  /** Whether `kill()` has been called against this handle. */
+  readonly killed: boolean;
+  /** Sends a signal to the child; mirrors `ChildProcess.kill`. */
+  kill(signal?: NodeJS.Signals | number,): boolean;
+  /** Registers a one-shot exit listener; mirrors `ChildProcess.once('exit', ...)`. */
+  once(event: 'exit', listener: ExitListener,): void;
+  /** Removes a previously-registered exit listener; mirrors `ChildProcess.off`. */
+  off(event: 'exit', listener: ExitListener,): void;
+};
+
+/**
+ * Factory that spawns a child process.
+ *
+ * The default factory wraps `child_process.spawn(command, args, { stdio: 'inherit' })`;
+ * tests inject a stub so the state-machine assertions do not depend on a real
+ * OS process. Splitting this interface out keeps the {@link Child} class free of
+ * test-only branches and keeps the spawn-options decision (stdio inheritance,
+ * env propagation, ...) at one site.
+ *
+ * @param args - command and argument list
+ *
+ * @returns spawned child handle
+ *
+ * @example
+ * ```ts
+ * const fake: SpawnFn = function fake() { return makeFakeHandle(); };
+ * const child = new Child({ command: 'bun', spawn: fake, },);
+ * ```
+ */
+export type SpawnFn = (args: {
+  readonly command: string;
+  readonly args: readonly string[];
+},) => SpawnedChildHandle;
+
+/**
+ * Construction options for {@link Child}.
+ */
+export type ChildOptions = {
+  /** Command to spawn (e.g. `'bun'`). */
+  readonly command: string;
+  /** Argument list passed verbatim to the spawn factory. Defaults to empty. */
+  readonly args?: readonly string[];
+  /** SIGTERM-to-SIGKILL grace period (ms); defaults to {@link DEFAULT_STOP_TIMEOUT_MS}. */
+  readonly stopTimeout?: number;
+  /** Spawn factory; defaults to wrapping `node:child_process.spawn` with `stdio: 'inherit'`. */
+  readonly spawn?: SpawnFn;
+  /** Parent logger; the child composes a `Child` tag on top. */
+  readonly logger?: Logger;
+};
+
+/**
+ * Default {@link SpawnFn}: wraps `node:child_process.spawn` with `stdio: 'inherit'`.
+ *
+ * Stdio inheritance lets the bun child's logs flow through to the user's
+ * terminal unchanged; the watcher process does not buffer or recolor, which
+ * was a known failure mode under watchexec's nested-tree stdio handling.
+ *
+ * @param args - command and argument list
+ *
+ * @returns spawned child handle
+ *
+ * @example
+ * ```ts
+ * const handle = defaultSpawn({ command: 'bun', args: ['src/server.ts',], },);
+ * ```
+ */
+function defaultSpawn(
+  args: {
+    readonly command: string;
+    readonly args: readonly string[];
+  },
+): SpawnedChildHandle {
+  /**
+   * `ChildProcess` has overload-rich `on`/`once`/`off` and a `this`-returning
+   * `kill`; the `SpawnedChildHandle` shape narrows to just the `exit` event.
+   * The narrower type is structurally satisfied at runtime but TS cannot prove
+   * the overload subset matches, so an explicit assertion lands here at the
+   * single integration boundary instead of polluting consumers.
+   */
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- narrowing ChildProcess to the minimal SpawnedChildHandle shape; behavior is structurally compatible at runtime
+  return nodeSpawn(
+    args.command,
+    [...args.args,],
+    { stdio: 'inherit', },
+  ) as unknown as SpawnedChildHandle;
+}
+
+/**
+ * Wraps a child handle's `'exit'` event in a promise that resolves with the
+ * `[code, signal]` pair the OS reported. Listener is `once` so it auto-removes
+ * after firing; the handle's EventEmitter is then eligible for GC even if the
+ * caller drops the returned promise.
+ *
+ * @param handle - spawned child handle
+ *
+ * @returns promise resolving with exit code and signal
+ *
+ * @example
+ * ```ts
+ * const exited = waitForExit(handle,);
+ * handle.kill('SIGTERM',);
+ * const { code, signal, } = await exited;
+ * ```
+ */
+function waitForExit(handle: SpawnedChildHandle,): Promise<{
+  readonly code: number | null;
+  readonly signal: NodeJS.Signals | null;
+}> {
+  // oxlint-disable-next-line promise/avoid-new -- EventEmitter -> Promise bridge needs the constructor form
+  return new Promise(function captureExit(resolve,) {
+    handle.once(
+      'exit',
+      function onExitForPromise(
+        code,
+        signal,
+      ) {
+        resolve({
+          code,
+          signal,
+        },);
+      },
+    );
+  },);
+}
+
+/**
+ * Awaits a promise and tags its resolution with `'exited'` so {@link Child.#stopRunning}
+ * can distinguish "child exited" from "stopTimeout elapsed" in a `Promise.race`.
+ *
+ * @param promise - exit-watcher promise
+ *
+ * @returns string tag `'exited'`
+ */
+async function tagExited(
+  promise: Promise<{
+    readonly code: number | null;
+    readonly signal: NodeJS.Signals | null;
+  }>,
+): Promise<'exited'> {
+  await promise;
+  return 'exited';
+}
+
+/**
+ * Sleeps for the given duration then resolves to `'timeout'`. Paired with
+ * {@link tagExited} inside a `Promise.race` to detect SIGTERM-grace expiry.
+ *
+ * @param ms - milliseconds to wait
+ *
+ * @returns string tag `'timeout'`
+ */
+async function tagTimeout(ms: number,): Promise<'timeout'> {
+  await wait(ms,);
+  return 'timeout';
+}
+
+/**
+ * Long-running child process with restart/stop semantics.
+ *
+ * Owns at most one underlying process at a time. {@link start} spawns it;
+ * {@link restart} tears down the running one before spawning the next;
+ * {@link stop} is the `restart`-without-spawn variant. SIGTERM is sent first;
+ * if the child has not exited within `stopTimeout`, SIGKILL escalates.
+ *
+ * The class is the unit of state because the orchestrator may issue many
+ * `restart()` calls over a long-running watch session and needs a stable
+ * handle to address; a function-returning-handle style would multiply
+ * closure state across modules without buying anything.
+ *
+ * @example
+ * ```ts
+ * const child = new Child({ command: 'bun', args: ['src/server.ts',], },);
+ * await child.start();
+ * // ... file change
+ * await child.restart();
+ * // ... user hits Ctrl+C
+ * await child.stop();
+ * ```
+ */
+export class Child {
+  /** Captured command string; immutable for the lifetime of the manager. */
+  readonly #command: string;
+  /** Captured argument list; immutable for the lifetime of the manager. */
+  readonly #args: readonly string[];
+  /** SIGTERM-to-SIGKILL grace period (ms); frozen at construction. */
+  readonly #stopTimeout: number;
+  /** Spawn factory; defaulted to `defaultSpawn` when the caller omits it. */
+  readonly #spawn: SpawnFn;
+  /** Tagged logger; composed with `Child.name` on top of the parent. */
+  readonly #logger: Logger;
+  /**
+   * Mutable state field backing the {@link state} getter; transitions documented at {@link ChildState}.
+   */
+  #state: ChildState = 'idle';
+  /**
+   * Currently active child handle, or `undefined` between spawns; backs {@link current}.
+   */
+  #current: SpawnedChildHandle | undefined = undefined;
+
+  /**
+   * Constructs the manager. Does NOT start the child; call {@link start} to spawn.
+   *
+   * @param options - construction options
+   *
+   * @example
+   * ```ts
+   * const child = new Child({ command: 'bun', args: ['src/server.ts',], },);
+   * ```
+   */
+  constructor(options: ChildOptions,) {
+    this.#command = options.command;
+    this.#args = options.args ?? [];
+    this.#stopTimeout = options.stopTimeout ?? DEFAULT_STOP_TIMEOUT_MS;
+    this.#spawn = options.spawn ?? defaultSpawn;
+    this.#logger = tagged({
+      tag: Child.name,
+      l: options.logger ?? defaultLogger,
+    },);
+  }
+
+  /**
+   * Current state. Reads are O(1) and side-effect free.
+   *
+   * @returns one of `idle`, `running`, `stopping`
+   *
+   * @example
+   * ```ts
+   * if (child.state === 'idle') await child.start();
+   * ```
+   */
+  get state(): ChildState {
+    return this.#state;
+  }
+
+  /**
+   * Active child handle, or `undefined` when no child is alive.
+   *
+   * Exposed so tests can inspect the underlying handle's `pid`, `killed`,
+   * and event-emission state; production callers should treat the
+   * {@link Child} as a black box and use the lifecycle methods instead.
+   *
+   * @returns active child handle, or `undefined`
+   */
+  get current(): SpawnedChildHandle | undefined {
+    return this.#current;
+  }
+
+  /**
+   * Spawns the child if state is `idle`. Logs a warning and returns when
+   * state is `running` or `stopping`; reentry would leak handles.
+   *
+   * Returns `Promise<void>` even though no await is needed today, so the
+   * lifecycle trio ({@link start}, {@link restart}, {@link stop}) stays
+   * uniformly awaitable; a future readiness-check (e.g. wait for the
+   * process to print a banner) lands here without breaking callers.
+   *
+   * @example
+   * ```ts
+   * await child.start();
+   * ```
+   */
+  start(): Promise<void> {
+    if (this.#state !== 'idle') {
+      this.#logger.warn(`start() in state ${this.#state}; ignoring`,);
+      return Promise.resolve();
+    }
+    this.#spawnAndTrack();
+    return Promise.resolve();
+  }
+
+  /**
+   * Stops the running child (if any) and spawns a fresh one.
+   *
+   * In state `idle`, behaves like {@link start}. In state `running`,
+   * sends SIGTERM, waits up to `stopTimeout`, escalates to SIGKILL,
+   * then spawns. In state `stopping`, logs a warning and returns;
+   * a parallel stop is already in flight and the orchestrator should
+   * not interleave restarts.
+   *
+   * @example
+   * ```ts
+   * await child.restart();
+   * ```
+   */
+  async restart(): Promise<void> {
+    if (this.#state === 'stopping') {
+      this.#logger.warn('restart() during stopping; ignoring',);
+      return;
+    }
+    if (this.#state === 'running')
+      await this.#stopRunning();
+    this.#spawnAndTrack();
+  }
+
+  /**
+   * Sends SIGTERM to the running child; escalates to SIGKILL after
+   * {@link ChildOptions.stopTimeout}. No-op when state is `idle`;
+   * logs a warning and returns when state is `stopping`.
+   *
+   * @example
+   * ```ts
+   * await child.stop();
+   * ```
+   */
+  async stop(): Promise<void> {
+    if (this.#state === 'idle')
+      return;
+    if (this.#state === 'stopping') {
+      this.#logger.warn('stop() during stopping; ignoring',);
+      return;
+    }
+    await this.#stopRunning();
+  }
+
+  /**
+   * Invokes the spawn factory and tracks the resulting handle. Wires
+   * an `exit` listener so a natural child exit (e.g. crash, normal
+   * completion) resets state to `idle` without orchestrator action.
+   */
+  #spawnAndTrack(): void {
+    const handle = this.#spawn({
+      command: this.#command,
+      args: this.#args,
+    },);
+    this.#current = handle;
+    this.#state = 'running';
+    this.#logger.info(
+      `spawned pid=${String(handle.pid ?? '?',)} command=${this.#command}`,
+    );
+
+    /** Captured for the sync exit listener that needs class state. */
+    const self = this;
+
+    handle.once(
+      'exit',
+      // chokidar-style sync listener inline at the `.once` call site:
+      // chokidar's ExitListener signature is positional (code, signal), and
+      // oxlint's `require-destructured-params` is hard-banned-from-disabling
+      // on declarations but accepts positional pairs in callback expressions.
+      function onSpawnExit(
+        code,
+        signal,
+      ) {
+        if (self.#current === handle) {
+          self.#current = undefined;
+          if (self.#state !== 'stopping') {
+            // Stop path explicitly manages this transition after Promise.race resolves;
+            // a natural (uncommanded) exit also lands here and resets the state.
+            self.#state = 'idle';
+          }
+        }
+        self.#logger.info(
+          `exited pid=${String(handle.pid ?? '?',)} code=${
+            code === null ? '?' : String(code,)
+          } signal=${signal ?? '?'}`,
+        );
+      },
+    );
+  }
+
+  /**
+   * SIGTERM + race against `stopTimeout` + SIGKILL on expiry.
+   *
+   * Caller is responsible for ensuring state is `running` at entry; the
+   * private method narrows the precondition via {@link nonNullishOrThrow}
+   * on `#current` so a stray call from a future code path fails loudly
+   * instead of silently no-op'ing.
+   */
+  async #stopRunning(): Promise<void> {
+    const handle = nonNullishOrThrow(this.#current,);
+    this.#state = 'stopping';
+    this.#logger.info(
+      `stopping pid=${String(handle.pid ?? '?',)} (SIGTERM)`,
+    );
+
+    /** Listener registered BEFORE kill so a synchronous-exit fake cannot lose the event. */
+    const exited = waitForExit(handle,);
+    handle.kill('SIGTERM',);
+
+    const result = await Promise.race([
+      tagExited(exited,),
+      tagTimeout(this.#stopTimeout,),
+    ],);
+    if (result === 'timeout') {
+      this.#logger.warn(
+        `SIGTERM timed out after ${String(this.#stopTimeout,)}ms; escalating to SIGKILL`,
+      );
+      handle.kill('SIGKILL',);
+      await exited;
+    }
+
+    this.#current = undefined;
+    this.#state = 'idle';
+  }
+}
