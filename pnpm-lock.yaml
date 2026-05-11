@@ -1197,12 +1197,18 @@ importers:
       '@cspotcode/outdent':
         specifier: 'catalog:'
         version: outdent@0.8.0
+      '@monochromatic-dev/module-es':
+        specifier: workspace:*
+        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
       '@monochromatic-dev/module-numeric-const':
         specifier: workspace:*
         version: link:../../module/numeric-const
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
