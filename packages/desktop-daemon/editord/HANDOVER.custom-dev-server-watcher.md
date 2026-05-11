@@ -64,9 +64,9 @@ Two orthogonal axes; conflating them muddles the comparison. Pick one from each.
 
 #### `watchman`
 
--   Cost: external native daemon.
+-   Cost: persistent background daemon plus a Node client library (e.g. `fb-watchman`). Installable via mise/brew like watchexec; the install cost is not the distinguishing factor.
 -   Fit: overkill.
--   Notes: Facebook's daemon, requires user install, separate process. Designed for very large repos. Has its own programmable filter DSL (S-expression operators: `allof`, `anyof`, `name`, `match`, `pcre`, `since`, `size`, `suffix`, `type`, documented at `watchman/website/docs/expr/`); operates over file metadata, not content, so cannot replicate watchexec's `-j` byte-content filter.
+-   Notes: Meta's daemon, designed for hundreds-of-thousands-of-files repos (Facebook's hg/git monorepos). Architecturally distinct from the other entries: the chokidar / `@parcel/watcher` / `fabiospampinato/watcher` packages are npm-installed and run *in-process* with the consumer's Node/Bun process; watchexec runs as a one-shot subprocess of the dev task; watchman runs as a long-lived system daemon that processes JSON queries over a Unix socket. The daemon model is overkill for one dev task watching one `src/server/` directory. Has its own programmable filter DSL (S-expression operators: `allof`, `anyof`, `name`, `match`, `pcre`, `since`, `size`, `suffix`, `type`, documented at `watchman/website/docs/expr/`); the DSL operates over file metadata, not content, so it cannot replicate watchexec's `-j` byte-content filter either.
 
 ### Aside: programmable filter DSL support across watchers
 
