@@ -4,7 +4,7 @@
 
 The package `packages/dev-script/watch-restart/` is being built per the approved plan at `/home/user/.claude/plans/plan-this-first-question-abstract-hopcroft.md`. Read that plan first; it has the full design, the option matrix that produced each decision, and the verification checklist. The original product handover at `packages/desktop-daemon/editord/HANDOVER.custom-dev-server-watcher.md` has the architectural rationale (the failures we are excluding by construction, the chokidar-vs-watchman analysis, etc.).
 
-**Status**: tasks 1 through 5 done. Tasks 6 through 10 remain. The package builds, lints, type-checks, and tests pass at the current checkpoint.
+**Status**: tasks 1 through 6 done. Tasks 7 through 10 remain. The package builds, lints, type-checks, and tests pass at the current checkpoint.
 
 ## State on disk (verified before this handover)
 
@@ -13,15 +13,25 @@ packages/dev-script/watch-restart/
 ├── HANDOVER.implementation-state.md   ← this file
 ├── README.md                          ← CLI surface and design choices
 ├── mise.toml                          ← extends-only tasks
-├── package.json                       ← deps: chokidar, picomatch, optique, ts-pattern, module-{es,logger,numeric-const,or-throw}
+├── package.json                       ← deps: chokidar, picomatch, optique, ts-pattern, module-{async-time,logger,numeric-const,or-throw}
 ├── src/
 │   ├── child.ts                       ← Child class (spawn + SIGTERM/SIGKILL state machine) + injectable SpawnFn
 │   ├── child.unit.test.ts             ← 13 tests covering state machine, stop, restart, reentry guards, defaults
+│   ├── filters/
+│   │   ├── compose.ts                 ← composeFilters (all-of, short-circuit) + anyFilter (any-of, short-circuit)
+│   │   ├── compose.unit.test.ts       ← 7 tests (4 composeFilters + 3 anyFilter)
+│   │   ├── content-hash.ts            ← contentHashFilter (reads ctx.hashCache; suppresses byte-identical writes)
+│   │   ├── content-hash.unit.test.ts  ← 6 tests covering unlink, add, byte-identical, different-bytes, too-large, ENOENT
+│   │   ├── ext.ts                     ← extFilter (case-insensitive, leading-dot optional)
+│   │   ├── ext.unit.test.ts           ← 5 tests covering match, reject, case, dot-optional, empty-passes-all
+│   │   ├── glob.ts                    ← globFilter (picomatch include/exclude; relativePath-relative)
+│   │   └── glob.unit.test.ts          ← 5 tests covering empty, include-only, multi-include, exclude-only, exclude-wins
 │   ├── hash-cache.ts                  ← HashCache class (sha256 hex; default 16 MiB cap via BYTES_PER_MIB)
 │   ├── hash-cache.unit.test.ts        ← 13 tests covering round-trip, boundary, mutation isolation, Map ops
-│   ├── index.ts                       ← re-exports HashCache, Watcher, Child, types
+│   ├── index.ts                       ← re-exports HashCache, Watcher, Child, all filters, types
 │   ├── log.ts                         ← root tagged logger `l`
-│   ├── types.ts                       ← WatchEvent, WatchEventKind, WatchCtx, WatchFilter
+│   ├── picomatch.d.ts                 ← ambient declaration: picomatch ships no types, @types/picomatch absent
+│   ├── types.ts                       ← WatchEvent, WatchEventKind, WatchCtx (with hashCache), WatchFilter (single-destructured-arg)
 │   ├── watcher.ts                     ← Watcher class (chokidar adapter + pre-populate orchestration)
 │   └── watcher.unit.test.ts           ← 9 tests (1 skipped) covering pre-populate, live add/change/unlink, lifecycle
 ├── tsconfig.json
@@ -35,7 +45,7 @@ Verification at this checkpoint:
 - `mise run //packages/dev-script/watch-restart:build` → exits 0, emits to `dist/final/node/`.
 - `mise run //packages/dev-script/watch-restart:lint` → 0 warnings, 0 errors.
 - `mise run //packages/dev-script/watch-restart:lint:types` → exits 0.
-- `mise run //packages/dev-script/watch-restart:test:unit` → 34 tests pass (13 HashCache + 8 Watcher + 13 Child; 1 Watcher atomic-save case skipped, see "Picked up during the child implementation" below).
+- `mise run //packages/dev-script/watch-restart:test:unit` → 57 tests pass (13 HashCache + 8 Watcher + 13 Child + 23 filters [6 contentHashFilter + 5 extFilter + 5 globFilter + 4 composeFilters + 3 anyFilter]; 1 Watcher atomic-save case skipped, see "Picked up during the child implementation" below).
 
 ## Decisions made during implementation that the plan did not pin
 
@@ -85,6 +95,22 @@ The reentry-guard test (`stop() during stopping`) uses `await wait(0)` after the
 
 **Coverage gap — `stdio: 'inherit'` has no automated test.** The injectable spawn factory means the only place stdio inheritance is baked in is `defaultSpawn`, which the unit suite does not exercise (tests pass their own fake factory). End-to-end coverage lands at task 9 when editord's dev loop runs the bun server through `watch-restart` and the user observes the bun logs in the terminal. A regression that silently flips `stdio` to `'pipe'` would not be caught by the unit suite; surface this in PR review or in any future refactor of `defaultSpawn`.
 
+### Picked up during the filters implementation
+
+The plan's `WatchFilter` signature was positional `(event, ctx) => boolean | Promise<boolean>`. AGENTS.md's "2+ parameter functions use a single destructured object parameter" rule applied to every implementer of that type. Resolution: changed `WatchFilter` to a single-arg shape `({ event, ctx, }) => boolean | Promise<boolean>`. Call sites pass `await filter({ event, ctx, },)`; filter bodies destructure in the signature (e.g. `function f({ event, ctx, }: { ... },): boolean`). The change ripples to no prior call sites because no production code consumed `WatchFilter` before this task.
+
+`composeFilters` and `anyFilter` accept a `readonly WatchFilter[]` array parameter, not rest args. AGENTS.md "no rest parameters (`...args`) in functions we control" forbids the rest form even though the plan's example used it. Call sites read `composeFilters([f1, f2, f3,],)` instead of `composeFilters(f1, f2, f3,)`. Both short-circuit on the first decision-determining result; the `for...of` loop uses `oxlint-disable-next-line eslint/no-await-in-loop` with justification ("filter N+1 must not run when filter N said skip/fire"), matching the precedent in `watcher.ts:369` (`Promise.allSettled` drain loop).
+
+`contentHashFilter` is signature-free of parameters; it reads `ctx.hashCache` from the context the orchestrator hands every filter. The plan's API was `contentHashFilter(opts?: { maxSize?: number })`; the cap now lives on `HashCache` construction (not on this filter) because the cap is a cache invariant, not a per-filter knob. `unlink` events pass through (`true`) since the watcher already cleared the cache entry; first-seen `add`/`change` events store the freshly computed hash and fire; byte-identical `change` events return `false`. Read errors (e.g. ENOENT race between event dispatch and `stat`) log a warning via `ctx.logger.warn` and return `true` — a transient race must not silently drop a real change.
+
+`globFilter` matches against `event.relativePath` (relative to the deepest watch root), not the absolute path; this keeps glob patterns workspace-portable. The plan's HANDOVER section had a question mark on the choice ("`event.path` (or `event.relativePath`?)"). Picked `relativePath` because absolute paths embed the workspace prefix and CI checkouts would mismatch.
+
+`extFilter([])` is a vacuous pass-all (returns `true` for every event), matching the CLI semantics "(event.ext in --ext list OR --ext list empty)" from the plan. The same convention applies to `globFilter({})` (no include and no exclude → pass-all). Empty `composeFilters([],)` returns vacuous-true (mathematical "all of nothing"); empty `anyFilter([],)` returns vacuous-false ("any of nothing"). These match standard logic conventions and let the flag-to-filter compiler skip building filter chains when the flag set is empty.
+
+**Picomatch ships without `.d.ts` files and `@types/picomatch` is absent from the catalog**, so a local ambient declaration lives at `src/picomatch.d.ts`. It declares only the narrow subset `globFilter` uses (`picomatch(glob: string | readonly string[]): (test: string) => boolean`). Replace with upstream or `@types/picomatch` if either lands.
+
+**TSDoc parser limitation surfaced.** Rolldown's TSDoc parser closes the comment block on any literal `*/` inside the JSDoc body. Glob examples written as `'src**/*.ts'` contain the sequence `**/` (specifically `*-*-/`, where `*-/` is the closer). Examples in `glob.ts` were simplified to single-star patterns (`'*.ts'`) that avoid the sequence; AGENTS.md's `*\\/` escape (write `*\/` in source) was the alternative but the simpler examples preserve the documentation intent without compromise.
+
 ## Pending tasks (in order)
 
 The task list IDs match `TaskList` entries.
@@ -95,7 +121,7 @@ The task list IDs match `TaskList` entries.
 
 ~~5. Implement `child.ts` + tests.~~ **Done.** Class `Child` lives at `src/child.ts`; injectable `SpawnFn` factory keeps the state-machine tests pure. 13 tests pass.
 
-6. **Implement built-in filters + tests.** Files: `filters/content-hash.ts`, `filters/ext.ts`, `filters/glob.ts`, `filters/compose.ts`. `contentHashFilter()` returns `WatchFilter` that reads `ctx.hashCache`. `extFilter(extensions)` checks `event.ext` against the array; case-insensitive; leading dot optional. `globFilter({ include, exclude })` uses `picomatch` to build matcher functions and tests `event.path` (or `event.relativePath`?). `composeFilters(...)` returns a filter that short-circuits on first `false` (all-of). `anyFilter(...)` short-circuits on first `true` (any-of). Tests for each: include/exclude/both, case sensitivity for ext, async-predicate composition, ctx.signal abort propagation.
+~~6. Implement built-in filters + tests.~~ **Done.** Four files under `src/filters/`: `content-hash.ts`, `ext.ts`, `glob.ts`, `compose.ts`. `WatchFilter` changed to single-destructured-arg shape; `composeFilters` / `anyFilter` take array (not rest). `globFilter` matches `event.relativePath`. 23 filter tests pass. Local `src/picomatch.d.ts` shim covers picomatch's missing types.
 
 7. **Implement `start.ts` + tests.** `startWatchRestart(options)` orchestrates: build HashCache → build chokidar watcher → build child wrapper → compose flag-derived filter with user `filter?` → on each post-ready event run the filter chain; if it passes, debounce-then-restart. Returns `{ stop }`. The flag-to-filter compilation logic can either live inline or be extracted to `flags-to-filter.ts` (task 8 splits it out). Tests use a temp dir, write files, assert restart spy was called the expected number of times.
 
@@ -142,4 +168,4 @@ Final verification (after task 9) lives in the plan's "Verification (end-to-end)
 
 ## Hand-off
 
-The plan, this handover, and the in-tree state are mutually consistent. The next agent's first move is task 6 (built-in filters: content-hash, ext, glob, compose + tests). Do not re-litigate the design questions; they are resolved in the plan with the option matrix that produced each call. If a new question surfaces during implementation, write the rationale into this file and proceed.
+The plan, this handover, and the in-tree state are mutually consistent. The next agent's first move is task 7 (`start.ts`: orchestrator that wires HashCache + Watcher + Child + filter chain into one `startWatchRestart()` entry point). Do not re-litigate the design questions; they are resolved in the plan with the option matrix that produced each call. If a new question surfaces during implementation, write the rationale into this file and proceed.

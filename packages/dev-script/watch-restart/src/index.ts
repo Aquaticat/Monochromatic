@@ -15,6 +15,13 @@ export {
   type SpawnedChildHandle,
   type SpawnFn,
 } from './child.ts';
+export { contentHashFilter, } from './filters/content-hash.ts';
+export { extFilter, } from './filters/ext.ts';
+export { globFilter, } from './filters/glob.ts';
+export {
+  anyFilter,
+  composeFilters,
+} from './filters/compose.ts';
 export {
   DEFAULT_MAX_HASH_SIZE_BYTES,
   HashCache,

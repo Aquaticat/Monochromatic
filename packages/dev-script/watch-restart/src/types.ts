@@ -74,13 +74,23 @@ export type WatchCtx = {
  *
  * Returning `true` (or a promise resolving to `true`) means "fire";
  * `false` means "skip". The orchestrator composes filters with
- * `composeFilters(...)` (all-of) or `anyFilter(...)` (any-of).
+ * `composeFilters(filters,)` (all-of) or `anyFilter(filters,)` (any-of).
+ *
+ * Single destructured-object parameter so 2+ logical inputs stay
+ * named-at-the-call-site; matches AGENTS.md's named-params rule.
  *
  * @example
  * ```ts
- * const tsFilter: WatchFilter = function tsFilter(event,) {
+ * function tsFilter(
+ *   { event, }: { readonly event: WatchEvent; readonly ctx: WatchCtx; },
+ * ): boolean {
  *   return event.ext === '.ts';
- * };
+ * }
  * ```
  */
-export type WatchFilter = (event: WatchEvent, ctx: WatchCtx,) => boolean | Promise<boolean>;
+export type WatchFilter = (
+  args: {
+    readonly event: WatchEvent;
+    readonly ctx: WatchCtx;
+  },
+) => boolean | Promise<boolean>;

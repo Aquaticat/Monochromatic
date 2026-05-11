@@ -1,0 +1,76 @@
+import type {
+  WatchCtx,
+  WatchEvent,
+  WatchFilter,
+} from '../types.ts';
+
+/**
+ * Builds a {@link WatchFilter} that suppresses byte-identical writes.
+ *
+ * The filter consults `ctx.hashCache` (shared with the watcher; pre-populated
+ * during the initial walk) and hashes the event's file on each post-`ready`
+ * event:
+ *
+ * - `unlink`: passes through (`true`); there is no content to compare and
+ *   the watcher already cleared the cache entry, so the decision to fire
+ *   belongs to other filters (e.g. `--events`).
+ * - `add` / `change`: hashes the file. Same hash as the stored value → skip
+ *   (`false`). Different hash or no stored hash → store the new hash and
+ *   fire (`true`).
+ * - File exceeds `hashCache.maxHashSize` (`hashFile` returns `null`):
+ *   returns `true` (fire-without-comparing) so a multi-GB file does not
+ *   block the dev loop on a slow read.
+ * - Read error (e.g. ENOENT when the file vanishes between event dispatch
+ *   and read): logs a warning and returns `true`; a transient race must
+ *   not silently drop a real change.
+ *
+ * The cache is owned by `startWatchRestart` and lives on {@link WatchCtx};
+ * keeping it off the filter's closure means a single shared cache flows
+ * from the watcher's pre-populate phase straight through to the live
+ * compare phase without a second copy.
+ *
+ * @returns watch filter that returns `false` for byte-identical writes
+ *
+ * @example
+ * ```ts
+ * const filter = contentHashFilter();
+ * const passed = await filter({ event, ctx, },);
+ * ```
+ */
+export function contentHashFilter(): WatchFilter {
+  return async function contentHashFilterFn(
+    {
+      event,
+      ctx,
+    }: {
+      readonly event: WatchEvent;
+      readonly ctx: WatchCtx;
+    },
+  ): Promise<boolean> {
+    if (event.kind === 'unlink') {
+      return true;
+    }
+    try {
+      const fresh = await ctx.hashCache.hashFile(event.path,);
+      if (fresh === null) {
+        return true;
+      }
+      const prior = ctx.hashCache.get(event.path,);
+      if (prior === fresh) {
+        return false;
+      }
+      ctx.hashCache.set({
+        path: event.path,
+        hash: fresh,
+      },);
+      return true;
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : String(error,);
+      ctx.logger.warn(
+        `content-hash filter failed for ${event.path}: ${message}; firing`,
+      );
+      return true;
+    }
+  };
+}
