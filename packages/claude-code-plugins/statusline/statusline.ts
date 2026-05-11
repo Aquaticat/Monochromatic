@@ -153,30 +153,69 @@ function formatRelativeTime(resetsAt: number,): string {
 const RATE_LIMIT_THRESHOLD = 50;
 const CRITICAL_THRESHOLD = 10;
 const CAUTION_THRESHOLD = 25;
+const FIVE_HOUR_WINDOW_SECONDS = 5 * SECONDS_PER_HOUR;
+const SEVEN_DAY_WINDOW_SECONDS = 7 * SECONDS_PER_DAY;
+const PROJECTED_OVERRUN_THRESHOLD = 100;
 
 /**
- * Format a rate limit tier as colored "X% left (Yt)".
- * Returns empty string if data is missing or remaining capacity is above threshold.
+ * Minimum used_percentage required before extrapolating burn rate.
+ * Avoids spurious overrun warnings from one-shot quota counters at session start,
+ * where a few seconds of elapsed time would extrapolate any nonzero usage to infinity.
  */
-function formatRateLimit(tier: RateLimitTier | undefined,): string {
+const MIN_USAGE_FOR_PROJECTION = 5;
+
+/**
+ * Format a rate limit tier as colored "X% left (Yt)", annotated with a
+ * projected-overrun marker " →Z%" when the current burn rate extrapolates
+ * past 100% before the window resets.
+ *
+ * Renders when remaining is at or below {@link RATE_LIMIT_THRESHOLD}
+ * **or** when projection exceeds {@link PROJECTED_OVERRUN_THRESHOLD};
+ * returns empty string otherwise, or when tier data is missing.
+ *
+ * @param tier - The rate-limit tier payload from the statusline JSON.
+ * @param windowSeconds - Fixed window duration; used to recover elapsed time as `windowSeconds - (resets_at - now)`.
+ *
+ * @example formatRateLimit({tier: {used_percentage: 92, resets_at: NOW + 3600}, windowSeconds: 18000}) // "8% left (1h)" in red
+ *
+ * @example formatRateLimit({tier: {used_percentage: 60, resets_at: NOW + 7200}, windowSeconds: 18000}) // "40% left →200% (2h)" in red, since projection > 100
+ */
+function formatRateLimit({
+  tier,
+  windowSeconds,
+}: {
+  tier: RateLimitTier | undefined;
+  windowSeconds: number;
+},): string {
   if (!tier?.used_percentage || !tier.resets_at)
     return '';
 
+  const now = Math.floor(Date.now() / 1_000,);
+  const elapsed = windowSeconds - (tier.resets_at - now);
+  const projected = elapsed > 0 && tier.used_percentage >= MIN_USAGE_FOR_PROJECTION
+    ? (tier.used_percentage / elapsed) * windowSeconds
+    : 0;
+  const isProjectedOverrun = projected > PROJECTED_OVERRUN_THRESHOLD;
+
   const remaining = Math.floor(100 - tier.used_percentage,);
-  if (remaining > RATE_LIMIT_THRESHOLD)
+  if (remaining > RATE_LIMIT_THRESHOLD && !isProjectedOverrun)
     return '';
 
   const timeLeft = formatRelativeTime(tier.resets_at,);
-  const rateColor = remaining <= CRITICAL_THRESHOLD
+  const rateColor = (isProjectedOverrun || remaining <= CRITICAL_THRESHOLD)
     ? RED
     : (remaining <= CAUTION_THRESHOLD
       ? YELLOW
       : GREEN);
 
+  const overrunMarker = isProjectedOverrun
+    ? ` →${Math.floor(projected,)}%`
+    : '';
+
   return `${
     color(
       rateColor,
-      `${remaining}% left`,
+      `${remaining}% left${overrunMarker}`,
     )
   } (${timeLeft})`;
 }
@@ -493,9 +532,15 @@ const contextSegment = used > 0 && total > 0
   )
   : '';
 
-// Rate limits (only visible when approaching limits)
-const fiveHour = formatRateLimit(input.rate_limits?.five_hour,);
-const sevenDay = formatRateLimit(input.rate_limits?.seven_day,);
+// Rate limits (visible when approaching limits or projected to overrun)
+const fiveHour = formatRateLimit({
+  tier: input.rate_limits?.five_hour,
+  windowSeconds: FIVE_HOUR_WINDOW_SECONDS,
+},);
+const sevenDay = formatRateLimit({
+  tier: input.rate_limits?.seven_day,
+  windowSeconds: SEVEN_DAY_WINDOW_SECONDS,
+},);
 const rateSegment = fiveHour && sevenDay
   ? `${fiveHour} · ${sevenDay}`
   : fiveHour || sevenDay || '';

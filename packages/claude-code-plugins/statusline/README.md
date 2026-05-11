@@ -27,6 +27,14 @@ Refactoring    Opus     51,045/1,000,000    28% left (1h23m)
 Compiling    Opus     51,045/1,000,000    28% left (1h23m) · 12% left (3d2h)
 ```
 
+**Projected to exceed** (60% used in the first 2h of a 5h window; remaining looks fine but burn rate extrapolates past 100%):
+
+```
+Refactoring    Opus     51,045/1,000,000    40% left →200% (3h)
+```
+
+The `→200%` marker shows the extrapolated end-of-window usage. The segment renders in red whenever projection exceeds 100%, even if remaining capacity is above the normal 50% threshold.
+
 The token counter is always 7 characters wide (`TTT,OOO` format) so the display never shifts.
 
 ## Activity word
@@ -116,8 +124,24 @@ Rate limit warnings use a "remaining + time-to-reset" framing.
 Instead of "72% used, resets at 4pm," the status line shows "28% left (1h23m)."
 This answers the natural question: "How much can I do before it refills?"
 
-Indicators only appear when remaining capacity drops to 50% or below.
-When everything is comfortable, nothing extra is shown; no news is good news.
+Indicators appear when either condition holds:
+
+- Remaining capacity drops to 50% or below, **or**
+- Current burn rate, extrapolated to the window reset, exceeds 100%.
+
+When everything is comfortable and burn rate is sustainable, nothing extra is shown; no news is good news.
+
+### Projection
+
+Each tier's window has a fixed duration (5 hours for `five_hour`, 7 days for `seven_day`).
+Elapsed time is recovered from `windowSize - (resets_at - now)`,
+burn rate is `used_percentage / elapsed`,
+and the projected end-of-window usage is `burn_rate * windowSize`.
+
+When projection exceeds 100%, the segment renders in red and appends a `→Z%` marker
+showing the extrapolated total (e.g., `40% left →200% (3h)`).
+Projection is suppressed until usage reaches 5%, since extrapolating from a near-zero
+sample at the start of a window produces unstable estimates.
 
 Two tiers are tracked from the statusline JSON payload:
 
@@ -141,7 +165,7 @@ Data is only available for Pro/Max subscribers after the first API response in a
 
 - **Green** -- more than 25% remaining
 - **Yellow** -- 10-25% remaining
-- **Red** -- 10% or less remaining
+- **Red** -- 10% or less remaining, **or** projection exceeds 100% at any remaining level
 
 ## Token calculation
 
