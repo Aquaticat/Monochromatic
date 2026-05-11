@@ -114,6 +114,34 @@ Reject unless and until the project has a documented need to consume *existing* 
 
 **F1 (function-predicate API) + ship `contentHashFilter()` as a built-in helper.** Keep the package's extensibility surface open and let TypeScript itself be the filter language. Revisit F2 only after a second consumer materialises with a real config-file need; F3 only after that consumer specifically needs jq syntax.
 
+### Should this package be Rust instead of TypeScript?
+
+`packages/dev-script/forbidden-strings/` is Rust, so the question is fair: why is this one not? The honest comparison, dimension by dimension.
+
+#### Where forbidden-strings justifies Rust
+
+-   **Hot path.** Runs in the pre-commit hook with a ~5 ms budget; Node startup alone is 50–100 ms and Bun startup is 30–80 ms.
+-   **CPU-bound work.** Scans up to 2,700 files (21 MiB) in 15.5 ms; the per-file regex+aho-corasick cost dominates. Rust's `regex`, `aho-corasick`, and `resharp` crates win measurably here.
+-   **No library API surface.** Consumed via CLI from a pre-commit hook and from CI. Nothing in the workspace wants to `import` it.
+-   **Native ecosystem advantage.** `resharp` exists in Rust only; the set-algebra operators (`A&B`, `~A`) require it.
+
+#### How `watch-restart` differs
+
+-   **Not a hot path.** The watcher runs for the duration of a dev session and reacts to a few filesystem events per minute. Startup pays once and is invisible against the bun server's own startup.
+-   **Not CPU-bound.** Per-event work is one stat plus one SHA-256 of a few hundred KB. Both Rust and Bun complete this in well under a millisecond of wall time; on this workload they are indistinguishable.
+-   **Library API is the point.** The "second consumer can import the library" item is in the acceptance criteria. Workspace consumers expect `import { startWatchRestart, contentHashFilter } from '@monochromatic-dev/dev-script-watch-restart'`. A Rust binary cannot serve that without a NAPI-N layer, and the workspace currently has no NAPI build infrastructure (forbidden-strings ships as a standalone CLI binary; nothing imports it).
+-   **The filter API is TypeScript functions (F1 above).** With a TypeScript watcher, a filter is `(event, ctx) => boolean | Promise<boolean>`: one cross-module call. With a Rust watcher, the filter is one of: a jaq DSL (rejected in F3), a subprocess-per-event boundary (slow, fragile), or a NAPI callback bridge (build complexity). The cross-language boundary costs more than the Rust speed buys back, by a wide margin.
+-   **The watchexec lesson cuts the other way.** watchexec is Rust; the SIGINT hang we paid for is a Tokio reference cycle in `FilterProgs::new`. Rust does not automatically deliver correct signal+async semantics; a complex Rust async runtime hides exactly this class of bug. A single-threaded TypeScript watcher with one child process and direct `child.kill('SIGTERM')` is easier to audit and harder to construct a reference-cycle bug in.
+-   **AGENTS.md default.** The workspace rule is TypeScript for dev scripts; forbidden-strings is the documented exception, granted because of the pre-commit hot path. Our workload does not have an analogous justification.
+
+#### When this should be revisited
+
+-   If the watcher ever runs in a pre-commit or git-hook hot path with a sub-100ms budget. None of the proposed second consumers (e.g. `watch:build:css`) is hot in that sense.
+-   If the workspace gains NAPI build infrastructure (because something else in the repo needs it), enabling a Rust core with TS bindings without inventing the pipeline for this package alone.
+-   If a workload appears that genuinely is CPU-bound at fs-event rate (a hashing benchmark on hundreds of MB per event, for instance).
+
+None of these is true today. The recommendation stays **TypeScript**, for the same shape of reason watchman is rejected: the language that would buy us speed on a hot path is the wrong choice for a package whose contract is "expose a TS function and a CLI to a TS-first workspace."
+
 ### Can we just use watchman?
 
 This question came up while drafting the handover. The honest answer: yes, watchman would technically work, and the package shape (watcher + hash-cache + child-process + filter) is unchanged whether the watcher dep is chokidar or `fb-watchman`. The reason chokidar wins for our case is concrete, not a hand-wave about "overkill for very large repos." Spelling it out so the planning agent does not have to re-derive it.
