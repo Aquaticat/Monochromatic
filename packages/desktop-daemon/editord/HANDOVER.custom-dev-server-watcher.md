@@ -66,7 +66,18 @@ Two orthogonal axes; conflating them muddles the comparison. Pick one from each.
 
 -   Cost: external native daemon.
 -   Fit: overkill.
--   Notes: Facebook's daemon, requires user install, separate process. Designed for very large repos.
+-   Notes: Facebook's daemon, requires user install, separate process. Designed for very large repos. Has its own programmable filter DSL (S-expression operators: `allof`, `anyof`, `name`, `match`, `pcre`, `since`, `size`, `suffix`, `type`, documented at `watchman/website/docs/expr/`); operates over file metadata, not content, so cannot replicate watchexec's `-j` byte-content filter.
+
+### Aside: programmable filter DSL support across watchers
+
+watchexec's `-j @file.jaq` (the flag whose SIGINT hang motivated this work) is uncommon. Only two watchers in current use have a programmable filter DSL:
+
+-   **watchexec**: `-j` runs a jaq program (a jq-compatible language) per event. State (a kv-store) can be threaded through, which is what enabled the original `content-changed.jaq` hash filter.
+-   **watchman**: the S-expression operators listed above. Stateless per query; operates on the file index, not on content.
+
+Every other watcher uses one of: glob patterns (`@parcel/watcher`'s `ignore`, `nodemon`'s `watch`/`ignore`, rollup-watch's `watch.exclude`), regex/string (chokidar's `ignored` accepts these), or a JS function callback (chokidar's `ignored` also accepts these; `fabiospampinato/watcher` similar). No JavaScript-side watcher ships a jq-language filter.
+
+Implication for the new package: we do not replicate the jaq DSL. The content-hash filter that the old `content-changed.jaq` provided becomes ~20 lines of TypeScript in the package's `hash-cache.ts`: a `Map<absolutePath, sha256hex>` plus an event-time compare. Callers that want richer filtering pass a function predicate, matching chokidar's `ignored` shape; no new language is introduced.
 
 ### Axis 2: restart driver
 
