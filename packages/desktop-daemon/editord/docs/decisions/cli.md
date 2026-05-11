@@ -33,8 +33,8 @@ Rejected alternatives:
 `editord-client` POSTs JSON to `/cli/<op>` on the daemon's existing h3 server.
 The token is read from `$TMPDIR/editord-<port>.token`
 (existing port-keyed token file in `src/server/operations/token-file.ts`).
-When `--port` is not specified, the client walks `$TMPDIR/editord-*.token` and picks the freshest by mtime
-(within `FRESHNESS_THRESHOLD_MS = 3000`); ambiguity fails with a list of candidate ports.
+Instance selection (which port, given that multiple editord instances may run simultaneously)
+follows the algorithm in "Instance routing" below.
 
 Rationale: token discovery is already solved; h3 already routes;
 the auth-check pattern is established on `/_ws`.
@@ -49,6 +49,64 @@ Rejected alternatives:
 - WS-only (CLI connects as a peer).
   Bidirectional stateful transport for a fire-and-forget op is awkward;
   handshake cost on every invocation; needs request-ID correlation.
+
+### Instance routing (multi-instance)
+
+Multiple editord instances run simultaneously, each bound to a distinct port
+and rooted at a distinct directory (`resolveRoot()` result at startup).
+The CLI selects the target instance per invocation.
+
+A sidecar metadata file accompanies every token:
+
+- `$TMPDIR/editord-<port>.token`: existing UUID token, unchanged.
+- `$TMPDIR/editord-<port>.json`: new sidecar containing
+  `{ port: number; rootDir: string; startedAtMs: number }`.
+  Written on startup after `resolveRoot()` resolves and before the HTTP server starts listening.
+  Mtime-touched alongside the token file every `TOUCH_INTERVAL_MS` (1 s).
+  Deleted on graceful shutdown alongside `deleteTokenFile()`.
+
+Selection algorithm, in order:
+
+1. `--port <N>` supplied: target that instance.
+   Read `editord-<N>.token` and `editord-<N>.json`; fail if either is missing or stale
+   (mtime older than `FRESHNESS_THRESHOLD_MS` = 3 s).
+2. Path argument present (e.g. `open <path>`, `format <path>`,
+   `diagnostics <path>`, `raw <type>` with a path field):
+   - Read every fresh `editord-*.json` sidecar.
+   - Filter to instances whose `rootDir` is an ancestor of the absolute-resolved path argument.
+   - Pick the deepest `rootDir` (most-specific covering instance);
+     nested roots (instance A at `/home/user`, instance B at `/home/user/project`)
+     resolve to B for a file under `project/`.
+   - No cover: fail with the path and the list of running instances + their roots.
+   - Tie at equal depth: fail with the list (ambiguous).
+3. No `--port` and no path argument (e.g. `status`, `peers`, `diagnostics` without path):
+   - Exactly one fresh instance: use it.
+   - Zero: fail "no editord instances running".
+   - Multiple: fail asking for `--port`, with the running list.
+
+Env var policy: the CLI does not read `PORT`.
+That env var is the daemon's bind-port concept;
+the CLI reading it would silently misroute calls in shells that have `PORT` set for another tool.
+`--port` flag only.
+`EDITORD_PORT` was considered as a CLI-specific override and rejected for now;
+shell aliases (`alias editord-client='editord-client --port 4401'`) cover the convenience case
+without adding a second source of truth.
+
+Peer IDs are per-instance, not global.
+`--peer <glob>` matches within the instance the CLI has already selected;
+`--port <N> --peer <glob>` explicitly resolves both axes.
+
+Rejected alternatives:
+
+- Embedding rootDir in the token file content (replace UUID string with JSON).
+  Cleaner data model, but the existing dev-mode auto-restart path
+  reads the token file as a plain UUID string at `token-file.ts`,
+  and migration is gratuitous when a sidecar achieves the same with zero change to that path.
+- CLI reading `PORT` env var.
+  Collides with shells that already set `PORT` for unrelated tools;
+  misroutes silently rather than failing loudly.
+- "Freshest token by mtime" as the default selection rule (the original draft).
+  All live instances refresh mtime every 1 s, so mtime does not disambiguate among running instances.
 
 ### Op surface (six commands)
 
@@ -139,6 +197,11 @@ Rejected alternatives:
 - Existing iterations (e.g. `for (const peer of connectedPeers)` in `handleDiagnostics` at `index.ts:134`
   and `handleFsChange` at `index.ts:163`) become `for (const entry of peers.values()) entry.send(...)`.
 - Callers in `src/server/ws.ts` that receive `connectedPeers` via `createWsHandler` need the same Map migration.
+- Extend `src/server/operations/token-file.ts` to write the sidecar JSON
+  (`editord-<port>.json` with `{ port, rootDir, startedAtMs }`)
+  after `resolveRoot()` completes and before `serve()` starts listening.
+  The sidecar's mtime is touched on the same interval as the token (`TOUCH_INTERVAL_MS`);
+  `deleteTokenFile()` deletes both files.
 
 ### Protocol changes
 
@@ -174,7 +237,8 @@ Deferred until needed; the initial cut leaves `focusedPath` as `undefined`.
 
 - `src/server/index.ts:109`: `connectedPeers` Set, to be replaced.
 - `src/server/index.ts:134`, `src/server/index.ts:163`: existing broadcast iterations.
-- `src/server/operations/token-file.ts`: token file format and freshness threshold.
+- `src/server/operations/token-file.ts`: token file format, freshness threshold,
+  and the new sidecar JSON (`editord-<port>.json`) co-written and co-touched alongside the token.
 - `src/protocol-client.ts:22`: existing client-to-server `open` (request-content, not display-file).
 - `src/protocol-server.ts:30`: existing `connected` message, to be extended with `peerId`.
 - Editor CLI prior art (fetched 2026-05-11): emacsclient (GNU Emacs manual),
