@@ -1,80 +1,12 @@
 /**
- * Creates a promise that resolves after a specified delay in milliseconds.
- * Useful for adding delays in async functions, throttling operations, or creating timeouts.
+ * Re-export of `wait` from `@monochromatic-dev/module-async-time`,
+ * aliased to `$` to preserve the taxonomy convention.
  *
- * The promise resolves with `undefined` after the specified time has elapsed.
- * Uses `setTimeout` internally to create the delay mechanism.
+ * The implementation lives in `module-async-time`; this file keeps the
+ * `t object/t promise/.../wait` slot in the `module-es` taxonomy so the
+ * namespace export `types.object.promise.from.number.wait.positional.portable.$`
+ * continues to resolve.
  *
- * @param timeInMs - Time to wait in milliseconds before resolving
- *
- * @returns Promise that resolves to undefined after the specified delay
- *
- * @example
- * Basic usage:
- * ```ts
- * await $(1000); // Wait for 1 second
- * console.log('1 second has passed');
- * ```
- *
- * @example
- * In an async function:
- * ```ts
- * async function delayedOperation() {
- *   console.log('Starting...');
- *   await $(500); // Wait 500ms
- *   console.log('After delay');
- * }
- * ```
- *
- * @example
- * Throttling operations:
- * ```ts
- * for (let i = 0; i < 5; i++) {
- *   console.log(`Step ${i + 1}`);
- *   await $(200); // 200ms between each step
- * }
- * ```
- *
- * @example
- * Creating timeouts in async workflows:
- * ```ts
- * async function fetchWithDelay() {
- *   const result = await Promise.race([
- *     fetch('/api/data'),
- *     $(5000).then(() => { throw new Error('Timeout'); })
- *   ]);
- *   return result;
- * }
- * ```
- *
- * @example
- * Simulating async operations in tests:
- * ```ts
- * async function simulateSlowOperation() {
- *   await $(100); // Simulate processing time
- *   return { success: true, data: 'processed' };
- * }
- * ```
- *
- * @example
- * Debouncing user interactions:
- * ```ts
- * let debounceTimeout: NodeJS.Timeout | null = null;
- *
- * async function debounceAction(action: () => void) {
- *   if (debounceTimeout) clearTimeout(debounceTimeout);
- *   await $(300); // Wait 300ms
- *   action();
- * }
- * ```
+ * @see {@link import('@monochromatic-dev/module-async-time').wait}
  */
-export function $(timeInMs: number,): Promise<undefined> {
-  // oxlint-disable-next-line promise/avoid-new -- Promise constructor pattern
-  return new Promise(function createTimeout(resolve,) {
-    // oxlint-disable-next-line eslint/no-promise-executor-return -- setTimeout return value intentionally propagated
-    return setTimeout(
-      resolve,
-      timeInMs,
-    );
-  },);
-}
+export { wait as $, } from '@monochromatic-dev/module-async-time';

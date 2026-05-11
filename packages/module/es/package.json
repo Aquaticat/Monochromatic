@@ -16,9 +16,7 @@
     "./create-observable": "./src/types/t object/t proxy/f/t any/createObservable/r s/p p/index.ts",
     "./create-observable-async": "./src/types/t object/t proxy/f/t any/createObservable/r a/p p/index.ts",
     "./map-iterable-async": "./src/types/t object/t array/f/t iterable/map/r a/p p/index.ts",
-    "./memoize-async": "./src/types/t function/f/t function/memoize/r a/p n/index.ts",
-    "./wait": "./src/types/t object/t promise/f/t number/wait/r a/p p/index.ts",
-    "./with-timeout": "./src/types/t object/t promise/f/t object/withTimeout/r a/p p/index.ts"
+    "./memoize-async": "./src/types/t function/f/t function/memoize/r a/p n/index.ts"
   },
   "files": [
     "dist/final",
@@ -44,6 +42,7 @@
     "@monochromatic-dev/module-test": "workspace:*"
   },
   "dependencies": {
+    "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*"
   },
   "version": "0.0.125",

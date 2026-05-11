@@ -59,4 +59,4 @@ export function intFlag(
   return Number.isFinite(parsed,) ? parsed : fallback;
 }
 
-export { $ as wait, } from '@monochromatic-dev/module-es/wait';
+export { wait, } from '@monochromatic-dev/module-async-time';

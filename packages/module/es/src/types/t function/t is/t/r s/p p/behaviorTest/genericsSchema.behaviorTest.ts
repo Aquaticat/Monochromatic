@@ -25,9 +25,7 @@
  */
 
 import type { Promisable, } from 'type-fest';
-import {
-  $ as wait,
-} from '../../../../../../t object/t promise/f/t number/wait/r a/p p/index.ts';
+import { wait, } from '@monochromatic-dev/module-async-time';
 
 //region Real Generic Schema Type Definitions
 

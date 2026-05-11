@@ -4,7 +4,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 import pLimit from 'p-limit';
 
-import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
+import { withTimeout, } from '@monochromatic-dev/module-async-time';
 import {
   DEFAULT_CONCURRENCY,
   type DescriptorContext,

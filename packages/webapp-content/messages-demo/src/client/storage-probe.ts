@@ -10,7 +10,7 @@
  * fully functional with all probes returning `false`.
  */
 
-import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
+import { withTimeout, } from '@monochromatic-dev/module-async-time';
 
 /** Capability flags consulted by the enhancement modules. */
 export type StorageCaps = {

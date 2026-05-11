@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/build-tool-css": "workspace:*",
-    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-numeric-const": "workspace:*",

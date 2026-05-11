@@ -1,7 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
-import { $ as withTimeout, } from '@monochromatic-dev/module-es/with-timeout';
+import { withTimeout, } from '@monochromatic-dev/module-async-time';
 import {
   type DescriptorContext,
   makeDescriptor,

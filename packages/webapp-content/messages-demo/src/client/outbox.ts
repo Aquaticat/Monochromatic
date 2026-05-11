@@ -22,7 +22,7 @@
  * not acked yet.
  */
 
-import { $ as wait, } from '@monochromatic-dev/module-es/wait';
+import { wait, } from '@monochromatic-dev/module-async-time';
 import {
   idbOpen,
   idbRequestResult,
