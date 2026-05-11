@@ -13,7 +13,6 @@ import type { Logger, } from '@monochromatic-dev/module-logger/types';
 import {
   describe,
   it,
-  type ItResult,
 } from '@monochromatic-dev/module-test';
 import { resolve, } from 'node:path';
 
@@ -379,20 +378,18 @@ export async function matrix({
           function createCombinationIt(combination,) {
             const label = formatLabel(combination,);
 
-            return function deferredRun(): Promise<ItResult> {
-              return it({
-                name: label,
-                l,
-                fn: async function runCombination() {
-                  const output = await executeCombination({
-                    combination,
-                    monorepoRoot,
-                  },);
-                  if (output !== '')
-                    l.info(output,);
-                },
-              },);
-            };
+            return it({
+              name: label,
+              l,
+              fn: async function runCombination() {
+                const output = await executeCombination({
+                  combination,
+                  monorepoRoot,
+                },);
+                if (output !== '')
+                  l.info(output,);
+              },
+            },);
           },
         ),
       },);
