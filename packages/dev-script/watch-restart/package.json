@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-numeric-const": "workspace:*",
     "@cspotcode/outdent": "catalog:",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",

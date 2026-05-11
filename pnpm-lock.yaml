@@ -1200,6 +1200,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/module-numeric-const':
+        specifier: workspace:*
+        version: link:../../module/numeric-const
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
