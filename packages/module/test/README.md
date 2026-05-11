@@ -470,6 +470,91 @@ it({
 The `.rejects` and `.resolves` APIs exist for compatibility
 but should not be used in new test code.
 
+### Duration and hang assertions
+
+There is no dedicated `toTakeLongerThan` / `toResolveWithin` matcher
+and no `expect.poll` / `vi.waitFor` equivalent;
+both Vitest features are intentionally omitted
+(see [expect matchers](#expect-matchers) and [Mocking and spies (vi object)](#mocking-and-spies-vi-object)).
+Both patterns compose from existing primitives.
+
+**Assert that something takes more than N ms** by measuring with `performance.now()`
+and asserting the elapsed delta with `toBeGreaterThan`:
+
+```ts
+it({
+  name: 'is slow',
+  fn: async ({ expect, },) => {
+    const start = performance.now();
+    await someOperation();
+    expect(performance.now() - start,).toBeGreaterThan(100,);
+  },
+},);
+```
+
+**Assert that something hangs**, in two forms.
+
+**Loose form**: combine the `timeout` and `fails` options.
+`runFnOnce` wraps `fn` in `withTimeout` from `@monochromatic-dev/module-async-time`,
+which throws when the timer expires;
+`fails: true` inverts pass/fail logic so the timeout-throw counts as PASS:
+
+```ts
+it({
+  name: 'never resolves',
+  timeout: 100,
+  fails: 'expected to hang',
+  fn: async () => {
+    await new Promise(() => {});
+  },
+},);
+```
+
+The loose form swallows **any** throw as PASS, including throws unrelated to hanging.
+If the fn throws synchronously for a different reason, the test still passes
+and the real bug is hidden.
+
+**Strict form**: call `withTimeout` directly inside the fn,
+catch the rejection, and assert on the error message.
+This rejects unrelated throws as real failures
+and only treats the labeled timeout error as success:
+
+```ts
+import { withTimeout, } from '@monochromatic-dev/module-async-time';
+
+it({
+  name: 'hangs',
+  fn: async ({ expect, },) => {
+    let caught: unknown = undefined;
+    try {
+      await withTimeout({
+        promise: possiblyHangingOp(),
+        ms: 100,
+        label: 'possiblyHangingOp',
+      },);
+    }
+    catch (error) {
+      caught = error;
+    }
+    expect(caught,).toBeInstanceOf(Error,);
+    expect((caught as Error).message,).toContain('Timed out after 100ms',);
+  },
+},);
+```
+
+Caveats common to both forms:
+
+- The assertion is "did not finish within N ms", not "hangs forever";
+  the halting problem prevents the framework from distinguishing the two.
+  Pick a `timeout` that is comfortably longer than any legitimate completion path
+  the code under test might take.
+- A genuinely infinite synchronous loop (`while (true) {}`) blocks the event loop,
+  so the `withTimeout` timer never fires and the test hangs the whole process.
+  This pattern only catches **async** hangs:
+  unresolved promises, awaits on never-settling I/O, deadlocked locks.
+  For sync infinite loops, isolate the call in a worker or subprocess
+  and apply the timeout there.
+
 ### Skipping tests
 
 ```ts
@@ -1030,6 +1115,8 @@ or **omitted** (intentional gap with rationale).
 - **`expect.poll`**:
   retry-based assertions belong in application code (`waitFor` patterns),
   not in the assertion library.
+  For duration and hang assertions specifically,
+  see [Duration and hang assertions](#duration-and-hang-assertions).
 - **`expect.extend`**:
   custom matchers add framework-specific API surface.
   Use `toSatisfy` with a predicate function instead.
