@@ -80,42 +80,44 @@ For content-preserving writes (editor saves identical bytes), the OS reports
 
 ### Solution
 
-Two layers of filtering, both applied in the `watchexec` command:
+Two layers, in different places:
 
-**Layer 1: `--no-meta`**: suppresses `Modify(Metadata(Any))` events at the
-kernel level. Handles `touch`, `chmod`, and similar metadata-only changes.
+**Layer 1: `--no-meta` on watchexec**: suppresses `Modify(Metadata(Any))`
+events at the kernel level. Handles `touch`, `chmod`, and similar
+metadata-only changes.
 
-**Layer 2: `-j @content-changed.jaq`**: a jaq filter program that compares
-file content hashes via watchexec's `kv_store` / `kv_fetch` builtins.
-Only passes events where the file's content hash differs from the last stored hash.
-First-seen files store their hash silently (no restart on initial scan).
+**Layer 2: skip-on-identical-content in editord's save handler**:
+`saveFile` reads the existing file before writing and returns early when
+the new content matches. No write happens, no fs event fires, no restart.
+This covers the dogfooding case (editing editord's own source from within
+editord), which is the practical reason the filter existed.
 
-The jaq program (`content-changed.jaq`):
+An earlier version used `-j @content-changed.jaq` on watchexec for the
+content-hash check. That layer was removed because watchexec hangs on
+SIGINT when `-j` is used; see "watchexec `-j` filter program hangs on
+SIGINT" below.
 
-```jaq
-any(.tags[] | select(.kind == "path" and .filetype == "file"); .absolute as $p | ($p | file_hash) as $h | (kv_fetch($p) // null) as $prev | $h | kv_store($p) | ($prev != null and $prev != $h))
-```
+**Behavior, by event:**
 
-**Behavior matrix:**
-
-| Event                   | `--no-meta` | Content-hash filter         | Result      |
-| ----------------------- | ----------- | --------------------------- | ----------- |
-| `touch` (mtime only)    | Suppressed  | --                          | No restart  |
-| `chmod` (perms only)    | Suppressed  | --                          | No restart  |
-| Write identical content | Passes      | Hash matches stored         | No restart  |
-| Write different content | Passes      | Hash differs                | **Restart** |
-| `git checkout` (revert) | Passes      | Hash differs from modified  | **Restart** |
-| New file created        | Passes      | No stored hash (first-seen) | No restart  |
+- `touch` (mtime only): suppressed by `--no-meta`. No restart.
+- `chmod` (perms only): suppressed by `--no-meta`. No restart.
+- editord saves identical content: `saveFile` returns early without
+  writing. No fs event, no restart.
+- editord saves different content: `saveFile` writes through, watchexec
+  fires. Restart.
+- External editor writes identical bytes (rare): watchexec fires. Restart.
+- External editor writes different bytes: watchexec fires. Restart.
+- `git checkout` (revert): watchexec fires. Restart.
+- New file created: watchexec fires. Restart.
 
 ### Constraints
 
-- The jaq filter file must be single-line. Watchexec's `@file` loader does not
-  support multi-line jaq programs or `#` comments (jaq has no comment syntax).
-- `kv_store` is in-memory only with no persistence across watchexec restarts.
-  After each restart, all files are "first-seen" and suppressed until their
-  next change. This is the correct behavior for a dev watcher.
-- `file_hash` reads the entire file on every event. For large files this adds
-  latency to event processing, but source files in `src/server/` are small.
+- The save-side skip only covers writes routed through editord's own
+  `saveFile`. External editors (vim, vscode) doing format-on-save with
+  byte-identical output still trigger a restart. This is rare in practice;
+  the common no-op-save case in this codebase is editord-on-editord.
+- Skipping the write also skips the mtime touch. Any consumer that keys
+  off mtime sees the file as unchanged, which matches the semantics.
 
 ---
 
@@ -321,20 +323,24 @@ existing on the closure side.
 
 ### Workaround
 
-Either:
+Resolved by removing `-j` from `dev:server` and moving the content-equality
+check into editord's `saveFile`. The `--no-meta` flag stays. See the
+"Unnecessary restarts on metadata-only or same-content writes" section
+above for the new behavior matrix and the trade-offs (external editors
+doing byte-identical format-on-save still trigger a restart).
 
-1. Drop `-j @src/server/content-changed.jaq` from the `dev:server` task in
-   `packages/desktop-daemon/editord/mise.toml`. Ctrl+C exits cleanly.
-   Trade-off: editor saves that produce identical file content trigger a
-   server restart, losing WebSocket connections and LSP servers. This is
-   the same regression that the "Unnecessary restarts on metadata-only or
-   same-content writes" section above was added to solve.
-2. Keep `-j` and recover the terminal manually after Ctrl+C:
-   `pkill -9 -f 'watchexec -w src/server'` from another terminal.
+Earlier alternatives considered:
 
-A third option, replacing watchexec's content-hash filter with a bun-side
-hash check on startup, eliminates the dependency on `-j` but requires
-restructuring the dev loop.
+1. Keep `-j` and recover the terminal manually after Ctrl+C:
+   `pkill -9 -f 'watchexec -w src/server'`. Rejected because every dev
+   session needs manual cleanup.
+2. Drop `-j` with no replacement filter. Rejected because the dogfooding
+   case (editord editing editord's source) restarts on every Ctrl+S, even
+   when no content changed, which kills WebSocket connections and LSP
+   servers.
+3. Custom TypeScript watcher replacing watchexec entirely. Rejected as
+   over-scoped: only one task uses `-j`, and the save-side skip handles
+   the actual observed trigger source.
 
 ### What does not work
 

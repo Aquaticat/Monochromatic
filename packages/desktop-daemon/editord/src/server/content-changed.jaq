@@ -1,1 +1,0 @@
-any(.tags[] | select(.kind == "path" and .filetype == "file"); .absolute as $p | ($p | file_hash) as $h | (kv_fetch($p) // null) as $prev | $h | kv_store($p) | ($prev != null and $prev != $h))
