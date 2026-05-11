@@ -271,7 +271,7 @@ async function runDescribe(
        * (raw timeout error, matching pre-change behavior).
        */
       const elapsedMs = performance.now() - startTime;
-      l.error(formatFailure({
+      l.error(await formatFailure({
         summary: `FAIL${runLabel}: timeout (${elapsedMs.toFixed(0,)}ms)`,
         value: timeoutError,
       },),);
@@ -326,7 +326,7 @@ async function runDescribe(
         `${String(errors.length,)} children failed in suite "${name || '(root)'}"`,
       );
 
-    l.error(formatFailure({
+    l.error(await formatFailure({
       summary: `FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,
       value: cause,
     },),);

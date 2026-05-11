@@ -23,6 +23,8 @@
  * @module
  */
 
+import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path';
+
 /**
  * Substrings identifying harness-internal stack frames. Any frame
  * containing one of these is dropped before joining; the failing
@@ -38,49 +40,69 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
   'module-test/dist/',
 ];
 
-// TODO: A shared `findMonorepoRoot` now lives in `@monochromatic-dev/module-fs-path`. The local heuristic stays because module-test is in module-fs-path's devDependencies (test harness), so depending on it from here would create a workspace cycle.
+//region Workspace prefix resolution
+
 /**
- * Walks up from the current working directory to the closest
- * ancestor containing `/packages/`, then returns that ancestor with
- * a trailing slash. This is the monorepo root for any pnpm workspace
- * laid out as `packages/<scope>/<pkg>/`.
+ * Cached workspace prefix. Set once on first call to
+ * {@link resolveWorkspacePrefix}; subsequent calls return the
+ * cached value without repeating filesystem walk. `undefined`
+ * signals "not yet resolved".
  *
- * Falls back to the cwd itself (with trailing slash) when no
- * `/packages/` segment is in the path, so a consumer outside this
- * monorepo still gets a useful relative form.
- *
- * Returns the empty string when `process.cwd()` is unavailable
- * (browsers or restricted runtimes), which makes the strip a no-op.
- *
- * @returns trailing-slashed monorepo root, or empty string when
- *   unavailable
+ * oxlint-disable reason: async lazy-init cache; `Map`/`memoize`
+ * alternatives don't fit (memoize is sync-only, Map adds ceremony
+ * for a single-entry async cache that resolves once and never
+ * changes).
  */
-function readWorkspacePrefix(): string {
-  if (typeof process === 'undefined')
-    return '';
+// oxlint-disable-next-line no-restricted-syntax/no-module-root-let
+let cachedWorkspacePrefix: string | undefined = undefined;
+
+/**
+ * Resolves the monorepo root directory (with trailing slash) by
+ * calling the shared {@link findMonorepoRoot} from
+ * `@monochromatic-dev/module-fs-path`. Falls back to
+ * `process.cwd()` when `findMonorepoRoot` throws (no mise.toml with
+ * `[monorepo]` found, browser without filesystem, etc.), and to the
+ * empty string when `process.cwd()` is also unavailable.
+ *
+ * Imports from module-fs-path create a workspace cycle (module-test
+ * is in module-fs-path's devDependencies); accepted because the
+ * cycle is build-time only and does not affect runtime resolution.
+ *
+ * @returns trailing-slashed monorepo root, cwd prefix, or empty
+ *   string when unavailable
+ */
+async function resolveWorkspacePrefix(): Promise<string> {
+  if (cachedWorkspacePrefix !== undefined)
+    return cachedWorkspacePrefix;
+
   try {
-    const cwd = process.cwd();
-    const packagesIndex = cwd.indexOf('/packages/',);
-    if (packagesIndex !== -1) {
-      const root = cwd.slice(
-        0,
-        packagesIndex,
-      );
-      return `${root}/`;
-    }
-    return `${cwd}/`;
+    const root = await findMonorepoRoot();
+    cachedWorkspacePrefix = `${root}/`;
+    return cachedWorkspacePrefix;
   }
   catch {
-    return '';
+    /**
+     * findMonorepoRoot threw (no mise.toml with [monorepo], browser
+     * without OPFS, etc.). Fall back to cwd so paths are still
+     * rendered relative to something useful.
+     */
+    if (typeof process === 'undefined') {
+      cachedWorkspacePrefix = '';
+      return cachedWorkspacePrefix;
+    }
+    try {
+      const cwd = process.cwd();
+      cachedWorkspacePrefix = `${cwd}/`;
+      return cachedWorkspacePrefix;
+    }
+    catch {
+      cachedWorkspacePrefix = '';
+      return cachedWorkspacePrefix;
+    }
   }
 }
 
-/**
- * Workspace prefix captured at module load. Stripped from stack
- * frame paths to produce cwd-relative output. Empty string in
- * browsers makes the strip a no-op.
- */
-const WORKSPACE_PREFIX = readWorkspacePrefix();
+//endregion Workspace prefix resolution
 
 /**
  * Safely stringifies an arbitrary value for inline display.
@@ -168,18 +190,27 @@ function isHarnessInternalFrame(frame: string,): boolean {
 }
 
 /**
- * Strips the captured workspace prefix from a frame so absolute
+ * Strips the resolved workspace prefix from a frame so absolute
  * paths render as cwd-relative. No-op when the prefix is empty.
  *
  * @param frame - trimmed stack frame line
  *
+ * @param workspacePrefix - resolved prefix from
+ *   {@link resolveWorkspacePrefix}
+ *
  * @returns frame with workspace prefix removed where present
  */
-function stripWorkspacePrefix(frame: string,): string {
-  if (WORKSPACE_PREFIX === '')
+function stripWorkspacePrefix({
+  frame,
+  workspacePrefix,
+}: {
+  readonly frame: string;
+  readonly workspacePrefix: string;
+},): string {
+  if (workspacePrefix === '')
     return frame;
   return frame.replaceAll(
-    WORKSPACE_PREFIX,
+    workspacePrefix,
     '',
   );
 }
@@ -196,23 +227,29 @@ function stripWorkspacePrefix(frame: string,): string {
  * @param message - already-extracted message used to detect the
  *   header-duplicate first line
  *
+ * @param workspacePrefix - resolved prefix from
+ *   {@link resolveWorkspacePrefix}
+ *
  * @returns trimmed, prefix-stripped, harness-filtered stack frames;
  *   empty when `.stack` is missing or not a string
  *
  * @example
  * ```ts
- * readStackFrames({
+ * await readStackFrames({
  *   error: new Error('boom'),
  *   message: 'boom',
+ *   workspacePrefix: '/var/home/user/Monochromatic/',
  * }) // ['at fn (packages/foo/file.ts:9:19)']
  * ```
  */
 function readStackFrames({
   error,
   message,
+  workspacePrefix,
 }: {
   readonly error: object;
   readonly message: string;
+  readonly workspacePrefix: string;
 },): readonly string[] {
   if (!('stack' in error) || typeof error.stack !== 'string')
     return [];
@@ -242,7 +279,10 @@ function readStackFrames({
       return !isHarnessInternalFrame(frame,);
     },)
     .map(function applyWorkspaceStrip(frame,) {
-      return stripWorkspacePrefix(frame,);
+      return stripWorkspacePrefix({
+        frame,
+        workspacePrefix,
+      },);
     },);
 }
 
@@ -264,6 +304,9 @@ function readStackFrames({
  * @param visited - shared cycle-detection set, mutated as the walk
  *   descends
  *
+ * @param workspacePrefix - resolved prefix from
+ *   {@link resolveWorkspacePrefix}
+ *
  * @returns one line for this node followed by lines for all of its
  *   descendants in walk order (cause first, then aggregate members)
  */
@@ -271,10 +314,12 @@ function formatNode({
   headerPrefix,
   value,
   visited,
+  workspacePrefix,
 }: {
   readonly headerPrefix: string;
   readonly value: unknown;
   readonly visited: WeakSet<object>;
+  readonly workspacePrefix: string;
 },): readonly string[] {
   if (typeof value !== 'object' || value === null)
     return [`${headerPrefix}Threw non-Error value: ${safeString(value,)}`,];
@@ -289,6 +334,7 @@ function formatNode({
   const frames = readStackFrames({
     error: value,
     message,
+    workspacePrefix,
   },);
   /**
    * Join frames with a single space so the whole error fits on one
@@ -306,6 +352,7 @@ function formatNode({
       headerPrefix: 'Caused by: ',
       value: causeValue,
       visited,
+      workspacePrefix,
     },)
     : [];
 
@@ -319,6 +366,7 @@ function formatNode({
         headerPrefix: `[${String(index + 1,)}/${String(errorsField.length,)}] `,
         value: member,
         visited,
+        workspacePrefix,
       },);
     },)
     : [];
@@ -358,7 +406,7 @@ function formatNode({
  *   throw new Error('outer', { cause: new Error('root', ), },);
  * }
  * catch (caught) {
- *   for (const line of formatErrorDeep(caught,))
+ *   for (const line of await formatErrorDeep(caught,))
  *     l.error(line,);
  * }
  * // emits:
@@ -366,20 +414,22 @@ function formatNode({
  * //   Caused by: Error: root at root (file:5:1) at ...
  * ```
  */
-export function formatErrorDeep(value: unknown,): readonly string[] {
+export async function formatErrorDeep(value: unknown,): Promise<readonly string[]> {
   const visited = new WeakSet<object>();
+  const workspacePrefix = await resolveWorkspacePrefix();
   return formatNode({
     headerPrefix: '',
     value,
     visited,
+    workspacePrefix,
   },);
 }
 
 /**
  * Fuses a `FAIL` summary with the formatted error chain into a
  * single multi-line string ready for one `l.error(...)` call.
- * The first error line (header plus inline stack frames) lands on
- * the summary line for grep-friendliness; subsequent cause lines
+ * The first error line (header plus inline stack frames) lands on the
+ * summary line for grep-friendliness; subsequent cause lines
  * follow as newline-separated continuation. The tagged logger then
  * prefixes its tag onto the summary line only; continuation lines
  * remain untagged.
@@ -398,7 +448,7 @@ export function formatErrorDeep(value: unknown,): readonly string[] {
  *   },);
  * }
  * catch (caught) {
- *   l.error(formatFailure({
+ *   l.error(await formatFailure({
  *     summary: `FAIL (${String(durationMs,)}ms)`,
  *     value: caught,
  *   },),);
@@ -409,14 +459,14 @@ export function formatErrorDeep(value: unknown,): readonly string[] {
  * //   Caused by: Error: root at root (...) at ...
  * ```
  */
-export function formatFailure({
+export async function formatFailure({
   summary,
   value,
 }: {
   readonly summary: string;
   readonly value: unknown;
-},): string {
-  const lines = formatErrorDeep(value,);
+},): Promise<string> {
+  const lines = await formatErrorDeep(value,);
   if (lines.length === 0)
     return summary;
   const [first, ...rest] = lines;

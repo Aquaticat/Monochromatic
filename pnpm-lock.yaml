@@ -1508,6 +1508,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../es
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../fs-path
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
