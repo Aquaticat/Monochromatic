@@ -1,7 +1,7 @@
 import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
-import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+import { findMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import {
   l,
   tagged,
@@ -149,7 +149,7 @@ export async function resolveSpecifier(
   //region Monorepo root resolution
   let monorepoRoot: string | undefined = undefined;
   try {
-    monorepoRoot = await findMonorepoRoot({ cwd, },);
+    monorepoRoot = await findMonorepoRootCached();
     if (monorepoRoot !== cwd) {
       rl.info(`trying monorepo root: ${monorepoRoot}`,);
       const fromMonorepo = resolveFrom({

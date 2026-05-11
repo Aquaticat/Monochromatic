@@ -27,8 +27,12 @@ export {
   ensureFile,
   ensurePath,
 } from './ensure.ts';
-// oxlint-disable-next-line import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMonorepoRoot runs
-export { findMonorepoRoot, } from './find-monorepo-root.ts';
+/* oxlint-disable import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMonorepoRoot runs */
+export {
+  findMonorepoRoot,
+  findMonorepoRootCached,
+} from './find-monorepo-root.ts';
+/* oxlint-enable import/no-cycle */
 export {
   trimLeadingSlash,
   trimTrailingSlash,

@@ -228,4 +228,53 @@ export async function findMonorepoRoot(
   return rawRoot;
 }
 
+/**
+ * Process-lifetime cache for {@link findMonorepoRootCached}.
+ * Stored as an object property so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject a top-level `let`).
+ * The in-flight promise reference is reused across concurrent first callers
+ * so they share one walk.
+ */
+const cache: { root?: Promise<string>; } = {};
+
+/**
+ * Memoised variant of {@link findMonorepoRoot} that locks in the first
+ * resolved root for the lifetime of the process.
+ *
+ * Result is captured on first call and returned for every subsequent
+ * call, even after `process.chdir`. Callers that need a fresh walk after
+ * an intentional cwd change use {@link findMonorepoRoot} directly.
+ *
+ * Rejections are cached too: when the first call cannot find a monorepo
+ * root, the same rejection is returned to every later caller. Matches the
+ * process-lifetime invariant (no `mise.toml` with `[monorepo]` will
+ * materialise mid-process).
+ *
+ * Internally calls {@link findMonorepoRoot} with no `cwd`, so the first
+ * caller's `process.cwd()` at call time decides the result.
+ *
+ * @returns absolute path to monorepo root, locked in at first call
+ *
+ * @throws when no ancestor of `process.cwd()` (at first call) contains a
+ *   `mise.toml` with `[monorepo]`; same rejection on every later call
+ *
+ * @example
+ * ```ts
+ * const root = await findMonorepoRootCached();
+ * ```
+ *
+ * @example
+ * ```ts
+ * // hot path: thousands of calls share one walk
+ * for (const file of files) {
+ *   const root = await findMonorepoRootCached();
+ *   await spawn('git', ['log', '--', file], { cwd: root, });
+ * }
+ * ```
+ */
+export function findMonorepoRootCached(): Promise<string> {
+  cache.root ??= findMonorepoRoot();
+  return cache.root;
+}
+
 //endregion Public API

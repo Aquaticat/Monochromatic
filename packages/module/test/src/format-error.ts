@@ -23,7 +23,7 @@
  * @module
  */
 
-import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path';
+import { findMonorepoRootCached, } from '@monochromatic-dev/module-fs-path';
 
 /**
  * Substrings identifying harness-internal stack frames. Any frame
@@ -43,26 +43,14 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
 //region Workspace prefix resolution
 
 /**
- * Cached workspace prefix. Set once on first call to
- * {@link resolveWorkspacePrefix}; subsequent calls return the
- * cached value without repeating filesystem walk. `undefined`
- * signals "not yet resolved".
- *
- * oxlint-disable reason: async lazy-init cache; `Map`/`memoize`
- * alternatives don't fit (memoize is sync-only, Map adds ceremony
- * for a single-entry async cache that resolves once and never
- * changes).
- */
-// oxlint-disable-next-line no-restricted-syntax/no-module-root-let
-let cachedWorkspacePrefix: string | undefined = undefined;
-
-/**
  * Resolves the monorepo root directory (with trailing slash) by
- * calling the shared {@link findMonorepoRoot} from
- * `@monochromatic-dev/module-fs-path`. Falls back to
- * `process.cwd()` when `findMonorepoRoot` throws (no mise.toml with
- * `[monorepo]` found, browser without filesystem, etc.), and to the
- * empty string when `process.cwd()` is also unavailable.
+ * calling {@link findMonorepoRootCached} from
+ * `@monochromatic-dev/module-fs-path`. The shared cached variant
+ * memoises the result process-wide, so no local cache is needed.
+ * Falls back to `process.cwd()` when the cached variant rejects
+ * (no `mise.toml` with `[monorepo]` found, browser without
+ * filesystem, etc.), and to the empty string when `process.cwd()`
+ * is also unavailable.
  *
  * Imports from module-fs-path create a workspace cycle (module-test
  * is in module-fs-path's devDependencies); accepted because the
@@ -72,32 +60,24 @@ let cachedWorkspacePrefix: string | undefined = undefined;
  *   string when unavailable
  */
 async function resolveWorkspacePrefix(): Promise<string> {
-  if (cachedWorkspacePrefix !== undefined)
-    return cachedWorkspacePrefix;
-
   try {
-    const root = await findMonorepoRoot();
-    cachedWorkspacePrefix = `${root}/`;
-    return cachedWorkspacePrefix;
+    const root = await findMonorepoRootCached();
+    return `${root}/`;
   }
   catch {
     /**
-     * findMonorepoRoot threw (no mise.toml with [monorepo], browser
-     * without OPFS, etc.). Fall back to cwd so paths are still
-     * rendered relative to something useful.
+     * The cached variant rejected (no mise.toml with [monorepo],
+     * browser without OPFS, etc.) and caches the rejection, so the
+     * fallback path runs on every call. Compute the cwd-based prefix
+     * directly; `process.cwd()` is cheap (single syscall).
      */
-    if (typeof process === 'undefined') {
-      cachedWorkspacePrefix = '';
-      return cachedWorkspacePrefix;
-    }
+    if (typeof process === 'undefined')
+      return '';
     try {
-      const cwd = process.cwd();
-      cachedWorkspacePrefix = `${cwd}/`;
-      return cachedWorkspacePrefix;
+      return `${process.cwd()}/`;
     }
     catch {
-      cachedWorkspacePrefix = '';
-      return cachedWorkspacePrefix;
+      return '';
     }
   }
 }

@@ -23,7 +23,7 @@ import {
 } from './container.ts';
 import { discoverTestFiles, } from './discover.ts';
 import { runHost, } from './host.ts';
-import { findMonorepoRoot, } from './root.ts';
+import { findMonorepoRootCached, } from './root.ts';
 import type {
   Combination,
   ExcludeEntry,
@@ -308,7 +308,7 @@ export async function matrix({
   //endregion Validate OS specifications
 
   //region Discover monorepo root
-  const monorepoRoot = await findMonorepoRoot({ cwd: process.cwd(), },);
+  const monorepoRoot = await findMonorepoRootCached();
   l.debug(`monorepo root: ${monorepoRoot}`,);
   //endregion Discover monorepo root
 

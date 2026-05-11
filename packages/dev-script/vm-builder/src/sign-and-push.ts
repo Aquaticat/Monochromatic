@@ -12,7 +12,7 @@
  * - `podman login ghcr.io` completed
  * - Cosign key pair at `packages/config/cosign/`
  */
-import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+import { findMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import { join, } from 'node:path';
@@ -24,7 +24,7 @@ const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
 const GHCR_TAG = 'ghcr.io/aquaticat/monochromatic-dev:latest';
 
 /** Absolute path to the monorepo root. */
-const MONOREPO_ROOT = await findMonorepoRoot();
+const MONOREPO_ROOT = await findMonorepoRootCached();
 
 /** Path to the cosign private key for image signing. */
 const COSIGN_KEY = join(
