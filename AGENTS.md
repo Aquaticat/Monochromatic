@@ -12,15 +12,13 @@ For external tool features, CLI options, config syntax, or API capabilities, fet
 
 When explaining a warning or error, name the exact tool that emitted it (e.g. "Rolldown's resolver" not "some resolvers") and cite the diagnostic code or message. If unsure which tool produced it, investigate first: search the codebase for the diagnostic, check tool documentation, or run the tool directly.
 
-When the user says "I was expecting you to..." or you yourself notice mid-conversation a failure mode future sessions would benefit from avoiding, treat it as a documentation gap. Propose a concrete AGENTS.md change (what rule, where it goes, exact wording) and perform the expected action. Never substitute "I'll keep it in mind" or any promise to your future self: sessions have no memory; rules persist only in AGENTS.md, a skill, or a hook. The cue to draft the edit is exactly the moment you catch yourself wanting to "remember next time."
-
-When proposing the edit, also check whether existing rules can be merged, sharpened, or removed. The mechanism is monotonic by default (every unmet expectation adds rules), leading to unbounded growth. Counteract: if a new rule duplicates or overlaps an existing one, merge instead of appending; if an existing rule has been overtaken by a sharper version, remove the older. AGENTS.md should grow only when no existing rule covers the failure mode.
+When the user says "I was expecting you to..." or you yourself notice mid-conversation a failure mode future sessions would benefit from avoiding, treat it as a documentation gap. Propose a concrete AGENTS.md change (what rule, where it goes, exact wording) and perform the expected action. Never substitute "I'll keep it in mind" or any promise to your future self: sessions have no memory; rules persist only in AGENTS.md, a skill, or a hook. When proposing the edit, also check whether existing rules can be merged, sharpened, or removed; the mechanism is monotonic by default (every unmet expectation adds rules), leading to unbounded growth. Counteract: if a new rule duplicates or overlaps an existing one, merge instead of appending; if an existing rule has been overtaken by a sharper version, remove the older. AGENTS.md should grow only when no existing rule covers the failure mode. The cue to draft the edit is exactly the moment you catch yourself wanting to "remember next time."
 
 ### Proactivity calibration
 
 This user does not perceive proactive action as overreach. Claude Code harness defaults that caution against "being too proactive" do not apply here. The git-commit guardrail typifies the pattern ("It is VERY IMPORTANT to only commit when explicitly asked, otherwise the user will feel that you are being too proactive"); the same calibration applies to every similar default. When the conversation, request verb, and AGENTS.md rules collectively authorize a step, take it; do not insert a "want me to..." or "should I go ahead and..." check before acting on the obvious next step.
 
-This does not relax other constraints. Destructive or shared-state actions still need explicit authorization (see "Executing actions with care" in the harness defaults, and the destructive-command and resource-exhaustion sections below). Decision verbs still return the answer not the action (see "Match action scope to the request verb"). Non-measurable preferences with multiple valid answers still warrant a clarifying question (see "Measure-vs-ask"). The signal this rule is firing rather than one of those: the next step is already determined by what the user asked, not by an unresolved choice you would have to invent an answer to.
+This does not relax other constraints. Destructive or shared-state actions still need explicit authorization. Decision verbs still return the answer not the action. Non-measurable preferences with multiple valid answers still warrant a clarifying question. The signal this rule is firing rather than one of those: the next step is already determined by what the user asked, not by an unresolved choice you would have to invent an answer to.
 
 The cue: you are about to write "want me to also..." or "should I go ahead and..." about a step the conversation has already authorized. Skip the prompt and do the step.
 
@@ -29,14 +27,13 @@ The cue: you are about to write "want me to also..." or "should I go ahead and..
 Before sending any response with substantive claims:
 
 1. Quantitative claim (size, speed, complexity, difficulty, duration) without measuring? Measure or rephrase as a guess.
-2. Described how an external tool works without reading its source? Clone and read, or label as recall-from-training.
+2. Described how an external tool works without reading its source? Clone and read (see "Third-party libraries"), or label as recall-from-training.
 3. Estimated the difficulty of a fix you have not built? Drop the estimate.
 4. Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
 5. Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents)? Measure it.
 6. Assumed a non-measurable preference (which approach, what they value)? Ask.
-7. Cited a file path or line number? Verify it exists. Described source behavior without one? Add the citation.
-8. Made a confident factual claim without naming what backs it? Either name the verification step inline ("verified by reading X.ts:42") or downgrade to a labeled guess.
-9. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
+7. Confident factual claim about your environment, an external tool, or source code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
+8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
 
 ### Measure-vs-ask
 
@@ -65,7 +62,7 @@ Skip when the user asked yes/no on a single proposal or already narrowed the cri
 
 ### Hedge phrases that signal a skipped step
 
-Do not write these; do the step instead. (Item 4 of the pre-response checklist applies to the same phrases.)
+Do not write these; do the step instead.
 
 - "probably small/large/fast/slow": run the measurement
 - "the fix is probably small": read the source code path or drop the estimate
@@ -75,7 +72,7 @@ Do not write these; do the step instead. (Item 4 of the pre-response checklist a
 - "better/worse than most/typical/average X": name the comparison set or drop the comparative; the qualifier sounds confident but invokes an unverified population (`<Xer> than most` and `worse/more/less than most` are hook-caught; `than typical`/`than average` rely on self-catch)
 - "this is a tractable PR": drop "tractable" or actually build the fix
 - "should be straightforward": drop "straightforward" or test the path
-- "no public diagnosis exists" used as a stopping point: clone the source and diagnose it yourself
+- "no public diagnosis exists" used as a stopping point: drop or clone the source yourself (see "Third-party libraries")
 - "an afternoon" or any other duration estimate: only valid if you have built a similar fix in this codebase before; otherwise drop
 
 The `ccsr` stop hook catches some of these at response-send time; internal self-catch is faster.
@@ -144,7 +141,7 @@ Confident-but-unbacked claims read identically to verified ones; the user cannot
 
 Every search result carries two claims: (a) the search ran correctly, (b) the lines you're seeing are the matches. Both can fail silently.
 
-**Zero-match silent failures:**
+#### Zero-match silent failures
 
 - Invalid `--type` argument (e.g. `rg --type tsx`, where `tsx` is not a registered ripgrep type; the `ts` type already covers `*.tsx`)
 - Wrong path or glob excluding the intended files
@@ -152,7 +149,7 @@ Every search result carries two claims: (a) the search ran correctly, (b) the li
 - Stale or empty target directory
 - Stdin-reading mode triggered by missing path argument (see "Before running a command")
 
-**Non-zero-match silent failures (same shape, opposite direction):**
+#### Non-zero-match silent failures (same shape, opposite direction)
 
 - `head -N` truncating before later files have a chance; one noisy file can consume the cap and bury everything alphabetically later. Remove the cap or raise it before drawing a conclusion; if you must cap, surface in the response that the result is truncated.
 - Denylist filters (`rg -v 'a|b|c'`) hide whatever you forgot to keep and discard whatever you forgot to include, invisibly. Prefer allowlist patterns: a positive shape that captures what you want (e.g. literal `' cat '` with surrounding spaces for prose-form English usage of a word that is also a shell command) rejects the rest by construction.
@@ -171,7 +168,7 @@ When discovering something that would not be immediately obvious to a future rea
 - `agent-browser`: headless browser CLI; rendered web pages, screenshots, web UI interaction, deployed-app verification
 - `FetchUrl`: documentation sites, npm pages, GitHub READMEs; raw source still useful when docs are incomplete
 - `gh`: GitHub issues, PRs, release notes, repository metadata
-- Web search cannot inspect package internals (sizes, dependency trees, source); clone repos to `/tmp` or install packages instead
+- Web search cannot inspect package internals (sizes, dependency trees, source); clone repos or install packages (see "Before running a command" for the clone-to-`/tmp` operational rule)
 - Do not remove cloned repos or other audit artifacts from `/tmp`; the user will clean up when ready
 
 ## Before running a command
@@ -294,23 +291,21 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 
 ### TypeScript
 
-**Standards.**
+#### Standards
 
 - Adhere to Oxlint, dprint configurations.
 - Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
 - Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
 - Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
 - Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
-- No arrow functions: use named function declarations; arrows produce anonymous stack traces and hide intent.
-- No `const x = function() {}`: use a function declaration instead; declarations are TSDoc-compatible, support overloading, and are easier to scan.
+- Use named function declarations exclusively: no arrow functions (anonymous stack traces, hide intent), no const-bound function expressions (no TSDoc, no overloads, harder to scan). Exception for callbacks whose signature is dictated by an external API or library: arrows are unavoidable; name the function and parenthesise all params.
 - No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
-- Always name functions; parentheses around all arrow params in external API callbacks where arrows are unavoidable.
 - Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
 - No rest parameters (`...args`) in functions we control; accept an array parameter instead.
 - Export immediately at declaration; avoid `Object.assign` for extending typed objects.
 - Throw and return early; use overloads (most specific first).
 
-**Type system.**
+#### Type system
 
 - Explicit parameter and return types; `type` over `interface`; `Record` for maps.
 - Avoid generic `Function` type; avoid unused/optional params in `Generator<T>`/`AsyncGenerator<T>`.
@@ -322,7 +317,7 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 - TypeScript does not propagate `const` narrowing into **function declarations** (both tsc and tsgo); the compiler only extends flow analysis across `FunctionExpression`, `ArrowFunction`, and method/accessor closures, because declarations are hoisted and could be called before the narrowing guard. Fix: use a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check.
 - Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures.
 
-**Variables and values.**
+#### Variables and values
 
 - `const` over `let`. Two hard rules enforce this:
   - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), wrap the mutation in a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or extract a helper function ending in `return <local-binding>` (the helper-shape allowlist suppresses the report).
@@ -335,7 +330,7 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 - `satisfies` for type checking without widening; separate destructuring blocks for dependent values.
 - Magic literals as named `const` (exception: `-2` through `2`); for fractional values, compose from exempt range: `HALF = 1 / 2`, `QUARTER = HALF / 2`, `THREE_QUARTERS = HALF + QUARTER`.
 
-**Programming patterns.**
+#### Programming patterns
 
 - `async`/`await` only; no `.then()`/`.catch()`/`.finally()`; no explicit `new Promise`.
 - `Promise.all()` for concurrent ops; `Promise.allSettled()` when all results needed; `AbortController` for cancellation.
@@ -392,16 +387,18 @@ When writing instructions, configuration, or documentation that prescribes how a
 
 ### Documentation standards
 
+#### Prose style
+
 - No emojis in human-readable content.
 - No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
-- Sentence case for headings; **bold** for emphasis (not ALL CAPS).
+- Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead.
 - Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
 - Present tense for current state, future tense only for planned features.
 - Eliminate unnecessary connecting phrases.
 
-### Markdown conventions
+#### Markdown syntax
 
-- Break lines at semantic boundaries so text reads naturally without editor wrapping; **bold** for emphasis; no *italics*.
+- Break lines at semantic boundaries so text reads naturally without editor wrapping; no *italics*.
 - `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`).
 - Fenced code blocks with language tags; include file paths as comments.
 - Reference-style links for repeated URLs; relative links for internal docs.
@@ -467,7 +464,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 
 Several hooks act on agent output and may block or modify actions.
 
-- **`ccsr` stop hook**: inspects the assistant response at send time and rejects turns containing certain hedge phrases ("probably", "maybe", "likely", "most likely", "I think", "should be", and similar). Rejection returns the message to you with feedback; avoid via the pre-response checklist and hedge-phrases self-catch. Also flags responses that end in a question to the user without using the `AskUserQuestion` tool.
+- **`ccsr` stop hook**: inspects the assistant response at send time and rejects turns containing the hedge phrases listed under "Hedge phrases that signal a skipped step". Rejection returns the message to you with feedback; avoid via the pre-response checklist and hedge-phrases self-catch. Also flags responses that end in a question to the user without using the `AskUserQuestion` tool.
 - **`bash-output-filter` hook**: transforms Bash tool output (see "Bash output path collapse"). Display only; does not modify actions. Triggers a bypass when the command contains `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
 - **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/dev-script/forbidden-strings/`.
 

@@ -219,3 +219,45 @@ The PHILOSOPHY.AGENTS.md "What does not belong" rules above (drop standard-tool 
 The plan's proposed consolidation of `Architecture decisions` / `Enforcement mechanisms` / `Agent skills` into a single trailing section was **not applied**. The three address distinct concerns (code-organization rules; enforcement tooling that acts on agent output; skill-file pointers), and the consolidation gain (~4 lines of header overhead) does not justify topical conflation. They remain as three separate top-level sections.
 
 The line-number references in `PLANNING.extract-refactor-guardrail.md:36` (cited as `AGENTS.md:78-79`) were already stale before this rewrite, so no special accommodation was made for line-number stability. Cross-references to AGENTS.md from `docs/decisions/vector-design.md`, `TODO.forbidden-strings.md`, and `TROUBLESHOOTING.pi-compaction-empty-summary.md` are by topic, not by line, and remain valid.
+
+## What was compressed (2026-05-11)
+
+AGENTS.md was compressed from 6693 words / 480 lines to 6672 words / 477 lines (-0.3% words, -0.6% lines). The much smaller reduction relative to 2026-05-09 reflects the document already being near a Moderate-merge fixed point; this third pass targeted residual redundancy that accumulated post-2026-05-09 rather than addressing previously-untouched areas. The user explicitly chose the same Moderate-merge rubric (preserve all rules, examples, and concrete references; drop only duplicated framing prose), confirmed the merge of `Documentation standards` + `Markdown conventions`, and confirmed consolidation of the clone-source cluster around its canonical home.
+
+### Sub-section merges
+
+- **Documentation standards + Markdown conventions** -- merged into one `Documentation standards` section with two `####` sub-headers (`#### Prose style`, `#### Markdown syntax`). The "Documentation standards" header was retained (not "Documentation and Markdown" as initially proposed) to preserve an external reference at `PLANNING.forbidden-strings-em-dash.md:281`. Duplicate "**bold** for emphasis" mention in the Markdown-conventions opener removed; the rule remains under `#### Prose style`.
+- **TypeScript function-declaration bullets** -- three bullets ("No arrow functions", "No const x = function() {}", "Always name functions; parentheses around all arrow params in external API callbacks where arrows are unavoidable") merged into one bullet preserving all four rationales (anonymous stack traces, hide intent, no TSDoc, no overloads, harder to scan, external-API exception with paren rule). The separate "No calling functions before their declaration" bullet kept distinct.
+- **Pre-response checklist items 7 and 8** -- merged into one item covering both verify-existing-citation and add-missing-citation cases. Old item 9 renumbered to new item 8.
+- **Communication style paragraphs 4-5** -- merged into one paragraph covering documentation-gap recognition, propose-edit, no-promise-to-future-self, monotonic-growth counter, and the cue.
+
+### Prose tightening
+
+- **`ccsr` stop hook entry** in `Enforcement mechanisms` -- the inline 6-phrase hedge list ("probably", "maybe", etc.) replaced by a back-reference to the canonical "Hedge phrases that signal a skipped step" section.
+- **Hedge phrases section** -- the reciprocal back-pointer "(Item 4 of the pre-response checklist applies to the same phrases.)" dropped; the checklist already points here.
+- **Proactivity calibration** -- three "(see X)" parenthetical cross-references dropped from paragraph 2; the rules stand on their own. The recognition-cue paragraph at line 23 retained as distinct from the action rule at line 19.
+- **Clone-source-and-read cluster** -- six mentions (pre-response checklist item 2, hedge-phrase entry "no public diagnosis exists", research-tools web-search rationale, before-running-command clone rule, Third-party-libraries canonical, "Name the verification step" example) consolidated. Line 387 (Third-party libraries) kept as canonical home with the full rule and the "quote file path, line number, code excerpt" caveat. Other mentions reference back via "(see ...)" pointers. Distinct sub-rules preserved separately: the `gh repo clone` vs `git clone` operational preference (`Before running a command`); the "do not remove cloned repos from `/tmp`" lifecycle rule (`Research tools`); the verification-step example value (`Name the verification step`).
+
+### Heading convention fix
+
+The 2026-05-09 pass introduced a pattern of using `**Title.**` bolded paragraphs as section sub-headings (e.g. `**Standards.**`, `**Type system.**` under `### TypeScript`). The user flagged this in the 2026-05-11 pass as misusing bold for titles. Convention now: bold is for inline emphasis only; section sub-headings use proper ATX headers (`####`) one level deeper than the parent `###`.
+
+Converted in this pass:
+- `**Zero-match silent failures:**` -> `#### Zero-match silent failures`
+- `**Non-zero-match silent failures (same shape, opposite direction):**` -> `#### Non-zero-match silent failures (same shape, opposite direction)`
+- TypeScript: `**Standards.**`, `**Type system.**`, `**Variables and values.**`, `**Programming patterns.**` -> `#### Standards`, `#### Type system`, `#### Variables and values`, `#### Programming patterns`
+- Documentation standards: `**Prose style.**`, `**Markdown syntax.**` (newly introduced earlier in this same pass) -> `#### Prose style`, `#### Markdown syntax`
+
+Retained as inline lead-ins (not titles, not converted): `**Measurable facts: measure.**`, `**Non-measurable facts: ask.**`, `**Exception: genuine uncertainty.**`. Each is followed immediately by a non-bolded sentence continuation on the same line, which is correct bold-for-emphasis usage rather than bold-as-title.
+
+The Prose-style rule was sharpened to capture the convention: "Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead."
+
+### Structure note
+
+The `Documentation standards` and `Markdown conventions` section headers were planned to merge into `Documentation and Markdown`, but a grep across the repository found `PLANNING.forbidden-strings-em-dash.md:281` referencing "Documentation standards" by name. Section names should remain stable (`PHILOSOPHY.AGENTS.md:221`); the merge proceeded under the original `Documentation standards` header with the prose-and-markdown content reorganized into two `####` sub-headers. This preserves the external reference.
+
+### What was deliberately not done
+
+The PHILOSOPHY.AGENTS.md "What does not belong" rules were again not opted into; the user chose the Moderate-merge rubric (matching the 2026-05-09 pass). The `Pre-response checklist` item 4 rephrase ("(see X)" -> "(full list: X)") was considered but skipped: the rephrase did not shorten the back-reference and offered no DRY benefit. The proactivity recognition-cue paragraph (post-edit line 23) was retained alongside the action rule (line 19) despite their surface similarity; the cue framing aids recognition.
+
+The `Pre-response checklist` items 3, 5, 6 were not consolidated: tightening these to back-references would strip the remediation verb, which is the checklist's whole value as a quick-scan tool. The verification-step example at `Name the verification step` line 137 ("verified by reading the package's README at the cloned repo") was retained verbatim despite mentioning a cloned repo; it is one of three illustrative examples, not a duplicate rule.
