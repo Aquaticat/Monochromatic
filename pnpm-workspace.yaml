@@ -165,7 +165,6 @@ overrides:
   '@earendil-works/pi-ai>zod-to-json-schema': '-'
   '@earendil-works/pi-coding-agent>@mariozechner/clipboard': '-'
   '@earendil-works/pi-coding-agent>marked': '-'
-  '@earendil-works/pi-coding-agent>undici': '-'
   '@earendil-works/pi-tui>chalk': '-'
   '@earendil-works/pi-tui>mime-types': '-'
 packageImportMethod: hardlink

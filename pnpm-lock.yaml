@@ -305,7 +305,6 @@ overrides:
   '@earendil-works/pi-ai>zod-to-json-schema': '-'
   '@earendil-works/pi-coding-agent>@mariozechner/clipboard': '-'
   '@earendil-works/pi-coding-agent>marked': '-'
-  '@earendil-works/pi-coding-agent>undici': '-'
   '@earendil-works/pi-tui>chalk': '-'
   '@earendil-works/pi-tui>mime-types': '-'
 
@@ -5582,6 +5581,10 @@ packages:
   undici-types@7.19.2:
     resolution: {integrity: sha512-qYVnV5OEm2AW8cJMCpdV20CDyaN3g0AjDlOGf1OW4iaDEx8MwdtChUp4zu4H0VP3nDRF/8RKWH+IPp9uW0YGZg==}
 
+  undici@7.25.0:
+    resolution: {integrity: sha512-xXnp4kTyor2Zq+J1FfPI6Eq3ew5h6Vl0F/8d9XU5zZQf1tX9s2Su1/3PiMmUANFULpmksxkClamIZcaUqryHsQ==}
+    engines: {node: '>=20.18.1'}
+
   unicorn-magic@0.3.0:
     resolution: {integrity: sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA==}
     engines: {node: '>=18'}
@@ -5959,6 +5962,7 @@ snapshots:
       proper-lockfile: 4.1.2
       strip-ansi: 7.2.0
       typebox: 1.1.34
+      undici: 7.25.0
       uuid: 14.0.0
       yaml: 2.8.3
     transitivePeerDependencies:
@@ -9028,6 +9032,8 @@ snapshots:
       quansync: 1.0.0
 
   undici-types@7.19.2: {}
+
+  undici@7.25.0: {}
 
   unicorn-magic@0.3.0: {}
 

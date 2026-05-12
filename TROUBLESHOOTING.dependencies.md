@@ -342,8 +342,15 @@ The overrides retained for pi-coding-agent are:
   package falls back to `clipboard = null`.
 - `marked` -- pi-coding-agent vendors `core/export-html/vendor/marked.min.js`
   and does not statically import the npm `marked` package.
-- `undici` -- statically imported only by `cli.js`, which the package's
-  `dist/index.js` does not export. Library consumers never load it.
+
+`undici` was previously retained as an override on the assumption that
+"library consumers never load it." That audit missed the `bin` entry:
+`package.json` maps `"pi": "dist/cli.js"`, and `dist/cli.js:8` statically
+imports `undici` (it installs an `EnvHttpProxyAgent` with disabled body /
+header timeouts). The workspace ships a `commit` shell alias that resolves
+to `pi 'commit all'`, so the `pi` binary is a first-class consumer of this
+workspace. Run-the-binary, not just import-the-library, is part of the
+"reachable from each pi-* package's entry" audit. The override is gone.
 
 The overrides retained for pi-tui are `chalk` and `mime-types`, neither
 of which the dist statically imports.
