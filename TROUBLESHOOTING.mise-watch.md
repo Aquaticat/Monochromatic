@@ -119,6 +119,17 @@ SIGINT" below.
 - Skipping the write also skips the mtime touch. Any consumer that keys
   off mtime sees the file as unchanged, which matches the semantics.
 
+### Update (2026-05): external-editor case is also covered now
+
+editord's `dev:server` runs through `@monochromatic-dev/dev-script-watch-restart`,
+which maintains an in-process content-hash cache and re-hashes every
+file on each filesystem event. A write with identical bytes (whoever
+issued it: editord's `saveFile`, vim's `formatprg`, vscode's
+`editor.formatOnSave`, `cp -p` from a sibling shell) produces a cache
+hit and no restart. The save-side skip in `saveFile` stays — it is
+strictly cheaper than the watch-side compare (no write, no event, no
+hash) for the editord-on-editord path it already covered.
+
 ---
 
 ## Server restart generates fresh auth token (client loses connection)
@@ -192,6 +203,16 @@ watchexec -w src/server -r -- bun src/server/index.ts
 
 Process tree: `watchexec → bun`. SIGTERM goes directly to bun,
 the signal handler runs, the port is released before the new instance starts.
+
+### Update (2026-05)
+
+editord's `dev:server` migrated off watchexec to
+`@monochromatic-dev/dev-script-watch-restart`. The new tree is even
+shallower (`watch-restart → bun`, no intermediate wrapper at all) because
+the watcher spawns the bun child directly via `node:child_process.spawn`
+with `stdio: 'inherit'`. SIGTERM still reaches bun by construction; the
+mitigation principle (flat process tree) is preserved by tool choice
+rather than by careful argv composition.
 
 ### What does not work
 
@@ -328,11 +349,27 @@ existing on the closure side.
 
 ### Workaround
 
-Resolved by removing `-j` from `dev:server` and moving the content-equality
-check into editord's `saveFile`. The `--no-meta` flag stays. See the
-"Unnecessary restarts on metadata-only or same-content writes" section
-above for the new behavior matrix and the trade-offs (external editors
-doing byte-identical format-on-save still trigger a restart).
+Resolved in two stages.
+
+Stage 1 (2026-04, commit `27051b66`): remove `-j` from `dev:server`; move
+the content-equality check into editord's `saveFile`. The `--no-meta`
+flag stays. Covered the editord-on-editord dogfooding case but external
+editors doing byte-identical format-on-save still triggered a restart.
+
+Stage 2 (2026-05): editord's `dev:server` migrates off watchexec
+entirely to `@monochromatic-dev/dev-script-watch-restart`. The new
+package owns an in-process content-hash cache (suppressing byte-identical
+writes regardless of writer, including external editors' format-on-save),
+spawns the bun child directly via `node:child_process` (one process
+layer; SIGTERM reaches the child without traversing a wrapper), and has
+no jaq filter program at all — so neither the SIGINT hang nor the deep-
+tree EADDRINUSE failure mode can recur for this task. The watchexec bug
+remains real; the editord loop simply no longer touches the code path.
+
+The "mise watch drops --no-meta and -J" section above still stands as a
+general mise/watchexec interaction bug; the editord task's escape from
+it was to call watchexec directly (stage 1) and then to leave watchexec
+behind (stage 2).
 
 Earlier alternatives considered:
 
@@ -343,9 +380,13 @@ Earlier alternatives considered:
    case (editord editing editord's source) restarts on every Ctrl+S, even
    when no content changed, which kills WebSocket connections and LSP
    servers.
-3. Custom TypeScript watcher replacing watchexec entirely. Rejected as
-   over-scoped: only one task uses `-j`, and the save-side skip handles
-   the actual observed trigger source.
+3. Custom TypeScript watcher replacing watchexec entirely. Initially
+   rejected as over-scoped (stage 1); revisited and adopted in stage 2
+   once the external-editor format-on-save case and the architectural
+   failure modes (SIGINT hang, deep-tree signal propagation) were
+   weighed against the implementation cost. Lives at
+   `packages/dev-script/watch-restart/`; see its README for the chokidar
+   + custom `child_process.spawn` rationale.
 
 ### What does not work
 

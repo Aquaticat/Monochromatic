@@ -223,11 +223,11 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] @optique/run
 - [ ] preact
 - [ ] preact-render-to-string
-- [ ] watcher
+- [x] watcher -- evaluated 2026-05 for `packages/dev-script/watch-restart/`; rejected in favour of chokidar (atomic-save + `awaitWriteFinish` stability window, larger production track record)
 - [ ] @csstools/css-tokenizer
 - [ ] @cspotcode/outdent
 - [ ] serialize-error
-- [ ] chokidar
+- [x] chokidar -- evaluated 2026-05; adopted by `packages/dev-script/watch-restart/` (one transitive dep `readdirp`, `atomic: true` for rename+create, `awaitWriteFinish` for chunked writes, cross-platform recursion via FSEvents/inotify/ReadDirectoryChangesW)
 - [ ] the-new-css-reset
 - [ ] TODS
 - [ ] opentype.js

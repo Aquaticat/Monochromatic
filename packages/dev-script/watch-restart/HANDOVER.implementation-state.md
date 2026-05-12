@@ -4,17 +4,21 @@
 
 The package `packages/dev-script/watch-restart/` is being built per the approved plan at `/home/user/.claude/plans/plan-this-first-question-abstract-hopcroft.md`. Read that plan first; it has the full design, the option matrix that produced each decision, and the verification checklist. The original product handover at `packages/desktop-daemon/editord/HANDOVER.custom-dev-server-watcher.md` has the architectural rationale (the failures we are excluding by construction, the chokidar-vs-watchman analysis, etc.).
 
-**Status**: tasks 1 through 8 done. Tasks 9 and 10 remain. The package builds, lints, type-checks, and tests pass at the current checkpoint.
+**Status**: tasks 1 through 10 done. Package builds, lints, type-checks, and tests pass; editord's `dev:server` is on watch-restart; AUDIT.md and TROUBLESHOOTING.mise-watch.md are updated. Remaining work is interactive verification of cases 5 through 11 from the plan (a human at the terminal driving the dev loop).
 
-**Last commit**: `1a5216bd feat(dev-script/watch-restart): add CLI entrypoint with optique parser`. Run `git log --oneline -- packages/dev-script/watch-restart` to see the full task-by-task progression.
+**Last commit**: see `git log --oneline -- packages/dev-script/watch-restart packages/desktop-daemon/editord AUDIT.md TROUBLESHOOTING.mise-watch.md` for the full task-by-task progression. Task 9 commit: `f006520e feat(desktop-daemon/editord): switch dev:server to watch-restart`.
 
-**Next concrete action (task 9)**:
+**Remaining interactive verification (cases 5 to 11 from the plan)**:
 
-1. Edit `packages/desktop-daemon/editord/package.json` line 28 (after `"nano-spawn": "catalog:"`): add `"@monochromatic-dev/dev-script-watch-restart": "workspace:*"` to `dependencies`. The current dependencies list is at lines 8-29.
-2. Edit `packages/desktop-daemon/editord/mise.toml` lines 34-44 (the `[tasks."dev:server"]` block): replace the comment block (lines 37-43) and the `run = "watchexec ..."` line with `run = "watch-restart -w src/server -- bun src/server/index.ts"`. Keep `hide = true` and the `description`.
-3. Run `pnpm install` **outside the sandbox** (AGENTS.md "Sandbox breaks `pnpm install`"). This links `watch-restart` into editord's `node_modules/.bin/`.
-4. Verify: `mise run //packages/desktop-daemon/editord:dev:server` starts the bun server; the server responds to HTTP; editing a `src/server/` file with new content triggers exactly one restart; saving byte-identical content produces no restart; Ctrl+C exits within ~1 s with no `EADDRINUSE` on a subsequent start. The full checklist is in the plan's "Verification (end-to-end)" cases 5–11.
-5. After the manual verification confirms green, also run `rg 'watchexec' packages/desktop-daemon/editord/` and expect zero matches (plan case 12).
+1. `mise run //packages/desktop-daemon/editord:dev:server` starts the bun server through `watch-restart`; the server prints startup logs and responds to HTTP on the configured port.
+2. Editing any file under `src/server/` with new content triggers exactly one restart; previous bun exits, new bun starts on the same port (no `EADDRINUSE`).
+3. Saving byte-identical content (either through editord's own `save.ts` flow or via an external editor's format-on-save) produces no restart.
+4. `touch src/server/index.ts` produces no restart (metadata-only; hash unchanged).
+5. Ctrl+C exits the watcher within ~1 s; the bun child exits; a subsequent `mise run //packages/desktop-daemon/editord:dev:server` succeeds (no leaked port, no zombie).
+6. `kill -TERM <pid>` against the watcher produces the same clean shutdown.
+7. Bun child's stdout and stderr appear unchanged (stdio inherit).
+
+The `rg 'watchexec' packages/desktop-daemon/editord/` invariant from the plan is satisfied modulo the historical mention in `HANDOVER.custom-dev-server-watcher.md` (the doc whose subject is the migration off watchexec); no live config or source references the binary.
 
 ## State on disk (verified before this handover)
 
@@ -173,9 +177,9 @@ The task list IDs match `TaskList` entries.
 
 ~~8. Implement `cli.ts` + `flags-to-filter.ts` + tests.~~ **Done (without `flags-to-filter.ts`; see notes).** `cli.ts` has the optique parser (module-internal), `parseArgs` helper (exported), `argsToOptions` mapper (exported), one-shot SIGINT/SIGTERM handlers, and a top-level program gated by `import.meta.main`. 12 tests pass covering argv → ParsedArgs → StartWatchRestartOptions round trip plus error paths. `flags-to-filter.ts` was dropped because the orchestrator (task 7) already compiles options into a filter chain internally; reintroducing it would duplicate logic.
 
-9. **Switch editord `dev:server` to `watch-restart`.** Add `"@monochromatic-dev/dev-script-watch-restart": "workspace:*"` to `packages/desktop-daemon/editord/package.json` dependencies. Rewrite the `dev:server` task in `packages/desktop-daemon/editord/mise.toml` from `watchexec -w src/server --no-meta -r -- bun src/server/index.ts` to `watch-restart -w src/server -- bun src/server/index.ts`. Drop the comment block above the task. Run `pnpm install` to link the workspace dep. Verify end-to-end per the plan's "Verification" section (start the server, edit a file, watch the restart; touch a file, no restart; Ctrl+C, clean shutdown).
+~~9. **Switch editord `dev:server` to `watch-restart`.**~~ **Done** (commit `f006520e`). `packages/desktop-daemon/editord/package.json` gained the workspace dep; `mise.toml` runs `watch-restart -w src/server -- bun src/server/index.ts`. `pnpm install` linked `watch-restart` into `editord/node_modules/.bin/`. `bun src/cli.ts --help` through that shim renders the optique-generated usage. Smoke-verified mechanically; interactive verification cases 5 to 11 listed at the top of this file.
 
-10. **Create `TROUBLESHOOTING.mise-watch.md` + tick AUDIT.md.** Lift the failure-mode analysis from the handover (`HANDOVER.custom-dev-server-watcher.md`) into `packages/desktop-daemon/editord/TROUBLESHOOTING.mise-watch.md`. Two sections: "EADDRINUSE from deep process trees on restart" (SIGTERM not propagating through `watchexec → mise → nu → bun`) and "watchexec `-j` filter program hangs on SIGINT" (Tokio reference cycle in `FilterProgs::new`). Both include the upstream-bug analysis and the workaround note: the loop has migrated off watchexec entirely. Update `AUDIT.md`: tick `chokidar` and remove the empty `watcher` line (or tick it with note that we picked chokidar instead).
+~~10. **Create `TROUBLESHOOTING.mise-watch.md` + tick AUDIT.md.**~~ **Done.** The plan asked for a new file at `packages/desktop-daemon/editord/TROUBLESHOOTING.mise-watch.md`, but `TROUBLESHOOTING.mise-watch.md` already lives at the workspace root (added in commit `1d5ff08d`, last touched in commit `d5cffaba`); the planning agent missed it. `HANDOVER.custom-dev-server-watcher.md` lines 302 and 336 say to **amend** the existing doc, not create a new one. Followed the HANDOVER directive: the existing root doc was amended in place with migration-status notes (Update sections under "Unnecessary restarts on metadata-only or same-content writes", "EADDRINUSE from deep process trees on restart", and the SIGINT-hang Workaround paragraph). The upstream-bug analysis and draft GitHub issue stayed intact. `AUDIT.md` ticked: `chokidar` adopted by `watch-restart` (with reason inline); `watcher` rejected with reason.
 
 ## Workspace conventions the implementer must follow
 
