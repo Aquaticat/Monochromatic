@@ -228,6 +228,7 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] @cspotcode/outdent
 - [ ] serialize-error
 - [x] chokidar -- evaluated 2026-05; adopted by `packages/dev-script/watch-restart/` (one transitive dep `readdirp`, `atomic: true` for rename+create, `awaitWriteFinish` for chunked writes, cross-platform recursion via FSEvents/inotify/ReadDirectoryChangesW)
+- [x] ignore (kaelzhang/node-ignore) -- evaluated 2026-05; adopted by `packages/dev-script/watch-restart/src/filters/gitignore.ts` for `--gitignore` / `--ignore-file` parsing (zero runtime deps, mirrors git's own semantics including negation `!`, anchored leading `/`, directory-only trailing `/`, and `**`; cheaper than reimplementing the spec)
 - [ ] the-new-css-reset
 - [ ] TODS
 - [ ] opentype.js
