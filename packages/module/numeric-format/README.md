@@ -62,6 +62,27 @@ No `bestFit`-style option was added.
 The custom implementation here is justified.
 Use `Intl.DurationFormat` directly for any integer-seconds multi-unit case (e.g. `1h30min` clocks); they are not in scope for this package.
 
+### Why `formatTrackedTime` (in `webapp-productivity/done`) stayed put
+
+A natural migration candidate is `formatTrackedTime` (integer seconds, multi-unit output like `1h30min0s`).
+It was deferred during this package's creation for three reasons surfaced by an empirical Bun probe of `Intl.DurationFormat` on Firefox 140's V8/JSC-compatible engine semantics:
+
+- **Empty-string regression at `0s`.**
+  `new Intl.DurationFormat('en', { style: 'long' | 'short' | 'narrow' }).format({hours:0,minutes:0,seconds:0})` returns the empty string.
+  The current `formatTrackedTime(0)` returns `'0s'`,
+  and the consuming code renders `\`tracked: ${...}\``,
+  so a direct swap produces `'tracked: '` for a fresh task.
+  Only `style: 'digital'` returns `'0:00:00'` for the zero case.
+- **Output shape change.**
+  For `5400s`: current `'1h30min0s'`; Intl `long` `'1 hour, 30 minutes'`; `short` `'1 hr, 30 min'`; `narrow` `'1h 30m'`; `digital` `'1:30:00'`.
+  None match exactly, and the choice is product/design, not technical.
+- **Locale choice is a non-measurable preference.**
+  Hard-coded `'en'` vs `navigator.language` vs `undefined` (host default) all have valid arguments.
+
+So `formatTrackedTime` stays as-is in `done` until someone makes those three calls.
+When the migration happens it belongs in the consuming app, not here;
+`Intl.DurationFormat` is already on the platform.
+
 ## Why not `Intl.NumberFormat` for bytes
 
 `Intl.NumberFormat` with `style: "unit"` supports the SI byte units (`byte`, `kilobyte`, `megabyte`, `gigabyte`, `terabyte`, `petabyte`),
