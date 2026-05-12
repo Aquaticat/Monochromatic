@@ -359,3 +359,109 @@ After this cleanup, `mise run //packages/pi/{auto-mode,morph-compact}:test:unit`
 both pass. `packages/pi/terminal-title:test:unit` fails on unrelated string
 assertions (`expected '✳ X' to equal 'π X'`) that predate the override
 work; those are test-fixture issues to fix separately.
+
+### ms (kept intentionally; no override)
+
+`pnpm install` emits no warning for `ms`; the package is not deprecated and
+carries no security advisory as of 2026-05-12.
+The upstream source is 3024 bytes across 162 lines, MIT-licensed, with zero
+runtime dependencies.
+The investigation below records why the blocklist mechanism was considered
+and rejected, so future reviewers do not repeat the analysis.
+
+#### Dependency chain
+
+```text
+ms@2.1.3
+├─┬ debug@4.4.3
+│ ├── @tokenizer/inflate → file-type → @earendil-works/pi-coding-agent
+│ │                     → @monochromatic-dev/pi-{auto-mode,morph-compact,terminal-title}
+│ ├── extract-zip → @earendil-works/pi-coding-agent [deduped]
+│ ├── micromark → @monochromatic-dev/dev-script-inference-canary-viewer
+│ │             → @monochromatic-dev/webapp-content-messages-demo
+│ │             → mdast-util-from-markdown → remark-* → @mdx-js/mdx
+│ │             → @monochromatic-dev/webapp-content-ssg-test
+│ └── stylelint → @monochromatic-dev/config-stylelint
+│                → stylelint-config-recommended → stylelint-config-standard
+│                → monochromatic (workspace root devDependency)
+└─┬ logform@2.7.0
+  ├── winston → neovim → @monochromatic-dev/mcp-nvim
+  └── winston-transport → winston [deduped]
+```
+
+`pnpm why ms` reproduces this on demand.
+No workspace package imports `ms` directly; the only declared consumers are
+`debug@4.4.3` and `logform@2.7.0`.
+
+#### API surface used
+
+Both consumers call `ms(number)` for the short-form duration humaniser and
+nothing else.
+
+- `debug/src/common.js:14` assigns `createDebug.humanize = require('ms')`,
+  and `debug` calls `ms(this.diff)` to produce log prefixes such as `+2m`.
+- `logform/ms.js:4` imports `ms`; `logform/ms.js:15` writes
+  `info.ms` as a template literal that prepends `+` to `ms(this.diff)`.
+
+Neither path uses the string-parser overload (`ms('2 days')`) or the
+`{ long: true }` formatter option.
+
+#### Why each blocklist action was rejected
+
+- Removal (`'ms': '-'` in `pnpm-workspace.yaml`):
+  `debug/src/common.js:14` hard-requires `ms` at module load.
+  A missing module crashes every code path that loads `debug` with
+  `MODULE_NOT_FOUND`, which transitively breaks stylelint, micromark,
+  pi-coding-agent, and every workspace target listed in the chain above.
+- Throwing stub (`POLICY` entry with `action: 'throw'` in `.pnpmfile.mjs`):
+  loading the workspace stub throws at the same import site.
+  Same crash as removal, with a custom error message; not a viable
+  replacement.
+- Silent stub (`POLICY` entry with `action: 'silent'` in `.pnpmfile.mjs`):
+  the call returns the callable Proxy defined in
+  `packages/stub/silent/index.cjs:3-19`.
+  Embedding the result in a template literal (the consumer pattern at
+  `logform/ms.js:15`) triggers primitive coercion.
+  Every Proxy `get` returns the Proxy itself, including `Symbol.toPrimitive`,
+  so coercion fails with
+  `TypeError: Cannot convert object to primitive value`.
+  The build does not stay green.
+- API-compatible shim (`packages/shim/ms/` wired via a `link:` override in
+  `pnpm-workspace.yaml`):
+  the pattern works technically; the precedent is
+  `packages/shim/node-domexception/`.
+  The cost is one new workspace package (implementation, type declaration,
+  tests, README, mise.toml) plus this audit-trail entry, set against no
+  current trigger.
+  The upstream package is not deprecated, has no advisory, and emits no
+  install warning.
+  A reimplementation must reproduce upstream behaviour exactly: rounding
+  boundaries, the 1.5x plural threshold for the long form, the 100-character
+  parse cap, and `NaN` / non-finite handling.
+  The downstream `debug` output is read by tooling across the ecosystem;
+  subtle deviation regresses log fixtures.
+  The maintenance burden and regression risk outweigh the marginal
+  governance benefit of removing one well-behaved transitive.
+
+#### Conditions for revisiting
+
+Reopen the question when any of the following occurs:
+
+- Upstream `ms` is deprecated, or pnpm starts emitting an install warning
+  for it.
+- A security advisory is filed against any maintained `ms` release.
+- The package's license changes from MIT.
+- A workspace package gains a direct `import 'ms'`, making first-party
+  code subject to the policy.
+- A workspace-wide policy is adopted that bans unjustified external
+  transitive dependencies regardless of pain point.
+
+The `@types/ms@2.1.0` types-only package, pulled in via
+`micromark → @types/debug → @types/ms`, is left in place for the same
+reason: no runtime impact, no install warning, no advisory.
+If a shim is ever introduced, override `@types/ms` to `'-'` so the
+workspace shim's own `index.d.cts` owns the types.
+
+See `docs/dependency-blocklist.md` for the decision rule
+(throw / silent / remove / shim) and the `node-domexception` entry above
+for the worked example of the API-compatible shim path.
