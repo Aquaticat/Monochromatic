@@ -4,9 +4,12 @@ Git wrapper that enforces safety rules before forwarding to the real git binary.
 
 ## Rules
 
-**Require root**: rejects commands when the working directory is not the root
-of a git repository (where `.git` exists). Exempt subcommands: `init`, `clone`,
-`version`, `help`, and `config` with `--global`/`--system`/`--list`.
+**Require root**: when the working directory is inside a git repository,
+rejects commands unless it is the repository root (where `.git` lives). When
+no `.git` is found up the directory tree, the command passes through to real
+git untouched, so git itself reports the missing-repo error if relevant.
+Exempt subcommands: `init`, `clone`, `version`, `help`, and `config` with
+`--global`/`--system`/`--list`.
 
 **Atomic push**: injects `--atomic` into `git push` commands automatically,
 ensuring all refs update together or none do. Override with `--no-atomic`.

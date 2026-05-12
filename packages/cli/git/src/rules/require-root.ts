@@ -32,9 +32,10 @@ const GLOBAL_CONFIG_FLAGS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Enforces that the working directory is the root of a git repository.
- * Uses `findUp` to locate `.git` up the directory tree, then verifies
- * that it lives in the current directory (not a parent).
+ * Enforces that, when the working directory lives inside a git repository,
+ * it is the root of that repository (where `.git` sits). When `.git` is not
+ * found up the directory tree, the rule passes the command through to real
+ * git, which will surface its own error if the subcommand needs a repo.
  *
  * Exempt subcommands: init, clone, version, help.
  * Also exempts `config` with `--global`, `--system`, or `--list`.
@@ -43,12 +44,12 @@ const GLOBAL_CONFIG_FLAGS: ReadonlySet<string> = new Set([
  *
  * @returns Unmodified args if the check passes.
  *
- * @throws When not at repo root and the command requires it.
+ * @throws When inside a repo but not at its root.
  *
  * @example
  * ```ts
  * await requireRoot(['status']);
- * // throws if cwd is not the repo root
+ * // throws if cwd is inside a repo but not at its root
  *
  * await requireRoot(['clone', 'https://github.com/...']);
  * // always passes -- clone is exempt
@@ -85,10 +86,8 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
   );
 
   if (gitPath === undefined) {
-    throw new Error(
-      'cli-git: not inside a git repository. '
-        + 'Tip: run this command inside a git repository.',
-    );
+    rl.debug('not inside a git repository: forwarding to real git',);
+    return args;
   }
 
   /** Directory containing the found `.git`. */
