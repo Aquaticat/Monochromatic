@@ -11,10 +11,11 @@ Anything `Intl` already handles should be called directly at the consumer.
 
 ## Exports
 
-| Function         | Source            | Description                                                                  |
-| ---------------- | ----------------- | ---------------------------------------------------------------------------- |
-| `formatBytes`    | `src/byte.ts`     | IEC binary byte formatter (`KiB` / `MiB` / `GiB`).                           |
-| `formatDuration` | `src/duration.ts` | Magnitude-adaptive sub-ms / ms / s formatter for `performance.now()` deltas. |
+| Function                | Source            | Description                                                                          |
+| ----------------------- | ----------------- | ------------------------------------------------------------------------------------ |
+| `formatBytes`           | `src/byte.ts`     | IEC binary byte formatter (`KiB` / `MiB` / `GiB`).                                   |
+| `formatDuration`        | `src/duration.ts` | Magnitude-adaptive sub-ms / ms / s formatter for `performance.now()` deltas.         |
+| `formatTrackedDuration` | `src/duration.ts` | Ultra-compact seconds-to-years ladder for productivity-app chip text (`1h30m`, `3d1h`, `1y2m`). |
 
 ## Why not `Intl.DurationFormat`
 
@@ -62,25 +63,50 @@ No `bestFit`-style option was added.
 The custom implementation here is justified.
 Use `Intl.DurationFormat` directly for any integer-seconds multi-unit case (e.g. `1h30min` clocks); they are not in scope for this package.
 
-### `formatTrackedTime` (in `webapp-productivity/done`) was migrated to `Intl.DurationFormat`
+### `formatTrackedDuration` (productivity-app tracked time)
 
-The natural migration candidate was `formatTrackedTime` (integer seconds, multi-unit output).
-Three blockers were considered, all resolved by picking `style: 'digital'`:
+`formatTrackedTime` was first migrated to `Intl.DurationFormat` with `style: 'digital'`, producing `H:MM:SS`.
+That shape forces mental arithmetic past 24h (a 3-day task renders `73:00:00`), so a second migration
+hand-rolled an ultra-compact ladder.
+The hand-roll is justified by three Intl gaps that compose:
 
-- **Empty-string regression at `0s`** for non-digital styles
-  (`new Intl.DurationFormat('en', { style: 'long' | 'short' | 'narrow' }).format({hours:0,minutes:0,seconds:0})` returns `""`).
-  Resolved: `style: 'digital'` returns `'0:00:00'` and never goes empty.
-- **Output shape change.**
-  Old `'1h30min0s'` -> new `'1:30:00'`.
-  Picked for stopwatch / timer convention; consistent `H:MM:SS` shape regardless of magnitude
-  (a 73-hour task is `73:00:00`, not `3 days, 1:00:00`).
-- **Locale choice.**
-  Left undefined so numerals follow the host's `Intl` default
-  (Arabic / Farsi locales render localized digits; Latin-numeral locales are unaffected).
+1. `Intl.DurationFormat` with `style: 'narrow'` produces `Xh Ym` (space-separated).
+   The app wants no space (`Xh0m` for stopwatch-style stability under live ticks).
+   Stripping the space post-format is locale-fragile.
+2. Narrow suffixes are locale data, not constants: `週` and `日` in Japanese, `세` and `일` in Korean.
+   The app wants ASCII single-letter suffixes everywhere so chip widths stay predictable
+   and the visual scan does not depend on locale.
+3. The decomposition uses 30 days per month and 365 days per year.
+   `Intl.DurationFormat` does not normalize across variable-length units;
+   the caller has to decompose anyway, and `30d ≈ 1 month` is an app-domain convention,
+   not an Intl default.
 
-The thin wrapper lives in the consuming webapp, not this package;
-`Intl.DurationFormat` is already on the platform and the only app-specific glue is the
-seconds -> `{hours, minutes, seconds}` decomposition.
+Output rule: strict top-2 in adjacency.
+The biggest non-zero unit pairs with the immediately smaller unit, even if the smaller one is zero.
+Seconds-only renders as top-1 (`Xs`), all-zero renders as `0s`.
+
+| Magnitude  | Shape  | Example                                          |
+| ---------- | ------ | ------------------------------------------------ |
+| zero       | `0s`   | `formatTrackedDuration(0)` -> `'0s'`             |
+| < 1 minute | `Xs`   | `formatTrackedDuration(45)` -> `'45s'`           |
+| minutes    | `XmYs` | `formatTrackedDuration(90)` -> `'1m30s'`         |
+| hours      | `XhYm` | `formatTrackedDuration(5_400)` -> `'1h30m'`      |
+| days       | `XdYh` | `formatTrackedDuration(263_400)` -> `'3d1h'`     |
+| weeks      | `XwYd` | `formatTrackedDuration(1_468_800)` -> `'2w3d'`   |
+| months     | `XmYw` | `formatTrackedDuration(30 * 86400)` -> `'1m0w'`  |
+| years      | `XyYm` | `formatTrackedDuration(425 * 86400)` -> `'1y2m'` |
+
+Single-letter `m` is reused for both months and minutes; the secondary suffix always disambiguates.
+A standalone `Xm` chip never occurs because seconds-only renders as `Xs`.
+
+Trade-offs from strict adjacency and the 30 / 365 approximations:
+
+- `35d` of tracked time renders as `1m0w` (months pairs with weeks=0; the trailing 5 days are dropped).
+  Acceptable cost for visual stability during live timer ticks.
+- 12 months in this system equals 360 days (12 × 30), not 365.
+  A task at 360 days renders `12m0w`; at 365 days it crosses into `1y0m`;
+  at 390 days it renders `1y0m` (the 25-day remainder is below the 30-day month threshold).
+  Same task class, different shape near the year boundary, because the two approximations are not internally consistent.
 
 ## Why not `Intl.NumberFormat` for bytes
 

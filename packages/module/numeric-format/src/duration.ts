@@ -1,29 +1,36 @@
 /**
- * Magnitude-adaptive duration formatter for developer-facing output
- * (test summaries, timing logs, perf traces).
+ * Time-category duration formatters that fall outside `Intl.DurationFormat`.
  *
- * `performance.now()` returns sub-millisecond precision (microseconds on
- * Node, nanoseconds on Bun); truncating to whole milliseconds collapses
- * most unit-test durations to `0ms` or `1ms`, hiding the per-test drift
- * signal that the duration log exists to surface. The output scales by
- * magnitude so summary columns stay narrow on slow tests while fast
- * tests retain sub-ms detail.
+ * Two distinct shapes live here:
  *
- * Not covered by `Intl.DurationFormat` because:
+ * - {@link formatDuration} — magnitude-adaptive sub-millisecond / ms / s
+ *   for `performance.now()` deltas (test summaries, perf traces).
+ * - {@link formatTrackedDuration} — ultra-compact human-friendly ladder
+ *   from seconds to years for accumulated tracked work time
+ *   (productivity-app chip text).
  *
- * 1. Duration Record fields are integer slots; fractional milliseconds
- *    cannot be represented. See proposal-intl-duration-format#199 and
- *    ecma402#980 for the rationale (calendar-quantity model, sync with
- *    `Temporal.Duration`).
- * 2. Magnitude-driven unit selection is out of scope; the API formats
- *    "amount of time" with caller-fixed fields, not an adaptive style.
- *    The auto-select-unit feature was punted to a hypothetical
- *    `Intl.RelativeTimeFormat` v2 (ecma402#498, still open).
+ * Both are gaps in `Intl.DurationFormat`: sub-ms precision is not
+ * representable (integer Duration Record slots, sync'd with
+ * `Temporal.Duration`; see proposal-intl-duration-format#199 and
+ * ecma402#980); magnitude-driven unit selection is out of charter and
+ * was punted to a hypothetical `Intl.RelativeTimeFormat` v2 (ecma402#498,
+ * still open); the `'narrow'` style produces space-separated, locale-
+ * specific suffixes (`Xh Ym` with literal space, `週` in Japanese)
+ * whereas the app needs ASCII compact without spaces; and the 30-day /
+ * 365-day month / year decomposition is app-domain, not Intl-default.
  *
  * @module
  */
 
-import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+import {
+  DAYS_PER_WEEK,
+  DAYS_PER_YEAR,
+  MS_PER_SECOND,
+  SECONDS_PER_DAY,
+  SECONDS_PER_HOUR,
+  SECONDS_PER_MINUTE,
+} from '@monochromatic-dev/module-numeric-const';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /**
  * Cutoff below which a duration renders with one decimal place. Above
@@ -56,4 +63,145 @@ export function formatDuration(durationMs: number,): string {
   if (durationMs < MS_PER_SECOND)
     return `${durationMs.toFixed(0,)}ms`;
   return `${(durationMs / MS_PER_SECOND).toFixed(1,)}s`;
+}
+
+/**
+ * Days assumed per calendar month for tracked-time decomposition. Real
+ * calendar months range 28 to 31; productivity-app convention rounds to
+ * 30 so `30d` of accumulated work renders as `1m0w` and the user does
+ * not have to mentally convert. Approximation is intentional and lives
+ * here (call site) rather than in `module-numeric-const` so it is
+ * visible to readers of this formatter.
+ */
+const DAYS_PER_MONTH = 30;
+
+/**
+ * Seconds in one week, derived from {@link SECONDS_PER_DAY} and
+ * {@link DAYS_PER_WEEK}. Exact (no approximation: 1 week = 7 days
+ * across all calendars).
+ */
+const SECONDS_PER_WEEK = SECONDS_PER_DAY * DAYS_PER_WEEK;
+
+/**
+ * Seconds in one month, derived from {@link SECONDS_PER_DAY} and
+ * {@link DAYS_PER_MONTH}. Approximation: 30 days. Creates a small cliff
+ * near the year boundary — see {@link formatTrackedDuration}.
+ */
+const SECONDS_PER_MONTH = SECONDS_PER_DAY * DAYS_PER_MONTH;
+
+/**
+ * Seconds in one year, derived from {@link SECONDS_PER_DAY} and
+ * {@link DAYS_PER_YEAR}. Approximation: 365 days (matches the convention
+ * documented on `DAYS_PER_YEAR` itself).
+ */
+const SECONDS_PER_YEAR = SECONDS_PER_DAY * DAYS_PER_YEAR;
+
+/**
+ * Format an integer-seconds duration as ultra-compact ASCII suitable for
+ * productivity-app chip text. Renders top-1 (when only seconds is
+ * non-zero) or top-2 in strict adjacency with the next smaller unit
+ * (when any larger unit is non-zero). Single-letter suffix per unit
+ * (`y`, `m`, `w`, `d`, `h`, `m`, `s`); the secondary always
+ * disambiguates the reused `m` — `1y2m` is years + months because of
+ * the `y`, `1h30m` is hours + minutes because of the `h`, and standalone
+ * `Xm` never occurs because seconds-only renders as `Xs`.
+ *
+ * Magnitude ladder (each row pairs the largest non-zero unit with the
+ * next smaller unit; weeks/days/hours/minutes/seconds are exact, months
+ * approximate at 30 days, years approximate at 365 days):
+ *
+ * - all zero       → `0s`
+ * - seconds only   → `Xs`
+ * - minutes        → `XmYs`     (m means minutes; partner is seconds)
+ * - hours          → `XhYm`     (m means minutes; partner is hours)
+ * - days           → `XdYh`
+ * - weeks          → `XwYd`
+ * - months         → `XmYw`     (m means months; partner is weeks)
+ * - years          → `XyYm`     (m means months; partner is years)
+ *
+ * Strict adjacency loses precision when the secondary unit is zero but
+ * a tertiary is non-zero (e.g. 35 days renders `1m0w` and the trailing
+ * 5 days are dropped). Acceptable cost for visual stability during live
+ * timer ticks. Near the year boundary (12 months = 360d vs 1 year =
+ * 365d) the same task class can render `12m0w` at 12 months and
+ * `1y0m` at 13 months due to the 30d / 365d approximations not being
+ * internally consistent (12 × 30 ≠ 365).
+ *
+ * @param seconds - non-negative duration in seconds; negative or
+ *   fractional inputs clamp to a non-negative integer
+ *
+ * @returns ultra-compact duration string
+ *
+ * @example
+ * formatTrackedDuration(0); // "0s"
+ * formatTrackedDuration(45); // "45s"
+ * formatTrackedDuration(90); // "1m30s"
+ * formatTrackedDuration(5400); // "1h30m"
+ * formatTrackedDuration(263_400); // "3d1h"  (= 3 days, 1 hour, 10 minutes; trailing minutes dropped)
+ * formatTrackedDuration(1_468_800); // "2w3d"
+ * formatTrackedDuration((365 + 60) * 86_400); // "1y2m"
+ */
+export function formatTrackedDuration(seconds: number,): string {
+  const total = Math.max(
+    0,
+    Math.floor(seconds,),
+  );
+
+  const years = Math.floor(total / SECONDS_PER_YEAR,);
+  const remAfterY = total % SECONDS_PER_YEAR;
+  const months = Math.floor(remAfterY / SECONDS_PER_MONTH,);
+  const remAfterMo = remAfterY % SECONDS_PER_MONTH;
+  const weeks = Math.floor(remAfterMo / SECONDS_PER_WEEK,);
+  const remAfterW = remAfterMo % SECONDS_PER_WEEK;
+  const days = Math.floor(remAfterW / SECONDS_PER_DAY,);
+  const remAfterD = remAfterW % SECONDS_PER_DAY;
+  const hours = Math.floor(remAfterD / SECONDS_PER_HOUR,);
+  const remAfterH = remAfterD % SECONDS_PER_HOUR;
+  const minutes = Math.floor(remAfterH / SECONDS_PER_MINUTE,);
+  const remSeconds = remAfterH % SECONDS_PER_MINUTE;
+
+  const UNITS = [
+    [
+      years,
+      'y',
+    ],
+    [
+      months,
+      'm',
+    ],
+    [
+      weeks,
+      'w',
+    ],
+    [
+      days,
+      'd',
+    ],
+    [
+      hours,
+      'h',
+    ],
+    [
+      minutes,
+      'm',
+    ],
+    [
+      remSeconds,
+      's',
+    ],
+  ] as const;
+
+  const biggestIdx = UNITS.findIndex(function isNonZero([value,],) {
+    return value > 0;
+  },);
+
+  if (biggestIdx === -1) return '0s';
+
+  const [bigValue, bigSuffix,] = nonNullishOrThrow(UNITS[biggestIdx],);
+
+  if (biggestIdx === UNITS.length - 1)
+    return `${bigValue}${bigSuffix}`;
+
+  const [smallValue, smallSuffix,] = nonNullishOrThrow(UNITS[biggestIdx + 1],);
+  return `${bigValue}${bigSuffix}${smallValue}${smallSuffix}`;
 }

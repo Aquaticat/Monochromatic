@@ -24,6 +24,9 @@ export { formatBytes, } from './byte.ts';
 
 //region duration
 
-export { formatDuration, } from './duration.ts';
+export {
+  formatDuration,
+  formatTrackedDuration,
+} from './duration.ts';
 
 //endregion duration

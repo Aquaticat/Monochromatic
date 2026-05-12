@@ -11,3 +11,4 @@
 
 import './byte.unit.test.ts';
 import './duration.unit.test.ts';
+import './tracked-duration.unit.test.ts';
