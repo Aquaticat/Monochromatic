@@ -148,28 +148,29 @@ export function wireLsp(
   /**
    * Wires the rename-confirm event from the rename input to perform the
    * actual rename. Captures the cursor position at initiation time so the
-   * rename request uses the correct symbol location.
+   * rename request uses the correct symbol location. Wrapped in a const
+   * ref-object so `current` can be reassigned without a function-root let.
    */
-  let renamePosition: {
-    line: number;
-    character: number;
-  } | null = null;
+  const renamePosition: {
+    current: { line: number; character: number; } | null;
+  } = { current: null, };
 
   renameInput.addEventListener(
     'rename-confirm',
     function handleRenameConfirm(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom event detail
       const { newName, } = (event as CustomEvent<{ newName: string; }>).detail;
-      if (renamePosition !== null) {
+      const captured = renamePosition.current;
+      if (captured !== null) {
         void performRename({
           ws,
           editorPane,
           getCurrentFilePath,
           newName,
-          line: renamePosition.line,
-          character: renamePosition.character,
+          line: captured.line,
+          character: captured.character,
         },);
-        renamePosition = null;
+        renamePosition.current = null;
       }
     },
   );
@@ -206,7 +207,7 @@ export function wireLsp(
     renameAtCursor: function renameAtCursorAction(): void {
       const pos = editorPane.getCursorPosition();
       if (pos !== null)
-        renamePosition = pos;
+        renamePosition.current = pos;
       void initiateRename({
         ws,
         editorPane,

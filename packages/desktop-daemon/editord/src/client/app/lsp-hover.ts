@@ -63,26 +63,34 @@ export function wireHover(
     getCurrentFilePath: GetCurrentFilePathFn;
   },
 ): void {
-  /** Tracks last hovered position to avoid redundant requests. */
-  let lastLine = -1;
-  let lastChar = -1;
+  /**
+   * Mutable hover state shared across mousemove, debounce, and reset callbacks.
+   * Wrapped in a const ref-object so each field can be reassigned without
+   * a function-root let.
+   */
+  const hoverState: {
+    lastLine: number;
+    lastChar: number;
+    latestMouseEvent: MouseEvent | null;
+  } = {
+    lastLine: -1,
+    lastChar: -1,
+    latestMouseEvent: null,
+  };
 
   /** Hides the popup and resets position tracking. */
   function resetHover(): void {
     hoverPopup.hide();
-    lastLine = -1;
-    lastChar = -1;
+    hoverState.lastLine = -1;
+    hoverState.lastChar = -1;
   }
-
-  /** Latest mouse event captured in the mousemove handler. */
-  let latestMouseEvent: MouseEvent | null = null;
 
   const {
     debounced: scheduleHover,
     cancel: cancelHover,
   } = createDebounced({
     fn: function doHover() {
-      const me = latestMouseEvent;
+      const me = hoverState.latestMouseEvent;
       if (me === null)
         return;
       if (completionPopup.visible || referencesPopup.visible)
@@ -96,10 +104,10 @@ export function wireHover(
       },);
       if (pos === null)
         return;
-      if (pos.line === lastLine && pos.character === lastChar)
+      if (pos.line === hoverState.lastLine && pos.character === hoverState.lastChar)
         return;
-      lastLine = pos.line;
-      lastChar = pos.character;
+      hoverState.lastLine = pos.line;
+      hoverState.lastChar = pos.character;
       void doRequestHover({
         ws,
         hoverPopup,
@@ -117,7 +125,7 @@ export function wireHover(
     'mousemove',
     function handleMouseMove(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mousemove is always a MouseEvent
-      latestMouseEvent = event as MouseEvent;
+      hoverState.latestMouseEvent = event as MouseEvent;
       scheduleHover();
     },
   );

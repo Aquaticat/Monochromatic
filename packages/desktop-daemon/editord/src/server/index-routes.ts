@@ -87,9 +87,14 @@ export function registerRoutes({
               packageRoot,
               id,
             );
-            let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
             try {
-              stats = await stat(fullPath,);
+              const stats = await stat(fullPath,);
+              if (!stats.isFile())
+                return;
+              return {
+                size: stats.size,
+                mtime: stats.mtimeMs,
+              };
             }
             catch (error) {
               /** Only swallow ENOENT (file not found); rethrow unexpected errors. */
@@ -102,12 +107,6 @@ export function registerRoutes({
 
               return;
             }
-            if (!stats.isFile())
-              return;
-            return {
-              size: stats.size,
-              mtime: stats.mtimeMs,
-            };
           },
         },
       );
