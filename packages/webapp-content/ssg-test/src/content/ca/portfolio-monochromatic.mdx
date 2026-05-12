@@ -1,0 +1,58 @@
+---
+title: "Monochromatic: sistema de disseny i monorepo de codi obert"
+description: "Mantenidor principal d'un ecosistema monorepo de TypeScript: sistema de disseny CSS, biblioteca d'utilitats funcionals, predefinits de configuració i eines per a desenvolupadors."
+tags:
+  - "portfolio"
+  - "development"
+  - "design"
+  - "open-source"
+---
+
+## Visió general
+
+Monochromatic és un ecosistema monorepo de TypeScript de codi obert
+que mantinc des del 2023.
+Comprèn un sistema de disseny CSS, una biblioteca d'utilitats funcionals
+i el generador de llocs estàtics que impulsa aquest mateix lloc web.
+
+[Veure a GitHub](https://github.com/Aquaticat/Monochromatic)
+
+## El meu paper i les meves contribucions
+
+Sóc el **mantenidor principal i únic arquitecte**, responsable de:
+
+- **Arquitectura**: disseny de l'estructura del monorepo, els límits dels paquets
+  i el graf de dependències entre desenes de paquets
+- **Sistema de disseny CSS**: construcció d'un sistema de disseny basat en tokens amb colors OKLCH,
+  propietats lògiques i suport per als modes clar i fosc
+- **Biblioteca d'utilitats**: utilitats funcionals de TypeScript per a patrons comuns
+- **Predefinits de configuració**: configuracions compartibles per a Dprint, Oxlint i TypeScript
+- **Documentació**: escriptura de documentació amb Astro
+- **Tests**: aplicació d'estàndards mitjançant proves automatitzades
+- **Generador de llocs estàtics**: construcció de l'SSG que impulsa aquati.cat,
+  amb compilacions incrementals, processament d'MDX, i18n i ressaltat de sintaxi
+  en temps de compilació amb la CSS Custom Highlight API
+
+## Aspectes tècnics destacats
+
+- **Eines de monorepo**: pnpm workspaces, executor de tasques mise,
+  dependències amb protocol workspace
+- **Ressaltat de sintaxi en temps de compilació**: els analitzadors Lezer s'executen en temps de compilació;
+  només es lliuren al navegador desplaçaments de caràcters precomputats,
+  amb una reducció del 99,4 % del JavaScript del client
+- **Compilacions incrementals**: hashing de contingut SHA-256 amb una memòria cau basada en manifest
+  per saltar el reprocessament dels fitxers no modificats
+- **i18n amb seguretat de tipus**: typesafe-i18n per a seguretat de traducció en temps de compilació
+- **Sistema de colors OKLCH**: propietats personalitzades de CSS amb espais de color
+  uniformes des del punt de vista perceptiu per a temes clar i fosc consistents
+
+## Habilitats i eines demostrades
+
+- TypeScript i JavaScript
+- Arquitectura de monorepo (pnpm workspaces)
+- Sistemes de disseny CSS i propietats personalitzades
+- Generació de llocs estàtics
+- Vite i Astro
+- ESLint i eines de qualitat de codi
+- Documentació tècnica
+- Manteniment de projectes de codi obert

@@ -6,6 +6,7 @@ import type { Locales, Translations } from './i18n-types.ts'
 import { loadedFormatters, loadedLocales, locales } from './i18n-util.ts'
 
 const localeTranslationLoaders = {
+	ca: () => import('./ca/index.ts'),
 	en: () => import('./en/index.ts'),
 	zh: () => import('./zh/index.ts'),
 }

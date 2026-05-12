@@ -1,0 +1,101 @@
+---
+title: "Lloc web de portafoli"
+description: "Un lloc de portafoli responsiu construït amb Bootstrap, SCSS personalitzat, Vite i Bun. Inclou optimització d'imatges AVIF, srcset responsiu i full d'estil per imprimir."
+tags:
+  - "portfolio"
+  - "development"
+---
+
+## Visió general
+
+Un lloc web de portafoli responsiu construït com a projecte acadèmic
+a Algonquin College el 2025.
+El projecte demostra habilitats de desenvolupament front-end
+amb eines modernes i optimització del rendiment.
+
+[Veure el codi font a GitHub](https://github.com/Aquaticat/portfolio)
+
+## El meu paper i les meves contribucions
+
+Vaig ser l'**únic desenvolupador**, responsable de:
+
+- **Desenvolupament**: vaig construir el lloc amb Bootstrap, variables SCSS personalitzades,
+  Vite i Bun
+- **Optimització d'imatges**: vaig convertir totes les imatges al format AVIF
+  amb `srcset` responsiu per a diferents mides de finestra
+- **Suport per a impressió**: vaig afegir un full d'estil per imprimir amb la biblioteca CSS Gutenberg
+- **Desplegament**: desplegament a GitHub Pages
+
+## Aspectes tècnics destacats
+
+- **Bootstrap amb SCSS personalitzat**: vaig ampliar el tema per defecte de Bootstrap
+  amb variables personalitzades per a un aspecte propi
+  mantenint la graella responsiva del framework
+- **Vite i Bun**: eines de construcció modernes per a un desenvolupament ràpid
+  i paquets de producció optimitzats
+- **Optimització d'imatges AVIF**: totes les imatges rasteritzades convertides a AVIF,
+  reduint la mida dels fitxers mantenint la qualitat visual
+- **srcset responsiu**: les imatges serveixen variants de mida adequada
+  segons la finestra del visitant
+- **Full d'estil per imprimir**: la biblioteca CSS Gutenberg garanteix que el portafoli
+  s'imprimeix de manera neta per a còpies físiques
+
+![Pàgina d'inici del lloc web de portafoli](../portfolio-website-homepage.avif)
+
+[Veure el fitxer de disseny a Figma](https://www.figma.com/design/kbocALxI9u9E65K8XuFvvM/portfolio-2025APR08?m=auto&t=Ade8VgG8lQDR6e4v-1)
+
+## Lliçons apreses
+
+<CalloutAlert data-type="warning">
+
+No feu servir mai Bootstrap en producció.
+
+</CalloutAlert>
+
+Bootstrap té components, però molts aspectes d'aquests no es poden personalitzar
+amb variables CSS.
+La recomanació oficial és afegir classes utilitàries a aquests components,
+cosa que disminueix els beneficis de fer servir components en primer lloc.
+
+Bootstrap promou un enfocament basat en classes utilitàries,
+però li falten moltes classes utilitàries bàsiques
+(per exemple, `backdrop-filter: blur(...)`)
+forçant els usuaris a afegir-les mitjançant l'API d'utilitats.
+Aquesta API és, en si mateixa, molt limitada:
+no permet afegir dues propietats CSS dins d'una sola classe utilitària.
+
+<CalloutAlert data-type="note">
+
+No tingueu por d'endinsar-vos en el codi font.
+
+</CalloutAlert>
+
+És l'única manera d'entendre per què Bootstrap fa el que fa.
+Treballar-hi em va donar apreciació pels enginyers
+que van construir i mantenir el framework,
+fins i tot quan vaig concloure que era l'eina equivocada per al meu projecte.
+
+Les Cascade Layers poden ajudar a sobreescriure els estils de Bootstrap,
+però llegir el codi font és inevitable a vegades,
+especialment amb `!important` escampat per tot arreu.
+
+<CalloutAlert data-type="tip">
+
+És preferible un generador de llocs estàtics de debò.
+Vite serveix tots els fitxers HTML sense configuració addicional,
+però no els construeix sense una solució alternativa.
+Un SSG de debò gestiona tot això automàticament.
+
+</CalloutAlert>
+
+## Habilitats i eines demostrades
+
+- HTML i CSS / SCSS
+- Personalització del framework Bootstrap
+- Eines de construcció Vite
+- Runtime Bun
+- Optimització d'imatges (AVIF, srcset)
+- Disseny web responsiu
+- Disseny de full d'estil per imprimir
+- Desplegament a GitHub Pages
+- Control de versions amb Git

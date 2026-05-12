@@ -1,0 +1,555 @@
+---
+title: "Enllaç vs botó: preguntes difícils"
+description: "Escenaris on triar entre <a> i <button> és més complicat del que sembla. Tria una opció per veure la resposta i el perquè."
+tags:
+  - "accessibility"
+  - "html"
+  - "interactive"
+---
+
+`<a>` i `<button>` semblen intercanviables: tots dos es poden clicar, tots dos poden executar JavaScript, tots dos es poden estilitzar per semblar el que el dissenyador prefereixi. La tria real entre ells és una decisió semàntica i de seguretat, no visual. `<a>` significa "vés a un lloc que puc desar com a adreça d'interès i compartir". `<button>` significa "fes alguna cosa ara mateix en aquesta pàgina". Si t'equivoques, trenques el botó enrere, trenques el clic central, trenques els lectors de pantalla o, en el pitjor dels casos, obres un forat que permet que qualsevol pàgina d'internet desencadeni en silenci accions destructives contra els teus usuaris.
+
+Els escenaris següents són els que solen fer ensopegar la gent. Alguns tenen una resposta correcta clara, altres tenen més d'una resposta correcta, i alguns depenen de com es comporta realment la funció en temps d'execució més que de com es veu en una maqueta. Tria allò que faries servir: l'explicació apareix tan bon punt cliques, i pots canviar la teva tria en qualsevol moment. La majoria de preguntes esperen una sola tria; una pregunta (el commutador de reproducció aleatòria) accepta múltiples respostes i fa servir caselles de selecció.
+
+<QuestionRadio
+  scenario={<>Una opció "Tanca la sessió" a la barra de navegació superior.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Si ho escrius com <code>{`<a href="/logout">`}</code>, qualsevol altre lloc web pot tancar la sessió dels teus usuaris sense que ho sàpiguen. Només cal que posin <code>{`<img src="/logout">`}</code> a la seva pàgina; quan el teu usuari hi visiti, el navegador carregarà aquest URL i el tancament de sessió es produirà. Això s'anomena CSRF (Cross-Site Request Forgery): un lloc que falsifica una sol·licitud a un altre. Les accions que canvien alguna cosa al servidor no haurien de produir-se mai a partir d'una sol·licitud d'URL simple (una sol·licitud <code>GET</code>).</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <>Tancar la sessió canvia una cosa important: posa fi a la sessió de l'usuari. Aquest tipus d'accions haurien d'enviar una sol·licitud <code>POST</code> o <code>DELETE</code> (els mètodes HTTP que signifiquen "fes alguna cosa al servidor", en contrast amb <code>GET</code>, que significa "mostra'm alguna cosa"). Un <code>{`<button>`}</code> dins d'un <code>{`<form method="post">`}</code> fa exactament això. Un enllaç no pot fer-ho; els enllaços només poden enviar sol·licituds <code>GET</code>.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Aquí no necessites dos controls. Mentre un d'ells sigui un enllaç que apunti a <code>/logout</code>, el problema de CSRF segueix existint: qualsevol altre lloc pot disparar-lo amb una etiqueta <code>{`<img>`}</code>.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>No hi ha cap element més adequat per al tancament de sessió que un botó dins d'un formulari. Altres entrades com <code>{`<input type="checkbox">`}</code> o <code>{`<select>`}</code> serveixen per triar un valor o canviar un estat, no per disparar una acció única.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>Aquesta regla no canvia segons el context al voltant. El tancament de sessió sempre ha de ser un botó que envia un formulari, mai un enllaç.</>,
+    },
+  ]}
+/>
+
+<QuestionCheckbox
+  scenario={<>Un commutador "Reproducció aleatòria" en un reproductor de música que activa i desactiva la reproducció aleatòria.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Un enllaç serveix per portar l'usuari a un URL nou. Activar la reproducció aleatòria no canvia l'URL i no recarrega la pàgina; només commuta un interruptor d'activat/desactivat dins del reproductor. Sense navegació, no hi ha enllaç.</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <>Un <code>{`<button>`}</code> funciona com a commutador, però un botó simple no pot dir a un lector de pantalla si la reproducció aleatòria està activada o desactivada. Afegeix <code>{`aria-pressed="true"`}</code> quan estigui activada i <code>{`aria-pressed="false"`}</code> quan estigui desactivada. <code>aria-pressed</code> és un atribut WAI-ARIA (ARIA és un conjunt d'atributs HTML addicionals que ajuden les tecnologies assistives, com els lectors de pantalla, a entendre la pàgina) i anuncia l'estat del commutador en veu alta als usuaris que no poden veure el canvi visual.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Només un control commuta la reproducció aleatòria. Mostrar-ne dos confondria els usuaris i les tecnologies assistives: no sabrien quin clicar ni com es relacionen els dos controls.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      correct: true,
+      explanation: <>Una altra bona opció és <code>{`<input type="checkbox">`}</code>. Una casella de selecció està dissenyada exactament per a aquest tipus de tria d'activat/desactivat. Es pot estilitzar amb CSS perquè sembli un interruptor o un botó commutador; l'estil visual és independent de l'element subjacent. Els lectors de pantalla anuncien automàticament l'estat marcat/desmarcat, així que no calen atributs ARIA addicionals.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>La reproducció aleatòria és sempre un estat d'activat/desactivat, independentment del disseny del reproductor. La resposta no canvia amb el context.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Una capçalera de columna "Nom" en una taula de dades que ordena les files quan es clica, sense canvi d'URL.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Un enllaç porta l'usuari a algun lloc: canvia l'URL o salta a un punt de la pàgina. En aquest escenari l'URL es manté igual i la taula només reordena les files existents. No hi ha cap destinació a la qual un enllaç pugui apuntar.</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <>Clicar la capçalera dispara una acció (ordenar) que reorganitza el que ja hi ha a la pantalla. Un <code>{`<button>`}</code> hi encaixa exactament. Posa el <code>{`<button>`}</code> dins del <code>{`<th>`}</code> (la cel·la de capçalera de la taula) i afegeix <code>aria-sort</code> al <code>{`<th>`}</code>. <code>aria-sort</code> és un atribut WAI-ARIA (ARIA afegeix informació addicional per a tecnologies assistives, com els lectors de pantalla) que els diu si la columna està ordenada actualment com a <code>"ascending"</code>, <code>"descending"</code> o <code>"none"</code>. Sense això, un usuari vident veu una petita icona de fletxa però un usuari de lector de pantalla no rep cap pista.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Una capçalera de columna té una zona clicable: la pròpia capçalera. Afegir un segon control al costat només recarregaria el disseny sense donar a l'usuari res nou per fer.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap altre element HTML integrat encaixa millor amb l'ordenació que un botó. Un <code>{`<select>`}</code> podria funcionar si volguessis que l'usuari escollís una columna d'ordenació d'un menú desplegable, però clicar la pròpia capçalera és una acció en forma de botó.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>L'escenari fixa que l'URL no canvia, cosa que elimina l'ambigüitat. Sense cap URL al qual enllaçar, la resposta ha de ser botó.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Una opció "Saber-ne més sobre els preus" al costat d'un selector de pla en un formulari d'inscripció.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Encertat si clicar això porta l'usuari a una pàgina de preus completa, com ara <code>/pricing</code>. Això és exactament el que fa un enllaç amb un <code>href</code>. Erroni si clicar-ho obre una petita finestra emergent o un tooltip a la mateixa pàgina sense sortir-ne.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Encertat si clicar obre un tooltip o un popover (una petita caixa flotant amb informació addicional) a la mateixa pàgina. Erroni si clicar porta l'usuari a una pàgina de preus separada: un botó no té cap URL al qual anar.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>N'hi ha prou amb un únic control ben triat. Dos elements de "saber-ne més" un al costat de l'altre només recarregarien el formulari sense ensenyar res nou a l'usuari.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Val la pena conèixer l'element <code>{`<details>`}</code>. Combinat amb un <code>{`<summary>`}</code> a dins, <code>{`<details>`}</code> crea una secció expansible nativa: clica el resum i el contingut amagat es desplega en línia. Sense JavaScript. Pot encaixar amb un patró de "saber-ne més" quan la informació addicional és breu i va just al costat de la pregunta. Però per a la decisió clàssica enllaç vs botó d'aquest escenari, la resposta realment depèn del que fa el clic.</>,
+    },
+    {
+      label: <>Depèn</>,
+      correct: true,
+      explanation: <>L'element correcte depèn enterament del que passa quan l'usuari clica. Obre un popover en aquesta pàgina → botó. Porta l'usuari a una pàgina de preus separada → enllaç. "Saber-ne més" és notòriament ambigu: una etiqueta més clara com "Mostra els detalls dels preus" o "Veure els preus complets" diria a l'usuari quin comportament esperar abans de clicar.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Una opció "Continua al pagament" al final del pas d'adreça de lliurament d'un procés de compra de diversos passos.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Un enllaç no pot enviar les dades del formulari de l'usuari al servidor. Si fessin clic dret i triessin "Obre en una pestanya nova", el navegador visitaria l'URL següent sense l'adreça que han teclejat; les dades es perdrien. Els enllaços només saben recuperar un URL (una sol·licitud <code>GET</code>); no poden portar continguts de formularis.</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <>Encara que faci la sensació d'anar a la pàgina següent, el botó fa una cosa primer: envia l'adreça de lliurament al servidor. Un <code>{`<button type="submit">`}</code> dins del <code>{`<form>`}</code> envia les dades del formulari (mitjançant <code>POST</code>), i el servidor respon mostrant el pas següent. Que l'URL canviï després és resultat de l'enviament, no l'objectiu del botó.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un botó d'enviament per pas de formulari. Dos botons que enviessin el mateix formulari permetrien a l'usuari clicar-los tots dos per accident, i un doble enviament en un procés de compra pot significar un doble càrrec.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Un <code>{`<button>`}</code> d'enviament de formulari és l'element HTML més clar per avançar en un formulari. <code>{`<input type="submit">`}</code> és sintaxi antiga que fa el mateix, però <code>{`<button>`}</code> és més flexible perquè hi pots posar icones o altres continguts a dins.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>Un formulari de diversos passos sempre necessita enviar les dades del pas actual al servidor abans de continuar. L'element correcte no canvia segons el disseny o l'estil.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Vols que tota una targeta de producte enllaci a <code>/product/42</code>, amb un botó "Desa per a més tard" a dins de la targeta que ho desi a una llista de desitjos sense navegar.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Embolicar tota la targeta amb <code>{`<a href="/product/42">`}</code> sembla que cobreix la navegació, però trenca el botó Desa. L'especificació HTML prohibeix posar elements interactius (com <code>{`<button>`}</code>) dins d'altres elements interactius (com <code>{`<a>`}</code>). Els navegadors intentaran reparar el marcatge invàlid de maneres impredictibles, i els lectors de pantalla anuncien el resultat de manera inconsistent.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Un botó sol no pot navegar a <code>/product/42</code>: els botons no tenen <code>href</code>. L'acció Desa sí que necessita un botó, però també necessitem alguna cosa que gestioni l'enllaç de nivell de pàgina a la pàgina de detall del producte.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      correct: true,
+      explanation: <>Necessites tots dos, però no niats. Fes servir el patró "stretched-link": posa un <code>{`<a href="/product/42">`}</code> simple només al títol del producte, i després fes servir CSS perquè aquest enllaç cobreixi tota la targeta. El truc: dóna a la targeta <code>position: relative</code>, i posa <code>{`::after { content: ""; position: absolute; inset: 0; }`}</code> a l'enllaç. El <code>::after</code> és un pseudoelement (un element fals generat per CSS), i fixar <code>inset: 0</code> l'estira perquè ompli la targeta, de manera que clicar qualsevol lloc de la targeta dispara l'enllaç. El botó Desa se situa a sobre amb el seu propi <code>z-index</code> i continua sent clicable de manera independent.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap element HTML únic pot alhora navegar a un URL i disparar una acció que no navega. Necessites de debò un element d'enllaç i un element de botó: la pregunta és com disposar-los perquè no es nin.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>La regla de no-nidació és universal: és una regla de l'especificació HTML, no una tria d'estil. La solució stretched-link funciona en qualsevol disseny de targeta, per tant la resposta no depèn del context.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Un control "Tornar a dalt" que desplaça l'usuari fins a la part superior d'una pàgina llarga.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      correct: true,
+      explanation: <><code>{`<a href="#top">`}</code> funciona sense gens de JavaScript. Quan l'usuari hi clica, el navegador es desplaça fins a la part superior de la pàgina perquè <code>#top</code> és un fragment d'URL especial (si no hi ha cap element a la pàgina amb <code>{`id="top"`}</code>, el navegador es desplaça per defecte a la part superior del document). Els lectors de pantalla l'anuncien com un enllaç que salta a algun lloc, que és exactament el que l'usuari espera.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Un botó necessitaria JavaScript (com <code>window.scrollTo(0, 0)</code>) per fer el desplaçament. Estaries reconstruint una cosa que el navegador ja fa de franc amb un enllaç i un fragment d'URL.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un control n'hi ha prou per a l'usuari. Un segon "tornar a dalt" només afegiria soroll visual sense donar cap capacitat nova a l'usuari.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap altre element HTML integrat fa la navegació per fragments tan netament com <code>{`<a>`}</code>. Podries muntar alguna cosa amb només CSS (com <code>scroll-margin</code> o consultes de contenidor), però per a un control senzill de "anar a dalt" l'enllaç és l'opció més simple i accessible.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>El truc del fragment <code>#top</code> funciona en tots els navegadors en tots els contextos. Cap disseny o estil del voltant canvia aquesta resposta.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Una opció "Esborrar el formulari" que restableix tots els camps a buit.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Esborrar el formulari no canvia l'URL; l'usuari es queda a la mateixa pàgina. Els enllaços serveixen per a la navegació, no per restablir entrades.</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <><code>{`<button type="reset">`}</code> està integrat a HTML. Posa'l dins d'un <code>{`<form>`}</code>, i clicar-lo restablirà automàticament cada entrada del formulari al seu valor per defecte. Sense JavaScript. Un avís del món real: la majoria de dissenyadors recomanen no incloure cap botó Esborrar. Se situa just al costat d'Envia, els usuaris hi cliquen per accident, perden la feina i s'enfaden. Si has d'incloure'n un, posa'l lluny d'Envia i estilitza'l perquè sembli menys destacat (més petit, menys negreta).</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un formulari té un Esborrar com a màxim. Més d'un només multiplica la probabilitat que l'usuari en cliqui un per accident.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap altre element HTML integrat encaixa amb "restablir cada camp d'aquest formulari" tan directament com <code>{`<button type="reset">`}</code>. <code>{`<input type="reset">`}</code> és la sintaxi antiga i fa exactament el mateix; qualsevol dels dos funciona.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>El comportament de restablir és el mateix independentment del formulari, el disseny o l'estil. La resposta no canvia amb el context.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Una interfície de pestanyes que canvia entre els panells "Resum", "Ressenyes" i "Especificacions", sense canvis d'URL.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Sense URL no hi ha res a què apuntar amb un enllaç. Si cada pestanya carregués un URL real com <code>/reviews</code> o <code>#reviews</code>, fer servir enllaços amb un rol de pestanya seria raonable. Però l'escenari diu "sense canvis d'URL", així que un enllaç no té cap destinació.</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <>Les pestanyes que només canvien el que es mostra a la pàgina actual són botons amb rols ARIA. El patró ARIA de pestanyes complet té aquest aspecte: posa <code>{`role="tablist"`}</code> al contenidor, <code>{`role="tab"`}</code> a cada botó i <code>{`role="tabpanel"`}</code> a cada secció de contingut. Afegeix <code>{`aria-selected="true"`}</code> a la pestanya activa i <code>{`aria-selected="false"`}</code> a les altres. Un lector de pantalla aleshores anuncia una cosa com "Pestanya 2 de 3, Ressenyes, seleccionada" quan l'usuari hi navega.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Cada panell té exactament una pestanya. Barrejar enllaços i botons dins de la mateixa tablist confondria tant els usuaris com els lectors de pantalla; esperen que totes les pestanyes d'un conjunt es comportin igual.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>No hi ha cap element integrat millor per al canvi de pestanyes a la mateixa pàgina que botons amb rols ARIA. Algunes biblioteques d'interfície inclouen un component de pestanyes a mida, però per sota són només botons amb els mateixos rols ARIA aplicats.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>L'escenari diu "sense canvis d'URL" directament, cosa que fixa la resposta. Sense URL a enllaçar, ha de ser botó.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Un element de navegació de nivell superior "Productes" que tant navega a <code>/products</code> COM expandeix un submenú desplegable quan es clica.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Un enllaç simple no pot commutar un submenú sense JavaScript que sobreescrigui el comportament normal del clic de l'enllaç. Acabaries trencant o bé la navegació o bé el commutador, i fer clic dret a "Obre en una pestanya nova" probablement també tindria mal comportament.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Un botó simple no té cap destinació d'URL. El clic dret "Obre en una pestanya nova" no funcionaria perquè no hi ha res per obrir. L'usuari tampoc no pot desar com a adreça d'interès ni compartir la pàgina <code>/products</code> directament des del botó.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      correct: true,
+      explanation: <>Un únic element HTML no pot fer dues feines diferents alhora; no pots ser destinació i commutador al mateix temps. Divideix-los en dos controls un al costat de l'altre: el text "Productes" com a <code>{`<a href="/products">`}</code>, i un petit botó <code>{`<button>`}</code> separat amb una doble fletxa al costat per expandir el submenú. Dóna al botó de la doble fletxa <code>{`aria-expanded="false"`}</code> (canvia'l a <code>"true"</code> amb JavaScript quan el submenú estigui obert) perquè els lectors de pantalla anunciïn el seu estat. GOV.UK i la ARIA Authoring Practices Guide ho recomanen.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap element HTML únic encaixa amb "navegar i commutar" alhora. La resposta és realment un enllaç i un botó; la pregunta és només com disposar-los.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>Les dues feines, navegar i commutar, són sempre dues coses separades. Cap context de disseny o estil les fusiona en un sol element.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>La barra de progrés d'un reproductor de vídeo que permet a l'usuari clicar o arrossegar per anar a una marca de temps concreta.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>No hi ha res a enllaçar; la barra de progrés no navega cap a un URL. I no hi ha una llista discreta de marques de temps que es puguin enumerar com a enllaços separats.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Un botó és per a una única acció discreta: un clic, una cosa passa. Anar-hi és continu al llarg d'un rang; l'usuari tria qualsevol posició entre el principi i el final del vídeo. Un botó no pot expressar "tria un valor al llarg d'aquest rang".</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Ni l'enllaç ni el botó encaixen individualment, així que combinar-los tampoc no ajuda.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      correct: true,
+      explanation: <>Això és un control lliscant. Fes servir <code>{`<input type="range">`}</code>: aquest és l'element HTML integrat per triar un valor numèric al llarg d'un rang continu. El navegador gestiona la pista visual, el polze i el comportament d'arrossegament per tu. Si realment no pots fer servir <code>{`<input type="range">`}</code> (potser el disseny visual no es pot aconseguir només amb CSS), recorre a <code>{`<div role="slider">`}</code> i afegeix quatre atributs ARIA: <code>aria-valuemin</code> (normalment <code>0</code>), <code>aria-valuemax</code> (normalment el total de segons), <code>aria-valuenow</code> (la posició actual) i, sobretot, <code>{`aria-valuetext="2 minuts 34 segons"`}</code>. Els números crus a <code>aria-valuenow</code> no signifiquen res útil per a un usuari de lector de pantalla; <code>aria-valuetext</code> és la versió llegible per humans que es llegeix en veu alta.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>Anar-hi és sempre un control de rang continu independentment del disseny o l'estil del reproductor. La resposta no depèn del context.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Un selector d'idioma al peu de pàgina que mostra EN, FR i DE.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Encertat si cada idioma correspon a un URL real, com ara <code>/fr</code> o <code>/de</code>, i clicar-hi canvia la pàgina a aquest URL. L'usuari pot llavors compartir <code>/fr</code> amb un amic que llegeix francès, o desar-lo com a adreça d'interès per tornar a la versió francesa més endavant.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Encertat només si el canvi d'idioma és purament al costat del client sense canvi d'URL; la pàgina es manté al mateix URL però el text es torna a renderitzar en un altre idioma. Moltes aplicacions d'una sola pàgina ho fan sense suport d'URL, cosa que significa que els usuaris no poden compartir ni desar com a adreça d'interès un idioma concret. Un error habitual.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un control per idioma és el que demana la interfície. Un enllaç i un botó per a cada idioma només recarregarien el peu de pàgina.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Un <code>{`<select>`}</code> amb una <code>{`<option>`}</code> per a cada idioma és una altra opció sòlida, sobretot quan dones suport a molts idiomes i llistar-los tots com a botons o enllaços ocuparia massa espai. Els lectors de pantalla gestionen <code>{`<select>`}</code> de manera nativa.</>,
+    },
+    {
+      label: <>Depèn</>,
+      correct: true,
+      explanation: <>L'element correcte depèn de com s'implementi el canvi d'idioma. URL per idioma com <code>/fr</code> → enllaços (perquè l'usuari els pugui compartir i desar com a adreces d'interès). Estat al costat del client sense canvi d'URL → botons (o un <code>{`<select>`}</code>). Moltes SPA escullen la segona via sense afegir mai suport d'URL, cosa que fa que les versions localitzades no es puguin compartir; val la pena comprovar-ho abans de triar.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Una opció "Suprimeix el compte" al final d'una pàgina de configuració.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Mateix problema que el tancament de sessió: un enllaç que apunti a <code>/delete-account</code> és una vulnerabilitat CSRF (Cross-Site Request Forgery). Qualsevol lloc maliciós podria incloure <code>{`<img src="https://yoursite.com/delete-account">`}</code> i suprimir silenciosament el compte del teu usuari quan hi visiti. Les accions destructives no s'han de disparar mai a partir d'una sol·licitud d'URL simple (una sol·licitud <code>GET</code>).</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <>Una acció destructiva hauria d'enviar una sol·licitud <code>DELETE</code> (el mètode HTTP la feina del qual és eliminar un recurs) o una sol·licitud <code>POST</code>. Posa el botó dins d'un <code>{`<form method="post">`}</code>, o dispara la sol·licitud des de JavaScript. El flux típic: l'usuari clica el botó → apareix un diàleg de confirmació que pregunta "Esteu segur?" → l'usuari confirma → s'envia la sol·licitud <code>DELETE</code>. Mantén la confirmació en un diàleg de la mateixa pàgina; enviar l'usuari a una pàgina <code>/confirm-delete</code> separada només per preguntar "esteu segur?" és fricció innecessària.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Només un control de supressió. Duplicar una acció destructiva és exactament com passen els accidents; dos botons dupliquen les probabilitats d'un clic erroni.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap altre element HTML integrat encaixa amb "disparar una acció destructiva després de confirmar" millor que un botó dins d'un formulari. <code>{`<input type="submit">`}</code> també funcionaria, però <code>{`<button>`}</code> és més flexible per a l'estil i per incloure-hi icones.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>La regla de seguretat (no exposar accions destructives com a URL accessibles per GET) és la mateixa independentment de com sigui la resta de la pàgina de configuració.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Un filtre tipus xip "Sabates" que restringeix els resultats de la cerca i actualitza l'URL a <code>?category=shoes</code>.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      correct: true,
+      explanation: <>L'estat filtrat és part de l'URL, cosa que el fa compartible, desable com a adreça d'interès i resisteix una recàrrega de pàgina. Fer clic dret a "Obre en una pestanya nova" hauria de donar la mateixa vista filtrada; els enllaços ho gestionen de franc. Aquest és el mateix patró que la paginació: cada estat de filtre és un URL real al qual l'usuari pot tornar. Molts llocs de comerç electrònic construeixen els xips de filtre amb JavaScript que no actualitza l'URL, cosa que trenca el botó enrere i fa que les vistes filtrades siguin impossibles de compartir.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Un botó executaria JavaScript que canvia el que hi ha a la pantalla però deixa l'URL igual. L'escenari diu explícitament que l'URL s'actualitza, així que un botó simple no és l'eina adequada; l'estat del filtre ha de ser part de l'URL.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un control per filtre. Mostrar un enllaç i un botó per a cada xip només recarregaria la pàgina.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Un enllaç estilitzat és l'opció més senzilla. Si el disseny demanés triar diversos filtres alhora amb sensació de desplegable, un <code>{`<select multiple>`}</code> o un grup de <code>{`<input type="checkbox">`}</code> hi podria encaixar, però cada xip individual continua sent una cosa clicable que canvia l'URL, és a dir, un enllaç.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>L'escenari fixa que l'URL s'actualitza, cosa que elimina l'ambigüitat. Canvi d'URL → enllaç.</>,
+    },
+  ]}
+/>
+
+{/*
+  Commented out: "In stock only" filter chip with no URL change.
+
+  Problems with this question:
+  - In-stock status is volatile data. An e-commerce site can't and
+    shouldn't ship stock status to the client as a static dataset for
+    client-side filtering; inventory changes minute-to-minute, and a
+    stale client-side filter would show sold-out products as available.
+    Even if the site did ship stock data, toggling the chip should
+    re-fetch per product to guarantee freshness, which defeats the
+    point of a "client-side only" filter.
+  - Independent of the stock-freshness issue: real e-commerce filters
+    should live in the URL so users can share, bookmark, and use the
+    back button on filtered views. A client-side-only filter is almost
+    always a mistake, not a legitimate design choice.
+  - The previous question (URL-updating filter chip) already teaches
+    "filters with URL state are links." Teaching "filters without URL
+    state are buttons" as a sibling question just endorses the wrong
+    pattern as a normal option.
+  - If kept, the correct answer (Button with aria-pressed) would apply
+    only to genuinely ephemeral filters, like a filter inside a modal
+    or an embedded widget that doesn't own the page URL. The original
+    scenario ("narrows search results") doesn't fit that exception.
+
+  Revisit: replace with a scenario where client-side-only filtering is
+  actually defensible (e.g. a filter inside a modal dialog that closes
+  without navigating), or drop the question entirely.
+
+<QuestionRadio
+  scenario={<>A filter chip "In stock only" that filters a product list client-side with no URL change.</>}
+  options={[
+    {
+      label: <>Link</>,
+      explanation: <>Nothing to link to; the filter state never reaches the URL, so there's no destination a link could point at.</>,
+    },
+    {
+      label: <>Button</>,
+      correct: true,
+      explanation: <>No URL change, no navigation; the chip just toggles a UI state on the current page. Use a <code>{`<button>`}</code> with <code>{`aria-pressed="true"`}</code> when the filter is active and <code>{`aria-pressed="false"`}</code> when it isn't. <code>aria-pressed</code> announces the on/off state to screen readers.</>,
+    },
+    {
+      label: <>Both (as separate elements)</>,
+      explanation: <>A single control per filter is enough. Two elements toggling the same state would just create confusion.</>,
+    },
+    {
+      label: <>Something else</>,
+      explanation: <><code>{`<input type="checkbox">`}</code> is another valid choice; it's designed for on/off state, and screen readers announce the checked state automatically.</>,
+    },
+    {
+      label: <>Depends</>,
+      explanation: <>The scenario pins down "no URL change," so the answer stays button (or checkbox). No surrounding context flips the result.</>,
+    },
+  ]}
+/>
+*/}
+
+<QuestionRadio
+  scenario={<>Una opció "Copia l'enllaç" que copia l'URL actual al porta-retalls.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>No hi ha res a què navegar; copiar un URL no porta l'usuari enlloc. Un enllaç sense destinació no té sentit aquí.</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <>Una acció pura: sense navegació, sense estat persistent. El <code>navigator.clipboard.writeText(url)</code> del navegador fa la còpia real; un <code>{`<button>`}</code> ho dispara. Un patró habitual: canvia temporalment l'etiqueta a "Copiat!" durant un o dos segons després que la còpia tingui èxit, i després retorna-la. Continua sent un botó, només amb una mica d'estat per al feedback.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un control per copiar és tot el que l'usuari necessita. Un segon botó de còpia al costat del primer només afegiria desordre.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap altre element HTML integrat encaixa amb això més naturalment que un botó. Un <code>{`<input type="text" readonly>`}</code> que mostri l'URL permet als usuaris seleccionar-lo i copiar-lo manualment, però això és una alternativa per a situacions en què JavaScript no es pot executar, no un substitut d'un botó Copia adequat.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>Copiar al porta-retalls és el mateix tipus d'acció a tot arreu. Cap context al voltant no ho canvia per un enllaç o un altre element.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>L'últim element d'un rastre de molles de pa (Inici › Productes › Portàtils), que representa la pàgina que l'usuari està veient actualment.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      correct: true,
+      explanation: <>Fes-lo un enllaç al seu propi URL (<code>{`<a href="/products/laptops" aria-current="page">Portàtils</a>`}</code>). Un enllaç permet als usuaris fer clic dret a "Copia l'adreça de l'enllaç", arrossegar l'element a la barra d'adreces d'interès o compartir l'URL: totes coses que la gent fa de debò amb els rastres de molles. <code>{`aria-current="page"`}</code> és un atribut WAI-ARIA (ARIA afegeix informació per als lectors de pantalla) que diu a les tecnologies assistives "aquesta és la pàgina actual", perquè els lectors de pantalla ho anunciïn correctament tot i continuar sent un enllaç. Molts llocs estilitzen l'element actual sense subratllat perquè els usuaris vidents no el confonguin amb una cosa que haurien de clicar.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Un botó implica que hi ha una acció a fer, però no hi ha res a fer; l'usuari ja és en aquesta pàgina. Cap comportament de clic té sentit per a un botó aquí.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un element del rastre de molles representa la pàgina actual. Un enllaç més un botó per al mateix element només confondria l'usuari.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Un <code>{`<span>`}</code> amb <code>{`aria-current="page"`}</code> és el patró més estricte que fan servir alguns llocs. Els lectors de pantalla ho anuncien correctament, i els usuaris vidents no poden clicar-hi per error. L'inconvenient: els usuaris no poden fer clic dret per copiar l'URL, arrossegar-lo a les adreces d'interès o compartir-lo: tots comportaments reals que la gent fa servir als rastres de molles. La versió d'enllaç guanya en utilitat.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>Tant la versió d'enllaç com la del <code>{`<span>`}</code> no interactiu són defensables. Cap canvia pel context del voltant; la tria té a veure amb quin compromís d'utilitat (desable com a adreça d'interès vs no clicable) importa més als teus usuaris.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Una opció "Salta al contingut principal" a dalt de tot de la pàgina, visualment amagada en repòs però mostrada quan rep el focus del teclat.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      correct: true,
+      explanation: <><code>{`<a href="#main">Salta al contingut principal</a>`}</code> és el patró estàndard. Navega a un fragment de pàgina (l'element <code>{`<main>`}</code>, o el que tingui <code>{`id="main"`}</code>) fent servir el comportament natiu de fragments del navegador. Sense JavaScript. Aquesta és una característica d'accessibilitat crítica per als usuaris de teclat: sense ella, cada càrrega de pàgina els obliga a tabular per cada enllaç de navegació abans de poder arribar al contingut. Requisits: fes-lo el primer element focalitzable al DOM, i fes servir CSS per amagar-lo visualment en repòs però revelar-lo quan rebi <code>:focus</code> perquè els usuaris de teclat el puguin veure mentre hi tabulen.</>,
+    },
+    {
+      label: <>Botó</>,
+      explanation: <>Un botó necessitaria JavaScript per desplaçar la pàgina o moure el focus. Això és més codi per mantenir i es trenca si els scripts no es carreguen. Un enllaç amb un fragment fa la mateixa feina de manera nativa: integrat al navegador, funciona a tot arreu.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un enllaç de salt és la convenció establerta. Duplicar-lo només confon els usuaris de teclat, que aprenen a esperar exactament un a dalt de la pàgina.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap altre element HTML integrat fa la navegació per fragments tan netament. Un <code>{`<a>`}</code> ben estilitzat amb <code>href</code> que apunti a <code>#main</code> és tota la solució.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>El patró de l'enllaç de salt és el mateix a cada pàgina de cada lloc. Cap context al voltant no canvia la resposta.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>Una icona de campana de notificacions a la barra de navegació superior que, quan es clica, obre un desplegable amb les notificacions recents.</>}
+  options={[
+    {
+      label: <>Enllaç</>,
+      explanation: <>Sense canvi d'URL; clicar la campana només revela un desplegable a la pàgina actual. L'URL es manté igual, la pàgina no navega, així que un enllaç no té cap destinació a què apuntar.</>,
+    },
+    {
+      label: <>Botó</>,
+      correct: true,
+      explanation: <>Clicar la campana dispara un canvi d'interfície (mostrar o amagar un desplegable), que és exactament la feina d'un botó. Aquí importen dos atributs: <code>{`aria-expanded="false"`}</code> quan el desplegable està tancat i <code>{`aria-expanded="true"`}</code> quan està obert, perquè els lectors de pantalla anunciïn l'estat actual. I <code>{`aria-label="Notificacions"`}</code>: com que l'únic contingut visible del botó és una icona, sense un <code>aria-label</code> un lector de pantalla només anunciaria "botó" sense cap idea de què serveix. Un error habitual de principiant: oblidar <code>aria-expanded</code>, cosa que deixa els usuaris de lector de pantalla sense cap manera de saber si han obert el desplegable.</>,
+    },
+    {
+      label: <>Tots dos (com a elements separats)</>,
+      explanation: <>Un disparador per desplegable. Un segon control que obrís el mateix desplegable només afegiria soroll sense afegir capacitat.</>,
+    },
+    {
+      label: <>Una altra cosa</>,
+      explanation: <>Cap altre element HTML integrat encaixa amb "revela un desplegable en clicar" millor que un botó. La nova Popover API (afegint <code>popovertarget</code> a un botó i <code>popover</code> a un <code>{`<div>`}</code>) és una manera moderna de connectar-los sense gens de JavaScript, però encara necessites un botó com a disparador.</>,
+    },
+    {
+      label: <>Depèn</>,
+      explanation: <>Un disparador per a un desplegable a la pàgina és sempre un botó, independentment de la icona, la posició a la navegació o l'estil del voltant. Cap context ho canvia per un enllaç.</>,
+    },
+  ]}
+/>

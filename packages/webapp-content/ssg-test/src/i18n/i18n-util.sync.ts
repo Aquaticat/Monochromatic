@@ -5,10 +5,12 @@ import { initFormatters } from './formatters.ts'
 import type { Locales, Translations } from './i18n-types.ts'
 import { loadedFormatters, loadedLocales, locales } from './i18n-util.ts'
 
+import ca from './ca/index.ts'
 import en from './en/index.ts'
 import zh from './zh/index.ts'
 
 const localeTranslations = {
+	ca,
 	en,
 	zh,
 }
