@@ -11,6 +11,7 @@ const en = {
   postNotInLang: "Post doesn't exist in specified language",
   redirectingToLangChooser: 'Choose a language for',
   themeToggle: 'Invert theme',
+  langSwitcher: 'Switch language',
 } satisfies BaseTranslation;
 
 export default en;

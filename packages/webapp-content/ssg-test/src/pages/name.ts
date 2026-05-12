@@ -79,11 +79,18 @@ export function namePage(
     ? firstPost.data.description
     : name;
 
+  /** Locales in which this slug actually has a translation. */
+  const availableInLangs: readonly Locales[] = posts.map(function pickLang(p,) {
+    return p.lang;
+  },);
+
   return pageLayout({
     title: name,
     lang,
     content,
     description,
     canonicalUrl,
+    currentName: name,
+    availableInLangs,
   },);
 }

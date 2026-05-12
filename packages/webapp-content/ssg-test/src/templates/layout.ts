@@ -29,6 +29,13 @@ import { headFragment, } from './head.ts';
  *
  * @param searchable - whether pagefind should index this page's content
  *
+ * @param currentName - current post slug; forwarded to the header so the
+ * language switcher can link items to the same post in each locale
+ *
+ * @param availableInLangs - locales in which the current post exists;
+ * forwarded to the header so locales without a translation fall back
+ * to the locale landing
+ *
  * @returns complete HTML document string including `<!DOCTYPE html>`
  *
  * @example
@@ -50,6 +57,8 @@ export function pageLayout(
     description,
     canonicalUrl,
     searchable = false,
+    currentName,
+    availableInLangs,
   }: {
     title: string;
     lang: Locales;
@@ -57,6 +66,8 @@ export function pageLayout(
     description: string;
     canonicalUrl: string;
     searchable?: boolean;
+    currentName?: string | undefined;
+    availableInLangs?: readonly Locales[] | undefined;
   },
 ): string {
   return `<!DOCTYPE html>\n${
@@ -73,7 +84,11 @@ export function pageLayout(
         h({
           tag: 'body',
           children: [
-            siteHeaderHtml(lang,),
+            siteHeaderHtml({
+              lang,
+              currentName,
+              availableInLangs,
+            },),
             pageContentHtml({
               content,
               searchable,

@@ -26,6 +26,10 @@ import { pageLayout, } from '../templates/layout.ts';
  *
  * @param canonicalUrl - full canonical URL for this page
  *
+ * @param availableInLangs - locales in which this post slug exists;
+ * forwarded to the layout so the language switcher can produce
+ * same-post links and fall back where translations are missing
+ *
  * @returns complete HTML document for the post page
  *
  * @example
@@ -36,6 +40,7 @@ import { pageLayout, } from '../templates/layout.ts';
  *   name: 'hello',
  *   renderedHtml: '<p>Hi</p>',
  *   canonicalUrl: 'https://aquati.cat/en/hello',
+ *   availableInLangs: ['en', 'ca'],
  * });
  * ```
  */
@@ -46,12 +51,14 @@ export function postPage(
     name,
     renderedHtml,
     canonicalUrl,
+    availableInLangs,
   }: {
     post: Post | undefined;
     lang: Locales;
     name: string;
     renderedHtml: string | undefined;
     canonicalUrl: string;
+    availableInLangs: readonly Locales[];
   },
 ): string {
   if (post === undefined || renderedHtml === undefined) {
@@ -59,6 +66,7 @@ export function postPage(
       lang,
       name,
       canonicalUrl,
+      availableInLangs,
     },);
   }
 
@@ -83,6 +91,8 @@ export function postPage(
     description: post.data.description,
     canonicalUrl,
     searchable: true,
+    currentName: name,
+    availableInLangs,
   },);
 }
 
@@ -95,6 +105,10 @@ export function postPage(
  *
  * @param canonicalUrl - full canonical URL for this page
  *
+ * @param availableInLangs - locales in which this post slug exists;
+ * forwarded so the language switcher highlights translations that
+ * do exist even though the requested one does not
+ *
  * @returns complete HTML document with redirect link
  */
 function postNotFoundPage(
@@ -102,10 +116,12 @@ function postNotFoundPage(
     lang,
     name,
     canonicalUrl,
+    availableInLangs,
   }: {
     lang: Locales;
     name: string;
     canonicalUrl: string;
+    availableInLangs: readonly Locales[];
   },
 ): string {
   const t = i18nObject(lang,);
@@ -138,5 +154,7 @@ function postNotFoundPage(
     content,
     description: t.postNotInLang(),
     canonicalUrl,
+    currentName: name,
+    availableInLangs,
   },);
 }

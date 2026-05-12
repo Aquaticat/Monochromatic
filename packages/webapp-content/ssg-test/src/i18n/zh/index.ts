@@ -11,6 +11,7 @@ const zh = {
   postNotInLang: '无该语言的页面',
   redirectingToLangChooser: '的语言选择',
   themeToggle: '反转主题',
+  langSwitcher: '切换语言',
 } satisfies Translation;
 
 export default zh;

@@ -20,6 +20,7 @@ import {
   GAP,
   GAP_SMALL,
 } from '../styles/constants.ts';
+import { html as langSwitcherHtml, } from './lang-switcher.ts';
 import { html as siteSearchHtml, } from './site-search.ts';
 import { html as themeToggleHtml, } from './theme-toggle.ts';
 
@@ -91,14 +92,30 @@ export function css(): string {
  *
  * @param lang - current language code for localized text and links
  *
+ * @param currentName - current post slug; forwarded to the lang switcher
+ * so its items can link to the same post in the target locale
+ *
+ * @param availableInLangs - locales in which the current post exists;
+ * forwarded to the lang switcher to compute per-locale fallbacks
+ *
  * @returns HTML string for the header
  *
  * @example
  * ```ts
- * const markup = html('en');
+ * const markup = html({ lang: 'en', currentName: 'hello', availableInLangs: ['en', 'ca'] });
  * ```
  */
-export function html(lang: Locales,): string {
+export function html(
+  {
+    lang,
+    currentName,
+    availableInLangs,
+  }: {
+    lang: Locales;
+    currentName?: string | undefined;
+    availableInLangs?: readonly Locales[] | undefined;
+  },
+): string {
   const t = i18nObject(lang,);
   return h({
     tag: 'site-header',
@@ -128,6 +145,11 @@ export function html(lang: Locales,): string {
           h({
             tag: 'nav',
             children: [
+              langSwitcherHtml({
+                currentLang: lang,
+                currentName,
+                availableInLangs,
+              },),
               themeToggleHtml(t,),
               siteSearchHtml(t,),
             ],

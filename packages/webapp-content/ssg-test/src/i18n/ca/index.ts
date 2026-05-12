@@ -11,6 +11,7 @@ const ca = {
   postNotInLang: 'La publicació no existeix en l\'idioma especificat',
   redirectingToLangChooser: 'Tria un idioma per a',
   themeToggle: 'Inverteix el tema',
+  langSwitcher: 'Canvia d\'idioma',
 } satisfies Translation;
 
 export default ca;

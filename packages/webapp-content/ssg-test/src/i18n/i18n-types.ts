@@ -51,6 +51,10 @@ type RootTranslation = {
 	 * I​n​v​e​r​t​ ​t​h​e​m​e
 	 */
 	themeToggle: string
+	/**
+	 * S​w​i​t​c​h​ ​l​a​n​g​u​a​g​e
+	 */
+	langSwitcher: string
 }
 
 export type TranslationFunctions = {
@@ -90,6 +94,10 @@ export type TranslationFunctions = {
 	 * Invert theme
 	 */
 	themeToggle: () => LocalizedString
+	/**
+	 * Switch language
+	 */
+	langSwitcher: () => LocalizedString
 }
 
 export type Formatters = {}

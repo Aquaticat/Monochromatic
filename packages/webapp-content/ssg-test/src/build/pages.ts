@@ -65,6 +65,19 @@ export async function generatePages(
   const byName = groupByName(posts,);
   const names = Object.keys(byName,);
 
+  /** Locales each post slug has a translation in. */
+  const availableLangsByName: Record<string, readonly Locales[]> = Object
+    .fromEntries(
+      Object.entries(byName,).map(function pickAvailable([name, namePosts,],) {
+        return [
+          name,
+          namePosts.map(function langOf(p,) {
+            return p.lang;
+          },),
+        ] as const;
+      },),
+    );
+
   const writes = [
     writePage({
       relativePath: 'index.html',
@@ -98,6 +111,7 @@ export async function generatePages(
               name,
               renderedHtml: html,
               canonicalUrl: `${siteUrl}/${lang}/${name}`,
+              availableInLangs: availableLangsByName[name] ?? [],
             },),
           },);
         },),

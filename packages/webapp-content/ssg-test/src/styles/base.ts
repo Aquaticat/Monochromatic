@@ -5,6 +5,7 @@
  * colocated component CSS, into a single CSS string for the build.
  */
 import * as calloutAlert from '../components/callout-alert.ts';
+import * as langSwitcher from '../components/lang-switcher.ts';
 import * as pageContent from '../components/page-content.ts';
 import * as postCard from '../components/post-card.ts';
 import * as postList from '../components/post-list.ts';
@@ -53,6 +54,7 @@ export function generateSiteCss(): string {
     pageContent.css(),
     calloutAlert.css(),
     siteHeader.css(),
+    langSwitcher.css(),
     themeToggle.css(),
     siteSearch.css(),
     postList.css(),
