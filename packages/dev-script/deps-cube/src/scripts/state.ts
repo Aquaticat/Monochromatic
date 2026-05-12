@@ -45,7 +45,7 @@ export type ViewState = {
   rotationX: number;
   rotationOrbit: number;
   zoom: number;
-  target: readonly [number, number, number,];
+  target: [number, number, number,];
 };
 
 /**

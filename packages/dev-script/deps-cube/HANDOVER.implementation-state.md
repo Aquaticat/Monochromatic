@@ -6,10 +6,11 @@ The package `packages/dev-script/deps-cube/` is being built per the approved pla
 
 Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D feature space (6 dims = 3 spatial + color + shape + size), with deck.gl WebGL rendering and a custom HTML control panel for dim swapping, 3-state boolean filtering, range sliders, name search, display toggles, and URL-hash bookmarking. Output: `./deps-cube-<YYYY-MM-DD>.html`. Stdout: exactly `Saved to <abs-path>`.
 
-**Status (2026-05-12, third handover)**: tasks 1 through 8 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), and the Node-side HTML emitter for the control panel. Tasks 9 through 13 pending. Lint and types pass on every file (0 errors; ~278 stylistic warnings, all non-blocking).
+**Status (2026-05-12, fourth handover)**: tasks 1 through 9 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), the Node-side HTML emitter for the control panel, and the browser-side runtime controller (Deck instantiation, event wiring, picking, URL-hash sync). Tasks 10 through 13 pending. Lint and types pass on every file (0 errors; ~326 stylistic warnings, all non-blocking).
 
 **Last commits**:
 
+- `d8142cba feat(dev-script/deps-cube): add HTML control panel renderer` (task 8)
 - `df8f7fb3 docs(dev-script/deps-cube): handover update — tasks 6–7 done, 8–13 pending` (second handover)
 - `c2ce8e45 feat(dev-script/deps-cube): add deck.gl config + layer factories` (task 7)
 - `a0609584 feat(dev-script/deps-cube): add browser-side filter + state modules` (task 6)
@@ -27,6 +28,13 @@ Done:
 - ~~Task 5 (probe)~~ — `src/probe.ts` (orchestrator) + `src/probe-fields.ts` (per-field probes + helpers) + `src/probe-transitive.ts` (depth-bounded dep walk). Failed entries return a stub via `failedProbe` with `unknownReason: 'private-or-404'`.
 - ~~Task 6 (filter + state)~~ — `src/scripts/filter.ts` exports `computeVisibleIndices`, `extractDim`, `derivedBool`, `searchMatches`, plus the type vocabulary (`ToggleKey`, `ToggleValue`, `ToggleState`, `DataDimKey`, `ChannelKey`, `DimMapping`, `RangeState`). `src/scripts/state.ts` exports `defaultState({ probes })`, `encodeState`/`decodeState` (URL-encoded JSON, no base64), `readStateFromHash`/`writeStateToHash`, plus the `AppState`/`ViewState`/`DisplayToggleState` types. Both files are pure functions, no DOM, browser-bundle-safe.
 - ~~Task 8 (HTML control panel)~~ — `src/render-controls.ts` exports `renderControls({ probes, state })` returning the full `<aside id="controls">` fragment: 6 dim `<select>` dropdowns (with channel-incompatible options rendered `disabled`), 7 three-state radio `<fieldset>`s, 6 range-slider pairs (`min`/`max` from full data extent; `value` from current state), search input with escaped value, 4 display checkboxes + `name-labels <select>`, visibility counter, reset button. Private helpers: `renderDimDropdown`, `renderToggleRow`, `renderRangeRow`, `renderDisplaySection`, `escapeAttr`, `computeChannelExtent`. Shared metadata extracted to `src/dim-meta.ts` (`DIM_DISPLAY_NAMES`, `DIM_KINDS`, `CHANNEL_ACCEPTED_KINDS`, `TOGGLE_LABELS`, `acceptsDim`); `deck-labels.ts` now imports `DIM_DISPLAY_NAMES` from there. Channel acceptance: `x`/`y`/`z`/`color` accept all kinds (renderer normalises gracefully); `shape` accepts binary+categorical; `size` accepts continuous only.
+- ~~Task 9 (browser-side controller)~~ — split across four files to stay under the line cap:
+  - `src/scripts/controller.ts` — entry point. Reads `window.__PROBES__`, runs `defaultState` overlaid with URL-hash state, instantiates `new Deck<OrbitView>({ views: orbitView, initialViewState, controller: true, layers, getTooltip, onClick })`, then wires `onViewStateChange` via `setProps` (deferred to avoid the `session` forward reference). Owns the `Session` type, `recomputeVisibility` / `rerenderLayers` / `syncHash` render-path helpers, and the `pickedProbe` runtime check for `info.object`. `start()` builds the session, runs `syncDomFromState`, defines a `commit` closure capturing `session` + `probes`, then calls every `wire*` function with that closure.
+  - `src/scripts/controller-events.ts` — six `wire*` functions (`wireDimDropdowns`, `wireToggles`, `wireRanges`, `wireSearch`, `wireDisplay`, `wireReset`). Each registers DOM listeners that mutate `session.state` in place and call `commit()` (no args). Declares its own `Session` shape *without* the `deck` field, so the controller's full `Session` is structurally assignable with no cast. Dim swap also recomputes scene bounds and resets the channel's slider min/max/value to the new dim's extent.
+  - `src/scripts/controller-dom.ts` — `el` / `elInput` / `elSelect` typed accessors using `instanceof` (no `as HTMLInputElement` casts at call sites), plus `syncDomFromState` which writes every state value back into the DOM after a reset / URL-hash overwrite.
+  - `src/scripts/controller-tooltip.ts` — `formatTooltipHtml` (10-row tooltip table with HTML-escaped probe fields) + lazy-initialised `<aside id="pinned-tooltip">` with a close button, exposed as `pinTooltip` / `unpinTooltip`. Used by the deck.gl `getTooltip` hover callback (transient) and the `onClick` handler (pinned).
+  - **`src/scripts/state.ts` change**: `ViewState.target` is now mutable `[number, number, number]` instead of `readonly`, because deck.gl's `OrbitViewState.target` requires mutable.
+  - **Bundle smoke test**: `bun build src/scripts/controller.ts --format=iife --minify` produces a 754KB bundle (513 modules, including `@luma.gl/core` transitives). About 2× the audit estimate (~400KB); the extra comes from luma.gl + math.gl + probe.gl. Worth recording in `docs/decisions/deps-cube.md` under "implementation notes" when task 11 lands.
 - ~~Task 7 (deck.gl config + layer factories)~~ — split across five files to stay under the line cap:
   - `src/deck-config.ts` — `orbitView` (OrbitView instance, `orbitAxis: 'Y'`, `fovy: 50`), `computeSceneBounds` (extent per channel from `extractDim`), `buildLayers` (assembles layer groups, filters by display toggles, returns `readonly Layer[]`). Exports `SceneBounds` type.
   - `src/deck-accessors.ts` — pure per-probe value accessors: `probePosition` (returns `[x, y, z] | null`), `probeFillColor` (red↔green linear RGB ramp + blue tint; mid-grey for unknown; alpha 13 ≈ 5% for filtered, 255 for visible), `probeRadius` (linear interp 3px↔30px), `probeIsFilled` (shape < 0.5 → filled), `unknownClusterPosition` (offset corner of bounds with per-index hash jitter).
@@ -36,15 +44,7 @@ Done:
 
 Pending:
 
-- **Task 9**: `src/scripts/controller.ts` — browser-side runtime entry. Lifecycle:
-  1. Read embedded `__PROBES__` global (data literal injected by `render-html.ts`).
-  2. Compute initial state via `defaultState({ probes })`, then overlay any URL-hash state via `readStateFromHash`.
-  3. Instantiate `new Deck({ views: [orbitView], initialViewState, controller: true, layers: buildLayers(...) , onViewStateChange })`.
-  4. Wire every control: dim dropdowns → swap `state.dimMapping`, re-compute bounds, re-call `buildLayers`. Toggles/sliders/search → re-compute `visibleIndices` only (no bounds recompute needed). Display checkboxes → re-call `buildLayers`. Reset button → reset state to `defaultState`.
-  5. After every state change, re-encode to URL hash via `writeStateToHash`.
-  6. Visibility counter updates on every filter change.
-  7. Pickable click handler for pinned tooltip; hover handler via `getTooltip`.
-- **Task 10**: `src/render-html.ts` (Node) composes the final HTML — inlines deck.gl bundle (`Bun.build` with `controller.ts` as entry, IIFE format), the data literal (`window.__PROBES__ = …`), the control-panel HTML from `render-controls`, minimal CSS (canvas main area + sidebar; native nesting; logical properties). `src/cli.ts` is the `#!/usr/bin/env bun` entry: top-level `await readCatalog()` → `await probeAll()` → write file → `console.log('Saved to ' + absPath)`. `src/index.ts` re-exports.
+- **Task 10**: `src/render-html.ts` (Node) composes the final HTML — inlines deck.gl bundle (`Bun.build` with `controller.ts` as entry, IIFE format), the data literal (`window.__PROBES__ = …`), the control-panel HTML from `render-controls`, minimal CSS (canvas main area + sidebar; native nesting; logical properties). `src/cli.ts` is the `#!/usr/bin/env bun` entry: top-level `await readCatalog()` → `await probeAll()` → write file → `console.log('Saved to ' + absPath)`. `src/index.ts` re-exports. **Note**: per the bundle smoke test in task 9, the IIFE bundle is ~754KB minified (513 modules); inline that as a `<script>` block in the final HTML.
 - **Task 11**: `docs/decisions/deps-cube.md` — depth-matched audit per AGENTS.md. Plan file has the bullet list to expand. Key point: document the 72.7% TS exception for deck.gl with the user-screenshot evidence as the deciding factor.
 - **Task 12**: `test/*.test.ts` — catalog, cache, probe (with stubbed gh/registry), filter, state, deck-config (snapshot layer count and accessor outputs), render-controls (snapshot HTML).
 - **Task 13**: end-to-end smoke run — `mise run //packages/dev-script/deps-cube:run`, open the HTML in Firefox, exercise the full verification checklist from the plan.
@@ -72,6 +72,10 @@ packages/dev-script/deps-cube/
 │   ├── probe-transitive.ts      ← depth-bounded dep walk
 │   ├── render-controls.ts       ← Node-side HTML emitter for the control-panel <aside>
 │   └── scripts/
+│       ├── controller.ts        ← bootstrap, Deck instantiation, render path, pickedProbe, start()
+│       ├── controller-dom.ts    ← el/elInput/elSelect typed accessors + syncDomFromState
+│       ├── controller-events.ts ← wire* functions for every control surface
+│       ├── controller-tooltip.ts← formatTooltipHtml + pinned-tooltip DOM management
 │       ├── filter.ts            ← computeVisibleIndices + extractDim + derivedBool + searchMatches
 │       └── state.ts             ← AppState, defaultState, URL-hash ser/deser
 └── test/                        ← still empty; tests land in task 12
