@@ -152,7 +152,10 @@ export function wireLsp(
    * ref-object so `current` can be reassigned without a function-root let.
    */
   const renamePosition: {
-    current: { line: number; character: number; } | null;
+    current: {
+      line: number;
+      character: number
+    } | null;
   } = { current: null, };
 
   renameInput.addEventListener(

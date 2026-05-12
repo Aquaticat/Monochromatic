@@ -102,8 +102,9 @@ export function registerRoutes({
                 && 'code' in error
                 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
                 && (error as NodeJS.ErrnoException).code === 'ENOENT';
-              if (!isNotFound)
-                throw error;
+              if (isNotFound)
+                return;
+              throw error;
             }
           },
         },
