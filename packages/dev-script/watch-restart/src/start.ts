@@ -6,6 +6,7 @@ import { composeFilters, } from './filters/compose.ts';
 import { contentHashFilter, } from './filters/content-hash.ts';
 import { extFilter, } from './filters/ext.ts';
 import { globFilter, } from './filters/glob.ts';
+import { regexFilter, } from './filters/regex.ts';
 import { typeFilter, } from './filters/type.ts';
 import {
   DEFAULT_MAX_HASH_SIZE_BYTES,
@@ -223,6 +224,19 @@ function buildInternalFilter(
     filters.push(globFilter({
       ...(options.include === undefined ? {} : { include: options.include, }),
       ...(options.exclude === undefined ? {} : { exclude: options.exclude, }),
+    },),);
+  }
+  if (
+    (options.includeRegex !== undefined && options.includeRegex.length > 0)
+    || (options.excludeRegex !== undefined && options.excludeRegex.length > 0)
+  ) {
+    filters.push(regexFilter({
+      ...(options.includeRegex === undefined
+        ? {}
+        : { include: options.includeRegex, }),
+      ...(options.excludeRegex === undefined
+        ? {}
+        : { exclude: options.excludeRegex, }),
     },),);
   }
   if (options.contentChanged !== false) {
