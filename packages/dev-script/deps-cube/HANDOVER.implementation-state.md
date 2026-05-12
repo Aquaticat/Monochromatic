@@ -6,33 +6,55 @@ The package `packages/dev-script/deps-cube/` is being built per the approved pla
 
 Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D feature space (6 dims = 3 spatial + color + shape + size), with deck.gl WebGL rendering and a custom HTML control panel for dim swapping, 3-state boolean filtering, range sliders, name search, display toggles, and URL-hash bookmarking. Output: `./deps-cube-<YYYY-MM-DD>.html`. Stdout: exactly `Saved to <abs-path>`.
 
-**Status (2026-05-12)**: tasks 1 through 5 done — package scaffolded and data layer (catalog parser, JSON file cache, registry+gh probe pipeline split across probe.ts/probe-fields.ts/probe-transitive.ts to stay under the 300 max-lines cap). Tasks 6 through 13 pending. Lint and types pass on the data layer (0 errors, 64 warnings — warnings are missing @example tags on internal helpers and stylistic per-line nits, all non-blocking).
+**Status (2026-05-12, second handover)**: tasks 1 through 7 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), and the full deck.gl config (orbit view, scene bounds, all six layer factories split across five files to stay under the 300-line cap). Tasks 8 through 13 pending. Lint and types pass on every file in the package (0 errors; warnings exist but are non-blocking stylistic nits like missing `@example` tags on internal helpers).
 
-**Last commit**: `7c57662e feat(dev-script/deps-cube): scaffold package and probe pipeline`. The pnpm catalog now carries `@deck.gl/core` and `@deck.gl/layers` at `>=9.3.2`; `pnpm install` has already been run outside the sandbox.
+**Last commits**:
+
+- `c2ce8e45 feat(dev-script/deps-cube): add deck.gl config + layer factories` (task 7)
+- `a0609584 feat(dev-script/deps-cube): add browser-side filter + state modules` (task 6)
+- `d6d1aae6 docs(dev-script/deps-cube): handover doc covering tasks 1-5 done, 6-13 pending` (first handover)
+- `7c57662e feat(dev-script/deps-cube): scaffold package and probe pipeline` (tasks 1–5)
 
 ## Task tracker (matches TaskList IDs 1–13)
 
 Done:
 
-- ~~Task 1 (scaffold)~~: `package.json` (bin `deps-cube` → `src/cli.ts`, private, deps on `@deck.gl/core`, `@deck.gl/layers`, `@cspotcode/outdent`, `@monochromatic-dev/module-es`, `find-up`, `nano-spawn`, `p-limit`, `yaml`; devDeps on `@monochromatic-dev/config-typescript`, `@monochromatic-dev/module-test`, `@types/bun`); `mise.toml` (`[tasks.run]` → `bun src/cli.ts`, `[tasks.test]` → `bun test`, plus `extends = "lint"`/`"lint:types"`/`"lint:oxlint"`); `tsconfig.json` extends `@monochromatic-dev/config-typescript/dom`; `README.md` documents the chosen viz, control panel, dims, cache location, manual verification checklist.
-- ~~Task 2 (catalog entry)~~: `pnpm-workspace.yaml` gains `@deck.gl/core: '>=9.3.2'` and `@deck.gl/layers: '>=9.3.2'` between `@csstools/css-tokenizer` and `@lezer/common`.
-- ~~Task 3 (catalog parser)~~: `src/catalog.ts` exports `readCatalog({ startDir? })` → `readonly CatalogEntry[]`. Finds `pnpm-workspace.yaml` via `find-up`, parses with `yaml`, extracts from both default `catalog:` block and any named `catalogs.<name>:` blocks. Aliased entries (`npm:<name>@<range>`) decoded into `{ npmName, range }`; alias decoder exported separately for tests as `decodeAlias({ key, value })`.
-- ~~Task 4 (cache)~~: `src/cache.ts` exports `createCache({ rootDir? })` → `Cache`. JSON file per (npm name, version) at `~/.cache/monochromatic/deps-cube/<name>/<version>.json` (honors `$XDG_CACHE_HOME`); each file holds a record of `{ [field]: { value, fetchedAt } }` so multiple fields can coexist with different TTLs. Atomic writes (tmp + rename). Reads return `undefined` on missing-or-expired-or-corrupt. `ttlMs: null` means never expire.
-- ~~Task 5 (probe)~~: split into three files to stay under 300 LOC each:
-  - `src/probe.ts` — orchestration: `probeAll({ entries, cache })` runs `probeOne` for every entry through a `pLimit(8)` semaphore, surfaces per-entry failures as a stub `PackageProbe` via `failedProbe`. Exports `PackageProbe`, `LicenseClass`, `UnknownReason`.
-  - `src/probe-fields.ts` — helpers + per-field probes: `parseRepository` (handles `{type, url, directory}` objects, plain strings, `github:owner/repo`, `git+https://...`, `git@github.com:...`), `resolveVersion`, `classifyLicense` ({permissive, copyleft, non-oss, unknown}), `fetchJson` (uses `AbortSignal.timeout(30s)` — no try-finally; AGENTS.md bans it), `ghApi` (shells `gh api <path>` via `nano-spawn`), and `probePackageManifest` / `probeDownloads` / `probeLanguages` / `probeLastCommit` (with `?path={directory}` for monorepo-housed entries). Exports `NpmPackage`, `NpmVersion`, `RepositoryInfo`, `LicenseClass`.
-  - `src/probe-transitive.ts` — `probeTransitive` walks `dependencies` recursively with `visited` set, depth-capped at 5; caches per-(name, version) with 30-day TTL. Split out so `probe-fields.ts` stays under the max-lines cap.
+- ~~Task 1 (scaffold)~~ — `package.json` (bin `deps-cube` → `src/cli.ts`, deps on `@deck.gl/core`, `@deck.gl/layers`, `@cspotcode/outdent`, `@monochromatic-dev/module-es`, `find-up`, `nano-spawn`, `p-limit`, `yaml`), `mise.toml`, `tsconfig.json`, `README.md`.
+- ~~Task 2 (catalog entry)~~ — `pnpm-workspace.yaml` carries `@deck.gl/core: '>=9.3.2'` and `@deck.gl/layers: '>=9.3.2'`.
+- ~~Task 3 (catalog parser)~~ — `src/catalog.ts` exports `readCatalog({ startDir? })` parsing both default `catalog:` block and named `catalogs.<name>:` blocks; alias decoder exported as `decodeAlias`.
+- ~~Task 4 (cache)~~ — `src/cache.ts` exports `createCache({ rootDir? })`. JSON file per (name, version) at `~/.cache/monochromatic/deps-cube/<name>/<version>.json`; per-field `{ value, fetchedAt }`; atomic tmp+rename writes.
+- ~~Task 5 (probe)~~ — `src/probe.ts` (orchestrator) + `src/probe-fields.ts` (per-field probes + helpers) + `src/probe-transitive.ts` (depth-bounded dep walk). Failed entries return a stub via `failedProbe` with `unknownReason: 'private-or-404'`.
+- ~~Task 6 (filter + state)~~ — `src/scripts/filter.ts` exports `computeVisibleIndices`, `extractDim`, `derivedBool`, `searchMatches`, plus the type vocabulary (`ToggleKey`, `ToggleValue`, `ToggleState`, `DataDimKey`, `ChannelKey`, `DimMapping`, `RangeState`). `src/scripts/state.ts` exports `defaultState({ probes })`, `encodeState`/`decodeState` (URL-encoded JSON, no base64), `readStateFromHash`/`writeStateToHash`, plus the `AppState`/`ViewState`/`DisplayToggleState` types. Both files are pure functions, no DOM, browser-bundle-safe.
+- ~~Task 7 (deck.gl config + layer factories)~~ — split across five files to stay under the line cap:
+  - `src/deck-config.ts` — `orbitView` (OrbitView instance, `orbitAxis: 'Y'`, `fovy: 50`), `computeSceneBounds` (extent per channel from `extractDim`), `buildLayers` (assembles layer groups, filters by display toggles, returns `readonly Layer[]`). Exports `SceneBounds` type.
+  - `src/deck-accessors.ts` — pure per-probe value accessors: `probePosition` (returns `[x, y, z] | null`), `probeFillColor` (red↔green linear RGB ramp + blue tint; mid-grey for unknown; alpha 13 ≈ 5% for filtered, 255 for visible), `probeRadius` (linear interp 3px↔30px), `probeIsFilled` (shape < 0.5 → filled), `unknownClusterPosition` (offset corner of bounds with per-index hash jitter).
+  - `src/deck-layers.ts` — wireframe `PathLayer` (12 edges via `edge({ a, b })` helper) + threshold-plane `PolygonLayer`s at `log10(10000)` / `log10(365)` / `log10(100000)`; planes render only when the channel is mapped to its expected default dim (otherwise the heuristic value is meaningless).
+  - `src/deck-scatter.ts` — `partitionProbes` helper buckets probes into `{ filled, stroked, unknown }` based on `probeIsFilled` and `unknownReason`. Three `ScatterplotLayer` factories: `buildLeafScatterLayer` (filled), `buildNonLeafScatterLayer` (stroked), `buildUnknownClusterLayer` (offset position, stroke+fill).
+  - `src/deck-labels.ts` — `buildAxisLabelsLayer` (TextLayer at axis midpoints using `DIM_DISPLAY_NAMES` for the three spatial channels) + `buildNameLabelsLayer` (top-N by staleness or all visible probes, label above each glyph).
 
 Pending:
 
-- **Task 6**: `src/scripts/filter.ts` (pure filter mask given probes + 3-state toggles + range sliders + search → visible-index set) + `src/scripts/state.ts` (URL-hash serialize/deserialize for camera viewState + dim mapping + filter state + toggle state). These live under `src/scripts/` because they're bundled into the output HTML's runtime `<script>` block, not the CLI build.
-- **Task 7**: `src/deck-config.ts` builds the deck.gl config: `OrbitView`, default `viewState`, layer factory functions (3D box wireframe `PolygonLayer`, three semi-transparent threshold-plane `PolygonLayer`s at log(10_000) / log(365 days) / log(100_000), `ScatterplotLayer` for leaf circles, `ScatterplotLayer` or `IconLayer` for non-leaf diamonds, `ScatterplotLayer` for the offset Unknown cluster, `TextLayer` for axis labels and top-N risk names).
-- **Task 8**: `src/render-controls.ts` emits the HTML control panel: 6 dim dropdowns (channel × candidate-data-dim, type-filtered), 7 three-state toggle rows (Leaf, TS-majority, Large, Recent, Permissive, Copyleft, Has-known-GH-repo), 6 range sliders, name search input, display-toggle checkboxes (threshold planes, wireframe, name labels, unknown cluster), visibility counter, reset button. Pure DOM markup, no UI library, sidebar layout.
-- **Task 9**: `src/scripts/controller.ts` is the runtime glue inside the output HTML: instantiates `new Deck({...})`, wires dim-swap (`deck.setProps({ layers: rebuild(...) })`), filter (per-glyph opacity 5% via accessor returning rgba with low alpha), search (same), license chip handler, toggle handlers, click-pin tooltip, bookmark serialize/deserialize via `scripts/state.ts`.
-- **Task 10**: `src/render-html.ts` composes the final HTML with inlined deck.gl bundle (`import deckText from '@deck.gl/core/dist/index.min.js' with { type: 'text' }` — need to verify the exact dist path), data + initial state as JS literals, the control panel HTML, the controller script, and minimal CSS. `src/cli.ts` is the bun-shebang entry: `readCatalog()` → `probeAll()` → `renderHtml()` → write `./deps-cube-{YYYY-MM-DD}.html` → `console.log('Saved to ' + abspath)`. `src/index.ts` re-exports.
-- **Task 11**: `docs/decisions/deps-cube.md` — depth-matched library audit per AGENTS.md. Plan file has the bullet list to expand. Key point: document the 72.7% TS exception for deck.gl with user-screenshot evidence.
-- **Task 12**: `test/*.test.ts` — catalog (yaml fixture + alias decode), cache (TTL + atomic write + corrupt-file handling), probe (sinon-stubbed gh + registry + downloads, asserting each of the 7 dims for healthy-GH / monorepo-housed / non-GH / 404 fixtures), deck-config (snapshot layer config + accessor outputs), filter (each toggle × slider × search combination), state (URL-hash roundtrip), render-controls (snapshot control-panel HTML), render-html (composed HTML has no external resource refs).
-- **Task 13**: end-to-end smoke run — actually run `mise run //packages/dev-script/deps-cube:run`, open the HTML in Firefox, exercise rotation/dim picker/filters/search/bookmark/tooltip, verify audit-target octant identifies known-bad pkgs from `.pnpmfile.mjs` rationale.
+- **Task 8**: `src/render-controls.ts` — Node-side HTML-string emitter for the control panel. Inputs: `{ probes, state }`. Output: an HTML fragment string ready to be embedded in the output HTML by `render-html.ts`. Markup:
+  - 6 `<select>` dropdowns for dim mapping (ids `dim-x` … `dim-size`); options filtered by channel-accepted type (shape: binary only; size: continuous only; x/y/z/color: any).
+  - 7 three-state toggle rows (radios with names `toggle-isLeaf`, …, `toggle-hasKnownRepo`; values `any`/`yes`/`no`).
+  - 6 range slider pairs (`range-x-min`, `range-x-max`, …) initialised to the current `state.ranges[channel]`.
+  - Search `<input type="text" id="search">`.
+  - Display toggles: `<input type="checkbox" id="display-wireframe">`, `display-planes`, `display-axis-labels`, `display-unknown`; plus `<select id="name-labels">` with options `none`/`topN`/`all`.
+  - `<span id="visibility-counter">N of M visible</span>`.
+  - `<button id="reset">Reset filters</button>`.
+  - No JS in this file — that's the controller's job. Plan helpers: `renderDimDropdown`, `renderToggleRow`, `renderRangeRow`, `renderDisplaySection`. Include `DIM_DISPLAY_NAMES` + `TOGGLE_LABELS` + per-channel accepted-type allowlist (constants — possibly worth a shared `dim-meta.ts` if duplicated with `deck-labels.ts`'s `DIM_DISPLAY_NAMES`).
+- **Task 9**: `src/scripts/controller.ts` — browser-side runtime entry. Lifecycle:
+  1. Read embedded `__PROBES__` global (data literal injected by `render-html.ts`).
+  2. Compute initial state via `defaultState({ probes })`, then overlay any URL-hash state via `readStateFromHash`.
+  3. Instantiate `new Deck({ views: [orbitView], initialViewState, controller: true, layers: buildLayers(...) , onViewStateChange })`.
+  4. Wire every control: dim dropdowns → swap `state.dimMapping`, re-compute bounds, re-call `buildLayers`. Toggles/sliders/search → re-compute `visibleIndices` only (no bounds recompute needed). Display checkboxes → re-call `buildLayers`. Reset button → reset state to `defaultState`.
+  5. After every state change, re-encode to URL hash via `writeStateToHash`.
+  6. Visibility counter updates on every filter change.
+  7. Pickable click handler for pinned tooltip; hover handler via `getTooltip`.
+- **Task 10**: `src/render-html.ts` (Node) composes the final HTML — inlines deck.gl bundle (`Bun.build` with `controller.ts` as entry, IIFE format), the data literal (`window.__PROBES__ = …`), the control-panel HTML from `render-controls`, minimal CSS (canvas main area + sidebar; native nesting; logical properties). `src/cli.ts` is the `#!/usr/bin/env bun` entry: top-level `await readCatalog()` → `await probeAll()` → write file → `console.log('Saved to ' + absPath)`. `src/index.ts` re-exports.
+- **Task 11**: `docs/decisions/deps-cube.md` — depth-matched audit per AGENTS.md. Plan file has the bullet list to expand. Key point: document the 72.7% TS exception for deck.gl with the user-screenshot evidence as the deciding factor.
+- **Task 12**: `test/*.test.ts` — catalog, cache, probe (with stubbed gh/registry), filter, state, deck-config (snapshot layer count and accessor outputs), render-controls (snapshot HTML).
+- **Task 13**: end-to-end smoke run — `mise run //packages/dev-script/deps-cube:run`, open the HTML in Firefox, exercise the full verification checklist from the plan.
 
 ## State on disk (verified before this handover)
 
@@ -46,14 +68,21 @@ packages/dev-script/deps-cube/
 ├── src/
 │   ├── cache.ts                 ← JSON file cache, per-key TTL, atomic writes
 │   ├── catalog.ts               ← pnpm-workspace.yaml parser + alias decode
-│   ├── probe.ts                 ← orchestration (probeAll, probeOne) + PackageProbe type
-│   ├── probe-fields.ts          ← parseRepository, resolveVersion, classifyLicense, fetchJson, ghApi, probe{PackageManifest,Downloads,Languages,LastCommit}
-│   ├── probe-transitive.ts      ← probeTransitive (split out for line cap)
-│   └── scripts/                 ← empty; runtime JS bundles go here in tasks 6/9
-└── test/                        ← empty; tests land in task 12
+│   ├── deck-accessors.ts        ← per-probe pure accessors (position/color/radius/shape)
+│   ├── deck-config.ts           ← orbit view + computeSceneBounds + buildLayers orchestrator
+│   ├── deck-labels.ts           ← axis + name label TextLayers
+│   ├── deck-layers.ts           ← wireframe PathLayer + threshold-plane PolygonLayers
+│   ├── deck-scatter.ts          ← filled/stroked/unknown ScatterplotLayers + partition helper
+│   ├── probe.ts                 ← orchestration + PackageProbe type
+│   ├── probe-fields.ts          ← per-field probes + helpers (gh + registry)
+│   ├── probe-transitive.ts      ← depth-bounded dep walk
+│   └── scripts/
+│       ├── filter.ts            ← computeVisibleIndices + extractDim + derivedBool + searchMatches
+│       └── state.ts             ← AppState, defaultState, URL-hash ser/deser
+└── test/                        ← still empty; tests land in task 12
 ```
 
-The split (probe.ts / probe-fields.ts / probe-transitive.ts) is enforced by the `eslint/max-lines: 300` rule in `packages/config/oxlint/src/rules/style.ts`. Keep new files under that.
+The split (probe.ts / probe-fields.ts / probe-transitive.ts and deck-config.ts / deck-accessors.ts / deck-layers.ts / deck-scatter.ts / deck-labels.ts) is enforced by the `eslint/max-lines: 300` rule. Keep new files under that — the rule counts code lines (skipping blanks and TSDoc comments).
 
 ## Verification before declaring each task complete
 
@@ -65,26 +94,31 @@ mise run //packages/dev-script/deps-cube:lint:oxlint
 mise run //packages/dev-script/deps-cube:test       # task 12 onwards
 ```
 
-The first two pass cleanly now. The oxlint output reports ~64 stylistic warnings; ignore those unless you are tidying for release (the warnings are mostly `argument-per-line`/`param-per-line` on callbacks and `tsdoc/require-example` on internal helpers). Errors must stay at 0.
+The first two pass cleanly now. oxlint reports ~258 stylistic warnings on the package; ignore those unless tidying for release. The blocking errors caught in this session were:
 
-Outside the sandbox, `pnpm install` works directly; the sandbox blocks it. Run installs from a normal terminal (or via Bash's `dangerouslyDisableSandbox`).
-
-`pnpm-lock.yaml` already includes `@deck.gl/core@9.3.2` and `@deck.gl/layers@9.3.2`.
+- `eslint/prefer-template` (two pre-existing in `catalog.ts` — string concat in error messages) — fixed by switching to template literals.
+- `tsdoc/check-tag-names` — TSDoc reads bare `@anthropic-ai` inside `@example` block as an unknown tag; escape with `\@`.
+- `eslint/max-lines` — fix by splitting; never disable.
+- `no-restricted-syntax/require-destructured-params` — function declarations with 2+ params must use destructured-object form; exempt only when the signature is dictated by external APIs (e.g. Array.prototype callbacks).
+- `typescript-eslint/no-unsafe-type-assertion` — the disable comment must be on the line directly preceding the cast; if the cast spans multiple lines, extract the expression first so the cast is on a single line.
 
 ## Notable design constraints already enforced
 
-- **No `let` at function-body root or module root**: `probeAll` uses a `p-limit` semaphore + `Promise.all` instead of a shared-counter worker pool. `unknownReason` is computed by an extracted helper `computeUnknownReason` instead of an IIFE.
-- **No arrow functions**: every callback is a named `function` expression (e.g. `function buildTask`, `function recurseOne`, `function sumBytes`). The `addBlockedBy` rule in AGENTS.md exempts external-API callbacks from the destructured-object-param rule but **not** from the param-per-line stylistic rule (which is a warning, not an error).
-- **No try-finally**: `fetchJson` uses `AbortSignal.timeout(30000)` instead of `new AbortController` + `setTimeout` + try-finally cleanup. If you need finite cleanup elsewhere, use `await using` with `Symbol.asyncDispose`.
-- **exactOptionalPropertyTypes**: all optional fields are typed as `field?: T | undefined` (never bare `field?: T`); otherwise tsgo rejects `undefined` assignments at exactly-optional sites.
-- **JSON.parse / response.json() casts**: surrounded by `// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- <reason>` per AGENTS.md's "Add `oxlint-disable-next-line` comments with justification" rule.
+- **No `let` at function-body root or module root**: `probeAll` uses `p-limit` instead of a counter; `unknownReason` is a named helper instead of an IIFE. Mutating-set patterns (`partitionProbes` push into three arrays) are fine — they don't trigger the rule since the lets aren't at the function root.
+- **No arrow functions**: every callback is a named `function` expression. Array-prototype callbacks (`(value, index)`) are exempt from the destructured-object-param rule but still must be named functions.
+- **No try-finally**: `fetchJson` uses `AbortSignal.timeout(30000)`. `decodeState` uses try-catch (allowed).
+- **exactOptionalPropertyTypes**: all optional fields are `field?: T | undefined`.
+- **JSON.parse / response.json() / `Object.fromEntries` casts**: surrounded by `// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- <reason>` per AGENTS.md. The disable must be on the line directly before the cast — if `Object.fromEntries(...) as T` spans multiple lines, extract to a `const record` first.
+- **deck.gl type quirks**: `PathGeometry`, `PolygonGeometry`, and `Position` are mutable in deck.gl's typings. Datum shapes must use `[number, number, number,][]` not `readonly (readonly [number, number, number,])[]`. Accessors that return positions must return mutable tuples too — `probePosition` and `unknownClusterPosition` both return mutable types.
 
 ## Notes for the next session
 
-- The deck.gl import for the bundled output (task 10) is the unknown spot. Verify the exact dist path under `node_modules/@deck.gl/core/dist/` and `node_modules/@deck.gl/layers/dist/` — the package may ship multiple entries (`dist.min.js`, `dist/dist.min.js`, etc.). Use `find ... | head` to scope, then `import { default as ... } with { type: 'text' }` for inlining into the HTML. If the dist isn't suitable, Bun can bundle on demand at HTML-generation time via `Bun.build` with the bundled deck.gl as the entry.
-- Probe transitive walks may be slow first-run (registry calls fan out). The current depth cap is 5 with a visited set; if the first run is too slow, drop the cap to 3 and note the reduced accuracy in the README.
-- Linguist `bytes(TypeScript) / sum(bytes)` is whole-repo; for monorepo-housed packages (`repository.directory` set), the code intentionally returns `null` for both `tsRatioOrNull` and `sourceBytesOrNull` and sets `unknownReason: 'monorepo'`. The viz must place these in the explicit Unknown cluster region — do not silently coerce to 0.
-- The `probeAll` failure-mode (`failedProbe` stub) populates `unknownReason: 'private-or-404'` and zeroes the continuous fields. The chart should render these with a distinct marker (e.g. dashed outline) so audit-time the failure surfaces visually rather than silently distorting the cluster.
-- `oxlint-disable-next-line` blocks must wrap tightly per AGENTS.md (disable on the line directly before the violation, then re-enable on the line directly after the closing `}` if a block scope was needed). The current file uses only `disable-next-line` form; no block disables yet.
+- **deck.gl bundling for task 10**: deck.gl is installed at `node_modules/@deck.gl/core` and `node_modules/@deck.gl/layers`. Don't try to inline the dist as raw text — use `Bun.build({ entrypoints: ['src/scripts/controller.ts'], format: 'iife', minify: true })` so Bun resolves and bundles deck.gl transitively from the controller's imports. Output goes into a `<script>` block inside the generated HTML.
+- **Plan deviation worth recording in `docs/decisions/deps-cube.md`**: the chosen visual distinction for the "shape" channel is filled vs stroked (not circle vs diamond). Reason: ScatterplotLayer renders circles only; supporting diamonds means IconLayer with custom icon textures (more code, harder to type) or SimpleMeshLayer (3D geometry, overkill at 120 points). Filled/stroked is the simplest binary distinction that doesn't require auxiliary assets. Document under "implementation notes".
+- **Display-name duplication**: `deck-labels.ts` has a `DIM_DISPLAY_NAMES` table and `render-controls.ts` (task 8) will need the same. If the duplication is unwelcome, extract to `src/dim-meta.ts` and import from both — but only do this in task 8, not retroactively.
+- **Top-N name labels**: currently ranks by `daysSinceLastCommitOrNull` descending (oldest first). Subject to refinement once the audit-target scoring is formalised; could be a weighted score across staleness + small size + non-TS + low downloads.
+- **Probes with all-zero continuous fields**: `failedProbe` returns zeroes (logSourceBytes=0, etc.). Combined with `Math.max(value, 1)` in `extractDim`, these render at `log10(1) = 0` on every spatial axis. They'll cluster at the origin if the unknown-cluster routing fails to catch them; cross-check by setting `unknownReason: 'private-or-404'` on all failed probes (already done) and ensure `partitionProbes` routes them to the unknown bucket via the `probe.unknownReason !== null` check.
+- **Linguist `bytes(TypeScript) / sum(bytes)` is whole-repo**: monorepo-housed packages (`repository.directory` set) intentionally return `null` for `tsRatioOrNull` and `sourceBytesOrNull` — the viz must place these in the Unknown cluster region, not silently coerce to 0. This is already the case.
+- **`oxlint-disable-next-line` placement**: must be on the line directly before the violation. If the violation spans multiple lines (e.g. a multi-line cast), extract the expression to a single-line `const` first and put the disable comment on the line directly above that. See `state.ts`'s `computeFullRanges` for the pattern.
 
 Plan, README, this handover, and the audit doc (`docs/decisions/deps-cube.md`, task 11) are the source of truth. The README documents external behaviour; this handover documents in-progress state; the plan documents the design decisions; the audit doc will document the library trade-off.
