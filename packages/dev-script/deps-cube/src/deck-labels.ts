@@ -16,10 +16,8 @@ import { TextLayer, } from '@deck.gl/layers';
 import type { PackageProbe, } from './probe.ts';
 import { probePosition, } from './deck-accessors.ts';
 import type { SceneBounds, } from './deck-config.ts';
-import type {
-  DataDimKey,
-  DimMapping,
-} from './scripts/filter.ts';
+import { DIM_DISPLAY_NAMES, } from './dim-meta.ts';
+import type { DimMapping, } from './scripts/filter.ts';
 import type { AppState, } from './scripts/state.ts';
 
 //region Types
@@ -46,20 +44,6 @@ const AXIS_LABEL_OFFSET = 0.5;
 const NAME_LABEL_OFFSET = 0.1;
 /** Half-coefficient used for axis-label centring (just `(min + max) / 2`). */
 const HALF = 1 / 2;
-
-/** Display names shown on axes for each candidate dim. */
-const DIM_DISPLAY_NAMES: Record<DataDimKey, string> = {
-  logSourceBytes: 'log10(source bytes)',
-  logDaysStale: 'log10(days stale)',
-  logInstallSize: 'log10(install bytes)',
-  logDownloads: 'log10(weekly downloads)',
-  tsRatio: 'TypeScript ratio',
-  runtimeDepCount: 'runtime dep count',
-  transitiveDepCount: 'transitive dep count',
-  logPackageAge: 'log10(age, days)',
-  isLeafNumeric: 'is leaf (0/1)',
-  licenseClassNumeric: 'license (0=permissive…3=unknown)',
-};
 
 /** Axis-label colour, slightly muted white. */
 const AXIS_LABEL_COLOR: readonly [number, number, number, number,] = [

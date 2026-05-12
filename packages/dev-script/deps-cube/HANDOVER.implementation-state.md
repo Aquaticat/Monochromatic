@@ -6,10 +6,11 @@ The package `packages/dev-script/deps-cube/` is being built per the approved pla
 
 Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D feature space (6 dims = 3 spatial + color + shape + size), with deck.gl WebGL rendering and a custom HTML control panel for dim swapping, 3-state boolean filtering, range sliders, name search, display toggles, and URL-hash bookmarking. Output: `./deps-cube-<YYYY-MM-DD>.html`. Stdout: exactly `Saved to <abs-path>`.
 
-**Status (2026-05-12, second handover)**: tasks 1 through 7 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), and the full deck.gl config (orbit view, scene bounds, all six layer factories split across five files to stay under the 300-line cap). Tasks 8 through 13 pending. Lint and types pass on every file in the package (0 errors; warnings exist but are non-blocking stylistic nits like missing `@example` tags on internal helpers).
+**Status (2026-05-12, third handover)**: tasks 1 through 8 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), and the Node-side HTML emitter for the control panel. Tasks 9 through 13 pending. Lint and types pass on every file (0 errors; ~278 stylistic warnings, all non-blocking).
 
 **Last commits**:
 
+- `df8f7fb3 docs(dev-script/deps-cube): handover update — tasks 6–7 done, 8–13 pending` (second handover)
 - `c2ce8e45 feat(dev-script/deps-cube): add deck.gl config + layer factories` (task 7)
 - `a0609584 feat(dev-script/deps-cube): add browser-side filter + state modules` (task 6)
 - `d6d1aae6 docs(dev-script/deps-cube): handover doc covering tasks 1-5 done, 6-13 pending` (first handover)
@@ -25,6 +26,7 @@ Done:
 - ~~Task 4 (cache)~~ — `src/cache.ts` exports `createCache({ rootDir? })`. JSON file per (name, version) at `~/.cache/monochromatic/deps-cube/<name>/<version>.json`; per-field `{ value, fetchedAt }`; atomic tmp+rename writes.
 - ~~Task 5 (probe)~~ — `src/probe.ts` (orchestrator) + `src/probe-fields.ts` (per-field probes + helpers) + `src/probe-transitive.ts` (depth-bounded dep walk). Failed entries return a stub via `failedProbe` with `unknownReason: 'private-or-404'`.
 - ~~Task 6 (filter + state)~~ — `src/scripts/filter.ts` exports `computeVisibleIndices`, `extractDim`, `derivedBool`, `searchMatches`, plus the type vocabulary (`ToggleKey`, `ToggleValue`, `ToggleState`, `DataDimKey`, `ChannelKey`, `DimMapping`, `RangeState`). `src/scripts/state.ts` exports `defaultState({ probes })`, `encodeState`/`decodeState` (URL-encoded JSON, no base64), `readStateFromHash`/`writeStateToHash`, plus the `AppState`/`ViewState`/`DisplayToggleState` types. Both files are pure functions, no DOM, browser-bundle-safe.
+- ~~Task 8 (HTML control panel)~~ — `src/render-controls.ts` exports `renderControls({ probes, state })` returning the full `<aside id="controls">` fragment: 6 dim `<select>` dropdowns (with channel-incompatible options rendered `disabled`), 7 three-state radio `<fieldset>`s, 6 range-slider pairs (`min`/`max` from full data extent; `value` from current state), search input with escaped value, 4 display checkboxes + `name-labels <select>`, visibility counter, reset button. Private helpers: `renderDimDropdown`, `renderToggleRow`, `renderRangeRow`, `renderDisplaySection`, `escapeAttr`, `computeChannelExtent`. Shared metadata extracted to `src/dim-meta.ts` (`DIM_DISPLAY_NAMES`, `DIM_KINDS`, `CHANNEL_ACCEPTED_KINDS`, `TOGGLE_LABELS`, `acceptsDim`); `deck-labels.ts` now imports `DIM_DISPLAY_NAMES` from there. Channel acceptance: `x`/`y`/`z`/`color` accept all kinds (renderer normalises gracefully); `shape` accepts binary+categorical; `size` accepts continuous only.
 - ~~Task 7 (deck.gl config + layer factories)~~ — split across five files to stay under the line cap:
   - `src/deck-config.ts` — `orbitView` (OrbitView instance, `orbitAxis: 'Y'`, `fovy: 50`), `computeSceneBounds` (extent per channel from `extractDim`), `buildLayers` (assembles layer groups, filters by display toggles, returns `readonly Layer[]`). Exports `SceneBounds` type.
   - `src/deck-accessors.ts` — pure per-probe value accessors: `probePosition` (returns `[x, y, z] | null`), `probeFillColor` (red↔green linear RGB ramp + blue tint; mid-grey for unknown; alpha 13 ≈ 5% for filtered, 255 for visible), `probeRadius` (linear interp 3px↔30px), `probeIsFilled` (shape < 0.5 → filled), `unknownClusterPosition` (offset corner of bounds with per-index hash jitter).
@@ -34,15 +36,6 @@ Done:
 
 Pending:
 
-- **Task 8**: `src/render-controls.ts` — Node-side HTML-string emitter for the control panel. Inputs: `{ probes, state }`. Output: an HTML fragment string ready to be embedded in the output HTML by `render-html.ts`. Markup:
-  - 6 `<select>` dropdowns for dim mapping (ids `dim-x` … `dim-size`); options filtered by channel-accepted type (shape: binary only; size: continuous only; x/y/z/color: any).
-  - 7 three-state toggle rows (radios with names `toggle-isLeaf`, …, `toggle-hasKnownRepo`; values `any`/`yes`/`no`).
-  - 6 range slider pairs (`range-x-min`, `range-x-max`, …) initialised to the current `state.ranges[channel]`.
-  - Search `<input type="text" id="search">`.
-  - Display toggles: `<input type="checkbox" id="display-wireframe">`, `display-planes`, `display-axis-labels`, `display-unknown`; plus `<select id="name-labels">` with options `none`/`topN`/`all`.
-  - `<span id="visibility-counter">N of M visible</span>`.
-  - `<button id="reset">Reset filters</button>`.
-  - No JS in this file — that's the controller's job. Plan helpers: `renderDimDropdown`, `renderToggleRow`, `renderRangeRow`, `renderDisplaySection`. Include `DIM_DISPLAY_NAMES` + `TOGGLE_LABELS` + per-channel accepted-type allowlist (constants — possibly worth a shared `dim-meta.ts` if duplicated with `deck-labels.ts`'s `DIM_DISPLAY_NAMES`).
 - **Task 9**: `src/scripts/controller.ts` — browser-side runtime entry. Lifecycle:
   1. Read embedded `__PROBES__` global (data literal injected by `render-html.ts`).
   2. Compute initial state via `defaultState({ probes })`, then overlay any URL-hash state via `readStateFromHash`.
@@ -70,19 +63,21 @@ packages/dev-script/deps-cube/
 │   ├── catalog.ts               ← pnpm-workspace.yaml parser + alias decode
 │   ├── deck-accessors.ts        ← per-probe pure accessors (position/color/radius/shape)
 │   ├── deck-config.ts           ← orbit view + computeSceneBounds + buildLayers orchestrator
-│   ├── deck-labels.ts           ← axis + name label TextLayers
+│   ├── deck-labels.ts           ← axis + name label TextLayers (imports DIM_DISPLAY_NAMES)
 │   ├── deck-layers.ts           ← wireframe PathLayer + threshold-plane PolygonLayers
 │   ├── deck-scatter.ts          ← filled/stroked/unknown ScatterplotLayers + partition helper
+│   ├── dim-meta.ts              ← shared display names, kinds, channel-acceptance, toggle labels
 │   ├── probe.ts                 ← orchestration + PackageProbe type
 │   ├── probe-fields.ts          ← per-field probes + helpers (gh + registry)
 │   ├── probe-transitive.ts      ← depth-bounded dep walk
+│   ├── render-controls.ts       ← Node-side HTML emitter for the control-panel <aside>
 │   └── scripts/
 │       ├── filter.ts            ← computeVisibleIndices + extractDim + derivedBool + searchMatches
 │       └── state.ts             ← AppState, defaultState, URL-hash ser/deser
 └── test/                        ← still empty; tests land in task 12
 ```
 
-The split (probe.ts / probe-fields.ts / probe-transitive.ts and deck-config.ts / deck-accessors.ts / deck-layers.ts / deck-scatter.ts / deck-labels.ts) is enforced by the `eslint/max-lines: 300` rule. Keep new files under that — the rule counts code lines (skipping blanks and TSDoc comments).
+The split (probe.ts / probe-fields.ts / probe-transitive.ts and deck-config.ts / deck-accessors.ts / deck-layers.ts / deck-scatter.ts / deck-labels.ts) is enforced by the `eslint/max-lines: 300` rule. Keep new files under that — the rule is configured with `skipBlankLines: true, skipComments: true`, so raw line counts can exceed 300 as long as code-only lines stay under (verified `render-controls.ts` at 402 raw lines passes cleanly).
 
 ## Verification before declaring each task complete
 
@@ -94,7 +89,7 @@ mise run //packages/dev-script/deps-cube:lint:oxlint
 mise run //packages/dev-script/deps-cube:test       # task 12 onwards
 ```
 
-The first two pass cleanly now. oxlint reports ~258 stylistic warnings on the package; ignore those unless tidying for release. The blocking errors caught in this session were:
+The first two pass cleanly now. oxlint reports ~278 stylistic warnings on the package (mostly `argument-per-line`, `tuple-per-line`, `array-element-per-line` against multi-arg helpers and tuple literals, plus `tsdoc/tag-lines` against doc blocks with adjacent `@param` lines); ignore those unless tidying for release. The blocking errors caught across sessions were:
 
 - `eslint/prefer-template` (two pre-existing in `catalog.ts` — string concat in error messages) — fixed by switching to template literals.
 - `tsdoc/check-tag-names` — TSDoc reads bare `@anthropic-ai` inside `@example` block as an unknown tag; escape with `\@`.
@@ -115,7 +110,7 @@ The first two pass cleanly now. oxlint reports ~258 stylistic warnings on the pa
 
 - **deck.gl bundling for task 10**: deck.gl is installed at `node_modules/@deck.gl/core` and `node_modules/@deck.gl/layers`. Don't try to inline the dist as raw text — use `Bun.build({ entrypoints: ['src/scripts/controller.ts'], format: 'iife', minify: true })` so Bun resolves and bundles deck.gl transitively from the controller's imports. Output goes into a `<script>` block inside the generated HTML.
 - **Plan deviation worth recording in `docs/decisions/deps-cube.md`**: the chosen visual distinction for the "shape" channel is filled vs stroked (not circle vs diamond). Reason: ScatterplotLayer renders circles only; supporting diamonds means IconLayer with custom icon textures (more code, harder to type) or SimpleMeshLayer (3D geometry, overkill at 120 points). Filled/stroked is the simplest binary distinction that doesn't require auxiliary assets. Document under "implementation notes".
-- **Display-name duplication**: `deck-labels.ts` has a `DIM_DISPLAY_NAMES` table and `render-controls.ts` (task 8) will need the same. If the duplication is unwelcome, extract to `src/dim-meta.ts` and import from both — but only do this in task 8, not retroactively.
+- **Display-name source**: `src/dim-meta.ts` owns `DIM_DISPLAY_NAMES`, `DIM_KINDS`, `CHANNEL_ACCEPTED_KINDS`, `TOGGLE_LABELS`, and the `acceptsDim` predicate. Both `deck-labels.ts` (axis labels) and `render-controls.ts` (dim dropdowns + toggle legends) import from here. Add new dim-meta there, not in either consumer.
 - **Top-N name labels**: currently ranks by `daysSinceLastCommitOrNull` descending (oldest first). Subject to refinement once the audit-target scoring is formalised; could be a weighted score across staleness + small size + non-TS + low downloads.
 - **Probes with all-zero continuous fields**: `failedProbe` returns zeroes (logSourceBytes=0, etc.). Combined with `Math.max(value, 1)` in `extractDim`, these render at `log10(1) = 0` on every spatial axis. They'll cluster at the origin if the unknown-cluster routing fails to catch them; cross-check by setting `unknownReason: 'private-or-404'` on all failed probes (already done) and ensure `partitionProbes` routes them to the unknown bucket via the `probe.unknownReason !== null` check.
 - **Linguist `bytes(TypeScript) / sum(bytes)` is whole-repo**: monorepo-housed packages (`repository.directory` set) intentionally return `null` for `tsRatioOrNull` and `sourceBytesOrNull` — the viz must place these in the Unknown cluster region, not silently coerce to 0. This is already the case.
