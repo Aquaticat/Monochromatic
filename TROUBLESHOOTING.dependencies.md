@@ -242,3 +242,56 @@ A workspace shim package re-exporting `globalThis.DOMException`, wired via
 `overrides: { 'node-domexception': 'link:packages/shim/node-domexception' }`,
 would silence the warning without breaking runtime. Not worth the package for
 an install-time-only message; revisit if the warning ever blocks a CI gate.
+
+### `@google/genai` (declared suppressed via pnpm override)
+
+The override line `'@earendil-works/pi-ai>@google/genai': '-'` in
+`pnpm-workspace.yaml` removes `@google/genai` (and its `protobufjs`,
+`google-auth-library`, `gcp-metadata`, `gaxios` subtree) from
+`@earendil-works/pi-ai`'s **resolved dependencies in `pnpm-lock.yaml`**.
+This is documentary intent only: pnpm 11.1.1 still extracts the package into
+`node_modules/.pnpm/@google+genai@*/` and links it from
+`node_modules/.pnpm/@earendil-works+pi-ai@*/node_modules/@google/genai`,
+because pi-ai's own `package.json` lists it under `dependencies`. The other
+pi-ai overrides (`@aws-sdk/client-bedrock-runtime`, `@mistralai/mistralai`,
+`chalk`, `partial-json`, `proxy-agent`, `undici`, `zod-to-json-schema`)
+behave the same way: declared removed in the lockfile, physically present
+on disk. To actually drop them, `pnpm prune` is required, but that breaks
+load-bearing orphans for `partial-json` (statically imported by
+`pi-ai/dist/utils/json-parse.js`, re-exported from pi-ai's entry) and
+several pi-coding-agent dependencies.
+
+#### Why the override is still worth having
+
+The lockfile is the source of truth read by future tooling and audits.
+Recording the intent there ensures `@google/genai` is not pinned to a
+specific version, the SBOM for this workspace does not list it as a
+declared dep, and any future tool that respects pnpm overrides for
+extraction (or any future pnpm version that does) will benefit immediately.
+
+#### Why suppression is safe at the runtime layer
+
+`@earendil-works/pi-ai` reaches `@google/genai` only through dynamic
+`import()`, so even if the package were actually removed at install time,
+pi-ai would not crash at module load:
+
+- `dist/providers/register-builtins.js:48-63` defines `createLazyStream`,
+  whose returned closure invokes `loadModule()` only when the stream is
+  called. The wrapper has a `.catch` that converts a module-resolution
+  failure into a stream-error event.
+- `dist/providers/register-builtins.js:100-118` defines
+  `loadGoogleProviderModule` and `loadGoogleVertexProviderModule`, which
+  call `import("./google.js")` and `import("./google-vertex.js")` lazily.
+- The static `import "@google/genai"` lines live in `dist/providers/google.js:1`,
+  `dist/providers/google-vertex.js:1`, and `dist/providers/google-shared.js:4`.
+  All three modules are reached only via the lazy chain above; no `.js` file
+  outside that chain static-imports any of them.
+
+#### What stops working
+
+Nothing in normal operation. `packages/pi/auto-mode` only references the
+Google APIs by string identifier in `src/judge-tool.ts:83`
+(`toolChoiceForApi`) and the matching unit tests, which never touch
+`@google/genai`. If a Google model were ever routed through `streamSimple`,
+pi-ai's `createLazyStream` catches the resolution error and emits a
+stream-error event.

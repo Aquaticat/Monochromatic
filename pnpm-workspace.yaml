@@ -144,6 +144,7 @@ overrides:
   # See packages/pi/morph-compact/src/pi-utils.ts for the local
   # re-implementation of the only two runtime helpers we used.
   '@earendil-works/pi-ai>@aws-sdk/client-bedrock-runtime': '-'
+  '@earendil-works/pi-ai>@google/genai': '-'
   '@earendil-works/pi-ai>@mistralai/mistralai': '-'
   '@earendil-works/pi-ai>chalk': '-'
   '@earendil-works/pi-ai>partial-json': '-'
