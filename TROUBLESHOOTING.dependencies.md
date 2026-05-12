@@ -29,7 +29,8 @@ The decision criterion is the same across all 24:
 each package is either abandoned (no commits in 3+ years on upstream),
 a polyfill rendered obsolete by every supported runtime (Node 22+, Bun),
 or a piece of the express 4.x micro-utility family that the workspace has chosen
-not to take a dependency on (h3 and elysia replace express).
+not to take a dependency on (h3 replaces express; elysia was audited but
+not adopted, see `AUDIT.md`).
 Per-package rationale is the `reason` field in `.pnpmfile.mjs`,
 which surfaces verbatim in the install-time warning.
 

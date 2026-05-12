@@ -91,7 +91,7 @@ const POLICY = Object.freeze({
   },
   'proxy-addr': {
     action: 'throw',
-    reason: 'abandoned express 4.x util; use h3 or elysia request helpers',
+    reason: 'abandoned express 4.x util; use h3 request helpers',
   },
   'regenerator-runtime': {
     action: 'throw',
