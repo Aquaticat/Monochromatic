@@ -4,9 +4,29 @@
 
 The package `packages/dev-script/watch-restart/` is being built per the approved plan at `/home/user/.claude/plans/plan-this-first-question-abstract-hopcroft.md`. Read that plan first; it has the full design, the option matrix that produced each decision, and the verification checklist. The original product handover at `packages/desktop-daemon/editord/HANDOVER.custom-dev-server-watcher.md` has the architectural rationale (the failures we are excluding by construction, the chokidar-vs-watchman analysis, etc.).
 
-**Status**: tasks 1 through 10 done. Package builds, lints, type-checks, and tests pass; editord's `dev:server` is on watch-restart; AUDIT.md and TROUBLESHOOTING.mise-watch.md are updated. Remaining work is interactive verification of cases 5 through 11 from the plan (a human at the terminal driving the dev loop).
+**Status**: tasks 1 through 10 done (baseline package).  Q6 watchexec-parity expansion approved by user 2026-05-12 (see plan file `## Question 6`).  Q6 progress: tasks 11 + 15 done (event shape extension + typeFilter, commit `812ff9b1`).  Remaining Q6 tasks: 14, 16, 17, 18, 19, 20, 22 (see "Q6 task tracker" below).  Baseline interactive verification (plan cases 5 to 11) still pending a human at the terminal — Q6 expansion is purely additive and does not block that verification.
 
-**Last commit**: see `git log --oneline -- packages/dev-script/watch-restart packages/desktop-daemon/editord AUDIT.md TROUBLESHOOTING.mise-watch.md` for the full task-by-task progression. Task 9 commit: `f006520e feat(desktop-daemon/editord): switch dev:server to watch-restart`.
+**Last commit**: see `git log --oneline -- packages/dev-script/watch-restart packages/desktop-daemon/editord AUDIT.md TROUBLESHOOTING.mise-watch.md` for the full task-by-task progression.  Task 9 baseline: `f006520e feat(desktop-daemon/editord): switch dev:server to watch-restart`.  Q6 task 11 + 15: `812ff9b1 feat(dev-script/watch-restart): extend event shape for file/dir events`.
+
+## Q6 task tracker
+
+Source-of-truth design: plan file `## Question 6: watchexec feature parity & jaq use case coverage — RESOLVED`.  TaskList entries map to plan tasks 11 through 22.
+
+Done:
+
+- ~~Task 11 + 15 (combined commit `812ff9b1`)~~: extended `WatchEventKind` with `addDir`/`unlinkDir`; added `WatchEntityType` and required `entity` field on `WatchEvent`; wired chokidar `addDir`/`unlinkDir` listeners in `watcher.ts`; added `filters/type.ts` (`typeFilter`) and default `['file']` wiring in `start.ts`'s `buildInternalFilter`; updated `content-hash.ts` to short-circuit on `entity === 'dir'`; updated test fixtures (compose/content-hash/ext/glob `makeEvent` helpers) to populate `entity`; extracted pure path helpers to `src/watcher-paths.ts` to keep watcher.ts under max-lines after the dir-listener additions.
+
+Pending (do in this order; each is one logical commit):
+
+- **Task 13 (cli.ts parser extension)**: add `--include-regex`, `--exclude-regex`, `--type`, `--hidden`/`--no-hidden`, `--follow-symlinks`/`--no-follow-symlinks`, `--gitignore`/`--no-gitignore`, `--ignore-file`, `--depth`, `--poll`, `--clear`/`--no-clear`, `--signal`, `--process-group`/`--no-process-group` to the optique parser.  Extend `ParsedArgs` and `argsToOptions`.  No filter wiring yet (subsequent tasks).  The `--signal` CLI flag maps to a library option named `killSignal` (the existing `signal?: AbortSignal` orchestrator-cancellation field stays); there is nothing to rename — `killSignal` is purely additive.
+- **Task 14 (filters/regex.ts)**: `regexFilter({include, exclude})`.  Match against `event.relativePath` (consistent with `globFilter`).  Wire into `buildInternalFilter` (only when at least one regex is given).  Tests.
+- **Task 16 (filters/hidden.ts)**: `hiddenFilter({allowHidden?})`.  When `allowHidden` is falsy, reject events whose `relativePath` has any segment starting with `.`.  Wire into `buildInternalFilter` (only when `options.hidden === false` or undefined; default-on hidden-exclusion).  Tests.
+- **Task 17 (filters/gitignore.ts + `ignore` dep)**: add `ignore` (kaelzhang/node-ignore) to the pnpm catalog and the package's `dependencies`.  Implement `gitignoreFilter({roots, extraFiles?}): Promise<WatchFilter>` — async because it reads `.gitignore` files from disk during construction.  The orchestrator awaits the factory once before the watcher starts.  Tests use temp-dir fixtures with `.gitignore` + extra-file patterns.  Tick `ignore` in `AUDIT.md` as part of task 22.
+- **Task 18 (watcher.ts chokidar config)**: pass `options.depth` → chokidar's `depth`; `options.poll` → `usePolling: true, interval: poll`; `options.followSymlinks` → `followSymlinks`.  Tests verify the options reach chokidar (either via a sinon stub on `chokidarWatch` or a direct temp-dir integration test).  Confirm chokidar emits `addDir`/`unlinkDir` under default config (already done via task 11 commit; cross-check before declaring task 18 done).
+- **Task 19 (child.ts process control)**: add `killSignal` (default `'SIGTERM'`), `processGroup` (default `true`), and `clear` (default `false`) to `ChildOptions` and `StartWatchRestartOptions`.  When `processGroup`, spawn with `detached: true` and use `process.kill(-pid, signal)` to signal the whole group; otherwise `process.kill(pid, signal)`.  When `clear`, write `\x1b[2J\x1b[H` to stdout before each child re-spawn.  Tests use the injectable `SpawnFn` to record the signal and pid sign.
+- **Task 20 + 22 (README + AUDIT.md)**: README documents the full Q6 flag set, defaults, the AND-of-OR-of cap rule, and the library-API fallback for compositions beyond that cap.  `AUDIT.md` ticks `ignore` as adopted with the path that uses it.  Task 21 (verify editord unchanged) is implicit — defaults (`--type file`, `--gitignore` ON, `--hidden` OFF, etc.) cover the existing case.
+
+When picking up: read the plan's Q6 section for the option-by-option rationale and example invocations.  Verify after each commit with the four-task `build`/`lint`/`lint:types`/`test:unit` quad listed under "Verification before declaring task complete" below.
 
 **Remaining interactive verification (cases 5 to 11 from the plan)**:
 
@@ -218,4 +238,6 @@ Final verification (after task 9) lives in the plan's "Verification (end-to-end)
 
 ## Hand-off
 
-The plan, this handover, and the in-tree state are mutually consistent. The next agent's first move is task 9 (switch editord's `dev:server` to `watch-restart`, then verify end-to-end per the plan's verification checklist). Do not re-litigate the design questions; they are resolved in the plan with the option matrix that produced each call. If a new question surfaces during implementation, write the rationale into this file and proceed.
+The plan, this handover, and the in-tree state are mutually consistent.  Baseline tasks 1 through 10 are committed; the editord dev loop already runs on watch-restart.  The next agent's first move is **Q6 task 13** (extend `cli.ts` optique parser with the new flags; see "Q6 task tracker" above for the exact flag list and the per-task contract).  After task 13 the natural sequence is 14 (regex filter), 16 (hidden filter), 17 (gitignore filter + `ignore` dep), 18 (watcher chokidar config), 19 (child process control), then 20 + 22 (README + AUDIT.md).  Each is one logical commit per AGENTS.md.
+
+Do not re-litigate the design questions; they are resolved in the plan with the option matrix that produced each call.  If a new question surfaces during implementation, write the rationale into this file and proceed.
