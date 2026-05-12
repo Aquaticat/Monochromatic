@@ -39,7 +39,7 @@ export async function fetchChain({
   line: number;
   character: number;
 },): Promise<SelectionRange[]> {
-  const r = await ws.request({
+  const { ranges, } = await ws.request({
     type: 'selectionRange',
     path,
     positions: [{
@@ -47,10 +47,6 @@ export async function fetchChain({
       character,
     },],
   },);
-  if (!('ranges' in r))
-    return [];
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'ranges' in r
-  const { ranges, } = r as { ranges: SelectionRange[]; };
   const [first,] = ranges;
   if (first === undefined)
     return [];

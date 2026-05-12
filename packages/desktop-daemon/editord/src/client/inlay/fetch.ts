@@ -6,7 +6,6 @@
  * file changes during the async request.
  */
 
-import type { InlayHint, } from '../../../protocol.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import {
   l,
@@ -55,7 +54,7 @@ export async function fetchInlayHints({
     if (range === null)
       return;
 
-    const result = await ws.request({
+    const { hints, } = await ws.request({
       type: 'inlayHint',
       path,
       range,
@@ -65,10 +64,7 @@ export async function fetchInlayHints({
     if (path !== getCurrentFilePath())
       return;
 
-    if ('hints' in result) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to inlayHintResult
-      editorPane.setInlayHints(result.hints as InlayHint[],);
-    }
+    editorPane.setInlayHints(hints,);
   }
   catch (error) {
     inlayLog.error(`failed to fetch inlay hints: ${String(error,)}`,);

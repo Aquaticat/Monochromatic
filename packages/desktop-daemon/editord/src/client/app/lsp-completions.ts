@@ -111,22 +111,12 @@ export async function requestCompletions(
     return;
 
   try {
-    const response = await ws.request({
+    const { items, } = await ws.request({
       type: 'completion',
       path,
       line: requestPos.line,
       character: requestPos.character,
     },);
-    if (!('items' in response))
-      return;
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'items' check
-    const { items, } = response as {
-      items: {
-        label: string;
-        detail: string;
-        insertText: string;
-      }[];
-    };
     const responsePos = editorPane.getCursorPosition();
     if (responsePos === null)
       return;

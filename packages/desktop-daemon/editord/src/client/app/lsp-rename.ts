@@ -65,18 +65,12 @@ export async function initiateRename({
   renameLog.info(`preparing rename at ${path}:${pos.line}:${pos.character}`,);
 
   try {
-    const response = await ws.request({
+    const result = await ws.request({
       type: 'prepareRename',
       path,
       line: pos.line,
       character: pos.character,
     },);
-
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by canRename check
-    const result = response as {
-      canRename: boolean;
-      placeholder?: string;
-    };
 
     if (!result.canRename) {
       showCursorToast({
@@ -147,33 +141,13 @@ export async function performRename({
   renameLog.info(`renaming to "${newName}" at ${path}:${line}:${character}`,);
 
   try {
-    const response = await ws.request({
+    const result = await ws.request({
       type: 'rename',
       path,
       line,
       character,
       newName,
     },);
-
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'edits' check
-    const result = response as {
-      edits: {
-        path: string;
-        edits: {
-          range: {
-            start: {
-              line: number;
-              character: number;
-            };
-            end: {
-              line: number;
-              character: number;
-            };
-          };
-          newText: string;
-        }[];
-      }[];
-    };
 
     /** Find edits for the currently open file and apply them to the buffer. */
     const currentFileEdits = result.edits.find(

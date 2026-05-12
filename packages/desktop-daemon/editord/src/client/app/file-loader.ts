@@ -73,16 +73,16 @@ export async function loadFile(
       type: 'open',
       path,
     },);
-    if (!('kind' in r))
-      return null;
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'kind' in r; cast needed because ServerMessage union is wide
-    const kind = r.kind as FileKind;
+    const {
+      kind,
+      content,
+    } = r;
     document.title = `editord - ${path}`;
 
     if (kind === 'image' || kind === 'audio' || kind === 'video') {
       editorPane.style.display = 'none';
       const mediaUrl = `/_raw?path=${encodeURIComponent(path,)}&token=${token}`;
-      const mediaOpts = 'mediaInfo' in r && typeof r.mediaInfo === 'string'
+      const mediaOpts = r.mediaInfo !== undefined
         ? {
           url: mediaUrl,
           mediaInfo: r.mediaInfo,
@@ -97,27 +97,24 @@ export async function loadFile(
       return kind;
     }
 
-    if (kind === 'binary' && 'content' in r) {
+    if (kind === 'binary') {
       editorPane.style.display = 'none';
-      binaryViewer.showHexDump({ content: String(r.content,), },);
+      binaryViewer.showHexDump({ content, },);
       return kind;
     }
 
     binaryViewer.hide();
     editorPane.style.display = '';
-    if ('content' in r) {
-      const content = String(r.content,);
-      if (content.length > FILE_SIZE_WARNING_THRESHOLD)
-        showFixedToast({ message: 'File too large (>100KB)', },);
-      editorPane.setParser(getParserForPath({ path, },),);
-      editorPane.setText(content,);
-      if (line !== undefined) {
-        editorPane.scrollToLine({ line, },);
-        editorPane.restoreCursor({
-          line: line - 1,
-          character: character ?? 0,
-        },);
-      }
+    if (content.length > FILE_SIZE_WARNING_THRESHOLD)
+      showFixedToast({ message: 'File too large (>100KB)', },);
+    editorPane.setParser(getParserForPath({ path, },),);
+    editorPane.setText(content,);
+    if (line !== undefined) {
+      editorPane.scrollToLine({ line, },);
+      editorPane.restoreCursor({
+        line: line - 1,
+        character: character ?? 0,
+      },);
     }
     return kind;
   }

@@ -66,31 +66,22 @@ export async function doGotoDefinition(
     return 'no-definition';
   gotoLog.info(`requesting definition at ${path}:${line}:${character}`,);
   try {
-    const response = await ws.request({
+    const def = await ws.request({
       type: 'gotoDefinition',
       path,
       line,
       character,
     },);
-    gotoLog.info(`definition response: ${JSON.stringify(response,)}`,);
-    if ('path' in response && 'line' in response) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by discriminant checks
-      const def = response as {
-        path: string;
-        line: number;
-        character: number;
-      };
-      if (def.path !== '') {
-        if (def.path === path && def.line === line)
-          return 'already-at-definition';
-        await loadFileSafe({
-          path: def.path,
-          line: def.line + 1,
-          character: def
-            .character,
-        },);
-        return 'navigated';
-      }
+    gotoLog.info(`definition response: ${JSON.stringify(def,)}`,);
+    if (def.path !== '') {
+      if (def.path === path && def.line === line)
+        return 'already-at-definition';
+      await loadFileSafe({
+        path: def.path,
+        line: def.line + 1,
+        character: def.character,
+      },);
+      return 'navigated';
     }
     return 'no-definition';
   }

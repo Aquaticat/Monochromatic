@@ -57,23 +57,19 @@ export async function doRequestHover({
   y: number;
 },): Promise<void> {
   try {
-    const response = await ws.request({
+    const { contents, } = await ws.request({
       type: 'hover',
       path,
       line,
       character,
     },);
-    if ('contents' in response) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'contents' check
-      const { contents, } = response as { contents: string; };
-      if (contents !== '') {
-        hoverLog.info(`showing hover at ${x},${y}`,);
-        hoverPopup.show({
-          text: contents,
-          x,
-          y,
-        },);
-      }
+    if (contents !== '') {
+      hoverLog.info(`showing hover at ${x},${y}`,);
+      hoverPopup.show({
+        text: contents,
+        x,
+        y,
+      },);
     }
   }
   catch (error) {

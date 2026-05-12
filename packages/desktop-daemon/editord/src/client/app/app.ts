@@ -118,11 +118,11 @@ const binaryViewer = document.createElement('binary-viewer',) as BinaryViewer;
 // oxlint-enable typescript-eslint/no-unsafe-type-assertion
 
 fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> {
-  const r = await ws.request({
+  const { entries, } = await ws.request({
     type: 'listDir',
     path,
   },);
-  return 'entries' in r ? r.entries : [];
+  return entries;
 };
 fileTree.onContextAction = function handleContextAction(action: ContextAction,): void {
   void dispatchContextAction({
@@ -145,12 +145,12 @@ searchOverlay.onSearch = async function handleSearch(
   query: string,
 ): Promise<SearchResult[]> {
   const scope = resolveSearchScope();
-  const r = await ws.request({
+  const { results, } = await ws.request({
     type: 'search',
     query,
     scope,
   },);
-  return 'results' in r ? r.results : [];
+  return results;
 };
 
 appElement.append(

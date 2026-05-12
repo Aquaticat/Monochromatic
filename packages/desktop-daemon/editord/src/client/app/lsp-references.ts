@@ -67,27 +67,12 @@ export async function showReferences(
   if (path === null)
     return;
   try {
-    const response = await ws.request({
+    const { locations, } = await ws.request({
       type: 'findReferences',
       path,
       line,
       character,
     },);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'locations' check; falls back to empty array when field is absent
-    const locations: {
-      path: string;
-      line: number;
-      character: number;
-    }[] = 'locations' in response
-      ? (response as {
-        locations: {
-          path: string;
-          line: number;
-          character: number;
-        }[];
-      })
-        .locations
-      : [];
     refLog.info(`references: ${locations.length} usage(s) found`,);
     if (locations.length === 0) {
       showCursorToast({

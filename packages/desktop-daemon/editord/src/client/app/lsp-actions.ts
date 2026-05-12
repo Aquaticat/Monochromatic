@@ -51,30 +51,12 @@ export async function formatDocument({
   if (path === null)
     return;
   try {
-    const response = await ws.request({
+    const { edits, } = await ws.request({
       type: 'format',
       path,
     },);
-    if ('edits' in response) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'edits' check
-      const { edits, } = response as {
-        edits: {
-          range: {
-            start: {
-              line: number;
-              character: number;
-            };
-            end: {
-              line: number;
-              character: number;
-            };
-          };
-          newText: string;
-        }[];
-      };
-      if (edits.length > 0)
-        editorPane.applyTextEdits(edits,);
-    }
+    if (edits.length > 0)
+      editorPane.applyTextEdits(edits,);
   }
   catch (error) {
     actionLog.error(`formatting failed: ${String(error,)}`,);
