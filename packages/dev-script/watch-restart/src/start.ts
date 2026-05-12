@@ -6,6 +6,7 @@ import { composeFilters, } from './filters/compose.ts';
 import { contentHashFilter, } from './filters/content-hash.ts';
 import { extFilter, } from './filters/ext.ts';
 import { globFilter, } from './filters/glob.ts';
+import { hiddenFilter, } from './filters/hidden.ts';
 import { regexFilter, } from './filters/regex.ts';
 import { typeFilter, } from './filters/type.ts';
 import {
@@ -238,6 +239,9 @@ function buildInternalFilter(
         ? {}
         : { exclude: options.excludeRegex, }),
     },),);
+  }
+  if (options.hidden !== true) {
+    filters.push(hiddenFilter(),);
   }
   if (options.contentChanged !== false) {
     filters.push(contentHashFilter(),);
