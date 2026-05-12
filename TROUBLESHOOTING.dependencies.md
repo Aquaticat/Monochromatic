@@ -295,11 +295,29 @@ overrides target packages that pi-ai either does not import
 provider modules (`@aws-sdk/client-bedrock-runtime`, `@google/genai`,
 `@mistralai/mistralai`, `proxy-agent`).
 
-The matching audit for `@earendil-works/pi-coding-agent>*` overrides has
-not been done. Several of those entries point at packages that
-pi-coding-agent's `dist/index.js` re-exports through modules with
-static imports (`proper-lockfile`, `yaml`, `glob`, `minimatch`, `ignore`,
-`uuid`, `cli-highlight`, `diff`, plus pi-tui's `marked` and
-`get-east-asian-width`), so `mise run //packages/pi/auto-mode:test:unit`
-still fails with `Cannot find package …` errors against pi-coding-agent's
-virtual store. Fixing that is a separate cleanup pass.
+`@earendil-works/pi-coding-agent>*` and `@earendil-works/pi-tui>*`
+received the same audit. Every dep that pi-coding-agent's `dist/index.js`
+re-exports through a module with a static import was removed from the
+override list: `chalk`, `cli-highlight`, `diff`, `extract-zip`,
+`file-type`, `glob`, `hosted-git-info`, `ignore`, `jiti` (imported as
+`jiti/static`), `minimatch`, `proper-lockfile`, `strip-ansi`, `uuid`,
+`yaml`. The same applies to pi-tui's `get-east-asian-width`
+(`utils.js`), `koffi` (`terminal.js`), and `marked` (`markdown.js`).
+
+The overrides retained for pi-coding-agent are:
+
+- `@mariozechner/clipboard` -- `utils/clipboard-native.js` wraps
+  `require("@mariozechner/clipboard")` in `try`/`catch`, so the missing
+  package falls back to `clipboard = null`.
+- `marked` -- pi-coding-agent vendors `core/export-html/vendor/marked.min.js`
+  and does not statically import the npm `marked` package.
+- `undici` -- statically imported only by `cli.js`, which the package's
+  `dist/index.js` does not export. Library consumers never load it.
+
+The overrides retained for pi-tui are `chalk` and `mime-types`, neither
+of which the dist statically imports.
+
+After this cleanup, `mise run //packages/pi/{auto-mode,morph-compact}:test:unit`
+both pass. `packages/pi/terminal-title:test:unit` fails on unrelated string
+assertions (`expected '✳ X' to equal 'π X'`) that predate the override
+work; those are test-fixture issues to fix separately.
