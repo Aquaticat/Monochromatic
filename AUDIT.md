@@ -223,7 +223,7 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] @optique/run
 - [ ] preact
 - [ ] preact-render-to-string
-- [x] watcher -- evaluated 2026-05 for `packages/dev-script/watch-restart/`; rejected in favour of chokidar (atomic-save + `awaitWriteFinish` stability window, larger production track record)
+- ~~watcher~~: rejected 2026-05 for `packages/dev-script/watch-restart/`; chokidar adopted instead (atomic-save + `awaitWriteFinish` stability window, larger production track record, active maintenance whereas watcher's last commit was 2024-07)
 - [ ] @csstools/css-tokenizer
 - [ ] @cspotcode/outdent
 - [ ] serialize-error
