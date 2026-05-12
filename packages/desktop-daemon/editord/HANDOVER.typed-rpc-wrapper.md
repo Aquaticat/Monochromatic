@@ -1,5 +1,63 @@
 # Path A handover: typed wrapper over the existing WebSocket client
 
+## Status (post commit-1, paused before commit-2 edits)
+
+### Done
+
+Commit 1 landed: `feat(desktop-daemon/editord): type EditorWsClient.request() return by request variant` (SHA `f3b7e04a`).
+
+-   `RequestResponseMap` added to `src/protocol.ts` in a new `//region Request/response mapping` block. The 19-entry map matches the verified request-to-response pairings (see "Design sketch" below).
+-   `EditorWsClient.request()` retyped at `src/client/ws/client.ts:164-204`. Signature is now `async request<TReq extends ClientRequest,>(message: TReq,): Promise<RequestResponseMap[TReq['type']]>`. The body is unchanged; one `as` cast at the return widens the type-erasure gap with an `oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion` suppression justified by wire-id correlation.
+-   `mise run //packages/desktop-daemon/editord:lint:types` passes. `mise run //packages/desktop-daemon/editord:build` passes. Lint count is unchanged from baseline (5 errors / 42 warnings) — verified via a `git stash` round-trip before committing.
+
+### Remaining
+
+Commit 2: drop manual narrowing at the call sites. 18 awaited-`request()` calls across 11 files. Process each per the per-site sanity check in the plan ("Step-by-step execution plan" -> "Commit 2"). Use the field-required reference below to decide whether each guard is dead (delete it) or behavioral (keep it).
+
+#### Files inspected but not edited
+
+These were read while planning commit 2 in the previous session. The patterns are confirmed; the edits have not been applied.
+
+-   `src/client/app/app.ts` — 2 calls: lines 121-125 (`'entries' in r ? r.entries : []`) and lines 148-153 (`'results' in r ? r.results : []`). Both guards are dead; `entries` is required on `dirListing` and `results` is required on `searchResults`. Drop the ternary, return the array directly.
+-   `src/client/app/context-actions.ts` — 6 `fsActionDone` calls (lines 36-83). All discard the response; no narrowing or casts to remove. Inferred types narrow automatically; the file is structurally unchanged.
+-   `src/client/app/file-loader.ts` — 1 call at line 72. Drop the `if (!('kind' in r)) return null;` at lines 76-77 and the `as FileKind` cast at line 79 (kind is required on `fileContent`). **Keep** the `if ('mediaInfo' in r && typeof r.mediaInfo === 'string')` guard at line 85 — `mediaInfo` is **optional** on `fileContent`, so the guard is behavioral, not type-narrowing. The `'content' in r` guards at lines 100 and 108 are also dead (content is required); drop them and use `r.content` directly. Remove the paired `oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion` suppression at line 78.
+
+#### Files still to inspect
+
+-   `src/client/app/lsp-actions.ts` (1 call)
+-   `src/client/app/lsp-completions.ts` (1 call)
+-   `src/client/app/lsp-goto-definition.ts` (1 call)
+-   `src/client/app/lsp-references.ts` (1 call)
+-   `src/client/app/lsp-rename.ts` (2 calls)
+-   `src/client/hover/request.ts` (1 call — `'contents' in response` guard at line 66 is dead, contents is required on `hoverResult`; the `if (contents !== '')` check at line 69 is separate and stays)
+-   `src/client/inlay/fetch.ts` (1 call)
+-   `src/client/selection/fetch.ts` (1 call)
+
+#### Reference: required vs optional fields on each response variant
+
+Read from `src/protocol-server.ts`. Use to decide guard fate: required fields = dead guard, optional fields = behavioral guard (keep).
+
+-   `fileContent`: kind required, content required, **mediaInfo optional**
+-   `saved`: `{ id, path }`
+-   `dirListing`: entries required
+-   `searchResults`: results required
+-   `hoverResult`: contents required, **range optional**
+-   `completionResult`: items required
+-   `formatResult`: edits required
+-   `definitionResult`: FilePosition fields (path, line, character) required
+-   `referencesResult`: locations required
+-   `inlayHintResult`: hints required
+-   `selectionRangeResult`: ranges required
+-   `prepareRenameResult`: canRename required, **range optional, placeholder optional**
+-   `renameResult`: edits required
+-   `fsActionDone`: `{ id }`
+
+#### Pre-existing lint debt (not from this work)
+
+`mise run //packages/desktop-daemon/editord:lint` exits 1 with 5 errors / 42 warnings as of commit 1. All errors are `no-restricted-syntax(no-function-root-let)` in files unrelated to this task: `src/client/app/lsp.ts`, `src/client/app/lsp-hover.ts`, `src/client/app/lsp-completions.ts:54-55`, `src/server/index-routes.ts:90`, and `src/client/ws/client.ts:225` (the pre-existing `let data: ServerMessage;` in `#handleMessage`). My commit-1 edits do not add to this count — verified by stashing the change, running lint, popping the stash, and re-running.
+
+This means acceptance criterion 3 ("`:lint` exits zero") in the plan below cannot be satisfied without separate cleanup. Options for the next session: (a) treat the pre-existing baseline as the post-condition for this task and document it, or (b) include a `chore(editord)` commit fixing the `no-function-root-let` violations before declaring commit-2 done. Either choice is reasonable; (a) keeps the scope tight to typed-RPC work, (b) leaves the package in a lint-clean state.
+
 ## What you are picking up
 
 editord is a local-only editor daemon serving a contenteditable PWA over WebSocket. Package: `packages/desktop-daemon/editord/`. The wire protocol is JSON over WebSocket with a `{type, id, ...}` envelope. Request/response correlation, 30-second timeouts, exponential-backoff reconnect, and token auth are all working and shipped (see `src/client/ws/client.ts`).
