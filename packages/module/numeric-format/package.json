@@ -1,0 +1,29 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/module-numeric-format",
+  "description": "Numeric formatters for the gaps Intl.DurationFormat / Intl.NumberFormat explicitly do not cover: magnitude-adaptive sub-millisecond durations and IEC binary byte units.",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-numeric-const": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  },
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/module/numeric-format"
+  }
+}

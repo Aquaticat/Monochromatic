@@ -1576,6 +1576,25 @@ importers:
         specifier: 'catalog:'
         version: 6.0.2
 
+  packages/module/numeric-format:
+    dependencies:
+      '@monochromatic-dev/module-numeric-const':
+        specifier: workspace:*
+        version: link:../numeric-const
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+
   packages/module/or-throw:
     devDependencies:
       '@monochromatic-dev/config-typescript':
@@ -1602,6 +1621,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
+      '@monochromatic-dev/module-numeric-format':
+        specifier: workspace:*
+        version: link:../numeric-format
       chai:
         specifier: 'catalog:'
         version: 6.2.2

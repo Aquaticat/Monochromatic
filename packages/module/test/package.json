@@ -22,6 +22,7 @@
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-numeric-format": "workspace:*",
     "chai": "catalog:",
     "expect-type": "catalog:",
     "chai-as-promised": "catalog:",

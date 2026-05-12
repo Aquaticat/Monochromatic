@@ -8,7 +8,8 @@ import {
   describe,
   it,
 } from '@monochromatic-dev/module-test';
-import { formatDuration, } from './format-duration.ts';
+
+import { formatDuration, } from './duration.ts';
 
 await describe({
   name: 'formatDuration',

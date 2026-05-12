@@ -5,6 +5,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/types';
 import pLimit from 'p-limit';
 
 import { withTimeout, } from '@monochromatic-dev/module-async-time';
+import { formatDuration, } from '@monochromatic-dev/module-numeric-format';
 import {
   DEFAULT_CONCURRENCY,
   type DescriptorContext,
@@ -12,7 +13,6 @@ import {
   RUN_WITH_CONTEXT,
   type TestDescriptor,
 } from './descriptor.ts';
-import { formatDuration, } from './format-duration.ts';
 import { formatFailure, } from './format-error.ts';
 import type { ItResult, } from './it.ts';
 

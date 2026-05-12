@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 import { withTimeout, } from '@monochromatic-dev/module-async-time';
+import { formatDuration, } from '@monochromatic-dev/module-numeric-format';
 import {
   type DescriptorContext,
   makeDescriptor,
@@ -11,7 +12,6 @@ import {
   createScopedExpect,
   type ScopedExpect,
 } from './expect.ts';
-import { formatDuration, } from './format-duration.ts';
 import { formatFailure, } from './format-error.ts';
 import {
   createSinon,
