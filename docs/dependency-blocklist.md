@@ -241,3 +241,4 @@ Consumers (`fetch-blob`, `node-fetch`, the `@libsql/hrana-client` and `gaxios` s
 - `packages/stub/silent/`: the workspace stub used by `action: 'silent'`.
 - `packages/shim/<name>/`: workspace shims for API-compatible substitution; current entries are `packages/shim/node-domexception/`.
 - `TROUBLESHOOTING.dependencies.md`: the audit trail for the existing parent-scoped overrides; cross-link entries here when a substitution replaces or augments one of those overrides.
+- `TROUBLESHOOTING.pnpmfile.md`: why the policy implementation is `.pnpmfile.mjs` with JSDoc types rather than `.pnpmfile.ts`; source trace, maintainer rationale, and the rejected pre-strip workaround.
