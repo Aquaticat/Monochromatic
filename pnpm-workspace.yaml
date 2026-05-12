@@ -125,7 +125,7 @@ catalog:
   'watcher': '>=2.3.1'
   'wawoff2': '>=2.0.1'
   'woff2-encode-wasm': '>=0.1.1'
-  'yaml': '>=2.8.0'
+  'yaml': '>=3.0.0-0'
 childConcurrency: 16
 dedupeDirectDeps: true
 hoist: false
@@ -182,14 +182,16 @@ overrides:
   # last commit 2021-01, abandoned), reducing supply-chain surface.
   # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
   'abort-controller': '-'
-  # Remove argparse globally. Two transitive importers ship it solely for
-  # their CLI entry points: js-yaml (bin/js-yaml.js) and wawoff2
-  # (bin/woff2_{compress,decompress}.js). The workspace consumes both
-  # packages as libraries only -- `webapp-content/ssg-test/src/lib/content.ts`
-  # uses the js-yaml load API; `webapp-content/ssg-test/src/build/subset-fonts.ts`
-  # uses `wawoff2.decompress`. Neither CLI is invoked anywhere in the tree
-  # or in CI. Removing argparse leaves the library APIs intact and drops
-  # 4214 LOC of supply-chain surface (last commit 2022-05).
+  # Remove argparse globally. It is shipped by two transitive importers solely
+  # for their CLI entry points: js-yaml (bin/js-yaml.js, pulled in via
+  # stylelint > cosmiconfig) and wawoff2 (bin/woff2_{compress,decompress}.js,
+  # pulled in directly by webapp-content/ssg-test). Neither CLI is invoked
+  # anywhere in the tree or in CI; we use wawoff2.decompress as a library and
+  # do not consume js-yaml at all (workspace YAML parsing now uses the `yaml`
+  # package -- see packages/dev-script/deps-cube/src/catalog.ts and
+  # packages/webapp-content/ssg-test/src/lib/content.ts). Removing argparse
+  # leaves the library APIs intact and drops 4214 LOC of supply-chain surface
+  # (last commit 2022-05).
   # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
   'argparse': '-'
 packageImportMethod: hardlink

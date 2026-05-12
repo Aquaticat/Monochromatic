@@ -295,8 +295,8 @@ catalogs:
       specifier: '>=0.1.1'
       version: 0.1.1
     yaml:
-      specifier: '>=2.8.0'
-      version: 2.8.3
+      specifier: '>=3.0.0-0'
+      version: 3.0.0-1
 
 overrides:
   jspdf>canvg: '-'
@@ -1018,7 +1018,7 @@ importers:
         version: 7.3.0
       yaml:
         specifier: 'catalog:'
-        version: 2.8.3
+        version: 3.0.0-1
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
@@ -2091,7 +2091,7 @@ importers:
         version: 0.1.1
       yaml:
         specifier: 'catalog:'
-        version: 2.8.3
+        version: 3.0.0-1
     devDependencies:
       '@lezer/common':
         specifier: 'catalog:'
@@ -5890,6 +5890,11 @@ packages:
     engines: {node: '>= 14.6'}
     hasBin: true
 
+  yaml@3.0.0-1:
+    resolution: {integrity: sha512-fwrrXynoY/YgE3mhaAEkvgREElO/2rLBiZjxNbLrRI2C8Etk+MXy4B72U3gk3FgFWVI98xz8Ms7lw0jLNoanlg==}
+    engines: {node: ^20.19 || ^22.12 || >=24}
+    hasBin: true
+
   yargs-parser@20.2.9:
     resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==}
     engines: {node: '>=10'}
@@ -9493,6 +9498,8 @@ snapshots:
   y18n@5.0.8: {}
 
   yaml@2.8.3: {}
+
+  yaml@3.0.0-1: {}
 
   yargs-parser@20.2.9: {}
 
