@@ -9,8 +9,10 @@ import {
   Child,
   DEFAULT_STOP_TIMEOUT_MS,
   type ExitListener,
+  type ProcessSignalFn,
   type SpawnedChildHandle,
   type SpawnFn,
+  type WriteClearFn,
 } from './child.ts';
 
 /**
@@ -231,6 +233,7 @@ await describe({
             const { spawn, } = makeRecordingSpawn();
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               spawn,
             },);
 
@@ -244,6 +247,7 @@ await describe({
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               args: ['a', 'b',],
               spawn,
             },);
@@ -263,6 +267,7 @@ await describe({
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               spawn,
             },);
 
@@ -279,6 +284,7 @@ await describe({
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               spawn,
             },);
 
@@ -294,6 +300,7 @@ await describe({
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               spawn,
             },);
 
@@ -323,6 +330,7 @@ await describe({
             },);
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               stopTimeout: 200,
               spawn,
             },);
@@ -344,6 +352,7 @@ await describe({
             },);
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               stopTimeout: 1_000,
               spawn,
             },);
@@ -365,6 +374,7 @@ await describe({
             },);
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               stopTimeout: stopTimeoutMs,
               spawn,
             },);
@@ -393,6 +403,7 @@ await describe({
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               spawn,
             },);
 
@@ -411,6 +422,7 @@ await describe({
             },);
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               stopTimeout: 200,
               spawn,
             },);
@@ -439,6 +451,7 @@ await describe({
             },);
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               stopTimeout: stopTimeoutMs,
               spawn,
             },);
@@ -474,12 +487,160 @@ await describe({
             const { spawn, records, } = makeRecordingSpawn();
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               spawn,
             },);
 
             await child.start();
 
             expect(records[0]?.args,).toEqual([],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'Q6 options (killSignal, processGroup, clear)',
+      children: [
+        it({
+          name: 'killSignal: SIGHUP sends SIGHUP first, then SIGKILL after timeout',
+          fn: async () => {
+            const stopTimeoutMs = 50;
+            const { spawn, records, } = makeRecordingSpawn({
+              autoExitOnSigterm: false,
+            },);
+            const child = new Child({
+              command: 'bun',
+              processGroup: false,
+              killSignal: 'SIGHUP',
+              stopTimeout: stopTimeoutMs,
+              spawn,
+            },);
+
+            await child.start();
+            await child.stop();
+
+            const { handle, } = nonNullishOrThrow(records[0],);
+            // SIGHUP is the first signal (instead of SIGTERM); SIGKILL is
+            // still the escalation because the FakeChild does not exit on
+            // SIGHUP in this test fixture.
+            expect(handle.signalsReceived,).toEqual(['SIGHUP', 'SIGKILL',],);
+            expect(child.state,).toBe('idle',);
+          },
+        },),
+        it({
+          name: 'processGroup: true routes signals through processSignal with negative pid',
+          fn: async () => {
+            const { spawn, records, } = makeRecordingSpawn();
+            const pgSignals: {
+              readonly pid: number;
+              readonly signal: NodeJS.Signals | number;
+            }[] = [];
+            /**
+             * Recording processSignal sink: pushes every received `(pid, signal)`
+             * and drives the corresponding fake handle's synthetic exit so the
+             * Promise.race in `#stopRunning` resolves on the `exited` branch
+             * rather than hitting the SIGKILL timeout.
+             *
+             * @param args - pid and signal forwarded from `Child.#sendSignal`
+             */
+            function recordingProcessSignal(
+              args: {
+                readonly pid: number;
+                readonly signal: NodeJS.Signals | number;
+              },
+            ): void {
+              pgSignals.push(args,);
+              /** Recover the FakeChild by absolute pid; negative inputs reach the same handle. */
+              const rec = records.find(function matchByPid(r,) {
+                return r.handle.pid === Math.abs(args.pid,);
+              },);
+              if (rec && typeof args.signal === 'string') {
+                rec.handle.simulateExit({
+                  code: null,
+                  signal: args.signal,
+                },);
+              }
+            }
+            const processSignal: ProcessSignalFn = recordingProcessSignal;
+            const child = new Child({
+              command: 'bun',
+              processGroup: true,
+              stopTimeout: 200,
+              spawn,
+              processSignal,
+            },);
+
+            await child.start();
+            await child.stop();
+
+            expect(pgSignals.length,).toBe(1,);
+            expect(nonNullishOrThrow(pgSignals[0],).pid,).toBe(-1_000,);
+            expect(nonNullishOrThrow(pgSignals[0],).signal,).toBe('SIGTERM',);
+            // The direct-handle kill path was NOT taken; `signalsReceived`
+            // on the fake stays empty under processGroup mode.
+            const { handle, } = nonNullishOrThrow(records[0],);
+            expect(handle.signalsReceived,).toEqual([],);
+            expect(child.state,).toBe('idle',);
+          },
+        },),
+        it({
+          name: 'clear: true runs writeClear before initial spawn and again before restart',
+          fn: async () => {
+            const calls: { count: number; } = { count: 0, };
+            /**
+             * Counting writeClear sink so the test can assert call timing
+             * without polluting stdout. Declared as a function expression
+             * to match the {@link WriteClearFn} structural type.
+             */
+            function recordingWriteClear(): void {
+              calls.count += 1;
+            }
+            const writeClear: WriteClearFn = recordingWriteClear;
+            const { spawn, } = makeRecordingSpawn({
+              autoExitOnSigterm: true,
+            },);
+            const child = new Child({
+              command: 'bun',
+              processGroup: false,
+              clear: true,
+              stopTimeout: 200,
+              spawn,
+              writeClear,
+            },);
+
+            await child.start();
+            expect(calls.count,).toBe(1,);
+
+            await child.restart();
+            expect(calls.count,).toBe(2,);
+
+            await child.stop();
+          },
+        },),
+        it({
+          name: 'clear: false (default) never runs writeClear',
+          fn: async () => {
+            const calls: { count: number; } = { count: 0, };
+            function recordingWriteClear(): void {
+              calls.count += 1;
+            }
+            const writeClear: WriteClearFn = recordingWriteClear;
+            const { spawn, } = makeRecordingSpawn({
+              autoExitOnSigterm: true,
+            },);
+            const child = new Child({
+              command: 'bun',
+              processGroup: false,
+              stopTimeout: 200,
+              spawn,
+              writeClear,
+            },);
+
+            await child.start();
+            await child.restart();
+            await child.stop();
+
+            expect(calls.count,).toBe(0,);
           },
         },),
       ],
@@ -498,6 +659,7 @@ await describe({
             },);
             const child = new Child({
               command: 'bun',
+              processGroup: false,
               stopTimeout: stopTimeoutMs,
               spawn,
             },);

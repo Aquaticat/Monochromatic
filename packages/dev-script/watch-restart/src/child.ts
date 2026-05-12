@@ -106,6 +106,44 @@ export type SpawnFn = (args: {
 },) => SpawnedChildHandle;
 
 /**
+ * Sends a signal to a process (or process group) by pid.
+ *
+ * Default implementation wraps `process.kill`; tests inject a recording
+ * function so assertions can verify which pid (positive for a single
+ * process, negative for a process group) received which signal without
+ * touching the real OS.
+ *
+ * @param args - pid (negative targets the matching process group on POSIX) and signal
+ *
+ * @example
+ * ```ts
+ * defaultProcessSignal({ pid: -1234, signal: 'SIGTERM', },);
+ * ```
+ */
+export type ProcessSignalFn = (
+  args: {
+    readonly pid: number;
+    readonly signal: NodeJS.Signals | number;
+  },
+) => void;
+
+/**
+ * Writes the terminal-clear escape sequence (or whatever side-effect the
+ * caller wants) before each child spawn.
+ *
+ * Default implementation writes `\x1b[2J\x1b[H` to `process.stdout`;
+ * tests inject a counting/recording function to assert call timing
+ * without polluting real stdout.
+ *
+ * @example
+ * ```ts
+ * const writes = { count: 0, };
+ * function recordingWriteClear(): void { writes.count += 1; }
+ * ```
+ */
+export type WriteClearFn = () => void;
+
+/**
  * Construction options for {@link Child}.
  */
 export type ChildOptions = {
@@ -115,6 +153,39 @@ export type ChildOptions = {
   readonly args?: readonly string[];
   /** SIGTERM-to-SIGKILL grace period (ms); defaults to {@link DEFAULT_STOP_TIMEOUT_MS}. */
   readonly stopTimeout?: number;
+  /**
+   * Signal sent first when stopping or restarting the child; SIGKILL is
+   * still the escalation after `stopTimeout` regardless of this value.
+   * Defaults to `'SIGTERM'`. `'SIGHUP'` is the canonical "soft-reload"
+   * choice for servers that re-read config without exiting.
+   */
+  readonly killSignal?: NodeJS.Signals;
+  /**
+   * When `true`, spawn with `detached: true` (POSIX `setsid`) so the
+   * child leads its own process group, and signal `-pid` (the negative
+   * pid) so the whole subtree receives the signal. When `false`, signal
+   * the direct child pid only. Defaults to `true`: the dev-server case
+   * commonly spawns its own workers (e.g. bun `--watch`, vite) that we
+   * want to kill together with the parent.
+   */
+  readonly processGroup?: boolean;
+  /**
+   * When `true`, run {@link writeClear} before every spawn (initial and
+   * restart). Defaults to `false` so the terminal scrollback is
+   * preserved unless the user opts in.
+   */
+  readonly clear?: boolean;
+  /**
+   * Process-signal sink; injected by tests to record `(pid, signal)`
+   * pairs without firing real `process.kill`. Defaults to a thin wrapper
+   * around `process.kill`.
+   */
+  readonly processSignal?: ProcessSignalFn;
+  /**
+   * Terminal-clear sink; injected by tests to count calls without
+   * polluting stdout. Defaults to writing `\x1b[2J\x1b[H` to `process.stdout`.
+   */
+  readonly writeClear?: WriteClearFn;
   /** Spawn factory; defaults to wrapping `node:child_process.spawn` with `stdio: 'inherit'`. */
   readonly spawn?: SpawnFn;
   /** Parent logger; the child composes a `Child` tag on top. */
@@ -122,40 +193,117 @@ export type ChildOptions = {
 };
 
 /**
- * Default {@link SpawnFn}: wraps `node:child_process.spawn` with `stdio: 'inherit'`.
+ * Builds the default {@link SpawnFn}: wraps `node:child_process.spawn` with
+ * `stdio: 'inherit'` and `detached: <processGroup>`.
  *
  * Stdio inheritance lets the bun child's logs flow through to the user's
  * terminal unchanged; the watcher process does not buffer or recolor, which
  * was a known failure mode under watchexec's nested-tree stdio handling.
  *
- * @param args - command and argument list
+ * `detached` is captured at Child construction time rather than passed
+ * through {@link SpawnFn}'s args so the public type stays narrow (tests
+ * inject a recording fake that does not know or care about detachment).
  *
- * @returns spawned child handle
+ * @param detached - forwarded to `node:child_process.spawn`'s options; when `true` the child becomes a process-group leader on POSIX
+ *
+ * @returns spawn factory
  *
  * @example
  * ```ts
- * const handle = defaultSpawn({ command: 'bun', args: ['src/server.ts',], },);
+ * const spawn = makeDefaultSpawn({ detached: true, },);
+ * const handle = spawn({ command: 'bun', args: ['src/server.ts',], },);
  * ```
  */
-function defaultSpawn(
-  args: {
-    readonly command: string;
-    readonly args: readonly string[];
+function makeDefaultSpawn(
+  {
+    detached,
+  }: {
+    readonly detached: boolean;
   },
-): SpawnedChildHandle {
-  /**
-   * `ChildProcess` has overload-rich `on`/`once`/`off` and a `this`-returning
-   * `kill`; the `SpawnedChildHandle` shape narrows to just the `exit` event.
-   * The narrower type is structurally satisfied at runtime but TS cannot prove
-   * the overload subset matches, so an explicit assertion lands here at the
-   * single integration boundary instead of polluting consumers.
-   */
-  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- narrowing ChildProcess to the minimal SpawnedChildHandle shape; behavior is structurally compatible at runtime
-  return nodeSpawn(
-    args.command,
-    [...args.args,],
-    { stdio: 'inherit', },
-  ) as unknown as SpawnedChildHandle;
+): SpawnFn {
+  return function defaultSpawn(
+    args: {
+      readonly command: string;
+      readonly args: readonly string[];
+    },
+  ): SpawnedChildHandle {
+    /**
+     * `ChildProcess` has overload-rich `on`/`once`/`off` and a `this`-returning
+     * `kill`; the `SpawnedChildHandle` shape narrows to just the `exit` event.
+     * The narrower type is structurally satisfied at runtime but TS cannot prove
+     * the overload subset matches, so an explicit assertion lands here at the
+     * single integration boundary instead of polluting consumers.
+     */
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- narrowing ChildProcess to the minimal SpawnedChildHandle shape; behavior is structurally compatible at runtime
+    return nodeSpawn(
+      args.command,
+      [...args.args,],
+      {
+        stdio: 'inherit',
+        detached,
+      },
+    ) as unknown as SpawnedChildHandle;
+  };
+}
+
+/**
+ * Default {@link ProcessSignalFn}: forwards to `process.kill`.
+ *
+ * Wrapped in a named function so the call site reads naturally and so
+ * dependency-injection points stay symmetric with {@link SpawnFn} and
+ * {@link WriteClearFn}.
+ *
+ * @param pid - target pid; negative values address the matching process group on POSIX
+ *
+ * @param signal - signal name (`'SIGTERM'`, `'SIGHUP'`, ...) or numeric signal id
+ *
+ * @example
+ * ```ts
+ * defaultProcessSignal({ pid: -1234, signal: 'SIGTERM', },);
+ * ```
+ */
+function defaultProcessSignal(
+  {
+    pid,
+    signal,
+  }: {
+    readonly pid: number;
+    readonly signal: NodeJS.Signals | number;
+  },
+): void {
+  process.kill(
+    pid,
+    signal,
+  );
+}
+
+/**
+ * Code point of the ESC (escape) control character. Named so the
+ * `magic-numbers` lint does not fire on the inline literal and so the
+ * intent (the standard 0x1B C0 control) is grep-able in one spot.
+ */
+const ESC_CODE_POINT: number = 0x1B;
+
+/**
+ * ESC character built from {@link ESC_CODE_POINT}. Hoisted as a named
+ * constant so the `defaultWriteClear` body stays free of raw escape-sequence
+ * literals.
+ */
+const ESC: string = String.fromCodePoint(ESC_CODE_POINT,);
+
+/**
+ * Default {@link WriteClearFn}: writes the terminal-clear escape to stdout.
+ *
+ * `${ESC}[2J` clears the screen and `${ESC}[H` moves the cursor home;
+ * matches `watchexec --clear=clear` and `clear(1)`.
+ *
+ * @example
+ * ```ts
+ * defaultWriteClear();
+ * ```
+ */
+function defaultWriteClear(): void {
+  process.stdout.write(`${ESC}[2J${ESC}[H`,);
 }
 
 /**
@@ -257,7 +405,25 @@ export class Child {
   readonly #args: readonly string[];
   /** SIGTERM-to-SIGKILL grace period (ms); frozen at construction. */
   readonly #stopTimeout: number;
-  /** Spawn factory; defaulted to `defaultSpawn` when the caller omits it. */
+  /** First signal sent on stop/restart; SIGKILL still escalates regardless. */
+  readonly #killSignal: NodeJS.Signals;
+  /**
+   * When `true`, spawn detached and signal `-pid`; see
+   * {@link ChildOptions.processGroup}.
+   */
+  readonly #processGroup: boolean;
+  /**
+   * When `true`, run the configured `writeClear` sink before every spawn.
+   */
+  readonly #clear: boolean;
+  /** Process-signal sink; default forwards to `process.kill`. */
+  readonly #processSignal: ProcessSignalFn;
+  /** Terminal-clear sink; default writes ANSI escape to `process.stdout`. */
+  readonly #writeClear: WriteClearFn;
+  /**
+   * Spawn factory; defaults to the detached-aware wrapper produced by
+   * a local `makeDefaultSpawn` factory.
+   */
   readonly #spawn: SpawnFn;
   /** Tagged logger; composed with `Child.name` on top of the parent. */
   readonly #logger: Logger;
@@ -284,7 +450,13 @@ export class Child {
     this.#command = options.command;
     this.#args = options.args ?? [];
     this.#stopTimeout = options.stopTimeout ?? DEFAULT_STOP_TIMEOUT_MS;
-    this.#spawn = options.spawn ?? defaultSpawn;
+    this.#killSignal = options.killSignal ?? 'SIGTERM';
+    this.#processGroup = options.processGroup ?? true;
+    this.#clear = options.clear ?? false;
+    this.#processSignal = options.processSignal ?? defaultProcessSignal;
+    this.#writeClear = options.writeClear ?? defaultWriteClear;
+    this.#spawn = options.spawn
+      ?? makeDefaultSpawn({ detached: this.#processGroup, },);
     this.#logger = tagged({
       tag: Child.name,
       l: options.logger ?? defaultLogger,
@@ -389,8 +561,15 @@ export class Child {
    * Invokes the spawn factory and tracks the resulting handle. Wires
    * an `exit` listener so a natural child exit (e.g. crash, normal
    * completion) resets state to `idle` without orchestrator action.
+   *
+   * Honors `clear`: when enabled, runs the configured `writeClear`
+   * sink before the spawn so the child's first output lands on a clean
+   * terminal rather than scrolling under the prior child's logs.
    */
   #spawnAndTrack(): void {
+    if (this.#clear) {
+      this.#writeClear();
+    }
     const handle = this.#spawn({
       command: this.#command,
       args: this.#args,
@@ -432,7 +611,38 @@ export class Child {
   }
 
   /**
-   * SIGTERM + race against `stopTimeout` + SIGKILL on expiry.
+   * Routes a signal to either the direct child or its process group.
+   *
+   * When {@link ChildOptions.processGroup} is `true` (default) and the
+   * handle reports a `pid`, the call goes through `process.kill(-pid)`
+   * via the configured `processSignal` sink so the whole subtree
+   * receives the signal. When `false` or `pid` is undefined, the
+   * signal is sent to the direct child handle (`handle.kill(signal)`),
+   * matching node's single-process semantics.
+   *
+   * @param handle - active child handle
+   *
+   * @param signal - signal name to deliver
+   */
+  #sendSignal(
+    handle: SpawnedChildHandle,
+    signal: NodeJS.Signals,
+  ): void {
+    if (this.#processGroup && handle.pid !== undefined) {
+      this.#processSignal({
+        pid: -handle.pid,
+        signal,
+      },);
+      return;
+    }
+    handle.kill(signal,);
+  }
+
+  /**
+   * Stops the running child: sends {@link ChildOptions.killSignal} first
+   * and races the exit against `stopTimeout`. On expiry, escalates to
+   * `SIGKILL` (always the escalation regardless of `killSignal` so a
+   * misbehaving child cannot block teardown indefinitely).
    *
    * Caller is responsible for ensuring state is `running` at entry; the
    * private method narrows the precondition via {@link nonNullishOrThrow}
@@ -443,12 +653,15 @@ export class Child {
     const handle = nonNullishOrThrow(this.#current,);
     this.#state = 'stopping';
     this.#logger.info(
-      `stopping pid=${String(handle.pid ?? '?',)} (SIGTERM)`,
+      `stopping pid=${String(handle.pid ?? '?',)} (${this.#killSignal})`,
     );
 
     /** Listener registered BEFORE kill so a synchronous-exit fake cannot lose the event. */
     const exited = waitForExit(handle,);
-    handle.kill('SIGTERM',);
+    this.#sendSignal(
+      handle,
+      this.#killSignal,
+    );
 
     const result = await Promise.race([
       tagExited(exited,),
@@ -456,9 +669,14 @@ export class Child {
     ],);
     if (result === 'timeout') {
       this.#logger.warn(
-        `SIGTERM timed out after ${String(this.#stopTimeout,)}ms; escalating to SIGKILL`,
+        `${this.#killSignal} timed out after ${
+          String(this.#stopTimeout,)
+        }ms; escalating to SIGKILL`,
       );
-      handle.kill('SIGKILL',);
+      this.#sendSignal(
+        handle,
+        'SIGKILL',
+      );
       await exited;
     }
 

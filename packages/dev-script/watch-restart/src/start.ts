@@ -350,6 +350,13 @@ export async function startWatchRestart(
     ...(options.stopTimeout === undefined
       ? {}
       : { stopTimeout: options.stopTimeout, }),
+    ...(options.killSignal === undefined
+      ? {}
+      : { killSignal: options.killSignal, }),
+    ...(options.processGroup === undefined
+      ? {}
+      : { processGroup: options.processGroup, }),
+    ...(options.clear === undefined ? {} : { clear: options.clear, }),
     logger: startLogger,
     ...(options.spawn === undefined ? {} : { spawn: options.spawn, }),
   },);

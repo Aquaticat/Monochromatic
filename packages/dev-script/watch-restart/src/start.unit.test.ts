@@ -234,6 +234,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           spawn,
         },);
 
@@ -253,6 +254,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           initial: false,
           spawn,
         },);
@@ -279,6 +281,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           initial: false,
           spawn,
         },);
@@ -303,6 +306,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           initial: false,
           contentChanged: false,
           spawn,
@@ -326,6 +330,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           initial: false,
           spawn,
         },);
@@ -351,6 +356,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           initial: false,
           extensions: ['.ts',],
           spawn,
@@ -377,6 +383,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           initial: false,
           exclude: ['*.test.ts',],
           spawn,
@@ -403,6 +410,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           initial: false,
           spawn,
         },);
@@ -425,6 +433,7 @@ await describe({
         const handle = await startWatchRestart({
           paths: [dir,],
           command: 'noop',
+          processGroup: false,
           initial: false,
           spawn,
         },);
