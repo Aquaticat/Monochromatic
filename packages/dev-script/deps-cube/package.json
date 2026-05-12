@@ -1,0 +1,33 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/dev-script-deps-cube",
+  "description": "Catalog dependency audit report: interactive 3D scatter (deck.gl WebGL) rendering each catalog package as a feature vector across TS-ratio, source size, install size, staleness, downloads, and dep count.",
+  "type": "module",
+  "private": true,
+  "main": "src/cli.ts",
+  "bin": {
+    "deps-cube": "src/cli.ts"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "@cspotcode/outdent": "catalog:",
+    "@deck.gl/core": "catalog:",
+    "@deck.gl/layers": "catalog:",
+    "@monochromatic-dev/module-es": "workspace:*",
+    "find-up": "catalog:",
+    "nano-spawn": "catalog:",
+    "p-limit": "catalog:",
+    "yaml": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/dev-script/deps-cube"
+  },
+  "sideEffects": true
+}
