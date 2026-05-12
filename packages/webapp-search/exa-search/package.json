@@ -13,8 +13,7 @@
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "h3": "catalog:",
-    "valibot": "catalog:",
-    "exa-js": "catalog:"
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

@@ -55,7 +55,6 @@ catalog:
   'csstype': '>=3.2.3'
   'decircular': '>=1.0.0'
   'dot-prop': '>=10.1.0'
-  'exa-js': '>=2.3.0'
   'execa': '>=9.6.1'
   'expect-type': '>=1.3.0'
   'feedsmith': '>=3.0.0-next.4'

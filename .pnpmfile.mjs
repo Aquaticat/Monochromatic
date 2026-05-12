@@ -60,6 +60,10 @@ const POLICY = Object.freeze({
     action: 'throw',
     reason: 'abandoned express 4.x util; compute via node:crypto.createHash inline',
   },
+  'exa-js': {
+    action: 'throw',
+    reason: 'Exa AI search SDK deprecated in favor of linkup.so',
+  },
   extglob: {
     action: 'throw',
     reason: 'abandoned micromatch ancestor; use picomatch (already in graph)',
