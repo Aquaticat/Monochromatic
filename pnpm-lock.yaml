@@ -308,7 +308,7 @@ overrides:
   '@earendil-works/pi-tui>chalk': '-'
   '@earendil-works/pi-tui>mime-types': '-'
 
-pnpmfileChecksum: sha256-zGYXE57n4hGokeXSwB2/avjySKrxTjcVRIW6/HqDMKk=
+pnpmfileChecksum: sha256-u43TlmGu29Xq8rU1bIZGb9rtwfyXgr1tVTAWE3bnFSA=
 
 importers:
 

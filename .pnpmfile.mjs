@@ -37,12 +37,114 @@
 /**
  * @type {Readonly<Record<string, Policy>>}
  */
-const POLICY = Object.freeze({});
+const POLICY = Object.freeze({
+  'caniuse-lite': {
+    action: 'throw',
+    reason:
+      '3MB+ browserslist data dep; the workspace targets a baseline directly, browserslist unused',
+  },
+  'convert-source-map': {
+    action: 'throw',
+    reason:
+      'abandoned; modern bundlers (rolldown, oxc, esbuild) handle source maps natively',
+  },
+  'cookie-signature': {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; use node:crypto.createHmac for signed cookies',
+  },
+  destroy: {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; stream.destroy() is native since Node 8',
+  },
+  etag: {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; compute via node:crypto.createHash inline',
+  },
+  extglob: {
+    action: 'throw',
+    reason: 'abandoned micromatch ancestor; use picomatch (already in graph)',
+  },
+  'fast-json-stable-stringify': {
+    action: 'throw',
+    reason: 'abandoned; use safe-stringify (catalog) or node:util.inspect',
+  },
+  'for-in': {
+    action: 'throw',
+    reason: 'trivial; use Object.entries / Object.keys with functional iteration',
+  },
+  forwarded: {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; parse Forwarded header inline',
+  },
+  fresh: {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; compare conditional-request headers inline',
+  },
+  'fs.realpath': {
+    action: 'throw',
+    reason:
+      'polyfill for Node<6 fs.realpath bugs; native realpath stable on every supported runtime',
+  },
+  methods: {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; HTTP methods are RFC 7231 constants',
+  },
+  'proxy-addr': {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; use h3 or elysia request helpers',
+  },
+  'regenerator-runtime': {
+    action: 'throw',
+    reason:
+      'Babel async/generator polyfill; obsolete on Node 22+ and Bun, async/await is native',
+  },
+  'repeat-element': {
+    action: 'throw',
+    reason: 'trivial; use Array.from({ length: n }, () => x) or Array(n).fill(x)',
+  },
+  'repeat-string': {
+    action: 'throw',
+    reason: 'trivial; use String.prototype.repeat',
+  },
+  sax: {
+    action: 'throw',
+    reason:
+      'abandoned XML parser; use fast-xml-parser (catalog entry, used by feedsmith)',
+  },
+  'set-blocking': {
+    action: 'throw',
+    reason: 'abandoned yargs<16 internal; native process.stdout writes are sufficient',
+  },
+  'source-map-resolve': {
+    action: 'throw',
+    reason: 'abandoned; modern bundlers handle source map resolution natively',
+  },
+  statuses: {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; HTTP statuses are RFC 7231 constants',
+  },
+  toidentifier: {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; trivial identifier-case conversion inline',
+  },
+  unpipe: {
+    action: 'throw',
+    reason: 'Node stream polyfill; stream.unpipe() native on every supported runtime',
+  },
+  'utils-merge': {
+    action: 'throw',
+    reason: 'trivial; use Object.assign or { ...a, ...b }',
+  },
+  vary: {
+    action: 'throw',
+    reason: 'abandoned express 4.x util; set Vary header directly',
+  },
+},);
 
 const STUB_SPECIFIER = Object.freeze({
   throw: 'workspace:@monochromatic-dev/stub-throwing@*',
   silent: 'workspace:@monochromatic-dev/stub-silent@*',
-});
+},);
 
 /**
  * Fields pnpm installs for a transitive dependency: regular `dependencies` and
@@ -56,7 +158,7 @@ const STUB_SPECIFIER = Object.freeze({
 const DEP_FIELDS = Object.freeze([
   'dependencies',
   'optionalDependencies',
-]);
+],);
 
 const warned = new Set();
 
@@ -69,12 +171,11 @@ const warned = new Set();
  * @param {string} key
  * @param {string} message
  */
-function warnOnce({ key, message }) {
-  if (warned.has(key)) {
+function warnOnce({ key, message, },) {
+  if (warned.has(key,))
     return;
-  }
-  warned.add(key);
-  console.warn(message);
+  warned.add(key,);
+  console.warn(message,);
 }
 
 /**
@@ -86,27 +187,27 @@ function warnOnce({ key, message }) {
  * @param {object} pkg
  * @returns {object}
  */
-function applyBlocklist({ pkg }) {
+function applyBlocklist({ pkg, },) {
   const dependentName = typeof pkg.name === 'string' ? pkg.name : '<unknown>';
   const dependentVersion = typeof pkg.version === 'string' ? pkg.version : '0.0.0';
 
   for (const field of DEP_FIELDS) {
     const deps = pkg[field];
-    if (deps === null || deps === undefined || typeof deps !== 'object') {
+    if (deps === null || deps === undefined || typeof deps !== 'object')
       continue;
-    }
-    for (const [name, currentSpec] of Object.entries(deps)) {
+    for (const [name, currentSpec,] of Object.entries(deps,)) {
       const policy = POLICY[name];
-      if (policy === undefined) {
+      if (policy === undefined)
         continue;
-      }
-      if (policy.allowed?.includes(dependentName) === true) {
+      if (policy.allowed?.includes(dependentName,) === true)
         continue;
-      }
 
       const key = `${dependentName}@${dependentVersion} -> ${name} [${policy.action}]`;
-      const message = `[blocked-dep] ${key}: substituting with stub-${policy.action}. ${policy.reason} (previous spec: ${String(currentSpec)})`;
-      warnOnce({ key, message });
+      const message =
+        `[blocked-dep] ${key}: substituting with stub-${policy.action}. ${policy.reason} (previous spec: ${
+          String(currentSpec,)
+        })`;
+      warnOnce({ key, message, },);
 
       deps[name] = STUB_SPECIFIER[policy.action];
     }
@@ -116,7 +217,7 @@ function applyBlocklist({ pkg }) {
 }
 
 export const hooks = {
-  readPackage(pkg) {
-    return applyBlocklist({ pkg });
+  readPackage(pkg,) {
+    return applyBlocklist({ pkg, },);
   },
 };

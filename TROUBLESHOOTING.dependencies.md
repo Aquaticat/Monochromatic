@@ -13,6 +13,62 @@ The parent-scoped overrides documented in this file
 are surgical removals for specific dependents.
 They sit alongside the global mechanisms, not inside them, and stay in `pnpm-workspace.yaml`.
 
+## Pre-emptive bans on poorly-maintained transitive utilities
+
+`.pnpmfile.mjs` declares 24 transitive utilities as blocked with `action: 'throw'`
+as of 2026-05-12.
+None are in the resolved graph at the time the entries were added
+(verified: zero matches in `pnpm-lock.yaml`).
+The policy is a forward-looking canary:
+if a future manifest declares one of these as a dependency,
+`pnpm install` emits a stderr `[blocked-dep]` line naming the consumer,
+and any runtime `require` on the package throws an error referencing
+`docs/dependency-blocklist.md`.
+
+The decision criterion is the same across all 24:
+each package is either abandoned (no commits in 3+ years on upstream),
+a polyfill rendered obsolete by every supported runtime (Node 22+, Bun),
+or a piece of the express 4.x micro-utility family that the workspace has chosen
+not to take a dependency on (h3 and elysia replace express).
+Per-package rationale is the `reason` field in `.pnpmfile.mjs`,
+which surfaces verbatim in the install-time warning.
+
+The 24 split into four groups:
+
+- Express 4.x family (11):
+  `cookie-signature`, `destroy`, `etag`, `forwarded`, `fresh`, `methods`,
+  `proxy-addr`, `statuses`, `toidentifier`, `utils-merge`, `vary`.
+- Polyfills obsolete on every supported runtime (3):
+  `fs.realpath`, `regenerator-runtime`, `unpipe`.
+- Abandoned utilities with trivial native or catalog replacements (6):
+  `extglob`, `for-in`, `repeat-element`, `repeat-string`, `sax`, `set-blocking`.
+- Source-map / browser-data / JSON utilities replaced by bundler built-ins
+  or catalog deps (4):
+  `caniuse-lite`, `convert-source-map`, `fast-json-stable-stringify`,
+  `source-map-resolve`.
+
+### Conditions for revisiting
+
+Remove or relax an entry when:
+
+- A workspace package gains a legitimate need for one of the listed packages
+  (e.g. a deliberate adoption of express, an SDK that pins old ajv).
+- A previously-abandoned package returns to active maintenance and the
+  rationale recorded here no longer applies.
+
+In both cases, update the entry's `reason` (or delete it) and record the
+change here so future readers see the audit trail.
+
+### Verification
+
+After editing the POLICY block, run `mise run prepare:pnpm:install`.
+pnpm rewrites the `pnpmfileChecksum` line in `pnpm-lock.yaml`
+and re-runs resolution.
+Because no current manifest declares any blocked package,
+no substitutions occur and no `[blocked-dep]` lines are printed.
+The only diff is the checksum line itself, which is committed alongside
+the `.pnpmfile.mjs` change.
+
 ## vlt fails to fetch manifest for versions with semver build metadata
 
 ### Symptom
