@@ -80,6 +80,26 @@ export type WatcherOptions = {
   readonly atomic?: boolean | number;
   /** Forwarded to chokidar's `awaitWriteFinish`; defaults to `{ stabilityThreshold: 50, pollInterval: 10 }`. */
   readonly awaitWriteFinish?: AwaitWriteFinishOptions;
+  /**
+   * Maximum subdirectory depth chokidar will descend from each root.
+   * `undefined` is chokidar's default (unlimited). `0` watches only the
+   * root directory's direct files.
+   */
+  readonly depth?: number;
+  /**
+   * Polling interval (ms). When set, chokidar uses `usePolling: true`
+   * with this value for `interval`. When `undefined`, native filesystem
+   * events are used (chokidar default). Set this on filesystems without
+   * inotify support (NFS mounts, WSL1-on-Windows-FS, some Docker setups).
+   */
+  readonly poll?: number;
+  /**
+   * Whether chokidar follows symbolic links when traversing watch roots.
+   * Defaults to `false` (this package's safer default), regardless of
+   * chokidar's own default; passed explicitly so the value is not
+   * silently flipped by a chokidar version bump.
+   */
+  readonly followSymlinks?: boolean;
   /** Callback fired for each post-`ready` event. Async callbacks are not awaited by chokidar. */
   readonly onEvent: (event: WatchEvent,) => void | Promise<void>;
   /** Parent logger; the watcher composes a `Watcher` tag on top. */
@@ -163,11 +183,25 @@ export class Watcher {
         },
         ignoreInitial: false,
         persistent: true,
+        // Always pass `followSymlinks` so the package's default (false) is
+        // enforced regardless of chokidar's own default value.
+        followSymlinks: options.followSymlinks === true,
         // Conditional spread keeps `ignored` absent when the caller passes none;
         // ChokidarOptions's `Partial<>` allows missing keys but not explicit `undefined`.
         ...(options.ignored === undefined
           ? {}
           : { ignored: [...options.ignored,], }),
+        // `depth` absent leaves chokidar's default (unlimited) intact.
+        ...(options.depth === undefined ? {} : { depth: options.depth, }),
+        // Polling: only enable when an explicit interval is given; both
+        // `usePolling` and `interval` are spread together so the keys move
+        // as one unit rather than leaving a stray `usePolling: false`.
+        ...(options.poll === undefined
+          ? {}
+          : {
+              usePolling: true,
+              interval: options.poll,
+            }),
       },
     );
 

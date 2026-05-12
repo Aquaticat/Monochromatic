@@ -425,6 +425,11 @@ export async function startWatchRestart(
     hashCache,
     onEvent,
     logger: startLogger,
+    ...(options.depth === undefined ? {} : { depth: options.depth, }),
+    ...(options.poll === undefined ? {} : { poll: options.poll, }),
+    ...(options.followSymlinks === undefined
+      ? {}
+      : { followSymlinks: options.followSymlinks, }),
   },);
 
   await watcher.untilReady();

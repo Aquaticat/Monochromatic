@@ -10,6 +10,7 @@ import {
   mkdtemp,
   rename,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -259,6 +260,146 @@ await describe({
 
             await watcher.stop();
             await rm(root, { recursive: true, },);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'chokidar option pass-through (depth, poll, followSymlinks)',
+      children: [
+        it({
+          name: 'depth caps subdirectory traversal during the initial walk',
+          fn: async () => {
+            const root = await makeTmpDir();
+            await mkdir(
+              join(root, 'a', 'b', 'c',),
+              { recursive: true, },
+            );
+            const shallow = join(root, 'shallow.txt',);
+            const mid = join(root, 'a', 'mid.txt',);
+            const deep = join(root, 'a', 'b', 'deep.txt',);
+            const deeper = join(root, 'a', 'b', 'c', 'deeper.txt',);
+            await writeFile(shallow, 'top',);
+            await writeFile(mid, 'mid',);
+            await writeFile(deep, 'deep',);
+            await writeFile(deeper, 'deeper',);
+
+            const events: WatchEvent[] = [];
+            const hashCache = new HashCache();
+            const watcher = new Watcher({
+              paths: [root,],
+              hashCache,
+              depth: 1,
+              onEvent: async function onEvent(event,) {
+                events.push(event,);
+              },
+            },);
+            await watcher.untilReady();
+
+            // depth: 1 admits root files (depth 0 of subdirs) and one level of subdirs.
+            // shallow.txt sits in root; mid.txt sits in a first-level subdir.
+            // deep.txt is inside `a/b/`, a second-level subdir, past the cap.
+            expect(hashCache.has(resolve(shallow,),),).toBe(true,);
+            expect(hashCache.has(resolve(mid,),),).toBe(true,);
+            expect(hashCache.has(resolve(deep,),),).toBe(false,);
+            expect(hashCache.has(resolve(deeper,),),).toBe(false,);
+
+            await watcher.stop();
+            await rm(root, { recursive: true, },);
+          },
+        },),
+        it({
+          name: 'poll mode emits live events on file changes',
+          fn: async () => {
+            const root = await makeTmpDir();
+            const events: WatchEvent[] = [];
+            const hashCache = new HashCache();
+            const watcher = new Watcher({
+              paths: [root,],
+              hashCache,
+              poll: 50,
+              onEvent: async function onEvent(event,) {
+                events.push(event,);
+              },
+            },);
+            await watcher.untilReady();
+
+            const file = join(root, 'polled.txt',);
+            await writeFile(file, 'v1',);
+            // Polling-mode latency is bounded by the interval + chokidar's
+            // stability window; 500ms covers both with headroom on slow CI.
+            await wait(500,);
+
+            const adds = events.filter(function isAdd(e,) {
+              return e.kind === 'add' && e.path === resolve(file,);
+            },);
+            expect(adds.length,).toBeGreaterThanOrEqual(1,);
+
+            await watcher.stop();
+            await rm(root, { recursive: true, },);
+          },
+        },),
+        it({
+          name: 'followSymlinks: true pre-populates files inside a symlinked directory',
+          fn: async () => {
+            const root = await makeTmpDir();
+            const external = await makeTmpDir();
+            const externalFile = join(external, 'linked-file.txt',);
+            await writeFile(externalFile, 'inside',);
+            await symlink(external, join(root, 'link',),);
+
+            const events: WatchEvent[] = [];
+            const hashCache = new HashCache();
+            const watcher = new Watcher({
+              paths: [root,],
+              hashCache,
+              followSymlinks: true,
+              onEvent: async function onEvent(event,) {
+                events.push(event,);
+              },
+            },);
+            await watcher.untilReady();
+
+            // Chokidar reports the path as it walked it: through the symlink.
+            // The pre-populate hashed the file's bytes, so a `has()` against
+            // the resolved-via-link path is the cleanest assertion.
+            const linkedPath = resolve(root, 'link', 'linked-file.txt',);
+            expect(hashCache.has(linkedPath,),).toBe(true,);
+
+            await watcher.stop();
+            await rm(root, { recursive: true, },);
+            await rm(external, { recursive: true, },);
+          },
+        },),
+        it({
+          name: 'followSymlinks default (false) skips files inside symlinked directories',
+          fn: async () => {
+            const root = await makeTmpDir();
+            const external = await makeTmpDir();
+            const externalFile = join(external, 'linked-file.txt',);
+            await writeFile(externalFile, 'inside',);
+            await symlink(external, join(root, 'link',),);
+
+            const events: WatchEvent[] = [];
+            const hashCache = new HashCache();
+            const watcher = new Watcher({
+              paths: [root,],
+              hashCache,
+              onEvent: async function onEvent(event,) {
+                events.push(event,);
+              },
+            },);
+            await watcher.untilReady();
+
+            const linkedPath = resolve(root, 'link', 'linked-file.txt',);
+            // With followSymlinks: false (default), chokidar must not
+            // descend into `link/` and so the file inside the linked tree
+            // never reaches the hash cache.
+            expect(hashCache.has(linkedPath,),).toBe(false,);
+
+            await watcher.stop();
+            await rm(root, { recursive: true, },);
+            await rm(external, { recursive: true, },);
           },
         },),
       ],
