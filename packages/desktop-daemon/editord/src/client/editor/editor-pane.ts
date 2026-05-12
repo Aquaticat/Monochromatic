@@ -190,10 +190,10 @@ export class EditorPane extends HTMLElement {
    * @param diagnostics - diagnostics from the language server
    */
   setDiagnostics(diagnostics: Diagnostic[],): void {
-    if (diagnosticsEqual(
-      diagnostics,
-      this.#diagnostics,
-    )) {
+    if (diagnosticsEqual({
+      a: diagnostics,
+      b: this.#diagnostics,
+    },)) {
       return;
     }
     this.#diagnostics = diagnostics;
@@ -207,10 +207,10 @@ export class EditorPane extends HTMLElement {
    * @param hints - inlay hints from the language server
    */
   setInlayHints(hints: InlayHint[],): void {
-    if (hintsEqual(
-      hints,
-      this.#inlayHints,
-    )) {
+    if (hintsEqual({
+      a: hints,
+      b: this.#inlayHints,
+    },)) {
       return;
     }
     this.#inlayHints = hints;

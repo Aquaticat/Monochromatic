@@ -83,10 +83,13 @@ export function computeDocumentRange({ editor, }: { editor: HTMLDivElement; },):
  * const result = diagnosticsEqual({ a: [], b: [], });
  * ```
  */
-export function diagnosticsEqual(
-  a: Diagnostic[],
-  b: Diagnostic[],
-): boolean {
+export function diagnosticsEqual({
+  a,
+  b,
+}: {
+  a: Diagnostic[];
+  b: Diagnostic[];
+},): boolean {
   if (a.length !== b.length)
     return false;
   return a.every(function matchDiagnostic(
@@ -123,10 +126,13 @@ export function diagnosticsEqual(
  * const result = hintsEqual({ a: [], b: [], });
  * ```
  */
-export function hintsEqual(
-  a: InlayHint[],
-  b: InlayHint[],
-): boolean {
+export function hintsEqual({
+  a,
+  b,
+}: {
+  a: InlayHint[];
+  b: InlayHint[];
+},): boolean {
   if (a.length !== b.length)
     return false;
   return a.every(function matchHint(

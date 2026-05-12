@@ -235,7 +235,7 @@ const SHUTDOWN_MS_PER_SECOND = 1_000;
  * the HTTP/WebSocket server. Once all of these resolve, the event loop
  * has no remaining ref'd handles and the process exits naturally.
  *
- * @param opts - whether to delete the auth token file (true for SIGINT, false for SIGTERM auto-restart)
+ * @param deleteTokens - whether to delete the auth token file (true for SIGINT, false for SIGTERM auto-restart)
  */
 async function shutdownApp(
   { deleteTokens, }: { deleteTokens: boolean; },
@@ -281,14 +281,28 @@ process.on(
   'SIGINT',
   function onSigint(): void {
     startShutdownWatchdog();
-    void shutdownApp({ deleteTokens: true, },).catch(logShutdownError,);
+    void (async function performSigintShutdown(): Promise<void> {
+      try {
+        await shutdownApp({ deleteTokens: true, },);
+      }
+      catch (error) {
+        logShutdownError(error,);
+      }
+    })();
   },
 );
 process.on(
   'SIGTERM',
   function onSigterm(): void {
     startShutdownWatchdog();
-    void shutdownApp({ deleteTokens: false, },).catch(logShutdownError,);
+    void (async function performSigtermShutdown(): Promise<void> {
+      try {
+        await shutdownApp({ deleteTokens: false, },);
+      }
+      catch (error) {
+        logShutdownError(error,);
+      }
+    })();
   },
 );
 
