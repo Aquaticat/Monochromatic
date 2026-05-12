@@ -4,7 +4,7 @@
  * Writes content to a file on disk.
  * Validates that the file path is within the allowed root directory.
  * Skips the write when on-disk content already matches, so dev-loop file
- * watchers (e.g. watchexec restarting the server) do not fire on no-op saves.
+ * watchers (e.g. the dev:server restart loop) do not fire on no-op saves.
  */
 
 import {

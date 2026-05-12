@@ -897,6 +897,9 @@ importers:
       '@monochromatic-dev/cli-terminal-exec':
         specifier: workspace:*
         version: link:../../cli/terminal-exec
+      '@monochromatic-dev/dev-script-watch-restart':
+        specifier: workspace:*
+        version: link:../../dev-script/watch-restart
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
