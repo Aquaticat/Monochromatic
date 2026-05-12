@@ -302,7 +302,7 @@ await describe({
       name: titleForEvent.name,
       children: [
         it({
-          name: 'tool_execution_start: prefixes title with ✳',
+          name: 'tool_execution_start: prefixes title with π',
           fn: async () => {
             const result = titleForEvent(
               'tool_execution_start',
@@ -311,11 +311,11 @@ await describe({
                 args: { command: 'npm test', },
               },
             );
-            expect(result,).toBe('✳ npm test',);
+            expect(result,).toBe('π npm test',);
           },
         },),
         it({
-          name: 'tool_execution_end: prefixes with ✳ and past tense',
+          name: 'tool_execution_end: prefixes with π and past tense',
           fn: async () => {
             const result = titleForEvent(
               'tool_execution_end',
@@ -324,7 +324,7 @@ await describe({
                 args: { path: '/home/user/index.ts', },
               },
             );
-            expect(result,).toBe('✳ Read index.ts',);
+            expect(result,).toBe('π Read index.ts',);
           },
         },),
         it({
@@ -333,7 +333,7 @@ await describe({
             expect(
               titleForEvent('session_start', { reason: 'startup', },),
             )
-              .toBe('✳ Session startup',);
+              .toBe('π Session startup',);
           },
         },),
         it({
@@ -342,7 +342,7 @@ await describe({
             expect(
               titleForEvent('session_start', {},),
             )
-              .toBe('✳ Session started',);
+              .toBe('π Session started',);
           },
         },),
         it({
@@ -351,7 +351,7 @@ await describe({
             expect(
               titleForEvent('session_shutdown', {},),
             )
-              .toBe('✳ Session ended',);
+              .toBe('π Session ended',);
           },
         },),
         it({
@@ -360,7 +360,7 @@ await describe({
             expect(
               titleForEvent('agent_end', {},),
             )
-              .toBe('✳ Stopped',);
+              .toBe('π Stopped',);
           },
         },),
         it({
@@ -369,7 +369,7 @@ await describe({
             expect(
               titleForEvent('before_agent_start', { prompt: 'Refactor auth', },),
             )
-              .toBe('✳ Refactor auth',);
+              .toBe('π Refactor auth',);
           },
         },),
         it({
@@ -405,7 +405,7 @@ await describe({
               'tool_execution_start',
               { toolName: 'custom_tool', },
             );
-            expect(result,).toBe('✳ Running custom_tool',);
+            expect(result,).toBe('π Running custom_tool',);
           },
         },),
       ],

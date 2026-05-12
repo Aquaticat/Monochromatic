@@ -26,33 +26,33 @@ pi -e ./packages/pi/terminal-title/src/index.ts
 
 ## How it works
 
-Subscribes to pi agent lifecycle events and updates the terminal window/tab title via `ctx.ui.setTitle()`. Titles use a `✳` prefix and are capped at 60 characters.
+Subscribes to pi agent lifecycle events and updates the terminal window/tab title via `ctx.ui.setTitle()`. Titles use a `π` prefix and are capped at 60 characters.
 
 **Event → title mapping:**
 
 | Event                  | Title example                |
 | ---------------------- | ---------------------------- |
-| `tool_execution_start` | `✳ Reading index.ts`         |
-| `tool_execution_end`   | `✳ Read index.ts`            |
-| `session_start`        | `✳ Session startup`          |
-| `session_shutdown`     | `✳ Session ended`            |
-| `agent_end`            | `✳ Stopped`                  |
-| `before_agent_start`   | `✳ Refactor the auth module` |
+| `tool_execution_start` | `π Reading index.ts`         |
+| `tool_execution_end`   | `π Read index.ts`            |
+| `session_start`        | `π Session startup`          |
+| `session_shutdown`     | `π Session ended`            |
+| `agent_end`            | `π Stopped`                  |
+| `before_agent_start`   | `π Refactor the auth module` |
 
 **Tool registry:**
 
 | Tool    | Pre title             | Post title           |
 | ------- | --------------------- | -------------------- |
-| `bash`  | `✳ npm test`          | `✳ npm test`         |
-| `read`  | `✳ Reading index.ts`  | `✳ Read index.ts`    |
-| `edit`  | `✳ Editing config.ts` | `✳ Edited config.ts` |
-| `write` | `✳ Writing output.ts` | `✳ Wrote output.ts`  |
-| `grep`  | `✳ Searching "TODO"`  | `✳ Searched "TODO"`  |
-| `find`  | `✳ Finding "*.ts"`    | `✳ Found "*.ts"`     |
-| `ls`    | `✳ Listing src`       | `✳ Listed src`       |
+| `bash`  | `π npm test`          | `π npm test`         |
+| `read`  | `π Reading index.ts`  | `π Read index.ts`    |
+| `edit`  | `π Editing config.ts` | `π Edited config.ts` |
+| `write` | `π Writing output.ts` | `π Wrote output.ts`  |
+| `grep`  | `π Searching "TODO"`  | `π Searched "TODO"`  |
+| `find`  | `π Finding "*.ts"`    | `π Found "*.ts"`     |
+| `ls`    | `π Listing src`       | `π Listed src`       |
 
 Custom/MCP tools that are not in the registry display generically:
-`✳ Running mcp__weather` / `✳ Ran mcp__weather`
+`π Running mcp__weather` / `π Ran mcp__weather`
 
 ## Source structure
 

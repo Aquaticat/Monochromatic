@@ -143,7 +143,7 @@ await describe({
         );
 
         expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('✳ npm test',);
+        expect(titles[0],).toBe('π npm test',);
       },
     },),
 
@@ -165,7 +165,7 @@ await describe({
         );
 
         expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('✳ Read file',);
+        expect(titles[0],).toBe('π Read file',);
       },
     },),
 
@@ -187,7 +187,7 @@ await describe({
         );
 
         expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('✳ Session startup',);
+        expect(titles[0],).toBe('π Session startup',);
       },
     },),
 
@@ -209,7 +209,7 @@ await describe({
         );
 
         expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('✳ Session ended',);
+        expect(titles[0],).toBe('π Session ended',);
       },
     },),
 
@@ -231,7 +231,7 @@ await describe({
         );
 
         expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('✳ Stopped',);
+        expect(titles[0],).toBe('π Stopped',);
       },
     },),
 
@@ -258,7 +258,7 @@ await describe({
         );
 
         expect(titles,).toHaveLength(1,);
-        expect(titles[0],).toBe('✳ Fix the auth bug',);
+        expect(titles[0],).toBe('π Fix the auth bug',);
       },
     },),
     //endregion before_agent_start handler

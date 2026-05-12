@@ -143,10 +143,10 @@ type EventData = {
  * @example
  * ```ts
  * titleForEvent('tool_execution_start', { toolName: 'bash', args: { command: 'npm test' } })
- * // '✳ npm test'
+ * // 'π npm test'
  *
  * titleForEvent('session_start', { reason: 'startup' })
- * // '✳ Session startup'
+ * // 'π Session startup'
  * ```
  */
 function titleForEvent(
