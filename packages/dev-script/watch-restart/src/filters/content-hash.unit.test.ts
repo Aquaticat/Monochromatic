@@ -87,6 +87,7 @@ function makeEvent(
 ): WatchEvent {
   return {
     kind: overrides.kind ?? 'change',
+    entity: overrides.entity ?? 'file',
     path: overrides.path ?? '/abs/file.ts',
     relativePath: overrides.relativePath ?? 'file.ts',
     ext: overrides.ext ?? '.ts',

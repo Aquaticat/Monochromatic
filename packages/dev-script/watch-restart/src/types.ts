@@ -4,23 +4,49 @@ import type { HashCache, } from './hash-cache.ts';
 /**
  * Kind of filesystem event the watcher surfaces.
  *
- * Mirrors chokidar's `add`, `change`, `unlink` events. Directory events
- * (`addDir`, `unlinkDir`) are not exposed: the orchestrator decides whether
- * to restart on file content, not directory structure.
+ * Mirrors chokidar's file events (add, change, unlink) and directory
+ * events (addDir, unlinkDir). The orchestrator's `typeFilter` (default
+ * file-only) gates whether directory events reach the restart driver;
+ * callers that want directory events pass `--type dir` or include both
+ * tokens to keep both.
  *
  * @example
  * ```ts
  * if (event.kind === 'unlink') cache.delete(event.path,);
+ * if (event.kind === 'addDir') logger.info(`new dir: ${event.path}`,);
  * ```
  */
-export type WatchEventKind = 'add' | 'change' | 'unlink';
+export type WatchEventKind =
+  | 'add'
+  | 'change'
+  | 'unlink'
+  | 'addDir'
+  | 'unlinkDir';
+
+/**
+ * Filesystem entity that an event affects.
+ *
+ * Orthogonal to {@link WatchEventKind}: an event's kind names the action
+ * (created/modified/removed), `entity` names what it acted on. Pre-computed
+ * by the watcher so filters do not have to inspect kind strings.
+ *
+ * @example
+ * ```ts
+ * if (event.entity === 'dir') {
+ *   // skip directory events; the dev-server only cares about files
+ *   return false;
+ * }
+ * ```
+ */
+export type WatchEntityType = 'file' | 'dir';
 
 /**
  * Normalised filesystem event delivered to filters and the restart driver.
  *
  * Fields are pre-computed so filters do not have to (re)compute them on
  * the hot path: `path` is absolute, `relativePath` is relative to the
- * matching watch root, `ext` is `path.extname(path)` (with dot).
+ * matching watch root, `ext` is `path.extname(path)` (with dot), `entity`
+ * is `'file'` for `add`/`change`/`unlink` and `'dir'` for `addDir`/`unlinkDir`.
  *
  * @example
  * ```ts
@@ -32,11 +58,13 @@ export type WatchEventKind = 'add' | 'change' | 'unlink';
 export type WatchEvent = {
   /** Kind of event (see {@link WatchEventKind}). */
   readonly kind: WatchEventKind;
-  /** Absolute path of the affected file. */
+  /** Filesystem entity affected (file or directory). */
+  readonly entity: WatchEntityType;
+  /** Absolute path of the affected file or directory. */
   readonly path: string;
   /** Path relative to the matching watch root (deepest match when roots nest). */
   readonly relativePath: string;
-  /** File extension including the dot, e.g. `'.ts'`; empty string for extension-less files. */
+  /** File extension including the dot, e.g. `'.ts'`; empty string for extension-less files or directories. */
   readonly ext: string;
 };
 

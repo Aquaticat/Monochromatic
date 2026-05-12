@@ -6,8 +6,6 @@ import { once, } from 'node:events';
 import {
   extname,
   relative,
-  resolve,
-  sep,
 } from 'node:path';
 import type { HashCache, } from './hash-cache.ts';
 import {
@@ -16,9 +14,15 @@ import {
   tagged,
 } from './log.ts';
 import type {
+  WatchEntityType,
   WatchEvent,
   WatchEventKind,
 } from './types.ts';
+import {
+  describeError,
+  isPathUnderRoot,
+  sortRootsByLengthDesc,
+} from './watcher-paths.ts';
 
 /**
  * Default `awaitWriteFinish.stabilityThreshold` (milliseconds).
@@ -81,85 +85,6 @@ export type WatcherOptions = {
   /** Parent logger; the watcher composes a `Watcher` tag on top. */
   readonly logger?: Logger;
 };
-
-/**
- * Wraps `path.resolve` for use with `Array.prototype.map`.
- * Module-scope so the closure does not capture and the lint stays clean.
- *
- * @param p - path to resolve
- *
- * @returns absolute path
- */
-function resolveOne(p: string,): string {
-  return resolve(p,);
-}
-
-/**
- * Resolves and sorts watch roots so the deepest match wins when a file
- * lives under nested overlapping roots.
- *
- * @param paths - watch roots from {@link WatcherOptions.paths}
- *
- * @returns roots resolved to absolute paths, sorted longest-first
- *
- * @example
- * ```ts
- * sortRootsByLengthDesc(['src', 'src/server',],); // ['/abs/src/server', '/abs/src']
- * ```
- */
-function sortRootsByLengthDesc(paths: readonly string[],): readonly string[] {
-  const copy: string[] = paths.map(function mapResolve(p,) {
-    return resolveOne(p,);
-  },);
-  copy.sort(function byLengthDesc(
-    a,
-    b,
-  ): number {
-    return b.length - a.length;
-  },);
-  return copy;
-}
-
-/**
- * Tests whether `absPath` lives inside (or equals) `root`.
- *
- * @param root - absolute directory path (no trailing separator required)
- *
- * @param absPath - absolute path to test
- *
- * @returns true when `absPath === root` or `absPath` is a child of `root`
- *
- * @example
- * ```ts
- * isPathUnderRoot({ root: '/abs/src', absPath: '/abs/src/index.ts', },); // true
- * isPathUnderRoot({ root: '/abs/src', absPath: '/abs/srcZ/index.ts', },); // false
- * ```
- */
-function isPathUnderRoot(
-  {
-    root,
-    absPath,
-  }: {
-    readonly root: string;
-    readonly absPath: string;
-  },
-): boolean {
-  if (absPath === root)
-    return true;
-  const prefix = root.endsWith(sep,) ? root : root + sep;
-  return absPath.startsWith(prefix,);
-}
-
-/**
- * Coerces an unknown thrown value into a printable string for logging.
- *
- * @param error - thrown value of unknown shape
- *
- * @returns human-readable error description
- */
-function describeError(error: unknown,): string {
-  return error instanceof Error ? error.message : String(error,);
-}
 
 /**
  * chokidar 5 adapter that owns one `FSWatcher`, pre-populates a {@link HashCache}
@@ -315,6 +240,54 @@ export class Watcher {
     }
 
     /**
+     * chokidar `addDir` listener.
+     * Directories have no content to hash, so pre-`ready` adds are
+     * silently absorbed (no cache write, no emit); post-`ready` adds
+     * normalise and emit. The {@link typeFilter} (default `['file']`)
+     * downstream decides whether the emitted event actually drives a
+     * restart.
+     *
+     * @param path - absolute directory path emitted by chokidar
+     */
+    function onAddDir(path: string,): void {
+      void (async function dispatchAddDir(): Promise<void> {
+        try {
+          await self.#dispatchDirEvent(
+            'addDir',
+            path,
+          );
+        }
+        catch (error) {
+          self.#logger.error(`addDir dispatch failed: ${describeError(error,)}`,);
+        }
+      })();
+    }
+
+    /**
+     * chokidar `unlinkDir` listener.
+     * Directory removals never had a hash entry; post-`ready` removals
+     * emit, pre-`ready` removals are absorbed (rare; would only happen
+     * if the initial walk catches a directory mid-removal).
+     *
+     * @param path - absolute directory path emitted by chokidar
+     */
+    function onUnlinkDir(path: string,): void {
+      void (async function dispatchUnlinkDir(): Promise<void> {
+        try {
+          await self.#dispatchDirEvent(
+            'unlinkDir',
+            path,
+          );
+        }
+        catch (error) {
+          self.#logger.error(
+            `unlinkDir dispatch failed: ${describeError(error,)}`,
+          );
+        }
+      })();
+    }
+
+    /**
      * chokidar `error` listener.
      * chokidar keeps the watcher alive after recoverable errors, so this
      * does not call `stop()`.
@@ -340,6 +313,14 @@ export class Watcher {
     this.#fsw.on(
       'unlink',
       onUnlink,
+    );
+    this.#fsw.on(
+      'addDir',
+      onAddDir,
+    );
+    this.#fsw.on(
+      'unlinkDir',
+      onUnlinkDir,
     );
     this.#fsw.on(
       'error',
@@ -425,6 +406,29 @@ export class Watcher {
   }
 
   /**
+   * Routes a directory `addDir`/`unlinkDir` event. Directories have no
+   * content to hash, so pre-`ready` events are silently absorbed; post-
+   * `ready` events normalise and emit. The downstream filter chain
+   * (`typeFilter`, default `['file']`) decides whether the emitted event
+   * drives a restart.
+   *
+   * @param kind - `'addDir'` for new directories, `'unlinkDir'` for removals
+   *
+   * @param path - absolute directory path emitted by chokidar
+   */
+  async #dispatchDirEvent(
+    kind: 'addDir' | 'unlinkDir',
+    path: string,
+  ): Promise<void> {
+    if (!this.#ready)
+      return;
+    await this.#emitEvent(
+      kind,
+      path,
+    );
+  }
+
+  /**
    * Schedules a pre-populate job and detaches its cleanup.
    *
    * @param path - absolute path to hash and store
@@ -474,6 +478,11 @@ export class Watcher {
    * Normalises a chokidar event into a {@link WatchEvent} and invokes the
    * orchestrator's callback.
    *
+   * `entity` is derived from `kind`: file kinds (`add`/`change`/`unlink`)
+   * map to `'file'`; dir kinds (`addDir`/`unlinkDir`) map to `'dir'`.
+   * Keeping the derivation here means downstream filters never have to
+   * recompute it from kind strings.
+   *
    * @param kind - event kind
    *
    * @param path - absolute path emitted by chokidar
@@ -483,8 +492,12 @@ export class Watcher {
     path: string,
   ): Promise<void> {
     const root = this.#findRoot(path,);
+    /** Entity derived from kind once; filters reuse rather than re-derive. */
+    const entity: WatchEntityType =
+      kind === 'addDir' || kind === 'unlinkDir' ? 'dir' : 'file';
     const event: WatchEvent = {
       kind,
+      entity,
       path,
       relativePath: root === undefined ? path : relative(
         root,

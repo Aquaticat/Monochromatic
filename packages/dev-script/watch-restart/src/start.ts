@@ -6,6 +6,7 @@ import { composeFilters, } from './filters/compose.ts';
 import { contentHashFilter, } from './filters/content-hash.ts';
 import { extFilter, } from './filters/ext.ts';
 import { globFilter, } from './filters/glob.ts';
+import { typeFilter, } from './filters/type.ts';
 import {
   DEFAULT_MAX_HASH_SIZE_BYTES,
   HashCache,
@@ -17,6 +18,7 @@ import {
 } from './log.ts';
 import type {
   WatchCtx,
+  WatchEntityType,
   WatchEvent,
   WatchEventKind,
   WatchFilter,
@@ -54,7 +56,13 @@ export type StartWatchRestartOptions = {
   readonly exclude?: readonly string[];
   /** Extensions admitted (case-insensitive, leading dot optional). */
   readonly extensions?: readonly string[];
-  /** Event kinds admitted; `undefined` admits all three. */
+  /**
+   * Entity types admitted; `undefined` defaults to `['file']` so the
+   * dev-server case (the package's reason for being) sees only file
+   * events. Pass `['file', 'dir']` to include directory create/remove.
+   */
+  readonly types?: readonly WatchEntityType[];
+  /** Event kinds admitted; `undefined` admits all kinds reaching the filter. */
   readonly events?: readonly WatchEventKind[];
   /** Suppress byte-identical writes when `true` (default); `false` disables. */
   readonly contentChanged?: boolean;
@@ -152,6 +160,15 @@ function buildInternalFilter(
 ): WatchFilter {
   /** Mutable working list of filters; collected in evaluation order before composition. */
   const filters: WatchFilter[] = [];
+
+  /**
+   * Default `types` to `['file']` so the baseline dev-server case (the
+   * package's reason for being) ignores the new `addDir`/`unlinkDir`
+   * events the watcher started emitting in Q6. Callers that want
+   * directory events pass `['file', 'dir']` or `['dir']`.
+   */
+  const types: readonly WatchEntityType[] = options.types ?? ['file',];
+  filters.push(typeFilter(types,),);
 
   if (options.events !== undefined) {
     filters.push(buildEventKindFilter(options.events,),);

@@ -55,6 +55,7 @@ function makeCtx(): WatchCtx {
 function makeEvent(): WatchEvent {
   return {
     kind: 'change',
+    entity: 'file',
     path: '/abs/file.ts',
     relativePath: 'file.ts',
     ext: '.ts',

@@ -18,6 +18,7 @@ export {
 export { contentHashFilter, } from './filters/content-hash.ts';
 export { extFilter, } from './filters/ext.ts';
 export { globFilter, } from './filters/glob.ts';
+export { typeFilter, } from './filters/type.ts';
 export {
   anyFilter,
   composeFilters,
@@ -35,6 +36,7 @@ export {
 } from './start.ts';
 export type {
   WatchCtx,
+  WatchEntityType,
   WatchEvent,
   WatchEventKind,
   WatchFilter,
