@@ -4,7 +4,7 @@
 
 The package `packages/dev-script/watch-restart/` is being built per the approved plan at `/home/user/.claude/plans/plan-this-first-question-abstract-hopcroft.md`. Read that plan first; it has the full design, the option matrix that produced each decision, and the verification checklist. The original product handover at `packages/desktop-daemon/editord/HANDOVER.custom-dev-server-watcher.md` has the architectural rationale (the failures we are excluding by construction, the chokidar-vs-watchman analysis, etc.).
 
-**Status**: tasks 1 through 7 done. Tasks 8 through 10 remain. The package builds, lints, type-checks, and tests pass at the current checkpoint.
+**Status**: tasks 1 through 8 done. Tasks 9 and 10 remain. The package builds, lints, type-checks, and tests pass at the current checkpoint.
 
 ## State on disk (verified before this handover)
 
@@ -17,6 +17,8 @@ packages/dev-script/watch-restart/
 ├── src/
 │   ├── child.ts                       ← Child class (spawn + SIGTERM/SIGKILL state machine) + injectable SpawnFn
 │   ├── child.unit.test.ts             ← 13 tests covering state machine, stop, restart, reentry guards, defaults
+│   ├── cli.ts                         ← #!/usr/bin/env bun; optique parser + argsToOptions + signal handlers (gated by import.meta.main)
+│   ├── cli.unit.test.ts               ← 12 tests covering argv round trip + argsToOptions errors
 │   ├── filters/
 │   │   ├── compose.ts                 ← composeFilters (all-of, short-circuit) + anyFilter (any-of, short-circuit)
 │   │   ├── compose.unit.test.ts       ← 7 tests (4 composeFilters + 3 anyFilter)
@@ -47,7 +49,7 @@ Verification at this checkpoint:
 - `mise run //packages/dev-script/watch-restart:build` → exits 0, emits to `dist/final/node/`.
 - `mise run //packages/dev-script/watch-restart:lint` → 0 warnings, 0 errors.
 - `mise run //packages/dev-script/watch-restart:lint:types` → exits 0.
-- `mise run //packages/dev-script/watch-restart:test:unit` → 66 tests pass (13 HashCache + 8 Watcher + 13 Child + 23 filters [6 contentHashFilter + 5 extFilter + 5 globFilter + 4 composeFilters + 3 anyFilter] + 9 startWatchRestart; 1 Watcher atomic-save case skipped, see "Picked up during the child implementation" below).
+- `mise run //packages/dev-script/watch-restart:test:unit` → 78 tests pass (13 HashCache + 8 Watcher + 13 Child + 23 filters [6 contentHashFilter + 5 extFilter + 5 globFilter + 4 composeFilters + 3 anyFilter] + 9 startWatchRestart + 12 cli [10 round trip + 2 errors]; 1 Watcher atomic-save case skipped, see "Picked up during the child implementation" below).
 
 ## Decisions made during implementation that the plan did not pin
 
@@ -131,6 +133,20 @@ The orchestrator is a function (not a class) that returns a `WatchRestartHandle 
 
 **Wait math: `50 + DEFAULT_DEBOUNCE_MS + 150 = 300 ms` per "did/didn't restart" assertion.** That covers chokidar's `awaitWriteFinish.stabilityThreshold` (50 ms), the orchestrator's debounce (100 ms), and a 150-ms safety margin for `setImmediate` jitter on slow CI. The orchestrator suite finishes in ~600 ms total (9 tests). If a future task shrinks the windows, drop the safety margin first; chokidar's threshold and our debounce are real semantic delays the test must wait through.
 
+### Picked up during the cli implementation
+
+The plan listed task 8 as "`cli.ts` + `flags-to-filter.ts`". `flags-to-filter.ts` was **dropped**: the orchestrator (task 7) already compiles options into a filter chain internally, so a separate compiler in CLI-land would duplicate the logic. The CLI's job collapses to "argv → StartWatchRestartOptions", which is one pure function (`argsToOptions`) plus the optique `parser`.
+
+**`parser` is not exported.** Optique combinators (`object`, `multiple`, `optional`, `option(...)` with value parsers) produce deeply generic types that `--isolatedDeclarations` cannot survive across the export boundary. Spelling the explicit `Parser<...>` type would leak @optique-internal generics. Resolution: keep `parser` module-internal; export an explicit `ParsedArgs` type and a `parseArgs({ argv, onExit?, stdout?, stderr? }): ParsedArgs` helper. Tests drive the helper; production calls it from the `import.meta.main` guard.
+
+**Top-level execution is gated by `import.meta.main`.** Bun's `import.meta.main` is `true` only when this file is the entrypoint. Tests importing `cli.ts` see `import.meta.main === false`, so the orchestrator does not boot and no signal handlers attach. The bin in `package.json` (`"watch-restart": "src/cli.ts"`) and the `#!/usr/bin/env bun` shebang make Bun the runtime.
+
+**Event-name vocabulary translation.** The CLI surfaces `create`/`change`/`delete` (filesystem-friendly); chokidar / our internal `WatchEventKind` uses `add`/`change`/`unlink`. `cliEventToInternal` maps the three forms; an unknown token throws so a typo fails the CLI rather than silently passing every event.
+
+**Shutdown handler is `process.once`, not `process.on`.** One-shot prevents a frustrated double-Ctrl+C from racing two `handle.stop()` calls; the second signal lands as a default-disposition hard exit.
+
+**Smoke test: `bun src/cli.ts --help` renders the optique-generated usage block.** Confirms the parser definition is syntactically valid and `import.meta.main` correctly gates top-level execution (exits cleanly after help, never reaches `startWatchRestart`).
+
 ## Pending tasks (in order)
 
 The task list IDs match `TaskList` entries.
@@ -143,9 +159,9 @@ The task list IDs match `TaskList` entries.
 
 ~~6. Implement built-in filters + tests.~~ **Done.** Four files under `src/filters/`: `content-hash.ts`, `ext.ts`, `glob.ts`, `compose.ts`. `WatchFilter` changed to single-destructured-arg shape; `composeFilters` / `anyFilter` take array (not rest). `globFilter` matches `event.relativePath`. 23 filter tests pass. Local `src/picomatch.d.ts` shim covers picomatch's missing types.
 
-~~7. Implement `start.ts` + tests.~~ **Done.** `startWatchRestart(options)` at `src/start.ts`; filter chain compiled inline (`buildInternalFilter`, `buildEventKindFilter` helpers stay module-local). Handle's `stop()` aborts the signal first, clears the debounce timer, then stops watcher + child. 9 tests pass covering initial/no-initial, byte-identical skip, --no-content-changed override, debounce coalesce across files, ext/exclude flags, stop teardown, idempotent stop. Filter-compilation logic stays in `start.ts`; task 8 may extract a thin `flags-to-filter.ts` wrapper if the CLI needs additional flag-to-options translation that should live separately.
+~~7. Implement `start.ts` + tests.~~ **Done.** `startWatchRestart(options)` at `src/start.ts`; filter chain compiled inline (`buildInternalFilter`, `buildEventKindFilter` helpers stay module-local). Handle's `stop()` aborts the signal first, clears the debounce timer, then stops watcher + child. 9 tests pass covering initial/no-initial, byte-identical skip, --no-content-changed override, debounce coalesce across files, ext/exclude flags, stop teardown, idempotent stop.
 
-8. **Implement `cli.ts` + `flags-to-filter.ts` + tests.** CLI: `#!/usr/bin/env bun` shebang, `@optique/core` + `@optique/run`, mirror `packages/dev-script/task-util/src/command.ts:54-82`. Flags: `-w`, `-i`, `-e`, `--ext`, `--events`, `--no-content-changed`, `--max-hash-size`, `--debounce`, `--stop-timeout`, `--no-initial`, plus `--` rest. `flags-to-filter.ts` compiles the parsed flag bag into a `WatchFilter` (composing `globFilter` and `extFilter`). The cli passes options through to `startWatchRestart` and awaits its handle; handles SIGINT/SIGTERM by calling `handle.stop()`. Tests stub `startWatchRestart` and assert option mapping.
+~~8. Implement `cli.ts` + `flags-to-filter.ts` + tests.~~ **Done (without `flags-to-filter.ts`; see notes).** `cli.ts` has the optique parser (module-internal), `parseArgs` helper (exported), `argsToOptions` mapper (exported), one-shot SIGINT/SIGTERM handlers, and a top-level program gated by `import.meta.main`. 12 tests pass covering argv → ParsedArgs → StartWatchRestartOptions round trip plus error paths. `flags-to-filter.ts` was dropped because the orchestrator (task 7) already compiles options into a filter chain internally; reintroducing it would duplicate logic.
 
 9. **Switch editord `dev:server` to `watch-restart`.** Add `"@monochromatic-dev/dev-script-watch-restart": "workspace:*"` to `packages/desktop-daemon/editord/package.json` dependencies. Rewrite the `dev:server` task in `packages/desktop-daemon/editord/mise.toml` from `watchexec -w src/server --no-meta -r -- bun src/server/index.ts` to `watch-restart -w src/server -- bun src/server/index.ts`. Drop the comment block above the task. Run `pnpm install` to link the workspace dep. Verify end-to-end per the plan's "Verification" section (start the server, edit a file, watch the restart; touch a file, no restart; Ctrl+C, clean shutdown).
 
@@ -188,4 +204,4 @@ Final verification (after task 9) lives in the plan's "Verification (end-to-end)
 
 ## Hand-off
 
-The plan, this handover, and the in-tree state are mutually consistent. The next agent's first move is task 8 (`cli.ts` with `@optique` parsing + optional `flags-to-filter.ts` extraction, then wire SIGINT/SIGTERM to `handle.stop()`). Do not re-litigate the design questions; they are resolved in the plan with the option matrix that produced each call. If a new question surfaces during implementation, write the rationale into this file and proceed.
+The plan, this handover, and the in-tree state are mutually consistent. The next agent's first move is task 9 (switch editord's `dev:server` to `watch-restart`, then verify end-to-end per the plan's verification checklist). Do not re-litigate the design questions; they are resolved in the plan with the option matrix that produced each call. If a new question surfaces during implementation, write the rationale into this file and proceed.
