@@ -27,6 +27,12 @@ export {
   HashCache,
   type HashCacheOptions,
 } from './hash-cache.ts';
+export {
+  DEFAULT_DEBOUNCE_MS,
+  startWatchRestart,
+  type StartWatchRestartOptions,
+  type WatchRestartHandle,
+} from './start.ts';
 export type {
   WatchCtx,
   WatchEvent,
