@@ -36,11 +36,22 @@ import {
 } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
 import {
+  cliEventToInternal,
+  compileRegex,
+  parseKillSignal,
+  parseTypeToken,
+  resolveBoolPair,
+  splitCommas,
+} from './cli-helpers.ts';
+import {
   startWatchRestart,
   type StartWatchRestartOptions,
   type WatchRestartHandle,
 } from './start.ts';
-import type { WatchEventKind, } from './types.ts';
+import type {
+  WatchEntityType,
+  WatchEventKind,
+} from './types.ts';
 
 /**
  * Shape produced by {@link parseArgs}.
@@ -57,10 +68,34 @@ export type ParsedArgs = {
   readonly include: readonly string[];
   /** `-e` / `--exclude`; exclude globs in argv order. */
   readonly exclude: readonly string[];
+  /** `--include-regex`; raw regex source strings in argv order. */
+  readonly includeRegex: readonly string[];
+  /** `--exclude-regex`; raw regex source strings in argv order. */
+  readonly excludeRegex: readonly string[];
   /** `--ext`; raw values pre-split (each entry may be a comma list). */
   readonly ext: readonly string[];
+  /** `--type`; raw type tokens (each entry may be a comma list). */
+  readonly type: readonly string[];
   /** `--events`; raw comma list, or `undefined` when not passed. */
   readonly events: string | undefined;
+  /** `--hidden`; `true` when passed. */
+  readonly hidden: boolean;
+  /** `--no-hidden`; `true` when passed. */
+  readonly noHidden: boolean;
+  /** `--follow-symlinks`; `true` when passed. */
+  readonly followSymlinks: boolean;
+  /** `--no-follow-symlinks`; `true` when passed. */
+  readonly noFollowSymlinks: boolean;
+  /** `--gitignore`; `true` when passed. */
+  readonly gitignore: boolean;
+  /** `--no-gitignore`; `true` when passed. */
+  readonly noGitignore: boolean;
+  /** `--ignore-file`; extra gitignore-format files in argv order. */
+  readonly ignoreFile: readonly string[];
+  /** `--depth`; parsed integer or `undefined`. */
+  readonly depth: number | undefined;
+  /** `--poll`; parsed integer or `undefined`. */
+  readonly poll: number | undefined;
   /** `--no-content-changed`; `true` when passed. */
   readonly noContentChanged: boolean;
   /** `--max-hash-size`; parsed integer or `undefined`. */
@@ -71,6 +106,16 @@ export type ParsedArgs = {
   readonly stopTimeout: number | undefined;
   /** `--no-initial`; `true` when passed. */
   readonly noInitial: boolean;
+  /** `--clear`; `true` when passed. */
+  readonly clear: boolean;
+  /** `--no-clear`; `true` when passed. */
+  readonly noClear: boolean;
+  /** `--signal`; raw signal name, or `undefined` when not passed. */
+  readonly signal: string | undefined;
+  /** `--process-group`; `true` when passed. */
+  readonly processGroup: boolean;
+  /** `--no-process-group`; `true` when passed. */
+  readonly noProcessGroup: boolean;
   /** Positional args after `--`; first is command, rest is its args. */
   readonly rest: readonly string[];
 };
@@ -97,13 +142,43 @@ const parser = object({
     '--exclude',
     string(),
   ),),
+  includeRegex: multiple(option(
+    '--include-regex',
+    string(),
+  ),),
+  excludeRegex: multiple(option(
+    '--exclude-regex',
+    string(),
+  ),),
   ext: multiple(option(
     '--ext',
+    string(),
+  ),),
+  type: multiple(option(
+    '--type',
     string(),
   ),),
   events: optional(option(
     '--events',
     string(),
+  ),),
+  hidden: option('--hidden',),
+  noHidden: option('--no-hidden',),
+  followSymlinks: option('--follow-symlinks',),
+  noFollowSymlinks: option('--no-follow-symlinks',),
+  gitignore: option('--gitignore',),
+  noGitignore: option('--no-gitignore',),
+  ignoreFile: multiple(option(
+    '--ignore-file',
+    string(),
+  ),),
+  depth: optional(option(
+    '--depth',
+    integer(),
+  ),),
+  poll: optional(option(
+    '--poll',
+    integer(),
   ),),
   noContentChanged: option('--no-content-changed',),
   maxHashSize: optional(option(
@@ -119,6 +194,14 @@ const parser = object({
     integer(),
   ),),
   noInitial: option('--no-initial',),
+  clear: option('--clear',),
+  noClear: option('--no-clear',),
+  signal: optional(option(
+    '--signal',
+    string(),
+  ),),
+  processGroup: option('--process-group',),
+  noProcessGroup: option('--no-process-group',),
   rest: multiple(argument(string(),),),
 },);
 
@@ -161,88 +244,30 @@ export function parseArgs(
 }
 
 /**
- * Splits a comma-separated string into trimmed non-empty tokens.
- *
- * Module-scope so `args.ext.flatMap(splitCommas,)` and
- * `args.events?.split` share the same token shape; oxlint's
- * `consistent-function-scoping` keeps pure helpers out of the closures
- * that call them.
- *
- * @param value - raw string from a CLI flag
- *
- * @returns trimmed non-empty tokens; never includes empty strings
- *
- * @example
- * ```ts
- * splitCommas('.ts, .tsx,, ',); // ['.ts', '.tsx']
- * ```
- */
-function splitCommas(value: string,): string[] {
-  return value
-    .split(',',)
-    .map(function trim(s,): string {
-      return s.trim();
-    },)
-    .filter(function nonEmpty(s,): boolean {
-      return s.length > 0;
-    },);
-}
-
-/**
- * Maps a single CLI event-name token to the internal {@link WatchEventKind}.
- *
- * `create`/`delete` are the user-facing names (filesystem vocabulary);
- * `add`/`unlink` are the chokidar terms surfaced internally. Unknown
- * names throw a clear error so the CLI fails fast instead of silently
- * treating a typo as "all kinds".
- *
- * @param token - one CLI event token (e.g. `'create'`)
- *
- * @returns internal {@link WatchEventKind}
- *
- * @throws Error when the token is not one of `create`, `change`, `delete`
- *
- * @example
- * ```ts
- * cliEventToInternal('create',); // 'add'
- * cliEventToInternal('delete',); // 'unlink'
- * ```
- */
-function cliEventToInternal(token: string,): WatchEventKind {
-  if (token === 'create') {
-    return 'add';
-  }
-  if (token === 'change') {
-    return 'change';
-  }
-  if (token === 'delete') {
-    return 'unlink';
-  }
-  throw new Error(
-    `Unknown --events token "${token}"; expected one of create, change, delete`,
-  );
-}
-
-/**
  * Maps the parsed CLI args onto a {@link StartWatchRestartOptions}.
  *
  * Pure transformation: no I/O, no global state, no defaults beyond what
  * the orchestrator itself applies. `--no-content-changed` becomes
  * `contentChanged: false`; absence stays absent (the orchestrator's
- * default-true kicks in). Same for `--no-initial`.
+ * default-true kicks in). Same for `--no-initial`. Pair flags
+ * (`--hidden`/`--no-hidden`, etc.) collapse to a tri-state via
+ * {@link resolveBoolPair}; both-passed is a usage error.
  *
  * The first positional after `--` becomes `command`; the remainder
  * becomes `args`. An empty `rest` is a CLI usage error and throws so
  * the user sees the cause instead of an opaque "spawn EINVAL" later.
  *
- * `--ext` and `--events` accept comma-lists; each is split and trimmed
- * before mapping.
+ * `--ext`, `--events`, and `--type` accept comma-lists; each is split
+ * and trimmed before mapping. `--include-regex` / `--exclude-regex`
+ * compile to {@link RegExp} (invalid patterns throw a `SyntaxError`).
+ * `--signal` validates against {@link parseKillSignal}'s allowed set.
  *
  * @param args - shape returned by {@link parseArgs}
  *
  * @returns options object handed straight to {@link startWatchRestart}
  *
- * @throws Error when no positional command is given after `--`
+ * @throws Error when no positional command is given after `--`, or when
+ * any token / regex / signal name fails its respective validator
  *
  * @example
  * ```ts
@@ -269,6 +294,14 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
       return splitCommas(raw,);
     },
   );
+  /** Flattened, comma-split type list mapped to internal entity types. */
+  const types: readonly WatchEntityType[] = args.type.flatMap(
+    function flattenType(raw,): string[] {
+      return splitCommas(raw,);
+    },
+  ).map(function mapTypeToken(token,): WatchEntityType {
+    return parseTypeToken(token,);
+  },);
   /**
    * Flattened, comma-split event kind list; translated from
    * CLI-facing `create`/`delete` to internal `add`/`unlink`.
@@ -276,11 +309,55 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
    */
   const events: readonly WatchEventKind[] | undefined = args.events === undefined
     ? undefined
-    : splitCommas(args.events,).map(
-      function mapEventToken(token,): WatchEventKind {
-        return cliEventToInternal(token,);
-      },
-    );
+    : splitCommas(args.events,).map(function mapEventToken(token,): WatchEventKind {
+      return cliEventToInternal(token,);
+    },);
+  /** Compiled include regex list; throws here if any pattern is invalid. */
+  const includeRegex: readonly RegExp[] = args.includeRegex.map(
+    function mapIncludeRegex(pattern,): RegExp {
+      return compileRegex(pattern,);
+    },
+  );
+  /** Compiled exclude regex list; throws here if any pattern is invalid. */
+  const excludeRegex: readonly RegExp[] = args.excludeRegex.map(
+    function mapExcludeRegex(pattern,): RegExp {
+      return compileRegex(pattern,);
+    },
+  );
+  /** Tri-state hidden toggle; both-passed throws inside resolveBoolPair. */
+  const hidden = resolveBoolPair({
+    positive: args.hidden,
+    negative: args.noHidden,
+    flag: 'hidden',
+  },);
+  /** Tri-state symlink-follow toggle. */
+  const followSymlinks = resolveBoolPair({
+    positive: args.followSymlinks,
+    negative: args.noFollowSymlinks,
+    flag: 'follow-symlinks',
+  },);
+  /** Tri-state gitignore toggle. */
+  const gitignore = resolveBoolPair({
+    positive: args.gitignore,
+    negative: args.noGitignore,
+    flag: 'gitignore',
+  },);
+  /** Tri-state terminal-clear toggle. */
+  const clear = resolveBoolPair({
+    positive: args.clear,
+    negative: args.noClear,
+    flag: 'clear',
+  },);
+  /** Tri-state process-group toggle. */
+  const processGroup = resolveBoolPair({
+    positive: args.processGroup,
+    negative: args.noProcessGroup,
+    flag: 'process-group',
+  },);
+  /** Validated kill signal (or `undefined` when --signal was not passed). */
+  const killSignal = args.signal === undefined
+    ? undefined
+    : parseKillSignal(args.signal,);
 
   return {
     paths: args.watch,
@@ -288,8 +365,17 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     ...(commandArgs.length > 0 ? { args: commandArgs, } : {}),
     ...(args.include.length > 0 ? { include: args.include, } : {}),
     ...(args.exclude.length > 0 ? { exclude: args.exclude, } : {}),
+    ...(includeRegex.length > 0 ? { includeRegex, } : {}),
+    ...(excludeRegex.length > 0 ? { excludeRegex, } : {}),
     ...(extensions.length > 0 ? { extensions, } : {}),
+    ...(types.length > 0 ? { types, } : {}),
     ...(events === undefined ? {} : { events, }),
+    ...(hidden === undefined ? {} : { hidden, }),
+    ...(followSymlinks === undefined ? {} : { followSymlinks, }),
+    ...(gitignore === undefined ? {} : { gitignore, }),
+    ...(args.ignoreFile.length > 0 ? { ignoreFiles: args.ignoreFile, } : {}),
+    ...(args.depth === undefined ? {} : { depth: args.depth, }),
+    ...(args.poll === undefined ? {} : { poll: args.poll, }),
     ...(args.noContentChanged ? { contentChanged: false, } : {}),
     ...(args.maxHashSize === undefined ? {} : { maxHashSize: args.maxHashSize, }),
     ...(args.debounce === undefined ? {} : { debounce: args.debounce, }),
@@ -297,6 +383,9 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
       ? {}
       : { stopTimeout: args.stopTimeout, }),
     ...(args.noInitial ? { initial: false, } : {}),
+    ...(clear === undefined ? {} : { clear, }),
+    ...(killSignal === undefined ? {} : { killSignal, }),
+    ...(processGroup === undefined ? {} : { processGroup, }),
   };
 }
 

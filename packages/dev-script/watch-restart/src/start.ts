@@ -54,6 +54,10 @@ export type StartWatchRestartOptions = {
   readonly include?: readonly string[];
   /** Exclude glob patterns; an exclude match short-circuits to skip. */
   readonly exclude?: readonly string[];
+  /** Include regex patterns matched against {@link WatchEvent.relativePath} (any-match OR). */
+  readonly includeRegex?: readonly RegExp[];
+  /** Exclude regex patterns matched against {@link WatchEvent.relativePath} (any-match short-circuits skip). */
+  readonly excludeRegex?: readonly RegExp[];
   /** Extensions admitted (case-insensitive, leading dot optional). */
   readonly extensions?: readonly string[];
   /**
@@ -64,6 +68,28 @@ export type StartWatchRestartOptions = {
   readonly types?: readonly WatchEntityType[];
   /** Event kinds admitted; `undefined` admits all kinds reaching the filter. */
   readonly events?: readonly WatchEventKind[];
+  /**
+   * Include hidden files and directories (segments starting with `.`).
+   * Defaults to `false`; an explicit `true` lets dotfiles through.
+   */
+  readonly hidden?: boolean;
+  /**
+   * Follow symbolic links during traversal. Defaults to `false` (chokidar's
+   * safer default); opt-in for projects whose watch roots include symlinked
+   * vendor directories.
+   */
+  readonly followSymlinks?: boolean;
+  /**
+   * Respect `.gitignore` files in the watched tree. Defaults to `true`;
+   * `false` lets ignored paths through (e.g. when watching `dist/` is intentional).
+   */
+  readonly gitignore?: boolean;
+  /** Extra gitignore-format files whose patterns AND with `.gitignore` (when enabled). */
+  readonly ignoreFiles?: readonly string[];
+  /** Maximum directory-descent depth from each watch root; `undefined` is unlimited. */
+  readonly depth?: number;
+  /** Polling interval (ms); `undefined` uses native filesystem events. */
+  readonly poll?: number;
   /** Suppress byte-identical writes when `true` (default); `false` disables. */
   readonly contentChanged?: boolean;
   /** Cap on file size hashed by {@link contentHashFilter}; default 16 MiB. */
@@ -74,6 +100,20 @@ export type StartWatchRestartOptions = {
   readonly stopTimeout?: number;
   /** Run the child at start when `true` (default); `false` defers to first event. */
   readonly initial?: boolean;
+  /** Clear the terminal (`\\x1b[2J\\x1b[H`) before each child re-spawn; default `false`. */
+  readonly clear?: boolean;
+  /**
+   * Signal sent to the child before the SIGKILL fallback; default `'SIGTERM'`.
+   * Named `killSignal` so it never collides with the orchestrator's internal
+   * `AbortSignal` shutdown plumbing.
+   */
+  readonly killSignal?: NodeJS.Signals;
+  /**
+   * Spawn the child as a process-group leader (`detached: true`) and signal
+   * the whole group (`process.kill(-pid, sig)`). Default `true`; turning off
+   * limits signals to the direct child pid only.
+   */
+  readonly processGroup?: boolean;
   /** Optional user predicate AND'd onto the internal chain (runs last). */
   readonly filter?: WatchFilter;
   /** Parent logger; the orchestrator composes a `startWatchRestart` tag on top. */

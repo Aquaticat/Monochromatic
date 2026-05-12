@@ -248,5 +248,225 @@ await describe({
         },),
       ],
     },),
+    describe({
+      name: 'Q6 flag round trip',
+      children: [
+        it({
+          name: '--include-regex and --exclude-regex compile into RegExp lists',
+          fn: async function regexRoundTrip() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--include-regex',
+              String.raw`\.story\.ts$`,
+              '--exclude-regex',
+              String.raw`\.test\.ts$`,
+              '--',
+              'foo',
+            ],);
+            const options = argsToOptions(args,);
+
+            expect(options.includeRegex?.length,).toBe(1,);
+            expect(options.includeRegex?.[0]?.test('a.story.ts',),).toBe(true,);
+            expect(options.excludeRegex?.length,).toBe(1,);
+            expect(options.excludeRegex?.[0]?.test('a.test.ts',),).toBe(true,);
+          },
+        },),
+        it({
+          name: '--type accepts comma list and repeated flag, mapped to entity types',
+          fn: async function typeRoundTrip() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--type',
+              'file,dir',
+              '--',
+              'foo',
+            ],);
+            const options = argsToOptions(args,);
+
+            expect(options.types,).toEqual(['file', 'dir',],);
+          },
+        },),
+        it({
+          name: '--ignore-file collects into ignoreFiles array',
+          fn: async function ignoreFileRoundTrip() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--ignore-file',
+              '.watchignore',
+              '--ignore-file',
+              '.devignore',
+              '--',
+              'foo',
+            ],);
+            const options = argsToOptions(args,);
+
+            expect(options.ignoreFiles,).toEqual(['.watchignore', '.devignore',],);
+          },
+        },),
+        it({
+          name: '--depth and --poll map to integer options',
+          fn: async function depthPollRoundTrip() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--depth',
+              '3',
+              '--poll',
+              '500',
+              '--',
+              'foo',
+            ],);
+            const options = argsToOptions(args,);
+
+            expect(options.depth,).toBe(3,);
+            expect(options.poll,).toBe(500,);
+          },
+        },),
+        it({
+          name: 'positive pair flags map to true',
+          fn: async function pairFlagsPositive() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--hidden',
+              '--follow-symlinks',
+              '--clear',
+              '--process-group',
+              '--',
+              'foo',
+            ],);
+            const options = argsToOptions(args,);
+
+            expect(options.hidden,).toBe(true,);
+            expect(options.followSymlinks,).toBe(true,);
+            expect(options.clear,).toBe(true,);
+            expect(options.processGroup,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'negative pair flags map to false',
+          fn: async function pairFlagsNegative() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--no-hidden',
+              '--no-follow-symlinks',
+              '--no-gitignore',
+              '--no-clear',
+              '--no-process-group',
+              '--',
+              'foo',
+            ],);
+            const options = argsToOptions(args,);
+
+            expect(options.hidden,).toBe(false,);
+            expect(options.followSymlinks,).toBe(false,);
+            expect(options.gitignore,).toBe(false,);
+            expect(options.clear,).toBe(false,);
+            expect(options.processGroup,).toBe(false,);
+          },
+        },),
+        it({
+          name: 'unset pair flags leave the option undefined',
+          fn: async function pairFlagsUnset() {
+            const args = runParser(['-w', 'src', '--', 'foo',],);
+            const options = argsToOptions(args,);
+
+            expect(options.hidden,).toBeUndefined();
+            expect(options.followSymlinks,).toBeUndefined();
+            expect(options.gitignore,).toBeUndefined();
+            expect(options.clear,).toBeUndefined();
+            expect(options.processGroup,).toBeUndefined();
+          },
+        },),
+        it({
+          name: '--signal maps to killSignal',
+          fn: async function signalRoundTrip() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--signal',
+              'SIGHUP',
+              '--',
+              'foo',
+            ],);
+            const options = argsToOptions(args,);
+
+            expect(options.killSignal,).toBe('SIGHUP',);
+          },
+        },),
+        it({
+          name: 'passing both --hidden and --no-hidden throws',
+          fn: async function pairBothThrows() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--hidden',
+              '--no-hidden',
+              '--',
+              'foo',
+            ],);
+
+            expect(function callWithConflict(): void {
+              argsToOptions(args,);
+            },).toThrow(/Cannot pass both --hidden and --no-hidden/,);
+          },
+        },),
+        it({
+          name: 'invalid --type token throws',
+          fn: async function invalidType() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--type',
+              'symlink',
+              '--',
+              'foo',
+            ],);
+
+            expect(function callWithBogusType(): void {
+              argsToOptions(args,);
+            },).toThrow(/Unknown --type token "symlink"/,);
+          },
+        },),
+        it({
+          name: 'invalid --signal name throws',
+          fn: async function invalidSignal() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--signal',
+              'SIGNUKE',
+              '--',
+              'foo',
+            ],);
+
+            expect(function callWithBogusSignal(): void {
+              argsToOptions(args,);
+            },).toThrow(/Unknown --signal/,);
+          },
+        },),
+        it({
+          name: 'invalid --include-regex pattern throws',
+          fn: async function invalidRegex() {
+            const args = runParser([
+              '-w',
+              'src',
+              '--include-regex',
+              '(',
+              '--',
+              'foo',
+            ],);
+
+            expect(function callWithBogusRegex(): void {
+              argsToOptions(args,);
+            },).toThrow();
+          },
+        },),
+      ],
+    },),
   ],
 },);
