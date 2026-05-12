@@ -11,6 +11,7 @@ import type {
   ClientRequest,
   Diagnostic,
   FsChangeType,
+  RequestResponseMap,
   ServerMessage,
 } from '../../../protocol.ts';
 import {
@@ -155,13 +156,25 @@ export class EditorWsClient {
   /**
    * Sends a typed request and waits for the correlated response.
    *
+   * Return type narrows by request discriminant via {@link RequestResponseMap},
+   * so callers receive the matching success-side ServerMessage variant directly
+   * without manual narrowing. Error responses reject the promise rather than
+   * resolving with an error variant.
+   *
    * @param message - client message (without `id`; it is auto-generated)
    *
-   * @returns server response message
+   * @returns success-side ServerMessage variant matching request type
    *
    * @throws when the server responds with an error or the connection closes
+   *
+   * @example
+   * ```ts
+   * const { content, kind } = await ws.request({ type: 'open', path });
+   * ```
    */
-  async request(message: ClientRequest,): Promise<ServerMessage> {
+  async request<TReq extends ClientRequest,>(
+    message: TReq,
+  ): Promise<RequestResponseMap[TReq['type']]> {
     await this.ready;
 
     const id = String(this.#nextId++,);
@@ -200,7 +213,8 @@ export class EditorWsClient {
     );
 
     this.#ws.send(JSON.stringify(fullMessage,),);
-    return responsePromise;
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- wire correlation by id guarantees resolved value is the success-side variant matching TReq['type']; error variants reject through #handleMessage
+    return responsePromise as Promise<RequestResponseMap[TReq['type']]>;
   }
 
   /**

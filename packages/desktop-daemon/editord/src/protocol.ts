@@ -5,6 +5,8 @@
  * common data types used by both sides of the connection.
  */
 
+import type { ServerMessage, } from './protocol-server.ts';
+
 //region Directory types
 
 /** Single entry in a directory listing. */
@@ -150,6 +152,50 @@ export type FileKind = 'text' | 'image' | 'audio' | 'video' | 'binary';
 export type FsChangeType = 'created' | 'modified' | 'deleted';
 
 //endregion Filesystem change types
+
+//region Request/response mapping
+
+/**
+ * Maps each ClientRequest discriminant to matching success-side ServerMessage variant.
+ *
+ * Server `error` responses reject through pending-request path in EditorWsClient
+ * `#handleMessage`, so map covers only success responses. Push notifications
+ * (`connected`, `fileChanged`, `diagnostics`) carry no `id` and lie outside
+ * the request/response cycle.
+ *
+ * Hand-maintained: when a new request/response pair is added to the protocol,
+ * update discriminated unions in protocol-client.ts / protocol-server.ts AND
+ * add corresponding entry here. TypeScript catches missing entries on first
+ * use through `EditorWsClient.request()`.
+ *
+ * @example
+ * ```ts
+ * type OpenResponse = RequestResponseMap['open']; // fileContent variant
+ * ```
+ */
+export type RequestResponseMap = {
+  open: Extract<ServerMessage, { type: 'fileContent'; }>;
+  save: Extract<ServerMessage, { type: 'saved'; }>;
+  listDir: Extract<ServerMessage, { type: 'dirListing'; }>;
+  search: Extract<ServerMessage, { type: 'searchResults'; }>;
+  hover: Extract<ServerMessage, { type: 'hoverResult'; }>;
+  completion: Extract<ServerMessage, { type: 'completionResult'; }>;
+  format: Extract<ServerMessage, { type: 'formatResult'; }>;
+  gotoDefinition: Extract<ServerMessage, { type: 'definitionResult'; }>;
+  findReferences: Extract<ServerMessage, { type: 'referencesResult'; }>;
+  inlayHint: Extract<ServerMessage, { type: 'inlayHintResult'; }>;
+  selectionRange: Extract<ServerMessage, { type: 'selectionRangeResult'; }>;
+  prepareRename: Extract<ServerMessage, { type: 'prepareRenameResult'; }>;
+  rename: Extract<ServerMessage, { type: 'renameResult'; }>;
+  deleteEntry: Extract<ServerMessage, { type: 'fsActionDone'; }>;
+  copyEntry: Extract<ServerMessage, { type: 'fsActionDone'; }>;
+  moveEntry: Extract<ServerMessage, { type: 'fsActionDone'; }>;
+  newEntry: Extract<ServerMessage, { type: 'fsActionDone'; }>;
+  openInTerminal: Extract<ServerMessage, { type: 'fsActionDone'; }>;
+  openInDefaultApp: Extract<ServerMessage, { type: 'fsActionDone'; }>;
+};
+
+//endregion Request/response mapping
 
 //region Re-exports: message types split to stay under max-lines
 
