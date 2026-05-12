@@ -12,6 +12,7 @@ import {
   RUN_WITH_CONTEXT,
   type TestDescriptor,
 } from './descriptor.ts';
+import { formatDuration, } from './format-duration.ts';
 import { formatFailure, } from './format-error.ts';
 import type { ItResult, } from './it.ts';
 
@@ -272,7 +273,7 @@ async function runDescribe(
        */
       const elapsedMs = performance.now() - startTime;
       l.error(await formatFailure({
-        summary: `FAIL${runLabel}: timeout (${elapsedMs.toFixed(0,)}ms)`,
+        summary: `FAIL${runLabel}: timeout (${formatDuration(elapsedMs,)})`,
         value: timeoutError,
       },),);
       throw timeoutError;
@@ -304,9 +305,7 @@ async function runDescribe(
     if (passedNames.length > 0) {
       if (errors.length === 0) {
         logSuccess(
-          `PASS ${passedNames.join(', ',)} ${labelPrefix}(${
-            durationMs.toFixed(0,)
-          }ms)`,
+          `PASS ${passedNames.join(', ',)} ${labelPrefix}(${formatDuration(durationMs,)})`,
         );
       }
       else
@@ -315,7 +314,7 @@ async function runDescribe(
 
     if (errors.length === 0) {
       if (passedNames.length === 0)
-        logSuccess(`${labelPrefix}(${durationMs.toFixed(0,)}ms)`,);
+        logSuccess(`${labelPrefix}(${formatDuration(durationMs,)})`,);
       return;
     }
 
@@ -327,7 +326,7 @@ async function runDescribe(
       );
 
     l.error(await formatFailure({
-      summary: `FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,
+      summary: `FAIL${runLabel} (${formatDuration(durationMs,)})`,
       value: cause,
     },),);
 

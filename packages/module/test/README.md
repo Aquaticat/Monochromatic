@@ -74,10 +74,10 @@ bounded, and unbounded modes all work without wrapping children in thunks.
   `repeats: 2` runs the suite 3 times total
 
 On success, the suite emits one `info` line listing every fulfilled child's name plus the
-suite's wall-clock duration: `PASS childA, childB, ... (Nms)`. The full `[outer] [inner]`
+suite's wall-clock duration: `PASS childA, childB, ... (<duration>)`. The full `[outer] [inner]`
 tag chain is in the line's prefix, so the parent-children mapping is visible at default
 verbosity. Per-test `PASS` lines are at `debug` (hidden by default; surface with
-`DEBUG=true`). On failure the suite emits a `FAIL (Nms)` line at `error`. Empty-name
+`DEBUG=true`). On failure the suite emits a `FAIL (<duration>)` line at `error`. Empty-name
 suites downgrade the success line to `debug`. See the [Output format](#output-format)
 section for the full contract.
 
@@ -206,17 +206,23 @@ test name. Empty-name suites contribute no tag segment.
 
 ### What each level emits
 
-- **`info`** -- per-suite `[outer] [inner] PASS childA, childB, ... (Nms)` listing
+- **`info`** -- per-suite `[outer] [inner] PASS childA, childB, ... (<duration>)` listing
   every fulfilled child (tests and nested describes alike) plus the suite's
   wall-clock duration. Mixed-result suites still emit a names list (without
   duration) so passing siblings stay visible alongside the error-level FAIL
   rollup. `SKIP` messages from `it` are also `info`. Visible by default.
-- **`error`** -- `[chain...] FAIL (Nms)` for each failing test, plus a rollup
-  `[chain...] FAIL (Nms)` for each suite that has failing children. Always visible.
-- **`debug`** -- per-test `[chain...] PASS (Nms)` for each passing test (full
+- **`error`** -- `[chain...] FAIL (<duration>)` for each failing test, plus a rollup
+  `[chain...] FAIL (<duration>)` for each suite that has failing children. Always visible.
+- **`debug`** -- per-test `[chain...] PASS (<duration>)` for each passing test (full
   hierarchy in the tag chain), per-suite `[chain...] start (concurrency: N)`
   traces, and the rollup for empty-name (invisible) suites. Hidden by default;
   enable with `DEBUG=true` or `--verbose`.
+
+The duration renders adaptively: below 10ms shows one decimal place (`0.3ms`,
+`9.9ms`), 10ms to 999ms shows whole milliseconds (`51ms`, `999ms`), and 1000ms
+or more shows seconds with one decimal (`1.2s`, `15.3s`). The harness measures
+with `performance.now()`, so the sub-ms detail reflects the underlying clock,
+not a synthetic estimate.
 
 ### Worked example
 
@@ -240,7 +246,7 @@ await describe({
 a successful run prints (default verbosity):
 
 ```
-[info] [...] [math] PASS adds, subtracts (2ms)
+[info] [...] [math] PASS adds, subtracts (1.4ms)
 ```
 
 The empty-name root suite's enumeration goes to `debug`, so it stays silent. With
@@ -248,19 +254,19 @@ The empty-name root suite's enumeration goes to `debug`, so it stays silent. Wit
 
 ```
 [debug] [...] [math] start (concurrency: 16)
-[debug] [...] [math] [adds] PASS (1ms)
-[debug] [...] [math] [subtracts] PASS (1ms)
-[info]  [...] [math] PASS adds, subtracts (2ms)
-[debug] [...] PASS math (2ms)
+[debug] [...] [math] [adds] PASS (0.5ms)
+[debug] [...] [math] [subtracts] PASS (0.6ms)
+[info]  [...] [math] PASS adds, subtracts (1.4ms)
+[debug] [...] PASS math (1.5ms)
 ```
 
 A failure in `subtracts` emits (default verbosity):
 
 ```
-[error] [...] [math] [subtracts] FAIL (1ms) Error: ... at fn (math.unit.test.ts:9:19) at runFnOnce (...)
+[error] [...] [math] [subtracts] FAIL (0.7ms) Error: ... at fn (math.unit.test.ts:9:19) at runFnOnce (...)
 Caused by: Error: ... at otherFn (...) at ...
 [info]  [...] [math] PASS adds
-[error] [...] [math] FAIL (2ms) Error: subtracts at runIt (...) at ...
+[error] [...] [math] FAIL (1.4ms) Error: subtracts at runIt (...) at ...
 Caused by: Error: ... at fn (math.unit.test.ts:9:19) at ...
 ```
 
