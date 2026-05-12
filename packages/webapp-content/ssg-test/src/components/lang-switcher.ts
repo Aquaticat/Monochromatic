@@ -1,17 +1,17 @@
 /**
  * Language switcher dropdown.
  *
- * Renders a globe-icon trigger button that opens a popover menu listing
- * each supported locale by its autonym. Items link to the same post in
- * the target locale when post context is available, falling back to the
- * locale landing otherwise.
+ * Renders a globe-icon trigger that opens a menu listing each supported
+ * locale by its autonym. Items link to the same post in the target
+ * locale when post context is available, falling back to the locale
+ * landing otherwise.
  *
- * Uses the native Popover API (`popovertarget` on the button and
- * `popover="auto"` on the `<ul>`) with no client-side JavaScript. The
- * project ships a `@supports not selector(:popover-open)` fallback in
- * `packages/stylesheet/monochromatic/src/fallback.css` that hides
- * `[popovertarget]` on browsers without popover support, so users on
- * legacy browsers fall through to the existing root index picker.
+ * Uses native `<details>` / `<summary>` so the open/close click is
+ * handled by the browser; no client-side JavaScript ships. Click-
+ * outside-to-close is not provided (an Esc handler is also not added);
+ * the user toggles by clicking the summary again. This is an
+ * intentional trade-off for shipping without JS; see
+ * `TECH-DEBT.lang-switcher.md`.
  */
 import {
   cssCalc,
@@ -40,9 +40,6 @@ import {
 /** Globe glyph from Material Symbols Outlined; codepoint U+E894. */
 const LANG_ICON = icon('language',);
 
-/** DOM id linking the trigger button to the popover menu. */
-const POPOVER_ID = 'lang-switcher-menu';
-
 /** Minimum menu width in rem; comfortably fits the longest autonym. */
 const MENU_MIN_INLINE_REM = 8;
 
@@ -51,7 +48,7 @@ const MENU_MIN_INLINE_REM = 8;
 //region CSS
 
 /**
- * Trigger button, popover menu, and option styles.
+ * Trigger summary, menu list, and option styles.
  *
  * @returns CSS string for the `<lang-switcher>` element
  *
@@ -70,17 +67,20 @@ export function css(): string {
       },
     },),
     $({
-      rule: 'lang-switcher .trigger',
+      rule: 'lang-switcher details',
+      decls: { display: 'inline-flex', },
+    },),
+    $({
+      rule: 'lang-switcher summary',
       decls: {
         display: 'inline-flex',
         'align-items': 'center',
         'justify-content': 'center',
         'min-inline-size': cssRem(TOUCH_TARGET,),
         'min-block-size': cssRem(TOUCH_TARGET,),
-        'background-color': 'transparent',
-        'border-style': 'none',
         cursor: 'pointer',
         color: 'inherit',
+        'list-style-type': 'none',
       },
       children: [
         $({
@@ -93,6 +93,10 @@ export function css(): string {
           },
         },),
       ],
+    },),
+    $({
+      rule: 'lang-switcher summary::-webkit-details-marker',
+      decls: { display: 'none', },
     },),
     $({
       rule: 'lang-switcher .menu',
@@ -113,12 +117,6 @@ export function css(): string {
         'list-style-type': 'none',
         'min-inline-size': cssRem(MENU_MIN_INLINE_REM,),
       },
-      children: [
-        $({
-          rule: '&:not(:popover-open)',
-          decls: { display: 'none', },
-        },),
-      ],
     },),
     $({
       rule: 'lang-switcher .menu a',
@@ -234,51 +232,47 @@ export function html(
     attrs: { 'data-is': '', },
     children: [
       h({
-        tag: 'button',
-        class: 'trigger',
-        attrs: {
-          type: 'button',
-          popovertarget: POPOVER_ID,
-          'aria-label': t.langSwitcher(),
-        },
+        tag: 'details',
         children: [
           h({
-            tag: 'span',
-            class: 'material-symbols-outlined',
-            text: LANG_ICON,
-          },),
-        ],
-      },),
-      h({
-        tag: 'ul',
-        class: 'menu',
-        attrs: {
-          id: POPOVER_ID,
-          popover: 'auto',
-        },
-        children: locales.map(function renderItem(targetLang,) {
-          const href = resolveHref({
-            targetLang,
-            currentName,
-            availableInLangs,
-          },);
-          const isCurrent = targetLang === currentLang;
-          return h({
-            tag: 'li',
+            tag: 'summary',
+            attrs: { 'aria-label': t.langSwitcher(), },
             children: [
               h({
-                tag: 'a',
-                attrs: {
-                  href,
-                  hreflang: targetLang,
-                  lang: targetLang,
-                  ...(isCurrent ? { 'aria-current': 'page', } : {}),
-                },
-                text: LANG_NAMES[targetLang],
+                tag: 'span',
+                class: 'material-symbols-outlined',
+                text: LANG_ICON,
               },),
             ],
-          },);
-        },),
+          },),
+          h({
+            tag: 'ul',
+            class: 'menu',
+            children: locales.map(function renderItem(targetLang,) {
+              const href = resolveHref({
+                targetLang,
+                currentName,
+                availableInLangs,
+              },);
+              const isCurrent = targetLang === currentLang;
+              return h({
+                tag: 'li',
+                children: [
+                  h({
+                    tag: 'a',
+                    attrs: {
+                      href,
+                      hreflang: targetLang,
+                      lang: targetLang,
+                      ...(isCurrent ? { 'aria-current': 'page', } : {}),
+                    },
+                    text: LANG_NAMES[targetLang],
+                  },),
+                ],
+              },);
+            },),
+          },),
+        ],
       },),
     ],
   },);

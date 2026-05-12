@@ -1,6 +1,6 @@
 # Tech debt: ssg-test language switcher dropdown
 
-Created 2026-05-12. The language switcher shipped in commit `68c3930d` got the feature out the door under the same same-day deadline as the Catalan translations (see `TECH-DEBT.catalan-translations.md`). The visible shape is right and the build is clean, but the code, UI, and UX all cut corners that would not survive a real review.
+Created 2026-05-12. The language switcher shipped in commit `68c3930d` (rewritten same day to `<details>` / `<summary>` after the original Popover API attempt did not register clicks reliably) got the feature out the door under the same same-day deadline as the Catalan translations (see `TECH-DEBT.catalan-translations.md`). The visible shape is right and the build is clean, but the code, UI, and UX all cut corners that would not survive a real review.
 
 ## Code dirt
 
@@ -31,7 +31,8 @@ Created 2026-05-12. The language switcher shipped in commit `68c3930d` got the f
 - **No keyboard arrows between items**: tabbing works but is non-standard for menus. ARIA Authoring Practices expects ArrowUp/ArrowDown.
 - **No open/close transition**: the menu snaps in and out. Acceptable for a utility menu but jarring next to the rest of the site.
 - **No close button** — relies on click-outside (native popover light-dismiss) and Esc. Discoverable to power users; obscure to others.
-- **Legacy-browser fallback is invisible**: `monochromatic/fallback.css` hides `[popovertarget]` entirely under `@supports not selector(:popover-open)`. Users on a browser without popover support lose the language switcher with no fallback link. The existing root index picker at `/` covers them only if they think to navigate there.
+- **No click-outside dismiss**: `<details>` does not close when the user clicks elsewhere on the page. The user has to click the summary again to collapse. The original Popover API attempt would have given this for free; the rewrite traded it away for click reliability.
+- **No Esc dismiss**: same shape as click-outside; pressing Esc with the menu open does nothing. Would need a small bit of JS or the Invokers proposal.
 - **Screen-reader trigger label is locale-agnostic**: `aria-label="Switch language"` does not announce the current locale. A reader has to walk the menu items and find `aria-current="page"` to discover the active locale. Better: `aria-label="Switch language, currently English"` composed at render time.
 - **Check glyph in current-locale anchor reads aloud**: `\2713` is rendered as text content via `::before`, so screen readers may announce "check mark Català". Using `aria-current="page"` as the sole semantic signal and the glyph purely decorative (via `::marker` or `aria-hidden` sibling, both with caveats) would be cleaner.
 
