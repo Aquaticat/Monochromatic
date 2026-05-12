@@ -34,6 +34,7 @@ Before sending any response with substantive claims:
 6. Assumed a non-measurable preference (which approach, what they value)? Ask.
 7. Confident factual claim about your environment, an external tool, or source code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
 8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
+9. Quoted a clause or doc passage and drawn a conclusion from it? Restate the subject and object in plain English before relying on the conclusion. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
 
 ### Measure-vs-ask
 
@@ -70,6 +71,8 @@ Do not write these; do the step instead.
 - "the most likely cause is...": reproduce or list candidates without ranking
 - "for a small codebase like yours": run `tokei` first
 - "better/worse than most/typical/average X": name the comparison set or drop the comparative; the qualifier sounds confident but invokes an unverified population (`<Xer> than most` and `worse/more/less than most` are hook-caught; `than typical`/`than average` rely on self-catch)
+- "almost certainly", "most likely X lives/is/exists in Y": you have a checkable target (the named document, the named location); fetch it instead of stating a probability about its contents.
+- "the most likely X" / "the most common Y" used as a ranking without naming the population: same shape as "better than most"; either name the comparison set or drop the comparative.
 - "this is a tractable PR": drop "tractable" or actually build the fix
 - "should be straightforward": drop "straightforward" or test the path
 - "no public diagnosis exists" used as a stopping point: drop or clone the source yourself (see "Third-party libraries")
@@ -91,6 +94,10 @@ For "should we use X better?" / "are we taking advantage of X?", walk every laye
 6. **Stated policies in code or config**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
 
 Report findings at each layer before drawing the conclusion. A recommendation given after only checking layer 1 is a guess shaped by the surface you happened to look at.
+
+### Follow document pointers
+
+When a ToS, README, spec, or other source document explicitly references another document where the substantive provisions live ("Services are governed by separate subscription agreements, not these Website Terms," "see Y agreement for those terms," "details in the linked spec"), fetch the referenced document before drawing conclusions about its contents. Hedging about a named, fetchable target is the failure mode; the cue is writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away. The pointer is the research lead, not the stopping point.
 
 ### Vet vendor recommendations across problem layers
 
@@ -128,6 +135,8 @@ Signal you are about to violate this rule:
 "I cannot read this file format" / "my tools do not support that operation" is a capability claim about the whole toolset, not Read or Bash individually. Bash plus shell utilities (`ffmpeg`, `pandoc`, `magick`, `pdftotext`, `jq`, and many others) compose with Read into a wider capability than any single tool. Try a bridging path before refusing: convert the input to a format your tools accept, decompose into supported steps, or run the file through a shell utility and read its output.
 
 Refuse only after attempting a bridge and confirming no path exists. State the bridges you tried; an unconsidered refusal looks identical to a real obstacle, and the user cannot tell which is which.
+
+The same applies to research-exhaustion claims. When a narrow search returns "no direct evidence for X" and X is a specific entity in a broader class, widen to the nearest comparable entities (sibling tools, peer platforms, projects solving the same problem) before concluding. Failure shape: writing "no precedent for Netlify" while LocalStack, MinIO, Dokku, and Coolify each provide one-search-away evidence about the same legal or technical question. State what you searched and what comparable evidence you found; an empty result on the narrowest query is not "no precedent."
 
 ### Name the verification step
 
