@@ -15,7 +15,7 @@ All typed-RPC work landed; lint baseline cleared as a follow-up.
 
 1.  ✓ Manual narrowing gone at every awaited-`request()` call site; responses destructured inline.
 2.  ✓ `mise run //packages/desktop-daemon/editord:lint:types` exits 0.
-3.  ✓ `mise run //packages/desktop-daemon/editord:lint` exits 0 (37 `no-function-root-let` warnings remain in unrelated files; warnings do not fail the gate).
+3.  ◐ `mise run //packages/desktop-daemon/editord:lint` reports 0 errors (down from baseline 5) but still exits 2 because 36 `no-function-root-let` warnings remain. Oxlint exits non-zero on warnings; clearing the exit code requires fixing the warnings too. See "Remaining lint debt" below.
 4.  ✓ `mise run //packages/desktop-daemon/editord:build` exits 0.
 5.  ⧗ Manual smoke in browser: not run here. Start `mise run //packages/desktop-daemon/editord:start:server`, open the printed URL, exercise the request matrix (`open`, `save`, `listDir`, `search`, `hover`, `completion`, `format`, `gotoDefinition`, `findReferences`, `inlayHint`, `selectionRange`, `prepareRename`/`rename`, plus the six fs actions).
 6.  ✓ No `package.json` entry changes.
@@ -23,7 +23,7 @@ All typed-RPC work landed; lint baseline cleared as a follow-up.
 
 ### Remaining lint debt (out of scope)
 
-`:lint` shows 37 `no-function-root-let` warnings in files outside this work: `apply-workspace-edit.ts`, `find-project-root.ts`, `lsp-completions.ts` (the `isInsideStringLiteral` parser cursor), `stream-rg.ts`, `copy-line.ts`, `text-resolve.ts`, `json-rpc.ts`, `highlight/utils.ts`, `client.ts` (the `let data` in `#handleMessage`), `search/render.ts`, `file-tree/entries.ts`, `debounce.ts`, `position-from-point.ts`, `text-edits.ts`. Each is a separate small refactor (ref-object, helper-shape, or oxlint-disable with state-machine justification per AGENTS.md). Not blocking the gate; left for a dedicated lint-cleanup pass.
+36 `no-function-root-let` warnings remain across files outside the typed-RPC scope: `apply-workspace-edit.ts`, `find-project-root.ts`, `lsp-completions.ts` (the `isInsideStringLiteral` parser cursor), `stream-rg.ts`, `copy-line.ts`, `text-resolve.ts`, `json-rpc.ts`, `highlight/utils.ts`, `client.ts` (the `let data` in `#handleMessage`), `search/render.ts`, `file-tree/entries.ts`, `debounce.ts`, `position-from-point.ts`, `text-edits.ts`, `diagnostics/range.ts`. Each is a separate small refactor (ref-object, helper-shape, or oxlint-disable with state-machine justification per AGENTS.md). Required to drive `:lint` to exit 0; left for a dedicated lint-cleanup pass.
 
 ## What you are picking up
 

@@ -104,8 +104,6 @@ export function registerRoutes({
                 && (error as NodeJS.ErrnoException).code === 'ENOENT';
               if (!isNotFound)
                 throw error;
-
-              return;
             }
           },
         },
