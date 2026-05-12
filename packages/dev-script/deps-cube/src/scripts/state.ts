@@ -1,0 +1,395 @@
+/**
+ * URL-hash bookmarking for the deck.gl scene.
+ *
+ * Serialises every piece of UI state (camera, dim mapping, filters,
+ * display toggles, search) into a URL hash so the user can copy and
+ * share an exact view. Pure functions: no DOM access, no globals
+ * beyond `encodeURIComponent` / `decodeURIComponent` / `JSON`.
+ *
+ * Hash format: `#state=<urlencoded-json>`. URL-encoding is preferred
+ * over base64 because the JSON payload is short and ASCII-safe in the
+ * common case, and `encodeURIComponent` handles unicode in the search
+ * field without the `btoa` "byte string" gotcha.
+ *
+ * @example
+ * ```ts
+ * const initial = defaultState({ probes });
+ * const restored = readStateFromHash({ hash: location.hash, fallback: initial });
+ * // ... user changes filters ...
+ * location.hash = writeStateToHash({ state: nextState });
+ * ```
+ */
+
+import type { PackageProbe, } from '../probe.ts';
+import {
+  type ChannelKey,
+  type DataDimKey,
+  type DimMapping,
+  extractDim,
+  type RangeState,
+  type ToggleKey,
+  type ToggleState,
+} from './filter.ts';
+
+//region Types
+
+/**
+ * OrbitView camera state per deck.gl conventions.
+ *
+ * - `rotationX` — pitch in degrees (0 = view along the +y axis).
+ * - `rotationOrbit` — yaw in degrees around the vertical axis.
+ * - `zoom` — log-like zoom factor; 0 ≈ default.
+ * - `target` — world-space coordinates of the orbit pivot.
+ */
+export type ViewState = {
+  rotationX: number;
+  rotationOrbit: number;
+  zoom: number;
+  target: readonly [number, number, number,];
+};
+
+/**
+ * Display-only toggles (don't filter data, only chrome).
+ */
+export type DisplayToggleState = {
+  showThresholdPlanes: boolean;
+  showWireframe: boolean;
+  showAxisLabels: boolean;
+  nameLabels: 'none' | 'topN' | 'all';
+  showUnknownCluster: boolean;
+};
+
+/**
+ * Full UI state — every value that contributes to a unique view.
+ */
+export type AppState = {
+  viewState: ViewState;
+  dimMapping: DimMapping;
+  toggles: ToggleState;
+  ranges: RangeState;
+  search: string;
+  displayToggles: DisplayToggleState;
+};
+
+//endregion Types
+
+//region Constants
+
+/** Default dim mapping per the plan's recommendation. */
+const DEFAULT_DIM_MAPPING: DimMapping = {
+  x: 'logSourceBytes',
+  y: 'logDaysStale',
+  z: 'logInstallSize',
+  color: 'tsRatio',
+  shape: 'isLeafNumeric',
+  size: 'logDownloads',
+};
+
+/** Default toggle state — every filter "don't care". */
+const DEFAULT_TOGGLES: ToggleState = {
+  isLeaf: 'any',
+  tsMajority: 'any',
+  large: 'any',
+  recent: 'any',
+  permissive: 'any',
+  copyleft: 'any',
+  hasKnownRepo: 'any',
+};
+
+/** Default display toggles — show every chrome element. */
+const DEFAULT_DISPLAY_TOGGLES: DisplayToggleState = {
+  showThresholdPlanes: true,
+  showWireframe: true,
+  showAxisLabels: true,
+  nameLabels: 'none',
+  showUnknownCluster: true,
+};
+
+/** Default OrbitView angle — slight tilt + slight orbit so 3 axes are distinguishable. */
+const DEFAULT_VIEW_STATE: ViewState = {
+  rotationX: 30,
+  rotationOrbit: -45,
+  zoom: 0,
+  target: [0, 0, 0,],
+};
+
+/** Channel keys, fixed order, used to iterate dim mapping. */
+const CHANNEL_KEYS: readonly ChannelKey[] = [
+  'x',
+  'y',
+  'z',
+  'color',
+  'shape',
+  'size',
+];
+
+//endregion Constants
+
+//region Range computation
+
+/**
+ * Computes the `[min, max]` extent across all probes for one data dim,
+ * skipping unknowns (`null`). Falls back to `[0, 0]` when no probe has
+ * a known value (degenerate, but lets the UI render without NaN).
+ *
+ * @param probes - Full probe array.
+ * @param dim - Data dim to scan.
+ *
+ * @returns Inclusive `[min, max]` bounds.
+ */
+function computeExtent(
+  {
+    probes,
+    dim,
+  }: {
+    probes: readonly PackageProbe[];
+    dim: DataDimKey;
+  },
+): readonly [number, number,] {
+  const values = probes
+    .map(function pluck(probe,) {
+      return extractDim({
+        probe,
+        dim,
+      },);
+    },)
+    .filter(function nonNull(value,): value is number {
+      return value !== null;
+    },);
+  if (values.length === 0) return [0, 0,];
+  return [
+    Math.min(...values,),
+    Math.max(...values,),
+  ];
+}
+
+/**
+ * Builds a `RangeState` with every channel set to its data extent.
+ *
+ * @param probes - Full probe array.
+ * @param dimMapping - Current channel → dim mapping.
+ *
+ * @returns Range state spanning the full data extent on every channel.
+ */
+function computeFullRanges(
+  {
+    probes,
+    dimMapping,
+  }: {
+    probes: readonly PackageProbe[];
+    dimMapping: DimMapping;
+  },
+): RangeState {
+  const entries = CHANNEL_KEYS.map(function rangeForChannel(channel,) {
+    return [
+      channel,
+      computeExtent({
+        probes,
+        dim: dimMapping[channel],
+      },),
+    ] as const;
+  },);
+  const record = Object.fromEntries(entries,);
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Object.fromEntries() returns Record<string, V>; the entries above exhaust ChannelKey.
+  return record as RangeState;
+}
+
+//endregion Range computation
+
+//region Defaults
+
+/**
+ * Initial UI state given a freshly-loaded probe array.
+ *
+ * Dim mapping and toggles use the plan's defaults; ranges are the full
+ * data extent so every probe passes the range filter; search is empty;
+ * display toggles all on; camera at default tilt + orbit.
+ *
+ * @param probes - Full probe array.
+ *
+ * @returns Default `AppState` for first render.
+ *
+ * @example
+ * ```ts
+ * const initial = defaultState({ probes });
+ * ```
+ */
+export function defaultState(
+  { probes, }: { probes: readonly PackageProbe[]; },
+): AppState {
+  return {
+    viewState: DEFAULT_VIEW_STATE,
+    dimMapping: DEFAULT_DIM_MAPPING,
+    toggles: DEFAULT_TOGGLES,
+    ranges: computeFullRanges({
+      probes,
+      dimMapping: DEFAULT_DIM_MAPPING,
+    },),
+    search: '',
+    displayToggles: DEFAULT_DISPLAY_TOGGLES,
+  };
+}
+
+//endregion Defaults
+
+//region Encoding
+
+/**
+ * Serialises an `AppState` to a URL-safe string.
+ *
+ * Returns the encoded payload only; callers prepend `state=` to use it
+ * inside a hash. Use {@link writeStateToHash} for the full `#state=…`
+ * convenience.
+ *
+ * @param state - The state to encode.
+ *
+ * @returns URL-safe encoded string.
+ *
+ * @example
+ * ```ts
+ * const encoded = encodeState({ state });
+ * location.hash = `state=${encoded}`;
+ * ```
+ */
+export function encodeState(
+  { state, }: { state: AppState; },
+): string {
+  return encodeURIComponent(JSON.stringify(state,),);
+}
+
+/**
+ * Shallow shape check — every top-level field present and of the right
+ * primitive kind. Doesn't deep-validate `dimMapping` values or range
+ * tuple shapes; if those are wrong the renderer will surface NaN /
+ * undefined and the user can reset via the URL.
+ *
+ * @param value - Parsed JSON value, untrusted.
+ *
+ * @returns The value typed as `AppState`, or `null` when malformed.
+ */
+function validateAppState(value: unknown,): AppState | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const required: readonly (keyof AppState)[] = [
+    'viewState',
+    'dimMapping',
+    'toggles',
+    'ranges',
+    'search',
+    'displayToggles',
+  ];
+  const has = required.every(function present(key,) {
+    return key in value;
+  },);
+  if (!has) return null;
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- shape verified above; deep-validation is intentionally cheap.
+  return value as AppState;
+}
+
+/**
+ * Decodes a URL-safe encoded string back into an `AppState`.
+ *
+ * Returns `null` for any failure (URI malformed, JSON parse error,
+ * missing required fields) so the caller can fall back to the default
+ * state without crashing.
+ *
+ * @param encoded - The URL-safe encoded string (no leading `state=`).
+ *
+ * @returns Restored state, or `null` if the input is malformed.
+ *
+ * @example
+ * ```ts
+ * const restored = decodeState({ encoded: match[1] });
+ * if (restored === null) {
+ *   // fall back to defaults
+ * }
+ * ```
+ */
+export function decodeState(
+  { encoded, }: { encoded: string; },
+): AppState | null {
+  try {
+    const json = decodeURIComponent(encoded,);
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; validateAppState narrows below.
+    const parsed = JSON.parse(json,) as unknown;
+    return validateAppState(parsed,);
+  } catch {
+    return null;
+  }
+}
+
+//endregion Encoding
+
+//region Hash helpers
+
+/**
+ * Extracts the `state=` payload from a hash string (with or without
+ * leading `#`) and decodes it, falling back to `fallback` on any
+ * failure.
+ *
+ * @param hash - The hash string (typically `window.location.hash`).
+ * @param fallback - State to return when the hash has no valid payload.
+ *
+ * @returns Decoded state, or `fallback` if absent/malformed.
+ *
+ * @example
+ * ```ts
+ * const state = readStateFromHash({
+ *   hash: location.hash,
+ *   fallback: defaultState({ probes }),
+ * });
+ * ```
+ */
+export function readStateFromHash(
+  {
+    hash,
+    fallback,
+  }: {
+    hash: string;
+    fallback: AppState;
+  },
+): AppState {
+  const stripped = hash.startsWith('#',) ? hash.slice(1,) : hash;
+  const match = /(?:^|&)state=([^&]+)/.exec(stripped,);
+  if (match === null) return fallback;
+  const encoded = match[1];
+  if (encoded === undefined) return fallback;
+  const decoded = decodeState({
+    encoded,
+  },);
+  return decoded ?? fallback;
+}
+
+/**
+ * Builds a hash string (`#state=…`) for a given state.
+ *
+ * @param state - State to serialise.
+ *
+ * @returns Hash including the leading `#`.
+ *
+ * @example
+ * ```ts
+ * location.hash = writeStateToHash({ state });
+ * ```
+ */
+export function writeStateToHash(
+  { state, }: { state: AppState; },
+): string {
+  return `#state=${encodeState({
+    state,
+  },)}`;
+}
+
+/**
+ * Provided for tests and other call sites that need the keys.
+ */
+export const TOGGLE_KEYS: readonly ToggleKey[] = [
+  'isLeaf',
+  'tsMajority',
+  'large',
+  'recent',
+  'permissive',
+  'copyleft',
+  'hasKnownRepo',
+];
+
+//endregion Hash helpers

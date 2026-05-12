@@ -151,7 +151,7 @@ export async function readCatalog(
     startDir === undefined ? undefined : { cwd: startDir, },
   );
   if (workspaceYamlPath === undefined)
-    throw new Error('Could not locate pnpm-workspace.yaml by walking up from ' + (startDir ?? process.cwd()),);
+    throw new Error(`Could not locate pnpm-workspace.yaml by walking up from ${startDir ?? process.cwd()}`,);
 
   const raw = await readFile(workspaceYamlPath, 'utf8',);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- YAML parse is `unknown`; pnpm-workspace.yaml shape is fixed.
@@ -170,7 +170,7 @@ export async function readCatalog(
 
   const combined = [...defaultEntries, ...namedEntries,];
   if (combined.length === 0)
-    throw new Error('No catalog or catalogs entries found in ' + workspaceYamlPath,);
+    throw new Error(`No catalog or catalogs entries found in ${workspaceYamlPath}`,);
 
   return combined;
 }
