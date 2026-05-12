@@ -6,6 +6,16 @@ The package `packages/dev-script/watch-restart/` is being built per the approved
 
 **Status**: tasks 1 through 8 done. Tasks 9 and 10 remain. The package builds, lints, type-checks, and tests pass at the current checkpoint.
 
+**Last commit**: `1a5216bd feat(dev-script/watch-restart): add CLI entrypoint with optique parser`. Run `git log --oneline -- packages/dev-script/watch-restart` to see the full task-by-task progression.
+
+**Next concrete action (task 9)**:
+
+1. Edit `packages/desktop-daemon/editord/package.json` line 28 (after `"nano-spawn": "catalog:"`): add `"@monochromatic-dev/dev-script-watch-restart": "workspace:*"` to `dependencies`. The current dependencies list is at lines 8-29.
+2. Edit `packages/desktop-daemon/editord/mise.toml` lines 34-44 (the `[tasks."dev:server"]` block): replace the comment block (lines 37-43) and the `run = "watchexec ..."` line with `run = "watch-restart -w src/server -- bun src/server/index.ts"`. Keep `hide = true` and the `description`.
+3. Run `pnpm install` **outside the sandbox** (AGENTS.md "Sandbox breaks `pnpm install`"). This links `watch-restart` into editord's `node_modules/.bin/`.
+4. Verify: `mise run //packages/desktop-daemon/editord:dev:server` starts the bun server; the server responds to HTTP; editing a `src/server/` file with new content triggers exactly one restart; saving byte-identical content produces no restart; Ctrl+C exits within ~1 s with no `EADDRINUSE` on a subsequent start. The full checklist is in the plan's "Verification (end-to-end)" cases 5–11.
+5. After the manual verification confirms green, also run `rg 'watchexec' packages/desktop-daemon/editord/` and expect zero matches (plan case 12).
+
 ## State on disk (verified before this handover)
 
 ```
