@@ -118,10 +118,11 @@ Four variable woff2 fonts ship with the site:
 
 The full upstream files live in `fonts-source/` (committed, not copied to
 `dist/`). `mise run format:fonts` reads each upstream file, scans
-`src/**/*.{ts,mdx,md}` for the characters actually in use, subsets with
-`subset-font` (harfbuzz WASM), and writes the result to `public/` where
-`build:site` picks it up as a regular static asset. Variable axes
-(`wght`, `opsz`, `FILL`, `GRAD`) are preserved.
+`src/**/*.{ts,mdx,md}` for the characters actually in use, runs each font
+through the three-stage `wawoff2` (WOFF2 decode) → `hb-subset-wasm`
+(harfbuzz subset) → `woff2-encode-wasm` (WOFF2 re-encode) pipeline, and
+writes the result to `public/` where `build:site` picks it up as a regular
+static asset. Variable axes (`wght`, `opsz`, `FILL`, `GRAD`) are preserved.
 
 Subsetting is **not** part of `build`. It takes a few seconds and its input
 (source files + upstream fonts) changes infrequently, so it is a format

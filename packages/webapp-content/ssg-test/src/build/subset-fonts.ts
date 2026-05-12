@@ -27,13 +27,22 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { fileURLToPath, } from 'node:url';
 
 import {
   initPromise,
   logger,
 } from '@monochromatic-dev/module-logger/logger';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import subsetFont from 'subset-font';
+import {
+  init as initSubset,
+  subset,
+} from 'hb-subset-wasm';
+import wawoff2 from 'wawoff2';
+import {
+  encode as encodeWoff2,
+  init as initWoff2,
+} from 'woff2-encode-wasm';
 import readdir from 'tiny-readdir-glob';
 
 import { ICON_CODEPOINTS, } from '../lib/icons/codepoints.ts';
@@ -47,6 +56,36 @@ const l = tagged({
   tag: 'subset-fonts',
   l: logger,
 },);
+
+//region Wasm initialization
+
+/**
+ * Loads both wasm modules in parallel.
+ *
+ * `hb-subset-wasm` performs SFNT subsetting; `woff2-encode-wasm` re-encodes
+ * the subsetted SFNT back to WOFF2. WOFF2 → SFNT decoding is delegated to
+ * `wawoff2` (no init needed; it lazy-loads its own wasm on first call).
+ *
+ * Each wasm module holds shared linear memory and a single allocator, so all
+ * subsequent calls into a given module share one heap. JS's single-threaded
+ * event loop keeps individual calls atomic because the call bodies contain no
+ * `await` points after `getWasm()` returns; concurrent `Promise.all` calls
+ * therefore cannot interleave mid-allocation.
+ */
+await Promise.all([
+  initSubset(
+    await readFile(
+      fileURLToPath(import.meta.resolve('hb-subset-wasm/hb-subset.wasm',),),
+    ),
+  ),
+  initWoff2(
+    await readFile(
+      fileURLToPath(import.meta.resolve('woff2-encode-wasm/encoder.wasm',),),
+    ),
+  ),
+],);
+
+//endregion
 
 /** Source files scanned for every charset pass. */
 const SOURCE_GLOB = 'src/**/*.{ts,mdx,md}';
@@ -261,11 +300,33 @@ async function subsetOne(
   }
 
   const before = input.byteLength;
-  const output = await subsetFont(
-    input,
-    text,
-    { targetFormat: 'woff2', },
+
+  /**
+   * WOFF2 → SFNT decode. `wawoff2.decompress` returns a `Buffer`-like
+   * `Uint8Array` containing the original TrueType/OpenType bytes that
+   * `hb_face_create` can read.
+   */
+  const sfntInput = await wawoff2.decompress(input,);
+
+  /**
+   * SFNT subset. `layoutFeatures: '*'` retains every GSUB/GPOS layout
+   * feature, matching the prior `subset-font` default (it called
+   * `hb_set_clear` + `hb_set_invert` on the layout-feature set).
+   */
+  const sfntSubset = await subset(
+    sfntInput,
+    {
+      text,
+      layoutFeatures: '*',
+    },
   );
+
+  /**
+   * SFNT → WOFF2 re-encode. `woff2-encode-wasm` compresses using Google's
+   * official woff2 + brotli wasm build, with a `wOF2` signature sanity
+   * check on the result.
+   */
+  const output = await encodeWoff2(sfntSubset,);
   const after = output.byteLength;
 
   await writeFile(
