@@ -1,11 +1,16 @@
 /**
  * Duration formatting utilities for tracked task time.
  *
+ * Renders elapsed seconds as `H:MM:SS` via `Intl.DurationFormat` with
+ * `style: 'digital'`. Days roll into the hours field so the shape stays
+ * stopwatch-like regardless of magnitude (a 73-hour task is `73:00:00`,
+ * not `3 days, 1:00:00`). Locale is left undefined so numerals follow
+ * the host's `Intl` default.
+ *
  * Pure functions with no component dependencies -- used by both
  * `\<task-card\>` and `\<task-detail\>` to display elapsed time.
  */
 import {
-  HOURS_PER_DAY,
   MS_PER_SECOND,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
@@ -13,17 +18,24 @@ import {
 
 import type { Task, } from '../../lib/types.ts';
 
+/** Cached formatter; `Intl.DurationFormat` is safe to reuse across calls. */
+const DIGITAL_FORMATTER = new Intl.DurationFormat(
+  undefined,
+  { style: 'digital', },
+);
+
 /**
- * Formats a duration in seconds as a human-readable string (e.g. "1h30min15s").
+ * Formats a duration in seconds as `H:MM:SS`.
  *
- * @param seconds - Non-negative duration in seconds
+ * @param seconds - Non-negative duration in seconds; negative or
+ *   fractional inputs are clamped to a non-negative integer
  *
  * @returns Formatted duration string
  *
  * @example
- * ```ts
- * formatTrackedTime(5400); // '1h30min0s'
- * ```
+ * formatTrackedTime(0); // '0:00:00'
+ * formatTrackedTime(5400); // '1:30:00'
+ * formatTrackedTime(263_400); // '73:10:00'
  */
 export function formatTrackedTime(seconds: number,): string {
   const totalSeconds = Math.max(
@@ -33,22 +45,11 @@ export function formatTrackedTime(seconds: number,): string {
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
   const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
-
-  if (hours > 0) {
-    const dayHours = Math.floor(hours / HOURS_PER_DAY,);
-    const remainHours = hours % HOURS_PER_DAY;
-    if (dayHours > 0) {
-      return `${String(dayHours,)}d${String(remainHours,)}h${String(minutes,)}min${
-        String(remainingSeconds,)
-      }s`;
-    }
-    return `${String(hours,)}h${String(minutes,)}min${String(remainingSeconds,)}s`;
-  }
-
-  if (minutes > 0)
-    return `${String(minutes,)}min${String(remainingSeconds,)}s`;
-
-  return `${String(totalSeconds,)}s`;
+  return DIGITAL_FORMATTER.format({
+    hours,
+    minutes,
+    seconds: remainingSeconds,
+  },);
 }
 
 /**
@@ -60,9 +61,7 @@ export function formatTrackedTime(seconds: number,): string {
  * @returns Formatted duration string
  *
  * @example
- * ```ts
  * const display = formatRunningTrackedTime(task);
- * ```
  */
 export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)

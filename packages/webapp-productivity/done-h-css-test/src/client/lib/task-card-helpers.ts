@@ -2,7 +2,6 @@
  * Helper functions and types for `<task-card>`.
  */
 import {
-  HOURS_PER_DAY,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
 } from '@monochromatic-dev/module-numeric-const';
@@ -19,17 +18,25 @@ export type TaskCardOptions = {
   onToggleComplete?: (taskId: string,) => Promise<void>;
 };
 
+/** Cached formatter; `Intl.DurationFormat` is safe to reuse across calls. */
+const DIGITAL_FORMATTER = new Intl.DurationFormat(
+  undefined,
+  { style: 'digital', },
+);
+
 /**
- * Formats a duration in seconds as a human-readable string (e.g. "1h30min15s").
+ * Formats a duration in seconds as `H:MM:SS` via `Intl.DurationFormat`.
+ * Days roll into the hours field so the shape stays stopwatch-like
+ * regardless of magnitude.
  *
- * @param seconds - Non-negative duration in seconds
+ * @param seconds - Non-negative duration in seconds; negative or
+ *   fractional inputs are clamped to a non-negative integer
  *
  * @returns Formatted duration string
  *
  * @example
- * ```ts
- * formatTrackedTime(3661) // "1h1min1s"
- * ```
+ * formatTrackedTime(0); // '0:00:00'
+ * formatTrackedTime(3661); // '1:01:01'
  */
 export function formatTrackedTime(seconds: number,): string {
   const totalSeconds = Math.max(
@@ -39,19 +46,11 @@ export function formatTrackedTime(seconds: number,): string {
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
   const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
-
-  if (hours > 0) {
-    const dayHours = Math.floor(hours / HOURS_PER_DAY,);
-    const remainHours = hours % HOURS_PER_DAY;
-    if (dayHours > 0)
-      return `${dayHours}d${remainHours}h${minutes}min${remainingSeconds}s`;
-    return `${hours}h${minutes}min${remainingSeconds}s`;
-  }
-
-  if (minutes > 0)
-    return `${minutes}min${remainingSeconds}s`;
-
-  return `${totalSeconds}s`;
+  return DIGITAL_FORMATTER.format({
+    hours,
+    minutes,
+    seconds: remainingSeconds,
+  },);
 }
 
 /**
@@ -63,10 +62,8 @@ export function formatTrackedTime(seconds: number,): string {
  * @returns Array of chip label strings
  *
  * @example
- * ```ts
  * const chips = buildChipTexts(task);
- * // ['#errand', 'tracked: 1h 30m', 'home']
- * ```
+ * // ['#errand', 'tracked: 1:30:00', 'home']
  */
 export function buildChipTexts(task: Task,): string[] {
   const chips: string[] = [];

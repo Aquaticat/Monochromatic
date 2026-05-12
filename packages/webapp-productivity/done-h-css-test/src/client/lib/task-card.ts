@@ -178,10 +178,8 @@ export function createTaskCard(
  * @returns Formatted tracked time string
  *
  * @example
- * ```ts
  * const label = formatRunningTrackedTime(task);
- * // 'tracked: 2h 15m'
- * ```
+ * // '2:15:00'
  */
 export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)
