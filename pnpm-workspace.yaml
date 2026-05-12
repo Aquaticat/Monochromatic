@@ -137,6 +137,14 @@ overrides:
   '@anthropic-ai/sdk': '>=0.91.1'
   'fast-xml-parser': '>=5.7.0'
   'postcss': '>=8.5.10'
+  # Substitute deprecated node-domexception@1.0.0 with a workspace shim that
+  # re-exports globalThis.DOMException (the native constructor on Node 17+
+  # and Bun). fetch-blob/from.js hard-imports the package and uses it as a
+  # constructor, so removal would crash node-fetch at module load. The shim
+  # is API-identical-by-construction, eliminating pnpm's install-time
+  # deprecation warning without altering runtime behaviour.
+  # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
+  'node-domexception': 'link:packages/shim/node-domexception'
   # Drop @earendil-works/pi-* transitive deps that this workspace does not
   # exercise: either unused in the published dist, or loaded only via lazy
   # `import()` inside provider modules. Statically-imported deps that are

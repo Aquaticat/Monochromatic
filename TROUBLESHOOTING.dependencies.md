@@ -179,11 +179,15 @@ See the draft bug report in `BUG-REPORT.vlt-build-metadata.md`
 
 It will turn `>=` in `package.json` into exact versions.
 
-### `[WARN] 1 deprecated subdependencies found: node-domexception@1.0.0`
+### `node-domexception` (substituted via workspace shim)
 
-Emitted by `pnpm install`. Install-time only; runtime is unaffected. Cannot
-be silenced without breaking runtime, and cannot be silenced by upgrading any
-direct dependency. Document and ignore.
+`pnpm install` previously emitted `[WARN] 1 deprecated subdependencies found: node-domexception@1.0.0`.
+Install-time only; runtime was unaffected.
+The override `'node-domexception': 'link:packages/shim/node-domexception'` in `pnpm-workspace.yaml`
+now substitutes the deprecated upstream package with a workspace shim whose `index.cjs` is the
+single line `module.exports = globalThis.DOMException`. The warning is gone; consumers
+(fetch-blob, node-fetch, the libsql and gaxios subtrees) see the native `DOMException`
+constructor exactly as before.
 
 #### Dependency chain
 
@@ -249,12 +253,26 @@ yields the platform constructor. The deprecated package is a no-op shim at
 runtime; the deprecation message is purely an npm-registry-level annotation
 read by pnpm at install time.
 
-#### Verified workaround paths (not applied)
+#### Workaround applied
 
-A workspace shim package re-exporting `globalThis.DOMException`, wired via
-`overrides: { 'node-domexception': 'link:packages/shim/node-domexception' }`,
-would silence the warning without breaking runtime. Not worth the package for
-an install-time-only message; revisit if the warning ever blocks a CI gate.
+`packages/shim/node-domexception/` is the workspace shim package.
+Files: `package.json` (private, name `@monochromatic-dev/shim-node-domexception`,
+CJS, exports `./index.cjs` and `./index.d.cts`), `index.cjs`
+(`'use strict'; module.exports = globalThis.DOMException;`), `index.d.cts`
+(`declare const _: new (message?: string, name?: string) => Error; export = _;`),
+plus `mise.toml` and `README.md`.
+
+`pnpm-workspace.yaml`'s `overrides` block wires it in with
+`'node-domexception': 'link:packages/shim/node-domexception'`. pnpm rewrites
+every transitive `node-domexception` edge to point at the workspace path; the
+real npm package is no longer installed under `node_modules/.pnpm/`.
+
+The shim mechanism is API-identical-by-construction to `node-domexception@1.0.0`,
+so every consumer of the package keeps the same observable behaviour at runtime.
+The drop-in nature is what justifies the global (not parent-scoped) override.
+
+See `docs/dependency-blocklist.md` for the mechanism reference, the decision
+rule (throw / silent / remove / shim), and the worked example.
 
 ### `@google/genai` (suppressed via pnpm override)
 
