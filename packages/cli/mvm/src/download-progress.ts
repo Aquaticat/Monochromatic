@@ -11,11 +11,7 @@ import { stat, } from 'node:fs/promises';
 import { Readable, } from 'node:stream';
 import { pipeline, } from 'node:stream/promises';
 
-import {
-  BYTES_PER_GIB,
-  BYTES_PER_KIB,
-  BYTES_PER_MIB,
-} from '@monochromatic-dev/module-numeric-const';
+import { formatBytes, } from '@monochromatic-dev/module-numeric-format';
 
 //region Display constants
 
@@ -26,26 +22,6 @@ const PERCENT = 100;
 const PROGRESS_LINE_PAD = 20;
 
 //endregion Display constants
-
-/**
- * Formats a byte count as a human-readable string (e.g. "123.4 MiB").
- *
- * @param bytes - Raw byte count
- *
- * @returns Formatted string with appropriate unit
- *
- * @example
- * ```ts
- * formatBytes(1_048_576); // => "1.0 MiB"
- * ```
- */
-export function formatBytes(bytes: number,): string {
-  if (bytes >= BYTES_PER_GIB)
-    return `${(bytes / BYTES_PER_GIB).toFixed(1,)} GiB`;
-  if (bytes >= BYTES_PER_MIB)
-    return `${(bytes / BYTES_PER_MIB).toFixed(1,)} MiB`;
-  return `${(bytes / BYTES_PER_KIB).toFixed(0,)} KiB`;
-}
 
 /**
  * Polls the destination file size and prints download progress to stderr.

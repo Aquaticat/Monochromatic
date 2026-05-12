@@ -9,4 +9,5 @@
 
 // oxlint-disable no-unassigned-import -- test files execute on import via top-level await
 
+import './byte.unit.test.ts';
 import './duration.unit.test.ts';

@@ -16,6 +16,12 @@
  * @packageDocumentation
  */
 
+//region byte
+
+export { formatBytes, } from './byte.ts';
+
+//endregion byte
+
 //region duration
 
 export { formatDuration, } from './duration.ts';

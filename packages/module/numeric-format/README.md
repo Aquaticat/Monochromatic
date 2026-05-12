@@ -13,6 +13,7 @@ Anything `Intl` already handles should be called directly at the consumer.
 
 | Function         | Source            | Description                                                                  |
 | ---------------- | ----------------- | ---------------------------------------------------------------------------- |
+| `formatBytes`    | `src/byte.ts`     | IEC binary byte formatter (`KiB` / `MiB` / `GiB`).                           |
 | `formatDuration` | `src/duration.ts` | Magnitude-adaptive sub-ms / ms / s formatter for `performance.now()` deltas. |
 
 ## Why not `Intl.DurationFormat`
