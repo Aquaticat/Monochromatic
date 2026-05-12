@@ -243,37 +243,22 @@ A workspace shim package re-exporting `globalThis.DOMException`, wired via
 would silence the warning without breaking runtime. Not worth the package for
 an install-time-only message; revisit if the warning ever blocks a CI gate.
 
-### `@google/genai` (declared suppressed via pnpm override)
+### `@google/genai` (suppressed via pnpm override)
 
 The override line `'@earendil-works/pi-ai>@google/genai': '-'` in
 `pnpm-workspace.yaml` removes `@google/genai` (and its `protobufjs`,
 `google-auth-library`, `gcp-metadata`, `gaxios` subtree) from
-`@earendil-works/pi-ai`'s **resolved dependencies in `pnpm-lock.yaml`**.
-This is documentary intent only: pnpm 11.1.1 still extracts the package into
-`node_modules/.pnpm/@google+genai@*/` and links it from
-`node_modules/.pnpm/@earendil-works+pi-ai@*/node_modules/@google/genai`,
-because pi-ai's own `package.json` lists it under `dependencies`. The other
-pi-ai overrides (`@aws-sdk/client-bedrock-runtime`, `@mistralai/mistralai`,
-`chalk`, `partial-json`, `proxy-agent`, `undici`, `zod-to-json-schema`)
-behave the same way: declared removed in the lockfile, physically present
-on disk. To actually drop them, `pnpm prune` is required, but that breaks
-load-bearing orphans for `partial-json` (statically imported by
-`pi-ai/dist/utils/json-parse.js`, re-exported from pi-ai's entry) and
-several pi-coding-agent dependencies.
-
-#### Why the override is still worth having
-
-The lockfile is the source of truth read by future tooling and audits.
-Recording the intent there ensures `@google/genai` is not pinned to a
-specific version, the SBOM for this workspace does not list it as a
-declared dep, and any future tool that respects pnpm overrides for
-extraction (or any future pnpm version that does) will benefit immediately.
+`@earendil-works/pi-ai`'s resolved dependencies. After a clean
+reinstall (`rm -rf node_modules && pnpm install`), the package is
+genuinely absent from `node_modules/.pnpm/`. A non-clean `pnpm install`
+or `pnpm install --force` can preserve orphan symlinks from a previous
+install state; if those need clearing, `pnpm prune` removes them.
 
 #### Why suppression is safe at the runtime layer
 
 `@earendil-works/pi-ai` reaches `@google/genai` only through dynamic
-`import()`, so even if the package were actually removed at install time,
-pi-ai would not crash at module load:
+`import()`, so pi-ai does not crash at module load when the package is
+absent:
 
 - `dist/providers/register-builtins.js:48-63` defines `createLazyStream`,
   whose returned closure invokes `loadModule()` only when the stream is
@@ -295,3 +280,26 @@ Google APIs by string identifier in `src/judge-tool.ts:83`
 `@google/genai`. If a Google model were ever routed through `streamSimple`,
 pi-ai's `createLazyStream` catches the resolution error and emits a
 stream-error event.
+
+#### Note on `partial-json`
+
+`@earendil-works/pi-ai>partial-json` was previously in the same override
+block but cannot be suppressed: `pi-ai/dist/utils/json-parse.js:1`
+statically imports `partial-json`, and that module is re-exported from
+pi-ai's entry (`dist/index.js:12: export * from "./utils/json-parse.js"`).
+Any consumer importing pi-ai (including `packages/pi/auto-mode`) crashes
+at module load when `partial-json` is absent. The override was removed
+to restore the runtime contract. The remaining `@earendil-works/pi-ai>*`
+overrides target packages that pi-ai either does not import
+(`chalk`, `undici`, `zod-to-json-schema`) or imports only inside lazy
+provider modules (`@aws-sdk/client-bedrock-runtime`, `@google/genai`,
+`@mistralai/mistralai`, `proxy-agent`).
+
+The matching audit for `@earendil-works/pi-coding-agent>*` overrides has
+not been done. Several of those entries point at packages that
+pi-coding-agent's `dist/index.js` re-exports through modules with
+static imports (`proper-lockfile`, `yaml`, `glob`, `minimatch`, `ignore`,
+`uuid`, `cli-highlight`, `diff`, plus pi-tui's `marked` and
+`get-east-asian-width`), so `mise run //packages/pi/auto-mode:test:unit`
+still fails with `Cannot find package …` errors against pi-coding-agent's
+virtual store. Fixing that is a separate cleanup pass.

@@ -147,7 +147,6 @@ overrides:
   '@earendil-works/pi-ai>@google/genai': '-'
   '@earendil-works/pi-ai>@mistralai/mistralai': '-'
   '@earendil-works/pi-ai>chalk': '-'
-  '@earendil-works/pi-ai>partial-json': '-'
   '@earendil-works/pi-ai>proxy-agent': '-'
   '@earendil-works/pi-ai>undici': '-'
   '@earendil-works/pi-ai>zod-to-json-schema': '-'
