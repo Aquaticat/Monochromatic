@@ -1,5 +1,18 @@
 # Package Management & Dependencies Troubleshooting
 
+## Global blocklist (substitution vs removal)
+
+For "this package is banned globally; warn and substitute or remove during install,"
+see `docs/dependency-blocklist.md`.
+That doc covers the two-home mechanism:
+`.pnpmfile.mjs` at the repo root for substitution stubs (`action: 'throw'` or `action: 'silent'`),
+`pnpm-workspace.yaml`'s `overrides` block for removal (pnpm's native `"name": "-"` primitive).
+
+The parent-scoped overrides documented in this file
+(`jspdf>canvg`, `@earendil-works/pi-ai>@google/genai`, the rest of the `pi-*` audit below)
+are surgical removals for specific dependents.
+They sit alongside the global mechanisms, not inside them, and stay in `pnpm-workspace.yaml`.
+
 ## vlt fails to fetch manifest for versions with semver build metadata
 
 ### Symptom
