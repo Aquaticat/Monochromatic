@@ -32,6 +32,7 @@
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",
     "chokidar": "catalog:",
+    "ignore": "catalog:",
     "picomatch": "catalog:",
     "ts-pattern": "catalog:"
   },

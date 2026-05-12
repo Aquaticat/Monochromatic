@@ -66,6 +66,7 @@ catalog:
   'happy-opfs': '>=2.0.2'
   'happy-rusty': '>=1.9.1'
   'hyphen': '>=1.14.1'
+  'ignore': '>=7.0.5'
   'isomorphic-git': '>=1.27.0'
   'jspdf': '>=2.5.2'
   'kysely': '>=0.28.17'

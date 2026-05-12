@@ -5,6 +5,7 @@ import {
 import { composeFilters, } from './filters/compose.ts';
 import { contentHashFilter, } from './filters/content-hash.ts';
 import { extFilter, } from './filters/ext.ts';
+import { gitignoreFilter, } from './filters/gitignore.ts';
 import { globFilter, } from './filters/glob.ts';
 import { hiddenFilter, } from './filters/hidden.ts';
 import { regexFilter, } from './filters/regex.ts';
@@ -197,9 +198,9 @@ function buildEventKindFilter(
  * },);
  * ```
  */
-function buildInternalFilter(
+async function buildInternalFilter(
   options: StartWatchRestartOptions,
-): WatchFilter {
+): Promise<WatchFilter> {
   /** Mutable working list of filters; collected in evaluation order before composition. */
   const filters: WatchFilter[] = [];
 
@@ -243,6 +244,27 @@ function buildInternalFilter(
   if (options.hidden !== true) {
     filters.push(hiddenFilter(),);
   }
+
+  /**
+   * Resolved `.gitignore` roots: only the watch roots when `--gitignore`
+   * is on (default); empty when off (`--no-gitignore`). The factory still
+   * loads from `extraFiles` regardless, per the plan's "separate AND"
+   * semantics (gitignore and ignore-file are independent dimensions).
+   */
+  const gitignoreRoots: readonly string[] = options.gitignore === false
+    ? []
+    : options.paths;
+  /** Resolved extra ignore files; empty when none configured. */
+  const gitignoreExtraFiles: readonly string[] = options.ignoreFiles ?? [];
+  if (gitignoreRoots.length > 0 || gitignoreExtraFiles.length > 0) {
+    filters.push(
+      await gitignoreFilter({
+        roots: gitignoreRoots,
+        extraFiles: gitignoreExtraFiles,
+      },),
+    );
+  }
+
   if (options.contentChanged !== false) {
     filters.push(contentHashFilter(),);
   }
@@ -317,7 +339,7 @@ export async function startWatchRestart(
   };
 
   /** Composed filter chain assembled once at start; evaluated on every event. */
-  const internalFilter: WatchFilter = buildInternalFilter(options,);
+  const internalFilter: WatchFilter = await buildInternalFilter(options,);
   /** Resolved debounce window. */
   const debounceMs: number = options.debounce ?? DEFAULT_DEBOUNCE_MS;
 

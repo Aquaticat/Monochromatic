@@ -156,6 +156,9 @@ catalogs:
     hyphen:
       specifier: '>=1.14.1'
       version: 1.14.1
+    ignore:
+      specifier: '>=7.0.5'
+      version: 7.0.5
     isomorphic-git:
       specifier: '>=1.27.0'
       version: 1.37.6
@@ -1224,6 +1227,9 @@ importers:
       chokidar:
         specifier: 'catalog:'
         version: 5.0.0
+      ignore:
+        specifier: 'catalog:'
+        version: 7.0.5
       picomatch:
         specifier: 'catalog:'
         version: 4.0.4
@@ -1584,6 +1590,9 @@ importers:
       '@monochromatic-dev/module-numeric-const':
         specifier: workspace:*
         version: link:../numeric-const
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../or-throw
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
