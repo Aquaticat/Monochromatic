@@ -33,7 +33,7 @@ export const RELAXATIONS: ReadonlyMap<string, Relaxation> = new Map([
       note: 'dropped trailing `\\b` alternation arm.',
       transform: function dropTrailingBoundary(r,): string {
         return r.replaceAll(
-          '|\\b)',
+          String.raw`|\b)`,
           ')',
         );
       },
