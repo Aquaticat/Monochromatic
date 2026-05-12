@@ -170,6 +170,28 @@ overrides:
   '@earendil-works/pi-coding-agent>marked': '-'
   '@earendil-works/pi-tui>chalk': '-'
   '@earendil-works/pi-tui>mime-types': '-'
+  # Remove abort-controller globally. It is a polyfill of the WHATWG
+  # AbortController for Node < 15. Our supported runtimes (Node 22+, Bun)
+  # all ship a native AbortController on globalThis. The only transitive
+  # importer is readable-stream@4 (pulled in by isomorphic-git), which
+  # already guards the require with `globalThis.AbortController ||
+  # require('abort-controller').AbortController` in pipeline.js,
+  # duplexify.js, and operators.js -- the `||` short-circuits to the
+  # native constructor before the require evaluates. Removing the package
+  # also drops the sole importer of event-target-shim (1739 LOC,
+  # last commit 2021-01, abandoned), reducing supply-chain surface.
+  # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
+  'abort-controller': '-'
+  # Remove argparse globally. Two transitive importers ship it solely for
+  # their CLI entry points: js-yaml (bin/js-yaml.js) and wawoff2
+  # (bin/woff2_{compress,decompress}.js). The workspace consumes both
+  # packages as libraries only -- `webapp-content/ssg-test/src/lib/content.ts`
+  # uses the js-yaml load API; `webapp-content/ssg-test/src/build/subset-fonts.ts`
+  # uses `wawoff2.decompress`. Neither CLI is invoked anywhere in the tree
+  # or in CI. Removing argparse leaves the library APIs intact and drops
+  # 4214 LOC of supply-chain surface (last commit 2022-05).
+  # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
+  'argparse': '-'
 packageImportMethod: hardlink
 preferWorkspacePackages: true
 resolutionMode: highest
