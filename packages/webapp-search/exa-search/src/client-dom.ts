@@ -1,4 +1,4 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments, eslint/prefer-destructuring -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
+// oxlint-disable typescript/strict-boolean-expressions, no-magic-numbers, no-warning-comments, eslint/prefer-destructuring -- DOM string coercions and a pre-existing TODO marker
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 import {
   $ as createObservable,
@@ -7,7 +7,6 @@ import {
 import {
   nonNullishOrThrow,
 } from '@monochromatic-dev/module-or-throw';
-import { Exa, } from 'exa-js';
 import * as v from 'valibot';
 
 import { replicateElementAsContentOf, } from './client-replicate-element.ts';
@@ -20,46 +19,33 @@ export const baseUrl = 'https://exa.aquati.cat/api/proxy';
  * Bindings are resolved eagerly at module load via `querySelector` assertions.
  */
 const bindings = {
-  exa: createObservable(
-    await (async function createExaExtra(): Promise<[
-      Exa,
-      { apiKey: string; },
-    ]> {
-      const apiKey = await v.parseAsync(
-        v.pipeAsync(
-          v.nullable(
-            v.pipe(
-              v.string(),
-              v.uuid(),
-            ),
+  apiKey: createObservable(
+    await v.parseAsync(
+      v.pipeAsync(
+        v.nullable(
+          v.pipe(
+            v.string(),
+            v.uuid(),
           ),
-          v.transformAsync(async function promptSet(val,): Promise<string> {
-            if (val !== null)
-              return val;
-            const inputApiKey = nonNullishOrThrow(await prompt('Set api key',),);
-            localStorage.setItem(
-              'exaApiKey',
-              inputApiKey,
-            );
-            return inputApiKey;
-          },),
-          v.uuid(),
         ),
-        localStorage.getItem('exaApiKey',),
-      );
-      const exa = new Exa(
-        apiKey,
-        baseUrl,
-      );
-      return [
-        exa,
-        { apiKey, },
-      ];
-    })(),
+        v.transformAsync(async function promptSet(val,): Promise<string> {
+          if (val !== null)
+            return val;
+          const inputApiKey = nonNullishOrThrow(await prompt('Set api key',),);
+          localStorage.setItem(
+            'exaApiKey',
+            inputApiKey,
+          );
+          return inputApiKey;
+        },),
+        v.uuid(),
+      ),
+      localStorage.getItem('exaApiKey',),
+    ),
     function updateStorage(val,) {
       localStorage.setItem(
         'exaApiKey',
-        val[1].apiKey,
+        val,
       );
     },
   ),
@@ -86,11 +72,8 @@ const bindings = {
   ),
 };
 
-/** Exa SDK client wrapped in an observable for reactive API key changes. */
-export const exa: Observable<[
-  Exa,
-  { apiKey: string; },
-]> = bindings.exa;
+/** Exa API key wrapped in an observable for reactive key changes. */
+export const apiKey: Observable<string> = bindings.apiKey;
 
 /** Search form element. */
 export const searchForm: HTMLFormElement = bindings.searchForm;

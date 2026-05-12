@@ -1,16 +1,15 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
+// oxlint-disable typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression -- DOM string coercions and IIFE-wrapped async handlers
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 import {
   nonNullishOrThrow,
 } from '@monochromatic-dev/module-or-throw';
-import { Exa, } from 'exa-js';
 
 import { displayResult, } from './client-display-result.ts';
 import {
+  apiKey,
   baseUrl,
   changeApiKeyButton,
   costDollarsSpan,
-  exa,
   numResults,
   numResultsInput,
   numTotalSearches,
@@ -20,6 +19,7 @@ import {
   searchForm,
   searchInput,
 } from './client-dom.ts';
+import { searchExa, } from './exa-fetch.ts';
 
 searchForm.addEventListener(
   'submit',
@@ -43,9 +43,11 @@ searchForm.addEventListener(
 
         processingParagraph.removeAttribute('hidden',);
 
-        const results = await exa.value[0].search(
-          searchInput.value.trim(),
-          {
+        const results = await searchExa({
+          apiKey: apiKey.value,
+          baseUrl,
+          query: searchInput.value.trim(),
+          options: {
             type: 'auto',
             numResults: numResults.value,
             contents: {
@@ -59,7 +61,7 @@ searchForm.addEventListener(
               highlights: true,
             },
           },
-        );
+        },);
 
         processingParagraph.setAttribute(
           'hidden',
@@ -72,11 +74,11 @@ searchForm.addEventListener(
           result,
           resultIndex,
         ) {
-          displayResult(
+          displayResult({
             resultArticles,
             result,
             resultIndex,
-          );
+          },);
         },);
 
         resultsSection.removeAttribute('hidden',);
@@ -97,13 +99,7 @@ changeApiKeyButton.addEventListener(
     void (async function promptForNewApiKey(): Promise<void> {
       try {
         const inputApiKey = nonNullishOrThrow(await prompt('Change api key',),);
-        exa.value = [
-          new Exa(
-            inputApiKey,
-            baseUrl,
-          ),
-          { apiKey: inputApiKey, },
-        ];
+        apiKey.value = inputApiKey;
       }
       catch (error: unknown) {
         console.error(

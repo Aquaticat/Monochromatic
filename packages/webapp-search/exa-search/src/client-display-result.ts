@@ -1,20 +1,10 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
+// oxlint-disable typescript/strict-boolean-expressions, no-magic-numbers, no-shadow -- DOM string coercions and template-cloning indices
 import {
   nonNullishOrThrow,
 } from '@monochromatic-dev/module-or-throw';
-import type {
-  ContentsOptions,
-  SearchResult,
-} from 'exa-js';
 
 import { replicateElementAsContentOf, } from './client-replicate-element.ts';
-
-/** Content options used for search requests requiring text, summary, and highlights. */
-type SearchContents = {
-  text: true;
-  summary: true;
-  highlights: true;
-};
+import type { ExaSearchResult, } from './exa-fetch.ts';
 
 /**
  * Populates a single result article element with data from an Exa search result.
@@ -27,14 +17,18 @@ type SearchContents = {
  *
  * @example
  * ```ts
- * displayResult(document.querySelectorAll('.result'), searchResult, 0);
+ * displayResult({ resultArticles, result, resultIndex: 0 });
  * ```
  */
-export function displayResult(
-  resultArticles: HTMLCollection,
-  result: SearchResult<SearchContents>,
-  resultIndex: number,
-): void {
+export function displayResult({
+  resultArticles,
+  result,
+  resultIndex,
+}: {
+  resultArticles: HTMLCollection;
+  result: ExaSearchResult;
+  resultIndex: number;
+},): void {
   const currentResultArticle = nonNullishOrThrow(
     resultArticles[resultIndex],
   );
