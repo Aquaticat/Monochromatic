@@ -174,6 +174,7 @@ const MIN_USAGE_FOR_PROJECTION = 5;
  * returns empty string otherwise, or when tier data is missing.
  *
  * @param tier - The rate-limit tier payload from the statusline JSON.
+ *
  * @param windowSeconds - Fixed window duration; used to recover elapsed time as `windowSeconds - (resets_at - now)`.
  *
  * @example formatRateLimit({tier: {used_percentage: 92, resets_at: NOW + 3600}, windowSeconds: 18000}) // "8% left (1h)" in red
