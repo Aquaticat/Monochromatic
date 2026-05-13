@@ -137,14 +137,14 @@ await describe({
     },),
 
     it({
-      name: 'defaultState turns on wireframe / axis labels / unknown cluster; threshold guides off by default',
+      name: 'defaultState turns on wireframe / axis labels / unknown cluster / all name labels; threshold guides off by default',
       fn: async () => {
         const s = defaultState({ probes: PROBES, },);
         expect(s.displayToggles.showWireframe,).toBe(true,);
         expect(s.displayToggles.showThresholdPlanes,).toBe(false,);
         expect(s.displayToggles.showAxisLabels,).toBe(true,);
         expect(s.displayToggles.showUnknownCluster,).toBe(true,);
-        expect(s.displayToggles.nameLabels,).toBe('none',);
+        expect(s.displayToggles.nameLabels,).toBe('all',);
       },
     },),
     //endregion defaultState

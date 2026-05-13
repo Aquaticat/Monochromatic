@@ -41,10 +41,20 @@ const COLOR_UNKNOWN: readonly [number, number, number,] = [
 const RADIUS_MIN_PX = 3;
 /** Maximum glyph radius in pixels. */
 const RADIUS_MAX_PX = 30;
-/** Minimum glyph radius in world units, as a fraction of the bounds diagonal. */
-const RADIUS_MIN_WORLD_FRACTION = 0.005;
-/** Maximum glyph radius in world units, as a fraction of the bounds diagonal. */
-const RADIUS_MAX_WORLD_FRACTION = 0.03;
+/**
+ * Minimum glyph radius in world units, as a fraction of the bounds diagonal.
+ *
+ * Halved from the iteration-2 value (0.005) so glyphs no longer obscure
+ * each other in dense regions and so per-glyph name labels have room to
+ * breathe.
+ */
+const RADIUS_MIN_WORLD_FRACTION = 0.0025;
+/**
+ * Maximum glyph radius in world units, as a fraction of the bounds diagonal.
+ *
+ * Halved from the iteration-2 value (0.03) to match the min reduction.
+ */
+const RADIUS_MAX_WORLD_FRACTION = 0.015;
 /** Offset applied to the unknown cluster, in scene-units, from the data box's max corner. */
 const UNKNOWN_CLUSTER_OFFSET = 2;
 /** Half-extent of the unknown-cluster jitter cube so glyphs don't pile on one point. */

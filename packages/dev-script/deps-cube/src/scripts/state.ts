@@ -101,14 +101,17 @@ const DEFAULT_TOGGLES: ToggleState = {
  *
  * Threshold guide lines default to off because they're an opt-in
  * heuristic overlay and clutter the reference-style coordinate-system
- * backdrop. Every other chrome element starts on so the scene reads
- * as a proper 3D coordinate system on first load.
+ * backdrop. Name labels default to `'all'` so every glyph is identifiable
+ * on first load (the scatter is sparse enough — ~70 catalog entries —
+ * for the labels to be useful rather than overwhelming). Every other
+ * chrome element starts on so the scene reads as a proper 3D coordinate
+ * system on first load.
  */
 const DEFAULT_DISPLAY_TOGGLES: DisplayToggleState = {
   showThresholdPlanes: false,
   showWireframe: true,
   showAxisLabels: true,
-  nameLabels: 'none',
+  nameLabels: 'all',
   showUnknownCluster: true,
 };
 

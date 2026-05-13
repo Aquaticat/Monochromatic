@@ -30,7 +30,10 @@ import type { Layer, } from '@deck.gl/core';
 import { TextLayer, } from '@deck.gl/layers';
 
 import type { PackageProbe, } from './probe.ts';
-import { probePosition, } from './deck-accessors.ts';
+import {
+  probePosition,
+  unknownClusterPosition,
+} from './deck-accessors.ts';
 import type { SceneBounds, } from './deck-config.ts';
 import { DIM_DISPLAY_NAMES, } from './dim-meta.ts';
 import type { DimMapping, } from './scripts/filter.ts';
@@ -358,15 +361,9 @@ export function buildNameLabelsLayer(
       };
     },)
     .filter(function isShown({
-      probe,
       originalIndex,
     },) {
-      if (!visibleIndices.has(originalIndex,)) return false;
-      if (probe.unknownReason !== null) return false;
-      return probePosition({
-        probe,
-        state,
-      },) !== null;
+      return visibleIndices.has(originalIndex,);
     },);
   const ranked = state.displayToggles.nameLabels === 'all'
     ? eligible
@@ -378,11 +375,20 @@ export function buildNameLabelsLayer(
     },).slice(0, TOP_N_NAMES,);
   if (ranked.length === 0) return null;
   const nameOffset = g.dy * NAME_LABEL_OFFSET_FRACTION;
-  const data: TextDatum[] = ranked.map(function asDatum({ probe, },) {
-    const pos = probePosition({
-      probe,
-      state,
-    },) ?? [0, 0, 0,];
+  const data: TextDatum[] = ranked.map(function asDatum({
+    probe,
+    originalIndex,
+  },) {
+    const inScenePos = probe.unknownReason === null
+      ? probePosition({
+        probe,
+        state,
+      },)
+      : null;
+    const pos = inScenePos ?? unknownClusterPosition({
+      index: originalIndex,
+      bounds,
+    },);
     return {
       position: [
         pos[0],

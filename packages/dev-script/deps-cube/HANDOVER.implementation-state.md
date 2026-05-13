@@ -37,9 +37,19 @@ Lint, types, and tests all clean (0 errors; ~471 stylistic warnings, all non-blo
 
 Pending: manual Firefox interaction verification — open the new HTML and confirm all three green planes render at every camera angle (drag-rotate to test); no brown threshold-guide lines by default; axes + capitals + origin in light gray on dark mode (or dark gray on light mode); subtitles in 10px at axis midpoints; no white-rectangle label backgrounds.
 
+**Status (2026-05-12, eleventh handover — glyph-scale + per-glyph name labels)**: with iteration-2's coordinate-system backdrop reading correctly, the user asked for two further tweaks: shrink the spheres / octahedra by 0.5× so they no longer obscure each other in dense regions, and label every glyph (including the unknown-cluster spheres) with its npm name by default. Implemented:
+
+- `src/deck-accessors.ts` — `RADIUS_MIN_WORLD_FRACTION` 0.005 → 0.0025 and `RADIUS_MAX_WORLD_FRACTION` 0.03 → 0.015; halved diagonal fractions used by `probeRadiusWorld` so every mesh-layer glyph renders at half its previous world-space size.
+- `src/scripts/state.ts` — `DEFAULT_DISPLAY_TOGGLES.nameLabels` flipped from `'none'` to `'all'`. The radio control still offers `none` / `topN` / `all`; the default is just no longer hidden.
+- `src/deck-labels.ts` — `buildNameLabelsLayer` no longer filters out probes with `unknownReason !== null` or null `probePosition`. For those, the per-glyph label position is sourced from `unknownClusterPosition` (the same accessor `buildUnknownClusterLayer` uses), so the upper-right unknown bucket also gets its names painted alongside the spheres. New import: `unknownClusterPosition` from `./deck-accessors.ts`.
+- Test fix: `test/state.unit.test.ts` assertion updated to expect `nameLabels: 'all'` and the test name extended to mention name labels.
+
+Lint, types, and tests all clean (0 errors; 471 stylistic warnings; 8 PASS / 0 FAIL / 1 SKIP). Fresh HTML at `dist/deps-cube-2026-05-13T02-28-46Z.html` (~822KB; no size delta from iteration-2 since the bundle contents are unchanged).
+
 **Last commits** (most recent first):
 
-- (next commit, this session) — iteration-2 coordinate-system fixes: SolidPolygonLayer with _full3d + threshold guides off by default + ChromeColors palette via detectScheme + label backgrounds dropped
+- (next commit, this session) — iteration-3 glyph scaling + per-glyph name labels
+- `21b62437 feat(dev-script/deps-cube): all 3 coordinate planes via SolidPolygonLayer + scheme-aware chrome` (iteration 2)
 - `220818cb feat(dev-script/deps-cube): 3D mesh glyphs + coordinate-system backdrop + dual-thumb sliders` (iteration 1)
 - `5d552cdf fix(dev-script/deps-cube): use ISO 8601 UTC down to seconds in output filename`
 - `dbd34c10 feat(dev-script/deps-cube): tsdown build with bin pointing to dist/final/node/cli.mjs`
