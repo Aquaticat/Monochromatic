@@ -268,7 +268,7 @@ await describe({
 
     //region computeVisibleIndices
     it({
-      name: 'all "any" toggles + wide ranges + empty search admits every known-position probe',
+      name: 'all "any" toggles + wide ranges + empty search admits every probe including partial-unknowns',
       fn: async () => {
         const visible = computeVisibleIndices({
           probes: PROBES,
@@ -277,10 +277,31 @@ await describe({
           search: '',
           dimMapping: DEFAULT_MAPPING,
         },);
-        // Monorepo probe has null x/color, so it fails passesRanges -> hidden.
+        // Partial-unknowns pass range filters: null channel values are
+        // treated as "not on the active scale, so the range doesn't
+        // exclude them". The hasKnownRepo='yes' toggle is the explicit
+        // knob for hiding partial-unknowns.
         expect(visible.has(0,),).toBe(true,);
         expect(visible.has(1,),).toBe(true,);
+        expect(visible.has(2,),).toBe(true,);
+        expect(visible.has(3,),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'hasKnownRepo=yes hides partial-unknowns explicitly',
+      fn: async () => {
+        const visible = computeVisibleIndices({
+          probes: PROBES,
+          toggles: { ...ANY_TOGGLES, hasKnownRepo: 'yes', },
+          ranges: WIDE_RANGES,
+          search: '',
+          dimMapping: DEFAULT_MAPPING,
+        },);
+        // MONOREPO_UNKNOWN has unknownReason !== null → hidden by this toggle.
         expect(visible.has(2,),).toBe(false,);
+        expect(visible.has(0,),).toBe(true,);
+        expect(visible.has(1,),).toBe(true,);
         expect(visible.has(3,),).toBe(true,);
       },
     },),

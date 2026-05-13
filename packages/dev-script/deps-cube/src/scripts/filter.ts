@@ -274,14 +274,23 @@ function passesToggles(
  * Tests whether a probe's value on each active channel is within bounds.
  *
  * Probes whose value is `null` on an active channel (unknown along that
- * dim) fail the range test — they're rendered as part of the Unknown
- * cluster rather than within the main spatial extent.
+ * dim) pass the range test: the range slider only constrains the known
+ * extent, and a `null` value isn't on that scale. Use the `hasKnownRepo`
+ * toggle (set to `'yes'`) to exclude partial-unknowns explicitly.
+ *
+ * Rationale: the default range state is `[data-min, data-max]` covering
+ * every known value, so a strict-null-fails policy would hide every
+ * partial-unknown on the initial "reset" view. The plan requires the
+ * counter to read `N of N visible` after a reset; the Unknown cluster
+ * is for *all-unknown* probes (rendered offset from the main box), not
+ * for partial-unknowns (which still appear at their known coords with
+ * a contrasting outline).
  *
  * @param probe - Probe being tested.
  * @param ranges - Per-channel `[min, max]` bounds.
  * @param dimMapping - Channel → data-dim mapping.
  *
- * @returns `true` if every channel's value is within bounds.
+ * @returns `true` if every channel's value is within bounds or unknown.
  */
 function passesRanges(
   {
@@ -306,7 +315,7 @@ function passesRanges(
       probe,
       dim,
     },);
-    if (value === null) return false;
+    if (value === null) return true;
     return value >= min && value <= max;
   },);
 }
