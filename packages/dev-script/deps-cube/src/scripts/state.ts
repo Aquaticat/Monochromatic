@@ -205,6 +205,14 @@ function computeFullRanges(
  * data extent so every probe passes the range filter; search is empty;
  * display toggles all on; camera at default tilt + orbit.
  *
+ * Every nested object is deep-cloned from the module-level `DEFAULT_*`
+ * constants via `structuredClone` so the controller's mutate-in-place
+ * wire handlers (`session.state.toggles[key] = next`, etc.) cannot
+ * corrupt the shared defaults. Without this, the first user toggle
+ * would silently rewrite `DEFAULT_TOGGLES`, and subsequent
+ * `defaultState()` calls (e.g. from the reset button) would return the
+ * already-corrupted constants.
+ *
  * @param probes - Full probe array.
  *
  * @returns Default `AppState` for first render.
@@ -218,15 +226,15 @@ export function defaultState(
   { probes, }: { probes: readonly PackageProbe[]; },
 ): AppState {
   return {
-    viewState: DEFAULT_VIEW_STATE,
-    dimMapping: DEFAULT_DIM_MAPPING,
-    toggles: DEFAULT_TOGGLES,
+    viewState: structuredClone(DEFAULT_VIEW_STATE,),
+    dimMapping: structuredClone(DEFAULT_DIM_MAPPING,),
+    toggles: structuredClone(DEFAULT_TOGGLES,),
     ranges: computeFullRanges({
       probes,
       dimMapping: DEFAULT_DIM_MAPPING,
     },),
     search: '',
-    displayToggles: DEFAULT_DISPLAY_TOGGLES,
+    displayToggles: structuredClone(DEFAULT_DISPLAY_TOGGLES,),
   };
 }
 
