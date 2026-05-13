@@ -16,11 +16,14 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  *
  * @param path - path to the entry to delete
  *
+ * @returns resolved absolute path, for watcher suppression at the dispatch
+ *   layer (the unlink event is self-triggered)
+ *
  * @throws when the path escapes root or the delete fails
  *
  * @example
  * ```ts
- * await deleteEntry({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', });
+ * const deleted = await deleteEntry({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', });
  * ```
  */
 export async function deleteEntry(
@@ -31,7 +34,7 @@ export async function deleteEntry(
     rootDir: string;
     path: string;
   },
-): Promise<void> {
+): Promise<string> {
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
@@ -44,4 +47,6 @@ export async function deleteEntry(
     absolutePath,
     { recursive: true, },
   );
+
+  return absolutePath;
 }

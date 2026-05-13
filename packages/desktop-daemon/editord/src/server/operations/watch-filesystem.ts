@@ -1,18 +1,37 @@
 /**
  * Directory-scoped filesystem watcher for editord.
  *
- * Watches individual directories (not recursive) using `fs.watch`.
- * Debounces rapid events and filters noise from temporary files.
- * Only directories explicitly registered via {@link DirWatcher.watchDir}
- * get watched (typically directories the user has expanded in the tree).
+ * Watches individual directories (not recursive) using `chokidar`. Each
+ * registered directory gets its own watcher with `depth: 0`, matching the
+ * file-tree UI's lazy-loading model: directories the user has not expanded
+ * never need watching, and the daemon avoids walking `node_modules`,
+ * `.git`, or build-output trees that whole-root recursive watching would
+ * pull in.
+ *
+ * On first registration of a directory, orphaned editord atomic-write temp
+ * files left over by a SIGKILL of a previous daemon are swept (best-effort,
+ * concurrent with watcher startup). The sweep is bounded by the directory's
+ * own entries; it does not recurse.
+ *
+ * `chokidar` already handles event debouncing (`awaitWriteFinish`),
+ * external editor atomic-save detection (`atomic`), and `add`/`change`/
+ * `unlink` event categorisation, so this wrapper is a thin adapter that
+ * preserves the editord-specific public API (`watchDir`, `suppressPath`,
+ * `close`, `FsChangeEvent`).
  */
 
 import {
   type FSWatcher,
-  watch,
-} from 'node:fs';
-import { stat, } from 'node:fs/promises';
-import { join, } from 'node:path';
+  watch as chokidarWatch,
+} from 'chokidar';
+import {
+  readdir,
+  unlink,
+} from 'node:fs/promises';
+import {
+  basename,
+  join,
+} from 'node:path';
 
 import type { FsChangeType, } from '../../protocol.ts';
 import {
@@ -20,12 +39,14 @@ import {
   tagged,
 } from '../log.ts';
 import {
-  DEBOUNCE_MS,
+  AWAIT_WRITE_FINISH_MS,
+  AWAIT_WRITE_FINISH_POLL_MS,
+  EDITORD_TEMP_PATTERN,
   isIgnored,
   SUPPRESS_MS,
 } from './watch-filesystem-filter.ts';
 
-/** Structured filesystem change event emitted after debounce and resolution. */
+/** Structured filesystem change event emitted to the watcher's consumer. */
 export type FsChangeEvent = {
   /** Absolute path of the changed entry. */
   path: string;
@@ -36,21 +57,93 @@ export type FsChangeEvent = {
 };
 
 /**
- * Manages per-directory `fs.watch` instances.
+ * Adapts a chokidar `ignored` predicate to editord's basename-level
+ * `isIgnored` rule. chokidar passes the full path; we match against the
+ * basename so the existing `IGNORED_NAMES`/`IGNORED_PATTERN` semantics
+ * keep working.
  *
- * Each watched directory gets one non-recursive watcher.
- * Raw events are debounced per-path, filtered for noise,
- * and resolved via `stat` to determine the change category.
+ * @param path - absolute path candidate
+ *
+ * @returns true when chokidar should skip the path entirely
+ *
+ * @example
+ * ```ts
+ * const skip = chokidarIgnored('/proj/.git');
+ * ```
+ */
+function chokidarIgnored(path: string,): boolean {
+  return isIgnored({ name: basename(path,), },);
+}
+
+/**
+ * Best-effort sweep of orphaned editord atomic-write temp files in one
+ * directory. Runs on first registration so any leftovers from a
+ * `SIGKILL`'d previous run are cleaned up the next time the user opens
+ * that directory in the tree.
+ *
+ * Errors are logged but never thrown: the watcher should come up even if
+ * the sweep fails, and chokidar's `ignored` predicate already filters
+ * surviving temp files from the event stream.
+ *
+ * @param path - absolute directory to sweep
+ *
+ * @param l - tagged logger for diagnostic output
+ */
+async function sweepOrphanTemps(
+  {
+    path,
+    l,
+  }: {
+    path: string;
+    l: Logger;
+  },
+): Promise<void> {
+  try {
+    const entries = await readdir(path,);
+    const orphans = entries.filter(
+      function isOrphan(name,): boolean {
+        return EDITORD_TEMP_PATTERN.test(name,);
+      },
+    );
+    if (orphans.length === 0)
+      return;
+    const results = await Promise.allSettled(
+      orphans.map(
+        function removeOrphan(name,): Promise<void> {
+          return unlink(
+            join(
+              path,
+              name,
+            ),
+          );
+        },
+      ),
+    );
+    const failed = results.filter(
+      function isRejection(r,): boolean {
+        return r.status === 'rejected';
+      },
+    );
+    if (failed.length > 0)
+      l.warn(`orphan sweep: ${String(failed.length,)}/${String(orphans.length,)} unlinks failed in ${path}`,);
+    else
+      l.info(`orphan sweep: cleaned ${String(orphans.length,)} temp file(s) in ${path}`,);
+  }
+  catch (sweepError) {
+    l.warn(`orphan sweep failed for ${path}: ${String(sweepError,)}`,);
+  }
+}
+
+/**
+ * Manages per-directory chokidar watchers.
+ *
+ * Each watched directory gets one `depth: 0` chokidar instance. Raw chokidar
+ * events are filtered through `#suppressed` (for self-triggered saves) and
+ * categorised into {@link FsChangeEvent}s before reaching the consumer.
  */
 export class DirWatcher {
   /** Active watchers keyed by directory path. */
   readonly #watchers = new Map<string, FSWatcher>();
-
-  /** Pending debounced events keyed by full path of the changed entry. */
-  readonly #pending = new Map<string, {
-    timer: ReturnType<typeof setTimeout>;
-    eventType: string;
-  }>();
 
   /** Paths suppressed from emitting events (e.g. after a self-save). */
   readonly #suppressed = new Set<string>();
@@ -62,7 +155,7 @@ export class DirWatcher {
   readonly #l: Logger;
 
   /**
-   * @param onChange - callback invoked for each debounced, filtered change event
+   * @param onChange - callback invoked for each filtered change event
    *
    * @param l - parent logger for tag composition
    */
@@ -84,6 +177,7 @@ export class DirWatcher {
 
   /**
    * Starts watching a directory for changes. No-op if already watched.
+   * Triggers a background orphan-temp sweep on first registration.
    *
    * @param path - absolute path of the directory to watch
    */
@@ -91,43 +185,42 @@ export class DirWatcher {
     if (this.#watchers.has(path,))
       return;
 
-    const self = this;
-    try {
-      const fsWatcher = watch(
-        path,
-        function handleWatchEvent(
-          eventType,
-          filename,
-        ) {
-          if (typeof filename !== 'string')
-            return;
-          if (isIgnored({ name: filename, },))
-            return;
-          self.#schedule({
-            dirPath: path,
-            filename,
-            eventType,
-          },);
+    const fsWatcher = chokidarWatch(
+      path,
+      {
+        atomic: true,
+        awaitWriteFinish: {
+          stabilityThreshold: AWAIT_WRITE_FINISH_MS,
+          pollInterval: AWAIT_WRITE_FINISH_POLL_MS,
         },
-      );
+        depth: 0,
+        ignoreInitial: true,
+        persistent: true,
+        followSymlinks: false,
+        ignored: chokidarIgnored,
+      },
+    );
 
-      fsWatcher.on(
-        'error',
-        function handleWatchError(error,) {
-          self.#l.error(`watcher error for ${path}: ${String(error,)}`,);
-          self.#removeWatcher({ path, },);
-        },
-      );
+    this.#wireEvents({
+      fsWatcher,
+      path,
+    },);
 
-      this.#watchers.set(
-        path,
-        fsWatcher,
-      );
-      this.#l.info(`watching: ${path}`,);
-    }
-    catch (error) {
-      this.#l.error(`failed to watch ${path}: ${String(error,)}`,);
-    }
+    this.#watchers.set(
+      path,
+      fsWatcher,
+    );
+    this.#l.info(`watching: ${path}`,);
+
+    /**
+     * Run the orphan sweep concurrently with watcher startup. With
+     * `ignoreInitial: true` and the `~$` ignore rule, neither the
+     * pre-existing temp files nor their unlinks emit events.
+     */
+    void sweepOrphanTemps({
+      path,
+      l: this.#l,
+    },);
   }
 
   /**
@@ -147,125 +240,130 @@ export class DirWatcher {
     );
   }
 
-  /** Closes all watchers and cancels pending debounce timers. */
-  close(): void {
-    for (const fsWatcher of this.#watchers.values())
-      fsWatcher.close();
+  /** Closes all watchers. */
+  async close(): Promise<void> {
+    const closes = [...this.#watchers.values(),].map(
+      function closeOne(w,) {
+        return w.close();
+      },
+    );
     this.#watchers.clear();
-
-    for (const entry of this.#pending.values())
-      clearTimeout(entry.timer,);
-    this.#pending.clear();
     this.#suppressed.clear();
+    await Promise.allSettled(closes,);
   }
 
   /**
-   * Debounces a raw filesystem event. Coalesces rapid events for the same
-   * path within {@link DEBOUNCE_MS}, keeping the latest event type.
+   * Wires chokidar lifecycle and event listeners for a single watcher.
+   * Each listener is a named function declaration; events the watcher would
+   * otherwise echo back to the client are dropped against `#suppressed`.
    *
-   * @param dirPath - watched directory path
+   * @param fsWatcher - the constructed chokidar watcher
    *
-   * @param filename - name of the changed entry within the directory
-   *
-   * @param eventType - raw event type from `fs.watch` ('rename' or 'change')
+   * @param path - directory path this watcher is responsible for
    */
-  #schedule({
-    dirPath,
-    filename,
-    eventType,
-  }: {
-    dirPath: string;
-    filename: string;
-    eventType: string;
-  },): void {
-    const fullPath = join(
-      dirPath,
-      filename,
-    );
-    if (this.#suppressed.has(fullPath,))
-      return;
-
-    const existing = this.#pending.get(fullPath,);
-    if (existing !== undefined)
-      clearTimeout(existing.timer,);
-
+  #wireEvents(
+    {
+      fsWatcher,
+      path,
+    }: {
+      fsWatcher: FSWatcher;
+      path: string;
+    },
+  ): void {
     const self = this;
-    const timer = globalThis.setTimeout(
-      function emitDebounced() {
-        self.#pending.delete(fullPath,);
-        void self.#resolveAndEmit({
-          fullPath,
-          eventType,
+
+    /**
+     * Emits a change event after suppression check.
+     */
+    function emit(
+      {
+        eventPath,
+        changeType,
+        isDirectory,
+      }: {
+        eventPath: string;
+        changeType: FsChangeType;
+        isDirectory: boolean;
+      },
+    ): void {
+      if (self.#suppressed.has(eventPath,))
+        return;
+      self.#onChange({
+        path: eventPath,
+        changeType,
+        isDirectory,
+      },);
+    }
+
+    fsWatcher.on(
+      'add',
+      function handleAdd(eventPath,) {
+        emit({
+          eventPath,
+          changeType: 'created',
+          isDirectory: false,
         },);
       },
-      DEBOUNCE_MS,
     );
-
-    this.#pending.set(
-      fullPath,
-      {
-        timer,
-        eventType,
+    fsWatcher.on(
+      'addDir',
+      function handleAddDir(eventPath,) {
+        emit({
+          eventPath,
+          changeType: 'created',
+          isDirectory: true,
+        },);
+      },
+    );
+    fsWatcher.on(
+      'change',
+      function handleChange(eventPath,) {
+        emit({
+          eventPath,
+          changeType: 'modified',
+          isDirectory: false,
+        },);
+      },
+    );
+    fsWatcher.on(
+      'unlink',
+      function handleUnlink(eventPath,) {
+        emit({
+          eventPath,
+          changeType: 'deleted',
+          isDirectory: false,
+        },);
+      },
+    );
+    fsWatcher.on(
+      'unlinkDir',
+      function handleUnlinkDir(eventPath,) {
+        emit({
+          eventPath,
+          changeType: 'deleted',
+          isDirectory: true,
+        },);
+      },
+    );
+    fsWatcher.on(
+      'error',
+      function handleWatchError(error,) {
+        self.#l.error(`watcher error for ${path}: ${String(error,)}`,);
+        self.#removeWatcher({ path, },);
       },
     );
   }
 
   /**
-   * Resolves a debounced event into a structured change event via `stat`.
-   *
-   * - `'change'` event type maps to `'modified'` (content change)
-   * - `'rename'` + file exists maps to `'created'`
-   * - `'rename'` + file gone maps to `'deleted'`
-   *
-   * @param fullPath - absolute path of the changed entry
-   *
-   * @param eventType - raw event type from `fs.watch`
-   */
-  async #resolveAndEmit({
-    fullPath,
-    eventType,
-  }: {
-    fullPath: string;
-    eventType: string;
-  },): Promise<void> {
-    if (eventType === 'change') {
-      this.#onChange({
-        path: fullPath,
-        changeType: 'modified',
-        isDirectory: false,
-      },);
-      return;
-    }
-
-    /** Rename event: stat to determine created vs deleted. */
-    try {
-      const stats = await stat(fullPath,);
-      this.#onChange({
-        path: fullPath,
-        changeType: 'created',
-        isDirectory: stats
-          .isDirectory(),
-      },);
-    }
-    catch {
-      this.#onChange({
-        path: fullPath,
-        changeType: 'deleted',
-        isDirectory: false,
-      },);
-    }
-  }
-
-  /**
-   * Removes and closes a single directory watcher.
+   * Removes and closes a single directory watcher (best-effort on error).
    *
    * @param path - directory path to stop watching
    */
   #removeWatcher({ path, }: { path: string; },): void {
     const fsWatcher = this.#watchers.get(path,);
-    if (fsWatcher !== undefined) {
-      fsWatcher.close();
-      this.#watchers.delete(path,);
-    }
+    if (fsWatcher === undefined)
+      return;
+    this.#watchers.delete(path,);
+    void fsWatcher.close();
   }
 }

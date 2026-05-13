@@ -206,5 +206,6 @@ export async function dispatchLspMessage(
     peer,
     parsed,
     lspManager,
+    dirWatcher,
   },);
 }

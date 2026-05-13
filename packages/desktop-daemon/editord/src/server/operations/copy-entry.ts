@@ -18,11 +18,15 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  *
  * @param destPath - destination path to copy to
  *
+ * @returns resolved absolute destination path, for watcher suppression at the
+ *   dispatch layer (the add event at the destination is self-triggered;
+ *   the source is unchanged so no source-side suppression is needed)
+ *
  * @throws when either path escapes root or the copy fails
  *
  * @example
  * ```ts
- * await copyEntry({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', destPath: '/home/user/project/src/renamed.ts', });
+ * const copied = await copyEntry({ rootDir: '/home/user/project', path: '/home/user/project/src/main.ts', destPath: '/home/user/project/src/renamed.ts', });
  * ```
  */
 export async function copyEntry(
@@ -35,7 +39,7 @@ export async function copyEntry(
     path: string;
     destPath: string;
   },
-): Promise<void> {
+): Promise<string> {
   const absoluteSource = assertWithinRoot({
     rootDir,
     path,
@@ -50,4 +54,6 @@ export async function copyEntry(
     absoluteDest,
     { recursive: true, },
   );
+
+  return absoluteDest;
 }

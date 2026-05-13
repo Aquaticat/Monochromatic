@@ -191,6 +191,7 @@ export async function dispatchMessage(
       parsed,
       rootDir,
       lspManager,
+      dirWatcher,
     },)) {
       return;
     }

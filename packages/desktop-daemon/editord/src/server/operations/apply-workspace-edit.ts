@@ -7,10 +7,7 @@
  * its open buffer.
  */
 
-import {
-  readFile,
-  writeFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 
 import type {
   Range,
@@ -19,6 +16,8 @@ import type {
 } from '../../protocol.ts';
 import type { LspWorkspaceEdit, } from '../lsp/types.ts';
 import { uriToPath, } from '../lsp/uri.ts';
+import type { DirWatcher, } from './watch-filesystem.ts';
+import { writeFileAtomic, } from './write-file-atomic.ts';
 
 /**
  * Converts 0-based line/character position to a string offset.
@@ -142,11 +141,10 @@ async function applyEditsToFile({
     text: content,
     edits: wireEdits,
   },);
-  await writeFile(
-    filePath,
-    modified,
-    'utf8',
-  );
+  await writeFileAtomic({
+    path: filePath,
+    content: modified,
+  },);
 }
 
 /**
@@ -154,10 +152,16 @@ async function applyEditsToFile({
  * Writes all affected files except the currently open one (which the client
  * updates in its buffer). Returns edits grouped by path for the client.
  *
+ * Suppresses the watcher for every file actually written to disk so the
+ * client never sees `fileChanged` echoes from its own rename or refactor.
+ *
  * @param workspaceEdit - LSP workspace edit with URI-keyed changes
  *
  * @param currentFilePath - path of the file currently open in the editor
  *   (edits for this file are returned but not written to disk)
+ *
+ * @param dirWatcher - watcher to silence for the duration of each write;
+ *   `null` when the watcher is not yet wired (e.g. tests, headless mode)
  *
  * @returns edits grouped by file path
  *
@@ -166,15 +170,18 @@ async function applyEditsToFile({
  * const fileEdits = await applyWorkspaceEdit({
  *   workspaceEdit: { changes: { 'file:///src/utils.ts': [{ range, newText: 'renamed' }] } },
  *   currentFilePath: '/home/user/project/src/main.ts',
+ *   dirWatcher,
  * });
  * ```
  */
 export async function applyWorkspaceEdit({
   workspaceEdit,
   currentFilePath,
+  dirWatcher,
 }: {
   workspaceEdit: LspWorkspaceEdit;
   currentFilePath: string;
+  dirWatcher: DirWatcher | null;
 },): Promise<WorkspaceFileEdit[]> {
   const { changes, } = workspaceEdit;
   if (changes === undefined)
@@ -206,6 +213,13 @@ export async function applyWorkspaceEdit({
     /** Skip disk write for the current file; the client applies those edits. */
     if (filePath === currentFilePath)
       continue;
+
+    /**
+     * Suppress before the write starts so the suppression set is populated
+     * before chokidar emits the post-`awaitWriteFinish` event.
+     */
+    if (dirWatcher !== null)
+      dirWatcher.suppressPath({ path: filePath, },);
 
     writePromises.push(applyEditsToFile({
       filePath,

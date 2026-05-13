@@ -243,7 +243,7 @@ async function shutdownApp(
   stopTokenTouch();
   if (deleteTokens)
     deleteTokenFile();
-  dirWatcher.close();
+  await dirWatcher.close();
   await lspManager.shutdown();
   await server.close(true,);
 }

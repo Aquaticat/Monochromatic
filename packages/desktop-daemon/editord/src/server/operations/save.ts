@@ -7,17 +7,15 @@
  * watchers (e.g. the dev:server restart loop) do not fire on no-op saves.
  */
 
-import {
-  readFile,
-  writeFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 
 import { assertWithinRoot, } from './assert-within-root.ts';
+import { writeFileAtomic, } from './write-file-atomic.ts';
 
 /**
  * Reads existing file content, returning null when the file is missing or
  * unreadable. Treating both as "different content" so the caller will attempt
- * the write and surface the real error from `writeFile` if any.
+ * the write and surface the real error from `writeFileAtomic` if any.
  *
  * @param absolutePath - absolute path of the file to read
  *
@@ -73,10 +71,9 @@ export async function saveFile(
   const existing = await readExistingOrNull(absolutePath,);
   if (existing === content)
     return absolutePath;
-  await writeFile(
-    absolutePath,
+  await writeFileAtomic({
+    path: absolutePath,
     content,
-    'utf8',
-  );
+  },);
   return absolutePath;
 }

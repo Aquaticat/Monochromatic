@@ -4,17 +4,19 @@
  * Creates a new file or directory within the root directory.
  */
 
-import {
-  mkdir,
-  writeFile,
-} from 'node:fs/promises';
+import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { assertWithinRoot, } from './assert-within-root.ts';
+import { writeFileAtomic, } from './write-file-atomic.ts';
 
 /**
  * Creates a new file or directory inside a parent directory.
  * The resulting path must remain within root.
+ *
+ * File creation goes through {@link writeFileAtomic} so the daemon never
+ * leaves a half-created file behind on crash; directory creation is a
+ * single `mkdir` syscall, which is already atomic.
  *
  * @param rootDir - absolute root directory for path containment
  *
@@ -24,11 +26,13 @@ import { assertWithinRoot, } from './assert-within-root.ts';
  *
  * @param isDirectory - whether to create a directory (true) or empty file (false)
  *
+ * @returns absolute path of the created entry, for watcher suppression at the dispatch layer
+ *
  * @throws when the path escapes root, name contains a separator, or the operation fails
  *
  * @example
  * ```ts
- * await newEntry({ rootDir: '/home/user/project', parentPath: 'src', name: 'utils.ts', isDirectory: false, });
+ * const created = await newEntry({ rootDir: '/home/user/project', parentPath: 'src', name: 'utils.ts', isDirectory: false, });
  * ```
  */
 export async function newEntry({
@@ -41,7 +45,7 @@ export async function newEntry({
   parentPath: string;
   name: string;
   isDirectory: boolean;
-},): Promise<void> {
+},): Promise<string> {
   if (name.includes('/',) || name.includes('\\',))
     throw new Error(`name must be a bare filename, got: ${name}`,);
 
@@ -60,9 +64,10 @@ export async function newEntry({
 
   await (isDirectory
     ? mkdir(absolutePath,)
-    : writeFile(
-      absolutePath,
-      '',
-      'utf8',
-    ));
+    : writeFileAtomic({
+      path: absolutePath,
+      content: '',
+    },));
+
+  return absolutePath;
 }

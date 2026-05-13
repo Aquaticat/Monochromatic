@@ -8,6 +8,7 @@
 import type { ClientMessage, } from '../protocol.ts';
 import type { LspManager, } from './lsp/lsp-manager.ts';
 import { applyWorkspaceEdit, } from './operations/apply-workspace-edit.ts';
+import type { DirWatcher, } from './operations/watch-filesystem.ts';
 import { toWireSelectionRange, } from './ws-conversions.ts';
 import {
   type Peer,
@@ -27,6 +28,9 @@ import {
  *
  * @param lspManager - LSP server coordinator
  *
+ * @param dirWatcher - watcher silenced during workspace-edit writes to avoid
+ *   self-echoing `fileChanged` events back to the client
+ *
  * @returns true if the message was handled, false if not a feature message type
  *
  * @example
@@ -35,6 +39,7 @@ import {
  *   peer,
  *   parsed: { type: 'gotoDefinition', id: '1', path: '/src/app.ts', line: 5, character: 12 },
  *   lspManager,
+ *   dirWatcher,
  * });
  * ```
  */
@@ -43,10 +48,12 @@ export async function dispatchLspFeatureMessage(
     peer,
     parsed,
     lspManager,
+    dirWatcher,
   }: {
     peer: Peer;
     parsed: ClientMessage;
     lspManager: LspManager | null;
+    dirWatcher: DirWatcher | null;
   },
 ): Promise<boolean> {
   if (parsed.type === 'gotoDefinition') {
@@ -216,6 +223,7 @@ export async function dispatchLspFeatureMessage(
     const fileEdits = await applyWorkspaceEdit({
       workspaceEdit,
       currentFilePath: parsed.path,
+      dirWatcher,
     },);
     sendJson({
       peer,
