@@ -4,12 +4,16 @@
 
 The package `packages/dev-script/deps-cube/` is being built per the approved plan at `/home/user/.claude/plans/make-a-new-workspace-serialized-puppy.md`. Read that plan first — it has the full design, the dimension mapping, the deck.gl scene composition, the UI/UX spec, the data-acquisition pipeline, the library-audit rationale (deck.gl approved at 72.7% TS as an explicit user-confirmed exception), and the verification checklist.
 
-Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D feature space (6 dims = 3 spatial + color + shape + size), with deck.gl WebGL rendering and a custom HTML control panel for dim swapping, 3-state boolean filtering, range sliders, name search, display toggles, and URL-hash bookmarking. Output: `./deps-cube-<YYYY-MM-DD>.html`. Stdout: exactly `Saved to <abs-path>`.
+Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D feature space (6 dims = 3 spatial + color + shape + size), with deck.gl WebGL rendering and a custom HTML control panel for dim swapping, 3-state boolean filtering, range sliders, name search, display toggles, and URL-hash bookmarking. Output: `<package>/dist/deps-cube-<YYYY-MM-DD>.html` (anchored to this package's directory via `import.meta.dirname`; the audit is per-monorepo, so cwd-anchoring would be wrong). Stdout: exactly `Saved to <abs-path>`.
 
-**Status (2026-05-12, seventh handover)**: tasks 1 through 12 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), the Node-side HTML emitter for the control panel, the browser-side runtime controller (Deck instantiation, event wiring, picking, URL-hash sync), the HTML composer + CLI entry point (`renderHtml` inlines a 754KB IIFE controller bundle + probes-as-JS-literal + control-panel HTML + native-CSS-nested styles into a single self-contained HTML file), `docs/decisions/deps-cube.md` (depth-matched library audit covering the 72.6% TS exception with the user-approved attribution, the verified transitive surface, the bundle-size delta vs the plan estimate, and the filled-vs-stroked deviation), and eight unit-test files (`test/*.unit.test.ts`) wired through the `test:unit` task template — 8 PASS, 0 FAIL, 1 SKIP (documented upstream bug, see Task 12 notes). Task 13 pending. Lint, types, and tests all clean (0 errors; ~368 stylistic warnings, all non-blocking).
+**Status (2026-05-12, eighth handover)**: tasks 1 through 12 done; task 13 partially complete (headless verification done; manual Firefox interaction checks pending). End-to-end smoke run surfaced three bugs, all now fixed in commits below: (1) cli.ts wrote to `process.cwd()` which polluted the source tree when invoked via `mise run`; (2) the range filter rejected probes with any null channel value, hiding 54 of 115 partial-unknowns on default state when the plan requires "N of N visible"; (3) `defaultState` returned the module-level `DEFAULT_*` constants by reference, and the controller's mutate-in-place wire handlers silently rewrote them, breaking the reset button after the first user toggle. Lint, types, and tests all clean (0 errors; ~370 stylistic warnings, all non-blocking). 9 PASS / 0 FAIL / 1 SKIP across the eight test files. The audit-target pattern (`tsMajority=no` + `isLeaf=yes` + `recent=no`) correctly narrows the 115-package catalog to a single probe (`mitata`) — exactly the kind of result the tool was built to surface.
 
 **Last commits**:
 
+- `b0364026 fix(dev-script/deps-cube): deep-clone defaults in defaultState to prevent shared-reference corruption` (task 13 fix 3)
+- `775efcf1 fix(dev-script/deps-cube): pass partial-unknowns through range filter by default` (task 13 fix 2)
+- `9376aff8 fix(dev-script/deps-cube): anchor output to <package>/dist/ via import.meta.dirname` (task 13 fix 1)
+- `77656a03 test(dev-script/deps-cube): add eight unit-test files for task 12` (task 12)
 - `cfa2d156 docs(dev-script/deps-cube): add depth-matched library audit for deck.gl` (task 11)
 - `c37ee14c feat(dev-script/deps-cube): add HTML composer + CLI entry` (task 10)
 - `a496f91c feat(dev-script/deps-cube): add browser-side scene controller` (task 9)
@@ -47,7 +51,7 @@ Done:
 
 - ~~Task 10 (HTML composer + CLI)~~ — three files plus a CSS asset:
   - `src/render-html.ts` — `renderHtml({ probes })` builds the final document: calls `Bun.build({ entrypoints: ['src/scripts/controller.ts'], format: 'iife', minify: true, target: 'browser' })` to obtain the controller IIFE, inlines `window.__PROBES__ = <json>` ahead of the controller script, embeds the control-panel fragment from `renderControls`, and wraps everything in `<!doctype html>...</html>` with the CSS from `styles.css` in a `<style>` block. Helpers: `bundleController` (throws when `result.success === false`, joining `result.logs.map(log => log.message)`), `escapeForScriptTag` (replaces `</script` → `<\/script` and `<!--` → `<\!--` so the inline JS can't escape the script tag). Empty-probes smoke test: 770KB output, 513 modules, document terminates cleanly with `</html>`.
-  - `src/cli.ts` — `#!/usr/bin/env bun` entry; top-level `await readCatalog()` → `createCache()` → `await probeAll({ entries, cache })` → `await renderHtml({ probes })` → `writeFile(absPath, html, 'utf8')` → `console.log(\`Saved to ${absPath}\`)`. `todaysOutputFilename()` returns `deps-cube-<YYYY-MM-DD>.html` in local time (date-only granularity so same-day re-runs overwrite). Each top-level `const` carries its own TSDoc (required at module root).
+  - `src/cli.ts` — `#!/usr/bin/env bun` entry; top-level `await readCatalog()` → `createCache()` → `await probeAll({ entries, cache })` → `await renderHtml({ probes })` → `mkdir(distDir, { recursive: true })` → `writeFile(absPath, html, 'utf8')` → `console.log(\`Saved to ${absPath}\`)`. `todaysOutputFilename()` returns `deps-cube-<YYYY-MM-DD>.html` in local time (date-only granularity so same-day re-runs overwrite). Output is anchored to `<package>/dist/` via `resolvePath(import.meta.dirname, '..', 'dist')`, not `process.cwd()`: the audit is per-monorepo, not per-cwd, and cwd-anchoring polluted the source tree when invoked via `mise run` (mise cd's into the package dir). Each top-level `const` carries its own TSDoc (required at module root).
   - `src/index.ts` — re-exports the library surface (`readCatalog`, `decodeAlias`, `CatalogEntry`; `createCache`, `Cache`; `probeAll`, `PackageProbe`, `LicenseClass`, `UnknownReason`; `renderHtml`; `renderControls`). The CLI in `cli.ts` is bin-only and not re-exported.
   - `src/styles.css` — page CSS imported via `with { type: 'text' }`. Native nesting (3 levels max), logical properties (`inline-size`, `padding-inline`, `border-inline-start-*`), `rem` sizing, `:focus-visible` on every interactive element, `min-block-size: 3rem` touch targets, design-token custom properties at `:root` with `prefers-color-scheme: dark` overrides. No `border`/`padding`/`margin` shorthands — only single-axis (`padding-block`, `padding-inline`) or single-concept (`border-radius`) shorthands; sided borders use longhand `border-block-start-width` / `-style` / `-color`.
   - `src/css.d.ts` — ambient `declare module '*.css'` shim so TypeScript types the text import as `string` (mirrors the existing `svg.d.ts` shim in `inference-canary-viewer`).
@@ -76,9 +80,22 @@ Done (continued):
 
   Sinon stubbing of global namespace methods (`Bun.build`, `globalThis.fetch`) requires `oxlint-disable typescript-eslint/no-unsafe-call` and `no-unsafe-member-access` because sinon's overload set doesn't unify with the Bun ambient namespace types or the fetch global. The disables are wrapped tightly around the `sinon.stub(...).resolves/rejects(...)` lines per the AGENTS.md disable-comment rule.
 
-Pending:
+Partial:
 
-- **Task 13**: end-to-end smoke run — `mise run //packages/dev-script/deps-cube:run`, open the HTML in Firefox, exercise the full verification checklist from the plan.
+- **Task 13** (in progress): end-to-end smoke run. Headless verification complete via `agent-browser` against `file://.../dist/deps-cube-2026-05-12.html`:
+  - CLI exits with one line of stdout: `Saved to <abs-path>` ✓
+  - HTML is self-contained (no `<link rel="stylesheet">`, no `<script src=…>`) ✓
+  - 115 probes inlined; visibility counter reads `115 of 115 visible` on first load ✓ (was 61 of 115 before the filter fix)
+  - Zero browser-console errors and zero page errors during deck.gl init ✓
+  - Search filtering works (`react` → 2 of 115; `etag` → 0 of 115, no etag-style packages in this catalog) ✓
+  - 3-state toggle composition for the audit-target pattern (`tsMajority=no` + `isLeaf=yes` + `recent=no`) narrows to 1 probe: `mitata` ✓
+  - Display toggles flip state (`#display-planes` checked → unchecked without error) ✓
+  - Reset button restores defaults across all radios + ranges + search ✓ (was broken before the defaultState clone fix)
+  - URL hash encodes state (`#state=…`, ~1.1KB encoded) ✓
+  - `hasKnownRepo='yes'` toggle hides partial-unknowns (`93 of 115`, matching the 22 probes with non-null `unknownReason`) ✓
+  - Re-run from cache completes in <2s ✓
+
+  Manual Firefox verification still needed for the interactive 3D pieces that headless tools cannot exercise meaningfully: drag-rotate, shift-drag pan, scroll-zoom, double-click reset of the camera; visual confirmation of glyph positions, wireframe, threshold planes, and partial-unknown outline color; hover-tooltip and click-pinned-tooltip behaviour. Open `packages/dev-script/deps-cube/dist/deps-cube-2026-05-12.html` in Firefox ESR 140+ and walk steps 4, 10, 11, 13, 16, 17 of the plan's verification checklist.
 
 ## State on disk (verified before this handover)
 
