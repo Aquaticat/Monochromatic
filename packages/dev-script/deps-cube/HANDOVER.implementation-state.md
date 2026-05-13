@@ -46,6 +46,17 @@ Pending: manual Firefox interaction verification — open the new HTML and confi
 
 Lint, types, and tests all clean (0 errors; 471 stylistic warnings; 8 PASS / 0 FAIL / 1 SKIP). Fresh HTML at `dist/deps-cube-2026-05-13T02-28-46Z.html` (~822KB; no size delta from iteration-2 since the bundle contents are unchanged).
 
+**Status (2026-05-12, fifteenth handover — both orientations per texture)**: iteration-6 added a single canvas-Y flip on the assumption that luma.gl would upload with `flipY: false`. luma.gl's source does default to `flipY: false`, but the empirical result on the sphere was still inverted text — likely because the equirectangular UV mapping combines with the orientation of the canvas in a way the single flip didn't undo. Instead of chasing the math, the user proposed a guaranteed-correct workaround: print BOTH an upright and a rotated-180° copy on the same texture, so at least one is readable from any rotation. That is now the implementation in `src/deck-textures.ts`:
+
+- Sphere textures get two stripes at `v = 0.35` (upright) and `v = 0.65` (rotated 180°), each with two horizontal repetitions at `u = 0.25 / 0.75`. Four text instances per texture; the viewer sees at least one right-side-up copy on the visible hemisphere regardless of camera angle.
+- Octahedron textures get two stripes inside the UV face triangle at `v = 1/4` (upright) and `v = 1/2` (rotated 180°). Each of the 8 faces shows both orientations, so a glance at any face yields a readable name.
+- `paintFlippedName` (the previous `scale(1, -1)` helper) replaced by paired `paintUpright` (no transform) and `paintRotated180` (`translate / rotate(PI)`); the rotation keeps the glyph centred under its anchor point without the Y-mirror artefacts that `scale(1, -1)` introduces on some glyph features.
+- Constants renamed: `SPHERE_EQUATOR_V` → `SPHERE_UPRIGHT_V` + `SPHERE_FLIPPED_V`; `OCTAHEDRON_CENTROID_V` → `OCTAHEDRON_UPRIGHT_V` + `OCTAHEDRON_FLIPPED_V`.
+
+Lint, types, and tests all clean (0 errors; 8 PASS / 0 FAIL / 1 SKIP). Fresh HTML at `dist/deps-cube-2026-05-13T03-02-47Z.html`.
+
+**Status (2026-05-12, fourteenth handover — texture fixes: vertical flip + auto-shrink + 2-repeat)**: iteration-6 added a single canvas-Y flip on the assumption that luma.gl would upload with `flipY: false`. luma.gl's source does default to `flipY: false`, but the empirical result on the sphere was still inverted text — likely because the equirectangular UV mapping combines with the orientation of the canvas in a way the single flip didn't undo. The previous attempt's contents follow.
+
 **Status (2026-05-12, fourteenth handover — texture fixes: vertical flip + auto-shrink + 2-repeat)**: iteration-5 baked the names but two artefacts showed up: text rendered upside-down on the camera-facing side of every sphere, and at 4 repetitions on a 512 px texture long names like `happy-rusty` overflowed their 128 px slot and overlapped. Both fixed in `src/deck-textures.ts`:
 
 - Vertical flip: text is drawn with a `ctx.save() / translate / scale(1, -1) / draw / restore()` wrapper. Reason: luma.gl's `SphereGeometry` writes `texCoord_v = 1 - latitude` (north pole at v=1, south pole at v=0) while WebGL's default canvas upload puts canvas-top at v=0. Without the flip, text drawn at canvas-middle ends up with its top half south-of-equator on the sphere, reading upside-down to anyone looking at the equator from outside. With the flip, the text renders right-side-up. Applies to the octahedron path too (faces are orientation-symmetric, so the flip never makes things worse).
@@ -87,7 +98,8 @@ Lint, types, and tests all clean (0 errors; 473 stylistic warnings — two more 
 
 **Last commits** (most recent first):
 
-- (next commit, this session) — iteration-6 texture vertical-flip + auto-shrink + 2-repeat
+- (next commit, this session) — iteration-7 paint upright AND rotated-180° copies on each texture
+- `bd6e6049 fix(dev-script/deps-cube): flip texture Y + auto-shrink long names + 2 reps` (iteration 6)
 - `62d80159 feat(dev-script/deps-cube): bake names into per-probe mesh textures` (iteration 5)
 - `059201f2 feat(dev-script/deps-cube): paint name labels onto each ball/octahedron` (iteration 4)
 - `217ffab5 feat(dev-script/deps-cube): halve glyph size and label every glyph by default` (iteration 3)

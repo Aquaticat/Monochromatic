@@ -15,13 +15,18 @@
  * read as wrong; the user explicitly asked for "part of the mesh"
  * semantics. Texture mapping is the standard way to get that.
  *
- * Sphere UV layout (equirectangular): the name is repeated 2× along
- * the equator (`v = 0.5`) at `u = 0.25 / 0.75` so it is visible from
- * any longitude. The text is rasterised flipped vertically because
- * luma.gl's sphere uses `texCoord_v = 1 − latitude` (north pole → top
- * of texture, south pole → bottom), but WebGL by default uploads
- * canvases with canvas-top mapped to texture-bottom — without the
- * flip the names render upside-down on the visible hemisphere.
+ * Sphere UV layout (equirectangular): the name is drawn in two
+ * horizontal stripes — one upright above the equator at `v ≈ 0.35`,
+ * one rotated 180° below the equator at `v ≈ 0.65`. Each stripe has
+ * two horizontal repetitions at `u = 0.25 / 0.75` for longitude
+ * coverage. The mix of orientations guarantees that, whatever
+ * combination of canvas-Y direction and texture-Y direction luma.gl
+ * actually chooses (it claims `flipY: false` but the empirical result
+ * on a sphere is that text drawn upright on the canvas reads
+ * upside-down on the sphere), at least one stripe is right-side-up
+ * from any camera rotation. The user proposed this when a single
+ * canvas-side flip kept rendering inverted on the sphere; the
+ * two-versions-per-texture approach sidesteps the orientation puzzle.
  *
  * Sphere font size auto-shrinks via `ctx.measureText` so even long
  * names like `happy-rusty` fit inside their `TEXTURE_SIZE_PX /
@@ -29,7 +34,7 @@
  *
  * Octahedron UV layout: every face is mapped to the same UV triangle
  * `(0, 0) — (1, 0) — (0.5, 1)`. The name is drawn inside that triangle
- * so each of the 8 faces shows the same label.
+ * (once upright, once rotated 180°) for the same reason.
  *
  * The shape parameter selects which texture layout to use; spheres and
  * octahedra have very different unwrappings.
@@ -84,16 +89,20 @@ const MIN_FONT_SIZE_PX = 22;
 const OUTLINE_WIDTH_PX = 6;
 /** Horizontal repetitions of the name around the sphere equator. Two copies (at u=0.25 and u=0.75) give visibility from any rotation while keeping each slot wide enough for readable text. */
 const SPHERE_REPETITIONS = 2;
-/** Vertical position of the equator in texture-space (sphere UV: equator is `v = 0.5`). */
-const SPHERE_EQUATOR_V = 0.5;
+/** Vertical position of the upright stripe in texture-space; sits just above the equator. */
+const SPHERE_UPRIGHT_V = 0.35;
+/** Vertical position of the rotated stripe in texture-space; sits just below the equator. Together with the upright stripe, this guarantees a readable orientation from every camera angle regardless of which way the texture sampler ends up mapping canvas-Y to sphere-Y. */
+const SPHERE_FLIPPED_V = 0.65;
 /** Fraction of the slot width the text may occupy before auto-shrink kicks in. Leaves a small margin for the outline. */
 const SPHERE_SLOT_FILL_FRACTION = 0.85;
 /** Half-coefficient used for centring. */
 const HALF = 1 / 2;
 /** Module-level cache: `(catalogKey, rgba, shape, withName)` → built canvas. Avoids re-rendering on every state recompute. */
 const TEXTURE_CACHE = new Map<string, HTMLCanvasElement>();
-/** Octahedron face triangle centroid is at `v = 1/3` (UV layout `(0,0)–(1,0)–(0.5,1)`); pre-compute to keep the value out of inline literals. */
-const OCTAHEDRON_CENTROID_V = 1 / 3;
+/** Octahedron upright stripe centre, in normalised texture v space. */
+const OCTAHEDRON_UPRIGHT_V = 1 / 4;
+/** Octahedron rotated stripe centre, in normalised texture v space. Below the upright copy so the face shows both within the `(0,0)–(1,0)–(0.5,1)` UV triangle. */
+const OCTAHEDRON_FLIPPED_V = 1 / 2;
 
 //endregion Constants
 
@@ -153,23 +162,44 @@ function paintBackground(
 }
 
 /**
- * Draws the name with a black outline and white fill at a given centre,
- * vertically flipped so it renders right-side-up on a sphere whose
- * texture is uploaded without Y-flip (canvas top → texture v=0 →
- * sphere south pole per luma.gl's `1 - latitude` mapping).
- *
- * For the octahedron the flip also applies; the UV triangle is
- * orientation-symmetric so the text either reads as drawn or as a
- * 180° rotation depending on which face the viewer is looking at —
- * acceptable, since each octahedron has 8 faces and at least one is
- * orientation-friendly from any camera angle.
+ * Draws the name with a black outline and white fill at a given
+ * canvas centre, in the natural canvas orientation.
  *
  * @param ctx - Target context.
  * @param text - Name string.
  * @param x - Horizontal centre in texture pixels.
  * @param y - Vertical centre in texture pixels.
  */
-function paintFlippedName(
+function paintUpright(
+  {
+    ctx,
+    text,
+    x,
+    y,
+  }: {
+    ctx: CanvasRenderingContext2D;
+    text: string;
+    x: number;
+    y: number;
+  },
+): void {
+  ctx.strokeText(text, x, y,);
+  ctx.fillText(text, x, y,);
+}
+
+/**
+ * Draws the name with a black outline and white fill at a given
+ * canvas centre, rotated 180° around that centre — i.e. upside-down
+ * in canvas coords. Paired with {@link paintUpright} on the same
+ * texture so the sphere shows at least one readable copy from any
+ * camera angle.
+ *
+ * @param ctx - Target context.
+ * @param text - Name string.
+ * @param x - Horizontal centre in texture pixels.
+ * @param y - Vertical centre in texture pixels.
+ */
+function paintRotated180(
   {
     ctx,
     text,
@@ -184,7 +214,7 @@ function paintFlippedName(
 ): void {
   ctx.save();
   ctx.translate(x, y,);
-  ctx.scale(1, -1,);
+  ctx.rotate(Math.PI,);
   ctx.strokeText(text, 0, 0,);
   ctx.fillText(text, 0, 0,);
   ctx.restore();
@@ -304,7 +334,8 @@ export function makeProbeTexture(
     },);
     ctx.font = `700 ${fontSize.toString()}px sans-serif`;
     ctx.lineWidth = OUTLINE_WIDTH_PX * (fontSize / FONT_SIZE_PX);
-    const yPx = SPHERE_EQUATOR_V * TEXTURE_SIZE_PX;
+    const uprightYPx = SPHERE_UPRIGHT_V * TEXTURE_SIZE_PX;
+    const flippedYPx = SPHERE_FLIPPED_V * TEXTURE_SIZE_PX;
     const offsets = Array.from(
       {
         length: SPHERE_REPETITIONS,
@@ -314,27 +345,42 @@ export function makeProbeTexture(
       },
     );
     for (const xPx of offsets) {
-      paintFlippedName({
+      paintUpright({
         ctx,
         text: probe.npmName,
         x: xPx,
-        y: yPx,
+        y: uprightYPx,
+      },);
+      paintRotated180({
+        ctx,
+        text: probe.npmName,
+        x: xPx,
+        y: flippedYPx,
       },);
     }
   } else {
     ctx.lineWidth = OUTLINE_WIDTH_PX;
     const centreX = TEXTURE_SIZE_PX * HALF;
     /**
-     * Octahedron faces map to UV triangle `(0,0) – (1,0) – (0.5,1)`,
-     * so the visual centroid in texture space is at `(0.5, 1/3)`.
-     * Drawing the text there centres it inside every face.
+     * Octahedron faces map to UV triangle `(0,0) – (1,0) – (0.5,1)`.
+     * Two stripes inside the triangle — upright at `v = 1/4` and
+     * rotated 180° at `v = 1/2` — so a reader sees at least one
+     * readable orientation per face regardless of how the texture
+     * winds up oriented on the sphere.
      */
-    const yPx = OCTAHEDRON_CENTROID_V * TEXTURE_SIZE_PX;
-    paintFlippedName({
+    const uprightYPx = OCTAHEDRON_UPRIGHT_V * TEXTURE_SIZE_PX;
+    const flippedYPx = OCTAHEDRON_FLIPPED_V * TEXTURE_SIZE_PX;
+    paintUpright({
       ctx,
       text: probe.npmName,
       x: centreX,
-      y: yPx,
+      y: uprightYPx,
+    },);
+    paintRotated180({
+      ctx,
+      text: probe.npmName,
+      x: centreX,
+      y: flippedYPx,
     },);
   }
   TEXTURE_CACHE.set(key, canvas,);
