@@ -9,8 +9,9 @@
  * exactly one line to stdout: `Saved to <abs-path>`. Probe progress
  * goes to stderr via `console.error` in {@link probeAll}.
  *
- * Output is anchored to this package's `dist/` via {@link PACKAGE_ROOT}
- * from `./find-package-root.ts`, which walks up from
+ * Output is anchored to this package's `dist/` via {@link PACKAGE_ROOT},
+ * resolved at module load by {@link findPackageRootCached} from
+ * `@monochromatic-dev/module-fs-path`. The helper walks up from
  * `import.meta.dirname` until the package's own `package.json` is
  * found. This works identically in source mode (`bun src/cli.ts`) and
  * in built mode (tsdown emits `<pkg>/dist/final/node/cli.mjs` and
@@ -37,11 +38,29 @@ import {
   resolve as resolvePath,
 } from 'node:path';
 
+import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path';
+
 import { createCache, } from './cache.ts';
 import { readCatalog, } from './catalog.ts';
-import { PACKAGE_ROOT, } from './find-package-root.ts';
 import { probeAll, } from './probe.ts';
 import { renderHtml, } from './render-html.ts';
+
+//region Package root
+
+/**
+ * Absolute path of this package's root directory, resolved at module load.
+ *
+ * Walks up from `import.meta.dirname` to the `package.json` whose
+ * `name` matches `@monochromatic-dev/dev-script-deps-cube`. Result is
+ * memoised by the helper, so `render-html.ts` (which also resolves
+ * this root) shares the same walk.
+ */
+const PACKAGE_ROOT = await findPackageRootCached({
+  dir: import.meta.dirname,
+  name: '@monochromatic-dev/dev-script-deps-cube',
+},);
+
+//endregion Package root
 
 //region Helpers
 

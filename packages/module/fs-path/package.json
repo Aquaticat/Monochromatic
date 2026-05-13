@@ -8,7 +8,8 @@
   "module": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./find-monorepo-root": "./src/find-monorepo-root.ts"
+    "./find-monorepo-root": "./src/find-monorepo-root.ts",
+    "./find-package-root": "./src/find-package-root.ts"
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",

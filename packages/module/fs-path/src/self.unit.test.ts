@@ -11,3 +11,4 @@
 
 import './path-ops.unit.test.ts';
 import './find-monorepo-root.unit.test.ts';
+import './find-package-root.unit.test.ts';

@@ -29,6 +29,7 @@
     "@deck.gl/core": "catalog:",
     "@deck.gl/layers": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
     "find-up": "catalog:",
     "nano-spawn": "catalog:",
     "p-limit": "catalog:",

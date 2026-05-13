@@ -1012,6 +1012,9 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../../module/fs-path
       find-up:
         specifier: 'catalog:'
         version: 8.0.0

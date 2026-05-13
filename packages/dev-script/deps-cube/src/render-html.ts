@@ -21,12 +21,26 @@
 import { readFile, } from 'node:fs/promises';
 import { resolve as resolvePath, } from 'node:path';
 
-import { PACKAGE_ROOT, } from './find-package-root.ts';
+import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path';
+
 import type { PackageProbe, } from './probe.ts';
 import { renderControls, } from './render-controls.ts';
 import { defaultState, } from './scripts/state.ts';
 
 //region Constants
+
+/**
+ * Absolute path of this package's root directory, resolved at module load.
+ *
+ * Walks up from `import.meta.dirname` to the `package.json` whose
+ * `name` matches `@monochromatic-dev/dev-script-deps-cube`. Result is
+ * memoised by the helper, so `cli.ts` (which also resolves this root)
+ * shares the same walk.
+ */
+const PACKAGE_ROOT = await findPackageRootCached({
+  dir: import.meta.dirname,
+  name: '@monochromatic-dev/dev-script-deps-cube',
+},);
 
 /**
  * Absolute path to the browser-side controller source entry point.

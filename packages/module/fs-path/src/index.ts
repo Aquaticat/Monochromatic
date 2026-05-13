@@ -32,6 +32,10 @@ export {
   findMonorepoRoot,
   findMonorepoRootCached,
 } from './find-monorepo-root.ts';
+export {
+  findPackageRoot,
+  findPackageRootCached,
+} from './find-package-root.ts';
 /* oxlint-enable import/no-cycle */
 export {
   trimLeadingSlash,

@@ -10,6 +10,7 @@ This package was extracted from `@monochromatic-dev/module-es`'s `path/` submodu
 The package is source-only.
 `.` resolves to `./src/index.ts` (the barrel), which re-exports every helper.
 `./find-monorepo-root` resolves directly to `./src/find-monorepo-root.ts` for consumers that only need that one function.
+`./find-package-root` resolves directly to `./src/find-package-root.ts` for consumers that only need that one function.
 
 | Function                | Source                      | Description                                                                                              |
 | ----------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -19,6 +20,9 @@ The package is source-only.
 | `isAbsolute`            | `src/index.ts`              | Whether a POSIX path starts with `/`.                                                                    |
 | `sep`                   | `src/index.ts`              | POSIX path separator (`'/'`).                                                                            |
 | `findMonorepoRoot`      | `src/find-monorepo-root.ts` | Walks upward for a `mise.toml` containing `[monorepo]`. Normalizes `/home/` to `/var/home/` for ostree.  |
+| `findMonorepoRootCached` | `src/find-monorepo-root.ts` | Memoised variant: first resolved root is locked in for the process lifetime; concurrent first callers share one walk. |
+| `findPackageRoot`       | `src/find-package-root.ts`  | Walks upward for a `package.json` whose `name` field matches a given value. Anchors a package on its own root in source and built modes. Node/Bun only. |
+| `findPackageRootCached` | `src/find-package-root.ts`  | Memoised variant of `findPackageRoot`, keyed by `name`. Two modules of the same package share one walk. |
 | `ensureDir`             | `src/ensure.ts`             | Creates a directory recursively when missing, verifies read/write when it exists.                        |
 | `ensureFile`            | `src/ensure.ts`             | Creates a file (and parents) when missing, verifies read/write when it exists.                           |
 | `ensurePath`            | `src/ensure.ts`             | Dispatches to `ensureFile` or `ensureDir` based on whether the path has an extension.                    |
@@ -60,5 +64,7 @@ await emptyDir(trimTrailingSlash(dirname('dist/bundle.js/'),),);
 - Node and Bun: `node:fs/promises` via dynamic import.
 - Browser with OPFS support: `happy-opfs` `readTextFile` (logs a warning on first use).
 - Browser without OPFS: stub that always returns `undefined`; the upward walk exhausts and the function throws.
+
+`findPackageRoot` is Node/Bun only: it reads `package.json` via `node:fs/promises` directly with no browser fallback. Current consumers anchor on `import.meta.dirname`, which is itself Node-only. A cross-runtime backend can be added when a browser consumer needs it.
 
 The path utilities (`dirname`, `join`, `resolve`, `isAbsolute`) delegate to `node:path/posix` when available and fall back to the pure-JS implementations in `src/fallbacks.ts` otherwise.
