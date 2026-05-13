@@ -4,9 +4,16 @@
  * `deps-cube` CLI entrypoint.
  *
  * Reads the workspace catalog, probes every entry, renders the HTML
- * report, writes it to `./deps-cube-<YYYY-MM-DD>.html`, and prints
- * exactly one line to stdout: `Saved to <abs-path>`. Probe progress
- * goes to stderr via `console.error` in {@link probeAll}.
+ * report, writes it to `<package>/dist/deps-cube-<YYYY-MM-DD>.html`,
+ * and prints exactly one line to stdout: `Saved to <abs-path>`. Probe
+ * progress goes to stderr via `console.error` in {@link probeAll}.
+ *
+ * Output is anchored to this package's own `dist/` (resolved from
+ * `import.meta.dirname`), not the user's cwd. Rationale: the report
+ * audits the monorepo's catalog, not any per-invocation working
+ * directory. Anchoring to the package keeps the artifact gitignored
+ * (root `.gitignore` excludes `dist`) and out of the source tree when
+ * invoked via `mise run` (mise changes into the package directory).
  *
  * No flags: the CLI is intentionally zero-config. Same-day re-runs
  * overwrite in place (the date stem stays constant) so iterating
@@ -15,11 +22,14 @@
  * @example
  * ```bash
  * deps-cube
- * # → Saved to /abs/path/to/deps-cube-2026-05-12.html
+ * # → Saved to /abs/path/to/deps-cube/dist/deps-cube-2026-05-12.html
  * ```
  */
 
-import { writeFile, } from 'node:fs/promises';
+import {
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 import {
   resolve as resolvePath,
 } from 'node:path';
@@ -69,8 +79,13 @@ const html = await renderHtml({
   probes,
 },);
 
-/** Absolute path of the output file under the current working directory. */
-const absPath = resolvePath(process.cwd(), todaysOutputFilename(),);
+/** Absolute path of this package's `dist/` directory (sibling of `src/`). */
+const distDir = resolvePath(import.meta.dirname, '..', 'dist',);
+
+await mkdir(distDir, { recursive: true, },);
+
+/** Absolute path of today's output file under `<package>/dist/`. */
+const absPath = resolvePath(distDir, todaysOutputFilename(),);
 
 await writeFile(absPath, html, 'utf8',);
 console.log(`Saved to ${absPath}`,);

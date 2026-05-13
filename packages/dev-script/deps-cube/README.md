@@ -14,7 +14,7 @@ deps-cube
 mise run //packages/dev-script/deps-cube:run
 ```
 
-Output: `./deps-cube-<YYYY-MM-DD>.html` in the current working directory. Stdout prints exactly `Saved to <abs-path>`. Open the HTML in any modern browser (Firefox ESR 140+ baseline).
+Output: `<package>/dist/deps-cube-<YYYY-MM-DD>.html` (anchored to this package's directory via `import.meta.dirname`, not the user's cwd; the audit is per-monorepo, not per-cwd). The package's `dist/` is gitignored. Stdout prints exactly `Saved to <abs-path>`. Open the HTML in any modern browser (Firefox ESR 140+ baseline).
 
 ## Dimensions
 
