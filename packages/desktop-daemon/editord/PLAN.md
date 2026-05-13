@@ -149,6 +149,16 @@
 - [x] `file-tree-entry.styles.ts`: extracted entry styles with custom disclosure arrows
 - [x] `completion-popup-render.ts`: extracted DOM rendering helpers for completion items
 
+## Phase 13 -- Save durability and watcher migration (done)
+
+- [x] `write-file-atomic.ts`: temp + fsync + rename helper, `O_NOFOLLOW`/`O_EXCL` on the temp open, `lstat`-and-refuse on symlinked targets (`ELOOP`), `fchmod` to preserve mode
+- [x] `save.ts`, `apply-workspace-edit.ts`, `new-entry.ts` migrated to `writeFileAtomic`
+- [x] `DirWatcher` (`watch-filesystem.ts`) reimplemented on chokidar 5 with `depth: 0`, `atomic: true`, `awaitWriteFinish`; public API (`watchDir`, `suppressPath`, `close`, `FsChangeEvent`) preserved
+- [x] Orphan `.*.editord.*~` temp sweep on first `watchDir` of each directory
+- [x] `dirWatcher.suppressPath` added for the previously-missing fs-action paths (apply-workspace-edit, new-entry, move-entry source+dest, delete-entry, copy-entry)
+
+Verification procedure for end-to-end checks: `HANDOVER.chokidar-atomic-migration.md`.
+
 ## Future (post-MVP)
 
 - Completion item kind icons
