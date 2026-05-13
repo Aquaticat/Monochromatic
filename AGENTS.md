@@ -35,6 +35,7 @@ Before sending any response with substantive claims:
 7. Confident factual claim about your environment, an external tool, or source code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
 8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
 9. Quoted a clause or doc passage and drawn a conclusion from it? Restate the subject and object in plain English before relying on the conclusion. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
+10. About to ask the user to perform a manual action? Apply "Handing off manual actions": try the bridging path first; if you must hand off, write it in HANDOVER format.
 
 ### Measure-vs-ask
 
@@ -137,6 +138,22 @@ Signal you are about to violate this rule:
 Refuse only after attempting a bridge and confirming no path exists. State the bridges you tried; an unconsidered refusal looks identical to a real obstacle, and the user cannot tell which is which.
 
 The same applies to research-exhaustion claims. When a narrow search returns "no direct evidence for X" and X is a specific entity in a broader class, widen to the nearest comparable entities (sibling tools, peer platforms, projects solving the same problem) before concluding. Failure shape: writing "no precedent for Netlify" while LocalStack, MinIO, Dokku, and Coolify each provide one-search-away evidence about the same legal or technical question. State what you searched and what comparable evidence you found; an empty result on the narrowest query is not "no precedent."
+
+### Handing off manual actions
+
+"You'll need to do X yourself" is the same shape as "I cannot read this file format" (see "Before claiming inability"): a capability claim about the whole toolset, not about Claude's reach. Many actions that feel manual have a bridging path. GUI clicks: `agent-browser` drives most web UIs; `xdotool` / `wtype` / `ydotool` drive native UIs; "click" actions usually have a keyboard shortcut to synthesise, or a backing HTTP/IPC endpoint that bypasses the UI entirely. Interactive auth: scripted with `expect`, or skipped via API tokens. Hardware activation: almost always a CLI. Try the bridging path before asking; if you ask, state the bridges you tried so the user can tell an unconsidered handoff from a real one.
+
+When the bridges genuinely fail and the user must execute, write the handoff as a verification script for a stranger who has never seen this UI:
+
+- Numbered steps; one observable action per step.
+- **Bold** every UI element: keystroke (`**F12**`, `**Ctrl+L**`, `**Shift+F6**`), menu or button label (`**Console**`, `**Delete**`, `**New File**`), tab name. Name both the key and the menu when both exist (`Open Chrome DevTools (**F12**)`, not just `open DevTools`).
+- After every state-changing step, state what the user should see: a logged line, a refreshed pane, a closed dialog. No implied feedback.
+- Separate `### Setup` (what to bring up first), `### Steps` (numbered actions), `### What to check` (expected outcome with the exact strings to grep or filter for), `### Restore` (how to undo any test state). Multi-section handoffs get a `Status: TODO | DONE` line per section so the user can interrupt and resume.
+- Use concrete strings, not paraphrases: filter for `"type":"fileChanged"`; expect `editord listening on port 4400`; expect `{ "zeroSize": 0, "zeroMatch": 0 }`. Paraphrasing forces the user to re-derive the exact string when their eyes scan the output.
+
+Canonical example: `packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`. Match its shape: status markers, what-this-proves intent, numbered steps with bold UI elements, what-to-check, restore.
+
+The cue you are about to violate the rule: about to write "you'll need to" or "please open" without naming the bridges you tried; "open DevTools" instead of "Open DevTools (**F12**)"; "find the menu" instead of "right-click an entry, pick **New File**"; a step without an expected outcome; a paraphrase ("look for the rename event") instead of an exact filter string (`"type":"fileChanged"`).
 
 ### Name the verification step
 
