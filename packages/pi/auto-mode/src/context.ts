@@ -47,6 +47,7 @@ import {
 function getTrustDirectives(
   ctx: ExtensionContext,
 ): string[] {
+  // TODO: Add tsdoc
   const directives: string[] = [];
   for (const entry of ctx.sessionManager.getBranch()) {
     if (isCustomEntry<string | null>(
