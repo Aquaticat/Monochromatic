@@ -46,6 +46,23 @@ Pending: manual Firefox interaction verification — open the new HTML and confi
 
 Lint, types, and tests all clean (0 errors; 471 stylistic warnings; 8 PASS / 0 FAIL / 1 SKIP). Fresh HTML at `dist/deps-cube-2026-05-13T02-28-46Z.html` (~822KB; no size delta from iteration-2 since the bundle contents are unchanged).
 
+**Status (2026-05-12, thirteenth handover — names baked into the mesh textures)**: iteration-4's painted labels still used a billboard `TextLayer` with `depthCompare: 'always'`, so back-glyph labels rendered on top of nearer glyphs (clearly visible in a Firefox screenshot where a back-octahedron's name appeared larger than the front octahedron occluding it). The user identified the fix: "If you made the text part of mesh this would not happen. Are you able to bake text into mesh?" Yes — and that is now the implementation. The floating `TextLayer` is gone; each probe gets its own `SimpleMeshLayer` with a per-probe canvas texture that has the colour and the npm name baked in. Depth testing then handles occlusion the same way it does for any other mesh surface — a sphere behind a sphere shows only the parts not occluded.
+
+- New `src/deck-textures.ts` — `makeProbeTexture({ probe, fillColor, shape, withName })` renders a 512×512 canvas: fill background with the probe's data-derived colour, then (when `withName`) draw the npm name in bold sans-serif 56 px white with a black 6 px outline. Two UV layouts:
+  - `'sphere'`: name repeated 4× along the equator (`v = 0.5`) so the equirectangular wrap shows the label from any longitude.
+  - `'octahedron'`: name once at the face triangle's centroid (`v = 1/3` under the UV layout `(0,0)–(1,0)–(0.5,1)` that every face shares).
+
+  Textures cached by `(catalogKey, rgba, shape, withName)` so repeated renders reuse the same canvas (and the same GPU upload).
+- `src/deck-geometries.ts` — octahedron now writes a UV triangle `(0,0)–(1,0)–(0.5,1)` per face (was all-zero `TEXCOORD_0`). The same UV patch on every face means the baked-name texture appears identically on each octahedron facet.
+- `src/deck-scatter.ts` rewritten — each factory now returns `readonly Layer[]` with one `SimpleMeshLayer` per probe rather than a single layer holding the whole bucket. Per-layer `opacity` (0.05 vs 1) supplies the filter-fade effect (since `texture` overrides `getColor` in deck.gl's SimpleMeshLayer, per-instance alpha is no longer available). Lighting stays on by default so the meshes keep their 3D shading.
+- New `src/deck-scatter-helpers.ts` — `partitionProbes` (leaf / non-leaf / unknown bucketing) and `computeNameBakeSet` (which `originalIndex` values get a baked name under the current `nameLabels` toggle) extracted so the main scatter file stays under the 300-line cap.
+- `src/deck-labels.ts` — `buildNameLabelsLayer` removed entirely (the corresponding visual is now baked into the textures); module docstring updated; unused `nameLabel` / `probePosition` / `unknownClusterPosition` / `PackageProbe` / `AppState` imports + the `TOP_N_NAMES` / `NAME_LABEL_SIZE_PX` / `NAME_LABEL_OFFSET_FRACTION` constants + the painted-label fill / outline constants are all gone.
+- `src/deck-config.ts` `buildLayers` — drops the `nameLabels === 'none'` branch (no separate name-label layer to gate); flattens the three scatter factories' `readonly Layer[]` returns directly into the layer groups.
+
+Per-probe layers (≈ 117 at the current catalog size) trade extra draw calls for correct depth-of-text rendering. A texture-atlas + per-instance UV transform extension would consolidate back to three draw calls but is not worth the complexity at this scale.
+
+Lint, types, and tests all clean (0 errors; 495 stylistic warnings; 8 PASS / 0 FAIL / 1 SKIP). Fresh HTML at `dist/deps-cube-2026-05-13T02-48-13Z.html` (~824KB).
+
 **Status (2026-05-12, twelfth handover — names painted on the balls)**: iteration-3 floated the names just above each glyph as a HUD label; the user asked for them to feel painted onto the balls themselves (basketball-with-team-logo metaphor). Implemented in a single file:
 
 - `src/deck-labels.ts` `buildNameLabelsLayer`:
@@ -61,7 +78,8 @@ Lint, types, and tests all clean (0 errors; 473 stylistic warnings — two more 
 
 **Last commits** (most recent first):
 
-- (next commit, this session) — iteration-4 paint-on-ball name labels (centered, SDF outline, depthCompare: always)
+- (next commit, this session) — iteration-5 bake names into per-probe mesh textures
+- `059201f2 feat(dev-script/deps-cube): paint name labels onto each ball/octahedron` (iteration 4)
 - `217ffab5 feat(dev-script/deps-cube): halve glyph size and label every glyph by default` (iteration 3)
 - `21b62437 feat(dev-script/deps-cube): all 3 coordinate planes via SolidPolygonLayer + scheme-aware chrome` (iteration 2)
 - `220818cb feat(dev-script/deps-cube): 3D mesh glyphs + coordinate-system backdrop + dual-thumb sliders` (iteration 1)

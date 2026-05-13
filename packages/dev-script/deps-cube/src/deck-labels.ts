@@ -1,14 +1,20 @@
 /**
- * Text-layer factories — axis tip labels, axis dim subtitles, origin
- * marker, and per-glyph name labels.
+ * Text-layer factories — axis tip capitals, axis dim subtitles, origin
+ * marker.
  *
  * The axis-label rendering is split across **two** TextLayer
  * instances: one for the bold capital `X`/`Y`/`Z` letters that sit at
  * the arrow tips, another for the smaller dim-name subtitles. The
- * origin gets a single TextLayer with the character `O`. Per-glyph
- * name labels live in their own TextLayer too. Splitting by purpose
- * keeps font sizes, anchor strategies, and per-instance positions
- * independent — a single combined layer would have to compromise.
+ * origin gets a single TextLayer with the character `O`. Splitting by
+ * purpose keeps font sizes, anchor strategies, and per-instance
+ * positions independent — a single combined layer would have to
+ * compromise.
+ *
+ * Per-glyph package-name labels used to live here too as a separate
+ * `TextLayer`, but iteration-5 moved them onto the mesh surface itself
+ * via a per-probe canvas texture (see `./deck-textures.ts` and
+ * `./deck-scatter.ts`) so depth testing correctly hides the name when
+ * the glyph rotates away from the camera.
  *
  * Split out from `deck-layers.ts` to stay under the 300-line cap.
  *
@@ -29,16 +35,10 @@
 import type { Layer, } from '@deck.gl/core';
 import { TextLayer, } from '@deck.gl/layers';
 
-import type { PackageProbe, } from './probe.ts';
-import {
-  probePosition,
-  unknownClusterPosition,
-} from './deck-accessors.ts';
 import type { SceneBounds, } from './deck-config.ts';
 import { DIM_DISPLAY_NAMES, } from './dim-meta.ts';
 import type { DimMapping, } from './scripts/filter.ts';
 import type { ChromeColors, } from './scripts/scheme.ts';
-import type { AppState, } from './scripts/state.ts';
 
 //region Types
 
@@ -61,30 +61,8 @@ const TIP_LABEL_SIZE_PX = 24;
 const SUBTITLE_LABEL_SIZE_PX = 10;
 /** Origin marker font size in pixels. */
 const ORIGIN_LABEL_SIZE_PX = 18;
-/** Name-label font size in pixels. */
-const NAME_LABEL_SIZE_PX = 11;
-/** Maximum names to show when `nameLabels === 'topN'`. */
-const TOP_N_NAMES = 10;
 /** Half-coefficient used for centring helpers. */
 const HALF = 1 / 2;
-/** Painted-label fill (pure white) used regardless of OS scheme; the SDF outline supplies contrast. */
-const PAINTED_LABEL_FILL: readonly [number, number, number, number,] = [
-  255,
-  255,
-  255,
-  255,
-];
-/** Painted-label outline (pure black) — wraps the white fill so the name reads on red, green, or grey balls. */
-const PAINTED_LABEL_OUTLINE: readonly [number, number, number, number,] = [
-  0,
-  0,
-  0,
-  255,
-];
-/** Painted-label outline width, in deck.gl TextLayer "relative to font size" units (typical range 0–5). */
-const PAINTED_LABEL_OUTLINE_WIDTH = 3;
-/** Painted-label bold weight; sans-serif at bold reads like printed lettering on a ball. */
-const PAINTED_LABEL_FONT_WEIGHT = 700;
 
 /**
  * Fraction of the axis extent that the capital sits past the arrow tip.
@@ -331,112 +309,3 @@ export function buildOriginLabelLayer(
 }
 
 //endregion Origin marker
-
-//region Name labels
-
-/**
- * Builds the package-name labels TextLayer for either every visible
- * probe (`'all'`) or just the top-N by staleness (`'topN'`).
- *
- * Painted-on-the-ball semantics (iteration 3): the label sits at the
- * glyph center (no upward offset), renders with `depthCompare: 'always'`
- * so it stays on top of the opaque mesh instead of being half-occluded
- * by the front of the sphere, uses a bold SDF font with a thick black
- * outline so the white fill reads on red / green / grey balls, and is
- * coloured statically rather than from the OS-scheme chrome palette
- * (the print is "on" the ball, not part of the page chrome).
- *
- * Top-N ranking heuristic: descending by `daysSinceLastCommitOrNull`
- * (oldest first). Subject to refinement once the audit-target scoring
- * is formalised.
- *
- * @param probes - Full probe array.
- * @param state - Current state.
- * @param visibleIndices - Set of original indices that pass every filter.
- *
- * @returns TextLayer, or `null` if no probes qualify.
- */
-export function buildNameLabelsLayer(
-  {
-    probes,
-    state,
-    bounds,
-    visibleIndices,
-  }: {
-    probes: readonly PackageProbe[];
-    state: AppState;
-    bounds: SceneBounds;
-    visibleIndices: ReadonlySet<number>;
-  },
-): Layer | null {
-  const eligible = probes
-    .map(function withIndex(
-      probe,
-      originalIndex,
-    ) {
-      return {
-        probe,
-        originalIndex,
-      };
-    },)
-    .filter(function isShown({
-      originalIndex,
-    },) {
-      return visibleIndices.has(originalIndex,);
-    },);
-  const ranked = state.displayToggles.nameLabels === 'all'
-    ? eligible
-    : [...eligible,].sort(function byStale(
-      a,
-      b,
-    ) {
-      return (b.probe.daysSinceLastCommitOrNull ?? 0) - (a.probe.daysSinceLastCommitOrNull ?? 0);
-    },).slice(0, TOP_N_NAMES,);
-  if (ranked.length === 0) return null;
-  const data: TextDatum[] = ranked.map(function asDatum({
-    probe,
-    originalIndex,
-  },) {
-    const inScenePos = probe.unknownReason === null
-      ? probePosition({
-        probe,
-        state,
-      },)
-      : null;
-    const pos = inScenePos ?? unknownClusterPosition({
-      index: originalIndex,
-      bounds,
-    },);
-    return {
-      position: pos,
-      text: probe.npmName,
-    };
-  },);
-  return new TextLayer<TextDatum>({
-    id: 'name-labels',
-    data,
-    getPosition: function getPosition(d,) {
-      return d.position;
-    },
-    getText: function getText(d,) {
-      return d.text;
-    },
-    getSize: NAME_LABEL_SIZE_PX,
-    getColor: PAINTED_LABEL_FILL,
-    sizeUnits: 'pixels',
-    fontFamily: 'sans-serif',
-    fontWeight: PAINTED_LABEL_FONT_WEIGHT,
-    fontSettings: {
-      sdf: true,
-    },
-    outlineColor: PAINTED_LABEL_OUTLINE,
-    outlineWidth: PAINTED_LABEL_OUTLINE_WIDTH,
-    getTextAnchor: 'middle',
-    getAlignmentBaseline: 'center',
-    parameters: {
-      depthCompare: 'always',
-    },
-  },);
-}
-
-//endregion Name labels

@@ -1,22 +1,29 @@
 /**
- * Glyph mesh-layer factories.
+ * Glyph mesh-layer factories — one `SimpleMeshLayer` per probe.
  *
- * Probes are partitioned into three buckets — leaf, non-leaf, unknown
- * — based on the shape-channel accessor and unknown-reason flag. Each
- * bucket gets its own {@link SimpleMeshLayer} with a different mesh:
- * spheres for leaf and unknown, octahedra for non-leaf. The shape
- * distinction is geometric (sphere vs octahedron from every angle),
- * not a 2D fill/stroke difference; 2D `ScatterplotLayer` was the
- * previous implementation but its flat circles foreshortened into
- * ellipses at oblique camera angles.
+ * Probes are partitioned into three buckets (leaf / non-leaf /
+ * unknown) by {@link ./deck-scatter-helpers.ts}, then each probe gets
+ * its own `SimpleMeshLayer` with a per-probe canvas texture from
+ * {@link ./deck-textures.ts} that bakes the npm name and fill colour
+ * directly onto the mesh surface. Depth testing then naturally
+ * occludes back-glyph names behind front glyphs. Spheres for leaf and
+ * unknown probes, octahedra for non-leaf.
  *
- * Geometries themselves live in {@link ./deck-geometries.ts} so each
- * layer file stays under the 300-line cap.
+ * Geometries live in {@link ./deck-geometries.ts}; texture baking in
+ * {@link ./deck-textures.ts}; per-probe colour / radius / position
+ * accessors in {@link ./deck-accessors.ts}; partitioning + name-bake
+ * selection in {@link ./deck-scatter-helpers.ts}.
+ *
+ * Per-probe layers (≈ 117 total at this catalog size) trade a higher
+ * draw-call count for correct depth-of-text rendering. A texture
+ * atlas with per-instance UV transforms would consolidate this back
+ * to three draw calls but needs a custom layer extension; not worth
+ * the complexity at this scale.
  *
  * @example
  * ```ts
  * import { buildLeafScatterLayer } from './deck-scatter.ts';
- * const layer = buildLeafScatterLayer({ probes, state, bounds, visibleIndices });
+ * const layers = buildLeafScatterLayer({ probes, state, bounds, visibleIndices });
  * ```
  */
 
@@ -27,8 +34,6 @@ import type { Geometry, } from '@luma.gl/engine';
 import type { PackageProbe, } from './probe.ts';
 import {
   probeFillColor,
-  probeIsFilled,
-  probePosition,
   probeRadiusWorld,
   unknownClusterPosition,
 } from './deck-accessors.ts';
@@ -37,102 +42,147 @@ import {
   octahedronGeometry,
   sphereGeometry,
 } from './deck-geometries.ts';
+import {
+  probePosition,
+} from './deck-accessors.ts';
+import {
+  computeNameBakeSet,
+  partitionProbes,
+  type ScatterDatum,
+} from './deck-scatter-helpers.ts';
+import {
+  makeProbeTexture,
+  type MeshShape,
+  type Rgba,
+} from './deck-textures.ts';
 import type { AppState, } from './scripts/state.ts';
 
-//region Types
+//region Constants
 
-/** Data shape passed to the mesh-layer `data` prop: probe + original-array index. */
-type ScatterDatum = {
-  probe: PackageProbe;
-  originalIndex: number;
-};
+/** Opacity multiplier applied to probes that fail the active filter set. ≈ 5 %. */
+const OPACITY_FILTERED = 0.05;
+/** Opacity multiplier for probes that pass every filter. */
+const OPACITY_VISIBLE = 1;
+/** Opaque-alpha byte used when baking the per-probe texture (filter fade is applied via `Layer.opacity` instead). */
+const TEXTURE_ALPHA = 255;
 
-//endregion Types
+//endregion Constants
 
-//region Probe partitioning
+//region Per-probe layer factory
 
 /**
- * Splits the probe array into leaf / non-leaf / unknown buckets,
- * preserving the original index of every probe so visibility lookups
- * stay accurate.
+ * Builds the per-probe `SimpleMeshLayer`. Per-glyph position, scale,
+ * and texture; per-layer opacity for the filtered-fade effect.
  *
- * @param probes - Full probe array.
+ * Texture sampling overrides `getColor` in deck.gl's
+ * `SimpleMeshLayer`, so the colour painted into the canvas IS the
+ * surface colour; the per-layer opacity supplies the visible /
+ * filtered fade. Lighting is intentionally left on (`material`
+ * default) so the mesh keeps its 3D shading.
+ *
+ * @param datum - Probe + original index.
  * @param state - Current state.
+ * @param bounds - Scene bounds.
+ * @param visibleIndices - Set of original indices that pass every filter.
+ * @param mesh - Geometry: sphere or octahedron.
+ * @param shape - Texture-layout selector matching `mesh`.
+ * @param idPrefix - Layer-id prefix; suffixed with `originalIndex` for uniqueness.
+ * @param bake - Whether to draw the npm name into the texture (vs colour-only).
+ * @param positionOverride - Optional explicit position; when set, takes precedence over `probePosition`.
  *
- * @returns Three disjoint arrays.
+ * @returns SimpleMeshLayer instance.
  */
-function partitionProbes(
+function buildProbeLayer(
   {
-    probes,
+    datum,
     state,
+    bounds,
+    visibleIndices,
+    mesh,
+    shape,
+    idPrefix,
+    bake,
+    positionOverride,
   }: {
-    probes: readonly PackageProbe[];
+    datum: ScatterDatum;
     state: AppState;
+    bounds: SceneBounds;
+    visibleIndices: ReadonlySet<number>;
+    mesh: Geometry;
+    shape: MeshShape;
+    idPrefix: string;
+    bake: boolean;
+    positionOverride?: readonly [number, number, number,] | undefined;
   },
-): {
-  leaf: readonly ScatterDatum[];
-  nonLeaf: readonly ScatterDatum[];
-  unknown: readonly ScatterDatum[];
-} {
-  const leaf: ScatterDatum[] = [];
-  const nonLeaf: ScatterDatum[] = [];
-  const unknown: ScatterDatum[] = [];
-  probes.forEach(function bucket(
-    probe,
-    originalIndex,
-  ) {
-    if (probe.unknownReason !== null) {
-      unknown.push({
-        probe,
-        originalIndex,
-      },);
-      return;
-    }
-    if (probePosition({
-      probe,
-      state,
-    },) === null) {
-      unknown.push({
-        probe,
-        originalIndex,
-      },);
-      return;
-    }
-    if (probeIsFilled({
-      probe,
-      state,
-    },))
-      leaf.push({
-        probe,
-        originalIndex,
-      },);
-    else nonLeaf.push({
-      probe,
-      originalIndex,
-    },);
+): Layer {
+  const isVisible = visibleIndices.has(datum.originalIndex,);
+  const color = probeFillColor({
+    probe: datum.probe,
+    state,
+    bounds,
+    isVisible: true,
   },);
-  return {
-    leaf,
-    nonLeaf,
-    unknown,
-  };
+  const opaqueColor: Rgba = [
+    color[0],
+    color[1],
+    color[2],
+    TEXTURE_ALPHA,
+  ];
+  const texture = makeProbeTexture({
+    probe: datum.probe,
+    fillColor: opaqueColor,
+    shape,
+    withName: bake,
+  },);
+  const pos = positionOverride ?? probePosition({
+    probe: datum.probe,
+    state,
+  },) ?? [
+    0,
+    0,
+    0,
+  ];
+  const radius = probeRadiusWorld({
+    probe: datum.probe,
+    state,
+    bounds,
+  },);
+  return new SimpleMeshLayer<ScatterDatum>({
+    id: `${idPrefix}-${datum.originalIndex.toString()}`,
+    data: [
+      datum,
+    ],
+    mesh,
+    texture,
+    opacity: isVisible ? OPACITY_VISIBLE : OPACITY_FILTERED,
+    getPosition: function getPosition() {
+      return pos;
+    },
+    getScale: function getScale() {
+      return [
+        radius,
+        radius,
+        radius,
+      ] as const;
+    },
+    pickable: true,
+  },);
 }
 
-//endregion Probe partitioning
+//endregion Per-probe layer factory
 
 //region Layer factories
 
 /**
- * Builds the sphere mesh-layer for probes the shape channel marks as
- * leaf (filled-equivalent in the binary shape mapping) and whose
- * spatial dims are all known.
+ * Builds one `SimpleMeshLayer` per leaf probe — sphere mesh, texture
+ * baked with the probe's colour and (per the toggle) its npm name.
  *
  * @param probes - Full probe array.
  * @param state - Current state.
  * @param bounds - Scene bounds.
  * @param visibleIndices - Set of original indices that pass every filter.
  *
- * @returns SimpleMeshLayer with sphere mesh.
+ * @returns Array of SimpleMeshLayers, one per leaf probe.
  */
 export function buildLeafScatterLayer(
   {
@@ -146,31 +196,40 @@ export function buildLeafScatterLayer(
     bounds: SceneBounds;
     visibleIndices: ReadonlySet<number>;
   },
-): Layer {
+): readonly Layer[] {
   const { leaf, } = partitionProbes({
     probes,
     state,
   },);
-  return buildMeshScatter({
-    id: 'scatter-leaf',
-    data: leaf,
+  const nameSet = computeNameBakeSet({
+    probes,
     state,
-    bounds,
-    visibleIndices,
-    mesh: sphereGeometry,
+  },);
+  return leaf.map(function asLayer(datum,) {
+    return buildProbeLayer({
+      datum,
+      state,
+      bounds,
+      visibleIndices,
+      mesh: sphereGeometry,
+      shape: 'sphere',
+      idPrefix: 'scatter-leaf',
+      bake: nameSet.has(datum.originalIndex,),
+    },);
   },);
 }
 
 /**
- * Builds the octahedron mesh-layer for probes the shape channel marks
- * as non-leaf.
+ * Builds one `SimpleMeshLayer` per non-leaf probe — octahedron mesh,
+ * texture baked with the probe's colour and (per the toggle) its npm
+ * name on every face.
  *
  * @param probes - Full probe array.
  * @param state - Current state.
  * @param bounds - Scene bounds.
  * @param visibleIndices - Set of original indices that pass every filter.
  *
- * @returns SimpleMeshLayer with octahedron mesh.
+ * @returns Array of SimpleMeshLayers, one per non-leaf probe.
  */
 export function buildNonLeafScatterLayer(
   {
@@ -184,32 +243,40 @@ export function buildNonLeafScatterLayer(
     bounds: SceneBounds;
     visibleIndices: ReadonlySet<number>;
   },
-): Layer {
+): readonly Layer[] {
   const { nonLeaf, } = partitionProbes({
     probes,
     state,
   },);
-  return buildMeshScatter({
-    id: 'scatter-nonleaf',
-    data: nonLeaf,
+  const nameSet = computeNameBakeSet({
+    probes,
     state,
-    bounds,
-    visibleIndices,
-    mesh: octahedronGeometry,
+  },);
+  return nonLeaf.map(function asLayer(datum,) {
+    return buildProbeLayer({
+      datum,
+      state,
+      bounds,
+      visibleIndices,
+      mesh: octahedronGeometry,
+      shape: 'octahedron',
+      idPrefix: 'scatter-nonleaf',
+      bake: nameSet.has(datum.originalIndex,),
+    },);
   },);
 }
 
 /**
- * Builds the Unknown-cluster sphere layer — probes with
- * `unknownReason !== null` or unknown spatial position. Placed at an
- * offset corner of the scene with stable per-index jitter.
+ * Builds one `SimpleMeshLayer` per unknown probe — sphere mesh placed
+ * at the unknown-cluster jitter position, texture with the mid-grey
+ * unknown colour and (per the toggle) the npm name.
  *
  * @param probes - Full probe array.
  * @param state - Current state.
  * @param bounds - Scene bounds.
  * @param visibleIndices - Set of original indices that pass every filter.
  *
- * @returns SimpleMeshLayer, or `null` when the bucket is empty.
+ * @returns Array of SimpleMeshLayers, empty when the bucket has no probes.
  */
 export function buildUnknownClusterLayer(
   {
@@ -223,108 +290,31 @@ export function buildUnknownClusterLayer(
     bounds: SceneBounds;
     visibleIndices: ReadonlySet<number>;
   },
-): Layer | null {
+): readonly Layer[] {
   const { unknown, } = partitionProbes({
     probes,
     state,
   },);
-  if (unknown.length === 0) return null;
-  return new SimpleMeshLayer<ScatterDatum>({
-    id: 'scatter-unknown',
-    data: unknown,
-    mesh: sphereGeometry,
-    getPosition: function getPosition(d,) {
-      return unknownClusterPosition({
-        index: d.originalIndex,
-        bounds,
-      },);
-    },
-    getColor: function getColor(d,) {
-      return probeFillColor({
-        probe: d.probe,
-        state,
-        bounds,
-        isVisible: visibleIndices.has(d.originalIndex,),
-      },);
-    },
-    getScale: function getScale(d,) {
-      const r = probeRadiusWorld({
-        probe: d.probe,
-        state,
-        bounds,
-      },);
-      return [
-        r,
-        r,
-        r,
-      ] as const;
-    },
-    pickable: true,
-  },);
-}
-
-/**
- * Internal: shared `SimpleMeshLayer` constructor for the leaf / non-leaf
- * scatter layers. Both share every prop except `id`, `data`, and `mesh`.
- *
- * @param id - Layer id.
- * @param data - Scatter data (probe + original index pairs).
- * @param state - Current state.
- * @param bounds - Scene bounds.
- * @param visibleIndices - Set of original indices that pass every filter.
- * @param mesh - The glyph mesh ({@link sphereGeometry} or {@link octahedronGeometry}).
- *
- * @returns SimpleMeshLayer instance.
- */
-function buildMeshScatter(
-  {
-    id,
-    data,
+  const nameSet = computeNameBakeSet({
+    probes,
     state,
-    bounds,
-    visibleIndices,
-    mesh,
-  }: {
-    id: string;
-    data: readonly ScatterDatum[];
-    state: AppState;
-    bounds: SceneBounds;
-    visibleIndices: ReadonlySet<number>;
-    mesh: Geometry;
-  },
-): Layer {
-  return new SimpleMeshLayer<ScatterDatum>({
-    id,
-    data,
-    mesh,
-    getPosition: function getPosition(d,) {
-      const pos = probePosition({
-        probe: d.probe,
-        state,
-      },);
-      return pos ?? [0, 0, 0,];
-    },
-    getColor: function getColor(d,) {
-      return probeFillColor({
-        probe: d.probe,
-        state,
-        bounds,
-        isVisible: visibleIndices.has(d.originalIndex,),
-      },);
-    },
-    getScale: function getScale(d,) {
-      const r = probeRadiusWorld({
-        probe: d.probe,
-        state,
-        bounds,
-      },);
-      return [
-        r,
-        r,
-        r,
-      ] as const;
-    },
-    pickable: true,
+  },);
+  return unknown.map(function asLayer(datum,) {
+    const pos = unknownClusterPosition({
+      index: datum.originalIndex,
+      bounds,
+    },);
+    return buildProbeLayer({
+      datum,
+      state,
+      bounds,
+      visibleIndices,
+      mesh: sphereGeometry,
+      shape: 'sphere',
+      idPrefix: 'scatter-unknown',
+      bake: nameSet.has(datum.originalIndex,),
+      positionOverride: pos,
+    },);
   },);
 }
 

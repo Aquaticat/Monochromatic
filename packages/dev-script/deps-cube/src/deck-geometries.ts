@@ -139,6 +139,19 @@ function buildOctahedronGeometry(): Geometry {
     normals[norOffset + 6] = nx;
     normals[norOffset + 7] = ny;
     normals[norOffset + 8] = nz;
+    /**
+     * Every face shares the same UV triangle `(0, 0) – (1, 0) – (0.5, 1)`
+     * so the per-probe canvas texture appears the same on each face;
+     * the name baked into that triangle is then readable on whichever
+     * face is currently camera-facing.
+     */
+    const uvOffset = faceIndex * FLOATS_PER_FACE_VEC2;
+    texCoords[uvOffset + 0] = 0;
+    texCoords[uvOffset + 1] = 0;
+    texCoords[uvOffset + 2] = 1;
+    texCoords[uvOffset + 3] = 0;
+    texCoords[uvOffset + 4] = 0.5;
+    texCoords[uvOffset + 5] = 1;
   },);
   return new Geometry({
     topology: 'triangle-list',

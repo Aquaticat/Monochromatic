@@ -25,7 +25,6 @@ import type { PackageProbe, } from './probe.ts';
 import {
   buildAxisCapitalsLayer,
   buildAxisSubtitlesLayer,
-  buildNameLabelsLayer,
   buildOriginLabelLayer,
 } from './deck-labels.ts';
 import {
@@ -213,13 +212,7 @@ export function buildLayers(
       bounds,
       visibleIndices,
     },)
-    : null;
-  const nameLabels = state.displayToggles.nameLabels === 'none' ? null : buildNameLabelsLayer({
-    probes,
-    state,
-    bounds,
-    visibleIndices,
-  },);
+    : [];
   const thresholdLines = state.displayToggles.showThresholdPlanes
     ? buildThresholdLineLayer({
       bounds,
@@ -249,23 +242,19 @@ export function buildLayers(
       bounds,
       chrome,
     },),
-    unknownCluster === null ? [] : [unknownCluster,],
-    [
-      buildLeafScatterLayer({
-        probes,
-        state,
-        bounds,
-        visibleIndices,
-      },),
-    ],
-    [
-      buildNonLeafScatterLayer({
-        probes,
-        state,
-        bounds,
-        visibleIndices,
-      },),
-    ],
+    unknownCluster,
+    buildLeafScatterLayer({
+      probes,
+      state,
+      bounds,
+      visibleIndices,
+    },),
+    buildNonLeafScatterLayer({
+      probes,
+      state,
+      bounds,
+      visibleIndices,
+    },),
     state.displayToggles.showAxisLabels
       ? [
         buildOriginLabelLayer({
@@ -283,7 +272,6 @@ export function buildLayers(
         },),
       ]
       : [],
-    nameLabels === null ? [] : [nameLabels,],
   ];
   return groups.flat();
 }
