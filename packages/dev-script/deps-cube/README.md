@@ -23,7 +23,7 @@ Default mapping (changeable via the in-page dim picker):
 - **x = log(source bytes)** — replacement cost
 - **y = log(days since last commit)** — staleness
 - **z = log(install size, transitive)** — actual footprint
-- **color** — TS ratio (red → green)
+- **color** — TS ratio, interpolated in OKLCH from red (low) through amber (mid) to green (high)
 - **shape** — circle (leaf) / diamond (non-leaf)
 - **size** — log(weekly downloads)
 

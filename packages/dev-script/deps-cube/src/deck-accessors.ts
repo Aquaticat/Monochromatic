@@ -20,6 +20,10 @@
 
 import type { PackageProbe, } from './probe.ts';
 import type { SceneBounds, } from './deck-config.ts';
+import {
+  oklchLerpToSrgb,
+  type Oklch,
+} from './oklch.ts';
 import { extractDim, } from './scripts/filter.ts';
 import type { AppState, } from './scripts/state.ts';
 
@@ -29,8 +33,25 @@ import type { AppState, } from './scripts/state.ts';
 const ALPHA_VISIBLE = 255;
 /** Alpha channel value when a probe is filtered out (≈ 5% opacity). */
 const ALPHA_FILTERED = 13;
-/** Constant blue tint added to the red↔green colormap so glyphs aren't pure 0,255,0 / 255,0,0. */
-const COLOR_BLUE_TINT = 80;
+/**
+ * Low end of the colour ramp (t = 0). Perceptually red; chroma kept
+ * under sRGB gamut limits for the chosen lightness.
+ */
+const COLOR_RAMP_LOW: Oklch = {
+  L: 0.65,
+  C: 0.22,
+  H: 29,
+};
+/**
+ * High end of the colour ramp (t = 1). Perceptually green; same chroma
+ * band as {@link COLOR_RAMP_LOW} so the lerp has stable saturation
+ * while the hue rotates through amber and yellow at the midpoint.
+ */
+const COLOR_RAMP_HIGH: Oklch = {
+  L: 0.74,
+  C: 0.2,
+  H: 145,
+};
 /** Mid-grey used for unknown color values. */
 const COLOR_UNKNOWN: readonly [number, number, number,] = [
   136,
@@ -61,8 +82,6 @@ const UNKNOWN_CLUSTER_OFFSET = 2;
 const UNKNOWN_CLUSTER_JITTER = 0.5;
 /** Binary "is filled" threshold: shape dim values < this render filled, otherwise stroked. */
 const SHAPE_FILLED_THRESHOLD = 0.5;
-/** RGB channel max value, used for the linear colormap. */
-const RGB_MAX = 255;
 
 //endregion Constants
 
@@ -183,8 +202,11 @@ export function unknownClusterPosition(
 /**
  * Returns the RGBA fill colour for one probe.
  *
- * - Visible probes use a red↔green linear ramp over the colour
- *   channel's bounds plus a constant blue tint.
+ * - Visible probes use an OKLCH lerp between {@link COLOR_RAMP_LOW}
+ *   (red) and {@link COLOR_RAMP_HIGH} (green) over the colour
+ *   channel's bounds. Perceptually uniform, so the midpoint reads as
+ *   amber/yellow instead of the muddy brown sRGB-space interpolation
+ *   produces.
  * - Probes with unknown colour-dim value get {@link COLOR_UNKNOWN} grey.
  * - Filtered-out probes get alpha={@link ALPHA_FILTERED} (≈ 5%);
  *   visible probes get alpha={@link ALPHA_VISIBLE}.
@@ -230,12 +252,19 @@ export function probeFillColor(
     lo,
     hi,
   },);
-  const r = Math.round(RGB_MAX * (1 - t),);
-  const g = Math.round(RGB_MAX * t,);
+  const [
+    r,
+    g,
+    b,
+  ] = oklchLerpToSrgb({
+    start: COLOR_RAMP_LOW,
+    end: COLOR_RAMP_HIGH,
+    t,
+  },);
   return [
     r,
     g,
-    COLOR_BLUE_TINT,
+    b,
     alpha,
   ];
 }
