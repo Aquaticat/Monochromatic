@@ -6,10 +6,11 @@ The package `packages/dev-script/deps-cube/` is being built per the approved pla
 
 Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D feature space (6 dims = 3 spatial + color + shape + size), with deck.gl WebGL rendering and a custom HTML control panel for dim swapping, 3-state boolean filtering, range sliders, name search, display toggles, and URL-hash bookmarking. Output: `./deps-cube-<YYYY-MM-DD>.html`. Stdout: exactly `Saved to <abs-path>`.
 
-**Status (2026-05-12, sixth handover)**: tasks 1 through 11 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), the Node-side HTML emitter for the control panel, the browser-side runtime controller (Deck instantiation, event wiring, picking, URL-hash sync), the HTML composer + CLI entry point (`renderHtml` inlines a 754KB IIFE controller bundle + probes-as-JS-literal + control-panel HTML + native-CSS-nested styles into a single self-contained HTML file), and `docs/decisions/deps-cube.md` (depth-matched library audit covering the 72.6% TS exception with the user-approved attribution, the verified transitive surface, the bundle-size delta vs the plan estimate, and the filled-vs-stroked deviation). Tasks 12 and 13 pending. Lint and types pass on every file (0 errors; ~338 stylistic warnings, all non-blocking).
+**Status (2026-05-12, seventh handover)**: tasks 1 through 12 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), the Node-side HTML emitter for the control panel, the browser-side runtime controller (Deck instantiation, event wiring, picking, URL-hash sync), the HTML composer + CLI entry point (`renderHtml` inlines a 754KB IIFE controller bundle + probes-as-JS-literal + control-panel HTML + native-CSS-nested styles into a single self-contained HTML file), `docs/decisions/deps-cube.md` (depth-matched library audit covering the 72.6% TS exception with the user-approved attribution, the verified transitive surface, the bundle-size delta vs the plan estimate, and the filled-vs-stroked deviation), and eight unit-test files (`test/*.unit.test.ts`) wired through the `test:unit` task template — 8 PASS, 0 FAIL, 1 SKIP (documented upstream bug, see Task 12 notes). Task 13 pending. Lint, types, and tests all clean (0 errors; ~368 stylistic warnings, all non-blocking).
 
 **Last commits**:
 
+- `cfa2d156 docs(dev-script/deps-cube): add depth-matched library audit for deck.gl` (task 11)
 - `c37ee14c feat(dev-script/deps-cube): add HTML composer + CLI entry` (task 10)
 - `a496f91c feat(dev-script/deps-cube): add browser-side scene controller` (task 9)
 - `d8142cba feat(dev-script/deps-cube): add HTML control panel renderer` (task 8)
@@ -56,9 +57,27 @@ Done (continued):
 
 - ~~Task 11 (decision doc)~~ — `docs/decisions/deps-cube.md` follows the pattern of the existing decision docs (`font-subsetting.md`, `readable-stream-shim.md`): Context, Decision with the TS-ratio exception (attributed to the user's screenshot-confirmed authorization, not an independent re-derivation), Rejected alternatives (plotly.js / three.js / echarts / d3-3d / @thi.ng/* / @nivo-visx-recharts / hand-rolled, each with the specific gate they fail), Audit notes (transitive surface enumerated package-by-package with license + module-type, build provenance via vis.gl's `ocular-bundle`, maintenance signals re-verified at audit time via `gh api repos/visgl/deck.gl` + `npm api`), Implementation notes (2x bundle weight vs plan estimate explained by the transitive cone, filled-vs-stroked shape deviation justified by ScatterplotLayer's circle-only rendering, pre-existing canvas wiring choice, top-N labels TODO, monorepo-housed packages routed to Unknown cluster). Numbers in the doc come from `gh api repos/visgl/deck.gl/{languages,contributors}` (TS 72.56%, contributors 277+) and `https://api.npmjs.org/downloads/point/last-week/` (~630K/week for `@deck.gl/core` and `@deck.gl/layers`), measured 2026-05-12. No em-dashes, no en-dashes, no tables, lines under 120, sentence-case headings, ATX max 3 levels.
 
+Done (continued):
+
+- ~~Task 12 (unit tests)~~ — eight `test/*.unit.test.ts` files: `cache`, `catalog`, `filter`, `state`, `render-controls`, `render-html`, `probe`, `deck-config`. Each is self-contained with local fixtures, uses the `@monochromatic-dev/module-test` harness (`describe({ name, children: [it(...)] })`), and creates temp directories under `os.tmpdir()` with an `await using` disposable for cleanup. The mise task wiring uses the root template (`[tasks.'test:unit'] extends = "test:unit"`), which runs `bun <file>` per `*.unit.test.ts` in parallel via the root `task_templates."test:unit"`. The CLAUDE.md rule "Never invoke raw tools (`bun test`, `oxlint`, etc.) directly; use the corresponding mise task" caught this — the package's earlier `[tasks.test] run = "bun test"` definition was replaced with the template extension.
+
+  Run via `mise run //packages/dev-script/deps-cube:test:unit`. Reports 8 PASS lines, 0 FAIL, 1 SKIP. Coverage per file:
+
+  - **cache** — read miss; round-trip; TTL semantics (null = never expire, negative = always expire); multiple fields coexisting in one file; rootDir exposure; parent-directory auto-creation for scoped names (`@scope/pkg`); malformed JSON treated as miss.
+  - **catalog** — `decodeAlias` for plain ranges, `npm:` aliases (scoped/unscoped, with/without `@range`); `readCatalog` for default + named blocks; `npm:` decoding inside catalog entries; throw paths for missing yaml and empty catalog blocks. Uses `findUp` constrained to a temp dir so the test doesn't accidentally pick up the real `pnpm-workspace.yaml` higher in the tree.
+  - **filter** — `extractDim` log scaling + null pass-through; binary/categorical numeric mapping; `derivedBool` for every toggle key including unknown-input branches; `searchMatches` substring (case-insensitive), `/regex/` form, malformed-regex fallback; `computeVisibleIndices` for all-any baseline, single-toggle filters, composed audit-target pattern (non-TS + leaf + stale + permissive), name search, narrow range.
+  - **state** — `defaultState` produces the plan dim mapping, "any" toggles, and ranges matching `Math.min/max(...extractDim values)` per channel (this indirectly covers the same extent logic `computeSceneBounds` runs at render time); `encodeState`/`decodeState` round-trip; malformed-JSON / missing-keys fallback paths; `readStateFromHash` empty / corrupt / round-trip.
+  - **render-controls** — structural counts (6 dim rows, 7 toggle rows × 3 radios, 6 range rows × 2 sliders); presence of every required id (`dim-<channel>`, `range-<channel>-<min|max>`, `search`, `display-*`, `name-labels`, `visibility-counter`, `reset`); visibility counter starts at `N of N visible`; `shape` dropdown disables continuous options (`tsRatio`, `logSourceBytes`) while leaving `isLeafNumeric` selectable; search-input value is HTML-attribute escaped (`"><script>` doesn't survive).
+  - **render-html** — stubs `Bun.build` via `ctx.sinon.stub(Bun, 'build').resolves(...)` returning a fake bundle. Asserts the composed document starts with `<!doctype html>`, has `<meta charset>`/`<meta viewport>`/`<title>`, contains no external `<link rel="stylesheet">` or `<script src=...>` references, inlines the probe array as `window.__PROBES__`, embeds the stubbed bundle text, and includes `<style>...</style>` plus the control panel + canvas. Verifies `</script` and `<!--` are neutralised inside both the data and the bundle text; verifies the failure path joins all bundler logs into the thrown error. **`concurrency: 1`** on this describe block — `Bun.build` is a single global property, so concurrent stubs trip sinon's "already wrapped" guard.
+  - **probe** — pure helpers (`parseRepository` for plain URL / `git+https` / `github:` shorthand / object with `directory` / non-GH / undefined / empty; `classifyLicense` for every class; `resolveVersion` for pinned vs range); `probeAll` exercised against a pre-populated file cache covering every `UnknownReason` branch (`null` known, `no-repo`, `non-github`, `monorepo`, `private-or-404`). The `private-or-404` case uses `sinon.stub(globalThis, 'fetch').rejects(...)` so the field probe's manifest fetch fails and the orchestrator emits a `failedProbe` stub via the catch in `probeAll`.
+  - **deck-config (accessors)** — covers the importable `src/deck-accessors.ts` helpers: `probePosition` (known + null spatial); `unknownClusterPosition` (offsets beyond bounds, deterministic per index, distinct per index); `probeFillColor` (visible=255 / filtered=13 alpha, grey for unknown colour dim, red↔green ramp); `probeRadius` (in `[3, 30]`px, minimum for null/zero size dim); `probeIsFilled` (false for leaves, true for non-leaves under the default shape mapping, hollow for unknown shape dim).
+
+  **Layer-count snapshot from the plan is blocked upstream**: importing `src/deck-config.ts` at test runtime fails because `@loaders.gl/schema-utils@4.4.1` statically imports `@math.gl/types` without declaring it as a dependency, so Bun's and Node's module-load resolver can't find the latter. `Bun.build` (used by `render-html.ts` at runtime) tree-shakes the unreachable path, so the produced HTML still works. The `deck-config.unit.test.ts` file has a single `it({ skip: '<reason>' })` placeholder so the limitation surfaces in test output. Upstream fix path: add `@math.gl/types` to `@loaders.gl/schema-utils`'s `package.json` dependencies (track via `visgl/loaders.gl` repo when revisiting).
+
+  Sinon stubbing of global namespace methods (`Bun.build`, `globalThis.fetch`) requires `oxlint-disable typescript-eslint/no-unsafe-call` and `no-unsafe-member-access` because sinon's overload set doesn't unify with the Bun ambient namespace types or the fetch global. The disables are wrapped tightly around the `sinon.stub(...).resolves/rejects(...)` lines per the AGENTS.md disable-comment rule.
+
 Pending:
 
-- **Task 12**: `test/*.test.ts` — catalog, cache, probe (with stubbed gh/registry), filter, state, deck-config (snapshot layer count and accessor outputs), render-controls (snapshot HTML).
 - **Task 13**: end-to-end smoke run — `mise run //packages/dev-script/deps-cube:run`, open the HTML in Firefox, exercise the full verification checklist from the plan.
 
 ## State on disk (verified before this handover)
@@ -95,7 +114,15 @@ packages/dev-script/deps-cube/
 │       ├── controller-tooltip.ts← formatTooltipHtml + pinned-tooltip DOM management
 │       ├── filter.ts            ← computeVisibleIndices + extractDim + derivedBool + searchMatches
 │       └── state.ts             ← AppState, defaultState, URL-hash ser/deser
-└── test/                        ← still empty; tests land in task 12
+└── test/
+    ├── cache.unit.test.ts        ← read/write/TTL/atomic semantics
+    ├── catalog.unit.test.ts      ← decodeAlias + readCatalog over fixture pnpm-workspace.yaml
+    ├── deck-config.unit.test.ts  ← deck-accessors (deck-config import blocked by loaders.gl bug)
+    ├── filter.unit.test.ts       ← extractDim / derivedBool / searchMatches / computeVisibleIndices
+    ├── probe.unit.test.ts        ← parseRepository / classifyLicense / probeAll (5 UnknownReason branches)
+    ├── render-controls.unit.test.ts ← structural counts + id presence + attribute escape
+    ├── render-html.unit.test.ts  ← Bun.build stub + self-contained-document assertions
+    └── state.unit.test.ts        ← defaultState ranges + encode/decode round-trip + hash helpers
 ```
 
 The split (probe.ts / probe-fields.ts / probe-transitive.ts and deck-config.ts / deck-accessors.ts / deck-layers.ts / deck-scatter.ts / deck-labels.ts) is enforced by the `eslint/max-lines: 300` rule. Keep new files under that — the rule is configured with `skipBlankLines: true, skipComments: true`, so raw line counts can exceed 300 as long as code-only lines stay under (verified `render-controls.ts` at 402 raw lines passes cleanly).
@@ -107,8 +134,10 @@ After every code change, run all three in sequence (none can be skipped):
 ```sh
 mise run //packages/dev-script/deps-cube:lint:types
 mise run //packages/dev-script/deps-cube:lint:oxlint
-mise run //packages/dev-script/deps-cube:test       # task 12 onwards
+mise run //packages/dev-script/deps-cube:test:unit
 ```
+
+**Never invoke `bun test` directly**: the project rule "Never invoke raw tools (`bun test`, `oxlint`, etc.) directly; use the corresponding mise task" applies here. The `test:unit` task extends the root `task_templates."test:unit"` which runs `bun <file>` per `*.unit.test.ts` in parallel — the harness (`@monochromatic-dev/module-test`) uses top-level `await describe(...)`, so each file is its own test process. Bun's built-in `bun test` runner has a separate result accumulator that doesn't track these harness-driven results; running through the template is the only way to get an accurate exit code and reporter output.
 
 The first two pass cleanly now. oxlint reports ~278 stylistic warnings on the package (mostly `argument-per-line`, `tuple-per-line`, `array-element-per-line` against multi-arg helpers and tuple literals, plus `tsdoc/tag-lines` against doc blocks with adjacent `@param` lines); ignore those unless tidying for release. The blocking errors caught across sessions were:
 

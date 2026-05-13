@@ -2,9 +2,8 @@
 description = "Generate the catalog dependency audit 3D scatter report"
 run = "bun src/cli.ts"
 
-[tasks.test]
-description = "Run unit tests"
-run = "bun test"
+[tasks.'test:unit']
+extends = "test:unit"
 
 [tasks.lint]
 extends = "lint"
