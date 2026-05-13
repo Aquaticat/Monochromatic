@@ -127,13 +127,14 @@ await describe({
     },),
 
     it({
-      name: 'emits six range rows with twelve sliders',
+      name: 'emits six range rows with twelve sliders inside dual-thumb tracks',
       fn: async () => {
         const html = renderControls({
           probes: PROBES,
           state: defaultState({ probes: PROBES, },),
         },);
-        expect(countOccurrences({ haystack: html, needle: 'class="range-row"', },),).toBe(6,);
+        expect(countOccurrences({ haystack: html, needle: 'class="range-row', },),).toBe(6,);
+        expect(countOccurrences({ haystack: html, needle: 'class="range-track"', },),).toBe(6,);
         expect(countOccurrences({ haystack: html, needle: '<input type="range"', },),).toBe(12,);
       },
     },),

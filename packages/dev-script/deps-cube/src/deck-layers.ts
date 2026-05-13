@@ -1,286 +1,342 @@
 /**
- * Wireframe and threshold-plane layer factories.
+ * Axis-shaft, arrowhead, and tick-mark layer factories.
  *
- * Scatter and text-layer factories live in sibling files
- * (`./deck-scatter.ts`, `./deck-labels.ts`) to keep each module
- * under the 300-line cap.
+ * Three structural elements of the coordinate-system backdrop:
+ *
+ * - {@link buildAxisShaftLayer} — three thick black line segments
+ *   running from the min corner outward along +x, +y, +z.
+ * - {@link buildAxisArrowheadLayers} — three small dark cones at the
+ *   tips of the axis shafts, pointing along the respective axis.
+ *   Pre-rotated cone geometries live in {@link ./deck-geometries.ts}
+ *   so no runtime orientation math is needed.
+ * - {@link buildAxisTickLayer} — short perpendicular marks at evenly
+ *   spaced intervals along each axis.
+ *
+ * Coordinate planes and threshold guide lines moved to
+ * `./deck-planes.ts`; scatter and text-layer factories live in
+ * `./deck-scatter.ts` and `./deck-labels.ts`.
  *
  * @example
  * ```ts
- * import { buildWireframeLayer } from './deck-layers.ts';
- * const layer = buildWireframeLayer({ bounds });
+ * import { buildAxisShaftLayer } from './deck-layers.ts';
+ * const shaft = buildAxisShaftLayer({ bounds });
  * ```
  */
 
 import type { Layer, } from '@deck.gl/core';
-import {
-  PathLayer,
-  PolygonLayer,
-} from '@deck.gl/layers';
+import { PathLayer, } from '@deck.gl/layers';
+import { SimpleMeshLayer, } from '@deck.gl/mesh-layers';
 
 import type { SceneBounds, } from './deck-config.ts';
-import type { DimMapping, } from './scripts/filter.ts';
+import {
+  coneGeometryX,
+  coneGeometryY,
+  coneGeometryZ,
+} from './deck-geometries.ts';
 
 //region Types
 
-/** Data shape for the wireframe PathLayer; deck.gl expects mutable nested arrays. */
+/** Data shape for the axis-shaft PathLayer; deck.gl expects mutable nested arrays. */
 type PathDatum = {
   path: [number, number, number,][];
 };
 
-/** Data shape for the PolygonLayer (threshold planes); mutable arrays per deck.gl typings. */
-type PolygonDatum = {
-  polygon: [number, number, number,][];
+/** Data shape for arrowhead mesh-layer instances. */
+type ArrowheadDatum = {
+  position: [number, number, number,];
 };
 
 //endregion Types
 
 //region Constants
 
-/** Source-bytes threshold (≈ "300 SLOC" boundary), on log10. */
-const SOURCE_BYTES_PLANE = Math.log10(10_000,);
-/** Days-since-commit threshold (1 year), on log10. */
-const DAYS_STALE_PLANE = Math.log10(365,);
-/** Install-size threshold (~100KB soft boundary), on log10. */
-const INSTALL_SIZE_PLANE = Math.log10(100_000,);
-
-/** Wireframe edge colour: light grey, ~60% opacity. */
-const WIREFRAME_COLOR: readonly [number, number, number, number,] = [
-  180,
-  180,
-  180,
-  160,
+/** Axis shaft colour: near-black for high contrast against any backdrop. */
+const AXIS_SHAFT_COLOR: readonly [number, number, number, number,] = [
+  40,
+  40,
+  40,
+  255,
 ];
 
-/** Threshold-plane fill colour: muted blue, ~12% opacity. */
-const THRESHOLD_PLANE_COLOR: readonly [number, number, number, number,] = [
-  80,
-  120,
-  200,
-  30,
+/** Axis tick mark colour: same near-black as the shafts but a touch lighter. */
+const AXIS_TICK_COLOR: readonly [number, number, number, number,] = [
+  60,
+  60,
+  60,
+  255,
 ];
+
+/** Axis shaft width in pixels (with `widthMinPixels` floor). */
+const AXIS_SHAFT_WIDTH = 3;
+/** Axis tick line width in pixels. */
+const AXIS_TICK_WIDTH = 1.5;
+
+/** Fraction of the axis extent the arrow tip extends past `max`. */
+const AXIS_EXTENSION_FRACTION = 0.12;
+/** Cone arrowhead length, as a fraction of the axis extent. */
+const ARROWHEAD_LENGTH_FRACTION = 0.06;
+/** Cone arrowhead radius, as a fraction of the axis extent. */
+const ARROWHEAD_RADIUS_FRACTION = 0.018;
+/** Number of tick marks per axis (evenly spaced including endpoints). */
+const TICK_COUNT = 5;
+/** Tick mark length, as a fraction of the axis extent. */
+const TICK_LENGTH_FRACTION = 0.02;
 
 //endregion Constants
 
 //region Helpers
 
 /**
- * Constructs a two-point path datum for the wireframe.
+ * Computes the per-axis extents and the arrow-tip positions, the most
+ * common derived quantities across this module.
  *
- * @param a - Start point.
- * @param b - End point.
+ * @param bounds - Scene bounds.
  *
- * @returns A `PathDatum` wrapping `[a, b]`.
+ * @returns Object with `dx`/`dy`/`dz` extents, `tipX`/`tipY`/`tipZ` tip positions, and the min corner.
  */
-function edge(
-  {
-    a,
-    b,
-  }: {
-    a: [number, number, number,];
-    b: [number, number, number,];
-  },
-): PathDatum {
+function computeAxisGeometry(
+  { bounds, }: { bounds: SceneBounds; },
+): {
+  xMin: number;
+  yMin: number;
+  zMin: number;
+  xMax: number;
+  yMax: number;
+  zMax: number;
+  dx: number;
+  dy: number;
+  dz: number;
+  tipX: number;
+  tipY: number;
+  tipZ: number;
+} {
+  const [
+    xMin,
+    xMax,
+  ] = bounds.x;
+  const [
+    yMin,
+    yMax,
+  ] = bounds.y;
+  const [
+    zMin,
+    zMax,
+  ] = bounds.z;
+  const dx = xMax - xMin;
+  const dy = yMax - yMin;
+  const dz = zMax - zMin;
   return {
-    path: [a, b,],
+    xMin,
+    yMin,
+    zMin,
+    xMax,
+    yMax,
+    zMax,
+    dx,
+    dy,
+    dz,
+    tipX: xMax + dx * AXIS_EXTENSION_FRACTION,
+    tipY: yMax + dy * AXIS_EXTENSION_FRACTION,
+    tipZ: zMax + dz * AXIS_EXTENSION_FRACTION,
   };
-}
-
-/**
- * Constructs a single threshold-plane PolygonLayer.
- *
- * @param id - Layer id (used by deck.gl for reconciliation).
- * @param polygon - Four 3D vertices of the rectangle.
- *
- * @returns PolygonLayer with one polygon.
- */
-function makePlane(
-  {
-    id,
-    polygon,
-  }: {
-    id: string;
-    polygon: [number, number, number,][];
-  },
-): Layer {
-  return new PolygonLayer<PolygonDatum>({
-    id,
-    data: [
-      { polygon, },
-    ],
-    getPolygon: function getPolygon(d,) {
-      return d.polygon;
-    },
-    getFillColor: THRESHOLD_PLANE_COLOR,
-    filled: true,
-    stroked: false,
-  },);
 }
 
 //endregion Helpers
 
-//region Wireframe
+//region Axis shafts + arrowheads
 
 /**
- * Builds the 12-edge bounding-box wireframe matching the spatial bounds.
+ * Builds a single {@link PathLayer} with three line segments — one per
+ * axis — running from the min corner to the arrow tip position.
  *
  * @param bounds - Scene bounds.
  *
- * @returns PathLayer containing 12 line segments.
+ * @returns PathLayer.
  */
-export function buildWireframeLayer(
+export function buildAxisShaftLayer(
   { bounds, }: { bounds: SceneBounds; },
 ): Layer {
-  const [
-    xMin,
-    xMax,
-  ] = bounds.x;
-  const [
-    yMin,
-    yMax,
-  ] = bounds.y;
-  const [
-    zMin,
-    zMax,
-  ] = bounds.z;
+  const g = computeAxisGeometry({
+    bounds,
+  },);
   const data: PathDatum[] = [
-    // bottom rectangle (z = zMin)
-    edge({
-      a: [xMin, yMin, zMin,],
-      b: [xMax, yMin, zMin,],
-    },),
-    edge({
-      a: [xMax, yMin, zMin,],
-      b: [xMax, yMax, zMin,],
-    },),
-    edge({
-      a: [xMax, yMax, zMin,],
-      b: [xMin, yMax, zMin,],
-    },),
-    edge({
-      a: [xMin, yMax, zMin,],
-      b: [xMin, yMin, zMin,],
-    },),
-    // top rectangle (z = zMax)
-    edge({
-      a: [xMin, yMin, zMax,],
-      b: [xMax, yMin, zMax,],
-    },),
-    edge({
-      a: [xMax, yMin, zMax,],
-      b: [xMax, yMax, zMax,],
-    },),
-    edge({
-      a: [xMax, yMax, zMax,],
-      b: [xMin, yMax, zMax,],
-    },),
-    edge({
-      a: [xMin, yMax, zMax,],
-      b: [xMin, yMin, zMax,],
-    },),
-    // vertical edges connecting bottom to top
-    edge({
-      a: [xMin, yMin, zMin,],
-      b: [xMin, yMin, zMax,],
-    },),
-    edge({
-      a: [xMax, yMin, zMin,],
-      b: [xMax, yMin, zMax,],
-    },),
-    edge({
-      a: [xMax, yMax, zMin,],
-      b: [xMax, yMax, zMax,],
-    },),
-    edge({
-      a: [xMin, yMax, zMin,],
-      b: [xMin, yMax, zMax,],
-    },),
+    {
+      path: [
+        [g.xMin, g.yMin, g.zMin,],
+        [g.tipX, g.yMin, g.zMin,],
+      ],
+    },
+    {
+      path: [
+        [g.xMin, g.yMin, g.zMin,],
+        [g.xMin, g.tipY, g.zMin,],
+      ],
+    },
+    {
+      path: [
+        [g.xMin, g.yMin, g.zMin,],
+        [g.xMin, g.yMin, g.tipZ,],
+      ],
+    },
   ];
   return new PathLayer<PathDatum>({
-    id: 'wireframe',
+    id: 'axis-shafts',
     data,
     getPath: function getPath(d,) {
       return d.path;
     },
-    getColor: WIREFRAME_COLOR,
-    getWidth: 1,
+    getColor: AXIS_SHAFT_COLOR,
+    getWidth: AXIS_SHAFT_WIDTH,
     widthUnits: 'pixels',
+    widthMinPixels: AXIS_SHAFT_WIDTH,
   },);
 }
 
-//endregion Wireframe
-
-//region Threshold planes
-
 /**
- * Builds zero to three threshold-plane PolygonLayers.
- *
- * Each plane is drawn only when its spatial channel is mapped to its
- * expected default dim — the threshold values are heuristics tied to
- * specific data dims (e.g. log10(10000) bytes ≈ 300 SLOC), so they
- * lose meaning under a different mapping.
+ * Builds three {@link SimpleMeshLayer} instances — one per axis —
+ * each rendering a single cone at the tip of its axis.
  *
  * @param bounds - Scene bounds.
- * @param dimMapping - Current dim mapping.
  *
- * @returns Array of zero to three PolygonLayers.
+ * @returns Three SimpleMeshLayers (one per axis).
  */
-export function buildThresholdPlaneLayers(
-  {
-    bounds,
-    dimMapping,
-  }: {
-    bounds: SceneBounds;
-    dimMapping: DimMapping;
-  },
+export function buildAxisArrowheadLayers(
+  { bounds, }: { bounds: SceneBounds; },
 ): readonly Layer[] {
-  const [
-    xMin,
-    xMax,
-  ] = bounds.x;
-  const [
-    yMin,
-    yMax,
-  ] = bounds.y;
-  const [
-    zMin,
-    zMax,
-  ] = bounds.z;
-  const layers: Layer[] = [];
-  if (dimMapping.x === 'logSourceBytes' && SOURCE_BYTES_PLANE > xMin && SOURCE_BYTES_PLANE < xMax) {
-    layers.push(makePlane({
-      id: 'plane-x',
-      polygon: [
-        [SOURCE_BYTES_PLANE, yMin, zMin,],
-        [SOURCE_BYTES_PLANE, yMax, zMin,],
-        [SOURCE_BYTES_PLANE, yMax, zMax,],
-        [SOURCE_BYTES_PLANE, yMin, zMax,],
+  const g = computeAxisGeometry({
+    bounds,
+  },);
+  const coneLengthX = g.dx * ARROWHEAD_LENGTH_FRACTION;
+  const coneLengthY = g.dy * ARROWHEAD_LENGTH_FRACTION;
+  const coneLengthZ = g.dz * ARROWHEAD_LENGTH_FRACTION;
+  const coneRadiusX = g.dx * ARROWHEAD_RADIUS_FRACTION;
+  const coneRadiusY = g.dy * ARROWHEAD_RADIUS_FRACTION;
+  const coneRadiusZ = g.dz * ARROWHEAD_RADIUS_FRACTION;
+  return [
+    new SimpleMeshLayer<ArrowheadDatum>({
+      id: 'arrowhead-x',
+      data: [
+        {
+          position: [g.tipX - coneLengthX, g.yMin, g.zMin,],
+        },
       ],
-    },),);
-  }
-  if (dimMapping.y === 'logDaysStale' && DAYS_STALE_PLANE > yMin && DAYS_STALE_PLANE < yMax) {
-    layers.push(makePlane({
-      id: 'plane-y',
-      polygon: [
-        [xMin, DAYS_STALE_PLANE, zMin,],
-        [xMax, DAYS_STALE_PLANE, zMin,],
-        [xMax, DAYS_STALE_PLANE, zMax,],
-        [xMin, DAYS_STALE_PLANE, zMax,],
+      mesh: coneGeometryX,
+      getPosition: function getPosition(d,) {
+        return d.position;
+      },
+      getColor: AXIS_SHAFT_COLOR,
+      getScale: [
+        coneLengthX,
+        coneRadiusX,
+        coneRadiusX,
+      ] as const,
+      pickable: false,
+    },),
+    new SimpleMeshLayer<ArrowheadDatum>({
+      id: 'arrowhead-y',
+      data: [
+        {
+          position: [g.xMin, g.tipY - coneLengthY, g.zMin,],
+        },
       ],
-    },),);
-  }
-  if (dimMapping.z === 'logInstallSize' && INSTALL_SIZE_PLANE > zMin && INSTALL_SIZE_PLANE < zMax) {
-    layers.push(makePlane({
-      id: 'plane-z',
-      polygon: [
-        [xMin, yMin, INSTALL_SIZE_PLANE,],
-        [xMax, yMin, INSTALL_SIZE_PLANE,],
-        [xMax, yMax, INSTALL_SIZE_PLANE,],
-        [xMin, yMax, INSTALL_SIZE_PLANE,],
+      mesh: coneGeometryY,
+      getPosition: function getPosition(d,) {
+        return d.position;
+      },
+      getColor: AXIS_SHAFT_COLOR,
+      getScale: [
+        coneRadiusY,
+        coneLengthY,
+        coneRadiusY,
+      ] as const,
+      pickable: false,
+    },),
+    new SimpleMeshLayer<ArrowheadDatum>({
+      id: 'arrowhead-z',
+      data: [
+        {
+          position: [g.xMin, g.yMin, g.tipZ - coneLengthZ,],
+        },
       ],
-    },),);
-  }
-  return layers;
+      mesh: coneGeometryZ,
+      getPosition: function getPosition(d,) {
+        return d.position;
+      },
+      getColor: AXIS_SHAFT_COLOR,
+      getScale: [
+        coneRadiusZ,
+        coneRadiusZ,
+        coneLengthZ,
+      ] as const,
+      pickable: false,
+    },),
+  ];
 }
 
-//endregion Threshold planes
+//endregion Axis shafts + arrowheads
+
+//region Tick marks
+
+/**
+ * Builds the tick-marks PathLayer: short perpendicular segments at
+ * evenly spaced intervals along each axis.
+ *
+ * @param bounds - Scene bounds.
+ *
+ * @returns PathLayer with `3 * (TICK_COUNT + 1)` tick segments.
+ */
+export function buildAxisTickLayer(
+  { bounds, }: { bounds: SceneBounds; },
+): Layer {
+  const g = computeAxisGeometry({
+    bounds,
+  },);
+  const tx = g.dx * TICK_LENGTH_FRACTION;
+  const ty = g.dy * TICK_LENGTH_FRACTION;
+  const ts: readonly number[] = Array.from(
+    {
+      length: TICK_COUNT + 1,
+    },
+    function tForIndex(_, i,) {
+      return i / TICK_COUNT;
+    },
+  );
+  const ticks: PathDatum[] = ts.flatMap(function tickTriple(t,) {
+    const xAt = g.xMin + g.dx * t;
+    const yAt = g.yMin + g.dy * t;
+    const zAt = g.zMin + g.dz * t;
+    return [
+      {
+        path: [
+          [xAt, g.yMin - ty, g.zMin,],
+          [xAt, g.yMin + ty, g.zMin,],
+        ],
+      },
+      {
+        path: [
+          [g.xMin - tx, yAt, g.zMin,],
+          [g.xMin + tx, yAt, g.zMin,],
+        ],
+      },
+      {
+        path: [
+          [g.xMin, g.yMin - ty, zAt,],
+          [g.xMin, g.yMin + ty, zAt,],
+        ],
+      },
+    ];
+  },);
+  return new PathLayer<PathDatum>({
+    id: 'axis-ticks',
+    data: ticks,
+    getPath: function getPath(d,) {
+      return d.path;
+    },
+    getColor: AXIS_TICK_COLOR,
+    getWidth: AXIS_TICK_WIDTH,
+    widthUnits: 'pixels',
+    widthMinPixels: AXIS_TICK_WIDTH,
+  },);
+}
+
+//endregion Tick marks

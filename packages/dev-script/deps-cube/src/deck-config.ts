@@ -23,13 +23,20 @@ import {
 
 import type { PackageProbe, } from './probe.ts';
 import {
-  buildAxisLabelsLayer,
+  buildAxisCapitalsLayer,
+  buildAxisSubtitlesLayer,
   buildNameLabelsLayer,
+  buildOriginLabelLayer,
 } from './deck-labels.ts';
 import {
-  buildThresholdPlaneLayers,
-  buildWireframeLayer,
+  buildAxisArrowheadLayers,
+  buildAxisShaftLayer,
+  buildAxisTickLayer,
 } from './deck-layers.ts';
+import {
+  buildCoordinatePlaneLayers,
+  buildThresholdLineLayer,
+} from './deck-planes.ts';
 import {
   buildLeafScatterLayer,
   buildNonLeafScatterLayer,
@@ -151,10 +158,25 @@ export function computeSceneBounds(
 /**
  * Assembles the deck.gl scene layers for the current state.
  *
- * Layer order (back-to-front): wireframe, threshold planes, unknown
- * cluster, leaf scatter, non-leaf scatter, axis labels, name labels.
- * Display-toggles skip individual layers; `null` returns from factories
- * (e.g. empty unknown cluster) are filtered out.
+ * Layer order (back-to-front):
+ *
+ * 1. Coordinate planes (green, semi-transparent)
+ * 2. Threshold guide lines (on the planes)
+ * 3. Axis shafts (thick black PathLayer)
+ * 4. Axis tick marks
+ * 5. Axis arrowhead cones
+ * 6. Unknown cluster (spheres at the +max corner)
+ * 7. Leaf scatter (spheres)
+ * 8. Non-leaf scatter (octahedra)
+ * 9. Origin label (`O`)
+ * 10. Axis capital labels (`X`, `Y`, `Z`)
+ * 11. Axis dim-name subtitles
+ * 12. Per-glyph name labels (when toggled)
+ *
+ * Display-toggles skip individual layers; `null` returns from
+ * factories (e.g. empty unknown cluster, no threshold guides) are
+ * filtered out. The `showWireframe` toggle now controls the
+ * coordinate planes (the bounding-box wireframe is gone).
  *
  * @param probes - Full probe array.
  * @param state - Current `AppState`.
@@ -195,20 +217,32 @@ export function buildLayers(
     bounds,
     visibleIndices,
   },);
+  const thresholdLines = state.displayToggles.showThresholdPlanes
+    ? buildThresholdLineLayer({
+      bounds,
+      dimMapping: state.dimMapping,
+    },)
+    : null;
   const groups: readonly (readonly Layer[])[] = [
     state.displayToggles.showWireframe
-      ? [
-        buildWireframeLayer({
-          bounds,
-        },),
-      ]
-      : [],
-    state.displayToggles.showThresholdPlanes
-      ? buildThresholdPlaneLayers({
+      ? buildCoordinatePlaneLayers({
         bounds,
-        dimMapping: state.dimMapping,
       },)
       : [],
+    thresholdLines === null ? [] : [thresholdLines,],
+    [
+      buildAxisShaftLayer({
+        bounds,
+      },),
+    ],
+    [
+      buildAxisTickLayer({
+        bounds,
+      },),
+    ],
+    buildAxisArrowheadLayers({
+      bounds,
+    },),
     unknownCluster === null ? [] : [unknownCluster,],
     [
       buildLeafScatterLayer({
@@ -228,7 +262,13 @@ export function buildLayers(
     ],
     state.displayToggles.showAxisLabels
       ? [
-        buildAxisLabelsLayer({
+        buildOriginLabelLayer({
+          bounds,
+        },),
+        buildAxisCapitalsLayer({
+          bounds,
+        },),
+        buildAxisSubtitlesLayer({
           bounds,
           dimMapping: state.dimMapping,
         },),

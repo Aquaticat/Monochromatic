@@ -41,6 +41,10 @@ const COLOR_UNKNOWN: readonly [number, number, number,] = [
 const RADIUS_MIN_PX = 3;
 /** Maximum glyph radius in pixels. */
 const RADIUS_MAX_PX = 30;
+/** Minimum glyph radius in world units, as a fraction of the bounds diagonal. */
+const RADIUS_MIN_WORLD_FRACTION = 0.005;
+/** Maximum glyph radius in world units, as a fraction of the bounds diagonal. */
+const RADIUS_MAX_WORLD_FRACTION = 0.03;
 /** Offset applied to the unknown cluster, in scene-units, from the data box's max corner. */
 const UNKNOWN_CLUSTER_OFFSET = 2;
 /** Half-extent of the unknown-cluster jitter cube so glyphs don't pile on one point. */
@@ -267,6 +271,65 @@ export function probeRadius(
     hi,
   },);
   return RADIUS_MIN_PX + t * (RADIUS_MAX_PX - RADIUS_MIN_PX);
+}
+
+/**
+ * Returns the glyph radius in world units, scaled to a fraction of the
+ * scene's bounding-box diagonal. Used by SimpleMeshLayer's `getScale`
+ * (mesh geometries are constructed with unit radius; the scale factor
+ * times unit radius yields the rendered world-space size).
+ *
+ * Computed as `diagonal * (RADIUS_MIN + t * (RADIUS_MAX - RADIUS_MIN))`
+ * where `t` is the size-channel value normalised to `[0, 1]`. Unknown
+ * size values get the minimum radius.
+ *
+ * Pixel-space radii (the `probeRadius` companion) keep glyphs the same
+ * apparent size regardless of zoom; world-space radii scale naturally
+ * with the camera. Spheres and octahedra need the latter so they look
+ * like true 3D objects, not screen-aligned sprites.
+ *
+ * @param probe - Source probe.
+ * @param state - Current state (uses `dimMapping.size`).
+ * @param bounds - Scene bounds.
+ *
+ * @returns Radius in world units.
+ *
+ * @example
+ * ```ts
+ * const r = probeRadiusWorld({ probe, state, bounds });
+ * new SimpleMeshLayer({ getScale: () => [r, r, r], ... });
+ * ```
+ */
+export function probeRadiusWorld(
+  {
+    probe,
+    state,
+    bounds,
+  }: {
+    probe: PackageProbe;
+    state: AppState;
+    bounds: SceneBounds;
+  },
+): number {
+  const dx = bounds.x[1] - bounds.x[0];
+  const dy = bounds.y[1] - bounds.y[0];
+  const dz = bounds.z[1] - bounds.z[0];
+  const diagonal = Math.hypot(dx, dy, dz,);
+  const value = extractDim({
+    probe,
+    dim: state.dimMapping.size,
+  },);
+  if (value === null) return diagonal * RADIUS_MIN_WORLD_FRACTION;
+  const [
+    lo,
+    hi,
+  ] = bounds.size;
+  const t = normalise({
+    value,
+    lo,
+    hi,
+  },);
+  return diagonal * (RADIUS_MIN_WORLD_FRACTION + t * (RADIUS_MAX_WORLD_FRACTION - RADIUS_MIN_WORLD_FRACTION));
 }
 
 //endregion Radius

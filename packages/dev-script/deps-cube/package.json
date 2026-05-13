@@ -28,6 +28,8 @@
     "@cspotcode/outdent": "catalog:",
     "@deck.gl/core": "catalog:",
     "@deck.gl/layers": "catalog:",
+    "@deck.gl/mesh-layers": "catalog:",
+    "@luma.gl/engine": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "find-up": "catalog:",

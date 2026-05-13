@@ -1,13 +1,17 @@
 /**
- * Scatter layer factories.
+ * Glyph mesh-layer factories.
  *
- * Probes are partitioned into three buckets — filled, stroked,
- * unknown — based on the shape-channel accessor and unknown-reason
- * flag. Each bucket gets its own ScatterplotLayer with appropriate
- * fill/stroke and (for unknowns) a synthetic position computed by
- * {@link unknownClusterPosition} in `./deck-accessors.ts`.
+ * Probes are partitioned into three buckets — leaf, non-leaf, unknown
+ * — based on the shape-channel accessor and unknown-reason flag. Each
+ * bucket gets its own {@link SimpleMeshLayer} with a different mesh:
+ * spheres for leaf and unknown, octahedra for non-leaf. The shape
+ * distinction is geometric (sphere vs octahedron from every angle),
+ * not a 2D fill/stroke difference; 2D `ScatterplotLayer` was the
+ * previous implementation but its flat circles foreshortened into
+ * ellipses at oblique camera angles.
  *
- * Split out from `deck-layers.ts` to stay under the 300-line cap.
+ * Geometries themselves live in {@link ./deck-geometries.ts} so each
+ * layer file stays under the 300-line cap.
  *
  * @example
  * ```ts
@@ -17,22 +21,27 @@
  */
 
 import type { Layer, } from '@deck.gl/core';
-import { ScatterplotLayer, } from '@deck.gl/layers';
+import { SimpleMeshLayer, } from '@deck.gl/mesh-layers';
+import type { Geometry, } from '@luma.gl/engine';
 
 import type { PackageProbe, } from './probe.ts';
 import {
   probeFillColor,
   probeIsFilled,
   probePosition,
-  probeRadius,
+  probeRadiusWorld,
   unknownClusterPosition,
 } from './deck-accessors.ts';
 import type { SceneBounds, } from './deck-config.ts';
+import {
+  octahedronGeometry,
+  sphereGeometry,
+} from './deck-geometries.ts';
 import type { AppState, } from './scripts/state.ts';
 
 //region Types
 
-/** Data shape passed to ScatterplotLayer's `data` prop: probe + original-array index. */
+/** Data shape passed to the mesh-layer `data` prop: probe + original-array index. */
 type ScatterDatum = {
   probe: PackageProbe;
   originalIndex: number;
@@ -40,25 +49,10 @@ type ScatterDatum = {
 
 //endregion Types
 
-//region Constants
-
-/** Line width for stroked glyphs, in pixels. */
-const STROKE_LINE_WIDTH = 2;
-
-/** Line colour for the unknown-cluster stroke; matches axis label tone. */
-const UNKNOWN_STROKE_COLOR: readonly [number, number, number, number,] = [
-  200,
-  200,
-  200,
-  200,
-];
-
-//endregion Constants
-
 //region Probe partitioning
 
 /**
- * Splits the probe array into filled / stroked / unknown buckets,
+ * Splits the probe array into leaf / non-leaf / unknown buckets,
  * preserving the original index of every probe so visibility lookups
  * stay accurate.
  *
@@ -76,12 +70,12 @@ function partitionProbes(
     state: AppState;
   },
 ): {
-  filled: readonly ScatterDatum[];
-  stroked: readonly ScatterDatum[];
+  leaf: readonly ScatterDatum[];
+  nonLeaf: readonly ScatterDatum[];
   unknown: readonly ScatterDatum[];
 } {
-  const filled: ScatterDatum[] = [];
-  const stroked: ScatterDatum[] = [];
+  const leaf: ScatterDatum[] = [];
+  const nonLeaf: ScatterDatum[] = [];
   const unknown: ScatterDatum[] = [];
   probes.forEach(function bucket(
     probe,
@@ -108,18 +102,18 @@ function partitionProbes(
       probe,
       state,
     },))
-      filled.push({
+      leaf.push({
         probe,
         originalIndex,
       },);
-    else stroked.push({
+    else nonLeaf.push({
       probe,
       originalIndex,
     },);
   },);
   return {
-    filled,
-    stroked,
+    leaf,
+    nonLeaf,
     unknown,
   };
 }
@@ -129,15 +123,16 @@ function partitionProbes(
 //region Layer factories
 
 /**
- * Builds the filled-glyph scatter for probes the shape channel marks
- * as filled and whose spatial dims are all known.
+ * Builds the sphere mesh-layer for probes the shape channel marks as
+ * leaf (filled-equivalent in the binary shape mapping) and whose
+ * spatial dims are all known.
  *
  * @param probes - Full probe array.
  * @param state - Current state.
  * @param bounds - Scene bounds.
  * @param visibleIndices - Set of original indices that pass every filter.
  *
- * @returns ScatterplotLayer.
+ * @returns SimpleMeshLayer with sphere mesh.
  */
 export function buildLeafScatterLayer(
   {
@@ -152,30 +147,30 @@ export function buildLeafScatterLayer(
     visibleIndices: ReadonlySet<number>;
   },
 ): Layer {
-  const { filled, } = partitionProbes({
+  const { leaf, } = partitionProbes({
     probes,
     state,
   },);
-  return buildScatter({
-    id: 'scatter-filled',
-    data: filled,
+  return buildMeshScatter({
+    id: 'scatter-leaf',
+    data: leaf,
     state,
     bounds,
     visibleIndices,
-    filled: true,
+    mesh: sphereGeometry,
   },);
 }
 
 /**
- * Builds the stroked-glyph scatter for probes the shape channel marks
- * as not-filled.
+ * Builds the octahedron mesh-layer for probes the shape channel marks
+ * as non-leaf.
  *
  * @param probes - Full probe array.
  * @param state - Current state.
  * @param bounds - Scene bounds.
  * @param visibleIndices - Set of original indices that pass every filter.
  *
- * @returns ScatterplotLayer.
+ * @returns SimpleMeshLayer with octahedron mesh.
  */
 export function buildNonLeafScatterLayer(
   {
@@ -190,22 +185,22 @@ export function buildNonLeafScatterLayer(
     visibleIndices: ReadonlySet<number>;
   },
 ): Layer {
-  const { stroked, } = partitionProbes({
+  const { nonLeaf, } = partitionProbes({
     probes,
     state,
   },);
-  return buildScatter({
-    id: 'scatter-stroked',
-    data: stroked,
+  return buildMeshScatter({
+    id: 'scatter-nonleaf',
+    data: nonLeaf,
     state,
     bounds,
     visibleIndices,
-    filled: false,
+    mesh: octahedronGeometry,
   },);
 }
 
 /**
- * Builds the Unknown-cluster scatter — probes with
+ * Builds the Unknown-cluster sphere layer — probes with
  * `unknownReason !== null` or unknown spatial position. Placed at an
  * offset corner of the scene with stable per-index jitter.
  *
@@ -214,7 +209,7 @@ export function buildNonLeafScatterLayer(
  * @param bounds - Scene bounds.
  * @param visibleIndices - Set of original indices that pass every filter.
  *
- * @returns ScatterplotLayer, or `null` when the bucket is empty.
+ * @returns SimpleMeshLayer, or `null` when the bucket is empty.
  */
 export function buildUnknownClusterLayer(
   {
@@ -234,16 +229,17 @@ export function buildUnknownClusterLayer(
     state,
   },);
   if (unknown.length === 0) return null;
-  return new ScatterplotLayer<ScatterDatum>({
+  return new SimpleMeshLayer<ScatterDatum>({
     id: 'scatter-unknown',
     data: unknown,
+    mesh: sphereGeometry,
     getPosition: function getPosition(d,) {
       return unknownClusterPosition({
         index: d.originalIndex,
         bounds,
       },);
     },
-    getFillColor: function getFillColor(d,) {
+    getColor: function getColor(d,) {
       return probeFillColor({
         probe: d.probe,
         state,
@@ -251,54 +247,56 @@ export function buildUnknownClusterLayer(
         isVisible: visibleIndices.has(d.originalIndex,),
       },);
     },
-    getRadius: function getRadius(d,) {
-      return probeRadius({
+    getScale: function getScale(d,) {
+      const r = probeRadiusWorld({
         probe: d.probe,
         state,
         bounds,
       },);
+      return [
+        r,
+        r,
+        r,
+      ] as const;
     },
-    radiusUnits: 'pixels',
-    filled: true,
-    stroked: true,
-    lineWidthMinPixels: 1,
-    getLineColor: UNKNOWN_STROKE_COLOR,
     pickable: true,
   },);
 }
 
 /**
- * Internal: shared ScatterplotLayer constructor for filled/stroked.
+ * Internal: shared `SimpleMeshLayer` constructor for the leaf / non-leaf
+ * scatter layers. Both share every prop except `id`, `data`, and `mesh`.
  *
  * @param id - Layer id.
  * @param data - Scatter data (probe + original index pairs).
  * @param state - Current state.
  * @param bounds - Scene bounds.
  * @param visibleIndices - Set of original indices that pass every filter.
- * @param filled - `true` for filled glyphs, `false` for hollow.
+ * @param mesh - The glyph mesh ({@link sphereGeometry} or {@link octahedronGeometry}).
  *
- * @returns ScatterplotLayer.
+ * @returns SimpleMeshLayer instance.
  */
-function buildScatter(
+function buildMeshScatter(
   {
     id,
     data,
     state,
     bounds,
     visibleIndices,
-    filled,
+    mesh,
   }: {
     id: string;
     data: readonly ScatterDatum[];
     state: AppState;
     bounds: SceneBounds;
     visibleIndices: ReadonlySet<number>;
-    filled: boolean;
+    mesh: Geometry;
   },
 ): Layer {
-  return new ScatterplotLayer<ScatterDatum>({
+  return new SimpleMeshLayer<ScatterDatum>({
     id,
     data,
+    mesh,
     getPosition: function getPosition(d,) {
       const pos = probePosition({
         probe: d.probe,
@@ -306,7 +304,7 @@ function buildScatter(
       },);
       return pos ?? [0, 0, 0,];
     },
-    getFillColor: function getFillColor(d,) {
+    getColor: function getColor(d,) {
       return probeFillColor({
         probe: d.probe,
         state,
@@ -314,25 +312,18 @@ function buildScatter(
         isVisible: visibleIndices.has(d.originalIndex,),
       },);
     },
-    getLineColor: function getLineColor(d,) {
-      return probeFillColor({
-        probe: d.probe,
-        state,
-        bounds,
-        isVisible: visibleIndices.has(d.originalIndex,),
-      },);
-    },
-    getRadius: function getRadius(d,) {
-      return probeRadius({
+    getScale: function getScale(d,) {
+      const r = probeRadiusWorld({
         probe: d.probe,
         state,
         bounds,
       },);
+      return [
+        r,
+        r,
+        r,
+      ] as const;
     },
-    radiusUnits: 'pixels',
-    filled,
-    stroked: !filled,
-    lineWidthMinPixels: STROKE_LINE_WIDTH,
     pickable: true,
   },);
 }

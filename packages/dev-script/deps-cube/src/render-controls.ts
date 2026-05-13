@@ -274,10 +274,12 @@ function renderRangeRow(
   const minAttr = fullMin.toString();
   const maxAttr = fullMax.toString();
   const stepAttr = RANGE_STEP.toString();
-  return `<div class="range-row" data-channel="${channel}">
+  return `<div class="range-row control-row" data-channel="${channel}">
       <label>${CHANNEL_LABELS[channel]} range</label>
-      <input type="range" id="range-${channel}-min" min="${minAttr}" max="${maxAttr}" step="${stepAttr}" value="${curMin.toString()}">
-      <input type="range" id="range-${channel}-max" min="${minAttr}" max="${maxAttr}" step="${stepAttr}" value="${curMax.toString()}">
+      <div class="range-track">
+        <input type="range" id="range-${channel}-min" min="${minAttr}" max="${maxAttr}" step="${stepAttr}" value="${curMin.toString()}">
+        <input type="range" id="range-${channel}-max" min="${minAttr}" max="${maxAttr}" step="${stepAttr}" value="${curMax.toString()}">
+      </div>
     </div>`;
 }
 
