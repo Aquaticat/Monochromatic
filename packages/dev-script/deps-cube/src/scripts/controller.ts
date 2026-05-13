@@ -48,6 +48,10 @@ import {
 } from './controller-tooltip.ts';
 import { computeVisibleIndices, } from './filter.ts';
 import {
+  type ChromeColors,
+  detectScheme,
+} from './scheme.ts';
+import {
   type AppState,
   defaultState,
   readStateFromHash,
@@ -78,6 +82,7 @@ type Session = {
   state: AppState;
   bounds: SceneBounds;
   visibleIndices: ReadonlySet<number>;
+  chrome: ChromeColors;
   deck: Deck<OrbitView>;
 };
 
@@ -170,6 +175,7 @@ function rerenderLayers(
     state: session.state,
     visibleIndices: session.visibleIndices,
     bounds: session.bounds,
+    chrome: session.chrome,
   },);
   session.deck.setProps({
     layers: [...layers,],
@@ -263,6 +269,7 @@ function createSession(
     search: initial.search,
     dimMapping: initial.dimMapping,
   },);
+  const chrome = detectScheme();
   const deck = new Deck<OrbitView>({
     canvas: 'deck-canvas',
     views: orbitView,
@@ -274,6 +281,7 @@ function createSession(
         state: initial,
         visibleIndices,
         bounds,
+        chrome,
       },),
     ],
     getTooltip: getTooltipForInfo,
@@ -283,6 +291,7 @@ function createSession(
     state: initial,
     bounds,
     visibleIndices,
+    chrome,
     deck,
   };
   deck.setProps({

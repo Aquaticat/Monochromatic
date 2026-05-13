@@ -96,9 +96,16 @@ const DEFAULT_TOGGLES: ToggleState = {
   hasKnownRepo: 'any',
 };
 
-/** Default display toggles — show every chrome element. */
+/**
+ * Default display toggles.
+ *
+ * Threshold guide lines default to off because they're an opt-in
+ * heuristic overlay and clutter the reference-style coordinate-system
+ * backdrop. Every other chrome element starts on so the scene reads
+ * as a proper 3D coordinate system on first load.
+ */
 const DEFAULT_DISPLAY_TOGGLES: DisplayToggleState = {
-  showThresholdPlanes: true,
+  showThresholdPlanes: false,
   showWireframe: true,
   showAxisLabels: true,
   nameLabels: 'none',

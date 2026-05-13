@@ -12,10 +12,17 @@
  *
  * Split out from `deck-layers.ts` to stay under the 300-line cap.
  *
+ * Iteration-2 dropped the opaque-white label backgrounds (they
+ * dominated dark-mode scenes) and threaded a {@link ChromeColors}
+ * palette through every factory so colours respect
+ * `prefers-color-scheme`. Subtitles moved from the arrow-tip
+ * neighbourhood to the axis midpoint to clear the capitals.
+ *
  * @example
  * ```ts
  * import { buildAxisCapitalsLayer } from './deck-labels.ts';
- * const layer = buildAxisCapitalsLayer({ bounds });
+ * import { detectScheme } from './scripts/scheme.ts';
+ * const layer = buildAxisCapitalsLayer({ bounds, chrome: detectScheme() });
  * ```
  */
 
@@ -27,6 +34,7 @@ import { probePosition, } from './deck-accessors.ts';
 import type { SceneBounds, } from './deck-config.ts';
 import { DIM_DISPLAY_NAMES, } from './dim-meta.ts';
 import type { DimMapping, } from './scripts/filter.ts';
+import type { ChromeColors, } from './scripts/scheme.ts';
 import type { AppState, } from './scripts/state.ts';
 
 //region Types
@@ -43,8 +51,11 @@ type TextDatum = {
 
 /** Axis-tip capital-letter font size in pixels. Larger than subtitles for hierarchy. */
 const TIP_LABEL_SIZE_PX = 24;
-/** Axis dim-name subtitle font size in pixels. */
-const SUBTITLE_LABEL_SIZE_PX = 12;
+/**
+ * Axis dim-name subtitle font size in pixels. Smaller than iteration-1
+ * (was 12) so the secondary text doesn't compete with the capitals.
+ */
+const SUBTITLE_LABEL_SIZE_PX = 10;
 /** Origin marker font size in pixels. */
 const ORIGIN_LABEL_SIZE_PX = 18;
 /** Name-label font size in pixels. */
@@ -54,44 +65,25 @@ const TOP_N_NAMES = 10;
 /** Half-coefficient used for centring helpers. */
 const HALF = 1 / 2;
 
-/** Axis label colour: near-black, high contrast against the light backdrop. */
-const AXIS_LABEL_COLOR: readonly [number, number, number, number,] = [
-  30,
-  30,
-  30,
-  255,
-];
-
-/** Origin marker colour, slightly muted vs the axis labels. */
-const ORIGIN_LABEL_COLOR: readonly [number, number, number, number,] = [
-  80,
-  80,
-  80,
-  255,
-];
-
-/** Name-label colour, dark enough to read on the light backdrop. */
-const NAME_LABEL_COLOR: readonly [number, number, number, number,] = [
-  50,
-  50,
-  50,
-  255,
-];
-
-/** Label background tint — translucent white so labels stay readable against the green planes. */
-const LABEL_BACKGROUND_COLOR: readonly [number, number, number, number,] = [
-  250,
-  250,
-  250,
-  220,
-];
-
-/** Fraction of the axis extent that the capital sits past the arrow tip. */
-const TIP_LABEL_OFFSET_FRACTION = 0.18;
-/** Fraction of the axis extent the dim-name subtitle sits inside the tip. */
-const SUBTITLE_OFFSET_FRACTION = 0.08;
-/** Fraction of the axis extent the origin label sits behind the min corner. */
-const ORIGIN_OFFSET_FRACTION = 0.04;
+/**
+ * Fraction of the axis extent that the capital sits past the arrow tip.
+ *
+ * Iteration-1 used 0.18; bumped to 0.22 so capitals never collide with
+ * the cone arrowheads even on axes with tight extents.
+ */
+const TIP_LABEL_OFFSET_FRACTION = 0.22;
+/**
+ * Fraction of the axis extent the dim-name subtitle is offset from the
+ * data box. Subtitles now sit at the axis midpoint (between min and
+ * max), offset OUTWARD perpendicular to the axis by this fraction.
+ */
+const SUBTITLE_OFFSET_FRACTION = 0.05;
+/**
+ * Fraction of the axis extent the origin label sits behind the min
+ * corner. Bumped from 0.04 to 0.08 so the `O` clears the data box and
+ * the axis-shaft origin point.
+ */
+const ORIGIN_OFFSET_FRACTION = 0.08;
 /** Name-label vertical offset above each glyph, as a fraction of the y extent. */
 const NAME_LABEL_OFFSET_FRACTION = 0.02;
 
@@ -160,7 +152,13 @@ function axisExtents(
  * @returns TextLayer with three capital-letter labels.
  */
 export function buildAxisCapitalsLayer(
-  { bounds, }: { bounds: SceneBounds; },
+  {
+    bounds,
+    chrome,
+  }: {
+    bounds: SceneBounds;
+    chrome: ChromeColors;
+  },
 ): Layer {
   const g = axisExtents({
     bounds,
@@ -192,13 +190,11 @@ export function buildAxisCapitalsLayer(
       return d.text;
     },
     getSize: TIP_LABEL_SIZE_PX,
-    getColor: AXIS_LABEL_COLOR,
+    getColor: chrome.axisLabel,
     sizeUnits: 'pixels',
     fontFamily: 'serif',
     getTextAnchor: 'middle',
     getAlignmentBaseline: 'center',
-    background: true,
-    getBackgroundColor: LABEL_BACKGROUND_COLOR,
   },);
 }
 
@@ -219,9 +215,11 @@ export function buildAxisSubtitlesLayer(
   {
     bounds,
     dimMapping,
+    chrome,
   }: {
     bounds: SceneBounds;
     dimMapping: DimMapping;
+    chrome: ChromeColors;
   },
 ): Layer {
   const g = axisExtents({
@@ -229,18 +227,17 @@ export function buildAxisSubtitlesLayer(
   },);
   const offX = g.dx * SUBTITLE_OFFSET_FRACTION;
   const offY = g.dy * SUBTITLE_OFFSET_FRACTION;
-  const offZ = g.dz * SUBTITLE_OFFSET_FRACTION;
   const data: TextDatum[] = [
     {
-      position: [g.xMax - offX, g.yMin - offY * HALF, g.zMin,],
+      position: [(g.xMin + g.xMax) * HALF, g.yMin - offY, g.zMin,],
       text: DIM_DISPLAY_NAMES[dimMapping.x],
     },
     {
-      position: [g.xMin - offX * HALF, g.yMax - offY, g.zMin,],
+      position: [g.xMin - offX, (g.yMin + g.yMax) * HALF, g.zMin,],
       text: DIM_DISPLAY_NAMES[dimMapping.y],
     },
     {
-      position: [g.xMin, g.yMin - offY * HALF, g.zMax - offZ,],
+      position: [g.xMin, g.yMin - offY, (g.zMin + g.zMax) * HALF,],
       text: DIM_DISPLAY_NAMES[dimMapping.z],
     },
   ];
@@ -254,13 +251,11 @@ export function buildAxisSubtitlesLayer(
       return d.text;
     },
     getSize: SUBTITLE_LABEL_SIZE_PX,
-    getColor: AXIS_LABEL_COLOR,
+    getColor: chrome.axisLabel,
     sizeUnits: 'pixels',
     fontFamily: 'monospace',
     getTextAnchor: 'middle',
     getAlignmentBaseline: 'center',
-    background: true,
-    getBackgroundColor: LABEL_BACKGROUND_COLOR,
   },);
 }
 
@@ -278,7 +273,13 @@ export function buildAxisSubtitlesLayer(
  * @returns TextLayer with one origin label.
  */
 export function buildOriginLabelLayer(
-  { bounds, }: { bounds: SceneBounds; },
+  {
+    bounds,
+    chrome,
+  }: {
+    bounds: SceneBounds;
+    chrome: ChromeColors;
+  },
 ): Layer {
   const g = axisExtents({
     bounds,
@@ -302,7 +303,7 @@ export function buildOriginLabelLayer(
       return d.text;
     },
     getSize: ORIGIN_LABEL_SIZE_PX,
-    getColor: ORIGIN_LABEL_COLOR,
+    getColor: chrome.originLabel,
     sizeUnits: 'pixels',
     fontFamily: 'serif',
     getTextAnchor: 'middle',
@@ -334,11 +335,13 @@ export function buildNameLabelsLayer(
     state,
     bounds,
     visibleIndices,
+    chrome,
   }: {
     probes: readonly PackageProbe[];
     state: AppState;
     bounds: SceneBounds;
     visibleIndices: ReadonlySet<number>;
+    chrome: ChromeColors;
   },
 ): Layer | null {
   const g = axisExtents({
@@ -399,7 +402,7 @@ export function buildNameLabelsLayer(
       return d.text;
     },
     getSize: NAME_LABEL_SIZE_PX,
-    getColor: NAME_LABEL_COLOR,
+    getColor: chrome.nameLabel,
     sizeUnits: 'pixels',
     fontFamily: 'monospace',
     getTextAnchor: 'middle',

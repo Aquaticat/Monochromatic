@@ -47,6 +47,7 @@ import {
   type DimMapping,
   extractDim,
 } from './scripts/filter.ts';
+import type { ChromeColors, } from './scripts/scheme.ts';
 import type { AppState, } from './scripts/state.ts';
 
 //region Types
@@ -196,11 +197,13 @@ export function buildLayers(
     state,
     visibleIndices,
     bounds,
+    chrome,
   }: {
     probes: readonly PackageProbe[];
     state: AppState;
     visibleIndices: ReadonlySet<number>;
     bounds: SceneBounds;
+    chrome: ChromeColors;
   },
 ): readonly Layer[] {
   const unknownCluster = state.displayToggles.showUnknownCluster
@@ -216,6 +219,7 @@ export function buildLayers(
     state,
     bounds,
     visibleIndices,
+    chrome,
   },);
   const thresholdLines = state.displayToggles.showThresholdPlanes
     ? buildThresholdLineLayer({
@@ -233,15 +237,18 @@ export function buildLayers(
     [
       buildAxisShaftLayer({
         bounds,
+        chrome,
       },),
     ],
     [
       buildAxisTickLayer({
         bounds,
+        chrome,
       },),
     ],
     buildAxisArrowheadLayers({
       bounds,
+      chrome,
     },),
     unknownCluster === null ? [] : [unknownCluster,],
     [
@@ -264,13 +271,16 @@ export function buildLayers(
       ? [
         buildOriginLabelLayer({
           bounds,
+          chrome,
         },),
         buildAxisCapitalsLayer({
           bounds,
+          chrome,
         },),
         buildAxisSubtitlesLayer({
           bounds,
           dimMapping: state.dimMapping,
+          chrome,
         },),
       ]
       : [],

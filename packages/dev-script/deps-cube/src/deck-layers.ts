@@ -33,6 +33,7 @@ import {
   coneGeometryY,
   coneGeometryZ,
 } from './deck-geometries.ts';
+import type { ChromeColors, } from './scripts/scheme.ts';
 
 //region Types
 
@@ -49,22 +50,6 @@ type ArrowheadDatum = {
 //endregion Types
 
 //region Constants
-
-/** Axis shaft colour: near-black for high contrast against any backdrop. */
-const AXIS_SHAFT_COLOR: readonly [number, number, number, number,] = [
-  40,
-  40,
-  40,
-  255,
-];
-
-/** Axis tick mark colour: same near-black as the shafts but a touch lighter. */
-const AXIS_TICK_COLOR: readonly [number, number, number, number,] = [
-  60,
-  60,
-  60,
-  255,
-];
 
 /** Axis shaft width in pixels (with `widthMinPixels` floor). */
 const AXIS_SHAFT_WIDTH = 3;
@@ -154,7 +139,13 @@ function computeAxisGeometry(
  * @returns PathLayer.
  */
 export function buildAxisShaftLayer(
-  { bounds, }: { bounds: SceneBounds; },
+  {
+    bounds,
+    chrome,
+  }: {
+    bounds: SceneBounds;
+    chrome: ChromeColors;
+  },
 ): Layer {
   const g = computeAxisGeometry({
     bounds,
@@ -185,7 +176,7 @@ export function buildAxisShaftLayer(
     getPath: function getPath(d,) {
       return d.path;
     },
-    getColor: AXIS_SHAFT_COLOR,
+    getColor: chrome.axis,
     getWidth: AXIS_SHAFT_WIDTH,
     widthUnits: 'pixels',
     widthMinPixels: AXIS_SHAFT_WIDTH,
@@ -201,7 +192,13 @@ export function buildAxisShaftLayer(
  * @returns Three SimpleMeshLayers (one per axis).
  */
 export function buildAxisArrowheadLayers(
-  { bounds, }: { bounds: SceneBounds; },
+  {
+    bounds,
+    chrome,
+  }: {
+    bounds: SceneBounds;
+    chrome: ChromeColors;
+  },
 ): readonly Layer[] {
   const g = computeAxisGeometry({
     bounds,
@@ -224,7 +221,7 @@ export function buildAxisArrowheadLayers(
       getPosition: function getPosition(d,) {
         return d.position;
       },
-      getColor: AXIS_SHAFT_COLOR,
+      getColor: chrome.axis,
       getScale: [
         coneLengthX,
         coneRadiusX,
@@ -243,7 +240,7 @@ export function buildAxisArrowheadLayers(
       getPosition: function getPosition(d,) {
         return d.position;
       },
-      getColor: AXIS_SHAFT_COLOR,
+      getColor: chrome.axis,
       getScale: [
         coneRadiusY,
         coneLengthY,
@@ -262,7 +259,7 @@ export function buildAxisArrowheadLayers(
       getPosition: function getPosition(d,) {
         return d.position;
       },
-      getColor: AXIS_SHAFT_COLOR,
+      getColor: chrome.axis,
       getScale: [
         coneRadiusZ,
         coneRadiusZ,
@@ -286,7 +283,13 @@ export function buildAxisArrowheadLayers(
  * @returns PathLayer with `3 * (TICK_COUNT + 1)` tick segments.
  */
 export function buildAxisTickLayer(
-  { bounds, }: { bounds: SceneBounds; },
+  {
+    bounds,
+    chrome,
+  }: {
+    bounds: SceneBounds;
+    chrome: ChromeColors;
+  },
 ): Layer {
   const g = computeAxisGeometry({
     bounds,
@@ -332,7 +335,7 @@ export function buildAxisTickLayer(
     getPath: function getPath(d,) {
       return d.path;
     },
-    getColor: AXIS_TICK_COLOR,
+    getColor: chrome.axisTick,
     getWidth: AXIS_TICK_WIDTH,
     widthUnits: 'pixels',
     widthMinPixels: AXIS_TICK_WIDTH,

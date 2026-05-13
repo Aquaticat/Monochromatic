@@ -22,11 +22,25 @@ Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D 
 
 Lint, types, and tests all clean (0 errors; ~454 stylistic warnings, all non-blocking). 9 PASS / 0 FAIL / 1 SKIP across the eight test files. The CLI runs end-to-end and produces a fresh `dist/deps-cube-*.html` (~826KB; slight uptick from the previous 803KB driven by the mesh-layers + luma.gl/engine additions in the inlined controller bundle).
 
-Pending: manual Firefox interaction verification — drag-rotate, shift-drag pan, scroll-zoom, double-click reset, glyph hover/click tooltips, dim-dropdown swap. Steps 4, 8, 9, 10, 11, 13, 16, 17 of the plan's verification checklist remain open. Open `packages/dev-script/deps-cube/dist/deps-cube-2026-05-13T01-57-32Z.html` (or the most recent timestamped file) in Firefox ESR 140+.
+**Status (2026-05-12, tenth handover — coordinate-system backdrop iteration 2)**: when the user opened the iteration-1 HTML in Firefox they could see only ONE green coordinate plane (back wall) — the floor and side wall were missing entirely. Diagnosis via reading deck.gl source: `SolidPolygonLayer`'s default tessellator runs earcut on the XY projection of the polygon. For our floor (constant `y`) and side wall (constant `x`) the XY projection collapses to a line, earcut produces zero triangles, and the layer renders nothing. The fix is `_full3d: true`, which permutes the largest-area plane onto XY before earcut and back after; that prop is exposed only by `SolidPolygonLayer`, not the high-level `PolygonLayer` wrapper. Implemented:
+
+- `src/deck-planes.ts` — swapped `PolygonLayer` for `SolidPolygonLayer` and passed `_full3d: true` on each of the three plane layers. Bumped `COORDINATE_PLANE_COLOR` alpha from 30 to 60 so the planes read clearly without dominating the data.
+- `src/scripts/state.ts` — `DEFAULT_DISPLAY_TOGGLES.showThresholdPlanes` flipped from `true` to `false`. The brown threshold guide lines were confusing default-on chrome; they're an opt-in heuristic overlay now.
+- New `src/scripts/scheme.ts` — exports `ChromeColors` type and `detectScheme()` that branches on `window.matchMedia('(prefers-color-scheme: dark)').matches` to return either a light-on-dark or dark-on-light palette for the chrome (axes / ticks / capitals / origin / name labels).
+- `src/scripts/controller.ts` — `createSession` calls `detectScheme()` once and stores the palette on the session; passed through to every `buildLayers` call via the existing render path. New `chrome: ChromeColors` field on the `Session` type.
+- `src/deck-config.ts` `buildLayers` — accepts `chrome: ChromeColors`, forwards to every chrome-coloured factory (`buildAxisShaftLayer`, `buildAxisArrowheadLayers`, `buildAxisTickLayer`, `buildOriginLabelLayer`, `buildAxisCapitalsLayer`, `buildAxisSubtitlesLayer`, `buildNameLabelsLayer`). Coordinate planes still use the static `COORDINATE_PLANE_COLOR` (green works on either backdrop).
+- `src/deck-labels.ts` — dropped the opaque-white label backgrounds (they dominated the dark scene); colours now come from `chrome`. Subtitles moved from the arrow-tip neighbourhood to the axis midpoint so they don't compete with the capitals. `SUBTITLE_LABEL_SIZE_PX` 12 → 10, `TIP_LABEL_OFFSET_FRACTION` 0.18 → 0.22, `ORIGIN_OFFSET_FRACTION` 0.04 → 0.08. Deleted the now-unused `LABEL_BACKGROUND_COLOR` / `AXIS_LABEL_COLOR` / `ORIGIN_LABEL_COLOR` / `NAME_LABEL_COLOR` constants.
+- `src/deck-layers.ts` — accepts `chrome` and reads `axis` and `axisTick` colours from it; deleted the `AXIS_SHAFT_COLOR` / `AXIS_TICK_COLOR` constants.
+- Test fix: `test/state.unit.test.ts` updated the `defaultState` display-toggle assertion to expect `showThresholdPlanes: false` (it was the only test referencing the flipped default).
+
+Lint, types, and tests all clean (0 errors; ~471 stylistic warnings, all non-blocking). 8 PASS / 0 FAIL / 1 SKIP across the eight test files. The CLI runs end-to-end and produces a fresh `dist/deps-cube-2026-05-13T02-18-53Z.html` (~822KB).
+
+Pending: manual Firefox interaction verification — open the new HTML and confirm all three green planes render at every camera angle (drag-rotate to test); no brown threshold-guide lines by default; axes + capitals + origin in light gray on dark mode (or dark gray on light mode); subtitles in 10px at axis midpoints; no white-rectangle label backgrounds.
 
 **Last commits** (most recent first):
 
-- (next commit, this session) — visual fixes: SimpleMeshLayer (spheres + octahedra) + axis-arrow backdrop + dual-thumb sliders + page overflow lock
+- (next commit, this session) — iteration-2 coordinate-system fixes: SolidPolygonLayer with _full3d + threshold guides off by default + ChromeColors palette via detectScheme + label backgrounds dropped
+- `220818cb feat(dev-script/deps-cube): 3D mesh glyphs + coordinate-system backdrop + dual-thumb sliders` (iteration 1)
 - `5d552cdf fix(dev-script/deps-cube): use ISO 8601 UTC down to seconds in output filename`
 - `dbd34c10 feat(dev-script/deps-cube): tsdown build with bin pointing to dist/final/node/cli.mjs`
 - `594ce226 fix(dev-script/deps-cube): walk up to package.json instead of hardcoded `..` for dist resolution`

@@ -6,6 +6,15 @@
  * the previous opaque threshold planes. Split out from
  * `deck-layers.ts` so each layer file stays under the 300-line cap.
  *
+ * Uses {@link SolidPolygonLayer} with `_full3d: true` rather than the
+ * higher-level `PolygonLayer`. `SolidPolygonLayer` is the only deck.gl
+ * layer that exposes `_full3d`, and without it the floor and side wall
+ * tessellate to zero triangles: their XY projection is a degenerate
+ * line, and earcut produces nothing. With `_full3d`, deck.gl picks the
+ * largest-area plane (xy / xz / yz) for tessellation, then permutes
+ * back — verified by reading the upstream
+ * `solid-polygon-layer/polygon.ts` getSurfaceIndices implementation.
+ *
  * @example
  * ```ts
  * import { buildCoordinatePlaneLayers } from './deck-planes.ts';
@@ -16,7 +25,7 @@
 import type { Layer, } from '@deck.gl/core';
 import {
   PathLayer,
-  PolygonLayer,
+  SolidPolygonLayer,
 } from '@deck.gl/layers';
 
 import type { SceneBounds, } from './deck-config.ts';
@@ -45,12 +54,18 @@ const DAYS_STALE_THRESHOLD = Math.log10(365,);
 /** Install-size threshold (~100KB soft boundary), on log10. */
 const INSTALL_SIZE_THRESHOLD = Math.log10(100_000,);
 
-/** Coordinate-plane fill colour: pale green, ~12% opacity (matches the reference image). */
+/**
+ * Coordinate-plane fill colour: pale green, ~24% opacity.
+ *
+ * Iteration-1 used alpha 30 (12%) which was effectively invisible against
+ * the busy scene. The reference image's planes read more clearly; alpha
+ * 60 gets visibly translucent without fully obscuring the data.
+ */
 const COORDINATE_PLANE_COLOR: readonly [number, number, number, number,] = [
   140,
   200,
   140,
-  30,
+  60,
 ];
 
 /** Threshold-line colour: muted brown so the line reads as a heuristic guide, not part of the axes. */
@@ -126,7 +141,7 @@ export function buildCoordinatePlaneLayers(
     ],
   };
   return [
-    new PolygonLayer<PolygonDatum>({
+    new SolidPolygonLayer<PolygonDatum>({
       id: 'plane-floor',
       data: [
         floor,
@@ -135,10 +150,9 @@ export function buildCoordinatePlaneLayers(
         return d.polygon;
       },
       getFillColor: COORDINATE_PLANE_COLOR,
-      filled: true,
-      stroked: false,
+      _full3d: true,
     },),
-    new PolygonLayer<PolygonDatum>({
+    new SolidPolygonLayer<PolygonDatum>({
       id: 'plane-back',
       data: [
         back,
@@ -147,10 +161,9 @@ export function buildCoordinatePlaneLayers(
         return d.polygon;
       },
       getFillColor: COORDINATE_PLANE_COLOR,
-      filled: true,
-      stroked: false,
+      _full3d: true,
     },),
-    new PolygonLayer<PolygonDatum>({
+    new SolidPolygonLayer<PolygonDatum>({
       id: 'plane-side',
       data: [
         side,
@@ -159,8 +172,7 @@ export function buildCoordinatePlaneLayers(
         return d.polygon;
       },
       getFillColor: COORDINATE_PLANE_COLOR,
-      filled: true,
-      stroked: false,
+      _full3d: true,
     },),
   ];
 }
