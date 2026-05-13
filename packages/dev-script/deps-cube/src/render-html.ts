@@ -18,21 +18,46 @@
  * ```
  */
 
-import { fileURLToPath, } from 'node:url';
+import { readFile, } from 'node:fs/promises';
+import { resolve as resolvePath, } from 'node:path';
 
+import { PACKAGE_ROOT, } from './find-package-root.ts';
 import type { PackageProbe, } from './probe.ts';
 import { renderControls, } from './render-controls.ts';
 import { defaultState, } from './scripts/state.ts';
-import stylesCss from './styles.css' with { type: 'text', };
 
 //region Constants
 
 /**
- * Absolute path to the browser-side controller entry point, resolved
- * relative to this module via `import.meta.url` so it works whether
- * run from source (`bun src/cli.ts`) or from a bundled dist.
+ * Absolute path to the browser-side controller source entry point.
+ *
+ * Anchored on {@link PACKAGE_ROOT} so it points at
+ * `<pkg>/src/scripts/controller.ts` regardless of where this module
+ * is evaluated from: an `import.meta.url`-relative path would resolve
+ * to `<pkg>/dist/final/node/scripts/controller.ts` after tsdown
+ * bundles this file into a single `cli.mjs`, and that target doesn't
+ * exist. `Bun.build` needs the original TypeScript source path; the
+ * source tree is shipped alongside the built artifacts (see
+ * `package.json#files`) so the path resolves in both modes.
  */
-const CONTROLLER_ENTRY_PATH = fileURLToPath(new URL('./scripts/controller.ts', import.meta.url,),);
+const CONTROLLER_ENTRY_PATH = resolvePath(PACKAGE_ROOT, 'src', 'scripts', 'controller.ts',);
+
+/**
+ * Inlined contents of `src/styles.css`, read once at module load.
+ *
+ * Originally imported via `with { type: 'text' }`, but tsdown's
+ * `css-guard` plugin throws unconditionally on `.css` files (no
+ * configuration opt-out) when bundling for Node. Replacing the
+ * import-attribute with a runtime `readFile` lets tsdown bundle
+ * `render-html.ts` without invoking the CSS plugin, while still
+ * inlining the stylesheet as a string at first use. The styles file
+ * is shipped via `package.json#files: ["src"]` so the path resolves
+ * after a tsdown build.
+ */
+const stylesCss = await readFile(
+  resolvePath(PACKAGE_ROOT, 'src', 'styles.css',),
+  'utf8',
+);
 
 /** Document `<title>` for the generated HTML. */
 const PAGE_TITLE = 'deps-cube — catalog dependency audit';

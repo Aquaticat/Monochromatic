@@ -4,11 +4,22 @@
   "description": "Catalog dependency audit report: interactive 3D scatter (deck.gl WebGL) rendering each catalog package as a feature vector across TS-ratio, source size, install size, staleness, downloads, and dep count.",
   "type": "module",
   "private": true,
-  "main": "src/cli.ts",
-  "bin": {
-    "deps-cube": "src/cli.ts"
+  "module": "dist/final/node/index.mjs",
+  "main": "dist/final/node/index.mjs",
+  "typings": "dist/final/node/index.d.mts",
+  "exports": {
+    ".": "./dist/final/node/index.mjs",
+    "./ts": "./src/index.ts"
   },
+  "bin": {
+    "deps-cube": "./dist/final/node/cli.mjs"
+  },
+  "files": [
+    "dist/final",
+    "src"
+  ],
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:"

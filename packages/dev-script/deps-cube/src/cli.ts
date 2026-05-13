@@ -8,15 +8,13 @@
  * and prints exactly one line to stdout: `Saved to <abs-path>`. Probe
  * progress goes to stderr via `console.error` in {@link probeAll}.
  *
- * Output is anchored to this package's `dist/`, located via {@link
- * findPackageRoot} walking up from `import.meta.dirname` until the
- * package's own `package.json` (matched by name) is found. A
- * hardcoded relative path (e.g. `import.meta.dirname + '..' +
- * 'dist'`) would break once tsdown emits `<pkg>/dist/cli.mjs` and the
- * `package.json#bin` points at that built file: `import.meta.dirname`
- * is `<pkg>/dist/` in built mode and `<pkg>/src/` in source mode, so a
- * single relative offset cannot cover both. Find-up returns the same
- * package root regardless of where the executing file actually lives.
+ * Output is anchored to this package's `dist/` via {@link PACKAGE_ROOT}
+ * from `./find-package-root.ts`, which walks up from
+ * `import.meta.dirname` until the package's own `package.json` is
+ * found. This works identically in source mode (`bun src/cli.ts`) and
+ * in built mode (tsdown emits `<pkg>/dist/final/node/cli.mjs` and
+ * `package.json#bin` points there). A hardcoded relative offset would
+ * land on different absolute paths in the two modes.
  *
  * No flags: the CLI is intentionally zero-config. Same-day re-runs
  * overwrite in place (the date stem stays constant) so iterating
@@ -31,76 +29,19 @@
 
 import {
   mkdir,
-  readFile,
   writeFile,
 } from 'node:fs/promises';
 import {
-  dirname,
   resolve as resolvePath,
 } from 'node:path';
 
 import { createCache, } from './cache.ts';
 import { readCatalog, } from './catalog.ts';
+import { PACKAGE_ROOT, } from './find-package-root.ts';
 import { probeAll, } from './probe.ts';
 import { renderHtml, } from './render-html.ts';
 
 //region Helpers
-
-/**
- * Name of this package as recorded in its `package.json`. Used by
- * {@link findPackageRoot} to confirm the walk found this package's
- * own manifest, not a parent's monorepo `package.json` if the local
- * one is somehow missing or malformed.
- */
-const PACKAGE_NAME = '@monochromatic-dev/dev-script-deps-cube';
-
-/**
- * Walks up from `dir` searching for a `package.json` whose `name`
- * field equals {@link PACKAGE_NAME}, and returns the directory that
- * contains it. Recursion terminates either at the matching package
- * (success) or at the filesystem root (throws).
- *
- * Why find-up instead of a fixed relative offset: in source mode
- * `import.meta.dirname` is `<pkg>/src/`; after a tsdown build that
- * emits `<pkg>/dist/cli.mjs` and re-points `package.json#bin` there,
- * `import.meta.dirname` is `<pkg>/dist/`. A single hardcoded `'..'`
- * cannot resolve to the same package root from both starting points,
- * but walking until the package's own manifest is found does.
- *
- * The name check is defensive: if the local `package.json` were
- * deleted or corrupted, the walk would otherwise silently land on a
- * parent manifest. Matching by name forces an explicit error instead.
- *
- * @param dir - Starting directory; the function tests `dir/package.json` first, then recurses to `dirname(dir)`.
- *
- * @returns Absolute path of this package's root directory.
- *
- * @throws When no matching `package.json` is found up to the filesystem root.
- *
- * @example
- * ```ts
- * const root = await findPackageRoot({ dir: import.meta.dirname });
- * ```
- */
-async function findPackageRoot(
-  { dir, }: { dir: string; },
-): Promise<string> {
-  const candidate = resolvePath(dir, 'package.json',);
-  try {
-    const contents = await readFile(candidate, 'utf8',);
-    const parsed = JSON.parse(contents,) as { name?: string; };
-    if (parsed.name === PACKAGE_NAME) return dir;
-  } catch {
-    // candidate file missing, unreadable, or malformed JSON: keep walking upward
-  }
-  const parent = dirname(dir,);
-  if (parent === dir) {
-    throw new Error(
-      `could not find package.json with name ${PACKAGE_NAME} walking up from ${dir}`,
-    );
-  }
-  return findPackageRoot({ dir: parent, },);
-}
 
 /**
  * Builds the output filename for today's run.
@@ -140,13 +81,8 @@ const html = await renderHtml({
   probes,
 },);
 
-/** Absolute path of this package's root, located by walking up from `import.meta.dirname` until the package's own `package.json` is found. */
-const packageRoot = await findPackageRoot({
-  dir: import.meta.dirname,
-},);
-
-/** Absolute path of this package's `dist/` directory. */
-const distDir = resolvePath(packageRoot, 'dist',);
+/** Absolute path of this package's `dist/` directory, anchored on {@link PACKAGE_ROOT}. */
+const distDir = resolvePath(PACKAGE_ROOT, 'dist',);
 
 await mkdir(distDir, { recursive: true, },);
 
