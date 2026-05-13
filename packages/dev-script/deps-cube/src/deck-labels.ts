@@ -67,6 +67,24 @@ const NAME_LABEL_SIZE_PX = 11;
 const TOP_N_NAMES = 10;
 /** Half-coefficient used for centring helpers. */
 const HALF = 1 / 2;
+/** Painted-label fill (pure white) used regardless of OS scheme; the SDF outline supplies contrast. */
+const PAINTED_LABEL_FILL: readonly [number, number, number, number,] = [
+  255,
+  255,
+  255,
+  255,
+];
+/** Painted-label outline (pure black) — wraps the white fill so the name reads on red, green, or grey balls. */
+const PAINTED_LABEL_OUTLINE: readonly [number, number, number, number,] = [
+  0,
+  0,
+  0,
+  255,
+];
+/** Painted-label outline width, in deck.gl TextLayer "relative to font size" units (typical range 0–5). */
+const PAINTED_LABEL_OUTLINE_WIDTH = 3;
+/** Painted-label bold weight; sans-serif at bold reads like printed lettering on a ball. */
+const PAINTED_LABEL_FONT_WEIGHT = 700;
 
 /**
  * Fraction of the axis extent that the capital sits past the arrow tip.
@@ -87,8 +105,6 @@ const SUBTITLE_OFFSET_FRACTION = 0.05;
  * the axis-shaft origin point.
  */
 const ORIGIN_OFFSET_FRACTION = 0.08;
-/** Name-label vertical offset above each glyph, as a fraction of the y extent. */
-const NAME_LABEL_OFFSET_FRACTION = 0.02;
 
 //endregion Constants
 
@@ -322,6 +338,14 @@ export function buildOriginLabelLayer(
  * Builds the package-name labels TextLayer for either every visible
  * probe (`'all'`) or just the top-N by staleness (`'topN'`).
  *
+ * Painted-on-the-ball semantics (iteration 3): the label sits at the
+ * glyph center (no upward offset), renders with `depthCompare: 'always'`
+ * so it stays on top of the opaque mesh instead of being half-occluded
+ * by the front of the sphere, uses a bold SDF font with a thick black
+ * outline so the white fill reads on red / green / grey balls, and is
+ * coloured statically rather than from the OS-scheme chrome palette
+ * (the print is "on" the ball, not part of the page chrome).
+ *
  * Top-N ranking heuristic: descending by `daysSinceLastCommitOrNull`
  * (oldest first). Subject to refinement once the audit-target scoring
  * is formalised.
@@ -338,18 +362,13 @@ export function buildNameLabelsLayer(
     state,
     bounds,
     visibleIndices,
-    chrome,
   }: {
     probes: readonly PackageProbe[];
     state: AppState;
     bounds: SceneBounds;
     visibleIndices: ReadonlySet<number>;
-    chrome: ChromeColors;
   },
 ): Layer | null {
-  const g = axisExtents({
-    bounds,
-  },);
   const eligible = probes
     .map(function withIndex(
       probe,
@@ -374,7 +393,6 @@ export function buildNameLabelsLayer(
       return (b.probe.daysSinceLastCommitOrNull ?? 0) - (a.probe.daysSinceLastCommitOrNull ?? 0);
     },).slice(0, TOP_N_NAMES,);
   if (ranked.length === 0) return null;
-  const nameOffset = g.dy * NAME_LABEL_OFFSET_FRACTION;
   const data: TextDatum[] = ranked.map(function asDatum({
     probe,
     originalIndex,
@@ -390,11 +408,7 @@ export function buildNameLabelsLayer(
       bounds,
     },);
     return {
-      position: [
-        pos[0],
-        pos[1] + nameOffset,
-        pos[2],
-      ],
+      position: pos,
       text: probe.npmName,
     };
   },);
@@ -408,11 +422,20 @@ export function buildNameLabelsLayer(
       return d.text;
     },
     getSize: NAME_LABEL_SIZE_PX,
-    getColor: chrome.nameLabel,
+    getColor: PAINTED_LABEL_FILL,
     sizeUnits: 'pixels',
-    fontFamily: 'monospace',
+    fontFamily: 'sans-serif',
+    fontWeight: PAINTED_LABEL_FONT_WEIGHT,
+    fontSettings: {
+      sdf: true,
+    },
+    outlineColor: PAINTED_LABEL_OUTLINE,
+    outlineWidth: PAINTED_LABEL_OUTLINE_WIDTH,
     getTextAnchor: 'middle',
     getAlignmentBaseline: 'center',
+    parameters: {
+      depthCompare: 'always',
+    },
   },);
 }
 

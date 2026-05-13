@@ -219,7 +219,6 @@ export function buildLayers(
     state,
     bounds,
     visibleIndices,
-    chrome,
   },);
   const thresholdLines = state.displayToggles.showThresholdPlanes
     ? buildThresholdLineLayer({

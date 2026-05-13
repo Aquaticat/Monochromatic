@@ -46,9 +46,23 @@ Pending: manual Firefox interaction verification — open the new HTML and confi
 
 Lint, types, and tests all clean (0 errors; 471 stylistic warnings; 8 PASS / 0 FAIL / 1 SKIP). Fresh HTML at `dist/deps-cube-2026-05-13T02-28-46Z.html` (~822KB; no size delta from iteration-2 since the bundle contents are unchanged).
 
+**Status (2026-05-12, twelfth handover — names painted on the balls)**: iteration-3 floated the names just above each glyph as a HUD label; the user asked for them to feel painted onto the balls themselves (basketball-with-team-logo metaphor). Implemented in a single file:
+
+- `src/deck-labels.ts` `buildNameLabelsLayer`:
+  - Position is the glyph center directly (no `+ nameOffset`). The `NAME_LABEL_OFFSET_FRACTION` constant is gone.
+  - `getColor` hardcoded to white `[255, 255, 255, 255]` instead of `chrome.nameLabel`; the SDF outline supplies contrast on any ball colour, so OS-scheme adaptation is no longer needed for this specific layer. Other label layers (capitals, subtitles, origin) still draw from `chrome` since they sit against the scene backdrop, not on opaque glyphs.
+  - `chrome` param dropped from the function signature; `deck-config.ts` `buildLayers` no longer forwards it for name labels (other factories untouched).
+  - Painted-letter look: `fontFamily: 'sans-serif'`, `fontWeight: 700`, `fontSettings: { sdf: true }`, `outlineColor` pure black, `outlineWidth: 3` (deck.gl-relative units; produces a ~10–15 % rim around the white fill at 11 px).
+  - Depth override: `parameters: { depthCompare: 'always' }` so the billboard text sits on top of the opaque sphere/octahedron rather than being half-occluded by the mesh's front face. Verified via cloned deck.gl source at `modules/extensions/src/terrain/terrain-pass.ts:90` and `modules/core/src/passes/screen-pass.ts:36` that `depthCompare: 'always'` is the WebGPU-style key deck.gl 9 / luma.gl v9 layers accept on `parameters`.
+
+`src/deck-config.ts` `buildLayers` updated call site (one less prop on `buildNameLabelsLayer`).
+
+Lint, types, and tests all clean (0 errors; 473 stylistic warnings — two more than the iteration-3 baseline, from the new SDF/outline declarations). 8 PASS / 0 FAIL / 1 SKIP. Fresh HTML at `dist/deps-cube-2026-05-13T02-35-01Z.html` (~823KB).
+
 **Last commits** (most recent first):
 
-- (next commit, this session) — iteration-3 glyph scaling + per-glyph name labels
+- (next commit, this session) — iteration-4 paint-on-ball name labels (centered, SDF outline, depthCompare: always)
+- `217ffab5 feat(dev-script/deps-cube): halve glyph size and label every glyph by default` (iteration 3)
 - `21b62437 feat(dev-script/deps-cube): all 3 coordinate planes via SolidPolygonLayer + scheme-aware chrome` (iteration 2)
 - `220818cb feat(dev-script/deps-cube): 3D mesh glyphs + coordinate-system backdrop + dual-thumb sliders` (iteration 1)
 - `5d552cdf fix(dev-script/deps-cube): use ISO 8601 UTC down to seconds in output filename`
