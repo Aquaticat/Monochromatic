@@ -18,9 +18,9 @@
 import { randomBytes, } from 'node:crypto';
 import { constants as fsConstants, } from 'node:fs';
 import {
+  lstat,
   open,
   rename,
-  stat,
   unlink,
 } from 'node:fs/promises';
 import {
@@ -35,9 +35,15 @@ import {
  * - `O_CREAT` — create the temp file.
  * - `O_EXCL` — fail if the temp file already exists (random suffix prevents
  *   collisions in practice; `O_EXCL` is defence-in-depth).
- * - `O_NOFOLLOW` — refuse to traverse a final-component symlink.
- *   A workspace symlink pointing at `/etc/passwd` cannot be turned into a
- *   write to `/etc/passwd` through editord.
+ * - `O_NOFOLLOW` — refuse the open if a pre-existing entity at the temp
+ *   path turns out to be a symlink. Combined with `O_EXCL`, the only
+ *   acceptable state for the temp path is "does not exist."
+ *
+ * Symlink protection for the **target** path is enforced separately by the
+ * `lstat` check in {@link refuseIfSymlink}; without it, `rename(temp, target)`
+ * would silently replace a symlinked target with a regular file. See
+ * `TROUBLESHOOTING.claude-code-edit-non-atomic-fallback.md` for the
+ * Claude Code `PRH` pattern this mirrors.
  */
 const TEMP_OPEN_FLAGS = fsConstants.O_WRONLY
   | fsConstants.O_CREAT
@@ -82,23 +88,34 @@ function buildTempPath(path: string,): string {
 }
 
 /**
- * Reads the target's mode bits so we can preserve them through the
- * temp-and-rename. Returns `null` when the target does not yet exist
- * (new-file path), in which case the temp inherits the daemon's default
- * `umask` and we skip `fchmod`.
+ * Refuses to write to a symlinked target, and reads the target's mode bits
+ * for preservation in the same `lstat` call. Both questions need an `lstat`
+ * (not `stat`) because `stat` follows symlinks and would silently expose
+ * the linked-to file's mode and existence.
  *
- * Errors other than ENOENT propagate; they signal a real I/O problem that
- * the caller should surface, not a "file is new" condition.
+ * Returns `null` when the target does not yet exist (new-file path), in
+ * which case the temp inherits the daemon's default `umask` and `fchmod`
+ * is skipped. Throws `ELOOP` when the target is a symlink, matching the
+ * user-facing semantics of "Refuse" in the plan's symlink decision. Errors
+ * other than `ENOENT` propagate as real I/O problems.
  *
  * @param path - absolute path of the final target
  *
  * @returns the target's `stats.mode`, or `null` if the target does not exist
  *
- * @throws when stat fails for a reason other than `ENOENT`
+ * @throws `ELOOP` when `path` is a symlink; other errors when `lstat` fails
+ *   for a reason other than `ENOENT`
  */
-async function readOriginalMode(path: string,): Promise<number | null> {
+async function refuseSymlinkAndReadMode(path: string,): Promise<number | null> {
   try {
-    const stats = await stat(path,);
+    const stats = await lstat(path,);
+    if (stats.isSymbolicLink()) {
+      const symlinkErr: Error & { code?: string; } = new Error(
+        `refusing to write through symlink: ${path}`,
+      );
+      symlinkErr.code = 'ELOOP';
+      throw symlinkErr;
+    }
     return stats.mode;
   }
   catch (statErr) {
@@ -200,8 +217,8 @@ export async function writeFileAtomic(
     content: string;
   },
 ): Promise<void> {
+  const originalMode = await refuseSymlinkAndReadMode(path,);
   const tempPath = buildTempPath(path,);
-  const originalMode = await readOriginalMode(path,);
   try {
     await writeContentToTemp({
       tempPath,
