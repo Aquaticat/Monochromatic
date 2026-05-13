@@ -15,9 +15,17 @@
  * read as wrong; the user explicitly asked for "part of the mesh"
  * semantics. Texture mapping is the standard way to get that.
  *
- * Sphere UV layout (equirectangular): the name is repeated 4× along
- * the equator (`v = 0.5`) at `u = 0.125 / 0.375 / 0.625 / 0.875` so it
- * is visible from any longitude.
+ * Sphere UV layout (equirectangular): the name is repeated 2× along
+ * the equator (`v = 0.5`) at `u = 0.25 / 0.75` so it is visible from
+ * any longitude. The text is rasterised flipped vertically because
+ * luma.gl's sphere uses `texCoord_v = 1 − latitude` (north pole → top
+ * of texture, south pole → bottom), but WebGL by default uploads
+ * canvases with canvas-top mapped to texture-bottom — without the
+ * flip the names render upside-down on the visible hemisphere.
+ *
+ * Sphere font size auto-shrinks via `ctx.measureText` so even long
+ * names like `happy-rusty` fit inside their `TEXTURE_SIZE_PX /
+ * SPHERE_REPETITIONS` slot.
  *
  * Octahedron UV layout: every face is mapped to the same UV triangle
  * `(0, 0) — (1, 0) — (0.5, 1)`. The name is drawn inside that triangle
@@ -68,14 +76,18 @@ export type Rgba = readonly [
 
 /** Texture side length in pixels. Power-of-two for cleanest mipmaps. */
 const TEXTURE_SIZE_PX = 512;
-/** Font size in pixels for the baked name. */
+/** Maximum font size in pixels for the baked name; auto-shrunk on the sphere if the text overruns its slot. */
 const FONT_SIZE_PX = 56;
+/** Minimum font size in pixels — below this the text stops shrinking and just overflows; readability matters more than fit. */
+const MIN_FONT_SIZE_PX = 22;
 /** Black outline width in pixels around the white text fill. */
 const OUTLINE_WIDTH_PX = 6;
-/** Horizontal repetitions of the name around the sphere equator. */
-const SPHERE_REPETITIONS = 4;
+/** Horizontal repetitions of the name around the sphere equator. Two copies (at u=0.25 and u=0.75) give visibility from any rotation while keeping each slot wide enough for readable text. */
+const SPHERE_REPETITIONS = 2;
 /** Vertical position of the equator in texture-space (sphere UV: equator is `v = 0.5`). */
 const SPHERE_EQUATOR_V = 0.5;
+/** Fraction of the slot width the text may occupy before auto-shrink kicks in. Leaves a small margin for the outline. */
+const SPHERE_SLOT_FILL_FRACTION = 0.85;
 /** Half-coefficient used for centring. */
 const HALF = 1 / 2;
 /** Module-level cache: `(catalogKey, rgba, shape, withName)` → built canvas. Avoids re-rendering on every state recompute. */
@@ -141,14 +153,23 @@ function paintBackground(
 }
 
 /**
- * Draws the name with a black outline and white fill at a given centre.
+ * Draws the name with a black outline and white fill at a given centre,
+ * vertically flipped so it renders right-side-up on a sphere whose
+ * texture is uploaded without Y-flip (canvas top → texture v=0 →
+ * sphere south pole per luma.gl's `1 - latitude` mapping).
+ *
+ * For the octahedron the flip also applies; the UV triangle is
+ * orientation-symmetric so the text either reads as drawn or as a
+ * 180° rotation depending on which face the viewer is looking at —
+ * acceptable, since each octahedron has 8 faces and at least one is
+ * orientation-friendly from any camera angle.
  *
  * @param ctx - Target context.
  * @param text - Name string.
  * @param x - Horizontal centre in texture pixels.
  * @param y - Vertical centre in texture pixels.
  */
-function paintName(
+function paintFlippedName(
   {
     ctx,
     text,
@@ -161,8 +182,44 @@ function paintName(
     y: number;
   },
 ): void {
-  ctx.strokeText(text, x, y,);
-  ctx.fillText(text, x, y,);
+  ctx.save();
+  ctx.translate(x, y,);
+  ctx.scale(1, -1,);
+  ctx.strokeText(text, 0, 0,);
+  ctx.fillText(text, 0, 0,);
+  ctx.restore();
+}
+
+/**
+ * Returns the largest font size in `[MIN_FONT_SIZE_PX, FONT_SIZE_PX]`
+ * that fits `text` inside `slotWidthPx * SPHERE_SLOT_FILL_FRACTION`.
+ *
+ * Uses `ctx.measureText` at `FONT_SIZE_PX` and rescales proportionally
+ * — text width is linear in font size for a given typeface, so one
+ * measurement is enough.
+ *
+ * @param ctx - Target context (must already have `font` set so subsequent measureText returns the correct width).
+ * @param text - The string that will be drawn.
+ * @param slotWidthPx - Width of the slot the text must fit inside.
+ *
+ * @returns Font size in pixels.
+ */
+function pickFontSize(
+  {
+    ctx,
+    text,
+    slotWidthPx,
+  }: {
+    ctx: CanvasRenderingContext2D;
+    text: string;
+    slotWidthPx: number;
+  },
+): number {
+  const measuredAtMax = ctx.measureText(text,).width;
+  const targetWidth = slotWidthPx * SPHERE_SLOT_FILL_FRACTION;
+  if (measuredAtMax <= targetWidth) return FONT_SIZE_PX;
+  const scaled = FONT_SIZE_PX * (targetWidth / measuredAtMax);
+  return Math.max(MIN_FONT_SIZE_PX, scaled,);
 }
 
 //endregion Helpers
@@ -235,13 +292,19 @@ export function makeProbeTexture(
   ctx.font = `700 ${FONT_SIZE_PX.toString()}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.lineWidth = OUTLINE_WIDTH_PX;
   ctx.lineJoin = 'round';
   ctx.strokeStyle = 'rgba(0, 0, 0, 1)';
   ctx.fillStyle = 'rgba(255, 255, 255, 1)';
   if (shape === 'sphere') {
-    const yPx = SPHERE_EQUATOR_V * TEXTURE_SIZE_PX;
     const stepPx = TEXTURE_SIZE_PX / SPHERE_REPETITIONS;
+    const fontSize = pickFontSize({
+      ctx,
+      text: probe.npmName,
+      slotWidthPx: stepPx,
+    },);
+    ctx.font = `700 ${fontSize.toString()}px sans-serif`;
+    ctx.lineWidth = OUTLINE_WIDTH_PX * (fontSize / FONT_SIZE_PX);
+    const yPx = SPHERE_EQUATOR_V * TEXTURE_SIZE_PX;
     const offsets = Array.from(
       {
         length: SPHERE_REPETITIONS,
@@ -251,7 +314,7 @@ export function makeProbeTexture(
       },
     );
     for (const xPx of offsets) {
-      paintName({
+      paintFlippedName({
         ctx,
         text: probe.npmName,
         x: xPx,
@@ -259,6 +322,7 @@ export function makeProbeTexture(
       },);
     }
   } else {
+    ctx.lineWidth = OUTLINE_WIDTH_PX;
     const centreX = TEXTURE_SIZE_PX * HALF;
     /**
      * Octahedron faces map to UV triangle `(0,0) – (1,0) – (0.5,1)`,
@@ -266,7 +330,7 @@ export function makeProbeTexture(
      * Drawing the text there centres it inside every face.
      */
     const yPx = OCTAHEDRON_CENTROID_V * TEXTURE_SIZE_PX;
-    paintName({
+    paintFlippedName({
       ctx,
       text: probe.npmName,
       x: centreX,

@@ -46,6 +46,15 @@ Pending: manual Firefox interaction verification — open the new HTML and confi
 
 Lint, types, and tests all clean (0 errors; 471 stylistic warnings; 8 PASS / 0 FAIL / 1 SKIP). Fresh HTML at `dist/deps-cube-2026-05-13T02-28-46Z.html` (~822KB; no size delta from iteration-2 since the bundle contents are unchanged).
 
+**Status (2026-05-12, fourteenth handover — texture fixes: vertical flip + auto-shrink + 2-repeat)**: iteration-5 baked the names but two artefacts showed up: text rendered upside-down on the camera-facing side of every sphere, and at 4 repetitions on a 512 px texture long names like `happy-rusty` overflowed their 128 px slot and overlapped. Both fixed in `src/deck-textures.ts`:
+
+- Vertical flip: text is drawn with a `ctx.save() / translate / scale(1, -1) / draw / restore()` wrapper. Reason: luma.gl's `SphereGeometry` writes `texCoord_v = 1 - latitude` (north pole at v=1, south pole at v=0) while WebGL's default canvas upload puts canvas-top at v=0. Without the flip, text drawn at canvas-middle ends up with its top half south-of-equator on the sphere, reading upside-down to anyone looking at the equator from outside. With the flip, the text renders right-side-up. Applies to the octahedron path too (faces are orientation-symmetric, so the flip never makes things worse).
+- 2 repetitions instead of 4 — slot width 256 px, room for a wider type.
+- Auto-shrink: a `pickFontSize` helper calls `ctx.measureText` once at the max font size and rescales proportionally to fit `slot * 0.85`, clamped to `[MIN_FONT_SIZE_PX, FONT_SIZE_PX] = [22, 56]`. The line width of the outline is scaled to match (`OUTLINE_WIDTH_PX * fontSize / FONT_SIZE_PX`) so the rim stays visually consistent.
+- Cache key already includes the name so the auto-shrink result is captured automatically; nothing to change there.
+
+Lint, types, and tests all clean (0 errors; 500 stylistic warnings; 8 PASS / 0 FAIL / 1 SKIP). Fresh HTML at `dist/deps-cube-2026-05-13T02-54-15Z.html`.
+
 **Status (2026-05-12, thirteenth handover — names baked into the mesh textures)**: iteration-4's painted labels still used a billboard `TextLayer` with `depthCompare: 'always'`, so back-glyph labels rendered on top of nearer glyphs (clearly visible in a Firefox screenshot where a back-octahedron's name appeared larger than the front octahedron occluding it). The user identified the fix: "If you made the text part of mesh this would not happen. Are you able to bake text into mesh?" Yes — and that is now the implementation. The floating `TextLayer` is gone; each probe gets its own `SimpleMeshLayer` with a per-probe canvas texture that has the colour and the npm name baked in. Depth testing then handles occlusion the same way it does for any other mesh surface — a sphere behind a sphere shows only the parts not occluded.
 
 - New `src/deck-textures.ts` — `makeProbeTexture({ probe, fillColor, shape, withName })` renders a 512×512 canvas: fill background with the probe's data-derived colour, then (when `withName`) draw the npm name in bold sans-serif 56 px white with a black 6 px outline. Two UV layouts:
@@ -78,7 +87,8 @@ Lint, types, and tests all clean (0 errors; 473 stylistic warnings — two more 
 
 **Last commits** (most recent first):
 
-- (next commit, this session) — iteration-5 bake names into per-probe mesh textures
+- (next commit, this session) — iteration-6 texture vertical-flip + auto-shrink + 2-repeat
+- `62d80159 feat(dev-script/deps-cube): bake names into per-probe mesh textures` (iteration 5)
 - `059201f2 feat(dev-script/deps-cube): paint name labels onto each ball/octahedron` (iteration 4)
 - `217ffab5 feat(dev-script/deps-cube): halve glyph size and label every glyph by default` (iteration 3)
 - `21b62437 feat(dev-script/deps-cube): all 3 coordinate planes via SolidPolygonLayer + scheme-aware chrome` (iteration 2)
