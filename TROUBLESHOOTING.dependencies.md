@@ -522,3 +522,130 @@ workspace shim's own `index.d.cts` owns the types.
 See `docs/dependency-blocklist.md` for the decision rule
 (throw / silent / remove / shim) and the `node-domexception` entry above
 for the worked example of the API-compatible shim path.
+
+### `proper-lockfile` (substituted via workspace shim)
+
+The upstream `proper-lockfile@4.1.2` (moxystudio/node-proper-lockfile, last
+commit 2021-01) is abandoned. It enters the resolved graph as a transitive
+of `@earendil-works/pi-coding-agent@0.74.0`:
+`proper-lockfile@4.1.2 → @earendil-works/pi-coding-agent → @monochromatic-dev/pi-auto-mode`.
+`pnpm why proper-lockfile` reproduces the chain.
+
+The override `'proper-lockfile': 'link:packages/shim/proper-lockfile'` in
+`pnpm-workspace.yaml` substitutes the abandoned upstream with a workspace shim
+whose `index.cjs` implements `lockSync(path, options)` and
+`lock(path, options)` via `node:fs.mkdirSync` on a sibling `.<basename>.lock`
+directory. The shim is decoupled from the silent stub's thenable trap (see
+below), so both the sync withLock and async withLockAsync paths in
+pi-coding-agent work unchanged.
+
+#### Why it cannot be removed
+
+The two consumer modules inside pi-coding-agent both hard-import the package
+at module scope:
+
+- `dist/core/auth-storage.js:12` -- `import lockfile from "proper-lockfile";`
+- `dist/core/settings-manager.js:4` -- `import lockfile from "proper-lockfile";`
+
+Both modules are re-exported from the package's barrel:
+
+- `dist/index.js:6` -- `export { AuthStorage, FileAuthStorageBackend, InMemoryAuthStorageBackend } from "./core/auth-storage.js";`
+- `dist/index.js:22` -- `export { SettingsManager } from "./core/settings-manager.js";`
+
+A `'proper-lockfile': '-'` override removes the package from the install but
+leaves the static import in `auth-storage.js` and `settings-manager.js` --
+loading `@earendil-works/pi-coding-agent` from `packages/pi/auto-mode` crashes
+with `Cannot find package 'proper-lockfile'` before any first-party code runs.
+
+#### Why the silent stub does not work
+
+`packages/stub/silent/index.cjs` is a `Proxy` over a no-op function whose
+`get` trap returns `module.exports` for every property. That makes the stub
+a thenable: `await stub` enters the Promise-resolution machinery, calls
+`stub.then(resolve, reject)`, the `apply` trap returns the stub (neither
+callback is invoked), and the await never settles.
+
+Consequence:
+
+- Sync path (`SettingsManager` startup load, `settings-manager.js:69` only
+  acquires the lock when the settings file already exists; sync release
+  returns the Proxy itself, the `release()` call is harmless): works.
+- Async path (`AuthStorage.getApiKey` during model resolution, reachable
+  from `core/model-registry.js:519` and `:585`): `release = await lockfile.lock(...)`
+  hangs on the thenable trap. The pi CLI hangs on startup model lookup.
+
+A `then` carve-out in the silent stub would fix this, but the workspace
+silent stub does not currently have one, and editing the stub to add it
+weakens the contract for every other policy entry.
+
+#### Why upgrading does not help
+
+`proper-lockfile@4.1.2` is the latest published version (the repo's last
+commit is from 2021-01). Upstream is unmaintained; there is no upgrade path.
+
+#### Runtime call sites exercised by the shim
+
+Every pi invocation reaches one or both of these paths:
+
+- `dist/main.js:377` -- `SettingsManager.create(cwd, agentDir)` runs at
+  startup. `FileSettingsStorage` only calls `lockfile.lockSync` when the
+  settings file already exists (`settings-manager.js:69`); on a fresh
+  machine, the sync lock is skipped until the file is created.
+- `dist/main.js:408` -- `AuthStorage.create()` runs at startup.
+- `dist/core/sdk.js:90,92`, `dist/core/agent-session-services.js:56,57`,
+  `dist/core/resource-loader.js:121`, `dist/package-manager-cli.js:304,358`
+  -- defaulted SDK construction; same call shape.
+- `dist/core/model-registry.js:519` -- `await this.authStorage.getApiKey(model.provider, ...)`
+  runs during model resolution. `FileAuthStorageBackend.getApiKey` goes through
+  `withLockAsync`, which does `release = await lockfile.lock(...)` and
+  `await release()`. Both ends of the async lock contract must execute
+  correctly for `pi` to start.
+
+#### Shim contract and known simplifications
+
+Implemented:
+
+- `lockSync(path, options)`: synchronous, atomic `mkdirSync` of `.<basename>.lock`
+  in the target's parent directory. Throws an `Error` with `code === 'ELOCKED'`
+  on `EEXIST`. Callers handle retries themselves (`auth-storage.js:32-54`
+  and `settings-manager.js:38-60` both wrap the call in a 10-attempt sync
+  retry loop with a 20ms busy-wait between attempts).
+- `lock(path, options)`: async with internal retry per `options.retries`
+  (number or object). Backoff is exponential by `factor` starting at
+  `minTimeout`, capped by `maxTimeout`. The return value is a callable
+  release function; `await release()` works because `await undefined`
+  resolves immediately.
+
+Omitted (relative to upstream):
+
+- No `fs.realpath` resolution. Both pi-coding-agent callsites always pass
+  `{ realpath: false }` (`auth-storage.js:38`, `settings-manager.js:44`),
+  so the shim treats every target as already-resolved.
+- No stale-lock detection. If pi crashes while holding the lock, the next
+  invocation throws ELOCKED until the user removes
+  `<agentDir>/.auth.json.lock` or `<agentDir>/.settings.json.lock` manually.
+- No `onCompromised` callback. The option is accepted but never invoked;
+  pi-coding-agent's `lockCompromised` flag stays false, so its
+  `throwIfCompromised()` checks are no-ops.
+- No `retries.randomize` jitter. Backoff is deterministic.
+
+The workspace does not run concurrent pi instances, so the omissions are
+acceptable. A `pi` crash recovery would require manual `rmdir` on the lock
+directory.
+
+#### Verification caveat
+
+The plan's verification step that runs
+`node -e "import('@earendil-works/pi-coding-agent').then(...)"` only proves
+the module loads through the shim resolution. It does not exercise
+`withLockAsync` under a real `getApiKey` call. The earlier steps
+(direct shim probes for sync acquire, async acquire, ELOCKED throw)
+cover the shim contract; the end-to-end `pi --help` step covers `SettingsManager.create`
+but only reaches the sync lock acquisition when `<agentDir>/settings.json`
+already exists (see `settings-manager.js:69`). To exercise the async lock
+path during verification on a fresh host, run `pi` once interactively or
+seed `<agentDir>/settings.json` with `{}` before re-running `pi --help`.
+
+See `docs/decisions/proper-lockfile-removal.md` for the decision rationale
+(why a shim was preferred over silent stub or pure removal) and
+`docs/dependency-blocklist.md` for the policy reference.

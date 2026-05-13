@@ -148,6 +148,21 @@ overrides:
   # deprecation warning without altering runtime behaviour.
   # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
   'node-domexception': 'link:packages/shim/node-domexception'
+  # Substitute proper-lockfile@4.1.2 with a workspace shim that implements
+  # lockSync/lock via node:fs.mkdirSync atomic-dir locking. The upstream is
+  # abandoned (moxystudio/node-proper-lockfile, last commit 2021-01) and hard-
+  # imported by @earendil-works/pi-coding-agent's dist/core/auth-storage.js
+  # (line 12) and dist/core/settings-manager.js (line 4); both modules are
+  # statically re-exported from the package's dist/index.js barrel (lines 6
+  # and 22). The pi CLI host evaluates them at startup (dist/main.js:377
+  # SettingsManager.create, dist/main.js:408 AuthStorage.create,
+  # dist/core/model-registry.js:519 await authStorage.getApiKey), so removal
+  # would crash pi at module load and the workspace silent stub would hang
+  # on `await release` because the stub's Proxy treats every property access
+  # (including .then) as a self-return.
+  # See docs/decisions/proper-lockfile-removal.md and
+  # TROUBLESHOOTING.dependencies.md.
+  'proper-lockfile': 'link:packages/shim/proper-lockfile'
   # Substitute readable-stream@3 (winston, winston-transport) and
   # readable-stream@4 (isomorphic-git) with a single workspace shim that
   # re-exports node:stream. Both upstream versions are userland mirrors of
