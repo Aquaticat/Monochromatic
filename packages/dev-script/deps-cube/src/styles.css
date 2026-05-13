@@ -82,6 +82,23 @@ body {
   }
 }
 
+.camera-help {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  margin-block: 0;
+  font-size: 0.875rem;
+
+  & dt {
+    font-weight: 600;
+  }
+
+  & dd {
+    margin-inline-start: 0;
+  }
+}
+
 .controls-section {
   margin-block-end: var(--space-5);
 

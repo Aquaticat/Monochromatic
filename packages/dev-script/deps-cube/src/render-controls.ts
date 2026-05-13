@@ -378,6 +378,15 @@ export function renderControls(
   const total = probes.length.toString();
   const searchAttr = escapeAttr(state.search,);
   return `<aside id="controls" class="controls">
+    <section class="controls-section" data-section="camera">
+      <h2>Camera</h2>
+      <dl class="camera-help">
+        <dt>Drag</dt><dd>rotate</dd>
+        <dt>Shift + drag</dt><dd>pan</dd>
+        <dt>Scroll</dt><dd>zoom</dd>
+        <dt>Double-click</dt><dd>reset view</dd>
+      </dl>
+    </section>
     <section class="controls-section" data-section="dim">
       <h2>Dimensions</h2>${dimRows}
     </section>
