@@ -264,6 +264,7 @@ function createSession(
     dimMapping: initial.dimMapping,
   },);
   const deck = new Deck<OrbitView>({
+    canvas: 'deck-canvas',
     views: orbitView,
     initialViewState: initial.viewState,
     controller: true,

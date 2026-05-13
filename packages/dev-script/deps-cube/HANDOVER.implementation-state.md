@@ -6,10 +6,11 @@ The package `packages/dev-script/deps-cube/` is being built per the approved pla
 
 Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D feature space (6 dims = 3 spatial + color + shape + size), with deck.gl WebGL rendering and a custom HTML control panel for dim swapping, 3-state boolean filtering, range sliders, name search, display toggles, and URL-hash bookmarking. Output: `./deps-cube-<YYYY-MM-DD>.html`. Stdout: exactly `Saved to <abs-path>`.
 
-**Status (2026-05-12, fourth handover)**: tasks 1 through 9 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), the Node-side HTML emitter for the control panel, and the browser-side runtime controller (Deck instantiation, event wiring, picking, URL-hash sync). Tasks 10 through 13 pending. Lint and types pass on every file (0 errors; ~326 stylistic warnings, all non-blocking).
+**Status (2026-05-12, fifth handover)**: tasks 1 through 10 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), the Node-side HTML emitter for the control panel, the browser-side runtime controller (Deck instantiation, event wiring, picking, URL-hash sync), and the HTML composer + CLI entry point (`renderHtml` inlines a 754KB IIFE controller bundle + probes-as-JS-literal + control-panel HTML + native-CSS-nested styles into a single self-contained HTML file). Tasks 11 through 13 pending. Lint and types pass on every file (0 errors; ~338 stylistic warnings, all non-blocking).
 
 **Last commits**:
 
+- `a496f91c feat(dev-script/deps-cube): add browser-side scene controller` (task 9)
 - `d8142cba feat(dev-script/deps-cube): add HTML control panel renderer` (task 8)
 - `df8f7fb3 docs(dev-script/deps-cube): handover update — tasks 6–7 done, 8–13 pending` (second handover)
 - `c2ce8e45 feat(dev-script/deps-cube): add deck.gl config + layer factories` (task 7)
@@ -42,9 +43,16 @@ Done:
   - `src/deck-scatter.ts` — `partitionProbes` helper buckets probes into `{ filled, stroked, unknown }` based on `probeIsFilled` and `unknownReason`. Three `ScatterplotLayer` factories: `buildLeafScatterLayer` (filled), `buildNonLeafScatterLayer` (stroked), `buildUnknownClusterLayer` (offset position, stroke+fill).
   - `src/deck-labels.ts` — `buildAxisLabelsLayer` (TextLayer at axis midpoints using `DIM_DISPLAY_NAMES` for the three spatial channels) + `buildNameLabelsLayer` (top-N by staleness or all visible probes, label above each glyph).
 
+- ~~Task 10 (HTML composer + CLI)~~ — three files plus a CSS asset:
+  - `src/render-html.ts` — `renderHtml({ probes })` builds the final document: calls `Bun.build({ entrypoints: ['src/scripts/controller.ts'], format: 'iife', minify: true, target: 'browser' })` to obtain the controller IIFE, inlines `window.__PROBES__ = <json>` ahead of the controller script, embeds the control-panel fragment from `renderControls`, and wraps everything in `<!doctype html>...</html>` with the CSS from `styles.css` in a `<style>` block. Helpers: `bundleController` (throws when `result.success === false`, joining `result.logs.map(log => log.message)`), `escapeForScriptTag` (replaces `</script` → `<\/script` and `<!--` → `<\!--` so the inline JS can't escape the script tag). Empty-probes smoke test: 770KB output, 513 modules, document terminates cleanly with `</html>`.
+  - `src/cli.ts` — `#!/usr/bin/env bun` entry; top-level `await readCatalog()` → `createCache()` → `await probeAll({ entries, cache })` → `await renderHtml({ probes })` → `writeFile(absPath, html, 'utf8')` → `console.log(\`Saved to ${absPath}\`)`. `todaysOutputFilename()` returns `deps-cube-<YYYY-MM-DD>.html` in local time (date-only granularity so same-day re-runs overwrite). Each top-level `const` carries its own TSDoc (required at module root).
+  - `src/index.ts` — re-exports the library surface (`readCatalog`, `decodeAlias`, `CatalogEntry`; `createCache`, `Cache`; `probeAll`, `PackageProbe`, `LicenseClass`, `UnknownReason`; `renderHtml`; `renderControls`). The CLI in `cli.ts` is bin-only and not re-exported.
+  - `src/styles.css` — page CSS imported via `with { type: 'text' }`. Native nesting (3 levels max), logical properties (`inline-size`, `padding-inline`, `border-inline-start-*`), `rem` sizing, `:focus-visible` on every interactive element, `min-block-size: 3rem` touch targets, design-token custom properties at `:root` with `prefers-color-scheme: dark` overrides. No `border`/`padding`/`margin` shorthands — only single-axis (`padding-block`, `padding-inline`) or single-concept (`border-radius`) shorthands; sided borders use longhand `border-block-start-width` / `-style` / `-color`.
+  - `src/css.d.ts` — ambient `declare module '*.css'` shim so TypeScript types the text import as `string` (mirrors the existing `svg.d.ts` shim in `inference-canary-viewer`).
+  - **Layout**: HTML body is `display: flex` with `<main id="canvas-host">` (`flex-grow: 1; position: relative; min-block-size: 100vh`) and `<aside id="controls">` (`inline-size: 22rem`) side-by-side. The deck.gl canvas is supplied as `<canvas id="deck-canvas">` inside the main element; the controller passes `canvas: 'deck-canvas'` to `new Deck<OrbitView>({...})` so deck.gl uses the pre-existing canvas instead of creating its own attached to `document.body`. **Controller change**: `src/scripts/controller.ts` `createSession` now passes `canvas: 'deck-canvas'` to the `Deck` constructor (no other changes).
+
 Pending:
 
-- **Task 10**: `src/render-html.ts` (Node) composes the final HTML — inlines deck.gl bundle (`Bun.build` with `controller.ts` as entry, IIFE format), the data literal (`window.__PROBES__ = …`), the control-panel HTML from `render-controls`, minimal CSS (canvas main area + sidebar; native nesting; logical properties). `src/cli.ts` is the `#!/usr/bin/env bun` entry: top-level `await readCatalog()` → `await probeAll()` → write file → `console.log('Saved to ' + absPath)`. `src/index.ts` re-exports. **Note**: per the bundle smoke test in task 9, the IIFE bundle is ~754KB minified (513 modules); inline that as a `<script>` block in the final HTML.
 - **Task 11**: `docs/decisions/deps-cube.md` — depth-matched audit per AGENTS.md. Plan file has the bullet list to expand. Key point: document the 72.7% TS exception for deck.gl with the user-screenshot evidence as the deciding factor.
 - **Task 12**: `test/*.test.ts` — catalog, cache, probe (with stubbed gh/registry), filter, state, deck-config (snapshot layer count and accessor outputs), render-controls (snapshot HTML).
 - **Task 13**: end-to-end smoke run — `mise run //packages/dev-script/deps-cube:run`, open the HTML in Firefox, exercise the full verification checklist from the plan.
@@ -61,16 +69,21 @@ packages/dev-script/deps-cube/
 ├── src/
 │   ├── cache.ts                 ← JSON file cache, per-key TTL, atomic writes
 │   ├── catalog.ts               ← pnpm-workspace.yaml parser + alias decode
+│   ├── cli.ts                   ← #!/usr/bin/env bun; readCatalog → probeAll → renderHtml → writeFile
+│   ├── css.d.ts                 ← ambient `declare module '*.css'` shim for text imports
 │   ├── deck-accessors.ts        ← per-probe pure accessors (position/color/radius/shape)
 │   ├── deck-config.ts           ← orbit view + computeSceneBounds + buildLayers orchestrator
 │   ├── deck-labels.ts           ← axis + name label TextLayers (imports DIM_DISPLAY_NAMES)
 │   ├── deck-layers.ts           ← wireframe PathLayer + threshold-plane PolygonLayers
 │   ├── deck-scatter.ts          ← filled/stroked/unknown ScatterplotLayers + partition helper
 │   ├── dim-meta.ts              ← shared display names, kinds, channel-acceptance, toggle labels
+│   ├── index.ts                 ← library re-exports (readCatalog, createCache, probeAll, renderHtml…)
 │   ├── probe.ts                 ← orchestration + PackageProbe type
 │   ├── probe-fields.ts          ← per-field probes + helpers (gh + registry)
 │   ├── probe-transitive.ts      ← depth-bounded dep walk
 │   ├── render-controls.ts       ← Node-side HTML emitter for the control-panel <aside>
+│   ├── render-html.ts           ← composes the final HTML (Bun.build bundle + probe literal + controls)
+│   ├── styles.css               ← page CSS, native nesting, logical properties, design tokens
 │   └── scripts/
 │       ├── controller.ts        ← bootstrap, Deck instantiation, render path, pickedProbe, start()
 │       ├── controller-dom.ts    ← el/elInput/elSelect typed accessors + syncDomFromState
@@ -112,7 +125,11 @@ The first two pass cleanly now. oxlint reports ~278 stylistic warnings on the pa
 
 ## Notes for the next session
 
-- **deck.gl bundling for task 10**: deck.gl is installed at `node_modules/@deck.gl/core` and `node_modules/@deck.gl/layers`. Don't try to inline the dist as raw text — use `Bun.build({ entrypoints: ['src/scripts/controller.ts'], format: 'iife', minify: true })` so Bun resolves and bundles deck.gl transitively from the controller's imports. Output goes into a `<script>` block inside the generated HTML.
+- **deck.gl bundling**: deck.gl is installed at `node_modules/@deck.gl/core` and `node_modules/@deck.gl/layers`. Don't try to inline the dist as raw text — `render-html.ts` calls `Bun.build({ entrypoints: ['src/scripts/controller.ts'], format: 'iife', minify: true, target: 'browser' })` so Bun resolves and bundles deck.gl transitively from the controller's imports. Output goes into a `<script>` block inside the generated HTML.
+- **`Bun.build` log type**: `result.logs` is `Array<BuildMessage | ResolveMessage>`. Both classes carry a `message: string` field; use `log.message` rather than `String(log,)` (the latter triggers `typescript-eslint/no-base-to-string` because the type doesn't declare a custom `toString`).
+- **`canvas: string` not `parent`**: deck.gl's `Deck` accepts either `parent?: HTMLDivElement | null` (creates its own canvas inside the supplied div) or `canvas?: HTMLCanvasElement | string | null` (uses the supplied element). The `string` form is the id of an existing `<canvas>` — simpler than typing through `HTMLDivElement`, no `as` cast needed. `controller.ts` passes `canvas: 'deck-canvas'`; `render-html.ts` emits `<canvas id="deck-canvas">` inside `<main id="canvas-host">`.
+- **CSS asset via `with { type: 'text' }`**: `styles.css` is imported as a `string` from `render-html.ts`. Requires the ambient shim in `css.d.ts` (`declare module '*.css'`) so TypeScript types the import. Sibling-package precedent: `inference-canary-viewer/src/svg.d.ts` does the same for `.svg`.
+- **CSS border rule**: AGENTS.md bans `border` / `padding` / `margin` shorthands (multi-axis + multi-sub-property). Single-axis (`padding-block`, `padding-inline`, `margin-inline-end`) and single-concept (`border-radius`, `inset`, `gap`) shorthands are fine; sided borders use longhand `border-block-start-width` / `-style` / `-color` (and the equivalent for `border-inline-*`). `outline` is similar — write `outline-width: 2px; outline-style: solid; outline-color: var(...); outline-offset: 2px;`.
 - **Plan deviation worth recording in `docs/decisions/deps-cube.md`**: the chosen visual distinction for the "shape" channel is filled vs stroked (not circle vs diamond). Reason: ScatterplotLayer renders circles only; supporting diamonds means IconLayer with custom icon textures (more code, harder to type) or SimpleMeshLayer (3D geometry, overkill at 120 points). Filled/stroked is the simplest binary distinction that doesn't require auxiliary assets. Document under "implementation notes".
 - **Display-name source**: `src/dim-meta.ts` owns `DIM_DISPLAY_NAMES`, `DIM_KINDS`, `CHANNEL_ACCEPTED_KINDS`, `TOGGLE_LABELS`, and the `acceptsDim` predicate. Both `deck-labels.ts` (axis labels) and `render-controls.ts` (dim dropdowns + toggle legends) import from here. Add new dim-meta there, not in either consumer.
 - **Top-N name labels**: currently ranks by `daysSinceLastCommitOrNull` descending (oldest first). Subject to refinement once the audit-target scoring is formalised; could be a weighted score across staleness + small size + non-TS + low downloads.
