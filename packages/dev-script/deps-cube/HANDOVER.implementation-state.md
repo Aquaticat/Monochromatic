@@ -6,10 +6,11 @@ The package `packages/dev-script/deps-cube/` is being built per the approved pla
 
 Tool premise: scatter-plot every catalog entry in the pnpm-workspace.yaml in 3D feature space (6 dims = 3 spatial + color + shape + size), with deck.gl WebGL rendering and a custom HTML control panel for dim swapping, 3-state boolean filtering, range sliders, name search, display toggles, and URL-hash bookmarking. Output: `./deps-cube-<YYYY-MM-DD>.html`. Stdout: exactly `Saved to <abs-path>`.
 
-**Status (2026-05-12, fifth handover)**: tasks 1 through 10 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), the Node-side HTML emitter for the control panel, the browser-side runtime controller (Deck instantiation, event wiring, picking, URL-hash sync), and the HTML composer + CLI entry point (`renderHtml` inlines a 754KB IIFE controller bundle + probes-as-JS-literal + control-panel HTML + native-CSS-nested styles into a single self-contained HTML file). Tasks 11 through 13 pending. Lint and types pass on every file (0 errors; ~338 stylistic warnings, all non-blocking).
+**Status (2026-05-12, sixth handover)**: tasks 1 through 11 done — package scaffolded, data layer (catalog + cache + probe pipeline), browser-side pure logic (filter mask + URL-hash state ser/deser), full deck.gl config (orbit view, scene bounds, six layer factories across five files), the Node-side HTML emitter for the control panel, the browser-side runtime controller (Deck instantiation, event wiring, picking, URL-hash sync), the HTML composer + CLI entry point (`renderHtml` inlines a 754KB IIFE controller bundle + probes-as-JS-literal + control-panel HTML + native-CSS-nested styles into a single self-contained HTML file), and `docs/decisions/deps-cube.md` (depth-matched library audit covering the 72.6% TS exception with the user-approved attribution, the verified transitive surface, the bundle-size delta vs the plan estimate, and the filled-vs-stroked deviation). Tasks 12 and 13 pending. Lint and types pass on every file (0 errors; ~338 stylistic warnings, all non-blocking).
 
 **Last commits**:
 
+- `c37ee14c feat(dev-script/deps-cube): add HTML composer + CLI entry` (task 10)
 - `a496f91c feat(dev-script/deps-cube): add browser-side scene controller` (task 9)
 - `d8142cba feat(dev-script/deps-cube): add HTML control panel renderer` (task 8)
 - `df8f7fb3 docs(dev-script/deps-cube): handover update — tasks 6–7 done, 8–13 pending` (second handover)
@@ -51,9 +52,12 @@ Done:
   - `src/css.d.ts` — ambient `declare module '*.css'` shim so TypeScript types the text import as `string` (mirrors the existing `svg.d.ts` shim in `inference-canary-viewer`).
   - **Layout**: HTML body is `display: flex` with `<main id="canvas-host">` (`flex-grow: 1; position: relative; min-block-size: 100vh`) and `<aside id="controls">` (`inline-size: 22rem`) side-by-side. The deck.gl canvas is supplied as `<canvas id="deck-canvas">` inside the main element; the controller passes `canvas: 'deck-canvas'` to `new Deck<OrbitView>({...})` so deck.gl uses the pre-existing canvas instead of creating its own attached to `document.body`. **Controller change**: `src/scripts/controller.ts` `createSession` now passes `canvas: 'deck-canvas'` to the `Deck` constructor (no other changes).
 
+Done (continued):
+
+- ~~Task 11 (decision doc)~~ — `docs/decisions/deps-cube.md` follows the pattern of the existing decision docs (`font-subsetting.md`, `readable-stream-shim.md`): Context, Decision with the TS-ratio exception (attributed to the user's screenshot-confirmed authorization, not an independent re-derivation), Rejected alternatives (plotly.js / three.js / echarts / d3-3d / @thi.ng/* / @nivo-visx-recharts / hand-rolled, each with the specific gate they fail), Audit notes (transitive surface enumerated package-by-package with license + module-type, build provenance via vis.gl's `ocular-bundle`, maintenance signals re-verified at audit time via `gh api repos/visgl/deck.gl` + `npm api`), Implementation notes (2x bundle weight vs plan estimate explained by the transitive cone, filled-vs-stroked shape deviation justified by ScatterplotLayer's circle-only rendering, pre-existing canvas wiring choice, top-N labels TODO, monorepo-housed packages routed to Unknown cluster). Numbers in the doc come from `gh api repos/visgl/deck.gl/{languages,contributors}` (TS 72.56%, contributors 277+) and `https://api.npmjs.org/downloads/point/last-week/` (~630K/week for `@deck.gl/core` and `@deck.gl/layers`), measured 2026-05-12. No em-dashes, no en-dashes, no tables, lines under 120, sentence-case headings, ATX max 3 levels.
+
 Pending:
 
-- **Task 11**: `docs/decisions/deps-cube.md` — depth-matched audit per AGENTS.md. Plan file has the bullet list to expand. Key point: document the 72.7% TS exception for deck.gl with the user-screenshot evidence as the deciding factor.
 - **Task 12**: `test/*.test.ts` — catalog, cache, probe (with stubbed gh/registry), filter, state, deck-config (snapshot layer count and accessor outputs), render-controls (snapshot HTML).
 - **Task 13**: end-to-end smoke run — `mise run //packages/dev-script/deps-cube:run`, open the HTML in Firefox, exercise the full verification checklist from the plan.
 
