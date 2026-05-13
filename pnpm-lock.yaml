@@ -305,6 +305,7 @@ overrides:
   fast-xml-parser: '>=5.7.0'
   postcss: '>=8.5.10'
   node-domexception: link:packages/shim/node-domexception
+  readable-stream: link:packages/shim/readable-stream
   '@earendil-works/pi-ai>@aws-sdk/client-bedrock-runtime': '-'
   '@earendil-works/pi-ai>@google/genai': '-'
   '@earendil-works/pi-ai>@mistralai/mistralai': '-'
@@ -1874,6 +1875,24 @@ importers:
         version: 1.3.11
 
   packages/shim/node-domexception:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+
+  packages/shim/proper-lockfile:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+
+  packages/shim/readable-stream:
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
@@ -3843,9 +3862,6 @@ packages:
     resolution: {integrity: sha512-I3yl4r9QB5ZRY3XuJVEPfc2XhZO6YweFPI+UovAzn+8/hb3oJ6lnysaFcjVpkCPfVWFUDvoZ8kmVDP7WyRtYtQ==}
     engines: {node: '>= 0.6.0'}
 
-  base64-js@1.5.1:
-    resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
-
   better-auth@1.6.9:
     resolution: {integrity: sha512-EBFURtglyiEZxbx4NJBoqUD8J65dX24yC+6I9AUbIXNgUkt76mshzGbHkxZ3n/lB7Dwq3kBC+hHt0hUQsnL7HA==}
     peerDependencies:
@@ -3929,9 +3945,6 @@ packages:
 
   buffer-crc32@0.2.13:
     resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
-
-  buffer@6.0.3:
-    resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
 
   bun-types@1.3.11:
     resolution: {integrity: sha512-1KGPpoxQWl9f6wcZh57LvrPIInQMn2TQ7jsgxqpRzg+l0QPOFvJVH7HmvHo/AiPgwXy+/Thf6Ov3EdVn1vOabg==}
@@ -4278,10 +4291,6 @@ packages:
 
   estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
-
-  events@3.3.0:
-    resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
-    engines: {node: '>=0.8.x'}
 
   execa@9.6.1:
     resolution: {integrity: sha512-9Be3ZoN4LmYR90tUoVu2te2BsbzHfhJyfEiAVfz7N5/zv+jduIfLrV2xdQXOHbaD6KgpGdO9PRPM1Y4Q9QkPkA==}
@@ -5255,10 +5264,6 @@ packages:
     resolution: {integrity: sha512-gjVS5hOP+M3wMm5nmNOucbIrqudzs9v/57bWRHQWLYklXqoXKrVfYW2W9+glfGsqtPgpiz5WwyEEB+ksXIx3gQ==}
     engines: {node: '>=18'}
 
-  process@0.11.10:
-    resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
-    engines: {node: '>= 0.6.0'}
-
   promise-limit@2.7.0:
     resolution: {integrity: sha512-7nJ6v5lnJsXwGprnGXga4wx6d1POjvi5Qmf1ivTRxTjH4Z/9Czja/UCMLVmB9N93GeWOU93XaFaEt6jbuoagNw==}
 
@@ -5286,14 +5291,6 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
-
-  readable-stream@3.6.2:
-    resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
-    engines: {node: '>= 6'}
-
-  readable-stream@4.7.0:
-    resolution: {integrity: sha512-oIGGmcpTLwPga8Bn6/Z75SVaH1z5dUut2ibSyAMVhmUggWpmDn2dapB0n7f8nwaSiRtepAsfJyfXIO5DCVAODg==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   readdirp@5.0.0:
     resolution: {integrity: sha512-9u/XQ1pvrQtYyMpZe7DXKv2p5CNvyVwzUB6uhLAnQwHMSgKMBR62lc7AHljaeteeHXn11XTAaLLUVZYVZyuRBQ==}
@@ -5509,9 +5506,6 @@ packages:
 
   string.prototype.codepointat@0.2.1:
     resolution: {integrity: sha512-2cBVCj6I4IOvEnjgO/hWqXjqBGsY+zwPmHl12Srk9IXSZ56Jwwmy+66XO5Iut/oQVR7t5ihYdLB0GMa4alEUcg==}
-
-  string_decoder@1.3.0:
-    resolution: {integrity: sha512-hkRX8U1WjJFd8LsDJ2yQ/wWWxaopEsABU1XfkM8A+j0+85JAGppt16cr1Whg6KIbb4okU6Mql6BOj+uup/wKeA==}
 
   stringify-entities@4.0.4:
     resolution: {integrity: sha512-IwfBptatlO+QCJUo19AqvrPNqlVMpW9YEL2LIVY+Rpv2qsjCGxaDLNRgeGsQWJhfItebuJhsGSLjaBbNSQ+ieg==}
@@ -7104,8 +7098,6 @@ snapshots:
   base64-arraybuffer@1.0.2:
     optional: true
 
-  base64-js@1.5.1: {}
-
   better-auth@1.6.9:
     dependencies:
       '@better-auth/core': 1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.3.6))(jose@6.2.3)(kysely@0.28.17)(nanostores@1.3.0)
@@ -7149,11 +7141,6 @@ snapshots:
       fill-range: 7.1.1
 
   buffer-crc32@0.2.13: {}
-
-  buffer@6.0.3:
-    dependencies:
-      base64-js: 1.5.1
-      ieee754: 1.2.1
 
   bun-types@1.3.11:
     dependencies:
@@ -7476,8 +7463,6 @@ snapshots:
   estree-walker@3.0.3:
     dependencies:
       '@types/estree': 1.0.8
-
-  events@3.3.0: {}
 
   execa@9.6.1:
     dependencies:
@@ -7957,7 +7942,7 @@ snapshots:
       minimisted: 2.0.1
       pako: 1.0.11
       pify: 4.0.1
-      readable-stream: 4.7.0
+      readable-stream: link:packages/shim/readable-stream
       sha.js: 2.4.12
       simple-get: 4.0.1
 
@@ -8753,8 +8738,6 @@ snapshots:
     dependencies:
       parse-ms: 4.0.0
 
-  process@0.11.10: {}
-
   promise-limit@2.7.0: {}
 
   promise-make-counter@1.0.2:
@@ -8783,19 +8766,6 @@ snapshots:
   quansync@1.0.0: {}
 
   queue-microtask@1.2.3: {}
-
-  readable-stream@3.6.2:
-    dependencies:
-      inherits: 2.0.4
-      string_decoder: 1.3.0
-      util-deprecate: 1.0.2
-
-  readable-stream@4.7.0:
-    dependencies:
-      buffer: 6.0.3
-      events: 3.3.0
-      process: 0.11.10
-      string_decoder: 1.3.0
 
   readdirp@5.0.0: {}
 
@@ -9096,10 +9066,6 @@ snapshots:
       strip-ansi: 7.2.0
 
   string.prototype.codepointat@0.2.1: {}
-
-  string_decoder@1.3.0:
-    dependencies:
-      safe-buffer: 5.2.1
 
   stringify-entities@4.0.4:
     dependencies:
@@ -9460,7 +9426,7 @@ snapshots:
   winston-transport@4.9.0:
     dependencies:
       logform: 2.7.0
-      readable-stream: 3.6.2
+      readable-stream: link:packages/shim/readable-stream
       triple-beam: 1.4.1
 
   winston@3.15.0:
@@ -9471,7 +9437,7 @@ snapshots:
       is-stream: 2.0.1
       logform: 2.7.0
       one-time: 1.0.0
-      readable-stream: 3.6.2
+      readable-stream: link:packages/shim/readable-stream
       safe-stable-stringify: 2.5.0
       stack-trace: 0.0.10
       triple-beam: 1.4.1

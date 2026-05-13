@@ -148,6 +148,27 @@ overrides:
   # deprecation warning without altering runtime behaviour.
   # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
   'node-domexception': 'link:packages/shim/node-domexception'
+  # Substitute readable-stream@3 (winston, winston-transport) and
+  # readable-stream@4 (isomorphic-git) with a single workspace shim that
+  # re-exports node:stream. Both upstream versions are userland mirrors of
+  # node:stream that originally targeted retired Node releases; on Node 22+
+  # they ship 3,005 LOC of duplicate stream machinery whose only purpose was
+  # back-compat with versions that no longer matter. The shim's index.cjs
+  # mirrors the end-state shape of readable-stream@3's entry (default export
+  # is Stream.Readable with every node:stream property defined as an own
+  # property on it, plus .Stream pointing at the module itself), and its
+  # lib/_stream_*.js subpaths re-export the matching node:stream class so
+  # winston-transport's deep import of readable-stream/lib/_stream_writable.js
+  # resolves unchanged. The shim uses Object.defineProperty rather than
+  # Object.assign because node:stream.Readable inherits a getter-only
+  # promises accessor on Node 22+ that makes the upstream Object.assign
+  # pattern throw at module load. The substitution also makes the transitive
+  # abort-controller fallback guards inside readable-stream@4's pipeline.js,
+  # duplexify.js, and operators.js unreachable, formally closing the loop on
+  # the 'abort-controller': '-' override above.
+  # See docs/decisions/readable-stream-shim.md for the full audit, including
+  # the enumerated consumer surface and the verification plan.
+  'readable-stream': 'link:packages/shim/readable-stream'
   # Drop @earendil-works/pi-* transitive deps that this workspace does not
   # exercise: either unused in the published dist, or loaded only via lazy
   # `import()` inside provider modules. Statically-imported deps that are

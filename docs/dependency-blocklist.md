@@ -215,6 +215,49 @@ After install, every transitive `node-domexception` edge resolves to the workspa
 The deprecation warning is gone.
 Consumers (`fetch-blob`, `node-fetch`, the `@libsql/hrana-client` and `gaxios` subtrees) see the native `DOMException` constructor exactly as before, so the `throw new DOMException(...)` paths in `fetch-blob` keep producing real `Error`-derived exceptions.
 
+### Shim for a multi-class library across two upstream versions
+
+`readable-stream` is a userland mirror of `node:stream` that two consumer chains pull in at different major versions:
+`winston@3.15.0` and `winston-transport@4.9.0` depend on `readable-stream@3.6.2`, while `isomorphic-git@1.37.6` depends on `readable-stream@4.7.0`.
+Both versions exist purely for back-compat with retired Node releases; on Node 22+ the platform's `node:stream` module covers every API both versions expose.
+
+The shim at `packages/shim/readable-stream/` re-exports `node:stream`:
+
+```js
+'use strict';
+
+const Stream = require('node:stream');
+
+module.exports = Stream.Readable;
+for (const key of Object.keys(Stream)) {
+  Object.defineProperty(module.exports, key, {
+    value: Stream[key],
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+}
+module.exports.Stream = Stream;
+```
+
+The pattern uses `Object.defineProperty` per key instead of the more idiomatic `Object.assign(module.exports, Stream)` because `Stream.Readable` inherits a getter-only `promises` accessor via its function-prototype chain (`Object.getPrototypeOf(Stream.Readable) === Stream`); under strict mode (which CommonJS modules run in by default in Node 22+), `Object.assign` throws `TypeError: Attempted to assign to readonly property` when it reaches the inherited accessor.
+`Object.defineProperty` creates a new own data property that shadows the inherited accessor, sidestepping the failure.
+
+The shim also ships five 3-line files under `lib/_stream_*.js` (`_stream_readable.js`, `_stream_writable.js`, `_stream_transform.js`, `_stream_duplex.js`, `_stream_passthrough.js`), each re-exporting the matching `node:stream` class.
+`winston-transport@4.9.0/modern.js:4` deep-imports `require('readable-stream/lib/_stream_writable.js')`; the corresponding `exports` entry in `package.json` routes that subpath to the shim's file.
+
+A single override entry covers both upstream versions because `link:` is a path resolver, not a semver resolver:
+
+```yaml
+overrides:
+  'readable-stream': 'link:packages/shim/readable-stream'
+```
+
+After install, three transitive `readable-stream` edges (`winston@3.15.0/node_modules/readable-stream`, `winston-transport@4.9.0/node_modules/readable-stream`, `isomorphic-git@1.37.6/node_modules/readable-stream`) symlink to the workspace shim.
+The substitution unifies `instanceof` identity across the workspace (every consumer of `readable-stream` now operates on `node:stream`'s classes directly) and makes the transitive `abort-controller` fallback guards inside `readable-stream@4`'s `pipeline.js`, `duplexify.js`, and `operators.js` unreachable, formally closing the loop on the earlier `'abort-controller': '-'` removal.
+
+`docs/decisions/readable-stream-shim.md` records the full audit, including the enumerated consumer surface, the verification plan, and the behavior risk callouts (default `autoDestroy` flip, `_construct` lifecycle, `Readable.from` strictness, etc.).
+
 ## Verification after adding an entry
 
 1.  Run install (`mise run prepare:pnpm:install`).
@@ -239,6 +282,6 @@ Consumers (`fetch-blob`, `node-fetch`, the `@libsql/hrana-client` and `gaxios` s
 - `pnpm-workspace.yaml`'s `overrides` block: global removals, parent-scoped removals, and `link:` substitutions to workspace shims.
 - `packages/stub/throwing/`: the workspace stub used by `action: 'throw'`.
 - `packages/stub/silent/`: the workspace stub used by `action: 'silent'`.
-- `packages/shim/<name>/`: workspace shims for API-compatible substitution; current entries are `packages/shim/node-domexception/`.
+- `packages/shim/<name>/`: workspace shims for API-compatible substitution; current entries are `packages/shim/node-domexception/` and `packages/shim/readable-stream/`.
 - `TROUBLESHOOTING.dependencies.md`: the audit trail for the existing parent-scoped overrides; cross-link entries here when a substitution replaces or augments one of those overrides.
 - `TROUBLESHOOTING.pnpmfile.md`: why the policy implementation is `.pnpmfile.mjs` with JSDoc types rather than `.pnpmfile.ts`; source trace, maintainer rationale, and the rejected pre-strip workaround.
