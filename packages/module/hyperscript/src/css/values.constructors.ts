@@ -463,6 +463,64 @@ export function cssMin(values: readonly (CssValue | string)[],): CssValue {
   return `min(${values.join(', ',)})` as CssValue;
 }
 
+/**
+ * Creates a `max()` expression from two or more CSS values.
+ *
+ * Each item can be a raw expression string or a branded {@link CssValue}.
+ * Use `calc()` inside arguments for arithmetic sub-expressions.
+ *
+ * @param values - two or more CSS length/percentage expressions to compare
+ *
+ * @returns branded CSS max expression
+ *
+ * @example
+ * ```ts
+ * cssMax([cssRem(1), cssPercent(10)])              // 'max(1rem, 10%)'
+ * cssMax(['100cqi', cssCalc('100% - 2rem')])       // 'max(100cqi, calc(100% - 2rem))'
+ * ```
+ */
+export function cssMax(values: readonly (CssValue | string)[],): CssValue {
+  return `max(${values.join(', ',)})` as CssValue;
+}
+
+/**
+ * Creates a `clamp()` expression bounding an ideal value between a minimum and maximum.
+ *
+ * `clamp(min, ideal, max)` evaluates to `ideal` when between `min` and `max`,
+ * and clips to the nearest bound otherwise. Each argument can be a raw
+ * expression string or a branded {@link CssValue}.
+ *
+ * @param min - lower bound (length or percentage)
+ *
+ * @param ideal - preferred value (typically a viewport-relative or `calc()` expression)
+ *
+ * @param max - upper bound (length or percentage)
+ *
+ * @returns branded CSS clamp expression
+ *
+ * @example
+ * ```ts
+ * cssClamp({ min: cssRem(1), ideal: cssVi(2), max: cssRem(2) })
+ * // 'clamp(1rem, 2vi, 2rem)'
+ *
+ * cssClamp({ min: '0', ideal: cssCalc('100% - 2rem'), max: cssPercent(100) })
+ * // 'clamp(0, calc(100% - 2rem), 100%)'
+ * ```
+ */
+export function cssClamp(
+  {
+    min,
+    ideal,
+    max,
+  }: {
+    min: CssValue | string;
+    ideal: CssValue | string;
+    max: CssValue | string;
+  },
+): CssValue {
+  return `clamp(${min}, ${ideal}, ${max})` as CssValue;
+}
+
 //endregion
 
 //region Number constructors

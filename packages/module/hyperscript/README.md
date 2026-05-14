@@ -78,7 +78,7 @@ preventing invalid units and disallowed color functions at the type level:
 - **Time:** `cssS`
 - **Angle:** `cssTurn`
 - **Color:** `cssOklch`, `cssColorFn`
-- **Reference:** `cssVar`, `cssCalc`, `cssMin`
+- **Reference:** `cssVar`, `cssCalc`, `cssMin`, `cssMax`, `cssClamp`
 - **Number:** `cssNum`, `cssInt`
 - **Transform:** `cssTranslateX`, `cssTranslateY`, `cssRotate`, `cssScale`
 - **Anchor:** `cssAnchor`

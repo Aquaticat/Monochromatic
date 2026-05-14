@@ -1,11 +1,17 @@
 import {
+  cssCalc,
+  cssClamp,
   cssCompounded,
   type CssDeclarations,
+  cssMax,
+  cssMin,
   cssNum,
   cssOklch,
+  cssPercent,
   cssRem,
   type CssValue,
   cssVar,
+  cssVi,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 import {
@@ -390,6 +396,53 @@ await describe({
           .toBe(
             '.btn{display:flex;&:focus{color:var(--fg)}&:focus{color:var(--fg)}}',
           );
+      },
+    },),
+
+    //endregion
+
+    //region Math function constructors
+
+    it({
+      name: 'cssMin joins values with comma-space',
+      fn: async () => {
+        expect(cssMin([cssRem(20,), cssPercent(100,),],),).toBe('min(20rem, 100%)',);
+      },
+    },),
+    it({
+      name: 'cssMax joins values with comma-space',
+      fn: async () => {
+        expect(cssMax([cssRem(1,), cssPercent(10,),],),).toBe('max(1rem, 10%)',);
+      },
+    },),
+    it({
+      name: 'cssMax accepts a calc() expression as a value',
+      fn: async () => {
+        expect(cssMax(['100cqi', cssCalc('100% - 2rem',),],),).toBe(
+          'max(100cqi, calc(100% - 2rem))',
+        );
+      },
+    },),
+    it({
+      name: 'cssClamp emits min, ideal, max in order',
+      fn: async () => {
+        expect(
+          cssClamp({ min: cssRem(1,), ideal: cssVi(2,), max: cssRem(2,), },),
+        )
+          .toBe('clamp(1rem, 2vi, 2rem)',);
+      },
+    },),
+    it({
+      name: 'cssClamp accepts mixed string and branded values',
+      fn: async () => {
+        expect(
+          cssClamp({
+            min: '0',
+            ideal: cssCalc('100% - 2rem',),
+            max: cssPercent(100,),
+          },),
+        )
+          .toBe('clamp(0, calc(100% - 2rem), 100%)',);
       },
     },),
 
