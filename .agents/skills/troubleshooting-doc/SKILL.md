@@ -37,13 +37,19 @@ not `bun`). One bug or one cluster of related bugs per file.
    `path/to/file.ext:LINE` and quotes the relevant code excerpt in a
    fenced block. Asserting "the parser rewrites X" without showing the
    rewrite is not allowed; this is the doc-writing specialisation of
-   AGENTS.md's broader source-citation rule.
+   AGENTS.md's broader source-citation rule. If a previous reading or
+   hypothesis was wrong, name it explicitly and quote the evidence
+   that disproved it, so the next investigator does not re-derive the
+   bad cause (the resharp doc's "earlier alternation-count reading was
+   wrong" paragraph is the shape).
 4. **Verification**: version under test (with crates.io checksum,
-   commit hash, or release tag), a runnable harness (shell commands or
-   a minimal `Cargo.toml` + `main.rs` snippet), and at least two
-   catalogues: patterns that work cleanly and patterns that fail. When
-   multiple error variants exist, split the failing catalogue by
-   variant so each failure mode is enumerated.
+   commit hash, or release tag), a runnable harness (shell invocation
+   of the affected binary, a minimal source-level program in the
+   target tool's language, or both when each surfaces different
+   information), and at least two catalogues: patterns that work
+   cleanly and patterns that fail. When multiple error variants exist,
+   split the failing catalogue by variant so each failure mode is
+   enumerated.
 5. **Verified workarounds**: each workaround is a runnable patch with
    its tradeoffs named (what semantics shift, what edge cases slip
    through). A workaround whose tradeoffs you have not stated is not
