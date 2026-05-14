@@ -55,10 +55,10 @@ export const execTool: ToolEntry = defineTool({
         return textResponse(formatExecResult(result,),);
       }
       catch (err: unknown) {
-        return errorResponse(
-          'exec_in_vm',
+        return errorResponse({
+          tag: 'exec_in_vm',
           err,
-        );
+        },);
       }
     },
   },
@@ -89,8 +89,10 @@ export const runTool: ToolEntry = defineTool({
     handler: async function handleRunInVm(args,) {
       /** Shell command coerced to string so the ephemeral VM receives a stable type regardless of MCP client encoding. */
       const command = String(args.command,);
-      /** Optional source VM to clone from; `undefined` selects the create-fresh path inside {@link run}. */
-      const from = typeof args.from === 'string' ? args.from : undefined;
+      /**
+       * Optional source VM to clone from; `undefined` selects the create-fresh path inside {@link run}.
+       */
+      const from = ((typeof args.from) === 'string') ? args.from : undefined;
       try {
         /** Execution result holding stdout, stderr, and exit code; formatted into the response below. */
         const result = await run({
@@ -100,10 +102,10 @@ export const runTool: ToolEntry = defineTool({
         return textResponse(formatExecResult(result,),);
       }
       catch (err: unknown) {
-        return errorResponse(
-          'run_in_vm',
+        return errorResponse({
+          tag: 'run_in_vm',
           err,
-        );
+        },);
       }
     },
   },

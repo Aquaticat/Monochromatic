@@ -62,10 +62,10 @@ export const pushTool: ToolEntry = defineTool({
         return textResponse(`Pushed ${hostPath} -> ${guestPath} in VM ${name}`,);
       }
       catch (err: unknown) {
-        return errorResponse(
-          'push_to_vm',
+        return errorResponse({
+          tag: 'push_to_vm',
           err,
-        );
+        },);
       }
     },
   },
@@ -125,10 +125,10 @@ export const pullTool: ToolEntry = defineTool({
         );
       }
       catch (err: unknown) {
-        return errorResponse(
-          'pull_from_vm',
+        return errorResponse({
+          tag: 'pull_from_vm',
           err,
-        );
+        },);
       }
     },
   },

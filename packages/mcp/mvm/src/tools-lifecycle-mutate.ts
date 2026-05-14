@@ -49,9 +49,11 @@ export const createTool: ToolEntry = defineTool({
       /** New VM name coerced to string so libvirt receives a stable type regardless of MCP client encoding. */
       const name = String(args.name,);
       /** Optional source VM to clone from; `undefined` selects the create-fresh path below. */
-      const from = typeof args.from === 'string' ? args.from : undefined;
-      /** Optional image template; `undefined` falls back to the default in {@link create}. */
-      const image = typeof args.image === 'string' ? args.image : undefined;
+      const from = ((typeof args.from) === 'string') ? args.from : undefined;
+      /**
+       * Optional image template; `undefined` falls back to the default in {@link create}.
+       */
+      const image = ((typeof args.image) === 'string') ? args.image : undefined;
       try {
         await (from !== undefined
           ? clone({
@@ -69,10 +71,10 @@ export const createTool: ToolEntry = defineTool({
         );
       }
       catch (err: unknown) {
-        return errorResponse(
-          'create_vm',
+        return errorResponse({
+          tag: 'create_vm',
           err,
-        );
+        },);
       }
     },
   },
@@ -99,9 +101,9 @@ export const destroyTool: ToolEntry = defineTool({
     },
     handler: async function handleDestroyVm(args,) {
       /** Optional single-VM target; mutually exclusive with `all` and validated below. */
-      const name = typeof args.name === 'string' ? args.name : undefined;
+      const name = ((typeof args.name) === 'string') ? args.name : undefined;
       /** Optional destroy-everything flag; mutually exclusive with `name` and validated below. */
-      const all = typeof args.all === 'boolean' ? args.all : undefined;
+      const all = ((typeof args.all) === 'boolean') ? args.all : undefined;
       try {
         if (all === true) {
           await destroyAll();
@@ -120,10 +122,10 @@ export const destroyTool: ToolEntry = defineTool({
         };
       }
       catch (err: unknown) {
-        return errorResponse(
-          'destroy_vm',
+        return errorResponse({
+          tag: 'destroy_vm',
           err,
-        );
+        },);
       }
     },
   },

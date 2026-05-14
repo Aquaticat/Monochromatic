@@ -35,10 +35,10 @@ export const listTool: ToolEntry = defineTool({
         return textResponse(lines.join('\n',),);
       }
       catch (err: unknown) {
-        return errorResponse(
-          'list_vms',
+        return errorResponse({
+          tag: 'list_vms',
           err,
-        );
+        },);
       }
     },
   },
@@ -56,10 +56,10 @@ export const updateTool: ToolEntry = defineTool({
         return textResponse('All template images updated successfully.',);
       }
       catch (err: unknown) {
-        return errorResponse(
-          'update_templates',
+        return errorResponse({
+          tag: 'update_templates',
           err,
-        );
+        },);
       }
     },
   },

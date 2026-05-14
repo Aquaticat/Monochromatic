@@ -50,23 +50,26 @@ export function textResponse(text: string,): TextResponse {
  * Build an MCP error response from a caught exception.
  * Logs the full error to stderr before returning the message to the client.
  *
- * @param tag - Tool name or label for the log prefix
+ * @param tag - Tool name or label for the log prefix.
  *
- * @param err - Caught exception value
+ * @param err - Caught exception value.
  *
- * @returns MCP response with `isError: true`
+ * @returns MCP response with `isError: true`.
  *
  * @example
  * ```ts
- * catch (err: unknown) { return errorResponse('exec_in_vm', err); }
+ * catch (err: unknown) { return errorResponse({ tag: 'exec_in_vm', err }); }
  * ```
  */
-export function errorResponse(
-  tag: string,
-  err: unknown,
-): ErrorResponse {
+export function errorResponse({
+  tag,
+  err,
+}: {
+  err: unknown;
+  tag: string;
+},): ErrorResponse {
   /** Human-readable error text extracted from `Error.message` when available, stringified otherwise. */
-  const message = err instanceof Error ? err.message : String(err,);
+  const message = (err instanceof Error) ? err.message : String(err,);
   console.error(
     `[mcp-mvm] ${tag} failed:`,
     err,
