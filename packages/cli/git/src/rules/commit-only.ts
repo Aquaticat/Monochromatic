@@ -7,7 +7,7 @@ import {
  * Wrapper-only escape hatch that suppresses `-o` injection for one invocation.
  * Stripped before forwarding to real git, which would otherwise reject it.
  */
-const ESCAPE_HATCH = '--skip-only';
+const ESCAPE_HATCH = '--no-enforce-only';
 
 /**
  * Flags that indicate the user already made an explicit choice about `--only`
@@ -26,13 +26,13 @@ const EXPLICIT_ONLY_FLAGS: ReadonlySet<string> = new Set([
  * silently picking up whatever happens to be staged.
  *
  * Skipped when `-o`, `--only`, or `--no-only` is already present (the user
- * made an explicit choice). The wrapper-only flag `--skip-only` is the escape
+ * made an explicit choice). The wrapper-only flag `--no-enforce-only` is the escape
  * hatch: it is stripped from args before forwarding, and injection is also
  * skipped for that invocation.
  *
  * @param args - Raw git arguments (subcommand + flags).
  *
- * @returns Modified args with `-o` injected after `commit`, with `--skip-only`
+ * @returns Modified args with `-o` injected after `commit`, with `--no-enforce-only`
  *   stripped, or unmodified args when the user has already chosen.
  *
  * @example
@@ -40,7 +40,7 @@ const EXPLICIT_ONLY_FLAGS: ReadonlySet<string> = new Set([
  * commitOnly(['commit', '-m', 'msg', 'file.ts']);
  * // => ['commit', '-o', '-m', 'msg', 'file.ts']
  *
- * commitOnly(['commit', '--skip-only', '-m', 'msg']);
+ * commitOnly(['commit', '--no-enforce-only', '-m', 'msg']);
  * // => ['commit', '-m', 'msg'] (escape hatch consumed)
  *
  * commitOnly(['commit', '--only', 'file.ts']);
