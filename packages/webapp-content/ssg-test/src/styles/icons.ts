@@ -79,7 +79,7 @@ export function iconFontStyles(): string {
         'font-family': "'Material Symbols Outlined'" as CssValue,
         'font-weight': 'normal' as CssValue,
         'font-style': 'normal' as CssValue,
-        'font-size': cssRem(1 + 1 / 2 / 2,),
+        'font-size': cssRem(1 + ((1 / 2) / 2),),
         'line-height': '1' as CssValue,
         display: 'inline-block',
         'white-space': 'nowrap',

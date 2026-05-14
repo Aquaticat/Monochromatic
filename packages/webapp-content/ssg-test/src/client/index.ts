@@ -82,8 +82,13 @@ function collectTextNodes(element: HTMLElement,): TextEntry[] {
  * @returns index of the first potentially overlapping text entry
  */
 function findFirstOverlap(
-  textEntries: readonly TextEntry[],
-  from: number,
+  {
+    textEntries,
+    from,
+  }: {
+    textEntries: readonly TextEntry[];
+    from: number;
+  },
 ): number {
   /** Inclusive lower binary-search bound. */
   let lo = 0;
@@ -94,7 +99,7 @@ function findFirstOverlap(
     const mid = (lo + hi) >>> 1;
     /** Entry inspected at the midpoint of the current search window. */
     const entry = nonNullishOrThrow(textEntries[mid],);
-    if (entry.start + entry.node.length <= from)
+    if ((entry.start + entry.node.length) <= from)
       lo = mid + 1;
     else
       hi = mid;
@@ -128,7 +133,7 @@ function createRangesFromPairs({
   for (const pair of encoded.split(';',)) {
     /** Position of the hyphen splitting `from-to`; `-1` means malformed. */
     const dashIndex = pair.indexOf('-',);
-    if (dashIndex === -1)
+    if (dashIndex === (-1))
       continue;
 
     /** Substring before the hyphen used as the start offset. */
@@ -144,10 +149,10 @@ function createRangesFromPairs({
     const to = Number(toStr,);
 
     /** First text-entry index that may overlap `from`, located via binary search. */
-    const startIdx = findFirstOverlap(
+    const startIdx = findFirstOverlap({
       textEntries,
       from,
-    );
+    },);
 
     for (let i = startIdx; i < textEntries.length; i++) {
       /** Text entry inspected at the current scan index. */
@@ -198,7 +203,7 @@ function createRangesFromPairs({
  * so a single `::highlight(hl-keyword)` rule styles all keywords site-wide.
  */
 function highlightAllCodeBlocks(): void {
-  if (typeof CSS === 'undefined' || !('highlights' in CSS))
+  if (((typeof CSS) === 'undefined') || (!('highlights' in CSS)))
     return;
 
   /** Code block elements with pre-computed offset data emitted by the SSG. */
@@ -214,7 +219,7 @@ function highlightAllCodeBlocks(): void {
     for (const group of HIGHLIGHT_GROUPS) {
       /** Serialised offset pairs for the current highlight group; null when absent. */
       const encoded = codeElement.getAttribute(`data-hl-${group}`,);
-      if (encoded === null || encoded.length === 0)
+      if ((encoded === null) || (encoded.length === 0))
         continue;
 
       /** Decoded DOM ranges for this group's encoded pairs. */
@@ -243,7 +248,7 @@ function highlightAllCodeBlocks(): void {
     const name = `hl-${group}`;
     /** Merged range list for the current group, or undefined when no matches were found. */
     const ranges = allRanges.get(group,);
-    if (ranges !== undefined && ranges.length > 0) {
+    if ((ranges !== undefined) && (ranges.length > 0)) {
       CSS.highlights.set(
         name,
         new Highlight(...ranges,),

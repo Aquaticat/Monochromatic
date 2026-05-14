@@ -117,10 +117,10 @@ function tickerKeyframeStops(): string[] {
 
   for (let i = 0; i < QUOTE_COUNT; i++) {
     /** Loop iteration's hold-start percentage marking when this quote becomes stationary. */
-    const holdStart = (i * (HOLD_DURATION + SCROLL_DURATION) / TOTAL_DURATION) * 100;
+    const holdStart = ((i * (HOLD_DURATION + SCROLL_DURATION)) / TOTAL_DURATION) * 100;
     /** Loop iteration's hold-end percentage marking when this quote begins scrolling out. */
-    const holdEnd = (i * (HOLD_DURATION + SCROLL_DURATION) + HOLD_DURATION)
-      / TOTAL_DURATION
+    const holdEnd = (((i * (HOLD_DURATION + SCROLL_DURATION)) + HOLD_DURATION)
+      / TOTAL_DURATION)
       * 100;
     /** Pre-formatted transform value applied to the hold-start and hold-end stops. */
     const offset = cssTranslateY(cssPercent(-(i * stepPercent),),);
@@ -132,7 +132,7 @@ function tickerKeyframeStops(): string[] {
       },),
     );
 
-    if (i < QUOTE_COUNT - 1) {
+    if (i < (QUOTE_COUNT - 1)) {
       stops.push(
         $({
           rule: `${holdEnd.toFixed(2,)}%`,
@@ -146,7 +146,7 @@ function tickerKeyframeStops(): string[] {
     $({
       rule: '100%',
       decls: {
-        transform: cssTranslateY(cssPercent(-(QUOTE_COUNT - 1) * (100 / QUOTE_COUNT),),),
+        transform: cssTranslateY(cssPercent((-(QUOTE_COUNT - 1)) * (100 / QUOTE_COUNT),),),
       },
     },),
   );

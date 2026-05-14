@@ -191,7 +191,7 @@ function resolveHref(
 ): string {
   if (currentName !== undefined) {
     /** Treats an unset `availableInLangs` as "all locales available" so non-post pages keep deep links. */
-    const hasTarget = availableInLangs === undefined
+    const hasTarget = (availableInLangs === undefined)
       || availableInLangs.includes(targetLang,);
     if (hasTarget)
       return `/${targetLang}/${currentName}`;

@@ -126,7 +126,7 @@ function insertHash(
 ): string {
   /** Position of the final dot; `-1` indicates the file has no extension. */
   const lastDot = name.lastIndexOf('.',);
-  if (lastDot === -1) {
+  if (lastDot === (-1)) {
     return `${name}.${
       hash.slice(
         0,
@@ -251,7 +251,7 @@ async function fingerprintCss(
       );
     }
     catch (error) {
-      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT')) {
         l.info(
           'styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',
         );
@@ -266,14 +266,22 @@ async function fingerprintCss(
   if (initialCss === undefined)
     return;
 
-  /** Mutable copy of the CSS body rewritten via replacements before hashing. */
-  let cssContent = initialCss;
-  for (const [original, hashed,] of replacements) {
-    cssContent = cssContent.replaceAll(
-      original,
-      hashed,
-    );
-  }
+  /** CSS body rewritten via replacements before hashing. */
+  const cssContent = [...replacements,].reduce(
+    function applyReplacement(
+      acc: string,
+      [original, hashed,]: readonly [
+        string,
+        string,
+      ],
+    ) {
+      return acc.replaceAll(
+        original,
+        hashed,
+      );
+    },
+    initialCss,
+  );
 
   /** Content-addressed hash spliced into the renamed CSS filename. */
   const hash = sha256(cssContent,);
@@ -340,17 +348,27 @@ async function rewriteReferences(
   ];
 
   await Promise.all(rewriteTargets.map(async function rewriteFile(filePath,) {
-    /** Mutable file body progressively rewritten by the replacement map. */
-    let content = await readFile(
+    /** Initial file body before replacements are applied. */
+    const initialContent = await readFile(
       filePath,
       'utf8',
     );
-    for (const [original, hashed,] of replacements) {
-      content = content.replaceAll(
-        original,
-        hashed,
-      );
-    }
+    /** File body after every replacement has been applied. */
+    const content = [...replacements,].reduce(
+      function applyReplacement(
+        acc: string,
+        [original, hashed,]: readonly [
+        string,
+        string,
+      ],
+      ) {
+        return acc.replaceAll(
+          original,
+          hashed,
+        );
+      },
+      initialContent,
+    );
     await writeFile(
       filePath,
       content,

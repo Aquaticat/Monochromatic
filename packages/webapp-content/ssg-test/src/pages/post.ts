@@ -61,7 +61,7 @@ export function postPage(
     availableInLangs: readonly Locales[];
   },
 ): string {
-  if (post === undefined || renderedHtml === undefined) {
+  if ((post === undefined) || (renderedHtml === undefined)) {
     return postNotFoundPage({
       lang,
       name,

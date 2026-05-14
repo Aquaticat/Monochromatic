@@ -96,6 +96,7 @@ const HEX_RADIX = 16;
  */
 function fnv1a32(input: string,): string {
   /** Running hash accumulator; intermediate state must be mutable per the FNV-1a algorithm. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- FNV-1a algorithm requires in-place XOR/multiply across the loop
   let hash = FNV_OFFSET_32;
   for (let i = 0; i < input.length; i++) {
     hash ^= input.codePointAt(i,) ?? 0;
@@ -118,7 +119,7 @@ function fnv1a32(input: string,): string {
  * @returns underlying string for hashing
  */
 function toHtmlString(value: SafeHtml | string,): string {
-  return typeof value === 'string' ? value : value.html;
+  return (typeof value) === 'string' ? value : value.html;
 }
 
 /**
@@ -195,9 +196,15 @@ function validate(props: QuestionProps,): void {
  * @returns rendered option fragment
  */
 function renderOption(
-  qId: string,
-  idx: number,
-  opt: QuestionOption,
+  {
+    qId,
+    idx,
+    opt,
+  }: {
+    qId: string;
+    idx: number;
+    opt: QuestionOption;
+  },
 ): SafeHtml {
   /** Unique input identifier; linked from the sibling label's htmlFor. */
   const inputId = `q-${qId}-${idx}`;
@@ -280,11 +287,11 @@ export function QuestionRadio(props: QuestionProps,): SafeHtml {
               opt,
               idx,
             ) {
-              return renderOption(
+              return renderOption({
                 qId,
                 idx,
                 opt,
-              );
+              },);
             },),
           },
         ),

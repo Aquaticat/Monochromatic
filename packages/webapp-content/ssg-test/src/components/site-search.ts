@@ -114,7 +114,7 @@ export function css(): string {
           decls: {
             color: 'inherit',
             'inline-size': cssRem(SEARCH_EXPANDED,),
-            'padding-inline-start': cssRem(2 + 1 / 2,),
+            'padding-inline-start': cssRem(2 + (1 / 2),),
             'padding-inline-end': cssRem(GAP_SMALL,),
             'border-color': cssVar('color-border',),
             'background-color': cssVar('color-bg',),
@@ -155,7 +155,7 @@ export function css(): string {
         position: 'absolute',
         inset: `${cssRem(SEARCH_COLLAPSED,)} 0 auto auto`,
         'min-inline-size': cssRem(SEARCH_EXPANDED,),
-        'max-block-size': cssRem(16 + 2 * 2 * 2,),
+        'max-block-size': cssRem(16 + (2 * 2 * 2),),
         'overflow-y': 'auto',
         'margin-block': cssInt(0,),
         'padding-block': cssRem(GAP_SMALL,),

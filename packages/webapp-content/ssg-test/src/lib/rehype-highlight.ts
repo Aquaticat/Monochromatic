@@ -160,15 +160,16 @@ function annotateCodeBlock({
       to: number,
       classes: string,
     ) {
-      /** Existing or freshly created pair list for this highlight class group. */
-      let pairs = pairsByGroup.get(classes,);
-      if (pairs === undefined) {
-        pairs = [];
+      /** Existing pair list for this highlight class group, or a freshly inserted empty array. */
+      const pairs = pairsByGroup.get(classes,) ?? (function initGroup(): string[] {
+        /** Newly allocated pair list inserted into the shared map. */
+        const fresh: string[] = [];
         pairsByGroup.set(
           classes,
-          pairs,
+          fresh,
         );
-      }
+        return fresh;
+      })();
       pairs.push(`${from}-${to}`,);
     },
   );
@@ -176,7 +177,7 @@ function annotateCodeBlock({
   for (const group of HIGHLIGHT_GROUPS) {
     /** Pairs for the current highlight group; undefined when no match was found. */
     const pairs = pairsByGroup.get(group,);
-    if (pairs !== undefined && pairs.length > 0)
+    if ((pairs !== undefined) && (pairs.length > 0))
       codeElement.properties[`data-hl-${group}`] = pairs.join(';',);
   }
 }
@@ -195,9 +196,9 @@ function visitNode(node: Root | Element,): void {
       /** First child node expected to be the `<code>` block; processed when present. */
       const [firstChild,] = child.children;
       if (
-        firstChild !== undefined
-        && firstChild.type === 'element'
-        && firstChild.tagName === 'code'
+        (firstChild !== undefined)
+        && (firstChild.type === 'element')
+        && (firstChild.tagName === 'code')
       ) {
         /** Language detected from the `<code>` class list, or undefined to skip. */
         const lang = getLanguage(firstChild,);

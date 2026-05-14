@@ -66,10 +66,12 @@ export async function ensureFavicons(
   /** Existence flags collected in parallel so the early-return path stays cheap when all targets exist. */
   const checks = await Promise.all(
     TARGETS.map(function checkTarget(name,) {
-      return fileExists(join(
-        PUBLIC,
-        name,
-      ),);
+      return fileExists({
+        filePath: join(
+          PUBLIC,
+          name,
+        ),
+      },);
     },),
   );
 

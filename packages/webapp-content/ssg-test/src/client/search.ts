@@ -88,54 +88,47 @@ const resultsList = document.querySelector<HTMLUListElement>('#search-results',)
 
 //region Pagefind lifecycle
 
-/** Cached Pagefind API instance, loaded once on first focus. */
-let pagefindApi: PagefindApi | undefined = undefined;
-
-/** Whether a Pagefind load attempt has already been made. */
-let loadAttempted = false;
-
 /**
  * Lazily loads the Pagefind JS API from the generated bundle.
  *
  * Called on first focus of the search input. Subsequent calls return
- * the cached instance. If loading fails (e.g. index not built yet),
- * logs a warning and returns `undefined`.
+ * the cached promise (single-flight). If loading fails (e.g. index not
+ * built yet), logs a warning and the cached promise resolves to `undefined`,
+ * so subsequent calls short-circuit without retrying the failed import.
  *
  * @returns Pagefind API instance or `undefined` on failure
  */
-async function loadPagefind(): Promise<PagefindApi | undefined> {
-  if (pagefindApi !== undefined)
-    return pagefindApi;
-
-  if (loadAttempted)
-    return undefined;
-
-  loadAttempted = true;
-
-  try {
-    // Dynamic import from the build-generated Pagefind bundle.
-    // This path is created by `pagefind --site dist` and cannot be
-    // resolved at bundle time; it must be a runtime import.
-    /* oxlint-disable no-unsafe-type-assertion -- Pagefind JS API shape is untyped */
-    /** Resolved Pagefind API module imported lazily on first interaction. */
-    const api = await import(
-      /* webpackIgnore: true */
-      // @ts-expect-error; Pagefind bundle is generated at build time by `pagefind --site dist`; no type declarations exist
-      '/pagefind/pagefind.js'
-    ) as PagefindApi;
-    /* oxlint-enable no-unsafe-type-assertion */
-    api.init();
-    pagefindApi = api;
-    return api;
-  }
-  catch (error) {
-    console.warn(
-      'Pagefind search index not available:',
-      error,
-    );
-    return undefined;
-  }
-}
+const loadPagefind: () => Promise<PagefindApi | undefined> = (function initLoader() {
+  /** Single-flight cached promise; the IIFE wrapping is required by no-module-root-let. */
+  let cached: Promise<PagefindApi | undefined> | undefined = undefined;
+  return function loadPagefindCached(): Promise<PagefindApi | undefined> {
+    cached ??= (async function importPagefind(): Promise<PagefindApi | undefined> {
+      try {
+        // Dynamic import from the build-generated Pagefind bundle.
+        // This path is created by `pagefind --site dist` and cannot be
+        // resolved at bundle time; it must be a runtime import.
+        /* oxlint-disable no-unsafe-type-assertion -- Pagefind JS API shape is untyped */
+        /** Resolved Pagefind API module imported lazily on first interaction. */
+        const api = await import(
+          /* webpackIgnore: true */
+          // @ts-expect-error; Pagefind bundle is generated at build time by `pagefind --site dist`; no type declarations exist
+          '/pagefind/pagefind.js'
+        ) as PagefindApi;
+        /* oxlint-enable no-unsafe-type-assertion */
+        api.init();
+        return api;
+      }
+      catch (error) {
+        console.warn(
+          'Pagefind search index not available:',
+          error,
+        );
+        return undefined;
+      }
+    })();
+    return cached;
+  };
+})();
 
 //endregion Pagefind lifecycle
 
@@ -200,8 +193,8 @@ async function executeSearch(query: string,): Promise<void> {
 
 //region Keyboard navigation state
 
-/** Index of the currently highlighted result, or -1 when none is active. */
-let activeIndex = -1;
+/** Mutable holder for the index of the currently highlighted result; `-1` means none. Wrapped in a const object to satisfy no-module-root-let while keeping read+write spread across handlers. */
+const navState: { activeIndex: number; } = { activeIndex: -1, };
 
 /**
  * Updates the visual and ARIA active descendant state.
@@ -213,21 +206,21 @@ let activeIndex = -1;
  * @param index - index of the option to activate, or -1 to clear
  */
 function setActiveOption(index: number,): void {
-  if (resultsList === null || input === null)
+  if ((resultsList === null) || (input === null))
     return;
 
   /** Snapshot of option elements used for index-based active-descendant updates. */
   const options = resultsList.querySelectorAll<HTMLElement>('[role="option"]',);
 
   /** Previously active option whose data attribute is cleared before the new one is set. */
-  const previous = options[activeIndex];
+  const previous = options[navState.activeIndex];
   if (previous !== undefined)
     delete previous.dataset.active;
 
-  activeIndex = index;
+  navState.activeIndex = index;
 
   /** Newly active option marked with `data-active` and scrolled into view. */
-  const option = options[activeIndex];
+  const option = options[navState.activeIndex];
   if (option !== undefined) {
     option.dataset.active = '';
     option.scrollIntoView({ block: 'nearest', },);
@@ -256,10 +249,10 @@ function setActiveOption(index: number,): void {
  * @param results - loaded Pagefind result data entries
  */
 function renderResults(results: readonly PagefindResultData[],): void {
-  if (resultsList === null || input === null)
+  if ((resultsList === null) || (input === null))
     return;
 
-  activeIndex = -1;
+  navState.activeIndex = -1;
 
   resultsList.innerHTML = results
     .map(function resultToListItem(
@@ -296,7 +289,7 @@ function hideResults(): void {
   if (resultsList === null)
     return;
 
-  activeIndex = -1;
+  navState.activeIndex = -1;
   resultsList.innerHTML = '';
 
   if (input !== null) {
@@ -312,7 +305,7 @@ function hideResults(): void {
 
 //region Event binding
 
-if (input !== null && resultsList !== null) {
+if ((input !== null) && (resultsList !== null)) {
   input.addEventListener(
     'focus',
     function onSearchFocus() {
@@ -342,7 +335,7 @@ if (input !== null && resultsList !== null) {
       /* oxlint-enable no-unsafe-type-assertion */
       /** Enclosing search widget element; clicks outside this container dismiss results. */
       const searchContainer = input.closest<HTMLElement>('site-search',);
-      if (searchContainer !== null && !searchContainer.contains(target,))
+      if ((searchContainer !== null) && (!searchContainer.contains(target,)))
         hideResults();
     },
   );
@@ -366,20 +359,20 @@ if (input !== null && resultsList !== null) {
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setActiveOption(activeIndex < count - 1 ? activeIndex + 1 : 0,);
+        setActiveOption(navState.activeIndex < (count - 1) ? navState.activeIndex + 1 : 0,);
         return;
       }
 
       if (event.key === 'ArrowUp') {
         event.preventDefault();
-        setActiveOption(activeIndex > 0 ? activeIndex - 1 : count - 1,);
+        setActiveOption(navState.activeIndex > 0 ? navState.activeIndex - 1 : count - 1,);
         return;
       }
 
-      if (event.key === 'Enter' && activeIndex >= 0 && activeIndex < count) {
+      if ((event.key === 'Enter') && (navState.activeIndex >= 0) && (navState.activeIndex < count)) {
         event.preventDefault();
         /** Currently active option whose URL is navigated to on Enter. */
-        const option = options[activeIndex];
+        const option = options[navState.activeIndex];
         if (option !== undefined) {
           /** Destructured `data-url` attribute storing the result href. */
           const { url, } = option.dataset;

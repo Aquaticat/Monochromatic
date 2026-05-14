@@ -71,7 +71,7 @@ function parseFrontmatter(raw: string,): {
     '\n',
     FRONTMATTER_OPEN.length,
   );
-  if (afterOpen === -1) {
+  if (afterOpen === (-1)) {
     return {
       data: {},
       content: str,
@@ -85,6 +85,7 @@ function parseFrontmatter(raw: string,): {
   /** Starting offset for the closing-fence scan; first character after the opening newline. */
   const searchFrom = afterOpen + 1;
   /** Cursor advanced through the loop while hunting for a column-zero closing fence. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser cursor advanced across multiple loop iterations
   let closeStart = searchFrom;
 
   for (;;) {
@@ -92,7 +93,7 @@ function parseFrontmatter(raw: string,): {
       FRONTMATTER_OPEN,
       closeStart,
     );
-    if (idx === -1) {
+    if (idx === (-1)) {
       return {
         data: {},
         content: str,
@@ -100,15 +101,15 @@ function parseFrontmatter(raw: string,): {
     }
 
     /* The delimiter must be at column 0 or immediately after a newline. */
-    if (idx === 0 || str[idx - 1] === '\n') {
+    if ((idx === 0) || (str[idx - 1] === '\n')) {
       /** Offset just past the closing fence; the next char must be newline or EOF for a valid close. */
       const afterDelim = idx + FRONTMATTER_OPEN.length;
 
       /* Next char must be a newline or EOF for a valid closing fence. */
       if (
-        afterDelim === str.length
-        || str[afterDelim] === '\n'
-        || str[afterDelim] === '\r'
+        (afterDelim === str.length)
+        || (str[afterDelim] === '\n')
+        || (str[afterDelim] === '\r')
       ) {
         /** YAML body between the opening and closing fences fed to parseYaml. */
         const yamlBlock = str.slice(

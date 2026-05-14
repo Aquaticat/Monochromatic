@@ -22,7 +22,7 @@ export const AVIF_EFFORT = 9;
  * @returns `true` if the error is an `Error` instance carrying a string `code`
  */
 function isNodeError(error: unknown,): error is Error & { code: string; } {
-  return error instanceof Error && 'code' in error && typeof error.code === 'string';
+  return (error instanceof Error) && ('code' in error) && ((typeof error.code) === 'string');
 }
 
 /**
@@ -39,14 +39,19 @@ function isNodeError(error: unknown,): error is Error & { code: string; } {
  *
  * @example
  * ```ts
- * if (await fileExists('image.png')) {
+ * if (await fileExists({ filePath: 'image.png' })) {
  *   // file is accessible
  * }
  * ```
  */
 export async function fileExists(
-  filePath: string,
-  l?: { error: (message: string,) => void; },
+  {
+    filePath,
+    l,
+  }: {
+    filePath: string;
+    l?: { error: (message: string,) => void; };
+  },
 ): Promise<boolean> {
   try {
     await access(filePath,);
@@ -54,7 +59,7 @@ export async function fileExists(
   }
   catch (error) {
     // Expected for missing files; log unexpected access errors for diagnostics
-    if (!isNodeError(error,) || error.code !== 'ENOENT') {
+    if ((!isNodeError(error,)) || (error.code !== 'ENOENT')) {
       /** Fallback to console so diagnostic still surfaces when no logger is supplied. */
       const target = l ?? console;
       target.error(
@@ -122,7 +127,7 @@ export async function maybeConvert(
     l: { info: (message: string,) => void; };
   },
 ): Promise<boolean> {
-  if (await fileExists(avifPath,))
+  if (await fileExists({ filePath: avifPath, },))
     return false;
 
   l.info(`converting ${filePath} -> ${avifPath}`,);

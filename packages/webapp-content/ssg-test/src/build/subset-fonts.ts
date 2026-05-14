@@ -295,20 +295,21 @@ async function subsetOne(
     basename,
   );
 
-  /** Reassignable buffer so the catch branch can throw a more actionable ENOENT message. */
-  let input: Buffer = Buffer.alloc(0,);
-  try {
-    input = await readFile(inputPath,);
-  }
-  catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      throw new Error(
-        `${inputPath} not found. Place the full upstream woff2 in ${SOURCE_FONTS_DIR}/ before running format:fonts.`,
-        { cause: error, },
-      );
+  /** Buffer loaded from disk; ENOENT is rethrown with an actionable hint pointing at the source dir. */
+  const input: Buffer = await (async function readFontInput(): Promise<Buffer> {
+    try {
+      return await readFile(inputPath,);
     }
-    throw error;
-  }
+    catch (error) {
+      if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT')) {
+        throw new Error(
+          `${inputPath} not found. Place the full upstream woff2 in ${SOURCE_FONTS_DIR}/ before running format:fonts.`,
+          { cause: error, },
+        );
+      }
+      throw error;
+    }
+  })();
 
   /** Original byte length captured before subsetting for the savings log line. */
   const before = input.byteLength;
@@ -349,7 +350,7 @@ async function subsetOne(
   );
 
   /** Compression ratio shown to operators verifying the subset actually shrinks the font. */
-  const savedPercent = Math.round((1 - after / before) * 100,);
+  const savedPercent = Math.round((1 - (after / before)) * 100,);
   l.info(
     `${basename}: ${before} → ${after} bytes (−${savedPercent}%)`,
   );

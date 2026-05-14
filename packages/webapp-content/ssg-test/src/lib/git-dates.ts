@@ -41,13 +41,19 @@ type CommandResult = Pick<Result, 'stdout' | 'stderr'>;
  *
  * @example
  * ```ts
- * const { stdout } = await runCapture('git', ['rev-parse', 'HEAD']);
+ * const { stdout } = await runCapture({ cmd: 'git', args: ['rev-parse', 'HEAD'] });
  * ```
  */
 async function runCapture(
-  cmd: string,
-  args: readonly string[],
-  { cwd, }: { cwd?: string; } = {},
+  {
+    cmd,
+    args,
+    cwd,
+  }: {
+    cmd: string;
+    args: readonly string[];
+    cwd?: string;
+  },
 ): Promise<CommandResult> {
   /** Destructured spawn result; only stdout and stderr are forwarded to the caller. */
   const {
@@ -79,11 +85,11 @@ async function runCapture(
 async function runGit(args: readonly string[],): Promise<CommandResult> {
   /** Repository root cached lookup pinning the git cwd. */
   const root = await findMonorepoRootCached();
-  return runCapture(
-    'git',
+  return runCapture({
+    cmd: 'git',
     args,
-    { cwd: root, },
-  );
+    cwd: root,
+  },);
 }
 
 //endregion Helpers
@@ -243,16 +249,16 @@ async function getRepoRelativePath(filePath: string,): Promise<string> {
     filePath,
   );
   /** Captured stdout containing the repo-relative path with forward slashes. */
-  const { stdout, } = await runCapture(
-    'git',
-    [
+  const { stdout, } = await runCapture({
+    cmd: 'git',
+    args: [
       'ls-files',
       '--full-name',
       '--',
       absolute,
     ],
-    { cwd: root, },
-  );
+    cwd: root,
+  },);
   return stdout.trim();
 }
 
@@ -288,14 +294,14 @@ async function ghApiFirstCommitDate(
   },
 ): Promise<string | undefined> {
   /** Captured stdout from `gh api` containing concatenated JSON pages. */
-  const { stdout, } = await runCapture(
-    'gh',
-    [
+  const { stdout, } = await runCapture({
+    cmd: 'gh',
+    args: [
       'api',
       '--paginate',
       `repos/${slug}/commits?path=${encodeURIComponent(repoRelPath,)}&per_page=100`,
     ],
-  );
+  },);
 
   /* `--paginate` concatenates JSON arrays with no separator between pages.
    * Parse by splitting on `][` and re-bracketing; single-page output parses
@@ -322,7 +328,7 @@ async function ghApiFirstCommitDate(
       /** Opening bracket re-inserted on every chunk except the first to rebuild the JSON array boundary. */
       const prefix = i === 0 ? '' : '[';
       /** Closing bracket re-inserted on every chunk except the last to rebuild the JSON array boundary. */
-      const suffix = i === arr.length - 1 ? '' : ']';
+      const suffix = i === (arr.length - 1) ? '' : ']';
       // oxlint-disable-next-line typescript-eslint(no-unsafe-return) -- see above
       return JSON.parse(`${prefix}${chunk}${suffix}`,);
     },) as GhCommit[])
@@ -406,8 +412,9 @@ export async function getPostDates(
     : localHistory.at(-1,);
 
   /** Final `published` ISO string, resolved through shallow/gh fallback when needed. */
-  let publishedIso: string | undefined = oldestLocalIso;
-  if (publishedIso === undefined && isShallow && latestIso !== undefined) {
+  const publishedIso: string | undefined = await (async function resolvePublishedIso(): Promise<string | undefined> {
+    if ((oldestLocalIso !== undefined) || (!isShallow) || (latestIso === undefined))
+      return oldestLocalIso;
     if (githubSlug === undefined) {
       throw new Error(
         `Shallow clone detected but no GitHub remote configured; cannot resolve published date for ${filePath}. Fetch with --unshallow or configure an origin on github.com.`,
@@ -415,16 +422,18 @@ export async function getPostDates(
     }
     /** Repo-relative form required by the GitHub commits API `path` query param. */
     const repoRelPath = await getRepoRelativePath(filePath,);
-    publishedIso = await ghApiFirstCommitDate({
+    /** ISO date returned by the gh-api fallback; undefined when the API has no commits for the path. */
+    const ghIso = await ghApiFirstCommitDate({
       slug: githubSlug,
       repoRelPath,
     },);
     l.info(
       `shallow clone: resolved published date for ${filePath} via gh api`,
     );
-  }
+    return ghIso;
+  })();
 
-  if (latestIso !== undefined && publishedIso !== undefined) {
+  if ((latestIso !== undefined) && (publishedIso !== undefined)) {
     return {
       published: new Date(publishedIso,),
       updated: new Date(latestIso,),

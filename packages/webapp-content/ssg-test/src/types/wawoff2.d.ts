@@ -29,5 +29,8 @@ declare module 'wawoff2' {
   };
 
   export default wawoff2;
-  export { compress, decompress, };
+  export {
+    compress,
+    decompress,
+  };
 }

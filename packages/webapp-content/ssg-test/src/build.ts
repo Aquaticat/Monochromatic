@@ -98,7 +98,7 @@ const effectiveCache = pipelineChanged ? undefined : cache;
  * Safe when HEAD is unchanged since the cache was written and the pipeline
  * has not changed (pipeline change already invalidates all cache entries).
  */
-const gitDatesReusable = !pipelineChanged && cache?.headSha === gitCtx.headSha;
+const gitDatesReusable = (!pipelineChanged) && (cache?.headSha === gitCtx.headSha);
 
 /** Map from absolute file path to resolved publication/update dates. */
 const datesByFilePath = new Map<string, ResolvedDates>();

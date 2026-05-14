@@ -111,9 +111,9 @@ export async function readCache(
   catch (error) {
     // ENOENT is expected on first build; everything else is worth logging
     /** Distinguishes the benign first-build case from genuine failures so logs stay quiet on the happy path. */
-    const isFileNotFound = error instanceof Error
-      && 'code' in error
-      && error.code === 'ENOENT';
+    const isFileNotFound = (error instanceof Error)
+      && ('code' in error)
+      && (error.code === 'ENOENT');
 
     if (!isFileNotFound) {
       l.error(
