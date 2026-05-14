@@ -19,12 +19,18 @@ The package is source-only.
 
 ### `prompt(message, defaultValue?)`
 
-Drop-in async replacement for `window.prompt` that uses an HTML `<dialog>`,
+Async replacement for `window.prompt` that uses an HTML `<dialog>`,
 so the dialog can be styled with CSS instead of locked to the browser's native chrome.
 Resolves to the entered string,
 or `null` when the user cancels (Esc, backdrop click, or the Cancel button).
 Unlike `window.prompt`, it never blocks the main thread;
 the returned promise lets other work continue while the dialog is open.
+
+It is not a true drop-in: `window.prompt` returns `''` when the user
+clicks OK with an empty field, but this helper resolves to `null`
+for both cancellation and empty-OK.
+Callers that need to distinguish "submitted blank" from "cancelled"
+should use a different control.
 
 ```ts
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
@@ -165,26 +171,34 @@ additional `a.redirectingTo` elements are ignored.
 
 ### `onLoadSetCssFromUrlParams(allowedProperties?)`
 
-Reads `location.search` and calls `documentElement.style.setProperty(key, value)`
-for every query-string pair.
+Reads `location.search` and calls
+`document.documentElement.style.setProperty(key, value)`
+verbatim for every query-string pair.
 When `allowedProperties` is supplied,
 only keys present in that iterable are applied;
 everything else is dropped.
 
+Each key passes through unchanged.
+A `--`-prefixed key (`--brand`) sets a CSS custom property on `:root`,
+visible to every `var(--brand)` read on the page.
+A standard CSS property name (`color`, `background-image`) sets an inline style on
+`<html>` itself, the same as writing it in a `<style>` block on the root element.
+A key that is neither a valid custom property nor a known CSS property is silently
+discarded by `setProperty`.
+
 The function is a thin bridge from
 "URL is the source of truth for theme"
 to
-"CSS custom properties are the source of truth for styles",
+"CSS state is the source of truth for styles",
 and is useful for shareable theme links,
 A/B-style configuration toggles,
 and quick visual debugging without a code change.
 Pass an allowlist whenever the URL is user-controllable;
 an open-ended call accepts every key in the query string,
 and is therefore an attack surface for crafted links
-that overwrite layout-critical custom properties.
-
-Expected markup: the values are applied to `:root`,
-so any custom-property reads (`var(--brand)`) anywhere in the page pick them up automatically.
+that overwrite layout-critical properties on `:root`
+(custom properties used by stylesheets, or standard properties like `display`
+that affect the entire document).
 
 ```ts
 import { onLoadSetCssFromUrlParams, } from '@monochromatic-dev/module-dom/ts/set/cssFromParam.ts';
@@ -195,14 +209,9 @@ onLoadSetCssFromUrlParams([
   '--radius',
 ],);
 
-// :root now has --brand and --radius set; CSS rules referencing var(--brand) update.
+// :root now has --brand and --radius set;
+// CSS rules referencing var(--brand) update.
 ```
-
-Note that the function writes whatever key it sees verbatim.
-Keys that are not already CSS custom-property names (no leading `--`)
-become invalid custom properties and are silently ignored by the browser;
-if you want plain property names converted to custom properties,
-prefix them in the URL.
 
 ## Design decisions
 
