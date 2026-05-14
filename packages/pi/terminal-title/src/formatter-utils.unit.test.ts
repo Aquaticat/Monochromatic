@@ -32,26 +32,26 @@ await describe({
         it({
           name: 'returns original string when within limit',
           fn: async () => {
-            expect(truncate('hello', 10,),).toBe('hello',);
+            expect(truncate({ value: 'hello', maxLength: 10, },),).toBe('hello',);
           },
         },),
         it({
           name: 'truncates and appends ellipsis when over limit',
           fn: async () => {
-            expect(truncate('hello world', 6,),).toBe('hello…',);
+            expect(truncate({ value: 'hello world', maxLength: 6, },),).toBe('hello…',);
           },
         },),
         it({
           name: 'returns original when exactly at limit',
           fn: async () => {
-            expect(truncate('hello', 5,),).toBe('hello',);
+            expect(truncate({ value: 'hello', maxLength: 5, },),).toBe('hello',);
           },
         },),
         it({
           name: 'handles single character truncation',
           fn: async () => {
-            expect(truncate('ab', 2,),).toBe('ab',);
-            expect(truncate('abc', 2,),).toBe('a…',);
+            expect(truncate({ value: 'ab', maxLength: 2, },),).toBe('ab',);
+            expect(truncate({ value: 'abc', maxLength: 2, },),).toBe('a…',);
           },
         },),
       ],
@@ -95,25 +95,25 @@ await describe({
         it({
           name: 'returns string value when present',
           fn: async () => {
-            expect(stringField({ path: '/foo.ts', }, 'path',),).toBe('/foo.ts',);
+            expect(stringField({ input: { path: '/foo.ts', }, key: 'path', },),).toBe('/foo.ts',);
           },
         },),
         it({
           name: 'returns undefined for missing key',
           fn: async () => {
-            expect(stringField({ path: '/foo.ts', }, 'missing',),).toBe(undefined,);
+            expect(stringField({ input: { path: '/foo.ts', }, key: 'missing', },),).toBe(undefined,);
           },
         },),
         it({
           name: 'returns undefined for non-string value',
           fn: async () => {
-            expect(stringField({ count: 42, }, 'count',),).toBe(undefined,);
+            expect(stringField({ input: { count: 42, }, key: 'count', },),).toBe(undefined,);
           },
         },),
         it({
           name: 'returns undefined for null value',
           fn: async () => {
-            expect(stringField({ path: null, }, 'path',),).toBe(undefined,);
+            expect(stringField({ input: { path: null, }, key: 'path', },),).toBe(undefined,);
           },
         },),
       ],

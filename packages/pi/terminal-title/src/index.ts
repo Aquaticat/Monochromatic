@@ -34,142 +34,6 @@ type TitleContext = {
   };
 };
 
-//region Event handlers
-
-/**
- * Handle `tool_execution_start`: set title to present tense tool activity.
- *
- * @param event - tool execution start event with toolName and args
- *
- * @param ctx - extension context providing `ui.setTitle()`
- */
-function handleToolExecutionStart(
-  event: {
-    toolName: string;
-    args?: unknown;
-  },
-  ctx: TitleContext,
-): void {
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
-  /** Event arguments coerced to a string-keyed record so the title builder can sample fields by name. */
-  const args = (event.args ?? {}) as Record<string, unknown>;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
-  ctx.ui.setTitle(
-    titleForEvent(
-      'tool_execution_start',
-      {
-        toolName: event.toolName,
-        args,
-      },
-    ),
-  );
-}
-
-/**
- * Handle `tool_execution_end`: set title to past tense tool activity.
- *
- * @param event - tool execution end event with toolName
- *
- * @param ctx - extension context providing `ui.setTitle()`
- */
-function handleToolExecutionEnd(
-  event: {
-    toolName: string;
-  },
-  ctx: TitleContext,
-): void {
-  ctx.ui.setTitle(
-    titleForEvent(
-      'tool_execution_end',
-      {
-        toolName: event.toolName,
-      },
-    ),
-  );
-}
-
-/**
- * Handle `session_start`: set title to session reason.
- *
- * @param event - session start event with reason
- *
- * @param ctx - extension context providing `ui.setTitle()`
- */
-function handleSessionStart(
-  event: SessionStartEvent,
-  ctx: TitleContext,
-): void {
-  ctx.ui.setTitle(
-    titleForEvent(
-      'session_start',
-      {
-        reason: event.reason,
-      },
-    ),
-  );
-}
-
-/**
- * Handle `session_shutdown`: set title to session ended.
- *
- * @param _event - session shutdown event (reason available but not shown)
- *
- * @param ctx - extension context providing `ui.setTitle()`
- */
-function handleSessionShutdown(
-  _event: SessionShutdownEvent,
-  ctx: TitleContext,
-): void {
-  ctx.ui.setTitle(
-    titleForEvent(
-      'session_shutdown',
-      {},
-    ),
-  );
-}
-
-/**
- * Handle `agent_end`: set title to "Stopped".
- *
- * @param _event - agent end event (messages available but not shown)
- *
- * @param ctx - extension context providing `ui.setTitle()`
- */
-function handleAgentEnd(
-  _event: AgentEndEvent,
-  ctx: TitleContext,
-): void {
-  ctx.ui.setTitle(
-    titleForEvent(
-      'agent_end',
-      {},
-    ),
-  );
-}
-
-/**
- * Handle `before_agent_start`: set title to user prompt text.
- *
- * @param event - before agent start event with prompt text
- *
- * @param ctx - extension context providing `ui.setTitle()`
- */
-function handleBeforeAgentStart(
-  event: BeforeAgentStartEvent,
-  ctx: TitleContext,
-): void {
-  ctx.ui.setTitle(
-    titleForEvent(
-      'before_agent_start',
-      {
-        prompt: event.prompt,
-      },
-    ),
-  );
-}
-
-//endregion
-
 //region Extension entry point
 
 /**
@@ -194,27 +58,105 @@ function handleBeforeAgentStart(
 export default function terminalTitle(pi: ExtensionAPI,): void {
   pi.on(
     'tool_execution_start',
-    handleToolExecutionStart,
+    function handleToolExecutionStart(
+      event: {
+        toolName: string;
+        args?: unknown;
+      },
+      ctx: TitleContext,
+    ) {
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
+      /** Event arguments coerced to a string-keyed record so the title builder can sample fields by name. */
+      const args = (event.args ?? {}) as Record<string, unknown>;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
+      ctx.ui.setTitle(
+        titleForEvent({
+          eventType: 'tool_execution_start',
+          data: {
+            toolName: event.toolName,
+            args,
+          },
+        },),
+      );
+    },
   );
   pi.on(
     'tool_execution_end',
-    handleToolExecutionEnd,
+    function handleToolExecutionEnd(
+      event: {
+        toolName: string;
+      },
+      ctx: TitleContext,
+    ) {
+      ctx.ui.setTitle(
+        titleForEvent({
+          eventType: 'tool_execution_end',
+          data: {
+            toolName: event.toolName,
+          },
+        },),
+      );
+    },
   );
   pi.on(
     'session_start',
-    handleSessionStart,
+    function handleSessionStart(
+      event: SessionStartEvent,
+      ctx: TitleContext,
+    ) {
+      ctx.ui.setTitle(
+        titleForEvent({
+          eventType: 'session_start',
+          data: {
+            reason: event.reason,
+          },
+        },),
+      );
+    },
   );
   pi.on(
     'session_shutdown',
-    handleSessionShutdown,
+    function handleSessionShutdown(
+      _event: SessionShutdownEvent,
+      ctx: TitleContext,
+    ) {
+      ctx.ui.setTitle(
+        titleForEvent({
+          eventType: 'session_shutdown',
+          data: {},
+        },),
+      );
+    },
   );
   pi.on(
     'agent_end',
-    handleAgentEnd,
+    function handleAgentEnd(
+      _event: AgentEndEvent,
+      ctx: TitleContext,
+    ) {
+      ctx.ui.setTitle(
+        titleForEvent({
+          eventType: 'agent_end',
+          data: {},
+        },),
+      );
+    },
   );
   pi.on(
     'before_agent_start',
-    handleBeforeAgentStart,
+    function handleBeforeAgentStart(
+      event: BeforeAgentStartEvent,
+      ctx: TitleContext,
+    ) {
+      ctx.ui.setTitle(
+        titleForEvent({
+          eventType: 'before_agent_start',
+          data: {
+            prompt: event.prompt,
+          },
+        },),
+      );
+    },
   );
 }
 

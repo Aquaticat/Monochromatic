@@ -80,11 +80,16 @@ function createMockContext() {
  * @returns the handler function
  */
 function getHandler(
-  registrations: RegistrationMap,
-  event: string,
+  {
+    registrations,
+    event,
+  }: {
+    registrations: RegistrationMap;
+    event: string;
+  },
 ): HandlerFn {
   const handlers = registrations.get(event,);
-  if (handlers === undefined || handlers.length === 0)
+  if ((handlers === undefined) || (handlers.length === 0))
     throw new Error(`No handler registered for event: ${event}`,);
   const [handler,] = handlers;
   if (handler === undefined)
@@ -136,7 +141,7 @@ await describe({
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
 
-        const handler = getHandler(registrations, 'tool_execution_start',);
+        const handler = getHandler({ registrations, event: 'tool_execution_start', },);
         handler(
           { toolName: 'bash', args: { command: 'npm test', }, },
           ctx,
@@ -158,7 +163,7 @@ await describe({
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
 
-        const handler = getHandler(registrations, 'tool_execution_end',);
+        const handler = getHandler({ registrations, event: 'tool_execution_end', },);
         handler(
           { toolName: 'read', result: {}, },
           ctx,
@@ -180,7 +185,7 @@ await describe({
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
 
-        const handler = getHandler(registrations, 'session_start',);
+        const handler = getHandler({ registrations, event: 'session_start', },);
         handler(
           { type: 'session_start', reason: 'startup', } as SessionStartEvent,
           ctx,
@@ -202,7 +207,7 @@ await describe({
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
 
-        const handler = getHandler(registrations, 'session_shutdown',);
+        const handler = getHandler({ registrations, event: 'session_shutdown', },);
         handler(
           { type: 'session_shutdown', reason: 'quit', } as SessionShutdownEvent,
           ctx,
@@ -224,7 +229,7 @@ await describe({
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
 
-        const handler = getHandler(registrations, 'agent_end',);
+        const handler = getHandler({ registrations, event: 'agent_end', },);
         handler(
           { type: 'agent_end', messages: [], } as AgentEndEvent,
           ctx,
@@ -246,7 +251,7 @@ await describe({
         terminalTitle(api,);
         const { ctx, titles, } = createMockContext();
 
-        const handler = getHandler(registrations, 'before_agent_start',);
+        const handler = getHandler({ registrations, event: 'before_agent_start', },);
         handler(
           {
             type: 'before_agent_start',

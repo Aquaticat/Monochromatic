@@ -33,7 +33,7 @@ await describe({
               name: 'pre: extracts and shortens command',
               fn: async () => {
                 expect(
-                  titleForTool('bash', { command: 'npm test', }, 'pre',),
+                  titleForTool({ toolName: 'bash', args: { command: 'npm test', }, tense: 'pre', },),
                 )
                   .toBe('npm test',);
               },
@@ -42,7 +42,7 @@ await describe({
               name: 'pre: strips env noise from command',
               fn: async () => {
                 expect(
-                  titleForTool('bash', { command: 'timeout 10 npm test', }, 'pre',),
+                  titleForTool({ toolName: 'bash', args: { command: 'timeout 10 npm test', }, tense: 'pre', },),
                 )
                   .toBe('npm test',);
               },
@@ -51,7 +51,7 @@ await describe({
               name: 'post: same shortening for past tense',
               fn: async () => {
                 expect(
-                  titleForTool('bash', { command: 'npm test', }, 'post',),
+                  titleForTool({ toolName: 'bash', args: { command: 'npm test', }, tense: 'post', },),
                 )
                   .toBe('npm test',);
               },
@@ -60,7 +60,7 @@ await describe({
               name: 'pre: falls back when command missing',
               fn: async () => {
                 expect(
-                  titleForTool('bash', {}, 'pre',),
+                  titleForTool({ toolName: 'bash', args: {}, tense: 'pre', },),
                 )
                   .toBe('Running command',);
               },
@@ -69,7 +69,7 @@ await describe({
               name: 'post: falls back when command missing',
               fn: async () => {
                 expect(
-                  titleForTool('bash', {}, 'post',),
+                  titleForTool({ toolName: 'bash', args: {}, tense: 'post', },),
                 )
                   .toBe('Ran command',);
               },
@@ -88,7 +88,7 @@ await describe({
               name: 'pre: shows Reading with filename',
               fn: async () => {
                 expect(
-                  titleForTool('read', { path: '/home/user/index.ts', }, 'pre',),
+                  titleForTool({ toolName: 'read', args: { path: '/home/user/index.ts', }, tense: 'pre', },),
                 )
                   .toBe('Reading index.ts',);
               },
@@ -97,7 +97,7 @@ await describe({
               name: 'post: shows Read with filename',
               fn: async () => {
                 expect(
-                  titleForTool('read', { path: '/app/config.json', }, 'post',),
+                  titleForTool({ toolName: 'read', args: { path: '/app/config.json', }, tense: 'post', },),
                 )
                   .toBe('Read config.json',);
               },
@@ -106,7 +106,7 @@ await describe({
               name: 'pre: falls back when path missing',
               fn: async () => {
                 expect(
-                  titleForTool('read', {}, 'pre',),
+                  titleForTool({ toolName: 'read', args: {}, tense: 'pre', },),
                 )
                   .toBe('Reading file',);
               },
@@ -125,7 +125,7 @@ await describe({
               name: 'pre: shows Editing with filename',
               fn: async () => {
                 expect(
-                  titleForTool('edit', { path: '/src/main.ts', }, 'pre',),
+                  titleForTool({ toolName: 'edit', args: { path: '/src/main.ts', }, tense: 'pre', },),
                 )
                   .toBe('Editing main.ts',);
               },
@@ -134,7 +134,7 @@ await describe({
               name: 'post: shows Edited with filename',
               fn: async () => {
                 expect(
-                  titleForTool('edit', { path: '/src/main.ts', }, 'post',),
+                  titleForTool({ toolName: 'edit', args: { path: '/src/main.ts', }, tense: 'post', },),
                 )
                   .toBe('Edited main.ts',);
               },
@@ -153,7 +153,7 @@ await describe({
               name: 'pre: shows Writing with filename',
               fn: async () => {
                 expect(
-                  titleForTool('write', { path: '/out/result.ts', }, 'pre',),
+                  titleForTool({ toolName: 'write', args: { path: '/out/result.ts', }, tense: 'pre', },),
                 )
                   .toBe('Writing result.ts',);
               },
@@ -162,7 +162,7 @@ await describe({
               name: 'post: shows Wrote with filename',
               fn: async () => {
                 expect(
-                  titleForTool('write', { path: '/out/result.ts', }, 'post',),
+                  titleForTool({ toolName: 'write', args: { path: '/out/result.ts', }, tense: 'post', },),
                 )
                   .toBe('Wrote result.ts',);
               },
@@ -181,7 +181,7 @@ await describe({
               name: 'pre: shows Searching with quoted pattern',
               fn: async () => {
                 expect(
-                  titleForTool('grep', { pattern: 'TODO', }, 'pre',),
+                  titleForTool({ toolName: 'grep', args: { pattern: 'TODO', }, tense: 'pre', },),
                 )
                   .toBe('Searching "TODO"',);
               },
@@ -190,7 +190,7 @@ await describe({
               name: 'post: shows Searched with quoted pattern',
               fn: async () => {
                 expect(
-                  titleForTool('grep', { pattern: 'FIXME', }, 'post',),
+                  titleForTool({ toolName: 'grep', args: { pattern: 'FIXME', }, tense: 'post', },),
                 )
                   .toBe('Searched "FIXME"',);
               },
@@ -199,7 +199,7 @@ await describe({
               name: 'pre: falls back when pattern missing',
               fn: async () => {
                 expect(
-                  titleForTool('grep', {}, 'pre',),
+                  titleForTool({ toolName: 'grep', args: {}, tense: 'pre', },),
                 )
                   .toBe('Searching',);
               },
@@ -218,7 +218,7 @@ await describe({
               name: 'pre: shows Finding with quoted pattern',
               fn: async () => {
                 expect(
-                  titleForTool('find', { pattern: '*.ts', }, 'pre',),
+                  titleForTool({ toolName: 'find', args: { pattern: '*.ts', }, tense: 'pre', },),
                 )
                   .toBe('Finding "*.ts"',);
               },
@@ -227,7 +227,7 @@ await describe({
               name: 'post: shows Found with quoted pattern',
               fn: async () => {
                 expect(
-                  titleForTool('find', { pattern: '*.json', }, 'post',),
+                  titleForTool({ toolName: 'find', args: { pattern: '*.json', }, tense: 'post', },),
                 )
                   .toBe('Found "*.json"',);
               },
@@ -246,7 +246,7 @@ await describe({
               name: 'pre: shows Listing with dirname',
               fn: async () => {
                 expect(
-                  titleForTool('ls', { path: '/home/user/src', }, 'pre',),
+                  titleForTool({ toolName: 'ls', args: { path: '/home/user/src', }, tense: 'pre', },),
                 )
                   .toBe('Listing src',);
               },
@@ -255,7 +255,7 @@ await describe({
               name: 'post: shows Listed with dirname',
               fn: async () => {
                 expect(
-                  titleForTool('ls', { path: '/home/user/src', }, 'post',),
+                  titleForTool({ toolName: 'ls', args: { path: '/home/user/src', }, tense: 'post', },),
                 )
                   .toBe('Listed src',);
               },
@@ -274,7 +274,7 @@ await describe({
               name: 'pre: shows Running with tool name',
               fn: async () => {
                 expect(
-                  titleForTool('mcp__weather', { city: 'Tokyo', }, 'pre',),
+                  titleForTool({ toolName: 'mcp__weather', args: { city: 'Tokyo', }, tense: 'pre', },),
                 )
                   .toBe('Running mcp__weather',);
               },
@@ -283,7 +283,7 @@ await describe({
               name: 'post: shows Ran with tool name',
               fn: async () => {
                 expect(
-                  titleForTool('mcp__weather', { city: 'Tokyo', }, 'post',),
+                  titleForTool({ toolName: 'mcp__weather', args: { city: 'Tokyo', }, tense: 'post', },),
                 )
                   .toBe('Ran mcp__weather',);
               },
@@ -304,26 +304,26 @@ await describe({
         it({
           name: 'tool_execution_start: prefixes title with π',
           fn: async () => {
-            const result = titleForEvent(
-              'tool_execution_start',
-              {
+            const result = titleForEvent({
+              eventType: 'tool_execution_start',
+              data: {
                 toolName: 'bash',
                 args: { command: 'npm test', },
               },
-            );
+            },);
             expect(result,).toBe('π npm test',);
           },
         },),
         it({
           name: 'tool_execution_end: prefixes with π and past tense',
           fn: async () => {
-            const result = titleForEvent(
-              'tool_execution_end',
-              {
+            const result = titleForEvent({
+              eventType: 'tool_execution_end',
+              data: {
                 toolName: 'read',
                 args: { path: '/home/user/index.ts', },
               },
-            );
+            },);
             expect(result,).toBe('π Read index.ts',);
           },
         },),
@@ -331,7 +331,7 @@ await describe({
           name: 'session_start: shows reason',
           fn: async () => {
             expect(
-              titleForEvent('session_start', { reason: 'startup', },),
+              titleForEvent({ eventType: 'session_start', data: { reason: 'startup', }, },),
             )
               .toBe('π Session startup',);
           },
@@ -340,7 +340,7 @@ await describe({
           name: 'session_start: defaults to "started" when no reason',
           fn: async () => {
             expect(
-              titleForEvent('session_start', {},),
+              titleForEvent({ eventType: 'session_start', data: {}, },),
             )
               .toBe('π Session started',);
           },
@@ -349,7 +349,7 @@ await describe({
           name: 'session_shutdown: shows Session ended',
           fn: async () => {
             expect(
-              titleForEvent('session_shutdown', {},),
+              titleForEvent({ eventType: 'session_shutdown', data: {}, },),
             )
               .toBe('π Session ended',);
           },
@@ -358,7 +358,7 @@ await describe({
           name: 'agent_end: shows Stopped',
           fn: async () => {
             expect(
-              titleForEvent('agent_end', {},),
+              titleForEvent({ eventType: 'agent_end', data: {}, },),
             )
               .toBe('π Stopped',);
           },
@@ -367,7 +367,7 @@ await describe({
           name: 'before_agent_start: shows user prompt',
           fn: async () => {
             expect(
-              titleForEvent('before_agent_start', { prompt: 'Refactor auth', },),
+              titleForEvent({ eventType: 'before_agent_start', data: { prompt: 'Refactor auth', }, },),
             )
               .toBe('π Refactor auth',);
           },
@@ -376,10 +376,10 @@ await describe({
           name: 'before_agent_start: truncates long prompts',
           fn: async () => {
             const longPrompt = 'a'.repeat(200,);
-            const result = titleForEvent(
-              'before_agent_start',
-              { prompt: longPrompt, },
-            );
+            const result = titleForEvent({
+              eventType: 'before_agent_start',
+              data: { prompt: longPrompt, },
+            },);
             expect(result.length <= MAX_TITLE_LENGTH,).toBe(true,);
             expect(result.startsWith(TITLE_PREFIX,),).toBe(true,);
           },
@@ -388,23 +388,23 @@ await describe({
           name: 'all titles respect MAX_TITLE_LENGTH',
           fn: async () => {
             const longCommand = 'a'.repeat(200,);
-            const result = titleForEvent(
-              'tool_execution_start',
-              {
+            const result = titleForEvent({
+              eventType: 'tool_execution_start',
+              data: {
                 toolName: 'bash',
                 args: { command: longCommand, },
               },
-            );
+            },);
             expect(result.length <= MAX_TITLE_LENGTH,).toBe(true,);
           },
         },),
         it({
           name: 'tool_execution_start with unknown tool falls back gracefully',
           fn: async () => {
-            const result = titleForEvent(
-              'tool_execution_start',
-              { toolName: 'custom_tool', },
-            );
+            const result = titleForEvent({
+              eventType: 'tool_execution_start',
+              data: { toolName: 'custom_tool', },
+            },);
             expect(result,).toBe('π Running custom_tool',);
           },
         },),

@@ -28,7 +28,10 @@ type TenseLabels = {
  */
 type ToolTitleEntry = {
   extract: (input: Record<string, unknown>,) => string | undefined;
-  format: (value: string, tense: 'pre' | 'post',) => string;
+  format: (
+    value: string,
+    tense: 'pre' | 'post',
+  ) => string;
   fallback: TenseLabels;
 };
 
@@ -44,13 +47,18 @@ type ToolTitleEntry = {
  *
  * @example
  * ```ts
- * truncate('a very long command string', 10) // 'a very lo…'
- * truncate('short', 10) // 'short'
+ * truncate({ value: 'a very long command string', maxLength: 10 }) // 'a very lo…'
+ * truncate({ value: 'short', maxLength: 10 }) // 'short'
  * ```
  */
 function truncate(
-  value: string,
-  maxLength: number,
+  {
+    value,
+    maxLength,
+  }: {
+    value: string;
+    maxLength: number;
+  },
 ): string {
   if (value.length <= maxLength)
     return value;
@@ -89,17 +97,22 @@ function shortPath(filePath: string,): string {
  *
  * @example
  * ```ts
- * stringField({ path: '/foo.ts' }, 'path') // '/foo.ts'
- * stringField({ path: '/foo.ts' }, 'missing') // undefined
+ * stringField({ input: { path: '/foo.ts' }, key: 'path' }) // '/foo.ts'
+ * stringField({ input: { path: '/foo.ts' }, key: 'missing' }) // undefined
  * ```
  */
 function stringField(
-  input: Record<string, unknown>,
-  key: string,
+  {
+    input,
+    key,
+  }: {
+    input: Record<string, unknown>;
+    key: string;
+  },
 ): string | undefined {
   /** Raw value pulled out of `input` by key; only strings are accepted, anything else becomes `undefined`. */
   const value = input[key];
-  if (typeof value === 'string')
+  if ((typeof value) === 'string')
     return value;
   return undefined;
 }
@@ -119,10 +132,10 @@ function stringField(
  */
 function field(key: string,): (input: Record<string, unknown>,) => string | undefined {
   return function extractField(input: Record<string, unknown>,) {
-    return stringField(
+    return stringField({
       input,
       key,
-    );
+    },);
   };
 }
 
@@ -142,7 +155,10 @@ function field(key: string,): (input: Record<string, unknown>,) => string | unde
  */
 function pathFormat(
   labels: TenseLabels,
-): (value: string, tense: 'pre' | 'post',) => string {
+): (
+  value: string,
+  tense: 'pre' | 'post',
+) => string {
   return function formatPath(
     v: string,
     tense: 'pre' | 'post',
@@ -166,16 +182,19 @@ function pathFormat(
  */
 function quotedFormat(
   labels: TenseLabels,
-): (value: string, tense: 'pre' | 'post',) => string {
+): (
+  value: string,
+  tense: 'pre' | 'post',
+) => string {
   return function formatQuoted(
     v: string,
     tense: 'pre' | 'post',
   ) {
     return `${labels[tense]} "${
-      truncate(
-        v,
-        MAX_PATTERN_LENGTH,
-      )
+      truncate({
+        value: v,
+        maxLength: MAX_PATTERN_LENGTH,
+      },)
     }"`;
   };
 }

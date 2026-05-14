@@ -49,15 +49,21 @@ type HandledEventType =
  *
  * @example
  * ```ts
- * titleForTool('bash', { command: 'npm test' }, 'pre') // 'npm test'
- * titleForTool('read', { path: '/home/user/index.ts' }, 'pre') // 'Reading index.ts'
- * titleForTool('mcp__weather', { city: 'Tokyo' }, 'pre') // 'Running mcp__weather'
+ * titleForTool({ toolName: 'bash', args: { command: 'npm test' }, tense: 'pre' }) // 'npm test'
+ * titleForTool({ toolName: 'read', args: { path: '/home/user/index.ts' }, tense: 'pre' }) // 'Reading index.ts'
+ * titleForTool({ toolName: 'mcp__weather', args: { city: 'Tokyo' }, tense: 'pre' }) // 'Running mcp__weather'
  * ```
  */
 function titleForTool(
-  toolName: string,
-  args: Record<string, unknown>,
-  tense: 'pre' | 'post',
+  {
+    toolName,
+    args,
+    tense,
+  }: {
+    toolName: string;
+    args: Record<string, unknown>;
+    tense: 'pre' | 'post';
+  },
 ): string {
   /** Lookup entry for the tool; `undefined` triggers the generic Running/Ran fallback below. */
   const entry = TOOL_TITLES[toolName];
@@ -87,18 +93,18 @@ function titleForTool(
  */
 const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string> = {
   tool_execution_start(data,) {
-    return titleForTool(
-      data.toolName ?? 'unknown',
-      data.args ?? {},
-      'pre',
-    );
+    return titleForTool({
+      toolName: data.toolName ?? 'unknown',
+      args: data.args ?? {},
+      tense: 'pre',
+    },);
   },
   tool_execution_end(data,) {
-    return titleForTool(
-      data.toolName ?? 'unknown',
-      data.args ?? {},
-      'post',
-    );
+    return titleForTool({
+      toolName: data.toolName ?? 'unknown',
+      args: data.args ?? {},
+      tense: 'post',
+    },);
   },
   session_start(data,) {
     return `Session ${data.reason ?? 'started'}`;
@@ -112,10 +118,10 @@ const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string
   before_agent_start(data,) {
     /** Pending user prompt sourced from the event; empty string when absent so truncate stays defined. */
     const prompt = data.prompt ?? '';
-    return truncate(
-      prompt,
-      MAX_TITLE_LENGTH - TITLE_PREFIX.length - 1,
-    );
+    return truncate({
+      value: prompt,
+      maxLength: MAX_TITLE_LENGTH - TITLE_PREFIX.length - 1,
+    },);
   },
 };
 
@@ -146,16 +152,24 @@ type EventData = {
  *
  * @example
  * ```ts
- * titleForEvent('tool_execution_start', { toolName: 'bash', args: { command: 'npm test' } })
+ * titleForEvent({
+ *   eventType: 'tool_execution_start',
+ *   data: { toolName: 'bash', args: { command: 'npm test' } },
+ * })
  * // 'π npm test'
  *
- * titleForEvent('session_start', { reason: 'startup' })
+ * titleForEvent({ eventType: 'session_start', data: { reason: 'startup' } })
  * // 'π Session startup'
  * ```
  */
 function titleForEvent(
-  eventType: HandledEventType,
-  data: EventData,
+  {
+    eventType,
+    data,
+  }: {
+    eventType: HandledEventType;
+    data: EventData;
+  },
 ): string {
   /** Body-text builder selected by event type; produces the user-visible payload before the prefix. */
   const builder = EVENT_BODY_BUILDERS[eventType];
@@ -163,10 +177,10 @@ function titleForEvent(
   const body = builder(data,);
   /** Prefixed title before truncation; the truncate call below enforces the terminal-friendly cap. */
   const title = `${TITLE_PREFIX} ${body}`;
-  return truncate(
-    title,
-    MAX_TITLE_LENGTH,
-  );
+  return truncate({
+    value: title,
+    maxLength: MAX_TITLE_LENGTH,
+  },);
 }
 
 export {
