@@ -72,16 +72,16 @@ export function renderStyles(): string {
         ],),
         'padding-block': cssRem(2,),
         'padding-inline': cssRem(2,),
-        'max-inline-size': cssRem(10 * (2 * 2 + 2),),
+        'max-inline-size': cssRem(10 * ((2 * 2) + 2),),
         'margin-inline': 'auto',
-        'line-height': cssNum(1 + 1 / 2,),
+        'line-height': cssNum(1 + (1 / 2),),
       },
     },),
 
     $({
       rule: 'h1',
       decls: {
-        'font-size': cssRem(1 + 1 / 2,),
+        'font-size': cssRem(1 + (1 / 2),),
         'margin-block-end': cssRem(1 / 2,),
       },
     },),
@@ -89,7 +89,7 @@ export function renderStyles(): string {
     $({
       rule: '.description',
       decls: {
-        'margin-block-end': cssRem(1 + 1 / 2,),
+        'margin-block-end': cssRem(1 + (1 / 2),),
         color: COLOR_MUTED,
       },
     },),
@@ -97,10 +97,10 @@ export function renderStyles(): string {
     $({
       rule: '.controls',
       decls: {
-        'margin-block-end': cssRem(1 + 1 / 2,),
+        'margin-block-end': cssRem(1 + (1 / 2),),
         display: 'flex',
         'flex-direction': 'column',
-        gap: cssRem(1 / 2 + 1 / 2 / 2,),
+        gap: cssRem((1 / 2) + (1 / 2 / 2),),
       },
     },),
 
@@ -121,7 +121,7 @@ export function renderStyles(): string {
       decls: {
         display: 'flex',
         'align-items': 'center',
-        gap: cssRem(1 / 2 + 1 / 2 / 2,),
+        gap: cssRem((1 / 2) + (1 / 2 / 2),),
       },
     },),
 
@@ -135,7 +135,7 @@ export function renderStyles(): string {
     $({
       rule: '.processed-preview',
       decls: {
-        'font-size': cssRem(1 - 1 / 2 / 2 / 2,),
+        'font-size': cssRem(1 - (1 / 2 / 2 / 2),),
         color: COLOR_MUTED_LIGHT,
         'font-family': 'monospace',
         'word-break': 'break-all',
@@ -169,7 +169,7 @@ export function renderStyles(): string {
     $({
       rule: '.column p.note',
       decls: {
-        'font-size': cssRem(1 / 2 + 1 / 2 / 2,),
+        'font-size': cssRem((1 / 2) + (1 / 2 / 2),),
         color: COLOR_FAINT,
         'margin-block-end': cssRem(1 / 2,),
       },
