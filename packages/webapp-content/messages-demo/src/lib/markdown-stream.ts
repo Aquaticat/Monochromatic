@@ -87,10 +87,12 @@ function isCodeFence(line: string,): boolean {
  * ```
  */
 export function* segmentBlocks(md: string,): Generator<string, void, void> {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming block segmenter: `buffer` accumulates lines until the blank-line boundary cuts a block; `inFence` toggles on each code-fence line so blanks inside fences do not split */
   /** Accumulator for the current block; yielded by `flush` when a blank-line boundary is reached. */
   let buffer = '';
   /** Tracks whether the walker is currently inside a fenced code block. */
   let inFence = false;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /**
    * Closes the running buffer, yielding it if non-empty, and resets.
@@ -126,7 +128,7 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
       continue;
     }
 
-    if (isBlank && !inFence) {
+    if (isBlank && (!inFence)) {
       yield* flush();
       continue;
     }
@@ -156,10 +158,12 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
  * ```
  */
 export function* renderChunks(md: string,): Generator<RenderedChunk, void, void> {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming chunker: `pendingMd` and `pendingHtml` accumulate across `segmentBlocks` iterations until the soft- or hard-cap threshold triggers an `emit` flush */
   /** Accumulator of source markdown across blocks; flushed at chunk boundaries. */
   let pendingMd = '';
   /** Accumulator of rendered HTML; the soft-target threshold compares against its length. */
   let pendingHtml = '';
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /**
    * Emits the accumulated chunk and resets the buffers.
@@ -203,7 +207,7 @@ export function* renderChunks(md: string,): Generator<RenderedChunk, void, void>
 
     // If adding this block would push the running HTML past the hard cap,
     // flush the pending chunk before adding.
-    if (pendingHtml.length + blockHtml.length > CHUNK_HARD_CAP_BYTES)
+    if ((pendingHtml.length + blockHtml.length) > CHUNK_HARD_CAP_BYTES)
       yield* emit();
 
     pendingMd += block;
@@ -234,14 +238,17 @@ export function* renderChunks(md: string,): Generator<RenderedChunk, void, void>
  *
  * @example
  * ```ts
- * extractPreview('# Hello\n\nWorld', 50); // 'Hello World'
- * extractPreview('```\ncode\n```', 50);   // '(no text preview)'
+ * extractPreview({ md: '# Hello\n\nWorld', maxLength: 50 }); // 'Hello World'
+ * extractPreview({ md: '```\ncode\n```', maxLength: 50 });   // '(no text preview)'
  * ```
  */
-export function extractPreview(
-  md: string,
-  maxLength: number,
-): string {
+export function extractPreview({
+  md,
+  maxLength,
+}: {
+  md: string;
+  maxLength: number;
+},): string {
   /** Successively stripped form; built up by chained replaces before length check. */
   const stripped = md
     .replaceAll(

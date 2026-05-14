@@ -44,19 +44,26 @@ const {
   ORPHAN_TTL_MS,
 } = sweepMod;
 
-let counter = 0;
-
 /**
  * Generates a deterministic but unique draft id.
  *
  * @param tag - short tag identifying the test, surfaced in the id
  *
  * @returns globally-unique draft id
+ *
+ * @example
+ * ```ts
+ * uniqueId('orphan'); // 't-orphan-1'
+ * uniqueId('orphan'); // 't-orphan-2'
+ * ```
  */
-function uniqueId(tag: string,): string {
-  counter += 1;
-  return `t-${tag}-${String(counter,)}`;
-}
+const uniqueId = (function makeUniqueId() {
+  let counter = 0;
+  return function nextId(tag: string,): string {
+    counter += 1;
+    return `t-${tag}-${String(counter,)}`;
+  };
+})();
 
 /**
  * Reads back whether a draft row still exists.
@@ -66,10 +73,10 @@ function uniqueId(tag: string,): string {
  * @returns `true` when the row was found
  */
 async function draftExists(draftId: string,): Promise<boolean> {
-  const row = await get<{ id: string; }>(
-    'SELECT id FROM drafts WHERE id = ?',
-    [draftId,],
-  );
+  const row = await get<{ id: string; }>({
+    sql: 'SELECT id FROM drafts WHERE id = ?',
+    params: [draftId,],
+  },);
   return row !== undefined;
 }
 
@@ -81,10 +88,10 @@ async function draftExists(draftId: string,): Promise<boolean> {
  * @returns `true` when the row was found
  */
 async function messageRowExists(messageId: number,): Promise<boolean> {
-  const row = await get<{ id: number; }>(
-    'SELECT id FROM messages WHERE id = ?',
-    [messageId,],
-  );
+  const row = await get<{ id: number; }>({
+    sql: 'SELECT id FROM messages WHERE id = ?',
+    params: [messageId,],
+  },);
   return row !== undefined;
 }
 
@@ -107,13 +114,13 @@ await describe({
             },);
             // Backdate the row so the sweep cutoff catches it.
             const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
-            await run(
-              'UPDATE drafts SET updated_at = ? WHERE id = ?',
-              [
+            await run({
+              sql: 'UPDATE drafts SET updated_at = ? WHERE id = ?',
+              params: [
                 stale,
                 draftId,
               ],
-            );
+            },);
             await sweepOrphans({ userId: 'user-a', },);
             expect(await draftExists(draftId,),).toBe(false,);
           },
@@ -160,13 +167,13 @@ await describe({
             },);
             expect(messageId,).not.toBeNull();
             const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
-            await run(
-              'UPDATE drafts SET updated_at = ? WHERE id = ?',
-              [
+            await run({
+              sql: 'UPDATE drafts SET updated_at = ? WHERE id = ?',
+              params: [
                 stale,
                 draftId,
               ],
-            );
+            },);
             await sweepOrphans({ userId: null, },);
             expect(await draftExists(draftId,),).toBe(true,);
           },
@@ -188,14 +195,14 @@ await describe({
               parentId: null,
             },);
             const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
-            await run(
-              'UPDATE drafts SET updated_at = ? WHERE id IN (?, ?)',
-              [
+            await run({
+              sql: 'UPDATE drafts SET updated_at = ? WHERE id IN (?, ?)',
+              params: [
                 stale,
                 aDraft,
                 bDraft,
               ],
-            );
+            },);
             await sweepOrphans({ userId: 'user-a', },);
             expect(await draftExists(aDraft,),).toBe(false,);
             expect(await draftExists(bDraft,),).toBe(true,);
@@ -224,13 +231,13 @@ await describe({
             const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
             for (const id of ids) {
               // oxlint-disable-next-line no-await-in-loop
-              await run(
-                'UPDATE drafts SET updated_at = ? WHERE id = ?',
-                [
+              await run({
+                sql: 'UPDATE drafts SET updated_at = ? WHERE id = ?',
+                params: [
                   stale,
                   id,
                 ],
-              );
+              },);
             }
             await sweepOrphans({ userId: 'user-a', },);
             let surviving = 0;
@@ -294,17 +301,17 @@ await describe({
                 charCount: 2,
               },
             },);
-            await run(
-              'UPDATE messages SET draft_id = ?, revision = 2 WHERE id = ?',
-              [
+            await run({
+              sql: 'UPDATE messages SET draft_id = ?, revision = 2 WHERE id = ?',
+              params: [
                 child,
                 messageId,
               ],
-            );
-            await run(
-              'UPDATE drafts SET finalized = 1 WHERE id = ?',
-              [child,],
-            );
+            },);
+            await run({
+              sql: 'UPDATE drafts SET finalized = 1 WHERE id = ?',
+              params: [child,],
+            },);
 
             // Soft-delete and backdate.
             const out = await softDeleteMessage({
@@ -313,26 +320,26 @@ await describe({
             },);
             expect(out.kind,).toBe('ok',);
             const stale = Date.now() - DELETED_TTL_MS - 1_000;
-            await run(
-              'UPDATE messages SET deleted_at = ? WHERE id = ?',
-              [
+            await run({
+              sql: 'UPDATE messages SET deleted_at = ? WHERE id = ?',
+              params: [
                 stale,
                 messageId,
               ],
-            );
+            },);
             await sweepDeleted();
 
             expect(await messageRowExists(messageId,),).toBe(false,);
             expect(await draftExists(root,),).toBe(false,);
             expect(await draftExists(child,),).toBe(false,);
             // FK cascade reaps chunks too.
-            const remaining = await get<{ count: number; }>(
-              'SELECT COUNT(*) AS count FROM chunks WHERE draft_id IN (?, ?)',
-              [
+            const remaining = await get<{ count: number; }>({
+              sql: 'SELECT COUNT(*) AS count FROM chunks WHERE draft_id IN (?, ?)',
+              params: [
                 root,
                 child,
               ],
-            );
+            },);
             expect(remaining?.count,).toBe(0,);
           },
         },),
@@ -457,13 +464,13 @@ await describe({
                 userId: 'user-a',
               },);
               // oxlint-disable-next-line no-await-in-loop
-              await run(
-                'UPDATE messages SET deleted_at = ? WHERE id = ?',
-                [
+              await run({
+                sql: 'UPDATE messages SET deleted_at = ? WHERE id = ?',
+                params: [
                   stale,
                   id,
                 ],
-              );
+              },);
             }
             await sweepDeleted();
             let alive = 0;

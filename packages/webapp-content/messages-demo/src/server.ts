@@ -81,7 +81,7 @@ function resolvePort(): number {
   const argumentPort = getArgumentValue('port',);
   /** Fallback environment value; used when the CLI did not supply one. */
   const environmentPort = process.env.PORT;
-  /** Resolved precedence: CLI > env; undefined falls through to the default. */
+  /** Resolved precedence: CLI \> env; undefined falls through to the default. */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
@@ -128,10 +128,10 @@ app.get(
     async function handleFeed(event,) {
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
-      return await renderFeed(
-        null,
+      return await renderFeed({
+        cursorToken: null,
         ifNoneMatch,
-      );
+      },);
     },
   ),
 );
@@ -141,16 +141,16 @@ app.get(
   defineHandler(
     async function handleFeedPage(event,) {
       /** Required `:cursor` path param; bails to 400 when missing. */
-      const cursor = requireParam(
-        event.context.params,
-        'cursor',
-      );
+      const cursor = requireParam({
+        params: event.context.params,
+        name: 'cursor',
+      },);
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
-      return await renderFeed(
-        cursor,
+      return await renderFeed({
+        cursorToken: cursor,
         ifNoneMatch,
-      );
+      },);
     },
   ),
 );
@@ -160,10 +160,10 @@ app.get(
   defineHandler(
     function handleMessageRoot(event,) {
       /** Parsed `:id` param; redirect target uses this in the chunk-0 URL. */
-      const id = parseId(
-        event.context.params,
-        'id',
-      );
+      const id = parseId({
+        params: event.context.params,
+        name: 'id',
+      },);
       return redirect(
         `/m/${String(id,)}/c/0`,
         HTTP_FOUND,
@@ -177,25 +177,23 @@ app.get(
   defineHandler(
     async function handleMessageChunk(event,) {
       /** Parsed `:id` param; consumed by `renderMessageChunk` as the message id. */
-      const id = parseId(
-        event.context.params,
-        'id',
-      );
+      const id = parseId({
+        params: event.context.params,
+        name: 'id',
+      },);
       /** Parsed `:idx` param; chunk index inside the message. */
-      const idx = parseId(
-        event.context.params,
-        'idx',
-        0,
-      );
+      const idx = parseId({
+        params: event.context.params,
+        name: 'idx',
+        min: 0,
+      },);
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
-      return await renderMessageChunk(
-        {
-          messageId: id,
-          chunkIndex: idx,
-        },
+      return await renderMessageChunk({
+        messageId: id,
+        chunkIndex: idx,
         ifNoneMatch,
-      );
+      },);
     },
   ),
 );
@@ -205,25 +203,23 @@ app.get(
   defineHandler(
     async function handleChunkRaw(event,) {
       /** Parsed `:id` param; consumed by `renderChunkRaw` as the message id. */
-      const id = parseId(
-        event.context.params,
-        'id',
-      );
+      const id = parseId({
+        params: event.context.params,
+        name: 'id',
+      },);
       /** Parsed `:idx` param; chunk index inside the message. */
-      const idx = parseId(
-        event.context.params,
-        'idx',
-        0,
-      );
+      const idx = parseId({
+        params: event.context.params,
+        name: 'idx',
+        min: 0,
+      },);
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
-      return await renderChunkRaw(
-        {
-          messageId: id,
-          chunkIndex: idx,
-        },
+      return await renderChunkRaw({
+        messageId: id,
+        chunkIndex: idx,
         ifNoneMatch,
-      );
+      },);
     },
   ),
 );
@@ -233,25 +229,23 @@ app.get(
   defineHandler(
     async function handleChunkMd(event,) {
       /** Parsed `:id` param; consumed by `renderChunkMd` as the message id. */
-      const id = parseId(
-        event.context.params,
-        'id',
-      );
+      const id = parseId({
+        params: event.context.params,
+        name: 'id',
+      },);
       /** Parsed `:idx` param; chunk index inside the message. */
-      const idx = parseId(
-        event.context.params,
-        'idx',
-        0,
-      );
+      const idx = parseId({
+        params: event.context.params,
+        name: 'idx',
+        min: 0,
+      },);
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
-      return await renderChunkMd(
-        {
-          messageId: id,
-          chunkIndex: idx,
-        },
+      return await renderChunkMd({
+        messageId: id,
+        chunkIndex: idx,
         ifNoneMatch,
-      );
+      },);
     },
   ),
 );
@@ -261,10 +255,10 @@ app.get(
   defineHandler(
     async function handleEdit(event,) {
       /** Parsed `:id` param; consumed by `renderEditPage`. */
-      const id = parseId(
-        event.context.params,
-        'id',
-      );
+      const id = parseId({
+        params: event.context.params,
+        name: 'id',
+      },);
       return await renderEditPage(id,);
     },
   ),
@@ -347,22 +341,27 @@ l.info(`listening on http://localhost:${String(port,)}`,);
 /**
  * Extracts a path parameter, throwing a 400 when missing.
  *
- * @param params - h3 route parameter record
- *
- * @param name - parameter name
+ * @param input - h3 route parameter record and the parameter name
  *
  * @returns parameter value
+ *
+ * @example
+ * ```ts
+ * const cursor = requireParam({ params: event.context.params, name: 'cursor' });
+ * ```
  */
 function requireParam(
-  params: Record<string, string> | undefined,
-  name: string,
+  input: {
+    params: Record<string, string> | undefined;
+    name: string;
+  },
 ): string {
   /** Indexed once so the empty-string check and the return both reference the same value. */
-  const value = params?.[name];
-  if (value === undefined || value === '') {
+  const value = input.params?.[input.name];
+  if ((value === undefined) || (value === '')) {
     throw new HTTPError({
       status: HTTP_BAD_REQUEST,
-      message: `missing route param: ${name}`,
+      message: `missing route param: ${input.name}`,
     },);
   }
   return value;
@@ -372,33 +371,39 @@ function requireParam(
  * Parses a route parameter as a non-negative integer. Used for both
  * message ids and chunk indices.
  *
- * @param params - h3 route parameter record
- *
- * @param name - parameter name
- *
- * @param min - minimum acceptable value (1 for ids, 0 for indices)
+ * @param input - h3 route parameter record, the parameter name, and the
+ *                minimum acceptable value (1 for ids, 0 for indices)
  *
  * @returns parsed integer
+ *
+ * @example
+ * ```ts
+ * const id = parseId({ params: event.context.params, name: 'id', min: 1 });
+ * ```
  */
 function parseId(
-  params: Record<string, string> | undefined,
-  name: string,
-  min = 1,
+  input: {
+    params: Record<string, string> | undefined;
+    name: string;
+    min?: number;
+  },
 ): number {
+  /** Defaults to `1`; ids start at 1, chunk indices pass `min: 0`. */
+  const min = input.min ?? 1;
   /** Raw param string forwarded into `Number.parseInt`. */
-  const raw = requireParam(
-    params,
-    name,
-  );
+  const raw = requireParam({
+    params: input.params,
+    name: input.name,
+  },);
   /** Parsed integer; non-finite or below-minimum triggers a 400 below. */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,
   );
-  if (!Number.isFinite(parsed,) || parsed < min) {
+  if ((!Number.isFinite(parsed,)) || (parsed < min)) {
     throw new HTTPError({
       status: HTTP_BAD_REQUEST,
-      message: `invalid ${name}: ${raw}`,
+      message: `invalid ${input.name}: ${raw}`,
     },);
   }
   return parsed;

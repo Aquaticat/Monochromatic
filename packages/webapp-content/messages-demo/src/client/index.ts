@@ -14,11 +14,13 @@
  * `attachComposer` registers its own submit handler.
  */
 
+/* oxlint-disable no-restricted-syntax/no-module-root-let -- bootstrap flags: `composerBooted` is flipped once when the composer module finishes loading; `pendingSubmit` is set by the submit interceptor when a click arrives before bootstrap and cleared inside `bootComposer` after redispatch */
 /** Whether the composer module has been loaded and bootstrapped. */
 let composerBooted = false;
 
 /** Pending submit event waiting for the composer to bootstrap. */
 let pendingSubmit = false;
+/* oxlint-enable no-restricted-syntax/no-module-root-let */
 
 /**
  * One-shot loader: dynamic-imports the composer module, calls its

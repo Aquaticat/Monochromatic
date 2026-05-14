@@ -37,30 +37,31 @@ import { renderPage, } from './_layout.ts';
 /**
  * Renders one page of the feed.
  *
- * @param cursorToken - opaque cursor from the URL, or `null` for first page
- *
- * @param ifNoneMatch - request `If-None-Match` header for ETag negotiation
+ * @param input - opaque cursor from the URL (`null` for first page) and
+ *                the request `If-None-Match` header for ETag negotiation
  *
  * @returns HTTP `Response`
  *
  * @example
  * ```ts
- * await renderFeed(null, null);                  // first page
- * await renderFeed('MTcxNDA4MDAwMDA6MTA0Mg', null); // older page
+ * await renderFeed({ cursorToken: null, ifNoneMatch: null });                  // first page
+ * await renderFeed({ cursorToken: 'MTcxNDA4MDAwMDA6MTA0Mg', ifNoneMatch: null }); // older page
  * ```
  */
 export async function renderFeed(
-  cursorToken: string | null,
-  ifNoneMatch: string | null,
+  input: {
+    cursorToken: string | null;
+    ifNoneMatch: string | null;
+  },
 ): Promise<Response> {
   /** Aggregate signature fed into the ETag; matches against `If-None-Match` for 304s. */
   const aggregates = await feedAggregates();
   /** Computed ETag; sent on both 200 and 304 responses. */
   const etag = etagForFeed(aggregates,);
-  if (matches(
-    ifNoneMatch,
+  if (matches({
+    ifNoneMatch: input.ifNoneMatch,
     etag,
-  )) {
+  },)) {
     return new Response(
       null,
       {
@@ -74,7 +75,7 @@ export async function renderFeed(
   }
 
   /** Decoded keyset cursor; null on the first page or when the token is absent. */
-  const cursor = cursorToken === null ? null : decodeCursor(cursorToken,);
+  const cursor = input.cursorToken === null ? null : decodeCursor(input.cursorToken,);
   /** Materialised page of feed entries used to render the cards and the pagination link. */
   const messages = await listFeed(cursor,);
   /** Rendered feed body HTML; embedded in the layout's main slot. */
@@ -183,17 +184,11 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
     },)
     .join('',);
 
-  /** Pagination HTML; empty when the page is incomplete. */
-  let pagination = '';
   /** Last entry on the page; cursor seed for the "older" link. */
   const last = messages.at(-1,);
-  if (messages.length === FEED_PAGE_SIZE && last !== undefined) {
-    /** Opaque cursor pointing to the next page. */
-    const next = encodeCursor({
-      createdAt: last.createdAt,
-      id: last.id,
-    },);
-    pagination = h({
+  /** Pagination HTML; empty when the page is incomplete. */
+  const pagination = ((messages.length === FEED_PAGE_SIZE) && (last !== undefined))
+    ? h({
       tag: 'nav',
       attrs: {
         class: 'feed-pagination',
@@ -204,13 +199,16 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
           tag: 'a',
           attrs: {
             class: 'pagination-older',
-            href: `/p/${next}`,
+            href: `/p/${encodeCursor({
+              createdAt: last.createdAt,
+              id: last.id,
+            },)}`,
           },
           text: 'older messages »',
         },),
       ],
-    },);
-  }
+    },)
+    : '';
 
   return h({
     tag: 'section',
@@ -253,7 +251,7 @@ function formatRelative(timestamp: number,): string {
     return `${String(Math.floor(deltaSeconds / SECONDS_PER_MINUTE,),)}m ago`;
   if (deltaSeconds < SECONDS_PER_DAY)
     return `${String(Math.floor(deltaSeconds / SECONDS_PER_HOUR,),)}h ago`;
-  if (deltaSeconds < SECONDS_PER_DAY * ISO_DATE_THRESHOLD_DAYS)
+  if (deltaSeconds < (SECONDS_PER_DAY * ISO_DATE_THRESHOLD_DAYS))
     return `${String(Math.floor(deltaSeconds / SECONDS_PER_DAY,),)}d ago`;
   return new Date(timestamp,).toISOString().slice(
     0,

@@ -50,17 +50,23 @@ function emptyMetrics(): CompilePipelineMetrics {
 /**
  * Renders one row of the overlay as an HTML fragment.
  *
- * @param label - row label shown on the left
- *
- * @param value - value shown on the right
+ * @param input - label shown on the left and value shown on the right
  *
  * @returns innerHTML fragment
+ *
+ * @example
+ * ```ts
+ * row({ label: 'compile p50', value: '12.4 ms' });
+ * // -> '<div class="composer-metrics-row"><span>compile p50</span><span>12.4 ms</span></div>'
+ * ```
  */
 function row(
-  label: string,
-  value: string,
+  input: {
+    label: string;
+    value: string;
+  },
 ): string {
-  return `<div class="composer-metrics-row"><span>${label}</span><span>${value}</span></div>`;
+  return `<div class="composer-metrics-row"><span>${input.label}</span><span>${input.value}</span></div>`;
 }
 
 /**
@@ -91,37 +97,37 @@ function mountMetricsOverlay(
     /** Snapshot of state metrics, falling back to empty when not yet seeded. */
     const m = input.state.metrics ?? emptyMetrics();
     overlay.innerHTML = `${
-      row(
-        'compile p50',
-        `${m.compileMsMedian.toFixed(1,)} ms`,
-      )
+      row({
+        label: 'compile p50',
+        value: `${m.compileMsMedian.toFixed(1,)} ms`,
+      },)
     }${
-      row(
-        'compile p99',
-        `${m.compileMsP99.toFixed(1,)} ms`,
-      )
+      row({
+        label: 'compile p99',
+        value: `${m.compileMsP99.toFixed(1,)} ms`,
+      },)
     }${
-      row(
-        'samples',
-        String(m.compileSamples,),
-      )
+      row({
+        label: 'samples',
+        value: String(m.compileSamples,),
+      },)
     }${
-      row(
-        'put queue max',
-        String(m.putQueueDepthMax,),
-      )
+      row({
+        label: 'put queue max',
+        value: String(m.putQueueDepthMax,),
+      },)
     }${
-      row(
-        'wasted puts',
-        String(m.wastedPuts,),
-      )
+      row({
+        label: 'wasted puts',
+        value: String(m.wastedPuts,),
+      },)
     }${
-      row(
-        'transition',
-        m.transitionMs === null
+      row({
+        label: 'transition',
+        value: m.transitionMs === null
           ? 'n/a'
           : `${m.transitionMs.toFixed(1,)} ms`,
-      )
+      },)
     }`;
   };
 }
@@ -142,7 +148,7 @@ type WorkerMetricsPayload = {
  * @returns the payload, or null when unrelated
  */
 function asMetricsPayload(data: unknown,): WorkerMetricsPayload | null {
-  if (typeof data !== 'object' || data === null || !('kind' in data))
+  if (((typeof data) !== 'object') || (data === null) || (!('kind' in data)))
     return null;
   /** Narrowed alias so the `kind` check reads `message.kind` rather than a type-cast. */
   const message: { kind: unknown; } = data;
@@ -171,7 +177,7 @@ function foldCounters(
 ): CompilePipelineMetrics {
   /** Running snapshot; replaced with widened copies as each payload field folds in. */
   let next = input.current;
-  if (typeof input.payload.maxPutQueueDepth === 'number') {
+  if ((typeof input.payload.maxPutQueueDepth) === 'number') {
     next = {
       ...next,
       putQueueDepthMax: Math.max(
@@ -180,7 +186,7 @@ function foldCounters(
       ),
     };
   }
-  if (typeof input.payload.wastedPuts === 'number') {
+  if ((typeof input.payload.wastedPuts) === 'number') {
     next = {
       ...next,
       wastedPuts: next.wastedPuts + input.payload.wastedPuts,
@@ -259,7 +265,7 @@ export function attachMetricsOverlay(
         return;
       if (Array.isArray(payload.compileMs,)) {
         for (const sample of payload.compileMs) {
-          if (typeof sample !== 'number')
+          if ((typeof sample) !== 'number')
             continue;
           samples.push(sample,);
           if (samples.length > SAMPLE_BUFFER)

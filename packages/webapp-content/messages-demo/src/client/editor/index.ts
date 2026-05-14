@@ -186,8 +186,10 @@ export function mountEditor(
       reject: (error: Error,) => void;
     }
   >();
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- per-instance request counter: incremented by every `request()` call and read inside `dispatch` to correlate replies; closure scope is exactly the editor instance */
   /** Monotonically incrementing request id; correlates worker replies with their resolvers. */
   let nextId = 1;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   worker.addEventListener(
     'message',
@@ -257,11 +259,13 @@ export function mountEditor(
   } satisfies WorkerInbound,);
   /* oxlint-enable eslint-plugin-unicorn/require-post-message-target-origin */
 
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- coordinator state: `mirror` follows the worker buffer across every applied changeset; `inflight` is the rolling promise chain that `flushed()` and `apply()` extend so concurrent calls observe a single tail */
   /** Main-thread mirror of the worker buffer. */
   let mirror = initialText;
 
   /** In-flight worker requests; `flushed()` waits on this. */
   let inflight: Promise<unknown> = Promise.resolve();
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /** Subscribers for `on('change', ...)`. */
   const changeListeners: ChangeListener[] = [];

@@ -67,10 +67,10 @@ export async function promoteToTier3(
     newDraftId,
     localChunks: [],
   };
-  setStatus(
-    input.status,
-    'tier 3 promotion: chunking...',
-  );
+  setStatus({
+    status: input.status,
+    message: 'tier 3 promotion: chunking...',
+  },);
   /** Captured pre-compile so the metrics hook can report the full surface-swap latency. */
   const transitionStart = performance.now();
   /** Holds the worker-produced chunks; consumed twice (length check, then map+writeBody). */
@@ -86,10 +86,10 @@ export async function promoteToTier3(
     input.state.tier = 2;
     /* oxlint-enable eslint/no-magic-numbers */
     input.state.tier3 = null;
-    setStatus(
-      input.status,
-      'tier 3 promotion aborted (no chunks)',
-    );
+    setStatus({
+      status: input.status,
+      message: 'tier 3 promotion aborted (no chunks)',
+    },);
     return;
   }
   /** Resolved once so the create-draft POST and any subsequent outbox PUTs share the same identity. */
@@ -133,8 +133,8 @@ export async function promoteToTier3(
     status: input.status,
     messageId: null,
   },);
-  setStatus(
-    input.status,
-    `tier 3: editing chunk 1 of ${String(compiled.chunks.length,)}`,
-  );
+  setStatus({
+    status: input.status,
+    message: `tier 3: editing chunk 1 of ${String(compiled.chunks.length,)}`,
+  },);
 }

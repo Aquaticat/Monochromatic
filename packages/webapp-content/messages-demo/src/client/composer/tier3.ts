@@ -122,7 +122,7 @@ export function updateTier3Nav(
   if (prev !== null)
     prev.disabled = currentSeq === 0;
   if (next !== null)
-    next.disabled = currentSeq >= chunkCount - 1;
+    next.disabled = currentSeq >= (chunkCount - 1);
 }
 
 /**
@@ -148,7 +148,7 @@ export async function loadChunkIntoEditor(
 ): Promise<void> {
   /** New-mode chunk cache; non-null bypasses the network fetch below. */
   const local = input.state.tier3?.localChunks;
-  if (local !== null && local !== undefined) {
+  if ((local !== null) && (local !== undefined)) {
     writeBody({
       state: input.state,
       textarea: input.textarea,
@@ -220,10 +220,10 @@ export async function navigateTier3(
     nav: input.nav,
     state: input.state,
   },);
-  setStatus(
-    input.status,
-    `editing chunk ${String(next + 1,)} of ${String(input.state.tier3.chunkCount,)}`,
-  );
+  setStatus({
+    status: input.status,
+    message: `editing chunk ${String(next + 1,)} of ${String(input.state.tier3.chunkCount,)}`,
+  },);
 }
 
 /**
@@ -285,8 +285,8 @@ export async function saveCurrentTier3Chunk(
         },),
       },
     ));
-  setStatus(
-    input.status,
-    `saved chunk ${String(seq + 1,)}`,
-  );
+  setStatus({
+    status: input.status,
+    message: `saved chunk ${String(seq + 1,)}`,
+  },);
 }

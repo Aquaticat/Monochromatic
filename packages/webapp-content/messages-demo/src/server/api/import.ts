@@ -55,7 +55,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
   async function handleImport(event,) {
     /** Identity sent via `x-user-id` header because the body is the upload payload. */
     const userId = event.req.headers.get('x-user-id',);
-    if (userId === null || userId === '') {
+    if ((userId === null) || (userId === '')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing x-user-id header',
@@ -64,7 +64,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
 
     /** Inbound body stream; null aborts the import before any draft is created. */
     const stream = event.req.body;
-    if (stream === null || stream === undefined) {
+    if ((stream === null) || (stream === undefined)) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'no request body',
@@ -82,6 +82,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     /** Decoded reader; multi-byte safe because `TextDecoderStream` re-aligns chunks. */
     const reader = stream.pipeThrough(new TextDecoderStream(),).getReader();
 
+    /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming state machine: `pending` is grown by each read and shrunk by `flushFromPending`; `seq`, `chunkCount`, `charCount`, and `firstMd` are mutated by `flushFromPending` as it commits chunks. All five must live alongside `flushFromPending` so they share the closure */
     /** Buffer holding text between chunker flushes; cut at blank-line boundaries. */
     let pending = '';
     /** Monotonically incrementing chunk index forwarded to `putChunk`. */
@@ -92,6 +93,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     let firstMd = '';
     /** Total chunk count produced by the chunker; passed to finalize. */
     let chunkCount = 0;
+    /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
     /**
      * Flushes whole chunks out of the pending buffer, leaving any
@@ -150,38 +152,49 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       }
     }
 
-    /** Holds the first thrown error from the read loop so the reader can release before rethrow. */
-    let readError: unknown = undefined;
-    try {
-      // Streaming reader is inherently sequential.
-      /* oxlint-disable no-await-in-loop, no-constant-condition */
-      while (true) {
-        /** Destructured read result; `done` ends the loop, `value` is the new text segment. */
-        const {
-          value,
-          done,
-        } = await reader.read();
-        if (done)
-          break;
-        pending += value;
-        // Avoid letting `pending` grow without bound between flushes.
-        // Once it exceeds twice the soft target we run a flush.
-        if (pending.length > CHUNK_TARGET_BYTES * PENDING_BUFFER_MULTIPLE)
-          await flushFromPending(false,);
+    /**
+     * Drains the reader, calling `flushFromPending` after every read that
+     * pushes `pending` past the soft cap, then a final force-flush. Any
+     * thrown error is captured so the caller can release the reader lock
+     * before rethrowing.
+     *
+     * @returns the first thrown error, or `undefined` on clean drain
+     */
+    async function drainReader(): Promise<unknown> {
+      try {
+        // Streaming reader is inherently sequential.
+        /* oxlint-disable eslint/no-await-in-loop, eslint/no-constant-condition */
+        while (true) {
+          /** Destructured read result; `done` ends the loop, `value` is the new text segment. */
+          const {
+            value,
+            done,
+          } = await reader.read();
+          if (done)
+            break;
+          pending += value;
+          // Avoid letting `pending` grow without bound between flushes.
+          // Once it exceeds twice the soft target we run a flush.
+          if (pending.length > (CHUNK_TARGET_BYTES * PENDING_BUFFER_MULTIPLE))
+            await flushFromPending(false,);
+        }
+        /* oxlint-enable eslint/no-await-in-loop, eslint/no-constant-condition */
+        // Drain anything left.
+        await flushFromPending(true,);
+        return undefined;
       }
-      /* oxlint-enable no-await-in-loop, no-constant-condition */
-      // Drain anything left.
-      await flushFromPending(true,);
+      catch (error) {
+        return error;
+      }
     }
-    catch (error) {
-      readError = error;
-    }
+    /** Holds the first thrown error from the read loop so the reader can release before rethrow. */
+    const readError = await drainReader();
     reader.releaseLock();
     if (readError !== undefined) {
       if (readError instanceof Error)
         throw readError;
       /** Human-readable rendering of `readError` for the rethrow message. */
-      const description = typeof readError === 'string'
+      const description = (typeof readError) === 'string'
         ? readError
         : 'unknown error';
       throw new Error(`stream read failed: ${description}`,);
@@ -200,10 +213,10 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       userId,
       charCount,
       chunkCount,
-      preview: extractPreview(
-        firstMd,
-        PREVIEW_MAX_LENGTH,
-      ),
+      preview: extractPreview({
+        md: firstMd,
+        maxLength: PREVIEW_MAX_LENGTH,
+      },),
     },);
     if (messageId === null) {
       throw new HTTPError({

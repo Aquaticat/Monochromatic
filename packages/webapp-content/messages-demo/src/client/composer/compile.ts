@@ -38,36 +38,37 @@ const PREVIEW_MAX_LENGTH = 200;
  */
 export function compileInline(body: string,): Compiled {
   /** Per-chunk rendered output; returned on the `chunks` field so the caller can PUT each row. */
-  const chunks: {
-    md: string;
-    html: string;
-    charCount: number;
-  }[] = [];
-  /** Accumulated character count across all chunks; passed to finalize. */
-  let charCount = 0;
-  /** First chunk's markdown captured once for the preview field. */
-  let firstMd = '';
-  /** Concatenated HTML; tier-1 sends inspect this for empty-result fallbacks. */
-  let html = '';
-  for (const chunk of renderChunks(body,)) {
-    if (chunks.length === 0)
-      firstMd = chunk.md;
-    chunks.push({
+  const chunks = [...renderChunks(body,)].map(function copy(chunk,) {
+    return {
       md: chunk.md,
       html: chunk.html,
       charCount: chunk.charCount,
-    },);
-    charCount += chunk.charCount;
-    html += chunk.html;
-  }
+    };
+  },);
+  /** First chunk's markdown captured once for the preview field. */
+  const firstMd = chunks[0]?.md ?? '';
+  /** Accumulated character count across all chunks; passed to finalize. */
+  const charCount = chunks.reduce(
+    function sumCharCount(
+      acc,
+      chunk,
+    ) {
+      return acc + chunk.charCount;
+    },
+    0,
+  );
+  /** Concatenated HTML; tier-1 sends inspect this for empty-result fallbacks. */
+  const html = chunks.map(function pickHtml(chunk,) {
+    return chunk.html;
+  },).join('',);
   return {
     html,
     chunkCount: chunks.length,
     charCount,
-    preview: extractPreview(
-      firstMd,
-      PREVIEW_MAX_LENGTH,
-    ),
+    preview: extractPreview({
+      md: firstMd,
+      maxLength: PREVIEW_MAX_LENGTH,
+    },),
     chunks,
   };
 }

@@ -40,6 +40,35 @@ export type Selection = {
 };
 
 /**
+ * Walks the ancestor chain from `start` upward, returning the first
+ * `.ce-line` element or `null` when the walk runs off the document.
+ *
+ * @param start - DFS root; usually the click target node
+ *
+ * @returns enclosing `.ce-line` element or `null`
+ *
+ * @example
+ * ```ts
+ * const line = findEnclosingLine(selection.anchorNode);
+ * ```
+ */
+function findEnclosingLine(start: Node,): HTMLElement | null {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor: `runner` advances up the parent chain until the `.ce-line` host is found or the walk reaches the document root */
+  /** Walks parent chain looking for the enclosing `.ce-line` element. */
+  let runner: Node | null = start;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
+  while (runner !== null) {
+    if (
+      (runner instanceof HTMLElement)
+      && runner.classList.contains('ce-line',)
+    )
+      return runner;
+    runner = runner.parentNode;
+  }
+  return null;
+}
+
+/**
  * Mounts the selection layer on the surface inside `host`. Listens for
  * `selectionchange` to keep an internal cache up-to-date and exposes
  * `get`/`set` for the input layer.
@@ -75,20 +104,8 @@ export function mountSelection(
       offset: number;
     },
   ): number | null {
-    /** Filled when the ancestor walk finds the enclosing `.ce-line`; null exits early. */
-    let line: HTMLElement | null = null;
-    /** Walks parent chain looking for the enclosing `.ce-line` element. */
-    let runner: Node | null = domInput.node;
-    while (runner !== null) {
-      if (
-        runner instanceof HTMLElement
-        && runner.classList.contains('ce-line',)
-      ) {
-        line = runner;
-        break;
-      }
-      runner = runner.parentNode;
-    }
+    /** Enclosing `.ce-line` element; null exits early to leave the selection unresolved. */
+    const line = findEnclosingLine(domInput.node,);
     if (line === null)
       return null;
     /** Parsed line index from the enclosing element's `data-line` attribute. */
@@ -102,62 +119,78 @@ export function mountSelection(
     // each) plus the offset within the current line. We use the
     // surface's textContent to recover line lengths since the line's
     // textContent matches the buffer slice the viewport rendered.
-    /** Accumulator summing preceding-line lengths plus newlines. */
-    let absolute = 0;
     /** Materialised line list so the walk can compare indices and break early. */
     const lines = [
       ...input.surface.querySelectorAll<HTMLElement>('.ce-line',),
     ];
-    for (const candidate of lines) {
-      /** Parsed line index of the candidate; comparison with `lineIndex` decides whether to stop. */
-      const candidateIndex = Number.parseInt(
-        candidate.dataset['line'] ?? '',
-        10,
-      );
-      if (Number.isNaN(candidateIndex,))
-        continue;
-      if (candidateIndex >= lineIndex)
-        break;
-      absolute += (candidate.textContent ?? '').length + 1;
-    }
-    // Within the line: sum text-node lengths up to the requested
-    // offset. The line typically has a single text child, but the
-    // browser may insert extra nodes for IME composition.
-    /** Running tally inside the target line; finalised when the DFS hits the target node. */
-    let withinLine = 0;
-    /** DFS sentinel; flipped once the target node is reached so later nodes are skipped. */
-    let foundTarget = false;
+    /** Sum of preceding-line lengths plus newlines; runs over `lines` and stops at `lineIndex`. */
+    const absolute = lines.reduce(
+      function sumPrecedingLineLengths(
+        acc,
+        candidate,
+      ) {
+        /** Parsed line index of the candidate; comparison with `lineIndex` decides whether to stop. */
+        const candidateIndex = Number.parseInt(
+          candidate.dataset['line'] ?? '',
+          10,
+        );
+        if (Number.isNaN(candidateIndex,) || (candidateIndex >= lineIndex))
+          return acc;
+        return acc + (candidate.textContent ?? '').length + 1;
+      },
+      0,
+    );
     /**
-     * Recursive DFS that tallies code-unit lengths of text nodes
-     * preceding the target `(node, offset)`. Sets `foundTarget` once
-     * the target node is reached so subsequent nodes are skipped.
+     * Tallies code-unit lengths of text nodes preceding the target
+     * `(node, offset)`. Uses a recursive DFS with closure-scoped state
+     * that exits the walk once `domInput.node` is reached.
      *
-     * @param node - current DFS node
+     * @param root - DFS root; the enclosing line element to walk into
+     *
+     * @returns running tally inside the target line
      */
-    function walk(node: Node,): void {
-      if (foundTarget)
-        return;
-      if (node === domInput.node) {
-        withinLine += domInput.offset;
-        foundTarget = true;
-        return;
+    function tallyWithinLine(root: HTMLElement,): number {
+      /* oxlint-disable no-restricted-syntax/no-function-root-let -- DFS state: `withinLine` accumulates as the walk crosses text nodes; `foundTarget` flips to short-circuit later siblings once the requested target is hit */
+      /** Running tally inside the target line; finalised when the DFS hits the target node. */
+      let withinLine = 0;
+      /** DFS sentinel; flipped once the target node is reached so later nodes are skipped. */
+      let foundTarget = false;
+      /* oxlint-enable no-restricted-syntax/no-function-root-let */
+      /**
+       * Recursive DFS that tallies code-unit lengths of text nodes
+       * preceding the target `(node, offset)`. Sets `foundTarget` once
+       * the target node is reached so subsequent nodes are skipped.
+       *
+       * @param node - current DFS node
+       */
+      function walk(node: Node,): void {
+        if (foundTarget)
+          return;
+        if (node === domInput.node) {
+          withinLine += domInput.offset;
+          foundTarget = true;
+          return;
+        }
+        if (node.nodeType === Node.TEXT_NODE) {
+          withinLine += (node.textContent ?? '').length;
+          return;
+        }
+        for (const child of node.childNodes)
+          walk(child,);
       }
-      if (node.nodeType === Node.TEXT_NODE) {
-        withinLine += (node.textContent ?? '').length;
-        return;
-      }
-      for (const child of node.childNodes)
-        walk(child,);
+      walk(root,);
+      return withinLine;
     }
-    walk(line,);
-    return absolute + withinLine;
+    return absolute + tallyWithinLine(line,);
   }
 
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- coordinator cache: `cached` is recomputed by the `selectionchange` listener and read by `getRange()` so consumers see the latest translation without paying for an inner-walk per read */
   /** Cache of the most recent selection in surface-local offsets. */
   let cached: {
     from: number;
     to: number;
   } | null = null;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /**
    * Reads the current `document.getSelection()` and translates it into
@@ -167,7 +200,7 @@ export function mountSelection(
   function refresh(): void {
     /** Browser-managed selection; null when no selection or no document scope. */
     const sel = document.getSelection();
-    if (sel === null || sel.rangeCount === 0) {
+    if ((sel === null) || (sel.rangeCount === 0)) {
       cached = null;
       return;
     }
@@ -187,7 +220,7 @@ export function mountSelection(
       node: range.endContainer,
       offset: range.endOffset,
     },);
-    if (from === null || to === null) {
+    if ((from === null) || (to === null)) {
       cached = null;
       return;
     }
@@ -223,12 +256,14 @@ export function mountSelection(
     node: Node;
     offset: number;
   } | null {
-    /** Running buffer offset; advances by line length + 1 (newline) per iteration. */
-    let cursor = 0;
     /** Materialised line list so the walk can break out as soon as the target is bracketed. */
     const lines = [
       ...input.surface.querySelectorAll<HTMLElement>('.ce-line',),
     ];
+    /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor: `cursor` is the running buffer offset advanced by line-length + 1 per iteration and read inside the loop body to decide whether the target falls in the current line */
+    /** Running buffer offset; advances by line length + 1 (newline) per iteration. */
+    let cursor = 0;
+    /* oxlint-enable no-restricted-syntax/no-function-root-let */
     for (const line of lines) {
       /** Current line's character length, derived from its rendered text content. */
       const lineLength = (line.textContent ?? '').length;
@@ -237,7 +272,7 @@ export function mountSelection(
       if (target.offset <= lineEnd) {
         /** First child as the preferred text node; falls back to the line element when missing. */
         const text = line.firstChild;
-        if (text !== null && text.nodeType === Node.TEXT_NODE) {
+        if ((text !== null) && (text.nodeType === Node.TEXT_NODE)) {
           return {
             node: text,
             offset: target.offset - cursor,
@@ -267,7 +302,7 @@ export function mountSelection(
       const start = offsetToDom({ offset: target.from, },);
       /** Resolved DOM end position; null aborts the set so a stale Range is not written. */
       const end = offsetToDom({ offset: target.to, },);
-      if (start === null || end === null)
+      if ((start === null) || (end === null))
         return;
       /** Browser-managed selection; null aborts the set when no document scope is available. */
       const sel = document.getSelection();

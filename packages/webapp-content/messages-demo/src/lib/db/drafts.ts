@@ -35,16 +35,16 @@ export async function createDraft(
 ): Promise<void> {
   /** Captured once so created_at and updated_at start as the same value. */
   const now = Date.now();
-  await run(
-    'INSERT INTO drafts(id, parent_id, user_id, created_at, updated_at, finalized) VALUES (?, ?, ?, ?, ?, 0)',
-    [
+  await run({
+    sql: 'INSERT INTO drafts(id, parent_id, user_id, created_at, updated_at, finalized) VALUES (?, ?, ?, ?, ?, 0)',
+    params: [
       draft.id,
       draft.parentId,
       draft.userId,
       now,
       now,
     ],
-  );
+  },);
 }
 
 /**
@@ -70,28 +70,28 @@ export async function putChunk(
   // Drop the row first so the upsert path uses a single CONFLICT-free
   // INSERT. Turso's prepared-statement planner handles this well; the
   // alternative ON CONFLICT REPLACE syntax requires more migrations.
-  await run(
-    `INSERT INTO chunks(draft_id, seq, md, html, char_count)
+  await run({
+    sql: `INSERT INTO chunks(draft_id, seq, md, html, char_count)
        VALUES (?, ?, ?, ?, ?)
        ON CONFLICT(draft_id, seq) DO UPDATE SET
          md = excluded.md,
          html = excluded.html,
          char_count = excluded.char_count`,
-    [
+    params: [
       input.draftId,
       input.seq,
       input.chunk.md,
       input.chunk.html,
       input.chunk.charCount,
     ],
-  );
-  await run(
-    'UPDATE drafts SET updated_at = ? WHERE id = ?',
-    [
+  },);
+  await run({
+    sql: 'UPDATE drafts SET updated_at = ? WHERE id = ?',
+    params: [
       now,
       input.draftId,
     ],
-  );
+  },);
 }
 
 /**
@@ -114,14 +114,14 @@ export async function highestContiguousSeq(draftId: string,): Promise<number> {
   // the seq list and walk it in JS. A draft is capped at 100k chunks
   // by upstream limits; even at the maximum this scan is < 5 ms.
   /** All seqs in ascending order; walked once in JS because libSQL has no window functions. */
-  const rows = await all<{ seq: number; }>(
-    'SELECT seq FROM chunks WHERE draft_id = ? ORDER BY seq ASC',
-    [draftId,],
-  );
+  const rows = await all<{ seq: number; }>({
+    sql: 'SELECT seq FROM chunks WHERE draft_id = ? ORDER BY seq ASC',
+    params: [draftId,],
+  },);
   /** Running tally; `-1` represents an empty draft per the function's contract. */
   let highest = -1;
   for (const row of rows) {
-    if (row.seq === highest + 1)
+    if (row.seq === (highest + 1))
       highest = row.seq;
     else
       break;
@@ -144,10 +144,10 @@ export async function highestContiguousSeq(draftId: string,): Promise<number> {
  */
 export async function hasChunks(draftId: string,): Promise<boolean> {
   /** Single-row EXISTS probe; null when the query returns no rows. */
-  const row = await get<{ exists: number; }>(
-    'SELECT EXISTS(SELECT 1 FROM chunks WHERE draft_id = ? LIMIT 1) AS "exists"',
-    [draftId,],
-  );
+  const row = await get<{ exists: number; }>({
+    sql: 'SELECT EXISTS(SELECT 1 FROM chunks WHERE draft_id = ? LIMIT 1) AS "exists"',
+    params: [draftId,],
+  },);
   return (row?.exists ?? 0) === 1;
 }
 
@@ -178,11 +178,11 @@ export async function finalizeDraft(
   },
 ): Promise<number | null> {
   /** Owner row used to cross-check identity before doing any write. */
-  const draft = await get<{ user_id: string; }>(
-    'SELECT user_id FROM drafts WHERE id = ?',
-    [input.draftId,],
-  );
-  if (draft === undefined || draft.user_id !== input.userId)
+  const draft = await get<{ user_id: string; }>({
+    sql: 'SELECT user_id FROM drafts WHERE id = ?',
+    params: [input.draftId,],
+  },);
+  if ((draft === undefined) || (draft.user_id !== input.userId))
     return null;
   if (!(await hasChunks(input.draftId,)))
     return null;
@@ -192,11 +192,11 @@ export async function finalizeDraft(
   await db.exec('BEGIN IMMEDIATE',);
   try {
     /** Insert result; `lastInsertRowid` is the new messages.id returned to the handler. */
-    const insert = await run(
-      `INSERT INTO messages(draft_id, user_id, created_at, updated_at,
+    const insert = await run({
+      sql: `INSERT INTO messages(draft_id, user_id, created_at, updated_at,
                             revision, char_count, chunk_count, preview)
          VALUES (?, ?, ?, ?, 1, ?, ?, ?)`,
-      [
+      params: [
         input.draftId,
         input.userId,
         now,
@@ -205,11 +205,11 @@ export async function finalizeDraft(
         input.chunkCount,
         input.preview,
       ],
-    );
-    await run(
-      'UPDATE drafts SET finalized = 1 WHERE id = ?',
-      [input.draftId,],
-    );
+    },);
+    await run({
+      sql: 'UPDATE drafts SET finalized = 1 WHERE id = ?',
+      params: [input.draftId,],
+    },);
     await db.exec('COMMIT',);
     return Number(insert.lastInsertRowid,);
   }
@@ -240,12 +240,12 @@ export async function cancelDraft(
   },
 ): Promise<boolean> {
   /** Delete result; `changes > 0` indicates a draft row was actually removed. */
-  const result = await run(
-    'DELETE FROM drafts WHERE id = ? AND user_id = ? AND finalized = 0',
-    [
+  const result = await run({
+    sql: 'DELETE FROM drafts WHERE id = ? AND user_id = ? AND finalized = 0',
+    params: [
       input.draftId,
       input.userId,
     ],
-  );
+  },);
   return result.changes > 0;
 }

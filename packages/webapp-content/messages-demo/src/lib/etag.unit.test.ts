@@ -92,10 +92,10 @@ await describe({
               revision: 3,
               chunkIndex: 7,
             },);
-            expect(matches(
+            expect(matches({
+              ifNoneMatch: etag,
               etag,
-              etag,
-            ),)
+            },),)
               .toBe(true,);
           },
         },),
@@ -103,10 +103,10 @@ await describe({
         it({
           name: 'returns false when ifNoneMatch is null',
           fn: async () => {
-            expect(matches(
-              null,
-              '"r3-7"',
-            ),)
+            expect(matches({
+              ifNoneMatch: null,
+              etag: '"r3-7"',
+            },),)
               .toBe(false,);
           },
         },),
@@ -114,10 +114,10 @@ await describe({
         it({
           name: 'returns false when ifNoneMatch is undefined',
           fn: async () => {
-            expect(matches(
-              undefined,
-              '"r3-7"',
-            ),)
+            expect(matches({
+              ifNoneMatch: undefined,
+              etag: '"r3-7"',
+            },),)
               .toBe(false,);
           },
         },),
@@ -125,10 +125,10 @@ await describe({
         it({
           name: 'returns false on differing tag',
           fn: async () => {
-            expect(matches(
-              '"r2-7"',
-              '"r3-7"',
-            ),)
+            expect(matches({
+              ifNoneMatch: '"r2-7"',
+              etag: '"r3-7"',
+            },),)
               .toBe(false,);
           },
         },),
@@ -136,10 +136,10 @@ await describe({
         it({
           name: 'matches one entry inside a comma-separated list',
           fn: async () => {
-            expect(matches(
-              '"r1-0", "r2-0", "r3-7"',
-              '"r3-7"',
-            ),)
+            expect(matches({
+              ifNoneMatch: '"r1-0", "r2-0", "r3-7"',
+              etag: '"r3-7"',
+            },),)
               .toBe(true,);
           },
         },),
@@ -147,10 +147,10 @@ await describe({
         it({
           name: 'comma list with no match returns false',
           fn: async () => {
-            expect(matches(
-              '"r1-0", "r2-0"',
-              '"r3-7"',
-            ),)
+            expect(matches({
+              ifNoneMatch: '"r1-0", "r2-0"',
+              etag: '"r3-7"',
+            },),)
               .toBe(false,);
           },
         },),
@@ -158,10 +158,10 @@ await describe({
         it({
           name: 'weak tag does not byte-match a strong tag',
           fn: async () => {
-            expect(matches(
-              'W/"r3-7"',
-              '"r3-7"',
-            ),)
+            expect(matches({
+              ifNoneMatch: 'W/"r3-7"',
+              etag: '"r3-7"',
+            },),)
               .toBe(false,);
           },
         },),

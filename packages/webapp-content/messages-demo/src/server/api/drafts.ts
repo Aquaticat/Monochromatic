@@ -57,21 +57,21 @@ export const createDraftHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Client-supplied draft id; required so cross-tab races over the same draft collide on the same row. */
-    const id = stringField(
+    const id = stringField({
       body,
-      'id',
-    );
+      key: 'id',
+    },);
     /** Owning user; cross-checked against the draft row by later endpoints. */
-    const userId = stringField(
+    const userId = stringField({
       body,
-      'user_id',
-    );
+      key: 'user_id',
+    },);
     /** Parent draft id for copy-on-write edits; null for fresh messages. */
-    const parentId = optionalStringField(
+    const parentId = optionalStringField({
       body,
-      'parent_id',
-    ) ?? null;
-    if (id === null || userId === null) {
+      key: 'parent_id',
+    },) ?? null;
+    if ((id === null) || (userId === null)) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing id or user_id',
@@ -106,21 +106,21 @@ export const createDraftHandler: EventHandlerWithFetch = defineHandler(
 export const putChunkHandler: EventHandlerWithFetch = defineHandler(
   async function handlePutChunk(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
-    const draftId = requirePathParam(
-      event.context.params,
-      'id',
-    );
+    const draftId = requirePathParam({
+      params: event.context.params,
+      name: 'id',
+    },);
     /** Raw `:seq` path param; parsed as decimal below. */
-    const seqRaw = requirePathParam(
-      event.context.params,
-      'seq',
-    );
+    const seqRaw = requirePathParam({
+      params: event.context.params,
+      name: 'seq',
+    },);
     /** Parsed seq; non-negative integer or the request is rejected. */
     const seq = Number.parseInt(
       seqRaw,
       DECIMAL_RADIX,
     );
-    if (!Number.isFinite(seq,) || seq < 0) {
+    if ((!Number.isFinite(seq,)) || (seq < 0)) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'invalid seq',
@@ -136,18 +136,18 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Markdown payload; required, written to chunks.md. */
-    const md = stringField(
+    const md = stringField({
       body,
-      'md',
-    );
+      key: 'md',
+    },);
     /** Rendered HTML payload; required, written to chunks.html. */
-    const html = stringField(
+    const html = stringField({
       body,
-      'html',
-    );
+      key: 'html',
+    },);
     /** Raw `char_count` value; narrowed to number below before the upsert. */
     const charCountRaw = body['char_count'];
-    if (md === null || html === null || typeof charCountRaw !== 'number') {
+    if ((md === null) || (html === null) || ((typeof charCountRaw) !== 'number')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing md, html, or char_count',
@@ -189,10 +189,10 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
 export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleFinalizeDraft(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
-    const draftId = requirePathParam(
-      event.context.params,
-      'id',
-    );
+    const draftId = requirePathParam({
+      params: event.context.params,
+      name: 'id',
+    },);
     /** Decoded body; defaulted so an absent body still flows through the shape check. */
     const body = await readBody<unknown>(event,) ?? {};
     if (!isRecord(body,)) {
@@ -202,24 +202,24 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Identity claimed by the finalize call; cross-checked against the draft row. */
-    const userId = stringField(
+    const userId = stringField({
       body,
-      'user_id',
-    );
+      key: 'user_id',
+    },);
     /** Preview snippet copied into messages.preview for the index page. */
-    const preview = stringField(
+    const preview = stringField({
       body,
-      'preview',
-    );
+      key: 'preview',
+    },);
     /** Raw `char_count`; narrowed to number below before the finalize. */
     const charCount = body['char_count'];
     /** Raw `chunk_count`; narrowed to number below before the finalize. */
     const chunkCount = body['chunk_count'];
     if (
-      userId === null
-      || preview === null
-      || typeof charCount !== 'number'
-      || typeof chunkCount !== 'number'
+      (userId === null)
+      || (preview === null)
+      || ((typeof charCount) !== 'number')
+      || ((typeof chunkCount) !== 'number')
     ) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -270,18 +270,27 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
 export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleCancelDraft(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
-    const draftId = requirePathParam(
-      event.context.params,
-      'id',
-    );
+    const draftId = requirePathParam({
+      params: event.context.params,
+      name: 'id',
+    },);
+    /**
+     * Reads the body if present; cancel tolerates absent body and reads
+     * identity from the JSON, so an empty object is returned on any read
+     * failure (including no body sent).
+     *
+     * @returns parsed body, or `{}` when absent or unreadable
+     */
+    async function readBodyOrEmpty(): Promise<unknown> {
+      try {
+        return await readBody<unknown>(event,) ?? {};
+      }
+      catch {
+        return {};
+      }
+    }
     /** Best-effort body read; cancel tolerates absent body and reads identity from the JSON below. */
-    let body: unknown = {};
-    try {
-      body = await readBody<unknown>(event,) ?? {};
-    }
-    catch {
-      // Empty body is acceptable for cancel; identity comes from path.
-    }
+    const body = await readBodyOrEmpty();
     if (!isRecord(body,)) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -289,10 +298,10 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Identity claimed by the cancel call; cross-checked against the draft row. */
-    const userId = stringField(
+    const userId = stringField({
       body,
-      'user_id',
-    );
+      key: 'user_id',
+    },);
     if (userId === null) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -332,7 +341,7 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
  * @returns `true` when `value` is a plain object
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value,);
+  return (value !== null) && ((typeof value) === 'object') && (!Array.isArray(value,));
 }
 
 /**
@@ -345,13 +354,16 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
  *
  * @returns string value or `null`
  */
-function stringField(
-  body: Record<string, unknown>,
-  key: string,
-): string | null {
+function stringField({
+  body,
+  key,
+}: {
+  body: Record<string, unknown>;
+  key: string;
+},): string | null {
   /** Indexed once so the typeof narrow and the return both reference the same value. */
   const value = body[key];
-  return typeof value === 'string' ? value : null;
+  return (typeof value) === 'string' ? value : null;
 }
 
 /**
@@ -365,15 +377,18 @@ function stringField(
  * @returns string when present and valid, `undefined` when absent,
  *          `null` when present but not a string
  */
-function optionalStringField(
-  body: Record<string, unknown>,
-  key: string,
-): string | null | undefined {
+function optionalStringField({
+  body,
+  key,
+}: {
+  body: Record<string, unknown>;
+  key: string;
+},): string | null | undefined {
   if (!(key in body))
     return undefined;
   /** Indexed after the `in`-check so the result reflects the supplied (possibly invalid) value. */
   const value = body[key];
-  return typeof value === 'string' ? value : null;
+  return (typeof value) === 'string' ? value : null;
 }
 
 /**
@@ -387,13 +402,16 @@ function optionalStringField(
  *
  * @throws `HTTPError` 400 when parameter is missing
  */
-function requirePathParam(
-  params: Record<string, string> | undefined,
-  name: string,
-): string {
+function requirePathParam({
+  params,
+  name,
+}: {
+  params: Record<string, string> | undefined;
+  name: string;
+},): string {
   /** Indexed once so the empty-string check and the return both reference the same value. */
   const value = params?.[name];
-  if (value === undefined || value === '') {
+  if ((value === undefined) || (value === '')) {
     throw new HTTPError({
       status: HTTP_BAD_REQUEST,
       message: `missing route param: ${name}`,

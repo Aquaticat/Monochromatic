@@ -75,15 +75,15 @@ export async function listFeed(cursor: Cursor | null,): Promise<FeedMessage[]> {
       revision: number;
       chunk_count: number;
       preview: string;
-    }>(
-      `SELECT m.id, m.user_id, u.name AS user_name, m.created_at, m.updated_at,
+    }>({
+      sql: `SELECT m.id, m.user_id, u.name AS user_name, m.created_at, m.updated_at,
                 m.revision, m.chunk_count, m.preview
          FROM messages m JOIN users u ON u.id = m.user_id
          WHERE m.deleted_at IS NULL
          ORDER BY m.created_at DESC, m.id DESC
          LIMIT ?`,
-      [FEED_PAGE_SIZE,],
-    )
+      params: [FEED_PAGE_SIZE,],
+    },)
     : await all<{
       id: number;
       user_id: string;
@@ -93,21 +93,21 @@ export async function listFeed(cursor: Cursor | null,): Promise<FeedMessage[]> {
       revision: number;
       chunk_count: number;
       preview: string;
-    }>(
-      `SELECT m.id, m.user_id, u.name AS user_name, m.created_at, m.updated_at,
+    }>({
+      sql: `SELECT m.id, m.user_id, u.name AS user_name, m.created_at, m.updated_at,
                 m.revision, m.chunk_count, m.preview
          FROM messages m JOIN users u ON u.id = m.user_id
          WHERE m.deleted_at IS NULL
            AND (m.created_at < ? OR (m.created_at = ? AND m.id < ?))
          ORDER BY m.created_at DESC, m.id DESC
          LIMIT ?`,
-      [
+      params: [
         cursor.createdAt,
         cursor.createdAt,
         cursor.id,
         FEED_PAGE_SIZE,
       ],
-    );
+    },);
 
   return rows.map(function toFeedMessage(row,) {
     return {
@@ -142,10 +142,10 @@ export async function feedAggregates(): Promise<{
   const row = await get<{
     max_id: number | null;
     max_updated_at: number | null;
-  }>(
-    `SELECT MAX(id) AS max_id, MAX(updated_at) AS max_updated_at
+  }>({
+    sql: `SELECT MAX(id) AS max_id, MAX(updated_at) AS max_updated_at
        FROM messages WHERE deleted_at IS NULL`,
-  );
+  },);
   return {
     maxId: row?.max_id ?? 0,
     maxUpdatedAt: row?.max_updated_at ?? 0,
@@ -180,14 +180,14 @@ export async function getSnapshot(messageId: number,): Promise<MessageSnapshot |
     user_id: string;
     user_name: string;
     deleted_at: number | null;
-  }>(
-    `SELECT m.id, m.draft_id, m.revision, m.chunk_count, m.user_id,
+  }>({
+    sql: `SELECT m.id, m.draft_id, m.revision, m.chunk_count, m.user_id,
             u.name AS user_name, m.deleted_at
        FROM messages m JOIN users u ON u.id = m.user_id
        WHERE m.id = ?`,
-    [messageId,],
-  );
-  if (row === undefined || row.deleted_at !== null)
+    params: [messageId,],
+  },);
+  if ((row === undefined) || (row.deleted_at !== null))
     return null;
   return {
     id: row.id,
@@ -215,10 +215,10 @@ export async function getSnapshot(messageId: number,): Promise<MessageSnapshot |
  */
 export async function messageExists(messageId: number,): Promise<boolean> {
   /** Single-row EXISTS probe; null result returns `false` via the coalesce. */
-  const row = await get<{ exists: number; }>(
-    'SELECT EXISTS(SELECT 1 FROM messages WHERE id = ?) AS "exists"',
-    [messageId,],
-  );
+  const row = await get<{ exists: number; }>({
+    sql: 'SELECT EXISTS(SELECT 1 FROM messages WHERE id = ?) AS "exists"',
+    params: [messageId,],
+  },);
   return (row?.exists ?? 0) === 1;
 }
 
@@ -255,41 +255,43 @@ export async function getChunk(
   // JS. Chain depth is `revision - 1`; capped at 10 by the edit handler,
   // so this loop is bounded.
   /** Head draft row; absence means the message id is unknown. */
-  const head = await get<{ draft_id: string; }>(
-    'SELECT draft_id FROM messages WHERE id = ?',
-    [input.messageId,],
-  );
+  const head = await get<{ draft_id: string; }>({
+    sql: 'SELECT draft_id FROM messages WHERE id = ?',
+    params: [input.messageId,],
+  },);
   if (head === undefined)
     return null;
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor with side-effecting branches: the walk advances `cursor` after each row-by-row decision and exits via either `return found` or the parent-id reassignment to null */
   /** Walk cursor; advances to each draft's parent until a chunk is found or the chain ends. */
   let cursor: string | null = head.draft_id;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
   // Chain walk: each iteration must read the previous draft's parent_id
   // before deciding whether to keep walking. Inherently sequential.
-  /* oxlint-disable no-await-in-loop */
+  /* oxlint-disable eslint/no-await-in-loop */
   while (cursor !== null) {
     /** Chunk row in the current draft, if present; non-undefined returns the chunk immediately. */
     const found = await get<{
       md: string;
       html: string;
-    }>(
-      'SELECT md, html FROM chunks WHERE draft_id = ? AND seq = ?',
-      [
+    }>({
+      sql: 'SELECT md, html FROM chunks WHERE draft_id = ? AND seq = ?',
+      params: [
         cursor,
         input.chunkIndex,
       ],
-    );
+    },);
     if (found !== undefined)
       return found;
     /** Parent draft id used to step the chain back one revision. */
     const parentRow: { parent_id: string | null; } | undefined = await get<
       { parent_id: string | null; }
-    >(
-      'SELECT parent_id FROM drafts WHERE id = ?',
-      [cursor,],
-    );
+    >({
+      sql: 'SELECT parent_id FROM drafts WHERE id = ?',
+      params: [cursor,],
+    },);
     cursor = parentRow?.parent_id ?? null;
   }
-  /* oxlint-enable no-await-in-loop */
+  /* oxlint-enable eslint/no-await-in-loop */
   return null;
 }
 
@@ -341,11 +343,11 @@ export async function editMessage(
       user_id: string;
       revision: number;
       deleted_at: number | null;
-    }>(
-      'SELECT user_id, revision, deleted_at FROM messages WHERE id = ?',
-      [input.messageId,],
-    );
-    if (message === undefined || message.deleted_at !== null) {
+    }>({
+      sql: 'SELECT user_id, revision, deleted_at FROM messages WHERE id = ?',
+      params: [input.messageId,],
+    },);
+    if ((message === undefined) || (message.deleted_at !== null)) {
       await db.exec('ROLLBACK',);
       return { kind: 'not-found', };
     }
@@ -361,11 +363,11 @@ export async function editMessage(
     const newDraft = await get<{
       user_id: string;
       finalized: number;
-    }>(
-      'SELECT user_id, finalized FROM drafts WHERE id = ?',
-      [input.newDraftId,],
-    );
-    if (newDraft === undefined || newDraft.user_id !== input.userId) {
+    }>({
+      sql: 'SELECT user_id, finalized FROM drafts WHERE id = ?',
+      params: [input.newDraftId,],
+    },);
+    if ((newDraft === undefined) || (newDraft.user_id !== input.userId)) {
       await db.exec('ROLLBACK',);
       return { kind: 'forbidden', };
     }
@@ -374,12 +376,12 @@ export async function editMessage(
     const now = Date.now();
     /** Incremented revision returned to the handler so it can echo the new value. */
     const newRevision = message.revision + 1;
-    await run(
-      `UPDATE messages
+    await run({
+      sql: `UPDATE messages
          SET draft_id = ?, revision = ?, updated_at = ?,
              char_count = ?, chunk_count = ?, preview = ?
          WHERE id = ?`,
-      [
+      params: [
         input.newDraftId,
         newRevision,
         now,
@@ -388,11 +390,11 @@ export async function editMessage(
         input.preview,
         input.messageId,
       ],
-    );
-    await run(
-      'UPDATE drafts SET finalized = 1 WHERE id = ?',
-      [input.newDraftId,],
-    );
+    },);
+    await run({
+      sql: 'UPDATE drafts SET finalized = 1 WHERE id = ?',
+      params: [input.newDraftId,],
+    },);
     await db.exec('COMMIT',);
     return {
       kind: 'ok',
@@ -435,10 +437,10 @@ export async function softDeleteMessage(
   const message = await get<{
     user_id: string;
     deleted_at: number | null;
-  }>(
-    'SELECT user_id, deleted_at FROM messages WHERE id = ?',
-    [input.messageId,],
-  );
+  }>({
+    sql: 'SELECT user_id, deleted_at FROM messages WHERE id = ?',
+    params: [input.messageId,],
+  },);
   if (message === undefined)
     return { kind: 'not-found', };
   if (message.deleted_at !== null)
@@ -447,13 +449,13 @@ export async function softDeleteMessage(
     return { kind: 'forbidden', };
   /** Captured before the UPDATE so deleted_at and updated_at land at the same instant. */
   const now = Date.now();
-  await run(
-    'UPDATE messages SET deleted_at = ?, updated_at = ? WHERE id = ?',
-    [
+  await run({
+    sql: 'UPDATE messages SET deleted_at = ?, updated_at = ? WHERE id = ?',
+    params: [
       now,
       now,
       input.messageId,
     ],
-  );
+  },);
   return { kind: 'ok', };
 }

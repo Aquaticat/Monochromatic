@@ -39,8 +39,6 @@ const {
   MAX_REVISIONS,
 } = messagesMod;
 
-let counter = 0;
-
 /**
  * Generates a deterministic but unique draft id for a single test. The
  * counter avoids collisions while keeping ids debuggable.
@@ -48,11 +46,20 @@ let counter = 0;
  * @param tag - short tag identifying the test, surfaced in the id
  *
  * @returns globally-unique draft id
+ *
+ * @example
+ * ```ts
+ * uniqueId('finalize'); // 't-finalize-1'
+ * uniqueId('finalize'); // 't-finalize-2'
+ * ```
  */
-function uniqueId(tag: string,): string {
-  counter += 1;
-  return `t-${tag}-${String(counter,)}`;
-}
+const uniqueId = (function makeUniqueId() {
+  let counter = 0;
+  return function nextId(tag: string,): string {
+    counter += 1;
+    return `t-${tag}-${String(counter,)}`;
+  };
+})();
 
 /**
  * Creates a draft with a single chunk and finalises it. Returns the
@@ -314,7 +321,7 @@ await describe({
             // to reach the cap (revision == MAX_REVISIONS).
             for (
               let edit = 0;
-              edit < MAX_REVISIONS - 1;
+              edit < (MAX_REVISIONS - 1);
               edit += 1
             ) {
               const child = uniqueId('cap-edit',);

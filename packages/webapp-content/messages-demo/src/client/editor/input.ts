@@ -57,8 +57,10 @@ export function attachInput(
     getMirror: () => string;
   },
 ): InputCleanup {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- IME composition guard: flipped by `compositionstart`/`compositionend` listeners and read by `beforeinput` to suspend changeset emission while the IME composes */
   /** True while an IME composition is in progress. */
   let composing = false;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /**
    * Sends a changeset, swallowing the inverse return value (it is
@@ -172,11 +174,11 @@ export function attachInput(
     // stops the browser from mutating the DOM out from under us.
     event.preventDefault();
 
-    if (event.inputType === 'insertText' || event.inputType === 'insertCompositionText') {
+    if ((event.inputType === 'insertText') || (event.inputType === 'insertCompositionText')) {
       handleInsert(event.data ?? '',);
       return;
     }
-    if (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak') {
+    if ((event.inputType === 'insertParagraph') || (event.inputType === 'insertLineBreak')) {
       handleInsert('\n',);
       return;
     }
@@ -208,7 +210,7 @@ export function attachInput(
     }
     // Fallback: if there is `data`, treat it as an insertion;
     // otherwise treat it as a backward delete.
-    if (typeof event.data === 'string' && event.data.length > 0) {
+    if (((typeof event.data) === 'string') && (event.data.length > 0)) {
       handleInsert(event.data,);
       return;
     }

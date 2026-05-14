@@ -146,7 +146,7 @@ export function fetchHeadDraftId(_messageId: number,): Promise<string | null> {
  * ```
  */
 export function randomId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+  if (((typeof crypto) !== 'undefined') && ((typeof crypto.randomUUID) === 'function'))
     return crypto.randomUUID();
   return `d-${String(Date.now(),)}-${
     String(Math.floor(Math.random() * RANDOM_ID_RANGE,),)
@@ -184,14 +184,14 @@ export function getIdentity(form: HTMLFormElement,): string {
  * ```
  */
 export function parseEditId(raw: string | undefined,): number | null {
-  if (raw === undefined || raw === '')
+  if ((raw === undefined) || (raw === ''))
     return null;
   /** Parsed once so the finite-and-positive guard and the return can both reference it. */
   const value = Number.parseInt(
     raw,
     DECIMAL_RADIX,
   );
-  return Number.isFinite(value,) && value > 0 ? value : null;
+  return Number.isFinite(value,) && (value > 0) ? value : null;
 }
 
 /**
@@ -223,20 +223,20 @@ export function appendStatusElement(form: HTMLFormElement,): HTMLElement {
  * Updates the composer's status indicator. The composer uses this for
  * "saved", "uploading", "error", etc.
  *
- * @param status - status element returned by `appendStatusElement`
- *
- * @param message - text to display
+ * @param input - status element returned by `appendStatusElement` plus the text
  *
  * @example
  * ```ts
- * setStatus(status, 'uploading...');
+ * setStatus({ status, message: 'uploading...' });
  * ```
  */
 export function setStatus(
-  status: HTMLElement,
-  message: string,
+  input: {
+    status: HTMLElement;
+    message: string;
+  },
 ): void {
-  status.textContent = message;
+  input.status.textContent = input.message;
 }
 
 /**

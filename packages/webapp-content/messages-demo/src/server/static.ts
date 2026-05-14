@@ -19,6 +19,35 @@ import {
 import { join, } from 'node:path';
 
 /**
+ * Returns `stat` for `./<id>`, or `undefined` when the file does not exist
+ * or is otherwise inaccessible. Swallows `stat`'s rejections so the caller
+ * can branch on the return value rather than try/catch around the await.
+ *
+ * @param id - URL-relative asset path; joined onto `'.'` before stat
+ *
+ * @returns stat result, or `undefined` on any failure
+ *
+ * @example
+ * ```ts
+ * const stats = await tryStat('dist/css/styles.css');
+ * if (stats !== undefined) console.log(stats.size);
+ * ```
+ */
+async function tryStat(id: string,): Promise<Awaited<ReturnType<typeof stat>> | undefined> {
+  try {
+    return await stat(
+      join(
+        '.',
+        id,
+      ),
+    );
+  }
+  catch {
+    return undefined;
+  }
+}
+
+/**
  * h3 handler that serves files from `./dist/` by URL-relative path.
  *
  * @example
@@ -40,24 +69,13 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
           );
         },
         getMeta: async function getMetadata(id,) {
-          /** Reassigned from undefined to the stat result on success; left undefined otherwise so the catch path returns. */
-          let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
-          try {
-            stats = await stat(
-              join(
-                '.',
-                id,
-              ),
-            );
-          }
-          catch {
-            // File not found or inaccessible.
-          }
-          if (stats === undefined || !stats.isFile())
+          /** Resolved stat result or `undefined` when the file does not exist or is inaccessible. */
+          const stats = await tryStat(id,);
+          if ((stats === undefined) || (!stats.isFile()))
             return;
           return {
-            size: stats.size,
-            mtime: stats.mtimeMs,
+            size: Number(stats.size,),
+            mtime: stats.mtime,
           };
         },
       },

@@ -65,7 +65,7 @@ export function decodeCursor(token: string,): Cursor {
   const raw = base64UrlDecode(token,);
   /** Colon offset separating the two integers; `-1` signals malformed input. */
   const colon = raw.indexOf(':',);
-  if (colon === -1)
+  if (colon === (-1))
     throw new Error(`malformed cursor: ${token}`,);
   /** Created-at half parsed as an integer. */
   const createdAt = Number.parseInt(
@@ -80,7 +80,7 @@ export function decodeCursor(token: string,): Cursor {
     raw.slice(colon + 1,),
     DECIMAL_RADIX,
   );
-  if (!Number.isFinite(createdAt,) || !Number.isFinite(id,))
+  if ((!Number.isFinite(createdAt,)) || (!Number.isFinite(id,)))
     throw new Error(`malformed cursor: ${token}`,);
   return {
     createdAt,
@@ -102,9 +102,14 @@ function base64UrlEncode(value: string,): string {
   /** UTF-8 byte view of `value`; iterated below into a Latin-1 string for `btoa`. */
   const bytes = new TextEncoder().encode(value,);
   /** Latin-1 representation of the UTF-8 bytes; safe input for `btoa`. */
-  let binary = '';
-  for (const byte of bytes)
-    binary += String.fromCodePoint(byte,);
+  const binary = Array
+    .from(
+      bytes,
+      function toLatin1(byte,) {
+        return String.fromCodePoint(byte,);
+      },
+    )
+    .join('',);
   return globalThis
     .btoa(binary,)
     .replaceAll(
@@ -130,7 +135,7 @@ function base64UrlEncode(value: string,): string {
  */
 function base64UrlDecode(value: string,): string {
   /** URL-safe input with `-_` mapped back to `+/`; padded below to a 4-group boundary. */
-  let padded = value
+  const unpadded = value
     .replaceAll(
       '-',
       '+',
@@ -139,8 +144,10 @@ function base64UrlDecode(value: string,): string {
       '_',
       '/',
     );
-  while (padded.length % BASE64_GROUP_SIZE !== 0)
-    padded += '=';
+  /** Number of `=` characters needed to reach the next 4-group boundary. */
+  const padLength = (BASE64_GROUP_SIZE - (unpadded.length % BASE64_GROUP_SIZE)) % BASE64_GROUP_SIZE;
+  /** Base64 input ready for `atob`; trailing `=` restored to a 4-group boundary. */
+  const padded = unpadded + '='.repeat(padLength,);
   /** Latin-1 string of decoded bytes; rewrapped into a Uint8Array below for `TextDecoder`. */
   const binary = globalThis.atob(padded,);
   /** Byte buffer copied from `binary`; decoded back to UTF-8 below. */

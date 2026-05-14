@@ -54,30 +54,30 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
     }
 
     /** Identity claimed by the edit; cross-checked against the message row. */
-    const userId = stringField(
+    const userId = stringField({
       body,
-      'user_id',
-    );
+      key: 'user_id',
+    },);
     /** Newly-created child draft id pointed at by the swap. */
-    const newDraftId = stringField(
+    const newDraftId = stringField({
       body,
-      'new_draft_id',
-    );
+      key: 'new_draft_id',
+    },);
     /** Preview snippet copied into messages.preview for the index page. */
-    const preview = stringField(
+    const preview = stringField({
       body,
-      'preview',
-    );
+      key: 'preview',
+    },);
     /** Raw `char_count`; narrowed to number below before the edit call. */
     const charCount = body['char_count'];
     /** Raw `chunk_count`; narrowed to number below before the edit call. */
     const chunkCount = body['chunk_count'];
     if (
-      userId === null
-      || newDraftId === null
-      || preview === null
-      || typeof charCount !== 'number'
-      || typeof chunkCount !== 'number'
+      (userId === null)
+      || (newDraftId === null)
+      || (preview === null)
+      || ((typeof charCount) !== 'number')
+      || ((typeof chunkCount) !== 'number')
     ) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -152,10 +152,10 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Identity claimed by the delete; cross-checked against the message row. */
-    const userId = stringField(
+    const userId = stringField({
       body,
-      'user_id',
-    );
+      key: 'user_id',
+    },);
     if (userId === null) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -209,7 +209,7 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
 function parseMessageId(params: Record<string, string> | undefined,): number {
   /** Raw `:id` path param; empty or undefined trips the 400 below. */
   const raw = params?.['id'];
-  if (raw === undefined || raw === '') {
+  if ((raw === undefined) || (raw === '')) {
     throw new HTTPError({
       status: HTTP_BAD_REQUEST,
       message: 'missing message id',
@@ -220,7 +220,7 @@ function parseMessageId(params: Record<string, string> | undefined,): number {
     raw,
     DECIMAL_RADIX,
   );
-  if (!Number.isFinite(value,) || value <= 0) {
+  if ((!Number.isFinite(value,)) || (value <= 0)) {
     throw new HTTPError({
       status: HTTP_BAD_REQUEST,
       message: 'invalid message id',
@@ -242,7 +242,7 @@ function parseMessageId(params: Record<string, string> | undefined,): number {
  * ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value,);
+  return (value !== null) && ((typeof value) === 'object') && (!Array.isArray(value,));
 }
 
 /**
@@ -257,16 +257,19 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
  *
  * @example
  * ```ts
- * const name = stringField(body, 'user_id');
+ * const name = stringField({ body, key: 'user_id' });
  * ```
  */
-function stringField(
-  body: Record<string, unknown>,
-  key: string,
-): string | null {
+function stringField({
+  body,
+  key,
+}: {
+  body: Record<string, unknown>;
+  key: string;
+},): string | null {
   /** Indexed once so the typeof narrow and the return both reference the same value. */
   const value = body[key];
-  return typeof value === 'string' ? value : null;
+  return (typeof value) === 'string' ? value : null;
 }
 
 //endregion

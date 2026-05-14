@@ -74,31 +74,30 @@ export function etagForFeed(
  * ETag. The comparison is byte-exact; there is only one strong ETag
  * shape per resource.
  *
- * @param ifNoneMatch - raw `If-None-Match` header value, or `null` /
- *                     `undefined` when the header is absent
- *
- * @param etag - the ETag value computed for the current resource
+ * @param input - raw `If-None-Match` header value plus the resource's ETag
  *
  * @returns `true` when the client's cached copy is current
  *
  * @example
  * ```ts
- * if (matches(req.headers.get('if-none-match'), etag)) return new Response(null, { status: 304 });
+ * if (matches({ ifNoneMatch: req.headers.get('if-none-match'), etag })) return new Response(null, { status: 304 });
  * ```
  */
 export function matches(
-  ifNoneMatch: string | null | undefined,
-  etag: string,
+  input: {
+    ifNoneMatch: string | null | undefined;
+    etag: string;
+  },
 ): boolean {
-  if (ifNoneMatch === undefined || ifNoneMatch === null)
+  if ((input.ifNoneMatch === undefined) || (input.ifNoneMatch === null))
     return false;
   // The client may send a comma-separated list (e.g. multiple cached
   // entries for the same URL across redirects); a hit on any of them
   // means our resource is current.
-  return ifNoneMatch
+  return input.ifNoneMatch
     .split(',',)
     .map(function trim(part,) {
       return part.trim();
     },)
-    .includes(etag,);
+    .includes(input.etag,);
 }

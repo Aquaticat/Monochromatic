@@ -156,7 +156,7 @@ await describe({
               },
               function gen(_, index,) {
                 return {
-                  createdAt: 1_700_000_000_000 + index * 1_000,
+                  createdAt: 1_700_000_000_000 + (index * 1_000),
                   id: index,
                 };
               },

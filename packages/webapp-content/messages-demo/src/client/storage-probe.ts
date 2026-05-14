@@ -107,7 +107,7 @@ function probeIdb(): Promise<boolean> {
   // the only reasonable bridge.
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- bridges callback API
   return new Promise<boolean>(function executor(resolve,) {
-    if (typeof indexedDB === 'undefined') {
+    if ((typeof indexedDB) === 'undefined') {
       resolve(false,);
       return;
     }
@@ -179,7 +179,7 @@ async function probeOpfs(): Promise<boolean> {
   // navigator.storage.getDirectory is the OPFS entry point. The check
   // is feature-detection plus a write attempt because some browsers
   // expose the API but reject writes (e.g. Safari private mode).
-  if (typeof navigator === 'undefined' || navigator.storage?.getDirectory === undefined)
+  if (((typeof navigator) === 'undefined') || (navigator.storage?.getDirectory === undefined))
     return false;
   try {
     /** OPFS root acquired once and reused by the file handle below. */
@@ -217,7 +217,7 @@ async function probeOpfs(): Promise<boolean> {
  * ```
  */
 function probeLocalStorage(): Promise<boolean> {
-  if (typeof localStorage === 'undefined')
+  if ((typeof localStorage) === 'undefined')
     return Promise.resolve(false,);
   try {
     localStorage.setItem(

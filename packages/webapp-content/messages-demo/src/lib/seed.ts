@@ -139,7 +139,7 @@ const LOREM_WORDS = (
  *
  * @returns pseudo-random number in [0, 1)
  */
-/* oxlint-disable eslint/no-magic-numbers, unicorn/prefer-math-trunc -- Mulberry32 algorithmic constants and bitwise int coercion */
+/* oxlint-disable eslint/no-magic-numbers, unicorn/prefer-math-trunc, no-restricted-syntax/no-function-root-let -- Mulberry32 PRNG: bitwise int coercion, algorithmic constants, and the canonical two-variable state-machine form (`value` and `temp` are mutated step by step through the integer hash) */
 function rng(seed: number,): number {
   // Mulberry32 step. Cheap and good enough for content distribution.
   /** Seed coerced to int32 via `| 0` so the bitwise math stays well-defined. */
@@ -156,7 +156,7 @@ function rng(seed: number,): number {
   );
   return (((temp ^ (temp >>> 14)) >>> 0) % 100_000) / 100_000;
 }
-/* oxlint-enable eslint/no-magic-numbers, unicorn/prefer-math-trunc */
+/* oxlint-enable eslint/no-magic-numbers, unicorn/prefer-math-trunc, no-restricted-syntax/no-function-root-let */
 
 /**
  * Builds a synthetic markdown body of approximately the requested size.
@@ -177,6 +177,56 @@ function synthesizeBody(
     seed: number;
   },
 ): string {
+  /**
+   * Builds a single block at the given cursor. Pure helper so the loop
+   * below stays free of locally-mutated string state.
+   *
+   * @param cursor - rng cursor advanced by the caller before each call
+   *
+   * @returns rendered block string with the trailing blank-line separator
+   */
+  function buildBlock(cursor: number,): string {
+    /** Pseudo-random value in `[0, 1)` driving the block-kind switch. */
+    const r = rng(cursor,);
+    /** Block-kind discriminant; one of the named constants above. */
+    const kind = Math.floor(r * BLOCK_KIND_COUNT,);
+    if (kind === BLOCK_KIND_HEADING) {
+      /** Heading level in `[1, HEADING_LEVEL_MAX]`. */
+      const level = 1 + Math.floor(rng(cursor + 1,) * HEADING_LEVEL_MAX,);
+      return `${'#'.repeat(level,)} ${
+        pickWords({
+          seed: cursor,
+          count: HEADING_WORD_BASE + Math.floor(rng(cursor + 2,) * HEADING_WORD_RANGE,),
+        },)
+      }\n\n`;
+    }
+    if (kind === BLOCK_KIND_CODE) {
+      /** Code-block line count drawn from the configured base + range. */
+      const lineCount = CODE_LINE_BASE + Math.floor(rng(cursor + 1,) * CODE_LINE_RANGE,);
+      /** Accumulator of synthesised code lines; joined with `\n` below. */
+      const lines = [];
+      for (let i = 0; i < lineCount; i += 1) {
+        lines.push(`  ${
+          pickWords({
+            seed: cursor + i,
+            count: CODE_WORDS_PER_LINE,
+          },)
+        }`,);
+      }
+      return `\`\`\`\n${lines.join('\n',)}\n\`\`\`\n\n`;
+    }
+    /** Paragraph word count drawn from the configured base + range. */
+    const wordCount = PARAGRAPH_WORD_BASE
+      + Math.floor(rng(cursor + 1,) * PARAGRAPH_WORD_RANGE,);
+    return `${
+      pickWords({
+        seed: cursor,
+        count: wordCount,
+      },)
+    }.\n\n`;
+  }
+
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming byte-budget loop: `total` accumulates the synthesised length and `cursor` is the rng seed advanced once per block; both feed back into the loop condition and the next-block call */
   /** Accumulator of synthesised block strings; joined at the end. */
   const parts: string[] = [];
   /** Running byte length so the loop stops at `targetBytes`. */
@@ -185,51 +235,12 @@ function synthesizeBody(
   let cursor = seed;
   while (total < targetBytes) {
     cursor += 1;
-    /** Pseudo-random value in `[0, 1)` driving the block-kind switch. */
-    const r = rng(cursor,);
-    /** Block-kind discriminant; one of the named constants above. */
-    const kind = Math.floor(r * BLOCK_KIND_COUNT,);
-    /** Block text built by the branch; appended to `parts`. */
-    let block = '';
-    if (kind === BLOCK_KIND_HEADING) {
-      /** Heading level in `[1, HEADING_LEVEL_MAX]`. */
-      const level = 1 + Math.floor(rng(cursor + 1,) * HEADING_LEVEL_MAX,);
-      block = `${'#'.repeat(level,)} ${
-        pickWords(
-          cursor,
-          HEADING_WORD_BASE + Math.floor(rng(cursor + 2,) * HEADING_WORD_RANGE,),
-        )
-      }\n\n`;
-    }
-    else if (kind === BLOCK_KIND_CODE) {
-      /** Code-block line count drawn from the configured base + range. */
-      const lineCount = CODE_LINE_BASE + Math.floor(rng(cursor + 1,) * CODE_LINE_RANGE,);
-      /** Accumulator of synthesised code lines; joined with `\n` below. */
-      const lines = [];
-      for (let i = 0; i < lineCount; i += 1) {
-        lines.push(`  ${
-          pickWords(
-            cursor + i,
-            CODE_WORDS_PER_LINE,
-          )
-        }`,);
-      }
-      block = `\`\`\`\n${lines.join('\n',)}\n\`\`\`\n\n`;
-    }
-    else {
-      /** Paragraph word count drawn from the configured base + range. */
-      const wordCount = PARAGRAPH_WORD_BASE
-        + Math.floor(rng(cursor + 1,) * PARAGRAPH_WORD_RANGE,);
-      block = `${
-        pickWords(
-          cursor,
-          wordCount,
-        )
-      }.\n\n`;
-    }
+    /** Block text built by the helper; appended to `parts`. */
+    const block = buildBlock(cursor,);
     parts.push(block,);
     total += block.length;
   }
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
   return parts.join('',);
 }
 
@@ -242,10 +253,13 @@ function synthesizeBody(
  *
  * @returns space-joined word string
  */
-function pickWords(
-  seed: number,
-  count: number,
-): string {
+function pickWords({
+  seed,
+  count,
+}: {
+  seed: number;
+  count: number;
+},): string {
   /** Accumulator of selected words; joined with spaces below. */
   const words: string[] = [];
   for (let i = 0; i < count; i += 1) {
@@ -311,10 +325,10 @@ async function createMessage(
     userId: input.userId,
     charCount,
     chunkCount,
-    preview: extractPreview(
-      firstMd,
-      PREVIEW_MAX_LENGTH,
-    ),
+    preview: extractPreview({
+      md: firstMd,
+      maxLength: PREVIEW_MAX_LENGTH,
+    },),
   },);
   if (messageId === null)
     throw new Error('finalize returned null for seeded draft',);
@@ -339,7 +353,7 @@ export async function runSeed(): Promise<void> {
   if (huge !== undefined) {
     /** Parsed gigabyte size from `--huge=`; positive number required. */
     const gigabytes = Number.parseFloat(huge,);
-    if (!Number.isFinite(gigabytes,) || gigabytes <= 0)
+    if ((!Number.isFinite(gigabytes,)) || (gigabytes <= 0))
       throw new Error(`invalid --huge=${huge}; expected a positive number of gigabytes`,);
     /** Target body length in bytes derived from `gigabytes`. */
     const targetBytes = Math.floor(gigabytes * BYTES_PER_GIB,);
@@ -364,7 +378,7 @@ export async function runSeed(): Promise<void> {
     count ?? String(DEFAULT_MESSAGE_COUNT,),
     DECIMAL_RADIX,
   );
-  if (!Number.isFinite(messageCount,) || messageCount <= 0)
+  if ((!Number.isFinite(messageCount,)) || (messageCount <= 0))
     throw new Error(`invalid --count=${String(count,)}`,);
 
   console.log(`seeding ${String(messageCount,)} mixed-size messages...`,);
@@ -396,7 +410,7 @@ export async function runSeed(): Promise<void> {
       body,
       userId,
     },);
-    if ((index + 1) % PROGRESS_INTERVAL === 0)
+    if (((index + 1) % PROGRESS_INTERVAL) === 0)
       console.log(`  ${String(index + 1,)} / ${String(messageCount,)}`,);
   }
   /* oxlint-enable no-await-in-loop */

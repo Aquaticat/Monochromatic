@@ -50,7 +50,7 @@ const MAX_REVISIONS_DISPLAY = 10;
 function startingTier(chunkCount: number,): 1 | 2 | 3 {
   if (chunkCount === 1)
     return 1;
-  if (chunkCount * CHUNK_TARGET_BYTES < TIER_3_THRESHOLD_BYTES)
+  if ((chunkCount * CHUNK_TARGET_BYTES) < TIER_3_THRESHOLD_BYTES)
     return 2;
   return 3;
 }

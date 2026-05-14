@@ -66,72 +66,64 @@ type ChunkFields = {
 /**
  * Returns the raw pre-rendered HTML for one chunk.
  *
- * @param input - message id, chunk index
- *
- * @param ifNoneMatch - request `If-None-Match` header
+ * @param input - message id, chunk index, and the request `If-None-Match` header
  *
  * @returns 200 with HTML body, 304, 404, or 410
  *
  * @example
  * ```ts
- * const r = await renderChunkRaw({ messageId: 1, chunkIndex: 0 }, null);
+ * const r = await renderChunkRaw({ messageId: 1, chunkIndex: 0, ifNoneMatch: null });
  * ```
  */
 export async function renderChunkRaw(
   input: {
     messageId: number;
     chunkIndex: number;
+    ifNoneMatch: string | null;
   },
-  ifNoneMatch: string | null,
 ): Promise<Response> {
-  return await renderChunkData(
-    {
-      ...input,
-      contentType: 'text/html; charset=utf-8',
-      pickField: pickHtml,
-    },
-    ifNoneMatch,
-  );
+  return await renderChunkData({
+    messageId: input.messageId,
+    chunkIndex: input.chunkIndex,
+    ifNoneMatch: input.ifNoneMatch,
+    contentType: 'text/html; charset=utf-8',
+    pickField: pickHtml,
+  },);
 }
 
 /**
  * Returns the source markdown for one chunk. Drives the edit composer.
  *
- * @param input - message id, chunk index
- *
- * @param ifNoneMatch - request `If-None-Match` header
+ * @param input - message id, chunk index, and the request `If-None-Match` header
  *
  * @returns 200 with markdown body, 304, 404, or 410
  *
  * @example
  * ```ts
- * const r = await renderChunkMd({ messageId: 1, chunkIndex: 0 }, null);
+ * const r = await renderChunkMd({ messageId: 1, chunkIndex: 0, ifNoneMatch: null });
  * ```
  */
 export async function renderChunkMd(
   input: {
     messageId: number;
     chunkIndex: number;
+    ifNoneMatch: string | null;
   },
-  ifNoneMatch: string | null,
 ): Promise<Response> {
-  return await renderChunkData(
-    {
-      ...input,
-      contentType: 'text/markdown; charset=utf-8',
-      pickField: pickMd,
-    },
-    ifNoneMatch,
-  );
+  return await renderChunkData({
+    messageId: input.messageId,
+    chunkIndex: input.chunkIndex,
+    ifNoneMatch: input.ifNoneMatch,
+    contentType: 'text/markdown; charset=utf-8',
+    pickField: pickMd,
+  },);
 }
 
 /**
  * Shared implementation for the two data endpoints. Differs only in
  * the field returned and the Content-Type header.
  *
- * @param input - identifiers + which chunk field to return
- *
- * @param ifNoneMatch - request `If-None-Match` header
+ * @param input - identifiers, the chunk-field picker, and the request `If-None-Match` header
  *
  * @returns 200, 304, 404, or 410
  */
@@ -141,8 +133,8 @@ async function renderChunkData(
     chunkIndex: number;
     contentType: string;
     pickField: (chunk: ChunkFields,) => string;
+    ifNoneMatch: string | null;
   },
-  ifNoneMatch: string | null,
 ): Promise<Response> {
   /** Snapshot of the message; null returns 410 Gone (deleted or never existed). */
   const snapshot = await getSnapshot(input.messageId,);
@@ -160,10 +152,10 @@ async function renderChunkData(
     revision: snapshot.revision,
     chunkIndex: input.chunkIndex,
   },);
-  if (matches(
-    ifNoneMatch,
+  if (matches({
+    ifNoneMatch: input.ifNoneMatch,
     etag,
-  )) {
+  },)) {
     return new Response(
       null,
       {
@@ -175,7 +167,7 @@ async function renderChunkData(
       },
     );
   }
-  if (input.chunkIndex < 0 || input.chunkIndex >= snapshot.chunkCount) {
+  if ((input.chunkIndex < 0) || (input.chunkIndex >= snapshot.chunkCount)) {
     return new Response(
       null,
       {

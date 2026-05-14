@@ -321,7 +321,7 @@ await describe({
               a: b,
               b: c,
             },);
-            if (ab === null || bc === null)
+            if ((ab === null) || (bc === null))
               throw new Error('expected composable inserts',);
             const left = composeChangesets({
               a: ab,

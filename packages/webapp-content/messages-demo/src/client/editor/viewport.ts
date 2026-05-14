@@ -94,6 +94,7 @@ export function mountViewport(
   spacer.append(surface,);
   input.host.append(spacer,);
 
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- coordinator state: `lineStarts` is rebuilt by `rebuildLineStarts` on every render; `lastText` caches the most recent buffer for diff-skipping; `lineHeight` is overwritten once after the first render measures the actual layout */
   /** Sorted array of line-start offsets; element 0 is always `0`. */
   let lineStarts: number[] = [
     0,
@@ -104,6 +105,7 @@ export function mountViewport(
 
   /** Pixel height per line; measured once after the first render. */
   let lineHeight = ESTIMATED_LINE_HEIGHT_PX;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /**
    * Rebuilds `lineStarts` from `text`. O(text.length); called from
@@ -163,7 +165,7 @@ export function mountViewport(
       if (start === undefined)
         continue;
       /** Buffer offset where this line ends; uses the next line's start minus the trailing newline. */
-      const end = line + 1 < lineStarts.length
+      const end = (line + 1) < lineStarts.length
         // The next line's start minus the trailing newline.
         ? (lineStarts[line + 1] ?? text.length) - 1
         : text.length;
@@ -192,7 +194,7 @@ export function mountViewport(
     if (firstLine !== null) {
       /** Live measurement; replaces `lineHeight` only when the divergence is material. */
       const measured = firstLine.getBoundingClientRect().height;
-      if (measured > 0 && Math.abs(measured - lineHeight,) > 1)
+      if ((measured > 0) && (Math.abs(measured - lineHeight,) > 1))
         lineHeight = measured;
     }
   }
@@ -218,16 +220,18 @@ export function mountViewport(
     line: number;
     col: number;
   } {
+    /* oxlint-disable no-restricted-syntax/no-function-root-let -- binary search state machine: `lo` and `hi` converge to the target line index by mid-point bisection; both must be reassigned each iteration to maintain the invariant */
     /** Binary-search lower bound; converges with `hi` to the target line index. */
     let lo = 0;
     /** Binary-search upper bound; capped at the highest known line index. */
     let hi = lineStarts.length - 1;
+    /* oxlint-enable no-restricted-syntax/no-function-root-let */
     while (lo < hi) {
       /** Midpoint biased upward so the loop terminates with `lo === hi`. */
       const mid = (lo + hi + 1) >>> 1;
       /** Probe value at `mid`; undefined signals a stale index and pushes `hi` down. */
       const start = lineStarts[mid];
-      if (start === undefined || start > offset)
+      if ((start === undefined) || (start > offset))
         hi = mid - 1;
       else
         lo = mid;
@@ -262,7 +266,7 @@ export function mountViewport(
     /** Buffer offset where the clamped line starts. */
     const lineStart = lineStarts[clampedLine] ?? 0;
     /** Buffer offset where the clamped line ends; uses next-start minus trailing newline. */
-    const nextStart = clampedLine + 1 < lineStarts.length
+    const nextStart = (clampedLine + 1) < lineStarts.length
       ? (lineStarts[clampedLine + 1] ?? lastText.length) - 1
       : lastText.length;
     /** Character width of the clamped line; used to clamp `target.col`. */

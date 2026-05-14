@@ -58,7 +58,7 @@ export function median(sortedAsc: readonly number[],): number {
     return 0;
   /** Center index for odd-length arrays; upper of the two centers for even-length arrays. */
   const mid = Math.floor(sortedAsc.length * MEDIAN_SPLIT,);
-  if (sortedAsc.length % 2 === 1)
+  if ((sortedAsc.length % 2) === 1)
     return sortedAsc[mid] ?? 0;
   return ((sortedAsc[mid - 1] ?? 0) + (sortedAsc[mid] ?? 0)) * MEDIAN_SPLIT;
 }

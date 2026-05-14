@@ -56,7 +56,10 @@ export type ChunkCache = {
    */
   get: (key: ChunkCacheKey,) => Promise<string | null>;
   /** Writes `html` for `key`. Overwrites a same-key entry. */
-  put: (key: ChunkCacheKey, html: string,) => Promise<void>;
+  put: (
+    key: ChunkCacheKey,
+    html: string,
+  ) => Promise<void>;
   /** Detaches resources (closes IDB if open). */
   destroy: () => void;
 };
@@ -366,13 +369,13 @@ function idbGet(
       function onSuccess(): void {
         /** Widened from `any` so the shape narrowing below stays type-safe. */
         const raw: unknown = request.result;
-        if (raw === null || typeof raw !== 'object' || !('html' in raw)) {
+        if ((raw === null) || ((typeof raw) !== 'object') || (!('html' in raw))) {
           resolve(null,);
           return;
         }
         /** Destructured after narrowing; required to satisfy the rule. */
         const { html, } = raw;
-        resolve(typeof html === 'string' ? html : null,);
+        resolve((typeof html) === 'string' ? html : null,);
       },
     );
     request.addEventListener(
@@ -473,10 +476,10 @@ async function evictIdbStale(
       /** Widened to `unknown` so the shape check can narrow the row before reading fields. */
       const value: unknown = cursor.value;
       /* oxlint-enable eslint/prefer-destructuring */
-      if (value !== null && typeof value === 'object' && 'revision' in value) {
+      if ((value !== null) && ((typeof value) === 'object') && ('revision' in value)) {
         /** Destructured after narrowing; the revision compare decides whether to delete this row. */
         const { revision, } = value;
-        if (typeof revision === 'number' && revision !== input.key.revision)
+        if (((typeof revision) === 'number') && (revision !== input.key.revision))
           cursor.delete();
       }
       cursor.continue();

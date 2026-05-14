@@ -126,7 +126,7 @@ await describe({
             let ack = -1;
             const fetchStub = sinon.stub(globalThis, 'fetch',).callsFake(
               function fakeFetch(url,) {
-                if (typeof url !== 'string')
+                if ((typeof url) !== 'string')
                   throw new Error('expected string url',);
                 const match = /\/chunks\/(\d+)/.exec(url,);
                 if (match === null)

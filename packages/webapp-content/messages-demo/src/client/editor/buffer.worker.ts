@@ -127,8 +127,10 @@ const undoStack: UndoEntry[] = [];
 /** Inverse changesets popped by undo, available to redo. Cleared on edit. */
 const redoStack: UndoEntry[] = [];
 
+/* oxlint-disable no-restricted-syntax/no-module-root-let -- singleton timer handle: set when a collapse is scheduled, cleared from inside the timeout and from `scheduleCollapseIfNeeded` after re-check; wrapping in a Map adds noise without a key to hang state off */
 /** Pending collapse timer; null when no collapse is queued. */
 let collapseTimer: ReturnType<typeof setTimeout> | null = null;
+/* oxlint-enable no-restricted-syntax/no-module-root-let */
 
 /**
  * Schedules a node-count collapse on the next idle. If the table grew
@@ -211,7 +213,7 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
       handleQuery(data,);
     else if (data.kind === 'snapshot')
       handleSnapshot(data,);
-    else if (data.kind === 'undo' || data.kind === 'redo')
+    else if ((data.kind === 'undo') || (data.kind === 'redo'))
       handleUndoRedo(data,);
   }
   catch (error) {
@@ -219,7 +221,7 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
     let message = 'unknown buffer-worker error';
     if (error instanceof Error)
       ({ message, } = error);
-    else if (typeof error === 'string')
+    else if ((typeof error) === 'string')
       message = error;
     /** Echoed back so the main thread can resolve the right pending promise; `-1` signals no-id. */
     const id = 'id' in data ? data.id : -1;

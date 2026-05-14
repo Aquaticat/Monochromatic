@@ -107,7 +107,7 @@ async function onMessage(event: MessageEvent<InboundMessage>,): Promise<void> {
     let message = 'unknown worker error';
     if (error instanceof Error)
       ({ message, } = error);
-    else if (typeof error === 'string')
+    else if ((typeof error) === 'string')
       message = error;
     post({
       kind: 'error',
@@ -134,6 +134,7 @@ self.addEventListener(
  * @param input - body to compile
  */
 function runCompileOnly(input: { body: string; },): void {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming compile pipeline: `charCount` sums per-chunk char counts; `firstMd` captures the chunk-0 markdown exactly once; `lastTick` is the previous-boundary timestamp subtracted on every iteration to bill per-chunk compile cost */
   /** Aggregated rendered chunks, sent on the `done` envelope so the main thread can PUT them in one batch. */
   const collected: {
     md: string;
@@ -151,6 +152,7 @@ function runCompileOnly(input: { body: string; },): void {
   // Timing each iteration captures the per-chunk compile cost.
   /** Tick of the previous boundary; subtracted from `now` to bill per-chunk compile time. */
   let lastTick = performance.now();
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
   for (const chunk of renderChunks(input.body,)) {
     /** Tick at the start of this iteration; replaces `lastTick` once the duration is recorded. */
     const now = performance.now();
@@ -176,10 +178,10 @@ function runCompileOnly(input: { body: string; },): void {
     kind: 'done',
     chunkCount: collected.length,
     charCount,
-    preview: extractPreview(
-      firstMd,
-      PREVIEW_MAX_LENGTH,
-    ),
+    preview: extractPreview({
+      md: firstMd,
+      maxLength: PREVIEW_MAX_LENGTH,
+    },),
     chunks: collected,
   },);
 }
@@ -196,6 +198,7 @@ async function runCompileAndUpload(
     body: string;
   },
 ): Promise<void> {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming PUT pipeline: `seq`/`charCount`/`firstMd` accumulate across the PUT loop and feed the final `done` envelope; `maxPutQueueDepth`/`pendingPuts` form the in-flight-depth high-watermark recorded in metrics; `chunkTick` is the rolling boundary used to bill per-block compile time */
   /** Monotonic chunk index used as the PUT seq path segment and progress envelope value. */
   let seq = 0;
   /** Running sum of char counts; sent on the `done` envelope as the message's total length. */
@@ -220,6 +223,7 @@ async function runCompileAndUpload(
   // micromark compile, which is what we want to measure.
   /** Tick of the previous chunker boundary; subtracted from `now` to bill compile time. */
   let chunkTick = performance.now();
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
   /** Pre-PUT staging: chunker fully drains here before any PUT starts so progress totals are exact. */
   const chunks: {
     md: string;
@@ -239,7 +243,7 @@ async function runCompileAndUpload(
   }
   // Sequential PUTs let the server return ack-up-to-N for the outbox to
   // drop acknowledged entries; parallel uploads would race the ack.
-  // oxlint-disable-next-line no-await-in-loop
+  /* oxlint-disable eslint/no-await-in-loop -- sequential PUTs are required so the server can return ack-up-to-N; parallelising them races the ack */
   for (const chunk of chunks) {
     if (seq === 0)
       firstMd = chunk.md;
@@ -250,7 +254,6 @@ async function runCompileAndUpload(
     );
     /** Tick at PUT start; subtracted from the post-await tick to record PUT duration. */
     const putStart = performance.now();
-    // oxlint-disable-next-line no-await-in-loop
     /** Highest contiguous seq the server acknowledges; forwarded via the `progress` envelope. */
     const ack = await putOneChunk({
       draftId: input.draftId,
@@ -277,6 +280,7 @@ async function runCompileAndUpload(
       ack,
     },);
   }
+  /* oxlint-enable eslint/no-await-in-loop */
   post({
     kind: 'metrics',
     compileMs,
@@ -291,10 +295,10 @@ async function runCompileAndUpload(
     kind: 'done',
     chunkCount: chunks.length,
     charCount,
-    preview: extractPreview(
-      firstMd,
-      PREVIEW_MAX_LENGTH,
-    ),
+    preview: extractPreview({
+      md: firstMd,
+      maxLength: PREVIEW_MAX_LENGTH,
+    },),
     chunks: allChunks,
   },);
 }
@@ -329,11 +333,13 @@ async function putOneChunk(
     html: input.chunk.html,
     char_count: input.chunk.charCount,
   },);
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- retry-loop error capture: the catch arm assigns the latest failure and the post-loop throw rethrows it; replacing with a try-catch-around-each-attempt loses the bounded-retry shape */
   /** Holds the most recent failure so the post-loop throw can rethrow it. */
   let lastError: unknown = undefined;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
   // Retry loop with exponential backoff: each attempt depends on the
   // previous one failing, so it is inherently sequential.
-  /* oxlint-disable no-await-in-loop */
+  /* oxlint-disable eslint/no-await-in-loop */
   for (let attempt = 0; attempt < PUT_MAX_ATTEMPTS; attempt += 1) {
     try {
       /** Awaited so both the status check and the JSON read can reuse the same response. */
@@ -354,7 +360,7 @@ async function putOneChunk(
       /** Server ack envelope; the `ack` field falls back to `input.seq` when missing or non-numeric. */
       const parsed = await response.json() as { ack?: unknown; };
       /* oxlint-enable typescript/no-unsafe-type-assertion */
-      return typeof parsed.ack === 'number' ? parsed.ack : input.seq;
+      return (typeof parsed.ack) === 'number' ? parsed.ack : input.seq;
     }
     catch (error) {
       lastError = error;
@@ -371,7 +377,7 @@ async function putOneChunk(
       },);
     }
   }
-  /* oxlint-enable no-await-in-loop */
+  /* oxlint-enable eslint/no-await-in-loop */
   throw lastError instanceof Error
     ? lastError
     : new Error('chunk PUT failed after retries',);

@@ -106,13 +106,13 @@ export function decideTierTransition(
     inEditMode: boolean;
   },
 ): TierTransition {
-  if (input.tier === 1 && input.length >= TIER_2_THRESHOLD)
+  if ((input.tier === 1) && (input.length >= TIER_2_THRESHOLD))
     return { kind: 'to-tier-2', };
   if (
-    input.tier === 2
-    && input.length >= TIER_3_THRESHOLD
-    && !input.tier3Active
-    && !input.inEditMode
+    (input.tier === 2)
+    && (input.length >= TIER_3_THRESHOLD)
+    && (!input.tier3Active)
+    && (!input.inEditMode)
   ) {
     return { kind: 'to-tier-3', };
   }
@@ -132,13 +132,16 @@ const DECIMAL_RADIX = 10;
  *
  * @example
  * ```ts
- * await attachComposer(form, await probeStorage());
+ * await attachComposer({ form, caps: await probeStorage() });
  * ```
  */
-export async function attachComposer(
-  form: HTMLFormElement,
-  caps: StorageCaps,
-): Promise<void> {
+export async function attachComposer({
+  form,
+  caps,
+}: {
+  form: HTMLFormElement;
+  caps: StorageCaps;
+},): Promise<void> {
   if (form.dataset['composerAttached'] === '1')
     return;
   form.dataset['composerAttached'] = '1';
@@ -149,12 +152,12 @@ export async function attachComposer(
   const textarea = form.querySelector<HTMLTextAreaElement>('.composer-body',);
   /** Send button; null aborts the attach. */
   const sendBtn = form.querySelector<HTMLButtonElement>('.composer-send',);
-  if (select === null || textarea === null || sendBtn === null)
+  if ((select === null) || (textarea === null) || (sendBtn === null))
     return;
 
   /** Identity previously persisted; restored if it still matches one of the select's options. */
   const persisted = loadIdentity(caps.localStorage,);
-  if (persisted !== null && [...select.options,].some(function isPersisted(option,) {
+  if ((persisted !== null) && [...select.options,].some(function isPersisted(option,) {
     return option.value === persisted;
   },)) {
     select.value = persisted;
@@ -163,10 +166,10 @@ export async function attachComposer(
   select.addEventListener(
     'change',
     function onIdentityChange() {
-      saveIdentity(
-        select.value,
-        caps.localStorage,
-      );
+      saveIdentity({
+        identity: select.value,
+        available: caps.localStorage,
+      },);
     },
   );
 
@@ -213,7 +216,7 @@ export async function attachComposer(
     state.metricsHooks = overlay;
   }
 
-  if (!caps.localStorage || !caps.idb)
+  if ((!caps.localStorage) || (!caps.idb))
     appendVolatileBadge(form,);
 
   /** Idempotent status element appended below the form; passed to every send and edit helper. */
@@ -258,7 +261,7 @@ export async function attachComposer(
   textarea.addEventListener(
     'keydown',
     function onKeydown(event,) {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+      if ((event.metaKey || event.ctrlKey) && (event.key === 'Enter')) {
         event.preventDefault();
         sendBtn.click();
       }
@@ -327,10 +330,10 @@ async function loadExistingChunksForEdit(
       seq: 0,
       textarea: input.textarea,
     },);
-    setStatus(
-      input.status,
-      `editing chunk 1 of ${String(chunkCount,)}`,
-    );
+    setStatus({
+      status: input.status,
+      message: `editing chunk 1 of ${String(chunkCount,)}`,
+    },);
     return;
   }
   /** Total chunk count from the server; used as the upper bound for the fetch loop. */
@@ -353,14 +356,16 @@ async function loadExistingChunksForEdit(
     textarea: input.textarea,
     text: parts.join('',),
   },);
-  setStatus(
-    input.status,
-    'editing message',
-  );
+  setStatus({
+    status: input.status,
+    message: 'editing message',
+  },);
 }
 
+/* oxlint-disable no-restricted-syntax/no-module-root-let -- singleton timer handle: cleared inside `clearTimeout` and reassigned by every `queueTierPromotionCheck` call; wrapping in a Map adds noise without a key to hang state off */
 /** Pending promotion-check timer; null when no check is queued. */
 let promotionTimer: ReturnType<typeof setTimeout> | null = null;
+/* oxlint-enable no-restricted-syntax/no-module-root-let */
 
 /**
  * Schedules a tier promotion check after a short idle. Promotes between
@@ -391,10 +396,10 @@ function queueTierPromotionCheck(
       },);
       if (transition.kind === 'to-tier-2') {
         input.state.tier = 2;
-        setStatus(
-          input.status,
-          'tier 2 (worker)',
-        );
+        setStatus({
+          status: input.status,
+          message: 'tier 2 (worker)',
+        },);
         // Fall through: a single tick can't double-jump to tier 3 because
         // the decision was made on the pre-transition `tier` value.
       }
@@ -423,8 +428,8 @@ export async function bootstrap(): Promise<void> {
     return;
   /** Storage capability probe results; forwarded to outbox, cache, and identity-store helpers. */
   const caps = await probeStorage();
-  await attachComposer(
+  await attachComposer({
     form,
     caps,
-  );
+  },);
 }

@@ -35,9 +35,9 @@ const seedUsers: SeedUser[] = await loadUsers();
  * ```
  */
 async function loadUsers(): Promise<SeedUser[]> {
-  return await all<SeedUser>(
-    'SELECT id, name FROM users ORDER BY name ASC',
-  );
+  return await all<SeedUser>({
+    sql: 'SELECT id, name FROM users ORDER BY name ASC',
+  },);
 }
 
 /**

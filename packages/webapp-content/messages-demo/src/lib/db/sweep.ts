@@ -60,21 +60,21 @@ export async function sweepOrphans(
 ): Promise<void> {
   /** Threshold; drafts older than this and still unfinalised are reaped. */
   const cutoff = Date.now() - ORPHAN_TTL_MS;
-  await run(
-    `DELETE FROM drafts WHERE id IN (
+  await run({
+    sql: `DELETE FROM drafts WHERE id IN (
        SELECT id FROM drafts
          WHERE finalized = 0
            AND updated_at < ?
            AND (? IS NULL OR user_id = ?)
          LIMIT ?
      )`,
-    [
+    params: [
       cutoff,
       scope.userId,
       scope.userId,
       SWEEP_BATCH,
     ],
-  );
+  },);
 }
 
 /**
@@ -96,15 +96,15 @@ export async function sweepDeleted(): Promise<void> {
   const candidates = await all<{
     id: number;
     draft_id: string;
-  }>(
-    `SELECT id, draft_id FROM messages
+  }>({
+    sql: `SELECT id, draft_id FROM messages
        WHERE deleted_at IS NOT NULL AND deleted_at < ?
        LIMIT ?`,
-    [
+    params: [
       cutoff,
       SWEEP_BATCH,
     ],
-  );
+  },);
   // Each candidate runs in its own transaction; chain walk inside the
   // transaction is inherently sequential (each parent_id reads the
   // previous draft's row).
@@ -112,10 +112,10 @@ export async function sweepDeleted(): Promise<void> {
   for (const candidate of candidates) {
     await db.exec('BEGIN IMMEDIATE',);
     try {
-      await run(
-        'DELETE FROM messages WHERE id = ?',
-        [candidate.id,],
-      );
+      await run({
+        sql: 'DELETE FROM messages WHERE id = ?',
+        params: [candidate.id,],
+      },);
       // Collect every draft in the chain, then DELETE them. Chunks
       // cascade via FK. We walk in JS because Turso does not implement
       // recursive CTEs. Chain depth is bounded by the 10-revision cap.
@@ -128,17 +128,17 @@ export async function sweepDeleted(): Promise<void> {
         /** Parent draft row; absence breaks the loop. */
         const parentRow: { parent_id: string | null; } | undefined = await get<
           { parent_id: string | null; }
-        >(
-          'SELECT parent_id FROM drafts WHERE id = ?',
-          [cursor,],
-        );
+        >({
+          sql: 'SELECT parent_id FROM drafts WHERE id = ?',
+          params: [cursor,],
+        },);
         cursor = parentRow?.parent_id ?? null;
       }
       for (const id of chainIds) {
-        await run(
-          'DELETE FROM drafts WHERE id = ?',
-          [id,],
-        );
+        await run({
+          sql: 'DELETE FROM drafts WHERE id = ?',
+          params: [id,],
+        },);
       }
       await db.exec('COMMIT',);
     }

@@ -50,7 +50,7 @@ function resolveDatabasePath(): string {
   const argumentPath = getArgumentValue('db',);
   /** Fallback environment value; used when the CLI did not supply one. */
   const environmentPath = process.env.DB_PATH;
-  /** Resolved precedence: CLI > env > default. */
+  /** Resolved precedence: CLI \> env \> default. */
   const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
   return normalizeDatabasePath(rawPath,);
 }
@@ -93,28 +93,28 @@ export default db;
  * Convenience: prepare + run a parameterised SQL statement, returning
  * the changes / lastInsertRowid pair.
  *
- * @param sql - SQL with `?` parameter placeholders
- *
- * @param params - bind parameters; defaults to none
+ * @param input - SQL with `?` placeholders and the bind parameters
  *
  * @returns `{ changes, lastInsertRowid }`
  *
  * @example
  * ```ts
- * await run('INSERT INTO users(id, name) VALUES (?, ?)', ['user-a', 'User A']);
+ * await run({ sql: 'INSERT INTO users(id, name) VALUES (?, ?)', params: ['user-a', 'User A'] });
  * ```
  */
 export async function run(
-  sql: string,
-  params: readonly unknown[] = [],
+  input: {
+    sql: string;
+    params?: readonly unknown[];
+  },
 ): Promise<{
   changes: number;
   lastInsertRowid: number;
 }> {
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
-  const stmt = db.prepare(sql,);
+  const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- Turso typed result */
-  return await stmt.run(...params,) as {
+  return await stmt.run(...(input.params ?? []),) as {
     changes: number;
     lastInsertRowid: number;
   };
@@ -124,51 +124,51 @@ export async function run(
 /**
  * Convenience: prepare + fetch the first row, or `undefined` if none.
  *
- * @param sql - SQL with `?` parameter placeholders
- *
- * @param params - bind parameters; defaults to none
+ * @param input - SQL with `?` placeholders and the bind parameters
  *
  * @returns first row or `undefined`
  *
  * @example
  * ```ts
- * const row = await get<{ name: string; }>('SELECT name FROM users WHERE id = ?', [id]);
+ * const row = await get<{ name: string; }>({ sql: 'SELECT name FROM users WHERE id = ?', params: [id] });
  * ```
  */
 export async function get<T = Record<string, unknown>,>(
-  sql: string,
-  params: readonly unknown[] = [],
+  input: {
+    sql: string;
+    params?: readonly unknown[];
+  },
 ): Promise<T | undefined> {
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
-  const stmt = db.prepare(sql,);
+  const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Turso returns any */
   /** Raw row returned by Turso; widened to `unknown` here and asserted to `T` below. */
-  const value = await stmt.get(...params,);
-  return (value === undefined || value === null) ? undefined : value as T;
+  const value = await stmt.get(...(input.params ?? []),);
+  return ((value === undefined) || (value === null)) ? undefined : value as T;
   /* oxlint-enable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion */
 }
 
 /**
  * Convenience: prepare + fetch all rows.
  *
- * @param sql - SQL with `?` parameter placeholders
- *
- * @param params - bind parameters; defaults to none
+ * @param input - SQL with `?` placeholders and the bind parameters
  *
  * @returns array of rows; empty when no matches
  *
  * @example
  * ```ts
- * const rows = await all<{ id: number; }>('SELECT id FROM users');
+ * const rows = await all<{ id: number; }>({ sql: 'SELECT id FROM users' });
  * ```
  */
 export async function all<T = Record<string, unknown>,>(
-  sql: string,
-  params: readonly unknown[] = [],
+  input: {
+    sql: string;
+    params?: readonly unknown[];
+  },
 ): Promise<T[]> {
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
-  const stmt = db.prepare(sql,);
+  const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- Turso typed rows */
-  return await stmt.all(...params,) as T[];
+  return await stmt.all(...(input.params ?? []),) as T[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
 }

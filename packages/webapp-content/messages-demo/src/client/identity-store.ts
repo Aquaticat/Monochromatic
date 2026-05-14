@@ -38,25 +38,25 @@ export function loadIdentity(available: boolean,): string | null {
  * `localStorage` is unavailable, the write throws, or the value is
  * empty.
  *
- * @param identity - user id from the dropdown
- *
- * @param available - whether the storage probe succeeded
+ * @param input - identity to save and the storage-probe flag
  *
  * @example
  * ```ts
- * saveIdentity('user-a', caps.localStorage);
+ * saveIdentity({ identity: 'user-a', available: caps.localStorage });
  * ```
  */
 export function saveIdentity(
-  identity: string,
-  available: boolean,
+  input: {
+    identity: string;
+    available: boolean;
+  },
 ): void {
-  if (!available || identity === '')
+  if ((!input.available) || (input.identity === ''))
     return;
   try {
     localStorage.setItem(
       IDENTITY_KEY,
-      identity,
+      input.identity,
     );
   }
   catch {

@@ -168,7 +168,7 @@ export function composeChangesets(
 ): Changeset | null {
   /** Offset where `a` ends after its insert; composition is only legal when `b` lands here. */
   const insertEnd = input.a.from + input.a.insert.length;
-  if (input.b.from !== insertEnd || input.b.to !== insertEnd)
+  if ((input.b.from !== insertEnd) || (input.b.to !== insertEnd))
     return null;
   return {
     from: input.a.from,

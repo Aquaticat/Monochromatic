@@ -103,29 +103,45 @@ export type Outbox = {
  * ```
  */
 export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
-  // Probes can succeed but the actual open can still fail (private
-  // mode quirks, quota races). Fall back to in-memory so the composer
-  // never blocks at startup.
-  /** Lazily assigned IDB handle; left null when the probe lied or the open call fails post-probe. */
-  let idb: IDBDatabase | null = null;
-  if (options.idbAvailable) {
+  /**
+   * Opens the IDB handle if the caller probed it as available, swallowing
+   * any post-probe failure (private mode quirks, quota races) so the
+   * composer falls back to in-memory rather than blocking startup.
+   *
+   * @returns the opened handle, or `null` when probe lied or open failed
+   */
+  async function maybeOpenIdb(): Promise<IDBDatabase | null> {
+    if (!options.idbAvailable)
+      return null;
     try {
-      idb = await openOutboxDb();
+      return await openOutboxDb();
     }
     catch {
-      idb = null;
+      return null;
+    }
+  }
+  /** Lazily assigned IDB handle; left null when the probe lied or the open call fails post-probe. */
+  const idb = await maybeOpenIdb();
+
+  /**
+   * Reads the persisted queue from IDB, falling back to an empty queue if
+   * the read raises (corrupted store, schema mismatch). Returns immediately
+   * with `[]` when no handle is available.
+   *
+   * @returns persisted queue snapshot, or `[]` on missing handle or read failure
+   */
+  async function readInitialQueue(): Promise<ChunkUpload[]> {
+    if (idb === null)
+      return [];
+    try {
+      return await readPersistedQueue(idb,);
+    }
+    catch {
+      return [];
     }
   }
   /** Initial queue populated from IDB when available; pushes from `enqueue` extend it later. */
-  let queue: ChunkUpload[] = [];
-  if (idb !== null) {
-    try {
-      queue = await readPersistedQueue(idb,);
-    }
-    catch {
-      queue = [];
-    }
-  }
+  const queue = await readInitialQueue();
   /** Closure-scoped state shared by every helper in this factory; queue and flags live here. */
   const state = {
     queue,
@@ -164,17 +180,16 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
           notifyFlushed();
       },
     };
-    while (state.queue.length > 0 && !state.destroyed) {
+    /* oxlint-disable eslint/no-await-in-loop -- sequential drain: each PUT must ack before the next can issue, so the server can return ack-up-to-N */
+    while ((state.queue.length > 0) && (!state.destroyed)) {
       /** Destructured head so the next iteration sees the new front element. */
       const [head,] = state.queue;
       if (head === undefined)
         break;
-      // oxlint-disable-next-line no-await-in-loop
       /** Server ack from the PUT; `null` signals retries exhausted and the loop pauses. */
       const ack = await tryPutWithBackoff(head,);
       if (ack === null)
         break;
-      // oxlint-disable-next-line no-await-in-loop
       await dropAcked({
         idb: state.idb,
         queue: state.queue,
@@ -182,6 +197,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
         ack,
       },);
     }
+    /* oxlint-enable eslint/no-await-in-loop */
   }
 
   /** Idempotent drain trigger. Multiple concurrent calls collapse. */
@@ -193,19 +209,19 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
   function onOnlineOrVisible(): void {
     if (state.destroyed)
       return;
-    if (typeof document !== 'undefined' && document.visibilityState !== 'visible')
+    if (((typeof document) !== 'undefined') && (document.visibilityState !== 'visible'))
       return;
     kick();
   }
 
-  if (typeof globalThis.addEventListener === 'function') {
+  if ((typeof globalThis.addEventListener) === 'function') {
     globalThis.addEventListener(
       'online',
       onOnlineOrVisible,
     );
   }
-  if (typeof document !== 'undefined'
-    && typeof document.addEventListener === 'function')
+  if (((typeof document) !== 'undefined')
+    && ((typeof document.addEventListener) === 'function'))
   {
     document.addEventListener(
       'visibilitychange',
@@ -231,7 +247,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       kick();
     },
     flushed() {
-      if (state.queue.length === 0 && !state.draining)
+      if ((state.queue.length === 0) && (!state.draining))
         return Promise.resolve();
       // The Promise constructor is the only way to capture a resolver
       // we hand off to the drain loop for later notification.
@@ -245,14 +261,14 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
     },
     destroy() {
       state.destroyed = true;
-      if (typeof globalThis.removeEventListener === 'function') {
+      if ((typeof globalThis.removeEventListener) === 'function') {
         globalThis.removeEventListener(
           'online',
           onOnlineOrVisible,
         );
       }
-      if (typeof document !== 'undefined'
-        && typeof document.removeEventListener === 'function')
+      if (((typeof document) !== 'undefined')
+        && ((typeof document.removeEventListener) === 'function'))
       {
         document.removeEventListener(
           'visibilitychange',
@@ -292,10 +308,9 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
     html: upload.html,
     char_count: upload.charCount,
   },);
-  // oxlint-disable-next-line no-await-in-loop
+  /* oxlint-disable eslint/no-await-in-loop -- retry attempts are inherently sequential: each retry must wait for the prior attempt's failure plus its backoff delay before issuing */
   for (let attempt = 0; attempt < PUT_MAX_ATTEMPTS; attempt += 1) {
     try {
-      // oxlint-disable-next-line no-await-in-loop
       /** Awaited so both the status check and the JSON read can reuse the same response. */
       const response = await fetch(
         url,
@@ -307,18 +322,17 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
       );
       if (!response.ok)
         throw new Error(`PUT returned ${String(response.status,)}`,);
-      // oxlint-disable-next-line no-await-in-loop
       /** Server ack envelope; falls back to `upload.seq` when `ack` is missing or non-numeric. */
       const parsed = await readJson<{ ack?: unknown; }>(response,);
-      return typeof parsed.ack === 'number' ? parsed.ack : upload.seq;
+      return (typeof parsed.ack) === 'number' ? parsed.ack : upload.seq;
     }
     catch {
       /** Exponential backoff per retry; doubles on each attempt (250 ms, 500 ms, 1 s). */
       const delay = PUT_BACKOFF_BASE_MS * (1 << attempt);
-      // oxlint-disable-next-line no-await-in-loop
       await wait(delay,);
     }
   }
+  /* oxlint-enable eslint/no-await-in-loop */
   return null;
 }
 
@@ -348,7 +362,7 @@ async function dropAcked(
     const entry = input.queue[index];
     if (entry === undefined)
       continue;
-    if (entry.draftId === input.draftId && entry.seq <= input.ack) {
+    if ((entry.draftId === input.draftId) && (entry.seq <= input.ack)) {
       input.queue.splice(
         index,
         1,
@@ -423,28 +437,18 @@ async function readPersistedQueue(db: IDBDatabase,): Promise<ChunkUpload[]> {
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /** Resolved records; sorted in place below so the drain loop emits original order. */
   const raw = await idbRequestResult<ChunkUpload[]>(request,);
-  raw.sort(comparePersistedUpload,);
+  // Array.sort dictates the (a, b) => number callback shape, so the
+  // comparator stays inline rather than being promoted to a top-level
+  // declaration that would violate require-destructured-params.
+  raw.sort(function comparePersistedUpload(
+    a: ChunkUpload,
+    b: ChunkUpload,
+  ): number {
+    if (a.draftId !== b.draftId)
+      return a.draftId < b.draftId ? -1 : 1;
+    return a.seq - b.seq;
+  },);
   return raw;
-}
-
-/**
- * Compare-by-`(draftId, seq)` for sorting the rehydrated queue so the
- * drain loop emits chunks in their original order.
- *
- * @param a - left side of the comparison
- *
- * @param b - right side of the comparison
- *
- * @returns negative when `a` precedes `b`, positive when `b` precedes
- *          `a`, zero when equal
- */
-function comparePersistedUpload(
-  a: ChunkUpload,
-  b: ChunkUpload,
-): number {
-  if (a.draftId !== b.draftId)
-    return a.draftId < b.draftId ? -1 : 1;
-  return a.seq - b.seq;
 }
 
 /**

@@ -198,8 +198,10 @@ export function splitAt(
     return 0;
   if (input.at >= input.table.length)
     return input.table.pieces.length;
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor advanced per iteration: `cursor` tracks the running document offset for the piece-table walk and is reassigned at the end of every loop body that doesn't return */
   /** Running document offset that tracks the start of `piece` per iteration. */
   let cursor = 0;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
   for (let index = 0; index < input.table.pieces.length; index += 1) {
     /** Currently-visited piece; null sentinel breaks the loop on sparse arrays. */
     const piece = input.table.pieces[index];
@@ -269,9 +271,9 @@ export function applyToTable(
     changeset,
   } = input;
   if (
-    changeset.from < 0
-    || changeset.to < changeset.from
-    || changeset.to > table.length
+    (changeset.from < 0)
+    || (changeset.to < changeset.from)
+    || (changeset.to > table.length)
   ) {
     throw new Error(
       `invalid changeset: from=${String(changeset.from,)} to=${

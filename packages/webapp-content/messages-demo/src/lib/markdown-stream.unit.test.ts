@@ -180,10 +180,10 @@ await describe({
         it({
           name: 'strips a leading heading marker',
           fn: async () => {
-            expect(extractPreview(
-              '# Hello\n\nWorld',
-              50,
-            ),)
+            expect(extractPreview({
+              md: '# Hello\n\nWorld',
+              maxLength: 50,
+            },),)
               .toBe('Hello World',);
           },
         },),
@@ -191,10 +191,10 @@ await describe({
         it({
           name: 'returns placeholder when source is a pure code block',
           fn: async () => {
-            expect(extractPreview(
-              '```\ncode\n```',
-              50,
-            ),)
+            expect(extractPreview({
+              md: '```\ncode\n```',
+              maxLength: 50,
+            },),)
               .toBe('(no text preview)',);
           },
         },),
@@ -203,10 +203,10 @@ await describe({
           name: 'truncates to maxLength characters',
           fn: async () => {
             const md = 'word '.repeat(100,);
-            expect(extractPreview(
+            expect(extractPreview({
               md,
-              50,
-            )
+              maxLength: 50,
+            },)
               .length,)
               .toBeLessThanOrEqual(50,);
           },
@@ -215,10 +215,10 @@ await describe({
         it({
           name: 'strips inline code markers',
           fn: async () => {
-            expect(extractPreview(
-              'see `foo()` for details',
-              50,
-            ),)
+            expect(extractPreview({
+              md: 'see `foo()` for details',
+              maxLength: 50,
+            },),)
               .toBe('see for details',);
           },
         },),
@@ -226,10 +226,10 @@ await describe({
         it({
           name: 'preserves link text and drops the href',
           fn: async () => {
-            expect(extractPreview(
-              'click [here](https://example.com) please',
-              50,
-            ),)
+            expect(extractPreview({
+              md: 'click [here](https://example.com) please',
+              maxLength: 50,
+            },),)
               .toBe('click here please',);
           },
         },),
@@ -237,10 +237,10 @@ await describe({
         it({
           name: 'drops images entirely',
           fn: async () => {
-            expect(extractPreview(
-              '![alt](pic.png) caption',
-              50,
-            ),)
+            expect(extractPreview({
+              md: '![alt](pic.png) caption',
+              maxLength: 50,
+            },),)
               .toBe('caption',);
           },
         },),
@@ -248,10 +248,10 @@ await describe({
         it({
           name: 'collapses runs of whitespace',
           fn: async () => {
-            expect(extractPreview(
-              'a   b\n\n\nc',
-              50,
-            ),)
+            expect(extractPreview({
+              md: 'a   b\n\n\nc',
+              maxLength: 50,
+            },),)
               .toBe('a b c',);
           },
         },),
@@ -259,10 +259,10 @@ await describe({
         it({
           name: 'returns placeholder on empty input',
           fn: async () => {
-            expect(extractPreview(
-              '',
-              50,
-            ),)
+            expect(extractPreview({
+              md: '',
+              maxLength: 50,
+            },),)
               .toBe('(no text preview)',);
           },
         },),

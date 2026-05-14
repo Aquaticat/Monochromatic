@@ -78,30 +78,28 @@ function tierFor(charCount: number,): 1 | 2 | 3 {
 /**
  * Renders the page for one chunk of a message.
  *
- * @param input - message id and chunk index from the URL
- *
- * @param ifNoneMatch - request `If-None-Match` header for ETag negotiation
+ * @param input - message id, chunk index from the URL, and the request
+ *                `If-None-Match` header for ETag negotiation
  *
  * @returns HTTP `Response`: 200 with HTML, 304 Not Modified, 404 Not
  *          Found, or 410 Gone
  *
  * @example
  * ```ts
- * const response = await renderMessageChunk({ messageId: 5, chunkIndex: 0 }, null);
+ * const response = await renderMessageChunk({ messageId: 5, chunkIndex: 0, ifNoneMatch: null });
  * ```
  */
 export async function renderMessageChunk(
   input: {
     messageId: number;
     chunkIndex: number;
+    ifNoneMatch: string | null;
   },
-  ifNoneMatch: string | null,
 ): Promise<Response> {
   await db.exec('BEGIN DEFERRED',);
-  /** Snapshot reused across the chunk count check, ETag, and chunk fetch. */
-  let snapshot: MessageSnapshot | null = null;
   try {
-    snapshot = await getSnapshot(input.messageId,);
+    /** Snapshot reused across the chunk count check, ETag, and chunk fetch. */
+    const snapshot = await getSnapshot(input.messageId,);
     if (snapshot === null) {
       // Distinguish gone from not-found so the client can decide
       // whether to clear cached state or follow a redirect.
@@ -134,10 +132,10 @@ export async function renderMessageChunk(
       revision: snapshot.revision,
       chunkIndex: input.chunkIndex,
     },);
-    if (matches(
-      ifNoneMatch,
+    if (matches({
+      ifNoneMatch: input.ifNoneMatch,
       etag,
-    )) {
+    },)) {
       await db.exec('COMMIT',);
       return new Response(
         null,
@@ -151,7 +149,7 @@ export async function renderMessageChunk(
       );
     }
 
-    if (input.chunkIndex < 0 || input.chunkIndex >= snapshot.chunkCount) {
+    if ((input.chunkIndex < 0) || (input.chunkIndex >= snapshot.chunkCount)) {
       await db.exec('COMMIT',);
       return new Response(
         renderSimplePage({
@@ -250,7 +248,7 @@ function renderChunkBody(
   /** True when the prev link is at chunk 0; renders as a disabled span instead. */
   const prevDisabled = chunkIndex === 0;
   /** True when the next link is at the last chunk; renders as a disabled span instead. */
-  const nextDisabled = chunkIndex >= snapshot.chunkCount - 1;
+  const nextDisabled = chunkIndex >= (snapshot.chunkCount - 1);
 
   /** Three pre-rendered nav items in the order prev, position, next. */
   const navItems: string[] = [
