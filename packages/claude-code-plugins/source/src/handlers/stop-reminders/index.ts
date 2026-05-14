@@ -3,6 +3,7 @@ import type {
   StopOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 import {
+  findCategoricalDismissal,
   findTrailingQuestion,
   findUncertainty,
   stripNonProseRegions,
@@ -44,6 +45,7 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
 
   const prose = stripNonProseRegions(event.last_assistant_message ?? '',);
   const match = findUncertainty(prose,);
+  const dismissal = findCategoricalDismissal(prose,);
   const question = findTrailingQuestion(prose,);
 
   const reasons: string[] = [];
@@ -55,6 +57,17 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
       'Always research thoroughly before responding.',
       'If you have already investigated and the uncertainty is genuinely warranted,',
       'say so explicitly and continue with your response.',
+      'This may be a false positive; use your judgement.',
+    );
+  }
+
+  if (dismissal !== undefined) {
+    reasons.push(
+      `Your response contains an uncited categorical dismissal ("${dismissal.phrase}").`,
+      'Categorical dismissals are one rg/find/config-read/AGENTS.md-grep away from being verified.',
+      'Cite the search result inline on the same line as the dismissal:',
+      'a file path with an extension, a path:line reference, or the literal "AGENTS.md".',
+      'If the dismissal was wrong, fold the now-relevant option back into the analysis.',
       'This may be a false positive; use your judgement.',
     );
   }
@@ -83,8 +96,8 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
-/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 function stopRemindersParser(raw: string,): StopInput {
+  /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
   return JSON.parse(raw,) as StopInput;
 }
 

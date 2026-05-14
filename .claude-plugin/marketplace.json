@@ -66,6 +66,14 @@
       "tags": ["time", "context", "user-prompt-submit", "hooks"]
     },
     {
+      "name": "correction-reminder",
+      "source": "./packages/claude-code-plugins/correction-reminder",
+      "description": "Detects correction phrases in user prompts and reminds Claude to call advisor before its next substantive response.",
+      "version": "0.0.1",
+      "category": "quality",
+      "tags": ["correction", "advisor", "user-prompt-submit", "hooks", "quality"]
+    },
+    {
       "name": "research-agent",
       "source": "./packages/claude-code-plugins/research-agent",
       "description": "Provides a research subagent with anti-hallucination guardrails for investigating external projects, GitHub discussions, and technical questions.",

@@ -13,6 +13,7 @@
     "./handlers/terminal-title": "./src/handlers/terminal-title/index.ts",
     "./handlers/claude-spawn": "./src/handlers/claude-spawn/index.ts",
     "./handlers/prompt-time": "./src/handlers/prompt-time.ts",
+    "./handlers/correction-reminder": "./src/handlers/correction-reminder.ts",
     "./cli/spawn-claude": "./src/cli/spawn-claude.ts"
   },
   "bin": {

@@ -32,12 +32,13 @@ Before sending any response with substantive claims:
 2. Described how an external tool works without reading its source? Clone and read (see "Third-party libraries"), or label as recall-from-training.
 3. Estimated the difficulty of a fix you have not built? Drop the estimate.
 4. Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
-5. Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents)? Measure it.
+5. Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/syntax/feature is used in the codebase, whether a config already covers the behaviour being proposed, whether AGENTS.md already bans/requires the thing being weighed)? Measure it. Categorical dismissals ("the project doesn't use X", "X doesn't apply here", "X is already handled by Y") feel like recall but are one `rg`/`find`/config-read/AGENTS.md-grep away from being checked. **AGENTS.md itself counts as a config to read.** Cite the search result inline (file path, line number, or config key); if the dismissal was wrong, fold the now-relevant option back into the analysis.
 6. Assumed a non-measurable preference (which approach, what they value)? Ask.
 7. Confident factual claim about your environment, an external tool, or source code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
 8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
 9. Quoted a clause or doc passage and drawn a conclusion from it? Restate the subject and object in plain English before relying on the conclusion. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
 10. About to ask the user to perform a manual action? Apply "Handing off manual actions": try the bridging path first; if you must hand off, write it in HANDOVER format.
+11. Revising a substantive claim the user just corrected? Call advisor before sending. The original reasoning had a blind spot; the revision shares it unless a fresh pair of eyes sees the transcript. User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
 
 ### Measure-vs-ask
 
@@ -80,6 +81,8 @@ Do not write these; do the step instead.
 - "should be straightforward": drop "straightforward" or test the path
 - "no public diagnosis exists" used as a stopping point: drop or clone the source yourself (see "Third-party libraries")
 - "an afternoon" or any other duration estimate: only valid if you have built a similar fix in this codebase before; otherwise drop
+- "the project doesn't use X" / "we don't use X" / "the codebase doesn't have X" used to cut off a candidate without verifying: one `rg`/`find`/config-read away; cite the search result or drop the dismissal. AGENTS.md and tsconfig count as places X may be wired up.
+- "X is already handled by Y" / "X is already covered by Y" used as a dismissal: read Y's config or source to confirm the overlap before dropping X from consideration. Pair the dismissal with a file path and line number, or drop it.
 
 The `ccsr` stop hook catches some of these at response-send time; internal self-catch is faster.
 

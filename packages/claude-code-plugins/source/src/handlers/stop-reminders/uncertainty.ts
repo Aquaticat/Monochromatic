@@ -170,6 +170,42 @@ function stripNonProseRegions(text: string,): string {
 
 //endregion
 
+//region Categorical-dismissal patterns
+
+/**
+ * Phrases that dismiss a candidate from consideration by appealing to a
+ * categorical fact about the project. Each is a `rg`/`find`/config-read away
+ * from being verified; uncited usage is the failure mode captured here.
+ *
+ * Specific session evidence (`1cbe8d82`): "project doesn't use JSX" was
+ * dismissed without `rg`; tsconfig had `jsx: preserve` and six fragments
+ * actively imported a JSX runtime.
+ */
+const DISMISSAL_PATTERNS: readonly RegExp[] = [
+  /\b(?:the )?project doesn['']?t use\b/i,
+  /\bwe don['']?t use\b/i,
+  /\b(?:the )?codebase doesn['']?t (?:use|have)\b/i,
+  /\bdoesn['']?t apply here\b/i,
+  /\bis already (?:handled|covered) by\b/i,
+];
+
+/**
+ * Patterns that count as a citation for the purpose of allowing a dismissal.
+ * If a dismissal line contains any of these, the dismissal is treated as
+ * grounded and not flagged.
+ *
+ * - File path with a recognized extension (`foo/bar.ts`, `tsconfig.options.json`)
+ * - Line-number suffix on a path (`:42`)
+ * - The literal `AGENTS.md` (explicit citation target per AGENTS.md rule 5)
+ */
+const CITATION_PATTERNS: readonly RegExp[] = [
+  /[\w./@-]+\.(?:ts|tsx|js|jsx|json|md|yaml|yml|toml|rs|py)\b/i,
+  /:\d{1,5}\b/,
+  /\bAGENTS\.md\b/,
+];
+
+//endregion
+
 //region Detection
 
 /**
@@ -237,6 +273,72 @@ const TRAILING_QUESTION_SCAN_LENGTH = 500;
  * // => { sentence: 'Want me to run the tests?' }
  * ```
  */
+/**
+ * Tests whether a line contains any citation indicator (file path with
+ * extension, `:N` line-number suffix, or the literal `AGENTS.md`).
+ *
+ * @param line - one prose line to inspect
+ *
+ * @returns `true` when the line carries at least one citation signal
+ *
+ * @example
+ * ```ts
+ * lineHasCitation('skip — see packages/x/y.ts:42');  // true
+ * lineHasCitation('the project doesn\'t use JSX');   // false
+ * ```
+ */
+function lineHasCitation(line: string,): boolean {
+  for (const pattern of CITATION_PATTERNS) {
+    if (pattern.test(line,))
+      return true;
+  }
+  return false;
+}
+
+/**
+ * Scans prose line-by-line for categorical-dismissal phrases that are not
+ * accompanied by a citation on the same line.
+ *
+ * A dismissal is treated as grounded when the line carries a file path, a
+ * `:N` line-number suffix, or names `AGENTS.md` directly; in that case the
+ * line is allowed and scanning continues. Uncited dismissals are flagged so
+ * the agent verifies the claim or removes it.
+ *
+ * Per-line scope keeps the check practical: a response with citations
+ * elsewhere does not blanket-authorise uncited dismissals scattered in
+ * other bullets.
+ *
+ * @param prose - text with code blocks and quotes already stripped
+ *
+ * @returns match details if an uncited dismissal was found, `undefined` otherwise
+ *
+ * @example
+ * ```ts
+ * findCategoricalDismissal('All JSX rules: project doesn\'t use JSX.');
+ * // => { phrase: "project doesn't use", pattern: /.../ }
+ *
+ * findCategoricalDismissal('Skip — project doesn\'t use X (see tsconfig.json:5)');
+ * // => undefined
+ * ```
+ */
+function findCategoricalDismissal(prose: string,): UncertaintyMatch | undefined {
+  const lines = prose.split('\n',);
+  for (const line of lines) {
+    if (lineHasCitation(line,))
+      continue;
+    for (const pattern of DISMISSAL_PATTERNS) {
+      const match = pattern.exec(line,);
+      if (match !== null) {
+        return {
+          phrase: match[0],
+          pattern,
+        };
+      }
+    }
+  }
+  return undefined;
+}
+
 function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
   const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH,);
 
@@ -266,6 +368,7 @@ function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
 //endregion
 
 export {
+  findCategoricalDismissal,
   findTrailingQuestion,
   findUncertainty,
   stripNonProseRegions,
