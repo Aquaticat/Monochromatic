@@ -64,6 +64,7 @@ export type MessageSnapshot = {
  * ```
  */
 export async function listFeed(cursor: Cursor | null,): Promise<FeedMessage[]> {
+  /** Raw SQL rows from the cursor or non-cursor query; mapped to the FeedMessage shape below. */
   const rows = cursor === null
     ? await all<{
       id: number;
@@ -137,6 +138,7 @@ export async function feedAggregates(): Promise<{
   maxId: number;
   maxUpdatedAt: number;
 }> {
+  /** Single-row aggregates query; nulls map to zeros so empty corpora still produce a stable ETag. */
   const row = await get<{
     max_id: number | null;
     max_updated_at: number | null;
@@ -169,6 +171,7 @@ export async function feedAggregates(): Promise<{
  * ```
  */
 export async function getSnapshot(messageId: number,): Promise<MessageSnapshot | null> {
+  /** Single-row snapshot lookup; null result or non-null `deleted_at` returns the public null below. */
   const row = await get<{
     id: number;
     draft_id: string;
@@ -211,6 +214,7 @@ export async function getSnapshot(messageId: number,): Promise<MessageSnapshot |
  * ```
  */
 export async function messageExists(messageId: number,): Promise<boolean> {
+  /** Single-row EXISTS probe; null result returns `false` via the coalesce. */
   const row = await get<{ exists: number; }>(
     'SELECT EXISTS(SELECT 1 FROM messages WHERE id = ?) AS "exists"',
     [messageId,],
@@ -250,17 +254,20 @@ export async function getChunk(
   // Turso does not implement recursive CTEs, so we walk the chain in
   // JS. Chain depth is `revision - 1`; capped at 10 by the edit handler,
   // so this loop is bounded.
+  /** Head draft row; absence means the message id is unknown. */
   const head = await get<{ draft_id: string; }>(
     'SELECT draft_id FROM messages WHERE id = ?',
     [input.messageId,],
   );
   if (head === undefined)
     return null;
+  /** Walk cursor; advances to each draft's parent until a chunk is found or the chain ends. */
   let cursor: string | null = head.draft_id;
   // Chain walk: each iteration must read the previous draft's parent_id
   // before deciding whether to keep walking. Inherently sequential.
   /* oxlint-disable no-await-in-loop */
   while (cursor !== null) {
+    /** Chunk row in the current draft, if present; non-undefined returns the chunk immediately. */
     const found = await get<{
       md: string;
       html: string;
@@ -273,6 +280,7 @@ export async function getChunk(
     );
     if (found !== undefined)
       return found;
+    /** Parent draft id used to step the chain back one revision. */
     const parentRow: { parent_id: string | null; } | undefined = await get<
       { parent_id: string | null; }
     >(
@@ -328,6 +336,7 @@ export async function editMessage(
 ): Promise<EditOutcome> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
+    /** Current message row; drives the outcome variant based on existence, ownership, and revision cap. */
     const message = await get<{
       user_id: string;
       revision: number;
@@ -348,6 +357,7 @@ export async function editMessage(
       await db.exec('ROLLBACK',);
       return { kind: 'capped', };
     }
+    /** Child draft row; absent or mismatched ownership becomes `forbidden`. */
     const newDraft = await get<{
       user_id: string;
       finalized: number;
@@ -360,7 +370,9 @@ export async function editMessage(
       return { kind: 'forbidden', };
     }
 
+    /** Captured before the UPDATE so messages.updated_at reflects the commit moment. */
     const now = Date.now();
+    /** Incremented revision returned to the handler so it can echo the new value. */
     const newRevision = message.revision + 1;
     await run(
       `UPDATE messages
@@ -419,6 +431,7 @@ export async function softDeleteMessage(
     userId: string;
   },
 ): Promise<DeleteOutcome> {
+  /** Current message row; absent or already-deleted becomes `not-found`, mismatched user becomes `forbidden`. */
   const message = await get<{
     user_id: string;
     deleted_at: number | null;
@@ -432,6 +445,7 @@ export async function softDeleteMessage(
     return { kind: 'not-found', };
   if (message.user_id !== input.userId)
     return { kind: 'forbidden', };
+  /** Captured before the UPDATE so deleted_at and updated_at land at the same instant. */
   const now = Date.now();
   await run(
     'UPDATE messages SET deleted_at = ?, updated_at = ? WHERE id = ?',

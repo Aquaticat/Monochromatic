@@ -53,7 +53,9 @@ export async function renderFeed(
   cursorToken: string | null,
   ifNoneMatch: string | null,
 ): Promise<Response> {
+  /** Aggregate signature fed into the ETag; matches against `If-None-Match` for 304s. */
   const aggregates = await feedAggregates();
+  /** Computed ETag; sent on both 200 and 304 responses. */
   const etag = etagForFeed(aggregates,);
   if (matches(
     ifNoneMatch,
@@ -71,10 +73,14 @@ export async function renderFeed(
     );
   }
 
+  /** Decoded keyset cursor; null on the first page or when the token is absent. */
   const cursor = cursorToken === null ? null : decodeCursor(cursorToken,);
+  /** Materialised page of feed entries used to render the cards and the pagination link. */
   const messages = await listFeed(cursor,);
+  /** Rendered feed body HTML; embedded in the layout's main slot. */
   const body = renderFeedBody(messages,);
 
+  /** Complete HTML document returned to the client. */
   const html = renderPage({
     title: cursor === null ? 'messages-demo' : `messages-demo (older)`,
     body,
@@ -110,8 +116,10 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
     },);
   }
 
+  /** Mapped HTML string per card; joined below into the feed section. */
   const cards = messages
     .map(function toCard(message,) {
+      /** Card header HTML (author, date, optional revision badge). */
       const cardHeader = h({
         tag: 'header',
         attrs: { class: 'card-meta', },
@@ -139,12 +147,14 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
         ],
       },);
 
+      /** Card preview body HTML (truncated message text). */
       const cardBody = h({
         tag: 'p',
         attrs: { class: 'card-preview', },
         text: message.preview,
       },);
 
+      /** Card footer HTML (open link, chunk count when paginated). */
       const cardFooter = h({
         tag: 'footer',
         attrs: { class: 'card-actions', },
@@ -173,9 +183,12 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
     },)
     .join('',);
 
+  /** Pagination HTML; empty when the page is incomplete. */
   let pagination = '';
+  /** Last entry on the page; cursor seed for the "older" link. */
   const last = messages.at(-1,);
   if (messages.length === FEED_PAGE_SIZE && last !== undefined) {
+    /** Opaque cursor pointing to the next page. */
     const next = encodeCursor({
       createdAt: last.createdAt,
       id: last.id,
@@ -230,7 +243,9 @@ const ISO_DATE_PREFIX_LENGTH = 10;
  * ```
  */
 function formatRelative(timestamp: number,): string {
+  /** Current ms-since-epoch used as the relative anchor. */
   const now = Date.now();
+  /** Seconds elapsed between `timestamp` and `now`; non-negative for past entries. */
   const deltaSeconds = Math.floor((now - timestamp) / MS_PER_SECOND,);
   if (deltaSeconds < SECONDS_PER_MINUTE)
     return 'just now';
