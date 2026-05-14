@@ -29,8 +29,10 @@ export type DisposableSandbox = SinonSandbox & {
  * ```
  */
 export function createSinon(config?: SinonSandboxConfig,): DisposableSandbox {
-  // oxlint-disable-next-line no-unsafe-type-assertion -- sinon sandbox matches SinonSandbox but lacks dispose symbols
+  /* oxlint-disable no-unsafe-type-assertion -- sinon sandbox matches SinonSandbox but lacks dispose symbols */
+  /** Local binding so dispose symbols can be installed before returning. */
   const sandbox = createSandbox(config,) as DisposableSandbox;
+  /* oxlint-enable no-unsafe-type-assertion */
 
   sandbox[Symbol.dispose] = function dispose(): void {
     sandbox.restore();

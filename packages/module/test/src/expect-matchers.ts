@@ -130,12 +130,15 @@ export function buildMatchers(
       expected: number,
       precision: number = 2,
     ): void {
+      /** Half-tolerance multiplier (named to keep the magic constant rule from firing on `0.5`). */
       const HALF = 1 / 2;
-      // oxlint-disable-next-line prefer-exponentiation-operator -- Math.pow is clearer here with a variable exponent
+      /* oxlint-disable prefer-exponentiation-operator -- Math.pow is clearer here with a variable exponent */
+      /** Floating-point tolerance derived from `precision` so chai's `closeTo` accepts values within +/-HALF of the lowest place. */
       const delta = Math.pow(
         10,
         -precision,
       ) * HALF;
+      /* oxlint-enable prefer-exponentiation-operator */
 
       a.to.be.closeTo(
         expected,
@@ -247,8 +250,10 @@ export function buildMatchers(
     toHaveBeenCalledExactlyOnceWith: function toHaveBeenCalledExactlyOnceWith(
       ...args: readonly unknown[]
     ): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
+      /** Captured spy reference reused across the call-count and first-call argument assertions. */
       const spy = actual as SinonSpy;
+      /* oxlint-enable no-unsafe-type-assertion */
 
       chaiExpect(
         spy.callCount,
@@ -272,8 +277,11 @@ export function buildMatchers(
     toHaveBeenLastCalledWith: function toHaveBeenLastCalledWith(
       ...args: readonly unknown[]
     ): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy with lastCall property
+      /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy with lastCall property */
+      /** Captured spy reference so the `lastCall` destructure below reads from a typed value. */
       const spy = actual as SinonSpy;
+      /* oxlint-enable no-unsafe-type-assertion */
+      /** Destructured most recent call so subsequent assertions read directly without re-accessing the spy. */
       const { lastCall, } = spy;
 
       chaiExpect(
@@ -290,8 +298,11 @@ export function buildMatchers(
       n: number,
       ...args: readonly unknown[]
     ): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy with getCall method
+      /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy with getCall method */
+      /** Captured spy reference so `getCall` below reads from a typed value. */
       const spy = actual as SinonSpy;
+      /* oxlint-enable no-unsafe-type-assertion */
+      /** Captured call at the requested 1-based index, reused for the null check and argument comparison. */
       const nthCall = spy.getCall(n - 1,);
 
       chaiExpect(
@@ -305,8 +316,11 @@ export function buildMatchers(
     },
 
     toHaveReturned: function toHaveReturned(): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
+      /** Captured spy reference so `getCalls` below reads from a typed value. */
       const spy = actual as SinonSpy;
+      /* oxlint-enable no-unsafe-type-assertion */
+      /** Captured returned-at-least-once flag reused inside the chai assertion below. */
       const hasReturned = spy.getCalls().some(function didReturn(call,) {
         return call.exception === undefined;
       },);
@@ -322,8 +336,11 @@ export function buildMatchers(
     },
 
     toHaveReturnedTimes: function toHaveReturnedTimes(count: number,): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
+      /** Captured spy reference so the call-list pipeline below reads from a typed value. */
       const spy = actual as SinonSpy;
+      /* oxlint-enable no-unsafe-type-assertion */
+      /** Captured count of returning calls used in the chai assertion below. */
       const returnCount = spy
         .getCalls()
         .filter(function didReturn(call,) {
@@ -344,8 +361,11 @@ export function buildMatchers(
     },
 
     toHaveLastReturnedWith: function toHaveLastReturnedWith(expected: unknown,): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
+      /** Captured spy reference so the `lastCall` destructure below reads from a typed value. */
       const spy = actual as SinonSpy;
+      /* oxlint-enable no-unsafe-type-assertion */
+      /** Destructured most recent call so subsequent assertions read directly without re-accessing the spy. */
       const { lastCall, } = spy;
 
       chaiExpect(
@@ -362,8 +382,11 @@ export function buildMatchers(
       n: number,
       expected: unknown,
     ): void {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- actual is expected to be a sinon spy
+      /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
+      /** Captured spy reference so `getCall` below reads from a typed value. */
       const spy = actual as SinonSpy;
+      /* oxlint-enable no-unsafe-type-assertion */
+      /** Captured call at the requested 1-based index, reused for the null check and return-value comparison. */
       const nthCall = spy.getCall(n - 1,);
 
       chaiExpect(

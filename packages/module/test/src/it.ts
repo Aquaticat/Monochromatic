@@ -84,6 +84,7 @@ async function runFnOnce({
   readonly name: string;
   readonly timeout: number | undefined;
 },): Promise<void> {
+  /** Hoists the test-fn invocation so it can be optionally wrapped with `withTimeout`. */
   const promise = fn(ctx,);
 
   await (timeout !== undefined
@@ -132,6 +133,7 @@ async function runIt(
     readonly opts: ItOptions;
   },
 ): Promise<ItResult> {
+  /** Pulls out individual fields with their defaults so the body can refer to them without re-reading the option object. */
   const {
     name,
     fn,
@@ -149,6 +151,7 @@ async function runIt(
    * so the full chain reads root-first: `[outer] [inner] [test-name] PASS`.
    */
   const baseLogger = explicitLogger ?? descriptorCtx.parentLogger;
+  /** Composed tagged logger used for every PASS/FAIL/SKIP line of this test. */
   const l = baseLogger !== undefined
     ? tagged({
       tag: name,
@@ -157,26 +160,35 @@ async function runIt(
     : tagged({ tag: name, },);
 
   if (skip !== false) {
+    /** Reason suffix appended after the SKIP keyword when a string was supplied. */
     const reason = typeof skip === 'string' ? `: ${skip}` : '';
     l.info(`SKIP${reason}`,);
     return { name, };
   }
 
+  /** Scoped expect plus its tracker so per-run assertion counts can be checked after each iteration. */
   const [scopedExpect, tracker,] = createScopedExpect();
+  /** Sinon sandbox tied to this test so stubs auto-restore when the function returns. */
   await using sandbox = createSinon();
+  /** Test context handed to the user-supplied test body. */
   const ctx: TestContext = {
     expect: scopedExpect,
     sinon: sandbox,
   };
 
+  /** Total iteration count: one base run plus any explicit repeats. */
   const totalRuns = 1 + repeats;
 
   for (let run = 0; run < totalRuns; run += 1) {
+    /** Per-iteration label inserted in log messages so repeat runs can be told apart. */
     const runLabel = totalRuns > 1
       ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]`
       : '';
+    /** Tracks whether the test body threw so post-run logic can branch on outcome. */
     let threw = false;
+    /** Captured throwable so failure formatting and rethrow can use the original cause. */
     let caughtError: unknown = undefined;
+    /** Start timestamp for this iteration so duration can be reported in PASS/FAIL output. */
     const runStart = performance.now();
 
     tracker.count = 0;
@@ -200,8 +212,10 @@ async function runIt(
     // clean sandbox; `await using` only fires at function-scope exit.
     sandbox.restore();
 
+    /** Elapsed time for this iteration, formatted into the result log line. */
     const durationMs = performance.now() - runStart;
 
+    /** Inline annotation appended after the FAIL/PASS line when `fails` was set as a string. */
     const failsReason = typeof fails === 'string' ? ` (${fails})` : '';
 
     if (fails !== false) {
@@ -212,6 +226,7 @@ async function runIt(
         continue;
       }
 
+      /** Synthetic cause attached to the rethrow when a `fails`-marked test unexpectedly passes. */
       const failsCause = new Error('Expected test to throw but it passed',);
       // oxlint-disable-next-line no-await-in-loop -- formatFailure is async; await is required before the throw on the next line, and only one loop iteration runs on this path
       l.error(await formatFailure({
@@ -238,6 +253,7 @@ async function runIt(
 
     //region Assertion count verification
     if (tracker.expected !== null && tracker.count !== tracker.expected) {
+      /** Synthetic cause naming the assertion-count mismatch so the failure surface mirrors a regular throw. */
       const assertionCause = new Error(
         `Expected ${String(tracker.expected,)} assertions, but ${
           String(tracker.count,)
@@ -257,6 +273,7 @@ async function runIt(
     }
 
     if (tracker.requiresAtLeastOne && tracker.count === 0) {
+      /** Synthetic cause used when `expect.hasAssertions()` was declared but no assertion ran. */
       const noAssertionsCause = new Error(
         'Expected at least one assertion to be called',
       );

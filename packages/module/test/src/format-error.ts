@@ -84,6 +84,7 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
  */
 async function resolveWorkspacePrefix(): Promise<string> {
   try {
+    /** Captured root so the trailing slash can be appended exactly once before returning. */
     const root = await findMonorepoRootCached();
     return `${root}/`;
   }
@@ -256,6 +257,7 @@ function readStackFrames({
 },): readonly string[] {
   if (!('stack' in error) || typeof error.stack !== 'string')
     return [];
+  /** Raw newline-split stack lines, before header-line trimming and per-frame cleanup. */
   const rawLines = error.stack.split('\n',);
   /**
    * V8 and JavaScriptCore prefix the stack with `ErrorName: message`
@@ -332,8 +334,11 @@ function formatNode({
 
   visited.add(value,);
 
+  /** Extracted message kept in a local so it can be reused for header construction and stack-header trimming. */
   const message = readMessage(value,);
+  /** Class label rendered ahead of the message; held in a local for the same reason as `message`. */
   const label = readErrorLabel(value,);
+  /** Cleaned stack frames produced once per node so the cause and aggregate branches both see the same set. */
   const frames = readStackFrames({
     error: value,
     message,
@@ -347,9 +352,12 @@ function formatNode({
   const framesInline = frames.length > 0
     ? ` ${frames.join(' ',)}`
     : '';
+  /** Composed header-plus-frames string for this node, prepended to the descendants in the return list. */
   const line = `${headerPrefix}${label}: ${message}${framesInline}`;
 
+  /** Cause value pulled out so the recursion only runs once when a cause exists. */
   const causeValue: unknown = 'cause' in value ? value.cause : undefined;
+  /** Recursively rendered cause subtree, kept separate from `errorLines` so cause precedes aggregate members. */
   const causeLines = causeValue !== undefined
     ? formatNode({
       headerPrefix: 'Caused by: ',
@@ -359,7 +367,9 @@ function formatNode({
     },)
     : [];
 
+  /** `errors` field pulled out so the array check and subsequent iteration both refer to the same captured value. */
   const errorsField: unknown = 'errors' in value ? value.errors : undefined;
+  /** Recursively rendered aggregate members, appended after `causeLines` to keep walk order stable. */
   const errorLines: readonly string[] = Array.isArray(errorsField,)
     ? errorsField.flatMap(function formatAggregateMember(
       member,
@@ -418,7 +428,9 @@ function formatNode({
  * ```
  */
 export async function formatErrorDeep(value: unknown,): Promise<readonly string[]> {
+  /** Shared cycle-detection set so a self-referential `.cause` does not recurse forever. */
   const visited = new WeakSet<object>();
+  /** Resolved once per top-level walk so all descendants see the same prefix. */
   const workspacePrefix = await resolveWorkspacePrefix();
   return formatNode({
     headerPrefix: '',
@@ -469,9 +481,11 @@ export async function formatFailure({
   readonly summary: string;
   readonly value: unknown;
 },): Promise<string> {
+  /** Walked error chain reused across the empty-check and the summary fusion. */
   const lines = await formatErrorDeep(value,);
   if (lines.length === 0)
     return summary;
+  /** First line is fused onto the summary so the tagged logger's prefix only renders once. */
   const [first, ...rest] = lines;
   return [
     `${summary} ${first}`,
