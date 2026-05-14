@@ -140,6 +140,7 @@ type XmlOptions = {
     children,
   }: XmlOptions,
 ): string {
+  /** Accumulates serialization fragments so they can be joined once at the end without intermediate string concatenations. */
   const parts: string[] = [`<${tag}`,];
 
   if (attrs !== undefined) {
@@ -149,6 +150,7 @@ type XmlOptions = {
 
   //region Self-closing check
   // XML has no void elements; instead, childless elements self-close.
+  /** Flags whether the element has body content so the caller can choose between self-closing and the open/close pair. */
   const hasContent = text !== undefined
     || raw !== undefined
     || (children !== undefined && children.length > 0);

@@ -124,8 +124,10 @@ type HOptions<TTag extends string,> = {
     children,
   }: HOptions<TTag>,
 ): ElementFromTag<TTag> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement, narrowed via tag generic
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement, narrowed via tag generic */
+  /** Narrows the created element so subsequent property writes are checked against the resolved tag mapping. */
   const element = document.createElement(tag,) as ElementFromTag<TTag>;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
 
   if (className !== undefined)
     element.className = className;

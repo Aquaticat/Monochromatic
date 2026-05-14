@@ -191,6 +191,7 @@ function camelToKebab(property: string,): string {
     children,
   }: HOptions,
 ): string {
+  /** Accumulates serialization fragments so they can be joined once at the end without intermediate string concatenations. */
   const parts: string[] = [`<${tag}`,];
 
   if (className !== undefined)
@@ -202,6 +203,7 @@ function camelToKebab(property: string,): string {
   }
 
   if (style !== undefined) {
+    /** Holds the serialized inline style value so it can be HTML-escaped as a single attribute before insertion. */
     const declarations = Object
       .entries(style,)
       .map(function toDecl([property, value,],) {

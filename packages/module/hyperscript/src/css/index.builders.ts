@@ -36,6 +36,7 @@ export type {
  * ```
  */
 function serializeDecls(decls: object,): string {
+  /** Accumulates property:value fragments so they can be joined with `;` once at the end. */
   const parts: string[] = [];
 
   for (const [property, value,] of Object.entries(decls,) as readonly [
@@ -112,9 +113,11 @@ function renderBody(
     children: readonly string[] | undefined;
   },
 ): string {
+  /** Accumulates declaration and raw segments so they can be joined with `;` separators. */
   const parts: string[] = [];
 
   if (decls !== undefined) {
+    /** Captures the joined declarations once so the empty check and push read from the same value. */
     const serialized = serializeDecls(decls,);
     if (serialized !== '')
       parts.push(serialized,);
@@ -123,10 +126,12 @@ function renderBody(
   if (raw !== undefined && raw !== '')
     parts.push(raw,);
 
+  /** Holds the concatenated children so the empty case can be detected before composing with the rest of the body. */
   const childrenStr = children !== undefined
     ? children.join('',)
     : '';
 
+  /** Holds the declarations-and-raw section so the join with `childrenStr` can insert a `;` only when both halves are non-empty. */
   const innerStr = parts.join(';',);
 
   if (innerStr !== '' && childrenStr !== '')
@@ -192,6 +197,7 @@ export function buildRule(
 export function buildAtRule(
   options: AtRuleOptions,
 ): string {
+  /** Pulls the at-rule options into named locals so the head and body sections can read each field directly. */
   const {
     at,
     params,
@@ -199,6 +205,7 @@ export function buildAtRule(
     raw,
     children,
   } = options;
+  /** Captures the at-rule keyword and optional params as a single prefix shared by both the statement and block forms. */
   const head = params !== undefined
     ? `@${at} ${params}`
     : `@${at}`;
