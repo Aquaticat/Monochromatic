@@ -315,8 +315,8 @@ All production source files are under 100 lines per the monorepo coding guidelin
 
 ## Tests
 
-145 unit and integration tests covering all modules:
+145 unit and integration tests covering all modules. Run via the mise task (preferred) or by invoking individual `*.unit.test.ts` files directly with `bun`:
 
 ```bash
-bun test packages/dev-script/file-enforcer/src/
+mise run //packages/dev-script/file-enforcer:test:unit
 ```

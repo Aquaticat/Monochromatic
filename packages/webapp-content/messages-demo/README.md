@@ -86,4 +86,4 @@ The DOM- and worker-bound checks must be driven through a running browser:
   and `put queue max <= 4`.
 
 Both 16a and 16c require booting the server and a browser; they are not part of
-the `bun test` suite.
+the unit-test suite (`mise run //packages/webapp-content/messages-demo:test:unit`).

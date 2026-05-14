@@ -9,7 +9,7 @@ so a hang could occur in the spawned process, in output buffering, or in the tes
 
 ## Investigation steps
 
-1. Run the test file directly with `bun test` (bypassing mise) to isolate whether the build step or the test step hangs
+1. Run the test file directly with `bun src/oxlint-stylistic.unit.test.ts` (bypassing mise) to isolate whether the build step or the test step hangs. Do not use `bun test`: the module-test harness runs as a side effect of import, and `bun test` would print misleading `0 pass / 0 fail` summaries even when the tests actually run.
 2. Check whether `oxlint --format json` itself hangs on the fixture files when run manually in the terminal
 3. Check if sandbox restrictions block `oxlint` binary execution or file reads (look for "Operation not permitted" in stderr)
 4. Verify `nano-spawn` subprocess stdout/stderr handling: a full buffer with no reader on stderr could deadlock

@@ -7,13 +7,13 @@ Tests file-enforcer under VPS-like resource constraints using podman containers 
 
 ```bash
 # Micro-benchmarks (fast, runs locally)
-bun test packages/fixture/file-enforcer-perf/src/perf.bench.test.ts
+mise run //packages/test-fixture/file-enforcer-perf:perf:micro
 
 # End-to-end benchmarks with hyperfine (requires hyperfine)
-bun packages/fixture/file-enforcer-perf/src/run-e2e.ts
+mise run //packages/test-fixture/file-enforcer-perf:perf:e2e
 
 # Full constrained benchmark in podman (requires podman, ~2 min)
-bun packages/fixture/file-enforcer-perf/src/run-constrained.ts
+mise run //packages/test-fixture/file-enforcer-perf:perf:constrained
 ```
 
 ## Benchmark fixture
@@ -33,7 +33,7 @@ Writes ~68 destination files total.
 
 ### Micro-benchmarks (`perf.bench.test.ts`)
 
-11 tests using `performance.now()` in `bun:test` (benchmark file, not migrated to module-test).
+11 standalone mitata benchmarks (declared with `bench()` from `mitata`, not the module-test harness; the file runs directly as `bun <path>`).
 Detect gross regressions (10x+ slowdowns) but are inherently unreliable due to JIT optimization, GC pauses, and scheduler jitter.
 Use generous pass thresholds and consume results to prevent dead code elimination.
 
