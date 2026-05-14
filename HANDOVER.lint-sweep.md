@@ -60,26 +60,33 @@ Per-package partial-progress is preserved in the working tree (uncommitted). Man
 
 Full final-status report: `/tmp/lint-orchestrator/final-status.md`.
 
-## Round 2 (v3 orchestrator, RUNNING when handover written)
+## Round 2 (v3 orchestrator) — COMPLETE
 
 - Launched 19:58:51 UTC (15:58:51 local) with v3 orchestrator (`/tmp/lint-orchestrator/run-v3.sh`).
-- `MAX_CONCURRENT=4` (down from 16 to respect API rate limit).
-- `CHILD_TIMEOUT_SEC=5400` (90 minutes; up from 60).
-- 35 packages in queue (`/tmp/lint-orchestrator/queue.txt`).
-- Initial batch: cli/git, cli/mvm, cli/rgffplay, cli/vmsync.
+- `MAX_CONCURRENT=4`, `CHILD_TIMEOUT_SEC=5400`.
+- 35-package queue, all 35 reached terminal state by 21:46:44 UTC (17:46:44 local).
+- ALL DONE at 21:46:44 UTC. Zero timeouts in round 2.
+- One BLOCKED reason: `dev-script/inference-canary-viewer` was already clean from inherited partial work — child correctly committed nothing and reported BLOCKED.
 
 Prompt template at `/tmp/lint-orchestrator/prompt.txt` was updated to handle inherited partial state from killed children:
 - "Run a fresh `mise run //packages/{PKG}:lint` to get CURRENT state. Cached output is stale."
 - "Treat any uncommitted modifications under packages/{PKG}/ as inherited work from your predecessor."
 - Race-safe commit: `git add <paths> && git commit -o <paths>` (the `-o` flag commits only listed paths, ignoring sibling staged work).
 
+## Final state (2026-05-14T21:47Z)
+
+- **48 / 48 packages clean** per `/tmp/lint-orchestrator/final-status.md`. Zero dirty.
+- **44 commits this session.**
+- Across both rounds + the cascade prep + the smoke test, every package that started the day with lint or type issues now passes `mise run //packages/<pkg>:lint`.
+
 ## After resume from compact
 
-1. Check round-2 progress: `tail -40 /tmp/lint-orchestrator/progress.log` and `ls /tmp/lint-orchestrator/{active,done,timeout}/`.
-2. If still running, monitor via `tail -F /tmp/lint-orchestrator/progress.log | grep -E 'LAUNCH|DONE|TIMEOUT|ALL DONE'`.
-3. When orchestrator ALL DONE: re-run `/tmp/lint-orchestrator/final-sweep.sh` to produce a fresh `final-status.md`.
-4. For any still-dirty packages: investigate per-package, likely round 3 with even more focus on specific rules or single packages at a time.
-5. Commit the final state of AUDIT.lint-2026-05-14.md if not yet caught up.
+The lint sweep is done. Likely next steps:
+
+1. Confirm `final-status.md` shows 48 clean / 0 dirty.
+2. Optionally run `mise run lint` at the root to verify end-to-end with the workspace task graph (note the AGENTS.md caveat that this can stop halfway if any single package errors; per-package was authoritative).
+3. Tell the user the sweep finished and point them at the per-package commits for review. The commit messages are detailed enough that they can scan `git log --oneline | head -50`.
+4. Consider a follow-up: add a CI gate that blocks PRs that increase the workspace warning count, so this backlog doesn't accumulate again.
 
 ## Key file locations (persist across compact)
 
