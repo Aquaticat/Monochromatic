@@ -73,20 +73,42 @@ Prompt template at `/tmp/lint-orchestrator/prompt.txt` was updated to handle inh
 - "Treat any uncommitted modifications under packages/{PKG}/ as inherited work from your predecessor."
 - Race-safe commit: `git add <paths> && git commit -o <paths>` (the `-o` flag commits only listed paths, ignoring sibling staged work).
 
-## Final state (2026-05-14T21:47Z)
+## Round 3 (post-compact, 3 slipped packages) — COMPLETE
 
-- **48 / 48 packages clean** per `/tmp/lint-orchestrator/final-status.md`. Zero dirty.
-- **44 commits this session.**
-- Across both rounds + the cascade prep + the smoke test, every package that started the day with lint or type issues now passes `mise run //packages/<pkg>:lint`.
+Root verification (`mise run lint`) after rounds 1 and 2 exposed three audit-dirty packages that never landed in the queue despite the per-package sweep having captured their lint output:
 
-## After resume from compact
+- `config/oxlint-tsdoc` (83 warnings, 1 error) — committed f6a8a93f
+- `mcp/mvm` (7 warnings, 1 error) — committed 089a0e2f
+- `module/zip-writer` (7 warnings, 1 error) — committed 6b317211
 
-The lint sweep is done. Likely next steps:
+Root cause of the slip: `/tmp/lint-orchestrator/queue-raw.txt` (49 lines) did not contain any of these three packages, but their `/tmp/lint-all-pkgs/<flat>.out` files exist with the expected size and warning/error counts. The queue-builder script dropped them upstream; the per-package sweep did cover them.
 
-1. Confirm `final-status.md` shows 48 clean / 0 dirty.
-2. Optionally run `mise run lint` at the root to verify end-to-end with the workspace task graph (note the AGENTS.md caveat that this can stop halfway if any single package errors; per-package was authoritative).
-3. Tell the user the sweep finished and point them at the per-package commits for review. The commit messages are detailed enough that they can scan `git log --oneline | head -50`.
-4. Consider a follow-up: add a CI gate that blocks PRs that increase the workspace warning count, so this backlog doesn't accumulate again.
+Round 3 ran the same v3 orchestrator with `MAX_CONCURRENT=4` and `CHILD_TIMEOUT_SEC=5400`. Three children launched at 22:19:53 UTC; all three reached terminal `DONE` by 22:33:54 UTC (~14 min, with config/oxlint-tsdoc the longest because of 83 TSDoc and structural issues). Zero timeouts.
+
+## Final state (2026-05-14T22:35Z)
+
+- **All 52 audit-dirty packages now lint-clean.** Verified via `mise run //packages/<pkg>:lint` per package.
+- **47 commits this session** (rounds 1+2: 44; round 3: 3).
+- Root `mise run lint` was used as the final verification trigger. The first root run flagged mcp/mvm and config/oxlint-tsdoc; the post-round-3 root run no longer reports any audit-scope package.
+- A fresh comprehensive per-package sweep (`/tmp/lint-orchestrator/verify-all.sh`, run after round 3) confirms zero dirty among the 88 originally-targeted packages.
+
+### Out-of-scope finding: codex-plugins backlog
+
+The `verify-all.sh` pass turned up nine dirty packages under `packages/codex-plugins/` (bash-output-filter, claude-spawn, correction-reminder, guardrail, prompt-time, session-start-housekeeping, source, stop-reminders, terminal-title; 489 total warnings, 5 errors with `source` carrying 461/5). This directory did not exist when the lint sweep started: the `codex` CLI scaffolded it mid-session and five `codex` processes are still actively running against the working tree. The packages are outside the original sweep scope and intentionally not fixed here.
+
+If a future session wants to roll these into the sweep, wait for codex to finish (the active processes are visible in `ps -eo etime,comm | grep codex`) before queueing them, to avoid edit collisions.
+
+### Verifier hardening
+
+`/tmp/lint-orchestrator/verify-all.sh` initially false-flagged `test-fixture/oxlint-no-restricted-syntax` and `test-fixture/oxlint-stylistic` as dirty because their `mise.toml` declares the lint task inside commented-out blocks (`# [tasks.lint]`); the discovery `grep` didn't strip comments. The fix is to pipe through `sed 's/#.*$//'` before matching, which yields 97 real lint-bearing packages (88 clean from the audit scope + 9 dirty codex-plugins).
+
+## After resume
+
+The original lint-sweep task is verified complete; all 52 audit-dirty packages pass per-package lint. Reasonable follow-ups:
+
+1. Eventually expand scope to codex-plugins once the codex tool finishes its scaffold.
+2. Consider a CI gate that blocks PRs increasing the workspace warning count so this backlog can't accumulate silently again.
+3. Optionally tighten the queue-builder for future sweeps so it cannot drop packages with non-empty `.out` files (see "Round 3 root cause" above).
 
 ## Key file locations (persist across compact)
 
