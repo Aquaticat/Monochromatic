@@ -88,6 +88,7 @@ type ToolbarHandlerDeps = {
  * ```
  */
 export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
+  /** Destructured up front so each handler closure captures the same handles. */
   const {
     colorPicker,
     sizeSlider,
@@ -123,6 +124,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   clearBtn.addEventListener(
     'click',
     function handleClear(): void {
+      /** Canvas dimensions captured per click so the clear region matches the current layout. */
       const {
         cw,
         ch,

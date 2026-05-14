@@ -148,6 +148,7 @@ export function normalizePointer({
   event: PointerEvent;
   canvas: HTMLCanvasElement;
 },): NormalizedPoint {
+  /** Layout snapshot so both normalization terms share one DOM read. */
   const rect = canvas.getBoundingClientRect();
   return [
     (event.clientX - rect.left) / rect.width,
@@ -231,6 +232,7 @@ export function startStroke(point: NormalizedPoint,): void {
 export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
   if (!drawing || current === null)
     return null;
+  /** Last sample retained so the returned segment can describe an incremental redraw. */
   const previous = current.points.at(-1,);
   if (previous === undefined)
     return null;

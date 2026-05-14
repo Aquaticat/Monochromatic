@@ -100,7 +100,9 @@ export function continuePan({
   if (!panning)
     return false;
 
+  /** Pointer displacement on the x axis since the gesture began. */
   const dx = event.clientX - panStartPointerX;
+  /** Companion to {@link dx} on the y axis. */
   const dy = event.clientY - panStartPointerY;
 
   if (!dragExceededThreshold) {
@@ -134,6 +136,7 @@ export function continuePan({
  */
 export function endPan(): boolean {
   panning = false;
+  /** Captured before resetting so the caller can distinguish a drag from a click. */
   const wasDrag = dragExceededThreshold;
   dragExceededThreshold = false;
   return wasDrag;

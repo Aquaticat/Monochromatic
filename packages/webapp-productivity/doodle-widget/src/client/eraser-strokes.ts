@@ -91,11 +91,15 @@ export function eraseStrokesAt({
   /** Squared radius for distance comparison without sqrt */
   const radiusSq = radiusPx * radiusPx;
 
+  /** Snapshot taken once so the loop can build the replacement list in isolation. */
   const oldStrokes = getStrokes();
+  /** Flag flipped only when at least one stroke loses a point, so the caller can skip redraws. */
   let erased = false;
+  /** Replacement list built alongside the iteration to avoid in-place mutation. */
   const newStrokes: StrokeData[] = [];
 
   for (const stroke of oldStrokes) {
+    /** Per-stroke flag separating untouched strokes from segment-split survivors. */
     let strokeModified = false;
     /** Sub-stroke segments surviving after erasure */
     const segments: NormalizedPoint[][] = [];
@@ -104,9 +108,11 @@ export function eraseStrokesAt({
 
     /** Previous stroke point in pixel space, for segment-to-segment checks */
     let prevStrokePx = 0;
+    /** Companion to {@link prevStrokePx} on the y axis. */
     let prevStrokePy = 0;
 
     for (let i = 0; i < stroke.points.length; i++) {
+      /** Skipped when undefined so sparse arrays do not break segment math. */
       const p = stroke.points[i];
       if (p === undefined)
         continue;
@@ -129,6 +135,7 @@ export function eraseStrokesAt({
         by,
       },);
 
+      /** Mutable so the fallback segment-distance check can promote it to `true`. */
       let shouldErase = pointDistSq <= radiusSq;
 
       // When the point itself is not close enough, check whether the
@@ -136,6 +143,7 @@ export function eraseStrokesAt({
       // close to or intersects the eraser segment. This catches fast
       // erases that cross between widely-spaced stroke points.
       if (!shouldErase && i > 0) {
+        /** Segment-to-segment distance covers fast drags that skip between stroke samples. */
         const segDistSq = segToSegDistSq({
           a1x: prevStrokePx,
           a1y: prevStrokePy,

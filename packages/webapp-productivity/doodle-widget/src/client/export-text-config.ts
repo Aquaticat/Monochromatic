@@ -145,6 +145,7 @@ function resolveExportEntry(
 function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[] {
   /** Default text font size in pixels */
   const defaultFontSizePx = TEXT_FONT_SIZE_REM * getRootFontSizePx();
+  /** Output array filled as raws stream through, so empty entries can be silently dropped. */
   const entries: ExportTextEntry[] = [];
 
   for (const raw of raws) {
@@ -178,6 +179,7 @@ function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[
 export function readTextEntries({ textLayer, }: {
   textLayer: HTMLDivElement;
 },): ExportTextEntry[] {
+  /** Live `NodeList` captured here so {@link Array.from} can map each entry to its raw shape. */
   const inputs = textLayer.querySelectorAll<HTMLInputElement>('.text-input',);
 
   return resolveExportEntries(

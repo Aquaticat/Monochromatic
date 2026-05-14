@@ -37,6 +37,7 @@ export type { ToolMode, } from './pointer-handler-deps.ts';
  * ```
  */
 export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
+  /** Destructured up front so each handler closure captures the same handles. */
   const {
     canvas,
     ctx,
@@ -58,6 +59,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointerdown',
     function handlePointerDown(event: PointerEvent,): void {
+      /** Captured once so branches downstream do not re-invoke the getter. */
       const mode = getToolMode();
       if (mode === 'zoom')
         return;
@@ -73,10 +75,12 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       }
 
       canvas.setPointerCapture(event.pointerId,);
+      /** Canvas dimensions captured at gesture start so handlers stay consistent if the layout shifts. */
       const {
         cw,
         ch,
       } = getCanvasSize();
+      /** Normalized pointer reused for the initial draw/erase action and stored as the previous-eraser sample. */
       const point = normalizePointer({
         event,
         canvas,
@@ -86,12 +90,14 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
         erasing = true;
         erasedInGesture = false;
         prevErasePoint = null;
+        /** Tracks whether any stroke geometry was removed in this tick so the redraw is conditional. */
         const strokeErased = eraseStrokesAt({
           point,
           previousPoint: null,
           cw,
           ch,
         },);
+        /** Companion flag for text removal so snapshot pushes happen only when something actually changed. */
         const textErased = eraseTextAt({
           point,
           previousPoint: null,
@@ -119,14 +125,17 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointermove',
     function handlePointerMove(event: PointerEvent,): void {
+      /** Captured once so branches downstream do not re-invoke the getter. */
       const mode = getToolMode();
       if (mode === 'zoom' || mode === 'text')
         return;
 
+      /** Canvas dimensions captured per move so eraser math stays in sync with the live layout. */
       const {
         cw,
         ch,
       } = getCanvasSize();
+      /** Normalized pointer reused for both draw and erase paths in this tick. */
       const point = normalizePointer({
         event,
         canvas,
@@ -135,12 +144,14 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       if (mode === 'erase') {
         if (!erasing)
           return;
+        /** Tracks whether stroke geometry was removed this tick so the redraw is conditional. */
         const strokeErased = eraseStrokesAt({
           point,
           previousPoint: prevErasePoint,
           cw,
           ch,
         },);
+        /** Companion flag for text removal so snapshot pushes happen only when something actually changed. */
         const textErased = eraseTextAt({
           point,
           previousPoint: prevErasePoint,
@@ -193,6 +204,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointerup',
     function handlePointerUp(): void {
+      /** Captured once so the snapshot decision and the early return share one tool reading. */
       const mode = getToolMode();
       if (mode === 'zoom')
         return;

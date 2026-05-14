@@ -61,6 +61,7 @@ export function measureSvgOverlay({
   /** Rendered SVG position and dimensions */
   const svgRect = svgElement.getBoundingClientRect();
 
+  /** Detached copy so the caller can embed the SVG without mutating the live DOM node. */
   const cloneNode = svgElement.cloneNode(true,);
   if (!(cloneNode instanceof SVGSVGElement))
     throw new Error('SVG clone is not an SVGSVGElement',);

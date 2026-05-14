@@ -83,11 +83,13 @@ function hexToRgb(hex: string,): {
  * ```
  */
 export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
+  /** Destructured up front so subsequent calls reuse the same handles. */
   const {
     container,
     overlay,
     textLayer,
   } = deps;
+  /** Page dimensions resolved once so layout math stays consistent across pages. */
   const {
     cw,
     ch,
@@ -107,7 +109,8 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   /** Page height in PDF points */
   const pageH = ch * PX_TO_PT;
 
-  // oxlint-disable-next-line new-cap -- jsPDF uses lowercase constructor by convention
+  /* oxlint-disable new-cap -- jsPDF uses lowercase constructor by convention */
+  /** PDF document built with one orientation guess so portrait and landscape inputs both fit. */
   const doc = new jsPDF({
     orientation: pageW >= pageH ? 'l' : 'p',
     unit: 'pt',
@@ -116,6 +119,7 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       pageH,
     ],
   },);
+  /* oxlint-enable new-cap */
   //endregion PDF document setup
 
   //region Render each page
@@ -139,8 +143,11 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     /** PNG image data as byte array for jsPDF embedding */
     // oxlint-disable-next-line no-await-in-loop -- depends on sequential page rendering above
     const blob = await pageCanvas.convertToBlob({ type: 'image/png', },);
-    // oxlint-disable-next-line no-await-in-loop -- depends on sequential blob above
+    /* oxlint-disable no-await-in-loop -- depends on sequential blob above */
+    /** Bytes pulled off the blob so the synchronous {@link Uint8Array} can wrap them. */
     const buffer = await blob.arrayBuffer();
+    /* oxlint-enable no-await-in-loop */
+    /** Typed view jsPDF requires for binary image embedding. */
     const imageData = new Uint8Array(buffer,);
     doc.addImage(
       imageData,
@@ -152,12 +159,14 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     );
 
     //region Overlay text as real PDF text
+    /** Filtered to the entries safe to render as selectable PDF text. */
     const textEntries = textEntriesToExport(page.textEntries,);
     for (const entry of textEntries) {
       /** Font size in points */
       const fontSizePt = entry.fontSizePx * PX_TO_PT;
       doc.setFontSize(fontSizePt,);
       if (entry.color.startsWith('#',)) {
+        /** Decomposed channels so jsPDF's three-arg setter receives integers, not a hex string. */
         const rgb = hexToRgb(entry.color,);
         doc.setTextColor(
           rgb.r,

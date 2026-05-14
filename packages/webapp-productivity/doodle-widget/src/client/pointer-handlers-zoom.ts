@@ -31,6 +31,7 @@ const LONG_PRESS_MS = 500;
  * ```
  */
 export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
+  /** Destructured up front so each handler closure captures the same handles. */
   const {
     canvas,
     getToolMode,
@@ -87,7 +88,9 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
           longPressTimer = null;
           if (downEvent === null)
             return;
+          /** Container layout captured per gesture so panning offsets stay consistent across reflows. */
           const containerRect = page.getBoundingClientRect();
+          /** Canvas dimensions resolved here so the zoom math uses fresh sizing. */
           const {
             cw,
             ch,
@@ -111,10 +114,12 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
     function handleZoomPointerMove(event: PointerEvent,): void {
       if (getToolMode() !== 'zoom')
         return;
+      /** Canvas dimensions resolved each move so pan math stays in sync with the live layout. */
       const {
         cw,
         ch,
       } = getCanvasSize();
+      /** True only when the pointer has crossed the drag threshold, so the cursor flip is conditional. */
       const dragging = continuePan({
         event,
         containerWidth: cw,
@@ -134,9 +139,12 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       if (getToolMode() !== 'zoom')
         return;
       clearLongPress();
+      /** True when the gesture moved past the drag threshold; suppresses the tap-to-zoom action. */
       const wasDrag = endPan();
       if (!wasDrag && !longPressFired) {
+        /** Container layout captured at release so the zoom origin matches the screen tap. */
         const containerRect = page.getBoundingClientRect();
+        /** Canvas dimensions resolved at release so the zoom math uses fresh sizing. */
         const {
           cw,
           ch,

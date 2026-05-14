@@ -60,6 +60,7 @@ export type WidgetDeps = {
  * ```
  */
 export function setupWidget(deps: WidgetDeps,): void {
+  /** Destructured up front so the long list of handles can be passed individually to each setup helper. */
   const {
     backgroundsScript,
     canvas,
@@ -84,9 +85,11 @@ export function setupWidget(deps: WidgetDeps,): void {
     sizeCanvas,
   } = deps;
 
+  /** Untyped JSON tree narrowed before assigning to {@link backgrounds}. */
   const parsed: unknown = JSON.parse(backgroundsScript.textContent,);
   if (!Array.isArray(parsed,))
     throw new Error('Page backgrounds data is not an array',);
+  /** Narrowed alias so consumers see a readonly string array without re-asserting. */
   const backgrounds: readonly string[] = parsed;
 
   initPages({
@@ -96,6 +99,7 @@ export function setupWidget(deps: WidgetDeps,): void {
   initHistory(backgrounds.length,);
   setTextLayer(textLayer,);
 
+  /** Handler hooks returned by undo setup so the toolbar can call them later. */
   const {
     pushSnapshot,
     updateUndoButtons,
@@ -111,6 +115,7 @@ export function setupWidget(deps: WidgetDeps,): void {
     pushSnapshot,
   );
 
+  /** Shared bag so both pointer setups receive identical handles without re-typing the object. */
   const pointerDeps = {
     canvas,
     ctx,
@@ -145,10 +150,12 @@ export function setupWidget(deps: WidgetDeps,): void {
   pageToggle.addEventListener(
     'change',
     function handlePageChange(event: Event,): void {
+      /** Event target destructured so the narrowing `instanceof` check can short-circuit. */
       const { target, } = event;
       if (!(target instanceof HTMLInputElement))
         return;
       resetZoom(zoomLayer,);
+      /** Canvas dimensions resolved after the zoom reset so the page switch sees fresh sizing. */
       const {
         cw,
         ch,

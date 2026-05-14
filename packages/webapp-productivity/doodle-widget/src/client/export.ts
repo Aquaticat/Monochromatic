@@ -147,6 +147,7 @@ export async function renderSvgOverlayToContext(
     exportScale?: number;
   },
 ): Promise<void> {
+  /** Layout snapshot of the overlay; `null` short-circuits when there is nothing to embed. */
   const info = measureSvgOverlay({
     container,
     overlay,
@@ -162,6 +163,7 @@ export async function renderSvgOverlayToContext(
 
   /** Export-space dimensions of the SVG overlay */
   const exportWidth = info.width * es;
+  /** Companion to {@link exportWidth} on the y axis. */
   const exportHeight = info.height * es;
 
   /** Set explicit dimensions so the Image decodes at the correct size */
@@ -175,7 +177,9 @@ export async function renderSvgOverlayToContext(
   );
   /** Re-serialized SVG markup encoded as a data URL for Image loading */
   const svgMarkup = new XMLSerializer().serializeToString(info.clone,);
+  /** Inline data URL so the SVG can be decoded without a network round-trip. */
   const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup,)}`;
+  /** `Image` used to rasterize the SVG into the offscreen 2D context. */
   const img = new Image();
   img.src = dataUrl;
   await img.decode();
@@ -228,6 +232,7 @@ export async function renderBaseCanvas({
   canvas: OffscreenCanvas;
   ctx: OffscreenCanvasRenderingContext2D;
 }> {
+  /** Letter dimensions resolved once so background and overlay agree on the canvas size. */
   const {
     cw,
     ch,
@@ -237,15 +242,18 @@ export async function renderBaseCanvas({
   const {
     cw: renderedCw,
   } = getRenderedSize(container,);
+  /** Conversion factor so the overlay rasterizes at letter scale regardless of viewport zoom. */
   const exportScale = cw / renderedCw;
 
   /** Scale factor for high-DPI rendering (defaults to 1) */
   const scale = imageScale ?? 1;
 
+  /** Offscreen canvas sized for the high-DPI variant so PDFs stay sharp. */
   const exportCanvas = new OffscreenCanvas(
     cw * scale,
     ch * scale,
   );
+  /** Drawing context retained alongside the canvas so the caller can paint on top. */
   const ctx = requireOffscreenContext(exportCanvas,);
 
   if (scale !== 1) {
@@ -314,7 +322,9 @@ export function triggerDownload({
   blob: Blob;
   filename: string;
 },): void {
+  /** Temporary object URL revoked once the anchor click has fired. */
   const url = URL.createObjectURL(blob,);
+  /** Synthetic anchor synthesizes the click so the browser surfaces a save dialog. */
   const link = document.createElement('a',);
   link.href = url;
   link.download = filename;

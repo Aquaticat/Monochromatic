@@ -103,6 +103,7 @@ export function placeTextInput(position: NormalizedPoint,): void {
   /** Text font size derived from active stroke width */
   const textSizePx = getStrokeWidth() * TEXT_SIZE_FACTOR;
 
+  /** Built before listener wiring so the keydown closure can capture the same node. */
   const input = createTextInput({
     insetInlineStart: `${String(position[0] * PERCENT_SCALE,)}%`,
     insetBlockStart: `${String(position[1] * PERCENT_SCALE,)}%`,

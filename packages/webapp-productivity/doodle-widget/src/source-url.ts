@@ -25,7 +25,9 @@ const FALLBACK_DIRECTORY = 'packages/webapp-productivity/doodle-widget';
  */
 async function resolveRepoUrl(): Promise<string> {
   try {
+    /** Monorepo root so `git remote` runs against the correct working tree. */
     const repoRoot = await findMonorepoRootCached();
+    /** Captured so the trailing `.git` can be trimmed before returning. */
     const result = await spawn(
       'git',
       [
@@ -65,6 +67,7 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
  */
 async function resolveDirectory(packageDir: string,): Promise<string> {
   try {
+    /** Raw manifest text so the JSON parse error stays scoped to this function. */
     const raw = await readFile(
       join(
         packageDir,
@@ -72,14 +75,17 @@ async function resolveDirectory(packageDir: string,): Promise<string> {
       ),
       'utf8',
     );
+    /** Untyped tree narrowed via {@link isRecord} before field access. */
     const parsed: unknown = JSON.parse(raw,);
     if (!isRecord(parsed,))
       return FALLBACK_DIRECTORY;
 
+    /** Repository field destructured so the runtime shape is checked before reading `directory`. */
     const { repository, } = parsed;
     if (!isRecord(repository,))
       return FALLBACK_DIRECTORY;
 
+    /** Directory field destructured so a non-string value falls through to the fallback. */
     const { directory, } = repository;
     if (typeof directory !== 'string')
       return FALLBACK_DIRECTORY;
@@ -108,6 +114,7 @@ async function resolveDirectory(packageDir: string,): Promise<string> {
  * ```
  */
 export async function resolveSourceUrl(packageDir: string,): Promise<string> {
+  /** Two halves resolved together so the slower I/O paths overlap. */
   const [repoUrl, directory,] = await Promise.all([
     resolveRepoUrl(),
     resolveDirectory(packageDir,),

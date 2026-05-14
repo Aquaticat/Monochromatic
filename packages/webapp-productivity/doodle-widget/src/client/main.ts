@@ -104,6 +104,7 @@ function sizeCanvas(): void {
  * Updates canvas cursor based on the selected tool radio.
  */
 function syncCursorToTool(): void {
+  /** Cached so each branch can compare without re-invoking the getter. */
   const mode = getToolMode();
   if (mode === 'draw' || mode === 'erase') {
     canvas.style.cursor = 'crosshair';

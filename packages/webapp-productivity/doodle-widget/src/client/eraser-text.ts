@@ -96,7 +96,9 @@ export function eraseTextAt({
     ch,
   },);
 
+  /** Spread once so removals during iteration do not break the NodeList. */
   const inputs = [...textLayer.querySelectorAll<HTMLInputElement>('.text-input',),];
+  /** Flag flipped only when at least one input is removed, so callers can skip redundant work. */
   let erased = false;
 
   /** Previous eraser position in content-space pixels when available */

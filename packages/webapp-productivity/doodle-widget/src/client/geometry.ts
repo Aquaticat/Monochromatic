@@ -48,7 +48,9 @@ export function distToSegmentSq(
     by: number;
   },
 ): number {
+  /** Cached so {@link lenSq} and the projection share one subtraction. */
   const dx = bx - ax;
+  /** Companion to {@link dx} on the y axis. */
   const dy = by - ay;
   /** Squared length of segment AB; zero means degenerate (A == B) */
   const lenSq = dx * dx + dy * dy;
@@ -66,6 +68,7 @@ export function distToSegmentSq(
   );
   /** Closest point on segment */
   const cx = ax + t * dx;
+  /** Companion to {@link cx} on the y axis. */
   const cy = ay + t * dy;
 
   return (px - cx) ** 2 + (py - cy) ** 2;

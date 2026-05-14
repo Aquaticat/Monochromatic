@@ -63,6 +63,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   pushSnapshot: () => void;
   updateUndoButtons: () => void;
 } {
+  /** Destructured up front so every closure inside this factory captures the same handles. */
   const {
     undoBtn,
     redoBtn,
@@ -76,6 +77,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
    * history availability for the current page.
    */
   function updateUndoButtons(): void {
+    /** Page index read once so both button states reflect the same page. */
     const pageIndex = getCurrentPageIndex();
     undoBtn.disabled = !canUndo(pageIndex,);
     redoBtn.disabled = !canRedo(pageIndex,);
@@ -110,6 +112,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
       layer: textLayer,
       clearFn: clearTextEntries,
     },);
+    /** Canvas dimensions resolved here so the redraw uses the current layout. */
     const {
       cw,
       ch,
@@ -125,6 +128,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   undoBtn.addEventListener(
     'click',
     function handleUndo(): void {
+      /** Null when the page's undo stack is empty, in which case the click is ignored. */
       const snapshot = undo(getCurrentPageIndex(),);
       if (snapshot !== null)
         restoreSnapshot(snapshot,);
@@ -134,6 +138,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   redoBtn.addEventListener(
     'click',
     function handleRedo(): void {
+      /** Null when the page's redo stack is empty, in which case the click is ignored. */
       const snapshot = redo(getCurrentPageIndex(),);
       if (snapshot !== null)
         restoreSnapshot(snapshot,);
@@ -147,13 +152,16 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
       if (event.target instanceof HTMLInputElement)
         return;
 
+      /** Either control or meta gates the shortcut so it does not fire on bare keys. */
       const hasModifier = event.ctrlKey || event.metaKey;
       if (!hasModifier)
         return;
 
+      /** Lower-cased so the comparison matches regardless of caps-lock or shift-induced casing. */
       const key = event.key.toLowerCase();
       if (key === 'z') {
         event.preventDefault();
+        /** Shift inverts the direction so Ctrl+Shift+Z redoes instead of undoing. */
         const snapshot = event.shiftKey
           ? redo(getCurrentPageIndex(),)
           : undo(getCurrentPageIndex(),);
@@ -162,6 +170,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
       }
       else if (key === 'y') {
         event.preventDefault();
+        /** Null when the redo stack is empty, in which case the keystroke is consumed harmlessly. */
         const snapshot = redo(getCurrentPageIndex(),);
         if (snapshot !== null)
           restoreSnapshot(snapshot,);

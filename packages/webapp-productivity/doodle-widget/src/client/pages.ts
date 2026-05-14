@@ -117,6 +117,7 @@ function saveCurrentPage({
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
 },): void {
+  /** Live page slot, or `undefined` when state has been wiped mid-switch. */
   const page = pages[currentIndex];
   if (page === undefined)
     return;
@@ -175,6 +176,7 @@ export function switchToPage({
   },);
 
   //region Restore target page
+  /** Destination page state; the surrounding bounds check guarantees presence. */
   const targetPage = pages[index];
   if (targetPage === undefined)
     throw new Error(`Page state missing for target index ${String(index,)}`,);

@@ -200,7 +200,9 @@ export function zoomAt(
     zoomLayer: HTMLElement;
   },
 ): void {
+  /** Direction-aware multiplier so a single formula handles both zoom in and zoom out. */
   const factor = direction === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
+  /** Clamped destination scale so the gesture cannot push past the configured bounds. */
   const newScale = Math.max(
     MIN_SCALE,
     Math.min(

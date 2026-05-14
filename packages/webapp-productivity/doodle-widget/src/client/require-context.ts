@@ -23,6 +23,7 @@
 export function requireCanvasContext(
   canvas: HTMLCanvasElement,
 ): CanvasRenderingContext2D {
+  /** Retained so the null-check pinpoints which canvas refused the context. */
   const ctx = canvas.getContext('2d',);
   if (ctx === null)
     throw new Error('Canvas 2D context unavailable',);
@@ -47,6 +48,7 @@ export function requireCanvasContext(
 export function requireOffscreenContext(
   canvas: OffscreenCanvas,
 ): OffscreenCanvasRenderingContext2D {
+  /** Retained so the null-check pinpoints which offscreen canvas refused the context. */
   const ctx = canvas.getContext('2d',);
   if (ctx === null)
     throw new Error('Export canvas 2D context unavailable',);

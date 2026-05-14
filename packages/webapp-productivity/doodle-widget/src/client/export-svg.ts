@@ -48,6 +48,7 @@ export function exportAsSvg(
     textLayer,
   }: ExportDeps,
 ): void {
+  /** Export dimensions resolved once so both root SVG and child paths share the same coordinate space. */
   const {
     cw,
     ch,
@@ -57,8 +58,10 @@ export function exportAsSvg(
   const {
     cw: renderedCw,
   } = getRenderedSize(container,);
+  /** Ratio applied to overlay positions so the embedded SVG lines up with the rasterized geometry. */
   const exportScale = cw / renderedCw;
 
+  /** Root SVG element accumulating every layer before serialization. */
   const svg = document.createElementNS(
     SVG_NS,
     'svg',
@@ -81,6 +84,7 @@ export function exportAsSvg(
   );
 
   //region White background
+  /** Opaque rectangle so the export renders against a fixed colour rather than the host page background. */
   const bgRect = document.createElementNS(
     SVG_NS,
     'rect',
@@ -101,10 +105,12 @@ export function exportAsSvg(
   //endregion White background
 
   //region Strokes (behind SVG overlay)
+  /** Snapshot pulled before the loop so concurrent edits cannot reshape the array mid-render. */
   const strokes = getStrokes();
   for (const stroke of strokes) {
     if (stroke.points.length < MIN_STROKE_POINTS)
       continue;
+    /** One path per stroke so the colour and width attributes do not leak between strokes. */
     const path = document.createElementNS(
       SVG_NS,
       'path',
@@ -117,6 +123,7 @@ export function exportAsSvg(
           [nx, ny,]: NormalizedPoint,
           index: number,
         ): string {
+          /** First point opens the path with a move, later points draw lines. */
           const cmd = index === 0 ? 'M' : 'L';
           return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
         },
@@ -151,6 +158,7 @@ export function exportAsSvg(
   //endregion Strokes
 
   //region Background SVG with multiply blending (on top of strokes)
+  /** Position metadata so the cloned overlay lines up with the rasterized geometry. */
   const overlayInfo = measureSvgOverlay({
     container,
     overlay,
@@ -181,8 +189,10 @@ export function exportAsSvg(
   //endregion Background SVG
 
   //region Text annotations
+  /** Snapshot of the live text inputs so DOM order, not iteration order, drives the SVG output. */
   const textEntries = readTextEntries({ textLayer, },);
   for (const entry of textEntries) {
+    /** One `<text>` node per entry so each annotation can carry its own colour and size. */
     const text = document.createElementNS(
       SVG_NS,
       'text',
@@ -218,6 +228,7 @@ export function exportAsSvg(
 
   /** Serialized SVG markup for download */
   const markup = new XMLSerializer().serializeToString(svg,);
+  /** Wrapped in a blob so the download helper can stream it through an object URL. */
   const blob = new Blob(
     [markup,],
     { type: 'image/svg+xml;charset=utf-8', },

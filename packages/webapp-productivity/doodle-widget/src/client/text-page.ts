@@ -65,6 +65,7 @@ export function createTextInput({
   color: string;
   fontSize: string;
 },): HTMLInputElement {
+  /** Configured before insertion so the caller can finalize any extra styling. */
   const input = document.createElement('input',);
   input.type = 'text';
   input.className = 'text-input';
@@ -94,6 +95,7 @@ export function createTextInput({
  * ```
  */
 export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
+  /** Live `NodeList` captured here so {@link Array.from} can map each entry through {@link serializeInput}. */
   const inputs = layer.querySelectorAll<HTMLInputElement>('.text-input',);
   return Array.from(
     inputs,
@@ -132,6 +134,7 @@ export function restoreTextEntries({
   layer: HTMLDivElement;
 },): void {
   for (const entry of entries) {
+    /** Detached input built first so its value and readonly flag are set before insertion. */
     const input = createTextInput({
       insetInlineStart: entry.insetInlineStart,
       insetBlockStart: entry.insetBlockStart,

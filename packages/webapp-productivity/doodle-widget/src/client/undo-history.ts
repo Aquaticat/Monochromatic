@@ -85,6 +85,7 @@ export function pushSnapshot({
   pageIndex: number;
   snapshot: Snapshot;
 },): void {
+  /** Per-page slot; missing only when the page was never initialized, in which case the push is silently dropped. */
   const history = histories[pageIndex];
   if (history === undefined)
     return;
@@ -97,6 +98,7 @@ export function pushSnapshot({
   history.index = history.states.length - 1;
 
   if (history.states.length > MAX_HISTORY_DEPTH) {
+    /** Count of oldest entries to drop so the depth cap holds. */
     const excess = history.states.length - MAX_HISTORY_DEPTH;
     history.states = history.states.slice(excess,);
     history.index -= excess;
@@ -116,6 +118,7 @@ export function pushSnapshot({
  * ```
  */
 export function undo(pageIndex: number,): Snapshot | null {
+  /** Page slot guarded so an absent or at-start page falls through to null. */
   const history = histories[pageIndex];
   if (history === undefined || history.index <= 0)
     return null;
@@ -136,6 +139,7 @@ export function undo(pageIndex: number,): Snapshot | null {
  * ```
  */
 export function redo(pageIndex: number,): Snapshot | null {
+  /** Page slot guarded so an absent or at-end page falls through to null. */
   const history = histories[pageIndex];
   if (history === undefined || history.index >= history.states.length - 1)
     return null;
@@ -156,6 +160,7 @@ export function redo(pageIndex: number,): Snapshot | null {
  * ```
  */
 export function canUndo(pageIndex: number,): boolean {
+  /** Page slot looked up so the predicate covers both presence and position. */
   const history = histories[pageIndex];
   return history !== undefined && history.index > 0;
 }
@@ -173,6 +178,7 @@ export function canUndo(pageIndex: number,): boolean {
  * ```
  */
 export function canRedo(pageIndex: number,): boolean {
+  /** Page slot looked up so the predicate covers both presence and position. */
   const history = histories[pageIndex];
   return history !== undefined && history.index < history.states.length - 1;
 }
