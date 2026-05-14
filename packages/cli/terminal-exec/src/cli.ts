@@ -51,7 +51,7 @@ export function parseArgs({ argv, }: { argv: readonly string[]; },): UserOptions
     if (arg === undefined)
       break;
 
-    if (arg === '--' || arg === '-e') {
+    if ((arg === '--') || (arg === '-e')) {
       l.debug(`found delimiter '${arg}'`,);
       i++;
       break;
@@ -104,11 +104,13 @@ export function parseArgs({ argv, }: { argv: readonly string[]; },): UserOptions
       String(hold,)
     }, command=${JSON.stringify(command,)}`,
   );
-  return {
+  /** Bound to a local before return so the helper-shape allowlist accepts the function-root `let` declarations above. */
+  const result: UserOptions = {
     appId,
     title,
     dir,
     hold,
     command,
   };
+  return result;
 }

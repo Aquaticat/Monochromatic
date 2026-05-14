@@ -77,7 +77,7 @@ export async function parseConfigFiles(
     for (const rawLine of text.split('\n',)) {
       /** Whitespace tolerance before prefix-character dispatch. */
       const line = rawLine.trim();
-      if (line.length === 0 || line.startsWith('#',))
+      if ((line.length === 0) || line.startsWith('#',))
         continue;
 
       if (line.startsWith('/',)) {
@@ -141,7 +141,7 @@ function parseDirective(
     const rest = line.slice(EXECARG_PREFIX.length,);
     /** Separator between entry id and default arg; -1 means malformed and skipped. */
     const colonIdx = rest.indexOf(':',);
-    if (colonIdx !== -1) {
+    if (colonIdx !== (-1)) {
       /** Target entry id for the default. */
       const entryId = rest.slice(
         0,

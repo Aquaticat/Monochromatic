@@ -56,14 +56,14 @@ export function applyKey({
       return s.length > 0;
     },);
   }
-  else if (key === 'X-TerminalArgExec' || key === 'TerminalArgExec')
+  else if ((key === 'X-TerminalArgExec') || (key === 'TerminalArgExec'))
     result.execArg = expandEscapes({ s: value, },);
-  else if (key === 'X-TerminalArgAppId' || key === 'TerminalArgAppId')
+  else if ((key === 'X-TerminalArgAppId') || (key === 'TerminalArgAppId'))
     result.appIdArg = expandEscapes({ s: value, },);
-  else if (key === 'X-TerminalArgTitle' || key === 'TerminalArgTitle')
+  else if ((key === 'X-TerminalArgTitle') || (key === 'TerminalArgTitle'))
     result.titleArg = expandEscapes({ s: value, },);
-  else if (key === 'X-TerminalArgDir' || key === 'TerminalArgDir')
+  else if ((key === 'X-TerminalArgDir') || (key === 'TerminalArgDir'))
     result.dirArg = expandEscapes({ s: value, },);
-  else if (key === 'X-TerminalArgHold' || key === 'TerminalArgHold')
+  else if ((key === 'X-TerminalArgHold') || (key === 'TerminalArgHold'))
     result.holdArg = expandEscapes({ s: value, },);
 }

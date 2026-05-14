@@ -82,12 +82,12 @@ export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] |
         i++;
         continue;
       }
-      if (ch === '\\' && i + 1 < exec.length) {
+      if ((ch === '\\') && ((i + 1) < exec.length)) {
         /** Lookahead char for the quoted-backslash escape branch. */
         const next = exec[i + 1];
         if (next === undefined)
           break; // unreachable (length checked above)
-        if (next === '"' || next === '`' || next === '$' || next === '\\') {
+        if ((next === '"') || (next === '`') || (next === '$') || (next === '\\')) {
           current += next;
           i += 2;
           continue;
@@ -104,7 +104,7 @@ export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] |
       continue;
     }
 
-    if (ch === ' ' || ch === '\t') {
+    if ((ch === ' ') || (ch === '\t')) {
       if (current.length > 0) {
         tokens.push(current,);
         current = '';
@@ -119,7 +119,7 @@ export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] |
     }
 
     //region % field code stripping
-    if (ch === '%' && i + 1 < exec.length) {
+    if ((ch === '%') && ((i + 1) < exec.length)) {
       /** Lookahead char for the `%` field-code branch. */
       const next = exec[i + 1];
       if (next === undefined)

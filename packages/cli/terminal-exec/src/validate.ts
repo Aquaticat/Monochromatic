@@ -166,14 +166,14 @@ export async function validateEntry({
   }
   //endregion
 
-  if (entry.tryExec.length > 0 && !await executableExists({ name: entry.tryExec, },)) {
+  if ((entry.tryExec.length > 0) && (!await executableExists({ name: entry.tryExec, },))) {
     l.debug(`${entryId}: TryExec '${entry.tryExec}' not found`,);
     return null;
   }
 
   /** Argv form of the Exec line; null or empty disqualifies the entry. */
   const execTokens = tokenizeExec({ exec: entry.exec, },);
-  if (execTokens === null || execTokens.length === 0) {
+  if ((execTokens === null) || (execTokens.length === 0)) {
     l.debug(`${entryId}: Exec tokenization failed or empty`,);
     return null;
   }

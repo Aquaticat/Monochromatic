@@ -94,18 +94,8 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
   } = await scanEntries({ dirs, },);
 
   //region Build candidate list: explicit entries, then KDE fallback, then fallback scan
-  /** Mutable copy so the KDE fallback can swap it without mutating config. */
-  let explicitIds = [...config.entryIds,];
-
-  if (explicitIds.length === 0) {
-    l.debug('no explicit entries in config, checking kdeglobals',);
-    /** KDE fallback used only when explicit entries are empty. */
-    const kdeId = await kdeTerminalService();
-    if (kdeId !== null) {
-      explicitIds = [kdeId,];
-      l.debug(`using KDE TerminalService '${kdeId}' as explicit entry`,);
-    }
-  }
+  /** Config preferences, or KDE TerminalService when config has no entries. */
+  const explicitIds = await resolveExplicitIds({ configEntryIds: config.entryIds, },);
 
   /** Fallback IDs with exclusions applied. */
   const filteredFallbackIds = fallbackIds.filter(function notExcluded(id,) {
@@ -157,6 +147,35 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 
   l.debug('no valid terminal emulator found',);
   return null;
+}
+
+/**
+ * Resolves the explicit entry id list: config preferences when present, otherwise the KDE TerminalService fallback.
+ *
+ * @param configEntryIds - Explicit entries from parsed xdg-terminals.list config.
+ *
+ * @returns Ordered list of entry ids to try as explicit candidates; empty when neither source provided one.
+ *
+ * @example
+ * ```ts
+ * const ids = await resolveExplicitIds({ configEntryIds: [] })
+ * // ['com.mitchellh.ghostty.desktop'] when kdeglobals has TerminalService set
+ * ```
+ */
+async function resolveExplicitIds(
+  { configEntryIds, }: { configEntryIds: readonly string[]; },
+): Promise<readonly string[]> {
+  if (configEntryIds.length > 0)
+    return configEntryIds;
+
+  l.debug('no explicit entries in config, checking kdeglobals',);
+  /** KDE fallback used only when explicit entries are empty. */
+  const kdeId = await kdeTerminalService();
+  if (kdeId === null)
+    return [];
+
+  l.debug(`using KDE TerminalService '${kdeId}' as explicit entry`,);
+  return [kdeId,];
 }
 
 /**

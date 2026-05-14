@@ -119,7 +119,7 @@ export function buildCommand({
   /** Mutable arg accumulator seeded with the kept exec tokens; appended to by the option blocks below. */
   const args: string[] = terminal.execTokens.filter(keepToken,);
 
-  if (options.appId.length > 0 && terminal.appIdArg.length > 0) {
+  if ((options.appId.length > 0) && (terminal.appIdArg.length > 0)) {
     appendArg({
       args,
       argKey: terminal.appIdArg,
@@ -127,7 +127,7 @@ export function buildCommand({
     },);
   }
 
-  if (options.title.length > 0 && terminal.titleArg.length > 0) {
+  if ((options.title.length > 0) && (terminal.titleArg.length > 0)) {
     appendArg({
       args,
       argKey: terminal.titleArg,
@@ -135,7 +135,7 @@ export function buildCommand({
     },);
   }
 
-  if (options.dir.length > 0 && terminal.dirArg.length > 0) {
+  if ((options.dir.length > 0) && (terminal.dirArg.length > 0)) {
     appendArg({
       args,
       argKey: terminal.dirArg,
@@ -143,7 +143,7 @@ export function buildCommand({
     },);
   }
 
-  if (options.hold && terminal.holdArg.length > 0)
+  if (options.hold && (terminal.holdArg.length > 0))
     args.push(terminal.holdArg,);
 
   if (options.command.length > 0) {

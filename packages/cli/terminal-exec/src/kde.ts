@@ -18,6 +18,34 @@ const l = tagged({
 },);
 
 /**
+ * Reads a UTF-8 text file, returning `null` when the read fails.
+ * Used to fold the kdeglobals-not-found branch into a single null-check at the call site.
+ *
+ * @param path - Absolute filesystem path to read.
+ *
+ * @returns File contents as a UTF-8 string, or `null` when the file is missing or unreadable.
+ *
+ * @example
+ * ```ts
+ * const text = await readFileOrNull({ path: '/home/alice/.config/kdeglobals' })
+ * // text === '[General]\nTerminalService=...\n' when present, null otherwise
+ * ```
+ */
+async function readFileOrNull(
+  { path, }: { path: string; },
+): Promise<string | null> {
+  try {
+    return await readFile(
+      path,
+      'utf8',
+    );
+  }
+  catch {
+    return null;
+  }
+}
+
+/**
  * Reads `TerminalService` from `~/.config/kdeglobals`.
  * This is the desktop entry filename that KDE System Settings writes
  * when the user selects a default terminal emulator.
@@ -38,15 +66,9 @@ export async function kdeTerminalService(): Promise<string | null> {
   /** KDE's global settings file; source of the TerminalService key. */
   const path = `${configHome}/kdeglobals`;
 
-  /** Empty default lets the catch path fall through without a separate branch; rebound by readFile on success. */
-  let text = '';
-  try {
-    text = await readFile(
-      path,
-      'utf8',
-    );
-  }
-  catch {
+  /** Null when kdeglobals is absent or unreadable; the catch path is the only failure mode. */
+  const text = await readFileOrNull({ path, },);
+  if (text === null) {
     l.debug('kdeglobals not found',);
     return null;
   }

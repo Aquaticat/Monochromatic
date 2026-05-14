@@ -68,7 +68,7 @@ export async function parseDesktopEntry(
 
     if (line.startsWith('[',)) {
       inDesktopEntry = line === '[Desktop Entry]';
-      if (!inDesktopEntry && result.exec.length > 0)
+      if ((!inDesktopEntry) && (result.exec.length > 0))
         break;
       continue;
     }
@@ -78,7 +78,7 @@ export async function parseDesktopEntry(
 
     /** Separator index; -1 means a non-key line that must be skipped. */
     const eqIdx = line.indexOf('=',);
-    if (eqIdx === -1)
+    if (eqIdx === (-1))
       continue;
 
     /** Normalized key name passed to applyKey for dispatch. */

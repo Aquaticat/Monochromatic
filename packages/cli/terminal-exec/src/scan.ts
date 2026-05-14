@@ -25,6 +25,34 @@ const l = tagged({
 },);
 
 /**
+ * Lists directory entries with type info, returning `null` when the directory cannot be read.
+ * Used so the walker skips missing or unreadable directories without leaking a let into walk's body.
+ *
+ * @param current - Absolute directory path to read.
+ *
+ * @returns Array of Dirent entries, or `null` when readdir throws.
+ *
+ * @example
+ * ```ts
+ * const entries = await readdirOrNull({ current: '/usr/share/applications' })
+ * // entries === [<Dirent for 'org.gnome.Terminal.desktop'>, ...] when present
+ * ```
+ */
+async function readdirOrNull(
+  { current, }: { current: string; },
+): Promise<readonly Dirent[] | null> {
+  try {
+    return await readdir(
+      current,
+      { withFileTypes: true, },
+    );
+  }
+  catch {
+    return null;
+  }
+}
+
+/**
  * Registry entry mapping an entry ID to its filesystem path.
  * When the same ID appears in multiple directories, the highest-priority
  * directory (last in the ascending-priority list) wins.
@@ -53,17 +81,10 @@ async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly s
    * @param current - Directory to walk.
    */
   async function walk({ current, }: { current: string; },): Promise<void> {
-    /** Empty default lets the catch path return early without restructuring. */
-    let entries: Dirent[] = [];
-    try {
-      entries = await readdir(
-        current,
-        { withFileTypes: true, },
-      );
-    }
-    catch {
+    /** Null when readdir throws (e.g. directory missing or unreadable); skip the directory. */
+    const entries = await readdirOrNull({ current, },);
+    if (entries === null)
       return;
-    }
     for (const entry of entries) {
       /** Absolute candidate for recursion or `.desktop` matching. */
       const fullPath = join(
@@ -133,7 +154,7 @@ export async function scanEntries({ dirs, }: { dirs: readonly string[]; },): Pro
       );
       /** Remove previous occurrence so re-adding puts it at the end (higher priority). */
       const prevIdx = allIds.indexOf(id,);
-      if (prevIdx !== -1) {
+      if (prevIdx !== (-1)) {
         allIds.splice(
           prevIdx,
           1,

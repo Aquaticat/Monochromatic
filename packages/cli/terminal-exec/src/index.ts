@@ -48,7 +48,7 @@ const command = buildCommand({
  * If `--dir` was provided but the terminal has no dir argument support,
  * change the working directory before exec.
  */
-if (options.dir.length > 0 && terminal.dirArg.length === 0) {
+if ((options.dir.length > 0) && (terminal.dirArg.length === 0)) {
   l.info(`terminal has no TerminalArgDir, cd to '${options.dir}'`,);
   process.chdir(options.dir,);
 }
