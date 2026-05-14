@@ -121,6 +121,7 @@ export async function stop(): Promise<void> {
   /** Milliseconds to wait after server exit for the port to be freed. */
   const PORT_FREE_DELAY_MS = 500;
 
+  /** Pinned reference to the current server handle so the exit listener still works after `server` is nulled below. */
   const currentServer = server;
   currentServer.kill();
   // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js event-based ChildProcess API
@@ -174,9 +175,11 @@ const MAX_HEALTH_POLLS = Math.ceil(HEALTH_TIMEOUT_MS / HEALTH_POLL_MS,);
 async function waitForHealth(): Promise<void> {
   for (let attempt = 0; attempt < MAX_HEALTH_POLLS; attempt++) {
     try {
+      /** Health-endpoint response; non-OK statuses keep the poll loop waiting. */
       // oxlint-disable-next-line no-await-in-loop -- sequential health polling by design
       const res = await fetch(HEALTH_URL,);
       if (res.ok) {
+        /** Parsed health payload; `status === 'ok'` ends the poll loop. */
         // oxlint-disable-next-line no-await-in-loop, typescript/no-unsafe-type-assertion -- sequential poll; JSON response shape is known
         const body = (await res.json()) as { status: string; };
         if (body.status === 'ok')

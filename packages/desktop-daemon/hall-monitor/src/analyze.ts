@@ -91,7 +91,9 @@ function buildImageEntry(
  * ```
  */
 export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
+  /** Upper-cased copy of the response so verdict matching is case-insensitive. */
   const upper = result.toUpperCase();
+  /** Regex match for the canonical `VERDICT: ...` line; null when only fallback keyword matching can apply. */
   const match = /VERDICT:\s*(PRODUCTIVE|UNPRODUCTIVE)/.exec(upper,);
   if (match !== null) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex capture group matches the union exactly
@@ -120,15 +122,18 @@ export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
  * ```
  */
 export async function analyze(sets: CaptureSet[],): Promise<string> {
+  /** Capture sets trimmed to {@link MAX_CAPTURE_SETS} so prompt size stays bounded. */
   const capped = sets.slice(
     0,
     MAX_CAPTURE_SETS,
   );
+  /** Cached length so the prompt-tail branch does not re-walk `capped`. */
   const numSets = capped.length;
 
   /** Build content array by flat-mapping each capture into its message entries. */
   const content: ChatMessage['content'] = capped.flatMap(
     function captureEntries(capture,) {
+      /** Human-readable local time used to label each capture in the prompt. */
       const ts = new Date(capture.timestamp,).toLocaleTimeString();
       return [
         {
@@ -158,6 +163,7 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
       : 'Analyze this capture. Is the user focused on productive work or distracted? Provide your verdict.',
   },);
 
+  /** OpenAI-compatible chat completion request body sent to the local llama-server. */
   const payload = {
     model: 'lfm2.5-vl-1.6b',
     messages: [
@@ -176,7 +182,9 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
     top_k: 20,
   };
 
+  /** Monotonic timestamp captured before the request so elapsed time can be logged. */
   const start = performance.now();
+  /** Response handle from llama-server; checked for non-OK status before reading the body. */
   const res = await fetch(
     API_URL,
     {
@@ -187,13 +195,17 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   );
 
   if (!res.ok) {
+    /** Raw error body included in the thrown error so callers can diagnose API failures. */
     const text = await res.text();
     throw new Error(`LLM API error ${res.status}: ${text}`,);
   }
 
+  /** Parsed completion response carrying both the verdict text and token-usage stats. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
   const data = (await res.json()) as CompletionResponse;
+  /** Wall-clock seconds spent on the request, rounded to one decimal for log output. */
   const elapsed = ((performance.now() - start) / MS_PER_SECOND).toFixed(1,);
+  /** Token-usage fields pulled out for the debug log line. */
   const {
     prompt_tokens,
     completion_tokens,
@@ -202,6 +214,7 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   log.debug(
     `[analyze] ${prompt_tokens} prompt + ${completion_tokens} completion tokens, ${elapsed}s`,
   );
+  /** First completion choice; treated as the canonical response since `n=1`. */
   const [firstChoice,] = data.choices;
   if (firstChoice === undefined)
     throw new Error('OpenAI API returned empty choices array',);

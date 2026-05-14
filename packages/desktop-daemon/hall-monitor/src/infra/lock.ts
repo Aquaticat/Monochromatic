@@ -88,25 +88,31 @@ export function acquireLock(): Promise<boolean> {
  * @returns PID of the socket owner, or null if not found
  */
 async function findSocketOwnerPid(): Promise<number | null> {
+  /** Snapshot of `/proc/net/unix` listing every Unix socket on the system. */
   const unix = await readFile(
     '/proc/net/unix',
     'utf8',
   );
+  /** First `/proc/net/unix` row whose path matches the hall-monitor abstract socket. */
   const line = unix.split('\n',).find(function matchHallMonitor(l,) {
     return l.includes('@hall-monitor',);
   },);
   if (line === undefined)
     return null;
+  /** Whitespace-separated `/proc/net/unix` columns used to extract the inode. */
   const fields = line.trim().split(/\s+/,);
+  /** Inode number that links the socket row to a `/proc/{pid}/fd` symlink target. */
   const inode = fields[INODE_FIELD_INDEX];
 
   for (const pid of await readdir('/proc',)) {
     if (!/^\d+$/.test(pid,))
       continue;
     try {
+      /** Open file descriptors of the candidate process; scanned for a matching socket inode. */
       // oxlint-disable-next-line no-await-in-loop -- sequential /proc traversal; parallel reads would race with process exits
       const fds = await readdir(`/proc/${pid}/fd`,);
       for (const fd of fds) {
+        /** Resolved fd symlink target; equals `socket:[<inode>]` for socket descriptors. */
         // oxlint-disable-next-line no-await-in-loop -- sequential readlink for each fd
         const link = await readlink(`/proc/${pid}/fd/${fd}`,);
         if (link === `socket:[${inode}]`) {
@@ -138,6 +144,7 @@ async function findSocketOwnerPid(): Promise<number | null> {
  * ```
  */
 export async function killExisting(): Promise<void> {
+  /** PID of the existing hall-monitor instance that must be terminated before the lock is free. */
   const pid = await findSocketOwnerPid();
   if (pid === null)
     throw new Error('Socket in use but could not find owner PID.',);

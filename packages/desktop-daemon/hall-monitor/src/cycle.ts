@@ -80,10 +80,12 @@ export async function cycle(): Promise<void> {
     return;
   }
 
+  /** Capture-cycle timestamp; reused for both the log line and the buffered capture set. */
   const ts = Date.now();
   log.debug(`[${new Date(ts,).toLocaleTimeString()}] Starting capture cycle...`,);
 
   try {
+    /** Screenshot and webcam buffers captured in parallel to keep latency minimal. */
     const [screenshot, webcam,] = await Promise.all([
       captureScreenshot(),
       captureWebcam(),
@@ -106,13 +108,16 @@ export async function cycle(): Promise<void> {
       screenshot,
       webcam,
     },);
+    /** Recent capture sets snapshot fed to the LLM; includes the just-stored entry. */
     const sets = getRecent();
     log.debug(`[memory] ${sets.length} capture set(s) in buffer`,);
 
     await startLlama();
+    /** Raw LLM response text; both logged verbatim and parsed for the verdict line. */
     const result = await analyze(sets,);
     await stopLlama();
 
+    /** Verdict extracted from the LLM response and pushed into the sliding decision window. */
     const verdict = parseVerdict(result,);
     /* oxlint-disable no-magic-numbers -- sliding window indices 1..4 */
     decisions = [
@@ -123,6 +128,7 @@ export async function cycle(): Promise<void> {
       verdict,
     ];
     /* oxlint-enable no-magic-numbers */
+    /** Count of unproductive verdicts in the current 5-cycle window; surfaced in the log line as `streak: N/5`. */
     const streakCount = decisions
       .filter(function checkUnproductive(d,) {
         return isUnproductive(d,);
@@ -146,6 +152,7 @@ export async function cycle(): Promise<void> {
     }
   }
   catch (err: unknown) {
+    /** Normalised error string so both Error instances and arbitrary throws log readable output. */
     const message = err instanceof Error ? err.message : String(err,);
     console.error(`[error] ${message}`,);
     log.error(`[error] ${message}`,);

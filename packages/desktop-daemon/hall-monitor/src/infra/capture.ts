@@ -45,6 +45,7 @@ function scaleFilter(longEdge: number,): string {
  * ```
  */
 export async function captureScreenshot(): Promise<Buffer> {
+  /** Temp PNG path used as a handoff file between spectacle and ffmpeg; cleaned up by the disposable below. */
   const tmp = `/tmp/hall-monitor-screen-${Date.now()}.png`;
   /** Disposable wrapper for temp file cleanup. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- disposable resource pattern
@@ -71,6 +72,7 @@ export async function captureScreenshot(): Promise<Buffer> {
       stderr: 'ignore',
     },
   );
+  /** ffmpeg child process that downscales the PNG handoff file and writes JPEG bytes to stdout. */
   const proc = cpSpawn(
     FFMPEG,
     [
@@ -93,6 +95,7 @@ export async function captureScreenshot(): Promise<Buffer> {
       'inherit',
     ], },
   );
+  /** Accumulated JPEG byte chunks streamed from ffmpeg's stdout. */
   const chunks: Buffer[] = [];
   proc.stdout.on(
     'data',
@@ -104,6 +107,7 @@ export async function captureScreenshot(): Promise<Buffer> {
     proc,
     'close',
   );
+  /** Concatenated screenshot buffer; rejected when ffmpeg produced no output. */
   const buf = Buffer.concat(chunks,);
   if (buf.length === 0)
     throw new Error('Screenshot resize produced empty output',);
@@ -125,6 +129,7 @@ export async function captureScreenshot(): Promise<Buffer> {
  * ```
  */
 export async function captureWebcam(): Promise<Buffer> {
+  /** ffmpeg child process that grabs a single v4l2 frame and emits JPEG bytes on stdout. */
   const proc = cpSpawn(
     FFMPEG,
     [
@@ -150,6 +155,7 @@ export async function captureWebcam(): Promise<Buffer> {
       'inherit',
     ], },
   );
+  /** Accumulated JPEG byte chunks streamed from ffmpeg's stdout. */
   const chunks: Buffer[] = [];
   proc.stdout.on(
     'data',
@@ -161,6 +167,7 @@ export async function captureWebcam(): Promise<Buffer> {
     proc,
     'close',
   );
+  /** Concatenated webcam frame buffer; rejected when ffmpeg produced no output. */
   const buf = Buffer.concat(chunks,);
   if (buf.length === 0)
     throw new Error('Webcam capture produced empty output',);
