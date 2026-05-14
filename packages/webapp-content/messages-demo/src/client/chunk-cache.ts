@@ -114,7 +114,9 @@ export async function createChunkCache(
  * @returns OPFS-backed cache
  */
 async function createOpfsCache(): Promise<ChunkCache> {
+  /** OPFS root acquired once and reused by the per-message subdirectory. */
   const root = await navigator.storage.getDirectory();
+  /** Per-package cache directory created on first call; reused across reads and writes. */
   const directory = await root.getDirectoryHandle(
     OPFS_DIRECTORY,
     { create: true, },
@@ -126,7 +128,9 @@ async function createOpfsCache(): Promise<ChunkCache> {
           directory,
           key,
         },);
+        /** File handle for the keyed entry; throws when absent so the catch falls through to null. */
         const handle = await directory.getFileHandle(opfsName(key,),);
+        /** Snapshot the handle's file so its body can be read as text. */
         const file = await handle.getFile();
         return await file.text();
       }
@@ -139,10 +143,12 @@ async function createOpfsCache(): Promise<ChunkCache> {
       html,
     ) {
       try {
+        /** File handle, created on first write so puts establish the slot lazily. */
         const handle = await directory.getFileHandle(
           opfsName(key,),
           { create: true, },
         );
+        /** Writable stream; written once and immediately closed below. */
         const writable = await handle.createWritable();
         await writable.write(html,);
         await writable.close();
@@ -167,6 +173,7 @@ async function createOpfsCache(): Promise<ChunkCache> {
  * @returns IDB-backed cache
  */
 async function createIdbCache(): Promise<ChunkCache> {
+  /** IDB connection opened once and reused by every get/put/destroy call returned from this factory. */
   const db = await openCacheDb();
   return {
     async get(key,) {
@@ -251,15 +258,19 @@ async function evictOpfsStale(
     key: ChunkCacheKey;
   },
 ): Promise<void> {
+  /** File-name prefix scoping the walk to the message id under consideration. */
   const messagePrefix = `${String(input.key.messageId,)}-`;
+  /** Extends `messagePrefix` with the current revision; entries starting with this are kept. */
   const currentRevPrefix = `${messagePrefix}${String(input.key.revision,)}-`;
   // FileSystemDirectoryHandle implements AsyncIterable<FileSystemHandle>
   // in Chromium and WebKit; older lib.dom.d.ts versions do not declare
   // the iterator on the type, so we narrow via a typed alias.
   if (!(Symbol.asyncIterator in input.directory))
     return;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM lib lacks the iterator type
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- DOM lib lacks the iterator type */
+  /** Narrowed alias so the `for await` loop sees a typed iterator instead of the DOM-lib gap. */
   const iterable = input.directory as unknown as AsyncIterable<FileSystemHandle>;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   // oxlint-disable-next-line no-await-in-loop
   for await (const handle of iterable) {
     if (!handle.name.startsWith(messagePrefix,))
@@ -337,11 +348,14 @@ function idbGet(
     resolve,
     reject,
   ) {
+    /** Read-only transaction scoped to the chunk store; closes on success callback. */
     const tx = input.db.transaction(
       IDB_STORE,
       'readonly',
     );
+    /** Store handle from the transaction; reused for the keyed get. */
     const store = tx.objectStore(IDB_STORE,);
+    /** Keyed get request; resolves to the row or `undefined` on miss. */
     const request = store.get([
       input.key.messageId,
       input.key.revision,
@@ -350,11 +364,13 @@ function idbGet(
     request.addEventListener(
       'success',
       function onSuccess(): void {
+        /** Widened from `any` so the shape narrowing below stays type-safe. */
         const raw: unknown = request.result;
         if (raw === null || typeof raw !== 'object' || !('html' in raw)) {
           resolve(null,);
           return;
         }
+        /** Destructured after narrowing; required to satisfy the rule. */
         const { html, } = raw;
         resolve(typeof html === 'string' ? html : null,);
       },
@@ -385,6 +401,7 @@ async function idbPut(
     html: string;
   },
 ): Promise<void> {
+  /** Read-write transaction held until `idbTransactionDone` resolves below. */
   const tx = input.db.transaction(
     IDB_STORE,
     'readwrite',
@@ -416,13 +433,16 @@ async function evictIdbStale(
     key: ChunkCacheKey;
   },
 ): Promise<void> {
+  /** Read-write transaction held until `idbTransactionDone` resolves below. */
   const tx = input.db.transaction(
     IDB_STORE,
     'readwrite',
   );
+  /** Store handle reused by the cursor open below. */
   const store = tx.objectStore(IDB_STORE,);
   // Composite primary key is [messageId, revision, idx]; bound the
   // cursor to messageId by setting revision/idx to 0..HUGE_KEY_CEILING.
+  /** Lower-bound to upper-bound composite key range scoping the cursor to one message. */
   const range = IDBKeyRange.bound(
     [
       input.key.messageId,
@@ -437,19 +457,24 @@ async function evictIdbStale(
     false,
     false,
   );
+  /** Cursor request opened against `range`; success callback fires per cursor advance. */
   const cursorRequest = store.openCursor(range,);
   cursorRequest.addEventListener(
     'success',
     function onCursor(): void {
+      /** Snapshot of `cursorRequest.result` so each callback reads a stable cursor reference. */
       const cursor = cursorRequest.result;
       if (cursor === null)
         return;
       // IDBCursorWithValue.value is typed as any; we widen back to unknown
       // for safe narrowing. Object destructuring would inherit the any
       // type and trip no-unsafe-assignment.
-      // oxlint-disable-next-line eslint/prefer-destructuring -- explicit unknown widening
+      /* oxlint-disable eslint/prefer-destructuring -- explicit unknown widening */
+      /** Widened to `unknown` so the shape check can narrow the row before reading fields. */
       const value: unknown = cursor.value;
+      /* oxlint-enable eslint/prefer-destructuring */
       if (value !== null && typeof value === 'object' && 'revision' in value) {
+        /** Destructured after narrowing; the revision compare decides whether to delete this row. */
         const { revision, } = value;
         if (typeof revision === 'number' && revision !== input.key.revision)
           cursor.delete();

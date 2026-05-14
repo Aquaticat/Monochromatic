@@ -106,6 +106,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
   // Probes can succeed but the actual open can still fail (private
   // mode quirks, quota races). Fall back to in-memory so the composer
   // never blocks at startup.
+  /** Lazily assigned IDB handle; left null when the probe lied or the open call fails post-probe. */
   let idb: IDBDatabase | null = null;
   if (options.idbAvailable) {
     try {
@@ -115,6 +116,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       idb = null;
     }
   }
+  /** Initial queue populated from IDB when available; pushes from `enqueue` extend it later. */
   let queue: ChunkUpload[] = [];
   if (idb !== null) {
     try {
@@ -124,6 +126,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       queue = [];
     }
   }
+  /** Closure-scoped state shared by every helper in this factory; queue and flags live here. */
   const state = {
     queue,
     idb,
@@ -134,6 +137,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
 
   /** Resolves every pending `flushed()` waiter and clears the list. */
   function notifyFlushed(): void {
+    /** Snapshot of `state.waiters` so the list can be reset before each resolver runs. */
     const pending = state.waiters;
     state.waiters = [];
     for (const resolve of pending)
@@ -151,6 +155,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
     if (state.draining || state.destroyed)
       return;
     state.draining = true;
+    /** `using` disposable so the draining flag clears even when the body throws. */
     using _drainCleanup = {
       /** Cleared at scope exit (including throws). */
       [Symbol.dispose]: function dispose(): void {
@@ -160,10 +165,12 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       },
     };
     while (state.queue.length > 0 && !state.destroyed) {
+      /** Destructured head so the next iteration sees the new front element. */
       const [head,] = state.queue;
       if (head === undefined)
         break;
       // oxlint-disable-next-line no-await-in-loop
+      /** Server ack from the PUT; `null` signals retries exhausted and the loop pauses. */
       const ack = await tryPutWithBackoff(head,);
       if (ack === null)
         break;
@@ -275,9 +282,11 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
  * ```
  */
 async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
+  /** Stable URL captured once outside the retry loop so each attempt targets the same slot. */
   const url = `/api/drafts/${encodeURIComponent(upload.draftId,)}/chunks/${
     String(upload.seq,)
   }`;
+  /** JSON body serialised once outside the retry loop to avoid repeated stringify cost. */
   const body = JSON.stringify({
     md: upload.md,
     html: upload.html,
@@ -287,6 +296,7 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
   for (let attempt = 0; attempt < PUT_MAX_ATTEMPTS; attempt += 1) {
     try {
       // oxlint-disable-next-line no-await-in-loop
+      /** Awaited so both the status check and the JSON read can reuse the same response. */
       const response = await fetch(
         url,
         {
@@ -298,10 +308,12 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
       if (!response.ok)
         throw new Error(`PUT returned ${String(response.status,)}`,);
       // oxlint-disable-next-line no-await-in-loop
+      /** Server ack envelope; falls back to `upload.seq` when `ack` is missing or non-numeric. */
       const parsed = await readJson<{ ack?: unknown; }>(response,);
       return typeof parsed.ack === 'number' ? parsed.ack : upload.seq;
     }
     catch {
+      /** Exponential backoff per retry; doubles on each attempt (250 ms, 500 ms, 1 s). */
       const delay = PUT_BACKOFF_BASE_MS * (1 << attempt);
       // oxlint-disable-next-line no-await-in-loop
       await wait(delay,);
@@ -329,8 +341,10 @@ async function dropAcked(
     ack: number;
   },
 ): Promise<void> {
+  /** Pre-sweep length captured so the reverse walk terminates at a known head. */
   const before = input.queue.length;
   for (let index = before - 1; index >= 0; index -= 1) {
+    /** Currently-visited entry; the guard below treats sparse holes as already-dropped. */
     const entry = input.queue[index];
     if (entry === undefined)
       continue;
@@ -394,15 +408,20 @@ function openOutboxDb(): Promise<IDBDatabase> {
  * ```
  */
 async function readPersistedQueue(db: IDBDatabase,): Promise<ChunkUpload[]> {
+  /** Read-only transaction scoped to the outbox store; held until the request resolves. */
   const tx = db.transaction(
     OUTBOX_STORE,
     'readonly',
   );
+  /** Store handle reused by the `getAll` request below. */
   const store = tx.objectStore(OUTBOX_STORE,);
   // The store's keyPath constrains every record to ChunkUpload shape;
   // see openOutboxDb's onUpgrade. getAll's typings widen to any[].
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- IDB store schema constraint
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- IDB store schema constraint */
+  /** Cast widens `getAll`'s `any[]` back to the schema-enforced `ChunkUpload[]`. */
   const request = store.getAll() as IDBRequest<ChunkUpload[]>;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
+  /** Resolved records; sorted in place below so the drain loop emits original order. */
   const raw = await idbRequestResult<ChunkUpload[]>(request,);
   raw.sort(comparePersistedUpload,);
   return raw;
@@ -445,6 +464,7 @@ async function persistOne(
     upload: ChunkUpload;
   },
 ): Promise<void> {
+  /** Read-write transaction held until `idbTransactionDone` resolves below. */
   const tx = input.idb.transaction(
     OUTBOX_STORE,
     'readwrite',
@@ -470,13 +490,16 @@ async function deleteAcked(
     ack: number;
   },
 ): Promise<void> {
+  /** Read-write transaction held until `idbTransactionDone` resolves below. */
   const tx = input.idb.transaction(
     OUTBOX_STORE,
     'readwrite',
   );
+  /** Store handle reused by the bounded-delete below. */
   const store = tx.objectStore(OUTBOX_STORE,);
   // Composite key range: every (draftId, seq) with seq in [0, ack].
   // Lower bound at seq=0 is the smallest value the chunker produces.
+  /** Composite-key range bounding the delete to one draft id and seqs 0..ack. */
   const range = IDBKeyRange.bound(
     [
       input.draftId,
