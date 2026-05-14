@@ -81,20 +81,31 @@ export function synthesizeBody(row: {
   seed: number;
   targetWordCount: number;
 },): string {
-  /** Collected paragraph strings joined with blank lines for the returned body. */
-  const paragraphs: string[] = [];
-  /** Running word count toward the target so the while loop knows when to stop. */
-  let writtenWords = 0;
-  /** Rolling seed advanced per paragraph so each paragraph draws different words. */
-  let cursor = row.seed;
-  while (writtenWords < row.targetWordCount) {
-    /** Words still owed against the target; caps the next paragraph length. */
-    const remaining = row.targetWordCount - writtenWords;
+  /**
+   * Recursively assembles paragraph strings until the running word total
+   * reaches the requested target. Threads the rolling seed cursor through
+   * the call chain so neither piece of state needs a function-root let.
+   *
+   * @param state - remaining word budget and the rolling seed cursor
+   *
+   * @returns paragraph strings collected in chronological order
+   *
+   * @example
+   * ```ts
+   * buildParagraphs({ remaining: 50, cursor: 42 }); // ['lorem ipsum dolor sit amet.', 'consectetur ...']
+   * ```
+   */
+  function buildParagraphs(state: {
+    remaining: number;
+    cursor: number;
+  },): readonly string[] {
+    if (state.remaining <= 0)
+      return [];
     /** Paragraph length capped by remaining so the body never overshoots the target. */
     const paragraphLength = Math.min(
-      remaining,
+      state.remaining,
       rngInt({
-        seed: cursor,
+        seed: state.cursor,
         lo: 8,
         hi: 60,
       },),
@@ -104,14 +115,23 @@ export function synthesizeBody(row: {
     for (let i = 0; i < paragraphLength; i += 1) {
       /** Per-word pick from the lorem pool; defaulted when picking fails. */
       const picked = rngPick({
-        seed: cursor + 1 + i,
+        seed: state.cursor + 1 + i,
         items: WORD_POOL,
       },) ?? 'item';
       words.push(picked,);
     }
-    paragraphs.push(`${words.join(' ',)}.`,);
-    writtenWords += paragraphLength;
-    cursor += paragraphLength + 1;
+    return [
+      `${words.join(' ',)}.`,
+      ...buildParagraphs({
+        remaining: state.remaining - paragraphLength,
+        cursor: state.cursor + paragraphLength + 1,
+      },),
+    ];
   }
+  /** Collected paragraph strings joined with blank lines for the returned body. */
+  const paragraphs = buildParagraphs({
+    remaining: row.targetWordCount,
+    cursor: row.seed,
+  },);
   return paragraphs.join('\n\n',);
 }

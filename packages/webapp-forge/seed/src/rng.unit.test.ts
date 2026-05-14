@@ -37,7 +37,7 @@ await describe({
           async fn() {
             for (let i = 0; i < 100; i += 1) {
               const r = rng(i,);
-              expect(r >= 0 && r < 1,).toBe(true,);
+              expect((r >= 0) && (r < 1),).toBe(true,);
             }
           },
         },),
@@ -72,7 +72,7 @@ await describe({
                 lo: 1,
                 hi: 10,
               },);
-              expect(v >= 1 && v < 10,).toBe(true,);
+              expect((v >= 1) && (v < 10),).toBe(true,);
             }
           },
         },),

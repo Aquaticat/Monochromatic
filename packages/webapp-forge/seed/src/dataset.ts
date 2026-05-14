@@ -79,20 +79,16 @@ export async function seedDataset(row: {
     repoIds,
     seed: row.seed,
   },);
-  /** Running tally accumulated across per-repo phase-1 seeding. */
-  let totalIssues = 0;
-  /** Running tally accumulated across per-repo phase-1 seeding. */
-  let totalComments = 0;
-  /** Running tally accumulated across per-repo phase-2 seeding. */
-  let totalMilestones = 0;
-  /** Running tally accumulated across per-repo phase-2 seeding. */
-  let totalPrs = 0;
-  /** Running tally accumulated across per-repo phase-2 seeding. */
-  let totalReviews = 0;
-  /** Running tally accumulated across per-repo phase-2 seeding. */
-  let totalAssignees = 0;
-  /** Running tally accumulated across per-repo phase-2 seeding. */
-  let totalMembers = 0;
+  /** Per-repo partial totals collected serially; reduced into the aggregate below. */
+  const perRepoTotals: {
+    issues: number;
+    comments: number;
+    milestones: number;
+    prs: number;
+    reviews: number;
+    assignees: number;
+    members: number;
+  }[] = [];
   for (const [index, repoId,] of repoIds.entries()) {
     /** Per-repo label id list defaulted to empty so the seeder receives a concrete array. */
     const labels = labelsByRepo.get(repoId,) ?? [];
@@ -103,15 +99,13 @@ export async function seedDataset(row: {
       seed: repoBaseSeed + index,
       userBaseSeed,
       userCount: row.userCount,
-      baseTimestamp: row.baseTimestamp + index * REPO_SEED_FACTOR,
+      baseTimestamp: row.baseTimestamp + (index * REPO_SEED_FACTOR),
       labelIds: labels,
       ...(row.maxIssuesPerRepo === undefined
         ? {}
         : { maxIssues: row.maxIssuesPerRepo, }),
     },);
     /* oxlint-enable no-await-in-loop */
-    totalIssues += r.issues;
-    totalComments += r.comments;
     /* oxlint-disable no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear */
     /** Phase-2 seeding result aggregated into the per-resource totals. */
     const phase2 = await seedPhase2ForRepo({
@@ -119,26 +113,56 @@ export async function seedDataset(row: {
       seed: repoBaseSeed + index,
       userBaseSeed,
       userCount: row.userCount,
-      baseTimestamp: row.baseTimestamp + index * REPO_SEED_FACTOR,
+      baseTimestamp: row.baseTimestamp + (index * REPO_SEED_FACTOR),
       issueIds: r.issueIds,
     },);
     /* oxlint-enable no-await-in-loop */
-    totalMilestones += phase2.milestones;
-    totalPrs += phase2.prs;
-    totalReviews += phase2.reviews;
-    totalAssignees += phase2.assignees;
-    totalMembers += phase2.members;
+    perRepoTotals.push({
+      issues: r.issues,
+      comments: r.comments,
+      milestones: phase2.milestones,
+      prs: phase2.prs,
+      reviews: phase2.reviews,
+      assignees: phase2.assignees,
+      members: phase2.members,
+    },);
   }
+  /** Summed per-resource totals across all repos. */
+  const aggregated = perRepoTotals.reduce(
+    function sumTotals(
+      acc,
+      partial,
+    ) {
+      return {
+        issues: acc.issues + partial.issues,
+        comments: acc.comments + partial.comments,
+        milestones: acc.milestones + partial.milestones,
+        prs: acc.prs + partial.prs,
+        reviews: acc.reviews + partial.reviews,
+        assignees: acc.assignees + partial.assignees,
+        members: acc.members + partial.members,
+      };
+    },
+    {
+      issues: 0,
+      comments: 0,
+      milestones: 0,
+      prs: 0,
+      reviews: 0,
+      assignees: 0,
+      members: 0,
+    },
+  );
   return {
     users: row.userCount,
     repos: row.repoCount,
     labels: totalLabels,
-    issues: totalIssues,
-    comments: totalComments,
-    milestones: totalMilestones,
-    prs: totalPrs,
-    reviews: totalReviews,
-    assignees: totalAssignees,
-    members: totalMembers,
+    issues: aggregated.issues,
+    comments: aggregated.comments,
+    milestones: aggregated.milestones,
+    prs: aggregated.prs,
+    reviews: aggregated.reviews,
+    assignees: aggregated.assignees,
+    members: aggregated.members,
   };
 }

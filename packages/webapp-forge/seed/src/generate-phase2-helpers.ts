@@ -20,22 +20,20 @@ export const PR_NUMBER_BASE = 100_000;
  * Composes a deterministic id of the form `<prefix>-<index>`, mirroring
  * the helper Phase 1's seed package uses.
  *
- * @param prefix - resource family prefix
- *
- * @param index - numeric index
+ * @param row - prefix and numeric index
  *
  * @returns composed id
  *
  * @example
  * ```ts
- * deterministicId('milestone', 0); // 'milestone-0'
+ * deterministicId({ prefix: 'milestone', index: 0 }); // 'milestone-0'
  * ```
  */
-export function deterministicId(
-  prefix: string,
-  index: number,
-): string {
-  return `${prefix}-${String(index,)}`;
+export function deterministicId(row: {
+  prefix: string;
+  index: number;
+},): string {
+  return `${row.prefix}-${String(row.index,)}`;
 }
 
 /**
@@ -47,22 +45,41 @@ export function deterministicId(
  *
  * @example
  * ```ts
- * fakeSha(0);
+ * fakeSha(0); // 40 lowercase hex chars, deterministic for seed 0
  * ```
  */
 export function fakeSha(seed: number,): string {
-  /** Accumulated hex chunks; loop runs until length reaches the SHA hex target. */
-  let s = '';
-  /** Rolling integer mutated each chunk to spread the seed across the SHA. */
-  let next = Math.trunc(seed,);
-  while (s.length < SHA_HEX_LENGTH) {
-    next = Math.trunc(
+  /**
+   * Appends hex chunks recursively until the SHA hex target length is reached,
+   * threading the rolling integer state without function-root lets.
+   *
+   * @param row - accumulated hex string and rolling integer state
+   *
+   * @returns accumulated SHA hex string clipped to the target length
+   *
+   * @example
+   * ```ts
+   * appendChunk({ s: '', next: 0 }); // returns the final 40-char SHA hex
+   * ```
+   */
+  function appendChunk(row: {
+    s: string;
+    next: number;
+  },): string {
+    if (row.s.length >= SHA_HEX_LENGTH)
+      return row.s.slice(
+        0,
+        SHA_HEX_LENGTH,
+      );
+    /** Next rolling integer derived from the prior state via the SHA mixing step. */
+    const nextValue = Math.trunc(
       Math.imul(
-        next + 1,
+        row.next + 1,
         HEX_RADIX,
       ),
     );
-    s += next
+    /** Hex chunk produced from `nextValue` and clipped to the per-round chunk width. */
+    const chunk = nextValue
       .toString(HEX_RADIX,)
       .padStart(
         SHA_HEX_CHUNK,
@@ -72,9 +89,13 @@ export function fakeSha(seed: number,): string {
         0,
         SHA_HEX_CHUNK,
       );
+    return appendChunk({
+      s: row.s + chunk,
+      next: nextValue,
+    },);
   }
-  return s.slice(
-    0,
-    SHA_HEX_LENGTH,
-  );
+  return appendChunk({
+    s: '',
+    next: Math.trunc(seed,),
+  },);
 }

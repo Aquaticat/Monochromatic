@@ -164,13 +164,13 @@ async function seedMilestones(row: {
   for (let i = 0; i < count; i += 1) {
     // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
     await insertMilestone({
-      id: deterministicId(
-        `milestone-${row.repoId}`,
-        i,
-      ),
+      id: deterministicId({
+        prefix: `milestone-${row.repoId}`,
+        index: i,
+      },),
       repoId: row.repoId,
       title: `v${String(i + 1,)}.0`,
-      dueAt: row.baseTimestamp + (i + 1) * MILESTONE_SEED_OFFSET,
+      dueAt: row.baseTimestamp + ((i + 1) * MILESTONE_SEED_OFFSET),
     },);
   }
   return count;
@@ -211,10 +211,10 @@ async function seedAssigneesForIssues(row: {
         hi: row.userCount,
       },);
       /** Composed assignee id mapped through the user namespace offset. */
-      const userId = deterministicId(
-        'user',
-        row.userBaseSeed + userIndex,
-      );
+      const userId = deterministicId({
+        prefix: 'user',
+        index: row.userBaseSeed + userIndex,
+      },);
       // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
       await assignUserToIssue({
         issueId,
@@ -258,10 +258,10 @@ async function seedRepoMembers(row: {
       hi: row.userCount,
     },);
     /** Composed member id mapped through the user namespace offset. */
-    const userId = deterministicId(
-      'user',
-      row.userBaseSeed + userIndex,
-    );
+    const userId = deterministicId({
+      prefix: 'user',
+      index: row.userBaseSeed + userIndex,
+    },);
     /** Role string sampled from the allowed set, defaulted to reader when picking fails. */
     const role = rngPick({
       seed: row.seed + i,

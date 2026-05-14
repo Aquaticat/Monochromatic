@@ -56,31 +56,29 @@ function getFlag(name: string,): string | undefined {
 /**
  * Parses an integer flag with a default.
  *
- * @param name - flag name without the leading dashes
- *
- * @param fallback - returned when the flag is absent or unparseable
+ * @param row - flag name and fallback value
  *
  * @returns parsed integer
  *
  * @example
  * ```ts
- * const repos = intFlag('repos', 3);
+ * const repos = intFlag({ name: 'repos', fallback: 3 });
  * ```
  */
-function intFlag(
-  name: string,
-  fallback: number,
-): number {
+function intFlag(row: {
+  name: string;
+  fallback: number;
+},): number {
   /** Raw flag string lifted from argv before integer parsing. */
-  const raw = getFlag(name,);
+  const raw = getFlag(row.name,);
   if (raw === undefined)
-    return fallback;
+    return row.fallback;
   /** Decimal-parsed flag value; reused twice in the finite check and return. */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,
   );
-  return Number.isFinite(parsed,) ? parsed : fallback;
+  return Number.isFinite(parsed,) ? parsed : row.fallback;
 }
 
 /** CLI `--out=` arg, used to override `DB_PATH`. */
@@ -89,22 +87,22 @@ if (out !== undefined)
   process.env.DB_PATH = out;
 
 /** Resolved seed flag. */
-const seed = intFlag(
-  'seed',
-  DEFAULT_SEED,
-);
+const seed = intFlag({
+  name: 'seed',
+  fallback: DEFAULT_SEED,
+},);
 
 /** Resolved `--users=` flag. */
-const userCount = intFlag(
-  'users',
-  DEFAULT_USERS,
-);
+const userCount = intFlag({
+  name: 'users',
+  fallback: DEFAULT_USERS,
+},);
 
 /** Resolved `--repos=` flag. */
-const repoCount = intFlag(
-  'repos',
-  DEFAULT_REPOS,
-);
+const repoCount = intFlag({
+  name: 'repos',
+  fallback: DEFAULT_REPOS,
+},);
 
 /** Raw `--max-issues-per-repo=` flag string, before parsing. */
 const maxIssuesPerRepoRaw = getFlag('max-issues-per-repo',);

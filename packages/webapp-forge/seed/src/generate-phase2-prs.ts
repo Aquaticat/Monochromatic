@@ -94,10 +94,10 @@ export async function seedPullRequestsForRepo(row: {
     /** Per-PR sub-seed reused for author, body, and SHA derivation. */
     const prSeed = row.seed + i;
     /** Composed PR-issue id reused by the insert and the returned id list. */
-    const issueId = deterministicId(
-      `pr-${row.repoId}`,
-      i,
-    );
+    const issueId = deterministicId({
+      prefix: `pr-${row.repoId}`,
+      index: i,
+    },);
     /** Deterministic user-table index used to pick the PR author. */
     const authorIndex = rngInt({
       seed: prSeed,
@@ -105,10 +105,10 @@ export async function seedPullRequestsForRepo(row: {
       hi: row.userCount,
     },);
     /** Composed author id mapped through the user namespace offset. */
-    const authorId = deterministicId(
-      'user',
-      row.userBaseSeed + authorIndex,
-    );
+    const authorId = deterministicId({
+      prefix: 'user',
+      index: row.userBaseSeed + authorIndex,
+    },);
     /** Body word-count target drawn from the seed; passed to the synthesiser. */
     const bodyWords = rngInt({
       seed: prSeed + PR_BODY_OFFSET,
@@ -171,7 +171,7 @@ export async function seedReviewsForPrs(row: {
     },);
     for (let r = 0; r < reviewCount; r += 1) {
       /** Per-review sub-seed offset so each review draws unique reviewer/state/body. */
-      const reviewSeed = row.seed + index * MAX_REVIEWS_PER_PR + r;
+      const reviewSeed = row.seed + (index * MAX_REVIEWS_PER_PR) + r;
       /** Deterministic user-table index used to pick the reviewer. */
       const reviewerIndex = rngInt({
         seed: reviewSeed,
@@ -179,10 +179,10 @@ export async function seedReviewsForPrs(row: {
         hi: row.userCount,
       },);
       /** Composed reviewer id mapped through the user namespace offset. */
-      const reviewerId = deterministicId(
-        'user',
-        row.userBaseSeed + reviewerIndex,
-      );
+      const reviewerId = deterministicId({
+        prefix: 'user',
+        index: row.userBaseSeed + reviewerIndex,
+      },);
       /** Review state sampled from the allowed set, defaulted to commented when picking fails. */
       const state = rngPick({
         seed: reviewSeed,
@@ -196,10 +196,10 @@ export async function seedReviewsForPrs(row: {
       },);
       // oxlint-disable-next-line no-await-in-loop -- transactional sequence rules out parallel inserts
       await submitReviewWithEvent({
-        id: deterministicId(
-          `review-${prIssueId}`,
-          r,
-        ),
+        id: deterministicId({
+          prefix: `review-${prIssueId}`,
+          index: r,
+        },),
         prIssueId,
         reviewerId,
         state,
