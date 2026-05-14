@@ -62,6 +62,7 @@ export function formatNumber(num: number,): string {
  * ```
  */
 export function renderBadges(detail: ProbeDetail,): string {
+  /** Accumulator for badge spans whose corresponding state flag is set. */
   const badges: string[] = [];
 
   if (detail.partial === true) {
@@ -135,6 +136,7 @@ export function renderPassMeta({
   usage: StreamUsage | undefined;
   finishReason: string | undefined;
 },): string {
+  /** Accumulator for `<dt>`/`<dd>` pairs added per available metric. */
   const items: string[] = [];
 
   if (timing !== undefined) {

@@ -38,8 +38,10 @@ export function buildProbeLegend(
     }
   }
 
+  /** Rendered legend item markup joined into the legend container body. */
   const items = [...seen.entries(),]
     .map(function buildItem([label, openrouterId,],): string {
+      /** Vendor-derived accent color used by the inline dot icon. */
       const color = vendorColor(openrouterId,);
       return h({
         tag: 'span',

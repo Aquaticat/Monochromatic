@@ -32,6 +32,7 @@ export function buildCrossModelPoints(
   entries: readonly ViewerEntry[],
   probe: string,
 ): readonly ScatterPoint[] {
+  /** Entries that recorded a score for the requested probe. */
   const relevant = entries.filter(function hasProbe(entry,): boolean {
     return probe in entry.probeScores;
   },);
@@ -40,9 +41,13 @@ export function buildCrossModelPoints(
     entry,
     index,
   ): ScatterPoint {
+    /** Probe-specific initial-pass score with zero fallback. */
     const score = entry.probeScores[probe] ?? 0;
+    /** Probe-specific fix-pass score; undefined when no fix was attempted. */
     const pass2Score = entry.pass2Scores?.[probe];
+    /** Vendor-derived accent color for the point's button. */
     const color = vendorColor(entry.model,);
+    /** Stable id linking the point to its probe-detail overlay. */
     const runId = `${entry.label}-${probe}-${entry.timestamp}`;
     return {
       runId,
@@ -102,6 +107,7 @@ export function buildSingleModelPoints(
   openrouterId: string,
   color: string,
 ): readonly ScatterPoint[] {
+  /** Entries scoring the requested probe for this specific model label. */
   const relevant = entries.filter(function matchLabelAndProbe(entry,): boolean {
     return entry.label === label && probe in entry.probeScores;
   },);
@@ -110,8 +116,11 @@ export function buildSingleModelPoints(
     entry,
     index,
   ): ScatterPoint {
+    /** Probe-specific initial-pass score with zero fallback. */
     const score = entry.probeScores[probe] ?? 0;
+    /** Probe-specific fix-pass score; undefined when no fix was attempted. */
     const pass2Score = entry.pass2Scores?.[probe];
+    /** Stable id linking the point to its probe-detail overlay. */
     const runId = `${label}-${probe}-${entry.timestamp}`;
     return {
       runId,

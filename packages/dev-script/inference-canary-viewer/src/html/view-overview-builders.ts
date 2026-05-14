@@ -44,8 +44,11 @@ export function buildAllModelPoints(
       entry,
       index,
     ): ScatterPoint {
+      /** Vendor-derived accent color for this point's button. */
       const color = vendorColor(entry.model,);
+      /** Stable id linking the point button to its detail overlay. */
       const runId = `${entry.label}-${entry.timestamp}`;
+      /** Source row used by the chart's optional data-table caption. */
       const tableRow = {
         timestamp: entry.timestamp,
         model: entry.label,
@@ -86,8 +89,10 @@ export function buildAllModelPoints(
  * ```
  */
 export function buildOverviewLegend(summaries: readonly ModelSummary[],): string {
+  /** Joined legend item markup feeding the legend container body. */
   const items = summaries
     .map(function buildLegendItem(summary,) {
+      /** Vendor-derived accent color used by the inline dot icon. */
       const color = vendorColor(summary.model,);
       return h({
         tag: 'span',

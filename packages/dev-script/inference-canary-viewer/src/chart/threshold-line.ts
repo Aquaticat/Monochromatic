@@ -30,6 +30,7 @@ export function renderThresholdLine(
     return '';
   /** Percentage multiplier */
   const PERCENT = 100;
+  /** Inline-style positioning expressed as percentage from the chart floor. */
   const bottom = threshold * PERCENT;
   return h({
     tag: 'div',

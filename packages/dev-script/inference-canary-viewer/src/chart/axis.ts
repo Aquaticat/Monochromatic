@@ -41,6 +41,7 @@ export function renderYAxis(): string {
   const PERCENT = 100;
   return Y_TICKS
     .map(function renderTick(tick,) {
+      /** CSS bottom offset (as percent) corresponding to this tick value. */
       const bottom = tick * PERCENT;
       return h({
         tag: 'span',
@@ -74,23 +75,29 @@ export function renderXAxis(timestamps: readonly string[],): string {
 
   /** Maximum number of X axis labels to show before skipping */
   const MAX_LABELS = 12;
+  /** Index stride between rendered ticks so the axis stays uncluttered. */
   const step = Math.max(
     1,
     Math.ceil(timestamps.length / MAX_LABELS,),
   );
 
+  /** Date/time formatter chosen by the data's span. */
   const formatter = chooseFormatter(timestamps,);
 
   /** Percentage multiplier */
   const PERCENT = 100;
+  /** Accumulator for rendered tick spans returned to the caller. */
   const ticks: string[] = [];
+  /** Tracks the previous tick's label so consecutive duplicates can be hidden. */
   let lastLabel = '';
   for (let i = 0; i < timestamps.length; i += step) {
     /** Center position when a single data point exists */
     const CENTER_PERCENT = HALF * PERCENT;
+    /** Horizontal position percentage for this tick along the inline axis. */
     const left = timestamps.length === 1
       ? CENTER_PERCENT
       : (i / (timestamps.length - 1)) * PERCENT;
+    /** Formatted label string for this tick before duplicate suppression. */
     const label = formatter(timestamps[i] ?? '',);
     /** Suppress consecutive duplicate labels so the axis stays readable */
     const displayLabel = label === lastLabel ? '' : label;
@@ -117,6 +124,7 @@ export function renderXAxis(timestamps: readonly string[],): string {
  * @returns formatter function mapping ISO timestamp to display label
  */
 function chooseFormatter(timestamps: readonly string[],): (ts: string,) => string {
+  /** Distinct YYYY-MM-DD prefixes across the supplied timestamps. */
   const uniqueDates = new Set(timestamps.map(function extractDate(ts,) {
     return ts.slice(
       0,
@@ -143,6 +151,7 @@ function chooseFormatter(timestamps: readonly string[],): (ts: string,) => strin
 function formatTime(timestamp: string,): string {
   /** ISO format: YYYY-MM-DDTHH:MM:SS, time starts at index 11 */
   const TIME_START = 11;
+  /** End index for the HH:MM slice extracted from the ISO timestamp. */
   const TIME_END = 16;
   if (timestamp.length < TIME_END)
     return timestamp;
@@ -173,9 +182,11 @@ function formatDate(timestamp: string,): string {
     0,
     10,
   );
+  /** Local current year used to detect the same-year shortening case. */
   const currentYear = new Date().getFullYear().toString();
   if (datePart.startsWith(currentYear,)) {
     // Same year: show MM-DD only; skip "YYYY-" prefix
+    /** Length of the leading "YYYY-" prefix that gets trimmed for same-year labels. */
     const YEAR_PREFIX_LENGTH = 5;
     return datePart.slice(YEAR_PREFIX_LENGTH,);
   }

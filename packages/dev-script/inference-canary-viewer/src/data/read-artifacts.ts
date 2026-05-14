@@ -188,7 +188,8 @@ export async function readArtifacts(): Promise<ArtifactData> {
         // oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional
         label: parsedMeta.label ?? modelDirent.name,
       };
-      // oxlint-disable-next-line no-await-in-loop -- sequential per-artifact reads grouped by run
+      /* oxlint-disable no-await-in-loop -- sequential per-artifact reads grouped by run */
+      /** Optional source and response file contents loaded together for this artifact directory. */
       const [source, response,] = await Promise.all([
         readOptional(join(
           dirPath,
@@ -199,6 +200,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
           'response.txt',
         ),),
       ],);
+      /* oxlint-enable no-await-in-loop */
       /** Assembled parsed artifact bundling metadata with optional source and response files. */
       const artifact: ParsedArtifact = {
         meta,

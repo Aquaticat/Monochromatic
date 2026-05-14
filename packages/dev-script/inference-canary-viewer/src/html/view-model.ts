@@ -59,21 +59,26 @@ export function renderByModel({
 
   return labels
     .map(function renderModelSection(label,): string {
+      /** Entries narrowed to the current model label. */
       const modelEntries = entries.filter(function matchLabel(entry,): boolean {
         return entry.label === label;
       },);
       /** OpenRouter model ID from the first entry, used for vendor color/icon */
       const openrouterId = modelEntries[0]?.model ?? '';
+      /** Vendor-derived accent color reused across this model's charts. */
       const color = vendorColor(openrouterId,);
+      /** Degradation threshold drawn as a horizontal reference line. */
       const threshold = thresholds.get(label,) ?? 0;
 
       // Overall score chart
+      /** Scatter points feeding the overall-score chart for this model. */
       const overallPoints = buildOverallPoints(
         modelEntries,
         label,
         openrouterId,
         color,
       );
+      /** Rendered overall-score chart markup for this model section. */
       const overallChart = renderScatterChart({
         points: overallPoints,
         threshold,
@@ -83,13 +88,16 @@ export function renderByModel({
       },);
 
       // Per-probe charts
+      /** Distinct probe slugs scored by this model across its runs. */
       const probeNames = [
         ...new Set(modelEntries.flatMap(function probeKeys(entry,): string[] {
           return Object.keys(entry.probeScores,);
         },),),
       ];
+      /** Joined per-probe scatter chart markup for this model's breakdown. */
       const probeCharts = probeNames
         .map(function renderProbeChart(probe,): string {
+          /** Scatter points feeding this probe's per-model chart. */
           const probePoints = buildProbePoints(
             modelEntries,
             label,

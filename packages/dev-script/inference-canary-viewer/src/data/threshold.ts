@@ -50,6 +50,7 @@ export function computeThreshold(
   label: string,
   entries: readonly ViewerEntry[],
 ): ModelThreshold {
+  /** Non-failed overall scores used as the statistical sample. */
   const scores = entries
     .filter(function matchLabel(entry,): boolean {
       return entry.label === label && !entry.failed && hasMultipleProbes(entry,);
@@ -68,6 +69,7 @@ export function computeThreshold(
     };
   }
 
+  /** Arithmetic mean of the sample scores. */
   const mean = scores.reduce(
     function add(
       sum,
@@ -77,6 +79,7 @@ export function computeThreshold(
     },
     0,
   ) / scores.length;
+  /** Squared-deviation average underlying the standard deviation. */
   const variance = scores.reduce(
     function addVariance(
       sum,
@@ -86,7 +89,9 @@ export function computeThreshold(
     },
     0,
   ) / scores.length;
+  /** Sample standard deviation used to space the threshold below the mean. */
   const stddev = Math.sqrt(variance,);
+  /** Floored degradation threshold returned to callers. */
   const threshold = Math.max(
     THRESHOLD_FLOOR,
     mean - STDDEV_MULTIPLIER * stddev,

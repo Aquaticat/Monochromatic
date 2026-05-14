@@ -55,8 +55,11 @@ export function renderOverview({
   }
 
   // Combined scatter chart: all models' overall scores
+  /** Scatter-plot data points feeding the combined overview chart. */
   const chartPoints = buildAllModelPoints(entries,);
+  /** Color/shape legend rendered above the chart. */
   const legend = buildOverviewLegend(summaries,);
+  /** Composed scatter chart markup for the all-models view. */
   const chart = renderScatterChart({
     points: chartPoints,
     threshold: 0,
@@ -66,12 +69,15 @@ export function renderOverview({
   },);
 
   // Summary table: status is shown inline rather than in its own column
+  /** Joined `<tr>` markup populating the summary table body. */
   const rows = summaries
     .map(function buildRow(summary,): string {
+      /** Vendor-derived accent color for the row's model icon. */
       const color = vendorColor(summary.model,);
       /** Data attribute value for row-level status styling */
       const statusClass = statusLevel(summary,);
 
+      /** Inline status badge appended to the score cell when applicable. */
       const inlineStatus = summary.failed
         ? ` ${
           h({
