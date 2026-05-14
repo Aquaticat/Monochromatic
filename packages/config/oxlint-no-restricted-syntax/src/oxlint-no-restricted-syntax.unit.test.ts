@@ -220,6 +220,15 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'prefer-describe-function-ref-name skips non-callable bindings',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/prefer-describe-function-ref-name-constants.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
   ],

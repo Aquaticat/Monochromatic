@@ -1,29 +1,192 @@
+import { readFileSync, } from 'node:fs';
+import {
+  dirname,
+  resolve,
+} from 'node:path';
+
 import type {
   Context,
   CreateOnceRule,
   ESTree,
   Scope,
+  Variable,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+/** All-caps snake-case binding name pattern; assumed to be a constant import. */
+const ALL_CAPS_SNAKE = /^[A-Z][A-Z0-9_]*$/;
+
+/**
+ * Reads an imported source file and reports whether `<name>` is declared
+ * as a function, class, or some other shape there.
+ *
+ * Resolves only relative paths; bails on workspace and external imports
+ * because the resolver would need to walk the package graph. Bails on
+ * read errors too. The caller falls back to the
+ * {@link ALL_CAPS_SNAKE} heuristic in either case.
+ *
+ * Match patterns:
+ *
+ * - `export function <name>` -> `'callable'`
+ * - `export async function <name>` -> `'callable'`
+ * - `export function* <name>` -> `'callable'`
+ * - `export class <name>` -> `'callable'`
+ * - `export const <name>` (any init) -> `'const'` (caller's responsibility
+ *   to ignore; instance `.name` is rarely meaningful)
+ * - `export { ... <name> ... }` re-export from another file -> `'reexport'`
+ *   (caller falls back to the name-shape heuristic; following re-exports
+ *   would require recursing through the package, beyond this rule's scope)
+ * - none of the above -> `'unknown'` (treat as not callable)
+ *
+ * @param sourcePath - Resolved absolute path of the imported file.
+ *
+ * @param name - Name being inspected in the source's export surface.
+ *
+ * @returns Tag describing what kind of binding the source exposes.
+ */
+function classifyExportedName(sourcePath: string, name: string,): 'callable' | 'const' | 'reexport' | 'unknown' {
+  const content = (function readOrEmpty(): string {
+    try {
+      return readFileSync(sourcePath, 'utf8',);
+    }
+    catch {
+      return '';
+    }
+  })();
+  if (content === '')
+    return 'unknown';
+  const fnRe = new RegExp(
+    '(?:^|\\n)export\\s+(?:async\\s+)?function\\s*\\*?\\s+' + name + '\\b',
+  );
+  if (fnRe.test(content,))
+    return 'callable';
+  const classRe = new RegExp('(?:^|\\n)export\\s+class\\s+' + name + '\\b',);
+  if (classRe.test(content,))
+    return 'callable';
+  const constRe = new RegExp('(?:^|\\n)export\\s+const\\s+' + name + '\\b',);
+  if (constRe.test(content,))
+    return 'const';
+  const reexportRe = new RegExp(
+    'export\\s*\\{[^}]*\\b' + name + '\\b[^}]*\\}\\s*from\\s*[\'"]',
+  );
+  if (reexportRe.test(content,))
+    return 'reexport';
+  return 'unknown';
+}
+
+/**
+ * Determines whether the binding behind a {@link Variable} is callable in
+ * a way that makes `binding.name` a meaningful suite name.
+ *
+ * - Function declarations and class declarations: yes, `.name` returns the
+ *   declared name.
+ * - `const`/`let`/`var` declarations: only when the initializer is itself a
+ *   function or class expression. `const X = new Map()` and `const X = 5`
+ *   produce `undefined` from `.name` and must be left as string literals.
+ * - Imports from a relative path: synchronously read the source file and
+ *   look for `export function`/`export class`/`export const` for `name`.
+ *   Treat `export const` (any init) as not callable. Re-exports from
+ *   another file (`export { name } from '...'`) and read failures fall
+ *   through to the {@link ALL_CAPS_SNAKE} name-shape heuristic.
+ * - Imports from a workspace or external package: ALL_CAPS_SNAKE -> not
+ *   callable; otherwise assumed callable.
+ * - Other definition kinds (parameter, catch clause, implicit global):
+ *   not the rule's target.
+ *
+ * @param variable - Scope-manager {@link Variable} for the matched binding.
+ *
+ * @param currentFile - Absolute path of the file being linted, used to
+ *   resolve relative import paths.
+ *
+ * @returns `true` when the binding is callable and the function-reference
+ *   form makes sense.
+ */
+function isCallableBinding(
+  variable: Variable,
+  currentFile: string,
+): boolean {
+  const [def,] = variable.defs;
+  if (def === undefined)
+    return false;
+  if (def.type === 'FunctionName' || def.type === 'ClassName')
+    return true;
+  if (def.type === 'ImportBinding') {
+    /** Walk up to the enclosing ImportDeclaration to inspect the source. */
+    const node = def.node;
+    const decl = node.type === 'ImportDeclaration'
+      ? node
+      : node.parent;
+    if (decl === null || decl === undefined || decl.type !== 'ImportDeclaration')
+      return !ALL_CAPS_SNAKE.test(variable.name,);
+    const sourceValue = decl.source.value;
+    if (typeof sourceValue !== 'string')
+      return !ALL_CAPS_SNAKE.test(variable.name,);
+    if (!sourceValue.startsWith('.'))
+      return !ALL_CAPS_SNAKE.test(variable.name,);
+    /** Resolve relative to the file under lint. */
+    const sourcePath = resolve(dirname(currentFile,), sourceValue,);
+    /** Imports use the alias's local name; the source may export under a different identifier. */
+    const sourceName = node.type === 'ImportSpecifier' && 'imported' in node
+      ? (function getImportedName(): string {
+        const { imported, } = node;
+        if (imported.type === 'Identifier')
+          return imported.name;
+        return variable.name;
+      })()
+      : variable.name;
+    const kind = classifyExportedName(sourcePath, sourceName,);
+    if (kind === 'callable')
+      return true;
+    if (kind === 'const')
+      return false;
+    return !ALL_CAPS_SNAKE.test(variable.name,);
+  }
+  if (def.type === 'Variable') {
+    const declarator = def.node;
+    if (declarator.type !== 'VariableDeclarator')
+      return false;
+    const { init, } = declarator;
+    if (init === null || init === undefined)
+      return false;
+    return (
+      init.type === 'FunctionExpression'
+      || init.type === 'ArrowFunctionExpression'
+      || init.type === 'ClassExpression'
+    );
+  }
+  return false;
+}
+
 /**
  * Prefers `describe({ name: myFn.name, ... })` over
- * `describe({ name: 'myFn', ... })` whenever `myFn` is an in-scope binding.
+ * `describe({ name: 'myFn', ... })` whenever `myFn` is a callable binding
+ * in scope.
  *
  * The function-reference form keeps suite names synchronised with renames:
  * `Function.prototype.name` updates automatically when the underlying
  * declaration is renamed, while a string literal silently drifts.
  *
- * Reports the `describe({ name: '<string>' })` form only when `<string>`
- * matches an identifier currently bound in the file (an import, a
- * top-level declaration, or any enclosing scope). String literals that
- * do not match any binding are left alone; they cover legitimate cases
- * such as CLI names, class names quoted as strings, and multi-word
- * descriptive headings.
+ * Fires only when the matched binding is callable (function declaration,
+ * class declaration, import not in ALL_CAPS_SNAKE shape, or `const`
+ * initialized with a function/class expression). Bindings that have no
+ * meaningful `.name` are left alone:
+ *
+ * - `const X = new Map()` -- instance `.name` is `undefined`.
+ * - `const X = { ... }` -- instance `.name` is `undefined`.
+ * - `const X = 5` -- numbers have no `.name`.
+ * - `import { THIRTY } from '...'` -- when `THIRTY` is ALL_CAPS_SNAKE the
+ *   import is assumed to be a constant value, not a function. (Camel-case
+ *   imports of non-callable values remain a residual false positive --
+ *   the rule cannot resolve imports at lint time without I/O.)
  *
  * Empty-string names (`name: ''`) are exempted: the harness uses them
  * for invisible top-level suites where the filename already identifies
  * the test target.
+ *
+ * Global identifiers (browser `find`, `name`, `event`, etc. enabled via
+ * `env.browser`) live in the global scope and are skipped during the
+ * scope-chain walk. The rule only inspects the module scope and any
+ * intermediate function/block scopes.
  *
  * Harness self-tests in `packages/module/test/src/{describe,it}.unit.test.ts`
  * are circular by design (the function under test IS the local binding);
@@ -32,13 +195,17 @@ import type {
  *
  * @example
  * ```ts
- * // Bad; string literal mirrors an in-scope import
+ * // Bad; string literal mirrors an in-scope import of a function
  * import { coerceArg } from './coerce-arg.ts';
  * await describe({ name: 'coerceArg', children: [\/* ... *\/] });
  *
  * // Good; function reference auto-syncs on rename
  * import { coerceArg } from './coerce-arg.ts';
  * await describe({ name: coerceArg.name, children: [\/* ... *\/] });
+ *
+ * // Good; MANAGERS is a `const = new Map()`, .name is undefined
+ * const MANAGERS = new Map();
+ * await describe({ name: 'MANAGERS', children: [\/* ... *\/] });
  *
  * // Good; no binding named 'fixtures' in scope
  * await describe({ name: 'fixtures', children: [\/* ... *\/] });
@@ -97,17 +264,20 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
           return;
         for (
           let scope: Scope | null = context.sourceCode.getScope(node,);
-          scope !== null;
+          scope !== null && scope.type !== 'global';
           scope = scope.upper
         ) {
-          if (scope.set.has(stringValue,)) {
+          const variable = scope.set.get(stringValue,);
+          if (variable === undefined)
+            continue;
+          if (isCallableBinding(variable, context.filename,)) {
             context.report({
               node: prop.value,
               messageId: 'forbidden',
               data: { name: stringValue, },
             },);
-            return;
           }
+          return;
         }
         return;
       }
