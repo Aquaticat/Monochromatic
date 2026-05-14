@@ -43,6 +43,7 @@ const SECTOR_SIZE = 512;
  * ```
  */
 export async function findFreeNbdDevice(): Promise<string> {
+  /** Function-tagged logger so NBD device discovery is traceable in shared logs. */
   const rl = tagged({
     tag: findFreeNbdDevice.name,
     l,
@@ -189,6 +190,7 @@ export async function connectDisposable(
     format: string;
   },
 ): Promise<NbdConnection> {
+  /** Function-tagged logger so connect/disconnect events are paired in traces. */
   const rl = tagged({
     tag: connectDisposable.name,
     l,
@@ -265,6 +267,7 @@ export async function patchBlocks(
     changedRegions: readonly QemuMapRegion[];
   },
 ): Promise<void> {
+  /** Function-tagged logger so per-region copy operations are traceable. */
   const rl = tagged({
     tag: patchBlocks.name,
     l,
@@ -375,6 +378,7 @@ async function transferRegion(
  * ```
  */
 export async function ensureNbdModule(): Promise<void> {
+  /** Function-tagged logger so module-load attempts surface clearly in traces. */
   const rl = tagged({
     tag: ensureNbdModule.name,
     l,

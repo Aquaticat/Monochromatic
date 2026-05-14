@@ -56,6 +56,7 @@ import {
  * ```
  */
 export async function syncFromKvm(name: string,): Promise<void> {
+  /** Function-tagged logger so post-boot sync steps are traceable per VM. */
   const rl = tagged({
     tag: syncFromKvm.name,
     l,
@@ -162,6 +163,12 @@ async function patchVhdxFromOverlay(
 
   /** NBD device for the overlay (source, read-only). */
   const sourceDevicePath = await findFreeNbdDevice();
+  /**
+   * Disposable NBD connection for the source overlay.
+   *
+   * Bound to `_sourceConn` so `await using` triggers automatic disconnect when
+   * this scope exits; the binding is intentionally unused beyond lifetime control.
+   */
   await using _sourceConn = await connectDisposable({
     imagePath: overlayPath,
     device: sourceDevicePath,
@@ -171,6 +178,12 @@ async function patchVhdxFromOverlay(
 
   /** NBD device for the vhdx (target, read-write). */
   const targetDevicePath = await findFreeNbdDevice();
+  /**
+   * Disposable NBD connection for the target vhdx.
+   *
+   * Bound to `_targetConn` so `await using` triggers automatic disconnect when
+   * this scope exits; the binding is intentionally unused beyond lifetime control.
+   */
   await using _targetConn = await connectDisposable({
     imagePath: vhdxPath,
     device: targetDevicePath,
@@ -203,6 +216,7 @@ async function patchVhdxFromOverlay(
  * ```
  */
 export async function syncFromHyperv(name: string,): Promise<void> {
+  /** Function-tagged logger so post-boot sync steps are traceable per VM. */
   const rl = tagged({
     tag: syncFromHyperv.name,
     l,
@@ -283,6 +297,7 @@ export async function syncFromHyperv(name: string,): Promise<void> {
  * ```
  */
 export async function syncVm(name: string,): Promise<void> {
+  /** Function-tagged logger so dispatch and per-hypervisor sync share traces. */
   const rl = tagged({
     tag: syncVm.name,
     l,

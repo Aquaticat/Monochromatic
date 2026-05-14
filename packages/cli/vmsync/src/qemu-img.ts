@@ -36,6 +36,7 @@ import type {
  * ```
  */
 export async function imageInfo(imagePath: string,): Promise<QemuImgInfo> {
+  /** Function-tagged logger so traces show which qemu-img call produced each line. */
   const rl = tagged({
     tag: imageInfo.name,
     l,
@@ -92,6 +93,7 @@ export async function convert(
     targetFormat: string;
   },
 ): Promise<void> {
+  /** Function-tagged logger so traces show which qemu-img call produced each line. */
   const rl = tagged({
     tag: convert.name,
     l,
@@ -143,6 +145,7 @@ export async function createOverlay(
     backingPath: string;
   },
 ): Promise<void> {
+  /** Function-tagged logger so traces show which qemu-img call produced each line. */
   const rl = tagged({
     tag: createOverlay.name,
     l,
@@ -182,6 +185,7 @@ export async function createOverlay(
  * ```
  */
 export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegion[]> {
+  /** Function-tagged logger so traces show which qemu-img call produced each line. */
   const rl = tagged({
     tag: blockMap.name,
     l,
@@ -233,6 +237,7 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
  * ```
  */
 export async function commitOverlay(overlayPath: string,): Promise<void> {
+  /** Function-tagged logger so traces show which qemu-img call produced each line. */
   const rl = tagged({
     tag: commitOverlay.name,
     l,
@@ -265,6 +270,7 @@ export async function commitOverlay(overlayPath: string,): Promise<void> {
  * ```
  */
 export async function checksum(imagePath: string,): Promise<string> {
+  /** Function-tagged logger so traces show which qemu-img call produced each line. */
   const rl = tagged({
     tag: checksum.name,
     l,
