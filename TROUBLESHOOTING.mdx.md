@@ -1,15 +1,12 @@
-# Troubleshooting MDX
+# `@mdx-js/mdx` 3.1.1 emits literal-string tag names for author-written lowercase JSX, bypassing `useMDXComponents()` and rendering custom-element tags as inert HTML
 
-## Explicit lowercase JSX tags bypass the components map
+## Symptom
 
-### Symptom
-
-A custom component is registered via `useMDXComponents()`
-under a kebab-case key like `'callout-alert'`,
-the MDX source uses `<callout-alert>...</callout-alert>`,
-and the component function is never invoked.
-The tag passes through to the output HTML as a plain element
-with its attributes copied verbatim.
+A custom component is registered in the components map under a
+kebab-case key like `'callout-alert'`. The MDX source uses
+`<callout-alert>...</callout-alert>`. The component function
+is never invoked; the tag passes through to the output HTML as
+a plain element with its attributes copied verbatim.
 
 Example output when the bug manifests:
 
@@ -29,55 +26,28 @@ Expected output (if the component function had been invoked):
   </blockquote></callout-alert>
 ```
 
-### Minimal reproduction
+## Root cause
 
-```ts
-// repro.ts
-import { compile, } from '@mdx-js/mdx';
+MDX intentionally distinguishes three JSX shapes in
+`recma-jsx-rewrite`:
 
-const src = '# Hi\n\n<callout-alert>text</callout-alert>\n\n<Foo>x</Foo>';
-console.log(String(await compile(src,),),);
-```
+1. Capitalised identifier (`<Foo>`): treated as a component
+   reference.
+2. Explicit lowercase JSX written by the author
+   (`<callout-alert>`): preserved as a literal tag name; no
+   components lookup.
+3. Tags generated from markdown (`# x` -> `<h1>`): rewritten
+   to look up `_components.h1`.
 
-Run with `bun repro.ts`.
-Relevant fragment of the compile output:
+The discriminator is the `data._mdxExplicitJsx` flag set
+during the remark phase.
 
-```js
-const _components = {
-    h1: 'h1',
-    ...props.components,
-  }, { Foo, } = _components;
-// ...
-return _jsxs(_Fragment, {
-  children: [_jsx(_components.h1, { // markdown  -> lookup
-    children: 'Hi',
-  },), '\n', _jsx('callout-alert', { // explicit JSX -> literal string
-    children: 'text',
-  },), '\n', _jsx(Foo, { // capitalized -> component reference
-    children: 'x',
-  },),],
-},);
-```
+Source trace (paths relative to the installed
+`@mdx-js/mdx@3.1.1` package):
 
-Three tag shapes, three different emission rules.
-Only the markdown-derived and the capitalized tag consult the components map.
-The author-written lowercase hyphenated tag becomes a literal string,
-so the jsx runtime renders it as a plain HTML element.
-
-### Root cause
-
-MDX intentionally distinguishes three JSX shapes in `recma-jsx-rewrite`:
-
-1. Capitalized identifier (`<Foo>`): treated as a component reference.
-2. Explicit lowercase JSX written by the author (`<callout-alert>`): preserved as a literal tag name; no components lookup.
-3. Tags generated from markdown (`# x` -> `<h1>`): rewritten to look up `_components.h1`.
-
-The discriminator is the `data._mdxExplicitJsx` flag set during the remark phase.
-
-Source trace (paths relative to the installed `@mdx-js/mdx@3.1.1` package):
-
-- `lib/plugin/remark-mark-and-unravel.js:88-94` sets `data._mdxExplicitJsx = true`
-  on every `mdxJsxFlowElement` and `mdxJsxTextElement` node:
+- `lib/plugin/remark-mark-and-unravel.js:88-94` — sets
+  `data._mdxExplicitJsx = true` on every `mdxJsxFlowElement`
+  and `mdxJsxTextElement` node:
 
   ```js
   if (
@@ -89,12 +59,13 @@ Source trace (paths relative to the installed `@mdx-js/mdx@3.1.1` package):
   }
   ```
 
-- `lib/plugin/recma-jsx-rewrite.js:160` treats any JSX whose tag is a valid identifier
-  and does not start with a lowercase letter as a component
-  (so `<Foo>`, `<$foo>`, `<_bar>` bind to a destructured reference).
-
-- `lib/plugin/recma-jsx-rewrite.js:177-180` is the branch that fires for author-written
-  lowercase hyphenated JSX, and its body is an explanatory comment only:
+- `lib/plugin/recma-jsx-rewrite.js:160` — treats any JSX
+  whose tag is a valid identifier and does not start with a
+  lowercase letter as a component (so `<Foo>`, `<$foo>`,
+  `<_bar>` bind to a destructured reference).
+- `lib/plugin/recma-jsx-rewrite.js:177-180` — the branch
+  that fires for author-written lowercase hyphenated JSX; its
+  body is an explanatory comment only:
 
   ```js
   } else if (node.data && node.data._mdxExplicitJsx) {
@@ -104,26 +75,65 @@ Source trace (paths relative to the installed `@mdx-js/mdx@3.1.1` package):
   }
   ```
 
-The fall-through `else` on the same file (lines 181-210) is what rewrites markdown-generated
-lowercase tags (which lack `_mdxExplicitJsx`) into `_components.tagname` lookups.
-Hyphenated non-identifier names get aliased to `_componentN` bindings there.
-Explicit JSX never reaches that branch.
+- The fall-through `else` on the same file (lines 181-210)
+  rewrites markdown-generated lowercase tags (which lack
+  `_mdxExplicitJsx`) into `_components.tagname` lookups.
+  Hyphenated non-identifier names get aliased to
+  `_componentN` bindings there. Explicit JSX never reaches
+  that branch.
 
-The behavior is documented by the comment above and mirrors the design goal:
-overriding the `h1` component should customize markdown-produced headings
-without also hijacking any literal `<h1>` the author wrote.
+The behaviour is documented by the comment above and mirrors
+the stated design goal: overriding the `h1` component should
+customise markdown-produced headings without also hijacking
+any literal `<h1>` the author wrote.
 
-### Verified solution
+## Verification
 
-Author the MDX source with a capitalized identifier
-and let the component function emit the custom-element tag in the output.
+Version under test: `@mdx-js/mdx@3.1.1`.
+
+Reproduce:
+
+```ts
+// repro.ts
+import { compile } from '@mdx-js/mdx';
+
+const src = '# Hi\n\n<callout-alert>text</callout-alert>\n\n<Foo>x</Foo>';
+console.log(String(await compile(src)));
+```
+
+Run with `bun repro.ts`. The relevant fragment:
+
+```js
+const _components = {
+    h1: 'h1',
+    ...props.components,
+  }, { Foo } = _components;
+// ...
+return _jsxs(_Fragment, {
+  children: [
+    _jsx(_components.h1, { children: 'Hi' }),    // markdown  -> lookup
+    '\n',
+    _jsx('callout-alert', { children: 'text' }), // explicit JSX -> literal string
+    '\n',
+    _jsx(Foo, { children: 'x' }),                // capitalized -> component reference
+  ],
+});
+```
+
+Three tag shapes, three different emission rules. Only the
+markdown-derived and capitalised tags consult the components
+map. The author-written lowercase hyphenated tag becomes a
+literal string; the JSX runtime renders it as a plain HTML
+element.
+
+## Verified workaround: author the MDX source with a capitalised identifier; emit the kebab tag from the component function
 
 In the barrel:
 
 ```ts
 // src/components/index.ts
-export { CalloutAlert, } from './callout-alert.ts';
-export { QuizQuestion, } from './quiz-question.ts';
+export { CalloutAlert } from './callout-alert.ts';
+export { QuizQuestion } from './quiz-question.ts';
 ```
 
 In the MDX content:
@@ -137,85 +147,100 @@ Never use Bootstrap in production.
 In the component:
 
 ```ts
-export function CalloutAlert(props: CalloutAlertProps,): SafeHtml {
-  // ...
+export function CalloutAlert(props: CalloutAlertProps): SafeHtml {
   return jsx('callout-alert', {
     'data-is': true,
     children: blockquote,
-  },);
+  });
 }
 ```
 
-The MDX author-facing identifier stays capitalized so MDX dispatches through the components map;
-the rendered DOM element is the hyphenated custom element because the function emits it.
+The MDX author-facing identifier stays capitalised so MDX
+dispatches through the components map; the rendered DOM
+element is the hyphenated custom element because the function
+emits it.
 
-### What does not work
+Tradeoff: introduces an indirection between the MDX source
+("CalloutAlert") and the rendered output
+("`<callout-alert>`"). Authors need to know both names. The
+project chose this approach because the alternative
+(`mdxJsx` runtime wrapper, below) hides the dispatch entirely.
 
-**Re-exporting under a string key.**
-`export { CalloutAlert as 'callout-alert', } from './callout-alert.ts'`
-combined with `import * as mdxComponents from './index.ts'` does not fix it.
-The problem is not that `_components['callout-alert']` is missing;
-it is that MDX never emits that lookup for explicit JSX in the first place.
+## What does not work
 
-**Providing `providerImportSource`.**
-Setting `compile(src, { providerImportSource: '@mdx-js/react' })` wires `useMDXComponents`
-into the compile output for capitalized identifiers only; the explicit JSX branch is unchanged.
-The compile output still emits `_jsx("callout-alert", ...)` as a literal string tag.
+- **Re-exporting under a string key**:
+  `export { CalloutAlert as 'callout-alert' } from './callout-alert.ts'`
+  combined with `import * as mdxComponents from './index.ts'`
+  does not fix it. The problem is not that
+  `_components['callout-alert']` is missing; it is that MDX
+  never emits that lookup for explicit JSX.
+- **Providing `providerImportSource`**: setting
+  `compile(src, { providerImportSource: '@mdx-js/react' })`
+  wires `useMDXComponents` into the compile output for
+  capitalised identifiers only; the explicit JSX branch is
+  unchanged. The compile output still emits
+  `_jsx("callout-alert", ...)` as a literal string tag.
+- **Intercepting at the jsx runtime boundary**: a wrapper that
+  dispatches string tag names through a components map does
+  work, but adds a layer that must be kept in sync with the
+  registry and makes the transformation invisible at the MDX
+  source level:
 
-**Intercepting at the jsx runtime boundary.**
-A wrapper that dispatches string tag names through a components map does work,
-but adds a layer that has to be kept in sync with the registry
-and makes the transformation invisible at the MDX source level:
+  ```ts
+  function mdxJsx(type, props, key) {
+    if (typeof type === 'string' && type in components)
+      return jsx(components[type], props, key);
+    return jsx(type, props, key);
+  }
+  ```
 
-```ts
-function mdxJsx(type, props, key,) {
-  if (typeof type === 'string' && type in components)
-    return jsx(components[type], props, key,);
-  return jsx(type, props, key,);
-}
-```
+  Avoid unless MDX source authors cannot be asked to use
+  capitalised identifiers. The capitalised-identifier solution
+  has no runtime cost and no registry indirection.
 
-Avoid this unless MDX source authors cannot be asked to use capitalized identifiers.
-The capitalized-identifier solution has no runtime cost and no registry indirection.
+## Why we would file this upstream (documentation only)
 
-### Draft upstream issue
+1. **Is it really upstream's fault?** No (behaviour); yes
+   (documentation gap). The behaviour is intentional and
+   correct; the user-facing docs do not call out the
+   distinction.
+2. **Can upstream fix it?** Yes; the fix is a documentation
+   change to the "Components" section of mdxjs.com.
+3. **Are they supporting this use case?** Yes; custom
+   components are explicitly supported via capitalised
+   identifiers.
+4. **Will they likely fix it?** Plausible; documentation PRs
+   are routinely accepted.
+5. **Have we prototyped a minimal fix?** Yes; the draft below
+   proposes the exact text.
 
-```markdown
-Title: Documentation improvement: call out that lowercase JSX tags bypass the components map
+Decision: worth filing as a docs improvement (not a code
+change).
 
-Labels: documentation
+## Draft upstream issue (kept as reference; revise before filing)
 
-Body:
+~~~md
+**Title**: Documentation improvement: call out that lowercase JSX tags bypass the components map
 
-The behavior that `<h1>heading</h1>` in MDX source is preserved as a literal
-tag and does NOT resolve through `useMDXComponents()` -- while `# heading`
-DOES -- is intentional and explained by the comment at
-`packages/mdx/lib/plugin/recma-jsx-rewrite.js:177-180`.
+**Labels**: documentation
 
-This is not clearly called out in the user-facing documentation at
-https://mdxjs.com/docs/using-mdx/#components.
-The current docs imply any element can be overridden via the components map,
-without distinguishing markdown-produced elements from author-written JSX.
+**Description**:
 
-Authors reaching for custom elements (e.g. `<callout-alert>`) hit this as a
-pit of failure: registering `{ 'callout-alert': CalloutAlert }` in the
-components map has no effect, the tag renders as a plain HTML element, and
-there is no diagnostic. The fix (use a capitalized identifier in MDX source
-and emit the kebab tag from the component function) is obvious once the
-constraint is known but not discoverable from the docs.
+The behaviour that `<h1>heading</h1>` in MDX source is preserved as a literal tag and does NOT resolve through `useMDXComponents()` — while `# heading` DOES — is intentional and explained by the comment at `packages/mdx/lib/plugin/recma-jsx-rewrite.js:177-180`.
 
-Suggested documentation change: add a short note to the "Components" section
-explaining that lowercase JSX tags in MDX source are treated as intrinsic
-HTML elements and will not be routed through the components map, and that
-only markdown-syntax-produced elements and capitalized JSX identifiers are.
+This is not clearly called out in the user-facing documentation at <https://mdxjs.com/docs/using-mdx/#components>. The current docs imply any element can be overridden via the components map, without distinguishing markdown-produced elements from author-written JSX.
+
+Authors reaching for custom elements (e.g. `<callout-alert>`) hit this as a pit of failure: registering `{ 'callout-alert': CalloutAlert }` in the components map has no effect, the tag renders as a plain HTML element, and there is no diagnostic. The fix (use a capitalised identifier in MDX source and emit the kebab tag from the component function) is obvious once the constraint is known but not discoverable from the docs.
+
+Suggested documentation change: add a short note to the "Components" section explaining that lowercase JSX tags in MDX source are treated as intrinsic HTML elements and will not be routed through the components map, and that only markdown-syntax-produced elements and capitalised JSX identifiers are.
 
 Reproduction:
 
-    import { compile } from '@mdx-js/mdx';
-    const src = '# Hi\n\n<callout-alert>x</callout-alert>\n\n<Foo>y</Foo>';
-    console.log(String(await compile(src)));
-
-Output shows `_jsx(_components.h1, ...)` for the markdown heading,
-`_jsx("callout-alert", ...)` for the explicit JSX, and
-`_jsx(Foo, ...)` for the capitalized identifier.
+```ts
+import { compile } from '@mdx-js/mdx';
+const src = '# Hi\n\n<callout-alert>x</callout-alert>\n\n<Foo>y</Foo>';
+console.log(String(await compile(src)));
 ```
+
+Output shows `_jsx(_components.h1, ...)` for the markdown heading, `_jsx("callout-alert", ...)` for the explicit JSX, and `_jsx(Foo, ...)` for the capitalised identifier.
+~~~
