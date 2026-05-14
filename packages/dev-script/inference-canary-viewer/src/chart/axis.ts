@@ -86,32 +86,50 @@ export function renderXAxis(timestamps: readonly string[],): string {
 
   /** Percentage multiplier */
   const PERCENT = 100;
-  /** Accumulator for rendered tick spans returned to the caller. */
-  const ticks: string[] = [];
-  /** Tracks the previous tick's label so consecutive duplicates can be hidden. */
-  let lastLabel = '';
-  for (let i = 0; i < timestamps.length; i += step) {
-    /** Center position when a single data point exists */
-    const CENTER_PERCENT = HALF * PERCENT;
+  /** Center position when a single data point exists */
+  const CENTER_PERCENT = HALF * PERCENT;
+
+  /** Indices into `timestamps` at which to emit a tick; stride-limited by `step`. */
+  const tickIndices = Array.from(
+    { length: Math.ceil(timestamps.length / step,), },
+    function indexAt(
+      _unused,
+      k,
+    ): number {
+      return k * step;
+    },
+  )
+    .filter(function inRange(i,): boolean {
+      return i < timestamps.length;
+    },);
+
+  /** Formatted label per tick, pre-computed so consecutive-duplicate suppression can index-compare. */
+  const tickLabels = tickIndices.map(function format(i,): string {
+    return formatter(timestamps[i] ?? '',);
+  },);
+
+  /** Rendered tick spans, joined into the axis HTML on return. */
+  const ticks = tickIndices.map(function renderTick(
+    i,
+    idx,
+  ): string {
     /** Horizontal position percentage for this tick along the inline axis. */
     const left = timestamps.length === 1
       ? CENTER_PERCENT
       : (i / (timestamps.length - 1)) * PERCENT;
-    /** Formatted label string for this tick before duplicate suppression. */
-    const label = formatter(timestamps[i] ?? '',);
+    /** Formatted label for this tick. */
+    const label = tickLabels[idx] ?? '';
     /** Suppress consecutive duplicate labels so the axis stays readable */
-    const displayLabel = label === lastLabel ? '' : label;
-    lastLabel = label;
-    ticks.push(
-      h({
-        tag: 'span',
-        class: 'tick',
-        style: { left: `${left.toFixed(2,)}%`, },
-        attrs: { title: timestamps[i] ?? '', },
-        text: displayLabel,
-      },),
-    );
-  }
+    const displayLabel = (idx > 0) && (tickLabels[idx - 1] === label) ? '' : label;
+    return h({
+      tag: 'span',
+      class: 'tick',
+      style: { left: `${left.toFixed(2,)}%`, },
+      attrs: { title: timestamps[i] ?? '', },
+      text: displayLabel,
+    },);
+  },);
+
   return ticks.join('\n',);
 }
 

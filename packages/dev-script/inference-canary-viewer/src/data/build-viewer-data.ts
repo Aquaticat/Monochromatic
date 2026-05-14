@@ -33,15 +33,19 @@ import type {
  *
  * @example
  * ```ts
- * const { entries, probeDetails } = buildViewerData(initialByRun, fixByRun, failures);
+ * const { entries, probeDetails, } = buildViewerData({ initialByRun, fixByRun, failures, });
  * // entries: ViewerEntry[], probeDetails: Map<string, ProbeDetail>
  * ```
  */
-export function buildViewerData(
-  initialByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>,
-  fixByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>,
-  failures: readonly FailureArtifactMeta[],
-): ArtifactData {
+export function buildViewerData({
+  initialByRun,
+  fixByRun,
+  failures,
+}: {
+  initialByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>;
+  fixByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>;
+  failures: readonly FailureArtifactMeta[];
+},): ArtifactData {
   /** Per-run viewer entries built up below; one entry per initial-pass run plus one per failure. */
   const entries: ViewerEntry[] = [];
   /** Per-probe detail records keyed by `probeKey(label, probeName, timestamp)` for overlay lookup. */
@@ -80,7 +84,7 @@ export function buildViewerData(
       /** Matching fix-pass artifact for this probe, if a fix run produced one. */
       const fix = fixes.get(probeName,);
       /** Enriched fix-pass metadata, or undefined when the fix artifact is missing or raw. */
-      const fixEnriched = fix !== undefined && isEnriched(fix.meta,)
+      const fixEnriched = (fix !== undefined) && isEnriched(fix.meta,)
         ? fix.meta
         : undefined;
       if (fixEnriched?.score !== undefined) {
@@ -89,11 +93,11 @@ export function buildViewerData(
       }
 
       probeDetails.set(
-        probeKey(
+        probeKey({
           label,
-          probeName,
+          probe: probeName,
           timestamp,
-        ),
+        },),
         buildProbeDetail({
           enriched,
           fixEnriched,

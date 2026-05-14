@@ -101,13 +101,13 @@ export function renderScatterChart({
   /** Backing data table HTML; suppressed entirely when the caller opts out via `hideTable`. */
   const tableHtml = hideTable === true
     ? ''
-    : renderDataTable(
-      points.map(function getTableRow(point,) {
+    : renderDataTable({
+      rows: points.map(function getTableRow(point,) {
         return point.tableRow;
       },),
       caption,
-      tableDisplay,
-    );
+      ...(tableDisplay !== undefined ? { options: tableDisplay, } : {}),
+    },);
 
   return h({
     tag: 'figure',
@@ -134,10 +134,10 @@ export function renderScatterChart({
             tag: 'div',
             class: 'chart-plot',
             children: [
-              renderThresholdLine(
+              renderThresholdLine({
                 threshold,
-                thresholdLabel,
-              ),
+                label: thresholdLabel,
+              },),
               pointElements,
             ],
           },),

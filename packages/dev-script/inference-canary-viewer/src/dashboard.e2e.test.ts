@@ -29,8 +29,14 @@ const DASHBOARD_URL = pathToFileURL(
  * @param page - Playwright page
  * @param id - popover element ID
  * @returns locator for the popover element
+ *
+ * @example
+ * ```ts
+ * const overlay = popoverById({ page, id: 'Sonnet 4.6-2026-03-06T12:00:00.000Z', });
+ * await expect(overlay,).toBeVisible();
+ * ```
  */
-function popoverById(page: Page, id: string,): ReturnType<Page['locator']> {
+function popoverById({ page, id, }: { page: Page; id: string; },): ReturnType<Page['locator']> {
   return page.locator(`id=${id}`,);
 }
 
@@ -94,7 +100,7 @@ test.describe('overview', () => {
       .locator('.view-section:has(> summary:text("Overview")) .chart-point',)
       .first();
     const targetId = await point.getAttribute('popovertarget',);
-    const overlay = popoverById(page, targetId ?? '',);
+    const overlay = popoverById({ page, id: targetId ?? '', },);
 
     await expect(overlay,).not.toBeVisible();
     await point.click();
@@ -115,7 +121,7 @@ test.describe('run overlay to probe overlay', () => {
       .locator('.view-section:has(> summary:text("Overview")) .chart-point',)
       .first();
     const targetId = await point.getAttribute('popovertarget',);
-    const runOverlay = popoverById(page, targetId ?? '',);
+    const runOverlay = popoverById({ page, id: targetId ?? '', },);
 
     await point.click();
     await expect(runOverlay,).toBeVisible();
@@ -126,7 +132,7 @@ test.describe('run overlay to probe overlay', () => {
 
     // Click probe card to open probe overlay
     const probeTargetId = await probeCard.getAttribute('popovertarget',);
-    const probeOverlay = popoverById(page, probeTargetId ?? '',);
+    const probeOverlay = popoverById({ page, id: probeTargetId ?? '', },);
 
     await probeCard.click();
     await expect(probeOverlay,).toBeVisible();
@@ -141,12 +147,12 @@ test.describe('run overlay to probe overlay', () => {
     await point.click();
 
     const targetId = await point.getAttribute('popovertarget',);
-    const runOverlay = popoverById(page, targetId ?? '',);
+    const runOverlay = popoverById({ page, id: targetId ?? '', },);
     const probeCard = runOverlay.locator('.probe-card',).first();
     await probeCard.click();
 
     const probeTargetId = await probeCard.getAttribute('popovertarget',);
-    const probeOverlay = popoverById(page, probeTargetId ?? '',);
+    const probeOverlay = popoverById({ page, id: probeTargetId ?? '', },);
     const title = probeOverlay.locator('.detail-popover-title',);
 
     await expect(title,).toBeVisible();
@@ -169,12 +175,12 @@ test.describe('probe overlay collapsible sections', () => {
     await point.click();
 
     const targetId = await point.getAttribute('popovertarget',);
-    const runOverlay = popoverById(page, targetId ?? '',);
+    const runOverlay = popoverById({ page, id: targetId ?? '', },);
     const probeCard = runOverlay.locator('.probe-card',).first();
     await probeCard.click();
 
     const probeTargetId = await probeCard.getAttribute('popovertarget',);
-    const probeOverlay = popoverById(page, probeTargetId ?? '',);
+    const probeOverlay = popoverById({ page, id: probeTargetId ?? '', },);
 
     // Find any collapsible section inside the probe overlay
     const collapsible = probeOverlay.locator('.collapsible-section',).first();
@@ -215,7 +221,7 @@ test.describe('by model deep navigation', () => {
     const targetId = await point.getAttribute('popovertarget',);
     await point.click();
 
-    const overlay = popoverById(page, targetId ?? '',);
+    const overlay = popoverById({ page, id: targetId ?? '', },);
     await expect(overlay,).toBeVisible();
   });
 });
@@ -247,7 +253,7 @@ test.describe('by probe deep navigation', () => {
     const targetId = await point.getAttribute('popovertarget',);
     await point.click();
 
-    const overlay = popoverById(page, targetId ?? '',);
+    const overlay = popoverById({ page, id: targetId ?? '', },);
     await expect(overlay,).toBeVisible();
   });
 });
@@ -265,8 +271,8 @@ test.describe('popover ID wiring', () => {
       const broken: string[] = [];
       for (const button of buttons) {
         const targetId = button.getAttribute('popovertarget',);
-        if (targetId !== null
-          && document.querySelector<HTMLElement>(`#${targetId}`,) === null)
+        if ((targetId !== null)
+          && (document.querySelector<HTMLElement>(`#${targetId}`,) === null))
         {
           broken.push(targetId,);
         }

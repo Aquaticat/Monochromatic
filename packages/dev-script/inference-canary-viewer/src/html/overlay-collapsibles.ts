@@ -31,7 +31,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
   /** Accumulates only the `<details>` blocks whose source data is present. */
   const sections: string[] = [];
 
-  if (detail.reasoning !== undefined && detail.reasoning !== '') {
+  if ((detail.reasoning !== undefined) && (detail.reasoning !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',
@@ -54,7 +54,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
     },),);
   }
 
-  if (detail.initialResponse !== undefined && detail.initialResponse !== '') {
+  if ((detail.initialResponse !== undefined) && (detail.initialResponse !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',
@@ -77,7 +77,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
     },),);
   }
 
-  if (detail.fixReasoning !== undefined && detail.fixReasoning !== '') {
+  if ((detail.fixReasoning !== undefined) && (detail.fixReasoning !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',
@@ -100,7 +100,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
     },),);
   }
 
-  if (detail.fixResponse !== undefined && detail.fixResponse !== '') {
+  if ((detail.fixResponse !== undefined) && (detail.fixResponse !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',
@@ -123,7 +123,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
     },),);
   }
 
-  if (detail.fixPrompt !== undefined && detail.fixPrompt !== '') {
+  if ((detail.fixPrompt !== undefined) && (detail.fixPrompt !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',

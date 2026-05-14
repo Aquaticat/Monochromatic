@@ -50,15 +50,19 @@ export function isEnriched(meta: ArtifactMeta,): meta is EnrichedArtifactMeta {
  *
  * @example
  * ```ts
- * probeKey('Sonnet 4.6', 'csv-rfc4180', '2026-03-06T12:00:00.000Z');
+ * probeKey({ label: 'Sonnet 4.6', probe: 'csv-rfc4180', timestamp: '2026-03-06T12:00:00.000Z', });
  * // "Sonnet 4.6::csv-rfc4180::2026-03-06T12:00:00.000Z"
  * ```
  */
-export function probeKey(
-  label: string,
-  probe: string,
-  timestamp: string,
-): string {
+export function probeKey({
+  label,
+  probe,
+  timestamp,
+}: {
+  label: string;
+  probe: string;
+  timestamp: string;
+},): string {
   return `${label}::${probe}::${timestamp}`;
 }
 

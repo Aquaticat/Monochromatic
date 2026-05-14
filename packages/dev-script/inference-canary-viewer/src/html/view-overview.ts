@@ -110,10 +110,10 @@ export function renderOverview({
           h({
             tag: 'td',
             children: [
-              iconDot(
-                summary.model,
+              iconDot({
+                modelId: summary.model,
                 color,
-              ),
+              },),
               ' ',
               h({
                 tag: 'span',

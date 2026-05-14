@@ -27,16 +27,26 @@ import {
  *
  * @example
  * ```ts
- * const points = buildOverallPoints(modelEntries, 'Sonnet 4.6', 'anthropic/claude-sonnet-4-6', '#D97757');
+ * const points = buildOverallPoints({
+ *   entries: modelEntries,
+ *   label: 'Sonnet 4.6',
+ *   openrouterId: 'anthropic/claude-sonnet-4-6',
+ *   color: '#D97757',
+ * });
  * // [{ runId: 'Sonnet 4.6-2026-...', score: 0.85, color: '#D97757', ... }]
  * ```
  */
-export function buildOverallPoints(
-  entries: readonly ViewerEntry[],
-  label: string,
-  openrouterId: string,
-  color: string,
-): readonly ScatterPoint[] {
+export function buildOverallPoints({
+  entries,
+  label,
+  openrouterId,
+  color,
+}: {
+  entries: readonly ViewerEntry[];
+  label: string;
+  openrouterId: string;
+  color: string;
+},): readonly ScatterPoint[] {
   return entries
     .filter(function filterMultipleProbes(entry,) {
       return hasMultipleProbes(entry,);
@@ -96,17 +106,29 @@ export function buildOverallPoints(
  *
  * @example
  * ```ts
- * const points = buildProbePoints(modelEntries, 'Sonnet 4.6', 'anthropic/claude-sonnet-4-6', 'csv-rfc4180', '#D97757');
+ * const points = buildProbePoints({
+ *   entries: modelEntries,
+ *   label: 'Sonnet 4.6',
+ *   openrouterId: 'anthropic/claude-sonnet-4-6',
+ *   probe: 'csv-rfc4180',
+ *   color: '#D97757',
+ * });
  * // [{ runId: 'Sonnet 4.6-csv-rfc4180-2026-...', score: 0.9, ... }]
  * ```
  */
-export function buildProbePoints(
-  entries: readonly ViewerEntry[],
-  label: string,
-  openrouterId: string,
-  probe: string,
-  color: string,
-): readonly ScatterPoint[] {
+export function buildProbePoints({
+  entries,
+  label,
+  openrouterId,
+  probe,
+  color,
+}: {
+  entries: readonly ViewerEntry[];
+  label: string;
+  openrouterId: string;
+  probe: string;
+  color: string;
+},): readonly ScatterPoint[] {
   return entries
     .filter(function hasProbe(entry,): boolean {
       return probe in entry.probeScores;

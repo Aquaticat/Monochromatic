@@ -72,12 +72,12 @@ export function renderByModel({
 
       // Overall score chart
       /** Scatter points feeding the overall-score chart for this model. */
-      const overallPoints = buildOverallPoints(
-        modelEntries,
+      const overallPoints = buildOverallPoints({
+        entries: modelEntries,
         label,
         openrouterId,
         color,
-      );
+      },);
       /** Rendered overall-score chart markup for this model section. */
       const overallChart = renderScatterChart({
         points: overallPoints,
@@ -98,13 +98,13 @@ export function renderByModel({
       const probeCharts = probeNames
         .map(function renderProbeChart(probe,): string {
           /** Scatter points feeding this probe's per-model chart. */
-          const probePoints = buildProbePoints(
-            modelEntries,
+          const probePoints = buildProbePoints({
+            entries: modelEntries,
             label,
             openrouterId,
             probe,
             color,
-          );
+          },);
           return h({
             tag: 'details',
             class: 'probe-section',
@@ -135,10 +135,10 @@ export function renderByModel({
           h({
             tag: 'summary',
             children: [
-              iconDot(
-                openrouterId,
+              iconDot({
+                modelId: openrouterId,
                 color,
-              ),
+              },),
               ' ',
               h({
                 tag: 'span',

@@ -58,7 +58,7 @@ function isTsBlock(codeElement: HTMLElement,): boolean {
     if (cls.startsWith(LANGUAGE_PREFIX,)) {
       /** Language identifier extracted from the `language-` class. */
       const lang = cls.slice(LANGUAGE_PREFIX.length,);
-      if (lang === 'ts' || lang === 'typescript')
+      if ((lang === 'ts') || (lang === 'typescript'))
         return true;
     }
   }
@@ -76,11 +76,21 @@ function isTsBlock(codeElement: HTMLElement,): boolean {
  * @param codeElement - the `<code>` element containing the text
  *
  * @returns map from highlight group name to DOM Range array
+ *
+ * @example
+ * ```ts
+ * const tree = parser.parse(codeElement.textContent ?? '',);
+ * const rangesByGroup = collectRanges({ tree, codeElement, });
+ * // Map(2) { 'keyword' => [Range, Range], 'string' => [Range] }
+ * ```
  */
-function collectRanges(
-  tree: Tree,
-  codeElement: HTMLElement,
-): Map<string, Range[]> {
+function collectRanges({
+  tree,
+  codeElement,
+}: {
+  tree: Tree;
+  codeElement: HTMLElement;
+},): Map<string, Range[]> {
   /** Flattened text nodes with their start offsets within the full text. */
   const textNodes: {
     node: Text;
@@ -121,7 +131,7 @@ function collectRanges(
         /** End offset of the current text node within the full code text. */
         const nodeEnd = entry.start + entry.node.length;
 
-        if (entry.start >= to || nodeEnd <= from)
+        if ((entry.start >= to) || (nodeEnd <= from))
           continue;
 
         /** Range start offset within the current text node, clamped to its bounds. */
@@ -177,7 +187,7 @@ function collectRanges(
  * so a single `::highlight(hl-keyword)` rule styles all keywords page-wide.
  */
 async function highlightAllCodeBlocks(): Promise<void> {
-  if (typeof CSS === 'undefined' || !('highlights' in CSS))
+  if (((typeof CSS) === 'undefined') || (!('highlights' in CSS)))
     return;
 
   /** All language-tagged code blocks on the page; filtered to TypeScript below. */
@@ -207,10 +217,10 @@ async function highlightAllCodeBlocks(): Promise<void> {
     /** Lezer parse tree produced from the block's text. */
     const tree = parser.parse(text,);
     /** Ranges produced from this block alone, grouped by highlight category. */
-    const blockRanges = collectRanges(
+    const blockRanges = collectRanges({
       tree,
       codeElement,
-    );
+    },);
 
     for (const [group, ranges,] of blockRanges) {
       /** Accumulator slot for this group; created on first encounter. */
@@ -231,7 +241,7 @@ async function highlightAllCodeBlocks(): Promise<void> {
     const name = `hl-${group}`;
     /** Ranges accumulated for this group across all blocks. */
     const ranges = allRanges.get(group,);
-    if (ranges !== undefined && ranges.length > 0) {
+    if ((ranges !== undefined) && (ranges.length > 0)) {
       CSS.highlights.set(
         name,
         new Highlight(...ranges,),

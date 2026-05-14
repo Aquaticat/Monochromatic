@@ -51,10 +51,10 @@ export function renderByProbe({ entries, }: {
   return probeNames
     .map(function renderProbeSection(probe,): string {
       /** Scatter points spanning every model for the current probe. */
-      const points = buildCrossModelPoints(
+      const points = buildCrossModelPoints({
         entries,
         probe,
-      );
+      },);
       /** Color/icon legend rendered above the cross-model chart. */
       const legend = buildProbeLegend(entries,);
 
@@ -79,13 +79,13 @@ export function renderByProbe({ entries, }: {
           /** Vendor-derived accent color reused across this model's points. */
           const color = vendorColor(openrouterId,);
           /** Scatter points for this single model within the current probe. */
-          const modelPoints = buildSingleModelPoints(
+          const modelPoints = buildSingleModelPoints({
             entries,
             probe,
             label,
             openrouterId,
             color,
-          );
+          },);
           return h({
             tag: 'details',
             class: 'model-section',
@@ -93,10 +93,10 @@ export function renderByProbe({ entries, }: {
               h({
                 tag: 'summary',
                 children: [
-                  iconDot(
-                    openrouterId,
+                  iconDot({
+                    modelId: openrouterId,
                     color,
-                  ),
+                  },),
                   ' ',
                   h({
                     tag: 'span',

@@ -75,7 +75,7 @@ export function renderBadges(detail: ProbeDetail,): string {
       },),
     );
   }
-  if (detail.error !== undefined && detail.error !== '') {
+  if ((detail.error !== undefined) && (detail.error !== '')) {
     badges.push(
       h({
         tag: 'span',
@@ -85,7 +85,7 @@ export function renderBadges(detail: ProbeDetail,): string {
       },),
     );
   }
-  if (detail.finishReason !== undefined && detail.finishReason !== 'stop') {
+  if ((detail.finishReason !== undefined) && (detail.finishReason !== 'stop')) {
     badges.push(
       h({
         tag: 'span',

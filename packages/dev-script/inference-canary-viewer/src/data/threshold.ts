@@ -42,18 +42,21 @@ export type ModelThreshold = {
  *
  * @example
  * ```ts
- * const t = computeThreshold('Sonnet 4.6', entries);
+ * const t = computeThreshold({ label: 'Sonnet 4.6', entries, });
  * // { model: '...', mean: 0.85, stddev: 0.05, threshold: 0.75, sampleCount: 10 }
  * ```
  */
-export function computeThreshold(
-  label: string,
-  entries: readonly ViewerEntry[],
-): ModelThreshold {
+export function computeThreshold({
+  label,
+  entries,
+}: {
+  label: string;
+  entries: readonly ViewerEntry[];
+},): ModelThreshold {
   /** Non-failed overall scores used as the statistical sample. */
   const scores = entries
     .filter(function matchLabel(entry,): boolean {
-      return entry.label === label && !entry.failed && hasMultipleProbes(entry,);
+      return (entry.label === label) && (!entry.failed) && hasMultipleProbes(entry,);
     },)
     .map(function getScore(entry,): number {
       return entry.overallScore;
@@ -85,7 +88,7 @@ export function computeThreshold(
       sum,
       score,
     ): number {
-      return sum + (score - mean) ** 2;
+      return sum + ((score - mean) ** 2);
     },
     0,
   ) / scores.length;
@@ -94,7 +97,7 @@ export function computeThreshold(
   /** Floored degradation threshold returned to callers. */
   const threshold = Math.max(
     THRESHOLD_FLOOR,
-    mean - STDDEV_MULTIPLIER * stddev,
+    mean - (STDDEV_MULTIPLIER * stddev),
   );
 
   return {

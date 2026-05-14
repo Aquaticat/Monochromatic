@@ -56,11 +56,11 @@ export async function renderAllOverlays({
         /** DOM id for the probe-level overlay opened from per-probe cards. */
         const probeId = `${entry.label}-${probe}-${entry.timestamp}`;
         /** Composite key into the enriched probe-detail map. */
-        const key = probeKey(
-          entry.label,
+        const key = probeKey({
+          label: entry.label,
           probe,
-          entry.timestamp,
-        );
+          timestamp: entry.timestamp,
+        },);
         return renderProbeOverlay({
           id: probeId,
           entry,

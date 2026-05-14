@@ -38,7 +38,7 @@ export function buildAllModelPoints(
 ): readonly ScatterPoint[] {
   return entries
     .filter(function hasScore(entry,): boolean {
-      return entry.overallScore > 0 && hasMultipleProbes(entry,);
+      return (entry.overallScore > 0) && hasMultipleProbes(entry,);
     },)
     .map(function toPoint(
       entry,
@@ -98,10 +98,10 @@ export function buildOverviewLegend(summaries: readonly ModelSummary[],): string
         tag: 'span',
         class: 'item',
         children: [
-          iconDot(
-            summary.model,
+          iconDot({
+            modelId: summary.model,
             color,
-          ),
+          },),
           ' ',
           h({
             tag: 'span',

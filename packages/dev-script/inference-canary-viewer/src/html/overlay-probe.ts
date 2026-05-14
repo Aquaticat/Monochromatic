@@ -22,6 +22,84 @@ import {
 } from './overlay-meta.ts';
 
 /**
+ * Builds the source-code section of a probe overlay.
+ *
+ * Returns a placeholder when `detail` is missing entirely, an empty string when
+ * the initial source is absent, a side-by-side diff when both fix source and
+ * fix directory are present, or a single source pane otherwise.
+ *
+ * @param detail - enriched probe detail (may be undefined for missing artifacts)
+ *
+ * @returns HTML string for the source section
+ *
+ * @example
+ * ```ts
+ * const html = await buildSourceSection(probeDetailWithDiff);
+ * // '<details class="collapsible-section">...<\/details>'
+ * ```
+ */
+async function buildSourceSection(detail: ProbeDetail | undefined,): Promise<string> {
+  if (detail === undefined) {
+    return h({
+      tag: 'p',
+      class: 'detail-popover-empty',
+      text: 'Artifacts not available for this run.',
+    },);
+  }
+  if (detail.initialSource === undefined)
+    return '';
+  if ((detail.fixSource !== undefined) && (detail.fixDir !== undefined)) {
+    /** Absolute path to the initial canary file; left side of the diff. */
+    const initialFile = join(
+      detail.initialDir,
+      'canary.ts',
+    );
+    /** Absolute path to the fixed canary file; right side of the diff. */
+    const fixFile = join(
+      detail.fixDir,
+      'canary.ts',
+    );
+    /** Computed line-level diff between initial and fix sources, fed to the side-by-side renderer. */
+    const diffLines = await computeDiff({
+      initialPath: initialFile,
+      fixPath: fixFile,
+    },);
+    return h({
+      tag: 'details',
+      class: 'collapsible-section',
+      children: [
+        h({
+          tag: 'summary',
+          text: 'Source diff',
+        },),
+        renderSideBySideDiff(diffLines,),
+      ],
+    },);
+  }
+  return h({
+    tag: 'details',
+    class: 'collapsible-section',
+    children: [
+      h({
+        tag: 'summary',
+        text: 'Source',
+      },),
+      h({
+        tag: 'pre',
+        class: 'source-code',
+        children: [
+          h({
+            tag: 'code',
+            class: 'language-ts',
+            text: detail.initialSource,
+          },),
+        ],
+      },),
+    ],
+  },);
+}
+
+/**
  * Renders a probe-specific overlay with source code, diff, and enriched metadata.
  *
  * @param id - unique overlay ID
@@ -71,8 +149,8 @@ export async function renderProbeOverlay({
     },)
     : '';
   /** Fix-pass metadata block; rendered only when the run actually has fix-pass timing or usage. */
-  const fixMeta = detail !== undefined
-      && (detail.fixTiming !== undefined || detail.fixUsage !== undefined)
+  const fixMeta = (detail !== undefined)
+      && ((detail.fixTiming !== undefined) || (detail.fixUsage !== undefined))
     ? renderPassMeta({
       label: 'Fix pass',
       timing: detail.fixTiming,
@@ -81,67 +159,8 @@ export async function renderProbeOverlay({
     },)
     : '';
 
-  /** Source-code section content; replaced below depending on whether a diff or single source applies. */
-  let sourceSection = detail === undefined
-    ? h({
-      tag: 'p',
-      class: 'detail-popover-empty',
-      text: 'Artifacts not available for this run.',
-    },)
-    : '';
-  if (detail?.initialSource !== undefined) {
-    if (detail.fixSource !== undefined && detail.fixDir !== undefined) {
-      /** Absolute path to the initial canary file; left side of the diff. */
-      const initialFile = join(
-        detail.initialDir,
-        'canary.ts',
-      );
-      /** Absolute path to the fixed canary file; right side of the diff. */
-      const fixFile = join(
-        detail.fixDir,
-        'canary.ts',
-      );
-      /** Computed line-level diff between initial and fix sources, fed to the side-by-side renderer. */
-      const diffLines = await computeDiff({
-        initialPath: initialFile,
-        fixPath: fixFile,
-      },);
-      sourceSection = h({
-        tag: 'details',
-        class: 'collapsible-section',
-        children: [
-          h({
-            tag: 'summary',
-            text: 'Source diff',
-          },),
-          renderSideBySideDiff(diffLines,),
-        ],
-      },);
-    }
-    else {
-      sourceSection = h({
-        tag: 'details',
-        class: 'collapsible-section',
-        children: [
-          h({
-            tag: 'summary',
-            text: 'Source',
-          },),
-          h({
-            tag: 'pre',
-            class: 'source-code',
-            children: [
-              h({
-                tag: 'code',
-                class: 'language-ts',
-                text: detail.initialSource,
-              },),
-            ],
-          },),
-        ],
-      },);
-    }
-  }
+  /** Source-code section content: diff, single source, placeholder, or empty depending on `detail` shape. */
+  const sourceSection = await buildSourceSection(detail,);
 
   /** Collapsible detail sections (reasoning, fix prompt, config); empty when detail is missing. */
   const collapsibles = detail !== undefined ? renderCollapsibles(detail,) : '';

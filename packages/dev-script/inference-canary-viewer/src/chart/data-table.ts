@@ -43,11 +43,21 @@ export type TableDisplayOptions = {
  * @param row - data row to render
  *
  * @returns HTML string for the cell, or empty string when column is hidden
+ *
+ * @example
+ * ```ts
+ * fixScoreCell({ hasFixScores: true, row: { timestamp: '...', model: 'Sonnet 4.6', probe: 'csv', score: 0.8, pass2Score: 0.95, failed: false, }, });
+ * // '<td>0.95<\/td>'
+ * fixScoreCell({ hasFixScores: false, row, }); // ''
+ * ```
  */
-function fixScoreCell(
-  hasFixScores: boolean,
-  row: TableRow,
-): string {
+function fixScoreCell({
+  hasFixScores,
+  row,
+}: {
+  hasFixScores: boolean;
+  row: TableRow;
+},): string {
   if (!hasFixScores)
     return '';
   if (row.pass2Score !== undefined) {
@@ -100,26 +110,34 @@ function fixScoreCell(
  *
  * @example
  * ```ts
- * const html = renderDataTable(rows, 'Score history', { showModel: true, showProbe: false });
+ * const html = renderDataTable({
+ *   rows,
+ *   caption: 'Score history',
+ *   options: { showModel: true, showProbe: false, },
+ * });
  * // '<table class="chart-data-table">...<\/table>'
  * ```
  */
-export function renderDataTable(
-  rows: readonly TableRow[],
-  caption: string,
-  options: TableDisplayOptions = {},
-): string {
+export function renderDataTable({
+  rows,
+  caption,
+  options = {},
+}: {
+  rows: readonly TableRow[];
+  caption: string;
+  options?: TableDisplayOptions;
+},): string {
   /** Resolved Model-column visibility; defaults to visible when option is omitted. */
   const showModel = options.showModel ?? true;
   /** Resolved Probe-column visibility; defaults to visible when option is omitted. */
   const showProbe = options.showProbe ?? true;
 
   /** When only timestamp + score remain, render as a compact grid instead of a table */
-  if (!showModel && !showProbe) {
-    return renderDataGrid(
+  if ((!showModel) && (!showProbe)) {
+    return renderDataGrid({
       rows,
       caption,
-    );
+    },);
   }
 
   /** Only show the fix score column when at least one row has pass2 data */
@@ -192,10 +210,10 @@ export function renderDataTable(
         },);
 
       /** Fix score cell: present, "(not run)" for failed, or "(data error)" */
-      const fixScoreTd = fixScoreCell(
+      const fixScoreTd = fixScoreCell({
         hasFixScores,
         row,
-      );
+      },);
 
       return h({
         tag: 'tr',

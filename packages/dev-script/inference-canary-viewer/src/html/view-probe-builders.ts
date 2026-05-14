@@ -24,14 +24,17 @@ import type { ViewerEntry, } from '../data/viewer-types.ts';
  *
  * @example
  * ```ts
- * const points = buildCrossModelPoints(entries, 'csv-rfc4180');
+ * const points = buildCrossModelPoints({ entries, probe: 'csv-rfc4180', });
  * // [{ runId: 'Sonnet 4.6-csv-rfc4180-2026-...', score: 0.9, ... }]
  * ```
  */
-export function buildCrossModelPoints(
-  entries: readonly ViewerEntry[],
-  probe: string,
-): readonly ScatterPoint[] {
+export function buildCrossModelPoints({
+  entries,
+  probe,
+}: {
+  entries: readonly ViewerEntry[];
+  probe: string;
+},): readonly ScatterPoint[] {
   /** Entries that recorded a score for the requested probe. */
   const relevant = entries.filter(function hasProbe(entry,): boolean {
     return probe in entry.probeScores;
@@ -96,20 +99,32 @@ export function buildCrossModelPoints(
  *
  * @example
  * ```ts
- * const points = buildSingleModelPoints(entries, 'csv-rfc4180', 'Sonnet 4.6', 'anthropic/claude-sonnet-4-6', '#D97757');
+ * const points = buildSingleModelPoints({
+ *   entries,
+ *   probe: 'csv-rfc4180',
+ *   label: 'Sonnet 4.6',
+ *   openrouterId: 'anthropic/claude-sonnet-4-6',
+ *   color: '#D97757',
+ * });
  * // [{ runId: 'Sonnet 4.6-csv-rfc4180-2026-...', score: 0.9, color: '#D97757', ... }]
  * ```
  */
-export function buildSingleModelPoints(
-  entries: readonly ViewerEntry[],
-  probe: string,
-  label: string,
-  openrouterId: string,
-  color: string,
-): readonly ScatterPoint[] {
+export function buildSingleModelPoints({
+  entries,
+  probe,
+  label,
+  openrouterId,
+  color,
+}: {
+  entries: readonly ViewerEntry[];
+  probe: string;
+  label: string;
+  openrouterId: string;
+  color: string;
+},): readonly ScatterPoint[] {
   /** Entries scoring the requested probe for this specific model label. */
   const relevant = entries.filter(function matchLabelAndProbe(entry,): boolean {
-    return entry.label === label && probe in entry.probeScores;
+    return (entry.label === label) && (probe in entry.probeScores);
   },);
 
   return relevant.map(function toPoint(

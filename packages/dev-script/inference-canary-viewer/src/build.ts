@@ -73,10 +73,10 @@ const thresholds = new Map<string, number>(
   uniqueLabels.map(function buildThreshold(label,) {
     return [
       label,
-      computeThreshold(
+      computeThreshold({
         label,
         entries,
-      )
+      },)
         .threshold,
     ];
   },),
@@ -110,7 +110,7 @@ const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(lab
     runCount: modelEntries.length,
     failed: latest.failed,
     threshold,
-    degraded: !latest.failed && latest.overallScore < threshold,
+    degraded: (!latest.failed) && (latest.overallScore < threshold),
   },];
 },);
 

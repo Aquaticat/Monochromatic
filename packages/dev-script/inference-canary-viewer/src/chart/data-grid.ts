@@ -20,14 +20,17 @@ import type { TableRow, } from './data-table.ts';
  *
  * @example
  * ```ts
- * const html = renderDataGrid(rows, 'Claude overall score');
+ * const html = renderDataGrid({ rows, caption: 'Claude overall score', });
  * // '<div class="score-card-grid" role="list" aria-label="...">...<\/div>'
  * ```
  */
-export function renderDataGrid(
-  rows: readonly TableRow[],
-  caption: string,
-): string {
+export function renderDataGrid({
+  rows,
+  caption,
+}: {
+  rows: readonly TableRow[];
+  caption: string;
+},): string {
   /** Show fix scores when at least one row has pass-2 data */
   const hasFixScores = rows.some(function hasPass2(row,) {
     return row.pass2Score !== undefined;

@@ -17,15 +17,18 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
  *
  * @example
  * ```ts
- * renderThresholdLine(0.75, 'threshold: 0.75');
+ * renderThresholdLine({ threshold: 0.75, label: 'threshold: 0.75', });
  * // '<div class="chart-threshold" style="bottom:75%">...<\/div>'
- * renderThresholdLine(0, ''); // ''
+ * renderThresholdLine({ threshold: 0, label: '', }); // ''
  * ```
  */
-export function renderThresholdLine(
-  threshold: number,
-  label: string,
-): string {
+export function renderThresholdLine({
+  threshold,
+  label,
+}: {
+  threshold: number;
+  label: string;
+},): string {
   if (threshold <= 0)
     return '';
   /** Percentage multiplier */

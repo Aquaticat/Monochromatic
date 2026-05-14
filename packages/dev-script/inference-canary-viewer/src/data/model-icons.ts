@@ -103,18 +103,16 @@ function extractDefs(inner: string,): {
   defs: string;
   content: string;
 } {
-  /** Accumulator that collects every `<defs>` body discovered while stripping them out. */
-  let defs = '';
+  /** Every `<defs>` body discovered, joined to form the hoisted defs string. */
+  const defs = [...inner.matchAll(/<defs>([\s\S]*?)<\/defs>/g,),]
+    .map(function pickContent(match,): string {
+      return match[1] ?? '';
+    },)
+    .join('',);
   /** Inner markup with all `<defs>` blocks removed; their content is captured in `defs`. */
   const content = inner.replaceAll(
-    /<defs>([\s\S]*?)<\/defs>/g,
-    function extractDef(
-      _match,
-      defsContent: string,
-    ) {
-      defs += defsContent;
-      return '';
-    },
+    /<defs>[\s\S]*?<\/defs>/g,
+    '',
   );
   return {
     defs,
@@ -175,20 +173,22 @@ const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
  * ```
  */
 export function renderSvgSprite(): string {
-  /** Accumulator for every vendor's `<defs>` content; hoisted onto the sprite root below. */
-  let allDefs = '';
   /** Rendered `<symbol>` elements, one per vendor; concatenated inside the sprite root. */
   const symbols = [...VENDOR_SYMBOLS.values(),].map(
     function buildSymbol({
       id,
       viewBox,
       inner,
-      defs,
     },) {
-      allDefs += defs;
       return `<symbol id="${id}" viewBox="${viewBox}">${inner}</symbol>`;
     },
   );
+  /** Concatenated `<defs>` content from every vendor; hoisted onto the sprite root. */
+  const allDefs = [...VENDOR_SYMBOLS.values(),]
+    .map(function pickDefs({ defs, },): string {
+      return defs;
+    },)
+    .join('',);
   /** Optional `<defs>` wrapper; omitted when no vendor contributed defs to avoid an empty tag. */
   const defsBlock = allDefs !== '' ? `<defs>${allDefs}</defs>` : '';
   return `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;inline-size:0;block-size:0;overflow:hidden">${defsBlock}${
@@ -225,14 +225,17 @@ function useRef(symbolId: string,): string {
  *
  * @example
  * ```ts
- * const dot = iconDot('anthropic/claude-opus-4.6', '#D97757');
+ * const dot = iconDot({ modelId: 'anthropic/claude-opus-4.6', color: '#D97757', });
  * // '<span class="color-swatch" data-shape="icon" data-vendor="anthropic"><svg ...><use href="#icon-anthropic"/></svg></span>'
  * ```
  */
-export function iconDot(
-  modelId: string,
-  color: string,
-): string {
+export function iconDot({
+  modelId,
+  color,
+}: {
+  modelId: string;
+  color: string;
+},): string {
   /** Vendor prefix taken from the slash-delimited model ID. */
   const vendor = modelId.split('/',)[0] ?? '';
   /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */

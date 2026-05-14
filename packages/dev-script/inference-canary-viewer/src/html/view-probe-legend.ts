@@ -47,10 +47,10 @@ export function buildProbeLegend(
         tag: 'span',
         class: 'item',
         children: [
-          iconDot(
-            openrouterId,
+          iconDot({
+            modelId: openrouterId,
             color,
-          ),
+          },),
           ' ',
           h({
             tag: 'span',

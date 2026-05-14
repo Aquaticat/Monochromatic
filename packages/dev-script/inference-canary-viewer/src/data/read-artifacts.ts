@@ -49,7 +49,7 @@ function isFailure(meta: Record<string, unknown>,): meta is FailureArtifactMeta 
  * @returns true when error is an Error with a `code` property
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
-  return error instanceof Error && 'code' in error;
+  return (error instanceof Error) && ('code' in error);
 }
 
 /**
@@ -68,7 +68,7 @@ async function readOptional(path: string,): Promise<string | undefined> {
   }
   catch (error: unknown) {
     // ENOENT is expected for optional files (e.g. canary.ts not saved in old artifacts)
-    if (!isErrnoException(error,) || error.code !== 'ENOENT') {
+    if ((!isErrnoException(error,)) || (error.code !== 'ENOENT')) {
       console.error(
         `[viewer] failed to read ${path}:`,
         error,
@@ -101,6 +101,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
   const failures: FailureArtifactMeta[] = [];
 
   /** Top-level entries under `LINT_DIR`, one per model directory; empty on read failure. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- try/catch with early-return-from-parent on missing dir; helper extraction would require a sentinel value
   let modelDirents: Dirent[] = [];
   try {
     modelDirents = await readdir(
@@ -226,9 +227,9 @@ export async function readArtifacts(): Promise<ArtifactData> {
     }
   }
 
-  return buildViewerData(
+  return buildViewerData({
     initialByRun,
     fixByRun,
     failures,
-  );
+  },);
 }
