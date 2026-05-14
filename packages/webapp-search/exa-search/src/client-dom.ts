@@ -32,11 +32,21 @@ const bindings = {
           if (val !== null)
             return val;
           const inputApiKey = nonNullishOrThrow(await prompt({ message: 'Set api key', },),);
-          localStorage.setItem(
-            'exaApiKey',
+          // Validate BEFORE persisting. The prompt aligns with native window.prompt
+          // and resolves '' on OK-with-empty; writing that through to localStorage
+          // would leave the page broken on every subsequent load.
+          const validated = v.parse(
+            v.pipe(
+              v.string(),
+              v.uuid(),
+            ),
             inputApiKey,
           );
-          return inputApiKey;
+          localStorage.setItem(
+            'exaApiKey',
+            validated,
+          );
+          return validated;
         },),
         v.uuid(),
       ),

@@ -3,6 +3,7 @@ import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 import {
   nonNullishOrThrow,
 } from '@monochromatic-dev/module-or-throw';
+import * as v from 'valibot';
 
 import { displayResult, } from './client-display-result.ts';
 import {
@@ -93,13 +94,31 @@ searchForm.addEventListener(
   },
 );
 
+/**
+ * Validator for the Change API Key prompt result.
+ *
+ * The prompt now resolves `''` on OK-with-empty (aligned with `window.prompt`),
+ * which would slip past `nonNullishOrThrow` and overwrite the stored key with
+ * an empty string, breaking the next page load when the module-init valibot
+ * pipeline (`client-dom.ts`) parses localStorage and requires a uuid. Running
+ * the same `v.string()` + `v.uuid()` check here rejects empty and malformed
+ * input before the observable setter writes to localStorage.
+ */
+const apiKeySchema = v.pipe(
+  v.string(),
+  v.uuid(),
+);
+
 changeApiKeyButton.addEventListener(
   'click',
   function onChangeApiKey() {
     void (async function promptForNewApiKey(): Promise<void> {
       try {
         const inputApiKey = nonNullishOrThrow(await prompt({ message: 'Change api key', },),);
-        apiKey.value = inputApiKey;
+        apiKey.value = v.parse(
+          apiKeySchema,
+          inputApiKey,
+        );
       }
       catch (error: unknown) {
         console.error(
