@@ -1,0 +1,46 @@
+/**
+ * `tomlGetCommentAfter`: trailing inline comment on the same source line.
+ *
+ * @module
+ */
+
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+
+import { trailingInlineCommentFor, } from './comments.ts';
+import { effectiveAt, } from './effective-value.ts';
+import { TomlPathNotFoundError, } from './errors.ts';
+import { formatPath, } from './path.ts';
+import type {
+  TomlComment,
+  TomlEditState,
+  TomlPath,
+} from './types.ts';
+
+/**
+ * The same-line trailing inline comment for the node at `path`, or `null`.
+ *
+ * A comment is "trailing" when its `range[0]` is strictly after the node's
+ * end and on the same source line (no newline between).
+ *
+ * @throws TomlPathNotFoundError when `path` does not exist or was deleted.
+ *
+ * @example
+ * ```toml
+ * key = "value"  # trailing
+ * ```
+ */
+export function tomlGetCommentAfter(
+  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+): TomlComment | null {
+  const result = effectiveAt({ edit, path, },);
+  if (result.kind === 'missing' || result.kind === 'deleted')
+    throw new TomlPathNotFoundError(
+      `Path ${formatPath({ path, },)} not found`,
+    );
+  if (result.kind === 'pending-value')
+    return null;
+  const node = result.kind === 'array-of-tables'
+    ? nonNullishOrThrow(result.nodes[result.nodes.length - 1],)
+    : result.node;
+  return trailingInlineCommentFor({ node, edit, },);
+}

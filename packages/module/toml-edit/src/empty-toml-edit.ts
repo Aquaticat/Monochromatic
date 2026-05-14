@@ -1,0 +1,40 @@
+/**
+ * `emptyTomlEdit`: construct a fresh edit state with no source.
+ *
+ * @module
+ */
+
+import { parseTomlEdit, } from './parse-toml-edit.ts';
+import type {
+  TomlEditState,
+  TomlEmptyOptions,
+} from './types.ts';
+
+/**
+ * Build a fresh `TomlEditState` over an empty source.
+ *
+ * Mode is forced to `'canonical'` because there are no bytes to splice.
+ * Use this when generating a TOML file from scratch via setters and
+ * `tomlStringify`.
+ *
+ * @param canonical - Partial override of `CanonicalOptions`.
+ *
+ * @returns Fresh canonical-mode `TomlEditState`.
+ *
+ * @example
+ * ```ts
+ * import { emptyTomlEdit, tomlSet, tomlStringify } from '\@monochromatic-dev/module-toml-edit';
+ *
+ * const e0 = emptyTomlEdit();
+ * const e1 = tomlSet({ edit: e0, path: ['title'], value: 'Demo', },);
+ * console.log(tomlStringify({ edit: e1, },),);
+ * ```
+ */
+export function emptyTomlEdit({ canonical, }: TomlEmptyOptions = {},): TomlEditState {
+  const base = parseTomlEdit(
+    canonical === undefined
+      ? { source: '', mode: 'canonical', }
+      : { source: '', mode: 'canonical', canonical, },
+  );
+  return { ...base, mode: 'canonical', };
+}

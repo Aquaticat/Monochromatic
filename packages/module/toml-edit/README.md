@@ -1,0 +1,105 @@
+# @monochromatic-dev/module-toml-edit
+
+Comment-preserving TOML read, edit, and write utility.
+
+Wraps [`toml-eslint-parser`](https://github.com/ota-meshi/toml-eslint-parser) and adds the serializer it does not ship.
+
+## Install
+
+```sh
+pnpm add @monochromatic-dev/module-toml-edit
+```
+
+## API shape
+
+Free-function API over an immutable `TomlEditState`.
+Mutating functions return a fresh state.
+
+## Examples
+
+Round-trip a file (splice mode, byte-identical when no edits applied):
+
+```ts
+import { parseTomlEdit, tomlStringify } from '@monochromatic-dev/module-toml-edit';
+
+const source = await Bun.file('mise.toml').text();
+const edit = parseTomlEdit({ source });
+const text = tomlStringify({ edit });
+// text === source
+```
+
+Edit a key while preserving comments and original formatting:
+
+```ts
+import { parseTomlEdit, tomlSet, tomlStringify } from '@monochromatic-dev/module-toml-edit';
+
+const e0 = parseTomlEdit({ source });
+const e1 = tomlSet({ edit: e0, path: ['tools', 'bun'], value: 'latest' });
+await Bun.write('mise.toml', tomlStringify({ edit: e1 }));
+```
+
+Build a TOML file from scratch (canonical mode):
+
+```ts
+import { emptyTomlEdit, tomlSet, tomlStringify } from '@monochromatic-dev/module-toml-edit';
+
+const e0 = emptyTomlEdit();
+const e1 = tomlSet({ edit: e0, path: ['title'], value: 'Demo' });
+const e2 = tomlSet({ edit: e1, path: ['tools', 'bun'], value: 'latest' });
+const out = tomlStringify({ edit: e2 });
+```
+
+## Modes
+
+`parseTomlEdit` accepts `mode: 'splice' | 'canonical'`.
+Default is `splice`, which emits unmutated regions verbatim from the source.
+`canonical` rebuilds text from the AST with consistent formatting on every `tomlStringify`.
+`emptyTomlEdit` is always canonical (no source to splice).
+
+## Mutation surface
+
+`tomlSet` handles five resolution outcomes:
+
+-  **Existing key-value or array element**: replaces the value bytes canonically. Style and raw spelling are preserved for unchanged primitives.
+-  **Existing `[foo]` table or top-level**: replaces the body's key-values with the entries of the supplied JS object. Sub-tables (`[foo.sub]`) and top-level table headers are preserved. The JS value must be a plain object; arrays, scalars, and `Date` throw `TomlTypeError`. Pass `{}` to clear the body.
+-  **Missing path with the deepest parent present**: inserts a fresh entry. Multi-segment tails become dotted-key inserts (`a.b.c = 42` at top-level, `b.c = 42` inside `[a]`). Inline tables are extended in place (`foo = {}` -> `foo = { x = 1 }`). Path-create through a scalar or `TOMLArray` throws.
+-  **Existing array-of-tables collection**: rejected with a clearer error. Wholesale replacement of `[[foo]]` instances is ambiguous; set per-element with `tomlSet({ path: ['foo', N, 'key'], value })`.
+-  **Dotted-key collision** (sibling-table or inline-table key overlap that would not re-parse): rejected with `TomlImmutableNodeError`.
+
+`tomlDelete` handles four resolution outcomes:
+
+-  **A key-value**: removes the entire line plus its trailing inline comment.
+-  **A `[foo]` table header**: removes the full block (header line + all body key-values + interleaved comments + trailing newline).
+-  **An array-of-tables collection**: removes every matched table block. Path `['foo']` against multiple `[[foo]]` instances clears them all; `['a']` against `[a.b]` + `[a.c]` removes both sub-tables.
+-  **An array element** (inside the direct value of a key-value): rewrites the parent array via canonical re-emission, missing the indexed element. Element-delete inside a nested array (`[[1,2],[3,4]]`) is rejected.
+
+Sub-path reads (`tomlGetValue` / `tomlHas`) project pending edits through the path: after `tomlDelete({ path: ['arr', 1] })` on `arr = [10, 20, 30]`, `tomlGetValue({ path: ['arr', 1] })` returns `30` (the new array's index 1).
+
+### v1 limitation: canonical mode on a parsed source
+
+In v1, `parseTomlEdit({ source, mode: 'canonical' })` falls back to splice emission when the source is non-empty.
+Per-node canonical re-emission is implemented (used when individual nodes are mutated), but a full AST walk that re-formats every byte of the parse output is deferred to v2.
+The intent: callers who only need canonical-from-scratch output go through `emptyTomlEdit()`; callers with a parsed source typically want to preserve the original layout for unchanged regions, which is what splice mode already provides.
+If full canonical re-formatting of parsed source is required (e.g. enforce indent, normalise array layouts on every key), reparse the splice output through `emptyTomlEdit()` + setters, or open an issue.
+
+### v1 limitation: array-of-tables wholesale replace
+
+`tomlSet({ path: ['foo'], value: {...} })` is rejected when the path resolves to an array-of-tables collection.
+The semantics are ambiguous (replace one logical table? replace each of N instances?), and the safer reading is per-element.
+Set values inside a specific instance with `tomlSet({ path: ['foo', N, 'key'], value })`.
+
+### v1 limitation: nested-array element delete
+
+`tomlDelete` on an element of an inner array (the outer container is itself a `TOMLArray`, not a key-value) is rejected.
+Re-emitting the entire outer container would force a layout choice the caller did not opt into.
+
+### `tomlGetNode` and `tomlGetRaw` are parse-time views
+
+Both bypass pending deltas. After `tomlSet({ edit, path, value: 'new' })`:
+
+-  `tomlGetValue({ edit, path })` returns `'new'` (delta-aware, with cross-path projection for sub-path reads).
+-  `tomlGetNode({ edit, path })` returns the parse-time AST node, whose `value` still reads the pre-edit content.
+   This is by design under the immutability invariant: the AST is shared by reference and never mutated; `node.range` correctly indexes into `edit.source`, which is also never mutated.
+-  `tomlGetRaw({ edit, path })` returns the parse-time source slice (the pre-edit bytes).
+
+For paths created by `tomlSet` that did not exist at parse time, neither function can return a node or bytes; `tomlStringify` and reparse first.

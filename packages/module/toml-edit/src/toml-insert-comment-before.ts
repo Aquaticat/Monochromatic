@@ -1,0 +1,62 @@
+/**
+ * `tomlInsertCommentBefore`: add a comment block immediately before a path.
+ *
+ * @module
+ */
+
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+
+import { TomlPathNotFoundError, } from './errors.ts';
+import { formatPath, } from './path.ts';
+import { resolveByPath, } from './resolve.ts';
+import type {
+  Insertion,
+  TomlEditState,
+  TomlPath,
+} from './types.ts';
+
+/**
+ * Insert one or more `#`-prefixed lines just before the node at `path`.
+ *
+ * The new comment lines are stored as a pending `Insertion` and emitted at
+ * `tomlStringify` time. They do not show up in `tomlGetComments` until the
+ * output is reparsed.
+ *
+ * @throws TomlPathNotFoundError when `path` does not exist.
+ */
+export function tomlInsertCommentBefore(
+  {
+    edit,
+    path,
+    comment,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath;
+    comment: string | readonly string[];
+  },
+): TomlEditState {
+  const resolved = resolveByPath({ edit, path, },);
+  if (resolved.kind === 'missing' || resolved.kind === 'top-level')
+    throw new TomlPathNotFoundError(
+      `Path ${formatPath({ path, },)} not found`,
+    );
+
+  const lines = toLines({ comment, },);
+  const text = lines.map(function withHash(line,) {
+    return `# ${line}\n`;
+  },).join('',);
+
+  const anchor: Insertion['anchor'] = resolved.kind === 'array-of-tables'
+    ? { position: 'before-node', node: nonNullishOrThrow(resolved.nodes[0],), }
+    : { position: 'before-node', node: resolved.node, };
+
+  return { ...edit, insertions: [...edit.insertions, { anchor, text, },], };
+}
+
+/** Normalise the `comment` arg to a readonly array of lines. */
+function toLines(
+  { comment, }: { comment: string | readonly string[]; },
+): readonly string[] {
+  if (typeof comment === 'string') return [comment,];
+  return comment;
+}
