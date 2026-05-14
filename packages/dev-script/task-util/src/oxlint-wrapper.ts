@@ -47,6 +47,7 @@ const oxlintArgs = [
 ];
 
 try {
+  /** Captured oxlint subprocess result; stdout is augmented with extra guidance before being forwarded. */
   const result = await spawn(
     'oxlint',
     [...oxlintArgs,],
@@ -61,6 +62,7 @@ try {
 catch (error) {
   if (error !== null && typeof error === 'object' && 'exitCode' in error) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'exitCode' in check narrows to subprocess shape
+    /** Re-typed thrown error so its captured stdout, stderr, and exit fields can be augmented and forwarded. */
     const subprocessError = error as {
       stdout?: string;
       stderr?: string;
@@ -68,6 +70,7 @@ catch (error) {
       signalName?: string;
     };
 
+    /** oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout. */
     const augmentedStdout = augmentOxlintOutput(subprocessError.stdout ?? '',);
 
     if (augmentedStdout.length > 0) {

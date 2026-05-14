@@ -56,6 +56,7 @@ import spawn from 'nano-spawn';
  * ```
  */
 async function removeStaleBuildInfo(): Promise<void> {
+  /** Buffered tsbuildinfo paths collected from the async glob; unlinked concurrently below. */
   const entries: string[] = [];
   for await (const entry of glob('dist/**/*.tsbuildinfo',))
     entries.push(entry,);
@@ -230,9 +231,13 @@ export function filterTsgoOutput(output: string,): {
     };
   }
 
+  /** Source output split per line so each diagnostic header and continuation can be classified independently. */
   const lines = output.split('\n',);
+  /** Lines retained after filtering; rejoined with `\n` to reconstruct the output stream. */
   const kept: string[] = [];
+  /** True while the loop is inside a suppressed diagnostic block, so its continuation lines are also dropped. */
   let droppingContinuation = false;
+  /** True once any non-suppressed diagnostic is retained; the caller uses it to decide the wrapper's exit code. */
   let hasRemainingErrors = false;
 
   for (const line of lines) {

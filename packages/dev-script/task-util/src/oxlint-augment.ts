@@ -112,6 +112,7 @@ const DIAGNOSTIC_HEADER_PATTERN = /[x!]\s+\S+\(([\w-]+)\)\s*:/;
  * ```
  */
 export function extractRuleName(line: string,): string | null {
+  /** Regex match against the ANSI-stripped line; capture group 1 holds the rule name when the header pattern fires. */
   const match = DIAGNOSTIC_HEADER_PATTERN.exec(stripAnsi(line,),);
   if (match === null)
     return null;
@@ -188,7 +189,9 @@ export function augmentOxlintOutput(output: string,): string {
   if (output.length === 0)
     return '';
 
+  /** Source output split per line so each diagnostic's header, body, and trailing blank can be inspected individually. */
   const lines = output.split('\n',);
+  /** Output buffer assembled in order; guidance lines are spliced in alongside the originals. */
   const result: string[] = [];
 
   /** Rule name from the current diagnostic block, null when unmatched. */
@@ -198,6 +201,7 @@ export function augmentOxlintOutput(output: string,): string {
   let injected = false;
 
   for (const line of lines) {
+    /** Rule name extracted from the current line when it matches a diagnostic header; otherwise null. */
     const ruleName = extractRuleName(line,);
     if (ruleName !== null) {
       activeGuidance = RULE_GUIDANCE[ruleName] !== undefined ? ruleName : null;

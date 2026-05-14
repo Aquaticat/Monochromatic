@@ -47,8 +47,10 @@ async function runStrategyCommand(
   timestamps: readonly number[],
   verbose: boolean,
 ): Promise<number> {
+  /** Space-separated stringified timestamps suitable for embedding in a `printf` argument list. */
   const formattedValues = timestamps.map(String,).join(' ',);
   // Use printf to pipe timestamps (one per line) into the strategy command via stdin
+  /** Full pipeline executed via `sh`, piping one timestamp per line into the user's strategy command. */
   const fullCommand = `printf '%s\\n' ${formattedValues} | ${command}`;
 
   if (verbose)
@@ -57,6 +59,7 @@ async function runStrategyCommand(
   /** Raw stdout from the command */
   let stdout = '';
   try {
+    /** Captured subprocess result; only `stdout` is consumed because the strategy contract returns its answer there. */
     const result = await spawn(
       fullCommand,
       { shell: true, },
@@ -82,6 +85,7 @@ async function runStrategyCommand(
   else if (stdout === '-Infinity')
     result = -Infinity;
   else {
+    /** Numeric coercion of the strategy's stdout; rejected as unparseable when NaN. */
     const num = Number(stdout,);
     if (Number.isNaN(num,)) {
       throw new Error(
@@ -95,6 +99,7 @@ async function runStrategyCommand(
   }
 
   if (verbose) {
+    /** ISO timestamp for finite values, raw `Infinity`/`-Infinity` string otherwise; only used for human-readable logging. */
     const display = Number.isFinite(result,)
       ? new Date(result,).toISOString()
       : String(result,);

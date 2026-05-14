@@ -43,12 +43,14 @@ function writeFiltered(
 ): void {
   if (raw.length === 0)
     return;
+  /** Output with allowed pnpm cycle warnings stripped; may be empty if every line was a known-benign warning. */
   const filtered = filterPnpmOutput(raw,);
   if (filtered.length > 0)
     stream.write(filtered,);
 }
 
 try {
+  /** Captured pnpm subprocess result; both streams are filtered before forwarding to the parent process. */
   const result = await spawn(
     'pnpm',
     [...pnpmArgs,],
@@ -66,6 +68,7 @@ try {
 catch (error) {
   if (error !== null && typeof error === 'object' && 'exitCode' in error) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape
+    /** Re-typed thrown error so its captured stdout, stderr, and exit fields can be forwarded after filtering. */
     const subprocessError = error as {
       stdout?: string;
       stderr?: string;

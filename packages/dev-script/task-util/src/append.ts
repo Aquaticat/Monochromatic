@@ -98,6 +98,7 @@ async function appendLinesToFile(
   filePath: string,
   lines: readonly string[],
 ): Promise<void> {
+  /** Joined payload with a trailing newline so subsequent appends start on a fresh line. */
   const content = `${lines.join('\n',)}\n`;
   await appendFile(
     filePath,

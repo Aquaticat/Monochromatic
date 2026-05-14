@@ -47,6 +47,7 @@ async function resolveGlob(
   position: 'source' | 'output',
   verbose: boolean,
 ): Promise<number[]> {
+  /** Files matched by the glob; an empty result yields an empty timestamp set rather than an error. */
   const files = await resolveGlobFiles(pattern,);
 
   if (files.length === 0) {
@@ -55,9 +56,11 @@ async function resolveGlob(
     return [];
   }
 
+  /** `fs.stat` results for every matched file; awaited concurrently so I/O latency overlaps. */
   const stats = await Promise.all(files.map(function statFile(file,) {
     return stat(file,);
   },),);
+  /** Modification times in milliseconds, projected from the stat results so the caller does not need stat metadata. */
   const mtimes = stats.map(function extractMtime(fileStat,) {
     return fileStat.mtimeMs;
   },);
@@ -107,6 +110,7 @@ async function resolveShellCommand(
   let stdout = '';
 
   try {
+    /** Captured subprocess result; only `stdout` is consumed because the command contract returns its timestamp there. */
     const result = await spawn(
       command,
       { shell: true, },
@@ -124,6 +128,7 @@ async function resolveShellCommand(
     );
   }
 
+  /** Numeric timestamp parsed from the command's stdout; `undefined` triggers the unparseable-output error path. */
   const parsed = parseTimestamp(stdout,);
   if (parsed === undefined) {
     throw new Error(
@@ -135,6 +140,7 @@ async function resolveShellCommand(
   }
 
   if (verbose) {
+    /** ISO timestamp for finite values, raw `Infinity`/`-Infinity` string otherwise; only used for human-readable logging. */
     const display = Number.isFinite(parsed,)
       ? new Date(parsed,).toISOString()
       : String(parsed,);
@@ -170,9 +176,11 @@ export async function resolveItems(
   position: 'source' | 'output',
   verbose: boolean,
 ): Promise<number[]> {
+  /** Per-item timestamp arrays awaited concurrently; flattened below into a single timestamp set. */
   const results = await Promise.all(
     items.map(async function resolveItem(item,): Promise<number[]> {
       if (isShellCommand(item,)) {
+        /** Single timestamp produced by a `sh:` command; wrapped in an array so the outer `flat()` call sees a uniform shape. */
         const ts = await resolveShellCommand(
           extractCommand(item,),
           position,

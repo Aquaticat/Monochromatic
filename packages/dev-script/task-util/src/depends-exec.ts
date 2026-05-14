@@ -122,6 +122,7 @@ function dumpAndHandleError(
 ): void {
   // SubprocessError from nano-spawn includes captured stdout/stderr
   if (error !== null && typeof error === 'object') {
+    /** Re-typed thrown error so its captured subprocess fields can be dumped to the parent streams. */
     const subprocessError = error as {
       stdout?: string;
       stderr?: string;

@@ -56,6 +56,7 @@ export type TimeStrategy = BuiltinTimeStrategy | `sh:${string}`;
  * ```
  */
 function computeMean(values: readonly number[],): number {
+  /** Running total accumulated by the linear scan below; final value divided by length to produce the mean. */
   let sum = 0;
   for (const v of values)
     sum += v;
@@ -79,12 +80,14 @@ function computeMean(values: readonly number[],): number {
  * ```
  */
 function computeMedian(values: readonly number[],): number {
+  /** Ascending copy of the input so the original ordering is preserved for the caller. */
   const sorted = [...values,].toSorted(function ascending(
     a,
     b,
   ) {
     return a - b;
   },);
+  /** Index of the upper middle element; for even-length arrays the lower middle (`mid - 1`) is used to avoid fractional values. */
   const mid = Math.floor(sorted.length / 2,);
   // Even length: use lower middle to avoid fractional timestamps
   if (sorted.length % 2 === 0)
