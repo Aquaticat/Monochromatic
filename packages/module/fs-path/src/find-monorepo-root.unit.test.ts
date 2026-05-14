@@ -20,7 +20,7 @@ import {
 import { isAbsolute, } from './index.ts';
 
 await describe({
-  name: 'findMonorepoRoot',
+  name: findMonorepoRoot.name,
   children: [
     it({
       name: 'returns an absolute path when called from inside the monorepo',
@@ -47,7 +47,7 @@ await describe({
 },);
 
 await describe({
-  name: 'findMonorepoRootCached',
+  name: findMonorepoRootCached.name,
   children: [
     it({
       name: 'resolves to the same root that findMonorepoRoot returns from process.cwd()',

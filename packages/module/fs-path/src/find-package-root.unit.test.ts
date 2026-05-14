@@ -24,7 +24,7 @@ import { isAbsolute, } from './index.ts';
 const OWN_PACKAGE_NAME = '@monochromatic-dev/module-fs-path';
 
 await describe({
-  name: 'findPackageRoot',
+  name: findPackageRoot.name,
   children: [
     it({
       name: 'returns absolute path when called from inside the package',
@@ -70,7 +70,7 @@ await describe({
 },);
 
 await describe({
-  name: 'findPackageRootCached',
+  name: findPackageRootCached.name,
   children: [
     it({
       name: 'resolves concurrent callers to the same value (one walk shared)',
