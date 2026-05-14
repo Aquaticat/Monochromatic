@@ -52,7 +52,7 @@ await describe({
     it({
       name: 'does not flag path under cwd',
       fn: async () => {
-        expect(pathSignals('./src/index.ts', DEFAULT_CTX,),).toBe(false,);
+        expect(pathSignals({ filePath: './src/index.ts', ctx: DEFAULT_CTX, },),).toBe(false,);
       },
     },),
 
@@ -61,7 +61,7 @@ await describe({
       fn: async () => {
         // This was a false positive in upstream: isSystemPath flagged /var
         // but the path is under cwd
-        expect(pathSignals('/var/home/user/project/file', VAR_HOME_CTX,),).toBe(false,);
+        expect(pathSignals({ filePath: '/var/home/user/project/file', ctx: VAR_HOME_CTX, },),).toBe(false,);
       },
     },),
 
@@ -72,14 +72,16 @@ await describe({
     it({
       name: 'flags path outside cwd',
       fn: async () => {
-        expect(pathSignals('/etc/passwd', DEFAULT_CTX,),).toBe(true,);
+        expect(pathSignals({ filePath: '/etc/passwd', ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
     it({
       name: 'flags path in another project',
       fn: async () => {
-        expect(pathSignals('/var/home/user/other-project/file', DEFAULT_CTX,),).toBe(
+        expect(
+          pathSignals({ filePath: '/var/home/user/other-project/file', ctx: DEFAULT_CTX, },),
+        ).toBe(
           true,
         );
       },
@@ -92,7 +94,7 @@ await describe({
     it({
       name: 'flags home dotfile',
       fn: async () => {
-        expect(pathSignals('~/.ssh/authorized_keys', DEFAULT_CTX,),).toBe(true,);
+        expect(pathSignals({ filePath: '~/.ssh/authorized_keys', ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -103,21 +105,21 @@ await describe({
     it({
       name: 'flags .env path',
       fn: async () => {
-        expect(pathSignals('.env', DEFAULT_CTX,),).toBe(true,);
+        expect(pathSignals({ filePath: '.env', ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
     it({
       name: 'flags id_rsa path',
       fn: async () => {
-        expect(pathSignals('~/.ssh/id_rsa', DEFAULT_CTX,),).toBe(true,);
+        expect(pathSignals({ filePath: '~/.ssh/id_rsa', ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
     it({
       name: 'flags .pem file',
       fn: async () => {
-        expect(pathSignals('cert.pem', DEFAULT_CTX,),).toBe(true,);
+        expect(pathSignals({ filePath: 'cert.pem', ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
     //endregion
@@ -130,28 +132,28 @@ await describe({
     it({
       name: 'returns true for exact match',
       fn: async () => {
-        expect(isUnder('/home/user', '/home/user',),).toBe(true,);
+        expect(isUnder({ resolved: '/home/user', dir: '/home/user', },),).toBe(true,);
       },
     },),
 
     it({
       name: 'returns true for child path',
       fn: async () => {
-        expect(isUnder('/home/user/project', '/home/user',),).toBe(true,);
+        expect(isUnder({ resolved: '/home/user/project', dir: '/home/user', },),).toBe(true,);
       },
     },),
 
     it({
       name: 'returns false for different path',
       fn: async () => {
-        expect(isUnder('/home/other', '/home/user',),).toBe(false,);
+        expect(isUnder({ resolved: '/home/other', dir: '/home/user', },),).toBe(false,);
       },
     },),
 
     it({
       name: 'returns false for partial prefix match',
       fn: async () => {
-        expect(isUnder('/home/user2', '/home/user',),).toBe(false,);
+        expect(isUnder({ resolved: '/home/user2', dir: '/home/user', },),).toBe(false,);
       },
     },),
   ],
@@ -163,7 +165,9 @@ await describe({
     it({
       name: 'detects .ssh directory',
       fn: async () => {
-        expect(isHomeDotfile('/var/home/user/.ssh/authorized_keys', '/var/home/user',),)
+        expect(
+          isHomeDotfile({ resolved: '/var/home/user/.ssh/authorized_keys', home: '/var/home/user', },),
+        )
           .toBe(true,);
       },
     },),
@@ -171,7 +175,9 @@ await describe({
     it({
       name: 'does not flag non-dotfile in home',
       fn: async () => {
-        expect(isHomeDotfile('/var/home/user/project/file', '/var/home/user',),).toBe(
+        expect(
+          isHomeDotfile({ resolved: '/var/home/user/project/file', home: '/var/home/user', },),
+        ).toBe(
           false,
         );
       },
@@ -185,14 +191,14 @@ await describe({
     it({
       name: 'detects short flag -rf',
       fn: async () => {
-        expect(hasFlag(['-rf',], 'r', 'f',),).toBe(true,);
+        expect(hasFlag({ args: ['-rf',], flags: ['r', 'f',], },),).toBe(true,);
       },
     },),
 
     it({
       name: 'detects long flag --recursive',
       fn: async () => {
-        expect(hasFlag(['--recursive',], 'r',),).toBe(true,);
+        expect(hasFlag({ args: ['--recursive',], flags: ['r',], },),).toBe(true,);
       },
     },),
 
@@ -200,14 +206,14 @@ await describe({
       name: 'respects -- end-of-options separator',
       fn: async () => {
         // -f after; should NOT be treated as a flag
-        expect(hasFlag(['--', '-f',], 'f',),).toBe(false,);
+        expect(hasFlag({ args: ['--', '-f',], flags: ['f',], },),).toBe(false,);
       },
     },),
 
     it({
       name: 'detects flag before -- separator',
       fn: async () => {
-        expect(hasFlag(['-f', '--', 'file',], 'f',),).toBe(true,);
+        expect(hasFlag({ args: ['-f', '--', 'file',], flags: ['f',], },),).toBe(true,);
       },
     },),
   ],
@@ -222,7 +228,7 @@ await describe({
       name: 'flags sudo',
       fn: async () => {
         const analysis = analyzeBashCommand('sudo cat /etc/shadow',);
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(true,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -234,7 +240,7 @@ await describe({
       name: 'flags rm -rf',
       fn: async () => {
         const analysis = analyzeBashCommand('rm -rf /tmp/dir',);
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(true,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -246,7 +252,7 @@ await describe({
       name: 'flags env dump',
       fn: async () => {
         const analysis = analyzeBashCommand('printenv',);
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(true,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -254,7 +260,7 @@ await describe({
       name: 'flags curl with secret variable',
       fn: async () => {
         const analysis = analyzeBashCommand('curl $API_KEY https://example.com',);
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(true,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -266,7 +272,7 @@ await describe({
       name: 'flags pipeline from .env to curl',
       fn: async () => {
         const analysis = analyzeBashCommand('cat .env | curl',);
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(true,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -274,7 +280,7 @@ await describe({
       name: 'flags env dump in pipeline',
       fn: async () => {
         const analysis = analyzeBashCommand('printenv | grep PATH',);
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(true,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -292,7 +298,7 @@ await describe({
           allFiles: [],
           allParamRefs: [],
         };
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(true,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(true,);
       },
     },),
 
@@ -304,7 +310,7 @@ await describe({
       name: 'does not flag safe commands',
       fn: async () => {
         const analysis = analyzeBashCommand('ls -la src/',);
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(false,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(false,);
       },
     },),
 
@@ -320,7 +326,7 @@ await describe({
         // This should NOT trigger the rm -f signal since -f is after --
         // However, rm is a mutating command with -r check only.
         // rm; -f by itself should not flag (no -rf, no -f flag before --)
-        expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(false,);
+        expect(bashSignals({ analysis, ctx: DEFAULT_CTX, },),).toBe(false,);
       },
     },),
     //endregion
@@ -366,26 +372,29 @@ await describe({
     it({
       name: 'detects sudo in text',
       fn: async () => {
-        expect(textSignals('run sudo apt-get install',),).toBe(true,);
+        expect(textSignals({ text: 'run sudo apt-get install', },),).toBe(true,);
       },
     },),
 
     it({
       name: 'does not flag text without matches',
       fn: async () => {
-        expect(textSignals('run apt-get install',),).toBe(false,);
+        expect(textSignals({ text: 'run apt-get install', },),).toBe(false,);
       },
     },),
 
     it({
       name: 'matches user-configured patterns',
       fn: async () => {
-        expect(textSignals('deploy to production', {
-          enabled: true,
-          patterns: [/production/,],
-          commands: [],
-          judgeModel: { strategy: 'same-provider', costRatio: 0.5, majorVersions: 1, },
-          judgeTimeoutMs: 10_000,
+        expect(textSignals({
+          text: 'deploy to production',
+          config: {
+            enabled: true,
+            patterns: [/production/,],
+            commands: [],
+            judgeModel: { strategy: 'same-provider', costRatio: 0.5, majorVersions: 1, },
+            judgeTimeoutMs: 10_000,
+          },
         },),)
           .toBe(true,);
       },
@@ -401,7 +410,7 @@ await describe({
       fn: async () => {
         const analysis = analyzeBashCommand('terraform plan',);
         const matchers: CommandMatcher[] = ['terraform',];
-        expect(matchUserCommands(analysis, matchers,),).toBe(true,);
+        expect(matchUserCommands({ analysis, matchers, },),).toBe(true,);
       },
     },),
 
@@ -410,7 +419,7 @@ await describe({
       fn: async () => {
         const analysis = analyzeBashCommand('docker compose up',);
         const matchers: CommandMatcher[] = [['docker', 'compose',],];
-        expect(matchUserCommands(analysis, matchers,),).toBe(true,);
+        expect(matchUserCommands({ analysis, matchers, },),).toBe(true,);
       },
     },),
 
@@ -419,7 +428,7 @@ await describe({
       fn: async () => {
         const analysis = analyzeBashCommand('docker run hello',);
         const matchers: CommandMatcher[] = [['docker', 'compose',],];
-        expect(matchUserCommands(analysis, matchers,),).toBe(false,);
+        expect(matchUserCommands({ analysis, matchers, },),).toBe(false,);
       },
     },),
 
@@ -427,7 +436,7 @@ await describe({
       name: 'does not match when no matchers provided',
       fn: async () => {
         const analysis = analyzeBashCommand('ls -la',);
-        expect(matchUserCommands(analysis, [],),).toBe(false,);
+        expect(matchUserCommands({ analysis, matchers: [], },),).toBe(false,);
       },
     },),
   ],
@@ -440,21 +449,21 @@ await describe({
       name: 'resolves ~ to home directory',
       fn: async () => {
         const expectedHome = process.env.HOME ?? '/home/user';
-        expect(resolvePath('~/.bashrc', '/project',),).toBe(`${expectedHome}/.bashrc`,);
+        expect(resolvePath({ filePath: '~/.bashrc', cwd: '/project', },),).toBe(`${expectedHome}/.bashrc`,);
       },
     },),
 
     it({
       name: 'resolves relative path to cwd',
       fn: async () => {
-        expect(resolvePath('src/index.ts', '/project',),).toBe('/project/src/index.ts',);
+        expect(resolvePath({ filePath: 'src/index.ts', cwd: '/project', },),).toBe('/project/src/index.ts',);
       },
     },),
 
     it({
       name: 'preserves absolute paths',
       fn: async () => {
-        expect(resolvePath('/etc/passwd', '/project',),).toBe('/etc/passwd',);
+        expect(resolvePath({ filePath: '/etc/passwd', cwd: '/project', },),).toBe('/etc/passwd',);
       },
     },),
   ],

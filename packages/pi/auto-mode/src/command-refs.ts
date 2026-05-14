@@ -31,30 +31,40 @@
 function extractParamRefs(
   cmd: string,
 ): string[] {
-  /** Cross-pass accumulator; both regex loops below push into it, deduped via `Set` at return. */
-  const refs: string[] = [];
-
   /** Separate from `simplePattern` because `${VAR}` has no surrounding-character constraints. */
   const bracedPattern = /\$\{([A-Za-z_][A-Za-z0-9_]*)\}/g;
-  /** Mutable cursor for `bracedPattern.exec` across the loop below. */
-  let bracedMatch: RegExpExecArray | null = bracedPattern.exec(cmd,);
-  while (bracedMatch !== null) {
-    if (bracedMatch[1] !== undefined)
-      refs.push(bracedMatch[1],);
-    bracedMatch = bracedPattern.exec(cmd,);
-  }
-
   /** Negative lookbehind/lookahead skip `$$` (escape) and `${`/`$(` (substitutions/subshells), which need different handling. */
   const simplePattern = /(?<!\$)\$([A-Za-z_][A-Za-z0-9_]*)(?![{(])/g;
-  /** Mutable cursor for `simplePattern.exec` across the loop below. */
-  let simpleMatch: RegExpExecArray | null = simplePattern.exec(cmd,);
-  while (simpleMatch !== null) {
-    if (simpleMatch[1] !== undefined)
-      refs.push(simpleMatch[1],);
-    simpleMatch = simplePattern.exec(cmd,);
-  }
 
-  return [...new Set(refs,),];
+  /** Captured variable names from `${VAR}` matches; `undefined` capture groups are filtered out. */
+  const bracedRefs = [...cmd.matchAll(bracedPattern,),]
+    .map(
+      function pickCapture(m,) {
+        return m[1];
+      },
+    )
+    .filter(
+      function isDefined(s,): s is string {
+        return s !== undefined;
+      },
+    );
+  /** Captured variable names from bare `$VAR` matches. */
+  const simpleRefs = [...cmd.matchAll(simplePattern,),]
+    .map(
+      function pickCapture(m,) {
+        return m[1];
+      },
+    )
+    .filter(
+      function isDefined(s,): s is string {
+        return s !== undefined;
+      },
+    );
+
+  return [...new Set([
+    ...bracedRefs,
+    ...simpleRefs,
+  ],),];
 }
 
 //endregion

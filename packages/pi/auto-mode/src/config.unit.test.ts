@@ -96,7 +96,13 @@ await describe({
     it({
       name: 'compiles valid regex patterns',
       fn: async () => {
-        const result = compilePatterns(['sudo', 'production',], 'test',);
+        const result = compilePatterns({
+          patterns: [
+            'sudo',
+            'production',
+          ],
+          label: 'test',
+        },);
         expect(result,).toHaveLength(2,);
         expect(result[0]?.test('run sudo apt-get',),).toBe(true,);
       },
@@ -105,14 +111,20 @@ await describe({
     it({
       name: 'throws on invalid regex',
       fn: async () => {
-        expect(() => compilePatterns(['[invalid',], 'test',)).toThrow();
+        expect(() => compilePatterns({
+          patterns: ['[invalid',],
+          label: 'test',
+        },)).toThrow();
       },
     },),
 
     it({
       name: 'returns empty array for empty input',
       fn: async () => {
-        expect(compilePatterns([], 'test',),).toHaveLength(0,);
+        expect(compilePatterns({
+          patterns: [],
+          label: 'test',
+        },),).toHaveLength(0,);
       },
     },),
   ],

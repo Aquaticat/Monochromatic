@@ -68,7 +68,7 @@ class NoBudgetModelError extends Error {
       "Tried to auto-detect a budget model for a background task, but couldn't find one.",
       `Reason: ${reason}`,
     ];
-    if (candidates.sameProvider !== undefined && candidates.sameProvider !== null) {
+    if ((candidates.sameProvider !== undefined) && (candidates.sameProvider !== null)) {
       /** Local alias for the same-provider candidate so the template strings stay readable. */
       const c = candidates.sameProvider;
       lines.push(
@@ -76,8 +76,8 @@ class NoBudgetModelError extends Error {
       );
     }
     if (
-      candidates.cheapestOverall !== undefined
-      && candidates.cheapestOverall !== null
+      (candidates.cheapestOverall !== undefined)
+      && (candidates.cheapestOverall !== null)
       && candidates.cheapestOverall.hasApiKey
     ) {
       /** Local alias for the cheapest-overall candidate so the template strings stay readable. */
@@ -105,23 +105,23 @@ class NoBudgetModelError extends Error {
 /**
  * Build a ModelCandidate from a Model.
  *
- * @param ctx - extension context
- *
- * @param model - the model
- *
- * @param provider - the provider name
- *
  * @returns a ModelCandidate
  *
  * @example
  * ```typescript
- * const candidate = toCandidate(ctx, model, "openai");
+ * const candidate = toCandidate({ ctx, model, provider: "openai" });
  * ```
  */
 function toCandidate(
-  ctx: ExtensionContext,
-  model: Model<Api>,
-  provider: string,
+  {
+    ctx,
+    model,
+    provider,
+  }: {
+    ctx: ExtensionContext;
+    model: Model<Api>;
+    provider: string;
+  },
 ): ModelCandidate {
   return {
     provider,
@@ -137,20 +137,21 @@ function toCandidate(
  *
  * Uses `getApiKeyAndHeaders` instead of upstream's broken `getApiKey`.
  *
- * @param ctx - extension context
- *
- * @param model - the model to resolve auth for
- *
  * @returns auth credentials, or `null` if resolution failed
  *
  * @example
  * ```typescript
- * const auth = await resolveAuth(ctx, model);
+ * const auth = await resolveAuth({ ctx, model });
  * ```
  */
 async function resolveAuth(
-  ctx: ExtensionContext,
-  model: Model<Api>,
+  {
+    ctx,
+    model,
+  }: {
+    ctx: ExtensionContext;
+    model: Model<Api>;
+  },
 ): Promise<{
   apiKey?: string;
   headers?: Record<string, string>;
@@ -189,23 +190,23 @@ async function resolveAuth(
 /**
  * Find the single cheapest model across all providers (for error context).
  *
- * @param ctx - extension context
- *
- * @param allModels - all available models
- *
- * @param majorVersions - how many major version families to search
- *
  * @returns the cheapest candidate, or `null` if none found
  *
  * @example
  * ```typescript
- * const cheapest = await findCheapestCandidate(ctx, models, 1);
+ * const cheapest = await findCheapestCandidate({ ctx, allModels: models, majorVersions: 1 });
  * ```
  */
 async function findCheapestCandidate(
-  ctx: ExtensionContext,
-  allModels: Model<Api>[],
-  majorVersions: number,
+  {
+    ctx,
+    allModels,
+    majorVersions,
+  }: {
+    ctx: ExtensionContext;
+    allModels: Model<Api>[];
+    majorVersions: number;
+  },
 ): Promise<ModelCandidate | null> {
   /** Dynamically imported version helper; lazy to break a potential circular import on module init. */
   const { findCheapestInMajorVersions, } = await import('./budget-model-version.ts');
@@ -226,37 +227,45 @@ async function findCheapestCandidate(
       list.push(m,);
   }
 
-  /** Best (cheapest-input) candidate seen so far across all providers; null until the first one is picked. */
-  let best: {
-    model: Model<Api>;
-    provider: string;
-  } | null = null;
-  for (const [provider, models,] of byProvider) {
-    /** Per-provider candidates already sorted by cost then version. */
-    const candidates = findCheapestInMajorVersions(
-      models,
-      majorVersions,
-    );
-    /** Head of the per-provider candidate list; compared against `best` to find the overall cheapest. */
-    const [firstCandidate,] = candidates;
-    if (
-      firstCandidate !== undefined
-      && (best === null || firstCandidate.cost.input < best.model.cost.input)
-    ) {
-      best = {
-        model: firstCandidate,
-        provider,
-      };
+  /** Best (cheapest-input) candidate across all providers; `null` when no provider yielded a candidate. */
+  const best = [...byProvider,].reduce<
+    | {
+      model: Model<Api>;
+      provider: string;
     }
-  }
+    | null
+  >(
+    function pickBest(
+      acc,
+      [provider, models,],
+    ) {
+      /** Per-provider candidates already sorted by cost then version. */
+      const candidates = findCheapestInMajorVersions({
+        models,
+        majorVersions,
+      },);
+      /** Head of the per-provider candidate list; compared against `acc` to find the overall cheapest. */
+      const [firstCandidate,] = candidates;
+      if (firstCandidate === undefined)
+        return acc;
+      if ((acc === null) || (firstCandidate.cost.input < acc.model.cost.input)) {
+        return {
+          model: firstCandidate,
+          provider,
+        };
+      }
+      return acc;
+    },
+    null,
+  );
 
   if (best === null)
     return null;
-  return toCandidate(
+  return toCandidate({
     ctx,
-    best.model,
-    best.provider,
-  );
+    model: best.model,
+    provider: best.provider,
+  },);
 }
 
 //endregion

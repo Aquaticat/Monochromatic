@@ -31,26 +31,25 @@ const l = tagged({
  *
  * If no interactive UI is available, denies by default (fail-closed).
  *
- * @param pi - the extension API
- *
- * @param ctx - the extension context
- *
- * @param action - description of the action
- *
- * @param explanation - why user approval is needed
- *
  * @returns a block result, or `undefined` if the user allows
  *
  * @example
  * ```typescript
- * const result = await askUser(pi, ctx, "bash: sudo rm -rf /", "Destructive command");
+ * const result = await askUser({ pi, ctx, action: "bash: sudo rm -rf /", explanation: "Destructive command" });
  * ```
  */
 async function askUser(
-  pi: ExtensionAPI,
-  ctx: ExtensionContext,
-  action: string,
-  explanation: string,
+  {
+    pi,
+    ctx,
+    action,
+    explanation,
+  }: {
+    pi: ExtensionAPI;
+    ctx: ExtensionContext;
+    action: string;
+    explanation: string;
+  },
 ): Promise<{
   block: true;
   reason: string;
@@ -143,22 +142,23 @@ async function askUser(
 /**
  * Update the widget with accumulated verdict counts.
  *
- * @param ctx - extension context
- *
- * @param verdicts - accumulated verdicts
- *
  * @example
  * ```typescript
- * updateWidget(ctx, flowVerdicts);
+ * updateWidget({ ctx, verdicts: flowVerdicts });
  * ```
  */
 function updateWidget(
-  ctx: ExtensionContext,
-  verdicts: {
-    action: string;
-    verdict: string;
-    reason: string;
-  }[],
+  {
+    ctx,
+    verdicts,
+  }: {
+    ctx: ExtensionContext;
+    verdicts: {
+      action: string;
+      verdict: string;
+      reason: string;
+    }[];
+  },
 ): void {
   /** Count of `approved` verdicts, surfaced in the widget summary line. */
   const approved = verdicts

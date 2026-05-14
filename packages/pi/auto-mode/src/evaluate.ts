@@ -49,39 +49,35 @@ const l = tagged({
  * On deny, returns a block result with guidance.
  * On ask, prompts the user.
  *
- * @param pi - the extension API
- *
- * @param ctx - the extension context
- *
- * @param config - the merged runtime config
- *
- * @param systemPrompt - the judge system prompt
- *
- * @param action - description of the action being evaluated
- *
- * @param batchContext - other tool calls in the same batch
- *
- * @param flowVerdicts - accumulated verdicts for the widget
- *
  * @returns a block result, or `undefined` to allow
  *
  * @example
  * ```typescript
- * const result = await evaluate(pi, ctx, config, prompt, "bash: sudo rm -rf /", undefined, verdicts);
+ * const result = await evaluate({ pi, ctx, config, systemPrompt: prompt, action: "bash: sudo rm -rf /", batchContext: undefined, flowVerdicts: verdicts });
  * ```
  */
 async function evaluate(
-  pi: ExtensionAPI,
-  ctx: ExtensionContext,
-  config: MergedConfig,
-  systemPrompt: string,
-  action: string,
-  batchContext: BatchEntry[] | undefined,
-  flowVerdicts: {
+  {
+    pi,
+    ctx,
+    config,
+    systemPrompt,
+    action,
+    batchContext,
+    flowVerdicts,
+  }: {
+    pi: ExtensionAPI;
+    ctx: ExtensionContext;
+    config: MergedConfig;
+    systemPrompt: string;
     action: string;
-    verdict: string;
-    reason: string;
-  }[],
+    batchContext: BatchEntry[] | undefined;
+    flowVerdicts: {
+      action: string;
+      verdict: string;
+      reason: string;
+    }[];
+  },
 ): Promise<{
   block: true;
   reason: string;
@@ -94,40 +90,53 @@ async function evaluate(
   innerL.debug(`evaluating action: ${action}`,);
 
   /**
-   * Resolved judge model handed to {@link callJudge}.
-   *
-   * Declared with `let` so the catch branch can leave it undefined and the
-   * downstream `if (judge === undefined)` falls through to manual approval.
+   * Resolved judge model handed to {@link callJudge}, or a recoverable failure marker.
    */
-  let judge: BudgetModel | undefined = undefined;
-  try {
-    judge = await resolveJudgeModel(
-      ctx,
-      config,
-    );
-  }
-  catch (err) {
+  const judgeResult = await (
+    async function tryResolveJudge(): Promise<
+      | {
+        ok: true;
+        judge: BudgetModel;
+      }
+      | {
+        ok: false;
+        err: unknown;
+      }
+    > {
+      try {
+        return {
+          ok: true,
+          judge: await resolveJudgeModel({
+            ctx,
+            config,
+          },),
+        };
+      }
+      catch (err) {
+        return {
+          ok: false,
+          err,
+        };
+      }
+    }
+  )();
+
+  if (!judgeResult.ok) {
     innerL.error(
       `judge model resolution failed: ${
-        err instanceof Error ? err.message : String(err,)
+        judgeResult.err instanceof Error ? judgeResult.err.message : String(judgeResult.err,)
       }`,
     );
-    return askUser(
+    return askUser({
       pi,
       ctx,
       action,
-      'No judge model available; manual approval required.',
-    );
+      explanation: 'No judge model available; manual approval required.',
+    },);
   }
 
-  if (judge === undefined) {
-    return askUser(
-      pi,
-      ctx,
-      action,
-      'No judge model available; manual approval required.',
-    );
-  }
+  /** Resolved judge after the `ok` discriminant narrowed the union. */
+  const { judge, } = judgeResult;
 
   /** Recent session activity rendered as a string for the judge prompt. */
   const recentContext = buildContext(ctx,);
@@ -136,17 +145,17 @@ async function evaluate(
 
   try {
     /** Structured verdict from the judge: `approve`/`deny`/`ask` plus rationale and guidance. */
-    const verdict = await callJudge(
-      judge.model,
-      judge.auth,
+    const verdict = await callJudge({
+      model: judge.model,
+      auth: judge.auth,
       action,
-      ctx.cwd,
+      cwd: ctx.cwd,
       recentContext,
       trustDirectives,
-      config.judgeTimeoutMs,
+      timeoutMs: config.judgeTimeoutMs,
       systemPrompt,
       batchContext,
-    );
+    },);
 
     if (verdict.verdict === 'approve') {
       innerL.info(`approve: ${verdict.reason}`,);
@@ -155,10 +164,10 @@ async function evaluate(
         verdict: 'approved',
         reason: verdict.reason,
       },);
-      updateWidget(
+      updateWidget({
         ctx,
-        flowVerdicts,
-      );
+        verdicts: flowVerdicts,
+      },);
       pi.appendEntry(
         VERDICT_ENTRY_TYPE,
         {
@@ -177,10 +186,10 @@ async function evaluate(
         verdict: 'denied',
         reason: verdict.reason,
       },);
-      updateWidget(
+      updateWidget({
         ctx,
-        flowVerdicts,
-      );
+        verdicts: flowVerdicts,
+      },);
       pi.appendEntry(
         VERDICT_ENTRY_TYPE,
         {
@@ -196,23 +205,23 @@ async function evaluate(
     }
 
     innerL.info(`ask: ${verdict.reason}`,);
-    return askUser(
+    return askUser({
       pi,
       ctx,
       action,
-      verdict.reason,
-    );
+      explanation: verdict.reason,
+    },);
   }
   catch (err) {
     /** Normalised error message so both `Error` instances and non-`Error` throws produce a string. */
     const msg = err instanceof Error ? err.message : String(err,);
     innerL.error(`judge error: ${msg}`,);
-    return askUser(
+    return askUser({
       pi,
       ctx,
       action,
-      `Judge error: ${msg}`,
-    );
+      explanation: `Judge error: ${msg}`,
+    },);
   }
 }
 
@@ -226,15 +235,20 @@ async function evaluate(
  * @returns a budget model with auth credentials
  */
 async function resolveJudgeModel(
-  ctx: ExtensionContext,
-  config: MergedConfig,
+  {
+    ctx,
+    config,
+  }: {
+    ctx: ExtensionContext;
+    config: MergedConfig;
+  },
 ): Promise<BudgetModel> {
   /** Dynamically imported budget-model finder; lazy to keep startup cost low when judging is rare. */
   const { findBudgetModel, } = await import('./budget-model.ts');
-  return findBudgetModel(
+  return findBudgetModel({
     ctx,
-    toBudgetModelOptions(config,),
-  );
+    options: toBudgetModelOptions(config,),
+  },);
 }
 
 /**

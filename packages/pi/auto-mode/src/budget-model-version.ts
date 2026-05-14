@@ -51,11 +51,11 @@ function extractMajorVersion(
     )
     .split(/\s+/,);
   for (const t of tokens) {
-    if (/^\d+$/.test(t,) && t.length >= DATE_TOKEN_DIGIT_COUNT)
+    if (/^\d+$/.test(t,) && (t.length >= DATE_TOKEN_DIGIT_COUNT))
       continue;
     /** First digit run inside the current token, e.g. `4` in `4o` or `3` in `3.5`. */
     const match = /(\d+)/.exec(t,);
-    if (match !== null && match[1] !== undefined) {
+    if ((match !== null) && (match[1] !== undefined)) {
       return Number.parseInt(
         match[1],
         10,
@@ -92,11 +92,11 @@ function extractVersionNumbers(
   /** Local alias for the date-token cutoff; kept inline so the regex literal stays readable in context. */
   const EIGHT = 8;
   for (const t of tokens) {
-    if (/^\d+$/.test(t,) && t.length >= EIGHT)
+    if (/^\d+$/.test(t,) && (t.length >= EIGHT))
       continue;
     /** First digit run inside the current token; null when the token is non-numeric. */
     const m = /(\d+)/.exec(t,);
-    if (m !== null && m[1] !== undefined) {
+    if ((m !== null) && (m[1] !== undefined)) {
       nums.push(
         Number.parseInt(
           m[1],
@@ -114,20 +114,21 @@ function extractVersionNumbers(
  * Higher version numbers first, then prefer shorter vectors
  * (aliases over dated snapshots).
  *
- * @param a - first model
- *
- * @param b - second model
- *
  * @returns comparison result
  *
  * @example
  * ```typescript
- * const cmp = compareVersions(modelA, modelB);
+ * const cmp = compareVersions({ a: modelA, b: modelB });
  * ```
  */
 function compareVersions(
-  a: Model<Api>,
-  b: Model<Api>,
+  {
+    a,
+    b,
+  }: {
+    a: Model<Api>;
+    b: Model<Api>;
+  },
 ): number {
   /** Version vector for `a`, e.g. `[3, 5]` for `claude-3.5-sonnet`. */
   const av = extractVersionNumbers(a.id,);
@@ -151,21 +152,23 @@ function compareVersions(
  * Find the cheapest models across the top N major version groups,
  * sorted by cost then version.
  *
- * @param models - all models to search (typically filtered to one provider)
- *
- * @param majorVersions - how many major versions to include:
- * 1 = latest only, 2 = latest + previous, 0 = all
+ * `majorVersions`: 1 = latest only, 2 = latest + previous, 0 = all.
  *
  * @returns cheapest models sorted by cost (ascending) then version (descending)
  *
  * @example
  * ```typescript
- * findCheapestInMajorVersions(models, 1); // latest major only
+ * findCheapestInMajorVersions({ models, majorVersions: 1 }); // latest major only
  * ```
  */
 function findCheapestInMajorVersions(
-  models: Model<Api>[],
-  majorVersions: number,
+  {
+    models,
+    majorVersions,
+  }: {
+    models: Model<Api>[];
+    majorVersions: number;
+  },
 ): Model<Api>[] {
   /** Distinct major-version numbers seen across the candidate set. */
   const allVersions = new Set<number>();
@@ -203,7 +206,7 @@ function findCheapestInMajorVersions(
     function hasVersion(m,) {
       /** Per-model major version used to test membership in `includedSet`. */
       const ver = extractMajorVersion(m.id,);
-      return ver !== null && includedSet.has(ver,);
+      return (ver !== null) && includedSet.has(ver,);
     },
   );
 
@@ -216,10 +219,10 @@ function findCheapestInMajorVersions(
       const costDiff = a.cost.input - b.cost.input;
       if (costDiff !== 0)
         return costDiff;
-      return compareVersions(
+      return compareVersions({
         a,
         b,
-      );
+      },);
     },
   );
 }

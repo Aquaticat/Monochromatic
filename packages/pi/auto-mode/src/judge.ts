@@ -43,43 +43,45 @@ const l = tagged({
  * Uses forced `tool_choice` to guarantee a machine-readable
  * response from the render_verdict tool.
  *
- * @param model - budget model to call
- *
- * @param auth - optional API key and headers forwarded to the stream
- *   when set; the model registry already handles auth, so most callers
- *   leave these undefined
- *
- * @param action - description of the action being evaluated
- *
- * @param cwd - agent's working directory
- *
- * @param recentContext - recent session activity summary
- *
- * @param trustDirectives - active user trust directives
- *
- * @param timeoutMs - maximum time to wait for a response
- *
- * @param systemPrompt - judge system prompt
- *
- * @param batchContext - other tool calls in the same batch
- *
  * @returns judge's verdict
  *
  * @example
  * ```typescript
- * const verdict = await callJudge(model, auth, "bash: sudo rm -rf /", "/project", context, [], 10_000, prompt);
+ * const verdict = await callJudge({
+ *   model,
+ *   auth,
+ *   action: "bash: sudo rm -rf /",
+ *   cwd: "/project",
+ *   recentContext: context,
+ *   trustDirectives: [],
+ *   timeoutMs: 10_000,
+ *   systemPrompt: prompt,
+ *   batchContext: undefined,
+ * });
  * ```
  */
 async function callJudge(
-  model: Model<Api>,
-  auth: BudgetModelAuth,
-  action: string,
-  cwd: string,
-  recentContext: string,
-  trustDirectives: string[],
-  timeoutMs: number,
-  systemPrompt: string,
-  batchContext: BatchEntry[] | undefined,
+  {
+    model,
+    auth,
+    action,
+    cwd,
+    recentContext,
+    trustDirectives,
+    timeoutMs,
+    systemPrompt,
+    batchContext,
+  }: {
+    model: Model<Api>;
+    auth: BudgetModelAuth;
+    action: string;
+    cwd: string;
+    recentContext: string;
+    trustDirectives: string[];
+    timeoutMs: number;
+    systemPrompt: string;
+    batchContext: BatchEntry[] | undefined;
+  },
 ): Promise<Verdict> {
   /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
   const innerL = tagged({
@@ -89,13 +91,13 @@ async function callJudge(
   innerL.debug(`calling ${String(model.provider,)}/${model.id} for action: ${action}`,);
 
   /** Rendered user-message body that bundles working directory, action, context, and batch siblings. */
-  const userContent = buildUserContent(
+  const userContent = buildUserContent({
     action,
     cwd,
     recentContext,
     trustDirectives,
     batchContext,
-  );
+  },);
 
   /** Single-turn user message array handed to the streaming entry point. */
   const messages = [
@@ -109,12 +111,12 @@ async function callJudge(
   /** Abort controller wired into both the timeout disposable and the stream's `signal` option. */
   const controller = new AbortController();
   /** Disposable timer; on scope exit it clears the timeout regardless of how the function returns. */
-  using _timer = disposableTimeout(
-    timeoutMs,
-    function onTimeout() {
+  using _timer = disposableTimeout({
+    ms: timeoutMs,
+    onTimeout() {
       controller.abort();
     },
-  );
+  },);
 
   /** Provider-specific stream options assembled key-by-key so `auth` fields stay optional. */
   const opts: Record<string, unknown> = {
@@ -150,24 +152,33 @@ async function callJudge(
 /**
  * Build the user content message for the judge.
  *
- * @param action - description of the action
- *
- * @param cwd - working directory
- *
- * @param recentContext - recent session activity
- *
- * @param trustDirectives - active trust directives
- *
- * @param batchContext - other tool calls in the same batch
- *
  * @returns formatted user message content
+ *
+ * @example
+ * ```typescript
+ * buildUserContent({
+ *   action: 'bash: rm -rf node_modules',
+ *   cwd: '/project',
+ *   recentContext: '',
+ *   trustDirectives: [],
+ *   batchContext: undefined,
+ * });
+ * ```
  */
 function buildUserContent(
-  action: string,
-  cwd: string,
-  recentContext: string,
-  trustDirectives: string[],
-  batchContext: BatchEntry[] | undefined,
+  {
+    action,
+    cwd,
+    recentContext,
+    trustDirectives,
+    batchContext,
+  }: {
+    action: string;
+    cwd: string;
+    recentContext: string;
+    trustDirectives: string[];
+    batchContext: BatchEntry[] | undefined;
+  },
 ): string {
   /** Per-line accumulator for the rendered prompt body; joined with newlines on return. */
   const lines: string[] = [
@@ -193,7 +204,7 @@ function buildUserContent(
     );
   }
 
-  if (batchContext !== undefined && batchContext.length > 0) {
+  if ((batchContext !== undefined) && (batchContext.length > 0)) {
     lines.push(
       '',
       'Other actions in this batch:',
@@ -241,10 +252,12 @@ function buildUserContent(
 async function collectToolCall(
   stream: AsyncIterable<AssistantMessageEvent>,
 ): Promise<Record<string, string>> {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- async-iteration accumulator latches: `toolCall` set on `toolcall_end`, `textContent` appended on each `text_end`; both are read after the loop terminates */
   /** Last-seen tool call from the stream; defined only after a `toolcall_end` event. */
   let toolCall: ToolCall | undefined = undefined;
   /** Cumulative text from `text_end` events, used only when the model never emitted a tool call. */
   let textContent = '';
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for await (const event of stream) {
     if (event.type === 'toolcall_end')
@@ -351,15 +364,17 @@ function extractJsonVerdict(
 function findBalancedJsonObject(text: string,): string | undefined {
   /** Index of the first `{` in the text; the scan starts here. */
   const start = text.indexOf('{',);
-  if (start === -1)
+  if (start === (-1))
     return undefined;
 
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- balanced-brace scanner state machine mutated across the character loop (depth counter, string-mode latch, escape latch) */
   /** Brace nesting depth; the slice is taken when this returns to 0. */
   let depth = 0;
   /** True while the scan is inside a double-quoted string literal so braces are ignored. */
   let inString = false;
   /** True after a backslash inside a string so the next character is treated as literal. */
   let escape = false;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for (let i = start; i < text.length; i++) {
     /** Character at the current scan position, used by the state machine below. */
@@ -423,9 +438,9 @@ function parseVerdict(
   const guidance = args.guidance ?? '';
 
   if (
-    verdict !== 'approve'
-    && verdict !== 'deny'
-    && verdict !== 'ask'
+    (verdict !== 'approve')
+    && (verdict !== 'deny')
+    && (verdict !== 'ask')
   ) {
     return {
       verdict: 'ask',
@@ -448,15 +463,21 @@ function parseVerdict(
 /**
  * Create a disposable timeout that clears itself on scope exit.
  *
- * @param ms - timeout duration in milliseconds
- *
- * @param onTimeout - callback when the timeout fires
- *
  * @returns disposable object
+ *
+ * @example
+ * ```typescript
+ * using timer = disposableTimeout({ ms: 5_000, onTimeout: () => controller.abort() });
+ * ```
  */
 function disposableTimeout(
-  ms: number,
-  onTimeout: () => void,
+  {
+    ms,
+    onTimeout,
+  }: {
+    ms: number;
+    onTimeout: () => void;
+  },
 ): Disposable {
   /** Timer handle returned by setTimeout; cleared on dispose to cancel pending callbacks. */
   const id = setTimeout(

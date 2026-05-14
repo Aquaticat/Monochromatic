@@ -185,7 +185,7 @@ export default function autoMode(
         '',
         params.rule,
       ];
-      if (params.reason !== undefined && params.reason !== '') {
+      if ((params.reason !== undefined) && (params.reason !== '')) {
         lines.push(
           '',
           params.reason,
@@ -240,19 +240,20 @@ export default function autoMode(
 
   //region Turn-level tracking
 
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- closure state shared by `agent_start`, `turn_start`, `agent_end`, and `tool_call` handlers; each handler writes a subset of these latches */
   /** Batch siblings accumulated during the current agent turn; surfaced to the judge for context. */
   let currentTurnBatch: BatchEntry[] = [];
   /** True once any tool call in this turn is denied; latched until the next `turn_start`. */
   let denialInCurrentTurn = false;
   /** Copy of the previous turn's denial flag; raises sensitivity for the very next turn. */
   let denialInPreviousTurn = false;
-
   /** Per-flow verdict log surfaced in the widget; reset on `agent_start` and `agent_end`. */
   let flowVerdicts: {
     action: string;
     verdict: string;
     reason: string;
   }[] = [];
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   //endregion
 
@@ -312,15 +313,12 @@ export default function autoMode(
         home: process.env.HOME ?? '/home',
       };
 
-      /** True when the tool call trips a static rule; promoted to true below for follow-ups after a denial. */
-      let flagged = shouldFlag(
+      /** True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up. */
+      const flagged = shouldFlag({
         event,
-        signalCtx,
+        ctx: signalCtx,
         config,
-      );
-
-      if (!flagged && denialInPreviousTurn && isRelevantTool(event,))
-        flagged = true;
+      },) || (denialInPreviousTurn && isRelevantTool(event,));
 
       if (!flagged)
         return undefined;
@@ -332,7 +330,7 @@ export default function autoMode(
         ? [...currentTurnBatch,]
         : undefined;
 
-      return evaluate(
+      return evaluate({
         pi,
         ctx,
         config,
@@ -340,7 +338,7 @@ export default function autoMode(
         action,
         batchContext,
         flowVerdicts,
-      )
+      },)
         .then(
           function handleResult(result,) {
             /** Coarse verdict label recorded in the per-turn batch: `deny` on any block, `approve` otherwise. */

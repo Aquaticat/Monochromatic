@@ -93,10 +93,10 @@ function toolChoiceForApi(
     };
   }
   if (
-    api === 'openai-completions'
-    || api === 'openai-responses'
-    || api === 'azure-openai-responses'
-    || api === 'openai-codex-responses'
+    (api === 'openai-completions')
+    || (api === 'openai-responses')
+    || (api === 'azure-openai-responses')
+    || (api === 'openai-codex-responses')
   ) {
     return 'required';
   }

@@ -20,11 +20,26 @@ import {
 } from './budget-model-version.ts';
 import { NoBudgetModelError, } from './budget-model.ts';
 
-/** Helper to create a minimal Model for testing. */
+/**
+ * Helper to create a minimal Model for testing.
+ *
+ * @returns a fully populated Model with the given id and cost
+ *
+ * @example
+ * ```typescript
+ * createModel({ id: 'gpt-4o-mini', costInput: 0.15, costOutput: 0.6 });
+ * ```
+ */
 function createModel(
-  id: string,
-  costInput: number,
-  costOutput: number,
+  {
+    id,
+    costInput,
+    costOutput,
+  }: {
+    id: string;
+    costInput: number;
+    costOutput: number;
+  },
 ): Model<Api> {
   return {
     id,
@@ -107,10 +122,10 @@ await describe({
       name: 'returns models sorted by cost',
       fn: async () => {
         const models = [
-          createModel('gpt-4o', 2.5, 10,),
-          createModel('gpt-4o-mini', 0.15, 0.6,),
+          createModel({ id: 'gpt-4o', costInput: 2.5, costOutput: 10, },),
+          createModel({ id: 'gpt-4o-mini', costInput: 0.15, costOutput: 0.6, },),
         ];
-        const result = findCheapestInMajorVersions(models, 1,);
+        const result = findCheapestInMajorVersions({ models, majorVersions: 1, },);
         expect(result[0]?.id,).toBe('gpt-4o-mini',);
       },
     },),
@@ -119,10 +134,10 @@ await describe({
       name: 'respects majorVersions=1 (latest only)',
       fn: async () => {
         const models = [
-          createModel('gpt-3.5-turbo', 0.5, 1.5,),
-          createModel('gpt-4o-mini', 0.15, 0.6,),
+          createModel({ id: 'gpt-3.5-turbo', costInput: 0.5, costOutput: 1.5, },),
+          createModel({ id: 'gpt-4o-mini', costInput: 0.15, costOutput: 0.6, },),
         ];
-        const result = findCheapestInMajorVersions(models, 1,);
+        const result = findCheapestInMajorVersions({ models, majorVersions: 1, },);
         // Only version 4 should be included (latest major = 4)
         expect(result.every(function isV4(m: Model<Api>,) {
           return m.id.startsWith('gpt-4',);
@@ -135,10 +150,10 @@ await describe({
       name: 'includes previous major version when majorVersions=2',
       fn: async () => {
         const models = [
-          createModel('gpt-3.5-turbo', 0.5, 1.5,),
-          createModel('gpt-4o-mini', 0.15, 0.6,),
+          createModel({ id: 'gpt-3.5-turbo', costInput: 0.5, costOutput: 1.5, },),
+          createModel({ id: 'gpt-4o-mini', costInput: 0.15, costOutput: 0.6, },),
         ];
-        const result = findCheapestInMajorVersions(models, 2,);
+        const result = findCheapestInMajorVersions({ models, majorVersions: 2, },);
         expect(result.length,).toBeGreaterThanOrEqual(2,);
       },
     },),
@@ -147,10 +162,10 @@ await describe({
       name: 'returns all versions when majorVersions=0',
       fn: async () => {
         const models = [
-          createModel('gpt-3.5-turbo', 0.5, 1.5,),
-          createModel('gpt-4o-mini', 0.15, 0.6,),
+          createModel({ id: 'gpt-3.5-turbo', costInput: 0.5, costOutput: 1.5, },),
+          createModel({ id: 'gpt-4o-mini', costInput: 0.15, costOutput: 0.6, },),
         ];
-        const result = findCheapestInMajorVersions(models, 0,);
+        const result = findCheapestInMajorVersions({ models, majorVersions: 0, },);
         expect(result,).toHaveLength(2,);
       },
     },),
@@ -158,8 +173,8 @@ await describe({
     it({
       name: 'returns empty array for models without versions',
       fn: async () => {
-        const models = [createModel('embedding-ada', 0.1, 0.1,),];
-        const result = findCheapestInMajorVersions(models, 1,);
+        const models = [createModel({ id: 'embedding-ada', costInput: 0.1, costOutput: 0.1, },),];
+        const result = findCheapestInMajorVersions({ models, majorVersions: 1, },);
         expect(result,).toHaveLength(0,);
       },
     },),

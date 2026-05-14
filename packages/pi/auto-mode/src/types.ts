@@ -63,35 +63,59 @@ type Verdict = {
 //region Custom entry helpers
 
 /**
- * Type-guard for custom session entries.
+ * Type-guard for trust-directive session entries.
  *
- * Narrows a `SessionEntry` to a specific `CustomEntry<T>`
- * by checking the entry type discriminator.
+ * Type predicates must use a single positional parameter so call-site
+ * narrowing works; the two custom entry types each get their own guard
+ * rather than a parameterised helper.
  *
  * @param entry - a session branch entry
  *
- * @param entryType - the custom entry type to match
- *
- * @returns `true` if the entry matches the expected type
+ * @returns `true` if the entry is a trust-directive entry
  *
  * @example
  * ```typescript
- * if (isCustomEntry<string>(entry, TRUST_ENTRY_TYPE)) {
- *   console.log(entry.data); // string
+ * if (isTrustEntry(entry)) {
+ *   console.log(entry.data); // string | null
  * }
  * ```
  */
-function isCustomEntry<T,>(
+function isTrustEntry(
   entry: {
     type: string;
     data?: unknown;
   },
-  entryType: string,
 ): entry is {
   type: string;
-  data: T;
+  data: string | null;
 } {
-  return entry.type === entryType;
+  return entry.type === TRUST_ENTRY_TYPE;
+}
+
+/**
+ * Type-guard for verdict session entries.
+ *
+ * @param entry - a session branch entry
+ *
+ * @returns `true` if the entry is a verdict entry
+ *
+ * @example
+ * ```typescript
+ * if (isVerdictEntry(entry)) {
+ *   console.log(entry.data.verdict);
+ * }
+ * ```
+ */
+function isVerdictEntry(
+  entry: {
+    type: string;
+    data?: unknown;
+  },
+): entry is {
+  type: string;
+  data: VerdictData;
+} {
+  return entry.type === VERDICT_ENTRY_TYPE;
 }
 
 //endregion
@@ -214,7 +238,8 @@ type BatchEntry = {
 //endregion
 
 export {
-  isCustomEntry,
+  isTrustEntry,
+  isVerdictEntry,
   TRUST_ENTRY_TYPE,
   VERDICT_ENTRY_TYPE,
 };

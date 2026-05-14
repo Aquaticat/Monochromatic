@@ -24,9 +24,8 @@ import {
   USER_MSG_TAIL,
 } from './constants.ts';
 import {
-  isCustomEntry,
-  TRUST_ENTRY_TYPE,
-  VERDICT_ENTRY_TYPE,
+  isTrustEntry,
+  isVerdictEntry,
   type VerdictData,
 } from './types.ts';
 
@@ -50,10 +49,7 @@ function getTrustDirectives(
   /** Accumulator for currently-active trust directives. */
   const directives: string[] = [];
   for (const entry of ctx.sessionManager.getBranch()) {
-    if (isCustomEntry<string | null>(
-      entry,
-      TRUST_ENTRY_TYPE,
-    )) {
+    if (isTrustEntry(entry,)) {
       if (entry.data === null)
         directives.length = 0;
       else
@@ -86,23 +82,14 @@ function buildContext(
   const branch = ctx.sessionManager.getBranch();
 
   /** Index of the most recent user message; -1 sentinel means none found. */
-  let userIdx = -1;
-  for (let i = branch.length - 1; i >= 0; i--) {
-    /** Branch entry under inspection during the reverse user-search. */
-    const item = branch[i];
-    if (item === undefined)
-      continue;
-    if (
-      item.type === 'message'
-      && (item as SessionMessageEntry).message.role === 'user'
-    ) {
-      userIdx = i;
-      break;
-    }
-  }
+  const userIdx = branch.findLastIndex(
+    function isUserMessage(item,) {
+      return (item !== undefined)
+        && (item.type === 'message')
+        && ((item as SessionMessageEntry).message.role === 'user');
+    },
+  );
 
-  /** Formatted user-message line; empty when no user message was found. */
-  let userLine = '';
   /** Accumulator for tool-call summary lines. */
   const toolLines: string[] = [];
   /** Queue of in-flight tool calls awaiting their matching toolResult. */
@@ -110,18 +97,22 @@ function buildContext(
     name: string;
     summary: string;
   }[] = [];
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- forward-scan state machine assembling userLine and tracking pendingVerdict across message-entry pairs */
+  /** Formatted user-message line; empty when no user message was found. */
+  let userLine = '';
   /** Verdict attached to the next tool call, or null when none is pending. */
   let pendingVerdict: VerdictData | null = null;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /** Fallback window size when no user message anchors the scan. */
   const TWENTY = 20;
+  /** Tail-window start used when no user message is found in the branch. */
+  const tailStart = Math.max(
+    0,
+    branch.length - TWENTY,
+  );
   /** Index where the forward scan begins. */
-  const start = userIdx >= 0
-    ? userIdx
-    : Math.max(
-      0,
-      branch.length - TWENTY,
-    );
+  const start = (userIdx !== (-1)) ? userIdx : tailStart;
 
   for (let i = start; i < branch.length; i++) {
     /** Branch entry under inspection during the forward summary build. */
@@ -129,10 +120,7 @@ function buildContext(
     if (entry === undefined)
       continue;
 
-    if (isCustomEntry<VerdictData>(
-      entry,
-      VERDICT_ENTRY_TYPE,
-    )) {
+    if (isVerdictEntry(entry,)) {
       pendingVerdict = entry.data;
       continue;
     }
@@ -154,10 +142,10 @@ function buildContext(
         if (block.type === 'toolCall') {
           pendingCalls.push({
             name: block.name,
-            summary: summarizeToolCall(
-              block.name,
-              block.arguments,
-            ),
+            summary: summarizeToolCall({
+              name: block.name,
+              args: block.arguments,
+            },),
           },);
         }
       }
@@ -170,7 +158,7 @@ function buildContext(
       /** Display string for the call: stored summary, or fallback to tool name. */
       const callStr = call?.summary ?? msg.toolName;
 
-      if (pendingVerdict !== null && pendingVerdict.verdict !== 'approve') {
+      if ((pendingVerdict !== null) && (pendingVerdict.verdict !== 'approve')) {
         toolLines.push(
           `[tool] ${callStr} → ${pendingVerdict.verdict} (${pendingVerdict.reason})`,
         );
@@ -217,7 +205,7 @@ function buildContext(
 function extractUserText(
   content: string | (TextContent | ImageContent)[],
 ): string {
-  if (typeof content === 'string')
+  if ((typeof content) === 'string')
     return content;
   return content
     .filter(
@@ -256,15 +244,22 @@ function abbreviate(
 /**
  * Summarize a tool call for the judge context.
  *
- * @param name - the tool name
- *
- * @param args - the tool call arguments
- *
  * @returns a one-line summary string
+ *
+ * @example
+ * ```typescript
+ * summarizeToolCall({ name: 'bash', args: { command: 'ls -la' } });
+ * // => 'bash: ls -la'
+ * ```
  */
 function summarizeToolCall(
-  name: string,
-  args: Record<string, unknown>,
+  {
+    name,
+    args,
+  }: {
+    name: string;
+    args: Record<string, unknown>;
+  },
 ): string {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- untyped tool call arguments */
   if (name === 'bash')

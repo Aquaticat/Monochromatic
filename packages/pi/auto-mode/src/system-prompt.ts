@@ -73,8 +73,8 @@ function buildSystemPrompt(
   const parts = [BASE_SYSTEM_PROMPT,];
 
   if (
-    config.globalInstructions !== undefined
-    && config.globalInstructions !== ''
+    (config.globalInstructions !== undefined)
+    && (config.globalInstructions !== '')
   ) {
     parts.push(
       `\n\nUser instructions (global):\n${config.globalInstructions}`,
@@ -82,8 +82,8 @@ function buildSystemPrompt(
   }
 
   if (
-    config.projectInstructions !== undefined
-    && config.projectInstructions !== ''
+    (config.projectInstructions !== undefined)
+    && (config.projectInstructions !== '')
   ) {
     parts.push(
       `\n\nProject instructions:\n${config.projectInstructions}`,

@@ -39,34 +39,35 @@ import type {
  * cheapest-first, gated by `costRatio` against the active model,
  * and returns the first candidate the registry can authenticate.
  *
- * @param ctx - extension context
- *
- * @param options - strategy, cost ratio, major version depth, and optional override
- *
  * @throws NoBudgetModelError if no suitable model is found
  *
  * @returns a budget model with auth credentials
  *
  * @example
  * ```typescript
- * const budget = await findBudgetModel(ctx);
+ * const budget = await findBudgetModel({ ctx });
  * ```
  */
 async function findBudgetModel(
-  ctx: ExtensionContext,
-  options?: BudgetModelOptions,
+  {
+    ctx,
+    options,
+  }: {
+    ctx: ExtensionContext;
+    options?: BudgetModelOptions;
+  },
 ): Promise<BudgetModel> {
   /** Options with defaults applied so the strategy branches below can read fields unconditionally. */
   const opts: BudgetModelOptions = options ?? { ...JUDGE_MODEL_DEFAULTS, };
 
   if (opts.modelOverride !== undefined) {
-    return await resolveModelOverride(
+    return await resolveModelOverride({
       ctx,
-      opts.modelOverride,
-    );
+      override: opts.modelOverride,
+    },);
   }
 
-  if (ctx.model === undefined || ctx.model === null)
+  if ((ctx.model === undefined) || (ctx.model === null))
     throw new NoBudgetModelError('no active model set',);
 
   /**
@@ -79,19 +80,19 @@ async function findBudgetModel(
   const activeModel = ctx.model;
 
   if (opts.strategy === 'any-provider') {
-    return await findAnyProvider(
+    return await findAnyProvider({
       ctx,
       activeModel,
-      opts.costRatio,
-      opts.majorVersions,
-    );
+      costRatio: opts.costRatio,
+      majorVersions: opts.majorVersions,
+    },);
   }
-  return await findSameProvider(
+  return await findSameProvider({
     ctx,
     activeModel,
-    opts.costRatio,
-    opts.majorVersions,
-  );
+    costRatio: opts.costRatio,
+    majorVersions: opts.majorVersions,
+  },);
 }
 
 //endregion
@@ -101,25 +102,24 @@ async function findBudgetModel(
 /**
  * Find the cheapest model in the same provider as the active model.
  *
- * @param ctx - extension context
- *
- * @param activeModel - the currently active model
- *
- * @param costRatio - maximum cost ratio vs active model
- *
- * @param majorVersions - how many major version families to search
- *
  * @returns a budget model with auth credentials
  */
 async function findSameProvider(
-  ctx: ExtensionContext,
-  /* `Model<any>` matches pi-coding-agent's ctx.model type; the helpers
-     only read `.provider` and `.cost.input`, both of which are present
-     on every Model<TApi extends Api>. */
-  // oxlint-disable-next-line typescript-eslint(no-explicit-any) -- propagating pi-coding-agent's Model<any> typing
-  activeModel: Model<any>,
-  costRatio: number,
-  majorVersions: number,
+  {
+    ctx,
+    activeModel,
+    costRatio,
+    majorVersions,
+  }: {
+    ctx: ExtensionContext;
+    /* `Model<any>` matches pi-coding-agent's ctx.model type; the helpers
+       only read `.provider` and `.cost.input`, both of which are present
+       on every Model<TApi extends Api>. */
+    // oxlint-disable-next-line typescript-eslint/no-explicit-any -- propagating pi-coding-agent's Model<any> typing
+    activeModel: Model<any>;
+    costRatio: number;
+    majorVersions: number;
+  },
 ): Promise<BudgetModel> {
   /** Active provider name normalised to string; used to filter the registry. */
   const activeProvider = String(activeModel.provider,);
@@ -137,11 +137,11 @@ async function findSameProvider(
    * @returns the cheapest model candidate found, or `null`
    */
   function lazyCheapestOverall(): Promise<ModelCandidate | null> {
-    return findCheapestCandidate(
+    return findCheapestCandidate({
       ctx,
       allModels,
       majorVersions,
-    );
+    },);
   }
 
   if (providerModels.length === 0) {
@@ -152,10 +152,10 @@ async function findSameProvider(
   }
 
   /** Same-provider candidates ranked by cost then version, the search frontier for this strategy. */
-  const candidates = findCheapestInMajorVersions(
-    providerModels,
+  const candidates = findCheapestInMajorVersions({
+    models: providerModels,
     majorVersions,
-  );
+  },);
 
   if (candidates.length === 0) {
     throw new NoBudgetModelError(
@@ -174,13 +174,13 @@ async function findSameProvider(
     );
   }
 
-  if (cheapestCandidate.cost.input >= activeModel.cost.input * costRatio) {
+  if (cheapestCandidate.cost.input >= (activeModel.cost.input * costRatio)) {
     /** Same-provider report row for the error message; the cheapest model is too expensive to use. */
-    const sameProvider = toCandidate(
+    const sameProvider = toCandidate({
       ctx,
-      cheapestCandidate,
-      activeProvider,
-    );
+      model: cheapestCandidate,
+      provider: activeProvider,
+    },);
     throw new NoBudgetModelError(
       `cheapest model in ${activeProvider} is $${cheapestCandidate.cost.input}/M input; not significantly cheaper than active model ($${activeModel.cost.input}/M input)`,
       {
@@ -191,14 +191,14 @@ async function findSameProvider(
   }
 
   for (const candidate of candidates) {
-    if (candidate.cost.input >= activeModel.cost.input * costRatio)
+    if (candidate.cost.input >= (activeModel.cost.input * costRatio))
       break;
     /* oxlint-disable no-await-in-loop -- sequential: stop at first successful auth */
     /** Resolved auth for the current candidate; `null` falls through to the next iteration. */
-    const auth = await resolveAuth(
+    const auth = await resolveAuth({
       ctx,
-      candidate,
-    );
+      model: candidate,
+    },);
     /* oxlint-enable no-await-in-loop */
     if (auth !== null) {
       return {
@@ -209,11 +209,11 @@ async function findSameProvider(
   }
 
   /** Same-provider report row for the error message; every same-provider candidate failed auth. */
-  const sameProvider = toCandidate(
+  const sameProvider = toCandidate({
     ctx,
-    cheapestCandidate,
-    activeProvider,
-  );
+    model: cheapestCandidate,
+    provider: activeProvider,
+  },);
   throw new NoBudgetModelError(
     `no API key available for cheapest models in provider "${activeProvider}"`,
     {
@@ -230,25 +230,24 @@ async function findSameProvider(
 /**
  * Find the cheapest model across all providers.
  *
- * @param ctx - extension context
- *
- * @param activeModel - the currently active model
- *
- * @param costRatio - maximum cost ratio vs active model
- *
- * @param majorVersions - how many major version families to search
- *
  * @returns a budget model with auth credentials
  */
 async function findAnyProvider(
-  ctx: ExtensionContext,
-  /* `Model<any>` matches pi-coding-agent's ctx.model type; the helpers
-     only read `.provider` and `.cost.input`, both of which are present
-     on every Model<TApi extends Api>. */
-  // oxlint-disable-next-line typescript-eslint(no-explicit-any) -- propagating pi-coding-agent's Model<any> typing
-  activeModel: Model<any>,
-  costRatio: number,
-  majorVersions: number,
+  {
+    ctx,
+    activeModel,
+    costRatio,
+    majorVersions,
+  }: {
+    ctx: ExtensionContext;
+    /* `Model<any>` matches pi-coding-agent's ctx.model type; the helpers
+       only read `.provider` and `.cost.input`, both of which are present
+       on every Model<TApi extends Api>. */
+    // oxlint-disable-next-line typescript-eslint/no-explicit-any -- propagating pi-coding-agent's Model<any> typing
+    activeModel: Model<any>;
+    costRatio: number;
+    majorVersions: number;
+  },
 ): Promise<BudgetModel> {
   /** Every model the registry knows about, regardless of provider. */
   const allModels = ctx.modelRegistry.getAll();
@@ -273,10 +272,10 @@ async function findAnyProvider(
   /** Flat union of every provider's top candidates; resorted by cost below. */
   const allCandidates: Model<Api>[] = [];
   for (const [, models,] of byProvider) {
-    allCandidates.push(...findCheapestInMajorVersions(
+    allCandidates.push(...findCheapestInMajorVersions({
       models,
       majorVersions,
-    ),);
+    },),);
   }
   /** Cross-provider candidates sorted by input cost ascending; the loop walks this in order. */
   const sortedCandidates = allCandidates.toSorted(
@@ -297,21 +296,21 @@ async function findAnyProvider(
     ? cheapestCandidate.cost.input
     : Number.POSITIVE_INFINITY;
 
-  if (cheapestCost >= activeModel.cost.input * costRatio) {
+  if (cheapestCost >= (activeModel.cost.input * costRatio)) {
     throw new NoBudgetModelError(
       `cheapest model across all providers is $${cheapestCost}/M input; not significantly cheaper than active model ($${activeModel.cost.input}/M input)`,
     );
   }
 
   for (const model of sortedCandidates) {
-    if (model.cost.input >= activeModel.cost.input * costRatio)
+    if (model.cost.input >= (activeModel.cost.input * costRatio))
       break;
     /* oxlint-disable no-await-in-loop -- sequential: stop at first successful auth */
     /** Resolved auth for the current candidate; `null` falls through to the next iteration. */
-    const auth = await resolveAuth(
+    const auth = await resolveAuth({
       ctx,
       model,
-    );
+    },);
     /* oxlint-enable no-await-in-loop */
     if (auth !== null) {
       return {
@@ -333,18 +332,19 @@ async function findAnyProvider(
 /**
  * Resolve a model override: skip auto-selection entirely.
  *
- * @param ctx - extension context
- *
- * @param override - the override specification
- *
  * @returns a budget model with auth credentials
  */
 async function resolveModelOverride(
-  ctx: ExtensionContext,
-  override: ModelOverride,
+  {
+    ctx,
+    override,
+  }: {
+    ctx: ExtensionContext;
+    override: ModelOverride;
+  },
 ): Promise<BudgetModel> {
   /** `provider/id` string form of the override, regardless of whether it came as a bare string or struct. */
-  const modelId = typeof override === 'string' ? override : override.model;
+  const modelId = (typeof override) === 'string' ? override : override.model;
   /** Index of the `/` separator between provider and model id; `-1` is acceptable, slice clamps. */
   const slashIndex = modelId.indexOf('/',);
   /** Substring before the `/`, e.g. `openai` in `openai/gpt-4o-mini`. */
@@ -362,13 +362,13 @@ async function resolveModelOverride(
     id,
   );
   /* oxlint-enable unicorn/no-array-method-this-argument */
-  if (model === undefined || model === null) {
+  if ((model === undefined) || (model === null)) {
     throw new NoBudgetModelError(
       `model override "${modelId}" not found in registry`,
     );
   }
 
-  if (typeof override !== 'string') {
+  if ((typeof override) !== 'string') {
     /** Inline auth from the override struct; bypasses the registry. */
     const { auth, } = override;
     /** Widened auth to satisfy the BudgetModelAuth alias on the return type. */
@@ -380,10 +380,10 @@ async function resolveModelOverride(
   }
 
   /** Registry-resolved auth for the override; throws below when the registry has no key. */
-  const auth = await resolveAuth(
+  const auth = await resolveAuth({
     ctx,
     model,
-  );
+  },);
   if (auth === null) {
     throw new NoBudgetModelError(
       `no API key for model override "${modelId}"`,

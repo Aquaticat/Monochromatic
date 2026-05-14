@@ -87,7 +87,7 @@ function loadMergedConfig(
   };
 
   if (rawJudgeModel.modelOverride !== undefined) {
-    if (typeof rawJudgeModel.modelOverride === 'string')
+    if ((typeof rawJudgeModel.modelOverride) === 'string')
       judgeModel.modelOverride = rawJudgeModel.modelOverride;
     else {
       /** Auth object assembled field-by-field so omitted keys stay undefined rather than `null`. */
@@ -106,14 +106,14 @@ function loadMergedConfig(
   return {
     enabled: global.enabled,
     commands,
-    patterns: compilePatterns(
-      patternStrs,
-      project !== undefined ? 'global+project' : 'global',
-    ),
-    ...(global.instructions !== undefined && global.instructions !== ''
+    patterns: compilePatterns({
+      patterns: patternStrs,
+      label: project !== undefined ? 'global+project' : 'global',
+    },),
+    ...((global.instructions !== undefined) && (global.instructions !== '')
       ? { globalInstructions: global.instructions, }
       : {}),
-    ...(project?.instructions !== undefined && project.instructions !== ''
+    ...((project?.instructions !== undefined) && (project.instructions !== '')
       ? { projectInstructions: project.instructions, }
       : {}),
     judgeModel,
@@ -177,15 +177,21 @@ function projectConfigPath(
 /**
  * Read and parse a JSON config file.
  *
- * @param path - the file path
- *
- * @param label - human-readable label for error messages
- *
  * @returns parsed data, or `undefined` if file not found
+ *
+ * @example
+ * ```typescript
+ * const data = readJsonFile({ path: '/home/user/.pi/agent/extensions/pi-auto-mode.json', label: 'global' });
+ * ```
  */
 function readJsonFile(
-  path: string,
-  label: string,
+  {
+    path,
+    label,
+  }: {
+    path: string;
+    label: string;
+  },
 ): unknown {
   try {
     return JSON.parse(readFileSync(
@@ -196,7 +202,7 @@ function readJsonFile(
   catch (err) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- Node.js error code access */
     /** Node-style errno (`ENOENT`, etc.) when the error originated in `fs`; `undefined` for anything else. */
-    const errCode = (err instanceof Error && 'code' in err)
+    const errCode = ((err instanceof Error) && ('code' in err))
       ? (err as NodeJS.ErrnoException).code
       : undefined;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -214,23 +220,27 @@ function readJsonFile(
 /**
  * Parse raw config data against a valibot schema.
  *
- * @param schema - valibot schema to validate against
- *
- * @param raw - raw data to parse
- *
- * @param path - file path (for error messages)
- *
- * @param label - human-readable label for error messages
- *
  * @returns parsed config data
  *
  * @throws when validation fails
+ *
+ * @example
+ * ```typescript
+ * const cfg = parseConfig({ schema: AutoModeConfigSchema, raw, path, label: 'global' });
+ * ```
  */
 function parseConfig<T,>(
-  schema: v.GenericSchema<unknown, T>,
-  raw: unknown,
-  path: string,
-  label: string,
+  {
+    schema,
+    raw,
+    path,
+    label,
+  }: {
+    schema: v.GenericSchema<unknown, T>;
+    raw: unknown;
+    path: string;
+    label: string;
+  },
 ): T {
   /** valibot safe-parse outcome; `success` discriminates between the typed output and a list of issues. */
   const result = v.safeParse(
@@ -247,20 +257,21 @@ function parseConfig<T,>(
 /**
  * Compile user-provided regex strings into RegExp objects.
  *
- * @param patterns - array of regex pattern strings
- *
- * @param label - human-readable label for error messages
- *
  * @returns array of compiled RegExp objects
  *
  * @example
  * ```typescript
- * compilePatterns(["sudo"], "global"); // [/sudo/]
+ * compilePatterns({ patterns: ["sudo"], label: "global" }); // [/sudo/]
  * ```
  */
 function compilePatterns(
-  patterns: string[],
-  label: string,
+  {
+    patterns,
+    label,
+  }: {
+    patterns: string[];
+    label: string;
+  },
 ): RegExp[] {
   return patterns.map(
     function compilePattern(p,) {
@@ -291,10 +302,10 @@ function loadGlobalConfig(): AutoModeConfig {
   /** Absolute path to `~/.pi/agent/extensions/pi-auto-mode.json`. */
   const path = globalConfigPath();
   /** Parsed JSON contents, or `undefined` when the file is absent so the caller can fall back to defaults. */
-  const raw = readJsonFile(
+  const raw = readJsonFile({
     path,
-    'global',
-  );
+    label: 'global',
+  },);
   if (raw === undefined)
     return GLOBAL_DEFAULTS;
   /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; nested config from JSON */
@@ -312,12 +323,12 @@ function loadGlobalConfig(): AutoModeConfig {
       ...rawJudgeModel,
     },
   };
-  return parseConfig(
-    AutoModeConfigSchema,
-    merged,
+  return parseConfig({
+    schema: AutoModeConfigSchema,
+    raw: merged,
     path,
-    'global',
-  );
+    label: 'global',
+  },);
 }
 
 /** Load project config from cwd.
@@ -335,10 +346,10 @@ function loadProjectConfig(
   /** Absolute path to `<cwd>/.pi/extensions/pi-auto-mode.json`. */
   const path = projectConfigPath(cwd,);
   /** Parsed JSON contents, or `undefined` when the project file is absent. */
-  const raw = readJsonFile(
+  const raw = readJsonFile({
     path,
-    'project',
-  );
+    label: 'project',
+  },);
   if (raw === undefined)
     return undefined;
   /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse returns unknown */
@@ -350,12 +361,12 @@ function loadProjectConfig(
     ...PROJECT_DEFAULTS,
     ...rawObj,
   };
-  return parseConfig(
-    ProjectConfigSchema,
-    merged,
+  return parseConfig({
+    schema: ProjectConfigSchema,
+    raw: merged,
     path,
-    'project',
-  );
+    label: 'project',
+  },);
 }
 
 //endregion

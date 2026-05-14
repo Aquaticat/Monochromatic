@@ -97,18 +97,24 @@ function createMockApi() {
  * Retrieves the registered handler for a given event.
  * Throws if no handler is registered.
  *
- * @param registrations - the registration map
- *
- * @param event - event name to look up
- *
  * @returns the handler function
+ *
+ * @example
+ * ```typescript
+ * const handler = getHandler({ registrations, event: 'tool_call' });
+ * ```
  */
 function getHandler(
-  registrations: RegistrationMap,
-  event: string,
+  {
+    registrations,
+    event,
+  }: {
+    registrations: RegistrationMap;
+    event: string;
+  },
 ): HandlerFn {
   const handlers = registrations.get(event,);
-  if (handlers === undefined || handlers.length === 0)
+  if ((handlers === undefined) || (handlers.length === 0))
     throw new Error(`No handler registered for event: ${event}`,);
   const [handler,] = handlers;
   if (handler === undefined)
@@ -220,7 +226,7 @@ await describe({
         await guardHandler('reset', mockCtx,);
 
         const resetEntry = entries.find(
-          e => e.customType === 'auto-mode:trust' && e.data === null,
+          e => (e.customType === 'auto-mode:trust') && (e.data === null),
         );
         expect(resetEntry,).toBeDefined();
       },

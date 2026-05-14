@@ -48,21 +48,22 @@ function contentSignals(
 /**
  * Check raw text against built-in and user-configured patterns.
  *
- * @param text - the text to check
- *
- * @param config - optional merged config with user patterns
- *
  * @returns `true` if any pattern matches
  *
  * @example
  * ```typescript
- * textSignals("run sudo apt-get install"); // true
- * textSignals("run apt-get install"); // false
+ * textSignals({ text: "run sudo apt-get install" }); // true
+ * textSignals({ text: "run apt-get install" }); // false
  * ```
  */
 function textSignals(
-  text: string,
-  config?: MergedConfig,
+  {
+    text,
+    config,
+  }: {
+    text: string;
+    config?: MergedConfig;
+  },
 ): boolean {
   for (const pattern of BUILTIN_TEXT_PATTERNS) {
     if (pattern.test(text,))

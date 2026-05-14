@@ -26,39 +26,40 @@ import type { SignalContext, } from './types.ts';
  * home directory on some Linux systems. The `!isUnder(resolved, cwd)`
  * check already catches paths outside the project directory.
  *
- * @param filePath - the file path to check
- *
- * @param ctx - signal context with cwd and home directory
- *
  * @returns `true` if the path should be flagged
  *
  * @example
  * ```typescript
- * pathSignals("/etc/passwd", { cwd: "/project", home: "/home/user" }); // true
- * pathSignals("./src/index.ts", { cwd: "/project", home: "/home/user" }); // false
+ * pathSignals({ filePath: "/etc/passwd", ctx: { cwd: "/project", home: "/home/user" } }); // true
+ * pathSignals({ filePath: "./src/index.ts", ctx: { cwd: "/project", home: "/home/user" } }); // false
  * ```
  */
 function pathSignals(
-  filePath: string,
-  ctx: SignalContext,
+  {
+    filePath,
+    ctx,
+  }: {
+    filePath: string;
+    ctx: SignalContext;
+  },
 ): boolean {
   /** Cached resolution shared by the cwd-containment, dotfile, and secret-pattern checks below. */
-  const resolved = resolvePath(
+  const resolved = resolvePath({
     filePath,
-    ctx.cwd,
-  );
+    cwd: ctx.cwd,
+  },);
 
-  if (!isUnder(
+  if (!isUnder({
     resolved,
-    ctx.cwd,
-  )) {
+    dir: ctx.cwd,
+  },)) {
     return true;
   }
 
-  if (isHomeDotfile(
+  if (isHomeDotfile({
     resolved,
-    ctx.home,
-  )) {
+    home: ctx.home,
+  },)) {
     return true;
   }
 
@@ -71,20 +72,21 @@ function pathSignals(
 /**
  * Resolve a file path relative to cwd, handling `~` expansion.
  *
- * @param filePath - the file path to resolve
- *
- * @param cwd - the current working directory
- *
  * @returns the resolved absolute path
  *
  * @example
  * ```typescript
- * resolvePath("~/.bashrc", "/project"); // "/home/user/.bashrc"
+ * resolvePath({ filePath: "~/.bashrc", cwd: "/project" }); // "/home/user/.bashrc"
  * ```
  */
 function resolvePath(
-  filePath: string,
-  cwd: string,
+  {
+    filePath,
+    cwd,
+  }: {
+    filePath: string;
+    cwd: string;
+  },
 ): string {
   if (filePath.startsWith('~',)) {
     return nodePath.resolve(
@@ -104,50 +106,52 @@ function resolvePath(
 /**
  * Check if a resolved path is under a given directory.
  *
- * @param resolved - the resolved absolute path
- *
- * @param dir - the directory to check against
- *
  * @returns `true` if the path is under or equal to the directory
  *
  * @example
  * ```typescript
- * isUnder("/home/user/project/src", "/home/user/project"); // true
- * isUnder("/etc/passwd", "/home/user/project"); // false
+ * isUnder({ resolved: "/home/user/project/src", dir: "/home/user/project" }); // true
+ * isUnder({ resolved: "/etc/passwd", dir: "/home/user/project" }); // false
  * ```
  */
 function isUnder(
-  resolved: string,
-  dir: string,
+  {
+    resolved,
+    dir,
+  }: {
+    resolved: string;
+    dir: string;
+  },
 ): boolean {
   /** Trailing slash prevents `/foo` from matching `/foobar` via `startsWith`. */
   const norm = dir.endsWith('/',) ? dir : `${dir}/`;
-  return resolved === dir || resolved.startsWith(norm,);
+  return (resolved === dir) || resolved.startsWith(norm,);
 }
 
 /**
  * Check if a resolved path is a dotfile or dotdir in the home directory.
  *
- * @param resolved - the resolved absolute path
- *
- * @param home - the home directory
- *
  * @returns `true` if the path is a dotfile/dotdir in home
  *
  * @example
  * ```typescript
- * isHomeDotfile("/home/user/.ssh/id_rsa", "/home/user"); // true
- * isHomeDotfile("/home/user/project/file", "/home/user"); // false
+ * isHomeDotfile({ resolved: "/home/user/.ssh/id_rsa", home: "/home/user" }); // true
+ * isHomeDotfile({ resolved: "/home/user/project/file", home: "/home/user" }); // false
  * ```
  */
 function isHomeDotfile(
-  resolved: string,
-  home: string,
-): boolean {
-  if (!isUnder(
+  {
     resolved,
     home,
-  )) {
+  }: {
+    resolved: string;
+    home: string;
+  },
+): boolean {
+  if (!isUnder({
+    resolved,
+    dir: home,
+  },)) {
     return false;
   }
   /** Home-relative path; first segment determines whether this is a dotfile/dotdir under `~`. */

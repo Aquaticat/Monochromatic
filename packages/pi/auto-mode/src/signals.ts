@@ -13,17 +13,21 @@ import {
   isToolCallEventType,
   type ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
+import {
+  hasFlag,
+  hasInlineCode,
+  hasNetworkCommand,
+  hasRootTarget,
+  hasSecretParamRefs,
+  hasSensitiveSource,
+  isMutatingCommand,
+} from './bash-helpers.ts';
 import { analyzeBashCommand, } from './command-parser.ts';
 import { looksLikePath, } from './command-refs.ts';
 import {
   ENV_DUMP_COMMANDS,
   INTERPRETER_COMMANDS,
-  INTERPRETER_INLINE_FLAGS,
-  LONG_FLAGS,
-  MUTATING_COMMANDS,
-  NETWORK_COMMANDS,
   PRIVILEGE_COMMANDS,
-  SECRET_VAR_PATTERN,
 } from './constants.ts';
 import {
   contentSignals,
@@ -38,7 +42,6 @@ import {
 } from './tool-helpers.ts';
 import type {
   BashAnalysis,
-  CommandInfo,
   JudgeModelConfig,
   SignalContext,
 } from './types.ts';
@@ -73,23 +76,23 @@ export type MergedConfig = {
  *
  * Returns `true` if any signal fires. No reason is propagated.
  *
- * @param event - the tool call event from pi
- *
- * @param ctx - signal context with cwd and home directory
- *
- * @param config - optional merged config with user patterns
- *
  * @returns `true` if the action should be flagged for judge review
  *
  * @example
  * ```typescript
- * const flagged = shouldFlag(event, { cwd, home });
+ * const flagged = shouldFlag({ event, ctx: { cwd, home } });
  * ```
  */
 function shouldFlag(
-  event: ToolCallEvent,
-  ctx: SignalContext,
-  config?: MergedConfig,
+  {
+    event,
+    ctx,
+    config,
+  }: {
+    event: ToolCallEvent;
+    ctx: SignalContext;
+    config?: MergedConfig;
+  },
 ): boolean {
   if (isToolCallEventType(
     'bash',
@@ -97,17 +100,17 @@ function shouldFlag(
   )) {
     /** Parsed bash AST used to walk individual commands and their redirect targets. */
     const analysis = analyzeBashCommand(event.input.command,);
-    if (bashSignals(
+    if (bashSignals({
       analysis,
       ctx,
-      config,
-    )) {
+      ...(config !== undefined ? { config, } : {}),
+    },)) {
       return true;
     }
-    if (textSignals(
-      event.input.command,
-      config,
-    )) {
+    if (textSignals({
+      text: event.input.command,
+      ...(config !== undefined ? { config, } : {}),
+    },)) {
       return true;
     }
     return false;
@@ -116,25 +119,25 @@ function shouldFlag(
   /** Path argument extracted from the tool event when one applies (read/write/edit/etc.). */
   const filePath = getFilePath(event,);
   if (
-    filePath !== undefined
-    && filePath !== ''
-    && pathSignals(
+    (filePath !== undefined)
+    && (filePath !== '')
+    && pathSignals({
       filePath,
       ctx,
-    )
+    },)
   ) {
     return true;
   }
 
   /** Free text extracted from the tool event (file body, search query) for content/text signals. */
   const text = extractToolText(event,);
-  if (text !== undefined && text !== '') {
+  if ((text !== undefined) && (text !== '')) {
     if (contentSignals(text,))
       return true;
-    if (textSignals(
+    if (textSignals({
       text,
-      config,
-    )) {
+      ...(config !== undefined ? { config, } : {}),
+    },)) {
       return true;
     }
   }
@@ -149,24 +152,24 @@ function shouldFlag(
 /**
  * Check bash command analysis for dangerous patterns.
  *
- * @param analysis - parsed bash command analysis
- *
- * @param ctx - signal context with cwd and home directory
- *
- * @param config - optional merged config with user command matchers
- *
  * @returns `true` if any bash signal fires
  *
  * @example
  * ```typescript
  * const analysis = analyzeBashCommand("sudo rm -rf /");
- * bashSignals(analysis, ctx); // true
+ * bashSignals({ analysis, ctx }); // true
  * ```
  */
 function bashSignals(
-  analysis: BashAnalysis,
-  ctx: SignalContext,
-  config?: MergedConfig,
+  {
+    analysis,
+    ctx,
+    config,
+  }: {
+    analysis: BashAnalysis;
+    ctx: SignalContext;
+    config?: MergedConfig;
+  },
 ): boolean {
   if (!analysis.parsed)
     return true;
@@ -174,24 +177,26 @@ function bashSignals(
   for (const cmd of analysis.commands) {
     if (PRIVILEGE_COMMANDS.has(cmd.name,))
       return true;
-    if (isMutatingCommand(cmd.name,) && hasFlag(
-      cmd.args,
-      'r',
-      'R',
-    )) {
+    if (isMutatingCommand(cmd.name,) && hasFlag({
+      args: cmd.args,
+      flags: [
+        'r',
+        'R',
+      ],
+    },)) {
       return true;
     }
-    if (cmd.name === 'rm' && hasFlag(
-      cmd.args,
-      'f',
-    )) {
+    if ((cmd.name === 'rm') && hasFlag({
+      args: cmd.args,
+      flags: ['f',],
+    },)) {
       return true;
     }
     if (hasRootTarget(cmd,))
       return true;
-    if (cmd.name === 'chmod' && cmd.args.includes('777',))
+    if ((cmd.name === 'chmod') && cmd.args.includes('777',))
       return true;
-    if (cmd.name === 'chmod' && cmd.args.some(
+    if ((cmd.name === 'chmod') && cmd.args.some(
       function hasSetuid(a,) {
         return a.includes('u+s',) || a.includes('g+s',);
       },
@@ -199,7 +204,7 @@ function bashSignals(
       return true;
     }
 
-    if (cmd.name === 'dd' && cmd.args.some(
+    if ((cmd.name === 'dd') && cmd.args.some(
       function hasOfEquals(a,) {
         return a.startsWith('of=',);
       },
@@ -211,13 +216,13 @@ function bashSignals(
       return true;
     if (ENV_DUMP_COMMANDS.has(cmd.name,))
       return true;
-    if (cmd.name === 'export' && cmd.args.includes('-p',))
+    if ((cmd.name === 'export') && cmd.args.includes('-p',))
       return true;
 
-    if (INTERPRETER_COMMANDS.has(cmd.name,) && hasInlineCode(
-      cmd.name,
-      cmd.args,
-    )) {
+    if (INTERPRETER_COMMANDS.has(cmd.name,) && hasInlineCode({
+      name: cmd.name,
+      args: cmd.args,
+    },)) {
       return true;
     }
 
@@ -227,16 +232,16 @@ function bashSignals(
       ...cmd.redirectTargets,
     ];
     for (const f of files) {
-      if (pathSignals(
-        f,
+      if (pathSignals({
+        filePath: f,
         ctx,
-      )) {
+      },)) {
         return true;
       }
     }
 
     if (
-      cmd.name === 'docker'
+      (cmd.name === 'docker')
       && (cmd.args.includes('-e',) || cmd.args.includes('--env-file',))
     ) {
       return true;
@@ -248,10 +253,10 @@ function bashSignals(
 
   if (
     analysis.isPipeline
-    && hasSensitiveSource(
+    && hasSensitiveSource({
       analysis,
       ctx,
-    )
+    },)
     && hasNetworkCommand(analysis,)
   ) {
     return true;
@@ -265,179 +270,14 @@ function bashSignals(
     return true;
   }
 
-  if (config?.commands && matchUserCommands(
+  if (config?.commands && matchUserCommands({
     analysis,
-    config.commands,
-  )) {
+    matchers: config.commands,
+  },)) {
     return true;
   }
 
   return false;
-}
-
-//endregion
-
-//region Scope and dataflow helpers
-
-/** Check if a command name is a mutating command.
- *
- * @param name - the command name
- *
- * @returns `true` if the command is a mutating command
- */
-function isMutatingCommand(
-  name: string,
-): boolean {
-  return MUTATING_COMMANDS.has(name,);
-}
-
-/**
- * Check if any of the given flags are present in the argument list.
- *
- * Handles `--` end-of-options separator correctly.
- *
- * @param args - the argument list
- *
- * @param flags - the flag characters to check (without `-` prefix)
- *
- * @returns `true` if any of the flags are found
- *
- * @example
- * ```typescript
- * hasFlag(["-rf"], "r", "f"); // true
- * hasFlag(["--", "-f"], "f"); // false
- * ```
- */
-function hasFlag(
-  args: string[],
-  ...flags: string[]
-): boolean {
-  /** Latch flipped on `--`; subsequent args are treated as positional and ignored by the matcher. */
-  let pastEndOfOptions = false;
-  return args.some(
-    function checkArg(a,) {
-      if (pastEndOfOptions)
-        return false;
-      if (a === '--') {
-        pastEndOfOptions = true;
-        return false;
-      }
-      if (!a.startsWith('-',))
-        return false;
-      if (a.startsWith('--',)) {
-        return flags.some(
-          function matchLongFlag(f,) {
-            return a === `--${LONG_FLAGS[f] ?? f}`;
-          },
-        );
-      }
-      return flags.some(
-        function matchShortFlag(f,) {
-          return a.includes(f,);
-        },
-      );
-    },
-  );
-}
-
-/** Check if any target in the command is the root directory.
- *
- * @param cmd - command info with args and redirect targets
- *
- * @returns `true` if a root target is found
- */
-function hasRootTarget(
-  cmd: Pick<CommandInfo, 'args' | 'redirectTargets'>,
-): boolean {
-  /** Every positional and redirect target as a flat list; each is tested for `/` or `/*`. */
-  const allTargets = [
-    ...cmd.args,
-    ...cmd.redirectTargets,
-  ];
-  return allTargets.some(
-    function isRootPath(a,) {
-      return a === '/' || a === '/*';
-    },
-  );
-}
-
-/** Check if a command has inline code.
- *
- * @param name - the command name
- *
- * @param args - the argument list
- *
- * @returns `true` if the command has inline code
- */
-function hasInlineCode(
-  name: string,
-  args: string[],
-): boolean {
-  /** Inline-code flags registered for this interpreter; `undefined` for non-interpreters. */
-  const flags = INTERPRETER_INLINE_FLAGS[name];
-  if (flags === undefined)
-    return false;
-  if (flags.length === 0)
-    return true;
-  return flags.some(
-    function flagPresent(f,) {
-      return args.includes(f,);
-    },
-  );
-}
-
-/** Check if the analysis contains any network commands.
- *
- * @param analysis - parsed bash command analysis
- *
- * @returns `true` if any network command is found
- */
-function hasNetworkCommand(
-  analysis: BashAnalysis,
-): boolean {
-  return analysis.commands.some(
-    function isNetworkCmd(c,) {
-      return NETWORK_COMMANDS.has(c.name,);
-    },
-  );
-}
-
-/** Check if the analysis contains secret variable references.
- *
- * @param analysis - parsed bash command analysis
- *
- * @returns `true` if any secret variable reference is found
- */
-function hasSecretParamRefs(
-  analysis: BashAnalysis,
-): boolean {
-  return analysis.allParamRefs.some(
-    function isSecretRef(ref,) {
-      return SECRET_VAR_PATTERN.test(ref,);
-    },
-  );
-}
-
-/** Check if the analysis contains sensitive source files.
- *
- * @param analysis - parsed bash command analysis
- *
- * @param ctx - signal context for path checks
- *
- * @returns `true` if any sensitive source is found
- */
-function hasSensitiveSource(
-  analysis: BashAnalysis,
-  ctx: SignalContext,
-): boolean {
-  return analysis.allFiles.some(
-    function isSensitivePath(f,) {
-      return pathSignals(
-        f,
-        ctx,
-      );
-    },
-  );
 }
 
 //endregion
@@ -447,25 +287,26 @@ function hasSensitiveSource(
 /**
  * Check if any command matches user-configured matchers.
  *
- * @param analysis - parsed bash command analysis
- *
- * @param matchers - user-configured command matchers
- *
  * @returns `true` if any command matches
  *
  * @example
  * ```typescript
- * matchUserCommands(analysis, ["terraform"]);
- * matchUserCommands(analysis, [["docker", "compose"]]);
+ * matchUserCommands({ analysis, matchers: ["terraform"] });
+ * matchUserCommands({ analysis, matchers: [["docker", "compose"]] });
  * ```
  */
 function matchUserCommands(
-  analysis: BashAnalysis,
-  matchers: CommandMatcher[],
+  {
+    analysis,
+    matchers,
+  }: {
+    analysis: BashAnalysis;
+    matchers: CommandMatcher[];
+  },
 ): boolean {
   for (const cmd of analysis.commands) {
     for (const matcher of matchers) {
-      if (typeof matcher === 'string') {
+      if ((typeof matcher) === 'string') {
         if (cmd.name === matcher)
           return true;
       }

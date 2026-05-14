@@ -53,17 +53,9 @@ function analyzeBashCommand(
   /** Param references harvested via regex before parsing so the catch-branch still surfaces them. */
   const preScanRefs = extractParamRefs(cmd,);
 
-  /**
-   * Tokens emitted by `shell-quote` for the command.
-   *
-   * Declared with `let` so the catch branch can leave it empty without
-   * needing a separate flag; reassigned inside `try` on successful parse.
-   */
-  let entries: ParseEntry[] = [];
-  try {
-    entries = parse(cmd,);
-  }
-  catch {
+  /** Tokens emitted by `shell-quote` for the command; `null` when the parse threw. */
+  const entries = tryParseEntries(cmd,);
+  if (entries === null) {
     return {
       ...empty,
       allParamRefs: preScanRefs,
@@ -72,6 +64,7 @@ function analyzeBashCommand(
 
   /** Accumulator for parsed `CommandInfo` entries; one push per `|`, `&&`, `||`, `;`, `&`, or `;;` boundary. */
   const commands: CommandInfo[] = [];
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- sequential parser state mutated across loop iterations (isPipeline latch, current-command accumulators, redirect-target latch) */
   /** True once a `|` operator has been seen anywhere in the command; surfaced verbatim on the return. */
   let isPipeline = false;
   /** Word tokens belonging to the command currently being assembled; reset at every command boundary. */
@@ -80,9 +73,10 @@ function analyzeBashCommand(
   let currentRedirectTargets: string[] = [];
   /** True for one tick after a redirect operator so the very next string token is captured as the target path. */
   let nextIsRedirectTarget = false;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for (const entry of entries) {
-    if (typeof entry === 'string') {
+    if ((typeof entry) === 'string') {
       if (nextIsRedirectTarget) {
         currentRedirectTargets.push(entry,);
         nextIsRedirectTarget = false;
@@ -98,11 +92,11 @@ function analyzeBashCommand(
     const { op, } = entry;
 
     if (
-      op === '>'
-      || op === '>>'
-      || op === '<'
-      || op === '>&'
-      || op === '|&'
+      (op === '>')
+      || (op === '>>')
+      || (op === '<')
+      || (op === '>&')
+      || (op === '|&')
     ) {
       nextIsRedirectTarget = true;
       continue;
@@ -110,25 +104,25 @@ function analyzeBashCommand(
 
     if (op === '|') {
       isPipeline = true;
-      flushCurrentCommand(
+      flushCurrentCommand({
         commands,
-        currentArgs,
-        currentRedirectTargets,
-        preScanRefs,
-      );
+        args: currentArgs,
+        redirectTargets: currentRedirectTargets,
+        paramRefs: preScanRefs,
+      },);
       currentArgs = [];
       currentRedirectTargets = [];
       nextIsRedirectTarget = false;
       continue;
     }
 
-    if (op === '&&' || op === '||' || op === ';' || op === '&') {
-      flushCurrentCommand(
+    if ((op === '&&') || (op === '||') || (op === ';') || (op === '&')) {
+      flushCurrentCommand({
         commands,
-        currentArgs,
-        currentRedirectTargets,
-        preScanRefs,
-      );
+        args: currentArgs,
+        redirectTargets: currentRedirectTargets,
+        paramRefs: preScanRefs,
+      },);
       currentArgs = [];
       currentRedirectTargets = [];
       nextIsRedirectTarget = false;
@@ -147,14 +141,14 @@ function analyzeBashCommand(
       continue;
     }
 
-    if (op === '(' || op === ')' || op === ';;') {
+    if ((op === '(') || (op === ')') || (op === ';;')) {
       if (op === ';;') {
-        flushCurrentCommand(
+        flushCurrentCommand({
           commands,
-          currentArgs,
-          currentRedirectTargets,
-          preScanRefs,
-        );
+          args: currentArgs,
+          redirectTargets: currentRedirectTargets,
+          paramRefs: preScanRefs,
+        },);
         currentArgs = [];
         currentRedirectTargets = [];
         nextIsRedirectTarget = false;
@@ -163,12 +157,12 @@ function analyzeBashCommand(
     }
   }
 
-  flushCurrentCommand(
+  flushCurrentCommand({
     commands,
-    currentArgs,
-    currentRedirectTargets,
-    preScanRefs,
-  );
+    args: currentArgs,
+    redirectTargets: currentRedirectTargets,
+    paramRefs: preScanRefs,
+  },);
 
   /** Union of every path-shaped argument and every redirect target across all commands, in source order. */
   const allFiles = commands.flatMap(
@@ -188,7 +182,7 @@ function analyzeBashCommand(
     ),
   ),];
 
-  if (allParamRefs.length === 0 && preScanRefs.length > 0)
+  if ((allParamRefs.length === 0) && (preScanRefs.length > 0))
     allParamRefs.push(...preScanRefs,);
 
   return {
@@ -207,21 +201,30 @@ function analyzeBashCommand(
 /**
  * Flush accumulated tokens into a `CommandInfo`.
  *
- * @param commands - the output array to push into
- *
- * @param args - accumulated word tokens for this command
- *
- * @param redirectTargets - accumulated redirect target paths
- *
- * @param paramRefs - pre-scanned variable references
+ * @example
+ * ```typescript
+ * flushCurrentCommand({
+ *   commands: cmdAcc,
+ *   args: ['curl', 'https://api.example.com'],
+ *   redirectTargets: ['out.txt'],
+ *   paramRefs: ['API_KEY'],
+ * });
+ * ```
  */
 function flushCurrentCommand(
-  commands: CommandInfo[],
-  args: string[],
-  redirectTargets: string[],
-  paramRefs: string[],
+  {
+    commands,
+    args,
+    redirectTargets,
+    paramRefs,
+  }: {
+    commands: CommandInfo[];
+    args: string[];
+    redirectTargets: string[];
+    paramRefs: string[];
+  },
 ): void {
-  if (args.length === 0 && redirectTargets.length === 0)
+  if ((args.length === 0) && (redirectTargets.length === 0))
     return;
 
   /** Command name (first word, empty string on redirect-only commands) plus its remaining word arguments. */
@@ -233,6 +236,32 @@ function flushCurrentCommand(
     redirectTargets,
     paramRefs: [...paramRefs,],
   },);
+}
+
+/**
+ * Run `shell-quote.parse` and convert throws to `null`.
+ *
+ * Pulled out of {@link analyzeBashCommand} so the caller can branch on the
+ * sentinel without holding an empty `let entries` at function root.
+ *
+ * @param cmd - raw bash command string forwarded to `shell-quote.parse`
+ *
+ * @returns the parsed entries, or `null` when the parser threw
+ *
+ * @example
+ * ```typescript
+ * const entries = tryParseEntries('echo hi') ?? [];
+ * ```
+ */
+function tryParseEntries(
+  cmd: string,
+): ParseEntry[] | null {
+  try {
+    return parse(cmd,);
+  }
+  catch {
+    return null;
+  }
 }
 
 //endregion
