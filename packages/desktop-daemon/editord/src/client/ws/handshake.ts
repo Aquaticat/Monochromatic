@@ -51,6 +51,7 @@ export function performHandshake({
      */
     function handleFirstMessage(event: MessageEvent,): void {
       try {
+        /** Parsed server message; discriminated below on `data.type`. */
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
         const data = JSON.parse(String(event.data,),) as ServerMessage;
         if (data.type === 'connected') {

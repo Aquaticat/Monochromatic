@@ -20,6 +20,7 @@ import type { ReferenceLocation, } from './types.ts';
  * ```
  */
 export function createReferenceAnchor(): HTMLDivElement {
+  /** Invisible anchor element used as the `anchor-name` target for the popover. */
   const anchor = document.createElement('div',);
   anchor.style.setProperty(
     'position',
@@ -104,6 +105,7 @@ export function renderReferenceItems(
     loc,
     index,
   ) {
+    /** Row element for a single reference; first row is auto-selected via dataset below. */
     const item = h({
       tag: 'div',
       class: 'item',

@@ -40,6 +40,7 @@ export function spawnDetached(
     resolve,
     reject,
   ): void {
+    /** Detached child process; `unref()`d below so the parent can exit independently. */
     const child = spawn(
       command,
       args,

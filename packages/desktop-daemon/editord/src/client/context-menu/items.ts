@@ -91,6 +91,7 @@ export function renderInputItem({
   item: ContextMenuItem;
   onActivate: (action: () => void,) => void;
 },): HTMLElement {
+  /** Text input element captured into a const so the keydown handler can read its value. */
   const input = h({
     tag: 'input',
     class: 'ctx-input',
@@ -102,6 +103,7 @@ export function renderInputItem({
       keydown: function handleInputKeydown(event: KeyboardEvent,): void {
         if (event.key === 'Enter') {
           event.preventDefault();
+          /** Trimmed input contents; Enter on empty value is a no-op. */
           const { value, } = input;
           if (value !== '') {
             onActivate(function fireAction(): void {

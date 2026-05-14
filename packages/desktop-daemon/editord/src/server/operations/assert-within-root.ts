@@ -62,6 +62,7 @@ export function assertWithinRoot(
     path: string;
   },
 ): string {
+  /** Canonicalised path; resolves `..` segments before the containment check. */
   const absolute = resolve(path,);
 
   if (!isWithinRoot({

@@ -31,6 +31,7 @@ const VERTICAL_OFFSET = 4;
  * ```
  */
 export function showFixedToast({ message, }: { message: string; },): void {
+  /** Toast element styled by the `[data-variant="fixed"]` selector. */
   const toast = h({
     tag: 'div',
     class: 'toast',
@@ -70,6 +71,7 @@ export function showCursorToast(
     rect: DOMRect;
   },
 ): void {
+  /** Toast element styled by the `[data-variant="cursor"]` selector. */
   const toast = h({
     tag: 'div',
     class: 'toast',

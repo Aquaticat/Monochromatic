@@ -227,7 +227,9 @@ export class EditorPane extends HTMLElement {
       return;
     /** Capture cursor before setText replaces every line div. */
     const cursorBefore = this.getCursorPosition();
+    /** Pre-edit document text; retained so {@link mapCursorThroughEdits} can translate the cursor. */
     const original = this.getText();
+    /** Post-edit document text; written back via `setText`. */
     const updated = applyEditsToText({
       text: original,
       edits,

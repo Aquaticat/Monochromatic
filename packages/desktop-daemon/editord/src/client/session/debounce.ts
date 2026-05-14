@@ -68,6 +68,7 @@ export function createDebouncedSave({
     },);
   }
 
+  /** Debounced wrapper around `saveNow`; `flush` triggers an immediate save and cancels the pending one. */
   const {
     debounced: debouncedSave,
     flush,

@@ -43,6 +43,7 @@ const EXTENSION_MAP: Record<string, string> = {
  * ```
  */
 export function getLanguageId({ path, }: { path: string; },): string {
+  /** Lowercase extension (including the leading dot) used to look up the LSP language id. */
   const ext = extname(path,).toLowerCase();
   return EXTENSION_MAP[ext] ?? 'plaintext';
 }

@@ -69,6 +69,7 @@ async function withClient<T,>({
   fallback: T;
   request: (client: LspClient,) => Promise<T>;
 },): Promise<T> {
+  /** Pool-resolved LSP client; `null` when no server is available for this file. */
   const c = await pool.resolve({
     type: serverType,
     filePath: path,

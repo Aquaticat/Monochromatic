@@ -152,9 +152,11 @@ export class CompletionPopup extends HTMLElement {
   accept(): string | null {
     if (this.#selectedIndex < 0 || this.#selectedIndex >= this.#items.length)
       return null;
+    /** Currently highlighted completion entry; bounds-checked above. */
     const item = this.#items[this.#selectedIndex];
     if (item === undefined)
       return null;
+    /** Text the caller will splice into the document at the cursor. */
     const { insertText, } = item;
     this.hide();
     this.dispatchEvent(

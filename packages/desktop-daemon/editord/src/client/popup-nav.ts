@@ -56,6 +56,7 @@ function handlePopupNav({
   popup: NavigablePopup;
   keyMap: PopupKeyMap;
 },): boolean {
+  /** Action descriptor for the pressed key; absent means we don't handle this key. */
   const entry = keyMap[event.key];
   if (entry === undefined)
     return false;
@@ -97,6 +98,7 @@ export function handleCompletionNav({
 },): boolean {
   /** Tab accepts the selected completion and inserts its text. */
   function acceptCompletion(): void {
+    /** Selected completion text; `null` when nothing is currently highlighted. */
     const text = completionPopup.accept();
     if (text !== null) {
       // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text preserving the browser undo stack

@@ -55,7 +55,9 @@ export async function dispatchFsAction({
     },);
   }
   else if (action.kind === 'new') {
+    /** Trailing slash in the user-entered name signals a directory creation. */
     const isDirectory = action.name.endsWith('/',);
+    /** Entry name without the trailing slash; the protocol carries the directory bit separately. */
     const name = isDirectory
       ? action.name.slice(
         0,

@@ -60,6 +60,7 @@ export function wireSessionPersistence(
    * @returns snapshot of file path, expanded dirs, cursor, and scroll offset
    */
   function collectState(): SessionState {
+    /** Current cursor position; defaulted to `{0, 0}` below when no file is open. */
     const cursor = editorPane.getCursorPosition();
     return {
       filePath: getCurrentFilePath(),

@@ -172,9 +172,11 @@ export class ReferencesPopup extends HTMLElement {
   accept(): ReferenceSelectDetail | null {
     if (this.#selectedIndex < 0 || this.#selectedIndex >= this.#locations.length)
       return null;
+    /** Currently highlighted reference entry; bounds-checked above. */
     const loc = this.#locations[this.#selectedIndex];
     if (loc === undefined)
       return null;
+    /** Public event detail; line is converted to 1-based to match editor convention. */
     const detail: ReferenceSelectDetail = {
       path: loc.path,
       line: loc.line + 1,

@@ -65,6 +65,7 @@ export function createRecentFiles(): RecentFiles {
    * @param path - absolute file path to record
    */
   function push(path: string,): void {
+    /** Position of `path` in the recent list; `-1` means new, `0` means already at front. */
     const existing = paths.indexOf(path,);
     if (existing === 0)
       return;

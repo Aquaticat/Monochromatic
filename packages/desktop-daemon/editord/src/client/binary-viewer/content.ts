@@ -50,6 +50,7 @@ export function createImageContent({ url, }: { url: string; },): HTMLElement {
  * ```
  */
 export function createAudioContent({ url, }: { url: string; },): HTMLElement {
+  /** Native `<audio controls>` element; its `loop` flag is toggled by `repeatBtn`. */
   const audio = h({
     tag: 'audio',
     attrs: {
@@ -58,6 +59,7 @@ export function createAudioContent({ url, }: { url: string; },): HTMLElement {
     },
   },);
 
+  /** Custom repeat-track button whose click handler flips `audio.loop`. */
   const repeatBtn = h({
     tag: 'button',
     class: 'repeat-btn',
