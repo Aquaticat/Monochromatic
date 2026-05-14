@@ -1,4 +1,4 @@
-# Claude Code `Edit`/`Write` fallback exposes empty-file window to concurrent readers
+# Claude Code v2.1.140 `Edit`/`Write` fallback `PRH` uses `open(O_TRUNC) + writeFileSync`, exposing an empty-file window to concurrent readers
 
 Status: **root cause identified**; remediation proposed; upstream issue not yet filed.
 
@@ -27,7 +27,11 @@ Edit attempt with `<tool_use_error>File has been modified since read, either by 
 or by a linter. Read it again before attempting to write it.</tool_use_error>`,
 indicating that another process was concurrently writing the same file during the session.
 
-## Reproduction
+## Verification
+
+Version under test: Claude Code v2.1.140 (linux x64, build
+2026-05-12T18:28:21Z, sha
+`89b4b3854fac52fdb8f9970133c4afe00174b6b9`).
 
 The window is caused by the non-atomic fallback in Claude Code's write helper,
 which uses Node's `open(O_TRUNC) + writeFileSync` shape.
@@ -317,7 +321,27 @@ the incident:
   Without the `Failed to write file atomically` log line, the writer's identity
   is unknown.
 
-## Draft GitHub issue
+## Why we would file this upstream
+
+All 5 constraints hold:
+
+1. **Is it really upstream's fault?** Yes; the fallback path
+   uses `O_TRUNC` rather than the temp-and-rename pattern
+   used by the primary path.
+2. **Can upstream fix it?** Yes; two concrete patches in the
+   draft below (retry atomic on transient errors; second
+   atomic temp with different suffix).
+3. **Are they supporting this use case?** Yes; cross-process
+   readers (watchers, LSPs, build tools) are the normal
+   environment Claude Code is used in.
+4. **Will they likely fix it?** Plausible; the bug is clear,
+   the trigger is logged, and the fix is local to `PRH`.
+5. **Have we prototyped a minimal fix?** Architectural
+   sketches in the draft; no PR yet.
+
+Decision: worth filing.
+
+## Draft GitHub issue (kept as reference; revise before filing)
 
 To file against `anthropics/claude-code`:
 
