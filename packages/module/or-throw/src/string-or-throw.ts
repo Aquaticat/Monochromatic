@@ -36,7 +36,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * ```
  */
 export function stringOrThrow<T,>(value: T,): ExtractOrUnknown<T, string> {
-  if (typeof value !== 'string')
+  if ((typeof value) !== 'string')
     throw new Error(`Expected string, got ${typeof value} ${String(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after typeof
   return value as ExtractOrUnknown<T, string>;

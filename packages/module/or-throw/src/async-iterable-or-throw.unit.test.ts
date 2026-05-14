@@ -19,7 +19,9 @@ await describe({
     it({
       name: 'returns async-iterable values unchanged',
       fn: async () => {
-        const gen = (async function* yieldOne() { yield 1; })();
+        const gen = (async function* yieldOne() {
+          yield 1;
+        })();
         expect(asyncIterableOrThrow(gen,),).toBe(gen,);
       },
     },),
@@ -46,7 +48,9 @@ await describe({
     it({
       name: 'narrows unknown to AsyncIterable<unknown>',
       fn: async () => {
-        const input: unknown = (async function* yieldOne() { yield 1; })();
+        const input: unknown = (async function* yieldOne() {
+          yield 1;
+        })();
         const output = asyncIterableOrThrow(input,);
         expectTypeOf(output,).toEqualTypeOf<AsyncIterable<unknown>>();
       },

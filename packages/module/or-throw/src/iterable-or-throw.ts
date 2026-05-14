@@ -36,11 +36,11 @@
  * ```
  */
 export function iterableOrThrow<T,>(value: T,): T & Iterable<unknown> {
-  if (typeof value === 'string') {
+  if ((typeof value) === 'string') {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- strings are statically known to implement Iterable<string>
     return value as T & Iterable<unknown>;
   }
-  if (value === null || value === undefined || typeof value !== 'object')
+  if ((value === null) || (value === undefined) || ((typeof value) !== 'object'))
     throw new Error(`Expected iterable, got ${typeof value} ${String(value,)}`,);
   if (!(Symbol.iterator in value))
     throw new Error(`Expected iterable, got object without Symbol.iterator`,);

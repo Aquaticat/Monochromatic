@@ -35,7 +35,7 @@
  * ```
  */
 export function asyncIterableOrThrow<T,>(value: T,): T & AsyncIterable<unknown> {
-  if (value === null || value === undefined || typeof value !== 'object')
+  if ((value === null) || (value === undefined) || ((typeof value) !== 'object'))
     throw new Error(`Expected async iterable, got ${typeof value} ${String(value,)}`,);
   if (!(Symbol.asyncIterator in value))
     throw new Error(`Expected async iterable, got object without Symbol.asyncIterator`,);

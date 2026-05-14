@@ -38,7 +38,7 @@
  * ```
  */
 export function nonNullishOrThrow<T,>(value: T | null | undefined,): T {
-  if (value === null || value === undefined)
+  if ((value === null) || (value === undefined))
     throw new Error(`Expected non-nullish value, got ${String(value,)}`,);
   return value;
 }

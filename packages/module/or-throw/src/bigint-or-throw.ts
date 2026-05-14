@@ -31,7 +31,7 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * ```
  */
 export function bigintOrThrow<T,>(value: T,): ExtractOrUnknown<T, bigint> {
-  if (typeof value !== 'bigint')
+  if ((typeof value) !== 'bigint')
     throw new Error(`Expected bigint, got ${typeof value} ${String(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after typeof
   return value as ExtractOrUnknown<T, bigint>;

@@ -26,7 +26,9 @@ await describe({
         expect(iterableOrThrow(set,),).toBe(set,);
         const map = new Map();
         expect(iterableOrThrow(map,),).toBe(map,);
-        const gen = (function* yieldOne() { yield 1; })();
+        const gen = (function* yieldOne() {
+          yield 1;
+        })();
         expect(iterableOrThrow(gen,),).toBe(gen,);
       },
     },),

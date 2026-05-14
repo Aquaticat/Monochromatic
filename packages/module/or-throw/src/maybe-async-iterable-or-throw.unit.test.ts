@@ -29,7 +29,9 @@ await describe({
     it({
       name: 'returns async-iterable values unchanged',
       fn: async () => {
-        const gen = (async function* yieldOne() { yield 1; })();
+        const gen = (async function* yieldOne() {
+          yield 1;
+        })();
         expect(maybeAsyncIterableOrThrow(gen,),).toBe(gen,);
       },
     },),
