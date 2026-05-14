@@ -26,7 +26,7 @@ await describe({
   name: '',
   children: [
     describe({
-      name: 'dependenciesFor',
+      name: dependenciesFor.name,
       children: [
         it({
           name:

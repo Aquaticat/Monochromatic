@@ -75,7 +75,7 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: 'parseUploadPackBody',
+      name: parseUploadPackBody.name,
       concurrency: 1,
       children: [
         it({
@@ -118,7 +118,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'parseReceivePackBody',
+      name: parseReceivePackBody.name,
       concurrency: 1,
       children: [
         it({
@@ -181,7 +181,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'multiplexSideband',
+      name: multiplexSideband.name,
       concurrency: 1,
       children: [
         it({
@@ -225,7 +225,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'writeUploadPackResponse',
+      name: writeUploadPackResponse.name,
       concurrency: 1,
       children: [
         it({
@@ -263,7 +263,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'writeReceivePackResponse',
+      name: writeReceivePackResponse.name,
       concurrency: 1,
       children: [
         it({

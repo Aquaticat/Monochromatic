@@ -39,7 +39,7 @@ await describe({
   name: '',
   children: [
     describe({
-      name: 'renderFilterList',
+      name: renderFilterList.name,
       children: [
         it({
           name: 'renders an empty-state message when no issues match',

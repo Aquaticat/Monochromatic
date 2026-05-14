@@ -28,7 +28,7 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: 'renderReviewThread',
+      name: renderReviewThread.name,
       concurrency: 1,
       children: [
         it({

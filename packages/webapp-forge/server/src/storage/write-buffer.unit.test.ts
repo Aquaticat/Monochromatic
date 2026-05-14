@@ -20,7 +20,7 @@ await describe({
   name: '',
   children: [
     describe({
-      name: 'createWriteBuffer',
+      name: createWriteBuffer.name,
       children: [
         it({
           name: 'flushes after enqueue when item count reaches flushAtItems',

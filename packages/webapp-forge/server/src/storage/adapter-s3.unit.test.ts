@@ -172,7 +172,7 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: 'encodeS3Key',
+      name: encodeS3Key.name,
       concurrency: 1,
       children: [
         it({
@@ -187,7 +187,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'createS3Storage',
+      name: createS3Storage.name,
       concurrency: 1,
       children: [
         it({

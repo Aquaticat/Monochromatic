@@ -48,7 +48,7 @@ await describe({
   name: '',
   children: [
     describe({
-      name: 'renderIssueDetail',
+      name: renderIssueDetail.name,
       children: [
         it({
           name: 'renders title and number',

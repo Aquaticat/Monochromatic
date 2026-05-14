@@ -18,7 +18,7 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: 'renderComment',
+      name: renderComment.name,
       concurrency: 1,
       children: [
         it({

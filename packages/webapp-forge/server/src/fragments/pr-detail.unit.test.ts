@@ -39,7 +39,7 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: 'renderPrDetail',
+      name: renderPrDetail.name,
       concurrency: 1,
       children: [
         it({

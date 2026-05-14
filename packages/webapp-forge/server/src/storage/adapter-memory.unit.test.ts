@@ -19,7 +19,7 @@ await describe({
   name: '',
   children: [
     describe({
-      name: 'createMemoryStorage',
+      name: createMemoryStorage.name,
       children: [
         it({
           name: 'put then get round-trips a value',

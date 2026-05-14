@@ -96,7 +96,7 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: 'processEvent',
+      name: processEvent.name,
       concurrency: 1,
       children: [
         it({

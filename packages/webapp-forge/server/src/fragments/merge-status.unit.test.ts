@@ -19,7 +19,7 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: 'renderMergeStatus',
+      name: renderMergeStatus.name,
       concurrency: 1,
       children: [
         it({
