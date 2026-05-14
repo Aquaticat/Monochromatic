@@ -327,6 +327,7 @@ overrides:
   '@earendil-works/pi-tui>chalk': '-'
   '@earendil-works/pi-tui>mime-types': '-'
   abort-controller: '-'
+  dprint: '-'
   argparse: '-'
 
 pnpmfileChecksum: sha256-n7nChYW0voHkiBdqzX7ITa+QUO8Vcomq92TlGotns50=

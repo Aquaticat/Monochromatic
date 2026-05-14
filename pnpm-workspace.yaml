@@ -231,6 +231,19 @@ overrides:
   # last commit 2021-01, abandoned), reducing supply-chain surface.
   # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
   'abort-controller': '-'
+  # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
+  # the native binary; each invocation pays the Node startup cost (multiple
+  # seconds in this workspace, vs sub-100ms for the native binary directly).
+  # The workspace runs dprint through mise (pinned in mise.toml), which executes
+  # the native binary without the wrapper. No workspace package depends on the
+  # npm distribution, so stripping it at install time is a no-op for the
+  # current tree; the override exists to keep it that way. If a future change
+  # adds `dprint` to a package.json, pnpm silently drops it and the binary
+  # never reaches node_modules, surfacing as a clear `Cannot find package`
+  # error at the call site. See TROUBLESHOOTING.dprint.md (Bug 1) and
+  # packages/config/dprint/README.md for the policy and VSCode-extension
+  # workaround. Refs #163.
+  'dprint': '-'
   # Remove argparse globally. It is shipped by two transitive importers solely
   # for their CLI entry points: js-yaml (bin/js-yaml.js, pulled in via
   # stylelint > cosmiconfig) and wawoff2 (bin/woff2_{compress,decompress}.js,
