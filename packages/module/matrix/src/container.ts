@@ -42,7 +42,7 @@ export function parseOs(os: string,): ParsedOs {
   /** Split point between protocol prefix and distro; -1 signals missing prefix. */
   const colonIndex = os.indexOf(':',);
 
-  if (colonIndex === -1) {
+  if (colonIndex === (-1)) {
     throw new Error(
       `OS specification "${os}" must have a protocol prefix (e.g. "container:ubuntu")`,
     );

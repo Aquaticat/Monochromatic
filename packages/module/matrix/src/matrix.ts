@@ -97,7 +97,7 @@ function testMatcher<T,>({
   readonly matcher: ExcludeMatcher<T>;
   readonly value: T;
 },): boolean {
-  if (typeof matcher === 'function') {
+  if ((typeof matcher) === 'function') {
     // oxlint-disable-next-line no-unsafe-type-assertion -- typeof guard guarantees matcher is a function; T is always a string literal union, never a function type
     return (matcher as (v: T,) => boolean)(value,);
   }
@@ -122,28 +122,28 @@ function matchesExclude({
   readonly combination: Combination;
   readonly exclude: ExcludeEntry;
 },): boolean {
-  if (exclude.os !== undefined && !testMatcher({
+  if ((exclude.os !== undefined) && (!testMatcher({
     matcher: exclude.os,
     value: combination.os,
-  },)) {
+  },))) {
     return false;
   }
-  if (exclude.user !== undefined && !testMatcher({
+  if ((exclude.user !== undefined) && (!testMatcher({
     matcher: exclude.user,
     value: combination.user,
-  },)) {
+  },))) {
     return false;
   }
-  if (exclude.runtime !== undefined && !testMatcher({
+  if ((exclude.runtime !== undefined) && (!testMatcher({
     matcher: exclude.runtime,
     value: combination.runtime,
-  },)) {
+  },))) {
     return false;
   }
-  if (exclude.file !== undefined && !testMatcher({
+  if ((exclude.file !== undefined) && (!testMatcher({
     matcher: exclude.file,
     value: combination.file,
-  },)) {
+  },))) {
     return false;
   }
   return true;
@@ -204,7 +204,7 @@ function formatLabel(combination: Combination,): string {
 function shortFileName(filePath: string,): string {
   /** Captured to reuse in both the absent-separator guard and the slice offset. */
   const lastSlash = filePath.lastIndexOf('/',);
-  if (lastSlash === -1)
+  if (lastSlash === (-1))
     return filePath;
   return filePath.slice(lastSlash + 1,);
 }
