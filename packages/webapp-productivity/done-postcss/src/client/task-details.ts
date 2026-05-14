@@ -103,41 +103,41 @@ detail.addEventListener(
             dueDate: task.dueDate,
             blockedBy: task.blockedBy,
           };
-          await api(
-            `/api/tasks/${task.id}`,
-            {
+          await api({
+            path: `/api/tasks/${task.id}`,
+            options: {
               method: 'PUT',
               body: JSON.stringify(payload,),
             },
-          );
+          },);
           globalThis.location.reload();
         }
         else if (action === 'start') {
-          await api(
-            `/api/tasks/${task.id}/start`,
-            { method: 'POST', },
-          );
+          await api({
+            path: `/api/tasks/${task.id}/start`,
+            options: { method: 'POST', },
+          },);
           globalThis.location.reload();
         }
         else if (action === 'stop') {
-          await api(
-            `/api/tasks/${task.id}/stop`,
-            { method: 'POST', },
-          );
+          await api({
+            path: `/api/tasks/${task.id}/stop`,
+            options: { method: 'POST', },
+          },);
           globalThis.location.reload();
         }
         else if (action === 'complete') {
-          await api(
-            `/api/tasks/${task.id}/complete`,
-            { method: 'POST', },
-          );
+          await api({
+            path: `/api/tasks/${task.id}/complete`,
+            options: { method: 'POST', },
+          },);
           globalThis.location.href = '/';
         }
         else if (action === 'delete') {
-          await api(
-            `/api/tasks/${task.id}`,
-            { method: 'DELETE', },
-          );
+          await api({
+            path: `/api/tasks/${task.id}`,
+            options: { method: 'DELETE', },
+          },);
           globalThis.location.href = '/';
         }
       }

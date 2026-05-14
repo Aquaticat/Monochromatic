@@ -70,7 +70,7 @@ class TaskCard extends HTMLElement {
     const task = this.#task;
     /** Local snapshot used for the null guard and the renderer call below. */
     const options = this.#options;
-    if (task === null || options === null)
+    if ((task === null) || (options === null))
       return;
     renderTaskCardContent({
       shadow: this.#shadow,
@@ -96,13 +96,18 @@ customElements.define(
  *
  * @example
  * ```ts
- * const card = createTaskCard(task, { onOpen: openTask });
+ * const card = createTaskCard({ task, options: { onOpen: openTask, onToggleComplete: completeTask } });
  * list.append(card);
  * ```
  */
 export function createTaskCard(
-  task: Task,
-  options: TaskCardOptions,
+  {
+    task,
+    options,
+  }: {
+    task: Task;
+    options: TaskCardOptions;
+  },
 ): TaskCard {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element registered as "task-card" */
   /** Configured custom element returned to the caller for DOM insertion. */

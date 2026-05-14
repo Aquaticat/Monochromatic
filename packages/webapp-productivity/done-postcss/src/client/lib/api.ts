@@ -21,12 +21,18 @@ export { showToast, };
  *
  * @example
  * ```ts
- * const task = await api<Task>('/api/tasks/uuid-123');
+ * const task = await api<Task>({ path: '/api/tasks/uuid-123' });
+ * await api({ path: '/api/tasks/uuid-123/complete', options: { method: 'POST' } });
  * ```
  */
 export async function api<TResponse = unknown,>(
-  path: string,
-  options?: RequestInit,
+  {
+    path,
+    options,
+  }: {
+    path: string;
+    options?: RequestInit;
+  },
 ): Promise<TResponse> {
   /** Combined header set; starts with the JSON content type and absorbs any caller-supplied headers. */
   const mergedHeaders = new Headers({ 'Content-Type': 'application/json', },);
@@ -62,12 +68,14 @@ export async function api<TResponse = unknown,>(
       error = { error: 'Request failed', };
     }
     /** Human-readable error surfaced both via toast and the thrown `Error`. */
-    const message =
-      typeof error === 'object' && error !== null && 'error' in error && typeof error
-            .error === 'string'
-        ? error
-          .error
-        : 'Request failed';
+    const message = (
+        ((typeof error) === 'object')
+        && (error !== null)
+        && ('error' in error)
+        && ((typeof error.error) === 'string')
+      )
+      ? error.error
+      : 'Request failed';
     showToast(message,);
     throw new Error(message,);
   }

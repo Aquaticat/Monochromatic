@@ -76,10 +76,20 @@ function resolvePort(): number {
  * @returns Parameter value
  *
  * @throws HTTPError 400 when parameter is missing
+ *
+ * @example
+ * ```ts
+ * const id = requireParam({ event, name: 'id' });
+ * ```
  */
 function requireParam(
-  event: Parameters<typeof getRouterParam>[0],
-  name: string,
+  {
+    event,
+    name,
+  }: {
+    event: Parameters<typeof getRouterParam>[0];
+    name: string;
+  },
 ): string {
   /** Raw parameter value from h3's router; `undefined` when missing. */
   const value = getRouterParam(
@@ -119,10 +129,10 @@ app.get(
   '/tasks/:id',
   defineHandler(function handleTaskDetails(event,) {
     return taskDetailsPage(
-      requireParam(
+      requireParam({
         event,
-        'id',
-      ),
+        name: 'id',
+      },),
     );
   },),
 );
@@ -148,23 +158,23 @@ app.post(
 app.put(
   '/api/tasks/:id',
   defineHandler(function handleUpdateTaskRoute(event,) {
-    return handleUpdateTask(
-      event.req,
-      requireParam(
+    return handleUpdateTask({
+      req: event.req,
+      id: requireParam({
         event,
-        'id',
-      ),
-    );
+        name: 'id',
+      },),
+    },);
   },),
 );
 app.delete(
   '/api/tasks/:id',
   defineHandler(function handleDeleteTaskRoute(event,) {
     return handleDeleteTask(
-      requireParam(
+      requireParam({
         event,
-        'id',
-      ),
+        name: 'id',
+      },),
     );
   },),
 );
@@ -172,10 +182,10 @@ app.post(
   '/api/tasks/:id/start',
   defineHandler(function handleStartTimerRoute(event,) {
     return handleStartTimer(
-      requireParam(
+      requireParam({
         event,
-        'id',
-      ),
+        name: 'id',
+      },),
     );
   },),
 );
@@ -183,10 +193,10 @@ app.post(
   '/api/tasks/:id/stop',
   defineHandler(function handleStopTimerRoute(event,) {
     return handleStopTimer(
-      requireParam(
+      requireParam({
         event,
-        'id',
-      ),
+        name: 'id',
+      },),
     );
   },),
 );
@@ -194,10 +204,10 @@ app.post(
   '/api/tasks/:id/complete',
   defineHandler(function handleCompleteTaskRoute(event,) {
     return handleCompleteTask(
-      requireParam(
+      requireParam({
         event,
-        'id',
-      ),
+        name: 'id',
+      },),
     );
   },),
 );

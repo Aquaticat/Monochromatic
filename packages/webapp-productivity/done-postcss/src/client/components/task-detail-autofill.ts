@@ -118,19 +118,19 @@ export class AutofillController {
         /** Patch accumulating only fields that were empty before the AI suggestion. */
         const update: Record<string, unknown> = {};
 
-        if (result.tags.length > 0 && state.tags.length === 0) {
+        if ((result.tags.length > 0) && (state.tags.length === 0)) {
           update.tags = result.tags;
           this.autofilled.add('tags',);
         }
-        if (result.locations.length > 0 && state.locations.length === 0) {
+        if ((result.locations.length > 0) && (state.locations.length === 0)) {
           update.locations = result.locations;
           this.autofilled.add('locations',);
         }
-        if (result.priority !== null && state.priority === null) {
+        if ((result.priority !== null) && (state.priority === null)) {
           update.priority = result.priority;
           this.autofilled.add('priority',);
         }
-        if (result.complexity !== null && state.complexity === null) {
+        if ((result.complexity !== null) && (state.complexity === null)) {
           update.complexity = result.complexity;
           this.autofilled.add('complexity',);
         }
@@ -139,7 +139,7 @@ export class AutofillController {
       }
     }
     catch (error: unknown) {
-      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+      if (!((error instanceof DOMException) && (error.name === 'AbortError'))) {
         console.error(
           'Autofill request failed:',
           error,

@@ -35,8 +35,12 @@ export function buildSuggestedSection(
   }: {
     suggestedTasks: readonly Task[];
     blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
-    buildTaskList: (tasks: readonly Task[],
-      blocked: Record<string, BlockedTaskLink[] | undefined>,) => HTMLUListElement;
+    buildTaskList: (
+      params: {
+        tasks: readonly Task[];
+        blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
+      },
+    ) => HTMLUListElement;
   },
 ): HTMLElement {
   /** Collapsible section heading for suggested tasks. */
@@ -125,10 +129,10 @@ export function buildSuggestedSection(
           class: 'empty',
           text: 'No tasks yet.',
         },)
-        : buildTaskList(
-          suggestedTasks,
+        : buildTaskList({
+          tasks: suggestedTasks,
           blockedTasksByBlocker,
-        ),
+        },),
     ],
   },);
 

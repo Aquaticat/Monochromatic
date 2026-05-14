@@ -78,10 +78,10 @@ function openTask(taskId: string,): void {
  * ```
  */
 async function completeTask(taskId: string,): Promise<void> {
-  await api(
-    `/api/tasks/${taskId}/complete`,
-    { method: 'POST', },
-  );
+  await api({
+    path: `/api/tasks/${taskId}/complete`,
+    options: { method: 'POST', },
+  },);
   globalThis.location.reload();
 }
 
@@ -93,10 +93,21 @@ async function completeTask(taskId: string,): Promise<void> {
  * @param blockedTasksByBlocker - Map of blocker ID to blocked task links
  *
  * @returns Unordered list element containing task cards
+ *
+ * @example
+ * ```ts
+ * const list = buildTaskList({ tasks: pageData.allTasks, blockedTasksByBlocker: pageData.blockedTasksByBlocker });
+ * app.append(list);
+ * ```
  */
 function buildTaskList(
-  tasks: readonly Task[],
-  blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>,
+  {
+    tasks,
+    blockedTasksByBlocker,
+  }: {
+    tasks: readonly Task[];
+    blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
+  },
 ): HTMLUListElement {
   /** Top-level list element; child tasks are appended as nested sub-lists. */
   const list = h({
@@ -105,13 +116,13 @@ function buildTaskList(
   },);
   for (const task of tasks) {
     list.append(
-      createTaskCard(
+      createTaskCard({
         task,
-        {
+        options: {
           onOpen: openTask,
           onToggleComplete: completeTask,
         },
-      ),
+      },),
     );
     /** Blocked-by children for the current task, defaulted to empty when none exist. */
     const childLinks = blockedTasksByBlocker[task.id] ?? [];
@@ -123,14 +134,14 @@ function buildTaskList(
           tag: 'ul',
           class: 'task-list',
           children: childLinks.map(function createBlockedCard(childLink,) {
-            return createTaskCard(
-              childLink.task,
-              {
+            return createTaskCard({
+              task: childLink.task,
+              options: {
                 showBlockedBadge: true,
                 onOpen: openTask,
                 onToggleComplete: completeTask,
               },
-            );
+            },);
           },),
         },),],
       },),);
@@ -172,10 +183,10 @@ allSection.append(h({
         class: 'empty',
         text: 'No tasks yet.',
       },)
-      : buildTaskList(
-        pageData.allTasks,
-        pageData.blockedTasksByBlocker,
-      ),
+      : buildTaskList({
+        tasks: pageData.allTasks,
+        blockedTasksByBlocker: pageData.blockedTasksByBlocker,
+      },),
   ],
 },),);
 app.append(allSection,);

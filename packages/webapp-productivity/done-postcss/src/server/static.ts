@@ -35,24 +35,27 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
           );
         },
         getMeta: async function getMetadata(id,) {
-          /** Mutable holder; assignment moves from the initial `undefined` once the `stat()` call resolves. */
-          let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
-          try {
-            stats = await stat(
-              join(
-                '.',
-                id,
-              ),
-            );
-          }
-          catch {
-            // File not found or inaccessible
-          }
-          if (stats === undefined || !stats.isFile())
+          /** Stat result captured via a try/catch helper; `undefined` when the file is missing or inaccessible. */
+          const stats = await (async function tryStat(): Promise<Awaited<ReturnType<typeof stat>> | undefined> {
+            try {
+              /** Direct `stat()` result returned to the outer `stats` binding. */
+              const result = await stat(
+                join(
+                  '.',
+                  id,
+                ),
+              );
+              return result;
+            }
+            catch {
+              return undefined;
+            }
+          })();
+          if ((stats === undefined) || (!stats.isFile()))
             return;
           return {
-            size: stats.size,
-            mtime: stats.mtimeMs,
+            size: Number(stats.size,),
+            mtime: Number(stats.mtimeMs,),
           };
         },
       },

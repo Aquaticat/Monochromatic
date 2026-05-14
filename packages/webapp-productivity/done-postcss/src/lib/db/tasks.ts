@@ -101,12 +101,17 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
  *
  * @example
  * ```ts
- * const task = await updateTask('uuid-123', { title: 'Updated title' });
+ * const task = await updateTask({ id: 'uuid-123', input: { title: 'Updated title' } });
  * ```
  */
 export async function updateTask(
-  id: string,
-  input: TaskUpdateInput,
+  {
+    id,
+    input,
+  }: {
+    id: string;
+    input: TaskUpdateInput;
+  },
 ): Promise<Task | null> {
   /** Existing task used as the merge base for the partial update. */
   const currentTask = await getTaskById(id,);

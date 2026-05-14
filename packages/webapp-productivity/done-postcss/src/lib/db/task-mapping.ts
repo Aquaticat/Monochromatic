@@ -41,7 +41,7 @@ export function parseStringArray(value: string,): string[] {
       return [];
 
     return parsed.filter(function isString(entry,): entry is string {
-      return typeof entry === 'string';
+      return (typeof entry) === 'string';
     },);
   }
   catch {

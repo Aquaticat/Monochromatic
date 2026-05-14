@@ -33,12 +33,12 @@ export async function handleStartTimer(id: string,): Promise<Response> {
   /** Updated task with the freshly set `timerStartedAt`; `null` triggers a 404 response. */
   const task = await startTaskTimer(id,);
   if (task === null) {
-    return jsonResponse(
-      { error: 'Task not found', },
-      HTTP_NOT_FOUND,
-    );
+    return jsonResponse({
+      payload: { error: 'Task not found', },
+      status: HTTP_NOT_FOUND,
+    },);
   }
-  return jsonResponse(task,);
+  return jsonResponse({ payload: task, },);
 }
 
 /**
@@ -57,12 +57,12 @@ export async function handleStopTimer(id: string,): Promise<Response> {
   /** Updated task with accumulated tracked time; `null` triggers a 404 response. */
   const task = await stopTaskTimer(id,);
   if (task === null) {
-    return jsonResponse(
-      { error: 'Task not found', },
-      HTTP_NOT_FOUND,
-    );
+    return jsonResponse({
+      payload: { error: 'Task not found', },
+      status: HTTP_NOT_FOUND,
+    },);
   }
-  return jsonResponse(task,);
+  return jsonResponse({ payload: task, },);
 }
 
 /**
@@ -81,19 +81,19 @@ export async function handleCompleteTask(id: string,): Promise<Response> {
   /** Completion outcome carrying both the success flag and any blockers refusing completion. */
   const result = await completeTask(id,);
   if (result.notFound) {
-    return jsonResponse(
-      { error: 'Task not found', },
-      HTTP_NOT_FOUND,
-    );
+    return jsonResponse({
+      payload: { error: 'Task not found', },
+      status: HTTP_NOT_FOUND,
+    },);
   }
   if (!result.completed) {
-    return jsonResponse(
-      {
+    return jsonResponse({
+      payload: {
         error: 'Task is blocked',
         blockedBy: result.blockedBy,
       },
-      HTTP_CONFLICT,
-    );
+      status: HTTP_CONFLICT,
+    },);
   }
-  return jsonResponse({ ok: true, },);
+  return jsonResponse({ payload: { ok: true, }, },);
 }

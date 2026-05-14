@@ -79,14 +79,16 @@ export function createNewTaskDialog(): NewTaskDialog {
   );
   panel.append(detail,);
 
-  /** Reference to the FAB so open/close can toggle its visibility. */
-  let fabElement: HTMLElement | null = null;
+  /** FAB element returned to the caller and toggled hidden when the panel is open. */
+  const fab = h({
+    tag: 'fab-button',
+    attrs: { label: 'Add task', },
+  },);
 
   /** Hides the panel popover and restores the FAB. */
   function closePanel(): void {
     panel.hidePopover();
-    if (fabElement !== null)
-      fabElement.hidden = false;
+    fab.hidden = false;
   }
 
   detail.addEventListener(
@@ -122,9 +124,9 @@ export function createNewTaskDialog(): NewTaskDialog {
 
             /** Current metadata snapshot from the detail component, included in the POST body. */
             const metadata = detail.getMetadata();
-            await api(
-              '/api/tasks',
-              {
+            await api({
+              path: '/api/tasks',
+              options: {
                 method: 'POST',
                 body: JSON.stringify({
                   title: trimmedTitle,
@@ -135,7 +137,7 @@ export function createNewTaskDialog(): NewTaskDialog {
                   complexity: metadata.complexity,
                 },),
               },
-            );
+            },);
             globalThis.location.reload();
           }
         }
@@ -160,8 +162,7 @@ export function createNewTaskDialog(): NewTaskDialog {
       blockerSummaries: [],
       mode: 'create',
     },);
-    if (fabElement !== null)
-      fabElement.hidden = true;
+    fab.hidden = true;
 
     // Restart the expand animation by toggling the data attribute
     delete panel.dataset['animating'];
@@ -178,14 +179,10 @@ export function createNewTaskDialog(): NewTaskDialog {
     },);
   }
 
-  /** FAB element returned to the caller and toggled hidden when the panel is open. */
-  const fab = h({
-    tag: 'fab-button',
-    attrs: { label: 'Add task', },
-    on: { click: openPanel, },
-  },);
-  // let bindings justified: fabElement is set once after creation, read in open/close callbacks
-  fabElement = fab;
+  fab.addEventListener(
+    'click',
+    openPanel,
+  );
 
   return {
     panel,

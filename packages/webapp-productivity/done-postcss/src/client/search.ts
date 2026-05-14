@@ -106,20 +106,20 @@ else {
 
   for (const result of pageData.results) {
     resultList.append(
-      createTaskCard(
-        result,
-        {
+      createTaskCard({
+        task: result,
+        options: {
           showBlockedBadge: result.isBlocked,
           onOpen: openTask,
           onToggleComplete: async function completeTask(taskId,): Promise<void> {
-            await api(
-              `/api/tasks/${taskId}/complete`,
-              { method: 'POST', },
-            );
+            await api({
+              path: `/api/tasks/${taskId}/complete`,
+              options: { method: 'POST', },
+            },);
             globalThis.location.reload();
           },
         },
-      ),
+      },),
     );
   }
 

@@ -33,7 +33,7 @@ const statuses = new Set<string>(TASK_STATUSES,);
 function parseStatus(value: unknown,): TaskStatus | undefined {
   if (value === undefined)
     return undefined;
-  if (typeof value !== 'string')
+  if ((typeof value) !== 'string')
     return undefined;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
   return statuses.has(value as TaskStatus,) ? (value as TaskStatus) : undefined;
@@ -59,12 +59,12 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   const result: TaskUpdateInput = {};
 
   if ('title' in value) {
-    if (typeof value.title !== 'string')
+    if ((typeof value.title) !== 'string')
       return null;
     result.title = value.title;
   }
   if ('description' in value) {
-    if (typeof value.description !== 'string' && value.description !== null)
+    if (((typeof value.description) !== 'string') && (value.description !== null))
       return null;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated above
     result.description = value.description;
@@ -99,26 +99,26 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
   if ('priority' in value) {
     /** Parsed priority enum; `undefined` signals an unrecognised value and aborts the parse. */
-    const v = parseEnumValue<TaskPriority>(
-      value.priority,
-      priorities,
-    );
+    const v = parseEnumValue<TaskPriority>({
+      value: value.priority,
+      validValues: priorities,
+    },);
     if (v === undefined)
       return null;
     result.priority = v;
   }
   if ('complexity' in value) {
     /** Parsed complexity enum; `undefined` signals an unrecognised value and aborts the parse. */
-    const v = parseEnumValue<TaskPriority>(
-      value.complexity,
-      priorities,
-    );
+    const v = parseEnumValue<TaskPriority>({
+      value: value.complexity,
+      validValues: priorities,
+    },);
     if (v === undefined)
       return null;
     result.complexity = v;
   }
   if ('dueDate' in value) {
-    if (typeof value.dueDate !== 'string' && value.dueDate !== null)
+    if (((typeof value.dueDate) !== 'string') && (value.dueDate !== null))
       return null;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated above
     result.dueDate = value.dueDate;

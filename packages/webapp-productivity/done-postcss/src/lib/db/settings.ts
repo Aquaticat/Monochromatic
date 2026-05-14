@@ -43,12 +43,17 @@ export async function getSetting(key: string,): Promise<string | null> {
  *
  * @example
  * ```ts
- * await setSetting('ai_api_key', 'sk-...');
+ * await setSetting({ key: 'ai_api_key', value: 'sk-...' });
  * ```
  */
 export async function setSetting(
-  key: string,
-  value: string,
+  {
+    key,
+    value,
+  }: {
+    key: string;
+    value: string;
+  },
 ): Promise<void> {
   await db
     .prepare(

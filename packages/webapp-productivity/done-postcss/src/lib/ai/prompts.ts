@@ -26,13 +26,19 @@ import type { ChatMessage, } from './client.ts';
  *
  * @example
  * ```ts
- * const messages = buildAutofillMessages('Buy groceries', existingTags, existingLocations);
+ * const messages = buildAutofillMessages({ title: 'Buy groceries', existingTags: ['shopping'], existingLocations: ['Walmart'] });
  * ```
  */
 export function buildAutofillMessages(
-  title: string,
-  existingTags: readonly string[],
-  existingLocations: readonly string[],
+  {
+    title,
+    existingTags,
+    existingLocations,
+  }: {
+    title: string;
+    existingTags: readonly string[];
+    existingLocations: readonly string[];
+  },
 ): ChatMessage[] {
   /** Instruction prompt with schema constraints; existing tags/locations are interpolated below. */
   const systemPrompt =
@@ -89,21 +95,27 @@ For consistency, prefer these existing locations when applicable: ${
  *
  * @example
  * ```ts
- * const messages = buildSuggestionMessages(tasks, 'Home', 'Quick wins only');
+ * const messages = buildSuggestionMessages({ tasks, currentLocation: 'Home', focusDirective: 'Quick wins only' });
  * ```
  */
 export function buildSuggestionMessages(
-  tasks: readonly {
-    id: string;
-    title: string;
-    tags: string[];
-    locations: string[];
-    priority: string | null;
-    dueDate: string | null;
-    complexity: string | null;
-  }[],
-  currentLocation: string | null,
-  focusDirective: string | null,
+  {
+    tasks,
+    currentLocation,
+    focusDirective,
+  }: {
+    tasks: readonly {
+      id: string;
+      title: string;
+      tags: string[];
+      locations: string[];
+      priority: string | null;
+      dueDate: string | null;
+      complexity: string | null;
+    }[];
+    currentLocation: string | null;
+    focusDirective: string | null;
+  },
 ): ChatMessage[] {
   /** ISO timestamp embedded into the user prompt so the model knows the request's wall-clock context. */
   const currentTime = new Date().toISOString();

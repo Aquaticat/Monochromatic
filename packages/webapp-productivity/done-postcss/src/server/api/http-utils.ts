@@ -24,12 +24,17 @@ export {
  *
  * @example
  * ```ts
- * return jsonResponse({ ok: true }, 200);
+ * return jsonResponse({ payload: { ok: true }, status: 200 });
  * ```
  */
 export function jsonResponse(
-  payload: unknown,
-  status: number = HTTP_OK,
+  {
+    payload,
+    status = HTTP_OK,
+  }: {
+    payload: unknown;
+    status?: number;
+  },
 ): Response {
   return Response.json(
     payload,

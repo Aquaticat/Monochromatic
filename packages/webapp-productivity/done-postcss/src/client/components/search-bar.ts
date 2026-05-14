@@ -115,11 +115,13 @@ class SearchBar extends HTMLElement {
     },);
 
     // Debounced search dispatch
+    /* oxlint-disable no-restricted-syntax/no-function-root-let -- debounce timer handle mutated on each keystroke; closed over by the input listener */
     /** Mutable timer handle replaced on each keystroke to debounce dispatch. */
     let timeout: ReturnType<typeof setTimeout> = setTimeout(
       function noop() {/* initial */},
       0,
     );
+    /* oxlint-enable no-restricted-syntax/no-function-root-let */
     input.addEventListener(
       'input',
       function onInput(this: SearchBar,): void {
