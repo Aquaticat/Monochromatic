@@ -1,17 +1,13 @@
 import base from '@monochromatic-dev/config-tsdown/.client.ts';
 import {
-  importAttributesPlugin,
-} from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
-import {
   defineConfig,
   type UserConfig,
 } from 'tsdown';
 
 /**
- * Client-side browser bundle config for the Done productivity app.
+ * Client-side browser bundle config for the Done h-css test variant.
  * Bundles five page entry points into `dist/client/*.js`.
- * Uses the import-attributes plugin so client code can import
- * pre-built CSS via `with { type: 'text' }`.
+ * No import-attributes plugin needed: h-css generates styles at runtime.
  */
 const config: UserConfig = defineConfig({
   ...base,
@@ -22,6 +18,5 @@ const config: UserConfig = defineConfig({
     './src/client/search.ts',
     './src/client/settings.ts',
   ],
-  plugins: [importAttributesPlugin(),],
 },);
 export default config;

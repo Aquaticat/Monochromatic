@@ -2,39 +2,50 @@
  * REST API handlers for task CRUD operations.
  *
  * Mounted by server.ts as route handlers:
- *   POST   /api/tasks       -\> handleCreateTask
- *   PUT    /api/tasks/:id   -\> handleUpdateTask
- *   DELETE /api/tasks/:id   -\> handleDeleteTask
- *
- * Client code calls these via the `api()` helper (see client/lib/api.ts),
- * typically followed by `globalThis.location.reload()` to re-render with fresh data.
+ *   POST   /api/tasks       -> handleCreateTask
+ *   PUT    /api/tasks/:id   -> handleUpdateTask
+ *   DELETE /api/tasks/:id   -> handleDeleteTask
  */
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_CREATED,
+  HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_NOT_FOUND,
+  HTTP_OK,
+} from '@monochromatic-dev/module-numeric-const';
+
 import {
   createTask,
   deleteTask,
   updateTask,
 } from '../../lib/db/tasks.ts';
 import type { TaskPriority, } from '../../lib/types.ts';
+import { parseTaskUpdateInput, } from './tasks-parse-update.ts';
 import {
-  HTTP_BAD_REQUEST,
-  HTTP_CREATED,
-  HTTP_INTERNAL_SERVER_ERROR,
-  HTTP_NOT_FOUND,
-  jsonResponse,
-} from './http-utils.ts';
-import { parseTaskUpdateInput, } from './task-validation-update.ts';
-import {
+  getPriorities,
   isRecord,
   parseEnumValue,
   parseStringArray,
-} from './task-validation.ts';
+} from './tasks-parse.ts';
 
-/** Recognized priority/complexity values for create handler. */
-const priorities = new Set<string>([
-  'low',
-  'medium',
-  'high',
-],);
+/**
+ * Wraps a payload in a JSON `Response` with the correct content type.
+ *
+ * @param payload - Serializable value
+ *
+ * @param status - HTTP status code (defaults to 200)
+ *
+ * @returns JSON response with content-type header
+ */
+function jsonResponse(
+  payload: unknown,
+  status: number = HTTP_OK,
+): Response {
+  return Response.json(
+    payload,
+    { status, },
+  );
+}
 
 /**
  * POST /api/tasks -- creates a new task from the request body.
@@ -45,7 +56,7 @@ const priorities = new Set<string>([
  *
  * @example
  * ```ts
- * const response = await handleCreateTask(event.req);
+ * const response = await handleCreateTask(request);
  * ```
  */
 export async function handleCreateTask(req: Request,): Promise<Response> {
@@ -66,6 +77,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       );
     }
 
+    const priorities = getPriorities();
     const task = await createTask({
       title,
       description: typeof body.description === 'string' ? body.description : null,
@@ -104,7 +116,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
  *
  * @example
  * ```ts
- * const response = await handleUpdateTask(event.req, 'uuid-123');
+ * const response = await handleUpdateTask(request, 'abc-123');
  * ```
  */
 export async function handleUpdateTask(
@@ -131,6 +143,7 @@ export async function handleUpdateTask(
         HTTP_NOT_FOUND,
       );
     }
+
     return jsonResponse(task,);
   }
   catch (error) {
@@ -150,7 +163,7 @@ export async function handleUpdateTask(
  *
  * @example
  * ```ts
- * const response = await handleDeleteTask('uuid-123');
+ * const response = await handleDeleteTask('abc-123');
  * ```
  */
 export async function handleDeleteTask(id: string,): Promise<Response> {
@@ -161,5 +174,6 @@ export async function handleDeleteTask(id: string,): Promise<Response> {
       HTTP_NOT_FOUND,
     );
   }
+
   return jsonResponse({ ok: true, },);
 }

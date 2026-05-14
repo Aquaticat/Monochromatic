@@ -1,18 +1,16 @@
 /**
  * Client entry script for the Search page.
  *
- * Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
- * The search page's HTML shell (rendered inline by the server, not via renderPage)
- * places a `\<search-bar\>` above `\<main id="app"\>` instead of a `\<top-nav\>`.
+ * Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import styles from '../../dist/css/styles.css' with { type: 'text', };
 import type { SearchTask, } from '../lib/types.ts';
 import { api, } from './lib/api.ts';
 import { injectCSS, } from './lib/inject-css.ts';
 import { readPageData, } from './lib/page-data.ts';
 import { createTaskCard, } from './lib/task-card.ts';
 import { searchStyles, } from './search-styles.ts';
+import { globalStyles, } from './styles.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
@@ -20,47 +18,47 @@ import './components/search-bar.ts';
 
 /** Shape of the JSON blob embedded in the search page by the server. */
 type SearchPageData = {
-  /** Current search query string. */
+  /** User's search query string. */
   query: string;
-  /** Matching tasks from search. */
+  /** Task results matching the query. */
   results: SearchTask[];
-  /** All unique tags for category browsing. */
+  /** All known tags for the tag chip display. */
   availableTags: string[];
 };
 
 /**
  * Navigates to the task detail page.
  *
- * @param taskId - UUID of the task to open
+ * @param taskId - ID of task to open
  */
-function openTask(taskId: string,): void {
+function handleOpen(taskId: string,): void {
   globalThis.location.href = `/tasks/${taskId}`;
 }
 
-injectCSS(styles,);
+injectCSS(globalStyles,);
 injectCSS(searchStyles,);
 
-/** Deserialized page data from the server-rendered JSON blob. */
+/** Deserialized page data containing search query, results, and available tags. */
 const pageData = readPageData<SearchPageData>();
 
-/** Root app container element. */
+/** Raw DOM element for the `#app` container. */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Typed reference to the app container. */
+/** Validated `#app` container element. */
 const app = appElement;
 
 // Listen for search events from the search-bar component
 document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
   'search',
-  function onSearch(event,) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string
-    const { query, } = (event as CustomEvent<{ query: string; }>).detail;
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent handler must be cast to EventListener for addEventListener
+  (function handleSearch(event: CustomEvent<{ query: string; }>,) {
+    const { query, } = event.detail;
     globalThis.location.href = query.length === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
-  } as EventListener,
+  }) as EventListener,
 );
 
 if (pageData.query.length === 0) {
@@ -78,13 +76,13 @@ if (pageData.query.length === 0) {
       h({
         tag: 'div',
         class: 'tag-chips',
-        children: availableTags.map(function createTagChip(tag,) {
+        children: availableTags.map(function buildTagChip(tag,) {
           return h({
             tag: 'button',
             class: 'tag-chip',
             text: `# ${tag}`,
             on: {
-              click: function onTagClick(): void {
+              click: function handleTagClick() {
                 globalThis.location.href = `/search?q=${encodeURIComponent(`#${tag}`,)}`;
               },
             },
@@ -95,7 +93,6 @@ if (pageData.query.length === 0) {
   }
 }
 else {
-  /** List element for search results. */
   const resultList = h({
     tag: 'ul',
     class: 'task-list',
@@ -107,8 +104,8 @@ else {
         result,
         {
           showBlockedBadge: result.isBlocked,
-          onOpen: openTask,
-          onToggleComplete: async function completeTask(taskId,): Promise<void> {
+          onOpen: handleOpen,
+          onToggleComplete: async function handleComplete(taskId,) {
             await api(
               `/api/tasks/${taskId}/complete`,
               { method: 'POST', },

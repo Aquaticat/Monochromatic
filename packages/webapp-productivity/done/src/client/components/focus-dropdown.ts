@@ -1,12 +1,12 @@
 /**
- * `\<focus-dropdown\>` -- popover-based dropdown for selecting a focus preset.
+ * `<focus-dropdown>` -- popover-based dropdown for selecting a focus preset.
  * Reads initial value from the `value` attribute and dispatches `change`
- * events with `\{ value \}` when a preset is selected.
+ * events with `{ value }` when a preset is selected.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { FOCUS_DROPDOWN_STYLES, } from './focus-dropdown-styles.ts';
 
-/** Default focus preset options. */
+/** Available focus preset labels. */
 const DEFAULT_PRESETS = [
   'Adulting tasks first',
   'Quick wins only',
@@ -14,7 +14,9 @@ const DEFAULT_PRESETS = [
 ];
 
 /**
- * `\<focus-dropdown\>` web component for selecting a focus preset.
+ * `<focus-dropdown>` web component.
+ *
+ * Popover-based dropdown that lets users select a focus preset.
  */
 class FocusDropdown extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
@@ -30,53 +32,69 @@ class FocusDropdown extends HTMLElement {
     this.#value = '';
   }
 
-  /** Reads initial value from attribute and renders the dropdown. */
+  /** Reads the `value` attribute and renders the dropdown. */
   connectedCallback(): void {
     this.#value = this.getAttribute('value',) ?? 'Select focus...';
     this.#render();
   }
 
-  /** Renders the trigger button and popover menu with preset options. */
+  /**
+   * Selects a preset, updates the display, and dispatches a change event.
+   *
+   * @param preset - Preset label
+   *
+   * @param textSpan - Text element to update
+   *
+   * @param menu - Popover menu to hide
+   */
+  #selectPreset(
+    preset: string,
+    textSpan: HTMLElement,
+    menu: HTMLElement,
+  ): void {
+    this.#value = preset;
+    textSpan.textContent = preset;
+    menu.hidePopover();
+    this.dispatchEvent(
+      new CustomEvent(
+        'change',
+        {
+          bubbles: true,
+          detail: { value: preset, },
+        },
+      ),
+    );
+  }
+
+  /** Renders the trigger button, divider, and popover menu into the shadow root. */
   #render(): void {
     const textSpan = h({
       tag: 'span',
       class: 'text',
       text: this.#value,
     },);
+    const selectFn = this.#selectPreset.bind(this,);
+
     const menu = h({
       tag: 'ul',
       class: 'menu',
       attrs: { popover: 'auto', },
-      children: DEFAULT_PRESETS.map(
-        function buildOption(
-          this: FocusDropdown,
-          preset: string,
-        ): HTMLElement {
-          return h({
-            tag: 'li',
-            class: 'option',
-            text: preset,
-            on: {
-              click: function selectPreset(this: FocusDropdown,): void {
-                this.#value = preset;
-                textSpan.textContent = preset;
-                menu.hidePopover();
-                this.dispatchEvent(
-                  new CustomEvent(
-                    'change',
-                    {
-                      bubbles: true,
-                      detail: { value: preset, },
-                    },
-                  ),
-                );
-              }
-                .bind(this,),
+      children: DEFAULT_PRESETS.map(function buildOption(preset,): HTMLElement {
+        return h({
+          tag: 'li',
+          class: 'option',
+          text: preset,
+          on: {
+            click: function handleOptionClick(): void {
+              selectFn(
+                preset,
+                textSpan,
+                menu,
+              );
             },
-          },);
-        }
-          .bind(this,),
-      ),
+          },
+        },);
+      },),
     },);
 
     this.#shadow.replaceChildren(
@@ -98,7 +116,7 @@ class FocusDropdown extends HTMLElement {
             text: '\u25BC',
           },),
         ],
-        on: { click: function onTriggerClick(): void {
+        on: { click: function handleTriggerClick(): void {
           menu.togglePopover();
         }, },
       },),

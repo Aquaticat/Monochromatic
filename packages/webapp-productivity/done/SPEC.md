@@ -11,7 +11,7 @@ Each user runs their own instance, provisioned automatically on registration.
 
 ### Authentication and instance lifecycle
 
-The orchestrator handles everything: auth, reverse proxy, and process management; no Caddy or AuthCrunch needed.
+The orchestrator handles everything: auth, reverse proxy, and process management. No Caddy or AuthCrunch needed.
 Coolify's own reverse proxy terminates HTTPS upstream, so the orchestrator only listens on HTTP internally.
 Path-based routing (`done.app/u/<user-id>/`) instead of subdomains: avoids DNS API calls on registration, offensive subdomain risk, wildcard cert complexity, and registrar rate limits.
 
@@ -24,7 +24,7 @@ Path-based routing (`done.app/u/<user-id>/`) instead of subdomains: avoids DNS A
 7. The orchestrator **suspends idle instances** (kill + respawn on next request) and **wakes them on URL access** (cold-start pattern)
 
 The Done app never sees unauthenticated requests.
-User IDs are opaque (ULIDs), not user-chosen names; no abuse vector for offensive URLs.
+User IDs are opaque (ULIDs), not user-chosen names: no abuse vector for offensive URLs.
 
 Auth security considerations:
 
@@ -41,7 +41,7 @@ It does not just organize tasks; it actively surfaces the right task at the righ
 ## Tech stack
 
 - **Runtime**: Bun (server + bundler)
-- **Framework**: h3 server with vanilla TypeScript client bundles. The server owns page routes and REST API routes under `/api/...`; client pages read server-embedded JSON and build DOM imperatively.
+- **Framework**: h3 server with vanilla TypeScript client bundles and h-css runtime-generated styles. The server owns page routes and REST API routes under `/api/...`; client pages read server-embedded JSON and build DOM imperatively.
 - **Database**: libsql (SQLite-compatible, single file, local)
 - **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk). Primary model: Qwen3-1.7B (Q4_K_M, ~1.2GB RAM, CPU-only, non-thinking mode for fast autofill). Fallback: LFM2.5-1.2B-Instruct (under 1GB, 239 tok/s on CPU).
 - **Auth + reverse proxy**: Orchestrator (Bun) -- handles registration, login, session cookies, path ACL enforcement, and HTTP reverse proxy to user processes. No Caddy or AuthCrunch; Coolify's reverse proxy terminates HTTPS upstream.
@@ -66,7 +66,7 @@ Full task list, unfiltered.
 ### In progress
 
 Live dashboard of tasks the user has started tracking.
-All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided `timerStartedAt` timestamp; no polling or SSE needed for display.
+All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided `timerStartedAt` timestamp: no polling or SSE needed for display.
 Tasks blocked by other tasks are **not shown in Suggestions or All**; they appear only nested/indented under the tasks blocking them (in any view where the blocker is visible). This makes circular dependencies harmless by design: cycled tasks simply vanish from top-level lists. Search always returns blocked tasks (with a "blocked" badge) so nothing is truly lost.
 
 ### Task details (overlay)
@@ -121,7 +121,7 @@ This is the primary notification mechanism: more reliable than browser push sinc
 Once daily, the server exports the user's task data as JSON and emails it to them.
 Attachment BLOBs (photos, files) are **excluded** from the backup email to stay within SMTP size limits.
 The raw `.db` file is also excluded for the same reason: only the JSON export (tasks, settings, attachment metadata) is sent.
-This is a caution-first data safety measure; if the instance dies, the user has a recent export.
+This is a caution-first data safety measure: if the instance dies, the user has a recent export.
 
 ## Task model
 
@@ -204,7 +204,7 @@ External metadata is preserved in `sourceMeta` for round-trip fidelity.
 ### Codebase TODO sync (read-only inbound for MVP)
 
 Scan TODO/FIXME/HACK comments from configured repos and import them as tasks.
-Outbound writes (modifying source files) are deferred post-competition; too risky to auto-edit a user's codebase in week 1.
+Outbound writes (modifying source files) are deferred post-competition: too risky to auto-edit a user's codebase in week 1.
 
 - **Inbound**: Parse `TODO`, `FIXME`, `HACK` comments from configured repos/directories. Create tasks with file path, line number, and surrounding context in description. `source: "codebase"`, `sourceId` encodes `repo:file:line`.
 - **Re-scan**: Periodic or webhook-triggered re-scan detects new TODOs, resolved TODOs (comment removed externally -> task marked done), and moved TODOs (file/line changed -> `sourceId` updated).
@@ -239,7 +239,7 @@ The server is the authority for start/stop events; the client handles smooth dis
 
 Each user's instance is a single Bun process running an h3 server.
 The server handles HTML page routes and REST API routes under `/api/...`.
-Client pages use vanilla TypeScript bundles, read server-embedded JSON, and perform mutations through API handlers.
+Client pages use vanilla TypeScript bundles and h-css runtime-generated styles, read server-embedded JSON, and perform mutations through API handlers.
 The orchestrator reverse-proxies `done.app/u/<user-id>/*` to the user's h3 port, stripping the `/u/<user-id>` prefix before the request reaches the app.
 
 ### AI rate limiting
@@ -249,7 +249,7 @@ Each Bun process enforces a simple in-memory rate limit on AI proxy calls (e.g.,
 ### Docker Compose deployment (Coolify)
 
 The entire stack ships as a `docker-compose.yml` deployable on Coolify.
-Coolify's own reverse proxy handles HTTPS termination; the orchestrator only listens on HTTP.
+Coolify's own reverse proxy handles HTTPS termination: the orchestrator only listens on HTTP.
 Two services:
 
 1. **orchestrator**: Bun image with the h3 Done app and orchestrator code. Listens on port 3000 (HTTP). Handles registration, login, session validation, path ACL enforcement, and HTTP reverse proxy to user processes. Spawns per-user Bun processes as child processes within the same container.
@@ -270,4 +270,4 @@ Environment variables (configured in Coolify):
 ### FTS5 rowid note
 
 libsql uses TEXT primary keys (ULIDs), so `rowid` is SQLite's implicit auto-assigned integer, not the ULID.
-FTS5 search queries JOIN on `tasks.rowid`, not `tasks.id`. This is correct but easy to confuse; be careful in implementation.
+FTS5 search queries JOIN on `tasks.rowid`, not `tasks.id`. This is correct but easy to confuse: be careful in implementation.

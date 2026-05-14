@@ -1,59 +1,37 @@
 /**
- * Pill data construction and rendering for `\<task-detail\>`.
- *
- * Extracted from task-detail.ts to keep each file under the line-count limit.
+ * Pill element builder for the `<task-detail>` web component.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
-import { formatRunningTrackedTime, } from '../lib/format-tracked-time.ts';
-
-/** Single pill descriptor with a field identifier and display text. */
-export type PillDatum = {
-  /** Metadata field this pill represents. */
-  field: string;
-  /** Display text shown inside the pill. */
-  text: string;
-};
+import { formatRunningTrackedTime, } from '../lib/task-card.ts';
+import type { MetadataState, } from './task-detail-types.ts';
 
 /**
- * Builds the pill descriptor array from current task state and metadata overrides.
+ * Builds pill elements from current metadata state and autofill status.
  *
- * @param task - Task data for non-editable fields like tracked time and due date
- *
- * @param tags - Current tag values (may differ from task.tags during editing)
- *
- * @param locations - Current location values
- *
- * @param priority - Current priority value
- *
- * @param complexity - Current complexity value
- *
- * @returns Array of pill descriptors
+ * @returns Array of pill span elements
  *
  * @example
  * ```ts
- * const pills = buildPillData({ task, tags, locations, priority, complexity });
+ * const pills = buildPillElements({ task, metadata, autofillLoading: false, autofilled: true });
+ * container.replaceChildren(...pills);
  * ```
  */
-export function buildPillData(
-  {
-    task,
-    tags,
-    locations,
-    priority,
-    complexity,
-  }: {
-    task: Task;
-    tags: string[];
-    locations: string[];
-    priority: string | null;
-    complexity: string | null;
-  },
-): PillDatum[] {
-  return [
+export function buildPillElements({
+  task,
+  metadata,
+  autofillLoading,
+  autofilled,
+}: {
+  task: Task;
+  metadata: MetadataState;
+  autofillLoading: boolean;
+  autofilled: Set<string>;
+},): HTMLElement[] {
+  const pillData = [
     {
       field: 'tags',
-      text: tags.length > 0 ? `# ${tags.join(', ',)}` : '# ?',
+      text: metadata.tags.length > 0 ? `# ${metadata.tags.join(', ',)}` : '# ?',
     },
     {
       field: 'tracked',
@@ -61,13 +39,13 @@ export function buildPillData(
     },
     {
       field: 'locations',
-      text: locations.length > 0
-        ? `where: ${locations.join(', ',)}`
+      text: metadata.locations.length > 0
+        ? `where: ${metadata.locations.join(', ',)}`
         : 'where: ?',
     },
     {
       field: 'priority',
-      text: `priority: ${priority ?? '?'}`,
+      text: `priority: ${metadata.priority ?? '?'}`,
     },
     {
       field: 'due',
@@ -75,7 +53,7 @@ export function buildPillData(
     },
     {
       field: 'complexity',
-      text: `complexity: ${complexity ?? '?'}`,
+      text: `complexity: ${metadata.complexity ?? '?'}`,
     },
     {
       field: 'reminders',
@@ -90,47 +68,17 @@ export function buildPillData(
         : 'blockedBy: none',
     },
   ];
-}
 
-/**
- * Renders pill elements from descriptors, applying loading/autofilled states.
- *
- * @param pills - Pill descriptors from {@link buildPillData}
- *
- * @param loading - Whether the autofill request is in progress
- *
- * @param autofilled - Set of field names that were autofilled by AI
- *
- * @returns Array of pill span elements
- *
- * @example
- * ```ts
- * const elements = buildPillElements({ pills, loading: false, autofilled: new Set() });
- * ```
- */
-export function buildPillElements(
-  {
-    pills,
-    loading,
-    autofilled,
-  }: {
-    pills: PillDatum[];
-    loading: boolean;
-    autofilled: Set<string>;
-  },
-): HTMLElement[] {
-  return pills.map(
-    function buildPill(pill,): HTMLElement {
-      const element = h({
-        tag: 'span',
-        class: 'pill',
-        text: pill.text,
-      },);
-      if (loading)
-        element.dataset['loading'] = '';
-      else if (autofilled.has(pill.field,))
-        element.dataset['autofilled'] = '';
-      return element;
-    },
-  );
+  return pillData.map(function toPillElement(pill,) {
+    const element = h({
+      tag: 'span',
+      class: 'pill',
+      text: pill.text,
+    },);
+    if (autofillLoading)
+      element.dataset['loading'] = '';
+    else if (autofilled.has(pill.field,))
+      element.dataset['autofilled'] = '';
+    return element;
+  },);
 }

@@ -1,12 +1,15 @@
 /**
- * `\<top-nav\>` -- sticky navigation bar with hamburger menu, page heading, and search link.
+ * `<top-nav>` -- sticky navigation bar with hamburger menu, page heading, and search link.
  * Dispatches a `menu-open` composed event when the hamburger is clicked.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { TOP_NAV_STYLES, } from './top-nav-styles.ts';
 
 /**
- * `\<top-nav\>` web component with hamburger, heading, and search icon.
+ * `<top-nav>` web component.
+ *
+ * Renders a sticky top bar with a hamburger toggle (for mobile), a heading,
+ * and a search link.
  */
 class TopNav extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
@@ -18,9 +21,11 @@ class TopNav extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the navigation bar with hamburger, heading, and search link. */
+  /** Renders the hamburger, heading, and search link into the shadow root. */
   connectedCallback(): void {
     const heading = this.getAttribute('heading',) ?? '';
+    const dispatchFn = this.dispatchEvent.bind(this,);
+
     this.#shadow.replaceChildren(
       h({
         tag: 'style',
@@ -51,9 +56,8 @@ class TopNav extends HTMLElement {
           },),
         ],
         on: {
-          // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-          click: function openMenu(this: TopNav,): void {
-            this.dispatchEvent(
+          click: function handleMenuOpen(): void {
+            dispatchFn(
               new CustomEvent(
                 'menu-open',
                 {
@@ -62,8 +66,7 @@ class TopNav extends HTMLElement {
                 },
               ),
             );
-          }
-            .bind(this,),
+          },
         },
       },),
       h({

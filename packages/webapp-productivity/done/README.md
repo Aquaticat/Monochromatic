@@ -5,12 +5,11 @@ AI-powered task aggregator that surfaces what to do next based on location and f
 ## How it runs
 
 Client JS is bundled by tsdown as a separate build step (`mise run build:js:client`).
-CSS compilation (build-css) still runs at server startup.
 In development, `mise run dev:site` uses `mise watch` to restart the process on any source change.
 
 ```sh
 mise run build:js:client  # bundle client scripts
-bun src/server.ts         # start server (compiles CSS at startup)
+bun src/server.ts         # start server
 mise run dev:site         # development (auto-restart on src/ change via mise watch)
 ```
 
@@ -18,7 +17,7 @@ mise run dev:site         # development (auto-restart on src/ change via mise wa
 
 Single h3 server process handling both page routes (HTML) and API routes (JSON).
 
-1. **CSS**: `@monochromatic-dev/build-css` resolves `@import` and expands `@mixin`/`@apply` into plain CSS
+1. **CSS**: h-css generates rule strings from typed declaration records; no separate compiler runs
 2. **Client JS**: tsdown bundles one entry per page (inbox, in-progress, task-details, search, settings) via `mise run build:js:client`
 3. **Server**: h3 `H3` route registration plus h3 static serving for built client assets from `dist/client/`
 4. **Database**: SQLite (@tursodatabase/database) with FTS5 full-text search, initialized via side-effect import at startup
@@ -26,7 +25,7 @@ Single h3 server process handling both page routes (HTML) and API routes (JSON).
 
 ## Monorepo dependencies
 
-- `@monochromatic-dev/build-css` -- CSS mixin/apply expansion pipeline
+- `@monochromatic-dev/module-hyperscript` -- h-css, h-html, h-dom factories
 - `@monochromatic-dev/module-es` -- Functional utilities
 
 This package runs only within the Monochromatic monorepo.
@@ -46,8 +45,22 @@ That is worse than consistently using raw `@tursodatabase/database` everywhere.
 
 The current approach uses named SQL constants extracted to the top of each file, which keeps query text readable and scannable without introducing a second abstraction layer.
 
+## CSS framework comparison variants
+
+Done's UI is built with h-css (typed TypeScript composition; see `PHILOSOPHY.css.md`).
+Sibling packages re-implement the same product against alternative CSS frameworks so the
+approaches can be diffed side by side at the same scale of UI.
+
+- `../done-postcss/` -- PostCSS `@mixin` + `@apply` (via `@monochromatic-dev/build-tool-css`)
+
+These comparison packages exist purely as reference. They inherit product changes from
+this package; they are not intended to be shipped, and may be deleted once their
+comparison value is exhausted. See each variant's README for the per-file differences.
+
 ## Further reading
 
 - `PLAN.md` -- Implementation plan with DB schema, AI prompts, and deployment details
 - `SPEC.md` -- Product specification (task model, screens, sync targets)
 - `FRAMEWORK_EVALUATION.md` -- Why vanilla TS + Bun over SvelteKit, Vue Vapor, or WC frameworks
+- `PHILOSOPHY.css.md` (repo root) -- Why h-css over `@apply`, CSS-in-JS, and external CSS files
+- `packages/module/hyperscript/README.md` -- h-css API reference

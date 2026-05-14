@@ -1,77 +1,140 @@
 /**
- * Shadow DOM styles for the `\<task-detail\>` component.
+ * Shadow DOM styles for the `<task-detail>` web component.
  */
-import { css, } from '../css.ts';
-import { TASK_DETAIL_BUTTON_STYLES, } from './task-detail-button-styles.ts';
+import {
+  cssCalc,
+  cssInt,
+  cssPercent,
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-hyperscript/ts';
+import { $ as css, } from '../css.ts';
+import {
+  appearanceNone,
+  flexCenter,
+  flexColumn,
+  flexRow,
+  focusOutline,
+  minTouchTarget,
+} from '../mixins.ts';
+import { TASK_DETAIL_INTERACTIVE_STYLES, } from './task-detail-styles-interactive.ts';
 
-/** Shadow DOM styles for `\<task-detail\>`. */
-export const TASK_DETAIL_STYLES: string = css(`
-  :host {
-    @apply --flex-column;
-    gap: 1rem;
-    padding-block: 1rem;
-    padding-inline: 1rem;
-  }
-  .header { @apply --flex-row; justify-content: space-between; }
-  .close {
-    @apply --appearance-none;
-    @apply --flex-center;
-    @apply --min-touch-target;
-    &:focus-visible {
-      outline-width: 0.125rem;
-      outline-style: solid;
-      outline-color: var(--fg);
-      outline-offset: -0.125rem;
-    }
-    & svg { inline-size: 2rem; block-size: 2rem; stroke: var(--fg); stroke-width: 4; }
-  }
-  .heading { font-size: 1.5rem; font-weight: 400; }
-  .title-input {
-    font-size: 1.5rem;
-    font-weight: 400;
-    border-style: none;
-    border-block-end-width: calc(1 / 16 * 1rem);
-    border-block-end-style: solid;
-    border-block-end-color: var(--fg);
-    background-color: transparent;
-    inline-size: 100%;
-    padding-block: 0.25rem;
-    padding-inline: 0;
-    outline: none;
-    font-family: inherit;
-    color: var(--fg);
-  }
-  .desc-input {
-    border-width: calc(1 / 16 * 1rem);
-    border-style: solid;
-    border-color: var(--fg);
-    padding-block: 0.5rem;
-    padding-inline: 0.5rem;
-    min-block-size: 4.5rem;
-    resize: vertical;
-    font: inherit;
-    color: var(--fg);
-    background-color: transparent;
-  }
-  .actions { display: flex; gap: 1rem; }
-  .pills { @apply --scroll-row; flex-wrap: wrap; }
-  .pill {
-    @apply --flex-center;
-    @apply --whitespace-nowrap;
-    border-width: calc(1 / 16 * 1rem);
-    border-style: solid;
-    border-color: var(--fg);
-    @apply --border-radius-full;
-    padding-block: 0.5rem;
-    padding-inline: 0.5rem;
-    gap: 0.25rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    &[data-autofilled] { border-color: var(--red-fg); color: var(--red-fg); }
-    &[data-loading] { opacity: 0.5; }
-  }
+/** Focus outline offset in rem (-1/8). */
+const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
 
-  ${TASK_DETAIL_BUTTON_STYLES}
+/** SVG stroke width for close icon. */
+const STROKE_WIDTH = 4;
 
-  @apply --shadow-dom-globals;
-`,);
+/** Heading and title-input font size in rem. */
+const HEADING_FONT_SIZE = 1 + 1 / 2;
+
+/** Normal font weight for headings and inputs. */
+const FONT_WEIGHT_NORMAL = 400;
+
+/** Full percentage for input inline-size. */
+const FULL_PERCENT = 100;
+
+/** Padding for title-input and description blocks in rem (1/4). */
+const SMALL_PADDING = 1 / 2 / 2;
+
+/** Padding for description input in rem (1/2). */
+const DESC_PADDING = 1 / 2;
+
+/** Minimum block-size for description textarea in rem. */
+const TEXTAREA_MIN_HEIGHT = 4.5;
+
+/** Compiled CSS string for `<task-detail>` Shadow DOM. */
+export const TASK_DETAIL_STYLES: string = [
+  css({
+    rule: ':host',
+    decls: {
+      ...flexColumn(),
+      gap: cssRem(1,),
+      'padding-block': cssRem(1,),
+      'padding-inline': cssRem(1,),
+    },
+  },),
+  css({
+    rule: '.header',
+    decls: {
+      ...flexRow(),
+      'justify-content': 'space-between',
+    },
+  },),
+  css({
+    rule: '.close',
+    decls: {
+      ...appearanceNone(),
+      ...flexCenter(),
+      ...minTouchTarget(),
+    },
+    children: [
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },),
+      },),
+      css({
+        rule: '& svg',
+        decls: {
+          'inline-size': cssRem(2,),
+          'block-size': cssRem(2,),
+          stroke: cssVar('fg',),
+          'stroke-width': cssInt(STROKE_WIDTH,),
+        },
+      },),
+    ],
+  },),
+  css({
+    rule: '.heading',
+    decls: {
+      'font-size': cssRem(HEADING_FONT_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
+    },
+  },),
+  css({
+    rule: '.title-input',
+    decls: {
+      'font-size': cssRem(HEADING_FONT_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
+      'border-style': 'none',
+      'border-block-end-width': cssCalc(`${cssRem(1,)} / 16`,),
+      'border-block-end-style': 'solid',
+      'border-block-end-color': cssVar('fg',),
+      'background-color': 'transparent',
+      'inline-size': cssPercent(FULL_PERCENT,),
+      'padding-block': cssRem(SMALL_PADDING,),
+      'padding-inline': 0,
+      'outline-style': 'none',
+      'font-family': 'inherit',
+      color: cssVar('fg',),
+    },
+  },),
+  css({
+    rule: '.desc-input',
+    decls: {
+      'border-width': cssCalc(`${cssRem(1,)} / 16`,),
+      'border-style': 'solid',
+      'border-color': cssVar('fg',),
+      'padding-block': cssRem(DESC_PADDING,),
+      'padding-inline': cssRem(DESC_PADDING,),
+      'min-block-size': cssRem(TEXTAREA_MIN_HEIGHT,),
+      resize: 'vertical',
+      'font-family': 'inherit',
+      'font-size': 'inherit',
+      'font-style': 'inherit',
+      'font-weight': 'inherit',
+      'line-height': 'inherit',
+      color: cssVar('fg',),
+      'background-color': 'transparent',
+    },
+  },),
+  css({
+    rule: '.actions',
+    decls: {
+      display: 'flex',
+      gap: cssRem(1,),
+    },
+  },),
+  TASK_DETAIL_INTERACTIVE_STYLES,
+]
+  .join('',);

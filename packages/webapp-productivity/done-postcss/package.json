@@ -1,0 +1,23 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/webapp-productivity-done-postcss",
+  "description": "PostCSS @apply variant of @monochromatic-dev/webapp-productivity-done, kept for side-by-side CSS framework comparison.",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/build-tool-css": "workspace:*",
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
+    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@tursodatabase/database": "catalog:",
+    "h3": "catalog:",
+    "postcss": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/rolldown-plugin-import-attributes": "workspace:*",
+    "@types/bun": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}

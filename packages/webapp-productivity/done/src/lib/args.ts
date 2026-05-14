@@ -14,7 +14,8 @@
  *
  * @example
  * ```ts
- * const port = getArgumentValue('port'); // '3000' when invoked with --port=3000
+ * const port = getArgumentValue('port');
+ * // '3000' when invoked with --port=3000
  * ```
  */
 export function getArgumentValue(name: string,): string | undefined {

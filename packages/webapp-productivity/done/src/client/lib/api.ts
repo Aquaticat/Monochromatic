@@ -21,21 +21,20 @@ export { showToast, };
  *
  * @example
  * ```ts
- * const task = await api<Task>('/api/tasks/uuid-123');
+ * const task = await api<Task>('/api/tasks/abc-123');
  * ```
  */
 export async function api<TResponse = unknown,>(
   path: string,
   options?: RequestInit,
 ): Promise<TResponse> {
-  const mergedHeaders = new Headers({ 'Content-Type': 'application/json', },);
+  const headers = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers !== undefined) {
-    const extra = new Headers(options.headers,);
-    extra.forEach(function applyHeader(
-      value: string,
-      key: string,
-    ): void {
-      mergedHeaders.set(
+    new Headers(options.headers,).forEach(function applyHeader(
+      value,
+      key,
+    ) {
+      headers.set(
         key,
         value,
       );
@@ -45,7 +44,7 @@ export async function api<TResponse = unknown,>(
     path,
     {
       ...options,
-      headers: mergedHeaders,
+      headers,
     },
   );
 

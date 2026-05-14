@@ -1,85 +1,99 @@
 /**
- * Shadow DOM styles for the `\<top-nav\>` component.
+ * Shadow DOM styles for the `<top-nav>` web component.
  */
-import { css, } from '../css.ts';
+import {
+  cssInt,
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-hyperscript/ts';
+import { $ as css, } from '../css.ts';
+import { stickyBar, } from '../mixins-composed.ts';
+import {
+  appearanceNone,
+  flexCenter,
+  flexColumn,
+  focusOutline,
+  minTouchTarget,
+} from '../mixins.ts';
+import { TOP_NAV_ICON_STYLES, } from './top-nav-styles-icons.ts';
+import { TOP_NAV_MEDIA_STYLES, } from './top-nav-styles-media.ts';
 
-/** Shadow DOM styles for `\<top-nav\>` -- hamburger, heading, search icon, responsive layout. */
-export const TOP_NAV_STYLES: string = css(`
-  :host {
-    @apply --sticky-bar;
-    justify-content: center;
-  }
-  h1 {
-    flex: 1;
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: 400;
-    line-height: normal;
-    margin-block: 0;
-    margin-inline: 0;
-  }
-  .action {
-    @apply --appearance-none;
-    @apply --flex-center;
-    @apply --min-touch-target;
-    color: var(--fg);
-    text-decoration: none;
-  }
-  .action:focus-visible {
-    outline-width: 0.125rem;
-    outline-style: solid;
-    outline-color: var(--fg);
-    outline-offset: -0.125rem;
-  }
-  .hamburger {
-    inline-size: 2rem;
-    block-size: 2rem;
-    @apply --flex-column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.375rem;
-  }
-  .line {
-    inline-size: 1.75rem;
-    block-size: 0.25rem;
-    background-color: var(--fg);
-    display: block;
-  }
-  .search-icon {
-    inline-size: 2rem;
-    block-size: 2rem;
-    position: relative;
-  }
-  .circle {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline-start: 0;
-    inline-size: 1.375rem;
-    block-size: 1.375rem;
-    border-width: 0.25rem;
-    border-style: solid;
-    border-color: var(--fg);
-    @apply --border-radius-full;
-  }
-  .handle {
-    position: absolute;
-    inset-block-start: calc(19 / 16 * 1rem);
-    inset-inline-start: calc(19 / 16 * 1rem);
-    inline-size: 0.25rem;
-    block-size: 0.875rem;
-    background-color: var(--fg);
-    transform: rotate(-45deg);
-    transform-origin: top left;
-  }
-  @media (min-width: 48rem) {
-    :host {
-      justify-content: space-between;
-      padding-inline-start: var(--min-gap);
-      border-block-end-width: calc(1 / 16 * 1rem);
-      border-block-end-style: solid;
-      border-block-end-color: var(--bg-weaker);
-    }
-    .menu-toggle { display: none; }
-    h1 { text-align: start; }
-  }
-`,);
+/** Heading font size in rem. */
+const HEADING_FONT_SIZE = 1 + 1 / 2;
+
+/** Normal font weight for heading. */
+const FONT_WEIGHT_NORMAL = 400;
+
+/** Focus outline offset in rem (-1/8). */
+const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
+
+/** Gap between hamburger lines in rem (3/8). */
+const HAMBURGER_GAP = 1 / 2 / 2 + 1 / 2 / 2 / 2;
+
+/** Hamburger line width in rem (1 3/4). */
+const LINE_WIDTH = 1 + 1 / 2 + 1 / 2 / 2;
+
+/** Hamburger line height in rem (1/4). */
+const LINE_HEIGHT = 1 / 2 / 2;
+
+/** Compiled CSS string for `<top-nav>` Shadow DOM. */
+export const TOP_NAV_STYLES: string = [
+  css({
+    rule: ':host',
+    decls: {
+      ...stickyBar(),
+      'justify-content': 'center',
+    },
+  },),
+  css({
+    rule: 'h1',
+    decls: {
+      'flex-grow': 1,
+      'text-align': 'center',
+      'font-size': cssRem(HEADING_FONT_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
+      'line-height': 'normal',
+      'margin-block': 0,
+      'margin-inline': 0,
+    },
+  },),
+  css({
+    rule: '.action',
+    decls: {
+      ...appearanceNone(),
+      ...flexCenter(),
+      ...minTouchTarget(),
+      color: cssVar('fg',),
+      'text-decoration': 'none',
+    },
+    children: [
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },),
+      },),
+    ],
+  },),
+  css({
+    rule: '.hamburger',
+    decls: {
+      'inline-size': cssRem(2,),
+      'block-size': cssRem(2,),
+      ...flexColumn(),
+      'justify-content': 'center',
+      'align-items': 'center',
+      gap: cssRem(HAMBURGER_GAP,),
+    },
+  },),
+  css({
+    rule: '.line',
+    decls: {
+      'inline-size': cssRem(LINE_WIDTH,),
+      'block-size': cssRem(LINE_HEIGHT,),
+      'background-color': cssVar('fg',),
+      display: 'block',
+    },
+  },),
+  ...TOP_NAV_ICON_STYLES,
+  TOP_NAV_MEDIA_STYLES,
+]
+  .join('',);

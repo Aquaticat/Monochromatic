@@ -11,7 +11,7 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   getTaskById,
   listTasksForBlockerPicker,
-} from '../../lib/db/tasks.ts';
+} from '../../lib/db/tasks-queries.ts';
 import { serializePageData, } from './layout.ts';
 
 /**
@@ -23,7 +23,7 @@ import { serializePageData, } from './layout.ts';
  *
  * @example
  * ```ts
- * const response = await taskDetailsPage('uuid-123');
+ * const response = await taskDetailsPage('abc-123');
  * ```
  */
 export async function taskDetailsPage(taskId: string,): Promise<Response> {

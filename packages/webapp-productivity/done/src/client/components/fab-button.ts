@@ -1,45 +1,71 @@
-import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import { css, } from '../css.ts';
+import {
+  cssInt,
+  cssRem,
+  cssVar,
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
+import { $ as css, } from '../css.ts';
+import {
+  borderRadiusFull,
+  flexCenter,
+  focusOutline,
+  minTouchTarget,
+} from '../mixins.ts';
 
-/** Z-index for the floating action button above page content. */
-const FAB_Z_INDEX = 50;
+/** Z-index for FAB positioning. */
+const Z_INDEX_FAB = 50;
 
-/** Shadow DOM styles for the `\<fab-button\>` component. */
-const STYLES = css(`
-  :host {
-    position: fixed;
-    inset-block-end: 1rem;
-    inset-inline-end: 1rem;
-    z-index: ${String(FAB_Z_INDEX,)};
-  }
-  button {
-    @apply --flex-center;
-    @apply --min-touch-target;
-    inline-size: 4rem;
-    block-size: 4rem;
-    @apply --border-radius-full;
-    background-color: var(--fg);
-    border-width: 0.25rem;
-    border-style: solid;
-    border-color: var(--bg);
-    color: var(--bg);
-    font-size: 2rem;
-    cursor: pointer;
-    line-height: 1.2;
-  }
-  button:hover { opacity: 0.85; }
-  button:focus-visible {
-    outline-width: 0.125rem;
-    outline-style: solid;
-    outline-color: var(--fg);
-    outline-offset: 0.125rem;
-  }
+/** FAB button size in rem. */
+const FAB_SIZE = 4;
 
-`,);
+/** FAB border width in rem (1/4). */
+const FAB_BORDER = 1 / 2 / 2;
+
+/** Compiled CSS string for `<fab-button>` Shadow DOM. */
+const STYLES = [
+  css({
+    rule: ':host',
+    decls: {
+      position: 'fixed',
+      'inset-block-end': cssRem(1,),
+      'inset-inline-end': cssRem(1,),
+      'z-index': cssInt(Z_INDEX_FAB,),
+    },
+  },),
+  css({
+    rule: 'button',
+    decls: {
+      ...flexCenter(),
+      ...minTouchTarget(),
+      'inline-size': cssRem(FAB_SIZE,),
+      'block-size': cssRem(FAB_SIZE,),
+      ...borderRadiusFull(),
+      'background-color': cssVar('fg',),
+      'border-width': cssRem(FAB_BORDER,),
+      'border-style': 'solid',
+      'border-color': cssVar('bg',),
+      color: cssVar('bg',),
+      'font-size': cssRem(2,),
+      cursor: 'pointer',
+      'line-height': 1.2,
+    },
+    children: [
+      css({
+        rule: '&:hover',
+        decls: { opacity: 0.85, },
+      },),
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline(),
+      },),
+    ],
+  },),
+]
+  .join('',);
 
 /**
- * `\<fab-button\>` -- floating action button pinned to the bottom-right.
- * Reads the `label` attribute for accessibility and renders a `\<slot\>` for custom content.
+ * `<fab-button>` -- floating action button pinned to the bottom-right.
+ * Reads the `label` attribute for accessibility and renders a `<slot>` for custom content.
  */
 class FabButton extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
@@ -51,7 +77,7 @@ class FabButton extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the button with aria-label and slot for content. */
+  /** Renders the action button with label and slot into the shadow root. */
   connectedCallback(): void {
     const label = this.getAttribute('label',) ?? 'Action';
     this.#shadow.replaceChildren(

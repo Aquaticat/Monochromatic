@@ -7,15 +7,35 @@
  *   POST /api/tasks/:id/complete -\> handleCompleteTask
  */
 import {
+  HTTP_CONFLICT,
+  HTTP_NOT_FOUND,
+  HTTP_OK,
+} from '@monochromatic-dev/module-numeric-const';
+
+import {
   completeTask,
   startTaskTimer,
   stopTaskTimer,
 } from '../../lib/db/tasks.ts';
-import {
-  HTTP_CONFLICT,
-  HTTP_NOT_FOUND,
-  jsonResponse,
-} from './http-utils.ts';
+
+/**
+ * Wraps a payload in a JSON `Response` with the correct content type.
+ *
+ * @param payload - Serializable value
+ *
+ * @param status - HTTP status code (defaults to 200)
+ *
+ * @returns JSON response
+ */
+function jsonResponse(
+  payload: unknown,
+  status: number = HTTP_OK,
+): Response {
+  return Response.json(
+    payload,
+    { status, },
+  );
+}
 
 /**
  * POST /api/tasks/:id/start -- starts the task timer.
@@ -26,7 +46,7 @@ import {
  *
  * @example
  * ```ts
- * const response = await handleStartTimer('uuid-123');
+ * const response = await handleStartTimer('abc-123');
  * ```
  */
 export async function handleStartTimer(id: string,): Promise<Response> {
@@ -37,6 +57,7 @@ export async function handleStartTimer(id: string,): Promise<Response> {
       HTTP_NOT_FOUND,
     );
   }
+
   return jsonResponse(task,);
 }
 
@@ -49,7 +70,7 @@ export async function handleStartTimer(id: string,): Promise<Response> {
  *
  * @example
  * ```ts
- * const response = await handleStopTimer('uuid-123');
+ * const response = await handleStopTimer('abc-123');
  * ```
  */
 export async function handleStopTimer(id: string,): Promise<Response> {
@@ -60,6 +81,7 @@ export async function handleStopTimer(id: string,): Promise<Response> {
       HTTP_NOT_FOUND,
     );
   }
+
   return jsonResponse(task,);
 }
 
@@ -72,7 +94,7 @@ export async function handleStopTimer(id: string,): Promise<Response> {
  *
  * @example
  * ```ts
- * const response = await handleCompleteTask('uuid-123');
+ * const response = await handleCompleteTask('abc-123');
  * ```
  */
 export async function handleCompleteTask(id: string,): Promise<Response> {
@@ -83,6 +105,7 @@ export async function handleCompleteTask(id: string,): Promise<Response> {
       HTTP_NOT_FOUND,
     );
   }
+
   if (!result.completed) {
     return jsonResponse(
       {
@@ -92,5 +115,6 @@ export async function handleCompleteTask(id: string,): Promise<Response> {
       HTTP_CONFLICT,
     );
   }
+
   return jsonResponse({ ok: true, },);
 }

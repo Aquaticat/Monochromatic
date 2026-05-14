@@ -1,5 +1,5 @@
 /**
- * Type definitions for the `\<task-detail\>` component.
+ * Types and constants for the `<task-detail>` web component.
  */
 import type {
   Task,
@@ -9,35 +9,50 @@ import type {
 
 /** Blocker task summary displayed as a pill in the task detail view. */
 export type BlockerSummary = {
-  /** UUID of the blocking task. */
+  /** Blocker task ID. */
   id: string;
-  /** Title of the blocking task. */
+  /** Blocker task title. */
   title: string;
-  /** Current status of the blocking task. */
+  /** Blocker task status. */
   status: string;
 };
 
 /** Shape of the JSON response from the `/api/ai/autofill` endpoint. */
 export type AutofillResult = {
-  /** Suggested tags for the task. */
+  /** AI-suggested tags. */
   tags: string[];
-  /** Suggested locations for the task. */
+  /** AI-suggested locations. */
   locations: string[];
-  /** Suggested priority level. */
+  /** AI-suggested priority. */
   priority: TaskPriority | null;
-  /** Suggested complexity level. */
+  /** AI-suggested complexity. */
   complexity: TaskComplexity | null;
 };
 
 /** Determines whether the component renders as a new-task creator or an editor. */
 export type TaskDetailMode = 'create' | 'edit';
 
+/** Mutable metadata state managed by the `<task-detail>` component. */
+export type MetadataState = {
+  /** Current tags (user-set or autofilled). */
+  tags: string[];
+  /** Current locations (user-set or autofilled). */
+  locations: string[];
+  /** Current priority (user-set or autofilled). */
+  priority: TaskPriority | null;
+  /** Current complexity (user-set or autofilled). */
+  complexity: TaskComplexity | null;
+};
+
 /** Configuration payload passed to `TaskDetail.configure()`. */
 export type TaskDetailData = {
-  /** Task being viewed or edited. */
+  /** Task being displayed or edited. */
   task: Task;
   /** Summaries of tasks that block this one. */
   blockerSummaries: BlockerSummary[];
-  /** Display mode: "create" for new tasks, "edit" for existing. */
+  /** Component mode: `"create"` for new tasks, `"edit"` (default) for existing. */
   mode?: TaskDetailMode;
 };
+
+/** Delay before triggering AI autofill after the user stops typing. */
+export const AUTOFILL_DEBOUNCE_MS = 500;

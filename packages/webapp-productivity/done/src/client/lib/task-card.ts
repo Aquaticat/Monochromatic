@@ -1,31 +1,35 @@
 /**
- * `\<task-card\>` web component and its factory function `createTaskCard()`.
+ * `<task-card>` web component and its factory function `createTaskCard()`.
  *
  * Unlike other web components that live in `components/`, task-card is in `lib/`
  * because it's always created programmatically (never placed in server HTML).
- * Client entry scripts call `createTaskCard(task, options)` which creates the
- * element, calls `configure()` to pass data, and returns it for appending to the DOM.
  */
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+
 import type { Task, } from '../../lib/types.ts';
 import {
-  renderTaskCardContent,
+  buildChipTexts,
+  formatTrackedTime,
   type TaskCardOptions,
-} from './task-card-render.ts';
+} from './task-card-helpers.ts';
+import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 
-export { formatRunningTrackedTime, } from './format-tracked-time.ts';
-
-/** `\<task-card\>` -- displays a task as a clickable card with checkbox, title, and metadata chips. */
+/**
+ * `<task-card>` -- displays a task as a clickable card with checkbox, title, and metadata chips.
+ * Created programmatically via `createTaskCard()`, not placed in server HTML.
+ */
 class TaskCard extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Currently displayed task, or null before configuration. */
+  /** Task data to display, set via `configure()`. */
   #task: Task | null = null;
 
-  /** Current rendering options, or null before configuration. */
+  /** Interaction callbacks and display flags, set via `configure()`. */
   #options: TaskCardOptions | null = null;
 
-  /** Initializes the shadow root for encapsulated rendering. */
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -49,32 +53,86 @@ class TaskCard extends HTMLElement {
 
   /**
    * Finds a chip element whose text starts with the given prefix.
+   * Used by the in-progress timer to update the "tracked:" chip live.
    *
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
    *
-   * @returns Matching chip element, or null if not found
+   * @returns Matching chip span, or null if not found
    */
   getChipElement(prefix: string,): HTMLSpanElement | null {
     for (const chip of this.#shadow.querySelectorAll<HTMLSpanElement>('.chip',)) {
-      if (chip.textContent.startsWith(prefix,)) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelectorAll(".chip") returns span elements
-        return chip as HTMLSpanElement;
-      }
+      if (chip.textContent.startsWith(prefix,))
+        return chip;
     }
     return null;
   }
 
-  /** Renders the full card content into the shadow root. */
+  /** Renders the card content (checkbox, title, chips) into the shadow root. */
   #render(): void {
     const task = this.#task;
     const options = this.#options;
     if (task === null || options === null)
       return;
-    renderTaskCardContent({
-      shadow: this.#shadow,
-      task,
-      options,
+
+    const chipTexts = buildChipTexts(task,);
+    const chipElements: HTMLElement[] = chipTexts.map(function toChipElement(text,) {
+      return h({
+        tag: 'span',
+        class: 'chip',
+        text,
+      },);
     },);
+    if (options.showBlockedBadge === true) {
+      chipElements.push(h({
+        tag: 'span',
+        class: 'chip blocked',
+        text: 'blocked',
+      },),);
+    }
+
+    this.#shadow.replaceChildren(
+      h({
+        tag: 'style',
+        text: TASK_CARD_STYLES,
+      },),
+      h({
+        tag: 'div',
+        class: 'row',
+        children: [
+          h({
+            tag: 'button',
+            class: 'checkbox',
+            attrs: { title: 'Complete task', },
+            children: [h({
+              tag: 'span',
+              class: 'checkbox-box',
+            },),],
+            on: {
+              click: async function handleCheckboxClick(event,) {
+                event.stopPropagation();
+                if (options.onToggleComplete !== undefined)
+                  await options.onToggleComplete(task.id,);
+              },
+            },
+          },),
+          h({
+            tag: 'span',
+            class: 'title',
+            text: task.title,
+          },),
+        ],
+        on: {
+          click: function handleCardClick() {
+            options.onOpen(task.id,);
+          },
+        },
+      },),
+      h({
+        tag: 'div',
+        class: 'chips',
+        children: chipElements,
+      },),
+    );
   }
 }
 
@@ -84,17 +142,17 @@ customElements.define(
 );
 
 /**
- * Factory: creates and configures a `\<task-card\>` element.
+ * Factory: creates and configures a `<task-card>` element ready for DOM insertion.
  *
  * @param task - Task data to display
  *
  * @param options - Callbacks for open/complete interactions
  *
- * @returns Configured TaskCard element
+ * @returns Configured task-card element
  *
  * @example
  * ```ts
- * const card = createTaskCard(task, { onOpen: openTask });
+ * const card = createTaskCard(task, { onOpen: handleOpen, onToggleComplete: handleComplete });
  * list.append(card);
  * ```
  */
@@ -102,11 +160,34 @@ export function createTaskCard(
   task: Task,
   options: TaskCardOptions,
 ): TaskCard {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-card"
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard
   const card = document.createElement('task-card',) as TaskCard;
   card.configure(
     task,
     options,
   );
   return card;
+}
+
+/**
+ * Formats tracked time including elapsed seconds from a running timer.
+ * If no timer is active, returns the static `trackedTime` formatted.
+ *
+ * @param task - Task with optional running timer
+ *
+ * @returns Formatted tracked time string
+ *
+ * @example
+ * const label = formatRunningTrackedTime(task);
+ * // '2:15:00'
+ */
+export function formatRunningTrackedTime(task: Task,): string {
+  if (task.timerStartedAt === null)
+    return formatTrackedTime(task.trackedTime,);
+
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),
+  );
+  return formatTrackedTime(task.trackedTime + elapsedSeconds,);
 }

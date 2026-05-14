@@ -1,0 +1,77 @@
+/**
+ * Thin wrapper around `fetch` for calling the JSON API endpoints defined
+ * in `server/api/tasks.ts` and `server/api/timer.ts`.
+ *
+ * Automatically sets `Content-Type: application/json` and shows a toast on error.
+ */
+import { HTTP_NO_CONTENT, } from '@monochromatic-dev/module-numeric-const';
+
+import { showToast, } from '../components/toast-message.ts';
+
+export { showToast, };
+
+/**
+ * Sends a fetch request to a JSON API endpoint with standard headers and error handling.
+ *
+ * @param path - API endpoint path
+ *
+ * @param options - Optional fetch request configuration
+ *
+ * @returns Parsed JSON response body, or undefined for 204 responses
+ *
+ * @example
+ * ```ts
+ * const task = await api<Task>('/api/tasks/uuid-123');
+ * ```
+ */
+export async function api<TResponse = unknown,>(
+  path: string,
+  options?: RequestInit,
+): Promise<TResponse> {
+  const mergedHeaders = new Headers({ 'Content-Type': 'application/json', },);
+  if (options?.headers !== undefined) {
+    const extra = new Headers(options.headers,);
+    extra.forEach(function applyHeader(
+      value: string,
+      key: string,
+    ): void {
+      mergedHeaders.set(
+        key,
+        value,
+      );
+    },);
+  }
+  const response = await fetch(
+    path,
+    {
+      ...options,
+      headers: mergedHeaders,
+    },
+  );
+
+  if (!response.ok) {
+    let error: unknown = undefined;
+    try {
+      error = await response.json();
+    }
+    catch {
+      error = { error: 'Request failed', };
+    }
+    const message =
+      typeof error === 'object' && error !== null && 'error' in error && typeof error
+            .error === 'string'
+        ? error
+          .error
+        : 'Request failed';
+    showToast(message,);
+    throw new Error(message,);
+  }
+
+  if (response.status === HTTP_NO_CONTENT) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 204 responses have no body; caller expects TResponse
+    return undefined as TResponse;
+  }
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response JSON matches the TResponse shape by API contract
+  return (await response.json()) as TResponse;
+}

@@ -1,40 +1,68 @@
-import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import { css, } from '../css.ts';
-// oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the toggle-switch custom element
+import {
+  cssCalc,
+  cssRem,
+  cssVar,
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
+import { $ as css, } from '../css.ts';
+import { buttonOutlined, } from '../mixins-composed.ts';
+import {
+  flexColumn,
+  flexRow,
+  focusOutline,
+} from '../mixins.ts';
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './toggle-switch.ts';
 
-/** Shadow DOM styles for the `\<setting-group\>` component. */
-const STYLES = css(`
-  :host {
-    @apply --flex-column;
-    gap: var(--min-padding);
-  }
-  .header {
-    @apply --flex-row;
-    gap: var(--min-gap);
-  }
-  .label {
-    font-size: 1rem;
-    flex: 1;
-  }
-  .desc {
-    font-size: calc(15 / 16 * 1rem);
-    line-height: 1.5;
-    color: var(--fg-weaker);
-  }
-  button {
-    @apply --button-outlined;
-  }
-  button:focus-visible {
-    outline-width: 0.125rem;
-    outline-style: solid;
-    outline-color: var(--fg);
-    outline-offset: 0.125rem;
-  }
-`,);
+/** Font size numerator for description text (15/16 rem). */
+const DESC_FONT_SIZE_PX = 15;
+
+/** Compiled CSS string for `<setting-group>` Shadow DOM. */
+const STYLES = [
+  css({
+    rule: ':host',
+    decls: {
+      ...flexColumn(),
+      gap: cssVar('min-padding',),
+    },
+  },),
+  css({
+    rule: '.header',
+    decls: {
+      ...flexRow(),
+      gap: cssVar('min-gap',),
+    },
+  },),
+  css({
+    rule: '.label',
+    decls: {
+      'font-size': cssRem(1,),
+      'flex-grow': 1,
+    },
+  },),
+  css({
+    rule: '.desc',
+    decls: {
+      'font-size': cssCalc(`${cssRem(DESC_FONT_SIZE_PX,)} / 16`,),
+      'line-height': 1.5,
+      color: cssVar('fg-weaker',),
+    },
+  },),
+  css({
+    rule: 'button',
+    decls: buttonOutlined(),
+    children: [
+      css({
+        rule: '&:focus-visible',
+        decls: focusOutline(),
+      },),
+    ],
+  },),
+]
+  .join('',);
 
 /**
- * `\<setting-group\>` -- a single settings row with a label, description,
+ * `<setting-group>` -- a single settings row with a label, description,
  * and an action control (toggle switch or button) determined by the `mode` attribute.
  */
 class SettingGroup extends HTMLElement {
@@ -47,7 +75,7 @@ class SettingGroup extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the setting group with label, optional description, and action control. */
+  /** Renders the setting label, optional description, and action control. */
   connectedCallback(): void {
     const label = this.getAttribute('label',) ?? '';
     const description = this.getAttribute('description',) ?? '';

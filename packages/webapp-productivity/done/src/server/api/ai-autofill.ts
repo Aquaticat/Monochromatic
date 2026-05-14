@@ -15,7 +15,7 @@
 import { chatCompletion, } from '../../lib/ai/client.ts';
 import { buildAutofillMessages, } from '../../lib/ai/prompts.ts';
 import db from '../../lib/db.ts';
-import { listAllTags, } from '../../lib/db/tasks.ts';
+import { listAllTags, } from '../../lib/db/tasks-queries.ts';
 import {
   TASK_COMPLEXITIES,
   TASK_PRIORITIES,
@@ -153,7 +153,7 @@ async function listAllLocations(): Promise<string[]> {
  *
  * @example
  * ```ts
- * const response = await handleAutofill(event.req);
+ * const response = await handleAutofill(request);
  * ```
  */
 export async function handleAutofill(req: Request,): Promise<Response> {

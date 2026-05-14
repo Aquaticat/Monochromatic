@@ -1,58 +1,19 @@
+/**
+ * `<search-bar>` -- sticky bar with a back button and debounced search input.
+ * Dispatches a `search` event with `{ query }` after the debounce delay.
+ */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import { css, } from '../css.ts';
+import { SEARCH_BAR_STYLES, } from './search-bar-styles.ts';
 
-/** Shadow DOM styles for the `\<search-bar\>` component. */
-const STYLES = css(`
-  :host {
-    @apply --sticky-bar;
-  }
-  .back {
-    @apply --appearance-none;
-    @apply --flex-center;
-    @apply --min-touch-target;
-    font-size: 1.5rem;
-    color: var(--fg);
-  }
-  .back:focus-visible {
-    outline-width: 0.125rem;
-    outline-style: solid;
-    outline-color: var(--fg);
-    outline-offset: -0.125rem;
-  }
-  input {
-    flex: 1;
-    border-style: none;
-    background-color: transparent;
-    font-size: 1rem;
-    font-family: inherit;
-    color: var(--fg);
-    outline: none;
-    block-size: 100%;
-  }
-  @apply --shadow-dom-globals;
-  @media (min-width: 48rem) {
-    :host {
-      border-block-end-width: calc(1 / 16 * 1rem);
-      border-block-end-style: solid;
-      border-block-end-color: var(--bg-weaker);
-    }
-    .back { display: none; }
-    input { font-size: 1.5rem; }
-  }
-`,);
-
-/** Debounce delay for search input in milliseconds. */
+/** Debounce delay for search input in milliseconds */
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** Navigates back one entry in browser history. */
-function onBackClick(): void {
+/** Navigates one step back in the browser history. */
+function handleBack(): void {
   history.back();
 }
 
-/**
- * `\<search-bar\>` -- sticky bar with a back button and debounced search input.
- * Dispatches a `search` event with `\{ query \}` after the debounce delay.
- */
+/** Sticky search bar with a back button and debounced search input. */
 class SearchBar extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
@@ -64,9 +25,9 @@ class SearchBar extends HTMLElement {
   }
 
   /**
-   * Current search input value.
+   * Current search input value, or empty string when not yet rendered.
    *
-   * @returns Text content of the input, or empty string if not rendered
+   * @returns Search input value
    */
   get value(): string {
     const input = this.#shadow.querySelector<HTMLInputElement>('input',);
@@ -74,9 +35,9 @@ class SearchBar extends HTMLElement {
   }
 
   /**
-   * Sets the search input value programmatically.
+   * Sets the search input value.
    *
-   * @param text - New input value
+   * @param text - New value to display
    */
   set value(text: string,) {
     const input = this.#shadow.querySelector<HTMLInputElement>('input',);
@@ -84,17 +45,17 @@ class SearchBar extends HTMLElement {
       input.value = text;
   }
 
-  /** Renders the search bar with back button and debounced input. */
+  /** Renders the back button and search input, wires up debounced search dispatch. */
   connectedCallback(): void {
     const query = this.getAttribute('value',) ?? '';
 
     // SVG back arrow built via innerHTML on a container because h() targets
-    // HTMLElement creation; SVG elements require the SVG namespace.
+    // HTMLElement creation: SVG elements require the SVG namespace.
     const backButton = h({
       tag: 'button',
       class: 'back',
       attrs: { 'aria-label': 'Go back', },
-      on: { click: onBackClick, },
+      on: { click: handleBack, },
     },);
     backButton.innerHTML =
       `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
@@ -110,17 +71,15 @@ class SearchBar extends HTMLElement {
     },);
 
     // Debounced search dispatch
-    let timeout: ReturnType<typeof setTimeout> = setTimeout(
-      function noop() {/* initial */},
-      0,
-    );
+    const dispatchFn = this.dispatchEvent.bind(this,);
+    let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
     input.addEventListener(
       'input',
-      function onInput(this: SearchBar,): void {
+      function handleInput(): void {
         clearTimeout(timeout,);
         timeout = setTimeout(
-          function dispatchSearch(this: SearchBar,): void {
-            this.dispatchEvent(
+          function emitSearch(): void {
+            dispatchFn(
               new CustomEvent(
                 'search',
                 {
@@ -129,18 +88,16 @@ class SearchBar extends HTMLElement {
                 },
               ),
             );
-          }
-            .bind(this,),
+          },
           SEARCH_DEBOUNCE_MS,
         );
-      }
-        .bind(this,),
+      },
     );
 
     this.#shadow.replaceChildren(
       h({
         tag: 'style',
-        text: STYLES,
+        text: SEARCH_BAR_STYLES,
       },),
       backButton,
       input,

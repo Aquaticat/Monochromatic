@@ -16,7 +16,7 @@ import {
 import { mkdirSync, } from 'node:fs';
 import { dirname, } from 'node:path';
 import { getArgumentValue, } from './args.ts';
-import { runMigrations, } from './db/migrations.ts';
+import { runMigrations, } from './db-migrations.ts';
 
 /** Default database file path when neither `--db=` nor `DB_PATH` env var is provided. */
 const DEFAULT_DATABASE_PATH = './data/done.db';
@@ -26,12 +26,11 @@ const DEFAULT_DATABASE_PATH = './data/done.db';
  *
  * @param value - Raw path that may use `file:` scheme
  *
- * @returns Plain filesystem path
+ * @returns Plain filesystem path without URI prefix
  */
 function normalizeDatabasePath(value: string,): string {
   if (!value.startsWith('file:',))
     return value;
-
   return value.slice('file:'.length,);
 }
 
@@ -39,7 +38,7 @@ function normalizeDatabasePath(value: string,): string {
  * Resolves the database file path from CLI arguments, environment, or default.
  * Priority: `--db=PATH` \> `DB_PATH` env var \> `DEFAULT_DATABASE_PATH`.
  *
- * @returns Resolved database path
+ * @returns Resolved filesystem path to the database file
  */
 function resolveDatabasePath(): string {
   const argumentPath = getArgumentValue('db',);
@@ -53,11 +52,15 @@ function resolveDatabasePath(): string {
  * Skips creation for `:memory:` databases.
  *
  * @param databasePath - Resolved filesystem path
+ *
+ * @example
+ * ```ts
+ * ensureDatabaseDirectoryExists('/home/user/.local/share/done/tasks.db');
+ * ```
  */
 function ensureDatabaseDirectoryExists(databasePath: string,): void {
   if (databasePath === ':memory:')
     return;
-
   const directoryPath = dirname(databasePath,);
   mkdirSync(
     directoryPath,
@@ -65,11 +68,11 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
   );
 }
 
-/** Resolved filesystem path for the SQLite database file. */
+/** Resolved database file path. */
 const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
-/** Open Turso database connection used by all data-access modules. */
+/** Open SQLite database connection with WAL mode and foreign keys. */
 const db: Database = await connect(
   databasePath,
   { experimental: ['triggers',], },

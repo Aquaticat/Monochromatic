@@ -1,62 +1,62 @@
 /**
- * Render function for the `\<task-detail\>` Shadow DOM tree.
- *
- * Builds the layout: header with close/save buttons, title input,
- * description textarea, attach/photo actions, pills container, and
- * action button row (delegated to task-detail-render-actions.ts).
+ * DOM building helpers for the `<task-detail>` render method.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
-import {
-  attachActionHandler,
-  buildActionButtonRow,
-} from './task-detail-render-actions.ts';
-import { TASK_DETAIL_STYLES, } from './task-detail-styles.ts';
-import type { TaskDetailMode, } from './task-detail-types.ts';
 
-/** References to interactive elements needed by the caller after render. */
-export type RenderResult = {
-  /** Title input for wiring autofill. */
+/** Options for building the task detail DOM tree. */
+type RenderOptions = {
+  /** Task being displayed. */
+  task: Task;
+  /** Whether the component is in create mode. */
+  isCreate: boolean;
+  /** Compiled CSS string for styles. */
+  styles: string;
+};
+
+/** References to dynamic elements within the rendered tree. */
+export type RenderRefs = {
+  /** Title text input. */
   titleInput: HTMLInputElement;
-  /** Description textarea for reading on save. */
+  /** Description textarea. */
   descInput: HTMLTextAreaElement;
+  /** Container for metadata pill elements. */
+  pillsContainer: HTMLElement;
+  /** Action button row (start/stop/complete/delete). */
+  btnRow: HTMLElement;
+};
+
+/** Result of building the task detail DOM tree. */
+type RenderResult = {
+  /** Top-level elements to insert into the shadow root. */
+  elements: (HTMLElement | HTMLStyleElement)[];
+  /** References to elements that need post-render interaction. */
+  refs: RenderRefs;
 };
 
 /**
- * Builds the full task-detail Shadow DOM content.
+ * Builds the complete `<task-detail>` Shadow DOM tree.
  *
- * @param shadow - Shadow root to render into
+ * Returns both the element list and refs to interactive elements
+ * so the caller can wire up event listeners without querying the DOM.
  *
- * @param task - Task data to display
- *
- * @param mode - "create" or "edit" display mode
- *
- * @param host - Host element for dispatching custom events
- *
- * @returns References to title and description inputs
+ * @returns Elements and refs
  *
  * @example
  * ```ts
- * const { titleInput } = renderTaskDetail({ shadow, task, mode: 'edit', host: this });
+ * const { elements, refs } = buildTaskDetailTree({ task, isCreate: false, styles: [] });
+ * shadow.replaceChildren(...elements);
  * ```
  */
-export function renderTaskDetail(
+export function buildTaskDetailTree(
   {
-    shadow,
     task,
-    mode,
-    host,
-  }: {
-    shadow: ShadowRoot;
-    task: Task;
-    mode: TaskDetailMode;
-    host: HTMLElement;
-  },
+    isCreate,
+    styles,
+  }: RenderOptions,
 ): RenderResult {
-  const isCreate = mode === 'create';
-
   // Close button uses innerHTML for SVG because h() creates HTML-namespace
-  // elements. SVG requires the SVG namespace.
+  // elements: SVG requires the SVG namespace.
   const closeButton = h({
     tag: 'button',
     class: 'close',
@@ -87,10 +87,58 @@ export function renderTaskDetail(
   if (task.description !== null)
     descInput.textContent = task.description;
 
-  shadow.replaceChildren(
+  const startAttrs: Record<string, string> = { 'data-action': 'start', };
+  if (task.timerStartedAt !== null)
+    startAttrs['disabled'] = '';
+  const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
+  if (task.timerStartedAt === null)
+    stopAttrs['disabled'] = '';
+  const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
+  if (task.blockedBy.length > 0)
+    completeAttrs['disabled'] = '';
+
+  const btnRow = h({
+    tag: 'div',
+    class: 'btn-row',
+    children: [
+      h({
+        tag: 'button',
+        class: 'btn-outline',
+        attrs: startAttrs,
+        text: 'Start',
+      },),
+      h({
+        tag: 'button',
+        class: 'btn-outline',
+        attrs: stopAttrs,
+        text: 'Stop',
+      },),
+      h({
+        tag: 'button',
+        class: 'btn-primary',
+        attrs: completeAttrs,
+        text: 'Complete',
+      },),
+      h({
+        tag: 'button',
+        class: 'btn-outline',
+        attrs: { 'data-action': 'delete', },
+        text: 'Delete',
+      },),
+    ],
+  },);
+  if (isCreate)
+    btnRow.dataset['hidden'] = '';
+
+  const pillsContainer = h({
+    tag: 'div',
+    class: 'pills',
+  },);
+
+  const elements = [
     h({
       tag: 'style',
-      text: TASK_DETAIL_STYLES,
+      text: styles,
     },),
     h({
       tag: 'div',
@@ -130,30 +178,17 @@ export function renderTaskDetail(
         },),
       ],
     },),
-    h({
-      tag: 'div',
-      class: 'pills',
-    },),
-    buildActionButtonRow({
-      task,
-      isCreate,
-    },),
-  );
-
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- h() created these elements with the correct tag
-  const typedTitleInput = titleInput as HTMLInputElement;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- h() created these elements with the correct tag
-  const typedDescInput = descInput as HTMLTextAreaElement;
-
-  attachActionHandler({
-    shadow,
-    host,
-    titleInput: typedTitleInput,
-    descInput: typedDescInput,
-  },);
+    pillsContainer,
+    btnRow,
+  ];
 
   return {
-    titleInput: typedTitleInput,
-    descInput: typedDescInput,
+    elements,
+    refs: {
+      titleInput,
+      descInput,
+      pillsContainer,
+      btnRow,
+    },
   };
 }

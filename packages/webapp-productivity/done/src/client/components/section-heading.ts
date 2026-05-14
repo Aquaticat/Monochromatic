@@ -1,43 +1,79 @@
-import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import { css, } from '../css.ts';
+import {
+  cssInt,
+  cssRem,
+  cssVar,
+  hDom as h,
+} from '@monochromatic-dev/module-hyperscript/ts';
+import { $ as css, } from '../css.ts';
+import {
+  flexCenter,
+  flexColumn,
+  flexRow,
+  minTouchTarget,
+} from '../mixins.ts';
 
-/** Shadow DOM styles for the `\<section-heading\>` component. */
-const STYLES = css(`
-  :host {
-    @apply --flex-column;
-    gap: 0.5rem;
-  }
-  .heading {
-    @apply --flex-row;
-    gap: 1rem;
-    font-size: 1.25rem;
-    font-weight: 400;
-    cursor: pointer;
-  }
-  .icon {
-    @apply --flex-center;
-    @apply --min-touch-target;
-    font-size: 2rem;
-  }
-  .toggle {
-    inline-size: 1.25rem;
-    block-size: 1.25rem;
-  }
-  .content {
-    @apply --flex-column;
-    gap: var(--gap);
-  }
-`,);
+/** Host gap in rem (1/2). */
+const HOST_GAP = 1 / 2;
+
+/** Heading and toggle size in rem (1 1/4). */
+const HEADING_SIZE = 1 + 1 / 2 / 2;
+
+/** Normal font weight. */
+const FONT_WEIGHT_NORMAL = 400;
+
+/** Compiled CSS string for `<section-heading>` Shadow DOM. */
+const STYLES = [
+  css({
+    rule: ':host',
+    decls: {
+      ...flexColumn(),
+      gap: cssRem(HOST_GAP,),
+    },
+  },),
+  css({
+    rule: '.heading',
+    decls: {
+      ...flexRow(),
+      gap: cssRem(1,),
+      'font-size': cssRem(HEADING_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
+      cursor: 'pointer',
+    },
+  },),
+  css({
+    rule: '.icon',
+    decls: {
+      ...flexCenter(),
+      ...minTouchTarget(),
+      'font-size': cssRem(2,),
+    },
+  },),
+  css({
+    rule: '.toggle',
+    decls: {
+      'inline-size': cssRem(HEADING_SIZE,),
+      'block-size': cssRem(HEADING_SIZE,),
+    },
+  },),
+  css({
+    rule: '.content',
+    decls: {
+      ...flexColumn(),
+      gap: cssVar('gap',),
+    },
+  },),
+]
+  .join('',);
 
 /**
- * `\<section-heading\>` -- collapsible section with icon, label, and toggle indicator.
- * Dispatches a `toggle` event with `\{ open \}` when the heading is clicked.
+ * `<section-heading>` -- collapsible section with icon, label, and toggle indicator.
+ * Dispatches a `toggle` event with `{ open }` when the heading is clicked.
  */
 class SectionHeading extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Whether the section content is currently expanded. */
+  /** Whether the section content is expanded. */
   #open = true;
 
   /** Initializes the shadow root. */
@@ -47,15 +83,15 @@ class SectionHeading extends HTMLElement {
   }
 
   /**
-   * Whether the section is currently expanded.
+   * Whether the section content is currently visible.
    *
-   * @returns True when the section content is visible
+   * @returns Current open state
    */
   get open(): boolean {
     return this.#open;
   }
 
-  /** Renders the heading and attaches the toggle click handler. */
+  /** Renders content and wires the heading click listener. */
   connectedCallback(): void {
     this.#render();
     this.#shadow.querySelector<HTMLElement>('.heading',)?.addEventListener(
@@ -64,12 +100,11 @@ class SectionHeading extends HTMLElement {
     );
   }
 
-  /**
-   * Toggles the open state and dispatches a toggle event.
-   * Registered as a click handler in connectedCallback.
-   */
-  // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-  readonly #toggle = function toggle(this: SectionHeading,): void {
+  /** Bound toggle handler that collapses/expands and dispatches a `toggle` event. */
+  readonly #toggle = this.#onToggle.bind(this,);
+
+  /** Toggles the open state and dispatches a `toggle` event. */
+  #onToggle(): void {
     this.#open = !this.#open;
     this.#updateToggle();
     this.dispatchEvent(
@@ -82,21 +117,25 @@ class SectionHeading extends HTMLElement {
       ),
     );
   }
-    .bind(this,);
 
-  /** Updates the toggle indicator and content visibility. */
+  /**
+   * Updates the toggle indicator and content visibility.
+   *
+   * @example
+   * ```ts
+   * this.#updateToggle();
+   * ```
+   */
   #updateToggle(): void {
     const toggle = this.#shadow.querySelector<HTMLElement>('.toggle',);
     if (toggle instanceof HTMLElement)
       toggle.textContent = this.#open ? '\u25B2' : '\u25BC';
     const content = this.#shadow.querySelector<HTMLElement>('.content',);
-    if (content !== null) {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns Element; style access needs HTMLElement
-      (content as HTMLElement).style.display = this.#open ? 'flex' : 'none';
-    }
+    if (content !== null)
+      content.style.display = this.#open ? 'flex' : 'none';
   }
 
-  /** Renders the heading, toggle indicator, and content slot into the shadow root. */
+  /** Renders the heading row and content slot into the shadow root. */
   #render(): void {
     const icon = this.getAttribute('icon',) ?? '';
     const label = this.getAttribute('label',) ?? '';

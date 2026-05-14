@@ -12,7 +12,7 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Configuration for rendering a page with the standard HTML shell. */
+/** Options for rendering a full HTML page with the standard layout shell. */
 type LayoutOptions = {
   title: string;
   heading: string;
@@ -34,7 +34,7 @@ type LayoutOptions = {
  *
  * @example
  * ```ts
- * const json = serializePageData({ key: 'value' });
+ * const json = serializePageData({ tasks: [] });
  * ```
  */
 export function serializePageData(data: unknown,): string {
@@ -59,7 +59,7 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  *
  * @example
  * ```ts
- * return renderPage({ title: 'Inbox - Done', heading: 'Inbox', entryScriptPath: '/dist/client/inbox.js', pageData: {} });
+ * const response = renderPage({ title: 'Inbox', heading: 'Inbox', entryScriptPath: '/dist/client/inbox.js', pageData: {} });
  * ```
  */
 export function renderPage(options: LayoutOptions,): Response {

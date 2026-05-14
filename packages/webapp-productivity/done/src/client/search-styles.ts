@@ -1,53 +1,81 @@
 /**
- * Page-scoped CSS for the Search page.
- *
- * Separated from search.ts to keep the entry script focused on
- * hydration logic rather than style declarations.
+ * Page-scoped styles for the Search page.
  */
+import {
+  cssCalc,
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-hyperscript/ts';
+import { $ as css, } from './css.ts';
+import {
+  borderRadiusFull,
+  flexCenter,
+  whitespaceNowrap,
+} from './mixins.ts';
 
-/** Large border-radius value for pill-shaped tag chips. */
-const PILL_BORDER_RADIUS_REM = 62.5;
+/** Tag chip padding in rem (1/2). */
+const CHIP_PADDING = 1 / 2;
 
-/** Search-specific styles for hints, tag chips, and responsive layout. */
-export const searchStyles: string = `
-.search-hint {
-  color: var(--fg-weaker);
-  font-size: 1rem;
-  line-height: 1.5;
-}
+/** Tag chip gap in rem (1/4). */
+const CHIP_GAP = 1 / 2 / 2;
 
-.tag-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--min-gap);
-}
+/** Desktop search hint font size in rem (3/2). */
+const HINT_FONT_SIZE_DESKTOP = (2 + 1) / 2;
 
-.tag-chip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-width: calc(1 / 16 * 1rem);
-  border-style: solid;
-  border-color: var(--fg);
-  border-radius: ${String(PILL_BORDER_RADIUS_REM,)}rem;
-  padding-block: 0.5rem;
-  padding-inline: 0.5rem;
-  gap: 0.25rem;
-  white-space: nowrap;
-  font-size: 1rem;
-  line-height: 1.5;
-  cursor: pointer;
-  background-color: transparent;
-  font: inherit;
-
-  &:hover {
-    background-color: var(--hover-bg);
-  }
-}
-
-@media (min-width: 48rem) {
-  .search-hint {
-    font-size: 1.5rem;
-  }
-}
-`;
+/** Compiled CSS string for search page styling. */
+export const searchStyles: string = [
+  css({
+    rule: '.search-hint',
+    decls: {
+      color: cssVar('fg-weaker',),
+      'font-size': cssRem(1,),
+      'line-height': 1.5,
+    },
+  },),
+  css({
+    rule: '.tag-chips',
+    decls: {
+      display: 'flex',
+      'flex-wrap': 'wrap',
+      gap: cssVar('min-gap',),
+    },
+  },),
+  css({
+    rule: '.tag-chip',
+    decls: {
+      ...flexCenter(),
+      ...whitespaceNowrap(),
+      ...borderRadiusFull(),
+      'border-width': cssCalc(`${cssRem(1,)} / 16`,),
+      'border-style': 'solid',
+      'border-color': cssVar('fg',),
+      'padding-block': cssRem(CHIP_PADDING,),
+      'padding-inline': cssRem(CHIP_PADDING,),
+      gap: cssRem(CHIP_GAP,),
+      cursor: 'pointer',
+      'background-color': 'transparent',
+      'font-family': 'inherit',
+      'font-size': 'inherit',
+      'font-style': 'inherit',
+      'font-weight': 'inherit',
+      'line-height': 'inherit',
+    },
+    children: [
+      css({
+        rule: '&:hover',
+        decls: { 'background-color': cssVar('hover-bg',), },
+      },),
+    ],
+  },),
+  css({
+    at: 'media',
+    params: '(min-width: 48rem)',
+    children: [
+      css({
+        rule: '.search-hint',
+        decls: { 'font-size': cssRem(HINT_FONT_SIZE_DESKTOP,), },
+      },),
+    ],
+  },),
+]
+  .join('',);

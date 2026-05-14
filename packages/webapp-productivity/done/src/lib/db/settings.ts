@@ -6,7 +6,7 @@
  */
 import db from '../db.ts';
 
-/** Raw database row shape for the settings table. */
+/** Database row shape for the settings table. */
 type SettingRow = {
   key: string;
   value: string;
@@ -21,7 +21,7 @@ type SettingRow = {
  *
  * @example
  * ```ts
- * const apiKey = await getSetting('ai_api_key');
+ * const apiKey = await getSetting('openai-api-key');
  * ```
  */
 export async function getSetting(key: string,): Promise<string | null> {
@@ -41,7 +41,7 @@ export async function getSetting(key: string,): Promise<string | null> {
  *
  * @example
  * ```ts
- * await setSetting('ai_api_key', 'sk-...');
+ * await setSetting('openai-api-key', 'sk-...');
  * ```
  */
 export async function setSetting(
@@ -67,7 +67,7 @@ export async function setSetting(
  *
  * @example
  * ```ts
- * const removed = await deleteSetting('ai_api_key');
+ * const removed = await deleteSetting('openai-api-key');
  * ```
  */
 export async function deleteSetting(key: string,): Promise<boolean> {
@@ -83,6 +83,7 @@ export async function deleteSetting(key: string,): Promise<boolean> {
  * @example
  * ```ts
  * const settings = await getAllSettings();
+ * // { 'openai-api-key': 'sk-...', 'location': 'home' }
  * ```
  */
 export async function getAllSettings(): Promise<Record<string, string>> {

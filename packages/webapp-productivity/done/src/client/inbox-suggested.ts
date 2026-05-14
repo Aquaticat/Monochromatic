@@ -1,45 +1,39 @@
 /**
- * Suggested section builder for the Inbox page.
- *
- * Builds the collapsible "Suggested" section with location autodetect
- * toggle, focus preset dropdown, and the suggested task list.
+ * Builds the "Suggested" section DOM for the inbox page.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import type {
-  BlockedTaskLink,
-  Task,
-} from '../lib/types.ts';
+import {
+  buildTaskList,
+  type InboxPageData,
+} from './inbox-builders.ts';
 
 /**
- * Builds the suggested section with controls and task list.
+ * Creates the suggested-tasks section with location/focus controls and task list.
  *
- * @param suggestedTasks - Tasks to display in the suggested section
+ * @param pageData - Deserialized inbox page data
  *
- * @param blockedTasksByBlocker - Map of blocker ID to blocked task links
+ * @param onOpen - Callback to navigate to task detail
  *
- * @param buildTaskList - Function to build a task list element
+ * @param onComplete - Callback to complete a task
  *
- * @returns Suggested section element ready for DOM insertion
+ * @returns Section heading element containing the suggested tasks UI
  *
  * @example
  * ```ts
- * const section = buildSuggestedSection({ suggestedTasks, blockedTasksByBlocker, buildTaskList });
- * app.append(section);
+ * const section = buildSuggestedSection({ pageData, onOpen: handleOpen, onComplete: handleComplete });
+ * app.prepend(section);
  * ```
  */
-export function buildSuggestedSection(
-  {
-    suggestedTasks,
-    blockedTasksByBlocker,
-    buildTaskList,
-  }: {
-    suggestedTasks: readonly Task[];
-    blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
-    buildTaskList: (tasks: readonly Task[],
-      blocked: Record<string, BlockedTaskLink[] | undefined>,) => HTMLUListElement;
-  },
-): HTMLElement {
-  /** Collapsible section heading for suggested tasks. */
+export function buildSuggestedSection({
+  pageData,
+  onOpen,
+  onComplete,
+}: {
+  pageData: InboxPageData;
+  onOpen: (taskId: string,) => void;
+  onComplete: (taskId: string,) => Promise<void>;
+},): HTMLElement {
+  /** Collapsible section heading for the suggested tasks block. */
   const suggestedSection = h({
     tag: 'section-heading',
     attrs: {
@@ -119,16 +113,18 @@ export function buildSuggestedSection(
           },),
         ],
       },),
-      suggestedTasks.length === 0
+      pageData.suggestedTasks.length === 0
         ? h({
           tag: 'p',
           class: 'empty',
           text: 'No tasks yet.',
         },)
-        : buildTaskList(
-          suggestedTasks,
-          blockedTasksByBlocker,
-        ),
+        : buildTaskList({
+          tasks: pageData.suggestedTasks,
+          blockedTasksByBlocker: pageData.blockedTasksByBlocker,
+          onOpen,
+          onToggleComplete: onComplete,
+        },),
     ],
   },);
 

@@ -1,0 +1,141 @@
+import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
+import { css, } from '../css.ts';
+
+/** Shadow DOM styles for the `\<section-heading\>` component. */
+const STYLES = css(`
+  :host {
+    @apply --flex-column;
+    gap: 0.5rem;
+  }
+  .heading {
+    @apply --flex-row;
+    gap: 1rem;
+    font-size: 1.25rem;
+    font-weight: 400;
+    cursor: pointer;
+  }
+  .icon {
+    @apply --flex-center;
+    @apply --min-touch-target;
+    font-size: 2rem;
+  }
+  .toggle {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+  }
+  .content {
+    @apply --flex-column;
+    gap: var(--gap);
+  }
+`,);
+
+/**
+ * `\<section-heading\>` -- collapsible section with icon, label, and toggle indicator.
+ * Dispatches a `toggle` event with `\{ open \}` when the heading is clicked.
+ */
+class SectionHeading extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
+  readonly #shadow: ShadowRoot;
+
+  /** Whether the section content is currently expanded. */
+  #open = true;
+
+  /** Initializes the shadow root. */
+  constructor() {
+    super();
+    this.#shadow = this.attachShadow({ mode: 'open', },);
+  }
+
+  /**
+   * Whether the section is currently expanded.
+   *
+   * @returns True when the section content is visible
+   */
+  get open(): boolean {
+    return this.#open;
+  }
+
+  /** Renders the heading and attaches the toggle click handler. */
+  connectedCallback(): void {
+    this.#render();
+    this.#shadow.querySelector<HTMLElement>('.heading',)?.addEventListener(
+      'click',
+      this.#toggle,
+    );
+  }
+
+  /**
+   * Toggles the open state and dispatches a toggle event.
+   * Registered as a click handler in connectedCallback.
+   */
+  // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+  readonly #toggle = function toggle(this: SectionHeading,): void {
+    this.#open = !this.#open;
+    this.#updateToggle();
+    this.dispatchEvent(
+      new CustomEvent(
+        'toggle',
+        {
+          detail: { open: this.#open, },
+          bubbles: true,
+        },
+      ),
+    );
+  }
+    .bind(this,);
+
+  /** Updates the toggle indicator and content visibility. */
+  #updateToggle(): void {
+    const toggle = this.#shadow.querySelector<HTMLElement>('.toggle',);
+    if (toggle instanceof HTMLElement)
+      toggle.textContent = this.#open ? '\u25B2' : '\u25BC';
+    const content = this.#shadow.querySelector<HTMLElement>('.content',);
+    if (content !== null) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns Element; style access needs HTMLElement
+      (content as HTMLElement).style.display = this.#open ? 'flex' : 'none';
+    }
+  }
+
+  /** Renders the heading, toggle indicator, and content slot into the shadow root. */
+  #render(): void {
+    const icon = this.getAttribute('icon',) ?? '';
+    const label = this.getAttribute('label',) ?? '';
+
+    this.#shadow.replaceChildren(
+      h({
+        tag: 'style',
+        text: STYLES,
+      },),
+      h({
+        tag: 'div',
+        class: 'heading',
+        children: [
+          h({
+            tag: 'span',
+            class: 'icon',
+            text: icon,
+          },),
+          h({
+            tag: 'span',
+            text: label,
+          },),
+          h({
+            tag: 'span',
+            class: 'toggle',
+            text: this.#open ? '\u25B2' : '\u25BC',
+          },),
+        ],
+      },),
+      h({
+        tag: 'div',
+        class: 'content',
+        children: [h({ tag: 'slot', },),],
+      },),
+    );
+  }
+}
+
+customElements.define(
+  'section-heading',
+  SectionHeading,
+);

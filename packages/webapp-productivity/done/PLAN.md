@@ -6,8 +6,8 @@ Items without a priority marker are implicitly highest priority.
 
 > Stale-warning, 2026-05-13: lower historical sections still contain the original
 > `Bun.serve()` / `Bun.build()` sketch. Current implementation uses h3 route
-> registration, build-css, and tsdown client bundles. Trust the architecture
-> overview below, `README.md`, and `src/server.ts` over older embedded snippets.
+> registration, h-css runtime-generated styles, and tsdown client bundles. Trust
+> `README.md` and `src/server.ts` over older embedded snippets.
 
 ## Architecture overview
 
@@ -15,7 +15,7 @@ No framework. Vanilla TypeScript on both server and client, unified by Bun.
 
 - **Server:** h3 `H3` route registration handles page and API routes. Static serving handles built client assets from `dist/client/`.
 - **Client:** Plain TypeScript with `document.createElement` for DOM construction. Custom elements where reuse is needed (task card, chip editor, collapsible section).
-- **Build:** `build-css` compiles global CSS and tsdown bundles client TypeScript as separate mise build tasks. Server startup compiles CSS, but client JS bundles are built separately by `mise run build:js:client`.
+- **Build:** h-css runtime-generated styles and tsdown client bundles are built through mise tasks.
 - **CSS:** CSS files use `@mixin`/`@apply` syntax processed by `@monochromatic-dev/build-css`. Processed CSS is imported as text in client TS and injected at runtime -- no separate `<link>` tags needed.
 - **Dev:** `mise watch -w src -r -- bun src/server.ts` restarts the server process on source changes.
 - **Operational advantage:** The orchestrator spawns per-user Bun processes. Each process runs the build pipeline at startup, so new/restarted processes immediately serve the latest code.
@@ -26,13 +26,13 @@ See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, V
 
 ### 1.1 Project setup (~1.5h) **done**
 
-- (0.25h) Initialize project at `packages/webapp-productivity/done/` with `package.json` (`workspace:*` references to monorepo packages)
+- (0.25h) Initialize project at `packages/site/done/` with `package.json` (`workspace:*` references to monorepo packages)
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
-- (0.25h) Create `src/server.ts`: entry point with build-css at startup, then h3 `H3` route registration and static serving
+- (0.25h) Create `src/server.ts`: entry point with build-css + `Bun.build()` at startup, then `Bun.serve()` with `routes` property
 - (0.25h) Create `src/client/` directory with a minimal `inbox.ts` entry point to verify the build pipeline
-- (0.25h) Verify: package build tasks produce client JS, `bun src/server.ts` serves it, and the mise dev task restarts on source changes
+- (0.25h) Verify: `bun --watch src/server.ts` starts, builds CSS + client TS, serves the built JS, and restarts on file change
 
-Historical server-entry sketch, superseded by the current h3 implementation in `src/server.ts`:
+The server entry point (validated in bun-test):
 
 ```ts
 // src/server.ts -- entry point for each user's Done instance
@@ -184,7 +184,7 @@ export function injectCSS(css: string,): void {
 - (0.5h) Verify migration runs cleanly on a fresh `.db` file, test FTS5 triggers manually
 
 libsql is SQLite-compatible, so all standard SQLite features work.
-The schema below is the complete initial migration; run it once on first startup.
+The schema below is the complete initial migration: run it once on first startup.
 
 ```sql
 -- ============================================================
@@ -711,7 +711,7 @@ CREATE INDEX idx_sessions_expires ON sessions(expires_at);
 ### Session cookie format
 
 The session cookie is a simple lookup token, not a signed JWT.
-The `sessions` table is the source of truth; no crypto to get wrong.
+The `sessions` table is the source of truth: no crypto to get wrong.
 
 ```http
 Cookie: session=<session-id>; Path=/u/<user-id>/; HttpOnly; Secure; SameSite=Strict
@@ -1077,7 +1077,7 @@ Two-day gap (Sat-Sun) before this session. Budget time for context recovery.
 
 The orchestrator is a standalone Bun/TypeScript process that manages the entire multi-tenant lifecycle.
 It lives at `packages/site/done/orchestrator/` with its own entry point.
-It handles auth, reverse proxy, and process management; no Caddy or AuthCrunch needed.
+It handles auth, reverse proxy, and process management: no Caddy or AuthCrunch needed.
 Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on HTTP (port 3000).
 
 #### 7.1a Registration and login (~1.5h)
@@ -1106,7 +1106,7 @@ Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on H
 
 The entire stack deploys as a single `docker-compose.yml` at `packages/site/done/docker-compose.yml`.
 Coolify picks it up and manages the deployment.
-Coolify's reverse proxy handles HTTPS termination; the orchestrator only listens on HTTP.
+Coolify's reverse proxy handles HTTPS termination: the orchestrator only listens on HTTP.
 
 **Services:**
 
@@ -1116,7 +1116,7 @@ Coolify's reverse proxy handles HTTPS termination; the orchestrator only listens
 | `llama-cpp`    | `ghcr.io/ggml-org/llama.cpp:server` (CPU) | Shared AI inference, OpenAI-compatible API |
 
 The orchestrator container spawns per-user Bun processes as child processes within itself (not separate containers).
-Each child process runs `Bun.build()` at startup to bundle client assets; no separate build step in the Dockerfile.
+Each child process runs `Bun.build()` at startup to bundle client assets: no separate build step in the Dockerfile.
 User data lives on a named volume mounted at `/data/` inside the orchestrator container.
 The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.db` on startup) -- no external config files to manage.
 
@@ -1255,7 +1255,7 @@ Read-only inbound for MVP. Outbound writes deferred post-competition.
 ## Validated by bun-test (packages/site/bun-test)
 
 A throwaway flashcard app was built pre-competition to validate the architecture.
-These patterns are confirmed working; no surprises expected during implementation.
+These patterns are confirmed working: no surprises expected during implementation.
 
 | Pattern                                                    | Status        | Notes                                                                      |
 | ---------------------------------------------------------- | ------------- | -------------------------------------------------------------------------- |
@@ -1269,7 +1269,7 @@ These patterns are confirmed working; no surprises expected during implementatio
 | fetch() mutations + window.location.reload()               | **validated** | Simple mutation pattern, no client-side state sync                         |
 | bun:sqlite in-memory DB                                    | **validated** | CRUD, foreign keys, WAL mode                                               |
 | Bun.file() auto Content-Type                               | **validated** | No manual content-type mapping needed                                      |
-| Static imports for DB + route handlers                     | **validated** | Dynamic imports unnecessary; top-level await ensures build completes first |
+| Static imports for DB + route handlers                     | **validated** | Dynamic imports unnecessary: top-level await ensures build completes first |
 
 ### Not yet tested (verify early in implementation)
 
@@ -1281,7 +1281,7 @@ These patterns are confirmed working; no surprises expected during implementatio
 | 5 client entrypoints (vs 2 tested)             | low    | Bun.build() is fast, linear scaling expected            |
 | setInterval timer tick on client               | low    | Standard browser API, trivial to test                   |
 | @upyo/smtp email sending                       | medium | External dependency, test with real SMTP early          |
-| Orchestrator multi-process spawning            | high   | Most complex untested piece; budget extra time on day 5 |
+| Orchestrator multi-process spawning            | high   | Most complex untested piece: budget extra time on day 5 |
 
 ## Risk areas
 

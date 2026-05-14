@@ -8,7 +8,7 @@
 import {
   listBlockedInboxTasks,
   listInboxUnblockedTasks,
-} from '../../lib/db/tasks.ts';
+} from '../../lib/db/tasks-queries.ts';
 import { renderPage, } from './layout.ts';
 
 /**

@@ -1,7 +1,7 @@
 /**
  * New-task panel module for the Inbox page.
  *
- * The FAB button transforms into a fixed panel containing `\<task-detail\>`
+ * The FAB button transforms into a fixed panel containing `<task-detail>`
  * in create mode. Uses the Popover API for top-layer stacking without a
  * blocking backdrop, so the side-drawer remains visible and interactive.
  *
@@ -13,7 +13,8 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';
 import type { TaskDetail, } from './components/task-detail.ts';
 import { api, } from './lib/api.ts';
-// oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the task-detail custom element
+// Side-effect import: registers the `<task-detail>` custom element
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/task-detail.ts';
 
 /** Blank task template used when creating a new task. */
@@ -38,7 +39,9 @@ const emptyTask: Task = {
   updatedAt: '',
 };
 
-/** Return value of `createNewTaskDialog`. */
+/**
+ * Return value of {@link createNewTaskDialog}.
+ */
 type NewTaskDialog = {
   /** Fixed panel element to append to the document body. */
   panel: HTMLElement;
@@ -63,7 +66,7 @@ type NewTaskDialog = {
  * ```
  */
 export function createNewTaskDialog(): NewTaskDialog {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail
   const detail = document.createElement('task-detail',) as TaskDetail;
 
   const panel = h({
@@ -88,58 +91,49 @@ export function createNewTaskDialog(): NewTaskDialog {
 
   detail.addEventListener(
     'action',
-    function onAction(event,) {
-      void (async function onActionAsync(): Promise<void> {
-        try {
-          if (!(event instanceof CustomEvent))
-            throw new TypeError("Expected CustomEvent for 'action' listener",);
-          /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload */
-          const {
-            action,
-            title,
-            description,
-          } = event.detail as {
-            action: string;
-            title: string;
-            description: string;
-          };
-          /* oxlint-enable typescript/no-unsafe-type-assertion */
+    function handleAction(event,) {
+      if (!(event instanceof CustomEvent))
+        throw new TypeError("Expected CustomEvent for 'action' listener",);
+      const {
+        action,
+        title,
+        description,
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
+      } = event.detail as {
+        action: string;
+        title: string;
+        description: string;
+      };
 
-          if (action === 'close') {
-            closePanel();
-            return;
-          }
+      if (action === 'close') {
+        closePanel();
+        return;
+      }
 
-          if (action === 'save') {
-            const trimmedTitle = title.trim();
-            if (trimmedTitle.length === 0)
-              return;
+      if (action === 'save') {
+        const trimmedTitle = title.trim();
+        if (trimmedTitle.length === 0)
+          return;
 
-            const metadata = detail.getMetadata();
-            await api(
-              '/api/tasks',
-              {
-                method: 'POST',
-                body: JSON.stringify({
-                  title: trimmedTitle,
-                  description: description.length === 0 ? null : description,
-                  tags: metadata.tags,
-                  locations: metadata.locations,
-                  priority: metadata.priority,
-                  complexity: metadata.complexity,
-                },),
-              },
-            );
-            globalThis.location.reload();
-          }
-        }
-        catch (error: unknown) {
-          console.error(
-            'new task action handler failed',
-            error,
+        const metadata = detail.getMetadata();
+        void (async function saveTask(): Promise<void> {
+          await api(
+            '/api/tasks',
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                title: trimmedTitle,
+                description: description.length === 0 ? null : description,
+                tags: metadata.tags,
+                locations: metadata.locations,
+                priority: metadata.priority,
+                complexity: metadata.complexity,
+              },),
+            },
           );
-        }
-      })();
+          globalThis.location.reload();
+        })();
+      }
     },
   );
 
@@ -160,12 +154,10 @@ export function createNewTaskDialog(): NewTaskDialog {
     // Restart the expand animation by toggling the data attribute
     delete panel.dataset['animating'];
     panel.showPopover();
-    requestAnimationFrame(function focusTitleInput() {
+    requestAnimationFrame(function animatePanel() {
       panel.dataset['animating'] = '';
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created
-      const titleInput = detail.shadowRoot?.querySelector<HTMLInputElement>(
-        '.title-input',
-      ) as HTMLInputElement | null;
+      const titleInput =
+        detail.shadowRoot?.querySelector<HTMLInputElement>('.title-input',) ?? null;
       titleInput?.focus();
     },);
   }

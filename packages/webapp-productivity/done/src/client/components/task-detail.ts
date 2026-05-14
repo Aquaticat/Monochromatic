@@ -1,107 +1,55 @@
 /**
- * `\<task-detail\>` -- full-page task editor with title, description, metadata pills,
- * action buttons (start/stop/complete/delete), and debounced AI autofill.
+ * `<task-detail>` web component for viewing and editing a single task.
  */
 import type {
   TaskComplexity,
   TaskPriority,
 } from '../../lib/types.ts';
-import { AutofillController, } from './task-detail-autofill.ts';
-import {
-  buildPillData,
-  buildPillElements,
-} from './task-detail-pills.ts';
-import { renderTaskDetail, } from './task-detail-render.ts';
+import { AutofillManager, } from './task-detail-autofill.ts';
+import { buildPillElements, } from './task-detail-pills.ts';
+import { buildTaskDetailTree, } from './task-detail-render.ts';
+import { TASK_DETAIL_STYLES, } from './task-detail-styles.ts';
 import type {
+  MetadataState,
   TaskDetailData,
   TaskDetailMode,
 } from './task-detail-types.ts';
 
 /**
- * `\<task-detail\>` web component for viewing and editing a single task.
+ * `<task-detail>` -- full-page task editor with title, description, metadata pills,
+ * action buttons (start/stop/complete/delete), and debounced AI autofill.
  */
 class TaskDetail extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Current task configuration data. */
+  /** Current task data and display configuration, or `null` before configure. */
   #data: TaskDetailData | null = null;
 
-  /** Current display mode. */
+  /** Whether the component is in edit or create mode. */
   #mode: TaskDetailMode = 'edit';
 
-  /** Mutable metadata state. */
-  #tags: string[] = [];
+  /** Mutable metadata state updated by autofill and user edits. */
+  #metadata: MetadataState = {
+    tags: [],
+    locations: [],
+    priority: null,
+    complexity: null,
+  };
 
-  /** Mutable locations state. */
-  #locations: string[] = [];
+  /** Debounced AI autofill manager. */
+  readonly #autofill = new AutofillManager();
 
-  /** Mutable priority state. */
-  #priority: TaskPriority | null = null;
-
-  /** Mutable complexity state. */
-  #complexity: TaskComplexity | null = null;
-
-  /** Autofill controller managing debounced AI requests. */
-  readonly #autofill: AutofillController;
-
-  /** Initializes the shadow root and autofill controller. */
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
-    this.#autofill = new AutofillController({
-      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-      getState: function getState(
-        this: TaskDetail,
-      ): {
-        tags: string[];
-        locations: string[];
-        priority: string | null;
-        complexity: string | null;
-      } {
-        return {
-          tags: this.#tags,
-          locations: this.#locations,
-          priority: this.#priority,
-          complexity: this.#complexity,
-        };
-      }
-        .bind(this,),
-      setState: function setState(
-        this: TaskDetail,
-        update: {
-          tags?: string[];
-          locations?: string[];
-          priority?: string | null;
-          complexity?: string | null;
-        },
-      ): void {
-        if (update.tags !== undefined)
-          this.#tags = update.tags as string[];
-        if (update.locations !== undefined)
-          this.#locations = update.locations as string[];
-        if (update.priority !== undefined) {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskPriority union
-          this.#priority = update.priority as TaskPriority | null;
-        }
-        if (update.complexity !== undefined) {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskComplexity union
-          this.#complexity = update.complexity as TaskComplexity | null;
-        }
-      }
-        .bind(this,),
-      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-      updateDisplay: function updateDisplay(this: TaskDetail,): void {
-        this.#updatePillsDisplay();
-      }
-        .bind(this,),
-    },);
   }
 
   /**
    * Sets task data, resets metadata state, and triggers a full render.
    *
-   * @param data - Task data and configuration
+   * @param data - Task data and mode configuration
    */
   configure(data: TaskDetailData,): void {
     console.log(
@@ -110,18 +58,20 @@ class TaskDetail extends HTMLElement {
     );
     this.#data = data;
     this.#mode = data.mode ?? 'edit';
-    this.#tags = [...data.task.tags,];
-    this.#locations = [...data.task.locations,];
-    this.#priority = data.task.priority;
-    this.#complexity = data.task.complexity;
-    this.#autofill.autofilled.clear();
+    this.#metadata = {
+      tags: [...data.task.tags,],
+      locations: [...data.task.locations,],
+      priority: data.task.priority,
+      complexity: data.task.complexity,
+    };
+    this.#autofill.reset();
     this.#render();
   }
 
   /**
-   * Returns the current metadata state for save payloads.
+   * Returns the current metadata state so the parent can include it in save payloads.
    *
-   * @returns Current metadata values
+   * @returns Current tags, locations, priority, and complexity
    */
   getMetadata(): {
     tags: string[];
@@ -129,15 +79,10 @@ class TaskDetail extends HTMLElement {
     priority: TaskPriority | null;
     complexity: TaskComplexity | null;
   } {
-    return {
-      tags: this.#tags,
-      locations: this.#locations,
-      priority: this.#priority,
-      complexity: this.#complexity,
-    };
+    return { ...this.#metadata, };
   }
 
-  /** Rebuilds pill elements from current metadata state. */
+  /** Rebuilds pill elements in the `.pills` container from current metadata state. */
   #updatePillsDisplay(): void {
     const pillsContainer = this.#shadow.querySelector<HTMLElement>('.pills',);
     if (pillsContainer === null)
@@ -146,40 +91,76 @@ class TaskDetail extends HTMLElement {
     if (task === undefined)
       return;
 
-    const pills = buildPillData({
+    const pillElements = buildPillElements({
       task,
-      tags: this.#tags,
-      locations: this.#locations,
-      priority: this.#priority,
-      complexity: this.#complexity,
+      metadata: this.#metadata,
+      autofillLoading: this.#autofill.loading,
+      autofilled: this.#autofill.autofilled,
     },);
-    pillsContainer.replaceChildren(
-      ...buildPillElements({
-        pills,
-        loading: this.#autofill.loading,
-        autofilled: this.#autofill.autofilled,
-      },),
-    );
+    pillsContainer.replaceChildren(...pillElements,);
   }
 
-  /** Delegates to renderTaskDetail and wires autofill on title input. */
+  /** Builds the complete Shadow DOM and wires up event listeners. */
   #render(): void {
     const data = this.#data;
     if (data === null)
       return;
-    const { titleInput, } = renderTaskDetail({
-      shadow: this.#shadow,
-      task: data.task,
-      mode: this.#mode,
-      host: this,
+    const { task, } = data;
+    const isCreate = this.#mode === 'create';
+
+    const {
+      elements,
+      refs,
+    } = buildTaskDetailTree({
+      task,
+      isCreate,
+      styles: TASK_DETAIL_STYLES,
     },);
+    this.#shadow.replaceChildren(...elements,);
     this.#updatePillsDisplay();
-    titleInput.addEventListener(
+
+    const requestAutofill = this.#autofill.request.bind(this.#autofill,);
+    const metadata = this.#metadata;
+    const updatePills = this.#updatePillsDisplay.bind(this,);
+    const dispatchFn = this.dispatchEvent.bind(this,);
+
+    refs.titleInput.addEventListener(
       'input',
-      function onTitleInput(this: TaskDetail,): void {
-        this.#autofill.request(titleInput.value,);
-      }
-        .bind(this,),
+      function handleTitleInput(): void {
+        requestAutofill({
+          title: refs.titleInput.value,
+          metadata,
+          onUpdate: function onAutofillUpdate(): void {
+            updatePills();
+          },
+        },);
+      },
+    );
+
+    this.#shadow.addEventListener(
+      'click',
+      function handleActionClick(event: Event,): void {
+        const { target, } = event;
+        if (!(target instanceof HTMLElement))
+          return;
+        const button = target.closest<HTMLElement>('[data-action]',);
+        if (button === null)
+          return;
+        const { action, } = button.dataset;
+        dispatchFn(
+          new CustomEvent(
+            'action',
+            {
+              bubbles: true,
+              detail: {
+                action,
+                title: refs.titleInput.value,
+                description: refs.descInput.value,
+              },
+            },
+          ),
+        );
+      },
     );
   }
 }

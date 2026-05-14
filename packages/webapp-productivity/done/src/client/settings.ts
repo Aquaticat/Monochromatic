@@ -1,12 +1,12 @@
 /**
  * Client entry script for the Settings page.
  *
- * Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
+ * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import styles from '../../dist/css/styles.css' with { type: 'text', };
 import { injectCSS, } from './lib/inject-css.ts';
 import { readPageData, } from './lib/page-data.ts';
+import { globalStyles, } from './styles.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
@@ -16,21 +16,20 @@ import './components/setting-group.ts';
 
 /** Shape of the JSON blob embedded in the settings page by the server. */
 type SettingsPageData = {
-  /** Server-provided settings message. */
   message: string;
 };
 
-injectCSS(styles,);
+injectCSS(globalStyles,);
 
-/** Deserialized settings page data (reserved for future use). */
+/** Deserialized page data (currently unused but kept for future features). */
 const _pageData = readPageData<SettingsPageData>();
 
-/** Root app container element. */
+/** Raw DOM element for the `#app` container. */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Typed reference to the app container. */
+/** Validated `#app` container element. */
 const app = appElement;
 
 //region Calendar connect

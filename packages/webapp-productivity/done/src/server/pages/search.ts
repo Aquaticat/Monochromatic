@@ -11,7 +11,7 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
   listAllTags,
   searchTasks,
-} from '../../lib/db/tasks.ts';
+} from '../../lib/db/tasks-queries.ts';
 import { serializePageData, } from './layout.ts';
 
 /**
@@ -23,7 +23,7 @@ import { serializePageData, } from './layout.ts';
  *
  * @example
  * ```ts
- * const response = await searchPage(new URL('https://example.com/search?q=test'));
+ * const response = await searchPage(new URL('http://localhost/search?q=groceries'));
  * ```
  */
 export async function searchPage(url: URL,): Promise<Response> {

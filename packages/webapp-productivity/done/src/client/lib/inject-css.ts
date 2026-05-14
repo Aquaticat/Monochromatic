@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import styles from '../../dist/css/styles.css' with { type: 'text' };
+ * import styles from '../dist/css/styles.css' with { type: 'text' };
  * injectCSS(styles);
  * ```
  */

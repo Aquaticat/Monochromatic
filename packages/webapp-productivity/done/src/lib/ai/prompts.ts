@@ -26,7 +26,7 @@ import type { ChatMessage, } from './client.ts';
  *
  * @example
  * ```ts
- * const messages = buildAutofillMessages('Buy groceries', existingTags, existingLocations);
+ * const messages = buildAutofillMessages('Buy groceries', ['errand'], ['Walmart']);
  * ```
  */
 export function buildAutofillMessages(
@@ -88,7 +88,7 @@ For consistency, prefer these existing locations when applicable: ${
  *
  * @example
  * ```ts
- * const messages = buildSuggestionMessages(tasks, 'Home', 'Quick wins only');
+ * const messages = buildSuggestionMessages(tasks, 'home', 'focus on errands');
  * ```
  */
 export function buildSuggestionMessages(
