@@ -54,6 +54,7 @@ export function scanImporterForAttribute({
   importerPath: string;
   importerSourceCache: Map<string, string>;
 },): string | undefined {
+  /** Importer source text; lazily read from disk on cache miss and stored back. */
   let source = importerSourceCache.get(importerPath,);
   if (source === undefined) {
     try {
@@ -74,12 +75,15 @@ export function scanImporterForAttribute({
   if (!source.includes(specifier,))
     return undefined;
 
+  /** Parsed AST root produced by rolldown's parser. */
   const result = parseSync(
     importerPath,
     source,
   );
+  /** Mutable accumulator written by the visitor when a matching specifier is encountered. */
   let found: string | undefined = undefined;
 
+  /** AST visitor that records the attribute type on the first matching specifier. */
   const visitor = new Visitor({
     ImportDeclaration(node: ESTree.ImportDeclaration,): void {
       if (found !== undefined)
@@ -114,6 +118,7 @@ export function scanImporterForAttribute({
         return;
       if (node.options === null)
         return;
+      /** Literal specifier text; computed sources are skipped. */
       const sourceValue = getStringLiteralValue(node.source,);
       if (sourceValue !== specifier)
         return;

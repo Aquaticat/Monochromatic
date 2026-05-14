@@ -55,16 +55,20 @@ export function transformImportAttributes({
   if (!code.includes(' with ',) && !code.includes(' with{',))
     return null;
 
+  /** Parsed AST root walked to collect attribute replacements. */
   const result = parseSync(
     id,
     code,
   );
+  /** Accumulator of span replacements that the reducer below applies to the source code. */
   const replacements: Replacement[] = [];
 
+  /** AST visitor that records replacements for each kind of attribute-bearing declaration. */
   const visitor = new Visitor({
     ImportDeclaration(node: ESTree.ImportDeclaration,): void {
       if (node.attributes.length === 0)
         return;
+      /** Attribute type on this static import; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
@@ -80,6 +84,7 @@ export function transformImportAttributes({
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
       if (node.source === null || node.attributes.length === 0)
         return;
+      /** Attribute type on this re-export with source; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
@@ -95,6 +100,7 @@ export function transformImportAttributes({
     ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
       if (node.attributes.length === 0)
         return;
+      /** Attribute type on this wildcard re-export; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
@@ -110,13 +116,16 @@ export function transformImportAttributes({
     ImportExpression(node: ESTree.ImportExpression,): void {
       if (node.options === null)
         return;
+      /** Attribute type extracted from the dynamic-import options object. */
       const attrType = extractTypeFromOptions(node.options,);
       if (attrType === undefined)
         return;
+      /** Literal specifier text; computed sources are skipped because their bytes cannot be rewritten safely. */
       const sourceValue = getStringLiteralValue(node.source,);
       if (sourceValue === undefined)
         return;
 
+      /** Quote character preserved so the rewritten specifier matches the source's quoting style. */
       const quote = code[node.source.start];
       replacements.push({
         start: node.source.start,
@@ -125,11 +134,14 @@ export function transformImportAttributes({
       },);
 
       // Remove the options argument: find the first comma between source and options
+      /** Slice between source end and options start, scanned to locate the separating comma. */
       const between = code.slice(
         node.source.end,
         node.options.start,
       );
+      /** Position of the comma within `between`; -1 means no comma was found. */
       const relCommaIndex = between.indexOf(',',);
+      /** Absolute offset where the options-argument removal span begins. */
       const commaPos = relCommaIndex === -1
         ? node.options.start
         : node.source.end + relCommaIndex;
@@ -154,6 +166,7 @@ export function transformImportAttributes({
     return b.start - a.start;
   },);
 
+  /** Final source after every replacement has been applied in descending start order. */
   const transformed = replacements.reduce(
     function applyReplacement(
       acc,

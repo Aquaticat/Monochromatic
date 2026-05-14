@@ -78,6 +78,7 @@ export function extractTypeFromAttributes(
   attributes: readonly ESTree.ImportAttribute[],
 ): string | undefined {
   for (const attr of attributes) {
+    /** Resolved attribute key name covering both identifier and string-literal AST forms. */
     const key = attr.key.type === 'Identifier'
       ? attr.key.name
       : attr.key.value;
@@ -113,6 +114,7 @@ export function extractTypeFromOptions(
     if (prop.type !== 'Property')
       continue;
 
+    /** Outer property name; only the `with` clause is relevant. */
     const key = getPropertyKeyName(prop.key,);
     if (key !== 'with' || prop.value.type !== 'ObjectExpression')
       continue;
@@ -121,7 +123,9 @@ export function extractTypeFromOptions(
       if (innerProp.type !== 'Property')
         continue;
 
+      /** Inner property name; narrowed to `type` below. */
       const innerKey = getPropertyKeyName(innerProp.key,);
+      /** String value paired with the `type` entry. */
       const innerValue = getStringLiteralValue(innerProp.value,);
       if (innerKey === 'type'
         && innerValue !== undefined

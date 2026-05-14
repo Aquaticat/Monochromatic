@@ -45,6 +45,7 @@ function findWithClauseStart({
   code: string;
   fromPos: number;
 },): number {
+  /** Detects whether the trailing slot begins with a `with`/`assert` keyword. */
   const match = /^[ \t\n\r]*(?:with|assert)/.exec(code.slice(fromPos,),);
   return match === null ? -1 : fromPos;
 }
@@ -66,6 +67,7 @@ function findWithClauseEnd({
   code: string;
   afterLastAttr: number;
 },): number {
+  /** Offset of the brace that ends the attributes object; falls through when absent. */
   const closingBrace = code.indexOf(
     '}',
     afterLastAttr,
@@ -107,6 +109,7 @@ export function collectStaticReplacements({
   code: string;
   replacements: Replacement[];
 },): void {
+  /** Quote character preserved so the rewritten specifier matches the source's quoting style. */
   const quote = code[source.start];
   replacements.push({
     start: source.start,
@@ -114,15 +117,18 @@ export function collectStaticReplacements({
     text: `${quote}${source.value}?${ATTR_QUERY_KEY}=${attrType}${quote}`,
   },);
 
+  /** Start of the `with`/`assert` clause to elide; -1 if no clause is present. */
   const withStart = findWithClauseStart({
     code,
     fromPos: source.end,
   },);
   if (withStart === -1)
     return;
+  /** Last attribute entry, used to anchor the end-of-clause scan. */
   const lastAttr = attributes.at(-1,);
   if (lastAttr === undefined)
     return;
+  /** End offset that completes the elision span past the closing brace. */
   const withEnd = findWithClauseEnd({
     code,
     afterLastAttr: lastAttr.end,
