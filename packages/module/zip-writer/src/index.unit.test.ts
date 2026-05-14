@@ -101,7 +101,7 @@ await describe({
   name: 'zip-writer',
   children: [
     describe({
-      name: 'crc32',
+      name: crc32.name,
       children: [
         it({
           name: 'returns 0 for empty input',
@@ -130,7 +130,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'dosDateTime',
+      name: dosDateTime.name,
       children: [
         it({
           name: 'encodes a normal date correctly',
