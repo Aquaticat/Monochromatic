@@ -254,53 +254,55 @@ async function fixOwnership(): Promise<void> {
  */
 async function undefineVmIfExists(name: string,): Promise<void> {
   try {
-    await exec(
-      'virsh',
-      [
+    await exec({
+      cmd: 'virsh',
+      args: [
         '--connect',
         LIBVIRT_URI,
         'dominfo',
         name,
       ],
-    );
+    },);
   }
   catch {
     // Domain not defined; nothing to remove.
     return;
   }
   console.log(`[vm-builder] removing existing VM '${name}'...`,);
-  /** Current domain state from `virsh domstate`; `'running'` requires `destroy` before `undefine`. */
-  const state = (await exec(
-    'virsh',
-    [
+  /**
+   * Current domain state from `virsh domstate`; `'running'` requires `destroy` before `undefine`.
+   */
+  const state = (await exec({
+    cmd: 'virsh',
+    args: [
       '--connect',
       LIBVIRT_URI,
       'domstate',
       name,
     ],
-  ))
+  },))
     .trim();
   if (state === 'running') {
-    await exec(
-      'virsh',
-      [
+    await exec({
+      cmd: 'virsh',
+      args: [
         '--connect',
         LIBVIRT_URI,
         'destroy',
         name,
       ],
-    );
+    },);
   }
-  await exec(
-    'virsh',
-    [
+  await exec({
+    cmd: 'virsh',
+    args: [
       '--connect',
       LIBVIRT_URI,
       'undefine',
       name,
       '--nvram',
     ],
-  );
+  },);
 }
 
 /**
@@ -313,14 +315,18 @@ async function undefineVmIfExists(name: string,): Promise<void> {
  */
 async function importVm(name: string,): Promise<void> {
   console.log(`[vm-builder] importing '${name}' into libvirt...`,);
-  /** Domain XML rendered for {@link name}; consumed by `virsh define`. */
+  /**
+   * Domain XML rendered for {@link name}; consumed by `virsh define`.
+   */
   const xml = generateDomainXml({
     name,
     memoryMib: VM_MEMORY_MIB,
     vcpus: VM_VCPUS,
     qcow2Path: QCOW2_PATH,
   },);
-  /** On-disk location of {@link xml}; `virsh define` reads from this path, not stdin. */
+  /**
+   * On-disk location of {@link xml}; `virsh define` reads from this path, not stdin.
+   */
   const xmlPath = join(
     OUTPUT_DIR,
     'domain.xml',
@@ -329,15 +335,15 @@ async function importVm(name: string,): Promise<void> {
     xmlPath,
     xml,
   );
-  await exec(
-    'virsh',
-    [
+  await exec({
+    cmd: 'virsh',
+    args: [
       '--connect',
       LIBVIRT_URI,
       'define',
       xmlPath,
     ],
-  );
+  },);
 }
 
 /**
@@ -347,13 +353,13 @@ async function importVm(name: string,): Promise<void> {
  */
 async function grantFlatpakAccess(): Promise<void> {
   try {
-    await exec(
-      'flatpak',
-      [
+    await exec({
+      cmd: 'flatpak',
+      args: [
         'info',
         'org.virt_manager.virt-manager',
       ],
-    );
+    },);
   }
   catch {
     // virt-manager is not a Flatpak; no override needed.
@@ -362,15 +368,15 @@ async function grantFlatpakAccess(): Promise<void> {
   console.log(
     '[vm-builder] granting virt-manager Flatpak access to output directory...',
   );
-  await exec(
-    'flatpak',
-    [
+  await exec({
+    cmd: 'flatpak',
+    args: [
       'override',
       '--user',
       `--filesystem=${OUTPUT_DIR}`,
       'org.virt_manager.virt-manager',
     ],
-  );
+  },);
 }
 
 /**
