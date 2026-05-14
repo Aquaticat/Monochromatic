@@ -22,9 +22,14 @@
 export async function* readLines(
   stream: AsyncIterable<Uint8Array>,
 ): AsyncGenerator<string> {
+  /** Reused decoder so multi-byte UTF-8 sequences split across chunks are stitched correctly via `stream: true`. */
   const decoder = new TextDecoder();
-  // `buffer` accumulates partial line data between chunk boundaries.
-  // Declared with `let` because string concatenation requires reassignment.
+  /**
+   * Accumulates partial line data between chunk boundaries.
+   *
+   * Declared with `let` because each chunk appends new text and each yield slices off
+   * the emitted prefix; both operations require reassignment of the binding.
+   */
   let buffer = '';
 
   for await (const chunk of stream) {
@@ -33,7 +38,12 @@ export async function* readLines(
       { stream: true, },
     );
 
-    // A single chunk may contain multiple newline-delimited messages.
+    /**
+     * Position of the next newline within `buffer`, or `-1` when no further complete line exists.
+     *
+     * Updated inside the loop as each line is sliced off and emitted, so a single chunk
+     * containing several newline-delimited messages yields each in turn.
+     */
     let newlineIndex = buffer.indexOf('\n',);
     while (newlineIndex !== -1) {
       yield buffer.slice(

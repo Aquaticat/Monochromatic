@@ -60,9 +60,13 @@ export function createMcpServer(
   config: McpServerConfig,
   tools: readonly ToolEntry[],
 ): McpServerHandle {
-  // Build an immutable tool lookup from the entry list.
-  // MCP clients (including Factory Droid) require `inputSchema` on every tool,
-  // even when the tool accepts no arguments. Default to an empty object schema.
+  /**
+   * Immutable lookup of registered tools keyed by name; built once at construction so
+   * later dispatch is O(1) without exposing a mutation surface.
+   *
+   * MCP clients (including Factory Droid) require `inputSchema` on every tool, even
+   * when the tool accepts no arguments; entries without one fall back to `{ type: 'object' }`.
+   */
   const toolMap: ReadonlyMap<string, RegisteredTool> = new Map(
     tools.map(function buildRegisteredTool(entry,) {
       return [
@@ -125,6 +129,7 @@ export function createMcpServer(
    * @returns JSON-RPC success or error response.
    */
   function handleRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
+    /** Request `id` is echoed in the response; `method` selects the branch below. */
     const {
       id,
       method,

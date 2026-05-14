@@ -78,13 +78,19 @@ export async function serve(
   input: AsyncIterable<Uint8Array> = process.stdin,
   output: StdoutWriter = processStdoutWriter(),
 ): Promise<void> {
+  /** Reused across every outbound message so each call avoids allocating a fresh encoder. */
   const encoder = new TextEncoder();
 
   for await (const line of readLines(input,)) {
     if (line.trim().length === 0)
       continue;
 
-    // Parse step: reject malformed JSON before any further processing.
+    /**
+     * Holds the parsed JSON value, or stays `undefined` if `JSON.parse` threw.
+     *
+     * Declared with `let` because the assignment happens inside the try block; the catch
+     * branch needs a binding visible at this scope to write the parse-error response.
+     */
     let parsed: unknown = undefined;
     try {
       parsed = JSON.parse(line,);
@@ -94,6 +100,7 @@ export async function serve(
         '[mcp-stdio] failed to parse JSON from stdin:',
         error,
       );
+      /** Parse-error response returned with `id: null` because the original id cannot be recovered. */
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
@@ -117,6 +124,7 @@ export async function serve(
         '[mcp-stdio] received invalid JSON-RPC message (missing jsonrpc or method):',
         parsed,
       );
+      /** Shape-error response when the message parsed but lacks `jsonrpc` or `method`. */
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
@@ -135,6 +143,7 @@ export async function serve(
 
     console.error(`[mcp-stdio] <- ${line}`,);
 
+    /** Dispatch result; `undefined` indicates a notification (no reply expected). */
     const response = await server.handleMessage(parsed,);
 
     // Notifications produce no response.
@@ -168,6 +177,7 @@ async function writeMessage(
   encoder: TextEncoder,
   message: JsonRpcOutbound,
 ): Promise<void> {
+  /** Newline-terminated JSON; MCP stdio framing requires one message per line. */
   const serialized = `${JSON.stringify(message,)}\n`;
   await writer.write(encoder.encode(serialized,),);
 }
