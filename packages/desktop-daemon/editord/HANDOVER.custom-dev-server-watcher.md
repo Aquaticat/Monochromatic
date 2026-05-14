@@ -116,7 +116,7 @@ Reject unless and until the project has a documented need to consume *existing* 
 
 ### Should this package be Rust instead of TypeScript?
 
-`packages/dev-script/forbidden-strings/` is Rust, so the question is fair: why is this one not? The honest comparison, dimension by dimension.
+`packages/cli/forbidden-strings/` is Rust, so the question is fair: why is this one not? The honest comparison, dimension by dimension.
 
 #### Where forbidden-strings justifies Rust
 

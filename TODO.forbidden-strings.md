@@ -51,7 +51,7 @@ or per-file constant overhead:
 1k rules and 2.7k files multiply small constants into seconds.
 
 Measured performance against the shipped binary lives in
-`packages/dev-script/forbidden-strings/PERF.md`.
+`packages/cli/forbidden-strings/PERF.md`.
 As of 2026-05-02 the implementation is ~300x under the full-repo budget,
 so the budgets above describe upper bounds the design honors with comfortable headroom,
 not targets the implementation is striving toward.
@@ -195,9 +195,9 @@ This means CI enforces whatever the secret holds, even if a contributor's local 
 ### Files to add (committed)
 
 - `hk.pkl` -- hk configuration; one `pre-commit` step invoking the scanner
-- `packages/dev-script/forbidden-strings/` -- Rust crate (Cargo.toml, src/main.rs);
+- `packages/cli/forbidden-strings/` -- Rust crate (Cargo.toml, src/main.rs);
   binary name `forbidden-strings`, depends on the `resharp` crate plus a TOML parser
-- `packages/dev-script/forbidden-strings/mise.toml` -- per-package build task
+- `packages/cli/forbidden-strings/mise.toml` -- per-package build task
   (`cargo build --release`) and install task that drops the binary on PATH
 - `forbidden-strings.local.example.txt` -- placeholder template a contributor copies
   to `forbidden-strings.local.txt` on first setup;
@@ -308,7 +308,7 @@ A single GitHub Actions job on pull_request and push to main:
 
 1. Checkout with full history (`fetch-depth: 0`) so `--from-ref` works
 2. Install mise, run `mise install` to get hk and the Rust toolchain
-3. Build the scanner with `mise run //packages/dev-script/forbidden-strings:build`
+3. Build the scanner with `mise run //packages/cli/forbidden-strings:build`
    (cache `target/` keyed on `Cargo.lock` to keep CI fast)
 4. Materialize `forbidden-strings.local.txt` from a repo secret
    (e.g. `secrets.FORBIDDEN_STRINGS_LIST`) -- the secret holds the full plain-text deny-list
@@ -369,7 +369,7 @@ Make this a required check in branch protection so `--no-verify` locally cannot 
 
 ## Rollout
 
-1. Land the Rust crate at `packages/dev-script/forbidden-strings/`
+1. Land the Rust crate at `packages/cli/forbidden-strings/`
    with the loader pointing at a `.local.txt` file that contains
    only an obviously-fake placeholder rule.
    Verify a `cargo build --release` and that the binary runs end-to-end

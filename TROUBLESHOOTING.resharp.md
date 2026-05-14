@@ -206,7 +206,7 @@ Verified 2026-05-10 against `resharp 0.5.2` (crates.io checksum
 published 2026-05-09) via a synthetic Rust crate calling
 `resharp::Regex::new` directly on each pattern, and against `resharp 0.5.1`
 via the forbidden-strings 0.1.0 release binary
-(`packages/dev-script/forbidden-strings/target/release/forbidden-strings`).
+(`packages/cli/forbidden-strings/target/release/forbidden-strings`).
 The `0.5.1`-to-`0.5.2` upstream delta is streaming/seeking, aarch64+wasm
 build targets, and a prefix-engine bugfix; none touch the `Kind::Compl`
 arm of `reverse`, which lives at `resharp-algebra/src/lib.rs:2234-2235`
@@ -218,7 +218,7 @@ Test harness (binary route):
 ```bash
 cd /tmp
 touch probe-input.txt
-FS=/var/home/user/Monochromatic/packages/dev-script/forbidden-strings/target/release/forbidden-strings
+FS=/var/home/user/Monochromatic/packages/cli/forbidden-strings/target/release/forbidden-strings
 echo '<rule>' > probe-rule.txt
 $FS --rules probe-rule.txt probe-input.txt
 echo "EXIT=$?"   # 0: compile + scan OK; 2: rule error

@@ -391,11 +391,11 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
 const HEADER = `# forbidden-strings deny-list (committed example).
 #
 # THIS FILE IS GENERATED. Do not edit by hand. Source of truth is
-# packages/dev-script/forbidden-strings/src/mise.port-betterleaks.ts
+# packages/cli/forbidden-strings/src/mise.port-betterleaks.ts
 # plus the upstream TOML at
-# packages/dev-script/forbidden-strings/data/betterleaks-default-config.toml.
+# packages/cli/forbidden-strings/data/betterleaks-default-config.toml.
 # Re-generate via:
-#   bun packages/dev-script/forbidden-strings/src/mise.port-betterleaks.ts
+#   bun packages/cli/forbidden-strings/src/mise.port-betterleaks.ts
 #
 # Composition:
 #   - This file (the committed example) ports the betterleaks default
@@ -449,7 +449,7 @@ const FOOTER = `# === resharp set-algebra demonstrations (engine-specific) ===
 /** Entry point. */
 async function main(): Promise<void> {
   const here = dirname(fileURLToPath(import.meta.url,),);
-  // mise.port-betterleaks.ts lives in packages/dev-script/forbidden-strings/src/.
+  // mise.port-betterleaks.ts lives in packages/cli/forbidden-strings/src/.
   // Walk up four levels to land at the repo root.
   const repoRoot = join(
     here,

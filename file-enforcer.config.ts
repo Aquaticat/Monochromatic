@@ -70,7 +70,7 @@ async function generateForbiddenStringsRules(): Promise<void> {
     './forbidden-strings.local.txt',
     `# Generated from forbidden-strings.local.example.txt + forbidden-strings.append.local.txt by file-enforcer.
 # Do not edit manually. To change baseline rules, edit
-# packages/dev-script/forbidden-strings/src/mise.port-betterleaks.ts and re-run it.
+# packages/cli/forbidden-strings/src/mise.port-betterleaks.ts and re-run it.
 # To add per-repo rules, edit forbidden-strings.append.local.txt.
 
 ${await cat([

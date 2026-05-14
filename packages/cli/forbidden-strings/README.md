@@ -39,10 +39,10 @@ needs operators PCRE doesn't have"; pick it when one of those two is the binding
 ## Build
 
 ```sh
-mise run //packages/dev-script/forbidden-strings:build
+mise run //packages/cli/forbidden-strings:build
 ```
 
-The release binary lands at `packages/dev-script/forbidden-strings/target/release/forbidden-strings`.
+The release binary lands at `packages/cli/forbidden-strings/target/release/forbidden-strings`.
 `hk.pkl` invokes that path directly; nothing needs to be on `$PATH`.
 
 ## Usage
@@ -92,7 +92,7 @@ the workflow YAML never echoes the secret value:
   run: printenv RULES > forbidden-strings.local.txt
 
 - name: Build scanner
-  run: mise run //packages/dev-script/forbidden-strings:build
+  run: mise run //packages/cli/forbidden-strings:build
 
 - name: Scan
   run: hk check --from-ref origin/main

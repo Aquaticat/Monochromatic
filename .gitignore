@@ -47,7 +47,7 @@ package-lock.json
 # Cargo.lock IS committed for the binary crate (reproducible builds catch
 # upstream supply-chain tampering). The unignore lives near the bottom of
 # this file so it overrides the global *.lock pattern below.
-packages/dev-script/forbidden-strings/target/
+packages/cli/forbidden-strings/target/
 
 # Contains secrets.
 .mcp.json
@@ -352,4 +352,4 @@ packages/webapp-forge/*/data/
 # forbidden-strings: re-include files hidden by global *.local.* / *.lock.
 # These must appear AFTER the global patterns to take effect.
 !/forbidden-strings.local.example.txt
-!/packages/dev-script/forbidden-strings/Cargo.lock
+!/packages/cli/forbidden-strings/Cargo.lock

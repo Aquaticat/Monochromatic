@@ -137,7 +137,7 @@ the escape branch, the alternation branch, anchor strip, the
 
 **2026-05-03 (post-unicode-off + post-greedy-combine + post-source-split)**,
 with `hyperfine 1.20.0`. Binary: `target/release/forbidden-strings` built
-with `mise run //packages/dev-script/forbidden-strings:build`.
+with `mise run //packages/cli/forbidden-strings:build`.
 
 The "realistic" ruleset is the betterleaks-port baseline: 259 regex
 rules + 3 literals (851 total lines).
@@ -720,8 +720,8 @@ per-match cost that forbidden-strings avoids by not having them.
 ```sh
 # Install betterleaks (e.g. via mise/aqua or brew)
 # Build forbidden-strings
-mise run //packages/dev-script/forbidden-strings:build
-FS=packages/dev-script/forbidden-strings/target/release/forbidden-strings
+mise run //packages/cli/forbidden-strings:build
+FS=packages/cli/forbidden-strings/target/release/forbidden-strings
 RULES=forbidden-strings.local.txt
 
 # Startup-only (0 bytes scanned)

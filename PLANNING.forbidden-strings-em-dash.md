@@ -3,7 +3,7 @@
 Date: 2026-05-10
 
 Investigation into using `forbidden-strings`
-(the resharp-based deny-list scanner at `packages/dev-script/forbidden-strings/`)
+(the resharp-based deny-list scanner at `packages/cli/forbidden-strings/`)
 to enforce the AGENTS.md ban on em-dashes (`—`), en-dashes (`–`),
 and their ASCII substitutes (`-`, `--`) when used as em-dashes in prose.
 
@@ -27,7 +27,7 @@ Bare literal lines for `—` and `–` in the rule file work directly:
 
 The 7-byte boundary check does not fire on multibyte non-word characters,
 so the literal substring-matches anywhere.
-Verified by reading `packages/dev-script/forbidden-strings/src/rules/atom.rs:21`
+Verified by reading `packages/cli/forbidden-strings/src/rules/atom.rs:21`
 and the README's "non-ASCII characters ... gate correctly" note.
 
 Empirical test against `/tmp/em-dash-fixture.md` (constructed during investigation):
@@ -52,7 +52,7 @@ since the goal is detection, not precise span isolation.
 Rule 2 catches `--` between alphabetic words
 on lines that do not contain `npm` or `git`.
 The `&` and `~()` operators route this rule through resharp
-(`packages/dev-script/forbidden-strings/src/rules/engine.rs:204` `requires_resharp`),
+(`packages/cli/forbidden-strings/src/rules/engine.rs:204` `requires_resharp`),
 which supports the set-algebra needed for the line-level complements.
 Since commit `67e844df`, the same routing predicate also detects
 lookaround openers (`(?=`, `(?!`, `(?<=`, `(?<!`), so rules whose only
@@ -87,7 +87,7 @@ Top hit files:
 - `packages/audit/oph-common-look-and-feel/src/index.html` (33)
 - `packages/module/es/src/types/.../simplifiedSchema.behaviorTest.ts` (25)
 - `packages/webapp-productivity/done/PLAN.md` (19)
-- `packages/dev-script/forbidden-strings/src/rules.rs` (12)
+- `packages/cli/forbidden-strings/src/rules.rs` (12)
 - `mise.toml` (9)
 
 ## What does not work
@@ -158,7 +158,7 @@ Plus `AGENTS.md` (states the rule), `AUDIT.em-dash.md` (lists violations),
 `TROUBLESHOOTING.*.md` files quoting external output.
 
 The scanner's only path-level exclusion is
-`is_skipped_file` at `packages/dev-script/forbidden-strings/src/main.rs:171-193`,
+`is_skipped_file` at `packages/cli/forbidden-strings/src/main.rs:171-193`,
 a hardcoded `matches!` over five exact basenames.
 No glob, no path prefix, no rule-scoped exclusion exists.
 
@@ -276,7 +276,7 @@ Out of scope for the current investigation.
 - Resharp engine: `https://github.com/ieviev/resharp`
   (cloned to `/tmp/resharp` during investigation)
 - Resharp syntax docs: `/tmp/resharp/docs/syntax.md`
-- Forbidden-strings source: `packages/dev-script/forbidden-strings/`
+- Forbidden-strings source: `packages/cli/forbidden-strings/`
 - Existing audit data: `AUDIT.em-dash.md` (untracked at investigation time)
 - AGENTS.md em-dash rule: under "Documentation standards"
 - Test fixtures used for prototyping during investigation:

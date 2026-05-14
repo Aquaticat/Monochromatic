@@ -1295,7 +1295,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 58: // Debounce state -- `let` needed because the timer is replaced on each event
 - Line 164: // Block forever -- watch mode runs until the process is killed.
 
-### packages/dev-script/forbidden-strings/PERF.md
+### packages/cli/forbidden-strings/PERF.md
 
 - Line 4: Numbers below are not aspirational targets -- they are reproducible measurements
 - Line 103: per-byte throughput on betterleaks-shape patterns. Mono -- the actual
@@ -1312,7 +1312,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 619: **Results** (do not overwrite -- regressions need history) when **any** of:
 - Line 633: Do not re-derive that analysis on every session -- read the plan, then decide.
 
-### packages/dev-script/forbidden-strings/README.md
+### packages/cli/forbidden-strings/README.md
 
 - Line 6: That breaks down when the forbidden literals would themselves leak if committed --
 - Line 34: is probably a better fit -- larger ecosystem, SARIF output, GitHub-native code-scanning upload,
@@ -1323,7 +1323,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 167: smaller residual gate -- still correct, just slower per file.
 - Line 195: and the opaque rule index appear in failure output -- otherwise a failing CI log
 
-### packages/dev-script/forbidden-strings/src/port-betterleaks-relaxations.ts
+### packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts
 
 - Line 20: // Trailing `\b` arm in `(?:[X]\|...\|\b)` -- resharp rejects \b as a
 

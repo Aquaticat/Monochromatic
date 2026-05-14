@@ -493,7 +493,7 @@ Neither pattern needs a disable comment if the AST shape matches the heuristic.
 Sites where neither refactor nor allowlist-shape applies:
 
 - Genuine multi-let state machines (Mulberry32 PRNG step in `packages/webapp-content/messages-demo/src/lib/seed.ts:143`; the kiwi binary parser in `packages/figma-parsers/kiwi/src/index.ts`).
-- Parsers with conditional-init fields and side-effecting branches (the TOML rule parser in `packages/dev-script/forbidden-strings/src/mise.port-betterleaks.ts:225-231`).
+- Parsers with conditional-init fields and side-effecting branches (the TOML rule parser in `packages/cli/forbidden-strings/src/mise.port-betterleaks.ts:225-231`).
 - Module-level memoization caches that have no clean Map/memoize replacement (`packages/module/logger/src/sinks/console.ts:8,11,100,160`).
 
 Each disable comment must name the specific constraint:

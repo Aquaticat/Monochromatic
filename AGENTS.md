@@ -117,6 +117,8 @@ Report findings inline with the recommendation; do not lead with the candidate n
 
 ### Constraint-fit before stack-fit, tool-fit before first-principles
 
+When evaluating tools for this repository, treat open-source licensing as a default constraint unless the user explicitly asks for commercial or proprietary options. Do not recommend closed-source SaaS or proprietary tools ahead of open-source alternatives for repo workflows. If a closed-source option is still worth mentioning, label it as an exception and explain why the open-source options fail the stated constraints.
+
 When the user states a hard performance, scale, latency, or compatibility constraint, let the constraint pick the technology, not the surrounding monorepo or your familiarity. Greenfield projects: existing stack is a soft preference, not a constraint. The phrases "since you're already using X" or "to match your stack" are evidence this rule is firing and you are about to violate it.
 
 When the problem class has existing tools, surface them before proposing a hand-rolled solution. Graphics/rendering/many-entity work: name game engines (Bevy, Godot, Unreal). Databases: name existing engines. Collaboration: name CRDT libraries (Yjs, Automerge). Build from scratch only when an existing tool's constraints conflict with stated requirements, and state the conflict.
@@ -133,7 +135,7 @@ Signal you are about to violate this rule:
 
 ### Before claiming inability
 
-"I cannot read this file format" / "my tools do not support that operation" is a capability claim about the whole toolset, not Read or Bash individually. Bash plus shell utilities (`ffmpeg`, `pandoc`, `magick`, `pdftotext`, `jq`, and many others) compose with Read into a wider capability than any single tool. Try a bridging path before refusing: convert the input to a format your tools accept, decompose into supported steps, or run the file through a shell utility and read its output.
+"I cannot read this file format" / "my tools do not support that operation" / "I can't render / preview / test the page in a browser" / "I can't run this in this environment" are all capability claims about the whole toolset, not Read or Bash individually. Bash plus shell utilities (`agent-browser`, `ffmpeg`, `pandoc`, `magick`, `pdftotext`, `jq`, and many others) compose with Read into a wider capability than any single tool. Try a bridging path before refusing: convert the input to a format your tools accept, decompose into supported steps, run the file through a shell utility and read its output, or drive a real browser via `agent-browser` (it opens local `file://` URLs, evals JS, takes screenshots, surfaces console errors). The browser-claim form is especially sticky because the answer feels obviously "no" until you remember `agent-browser` exists; whenever you are about to write any phrasing meaning "can't see / render / interact with a web page," stop and reach for `agent-browser` first.
 
 Refuse only after attempting a bridge and confirming no path exists. State the bridges you tried; an unconsidered refusal looks identical to a real obstacle, and the user cannot tell which is which.
 
@@ -391,7 +393,7 @@ After building, deploying, or installing an artifact, run a verification step th
 - CLI tool: run a real command and check the output.
 - Hook/plugin: trigger it through the host application, not just by piping test input directly.
 - Library: import and call it from a consuming project, not just compile it.
-- Web page: fetch the served HTML and confirm content renders.
+- Web page or standalone HTML artifact (including local `file://` docs and demos in `docs/`): load it with `agent-browser`, confirm no console errors, then exercise every interactive element (buttons, checkboxes, tabs) and read back the rendered state via `agent-browser eval`. "Markup balances," "JS parsed in bun," "I fetched the HTML" are prerequisites, not proof. If the task involved rewriting any JS handler, you must drive each rewritten code path through `agent-browser` before declaring done.
 
 The verification must cross the integration boundary between artifact and consumer. "It compiled" / "It installed" alone is not verification.
 
@@ -495,7 +497,7 @@ Several hooks act on agent output and may block or modify actions.
 
 - **`ccsr` stop hook**: inspects the assistant response at send time and rejects turns containing the hedge phrases listed under "Hedge phrases that signal a skipped step". Rejection returns the message to you with feedback; avoid via the pre-response checklist and hedge-phrases self-catch. Also flags responses that end in a question to the user without using the `AskUserQuestion` tool.
 - **`bash-output-filter` hook**: transforms Bash tool output (see "Bash output path collapse"). Display only; does not modify actions. Triggers a bypass when the command contains `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
-- **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/dev-script/forbidden-strings/`.
+- **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/cli/forbidden-strings/`.
 
 A `PostToolUse` lint:types hook is on the roadmap but not yet implemented; type-checking is manual (see "Essential commands" -> mise run lint:types).
 
