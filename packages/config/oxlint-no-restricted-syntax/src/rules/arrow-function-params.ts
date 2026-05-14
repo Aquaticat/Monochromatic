@@ -48,6 +48,7 @@ export function extractParamsText(
   /** Skip `async ` prefix if present. */
   let start = 0;
   if (node.async) {
+    /** Leading `async ` keyword match, used to advance `start` past it. */
     const asyncMatch = /^async\s+/.exec(fullText,);
     if (asyncMatch !== null)
       start = asyncMatch[0].length;
@@ -58,8 +59,10 @@ export function extractParamsText(
    * Count angle bracket depth to handle nested generics.
    */
   if (node.typeParameters !== null && node.typeParameters !== undefined) {
+    /** Source slice starting at the first non-`async` character; inspected for a leading `<`. */
     const tpText = fullText.slice(start,);
     if (tpText.startsWith('<',)) {
+      /** Angle-bracket nesting counter so nested generics resolve before the params open. */
       let depth = 0;
       for (let i = 0; i < tpText.length; i++) {
         if (tpText[i] === '<')
@@ -77,10 +80,13 @@ export function extractParamsText(
 
   /** Now find the balanced parenthesized params. */
   const rest = fullText.slice(start,);
+  /** Parenthesis nesting counter; the params end when it returns to zero. */
   let depth = 0;
+  /** Active string-literal delimiter while scanning, or null when outside a string. */
   let inString: string | null = null;
 
   for (let i = 0; i < rest.length; i++) {
+    /** Current character under the scanner cursor. */
     const ch = rest[i];
 
     if (inString !== null) {

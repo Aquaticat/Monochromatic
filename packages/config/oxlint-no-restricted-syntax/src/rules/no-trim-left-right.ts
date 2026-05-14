@@ -40,11 +40,13 @@ export const noTrimLeftRight: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       CallExpression(node: ESTree.CallExpression,): void {
+        /** Call target; only `x.trimLeft()` / `x.trimRight()` member calls trigger the rule. */
         const { callee, } = node;
         if (callee.type !== 'MemberExpression' || callee.computed)
           return;
         if (callee.property.type !== 'Identifier')
           return;
+        /** Member-access identifier name; matched against the deprecated trim aliases. */
         const { name, } = callee.property;
         if (name === 'trimLeft') {
           context.report({

@@ -61,11 +61,13 @@ export const requireQueryselectorGeneric: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       CallExpression(node: ESTree.CallExpression,): void {
+        /** Call target; only member expressions on a selector method qualify for the rule. */
         const { callee, } = node;
         if (callee.type !== 'MemberExpression' || callee.computed)
           return;
         if (callee.property.type !== 'Identifier')
           return;
+        /** Member-access identifier name; matched against {@link SELECTOR_METHODS}. */
         const methodName = callee.property.name;
         if (!SELECTOR_METHODS.has(methodName,))
           return;

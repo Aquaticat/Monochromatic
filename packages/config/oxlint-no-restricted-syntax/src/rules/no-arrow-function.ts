@@ -73,8 +73,9 @@ export const noArrowFunction: CreateOnceRule = {
         /** Variable name from the declarator (e.g. `foo` in `const foo = ...`). */
         const { name, } = parent.id;
 
-        /** Whether the grandparent declaration is exported. */
+        /** Node containing the `VariableDeclaration`; inspected to detect an `export` wrapper. */
         const grandparent = parent.parent.parent;
+        /** True when the declaration is exported, so the replacement keeps the `export` prefix. */
         const isExported = grandparent.type === 'ExportNamedDeclaration';
 
         /** The full declaration node to replace (including `export` if present). */

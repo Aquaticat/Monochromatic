@@ -20,17 +20,21 @@ import type {
  * @returns `true` when the function shape matches the helper pattern.
  */
 function isHelperShape(body: ESTree.FunctionBody,): boolean {
+  /** Direct statements of the function body; scanned for the trailing `return <identifier>` shape. */
   const stmts = body.body;
   /** Minimum statement count for a meaningful helper (declaration + return). */
   const minStmts = 2;
   if (stmts.length < minStmts)
     return false;
+  /** Final statement of the body; only `ReturnStatement` continues the check. */
   const last = stmts.at(-1,);
   if (last === undefined || last.type !== 'ReturnStatement')
     return false;
+  /** Expression returned by the helper; only a bare identifier qualifies as the helper shape. */
   const arg = last.argument;
   if (arg === null || arg.type !== 'Identifier')
     return false;
+  /** Name of the returned identifier; must resolve to a root-level declaration to allowlist the helper. */
   const returnedName = arg.name;
   for (const stmt of stmts) {
     if (stmt.type === 'VariableDeclaration') {
@@ -139,6 +143,7 @@ export const noFunctionRootLet: CreateOnceRule = {
      * @param node - Function declaration or expression AST node.
      */
     function checkFunction(node: ESTree.Function,): void {
+      /** Parent node and body block; both required for IIFE-callee and root-let scans. */
       const {
         parent,
         body,
