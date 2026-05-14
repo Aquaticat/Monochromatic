@@ -46,6 +46,7 @@ import {
  * ```
  */
 function refsAdvertisementHeaders(service: string,): Headers {
+  /** Fresh `Headers` instance per call so callers may freely mutate it. */
   const headers = new Headers();
   headers.set(
     'content-type',
@@ -71,6 +72,7 @@ function refsAdvertisementHeaders(service: string,): Headers {
  * ```
  */
 function rpcResultHeaders(service: string,): Headers {
+  /** Fresh `Headers` instance per call so callers may freely mutate it. */
   const headers = new Headers();
   headers.set(
     'content-type',
@@ -103,6 +105,7 @@ function stripGitSuffix(raw: string,): string {
       message: 'expected repo path to end in .git',
     },);
   }
+  /** Suffix length the `slice` below trims off. */
   const TAIL = '.git'.length;
   return raw.slice(
     0,
@@ -125,6 +128,7 @@ function stripGitSuffix(raw: string,): string {
  * ```
  */
 async function readRequestBytes(request: Request,): Promise<Uint8Array> {
+  /** Buffered request body backing the returned view. */
   const buf = await request.arrayBuffer();
   return new Uint8Array(buf,);
 }
@@ -134,7 +138,9 @@ async function readRequestBytes(request: Request,): Promise<Uint8Array> {
  */
 export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
   async function handleInfoRefs(event,) {
+    /** Owner login segment of the route path. */
     const owner = event.context.params?.['owner'];
+    /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
     if (owner === undefined || owner === '' || repoRaw === undefined || repoRaw === '') {
       throw new HTTPError({
@@ -142,8 +148,11 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
         message: 'missing route params',
       },);
     }
+    /** Repo name with the `.git` suffix removed. */
     const repo = stripGitSuffix(repoRaw,);
+    /** Request URL parsed once so query params are reachable below. */
     const url = new URL(event.req.url,);
+    /** Negotiated smart-HTTP service from the `?service=` query param. */
     const service = url.searchParams.get('service',) ?? '';
     if (service !== 'git-upload-pack' && service !== 'git-receive-pack') {
       throw new HTTPError({
@@ -151,6 +160,7 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
         message: `unsupported service: ${service}`,
       },);
     }
+    /** Advertisement bytes returned in the response body. */
     const body = await buildInfoRefsAdvertisement({
       owner,
       repo,
@@ -171,7 +181,9 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
  */
 export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
   async function handleUploadPackRoute(event,) {
+    /** Owner login segment of the route path. */
     const owner = event.context.params?.['owner'];
+    /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
     if (owner === undefined || owner === '' || repoRaw === undefined || repoRaw === '') {
       throw new HTTPError({
@@ -179,8 +191,11 @@ export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
         message: 'missing route params',
       },);
     }
+    /** Repo name with the `.git` suffix removed. */
     const repo = stripGitSuffix(repoRaw,);
+    /** Full request body bytes fed to the iso-server. */
     const requestBody = await readRequestBytes(event.req,);
+    /** Response body bytes returned from the upload-pack handler. */
     const responseBody = await handleUploadPack({
       owner,
       repo,
@@ -207,7 +222,9 @@ export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
  */
 export const gitReceivePackHandler: EventHandlerWithFetch = defineHandler(
   async function handleReceivePackRoute(event,) {
+    /** Owner login segment of the route path. */
     const owner = event.context.params?.['owner'];
+    /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
     if (owner === undefined || owner === '' || repoRaw === undefined || repoRaw === '') {
       throw new HTTPError({
@@ -215,28 +232,32 @@ export const gitReceivePackHandler: EventHandlerWithFetch = defineHandler(
         message: 'missing route params',
       },);
     }
+    /** Repo name with the `.git` suffix removed. */
     const repo = stripGitSuffix(repoRaw,);
+    /** Full request body bytes fed to the iso-server. */
     const requestBody = await readRequestBytes(event.req,);
+    /** Receive-pack outcome: response body plus applied ref triplets. */
     const outcome = await handleReceivePack({
       owner,
       repo,
       body: requestBody,
     },);
-    // Record one push event per applied ref update for downstream
-    // dependency-graph consumers. Skip silently when the repo is not
-    // registered in the DB.
+    /** Repo row needed to record push events; missing rows skip the event log. */
     const repoRow = await getRepoByOwnerLogin({
       ownerLogin: owner,
       name: repo,
     },);
     if (repoRow !== undefined) {
+      /** Timestamp shared by every push event emitted in this loop iteration. */
       const now = Date.now();
       for (const triplet of outcome.applied) {
-        // oxlint-disable-next-line no-await-in-loop -- one event row per ref; serial is intentional for ordering
+        /* oxlint-disable no-await-in-loop -- one event row per ref; serial is intentional for ordering */
+        /** Per-resource monotonic sequence used by the dispatcher. */
         const sequenceNumber = await nextSequence(
           'repo',
           repoRow.id,
         );
+        /* oxlint-enable no-await-in-loop */
         // oxlint-disable-next-line no-await-in-loop -- ditto: events must land in ref-update order
         await insertEvent({
           resourceType: 'repo',

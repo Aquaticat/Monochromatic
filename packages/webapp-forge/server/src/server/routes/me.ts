@@ -95,6 +95,7 @@ type DeltaPayload = {
  * @returns actor identity or `null`
  */
 async function resolveActor(headers: Headers,): Promise<DeltaActor | null> {
+  /** Active Better Auth session, when present on the request. */
   const session = await auth.api.getSession({ headers, },);
   if (session !== null) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- Better Auth's session.user shape includes the username plugin's optional `username` field */
@@ -108,9 +109,11 @@ async function resolveActor(headers: Headers,): Promise<DeltaActor | null> {
   }
   if (process.env.NODE_ENV === 'production')
     return null;
+  /** Dev-only login from the legacy header; missing returns null. */
   const headerLogin = headers.get('x-forge-user',);
   if (headerLogin === null || headerLogin === '')
     return null;
+  /** Resolved user row for the dev header login. */
   const fallbackUser = await getUserByLogin(headerLogin,);
   if (fallbackUser === undefined)
     return null;
@@ -134,6 +137,7 @@ function parseDeltaPath(path: string,): {
   readonly kind: 'issue-detail' | 'filter-list';
   readonly number: number | null;
 } | null {
+  /** Issue-detail path match; non-null returns the parsed shape below. */
   const issueDetailMatch = /^\/([^/]+)\/([^/]+)\/issues\/(\d+)\/?$/.exec(path,);
   if (issueDetailMatch !== null) {
     return {
@@ -146,6 +150,7 @@ function parseDeltaPath(path: string,): {
       ),
     };
   }
+  /** Filter-list path match; non-null returns the parsed shape below. */
   const filterListMatch = /^\/([^/]+)\/([^/]+)\/issues\/?$/.exec(path,);
   if (filterListMatch !== null) {
     return {
@@ -176,6 +181,7 @@ async function buildIssueDetailDelta(row: {
   actor: DeltaActor;
   path: string;
 },): Promise<DeltaPayload> {
+  /** Repo row identified by owner login + repo name. */
   const repo = await getRepoByOwnerLogin({
     ownerLogin: row.owner,
     name: row.repo,
@@ -194,6 +200,7 @@ async function buildIssueDetailDelta(row: {
       },
     };
   }
+  /** Issue row identified by repo id + number. */
   const issue = await getIssueByNumber({
     repoId: repo.id,
     number: row.number,
@@ -212,7 +219,9 @@ async function buildIssueDetailDelta(row: {
       },
     };
   }
+  /** Issue comments scanned below for actor authorship. */
   const comments = await listComments(issue.id,);
+  /** Ids of comments the actor authored on this issue. */
   const authoredCommentIds = comments
     .filter(function isMine(comment,) {
       return comment.author_id === row.actor.id;
@@ -220,13 +229,17 @@ async function buildIssueDetailDelta(row: {
     .map(function pickId(comment,) {
       return comment.id;
     },);
+  /** Actor's membership row in this repo; `undefined` for non-members. */
   const membership = await getRepoMember({
     repoId: repo.id,
     userId: row.actor.id,
   },);
+  /** Actor owns the repo; bypasses the role check below. */
   const isOwner = repo.owner_id === row.actor.id;
+  /** Actor has write permission via ownership or membership role. */
   const isWriter = isOwner
     || (membership !== undefined && WRITE_ROLES.has(membership.role,));
+  /** Actor authored the issue; combined with isWriter to compute close permission. */
   const isAuthor = issue.author_id === row.actor.id;
   return {
     actor: row.actor,
@@ -257,6 +270,7 @@ async function buildFilterListDelta(row: {
   actor: DeltaActor;
   path: string;
 },): Promise<DeltaPayload> {
+  /** Repo row identified by owner login + repo name. */
   const repo = await getRepoByOwnerLogin({
     ownerLogin: row.owner,
     name: row.repo,
@@ -275,11 +289,14 @@ async function buildFilterListDelta(row: {
       },
     };
   }
+  /** Actor's membership row in this repo; `undefined` for non-members. */
   const membership = await getRepoMember({
     repoId: repo.id,
     userId: row.actor.id,
   },);
+  /** Actor owns the repo; bypasses the role check below. */
   const isOwner = repo.owner_id === row.actor.id;
+  /** Actor has write permission via ownership or membership role. */
   const isWriter = isOwner
     || (membership !== undefined && WRITE_ROLES.has(membership.role,));
   return {
@@ -309,7 +326,9 @@ async function buildFilterListDelta(row: {
  */
 export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
   async function handleMeDelta(event,) {
+    /** Request URL parsed once so query params are reachable below. */
     const url = new URL(event.req.url,);
+    /** Required `?path=...` query parameter naming the fragment path. */
     const path = url.searchParams.get('path',);
     if (path === null || path === '') {
       throw new HTTPError({
@@ -317,8 +336,10 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
         message: 'missing path query parameter',
       },);
     }
+    /** Resolved actor; null produces the unauthenticated payload below. */
     const actor = await resolveActor(event.req.headers,);
     if (actor === null) {
+      /** Unauthenticated delta payload returned with a null actor. */
       const payload: DeltaPayload = {
         actor: null,
         path,
@@ -336,8 +357,10 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
         { headers: JSON_HEADERS, },
       );
     }
+    /** Parsed path components; null for unsupported shapes. */
     const parsed = parseDeltaPath(path,);
     if (parsed === null) {
+      /** Empty-overlay payload returned for paths the endpoint does not recognise. */
       const payload: DeltaPayload = {
         actor,
         path,
@@ -356,6 +379,7 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
       );
     }
     if (parsed.kind === 'issue-detail' && parsed.number !== null) {
+      /** Issue-detail delta payload populated from the actor's repo membership. */
       const payload = await buildIssueDetailDelta({
         owner: parsed.owner,
         repo: parsed.repo,
@@ -368,6 +392,7 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
         { headers: JSON_HEADERS, },
       );
     }
+    /** Filter-list delta payload populated from the actor's repo membership. */
     const payload = await buildFilterListDelta({
       owner: parsed.owner,
       repo: parsed.repo,
