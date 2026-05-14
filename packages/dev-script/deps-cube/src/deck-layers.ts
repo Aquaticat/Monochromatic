@@ -95,20 +95,26 @@ function computeAxisGeometry(
   tipY: number;
   tipZ: number;
 } {
+  /** Inclusive `[xMin, xMax]` extracted from the X bounds for downstream tip / extent math. */
   const [
     xMin,
     xMax,
   ] = bounds.x;
+  /** Inclusive `[yMin, yMax]` extracted from the Y bounds. */
   const [
     yMin,
     yMax,
   ] = bounds.y;
+  /** Inclusive `[zMin, zMax]` extracted from the Z bounds. */
   const [
     zMin,
     zMax,
   ] = bounds.z;
+  /** X extent of the data box; arrow tips and tick spacings are fractions of this. */
   const dx = xMax - xMin;
+  /** Y extent of the data box. */
   const dy = yMax - yMin;
+  /** Z extent of the data box. */
   const dz = zMax - zMin;
   return {
     xMin,
@@ -147,9 +153,11 @@ export function buildAxisShaftLayer(
     chrome: ChromeColors;
   },
 ): Layer {
+  /** Cached axis geometry (mins, extents, arrow tips) shared by every path datum below. */
   const g = computeAxisGeometry({
     bounds,
   },);
+  /** Three two-point paths, one per axis, running from the origin corner to each arrow tip. */
   const data: PathDatum[] = [
     {
       path: [
@@ -200,14 +208,21 @@ export function buildAxisArrowheadLayers(
     chrome: ChromeColors;
   },
 ): readonly Layer[] {
+  /** Cached axis geometry; cone positions and scales derive from its extents. */
   const g = computeAxisGeometry({
     bounds,
   },);
+  /** X arrowhead cone length in world units; scales with X extent so cones stay proportional. */
   const coneLengthX = g.dx * ARROWHEAD_LENGTH_FRACTION;
+  /** Y arrowhead cone length; same fraction as X but applied to the Y extent. */
   const coneLengthY = g.dy * ARROWHEAD_LENGTH_FRACTION;
+  /** Z arrowhead cone length; same fraction as X but applied to the Z extent. */
   const coneLengthZ = g.dz * ARROWHEAD_LENGTH_FRACTION;
+  /** X arrowhead cone base radius; visually balances the cone length. */
   const coneRadiusX = g.dx * ARROWHEAD_RADIUS_FRACTION;
+  /** Y arrowhead cone base radius. */
   const coneRadiusY = g.dy * ARROWHEAD_RADIUS_FRACTION;
+  /** Z arrowhead cone base radius. */
   const coneRadiusZ = g.dz * ARROWHEAD_RADIUS_FRACTION;
   return [
     new SimpleMeshLayer<ArrowheadDatum>({
@@ -291,11 +306,15 @@ export function buildAxisTickLayer(
     chrome: ChromeColors;
   },
 ): Layer {
+  /** Cached axis geometry; tick positions and lengths derive from its extents. */
   const g = computeAxisGeometry({
     bounds,
   },);
+  /** Tick mark length on the X axis in world units; reused for Z ticks since both share the X extent. */
   const tx = g.dx * TICK_LENGTH_FRACTION;
+  /** Tick mark length on the Y axis in world units. */
   const ty = g.dy * TICK_LENGTH_FRACTION;
+  /** `[0, 1/N, …, 1]` normalised positions for the `TICK_COUNT + 1` evenly-spaced ticks. */
   const ts: readonly number[] = Array.from(
     {
       length: TICK_COUNT + 1,
@@ -304,9 +323,13 @@ export function buildAxisTickLayer(
       return i / TICK_COUNT;
     },
   );
+  /** Flattened tick paths: three perpendicular segments per `t` value, one per axis. */
   const ticks: PathDatum[] = ts.flatMap(function tickTriple(t,) {
+    /** World-space X coordinate of the tick on the X axis for parameter `t`. */
     const xAt = g.xMin + g.dx * t;
+    /** World-space Y coordinate of the tick on the Y axis for parameter `t`. */
     const yAt = g.yMin + g.dy * t;
+    /** World-space Z coordinate of the tick on the Z axis for parameter `t`. */
     const zAt = g.zMin + g.dz * t;
     return [
       {

@@ -194,36 +194,51 @@ async function probeOne(
     cache: Cache;
   },
 ): Promise<PackageProbe> {
+  /** npm registry manifest for the package; the source of every static field below. */
   const pkg = await probePackageManifest({
     npmName: entry.npmName,
     cache,
   },);
+  /** Concrete version actually used for measurements; falls back to the raw range string when resolution fails. */
   const resolvedVersion = resolveVersion({
     range: entry.range,
     pkg,
   },) ?? entry.range;
 
+  /** Version-scoped sub-manifest for `resolvedVersion`; `{}` when the registry response is incomplete. */
   const versionManifest = pkg.versions?.[resolvedVersion] ?? {};
+  /** Runtime dependency map declared in the version manifest. */
   const dependencies = versionManifest.dependencies ?? {};
+  /** Count of direct runtime deps; drives the `isLeaf` flag and the runtime-dep visual channel. */
   const runtimeDepCount = Object.keys(dependencies,).length;
+  /** `true` when the package has no runtime deps; convenience flag derived from `runtimeDepCount`. */
   const isLeaf = runtimeDepCount === 0;
+  /** Self install size in bytes; `0` when the registry omits `dist.unpackedSize`. */
   const installSizeBytes = versionManifest.dist?.unpackedSize ?? 0;
+  /** Bucketed license class derived from the SPDX-ish `license` field; coarser than the raw string for visualisation. */
   const licenseClass = classifyLicense(versionManifest.license,);
 
+  /** ISO timestamp of first publish; missing on some legacy packages. */
   const createdAt = pkg.time?.created;
+  /** Days since first publish, computed from `createdAt`; `0` when `createdAt` is missing. */
   const packageAgeDays = createdAt === undefined
     ? 0
     : Math.floor((Date.now() - new Date(createdAt,).getTime()) / MS_PER_DAY,);
 
+  /** Weekly download count from the npm registry; surfaces popularity as a visual channel. */
   const weeklyDownloads = await probeDownloads({
     npmName: entry.npmName,
     cache,
   },);
 
+  /** Parsed repository pointer, or `null` when the manifest lacks a usable repo URL. */
   const repoInfo = parseRepository(versionManifest.repository,);
+  /** `true` when the package lives inside a monorepo; Linguist measures the wrong scope here so we skip it. */
   const isMonorepoHoused = repoInfo !== null && repoInfo.directory !== undefined;
+  /** `true` when the repo is on GitHub; gates the GH-specific probes below. */
   const isGitHub = repoInfo !== null && repoInfo.host === 'github';
 
+  /** Tuple of parallel GH/registry probe results: Linguist languages, last-commit ISO, transitive dep count. */
   const [languages, lastCommitDate, transitiveDepCount,] = await Promise.all([
     isGitHub && !isMonorepoHoused
       ? probeLanguages({
@@ -249,24 +264,31 @@ async function probeOne(
     },),
   ],);
 
+  /** Sum of Linguist byte counts across every detected language, used as the denominator for `tsRatioOrNull`. */
   const totalBytes = languages === null
     ? null
     : Object.values(languages,).reduce(function sumBytes(a, b,) {
       return a + b;
     }, 0,);
+  /** Bytes Linguist attributes to TypeScript; `null` when Linguist did not run or did not detect TS. */
   const tsBytes = languages?.['TypeScript'] ?? null;
+  /** Bytes Linguist attributes to JavaScript; `0` when Linguist did not detect JS. */
   const jsBytes = languages?.['JavaScript'] ?? 0;
 
+  /** TS-share of total source bytes, in `[0, 1]`; `null` when Linguist data is missing or unusable. */
   const tsRatioOrNull = totalBytes === null || totalBytes === 0 || tsBytes === null
     ? null
     : tsBytes / totalBytes;
+  /** Combined TS+JS bytes; `null` when Linguist data is missing. */
   const sourceBytesOrNull = totalBytes === null
     ? null
     : (tsBytes ?? 0) + jsBytes;
+  /** Days since the most-recent commit; `null` when the last-commit probe failed or was skipped. */
   const daysSinceLastCommitOrNull = lastCommitDate === null
     ? null
     : Math.floor((Date.now() - new Date(lastCommitDate,).getTime()) / MS_PER_DAY,);
 
+  /** Discriminated reason for any unknown GH-derived field, or `null` when all three are known. */
   const unknownReason = computeUnknownReason({
     repoInfo,
     isMonorepoHoused,
@@ -323,8 +345,11 @@ export async function probeAll(
     cache: Cache;
   },
 ): Promise<readonly PackageProbe[]> {
+  /** Semaphore that bounds in-flight probes so we don't blow through rate limits. */
   const limit = pLimit(CONCURRENCY,);
+  /** Total entry count, cached for log messages. */
   const total = entries.length;
+  /** Per-entry probe promises queued through `limit`; resolved in input order via `Promise.all`. */
   const tasks = entries.map(function buildTask(entry, index,) {
     return limit(async function runTask() {
       console.error(`[probe ${(index + 1).toString()}/${total.toString()}] ${entry.npmName}`,);

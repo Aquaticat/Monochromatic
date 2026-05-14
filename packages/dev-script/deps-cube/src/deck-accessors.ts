@@ -135,14 +135,17 @@ export function probePosition(
     state: AppState;
   },
 ): [number, number, number,] | null {
+  /** Scene-space X coordinate, or `null` when the X dim is unknown for this probe. */
   const x = extractDim({
     probe,
     dim: state.dimMapping.x,
   },);
+  /** Scene-space Y coordinate, or `null` when the Y dim is unknown for this probe. */
   const y = extractDim({
     probe,
     dim: state.dimMapping.y,
   },);
+  /** Scene-space Z coordinate, or `null` when the Z dim is unknown for this probe. */
   const z = extractDim({
     probe,
     dim: state.dimMapping.z,
@@ -171,22 +174,31 @@ export function unknownClusterPosition(
     bounds: SceneBounds;
   },
 ): [number, number, number,] {
+  /** Upper-bound corner of the data box on X; the unknown cluster sits beyond this. */
   const [
     ,
     xMax,
   ] = bounds.x;
+  /** Upper-bound corner of the data box on Y; the unknown cluster sits beyond this. */
   const [
     ,
     yMax,
   ] = bounds.y;
+  /** Upper-bound corner of the data box on Z; the unknown cluster sits beyond this. */
   const [
     ,
     zMax,
   ] = bounds.z;
-  // Cheap stable hash → 3 small offsets in [-J, J].
+  /**
+   * Knuth multiplicative hash on the probe index, giving a deterministic 32-bit
+   * value to derive three independent jitter offsets from.
+   */
   const hash = (index * 2654435761) >>> 0;
+  /** X jitter in `[-UNKNOWN_CLUSTER_JITTER, +UNKNOWN_CLUSTER_JITTER]`, derived from the low byte of `hash`. */
   const jx = (((hash & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
+  /** Y jitter from the second byte of `hash`, same range as `jx`. */
   const jy = ((((hash >> 8) & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
+  /** Z jitter from the third byte of `hash`, same range as `jx`. */
   const jz = ((((hash >> 16) & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
   return [
     xMax + UNKNOWN_CLUSTER_OFFSET + jx,
@@ -231,7 +243,9 @@ export function probeFillColor(
     isVisible: boolean;
   },
 ): [number, number, number, number,] {
+  /** Alpha selected by filter visibility so filtered probes fade out instead of disappearing. */
   const alpha = isVisible ? ALPHA_VISIBLE : ALPHA_FILTERED;
+  /** Raw probe value for the colour dim, or `null` when the dim is unknown. */
   const value = extractDim({
     probe,
     dim: state.dimMapping.color,
@@ -243,15 +257,18 @@ export function probeFillColor(
       COLOR_UNKNOWN[2],
       alpha,
     ];
+  /** Inclusive `[lo, hi]` range for the colour dim across the whole dataset, used to normalise `value`. */
   const [
     lo,
     hi,
   ] = bounds.color;
+  /** Normalised colour-dim value in `[0, 1]`, used as the lerp parameter. */
   const t = normalise({
     value,
     lo,
     hi,
   },);
+  /** sRGB triplet from the OKLCH lerp; perceptually uniform so the midpoint reads as amber rather than mud. */
   const [
     r,
     g,
@@ -295,15 +312,18 @@ export function probeRadius(
     bounds: SceneBounds;
   },
 ): number {
+  /** Raw probe value for the size dim, or `null` when the dim is unknown. */
   const value = extractDim({
     probe,
     dim: state.dimMapping.size,
   },);
   if (value === null) return RADIUS_MIN_PX;
+  /** Inclusive `[lo, hi]` range for the size dim, used to normalise `value`. */
   const [
     lo,
     hi,
   ] = bounds.size;
+  /** Normalised size-dim value in `[0, 1]`, used to interpolate between min and max radius. */
   const t = normalise({
     value,
     lo,
@@ -350,19 +370,26 @@ export function probeRadiusWorld(
     bounds: SceneBounds;
   },
 ): number {
+  /** Width of the scene bounding box along X, one component of the diagonal. */
   const dx = bounds.x[1] - bounds.x[0];
+  /** Depth of the scene bounding box along Y, one component of the diagonal. */
   const dy = bounds.y[1] - bounds.y[0];
+  /** Height of the scene bounding box along Z, one component of the diagonal. */
   const dz = bounds.z[1] - bounds.z[0];
+  /** Bounding-box diagonal length; world-space radii are expressed as fractions of this so they scale with scene size. */
   const diagonal = Math.hypot(dx, dy, dz,);
+  /** Raw probe value for the size dim, or `null` when the dim is unknown. */
   const value = extractDim({
     probe,
     dim: state.dimMapping.size,
   },);
   if (value === null) return diagonal * RADIUS_MIN_WORLD_FRACTION;
+  /** Inclusive `[lo, hi]` range for the size dim, used to normalise `value`. */
   const [
     lo,
     hi,
   ] = bounds.size;
+  /** Normalised size-dim value in `[0, 1]`, used to interpolate between min and max world-space radius fractions. */
   const t = normalise({
     value,
     lo,
@@ -396,6 +423,7 @@ export function probeIsFilled(
     state: AppState;
   },
 ): boolean {
+  /** Raw probe value for the shape dim; `null` falls through to the hollow default below. */
   const value = extractDim({
     probe,
     dim: state.dimMapping.shape,

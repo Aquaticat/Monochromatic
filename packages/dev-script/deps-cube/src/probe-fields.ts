@@ -99,13 +99,17 @@ const PERMISSIVE_LICENSES = new Set([
 export function parseRepository(repoField: NpmVersion['repository'],): RepositoryInfo {
   if (repoField === undefined || repoField === null) return null;
 
+  /** Unified string form of the `repository` value, regardless of plain-string or object shape. */
   const rawString = typeof repoField === 'string' ? repoField : (repoField.url ?? '');
+  /** Optional monorepo sub-directory; only objects carry one, plain-string entries don't. */
   const directory = typeof repoField === 'string' ? undefined : repoField.directory;
 
   if (rawString === '') return null;
 
+  /** Match result for the `github:owner/repo` shorthand syntax; preferred over the URL form when present. */
   const shortMatch = /^github:([^/]+)\/(.+?)(?:\.git)?$/i.exec(rawString,);
   if (shortMatch !== null) {
+    /** `[full, owner, repo]` captured groups from `shortMatch`; full match discarded. */
     const [, owner, repo,] = shortMatch;
     if (owner === undefined || repo === undefined) return null;
     return {
@@ -117,9 +121,12 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
     };
   }
 
+  /** Pattern matching any GitHub URL variant: `https://`, `git+`, `git@`, with or without `.git` suffix. */
   const githubUrlPattern = /github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?(?:[/?#].*)?$/i;
+  /** Match result for the GitHub URL pattern; `null` when the URL is not on GitHub. */
   const match = githubUrlPattern.exec(rawString,);
   if (match !== null) {
+    /** `[full, owner, repo]` captured groups from `match`; full match discarded. */
     const [, owner, repo,] = match;
     if (owner === undefined || repo === undefined) return null;
     return {
@@ -181,6 +188,7 @@ export function resolveVersion(
  * @returns One of `permissive`, `copyleft`, `non-oss`, or `unknown`.
  */
 export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
+  /** Normalised license string: object form unwrapped, uppercased, trimmed, ready for set/prefix checks. */
   const raw = (typeof license === 'string' ? license : license?.type ?? '').toUpperCase().trim();
   if (raw === '') return 'unknown';
   if (PERMISSIVE_LICENSES.has(raw,)) return 'permissive';
@@ -205,6 +213,7 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
  * @throws When the request times out, network errors, or HTTP status is not 2xx.
  */
 async function fetchJson<T>(url: string,): Promise<T> {
+  /** HTTP response from `fetch`; aborted if it doesn't complete within `HTTP_TIMEOUT_MS`. */
   const response = await fetch(url, { signal: AbortSignal.timeout(HTTP_TIMEOUT_MS,), },);
   if (!response.ok) throw new Error(`HTTP ${response.status.toString()} on ${url}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response.json() is `unknown`; caller asserts T.
@@ -221,6 +230,7 @@ async function fetchJson<T>(url: string,): Promise<T> {
  * @throws When `gh` exits non-zero (rate limit, auth failure, not found).
  */
 async function ghApi<T>(path: string,): Promise<T> {
+  /** `gh api` subprocess result; `stdout` holds the JSON payload, throws on non-zero exit. */
   const result = await spawn('gh', ['api', path,], { timeout: HTTP_TIMEOUT_MS, },);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; caller asserts T.
   return JSON.parse(result.stdout,) as T;
@@ -252,6 +262,7 @@ export async function probePackageManifest(
     cache: Cache;
   },
 ): Promise<NpmPackage> {
+  /** Cached manifest, valid for `TTL_30_DAYS`; `undefined` on cache miss. */
   const cached = await cache.read<NpmPackage>({
     name: npmName,
     version: '_pkg',
@@ -259,6 +270,7 @@ export async function probePackageManifest(
     ttlMs: TTL_30_DAYS,
   },);
   if (cached !== undefined) return cached;
+  /** Fresh manifest from the npm registry; written to cache below before return. */
   const fetched = await fetchJson<NpmPackage>(
     `https://registry.npmjs.org/${encodeURIComponent(npmName,).replace(/%40/g, '@',)}`,
   );
@@ -293,6 +305,7 @@ export async function probeDownloads(
     cache: Cache;
   },
 ): Promise<number> {
+  /** Cached downloads payload from a prior run, if still within TTL. */
   const cached = await cache.read<{ downloads: number; }>({
     name: npmName,
     version: '_pkg',
@@ -301,6 +314,7 @@ export async function probeDownloads(
   },);
   if (cached !== undefined) return cached.downloads;
   try {
+    /** Fresh downloads payload from npm; the outer try swallows failures so transient errors yield `0`. */
     const fetched = await fetchJson<{ downloads: number; }>(
       `https://api.npmjs.org/downloads/point/last-week/${encodeURIComponent(npmName,).replace(/%40/g, '@',)}`,
     );
@@ -341,7 +355,9 @@ export async function probeLanguages(
     cache: Cache;
   },
 ): Promise<Record<string, number> | null> {
+  /** Cache key for the languages probe; `<owner>/<repo>` so different repos don't collide. */
   const key = `${owner}/${repo}`;
+  /** Cached Linguist response if previously fetched. */
   const cached = await cache.read<Record<string, number>>({
     name: key,
     version: '_repo',
@@ -350,6 +366,7 @@ export async function probeLanguages(
   },);
   if (cached !== undefined) return cached;
   try {
+    /** Fresh Linguist response; on error the catch returns `null` to signal "unknown" upstream. */
     const fetched = await ghApi<Record<string, number>>(`repos/${owner}/${repo}/languages`,);
     await cache.write({
       name: key,
@@ -392,8 +409,11 @@ export async function probeLastCommit(
     cache: Cache;
   },
 ): Promise<string | null> {
+  /** Cache key shared by both whole-repo and path-scoped variants; the `field` discriminates. */
   const key = `${owner}/${repo}`;
+  /** Cache field tag; distinguishes whole-repo `pushed_at` from per-directory commit lookups. */
   const field = directory === undefined ? 'pushed_at' : `commits:${directory}`;
+  /** Cached ISO date string from a prior probe of the same `key`/`field`. */
   const cached = await cache.read<string>({
     name: key,
     version: '_repo',
@@ -404,6 +424,7 @@ export async function probeLastCommit(
 
   try {
     if (directory === undefined) {
+      /** Whole-repo metadata; `pushed_at` is the cheap proxy for "any commit anywhere". */
       const repoMeta = await ghApi<{ pushed_at: string; }>(`repos/${owner}/${repo}`,);
       await cache.write({
         name: key,
@@ -413,9 +434,11 @@ export async function probeLastCommit(
       },);
       return repoMeta.pushed_at;
     }
+    /** Path-scoped commit list (most-recent first); only the first entry's author date is consumed. */
     const commits = await ghApi<readonly { commit?: { author?: { date?: string; }; }; }[]>(
       `repos/${owner}/${repo}/commits?path=${encodeURIComponent(directory,)}&per_page=1`,
     );
+    /** Author date of the most-recent path-scoped commit; `undefined` when the response is shaped unexpectedly. */
     const date = commits[0]?.commit?.author?.date;
     if (date === undefined) return null;
     await cache.write({

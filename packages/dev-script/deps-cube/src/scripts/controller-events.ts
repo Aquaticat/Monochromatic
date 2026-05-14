@@ -121,6 +121,7 @@ function computeRangeExtent(
     dim: DataDimKey;
   },
 ): readonly [number, number,] {
+  /** Known (non-null) values for `dim` across `probes`; basis for the `[min, max]` extent. */
   const values = probes
     .map(function pluck(probe,) {
       return extractDim({
@@ -163,20 +164,26 @@ export function wireDimDropdowns(
   },
 ): void {
   CHANNEL_KEYS.forEach(function bind(channel,) {
+    /** Dim-dropdown `<select>` for this channel; source of the `change` event below. */
     const select = elSelect(`dim-${channel}`,);
     select.addEventListener('change', function onChange() {
+      /** Raw `value` attribute from the dropdown; validated against {@link DIM_KEYS} before use. */
       const raw = select.value;
+      /** Narrowed `DataDimKey` matching `raw`; `undefined` rejects stale or out-of-bounds values. */
       const nextDim = DIM_KEYS.find(function match(candidate,) {
         return candidate === raw;
       },);
       if (nextDim === undefined) return;
       session.state.dimMapping[channel] = nextDim;
+      /** Fresh `[min, max]` for the newly-selected dim; replaces the now-meaningless previous range. */
       const extent = computeRangeExtent({
         probes,
         dim: nextDim,
       },);
       session.state.ranges[channel] = extent;
+      /** Min-slider for this channel; min/max/value rewritten to the new dim's extent below. */
       const minSlider = elInput(`range-${channel}-min`,);
+      /** Max-slider for this channel; min/max/value rewritten to the new dim's extent below. */
       const maxSlider = elInput(`range-${channel}-max`,);
       minSlider.min = extent[0].toString();
       minSlider.max = extent[1].toString();
@@ -211,11 +218,14 @@ export function wireToggles(
   },
 ): void {
   TOGGLE_KEYS.forEach(function bind(key: ToggleKey,) {
+    /** Fieldset wrapping the three radios for this toggle; event delegation hangs off it. */
     const fieldset = document.querySelector<HTMLFieldSetElement>(`[data-toggle="${key}"]`,);
     if (fieldset === null) return;
     fieldset.addEventListener('change', function onChange(event,) {
+      /** Delegated event target; narrowed to `HTMLInputElement` below before reading `.value`. */
       const input = event.target;
       if (!(input instanceof HTMLInputElement)) return;
+      /** Narrowed `ToggleValue` matching the input's value; `undefined` rejects unexpected values. */
       const next = TOGGLE_VALUES.find(function match(candidate,) {
         return candidate === input.value;
       },);
@@ -244,7 +254,9 @@ export function wireRanges(
   },
 ): void {
   CHANNEL_KEYS.forEach(function bind(channel,) {
+    /** Min-slider for this channel; closed over by `onInput`. */
     const minSlider = elInput(`range-${channel}-min`,);
+    /** Max-slider for this channel; closed over by `onInput`. */
     const maxSlider = elInput(`range-${channel}-max`,);
     /**
      * Common handler bound to both sliders' `input` event. Normalises
@@ -252,7 +264,9 @@ export function wireRanges(
      * rather than an inverted (and silently empty) one.
      */
     function onInput(): void {
+      /** Numeric form of the min-slider's current value. */
       const minVal = Number.parseFloat(minSlider.value,);
+      /** Numeric form of the max-slider's current value. */
       const maxVal = Number.parseFloat(maxSlider.value,);
       session.state.ranges[channel] = minVal <= maxVal ? [minVal, maxVal,] : [maxVal, minVal,];
       commit();
@@ -279,6 +293,7 @@ export function wireSearch(
     commit: Commit;
   },
 ): void {
+  /** Search-box `<input>`; mirrored to `state.search` on every keystroke. */
   const input = elInput('search',);
   input.addEventListener('input', function onInput() {
     session.state.search = input.value;
@@ -318,6 +333,7 @@ export function wireDisplay(
       key: 'showWireframe' | 'showThresholdPlanes' | 'showAxisLabels' | 'showUnknownCluster';
     },
   ): void {
+    /** Checkbox `<input>` resolved by id; `change` event drives the bound display toggle. */
     const input = elInput(id,);
     input.addEventListener('change', function onChange() {
       session.state.displayToggles[key] = input.checked;
@@ -340,8 +356,10 @@ export function wireDisplay(
     id: 'display-unknown',
     key: 'showUnknownCluster',
   },);
+  /** Name-labels `<select>`; controls how many probe names are rendered as text. */
   const nameLabels = elSelect('name-labels',);
   nameLabels.addEventListener('change', function onChange() {
+    /** Raw `value` from the select; narrowed against the allowed name-label modes below. */
     const raw = nameLabels.value;
     if (raw !== 'none' && raw !== 'topN' && raw !== 'all') return;
     session.state.displayToggles.nameLabels = raw;
@@ -368,8 +386,10 @@ export function wireReset(
     commit: Commit;
   },
 ): void {
+  /** Reset button; click handler swaps state back to {@link defaultState} and re-syncs every control. */
   const button = el('reset',);
   button.addEventListener('click', function onClick() {
+    /** Pristine state derived from the source probes; replaces the entire session state below. */
     const next = defaultState({
       probes,
     },);
