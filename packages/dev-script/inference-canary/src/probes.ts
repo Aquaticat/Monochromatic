@@ -61,6 +61,7 @@ const simpleJson: Probe = {
   ): number {
     try {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse result checked structurally below
+      /** Decoded JSON response, validated structurally on the following lines. */
       const parsed = JSON.parse(response.trim(),) as Record<string, unknown>;
       /** Expected value in the JSON output */
       const EXPECTED_VALUE = 42;

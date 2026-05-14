@@ -40,6 +40,7 @@ function createDisposableTimeout(
   callback: () => void,
   ms: number,
 ): Disposable {
+  /** Node timer handle retained so `clearTimeout` can run from the dispose hook. */
   const id = setTimeout(
     callback,
     ms,
@@ -80,15 +81,21 @@ export async function runProbe(
   config: RunnerConfig,
   timestamp: string,
 ): Promise<ProbeResult> {
+  /** Signals cancellation to in-flight HTTP streams and container processes when the timeout fires. */
   const controller = new AbortController();
+  /** Live probe execution; settled by either success, failure, or `controller.abort()`. */
   const corePromise = runProbeCore(
     probe,
     config,
     timestamp,
     controller.signal,
   );
-  // Zero-score sentinel returned when the timeout fires; score 0 is recorded in history
-  // so the overall model score reflects the failure without discarding other probe results.
+  /**
+   * Zero-score sentinel returned when the timeout fires.
+   *
+   * Score 0 is recorded in history so the overall model score reflects the failure
+   * without discarding other probe results from the same run.
+   */
   const timedOutResult: ProbeResult = {
     name: probe.name,
     category: probe.category,
@@ -117,6 +124,7 @@ export async function runProbe(
     }
   }
 
+  /** Promise resolved from the timeout callback; raced against {@link observedCore}. */
   const {
     promise: timeoutPromise,
     resolve: resolveTimeout,
@@ -124,7 +132,7 @@ export async function runProbe(
     ProbeResult
   >();
 
-  // Timer auto-clears when the function returns via Symbol.dispose.
+  /** Disposable timeout handle; auto-clears via `Symbol.dispose` when the function returns. */
   using _timer = createDisposableTimeout(
     function onTimeout(): void {
       controller.abort();

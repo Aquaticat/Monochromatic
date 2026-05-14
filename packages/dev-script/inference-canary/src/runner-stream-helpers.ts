@@ -84,6 +84,7 @@ export function logTiming(
     tag: `timing:${label}`,
     l,
   },);
+  /** Total stream duration rendered as seconds with one decimal, suitable for terse human log lines. */
   const totalSeconds = (timing.totalMs / MS_PER_SECOND).toFixed(1,);
   rl.info(
     `ttfc=${String(timing.timeToFirstChunkMs,)}ms`

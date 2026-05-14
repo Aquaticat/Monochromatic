@@ -53,6 +53,7 @@ export function cacheAndComputePerfMultiplier(
     context.label,
     perfResult,
   );
+  /** Multiplier in [0, 1] derived from `perfResult.durationMs` against the configured thresholds. */
   const score = computePerfScore(
     perfResult,
     config.perfTest,

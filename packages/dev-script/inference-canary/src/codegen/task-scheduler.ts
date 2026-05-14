@@ -60,6 +60,7 @@ export const taskScheduler: Probe = createCodeGenProbe({
   ]
     .join('\n',),
   verify: function verifyTaskScheduler(result,): { correctness: number; } {
+    /** Trimmed output lines split off stdout so each can be matched against expected prefixes. */
     const lines = result.stdout.trim().split('\n',).map(function trimLine(line,): string {
       return line.trim();
     },);
@@ -88,22 +89,28 @@ export const taskScheduler: Probe = createCodeGenProbe({
      * @returns parsed timestamp in ms, or undefined when not found
      */
     function extractTime(prefix: string,): number | undefined {
+      /** First output line starting with the requested DONE prefix, or undefined if missing. */
       const line = lines.find(function matchPrefix(lineItem,): boolean {
         return lineItem.startsWith(`DONE ${prefix}`,);
       },);
       if (line === undefined)
         return undefined;
+      /** RegExp capture of the elapsed-ms field after the `@` marker. */
       const match = /@(\d+)/.exec(line,);
       return match !== null ? Number(match[1],) : undefined;
     }
 
+    /** Elapsed ms reported for task A; undefined when the line was missing or malformed. */
     const timeA = extractTime('A',);
+    /** Elapsed ms reported for task B; undefined when the line was missing or malformed. */
     const timeB = extractTime('B',);
+    /** Elapsed ms reported for task C; undefined when the line was missing or malformed. */
     const timeC = extractTime('C',);
 
     if (timeA === undefined || timeB === undefined || timeC === undefined)
       return { correctness: 0.2, };
 
+    /** Number of timing and ordering invariants the candidate output satisfies, out of {@link TOTAL_CHECKS}. */
     const correctCount = [
       Math.abs(timeA - EXPECTED_AB_TIME,) < TIMING_TOLERANCE,
       Math.abs(timeB - EXPECTED_AB_TIME,) < TIMING_TOLERANCE,

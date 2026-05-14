@@ -46,6 +46,7 @@ export async function handleRunFailure(
     tag: mergedConfig.label,
     l,
   },);
+  /** Caught value normalised to a string; preserves `error.message` when available, otherwise coerces via `String(error)`. */
   const message = error instanceof Error ? error.message : String(error,);
   rl.error(`FAILED: ${message}`,);
 

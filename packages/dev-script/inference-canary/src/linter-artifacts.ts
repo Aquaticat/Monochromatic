@@ -121,6 +121,7 @@ export function artifactDir(meta: ArtifactMeta,): string {
       }, probe=${String(meta.probe,)})`,
     );
   }
+  /** Timestamp slug with colons rewritten to hyphens so it is filesystem-safe across platforms. */
   const safeTs = timestampSlug(meta.timestamp,);
   return join(
     LINT_DIR,
@@ -155,11 +156,13 @@ export async function writeLintFile(
   readonly filePath: string;
   readonly lintDir: string;
 }> {
+  /** Per-run artifact directory; computed deterministically from {@link meta} so historical runs do not collide. */
   const lintDir = artifactDir(meta,);
   await mkdir(
     lintDir,
     { recursive: true, },
   );
+  /** Absolute path of the generated `canary.ts`, the file oxlint and tsgo consume downstream. */
   const filePath = join(
     lintDir,
     'canary.ts',
@@ -212,6 +215,7 @@ export async function writeEnrichedArtifact(
   enriched: EnrichedArtifactMeta,
   rawResponse: string,
 ): Promise<void> {
+  /** Existing artifact directory; reused so the basic meta.json gets overwritten in place. */
   const dir = artifactDir(enriched,);
   await mkdir(
     dir,
@@ -255,7 +259,9 @@ export async function writeEnrichedArtifact(
  * ```
  */
 export async function writeFailureArtifact(meta: FailureArtifactMeta,): Promise<void> {
+  /** Filesystem-safe timestamp slug; same encoding as {@link artifactDir} for consistency. */
   const safeTs = timestampSlug(meta.timestamp,);
+  /** Failure-specific directory path under the model label, separate from per-probe directories. */
   const dir = join(
     LINT_DIR,
     meta.label,

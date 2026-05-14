@@ -68,12 +68,14 @@ export async function runAndEnrichFixPass(
     },),
   },);
   try {
+    /** Context object handed to the second-pass scoring run; identifies pass kind and carries cancellation. */
     const fixContext: ScoreContext = {
       label: config.label,
       pass: 'fix',
       timestamp,
       signal,
     };
+    /** Result of the fix pass; undefined when the probe declined to run a second pass. */
     const pass2Result = await runSecondPass(
       probe,
       config,
@@ -85,7 +87,9 @@ export async function runAndEnrichFixPass(
     if (pass2Result === undefined)
       return undefined;
 
+    /** Score change between mean first-pass score and fix-pass score; positive means improvement. */
     const delta = pass2Result.score - meanScore;
+    /** Signed delta string used for log output: `+0.20`, `-0.10`. */
     const deltaStr = delta >= 0 ? `+${delta.toFixed(2,)}` : delta.toFixed(2,);
     rl.info(
       `pass2: score=${
@@ -111,12 +115,13 @@ export async function runAndEnrichFixPass(
     return pass2Result.score;
   }
   catch (fixError) {
+    /** Human-readable error string for log output; unwraps Error to its message field. */
     const errorMessage = fixError instanceof Error
       ? fixError.message
       : String(fixError,);
     rl.error(`pass2 failed: ${errorMessage}`,);
 
-    // Save partial fix data if the stream was aborted mid-response.
+    /** Partial response text recovered when the stream was aborted mid-completion. */
     const partialFix = extractPartialCompletion(fixError,);
     if (partialFix !== undefined) {
       try {

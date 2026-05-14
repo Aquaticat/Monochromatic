@@ -67,6 +67,7 @@ export const cssMixinTranspiler: Probe = createCodeGenProbe({
     reject: boolean;
     source: string;
   } {
+    /** Whether the model's source violates the no-regex constraint stated in the prompt. */
     const usesRegex = detectsRegexUsage(source,);
     regexViolationCache.set(
       context.label,

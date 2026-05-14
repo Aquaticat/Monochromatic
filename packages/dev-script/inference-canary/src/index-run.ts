@@ -49,11 +49,17 @@ export async function runAndReport(
   apiKey: string,
   runsOverride: number | undefined,
 ): Promise<void> {
+  /** Partial config patch carrying the consistency-runs override, or empty when no override is set. */
   const consistencyRunsOverride: Pick<Partial<RunnerConfig>, 'consistencyRuns'> =
     runsOverride !== undefined ? { consistencyRuns: runsOverride, } : {};
 
-  // Skip models that had a whole-model failure (e.g. 429, auth error) within the last 24 hours.
-  // Their failure artifacts are already recorded; retesting would just hit the same error.
+  /**
+   * Models that survive the recent-failure filter.
+   *
+   * Models with a whole-model failure (e.g. 429, auth error) in the last 24 hours
+   * are dropped; their failure artifacts are already recorded and a retest would
+   * just hit the same error.
+   */
   const modelsToRun = selectedModels.filter(function shouldRun(model,): boolean {
     if (recentlyFailedModels.has(model.label,)) {
       /** Model-specific logger for skip messages. */
@@ -67,6 +73,7 @@ export async function runAndReport(
     return true;
   },);
 
+  /** Canary reports for every kept model; promise fan-out so models run concurrently. */
   const reports: readonly CanaryReport[] = await Promise.all(
     modelsToRun.map(function runModel(model,): Promise<CanaryReport> {
       return runCanary(
@@ -83,9 +90,11 @@ export async function runAndReport(
     },),
   );
 
+  /** Reports that produced at least one probe result, including timed-out probes (score 0). */
   const reportsWithResults = reports.filter(function hasResults(report,): boolean {
     return report.results.length > 0;
   },);
+  /** Reports that recorded a whole-model failure such as a 429 or auth error. */
   const failedReports = reports.filter(function isFailed(report,): boolean {
     return report.failed;
   },);
@@ -100,8 +109,12 @@ export async function runAndReport(
     return;
   }
 
-  // reportsWithResults covers timed-out models (they now have zero-score results);
-  // failedReports covers whole-model failures (API errors, auth failures, etc.).
+  /**
+   * Union of both report kinds for the final formatted output.
+   *
+   * `reportsWithResults` covers timed-out models (zero-score results) and
+   * `failedReports` covers whole-model failures (API errors, auth failures, etc.).
+   */
   const reportsToDisplay = [
     ...reportsWithResults,
     ...failedReports,

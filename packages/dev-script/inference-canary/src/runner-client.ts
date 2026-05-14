@@ -59,6 +59,7 @@ export function executeProbe(
   client: OpenAI,
   signal?: AbortSignal,
 ): Promise<CompletionResult> {
+  /** Two-turn chat history (system + user) assembled from the probe's text fields. */
   const messages: ChatMessage[] = [
     {
       role: 'system',

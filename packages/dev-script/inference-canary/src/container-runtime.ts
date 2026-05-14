@@ -85,6 +85,7 @@ function detectRuntime(): string {
     'podman',
     'docker',
   ] as const) {
+    /** Absolute path of the candidate runtime if installed, or null when missing from PATH. */
     const resolved = whichSync(runtime,);
     if (resolved !== null) {
       rl.info(`using runtime: ${resolved}`,);

@@ -53,6 +53,7 @@ export async function execContainer(
   /** Total host-side timeout: container limit plus a buffer for startup/teardown */
   const timeoutMs = (CONTAINER_TIMEOUT_SECONDS + HOST_TIMEOUT_BUFFER_SECONDS)
     * MS_PER_SECOND;
+  /** Raw spawn result before the kill-vs-exit fields are renamed for the public {@link ContainerResult} shape. */
   const result = await execBun(
     CONTAINER_RUNTIME,
     containerArgs,
