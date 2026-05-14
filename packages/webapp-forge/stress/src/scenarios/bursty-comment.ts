@@ -83,15 +83,15 @@ const BURSTY_ISSUE_ID = 'issue-bursty';
  */
 async function run(): Promise<ScenarioResult> {
   /** Resolved `--burst-events` flag controlling the comment count per burst. */
-  const burstEvents = intFlag(
-    'burst-events',
-    DEFAULT_BURST_EVENTS,
-  );
+  const burstEvents = intFlag({
+    name: 'burst-events',
+    fallback: DEFAULT_BURST_EVENTS,
+  },);
   /** Resolved `--burst-duration-ms` flag controlling the wall-clock budget for the burst. */
-  const burstDurationMs = intFlag(
-    'burst-duration-ms',
-    DEFAULT_BURST_DURATION_MS,
-  );
+  const burstDurationMs = intFlag({
+    name: 'burst-duration-ms',
+    fallback: DEFAULT_BURST_DURATION_MS,
+  },);
 
   /** Shared creation timestamp keeps user, repo, and issue chronologically aligned. */
   const now = Date.now();

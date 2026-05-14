@@ -36,31 +36,29 @@ export function getFlag(name: string,): string | undefined {
 /**
  * Reads an integer flag with a default fallback.
  *
- * @param name - flag name without the leading dashes
- *
- * @param fallback - returned when the flag is absent or unparseable
+ * @param row - flag name and fallback
  *
  * @returns parsed integer
  *
  * @example
  * ```ts
- * const events = intFlag('burst-events', 100);
+ * const events = intFlag({ name: 'burst-events', fallback: 100 });
  * ```
  */
-export function intFlag(
-  name: string,
-  fallback: number,
-): number {
+export function intFlag(row: {
+  name: string;
+  fallback: number;
+},): number {
   /** String form of the flag; `undefined` falls through to the default. */
-  const raw = getFlag(name,);
+  const raw = getFlag(row.name,);
   if (raw === undefined)
-    return fallback;
+    return row.fallback;
   /** Numeric interpretation; non-finite results (NaN, Infinity) also fall back. */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,
   );
-  return Number.isFinite(parsed,) ? parsed : fallback;
+  return Number.isFinite(parsed,) ? parsed : row.fallback;
 }
 
 export { wait, } from '@monochromatic-dev/module-async-time';

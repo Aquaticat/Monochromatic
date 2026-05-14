@@ -92,18 +92,18 @@ type HotRepoConfig = {
 function readConfig(): HotRepoConfig {
   void getFlag;
   return {
-    repoIssues: intFlag(
-      'repo-issues',
-      DEFAULT_REPO_ISSUES,
-    ),
-    burstEvents: intFlag(
-      'burst-events',
-      DEFAULT_BURST_EVENTS,
-    ),
-    burstDurationMs: intFlag(
-      'burst-duration-ms',
-      DEFAULT_BURST_DURATION_MS,
-    ),
+    repoIssues: intFlag({
+      name: 'repo-issues',
+      fallback: DEFAULT_REPO_ISSUES,
+    },),
+    burstEvents: intFlag({
+      name: 'burst-events',
+      fallback: DEFAULT_BURST_EVENTS,
+    },),
+    burstDurationMs: intFlag({
+      name: 'burst-duration-ms',
+      fallback: DEFAULT_BURST_DURATION_MS,
+    },),
   };
 }
 
@@ -127,22 +127,20 @@ function knownRepoIdFor(seed: number,): string {
  * Composes the deterministic issue id mirroring `webapp-forge-seed`'s
  * `deterministicId('issue-${repoId}', i)`.
  *
- * @param repoId - target repo id
- *
- * @param index - issue index within the repo
+ * @param row - inputs
  *
  * @returns issue id
  *
  * @example
  * ```ts
- * issueIdFor('repo-1000000', 0); // 'issue-repo-1000000-0'
+ * issueIdFor({ repoId: 'repo-1000000', index: 0 }); // 'issue-repo-1000000-0'
  * ```
  */
-function issueIdFor(
-  repoId: string,
-  index: number,
-): string {
-  return `issue-${repoId}-${String(index,)}`;
+function issueIdFor(row: {
+  repoId: string;
+  index: number;
+},): string {
+  return `issue-${row.repoId}-${String(row.index,)}`;
 }
 
 /**
@@ -309,10 +307,10 @@ async function run(): Promise<ScenarioResult> {
       ),
     },);
     /** Target issue id reconstructed from the deterministic seed scheme. */
-    const issueId = issueIdFor(
-      knownRepoId,
-      issueIndex,
-    );
+    const issueId = issueIdFor({
+      repoId: knownRepoId,
+      index: issueIndex,
+    },);
     /** Unique synthetic comment id keyed off the iteration index. */
     const commentId = `c-burst-${String(i,)}`;
     /** Per-event start timestamp anchoring the latency sample. */

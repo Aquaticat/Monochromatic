@@ -112,18 +112,18 @@ type ForcePushConfig = {
  */
 function readConfig(): ForcePushConfig {
   return {
-    blobSize: intFlag(
-      'blob-size',
-      DEFAULT_BLOB_SIZE,
-    ),
-    burstEvents: intFlag(
-      'burst-events',
-      DEFAULT_BURST_EVENTS,
-    ),
-    burstDurationMs: intFlag(
-      'burst-duration-ms',
-      DEFAULT_BURST_DURATION_MS,
-    ),
+    blobSize: intFlag({
+      name: 'blob-size',
+      fallback: DEFAULT_BLOB_SIZE,
+    },),
+    burstEvents: intFlag({
+      name: 'burst-events',
+      fallback: DEFAULT_BURST_EVENTS,
+    },),
+    burstDurationMs: intFlag({
+      name: 'burst-duration-ms',
+      fallback: DEFAULT_BURST_DURATION_MS,
+    },),
   };
 }
 
@@ -346,48 +346,63 @@ async function run(): Promise<ScenarioResult> {
     config.burstEvents,
     1,
   );
-  /** Old oid each new force-push targets; seeded to the all-zero (no prior ref) sentinel. */
-  let priorOid = ZERO_OID;
-  /** Running count of accepted ref updates used by the apply-count invariant. */
-  let appliedTotal = 0;
-
-  for (let i = 0; i < config.burstEvents; i += 1) {
-    /* oxlint-disable no-await-in-loop -- per-iteration sequential is by design (each push depends on the prior ref state) */
-    /** Fabricated commit and packfile for this iteration's force-push. */
-    const fab = await fabricateCommit({
-      blobSize: config.blobSize,
-      // Vary the blob byte each iteration so each commit oid differs.
-      byteValue: i & 0xFF,
-      iteration: i,
-    },);
-    /* oxlint-enable no-await-in-loop */
-    /** Receive-pack request body advancing `refs/heads/main` from `priorOid` to `fab.oid`. */
-    const body = buildReceivePackBody({
-      oldOid: priorOid,
-      newOid: fab.oid,
-      packfile: fab.packfile,
-    },);
-    /** Apply-phase start timestamp anchoring the latency sample. */
-    const t0 = Date.now();
-    /* oxlint-disable no-await-in-loop -- paced burst by design */
-    /** Receive-pack outcome whose `applied` length proves the ref update was accepted. */
-    const outcome = await handleReceivePack({
-      owner: OWNER,
-      repo: REPO,
-      body,
-    },);
-    /* oxlint-enable no-await-in-loop */
-    /** Apply-phase end timestamp; difference with `t0` is the sample. */
-    const t1 = Date.now();
-    samples.push(t1 - t0,);
-    appliedTotal += outcome.applied.length;
-    priorOid = fab.oid;
-    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
-    await waitInterval({
-      intervalMs,
-      elapsedMs: t1 - t0,
-    },);
-  }
+  /** Final ref oid and accepted-update count produced by the burst loop. */
+  const {
+    priorOid,
+    appliedTotal,
+  } = await (async function runBurst(): Promise<{
+    priorOid: string;
+    appliedTotal: number;
+  }> {
+    /** Old oid each new force-push targets; seeded to the all-zero (no prior ref) sentinel. */
+    let oid = ZERO_OID;
+    /** Running count of accepted ref updates used by the apply-count invariant. */
+    let applied = 0;
+    for (let i = 0; i < config.burstEvents; i += 1) {
+      /* oxlint-disable no-await-in-loop -- per-iteration sequential is by design (each push depends on the prior ref state) */
+      /** Fabricated commit oid for this iteration's force-push. */
+      const {
+        oid: nextOid,
+        packfile,
+      } = await fabricateCommit({
+        blobSize: config.blobSize,
+        // Vary the blob byte each iteration so each commit oid differs.
+        byteValue: i & 0xFF,
+        iteration: i,
+      },);
+      /* oxlint-enable no-await-in-loop */
+      /** Receive-pack request body advancing `refs/heads/main` from `oid` to `nextOid`. */
+      const body = buildReceivePackBody({
+        oldOid: oid,
+        newOid: nextOid,
+        packfile,
+      },);
+      /** Apply-phase start timestamp anchoring the latency sample. */
+      const t0 = Date.now();
+      /* oxlint-disable no-await-in-loop -- paced burst by design */
+      /** Receive-pack outcome whose `applied` length proves the ref update was accepted. */
+      const outcome = await handleReceivePack({
+        owner: OWNER,
+        repo: REPO,
+        body,
+      },);
+      /* oxlint-enable no-await-in-loop */
+      /** Apply-phase end timestamp; difference with `t0` is the sample. */
+      const t1 = Date.now();
+      samples.push(t1 - t0,);
+      applied += outcome.applied.length;
+      oid = nextOid;
+      // oxlint-disable-next-line no-await-in-loop -- paced burst by design
+      await waitInterval({
+        intervalMs,
+        elapsedMs: t1 - t0,
+      },);
+    }
+    return {
+      priorOid: oid,
+      appliedTotal: applied,
+    };
+  })();
 
   // Verify the resulting ref points where we expect, by upload-packing it back.
   /** Upload-pack response proving the final commit oid is reachable via the smart-HTTP path. */

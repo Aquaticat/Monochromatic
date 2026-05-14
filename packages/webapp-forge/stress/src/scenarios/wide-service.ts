@@ -114,22 +114,22 @@ type WideServiceConfig = {
  */
 function readConfig(): WideServiceConfig {
   return {
-    repoCount: intFlag(
-      'repos',
-      DEFAULT_REPO_COUNT,
-    ),
-    userCount: intFlag(
-      'users',
-      DEFAULT_USER_COUNT,
-    ),
-    burstEvents: intFlag(
-      'burst-events',
-      DEFAULT_BURST_EVENTS,
-    ),
-    burstDurationMs: intFlag(
-      'burst-duration-ms',
-      DEFAULT_BURST_DURATION_MS,
-    ),
+    repoCount: intFlag({
+      name: 'repos',
+      fallback: DEFAULT_REPO_COUNT,
+    },),
+    userCount: intFlag({
+      name: 'users',
+      fallback: DEFAULT_USER_COUNT,
+    },),
+    burstEvents: intFlag({
+      name: 'burst-events',
+      fallback: DEFAULT_BURST_EVENTS,
+    },),
+    burstDurationMs: intFlag({
+      name: 'burst-duration-ms',
+      fallback: DEFAULT_BURST_DURATION_MS,
+    },),
   };
 }
 
@@ -151,7 +151,7 @@ function repoIdFor(row: {
   seed: number;
   index: number;
 },): string {
-  return `repo-${String(row.seed * REPO_SEED_FACTOR + row.index,)}`;
+  return `repo-${String((row.seed * REPO_SEED_FACTOR) + row.index,)}`;
 }
 
 /**
