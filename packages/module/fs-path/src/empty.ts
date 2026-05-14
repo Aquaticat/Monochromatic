@@ -36,13 +36,16 @@ const l = tagged({ tag: 'path/empty', },);
  * ```
  */
 export async function emptyPath(path: string,): Promise<string> {
+  /** Position of the query separator so the bundler-style `?raw` suffix can be stripped before `posix.parse`. */
   const queryIndex = path.indexOf('?',);
+  /** Path with any query suffix removed; only this form is fed to `posix.parse` so extension detection is not fooled by the query. */
   const cleanPath = queryIndex !== -1
     ? path.slice(
       0,
       queryIndex,
     )
     : path;
+  /** Parsed segments used solely to read `ext`, which decides file-vs-directory dispatch. */
   const parsed = posix.parse(cleanPath,);
 
   if (parsed.ext) {
@@ -67,6 +70,7 @@ export async function emptyPath(path: string,): Promise<string> {
  * ```
  */
 export async function emptyDir(path: string,): Promise<string> {
+  /** Snapshot of directory contents taken once so removals don't race with a live iterator. */
   const entries = await readdir(path,);
 
   await Promise.all(entries.map(function removeEntry(entry,): Promise<void> {
@@ -99,7 +103,9 @@ export async function emptyDir(path: string,): Promise<string> {
  * ```
  */
 export async function emptyFile(path: string,): Promise<string> {
+  /** Position of the query separator so the bundler-style `?raw` suffix can be stripped before the write. */
   const queryIndex = path.indexOf('?',);
+  /** Path with any query suffix removed so `writeFile` targets the actual on-disk file. */
   const cleanPath = queryIndex !== -1
     ? path.slice(
       0,
@@ -128,17 +134,21 @@ export async function emptyFile(path: string,): Promise<string> {
  * ```
  */
 export async function removeEmptyFilesInDir(path: string,): Promise<string> {
+  /** Snapshot of directory contents taken once so the removal pass doesn't race with a live iterator. */
   const entries = await readdir(path,);
 
   await Promise.all(
     entries.map(async function checkAndRemoveIfEmpty(entry,): Promise<void> {
+      /** Absolute path to the entry so `stat`, `readFile`, and `rm` all target the same node regardless of `cwd`. */
       const fullPath = posix.join(
         path,
         entry,
       );
+      /** File metadata used to skip directories and other non-regular entries before reading. */
       const stats = await stat(fullPath,);
 
       if (stats.isFile()) {
+        /** File body read in full because emptiness is decided after trimming whitespace, not by size alone. */
         const content = await readFile(
           fullPath,
           'utf8',

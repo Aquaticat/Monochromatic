@@ -40,6 +40,7 @@ const l = tagged({ tag: 'findMonorepoRoot', },);
  * @returns read function that catches `ENOENT` and returns `undefined`
  */
 async function resolveNodeReadFile(): Promise<ReadFileFn> {
+  /** Dynamic import keeps `node:fs/promises` out of browser bundles. */
   const { readFile, } = await import('node:fs/promises');
 
   return async function nodeReadFile(path: string,): Promise<string | undefined> {
@@ -64,12 +65,14 @@ async function resolveNodeReadFile(): Promise<ReadFileFn> {
  * @returns read function that unwraps `AsyncIOResult` and returns `undefined` on error
  */
 async function resolveOpfsReadFile(): Promise<ReadFileFn> {
+  /** Dynamic import keeps `happy-opfs` out of Node bundles where OPFS is unavailable anyway. */
   const { readTextFile, } = await import('happy-opfs');
   l.warn(
     'using OPFS for monorepo root discovery: mise.toml must exist in OPFS to be found',
   );
 
   return async function opfsReadFile(path: string,): Promise<string | undefined> {
+    /** `AsyncIOResult` wrapper from `happy-opfs`; unwrapped only on the success branch so errors map to `undefined`. */
     const result = await readTextFile(path,);
     if (result.isOk())
       return result.unwrap();
@@ -110,6 +113,7 @@ async function resolveReadFile(): Promise<ReadFileFn> {
 
   // Browser: check OPFS support via happy-opfs
   try {
+    /** Dynamic import so the OPFS probe runs only when no Node fs is available. */
     const { isOPFSSupported, } = await import('happy-opfs');
     if (isOPFSSupported()) {
       backendCache.readFile = await resolveOpfsReadFile();
@@ -150,10 +154,12 @@ async function walkUp({
   cwd: string;
   readFile: ReadFileFn;
 },): Promise<string | undefined> {
+  /** `mise.toml` body at the current level, or `undefined` when the file is missing; the marker check decides whether this level is the root. */
   const content = await readFile(`${cwd}/mise.toml`,);
   if (content !== undefined && content.includes(MONOREPO_SECTION_MARKER,))
     return cwd;
 
+  /** Next directory to inspect; equal to `cwd` only at the filesystem root, which terminates recursion with `undefined`. */
   const parent = dirname(cwd,);
   if (parent === cwd)
     return undefined;
@@ -200,9 +206,13 @@ async function walkUp({
 export async function findMonorepoRoot(
   { cwd, }: { cwd?: string; } = {},
 ): Promise<string> {
-  /* oxlint-disable-next-line typescript/no-unnecessary-condition -- process may be undefined in browser */
+  /* oxlint-disable typescript/no-unnecessary-condition -- process may be undefined in browser */
+  /** Walk origin; falls back to `process.cwd()` on Node/Bun and the filesystem root in browsers without a working directory concept. */
   const startDir = cwd ?? (typeof process !== 'undefined' ? process.cwd() : '/');
+  /* oxlint-enable typescript/no-unnecessary-condition */
+  /** Resolved backend captured once so the walk uses a single read function regardless of how many recursion levels run. */
   const readFile = await resolveReadFile();
+  /** Walk result before the Fedora ostree `/home` rewrite to `/var/home`; `undefined` means no ancestor matched. */
   const rawRoot = await walkUp({
     cwd: startDir,
     readFile,
