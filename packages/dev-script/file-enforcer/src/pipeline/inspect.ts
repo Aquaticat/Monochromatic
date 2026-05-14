@@ -21,6 +21,7 @@ const INSPECT_PREVIEW_LENGTH = 200;
  * ```
  */
 export function inspect<const TValue,>(value: TValue,): TValue {
+  /** Function-scoped logger tagged with the call site for traceable pipeline inspection. */
   const rl = tagged({
     tag: inspect.name,
     l,

@@ -52,15 +52,19 @@ let cachedManager: PackageManager | null | undefined = undefined;
 export async function detectManager(): Promise<PackageManager | null> {
   if (cachedManager !== undefined)
     return cachedManager;
+  /** Snapshot of registered manager entries; iteration order defines detection priority. */
   const entries = [...MANAGERS.entries(),];
+  /** Per-manager probe results: the manager name when its check succeeds, otherwise `null`. */
   const results = await Promise.all(
     entries.map(
       async function checkManager([name, def,],): Promise<PackageManager | null> {
+        /** Whether this manager's existence check exits successfully on the current system. */
         const available = await evaluatePredicate(def.check,);
         return available ? name : null;
       },
     ),
   );
+  /** First non-null entry in priority order, or `undefined` when nothing matched. */
   const detected = results.find(function isPresent(name,): name is PackageManager {
     return name !== null;
   },);
@@ -181,9 +185,11 @@ export async function canProvide(
   manager: PackageManager,
   packageName: string,
 ): Promise<boolean> {
+  /** Manager definition; absent entry means `manager` is unrecognised. */
   const def = MANAGERS.get(manager,);
   if (!def)
     return false;
+  /** Search command with `{pkg}` substituted to the resolved package name. */
   const cmd = fillTemplate(
     def.search,
     packageName,
@@ -217,20 +223,25 @@ export async function installPackage(
   manager: PackageManager,
   packageName: string,
 ): Promise<string> {
+  /** Manager definition; missing entry indicates a programmer bug, so we throw. */
   const def = MANAGERS.get(manager,);
   if (!def)
     throw new Error(`Unknown package manager: ${manager}`,);
+  /** Install command with `{pkg}` substituted to the resolved package name. */
   const cmd = fillTemplate(
     def.install,
     packageName,
   );
+  /** True when the manager needs root and the process is not already running as root. */
   const needsSudo = def.needsRoot && !isRoot();
+  /** Final argv with `sudo` prepended only when {@link needsSudo} flagged it. */
   const fullCmd = needsSudo
     ? [
       'sudo',
       ...cmd,
     ]
     : cmd;
+  /** Head/tail split of `fullCmd` so `exec` receives executable and args separately. */
   const [executable = '', ...args] = fullCmd;
   return await exec(
     executable,

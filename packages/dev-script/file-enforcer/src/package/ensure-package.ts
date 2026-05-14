@@ -54,6 +54,7 @@ export function registerPackages(entries: readonly PackageEntry[],): void {
  * @returns Map from binary name to package entry
  */
 function buildIndex(): ReadonlyMap<string, PackageEntry> {
+  /** Lookup map from binary name to package entry; returned read-only after the loop. */
   const map = new Map<string, PackageEntry>();
   for (const entry of registered) {
     map.set(
@@ -130,7 +131,9 @@ function resolvePackageName(
 export async function ensurePackage(binary: string,): Promise<void> {
   index ??= buildIndex();
 
+  /** Registered entry for `binary`, or `undefined` when the caller never declared it. */
   const entry = index.get(binary,);
+  /** Entry actually used downstream; falls back to a self-named default for unregistered binaries. */
   const effectiveEntry: PackageEntry = entry ?? {
     available: null,
     bin: binary,
@@ -139,6 +142,7 @@ export async function ensurePackage(binary: string,): Promise<void> {
     overrides: Object.freeze({},),
   };
 
+  /** Whether the binary already responds to its existence check; short-circuits the install path. */
   const alreadyInstalled = await binaryExists(
     binary,
     effectiveEntry.check,
@@ -146,10 +150,12 @@ export async function ensurePackage(binary: string,): Promise<void> {
   if (alreadyInstalled)
     return;
 
+  /** Detected manager on this host, or `null` when nothing supported is installed. */
   const manager = await detectManager();
   if (!manager)
     throw new NoManagerError(binary,);
 
+  /** Manager-specific package name; `undefined` when Repology says this manager cannot supply it. */
   const packageName = resolvePackageName(
     effectiveEntry,
     manager,
@@ -163,6 +169,7 @@ export async function ensurePackage(binary: string,): Promise<void> {
     );
   }
 
+  /** Live confirmation from the manager's search command that the package is installable now. */
   const available = await canProvide(
     manager,
     packageName,
@@ -175,6 +182,7 @@ export async function ensurePackage(binary: string,): Promise<void> {
     );
   }
 
+  /** Function-scoped logger tagged with the call site for traceable install logs. */
   const rl = tagged({
     tag: ensurePackage.name,
     l,
@@ -185,6 +193,7 @@ export async function ensurePackage(binary: string,): Promise<void> {
     packageName,
   );
 
+  /** Post-install existence check; non-true here means the package failed to provide the binary. */
   const verified = await binaryExists(
     binary,
     effectiveEntry.check,

@@ -69,6 +69,7 @@ async function writeIfChanged(
     readonly sourcePath?: string;
   },
 ): Promise<void> {
+  /** Function-scoped logger tagged with the call site for traceable write logs. */
   const rl = tagged({
     tag: writeIfChanged.name,
     l,

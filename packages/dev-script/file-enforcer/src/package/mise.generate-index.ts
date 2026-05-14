@@ -72,13 +72,16 @@ const SUPPORTED_MANAGERS = new Set([
  */
 async function ensureImage(): Promise<void> {
   console.log('[generate-index] building container image...',);
+  /** GitHub token from either env var; empty string when neither is set. */
   const token = process.env['MISE_GITHUB_TOKEN'] ?? process.env['GITHUB_TOKEN'] ?? '';
+  /** `--secret` args for podman; empty when no token, so unauthenticated clones run instead. */
   const secretArgs = token !== ''
     ? [
       '--secret',
       `id=github_token,env=GITHUB_TOKEN`,
     ]
     : [];
+  /** Subprocess env; injects `GITHUB_TOKEN` only when a token was found, so podman picks it up via `--secret`. */
   const env = token !== ''
     ? {
       ...process.env,
@@ -151,6 +154,7 @@ async function ensureVolumes(): Promise<void> {
  * @returns Captured stdout
  */
 async function runContainer(args: readonly string[],): Promise<string> {
+  /** Spawn result; stdout is returned to the caller, stderr is mirrored to the console for visibility. */
   const result = await spawn(
     'podman',
     [
@@ -184,12 +188,15 @@ async function runContainer(args: readonly string[],): Promise<string> {
  * @returns Set of mise-installable tool names (lowercase)
  */
 async function loadMiseRegistry(): Promise<ReadonlySet<string>> {
+  /** Spawn result; only `stdout` is parsed for tool names. */
   const result = await spawn(
     'mise',
     ['registry',],
   );
+  /** Set of mise-registry tool names; lowercase for case-insensitive matching downstream. */
   const names = new Set<string>();
   for (const line of result.stdout.split('\n',)) {
+    /** First whitespace-separated token of `line`; tool name on `mise registry` output. */
     const [name,] = line.split(/\s+/,);
     if (name !== undefined && name !== '')
       names.add(name.toLowerCase(),);
@@ -265,7 +272,9 @@ type RepologyProject = {
  * @returns TypeScript source code
  */
 function generateTypeScript(projects: readonly RepologyProject[],): string {
+  /** Date portion of the current ISO timestamp; used in the generated file header. */
   const [today,] = new Date().toISOString().split('T',);
+  /** Output buffer: header + entries + closing token, joined with newlines at the end. */
   const lines: string[] = [
     '/**',
     ' * Auto-generated from Repology package metadata.',
@@ -282,6 +291,7 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
   ];
 
   for (const project of projects) {
+    /** Generated `p(...)` call string for this project; appended verbatim into the output array. */
     const entry = buildPCall(project,);
     lines.push(`  ${entry},`,);
   }
@@ -301,6 +311,7 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
  * @returns TypeScript expression string like `p('curl')` or `p({ effname: '...', yes: [...] })`
  */
 function buildPCall(project: RepologyProject,): string {
+  /** Per-manager entries from Repology filtered down to managers we generate code for. */
   const managers = Object
     .entries(project.repos,)
     .filter(function isSupported([manager,],): boolean {

@@ -96,10 +96,12 @@ export async function notifyWriteProtection(filePath: string,): Promise<void> {
  * @param filePath - Absolute path shown in the notification body
  */
 async function sendDesktopNotification(filePath: string,): Promise<void> {
+  /** Function-scoped logger tagged with the call site for traceable notification logs. */
   const rl = tagged({
     tag: sendDesktopNotification.name,
     l,
   },);
+  /** Detected notification backend, or `null` when no compatible tool is installed. */
   const tool = await detectNotificationTool();
   if (tool === null)
     return;
@@ -137,6 +139,7 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
       "'",
       "''",
     );
+    /** Title with single quotes doubled, matching the PowerShell literal escape used above for `safeBody`. */
     const safeTitle = title.replaceAll(
       "'",
       "''",

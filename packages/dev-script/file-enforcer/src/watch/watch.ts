@@ -32,6 +32,7 @@ import {
  * ```
  */
 export function startWatching(configPath: string,): Promise<never> {
+  /** Function-scoped logger tagged with the call site for traceable watch-mode logs. */
   const rl = tagged({
     tag: startWatching.name,
     l,
@@ -56,6 +57,12 @@ export function startWatching(configPath: string,): Promise<never> {
   /** Protected paths that need notification, accumulated during the debounce window */
   const pendingProtected: Set<string> = new Set<string>();
   // Debounce state: `let` needed because the timer is replaced on each event
+  /**
+   * Active debounce timer handle, or `undefined` between bursts.
+   *
+   * Reassigned on every event so the most recent timer wins; previous timers
+   * are cleared via {@link clearTimeout} before a new one is scheduled.
+   */
   let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
   /**
@@ -110,6 +117,7 @@ export function startWatching(configPath: string,): Promise<never> {
       function debouncedRerun(): void {
         /** Snapshot accumulated state before clearing */
         const paths = [...pendingPaths,];
+        /** Snapshot of paths that need write-protection notifications, paired with `paths`. */
         const protectedPaths = [...pendingProtected,];
         pendingPaths.clear();
         pendingProtected.clear();

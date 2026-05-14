@@ -37,6 +37,7 @@ export function mergeOverrides(
   }
 
   return generated.map(function applyOverride(entry,): PackageEntry {
+    /** Override entry matched by effname, or `undefined` when none registered. */
     const override = overrideMap.get(entry.effname,);
     if (!override)
       return entry;

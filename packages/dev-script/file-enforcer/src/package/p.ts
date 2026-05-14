@@ -67,6 +67,7 @@ function buildFromShorthand(name: string,): PackageEntry {
  * @returns Immutable package entry
  */
 function buildFromSpec(spec: PackageSpec,): PackageEntry {
+  /** Destructured spec fields; pulled out so the return literal stays compact. */
   const {
     bin,
     check,
@@ -74,6 +75,7 @@ function buildFromSpec(spec: PackageSpec,): PackageEntry {
     yes,
   } = spec;
 
+  /** Availability set and overrides; `null` availability when no `yes` array was supplied. */
   const result = yes !== undefined
     ? parseYes(yes,)
     : {
@@ -107,12 +109,15 @@ function parseYes(
   readonly available: ReadonlySet<PackageManager>;
   readonly overrides: Readonly<Record<string, string>>;
 } {
+  /** Managers that can supply this package; populated as the `yes` array is walked. */
   const available = new Set<PackageManager>();
+  /** Per-manager package-name overrides extracted from `[manager, packageName]` tuples. */
   const overrides: Record<string, string> = {};
   for (const entry of yes) {
     if (typeof entry === 'string')
       available.add(entry,);
     else {
+      /** Tuple split: explicit manager plus its custom package name. */
       const [manager, packageName,] = entry;
       available.add(manager,);
       overrides[manager] = packageName;

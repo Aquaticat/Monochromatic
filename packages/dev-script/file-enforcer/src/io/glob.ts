@@ -93,11 +93,13 @@ function splitGlob(
  * ```
  */
 export async function expandGlob(pattern: string,): Promise<readonly string[]> {
+  /** Triple from {@link splitGlob}: matcher cwd, glob suffix, and originally-typed prefix. */
   const [cwd, relativeGlob, originalPrefix,] = splitGlob(pattern,);
 
   if (relativeGlob === '')
     return [cwd,];
 
+  /** Files matched by the glob suffix under `cwd`; only the `files` field is consumed. */
   const { files, } = await readdirGlob(
     relativeGlob,
     { cwd, },
@@ -153,6 +155,7 @@ export function mirrorGlobPath(
 
   /** Number of wildcards in source vs dest must match for positional substitution */
   const sourceWildcardCount = sourceParts.length - 1;
+  /** Wildcard count on the destination side; compared with source to detect mismatches. */
   const destWildcardCount = destParts.length - 1;
   if (sourceWildcardCount !== destWildcardCount) {
     throw new Error(
@@ -165,8 +168,12 @@ export function mirrorGlobPath(
 
   /** Values captured from each wildcard position in the source path */
   const captured: string[] = [];
-  // Walk the source path, peeling off fixed prefixes to isolate wildcard captures;
-  // let needed because remainder shrinks with each iteration
+  // Walk the source path, peeling off fixed prefixes to isolate wildcard captures.
+  /**
+   * Unconsumed tail of the source path; shrinks as fixed prefixes get peeled off each iteration.
+   *
+   * `let` is required: remainder is reassigned in every loop iteration.
+   */
   let remainder = sourcePath;
   for (let partIndex = 0; partIndex < sourceParts.length; partIndex++) {
     /** Fixed text before (or after) the current wildcard */
@@ -183,6 +190,7 @@ export function mirrorGlobPath(
     if (partIndex < sourceWildcardCount) {
       /** Position of the next fixed segment, marking the end of this wildcard capture */
       const nextFixed = sourceParts[partIndex + 1] ?? '';
+      /** Index in `remainder` where the next fixed segment begins, or end-of-string when none remains. */
       const nextFixedPos = nextFixed === ''
         ? remainder.length
         : remainder.indexOf(nextFixed,);

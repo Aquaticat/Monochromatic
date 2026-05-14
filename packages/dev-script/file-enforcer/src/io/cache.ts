@@ -43,9 +43,11 @@ export function invalidatePaths(paths: readonly string[],): void {
 export async function readCached(filePath: string,): Promise<string> {
   /** Absolute path used as the cache key for reliable lookups */
   const absPath = resolve(filePath,);
+  /** Previously-cached content for `absPath`, or `undefined` on miss. */
   const cached = readCache.get(absPath,);
   if (cached !== undefined)
     return cached;
+  /** Freshly-read file content; stored before return so the next call short-circuits. */
   const content = await readFile(
     absPath,
     'utf8',

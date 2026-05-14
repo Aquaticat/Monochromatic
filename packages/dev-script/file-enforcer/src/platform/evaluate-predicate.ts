@@ -86,6 +86,7 @@ export type PlatformCommands = readonly PlatformEntry[];
  */
 export async function evaluatePredicate(predicate: Predicate,): Promise<boolean> {
   try {
+    /** Head/tail split of predicate so `spawn` receives executable plus argv separately. */
     const [cmd = '', ...args] = predicate;
     await spawn(
       cmd,

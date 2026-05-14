@@ -40,6 +40,7 @@ export async function watchDirectory(
   configPath: string,
   onEvent: (kind: EventKind, filename: string,) => void,
 ): Promise<void> {
+  /** Function-scoped logger tagged with the call site for traceable watcher logs. */
   const rl = tagged({
     tag: watchDirectory.name,
     l,
