@@ -23,5 +23,9 @@
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/module/numeric-const"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

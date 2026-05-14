@@ -1,5 +1,6 @@
 {
   "name": "@monochromatic-dev/config-dprint",
+  "version": "0.0.1",
   "private": false,
   "keywords": [
     "dprint",
@@ -25,5 +26,9 @@
     "directory": "packages/config/dprint"
   },
   "preferUnplugged": true,
-  "description": "Shared dprint configuration for Monochromatic repositories."
+  "description": "Shared dprint configuration for Monochromatic repositories.",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

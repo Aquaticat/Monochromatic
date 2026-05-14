@@ -1,5 +1,6 @@
 {
   "name": "@monochromatic-dev/config-tsdown",
+  "version": "0.0.1",
   "private": false,
   "keywords": [
     "tsdown",
@@ -36,5 +37,9 @@
       "default": "./src/index.client.ts"
     }
   },
-  "description": "Shared tsdown build configuration for Monochromatic packages."
+  "description": "Shared tsdown build configuration for Monochromatic packages.",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

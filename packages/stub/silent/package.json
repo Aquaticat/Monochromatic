@@ -27,5 +27,9 @@
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/stub/silent"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

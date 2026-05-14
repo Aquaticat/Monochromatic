@@ -23,5 +23,9 @@
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/module/or-throw"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
