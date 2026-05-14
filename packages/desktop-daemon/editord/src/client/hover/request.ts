@@ -57,6 +57,7 @@ export async function doRequestHover({
   y: number;
 },): Promise<void> {
   try {
+    /** Hover text from the language server; empty string means "nothing to show". */
     const { contents, } = await ws.request({
       type: 'hover',
       path,

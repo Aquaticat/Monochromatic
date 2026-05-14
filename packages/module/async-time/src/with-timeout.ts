@@ -36,9 +36,22 @@ export async function withTimeout<T,>({
   readonly ms: number;
   readonly promise: Promise<T>;
 },): Promise<T> {
+  /**
+   * setTimeout handle shared between the Promise executor and the `using` disposer.
+   *
+   * Hoisted to function root because the executor assigns it synchronously
+   * inside `new Promise`, while the disposer reads it on every scope-exit path;
+   * both branches must reference the same binding.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- timer handle is assigned inside the Promise constructor callback and read by the using-disposer; both branches need a shared mutable binding
   let timer: ReturnType<typeof setTimeout> | undefined = undefined;
 
+  /**
+   * Clears the pending setTimeout when the race resolves before the timeout fires.
+   *
+   * Without this, the timer would still call `reject` after `Promise.race` has
+   * already settled, producing an unhandled rejection on a promise no caller awaits.
+   */
   using _cleanup = {
     [Symbol.dispose](): void {
       if (timer !== undefined)

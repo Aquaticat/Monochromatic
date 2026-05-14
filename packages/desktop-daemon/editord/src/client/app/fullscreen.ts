@@ -43,6 +43,7 @@ const FULLSCREEN_ICON_SVG =
  * ```
  */
 export function wireFullscreen({ appElement, }: { appElement: HTMLElement; },): void {
+  /** Floating action button that enters fullscreen + keyboard lock when clicked. */
   const fab = document.createElement('button',);
   fab.type = 'button';
   fab.className = 'fullscreen-fab';

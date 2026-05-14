@@ -59,6 +59,13 @@ export function createDebounced(
     delayMs: number;
   },
 ): DebouncedHandle {
+  /**
+   * Active `setTimeout` handle, or `0` when no timer is pending.
+   *
+   * Reassigned by every `debounced()` call (after clearing the previous handle)
+   * and reset to `0` by `flush()` and `cancel()`. Sentinel `0` lets
+   * `clearTimeout(timer)` stay a safe no-op on first invocation.
+   */
   let timer = 0;
 
   /** Executes the function immediately and cancels any pending timer. */

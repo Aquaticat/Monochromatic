@@ -125,6 +125,7 @@ export class BinaryViewer extends HTMLElement {
 
   /** Removes all content nodes from the shadow root, keeping the style element. */
   #clear(): void {
+    /** Captured `<style>` node so it can be re-attached after `replaceChildren()` wipes the shadow root. */
     const style = this.#shadow.querySelector<HTMLStyleElement>('style',);
     this.#shadow.replaceChildren();
     if (style !== null)

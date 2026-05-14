@@ -80,6 +80,7 @@ export async function bootSession(
       return recentFiles.paths;
     },
   },);
+  /** Session state restored from the server: file path to reopen plus the recent files list. */
   const restored = await restoreSession({
     ws,
     editorPane,
