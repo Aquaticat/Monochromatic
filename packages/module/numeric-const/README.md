@@ -1,5 +1,7 @@
 # module-numeric-const
 
+Ready to publish.
+
 Universal numeric constants for the Monochromatic monorepo.
 This package is the canonical home for numeric values that express mathematical or physical relationships,
 and for codes defined by external specifications.

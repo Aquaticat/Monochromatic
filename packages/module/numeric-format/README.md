@@ -1,5 +1,7 @@
 # module-numeric-format
 
+Ready to publish.
+
 Numeric formatters for the gaps left by `Intl.DurationFormat` and `Intl.NumberFormat`.
 This package mirrors `@monochromatic-dev/module-numeric-const`:
 one file per category, re-exported from `index.ts`,

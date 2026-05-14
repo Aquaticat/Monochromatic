@@ -4,7 +4,7 @@
   "description": "Runtime assertions that pass the value through or throw: nonNullishOrThrow, truthyOrThrow, falsyOrThrow.",
   "type": "module",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
   "module": "src/index.ts",
   "exports": {
     ".": "./src/index.ts"

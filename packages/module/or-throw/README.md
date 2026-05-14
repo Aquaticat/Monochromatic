@@ -1,5 +1,7 @@
 # module-or-throw
 
+Ready to publish.
+
 Runtime assertions that pass the value through or throw.
 
 Each helper narrows the static type when the runtime check passes,

@@ -4,7 +4,7 @@
   "description": "Async timing primitives: wait (sleep) and withTimeout (deadline-bounded race).",
   "type": "module",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
   "module": "src/index.ts",
   "exports": {
     ".": "./src/index.ts"

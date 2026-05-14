@@ -4,7 +4,7 @@
   "description": "Numeric formatters for the gaps Intl.DurationFormat / Intl.NumberFormat explicitly do not cover: magnitude-adaptive sub-millisecond durations and IEC binary byte units.",
   "type": "module",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
   "module": "src/index.ts",
   "exports": {
     ".": "./src/index.ts"

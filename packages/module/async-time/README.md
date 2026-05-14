@@ -1,5 +1,7 @@
 ## module-async-time
 
+Ready to publish.
+
 Async timing primitives.
 
 ### Helpers
