@@ -289,6 +289,7 @@ Move changes where they belong immediately: different file, new file, gitignore 
 - Prefer `Object.entries` and functional methods over `for...in`.
 - Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
 - Block-level `/* oxlint-disable rule */` must wrap tightly. Order with TSDoc: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */`. The disable goes **before** the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the **very next line** after the declaration (or closing `);`/`}`). Never at end-of-file or many lines later. Leaving a disable open longer than necessary silences unrelated violations.
+- When a declaration needs both TSDoc and a suppression, use the block-level disable + enable pair wrapping the TSDoc and declaration tightly. Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration: the directive applies only to the literal next physical line, so it lands on the TSDoc instead of the declaration and the suppression is lost.
 
 ### Logging
 
