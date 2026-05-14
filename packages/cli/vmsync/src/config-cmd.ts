@@ -40,6 +40,7 @@ export async function updateConfig(
     cpus: number | undefined;
   },
 ): Promise<void> {
+  /** Tagged logger so config-update entries are scoped to `updateConfig` in the output. */
   const rl = tagged({
     tag: updateConfig.name,
     l,

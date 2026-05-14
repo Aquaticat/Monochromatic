@@ -50,6 +50,7 @@ async function safeReaddir(rl: ReturnType<typeof tagged>,): Promise<string[]> {
  * ```
  */
 export async function listVms(): Promise<readonly string[]> {
+  /** Tagged logger so list-vm entries are scoped to `listVms` in the output. */
   const rl = tagged({
     tag: listVms.name,
     l,
@@ -103,6 +104,7 @@ export async function listVms(): Promise<readonly string[]> {
  * ```
  */
 export async function printVmList(): Promise<void> {
+  /** Tagged logger so print-list entries are scoped to `printVmList` in the output. */
   const rl = tagged({
     tag: printVmList.name,
     l,

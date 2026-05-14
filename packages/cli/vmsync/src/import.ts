@@ -68,6 +68,7 @@ async function validateUefi(
     format: string;
   },
 ): Promise<void> {
+  /** Tagged logger so UEFI-validation entries are scoped to `validateUefi` in the output. */
   const rl = tagged({
     tag: validateUefi.name,
     l,
@@ -78,6 +79,7 @@ async function validateUefi(
   /** NBD device allocated for this inspection. */
   const device = await findFreeNbdDevice();
 
+  /** Auto-disposed NBD connection; bound for its side effect of holding the export open. */
   await using _conn = await connectDisposable({
     imagePath,
     device,
@@ -157,6 +159,7 @@ export async function importImage(
     name: string | undefined;
   },
 ): Promise<void> {
+  /** Tagged logger so import entries are scoped to `importImage` in the output. */
   const rl = tagged({
     tag: importImage.name,
     l,

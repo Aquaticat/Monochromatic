@@ -69,6 +69,7 @@ const OVMF_SEARCH_PATHS: readonly string[] = [
  * ```
  */
 async function findOvmf(): Promise<string> {
+  /** Tagged logger so OVMF-discovery entries are scoped to `findOvmf` in the output. */
   const rl = tagged({
     tag: findOvmf.name,
     l,
@@ -129,6 +130,7 @@ async function findOvmf(): Promise<string> {
  * ```
  */
 async function bootKvm(name: string,): Promise<void> {
+  /** Tagged logger so KVM-boot entries are scoped to `bootKvm` in the output. */
   const rl = tagged({
     tag: bootKvm.name,
     l,
@@ -230,6 +232,7 @@ async function bootKvm(name: string,): Promise<void> {
  * ```
  */
 async function bootHyperv(name: string,): Promise<void> {
+  /** Tagged logger so Hyper-V-boot entries are scoped to `bootHyperv` in the output. */
   const rl = tagged({
     tag: bootHyperv.name,
     l,
@@ -353,6 +356,7 @@ export function parseMemoryToBytes(memory: string,): number {
  * ```
  */
 export async function bootVm(name: string,): Promise<void> {
+  /** Tagged logger so VM-boot entries are scoped to `bootVm` in the output. */
   const rl = tagged({
     tag: bootVm.name,
     l,

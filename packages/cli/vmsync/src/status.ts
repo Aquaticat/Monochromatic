@@ -26,6 +26,7 @@ import {
  * ```
  */
 export async function showStatus(name: string,): Promise<void> {
+  /** Tagged logger so status entries are scoped to `showStatus` in the output. */
   const rl = tagged({
     tag: showStatus.name,
     l,

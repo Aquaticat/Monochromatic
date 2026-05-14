@@ -189,6 +189,7 @@ export function stripJsoncComments(text: string,): string {
  * ```
  */
 export async function readConfig(name: string,): Promise<VmsyncConfig> {
+  /** Tagged logger so read-config entries are scoped to `readConfig` in the output. */
   const rl = tagged({
     tag: readConfig.name,
     l,
@@ -222,6 +223,7 @@ export async function writeConfig(
   name: string,
   config: VmsyncConfig,
 ): Promise<void> {
+  /** Tagged logger so write-config entries are scoped to `writeConfig` in the output. */
   const rl = tagged({
     tag: writeConfig.name,
     l,
