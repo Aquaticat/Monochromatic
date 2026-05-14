@@ -16,8 +16,6 @@
  *   user-controllable, since otherwise a crafted link can overwrite any
  *   layout-critical property on `:root`.
  *
- * @returns Nothing (void). Modifies the document's root element styles directly.
- *
  * @example
  * ```ts
  * // URL: https://example.com/?--brand=red&font-size=16px&margin-inline=1rem

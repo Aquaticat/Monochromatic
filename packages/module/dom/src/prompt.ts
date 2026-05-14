@@ -1,11 +1,14 @@
 // Prompt Dialog Polyfill: Drop-in replacement for window.prompt using dialog element
 
+/* oxlint-disable require-await -- exposed as async so callers can `await` even though the work is event-driven */
 /**
  * Creates a modern prompt dialog using the HTML dialog element.
  * This serves as a polyfill for window.prompt with enhanced styling capabilities.
  *
  * @param message - Message to display to the user
+ *
  * @param defaultValue - Default value for the input field
+ *
  * @returns Promise that resolves to the user's input or null if cancelled
  *
  * @example
@@ -16,13 +19,12 @@
  * }
  * ```
  */
-// oxlint-disable-next-line require-await -- Required
 export async function prompt(
   message: string,
   defaultValue = '',
 ): Promise<string | null> {
   // oxlint-disable-next-line promise/avoid-new -- Required for dialog event handling
-  return new Promise(resolve => {
+  return new Promise(function promptExecutor(resolve,) {
     // Create dialog element
     const dialog = document.createElement('dialog',);
     dialog.className = 'prompt-polyfill-dialog';
@@ -68,7 +70,7 @@ export async function prompt(
     // Handle form submission
     form.addEventListener(
       'submit',
-      event => {
+      function onSubmit(event,) {
         event.preventDefault();
         dialog.returnValue = input.value;
         dialog.close();
@@ -78,7 +80,7 @@ export async function prompt(
     // Handle cancel button
     cancelButton.addEventListener(
       'click',
-      () => {
+      function onCancelClick() {
         dialog.returnValue = '';
         dialog.close();
       },
@@ -87,7 +89,7 @@ export async function prompt(
     // Handle dialog close (ESC key or other close methods)
     dialog.addEventListener(
       'close',
-      () => {
+      function onClose() {
         // Get the return value (empty string means cancelled)
         const result = dialog.returnValue || null;
 
@@ -102,14 +104,14 @@ export async function prompt(
     // Handle backdrop click
     dialog.addEventListener(
       'click',
-      event => {
+      function onBackdropClick(event,) {
         // Check if click was on the backdrop (dialog element itself, not its children)
         if (event.target === dialog) {
           const rect = dialog.getBoundingClientRect();
-          const clickedInDialog = event.clientX >= rect.left
-            && event.clientX <= rect.right
-            && event.clientY >= rect.top
-            && event.clientY <= rect.bottom;
+          const clickedInDialog = (event.clientX >= rect.left)
+            && (event.clientX <= rect.right)
+            && (event.clientY >= rect.top)
+            && (event.clientY <= rect.bottom);
 
           if (!clickedInDialog) {
             dialog.returnValue = '';
@@ -126,3 +128,4 @@ export async function prompt(
     input.select();
   },);
 }
+/* oxlint-enable require-await */
