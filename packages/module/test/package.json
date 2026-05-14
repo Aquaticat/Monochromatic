@@ -4,7 +4,7 @@
   "description": "Test harness with Jest-style expect over chai, sinon sandbox with dispose, and concurrent describe/it runner.",
   "type": "module",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
   "module": "dist/final/neutral/index.mjs",
   "exports": {
     ".": {

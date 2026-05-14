@@ -1,5 +1,7 @@
 # @monochromatic-dev/module-test
 
+Ready to publish.
+
 Jest-style test harness built on chai and sinon.
 Designed to replace `bun:test` as the monorepo's test primitive
 with a runtime-neutral, self-contained alternative.
