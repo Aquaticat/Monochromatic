@@ -20,7 +20,9 @@ export {
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
+  readExisting,
 } from './io/write.ts';
+export { overwriteTomlKey, } from './io/write-toml.ts';
 export {
   l,
   tagged,
@@ -51,8 +53,13 @@ export { exec, } from './pipeline/exec.ts';
 export { inspect, } from './pipeline/inspect.ts';
 export {
   dedup,
-  getProperty,
+  getJsonProperty,
 } from './pipeline/transform.ts';
+export {
+  editTomlKey,
+  getTomlProperty,
+} from './pipeline/toml.ts';
+export type { Path, } from './types.ts';
 export type {
   Command,
   PlatformCommands,

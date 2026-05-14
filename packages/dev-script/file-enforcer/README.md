@@ -50,11 +50,14 @@ bun packages/dev-script/file-enforcer/src/index.ts --watch
 - `overwrite(dest, content)`: writes content to dest; skips when existing content is identical
 - `overwriteIfNotExists(dest, content)`: writes only if the file does not exist
 - `overwriteEach(destGlob, files)`: mirrors each `GlobResults` entry to a destination using positional wildcard substitution; source glob is read from the array
+- `overwriteTomlKey({ dest, path, value })`: updates a single key in an existing TOML file, preserving comments and unmutated whitespace via splice mode; throws when dest does not exist
 
 ### Transforms
 
 - `dedup(content)`: removes duplicate lines, preserving first occurrence order
-- `getProperty(path, jsonContent)`: extracts a nested value using dot-separated paths (e.g., `.config.features`)
+- `getJsonProperty({ path, content })`: extracts a nested value from JSON; `path` is an array of segments (string keys and numeric array indices), avoiding ambiguity for keys that contain literal dots
+- `getTomlProperty({ path, content })`: same shape as `getJsonProperty` but for TOML; backed by `@monochromatic-dev/module-toml-edit`, supports section headers, inline tables, and array-of-tables indexing
+- `editTomlKey({ content, path, value })`: returns TOML text with a single key set or replaced; splice mode keeps unmutated regions byte-identical. Each call parses and stringifies, so for multiple edits to the same source, compose `parseTomlEdit + tomlSet + tomlStringify` from `@monochromatic-dev/module-toml-edit` directly
 - `exec(cmd, args)`: runs a command and captures stdout
 - `exec(platformCommands)`: platform-aware exec; evaluates `[predicate, command]` tuples top-to-bottom and runs the first match (see [Platform-aware exec](#platform-aware-exec) below)
 - `evaluatePredicate(predicate)`: runs a predicate and returns whether it succeeded (exit 0); results cached per-session
@@ -306,12 +309,14 @@ All production source files are under 100 lines per the monorepo coding guidelin
 - `notify.ts`: terminal warning + platform-aware desktop notification dispatch
 - `p.ts`: `p()` builder for `PackageEntry` values
 - `tracker.ts`: read/write/timestamp tracking for watch mode
-- `transform.ts`: dedup and dot-prop getProperty
-- `types.ts`: `PackageManager`, `PackageSpec`, `PackageEntry` type definitions
+- `toml.ts`: getTomlProperty and editTomlKey backed by @monochromatic-dev/module-toml-edit
+- `transform.ts`: dedup and dot-prop getJsonProperty (array-path form)
+- `types.ts`: `PackageManager`, `PackageSpec`, `PackageEntry`, and the local `Path` alias
 - `watch.ts`: main watch loop with debounce and cache-busting re-import
 - `watch-dir.ts`: per-directory fs.watch wrapper with AbortController
 - `watch-filter.ts`: event classification (source/protected/ignore)
-- `write.ts`: overwrite, overwriteIfNotExists, overwriteEach with content-skip
+- `write.ts`: overwrite, overwriteIfNotExists, overwriteEach, readExisting with content-skip
+- `write-toml.ts`: overwriteTomlKey -- read existing TOML, apply one key edit, write back through writeIfChanged
 
 ## Tests
 

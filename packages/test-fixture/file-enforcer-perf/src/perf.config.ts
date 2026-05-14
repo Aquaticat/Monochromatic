@@ -1,7 +1,7 @@
 /**
  * Performance benchmark configuration for file-enforcer.
  * Exercises all major operations: cat (array + glob), overwrite,
- * overwriteEach, dedup, getProperty, and deep glob traversal.
+ * overwriteEach, dedup, getJsonProperty, and deep glob traversal.
  *
  * Writes ~68 destination files from ~240 source files.
  * Run via `bun perf.config.ts` after setup-fixture.ts creates the fixture.
@@ -13,7 +13,7 @@ import { join, } from 'node:path';
 import {
   cat,
   dedup,
-  getProperty,
+  getJsonProperty,
   overwrite,
   overwriteEach,
   readCache,
@@ -129,7 +129,10 @@ async function mirrorConfig(
  */
 async function extractName(): Promise<void> {
   const content = await cat([`${pkgPath(0,)}/config/settings.json`,],);
-  await overwrite(`${DEST}/name-0.txt`, getProperty('.name', content,),);
+  await overwrite(
+    `${DEST}/name-0.txt`,
+    getJsonProperty({ path: ['name',], content, },),
+  );
 }
 
 /**
@@ -137,7 +140,10 @@ async function extractName(): Promise<void> {
  */
 async function extractFeatures(): Promise<void> {
   const content = await cat([`${pkgPath(1,)}/config/settings.json`,],);
-  await overwrite(`${DEST}/features-1.txt`, getProperty('.config.features', content,),);
+  await overwrite(
+    `${DEST}/features-1.txt`,
+    getJsonProperty({ path: ['config', 'features',], content, },),
+  );
 }
 
 /**
@@ -165,7 +171,7 @@ await Promise.all([
     return mirrorConfig(config,);
   },),
 
-  // GetProperty extractions: parse JSON and extract nested values
+  // getJsonProperty extractions: parse JSON and extract nested values
   extractName(),
   extractFeatures(),
 

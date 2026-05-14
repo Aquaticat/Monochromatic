@@ -11,7 +11,7 @@ import {
   classifyEvent,
   dedup,
   expandGlob,
-  getProperty,
+  getJsonProperty,
   mirrorGlobPath,
   overwrite,
   reset,
@@ -200,7 +200,7 @@ summary(function computeBenchmarks() {
     do_not_optimize(result,);
   },);
 
-  bench('getProperty: extract from 1KB JSON', function getPropertyBench() {
+  bench('getJsonProperty: extract from 1KB JSON', function getJsonPropertyBench() {
     const ARRAY_SIZE = 50;
     const jsonContent = JSON.stringify({
       deeply: { nested: { property: { value: 'found-it', }, }, },
@@ -209,7 +209,10 @@ summary(function computeBenchmarks() {
         name: `item-${String(index,)}`,
       }),),
     }, null, 2,);
-    const result = getProperty('.deeply.nested.property.value', jsonContent,);
+    const result = getJsonProperty({
+      path: ['deeply', 'nested', 'property', 'value',],
+      content: jsonContent,
+    },);
     do_not_optimize(result,);
   },);
 },);

@@ -38,7 +38,7 @@ async function ensureDir(filePath: string,): Promise<void> {
  *
  * @returns File content as string, or undefined if missing
  */
-async function readExisting(filePath: string,): Promise<string | undefined> {
+export async function readExisting(filePath: string,): Promise<string | undefined> {
   try {
     return await readCached(filePath,);
   }

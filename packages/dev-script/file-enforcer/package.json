@@ -23,6 +23,7 @@
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/module-toml-edit": "workspace:*",
     "dot-prop": "catalog:",
     "find-up": "catalog:",
     "nano-spawn": "catalog:",

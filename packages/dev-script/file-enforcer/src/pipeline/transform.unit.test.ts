@@ -5,7 +5,7 @@ import {
 } from '@monochromatic-dev/module-test';
 import {
   dedup,
-  getProperty,
+  getJsonProperty,
 } from './transform.ts';
 
 await describe({
@@ -63,25 +63,28 @@ await describe({
 
     //endregion dedup
 
-    //region getProperty
+    //region getJsonProperty
 
     describe({
-      name: getProperty.name,
+      name: getJsonProperty.name,
       children: [
         it({
           name: 'extracts a top-level string property',
           fn: async () => {
             /** JSON with a simple string value */
             const json = JSON.stringify({ name: 'Alice', },);
-            expect(getProperty('.name', json,),).toBe('Alice',);
+            expect(getJsonProperty({ path: ['name',], content: json, },),).toBe('Alice',);
           },
         },),
         it({
-          name: 'extracts a nested property via dot-path',
+          name: 'extracts a nested property via array path',
           fn: async () => {
             /** JSON with nested structure */
             const json = JSON.stringify({ settings: { theme: 'dark', }, },);
-            expect(getProperty('.settings.theme', json,),).toBe('dark',);
+            expect(getJsonProperty({
+              path: ['settings', 'theme',],
+              content: json,
+            },),).toBe('dark',);
           },
         },),
         it({
@@ -89,7 +92,7 @@ await describe({
           fn: async () => {
             /** JSON with a numeric value that should be stringified */
             const json = JSON.stringify({ count: 42, },);
-            expect(getProperty('.count', json,),).toBe('42',);
+            expect(getJsonProperty({ path: ['count',], content: json, },),).toBe('42',);
           },
         },),
         it({
@@ -97,7 +100,7 @@ await describe({
           fn: async () => {
             /** JSON with an array value */
             const json = JSON.stringify({ items: [1, 2, 3,], },);
-            expect(getProperty('.items', json,),).toBe(
+            expect(getJsonProperty({ path: ['items',], content: json, },),).toBe(
               JSON.stringify([1, 2, 3,], null, 2,),
             );
           },
@@ -107,7 +110,7 @@ await describe({
           fn: async () => {
             /** JSON with a nested object to extract */
             const json = JSON.stringify({ nested: { a: 1, b: 2, }, },);
-            expect(getProperty('.nested', json,),).toBe(
+            expect(getJsonProperty({ path: ['nested',], content: json, },),).toBe(
               JSON.stringify({ a: 1, b: 2, }, null, 2,),
             );
           },
@@ -117,14 +120,17 @@ await describe({
           fn: async () => {
             /** JSON where the requested path does not exist */
             const json = JSON.stringify({ exists: true, },);
-            // dot-prop returns undefined for missing keys; getProperty passes it through
-            expect(getProperty('.missing', json,),).toBeUndefined();
+            // dot-prop returns undefined for missing keys; getJsonProperty passes it through
+            expect(getJsonProperty({
+              path: ['missing',],
+              content: json,
+            },),).toBeUndefined();
           },
         },),
         it({
           name: 'throws on invalid JSON input',
           fn: async () => {
-            expect(() => getProperty('.key', 'not-json',)).toThrow();
+            expect(() => getJsonProperty({ path: ['key',], content: 'not-json', },)).toThrow();
           },
         },),
         it({
@@ -132,7 +138,7 @@ await describe({
           fn: async () => {
             /** JSON with a boolean value */
             const json = JSON.stringify({ active: true, },);
-            expect(getProperty('.active', json,),).toBe('true',);
+            expect(getJsonProperty({ path: ['active',], content: json, },),).toBe('true',);
           },
         },),
         it({
@@ -140,7 +146,7 @@ await describe({
           fn: async () => {
             /** JSON with an explicit null */
             const json = JSON.stringify({ value: null, },);
-            expect(getProperty('.value', json,),).toBe('null',);
+            expect(getJsonProperty({ path: ['value',], content: json, },),).toBe('null',);
           },
         },),
         it({
@@ -148,11 +154,34 @@ await describe({
           fn: async () => {
             /** JSON with three levels of nesting */
             const json = JSON.stringify({ a: { b: { c: 'deep', }, }, },);
-            expect(getProperty('.a.b.c', json,),).toBe('deep',);
+            expect(getJsonProperty({
+              path: ['a', 'b', 'c',],
+              content: json,
+            },),).toBe('deep',);
+          },
+        },),
+        it({
+          name: 'indexes into arrays by numeric segment',
+          fn: async () => {
+            /** JSON with an array of objects */
+            const json = JSON.stringify({ items: [{ name: 'first', }, { name: 'second', },], },);
+            expect(getJsonProperty({
+              path: ['items', 0, 'name',],
+              content: json,
+            },),).toBe('first',);
+          },
+        },),
+        it({
+          name: 'addresses keys containing literal dots via array segments',
+          fn: async () => {
+            /** JSON where a single key contains a literal dot */
+            const json = JSON.stringify({ 'a.b': 'value', },);
+            /** Array form treats `'a.b'` as one segment, avoiding the dot-as-separator parse */
+            expect(getJsonProperty({ path: ['a.b',], content: json, },),).toBe('value',);
           },
         },),
       ],
     },),
-    //endregion getProperty
+    //endregion getJsonProperty
   ],
 },);

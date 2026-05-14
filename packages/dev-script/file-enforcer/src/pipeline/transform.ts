@@ -1,4 +1,5 @@
 import { getProperty as dotPropGet, } from 'dot-prop';
+import type { Path, } from '../types.ts';
 
 /**
  * Removes duplicate lines from a string, preserving first occurrence order.
@@ -18,33 +19,44 @@ export function dedup(content: string,): string {
 }
 
 /**
- * Extracts a nested property from JSON content using a dot-separated path.
- * Uses `dot-prop` under the hood; supports simple dot notation (`.a.b.c`),
- * not the full JSONPath query language.
+ * Extracts a nested property from JSON content using a structured path.
  *
- * @param path - Dot-separated path with leading dot (e.g., `.rules`, `.settings.env`)
+ * Backed by `dot-prop`, called with array segments (no dot-string translation),
+ * which means keys containing literal dots resolve correctly: `['a.b',]` selects
+ * key `"a.b"`, not nested `a` then `b`.
+ *
+ * Return type is `string` for the common path; on missing path the underlying
+ * `JSON.stringify(undefined)` returns `undefined`, so callers can still rely on
+ * `=== undefined` for missing-value checks.
+ *
+ * @param path - Sequence of key segments (and numeric array indices)
  *
  * @param content - JSON string to parse and extract from
  *
- * @returns Extracted value as a string (stringified if not already a string)
+ * @returns Extracted value as string (`JSON.stringify(value, null, 2)` when not already a string), or `undefined` when missing
  *
  * @example
  * ```ts
- * getProperty('.rules', '{"rules":{"no-var":"error"}}');
- * // '{"no-var":"error"}'
+ * getJsonProperty({ path: ['rules',], content: '{"rules":{"no-var":"error"}}', },);
+ * // '{\n  "no-var": "error"\n}'
  * ```
  */
-export function getProperty(
-  path: string,
-  content: string,
+export function getJsonProperty(
+  {
+    path,
+    content,
+  }: {
+    readonly path: Path;
+    readonly content: string;
+  },
 ): string {
   /** Parsed JSON value */
   const parsed: unknown = JSON.parse(content,);
-  /** Extracted value at the dot-path (slice(1) removes leading dot) */
+  /** Extracted value at the array-path; dot-prop v10 accepts arrays natively */
   const extracted: unknown = dotPropGet(
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown, dot-prop requires Record
     parsed as Record<string, unknown>,
-    path.slice(1,),
+    path,
   );
   return typeof extracted === 'string' ? extracted : JSON.stringify(
     extracted,

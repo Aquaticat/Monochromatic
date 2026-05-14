@@ -126,7 +126,7 @@ await describe({
       },
     },),
     it({
-      name: 'config file using getProperty transform',
+      name: 'config file using getJsonProperty transform',
       fn: async () => {
         const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-integ-',),);
         reset();
@@ -142,12 +142,14 @@ await describe({
 
         /** Config that extracts a property from JSON */
         const configContent = `
-            import { cat, getProperty, overwrite } from '${
+            import { cat, getJsonProperty, overwrite } from '${
           join(import.meta.dirname, 'index.ts',)
         }';
             await overwrite(
               '${join(tempDir, 'name.txt',)}',
-              getProperty('.config.name', await cat(['${join(tempDir, 'data.json',)}']))
+              getJsonProperty({ path: ['config', 'name'], content: await cat(['${
+          join(tempDir, 'data.json',)
+        }']) })
             );
           `;
         const configPath = join(tempDir, 'prop.config.ts',);

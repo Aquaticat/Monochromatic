@@ -1089,6 +1089,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/module-toml-edit':
+        specifier: workspace:*
+        version: link:../../module/toml-edit
       dot-prop:
         specifier: 'catalog:'
         version: 10.1.0
