@@ -149,8 +149,11 @@ export function createWriteBuffer(
   storage: Storage,
   options: WriteBufferOptions = {},
 ): WriteBuffer {
+  /** Item-count threshold that triggers an automatic flush. */
   const flushAtItems = options.flushAtItems ?? DEFAULT_FLUSH_AT_ITEMS;
+  /** Time-based flush threshold in milliseconds. */
   const flushAtMs = options.flushAtMs ?? DEFAULT_FLUSH_AT_MS;
+  /** Maximum overlapping `putBatch` calls allowed against the adapter. */
   const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
 
   /** Pending items keyed by storage key (later wins). */
@@ -194,8 +197,7 @@ export function createWriteBuffer(
     clearTimer();
     if (queue.size === 0)
       return;
-    // Snapshot pending items so re-entry from `enqueue` during the
-    // adapter call does not break the iteration order.
+    /** Snapshot of pending items; re-entry from `enqueue` repopulates `queue`. */
     const items: StoragePutItem[] = [...queue.values(),];
     queue.clear();
     // Bound concurrency: when we have already saturated the in-flight
@@ -204,9 +206,11 @@ export function createWriteBuffer(
       // oxlint-disable-next-line no-await-in-loop -- explicit serialisation under saturation
       await Promise.race(inFlight,);
     }
+    /** In-flight putBatch promise tracked so close() can await every flush. */
     const promise = storage.putBatch(items,);
     inFlight.add(promise,);
     detach(async function trackInFlight(): Promise<void> {
+      /** RAII disposer removes `promise` from the in-flight set on settle. */
       using _disposeOnSettle = {
         [Symbol.dispose](): void {
           inFlight.delete(promise,);

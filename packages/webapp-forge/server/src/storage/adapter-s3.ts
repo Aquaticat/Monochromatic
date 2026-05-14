@@ -138,7 +138,9 @@ function objectUrl(row: {
  * ```
  */
 function parseKeys(xml: string,): string[] {
+  /** Accumulator for the matched `<Key>` values in document order. */
   const keys: string[] = [];
+  /** Pattern matching `<Key>...</Key>` non-greedily so adjacent tags do not merge. */
   const pattern = /<Key>(.+?)<\/Key>/g;
   for (const match of xml.matchAll(pattern,)) {
     if (match[1] !== undefined)
@@ -161,9 +163,11 @@ function parseKeys(xml: string,): string[] {
  * ```
  */
 function parseContinuationToken(xml: string,): string | undefined {
+  /** IsTruncated flag; absent or false means the response is the final page. */
   const truncated = /<IsTruncated>(.+?)<\/IsTruncated>/.exec(xml,);
   if (truncated?.[1] !== 'true')
     return undefined;
+  /** Raw continuation token; XML-escaped values are decoded before returning. */
   const token = /<NextContinuationToken>(.+?)<\/NextContinuationToken>/.exec(xml,);
   return token?.[1] === undefined ? undefined : decodeXmlEntities(token[1],);
 }
@@ -222,6 +226,7 @@ async function throwOnError(row: {
 },): Promise<void> {
   if (row.response.status >= HTTP_OK && row.response.status < HTTP_REDIRECT)
     return;
+  /** Response body included verbatim in the thrown error for diagnostics. */
   const body = await row.response.text();
   throw new Error(
     `S3 ${row.operation} ${row.key} failed: ${
@@ -258,6 +263,7 @@ async function listOnePage(row: {
   keys: string[];
   nextToken: string | undefined;
 }> {
+  /** ListObjectsV2 query parameters built into the request URL below. */
   const params = new URLSearchParams();
   params.set(
     'list-type',
@@ -277,7 +283,9 @@ async function listOnePage(row: {
       row.continuationToken,
     );
   }
+  /** Fully qualified ListObjectsV2 URL with all query parameters set. */
   const url = `${row.endpoint}/${row.bucket}?${params.toString()}`;
+  /** Signed HTTP response with the raw XML page body. */
   const response = await row.client.fetch(
     url,
     { method: 'GET', },
@@ -287,6 +295,7 @@ async function listOnePage(row: {
     operation: 'list',
     key: row.prefix,
   },);
+  /** Response body parsed below by `parseKeys`/`parseContinuationToken`. */
   const xml = await response.text();
   return {
     keys: parseKeys(xml,),
@@ -320,6 +329,7 @@ async function listOnePage(row: {
  * ```
  */
 export function createS3Storage(options: S3StorageOptions,): Storage {
+  /** Concurrency limiter shared across every batch operation on the adapter. */
   const limit = pLimit(options.putBatchConcurrency ?? DEFAULT_PUT_BATCH_CONCURRENCY,);
 
   /**
@@ -338,14 +348,15 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
     key: string,
     body: Uint8Array,
   ): Promise<void> {
+    /** Fully qualified S3 object URL for the PUT request. */
     const url = objectUrl({
       endpoint: options.endpoint,
       bucket: options.bucket,
       key,
     },);
-    // Fresh-buffer copy so the body satisfies BodyInit's requirement of
-    // Uint8Array<ArrayBuffer> (not the more general ArrayBufferLike).
+    /** Fresh buffer copy ensures the body satisfies `Uint8Array<ArrayBuffer>`. */
     const reqBody = new Uint8Array(body,);
+    /** Signed HTTP response from the PUT operation. */
     const response = await options.client.fetch(
       url,
       {
@@ -396,11 +407,13 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
    * ```
    */
   async function get(key: string,): Promise<Uint8Array | undefined> {
+    /** Fully qualified S3 object URL for the GET request. */
     const url = objectUrl({
       endpoint: options.endpoint,
       bucket: options.bucket,
       key,
     },);
+    /** Signed HTTP response from the GET operation. */
     const response = await options.client.fetch(
       url,
       { method: 'GET', },
@@ -415,6 +428,7 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
       operation: 'get',
       key,
     },);
+    /** ArrayBuffer body returned wrapped in a Uint8Array view. */
     const buffer = await response.arrayBuffer();
     return new Uint8Array(buffer,);
   }
@@ -430,11 +444,13 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
    * ```
    */
   async function deleteFn(key: string,): Promise<void> {
+    /** Fully qualified S3 object URL for the DELETE request. */
     const url = objectUrl({
       endpoint: options.endpoint,
       bucket: options.bucket,
       key,
     },);
+    /** Signed HTTP response from the DELETE operation. */
     const response = await options.client.fetch(
       url,
       { method: 'DELETE', },
@@ -464,10 +480,13 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
    * ```
    */
   async function list(prefix: string,): Promise<string[]> {
+    /** Keys accumulated across pages; sorted before returning. */
     const accumulated: string[] = [];
+    /** Continuation token threaded through pagination; undefined ends the loop. */
     let continuationToken: string | undefined = undefined;
     do {
-      // oxlint-disable-next-line no-await-in-loop -- pagination requires the previous token to fetch the next page
+      /* oxlint-disable no-await-in-loop -- pagination requires the previous token to fetch the next page */
+      /** Next ListObjectsV2 page: keys and the continuation token for the page after. */
       const page = await listOnePage({
         client: options.client,
         endpoint: options.endpoint,
@@ -477,6 +496,7 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
       },);
       accumulated.push(...page.keys,);
       continuationToken = page.nextToken;
+      /* oxlint-enable no-await-in-loop */
     }
     while (continuationToken !== undefined);
     return accumulated.toSorted(function compareAsc(
