@@ -26,13 +26,11 @@ await describe({
           name: 'flushes after enqueue when item count reaches flushAtItems',
           async fn() {
             const storage = createMemoryStorage();
-            const buffer = createWriteBuffer(
+            const buffer = createWriteBuffer({
               storage,
-              {
-                flushAtItems: 2,
-                flushAtMs: 10_000,
-              },
-            );
+              flushAtItems: 2,
+              flushAtMs: 10_000,
+            },);
             buffer.enqueue({
               key: 'a',
               body: encoder.encode('1',),
@@ -51,13 +49,11 @@ await describe({
           name: 'flushes after flushAtMs even when below the size threshold',
           async fn() {
             const storage = createMemoryStorage();
-            const buffer = createWriteBuffer(
+            const buffer = createWriteBuffer({
               storage,
-              {
-                flushAtItems: 100,
-                flushAtMs: 5,
-              },
-            );
+              flushAtItems: 100,
+              flushAtMs: 5,
+            },);
             buffer.enqueue({
               key: 'a',
               body: encoder.encode('1',),
@@ -76,13 +72,11 @@ await describe({
           name: 'coalesces repeated keys to the latest body',
           async fn() {
             const storage = createMemoryStorage();
-            const buffer = createWriteBuffer(
+            const buffer = createWriteBuffer({
               storage,
-              {
-                flushAtItems: 100,
-                flushAtMs: 100,
-              },
-            );
+              flushAtItems: 100,
+              flushAtMs: 100,
+            },);
             buffer.enqueue({
               key: 'a',
               body: encoder.encode('first',),
@@ -101,7 +95,7 @@ await describe({
           name: 'close prevents further enqueue',
           async fn() {
             const storage = createMemoryStorage();
-            const buffer = createWriteBuffer(storage,);
+            const buffer = createWriteBuffer({ storage, },);
             await buffer.close();
             expect(function reEnqueueAfterClose() {
               buffer.enqueue({
@@ -116,13 +110,11 @@ await describe({
           name: 'pending counter reflects the queue size before flush',
           async fn() {
             const storage = createMemoryStorage();
-            const buffer = createWriteBuffer(
+            const buffer = createWriteBuffer({
               storage,
-              {
-                flushAtItems: 100,
-                flushAtMs: 1_000,
-              },
-            );
+              flushAtItems: 100,
+              flushAtMs: 1_000,
+            },);
             buffer.enqueue({
               key: 'a',
               body: encoder.encode('1',),
@@ -141,13 +133,11 @@ await describe({
           name: 'close() flushes pending items before returning',
           async fn() {
             const storage = createMemoryStorage();
-            const buffer = createWriteBuffer(
+            const buffer = createWriteBuffer({
               storage,
-              {
-                flushAtItems: 100,
-                flushAtMs: 10_000,
-              },
-            );
+              flushAtItems: 100,
+              flushAtMs: 10_000,
+            },);
             buffer.enqueue({
               key: 'a',
               body: encoder.encode('written-by-close',),

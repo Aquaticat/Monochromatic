@@ -111,7 +111,7 @@ async function resolveActor(headers: Headers,): Promise<DeltaActor | null> {
     return null;
   /** Dev-only login from the legacy header; missing returns null. */
   const headerLogin = headers.get('x-forge-user',);
-  if (headerLogin === null || headerLogin === '')
+  if ((headerLogin === null) || (headerLogin === ''))
     return null;
   /** Resolved user row for the dev header login. */
   const fallbackUser = await getUserByLogin(headerLogin,);
@@ -238,7 +238,7 @@ async function buildIssueDetailDelta(row: {
   const isOwner = repo.owner_id === row.actor.id;
   /** Actor has write permission via ownership or membership role. */
   const isWriter = isOwner
-    || (membership !== undefined && WRITE_ROLES.has(membership.role,));
+    || ((membership !== undefined) && WRITE_ROLES.has(membership.role,));
   /** Actor authored the issue; combined with isWriter to compute close permission. */
   const isAuthor = issue.author_id === row.actor.id;
   return {
@@ -298,7 +298,7 @@ async function buildFilterListDelta(row: {
   const isOwner = repo.owner_id === row.actor.id;
   /** Actor has write permission via ownership or membership role. */
   const isWriter = isOwner
-    || (membership !== undefined && WRITE_ROLES.has(membership.role,));
+    || ((membership !== undefined) && WRITE_ROLES.has(membership.role,));
   return {
     actor: row.actor,
     path: row.path,
@@ -330,7 +330,7 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
     const url = new URL(event.req.url,);
     /** Required `?path=...` query parameter naming the fragment path. */
     const path = url.searchParams.get('path',);
-    if (path === null || path === '') {
+    if ((path === null) || (path === '')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing path query parameter',
@@ -378,7 +378,7 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
         { headers: JSON_HEADERS, },
       );
     }
-    if (parsed.kind === 'issue-detail' && parsed.number !== null) {
+    if ((parsed.kind === 'issue-detail') && (parsed.number !== null)) {
       /** Issue-detail delta payload populated from the actor's repo membership. */
       const payload = await buildIssueDetailDelta({
         owner: parsed.owner,

@@ -45,10 +45,10 @@ await describe({
               ],
               issueState: 'open',
             };
-            const keys = dependenciesFor(
+            const keys = dependenciesFor({
               event,
               context,
-            );
+            },);
             expect(keys.has(issueDetailKey({
               repoId: 'repo-1',
               issueId: 'issue-1',
@@ -106,10 +106,10 @@ await describe({
               ],
               issueState: 'open',
             };
-            const keys = dependenciesFor(
+            const keys = dependenciesFor({
               event,
               context,
-            );
+            },);
             for (const labelId of ['bug', 'feat', 'docs',]) {
               expect(keys.has(filterListKey({
                 repoId: 'repo-1',
@@ -136,10 +136,10 @@ await describe({
               repoLabelIds: ['bug',],
               issueState: 'open',
             };
-            const keys = dependenciesFor(
+            const keys = dependenciesFor({
               event,
               context,
-            );
+            },);
             const bugOpen = filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',
@@ -166,10 +166,10 @@ await describe({
               repoLabelIds: ['bug',],
               issueState: 'open',
             };
-            const keys = dependenciesFor(
+            const keys = dependenciesFor({
               event,
               context,
-            );
+            },);
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
@@ -201,10 +201,10 @@ await describe({
               ],
               issueState: 'open',
             };
-            const keys = dependenciesFor(
+            const keys = dependenciesFor({
               event,
               context,
-            );
+            },);
             expect(keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',

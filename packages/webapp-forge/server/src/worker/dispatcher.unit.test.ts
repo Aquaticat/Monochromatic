@@ -39,12 +39,13 @@ const {
 } = fragmentKeysMod;
 const { createMemoryStorage, } = memoryAdapterMod;
 
-let counter = 0;
+/** Module-scope counter container; held on a `const` object so the mutation stays out of module-root let. */
+const counterState: { value: number; } = { value: 0, };
 
 /** Generates a deterministic but unique id. */
 function uniqueId(tag: string,): string {
-  counter += 1;
-  return `t-${tag}-${String(counter,)}`;
+  counterState.value += 1;
+  return `t-${tag}-${String(counterState.value,)}`;
 }
 
 /**
@@ -105,15 +106,15 @@ await describe({
             const setup = await setupIssue();
             const storage = createMemoryStorage();
             // Process the issue.created event so the detail fragment exists.
-            await processEvent(
-              {
+            await processEvent({
+              event: {
                 kind: 'issue.created',
                 resourceId: setup.issueId,
               },
-              setup.issueSequence,
-              setup.issueEventId,
-              storage,
-            );
+              sequenceNumber: setup.issueSequence,
+              eventId: setup.issueEventId,
+              sink: storage,
+            },);
             // Add a comment, advancing the sequence.
             const commentId = uniqueId('comment',);
             const commentEventId = await createCommentWithEvent({
@@ -123,15 +124,15 @@ await describe({
               body: 'A comment',
               createdAt: Date.now(),
             },);
-            const result = await processEvent(
-              {
+            const result = await processEvent({
+              event: {
                 kind: 'comment.created',
                 resourceId: setup.issueId,
               },
-              2,
-              commentEventId,
-              storage,
-            );
+              sequenceNumber: 2,
+              eventId: commentEventId,
+              sink: storage,
+            },);
             expect(result.fanout > 0,).toBe(true,);
             const detail = await storage.get(issueDetailKey({
               repoId: setup.repoId,
@@ -159,15 +160,15 @@ await describe({
               sourceEventId: 999,
               sourceEventSequence: 999,
             },);
-            const result = await processEvent(
-              {
+            const result = await processEvent({
+              event: {
                 kind: 'issue.created',
                 resourceId: setup.issueId,
               },
-              setup.issueSequence,
-              setup.issueEventId,
-              storage,
-            );
+              sequenceNumber: setup.issueSequence,
+              eventId: setup.issueEventId,
+              sink: storage,
+            },);
             expect(result.discarded > 0,).toBe(true,);
           },
         },),
@@ -176,27 +177,27 @@ await describe({
           async fn() {
             const setup = await setupIssue();
             const storage = createMemoryStorage();
-            await processEvent(
-              {
+            await processEvent({
+              event: {
                 kind: 'issue.created',
                 resourceId: setup.issueId,
               },
-              setup.issueSequence,
-              setup.issueEventId,
-              storage,
-            );
+              sequenceNumber: setup.issueSequence,
+              eventId: setup.issueEventId,
+              sink: storage,
+            },);
             // Re-run the same event with a higher sequence number;
             // the rendered output is identical, so the hash matches
             // and every put is skipped.
-            const second = await processEvent(
-              {
+            const second = await processEvent({
+              event: {
                 kind: 'issue.created',
                 resourceId: setup.issueId,
               },
-              setup.issueSequence + 5,
-              setup.issueEventId + 5,
-              storage,
-            );
+              sequenceNumber: setup.issueSequence + 5,
+              eventId: setup.issueEventId + 5,
+              sink: storage,
+            },);
             expect(second.skipped,).toBe(second.fanout,);
             expect(second.written,).toBe(0,);
           },
@@ -223,15 +224,15 @@ await describe({
               labelId: labelA,
               createdAt: Date.now(),
             },);
-            const result = await processEvent(
-              {
+            const result = await processEvent({
+              event: {
                 kind: 'issue.labeled',
                 resourceId: setup.issueId,
               },
-              2,
+              sequenceNumber: 2,
               eventId,
-              storage,
-            );
+              sink: storage,
+            },);
             // Detail + (any-label x 2 states) + (labelA x 2 states for "issue has labelA") + (labelA, labelB for "repo-wide on current state").
             expect(result.fanout > 0,).toBe(true,);
             const noFilterOpen = await storage.get(filterListKey({

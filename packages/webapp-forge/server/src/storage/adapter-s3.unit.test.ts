@@ -61,7 +61,7 @@ type FakeServer = {
  * ```
  */
 function resolveUrl(input: string | URL | Request,): string {
-  if (typeof input === 'string')
+  if ((typeof input) === 'string')
     return input;
   if (input instanceof URL)
     return input.href;
@@ -85,83 +85,83 @@ function createFakeServer(): FakeServer {
   const store = new Map<string, Uint8Array>();
   const log: RecordedRequest[] = [];
 
-  async function fetchFn(
-    input: string | URL | Request,
-    init?: RequestInit,
-  ): Promise<Response> {
-    const url = resolveUrl(input,);
-    const method = init?.method ?? 'GET';
-    const body = init?.body;
-    const bodyByteLength = body instanceof Uint8Array ? body.byteLength : 0;
-    log.push({
-      method,
-      url,
-      bodyByteLength,
-    },);
-
-    const u = new URL(url,);
-    const path = u.pathname.replace(`/${FAKE_BUCKET}/`, '',);
-    const isList = u.pathname === `/${FAKE_BUCKET}`
-      && u.searchParams.get('list-type',) === '2';
-
-    if (isList) {
-      const prefix = u.searchParams.get('prefix',) ?? '';
-      const matched = [...store.keys(),]
-        .filter(function hasPrefix(k,) {
-          return k.startsWith(prefix,);
-        },)
-        .toSorted(function compareAsc(
-          a,
-          b,
-        ) {
-          return a < b ? -1 : 1;
-        },);
-      const xmlContents = matched
-        .map(function entry(k,) {
-          return `<Contents><Key>${k}</Key></Contents>`;
-        },)
-        .join('',);
-      const xml =
-        `<?xml version="1.0"?><ListBucketResult><IsTruncated>false</IsTruncated>${xmlContents}</ListBucketResult>`;
-      return new Response(xml, {
-        status: STATUS_OK,
-        headers: { 'content-type': 'application/xml', },
-      },);
-    }
-
-    const decodedKey = decodeURIComponent(path,);
-
-    if (method === 'PUT') {
-      if (body instanceof Uint8Array) {
-        store.set(
-          decodedKey,
-          new Uint8Array(body,),
-        );
-      }
-      return new Response(null, { status: STATUS_OK, },);
-    }
-
-    if (method === 'GET') {
-      const value = store.get(decodedKey,);
-      if (value === undefined)
-        return new Response(null, { status: STATUS_NOT_FOUND, },);
-      const respBody = new Uint8Array(value,);
-      return new Response(
-        respBody,
-        { status: STATUS_OK, },
-      );
-    }
-
-    if (method === 'DELETE') {
-      store.delete(decodedKey,);
-      return new Response(null, { status: STATUS_NO_CONTENT, },);
-    }
-
-    return new Response(null, { status: STATUS_NOT_FOUND, },);
-  }
-
   return {
-    client: { fetch: fetchFn, },
+    client: {
+      async fetch(
+        input: string | URL | Request,
+        init?: RequestInit,
+      ): Promise<Response> {
+        const url = resolveUrl(input,);
+        const method = init?.method ?? 'GET';
+        const body = init?.body;
+        const bodyByteLength = body instanceof Uint8Array ? body.byteLength : 0;
+        log.push({
+          method,
+          url,
+          bodyByteLength,
+        },);
+
+        const u = new URL(url,);
+        const path = u.pathname.replace(`/${FAKE_BUCKET}/`, '',);
+        const isList = (u.pathname === `/${FAKE_BUCKET}`)
+          && (u.searchParams.get('list-type',) === '2');
+
+        if (isList) {
+          const prefix = u.searchParams.get('prefix',) ?? '';
+          const matched = [...store.keys(),]
+            .filter(function hasPrefix(k,) {
+              return k.startsWith(prefix,);
+            },)
+            .toSorted(function compareAsc(
+              a,
+              b,
+            ) {
+              return a < b ? -1 : 1;
+            },);
+          const xmlContents = matched
+            .map(function entry(k,) {
+              return `<Contents><Key>${k}</Key></Contents>`;
+            },)
+            .join('',);
+          const xml =
+            `<?xml version="1.0"?><ListBucketResult><IsTruncated>false</IsTruncated>${xmlContents}</ListBucketResult>`;
+          return new Response(xml, {
+            status: STATUS_OK,
+            headers: { 'content-type': 'application/xml', },
+          },);
+        }
+
+        const decodedKey = decodeURIComponent(path,);
+
+        if (method === 'PUT') {
+          if (body instanceof Uint8Array) {
+            store.set(
+              decodedKey,
+              new Uint8Array(body,),
+            );
+          }
+          return new Response(null, { status: STATUS_OK, },);
+        }
+
+        if (method === 'GET') {
+          const value = store.get(decodedKey,);
+          if (value === undefined)
+            return new Response(null, { status: STATUS_NOT_FOUND, },);
+          const respBody = new Uint8Array(value,);
+          return new Response(
+            respBody,
+            { status: STATUS_OK, },
+          );
+        }
+
+        if (method === 'DELETE') {
+          store.delete(decodedKey,);
+          return new Response(null, { status: STATUS_NO_CONTENT, },);
+        }
+
+        return new Response(null, { status: STATUS_NOT_FOUND, },);
+      },
+    },
     store,
     log,
   };

@@ -40,12 +40,13 @@ const {
 } = fragmentKeysMod;
 const { createMemoryStorage, } = memoryAdapterMod;
 
-let counter = 0;
+/** Module-scope counter container; held on a `const` object so the mutation stays out of module-root let. */
+const counterState: { value: number; } = { value: 0, };
 
 /** Generates a deterministic but unique id within this test file. */
 function uniqueId(tag: string,): string {
-  counter += 1;
-  return `dpx-${tag}-${String(counter,)}`;
+  counterState.value += 1;
+  return `dpx-${tag}-${String(counterState.value,)}`;
 }
 
 /** Sets up a user and repo, returns their ids. */
@@ -98,15 +99,15 @@ await describe({
               createdAt: Date.now(),
             },);
             const storage = createMemoryStorage();
-            const result = await processEvent(
-              {
+            const result = await processEvent({
+              event: {
                 kind: 'pr.opened',
                 resourceId: issueId,
               },
-              1,
+              sequenceNumber: 1,
               eventId,
-              storage,
-            );
+              sink: storage,
+            },);
             expect(result.fanout > 0,).toBe(true,);
             const detail = await storage.get(prDetailKey({
               repoId,
@@ -149,15 +150,15 @@ await describe({
               createdAt: Date.now(),
             },);
             const storage = createMemoryStorage();
-            await processEvent(
-              {
+            await processEvent({
+              event: {
                 kind: 'pr.opened',
                 resourceId: issueId,
               },
-              1,
-              openedEventId,
-              storage,
-            );
+              sequenceNumber: 1,
+              eventId: openedEventId,
+              sink: storage,
+            },);
             const reviewEventId = await submitReviewWithEvent({
               id: uniqueId('rv',),
               prIssueId: issueId,
@@ -166,15 +167,15 @@ await describe({
               body: 'LGTM',
               createdAt: Date.now(),
             },);
-            const result = await processEvent(
-              {
+            const result = await processEvent({
+              event: {
                 kind: 'review.submitted',
                 resourceId: issueId,
               },
-              2,
-              reviewEventId,
-              storage,
-            );
+              sequenceNumber: 2,
+              eventId: reviewEventId,
+              sink: storage,
+            },);
             expect(result.fanout > 0,).toBe(true,);
             const detail = await storage.get(prDetailKey({
               repoId,
@@ -204,15 +205,15 @@ await describe({
               createdAt: Date.now(),
             },);
             const storage = createMemoryStorage();
-            await processEvent(
-              {
+            await processEvent({
+              event: {
                 kind: 'issue.created',
                 resourceId: issueId,
               },
-              1,
-              issueEventId,
-              storage,
-            );
+              sequenceNumber: 1,
+              eventId: issueEventId,
+              sink: storage,
+            },);
             const commentId = uniqueId('cmt',);
             const commentEventId = await createCommentWithEvent({
               id: commentId,
@@ -221,16 +222,16 @@ await describe({
               body: 'Hello there',
               createdAt: Date.now(),
             },);
-            await processEvent(
-              {
+            await processEvent({
+              event: {
                 kind: 'comment.created',
                 resourceId: issueId,
                 commentId,
               },
-              2,
-              commentEventId,
-              storage,
-            );
+              sequenceNumber: 2,
+              eventId: commentEventId,
+              sink: storage,
+            },);
             const standalone = await storage.get(commentKey(commentId,),);
             expect(standalone,).toBeDefined();
             const text = new TextDecoder().decode(standalone,);

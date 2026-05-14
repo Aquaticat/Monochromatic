@@ -26,7 +26,7 @@ import type {
  *
  * @example
  * ```ts
- * createWriteBuffer(storage, { flushAtItems: DEFAULT_FLUSH_AT_ITEMS });
+ * createWriteBuffer({ storage, flushAtItems: DEFAULT_FLUSH_AT_ITEMS });
  * ```
  */
 const DEFAULT_FLUSH_AT_ITEMS = 256;
@@ -36,7 +36,7 @@ const DEFAULT_FLUSH_AT_ITEMS = 256;
  *
  * @example
  * ```ts
- * createWriteBuffer(storage, { flushAtMs: DEFAULT_FLUSH_AT_MS });
+ * createWriteBuffer({ storage, flushAtMs: DEFAULT_FLUSH_AT_MS });
  * ```
  */
 const DEFAULT_FLUSH_AT_MS = 50;
@@ -46,7 +46,7 @@ const DEFAULT_FLUSH_AT_MS = 50;
  *
  * @example
  * ```ts
- * createWriteBuffer(storage, { concurrency: DEFAULT_CONCURRENCY });
+ * createWriteBuffer({ storage, concurrency: DEFAULT_CONCURRENCY });
  * ```
  */
 const DEFAULT_CONCURRENCY = 64;
@@ -56,10 +56,32 @@ const DEFAULT_CONCURRENCY = 64;
  *
  * @example
  * ```ts
- * const buffer = createWriteBuffer(storage, { flushAtItems: 64, flushAtMs: 25 });
+ * const buffer = createWriteBuffer({ storage, flushAtItems: 64, flushAtMs: 25 });
  * ```
  */
 export type WriteBufferOptions = {
+  /** Flush when this many items are queued. Default 256. */
+  readonly flushAtItems?: number;
+
+  /** Flush this many ms after the first queued item. Default 50. */
+  readonly flushAtMs?: number;
+
+  /** Maximum simultaneous in-flight `putBatch` calls. Default 64. */
+  readonly concurrency?: number;
+};
+
+/**
+ * Named parameters for {@link createWriteBuffer}.
+ *
+ * @example
+ * ```ts
+ * const buffer = createWriteBuffer({ storage, flushAtItems: 64 });
+ * ```
+ */
+export type CreateWriteBufferParams = {
+  /** Downstream storage adapter to buffer writes against. */
+  readonly storage: Storage;
+
   /** Flush when this many items are queued. Default 256. */
   readonly flushAtItems?: number;
 
@@ -132,29 +154,33 @@ function detach(promise: Promise<unknown>,): void {
 /**
  * Creates a write buffer in front of a storage adapter.
  *
- * @param storage - downstream adapter (memory, S3-compatible, etc.)
+ * @param storage - downstream storage adapter (memory, S3-compatible, etc.)
  *
- * @param options - tunables
+ * @param flushAtItems - item-count threshold that triggers a flush (default 256)
+ *
+ * @param flushAtMs - ms-based flush trigger (default 50)
+ *
+ * @param concurrency - maximum simultaneous in-flight `putBatch` calls (default 64)
  *
  * @returns write buffer instance
  *
  * @example
  * ```ts
- * const buffer = createWriteBuffer(storage, { flushAtItems: 64, flushAtMs: 25 });
+ * const buffer = createWriteBuffer({
+ *   storage,
+ *   flushAtItems: 64,
+ *   flushAtMs: 25,
+ * });
  * buffer.enqueue({ key: 'fragments/a', body: bytes });
  * await buffer.close();
  * ```
  */
-export function createWriteBuffer(
-  storage: Storage,
-  options: WriteBufferOptions = {},
-): WriteBuffer {
-  /** Item-count threshold that triggers an automatic flush. */
-  const flushAtItems = options.flushAtItems ?? DEFAULT_FLUSH_AT_ITEMS;
-  /** Time-based flush threshold in milliseconds. */
-  const flushAtMs = options.flushAtMs ?? DEFAULT_FLUSH_AT_MS;
-  /** Maximum overlapping `putBatch` calls allowed against the adapter. */
-  const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
+export function createWriteBuffer({
+  storage,
+  flushAtItems = DEFAULT_FLUSH_AT_ITEMS,
+  flushAtMs = DEFAULT_FLUSH_AT_MS,
+  concurrency = DEFAULT_CONCURRENCY,
+}: CreateWriteBufferParams,): WriteBuffer {
 
   /** Pending items keyed by storage key (later wins). */
   const queue = new Map<string, StoragePutItem>();
@@ -162,11 +188,14 @@ export function createWriteBuffer(
   /** In-flight flush promises bounded by `concurrency`. */
   const inFlight = new Set<Promise<void>>();
 
-  /** Whether the buffer has been closed. */
-  let closed = false;
-
-  /** Active timer handle for the time-based flush trigger. */
-  let timerId: ReturnType<typeof setTimeout> | null = null;
+  /** Mutable per-instance state captured by the closures below. */
+  const state: {
+    closed: boolean;
+    timerId: ReturnType<typeof setTimeout> | null;
+  } = {
+    closed: false,
+    timerId: null,
+  };
 
   /**
    * Cancels any pending time-based flush trigger.
@@ -177,9 +206,9 @@ export function createWriteBuffer(
    * ```
    */
   function clearTimer(): void {
-    if (timerId !== null) {
-      clearTimeout(timerId,);
-      timerId = null;
+    if (state.timerId !== null) {
+      clearTimeout(state.timerId,);
+      state.timerId = null;
     }
   }
 
@@ -231,11 +260,11 @@ export function createWriteBuffer(
    * ```
    */
   function scheduleTimer(): void {
-    if (timerId !== null)
+    if (state.timerId !== null)
       return;
-    timerId = setTimeout(
+    state.timerId = setTimeout(
       function timerFlush() {
-        timerId = null;
+        state.timerId = null;
         // Fire-and-forget: any consumer that needs to await the flush
         // should call `flush()` explicitly.
         detach(flushOnce(),);
@@ -246,7 +275,7 @@ export function createWriteBuffer(
 
   return {
     enqueue(item: StoragePutItem,): void {
-      if (closed)
+      if (state.closed)
         throw new Error('write buffer is closed',);
       queue.set(
         item.key,
@@ -264,7 +293,7 @@ export function createWriteBuffer(
       await Promise.all(inFlight,);
     },
     async close(): Promise<void> {
-      closed = true;
+      state.closed = true;
       clearTimer();
       await flushOnce();
       await Promise.all(inFlight,);

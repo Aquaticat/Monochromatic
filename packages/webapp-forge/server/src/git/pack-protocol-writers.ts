@@ -128,7 +128,7 @@ export function writeUploadPackResponse(row: {
   /** Response chunks; starts with the mandatory NAK acknowledging no common bases. */
   const chunks: Uint8Array[] = [encodePkt('NAK\n',),];
   if (row.useSideBand) {
-    if (row.progress !== undefined && row.progress.length > 0) {
+    if ((row.progress !== undefined) && (row.progress.length > 0)) {
       /** Fresh encoder reused only for the progress payload. */
       const encoder = new TextEncoder();
       chunks.push(...multiplexSideband({
@@ -210,20 +210,30 @@ export function writeReceivePackResponse(row: {
   if (row.useSideBand !== true)
     return report;
   /** Running sum of report chunk lengths to size the flattened buffer. */
-  let total = 0;
-  for (const chunk of report)
-    total += chunk.byteLength;
+  const total = report.reduce(
+    function sumByteLength(
+      sum: number,
+      chunk: Uint8Array,
+    ): number {
+      return sum + chunk.byteLength;
+    },
+    0,
+  );
   /** Flattened report bytes; sideband multiplexing operates on a single buffer. */
   const flat = new Uint8Array(total,);
-  /** Write position advancing through `flat` as each chunk is copied. */
-  let cursor = 0;
-  for (const chunk of report) {
-    flat.set(
-      chunk,
-      cursor,
-    );
-    cursor += chunk.byteLength;
-  }
+  report.reduce(
+    function writeChunkAt(
+      cursor: number,
+      chunk: Uint8Array,
+    ): number {
+      flat.set(
+        chunk,
+        cursor,
+      );
+      return cursor + chunk.byteLength;
+    },
+    0,
+  );
   return [
     ...multiplexSideband({
       payload: flat,

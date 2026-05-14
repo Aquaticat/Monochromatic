@@ -54,15 +54,15 @@ type CreateCommentPayload = {
 export const createIssueHandler: EventHandlerWithFetch = defineHandler(
   async function handleCreateIssue(event,) {
     /** Owner login segment of the route path. */
-    const owner = requireParam(
-      event.context.params,
-      'owner',
-    );
+    const owner = requireParam({
+      params: event.context.params,
+      name: 'owner',
+    },);
     /** Repo name segment of the route path. */
-    const repoName = requireParam(
-      event.context.params,
-      'repo',
-    );
+    const repoName = requireParam({
+      params: event.context.params,
+      name: 'repo',
+    },);
     /** Authenticated actor authoring the new issue. */
     const actor = await requireActor(event,);
     /** Repo row identified by owner login + repo name. */
@@ -79,7 +79,7 @@ export const createIssueHandler: EventHandlerWithFetch = defineHandler(
     /** Untyped request body cast to the expected payload shape. */
     const payload = await event.req.json() as CreateIssuePayload;
     /** Validated title; empty triggers a 400. */
-    const title = typeof payload.title === 'string' ? payload.title : '';
+    const title = ((typeof payload.title) === 'string') ? payload.title : '';
     if (title === '') {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -87,9 +87,9 @@ export const createIssueHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Optional issue body; defaults to empty string. */
-    const issueBody = typeof payload.body === 'string' ? payload.body : '';
+    const issueBody = ((typeof payload.body) === 'string') ? payload.body : '';
     /** Optional client-supplied number; defaults to current ms epoch. */
-    const number = typeof payload.number === 'number'
+    const number = ((typeof payload.number) === 'number')
       ? payload.number
       : Date.now();
     /** Synthesised issue id used as primary key. */
@@ -123,20 +123,20 @@ export const createIssueHandler: EventHandlerWithFetch = defineHandler(
 export const createCommentHandler: EventHandlerWithFetch = defineHandler(
   async function handleCreateComment(event,) {
     /** Owner login segment of the route path. */
-    const owner = requireParam(
-      event.context.params,
-      'owner',
-    );
+    const owner = requireParam({
+      params: event.context.params,
+      name: 'owner',
+    },);
     /** Repo name segment of the route path. */
-    const repoName = requireParam(
-      event.context.params,
-      'repo',
-    );
+    const repoName = requireParam({
+      params: event.context.params,
+      name: 'repo',
+    },);
     /** Raw issue number from the URL; parsed below. */
-    const numberRaw = requireParam(
-      event.context.params,
-      'number',
-    );
+    const numberRaw = requireParam({
+      params: event.context.params,
+      name: 'number',
+    },);
     /** Parsed issue number for the lookup below. */
     const number = Number.parseInt(
       numberRaw,
@@ -169,7 +169,7 @@ export const createCommentHandler: EventHandlerWithFetch = defineHandler(
     /** Untyped request body cast to the expected payload shape. */
     const payload = await event.req.json() as CreateCommentPayload;
     /** Validated body; empty triggers a 400. */
-    const body = typeof payload.body === 'string' ? payload.body : '';
+    const body = ((typeof payload.body) === 'string') ? payload.body : '';
     if (body === '') {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -203,25 +203,25 @@ export const createCommentHandler: EventHandlerWithFetch = defineHandler(
 export const labelIssueHandler: EventHandlerWithFetch = defineHandler(
   async function handleLabelIssue(event,) {
     /** Owner login segment of the route path. */
-    const owner = requireParam(
-      event.context.params,
-      'owner',
-    );
+    const owner = requireParam({
+      params: event.context.params,
+      name: 'owner',
+    },);
     /** Repo name segment of the route path. */
-    const repoName = requireParam(
-      event.context.params,
-      'repo',
-    );
+    const repoName = requireParam({
+      params: event.context.params,
+      name: 'repo',
+    },);
     /** Raw issue number from the URL; parsed below. */
-    const numberRaw = requireParam(
-      event.context.params,
-      'number',
-    );
+    const numberRaw = requireParam({
+      params: event.context.params,
+      name: 'number',
+    },);
     /** Label id segment of the route path. */
-    const labelId = requireParam(
-      event.context.params,
-      'label',
-    );
+    const labelId = requireParam({
+      params: event.context.params,
+      name: 'label',
+    },);
     /** Parsed issue number for the lookup below. */
     const number = Number.parseInt(
       numberRaw,

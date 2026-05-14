@@ -69,10 +69,10 @@ export async function dispatchAndFlush(row: {
   while (true) {
     /* oxlint-disable no-await-in-loop -- sequential by design */
     /** Next page of unprocessed events ordered by id. */
-    const events = await listEventsAfter(
-      cursor,
-      batchSize,
-    );
+    const events = await listEventsAfter({
+      afterId: cursor,
+      limit: batchSize,
+    },);
     /* oxlint-enable no-await-in-loop */
     if (events.length === 0)
       break;
@@ -100,12 +100,12 @@ export async function dispatchAndFlush(row: {
           commentId,
         };
       // oxlint-disable-next-line no-await-in-loop -- per-resource ordering relies on sequential dispatch
-      await processEvent(
+      await processEvent({
         event,
-        eventRow.sequence_number,
-        eventRow.id,
-        row.writeBuffer,
-      );
+        sequenceNumber: eventRow.sequence_number,
+        eventId: eventRow.id,
+        sink: row.writeBuffer,
+      },);
     }
     if (events.length < batchSize)
       break;
@@ -128,21 +128,54 @@ export async function dispatchAndFlush(row: {
  * extractCommentId('{"commentId":"c1","authorId":"u1"}'); // 'c1'
  * ```
  */
-function extractCommentId(payload: string,): string | undefined {
-  /** Parsed JSON payload; `undefined` until the `try` block succeeds. */
-  let parsed: unknown = undefined;
+/**
+ * Wraps `JSON.parse` so failures resolve to `undefined` instead of
+ * throwing, isolating the catch so the caller can stay declarative.
+ *
+ * @param payload - JSON-serialised event payload
+ *
+ * @returns parsed value, or `undefined` when the input is not valid JSON
+ *
+ * @example
+ * ```ts
+ * tryParseJson('{"commentId":"c1"}'); // { commentId: 'c1' }
+ * tryParseJson('not json'); // undefined
+ * ```
+ */
+function tryParseJson(payload: string,): unknown {
   try {
-    // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
-    parsed = JSON.parse(payload,);
+    // oxlint-disable-next-line typescript/no-unsafe-return -- JSON.parse returns any
+    return JSON.parse(payload,);
   }
   catch {
     return undefined;
   }
-  if (parsed === null || typeof parsed !== 'object')
+}
+
+/**
+ * Reads the `commentId` field from an event row's JSON payload.
+ *
+ * Returns `undefined` when the payload is malformed JSON or when the
+ * `commentId` field is missing or not a string.
+ *
+ * @param payload - the event row's `payload` column (JSON string)
+ *
+ * @returns the comment id, or `undefined` when it is absent
+ *
+ * @example
+ * ```ts
+ * extractCommentId('{"commentId":"c1","authorId":"u1"}'); // 'c1'
+ * extractCommentId('{}'); // undefined
+ * ```
+ */
+function extractCommentId(payload: string,): string | undefined {
+  /** Parsed JSON payload; `undefined` when the input is not valid JSON. */
+  const parsed = tryParseJson(payload,);
+  if ((parsed === null) || ((typeof parsed) !== 'object'))
     return undefined;
   if (!('commentId' in parsed))
     return undefined;
   /** Destructured commentId narrowed to string below. */
   const { commentId, } = parsed;
-  return typeof commentId === 'string' ? commentId : undefined;
+  return ((typeof commentId) === 'string') ? commentId : undefined;
 }

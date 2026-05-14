@@ -82,18 +82,16 @@ const ALL_STATES: readonly IssueStateFacet[] = [
  *   cannot change the issue's state today but the union still has to cover
  *   future state-change events deterministically
  *
- * @param event - event header
- *
- * @param context - pre-resolved issue metadata
+ * @param row - event header plus pre-resolved issue metadata
  *
  * @returns fragment keys to rebuild (deduplicated `Set`)
  *
  * @example
  * ```ts
- * dependenciesFor(
- *   { kind: 'comment.created', resourceId: 'i1' },
- *   { repoId: 'r1', issueLabelIds: ['bug'], repoLabelIds: ['bug', 'feat'], issueState: 'open' },
- * );
+ * dependenciesFor({
+ *   event: { kind: 'comment.created', resourceId: 'i1' },
+ *   context: { repoId: 'r1', issueLabelIds: ['bug'], repoLabelIds: ['bug', 'feat'], issueState: 'open' },
+ * });
  * // Set {
  * //   'issues/r1/i1/detail',
  * //   'repos/r1/filters/* /open/list',
@@ -102,10 +100,17 @@ const ALL_STATES: readonly IssueStateFacet[] = [
  * // }
  * ```
  */
-export function dependenciesFor(
-  event: EventInput,
-  context: ResolvedEventContext,
-): Set<string> {
+export function dependenciesFor(row: {
+  /** Event header used for routing decisions. */
+  event: EventInput;
+  /** Issue context (repo, labels, state) needed for fanning out filter-list keys. */
+  context: ResolvedEventContext;
+},): Set<string> {
+  /** Aliases destructured up front so the fanning-out branches stay readable. */
+  const {
+    event,
+    context,
+  } = row;
   /** Dependency keys accumulating as branches below resolve. */
   const keysIterable: string[] = [
     issueDetailKey({
@@ -149,18 +154,18 @@ export function dependenciesFor(
 
   // `comment.created` rebuilds the standalone comment fragment so swap
   // targets and permalinks have the new HTML available.
-  if (event.kind === 'comment.created' && event.commentId !== undefined)
+  if ((event.kind === 'comment.created') && (event.commentId !== undefined))
     keysIterable.push(commentKey(event.commentId,),);
 
   // PR-lifecycle events fan out to the PR-specific fragments (detail,
   // merge-status, reviews) in addition to the issue-detail and filter
   // lists already added above (PR shares identity with issue).
   if (
-    event.kind === 'pr.opened'
-    || event.kind === 'pr.merged'
-    || event.kind === 'pr.closed'
-    || event.kind === 'review.submitted'
-    || event.kind === 'push'
+    (event.kind === 'pr.opened')
+    || (event.kind === 'pr.merged')
+    || (event.kind === 'pr.closed')
+    || (event.kind === 'review.submitted')
+    || (event.kind === 'push')
   ) {
     keysIterable.push(prDetailKey({
       repoId: context.repoId,
@@ -175,10 +180,10 @@ export function dependenciesFor(
   // Review-thread fragment rebuilds when the thread itself changes
   // (new review) or when a PR transition resets review counts.
   if (
-    event.kind === 'review.submitted'
-    || event.kind === 'pr.opened'
-    || event.kind === 'pr.merged'
-    || event.kind === 'pr.closed'
+    (event.kind === 'review.submitted')
+    || (event.kind === 'pr.opened')
+    || (event.kind === 'pr.merged')
+    || (event.kind === 'pr.closed')
   ) {
     keysIterable.push(reviewThreadKey({
       repoId: context.repoId,

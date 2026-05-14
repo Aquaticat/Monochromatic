@@ -26,10 +26,10 @@ import type { FragmentIndexRow, } from './types.ts';
 export async function getFragmentIndex(
   fragmentKey: string,
 ): Promise<FragmentIndexRow | undefined> {
-  return await get<FragmentIndexRow>(
-    'SELECT * FROM fragment_index WHERE fragment_key = ?',
-    [fragmentKey,],
-  );
+  return await get<FragmentIndexRow>({
+    sql: 'SELECT * FROM fragment_index WHERE fragment_key = ?',
+    params: [fragmentKey,],
+  },);
 }
 
 /**
@@ -60,8 +60,8 @@ export async function upsertFragmentIndexIfNewer(row: {
   sourceEventSequence: number;
 },): Promise<boolean> {
   /** Upsert result; `changes > 0` means our row won the sequence guard. */
-  const result = await run(
-    `INSERT INTO fragment_index(fragment_key, content_hash, last_built_at, source_event_id, source_event_sequence)
+  const result = await run({
+    sql: `INSERT INTO fragment_index(fragment_key, content_hash, last_built_at, source_event_id, source_event_sequence)
      VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(fragment_key) DO UPDATE SET
        content_hash = excluded.content_hash,
@@ -69,13 +69,13 @@ export async function upsertFragmentIndexIfNewer(row: {
        source_event_id = excluded.source_event_id,
        source_event_sequence = excluded.source_event_sequence
      WHERE excluded.source_event_sequence > fragment_index.source_event_sequence`,
-    [
+    params: [
       row.fragmentKey,
       row.contentHash,
       row.lastBuiltAt,
       row.sourceEventId,
       row.sourceEventSequence,
     ],
-  );
+  },);
   return result.changes > 0;
 }

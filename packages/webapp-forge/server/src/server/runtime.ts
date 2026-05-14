@@ -17,7 +17,7 @@ import {
 export const storage: Storage = createMemoryStorage();
 
 /** Process-shared write buffer in front of the storage adapter. */
-export const writeBuffer: WriteBuffer = createWriteBuffer(storage,);
+export const writeBuffer: WriteBuffer = createWriteBuffer({ storage, },);
 
 /**
  * Tracks the highest `events.id` processed so far. Routes update it
@@ -25,9 +25,10 @@ export const writeBuffer: WriteBuffer = createWriteBuffer(storage,);
  *
  * Phase 1's dispatcher is synchronous in-request; on every write the
  * route handler reads this value, dispatches everything newer than it,
- * and stores the new cursor.
+ * and stores the new cursor. Stored on a `const` container object so
+ * the mutable counter stays out of module-root scope.
  */
-let lastProcessedEventId = 0;
+const eventCursor: { lastProcessedEventId: number; } = { lastProcessedEventId: 0, };
 
 /**
  * Reads the current event cursor.
@@ -40,7 +41,7 @@ let lastProcessedEventId = 0;
  * ```
  */
 export function getEventCursor(): number {
-  return lastProcessedEventId;
+  return eventCursor.lastProcessedEventId;
 }
 
 /**
@@ -54,6 +55,6 @@ export function getEventCursor(): number {
  * ```
  */
 export function setEventCursor(eventId: number,): void {
-  if (eventId > lastProcessedEventId)
-    lastProcessedEventId = eventId;
+  if (eventId > eventCursor.lastProcessedEventId)
+    eventCursor.lastProcessedEventId = eventId;
 }

@@ -43,12 +43,13 @@ const {
   upsertRepoMember,
 } = queriesMod;
 
-let counter = 0;
+/** Module-scope counter container; held on a `const` object so the mutation stays out of module-root let. */
+const counterState: { value: number; } = { value: 0, };
 
 /** Generates a deterministic but unique id within this test file. */
 function uniqueId(tag: string,): string {
-  counter += 1;
-  return `q2r-${tag}-${String(counter,)}`;
+  counterState.value += 1;
+  return `q2r-${tag}-${String(counterState.value,)}`;
 }
 
 /** Sets up a user and repo, returns their ids. */

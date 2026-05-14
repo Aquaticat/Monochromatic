@@ -38,12 +38,13 @@ const {
   submitReviewWithEvent,
 } = queriesMod;
 
-let counter = 0;
+/** Module-scope counter container; held on a `const` object so the mutation stays out of module-root let. */
+const counterState: { value: number; } = { value: 0, };
 
 /** Generates a deterministic but unique id within this test file. */
 function uniqueId(tag: string,): string {
-  counter += 1;
-  return `q2e-${tag}-${String(counter,)}`;
+  counterState.value += 1;
+  return `q2e-${tag}-${String(counterState.value,)}`;
 }
 
 /** Sets up a user and repo, returns their ids. */
@@ -104,10 +105,10 @@ await describe({
             expect(matched.length,).toBe(1,);
             expect(matched[0]?.issue_id,).toBe(issueId,);
 
-            const newer = await listEventsAfter(
-              eventId - 1,
-              10,
-            );
+            const newer = await listEventsAfter({
+              afterId: eventId - 1,
+              limit: 10,
+            },);
             const last = newer.at(-1,);
             expect(last?.kind,).toBe('pr.opened',);
             expect(last?.resource_type,).toBe('pr',);
@@ -142,10 +143,10 @@ await describe({
             expect(pr?.head_sha,).toBe(newSha,);
             expect(pr?.mergeable,).toBe('clean',);
 
-            const events = await listEventsAfter(
-              pushEventId - 1,
-              10,
-            );
+            const events = await listEventsAfter({
+              afterId: pushEventId - 1,
+              limit: 10,
+            },);
             const last = events.at(-1,);
             expect(last?.kind,).toBe('push',);
           },
@@ -190,10 +191,10 @@ await describe({
             expect(reviews.length,).toBe(1,);
             expect(reviews[0]?.state,).toBe('approved',);
 
-            const newer = await listEventsAfter(
-              eventId - 1,
-              10,
-            );
+            const newer = await listEventsAfter({
+              afterId: eventId - 1,
+              limit: 10,
+            },);
             const last = newer.at(-1,);
             expect(last?.kind,).toBe('review.submitted',);
           },

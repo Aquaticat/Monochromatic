@@ -224,7 +224,7 @@ async function throwOnError(row: {
   operation: string;
   key: string;
 },): Promise<void> {
-  if (row.response.status >= HTTP_OK && row.response.status < HTTP_REDIRECT)
+  if ((row.response.status >= HTTP_OK) && (row.response.status < HTTP_REDIRECT))
     return;
   /** Response body included verbatim in the thrown error for diagnostics. */
   const body = await row.response.text();
@@ -341,12 +341,17 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
    *
    * @example
    * ```ts
-   * await storage.put('a/b', new Uint8Array(...));
+   * await putOne({ key: 'a/b', body: new Uint8Array(...) });
    * ```
    */
-  async function put(
-    key: string,
-    body: Uint8Array,
+  async function putOne(
+    {
+      key,
+      body,
+    }: {
+      key: string;
+      body: Uint8Array;
+    },
   ): Promise<void> {
     /** Fully qualified S3 object URL for the PUT request. */
     const url = objectUrl({
@@ -385,14 +390,15 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
     await Promise.all(
       items.map(function schedule(item,) {
         return limit(function performPut() {
-          return put(
-            item.key,
-            item.body,
-          );
+          return putOne({
+            key: item.key,
+            body: item.body,
+          },);
         },);
       },),
     );
   }
+
 
   /**
    * Single GET from the bucket.
@@ -480,25 +486,29 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
    * ```
    */
   async function list(prefix: string,): Promise<string[]> {
-    /** Keys accumulated across pages; sorted before returning. */
-    const accumulated: string[] = [];
-    /** Continuation token threaded through pagination; undefined ends the loop. */
-    let continuationToken: string | undefined = undefined;
-    do {
-      /* oxlint-disable no-await-in-loop -- pagination requires the previous token to fetch the next page */
-      /** Next ListObjectsV2 page: keys and the continuation token for the page after. */
-      const page = await listOnePage({
-        client: options.client,
-        endpoint: options.endpoint,
-        bucket: options.bucket,
-        prefix,
-        continuationToken,
-      },);
-      accumulated.push(...page.keys,);
-      continuationToken = page.nextToken;
-      /* oxlint-enable no-await-in-loop */
-    }
-    while (continuationToken !== undefined);
+    /** Keys accumulated across pages; scoped to an IIFE so the pagination cursor stays inside the loop. */
+    const accumulated = await (async function paginate(): Promise<string[]> {
+      /** Keys accumulated across pages; sorted before returning. */
+      const acc: string[] = [];
+      /** Continuation token threaded through pagination; undefined ends the loop. */
+      let continuationToken: string | undefined = undefined;
+      do {
+        /* oxlint-disable no-await-in-loop -- pagination requires the previous token to fetch the next page */
+        /** Next ListObjectsV2 page: keys and the continuation token for the page after. */
+        const page = await listOnePage({
+          client: options.client,
+          endpoint: options.endpoint,
+          bucket: options.bucket,
+          prefix,
+          continuationToken,
+        },);
+        acc.push(...page.keys,);
+        continuationToken = page.nextToken;
+        /* oxlint-enable no-await-in-loop */
+      }
+      while (continuationToken !== undefined);
+      return acc;
+    })();
     return accumulated.toSorted(function compareAsc(
       a,
       b,
@@ -508,7 +518,15 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
   }
 
   return {
-    put,
+    put(
+      key: string,
+      body: Uint8Array,
+    ): Promise<void> {
+      return putOne({
+        key,
+        body,
+      },);
+    },
     putBatch,
     get,
     delete: deleteFn,

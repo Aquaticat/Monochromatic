@@ -44,10 +44,10 @@ export async function insertReview(row: {
   body?: string;
   createdAt: number;
 },): Promise<void> {
-  await run(
-    `INSERT OR IGNORE INTO reviews(id, pr_issue_id, reviewer_id, state, body, created_at)
+  await run({
+    sql: `INSERT OR IGNORE INTO reviews(id, pr_issue_id, reviewer_id, state, body, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    [
+    params: [
       row.id,
       row.prIssueId,
       row.reviewerId,
@@ -55,7 +55,7 @@ export async function insertReview(row: {
       row.body ?? '',
       row.createdAt,
     ],
-  );
+  },);
 }
 
 /**
@@ -88,10 +88,10 @@ export async function submitReviewWithEvent(row: {
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
-    await run(
-      `INSERT INTO reviews(id, pr_issue_id, reviewer_id, state, body, created_at)
+    await run({
+      sql: `INSERT INTO reviews(id, pr_issue_id, reviewer_id, state, body, created_at)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [
+      params: [
         row.id,
         row.prIssueId,
         row.reviewerId,
@@ -99,19 +99,19 @@ export async function submitReviewWithEvent(row: {
         row.body ?? '',
         row.createdAt,
       ],
-    );
-    await run(
-      'UPDATE issues SET updated_at = ? WHERE id = ?',
-      [
+    },);
+    await run({
+      sql: 'UPDATE issues SET updated_at = ? WHERE id = ?',
+      params: [
         row.createdAt,
         row.prIssueId,
       ],
-    );
+    },);
     /** Per-resource monotonic sequence captured before the event row insert. */
-    const sequenceNumber = await nextSequence(
-      'pr',
-      row.prIssueId,
-    );
+    const sequenceNumber = await nextSequence({
+      resourceType: 'pr',
+      resourceId: row.prIssueId,
+    },);
     /** Generated `events.id` returned to callers for cursor tracking. */
     const eventId = await insertEvent({
       resourceType: 'pr',
@@ -147,8 +147,8 @@ export async function submitReviewWithEvent(row: {
  * ```
  */
 export async function listReviewsForPr(prIssueId: string,): Promise<Review[]> {
-  return await all<Review>(
-    'SELECT * FROM reviews WHERE pr_issue_id = ? ORDER BY created_at ASC, id ASC',
-    [prIssueId,],
-  );
+  return await all<Review>({
+    sql: 'SELECT * FROM reviews WHERE pr_issue_id = ? ORDER BY created_at ASC, id ASC',
+    params: [prIssueId,],
+  },);
 }

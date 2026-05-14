@@ -31,15 +31,15 @@ export async function upsertRepoMember(row: {
   userId: string;
   role: string;
 },): Promise<void> {
-  await run(
-    `INSERT INTO repo_members(repo_id, user_id, role) VALUES (?, ?, ?)
+  await run({
+    sql: `INSERT INTO repo_members(repo_id, user_id, role) VALUES (?, ?, ?)
      ON CONFLICT(repo_id, user_id) DO UPDATE SET role = excluded.role`,
-    [
+    params: [
       row.repoId,
       row.userId,
       row.role,
     ],
-  );
+  },);
 }
 
 /**
@@ -56,13 +56,13 @@ export async function removeRepoMember(row: {
   repoId: string;
   userId: string;
 },): Promise<void> {
-  await run(
-    'DELETE FROM repo_members WHERE repo_id = ? AND user_id = ?',
-    [
+  await run({
+    sql: 'DELETE FROM repo_members WHERE repo_id = ? AND user_id = ?',
+    params: [
       row.repoId,
       row.userId,
     ],
-  );
+  },);
 }
 
 /**
@@ -81,13 +81,13 @@ export async function getRepoMember(row: {
   repoId: string;
   userId: string;
 },): Promise<RepoMember | undefined> {
-  return await get<RepoMember>(
-    'SELECT * FROM repo_members WHERE repo_id = ? AND user_id = ?',
-    [
+  return await get<RepoMember>({
+    sql: 'SELECT * FROM repo_members WHERE repo_id = ? AND user_id = ?',
+    params: [
       row.repoId,
       row.userId,
     ],
-  );
+  },);
 }
 
 /**
@@ -103,10 +103,10 @@ export async function getRepoMember(row: {
  * ```
  */
 export async function listRepoMembers(repoId: string,): Promise<RepoMember[]> {
-  return await all<RepoMember>(
-    'SELECT * FROM repo_members WHERE repo_id = ? ORDER BY user_id ASC',
-    [repoId,],
-  );
+  return await all<RepoMember>({
+    sql: 'SELECT * FROM repo_members WHERE repo_id = ? ORDER BY user_id ASC',
+    params: [repoId,],
+  },);
 }
 
 /**
@@ -123,13 +123,13 @@ export async function assignUserToIssue(row: {
   issueId: string;
   userId: string;
 },): Promise<void> {
-  await run(
-    'INSERT OR IGNORE INTO issue_assignees(issue_id, user_id) VALUES (?, ?)',
-    [
+  await run({
+    sql: 'INSERT OR IGNORE INTO issue_assignees(issue_id, user_id) VALUES (?, ?)',
+    params: [
       row.issueId,
       row.userId,
     ],
-  );
+  },);
 }
 
 /**
@@ -146,13 +146,13 @@ export async function unassignUserFromIssue(row: {
   issueId: string;
   userId: string;
 },): Promise<void> {
-  await run(
-    'DELETE FROM issue_assignees WHERE issue_id = ? AND user_id = ?',
-    [
+  await run({
+    sql: 'DELETE FROM issue_assignees WHERE issue_id = ? AND user_id = ?',
+    params: [
       row.issueId,
       row.userId,
     ],
-  );
+  },);
 }
 
 /**
@@ -178,14 +178,15 @@ export async function listIssueAssignees(issueId: string,): Promise<User[]> {
     readonly login: string | null;
     readonly email: string;
     readonly createdAt: string;
-  }>(
-    `SELECT u.id, u.username AS login, u.email, u.createdAt
+  }>({
+    sql:
+      `SELECT u.id, u.username AS login, u.email, u.createdAt
      FROM user u
      JOIN issue_assignees ia ON ia.user_id = u.id
      WHERE ia.issue_id = ?
      ORDER BY u.username ASC`,
-    [issueId,],
-  );
+    params: [issueId,],
+  },);
   return rows.map(function rowToUser(row,) {
     return {
       id: row.id,

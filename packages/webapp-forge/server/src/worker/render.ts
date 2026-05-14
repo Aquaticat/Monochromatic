@@ -76,13 +76,13 @@ export async function renderFragment(fragmentKey: string,): Promise<RenderResult
     /** Destructured filter-list groups: repo, label, state facet. */
     const [, repoId, labelId, stateFacet,] = filterListMatch;
     if (
-      repoId === undefined
-      || labelId === undefined
-      || stateFacet === undefined
+      (repoId === undefined)
+      || (labelId === undefined)
+      || (stateFacet === undefined)
     ) {
       throw new Error(`unparseable fragment key: ${fragmentKey}`,);
     }
-    if (stateFacet !== 'open' && stateFacet !== 'closed')
+    if ((stateFacet !== 'open') && (stateFacet !== 'closed'))
       throw new Error(`invalid state facet in key: ${fragmentKey}`,);
     return await renderFilterListByKey({
       repoId,

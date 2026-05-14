@@ -42,17 +42,17 @@ export async function insertPullRequest(row: {
   headSha: string;
   mergeable?: string;
 },): Promise<void> {
-  await run(
-    `INSERT OR IGNORE INTO prs(issue_id, base_ref, head_ref, head_sha, mergeable)
+  await run({
+    sql: `INSERT OR IGNORE INTO prs(issue_id, base_ref, head_ref, head_sha, mergeable)
      VALUES (?, ?, ?, ?, ?)`,
-    [
+    params: [
       row.issueId,
       row.baseRef,
       row.headRef,
       row.headSha,
       row.mergeable ?? 'unknown',
     ],
-  );
+  },);
 }
 
 /**
@@ -68,10 +68,10 @@ export async function insertPullRequest(row: {
  * ```
  */
 export async function getPullRequest(issueId: string,): Promise<PullRequest | undefined> {
-  return await get<PullRequest>(
-    'SELECT * FROM prs WHERE issue_id = ?',
-    [issueId,],
-  );
+  return await get<PullRequest>({
+    sql: 'SELECT * FROM prs WHERE issue_id = ?',
+    params: [issueId,],
+  },);
 }
 
 /**
@@ -91,10 +91,10 @@ export async function getPullRequest(issueId: string,): Promise<PullRequest | un
 export async function listPullRequestsByHeadSha(
   headSha: string,
 ): Promise<PullRequest[]> {
-  return await all<PullRequest>(
-    'SELECT * FROM prs WHERE head_sha = ?',
-    [headSha,],
-  );
+  return await all<PullRequest>({
+    sql: 'SELECT * FROM prs WHERE head_sha = ?',
+    params: [headSha,],
+  },);
 }
 
 /**
@@ -134,10 +134,10 @@ export async function createPullRequestWithEvent(row: {
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
-    await run(
-      `INSERT INTO issues(id, repo_id, number, author_id, title, body, state, created_at, updated_at)
+    await run({
+      sql: `INSERT INTO issues(id, repo_id, number, author_id, title, body, state, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?)`,
-      [
+      params: [
         row.issueId,
         row.repoId,
         row.number,
@@ -147,22 +147,22 @@ export async function createPullRequestWithEvent(row: {
         row.createdAt,
         row.createdAt,
       ],
-    );
-    await run(
-      `INSERT INTO prs(issue_id, base_ref, head_ref, head_sha, mergeable)
+    },);
+    await run({
+      sql: `INSERT INTO prs(issue_id, base_ref, head_ref, head_sha, mergeable)
        VALUES (?, ?, ?, ?, 'unknown')`,
-      [
+      params: [
         row.issueId,
         row.baseRef,
         row.headRef,
         row.headSha,
       ],
-    );
+    },);
     /** Per-resource monotonic sequence captured before the event row insert. */
-    const sequenceNumber = await nextSequence(
-      'pr',
-      row.issueId,
-    );
+    const sequenceNumber = await nextSequence({
+      resourceType: 'pr',
+      resourceId: row.issueId,
+    },);
     /** Generated `events.id` returned to callers for cursor tracking. */
     const eventId = await insertEvent({
       resourceType: 'pr',
@@ -207,27 +207,27 @@ export async function pushPullRequestHead(row: {
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
-    await run(
-      `UPDATE prs SET head_sha = ?, mergeable = ?
+    await run({
+      sql: `UPDATE prs SET head_sha = ?, mergeable = ?
        WHERE issue_id = ?`,
-      [
+      params: [
         row.headSha,
         row.mergeable ?? 'unknown',
         row.issueId,
       ],
-    );
-    await run(
-      'UPDATE issues SET updated_at = ? WHERE id = ?',
-      [
+    },);
+    await run({
+      sql: 'UPDATE issues SET updated_at = ? WHERE id = ?',
+      params: [
         row.createdAt,
         row.issueId,
       ],
-    );
+    },);
     /** Per-resource monotonic sequence captured before the event row insert. */
-    const sequenceNumber = await nextSequence(
-      'pr',
-      row.issueId,
-    );
+    const sequenceNumber = await nextSequence({
+      resourceType: 'pr',
+      resourceId: row.issueId,
+    },);
     /** Generated `events.id` returned to callers for cursor tracking. */
     const eventId = await insertEvent({
       resourceType: 'pr',

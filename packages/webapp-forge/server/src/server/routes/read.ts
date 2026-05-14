@@ -47,26 +47,26 @@ const HTML_FRAGMENT_HEADERS = {
 export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
   async function handleIssueDetail(event,) {
     /** Owner login segment of the route path. */
-    const owner = requireParam(
-      event.context.params,
-      'owner',
-    );
+    const owner = requireParam({
+      params: event.context.params,
+      name: 'owner',
+    },);
     /** Repo name segment of the route path. */
-    const repoName = requireParam(
-      event.context.params,
-      'repo',
-    );
+    const repoName = requireParam({
+      params: event.context.params,
+      name: 'repo',
+    },);
     /** Raw issue number from the URL; parsed below. */
-    const numberRaw = requireParam(
-      event.context.params,
-      'number',
-    );
+    const numberRaw = requireParam({
+      params: event.context.params,
+      name: 'number',
+    },);
     /** Parsed issue number; non-finite or non-positive triggers a 400. */
     const number = Number.parseInt(
       numberRaw,
       DECIMAL_RADIX,
     );
-    if (!Number.isFinite(number,) || number <= 0) {
+    if ((!Number.isFinite(number,)) || (number <= 0)) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'invalid issue number',
@@ -120,15 +120,15 @@ export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
 export const filterListHandler: EventHandlerWithFetch = defineHandler(
   async function handleFilterList(event,) {
     /** Owner login segment of the route path. */
-    const owner = requireParam(
-      event.context.params,
-      'owner',
-    );
+    const owner = requireParam({
+      params: event.context.params,
+      name: 'owner',
+    },);
     /** Repo name segment of the route path. */
-    const repoName = requireParam(
-      event.context.params,
-      'repo',
-    );
+    const repoName = requireParam({
+      params: event.context.params,
+      name: 'repo',
+    },);
     /** Request URL parsed once so query params are reachable below. */
     const url = new URL(event.req.url,);
     /** `?label=...` query param; null means "any label". */

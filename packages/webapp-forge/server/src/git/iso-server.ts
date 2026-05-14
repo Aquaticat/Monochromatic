@@ -89,9 +89,10 @@ export async function handleUploadPack(
     wants: request.wants,
     haves: request.haves,
   },);
-  /** Packfile bytes start empty; only populated when the want set is non-empty. */
-  let packfile = new Uint8Array(0,);
-  if (oids.length > 0) {
+  /** Packfile bytes; populated from packObjects only when the want set is non-empty. */
+  const packfile = await (async function buildPackfile(): Promise<Uint8Array> {
+    if (oids.length === 0)
+      return new Uint8Array(0,);
     /** Pack-generation result; `packfile` is undefined for empty packs. */
     const result = await git.packObjects({
       fs: nodeFs,
@@ -99,9 +100,10 @@ export async function handleUploadPack(
       oids,
       write: false,
     },);
-    if (result.packfile !== undefined)
-      packfile = new Uint8Array(result.packfile,);
-  }
+    if (result.packfile === undefined)
+      return new Uint8Array(0,);
+    return new Uint8Array(result.packfile,);
+  })();
   /** Wire chunks framing the packfile plus protocol scaffolding. */
   const chunks = writeUploadPackResponse({
     packfile,
@@ -146,22 +148,36 @@ export async function handleReceivePack(
       applied: [],
     };
   }
-  /** Indexing success flag reported back via the wire response. */
-  let unpackOk = true;
-  /** Captured pack-indexing error message, when one occurs. */
-  let unpackError: string | undefined = undefined;
-  if (request.packfile.byteLength > 0) {
+  /** Indexing outcome; isolated so the try/catch state stays scoped to the inner IIFE. */
+  const {
+    unpackOk,
+    unpackError,
+  } = await (async function tryIndexPack(): Promise<{
+    unpackOk: boolean;
+    unpackError: string | undefined;
+  }> {
+    if (request.packfile.byteLength === 0)
+      return {
+        unpackOk: true,
+        unpackError: undefined,
+      };
     try {
       await indexPackData({
         gitdir,
         packBytes: request.packfile,
       },);
+      return {
+        unpackOk: true,
+        unpackError: undefined,
+      };
     }
     catch (err: unknown) {
-      unpackOk = false;
-      unpackError = err instanceof Error ? err.message : 'index failed';
+      return {
+        unpackOk: false,
+        unpackError: err instanceof Error ? err.message : 'index failed',
+      };
     }
-  }
+  })();
   /** Per-ref outcomes mirrored back into the receive-pack response body. */
   const refResults: {
     refName: string;

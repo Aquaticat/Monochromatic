@@ -294,20 +294,28 @@ type ReviewCounts = {
 function countReviewStates(
   reviews: readonly { readonly state: string; }[],
 ): ReviewCounts {
-  /** Running count of `approved` reviews. */
-  let approved = 0;
-  /** Running count of `changes_requested` reviews. */
-  let changesRequested = 0;
-  for (const review of reviews) {
-    if (review.state === 'approved')
-      approved += 1;
-    else if (review.state === 'changes_requested')
-      changesRequested += 1;
-  }
-  return {
-    approved,
-    changesRequested,
-  };
+  return reviews.reduce(
+    function tallyReviewState(
+      counts: ReviewCounts,
+      review: { readonly state: string; },
+    ): ReviewCounts {
+      if (review.state === 'approved')
+        return {
+          approved: counts.approved + 1,
+          changesRequested: counts.changesRequested,
+        };
+      if (review.state === 'changes_requested')
+        return {
+          approved: counts.approved,
+          changesRequested: counts.changesRequested + 1,
+        };
+      return counts;
+    },
+    {
+      approved: 0,
+      changesRequested: 0,
+    },
+  );
 }
 
 /**
@@ -414,7 +422,7 @@ async function loadRepoOwner(repoId: string,): Promise<{
  * ```
  */
 function normaliseMergeable(raw: string,): MergeableState {
-  if (raw === 'clean' || raw === 'conflicts')
+  if ((raw === 'clean') || (raw === 'conflicts'))
     return raw;
   return 'unknown';
 }

@@ -224,20 +224,21 @@ export async function applyRefUpdate(row: {
     gitdir,
   } = row;
   /** Current ref value, or `undefined` when the ref does not yet exist. */
-  let currentOid: string | undefined = undefined;
-  try {
-    currentOid = await git.resolveRef({
-      fs: nodeFs,
-      gitdir,
-      ref: triplet.refName,
-    },);
-  }
-  catch {
-    currentOid = undefined;
-  }
+  const currentOid = await (async function resolveCurrentOid(): Promise<string | undefined> {
+    try {
+      return await git.resolveRef({
+        fs: nodeFs,
+        gitdir,
+        ref: triplet.refName,
+      },);
+    }
+    catch {
+      return undefined;
+    }
+  })();
   // Validate old-OID: caller asserts what they think the ref points at.
   // Ignore zero comparison (creating a new ref).
-  if (triplet.oldOid !== ZERO_OID && currentOid !== triplet.oldOid) {
+  if ((triplet.oldOid !== ZERO_OID) && (currentOid !== triplet.oldOid)) {
     return {
       ok: false,
       error: triplet.oldOid !== currentOid ? 'fetch-first' : 'unknown',

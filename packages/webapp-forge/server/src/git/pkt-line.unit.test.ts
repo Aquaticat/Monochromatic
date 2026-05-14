@@ -90,7 +90,7 @@ await describe({
         const lines: PktLine[] = decodePktLines(original,);
         expect(lines.length,).toBe(1,);
         const [first,] = lines;
-        if (first === null || first === 'delim' || first === undefined)
+        if ((first === null) || (first === 'delim') || (first === undefined))
           throw new Error('expected data line',);
         expect(new TextDecoder().decode(first,),).toBe('hello\n',);
       },

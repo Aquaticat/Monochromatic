@@ -129,7 +129,7 @@ await describe({
               decoded,
               10,
             );
-            expect(parsed >= 0 && parsed < 100,).toBe(true,);
+            expect((parsed >= 0) && (parsed < 100),).toBe(true,);
           },
         },),
       ],

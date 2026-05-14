@@ -29,15 +29,15 @@ export async function insertMilestone(row: {
   title: string;
   dueAt?: number | null;
 },): Promise<void> {
-  await run(
-    'INSERT OR IGNORE INTO milestones(id, repo_id, title, due_at) VALUES (?, ?, ?, ?)',
-    [
+  await run({
+    sql: 'INSERT OR IGNORE INTO milestones(id, repo_id, title, due_at) VALUES (?, ?, ?, ?)',
+    params: [
       row.id,
       row.repoId,
       row.title,
       row.dueAt ?? null,
     ],
-  );
+  },);
 }
 
 /**
@@ -53,10 +53,10 @@ export async function insertMilestone(row: {
  * ```
  */
 export async function getMilestone(id: string,): Promise<Milestone | undefined> {
-  return await get<Milestone>(
-    'SELECT * FROM milestones WHERE id = ?',
-    [id,],
-  );
+  return await get<Milestone>({
+    sql: 'SELECT * FROM milestones WHERE id = ?',
+    params: [id,],
+  },);
 }
 
 /**
@@ -72,11 +72,11 @@ export async function getMilestone(id: string,): Promise<Milestone | undefined> 
  * ```
  */
 export async function listRepoMilestones(repoId: string,): Promise<Milestone[]> {
-  return await all<Milestone>(
-    `SELECT * FROM milestones WHERE repo_id = ?
+  return await all<Milestone>({
+    sql: `SELECT * FROM milestones WHERE repo_id = ?
      ORDER BY due_at IS NULL ASC, due_at ASC, title ASC`,
-    [repoId,],
-  );
+    params: [repoId,],
+  },);
 }
 
 /**
@@ -93,14 +93,14 @@ export async function setIssueMilestone(row: {
   issueId: string;
   milestoneId: string;
 },): Promise<void> {
-  await run(
-    `INSERT INTO issue_milestone(issue_id, milestone_id) VALUES (?, ?)
+  await run({
+    sql: `INSERT INTO issue_milestone(issue_id, milestone_id) VALUES (?, ?)
      ON CONFLICT(issue_id) DO UPDATE SET milestone_id = excluded.milestone_id`,
-    [
+    params: [
       row.issueId,
       row.milestoneId,
     ],
-  );
+  },);
 }
 
 /**
@@ -114,10 +114,10 @@ export async function setIssueMilestone(row: {
  * ```
  */
 export async function clearIssueMilestone(issueId: string,): Promise<void> {
-  await run(
-    'DELETE FROM issue_milestone WHERE issue_id = ?',
-    [issueId,],
-  );
+  await run({
+    sql: 'DELETE FROM issue_milestone WHERE issue_id = ?',
+    params: [issueId,],
+  },);
 }
 
 /**
@@ -134,9 +134,9 @@ export async function clearIssueMilestone(issueId: string,): Promise<void> {
  */
 export async function getIssueMilestoneId(issueId: string,): Promise<string | undefined> {
   /** Single junction row; `undefined` when the issue has no milestone. */
-  const row = await get<{ readonly milestone_id: string; }>(
-    'SELECT milestone_id FROM issue_milestone WHERE issue_id = ?',
-    [issueId,],
-  );
+  const row = await get<{ readonly milestone_id: string; }>({
+    sql: 'SELECT milestone_id FROM issue_milestone WHERE issue_id = ?',
+    params: [issueId,],
+  },);
   return row?.milestone_id;
 }

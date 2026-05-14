@@ -27,14 +27,14 @@ export async function insertOrg(row: {
   name: string;
   createdAt: number;
 },): Promise<void> {
-  await run(
-    'INSERT OR IGNORE INTO orgs(id, name, created_at) VALUES (?, ?, ?)',
-    [
+  await run({
+    sql: 'INSERT OR IGNORE INTO orgs(id, name, created_at) VALUES (?, ?, ?)',
+    params: [
       row.id,
       row.name,
       row.createdAt,
     ],
-  );
+  },);
 }
 
 /**
@@ -50,10 +50,10 @@ export async function insertOrg(row: {
  * ```
  */
 export async function getOrg(id: string,): Promise<Org | undefined> {
-  return await get<Org>(
-    'SELECT * FROM orgs WHERE id = ?',
-    [id,],
-  );
+  return await get<Org>({
+    sql: 'SELECT * FROM orgs WHERE id = ?',
+    params: [id,],
+  },);
 }
 
 /**
@@ -69,8 +69,8 @@ export async function getOrg(id: string,): Promise<Org | undefined> {
  * ```
  */
 export async function getOrgByName(name: string,): Promise<Org | undefined> {
-  return await get<Org>(
-    'SELECT * FROM orgs WHERE name = ?',
-    [name,],
-  );
+  return await get<Org>({
+    sql: 'SELECT * FROM orgs WHERE name = ?',
+    params: [name,],
+  },);
 }

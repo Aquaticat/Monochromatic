@@ -27,7 +27,7 @@ import { join, } from 'node:path';
 export function gitdirRoot(): string {
   /** Optional environment override; falls back to `<cwd>/.gitdir` below. */
   const fromEnv = process.env.WEBAPP_FORGE_GITDIR_ROOT;
-  if (fromEnv !== undefined && fromEnv !== '')
+  if ((fromEnv !== undefined) && (fromEnv !== ''))
     return fromEnv;
   return join(
     process.cwd(),

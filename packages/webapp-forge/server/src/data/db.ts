@@ -122,8 +122,8 @@ const reposSchemaRow = await reposSchemaStmt.get(
 /* oxlint-enable typescript/no-unsafe-type-assertion */
 
 if (
-  reposSchemaRow === undefined
-  || reposSchemaRow.s.includes('REFERENCES users',)
+  (reposSchemaRow === undefined)
+  || (reposSchemaRow.s.includes('REFERENCES users',))
 ) {
   await db.exec(migration0004,);
 }
@@ -133,28 +133,31 @@ export default db;
 /**
  * Convenience: prepare + run a parameterised SQL statement.
  *
- * @param sql - SQL with `?` parameter placeholders
- *
- * @param params - bind parameters; defaults to none
+ * @param row - SQL plus optional bind parameters
  *
  * @returns `{ changes, lastInsertRowid }`
  *
  * @example
  * ```ts
- * await run('INSERT INTO users(id, login, created_at) VALUES (?, ?, ?)', ['u1', 'alice', Date.now()]);
+ * await run({
+ *   sql: 'INSERT INTO users(id, login, created_at) VALUES (?, ?, ?)',
+ *   params: ['u1', 'alice', Date.now()],
+ * });
  * ```
  */
-export async function run(
-  sql: string,
-  params: readonly unknown[] = [],
-): Promise<{
+export async function run(row: {
+  /** SQL with `?` parameter placeholders. */
+  sql: string;
+  /** Bind parameters; defaults to none. */
+  params?: readonly unknown[];
+},): Promise<{
   changes: number;
   lastInsertRowid: number;
 }> {
   /** Prepared statement for the one-shot execution. */
-  const stmt = db.prepare(sql,);
+  const stmt = db.prepare(row.sql,);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed result
-  return await stmt.run(...params,) as {
+  return await stmt.run(...(row.params ?? []),) as {
     changes: number;
     lastInsertRowid: number;
   };
@@ -163,51 +166,57 @@ export async function run(
 /**
  * Convenience: prepare + fetch the first row, or `undefined` if none.
  *
- * @param sql - SQL with `?` parameter placeholders
- *
- * @param params - bind parameters; defaults to none
+ * @param row - SQL plus optional bind parameters
  *
  * @returns first row or `undefined`
  *
  * @example
  * ```ts
- * const row = await get<{ login: string; }>('SELECT login FROM users WHERE id = ?', [id]);
+ * const user = await get<{ login: string; }>({
+ *   sql: 'SELECT login FROM users WHERE id = ?',
+ *   params: [id],
+ * });
  * ```
  */
-export async function get<T = Record<string, unknown>,>(
-  sql: string,
-  params: readonly unknown[] = [],
-): Promise<T | undefined> {
+export async function get<T = Record<string, unknown>,>(row: {
+  /** SQL with `?` parameter placeholders. */
+  sql: string;
+  /** Bind parameters; defaults to none. */
+  params?: readonly unknown[];
+},): Promise<T | undefined> {
   /** Prepared statement for the single-row fetch. */
-  const stmt = db.prepare(sql,);
+  const stmt = db.prepare(row.sql,);
   /* oxlint-disable typescript/no-unsafe-assignment -- libSQL returns any */
   /** First row returned by the statement; undefined when no rows match. */
-  const value = await stmt.get(...params,);
+  const value = await stmt.get(...(row.params ?? []),);
   /* oxlint-enable typescript/no-unsafe-assignment */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed row
-  return (value === undefined || value === null) ? undefined : value as T;
+  return ((value === undefined) || (value === null)) ? undefined : value as T;
 }
 
 /**
  * Convenience: prepare + fetch all rows.
  *
- * @param sql - SQL with `?` parameter placeholders
- *
- * @param params - bind parameters; defaults to none
+ * @param row - SQL plus optional bind parameters
  *
  * @returns array of rows; empty when no matches
  *
  * @example
  * ```ts
- * const rows = await all<{ id: string; }>('SELECT id FROM repos WHERE owner_id = ?', [ownerId]);
+ * const repos = await all<{ id: string; }>({
+ *   sql: 'SELECT id FROM repos WHERE owner_id = ?',
+ *   params: [ownerId],
+ * });
  * ```
  */
-export async function all<T = Record<string, unknown>,>(
-  sql: string,
-  params: readonly unknown[] = [],
-): Promise<T[]> {
+export async function all<T = Record<string, unknown>,>(row: {
+  /** SQL with `?` parameter placeholders. */
+  sql: string;
+  /** Bind parameters; defaults to none. */
+  params?: readonly unknown[];
+},): Promise<T[]> {
   /** Prepared statement for the multi-row fetch. */
-  const stmt = db.prepare(sql,);
+  const stmt = db.prepare(row.sql,);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed rows
-  return await stmt.all(...params,) as T[];
+  return await stmt.all(...(row.params ?? []),) as T[];
 }

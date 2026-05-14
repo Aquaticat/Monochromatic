@@ -149,7 +149,7 @@ async function markTree(row: {
   },);
   for (const entry of tree.tree) {
     if (entry.type === 'blob') {
-      if (!row.bag.has(entry.oid,) && !row.excluded.has(entry.oid,))
+      if ((!row.bag.has(entry.oid,)) && (!row.excluded.has(entry.oid,)))
         row.bag.add(entry.oid,);
     }
     else if (entry.type === 'tree') {

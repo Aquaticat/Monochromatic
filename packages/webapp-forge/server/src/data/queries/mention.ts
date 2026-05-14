@@ -27,13 +27,13 @@ export async function addMention(row: {
   userId: string;
   fragmentKey: string;
 },): Promise<void> {
-  await run(
-    'INSERT OR IGNORE INTO mention_index(user_id, fragment_key) VALUES (?, ?)',
-    [
+  await run({
+    sql: 'INSERT OR IGNORE INTO mention_index(user_id, fragment_key) VALUES (?, ?)',
+    params: [
       row.userId,
       row.fragmentKey,
     ],
-  );
+  },);
 }
 
 /**
@@ -50,13 +50,13 @@ export async function removeMention(row: {
   userId: string;
   fragmentKey: string;
 },): Promise<void> {
-  await run(
-    'DELETE FROM mention_index WHERE user_id = ? AND fragment_key = ?',
-    [
+  await run({
+    sql: 'DELETE FROM mention_index WHERE user_id = ? AND fragment_key = ?',
+    params: [
       row.userId,
       row.fragmentKey,
     ],
-  );
+  },);
 }
 
 /**
@@ -81,19 +81,19 @@ export async function replaceMentionsForFragment(row: {
   fragmentKey: string;
   userIds: readonly string[];
 },): Promise<void> {
-  await run(
-    'DELETE FROM mention_index WHERE fragment_key = ?',
-    [row.fragmentKey,],
-  );
+  await run({
+    sql: 'DELETE FROM mention_index WHERE fragment_key = ?',
+    params: [row.fragmentKey,],
+  },);
   for (const userId of row.userIds) {
     // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially over the same connection
-    await run(
-      'INSERT OR IGNORE INTO mention_index(user_id, fragment_key) VALUES (?, ?)',
-      [
+    await run({
+      sql: 'INSERT OR IGNORE INTO mention_index(user_id, fragment_key) VALUES (?, ?)',
+      params: [
         userId,
         row.fragmentKey,
       ],
-    );
+    },);
   }
 }
 
@@ -111,10 +111,10 @@ export async function replaceMentionsForFragment(row: {
  */
 export async function listFragmentsMentioningUser(userId: string,): Promise<string[]> {
   /** Raw `mention_index` rows projected to fragment keys below. */
-  const rows = await all<{ readonly fragment_key: string; }>(
-    'SELECT fragment_key FROM mention_index WHERE user_id = ? ORDER BY fragment_key ASC',
-    [userId,],
-  );
+  const rows = await all<{ readonly fragment_key: string; }>({
+    sql: 'SELECT fragment_key FROM mention_index WHERE user_id = ? ORDER BY fragment_key ASC',
+    params: [userId,],
+  },);
   return rows.map(function pickKey(r,) {
     return r.fragment_key;
   },);
@@ -136,10 +136,10 @@ export async function listUsersMentionedByFragment(
   fragmentKey: string,
 ): Promise<string[]> {
   /** Raw `mention_index` rows projected to user ids below. */
-  const rows = await all<{ readonly user_id: string; }>(
-    'SELECT user_id FROM mention_index WHERE fragment_key = ? ORDER BY user_id ASC',
-    [fragmentKey,],
-  );
+  const rows = await all<{ readonly user_id: string; }>({
+    sql: 'SELECT user_id FROM mention_index WHERE fragment_key = ? ORDER BY user_id ASC',
+    params: [fragmentKey,],
+  },);
   return rows.map(function pickId(r,) {
     return r.user_id;
   },);

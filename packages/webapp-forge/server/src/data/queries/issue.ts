@@ -54,10 +54,10 @@ export async function createIssueWithEvent(row: {
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
-    await run(
-      `INSERT INTO issues(id, repo_id, number, author_id, title, body, state, created_at, updated_at)
+    await run({
+      sql: `INSERT INTO issues(id, repo_id, number, author_id, title, body, state, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?)`,
-      [
+      params: [
         row.id,
         row.repoId,
         row.number,
@@ -67,12 +67,12 @@ export async function createIssueWithEvent(row: {
         row.createdAt,
         row.createdAt,
       ],
-    );
+    },);
     /** Per-resource monotonic sequence captured before the event row insert. */
-    const sequenceNumber = await nextSequence(
-      'issue',
-      row.id,
-    );
+    const sequenceNumber = await nextSequence({
+      resourceType: 'issue',
+      resourceId: row.id,
+    },);
     /** Generated `events.id` returned to callers for cursor tracking. */
     const eventId = await insertEvent({
       resourceType: 'issue',
@@ -115,25 +115,25 @@ export async function labelIssueWithEvent(row: {
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
-    await run(
-      'INSERT OR IGNORE INTO issue_labels(issue_id, label_id) VALUES (?, ?)',
-      [
+    await run({
+      sql: 'INSERT OR IGNORE INTO issue_labels(issue_id, label_id) VALUES (?, ?)',
+      params: [
         row.issueId,
         row.labelId,
       ],
-    );
-    await run(
-      'UPDATE issues SET updated_at = ? WHERE id = ?',
-      [
+    },);
+    await run({
+      sql: 'UPDATE issues SET updated_at = ? WHERE id = ?',
+      params: [
         row.createdAt,
         row.issueId,
       ],
-    );
+    },);
     /** Per-resource monotonic sequence captured before the event row insert. */
-    const sequenceNumber = await nextSequence(
-      'issue',
-      row.issueId,
-    );
+    const sequenceNumber = await nextSequence({
+      resourceType: 'issue',
+      resourceId: row.issueId,
+    },);
     /** Generated `events.id` returned to callers for cursor tracking. */
     const eventId = await insertEvent({
       resourceType: 'issue',
@@ -180,28 +180,28 @@ export async function createCommentWithEvent(row: {
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
-    await run(
-      'INSERT INTO comments(id, issue_id, author_id, body, created_at) VALUES (?, ?, ?, ?, ?)',
-      [
+    await run({
+      sql: 'INSERT INTO comments(id, issue_id, author_id, body, created_at) VALUES (?, ?, ?, ?, ?)',
+      params: [
         row.id,
         row.issueId,
         row.authorId,
         row.body,
         row.createdAt,
       ],
-    );
-    await run(
-      'UPDATE issues SET updated_at = ? WHERE id = ?',
-      [
+    },);
+    await run({
+      sql: 'UPDATE issues SET updated_at = ? WHERE id = ?',
+      params: [
         row.createdAt,
         row.issueId,
       ],
-    );
+    },);
     /** Per-resource monotonic sequence captured before the event row insert. */
-    const sequenceNumber = await nextSequence(
-      'issue',
-      row.issueId,
-    );
+    const sequenceNumber = await nextSequence({
+      resourceType: 'issue',
+      resourceId: row.issueId,
+    },);
     /** Generated `events.id` returned to callers for cursor tracking. */
     const eventId = await insertEvent({
       resourceType: 'issue',
@@ -236,10 +236,10 @@ export async function createCommentWithEvent(row: {
  * ```
  */
 export async function getIssue(id: string,): Promise<Issue | undefined> {
-  return await get<Issue>(
-    'SELECT * FROM issues WHERE id = ?',
-    [id,],
-  );
+  return await get<Issue>({
+    sql: 'SELECT * FROM issues WHERE id = ?',
+    params: [id,],
+  },);
 }
 
 /**
@@ -256,10 +256,10 @@ export async function getIssue(id: string,): Promise<Issue | undefined> {
  * ```
  */
 export async function getComment(id: string,): Promise<Comment | undefined> {
-  return await get<Comment>(
-    'SELECT * FROM comments WHERE id = ?',
-    [id,],
-  );
+  return await get<Comment>({
+    sql: 'SELECT * FROM comments WHERE id = ?',
+    params: [id,],
+  },);
 }
 
 /**
@@ -278,13 +278,13 @@ export async function getIssueByNumber(row: {
   repoId: string;
   number: number;
 },): Promise<Issue | undefined> {
-  return await get<Issue>(
-    'SELECT * FROM issues WHERE repo_id = ? AND number = ?',
-    [
+  return await get<Issue>({
+    sql: 'SELECT * FROM issues WHERE repo_id = ? AND number = ?',
+    params: [
       row.repoId,
       row.number,
     ],
-  );
+  },);
 }
 
 /**
@@ -300,10 +300,10 @@ export async function getIssueByNumber(row: {
  * ```
  */
 export async function listComments(issueId: string,): Promise<Comment[]> {
-  return await all<Comment>(
-    'SELECT * FROM comments WHERE issue_id = ? ORDER BY created_at ASC, id ASC',
-    [issueId,],
-  );
+  return await all<Comment>({
+    sql: 'SELECT * FROM comments WHERE issue_id = ? ORDER BY created_at ASC, id ASC',
+    params: [issueId,],
+  },);
 }
 
 /**
@@ -319,13 +319,13 @@ export async function listComments(issueId: string,): Promise<Comment[]> {
  * ```
  */
 export async function listIssueLabels(issueId: string,): Promise<Label[]> {
-  return await all<Label>(
-    `SELECT l.* FROM labels l
+  return await all<Label>({
+    sql: `SELECT l.* FROM labels l
      JOIN issue_labels il ON il.label_id = l.id
      WHERE il.issue_id = ?
      ORDER BY l.name ASC`,
-    [issueId,],
-  );
+    params: [issueId,],
+  },);
 }
 
 /**
@@ -346,25 +346,25 @@ export async function listIssueIdsForFilter(row: {
   state: string;
 },): Promise<IssueIdRow[]> {
   if (row.labelId === null) {
-    return await all<IssueIdRow>(
-      `SELECT i.id, i.updated_at FROM issues i
+    return await all<IssueIdRow>({
+      sql: `SELECT i.id, i.updated_at FROM issues i
        WHERE i.repo_id = ? AND i.state = ?
        ORDER BY i.updated_at DESC, i.id DESC`,
-      [
+      params: [
         row.repoId,
         row.state,
       ],
-    );
+    },);
   }
-  return await all<IssueIdRow>(
-    `SELECT i.id, i.updated_at FROM issues i
+  return await all<IssueIdRow>({
+    sql: `SELECT i.id, i.updated_at FROM issues i
      JOIN issue_labels il ON il.issue_id = i.id
      WHERE i.repo_id = ? AND i.state = ? AND il.label_id = ?
      ORDER BY i.updated_at DESC, i.id DESC`,
-    [
+    params: [
       row.repoId,
       row.state,
       row.labelId,
     ],
-  );
+  },);
 }

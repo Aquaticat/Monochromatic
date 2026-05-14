@@ -58,38 +58,41 @@ export type ProcessEventResult = {
 /**
  * Turns one event into rebuilds.
  *
- * @param event - event header
- *
- * @param _sequenceNumber - per-resource sequence number that produced
- *                          the event. Unused after the sequence guard
- *                          moved to `events.id`; kept on the signature
- *                          so callers do not have to change as the
- *                          dispatcher learns to publish per-resource
- *                          metrics in Phase 2+
- *
- * @param eventId - generated `events.id`; doubles as the global
- *                  monotonic sequence guard for `fragment_index`
- *
- * @param sink - storage destination (write buffer in production, adapter in tests)
+ * @param row - dispatcher inputs
  *
  * @returns counters describing what happened
  *
  * @example
  * ```ts
- * await processEvent(
- *   { kind: 'comment.created', resourceId: 'i1' },
- *   3,
- *   42,
- *   storageOrBuffer,
- * );
+ * await processEvent({
+ *   event: { kind: 'comment.created', resourceId: 'i1' },
+ *   sequenceNumber: 3,
+ *   eventId: 42,
+ *   sink: storageOrBuffer,
+ * });
  * ```
  */
-export async function processEvent(
-  event: EventInput,
-  _sequenceNumber: number,
-  eventId: number,
-  sink: Storage | WriteBuffer,
-): Promise<ProcessEventResult> {
+export async function processEvent(row: {
+  /** Event header to dispatch. */
+  event: EventInput;
+  /**
+   * Per-resource sequence number that produced the event. Unused after
+   * the sequence guard moved to `events.id`; kept on the signature so
+   * callers do not have to change as the dispatcher learns to publish
+   * per-resource metrics in Phase 2+.
+   */
+  sequenceNumber: number;
+  /** Generated `events.id`; doubles as the global monotonic sequence guard for `fragment_index`. */
+  eventId: number;
+  /** Storage destination (write buffer in production, adapter in tests). */
+  sink: Storage | WriteBuffer;
+},): Promise<ProcessEventResult> {
+  /** Aliases destructured up front so loop branches stay readable. */
+  const {
+    event,
+    eventId,
+    sink,
+  } = row;
   /** Issue context drives the dependency graph; null means the event is stale. */
   const context = await resolveContext(event,);
   if (context === null) {
@@ -104,16 +107,23 @@ export async function processEvent(
     };
   }
   /** Fragment keys this event invalidates. */
-  const keys = dependenciesFor(
+  const keys = dependenciesFor({
     event,
     context,
-  );
-  /** Counter for fragments whose content hash matched and were skipped. */
-  let skipped = 0;
-  /** Counter for fragments that were re-rendered and written. */
-  let written = 0;
-  /** Counter for fragments that lost the sequence-guard race. */
-  let discarded = 0;
+  },);
+  /**
+   * Per-event counters accumulated by the rebuild loop below. Held on a
+   * `const` state object so the mutation stays out of function-body root.
+   */
+  const counters: {
+    skipped: number;
+    written: number;
+    discarded: number;
+  } = {
+    skipped: 0,
+    written: 0,
+    discarded: 0,
+  };
 
   // Render in declared order. Phase 2+ adds parallel rendering via
   // p-limit; for Phase 1 the synchronous in-request dispatcher only
@@ -128,7 +138,7 @@ export async function processEvent(
     const result = await renderFragment(fragmentKey,);
     /* oxlint-enable no-await-in-loop */
     if (previousHash === result.contentHash) {
-      skipped += 1;
+      counters.skipped += 1;
       continue;
     }
     // Use the globally monotonic `events.id` as the sequence guard.
@@ -155,7 +165,7 @@ export async function processEvent(
           String(eventId,)
         }`,
       );
-      discarded += 1;
+      counters.discarded += 1;
       continue;
     }
     if ('enqueue' in sink) {
@@ -171,14 +181,14 @@ export async function processEvent(
         result.body,
       );
     }
-    written += 1;
+    counters.written += 1;
   }
 
   return {
     fanout: keys.size,
-    skipped,
-    written,
-    discarded,
+    skipped: counters.skipped,
+    written: counters.written,
+    discarded: counters.discarded,
   };
 }
 

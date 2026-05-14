@@ -29,27 +29,27 @@ import {
 /**
  * Reads a route param or throws a 400 when missing.
  *
- * @param params - h3 route parameter record
- *
- * @param name - parameter name to extract
+ * @param row - inputs
  *
  * @returns parameter value (always non-empty)
  *
  * @example
  * ```ts
- * const owner = requireParam(event.context.params, 'owner');
+ * const owner = requireParam({ params: event.context.params, name: 'owner' });
  * ```
  */
-export function requireParam(
-  params: Record<string, string> | undefined,
-  name: string,
-): string {
+export function requireParam(row: {
+  /** h3 route parameter record. */
+  params: Record<string, string> | undefined;
+  /** Parameter name to extract. */
+  name: string;
+},): string {
   /** Raw param value; missing/empty triggers the 400 below. */
-  const value = params?.[name];
-  if (value === undefined || value === '') {
+  const value = row.params?.[row.name];
+  if ((value === undefined) || (value === '')) {
     throw new HTTPError({
       status: HTTP_BAD_REQUEST,
-      message: `missing route param: ${name}`,
+      message: `missing route param: ${row.name}`,
     },);
   }
   return value;
@@ -111,7 +111,7 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
   }
   /** Dev-only login from the legacy header; missing triggers the 401 below. */
   const login = event.req.headers.get('x-forge-user',);
-  if (login === null || login === '') {
+  if ((login === null) || (login === '')) {
     throw new HTTPError({
       status: HTTP_UNAUTHORIZED,
       message: 'no session and missing X-Forge-User dev header',
@@ -165,7 +165,7 @@ export async function runDispatch(): Promise<void> {
  * ```
  */
 export function parseStateFacet(raw: string,): IssueStateFacet | null {
-  if (raw === 'open' || raw === 'closed')
+  if ((raw === 'open') || (raw === 'closed'))
     return raw;
   return null;
 }

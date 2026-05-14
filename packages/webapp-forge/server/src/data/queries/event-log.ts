@@ -20,41 +20,41 @@ import type {
 /**
  * Increments the per-resource sequence counter and returns the new value.
  *
- * @param resourceType - resource discriminant
- *
- * @param resourceId - resource id
+ * @param row - resource identifier
  *
  * @returns new sequence value (\>= 1)
  *
  * @example
  * ```ts
- * const seq = await nextSequence('issue', 'i1');
+ * const seq = await nextSequence({ resourceType: 'issue', resourceId: 'i1' });
  * ```
  */
-export async function nextSequence(
-  resourceType: ResourceType,
-  resourceId: string,
-): Promise<number> {
-  await run(
-    `INSERT INTO sequences(resource_type, resource_id, current)
+export async function nextSequence(row: {
+  /** Resource discriminant. */
+  resourceType: ResourceType;
+  /** Resource id. */
+  resourceId: string;
+},): Promise<number> {
+  await run({
+    sql: `INSERT INTO sequences(resource_type, resource_id, current)
      VALUES (?, ?, 1)
      ON CONFLICT(resource_type, resource_id) DO UPDATE SET current = current + 1`,
-    [
-      resourceType,
-      resourceId,
+    params: [
+      row.resourceType,
+      row.resourceId,
     ],
-  );
+  },);
   /** Re-read after the upsert returns the post-increment value. */
-  const row = await get<{ current: number; }>(
-    'SELECT current FROM sequences WHERE resource_type = ? AND resource_id = ?',
-    [
-      resourceType,
-      resourceId,
+  const sequenceRow = await get<{ current: number; }>({
+    sql: 'SELECT current FROM sequences WHERE resource_type = ? AND resource_id = ?',
+    params: [
+      row.resourceType,
+      row.resourceId,
     ],
-  );
-  if (row === undefined)
+  },);
+  if (sequenceRow === undefined)
     throw new Error('sequence row vanished after upsert',);
-  return row.current;
+  return sequenceRow.current;
 }
 
 /**
@@ -85,10 +85,10 @@ export async function insertEvent(row: {
   createdAt: number;
 },): Promise<number> {
   /** Insert result; `lastInsertRowid` becomes the returned `events.id`. */
-  const result = await run(
-    `INSERT INTO events(resource_type, resource_id, kind, payload, sequence_number, created_at)
+  const result = await run({
+    sql: `INSERT INTO events(resource_type, resource_id, kind, payload, sequence_number, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    [
+    params: [
       row.resourceType,
       row.resourceId,
       row.kind,
@@ -96,33 +96,33 @@ export async function insertEvent(row: {
       row.sequenceNumber,
       row.createdAt,
     ],
-  );
+  },);
   return result.lastInsertRowid;
 }
 
 /**
  * Reads events with id strictly greater than `afterId`, in id order.
  *
- * @param afterId - exclusive lower bound on `events.id`
- *
- * @param limit - maximum number of rows to return
+ * @param row - pagination cursor + page size
  *
  * @returns events array (possibly empty)
  *
  * @example
  * ```ts
- * const newer = await listEventsAfter(0, 100);
+ * const newer = await listEventsAfter({ afterId: 0, limit: 100 });
  * ```
  */
-export async function listEventsAfter(
-  afterId: number,
-  limit: number,
-): Promise<EventRow[]> {
-  return await all<EventRow>(
-    'SELECT * FROM events WHERE id > ? ORDER BY id ASC LIMIT ?',
-    [
-      afterId,
-      limit,
+export async function listEventsAfter(row: {
+  /** Exclusive lower bound on `events.id`. */
+  afterId: number;
+  /** Maximum number of rows to return. */
+  limit: number;
+},): Promise<EventRow[]> {
+  return await all<EventRow>({
+    sql: 'SELECT * FROM events WHERE id > ? ORDER BY id ASC LIMIT ?',
+    params: [
+      row.afterId,
+      row.limit,
     ],
-  );
+  },);
 }

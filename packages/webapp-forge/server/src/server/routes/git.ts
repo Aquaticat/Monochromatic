@@ -142,7 +142,7 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
     const owner = event.context.params?.['owner'];
     /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
-    if (owner === undefined || owner === '' || repoRaw === undefined || repoRaw === '') {
+    if ((owner === undefined) || (owner === '') || (repoRaw === undefined) || (repoRaw === '')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing route params',
@@ -154,7 +154,7 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
     const url = new URL(event.req.url,);
     /** Negotiated smart-HTTP service from the `?service=` query param. */
     const service = url.searchParams.get('service',) ?? '';
-    if (service !== 'git-upload-pack' && service !== 'git-receive-pack') {
+    if ((service !== 'git-upload-pack') && (service !== 'git-receive-pack')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: `unsupported service: ${service}`,
@@ -185,7 +185,7 @@ export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
     const owner = event.context.params?.['owner'];
     /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
-    if (owner === undefined || owner === '' || repoRaw === undefined || repoRaw === '') {
+    if ((owner === undefined) || (owner === '') || (repoRaw === undefined) || (repoRaw === '')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing route params',
@@ -226,7 +226,7 @@ export const gitReceivePackHandler: EventHandlerWithFetch = defineHandler(
     const owner = event.context.params?.['owner'];
     /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
-    if (owner === undefined || owner === '' || repoRaw === undefined || repoRaw === '') {
+    if ((owner === undefined) || (owner === '') || (repoRaw === undefined) || (repoRaw === '')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing route params',
@@ -253,10 +253,10 @@ export const gitReceivePackHandler: EventHandlerWithFetch = defineHandler(
       for (const triplet of outcome.applied) {
         /* oxlint-disable no-await-in-loop -- one event row per ref; serial is intentional for ordering */
         /** Per-resource monotonic sequence used by the dispatcher. */
-        const sequenceNumber = await nextSequence(
-          'repo',
-          repoRow.id,
-        );
+        const sequenceNumber = await nextSequence({
+          resourceType: 'repo',
+          resourceId: repoRow.id,
+        },);
         /* oxlint-enable no-await-in-loop */
         // oxlint-disable-next-line no-await-in-loop -- ditto: events must land in ref-update order
         await insertEvent({

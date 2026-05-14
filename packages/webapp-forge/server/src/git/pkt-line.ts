@@ -77,7 +77,7 @@ export function delimPkt(): Uint8Array {
  */
 export function encodePkt(payload: Uint8Array | string,): Uint8Array {
   /** Payload bytes; strings are UTF-8 encoded here so callers may pass either. */
-  const bytes = typeof payload === 'string'
+  const bytes = ((typeof payload) === 'string')
     ? new TextEncoder().encode(payload,)
     : payload;
   /** Total frame length includes the length prefix itself per the spec. */
@@ -128,7 +128,7 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
   /** Cursor advancing through `data` as each frame is consumed. */
   let offset = 0;
   while (offset < data.byteLength) {
-    if (data.byteLength - offset < PKT_LEN_BYTES) {
+    if ((data.byteLength - offset) < PKT_LEN_BYTES) {
       throw new Error(
         `pkt-line decode: trailing ${
           String(data.byteLength - offset,)
@@ -161,7 +161,7 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
     }
     if (length < PKT_LEN_BYTES)
       throw new Error(`pkt-line decode: length ${String(length,)} below header size`,);
-    if (offset + length > data.byteLength) {
+    if ((offset + length) > data.byteLength) {
       throw new Error(
         `pkt-line decode: line claims ${String(length,)} bytes but only ${
           String(data.byteLength - offset,)

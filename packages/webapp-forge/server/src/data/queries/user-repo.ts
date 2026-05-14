@@ -86,10 +86,10 @@ export async function insertUser(row: {
   const createdAtIso = new Date(row.createdAt,).toISOString();
   /** Email defaults to a synthesised value so the NOT NULL column is satisfied. */
   const email = row.email ?? `${row.login}@forge.test`;
-  await run(
-    `INSERT OR IGNORE INTO user(id, name, email, emailVerified, createdAt, updatedAt, username, displayUsername)
+  await run({
+    sql: `INSERT OR IGNORE INTO user(id, name, email, emailVerified, createdAt, updatedAt, username, displayUsername)
      VALUES (?, ?, ?, 0, ?, ?, ?, ?)`,
-    [
+    params: [
       row.id,
       row.login,
       email,
@@ -98,7 +98,7 @@ export async function insertUser(row: {
       row.login,
       row.login,
     ],
-  );
+  },);
 }
 
 /**
@@ -117,9 +117,9 @@ export async function insertRepo(row: {
   name: string;
   createdAt: number;
 },): Promise<void> {
-  await run(
-    'INSERT OR IGNORE INTO repos(id, owner_id, name, visibility, default_branch, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [
+  await run({
+    sql: 'INSERT OR IGNORE INTO repos(id, owner_id, name, visibility, default_branch, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    params: [
       row.id,
       row.ownerId,
       row.name,
@@ -127,7 +127,7 @@ export async function insertRepo(row: {
       'main',
       row.createdAt,
     ],
-  );
+  },);
 }
 
 /**
@@ -146,15 +146,15 @@ export async function insertLabel(row: {
   name: string;
   color?: string;
 },): Promise<void> {
-  await run(
-    'INSERT OR IGNORE INTO labels(id, repo_id, name, color) VALUES (?, ?, ?, ?)',
-    [
+  await run({
+    sql: 'INSERT OR IGNORE INTO labels(id, repo_id, name, color) VALUES (?, ?, ?, ?)',
+    params: [
       row.id,
       row.repoId,
       row.name,
       row.color ?? '888888',
     ],
-  );
+  },);
 }
 
 /**
@@ -171,10 +171,10 @@ export async function insertLabel(row: {
  */
 export async function getUser(id: string,): Promise<User | undefined> {
   /** Raw user row from the DB; `undefined` when no match. */
-  const row = await get<UserRow>(
-    'SELECT id, username AS login, email, createdAt FROM user WHERE id = ?',
-    [id,],
-  );
+  const row = await get<UserRow>({
+    sql: 'SELECT id, username AS login, email, createdAt FROM user WHERE id = ?',
+    params: [id,],
+  },);
   return row === undefined ? undefined : toUser(row,);
 }
 
@@ -192,10 +192,10 @@ export async function getUser(id: string,): Promise<User | undefined> {
  */
 export async function getUserByLogin(login: string,): Promise<User | undefined> {
   /** Raw user row from the DB; `undefined` when no match. */
-  const row = await get<UserRow>(
-    'SELECT id, username AS login, email, createdAt FROM user WHERE username = ?',
-    [login,],
-  );
+  const row = await get<UserRow>({
+    sql: 'SELECT id, username AS login, email, createdAt FROM user WHERE username = ?',
+    params: [login,],
+  },);
   return row === undefined ? undefined : toUser(row,);
 }
 
@@ -212,10 +212,10 @@ export async function getUserByLogin(login: string,): Promise<User | undefined> 
  * ```
  */
 export async function getRepo(id: string,): Promise<Repo | undefined> {
-  return await get<Repo>(
-    'SELECT * FROM repos WHERE id = ?',
-    [id,],
-  );
+  return await get<Repo>({
+    sql: 'SELECT * FROM repos WHERE id = ?',
+    params: [id,],
+  },);
 }
 
 /**
@@ -234,15 +234,15 @@ export async function getRepoByOwnerLogin(row: {
   ownerLogin: string;
   name: string;
 },): Promise<Repo | undefined> {
-  return await get<Repo>(
-    `SELECT r.* FROM repos r
+  return await get<Repo>({
+    sql: `SELECT r.* FROM repos r
      JOIN user u ON u.id = r.owner_id
      WHERE u.username = ? AND r.name = ?`,
-    [
+    params: [
       row.ownerLogin,
       row.name,
     ],
-  );
+  },);
 }
 
 /**
@@ -258,10 +258,10 @@ export async function getRepoByOwnerLogin(row: {
  * ```
  */
 export async function getLabel(id: string,): Promise<Label | undefined> {
-  return await get<Label>(
-    'SELECT * FROM labels WHERE id = ?',
-    [id,],
-  );
+  return await get<Label>({
+    sql: 'SELECT * FROM labels WHERE id = ?',
+    params: [id,],
+  },);
 }
 
 /**
@@ -277,8 +277,8 @@ export async function getLabel(id: string,): Promise<Label | undefined> {
  * ```
  */
 export async function listRepoLabels(repoId: string,): Promise<Label[]> {
-  return await all<Label>(
-    'SELECT * FROM labels WHERE repo_id = ? ORDER BY name ASC',
-    [repoId,],
-  );
+  return await all<Label>({
+    sql: 'SELECT * FROM labels WHERE repo_id = ? ORDER BY name ASC',
+    params: [repoId,],
+  },);
 }
