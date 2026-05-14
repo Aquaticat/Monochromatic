@@ -45,4 +45,61 @@ export {
   items,
 };
 
+// TypeScript function-like nodes already formatted one-param-per-line.
+
+type FnType = (
+  a: string,
+  b: number,
+) => void;
+
+declare function ambient(
+  a: string,
+  b: number,
+): void;
+
+type WithMethod = {
+  run(
+    a: string,
+    b: number,
+  ): void;
+};
+
+type Callable = {
+  (
+    a: string,
+    b: number,
+  ): void;
+};
+
+type Constructible = {
+  new (
+    a: string,
+    b: number,
+  ): void;
+};
+
+type CtorType = new (
+  a: string,
+  b: number,
+) => void;
+
+declare class WithMember {
+  m(
+    a: string,
+    b: number,
+  ): void;
+}
+
+export type {
+  Callable,
+  Constructible,
+  CtorType,
+  FnType,
+  WithMethod,
+};
+export {
+  ambient,
+  WithMember,
+};
+
 export {};

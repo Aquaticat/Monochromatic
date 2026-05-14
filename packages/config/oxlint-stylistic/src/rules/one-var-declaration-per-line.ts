@@ -1,0 +1,155 @@
+// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
+import type {
+  Context,
+  CreateOnceRule,
+  Fixer,
+  Span,
+  VisitorWithHooks,
+} from '@oxlint/plugins';
+
+import { baseIndentAt, } from '../utility/indent.ts';
+import { lineAt, } from '../utility/line-at.ts';
+import {
+  at,
+  rangeOf,
+} from '../utility/range.ts';
+
+/** Parent types under which a multi-declarator declaration is allowed inline. */
+const FOR_PARENT_TYPES = new Set([
+  'ForStatement',
+  'ForInStatement',
+  'ForOfStatement',
+],);
+
+/** Matches inter-declarator slices that consist only of whitespace and commas. */
+const SAFE_TO_FIX = /^[\s,]*$/u;
+
+/**
+ * Enforces one declarator per line in `var`/`let`/`const`/`using` declarations.
+ *
+ * Operates in `'always'` mode: every multi-declarator declaration is flagged
+ * whenever two consecutive declarators share a source line, regardless of
+ * whether either has an initializer.
+ *
+ * Declarations inside `for`/`for-in`/`for-of` init positions are skipped
+ * because the for-statement init slot is not a top-level statement and the
+ * one-per-line shape would be syntactically meaningless there.
+ *
+ * The autofix inserts `,\n<indent>` between same-line declarators. When the
+ * inter-declarator source slice contains a comment (anything beyond
+ * whitespace and `,`), the fix is suppressed so the comment is preserved;
+ * the violation is still reported.
+ *
+ * @example
+ * ```ts
+ * // Bad
+ * const a = 1, b = 2;
+ * let x, y;
+ *
+ * // Good
+ * const a = 1,
+ *   b = 2;
+ * let x,
+ *   y;
+ * ```
+ */
+export const oneVarDeclarationPerLine: CreateOnceRule = {
+  meta: {
+    type: 'layout',
+    fixable: 'whitespace',
+    docs: {
+      description:
+        'Require each variable declarator to be on its own line when two or more share a declaration.',
+      recommended: true,
+    },
+    messages: {
+      expectVarOnNewline: 'Expected variable declaration to be on a new line.',
+    },
+  },
+  createOnce(context: Context,): VisitorWithHooks {
+    /**
+     * Checks consecutive declarator pairs and reports those that share a line.
+     *
+     * @param node - VariableDeclaration AST node
+     */
+    function checkDeclaration(node: Span,): void {
+      const {
+        declarations,
+        parent,
+      } = node as Span & {
+        declarations: Span[];
+        parent?: { type: string; };
+      };
+      if (
+        (parent !== undefined)
+        && FOR_PARENT_TYPES.has(parent.type,)
+      ) {
+        return;
+      }
+
+      if (declarations.length < 2)
+        return;
+
+      const sourceText = context.sourceCode.getText();
+      const baseIndent = baseIndentAt({
+        sourceText,
+        offset: rangeOf(node,)[0],
+      },);
+      const childIndent = `${baseIndent}  `;
+
+      for (let i = 1; i < declarations.length; i++) {
+        const prev = at({
+          arr: declarations,
+          index: i - 1,
+        },);
+        const curr = at({
+          arr: declarations,
+          index: i,
+        },);
+        const prevRange = rangeOf(prev,);
+        const currRange = rangeOf(curr,);
+
+        if (
+          lineAt({
+            sourceText,
+            offset: prevRange[1],
+          },) !== lineAt({
+            sourceText,
+            offset: currRange[0],
+          },)
+        ) {
+          continue;
+        }
+
+        const between = sourceText.slice(
+          prevRange[1],
+          currRange[0],
+        );
+        const canFix = SAFE_TO_FIX.test(between,);
+
+        context.report({
+          node: curr,
+          messageId: 'expectVarOnNewline',
+          ...canFix
+            ? {
+              fix(fixer: Fixer,): ReturnType<Fixer['replaceTextRange']> {
+                return fixer.replaceTextRange(
+                  [
+                    prevRange[1],
+                    currRange[0],
+                  ],
+                  `,\n${childIndent}`,
+                );
+              },
+            }
+            : {},
+        },);
+      }
+    }
+
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+    return {
+      VariableDeclaration: checkDeclaration,
+    } as VisitorWithHooks;
+  },
+};

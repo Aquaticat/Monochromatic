@@ -160,6 +160,11 @@ export const styleRules: DummyRuleMap = {
   'stylistic/destructure-per-line': 'warn',
   //endregion stylistic
 
+  //region stylistic: statement boundaries
+  'stylistic/one-var-declaration-per-line': 'warn',
+  'stylistic/max-statements-per-line': 'warn',
+  //endregion stylistic: statement boundaries
+
   //region stylistic: expression structure
   'stylistic/no-mixed-operators': 'warn',
   //endregion stylistic: expression structure

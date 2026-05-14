@@ -18,8 +18,8 @@ import spawn from 'nano-spawn';
 type OxlintDiagnostic = {
   /** Human-readable error message. */
   readonly message: string;
-  /** Rule identifier in `plugin(rule-name)` format. */
-  readonly code: string;
+  /** Rule identifier in `plugin(rule-name)` format. Absent for runner-level errors. */
+  readonly code?: string;
   /** `"error"` or `"warning"`. */
   readonly severity: string;
   /** Source file path relative to cwd. */
@@ -108,7 +108,9 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
   const output: OxlintOutput = JSON.parse(stdout,);
 
   return output.diagnostics.filter(function isStylisticRule(diagnostic,): boolean {
-    return diagnostic.code.startsWith('stylistic(',);
+    // Defensive: some runner-level error diagnostics omit `code` entirely.
+    return (typeof diagnostic.code === 'string')
+      && diagnostic.code.startsWith('stylistic(',);
   },);
 }
 
@@ -120,8 +122,8 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
  * @returns sorted array of unique `stylistic(rule-name)` codes
  */
 function uniqueRules(diagnostics: readonly OxlintDiagnostic[],): readonly string[] {
-  const codes = diagnostics.map(function getCode(d,): string {
-    return d.code;
+  const codes = diagnostics.flatMap(function getCode(d,): string[] {
+    return d.code === undefined ? [] : [d.code,];
   },);
   const deduped: string[] = [...new Set<string>(codes,),];
   deduped.sort();
@@ -317,6 +319,32 @@ await describe({
         },),
       ],
     },),
+    describe({
+      name: 'one-var-declaration-per-line',
+      children: [
+        it({
+          name: 'reports multi-declarator declarations on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/one-var-declaration-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(one-var-declaration-per-line)',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'max-statements-per-line',
+      children: [
+        it({
+          name: 'reports multiple statements on the same line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/max-statements-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(max-statements-per-line)',);
+          },
+        },),
+      ],
+    },),
 
     //endregion Invalid fixtures
 
@@ -364,7 +392,8 @@ await describe({
             const diagnostics = await lint('invalid/fixable.copy.ts',);
             const stylisticDiags = diagnostics.filter(
               function isStylistic(d,): boolean {
-                return d.code.startsWith('stylistic(',);
+                return (typeof d.code === 'string')
+                  && d.code.startsWith('stylistic(',);
               },
             );
             expect(stylisticDiags,).toEqual([],);
@@ -461,6 +490,12 @@ await describe({
             // Object properties should be on separate lines
             expect(fixedContent,).toContain("  host: 'localhost',",);
             expect(fixedContent,).toMatch(/\s+port: 3000\n/,);
+
+            // Multi-declarator declaration should be split across lines.
+            expect(fixedContent,).toMatch(/const m = 1,\n\s+n = 2;/,);
+
+            // Two statements on a line should be split across lines.
+            expect(fixedContent,).toMatch(/const p = 10;\nconst q = 20;/,);
 
             cleanupFile(fixableCopy,);
           },

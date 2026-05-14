@@ -5,6 +5,7 @@ import type {
   Span,
 } from '@oxlint/plugins';
 
+import { baseIndentAt, } from './indent.ts';
 import { lineAt, } from './line-at.ts';
 import {
   at,
@@ -129,15 +130,10 @@ export function buildParamFix({
   context,
 }: BuildParamFixParams,): ReturnType<Fixer['replaceText']> {
   /** Detect base indentation from the line containing `(`. */
-  const lineStart = sourceText.lastIndexOf(
-    '\n',
-    openParen - 1,
-  ) + 1;
-  const linePrefix = sourceText.slice(
-    lineStart,
-    openParen,
-  );
-  const baseIndent = /^(\s*)/.exec(linePrefix,)?.[1] ?? '';
+  const baseIndent = baseIndentAt({
+    sourceText,
+    offset: openParen,
+  },);
   const childIndent = `${baseIndent}  `;
 
   const paramTexts = params.map(

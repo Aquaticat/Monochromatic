@@ -18,7 +18,12 @@ by requiring explicit parentheses at operator boundaries.
 
 All per-line rules are auto-fixable via `oxlint --fix`.
 
-- **param-per-line** -- each function parameter on its own line (declarations, expressions, arrows)
+- **param-per-line** -- each function parameter on its own line.
+  Covers `FunctionDeclaration`, `FunctionExpression`, `ArrowFunctionExpression`
+  and the full TypeScript function-like set:
+  `TSFunctionType`, `TSDeclareFunction`, `TSMethodSignature`,
+  `TSCallSignatureDeclaration`, `TSConstructSignatureDeclaration`,
+  `TSConstructorType`, `TSEmptyBodyFunctionExpression`.
 - **argument-per-line** -- each function call argument on its own line (`CallExpression`, `NewExpression`)
 - **array-element-per-line** -- each array literal element on its own line
 - **object-property-per-line** -- each object literal property on its own line
@@ -27,6 +32,18 @@ All per-line rules are auto-fixable via `oxlint --fix`.
 - **type-property-per-line** -- each type literal or interface member on its own line
 - **tuple-per-line** -- each tuple type element on its own line
 - **destructure-per-line** -- each destructured property on its own line
+
+### Statement boundaries
+
+- **one-var-declaration-per-line** -- each declarator in a `var`/`let`/`const`/`using` declaration on its own line.
+  Operates in `'always'` mode: every multi-declarator declaration is flagged
+  regardless of whether declarators have initializers.
+  Auto-fixable; fix is suppressed if a comment lives between declarators (preserves the comment).
+- **max-statements-per-line** -- at most one statement per source line.
+  Single-child container parents (`if`/`while`/`for`/`labeled`/`export-default`/`export-named`)
+  exempt their inner statement, so `if (a) foo();` is allowed; the alternate branch of `if`/`else`
+  is not exempt, so `if (a) foo(); else bar();` flags `bar()`.
+  Auto-fixable; fix is suppressed if a comment lives between statements (preserves the comment).
 
 ### Expression structure
 
@@ -53,6 +70,11 @@ export default defineConfig({
 **Union/intersection types excluded**: a `union-per-line` rule was prototyped but dropped.
 Inline type assertions like `Span & Record<string, unknown>` and `T | null | undefined`
 generated too much noise to be worth enforcing.
+
+**Blank-line rules excluded**: `lines-between-*`, `lines-around-*`, and `padding-line-between-*`
+rules are intentionally out of scope.
+Vertical whitespace stays with dprint plus local judgment;
+this plugin enforces item boundaries and expression structure only.
 
 **Minimum 2 items**: single-item constructs are never flagged.
 An array with one element or a function with one parameter stays on one line.

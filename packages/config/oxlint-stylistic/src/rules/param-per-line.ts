@@ -17,23 +17,41 @@ import {
 } from '../utility/range.ts';
 
 /**
- * Enforces one parameter per line in function declarations and expressions.
+ * Enforces one parameter per line in function declarations, function
+ * expressions, arrow functions, and the full TypeScript function-like
+ * node set: `TSFunctionType`, `TSDeclareFunction`, `TSMethodSignature`,
+ * `TSCallSignatureDeclaration`, `TSConstructSignatureDeclaration`,
+ * `TSConstructorType`, and `TSEmptyBodyFunctionExpression`.
  *
  * In ESTree (used by oxlint JS plugins), `node.params` is a plain array
  * of parameter nodes without a wrapper container. This rule handles the
  * detection and fix logic directly instead of delegating to
  * `checkItemsPerLine`, which expects a container node with delimiters.
  *
+ * The autofix replaces only the source range `[openParen, closeParen + 1]`,
+ * so syntactic prefixes (`new` for constructor types and construct signatures)
+ * and tails (`=> void`, `: void;`) of every covered shape are preserved.
+ *
  * @example
  * ```ts
  * // Bad
  * function create(name: string, age: number): void {}
+ * type F = (a: string, b: number) => void;
+ * declare function ambient(a: string, b: number): void;
  *
  * // Good
  * function create(
  *   name: string,
  *   age: number,
  * ): void {}
+ * type F = (
+ *   a: string,
+ *   b: number,
+ * ) => void;
+ * declare function ambient(
+ *   a: string,
+ *   b: number,
+ * ): void;
  * ```
  */
 export const paramPerLine: CreateOnceRule = {
@@ -115,6 +133,13 @@ export const paramPerLine: CreateOnceRule = {
       FunctionDeclaration: checkFunction,
       FunctionExpression: checkFunction,
       ArrowFunctionExpression: checkFunction,
+      TSFunctionType: checkFunction,
+      TSDeclareFunction: checkFunction,
+      TSMethodSignature: checkFunction,
+      TSCallSignatureDeclaration: checkFunction,
+      TSConstructSignatureDeclaration: checkFunction,
+      TSConstructorType: checkFunction,
+      TSEmptyBodyFunctionExpression: checkFunction,
     } as VisitorWithHooks;
   },
 };
