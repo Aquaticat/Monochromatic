@@ -156,6 +156,7 @@ function computeExtent(
     dim: DataDimKey;
   },
 ): readonly [number, number,] {
+  /** Known dim readings (unknowns stripped) so `Math.min`/`Math.max` see only real numbers. */
   const values = probes
     .map(function pluck(probe,) {
       return extractDim({
@@ -190,6 +191,7 @@ function computeFullRanges(
     dimMapping: DimMapping;
   },
 ): RangeState {
+  /** Per-channel `[channel, extent]` tuples; feeds `Object.fromEntries` to build the record. */
   const entries = CHANNEL_KEYS.map(function rangeForChannel(channel,) {
     return [
       channel,
@@ -199,6 +201,7 @@ function computeFullRanges(
       },),
     ] as const;
   },);
+  /** Channel-to-extent record before the unsafe cast back to `RangeState`. */
   const record = Object.fromEntries(entries,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Object.fromEntries() returns Record<string, V>; the entries above exhaust ChannelKey.
   return record as RangeState;
@@ -287,6 +290,7 @@ export function encodeState(
  */
 function validateAppState(value: unknown,): AppState | null {
   if (typeof value !== 'object' || value === null) return null;
+  /** Top-level `AppState` fields that must all be present for the shape check to pass. */
   const required: readonly (keyof AppState)[] = [
     'viewState',
     'dimMapping',
@@ -295,6 +299,7 @@ function validateAppState(value: unknown,): AppState | null {
     'search',
     'displayToggles',
   ];
+  /** `true` only when every required field is present on the parsed object. */
   const has = required.every(function present(key,) {
     return key in value;
   },);
@@ -326,9 +331,12 @@ export function decodeState(
   { encoded, }: { encoded: string; },
 ): AppState | null {
   try {
+    /** URI-decoded JSON payload extracted from the hash. */
     const json = decodeURIComponent(encoded,);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; validateAppState narrows below.
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; validateAppState narrows below. */
+    /** Untrusted parsed JSON; downgraded to `unknown` so `validateAppState` is the only narrowing path. */
     const parsed = JSON.parse(json,) as unknown;
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     return validateAppState(parsed,);
   } catch {
     return null;
@@ -366,11 +374,15 @@ export function readStateFromHash(
     fallback: AppState;
   },
 ): AppState {
+  /** Hash with the leading `#` removed so `state=` always appears at offset 0 or after `&`. */
   const stripped = hash.startsWith('#',) ? hash.slice(1,) : hash;
+  /** Regex match groups for the `state=` parameter; `null` means no payload to decode. */
   const match = /(?:^|&)state=([^&]+)/.exec(stripped,);
   if (match === null) return fallback;
+  /** Captured URL-encoded payload from the `state=` parameter. */
   const encoded = match[1];
   if (encoded === undefined) return fallback;
+  /** Round-tripped state, or `null` when the payload fails to parse or validate. */
   const decoded = decodeState({
     encoded,
   },);

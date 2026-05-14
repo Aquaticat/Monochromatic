@@ -98,12 +98,17 @@ export const sphereGeometry: Geometry = new SphereGeometry({
  * @returns A `Geometry` ready to feed into `SimpleMeshLayer.mesh`.
  */
 function buildOctahedronGeometry(): Geometry {
+  /** Eight-face count; drives every typed-array size below. */
   const faceCount = OCTAHEDRON_FACE_INDICES.length;
+  /** Interleaved per-face vertex positions; written face-by-face inside the loop. */
   const positions = new Float32Array(faceCount * FLOATS_PER_FACE_VEC3,);
+  /** Per-vertex normals; each face's three corners share the same face normal. */
   const normals = new Float32Array(faceCount * FLOATS_PER_FACE_VEC3,);
+  /** Per-vertex UVs; every face uses the same triangle so the canvas texture renders identically per side. */
   const texCoords = new Float32Array(faceCount * FLOATS_PER_FACE_VEC2,);
   /** Looks up an octahedron vertex by index; throws on out-of-range. */
   function vertexAt(i: number,): readonly [number, number, number,] {
+    /** Vertex tuple from the canonical table; out-of-range becomes an explicit error rather than a silent `undefined`. */
     const v = OCTAHEDRON_VERTICES[i];
     if (v === undefined) throw new Error(`octahedron vertex index out of range: ${i.toString()}`,);
     return v;
@@ -112,13 +117,19 @@ function buildOctahedronGeometry(): Geometry {
     [a, b, c,],
     faceIndex,
   ) {
+    /** First corner of the triangle being emitted. */
     const vA = vertexAt(a,);
+    /** Second corner of the triangle being emitted. */
     const vB = vertexAt(b,);
+    /** Third corner of the triangle being emitted. */
     const vC = vertexAt(c,);
     /** Face-centroid sum component × `SQRT_3_INV` = octahedral unit normal. */
     const nx = (vA[0] + vB[0] + vC[0]) * SQRT_3_INV;
+    /** Y component of the same face normal. */
     const ny = (vA[1] + vB[1] + vC[1]) * SQRT_3_INV;
+    /** Z component of the same face normal. */
     const nz = (vA[2] + vB[2] + vC[2]) * SQRT_3_INV;
+    /** Byte-flat write cursor for the position buffer; advances three vec3 slots per face. */
     const posOffset = faceIndex * FLOATS_PER_FACE_VEC3;
     positions[posOffset + 0] = vA[0];
     positions[posOffset + 1] = vA[1];
@@ -129,6 +140,7 @@ function buildOctahedronGeometry(): Geometry {
     positions[posOffset + 6] = vC[0];
     positions[posOffset + 7] = vC[1];
     positions[posOffset + 8] = vC[2];
+    /** Write cursor for the normal buffer; identical stride to {@link posOffset}. */
     const norOffset = faceIndex * FLOATS_PER_FACE_VEC3;
     normals[norOffset + 0] = nx;
     normals[norOffset + 1] = ny;

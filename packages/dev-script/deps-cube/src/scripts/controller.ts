@@ -100,6 +100,7 @@ type Session = {
  * @throws When `window.__PROBES__` was not injected.
  */
 function getProbes(): readonly PackageProbe[] {
+  /** Probe array injected onto `window` by `render-html.ts`; `undefined` signals a broken bundle. */
   const probes = window.__PROBES__;
   if (probes === undefined) throw new Error('window.__PROBES__ not injected; check render-html.ts',);
   return probes;
@@ -150,6 +151,7 @@ function recomputeVisibility(
     search: session.state.search,
     dimMapping: session.state.dimMapping,
   },);
+  /** Counter element under the canvas; missing in tests / partial pages, so we no-op when absent. */
   const counter = document.getElementById('visibility-counter',);
   if (counter !== null) counter.textContent = `${session.visibleIndices.size.toString()} of ${probes.length.toString()} visible`;
 }
@@ -170,6 +172,7 @@ function rerenderLayers(
     probes: readonly PackageProbe[];
   },
 ): void {
+  /** Layer list rebuilt from current session inputs; pushed to `Deck` via `setProps`. */
   const layers = buildLayers({
     probes,
     state: session.state,
@@ -208,6 +211,7 @@ function syncHash(
  * @returns `{ html }` for hovered probes, `null` otherwise.
  */
 function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
+  /** Probe under the cursor, or `null` for hover-over-empty-space. */
   const probe = pickedProbe(info,);
   if (probe === null) return null;
   return {
@@ -224,6 +228,7 @@ function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
  * @param info - deck.gl picking info.
  */
 function onCanvasClick(info: PickingInfo,): void {
+  /** Probe under the click, or `null` for miss-clicks that should unpin instead of pin. */
   const probe = pickedProbe(info,);
   if (probe === null) {
     unpinTooltip();
@@ -252,16 +257,19 @@ function onCanvasClick(info: PickingInfo,): void {
 function createSession(
   { probes, }: { probes: readonly PackageProbe[]; },
 ): Session {
+  /** Initial `AppState`; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults. */
   const initial = readStateFromHash({
     hash: window.location.hash,
     fallback: defaultState({
       probes,
     },),
   },);
+  /** Per-channel data extents used by every layer factory; recomputed only when the dim mapping changes. */
   const bounds = computeSceneBounds({
     probes,
     dimMapping: initial.dimMapping,
   },);
+  /** Set of probe indices that pass the initial filter combination; drives full-vs-faded opacity. */
   const visibleIndices = computeVisibleIndices({
     probes,
     toggles: initial.toggles,
@@ -269,7 +277,9 @@ function createSession(
     search: initial.search,
     dimMapping: initial.dimMapping,
   },);
+  /** Current light/dark scheme snapshot; passed through to layer factories for colour selection. */
   const chrome = detectScheme();
+  /** deck.gl `Deck` instance bound to the `#deck-canvas` element; layers, view state, and tooltips wire through this. */
   const deck = new Deck<OrbitView>({
     canvas: 'deck-canvas',
     views: orbitView,
@@ -287,6 +297,7 @@ function createSession(
     getTooltip: getTooltipForInfo,
     onClick: onCanvasClick,
   },);
+  /** Mutable session bundle; every wire handler reads and writes through this single object. */
   const session: Session = {
     state: initial,
     bounds,
@@ -296,6 +307,7 @@ function createSession(
   };
   deck.setProps({
     onViewStateChange: function onViewStateChange(params,) {
+      /** Latest view-state delta from deck.gl; copied into the session so hash sync can serialise it. */
       const v = params.viewState;
       session.state.viewState = {
         target: v.target,
@@ -317,7 +329,9 @@ function createSession(
  * the URL hash, and updates the visibility counter.
  */
 function start(): void {
+  /** Embedded probe payload; throws via {@link getProbes} when the global is missing. */
   const probes = getProbes();
+  /** Hydrated session for this page load. */
   const session = createSession({
     probes,
   },);

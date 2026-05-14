@@ -131,10 +131,15 @@ function formatBool(value: boolean | null,): string {
 export function formatTooltipHtml(
   { probe, }: { probe: PackageProbe; },
 ): string {
+  /** Escaped npm name so the header is injection-safe. */
   const name = escapeHtml(probe.npmName,);
+  /** Escaped resolved version paired with the name in the tooltip header. */
   const version = escapeHtml(probe.resolvedVersion,);
+  /** Escaped license-class label rendered in the table. */
   const license = escapeHtml(probe.licenseClass,);
+  /** Escaped repository URL, or the literal `"unknown"` when the probe lacks a repo. */
   const repo = probe.repositoryUrlOrNull === null ? 'unknown' : escapeHtml(probe.repositoryUrlOrNull,);
+  /** Optional unknown-reason banner; empty string when the probe has no unknowns to report. */
   const unknown = probe.unknownReason === null ? '' : `<div class="tooltip-unknown">unknown: ${escapeHtml(probe.unknownReason,)}</div>`;
   return `<div class="tooltip">
       <div class="tooltip-name">${name}@${version}</div>
@@ -167,11 +172,14 @@ export function formatTooltipHtml(
  * @returns The `<aside>` element used for pinned tooltips.
  */
 function ensurePinElement(): HTMLElement {
+  /** Existing pinned-tooltip element from a previous `ensurePinElement` call, or `null` on first use. */
   const existing = document.getElementById(PINNED_ID,);
   if (existing !== null) return existing;
+  /** Fresh outer `<aside>` element that owns the pinned-tooltip surface. */
   const aside = document.createElement('aside',);
   aside.id = PINNED_ID;
   aside.hidden = true;
+  /** Close button child whose click handler hides the pinned tooltip. */
   const close = document.createElement('button',);
   close.type = 'button';
   close.className = PINNED_CLOSE_CLASS;
@@ -179,6 +187,7 @@ function ensurePinElement(): HTMLElement {
   close.addEventListener('click', function onCloseClick() {
     unpinTooltip();
   },);
+  /** Inner content wrapper whose `innerHTML` is replaced on every pin. */
   const content = document.createElement('div',);
   content.className = PINNED_CONTENT_CLASS;
   aside.append(close, content,);
@@ -199,7 +208,9 @@ function ensurePinElement(): HTMLElement {
 export function pinTooltip(
   { probe, }: { probe: PackageProbe; },
 ): void {
+  /** Pinned-tooltip `<aside>`, created on first use. */
   const aside = ensurePinElement();
+  /** Content wrapper inside the aside; `null` only if the DOM was tampered with externally. */
   const content = aside.querySelector<HTMLDivElement>(`.${PINNED_CONTENT_CLASS}`,);
   if (content === null) return;
   content.innerHTML = formatTooltipHtml({
@@ -217,6 +228,7 @@ export function pinTooltip(
  * ```
  */
 export function unpinTooltip(): void {
+  /** Pinned-tooltip element, if it was ever created; missing element is a no-op. */
   const aside = document.getElementById(PINNED_ID,);
   if (aside === null) return;
   aside.hidden = true;

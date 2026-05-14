@@ -115,25 +115,30 @@ function buildProbeLayer(
     positionOverride?: readonly [number, number, number,] | undefined;
   },
 ): Layer {
+  /** `true` when the probe passes every filter; drives the layer's `opacity`. */
   const isVisible = visibleIndices.has(datum.originalIndex,);
+  /** Probe's fill colour computed at full opacity so the baked texture stays opaque. */
   const color = probeFillColor({
     probe: datum.probe,
     state,
     bounds,
     isVisible: true,
   },);
+  /** Same colour with a fixed alpha so the texture canvas paints solid pixels (layer opacity handles fading). */
   const opaqueColor: Rgba = [
     color[0],
     color[1],
     color[2],
     TEXTURE_ALPHA,
   ];
+  /** Probe-specific texture canvas (colour, optional name) reused as the mesh texture. */
   const texture = makeProbeTexture({
     probe: datum.probe,
     fillColor: opaqueColor,
     shape,
     withName: bake,
   },);
+  /** World-space position; honours the unknown-cluster override before falling back to the data-driven position. */
   const pos = positionOverride ?? probePosition({
     probe: datum.probe,
     state,
@@ -142,6 +147,7 @@ function buildProbeLayer(
     0,
     0,
   ];
+  /** Per-probe scale factor; deck.gl's `getScale` returns the same value on every axis. */
   const radius = probeRadiusWorld({
     probe: datum.probe,
     state,
@@ -197,10 +203,12 @@ export function buildLeafScatterLayer(
     visibleIndices: ReadonlySet<number>;
   },
 ): readonly Layer[] {
+  /** Leaf-only partition; non-leaf and unknown probes are handled by sibling factories. */
   const { leaf, } = partitionProbes({
     probes,
     state,
   },);
+  /** Set of probe indices whose npm name should be baked into the texture this frame. */
   const nameSet = computeNameBakeSet({
     probes,
     state,
@@ -244,10 +252,12 @@ export function buildNonLeafScatterLayer(
     visibleIndices: ReadonlySet<number>;
   },
 ): readonly Layer[] {
+  /** Non-leaf partition; leaves and unknown probes are handled by sibling factories. */
   const { nonLeaf, } = partitionProbes({
     probes,
     state,
   },);
+  /** Set of probe indices whose npm name should be baked into the texture this frame. */
   const nameSet = computeNameBakeSet({
     probes,
     state,
@@ -291,15 +301,18 @@ export function buildUnknownClusterLayer(
     visibleIndices: ReadonlySet<number>;
   },
 ): readonly Layer[] {
+  /** Unknown-bucket partition; leaves and non-leaves are handled by sibling factories. */
   const { unknown, } = partitionProbes({
     probes,
     state,
   },);
+  /** Set of probe indices whose npm name should be baked into the texture this frame. */
   const nameSet = computeNameBakeSet({
     probes,
     state,
   },);
   return unknown.map(function asLayer(datum,) {
+    /** Jittered cluster position so unknown probes don't stack at the same point. */
     const pos = unknownClusterPosition({
       index: datum.originalIndex,
       bounds,

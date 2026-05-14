@@ -123,7 +123,9 @@ export type Cache = {
  * @returns Absolute path to the default cache root directory.
  */
 function defaultRootDir(): string {
+  /** XDG override; empty or unset falls through to the `$HOME/.cache` default. */
   const xdg = process.env['XDG_CACHE_HOME'];
+  /** Resolved cache home; honours XDG when present, falls back to the conventional location. */
   const cacheHome = xdg !== undefined && xdg !== '' ? xdg : join(homedir(), '.cache',);
   return join(cacheHome, 'monochromatic', 'deps-cube',);
 }
@@ -162,6 +164,7 @@ function filePath(
  */
 async function readFileOrEmpty(path: string,): Promise<CacheFile> {
   try {
+    /** UTF-8 file contents fed to `JSON.parse`; any failure here is caught below as a miss. */
     const raw = await readFile(path, 'utf8',);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; cache files are written only by us.
     return JSON.parse(raw,) as CacheFile;
@@ -187,6 +190,7 @@ async function readFileOrEmpty(path: string,): Promise<CacheFile> {
 export function createCache(
   { rootDir, }: { rootDir?: string; } = {},
 ): Cache {
+  /** Cache root used by every closure on this handle; pinned at construction so later env mutations are ignored. */
   const resolvedRoot = rootDir ?? defaultRootDir();
 
   /**
@@ -204,12 +208,15 @@ export function createCache(
       ttlMs: number | null;
     },
   ): Promise<T | undefined> {
+    /** Absolute on-disk path for this (name, version) pair. */
     const path = filePath({
       name,
       version,
       rootDir: resolvedRoot,
     },);
+    /** Parsed cache file; treats a missing or corrupt file as an empty record. */
     const file = await readFileOrEmpty(path,);
+    /** Stored entry for the requested field, or `undefined` for a miss. */
     const entry = file[field];
     if (entry === undefined) return undefined;
     if (ttlMs !== null && Date.now() - entry.fetchedAt > ttlMs)
@@ -232,12 +239,15 @@ export function createCache(
       value: T;
     },
   ): Promise<void> {
+    /** Destination cache file path. */
     const path = filePath({
       name,
       version,
       rootDir: resolvedRoot,
     },);
+    /** Current file contents preserved across the write so sibling fields aren't clobbered. */
     const existing = await readFileOrEmpty(path,);
+    /** Merged file body to be serialised; new value plus a fresh `fetchedAt` overwrites the matching field. */
     const next: CacheFile = {
       ...existing,
       [field]: {
@@ -246,6 +256,7 @@ export function createCache(
       },
     };
     await mkdir(dirname(path,), { recursive: true, },);
+    /** Sibling temp path used for the atomic write; pid and timestamp avoid collisions between concurrent writes. */
     const tmpPath = `${path}.${process.pid}.${Date.now()}.tmp`;
     await writeFile(tmpPath, JSON.stringify(next, null, 2,), 'utf8',);
     await rename(tmpPath, path,);

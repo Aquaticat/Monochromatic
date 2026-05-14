@@ -79,7 +79,9 @@ export function decodeAlias(
       range: value,
     };
   }
+  /** Catalog value after the `npm:` alias prefix; still contains the optional `@<range>` suffix. */
   const remainder = value.slice('npm:'.length,);
+  /** Position of the version-separating `@`; `lastIndexOf` skips the scope-leading `@`. */
   const atIndex = remainder.lastIndexOf('@',);
   // No '@' or only the scope-leading '@' (index 0) means no range; entire
   // remainder is the aliased package name.
@@ -113,6 +115,7 @@ function entriesFromBlock(
   },
 ): readonly CatalogEntry[] {
   return Object.entries(block,).map(function toEntry([key, value,],): CatalogEntry {
+    /** Real npm package name plus version range, with `npm:` aliases resolved. */
     const {
       npmName,
       range,
@@ -146,6 +149,7 @@ function entriesFromBlock(
 export async function readCatalog(
   { startDir, }: { startDir?: string; } = {},
 ): Promise<readonly CatalogEntry[]> {
+  /** Absolute path to the nearest `pnpm-workspace.yaml` walked up from `startDir`. */
   const workspaceYamlPath = await findUp(
     'pnpm-workspace.yaml',
     startDir === undefined ? undefined : { cwd: startDir, },
@@ -153,14 +157,21 @@ export async function readCatalog(
   if (workspaceYamlPath === undefined)
     throw new Error(`Could not locate pnpm-workspace.yaml by walking up from ${startDir ?? process.cwd()}`,);
 
+  /** UTF-8 text of the workspace file; fed to the YAML parser. */
   const raw = await readFile(workspaceYamlPath, 'utf8',);
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- YAML parse is `unknown`; pnpm-workspace.yaml shape is fixed.
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- YAML parse is `unknown`; pnpm-workspace.yaml shape is fixed. */
+  /** Parsed workspace document, narrowed to the catalog-bearing subset. */
   const parsed = parseYaml(raw,) as WorkspaceYaml;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
+  /** Default `catalog:` block; empty object preserves the rest of the pipeline when absent. */
   const defaultBlock = parsed.catalog ?? {};
+  /** Named `catalogs.*` blocks keyed by catalog name; empty object when the file has only the default catalog. */
   const namedBlocks = parsed.catalogs ?? {};
 
+  /** Flattened entries from the default block, each tagged without a `catalogName`. */
   const defaultEntries = entriesFromBlock({ block: defaultBlock, },);
+  /** Flattened entries from every named block, each tagged with its `catalogName`. */
   const namedEntries = Object.entries(namedBlocks,).flatMap(function expandNamed([catalogName, block,],) {
     return entriesFromBlock({
       block,
@@ -168,6 +179,7 @@ export async function readCatalog(
     },);
   },);
 
+  /** Union of default and named entries returned to callers. */
   const combined = [...defaultEntries, ...namedEntries,];
   if (combined.length === 0)
     throw new Error(`No catalog or catalogs entries found in ${workspaceYamlPath}`,);

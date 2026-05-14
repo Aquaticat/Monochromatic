@@ -306,14 +306,19 @@ function passesRanges(
     dimMapping: DimMapping;
   },
 ): boolean {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Object.keys() returns `string[]`; ChannelKey is the known set of keys.
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.keys() returns `string[]`; ChannelKey is the known set of keys. */
+  /** Channel ids from the dim mapping, retyped so `passOne` sees `ChannelKey`. */
   const channels = Object.keys(dimMapping,) as readonly ChannelKey[];
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   return channels.every(function passOne(channel,) {
+    /** Data dim currently bound to this channel; used to read the probe's value. */
     const dim = dimMapping[channel];
+    /** Lower and upper bounds of the channel's range slider, in displayed-value units. */
     const [
       min,
       max,
     ] = ranges[channel];
+    /** Extracted dim reading for the probe; `null` skips the range constraint. */
     const value = extractDim({
       probe,
       dim,
@@ -352,9 +357,11 @@ export function searchMatches(
   },
 ): boolean {
   if (search === '') return true;
+  /** Lowercased npm name so the substring/regex test is case-insensitive. */
   const name = probe.npmName.toLowerCase();
   if (search.length >= 2 && search.startsWith('/',) && search.endsWith('/',)) {
     try {
+      /** Regex parsed from the `/.../` delimiters; an invalid pattern is caught and falls back to "no match". */
       const pattern = new RegExp(search.slice(1, -1,), 'i',);
       return pattern.test(name,);
     } catch {
@@ -414,6 +421,7 @@ export function computeVisibleIndices(
       probe,
       index,
     ) {
+      /** Conjunction of every filter check; only fully-passing probes contribute their index. */
       const ok = passesToggles({
         probe,
         toggles,
