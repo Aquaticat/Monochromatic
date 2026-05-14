@@ -41,12 +41,15 @@ export function verifySessionStorage(): boolean {
   state.verified = true;
 
   try {
+    /** Sentinel key used only for the probe write/read; removed afterward to avoid polluting real log entries. */
     const testKey = '__monochromatic_verify__';
+    /** Timestamp-based probe value so concurrent verifications never read each other's writes. */
     const testValue = `test-${Date.now()}`;
     globalThis.sessionStorage.setItem(
       testKey,
       testValue,
     );
+    /** Probe value read back from storage; equality with `testValue` proves writes actually persist. */
     const readBack = globalThis.sessionStorage.getItem(testKey,);
     globalThis.sessionStorage.removeItem(testKey,);
     state.available = readBack === testValue;
@@ -67,6 +70,7 @@ function write(record: LogRecord,): void {
     return;
 
   try {
+    /** Counter-incremented storage key so each log entry occupies its own slot; the prefix namespaces them. */
     const key = `${STORAGE_KEY_PREFIX}.${state.lineCounter++}`;
     globalThis.sessionStorage.setItem(
       key,

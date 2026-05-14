@@ -43,6 +43,7 @@ export function tagged({
   l?: Logger;
   tag: string;
 },): Logger {
+  /** Bracketed tag prepended to every message; built once so each log call does one concatenation. */
   const prefix = `[${tag}] `;
   return {
     debug: function debug(message: string,): void {

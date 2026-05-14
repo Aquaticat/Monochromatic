@@ -38,23 +38,30 @@ export async function verifyOpfs(): Promise<boolean> {
   state.verified = true;
 
   try {
+    /** Origin Private File System directory handle that hosts every monochromatic log file. */
     const opfsRoot = await navigator.storage.getDirectory();
+    /** ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name. */
     const timestamp = new Date().toISOString().replaceAll(
       ':',
       '-',
     );
+    /** OPFS handle for the per-run log file, created on first verification and reused for subsequent writes. */
     const fileHandle = await opfsRoot.getFileHandle(
       `monochromatic-${timestamp}.log.jsonl`,
       { create: true, },
     );
     // Write test data and close to flush; getFile() reads stale content
     // while a FileSystemWritableFileStream is still open
+    /** Throwaway writable used only to flush the probe so the next `getFile` returns persisted content. */
     const probeWritable = await fileHandle.createWritable({ keepExistingData: true, },);
+    /** Probe record written and read back to confirm OPFS round-trips writes. */
     const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
     await probeWritable.write(testData,);
     await probeWritable.close();
 
+    /** File snapshot of the probe, taken after closing `probeWritable` so its bytes are flushed. */
     const file = await fileHandle.getFile();
+    /** Probe contents read back; matching the literal `"test":true` proves OPFS persisted the data. */
     const content = await file.text();
     state.available = content.includes('"test":true',);
 

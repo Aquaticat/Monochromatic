@@ -186,13 +186,16 @@ function emitRun(
     level: Level;
   },
 ): void {
+  /** Joined run text; one `\n`-separated string per console call so a long run becomes a single grouped entry rather than N separate ones. */
   const text = records
     .map(function formatOne(r,) {
       return formatRecord(r,);
     },)
     .join('\n',);
   try {
+    /** Name (not the function reference) of the matching `console.*` method; resolved lazily so post-import hot patches still apply. */
     const method = LEVEL_TO_CONSOLE_METHOD[level];
+    /** Resolved console method looked up by name; may be missing or non-callable in stripped runtimes, which the guard handles. */
     const consoleFn = console[method];
     if (typeof consoleFn === 'function') {
       consoleFn.call(
@@ -242,6 +245,7 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
       runs,
       record,
     ) {
+      /** Trailing run being extended; new same-level records append onto it, otherwise a fresh run is opened. */
       const tail = runs.at(-1,);
       if (tail !== undefined && tail.level === record.level) {
         tail.records.push(record,);
@@ -274,6 +278,12 @@ function flushBuffer(): void {
   if (buffer.length === 0)
     return;
 
+  /**
+   * Snapshot of buffered records drained before the loop.
+   *
+   * Using `splice(0)` empties the buffer atomically so any record enqueued
+   * during emission lands in the next flush rather than this one.
+   */
   const records = buffer.splice(0,);
   for (const run of groupRuns(records,)) {
     emitRun({
@@ -310,6 +320,7 @@ export function verifyConsole(): boolean {
       return state.available;
     }
 
+    /** Sample `console.debug` reference used only to check the method actually exists in the host; absent in some stripped runtimes. */
     const testFn = console.debug;
     if (typeof testFn !== 'function') {
       state.available = false;

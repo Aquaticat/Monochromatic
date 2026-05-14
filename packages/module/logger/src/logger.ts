@@ -80,6 +80,7 @@ async function initialize(): Promise<void> {
 
   for (const entry of sinkEntries) {
     try {
+      /** Verification return value (sync boolean or Promise); the next line awaits conditionally so sync sinks add no microtask. */
       const result = entry.verify();
       // oxlint-disable-next-line no-await-in-loop -- Sinks must be verified sequentially to avoid race conditions
       entry.available = result instanceof Promise ? await result : result;
@@ -125,12 +126,14 @@ function createMethod(level: Level,): (message: string,) => void {
     if (!state.hasAvailableSink && state.initialized)
       throw new Error('No logging backends available',);
 
+    /** Subset of sinks that survived verification; filtered fresh per call so a sink that drops out is excluded next time. */
     const available = sinkEntries.filter(function isAvailable(entry,) {
       return entry.available === true;
     },);
     if (available.length === 0)
       return;
 
+    /** Shared LogRecord forwarded to every available sink; built once per call so all sinks see the same timestamp. */
     const record: LogRecord = {
       level,
       message,
@@ -139,6 +142,7 @@ function createMethod(level: Level,): (message: string,) => void {
 
     available.forEach(function writeToSink(entry,) {
       try {
+        /** Sink write return value (void or Promise); when a Promise, its rejection marks the sink unavailable rather than crashing the caller. */
         const result = entry.sink.write(record,);
         if (result instanceof Promise) {
           // Fire-and-forget: awaiting would make the logger blocking
@@ -179,6 +183,7 @@ function createMethod(level: Level,): (message: string,) => void {
 async function flushAll(): Promise<void> {
   await Promise.all(
     sinkEntries.map(async function runFlush(entry,) {
+      /** Optional sink-supplied flush hook; absent when the sink writes synchronously and needs no draining. */
       const sinkFlush = entry.sink.flush;
       if (entry.available !== true || typeof sinkFlush !== 'function')
         return;

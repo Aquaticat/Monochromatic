@@ -74,11 +74,13 @@ export async function findNodeModulesUp(
     join: typeof Join;
   },
 ): Promise<string | undefined> {
+  /** Directory being tested in this iteration; either resolves to a node_modules or triggers the walk to the parent. */
   const candidate = join(
     cwd,
     'node_modules',
   );
   try {
+    /** Stat result for `candidate`; only directories count as a hit, guarding against a sibling file also named `node_modules`. */
     const entry = await stat(candidate,);
     if (entry.isDirectory())
       return candidate;
@@ -86,6 +88,7 @@ export async function findNodeModulesUp(
   catch {
     /* ENOENT or similar; keep walking up */
   }
+  /** Parent directory used by the next recursive step; equal to `cwd` only at the filesystem root, which terminates the walk. */
   const parent = dirname(cwd,);
   if (parent === cwd)
     return undefined;
@@ -118,7 +121,9 @@ async function runVerify(): Promise<boolean> {
 
   try {
     // Dynamic import for Node.js modules: cache appendFile for use in fileSink.write
+    /** Dynamically imported `node:fs/promises`; held in this scope so its members are reused without re-importing. */
     const fs = await import('node:fs/promises');
+    /** Path utilities dynamically imported alongside `fs`; needed by the upward search for the closest node_modules. */
     const {
       dirname,
       join,
@@ -126,6 +131,7 @@ async function runVerify(): Promise<boolean> {
 
     state.appendFile = fs.appendFile;
 
+    /** Resolved absolute path of the closest ancestor `node_modules`, or undefined when none exists (e.g. a stray cwd). */
     const nodeModulesDir = await findNodeModulesUp({
       cwd: process.cwd(),
       stat: fs.stat,
@@ -147,6 +153,7 @@ async function runVerify(): Promise<boolean> {
       return false;
     }
 
+    /** Directory under the chosen `node_modules` where every monochromatic log file lands. */
     const LOG_DIR = join(
       nodeModulesDir,
       '.monochromatic',
@@ -156,6 +163,7 @@ async function runVerify(): Promise<boolean> {
       { recursive: true, },
     );
 
+    /** ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name. */
     const timestamp = new Date().toISOString().replaceAll(
       ':',
       '-',
@@ -166,11 +174,13 @@ async function runVerify(): Promise<boolean> {
     );
 
     // Verify by writing and reading test data
+    /** Probe record written and read back to confirm the chosen file path round-trips. */
     const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
     await state.appendFile(
       state.filePath,
       testData,
     );
+    /** Probe contents read back; matching the literal `"test":true` proves the append + read path works end-to-end. */
     const content = await fs.readFile(
       state.filePath,
       'utf8',
