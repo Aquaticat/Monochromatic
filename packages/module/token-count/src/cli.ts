@@ -48,7 +48,7 @@ if (args.files.length === 0)
   throw new Error('At least one FILE argument is required',);
 
 /** Model override from `--model` flag, or `undefined` for the default. */
-const model = typeof args.model === 'string' ? args.model : undefined;
+const model = ((typeof args.model) === 'string') ? args.model : undefined;
 /** Configuration object passed to each `countFileTokens` call. */
 const config = model !== undefined ? { model, } : {};
 

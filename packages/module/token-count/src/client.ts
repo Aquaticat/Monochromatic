@@ -54,7 +54,7 @@ function resolveApiKey(explicit: string | undefined,): string | undefined {
   for (const envVar of API_KEY_ENV_VARS) {
     /** Treat empty-string env vars as unset so a blank shell export does not shadow later fallbacks. */
     const value = process.env[envVar];
-    if (value !== undefined && value !== '')
+    if ((value !== undefined) && (value !== ''))
       return value;
   }
   return undefined;
