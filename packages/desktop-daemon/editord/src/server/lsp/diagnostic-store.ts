@@ -81,6 +81,7 @@ export class DiagnosticStore {
         new Map(),
       );
     }
+    /** URI-keyed inner map; guaranteed by the `set` above but typed as optional. */
     const sourceMap = this.#store.get(uri,);
     if (sourceMap === undefined)
       return;
@@ -93,6 +94,7 @@ export class DiagnosticStore {
         prev,
         i,
       ) {
+        /** Counterpart in the new array; undefined on length mismatch (handled above). */
         const next = diagnostics[i];
         if (next === undefined)
           return false;
@@ -129,6 +131,7 @@ export class DiagnosticStore {
       }
     }
 
+    /** Filesystem path returned to the broadcast handler; the wire form was URI. */
     const path = uriToPath({ uri, },);
     this.#onDiagnostics({
       path,

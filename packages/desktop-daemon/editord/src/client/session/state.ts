@@ -78,6 +78,7 @@ export function saveSessionState({
   state: SessionState;
 },): void {
   try {
+    /** Composite localStorage key keyed on filesystem id + root dir. */
     const key = storageKey({
       fsId,
       rootDir,
@@ -114,10 +115,12 @@ export function restoreSessionState({
   rootDir: string;
 },): SessionState | null {
   try {
+    /** Composite localStorage key keyed on filesystem id + root dir. */
     const key = storageKey({
       fsId,
       rootDir,
     },);
+    /** Raw JSON string; null indicates no saved state for this key. */
     const raw = localStorage.getItem(key,);
     if (raw === null)
       return null;

@@ -99,7 +99,9 @@ async function sweepOrphanTemps(
   },
 ): Promise<void> {
   try {
+    /** Snapshot of directory contents prior to filtering for stale temp files. */
     const entries = await readdir(path,);
+    /** Stale temp files left over from interrupted writes; subset of `entries`. */
     const orphans = entries.filter(
       function isOrphan(name,): boolean {
         return EDITORD_TEMP_PATTERN.test(name,);
@@ -107,6 +109,7 @@ async function sweepOrphanTemps(
     );
     if (orphans.length === 0)
       return;
+    /** Settled results so a single unlink failure does not mask the rest. */
     const results = await Promise.allSettled(
       orphans.map(
         function removeOrphan(name,): Promise<void> {
@@ -119,6 +122,7 @@ async function sweepOrphanTemps(
         },
       ),
     );
+    /** Rejected promises only; surfaced in the warn branch below. */
     const failed = results.filter(
       function isRejection(r,): boolean {
         return r.status === 'rejected';
@@ -185,6 +189,7 @@ export class DirWatcher {
     if (this.#watchers.has(path,))
       return;
 
+    /** Per-directory chokidar instance; depth 0 keeps the watch shallow. */
     const fsWatcher = chokidarWatch(
       path,
       {
@@ -230,6 +235,7 @@ export class DirWatcher {
    * @param path - absolute file path to suppress
    */
   suppressPath({ path, }: { path: string; },): void {
+    /** Captured for the timer callback because `this` rebinds inside `setTimeout`. */
     const self = this;
     self.#suppressed.add(path,);
     globalThis.setTimeout(
@@ -242,6 +248,7 @@ export class DirWatcher {
 
   /** Closes all watchers. */
   async close(): Promise<void> {
+    /** Settled together so one failed watcher close does not block the others. */
     const closes = [...this.#watchers.values(),].map(
       function closeOne(w,) {
         return w.close();
@@ -270,6 +277,7 @@ export class DirWatcher {
       path: string;
     },
   ): void {
+    /** Captured for the listener closures because chokidar invokes them with its own `this`. */
     const self = this;
 
     /**
@@ -360,6 +368,7 @@ export class DirWatcher {
    * @param path - directory path to stop watching
    */
   #removeWatcher({ path, }: { path: string; },): void {
+    /** Already-removed watcher returns silently rather than throwing. */
     const fsWatcher = this.#watchers.get(path,);
     if (fsWatcher === undefined)
       return;

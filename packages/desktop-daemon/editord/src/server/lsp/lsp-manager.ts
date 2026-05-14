@@ -151,12 +151,16 @@ export function createLspManager({
   onDiagnostics: DiagnosticsHandler;
   l: Logger;
 },): LspManager {
+  /** Tagged logger forwarded to all subsystems so log lines stay attributable. */
   const managerLog = tagged({
     tag: 'lsp',
     l,
   },);
+  /** Per-file diagnostic aggregator that fans out to the manager's `onDiagnostics`. */
   const diagnostics = new DiagnosticStore({ onDiagnostics, },);
+  /** URI-keyed document state shared across the didOpen/didChange/didClose helpers. */
   const documents = new Map<string, DocumentState>();
+  /** LSP server pool keyed by `<type>:<root>`; each entry is lazy. */
   const pool = new LspPool({
     ceiling,
     l: managerLog,

@@ -56,6 +56,7 @@ const VIDEO_EXTENSIONS = new Set([
 export function getMediaKind(
   { path, }: { path: string; },
 ): Extract<FileKind, 'image' | 'audio' | 'video'> | null {
+  /** Lowercased extension so the extension sets stay case-insensitive. */
   const ext = extname(path,).toLowerCase();
   if (IMAGE_EXTENSIONS.has(ext,))
     return 'image';
@@ -103,6 +104,7 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
  * ```
  */
 export function getContentType({ path, }: { path: string; },): string {
+  /** Lowercased extension keyed against {@link CONTENT_TYPE_MAP} below. */
   const ext = extname(path,).toLowerCase();
   return CONTENT_TYPE_MAP[ext] ?? 'application/octet-stream';
 }

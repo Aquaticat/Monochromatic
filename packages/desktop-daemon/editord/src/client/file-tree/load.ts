@@ -54,6 +54,7 @@ export function loadDirChildren({
   detail: DirOpenDetail;
   state: FileTreeState;
 },): void {
+  /** Destructured up-front so the closure below references stable bindings, not `detail.x` reads. */
   const {
     path,
     childrenContainer,
@@ -63,8 +64,10 @@ export function loadDirChildren({
   state.loadedDirs.add(path,);
   state.onDirExpanded?.(path,);
 
+  /** Tracked in `loadPromises` so concurrent expansions can coalesce. */
   const loadPromise = (async function load(): Promise<void> {
     try {
+      /** Pulled out of the prefetch cache; rendered immediately for perceived responsiveness. */
       const cached = state.prefetchCache.get(path,);
       state.prefetchCache.delete(path,);
 
@@ -82,8 +85,10 @@ export function loadDirChildren({
 
       // Always verify with a fresh fetch: prefetch cache can be stale
       // when files are created after the parent directory was expanded
+      /** Fresh listing from the server; replaces the cached render below. */
       const entries = await (state.fetchDir?.(path,) ?? Promise.resolve([],));
 
+      /** Authoritative DOM children built from the fresh listing. */
       const children = createEntryElements({
         parentPath: path,
         entries,
@@ -139,9 +144,11 @@ export function createEntryElements({
   entries: DirEntry[];
   recentPaths: string[];
 },): HTMLElement[] {
+  /** Built once outside the map so per-entry recency lookups are O(1). */
   const recencyIndex = buildRecencyIndex({ recentPaths, },);
 
   return entries.map(function createEntry(entry,) {
+    /** Joined parent + entry name; reused for path-based attributes below. */
     const fullPath = childPath({
       parentPath,
       name: entry.name,

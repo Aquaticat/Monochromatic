@@ -36,12 +36,14 @@ export async function shutdownPoolForPath({
 },): Promise<void> {
   /** Collect matching entries for concurrent shutdown. */
   const toRemove: string[] = [];
+  /** Pool entries whose root contains `path`; each gets its own concurrent shutdown. */
   const matching: {
     key: string;
     promise: Promise<LspClient | null>;
   }[] = [];
 
   for (const [key, promise,] of pool.entries()) {
+    /** Project root extracted from the composite pool key. */
     const root = rootFromPoolKey({ key, },);
     if (isWithinRoot({
       root,
@@ -62,6 +64,7 @@ export async function shutdownPoolForPath({
       promise,
     },): Promise<void> {
       try {
+        /** Resolved client; null when the spawn never succeeded. */
         const client = await promise;
         if (client !== null)
           await client.shutdown();
@@ -98,6 +101,7 @@ export async function shutdownAllPooled({
   await Promise.all(
     [...pool.values(),].map(async function shutdownClient(promise,): Promise<void> {
       try {
+        /** Resolved client; null when the spawn never succeeded. */
         const c = await promise;
         if (c !== null)
           await c.shutdown();

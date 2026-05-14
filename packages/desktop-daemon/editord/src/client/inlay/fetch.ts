@@ -45,15 +45,18 @@ export async function fetchInlayHints({
   editorPane: EditorPane;
   getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
+  /** Skip when no file is open; LSP needs a target. */
   const path = getCurrentFilePath();
   if (path === null)
     return;
 
   try {
+    /** Whole-document range so the inlay query covers every line. */
     const range = editorPane.getDocumentRange();
     if (range === null)
       return;
 
+    /** Hints destructured directly; the rest of the response is unused here. */
     const { hints, } = await ws.request({
       type: 'inlayHint',
       path,

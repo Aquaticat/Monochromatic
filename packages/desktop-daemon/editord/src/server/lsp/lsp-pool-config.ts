@@ -59,6 +59,7 @@ export function buildPoolKey({
  * ```
  */
 export function rootFromPoolKey({ key, }: { key: string; },): string {
+  /** Negative one collapses to slice(0), returning the whole key when no separator exists. */
   const colonIndex = key.indexOf(POOL_KEY_SEPARATOR,);
   return key.slice(colonIndex + 1,);
 }
@@ -157,19 +158,24 @@ export async function spawnLspClient({
     recentStderr: string;
   },) => void;
 },): Promise<LspClient | null> {
+  /** Per-server-type spawn definition: command, args, init opts. */
   const def = COMMANDS[type];
+  /** Project-local bin dir prepended to PATH so workspace tooling resolves first. */
   const binPath = join(
     root,
     'node_modules/.bin',
   );
+  /** Environment passed to the child; PATH gets the project bin dir prepended. */
   const env = {
     ...process.env,
     PATH: `${binPath}${delimiter}${process.env.PATH ?? ''}`,
   };
 
+  /** LSP wire format expects a URI for the workspace root. */
   const rootUri = pathToUri({ path: root, },);
 
   try {
+    /** Client wrapper around the spawned LSP child process. */
     const c = new LspClient({
       command: def.command,
       args: [...def.args,],

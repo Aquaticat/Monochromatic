@@ -49,6 +49,7 @@ export function applyDiagnosticHighlights({
   }
 
   for (const diagnostic of diagnostics) {
+    /** DOM Range for the diagnostic; null when the position is out of bounds. */
     const range = createDiagnosticRange({
       editor,
       diagnostic,
@@ -59,7 +60,9 @@ export function applyDiagnosticHighlights({
 
   /** Register or remove highlights for each severity level. */
   for (const level of SEVERITY_LEVELS) {
+    /** CSS highlight registry key per severity level. */
     const highlightName = `diag-${level}`;
+    /** Per-level range list; undefined was filled in the loop above. */
     const ranges = bySeverity.get(level,);
     if (ranges === undefined)
       continue;

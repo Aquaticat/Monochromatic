@@ -55,11 +55,14 @@ export type JsonRpcMessage = JsonRpcRequest | JsonRpcNotification | JsonRpcRespo
  * ```
  */
 export function encodeLspMessage({ message, }: { message: unknown; },): Buffer {
+  /** Stringified message; serves as the JSON-RPC body before UTF-8 encoding. */
   const json = JSON.stringify(message,);
+  /** UTF-8 encoded body; needed for the Content-Length byte count below. */
   const content = Buffer.from(
     json,
     'utf8',
   );
+  /** LSP-style framing header preceded by an empty line per the spec. */
   const header = `Content-Length: ${content.byteLength}\r\n\r\n`;
   return Buffer.concat([
     Buffer.from(

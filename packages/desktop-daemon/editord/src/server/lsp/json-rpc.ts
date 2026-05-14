@@ -58,6 +58,7 @@ export function createLspParser({
   let totalLength = 0;
   /** Consolidated buffer: rebuilt from chunks only when needed for parsing. */
   let buffer = Buffer.alloc(0,);
+  /** -1 means no header parsed yet; reset to -1 after consuming the body. */
   let contentLength = -1;
 
   /**
@@ -85,16 +86,19 @@ export function createLspParser({
       while (true) {
         if (contentLength === -1) {
           consolidate();
+          /** -1 means the header is not yet complete in the buffer; wait for more data. */
           const headerEnd = buffer.indexOf(HEADER_SEPARATOR,);
           if (headerEnd === -1)
             return;
 
+          /** Header text decoded as ASCII so the Content-Length scan stays cheap. */
           const header = buffer
             .subarray(
               0,
               headerEnd,
             )
             .toString('ascii',);
+          /** null means the header lacks Content-Length; skip past it and resume. */
           const match = CONTENT_LENGTH_PATTERN.exec(header,);
           if (match === null) {
             buffer = buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
@@ -112,6 +116,7 @@ export function createLspParser({
           return;
         consolidate();
 
+        /** Body bytes decoded as UTF-8 for `JSON.parse` below. */
         const json = buffer
           .subarray(
             0,
@@ -123,8 +128,10 @@ export function createLspParser({
         contentLength = -1;
 
         try {
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; callers validate via discriminant checks
+          /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; callers validate via discriminant checks */
+          /** Untyped at runtime; downstream handlers gate on discriminants before use. */
           const message = JSON.parse(json,) as JsonRpcMessage;
+          /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
           onMessage(message,);
         }
         catch (error) {

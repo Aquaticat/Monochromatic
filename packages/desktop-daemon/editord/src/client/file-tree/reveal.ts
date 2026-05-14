@@ -37,8 +37,10 @@ export function collectAncestorDirs({
   paths: string[];
   rootLength: number;
 },): Set<string> {
+  /** Set deduplicates ancestors that appear under multiple input paths. */
   const dirs = new Set<string>();
   for (const filePath of paths) {
+    /** Mutated upward to the root by the inner loop. */
     let current = filePath.slice(
       0,
       filePath.lastIndexOf('/',),
@@ -78,12 +80,15 @@ export function findScrollAnchor({
   element: HTMLElement;
   offsetFromViewport: number;
 } | null {
+  /** Reused as the viewport reference frame for every candidate compare below. */
   const hostRect = hostElement.getBoundingClientRect();
+  /** Cached top edge so the loop does not re-read the rect property on every iteration. */
   const viewportTop = hostRect.top;
 
   for (const candidate of tree.querySelectorAll<HTMLElement>(
     'summary, tree-file-entry',
   )) {
+    /** Per-candidate rect compared against the viewport reference frame. */
     const rect = candidate.getBoundingClientRect();
     if (rect.bottom > viewportTop) {
       return {
@@ -115,6 +120,7 @@ export function scrollToFile({
   tree: HTMLDivElement;
   path: string;
 },): void {
+  /** Null when the file is not yet rendered; scroll skipped in that case. */
   const label = tree.querySelector<HTMLElement>(
     `tree-file-entry[data-path="${CSS.escape(path,)}"]`,
   );
@@ -161,6 +167,7 @@ export async function revealFiles(
     restoreExpansion: (opts: { dirs: string[]; },) => Promise<void>;
   },
 ): Promise<void> {
+  /** Deduped ancestor directories that need expanding to reveal `paths`. */
   const dirs = collectAncestorDirs({
     paths,
     rootLength: rootPath.length,
@@ -172,12 +179,14 @@ export async function revealFiles(
       String(paths.length,)
     } recent files`,
   );
+  /** Anchor captured before expansion so its post-expansion shift can be measured. */
   const anchor = findScrollAnchor({
     tree,
     hostElement,
   },);
   await restoreExpansion({ dirs: [...dirs,], },);
   if (anchor !== null) {
+    /** Difference from {@link anchor.offsetFromViewport} drives the scroll correction. */
     const newTop = anchor.element.getBoundingClientRect().top;
     hostElement.scrollTop += newTop - anchor.offsetFromViewport;
   }

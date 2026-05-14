@@ -59,34 +59,43 @@ export function generateHexDump(
     totalSize?: number;
   },
 ): string {
+  /** Original file size; differs from buffer length when caller pre-truncated. */
   const fullSize = totalSize ?? buffer.length;
+  /** Capped output length so very large buffers do not produce unbounded dumps. */
   const limit = Math.min(
     buffer.length,
     HEX_DUMP_MAX_BYTES,
   );
+  /** Accumulator joined with newlines as the final return. */
   const lines: string[] = [];
 
   for (let offset = 0; offset < limit; offset += BYTES_PER_LINE) {
+    /** Padded offset shown at the start of each dump row. */
     const offsetHex = offset.toString(HEX_RADIX,).padStart(
       OFFSET_WIDTH,
       '0',
     );
+    /** Clamps the final row when the buffer is not a multiple of the row width. */
     const end = Math.min(
       offset + BYTES_PER_LINE,
       limit,
     );
+    /** Slice covering this row; up to {@link BYTES_PER_LINE} bytes. */
     const chunk = buffer.subarray(
       offset,
       end,
     );
 
+    /** Per-byte hex strings joined with spaces below. */
     const hexParts: string[] = [];
+    /** ASCII gutter built byte-by-byte alongside the hex parts. */
     let ascii = '';
 
     for (let i = 0; i < BYTES_PER_LINE; i++) {
       if (i === GROUP_BOUNDARY)
         hexParts.push('',);
       if (i < chunk.length) {
+        /** {@link nonNullishOrThrow} replaces the `!` operator banned by AGENTS.md. */
         const byte = nonNullishOrThrow(chunk[i],);
         hexParts.push(byte.toString(HEX_RADIX,).padStart(
           2,

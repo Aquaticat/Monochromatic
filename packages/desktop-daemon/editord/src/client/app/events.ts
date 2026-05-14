@@ -123,8 +123,10 @@ export function wireSelectEvents(
   fileTree.addEventListener(
     'file-select',
     function handleFileSelect(event,) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree */
+      /** Custom-event detail destructured to read the selected file path. */
       const { path, } = (event as CustomEvent<{ path: string; }>).detail;
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       state.currentFilePath = path;
       recordFileOpen(path,);
       void loadFileAndRefreshHints({
@@ -138,11 +140,13 @@ export function wireSelectEvents(
   searchOverlay.addEventListener(
     'result-select',
     function handleResultSelect(event,) {
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay */
+      /** Custom-event detail destructured to read the selected file path and line. */
       const {
         path,
         line,
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
       } = (event as CustomEvent<ResultSelectDetail>).detail;
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       state.currentFilePath = path;
       recordFileOpen(path,);
       void loadFileAndRefreshHints({
@@ -157,12 +161,14 @@ export function wireSelectEvents(
   referencesPopup.addEventListener(
     'reference-select',
     function handleReferenceSelect(event,) {
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup */
+      /** Custom-event detail destructured to read the navigation target. */
       const {
         path,
         line,
         character,
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup
       } = (event as CustomEvent<ReferenceSelectDetail>).detail;
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       state.currentFilePath = path;
       recordFileOpen(path,);
       void loadFileAndRefreshHints({

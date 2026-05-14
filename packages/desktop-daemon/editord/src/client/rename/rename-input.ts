@@ -57,7 +57,9 @@ export class RenameInput extends HTMLElement {
       'manual',
     );
 
+    /** Local alias for the private input field used by both keydown branches below. */
     const input = this.#input;
+    /** Captured for the listener closures because event callbacks rebind `this`. */
     const component = this;
 
     input.addEventListener(
@@ -66,6 +68,7 @@ export class RenameInput extends HTMLElement {
         event.stopPropagation();
         if (event.key === 'Enter') {
           event.preventDefault();
+          /** Whitespace-only entries are dropped to avoid no-op renames. */
           const newName = input.value.trim();
           if (newName !== '') {
             component.dispatchEvent(new CustomEvent(

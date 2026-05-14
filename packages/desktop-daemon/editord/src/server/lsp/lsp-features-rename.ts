@@ -55,7 +55,9 @@ export async function requestPrepareRename({
   line: number;
   character: number;
 },): Promise<PrepareRenameResult | null> {
+  /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
+  /** Raw LSP response normalised into the editord shape below. */
   const result = await client.request({
     method: 'textDocument/prepareRename',
     params: {
@@ -71,8 +73,10 @@ export async function requestPrepareRename({
   if (result === null || result === undefined)
     return null;
 
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP prepareRename returns Range | { range, placeholder } | null
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- LSP prepareRename returns Range | { range, placeholder } | null */
+  /** Loosely typed record so the shape branches below stay readable. */
   const raw = result as Record<string, unknown>;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
   /**
    * tsgo returns `{ range, placeholder }` when prepareProvider is true.
@@ -133,7 +137,9 @@ export async function requestRename({
   character: number;
   newName: string;
 },): Promise<LspWorkspaceEdit | null> {
+  /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
+  /** WorkspaceEdit from LSP; null indicates no rename was produced. */
   const result = await client.request({
     method: 'textDocument/rename',
     params: {

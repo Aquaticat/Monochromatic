@@ -33,12 +33,15 @@ const ORDER_BASE = 128;
  * ```
  */
 export function nameToOrder({ name, }: { name: string; },): number {
+  /** Case-folded copy keeps mixed-case sibling files sorted alphabetically. */
   const lower = name.toLowerCase();
+  /** Capped iteration count keeps the accumulator below Number.MAX_SAFE_INTEGER. */
   const limit = Math.min(
     lower.length,
     ORDER_CHARS,
   );
   // Mutable accumulator shifted left by ORDER_BASE per character
+  /** Built up as a base-{@link ORDER_BASE} number from the first `limit` code points. */
   let order = 0;
   for (let index = 0; index < limit; index++)
     order = order * ORDER_BASE + (lower.codePointAt(index,) ?? 0);

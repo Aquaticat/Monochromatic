@@ -85,15 +85,19 @@ export function moveSearchSelection({
   if (results.length === 0)
     return selectedIndex;
 
+  /** Live collection of rendered result rows. */
   const { children, } = container;
+  /** Currently-selected row whose dataset flag must be cleared before reassignment. */
   const previous = children[selectedIndex];
   if (previous !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
     delete (previous as HTMLElement).dataset['selected'];
   }
 
+  /** Wraps the new index modulo length so navigation cycles. */
   const newIndex = (selectedIndex + delta + results.length) % results.length;
 
+  /** Newly-selected row receiving the `data-selected` flag and viewport scroll. */
   const current = children[newIndex];
   if (current !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
@@ -126,6 +130,7 @@ export function buildResultDetail({
   index: number;
   results: SearchResult[];
 },): ResultSelectDetail | null {
+  /** Out-of-range index returns null instead of throwing. */
   const result = results[index];
   if (result === undefined)
     return null;

@@ -66,6 +66,7 @@ export function applyLineAnnotation({
   lineDiags: Diagnostic[] | undefined;
   spaceRatio: number;
 },): void {
+  /** Accumulator for the inlay rows joined into the dataset attribute below. */
   const rows: string[] = [];
 
   if (lineHints !== undefined) {
@@ -79,6 +80,7 @@ export function applyLineAnnotation({
       },
     );
 
+    /** Mutated as hints are appended; flushed to {@link rows} on overlap. */
     let rowText = '';
     /**
      * Cursor in monospace character units, used only for the overlap
@@ -87,7 +89,9 @@ export function applyLineAnnotation({
     let cursor = 0;
 
     for (const hint of sorted) {
+      /** Rendered hint string; used for both row append and cursor advance. */
       const label = formatHintLabel({ hint, },);
+      /** Column the hint anchors to; compared against {@link cursor} for overlap. */
       const charPos = hint.position.character;
 
       if (rowText === '' || charPos >= cursor) {
@@ -108,6 +112,7 @@ export function applyLineAnnotation({
       else {
         /** Overlaps previous hint; flush current row and start fresh. */
         rows.push(rowText,);
+        /** Approximates the column offset using {@link spaceRatio} from canvas measurement. */
         const indent = ' '.repeat(Math.round(charPos * spaceRatio,),);
         rowText = indent + label;
         cursor = charPos + label.length;
@@ -120,6 +125,7 @@ export function applyLineAnnotation({
 
   if (lineDiags !== undefined) {
     for (const diagnostic of lineDiags) {
+      /** Approximates the diagnostic's column using {@link spaceRatio}. */
       const indent = ' '.repeat(
         Math.round(diagnostic.range.start.character * spaceRatio,),
       );

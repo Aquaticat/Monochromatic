@@ -26,9 +26,12 @@ export function groupByLine<T,>({
   items: T[];
   keyFn: (item: T,) => number;
 },): Map<number, T[]> {
+  /** Line-keyed map; values are accumulated as items are processed. */
   const groups = new Map<number, T[]>();
   for (const item of items) {
+    /** Computed once per item to avoid two `keyFn` calls in the get/set pair. */
     const key = keyFn(item,);
+    /** Existing bucket reused; undefined triggers lazy creation. */
     let group = groups.get(key,);
     if (group === undefined) {
       group = [];

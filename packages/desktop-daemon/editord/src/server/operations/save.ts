@@ -64,10 +64,12 @@ export async function saveFile(
     content: string;
   },
 ): Promise<string> {
+  /** Resolved root-rebased path required by the atomic write below. */
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
   },);
+  /** Existing content; equality with `content` makes the write a no-op. */
   const existing = await readExistingOrNull(absolutePath,);
   if (existing === content)
     return absolutePath;

@@ -32,14 +32,18 @@ export function findTextOffset({
   node: Text;
   offset: number;
 } | null {
+  /** SHOW_TEXT walker keeps the loop body free of element-node guards. */
   const walker = document.createTreeWalker(
     lineDiv,
     NodeFilter.SHOW_TEXT,
   );
+  /** Decrements as the walker advances; the matching node is the one that goes non-positive. */
   let remaining = charOffset;
+  /** Walker cursor; null means the offset is past the end of the line. */
   let textNode = walker.nextNode();
 
   while (textNode !== null) {
+    /** Defensive default keeps the count advancing past nodes with null content. */
     const len = textNode.textContent?.length ?? 0;
     if (remaining <= len) {
       return {
@@ -76,15 +80,19 @@ export function createDiagnosticRange({
   editor: HTMLElement;
   diagnostic: Diagnostic;
 },): globalThis.Range | null {
+  /** Out-of-bounds line index returns null instead of throwing. */
   const startDiv = editor.children[diagnostic.range.start.line];
+  /** Out-of-bounds line index returns null instead of throwing. */
   const endDiv = editor.children[diagnostic.range.end.line];
   if (startDiv === undefined || endDiv === undefined)
     return null;
 
+  /** Resolved DOM position; null when the start column is past end-of-line. */
   const startPos = findTextOffset({
     lineDiv: startDiv,
     charOffset: diagnostic.range.start.character,
   },);
+  /** Resolved DOM position; null when the end column is past end-of-line. */
   const endPos = findTextOffset({
     lineDiv: endDiv,
     charOffset: diagnostic.range.end.character,
@@ -92,6 +100,7 @@ export function createDiagnosticRange({
   if (startPos === null || endPos === null)
     return null;
 
+  /** Mutable Range built up across the next few setStart/setEnd calls. */
   const range = document.createRange();
   range.setStart(
     startPos.node,

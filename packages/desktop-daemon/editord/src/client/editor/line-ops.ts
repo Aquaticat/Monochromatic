@@ -35,6 +35,7 @@ export function deleteLineAt({
   line: number;
   character: number;
 } {
+  /** Live HTMLCollection so subsequent edits observe the post-removal length. */
   const { children, } = editor;
   if (children.length <= 1) {
     /** Single line: clear it instead of removing. */
@@ -47,6 +48,7 @@ export function deleteLineAt({
     };
   }
 
+  /** Out-of-range index returns the cursor unchanged rather than throwing. */
   const lineDiv = children[line];
   if (lineDiv === undefined) {
     return {
@@ -95,9 +97,11 @@ export function duplicateLineAt({
   line: number;
   character: number;
 } | null {
+  /** Source line for the duplicate; null result signals out-of-range. */
   const lineDiv = editor.children[line];
   if (lineDiv === undefined)
     return null;
+  /** Deep clone so child nodes (highlights) replicate, not share references. */
   const clone = lineDiv.cloneNode(true,);
   lineDiv.after(clone,);
   return {
@@ -134,11 +138,14 @@ export function swapLineDown({
   line: number;
   character: number;
 } | null {
+  /** Length needed before grabbing the neighbour to confirm the move is in range. */
   const { children, } = editor;
   if (line >= children.length - 1)
     return null;
 
+  /** Element being moved past its successor. */
   const currentDiv = children[line];
+  /** Successor that becomes the predecessor after the swap. */
   const nextDiv = children[line + 1];
   if (currentDiv === undefined || nextDiv === undefined)
     return null;
@@ -181,8 +188,11 @@ export function swapLineUp({
   if (line <= 0)
     return null;
 
+  /** Live HTMLCollection used to look up both neighbour divs. */
   const { children, } = editor;
+  /** Element being moved past its predecessor. */
   const currentDiv = children[line];
+  /** Predecessor that becomes the successor after the swap. */
   const prevDiv = children[line - 1];
   if (currentDiv === undefined || prevDiv === undefined)
     return null;

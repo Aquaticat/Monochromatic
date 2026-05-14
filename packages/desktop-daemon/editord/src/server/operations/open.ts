@@ -61,13 +61,16 @@ export async function openFile(
     path: string;
   },
 ): Promise<OpenResult> {
+  /** Resolved root-rebased path used by every downstream filesystem call. */
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
   },);
 
+  /** Null falls through to the binary probe path below. */
   const mediaKind = getMediaKind({ path, },);
   if (mediaKind !== null) {
+    /** Optional metadata (dimensions, duration); omitted from the response when null. */
     const mediaInfo = await probeMedia({ path: absolutePath, },);
     return {
       kind: mediaKind,
@@ -79,7 +82,9 @@ export async function openFile(
 
   /** Probe first bytes for null to detect binary without reading the entire file. */
   await using handle = await fsOpen(absolutePath,);
+  /** Holds only the head bytes; reused as the prefix when concatenating the tail later. */
   const probe = Buffer.alloc(BINARY_PROBE_SIZE,);
+  /** Actual byte count may be less than the buffer for files smaller than the probe size. */
   const { bytesRead, } = await handle.read(
     probe,
     0,
@@ -96,10 +101,12 @@ export async function openFile(
   {
     /** Binary: read only what hex dump needs instead of the entire file. */
     const { size, } = await handle.stat();
+    /** Capped so very large binaries do not exhaust memory. */
     const dumpLimit = Math.min(
       size,
       HEX_DUMP_MAX_BYTES,
     );
+    /** Sized to {@link dumpLimit} so the read fits without an extra slice. */
     const dumpBuffer = Buffer.alloc(dumpLimit,);
     await handle.read(
       dumpBuffer,
@@ -120,6 +127,7 @@ export async function openFile(
 
   /** Read the remainder from the already-open handle instead of re-reading the full file. */
   const { size, } = await handle.stat();
+  /** Tail length needed; ≤ 0 means the probe already captured the whole file. */
   const remaining = size - bytesRead;
   if (remaining <= 0) {
     return {
@@ -134,6 +142,7 @@ export async function openFile(
       size,
     };
   }
+  /** Concatenated with the probe to form the full file contents. */
   const tail = Buffer.alloc(remaining,);
   await handle.read(
     tail,

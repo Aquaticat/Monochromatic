@@ -27,8 +27,10 @@ export const MAX_HIGHLIGHT_BYTES = FILE_SIZE_WARNING_THRESHOLD;
  */
 export function getLineTexts({ editor, }: { editor: HTMLDivElement; },): string[] {
   return [...editor.children,].map(function readLine(div,) {
-    // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- textContent is typed as `string | null` in DOM; null when node has no text
+    /* oxlint-disable typescript-eslint/no-unnecessary-condition -- textContent is typed as `string | null` in DOM; null when node has no text */
+    /** Defensive default keeps empty divs producing the empty string rather than null. */
     const text = div.textContent ?? '';
+    /* oxlint-enable typescript-eslint/no-unnecessary-condition */
     return text === '\n' ? '' : text;
   },);
 }
@@ -58,10 +60,14 @@ export function findLineForOffset({
   offset: number;
   lineStarts: readonly number[];
 },): number {
+  /** Binary-search lower bound; mutated as the search narrows. */
   let lo = 0;
+  /** Binary-search upper bound; ends one before length so out-of-range returns last. */
   let hi = lineStarts.length - 1;
   while (lo <= hi) {
+    /** Unsigned right shift halves without overflowing for very long files. */
     const mid = (lo + hi) >>> 1;
+    /** Cumulative offset at the candidate line; undefined breaks the loop. */
     const start = lineStarts[mid];
     if (start === undefined)
       break;

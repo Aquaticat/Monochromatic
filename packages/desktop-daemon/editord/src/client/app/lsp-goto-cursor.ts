@@ -68,7 +68,9 @@ export function performGotoAtCursor(
   },
 ): void {
   hoverPopup.hide();
+  /** Cursor coords sent to LSP definition/references requests. */
   const pos = editorPane.getCursorPosition();
+  /** Screen rect anchors the toast and references popup. */
   const rect = editorPane.getCursorRect();
   if (pos === null || rect === null) {
     cursorLog.info('could not resolve editor cursor position',);
@@ -121,6 +123,7 @@ async function navigateOrFindReferences({
   character: number;
   rect: DOMRect;
 },): Promise<void> {
+  /** Outcome literal driving the branch chain below. */
   const result = await doGotoDefinition({
     ws,
     getCurrentFilePath,

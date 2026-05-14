@@ -52,6 +52,7 @@ export function childPath(
 export function buildRecencyIndex(
   { recentPaths, }: { recentPaths: readonly string[]; },
 ): Map<string, number> {
+  /** Position-keyed map; lower index means more recent. */
   const index = new Map<string, number>();
   recentPaths.forEach(function indexRecent(
     path,
@@ -77,7 +78,9 @@ const MAX_PREFETCH_CACHE_SIZE = 200;
 function evictPrefetchCache({ cache, }: { cache: Map<string, DirEntry[]>; },): void {
   if (cache.size <= MAX_PREFETCH_CACHE_SIZE)
     return;
+  /** Number of oldest entries to drop so the cache returns under cap. */
   const excess = cache.size - MAX_PREFETCH_CACHE_SIZE;
+  /** Counter compared against {@link excess} to stop the eviction loop. */
   let removed = 0;
   for (const key of cache.keys()) {
     if (removed >= excess)
@@ -122,10 +125,12 @@ export async function preloadChildren({
         return entry.isDirectory;
       },)
       .map(async function prefetchDir(entry,) {
+        /** Joined parent + entry name; cache key for the prefetched listing. */
         const fullPath = childPath({
           parentPath,
           name: entry.name,
         },);
+        /** Listing stored under {@link fullPath} for the next on-demand expansion. */
         const children = await fetchDir(fullPath,);
         prefetchCache.set(
           fullPath,

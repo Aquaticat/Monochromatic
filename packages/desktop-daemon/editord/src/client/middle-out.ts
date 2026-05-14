@@ -44,6 +44,7 @@ export function middleOut({
   if (text.length <= budget)
     return text;
 
+  /** Case-folded indexOf so queries find matches regardless of case. */
   const matchStart = text.toLowerCase().indexOf(query.toLowerCase(),);
 
   if (matchStart === -1) {
@@ -53,6 +54,7 @@ export function middleOut({
     ) + ELLIPSIS;
   }
 
+  /** End offset of the matched substring; bounds the truncation decisions below. */
   const matchEnd = matchStart + query.length;
 
   // Match near the start: keep start, truncate end
@@ -68,8 +70,11 @@ export function middleOut({
     return ELLIPSIS + text.slice(text.length - budget + 1,);
 
   // Match in the middle: truncate both sides, center on the match
+  /** Remaining budget after reserving space for the query and two ellipses. */
   const contextBudget = budget - query.length - 2;
+  /** Half the context budget rounded down, allocated to the prefix. */
   const before = Math.floor(contextBudget / 2,);
+  /** Remaining context budget allocated to the suffix; absorbs the rounding. */
   const after = contextBudget - before;
 
   return ELLIPSIS + text.slice(

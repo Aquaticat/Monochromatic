@@ -48,15 +48,18 @@ export async function doExpandSelection({
   editorPane: EditorPane;
   getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
+  /** Skip when no file is open; LSP needs a target. */
   const path = getCurrentFilePath();
   if (path === null)
     return;
 
+  /** Cursor coords sent to the LSP `selectionRange` request. */
   const pos = editorPane.getCursorPosition();
   if (pos === null)
     return;
 
   try {
+    /** Innermost-first chain of ranges returned by the LSP. */
     const chain = await fetchChain({
       ws,
       path,
@@ -66,6 +69,7 @@ export async function doExpandSelection({
     if (chain.length === 0)
       return;
 
+    /** Current selection compared against chain entries to pick the next outer range. */
     const currentSel = editorPane.getSelection();
 
     /** No selection or collapsed: apply the innermost range. */
@@ -73,6 +77,7 @@ export async function doExpandSelection({
       || (currentSel.startLine === currentSel.endLine
         && currentSel.startCharacter === currentSel.endCharacter))
     {
+      /** Innermost entry; undefined was guarded out by the length check above. */
       const [first,] = chain;
       if (first !== undefined) {
         editorPane.setSelection(toFlat({ sr: first, },),);
@@ -83,6 +88,7 @@ export async function doExpandSelection({
 
     /** Find the first range strictly larger than the current selection. */
     for (const entry of chain) {
+      /** Flat form needed by {@link strictlyContains}. */
       const flat = toFlat({ sr: entry, },);
       if (strictlyContains({
         outer: flat,

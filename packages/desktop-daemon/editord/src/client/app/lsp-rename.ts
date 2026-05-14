@@ -51,11 +51,14 @@ export async function initiateRename({
   renameInput: RenameInput;
   getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
+  /** Skip when no file is open; LSP needs a target. */
   const path = getCurrentFilePath();
   if (path === null)
     return;
 
+  /** Cursor coords sent to the LSP `prepareRename` request. */
   const pos = editorPane.getCursorPosition();
+  /** Screen rect anchors the toast and rename popover. */
   const rect = editorPane.getCursorRect();
   if (pos === null || rect === null) {
     renameLog.info('could not resolve cursor position for rename',);
@@ -65,6 +68,7 @@ export async function initiateRename({
   renameLog.info(`preparing rename at ${path}:${pos.line}:${pos.character}`,);
 
   try {
+    /** LSP response indicating rename eligibility and an optional placeholder. */
     const result = await ws.request({
       type: 'prepareRename',
       path,
@@ -80,6 +84,7 @@ export async function initiateRename({
       return;
     }
 
+    /** Empty fallback so the input opens with a usable cursor regardless of LSP support. */
     const placeholder = result.placeholder ?? '';
     renameLog.info(`symbol renamable, placeholder: "${placeholder}"`,);
 
@@ -134,6 +139,7 @@ export async function performRename({
   line: number;
   character: number;
 },): Promise<void> {
+  /** Skip when no file is open; LSP needs a target. */
   const path = getCurrentFilePath();
   if (path === null)
     return;
@@ -141,6 +147,7 @@ export async function performRename({
   renameLog.info(`renaming to "${newName}" at ${path}:${line}:${character}`,);
 
   try {
+    /** Workspace edits returned by the LSP rename handler. */
     const result = await ws.request({
       type: 'rename',
       path,
@@ -159,7 +166,9 @@ export async function performRename({
     if (currentFileEdits !== undefined && currentFileEdits.edits.length > 0)
       editorPane.applyTextEdits(currentFileEdits.edits,);
 
+    /** File-count summary used in the post-rename log entry below. */
     const totalFiles = result.edits.length;
+    /** Edit-count summary used in the post-rename log entry below. */
     const totalEdits = result.edits.reduce(
       function countEdits(
         sum,

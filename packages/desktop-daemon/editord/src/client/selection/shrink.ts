@@ -50,19 +50,23 @@ export async function doShrinkSelection({
   editorPane: EditorPane;
   getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
+  /** Skip when no file is open; LSP needs a target. */
   const path = getCurrentFilePath();
   if (path === null)
     return;
 
+  /** Existing selection compared against chain entries to pick the next inner range. */
   const currentSel = editorPane.getSelection();
   if (currentSel === null)
     return;
 
+  /** Cursor coords sent to the LSP `selectionRange` request. */
   const pos = editorPane.getCursorPosition();
   if (pos === null)
     return;
 
   try {
+    /** Innermost-first chain of ranges returned by the LSP. */
     const chain = await fetchChain({
       ws,
       path,
@@ -79,6 +83,7 @@ export async function doShrinkSelection({
      */
     let best: FlatRange | null = null;
     for (const entry of chain) {
+      /** Flat form needed by {@link strictlyContains}. */
       const flat = toFlat({ sr: entry, },);
       /** Without this combined check, the inner `best` comparison would run for non-contained ranges. */
       if (strictlyContains({

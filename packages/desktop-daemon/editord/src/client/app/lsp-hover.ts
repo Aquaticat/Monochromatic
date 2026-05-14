@@ -85,19 +85,23 @@ export function wireHover(
     hoverState.lastChar = -1;
   }
 
+  /** Debounced hover trigger plus its cancel handle, both wired to mouse events below. */
   const {
     debounced: scheduleHover,
     cancel: cancelHover,
   } = createDebounced({
     fn: function doHover() {
+      /** Latest mousemove captured by the listener; null means the cursor left the pane. */
       const me = hoverState.latestMouseEvent;
       if (me === null)
         return;
       if (completionPopup.visible || referencesPopup.visible)
         return;
+      /** Skip when no file is open; LSP needs a target. */
       const path = getCurrentFilePath();
       if (path === null)
         return;
+      /** Resolved cursor coords; null means the point was outside any text node. */
       const pos = editorPane.getPositionFromPoint({
         x: me.clientX,
         y: me.clientY,
@@ -134,8 +138,10 @@ export function wireHover(
     'mouseleave',
     function handleMouseLeave(event,) {
       cancelHover();
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mouseleave is always a MouseEvent
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- mouseleave is always a MouseEvent */
+      /** Narrowed event for the relatedTarget property used in the popup-overlap check below. */
       const me = event as MouseEvent;
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       if (me.relatedTarget === hoverPopup
         || (me.relatedTarget instanceof Node && hoverPopup.contains(me.relatedTarget,)))
       {

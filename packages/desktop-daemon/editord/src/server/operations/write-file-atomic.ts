@@ -80,6 +80,7 @@ const TEMP_SUFFIX_BYTES = 6;
  * ```
  */
 function buildTempPath(path: string,): string {
+  /** Random suffix prevents collisions when multiple writers target the same file. */
   const rand = randomBytes(TEMP_SUFFIX_BYTES,).toString('hex',);
   return join(
     dirname(path,),
@@ -108,8 +109,10 @@ function buildTempPath(path: string,): string {
  */
 async function refuseSymlinkAndReadMode(path: string,): Promise<number | null> {
   try {
+    /** `lstat` (not `stat`) so the symlink check sees the link itself, not its target. */
     const stats = await lstat(path,);
     if (stats.isSymbolicLink()) {
+      /** ELOOP-tagged so the caller can branch on `.code` like a real `fs` error. */
       const symlinkErr: Error & { code?: string; } = new Error(
         `refusing to write through symlink: ${path}`,
       );
@@ -150,6 +153,7 @@ async function writeContentToTemp(
     originalMode: number | null;
   },
 ): Promise<void> {
+  /** `await using` ensures close runs before the caller renames the temp into place. */
   await using fd = await open(
     tempPath,
     TEMP_OPEN_FLAGS,
@@ -217,7 +221,9 @@ export async function writeFileAtomic(
     content: string;
   },
 ): Promise<void> {
+  /** Captured up-front so the temp can inherit the target's mode if it existed. */
   const originalMode = await refuseSymlinkAndReadMode(path,);
+  /** Sibling temp path used for the atomic write-then-rename swap. */
   const tempPath = buildTempPath(path,);
   try {
     await writeContentToTemp({

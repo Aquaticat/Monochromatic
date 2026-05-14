@@ -35,7 +35,9 @@ function relevantClients(
     dprint,
   }: { languageId: string; } & ServerSlots,
 ): LspClient[] {
+  /** Accumulator filled by language-specific gating below. */
   const clients: LspClient[] = [];
+  /** Cached so the gating below does not re-test the language id three times. */
   const isJsTs = JS_TS_LANGUAGE_IDS.has(languageId,);
   if (isJsTs && oxlint !== null && oxlint.initialized)
     clients.push(oxlint,);
@@ -67,7 +69,9 @@ export function didOpen({
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
 },): void {
+  /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
+  /** Resolved once so {@link relevantClients} and the didOpen payload stay in sync. */
   const languageId = getLanguageId({ path, },);
   if (documents.has(uri,)) {
     didClose({
@@ -123,7 +127,9 @@ export function didChange({
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
 },): void {
+  /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
+  /** Skip notifying when the file was never opened to avoid spurious server churn. */
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;
@@ -165,7 +171,9 @@ export function didSave({
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
 },): void {
+  /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
+  /** Skip notifying when the file was never opened to avoid spurious server churn. */
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;
@@ -199,7 +207,9 @@ export function didClose({
   documents: Map<string, DocumentState>;
   servers: ServerSlots;
 },): void {
+  /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
+  /** Skip notifying when the file was never opened to avoid spurious server churn. */
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;

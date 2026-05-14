@@ -113,7 +113,9 @@ export async function performSearch({
     },);
     return;
   }
+  /** Leading `%` toggles content-only mode; stripped from {@link query}. */
   const isContentOnly = raw.startsWith('%',);
+  /** Trimmed pattern sent to the server; empty short-circuits to no-op. */
   const query = isContentOnly ? raw.slice(1,).trim() : raw.trim();
   if (query === '') {
     onResults({
@@ -122,11 +124,14 @@ export async function performSearch({
     },);
     return;
   }
+  /** Monotonic counter used to drop stale results from outdated requests. */
   const generation = ++state.searchGeneration;
   try {
+    /** Raw mixed-kind results before the content-only filter below. */
     const results = await onSearch(query,);
     if (generation !== state.searchGeneration)
       return;
+    /** Mode-gated subset surfaced to the consumer. */
     const filtered = isContentOnly
       ? results.filter(function isContent(r,) {
         return r.kind === 'content';

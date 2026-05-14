@@ -47,7 +47,9 @@ export async function requestGotoDefinition({
   line: number;
   character: number;
 } | null> {
+  /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
+  /** LSP returns Location | Location[] | null; normalised below. */
   const result = await client.request({
     method: 'textDocument/definition',
     params: {
@@ -71,7 +73,8 @@ export async function requestGotoDefinition({
   if (rawLocation === undefined || rawLocation === null)
     return null;
 
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrow from Location shape
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrow from Location shape */
+  /** Narrowed Location view used to read the definition coords. */
   const loc = rawLocation as {
     uri: string;
     range: {
@@ -81,6 +84,8 @@ export async function requestGotoDefinition({
       };
     };
   };
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+  /** Filesystem path returned to the caller; the wire form was URI. */
   const defPath = uriToPath({ uri: loc.uri, },);
   return {
     path: defPath,
@@ -123,7 +128,9 @@ export async function requestReferences({
   line: number;
   character: number;
 }[]> {
+  /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
+  /** Empty / non-array result is mapped to `[]` below. */
   const result = await client.request({
     method: 'textDocument/references',
     params: {
@@ -152,6 +159,7 @@ export async function requestReferences({
   }[])
     .map(
       function convertLocation(loc,) {
+        /** Filesystem path returned to the caller; the wire form was URI. */
         const refPath = uriToPath({ uri: loc.uri, },);
         return {
           path: refPath,

@@ -83,7 +83,9 @@ export class TreeDirEntry extends HTMLElement {
       class: 'children',
     },);
 
+    /** Captured for the listener closures because event callbacks rebind `this`. */
     const entry = this;
+    /** `<summary>` element wired with the right-click context-menu listener. */
     const summary = h({
       tag: 'summary',
       attrs: { 'data-path': this.entryPath, },
@@ -122,8 +124,10 @@ export class TreeDirEntry extends HTMLElement {
       ],
       on: {
         toggle: function handleToggle(event: Event,) {
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle fires on <details>
+          /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- toggle fires on <details> */
+          /** Narrowed event target so the `.open` flag is reachable. */
           const detailsEl = event.currentTarget as HTMLDetailsElement;
+          /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
           if (!detailsEl.open)
             return;
           entry.dispatchEvent(new CustomEvent(
@@ -168,8 +172,10 @@ export function createTreeDirEntry(
     name: string;
   },
 ): TreeDirEntry {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define */
+  /** Custom element instance returned to the caller. */
   const entry = document.createElement('tree-dir-entry',) as TreeDirEntry;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   entry.entryPath = path;
   entry.entryName = name;
   return entry;

@@ -27,6 +27,7 @@ export function renderItems({ items, }: { items: CompletionItem[]; },): HTMLDivE
     item,
     index,
   ) {
+    /** Per-item row populated below; first item gets `data-selected`. */
     const el = h({
       tag: 'div',
       class: 'item',
@@ -66,8 +67,10 @@ export function updateSelection(
     selectedIndex: number;
   },
 ): void {
+  /** Live HTMLCollection of rendered item rows. */
   const { children, } = list;
   for (let i = 0; i < children.length; i++) {
+    /** Per-row element; the dataset flag flips based on whether i matches the selection. */
     const child = children[i];
     if (child instanceof HTMLElement) {
       if (i === selectedIndex) {

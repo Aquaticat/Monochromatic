@@ -54,6 +54,7 @@ export class TreeFileEntry extends HTMLElement {
     );
     this.style.order = String(nameToOrder({ name: this.entryName, },),);
 
+    /** Recency badge slot rendered to the left of the entry name. */
     const toggle = h({
       tag: 'span',
       class: 'toggle',
@@ -72,6 +73,7 @@ export class TreeFileEntry extends HTMLElement {
       },),
     );
 
+    /** Captured for the listener closures because event callbacks rebind `this`. */
     const entry = this;
     this.addEventListener(
       'click',
@@ -139,8 +141,10 @@ export function createTreeFileEntry({
   name: string;
   recencyIndex: number;
 },): TreeFileEntry {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define */
+  /** Custom element instance returned to the caller. */
   const entry = document.createElement('tree-file-entry',) as TreeFileEntry;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   entry.entryPath = path;
   entry.entryName = name;
   entry.recencyIndex = recencyIndex;

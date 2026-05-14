@@ -70,6 +70,7 @@ export async function dispatchMessage(
     dirWatcher: DirWatcher | null;
   },
 ): Promise<void> {
+  /** Untyped intermediate so the shape can be validated before assertion. */
   const raw: unknown = JSON.parse(messageText,);
   if (typeof raw !== 'object'
     || raw === null
@@ -85,11 +86,14 @@ export async function dispatchMessage(
     },);
     return;
   }
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- shape validated above: object with string `type`; individual handlers check discriminants
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- shape validated above: object with string `type`; individual handlers check discriminants */
+  /** Narrowed view used by every handler branch below. */
   const parsed = raw as ClientMessage;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
   try {
     if (parsed.type === 'open') {
+      /** File contents and metadata returned to the requesting peer. */
       const result = await openFile({
         rootDir,
         path: parsed.path,
@@ -112,6 +116,7 @@ export async function dispatchMessage(
       return;
     }
     if (parsed.type === 'save') {
+      /** Resolved path used to suppress the matching watcher event below. */
       const absolutePath = await saveFile({
         rootDir,
         path: parsed.path,
@@ -133,6 +138,7 @@ export async function dispatchMessage(
     }
     // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
     if (parsed.type === 'listDir') {
+      /** Directory entries and metadata returned to the requesting peer. */
       const result = await listDir({
         rootDir,
         path: parsed.path,
@@ -150,6 +156,7 @@ export async function dispatchMessage(
     // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
     if (parsed.type === 'search') {
       peerSearchControllers.get(peer,)?.abort();
+      /** Stored on the peer so a subsequent search request can cancel this one. */
       const controller = new AbortController();
       peerSearchControllers.set(
         peer,
@@ -159,6 +166,7 @@ export async function dispatchMessage(
         rootDir,
         path: parsed.scope,
       },);
+      /** Search hits returned only when the controller has not been aborted. */
       const result = await search({
         rootDir: parsed.scope,
         query: parsed.query,
@@ -209,10 +217,13 @@ export async function dispatchMessage(
     },);
   }
   catch (error) {
+    /** Normalised to a string so the error reply is JSON-safe. */
     const msg = extractErrorMessage({ error, },);
     l.error(`dispatch failed: ${msg}`,);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- `parsed` is from unvalidated JSON cast; requests have `id`, notifications do not
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- `parsed` is from unvalidated JSON cast; requests have `id`, notifications do not */
+    /** Undefined for notifications, suppressing the targeted reply below. */
     const requestId = 'id' in parsed ? (parsed as { id: string; }).id : undefined;
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     if (requestId !== undefined) {
       sendJson({
         peer,

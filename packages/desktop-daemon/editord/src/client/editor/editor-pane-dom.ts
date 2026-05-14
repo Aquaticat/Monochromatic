@@ -20,6 +20,7 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * ```
  */
 export function createEditorElement(): HTMLDivElement {
+  /** Container element with paste-listener wired below. */
   const editor = h({
     tag: 'div',
     class: 'editor',
@@ -91,8 +92,10 @@ export function setTextContent({
 export function getTextContent({ editor, }: { editor: HTMLDivElement; },): string {
   return [...editor.children,]
     .map(function readLine(child,) {
-      // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec
+      /* oxlint-disable typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec */
+      /** Defensive default keeps empty divs producing the empty string rather than null. */
       const t = child.textContent ?? '';
+      /* oxlint-enable typescript-eslint/no-unnecessary-condition */
       return t === '\n' ? '' : t;
     },)
     .join('\n',);
@@ -119,11 +122,14 @@ export function getLineText({
   editor: HTMLDivElement;
   line: number;
 },): string | null {
+  /** Out-of-range line index returns null rather than throwing. */
   const child = editor.children[line];
   if (child === undefined)
     return null;
-  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec
+  /* oxlint-disable typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec */
+  /** Defensive default keeps empty divs producing the empty string rather than null. */
   const t = child.textContent ?? '';
+  /* oxlint-enable typescript-eslint/no-unnecessary-condition */
   return t === '\n' ? '' : t;
 }
 
@@ -150,6 +156,7 @@ export function scrollLineIntoView({
   editor: HTMLDivElement;
   line: number;
 },): void {
+  /** Clamped lookup so out-of-range line numbers fall back to first/last instead of throwing. */
   const child = editor.children[
     Math.max(
       0,

@@ -54,6 +54,7 @@ export function streamRg({
     resolve,
     reject,
   ) {
+    /** Child process whose stdout is parsed line-by-line below. */
     const proc = spawn(
       'rg',
       [
@@ -61,8 +62,11 @@ export function streamRg({
         ...args,
       ],
     );
+    /** Accumulator passed to `resolve` once the process closes or the cap is hit. */
     const results: SearchResult[] = [];
+    /** Carries partial last line between data events. */
     let buffer = '';
+    /** Idempotency guard so close/data races resolve the promise only once. */
     let resolved = false;
 
     /**
@@ -90,6 +94,7 @@ export function streamRg({
       'data',
       function handleData(chunk: Buffer,) {
         buffer += chunk.toString('utf8',);
+        /** Split on newlines; the trailing partial line stays in `buffer`. */
         const lines = buffer.split('\n',);
         /** Keep the last (possibly incomplete) line in the buffer. */
         buffer = lines.pop() ?? '';
@@ -98,6 +103,7 @@ export function streamRg({
           if (line === '')
             continue;
 
+          /** Null skips noise lines (rg JSON envelopes that are not match records). */
           const result = processLine(line,);
           if (result !== null) {
             results.push(result,);
@@ -114,6 +120,7 @@ export function streamRg({
       'close',
       function handleClose() {
         if (buffer !== '') {
+          /** Last partial line salvaged on close so we do not drop the final hit. */
           const result = processLine(buffer,);
           if (result !== null)
             results.push(result,);

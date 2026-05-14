@@ -53,10 +53,12 @@ const DECIMAL_RADIX = 10;
  * @returns resolved port number
  */
 function resolvePort(): number {
+  /** Raw env value (undefined when unset) gates the parse below. */
   const environmentPort = process.env.PORT;
   if (environmentPort === undefined)
     return DEFAULT_PORT;
 
+  /** Decimal-radix parse; NaN falls through to the default. */
   const parsedPort = Number.parseInt(
     environmentPort,
     DECIMAL_RADIX,
@@ -126,6 +128,7 @@ function handleDiagnostics(
 ): void {
   if (connectedPeers.size === 0)
     return;
+  /** Stringified once and reused across all peers in the broadcast loop. */
   const message = JSON.stringify({
     type: 'diagnostics',
     path,
@@ -154,6 +157,7 @@ const dirWatcher = new DirWatcher({
   onChange: function handleFsChange(event,): void {
     if (connectedPeers.size === 0)
       return;
+    /** Stringified once and reused across all peers in the broadcast loop. */
     const message = JSON.stringify({
       type: 'fileChanged',
       path: event.path,
@@ -210,6 +214,7 @@ const server = serve(
     plugins: [
       ws({
         resolve: async function resolveWebSocketHooks(request,) {
+          /** h3 response carrying crossws hooks as a non-standard property. */
           const response = await app.fetch(request,);
           // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-return, typescript/no-explicit-any, typescript-eslint/no-unsafe-type-assertion -- crossws attaches hooks as a non-standard property on the Response object
           return (response as any).crossws;
@@ -254,6 +259,7 @@ async function shutdownApp(
  * remain ref'd after `client.shutdown()` returns; this is the backstop.
  */
 function startShutdownWatchdog(): void {
+  /** Unref'd timer so it does not by itself keep the event loop alive. */
   const watchdog = setTimeout(
     function shutdownWatchdogTimeout(): void {
       httpLog.error(

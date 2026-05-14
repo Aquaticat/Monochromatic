@@ -91,7 +91,9 @@ function searchFiles({
   query: string;
   signal: AbortSignal | undefined;
 },): Promise<SearchResult[]> {
+  /** Smart-case: an uppercase character in the query enables case sensitivity. */
   const caseSensitive = hasUpperCase({ query, },);
+  /** Pre-folded query so the per-line filter does not re-lowercase repeatedly. */
   const normalizedQuery = caseSensitive ? query : query.toLowerCase();
 
   return streamRg({
@@ -102,10 +104,12 @@ function searchFiles({
     maxResults: MAX_FILE_RESULTS,
     signal,
     processLine: function matchFilePath(line,) {
+      /** Relative form keeps the include-test scoped to the project tree, not the absolute path. */
       const relativePath = relative(
         rootDir,
         line,
       );
+      /** Case-folded copy aligned with {@link normalizedQuery} so `.includes` works symmetrically. */
       const candidate = caseSensitive ? relativePath : relativePath.toLowerCase();
 
       if (candidate.includes(normalizedQuery,)) {
@@ -155,13 +159,17 @@ function searchContents({
     signal,
     processLine: function matchContent(line,) {
       try {
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- rg --json output is typed; we only process 'match' entries
+        /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- rg --json output is typed; we only process 'match' entries */
+        /** Untyped intermediate so the discriminant can be checked before narrowing. */
         const parsed = JSON.parse(line,) as RgJsonMatch | { type: string; };
+        /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         if (parsed.type !== 'match')
           return null;
 
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by type check above
+        /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guarded by type check above */
+        /** Narrowed view used to read the rg `data` payload. */
         const match = parsed as RgJsonMatch;
+        /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         return {
           kind: 'content' as const,
           path: match.data.path.text,
@@ -217,6 +225,7 @@ export async function search({
 },): Promise<SearchOperationResult> {
   l.info(`searching for "${query}"`,);
 
+  /** File-path search runs concurrently with the content search to halve wall time. */
   const [files, contents,] = await Promise.all([
     searchFiles({
       rootDir,

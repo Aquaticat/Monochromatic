@@ -47,9 +47,11 @@ const joinedConfigFilesCache = new WeakMap<readonly string[], string>();
  * @returns null-separated string of file names
  */
 function getJoinedConfigFiles(configFiles: readonly string[],): string {
+  /** Cached joined form; avoids re-joining when the same array is reused. */
   const cached = joinedConfigFilesCache.get(configFiles,);
   if (cached !== undefined)
     return cached;
+  /** Null byte cannot appear in filenames, so it is safe as a delimiter. */
   const joined = configFiles.join('\0',);
   joinedConfigFilesCache.set(
     configFiles,
@@ -85,11 +87,14 @@ export function findProjectRoot({
   configFiles: readonly string[];
   ceiling: string;
 },): string | null {
+  /** Composite key encodes startDir, ceiling, and the joined config-file set. */
   const cacheKey = `${startDir}\0${ceiling}\0${getJoinedConfigFiles(configFiles,)}`;
+  /** TTL-gated reuse below avoids hitting the filesystem for recently-resolved paths. */
   const cached = rootCache.get(cacheKey,);
   if (cached !== undefined && Date.now() - cached.storedAt < CACHE_TTL_MS)
     return cached.value;
 
+  /** Walks upward from {@link startDir}; mutated by the loop body. */
   let dir = startDir;
   while (true) {
     for (const file of configFiles) {
@@ -110,6 +115,7 @@ export function findProjectRoot({
     /** Stop if we've reached the ceiling or filesystem root. */
     if (dir === ceiling)
       break;
+    /** Same-as-self means we hit the filesystem root; break to avoid infinite loop. */
     const parent = dirname(dir,);
     if (parent === dir)
       break;

@@ -64,15 +64,18 @@ export async function resolveTsconfigIncludes({
   root: string;
   l: Logger;
 },): Promise<readonly string[]> {
+  /** TTL-gated reuse below avoids respawning tsgo for repeated queries. */
   const cached = includesCache.get(root,);
   if (cached !== undefined && Date.now() - cached.storedAt < CACHE_TTL_MS)
     return cached.patterns;
 
   try {
+    /** Project-local bin dir prepended to PATH so workspace tsgo resolves first. */
     const binPath = join(
       root,
       'node_modules/.bin',
     );
+    /** tsgo --showConfig stdout; parsed as the project's resolved tsconfig. */
     const result = await spawn(
       'tsgo',
       ['--showConfig',],
@@ -85,10 +88,13 @@ export async function resolveTsconfigIncludes({
       },
     );
 
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- tsgo --showConfig always returns { include?: string[] }
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- tsgo --showConfig always returns { include?: string[] } */
+    /** Parsed tsconfig payload narrowed to the `include` field used below. */
     const config = JSON.parse(result.output,) as {
       include?: string[];
     };
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+    /** Empty fallback so the cache stores a usable array even for unconfigured projects. */
     const patterns = config.include ?? [];
 
     includesCache.set(
