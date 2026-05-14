@@ -36,6 +36,7 @@ import { ensureTemplate, } from './template.ts';
  * ```
  */
 export async function update(): Promise<void> {
+  /** Logger scoped to this update call so each per-image step is namespaced. */
   const rl = tagged({
     tag: update.name,
     l,
@@ -43,14 +44,18 @@ export async function update(): Promise<void> {
 
   rl.info('updating all template images unconditionally',);
 
+  /** Flat list of `rm()` promises across every registered image; awaited concurrently below. */
   // Delete all cached base images and templates
   const removePromises = Object.entries(IMAGES,).flatMap(
     function buildRemoveOps([name, spec,],) {
+      /** Pending remove operations for this image; collected so `flatMap` returns a flat array. */
       const ops: Promise<void>[] = [];
+      /** On-disk path of the cached base image for this registry entry. */
       const imagePath = join(
         IMAGES_DIR,
         spec.fileName,
       );
+      /** On-disk path of the cached template qcow2 for this registry entry. */
       const templatePath = join(
         IMAGES_DIR,
         spec.templateFileName,
@@ -70,6 +75,7 @@ export async function update(): Promise<void> {
   );
   await Promise.all(removePromises,);
 
+  /** On-disk path of the cached virtio-win ISO; shared by every Windows registry entry. */
   // Delete cached virtio-win ISO (shared across Windows versions)
   const virtioPath = join(
     IMAGES_DIR,
@@ -80,6 +86,7 @@ export async function update(): Promise<void> {
     await rm(virtioPath,);
   }
 
+  /** Materialised registry entries; iterated serially below and counted for the final summary. */
   // Rebuild all templates sequentially (each may spawn a VM that occupies shared resources)
   const imageEntries = Object.entries(IMAGES,);
   for (const [name, spec,] of imageEntries) {

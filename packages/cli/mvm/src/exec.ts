@@ -58,17 +58,22 @@ export async function exec(
   },
 ): Promise<ExecResult> {
   validateName(name,);
+  /** Logger scoped to this exec call so log lines carry the function name. */
   const rl = tagged({
     tag: exec.name,
     l,
   },);
+  /** Prefixed libvirt domain name; required because libvirt namespaces VMs under {@link VM_PREFIX}. */
   const fullName = `${VM_PREFIX}${name}`;
 
+  /** Per-VM directory holding `meta.json`; used below to determine guest shell. */
   const vmDir = join(
     VMS_DIR,
     name,
   );
+  /** Stored VM metadata; the osFamily and shell drive the guest-exec invocation shape. */
   const meta = await readVmMeta(vmDir,);
+  /** Shell-specific `path` and `arg` array shaped for the guest's native shell. */
   const {
     arg,
     path,
@@ -80,6 +85,7 @@ export async function exec(
 
   rl.debug(`executing command in VM ${name} (${meta.osFamily}, ${path}): ${command}`,);
 
+  /** Serialised `guest-exec` request body; assembled once because the same payload runs the command. */
   const execPayload = JSON.stringify({
     execute: 'guest-exec',
     arguments: {
@@ -89,6 +95,7 @@ export async function exec(
     },
   },);
 
+  /** Raw response text from the initial `guest-exec` call; carries the pid for polling. */
   const execResult = await virsh({
     args: [
       'qemu-agent-command',
@@ -96,11 +103,14 @@ export async function exec(
       execPayload,
     ],
   },);
+  /** Parsed exec response narrowed to the pid carrier; pid is destructured next. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
   const execParsed = JSON.parse(execResult,) as { return: { pid: number; }; };
+  /** Guest process id assigned by the QEMU guest agent; reused on every poll. */
   const { pid, } = execParsed.return;
   rl.debug(`guest-exec started with pid ${String(pid,)}`,);
 
+  /** Serialised `guest-exec-status` request body; reused inside the polling loop. */
   const statusPayload = JSON.stringify({
     execute: 'guest-exec-status',
     arguments: { pid, },
@@ -108,6 +118,7 @@ export async function exec(
 
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- polling loop
   while (true) {
+    /** Raw `guest-exec-status` response polled each iteration until the process exits. */
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
     const statusResult = await virsh({
       args: [
@@ -116,6 +127,7 @@ export async function exec(
         statusPayload,
       ],
     },);
+    /** Parsed status response with the optional captured stdio buffers. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
     const statusParsed = JSON.parse(statusResult,) as { return: {
       exited: boolean;
@@ -123,6 +135,7 @@ export async function exec(
       'out-data'?: string;
       'err-data'?: string;
     }; };
+    /** Inner status payload; unwraps the `return` envelope for ergonomic access. */
     const status = statusParsed.return;
 
     if (!status.exited) {
@@ -136,12 +149,15 @@ export async function exec(
       continue;
     }
 
+    /** Decoded stdout text; QMP captures it as base64 so it needs decoding before returning. */
     const stdout = status['out-data'] !== undefined
       ? decodeBase64(status['out-data'],)
       : '';
+    /** Decoded stderr text; mirrors the stdout decode path. */
     const stderr = status['err-data'] !== undefined
       ? decodeBase64(status['err-data'],)
       : '';
+    /** Guest exit code; defaulted to 0 because the agent omits the field on a clean exit. */
     const exitCode = status.exitcode ?? 0;
 
     rl.debug(`command exited with code ${String(exitCode,)}`,);

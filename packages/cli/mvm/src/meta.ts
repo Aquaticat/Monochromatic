@@ -77,10 +77,12 @@ export async function writeVmMeta({
   image: string;
   vmDir: string;
 },): Promise<void> {
+  /** Logger scoped to this writer so legacy-file fallbacks log with context. */
   const rl = tagged({
     tag: writeVmMeta.name,
     l,
   },);
+  /** Metadata record persisted to `meta.json`; captures the guest config snapshot at creation time. */
   const meta: VmMeta = {
     createdAt: new Date().toISOString(),
     defaultUser: guest.defaultUser,
@@ -89,6 +91,7 @@ export async function writeVmMeta({
     shell: guest.shell,
   };
 
+  /** Path of the metadata file inside the VM directory; chosen once and reused in the debug log. */
   const metaPath = join(
     vmDir,
     'meta.json',
@@ -136,6 +139,7 @@ export async function writeVmMeta({
  * ```
  */
 export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
+  /** Logger scoped to this reader so legacy-fallback messages are namespaced. */
   const rl = tagged({
     tag: readVmMeta.name,
     l,
@@ -143,6 +147,7 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
 
   // Try meta.json first
   try {
+    /** Raw `meta.json` contents read from disk; parsed as `VmMeta` below. */
     const content = await readFile(
       join(
         vmDir,
@@ -150,6 +155,7 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
       ),
       'utf8',
     );
+    /** Parsed metadata record; trusted because it was written by {@link writeVmMeta}. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted local meta.json written by writeVmMeta
     const meta = JSON.parse(content,) as VmMeta;
     rl.debug(`read VM metadata from ${vmDir}/meta.json`,);
@@ -160,8 +166,10 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
   }
 
   // Fall back to legacy image text file
+  /** Image identifier resolved from the legacy `image` text file, or {@link DEFAULT_IMAGE} when missing. */
   let image = DEFAULT_IMAGE;
   try {
+    /** Raw legacy file contents; trimmed because old writers added a trailing newline. */
     const content = await readFile(
       join(
         vmDir,
@@ -175,7 +183,9 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
     rl.debug('legacy image file not found, assuming ubuntu',);
   }
 
+  /** Image record resolved from the legacy identifier; registry or custom. */
   const resolved = resolveImage(image,);
+  /** Guest config used to fill the synthetic `VmMeta`; defaults for custom images. */
   const guest = resolved.kind === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;

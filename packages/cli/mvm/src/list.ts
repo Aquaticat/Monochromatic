@@ -24,23 +24,30 @@ export type VmInfo = {
  * ```
  */
 export async function list(): Promise<readonly VmInfo[]> {
+  /** Logger scoped to this call so debug output is attributable. */
   const rl = tagged({
     tag: list.name,
     l,
   },);
   rl.debug('querying virsh for all VMs',);
 
+  /** Raw multi-line output from `virsh list --all`; parsed line by line below. */
   const output = await virsh({ args: [
     'list',
     '--all',
   ], },);
+  /** Each row of the virsh table, including the header and separator rows the regex below filters out. */
   const lines = output.split('\n',);
 
+  /** Accumulator for prefixed VMs found in the virsh table; returned as the result. */
   const vms: VmInfo[] = [];
 
   for (const line of lines) {
+    /** Regex match against a virsh row: id, name, state; null on non-data rows. */
     const match = /\s+(?:\d+|-)\s+(\S+)\s+(.+)/.exec(line,);
+    /** Captured VM name from the regex; may be undefined when the line is not a data row. */
     const vmName = match?.[1];
+    /** Captured state column from the regex; trimmed when emitted because it carries trailing spaces. */
     const vmState = match?.[2];
     if (vmName !== undefined && vmState !== undefined && vmName.startsWith(VM_PREFIX,)) {
       vms.push({

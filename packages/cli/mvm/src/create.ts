@@ -52,11 +52,13 @@ async function setWindowsHostname({
   hostname: string;
   name: string;
 },): Promise<void> {
+  /** Logger scoped to this helper so the rename invocation is namespaced. */
   const rl = tagged({
     tag: setWindowsHostname.name,
     l,
   },);
   rl.info(`setting Windows hostname to ${hostname}`,);
+  /** Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal. */
   const result = await exec({
     command: `Rename-Computer -NewName '${hostname}' -Force`,
     name,
@@ -103,15 +105,18 @@ export async function create({
   name: string;
 },): Promise<void> {
   validateName(name,);
+  /** Logger scoped to this create call so step logs are namespaced. */
   const rl = tagged({
     tag: create.name,
     l,
   },);
+  /** Per-VM scratch directory under `VMS_DIR`; holds disk, seed ISO, and shared dir. */
   const vmDir = join(
     VMS_DIR,
     name,
   );
 
+  /** Resolved image record from registry or custom-template lookup; drives the rest of the pipeline. */
   const resolved = resolveImage(image,);
   rl.info(`creating VM ${name} (image: ${image})`,);
   await mkdir(
@@ -119,18 +124,22 @@ export async function create({
     { recursive: true, },
   );
 
+  /** Backing template path; registry images go through the bake pipeline, custom ones are used directly. */
   const templateImage = resolved.kind === 'registry'
     ? await ensureTemplate(resolved.spec,)
     : resolved.customTemplatePath;
 
+  /** Guest config (osFamily, shell, etc.); falls back to {@link CUSTOM_GUEST_DEFAULTS} for custom templates. */
   const guest = resolved.kind === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
+  /** New VM's qcow2 path; created with the resolved template as a backing file. */
   const diskPath = join(
     vmDir,
     'disk.qcow2',
   );
+  /** Disk capacity for the new VM; Windows needs a larger image so it gets bumped up. */
   const diskSize = guest.osFamily === 'windows' ? WINDOWS_DISK_SIZE : DEFAULT_DISK_SIZE;
 
   rl.info('creating disk from template image...',);
@@ -159,11 +168,13 @@ export async function create({
     { recursive: true, },
   );
 
+  /** NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init. */
   const seedIsoPath = await createSeedIso({
     guest,
     name,
     vmDir,
   },);
+  /** Libvirt domain XML wiring the disk, seed ISO, and shared dir into a new VM definition. */
   const xml = domainXml({
     diskPath,
     name,

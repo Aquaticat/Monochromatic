@@ -63,15 +63,18 @@ export async function clone(
 ): Promise<void> {
   validateName(source,);
   validateName(destination,);
+  /** Logger scoped to this clone call so step logs are namespaced. */
   const rl = tagged({
     tag: clone.name,
     l,
   },);
 
+  /** Source VM directory; holds the disk and metadata that get copied. */
   const srcVmDir = join(
     VMS_DIR,
     source,
   );
+  /** Destination VM directory; created below before the qemu-img copy. */
   const dstVmDir = join(
     VMS_DIR,
     destination,
@@ -83,10 +86,12 @@ export async function clone(
     { recursive: true, },
   );
 
+  /** Source qcow2 path; existence is checked next to detect a missing source VM. */
   const srcDiskPath = join(
     srcVmDir,
     'disk.qcow2',
   );
+  /** Destination qcow2 path; `qemu-img convert` writes the cloned image here. */
   const dstDiskPath = join(
     dstVmDir,
     'disk.qcow2',
@@ -96,6 +101,7 @@ export async function clone(
     await access(srcDiskPath,);
   }
   catch {
+    /** Listing of `VMS_DIR` so the error message can surface known VM names to the user. */
     const entries = await readdir(VMS_DIR,);
     throw new Error(
       `source VM "${source}" not found (no disk at ${srcDiskPath}). Available VMs: ${
@@ -116,8 +122,11 @@ export async function clone(
     ],
   },);
 
+  /** Source VM metadata; the image field is preserved so the clone inherits the same guest config. */
   const meta = await readVmMeta(srcVmDir,);
+  /** Resolved image record; either a registry spec or a fall-through for custom images. */
   const resolved = resolveImage(meta.image,);
+  /** Guest config used for cloud-init seeding; defaults applied when the image isn't in the registry. */
   const guest = resolved.kind === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
@@ -132,11 +141,13 @@ export async function clone(
     { recursive: true, },
   );
 
+  /** Generated NoCloud seed ISO with a new instance-id so cloud-init reruns on the clone. */
   const seedIsoPath = await createSeedIso({
     guest,
     name: destination,
     vmDir: dstVmDir,
   },);
+  /** Libvirt domain XML for the clone; attaches the cloned disk, seed ISO, and shared dir. */
   const xml = domainXml({
     diskPath: dstDiskPath,
     name: destination,
@@ -155,6 +166,7 @@ export async function clone(
   // Windows VMs: set hostname via guest agent since cloud-init is not available
   if (guest.osFamily === 'windows') {
     rl.info(`setting Windows hostname to ${destination}`,);
+    /** Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal. */
     const result = await exec({
       command: `Rename-Computer -NewName '${destination}' -Force`,
       name: destination,

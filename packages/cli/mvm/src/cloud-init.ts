@@ -59,6 +59,7 @@ function vmUserData({
   guest: GuestConfig;
   name: string;
 },): string {
+  /** Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`. */
   const linux = asLinux(guest,);
   return `#cloud-config
 hostname: ${name}
@@ -104,6 +105,7 @@ function templateUserData(
     name: string;
   },
 ): string {
+  /** Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`. */
   const linux = asLinux(guest,);
   return `#cloud-config
 hostname: ${name}
@@ -163,6 +165,7 @@ export async function createSeedIso({
   vmDir: string;
 },): Promise<string | undefined> {
   if (guest.osFamily === 'windows') {
+    /** Logger for the Windows skip-path; namespaced so the info line is attributable. */
     const rl = tagged({
       tag: createSeedIso.name,
       l,
@@ -171,12 +174,15 @@ export async function createSeedIso({
     return undefined;
   }
 
+  /** Logger scoped to this function so the "created seed ISO" message is attributable. */
   const rl = tagged({
     tag: createSeedIso.name,
     l,
   },);
 
+  /** Shared text encoder used for both user-data and meta-data byte payloads. */
   const encoder = new TextEncoder();
+  /** UTF-8 user-data payload picked from template or VM variant depending on `template`. */
   const userData = encoder.encode(
     template
       ? templateUserData({
@@ -189,12 +195,14 @@ export async function createSeedIso({
       },),
   );
 
+  /** UTF-8 meta-data payload; carries `instance-id` so cloud-init reruns when the id changes. */
   const metaData = encoder.encode(
     `instance-id: ${name}
 local-hostname: ${name}
 `,
   );
 
+  /** Generated ISO9660 image carrying `user-data` and `meta-data` under the `cidata` volume. */
   const iso = createIso({
     files: [
       {
@@ -209,6 +217,7 @@ local-hostname: ${name}
     volumeId: 'cidata',
   },);
 
+  /** Output path of the seed ISO; attached as a CDROM by the domain XML. */
   const seedPath = join(
     vmDir,
     'seed.iso',

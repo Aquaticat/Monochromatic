@@ -56,10 +56,13 @@ async function pollProgress(
     if (signal.aborted)
       break;
     try {
+      /** Current on-disk size of the destination file; polled each tick to drive progress output. */
       // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
       const { size, } = await stat(destPath,);
+      /** Human-readable form of `size` (e.g. "12.3 MB"); cached so it appears in both branches. */
       const downloadedStr = formatBytes(size,);
       if (contentLength > 0) {
+        /** Integer percentage of the download completed; only meaningful when content-length is known. */
         const pct = Math.round((size / contentLength) * PERCENT,);
         process.stderr.write(
           `\r  downloading: ${downloadedStr} / ${totalStr} (${String(pct,)}%)`,
@@ -99,11 +102,15 @@ export async function writeWithProgress({
   response: Response;
   rl: { info: (msg: string,) => void; };
 },): Promise<void> {
+  /** Expected total bytes from the `content-length` header; 0 when the server omits it. */
   const contentLength = Number(response.headers.get('content-length',) ?? 0,);
+  /** Pre-formatted display string for the total size; computed once because progress prints it every tick. */
   const totalStr = contentLength > 0 ? formatBytes(contentLength,) : 'unknown';
 
+  /** Coordinates between the polling loop and the stream pipeline; abort stops the poller cleanly. */
   const controller = new AbortController();
 
+  /** Background progress poller; awaited at the end to ensure the final tick flushes before returning. */
   // Start progress polling in the background
   const progressDone = pollProgress(
     destPath,
@@ -112,6 +119,7 @@ export async function writeWithProgress({
     controller.signal,
   );
 
+  /** Response body stream destructured for null-check; null bodies trigger an explicit error. */
   // Stream response body to disk via AsyncIterable protocol (runtime-neutral)
   const { body, } = response;
   if (body === null) {
@@ -128,6 +136,7 @@ export async function writeWithProgress({
   controller.abort();
   await progressDone;
 
+  /** Final on-disk size after the pipeline completes; printed as the "downloaded: ..." line. */
   const { size, } = await stat(destPath,);
   process.stderr.write(
     `\r  downloaded: ${formatBytes(size,)} total${' '.repeat(PROGRESS_LINE_PAD,)}\n`,

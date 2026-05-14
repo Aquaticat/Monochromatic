@@ -33,6 +33,7 @@ function writeDirEntry(
     size: number;
   },
 ): number {
+  /** ISO9660 file identifier length; the special "self" and "parent" entries collapse to a single byte. */
   const nameLen = opts.name === '\u0000' || opts.name === '\u0001' ? 1 : opts.name.length;
   /** Record length must be even per ISO9660. */
   const recordLen = L.DIR_FIXED_HEADER_SIZE + nameLen + (nameLen % 2 === 0 ? 1 : 0);
@@ -115,8 +116,11 @@ export function createIso({
   }[];
   volumeId: string;
 },): Uint8Array {
+  /** Cursor advancing across file-data sectors; assigned to each entry then incremented. */
   let nextSector = L.FIRST_FILE_DATA_SECTOR;
+  /** Per-file layout records carrying the assigned starting sector; iterated below to emit directory entries and payloads. */
   const entries = files.map(function mapFileEntry(f,) {
+    /** Sector this file occupies; reserved before `nextSector` is bumped past the file. */
     const sector = nextSector;
     nextSector += Math.ceil(f.data.length / L.SECTOR_SIZE,) || 1;
     return {
@@ -126,12 +130,17 @@ export function createIso({
     };
   },);
 
+  /** Total sectors required for system area, descriptors, root dir, and all file data; sizes the output buffer. */
   const totalSectors = nextSector;
+  /** Output ISO image buffer; zero-filled with `totalSectors` worth of bytes. */
   const iso = new Uint8Array(totalSectors * L.SECTOR_SIZE,);
+  /** Typed DataView over `iso` for endian-aware writes of multi-byte integers. */
   const view = new DataView(iso.buffer,);
+  /** Root directory occupies exactly one sector; large enough for the entries this tool emits. */
   const rootDirSize = L.SECTOR_SIZE;
 
   //region Primary Volume Descriptor (sector 16)
+  /** Byte offset of the PVD inside `iso`; PVD lives at sector 16 by spec. */
   const pvd = L.PVD_SECTOR * L.SECTOR_SIZE;
   iso[pvd] = 1;
   L.writeStr(
@@ -219,6 +228,7 @@ export function createIso({
   //endregion
 
   //region Volume Descriptor Set Terminator (sector 17)
+  /** Byte offset of the VDST inside `iso`; VDST follows the PVD at sector 17 by spec. */
   const vdst = L.VDST_SECTOR * L.SECTOR_SIZE;
   iso[vdst] = 255;
   L.writeStr(
@@ -241,6 +251,7 @@ export function createIso({
       false,
     ],
   ] as const) {
+    /** Byte offset of the current path table inside `iso`; emitted once in LE then once in BE. */
     const pt = ptSector * L.SECTOR_SIZE;
     iso[pt] = 1;
     view.setUint32(
@@ -257,6 +268,7 @@ export function createIso({
   //endregion
 
   //region Root directory (sector 20)
+  /** Write cursor inside the root directory sector; bumped by each emitted dir entry. */
   let pos = L.ROOT_DIRECTORY_SECTOR * L.SECTOR_SIZE;
   pos += writeDirEntry(
     iso,

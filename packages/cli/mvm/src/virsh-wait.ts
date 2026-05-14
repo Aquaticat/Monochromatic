@@ -51,12 +51,16 @@ export async function waitForGuestAgent({
   name: string;
   timeoutMs?: number;
 },): Promise<void> {
+  /** Logger scoped to this call so retry logs are namespaced. */
   const rl = tagged({
     tag: waitForGuestAgent.name,
     l,
   },);
+  /** Prefixed libvirt domain name; what `virsh` expects on the wire. */
   const fullName = `${VM_PREFIX}${name}`;
+  /** Pre-serialised `guest-ping` payload; reused on every poll. */
   const pingPayload = JSON.stringify({ execute: 'guest-ping', },);
+  /** Wall-clock reference for the timeout check; epoch ms at entry. */
   const startTime = Date.now();
 
   rl.info(`waiting for guest agent on ${name}...`,);
@@ -73,6 +77,7 @@ export async function waitForGuestAgent({
       return;
     }
     catch {
+      /** Milliseconds since polling began; compared against `timeoutMs` to give up. */
       const elapsed = Date.now() - startTime;
       if (elapsed >= timeoutMs) {
         throw new Error(
@@ -108,11 +113,14 @@ export async function waitForGuestAgent({
  * ```
  */
 export async function shutdownVm({ name, }: { name: string; },): Promise<void> {
+  /** Logger scoped to this shutdown call so the diagnostic catch is namespaced. */
   const rl = tagged({
     tag: shutdownVm.name,
     l,
   },);
+  /** Prefixed libvirt domain name; what `virsh` expects on the wire. */
   const fullName = `${VM_PREFIX}${name}`;
+  /** Serialised `guest-shutdown` request; the response is ignored because the agent dies mid-shutdown. */
   const payload = JSON.stringify({ execute: 'guest-shutdown', },);
   try {
     await virsh({ args: [
@@ -141,17 +149,21 @@ export async function shutdownVm({ name, }: { name: string; },): Promise<void> {
  * ```
  */
 export async function waitForShutdown({ name, }: { name: string; },): Promise<void> {
+  /** Logger scoped to this call so polling logs are namespaced. */
   const rl = tagged({
     tag: waitForShutdown.name,
     l,
   },);
+  /** Prefixed libvirt domain name; what `virsh domstate` expects on the wire. */
   const fullName = `${VM_PREFIX}${name}`;
+  /** Wall-clock reference for the timeout check; epoch ms at entry. */
   const startTime = Date.now();
 
   rl.info(`waiting for VM ${name} to shut down...`,);
 
   // oxlint-disable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new -- polling loop
   while (true) {
+    /** Current libvirt domain state string; loop exits when it reaches `shut off`. */
     const state = await virsh({ args: [
       'domstate',
       fullName,
@@ -161,6 +173,7 @@ export async function waitForShutdown({ name, }: { name: string; },): Promise<vo
       return;
     }
 
+    /** Milliseconds since polling began; compared against the shutdown timeout to give up. */
     const elapsed = Date.now() - startTime;
     if (elapsed >= SHUTDOWN_TIMEOUT_MS) {
       throw new Error(

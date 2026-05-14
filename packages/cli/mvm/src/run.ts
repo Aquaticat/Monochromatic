@@ -26,6 +26,7 @@ const NAME_RANDOM_BYTES = 4;
  * ```
  */
 function generateEphemeralName(): string {
+  /** Hex-encoded random suffix; keeps collision probability negligible across concurrent ephemeral VMs. */
   const suffix = randomBytes(NAME_RANDOM_BYTES,).toString('hex',);
   return `ephemeral-${suffix}`;
 }
@@ -64,10 +65,12 @@ export async function run(
     from: string | undefined;
   },
 ): Promise<ExecResult> {
+  /** Logger scoped to this run call so VM lifecycle steps log under the right name. */
   const rl = tagged({
     tag: run.name,
     l,
   },);
+  /** Ephemeral VM name; unique per invocation so concurrent `run()` calls do not collide. */
   const name = generateEphemeralName();
 
   rl.info(
@@ -121,6 +124,7 @@ export async function run(
     onSignal,
   );
 
+  /** Disposable guard that detaches the signal handlers and destroys the ephemeral VM on scope exit. */
   await using _guard = {
     async [Symbol.asyncDispose](): Promise<void> {
       process.removeListener(
@@ -142,6 +146,7 @@ export async function run(
     },)
     : create({ name, },));
 
+  /** Captured stdio and exit code from the guest command; returned to the caller. */
   const result = await exec({
     command,
     name,

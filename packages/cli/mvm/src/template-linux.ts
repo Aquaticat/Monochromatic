@@ -59,10 +59,12 @@ const LINUX_TEMPLATE_AGENT_TIMEOUT_MS = 120_000;
  * ```
  */
 export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string> {
+  /** Logger scoped to this template-bake call so log lines carry the function name. */
   const rl = tagged({
     tag: ensureLinuxTemplate.name,
     l,
   },);
+  /** Final on-disk path for the baked template qcow2; written after the overlay is flattened. */
   const templatePath = join(
     IMAGES_DIR,
     spec.templateFileName,
@@ -72,7 +74,9 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
     `creating template ${spec.templateFileName} with qemu-guest-agent pre-installed...`,
   );
 
+  /** Cached cloud image used as the qcow2 backing file during the bake. */
   const baseImage = await ensureImage(spec,);
+  /** Per-VM scratch directory for the install VM; holds the overlay disk and seed ISO. */
   const vmDir = join(
     VMS_DIR,
     TEMPLATE_VM_NAME,
@@ -82,11 +86,13 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
     { recursive: true, },
   );
 
+  /** Overlay qcow2 with `baseImage` as its backing file; the bake mutates this overlay. */
   const diskPath = join(
     vmDir,
     'disk.qcow2',
   );
 
+  /** Disposable guard that tears down the template VM on scope exit, even on early throws. */
   await using _cleanup = templateVmGuard(rl,);
 
   rl.info('creating overlay disk from base image...',);
@@ -105,12 +111,14 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
     ],
   },);
 
+  /** NoCloud seed ISO carrying cloud-init user-data that installs `qemu-guest-agent`. */
   const seedIsoPath = await createSeedIso({
     guest: spec,
     name: TEMPLATE_VM_NAME,
     template: true,
     vmDir,
   },);
+  /** Libvirt domain XML for the temporary install VM. */
   const xml = domainXml({
     diskPath,
     name: TEMPLATE_VM_NAME,
