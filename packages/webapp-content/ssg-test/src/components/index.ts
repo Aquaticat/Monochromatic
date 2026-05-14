@@ -16,3 +16,4 @@
 export { CalloutAlert, } from './callout-alert.ts';
 export { QuestionCheckbox, } from './question-checkbox.ts';
 export { QuestionRadio, } from './question-radio.ts';
+export { ShuffleChildren, } from './shuffle-children.ts';

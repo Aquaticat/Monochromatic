@@ -1,0 +1,445 @@
+---
+title: "Guess the tagline"
+description: "Sixteen real marketing taglines from tech and retail giants. Pick which company you think it belongs to. Some are obvious; most are not."
+tags:
+  - "marketing"
+  - "interactive"
+---
+
+Marketing taglines from tech companies are bizarrely interchangeable. Strip the logo and the name, leave just the line, and "AI for problem solvers," "the cloud that works for you," and "the new way to cloud" could each belong to half a dozen vendors. The lines below are real: a mix from frontier AI labs, hyperscalers, bare-metal hosts, retail giants, and edge networks. Pick which company you think each one belongs to. The question order is reshuffled on every page load, so you cannot memorise the sequence; the explanation reveals as soon as you pick, and you can change your guess at any time.
+
+<ShuffleChildren>
+
+<QuestionRadio
+  scenario={<>"Meet your thinking partner"</>}
+  options={[
+    {
+      label: <>Notion AI</>,
+      explanation: <>Plausible because Notion's AI sits alongside notes you are already thinking with, but Notion's own copy leans on "AI inside your docs" and "AI for work," not the partner framing.</>,
+    },
+    {
+      label: <>Microsoft Copilot</>,
+      explanation: <>Plausible because Copilot is literally named after a co-pilot, which is partner-shaped. But Microsoft pushes Copilot as an everyday productivity assistant, not a thinking partner.</>,
+    },
+    {
+      label: <>Claude</>,
+      correct: true,
+      explanation: <>Anthropic uses this line to position Claude as a reasoning collaborator rather than a chat-based assistant. The "partner" framing pushes against the wand-waving "AI helper" positioning that ChatGPT and Copilot lean on.</>,
+    },
+    {
+      label: <>ChatGPT</>,
+      explanation: <>ChatGPT's headline copy is more functional ("get answers, find inspiration, be more productive"). The quiet "thinking partner" framing is the wrong volume for OpenAI's mass-consumer brand.</>,
+    },
+    {
+      label: <>Perplexity</>,
+      explanation: <>Perplexity positions around answers, not partnership: "where knowledge begins," "the answer engine." Thinking-partner is closer to Claude's slow-and-careful brand.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"The AI for problem solvers"</>}
+  options={[
+    {
+      label: <>Perplexity</>,
+      explanation: <>Plausible because Perplexity is search-shaped, and search is a problem-solving tool. But Perplexity's actual positioning is "where knowledge begins" and "the answer engine," which is research-shaped, not problem-shaped.</>,
+    },
+    {
+      label: <>ChatGPT</>,
+      explanation: <>ChatGPT optimises for breadth and casual use, not the technical "problem solver" identity. OpenAI tends to use friendlier, more universal copy.</>,
+    },
+    {
+      label: <>Gemini</>,
+      explanation: <>Google's Gemini positioning is personal-assistant-shaped ("your personal AI assistant"), and Google's brand voice is too soft for the angular "problem solvers" identity.</>,
+    },
+    {
+      label: <>Claude</>,
+      correct: true,
+      explanation: <>Another Anthropic line for Claude, this one targeting people who frame their work as problem-solving (engineers, researchers, analysts) rather than the general "help me with anything" market.</>,
+    },
+    {
+      label: <>Mistral</>,
+      explanation: <>Mistral leans technical but on the "open and customisable" axis. Their flagship copy is "frontier AI in your hands," not the user-identity framing of "problem solvers."</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"What can I help with?"</>}
+  options={[
+    {
+      label: <>Claude</>,
+      explanation: <>Claude's input placeholder on the first turn is closer to "How can I help you today?" — more verbose. The pared-down phrasing belongs to a different lab.</>,
+    },
+    {
+      label: <>ChatGPT</>,
+      correct: true,
+      explanation: <>This is the placeholder text inside ChatGPT's main input box. OpenAI made the entire interface that prompt: no marketing surface, just the question staring back at you.</>,
+    },
+    {
+      label: <>Gemini</>,
+      explanation: <>Gemini's chat-input copy is closer to "Ask Gemini." Less colloquial, more product-named than ChatGPT's framing.</>,
+    },
+    {
+      label: <>Microsoft Copilot</>,
+      explanation: <>Copilot's chat surface defaults to "Ask me anything," leaning on the assistant identity rather than the open-ended help framing.</>,
+    },
+    {
+      label: <>Siri</>,
+      explanation: <>Siri's prompt is "What can I help you with?" — close enough that it is a real misread. ChatGPT trimmed the "you" and made the line slightly more inviting.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"Ready when you are"</>}
+  options={[
+    {
+      label: <>Vercel</>,
+      explanation: <>Plausible because Vercel's entire brand is around fast deploys and developer readiness. Vercel's actual tagline runs closer to "develop, preview, ship."</>,
+    },
+    {
+      label: <>OpenAI</>,
+      correct: true,
+      explanation: <>OpenAI uses this short, calm line across product surfaces; it suits a brand that wants to feel infrastructure-shaped (always on, waiting for you to act) rather than feature-shaped.</>,
+    },
+    {
+      label: <>Cloudflare</>,
+      explanation: <>Cloudflare uses "help build a better Internet" and "powering 20% of the Internet," not the patient, waiting-for-you tone.</>,
+    },
+    {
+      label: <>Netlify</>,
+      explanation: <>Netlify's positioning is "build with confidence" and "ship faster." Same developer audience, different timbre.</>,
+    },
+    {
+      label: <>Anthropic</>,
+      explanation: <>Anthropic-the-company's own copy focuses on safety and reasoning, not readiness. Their product copy for Claude has more weight; "ready when you are" is too breezy.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"Meet your unique security requirements"</>}
+  options={[
+    {
+      label: <>Vanta</>,
+      explanation: <>Vanta's compliance-automation pitch is "security and compliance, on autopilot" and "continuous compliance." Their copy is verb-shaped (automation), not noun-shaped (requirements).</>,
+    },
+    {
+      label: <>Drata</>,
+      explanation: <>Drata leans on "modern compliance" and "always audit-ready." Like Vanta, the pitch is about ongoing motion, not meeting a static requirement set.</>,
+    },
+    {
+      label: <>Microsoft Azure</>,
+      explanation: <>Azure's enterprise security copy uses "zero trust" and "multilayered protection," not the generic "unique requirements" framing.</>,
+    },
+    {
+      label: <>AWS</>,
+      correct: true,
+      explanation: <>AWS uses "unique requirements" phrasing constantly because their pitch to enterprise buyers is "whatever you need, we have an SKU." Security is one of dozens of areas with this exact shape of copy.</>,
+    },
+    {
+      label: <>Google Cloud</>,
+      explanation: <>Google Cloud's security pitch leans on "designed and built for the modern world," i.e. AI-era cloud. The "unique requirements" phrasing is too generic-enterprise for Google's voice.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"Build, Secure, and Deliver. Instantly."</>}
+  options={[
+    {
+      label: <>Cloudflare</>,
+      explanation: <>Plausible because Cloudflare also sits in the build / secure / deliver Venn diagram. But Cloudflare's voice is broader and more product-line-oriented; they would not pack three imperatives into one sentence.</>,
+    },
+    {
+      label: <>Fastly</>,
+      correct: true,
+      explanation: <>Fastly's brand voice has always been clipped and command-shaped. Three verbs and "instantly" fit their edge-compute positioning around developer immediacy.</>,
+    },
+    {
+      label: <>Akamai</>,
+      explanation: <>Akamai's enterprise-CDN positioning is "powering trusted experiences" — measured and corporate, not staccato-imperative.</>,
+    },
+    {
+      label: <>Vercel</>,
+      explanation: <>Vercel uses "develop, preview, ship," which is build / test / deliver-shaped. But Vercel does not lead with "secure"; their security is implicit.</>,
+    },
+    {
+      label: <>AWS CloudFront</>,
+      explanation: <>CloudFront's copy lives inside the AWS console and reads more like documentation than positioning ("fast, secure, global content delivery").</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"Everything we learned from powering 20% of the Internet"</>}
+  options={[
+    {
+      label: <>Akamai</>,
+      explanation: <>Akamai's voice is corporate-traditional ("powering trusted experiences"), not first-person-plural ("we learned"). And the "20% of the web" claim is more associated with the company that pushes it the hardest in modern marketing.</>,
+    },
+    {
+      label: <>Cloudflare</>,
+      correct: true,
+      explanation: <>Cloudflare has talked about its share of the web (sometimes stated higher than 20%) for years; the line packages that scale as authoritative experience, which is the bedrock of their enterprise pitch.</>,
+    },
+    {
+      label: <>AWS</>,
+      explanation: <>AWS does not use scale claims for the internet itself; their numbers are about uptime, regions, and customers, not "percent of the internet."</>,
+    },
+    {
+      label: <>Fastly</>,
+      explanation: <>Fastly is much smaller than 20% of the web. They lean on "next-gen edge cloud" rather than scale claims.</>,
+    },
+    {
+      label: <>Vercel</>,
+      explanation: <>Vercel powers a sliver of the web (mostly modern frontends). They would not claim 20%; their pitch is quality-of-developer-experience, not volume.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"The cloud that works for you, not the other way around"</>}
+  options={[
+    {
+      label: <>DigitalOcean</>,
+      explanation: <>Plausible because DigitalOcean has been the developer-friendly cloud for years, and their old positioning leaned this exact way. But the line was adopted harder by the larger contrast-with-hyperscalers player.</>,
+    },
+    {
+      label: <>Linode</>,
+      explanation: <>Linode pre-acquisition leaned on "cloud computing made simple." Same audience, different angle ("simple" rather than "works for you").</>,
+    },
+    {
+      label: <>Cloudflare</>,
+      correct: true,
+      explanation: <>Cloudflare uses this line to draw a contrast against the hyperscalers (AWS, Azure, GCP), whose pitch implicitly demands you learn their abstractions. Cloudflare frames itself as the developer-friendly cloud whose UX adapts to you.</>,
+    },
+    {
+      label: <>Vultr</>,
+      explanation: <>Vultr leans on global reach and AI infrastructure now. The "works for you" framing is more general-cloud than Vultr's tighter positioning.</>,
+    },
+    {
+      label: <>Hetzner</>,
+      explanation: <>Hetzner is hyper-utilitarian: "dedicated servers, cloud, and hosting" at a price. They do not romanticise the relationship with the cloud.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"The new way to cloud"</>}
+  options={[
+    {
+      label: <>DigitalOcean</>,
+      explanation: <>DigitalOcean's positioning has been "developer cloud," specific and audience-named. "The new way to cloud" is too abstract for their developer-focused voice.</>,
+    },
+    {
+      label: <>Oracle Cloud</>,
+      explanation: <>Oracle Cloud's pitch is performance and price-per-core. The verb "cloud" (as in "to cloud") is too playful for Oracle's enterprise tone.</>,
+    },
+    {
+      label: <>IBM Cloud</>,
+      explanation: <>IBM Cloud leans on hybrid and enterprise legacy: "cloud for the enterprise AI era." Not the casual "new way" framing.</>,
+    },
+    {
+      label: <>AWS</>,
+      explanation: <>AWS is the incumbent, so "new way" would never be their line; they are the way being pushed against.</>,
+    },
+    {
+      label: <>Google Cloud</>,
+      correct: true,
+      explanation: <>Google Cloud has used this line to position against AWS's incumbency. "New way" implicitly says "AWS is the old way."</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"Build with AI. Deploy and scale apps fast. Analyze and secure your data."</>}
+  options={[
+    {
+      label: <>AWS</>,
+      explanation: <>AWS lists product categories without imperative verbs. Their homepage is closer to "why AWS" and "industries we serve."</>,
+    },
+    {
+      label: <>Microsoft Azure</>,
+      explanation: <>Azure leads with "invent with purpose" and AI-with-enterprise framing, not a three-imperatives shape.</>,
+    },
+    {
+      label: <>Google Cloud</>,
+      correct: true,
+      explanation: <>This is Google Cloud's homepage copy, three imperatives mapping to their three main product clusters (AI, app platform, data and security). The sentence is product-area-shaped, which is how Google Cloud has structured its pitch since the AI inflection.</>,
+    },
+    {
+      label: <>Vercel</>,
+      explanation: <>Vercel's three imperatives are "develop, preview, ship." Different verbs, different scope (frontend rather than full cloud).</>,
+    },
+    {
+      label: <>Oracle Cloud</>,
+      explanation: <>Oracle Cloud's pitch is performance numbers, not three imperatives. "Twice the performance, half the cost" is the brand shape.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"One platform, fully integrated from silicon to agent, with economics that improve as you scale."</>}
+  options={[
+    {
+      label: <>Oracle Cloud</>,
+      explanation: <>Plausible because "silicon to agent" sounds like Oracle's stack-down positioning. But Oracle's brand voice runs to performance and price, not "integrated platform."</>,
+    },
+    {
+      label: <>AWS</>,
+      explanation: <>AWS does own silicon (Graviton, Trainium, Inferentia) but their copy never collapses the stack into one sentence; they market each layer separately.</>,
+    },
+    {
+      label: <>Google Cloud</>,
+      explanation: <>Google also owns silicon (TPUs) but their integration story is AI-shaped ("Gemini in every layer"), not the silicon-to-agent framing.</>,
+    },
+    {
+      label: <>DigitalOcean</>,
+      correct: true,
+      explanation: <>Surprising, but DigitalOcean has been reframing around full-stack AI infrastructure after acquiring Paperspace. "Silicon to agent" is the pitch for owning the layer below the application: chips, compute, and the agent runtime built on top.</>,
+    },
+    {
+      label: <>Microsoft Azure</>,
+      explanation: <>Azure's silicon story is partnership-shaped (AMD, Nvidia, in-house Maia). The integrated-from-silicon framing is not how they sell it.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"Low prices. Free shipping."</>}
+  options={[
+    {
+      label: <>Walmart</>,
+      explanation: <>Walmart's positioning is "save money, live better." Same low-price angle but a different sentence shape, and Walmart leans on the lifestyle promise more than logistics.</>,
+    },
+    {
+      label: <>Amazon</>,
+      correct: true,
+      explanation: <>Two short fragments that encode Amazon's foundational flywheel. The line is older than most of their current marketing and still sits on their homepage.</>,
+    },
+    {
+      label: <>Target</>,
+      explanation: <>Target's brand is "expect more, pay less" — value framed as expectation, not just price. And Target's free-shipping threshold is part of their loyalty program, not a brand promise.</>,
+    },
+    {
+      label: <>eBay</>,
+      explanation: <>eBay's pitch is variety and finding things ("shop the things you love"), not the price-and-shipping flywheel.</>,
+    },
+    {
+      label: <>AliExpress</>,
+      explanation: <>AliExpress is price-shaped, but their voice is about discovery ("millions of items at affordable prices"). The bald "free shipping" claim does not fit because their free-shipping deal is conditional and country-specific.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"Dedicated server, cloud & hosting"</>}
+  options={[
+    {
+      label: <>OVHcloud</>,
+      explanation: <>Plausible because OVHcloud sells the same three categories and serves the same European-utility audience. But OVHcloud's brand voice is "innovation for freedom"; they reach for an angle the answer here refuses to bother with.</>,
+    },
+    {
+      label: <>DigitalOcean</>,
+      explanation: <>DigitalOcean is positioning-shaped ("the developer cloud," "simple cloud computing"). They would never lead with a product list.</>,
+    },
+    {
+      label: <>Hetzner</>,
+      correct: true,
+      explanation: <>Hetzner is famously utilitarian; their tagline is literally the list of products. No metaphor, no verb, just the menu.</>,
+    },
+    {
+      label: <>Linode</>,
+      explanation: <>Linode (now Akamai Connected Cloud) used "cloud computing made simple" for years. Same simple-cloud niche but their copy is sentence-shaped, not menu-shaped.</>,
+    },
+    {
+      label: <>Vultr</>,
+      explanation: <>Vultr's tagline is "the AI-first global cloud platform." Single phrase, brand-shaped, not a product menu.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"The AI-first Global Cloud Platform"</>}
+  options={[
+    {
+      label: <>CoreWeave</>,
+      explanation: <>Plausible because CoreWeave is the highest-profile AI-cloud pure-play. But CoreWeave's actual positioning is "the AI Hyperscaler": bigger, more frontier-shaped.</>,
+    },
+    {
+      label: <>Lambda Labs</>,
+      explanation: <>Lambda's pitch is "GPU cloud for AI training and inference": narrower, more practitioner-shaped. Not the platform framing.</>,
+    },
+    {
+      label: <>Paperspace</>,
+      explanation: <>Paperspace (now part of DigitalOcean) positioned around "cloud GPUs without the wait." Same niche, different voice.</>,
+    },
+    {
+      label: <>Vultr</>,
+      correct: true,
+      explanation: <>Vultr rebranded around AI infrastructure and uses this exact line. "AI-first" is the differentiator; "global cloud" is the prior identity.</>,
+    },
+    {
+      label: <>RunPod</>,
+      explanation: <>RunPod's brand is developer-immediate ("the cloud built for AI"). They sell container-shaped GPU access rather than the broader "cloud platform."</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"The World's Most Distributed Cloud Computing Platform"</>}
+  options={[
+    {
+      label: <>Cloudflare</>,
+      explanation: <>Cloudflare also claims very high distribution, but their phrasing is "the connectivity cloud" and "help build a better internet." Not the "most distributed" superlative.</>,
+    },
+    {
+      label: <>Linode (Akamai)</>,
+      correct: true,
+      explanation: <>Akamai Connected Cloud (the Linode rebrand) trades on Akamai's edge-network footprint. Akamai's POP count is genuinely the highest in the industry, so "most distributed" is a factual claim wearing a tagline.</>,
+    },
+    {
+      label: <>AWS</>,
+      explanation: <>AWS marketing leads with regions and availability zones, not distribution superlatives. Their network is concentrated in fewer, larger sites.</>,
+    },
+    {
+      label: <>Google Cloud</>,
+      explanation: <>Google Cloud emphasises "the global, secure cloud" but does not claim the most-distributed crown; that title belongs to the CDN side of the market.</>,
+    },
+    {
+      label: <>OVHcloud</>,
+      explanation: <>OVHcloud is European-major with some global reach but does not claim "most distributed." Their differentiator is sovereignty and bare-metal.</>,
+    },
+  ]}
+/>
+
+<QuestionRadio
+  scenario={<>"The global edge platform that truly hops"</>}
+  options={[
+    {
+      label: <>Cloudflare</>,
+      explanation: <>Cloudflare is also an edge platform with global reach, but their brand voice does not do animal puns; their copy is straight-faced.</>,
+    },
+    {
+      label: <>bunny.net</>,
+      correct: true,
+      explanation: <>The "hops" pun is the giveaway: bunny.net leans on rabbit imagery throughout their brand. The line is both literal (multi-hop routing) and the brand pun.</>,
+    },
+    {
+      label: <>Fastly</>,
+      explanation: <>Fastly leans on speed metaphors but stays in motorsport and racing territory, not animal-shaped jokes.</>,
+    },
+    {
+      label: <>Akamai</>,
+      explanation: <>Akamai's brand voice is enterprise-formal ("powering trusted experiences"). They would not write a pun.</>,
+    },
+    {
+      label: <>KeyCDN</>,
+      explanation: <>KeyCDN is utility-shaped, similar to Hetzner: "high performance content delivery." No brand puns.</>,
+    },
+  ]}
+/>
+
+</ShuffleChildren>

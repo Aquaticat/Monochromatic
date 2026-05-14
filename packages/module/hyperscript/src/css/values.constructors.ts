@@ -521,6 +521,47 @@ export function cssClamp(
   return `clamp(${min}, ${ideal}, ${max})` as CssValue;
 }
 
+/**
+ * Creates a CSS `random()` expression that resolves to a fresh random value per evaluation.
+ *
+ * Useful for shuffle effects (e.g. `order: cssRandom({ min: 1, max: 1000, step: 1 })`)
+ * and other per-render randomisation. Browsers that do not support CSS `random()` drop
+ * the entire declaration; pair with a JS fallback or a sensible default when graceful
+ * degradation matters.
+ *
+ * Pass `step` to align the value to a grid (use `1` for integer outputs, suitable for
+ * properties like `order` or `z-index`). Omit `step` for an unrounded value.
+ *
+ * @param min - inclusive lower bound
+ *
+ * @param max - inclusive upper bound
+ *
+ * @param step - optional step alignment; when omitted the value is unaligned
+ *
+ * @returns branded CSS random expression
+ *
+ * @example
+ * ```ts
+ * cssRandom({ min: 1, max: 1000, step: 1 })  // 'random(1, 1000, by 1)'
+ * cssRandom({ min: 0, max: 1 })               // 'random(0, 1)'
+ * ```
+ */
+export function cssRandom(
+  {
+    min,
+    max,
+    step,
+  }: {
+    min: number;
+    max: number;
+    step?: number;
+  },
+): CssValue {
+  return step === undefined
+    ? `random(${min}, ${max})` as CssValue
+    : `random(${min}, ${max}, by ${step})` as CssValue;
+}
+
 //endregion
 
 //region Number constructors

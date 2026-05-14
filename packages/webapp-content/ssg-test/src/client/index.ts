@@ -24,6 +24,8 @@ import {
 import { HIGHLIGHT_GROUPS, } from './highlight-groups.ts';
 // oxlint-disable-next-line no-unassigned-import -- side-effect import: registers DOM event listeners for the search widget on module load
 import './search.ts';
+// oxlint-disable-next-line no-unassigned-import -- side-effect import: shuffles <shuffle-children> direct children at load time when CSS random() is unsupported
+import './shuffle-children.ts';
 
 export {}; // module boundary marker
 

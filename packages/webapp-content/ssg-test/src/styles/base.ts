@@ -11,6 +11,7 @@ import * as postCard from '../components/post-card.ts';
 import * as postList from '../components/post-list.ts';
 import * as questionCheckbox from '../components/question-checkbox.ts';
 import * as questionRadio from '../components/question-radio.ts';
+import * as shuffleChildren from '../components/shuffle-children.ts';
 import * as siteFooter from '../components/site-footer.ts';
 import * as siteHeader from '../components/site-header.ts';
 import * as siteSearch from '../components/site-search.ts';
@@ -61,6 +62,7 @@ export function generateSiteCss(): string {
     postCard.css(),
     questionRadio.css(),
     questionCheckbox.css(),
+    shuffleChildren.css(),
     siteFooter.css(),
   ]
     .join('\n',);

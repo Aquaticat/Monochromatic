@@ -8,6 +8,7 @@ import {
   cssNum,
   cssOklch,
   cssPercent,
+  cssRandom,
   cssRem,
   type CssValue,
   cssVar,
@@ -443,6 +444,21 @@ await describe({
           },),
         )
           .toBe('clamp(0, calc(100% - 2rem), 100%)',);
+      },
+    },),
+    it({
+      name: 'cssRandom emits min and max as a two-argument call',
+      fn: async () => {
+        expect(cssRandom({ min: 0, max: 1, },),).toBe('random(0, 1)',);
+      },
+    },),
+    it({
+      name: 'cssRandom appends `by <step>` when step is provided',
+      fn: async () => {
+        expect(
+          cssRandom({ min: 1, max: 1_000, step: 1, },),
+        )
+          .toBe('random(1, 1000, by 1)',);
       },
     },),
 

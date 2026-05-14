@@ -89,6 +89,7 @@ export {
   cssOklch,
   cssOklchFrom,
   cssPercent,
+  cssRandom,
   cssRem,
   cssRotate,
   cssS,
