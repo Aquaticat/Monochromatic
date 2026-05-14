@@ -59,6 +59,7 @@ function generateCombinations({
   readonly user: readonly UserContext[];
   readonly runtime: readonly Runtime[];
 },): readonly Combination[] {
+  /** Accumulator; four nested loops would be unwieldy as a single `.flatMap` chain. */
   const combinations: Combination[] = [];
 
   for (const file of files) {
@@ -201,6 +202,7 @@ function formatLabel(combination: Combination,): string {
  * @returns filename without directory
  */
 function shortFileName(filePath: string,): string {
+  /** Captured to reuse in both the absent-separator guard and the slice offset. */
   const lastSlash = filePath.lastIndexOf('/',);
   if (lastSlash === -1)
     return filePath;
@@ -230,6 +232,7 @@ function executeCombination({
   readonly combination: Combination;
   readonly monorepoRoot: string;
 },): Promise<string> {
+  /** Protocol drives the backend choice; parsed once and inspected by each branch. */
   const parsed = parseOs(combination.os,);
 
   if (parsed.protocol === 'host')
@@ -290,6 +293,7 @@ export async function matrix({
   exclude = [],
   concurrency = DEFAULT_CONCURRENCY,
 }: MatrixOptions,): Promise<void> {
+  /** Tagged logger so each line in this function carries the `matrix` scope. */
   const l: Logger = tagged({
     tag: matrix.name,
     l: defaultLogger,
@@ -297,6 +301,7 @@ export async function matrix({
 
   //region Validate OS specifications
   for (const osSpec of os) {
+    /** Pre-validates the protocol up-front; failing here surfaces config errors before any work. */
     const parsed = parseOs(osSpec,);
     if (parsed.protocol === 'vm') {
       throw new Error(
@@ -307,11 +312,13 @@ export async function matrix({
   //endregion Validate OS specifications
 
   //region Discover monorepo root
+  /** Resolved once and threaded into every container invocation as the bind-mount source. */
   const monorepoRoot = await findMonorepoRootCached();
   l.debug(`monorepo root: ${monorepoRoot}`,);
   //endregion Discover monorepo root
 
   //region Resolve files
+  /** Either the consumer's explicit list (resolved against cwd) or auto-discovered tests. */
   const files = filesOption !== undefined
     ? filesOption.map(function resolveFile(filePath,) {
       return resolve(
@@ -327,12 +334,14 @@ export async function matrix({
   //endregion Resolve files
 
   //region Generate and filter combinations
+  /** Raw cartesian product before exclusion; retained so the log line below can report the delta. */
   const allCombinations = generateCombinations({
     files,
     os,
     user,
     runtime,
   },);
+  /** Survivors after applying the user-supplied exclude entries; what actually executes. */
   const combinations = applyExcludes({
     combinations: allCombinations,
     excludes: exclude,
@@ -355,6 +364,7 @@ export async function matrix({
    */
   const fileGroups = new Map<string, Combination[]>();
   for (const combination of combinations) {
+    /** Existing per-file bucket, if any; absent first iteration per file. */
     const existing = fileGroups.get(combination.file,);
     if (existing !== undefined)
       existing.push(combination,);
@@ -366,8 +376,10 @@ export async function matrix({
     }
   }
 
+  /** One describe-tree per file, each containing one `it` per combination for that file. */
   const children = [...fileGroups.entries(),].map(
     function createFileDescribe([filePath, fileCombinations,],) {
+      /** Trimmed-path display label; full path is too long for nested describe output. */
       const fileName = shortFileName(filePath,);
 
       return describe({
@@ -376,12 +388,14 @@ export async function matrix({
         concurrency,
         children: fileCombinations.map(
           function createCombinationIt(combination,) {
+            /** Human-readable axis tuple used as the `it` name. */
             const label = formatLabel(combination,);
 
             return it({
               name: label,
               l,
               fn: async function runCombination() {
+                /** Captured so the empty-output check below does not log a blank line. */
                 const output = await executeCombination({
                   combination,
                   monorepoRoot,

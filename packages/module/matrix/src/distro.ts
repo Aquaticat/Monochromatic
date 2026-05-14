@@ -122,6 +122,7 @@ export function prerequisiteCommand({
   readonly manager: PackageManager;
   readonly user: UserContext;
 },): string {
+  /** Captured to keep the ternary readable and avoid two lookups. */
   const commands = PREREQUISITE_COMMANDS[manager];
   return user === 'root' ? commands.base : commands.withSudo;
 }

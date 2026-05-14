@@ -32,6 +32,7 @@ const MATRIX_TEST_SUFFIX = '.unit.matrix.test.ts';
  * ```
  */
 export async function discoverTestFiles(cwd: string,): Promise<readonly string[]> {
+  /** Raw recursive directory walk; filtered and mapped below into the public result. */
   const entries = await readdir(
     cwd,
     {
@@ -40,6 +41,7 @@ export async function discoverTestFiles(cwd: string,): Promise<readonly string[]
     },
   );
 
+  /** Filtered, sorted absolute paths; built as a chain to keep each step inspectable. */
   const files = entries
     .filter(function isMatrixTest(entry,) {
       if (!entry.isFile())
