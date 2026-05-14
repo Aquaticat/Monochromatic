@@ -18,7 +18,7 @@ that accepts only TLS 1.3. See issue 7 for diagnosis and workarounds.
 
 `aquati.cat` is self-hosted on Hetzner using Caddy. The apex CAA record is:
 
-```
+```text
 aquati.cat. IN CAA 0 issue "letsencrypt.org"
 ```
 
@@ -143,7 +143,7 @@ Place a CAA record at `aws.aquati.cat` that permits Amazon. The walk now
 terminates one level below the apex and never reads the apex CAA. The
 apex CAA stays untouched.
 
-```
+```text
 aws.aquati.cat. 300 IN CAA 0 issue "amazon.com"
 ```
 
@@ -170,7 +170,7 @@ Requesting an ACM cert with `--key-algorithm EC_secp384r1` succeeds. The
 cert is issued and validated normally. Attaching it to a new CloudFront
 distribution then fails with:
 
-```
+```text
 An error occurred (InvalidViewerCertificate) when calling the
 CreateDistribution operation: The specified SSL certificate doesn't
 exist, isn't in us-east-1 region, isn't valid, or doesn't include a
@@ -318,14 +318,14 @@ After the cert is issued, the next step is to point `aws.aquati.cat` at
 the CloudFront distribution via a CNAME. Adding the CNAME at the
 registrar (Njalla) fails:
 
-```
+```text
 Cannot add CNAME: aws.aquati.cat already has a CAA record. CNAME
 records cannot coexist with other record types at the same name.
 ```
 
 ### Minimal repro
 
-```
+```text
 # Existing record (from issue 2):
 aws.aquati.cat. IN CAA 0 issue "amazon.com"
 
