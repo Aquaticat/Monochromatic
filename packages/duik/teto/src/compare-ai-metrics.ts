@@ -70,11 +70,11 @@ export async function runAiMetrics(
 
       try {
         // oxlint-disable-next-line no-await-in-loop -- sequential provider fallback; later providers only run if earlier ones fail
-        const result = await aiCompare(
-          refInput,
-          cmpInput,
-          { provider: name, },
-        );
+        const result = await aiCompare({
+          imageA: refInput,
+          imageB: cmpInput,
+          config: { provider: name, },
+        },);
         console.error(
           `${name}:  similarity=${result.similarity.toFixed(4,)}  distance=${
             result

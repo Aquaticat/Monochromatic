@@ -145,9 +145,12 @@ export function inferFormat(filePath: string,): ImageFormat {
  */
 export function bufferToBase64(buffer: ArrayBuffer,): string {
   const bytes = new Uint8Array(buffer,);
-  let binary = '';
-  for (const byte of bytes)
-    binary += String.fromCodePoint(byte,);
+  const binary = Array.from(
+    bytes,
+    function byteToChar(byte,) {
+      return String.fromCodePoint(byte,);
+    },
+  ).join('',);
   return btoa(binary,);
 }
 
@@ -162,14 +165,17 @@ export function bufferToBase64(buffer: ArrayBuffer,): string {
  *
  * @example
  * ```ts
- * const uri = bufferToDataUri(bytes, 'png');
+ * const uri = bufferToDataUri({ buffer: bytes, format: 'png' });
  * // 'data:image/png;base64,iVBOR...'
  * ```
  */
-export function bufferToDataUri(
-  buffer: ArrayBuffer,
-  format: ImageFormat,
-): string {
+export function bufferToDataUri({
+  buffer,
+  format,
+}: {
+  buffer: ArrayBuffer;
+  format: ImageFormat;
+},): string {
   const rl = tagged({
     tag: bufferToDataUri.name,
     l,

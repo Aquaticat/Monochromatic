@@ -85,16 +85,19 @@ function resolveGeminiDescribeKey(): string | undefined {
  *
  * @example
  * ```ts
- * const description = await describeViaGemini(
- *   { path: './before.png' },
- *   { path: './after.png' },
- * );
+ * const description = await describeViaGemini({
+ *   imageA: { path: './before.png' },
+ *   imageB: { path: './after.png' },
+ * });
  * ```
  */
-export async function describeViaGemini(
-  imageA: ImageInput,
-  imageB: ImageInput,
-): Promise<string | undefined> {
+export async function describeViaGemini({
+  imageA,
+  imageB,
+}: {
+  imageA: ImageInput;
+  imageB: ImageInput;
+},): Promise<string | undefined> {
   const rl = tagged({
     tag: describeViaGemini.name,
     l,

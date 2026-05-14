@@ -57,13 +57,16 @@ export function resolveVoyageApiKey(configKey: string | undefined,): string {
  *
  * @example
  * ```ts
- * const response = await callVoyageApi(request, 'pa-...');
+ * const response = await callVoyageApi({ requestBody: request, apiKey: 'pa-...' });
  * ```
  */
-export async function callVoyageApi(
-  requestBody: VoyageApiRequest,
-  apiKey: string,
-): Promise<VoyageApiResponse> {
+export async function callVoyageApi({
+  requestBody,
+  apiKey,
+}: {
+  requestBody: VoyageApiRequest;
+  apiKey: string;
+},): Promise<VoyageApiResponse> {
   const rl = tagged({
     tag: callVoyageApi.name,
     l,

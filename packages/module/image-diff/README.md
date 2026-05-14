@@ -27,11 +27,11 @@ Or pass them directly via config:
 ```ts
 import { compare, } from '@monochromatic-dev/module-image-diff';
 
-const result = await compare(
-  { path: './before.png', },
-  { path: './after.png', },
-  { provider: 'gemini', apiKey: 'AIza...', },
-);
+const result = await compare({
+  imageA: { path: './before.png', },
+  imageB: { path: './after.png', },
+  config: { provider: 'gemini', apiKey: 'AIza...', },
+},);
 ```
 
 ## Usage
@@ -41,10 +41,10 @@ const result = await compare(
 ```ts
 import { compareAll, } from '@monochromatic-dev/module-image-diff';
 
-const results = await compareAll(
-  { path: './before.png', },
-  { path: './after.png', },
-);
+const results = await compareAll({
+  imageA: { path: './before.png', },
+  imageB: { path: './after.png', },
+},);
 for (const { provider, result, } of results)
   console.log(`${provider}: similarity=${result.similarity}`,);
 ```
@@ -54,11 +54,11 @@ for (const { provider, result, } of results)
 ```ts
 import { compare, } from '@monochromatic-dev/module-image-diff';
 
-const result = await compare(
-  { path: './before.png', },
-  { path: './after.png', },
-  { provider: 'gemini', },
-);
+const result = await compare({
+  imageA: { path: './before.png', },
+  imageB: { path: './after.png', },
+  config: { provider: 'gemini', },
+},);
 console.log(`Similarity: ${result.similarity}`,);
 ```
 
@@ -77,10 +77,10 @@ for (const { provider, result, } of results)
 ```ts
 import { embedBatch, } from '@monochromatic-dev/module-image-diff';
 
-const { embeddings, } = await embedBatch(
-  [{ path: './a.png', }, { path: './b.png', },],
-  { provider: 'voyage', },
-);
+const { embeddings, } = await embedBatch({
+  inputs: [{ path: './a.png', }, { path: './b.png', },],
+  config: { provider: 'voyage', },
+},);
 ```
 
 ### Supported input formats
@@ -99,10 +99,10 @@ import {
 } from '@monochromatic-dev/module-image-diff';
 
 // For unit-normalized embeddings (Voyage, Gemini at 3072 dims), dotProduct === cosineSimilarity
-const sim = dotProduct(embeddingA, embeddingB,);
+const sim = dotProduct({ a: embeddingA, b: embeddingB, },);
 
 // For arbitrary vectors, use cosineSimilarity which normalizes first
-const sim2 = cosineSimilarity(vectorA, vectorB,);
+const sim2 = cosineSimilarity({ a: vectorA, b: vectorB, },);
 ```
 
 ## CLI

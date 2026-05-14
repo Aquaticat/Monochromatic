@@ -1554,6 +1554,12 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
+      '@optique/core':
+        specifier: 'catalog:'
+        version: 1.0.0-dev.1692
+      '@optique/run':
+        specifier: 'catalog:'
+        version: 1.0.0-dev.1692
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*

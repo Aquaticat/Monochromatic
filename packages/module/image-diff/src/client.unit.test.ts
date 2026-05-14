@@ -22,7 +22,15 @@ import type { Provider, } from './types.ts';
  * @param blue - blue channel value (0-255)
  * @returns 1x1 PNG as base64 data URI
  */
-function makeMinimalPngDataUri(red: number, green: number, blue: number,): string {
+function makeMinimalPngDataUri({
+  red,
+  green,
+  blue,
+}: {
+  red: number;
+  green: number;
+  blue: number;
+},): string {
   /**
    * Minimal 1x1 RGBA PNG built from raw bytes.
    * Structure: PNG signature + IHDR + IDAT (zlib-compressed scanline) + IEND.
@@ -30,25 +38,30 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number,): strin
   const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,];
 
   /** CRC32 lookup table, computed once. */
-  const crcTable: number[] = [];
-  for (let n = 0; n < 256; n++) {
-    let c = n;
-    for (let k = 0; k < 8; k++) {
-      // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise ops
-      c = c & 1 ? 0xED_B8_83_20 ^ (c >>> 1) : c >>> 1;
-    }
-    crcTable.push(c,);
-  }
+  const crcTable: number[] = Array.from(
+    { length: 256, },
+    function buildCrcEntry(_, n,) {
+      return Array.from({ length: 8, },).reduce(
+        function step(c: number,) {
+          // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise ops
+          return c & 1 ? 0xED_B8_83_20 ^ (c >>> 1) : c >>> 1;
+        },
+        n,
+      );
+    },
+  );
 
   /** Compute CRC32 of a byte array. */
   function crc32(bytes: number[],): number {
-    let crc = 0xFF_FF_FF_FF;
-    for (const byte of bytes) {
-      // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise operations
-      crc = (crcTable[(crc ^ byte) & 0xFF] ?? 0) ^ (crc >>> 8);
-    }
+    const finalCrc = bytes.reduce(
+      function updateCrc(crc, byte,) {
+        // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise operations
+        return (crcTable[(crc ^ byte) & 0xFF] ?? 0) ^ (crc >>> 8);
+      },
+      0xFF_FF_FF_FF,
+    );
     // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- final XOR; bitwise truncation is intentional for CRC32
-    return Math.trunc((crc ^ 0xFF_FF_FF_FF) >>> 0,);
+    return Math.trunc((finalCrc ^ 0xFF_FF_FF_FF) >>> 0,);
   }
 
   /** Encode a 4-byte big-endian unsigned integer. */
@@ -66,20 +79,43 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number,): strin
   }
 
   /** Build a PNG chunk: length + type + data + CRC. */
-  function makeChunk(type: number[], data: number[],): number[] {
+  function makeChunk({
+    type,
+    data,
+  }: {
+    type: number[];
+    data: number[];
+  },): number[] {
     const typeAndData = [...type, ...data,];
     return [...uint32be(data.length,), ...typeAndData,
       ...uint32be(crc32(typeAndData,),),];
   }
 
   /** IHDR: 1x1, 8-bit RGBA */
-  const ihdr = makeChunk(
-    [0x49, 0x48, 0x44, 0x52,],
-    [...uint32be(1,), ...uint32be(1,), 8, 6, 0, 0, 0,],
-  );
+  const ihdr = makeChunk({
+    type: [0x49, 0x48, 0x44, 0x52,],
+    data: [...uint32be(1,), ...uint32be(1,), 8, 6, 0, 0, 0,],
+  },);
 
   /** Raw scanline: filter byte (0=None) + RGBA pixel. */
   const rawScanline = [0, red, green, blue, 255,];
+
+  /** Adler-32 checksum of the raw scanline data. */
+  const {
+    adlerA,
+    adlerB,
+  } = rawScanline.reduce(
+    function updateAdler(acc, byte,) {
+      const nextA = (acc.adlerA + byte) % 65_521;
+      return {
+        adlerA: nextA,
+        adlerB: (acc.adlerB + nextA) % 65_521,
+      };
+    },
+    { adlerA: 1, adlerB: 0, },
+  );
+  // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- Adler-32 packing; bitwise truncation is intentional
+  const adler32 = Math.trunc(((adlerB << 16) | adlerA) >>> 0,);
 
   /**
    * Zlib wrapper around a single uncompressed deflate block.
@@ -100,26 +136,25 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number,): strin
     nlen & 0xFF,
     (nlen >>> 8) & 0xFF,
     ...rawScanline,
+    ...uint32be(adler32,),
   ];
 
-  /** Adler-32 checksum of the raw scanline data. */
-  let a = 1;
-  let b = 0;
-  for (const byte of rawScanline) {
-    a = (a + byte) % 65_521;
-    b = (b + a) % 65_521;
-  }
-  // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- Adler-32 packing; bitwise truncation is intentional
-  const adler32 = Math.trunc(((b << 16) | a) >>> 0,);
-  deflateBlock.push(...uint32be(adler32,),);
-
-  const idat = makeChunk([0x49, 0x44, 0x41, 0x54,], deflateBlock,);
-  const iend = makeChunk([0x49, 0x45, 0x4E, 0x44,], [],);
+  const idat = makeChunk({
+    type: [0x49, 0x44, 0x41, 0x54,],
+    data: deflateBlock,
+  },);
+  const iend = makeChunk({
+    type: [0x49, 0x45, 0x4E, 0x44,],
+    data: [],
+  },);
 
   const pngBytes = new Uint8Array([...pngSignature, ...ihdr, ...idat, ...iend,],);
-  let binary = '';
-  for (const byte of pngBytes)
-    binary += String.fromCodePoint(byte,);
+  const binary = Array.from(
+    pngBytes,
+    function byteToChar(byte,) {
+      return String.fromCodePoint(byte,);
+    },
+  ).join('',);
   return `data:image/png;base64,${btoa(binary,)}`;
 }
 
@@ -134,8 +169,11 @@ await describe({
         it({
           name: 'returns an embedding vector from a minimal PNG',
           fn: async () => {
-            const dataUri = makeMinimalPngDataUri(255, 0, 0,);
-            const result = await embed({ base64: dataUri, }, { provider: 'voyage', },);
+            const dataUri = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const result = await embed({
+              input: { base64: dataUri, },
+              config: { provider: 'voyage', },
+            },);
 
             expect(result.embedding.length,).toBeGreaterThan(0,);
             expect(result.usage.totalTokens,).toBeGreaterThan(0,);
@@ -149,10 +187,11 @@ await describe({
         it({
           name: 'returns embeddings for multiple images',
           fn: async () => {
-            const red = makeMinimalPngDataUri(255, 0, 0,);
-            const blue = makeMinimalPngDataUri(0, 0, 255,);
-            const result = await embedBatch([{ base64: red, }, { base64: blue, },], {
-              provider: 'voyage',
+            const red = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const blue = makeMinimalPngDataUri({ red: 0, green: 0, blue: 255, },);
+            const result = await embedBatch({
+              inputs: [{ base64: red, }, { base64: blue, },],
+              config: { provider: 'voyage', },
             },);
 
             expect(result.embeddings.length,).toBe(2,);
@@ -171,9 +210,11 @@ await describe({
         it({
           name: 'identical images have similarity near 1',
           fn: async () => {
-            const red = makeMinimalPngDataUri(255, 0, 0,);
-            const result = await compare({ base64: red, }, { base64: red, }, {
-              provider: 'voyage',
+            const red = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const result = await compare({
+              imageA: { base64: red, },
+              imageB: { base64: red, },
+              config: { provider: 'voyage', },
             },);
 
             expect(result.similarity,).toBeGreaterThan(0.99,);
@@ -183,10 +224,12 @@ await describe({
         it({
           name: 'different-colored images have lower similarity',
           fn: async () => {
-            const red = makeMinimalPngDataUri(255, 0, 0,);
-            const blue = makeMinimalPngDataUri(0, 0, 255,);
-            const result = await compare({ base64: red, }, { base64: blue, }, {
-              provider: 'voyage',
+            const red = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const blue = makeMinimalPngDataUri({ red: 0, green: 0, blue: 255, },);
+            const result = await compare({
+              imageA: { base64: red, },
+              imageB: { base64: blue, },
+              config: { provider: 'voyage', },
             },);
 
             expect(result.similarity,).toBeLessThan(1,);
@@ -207,8 +250,11 @@ await describe({
         it({
           name: 'returns an embedding vector from a minimal PNG',
           fn: async () => {
-            const dataUri = makeMinimalPngDataUri(255, 0, 0,);
-            const result = await embed({ base64: dataUri, }, { provider: 'gemini', },);
+            const dataUri = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const result = await embed({
+              input: { base64: dataUri, },
+              config: { provider: 'gemini', },
+            },);
 
             expect(result.embedding.length,).toBeGreaterThan(0,);
           },
@@ -221,10 +267,11 @@ await describe({
         it({
           name: 'returns embeddings for multiple images',
           fn: async () => {
-            const red = makeMinimalPngDataUri(255, 0, 0,);
-            const blue = makeMinimalPngDataUri(0, 0, 255,);
-            const result = await embedBatch([{ base64: red, }, { base64: blue, },], {
-              provider: 'gemini',
+            const red = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const blue = makeMinimalPngDataUri({ red: 0, green: 0, blue: 255, },);
+            const result = await embedBatch({
+              inputs: [{ base64: red, }, { base64: blue, },],
+              config: { provider: 'gemini', },
             },);
 
             expect(result.embeddings.length,).toBe(2,);
@@ -243,9 +290,11 @@ await describe({
         it({
           name: 'identical images have similarity near 1',
           fn: async () => {
-            const red = makeMinimalPngDataUri(255, 0, 0,);
-            const result = await compare({ base64: red, }, { base64: red, }, {
-              provider: 'gemini',
+            const red = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const result = await compare({
+              imageA: { base64: red, },
+              imageB: { base64: red, },
+              config: { provider: 'gemini', },
             },);
 
             expect(result.similarity,).toBeGreaterThan(0.99,);
@@ -255,10 +304,12 @@ await describe({
         it({
           name: 'different-colored images have lower similarity',
           fn: async () => {
-            const red = makeMinimalPngDataUri(255, 0, 0,);
-            const blue = makeMinimalPngDataUri(0, 0, 255,);
-            const result = await compare({ base64: red, }, { base64: blue, }, {
-              provider: 'gemini',
+            const red = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const blue = makeMinimalPngDataUri({ red: 0, green: 0, blue: 255, },);
+            const result = await compare({
+              imageA: { base64: red, },
+              imageB: { base64: blue, },
+              config: { provider: 'gemini', },
             },);
 
             expect(result.similarity,).toBeLessThan(1,);
@@ -279,9 +330,12 @@ await describe({
         it({
           name: 'returns results from both providers',
           fn: async () => {
-            const red = makeMinimalPngDataUri(255, 0, 0,);
-            const blue = makeMinimalPngDataUri(0, 0, 255,);
-            const results = await compareAll({ base64: red, }, { base64: blue, },);
+            const red = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
+            const blue = makeMinimalPngDataUri({ red: 0, green: 0, blue: 255, },);
+            const results = await compareAll({
+              imageA: { base64: red, },
+              imageB: { base64: blue, },
+            },);
 
             expect(results.length,).toBe(2,);
             const providers = results.map(function getProvider(r,) {
@@ -304,7 +358,7 @@ await describe({
         it({
           name: 'returns embeddings from both providers',
           fn: async () => {
-            const red = makeMinimalPngDataUri(255, 0, 0,);
+            const red = makeMinimalPngDataUri({ red: 255, green: 0, blue: 0, },);
             const results = await embedAll({ base64: red, },);
 
             expect(results.length,).toBe(2,);

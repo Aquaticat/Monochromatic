@@ -33,13 +33,16 @@ import type {
  *
  * @example
  * ```ts
- * const { embedding } = await geminiEmbed({ path: './photo.png' }, {});
+ * const { embedding } = await geminiEmbed({ input: { path: './photo.png' }, config: {} });
  * ```
  */
-async function geminiEmbed(
-  input: ImageInput,
-  config: ImageDiffConfig,
-): Promise<EmbeddingResult> {
+async function geminiEmbed({
+  input,
+  config,
+}: {
+  input: ImageInput;
+  config: ImageDiffConfig;
+},): Promise<EmbeddingResult> {
   const rl = tagged({
     tag: geminiEmbed.name,
     l,

@@ -57,10 +57,10 @@ export async function embedAll(
 
   const results = await Promise.all(
     ALL_PROVIDERS.map(async function embedWithProvider(provider,) {
-      const result = await embed(
+      const result = await embed({
         input,
-        { provider, },
-      );
+        config: { provider, },
+      },);
       return {
         provider,
         result,
@@ -100,10 +100,10 @@ export async function embedBatchAll(
 
   const results = await Promise.all(
     ALL_PROVIDERS.map(async function embedBatchWithProvider(provider,) {
-      const result = await embedBatch(
+      const result = await embedBatch({
         inputs,
-        { provider, },
-      );
+        config: { provider, },
+      },);
       return {
         provider,
         result,

@@ -34,13 +34,16 @@ const DEFAULT_VOYAGE_MODEL: VoyageModel = 'voyage-multimodal-3.5';
  *
  * @example
  * ```ts
- * const { embedding } = await voyageEmbed({ path: './photo.png' }, {});
+ * const { embedding } = await voyageEmbed({ input: { path: './photo.png' }, config: {} });
  * ```
  */
-async function voyageEmbed(
-  input: ImageInput,
-  config: ImageDiffConfig,
-): Promise<EmbeddingResult> {
+async function voyageEmbed({
+  input,
+  config,
+}: {
+  input: ImageInput;
+  config: ImageDiffConfig;
+},): Promise<EmbeddingResult> {
   const rl = tagged({
     tag: voyageEmbed.name,
     l,
@@ -58,10 +61,10 @@ async function voyageEmbed(
     truncation: true,
   };
 
-  const response = await callVoyageApi(
-    request,
+  const response = await callVoyageApi({
+    requestBody: request,
     apiKey,
-  );
+  },);
   const firstData = response.data[0];
   if (firstData === undefined)
     throw new Error('Voyage API returned empty data array',);
@@ -87,13 +90,19 @@ async function voyageEmbed(
  *
  * @example
  * ```ts
- * const { embeddings } = await voyageEmbedBatch([{ path: 'a.png' }, { path: 'b.png' }], {});
+ * const { embeddings } = await voyageEmbedBatch({
+ *   inputs: [{ path: 'a.png' }, { path: 'b.png' }],
+ *   config: {},
+ * });
  * ```
  */
-async function voyageEmbedBatch(
-  inputs: readonly ImageInput[],
-  config: ImageDiffConfig,
-): Promise<BatchEmbeddingResult> {
+async function voyageEmbedBatch({
+  inputs,
+  config,
+}: {
+  inputs: readonly ImageInput[];
+  config: ImageDiffConfig;
+},): Promise<BatchEmbeddingResult> {
   const rl = tagged({
     tag: voyageEmbedBatch.name,
     l,
@@ -120,10 +129,10 @@ async function voyageEmbedBatch(
     truncation: true,
   };
 
-  const response = await callVoyageApi(
-    request,
+  const response = await callVoyageApi({
+    requestBody: request,
     apiKey,
-  );
+  },);
 
   /** Sort by index to guarantee input order. */
   const sorted = [...response.data,].toSorted(function byIndex(

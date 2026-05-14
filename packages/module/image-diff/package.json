@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
-    "@monochromatic-dev/module-logger": "workspace:*"
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@optique/core": "catalog:",
+    "@optique/run": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

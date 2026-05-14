@@ -10,10 +10,10 @@
  * import { compareAll } from '@monochromatic-dev/module-image-diff';
  *
  * // Compare using all providers (Voyage + Gemini)
- * const results = await compareAll(
- *   { path: './before.png' },
- *   { path: './after.png' },
- * );
+ * const results = await compareAll({
+ *   imageA: { path: './before.png' },
+ *   imageB: { path: './after.png' },
+ * });
  * for (const { provider, result } of results) {
  *   console.log(`${provider}: similarity=${result.similarity}`);
  * }
@@ -24,11 +24,11 @@
  * import { compare } from '@monochromatic-dev/module-image-diff';
  *
  * // Compare using a specific provider
- * const result = await compare(
- *   { path: './before.png' },
- *   { path: './after.png' },
- *   { provider: 'gemini' },
- * );
+ * const result = await compare({
+ *   imageA: { path: './before.png' },
+ *   imageB: { path: './after.png' },
+ *   config: { provider: 'gemini' },
+ * });
  * ```
  *
  * @packageDocumentation

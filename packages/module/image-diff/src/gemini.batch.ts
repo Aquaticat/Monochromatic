@@ -31,13 +31,19 @@ import type {
  *
  * @example
  * ```ts
- * const { embeddings } = await geminiEmbedBatch([{ path: 'a.png' }, { path: 'b.png' }], {});
+ * const { embeddings } = await geminiEmbedBatch({
+ *   inputs: [{ path: 'a.png' }, { path: 'b.png' }],
+ *   config: {},
+ * });
  * ```
  */
-export async function geminiEmbedBatch(
-  inputs: readonly ImageInput[],
-  config: ImageDiffConfig,
-): Promise<BatchEmbeddingResult> {
+export async function geminiEmbedBatch({
+  inputs,
+  config,
+}: {
+  inputs: readonly ImageInput[];
+  config: ImageDiffConfig;
+},): Promise<BatchEmbeddingResult> {
   const rl = tagged({
     tag: geminiEmbedBatch.name,
     l,

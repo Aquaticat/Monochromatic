@@ -113,27 +113,30 @@ function resolveOpenRouterApiKey(): string | undefined {
  *
  * @example
  * ```ts
- * const description = await describeImageDifference(
- *   { path: './before.png' },
- *   { path: './after.png' },
- * );
+ * const description = await describeImageDifference({
+ *   imageA: { path: './before.png' },
+ *   imageB: { path: './after.png' },
+ * });
  * if (description !== undefined) console.log(description);
  * ```
  */
-export async function describeImageDifference(
-  imageA: ImageInput,
-  imageB: ImageInput,
-): Promise<string | undefined> {
+export async function describeImageDifference({
+  imageA,
+  imageB,
+}: {
+  imageA: ImageInput;
+  imageB: ImageInput;
+},): Promise<string | undefined> {
   const rl = tagged({
     tag: describeImageDifference.name,
     l,
   },);
 
   // Prefer the native Gemini API: avoids the OpenRouter proxy overhead
-  const geminiResult = await describeViaGemini(
+  const geminiResult = await describeViaGemini({
     imageA,
     imageB,
-  );
+  },);
   if (geminiResult !== undefined) {
     rl.debug('description obtained via native Gemini API',);
     return geminiResult;

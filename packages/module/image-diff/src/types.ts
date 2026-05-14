@@ -199,17 +199,31 @@ export type BatchEmbeddingResult = {
 //region Provider interface
 
 /**
+ * Parameters accepted by {@link EmbeddingProvider.embed}.
+ */
+export type EmbedParams = {
+  input: ImageInput;
+  config: ImageDiffConfig;
+};
+
+/**
+ * Parameters accepted by {@link EmbeddingProvider.embedBatch}.
+ */
+export type EmbedBatchParams = {
+  inputs: readonly ImageInput[];
+  config: ImageDiffConfig;
+};
+
+/**
  * Common interface that both Voyage and Gemini provider modules implement.
  * Each provider converts {@link ImageInput} into its native API format,
  * calls the embedding API, and returns normalized results.
  */
 export type EmbeddingProvider = {
   /** Compute a single image embedding. */
-  readonly embed: (input: ImageInput,
-    config: ImageDiffConfig,) => Promise<EmbeddingResult>;
+  readonly embed: (params: EmbedParams,) => Promise<EmbeddingResult>;
   /** Compute embeddings for multiple images in a batch. */
-  readonly embedBatch: (inputs: readonly ImageInput[],
-    config: ImageDiffConfig,) => Promise<BatchEmbeddingResult>;
+  readonly embedBatch: (params: EmbedBatchParams,) => Promise<BatchEmbeddingResult>;
 };
 
 //endregion Provider interface

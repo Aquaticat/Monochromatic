@@ -38,19 +38,22 @@ const ALL_PROVIDERS: readonly Provider[] = [
  *
  * @example
  * ```ts
- * const results = await compareAll(
- *   { path: './before.png' },
- *   { path: './after.png' },
- * );
+ * const results = await compareAll({
+ *   imageA: { path: './before.png' },
+ *   imageB: { path: './after.png' },
+ * });
  * for (const { provider, result } of results) {
  *   console.log(`${provider}: similarity=${result.similarity}`);
  * }
  * ```
  */
-export async function compareAll(
-  imageA: ImageInput,
-  imageB: ImageInput,
-): Promise<readonly MultiProviderComparisonEntry[]> {
+export async function compareAll({
+  imageA,
+  imageB,
+}: {
+  imageA: ImageInput;
+  imageB: ImageInput;
+},): Promise<readonly MultiProviderComparisonEntry[]> {
   const rl = tagged({
     tag: compareAll.name,
     l,
@@ -63,20 +66,20 @@ export async function compareAll(
 
   const allResults = await Promise.allSettled([
     ...ALL_PROVIDERS.map(async function compareWithProvider(provider,) {
-      const result = await compareEmbeddings(
+      const result = await compareEmbeddings({
         imageA,
         imageB,
-        { provider, },
-      );
+        config: { provider, },
+      },);
       return {
         provider,
         result,
       };
     },),
-    describeImageDifference(
+    describeImageDifference({
       imageA,
       imageB,
-    ),
+    },),
   ],);
 
   /** Last settlement is the description call. */

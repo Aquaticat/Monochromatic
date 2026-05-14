@@ -12,14 +12,17 @@
  *
  * @example
  * ```ts
- * const sim = dotProduct([1, 0], [0, 1]); // 0
- * const same = dotProduct([1, 0], [1, 0]); // 1
+ * const sim = dotProduct({ a: [1, 0], b: [0, 1] }); // 0
+ * const same = dotProduct({ a: [1, 0], b: [1, 0] }); // 1
  * ```
  */
-export function dotProduct(
-  a: readonly number[],
-  b: readonly number[],
-): number {
+export function dotProduct({
+  a,
+  b,
+}: {
+  a: readonly number[];
+  b: readonly number[];
+},): number {
   if (a.length !== b.length) {
     throw new Error(
       `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
@@ -52,34 +55,33 @@ export function dotProduct(
  *
  * @example
  * ```ts
- * const sim = cosineSimilarity([3, 4], [4, 3]); // ~0.96
+ * const sim = cosineSimilarity({ a: [3, 4], b: [4, 3] }); // ~0.96
  * ```
  */
-export function cosineSimilarity(
-  a: readonly number[],
-  b: readonly number[],
-): number {
+export function cosineSimilarity({
+  a,
+  b,
+}: {
+  a: readonly number[];
+  b: readonly number[];
+},): number {
   if (a.length !== b.length) {
     throw new Error(
       `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
     );
   }
 
-  let dot = 0;
-  let magA = 0;
-  let magB = 0;
-
-  for (let i = 0; i < a.length; i++) {
-    const ai = a[i];
-    const bi = b[i];
-    if (ai === undefined || bi === undefined)
-      break;
-    dot += ai * bi;
-    magA += ai * ai;
-    magB += bi * bi;
-  }
-
-  const magnitude = Math.sqrt(magA,) * Math.sqrt(magB,);
+  const dot = dotProduct({
+    a,
+    b,
+  },);
+  const magnitude = Math.sqrt(dotProduct({
+    a,
+    b: a,
+  },),) * Math.sqrt(dotProduct({
+    a: b,
+    b,
+  },),);
   if (magnitude === 0) {
     throw new Error(
       'Cannot compute cosine similarity: one or both vectors have zero magnitude',

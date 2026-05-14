@@ -66,10 +66,10 @@ export async function toVoyageContentItem(
           .byteLength,)
       } bytes, format: ${input.format})`,
     );
-    const dataUri = bufferToDataUri(
-      input.buffer,
-      input.format,
-    );
+    const dataUri = bufferToDataUri({
+      buffer: input.buffer,
+      format: input.format,
+    },);
     return {
       type: 'image_base64',
       image_base64: dataUri,
@@ -80,10 +80,10 @@ export async function toVoyageContentItem(
     rl.debug(`reading file: ${input.path}`,);
     const format = inferFormat(input.path,);
     const fileBuffer = await readFile(input.path,);
-    const dataUri = bufferToDataUri(
-      fileBuffer.buffer,
+    const dataUri = bufferToDataUri({
+      buffer: fileBuffer.buffer,
       format,
-    );
+    },);
     return {
       type: 'image_base64',
       image_base64: dataUri,
