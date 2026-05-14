@@ -70,8 +70,8 @@ export function $(
   const matches = str.matchAll(trimmer,);
 
   // Track consecutive matches starting from position 0
-  /** Total characters consumed by contiguous leading matches found so far. */
-  let totalTrimLength = 0;
+  /** Total characters consumed by contiguous leading matches found so far; held on an object so the function root stays const-only. */
+  const trimState = { totalTrimLength: 0, };
 
   // Process matches in order to find consecutive leading matches
   for (const match of matches) {
@@ -83,15 +83,15 @@ export function $(
 
     // No bug here because js matchAll consumes matches.
     // If match doesn't start at the current trim position, stop
-    if (matchIndex !== totalTrimLength)
+    if (matchIndex !== trimState.totalTrimLength)
       break;
 
     // Add this match length to total trim
     /** Length of the current match folded into the running trim count. */
     const matchLength = match[0].length;
-    totalTrimLength += matchLength;
+    trimState.totalTrimLength += matchLength;
   }
 
   // Return string with all consecutive leading matches removed
-  return str.slice(totalTrimLength,);
+  return str.slice(trimState.totalTrimLength,);
 }

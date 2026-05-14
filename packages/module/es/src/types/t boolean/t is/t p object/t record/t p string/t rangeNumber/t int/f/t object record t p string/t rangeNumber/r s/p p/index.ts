@@ -26,7 +26,7 @@ export function $(value: RangeNumber,): value is RangeNumberInt {
   } = value;
 
   // Check that both are integers
-  if (!Number.isInteger(startInclusive,) || !Number.isInteger(endInclusive,))
+  if ((!Number.isInteger(startInclusive,)) || (!Number.isInteger(endInclusive,)))
     return false;
 
   // Check that startInclusive <= endInclusive

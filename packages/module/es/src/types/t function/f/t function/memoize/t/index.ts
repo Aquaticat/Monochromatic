@@ -23,7 +23,10 @@ export type MemoizeOptions<
    * Computes cache key from arguments. Must be deterministic.
    * Required because variadic argument hashing is error-prone.
    */
-  keyFn: (this: void, ...args: TArgs) => string;
+  keyFn: (
+    this: void,
+    ...args: TArgs
+  ) => string;
   /**
    * Sync store backend for cache persistence.
    * Defaults to a fresh in-memory SyncStore with LRU eviction at {@link DEFAULT_MAX_CACHE_SIZE}.
@@ -50,7 +53,10 @@ export type MemoizeAsyncOptions<
    * Computes cache key from arguments. Must be deterministic.
    * Required because variadic argument hashing is error-prone.
    */
-  keyFn: (this: void, ...args: TArgs) => string;
+  keyFn: (
+    this: void,
+    ...args: TArgs
+  ) => string;
   /**
    * Store backend for cache persistence.
    * Defaults to a fresh in-memory Store with LRU eviction at {@link DEFAULT_MAX_CACHE_SIZE}.
@@ -99,7 +105,10 @@ export type MemoizedFunction<
   TArgs extends readonly unknown[],
   TReturn,
 > = {
-  (this: void, options: MemoizedCallOptions<TArgs>,): TReturn;
+  (
+    this: void,
+    options: MemoizedCallOptions<TArgs>,
+  ): TReturn;
   /** Read-only access to the underlying SyncStore. */
   readonly store: SyncStore;
   /** Wipe all cached entries. */
@@ -129,7 +138,10 @@ export type MemoizedAsyncFunction<
   TArgs extends readonly unknown[],
   TReturn,
 > = {
-  (this: void, options: MemoizedCallOptions<TArgs>,): Promise<TReturn>;
+  (
+    this: void,
+    options: MemoizedCallOptions<TArgs>,
+  ): Promise<TReturn>;
   /** Read-only access to the underlying Store. */
   readonly store: Store;
   /** Wipe all cached entries. */
@@ -159,7 +171,10 @@ export type MemoizeNamedOptions<
   TReturn,
 > = MemoizeOptions<TArgs> & {
   /** Pure synchronous function to memoize. */
-  fn: (this: void, ...args: TArgs) => TReturn;
+  fn: (
+    this: void,
+    ...args: TArgs
+  ) => TReturn;
 };
 
 /**
@@ -183,5 +198,8 @@ export type MemoizeAsyncNamedOptions<
   TReturn,
 > = MemoizeAsyncOptions<TArgs> & {
   /** Pure async function to memoize. */
-  fn: (this: void, ...args: TArgs) => Promise<TReturn>;
+  fn: (
+    this: void,
+    ...args: TArgs
+  ) => Promise<TReturn>;
 };

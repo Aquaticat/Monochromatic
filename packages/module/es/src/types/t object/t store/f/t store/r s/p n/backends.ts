@@ -16,16 +16,19 @@ import type { SyncStorageBackend, } from '../../../../t/r s/index.ts';
  *
  * @example
  * ```ts
- * const results = queryAllBackendsSync(backends, 'my-key');
+ * const results = queryAllBackendsSync({ backends, key: 'my-key' });
  * ```
  */
-export function queryAllBackendsSync(
+export function queryAllBackendsSync({
+  backends,
+  key,
+}: {
   backends: readonly [
     SyncStorageBackend,
     ...SyncStorageBackend[],
-  ],
-  key: string,
-): [
+  ];
+  key: string;
+},): [
   BackendResult<SyncStorageBackend>,
   ...BackendResult<SyncStorageBackend>[],
 ] {

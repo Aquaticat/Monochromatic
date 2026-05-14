@@ -17,16 +17,19 @@ import { match, } from 'ts-pattern';
  *
  * @example
  * ```ts
- * serializePrimitive(true, 'boolean');   // "true"
- * serializePrimitive("hello", 'string'); // '"hello"'
- * serializePrimitive(42, 'number');      // "42"
+ * serializePrimitive({ obj: true, primitiveObjType: 'boolean' });   // "true"
+ * serializePrimitive({ obj: "hello", primitiveObjType: 'string' }); // '"hello"'
+ * serializePrimitive({ obj: 42, primitiveObjType: 'number' });      // "42"
  * ```
  */
-export function serializePrimitive(
-  obj: unknown,
+export function serializePrimitive({
+  obj,
+  primitiveObjType,
+}: {
+  obj: unknown;
   primitiveObjType: 'boolean' | 'string' | 'number' | 'date' | 'bigint' | 'null'
-    | 'undefined' | 'NaN' | 'symbol',
-): string {
+    | 'undefined' | 'NaN' | 'symbol';
+},): string {
   return match(primitiveObjType,)
     .with(
       'boolean',

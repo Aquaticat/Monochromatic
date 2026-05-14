@@ -23,10 +23,16 @@
  * ```
  */
 export function $<
-  const Fn extends (a: Parameters<Fn>[0], b: Parameters<Fn>[1],) => ReturnType<Fn>,
+  const Fn extends (
+    a: Parameters<Fn>[0],
+    b: Parameters<Fn>[1],
+  ) => ReturnType<Fn>,
 >(
   fn: Fn,
-): (a: Parameters<Fn>[0], b: Parameters<Fn>[1],) => ReturnType<Fn> {
+): (
+  a: Parameters<Fn>[0],
+  b: Parameters<Fn>[1],
+) => ReturnType<Fn> {
   return function binary(
     a: Parameters<Fn>[0],
     b: Parameters<Fn>[1],

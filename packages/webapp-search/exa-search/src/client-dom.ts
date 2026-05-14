@@ -19,8 +19,8 @@ export const baseUrl = 'https://exa.aquati.cat/api/proxy';
  * Bindings are resolved eagerly at module load via `querySelector` assertions.
  */
 const bindings = {
-  apiKey: createObservable(
-    await v.parseAsync(
+  apiKey: createObservable({
+    initialValue: await v.parseAsync(
       v.pipeAsync(
         v.nullable(
           v.pipe(
@@ -54,13 +54,13 @@ const bindings = {
       ),
       localStorage.getItem('exaApiKey',),
     ),
-    function updateStorage(val,) {
+    onChange: function updateStorage(val,) {
       localStorage.setItem(
         'exaApiKey',
         val,
       );
     },
-  ),
+  },),
   searchForm: nonNullishOrThrow(
     document.querySelector<HTMLFormElement>('.searchForm',),
   ),
@@ -127,8 +127,8 @@ const derived = {
     ),
     numResultsInput.max,
   ),
-  numTotalSearches: createObservable(
-    v.parse(
+  numTotalSearches: createObservable({
+    initialValue: v.parse(
       v.pipe(
         v.unknown(),
         v.transform(function toNumberOrZero(input,) {
@@ -140,12 +140,12 @@ const derived = {
       ),
       localStorage.getItem('numTotalSearches',),
     ),
-    function updateDisplay(val,) {
+    onChange: function updateDisplay(val: number,) {
       numTotalSearchesSpan.textContent = String(val,);
     },
-  ),
-  numResults: createObservable(
-    v.parse(
+  },),
+  numResults: createObservable({
+    initialValue: v.parse(
       v.pipe(
         v.unknown(),
         v.transform(Number,),
@@ -153,14 +153,14 @@ const derived = {
       ),
       localStorage.getItem('numResults',) ?? numResultsInput.value,
     ),
-    function updateStored(val,) {
+    onChange: function updateStored(val: number,) {
       localStorage.setItem(
         'numResults',
         String(val,),
       );
       numResultsInput.value = String(val,);
     },
-  ),
+  },),
 };
 
 /** Search text input element. */

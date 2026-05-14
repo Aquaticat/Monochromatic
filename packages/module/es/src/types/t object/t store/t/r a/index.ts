@@ -29,7 +29,10 @@ export type StorageBackend = {
    * @param key - storage key
    * @param value - serialized value to store
    */
-  set: (key: string, value: string,) => Promisable<unknown>;
+  set: (
+    key: string,
+    value: string,
+  ) => Promisable<unknown>;
 
   /**
    * Remove entry by key.
@@ -96,7 +99,10 @@ export type $ = BaseStoreFields<StorageBackend> & {
    * @param value - data to persist
    * @returns this store for chaining
    */
-  set: (key: string, value: unknown,) => Promise<$>;
+  set: (
+    key: string,
+    value: unknown,
+  ) => Promise<$>;
 
   /**
    * Read value by key using consensus and heal backends to canonical result.

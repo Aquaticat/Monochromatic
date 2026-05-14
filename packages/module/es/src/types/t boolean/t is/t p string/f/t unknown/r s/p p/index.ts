@@ -27,7 +27,7 @@ import type { $ as Is, } from '@_/types/t function/t is/t/r s/p p/index.ts';
  * ```
  */
 export function $(value: unknown,): value is string {
-  return typeof value === 'string';
+  return (typeof value) === 'string';
 }
 
 /** Compile-time test: function satisfies the type guard interface. */

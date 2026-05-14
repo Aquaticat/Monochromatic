@@ -26,7 +26,7 @@
  * ```
  */
 export function $(value: unknown,): boolean {
-  if (typeof value !== 'object' || value === null)
+  if (((typeof value) !== 'object') || (value === null))
     return false;
 
   /** Tracks visited object references. */
@@ -40,7 +40,7 @@ export function $(value: unknown,): boolean {
   while (stack.length > 0) {
     /** Next reference dequeued from the traversal stack. */
     const current = stack.pop();
-    if (typeof current !== 'object' || current === null)
+    if (((typeof current) !== 'object') || (current === null))
       continue;
     if (seen.has(current,))
       return true;

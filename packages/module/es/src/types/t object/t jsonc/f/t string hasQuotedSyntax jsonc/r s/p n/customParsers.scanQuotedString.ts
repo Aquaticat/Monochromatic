@@ -13,30 +13,33 @@ import type * as Jsonc from '../../../../t/index.ts';
  *
  * @returns index of the closing double quote
  */
-function findTerminatingQuote(
-  input: string,
-  fromIndex: number,
-): number {
-  // Mutable scan index and counter required for allocation-free O(n) traversal
+function findTerminatingQuote({
+  input,
+  fromIndex,
+}: {
+  input: string;
+  fromIndex: number;
+},): number {
+  // Mutable scan counter held on an object so the function root stays const-only.
   /** Backslash run length carried across iterations to decide quote escaping by parity. */
-  let consecutiveBackslashes = 0;
+  const scanState = { consecutiveBackslashes: 0, };
   for (let charIndex = fromIndex; charIndex < input.length; charIndex++) {
     /** Current input character under inspection in the scan loop. */
     const ch = input[charIndex];
     if (ch === '\\') {
-      consecutiveBackslashes++;
+      scanState.consecutiveBackslashes++;
       continue;
     }
     if (ch === '"') {
-      if ((consecutiveBackslashes % 2) === 0)
+      if ((scanState.consecutiveBackslashes % 2) === 0)
         return charIndex; // unescaped terminator
 
       // escaped quote; reset and continue
-      consecutiveBackslashes = 0;
+      scanState.consecutiveBackslashes = 0;
       continue;
     }
     // non-backslash, non-quote resets the run
-    consecutiveBackslashes = 0;
+    scanState.consecutiveBackslashes = 0;
   }
   throw new Error('malformed jsonc, unterminated string',);
 }
@@ -73,10 +76,10 @@ export function scanQuotedString(
     throw new Error('expected a double quote to start a JSON string',);
 
   /** Index of the terminating double quote located by the scan loop. */
-  const closingIndex = findTerminatingQuote(
-    value,
-    1,
-  );
+  const closingIndex = findTerminatingQuote({
+    input: value,
+    fromIndex: 1,
+  },);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- slice of JSONC string remains a JSONC fragment */
   /** Consumed quoted span carried back in the fragment-branded form. */
   const consumed = value.slice(

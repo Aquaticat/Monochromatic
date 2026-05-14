@@ -27,11 +27,11 @@ export function $(value: StringUnknownRecord,): value is RangeNumberInt {
   } = value;
 
   // Check that both properties are numbers
-  if (typeof startInclusive !== 'number' || typeof endInclusive !== 'number')
+  if (((typeof startInclusive) !== 'number') || ((typeof endInclusive) !== 'number'))
     return false;
 
   // Check that both are integers
-  if (!Number.isInteger(startInclusive,) || !Number.isInteger(endInclusive,))
+  if ((!Number.isInteger(startInclusive,)) || (!Number.isInteger(endInclusive,)))
     return false;
 
   // Check that startInclusive <= endInclusive

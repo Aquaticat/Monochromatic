@@ -45,5 +45,5 @@ export function $<const MyValue,>(
   : MyValue & Promise<unknown>
 {
   // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime check on unknown value shape
-  return typeof (value as any)?.then === 'function';
+  return (typeof (value as any)?.then) === 'function';
 }

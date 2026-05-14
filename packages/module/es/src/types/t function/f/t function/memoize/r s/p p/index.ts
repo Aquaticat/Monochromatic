@@ -33,12 +33,21 @@ import { $ as named, } from '../p n/index.ts';
 export function $<
   const TArgs extends readonly unknown[],
   const TReturn,
->(
-  this: void,
-  fn: (this: void, ...args: TArgs) => TReturn,
-  keyFn: (this: void, ...args: TArgs) => string,
-  store?: SyncStore,
-): MemoizedFunction<TArgs, TReturn> {
+>({
+  fn,
+  keyFn,
+  store,
+}: {
+  fn: (
+    this: void,
+    ...args: TArgs
+  ) => TReturn;
+  keyFn: (
+    this: void,
+    ...args: TArgs
+  ) => string;
+  store?: SyncStore;
+},): MemoizedFunction<TArgs, TReturn> {
   return named({
     fn,
     keyFn,

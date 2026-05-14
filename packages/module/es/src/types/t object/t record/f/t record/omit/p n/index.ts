@@ -57,7 +57,7 @@ import {
   /** Normalised omit set with numeric keys widened to strings to match Reflect.ownKeys output. */
   const normalizedOmitSet = new Set<string | symbol>();
   for (const key of toOmit) {
-    if (typeof key === 'number')
+    if ((typeof key) === 'number')
       normalizedOmitSet.add(String(key,),);
     else
       normalizedOmitSet.add(key,);

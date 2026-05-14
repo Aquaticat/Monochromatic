@@ -13,42 +13,42 @@
  * Basic transformation:
  * ```ts
  * const numbers = [1, 2, 3, 4];
- * const doubled = $(x => x * 2, numbers);
+ * const doubled = $({ mappingFn: (x) => x * 2, arrayLike: numbers });
  * console.log(doubled); // [2, 4, 6, 8]
  * ```
  *
  * @example
  * Using index parameter:
  * ```ts
- * const indexed = $(
- *   (element, index) => `${index}: ${element}`,
- *   ['a', 'b', 'c']
- * );
+ * const indexed = $({
+ *   mappingFn: (element, index) => `${index}: ${element}`,
+ *   arrayLike: ['a', 'b', 'c'],
+ * });
  * console.log(indexed); // ["0: a", "1: b", "2: c"]
  * ```
  *
  * @example
  * Using all parameters (element, index, array):
  * ```ts
- * const withContext = $(
- *   (element, index, array) => ({
+ * const withContext = $({
+ *   mappingFn: (element, index, array) => ({
  *     value: element,
  *     position: index + 1,
- *     total: array.length
+ *     total: array.length,
  *   }),
- *   [10, 20, 30]
- * );
+ *   arrayLike: [10, 20, 30],
+ * });
  * // [{ value: 10, position: 1, total: 3 }, ...]
  * ```
  *
  * @example
  * Works with any iterable:
  * ```ts
- * const setResult = $(x => x.toUpperCase(), new Set(['a', 'b']));
+ * const setResult = $({ mappingFn: (x) => x.toUpperCase(), arrayLike: new Set(['a', 'b']) });
  * console.log(setResult); // ['A', 'B']
  *
  * // String characters
- * const charCodes = $(c => c.charCodeAt(0), 'hello');
+ * const charCodes = $({ mappingFn: (c) => c.charCodeAt(0), arrayLike: 'hello' });
  * console.log(charCodes); // [104, 101, 108, 108, 111]
  * ```
  *
@@ -60,20 +60,30 @@
  *   { id: 2, name: 'Bob', age: 25 }
  * ];
  *
- * const userSummary = $(
- *   (user, index) => `${index + 1}. ${user.name} (${user.age})`,
- *   users
- * );
+ * const userSummary = $({
+ *   mappingFn: (user, index) => `${index + 1}. ${user.name} (${user.age})`,
+ *   arrayLike: users,
+ * });
  * console.log(userSummary); // ["1. Alice (30)", "2. Bob (25)"]
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function $<const T_element, const T_mappedElement,>(
+/* @__NO_SIDE_EFFECTS__ */ export function $<const T_element, const T_mappedElement,>({
+  mappingFn,
+  arrayLike,
+}: {
   mappingFn:
     | ((element: T_element,) => T_mappedElement)
-    | ((element: T_element, index: number,) => T_mappedElement)
-    | ((element: T_element, index: number, array: T_element[],) => T_mappedElement),
-  arrayLike: Iterable<T_element>,
-): T_mappedElement[] {
+    | ((
+      element: T_element,
+      index: number,
+    ) => T_mappedElement)
+    | ((
+      element: T_element,
+      index: number,
+      array: T_element[],
+    ) => T_mappedElement);
+  arrayLike: Iterable<T_element>;
+},): T_mappedElement[] {
   /** Materialised array used so the union-typed callback can dispatch through Array.map. */
   const arr: T_element[] = [...arrayLike,];
   // oxlint-disable-next-line unicorn/no-array-callback-reference -- mappingFn union signature handles all Array.map callback arities

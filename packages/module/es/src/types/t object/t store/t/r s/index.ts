@@ -28,7 +28,10 @@ export type SyncStorageBackend = {
    * @param key - storage key
    * @param value - serialized value to store
    */
-  set: (key: string, value: string,) => unknown;
+  set: (
+    key: string,
+    value: string,
+  ) => unknown;
 
   /**
    * Remove entry by key.
@@ -95,7 +98,10 @@ export type $ = BaseStoreFields<SyncStorageBackend> & {
    * @param value - data to persist
    * @returns this store for chaining
    */
-  set: (key: string, value: unknown,) => $;
+  set: (
+    key: string,
+    value: unknown,
+  ) => $;
 
   /**
    * Read value by key using consensus and heal backends to canonical result.

@@ -122,18 +122,23 @@ export function parseOneRecordMember(
  *
  * @example
  * ```ts
- * const { entries, tail } = parseRecordMembers('"a": 1, "b": 2}rest' as FragmentStringJsonc);
+ * const { entries, tail } = parseRecordMembers({
+ *   tail: '"a": 1, "b": 2}rest' as FragmentStringJsonc,
+ * });
  * // entries.length === 2
  * // tail === 'rest'
  * ```
  */
-export function parseRecordMembers(
-  tail: FragmentStringJsonc,
-  entries: readonly [
+export function parseRecordMembers({
+  tail,
+  entries = [],
+}: {
+  tail: FragmentStringJsonc;
+  entries?: readonly [
     Jsonc.RecordKey,
     Jsonc.Value,
-  ][] = [],
-): {
+  ][];
+},): {
   entries: readonly [
     Jsonc.RecordKey,
     Jsonc.Value,
@@ -169,10 +174,10 @@ export function parseRecordMembers(
       entries: nextEntries,
       tail: decision.tail,
     }
-    : parseRecordMembers(
-      decision.tailStart,
-      nextEntries,
-    );
+    : parseRecordMembers({
+      tail: decision.tailStart,
+      entries: nextEntries,
+    },);
 }
 //endregion Record members
 
@@ -239,10 +244,9 @@ export function customParserForRecord(
   const {
     entries,
     tail,
-  } = parseRecordMembers(
-    woOpening,
-    [],
-  );
+  } = parseRecordMembers({
+    tail: woOpening,
+  },);
   return {
     value: new Map(entries,),
     ...(context?.comment ? { comment: context.comment, } : {}),

@@ -28,7 +28,7 @@ await describe({
             const result = tryArrayFastPath({ value: '[1, 2, 3, ]' as FragmentStringJsonc,
               context, },);
 
-            if (typeof result === 'symbol')
+            if ((typeof result) === 'symbol')
               throw new Error('expected parsed result, got symbol',);
             if (!('json' in result))
               throw new Error('expected PlainJson result',);
@@ -44,7 +44,7 @@ await describe({
             const result = tryArrayFastPath({ value: '[1, 2, 3]' as FragmentStringJsonc,
               context, },);
 
-            if (typeof result === 'symbol')
+            if ((typeof result) === 'symbol')
               throw new Error('expected parsed result, got symbol',);
             if (!('json' in result))
               throw new Error('expected PlainJson result',);
@@ -114,7 +114,7 @@ await describe({
             },);
 
             // Narrow by category first
-            if (typeof result === 'symbol') {
+            if ((typeof result) === 'symbol') {
               if (result === NO_FAST_PATH)
                 expect(result,).toBe(NO_FAST_PATH,);
               else
@@ -137,7 +137,7 @@ await describe({
             const result = tryArrayFastPath({ value: '[1, 2, ]' as FragmentStringJsonc,
               context, },);
 
-            if (typeof result === 'symbol')
+            if ((typeof result) === 'symbol')
               throw new Error('expected parsed result',);
 
             expect(result.comment?.commentValue,).toBe('leading comment',);
@@ -175,7 +175,7 @@ await describe({
               context,
             },);
 
-            if (typeof result === 'symbol')
+            if ((typeof result) === 'symbol')
               throw new Error('expected parsed result',);
             if (!('json' in result))
               throw new Error('expected PlainJson result',);
@@ -193,7 +193,7 @@ await describe({
               context,
             },);
 
-            if (typeof result === 'symbol')
+            if ((typeof result) === 'symbol')
               throw new Error('expected parsed result',);
             if (!('json' in result))
               throw new Error('expected PlainJson result',);

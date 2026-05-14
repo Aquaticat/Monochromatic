@@ -31,7 +31,9 @@ await describe({
         it({
           name: 'no context comment',
           fn: async () => {
-            const out = parseRecordHeader(' "a":1}TAIL' as FragmentStringJsonc,);
+            const out = parseRecordHeader({
+              valueAfterBrace: ' "a":1}TAIL' as FragmentStringJsonc,
+            },);
             expect(out.recordComment,).toBeUndefined();
             expect(out.tail,).toBe(' "a":1}TAIL' as FragmentStringJsonc,);
           },
@@ -40,10 +42,12 @@ await describe({
         it({
           name: 'with context comment',
           fn: async () => {
-            const out = parseRecordHeader(
-              ' "a":1}' as FragmentStringJsonc,
-              { comment: { type: 'block', commentValue: 'RC', }, } as Jsonc.ValueBase,
-            );
+            const out = parseRecordHeader({
+              valueAfterBrace: ' "a":1}' as FragmentStringJsonc,
+              context: {
+                comment: { type: 'block', commentValue: 'RC', },
+              } as Jsonc.ValueBase,
+            },);
             expect(out.recordComment?.type,).toBe('block',);
             expect(out.recordComment?.commentValue,).toBe('RC',);
           },
@@ -228,7 +232,9 @@ await describe({
         it({
           name: 'single member then end',
           fn: async () => {
-            const out = parseRecordMembers('"a": 1}TAIL' as FragmentStringJsonc,);
+            const out = parseRecordMembers({
+              tail: '"a": 1}TAIL' as FragmentStringJsonc,
+            },);
             expect(out.entries,).toHaveLength(1,);
             const [key, val,] = out.entries[0] as [Jsonc.RecordKey, Jsonc.Number,];
             expect(key.value,).toBe('"a"',);
@@ -240,9 +246,9 @@ await describe({
         it({
           name: 'multiple members with trailing comma',
           fn: async () => {
-            const out = parseRecordMembers(
-              '"a": 1, /* c */ "b": 2, }X' as FragmentStringJsonc,
-            );
+            const out = parseRecordMembers({
+              tail: '"a": 1, /* c */ "b": 2, }X' as FragmentStringJsonc,
+            },);
             expect(out.entries,).toHaveLength(2,);
             expect(out.entries.map(([k, v,],) => [k.value, (v as Jsonc.Number).value,]),)
               .toEqual(
@@ -255,7 +261,9 @@ await describe({
         it({
           name: 'immediate closing brace',
           fn: async () => {
-            const out = parseRecordMembers('}TAIL' as FragmentStringJsonc,);
+            const out = parseRecordMembers({
+              tail: '}TAIL' as FragmentStringJsonc,
+            },);
             expect(out.entries,).toHaveLength(0,);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },

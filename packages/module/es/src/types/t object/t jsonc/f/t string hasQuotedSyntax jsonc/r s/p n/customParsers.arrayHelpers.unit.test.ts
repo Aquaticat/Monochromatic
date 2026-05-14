@@ -65,7 +65,7 @@ await describe({
         it({
           name: 'single element then end',
           fn: async () => {
-            const out = parseArrayElements('1]TAIL' as FragmentStringJsonc,);
+            const out = parseArrayElements({ tail: '1]TAIL' as FragmentStringJsonc, },);
             expect(out.items,).toEqual([{ value: 1, },],);
             expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
           },
@@ -74,9 +74,9 @@ await describe({
         it({
           name: 'multi with comments and trailing comma',
           fn: async () => {
-            const out = parseArrayElements(
-              '1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc,
-            );
+            const out = parseArrayElements({
+              tail: '1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc,
+            },);
             expect((out.items as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2,],);
             expect(out.tail,).toBe('X' as FragmentStringJsonc,);
           },
@@ -85,7 +85,7 @@ await describe({
         it({
           name: 'invalid: identifier right after literal (boundary handled by separator)',
           fn: async () => {
-            expect(() => parseArrayElements('nullY]' as FragmentStringJsonc,)).toThrow(
+            expect(() => parseArrayElements({ tail: 'nullY]' as FragmentStringJsonc, },)).toThrow(
               /expected ',' or ']'/,
             );
           },

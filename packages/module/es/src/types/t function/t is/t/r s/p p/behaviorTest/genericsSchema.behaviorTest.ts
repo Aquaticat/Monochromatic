@@ -62,11 +62,11 @@ type RealMaybeAsyncSchema<Input = unknown, Output = Input,> =
 function isRealSchema_Unknown(value: unknown,): value is RealSchema {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof value.parse === 'function';
+  return (typeof value.parse) === 'function';
 }
 
 /**
@@ -84,11 +84,11 @@ function isRealSchema_Generic<const MyValue = unknown,>(
 {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof (value as any).parse === 'function';
+  return (typeof (value as any).parse) === 'function';
 }
 
 /**
@@ -103,11 +103,11 @@ function isRealSchema_Typed<Input = unknown, Output = Input,>(
 ): value is RealSchema<Input, Output> {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof value.parse === 'function';
+  return (typeof value.parse) === 'function';
 }
 
 /**
@@ -124,11 +124,11 @@ function isRealSchema_GenericExtends<
 ): value is T {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof value.parse === 'function';
+  return (typeof value.parse) === 'function';
 }
 
 /**
@@ -148,11 +148,11 @@ function isRealSchema_GenericExtendsInfer<
 {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof value.parse === 'function';
+  return (typeof value.parse) === 'function';
 }
 
 /**
@@ -171,11 +171,11 @@ function isRealSchema_GenericExtendsDirect<
 ): value is T {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof value.parse === 'function';
+  return (typeof value.parse) === 'function';
 }
 
 /**
@@ -188,11 +188,11 @@ function isRealSchema_GenericExtendsDirect<
 function isRealSchemaAsync_Unknown(value: unknown,): value is RealSchemaAsync {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parseAsync' in value))
     return false;
-  return typeof value.parseAsync === 'function';
+  return (typeof value.parseAsync) === 'function';
 }
 
 /**
@@ -210,11 +210,11 @@ function isRealSchemaAsync_Generic<const MyValue = unknown,>(
 {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parseAsync' in value))
     return false;
-  return typeof (value as any).parseAsync === 'function';
+  return (typeof (value as any).parseAsync) === 'function';
 }
 
 /**
@@ -231,11 +231,11 @@ function isRealSchemaAsync_GenericExtends<
 ): value is T {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parseAsync' in value))
     return false;
-  return typeof value.parseAsync === 'function';
+  return (typeof value.parseAsync) === 'function';
 }
 
 /**
@@ -279,14 +279,14 @@ function isRealMaybeAsyncSchema_GenericExtends<
 ): value is T {
   // Use type guards to check for either variant
   return (
-    (typeof value === 'object'
-      && value !== null
-      && 'parse' in value
-      && typeof value.parse === 'function')
-    || (typeof value === 'object'
-      && value !== null
-      && 'parseAsync' in value
-      && typeof value.parseAsync === 'function')
+    (((typeof value) === 'object')
+      && (value !== null)
+      && ('parse' in value)
+      && ((typeof value.parse) === 'function'))
+    || (((typeof value) === 'object')
+      && (value !== null)
+      && ('parseAsync' in value)
+      && ((typeof value.parseAsync) === 'function'))
   );
 }
 
@@ -551,7 +551,9 @@ const realGenericTestValues = {
 
 /** Tests all guard patterns against StringToNumberSchema with Input/Output preservation. */
 const testRealGenericStringToNumber = (function testRealGenericStringToNumber(): void {
-  /** Schema under test in this scenario; each pattern below narrows {@link value} and is observed for type preservation. */
+  /**
+   * Schema under test in this scenario; each pattern below narrows {@link value} and is observed for type preservation.
+   */
   const value = realGenericTestValues.stringToNumberSchema;
 
   // Unknown Pattern
@@ -850,14 +852,14 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
 
   // Test with actual async schema
   if (isRealMaybeAsyncSchema_Unknown(asyncSchema,)
-    && 'parseAsync' in asyncSchema)
+    && ('parseAsync' in asyncSchema))
   {
     // Should work with async schemas through union
     asyncSchema.parseAsync; // Available for async schemas
   }
 
   if (isRealMaybeAsyncSchema_Generic(asyncSchema,)
-    && 'parseAsync' in asyncSchema)
+    && ('parseAsync' in asyncSchema))
   {
     // Type discrimination needed for union
     asyncSchema.parseAsync; // Available with preserved types
@@ -1124,9 +1126,13 @@ const testRealGenericComplexConstraints =
       /** Input string fed through validator/parser/transformer; literal kept so the scenario is reproducible. */
       const input = '456';
       if (validatedSchema.validator(input,)) {
-        /** Parse result on {@link input} after validation; observed inside Generic Extends narrowing. */
+        /**
+         * Parse result on {@link input} after validation; observed inside Generic Extends narrowing.
+         */
         const parsed = validatedSchema.parse(input,);
-        /** Transformer result on {@link input}; verifies the additional method retained typing under Generic Extends. */
+        /**
+         * Transformer result on {@link input}; verifies the additional method retained typing under Generic Extends.
+         */
         const transformed = validatedSchema.transformer(input,);
       }
     }
@@ -1145,9 +1151,13 @@ const testRealGenericComplexConstraints =
       /** Input string fed through validator/parser/transformer under Generic Extends Direct narrowing. */
       const input = '789';
       if (validatedSchema.validator(input,)) {
-        /** Parse result on {@link input}; verifies Generic Extends Direct retains the Output type. */
+        /**
+         * Parse result on {@link input}; verifies Generic Extends Direct retains the Output type.
+         */
         const parsed = validatedSchema.parse(input,);
-        /** Transformer result on {@link input}; verifies the extra method survives non-intersection narrowing. */
+        /**
+         * Transformer result on {@link input}; verifies the extra method survives non-intersection narrowing.
+         */
         const transformed = validatedSchema.transformer(input,);
       }
     }

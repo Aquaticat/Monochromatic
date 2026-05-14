@@ -26,7 +26,7 @@ export function $(value: StringUnknownRecord,): value is RangeNumber {
     startInclusive,
     endInclusive,
   } = value;
-  if (typeof startInclusive === 'number' && typeof endInclusive === 'number')
+  if (((typeof startInclusive) === 'number') && ((typeof endInclusive) === 'number'))
     return startInclusive <= endInclusive;
 
   return false;

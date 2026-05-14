@@ -39,13 +39,16 @@ export type BackendResult<TBackend = unknown,> = {
  * @example
  * ```ts
  * const buckets = Map.groupBy(results, (r) => r.value);
- * const { hasMajority, value } = pickMajority(buckets, results.length);
+ * const { hasMajority, value } = pickMajority({ buckets, totalCount: results.length });
  * ```
  */
-export function pickMajority<TBackend = unknown,>(
-  buckets: Map<string | undefined, BackendResult<TBackend>[]>,
-  totalCount: number,
-): {
+export function pickMajority<TBackend = unknown,>({
+  buckets,
+  totalCount,
+}: {
+  buckets: Map<string | undefined, BackendResult<TBackend>[]>;
+  totalCount: number;
+},): {
   hasMajority: boolean;
   value?: string | undefined;
 } {
@@ -87,19 +90,23 @@ export function pickMajority<TBackend = unknown,>(
  *
  * @example
  * ```ts
- * const canonical = computeFromHighestTier(grouped, highest, 'my-key');
+ * const canonical = computeFromHighestTier({ groupedHighest: grouped, highestResults: highest, key: 'my-key' });
  * ```
  */
-export function computeFromHighestTier<TBackend = unknown,>(
-  groupedHighest: Map<string | undefined, BackendResult<TBackend>[]>,
-  highestResults: readonly BackendResult<TBackend>[],
-  key: string,
-): string | undefined {
+export function computeFromHighestTier<TBackend = unknown,>({
+  groupedHighest,
+  highestResults,
+  key,
+}: {
+  groupedHighest: Map<string | undefined, BackendResult<TBackend>[]>;
+  highestResults: readonly BackendResult<TBackend>[];
+  key: string;
+},): string | undefined {
   /** Majority pick restricted to the highest priority tier; throws below when no clear winner exists. */
-  const highestTier = pickMajority(
-    groupedHighest,
-    highestResults.length,
-  );
+  const highestTier = pickMajority({
+    buckets: groupedHighest,
+    totalCount: highestResults.length,
+  },);
   if (!highestTier.hasMajority) {
     throw new Error(
       `(maybe sync) Store.get consensus failure for key "${key}" -- no majority in highest tier`,
@@ -123,15 +130,20 @@ export function computeFromHighestTier<TBackend = unknown,>(
  *
  * @example
  * ```ts
- * const canonical = computeCanonical(allResults, groupedHighest, highestResults, 'key');
+ * const canonical = computeCanonical({ results: allResults, groupedHighest, highestResults, key: 'my-key' });
  * ```
  */
-export function computeCanonical<TBackend = unknown,>(
-  results: readonly BackendResult<TBackend>[],
-  groupedHighest: Map<string | undefined, BackendResult<TBackend>[]>,
-  highestResults: readonly BackendResult<TBackend>[],
-  key: string,
-): string | undefined {
+export function computeCanonical<TBackend = unknown,>({
+  results,
+  groupedHighest,
+  highestResults,
+  key,
+}: {
+  results: readonly BackendResult<TBackend>[];
+  groupedHighest: Map<string | undefined, BackendResult<TBackend>[]>;
+  highestResults: readonly BackendResult<TBackend>[];
+  key: string;
+},): string | undefined {
   /** Cross-tier grouping by serialized value so a strong overall majority can short-circuit tier-aware fallback. */
   const groupedAll = Map.groupBy(
     results,
@@ -141,18 +153,18 @@ export function computeCanonical<TBackend = unknown,>(
   );
 
   /** Cross-tier majority pick; consulted before falling back to highest-tier-only resolution. */
-  const overall = pickMajority(
-    groupedAll,
-    results.length,
-  );
+  const overall = pickMajority({
+    buckets: groupedAll,
+    totalCount: results.length,
+  },);
 
   return overall.hasMajority
     ? overall.value
-    : computeFromHighestTier(
+    : computeFromHighestTier({
       groupedHighest,
       highestResults,
       key,
-    );
+    },);
 }
 
 /**
@@ -173,16 +185,19 @@ export function computeCanonical<TBackend = unknown,>(
  *
  * @example
  * ```ts
- * const canonical = resolveConsensus(results, 'my-key');
+ * const canonical = resolveConsensus({ results, key: 'my-key' });
  * ```
  */
-export function resolveConsensus<TBackend = unknown,>(
+export function resolveConsensus<TBackend = unknown,>({
+  results,
+  key,
+}: {
   results: readonly [
     BackendResult<TBackend>,
     ...BackendResult<TBackend>[],
-  ],
-  key: string,
-): string | undefined {
+  ];
+  key: string;
+},): string | undefined {
   /** Results grouped by priority tier so the highest-priority cohort can be isolated for consensus. */
   const grouped = Map.groupBy(
     results,
@@ -205,7 +220,7 @@ export function resolveConsensus<TBackend = unknown,>(
 
   /** Last entry in `sortedTiers`; the highest-priority cohort that gates consensus when cross-tier majority fails. */
   const highestResults = sortedTiers.at(-1,);
-  if (highestResults === undefined || highestResults.length === 0)
+  if ((highestResults === undefined) || (highestResults.length === 0))
     throw new Error(`(maybe sync) Store.get: no backend results for key "${key}"`,);
 
   /** Highest-tier results regrouped by serialized value, ready for majority resolution. */
@@ -216,10 +231,10 @@ export function resolveConsensus<TBackend = unknown,>(
     },
   );
 
-  return computeCanonical(
+  return computeCanonical({
     results,
     groupedHighest,
     highestResults,
     key,
-  );
+  },);
 }

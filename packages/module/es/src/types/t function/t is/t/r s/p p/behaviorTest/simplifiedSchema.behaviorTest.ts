@@ -57,11 +57,11 @@ type ComplexSchema = SchemaWithWeight & {
 function isSchema_Unknown(value: unknown,): value is Schema {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof value.parse === 'function';
+  return (typeof value.parse) === 'function';
 }
 
 /**
@@ -78,11 +78,11 @@ function isSchema_Generic<const MyValue = unknown,>(
 {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof (value as any).parse === 'function';
+  return (typeof (value as any).parse) === 'function';
 }
 
 /**
@@ -95,11 +95,11 @@ function isSchema_Generic<const MyValue = unknown,>(
 function isSchema_Typed(value: Schema,): value is Schema {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof value.parse === 'function';
+  return (typeof value.parse) === 'function';
 }
 
 /**
@@ -114,11 +114,11 @@ function isSchema_GenericExtends<const T extends Schema = Schema,>(
 ): value is T {
   if (value === null)
     return false;
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (!('parse' in value))
     return false;
-  return typeof value.parse === 'function';
+  return (typeof value.parse) === 'function';
 }
 //endregion Simplified Guard Patterns
 
@@ -214,7 +214,9 @@ const simplifiedTestValues = {
 //region Simplified Behavioral Tests
 /** Tests all guard patterns against SchemaWithWeight for property preservation. */
 const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight(): void {
-  /** `SchemaWithWeight` instance under test; every guard pattern below narrows {@link value} to verify `weight` survives. */
+  /**
+   * `SchemaWithWeight` instance under test; every guard pattern below narrows {@link value} to verify `weight` survives.
+   */
   const value = simplifiedTestValues.schemaWithWeight;
 
   // Unknown guard
@@ -458,7 +460,9 @@ const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases(): void {
   // Null and undefined
   /** `null` literal alias; verifies Unknown's narrowing never enters the body even though it type-checks. */
   const nullVal = simplifiedTestValues.nullValue;
-  /** `undefined` literal alias; mirrors {@link nullVal} for the `undefined` arm of the falsy edge cases. */
+  /**
+   * `undefined` literal alias; mirrors {@link nullVal} for the `undefined` arm of the falsy edge cases.
+   */
   const undefinedVal = simplifiedTestValues.undefinedValue;
 
   if (isSchema_Unknown(nullVal,))

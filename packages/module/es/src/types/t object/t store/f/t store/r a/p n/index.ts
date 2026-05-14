@@ -1,4 +1,7 @@
-import superjson from 'superjson';
+import {
+  parse as superjsonParse,
+  stringify as superjsonStringify,
+} from 'superjson';
 
 import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
 import {
@@ -71,16 +74,18 @@ export { configureDefaultBackendsBuilder, } from './backends.ts';
 export async function $(config: StoreConfig = {},): Promise<Store> {
   /** Caller-supplied identifier or freshly minted UUID; used in debug logs and passed to the platform backends builder. */
   const storeId = config.storeId ?? crypto.randomUUID();
-  // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
   /** Serializer applied on every `set`; defaults to superjson so structured values round-trip through string backends. */
-  const serializer: Serializer = config.serializer ?? superjson.stringify;
-  // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
-  /** Deserializer applied on every `get`; paired with {@link serializer}'s default so superjson output decodes correctly. */
-  const deserializer: Deserializer = config.deserializer ?? superjson.parse;
+  const serializer: Serializer = config.serializer ?? superjsonStringify;
+  /**
+   * Deserializer applied on every `get`; paired with {@link serializer}'s default so superjson output decodes correctly.
+   */
+  const deserializer: Deserializer = config.deserializer ?? superjsonParse;
   /** When `true`, circular structures are serialized lossily instead of throwing; opt-in safety net for graph-shaped values. */
   const lossyForCircular = config.lossyForCircular ?? true;
 
-  /** Platform-specific backend factory registered via {@link configureDefaultBackendsBuilder}, or undefined when none was set. */
+  /**
+   * Platform-specific backend factory registered via {@link configureDefaultBackendsBuilder}, or undefined when none was set.
+   */
   const defaultBackendsBuilder = getDefaultBackendsBuilder();
   /** Non-empty list of storage backends; user-supplied, else the platform builder's output, else a single in-memory Map. */
   const backends: readonly [
@@ -98,7 +103,9 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
     return p.policy === 'lru';
   },);
-  /** LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or undefined when LRU is not configured. */
+  /**
+   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or undefined when LRU is not configured.
+   */
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
     : undefined;
@@ -151,21 +158,21 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     async get<const T = unknown,>(key: string,): Promise<T | undefined> {
       defaultLogger.debug(`Store.get: "${key}"`,);
       /** Per-backend lookup results; feeds both consensus resolution and the healing pass. */
-      const results = await queryAllBackends(
+      const results = await queryAllBackends({
         backends,
         key,
-      );
+      },);
       /** Consensus value across backends, or undefined when no backend held the key. */
-      const canonicalSerialized = resolveConsensus(
+      const canonicalSerialized = resolveConsensus({
         results,
         key,
-      );
+      },);
 
-      await healBackends(
+      await healBackends({
         results,
         canonicalSerialized,
         key,
-      );
+      },);
 
       if (canonicalSerialized !== undefined) {
         await evictLruEntry({
@@ -199,7 +206,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
       await Promise.all(
         backends.map(async function clearBackend(backend,) {
           // Map and similar backends support clear()
-          if ('clear' in backend && typeof backend.clear === 'function') {
+          if (('clear' in backend) && ((typeof backend.clear) === 'function')) {
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime check confirms clear is a function
             await (backend.clear as () => unknown)();
           }

@@ -78,7 +78,6 @@ export async function $<
   const TArgs extends readonly unknown[],
   const TReturn,
 >(
-  this: void,
   options: MemoizeAsyncNamedOptions<TArgs, TReturn>,
 ): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
   /** Caller-provided function plus cache-key builder extracted from `options` for closure capture. */
@@ -127,10 +126,13 @@ export async function $<
    *
    * @returns cached or freshly computed result
    */
-  async function resolveValue(
-    cacheKey: string,
-    args: TArgs,
-  ): Promise<TReturn> {
+  async function resolveValue({
+    cacheKey,
+    args,
+  }: {
+    cacheKey: string;
+    args: TArgs;
+  },): Promise<TReturn> {
     /** Auto-disposer that clears the inflight entry on scope exit, even on throw. */
     using _guard = inflightGuard(cacheKey,);
 
@@ -158,20 +160,23 @@ export async function $<
    *
    * @returns promise resolving to the cached or computed value
    */
-  function dispatch(
-    cacheKey: string,
-    args: TArgs,
-  ): Promise<TReturn> {
+  function dispatch({
+    cacheKey,
+    args,
+  }: {
+    cacheKey: string;
+    args: TArgs;
+  },): Promise<TReturn> {
     /** Inflight promise for this key, if any; returning it dedupes concurrent callers onto a single computation. */
     const existing = inflight.get(cacheKey,);
     if (existing !== undefined)
       return existing;
 
     /** Newly started computation registered in `inflight` so concurrent callers share it. */
-    const promise = resolveValue(
+    const promise = resolveValue({
       cacheKey,
       args,
-    );
+    },);
     inflight.set(
       cacheKey,
       promise,
@@ -186,21 +191,20 @@ export async function $<
    * @returns cached or freshly computed result
    */
   function memoized(
-    this: void,
     {
       args,
       salt,
     }: MemoizedCallOptions<TArgs>,
   ): Promise<TReturn> {
     /** Composite cache key combining the argument-derived key with the per-call `salt` for invalidation. */
-    const cacheKey = buildCacheKey(
-      keyFn(...args,),
+    const cacheKey = buildCacheKey({
+      argKey: keyFn(...args,),
       salt,
-    );
-    return dispatch(
+    },);
+    return dispatch({
       cacheKey,
       args,
-    );
+    },);
   }
 
   memoized.store = store;

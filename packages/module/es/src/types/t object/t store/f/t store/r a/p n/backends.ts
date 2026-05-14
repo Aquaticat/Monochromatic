@@ -16,16 +16,19 @@ import type { StorageBackend, } from '../../../../t/r a/index.ts';
  *
  * @example
  * ```ts
- * const results = await queryAllBackends(backends, 'my-key');
+ * const results = await queryAllBackends({ backends, key: 'my-key' });
  * ```
  */
-export async function queryAllBackends(
+export async function queryAllBackends({
+  backends,
+  key,
+}: {
   backends: readonly [
     StorageBackend,
     ...StorageBackend[],
-  ],
-  key: string,
-): Promise<[
+  ];
+  key: string;
+},): Promise<[
   BackendResult<StorageBackend>,
   ...BackendResult<StorageBackend>[],
 ]> {
@@ -66,10 +69,8 @@ export type DefaultBackendsBuilder = (args: {
   ...StorageBackend[],
 ]>;
 
-/** Module-level builder set by platform entry files. */
-// Intentional let: configured once at module load by platform entry
-// oxlint-disable-next-line prefer-const -- Intentional: configured once at module load by platform entry
-let defaultBackendsBuilder: DefaultBackendsBuilder | undefined = undefined;
+/** Module-level builder registry keyed by a sentinel; one entry max, configured once at module load by platform entry. */
+const builderRegistry = new Map<'default', DefaultBackendsBuilder>();
 
 /**
  * Configure a platform-specific default backends builder.
@@ -85,7 +86,10 @@ let defaultBackendsBuilder: DefaultBackendsBuilder | undefined = undefined;
  * ```
  */
 export function configureDefaultBackendsBuilder(builder: DefaultBackendsBuilder,): void {
-  defaultBackendsBuilder = builder;
+  builderRegistry.set(
+    'default',
+    builder,
+  );
 }
 
 /**
@@ -102,7 +106,7 @@ export function configureDefaultBackendsBuilder(builder: DefaultBackendsBuilder,
  * ```
  */
 export function getDefaultBackendsBuilder(): DefaultBackendsBuilder | undefined {
-  return defaultBackendsBuilder;
+  return builderRegistry.get('default',);
 }
 
 /**

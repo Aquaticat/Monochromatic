@@ -23,10 +23,13 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
  * // → { arrayComment: { /* ... *\/ }, tail: ' 1,2]TAIL' as FragmentStringJsonc }
  * ```
  */
-export function parseArrayHeader(
-  valueAfterBracket: FragmentStringJsonc | StringJsonc,
-  context?: Jsonc.ValueBase,
-): {
+export function parseArrayHeader({
+  valueAfterBracket,
+  context,
+}: {
+  valueAfterBracket: FragmentStringJsonc | StringJsonc;
+  context?: Jsonc.ValueBase;
+},): {
   arrayComment?: Jsonc.Comment;
   tail: FragmentStringJsonc;
 } {

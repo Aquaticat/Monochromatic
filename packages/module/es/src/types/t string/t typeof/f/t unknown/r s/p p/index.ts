@@ -34,17 +34,17 @@ export function $(
     return 'null';
   if (obj === undefined)
     return 'undefined';
-  if (typeof obj === 'number' && Number.isNaN(obj,))
+  if (((typeof obj) === 'number') && Number.isNaN(obj,))
     return 'NaN';
-  if (typeof obj === 'number')
+  if ((typeof obj) === 'number')
     return 'number';
-  if (typeof obj === 'boolean')
+  if ((typeof obj) === 'boolean')
     return 'boolean';
-  if (typeof obj === 'bigint')
+  if ((typeof obj) === 'bigint')
     return 'bigint';
-  if (typeof obj === 'symbol')
+  if ((typeof obj) === 'symbol')
     return 'symbol';
-  if (typeof obj === 'string')
+  if ((typeof obj) === 'string')
     return 'string';
 
   // Handle special object types
@@ -60,7 +60,7 @@ export function $(
   // FIXME: Does this correctly handle wrapper types?
 
   // Handle objects with careful checking to avoid primitive conversion errors
-  if (typeof obj === 'object') {
+  if ((typeof obj) === 'object') {
     // Check for null-prototype objects first (like Object.create(null))
     console.log('hello',);
     /* oxlint-disable typescript/no-unsafe-assignment -- Checking prototype */
@@ -90,17 +90,16 @@ export function $(
   // For everything else (class instances, functions, etc.), throw an error
   /** Raw typeof discriminant included in the error message. */
   const objType = typeof obj;
-  /* oxlint-disable eslint/init-declarations -- assigned in try/catch below */
-  /** Stringified preview of obj for the error message, populated inside the try/catch. */
-  let objStringified: string;
-  /* oxlint-enable eslint/init-declarations */
-  try {
-    objStringified = JSON.stringify(obj,);
-  }
-  catch {
-    /* v8 ignore next -- @preserve */
-    objStringified = '[object Object]';
-  }
+  /** Stringified preview of obj for the error message; computed via try/catch so unstringifiable values fall back gracefully. */
+  const objStringified = (function buildStringifiedPreview(): string {
+    try {
+      return JSON.stringify(obj,);
+    }
+    catch {
+      /* v8 ignore next -- @preserve */
+      return '[object Object]';
+    }
+  })();
   throw new TypeError(
     `Unrecognized obj with type "${objType}" and value ${objStringified}`,
   );

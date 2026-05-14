@@ -17,7 +17,7 @@ await describe({
         const results = [];
 
         for await (const result of $({
-          predicate: (n: number,) => n % 2 === 0,
+          predicate: (n: number,) => (n % 2) === 0,
           iterable: numbers,
         },)) {
           results.push(result,);
@@ -91,7 +91,7 @@ await describe({
           predicate: async (n: number,) => {
             // Simulate async operation
             await Promise.resolve();
-            return n % 2 === 0;
+            return (n % 2) === 0;
           },
           iterable: numbers,
         },)) {
@@ -118,7 +118,7 @@ await describe({
         const results = [];
 
         for await (const result of $({
-          predicate: (n: number,) => n % 2 === 0,
+          predicate: (n: number,) => (n % 2) === 0,
           iterable: asyncNumbers(),
         },)) {
           results.push(result,);
@@ -138,7 +138,7 @@ await describe({
         const results = [];
 
         for await (const result of $({
-          predicate: (n: number,) => n % 2 === 0,
+          predicate: (n: number,) => (n % 2) === 0,
           iterable: numbers,
         },)) {
           results.push(result,);
@@ -158,7 +158,7 @@ await describe({
         const results = [];
 
         for await (const result of $({
-          predicate: (n: number,) => n % 2 === 0,
+          predicate: (n: number,) => (n % 2) === 0,
           iterable: numbers,
         },)) {
           results.push(result,);
@@ -216,7 +216,7 @@ await describe({
         const results = [];
 
         for await (const result of $({
-          predicate: (item: Item,) => item.id % 2 === 0,
+          predicate: (item: Item,) => (item.id % 2) === 0,
           iterable: items,
         },)) {
           results.push(result,);

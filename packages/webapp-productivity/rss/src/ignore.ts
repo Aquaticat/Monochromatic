@@ -47,8 +47,8 @@ export async function getIgnoreContent(): Promise<string> {
     return '';
   }
   /** Per-file contents read in parallel, joined back into one stream for callers. */
-  const contents = await mapIterableAsync(
-    function readIgnoreFile(dirent: Dirent,) {
+  const contents = await mapIterableAsync({
+    fn: function readIgnoreFile(dirent: Dirent,) {
       return readFile(
         join(
           dirent.parentPath,
@@ -57,8 +57,8 @@ export async function getIgnoreContent(): Promise<string> {
         'utf8',
       );
     },
-    filesInDir,
-  );
+    iterable: filesInDir,
+  },);
   return contents.join('',);
 }
 

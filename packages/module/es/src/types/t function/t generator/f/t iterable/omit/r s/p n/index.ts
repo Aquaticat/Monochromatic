@@ -69,7 +69,7 @@ export function* $<T,>(
   // Size comparison short-circuits validation when all keys matched.
   // If sizes differ, iterate to find the specific missing key for the error message.
   // Skip validation entirely when strict mode is disabled.
-  if (strict && matched.size !== toOmit.size) {
+  if (strict && (matched.size !== toOmit.size)) {
     for (const key of toOmit) {
       if (!matched.has(key,))
         throw new Error(`Key not found in iterable: ${String(key,)}`,);

@@ -77,7 +77,6 @@ export function $<
   const TArgs extends readonly unknown[],
   const TReturn,
 >(
-  this: void,
   options: MemoizeNamedOptions<TArgs, TReturn>,
 ): MemoizedFunction<TArgs, TReturn> {
   /** Function and key derivation destructured for repeated use inside the wrapper. */
@@ -101,17 +100,16 @@ export function $<
    * @returns cached or freshly computed result
    */
   function memoized(
-    this: void,
     {
       args,
       salt,
     }: MemoizedCallOptions<TArgs>,
   ): TReturn {
     /** Salted cache key combining the user-supplied keyFn output with the per-call salt. */
-    const cacheKey = buildCacheKey(
-      keyFn(...args,),
+    const cacheKey = buildCacheKey({
+      argKey: keyFn(...args,),
       salt,
-    );
+    },);
 
     /** Previously memoized return value, or `undefined` when not yet stored. */
     const cached = store.get<TReturn>(cacheKey,);

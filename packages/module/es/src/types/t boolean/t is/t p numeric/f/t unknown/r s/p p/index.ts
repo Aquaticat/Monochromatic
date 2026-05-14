@@ -15,5 +15,5 @@
 export function $(
   value: unknown,
 ): value is number | bigint {
-  return typeof value === 'number' || typeof value === 'bigint';
+  return ((typeof value) === 'number') || ((typeof value) === 'bigint');
 }

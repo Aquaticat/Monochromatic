@@ -11,19 +11,26 @@ import type { BackendResult, } from './consensus.ts';
  *
  * @example
  * ```ts
- * await healBackends(results, '"correct-value"', 'my-key');
+ * await healBackends({ results, canonicalSerialized: '"correct-value"', key: 'my-key' });
  * ```
  */
-export async function healBackends(
+export async function healBackends({
+  results,
+  canonicalSerialized,
+  key,
+}: {
   results: readonly BackendResult<
     {
-      set: (key: string, value: string,) => unknown;
+      set: (
+        key: string,
+        value: string,
+      ) => unknown;
       delete: (key: string,) => unknown;
     }
-  >[],
-  canonicalSerialized: string | undefined,
-  key: string,
-): Promise<void> {
+  >[];
+  canonicalSerialized: string | undefined;
+  key: string;
+},): Promise<void> {
   await Promise.all(
     results.map(async function heal({
       value,
@@ -56,19 +63,26 @@ export async function healBackends(
  *
  * @example
  * ```ts
- * healBackendsSync(results, '"correct-value"', 'my-key');
+ * healBackendsSync({ results, canonicalSerialized: '"correct-value"', key: 'my-key' });
  * ```
  */
-export function healBackendsSync(
+export function healBackendsSync({
+  results,
+  canonicalSerialized,
+  key,
+}: {
   results: readonly BackendResult<
     {
-      set: (key: string, value: string,) => unknown;
+      set: (
+        key: string,
+        value: string,
+      ) => unknown;
       delete: (key: string,) => unknown;
     }
-  >[],
-  canonicalSerialized: string | undefined,
-  key: string,
-): void {
+  >[];
+  canonicalSerialized: string | undefined;
+  key: string;
+},): void {
   for (const {
     value,
     backend,

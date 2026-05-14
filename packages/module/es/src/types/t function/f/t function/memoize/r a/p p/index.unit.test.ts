@@ -18,7 +18,7 @@ await describe({
       name: 'returns computed value on first call',
       fn: async () => {
         const fn = async (x: number,): Promise<number> => x * 2;
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         expect(await memoized({ args: [5,], salt: 'v1', },),).toBe(10,);
       },
@@ -31,7 +31,7 @@ await describe({
           callCount += 1;
           return x * 2;
         };
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         expect(await memoized({ args: [5,], salt: 'v1', },),).toBe(10,);
         expect(await memoized({ args: [5,], salt: 'v1', },),).toBe(10,);
@@ -49,7 +49,7 @@ await describe({
           },);
           return x * 2;
         };
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         const [result1, result2,] = await Promise.all([
           memoized({ args: [5,], salt: 'v1', },),
@@ -70,7 +70,7 @@ await describe({
             throw new Error('first call fails',);
           return x * 2;
         };
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         await expect(memoized({ args: [5,], salt: 'v1', },),).rejects.toThrow(
           'first call fails',
@@ -89,7 +89,7 @@ await describe({
           callCount += 1;
           return x;
         };
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         expect(await memoized({ args: [1,], salt: 'a', },),).toBe(1,);
         expect(await memoized({ args: [1,], salt: 'a', },),).toBe(1,);
@@ -106,7 +106,7 @@ await describe({
           callCount += 1;
           return x;
         };
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         await memoized({ args: [1,], salt: 'v1', },);
         await memoized.clear();
@@ -123,7 +123,7 @@ await describe({
           callCount += 1;
           return x;
         };
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         await memoized({ args: [1,], salt: 'v1', },);
         await memoized.delete('1:v1',);
@@ -136,7 +136,7 @@ await describe({
       name: '.store provides access to the underlying Store',
       fn: async () => {
         const fn = async (x: number,): Promise<number> => x;
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         expect(memoized.store,).toBeDefined();
         expect(memoized.store.storeId,).toBeDefined();
@@ -150,7 +150,7 @@ await describe({
           callCount += 1;
           return x * 2;
         };
-        const memoized = await $(fn, (x: number,) => String(x,),);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), },);
 
         expect(await memoized({ args: [1,], salt: 'v1', },),).toBe(2,);
         expect(await memoized({ args: [2,], salt: 'v1', },),).toBe(4,);
@@ -169,7 +169,7 @@ await describe({
           storeId: 'lru-async-test',
           eviction: [{ policy: 'lru', maxSize: 2, },],
         },);
-        const memoized = await $(fn, (x: number,) => String(x,), store,);
+        const memoized = await $({ fn, keyFn: (x: number,) => String(x,), store, },);
 
         await memoized({ args: [1,], salt: 'v1', },);
         await memoized({ args: [2,], salt: 'v1', },);

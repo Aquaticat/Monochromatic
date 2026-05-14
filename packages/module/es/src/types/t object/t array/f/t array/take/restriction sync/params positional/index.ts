@@ -13,7 +13,7 @@
  * @example
  * Take from array:
  * ```ts
- * const first3 = $(3, [1, 2, 3, 4, 5]);
+ * const first3 = $({ count: 3, iterable: [1, 2, 3, 4, 5] });
  * console.log(first3); // [1, 2, 3]
  * ```
  *
@@ -21,14 +21,14 @@
  * Take from Set:
  * ```ts
  * const set = new Set(['a', 'b', 'c', 'd']);
- * const first2 = $(2, set);
+ * const first2 = $({ count: 2, iterable: set });
  * console.log(first2); // ['a', 'b']
  * ```
  *
  * @example
  * Take fewer than available:
  * ```ts
- * const all = $(10, [1, 2, 3]);
+ * const all = $({ count: 10, iterable: [1, 2, 3] });
  * console.log(all); // [1, 2, 3]
  * ```
  *
@@ -42,21 +42,21 @@
  *     [a, b] = [b, a + b];
  *   }
  * }
- * const firstFibs = $(8, fibonacci());
+ * const firstFibs = $({ count: 8, iterable: fibonacci() });
  * console.log(firstFibs); // [0, 1, 1, 2, 3, 5, 8, 13]
  * ```
  *
  * @example
  * Take zero elements:
  * ```ts
- * const none = $(0, [1, 2, 3]);
+ * const none = $({ count: 0, iterable: [1, 2, 3] });
  * console.log(none); // []
  * ```
  *
  * @example
  * Take from string (iterable characters):
  * ```ts
- * const firstChars = $(3, 'hello world');
+ * const firstChars = $({ count: 3, iterable: 'hello world' });
  * console.log(firstChars); // ['h', 'e', 'l']
  * ```
  *
@@ -68,14 +68,17 @@
  *   while (true) yield n++;
  * }
  *
- * const first5 = $(5, naturalNumbers());
+ * const first5 = $({ count: 5, iterable: naturalNumbers() });
  * console.log(first5); // [1, 2, 3, 4, 5]
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function $<const T,>(
-  count: number,
-  iterable: Iterable<T>,
-): T[] {
+/* @__NO_SIDE_EFFECTS__ */ export function $<const T,>({
+  count,
+  iterable,
+}: {
+  count: number;
+  iterable: Iterable<T>;
+},): T[] {
   if (count < 0)
     throw new RangeError('Count must be non-negative',);
   if (count === 0)
@@ -83,13 +86,10 @@
 
   /** Accumulator of taken elements up to the requested count. */
   const result: T[] = [];
-  /** Running count of elements collected so far, used to short-circuit at the cap. */
-  let taken = 0;
 
   for (const element of iterable) {
     result.push(element,);
-    taken++;
-    if (taken >= count)
+    if (result.length >= count)
       break;
   }
 

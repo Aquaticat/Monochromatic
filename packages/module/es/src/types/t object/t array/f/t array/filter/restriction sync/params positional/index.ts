@@ -17,7 +17,7 @@
  * Basic array filtering:
  * ```ts
  * const numbers = [1, 2, 3, 4, 5];
- * const evens = $((n) => n % 2 === 0, numbers);
+ * const evens = $({ predicate: (n) => n % 2 === 0, arrayLike: numbers });
  * console.log(evens); // [2, 4]
  * ```
  *
@@ -25,7 +25,7 @@
  * Working with Sets:
  * ```ts
  * const words = new Set(['apple', 'banana', 'cherry', 'date']);
- * const longWords = $((word) => word.length > 5, words);
+ * const longWords = $({ predicate: (word) => word.length > 5, arrayLike: words });
  * console.log(longWords); // ['banana', 'cherry']
  * ```
  *
@@ -37,7 +37,7 @@
  *   { id: 2, name: 'Bob', active: false },
  *   { id: 3, name: 'Charlie', active: true }
  * ];
- * const activeUsers = $((user) => user.active, users);
+ * const activeUsers = $({ predicate: (user) => user.active, arrayLike: users });
  * console.log(activeUsers); // [Alice, Charlie objects]
  * ```
  *
@@ -45,7 +45,10 @@
  * String filtering with complex predicates:
  * ```ts
  * const emails = ['valid\@test.com', 'invalid-email', 'another\@test.com'];
- * const validEmails = $((email) => email.includes('\@') && email.includes('.'), emails);
+ * const validEmails = $({
+ *   predicate: (email) => email.includes('\@') && email.includes('.'),
+ *   arrayLike: emails,
+ * });
  * console.log(validEmails); // ['valid\@test.com', 'another\@test.com']
  * ```
  *
@@ -58,14 +61,17 @@
  *   }
  * }
  *
- * const evenNumbers = $((n) => n % 2 === 0, generateNumbers());
+ * const evenNumbers = $({ predicate: (n) => n % 2 === 0, arrayLike: generateNumbers() });
  * console.log(evenNumbers); // [2, 4, 6, 8, 10]
  * ```
  */
-export function $<T_i,>(
-  predicate: (i: T_i,) => boolean,
-  arrayLike: Iterable<T_i>,
-): T_i[] {
+export function $<T_i,>({
+  predicate,
+  arrayLike,
+}: {
+  predicate: (i: T_i,) => boolean;
+  arrayLike: Iterable<T_i>;
+},): T_i[] {
   /** Accumulator of elements that satisfy the predicate. */
   const yes: T_i[] = [];
 

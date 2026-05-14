@@ -26,8 +26,11 @@ export type ObservableAsync<T,> = {
  *
  * @example
  * ```ts
- * const feeds = await $([], async (next, prev) => {
- *   await updateUI(next);
+ * const feeds = await $({
+ *   initialValue: [],
+ *   onChange: async (next, prev) => {
+ *     await updateUI(next);
+ *   },
  * });
  * feeds.value = await fetchFeeds();
  * ```
@@ -35,25 +38,31 @@ export type ObservableAsync<T,> = {
  * @example
  * Top-level module observable:
  * ```ts
- * export const itemsObservable = await $([], onItemsChange);
+ * export const itemsObservable = await $({ initialValue: [], onChange: onItemsChange });
  * ```
  */
-export async function $<T,>(
-  initialValue: T,
-  onChange: (newValue: T, oldValue: T,) => void | Promise<void>,
-): Promise<ObservableAsync<T>> {
-  /** Internal store backing the value getter and setter pair. */
-  let current: T = initialValue;
+export async function $<T,>({
+  initialValue,
+  onChange,
+}: {
+  initialValue: T;
+  onChange: (
+    newValue: T,
+    oldValue: T,
+  ) => void | Promise<void>;
+},): Promise<ObservableAsync<T>> {
+  /** Internal store backing the value getter and setter; held in an object so mutation lives on a property, not a function-root `let`. */
+  const state: { current: T; } = { current: initialValue, };
   return {
     /** Retrieves the current observed value. */
     get value(): T {
-      return current;
+      return state.current;
     },
     /** Sets the observed value and triggers the onChange callback. */
     set value(newValue: T,) {
       /** Snapshot of the prior value preserved for the change handler call. */
-      const old = current;
-      current = newValue;
+      const old = state.current;
+      state.current = newValue;
       void onChange(
         newValue,
         old,

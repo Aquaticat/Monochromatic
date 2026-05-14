@@ -86,8 +86,8 @@ async function fetchAndParseFeeds(
     outline: Opml.Outline<string> & { xmlUrl: string; };
   };
   /** Fetched feed texts paired with outlines, filtered down to the successful subset. */
-  const textsWOutline: TextWOutline[] = (await mapIterableAsync(
-    async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {
+  const textsWOutline: TextWOutline[] = (await mapIterableAsync({
+    fn: async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {
       /** Single Response held so status check and text read share one network round trip. */
       const response = await fetch(outline.xmlUrl,);
       if (!response.ok) {
@@ -107,8 +107,8 @@ async function fetchAndParseFeeds(
         return DISCARD;
       }
     },
-    outlines,
-  ))
+    iterable: outlines,
+  },))
     .filter(function notDiscard(value,): value is TextWOutline {
       return value !== DISCARD;
     },);

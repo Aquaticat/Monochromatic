@@ -52,14 +52,14 @@ export function* $<const T,>(
   element: T;
   index: Int & (Positive | 0);
 }> {
-  /** Running zero-based position emitted alongside each element. */
-  let index = 0;
+  /** Running zero-based position emitted alongside each element; counter wrapped in an object to keep mutation off the function root. */
+  const counter = { index: 0, };
   for (const element of myIterable) {
     yield {
       element,
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- index is a non-negative integer
-      index: index as Int & (Positive | 0),
+      index: counter.index as Int & (Positive | 0),
     };
-    index++;
+    counter.index++;
   }
 }

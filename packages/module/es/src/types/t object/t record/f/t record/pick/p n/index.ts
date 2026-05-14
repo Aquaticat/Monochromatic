@@ -60,7 +60,7 @@ import {
   for (const key of Reflect.ownKeys(original,)) {
     normalizedOriginalKeys.add(key,);
     // Add numeric representation for string keys that are valid numbers so they match user-provided numeric keys.
-    if (typeof key === 'string') {
+    if ((typeof key) === 'string') {
       /** Numeric dual added so user-supplied numeric keys match the string ownKey. */
       const numericKey = Number(key,);
       if (!Number.isNaN(numericKey,))

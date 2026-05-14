@@ -24,11 +24,8 @@ type ParseValueFn = (
   remaining: FragmentStringJsonc;
 };
 
-/** Late-bound reference, set once before any parsing call. */
-// Intentional let: configured once during module initialization by the parseValue module
-// oxlint-disable-next-line prefer-const
-// oxlint-disable-next-line eslint/init-declarations -- configured once during module initialization
-let ref: ParseValueFn;
+/** Late-bound reference container; populated once during module initialization by `customParsers.parseValue.ts`. */
+const refRegistry = new Map<'parseValue', ParseValueFn>();
 
 /**
  * Register the `parseValueFromStart` implementation.
@@ -42,7 +39,10 @@ let ref: ParseValueFn;
  * ```
  */
 export function registerParseValue(fn: ParseValueFn,): void {
-  ref = fn;
+  refRegistry.set(
+    'parseValue',
+    fn,
+  );
 }
 
 /**
@@ -69,5 +69,9 @@ export function callParseValue(
   parsed: Jsonc.Value;
   remaining: FragmentStringJsonc;
 } {
+  /** Registered dispatch implementation; must be present because parser init runs before any user call. */
+  const ref = refRegistry.get('parseValue',);
+  if (ref === undefined)
+    throw new Error('parseValue not registered; registerParseValue must be called before parsing',);
   return ref(args,);
 }

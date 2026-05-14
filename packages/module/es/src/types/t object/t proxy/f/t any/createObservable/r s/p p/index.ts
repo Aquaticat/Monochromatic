@@ -21,8 +21,11 @@ export type Observable<T,> = {
  *
  * @example
  * ```ts
- * const counter = $(0, (next, prev) => {
- *   console.log(`Changed from ${prev} to ${next}`);
+ * const counter = $({
+ *   initialValue: 0,
+ *   onChange: (next, prev) => {
+ *     console.log(`Changed from ${prev} to ${next}`);
+ *   },
  * });
  * counter.value = 1; // logs "Changed from 0 to 1"
  * ```
@@ -30,26 +33,32 @@ export type Observable<T,> = {
  * @example
  * Reactive pipeline:
  * ```ts
- * const items = $([], onItemsChange);
+ * const items = $({ initialValue: [], onChange: onItemsChange });
  * items.value = [...items.value, newItem];
  * ```
  */
-export function $<T,>(
-  initialValue: T,
-  onChange: (newValue: T, oldValue: T,) => void,
-): Observable<T> {
-  /** Internal store backing the value getter and setter pair. */
-  let current: T = initialValue;
+export function $<T,>({
+  initialValue,
+  onChange,
+}: {
+  initialValue: T;
+  onChange: (
+    newValue: T,
+    oldValue: T,
+  ) => void;
+},): Observable<T> {
+  /** Internal store backing the value getter and setter; held in an object so mutation lives on a property, not a function-root `let`. */
+  const state: { current: T; } = { current: initialValue, };
   return {
     /** Retrieves the current observed value. */
     get value(): T {
-      return current;
+      return state.current;
     },
     /** Sets the observed value and triggers the onChange callback. */
     set value(newValue: T,) {
       /** Snapshot of the prior value preserved for the change handler call. */
-      const old = current;
-      current = newValue;
+      const old = state.current;
+      state.current = newValue;
       onChange(
         newValue,
         old,

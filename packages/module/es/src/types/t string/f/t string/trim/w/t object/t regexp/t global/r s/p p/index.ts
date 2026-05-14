@@ -15,10 +15,13 @@ import { $ as named, } from '../p n/index.ts';
  * $('---hello---', /\-/g); // 'hello'
  * ```
  */
-export function $(
-  str: string,
-  trimmer: Global,
-): string {
+export function $({
+  str,
+  trimmer,
+}: {
+  str: string;
+  trimmer: Global;
+},): string {
   return named({
     str,
     trimmer,

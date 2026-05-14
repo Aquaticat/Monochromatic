@@ -24,19 +24,19 @@ await describe({
           fn: async () => {
             {
               const out = parseLiteralToken({ value: 'null,' as FragmentStringJsonc, },);
-              if (typeof out === 'symbol')
+              if ((typeof out) === 'symbol')
                 throw new Error('expected literal',);
               expect(out.parsed,).toEqual({ value: null, },);
             }
             {
               const out = parseLiteralToken({ value: 'true ]' as FragmentStringJsonc, },);
-              if (typeof out === 'symbol')
+              if ((typeof out) === 'symbol')
                 throw new Error('expected literal',);
               expect(out.parsed,).toEqual({ value: true, },);
             }
             {
               const out = parseLiteralToken({ value: 'false]' as FragmentStringJsonc, },);
-              if (typeof out === 'symbol')
+              if ((typeof out) === 'symbol')
                 throw new Error('expected literal',);
               expect(out.parsed,).toEqual({ value: false, },);
             }
@@ -47,7 +47,7 @@ await describe({
           name: 'prefix match stays here; boundary enforced later',
           fn: async () => {
             const out = parseLiteralToken({ value: 'nully' as FragmentStringJsonc, },);
-            if (typeof out === 'symbol')
+            if ((typeof out) === 'symbol')
               throw new Error('expected literal',);
             expect(out.consumed,).toBe('null' as FragmentStringJsonc,);
             expect(out.remaining,).toBe('y' as FragmentStringJsonc,);

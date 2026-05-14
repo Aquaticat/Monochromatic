@@ -107,14 +107,16 @@ function tryContainerFastPath(
   if (!trimmed.endsWith(closingChar,))
     return NO_FAST_PATH;
 
-  /** Cursor that walks back from the closing character to detect a trailing-comma pattern. */
-  let searchIndex = trimmed.length - closingChar.length;
+  /** Cursor that walks back from the closing character to detect a trailing-comma pattern; cursor state held on an object so the function root stays const-only. */
+  const cursor = { searchIndex: trimmed.length - closingChar.length, };
   // Skip whitespace before the closing character
-  while (searchIndex > 0 && /\s/.test(trimmed[searchIndex - 1] ?? '',))
-    searchIndex--;
+  while ((cursor.searchIndex > 0) && /\s/.test(trimmed[cursor.searchIndex - 1] ?? '',))
+    cursor.searchIndex--;
 
+  /** Local copy of the final cursor position used by the comma/end checks below. */
+  const { searchIndex, } = cursor;
   // Check if there's a comma before the whitespace
-  if (searchIndex > 0 && trimmed[searchIndex - 1] === ',') {
+  if ((searchIndex > 0) && (trimmed[searchIndex - 1] === ',')) {
     // Found trailing comma pattern like ", ]" or ", }"
     // Check if there's any content between opening character and the comma
     /** Body between the opening bracket and the trailing comma; empty means malformed container like "[ , ]". */
@@ -318,7 +320,7 @@ export function parseWithFallback({
     value,
     context,
   },);
-  if (typeof fastPathResult !== 'symbol')
+  if ((typeof fastPathResult) !== 'symbol')
     return fastPathResult;
 
   /** Full custom-parser result including `remainingContent`, which is stripped before returning to the caller. */

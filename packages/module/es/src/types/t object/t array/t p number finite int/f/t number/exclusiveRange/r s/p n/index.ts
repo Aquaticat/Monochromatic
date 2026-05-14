@@ -33,7 +33,7 @@ export function $(
   return (start > end
     ? []
     : Array.from(
-      { length: end - start + 1, },
+      { length: (end - start) + 1, },
       function offset(
         _,
         index,

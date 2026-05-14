@@ -14,10 +14,13 @@ import { $ as named, } from '../p n/index.ts';
  * $(['a', 'b', 'c'], ', '); // 'a, b, c'
  * ```
  */
-export function $(
-  strings: string[],
-  concatWith: string,
-): string {
+export function $({
+  strings,
+  concatWith,
+}: {
+  strings: string[];
+  concatWith: string;
+},): string {
   return named({
     strings,
     concatWith,

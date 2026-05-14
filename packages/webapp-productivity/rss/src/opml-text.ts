@@ -48,8 +48,8 @@ export async function getOPMLTexts(
   /** Unique sentinel returned for fetch/read failures so the filter step can drop them. */
   const DISCARD = Symbol('discard',);
   /** Successfully fetched OPML texts left after dropping DISCARD entries. */
-  const result = (await mapIterableAsync(
-    async function fetchOpml(
+  const result = (await mapIterableAsync({
+    fn: async function fetchOpml(
       opmlLink: (v.InferOutput<typeof OPMLS_SCHEMA>)[number],
     ): Promise<string | typeof DISCARD> {
       if (opmlLink.startsWith('http',)) {
@@ -104,8 +104,8 @@ export async function getOPMLTexts(
       innerL.warn(`${opmlLink} uses unsupported protocol`,);
       return DISCARD;
     },
-    opmls,
-  ))
+    iterable: opmls,
+  },))
     .filter(function notDiscard(text,): text is string {
       return text !== DISCARD;
     },);

@@ -15,5 +15,5 @@ export function $<const MyValue,>(
   value: MyValue,
 ): value is MyValue extends AsyncIterable<infer T> ? MyValue & AsyncIterable<T> : never {
   // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unnecessary-condition, typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime check on unknown value shape
-  return typeof (value as any)?.[Symbol.asyncIterator] === 'function';
+  return (typeof (value as any)?.[Symbol.asyncIterator]) === 'function';
 }

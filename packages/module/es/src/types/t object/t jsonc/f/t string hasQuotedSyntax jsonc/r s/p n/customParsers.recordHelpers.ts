@@ -21,14 +21,19 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
  *
  * @example
  * ```ts
- * parseRecordHeader('{ /* c *\/ "a":1}TAIL'.slice(1) as FragmentStringJsonc)
+ * parseRecordHeader({
+ *   valueAfterBrace: '{ /* c *\/ "a":1}TAIL'.slice(1) as FragmentStringJsonc,
+ * });
  * // → { recordComment: undefined, tail: ' /* c *\/ "a":1}TAIL' as FragmentStringJsonc }
  * ```
  */
-export function parseRecordHeader(
-  valueAfterBrace: FragmentStringJsonc | StringJsonc,
-  context?: Jsonc.ValueBase,
-): {
+export function parseRecordHeader({
+  valueAfterBrace,
+  context,
+}: {
+  valueAfterBrace: FragmentStringJsonc | StringJsonc;
+  context?: Jsonc.ValueBase;
+},): {
   recordComment?: Jsonc.Comment;
   tail: FragmentStringJsonc;
 } {

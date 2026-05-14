@@ -55,7 +55,7 @@ export function $({
 
     // Odd count means inside quotes, even count means outside quotes
     /** Parity verdict for whether the range starts inside a quoted span. */
-    const isInsideQuotes = effectiveDoubleQuotesInStrBefore % 2 !== 0;
+    const isInsideQuotes = (effectiveDoubleQuotesInStrBefore % 2) !== 0;
 
     // Use the original branded string as the key
     newQuoteStatusMap.set(

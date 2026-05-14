@@ -35,13 +35,15 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
   // Must be lazy else will match 1, /* c *\/ 2, /* d *\/
   /** Matches a `/* ... *\/` comment confined to a single line; lazy so it stops at the first closing delimiter. */
   const FIRST_LINE_BLOCK_COMMENT_REGEX = /\/\*[^\n]*?\*\//;
-  /** Single-line block comment match against {@link trimmed}, or null when the comment spans multiple lines. */
+  /**
+   * Single-line block comment match against {@link trimmed}, or null when the comment spans multiple lines.
+   */
   const firstLineMatch = FIRST_LINE_BLOCK_COMMENT_REGEX.exec(trimmed,);
   if (firstLineMatch) {
     // Found a complete block comment on the first line - return immediately
     // Doesn't handle `/* a {"b": "*\/" } *\/ {"c": "d"}`
     // Because in all languages, *\/ upon first found after starting a block comment, auto becomes end marker of block comment.
-    return firstLineMatch.index + firstLineMatch[0].length - '*/'.length;
+    return (firstLineMatch.index + firstLineMatch[0].length) - '*/'.length;
   }
 
   // If not on first line, use line-based approach
@@ -64,8 +66,8 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
     // And we assume valid JSONC.
 
     // Valid starSlash found - return its position
-    return newlineStarSlashMatch.index
-      + newlineStarSlashMatch[0].length
+    return (newlineStarSlashMatch.index
+      + newlineStarSlashMatch[0].length)
       - '*/'.length;
   }
 
@@ -112,7 +114,7 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
       '\n',
       '//'.length,
     );
-    if (newlinePosition === -1) {
+    if (newlinePosition === (-1)) {
       // No newline found - line comment extends to end of input (valid at end of file)
       /** Inline comment node captured up to EOF; emitted because the comment consumed every remaining character. */
       const commentPart: Jsonc.Comment = {
@@ -166,11 +168,15 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
   }
 
   if (trimmed.startsWith('/*',)) {
-    /** Index of the `*` that closes the block comment; computed by {@link findBlockEndPosition}. */
+    /**
+     * Index of the `*` that closes the block comment; computed by {@link findBlockEndPosition}.
+     */
     const blockEndPosition = findBlockEndPosition({ value: trimmed, },);
 
     // Extract the comment and the rest of the content after the closing star slash
-    /** Block comment node spanning from `/*` to {@link blockEndPosition}; raw body preserved for downstream consumers. */
+    /**
+     * Block comment node spanning from `/*` to {@link blockEndPosition}; raw body preserved for downstream consumers.
+     */
     const commentPart: Jsonc.Comment = {
       type: 'block',
       commentValue: trimmed.slice(

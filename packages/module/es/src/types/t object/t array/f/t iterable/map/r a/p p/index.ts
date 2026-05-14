@@ -15,25 +15,28 @@
  * @example
  * Fetch multiple URLs concurrently:
  * ```ts
- * const responses = await $(
- *   async (url: string) => (await fetch(url)).text(),
- *   ['https://a.com', 'https://b.com'],
- * );
+ * const responses = await $({
+ *   fn: async (url: string) => (await fetch(url)).text(),
+ *   iterable: ['https://a.com', 'https://b.com'],
+ * });
  * ```
  *
  * @example
  * Read directory entries:
  * ```ts
- * const contents = await $(
- *   async (entry: Dirent) => readFile(join(entry.parentPath, entry.name), 'utf8'),
- *   dirEntries,
- * );
+ * const contents = await $({
+ *   fn: async (entry: Dirent) => readFile(join(entry.parentPath, entry.name), 'utf8'),
+ *   iterable: dirEntries,
+ * });
  * ```
  */
-export async function $<T, R,>(
-  fn: (item: T,) => Promise<R>,
-  iterable: AsyncIterable<T> | Iterable<T>,
-): Promise<R[]> {
+export async function $<T, R,>({
+  fn,
+  iterable,
+}: {
+  fn: (item: T,) => Promise<R>;
+  iterable: AsyncIterable<T> | Iterable<T>;
+},): Promise<R[]> {
   // Each `fn` call starts executing immediately (promises are eager, not lazy).
   // `Promise.all` only collects already-running results; it does not "activate" them.
   // `Array.fromAsync` is not suitable here: it awaits each mapped value sequentially,

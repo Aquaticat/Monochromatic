@@ -71,11 +71,11 @@ export function $(obj: unknown,): string {
   /** Discriminant describing the runtime kind of obj, used to pick a serialiser branch. */
   const objType = unknownToTypeOfString(obj,);
   if (primitive.includes(objType,)) {
-    return serializePrimitive(
+    return serializePrimitive({
       obj,
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- objType verified in primitive tuple
-      objType as typeof primitive[number],
-    );
+      primitiveObjType: objType as typeof primitive[number],
+    },);
   }
 
   return match(objType,)

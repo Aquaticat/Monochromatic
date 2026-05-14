@@ -35,10 +35,13 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
  * // tail === 'rest'
  * ```
  */
-export function parseArrayElements(
-  tail: FragmentStringJsonc,
-  items: readonly Jsonc.Value[] = [],
-): {
+export function parseArrayElements({
+  tail,
+  items = [],
+}: {
+  tail: FragmentStringJsonc;
+  items?: readonly Jsonc.Value[];
+},): {
   items: readonly Jsonc.Value[];
   tail: FragmentStringJsonc;
 } {
@@ -73,13 +76,13 @@ export function parseArrayElements(
       tail: decision.tail,
     };
   }
-  return parseArrayElements(
-    decision.tailStart,
-    [
+  return parseArrayElements({
+    tail: decision.tailStart,
+    items: [
       ...items,
       parsed,
     ],
-  );
+  },);
 }
 //endregion Array elements
 
@@ -116,10 +119,10 @@ export function customParserForArray(
   const {
     arrayComment,
     tail: headerTail,
-  } = parseArrayHeader(
-    woOpening,
-    context,
-  );
+  } = parseArrayHeader({
+    valueAfterBracket: woOpening,
+    ...(context !== undefined ? { context, } : {}),
+  },);
   //endregion Entry and comment skip
 
   //region Empty array fast-exit: Handle immediate closing bracket
@@ -148,10 +151,10 @@ export function customParserForArray(
   const {
     items,
     tail,
-  } = parseArrayElements(
-    headerTail,
-    [],
-  );
+  } = parseArrayElements({
+    tail: headerTail,
+    items: [],
+  },);
   return {
     value: items as Jsonc.Value[],
     ...(arrayComment ? { comment: arrayComment, } : {}),
