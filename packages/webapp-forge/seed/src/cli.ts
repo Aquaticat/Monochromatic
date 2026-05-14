@@ -44,7 +44,9 @@ const DEFAULT_REPOS = 3;
  * ```
  */
 function getFlag(name: string,): string | undefined {
+  /** Match-prefix derived from the flag name so the find call locates the right argv entry. */
   const prefix = `--${name}=`;
+  /** First matching argv entry, or undefined when the flag was not passed. */
   const argument = process.argv.find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
   },);
@@ -69,9 +71,11 @@ function intFlag(
   name: string,
   fallback: number,
 ): number {
+  /** Raw flag string lifted from argv before integer parsing. */
   const raw = getFlag(name,);
   if (raw === undefined)
     return fallback;
+  /** Decimal-parsed flag value; reused twice in the finite check and return. */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,

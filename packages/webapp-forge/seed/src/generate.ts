@@ -160,17 +160,21 @@ export async function seedRepos(row: {
   userCount: number;
   baseTimestamp: number;
 },): Promise<string[]> {
+  /** Collected repo ids returned to the caller for downstream seeding. */
   const repoIds: string[] = [];
   for (let i = 0; i < row.repoCount; i += 1) {
+    /** Deterministic user-table index used to pick the repo owner. */
     const ownerIndex = rngInt({
       seed: row.seed + i,
       lo: 0,
       hi: row.userCount,
     },);
+    /** Composed owner id mapped through the user namespace offset. */
     const ownerId = deterministicId(
       'user',
       row.userBaseSeed + ownerIndex,
     );
+    /** Composed repo id reused by the insert and the returned id list. */
     const repoId = deterministicId(
       'repo',
       row.seed + i,
@@ -212,11 +216,15 @@ export async function seedLabels(row: {
   repoIds: readonly string[];
   seed: number;
 },): Promise<SeedLabelsResult> {
+  /** Per-repo label lookup populated below and returned so callers can re-attach labels to issues. */
   const labelsByRepo = new Map<string, string[]>();
+  /** Running label-insert count returned alongside the lookup map. */
   let total = 0;
   for (const repoId of row.repoIds) {
+    /** Per-repo label id list accumulated and stored in the lookup map. */
     const labels: string[] = [];
     for (const [index, label,] of DEFAULT_LABELS.entries()) {
+      /** Composed label id reused by the insert and the per-repo list. */
       const labelId = deterministicId(
         `label-${repoId}`,
         row.seed + index,
@@ -273,32 +281,43 @@ export async function seedIssuesForRepo(row: {
   labelIds: readonly string[];
   maxIssues?: number;
 },): Promise<SeedIssuesResult> {
+  /** Long-tail-distributed issue count drawn from the seed before any cap is applied. */
   const requested = sampleIssueCount(row.seed,);
+  /** Final per-repo issue count, capped by the optional maxIssues argument when set. */
   const issueCount = row.maxIssues === undefined
     ? requested
     : Math.min(
       requested,
       row.maxIssues,
     );
+  /** Running comment-insert count returned alongside issue ids. */
   let totalComments = 0;
+  /** Collected issue ids returned so phase-2 PR seeding can target them. */
   const issueIds: string[] = [];
   for (let i = 0; i < issueCount; i += 1) {
+    /** Per-issue sub-seed multiplied to spread issues across the seed space. */
     const issueSeed = row.seed * ISSUE_SEED_MULTIPLIER + i;
+    /** Deterministic user-table index used to pick the issue author. */
     const authorIndex = rngInt({
       seed: issueSeed,
       lo: 0,
       hi: row.userCount,
     },);
+    /** Composed author id mapped through the user namespace offset. */
     const authorId = deterministicId(
       'user',
       row.userBaseSeed + authorIndex,
     );
+    /** Composed issue id reused by the insert, the label call, and the returned id list. */
     const issueId = deterministicId(
       `issue-${row.repoId}`,
       i,
     );
+    /** One-based issue number used for the insert and not reused elsewhere. */
     const number = i + 1;
+    /** Synthesised issue title derived from the per-issue seed. */
     const title = synthesizeTitle(issueSeed,);
+    /** Synthesised issue body whose word count is drawn from the issue body range. */
     const body = synthesizeBody({
       seed: issueSeed,
       targetWordCount: rngInt({
@@ -320,6 +339,7 @@ export async function seedIssuesForRepo(row: {
     issueIds.push(issueId,);
     // Optionally pin a label.
     if (row.labelIds.length > 0) {
+      /** Optional label id picked from the per-repo palette; null/undefined skips the insert. */
       const labelId = rngPick({
         seed: issueSeed + ISSUE_TO_LABEL_SEED_OFFSET,
         items: row.labelIds,
@@ -333,24 +353,30 @@ export async function seedIssuesForRepo(row: {
         },);
       }
     }
+    /** Per-issue comment count drawn from the long-tail distribution; bounds the comment loop. */
     const commentCount = sampleCommentCount(
       issueSeed + ISSUE_TO_COMMENT_SEED_OFFSET,
     );
     for (let c = 0; c < commentCount; c += 1) {
+      /** Per-comment sub-seed multiplied to spread comments across the seed space. */
       const commentSeed = issueSeed * COMMENT_SEED_MULTIPLIER + c;
+      /** Deterministic user-table index used to pick the comment author. */
       const commentAuthorIndex = rngInt({
         seed: commentSeed,
         lo: 0,
         hi: row.userCount,
       },);
+      /** Composed comment author id mapped through the user namespace offset. */
       const commentAuthorId = deterministicId(
         'user',
         row.userBaseSeed + commentAuthorIndex,
       );
+      /** Composed comment id reused only by the insert. */
       const commentId = deterministicId(
         `comment-${issueId}`,
         c,
       );
+      /** Synthesised comment body whose word count is drawn from the comment body range. */
       const commentBody = synthesizeBody({
         seed: commentSeed,
         targetWordCount: rngInt({

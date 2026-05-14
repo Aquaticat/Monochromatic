@@ -1,5 +1,17 @@
 # JSR npm bridge: Bun's conditional GET cache triggers 502 Bad Gateway from npm.jsr.io
 
+> **Historical context (2026-05-14).** This document is retained for
+> source-trace reference. The workspace no longer consumes JSR-hosted packages
+> (see `PHILOSOPHY.tool-choices.md`) and uses pnpm as the package manager, not
+> `bun install` (migration landed in `e424ffde build(*): migrate package
+> manager from vlt to pnpm`). The conditional-GET 502 cannot trigger on the
+> current install path. Both the registry-side and installer-side defects are
+> tracked as out-of-scope categories in `.out-of-scope/jsr.md` and
+> `.out-of-scope/bun-install.md`; no GitHub tracking issue is open against
+> either. The "Verified workaround" section below references a `mise run
+> fix:jsr` task that was deleted as part of the pnpm migration; treat it as
+> historical reproduction guidance, not as a live workspace task.
+
 ## Symptom
 
 ```bash

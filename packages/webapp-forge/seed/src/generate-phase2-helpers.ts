@@ -51,7 +51,9 @@ export function deterministicId(
  * ```
  */
 export function fakeSha(seed: number,): string {
+  /** Accumulated hex chunks; loop runs until length reaches the SHA hex target. */
   let s = '';
+  /** Rolling integer mutated each chunk to spread the seed across the SHA. */
   let next = Math.trunc(seed,);
   while (s.length < SHA_HEX_LENGTH) {
     next = Math.trunc(

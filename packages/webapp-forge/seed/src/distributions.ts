@@ -79,6 +79,7 @@ const COMMENTS_TAIL_RANGE = 1_000;
  * ```
  */
 export function sampleIssueCount(seed: number,): number {
+  /** Bucket-selector draw in [0, 1) compared against the cumulative percentile thresholds. */
   const r = rng(seed,);
   if (r < P50_THRESHOLD)
     return ISSUES_P50_BASE + Math.floor(rng(seed + 1,) * ISSUES_P50_RANGE,);
@@ -104,6 +105,7 @@ export function sampleIssueCount(seed: number,): number {
  * ```
  */
 export function sampleCommentCount(seed: number,): number {
+  /** Bucket-selector draw in [0, 1) compared against the cumulative percentile thresholds. */
   const r = rng(seed,);
   if (r < P50_THRESHOLD)
     return COMMENTS_P50_BASE + Math.floor(rng(seed + 1,) * COMMENTS_P50_RANGE,);

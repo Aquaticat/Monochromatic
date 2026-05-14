@@ -54,13 +54,16 @@ export async function seedDataset(row: {
   baseTimestamp: number;
   maxIssuesPerRepo?: number;
 },): Promise<SeedSummary> {
+  /** Namespace offset reserving the user id range from repos sharing the same root seed. */
   const userBaseSeed = row.seed * USER_SEED_FACTOR;
   await seedUsers({
     seed: userBaseSeed,
     count: row.userCount,
     baseTimestamp: row.baseTimestamp,
   },);
+  /** Namespace offset reserving the repo id range from users sharing the same root seed. */
   const repoBaseSeed = row.seed * REPO_SEED_FACTOR;
+  /** Repo id list returned from seeding; reused to derive per-repo iteration order. */
   const repoIds = await seedRepos({
     seed: repoBaseSeed,
     repoCount: row.repoCount,
@@ -68,6 +71,7 @@ export async function seedDataset(row: {
     userCount: row.userCount,
     baseTimestamp: row.baseTimestamp,
   },);
+  /** Destructured label totals so the summary can aggregate without re-querying. */
   const {
     totalLabels,
     labelsByRepo,
@@ -75,16 +79,25 @@ export async function seedDataset(row: {
     repoIds,
     seed: row.seed,
   },);
+  /** Running tally accumulated across per-repo phase-1 seeding. */
   let totalIssues = 0;
+  /** Running tally accumulated across per-repo phase-1 seeding. */
   let totalComments = 0;
+  /** Running tally accumulated across per-repo phase-2 seeding. */
   let totalMilestones = 0;
+  /** Running tally accumulated across per-repo phase-2 seeding. */
   let totalPrs = 0;
+  /** Running tally accumulated across per-repo phase-2 seeding. */
   let totalReviews = 0;
+  /** Running tally accumulated across per-repo phase-2 seeding. */
   let totalAssignees = 0;
+  /** Running tally accumulated across per-repo phase-2 seeding. */
   let totalMembers = 0;
   for (const [index, repoId,] of repoIds.entries()) {
+    /** Per-repo label id list defaulted to empty so the seeder receives a concrete array. */
     const labels = labelsByRepo.get(repoId,) ?? [];
-    // oxlint-disable-next-line no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear
+    /* oxlint-disable no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear */
+    /** Phase-1 seeding result reused for the comment/issue totals and to feed phase-2. */
     const r = await seedIssuesForRepo({
       repoId,
       seed: repoBaseSeed + index,
@@ -96,9 +109,11 @@ export async function seedDataset(row: {
         ? {}
         : { maxIssues: row.maxIssuesPerRepo, }),
     },);
+    /* oxlint-enable no-await-in-loop */
     totalIssues += r.issues;
     totalComments += r.comments;
-    // oxlint-disable-next-line no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear
+    /* oxlint-disable no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear */
+    /** Phase-2 seeding result aggregated into the per-resource totals. */
     const phase2 = await seedPhase2ForRepo({
       repoId,
       seed: repoBaseSeed + index,
@@ -107,6 +122,7 @@ export async function seedDataset(row: {
       baseTimestamp: row.baseTimestamp + index * REPO_SEED_FACTOR,
       issueIds: r.issueIds,
     },);
+    /* oxlint-enable no-await-in-loop */
     totalMilestones += phase2.milestones;
     totalPrs += phase2.prs;
     totalReviews += phase2.reviews;

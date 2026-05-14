@@ -82,27 +82,34 @@ export async function seedPullRequestsForRepo(row: {
   count: number;
   issueIds: readonly string[];
 }> {
+  /** PR count drawn from the seed; bounds the insertion loop. */
   const count = rngInt({
     seed: row.seed,
     lo: 0,
     hi: MAX_PRS_PER_REPO + 1,
   },);
+  /** Collected PR issue ids returned to the caller for downstream review seeding. */
   const ids: string[] = [];
   for (let i = 0; i < count; i += 1) {
+    /** Per-PR sub-seed reused for author, body, and SHA derivation. */
     const prSeed = row.seed + i;
+    /** Composed PR-issue id reused by the insert and the returned id list. */
     const issueId = deterministicId(
       `pr-${row.repoId}`,
       i,
     );
+    /** Deterministic user-table index used to pick the PR author. */
     const authorIndex = rngInt({
       seed: prSeed,
       lo: 0,
       hi: row.userCount,
     },);
+    /** Composed author id mapped through the user namespace offset. */
     const authorId = deterministicId(
       'user',
       row.userBaseSeed + authorIndex,
     );
+    /** Body word-count target drawn from the seed; passed to the synthesiser. */
     const bodyWords = rngInt({
       seed: prSeed + PR_BODY_OFFSET,
       lo: PR_BODY_WORDS_LO,
@@ -153,28 +160,35 @@ export async function seedReviewsForPrs(row: {
   userCount: number;
   baseTimestamp: number;
 },): Promise<number> {
+  /** Running review count returned to the caller after the per-PR loops finish. */
   let total = 0;
   for (const [index, prIssueId,] of row.prIssueIds.entries()) {
+    /** Per-PR review count drawn from the seed; bounds the inner loop. */
     const reviewCount = rngInt({
       seed: row.seed + index,
       lo: 0,
       hi: MAX_REVIEWS_PER_PR + 1,
     },);
     for (let r = 0; r < reviewCount; r += 1) {
+      /** Per-review sub-seed offset so each review draws unique reviewer/state/body. */
       const reviewSeed = row.seed + index * MAX_REVIEWS_PER_PR + r;
+      /** Deterministic user-table index used to pick the reviewer. */
       const reviewerIndex = rngInt({
         seed: reviewSeed,
         lo: 0,
         hi: row.userCount,
       },);
+      /** Composed reviewer id mapped through the user namespace offset. */
       const reviewerId = deterministicId(
         'user',
         row.userBaseSeed + reviewerIndex,
       );
+      /** Review state sampled from the allowed set, defaulted to commented when picking fails. */
       const state = rngPick({
         seed: reviewSeed,
         items: REVIEW_STATES,
       },) ?? 'commented';
+      /** Review body word-count target drawn from the seed; passed to the synthesiser. */
       const bodyWords = rngInt({
         seed: reviewSeed,
         lo: REVIEW_BODY_WORDS_LO,

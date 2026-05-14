@@ -40,17 +40,21 @@ const TITLE_PREFIXES = [
  * ```
  */
 export function synthesizeTitle(seed: number,): string {
+  /** Title prefix sampled from the bug-tracker palette, defaulted when picking fails. */
   const prefix = rngPick({
     seed,
     items: TITLE_PREFIXES,
   },) ?? 'Issue:';
+  /** Title word count drawn from the seed; bounds the per-word picking loop. */
   const wordCount = rngInt({
     seed: seed + 1,
     lo: 4,
     hi: 10,
   },);
+  /** Collected title words assembled into the returned string. */
   const words: string[] = [];
   for (let i = 0; i < wordCount; i += 1) {
+    /** Per-word pick from the lorem pool; defaulted when picking fails. */
     const picked = rngPick({
       seed: seed + 2 + i,
       items: WORD_POOL,
@@ -77,11 +81,16 @@ export function synthesizeBody(row: {
   seed: number;
   targetWordCount: number;
 },): string {
+  /** Collected paragraph strings joined with blank lines for the returned body. */
   const paragraphs: string[] = [];
+  /** Running word count toward the target so the while loop knows when to stop. */
   let writtenWords = 0;
+  /** Rolling seed advanced per paragraph so each paragraph draws different words. */
   let cursor = row.seed;
   while (writtenWords < row.targetWordCount) {
+    /** Words still owed against the target; caps the next paragraph length. */
     const remaining = row.targetWordCount - writtenWords;
+    /** Paragraph length capped by remaining so the body never overshoots the target. */
     const paragraphLength = Math.min(
       remaining,
       rngInt({
@@ -90,8 +99,10 @@ export function synthesizeBody(row: {
         hi: 60,
       },),
     );
+    /** Collected paragraph words assembled before joining onto the paragraph list. */
     const words: string[] = [];
     for (let i = 0; i < paragraphLength; i += 1) {
+      /** Per-word pick from the lorem pool; defaulted when picking fails. */
       const picked = rngPick({
         seed: cursor + 1 + i,
         items: WORD_POOL,

@@ -19,8 +19,10 @@
  * ```
  */
 export function rng(seed: number,): number {
+  /** Mutable accumulator coerced to int32 so subsequent bitwise math stays in range. */
   let value = seed | 0;
   value = (value + 0x6D_2B_79_F5) | 0;
+  /** Mixing temporary mutated through the second avalanche step before final reduction. */
   let temp = Math.imul(
     value ^ (value >>> 15),
     value | 1,
