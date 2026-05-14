@@ -32,8 +32,9 @@ type StopRemindersOutput = StopOutput | Record<string, never>;
  *    I think, etc.); a hit contributes a reminder to gather evidence.
  * 4. **Trailing-question scan** -- looks for sentences ending in `?` in the
  *    last 500 characters; rhetorical/conditional prefixes are excluded.
- * 5. **Result** -- if any reasons accumulated, returns `{ decision: 'block',
- *    reason: <reasons joined by space> }`; otherwise `{}`.
+ * 5. **Result** -- if any reasons accumulated, returns
+ *    `\{ decision: 'block', reason: [reasons joined by space] \}`;
+ *    otherwise `\{\}`.
  *
  * @param event - parsed Stop event from Claude Code
  *

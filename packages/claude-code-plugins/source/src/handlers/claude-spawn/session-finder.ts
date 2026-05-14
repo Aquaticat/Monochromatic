@@ -117,8 +117,8 @@ function walkProcessTreeFrom(pid: number,): PidMapping | null {
  * coordination directory.
  *
  * When invoked via Bash tool, the process tree is:
- *   Claude -> [sandbox?] -> shell -> spawn-claude
- * The SessionStart hook writes `.by-pid/{claudePid}`, so we walk up until we
+ *   Claude -\> [sandbox?] -\> shell -\> spawn-claude
+ * The SessionStart hook writes `.by-pid/[claudePid]`, so we walk up until we
  * find a matching PID file.
  *
  * @returns session identity of calling Claude instance, or `null` if not found
