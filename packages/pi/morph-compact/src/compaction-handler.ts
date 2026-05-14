@@ -16,8 +16,12 @@ import { resolveMorphApiKey, } from './api-key.ts';
 import { attemptMorphCompaction, } from './compaction.ts';
 import type { MorphCompactionDetails, } from './types.ts';
 
-/** One-time warning per session when Morph API key is missing. */
-let warnedMissingKey = false;
+/**
+ * Latches for one-time warnings during a session.
+ * Set membership replaces a module-root boolean so the module stays free of
+ * top-level `let` (workspace lint rule).
+ */
+const warnedFlags = new Set<'missingKey'>();
 
 /**
  * Reset the missing-key warning flag for a new session.
@@ -28,7 +32,7 @@ let warnedMissingKey = false;
  * ```
  */
 export function resetMissingKeyWarning(): void {
-  warnedMissingKey = false;
+  warnedFlags.delete('missingKey',);
 }
 
 /**
@@ -51,11 +55,14 @@ export function resetMissingKeyWarning(): void {
  *
  * @example
  * ```typescript
- * pi.on("session_before_compact", handleBeforeCompact);
+ * pi.on("session_before_compact", (event, ctx) => handleBeforeCompact({ event, ctx }));
  * ```
  */
-export async function handleBeforeCompact(
-  event: SessionBeforeCompactEvent,
+export async function handleBeforeCompact({
+  event,
+  ctx,
+}: {
+  event: SessionBeforeCompactEvent;
   ctx: {
     getContextUsage(): {
       tokens: number | null;
@@ -67,8 +74,8 @@ export async function handleBeforeCompact(
         type?: 'info' | 'warning' | 'error',
       ): void;
     };
-  },
-): Promise<
+  };
+},): Promise<
   | { compaction: CompactionResult<MorphCompactionDetails>; }
   | { cancel: true; }
   | undefined
@@ -76,8 +83,8 @@ export async function handleBeforeCompact(
   /** Resolved Morph key; undefined disables the integration for this event. */
   const apiKey = await resolveMorphApiKey();
   if (apiKey === undefined) {
-    if (!warnedMissingKey) {
-      warnedMissingKey = true;
+    if (!warnedFlags.has('missingKey',)) {
+      warnedFlags.add('missingKey',);
       ctx.ui.notify(
         'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json): Morph Compact disabled, using pi default compaction',
         'warning',
@@ -100,9 +107,9 @@ export async function handleBeforeCompact(
   } = event.preparation;
 
   /** True when either pending list has at least one message. */
-  const hasMessages = messagesToSummarize.length > 0
-    || turnPrefixMessages.length > 0;
-  if (!hasMessages && previousSummary === undefined) {
+  const hasMessages = (messagesToSummarize.length > 0)
+    || (turnPrefixMessages.length > 0);
+  if ((!hasMessages) && (previousSummary === undefined)) {
     ctx.ui.notify(
       'Morph Compact: nothing to compact (session too small)',
       'warning',
@@ -120,11 +127,11 @@ export async function handleBeforeCompact(
 
   try {
     /** Outcome of the Morph attempt; success surfaces a CompactionResult. */
-    const attempt = await attemptMorphCompaction(
+    const attempt = await attemptMorphCompaction({
       event,
-      ctx.getContextUsage(),
+      contextUsage: ctx.getContextUsage(),
       apiKey,
-    );
+    },);
 
     if (attempt.kind === 'fallback')
       return undefined;
@@ -136,8 +143,8 @@ export async function handleBeforeCompact(
       /** Telemetry block stored on result.details; absent when the API omitted usage. */
       const morphUsage = result.details?.morphUsage;
       /** Whole-percent reduction reported to the UI; zero when ratio unavailable. */
-      const reductionPct = morphUsage?.compressionRatio !== undefined
-          && morphUsage.compressionRatio !== 0
+      const reductionPct = ((morphUsage?.compressionRatio !== undefined)
+          && (morphUsage.compressionRatio !== 0))
         ? Math.round(
           (1 - morphUsage.compressionRatio) * 100,
         )

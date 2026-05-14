@@ -262,13 +262,13 @@ function resolveApiKey({
 }: {
   explicit?: string | undefined;
 },): string {
-  if (explicit !== undefined && explicit !== '')
+  if ((explicit !== undefined) && (explicit !== ''))
     return explicit;
   /** Browser-safe fallback to process env when the runtime exposes one. */
-  const envKey = typeof process !== 'undefined'
+  const envKey = ((typeof process) !== 'undefined')
     ? process.env['MORPH_API_KEY']
     : undefined;
-  if (envKey !== undefined && envKey !== '')
+  if ((envKey !== undefined) && (envKey !== ''))
     return envKey;
   throw new MorphApiKeyMissingError();
 }
@@ -302,7 +302,7 @@ function buildRequestBody(input: CompactInput,): Record<string, unknown> {
     body['messages'] = input.messages;
     return body;
   }
-  if (typeof input.input === 'string') {
+  if ((typeof input.input) === 'string') {
     body['input'] = input.input;
     return body;
   }

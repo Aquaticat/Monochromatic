@@ -88,7 +88,7 @@ export function chooseCompressionRatio(
     contextWindow: number;
   },
 ): number {
-  if (contextUsage === undefined || contextUsage.tokens === null)
+  if ((contextUsage === undefined) || (contextUsage.tokens === null))
     return RATIO_HIGH;
   /** Pressure proxy chosen for adaptive ratio selection. */
   const fraction = contextUsage.tokens / contextUsage.contextWindow;
@@ -118,20 +118,28 @@ export function chooseCompressionRatio(
  *
  * @example
  * ```typescript
- * const attempt = await attemptMorphCompaction(event, ctx.getContextUsage(), apiKey);
+ * const attempt = await attemptMorphCompaction({
+ *   event,
+ *   contextUsage: ctx.getContextUsage(),
+ *   apiKey,
+ * });
  * if (attempt.kind === "success") {
  *   return { compaction: attempt.result };
  * }
  * ```
  */
-export async function attemptMorphCompaction(
-  event: SessionBeforeCompactEvent,
+export async function attemptMorphCompaction({
+  event,
+  contextUsage,
+  apiKey,
+}: {
+  event: SessionBeforeCompactEvent;
   contextUsage?: {
     tokens: number | null;
     contextWindow: number;
-  },
-  apiKey?: string,
-): Promise<MorphCompactionAttempt> {
+  } | undefined;
+  apiKey?: string | undefined;
+},): Promise<MorphCompactionAttempt> {
   /** Destructured event surface used throughout the attempt body. */
   const {
     preparation,
@@ -158,7 +166,7 @@ export async function attemptMorphCompaction(
   // When there are no new messages but a previous summary exists,
   // Morph can still re-compress the previous summary to save space.
   // The index.ts handler already cancels when both are empty.
-  if (allMessages.length === 0 && previousSummary === undefined)
+  if ((allMessages.length === 0) && (previousSummary === undefined))
     return { kind: 'fallback', };
 
   /** Serialized conversation used as Morph input; empty when re-compressing summary alone. */
@@ -166,18 +174,18 @@ export async function attemptMorphCompaction(
     ? serializeConversation(convertToLlm(allMessages,),)
     : '';
   /** Final prompt body sent to Morph; merges prior summary with new content. */
-  const input = buildMorphInput(
-    conversationText,
+  const input = buildMorphInput({
+    serializedConversation: conversationText,
     previousSummary,
-  );
+  },);
   if (input.trim() === '')
     return { kind: 'fallback', };
 
   /** Latest user intent forwarded to Morph for relevance ranking. */
-  const query = extractLatestQuery(
+  const query = extractLatestQuery({
     branchEntries,
     customInstructions,
-  )
+  },)
     .slice(
       0,
       MAX_QUERY_LENGTH,
@@ -214,7 +222,7 @@ export async function attemptMorphCompaction(
 
   /** Trimmed compacted body; empty payload triggers fallback. */
   const output = result.output?.trim();
-  if (output === undefined || output === '')
+  if ((output === undefined) || (output === ''))
     return { kind: 'fallback', };
 
   /** Read vs modified split appended after Morph's summary. */
@@ -224,10 +232,10 @@ export async function attemptMorphCompaction(
   } = computeFileLists(fileOps,);
   /** Final summary string surfaced to pi as compaction output. */
   const summary = `${wrapMorphOutput(output,)}${
-    formatFileOperations(
+    formatFileOperations({
       readFiles,
       modifiedFiles,
-    )
+    },)
   }`;
 
   /** Optional Morph telemetry rolled into details for the UI panel. */

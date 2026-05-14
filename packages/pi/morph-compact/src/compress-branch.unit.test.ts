@@ -24,11 +24,15 @@ import { MorphCompactClient, } from './morph-client.ts';
 //region Test helpers
 
 /** Build a minimal message entry for tests. */
-function makeMessageEntry(
-  role: string,
-  content: unknown,
+function makeMessageEntry({
+  role,
+  content,
   id = 'msg-1',
-): SessionEntry {
+}: {
+  role: string;
+  content: unknown;
+  id?: string;
+},): SessionEntry {
   return {
     type: 'message',
     id,
@@ -43,10 +47,13 @@ function makeMessageEntry(
 }
 
 /** Build a minimal compaction entry for tests. */
-function makeCompactionEntry(
-  summary: string,
+function makeCompactionEntry({
+  summary,
   id = 'compact-1',
-): SessionEntry {
+}: {
+  summary: string;
+  id?: string;
+},): SessionEntry {
   return {
     type: 'compaction',
     id,
@@ -150,7 +157,7 @@ await describe({
           fn: async () => {
             const previousSummary = 'Previous compacted context here';
             const entries: SessionEntry[] = [
-              makeCompactionEntry(previousSummary,),
+              makeCompactionEntry({ summary: previousSummary, },),
             ];
             const result = await compressBranch({
               ...emptyParams(),
@@ -172,16 +179,16 @@ await describe({
               );
 
             const entries: SessionEntry[] = [
-              makeMessageEntry(
-                'user',
-                'What is the capital of France?',
-                'msg-1',
-              ),
-              makeMessageEntry(
-                'assistant',
-                'Paris is the capital of France.',
-                'msg-2',
-              ),
+              makeMessageEntry({
+                role: 'user',
+                content: 'What is the capital of France?',
+                id: 'msg-1',
+              },),
+              makeMessageEntry({
+                role: 'assistant',
+                content: 'Paris is the capital of France.',
+                id: 'msg-2',
+              },),
             ];
             const result = await compressBranch({
               ...emptyParams(),
@@ -213,12 +220,12 @@ await describe({
 
             const previousSummary = 'Old context about Spain';
             const entries: SessionEntry[] = [
-              makeCompactionEntry(previousSummary,),
-              makeMessageEntry(
-                'user',
-                'Now tell me about Italy',
-                'msg-1',
-              ),
+              makeCompactionEntry({ summary: previousSummary, },),
+              makeMessageEntry({
+                role: 'user',
+                content: 'Now tell me about Italy',
+                id: 'msg-1',
+              },),
             ];
             const result = await compressBranch({
               ...emptyParams(),
@@ -248,11 +255,11 @@ await describe({
               );
 
             const entries: SessionEntry[] = [
-              makeMessageEntry(
-                'user',
-                'General question',
-                'msg-1',
-              ),
+              makeMessageEntry({
+                role: 'user',
+                content: 'General question',
+                id: 'msg-1',
+              },),
             ];
             const result = await compressBranch({
               ...emptyParams(),
@@ -286,11 +293,11 @@ await describe({
               );
 
             const entries: SessionEntry[] = [
-              makeMessageEntry(
-                'user',
-                'Some question',
-                'msg-1',
-              ),
+              makeMessageEntry({
+                role: 'user',
+                content: 'Some question',
+                id: 'msg-1',
+              },),
             ];
             await expect(
               compressBranch({
@@ -316,20 +323,20 @@ await describe({
 
             const previousSummary = 'Earlier conversation about Germany';
             const entries: SessionEntry[] = [
-              makeMessageEntry(
-                'user',
-                'Old message before compaction',
-                'msg-old',
-              ),
-              makeCompactionEntry(
-                previousSummary,
-                'compact-1',
-              ),
-              makeMessageEntry(
-                'user',
-                'New message after compaction',
-                'msg-new',
-              ),
+              makeMessageEntry({
+                role: 'user',
+                content: 'Old message before compaction',
+                id: 'msg-old',
+              },),
+              makeCompactionEntry({
+                summary: previousSummary,
+                id: 'compact-1',
+              },),
+              makeMessageEntry({
+                role: 'user',
+                content: 'New message after compaction',
+                id: 'msg-new',
+              },),
             ];
             const result = await compressBranch({
               ...emptyParams(),
@@ -356,24 +363,24 @@ await describe({
               );
 
             const entries: SessionEntry[] = [
-              makeCompactionEntry(
-                'First compaction',
-                'compact-1',
-              ),
-              makeMessageEntry(
-                'user',
-                'Message between compactions',
-                'msg-1',
-              ),
-              makeCompactionEntry(
-                'Second compaction',
-                'compact-2',
-              ),
-              makeMessageEntry(
-                'user',
-                'Message after second compaction',
-                'msg-2',
-              ),
+              makeCompactionEntry({
+                summary: 'First compaction',
+                id: 'compact-1',
+              },),
+              makeMessageEntry({
+                role: 'user',
+                content: 'Message between compactions',
+                id: 'msg-1',
+              },),
+              makeCompactionEntry({
+                summary: 'Second compaction',
+                id: 'compact-2',
+              },),
+              makeMessageEntry({
+                role: 'user',
+                content: 'Message after second compaction',
+                id: 'msg-2',
+              },),
             ];
             const result = await compressBranch({
               ...emptyParams(),

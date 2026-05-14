@@ -26,8 +26,6 @@
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
-  ExtensionContext,
-  SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
 import {
@@ -48,13 +46,14 @@ import {
 //region Session state
 
 /**
- * Module-level reference to the pi extension API.
+ * Module-level slot for the pi extension API.
  *
- * Stored here so the `session_start` handler can call
- * `pi.getFlag()` and `pi.sendUserMessage()` without
- * receiving the API as a parameter.
+ * Stored in a `Map` (instead of a top-level `let`) so the `session_start`
+ * handler can call `pi.getFlag()` and `pi.sendUserMessage()` without
+ * receiving the API as a parameter. The single key `'value'` distinguishes
+ * "not yet registered" (no entry) from "registered" (entry present).
  */
-let extensionApi: ExtensionAPI | null = null;
+const extensionApiSlot = new Map<'value', ExtensionAPI>();
 
 //endregion
 
@@ -73,10 +72,13 @@ let extensionApi: ExtensionAPI | null = null;
  *
  * @param ctx - extension command context with session access and UI
  */
-async function handleMorphCompactCommand(
-  args: string,
-  ctx: ExtensionCommandContext,
-): Promise<void> {
+async function handleMorphCompactCommand({
+  args,
+  ctx,
+}: {
+  args: string;
+  ctx: ExtensionCommandContext;
+},): Promise<void> {
   /** Resolved Morph key gates the command early when missing. */
   const apiKey = await resolveMorphApiKey();
   if (apiKey === undefined) {
@@ -124,10 +126,10 @@ async function handleMorphCompactCommand(
       },);
     }
     else {
-      await launchWithLargeContext(
-        ctx.cwd,
+      await launchWithLargeContext({
+        cwd: ctx.cwd,
         compressedText,
-      );
+      },);
     }
 
     ctx.ui.notify(
@@ -154,21 +156,15 @@ async function handleMorphCompactCommand(
  * (checked in priority order: file → Unix socket → TCP) and
  * injects it as a user message. Then resets per-session state.
  *
- * @param event - the session_start event
- *
- * @param ctx - extension context
+ * Takes no parameters: the pi API is held in the module-level
+ * {@link extensionApiSlot}, so the event payload itself is unused
+ * by this handler.
  */
-async function handleSessionStart(
-  event: SessionStartEvent,
-  ctx: ExtensionContext,
-): Promise<void> {
-  if (extensionApi !== null) {
-    await handleSessionStartInject(
-      extensionApi,
-      event,
-      ctx,
-    );
-  }
+async function handleSessionStart(): Promise<void> {
+  /** Late-bound pi API captured at extension init; absent before first registration. */
+  const api = extensionApiSlot.get('value',);
+  if (api !== undefined)
+    await handleSessionStartInject(api,);
 
   resetMissingKeyWarning();
   resetApiKeyCache();
@@ -194,7 +190,10 @@ async function handleSessionStart(
 export default function morphCompact(
   pi: ExtensionAPI,
 ): void {
-  extensionApi = pi;
+  extensionApiSlot.set(
+    'value',
+    pi,
+  );
 
   pi.registerFlag(
     'morph-compact-file',
@@ -220,14 +219,30 @@ export default function morphCompact(
 
   pi.on(
     'session_before_compact',
-    handleBeforeCompact,
+    function bridgeBeforeCompact(
+      event,
+      ctx,
+    ) {
+      return handleBeforeCompact({
+        event,
+        ctx,
+      },);
+    },
   );
 
   pi.registerCommand(
     'morph-compact',
     {
       description: 'Compress session context and launch a new pi terminal with it',
-      handler: handleMorphCompactCommand,
+      handler: function bridgeMorphCompactCommand(
+        args,
+        ctx,
+      ) {
+        return handleMorphCompactCommand({
+          args,
+          ctx,
+        },);
+      },
     },
   );
 

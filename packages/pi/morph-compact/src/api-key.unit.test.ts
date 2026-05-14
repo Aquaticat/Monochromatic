@@ -28,10 +28,13 @@ class EnvRestore implements Disposable {
 }
 
 /** Set an env var and return a disposable that restores the original value. */
-function setEnv(
-  key: string,
-  value: string,
-): EnvRestore {
+function setEnv({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+},): EnvRestore {
   const original = process.env[key];
   process.env[key] = value;
   resetApiKeyCache();
@@ -48,7 +51,7 @@ await describe({
           name: 'resolves MORPH_API_KEY from environment',
           fn: async () => {
             // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
-            using _restore = setEnv('MORPH_API_KEY', 'test-key-from-env',);
+            using _restore = setEnv({ key: 'MORPH_API_KEY', value: 'test-key-from-env', },);
             const key = await resolveMorphApiKey();
             expect(key,).toBe('test-key-from-env',);
           },
@@ -57,7 +60,7 @@ await describe({
           name: 'returns env value directly when set',
           fn: async () => {
             // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
-            using _restore = setEnv('MORPH_API_KEY', 'cached-key',);
+            using _restore = setEnv({ key: 'MORPH_API_KEY', value: 'cached-key', },);
             const first = await resolveMorphApiKey();
             // Env var takes priority over cache
             process.env.MORPH_API_KEY = 'new-key';
@@ -70,7 +73,7 @@ await describe({
           name: 'resetApiKeyCache clears the cache',
           fn: async () => {
             // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
-            using _restore = setEnv('MORPH_API_KEY', 'before-reset',);
+            using _restore = setEnv({ key: 'MORPH_API_KEY', value: 'before-reset', },);
             await resolveMorphApiKey();
             process.env.MORPH_API_KEY = 'after-reset';
             resetApiKeyCache();
@@ -87,7 +90,7 @@ await describe({
           name: 'allows re-reading after cache reset',
           fn: async () => {
             // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
-            using _restore = setEnv('MORPH_API_KEY', 'initial',);
+            using _restore = setEnv({ key: 'MORPH_API_KEY', value: 'initial', },);
             await resolveMorphApiKey();
             process.env.MORPH_API_KEY = 'post-reset';
             resetApiKeyCache();

@@ -11,10 +11,13 @@ import {
 } from './formatting.ts';
 
 /** Build a minimal message entry for query extraction tests. */
-function makeMessageEntry(
-  role: string,
-  content: unknown,
-): SessionEntry {
+function makeMessageEntry({
+  role,
+  content,
+}: {
+  role: string;
+  content: unknown;
+},): SessionEntry {
   return {
     type: 'message',
     id: 'test',
@@ -38,12 +41,12 @@ await describe({
           name: 'extracts last user message text',
           fn: async () => {
             const entries = [
-              makeMessageEntry('user', 'Tell me about European capitals',),
+              makeMessageEntry({ role: 'user', content: 'Tell me about European capitals', },),
             ];
-            const query = extractLatestQuery(
-              entries,
-              undefined,
-            );
+            const query = extractLatestQuery({
+              branchEntries: entries,
+              customInstructions: undefined,
+            },);
             expect(query,).toBe('Tell me about European capitals',);
           },
         },),
@@ -51,22 +54,22 @@ await describe({
           name: 'custom instructions take priority',
           fn: async () => {
             const entries = [
-              makeMessageEntry('user', 'Tell me about European capitals',),
+              makeMessageEntry({ role: 'user', content: 'Tell me about European capitals', },),
             ];
-            const query = extractLatestQuery(
-              entries,
-              'focus on geography',
-            );
+            const query = extractLatestQuery({
+              branchEntries: entries,
+              customInstructions: 'focus on geography',
+            },);
             expect(query,).toBe('focus on geography',);
           },
         },),
         it({
           name: 'returns empty string for empty branch entries',
           fn: async () => {
-            const query = extractLatestQuery(
-              [],
-              undefined,
-            );
+            const query = extractLatestQuery({
+              branchEntries: [],
+              customInstructions: undefined,
+            },);
             expect(query,).toBe('',);
           },
         },),
@@ -91,10 +94,10 @@ await describe({
                 },
               } as unknown as SessionEntry,
             ];
-            const query = extractLatestQuery(
-              entries,
-              undefined,
-            );
+            const query = extractLatestQuery({
+              branchEntries: entries,
+              customInstructions: undefined,
+            },);
             expect(query,).toBe('What is the capital?',);
           },
         },),
@@ -106,10 +109,10 @@ await describe({
         it({
           name: 'wraps previous summary in keepContext tags',
           fn: async () => {
-            const input = buildMorphInput(
-              'conversation text',
-              'Previous summary content',
-            );
+            const input = buildMorphInput({
+              serializedConversation: 'conversation text',
+              previousSummary: 'Previous summary content',
+            },);
             expect(input,).toContain('<keepContext>',);
             expect(input,).toContain('[Previous compacted context]',);
             expect(input,).toContain('Previous summary content',);
@@ -120,10 +123,10 @@ await describe({
         it({
           name: 'omits keepContext when no previous summary',
           fn: async () => {
-            const input = buildMorphInput(
-              'conversation text',
-              undefined,
-            );
+            const input = buildMorphInput({
+              serializedConversation: 'conversation text',
+              previousSummary: undefined,
+            },);
             expect(input,).not.toContain('<keepContext>',);
             expect(input,).toContain('conversation text',);
           },
@@ -131,10 +134,10 @@ await describe({
         it({
           name: 'omits keepContext for empty previous summary',
           fn: async () => {
-            const input = buildMorphInput(
-              'conversation text',
-              '   ',
-            );
+            const input = buildMorphInput({
+              serializedConversation: 'conversation text',
+              previousSummary: '   ',
+            },);
             expect(input,).not.toContain('<keepContext>',);
           },
         },),

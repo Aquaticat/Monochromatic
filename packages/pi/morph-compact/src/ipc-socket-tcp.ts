@@ -71,10 +71,13 @@ export async function createOneShotTcpServer(
   text: string,
 ): Promise<OneShotTcpServerResult> {
   /** Lazily assigned server reference closed by the shared close() helper. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- mutable state closed over by net.Server event handlers (handleConnection, handleError, close, idle timer)
   let server: Server | null = null;
   /** Idle-timeout handle cleared on connect or close. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- mutable state closed over by net.Server event handlers (handleConnection, handleError, close, idle timer)
   let idleTimer: ReturnType<typeof setTimeout> | null = null;
   /** Guards against re-entry when multiple clients race to connect. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch for racing client connections
   let served = false;
 
   /** Close the server and clear idle timer. */
@@ -139,10 +142,10 @@ export async function createOneShotTcpServer(
           /** AddressInfo from the bound socket; resolved into host:port for callers. */
           const addrInfo = server?.address();
           if (
-            addrInfo !== undefined
-            && addrInfo !== null
-            && typeof addrInfo !== 'string'
-            && 'port' in addrInfo
+            (addrInfo !== undefined)
+            && (addrInfo !== null)
+            && ((typeof addrInfo) !== 'string')
+            && ('port' in addrInfo)
           ) {
             resolve(`${addrInfo.address}:${addrInfo.port}`,);
           }
@@ -204,6 +207,7 @@ export function readFromTcpSocket(
       /** Captured data buffers concatenated when the server ends the stream. */
       const chunks: Buffer[] = [];
       /** Latch ensuring resolve/reject is called exactly once. */
+      // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch shared between data/end/error handlers and the timeout
       let settled = false;
 
       /**
@@ -213,10 +217,13 @@ export function readFromTcpSocket(
        *
        * @param result - resolved value when error is null
        */
-      function finish(
-        error: Error | null,
-        result?: string,
-      ): void {
+      function finish({
+        error,
+        result,
+      }: {
+        error: Error | null;
+        result?: string;
+      },): void {
         if (settled)
           return;
         settled = true;
@@ -245,10 +252,10 @@ export function readFromTcpSocket(
           socket.on(
             'end',
             function onEnd(): void {
-              finish(
-                null,
-                Buffer.concat(chunks,).toString('utf8',),
-              );
+              finish({
+                error: null,
+                result: Buffer.concat(chunks,).toString('utf8',),
+              },);
             },
           );
           socket.on(
@@ -256,7 +263,7 @@ export function readFromTcpSocket(
             function onError(
               err: Error,
             ): void {
-              finish(err,);
+              finish({ error: err, },);
             },
           );
         },
@@ -267,7 +274,7 @@ export function readFromTcpSocket(
         function onError(
           err: Error,
         ): void {
-          finish(err,);
+          finish({ error: err, },);
         },
       );
 
@@ -275,9 +282,11 @@ export function readFromTcpSocket(
       setTimeout(
         function onTimeout(): void {
           socket.destroy();
-          finish(new Error(
-            `readFromTcpSocket: timed out after ${CLIENT_READ_TIMEOUT_MS}ms`,
-          ),);
+          finish({
+            error: new Error(
+              `readFromTcpSocket: timed out after ${CLIENT_READ_TIMEOUT_MS}ms`,
+            ),
+          },);
         },
         CLIENT_READ_TIMEOUT_MS,
       );

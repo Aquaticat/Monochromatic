@@ -31,13 +31,13 @@ type McpConfig = {
 };
 
 /**
- * Cached API key resolved during this session.
- * Avoids re-reading mcp.json on every compaction event.
+ * Cache of the resolved Morph API key for the session.
+ * Map key is the literal `'value'`; presence indicates the cache has been
+ * populated, and the stored value may itself be undefined when mcp.json
+ * contained no Morph entry. Using `Map.has` lets us distinguish "not yet
+ * resolved" from "resolved to undefined" without a separate flag.
  */
-let cachedApiKey: string | undefined = undefined;
-
-/** Whether the cache has been populated (even if result is undefined). */
-let cachePopulated = false;
+const apiKeyCache = new Map<'value', string | undefined>();
 
 /**
  * Read `MORPH_API_KEY` from `~/.pi/agent/mcp.json`.
@@ -62,7 +62,7 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
     /** Parsed mcp.json payload before structural validation. */
     const config: unknown = JSON.parse(contents,);
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-    if (typeof config !== 'object' || config === null)
+    if (((typeof config) !== 'object') || (config === null))
       return undefined;
     /** MCP server entries that may carry the Morph key under env. */
     const servers = (config as McpConfig).mcpServers;
@@ -76,7 +76,7 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
       const server = servers[serverName];
       /** First env-stored key encountered short-circuits the walk. */
       const key = server?.env?.['MORPH_API_KEY'];
-      if (key !== undefined && key !== '')
+      if ((key !== undefined) && (key !== ''))
         return key;
     }
     return undefined;
@@ -107,17 +107,21 @@ export async function resolveMorphApiKey(): Promise<string | undefined> {
   // Check env var first
   /** Direct env override takes precedence over mcp.json. */
   const envKey = process.env.MORPH_API_KEY;
-  if (envKey !== undefined && envKey !== '')
+  if ((envKey !== undefined) && (envKey !== ''))
     return envKey;
 
   // Return cached value if already resolved
-  if (cachePopulated)
-    return cachedApiKey;
+  if (apiKeyCache.has('value'))
+    return apiKeyCache.get('value');
 
   // Read from mcp.json and cache
-  cachedApiKey = await readKeyFromMcpConfig();
-  cachePopulated = true;
-  return cachedApiKey;
+  /** Resolved key from mcp.json; may be undefined when no Morph entry exists. */
+  const resolved = await readKeyFromMcpConfig();
+  apiKeyCache.set(
+    'value',
+    resolved,
+  );
+  return resolved;
 }
 
 /**
@@ -130,6 +134,5 @@ export async function resolveMorphApiKey(): Promise<string | undefined> {
  * ```
  */
 export function resetApiKeyCache(): void {
-  cachedApiKey = undefined;
-  cachePopulated = false;
+  apiKeyCache.clear();
 }

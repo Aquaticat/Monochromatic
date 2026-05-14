@@ -8,11 +8,7 @@
  * @module
  */
 
-import type {
-  ExtensionAPI,
-  ExtensionContext,
-  SessionStartEvent,
-} from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
 import {
   rmSync,
@@ -63,13 +59,19 @@ export const MAX_COMPRESSED_ARG_BYTES = 100_000;
  *
  * @example
  * ```typescript
- * await launchWithLargeContext('/home/user/project', compressedText);
+ * await launchWithLargeContext({
+ *   cwd: '/home/user/project',
+ *   compressedText,
+ * });
  * ```
  */
-export async function launchWithLargeContext(
-  cwd: string,
-  compressedText: string,
-): Promise<void> {
+export async function launchWithLargeContext({
+  cwd,
+  compressedText,
+}: {
+  cwd: string;
+  compressedText: string;
+},): Promise<void> {
   // Tier 2: temp file
   try {
     /** Path returned by the file tier; surfaced as a CLI flag to the child. */
@@ -134,19 +136,13 @@ export async function launchWithLargeContext(
  *
  * @param extensionApi - the pi extension API for flag access and messaging
  *
- * @param _event - the session_start event (unused)
- *
- * @param _ctx - extension context (unused)
- *
  * @example
  * ```typescript
- * await handleSessionStartInject(pi, event, ctx);
+ * await handleSessionStartInject(pi);
  * ```
  */
 export async function handleSessionStartInject(
   extensionApi: ExtensionAPI,
-  _event: SessionStartEvent,
-  _ctx: ExtensionContext,
 ): Promise<void> {
   await injectCompactContext(extensionApi,);
 }
@@ -170,7 +166,7 @@ async function injectCompactContext(
   // Tier 2: temp file
   /** File path passed from launcher; non-string means file tier inactive. */
   const filePath = api.getFlag('morph-compact-file',);
-  if (typeof filePath === 'string') {
+  if ((typeof filePath) === 'string') {
     /** Decoded compact payload read off disk for injection. */
     const text = readCompactFile(filePath,);
     api.sendUserMessage(text,);
@@ -193,7 +189,7 @@ async function injectCompactContext(
   // Tier 3: Unix domain socket
   /** Socket path passed from launcher; non-string means socket tier inactive. */
   const socketPath = api.getFlag('morph-compact-socket',);
-  if (typeof socketPath === 'string') {
+  if ((typeof socketPath) === 'string') {
     /** Payload read from the one-shot socket server before injection. */
     const text = await readFromUnixSocket(socketPath,);
     api.sendUserMessage(text,);
@@ -210,7 +206,7 @@ async function injectCompactContext(
   // Tier 4: TCP localhost
   /** TCP address passed from launcher; non-string means TCP tier inactive. */
   const tcpAddress = api.getFlag('morph-compact-tcp',);
-  if (typeof tcpAddress === 'string') {
+  if ((typeof tcpAddress) === 'string') {
     /** Payload read from the one-shot TCP server before injection. */
     const text = await readFromTcpSocket(tcpAddress,);
     api.sendUserMessage(text,);

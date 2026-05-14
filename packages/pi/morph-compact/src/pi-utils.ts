@@ -194,24 +194,31 @@ type BashExecutionAgentMessage = {
 function bashExecutionToText(
   msg: BashExecutionAgentMessage,
 ): string {
-  /** Mutable accumulator that grows with command, output, and trailer notes. */
-  let text = `Ran \`${msg.command}\`\n`;
-  if (msg.output)
-    text += `\`\`\`\n${msg.output}\n\`\`\``;
-  else
-    text += '(no output)';
-  if (msg.cancelled)
-    text += '\n\n(command cancelled)';
-  else if (
-    msg.exitCode !== null
-    && msg.exitCode !== undefined
-    && msg.exitCode !== 0
-  ) {
-    text += `\n\nCommand exited with code ${msg.exitCode}`;
+  /** Per-section pieces joined with newlines to produce the final summary text. */
+  const sections: string[] = [
+    `Ran \`${msg.command}\``,
+    (msg.output !== '')
+      ? `\`\`\`\n${msg.output}\n\`\`\``
+      : '(no output)',
+  ];
+  if (msg.cancelled) {
+    sections.push('\n(command cancelled)',);
   }
-  if (msg.truncated && msg.fullOutputPath)
-    text += `\n\n[Output truncated. Full output: ${msg.fullOutputPath}]`;
-  return text;
+  else if (
+    (msg.exitCode !== null)
+    && (msg.exitCode !== undefined)
+    && (msg.exitCode !== 0)
+  ) {
+    sections.push(`\nCommand exited with code ${msg.exitCode}`,);
+  }
+  if (
+    msg.truncated
+    && (msg.fullOutputPath !== undefined)
+    && (msg.fullOutputPath !== '')
+  ) {
+    sections.push(`\n[Output truncated. Full output: ${msg.fullOutputPath}]`,);
+  }
+  return sections.join('\n',);
 }
 
 /**
@@ -227,14 +234,17 @@ function bashExecutionToText(
  *
  * @example
  * ```typescript
- * truncateForSummary('hello world', 5);
+ * truncateForSummary({ text: 'hello world', maxChars: 5 });
  * // 'hello\\n\\n[... 6 more characters truncated]'
  * ```
  */
-function truncateForSummary(
-  text: string,
-  maxChars: number,
-): string {
+function truncateForSummary({
+  text,
+  maxChars,
+}: {
+  text: string;
+  maxChars: number;
+},): string {
   if (text.length <= maxChars)
     return text;
   /** Dropped-character count surfaced in the truncation marker. */
@@ -298,66 +308,61 @@ type CompactionSummaryAgentMessage = {
 function toLlmMessage(
   m: AgentMessage,
 ): Message | undefined {
-  switch (m.role) {
-    case 'bashExecution': {
-      if (m.excludeFromContext)
-        return undefined;
-      return {
-        role: 'user',
-        content: [{
-          type: 'text',
-          text: bashExecutionToText(m,),
-        },],
-        timestamp: m.timestamp,
-      };
-    }
-    case 'custom': {
-      /** Normalized content array; raw strings are wrapped before forwarding. */
-      const content = typeof m.content === 'string'
-        ? [{
-          type: 'text' as const,
-          text: m.content,
-        },]
-        : m.content;
-      return {
-        role: 'user',
-        content,
-        timestamp: m.timestamp,
-      };
-    }
-    case 'branchSummary': {
-      return {
-        role: 'user',
-        content: [{
-          type: 'text',
-          text: BRANCH_SUMMARY_PREFIX + m.summary + BRANCH_SUMMARY_SUFFIX,
-        },],
-        timestamp: m.timestamp,
-      };
-    }
-    case 'compactionSummary': {
-      return {
-        role: 'user',
-        content: [{
-          type: 'text',
-          text: COMPACTION_SUMMARY_PREFIX + m.summary + COMPACTION_SUMMARY_SUFFIX,
-        },],
-        timestamp: m.timestamp,
-      };
-    }
-    case 'user':
-    case 'assistant':
-    case 'toolResult':
-      return m;
-    default:
-      throw new Error(`convertToLlm: unhandled message role: ${JSON.stringify(m,)}`,);
+  if (m.role === 'bashExecution') {
+    if (m.excludeFromContext === true)
+      return undefined;
+    return {
+      role: 'user',
+      content: [{
+        type: 'text',
+        text: bashExecutionToText(m,),
+      },],
+      timestamp: m.timestamp,
+    };
   }
+  if (m.role === 'custom') {
+    /** Normalized content array; raw strings are wrapped before forwarding. */
+    const content = ((typeof m.content) === 'string')
+      ? [{
+        type: 'text' as const,
+        text: m.content,
+      },]
+      : m.content;
+    return {
+      role: 'user',
+      content,
+      timestamp: m.timestamp,
+    };
+  }
+  if (m.role === 'branchSummary') {
+    return {
+      role: 'user',
+      content: [{
+        type: 'text',
+        text: BRANCH_SUMMARY_PREFIX + m.summary + BRANCH_SUMMARY_SUFFIX,
+      },],
+      timestamp: m.timestamp,
+    };
+  }
+  if (m.role === 'compactionSummary') {
+    return {
+      role: 'user',
+      content: [{
+        type: 'text',
+        text: COMPACTION_SUMMARY_PREFIX + m.summary + COMPACTION_SUMMARY_SUFFIX,
+      },],
+      timestamp: m.timestamp,
+    };
+  }
+  if ((m.role === 'user') || (m.role === 'assistant') || (m.role === 'toolResult'))
+    return m;
+  throw new Error(`convertToLlm: unhandled message role: ${JSON.stringify(m,)}`,);
 }
 
 /**
  * Transform extended `AgentMessage[]` (which may include pi-coding-agent's
  * custom roles like `bashExecution`, `custom`, `branchSummary`,
- * `compactionSummary`) into base LLM-compatible {@link Message Messages}.
+ * `compactionSummary`) into base LLM-compatible {@link Message | Messages}.
  *
  * Bit-for-bit compatible with pi-coding-agent's `convertToLlm` so summaries
  * fed to Morph Compact match what pi's default compaction would feed to its
@@ -402,7 +407,7 @@ export function convertToLlm(
 function userTextFromContent(
   content: string | (TextContent | ImageContent)[],
 ): string {
-  if (typeof content === 'string')
+  if ((typeof content) === 'string')
     return content;
   return content
     .filter(function isText(c,): c is TextContent {
@@ -495,10 +500,10 @@ export function serializeConversation(
       if (content) {
         parts.push(
           `[Tool result]: ${
-            truncateForSummary(
-              content,
-              TOOL_RESULT_MAX_CHARS,
-            )
+            truncateForSummary({
+              text: content,
+              maxChars: TOOL_RESULT_MAX_CHARS,
+            },)
           }`,
         );
       }

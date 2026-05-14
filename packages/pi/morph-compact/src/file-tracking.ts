@@ -55,14 +55,17 @@ export function computeFileLists(
  *
  * @example
  * ```typescript
- * const xml = formatFileOperations(["foo.ts"], ["bar.ts"]);
+ * const xml = formatFileOperations({ readFiles: ["foo.ts"], modifiedFiles: ["bar.ts"] });
  * // "<read-files>\nfoo.ts\n</read-files>\n\n<modified-files>\nbar.ts\n</modified-files>"
  * ```
  */
-export function formatFileOperations(
-  readFiles: string[],
-  modifiedFiles: string[],
-): string {
+export function formatFileOperations({
+  readFiles,
+  modifiedFiles,
+}: {
+  readFiles: string[];
+  modifiedFiles: string[];
+},): string {
   /** Accumulates per-category XML fragments before joining. */
   const sections: string[] = [];
   if (readFiles.length > 0)

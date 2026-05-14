@@ -87,13 +87,13 @@ await describe({
         it({
           name: 'produces XML with both sections',
           fn: async () => {
-            const xml = formatFileOperations(
-              [
+            const xml = formatFileOperations({
+              readFiles: [
                 'a.ts',
                 'b.ts',
               ],
-              ['c.ts',],
-            );
+              modifiedFiles: ['c.ts',],
+            },);
             expect(xml,).toContain('<read-files>',);
             expect(xml,).toContain('</read-files>',);
             expect(xml,).toContain('<modified-files>',);
@@ -105,10 +105,10 @@ await describe({
         it({
           name: 'omits read-files when only modified files exist',
           fn: async () => {
-            const xml = formatFileOperations(
-              [],
-              ['changed.ts',],
-            );
+            const xml = formatFileOperations({
+              readFiles: [],
+              modifiedFiles: ['changed.ts',],
+            },);
             expect(xml,).not.toContain('<read-files>',);
             expect(xml,).toContain('<modified-files>',);
           },
@@ -116,10 +116,10 @@ await describe({
         it({
           name: 'returns empty string for no files',
           fn: async () => {
-            const xml = formatFileOperations(
-              [],
-              [],
-            );
+            const xml = formatFileOperations({
+              readFiles: [],
+              modifiedFiles: [],
+            },);
             expect(xml,).toBe('',);
           },
         },),

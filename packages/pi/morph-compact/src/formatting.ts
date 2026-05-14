@@ -29,19 +29,19 @@ function isTextContentItem(
   type: string;
   text: string;
 } {
-  if (typeof item !== 'object' || item === null)
+  if (((typeof item) !== 'object') || (item === null))
     return false;
   // Property-existence checks narrow `object` to `object & Record<string, unknown>`
   // without an explicit type assertion
-  if (!('type' in item) || !('text' in item))
+  if ((!('type' in item)) || (!('text' in item)))
     return false;
   /** Discriminator value the guard compares to the "text" literal. */
   const typeVal = item.type;
   /** Captured payload validated to be a string before the guard returns true. */
   const textVal = item.text;
   return (
-    typeVal === 'text'
-    && typeof textVal === 'string'
+    (typeVal === 'text')
+    && ((typeof textVal) === 'string')
   );
 }
 
@@ -61,7 +61,7 @@ function isTextContentItem(
 export function textFromContent(
   content: unknown,
 ): string | undefined {
-  if (typeof content === 'string') {
+  if ((typeof content) === 'string') {
     /** Cheap pre-check so all-whitespace strings collapse to undefined. */
     const trimmed = content.trim();
     if (trimmed === '')
@@ -104,17 +104,23 @@ export function textFromContent(
  *
  * @example
  * ```typescript
- * const query = extractLatestQuery(entries, "focus on auth");
+ * const query = extractLatestQuery({
+ *   branchEntries: entries,
+ *   customInstructions: "focus on auth",
+ * });
  * // Returns "focus on auth" (custom instructions take priority)
  * ```
  */
-export function extractLatestQuery(
-  branchEntries: SessionEntry[],
-  customInstructions?: string,
-): string {
+export function extractLatestQuery({
+  branchEntries,
+  customInstructions,
+}: {
+  branchEntries: SessionEntry[];
+  customInstructions?: string | undefined;
+},): string {
   /** User-supplied instructions short-circuit branch scanning when present. */
   const custom = customInstructions?.trim();
-  if (custom !== undefined && custom !== '')
+  if ((custom !== undefined) && (custom !== ''))
     return custom;
 
   for (let index = branchEntries.length - 1; index >= 0; index -= 1) {
@@ -136,13 +142,13 @@ export function extractLatestQuery(
     if (message.role === 'user') {
       /** Concatenated user text; first non-empty result becomes the query. */
       const text = textFromContent(message.content,);
-      if (text !== undefined && text !== '')
+      if ((text !== undefined) && (text !== ''))
         return text;
     }
     if (
-      message.role === 'bashExecution'
-      && message.command !== undefined
-      && message.command !== ''
+      (message.role === 'bashExecution')
+      && (message.command !== undefined)
+      && (message.command !== '')
     ) {
       return message.command.trim();
     }
@@ -200,18 +206,24 @@ export function wrapMorphOutput(output: string,): string {
  *
  * @example
  * ```typescript
- * const input = buildMorphInput(conversationText, previousSummary);
+ * const input = buildMorphInput({
+ *   serializedConversation: conversationText,
+ *   previousSummary,
+ * });
  * ```
  */
-export function buildMorphInput(
-  serializedConversation: string,
-  previousSummary?: string,
-): string {
+export function buildMorphInput({
+  serializedConversation,
+  previousSummary,
+}: {
+  serializedConversation: string;
+  previousSummary?: string | undefined;
+},): string {
   /** Accumulator for the optional summary block and serialized conversation. */
   const parts: string[] = [];
   /** Trimmed previous summary; treated as missing when whitespace-only. */
   const previous = previousSummary?.trim();
-  if (previous !== undefined && previous !== '') {
+  if ((previous !== undefined) && (previous !== '')) {
     parts.push('<keepContext>',);
     parts.push('[Previous compacted context]',);
     parts.push(previous,);

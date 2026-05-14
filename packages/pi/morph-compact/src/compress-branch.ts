@@ -54,6 +54,9 @@ type BranchMessage = SessionMessageEntry['message'];
 
 //region Entry walking
 
+/** Sentinel returned by `findLastIndex` when no entry satisfies the predicate. */
+const NO_COMPACTION_INDEX = -1;
+
 /**
  * Walk branch entries to find the last compaction and collect
  * post-compaction messages.
@@ -71,47 +74,34 @@ function walkBranch(branchEntries: SessionEntry[],): {
   previousSummary: string | undefined;
   messages: BranchMessage[];
 } {
-  /** Index of the most recent compaction entry; -1 means none seen yet. */
-  let lastCompactionIndex = -1;
-  /** Summary text recovered from the last compaction entry, when present. */
-  let previousSummary: string | undefined = undefined;
-
-  for (
-    let index = 0;
-    index < branchEntries.length;
-    index += 1
-  ) {
-    /** Branch entry under inspection in the forward pass. */
-    const entry = branchEntries[index];
-    if (entry === undefined)
-      continue;
-    if (entry.type === 'compaction') {
-      lastCompactionIndex = index;
-      previousSummary = (entry as CompactionEntry).summary;
-    }
-  }
+  /** Position of the most recent compaction entry; sentinel value means none seen. */
+  const lastCompactionIndex = branchEntries.findLastIndex(
+    function isCompaction(entry,) {
+      return (entry !== undefined) && (entry.type === 'compaction');
+    },
+  );
+  /** Compaction entry slot lookup; undefined when no compaction was found. */
+  const lastCompactionEntry = (lastCompactionIndex === NO_COMPACTION_INDEX)
+    ? undefined
+    : branchEntries[lastCompactionIndex];
+  /** Last compaction entry's summary text; undefined when no compaction was found. */
+  const previousSummary = (lastCompactionEntry?.type === 'compaction')
+    ? lastCompactionEntry.summary
+    : undefined;
 
   // Collect all messages from SessionMessageEntry entries
   // after the last compaction (or all messages if no compaction)
   /** First index past the last compaction; iteration anchor for collection. */
   const startIdx = lastCompactionIndex + 1;
   /** Post-compaction messages forwarded into the Morph payload. */
-  const messages: BranchMessage[] = [];
-  for (
-    let index = startIdx;
-    index < branchEntries.length;
-    index += 1
-  ) {
-    /** Current entry inspected for message-type extraction. */
-    const entry = branchEntries[index];
-    if (entry === undefined)
-      continue;
-    if (entry.type !== 'message')
-      continue;
-    /** Narrowed alias exposing the message payload typed as BranchMessage. */
-    const msgEntry = entry as SessionMessageEntry;
-    messages.push(msgEntry.message,);
-  }
+  const messages: BranchMessage[] = branchEntries
+    .slice(startIdx,)
+    .filter(function isMessage(entry,) {
+      return (entry !== undefined) && (entry.type === 'message');
+    },)
+    .map(function takeMessage(entry,) {
+      return (entry as SessionMessageEntry).message;
+    },);
 
   return {
     previousSummary,
@@ -168,7 +158,7 @@ export async function compressBranch(
   } = walkBranch(branchEntries,);
 
   // Nothing to compress at all
-  if (messages.length === 0 && previousSummary === undefined) {
+  if ((messages.length === 0) && (previousSummary === undefined)) {
     throw new Error(
       'Nothing to compress: session has no messages and no previous compaction',
     );
@@ -176,7 +166,7 @@ export async function compressBranch(
 
   // No new messages since last compaction; return previous
   // summary directly to avoid wasting Morph credits
-  if (messages.length === 0 && previousSummary !== undefined)
+  if ((messages.length === 0) && (previousSummary !== undefined))
     return previousSummary;
 
   // Serialize messages for Morph input
@@ -185,16 +175,16 @@ export async function compressBranch(
     convertToLlm(messages,),
   );
   /** Final prompt body combining prior summary tags and conversation. */
-  const input = buildMorphInput(
-    conversationText,
+  const input = buildMorphInput({
+    serializedConversation: conversationText,
     previousSummary,
-  );
+  },);
 
   /** Latest-intent query forwarded for relevance ranking. */
-  const query = extractLatestQuery(
+  const query = extractLatestQuery({
     branchEntries,
     customInstructions,
-  );
+  },);
   /** Adaptive ratio derived from current context pressure. */
   const ratio = chooseCompressionRatio(contextUsage,);
 
@@ -214,7 +204,7 @@ export async function compressBranch(
 
   /** Trimmed compacted body; empty output is treated as failure. */
   const output = result.output?.trim();
-  if (output === undefined || output === '') {
+  if ((output === undefined) || (output === '')) {
     throw new Error(
       'Morph Compact returned empty output: compression failed',
     );
