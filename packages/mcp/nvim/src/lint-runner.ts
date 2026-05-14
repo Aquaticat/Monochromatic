@@ -70,6 +70,7 @@ export async function runOxlint(
       notes: [],
     };
   }
+  /** Directory containing the nearest `oxlint.config.ts`; used as cwd for orphan-file fallback so oxlint loads its config. */
   const configDir = findAncestorWithFile(
     dirname(firstFile,),
     'oxlint.config.ts',
@@ -85,15 +86,19 @@ export async function runOxlint(
   }
 
   //region Group files by tsconfig ancestor: each group runs in its own cwd
+  /** Files keyed by their nearest tsconfig directory; one oxlint invocation runs per key with `--type-aware` enabled. */
   const groupsByPackageRoot = new Map<string, string[]>();
+  /** Files with no tsconfig ancestor; linted in a single fallback invocation without `--type-aware`. */
   const filesWithoutTsconfig: string[] = [];
 
   for (const filePath of files) {
+    /** Nearest tsconfig directory for this file; `null` triggers the fallback bucket. */
     const packageRoot = findAncestorWithFile(
       dirname(filePath,),
       'tsconfig.json',
     );
     if (packageRoot !== null) {
+      /** Files already grouped under this package root; extended in place when present. */
       const existing = groupsByPackageRoot.get(packageRoot,);
       if (existing !== undefined)
         existing.push(filePath,);
@@ -110,10 +115,13 @@ export async function runOxlint(
   }
   //endregion Group files by tsconfig ancestor
 
+  /** Path-keyed accumulator that gathers diagnostics from every oxlint invocation before the final return. */
   const merged = new Map<string, Diagnostic[]>();
+  /** Mutable caveat list; may gain a fallback-mode warning when some files lack a tsconfig ancestor. */
   const notes: string[] = [];
 
   //region Run per-package-root invocations with --type-aware
+  /** Concurrent oxlint runs, one per package root; each uses its own cwd so type-aware rules resolve correctly. */
   const packageRuns = [...groupsByPackageRoot.entries(),].map(
     function runPackageOxlint([packageRoot, packageFiles,],) {
       return spawnOxlint({
@@ -127,6 +135,7 @@ export async function runOxlint(
 
   //region Run fallback invocation without --type-aware for orphaned files
   // oxlint-disable-next-line promise/prefer-await-to-then -- initial value for conditional Promise.all
+  /** Promise placeholder for the optional fallback oxlint run; resolves to `null` when no orphaned files exist. */
   let fallbackRun: Promise<Map<string, Diagnostic[]> | null> = Promise.resolve(null,);
   if (filesWithoutTsconfig.length > 0) {
     notes.push(
@@ -141,6 +150,7 @@ export async function runOxlint(
   }
   //endregion Run fallback invocation without --type-aware for orphaned files
 
+  /** Tuple of (per-package-root results, optional fallback result); awaited together so both lint groups overlap. */
   const [packageResults, fallbackResult,] = await Promise.all([
     Promise.all(packageRuns,),
     fallbackRun,
@@ -181,6 +191,7 @@ function mergeInto(
   source: Map<string, Diagnostic[]>,
 ): void {
   for (const [filePath, diagnostics,] of source) {
+    /** Diagnostics already collected under this path in the target map; extended in place when present. */
     const existing = target.get(filePath,);
     if (existing !== undefined)
       existing.push(...diagnostics,);

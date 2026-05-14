@@ -26,6 +26,7 @@ import type { CurrentFile, } from './nvim-types.ts';
  * ```
  */
 export function modifiedCaveat(files: readonly CurrentFile[],): string {
+  /** Paths whose buffers have unsaved changes; drives the singular/plural caveat shape below. */
   const modifiedPaths = files
     .filter(function isModified(file,) {
       return file.modified;
@@ -62,6 +63,7 @@ export function modifiedCaveat(files: readonly CurrentFile[],): string {
 export function formatNotes(notes: readonly string[],): string {
   if (notes.length === 0)
     return '';
+  /** Notes wrapped in `(note: ...)` markers and joined newline-separated; prefixed with a blank line by the caller. */
   const formattedNotes = notes
     .map(function prefixNote(note,) {
       return `(note: ${note})`;
@@ -84,6 +86,7 @@ export function formatNotes(notes: readonly string[],): string {
  * ```
  */
 export function buildHeader(files: readonly CurrentFile[],): string {
+  /** First entry; used for the single-instance shortcut path that emits a vertical key/value block. */
   const [firstFile,] = files;
   if (files.length === 1 && firstFile !== undefined)
     return `path: ${firstFile.path}\nfiletype: ${firstFile.filetype}\nmodified: ${firstFile.modified}`;

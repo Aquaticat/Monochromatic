@@ -30,12 +30,15 @@ import type {
  * ```
  */
 export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
+  /** Every discovered Neovim instance; queried concurrently so total latency tracks the slowest. */
   const nvimClients = getAllClients();
 
+  /** Per-instance file-grouped diagnostic lists; merged into a single path-keyed map below. */
   const instanceResults = await Promise.all(
     nvimClients.map(async function queryInstance(nvim,) {
       try {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
+        /** Raw msgpack file entries from the Lua bridge; mapped to typed FileDiagnostics below. */
         const raw = (await nvim.executeLua(
           LUA_GET_ALL_DIAGNOSTICS,
           [],
@@ -44,7 +47,9 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
           unknown
         >[];
         return raw.map(function mapFileEntry(file,) {
+          /** Buffer path from the Lua bridge; coerced to empty string when missing so the Map key is always a string. */
           const filePath = typeof file.path === 'string' ? file.path : '';
+          /** Raw diagnostic records for this file; empty when the Lua bridge returned a non-array (defensive). */
           const fileDiags = Array.isArray(file.diagnostics,)
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim msgpack array narrowed via Array.isArray
             ? file.diagnostics as Record<string, unknown>[]
@@ -68,10 +73,12 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
   );
 
   //region Merge diagnostics from all instances by file path
+  /** Path-keyed accumulator that gathers every instance's diagnostics for each file before final dedup. */
   const byPath = new Map<string, Diagnostic[]>();
 
   for (const instanceFiles of instanceResults) {
     for (const fileEntry of instanceFiles) {
+      /** Diagnostics already collected for this path from earlier instances; extended in place when present. */
       const existing = byPath.get(fileEntry.path,);
       if (existing !== undefined)
         existing.push(...fileEntry.diagnostics,);

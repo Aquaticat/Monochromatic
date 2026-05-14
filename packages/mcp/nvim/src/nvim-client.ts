@@ -47,12 +47,15 @@ export type {
  * ```
  */
 export async function getDiagnostics(): Promise<Diagnostic[]> {
+  /** Every discovered Neovim instance; queried concurrently to keep latency tied to the slowest, not the sum. */
   const nvimClients = getAllClients();
 
+  /** Per-instance diagnostic arrays; flattened before return so callers see one combined list. */
   const results = await Promise.all(
     nvimClients.map(async function queryInstance(nvim,) {
       try {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
+        /** Raw msgpack records from the Lua bridge; mapped to typed diagnostics below. */
         const raw = (await nvim
           .executeLua(
             LUA_GET_CURRENT_BUF_DIAGNOSTICS,
@@ -89,12 +92,15 @@ export async function getDiagnostics(): Promise<Diagnostic[]> {
  * ```
  */
 export async function getCurrentFiles(): Promise<CurrentFile[]> {
+  /** Every discovered Neovim instance; queried concurrently so latency tracks the slowest, not the sum. */
   const nvimClients = getAllClients();
 
+  /** Per-instance current-file records or `null` when the instance failed; nulls are filtered out below. */
   const results = await Promise.all(
     nvimClients.map(async function queryInstance(nvim,) {
       try {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
+        /** Raw record from the Lua bridge; field types are coerced individually below. */
         const result = (await nvim.executeLua(
           LUA_GET_CURRENT_FILE,
           [],

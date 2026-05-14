@@ -48,6 +48,7 @@ export async function spawnOxlint({
   files: readonly string[];
   typeAware: boolean;
 },): Promise<Map<string, Diagnostic[]>> {
+  /** CLI argv for oxlint; forces JSON output and optionally enables type-aware rules. */
   const args = [
     '--format',
     'json',
@@ -56,6 +57,7 @@ export async function spawnOxlint({
   ];
 
   try {
+    /** Successful oxlint invocation (exit code 0); means no diagnostics were emitted. */
     const result = await spawn(
       'oxlint',
       args,
@@ -64,6 +66,7 @@ export async function spawnOxlint({
         timeout: OXLINT_TIMEOUT_MS,
       },
     );
+    /** Captured stdout from the zero-exit run; non-empty when diagnostics happen to be present at warning level. */
     const { stdout, } = result;
 
     if (stdout.trim().length === 0) {
@@ -72,6 +75,7 @@ export async function spawnOxlint({
     }
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
+    /** Parsed oxlint JSON output; trusted to match {@link OxlintJsonOutput} because oxlint is the producer. */
     const parsed = JSON.parse(stdout,) as OxlintJsonOutput;
     return parseOxlintOutput(
       parsed,
@@ -81,19 +85,23 @@ export async function spawnOxlint({
   catch (err: unknown) {
     // oxlint exits non-zero when it finds diagnostics, which is expected
     if (err !== null && err !== undefined && typeof err === 'object' && 'stdout' in err) {
+      /** Captured stdout from the failed run; oxlint emits diagnostics here even when exiting non-zero. */
       const stdout = String(err.stdout,);
       if (stdout.trim().length > 0) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
+        /** Parsed oxlint JSON output from the failed run; same schema as the success path. */
         const parsed = JSON.parse(stdout,) as OxlintJsonOutput;
         return parseOxlintOutput(
           parsed,
           cwd,
         );
       }
+      /** Exit code surfaced to the log when oxlint produced no diagnostics; `'unknown'` when nano-spawn omits the field. */
       const exitCode = 'exitCode' in err ? String(err.exitCode,) : 'unknown';
       console.error(`[mcp-nvim] oxlint produced no output (exit code ${exitCode})`,);
       return new Map();
     }
+    /** Fallback error description used when the caught value isn't an oxlint result; covers spawn failures, timeouts, etc. */
     const message = err instanceof Error ? err.message : String(err,);
     console.error(`[mcp-nvim] Failed to run oxlint: ${message}`,);
     return new Map();

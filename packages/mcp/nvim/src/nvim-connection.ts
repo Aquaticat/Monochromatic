@@ -33,15 +33,19 @@ const clients = new Map<string, NeovimClient>();
  * ```
  */
 export function findAllSocketPaths(): string[] {
+  /** Set accumulates discovered paths so the `$NVIM` entry can coexist with scan-directory entries without duplication. */
   const found = new Set<string>();
 
   if (process.env.NVIM !== undefined && process.env.NVIM !== '')
     found.add(process.env.NVIM,);
 
+  /** Current process UID; `undefined` on platforms where `getuid` isn't available (e.g. Windows). */
   const uid = process.getuid?.();
   if (uid !== undefined) {
+    /** Per-user runtime directory where Neovim stores its RPC sockets on systemd Linux. */
     const dir = `/run/user/${uid}`;
     try {
+      /** Filenames matching the `nvim.*` convention; non-nvim entries in the directory are ignored. */
       const entries = readdirSync(dir,).filter(function isNvimSocket(entry,) {
         return entry.startsWith('nvim.',);
       },);
@@ -70,11 +74,14 @@ export function findAllSocketPaths(): string[] {
  * ```
  */
 function connectToSocket(socketPath: string,): NeovimClient {
+  /** Previously-created client for this socket; reused so each socket has at most one open RPC connection. */
   const cached = clients.get(socketPath,);
   if (cached !== undefined)
     return cached;
 
+  /** Bidirectional Unix socket used as both reader and writer for the Neovim RPC client. */
   const socket = connect(socketPath,);
+  /** Newly-attached Neovim RPC client; cached below so subsequent calls reuse it. */
   const nvim = attach({
     reader: socket,
     writer: socket,
@@ -99,6 +106,7 @@ function connectToSocket(socketPath: string,): NeovimClient {
  * ```
  */
 export function getAllClients(): NeovimClient[] {
+  /** Every reachable Neovim RPC socket; empty means no Neovim is running, which is treated as a hard error below. */
   const paths = findAllSocketPaths();
   if (paths.length === 0) {
     throw new Error(

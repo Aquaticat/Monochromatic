@@ -90,13 +90,16 @@ export type FileDiagnostics = {
  * ```
  */
 export function normalizeMessage(message: string,): string {
+  /** Offset of the literal `\nhelp: ` separator that splits primary text from help text; -1 means no help section. */
   const helpIndex = message.indexOf('\nhelp: ',);
   if (helpIndex === -1)
     return message;
+  /** Primary diagnostic text before the help separator. */
   const mainMessage = message.slice(
     0,
     helpIndex,
   );
+  /** Help text following the separator, ready to be re-emitted as a parenthesised suffix. */
   const helpText = message.slice(helpIndex + '\nhelp: '.length,);
   return `${mainMessage} (help: ${helpText})`;
 }
