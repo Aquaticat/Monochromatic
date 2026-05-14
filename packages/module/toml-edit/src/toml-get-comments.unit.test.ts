@@ -14,7 +14,7 @@ import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlGetComments, } from './toml-get-comments.ts';
 
 await describe({
-  name: 'tomlGetComments',
+  name: tomlGetComments.name,
   children: [
     it({
       name: 'returns every Block comment in source order',

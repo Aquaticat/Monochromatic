@@ -15,7 +15,7 @@ import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlGetNode, } from './toml-get-node.ts';
 
 await describe({
-  name: 'tomlGetNode',
+  name: tomlGetNode.name,
   children: [
     it({
       name: 'returns the value AST node for an existing keyvalue',

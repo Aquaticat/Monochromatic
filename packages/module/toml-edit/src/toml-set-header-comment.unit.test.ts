@@ -16,7 +16,7 @@ import { tomlSetHeaderComment, } from './toml-set-header-comment.ts';
 import { tomlStringify, } from './toml-stringify.ts';
 
 await describe({
-  name: 'tomlSetHeaderComment',
+  name: tomlSetHeaderComment.name,
   children: [
     it({
       name: 'string comment lands above the body in canonical mode',

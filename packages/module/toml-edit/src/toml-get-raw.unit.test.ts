@@ -19,7 +19,7 @@ import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlGetRaw, } from './toml-get-raw.ts';
 
 await describe({
-  name: 'tomlGetRaw',
+  name: tomlGetRaw.name,
   children: [
     it({
       name: 'returns the source slice for an existing keyvalue',

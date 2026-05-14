@@ -25,7 +25,7 @@ import {
 } from './wrappers.ts';
 
 await describe({
-  name: 'tomlSet',
+  name: tomlSet.name,
   children: [
     it({
       name: 'no-op set with the same value is byte-identical',

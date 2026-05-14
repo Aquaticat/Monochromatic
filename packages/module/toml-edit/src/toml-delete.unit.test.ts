@@ -19,7 +19,7 @@ import { tomlGetValue, } from './toml-get-value.ts';
 import { tomlStringify, } from './toml-stringify.ts';
 
 await describe({
-  name: 'tomlDelete',
+  name: tomlDelete.name,
   children: [
     it({
       name: 'removes a top-level key plus its trailing newline',

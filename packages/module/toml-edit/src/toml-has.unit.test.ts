@@ -16,7 +16,7 @@ import { tomlHas, } from './toml-has.ts';
 import { tomlSet, } from './toml-set.ts';
 
 await describe({
-  name: 'tomlHas',
+  name: tomlHas.name,
   children: [
     it({
       name: 'true for an existing top-level key',

@@ -14,7 +14,7 @@ import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlKeys, } from './toml-keys.ts';
 
 await describe({
-  name: 'tomlKeys',
+  name: tomlKeys.name,
   children: [
     it({
       name: 'lists top-level keys when no path given',

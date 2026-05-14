@@ -16,7 +16,7 @@ import { tomlInsertCommentAfter, } from './toml-insert-comment-after.ts';
 import { tomlStringify, } from './toml-stringify.ts';
 
 await describe({
-  name: 'tomlInsertCommentAfter',
+  name: tomlInsertCommentAfter.name,
   children: [
     it({
       name: 'appends an inline trailing comment on the same line',

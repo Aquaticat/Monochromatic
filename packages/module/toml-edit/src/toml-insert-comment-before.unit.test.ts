@@ -16,7 +16,7 @@ import { tomlInsertCommentBefore, } from './toml-insert-comment-before.ts';
 import { tomlStringify, } from './toml-stringify.ts';
 
 await describe({
-  name: 'tomlInsertCommentBefore',
+  name: tomlInsertCommentBefore.name,
   children: [
     it({
       name: 'inserts a single comment line before a top-level key',
