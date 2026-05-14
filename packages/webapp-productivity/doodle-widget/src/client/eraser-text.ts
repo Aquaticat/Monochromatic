@@ -40,10 +40,10 @@ function pointInInputRect(
     input: HTMLInputElement;
   },
 ): boolean {
-  return px >= input.offsetLeft
-    && px <= input.offsetLeft + input.offsetWidth
-    && py >= input.offsetTop
-    && py <= input.offsetTop + input.offsetHeight;
+  return (px >= input.offsetLeft)
+    && (px <= (input.offsetLeft + input.offsetWidth))
+    && (py >= input.offsetTop)
+    && (py <= (input.offsetTop + input.offsetHeight));
 }
 
 /**
@@ -119,7 +119,7 @@ export function eraseTextAt({
     },);
 
     /** Check previous eraser position when available */
-    const hitPrevious = prev !== null
+    const hitPrevious = (prev !== null)
       && pointInInputRect({
         px: prev.px,
         py: prev.py,
@@ -127,7 +127,7 @@ export function eraseTextAt({
       },);
 
     /** Check whether the eraser travel segment crosses the input rect */
-    const hitSegment = prev !== null
+    const hitSegment = (prev !== null)
       && segmentIntersectsRect({
         sx: prev.px,
         sy: prev.py,

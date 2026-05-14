@@ -20,10 +20,10 @@ const TOAST_RADIUS = 1 / 2;
 const TOAST_BOTTOM_OFFSET = 2;
 
 /** Toast font size in rem (slightly smaller than body text) */
-const TOAST_FONT_SIZE = 1 - 1 / (2 + 2 + 2 + 2 + 2);
+const TOAST_FONT_SIZE = 1 - (1 / (2 + 2 + 2 + 2 + 2));
 
 /** Transition duration in seconds for fade in/out */
-const TRANSITION_DURATION = 1 / 2 - 1 / (2 + 2 + 1);
+const TRANSITION_DURATION = (1 / 2) - (1 / (2 + 2 + 1));
 
 /**
  * Generates CSS rules for the zoom toast popover.

@@ -43,11 +43,21 @@ export type PageState = {
   svgBackground: string;
 };
 
-/** All page states indexed by page number */
-let pages: PageState[] = [];
-
-/** Zero-based index of the currently active page */
-let currentIndex = 0;
+/**
+ * Multi-page state container.
+ *
+ * Stored as object properties so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject top-level `let`).
+ */
+const pagesState: {
+  /** All page states indexed by page number */
+  pages: PageState[];
+  /** Zero-based index of the currently active page */
+  currentIndex: number;
+} = {
+  pages: [],
+  currentIndex: 0,
+};
 
 /**
  * Initializes page states from default SVG backgrounds.
@@ -71,16 +81,16 @@ export function initPages({
   backgrounds: readonly string[];
   overlay: HTMLElement;
 },): void {
-  pages = backgrounds.map(function createPage(svg,): PageState {
+  pagesState.pages = backgrounds.map(function createPage(svg,): PageState {
     return {
       strokes: [],
       textEntries: [],
       svgBackground: svg,
     };
   },);
-  currentIndex = 0;
+  pagesState.currentIndex = 0;
   /** First page state for initial background rendering */
-  const [firstPage,] = pages;
+  const [firstPage,] = pagesState.pages;
   if (firstPage === undefined)
     throw new Error('No page backgrounds provided',);
   overlay.innerHTML = firstPage.svgBackground;
@@ -97,7 +107,7 @@ export function initPages({
  * ```
  */
 export function getCurrentPageIndex(): number {
-  return currentIndex;
+  return pagesState.currentIndex;
 }
 
 /**
@@ -118,7 +128,7 @@ function saveCurrentPage({
   textLayer: HTMLDivElement;
 },): void {
   /** Live page slot, or `undefined` when state has been wiped mid-switch. */
-  const page = pages[currentIndex];
+  const page = pagesState.pages[pagesState.currentIndex];
   if (page === undefined)
     return;
   finalizeActiveInput();
@@ -165,9 +175,9 @@ export function switchToPage({
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
 },): void {
-  if (index === currentIndex)
+  if (index === pagesState.currentIndex)
     return;
-  if (index < 0 || index >= pages.length)
+  if ((index < 0) || (index >= pagesState.pages.length))
     return;
   endStroke();
   saveCurrentPage({
@@ -177,7 +187,7 @@ export function switchToPage({
 
   //region Restore target page
   /** Destination page state; the surrounding bounds check guarantees presence. */
-  const targetPage = pages[index];
+  const targetPage = pagesState.pages[index];
   if (targetPage === undefined)
     throw new Error(`Page state missing for target index ${String(index,)}`,);
   setStrokes(targetPage.strokes,);
@@ -187,7 +197,7 @@ export function switchToPage({
     clearFn: clearTextEntries,
   },);
   overlay.innerHTML = targetPage.svgBackground;
-  currentIndex = index;
+  pagesState.currentIndex = index;
   //endregion Restore target page
 
   redraw({
@@ -230,5 +240,5 @@ export function snapshotAllPages({
     overlay,
     textLayer,
   },);
-  return [...pages,];
+  return [...pagesState.pages,];
 }

@@ -22,12 +22,20 @@ const TEXT_SIZE_FACTOR = 2;
 //region State
 
 /**
- * Text layer container, set via {@link setTextLayer}
+ * Text editing state container.
+ *
+ * Stored as object properties so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject top-level `let`).
  */
-let layerElement: HTMLDivElement | null = null;
-
-/** Currently focused text input, or null when idle */
-let activeInput: HTMLInputElement | null = null;
+const textState: {
+  /** Text layer container, set via {@link setTextLayer} */
+  layerElement: HTMLDivElement | null;
+  /** Currently focused text input, or null when idle */
+  activeInput: HTMLInputElement | null;
+} = {
+  layerElement: null,
+  activeInput: null,
+};
 
 //endregion State
 
@@ -49,7 +57,7 @@ const TEXT_FINALIZED_EVENT = 'textfinalized';
  * ```
  */
 export function setTextLayer(layer: HTMLDivElement,): void {
-  layerElement = layer;
+  textState.layerElement = layer;
 }
 
 /**
@@ -63,20 +71,20 @@ export function setTextLayer(layer: HTMLDivElement,): void {
  * ```
  */
 export function finalizeActiveInput(): void {
-  if (activeInput === null)
+  if (textState.activeInput === null)
     return;
 
   /** Whether the input has non-empty content worth keeping */
-  const hasContent = activeInput.value.trim() !== '';
+  const hasContent = textState.activeInput.value.trim() !== '';
   if (hasContent)
-    activeInput.readOnly = true;
+    textState.activeInput.readOnly = true;
   else
-    activeInput.remove();
+    textState.activeInput.remove();
 
-  activeInput = null;
+  textState.activeInput = null;
 
-  if (hasContent && layerElement !== null)
-    layerElement.dispatchEvent(new CustomEvent(TEXT_FINALIZED_EVENT,),);
+  if (hasContent && (textState.layerElement !== null))
+    textState.layerElement.dispatchEvent(new CustomEvent(TEXT_FINALIZED_EVENT,),);
 }
 
 /**
@@ -95,7 +103,7 @@ export function finalizeActiveInput(): void {
 export function placeTextInput(position: NormalizedPoint,): void {
   finalizeActiveInput();
 
-  if (layerElement === null)
+  if (textState.layerElement === null)
     return;
 
   /** Active color captured at text input creation */
@@ -129,8 +137,8 @@ export function placeTextInput(position: NormalizedPoint,): void {
     finalizeActiveInput,
   );
 
-  activeInput = input;
-  layerElement.append(input,);
+  textState.activeInput = input;
+  textState.layerElement.append(input,);
   /**
    * preventScroll stops the browser from scrolling the overflow-hidden
    * canvas container to reveal the input when it extends past the edge.
@@ -147,9 +155,9 @@ export function placeTextInput(position: NormalizedPoint,): void {
  * ```
  */
 export function discardActiveInput(): void {
-  if (activeInput !== null) {
-    activeInput.remove();
-    activeInput = null;
+  if (textState.activeInput !== null) {
+    textState.activeInput.remove();
+    textState.activeInput = null;
   }
 }
 
@@ -163,6 +171,6 @@ export function discardActiveInput(): void {
  */
 export function clearTextEntries(): void {
   discardActiveInput();
-  if (layerElement !== null)
-    layerElement.replaceChildren();
+  if (textState.layerElement !== null)
+    textState.layerElement.replaceChildren();
 }

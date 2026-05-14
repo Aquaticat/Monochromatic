@@ -17,7 +17,7 @@ import { INSET_ZERO_DECLS, } from './style-tokens.ts';
 const TEXT_INPUT_MIN_INLINE_SIZE = 2 * 2 * 2;
 
 /** Text input line height (wider than CSS normal ~1.2 for readability) */
-const TEXT_INPUT_LINE_HEIGHT = 1 + 2 / (2 + 2 + 1);
+const TEXT_INPUT_LINE_HEIGHT = 1 + (2 / (2 + 2 + 1));
 
 /**
  * Generates CSS rules for the text overlay layer and text inputs.
@@ -62,7 +62,7 @@ export function renderTextStyles(): string[] {
           'system-ui',
           'sans-serif',
         ],),
-        'font-size': cssRem(1 + 1 / 2 / 2,),
+        'font-size': cssRem(1 + ((1 / 2) / 2),),
         'line-height': cssNum(TEXT_INPUT_LINE_HEIGHT,),
         'padding-block': cssNum(0,),
         'padding-inline': cssNum(0,),

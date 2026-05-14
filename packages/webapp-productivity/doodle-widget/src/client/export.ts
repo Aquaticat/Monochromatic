@@ -163,7 +163,9 @@ export async function renderSvgOverlayToContext(
 
   /** Export-space dimensions of the SVG overlay */
   const exportWidth = info.width * es;
-  /** Companion to {@link exportWidth} on the y axis. */
+  /**
+   * Companion to {@link exportWidth} on the y axis.
+   */
   const exportHeight = info.height * es;
 
   /** Set explicit dimensions so the Image decodes at the correct size */

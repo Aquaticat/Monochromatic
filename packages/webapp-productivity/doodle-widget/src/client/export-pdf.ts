@@ -144,7 +144,9 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     // oxlint-disable-next-line no-await-in-loop -- depends on sequential page rendering above
     const blob = await pageCanvas.convertToBlob({ type: 'image/png', },);
     /* oxlint-disable no-await-in-loop -- depends on sequential blob above */
-    /** Bytes pulled off the blob so the synchronous {@link Uint8Array} can wrap them. */
+    /**
+     * Bytes pulled off the blob so the synchronous {@link Uint8Array} can wrap them.
+     */
     const buffer = await blob.arrayBuffer();
     /* oxlint-enable no-await-in-loop */
     /** Typed view jsPDF requires for binary image embedding. */

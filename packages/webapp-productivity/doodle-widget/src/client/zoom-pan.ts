@@ -17,23 +17,33 @@ const DRAG_THRESHOLD = 4;
 
 //region State
 
-/** Whether a pan drag gesture is active */
-let panning = false;
-
-/** Pointer X at pan start in screen pixels */
-let panStartPointerX = 0;
-
-/** Pointer Y at pan start in screen pixels */
-let panStartPointerY = 0;
-
-/** Pan offset X at drag start */
-let panStartOffsetX = 0;
-
-/** Pan offset Y at drag start */
-let panStartOffsetY = 0;
-
-/** Whether pointer moved enough to count as drag (not click) */
-let dragExceededThreshold = false;
+/**
+ * Pan drag gesture state container.
+ *
+ * Stored as object properties so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject top-level `let`).
+ */
+const panState: {
+  /** Whether a pan drag gesture is active */
+  panning: boolean;
+  /** Pointer X at pan start in screen pixels */
+  panStartPointerX: number;
+  /** Pointer Y at pan start in screen pixels */
+  panStartPointerY: number;
+  /** Pan offset X at drag start */
+  panStartOffsetX: number;
+  /** Pan offset Y at drag start */
+  panStartOffsetY: number;
+  /** Whether pointer moved enough to count as drag (not click) */
+  dragExceededThreshold: boolean;
+} = {
+  panning: false,
+  panStartPointerX: 0,
+  panStartPointerY: 0,
+  panStartOffsetX: 0,
+  panStartOffsetY: 0,
+  dragExceededThreshold: false,
+};
 
 //endregion State
 
@@ -60,12 +70,12 @@ export function startPan({
   currentPanX: number;
   currentPanY: number;
 },): void {
-  panning = true;
-  dragExceededThreshold = false;
-  panStartPointerX = event.clientX;
-  panStartPointerY = event.clientY;
-  panStartOffsetX = currentPanX;
-  panStartOffsetY = currentPanY;
+  panState.panning = true;
+  panState.dragExceededThreshold = false;
+  panState.panStartPointerX = event.clientX;
+  panState.panStartPointerY = event.clientY;
+  panState.panStartOffsetX = currentPanX;
+  panState.panStartOffsetY = currentPanY;
 }
 
 /**
@@ -97,24 +107,26 @@ export function continuePan({
   containerHeight: number;
   zoomLayer: HTMLElement;
 },): boolean {
-  if (!panning)
+  if (!panState.panning)
     return false;
 
   /** Pointer displacement on the x axis since the gesture began. */
-  const dx = event.clientX - panStartPointerX;
-  /** Companion to {@link dx} on the y axis. */
-  const dy = event.clientY - panStartPointerY;
+  const dx = event.clientX - panState.panStartPointerX;
+  /**
+   * Companion to {@link dx} on the y axis.
+   */
+  const dy = event.clientY - panState.panStartPointerY;
 
-  if (!dragExceededThreshold) {
-    if (Math.abs(dx,) > DRAG_THRESHOLD || Math.abs(dy,) > DRAG_THRESHOLD)
-      dragExceededThreshold = true;
+  if (!panState.dragExceededThreshold) {
+    if ((Math.abs(dx,) > DRAG_THRESHOLD) || (Math.abs(dy,) > DRAG_THRESHOLD))
+      panState.dragExceededThreshold = true;
     else
       return false;
   }
 
   setPan({
-    x: panStartOffsetX + dx,
-    y: panStartOffsetY + dy,
+    x: panState.panStartOffsetX + dx,
+    y: panState.panStartOffsetY + dy,
   },);
   clampPan({
     containerWidth,
@@ -135,9 +147,9 @@ export function continuePan({
  * ```
  */
 export function endPan(): boolean {
-  panning = false;
+  panState.panning = false;
   /** Captured before resetting so the caller can distinguish a drag from a click. */
-  const wasDrag = dragExceededThreshold;
-  dragExceededThreshold = false;
+  const wasDrag = panState.dragExceededThreshold;
+  panState.dragExceededThreshold = false;
   return wasDrag;
 }

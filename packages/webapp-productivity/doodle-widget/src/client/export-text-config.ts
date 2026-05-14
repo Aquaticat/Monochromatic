@@ -117,11 +117,11 @@ function resolveExportEntry(
   },
 ): ExportTextEntry {
   /** Per-entry font size, falling back to CSS default */
-  const fontSizePx = raw.fontSize !== undefined && raw.fontSize !== ''
+  const fontSizePx = ((raw.fontSize !== undefined) && (raw.fontSize !== ''))
     ? Number.parseFloat(raw.fontSize,)
     : defaultFontSizePx;
   /** Per-entry color, falling back to CSS default */
-  const color = raw.color !== undefined && raw.color !== '' ? raw.color : TEXT_COLOR;
+  const color = ((raw.color !== undefined) && (raw.color !== '')) ? raw.color : TEXT_COLOR;
 
   return {
     value: raw.value,
@@ -179,7 +179,9 @@ function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[
 export function readTextEntries({ textLayer, }: {
   textLayer: HTMLDivElement;
 },): ExportTextEntry[] {
-  /** Live `NodeList` captured here so {@link Array.from} can map each entry to its raw shape. */
+  /**
+   * Live `NodeList` captured here so {@link Array.from} can map each entry to its raw shape.
+   */
   const inputs = textLayer.querySelectorAll<HTMLInputElement>('.text-input',);
 
   return resolveExportEntries(

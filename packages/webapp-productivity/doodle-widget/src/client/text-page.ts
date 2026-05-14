@@ -95,7 +95,9 @@ export function createTextInput({
  * ```
  */
 export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
-  /** Live `NodeList` captured here so {@link Array.from} can map each entry through {@link serializeInput}. */
+  /**
+   * Live `NodeList` captured here so {@link Array.from} can map each entry through {@link serializeInput}.
+   */
   const inputs = layer.querySelectorAll<HTMLInputElement>('.text-input',);
   return Array.from(
     inputs,

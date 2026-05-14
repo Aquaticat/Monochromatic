@@ -9,8 +9,13 @@
 /** Duration in milliseconds before the toast auto-hides */
 const TOAST_DURATION_MS = 3_000;
 
-/** Timer id for the auto-dismiss timeout */
-let hideTimer: ReturnType<typeof setTimeout> | null = null;
+/**
+ * Timer id container for the auto-dismiss timeout.
+ *
+ * Stored as an object property so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject a top-level `let`).
+ */
+const timerState: { id: ReturnType<typeof setTimeout> | null; } = { id: null };
 
 /**
  * Shows the zoom instruction toast, auto-hiding after a delay.
@@ -25,15 +30,15 @@ let hideTimer: ReturnType<typeof setTimeout> | null = null;
  * ```
  */
 export function showZoomToast(toast: HTMLElement,): void {
-  if (hideTimer !== null) {
-    clearTimeout(hideTimer,);
-    hideTimer = null;
+  if (timerState.id !== null) {
+    clearTimeout(timerState.id,);
+    timerState.id = null;
   }
   toast.showPopover();
-  hideTimer = setTimeout(
+  timerState.id = setTimeout(
     function hideToast(): void {
       toast.hidePopover();
-      hideTimer = null;
+      timerState.id = null;
     },
     TOAST_DURATION_MS,
   );

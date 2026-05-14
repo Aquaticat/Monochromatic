@@ -20,14 +20,24 @@ const ZOOM_STEP = 2;
 
 //region State
 
-/** Current zoom scale (1 = no zoom) */
-let scale = 1;
-
-/** Pan offset X in CSS pixels relative to container */
-let panX = 0;
-
-/** Pan offset Y in CSS pixels relative to container */
-let panY = 0;
+/**
+ * Zoom and pan state container.
+ *
+ * Stored as object properties so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject top-level `let`).
+ */
+const zoomState: {
+  /** Current zoom scale (1 = no zoom) */
+  scale: number;
+  /** Pan offset X in CSS pixels relative to container */
+  panX: number;
+  /** Pan offset Y in CSS pixels relative to container */
+  panY: number;
+} = {
+  scale: 1,
+  panX: 0,
+  panY: 0,
+};
 
 //endregion State
 
@@ -42,7 +52,7 @@ let panY = 0;
  * ```
  */
 export function getScale(): number {
-  return scale;
+  return zoomState.scale;
 }
 
 /**
@@ -56,7 +66,7 @@ export function getScale(): number {
  * ```
  */
 export function getPanX(): number {
-  return panX;
+  return zoomState.panX;
 }
 
 /**
@@ -70,7 +80,7 @@ export function getPanX(): number {
  * ```
  */
 export function getPanY(): number {
-  return panY;
+  return zoomState.panY;
 }
 
 /**
@@ -87,14 +97,14 @@ export function getPanY(): number {
  * ```
  */
 export function applyZoomTransform(zoomLayer: HTMLElement,): void {
-  if (scale === 1) {
+  if (zoomState.scale === 1) {
     zoomLayer.style.transform = '';
     return;
   }
   zoomLayer.style.transformOrigin = '0 0';
-  zoomLayer.style.transform = `translate(${String(panX,)}px, ${String(panY,)}px) scale(${
-    String(scale,)
-  })`;
+  zoomLayer.style.transform = `translate(${String(zoomState.panX,)}px, ${
+    String(zoomState.panY,)
+  }px) scale(${String(zoomState.scale,)})`;
 }
 
 /**
@@ -116,23 +126,23 @@ export function clampPan({
   containerWidth: number;
   containerHeight: number;
 },): void {
-  if (scale <= 1) {
-    panX = 0;
-    panY = 0;
+  if (zoomState.scale <= 1) {
+    zoomState.panX = 0;
+    zoomState.panY = 0;
     return;
   }
-  panX = Math.max(
-    -(scale - 1) * containerWidth,
+  zoomState.panX = Math.max(
+    (-(zoomState.scale - 1)) * containerWidth,
     Math.min(
       0,
-      panX,
+      zoomState.panX,
     ),
   );
-  panY = Math.max(
-    -(scale - 1) * containerHeight,
+  zoomState.panY = Math.max(
+    (-(zoomState.scale - 1)) * containerHeight,
     Math.min(
       0,
-      panY,
+      zoomState.panY,
     ),
   );
 }
@@ -156,8 +166,8 @@ export function setPan({
   x: number;
   y: number;
 },): void {
-  panX = x;
-  panY = y;
+  zoomState.panX = x;
+  zoomState.panY = y;
 }
 
 /**
@@ -207,16 +217,16 @@ export function zoomAt(
     MIN_SCALE,
     Math.min(
       MAX_SCALE,
-      scale * factor,
+      zoomState.scale * factor,
     ),
   );
-  if (newScale === scale)
+  if (newScale === zoomState.scale)
     return;
   /** Ratio between new and old scale for pan adjustment */
-  const actualFactor = newScale / scale;
-  panX = screenX * (1 - actualFactor) + panX * actualFactor;
-  panY = screenY * (1 - actualFactor) + panY * actualFactor;
-  scale = newScale;
+  const actualFactor = newScale / zoomState.scale;
+  zoomState.panX = (screenX * (1 - actualFactor)) + (zoomState.panX * actualFactor);
+  zoomState.panY = (screenY * (1 - actualFactor)) + (zoomState.panY * actualFactor);
+  zoomState.scale = newScale;
   clampPan({
     containerWidth,
     containerHeight,
@@ -235,9 +245,9 @@ export function zoomAt(
  * ```
  */
 export function resetZoom(zoomLayer: HTMLElement,): void {
-  scale = 1;
-  panX = 0;
-  panY = 0;
+  zoomState.scale = 1;
+  zoomState.panX = 0;
+  zoomState.panY = 0;
   applyZoomTransform(zoomLayer,);
 }
 

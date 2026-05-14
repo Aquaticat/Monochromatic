@@ -85,7 +85,9 @@ export function setupWidget(deps: WidgetDeps,): void {
     sizeCanvas,
   } = deps;
 
-  /** Untyped JSON tree narrowed before assigning to {@link backgrounds}. */
+  /**
+   * Untyped JSON tree narrowed before assigning to {@link backgrounds}.
+   */
   const parsed: unknown = JSON.parse(backgroundsScript.textContent,);
   if (!Array.isArray(parsed,))
     throw new Error('Page backgrounds data is not an array',);

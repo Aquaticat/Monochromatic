@@ -53,7 +53,9 @@ export async function renderPageCanvas({
   /** Device pixel ratio for high-DPI rendering */
   const dpr = globalThis.devicePixelRatio;
 
-  /** Destructured so the surrounding helper layout returned by {@link renderBaseCanvas} can be discarded. */
+  /**
+   * Destructured so the surrounding helper layout returned by {@link renderBaseCanvas} can be discarded.
+   */
   const { canvas, } = await renderBaseCanvas({
     container,
     overlay,

@@ -40,11 +40,19 @@ import { refreshZoomTransform, } from './zoom.ts';
 /** 2D rendering context for the drawing canvas */
 const ctx = requireCanvasContext(canvas,);
 
-/** Current canvas width in CSS pixels */
-let canvasWidth = 0;
-
-/** Current canvas height in CSS pixels */
-let canvasHeight = 0;
+/**
+ * Current canvas size in CSS pixels.
+ *
+ * Stored as object properties so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject top-level `let`).
+ */
+const canvasSize: {
+  width: number;
+  height: number;
+} = {
+  width: 0,
+  height: 0,
+};
 
 /**
  * Reads the currently selected tool from the radio group.
@@ -71,8 +79,8 @@ function getCanvasSize(): {
   ch: number;
 } {
   return {
-    cw: canvasWidth,
-    ch: canvasHeight,
+    cw: canvasSize.width,
+    ch: canvasSize.height,
   };
 }
 
@@ -84,18 +92,18 @@ function getCanvasSize(): {
  * rendered dimensions so strokes align with the visual frame.
  */
 function sizeCanvas(): void {
-  canvasWidth = page.clientWidth;
-  canvasHeight = page.clientHeight;
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
+  canvasSize.width = page.clientWidth;
+  canvasSize.height = page.clientHeight;
+  canvas.width = canvasSize.width;
+  canvas.height = canvasSize.height;
   redraw({
     ctx,
-    cw: canvasWidth,
-    ch: canvasHeight,
+    cw: canvasSize.width,
+    ch: canvasSize.height,
   },);
   refreshZoomTransform({
-    containerWidth: canvasWidth,
-    containerHeight: canvasHeight,
+    containerWidth: canvasSize.width,
+    containerHeight: canvasSize.height,
     zoomLayer,
   },);
 }
@@ -106,7 +114,7 @@ function sizeCanvas(): void {
 function syncCursorToTool(): void {
   /** Cached so each branch can compare without re-invoking the getter. */
   const mode = getToolMode();
-  if (mode === 'draw' || mode === 'erase') {
+  if ((mode === 'draw') || (mode === 'erase')) {
     canvas.style.cursor = 'crosshair';
     discardActiveInput();
   }

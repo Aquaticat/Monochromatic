@@ -27,7 +27,9 @@ import {
  * ```
  */
 export async function exportAsPng(deps: ExportDeps,): Promise<void> {
-  /** Text layer destructured separately so the rest of {@link deps} can be passed straight into the renderer. */
+  /**
+   * Text layer destructured separately so the rest of {@link deps} can be passed straight into the renderer.
+   */
   const {
     textLayer,
   } = deps;

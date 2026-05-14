@@ -47,14 +47,21 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
     pushSnapshot,
   } = deps;
 
-  /** Whether an erase gesture is currently active */
-  let erasing = false;
-
-  /** Whether any content was erased during the current gesture */
-  let erasedInGesture = false;
-
-  /** Previous eraser position for segment-based hit testing */
-  let prevErasePoint: NormalizedPoint | null = null;
+  /**
+   * Per-gesture mutable state container.
+   *
+   * Stored as object properties so function-root state stays in a `const`
+   * container (`no-function-root-let` would otherwise reject top-level `let`).
+   */
+  const eraseState: {
+    erasing: boolean;
+    erasedInGesture: boolean;
+    prevErasePoint: NormalizedPoint | null;
+  } = {
+    erasing: false,
+    erasedInGesture: false,
+    prevErasePoint: null,
+  };
 
   canvas.addEventListener(
     'pointerdown',
@@ -87,9 +94,9 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       },);
 
       if (mode === 'erase') {
-        erasing = true;
-        erasedInGesture = false;
-        prevErasePoint = null;
+        eraseState.erasing = true;
+        eraseState.erasedInGesture = false;
+        eraseState.prevErasePoint = null;
         /** Tracks whether any stroke geometry was removed in this tick so the redraw is conditional. */
         const strokeErased = eraseStrokesAt({
           point,
@@ -106,7 +113,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
           textLayer,
         },);
         if (strokeErased || textErased)
-          erasedInGesture = true;
+          eraseState.erasedInGesture = true;
         if (strokeErased) {
           redraw({
             ctx,
@@ -114,7 +121,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
             ch,
           },);
         }
-        prevErasePoint = point;
+        eraseState.prevErasePoint = point;
         return;
       }
 
@@ -127,7 +134,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
     function handlePointerMove(event: PointerEvent,): void {
       /** Captured once so branches downstream do not re-invoke the getter. */
       const mode = getToolMode();
-      if (mode === 'zoom' || mode === 'text')
+      if ((mode === 'zoom') || (mode === 'text'))
         return;
 
       /** Canvas dimensions captured per move so eraser math stays in sync with the live layout. */
@@ -142,25 +149,25 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       },);
 
       if (mode === 'erase') {
-        if (!erasing)
+        if (!eraseState.erasing)
           return;
         /** Tracks whether stroke geometry was removed this tick so the redraw is conditional. */
         const strokeErased = eraseStrokesAt({
           point,
-          previousPoint: prevErasePoint,
+          previousPoint: eraseState.prevErasePoint,
           cw,
           ch,
         },);
         /** Companion flag for text removal so snapshot pushes happen only when something actually changed. */
         const textErased = eraseTextAt({
           point,
-          previousPoint: prevErasePoint,
+          previousPoint: eraseState.prevErasePoint,
           cw,
           ch,
           textLayer,
         },);
         if (strokeErased || textErased)
-          erasedInGesture = true;
+          eraseState.erasedInGesture = true;
         if (strokeErased) {
           redraw({
             ctx,
@@ -168,7 +175,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
             ch,
           },);
         }
-        prevErasePoint = point;
+        eraseState.prevErasePoint = point;
         return;
       }
 
@@ -196,9 +203,9 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   /** Resets draw/erase gesture state at pointer release */
   function endGesture(): void {
     endStroke();
-    erasing = false;
-    erasedInGesture = false;
-    prevErasePoint = null;
+    eraseState.erasing = false;
+    eraseState.erasedInGesture = false;
+    eraseState.prevErasePoint = null;
   }
 
   canvas.addEventListener(
@@ -208,7 +215,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       const mode = getToolMode();
       if (mode === 'zoom')
         return;
-      if (mode === 'draw' || (mode === 'erase' && erasedInGesture))
+      if ((mode === 'draw') || ((mode === 'erase') && eraseState.erasedInGesture))
         pushSnapshot();
       endGesture();
     },

@@ -34,8 +34,13 @@ type PageHistory = {
   index: number;
 };
 
-/** History stacks indexed by page number */
-let histories: PageHistory[] = [];
+/**
+ * History stacks indexed by page number.
+ *
+ * Stored as an object property so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject a top-level `let`).
+ */
+const historiesState: { all: PageHistory[]; } = { all: [] };
 
 /**
  * Initializes empty history stacks for all pages.
@@ -55,7 +60,7 @@ export function initHistory(pageCount: number,): void {
     strokes: [],
     textEntries: [],
   };
-  histories = Array.from(
+  historiesState.all = Array.from(
     { length: pageCount, },
     function createPageHistory(): PageHistory {
       return {
@@ -86,7 +91,7 @@ export function pushSnapshot({
   snapshot: Snapshot;
 },): void {
   /** Per-page slot; missing only when the page was never initialized, in which case the push is silently dropped. */
-  const history = histories[pageIndex];
+  const history = historiesState.all[pageIndex];
   if (history === undefined)
     return;
 
@@ -119,8 +124,8 @@ export function pushSnapshot({
  */
 export function undo(pageIndex: number,): Snapshot | null {
   /** Page slot guarded so an absent or at-start page falls through to null. */
-  const history = histories[pageIndex];
-  if (history === undefined || history.index <= 0)
+  const history = historiesState.all[pageIndex];
+  if ((history === undefined) || (history.index <= 0))
     return null;
   history.index -= 1;
   return history.states[history.index] ?? null;
@@ -140,8 +145,8 @@ export function undo(pageIndex: number,): Snapshot | null {
  */
 export function redo(pageIndex: number,): Snapshot | null {
   /** Page slot guarded so an absent or at-end page falls through to null. */
-  const history = histories[pageIndex];
-  if (history === undefined || history.index >= history.states.length - 1)
+  const history = historiesState.all[pageIndex];
+  if ((history === undefined) || (history.index >= (history.states.length - 1)))
     return null;
   history.index += 1;
   return history.states[history.index] ?? null;
@@ -161,8 +166,8 @@ export function redo(pageIndex: number,): Snapshot | null {
  */
 export function canUndo(pageIndex: number,): boolean {
   /** Page slot looked up so the predicate covers both presence and position. */
-  const history = histories[pageIndex];
-  return history !== undefined && history.index > 0;
+  const history = historiesState.all[pageIndex];
+  return (history !== undefined) && (history.index > 0);
 }
 
 /**
@@ -179,6 +184,6 @@ export function canUndo(pageIndex: number,): boolean {
  */
 export function canRedo(pageIndex: number,): boolean {
   /** Page slot looked up so the predicate covers both presence and position. */
-  const history = histories[pageIndex];
-  return history !== undefined && history.index < history.states.length - 1;
+  const history = historiesState.all[pageIndex];
+  return (history !== undefined) && (history.index < (history.states.length - 1));
 }

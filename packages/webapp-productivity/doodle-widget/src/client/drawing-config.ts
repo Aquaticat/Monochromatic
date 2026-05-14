@@ -21,11 +21,19 @@ const DEFAULT_STROKE_WIDTH = 10;
 
 //region State
 
-/** Active stroke color for new strokes */
-let activeColor: string = DEFAULT_STROKE_COLOR;
-
-/** Active stroke width for new strokes */
-let activeWidth: number = DEFAULT_STROKE_WIDTH;
+/**
+ * Active drawing configuration container.
+ *
+ * Stored as an object property so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject a top-level `let`).
+ */
+const drawingState: {
+  color: string;
+  width: number;
+} = {
+  color: DEFAULT_STROKE_COLOR,
+  width: DEFAULT_STROKE_WIDTH,
+};
 
 //endregion State
 
@@ -41,7 +49,7 @@ let activeWidth: number = DEFAULT_STROKE_WIDTH;
  * ```
  */
 export function getStrokeColor(): string {
-  return activeColor;
+  return drawingState.color;
 }
 
 /**
@@ -55,7 +63,7 @@ export function getStrokeColor(): string {
  * ```
  */
 export function setStrokeColor(color: string,): void {
-  activeColor = color;
+  drawingState.color = color;
 }
 
 /**
@@ -70,7 +78,7 @@ export function setStrokeColor(color: string,): void {
  * ```
  */
 export function getStrokeWidth(): number {
-  return activeWidth;
+  return drawingState.width;
 }
 
 /**
@@ -84,5 +92,5 @@ export function getStrokeWidth(): number {
  * ```
  */
 export function setStrokeWidth(width: number,): void {
-  activeWidth = width;
+  drawingState.width = width;
 }

@@ -48,30 +48,36 @@ export function distToSegmentSq(
     by: number;
   },
 ): number {
-  /** Cached so {@link lenSq} and the projection share one subtraction. */
+  /**
+   * Cached so {@link lenSq} and the projection share one subtraction.
+   */
   const dx = bx - ax;
-  /** Companion to {@link dx} on the y axis. */
+  /**
+   * Companion to {@link dx} on the y axis.
+   */
   const dy = by - ay;
   /** Squared length of segment AB; zero means degenerate (A == B) */
-  const lenSq = dx * dx + dy * dy;
+  const lenSq = (dx * dx) + (dy * dy);
 
   if (lenSq === 0)
-    return (px - ax) ** 2 + (py - ay) ** 2;
+    return ((px - ax) ** 2) + ((py - ay) ** 2);
 
   /** Projection parameter clamped to [0, 1] so closest point stays on segment */
   const t = Math.max(
     0,
     Math.min(
       1,
-      ((px - ax) * dx + (py - ay) * dy) / lenSq,
+      (((px - ax) * dx) + ((py - ay) * dy)) / lenSq,
     ),
   );
   /** Closest point on segment */
-  const cx = ax + t * dx;
-  /** Companion to {@link cx} on the y axis. */
-  const cy = ay + t * dy;
+  const cx = ax + (t * dx);
+  /**
+   * Companion to {@link cx} on the y axis.
+   */
+  const cy = ay + (t * dy);
 
-  return (px - cx) ** 2 + (py - cy) ** 2;
+  return ((px - cx) ** 2) + ((py - cy) ** 2);
 }
 
 /**
@@ -111,7 +117,7 @@ function cross(
     cy: number;
   },
 ): number {
-  return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+  return ((bx - ax) * (cy - ay)) - ((by - ay) * (cx - ax));
 }
 
 /**
@@ -208,8 +214,8 @@ export function segmentsIntersect(
     cy: b2y,
   },);
 
-  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0))
-    && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+  return ((((d1 > 0) && (d2 < 0)) || ((d1 < 0) && (d2 > 0))))
+    && ((((d3 > 0) && (d4 < 0)) || ((d3 < 0) && (d4 > 0))));
 }
 
 /**

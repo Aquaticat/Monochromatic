@@ -55,7 +55,7 @@ async function resolveRepoUrl(): Promise<string> {
  * @returns true when {@link value} is a plain object (non-null, non-array)
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+  return ((typeof value) === 'object') && (value !== null);
 }
 
 /**
@@ -75,7 +75,9 @@ async function resolveDirectory(packageDir: string,): Promise<string> {
       ),
       'utf8',
     );
-    /** Untyped tree narrowed via {@link isRecord} before field access. */
+    /**
+     * Untyped tree narrowed via {@link isRecord} before field access.
+     */
     const parsed: unknown = JSON.parse(raw,);
     if (!isRecord(parsed,))
       return FALLBACK_DIRECTORY;
@@ -87,7 +89,7 @@ async function resolveDirectory(packageDir: string,): Promise<string> {
 
     /** Directory field destructured so a non-string value falls through to the fallback. */
     const { directory, } = repository;
-    if (typeof directory !== 'string')
+    if ((typeof directory) !== 'string')
       return FALLBACK_DIRECTORY;
 
     return directory;

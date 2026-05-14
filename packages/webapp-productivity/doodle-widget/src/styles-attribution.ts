@@ -12,7 +12,7 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Attribution bar font size, smaller than body text */
-const ATTRIBUTION_FONT_SIZE = 1 / 2 + 1 / 2 / 2;
+const ATTRIBUTION_FONT_SIZE = (1 / 2) + ((1 / 2) / 2);
 
 /** Vertical padding for the attribution bar */
 const ATTRIBUTION_PADDING_BLOCK = 1 / 2 / 2;
