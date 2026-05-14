@@ -23,26 +23,26 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 **Status**: Normal priority, core library expansion
 
-- [ ] Add `array.shuffle()` - Random array shuffling with proper Fisher-Yates algorithm
-- [ ] Add `array.rotate()` - Rotate array elements left/right by n positions
-- [ ] Add `array.partition()` - Split array into chunks based on predicate
-- [ ] Add `array.difference()` - Find elements in first array not in second
-- [ ] Add `array.intersection()` - Find common elements between arrays
-- [ ] Add `array.union()` - Combine arrays with unique elements
-- [ ] Add `array.zip()` - Combine multiple arrays element-wise
-- [ ] Add `array.unzip()` - Split array of tuples into separate arrays
+- [ ] Add `array.shuffle()`: Random array shuffling with proper Fisher-Yates algorithm
+- [ ] Add `array.rotate()`: Rotate array elements left/right by n positions
+- [ ] Add `array.partition()`: Split array into chunks based on predicate
+- [ ] Add `array.difference()`: Find elements in first array not in second
+- [ ] Add `array.intersection()`: Find common elements between arrays
+- [ ] Add `array.union()`: Combine arrays with unique elements
+- [ ] Add `array.zip()`: Combine multiple arrays element-wise
+- [ ] Add `array.unzip()`: Split array of tuples into separate arrays
 
 #### Async Iterator Utilities
 
 **Status**: High priority, missing critical functionality
 
-- [ ] Add `asyncIterable.map()` - Transform async iterables
-- [ ] Add `asyncIterable.filter()` - Filter async iterables
-- [ ] Add `asyncIterable.reduce()` - Reduce async iterables
-- [ ] Add `asyncIterable.take()` - Take first n items from async iterable
-- [ ] Add `asyncIterable.skip()` - Skip first n items from async iterable
-- [ ] Add `asyncIterable.batch()` - Batch async iterable into groups
-- [ ] Add `asyncIterable.parallel()` - Process async iterable in parallel with concurrency limit
+- [ ] Add `asyncIterable.map()`: Transform async iterables
+- [ ] Add `asyncIterable.filter()`: Filter async iterables
+- [ ] Add `asyncIterable.reduce()`: Reduce async iterables
+- [ ] Add `asyncIterable.take()`: Take first n items from async iterable
+- [ ] Add `asyncIterable.skip()`: Skip first n items from async iterable
+- [ ] Add `asyncIterable.batch()`: Batch async iterable into groups
+- [ ] Add `asyncIterable.parallel()`: Process async iterable in parallel with concurrency limit
 
 #### Object Utilities
 
@@ -52,51 +52,51 @@ This file tracks improvements needed across different packages in the monorepo, 
 - [x] Add record `omit` helper in current `module-es` taxonomy
 - [x] Add record `merge` helper in current `module-es` taxonomy
 - [ ] Add root-friendly aliases or documentation for record pick, omit, and merge
-- [ ] Add `object.flatten()` - Flatten nested objects with dot notation keys
-- [ ] Add `object.unflatten()` - Convert dot notation keys back to nested objects
-- [ ] Add `object.transform()` - Transform object keys and values
-- [ ] Add `object.isEmpty()` - Check if object has no enumerable properties
+- [ ] Add `object.flatten()`: Flatten nested objects with dot notation keys
+- [ ] Add `object.unflatten()`: Convert dot notation keys back to nested objects
+- [ ] Add `object.transform()`: Transform object keys and values
+- [ ] Add `object.isEmpty()`: Check if object has no enumerable properties
 
 #### Date and Time Utilities
 
 **Status**: Normal priority, common need
 
-- [ ] Add `date.format()` - Format dates with locale support
-- [ ] Add `date.parse()` - Parse dates with multiple format support
-- [ ] Add `date.add()` - Add time intervals to dates
-- [ ] Add `date.subtract()` - Subtract time intervals from dates
-- [ ] Add `date.diff()` - Calculate differences between dates
-- [ ] Add `date.isValid()` - Validate date objects
-- [ ] Add `date.timezone()` - Timezone conversion utilities
+- [ ] Add `date.format()`: Format dates with locale support
+- [ ] Add `date.parse()`: Parse dates with multiple format support
+- [ ] Add `date.add()`: Add time intervals to dates
+- [ ] Add `date.subtract()`: Subtract time intervals from dates
+- [ ] Add `date.diff()`: Calculate differences between dates
+- [ ] Add `date.isValid()`: Validate date objects
+- [ ] Add `date.timezone()`: Timezone conversion utilities
 
 #### Validation and Type Guards
 
 **Status**: High priority, type safety
 
-- [ ] Add `validate.email()` - Email validation with proper RFC compliance
+- [ ] Add `validate.email()`: Email validation with proper RFC compliance
 - [ ] Add `validate.url()`: URL validation with protocol options
 - [ ] Add `validate.json()`: JSON validation with schema support
-- [ ] Add `validate.range()` - Number range validation
-- [ ] Add `validate.length()` - String/array length validation
-- [ ] Add `is.plainObject()` - Check for plain objects vs class instances
-- [ ] Add `is.emptyArray()` - Type-safe empty array check
-- [ ] Add `is.nonEmptyArray()` - Type-safe non-empty array check
+- [ ] Add `validate.range()`: Number range validation
+- [ ] Add `validate.length()`: String/array length validation
+- [ ] Add `is.plainObject()`: Check for plain objects vs class instances
+- [ ] Add `is.emptyArray()`: Type-safe empty array check
+- [ ] Add `is.nonEmptyArray()`: Type-safe non-empty array check
 
 ### Medium Priority
 
 #### Math Utilities
 
-- [ ] Add `math.clamp()` - Constrain number to range
-- [ ] Add `math.lerp()` - Linear interpolation
-- [ ] Add `math.round()` - Round to specified decimal places
-- [ ] Add `math.random()` - Seeded random number generation
-- [ ] Add `math.statistics()` - Mean, median, mode calculations
+- [ ] Add `math.clamp()`: Constrain number to range
+- [ ] Add `math.lerp()`: Linear interpolation
+- [ ] Add `math.round()`: Round to specified decimal places
+- [ ] Add `math.random()`: Seeded random number generation
+- [ ] Add `math.statistics()`: Mean, median, mode calculations
 
 #### Path and URL Utilities
 
 - [ ] Decide whether `module-fs-path` should publicly export `normalize()`; path helpers moved out of `module-es`
-- [ ] Add `url.build()` - Build URLs with query parameters
-- [ ] Add `url.parse()` - Parse URLs into components
+- [ ] Add `url.build()`: Build URLs with query parameters
+- [ ] Add `url.parse()`: Parse URLs into components
 
 ---
 
@@ -114,8 +114,10 @@ This file tracks improvements needed across different packages in the monorepo, 
 #### Medium Priority
 
 - [ ] Create template tsconfig files for common scenarios
-- [ ] Add TypeScript project reference examples
 - [ ] Document performance optimization settings
+
+> TypeScript project references are out of scope.
+> See [`.out-of-scope/typescript-project-references.md`](.out-of-scope/typescript-project-references.md).
 
 ---
 

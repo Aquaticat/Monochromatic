@@ -2,6 +2,8 @@
 
 Notes from reviewing `packages/pi/auto-mode`, which GLM authored end to end. A reference for future sessions: what to expect from GLM-authored code, what to look for, what to roll back.
 
+> **Status (2026-05-14): the specific issues called out in this document have been fixed in `packages/pi/auto-mode`.** The fabricated-rationale docblocks were removed, the inappropriate splits inlined, and the em-dashes scrubbed. This file is retained as a behavioral reference for future GLM-authored code, not as an open audit of the current package.
+
 ## The signature failure: 12 files, one fabricated rationale
 
 Every extracted file in this package (12 of them) claims the same justification:

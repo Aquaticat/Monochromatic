@@ -12,19 +12,22 @@
 - [ ] Optimize mise task dependencies to reduce unnecessary work
 - [ ] Implement better caching strategies for mise tasks
 - [ ] Add parallel execution where possible
-- [ ] Optimize TypeScript compilation with project references
 - [ ] Reduce cold build times for fresh clones
 
 #### TypeScript Compilation Performance
 
-**Status**: High priority, daily development impact
+**Status**: Normal priority, daily development impact
 
-- [ ] Implement TypeScript project references across all packages
-- [ ] Add TypeScript incremental compilation
+- [ ] Add TypeScript incremental compilation (without full project references; see below)
 - [ ] Optimize TypeScript configuration for build speed
 - [ ] Profile TypeScript compilation times by package
 - [ ] Implement TypeScript build result caching
 - [ ] Add TypeScript compilation parallelization
+
+> TypeScript project references are explicitly out of scope.
+> See [`.out-of-scope/typescript-project-references.md`](.out-of-scope/typescript-project-references.md).
+> tsgo reads source directly via the `./ts` exports entry,
+> so cross-package type-check performance is already acceptable without references.
 
 #### tsdown Build Optimization
 

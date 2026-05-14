@@ -65,14 +65,15 @@ Reduce redundant attributes in PlantUML-generated SVGs:
 
 #### Pre-generate Search Results Pages
 
-**Status**: Medium Priority (user experience)
-
-Use pagefind or other tools to pre-generate search results pages.
-Improve search functionality with pre-generated results.
+**Status**: Done. `webapp-content/ssg-test` runs `pagefind --site dist` in
+`build:postprocess` (parallel with the fingerprinting phases). The client
+consumes the runtime `pagefind.search()` API via `src/client/search.ts`,
+and `data-pagefind-body` is wired into `page-content.ts`. See the ssg-test
+README for the full pipeline.
 
 #### Enhanced Search Implementation
 
-- [ ] Evaluate and implement advanced search tools (pagefind, algolia, elasticsearch)
+- [x] Adopt pagefind for content webapps (done; see ssg-test).
 - [ ] Create search index optimization and maintenance
 - [ ] Add search analytics and usage tracking
 - [ ] Implement search result ranking and relevance optimization
