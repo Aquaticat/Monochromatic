@@ -15,7 +15,7 @@ const { parseValueFromStart, } = exported;
 
 //region parseValueFromStart
 await describe({
-  name: 'parseValueFromStart',
+  name: parseValueFromStart.name,
   children: [
     it({
       name: 'string and number',

@@ -26,7 +26,7 @@ await describe({
   children: [
     //region parseRecordHeader
     describe({
-      name: 'parseRecordHeader',
+      name: parseRecordHeader.name,
       children: [
         it({
           name: 'no context comment',
@@ -54,7 +54,7 @@ await describe({
 
     //region expectRecordSeparatorOrEnd
     describe({
-      name: 'expectRecordSeparatorOrEnd',
+      name: expectRecordSeparatorOrEnd.name,
       children: [
         it({
           name: 'end directly',
@@ -95,7 +95,7 @@ await describe({
 
     //region parseRecordKey
     describe({
-      name: 'parseRecordKey',
+      name: parseRecordKey.name,
       children: [
         it({
           name: 'simple key without comment',
@@ -133,7 +133,7 @@ await describe({
 
     //region expectColonAfterKey
     describe({
-      name: 'expectColonAfterKey',
+      name: expectColonAfterKey.name,
       children: [
         it({
           name: 'colon immediately after',
@@ -165,7 +165,7 @@ await describe({
 
     //region parseRecordValue
     describe({
-      name: 'parseRecordValue',
+      name: parseRecordValue.name,
       children: [
         it({
           name: 'simple number value',
@@ -192,7 +192,7 @@ await describe({
 
     //region parseOneRecordMember
     describe({
-      name: 'parseOneRecordMember',
+      name: parseOneRecordMember.name,
       children: [
         it({
           name: 'simple key:value pair',
@@ -223,7 +223,7 @@ await describe({
 
     //region parseRecordMembers
     describe({
-      name: 'parseRecordMembers',
+      name: parseRecordMembers.name,
       children: [
         it({
           name: 'single member then end',

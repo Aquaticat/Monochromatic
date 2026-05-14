@@ -18,7 +18,7 @@ await describe({
   children: [
     //region expectArraySeparatorOrEnd
     describe({
-      name: 'expectArraySeparatorOrEnd',
+      name: expectArraySeparatorOrEnd.name,
       children: [
         it({
           name: 'end directly',
@@ -60,7 +60,7 @@ await describe({
 
     //region parseArrayElements
     describe({
-      name: 'parseArrayElements',
+      name: parseArrayElements.name,
       children: [
         it({
           name: 'single element then end',

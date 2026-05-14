@@ -17,7 +17,7 @@ await describe({
   children: [
     //region parseLiteralToken
     describe({
-      name: 'parseLiteralToken',
+      name: parseLiteralToken.name,
       children: [
         it({
           name: 'null/true/false',
@@ -67,7 +67,7 @@ await describe({
 
     //region parseNumberToken
     describe({
-      name: 'parseNumberToken',
+      name: parseNumberToken.name,
       children: [
         it({
           name: 'ints/decimals/exponents',
