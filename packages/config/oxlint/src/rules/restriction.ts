@@ -51,6 +51,12 @@ export const restrictionRules: DummyRuleMap = {
   // or an IIFE-into-const initialization.
   'no-restricted-syntax/no-module-root-let': 'warn',
 
+  // `describe({ name: '<fn>' })` silently drifts on rename. Prefer
+  // `describe({ name: <fn>.name })` whenever `<fn>` is an in-scope binding.
+  // Scoped to `*.unit.test.ts` via overrides; harness self-tests opt out
+  // via inline disable comments.
+  'no-restricted-syntax/prefer-describe-function-ref-name': 'warn',
+
   // Use using/await using for cleanup instead of try...finally.
   'no-restricted-syntax/no-try-finally': 'error',
 

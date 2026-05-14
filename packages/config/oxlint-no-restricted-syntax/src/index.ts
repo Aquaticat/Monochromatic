@@ -43,6 +43,9 @@ import { noTryFinally, } from './rules/no-try-finally.ts';
 import {
   noVariableFunctionExpression,
 } from './rules/no-variable-function-expression.ts';
+import {
+  preferDescribeFunctionRefName,
+} from './rules/prefer-describe-function-ref-name.ts';
 import { requireDestructuredParams, } from './rules/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
 
@@ -86,6 +89,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-trim-left-right': noTrimLeftRight,
     'no-try-finally': noTryFinally,
     'no-variable-function-expression': noVariableFunctionExpression,
+    'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'require-destructured-params': requireDestructuredParams,
     'require-queryselector-generic': requireQueryselectorGeneric,
     //endregion Syntax rules

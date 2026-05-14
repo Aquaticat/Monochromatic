@@ -148,6 +148,7 @@ const SUBSTANTIVE_RULES = [
   'no-trim-left-right',
   'no-try-finally',
   'no-variable-function-expression',
+  'prefer-describe-function-ref-name',
   'require-destructured-params',
   'require-queryselector-generic',
 ] as const;

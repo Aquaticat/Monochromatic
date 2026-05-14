@@ -208,6 +208,26 @@ const testOverride = {
   },
 } satisfies OxlintOverride;
 
+/**
+ * The `prefer-describe-function-ref-name` rule fires when a `describe()` call
+ * uses a string literal name that matches an in-scope binding. Unit tests
+ * exercise a specific export and benefit from the function-reference form
+ * (`describe({ name: myFn.name })`) so suite names follow renames. Other
+ * test shapes (e2e, browser, bench) describe scenarios rather than single
+ * exports; the literal form is correct there.
+ */
+const nonUnitTestRuleOverride = {
+  files: [
+    '**/*.e2e.test.ts',
+    '**/*.browser.test.ts',
+    '**/*.bench.ts',
+    '**/*.spec.ts',
+  ],
+  rules: {
+    'no-restricted-syntax/prefer-describe-function-ref-name': 'off' as const,
+  },
+} satisfies OxlintOverride;
+
 /** All overrides, ordered from most specific to least specific. */
 export const overrides: OxlintOverride[] = [
   figmaOverride,
@@ -218,5 +238,6 @@ export const overrides: OxlintOverride[] = [
   declarationOverride,
   configOverride,
   jestMatcherApiOverride,
+  nonUnitTestRuleOverride,
   testOverride,
 ];
