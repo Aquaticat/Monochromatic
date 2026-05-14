@@ -68,16 +68,20 @@ function bashOutputFilterHandler(event: PreToolUseInput,): BashOutputFilterOutpu
   if ((event.tool_name !== 'Bash') || (!isBashToolInput(event.tool_input,)))
     return {};
 
+  /** Narrowed Bash tool input; refined from `event.tool_input` by `isBashToolInput`. */
   const bashInput = event.tool_input;
 
   if ((!isAllowed(bashInput.command,)) || shouldSkip(bashInput.command,))
     return {};
 
+  /** True when running from the bundled hook entry (`.mjs`); false during source-driven dev runs. */
   const isBuilt = import.meta.url.endsWith('.mjs',);
+  /** Sibling path to the filter script chosen by build mode (`.mjs` vs `.ts`). */
   const filterPath = isBuilt
     ? `${import.meta.dirname}/filter.mjs`
     : `${import.meta.dirname}/filter.ts`;
 
+  /** Rewritten command pipeline that streams the original command's merged output through the filter. */
   const wrappedCommand =
     `set -o pipefail && ${bashInput.command} 2>&1 | bun ${filterPath} && true`;
 

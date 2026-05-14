@@ -63,6 +63,7 @@ Image A is the first image, Image B is the second.`;
  * @returns resolved API key, or `undefined` if not configured
  */
 function resolveGeminiDescribeKey(): string | undefined {
+  /** Resolved Gemini key from preferred-then-fallback env var; treated as missing when blank. */
   const key = process.env['IMAGE_DIFF_GEMINI_API_KEY']
     ?? process.env['GEMINI_API_KEY'];
   if (key === undefined || key === '')
@@ -98,21 +99,25 @@ export async function describeViaGemini({
   imageA: ImageInput;
   imageB: ImageInput;
 },): Promise<string | undefined> {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: describeViaGemini.name,
     l,
   },);
 
+  /** Gemini credential; absent triggers an early `undefined` return so the OpenRouter fallback can run. */
   const apiKey = resolveGeminiDescribeKey();
   if (apiKey === undefined)
     return undefined;
 
   rl.debug('describing image differences via native Gemini API',);
+  /** Both images encoded as Gemini `inline_data` parts in parallel so the request body can embed them. */
   const [inlineA, inlineB,] = await Promise.all([
     toGeminiInlineData(imageA,),
     toGeminiInlineData(imageB,),
   ],);
 
+  /** Gemini generateContent payload pairing the diff prompt with the two inline image parts. */
   const requestBody: GenerateContentRequest = {
     contents: [
       {
@@ -131,9 +136,11 @@ export async function describeViaGemini({
     ],
   };
 
+  /** Full Gemini generateContent endpoint URL with the description model interpolated. */
   const url = `${GEMINI_API_BASE}/${GEMINI_DESCRIBE_MODEL}:generateContent`;
   rl.debug(`calling Gemini generateContent: ${url}`,);
 
+  /** Raw `fetch` response; status checked before parsing JSON so errors surface with their body. */
   const response = await fetch(
     url,
     {
@@ -147,6 +154,7 @@ export async function describeViaGemini({
   );
 
   if (!response.ok) {
+    /** Raw response body captured for both the log line and the thrown error message. */
     const errorBody = await response.text();
     rl.error(
       `Gemini generateContent returned ${String(response.status,)}: ${errorBody}`,
@@ -156,16 +164,20 @@ export async function describeViaGemini({
     );
   }
 
+  /** Parsed generateContent payload; structure validated by the candidate/part guards below. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response type assertion
   const result = await response.json() as GenerateContentResponse;
+  /** First candidate destructured for content access; guarded against the empty-candidates case. */
   const [candidate,] = result.candidates;
   if (candidate === undefined)
     throw new Error('Gemini generateContent returned no candidates',);
 
+  /** First content part destructured for text access; guarded against the empty-parts case. */
   const [part,] = candidate.content.parts;
   if (part === undefined)
     throw new Error('Gemini generateContent returned no content parts',);
 
+  /** Model's textual diff description; returned directly to the caller after a debug-log of its length. */
   const description = part.text;
   rl.debug(
     `received description (${String(description.length,)} chars) via native Gemini`,

@@ -69,24 +69,30 @@ function updateChildOnStop(
     lastMessage: string | undefined;
   },
 ): void {
+  /** Spawn correlation id injected by the CLI when this Claude was a child; absent in normal runs. */
   const spawnId = process.env.CLAUDE_SPAWN_ID;
   if ((spawnId === undefined) || (lastMessage === undefined))
     return;
 
+  /** Path to the child's spawn-state JSON file under `SPAWNS_DIR`. */
   const filePath = join(
     SPAWNS_DIR,
     `${spawnId}.json`,
   );
 
   try {
+    /** Current on-disk state text, parsed below to confirm ownership before rewriting. */
     const existing = readFileSync(
       filePath,
       'utf8',
     );
-    /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
+    /** Parsed spawn state; the cast is safe because only the spawn-claude CLI writes this file. */
     const state = JSON.parse(existing,) as SpawnState;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     if (state.sessionId === sessionId) {
+      /** New state with `status: 'stopped'` and the final assistant message recorded. */
       const updated: SpawnState = {
         ...state,
         lastMessage,
@@ -119,6 +125,7 @@ function stopResponse(
   event: Extract<HookInput, { hook_event_name: 'Stop'; }>,
 ): ClaudeSpawnOutput {
   if (!event.stop_hook_active) {
+    /** Formatted child-result text consumed atomically; `null` when nothing pending. */
     const context = checkCompletedChildren({
       parentSessionId: event.session_id,
       consume: true,
@@ -133,6 +140,7 @@ function stopResponse(
       };
     }
   }
+  /** Pass-through payload returned when no children have completed yet. */
   const empty: HookOutputBase = {};
   return {
     kind: 'json',
@@ -149,11 +157,13 @@ function stopResponse(
  * @returns hook response carrying child-result text, or empty pass-through
  */
 function additionalContextResponse(event: HookInput,): ClaudeSpawnOutput {
+  /** Formatted child-result text consumed atomically; `null` when no completion is pending. */
   const context = checkCompletedChildren({
     parentSessionId: event.session_id,
     consume: true,
   },);
   if (context === null) {
+    /** Pass-through payload returned when there is nothing to inject. */
     const empty: HookOutputBase = {};
     return {
       kind: 'json',
@@ -188,6 +198,7 @@ function additionalContextResponse(event: HookInput,): ClaudeSpawnOutput {
  */
 function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
   if (event.hook_event_name === 'SessionStart') {
+    /** Raw SessionStart warning text emitted directly to stdout. */
     const text = handleSessionStart({
       sessionId: event.session_id,
       transcriptPath: event.transcript_path,
@@ -206,6 +217,7 @@ function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
     return stopResponse(event,);
   }
   if (event.hook_event_name === 'SessionEnd') {
+    /** SessionEnd is a no-op for this plugin; return the empty pass-through. */
     const empty: HookOutputBase = {};
     return {
       kind: 'json',

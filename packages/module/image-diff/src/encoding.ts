@@ -112,11 +112,14 @@ export function isImageBase64(input: ImageInput,): input is ImageBase64 {
  * ```
  */
 export function inferFormat(filePath: string,): ImageFormat {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: inferFormat.name,
     l,
   },);
+  /** Path extension normalised to lower case for case-insensitive lookup in {@link EXTENSION_FORMAT_MAP}. */
   const ext = extname(filePath,).toLowerCase();
+  /** Format resolved from the extension; `undefined` for unsupported extensions triggers the explicit error below. */
   const format = EXTENSION_FORMAT_MAP[ext];
   if (format === undefined) {
     throw new Error(
@@ -144,7 +147,9 @@ export function inferFormat(filePath: string,): ImageFormat {
  * ```
  */
 export function bufferToBase64(buffer: ArrayBuffer,): string {
+  /** Byte-level view over the buffer; `btoa` needs a string of single-byte chars, not the raw buffer. */
   const bytes = new Uint8Array(buffer,);
+  /** Binary string assembled byte by byte; one code point per byte is what `btoa` expects. */
   const binary = Array.from(
     bytes,
     function byteToChar(byte,) {
@@ -176,10 +181,12 @@ export function bufferToDataUri({
   buffer: ArrayBuffer;
   format: ImageFormat;
 },): string {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: bufferToDataUri.name,
     l,
   },);
+  /** Raw base64 payload; prefixed below with the media-type header to produce the final data URI. */
   const base64 = bufferToBase64(buffer,);
   rl.debug(
     `encoded ${String(new Uint8Array(buffer,).length,)} bytes as base64 data URI`,
@@ -206,6 +213,7 @@ export function parseDataUri(dataUri: string,): {
   mimeType: string;
   data: string;
 } {
+  /** Match of `data:<mime>;base64,<data>`; capture groups 1 and 2 hold the MIME type and payload. */
   const match = /^data:([^;]+);base64,(.+)$/.exec(dataUri,);
   if (match === null || match[1] === undefined || match[2] === undefined) {
     throw new Error(

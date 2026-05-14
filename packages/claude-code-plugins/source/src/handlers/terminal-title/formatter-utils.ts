@@ -113,6 +113,7 @@ function stringField(
     key: string;
   },
 ): string | undefined {
+  /** Property value read from the tool input; non-string shapes fall through to `undefined`. */
   const value = input[key];
   if ((typeof value) === 'string')
     return value;

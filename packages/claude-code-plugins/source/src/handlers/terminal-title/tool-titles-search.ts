@@ -33,13 +33,17 @@ const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
   },
   AskUserQuestion: {
     extract(input,): string | undefined {
+      /** Questions array from the AskUserQuestion tool input; non-array shapes are rejected below. */
       const { questions, } = input;
       if (!Array.isArray(questions,))
         return undefined;
-      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- untyped tool_input; structure verified by Array.isArray guard */
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- untyped tool_input; structure verified by Array.isArray guard */
+      /** First entry destructured from the questions array; only one question's title is shown. */
       const [first,] = questions as Record<string, unknown>[];
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       if (first === undefined)
         return undefined;
+      /** Question text pulled from the first entry; non-string shapes fall through to `undefined`. */
       const { question, } = first;
       if ((typeof question) === 'string')
         return question;
@@ -67,6 +71,7 @@ const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
       v,
       tense,
     ) {
+      /** Verb form chosen by tense; reused in both the URL hostname and the error fallback. */
       const verb = tense === 'pre' ? 'Fetching' : 'Fetched';
       try {
         return `${verb} ${new URL(v,).hostname}`;

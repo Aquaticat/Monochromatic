@@ -93,16 +93,19 @@ function handleSessionStart({
   const spawnId = process.env.CLAUDE_SPAWN_ID;
 
   if (spawnId !== undefined) {
+    /** Path to the spawn-state JSON pre-created by the CLI for this child. */
     const jsonPath = join(
       SPAWNS_DIR,
       `${spawnId}.json`,
     );
 
     try {
+      /** Existing spawn-state text on disk; parsed below before deciding to claim. */
       const raw = readFileSync(
         jsonPath,
         'utf8',
       );
+      /** Parsed spawn state; an empty `sessionId` field signals an unclaimed slot. */
       const state = parseHookJson<SpawnState>(raw,);
 
       if (state.sessionId === '') {
@@ -123,6 +126,7 @@ function handleSessionStart({
     }
   }
 
+  /** Warning text from CLI auto-setup, or `null` when setup succeeded or was unnecessary. */
   const cliWarning = autoSetupCli(hookDir,);
   if (cliWarning !== null)
     return cliWarning;

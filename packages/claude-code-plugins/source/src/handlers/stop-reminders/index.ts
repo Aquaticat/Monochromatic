@@ -51,11 +51,16 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
   if (event.stop_hook_active)
     return {};
 
+  /** Final assistant message with code blocks, inline code, and quotes stripped before scanning. */
   const prose = stripNonProseRegions(event.last_assistant_message ?? '',);
+  /** First hedging-phrase hit, if any; populates the uncertainty reminder when defined. */
   const match = findUncertainty(prose,);
+  /** First uncited categorical-dismissal hit; populates the dismissal reminder when defined. */
   const dismissal = findCategoricalDismissal(prose,);
+  /** Trailing user-directed question hit; populates the AskUserQuestion reminder when defined. */
   const question = findTrailingQuestion(prose,);
 
+  /** Reminder lines accumulated across the three detectors; joined into the final block reason. */
   const reasons: string[] = [];
 
   if (match !== undefined) {

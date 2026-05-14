@@ -83,8 +83,11 @@ async function runHookPlugin<TInput, TOutput,>(
     writer: Writer<TOutput>;
   },
 ): Promise<void> {
+  /** Full stdin payload from Claude Code, awaited to EOF before parsing. */
   const raw = await text(process.stdin,);
+  /** Parsed hook event passed to the plugin handler below. */
   const event = parser(raw,);
+  /** Handler response; serialized by the writer for stdout. */
   const output = await handler(event,);
   process.stdout.write(writer(output,),);
 }

@@ -54,6 +54,7 @@ export async function compareAll({
   imageA: ImageInput;
   imageB: ImageInput;
 },): Promise<readonly MultiProviderComparisonEntry[]> {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: compareAll.name,
     l,
@@ -64,8 +65,15 @@ export async function compareAll({
     } providers with description`,
   );
 
+  /**
+   * All concurrent settlements: one per provider comparison, plus the description call appended last.
+   *
+   * `allSettled` over `all` so a single provider's failure (missing API key, transport error) does
+   * not abort the others; downstream code filters fulfilled entries and falls back gracefully.
+   */
   const allResults = await Promise.allSettled([
     ...ALL_PROVIDERS.map(async function compareWithProvider(provider,) {
+      /** Single-provider embedding comparison; paired with the provider name in the returned entry. */
       const result = await compareEmbeddings({
         imageA,
         imageB,
@@ -86,6 +94,7 @@ export async function compareAll({
   const descriptionSettlement = allResults.at(-1,);
   if (descriptionSettlement === undefined)
     throw new Error('unreachable: allResults is non-empty',);
+  /** Textual diff description when the description call succeeded; `undefined` on rejection. */
   const description = descriptionSettlement.status === 'fulfilled'
     ? descriptionSettlement.value as string | undefined
     : undefined;
@@ -95,9 +104,11 @@ export async function compareAll({
     0,
     -1,
   );
+  /** Collected per-provider comparison entries that resolved successfully; rejections are logged and skipped. */
   const successfulEntries: MultiProviderComparisonEntry[] = [];
   for (const settlement of providerSettlements) {
     if (settlement.status === 'fulfilled') {
+      /** Fulfilled settlement value reshaped via assertion; `allSettled` returns `unknown` for tuple inputs. */
       const entry = settlement.value as {
         provider: Provider;
         result: Omit<ComparisonResult, 'description'>;

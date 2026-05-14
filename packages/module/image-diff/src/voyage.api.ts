@@ -28,10 +28,12 @@ export const VOYAGE_API_URL = 'https://api.voyageai.com/v1/multimodalembeddings'
  * ```
  */
 export function resolveVoyageApiKey(configKey: string | undefined,): string {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: resolveVoyageApiKey.name,
     l,
   },);
+  /** Resolved key from explicit config, then preferred env var, then fallback env var; blank triggers the explicit error. */
   const key = configKey
     ?? process.env['IMAGE_DIFF_VOYAGE_API_KEY']
     ?? process.env['VOYAGE_API_KEY'];
@@ -67,6 +69,7 @@ export async function callVoyageApi({
   requestBody: VoyageApiRequest;
   apiKey: string;
 },): Promise<VoyageApiResponse> {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: callVoyageApi.name,
     l,
@@ -80,6 +83,7 @@ export async function callVoyageApi({
     } input(s)`,
   );
 
+  /** Raw `fetch` response; status checked before parsing JSON so errors surface with their body. */
   const response = await fetch(
     VOYAGE_API_URL,
     {
@@ -93,11 +97,13 @@ export async function callVoyageApi({
   );
 
   if (!response.ok) {
+    /** Raw response body captured for both the log line and the thrown error message. */
     const errorBody = await response.text();
     rl.error(`API returned ${String(response.status,)}: ${errorBody}`,);
     throw new Error(`Voyage AI API error (${String(response.status,)}): ${errorBody}`,);
   }
 
+  /** Parsed Voyage API payload; structure validated by the response-type assertion above. */
   const result = await response.json() as VoyageApiResponse;
   rl.debug(
     `received ${String(result.data.length,)} embedding(s), total tokens: ${

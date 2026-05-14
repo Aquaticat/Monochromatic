@@ -67,6 +67,7 @@ export async function embed({
   input: ImageInput;
   config?: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
+  /** Selected provider name; defaults to Voyage when unspecified by the caller. */
   const provider = config.provider ?? 'voyage';
   return getProvider(provider,).embed({
     input,
@@ -101,6 +102,7 @@ export async function embedBatch({
   inputs: readonly ImageInput[];
   config?: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
+  /** Selected provider name; defaults to Voyage when unspecified by the caller. */
   const provider = config.provider ?? 'voyage';
   return getProvider(provider,).embedBatch({
     inputs,
@@ -140,13 +142,16 @@ export async function compareEmbeddings({
   imageB: ImageInput;
   config?: ImageDiffConfig;
 },): Promise<Omit<ComparisonResult, 'description'>> {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: compareEmbeddings.name,
     l,
   },);
+  /** Selected provider name; defaults to Voyage when unspecified by the caller. */
   const provider = config.provider ?? 'voyage';
   rl.debug(`comparing embeddings via ${provider}`,);
 
+  /** Both image embeddings produced in a single batch call so the API charges and round-trips just once. */
   const { embeddings, } = await getProvider(provider,).embedBatch({
     inputs: [
       imageA,
@@ -154,14 +159,17 @@ export async function compareEmbeddings({
     ],
     config,
   },);
+  /** Pair of embeddings destructured for the dot-product call; guarded against a malformed batch result. */
   const [embeddingA, embeddingB,] = embeddings;
   if (embeddingA === undefined || embeddingB === undefined)
     throw new Error('Expected exactly 2 embeddings from batch call',);
 
+  /** Cosine-equivalent similarity (embeddings are unit vectors) for the two images. */
   const similarity = dotProduct({
     a: embeddingA,
     b: embeddingB,
   },);
+  /** Perceptual distance derived from similarity; `0` when identical, `1` when orthogonal. */
   const distance = 1 - similarity;
 
   rl.debug(
@@ -210,12 +218,14 @@ export async function compare({
   imageB: ImageInput;
   config?: ImageDiffConfig;
 },): Promise<ComparisonResult> {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: compare.name,
     l,
   },);
   rl.debug('running embedding comparison and description concurrently',);
 
+  /** Tuple of [embedding comparison, textual description] resolved concurrently to halve wall time. */
   const results = await Promise.all([
     compareEmbeddings({
       imageA,
@@ -227,6 +237,7 @@ export async function compare({
       imageB,
     },),
   ],);
+  /** Tuple destructured for separate handling; description-absence triggers an explicit missing-key error. */
   const [embeddingResult, description,] = results;
   if (description === undefined) {
     throw new Error(

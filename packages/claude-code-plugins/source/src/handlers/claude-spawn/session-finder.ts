@@ -34,10 +34,12 @@ import {
  */
 function readParentPid(pid: number,): number | null {
   try {
+    /** Raw `/proc/<pid>/status` text whose `PPid:` line carries the parent PID. */
     const statusContent = readFileSync(
       `/proc/${String(pid,)}/status`,
       'utf8',
     );
+    /** First line beginning with `PPid:`; remains `undefined` on unrecognised status formats. */
     const ppidLine = statusContent.split('\n',).find(function isPpidLine(line,) {
       return line.startsWith('PPid:',);
     },);
@@ -69,11 +71,13 @@ function readParentPid(pid: number,): number | null {
  * ```
  */
 function readPidMapping(pid: number,): PidMapping | null {
+  /** Path under `.by-pid/` where the SessionStart hook would have recorded this PID. */
   const pidFilePath = join(
     BY_PID_DIR,
     String(pid,),
   );
   try {
+    /** File contents on disk; parsed below as the mapping JSON. */
     const raw = readFileSync(
       pidFilePath,
       'utf8',
@@ -102,9 +106,11 @@ function readPidMapping(pid: number,): PidMapping | null {
 function walkProcessTreeFrom(pid: number,): PidMapping | null {
   if (pid <= 1)
     return null;
+  /** Mapping for `pid` itself; short-circuits the recursion when present. */
   const direct = readPidMapping(pid,);
   if (direct !== null)
     return direct;
+  /** Parent PID continuing the walk; `null` ends recursion when `/proc` is unreadable. */
   const parentPid = readParentPid(pid,);
   if (parentPid === null)
     return null;
@@ -149,6 +155,7 @@ function findByProcessTree(): PidMapping | null {
  * ```
  */
 function findByMostRecent(): PidMapping | null {
+  /** Filenames in `.by-pid/`, or `null` when the directory cannot be read. */
   const entries = (function readByPidDir(): string[] | null {
     try {
       return readdirSync(BY_PID_DIR,);
@@ -167,22 +174,27 @@ function findByMostRecent(): PidMapping | null {
     mtime: number;
   } | null;
 
+  /** Accumulator that ends with the latest valid mapping after scanning every entry. */
   const newest = entries.reduce<NewestMapping>(
     function pickNewer(
       current,
       filename,
     ) {
+      /** Absolute path to the candidate `.by-pid/` entry being scored. */
       const filePath = join(
         BY_PID_DIR,
         filename,
       );
 
       try {
+        /** Modification time used to rank against the running accumulator. */
         const mtime = statSync(filePath,).mtimeMs;
+        /** Raw file contents fed to `parseHookJson` below. */
         const raw = readFileSync(
           filePath,
           'utf8',
         );
+        /** Parsed mapping that replaces the accumulator when its `mtime` is newer. */
         const mapping = parseHookJson<PidMapping>(raw,);
 
         if ((current === null) || (mtime > current.mtime)) {

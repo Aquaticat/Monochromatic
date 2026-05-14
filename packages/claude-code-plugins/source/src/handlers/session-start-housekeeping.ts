@@ -52,6 +52,7 @@ async function ensureDir(dirPath: string,): Promise<void> {
  * ```
  */
 async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
+  /** Pending `rm` operations across every matched `dist/final/<artifact>`, awaited concurrently below. */
   const removals: Promise<void>[] = [];
 
   for await (const finalDir of glob(
@@ -121,6 +122,7 @@ type SessionStartHousekeepingOutput = void;
 async function sessionStartHousekeepingHandler(
   event: SessionStartInput,
 ): Promise<SessionStartHousekeepingOutput> {
+  /** Monorepo root, derived from the SessionStart event's `cwd` field. */
   const workspaceRoot = event.cwd;
   await Promise.all([
     ensureDir('/tmp/claude',),

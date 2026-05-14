@@ -83,6 +83,7 @@ function checkCompletedChildren(
     consume: boolean;
   },
 ): string | null {
+  /** Filenames in `SPAWNS_DIR`; `null` when the directory is missing or unreadable. */
   const entries = (function readSpawnsDir(): string[] | null {
     try {
       return readdirSync(SPAWNS_DIR,);
@@ -95,16 +96,19 @@ function checkCompletedChildren(
   if (entries === null)
     return null;
 
+  /** Formatted result strings for each completed child belonging to this parent. */
   const results: string[] = [];
 
   for (const filename of entries) {
     if (!filename.endsWith('.json',))
       continue;
 
+    /** Absolute path to the candidate spawn-state file. */
     const filePath = join(
       SPAWNS_DIR,
       filename,
     );
+    /** Sibling `.reported` path used to consume the entry atomically via rename. */
     const reportedPath = join(
       SPAWNS_DIR,
       filename.replace(
@@ -114,10 +118,12 @@ function checkCompletedChildren(
     );
 
     try {
+      /** Raw JSON for the candidate; parsed below to recover the spawn state. */
       const raw = readFileSync(
         filePath,
         'utf8',
       );
+      /** Parsed spawn state used to filter by parent session and stopped status. */
       const state = parseHookJson<SpawnState>(raw,);
 
       if (state.parentSessionId !== parentSessionId)

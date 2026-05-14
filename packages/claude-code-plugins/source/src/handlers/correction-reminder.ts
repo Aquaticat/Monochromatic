@@ -114,6 +114,7 @@ type CorrectionReminderOutput = UserPromptSubmitOutput;
 function correctionReminderHandler(
   event: UserPromptSubmitInput,
 ): CorrectionReminderOutput {
+  /** True when the user's prompt contains a correction phrase; gates the reminder text. */
   const triggered = detectCorrection(event.prompt,);
   return {
     hookSpecificOutput: {

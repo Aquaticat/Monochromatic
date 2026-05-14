@@ -29,9 +29,17 @@ export function dotProduct({
     );
   }
 
+  /**
+   * Running dot-product accumulator.
+   *
+   * `let` is required because each loop iteration contributes one term; `reduce` would force
+   * a `b[i]!` non-null assertion at the same place the explicit guard below already handles.
+   */
   let sum = 0;
   for (let i = 0; i < a.length; i++) {
+    /** Element from the first vector at index `i`; guarded against jagged-array sparsity. */
     const ai = a[i];
+    /** Element from the second vector at index `i`; guarded against jagged-array sparsity. */
     const bi = b[i];
     if (ai === undefined || bi === undefined)
       break;
@@ -71,10 +79,12 @@ export function cosineSimilarity({
     );
   }
 
+  /** Numerator of the cosine formula; reused below after the magnitudes are computed. */
   const dot = dotProduct({
     a,
     b,
   },);
+  /** Denominator of the cosine formula: product of the two vector lengths via the self-dot-product identity. */
   const magnitude = Math.sqrt(dotProduct({
     a,
     b: a,

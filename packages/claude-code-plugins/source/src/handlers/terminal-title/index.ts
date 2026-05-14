@@ -32,14 +32,18 @@ const TITLE_PREFIX = '✳';
  * @returns descriptive title like "Reading index.ts" (pre) or "Read index.ts" (post)
  */
 function titleForTool(event: PreToolUseInput | PostToolUseInput,): string {
+  /** Tool name and input pulled from the hook event for downstream formatting. */
   const {
     tool_name: toolName,
     tool_input: input,
   } = event;
+  /** `pre` for PreToolUse, `post` for PostToolUse; picks the verb form of the title. */
   const tense = event.hook_event_name === 'PreToolUse' ? 'pre' : 'post';
+  /** Per-tool formatter entry; `undefined` when no specific formatter is registered. */
   const entry = TOOL_TITLES[toolName];
   if (entry === undefined)
     return toolName;
+  /** Extracted target value (path, command, etc.); `undefined` falls back to a generic title. */
   const value = entry.extract(input,);
   if (value === undefined)
     return entry.fallback[tense];
@@ -116,10 +120,12 @@ function titleForEvent(hookEvent: HookInput,): string {
  */
 function setTerminalTitle(title: string,): void {
   try {
+    /** Write-mode file descriptor for `/dev/tty`; closed by `_cleanup` on scope exit. */
     const fd = openSync(
       '/dev/tty',
       'w',
     );
+    /** Disposable that closes `fd` when this block ends, even if `writeSync` throws. */
     using _cleanup = { [Symbol.dispose](): void {
       closeSync(fd,);
     }, };
@@ -155,6 +161,7 @@ type TerminalTitleOutput = void;
  * ```
  */
 function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
+  /** Title text derived from the event before prefixing and truncation. */
   const title = titleForEvent(event,);
   setTerminalTitle(truncate({
     value: `${TITLE_PREFIX} ${title}`,

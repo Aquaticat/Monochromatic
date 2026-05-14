@@ -242,6 +242,7 @@ type QuestionMatch = {
  */
 function findUncertainty(prose: string,): UncertaintyMatch | undefined {
   for (const pattern of UNCERTAINTY_PATTERNS) {
+    /** Regex execution result; non-null when this pattern fires in the prose. */
     const match = pattern.exec(prose,);
     if (match !== null) {
       return {
@@ -322,11 +323,13 @@ function lineHasCitation(line: string,): boolean {
  * ```
  */
 function findCategoricalDismissal(prose: string,): UncertaintyMatch | undefined {
+  /** Prose split per-line so each dismissal check is scoped to its own citation context. */
   const lines = prose.split('\n',);
   for (const line of lines) {
     if (lineHasCitation(line,))
       continue;
     for (const pattern of DISMISSAL_PATTERNS) {
+      /** Regex execution result against this line; non-null when the dismissal pattern fires. */
       const match = pattern.exec(line,);
       if (match !== null) {
         return {
@@ -355,16 +358,21 @@ function findCategoricalDismissal(prose: string,): UncertaintyMatch | undefined 
  * ```
  */
 function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
+  /** Last `TRAILING_QUESTION_SCAN_LENGTH` chars; trailing questions live at the end of a turn. */
   const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH,);
 
+  /** Regex matching a capitalised sentence ending in `?` at the very end of `tail`. */
   const questionPattern = /(?:^|[.!?]\s+)([A-Z][^.!?]*\?)\s*$/;
+  /** Regex execution result; `null` when no trailing question is present. */
   const match = questionPattern.exec(tail,);
 
   if (match === null)
     return undefined;
 
+  /** Captured sentence (capture group 1, or full match as fallback). */
   const sentence = match[1] ?? match[0];
 
+  /** Prefixes that mark a rhetorical or conditional question, so they should not trigger the reminder. */
   const rhetoricalPrefixes = [
     /^what if\b/i,
     /^why does\b/i,

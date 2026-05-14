@@ -37,18 +37,22 @@ export async function handleEmbed({
   provider: Provider | undefined;
   model: EmbeddingModel | undefined;
 },): Promise<void> {
+  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: handleEmbed.name,
     l,
   },);
+  /** Parsed image input; converts the CLI path-or-URL string into the structured {@link ImageInput}. */
   const input = parseImageArg(image,);
 
   if (provider !== undefined) {
     rl.debug(`embedding via ${provider}`,);
+    /** Single-provider config; only includes `model` when the caller passed an override. */
     const config = {
       provider,
       ...(model !== undefined ? { model, } : {}),
     };
+    /** Single-provider embedding result; printed as JSON below. */
     const result = await embed({
       input,
       config,
@@ -67,6 +71,7 @@ export async function handleEmbed({
   }
   else {
     rl.debug('embedding via all providers',);
+    /** Per-provider embedding entries from the multi-provider dispatch; printed as JSON below. */
     const results = await embedAll(input,);
 
     console.log(JSON.stringify(

@@ -97,6 +97,7 @@ type GuardrailOutput = PreToolUseOutput | Record<string, never>;
  */
 function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
   if (event.tool_name === 'Bash') {
+    /** Bash command string extracted defensively; `undefined` when the field is absent. */
     const command = 'command' in event.tool_input
       ? event.tool_input['command']
       : undefined;
@@ -126,6 +127,7 @@ function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
   if (event.tool_name !== 'Agent')
     return {};
 
+  /** Agent's `subagent_type` field, fed to `isGeneralPurpose` to detect the banned default. */
   const subagentType = 'subagent_type' in event.tool_input
     ? event.tool_input['subagent_type']
     : undefined;
@@ -146,6 +148,7 @@ function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
     };
   }
 
+  /** Agent's `resume` field; presence triggers the no-polling deny path. */
   const resume = 'resume' in event.tool_input
     ? event.tool_input['resume']
     : undefined;
