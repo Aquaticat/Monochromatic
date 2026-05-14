@@ -66,17 +66,19 @@ function computeOffsets(
     cdSize += CDH_FIXED_SIZE + entry.nameBytes.length;
   /** Final archive size used to allocate the output buffer. */
   const totalSize = cdStart + cdSize + EOCD_FIXED_SIZE;
-  if (cdStart > MAX_UINT32 || cdSize > MAX_UINT32 || totalSize > MAX_UINT32) {
+  if ((cdStart > MAX_UINT32) || (cdSize > MAX_UINT32) || (totalSize > MAX_UINT32)) {
     throw new Error(
       `zip-writer: archive too large for legacy ZIP (${totalSize} bytes, max ${MAX_UINT32}); Zip64 not supported`,
     );
   }
-  return {
+  /** Aggregated computation result; named binding so the function matches the helper-shape allowlist. */
+  const result = {
     positioned,
     cdStart,
     cdSize,
     totalSize,
   };
+  return result;
 }
 
 /**

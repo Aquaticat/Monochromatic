@@ -82,13 +82,19 @@ async function listZipEntries(bytes: Uint8Array,): Promise<string[]> {
  * since `nano-spawn` returns string-only stdout (no `encoding: 'buffer'`).
  *
  * @param bytes - Archive bytes to extract from
+ *
  * @param path - Entry path inside the archive
  *
  * @returns Raw bytes of the extracted entry
  */
 async function extractFromZip(
-  bytes: Uint8Array,
-  path: string,
+  {
+    bytes,
+    path,
+  }: {
+    bytes: Uint8Array;
+    path: string;
+  },
 ): Promise<Uint8Array> {
   await using tempDir = await makeTempDir();
   const file = join(tempDir.path, 'test.zip',);
@@ -261,7 +267,7 @@ await describe({
             const original = 'hello 世界 🌍';
             zip.add('greeting.txt', original,);
             const bytes = zip.build();
-            const extracted = await extractFromZip(bytes, 'greeting.txt',);
+            const extracted = await extractFromZip({ bytes, path: 'greeting.txt', },);
             expect(new TextDecoder().decode(extracted,),).toBe(original,);
           },
         },),
@@ -274,7 +280,7 @@ await describe({
               data[i] = (i * 7) & 0xFF;
             zip.add('blob.bin', data,);
             const bytes = zip.build();
-            const extracted = await extractFromZip(bytes, 'blob.bin',);
+            const extracted = await extractFromZip({ bytes, path: 'blob.bin', },);
             expect(extracted.length,).toBe(data.length,);
             for (let i = 0; i < data.length; i += 1)
               expect(extracted[i],).toBe(data[i],);
@@ -288,7 +294,7 @@ await describe({
             const bytes = zip.build();
             const entries = await listZipEntries(bytes,);
             expect(entries,).toEqual(['日本語/ファイル.txt',],);
-            const extracted = await extractFromZip(bytes, '日本語/ファイル.txt',);
+            const extracted = await extractFromZip({ bytes, path: '日本語/ファイル.txt', },);
             expect(new TextDecoder().decode(extracted,),).toBe('こんにちは',);
           },
         },),

@@ -67,7 +67,9 @@ export function crc32(data: Uint8Array,): number {
       throw new Error('zip-writer: CRC32 table corrupted',);
     c = tableEntry ^ (c >>> BYTE_BITS);
   }
-  // See note on `>>> 0` in buildCrc32Table.
-  // oxlint-disable-next-line eslint-plugin-unicorn/prefer-math-trunc
-  return (c ^ CRC32_INIT) >>> 0;
+  /* oxlint-disable eslint-plugin-unicorn/prefer-math-trunc -- See note on `>>> 0` in buildCrc32Table. */
+  /** Final CRC value after the standard finalize XOR; reinterpreted as unsigned 32-bit. */
+  const result = (c ^ CRC32_INIT) >>> 0;
+  /* oxlint-enable eslint-plugin-unicorn/prefer-math-trunc */
+  return result;
 }
