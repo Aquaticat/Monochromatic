@@ -53,13 +53,13 @@ What does not work:
 
 Source citations (rolldown `main` as of 2026-03-15):
 
-- `crates/rolldown/src/ast_scanner/mod.rs:674-676` — stores
+- `crates/rolldown/src/ast_scanner/mod.rs:674-676`: stores
   attributes but does not set module type.
-- `crates/rolldown/src/ast_scanner/new_url.rs:68` — only
+- `crates/rolldown/src/ast_scanner/new_url.rs:68`: only
   place `asserted_module_type` is set.
-- `crates/rolldown_common/src/types/import_record.rs:31` —
+- `crates/rolldown_common/src/types/import_record.rs:31`:
   `asserted_module_type: Option<ModuleType>`.
-- `packages/rolldown/src/plugin/index.ts:132-157` —
+- `packages/rolldown/src/plugin/index.ts:132-157`:
   `ResolveIdExtraOptions` lacks `attributes`.
 
 ### Verification
@@ -151,7 +151,7 @@ names:
 TypeScript discriminated-union narrowing does not work:
 
 ```ts
-// Does NOT narrow — "Literal" is not a discriminant in the declared union
+// Does NOT narrow; "Literal" is not a discriminant in the declared union
 if (node.source.type === 'Literal') {
   node.source.value;  // TypeScript error: 'value' does not exist on type 'Expression'
 }
@@ -286,16 +286,16 @@ actually wanted instead.
 
 Rolldown 1.0.0-rc.9:
 
-- `dist/shared/define-config-*.d.mts:3338-3347` —
+- `dist/shared/define-config-*.d.mts:3338-3347`:
   `mainFields` type and per-platform defaults.
-- `dist/shared/binding-*.d.mts:559` — native binding
+- `dist/shared/binding-*.d.mts:559`: native binding
   `mainFields` field.
 
 tsdown:
 
-- `dist/types-*.d.mts:880-882` — `inputOptions` pass-through
+- `dist/types-*.d.mts:880-882`: `inputOptions` pass-through
   to rolldown `InputOptions`.
-- `dist/types-*.d.mts:763` — `platform` option definition.
+- `dist/types-*.d.mts:763`: `platform` option definition.
 
 ### Why we do not file this upstream
 
@@ -354,17 +354,17 @@ package, tries to find it on disk, and fails.
 
 Source locations:
 
-- `crates/rolldown_resolver/src/resolver_config.rs:133` —
+- `crates/rolldown_resolver/src/resolver_config.rs:133`:
   `builtin_modules` gated on `Platform::Node`.
-- `crates/rolldown/src/utils/prepare_build_context.rs:157-160` —
+- `crates/rolldown/src/utils/prepare_build_context.rs:157-160`:
   ESM defaults to `Browser` platform.
 
 oxc-resolver:
 
-- `src/lib.rs:478-488` — `require_core()` checks
+- `src/lib.rs:478-488`: `require_core()` checks
   `starts_with("node:")` but only when `builtin_modules` is
   enabled.
-- `nodejs-built-in-modules` crate — includes `path/posix`,
+- `nodejs-built-in-modules` crate; includes `path/posix`,
   `path/win32`, `stream/promises`, etc. in `BUILTINS`.
 
 ### Verification
@@ -375,11 +375,11 @@ importing any `node:` subpath under `platform: 'neutral'`.
 ### Verified workaround: import from the parent module
 
 ```ts
-// Before — breaks under platform: 'neutral'
+// Before; breaks under platform: 'neutral'
 import { parse } from 'node:path/posix';
 parse(somePath);
 
-// After — resolves on all platforms
+// After; resolves on all platforms
 import { posix } from 'node:path';
 posix.parse(somePath);
 ```

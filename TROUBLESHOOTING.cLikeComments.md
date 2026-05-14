@@ -24,8 +24,8 @@ parse as JSONC.
 Affects two test cases in
 `customParsers.startsWithComment.unit.test.ts`:
 
-- `:396-410` — block comment containing a line comment with `*/`
-- `:413-428` — block comment with multiple line comments each
+- `:396-410`: block comment containing a line comment with `*/`
+- `:413-428`: block comment with multiple line comments each
   containing `*/`
 
 Both are marked skipped because of this limitation.
@@ -64,7 +64,7 @@ state that the regex layer cannot express.
 
 A third related test confirms the broader rule:
 
-- `customParsers.startsWithComment.unit.test.ts:529-538` — `*/`
+- `customParsers.startsWithComment.unit.test.ts:529-538`: `*/`
   inside a quoted string also terminates the block comment, because
   quotes have no special meaning inside comments.
 
@@ -159,9 +159,9 @@ correspond to a configuration we actually want to support.
 
 ## Related
 
-- [`TROUBLESHOOTING.toml.md`](./TROUBLESHOOTING.toml.md) — why we wrote
+- [`TROUBLESHOOTING.toml.md`](./TROUBLESHOOTING.toml.md): why we wrote
   a JSONC parser instead of using TOML.
-- `customParsers.startsWithComment.ts:20-74` — `findBlockEndPosition`
+- `customParsers.startsWithComment.ts:20-74`: `findBlockEndPosition`
   implementation (the heuristic that fails).
-- `customParsers.startsWithComment.ts:95-144` — inline comment
+- `customParsers.startsWithComment.ts:95-144`: inline comment
   handling (no nesting issues, as line comments terminate at EOL).

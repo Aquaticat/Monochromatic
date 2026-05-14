@@ -124,5 +124,5 @@ The harness should still re-throw after logging, preserving the existing `Error(
 
 ### Files to modify
 
-- `packages/module/test/src/it.ts` — add inline error logging in failure paths.
-- `packages/module/test/src/self.unit.test.ts` — if self-test output assertions exist, update expectations to account for new log lines (or verify if any non-build assertions are affected).
+- `packages/module/test/src/it.ts`: add inline error logging in failure paths.
+- `packages/module/test/src/self.unit.test.ts`: if self-test output assertions exist, update expectations to account for new log lines (or verify if any non-build assertions are affected).

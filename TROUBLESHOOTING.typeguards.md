@@ -55,11 +55,11 @@ caller's richer type is discarded.
 
 Concretely:
 
-- `(x: SchemaWithWeight): x is Schema` — narrowing produces
+- `(x: SchemaWithWeight): x is Schema`: narrowing produces
   `SchemaWithWeight & Schema`, which preserves `weight`.
-- `(x: unknown): x is Schema` — narrowing produces `Schema`
+- `(x: unknown): x is Schema`: narrowing produces `Schema`
   alone; the caller's properties are gone.
-- `(x: T): x is T` with `T extends Schema` — narrowing
+- `(x: T): x is T` with `T extends Schema`: narrowing
   produces `T`, which preserves the caller's properties when
   `T` was the rich type.
 
@@ -184,12 +184,12 @@ if (isSchema(typed)) {
 ```ts
 const enriched = { parse: x => x, weight: 100, metadata: {...} };
 
-// DON'T cast to unknown — loses all properties
+// DON'T cast to unknown; loses all properties
 if (isSchema(enriched as unknown)) {
   enriched.weight;  // lost
 }
 
-// DO use direct validation — preserves properties
+// DO use direct validation; preserves properties
 if (isSchema(enriched)) {
   enriched.weight;     // preserved
   enriched.metadata;   // preserved

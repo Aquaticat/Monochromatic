@@ -45,7 +45,7 @@ not geometry, transitions, or interaction targets.
 Versions under test:
 
 - Figma web app (production), as of 2026-05.
-- BrowserOS, Playwright, Puppeteer — all return empty results when
+- BrowserOS, Playwright, Puppeteer; all return empty results when
   querying for design-content selectors inside the canvas.
 
 Reproduce: open any Figma file via Playwright; the page's DOM
@@ -146,7 +146,7 @@ The behaviour is by design and serves Figma's primary use case
 4. **Will they likely fix it?** Unknown. Demand from
    automation-first users is growing but Figma's roadmap has not
    committed.
-5. **Have we prototyped a minimal fix?** N/A — closed source.
+5. **Have we prototyped a minimal fix?** N/A; closed source.
 
 Decision: no upstream report from us. Track Figma roadmap for
 API expansion to comments, prototypes, and annotations. None of

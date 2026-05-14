@@ -66,11 +66,11 @@ finding:
 
 Ghostty's side is behaving correctly:
 
-- `stream_handler.zig:874-888` — `\e[0 q` handler restores
+- `stream_handler.zig:874-888`: `\e[0 q` handler restores
   `default_cursor_style` from config via `self.default_cursor_style`.
-- `Config.zig:872` — `cursor-style = bar` maps to the `.bar` enum
+- `Config.zig:872`: `cursor-style = bar` maps to the `.bar` enum
   variant.
-- `cursor.zig:4-15` — `.bar` is the bar shape with no lossy
+- `cursor.zig:4-15`: `.bar` is the bar shape with no lossy
   conversion.
 
 The combination of "Claude Code hides the cursor" and "Claude Code
@@ -100,7 +100,7 @@ for a Claude Code update that supports cursor-style customisation
 - **`Se` / `Ss` terminfo capabilities**: Claude Code does not use
   terminfo for cursor shape; the hardcoded `f$.inverse` rendering
   bypasses any terminfo entry.
-- **`infocmp` / patching Ghostty's terminfo**: same as above — the
+- **`infocmp` / patching Ghostty's terminfo**: same as above; the
   application does not consult terminfo for cursor shape.
 
 ## Why we do not file this upstream (Claude Code)

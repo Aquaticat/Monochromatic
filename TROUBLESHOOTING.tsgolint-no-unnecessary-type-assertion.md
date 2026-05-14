@@ -111,11 +111,11 @@ appear unnecessary.
     a similar issue by using `getResolvedSignature` +
     `GetReturnTypeOfSignature` instead.
 - **typescript-go contextual type**:
-  `internal/checker/checker.go:28318-28322` — returns the
+  `internal/checker/checker.go:28318-28322`: returns the
   asserted type as contextual type for children of
   `AsExpression`.
 - **typescript-go signature caching**:
-  `internal/checker/checker.go:8162-8164` —
+  `internal/checker/checker.go:8162-8164`:
   `getResolvedSignature` caches the resolved signature,
   preserving the contextually-influenced inference.
 

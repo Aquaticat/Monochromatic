@@ -29,7 +29,7 @@ into `~/.gitconfig`:
 
 Source citations from [cli/cli](https://github.com/cli/cli):
 
-- `pkg/cmd/auth/setupgit/setupgit.go:56` — calls `f.Executable()`
+- `pkg/cmd/auth/setupgit/setupgit.go:56`: calls `f.Executable()`
   to get the binary path:
 
 ```go
@@ -37,7 +37,7 @@ Source citations from [cli/cli](https://github.com/cli/cli):
 path, err := f.Executable()
 ```
 
-- `pkg/cmdutil/factory.go:42-51` — checks `GH_PATH` env var
+- `pkg/cmdutil/factory.go:42-51`: checks `GH_PATH` env var
   first; if unset, calls `executable()`:
 
 ```go
@@ -47,7 +47,7 @@ if path := os.Getenv("GH_PATH"); path != "" {
 return executable()
 ```
 
-- `pkg/cmdutil/factory.go:69-105` — `executable()` calls
+- `pkg/cmdutil/factory.go:69-105`: `executable()` calls
   `os.Executable()` to get the running binary, then scans
   `$PATH` for any symlink whose `filepath.EvalSymlinks` target
   equals the same real binary. The intent is to prefer a stable
@@ -159,7 +159,7 @@ re-authenticate via `gh auth login`.
    absolute-path discipline is correct for Homebrew. The mise
    shim layout breaks the symlink-walk heuristic; that is a
    compatibility gap, not a defect.
-2. **Can upstream fix it?** Yes — extend `executable()` to
+2. **Can upstream fix it?** Yes; extend `executable()` to
    recognise mise shims (e.g. follow the shim, run `gh --version`
    on the resolved target, compare versions). Non-trivial.
 3. **Are they supporting this use case?** mise is not explicitly

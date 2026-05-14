@@ -118,12 +118,12 @@ Oxlint matches the comment text against the bare rule name using
 substring containment, not exact prefix matching. Source citations
 (oxc commit `main` as of 2026-03-13):
 
-- `crates/oxc_linter/src/disable_directives.rs:184-216` — `contains()`
+- `crates/oxc_linter/src/disable_directives.rs:184-216`: `contains()`
   method with substring match.
-- `crates/oxc_linter/src/disable_directives.rs:578-595` —
+- `crates/oxc_linter/src/disable_directives.rs:578-595`:
   `get_rule_names()` parser (splits on `,`, trims whitespace, strips
   `--` suffixes).
-- `crates/oxc_linter/src/tsgolint.rs:1057-1079` —
+- `crates/oxc_linter/src/tsgolint.rs:1057-1079`:
   `should_skip_diagnostic()` for tsgo rules makes three separate
   `contains()` calls with bare, `typescript-eslint/`, and
   `@typescript-eslint/` prefixes; the bare check already matches any

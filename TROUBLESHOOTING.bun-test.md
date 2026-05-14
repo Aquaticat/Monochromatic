@@ -189,14 +189,14 @@ Remove all `expect.assertions(...)` calls and replace with
 explicit assertions that validate the exact behaviour expected:
 
 ```ts
-// Before — unreliable under concurrency
+// Before; unreliable under concurrency
 test('example', () => {
   expect.assertions(2);
   expect(getValue()).toBe(5);
   expect(getError()).toBeNull();
 });
 
-// After — reliable regardless of concurrency
+// After; reliable regardless of concurrency
 test('example', () => {
   const value = getValue();
   const error = getError();

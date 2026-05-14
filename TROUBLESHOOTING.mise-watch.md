@@ -149,7 +149,7 @@ which maintains an in-process content-hash cache and re-hashes every
 file on each filesystem event. A write with identical bytes (whoever
 issued it: editord's `saveFile`, vim's `formatprg`, vscode's
 `editor.formatOnSave`, `cp -p` from a sibling shell) produces a cache
-hit and no restart. The save-side skip in `saveFile` stays — it is
+hit and no restart. The save-side skip in `saveFile` stays; it is
 strictly cheaper than the watch-side compare (no write, no event, no
 hash) for the editord-on-editord path it already covered.
 
@@ -432,7 +432,7 @@ package owns an in-process content-hash cache (suppressing byte-identical
 writes regardless of writer, including external editors' format-on-save),
 spawns the bun child directly via `node:child_process` (one process
 layer; SIGTERM reaches the child without traversing a wrapper), and has
-no jaq filter program at all — so neither the SIGINT hang nor the deep-
+no jaq filter program at all; so neither the SIGINT hang nor the deep-
 tree EADDRINUSE failure mode can recur for this task. The watchexec bug
 remains real; the editord loop simply no longer touches the code path.
 

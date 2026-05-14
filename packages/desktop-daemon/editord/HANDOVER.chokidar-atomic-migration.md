@@ -32,7 +32,7 @@ mise run //packages/desktop-daemon/editord:dev
 
 This starts `watch-restart` plus `bun src/server/index.ts`. Watch the
 terminal: a successful start logs `editord listening on port 4400`. If
-you see `EADDRINUSE`, an older instance is still bound — kill it with
+you see `EADDRINUSE`, an older instance is still bound; kill it with
 `pkill -f 'bun src/server/index.ts'` and re-run.
 
 The default port is `4400`. The auth token is in
@@ -60,7 +60,7 @@ every other file, scrambling cursor positions.
 
 1.  Open the PWA at `http://localhost:4400`. Pick a project that has at
     least one TypeScript symbol used in two or more files (any monorepo
-    package works — e.g. `packages/dev-script/deps-cube/src/cache.ts`
+    package works; e.g. `packages/dev-script/deps-cube/src/cache.ts`
     has `createCache` referenced from `index.ts` and others).
 2.  Open Chrome DevTools (F12). Go to the **Console** tab. Clear the
     log (`Ctrl+L`).
@@ -118,7 +118,7 @@ console filter set to `fileChanged`:
 
 Each action must produce **zero** `fileChanged` events in the DevTools
 Console during and immediately after the action. The tree may refresh
-visually — that's a different message (`listDir` response). Only
+visually; that's a different message (`listDir` response). Only
 `fileChanged` is the regression marker.
 
 To distinguish: in the Console filter, search exactly `"type":"fileChanged"`.
@@ -258,7 +258,7 @@ wait
 
 The `&` starts the writer in the background; the reader runs in the
 foreground until done; `wait` keeps the shell alive for the writer to
-finish. Each takes ~5–30 seconds depending on disk speed.
+finish. Each takes ~5 to 30 seconds depending on disk speed.
 
 ### Expected result
 
@@ -267,7 +267,7 @@ finish. Each takes ~5–30 seconds depending on disk speed.
 ```
 
 `zeroSize` and `zeroMatch` must both be **0**. Anything non-zero
-indicates a torn-write window and is a regression — capture the exact
+indicates a torn-write window and is a regression; capture the exact
 output, the daemon's stderr, and the editord version, and file as a
 new TROUBLESHOOTING file in the repo root.
 
@@ -299,7 +299,7 @@ re-run them:
     with the right shape.
 
 If any of these fails on a new build, the bug is in the helper or the
-watcher itself, not in the integration — the smoke commands are in the
+watcher itself, not in the integration; the smoke commands are in the
 git history of this branch (search for `wfa-smoke` and `wfa-supp-test`
 in the session log).
 

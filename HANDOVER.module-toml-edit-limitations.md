@@ -2,7 +2,7 @@
 
 Status: **COMPLETE**. Plan executed end-to-end. Single commit
 `1785e42c feat(module/toml-edit): add comment-preserving TOML edit
-utility` (the package was entirely untracked before — committed as one
+utility` (the package was entirely untracked before; committed as one
 logical unit covering both the original skeleton and the limitation
 fixes).
 
@@ -42,7 +42,7 @@ for `kind: 'table'`, `'top-level'`, or `'array-of-tables'`. Now:
   `TOMLKeyValue` entries, adds them to deletions, inserts new entries
   from `Object.entries(value)` anchored `inside-table atEnd` (for
   `TOMLTable`) or `before-node` of the first child table (for
-  `TOMLTopLevelTable` — avoids the TOML grammar trap where a KV after
+  `TOMLTopLevelTable`: avoids the TOML grammar trap where a KV after
   a table header lands inside that table).
 - `kind: 'array-of-tables'` -> still throws, but with a clearer
   message naming the alternative.
@@ -83,7 +83,7 @@ between body items), so no `splice.ts` change was needed.
 delegates to `deleteArrayElement` which:
 
 - Walks `element.parent` (TOMLArray) and `parent.parent`
-  (TOMLKeyValue). Nested arrays (`[[1,2],[3,4]]`) are rejected — the
+  (TOMLKeyValue). Nested arrays (`[[1,2],[3,4]]`) are rejected; the
   outer container is also a TOMLArray.
 - Re-emits the array via the new `emitArrayWithoutIndex` helper in
   `src/emit-value.ts`.
@@ -126,9 +126,9 @@ runs three layers:
 ## File-level changes
 
 - `src/collision.ts` (new, 173 lines)
-- `src/path-create.ts` (new, 333 lines) — extracted from `toml-set.ts`
+- `src/path-create.ts` (new, 333 lines): extracted from `toml-set.ts`
   to stay under the 300-line cap.
-- `src/state.ts` (new, 60 lines) — shared `withEditOn` / `withInsertion`.
+- `src/state.ts` (new, 60 lines): shared `withEditOn` / `withInsertion`.
 - `src/cross-path-effective.unit.test.ts` (new, 7 tests)
 - `src/toml-set.ts` (rewritten, 222 lines)
 - `src/toml-delete.ts` (rewritten, 159 lines)

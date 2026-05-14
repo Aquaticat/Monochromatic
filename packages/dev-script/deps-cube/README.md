@@ -29,7 +29,7 @@ Default mapping (changeable via the in-page dim picker):
 
 Available additional dims selectable per channel:
 
-- TS ratio (continuous 0–1)
+- TS ratio (continuous 0 to 1)
 - Runtime dep count
 - Transitive dep count
 - Package age (days since first publish)

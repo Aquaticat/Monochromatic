@@ -57,9 +57,9 @@ curl -sI https://npm.jsr.io/@jsr/std__path
 
 Source citations in [`jsr-io/jsr`](https://github.com/jsr-io/jsr):
 
-- `lb/main.ts:89-119` — `npm.jsr.io` is a Cloudflare Worker that
+- `lb/main.ts:89-119`: `npm.jsr.io` is a Cloudflare Worker that
   proxies to R2 static storage.
-- `api/src/s3_paths.rs:62-71` — the R2 bucket stores only the
+- `api/src/s3_paths.rs:62-71`: the R2 bucket stores only the
   full packument at the `@jsr/scope__name` key. No per-version
   objects are stored, so the version-specific URL path maps to a
   nonexistent R2 key.
@@ -214,13 +214,13 @@ Decision: worth filing.
 
 Source trace:
 
-- `src/package-info/src/index.ts:601-608` — `isSingle` branch uses the version-specific endpoint exclusively.
-- `src/package-info/src/index.ts:407` — constructs the URL.
-- `src/package-info/src/index.ts:413-423` — throws on non-200.
+- `src/package-info/src/index.ts:601-608`: `isSingle` branch uses the version-specific endpoint exclusively.
+- `src/package-info/src/index.ts:407`: constructs the URL.
+- `src/package-info/src/index.ts:413-423`: throws on non-200.
 
 Reproduction: see test case above (omitted here for brevity; insert before filing).
 
-**Suggested fix**: Option A is the safest — fall back to full packument on 404 in `#registryManifestRequest`. Option B (skip the optimisation for JSR scope-registries) mirrors the existing tarball-URL carve-out at `spec/src/browser.ts:648-651`.
+**Suggested fix**: Option A is the safest; fall back to full packument on 404 in `#registryManifestRequest`. Option B (skip the optimisation for JSR scope-registries) mirrors the existing tarball-URL carve-out at `spec/src/browser.ts:648-651`.
 
 Related issue: `defaultScopeRegistries` is not merged in `getOptions()` (`spec/src/browser.ts:72`), so `@jsr/*` routing fails on first install without an explicit `vlt.json`.
 ~~~
@@ -238,8 +238,8 @@ Related issue: `defaultScopeRegistries` is not merged in `getOptions()` (`spec/s
 
 Source trace:
 
-- `lb/main.ts:89-119` — Cloudflare Worker routing to R2.
-- `api/src/s3_paths.rs:62-71` — only the full packument key is stored.
+- `lb/main.ts:89-119`: Cloudflare Worker routing to R2.
+- `api/src/s3_paths.rs:62-71`: only the full packument key is stored.
 
 **Suggested fix**: implement the endpoint in the Worker by extracting the requested version from the cached full packument JSON, returning the per-version object. No R2 storage change required.
 

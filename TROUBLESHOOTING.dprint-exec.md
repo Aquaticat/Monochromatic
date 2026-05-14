@@ -169,7 +169,7 @@ content to stdin." The result is still read from
 
 Source citations (exec plugin source 0.6.0):
 
-- `handler.rs:162-253` — format flow:
+- `handler.rs:162-253`: format flow:
   1. Spawns the command with `stdin: Stdio::null()` and
      `stdout: Stdio::piped()`.
   2. Captures the command's stdout as formatted content.
@@ -178,7 +178,7 @@ Source citations (exec plugin source 0.6.0):
      file content.
   5. If exit code is non-zero: returns an error, discarding
      everything.
-- `handler.rs:299-314` — exit-code check:
+- `handler.rs:299-314`: exit-code check:
 
   ```rust
   if exit_status.success() {
@@ -282,7 +282,7 @@ dprint.
 
 ---
 
-## Bug 3: `cacheKeyFilesHash` shows `null` per command in resolved config — expected behaviour
+## Bug 3: `cacheKeyFilesHash` shows `null` per command in resolved config; expected behaviour
 
 ### Symptom
 

@@ -84,7 +84,7 @@ Writing our own wrapper would reproduce essentially the same code that
 Node adapter that runs Python `fonttools` (incl. `pyftsubset`) via Pyodide.
 This is the upstream tool Google Fonts uses; the most feature-complete
 subsetter that exists. Rejected because our call site needs `text` +
-`targetFormat: 'woff2'` plus retained layout features — a small fraction of
+`targetFormat: 'woff2'` plus retained layout features; a small fraction of
 fonttools' surface. The install carries the full CPython 3.x WASM runtime
 plus the fonttools wheels; cold start is multi-second. Re-evaluate if a
 future requirement needs pyftsubset-specific features
@@ -120,7 +120,7 @@ many years of production use behind it.
 `hb-subset-wasm@0.4.0`, `woff2-encode-wasm@0.1.1`. Both ~1 month old as of
 2026-05-12, single maintainer (Kyosuke Nakamura / PixelGrid Inc., GitHub
 since 2008, 30 public repos, prior `cloudflare-pages-glyphhanger` work).
-Low download counts (99 + 40 per month respectively) — community oversight
+Low download counts (99 + 40 per month respectively): community oversight
 risk is real and the audit cited above is the workspace's primary
 correctness guarantee. Re-audit if upstream releases a major version that
 changes the wasm import surface or the build flags

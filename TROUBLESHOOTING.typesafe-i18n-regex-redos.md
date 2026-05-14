@@ -217,7 +217,7 @@ We evaluated dropping `typesafe-i18n` entirely. Decision:
    (Crowdin-backed, 248 contributors, SLSA provenance
    attestations on npm, smallest gzip ~2 kB). Downside: ICU
    MessageFormat requires single-quote escape for literal `{`
-   / `}` — same escaping problem at compile time instead of
+   / `}`: same escaping problem at compile time instead of
    runtime.
 3. **`@inlang/paraglide-js`**. Only runtime that needs zero
    escaping for `{`: translations are compiled to JS template

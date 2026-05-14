@@ -6,10 +6,10 @@ All typed-RPC work landed; lint baseline cleared as a follow-up.
 
 ### Commits
 
--   `f3b7e04a feat(desktop-daemon/editord): type EditorWsClient.request() return by request variant` — `RequestResponseMap` in `src/protocol.ts`, generic signature on `request()`. Single suppression-justified `as` cast remains at the return inside `request()` (wire-id correlation).
--   `c35f5ab8 refactor(desktop-daemon/editord): drop manual narrowing at request() call sites` — 11 files, 18 awaited-`request()` calls. Dead `'X' in result` guards and paired `as` casts removed; behavioral guards kept on optional fields (`mediaInfo`, empty-string `contents`, empty-string `path`).
--   `54351284 chore(desktop-daemon/editord): fix lint errors blocking :lint exit 0` — pre-existing 5 errors fixed (`require-destructured-params` on `diagnosticsEqual`/`hintsEqual`, `tsdoc check-param-names` on `shutdownApp`, two `.catch()` calls on SIGINT/SIGTERM handlers).
--   `a2903a59 refactor(desktop-daemon/editord): convert function-root-let to const ref-objects` — five `let` bindings converted to const ref-objects in `lsp.ts`, `lsp-hover.ts`, `index-routes.ts`. Reduces warning count from 42 to 37.
+-   `f3b7e04a feat(desktop-daemon/editord): type EditorWsClient.request() return by request variant`: `RequestResponseMap` in `src/protocol.ts`, generic signature on `request()`. Single suppression-justified `as` cast remains at the return inside `request()` (wire-id correlation).
+-   `c35f5ab8 refactor(desktop-daemon/editord): drop manual narrowing at request() call sites`: 11 files, 18 awaited-`request()` calls. Dead `'X' in result` guards and paired `as` casts removed; behavioral guards kept on optional fields (`mediaInfo`, empty-string `contents`, empty-string `path`).
+-   `54351284 chore(desktop-daemon/editord): fix lint errors blocking :lint exit 0`: pre-existing 5 errors fixed (`require-destructured-params` on `diagnosticsEqual`/`hintsEqual`, `tsdoc check-param-names` on `shutdownApp`, two `.catch()` calls on SIGINT/SIGTERM handlers).
+-   `a2903a59 refactor(desktop-daemon/editord): convert function-root-let to const ref-objects`: five `let` bindings converted to const ref-objects in `lsp.ts`, `lsp-hover.ts`, `index-routes.ts`. Reduces warning count from 42 to 37.
 
 ### Acceptance criteria
 

@@ -21,7 +21,7 @@ Created 2026-05-12. The language switcher shipped in commit `68c3930d` (rewritte
 - **Trigger sizing diverges from siblings**: lang-switcher trigger sets `min-inline-size: 3rem; min-block-size: 3rem` (`TOUCH_TARGET`), but `<theme-toggle>` and `<site-search>` siblings do not enforce the same minimum. Heights may not align in the nav row.
 - **Arbitrary menu width**: `min-inline-size: 8rem` was eyeballed for the three current autonyms (`English`, `Català`, `中文`). Not tested against locales with longer autonyms.
 - **CJK vs Latin script baseline mismatch**: `中文` sits at a different optical baseline and weight than `English`/`Català` because the Material/Inter stack falls back to the system CJK font. Visual rhythm in the menu looks uneven.
-- **No focus ring on the menu container** — only individual links have `:focus-visible` rings. When the popover opens, there is no perimeter cue.
+- **No focus ring on the menu container**: only individual links have `:focus-visible` rings. When the popover opens, there is no perimeter cue.
 
 ## UX dirt
 
@@ -30,7 +30,7 @@ Created 2026-05-12. The language switcher shipped in commit `68c3930d` (rewritte
 - **No focus management on open**: pressing the trigger opens the popover but focus stays on the button. The user must Tab to reach the first menu item; conventional menu pattern moves focus into the menu on activation.
 - **No keyboard arrows between items**: tabbing works but is non-standard for menus. ARIA Authoring Practices expects ArrowUp/ArrowDown.
 - **No open/close transition**: the menu snaps in and out. Acceptable for a utility menu but jarring next to the rest of the site.
-- **No close button** — relies on click-outside (native popover light-dismiss) and Esc. Discoverable to power users; obscure to others.
+- **No close button**: relies on click-outside (native popover light-dismiss) and Esc. Discoverable to power users; obscure to others.
 - **No click-outside dismiss**: `<details>` does not close when the user clicks elsewhere on the page. The user has to click the summary again to collapse. The original Popover API attempt would have given this for free; the rewrite traded it away for click reliability.
 - **No Esc dismiss**: same shape as click-outside; pressing Esc with the menu open does nothing. Would need a small bit of JS or the Invokers proposal.
 - **Screen-reader trigger label is locale-agnostic**: `aria-label="Switch language"` does not announce the current locale. A reader has to walk the menu items and find `aria-current="page"` to discover the active locale. Better: `aria-label="Switch language, currently English"` composed at render time.

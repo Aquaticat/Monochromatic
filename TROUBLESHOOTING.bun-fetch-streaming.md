@@ -76,7 +76,7 @@ Versions under test:
 - OpenAI SDK v5+ (uses native fetch; v4 had a separate
   `agentkeepalive` hang bug)
 - OpenRouter SDK: all versions (uses native fetch)
-- Node.js: not affected — undici unrefs idle sockets via
+- Node.js: not affected; undici unrefs idle sockets via
   `socket.unref()` in `resumeH1`
 
 Reproduce against any SSE endpoint that holds keep-alive after
@@ -157,7 +157,7 @@ Existing transport options for streaming inference:
   use fetch ReadableStream; not affected.
 - **WebSocket via Bun native**: does not use fetch
   ReadableStream; not affected.
-- **undici fetch (bypasses Bun's native fetch)**: unclear —
+- **undici fetch (bypasses Bun's native fetch)**: unclear;
   Bun polyfills Node APIs; untested.
 
 OpenRouter's Responses API (`/api/v1/responses`) supports

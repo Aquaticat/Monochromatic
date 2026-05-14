@@ -64,7 +64,7 @@ Two orthogonal axes; conflating them muddles the comparison. Pick one from each.
 
 #### `watchman`
 
--   Cost: persistent background daemon plus `fb-watchman` npm client (callback-style, version 2.0.2 on npm but actively maintained — most recent commits at `facebook/watchman` `watchman/node/` from 2024-12 modernisation pass; 2025-07 cleanup). Daemon installable via mise/brew like watchexec.
+-   Cost: persistent background daemon plus `fb-watchman` npm client (callback-style, version 2.0.2 on npm but actively maintained; most recent commits at `facebook/watchman` `watchman/node/` from 2024-12 modernisation pass; 2025-07 cleanup). Daemon installable via mise/brew like watchexec.
 -   Fit: would work, but not justified for this case.
 -   Notes: see "Can we just use watchman?" below for the full reasoning. Short version: watchman is architecturally a long-lived daemon designed to amortise its cost across many tools and many directories. We have one tool watching one directory. The watchman DSL is metadata-only (no content access), so the byte-identical filter still has to live in a TS hash cache. Cross-platform recursion and atomic-save handling are first-class in chokidar 5 too, so we do not gain those by switching.
 
@@ -106,7 +106,7 @@ This is purpose-built for our event shape and avoids reinventing jq. The CLI fla
 
 #### Option F3: jaq subset or full port (last resort)
 
-A subset of jaq in TypeScript. The reference Rust implementation (`01mf02/jaq`) is on the order of 10k–20k LOC across the parser, optimizer, and evaluator; a TypeScript port that matches watchexec's `--help`-documented surface (the jaq stdlib plus `file_meta`, `file_size`, `file_read`, `file_hash`, `kv_store`, `kv_fetch`, `kv_clear`, logging primitives) is a multi-week project, not a side concern. We would also inherit jaq's semantic edge cases (e.g. the "stops after outputting the first value" gotcha that watchexec's own help calls out).
+A subset of jaq in TypeScript. The reference Rust implementation (`01mf02/jaq`) is on the order of 10k,20k LOC across the parser, optimizer, and evaluator; a TypeScript port that matches watchexec's `--help`-documented surface (the jaq stdlib plus `file_meta`, `file_size`, `file_read`, `file_hash`, `kv_store`, `kv_fetch`, `kv_clear`, logging primitives) is a multi-week project, not a side concern. We would also inherit jaq's semantic edge cases (e.g. the "stops after outputting the first value" gotcha that watchexec's own help calls out).
 
 Reject unless and until the project has a documented need to consume *existing* jaq programs from another tool. We do not.
 
@@ -120,7 +120,7 @@ Reject unless and until the project has a documented need to consume *existing* 
 
 #### Where forbidden-strings justifies Rust
 
--   **Hot path.** Runs in the pre-commit hook with a ~5 ms budget; Node startup alone is 50–100 ms and Bun startup is 30–80 ms.
+-   **Hot path.** Runs in the pre-commit hook with a ~5 ms budget; Node startup alone is 50 to 100 ms and Bun startup is 30 to 80 ms.
 -   **CPU-bound work.** Scans up to 2,700 files (21 MiB) in 15.5 ms; the per-file regex+aho-corasick cost dominates. Rust's `regex`, `aho-corasick`, and `resharp` crates win measurably here.
 -   **No library API surface.** Consumed via CLI from a pre-commit hook and from CI. Nothing in the workspace wants to `import` it.
 -   **Native ecosystem advantage.** `resharp` exists in Rust only; the set-algebra operators (`A&B`, `~A`) require it.

@@ -30,7 +30,7 @@ distinct from rolldown's builtin `isolatedDeclarationPlugin`:
   `transform_ast` hook, fully in Rust.
 - Emits each `.d.ts` as a **separate asset** via
   `ctx.emit_file()`.
-- No bundling — output mirrors the source module graph.
+- No bundling; output mirrors the source module graph.
 
 **`rolldown-plugin-dts`** (JS plugin, what tsdown uses):
 

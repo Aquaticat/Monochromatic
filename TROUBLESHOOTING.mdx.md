@@ -45,7 +45,7 @@ during the remark phase.
 Source trace (paths relative to the installed
 `@mdx-js/mdx@3.1.1` package):
 
-- `lib/plugin/remark-mark-and-unravel.js:88-94` — sets
+- `lib/plugin/remark-mark-and-unravel.js:88-94`: sets
   `data._mdxExplicitJsx = true` on every `mdxJsxFlowElement`
   and `mdxJsxTextElement` node:
 
@@ -59,11 +59,11 @@ Source trace (paths relative to the installed
   }
   ```
 
-- `lib/plugin/recma-jsx-rewrite.js:160` — treats any JSX
+- `lib/plugin/recma-jsx-rewrite.js:160`: treats any JSX
   whose tag is a valid identifier and does not start with a
   lowercase letter as a component (so `<Foo>`, `<$foo>`,
   `<_bar>` bind to a destructured reference).
-- `lib/plugin/recma-jsx-rewrite.js:177-180` — the branch
+- `lib/plugin/recma-jsx-rewrite.js:177-180`: the branch
   that fires for author-written lowercase hyphenated JSX; its
   body is an explanatory comment only:
 
@@ -226,7 +226,7 @@ change).
 
 **Description**:
 
-The behaviour that `<h1>heading</h1>` in MDX source is preserved as a literal tag and does NOT resolve through `useMDXComponents()` — while `# heading` DOES — is intentional and explained by the comment at `packages/mdx/lib/plugin/recma-jsx-rewrite.js:177-180`.
+The behaviour that `<h1>heading</h1>` in MDX source is preserved as a literal tag and does NOT resolve through `useMDXComponents()` (while `# heading` DOES) is intentional and explained by the comment at `packages/mdx/lib/plugin/recma-jsx-rewrite.js:177-180`.
 
 This is not clearly called out in the user-facing documentation at <https://mdxjs.com/docs/using-mdx/#components>. The current docs imply any element can be overridden via the components map, without distinguishing markdown-produced elements from author-written JSX.
 

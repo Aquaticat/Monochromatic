@@ -40,13 +40,13 @@ const SYSTEM_PREFIXES = ['/etc', '/usr', '/var', '/boot', '/sys', '/proc',
 function pathSignals(filePath, ctx) {
   const resolved = resolvePath(filePath, ctx.cwd);
   if (!isUnder(resolved, ctx.cwd))
-    return true; // outside cwd — flag
+    return true; // outside cwd; flag
   if (isHomeDotfile(resolved, ctx.home))
-    return true; // dotfile in $HOME — flag
+    return true; // dotfile in $HOME; flag
   if (isSystemPath(resolved))
-    return true; // system path — flag
+    return true; // system path; flag
   if (SECRET_PATH_PATTERN.test(filePath))
-    return true; // secret file — flag
+    return true; // secret file; flag
   return false;
 }
 ```
@@ -67,11 +67,11 @@ a `SYSTEM_PREFIXES` entry.
 
 Source citations in the yapp monorepo:
 
-- `packages/safeguard/src/signals.ts:95-101` — `pathSignals`
+- `packages/safeguard/src/signals.ts:95-101`: `pathSignals`
   function.
-- `packages/safeguard/src/signals.ts:122-125` —
+- `packages/safeguard/src/signals.ts:122-125`:
   `SYSTEM_PREFIXES` array.
-- `packages/safeguard/src/signals.ts:127-129` —
+- `packages/safeguard/src/signals.ts:127-129`:
   `isSystemPath` function.
 
 ### Verification
@@ -262,7 +262,7 @@ Pi-coding-agent version: 0.70.6. Source:
 
 ### Symptom
 
-Every flagged action shows "No judge model available —
+Every flagged action shows "No judge model available;
 manual approval required" regardless of judge-model
 configuration. Setting `majorVersions: 0` or
 `strategy: "any-provider"` has no effect. The judge is never
@@ -272,7 +272,7 @@ reached.
 # Any action that triggers the safeguard flagger (e.g. a bash command
 # containing "sudo"):
 pi -p "run sudo apt update"
-# Result: "No judge model available — manual approval required."
+# Result: "No judge model available; manual approval required."
 ```
 
 ### Root cause
@@ -325,7 +325,7 @@ async function evaluate(pi, ctx, config, systemPrompt, action, batchContext,
   }
   catch {
     return askUser(pi, ctx, action,
-      'No judge model available — manual approval required.');
+      'No judge model available; manual approval required.');
   }
   // ...
 }
@@ -338,13 +338,13 @@ missing model.
 
 Source locations:
 
-- `packages/budget-model/src/index.ts` — four calls to
+- `packages/budget-model/src/index.ts`: four calls to
   `ctx.modelRegistry.getApiKey(model)`.
 - `@earendil-works/pi-coding-agent`
   `core/model-registry.ts`: `ModelRegistry` class has
   `getApiKeyAndHeaders` and `getApiKeyForProvider` but no
   `getApiKey`.
-- `packages/safeguard/src/index.ts` — bare `catch` block in
+- `packages/safeguard/src/index.ts`: bare `catch` block in
   `evaluate` that swallows the TypeError.
 
 ### Verification
@@ -462,7 +462,7 @@ Every flagged action requires manual approval, regardless of configuration. The 
 1. Install pi-safeguard 2.0.1 (which depends on pi-budget-model 1.0.1).
 2. Use any model that triggers the safeguard flagger.
 3. Expected: judge model is selected and evaluates the action.
-4. Actual: "No judge model available — manual approval required."
+4. Actual: "No judge model available; manual approval required."
 
 **Suggested fix**:
 

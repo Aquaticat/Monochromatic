@@ -49,13 +49,13 @@ depending on stack depth and sink configuration.
 Replace function-entry `l.trace()` calls with `l.debug()`:
 
 ```ts
-// Before — with stack-trace overhead
+// Before; with stack-trace overhead
 function myFunction() {
   l.trace('myFunction started');
   // ... function logic
 }
 
-// After — basic debug logging
+// After; basic debug logging
 function myFunction() {
   l.debug('myFunction started');
   // ... function logic

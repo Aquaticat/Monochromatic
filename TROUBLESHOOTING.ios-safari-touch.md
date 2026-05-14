@@ -9,7 +9,7 @@ breaks on every iPhone and iPad:
   do nothing.
 - Long-press gestures trigger the iOS context menu instead of
   the application action.
-- `pointerup` never fires after `pointerdown` — the browser
+- `pointerup` never fires after `pointerdown`: the browser
   swallows it via `pointercancel`.
 - Draw/paint strokes cut off mid-gesture when iOS decides the
   touch is a scroll.
@@ -17,7 +17,7 @@ breaks on every iPhone and iPad:
   indication the CSS property was not honoured.
 
 Affects interactive canvases, drawing surfaces, map controls,
-custom gesture handlers — anything relying on
+custom gesture handlers; anything relying on
 `touch-action: none` to suppress native gestures.
 
 ## Root cause
@@ -50,7 +50,7 @@ WebKit bug
 - 2014: WebKit bug filed requesting `touch-action` support.
 - 2014: Chrome 36 shipped complete `touch-action` support.
 - 2015: WebKit implements `touch-action: manipulation` (the
-  easy one — only disables double-tap zoom).
+  easy one; only disables double-tap zoom).
 - 2017: Firefox 52 shipped complete `touch-action` support.
 - 2019: WebKit adds `touch-action: pan-y` (iOS 13); `none`
   partially implemented.
@@ -68,7 +68,7 @@ WebKit bug
 Versions under test:
 
 - iOS Safari on iOS 15, 17, 18 (latest at time of writing).
-- Chrome, Firefox, and desktop Safari for comparison —
+- Chrome, Firefox, and desktop Safari for comparison;
   workarounds verified to not break the working browsers.
 
 Reproduce: add a canvas with `touch-action: none` and a
@@ -82,7 +82,7 @@ Verified fix applied in this project in
 `packages/webapp-productivity/doodle-widget/src/client/pointer-handlers-zoom.ts`
 and `packages/webapp-productivity/doodle-widget/src/styles.ts`.
 Tested on a physical iPhone running iOS Safari; all three
-workaround changes (below) are required — removing any one
+workaround changes (below) are required; removing any one
 causes the zoom tool to fail on iOS.
 
 ## Verified workaround (three changes; all required)
@@ -147,7 +147,7 @@ out) triggers the system callout instead.
 
 ```css
 #my-canvas {
-  touch-action: none;            /* still set — works on every other browser */
+  touch-action: none;            /* still set; works on every other browser */
   -webkit-touch-callout: none;   /* iOS long-press menu suppression */
 }
 ```

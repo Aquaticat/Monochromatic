@@ -56,7 +56,7 @@ await describe({
 
 Keep `describe` names unique within a scope:
 
-- Prefer `functionName.name` for imported functions — that is
+- Prefer `functionName.name` for imported functions; that is
   inherently unique per import.
 - Use region markers (`//region X` / `//endregion`) to visually
   separate groups and catch accidental duplication during review.
@@ -78,7 +78,7 @@ were the upstream:
 
 1. **Is it really upstream's fault?** Borderline. Deduplication
    matching bun:test's reporter would help but adds complexity.
-2. **Can upstream fix it?** Yes — augment the reporter to mark
+2. **Can upstream fix it?** Yes; augment the reporter to mark
    duplicates with a suffix or path.
 3. **Are they supporting this use case?** The runner accepts any
    name; duplicates are not rejected.
@@ -89,7 +89,7 @@ Decision: keep the convention rule.
 
 ---
 
-## Bug 2: Multiple top-level `await describe(...)` calls — first failure skips the rest
+## Bug 2: Multiple top-level `await describe(...)` calls; first failure skips the rest
 
 ### Symptom
 

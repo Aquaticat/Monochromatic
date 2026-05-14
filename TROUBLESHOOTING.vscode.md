@@ -119,7 +119,7 @@ Add `/etc/fstab` entries:
 - **Git worktrees**: each worktree has its own checkout, so changes
   in one do not propagate live to the other. Suitable for working on
   different branches concurrently, not for "same files in two
-  windows" — different goal.
+  windows"; different goal.
 - **Symbolic links** (`ln -s`): VS Code canonicalises the path before
   the identity check, so a symlink resolves back to the same target
   and gets treated as the same workspace. Mount binds are not
@@ -157,4 +157,4 @@ if the workaround stops working after a VS Code or Remote-WSL update.
 ## Related
 
 - [dprint VS Code extension PATH gap in WSL](./TROUBLESHOOTING.dprint.md)
-  — a sibling Remote-WSL pain point with a different shape.
+ ; a sibling Remote-WSL pain point with a different shape.

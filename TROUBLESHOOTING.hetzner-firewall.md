@@ -13,7 +13,7 @@ decision not to broaden the firewall.
 
 ---
 
-## Bug 1: Tor onion service outbound — pool sizing for the dynamic top-N guard allowlist
+## Bug 1: Tor onion service outbound; pool sizing for the dynamic top-N guard allowlist
 
 ### Symptom
 

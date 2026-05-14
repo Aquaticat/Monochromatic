@@ -16,7 +16,7 @@ import { glob } from 'node:fs/promises';
 
 // Directory contains: visible, .hidden
 for await (const match of glob('/path/*'))
-  console.log(match); // only "visible" — .hidden is silently skipped
+  console.log(match); // only "visible"; .hidden is silently skipped
 
 for await (const match of glob('/path/.*'))
   console.log(match); // no output at all
@@ -39,7 +39,7 @@ return {
   onlyFiles: false,
   exclude,
 };
-// ^^^ no `dot` property — falls through to Bun.Glob default
+// ^^^ no `dot` property; falls through to Bun.Glob default
 ```
 
 The native `Bun.Glob` scan implementation in Zig defaults `dot` to
@@ -80,7 +80,7 @@ prevents dot-file matching even with literal dot prefixes. See
 
 ### Why this has not been widely reported
 
-1. `fs.glob` only stabilised in Node.js v22.17.0 (June 2025) —
+1. `fs.glob` only stabilised in Node.js v22.17.0 (June 2025):
    most projects still use third-party packages.
 2. Third-party glob packages dominate: `glob` (312M/week),
    `fast-glob` (102M/week), `tinyglobby` (77M/week) as of
@@ -128,12 +128,12 @@ console.log(dotMatches);
 
 Two files used `Bun.Glob`:
 
-- `packages/dev-script/file-enforcer/src/io/glob.ts` —
+- `packages/dev-script/file-enforcer/src/io/glob.ts`:
   `expandGlob()` requires `dot: true` to match hidden files.
   **Cannot migrate** to `fs.glob` due to this bug. Kept on
   `Bun.Glob`.
 - `packages/claude-code-plugins/session-start-housekeeping/src/index.ts`
-  — matches named directories only
+ ; matches named directories only
   (`packages/*/*/dist/final`); no dot-file concern. **Migrated**
   to `node:fs/promises` glob.
 
@@ -204,13 +204,13 @@ entries at all, which is a lower level than pattern matching.
 
 ## Source evidence
 
-- `src/js/internal/fs/glob.ts` — `mapOptions` function, missing
+- `src/js/internal/fs/glob.ts`: `mapOptions` function, missing
   `dot: true`.
-- `src/bun.js/api/glob.zig:70` — `ScanOpts` defaults `.dot =
+- `src/bun.js/api/glob.zig:70`: `ScanOpts` defaults `.dot =
   false`.
-- `packages/bun-types/bun.d.ts:7646-7650` — type definition
+- `packages/bun-types/bun.d.ts:7646-7650`: type definition
   confirms `dot` defaults to `false`.
-- `src/js/node/fs.ts` — `node:fs` module imports and exposes
+- `src/js/node/fs.ts`: `node:fs` module imports and exposes
   `glob`/`globSync` from the internal module.
 
 ## Why we did file this upstream
@@ -244,7 +244,7 @@ locations and patch.
 
 Source trace:
 
-- `src/js/internal/fs/glob.ts:93-103` — `mapOptions` builds scan options without `dot: true`:
+- `src/js/internal/fs/glob.ts:93-103`: `mapOptions` builds scan options without `dot: true`:
 
 ```ts
 return {
@@ -255,7 +255,7 @@ return {
 };
 ```
 
-- `src/bun.js/api/glob.zig:70` — `ScanOpts` defaults `.dot = false`:
+- `src/bun.js/api/glob.zig:70`: `ScanOpts` defaults `.dot = false`:
 
 ```zig
 var out: ScanOpts = .{ .cwd = null, .dot = false, ... };
