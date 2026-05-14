@@ -23,7 +23,7 @@ as `git -C /repo push` bypass this rule.
 every commit must name the paths it includes rather than picking up whatever is
 staged. Skipped when `-o`, `--only`, or `--no-only` is already present (the user
 has made an explicit choice). Escape hatch for a single invocation: pass
-`--not-only`, which is stripped before forwarding to real git. Current limitation:
+`--skip-only`, which is stripped before forwarding to real git. Current limitation:
 pre-subcommand global options such as `git -C /repo commit` bypass this rule.
 
 ## How it works
