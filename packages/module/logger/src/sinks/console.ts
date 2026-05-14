@@ -65,7 +65,7 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set([
  */
 function detectVerbose(): boolean {
   try {
-    if (typeof process !== 'undefined' && process.env['DEBUG'] === 'true')
+    if (((typeof process) !== 'undefined') && (process.env['DEBUG'] === 'true'))
       return true;
   }
   catch {
@@ -73,7 +73,7 @@ function detectVerbose(): boolean {
   }
 
   try {
-    if (typeof process !== 'undefined'
+    if (((typeof process) !== 'undefined')
       && Array.isArray(process.argv,)
       && process.argv.includes('--verbose',))
     {
@@ -197,7 +197,7 @@ function emitRun(
     const method = LEVEL_TO_CONSOLE_METHOD[level];
     /** Resolved console method looked up by name; may be missing or non-callable in stripped runtimes, which the guard handles. */
     const consoleFn = console[method];
-    if (typeof consoleFn === 'function') {
+    if ((typeof consoleFn) === 'function') {
       consoleFn.call(
         console,
         text,
@@ -247,7 +247,7 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
     ) {
       /** Trailing run being extended; new same-level records append onto it, otherwise a fresh run is opened. */
       const tail = runs.at(-1,);
-      if (tail !== undefined && tail.level === record.level) {
+      if ((tail !== undefined) && (tail.level === record.level)) {
         tail.records.push(record,);
         return runs;
       }
@@ -315,19 +315,19 @@ export function verifyConsole(): boolean {
   state.verified = true;
 
   try {
-    if (typeof console === 'undefined') {
+    if ((typeof console) === 'undefined') {
       state.available = false;
       return state.available;
     }
 
     /** Sample `console.debug` reference used only to check the method actually exists in the host; absent in some stripped runtimes. */
     const testFn = console.debug;
-    if (typeof testFn !== 'function') {
+    if ((typeof testFn) !== 'function') {
       state.available = false;
       return state.available;
     }
 
-    if (typeof queueMicrotask !== 'function') {
+    if ((typeof queueMicrotask) !== 'function') {
       state.available = false;
       return state.available;
     }
@@ -358,7 +358,7 @@ function write(record: LogRecord,): void {
   if (!state.available)
     return;
 
-  if (!getVerbose() && SILENT_LEVELS.has(record.level,))
+  if ((!getVerbose()) && SILENT_LEVELS.has(record.level,))
     return;
 
   buffer.push(record,);

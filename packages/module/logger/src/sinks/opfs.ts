@@ -81,7 +81,7 @@ export async function verifyOpfs(): Promise<boolean> {
  * @param record - log record to write
  */
 async function write(record: LogRecord,): Promise<void> {
-  if (!state.available || !state.writable)
+  if ((!state.available) || (!state.writable))
     return;
 
   try {

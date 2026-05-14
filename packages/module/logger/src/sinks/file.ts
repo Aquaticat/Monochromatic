@@ -111,9 +111,9 @@ async function runVerify(): Promise<boolean> {
   // Guard: skip dynamic import entirely outside Node.js to avoid
   // browser console errors from attempting to fetch node: URLs
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined
-  if (globalThis.process === undefined
+  if ((globalThis.process === undefined)
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- process.versions may be absent in non-Node polyfills
-    || globalThis.process.versions?.node === undefined)
+    || (globalThis.process.versions?.node === undefined))
   {
     state.available = false;
     return false;
@@ -228,7 +228,7 @@ export function verifyFile(): Promise<boolean> {
  */
 async function write(record: LogRecord,): Promise<void> {
   // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath is string|null, checking both conditions
-  if (!state.available || !state.filePath || !state.appendFile)
+  if ((!state.available) || (!state.filePath) || (!state.appendFile))
     return;
 
   try {

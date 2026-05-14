@@ -123,7 +123,7 @@ function markFailed(entry: SinkEntry,): void {
  */
 function createMethod(level: Level,): (message: string,) => void {
   return function logAtLevel(message: string,): void {
-    if (!state.hasAvailableSink && state.initialized)
+    if ((!state.hasAvailableSink) && state.initialized)
       throw new Error('No logging backends available',);
 
     /** Subset of sinks that survived verification; filtered fresh per call so a sink that drops out is excluded next time. */
@@ -185,7 +185,7 @@ async function flushAll(): Promise<void> {
     sinkEntries.map(async function runFlush(entry,) {
       /** Optional sink-supplied flush hook; absent when the sink writes synchronously and needs no draining. */
       const sinkFlush = entry.sink.flush;
-      if (entry.available !== true || typeof sinkFlush !== 'function')
+      if ((entry.available !== true) || ((typeof sinkFlush) !== 'function'))
         return;
       try {
         await sinkFlush();
