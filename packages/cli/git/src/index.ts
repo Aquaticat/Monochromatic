@@ -6,6 +6,7 @@ import {
   tagged,
 } from './log.ts';
 import { resolveGit, } from './resolve-git.ts';
+import { addExplicit, } from './rules/add-explicit.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
 import { commitOnly, } from './rules/commit-only.ts';
 import { requireRoot, } from './rules/require-root.ts';
@@ -41,6 +42,7 @@ const RULES: readonly ((
   args: readonly string[],
 ) => readonly string[] | Promise<readonly string[]>)[] = [
   requireRoot,
+  addExplicit,
   atomicPush,
   commitOnly,
 ];
@@ -77,7 +79,7 @@ try {
     && (processedArgs[0] !== undefined)
     && VERSION_SUBCOMMANDS.has(processedArgs[0],))
   {
-    console.log('cli-git wrapper (require-root, atomic-push, commit-only)',);
+    console.log('cli-git wrapper (require-root, add-explicit, atomic-push, commit-only)',);
   }
 }
 catch (error) {

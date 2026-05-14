@@ -14,6 +14,14 @@ to real git untouched, so git itself reports the missing-repo error if
 relevant. Exempt subcommands: `init`, `clone`, `version`, `help`, and
 `config` with `--global`/`--system`/`--list`.
 
+**Add explicit**: rejects `git add` invocations that use bulk-staging
+patterns (`.`, `./`, `*`, `:/`, `-A`/`--all`, `-u`/`--update`), which sweep
+up paths the caller did not intend to stage and leave the index in a state
+that does not match a single logical change. Name the paths explicitly, or
+pass `--no-enforce-bulk-add` to bypass for one invocation; the flag is stripped
+before forwarding to real git. The rule walks pre-subcommand global options
+the same way atomic-push does.
+
 **Atomic push**: injects `--atomic` into `git push` commands automatically,
 ensuring all refs update together or none do. Override with `--no-atomic`.
 The rule walks pre-subcommand global options (`-C <path>`, `-c key=val`,
