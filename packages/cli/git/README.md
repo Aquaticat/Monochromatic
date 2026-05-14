@@ -34,6 +34,13 @@ has made an explicit choice). Escape hatch for a single invocation: pass
 `--no-enforce-only`, which is stripped before forwarding to real git. The rule
 walks pre-subcommand global options the same way atomic-push does.
 
+**Status hints off**: injects `-c advice.statusHints=false` before `git status`
+so git suppresses its stock hints, which suggest patterns the wrapper rejects
+(`git add` with bulk patterns, `git commit -a` colliding with commit-only's
+`-o`). A cli-git note prints after the status output describing the wrapper's
+constraints. Skipped when the user has already set `advice.statusHints=...` via
+`-c` (the user's explicit choice wins).
+
 ## How it works
 
 The wrapper shadows the system `git` binary on PATH (via mise bin linkage).
