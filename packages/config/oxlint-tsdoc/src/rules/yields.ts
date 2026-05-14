@@ -21,7 +21,10 @@ type CreateFunctionTsdocVisitorParams = {
   /** Oxlint rule context. */
   context: Context;
   /** Invoked with node and parsed TSDoc. */
-  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult,) => void;
+  handler: (
+    node: Span & Record<string, unknown>,
+    result: TsdocParseResult,
+  ) => void;
 };
 
 /**
@@ -160,7 +163,7 @@ export const requireYieldsCheck: CreateOnceRule = {
         node,
         result,
       ): void {
-        if (!isGeneratorFunction(node,) && hasYieldsTag(result,)) {
+        if ((!isGeneratorFunction(node,)) && hasYieldsTag(result,)) {
           context.report({
             node: result.comment,
             messageId: 'notGenerator',

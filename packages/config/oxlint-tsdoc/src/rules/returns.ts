@@ -89,8 +89,8 @@ export const requireReturnsCheck: CreateOnceRule = {
         node,
         result,
       ): void {
-        if (!functionReturnsValue(node,)
-          && result.docComment.returnsBlock !== undefined)
+        if ((!functionReturnsValue(node,))
+          && (result.docComment.returnsBlock !== undefined))
         {
           context.report({
             node: result.comment,

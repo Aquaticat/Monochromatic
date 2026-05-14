@@ -94,10 +94,14 @@ export const tagLines: CreateOnceRule = {
             )
             .trimStart();
           if (prevTrimmed.length > 0) {
-            /** Match for the leading `@tag` on the current line; null when not a tag line. */
+            /**
+             * Match for the leading `\@tag` on the current line; null when not a tag line.
+             */
             const tagMatch = (/^(@\w+)/).exec(trimmed,);
-            /** Resolved tag string for the error message, with `@unknown` fallback for the impossible-null case. */
-            const tag = tagMatch !== null ? tagMatch[1] ?? '@unknown' : '@unknown';
+            /**
+             * Resolved tag string for the error message, with `\@unknown` fallback for the impossible-null case.
+             */
+            const tag = (tagMatch !== null) ? (tagMatch[1] ?? '@unknown') : '@unknown';
 
             /**
              * Line number of the tag line in the source file (1-based).

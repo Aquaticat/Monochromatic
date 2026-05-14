@@ -66,9 +66,13 @@ export const checkParamNames: CreateOnceRule = {
       ): void {
         /** Ordered list of declared parameter names; positions in this array drive the index match. */
         const paramNames = extractParamNames(node,);
-        /** Ordered list of `@param` names extracted from the TSDoc comment. */
+        /**
+         * Ordered list of `\@param` names extracted from the TSDoc comment.
+         */
         const docParamNames = extractDocParamNames(result.docComment,);
-        /** Names from destructured patterns; `@param` tags matching these are accepted as-is. */
+        /**
+         * Names from destructured patterns; `\@param` tags matching these are accepted as-is.
+         */
         const destructuredNames = extractDestructuredParamNames(node,);
 
         // Check each documented param exists in the function signature

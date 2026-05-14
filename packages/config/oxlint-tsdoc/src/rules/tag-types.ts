@@ -77,7 +77,7 @@ export const validTypes: CreateOnceRule = {
       PropertyDefinition: check,
       TSEnumMember: check,
       Property(node,): void {
-        if (node.kind === 'get' || node.kind === 'set')
+        if ((node.kind === 'get') || (node.kind === 'set'))
           check(node,);
       },
     } as VisitorWithHooks;

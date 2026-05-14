@@ -45,7 +45,10 @@ export const noTypes: CreateOnceRule = {
         _node,
         comment,
       ): void {
-        /** Comment body split into lines; each is scanned for the disallowed `@tag {type}` shape. */
+        /**
+         * Comment body split into lines; each is scanned for the disallowed JSDoc-style
+         * curly-braced type annotation that follows a tag.
+         */
         const lines = comment.value.split('\n',);
         lines.forEach(function checkLine(
           line,

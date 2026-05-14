@@ -64,7 +64,9 @@ export const emptyTags: CreateOnceRule = {
           line,
           index,
         ): void {
-          /** Line stripped of indent and `*` so the leading `@tag` (if any) is at column 0. */
+          /**
+           * Line stripped of indent and `*` so the leading `\@tag` (if any) is at column 0.
+           */
           const trimmed = line
             .trimStart()
             .replace(
@@ -72,7 +74,9 @@ export const emptyTags: CreateOnceRule = {
               '',
             )
             .trimStart();
-          /** Match of `@tag <text>`; null when the line carries no tag with trailing text. */
+          /**
+           * Match of `\@tag <text>`; null when the line carries no tag with trailing text.
+           */
           const tagMatch = (/^(@\w+)\s+(.+)/).exec(trimmed,);
           if (tagMatch === null)
             return;
@@ -81,10 +85,10 @@ export const emptyTags: CreateOnceRule = {
             1: tag,
             2: rest,
           } = tagMatch;
-          if (tag !== undefined
+          if ((tag !== undefined)
             && modifierTags.has(tag,)
-            && rest !== undefined
-            && rest.trim().length > 0)
+            && (rest !== undefined)
+            && (rest.trim().length > 0))
           {
             context.report({
               loc: {

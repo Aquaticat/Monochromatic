@@ -52,7 +52,9 @@ export const requireReturnsDescription: CreateOnceRule = {
         _node,
         result,
       ): void {
-        /** Parsed `@returns` block on the comment; absent means nothing to validate. */
+        /**
+         * Parsed `\@returns` block on the comment; absent means nothing to validate.
+         */
         const { returnsBlock, } = result.docComment;
         if (returnsBlock === undefined)
           return;

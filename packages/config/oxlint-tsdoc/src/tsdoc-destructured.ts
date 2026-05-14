@@ -19,7 +19,7 @@ import type { Span, } from '@oxlint/plugins';
 function unwrapMethodDefinition(
   node: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-  if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
+  if ((node.type === 'MethodDefinition') || (node.type === 'TSAbstractMethodDefinition')) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
   }
@@ -117,7 +117,7 @@ function collectDestructuredNames({
         /** Key node of a destructured property; only `Identifier` keys contribute a name. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const key = prop.key as Record<string, unknown> | undefined;
-        if (key !== undefined && key.type === 'Identifier') {
+        if ((key !== undefined) && (key.type === 'Identifier')) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           names.add(key.name as string,);
         }

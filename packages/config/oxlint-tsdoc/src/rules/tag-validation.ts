@@ -50,7 +50,9 @@ export const checkAccess: CreateOnceRule = {
         const text = comment.value;
         accessTags.forEach(function findTag(tag,): void {
           // Match tag at word boundary to avoid false positives
-          /** Tag with `@` escaped for use inside the dynamic regex literal. */
+          /**
+           * Tag with `\@` escaped for use inside the dynamic regex literal.
+           */
           const escapedTag = tag.replace(
             '@',
             String.raw`\@`,

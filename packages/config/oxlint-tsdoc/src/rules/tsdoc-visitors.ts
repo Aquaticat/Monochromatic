@@ -47,7 +47,10 @@ export type CreateTsdocVisitorParams = {
   /** Oxlint rule context. */
   context: Context;
   /** Invoked for each (node, comment) pair. */
-  handler: (node: Span, comment: Comment,) => void;
+  handler: (
+    node: Span,
+    comment: Comment,
+  ) => void;
 };
 
 /**
@@ -108,7 +111,7 @@ export function createTsdocVisitor({
     PropertyDefinition: check,
     TSEnumMember: check,
     Property(node,): void {
-      if (node.kind === 'get' || node.kind === 'set')
+      if ((node.kind === 'get') || (node.kind === 'set'))
         check(node,);
     },
   } as VisitorWithHooks;
@@ -121,7 +124,10 @@ export type CreateFunctionTsdocVisitorParams = {
   /** Oxlint rule context. */
   context: Context;
   /** Invoked with node and parsed TSDoc for each function-like node. */
-  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult,) => void;
+  handler: (
+    node: Span & Record<string, unknown>,
+    result: TsdocParseResult,
+  ) => void;
 };
 
 /**

@@ -57,8 +57,8 @@ function isDirectlyExported(node: Span,): boolean {
   const parent = typed.parent as Record<string, unknown> | undefined;
   if (parent === undefined)
     return false;
-  return parent.type === 'ExportNamedDeclaration'
-    || parent.type === 'ExportDefaultDeclaration';
+  return (parent.type === 'ExportNamedDeclaration')
+    || (parent.type === 'ExportDefaultDeclaration');
 }
 
 /**
@@ -226,7 +226,7 @@ export const requireExample: CreateOnceRule = {
       /** Declarator list; for `const a = ..., b = ...` only the first is inspected. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const declarations = typed.declarations as Record<string, unknown>[] | undefined;
-      if (declarations === undefined || declarations.length === 0)
+      if ((declarations === undefined) || (declarations.length === 0))
         return;
 
       /** First declarator; destructured here so its `init` can be inspected below. */
@@ -239,9 +239,9 @@ export const requireExample: CreateOnceRule = {
       /** Initializer of the first declarator; `null` for empty bindings, undefined absent. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const init = decl.init as Record<string, unknown> | null | undefined;
-      if (init === undefined || init === null)
+      if ((init === undefined) || (init === null))
         return;
-      if (init.type !== 'FunctionExpression' && init.type !== 'ArrowFunctionExpression')
+      if ((init.type !== 'FunctionExpression') && (init.type !== 'ArrowFunctionExpression'))
         return;
 
       /** Attached TSDoc comment for the variable; absent means nothing to validate. */
@@ -303,7 +303,7 @@ export const requireExample: CreateOnceRule = {
           /** Local-name node of the specifier (`a` in `export { a as b }`). */
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const local = spec.local as Record<string, unknown> | undefined;
-          if (local !== undefined && typeof local.name === 'string')
+          if ((local !== undefined) && ((typeof local.name) === 'string'))
             specifierExportedNames.add(local.name,);
         }
       },

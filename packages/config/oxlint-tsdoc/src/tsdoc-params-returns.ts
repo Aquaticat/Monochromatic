@@ -19,7 +19,7 @@ import type { Span, } from '@oxlint/plugins';
 function unwrapMethodDefinition(
   node: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-  if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
+  if ((node.type === 'MethodDefinition') || (node.type === 'TSAbstractMethodDefinition')) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
   }
@@ -42,11 +42,11 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
   // Check kind on the outer MethodDefinition BEFORE unwrapping to .value,
   // because `kind` ("constructor", "get", "set", "method") is a property
   // of MethodDefinition, not of the inner FunctionExpression.
-  if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
+  if ((node.type === 'MethodDefinition') || (node.type === 'TSAbstractMethodDefinition')) {
     /** Method kind (constructor/get/set/method); read on the outer MethodDefinition before unwrap. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const kind = (node as Record<string, unknown>).kind as string | undefined;
-    if (kind === 'constructor' || kind === 'set')
+    if ((kind === 'constructor') || (kind === 'set'))
       return false;
   }
 
@@ -60,7 +60,7 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
   /** TS return-type annotation node; null when the parser observed the absence explicitly. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const returnType = target.returnType as Record<string, unknown> | undefined | null;
-  if (returnType !== undefined && returnType !== null) {
+  if ((returnType !== undefined) && (returnType !== null)) {
     /** Inner annotation wrapped by `returnType`; the actual TS type lives one level deeper. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const typeAnnotation = returnType.typeAnnotation as
@@ -70,7 +70,7 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
       /** AST node-type tag (`TSVoidKeyword`, `TSTypeReference`, etc.) that drives the branch below. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const tsType = typeAnnotation.type as string | undefined;
-      if (tsType === 'TSVoidKeyword' || tsType === 'TSNeverKeyword')
+      if ((tsType === 'TSVoidKeyword') || (tsType === 'TSNeverKeyword'))
         return false;
       /**
        * Handle `Promise<void>` and `Promise<never>` return types.
@@ -94,11 +94,11 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
           /** Concrete type parameters of `Promise<...>`; exactly one is the valid shape. */
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const params = typeArgs?.params as Record<string, unknown>[] | undefined;
-          if (params !== undefined && params.length === 1) {
+          if ((params !== undefined) && (params.length === 1)) {
             /** AST node-type of the single Promise type argument, e.g. `TSVoidKeyword`. */
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
             const innerType = params[0]?.type as string | undefined;
-            if (innerType === 'TSVoidKeyword' || innerType === 'TSNeverKeyword')
+            if ((innerType === 'TSVoidKeyword') || (innerType === 'TSNeverKeyword'))
               return false;
           }
         }

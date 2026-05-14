@@ -49,25 +49,25 @@ export function extractNodeName(node: Span,): string {
     /** Declarator list of the variable statement; first declarator carries the canonical name. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const declarations = typed.declarations as Record<string, unknown>[] | undefined;
-    if (declarations !== undefined && declarations.length > 0) {
+    if ((declarations !== undefined) && (declarations.length > 0)) {
       /** Identifier node of the first declarator; carries the variable name string. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const id = declarations[0]?.id as Record<string, unknown> | undefined;
-      if (id !== undefined && typeof id.name === 'string')
+      if ((id !== undefined) && ((typeof id.name) === 'string'))
         return id.name;
     }
     return 'anonymous';
   }
 
   // MethodDefinition / PropertyDefinition / Property: key.name
-  if (typed.type === 'MethodDefinition'
-    || typed.type === 'PropertyDefinition'
-    || typed.type === 'Property')
+  if ((typed.type === 'MethodDefinition')
+    || (typed.type === 'PropertyDefinition')
+    || (typed.type === 'Property'))
   {
     /** Key node of the member (`foo` in `class C { foo() {} }`); supplies the diagnostic name. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const key = typed.key as Record<string, unknown> | undefined;
-    if (key !== undefined && typeof key.name === 'string')
+    if ((key !== undefined) && ((typeof key.name) === 'string'))
       return key.name;
     return 'anonymous';
   }
@@ -76,11 +76,11 @@ export function extractNodeName(node: Span,): string {
   /** Identifier node of the declaration; present on functions, classes, type aliases, etc. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const id = typed.id as Record<string, unknown> | undefined;
-  if (id !== undefined && typeof id.name === 'string')
+  if ((id !== undefined) && ((typeof id.name) === 'string'))
     return id.name;
 
   // FunctionDeclaration without name, TSEnumMember with direct name
-  if (typeof typed.name === 'string')
+  if ((typeof typed.name) === 'string')
     return typed.name;
 
   return 'anonymous';
@@ -99,7 +99,9 @@ export function extractNodeName(node: Span,): string {
  * ```
  */
 export function extractNodeKind(node: Span,): string {
-  /** AST type tag (e.g. `FunctionDeclaration`); the key into {@link NODE_KIND_LABELS}. */
+  /**
+   * AST type tag (e.g. `FunctionDeclaration`); the key into {@link NODE_KIND_LABELS}.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const nodeType = (node as Span & Record<string, unknown>).type as string | undefined;
   if (nodeType === undefined)

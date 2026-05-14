@@ -54,7 +54,7 @@ export const escapeInlineTags: CreateOnceRule = {
             index,
           ): void {
             // Skip the first line opener
-            if (index === 0 && line.trimEnd().endsWith('*',))
+            if ((index === 0) && line.trimEnd().endsWith('*',))
               return;
             /** Line stripped of indent and `*` so an embedded `*\/` becomes detectable in content. */
             const trimmed = line.trimStart().replace(

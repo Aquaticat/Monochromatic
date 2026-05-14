@@ -56,7 +56,7 @@ const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration,);
  * @returns true for `/** ... *\/` style comments
  */
 function isTsdocBlock(comment: Comment,): boolean {
-  return comment.type === 'Block' && comment.value.startsWith('*',);
+  return (comment.type === 'Block') && comment.value.startsWith('*',);
 }
 
 /**
@@ -121,7 +121,7 @@ export function findTsdocComment({
   for (let i = comments.length - 1; i >= 0; i--) {
     /** Single comment candidate at index `i`; checked for the TSDoc block marker. */
     const c = comments[i];
-    if (c !== undefined && isTsdocBlock(c,))
+    if ((c !== undefined) && isTsdocBlock(c,))
       return c;
   }
 
@@ -131,7 +131,7 @@ export function findTsdocComment({
   const nodeType = (node as unknown as Record<string, unknown>).type as
     | string
     | undefined;
-  if (nodeType === undefined || !FALLBACK_ELIGIBLE_TYPES.has(nodeType,))
+  if ((nodeType === undefined) || (!FALLBACK_ELIGIBLE_TYPES.has(nodeType,)))
     return undefined;
 
   // Fallback: scan all comments for the closest TSDoc ending on the line
@@ -152,9 +152,9 @@ export function findTsdocComment({
     const candidateEndLine = candidate.loc.end.line;
     if (candidateEndLine >= nodeStartLine)
       continue;
-    if (nodeStartLine - candidateEndLine > 1)
+    if ((nodeStartLine - candidateEndLine) > 1)
       continue;
-    if (best === undefined || candidate.loc.end.line > best.loc.end.line)
+    if ((best === undefined) || (candidate.loc.end.line > best.loc.end.line))
       best = candidate;
   }
 
