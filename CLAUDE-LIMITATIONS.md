@@ -44,6 +44,10 @@ suitable for After Effects Duik rigging and animation.
 
 **Time spent:** 8+ hours across many Claude instances. No approach produced usable results.
 
+**Status (2026-05-14):** the failed packages (`packages/duik/teto`,
+`packages/duik/teto-generated`) were removed for quality reasons.
+This entry is preserved so future sessions do not retry the same approaches.
+
 ### Attempt 1: Blender 3D modeling
 
 Tried generating Blender models of character components via MCP.

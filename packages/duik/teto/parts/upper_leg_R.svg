@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
-  <!-- Right upper leg - shifted 5px outward for wider stance -->
-  <path d="M429,430 Q439,440 443,460 L447,530 L449,590 L451,640 L411,640 L409,590 L405,530 L401,460 Q399,440 401,430 Z"
-        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="1.2"/>
-  <path d="M433,470 Q441,550 447,630" stroke="#e0c8b8" stroke-width="2" opacity="0.3"/>
-</svg>

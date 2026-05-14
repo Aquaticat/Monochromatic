@@ -106,7 +106,7 @@ function buildMinimalSchemaBytes(): number[] {
   bytes.push(0,);
   bytes.push(...encodeVarUint(2,),);
 
-  // Def 3: Matrix (STRUCT) - 6 float fields
+  // Def 3: Matrix (STRUCT): 6 float fields
   bytes.push(...encodeString('Matrix',),);
   bytes.push(1,); // STRUCT
   bytes.push(...encodeVarUint(6,),);
@@ -117,7 +117,7 @@ function buildMinimalSchemaBytes(): number[] {
     bytes.push(...encodeVarUint(0,),); // tag (unused for struct field order)
   }
 
-  // Def 4: GUID (STRUCT) - sessionID(uint), localID(uint)
+  // Def 4: GUID (STRUCT): sessionID(uint), localID(uint)
   bytes.push(...encodeString('GUID',),);
   bytes.push(1,); // STRUCT
   bytes.push(...encodeVarUint(2,),);
@@ -130,7 +130,7 @@ function buildMinimalSchemaBytes(): number[] {
   bytes.push(0,);
   bytes.push(...encodeVarUint(2,),); // tag = 2
 
-  // Def 5: ParentIndex (STRUCT) - guid(GUID ref), position(string)
+  // Def 5: ParentIndex (STRUCT): guid(GUID ref), position(string)
   bytes.push(...encodeString('ParentIndex',),);
   bytes.push(1,); // STRUCT
   bytes.push(...encodeVarUint(2,),);
@@ -143,7 +143,7 @@ function buildMinimalSchemaBytes(): number[] {
   bytes.push(0,);
   bytes.push(...encodeVarUint(2,),); // tag = 2
 
-  // Def 6: NodeChange (MESSAGE) - guid, phase, parentIndex, type, name, visible, opacity
+  // Def 6: NodeChange (MESSAGE): guid, phase, parentIndex, type, name, visible, opacity
   bytes.push(...encodeString('NodeChange',),);
   bytes.push(2,); // MESSAGE
   bytes.push(...encodeVarUint(7,),);
@@ -566,7 +566,7 @@ await describe({
             // Message tag 3 (ackID) = 0
             doc.push(...encodeVarUint(3,),);
             doc.push(...encodeVarUint(0,),);
-            // Message tag 4 (nodeChanges) - repeated, count prefix
+            // Message tag 4 (nodeChanges): repeated, count prefix
             doc.push(...encodeVarUint(4,),);
             doc.push(...encodeVarUint(1,),); // 1 node change
             // NodeChange message:

@@ -38,17 +38,17 @@
  * The regex pattern `/[$()*+.?[\\\]^{|}]/g` matches each metacharacter and replaces it with
  * an escaped version by prefixing it with a backslash. Here's what each metacharacter means:
  *
- * - `$` - End of string anchor (matches position, not character)
- * - `(` and `)` - Capturing group delimiters for grouping and capturing matches
- * - `*` - Zero or more quantifier (matches preceding element 0 or more times)
- * - `+` - One or more quantifier (matches preceding element 1 or more times)
- * - `.` - Any character wildcard (matches any single character except newline)
- * - `?` - Zero or one quantifier (matches preceding element 0 or 1 times)
- * - `[` and `]` - Character class delimiters for matching sets of characters
- * - `\` - Escape character for escaping special regex characters
- * - `^` - Start of string anchor OR negation in character classes
- * - `{` and `}` - Quantifier delimiters for exact repetition counts \{n,m\}
- * - `|` - Alternation operator for matching either left or right expression
+ * - `$`: End of string anchor (matches position, not character)
+ * - `(` and `)`: Capturing group delimiters for grouping and capturing matches
+ * - `*`: Zero or more quantifier (matches preceding element 0 or more times)
+ * - `+`: One or more quantifier (matches preceding element 1 or more times)
+ * - `.`: Any character wildcard (matches any single character except newline)
+ * - `?`: Zero or one quantifier (matches preceding element 0 or 1 times)
+ * - `[` and `]`: Character class delimiters for matching sets of characters
+ * - `\`: Escape character for escaping special regex characters
+ * - `^`: Start of string anchor OR negation in character classes
+ * - `{` and `}`: Quantifier delimiters for exact repetition counts \{n,m\}
+ * - `|`: Alternation operator for matching either left or right expression
  */
 export function $({ str, }: { str: string; },): RegExp {
   // Escape all regex metacharacters to create a literal pattern

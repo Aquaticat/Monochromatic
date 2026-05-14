@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
-  <!-- Mouth - separate layer for lip sync -->
-  <!-- Small closed mouth, neutral expression -->
-  <path d="M 393 188 Q 400 186 407 188" fill="none" stroke="#cc6666" stroke-width="1.8"
-        stroke-linecap="round"/>
-  <!-- Lower lip hint -->
-  <path d="M 395 190 Q 400 193 405 190" fill="none" stroke="#dfa0a0" stroke-width="0.8"
-        stroke-linecap="round"/>
-</svg>

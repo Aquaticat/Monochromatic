@@ -326,23 +326,6 @@ Replace with paired commas, parentheses, colon, semicolon, or period.
 
 - Line 276: // tsgo #2666 — stale .tsbuildinfo causes false negatives; clean before each build
 
-### packages/duik/teto-generated/src/mise.assemble.ts
-
-- Line 41: `Traced SVG directory not found: ${tracedDir} — run the trace task first`,
-
-### packages/duik/teto-generated/src/mise.compare.ts
-
-- Line 40: `Composite PNG not found: ${compositePng} — run the composite task first`,
-
-### packages/duik/teto-generated/src/mise.segment.ts
-
-- Line 44: `Cropped front view not found at ${inputImage} — run the crop task first`,
-
-### packages/duik/teto-generated/src/mise.trace.ts
-
-- Line 144: `Masks directory not found: ${masksDir} — run the segment task first`,
-- Line 157: throw new Error('No PGM masks found — segmentation may have failed',);
-
 ### packages/figma-parsers/penpot/src/index.ts
 
 - Line 770: // For decks, find all SLIDE nodes — each becomes a page
@@ -1666,26 +1649,6 @@ Replace with proper punctuation or restructure sentence.
 ### packages/dev-script/vm-builder/src/import.ts
 
 - Line 74: /** libvirt session URI -- no sudo needed. */
-
-### packages/duik/teto-generated/README.md
-
-- Line 14: 1. **crop** -- extract the front view from the 3-view reference sheet using ImageMagick
-- Line 15: 2. **segment** -- generate per-part binary masks via color matching + spatial bounding boxes
-- Line 16: 3. **trace** -- convert masks to SVG paths with potrace (runs in a container)
-- Line 17: 4. **assemble** -- transform traced paths into the 800x1200 viewBox, apply fill colors
-- Line 18: 5. **composite** -- stack all parts in layer order into a single preview SVG
-
-### packages/duik/teto/src/measure-profile.ts
-
-- Line 79: /** Read the PGM file directly -- it's a simple text format. */
-
-### packages/duik/teto/src/mise.narrow.ts
-
-- Line 39: /** Head 20% too wide -- gentle narrowing. */
-
-### packages/duik/teto/src/narrow-svg.ts
-
-- Line 96: /** V takes a single y value -- don't transform. */
 
 ### packages/figma-parsers/kiwi/RESEARCH.md
 

@@ -208,11 +208,10 @@ The single source of truth is `pnpm-workspace.yaml`.
 
 ## License inconsistency
 
-Three different license values across 69 packages:
+Two different license values across 67 packages:
 
 - `LGPL-3.0-or-later` (65 packages)
 - `LGPL-3.0-or-later AND CC-BY-SA-4.0` (2): webapp-content/ssg-test, typeface/aquaticat
-- `CC-BY-SA-4.0` (2): duik/teto, duik/teto-generated
 
 The mixed licenses are likely intentional (content vs code),
 but there is no documentation explaining the licensing model.

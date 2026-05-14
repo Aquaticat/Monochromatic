@@ -1334,18 +1334,6 @@ importers:
         specifier: 'catalog:'
         version: 1.3.11
 
-  packages/duik/teto:
-    dependencies:
-      '@monochromatic-dev/module-image-diff':
-        specifier: workspace:*
-        version: link:../../module/image-diff
-
-  packages/duik/teto-generated:
-    dependencies:
-      '@monochromatic-dev/module-image-diff':
-        specifier: workspace:*
-        version: link:../../module/image-diff
-
   packages/figma-parsers/kiwi:
     dependencies:
       '@monochromatic-dev/module-es':
