@@ -68,6 +68,7 @@ function addIfLocal(
     raw: string;
   },
 ): void {
+  /** URL with surrounding whitespace removed; raw CSS values often carry stray padding. */
   const trimmed = raw.trim();
   if (trimmed === '' || trimmed.startsWith('#',))
     return;
@@ -95,6 +96,7 @@ function nextSemanticToken(
   },
 ): CSSToken | null {
   for (let index = startIndex; index < tokens.length; index += 1) {
+    /** Current token under inspection; skipped if it carries no semantic content. */
     const token = nonNullishOrThrow(tokens[index],);
     if (!isTokenWhiteSpaceOrComment(token,))
       return token;
@@ -128,10 +130,13 @@ function nextSemanticToken(
  * ```
  */
 export function extractCssUrls(source: string,): string[] {
+  /** Full token stream produced by the CSS tokenizer; walked once below. */
   const tokens: CSSToken[] = tokenize({ css: source, },);
+  /** Output set; deduplicates references seen multiple times across the stylesheet. */
   const refs = new Set<string>();
 
   for (let index = 0; index < tokens.length; index += 1) {
+    /** Current token in the linear scan; dispatch below depends on its kind. */
     const token = nonNullishOrThrow(tokens[index],);
     if (isTokenURL(token,)) {
       addIfLocal({
@@ -143,6 +148,7 @@ export function extractCssUrls(source: string,): string[] {
     if (isTokenFunction(token,)) {
       if (tokenValue(token,).toLowerCase() !== 'url')
         continue;
+      /** First semantic token after `url(`; expected to be the quoted URL string. */
       const next = nextSemanticToken({
         tokens,
         startIndex: index + 1,
@@ -158,6 +164,7 @@ export function extractCssUrls(source: string,): string[] {
     if (isTokenAtKeyword(token,)) {
       if (tokenValue(token,).toLowerCase() !== 'import')
         continue;
+      /** First semantic token after `@import`; expected to be the imported stylesheet URL. */
       const next = nextSemanticToken({
         tokens,
         startIndex: index + 1,

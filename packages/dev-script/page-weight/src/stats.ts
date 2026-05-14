@@ -75,10 +75,13 @@ function add(
 function medianOfSorted(sorted: readonly number[],): number {
   if (sorted.length === 0)
     throw new Error('cannot compute median of empty sample',);
+  /** Index of the upper-middle element; for odd lengths this is the median position. */
   const mid = Math.floor(sorted.length / 2,);
   if (sorted.length % 2 === 1)
     return nonNullishOrThrow(sorted[mid],);
+  /** Lower of the two central values for even-length samples. */
   const low = nonNullishOrThrow(sorted[mid - 1],);
+  /** Upper of the two central values for even-length samples. */
   const high = nonNullishOrThrow(sorted[mid],);
   return (low + high) / 2;
 }
@@ -105,7 +108,9 @@ function medianOfSorted(sorted: readonly number[],): number {
 export function summarize(sample: readonly number[],): Stats {
   if (sample.length === 0)
     throw new Error('cannot summarize an empty sample',);
+  /** Ascending-sorted copy; needed for median computation and for `min`/`max` lookup. */
   const sorted = sample.toSorted(ascending,);
+  /** Sum of every observation; reused for both the `sum` output and the `mean` computation. */
   const sum = sorted.reduce(
     add,
     0,

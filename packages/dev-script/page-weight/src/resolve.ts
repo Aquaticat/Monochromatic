@@ -51,14 +51,23 @@ export function resolveReference(
     ref: string;
   },
 ): string | null {
+  /** Reference with any `#fragment` removed; fragments do not affect the served file. */
   const withoutFragment = nonNullishOrThrow(ref.trim().split('#',)[0],);
+  /** Reference with the query string also stripped; query parameters do not change the path on disk. */
   const trimmed = nonNullishOrThrow(withoutFragment.split('?',)[0],);
   if (trimmed === '')
     return null;
   if (trimmed.startsWith('//',) || /^[a-z][a-z0-9+.-]*:/i.test(trimmed,))
     return null;
 
+  /** Canonical absolute form of the dist root used as the containment boundary. */
   const absoluteRoot = pathResolve(root,);
+  /**
+   * Absolute filesystem path for the reference.
+   *
+   * Root-absolute refs (`/foo.css`) join against `absoluteRoot`; relative refs join
+   * against the directory of the file that contains the reference.
+   */
   const resolved = isAbsolute(trimmed,)
     ? pathResolve(
       absoluteRoot,
@@ -69,6 +78,7 @@ export function resolveReference(
       trimmed,
     );
 
+  /** Path of `resolved` relative to `absoluteRoot`; used to detect escapes via `..` or absolute output. */
   const relativeToRoot = relative(
     absoluteRoot,
     resolved,
