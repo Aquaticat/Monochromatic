@@ -20,6 +20,7 @@ class TopNav extends HTMLElement {
 
   /** Renders the navigation bar with hamburger, heading, and search link. */
   connectedCallback(): void {
+    /** Heading text from the `heading` attribute, displayed in the page title `<h1>`. */
     const heading = this.getAttribute('heading',) ?? '';
     this.#shadow.replaceChildren(
       h({

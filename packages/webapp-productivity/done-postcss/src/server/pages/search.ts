@@ -27,16 +27,21 @@ import { serializePageData, } from './layout.ts';
  * ```
  */
 export async function searchPage(url: URL,): Promise<Response> {
+  /** Query string lifted from the `?q=` parameter; defaults to empty for the landing view. */
   const query = url.searchParams.get('q',) ?? '';
+  /** Search results from the FTS (or LIKE fallback) query. */
   const results = await searchTasks(query,);
+  /** All tags in the database; rendered as quick-filter chips on the landing view. */
   const availableTags = await listAllTags();
 
+  /** Serialized into the embedded JSON `<script>` for the client entry to hydrate from. */
   const pageData = {
     query,
     results,
     availableTags,
   };
 
+  /** Rendered HTML response body; built via `hHtml` and wrapped with `<!DOCTYPE html>`. */
   const html = `<!DOCTYPE html>
 ${
     h({

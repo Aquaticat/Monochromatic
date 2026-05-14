@@ -139,13 +139,16 @@ class TaskDetail extends HTMLElement {
 
   /** Rebuilds pill elements from current metadata state. */
   #updatePillsDisplay(): void {
+    /** Container the pill list is rendered into; absent before initial render. */
     const pillsContainer = this.#shadow.querySelector<HTMLElement>('.pills',);
     if (pillsContainer === null)
       return;
+    /** Task data extracted from `#data`; updates are skipped until `configure()` has run. */
     const task = this.#data?.task;
     if (task === undefined)
       return;
 
+    /** Descriptor list driving the pill render below. */
     const pills = buildPillData({
       task,
       tags: this.#tags,
@@ -164,9 +167,11 @@ class TaskDetail extends HTMLElement {
 
   /** Delegates to renderTaskDetail and wires autofill on title input. */
   #render(): void {
+    /** Snapshot of `#data` to satisfy the null check and stable destructure below. */
     const data = this.#data;
     if (data === null)
       return;
+    /** Title input returned by the shared renderer; autofill is wired on its `input` events. */
     const { titleInput, } = renderTaskDetail({
       shadow: this.#shadow,
       task: data.task,

@@ -131,6 +131,7 @@ class ToggleSwitch extends HTMLElement {
 
   /** Renders the track and thumb into the shadow root. */
   #render(): void {
+    /** Current toggle state, used to pick the thumb position class and glyph. */
     const isOn = this.on;
     this.#shadow.replaceChildren(
       h({

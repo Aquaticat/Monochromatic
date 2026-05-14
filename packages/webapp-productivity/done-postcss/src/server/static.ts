@@ -35,6 +35,7 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
           );
         },
         getMeta: async function getMetadata(id,) {
+          /** Mutable holder; assignment moves from the initial `undefined` once the `stat()` call resolves. */
           let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
           try {
             stats = await stat(

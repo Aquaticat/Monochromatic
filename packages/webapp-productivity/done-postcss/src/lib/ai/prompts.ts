@@ -34,6 +34,7 @@ export function buildAutofillMessages(
   existingTags: readonly string[],
   existingLocations: readonly string[],
 ): ChatMessage[] {
+  /** Instruction prompt with schema constraints; existing tags/locations are interpolated below. */
   const systemPrompt =
     `You are a task metadata assistant. Given a task title, infer metadata.
 Return ONLY valid JSON matching this schema, no other text:
@@ -104,8 +105,10 @@ export function buildSuggestionMessages(
   currentLocation: string | null,
   focusDirective: string | null,
 ): ChatMessage[] {
+  /** ISO timestamp embedded into the user prompt so the model knows the request's wall-clock context. */
   const currentTime = new Date().toISOString();
 
+  /** Instruction prompt describing ranking factors and the JSON-array output contract. */
   const systemPrompt =
     `You are a task prioritization assistant. Given a list of tasks and the user's current context, return the task IDs ranked by what the user should do next.
 Return ONLY a JSON array of task ID strings, most important first. No other text.
@@ -117,6 +120,7 @@ Ranking factors (in rough priority order):
 4. Priority: high > medium > low
 5. Complexity: prefer lower-complexity tasks when other factors are equal`;
 
+  /** User-side content combining context tags and serialized task summaries. */
   const userContent = `<user_context>
 Location: ${currentLocation ?? 'unknown'}
 Focus: ${focusDirective ?? 'none'}

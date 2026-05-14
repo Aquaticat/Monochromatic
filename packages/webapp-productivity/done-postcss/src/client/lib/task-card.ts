@@ -66,7 +66,9 @@ class TaskCard extends HTMLElement {
 
   /** Renders the full card content into the shadow root. */
   #render(): void {
+    /** Local snapshot used for the null guard and the renderer call below. */
     const task = this.#task;
+    /** Local snapshot used for the null guard and the renderer call below. */
     const options = this.#options;
     if (task === null || options === null)
       return;
@@ -102,8 +104,10 @@ export function createTaskCard(
   task: Task,
   options: TaskCardOptions,
 ): TaskCard {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-card"
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element registered as "task-card" */
+  /** Configured custom element returned to the caller for DOM insertion. */
   const card = document.createElement('task-card',) as TaskCard;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   card.configure(
     task,
     options,

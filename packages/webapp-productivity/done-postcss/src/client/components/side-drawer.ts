@@ -111,6 +111,7 @@ class SideDrawer extends HTMLElement {
 
   /** Renders both the inline sidebar and popover panel into the shadow root. */
   #render(): void {
+    /** Popover-only close button; tagged with `panel-close` so the click handler can find it. */
     const panelClose = buildCloseButton('Close menu',);
     panelClose.classList.add('panel-close',);
 

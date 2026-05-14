@@ -42,8 +42,11 @@ function normalizeDatabasePath(value: string,): string {
  * @returns Resolved database path
  */
 function resolveDatabasePath(): string {
+  /** Path supplied via `--db=` CLI flag, if present. */
   const argumentPath = getArgumentValue('db',);
+  /** Path from `DB_PATH` environment variable, used when no CLI flag is given. */
   const environmentPath = process.env.DB_PATH;
+  /** First defined source in priority order, falling back to the default path. */
   const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
   return normalizeDatabasePath(rawPath,);
 }
@@ -58,6 +61,7 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
   if (databasePath === ':memory:')
     return;
 
+  /** Parent directory of the database file; ensured via `mkdirSync({ recursive: true })`. */
   const directoryPath = dirname(databasePath,);
   mkdirSync(
     directoryPath,

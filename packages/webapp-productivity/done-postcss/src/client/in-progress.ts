@@ -88,19 +88,23 @@ const TIMER_UPDATE_MS = 1_000;
 // Live timer updates: correlate each card with its task by DOM order
 setInterval(
   function updateTimers() {
+    /** Current set of task-card elements; recomputed each tick in case the list mutates. */
     const cards = list.querySelectorAll<HTMLElement>('task-card',);
     cards.forEach(function updateCard(
       card,
       cardIndex,
     ) {
+      /** Task data aligned to the card by DOM order; `undefined` triggers an early return. */
       const task = pageData.tasks[cardIndex];
       if (task === undefined)
         return;
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element has getChipElement method
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element has getChipElement method */
+      /** Tracked-time chip on the task-card; returns `null` when the card has not yet rendered chips. */
       const chipEl = (card as unknown as {
         getChipElement?: (prefix: string,) => HTMLSpanElement | null;
       })
         .getChipElement?.('tracked:',);
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       if (chipEl instanceof HTMLSpanElement)
         chipEl.textContent = `tracked: ${formatRunningTrackedTime(task,)}`;
     },);

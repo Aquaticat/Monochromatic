@@ -49,11 +49,16 @@ class SettingGroup extends HTMLElement {
 
   /** Renders the setting group with label, optional description, and action control. */
   connectedCallback(): void {
+    /** Row title from the `label` attribute. */
     const label = this.getAttribute('label',) ?? '';
+    /** Optional secondary description rendered as a `<p>` when non-empty. */
     const description = this.getAttribute('description',) ?? '';
+    /** Either `'button'` or `'toggle'`; chooses which control sits in the action slot. */
     const mode = this.getAttribute('mode',) ?? 'toggle';
+    /** Initial on state for `mode === 'toggle'`, derived from presence of the `on` attribute. */
     const on = this.hasAttribute('on',);
 
+    /** Either a button or a `<toggle-switch>` depending on `mode`. */
     const actionElement = mode === 'button'
       ? h({
         tag: 'button',
@@ -71,6 +76,7 @@ class SettingGroup extends HTMLElement {
         attrs: on ? { on: '', } : {},
       },);
 
+    /** Builds incrementally so the optional description can be pushed only when present. */
     const children: (HTMLElement)[] = [
       h({
         tag: 'style',

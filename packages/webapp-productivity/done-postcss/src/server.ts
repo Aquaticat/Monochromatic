@@ -50,11 +50,15 @@ const DECIMAL_RADIX = 10;
  * @returns Resolved port number
  */
 function resolvePort(): number {
+  /** Port supplied via `--port=` CLI flag, if present. */
   const argumentPort = getArgumentValue('port',);
+  /** Port from `PORT` environment variable, used when no CLI flag is given. */
   const environmentPort = process.env.PORT;
+  /** Whichever source (CLI takes precedence) provided a value, or `undefined`. */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
+  /** Numeric port after `parseInt`; `NaN` falls back to `DEFAULT_PORT`. */
   const parsedPort = Number.parseInt(
     rawPort,
     DECIMAL_RADIX,
@@ -77,6 +81,7 @@ function requireParam(
   event: Parameters<typeof getRouterParam>[0],
   name: string,
 ): string {
+  /** Raw parameter value from h3's router; `undefined` when missing. */
   const value = getRouterParam(
     event,
     name,

@@ -55,8 +55,10 @@ const app = appElement;
 document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
   'search',
   function onSearch(event,) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string */
+    /** Search query lifted from the custom event detail. */
     const { query, } = (event as CustomEvent<{ query: string; }>).detail;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
     globalThis.location.href = query.length === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
@@ -72,6 +74,7 @@ if (pageData.query.length === 0) {
     },),
   );
 
+  /** Tag chip list extracted from `pageData`; rendered only when non-empty. */
   const { availableTags, } = pageData;
   if (availableTags.length > 0) {
     app.append(

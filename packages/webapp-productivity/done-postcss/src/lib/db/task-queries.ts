@@ -36,10 +36,12 @@ import {
  * ```
  */
 export async function getTaskRowById(id: string,): Promise<TaskRow | null> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape */
+  /** Single-row lookup result; `undefined` becomes the public `null` return. */
   const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID,).get(id,) as
     | TaskRow
     | undefined;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return taskRow ?? null;
 }
 
@@ -56,6 +58,7 @@ export async function getTaskRowById(id: string,): Promise<TaskRow | null> {
  * ```
  */
 export async function getTaskById(id: string,): Promise<Task | null> {
+  /** Raw row from `getTaskRowById`; mapped to the application shape when present. */
   const taskRow = await getTaskRowById(id,);
   return taskRow === null ? null : mapTask(taskRow,);
 }
@@ -71,8 +74,10 @@ export async function getTaskById(id: string,): Promise<Task | null> {
  * ```
  */
 export async function listInboxUnblockedTasks(): Promise<Task[]> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
+  /** Raw row list for the unblocked-inbox query; mapped element-wise below. */
   const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,).all() as TaskRow[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
   },);
@@ -89,10 +94,12 @@ export async function listInboxUnblockedTasks(): Promise<Task[]> {
  * ```
  */
 export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow with blocker_id join column
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow with blocker_id join column */
+  /** Raw row list paired with the join column; rebuilt into blocker links below. */
   const rows = await db
     .prepare(SQL_SELECT_BLOCKED_INBOX,)
     .all() as (TaskRow & { blocker_id: string; })[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toBlockedLink(row,) {
     return {
       blockerId: row.blocker_id,
@@ -112,8 +119,10 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
  * ```
  */
 export async function listInProgressTasks(): Promise<Task[]> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
+  /** Raw row list of tasks with active timers; mapped element-wise below. */
   const rows = await db.prepare(SQL_SELECT_IN_PROGRESS,).all() as TaskRow[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
   },);
@@ -132,8 +141,10 @@ export async function listInProgressTasks(): Promise<Task[]> {
  * ```
  */
 export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
+  /** Raw candidate rows excluding the current task; mapped element-wise below. */
   const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,).all(taskId,) as TaskRow[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
   },);
@@ -150,8 +161,10 @@ export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]
  * ```
  */
 export async function listAllTags(): Promise<string[]> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns rows with tag column
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns rows with tag column */
+  /** Single-column tag rows; flattened to a string array below. */
   const rows = await db.prepare(SQL_SELECT_ALL_TAGS,).all() as { tag: string; }[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function extractTag(row,) {
     return row.tag;
   },);
@@ -171,15 +184,18 @@ export async function listAllTags(): Promise<string[]> {
  * ```
  */
 export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
+  /** Whitespace-trimmed query; empty trim short-circuits with no DB call. */
   const normalizedSearchQuery = searchQuery.trim();
   if (normalizedSearchQuery.length === 0)
     return [];
 
   try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database FTS query
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- database FTS query */
+    /** FTS-matched rows joined with the blocked flag; mapped to `SearchTask` below. */
     const rows = await db.prepare(SQL_SEARCH_FTS,).all(
       normalizedSearchQuery,
     ) as (TaskRow & { is_blocked: number; })[];
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
     return rows.map(function toSearchTask(row,) {
       return {
         ...mapTask(row,),
@@ -188,13 +204,15 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
     },);
   }
   catch {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database LIKE query
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- database LIKE query */
+    /** Fallback LIKE-match rows used when FTS rejects the query syntax. */
     const rows = await db
       .prepare(SQL_SEARCH_LIKE,)
       .all(
         `%${normalizedSearchQuery}%`,
         `%${normalizedSearchQuery}%`,
       ) as (TaskRow & { is_blocked: number; })[];
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
     return rows.map(function toSearchTask(row,) {
       return {
         ...mapTask(row,),

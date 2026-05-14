@@ -22,8 +22,11 @@ import { renderPage, } from './layout.ts';
  * ```
  */
 export async function inboxPage(): Promise<Response> {
+  /** Top-level inbox tasks with no remaining blockers. */
   const inboxTasks = await listInboxUnblockedTasks();
+  /** Blocked tasks paired with the blocker IDs that hide them. */
   const blockedLinks = await listBlockedInboxTasks();
+  /** Blocked-task links grouped by blocker ID for nested rendering in the client. */
   const blockedTasksByBlocker = Object.groupBy(
     blockedLinks,
     function byBlocker(link,) {

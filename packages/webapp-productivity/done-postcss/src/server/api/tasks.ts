@@ -50,6 +50,7 @@ const priorities = new Set<string>([
  */
 export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
+    /** Parsed JSON body retained as `unknown` until `isRecord` narrows it below. */
     const body: unknown = await req.json();
     if (!isRecord(body,)) {
       return jsonResponse(
@@ -58,6 +59,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       );
     }
 
+    /** Trimmed title; empty trim short-circuits with a 400 response. */
     const title = typeof body.title === 'string' ? body.title.trim() : '';
     if (title.length === 0) {
       return jsonResponse(
@@ -66,6 +68,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       );
     }
 
+    /** Persisted task returned to the caller as the 201 body. */
     const task = await createTask({
       title,
       description: typeof body.description === 'string' ? body.description : null,
@@ -112,7 +115,9 @@ export async function handleUpdateTask(
   id: string,
 ): Promise<Response> {
   try {
+    /** Parsed JSON body retained as `unknown` until the update parser narrows the shape. */
     const body: unknown = await req.json();
+    /** Validated update payload; `null` triggers a 400 response. */
     const taskUpdateInput = parseTaskUpdateInput(body,);
     if (taskUpdateInput === null) {
       return jsonResponse(
@@ -121,6 +126,7 @@ export async function handleUpdateTask(
       );
     }
 
+    /** Updated task; `null` triggers a 404 when the row was removed concurrently. */
     const task = await updateTask(
       id,
       taskUpdateInput,
@@ -154,6 +160,7 @@ export async function handleUpdateTask(
  * ```
  */
 export async function handleDeleteTask(id: string,): Promise<Response> {
+  /** Whether the delete affected a row; `false` triggers a 404 response. */
   const deleted = await deleteTask(id,);
   if (!deleted) {
     return jsonResponse(

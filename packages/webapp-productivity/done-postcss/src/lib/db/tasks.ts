@@ -57,7 +57,9 @@ export {
  * ```
  */
 export async function createTask(input: TaskCreateInput,): Promise<Task> {
+  /** Server-generated UUID assigned before the insert so the read-back can find the row. */
   const id = crypto.randomUUID();
+  /** ISO timestamp reused for both `created_at` and `updated_at` to keep them aligned. */
   const timestamp = nowIso();
 
   await db.prepare(SQL_INSERT_TASK,).run(
@@ -81,6 +83,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
     timestamp,
   );
 
+  /** Read-back of the freshly inserted row; absence indicates a write/read race. */
   const createdTask = await getTaskById(id,);
   if (createdTask === null)
     throw new Error('Failed to read created task',);
@@ -105,10 +108,12 @@ export async function updateTask(
   id: string,
   input: TaskUpdateInput,
 ): Promise<Task | null> {
+  /** Existing task used as the merge base for the partial update. */
   const currentTask = await getTaskById(id,);
   if (currentTask === null)
     return null;
 
+  /** Merged task object combining the previous values with any fields supplied in `input`. */
   const updated: Task = {
     ...currentTask,
     title: input.title?.trim() ?? currentTask.title,
@@ -155,6 +160,7 @@ export async function updateTask(
  * ```
  */
 export async function deleteTask(id: string,): Promise<boolean> {
+  /** Run result whose `.changes` distinguishes a successful delete from a no-op. */
   const result = await db.prepare(SQL_DELETE_TASK,).run(id,);
   return result.changes > 0;
 }

@@ -25,10 +25,12 @@ type SettingRow = {
  * ```
  */
 export async function getSetting(key: string,): Promise<string | null> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns the SettingRow shape
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns the SettingRow shape */
+  /** Single-row result from the lookup; `undefined` indicates the key is missing. */
   const row = await db.prepare('SELECT value FROM settings WHERE key = ?',).get(key,) as
     | Pick<SettingRow, 'value'>
     | undefined;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return row?.value ?? null;
 }
 
@@ -71,6 +73,7 @@ export async function setSetting(
  * ```
  */
 export async function deleteSetting(key: string,): Promise<boolean> {
+  /** Run result whose `.changes` distinguishes a successful delete from a no-op. */
   const result = await db.prepare('DELETE FROM settings WHERE key = ?',).run(key,);
   return result.changes > 0;
 }
@@ -86,10 +89,12 @@ export async function deleteSetting(key: string,): Promise<boolean> {
  * ```
  */
 export async function getAllSettings(): Promise<Record<string, string>> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns SettingRow shape
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns SettingRow shape */
+  /** All settings rows in alphabetical key order, converted to a plain object below. */
   const rows = await db
     .prepare('SELECT key, value FROM settings ORDER BY key ASC',)
     .all() as SettingRow[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return Object.fromEntries(rows.map(function toEntry(row,) {
     return [
       row.key,

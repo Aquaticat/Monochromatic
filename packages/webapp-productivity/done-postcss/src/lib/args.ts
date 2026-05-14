@@ -18,7 +18,9 @@
  * ```
  */
 export function getArgumentValue(name: string,): string | undefined {
+  /** Match string for the `--name=` portion preceding the value. */
   const prefix = `--${name}=`;
+  /** First `process.argv` entry starting with the prefix, if any. */
   const argument = process.argv.find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
   },);

@@ -55,6 +55,7 @@ function parseStatus(value: unknown,): TaskStatus | undefined {
 export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   if (!isRecord(value,))
     return null;
+  /** Accumulator: each field block validates the input and adds the parsed value here. */
   const result: TaskUpdateInput = {};
 
   if ('title' in value) {
@@ -69,30 +70,35 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
     result.description = value.description;
   }
   if ('tags' in value) {
+    /** Parsed `tags` array; `null` signals a validation failure and aborts the parse. */
     const v = parseStringArray(value.tags,);
     if (v === null)
       return null;
     result.tags = v;
   }
   if ('locations' in value) {
+    /** Parsed `locations` array; `null` signals a validation failure and aborts the parse. */
     const v = parseStringArray(value.locations,);
     if (v === null)
       return null;
     result.locations = v;
   }
   if ('blockedBy' in value) {
+    /** Parsed `blockedBy` array; `null` signals a validation failure and aborts the parse. */
     const v = parseStringArray(value.blockedBy,);
     if (v === null)
       return null;
     result.blockedBy = v;
   }
   if ('reminders' in value) {
+    /** Parsed `reminders` array; `null` signals a validation failure and aborts the parse. */
     const v = parseStringArray(value.reminders,);
     if (v === null)
       return null;
     result.reminders = v;
   }
   if ('priority' in value) {
+    /** Parsed priority enum; `undefined` signals an unrecognised value and aborts the parse. */
     const v = parseEnumValue<TaskPriority>(
       value.priority,
       priorities,
@@ -102,6 +108,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
     result.priority = v;
   }
   if ('complexity' in value) {
+    /** Parsed complexity enum; `undefined` signals an unrecognised value and aborts the parse. */
     const v = parseEnumValue<TaskPriority>(
       value.complexity,
       priorities,
@@ -117,6 +124,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
     result.dueDate = value.dueDate;
   }
   if ('status' in value) {
+    /** Parsed task status; `undefined` signals an unrecognised value and aborts the parse. */
     const v = parseStatus(value.status,);
     if (v === undefined)
       return null;

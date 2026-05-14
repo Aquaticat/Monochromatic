@@ -63,6 +63,7 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  * ```
  */
 export function renderPage(options: LayoutOptions,): Response {
+  /** Top-nav element string, or empty when the caller opts out via `hideTopNav`. */
   const topNav = options.hideTopNav === true
     ? ''
     : h({
@@ -70,6 +71,7 @@ export function renderPage(options: LayoutOptions,): Response {
       attrs: { heading: options.heading, },
     },);
 
+  /** Rendered HTML response body; built via `hHtml` and wrapped with `<!DOCTYPE html>`. */
   const html = `<!DOCTYPE html>
 ${
     h({

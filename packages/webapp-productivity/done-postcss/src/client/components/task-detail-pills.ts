@@ -121,6 +121,7 @@ export function buildPillElements(
 ): HTMLElement[] {
   return pills.map(
     function buildPill(pill,): HTMLElement {
+      /** Span captured so loading and autofilled data attributes can be set conditionally. */
       const element = h({
         tag: 'span',
         class: 'pill',

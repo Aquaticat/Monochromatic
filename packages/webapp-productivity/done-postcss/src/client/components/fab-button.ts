@@ -53,6 +53,7 @@ class FabButton extends HTMLElement {
 
   /** Renders the button with aria-label and slot for content. */
   connectedCallback(): void {
+    /** Accessibility label from the `label` attribute, with a fallback for missing attribute. */
     const label = this.getAttribute('label',) ?? 'Action';
     this.#shadow.replaceChildren(
       h({

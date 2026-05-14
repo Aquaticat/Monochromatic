@@ -14,10 +14,12 @@
  * ```
  */
 export function readPageData<TData,>(): TData {
+  /** Embedded JSON `<script>` placed in the HTML by the server render. */
   const element = document.querySelector<HTMLScriptElement>('#page-data',);
   if (!(element instanceof HTMLScriptElement))
     throw new Error('Missing page data script element',);
 
+  /** Raw JSON payload extracted from the script element. */
   const text = element.textContent;
   if (text.length === 0)
     throw new Error('Page data element is empty',);

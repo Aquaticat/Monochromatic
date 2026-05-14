@@ -86,9 +86,11 @@ class SectionHeading extends HTMLElement {
 
   /** Updates the toggle indicator and content visibility. */
   #updateToggle(): void {
+    /** Toggle indicator span; absent before first render, so the check below guards. */
     const toggle = this.#shadow.querySelector<HTMLElement>('.toggle',);
     if (toggle instanceof HTMLElement)
       toggle.textContent = this.#open ? '\u25B2' : '\u25BC';
+    /** Content wrapper whose display style is flipped to show or hide the slotted content. */
     const content = this.#shadow.querySelector<HTMLElement>('.content',);
     if (content !== null) {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns Element; style access needs HTMLElement
@@ -98,7 +100,9 @@ class SectionHeading extends HTMLElement {
 
   /** Renders the heading, toggle indicator, and content slot into the shadow root. */
   #render(): void {
+    /** Leading icon glyph from the `icon` attribute. */
     const icon = this.getAttribute('icon',) ?? '';
+    /** Heading text from the `label` attribute, displayed next to the icon. */
     const label = this.getAttribute('label',) ?? '';
 
     this.#shadow.replaceChildren(

@@ -98,6 +98,7 @@ function buildTaskList(
   tasks: readonly Task[],
   blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>,
 ): HTMLUListElement {
+  /** Top-level list element; child tasks are appended as nested sub-lists. */
   const list = h({
     tag: 'ul',
     class: 'task-list',
@@ -112,6 +113,7 @@ function buildTaskList(
         },
       ),
     );
+    /** Blocked-by children for the current task, defaulted to empty when none exist. */
     const childLinks = blockedTasksByBlocker[task.id] ?? [];
     if (childLinks.length > 0) {
       list.append(h({

@@ -38,11 +38,13 @@ class FocusDropdown extends HTMLElement {
 
   /** Renders the trigger button and popover menu with preset options. */
   #render(): void {
+    /** Trigger label span captured so option clicks can update it in place. */
     const textSpan = h({
       tag: 'span',
       class: 'text',
       text: this.#value,
     },);
+    /** Popover menu captured so option clicks can call `hidePopover()` after selection. */
     const menu = h({
       tag: 'ul',
       class: 'menu',

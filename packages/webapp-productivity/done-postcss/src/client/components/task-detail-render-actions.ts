@@ -31,16 +31,20 @@ export function buildActionButtonRow(
     isCreate: boolean;
   },
 ): HTMLElement {
+  /** Start button attrs; `disabled` is appended when a timer is already running. */
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
   if (task.timerStartedAt !== null)
     startAttrs['disabled'] = '';
+  /** Stop button attrs; `disabled` is appended when no timer is running. */
   const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
   if (task.timerStartedAt === null)
     stopAttrs['disabled'] = '';
+  /** Complete button attrs; `disabled` is appended when blockers remain. */
   const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
   if (task.blockedBy.length > 0)
     completeAttrs['disabled'] = '';
 
+  /** Row captured separately so the create-mode hidden flag can be toggled. */
   const btnRow = h({
     tag: 'div',
     class: 'btn-row',
@@ -109,13 +113,18 @@ export function attachActionHandler(
   shadow.addEventListener(
     'click',
     function onAction(event,): void {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers */
+      /** Click target narrowed to `HTMLElement` so `closest()` can be invoked. */
       const target = event.target as HTMLElement;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
+      /** Nearest `[data-action]` button ancestor, or `null` when the click was outside any action. */
       const button = target.closest<HTMLElement>('[data-action]',);
       if (button === null)
         return;
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- closest returns HTMLElement with dataset
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- closest returns HTMLElement with dataset */
+      /** Action name from the button's `data-action` attribute, forwarded to the custom event. */
       const { action, } = (button as HTMLElement).dataset;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
 
       host.dispatchEvent(
         new CustomEvent(

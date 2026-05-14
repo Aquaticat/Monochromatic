@@ -89,12 +89,14 @@ export class AutofillController {
    * @param title - Trimmed title text
    */
   async #fetch(title: string,): Promise<void> {
+    /** Captured locally so the abort signal can be reused for the in-flight check and abort. */
     const controller = new AbortController();
     this.#abort = controller;
     this.loading = true;
     this.#callbacks.updateDisplay();
 
     try {
+      /** Server response containing the AI-suggested metadata payload. */
       const response = await fetch(
         '/api/ai/autofill',
         {
@@ -106,10 +108,14 @@ export class AutofillController {
       );
 
       if (response.ok) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape
+        /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape */
+        /** Parsed autofill payload; shape is enforced by the server endpoint contract. */
         const result = (await response.json()) as AutofillResult;
+        /* oxlint-enable typescript/no-unsafe-type-assertion */
         this.autofilled.clear();
+        /** Current field values from the host so empty-field merging can be done. */
         const state = this.#callbacks.getState();
+        /** Patch accumulating only fields that were empty before the AI suggestion. */
         const update: Record<string, unknown> = {};
 
         if (result.tags.length > 0 && state.tags.length === 0) {

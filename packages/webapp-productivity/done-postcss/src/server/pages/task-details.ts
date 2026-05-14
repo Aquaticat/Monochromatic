@@ -27,6 +27,7 @@ import { serializePageData, } from './layout.ts';
  * ```
  */
 export async function taskDetailsPage(taskId: string,): Promise<Response> {
+  /** Existing task; a missing ID short-circuits with a 404 response. */
   const task = await getTaskById(taskId,);
   if (task === null) {
     return new Response(
@@ -35,7 +36,9 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
     );
   }
 
+  /** All tasks eligible to be picked as new blockers (excludes the current task). */
   const blockerCandidates = await listTasksForBlockerPicker(taskId,);
+  /** Lookup table for resolving `blockedBy` IDs to candidate records. */
   const blockerCandidatesById = Object.fromEntries(
     blockerCandidates.map(function toEntry(candidate,) {
       return [
@@ -44,6 +47,7 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
       ];
     },),
   );
+  /** Existing blockers, resolved to candidate records and projected to the summary shape. */
   const blockerSummaries = task
     .blockedBy
     .map(function lookupBlocker(blockerId,) {
@@ -60,6 +64,7 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
       };
     },);
 
+  /** Serialized into the embedded JSON `<script>` for client-side hydration. */
   const pageData = {
     task,
     blockerCandidates: blockerCandidates.map(function toMinimal(candidate,) {
@@ -71,6 +76,7 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
     blockerSummaries,
   };
 
+  /** Rendered HTML response body; built via `hHtml` and wrapped with `<!DOCTYPE html>`. */
   const html = `<!DOCTYPE html>
 ${
     h({

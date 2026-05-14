@@ -28,8 +28,10 @@ export async function api<TResponse = unknown,>(
   path: string,
   options?: RequestInit,
 ): Promise<TResponse> {
+  /** Combined header set; starts with the JSON content type and absorbs any caller-supplied headers. */
   const mergedHeaders = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers !== undefined) {
+    /** Caller-supplied headers normalised through the `Headers` ctor before merging. */
     const extra = new Headers(options.headers,);
     extra.forEach(function applyHeader(
       value: string,
@@ -41,6 +43,7 @@ export async function api<TResponse = unknown,>(
       );
     },);
   }
+  /** Raw fetch response shared by both the error and success paths below. */
   const response = await fetch(
     path,
     {
@@ -50,6 +53,7 @@ export async function api<TResponse = unknown,>(
   );
 
   if (!response.ok) {
+    /** Parsed body or fallback object; assigned in `try`, defaulted in `catch`. */
     let error: unknown = undefined;
     try {
       error = await response.json();
@@ -57,6 +61,7 @@ export async function api<TResponse = unknown,>(
     catch {
       error = { error: 'Request failed', };
     }
+    /** Human-readable error surfaced both via toast and the thrown `Error`. */
     const message =
       typeof error === 'object' && error !== null && 'error' in error && typeof error
             .error === 'string'

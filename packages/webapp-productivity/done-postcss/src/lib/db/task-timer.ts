@@ -48,6 +48,7 @@ export type CompleteTaskResult = {
  * ```
  */
 export async function startTaskTimer(id: string,): Promise<Task | null> {
+  /** Single ISO timestamp reused for both `timer_started_at` and `updated_at` to keep them aligned. */
   const timestamp = nowIso();
   await db.prepare(SQL_START_TIMER,).run(
     timestamp,
@@ -70,10 +71,12 @@ export async function startTaskTimer(id: string,): Promise<Task | null> {
  * ```
  */
 export async function stopTaskTimer(id: string,): Promise<Task | null> {
+  /** Existing task; absent task short-circuits with `null`. */
   const currentTask = await getTaskById(id,);
   if (currentTask === null)
     return null;
 
+  /** Seconds the running timer accumulated; zero when no timer was active. */
   const elapsedSeconds = currentTask.timerStartedAt === null
     ? 0
     : Math.max(
@@ -82,6 +85,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
         (Date.now() - Date.parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
       ),
     );
+  /** ISO timestamp for the `updated_at` column on the stop write. */
   const timestamp = nowIso();
   await db.prepare(SQL_STOP_TIMER,).run(
     currentTask.trackedTime + elapsedSeconds,
@@ -105,6 +109,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
  * ```
  */
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
+  /** Existing task; absent task short-circuits with `notFound: true`. */
   const currentTask = await getTaskById(id,);
   if (currentTask === null) {
     return {
@@ -114,11 +119,14 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
     };
   }
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns blocker join columns
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns blocker join columns */
+  /** Raw blocker rows; emptiness implies completion is allowed. */
   const blockingRows = await db.prepare(SQL_SELECT_BLOCKERS,).all(id,) as {
     blocker_id: string;
     blocker_title: string;
   }[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
+  /** Application-shaped blocker summaries returned to the caller when completion is refused. */
   const blockedBy = blockingRows.map(function toSummary(row,) {
     return {
       blockerId: row.blocker_id,

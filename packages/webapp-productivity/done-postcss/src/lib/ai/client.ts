@@ -41,6 +41,7 @@ const requestTimestamps: number[] = [];
  * @returns `true` when the request should be rejected
  */
 function isRateLimited(): boolean {
+  /** Boundary timestamp; any entry older than this is expired and discarded. */
   const cutoff = Date.now() - WINDOW_DURATION_MS;
 
   // Discard entries older than the window
@@ -138,6 +139,7 @@ export async function chatCompletion(
 
   recordRequest();
 
+  /** Request payload accumulated below; optional fields are conditionally added. */
   const body: Record<string, unknown> = {
     messages: options.messages,
     temperature: options.temperature ?? 0,
@@ -150,6 +152,7 @@ export async function chatCompletion(
     body.response_format = { type: 'json_object', };
 
   try {
+    /** Raw fetch response read by both the error and success branches below. */
     const response = await fetch(
       completionsUrl,
       {
@@ -161,6 +164,7 @@ export async function chatCompletion(
     );
 
     if (!response.ok) {
+      /** Body text from a failed response; left as a default when reading throws. */
       let errorText = 'unknown error';
       try {
         errorText = await response.text();
@@ -174,8 +178,11 @@ export async function chatCompletion(
       };
     }
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse */
+    /** Parsed completion payload; shape matches `ChatCompletionResponse`. */
     const data = (await response.json()) as ChatCompletionResponse;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    /** First (and only used) choice; `undefined` triggers an empty-result error result. */
     const [firstChoice,] = data.choices;
     if (firstChoice === undefined) {
       return {
@@ -190,6 +197,7 @@ export async function chatCompletion(
     };
   }
   catch (caughtError: unknown) {
+    /** Display string extracted from the thrown value, with a `String()` fallback for non-Errors. */
     const message = caughtError instanceof Error
       ? caughtError.message
       : String(caughtError,);

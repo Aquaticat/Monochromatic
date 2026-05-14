@@ -75,6 +75,7 @@ detail.addEventListener(
         if (!(event instanceof CustomEvent))
           throw new TypeError("Expected CustomEvent for 'action' listener",);
         /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload */
+        /** Destructured action payload from the `action` custom event detail. */
         const {
           action,
           title,
@@ -89,7 +90,9 @@ detail.addEventListener(
         if (action === 'close')
           globalThis.location.href = '/';
         else if (action === 'save') {
+          /** Current metadata snapshot from the detail component for the PUT body. */
           const metadata = detail.getMetadata();
+          /** PUT body merged from form inputs and metadata. */
           const payload = {
             title,
             description: description.length === 0 ? null : description,

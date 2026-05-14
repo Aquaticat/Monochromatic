@@ -69,6 +69,7 @@ class SearchBar extends HTMLElement {
    * @returns Text content of the input, or empty string if not rendered
    */
   get value(): string {
+    /** Input element from the rendered shadow tree; `null` before `connectedCallback`. */
     const input = this.#shadow.querySelector<HTMLInputElement>('input',);
     return input?.value ?? '';
   }
@@ -79,6 +80,7 @@ class SearchBar extends HTMLElement {
    * @param text - New input value
    */
   set value(text: string,) {
+    /** Input element from the rendered shadow tree; assignment is skipped when not yet rendered. */
     const input = this.#shadow.querySelector<HTMLInputElement>('input',);
     if (input !== null)
       input.value = text;
@@ -86,10 +88,12 @@ class SearchBar extends HTMLElement {
 
   /** Renders the search bar with back button and debounced input. */
   connectedCallback(): void {
+    /** Pre-filled query from the `value` attribute, defaulting to empty when absent. */
     const query = this.getAttribute('value',) ?? '';
 
     // SVG back arrow built via innerHTML on a container because h() targets
     // HTMLElement creation; SVG elements require the SVG namespace.
+    /** Back button captured so innerHTML can be set with the SVG payload below. */
     const backButton = h({
       tag: 'button',
       class: 'back',
@@ -99,6 +103,7 @@ class SearchBar extends HTMLElement {
     backButton.innerHTML =
       `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
 
+    /** Search input captured so the debounce closure can read its current value. */
     const input = h({
       tag: 'input',
       attrs: {
@@ -110,6 +115,7 @@ class SearchBar extends HTMLElement {
     },);
 
     // Debounced search dispatch
+    /** Mutable timer handle replaced on each keystroke to debounce dispatch. */
     let timeout: ReturnType<typeof setTimeout> = setTimeout(
       function noop() {/* initial */},
       0,

@@ -64,6 +64,7 @@ class ToastMessage extends HTMLElement {
 
   /** Renders the toast content into the shadow root. */
   #render(): void {
+    /** Text payload from the `message` attribute; empty string when the attribute is absent. */
     const message = this.getAttribute('message',) ?? '';
     this.#shadow.replaceChildren(
       h({
@@ -98,6 +99,7 @@ customElements.define(
 export function showToast(message: string,): void {
   document.querySelector<HTMLElement>('toast-message',)?.remove();
 
+  /** Fresh toast element; previous toast (if any) was removed above to avoid overlap. */
   const toast = document.createElement('toast-message',);
   toast.setAttribute(
     'message',

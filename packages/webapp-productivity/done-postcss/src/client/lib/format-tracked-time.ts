@@ -38,12 +38,16 @@ const DIGITAL_FORMATTER = new Intl.DurationFormat(
  * formatTrackedTime(263_400); // '73:10:00'
  */
 export function formatTrackedTime(seconds: number,): string {
+  /** Non-negative integer seconds; negative or fractional inputs are clamped here. */
   const totalSeconds = Math.max(
     0,
     Math.floor(seconds,),
   );
+  /** Whole-hour portion; days roll into hours so the digital format stays stopwatch-like. */
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
+  /** Whole-minute portion of the remainder after extracting hours. */
   const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
+  /** Remaining seconds after extracting hours and minutes. */
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
   return DIGITAL_FORMATTER.format({
     hours,
@@ -67,6 +71,7 @@ export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)
     return formatTrackedTime(task.trackedTime,);
 
+  /** Seconds elapsed since the timer started; clamped to non-negative for clock skew safety. */
   const elapsedSeconds = Math.max(
     0,
     Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),

@@ -32,6 +32,7 @@ export type TaskCardOptions = {
  * ```
  */
 export function buildChipTexts(task: Task,): string[] {
+  /** Chip strings accumulated in display order; each block below pushes conditionally. */
   const chips: string[] = [];
   if (task.tags.length > 0)
     chips.push(`# ${task.tags.join(', ',)}`,);
@@ -78,6 +79,7 @@ export function renderTaskCardContent(
     options: TaskCardOptions;
   },
 ): void {
+  /** Rendered chip elements; the optional blocked badge is appended below when requested. */
   const chipElements: HTMLElement[] = buildChipTexts(task,).map(
     function createChip(text,): HTMLElement {
       return h({
@@ -115,6 +117,7 @@ export function renderTaskCardContent(
           on: {
             click: function onCheckboxClick(event,): void {
               event.stopPropagation();
+              /** Caller-supplied complete handler; the click is a no-op when not provided. */
               const { onToggleComplete, } = options;
               if (onToggleComplete !== undefined) {
                 void (async function onCheckboxClickAsync(): Promise<void> {

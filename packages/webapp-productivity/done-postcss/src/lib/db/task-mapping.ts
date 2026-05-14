@@ -35,6 +35,7 @@ export function nowIso(): string {
  */
 export function parseStringArray(value: string,): string[] {
   try {
+    /** Raw JSON.parse output typed as `unknown` until the array shape check runs. */
     const parsed = JSON.parse(value,) as unknown;
     if (!Array.isArray(parsed,))
       return [];

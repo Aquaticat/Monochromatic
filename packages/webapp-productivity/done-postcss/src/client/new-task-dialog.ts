@@ -63,9 +63,12 @@ type NewTaskDialog = {
  * ```
  */
 export function createNewTaskDialog(): NewTaskDialog {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail */
+  /** Detail web component captured so the action handler and open flow can configure it. */
   const detail = document.createElement('task-detail',) as TaskDetail;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
 
+  /** Popover panel wrapping the detail component; toggled via `showPopover`/`hidePopover`. */
   const panel = h({
     tag: 'div',
     class: 'new-task-panel',
@@ -94,6 +97,7 @@ export function createNewTaskDialog(): NewTaskDialog {
           if (!(event instanceof CustomEvent))
             throw new TypeError("Expected CustomEvent for 'action' listener",);
           /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload */
+          /** Destructured action payload from the `action` custom event detail. */
           const {
             action,
             title,
@@ -111,10 +115,12 @@ export function createNewTaskDialog(): NewTaskDialog {
           }
 
           if (action === 'save') {
+            /** Title with leading/trailing whitespace stripped; empty trim aborts the save. */
             const trimmedTitle = title.trim();
             if (trimmedTitle.length === 0)
               return;
 
+            /** Current metadata snapshot from the detail component, included in the POST body. */
             const metadata = detail.getMetadata();
             await api(
               '/api/tasks',
@@ -162,14 +168,17 @@ export function createNewTaskDialog(): NewTaskDialog {
     panel.showPopover();
     requestAnimationFrame(function focusTitleInput() {
       panel.dataset['animating'] = '';
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created */
+      /** Title input from inside the detail's shadow root; focused after the expand frame. */
       const titleInput = detail.shadowRoot?.querySelector<HTMLInputElement>(
         '.title-input',
       ) as HTMLInputElement | null;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       titleInput?.focus();
     },);
   }
 
+  /** FAB element returned to the caller and toggled hidden when the panel is open. */
   const fab = h({
     tag: 'fab-button',
     attrs: { label: 'Add task', },
