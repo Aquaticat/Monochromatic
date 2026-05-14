@@ -75,7 +75,9 @@ export function mountSelection(
       offset: number;
     },
   ): number | null {
+    /** Filled when the ancestor walk finds the enclosing `.ce-line`; null exits early. */
     let line: HTMLElement | null = null;
+    /** Walks parent chain looking for the enclosing `.ce-line` element. */
     let runner: Node | null = domInput.node;
     while (runner !== null) {
       if (
@@ -89,6 +91,7 @@ export function mountSelection(
     }
     if (line === null)
       return null;
+    /** Parsed line index from the enclosing element's `data-line` attribute. */
     const lineIndex = Number.parseInt(
       line.dataset['line'] ?? '',
       10,
@@ -99,11 +102,14 @@ export function mountSelection(
     // each) plus the offset within the current line. We use the
     // surface's textContent to recover line lengths since the line's
     // textContent matches the buffer slice the viewport rendered.
+    /** Accumulator summing preceding-line lengths plus newlines. */
     let absolute = 0;
+    /** Materialised line list so the walk can compare indices and break early. */
     const lines = [
       ...input.surface.querySelectorAll<HTMLElement>('.ce-line',),
     ];
     for (const candidate of lines) {
+      /** Parsed line index of the candidate; comparison with `lineIndex` decides whether to stop. */
       const candidateIndex = Number.parseInt(
         candidate.dataset['line'] ?? '',
         10,
@@ -117,7 +123,9 @@ export function mountSelection(
     // Within the line: sum text-node lengths up to the requested
     // offset. The line typically has a single text child, but the
     // browser may insert extra nodes for IME composition.
+    /** Running tally inside the target line; finalised when the DFS hits the target node. */
     let withinLine = 0;
+    /** DFS sentinel; flipped once the target node is reached so later nodes are skipped. */
     let foundTarget = false;
     /**
      * Recursive DFS that tallies code-unit lengths of text nodes
@@ -157,20 +165,24 @@ export function mountSelection(
    * selection is not inside the editor surface.
    */
   function refresh(): void {
+    /** Browser-managed selection; null when no selection or no document scope. */
     const sel = document.getSelection();
     if (sel === null || sel.rangeCount === 0) {
       cached = null;
       return;
     }
+    /** First range; the editor uses single-range selections only. */
     const range = sel.getRangeAt(0,);
     if (!input.surface.contains(range.startContainer,)) {
       cached = null;
       return;
     }
+    /** Start offset translated from DOM coordinates. */
     const from = domToOffset({
       node: range.startContainer,
       offset: range.startOffset,
     },);
+    /** End offset translated from DOM coordinates. */
     const to = domToOffset({
       node: range.endContainer,
       offset: range.endOffset,
@@ -211,14 +223,19 @@ export function mountSelection(
     node: Node;
     offset: number;
   } | null {
+    /** Running buffer offset; advances by line length + 1 (newline) per iteration. */
     let cursor = 0;
+    /** Materialised line list so the walk can break out as soon as the target is bracketed. */
     const lines = [
       ...input.surface.querySelectorAll<HTMLElement>('.ce-line',),
     ];
     for (const line of lines) {
+      /** Current line's character length, derived from its rendered text content. */
       const lineLength = (line.textContent ?? '').length;
+      /** Buffer offset where this line ends (exclusive of trailing newline). */
       const lineEnd = cursor + lineLength;
       if (target.offset <= lineEnd) {
+        /** First child as the preferred text node; falls back to the line element when missing. */
         const text = line.firstChild;
         if (text !== null && text.nodeType === Node.TEXT_NODE) {
           return {
@@ -246,13 +263,17 @@ export function mountSelection(
       return cached;
     },
     set(target,) {
+      /** Resolved DOM start position; null aborts the set so a stale Range is not written. */
       const start = offsetToDom({ offset: target.from, },);
+      /** Resolved DOM end position; null aborts the set so a stale Range is not written. */
       const end = offsetToDom({ offset: target.to, },);
       if (start === null || end === null)
         return;
+      /** Browser-managed selection; null aborts the set when no document scope is available. */
       const sel = document.getSelection();
       if (sel === null)
         return;
+      /** Fresh Range covering the resolved start and end; replaces the existing selection. */
       const range = document.createRange();
       range.setStart(
         start.node,
