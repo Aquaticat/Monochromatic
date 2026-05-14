@@ -98,12 +98,14 @@ export async function renderMessageChunk(
   ifNoneMatch: string | null,
 ): Promise<Response> {
   await db.exec('BEGIN DEFERRED',);
+  /** Snapshot reused across the chunk count check, ETag, and chunk fetch. */
   let snapshot: MessageSnapshot | null = null;
   try {
     snapshot = await getSnapshot(input.messageId,);
     if (snapshot === null) {
       // Distinguish gone from not-found so the client can decide
       // whether to clear cached state or follow a redirect.
+      /** Tells 410 Gone (existed once) from 404 Not Found (never existed). */
       const exists = await messageExists(input.messageId,);
       await db.exec('COMMIT',);
       return new Response(
@@ -127,6 +129,7 @@ export async function renderMessageChunk(
       );
     }
 
+    /** Computed ETag; sent on both 200 and 304 responses. */
     const etag = etagForChunk({
       revision: snapshot.revision,
       chunkIndex: input.chunkIndex,
@@ -169,6 +172,7 @@ export async function renderMessageChunk(
       );
     }
 
+    /** Chunk row resolved via the copy-on-write draft chain walk. */
     const chunk = await getChunk({
       messageId: input.messageId,
       chunkIndex: input.chunkIndex,
@@ -185,11 +189,13 @@ export async function renderMessageChunk(
       );
     }
 
+    /** Rendered chunk body HTML; embedded in the layout's main slot. */
     const body = renderChunkBody({
       snapshot,
       chunkIndex: input.chunkIndex,
       chunkHtml: chunk.html,
     },);
+    /** Complete HTML document returned to the client. */
     const html = renderPage({
       title: `Message ${String(snapshot.id,)} (chunk ${
         String(input.chunkIndex + 1,)
@@ -235,14 +241,18 @@ function renderChunkBody(
     chunkHtml: string;
   },
 ): string {
+  /** Destructured early so the chunk-nav branches read the fields directly. */
   const {
     snapshot,
     chunkIndex,
     chunkHtml,
   } = input;
+  /** True when the prev link is at chunk 0; renders as a disabled span instead. */
   const prevDisabled = chunkIndex === 0;
+  /** True when the next link is at the last chunk; renders as a disabled span instead. */
   const nextDisabled = chunkIndex >= snapshot.chunkCount - 1;
 
+  /** Three pre-rendered nav items in the order prev, position, next. */
   const navItems: string[] = [
     prevDisabled
       ? h({
@@ -287,6 +297,7 @@ function renderChunkBody(
       },),
   ];
 
+  /** Message-meta header HTML (back link, author, revision). */
   const meta = h({
     tag: 'header',
     attrs: { class: 'message-meta', },
@@ -312,6 +323,7 @@ function renderChunkBody(
     ],
   },);
 
+  /** Chunk-nav HTML (prev, position, next) for both top and bottom of the chunk body. */
   const nav = h({
     tag: 'nav',
     attrs: {

@@ -38,6 +38,7 @@ export function setupTier3Nav(
   },
 ): void {
   input.form.classList.add('tier-3',);
+  /** Chunk-nav container inserted above the textarea so the prev/next/save buttons stay visible. */
   const nav = document.createElement('div',);
   nav.className = 'composer-chunk-nav';
   nav.innerHTML = `
@@ -105,14 +106,18 @@ export function updateTier3Nav(
 ): void {
   if (input.state.tier3 === null)
     return;
+  /** Destructured early so the button-state branches read the values directly. */
   const {
     currentSeq,
     chunkCount,
   } = input.state.tier3;
+  /** Position label element; updated on every nav refresh. */
   const position = input.nav.querySelector<HTMLElement>('[data-tier3-position]',);
   if (position !== null)
     position.textContent = `chunk ${String(currentSeq + 1,)} of ${String(chunkCount,)}`;
+  /** Prev button; disabled at chunk 0. */
   const prev = input.nav.querySelector<HTMLButtonElement>('[data-tier3-prev]',);
+  /** Next button; disabled at the last chunk. */
   const next = input.nav.querySelector<HTMLButtonElement>('[data-tier3-next]',);
   if (prev !== null)
     prev.disabled = currentSeq === 0;
@@ -141,6 +146,7 @@ export async function loadChunkIntoEditor(
     textarea: HTMLTextAreaElement;
   },
 ): Promise<void> {
+  /** New-mode chunk cache; non-null bypasses the network fetch below. */
   const local = input.state.tier3?.localChunks;
   if (local !== null && local !== undefined) {
     writeBody({
@@ -152,6 +158,7 @@ export async function loadChunkIntoEditor(
   }
   if (input.messageId === null)
     throw new Error('cannot load chunk: no message id and no local chunks',);
+  /** Per-chunk markdown fetch; throws on `!ok` so the textarea is not stomped with empty text. */
   const response = await fetch(
     `/m/${String(input.messageId,)}/c/${String(input.seq,)}/md`,
   );
@@ -194,6 +201,7 @@ export async function navigateTier3(
     textarea: input.textarea,
     status: input.status,
   },);
+  /** Clamped target seq so the buttons remain disabled at boundaries even if state drifts. */
   const next = Math.max(
     0,
     Math.min(
@@ -238,10 +246,15 @@ export async function saveCurrentTier3Chunk(
 ): Promise<void> {
   if (input.state.tier3 === null)
     return;
+  /** Current chunk markdown; read once so the compile, char-count, and PUT use the same snapshot. */
   const md = input.textarea.value;
+  /** Inline compile result; only the rendered HTML is forwarded to the chunk PUT. */
   const { html, } = compileInline(md,);
+  /** Character count forwarded to both the in-memory cache update and the chunk PUT. */
   const charCount = md.length;
+  /** Current seq from the tier-3 state; the chunk PUT lands here. */
   const seq = input.state.tier3.currentSeq;
+  /** Draft id used in the PUT URL; tier-3 reuses the new draft for every chunk save. */
   const draftId = input.state.tier3.newDraftId;
   // Mirror the edit into localChunks (new-mode tier 3) so prev/next
   // navigation reflects the latest text without a server round-trip.
