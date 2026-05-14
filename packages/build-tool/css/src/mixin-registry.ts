@@ -130,8 +130,9 @@ export function expandMixinBodies(): void {
    * Safety limit to detect circular \@apply references between mixins.
    */
   const MAX_PASSES = 10;
-  // Mutable counters needed for fixed-point iteration convergence tracking
+  /** Pass index drives convergence detection against {@link MAX_PASSES}. */
   let passCount = 0;
+  /** Sentinel flips false once a pass mutates no mixin, ending the loop. */
   let hasChanges = true;
 
   while (hasChanges) {

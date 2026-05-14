@@ -47,11 +47,13 @@ const nodeFs: typeof NodeFs | undefined = hasNodeFs
  * ```
  */
 export async function readCssFile(absolutePath: string,): Promise<string> {
+  /** Registry hit shortcuts the filesystem fallback for browser builds. */
   const cached = fsRegistry.get(absolutePath,);
   if (cached !== undefined)
     return cached;
 
   if (nodeFs !== undefined) {
+    /** Dynamic import keeps `node:fs/promises` out of browser bundles. */
     const { readFile, } = await import('node:fs/promises');
     return readFile(
       absolutePath,
@@ -80,6 +82,7 @@ export async function readCssFile(absolutePath: string,): Promise<string> {
  * ```
  */
 export function readCssFileSync(absolutePath: string,): string {
+  /** Registry hit shortcuts the filesystem fallback for browser builds. */
   const cached = fsRegistry.get(absolutePath,);
   if (cached !== undefined)
     return cached;

@@ -105,6 +105,7 @@ export function expandApplyRules(root: Root,): void {
        * Cloned mixin body with source locations pointing back to the \@apply site.
        */
       const clonedNodes = mixinNodes.map(function cloneWithSource(child,) {
+        /** Cloning isolates the registry's body from per-call source rewrites. */
         const cloned = child.clone();
         cloned.source = source;
         return cloned;

@@ -110,6 +110,7 @@ export function applyMixins(
  * ```
  */
 export async function build(options: BuildOptions,): Promise<string> {
+  /** Destructured upfront so input and output paths are visible to the whole flow. */
   const {
     input,
     output,
@@ -147,6 +148,7 @@ export async function build(options: BuildOptions,): Promise<string> {
   const result = root.toString();
 
   // Write output: uses dynamic import so browser callers don't pull in node:fs
+  /** Dynamic import keeps `node:fs/promises` out of browser bundles. */
   const {
     mkdir,
     writeFile,

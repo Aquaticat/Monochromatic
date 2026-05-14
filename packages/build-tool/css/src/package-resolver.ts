@@ -41,6 +41,7 @@ export function findPackageDir(
   | string
   | undefined
 {
+  /** Cursor advances toward the filesystem root each iteration. */
   let current = startDir;
 
   // Walk up to filesystem root looking for node_modules
@@ -166,6 +167,7 @@ export function resolvePackage(
   specifier: string,
   fromDir: string,
 ): string {
+  /** Split decouples package directory lookup from sub-path resolution. */
   const [packageName, subpath,] = splitPackageSpecifier(specifier,);
   /** Absolute path to the package directory in node_modules */
   const packageDir = findPackageDir(
