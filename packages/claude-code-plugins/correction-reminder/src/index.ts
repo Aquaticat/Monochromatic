@@ -2,7 +2,7 @@
 
 /**
  * Claude Code UserPromptSubmit hook that detects correction phrases in user
- * input and reminds Claude to call advisor before its next substantive
+ * input and reminds Claude to re-check evidence before its next substantive
  * response.
  *
  * Thin shim; handler logic, parser, and writer live in

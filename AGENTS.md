@@ -2,6 +2,16 @@
 
 This document is organized by moment of decision, not by topic. When you reach a particular point in the work (about to respond, about to run a command, about to edit code, about to declare done), the corresponding section contains every rule that applies. Cross-cutting reference material (workspace conventions, enforcement mechanisms, agent skills) appears toward the end.
 
+## Critical hot paths
+
+This section is an index to high-loss rules below; it does not add separate policy. When a cue matches, follow the target rule immediately rather than rediscovering it later.
+
+- **Visible terminal/window/session**: use `terminal-exec -- <command> ...` for arbitrary commands that need a real terminal window, including Codex. `spawn_agent` and PTY sessions are not visible terminals. `spawn-claude` is only for Claude Code child sessions. Do not probe `terminal-exec` with `--help`; read its README or source because unknown options are ignored and it opens a terminal. See "Visible terminal spawning".
+- **External tool, CLI, config, or API capability claims**: fetch current docs or clone and read source before answering. Do not infer from `--help`, package wrappers, or memory when the source is available. See "Communication style" and "Third-party libraries".
+- **Git cleanup, destructive git guards, or worktree safety reviews**: inspect ignored root artifacts with the sentinel commands before final findings. See "Git cleanup and worktree safety reviews".
+- **Tests**: identify the target package and task before running tests. Do not use repo-root `mise run test` as a reflex for narrow package work. See "Essential commands".
+- **User correction of a substantive claim**: treat the correction as evidence that the previous verification path failed. Re-read primary evidence or use a genuinely separate reviewer if independent review is requested. Do not write a same-session `Advisor pass: ...` as evidence. See "Pre-response checklist".
+
 ## Before responding to the user
 
 ### Communication style
@@ -40,7 +50,7 @@ Before sending any response with substantive claims:
 8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
 9. Quoted a clause or doc passage and drawn a conclusion from it? Restate the subject and object in plain English before relying on the conclusion. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
 10. About to ask the user to perform a manual action? Apply "Handing off manual actions": try the bridging path first; if you must hand off, write it in HANDOVER format.
-11. Revising a substantive claim the user just corrected? Call advisor before sending. If no native advisor tool is available, use `.agents/skills/advisor/SKILL.md` as the clean-room fallback workflow before answering. The original reasoning had a blind spot; the revision shares it unless a fresh review pass sees the transcript. User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
+11. Revising a substantive claim the user just corrected? Treat the correction as evidence that your previous verification path was insufficient. Re-read primary sources, run concrete commands, or use a genuinely separate reviewer when the user asks for independent review. Do not run a same-session self-review, local "advisor" skill, or magic `Advisor pass: ...` ritual; self-review is not independent evidence. See `docs/agent-self-review.md`. User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
 
 ### Measure-vs-ask
 
@@ -200,6 +210,18 @@ Every search result carries two claims: (a) the search ran correctly, (b) the li
 
 A non-zero result does not self-validate any more than a zero result does. Run a sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
 
+### Git cleanup and worktree safety reviews
+
+When reviewing a plan or change that touches `git clean`, destructive git guards, worktree safety, or ignored-file cleanup, inspect ignored root artifacts before final findings. Run:
+
+```bash
+find . -maxdepth 1 \( -name HEAD -o -name config -o -name hooks -o -name objects -o -name refs \) -print
+git check-ignore -v HEAD config hooks objects refs
+git clean -ndX HEAD config hooks objects refs
+```
+
+Do not rely on `git status`, `git ls-files --others --exclude-standard`, or `rg --files`; those hide ignored files. If any root sentinel exists, cleanup or an exact safe cleanup path is part of the design under review.
+
 ### Document non-obvious findings
 
 When discovering something that would not be immediately obvious to a future reader, document it in the relevant readme or doc file right away: implementation details, behavioral quirks, implicit constraints, anything that required investigation or experimentation to uncover.
@@ -215,7 +237,15 @@ When discovering something that would not be immediately obvious to a future rea
 
 ## Before running a command
 
+### Visible terminal spawning
+
+When the user asks to spawn something in another terminal, window, or session, use a real terminal launcher. For arbitrary commands, including Codex, use `terminal-exec -- <command> ...`. Use `spawn-claude` only for Claude Code child sessions. `spawn_agent` is not an OS terminal, and a PTY/TTY is not the same as a visible terminal emulator window.
+
+Do not run `terminal-exec --help` as a probe. `terminal-exec` does not implement a help flag; its parser ignores unknown options and then opens the default terminal. Verify usage by reading `packages/cli/terminal-exec/README.md` or `packages/cli/terminal-exec/src/cli.ts`.
+
 Pipes in the Bash tool are unreliable; the Claude Code issue tracking the bug is treated as wontfix. Workaround: redirect to a file then read the file.
+
+Do not wrap routine verification commands in an external `timeout` binary. Use the command tool's session/polling behavior first; if a process truly remains after producing its useful output, inspect the PID and stop that specific stale process. Reserve external timeout wrappers for commands whose own behavior is specifically being tested or for commands with a known unbounded runtime and no narrower kill mechanism.
 
 Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool. Without a path argument, `rg` detects non-TTY stdin in the sandbox and switches to stdin-reading mode. Combined with command chains (`&&`, `;`), the `< /dev/null` redirect misapplies to the last command, leaving `rg` blocking forever on a socket that never sends EOF. See `PIPE-BUG.md`.
 
@@ -516,11 +546,12 @@ Several hooks act on agent output and may block or modify actions.
 - **`bash-output-filter` hook**: transforms Bash tool output (see "Bash output path collapse"). Display only; does not modify actions. Triggers a bypass when the command contains `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
 - **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/cli/forbidden-strings/`.
 
+Codex plugin packages under `packages/codex-plugins/` are work in progress. Do not assume a Codex hook is active unless you verify the installed Codex config or current session output proves it.
+
 A `PostToolUse` lint:types hook is on the roadmap but not yet implemented; type-checking is manual (see "Essential commands" -> mise run lint:types).
 
 ## Agent skills
 
-- **Advisor**: clean-room fallback for the Claude Code advisor pattern when no native advisor tool is available. Use `.agents/skills/advisor/SKILL.md` before substantive revisions after user corrections, before committing to an approach on multi-step work, when stuck, and before declaring longer work done.
 - **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
 - **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
 - **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.

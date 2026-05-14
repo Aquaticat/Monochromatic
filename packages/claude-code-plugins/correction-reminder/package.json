@@ -1,7 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/claude-code-plugins-correction-reminder",
-  "description": "Claude Code UserPromptSubmit hook that detects correction phrases in user input and reminds Claude to call advisor before its next substantive response.",
+  "description": "Claude Code UserPromptSubmit hook that detects correction phrases and reminds Claude to re-check evidence before its next substantive response.",
   "type": "module",
   "bin": {
     "cccr": "./dist/final/node/index.mjs"

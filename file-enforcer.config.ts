@@ -113,10 +113,13 @@ General purpose agents are banned because of bugs.
 Use \`spawn-claude\` outside sandbox to launch steerable child Claude Code sessions in visible terminal windows.
 The child session runs independently; results are forwarded back to the parent automatically via hooks.
 
+Use \`terminal-exec -- <command> ...\` outside sandbox for arbitrary commands that need a visible terminal window, including Codex. \`spawn-claude\` is only for Claude Code child sessions.
+
 \`\`\`bash
 spawn-claude "implement feature X"
 spawn-claude --cwd /some/path "fix the bug in module Y"
 spawn-claude --extra-arguments "--model sonnet" "refactor this module"
+terminal-exec -- codex exec --cd /some/path "investigate issue Z"
 \`\`\`
 
 The command prints \`{"spawnId":"<uuid>"}\` on success.

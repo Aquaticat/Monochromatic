@@ -33,7 +33,7 @@ await describe({
         it({
           name: 'detects "demonstrably false"',
           fn: async () => {
-            expect(detectCorrection('That\'s demonstrably false.',),).toBe(true,);
+            expect(detectCorrection("That's demonstrably false.",),).toBe(true,);
           },
         },),
         it({
@@ -45,7 +45,7 @@ await describe({
         it({
           name: 'detects "didn\'t you"',
           fn: async () => {
-            expect(detectCorrection('Didn\'t you check the config first?',),).toBe(
+            expect(detectCorrection("Didn't you check the config first?",),).toBe(
               true,
             );
           },
@@ -53,7 +53,7 @@ await describe({
         it({
           name: 'detects "you\'re wrong"',
           fn: async () => {
-            expect(detectCorrection('You\'re wrong about that claim.',),).toBe(
+            expect(detectCorrection("You're wrong about that claim.",),).toBe(
               true,
             );
           },
@@ -62,8 +62,9 @@ await describe({
           name: 'detects "shouldn\'t have"',
           fn: async () => {
             expect(
-              detectCorrection('You shouldn\'t have included that.',),
-            ).toBe(true,);
+              detectCorrection("You shouldn't have included that.",),
+            )
+              .toBe(true,);
           },
         },),
         it({
@@ -71,7 +72,8 @@ await describe({
           fn: async () => {
             expect(
               detectCorrection('Why would you skip the AGENTS.md check?',),
-            ).toBe(true,);
+            )
+              .toBe(true,);
           },
         },),
         it({
@@ -85,7 +87,7 @@ await describe({
         it({
           name: 'returns false for a neutral prompt',
           fn: async () => {
-            expect(detectCorrection('What\'s the build status?',),).toBe(false,);
+            expect(detectCorrection("What's the build status?",),).toBe(false,);
           },
         },),
         it({
@@ -93,7 +95,8 @@ await describe({
           fn: async () => {
             expect(
               detectCorrection('Can you tell me more about the next step?',),
-            ).toBe(false,);
+            )
+              .toBe(false,);
           },
         },),
       ],
@@ -105,7 +108,7 @@ await describe({
           name: 'injects reminder when a correction phrase fires',
           fn: async () => {
             const out = correctionReminderHandler(
-              makeEvent('That\'s demonstrably false.',),
+              makeEvent("That's demonstrably false.",),
             );
             expect(out.hookSpecificOutput?.additionalContext,).toMatch(
               /correction-detected/,
@@ -113,13 +116,13 @@ await describe({
           },
         },),
         it({
-          name: 'reminder mentions calling advisor',
+          name: 'reminder rejects same-session self-review',
           fn: async () => {
             const out = correctionReminderHandler(
               makeEvent('You missed the JSX runtime.',),
             );
             expect(out.hookSpecificOutput?.additionalContext,).toMatch(
-              /advisor/,
+              /self-review is not/,
             );
           },
         },),
@@ -138,7 +141,7 @@ await describe({
           name: 'emits empty additionalContext for non-correction prompts',
           fn: async () => {
             const out = correctionReminderHandler(
-              makeEvent('What\'s the build status?',),
+              makeEvent("What's the build status?",),
             );
             expect(out.hookSpecificOutput?.additionalContext,).toBe('',);
           },

@@ -1,0 +1,116 @@
+{
+  "name": "Monochromatic Codex Plugins",
+  "interface": {
+    "displayName": "Monochromatic Codex Plugins"
+  },
+  "plugins": [
+    {
+      "name": "terminal-title",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/terminal-title"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "stop-reminders",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/stop-reminders"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Quality"
+    },
+    {
+      "name": "session-start-housekeeping",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/session-start-housekeeping"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Maintenance"
+    },
+    {
+      "name": "guardrail",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/guardrail"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Quality"
+    },
+    {
+      "name": "bash-output-filter",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/bash-output-filter"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "claude-spawn",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/claude-spawn"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "prompt-time",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/prompt-time"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "correction-reminder",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/correction-reminder"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Quality"
+    },
+    {
+      "name": "research-agent",
+      "source": {
+        "source": "local",
+        "path": "./packages/codex-plugins/research-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Quality"
+    }
+  ]
+}

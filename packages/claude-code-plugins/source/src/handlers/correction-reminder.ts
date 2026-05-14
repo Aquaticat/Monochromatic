@@ -13,7 +13,7 @@ import type {
  * corrections produced four fresh errors: each revision shared the blind
  * spot of the claim it replaced. The pattern this hook targets is treating
  * a correction as a small patch rather than an approach-change moment that
- * warrants calling `advisor`.
+ * warrants concrete re-verification.
  */
 const CORRECTION_PATTERNS: readonly RegExp[] = [
   /\bdemonstrably (?:false|wrong)\b/i,
@@ -77,10 +77,13 @@ const CORRECTION_REMINDER_TEXT = [
   'approach-change moment, not a small patch. The blind spot that produced',
   'the original claim is still active for the revision.',
   '',
-  'Before your next substantive response, call the advisor tool.',
-  'It receives your full transcript, so it can see the blind spot you cannot.',
+  'Before your next substantive response, re-check the claim against primary',
+  'sources, local files, logs, or command output. Do not run a same-session',
+  'self-review or write an `Advisor pass: ...` line; self-review is not',
+  'independent evidence. See `docs/agent-self-review.md`.',
   '</correction-detected>',
-].join('\n',);
+]
+  .join('\n',);
 
 /**
  * Output of the correction-reminder handler.
@@ -92,7 +95,7 @@ type CorrectionReminderOutput = UserPromptSubmitOutput;
 //endregion
 
 /**
- * Scans user input for correction phrases and injects an advisor-call
+ * Scans user input for correction phrases and injects a concrete-verification
  * reminder when one is found. Returns an empty additionalContext when no
  * correction is detected so the rest of the pipeline runs unchanged.
  *

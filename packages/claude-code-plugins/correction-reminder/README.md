@@ -1,6 +1,6 @@
 # correction-reminder
 
-Claude Code `UserPromptSubmit` hook that detects correction phrases in user input and reminds Claude to call `advisor` before its next substantive response.
+Claude Code `UserPromptSubmit` hook that detects correction phrases in user input and reminds Claude to re-check evidence before its next substantive response.
 
 ## What it does
 
@@ -13,8 +13,10 @@ Per AGENTS.md Pre-response checklist item 11: a user correction is an
 approach-change moment, not a small patch. The blind spot that produced
 the original claim is still active for the revision.
 
-Before your next substantive response, call the advisor tool.
-It receives your full transcript, so it can see the blind spot you cannot.
+Before your next substantive response, re-check the claim against primary
+sources, local files, logs, or command output. Do not run a same-session
+self-review or write an `Advisor pass: ...` line; self-review is not
+independent evidence. See `docs/agent-self-review.md`.
 </correction-detected>
 ```
 
@@ -36,7 +38,7 @@ The hook fires on any of the following patterns in user input (case-insensitive,
 
 ## Why this hook exists
 
-Session evidence (`1cbe8d82`): four consecutive user corrections each produced a fresh error in the revision. The blind spot that produced the original claim was active for each revision because each was framed as a small patch rather than as a change-of-approach moment that warrants surfacing the transcript to a stronger reviewer.
+Session evidence (`1cbe8d82`): four consecutive user corrections each produced a fresh error in the revision. The blind spot that produced the original claim was active for each revision because each was framed as a small patch rather than as a change-of-approach moment that warrants concrete re-verification.
 
 This hook fires before the response is written, which is the highest-leverage point at which to redirect.
 

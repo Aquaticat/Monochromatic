@@ -3,6 +3,7 @@ import type {
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 import {
   glob,
+  lstat,
   mkdir,
   rm,
 } from 'node:fs/promises';
@@ -21,6 +22,19 @@ const STALE_DIST_ARTIFACTS = [
   'refs',
   '.claude',
 ];
+
+/**
+ * Zero-byte Claude Code sandbox sentinels that can appear at the workspace root.
+ * These names overlap with Git's internal metadata, so they are cleaned only
+ * when they are exact root-level empty regular files.
+ */
+const ROOT_SENTINEL_ARTIFACTS = [
+  'HEAD',
+  'config',
+  'hooks',
+  'objects',
+  'refs',
+] as const;
 
 /**
  * Creates a directory if it does not already exist (equivalent to `mkdir -p`).
@@ -76,6 +90,70 @@ async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
 }
 
 /**
+ * Returns true when an unknown caught error is an ENOENT filesystem miss.
+ *
+ * @param error - caught exception from a filesystem operation
+ *
+ * @returns whether the error has `code === 'ENOENT'`
+ */
+function isMissingPathError(error: unknown,): boolean {
+  if ((typeof error) !== 'object')
+    return false;
+
+  if (error === null)
+    return false;
+
+  if (!('code' in error))
+    return false;
+
+  return error.code === 'ENOENT';
+}
+
+/**
+ * Removes a single root sentinel only when it is a zero-byte regular file.
+ *
+ * @param artifactPath - absolute path to one root sentinel candidate
+ */
+async function cleanRootSentinelArtifact(artifactPath: string,): Promise<void> {
+  try {
+    /** Candidate stat, read with `lstat` so symlinks are preserved. */
+    const stats = await lstat(artifactPath,);
+
+    if ((!stats.isFile()) || (stats.size > 0))
+      return;
+
+    await rm(
+      artifactPath,
+      { force: true, },
+    );
+  }
+  catch (error: unknown) {
+    if (isMissingPathError(error,))
+      return;
+
+    throw error;
+  }
+}
+
+/**
+ * Removes root-level zero-byte Claude Code sandbox sentinel files.
+ *
+ * @param workspaceRoot - absolute path to the monorepo root
+ *
+ * @example
+ * ```ts
+ * await cleanRootSentinelArtifacts('/var/home/user/Monochromatic');
+ * ```
+ */
+async function cleanRootSentinelArtifacts(workspaceRoot: string,): Promise<void> {
+  await Promise.all(
+    ROOT_SENTINEL_ARTIFACTS.map(function cleanArtifact(artifact,): Promise<void> {
+      return cleanRootSentinelArtifact(`${workspaceRoot}/${artifact}`,);
+    },),
+  );
+}
+
+/**
  * Removes the ephemeral `.mcp.json` file from the workspace root. Regenerated
  * each session and must not persist across sessions.
  *
@@ -105,6 +183,7 @@ type SessionStartHousekeepingOutput = void;
  *
  * - Ensures `/tmp/claude` and `/tmp/claude-1000` exist
  * - Removes stale git metadata leaked into nested `dist/final/` directories
+ * - Removes zero-byte Claude Code sandbox sentinels from the workspace root
  * - Removes the ephemeral `.mcp.json` from the workspace root
  *
  * Side-effecting by design; returns nothing. The runtime treats `void` outputs
@@ -128,6 +207,7 @@ async function sessionStartHousekeepingHandler(
     ensureDir('/tmp/claude',),
     ensureDir('/tmp/claude-1000',),
     cleanDistArtifacts(workspaceRoot,),
+    cleanRootSentinelArtifacts(workspaceRoot,),
     removeMcpJson(workspaceRoot,),
   ],);
 }
@@ -172,6 +252,8 @@ function sessionStartHousekeepingWriter(
 export type { SessionStartHousekeepingOutput, };
 
 export {
+  cleanRootSentinelArtifacts,
+  ROOT_SENTINEL_ARTIFACTS,
   sessionStartHousekeepingHandler,
   sessionStartHousekeepingParser,
   sessionStartHousekeepingWriter,
