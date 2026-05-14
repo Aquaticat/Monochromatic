@@ -64,8 +64,11 @@ function parseSvg(raw: string,): {
   viewBox: string;
   inner: string;
 } {
+  /** Regex match for the root `viewBox` attribute on the outer `<svg>` element. */
   const viewBoxMatch = /viewBox="([^"]+)"/.exec(raw,);
+  /** Extracted viewBox value; falls back to the lobehub icon default `0 0 24 24`. */
   const viewBox = viewBoxMatch?.[1] ?? '0 0 24 24';
+  /** SVG body with the outer `<svg>` opening and closing tags stripped. */
   const inner = raw
     .replace(
       /^<svg[^>]*>/,
@@ -100,7 +103,9 @@ function extractDefs(inner: string,): {
   defs: string;
   content: string;
 } {
+  /** Accumulator that collects every `<defs>` body discovered while stripping them out. */
   let defs = '';
+  /** Inner markup with all `<defs>` blocks removed; their content is captured in `defs`. */
   const content = inner.replaceAll(
     /<defs>([\s\S]*?)<\/defs>/g,
     function extractDef(
@@ -132,10 +137,12 @@ type VendorSymbol = {
 /** Map of vendor prefix to parsed symbol data */
 const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
   Object.entries(RAW_SVGS,).map(function parseEntry([vendor, raw,],) {
+    /** ViewBox and inner markup pulled from the raw SVG before defs are extracted. */
     const {
       viewBox,
       inner,
     } = parseSvg(raw,);
+    /** `<defs>` content and remaining markup, separated so gradients can be hoisted. */
     const {
       defs,
       content,
@@ -168,7 +175,9 @@ const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
  * ```
  */
 export function renderSvgSprite(): string {
+  /** Accumulator for every vendor's `<defs>` content; hoisted onto the sprite root below. */
   let allDefs = '';
+  /** Rendered `<symbol>` elements, one per vendor; concatenated inside the sprite root. */
   const symbols = [...VENDOR_SYMBOLS.values(),].map(
     function buildSymbol({
       id,
@@ -180,6 +189,7 @@ export function renderSvgSprite(): string {
       return `<symbol id="${id}" viewBox="${viewBox}">${inner}</symbol>`;
     },
   );
+  /** Optional `<defs>` wrapper; omitted when no vendor contributed defs to avoid an empty tag. */
   const defsBlock = allDefs !== '' ? `<defs>${allDefs}</defs>` : '';
   return `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;inline-size:0;block-size:0;overflow:hidden">${defsBlock}${
     symbols.join('',)
@@ -223,7 +233,9 @@ export function iconDot(
   modelId: string,
   color: string,
 ): string {
+  /** Vendor prefix taken from the slash-delimited model ID. */
   const vendor = modelId.split('/',)[0] ?? '';
+  /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
   if (symbol === undefined) {
     return h({
@@ -258,7 +270,9 @@ export function iconDot(
  * ```
  */
 export function vendorIcon(modelId: string,): string | undefined {
+  /** Vendor prefix taken from the slash-delimited model ID. */
   const vendor = modelId.split('/',)[0] ?? '';
+  /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
   return symbol === undefined ? undefined : useRef(symbol.id,);
 }

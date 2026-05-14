@@ -109,7 +109,9 @@ export function renderDataTable(
   caption: string,
   options: TableDisplayOptions = {},
 ): string {
+  /** Resolved Model-column visibility; defaults to visible when option is omitted. */
   const showModel = options.showModel ?? true;
+  /** Resolved Probe-column visibility; defaults to visible when option is omitted. */
   const showProbe = options.showProbe ?? true;
 
   /** When only timestamp + score remain, render as a compact grid instead of a table */
@@ -125,6 +127,7 @@ export function renderDataTable(
     return row.pass2Score !== undefined;
   },);
 
+  /** Table header row built once and reused; column set depends on resolved visibility flags. */
   const headerRow = h({
     tag: 'tr',
     children: [
@@ -162,6 +165,7 @@ export function renderDataTable(
     ],
   },);
 
+  /** Rendered `<tr>` strings joined into the table body; each row mirrors the visibility flags from the header. */
   const bodyRows = rows
     .map(function renderRow(row,) {
       /** Timestamp cell with inline "(timeout)" for failed runs */

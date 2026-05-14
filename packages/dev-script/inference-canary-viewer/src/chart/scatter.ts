@@ -90,12 +90,15 @@ export function renderScatterChart({
     },);
   }
 
+  /** Positioned `<button>` markup for every point; rendered once and embedded inside the plot area. */
   const pointElements = renderPointElements(points,);
 
+  /** Ordered timestamps extracted for the X-axis label renderer. */
   const timestamps = points.map(function getTimestamp(point,) {
     return point.timestamp;
   },);
 
+  /** Backing data table HTML; suppressed entirely when the caller opts out via `hideTable`. */
   const tableHtml = hideTable === true
     ? ''
     : renderDataTable(

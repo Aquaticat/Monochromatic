@@ -100,6 +100,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
   /** Whole-model failure artifacts */
   const failures: FailureArtifactMeta[] = [];
 
+  /** Top-level entries under `LINT_DIR`, one per model directory; empty on read failure. */
   let modelDirents: Dirent[] = [];
   try {
     modelDirents = await readdir(
@@ -118,10 +119,12 @@ export async function readArtifacts(): Promise<ArtifactData> {
   for (const modelDirent of modelDirents.filter(function isDir(dirent,) {
     return dirent.isDirectory();
   },)) {
+    /** Absolute path to the model subdirectory currently being walked. */
     const modelPath = join(
       LINT_DIR,
       modelDirent.name,
     );
+    /** Run subdirectories under `modelPath`; empty when the directory cannot be read. */
     let subdirents: Dirent[] = [];
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential directory reads with per-iteration error handling
@@ -141,10 +144,12 @@ export async function readArtifacts(): Promise<ArtifactData> {
     for (const subdirent of subdirents.filter(function isDir(dirent,) {
       return dirent.isDirectory();
     },)) {
+      /** Absolute path to the run subdirectory currently being processed. */
       const dirPath = join(
         modelPath,
         subdirent.name,
       );
+      /** Raw `meta.json` contents; undefined when the file is missing or unreadable. */
       // oxlint-disable-next-line no-await-in-loop -- sequential per-artifact reads with individual error handling
       const metaRaw = await readOptional(join(
         dirPath,
@@ -153,6 +158,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
       if (metaRaw === undefined)
         continue;
 
+      /** Parsed `meta.json` object; populated below or replaced with `{}` on parse failure. */
       let parsed: Record<string, unknown> = {};
       try {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns any; shape validated by isFailure guard and field access below
@@ -171,9 +177,10 @@ export async function readArtifacts(): Promise<ArtifactData> {
         continue;
       }
 
-      // Old artifacts without label fall back to the directory name
+      /** Parsed artifact metadata in its declared shape, before the fallback label is applied. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated via isFailure guard; shape matches ArtifactMeta
       const parsedMeta = parsed as ArtifactMeta;
+      /** Artifact metadata with a guaranteed `label`; old artifacts without one fall back to the directory name. */
       const meta: ArtifactMeta = {
         ...parsedMeta,
         // oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional
@@ -190,15 +197,19 @@ export async function readArtifacts(): Promise<ArtifactData> {
           'response.txt',
         ),),
       ],);
+      /** Assembled parsed artifact bundling metadata with optional source and response files. */
       const artifact: ParsedArtifact = {
         meta,
         source,
         response,
         dir: dirPath,
       };
+      /** Composite key grouping artifacts for the same run across probes. */
       const runKey = `${meta.label}::${meta.timestamp}`;
 
+      /** Per-pass bucket selected by `meta.pass`; new artifacts are inserted into this Map. */
       const target = meta.pass === 'initial' ? initialByRun : fixByRun;
+      /** Existing probe-to-artifact map for the run, or a fresh empty Map when first seen. */
       const probes = target.get(runKey,) ?? new Map<string, ParsedArtifact>();
       probes.set(
         meta.probe,

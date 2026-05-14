@@ -41,6 +41,7 @@ export async function computeDiff({
    */
   let stdout = '';
   try {
+    /** Spawn result holding stdout on the success path; ignored on exit-1 (handled in catch). */
     const result = await spawn(
       'git',
       [
@@ -72,7 +73,9 @@ export async function computeDiff({
  * @returns parsed diff lines
  */
 function parseDiffOutput(output: string,): readonly DiffLine[] {
+  /** Raw output split into lines so each can be classified against the unified-diff prefixes. */
   const lines = output.split('\n',);
+  /** Accumulator that collects classified diff lines once the parser is inside a hunk. */
   const result: DiffLine[] = [];
 
   /** Whether we have passed the header and reached actual diff content */

@@ -88,16 +88,19 @@ const thresholds = new Map<string, number>(
 
 /** Summaries for the overview table, one per model */
 const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(label,) {
+  /** Entries that share the model label being summarised this iteration. */
   const modelEntries = entries.filter(function matchLabel(entry,) {
     return entry.label === label;
   },);
   /** Latest multi-probe run for meaningful overall score; fall back to latest run */
   /* oxlint-disable-next-line unicorn/no-array-callback-reference -- hasMultipleProbes is a type-compatible predicate */
   const latestMultiProbe = modelEntries.filter(hasMultipleProbes,).at(-1,);
+  /** Run that drives the summary row; prefers a multi-probe run for representative score. */
   const latest = latestMultiProbe ?? modelEntries.at(-1,);
   if (latest === undefined)
     return [];
 
+  /** Degradation threshold for this model; `0` when no threshold is registered. */
   const threshold = thresholds.get(label,) ?? 0;
   return [{
     model: latest.model,

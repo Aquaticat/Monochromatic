@@ -51,14 +51,17 @@ export async function renderProbeOverlay({
   probe: string;
   detail: ProbeDetail | undefined;
 },): Promise<string> {
+  /** Run label destructured from the viewer entry; used in the overlay title. */
   const { label, } = entry;
+  /** Initial-pass score for this probe; defaulted to zero so the title always renders a number. */
   const score = entry.probeScores[probe] ?? 0;
+  /** Fix-pass score for this probe; absent when no fix run produced one. */
   const pass2Score = entry.pass2Scores?.[probe];
 
-  // Status badges (partial, error, non-stop finish reason)
+  /** Status badges (partial, error, non-stop finish reason); empty when no detail is available. */
   const badges = detail !== undefined ? renderBadges(detail,) : '';
 
-  // Pass metadata sections (timing, usage, finish reason)
+  /** Initial-pass metadata block (timing, usage, finish reason); omitted when detail is missing. */
   const initialMeta = detail !== undefined
     ? renderPassMeta({
       label: 'Initial pass',
@@ -67,6 +70,7 @@ export async function renderProbeOverlay({
       finishReason: detail.finishReason,
     },)
     : '';
+  /** Fix-pass metadata block; rendered only when the run actually has fix-pass timing or usage. */
   const fixMeta = detail !== undefined
       && (detail.fixTiming !== undefined || detail.fixUsage !== undefined)
     ? renderPassMeta({
@@ -77,7 +81,7 @@ export async function renderProbeOverlay({
     },)
     : '';
 
-  // Source code section (diff or single)
+  /** Source-code section content; replaced below depending on whether a diff or single source applies. */
   let sourceSection = detail === undefined
     ? h({
       tag: 'p',
@@ -87,14 +91,17 @@ export async function renderProbeOverlay({
     : '';
   if (detail?.initialSource !== undefined) {
     if (detail.fixSource !== undefined && detail.fixDir !== undefined) {
+      /** Absolute path to the initial canary file; left side of the diff. */
       const initialFile = join(
         detail.initialDir,
         'canary.ts',
       );
+      /** Absolute path to the fixed canary file; right side of the diff. */
       const fixFile = join(
         detail.fixDir,
         'canary.ts',
       );
+      /** Computed line-level diff between initial and fix sources, fed to the side-by-side renderer. */
       const diffLines = await computeDiff({
         initialPath: initialFile,
         fixPath: fixFile,
@@ -136,10 +143,12 @@ export async function renderProbeOverlay({
     }
   }
 
-  // Collapsible detail sections (reasoning, fix prompt, config)
+  /** Collapsible detail sections (reasoning, fix prompt, config); empty when detail is missing. */
   const collapsibles = detail !== undefined ? renderCollapsibles(detail,) : '';
 
+  /** Optional `(fix: X.XX)` suffix on the title; only appears when a fix-pass score exists. */
   const pass2Suffix = pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : '';
+  /** Composed overlay heading combining label, probe, scores, timestamp, and failure marker. */
   const title = `${label} - ${probe} - ${
     score.toFixed(2,)
   }${pass2Suffix} - ${entry.timestamp}${entry.failed ? ' (FAILED)' : ''}`;
