@@ -1,4 +1,4 @@
-# AWS CloudFront mirror for aquati.cat
+# AWS CloudFront + ACM + Njalla DNS (us-east-1, November 2025 TLS 1.3 origin announcement era): mirror setup hits seven failure surfaces — Alt-Svc cross-origin SAN forcing apex CAA widening, CAA tree-walk reaching apex, EC_secp384r1 cert rejected with misleading InvalidViewerCertificate, deterministic validation CNAME tokens per (account, domain), CAA-vs-CNAME coexistence ban, CNAME-following keeps CAA chain safe, and CloudFront edge HTTP 502 against TLS-1.3-only origin
 
 **Date**: 2026-05-09
 **Subject**: Setting up `aws.aquati.cat` as a public CloudFront mirror of
@@ -684,6 +684,127 @@ The following alternatives were considered and rejected:
   against an origin that accepts only TLS 1.3. Multiple post-November
   community reports observe the same. Status of the announcement: not
   reliably shipped as of the date above.
+
+## Why we do not file these upstream
+
+Walked per issue against the 5-constraint upstream-filing check. Default
+policy: do not file. The audit trail is the point.
+
+### Issues 1, 2, 5, 6: RFC-mandated behavior
+
+Issues 1 (RFC 7838 forces multi-SAN cert for cross-origin Alt-Svc), 2
+(RFC 8659 tree-walk reaches apex), 5 (RFC 1912 plus RFC 2181 ban
+CAA-vs-CNAME coexistence), 6 (RFC 8659 CNAME-following keeps chain safe)
+are RFC-mandated behaviors, not bugs.
+
+1. **Upstream's fault?** No. RFCs 7838, 8659, 1912, 2181 define the
+   behavior. ACM, Njalla, and CloudFront each implement the specs
+   correctly.
+2. **Can upstream fix it?** Not applicable; the RFC is the spec.
+3. **Supporting the use case?** Not applicable; the use case is fully
+   supported, just constrained by the specs.
+4. **Will they fix it?** Not applicable.
+5. **Minimal-fix prototype?** Not applicable.
+
+**Decision: no upstream report.** The "fix" is to understand the spec
+and route around it (issue 1: drop Alt-Svc; issue 2: place subdomain
+CAA; issue 5: remove subdomain CAA before adding CNAME; issue 6:
+trust the CNAME-following walk).
+
+### Issue 3: CloudFront InvalidViewerCertificate error string omits key algorithm cause
+
+The error string lists four conditions (ARN, region, validity, chain),
+none of which apply when the cause is an unsupported key algorithm
+(`EC_secp384r1`). UX defect, not a behavior defect.
+
+1. **Upstream's fault?** Yes. Error message is genuinely misleading.
+2. **Can upstream fix it?** Yes; one-line change to the error string in
+   the `CreateDistribution` validation path to name the unsupported
+   algorithm or list the supported set.
+3. **Supporting the use case?** Yes. Single-name ACM cert + CloudFront
+   distribution is a documented, common combination.
+4. **Will they fix it?** Unknown. AWS service teams do iterate on error
+   message wording, but this specific message has been in the field for
+   years across multiple algorithm changes (RSA → ECDSA, P-256
+   introduction). Low signal that a fix is queued.
+5. **Minimal-fix prototype?** Not feasible; the validation code is
+   closed-source. A user-facing prototype would be a Re:Post feedback
+   item with the misleading message and the actual cause.
+
+**Decision: do not file as a bug.** Already-existing internal
+diagnosis is enough; AWS does not provide a tracker that accepts UX
+feedback at a granularity finer than Re:Post. If a Re:Post post would
+help future searchers find the diagnosis, the draft below is the
+content. Do not file as-is.
+
+~~~md
+**Title:** CloudFront `InvalidViewerCertificate` error string does not
+mention unsupported key algorithm when ACM cert uses EC_secp384r1
+
+**Symptom:**
+
+```
+An error occurred (InvalidViewerCertificate) when calling the
+CreateDistribution operation: The specified SSL certificate doesn't
+exist, isn't in us-east-1 region, isn't valid, or doesn't include a
+valid certificate chain.
+```
+
+None of the four listed conditions applies when the actual cause is an
+ECDSA P-384 key. The supported algorithms are RSA at 1024/2048/3072/4096
+plus ECDSA prime256v1
+(<https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html#https-requirements-size-of-public-key>).
+
+**Suggested fix:** Add the supported-algorithm set to the error string
+when the ARN, region, validity, and chain are all valid but the key
+algorithm is not in the supported set.
+~~~
+
+### Issue 4: ACM validation CNAME deterministic per (account, domain) — docs gap
+
+ACM derives the validation CNAME deterministically from the AWS account
+ID and the domain name, so re-requests for the same `(account, domain)`
+reuse the existing CNAME. This is consistent and useful, but not
+documented in a single canonical AWS doc.
+
+1. **Upstream's fault?** Yes, narrowly: docs gap. Behavior is
+   reasonable; documentation does not call it out.
+2. **Can upstream fix it?** Yes; one paragraph in the ACM DNS
+   validation docs.
+3. **Supporting the use case?** Yes; re-requesting after a failed cert
+   is a common path.
+4. **Will they fix it?** Unknown. Docs feedback through the page's
+   feedback widget is the standard route.
+5. **Minimal-fix prototype?** Docs-only change; the prototype is the
+   one-paragraph addition.
+
+**Decision: low-priority docs feedback only.** Future investigators
+can find the diagnosis here; AWS docs feedback widget is the route if
+filed. Do not file as a bug.
+
+### Issue 7: CloudFront edge HTTP 502 against TLS-1.3-only origin
+
+Two-layer mismatch: API enum still closed at `[SSLv3, TLSv1, TLSv1.1,
+TLSv1.2]`, and the November 2025 announced auto-negotiation does not
+apply at the YTO53-P2 edge as of the date above.
+
+1. **Upstream's fault?** Yes. AWS announced the feature publicly, the
+   API enum has not been extended, and the edge behavior does not
+   match the announcement.
+2. **Can upstream fix it?** Yes. The fix is API enum extension to
+   include `TLSv1.3` and edge rollout of the auto-negotiation; AWS is
+   the only party with access.
+3. **Supporting the use case?** Yes per the November 2025 announcement.
+4. **Will they fix it?** Likely yes, given the announcement, but the
+   ship date is uncertain. Re:Post feature request thread already
+   open: <https://repost.aws/questions/QUzNusy9axTz2iWIyfK1q-nw>.
+5. **Minimal-fix prototype?** Not feasible; the API is closed-source.
+
+**Decision: no separate filing.** The existing Re:Post feature request
+covers the use case. Wait for AWS to ship; workaround D (wait) is the
+chosen path because `fastly.aquati.cat` already provides the mirror
+function. If the wait extends past 6 months from announcement
+(2026-05), reconsider workaround A or C.
 
 ## References
 
