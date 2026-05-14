@@ -1,6 +1,6 @@
 # AUDIT.em-dash.md
 
-Date: 2026-05-10
+Date: 2026-05-10 (original audit), 2026-05-14 (post-sweep counts)
 
 AGENTS.md rule:
 
@@ -13,6 +13,8 @@ AGENTS.md rule:
 
 ## Summary
 
+Original audit (2026-05-10):
+
 | Category                      | Violations | Files |
 | ----------------------------- | ---------- | ----- |
 | Em-dash (`—`) prose asides    | 196        | 91    |
@@ -20,7 +22,39 @@ AGENTS.md rule:
 | ASCII `--` em-dash substitute | 1058       | 369   |
 | ASCII `-` em-dash substitute  | 625        | 58    |
 
-Total definite prose violations: 1883
+Total original violations: 1883.
+
+Post-sweep counts (2026-05-14, issue #55):
+
+| Category                      | Outside intentional | Inside intentional |
+| ----------------------------- | ------------------- | ------------------ |
+| Em-dash (`—`) MD              | 0                   | 202                |
+| Em-dash (`—`) TS              | 0                   | 0                  |
+| En-dash (`–`) MD              | 0                   | 14                 |
+| En-dash (`–`) TS              | 0                   | 2                  |
+| ASCII `--` MD                 | 418                 | 1044               |
+| ASCII `--` TS                 | 1161                | 0                  |
+| ASCII `-` MD                  | not swept           | not swept          |
+
+Intentional content (preserved by exclusion list): `AUDIT.em-dash.md` itself
+(self-references), `PLANNING.forbidden-strings-em-dash.md`,
+`packages/cli/forbidden-strings/README.md`, `AGENTS.md` (rule statement in
+backticks), `GLM_LIMITATIONS.md` (documents model violations), and
+`packages/module/hyperscript/src/css/index.unit.test.ts` (en-dash as CSS
+counter-style symbol). The MD `--` sweep also excluded
+`TODO.claude-code-words.md` and `TODO.forbidden-strings.md` because both
+intentionally use `--` as definition markers.
+
+Remaining ASCII `--` instances (418 MD, 1161 TS) are CLI argument separators
+preserved by the sweep heuristic: lines that look like CLI invocations
+(`mise`, `git`, `npm`, etc. as first token), text inside fenced code blocks,
+inline backtick spans, and `oxlint-disable`/`eslint-disable`/`biome-disable`
+directives (which use ` -- ` as a syntactic rule/reason separator).
+
+ASCII `-` sweep deferred: ambiguity with subtraction, negative numbers,
+date ranges, and list bullets pushes the false-positive rate too high for
+a single-pass mechanical sweep. Follow-up issue tracks the remaining
+work plus the `forbidden-strings` rule that prevents regressions.
 
 ## A. Em-dash (`—`) prose asides
 
