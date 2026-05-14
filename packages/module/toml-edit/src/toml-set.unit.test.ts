@@ -384,6 +384,39 @@ await describe({
     },),
 
     it({
+      name: 'effective sub-path read after AOT replace returns new element value',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
+        const e1 = tomlSet({
+          edit: parseTomlEdit({ source, },),
+          path: ['foo',],
+          value: [
+            { y: 7, },
+            { y: 8, },
+          ],
+        },);
+        expect(tomlGetValue({ edit: e1, path: ['foo', 0, 'y',], },),).toBe(7,);
+        expect(tomlGetValue({ edit: e1, path: ['foo', 1, 'y',], },),).toBe(8,);
+      },
+    },),
+
+    it({
+      name: 'effective whole-AOT read after replace is undefined (parent-path projection is sub-path only)',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
+        const e1 = tomlSet({
+          edit: parseTomlEdit({ source, },),
+          path: ['foo',],
+          value: [
+            { y: 7, },
+            { y: 8, },
+          ],
+        },);
+        expect(tomlGetValue({ edit: e1, path: ['foo',], },),).toBe(undefined,);
+      },
+    },),
+
+    it({
       name: 'immutable: AOT replace on derived state leaves original intact',
       fn: async () => {
         const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
