@@ -43,7 +43,7 @@ export const noVariableFunctionExpression: CreateOnceRule = {
     return {
       VariableDeclaration(node: ESTree.VariableDeclaration,): void {
         for (const declarator of node.declarations) {
-          if (declarator.init !== null && declarator.init.type === 'FunctionExpression') {
+          if ((declarator.init !== null) && (declarator.init.type === 'FunctionExpression')) {
             context.report({
               node,
               messageId: 'forbidden',

@@ -58,10 +58,10 @@ export const noArrowFunction: CreateOnceRule = {
          */
         const { parent, } = node;
         if (
-          parent.type !== 'VariableDeclarator'
-          || parent.id.type !== 'Identifier'
-          || parent.parent.type !== 'VariableDeclaration'
-          || parent.parent.declarations.length !== 1
+          (parent.type !== 'VariableDeclarator')
+          || (parent.id.type !== 'Identifier')
+          || (parent.parent.type !== 'VariableDeclaration')
+          || (parent.parent.declarations.length !== 1)
         ) {
           context.report({
             node,
@@ -86,7 +86,7 @@ export const noArrowFunction: CreateOnceRule = {
 
         /** Generic type parameters if present. */
         const typeParamsText =
-          node.typeParameters !== null && node.typeParameters !== undefined
+          (node.typeParameters !== null) && (node.typeParameters !== undefined)
             ? context.sourceCode.getText(node.typeParameters,)
             : '';
 
@@ -101,7 +101,7 @@ export const noArrowFunction: CreateOnceRule = {
         },);
 
         /** Return type annotation if present. */
-        const returnTypeText = node.returnType !== null && node.returnType !== undefined
+        const returnTypeText = (node.returnType !== null) && (node.returnType !== undefined)
           ? context.sourceCode.getText(node.returnType,)
           : '';
 

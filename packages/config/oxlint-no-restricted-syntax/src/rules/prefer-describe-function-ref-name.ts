@@ -27,28 +27,48 @@ const ALL_CAPS_SNAKE = /^[A-Z][A-Z0-9_]*$/;
  *
  * Match patterns:
  *
- * - `export function <name>` -> `'callable'`
- * - `export async function <name>` -> `'callable'`
- * - `export function* <name>` -> `'callable'`
- * - `export class <name>` -> `'callable'`
- * - `export const <name>` (any init) -> `'const'` (caller's responsibility
+ * - `export function <name>` -\> `'callable'`
+ * - `export async function <name>` -\> `'callable'`
+ * - `export function* <name>` -\> `'callable'`
+ * - `export class <name>` -\> `'callable'`
+ * - `export const <name>` (any init) -\> `'const'` (caller's responsibility
  *   to ignore; instance `.name` is rarely meaningful)
- * - `export { ... <name> ... }` re-export from another file -> `'reexport'`
+ * - `export { ... <name> ... }` re-export from another file -\> `'reexport'`
  *   (caller falls back to the name-shape heuristic; following re-exports
  *   would require recursing through the package, beyond this rule's scope)
- * - none of the above -> `'unknown'` (treat as not callable)
+ * - none of the above -\> `'unknown'` (treat as not callable)
  *
  * @param sourcePath - Resolved absolute path of the imported file.
  *
  * @param name - Name being inspected in the source's export surface.
  *
  * @returns Tag describing what kind of binding the source exposes.
+ *
+ * @example
+ * ```ts
+ * const kind = classifyExportedName({
+ *   sourcePath: '/repo/packages/foo/src/bar.ts',
+ *   name: 'bar',
+ * });
+ * // kind === 'callable' when bar.ts contains `export function bar() {}`
+ * ```
  */
-function classifyExportedName(sourcePath: string, name: string,): 'callable' | 'const' | 'reexport' | 'unknown' {
+function classifyExportedName(
+  {
+    sourcePath,
+    name,
+  }: {
+    sourcePath: string;
+    name: string;
+  },
+): 'callable' | 'const' | 'reexport' | 'unknown' {
   /** Source text of the imported file; empty when the read fails so callers can short-circuit. */
   const content = (function readOrEmpty(): string {
     try {
-      return readFileSync(sourcePath, 'utf8',);
+      return readFileSync(
+        sourcePath,
+        'utf8',
+      );
     }
     catch {
       return '';
@@ -58,21 +78,21 @@ function classifyExportedName(sourcePath: string, name: string,): 'callable' | '
     return 'unknown';
   /** Pattern matching `export function`, `export async function`, and `export function*` declarations of `name`. */
   const fnRe = new RegExp(
-    '(?:^|\\n)export\\s+(?:async\\s+)?function\\s*\\*?\\s+' + name + '\\b',
+    String.raw`(?:^|\n)export\s+(?:async\s+)?function\s*\*?\s+${name}\b`,
   );
   if (fnRe.test(content,))
     return 'callable';
   /** Pattern matching `export class` declarations of `name`. */
-  const classRe = new RegExp('(?:^|\\n)export\\s+class\\s+' + name + '\\b',);
+  const classRe = new RegExp(String.raw`(?:^|\n)export\s+class\s+${name}\b`,);
   if (classRe.test(content,))
     return 'callable';
   /** Pattern matching `export const` declarations of `name`, regardless of initializer shape. */
-  const constRe = new RegExp('(?:^|\\n)export\\s+const\\s+' + name + '\\b',);
+  const constRe = new RegExp(String.raw`(?:^|\n)export\s+const\s+${name}\b`,);
   if (constRe.test(content,))
     return 'const';
   /** Pattern matching `export { ... name ... } from '...'` re-export specifiers. */
   const reexportRe = new RegExp(
-    'export\\s*\\{[^}]*\\b' + name + '\\b[^}]*\\}\\s*from\\s*[\'"]',
+    String.raw`export\s*\{[^}]*\b${name}\b[^}]*\}\s*from\s*['"]`,
   );
   if (reexportRe.test(content,))
     return 'reexport';
@@ -93,7 +113,7 @@ function classifyExportedName(sourcePath: string, name: string,): 'callable' | '
  *   Treat `export const` (any init) as not callable. Re-exports from
  *   another file (`export { name } from '...'`) and read failures fall
  *   through to the {@link ALL_CAPS_SNAKE} name-shape heuristic.
- * - Imports from a workspace or external package: ALL_CAPS_SNAKE -> not
+ * - Imports from a workspace or external package: ALL_CAPS_SNAKE -\> not
  *   callable; otherwise assumed callable.
  * - Other definition kinds (parameter, catch clause, implicit global):
  *   not the rule's target.
@@ -105,36 +125,53 @@ function classifyExportedName(sourcePath: string, name: string,): 'callable' | '
  *
  * @returns `true` when the binding is callable and the function-reference
  *   form makes sense.
+ *
+ * @example
+ * ```ts
+ * const callable = isCallableBinding({
+ *   variable: scope.set.get('coerceArg'),
+ *   currentFile: '/repo/packages/foo/src/index.ts',
+ * });
+ * // callable === true when coerceArg resolves to a function declaration
+ * ```
  */
 function isCallableBinding(
-  variable: Variable,
-  currentFile: string,
+  {
+    variable,
+    currentFile,
+  }: {
+    variable: Variable;
+    currentFile: string;
+  },
 ): boolean {
   /** First definition site of the binding; absent for implicit globals the rule does not target. */
   const [def,] = variable.defs;
   if (def === undefined)
     return false;
-  if (def.type === 'FunctionName' || def.type === 'ClassName')
+  if ((def.type === 'FunctionName') || (def.type === 'ClassName'))
     return true;
   if (def.type === 'ImportBinding') {
     /** Walk up to the enclosing ImportDeclaration to inspect the source. */
-    const node = def.node;
+    const { node, } = def;
     /** Resolved enclosing ImportDeclaration, or the non-import parent when scope-manager hands back something unexpected. */
     const decl = node.type === 'ImportDeclaration'
       ? node
       : node.parent;
-    if (decl === null || decl === undefined || decl.type !== 'ImportDeclaration')
+    if ((decl === null) || (decl === undefined) || (decl.type !== 'ImportDeclaration'))
       return !ALL_CAPS_SNAKE.test(variable.name,);
     /** Literal source string of the import, typed as `string | null` by ESTree to cover non-conforming nodes. */
     const sourceValue = decl.source.value;
-    if (typeof sourceValue !== 'string')
+    if ((typeof sourceValue) !== 'string')
       return !ALL_CAPS_SNAKE.test(variable.name,);
     if (!sourceValue.startsWith('.'))
       return !ALL_CAPS_SNAKE.test(variable.name,);
     /** Resolve relative to the file under lint. */
-    const sourcePath = resolve(dirname(currentFile,), sourceValue,);
+    const sourcePath = resolve(
+      dirname(currentFile,),
+      sourceValue,
+    );
     /** Imports use the alias's local name; the source may export under a different identifier. */
-    const sourceName = node.type === 'ImportSpecifier' && 'imported' in node
+    const sourceName = (node.type === 'ImportSpecifier') && ('imported' in node)
       ? (function getImportedName(): string {
         /** Imported-name slot on the specifier; an Identifier or string Literal per ESTree. */
         const { imported, } = node;
@@ -144,7 +181,10 @@ function isCallableBinding(
       })()
       : variable.name;
     /** Classification tag distinguishing callable, plain const, re-export, or unresolved bindings. */
-    const kind = classifyExportedName(sourcePath, sourceName,);
+    const kind = classifyExportedName({
+      sourcePath,
+      name: sourceName,
+    },);
     if (kind === 'callable')
       return true;
     if (kind === 'const')
@@ -158,12 +198,12 @@ function isCallableBinding(
       return false;
     /** Right-hand initializer; absent for `let x;`-style declarations the rule treats as non-callable. */
     const { init, } = declarator;
-    if (init === null || init === undefined)
+    if ((init === null) || (init === undefined))
       return false;
     return (
-      init.type === 'FunctionExpression'
-      || init.type === 'ArrowFunctionExpression'
-      || init.type === 'ClassExpression'
+      (init.type === 'FunctionExpression')
+      || (init.type === 'ArrowFunctionExpression')
+      || (init.type === 'ClassExpression')
     );
   }
   return false;
@@ -253,11 +293,11 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
      * @param node - The `CallExpression` AST node.
      */
     function checkCall(node: ESTree.CallExpression,): void {
-      if (node.callee.type !== 'Identifier' || node.callee.name !== 'describe')
+      if ((node.callee.type !== 'Identifier') || (node.callee.name !== 'describe'))
         return;
       /** First argument of the call, or `undefined` when none was passed. */
       const [firstArg,] = node.arguments;
-      if (firstArg === undefined || firstArg.type !== 'ObjectExpression')
+      if ((firstArg === undefined) || (firstArg.type !== 'ObjectExpression'))
         return;
       for (const prop of firstArg.properties) {
         if (prop.type !== 'Property')
@@ -266,9 +306,9 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
           continue;
         if (prop.shorthand)
           continue;
-        if (prop.key.type !== 'Identifier' || prop.key.name !== 'name')
+        if ((prop.key.type !== 'Identifier') || (prop.key.name !== 'name'))
           continue;
-        if (prop.value.type !== 'Literal' || typeof prop.value.value !== 'string')
+        if ((prop.value.type !== 'Literal') || ((typeof prop.value.value) !== 'string'))
           continue;
         /** String value of the `name` property. */
         const stringValue = prop.value.value;
@@ -276,14 +316,17 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
           return;
         for (
           let scope: Scope | null = context.sourceCode.getScope(node,);
-          scope !== null && scope.type !== 'global';
+          (scope !== null) && (scope.type !== 'global');
           scope = scope.upper
         ) {
           /** Binding registered in this scope under `stringValue`, or `undefined` when the scope has none. */
           const variable = scope.set.get(stringValue,);
           if (variable === undefined)
             continue;
-          if (isCallableBinding(variable, context.filename,)) {
+          if (isCallableBinding({
+            variable,
+            currentFile: context.filename,
+          },)) {
             context.report({
               node: prop.value,
               messageId: 'forbidden',

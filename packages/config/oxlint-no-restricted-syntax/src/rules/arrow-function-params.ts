@@ -58,7 +58,7 @@ export function extractParamsText(
    * Skip type parameters `<...>` if present.
    * Count angle bracket depth to handle nested generics.
    */
-  if (node.typeParameters !== null && node.typeParameters !== undefined) {
+  if ((node.typeParameters !== null) && (node.typeParameters !== undefined)) {
     /** Source slice starting at the first non-`async` character; inspected for a leading `<`. */
     const tpText = fullText.slice(start,);
     if (tpText.startsWith('<',)) {
@@ -99,7 +99,7 @@ export function extractParamsText(
       continue;
     }
 
-    if (ch === '"' || ch === "'" || ch === '`') {
+    if ((ch === '"') || (ch === "'") || (ch === '`')) {
       inString = ch;
       continue;
     }

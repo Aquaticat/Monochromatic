@@ -39,9 +39,9 @@ export const noHasownproperty: CreateOnceRule = {
       CallExpression(node: ESTree.CallExpression,): void {
         /** Call target; only `x.hasOwnProperty()` member calls qualify for the rule. */
         const { callee, } = node;
-        if (callee.type !== 'MemberExpression' || callee.computed)
+        if ((callee.type !== 'MemberExpression') || callee.computed)
           return;
-        if (callee.property.type !== 'Identifier' || callee.property.name !== 'hasOwnProperty')
+        if ((callee.property.type !== 'Identifier') || (callee.property.name !== 'hasOwnProperty'))
           return;
         context.report({
           node,
