@@ -55,18 +55,27 @@ const sinkEntries: SinkEntry[] = [
   },
 ];
 
-/** Whether initialization has completed. */
-let initialized = false;
-
-/** Whether at least one sink backend is available. */
-let hasAvailableSink = false;
+/**
+ * Module-local mutable state grouped in a `const` container so module-root
+ * state stays out of a top-level `let` (`no-module-root-let` would otherwise
+ * reject it). `initialized` flips true once the eager `initialize()` settles;
+ * `hasAvailableSink` reflects whether any sink survives verification and is
+ * recomputed by `markFailed` as sinks drop out at runtime.
+ */
+const state: {
+  initialized: boolean;
+  hasAvailableSink: boolean;
+} = {
+  hasAvailableSink: false,
+  initialized: false,
+};
 
 /**
  * Initializes all sink backends by verifying their availability.
  * Runs once at module load time.
  */
 async function initialize(): Promise<void> {
-  if (initialized)
+  if (state.initialized)
     return;
 
   for (const entry of sinkEntries) {
@@ -75,16 +84,16 @@ async function initialize(): Promise<void> {
       // oxlint-disable-next-line no-await-in-loop -- Sinks must be verified sequentially to avoid race conditions
       entry.available = result instanceof Promise ? await result : result;
       if (entry.available)
-        hasAvailableSink = true;
+        state.hasAvailableSink = true;
     }
     catch {
       entry.available = false;
     }
   }
 
-  initialized = true;
+  state.initialized = true;
 
-  if (!hasAvailableSink)
+  if (!state.hasAvailableSink)
     throw new Error('No logging backends available',);
 }
 
@@ -99,7 +108,7 @@ const initPromise: Promise<void> = initialize();
  */
 function markFailed(entry: SinkEntry,): void {
   entry.available = false;
-  hasAvailableSink = sinkEntries.some(function isAvailable(sinkEntry,) {
+  state.hasAvailableSink = sinkEntries.some(function isAvailable(sinkEntry,) {
     return sinkEntry.available === true;
   },);
 }
@@ -113,7 +122,7 @@ function markFailed(entry: SinkEntry,): void {
  */
 function createMethod(level: Level,): (message: string,) => void {
   return function logAtLevel(message: string,): void {
-    if (!hasAvailableSink && initialized)
+    if (!state.hasAvailableSink && state.initialized)
       throw new Error('No logging backends available',);
 
     const available = sinkEntries.filter(function isAvailable(entry,) {
@@ -148,7 +157,7 @@ function createMethod(level: Level,): (message: string,) => void {
       }
     },);
 
-    if (!hasAvailableSink)
+    if (!state.hasAvailableSink)
       throw new Error('All logging backends have failed',);
   };
 }

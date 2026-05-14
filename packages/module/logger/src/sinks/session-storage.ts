@@ -6,14 +6,22 @@ import type {
 /** Prefix for sessionStorage keys to namespace log entries. */
 const STORAGE_KEY_PREFIX = 'monochromatic.log';
 
-/** Counter for unique log entry keys within the session. */
-let lineCounter = 0;
-
-/** Caches verification result to avoid repeated checks. */
-let verified = false;
-
-/** Whether sessionStorage backend is available for logging. */
-let available = true;
+/**
+ * Module-local mutable state grouped in a `const` container so module-root
+ * state stays out of a top-level `let` (`no-module-root-let` would otherwise
+ * reject it). `lineCounter` increments per write to keep keys unique;
+ * `verified` short-circuits repeat verification; `available` flips false on
+ * a failed verification or a runtime throw.
+ */
+const state: {
+  lineCounter: number;
+  verified: boolean;
+  available: boolean;
+} = {
+  available: true,
+  lineCounter: 0,
+  verified: false,
+};
 
 /**
  * Verifies sessionStorage actually persists data.
@@ -28,9 +36,9 @@ let available = true;
  * ```
  */
 export function verifySessionStorage(): boolean {
-  if (verified)
-    return available;
-  verified = true;
+  if (state.verified)
+    return state.available;
+  state.verified = true;
 
   try {
     const testKey = '__monochromatic_verify__';
@@ -41,12 +49,12 @@ export function verifySessionStorage(): boolean {
     );
     const readBack = globalThis.sessionStorage.getItem(testKey,);
     globalThis.sessionStorage.removeItem(testKey,);
-    available = readBack === testValue;
+    state.available = readBack === testValue;
   }
   catch {
-    available = false;
+    state.available = false;
   }
-  return available;
+  return state.available;
 }
 
 /**
@@ -55,11 +63,11 @@ export function verifySessionStorage(): boolean {
  * @param record - log record to persist
  */
 function write(record: LogRecord,): void {
-  if (!available)
+  if (!state.available)
     return;
 
   try {
-    const key = `${STORAGE_KEY_PREFIX}.${lineCounter++}`;
+    const key = `${STORAGE_KEY_PREFIX}.${state.lineCounter++}`;
     globalThis.sessionStorage.setItem(
       key,
       JSON.stringify(record,),

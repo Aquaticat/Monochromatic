@@ -32,8 +32,13 @@ async function waitForFlush(): Promise<void> {
  * @returns A complete `LogRecord`.
  */
 function record(
-  level: LogRecord['level'],
-  message: string,
+  {
+    level,
+    message,
+  }: {
+    level: LogRecord['level'];
+    message: string;
+  },
 ): LogRecord {
   return {
     level,
@@ -68,10 +73,10 @@ await describe({
           'info',
         );
 
-        void consoleSink.write(record(
-          'info',
-          'deferred',
-        ),);
+        void consoleSink.write(record({
+          level: 'info',
+          message: 'deferred',
+        },),);
         expect(spy.callCount,)
           .toBe(0,);
 
@@ -91,14 +96,14 @@ await describe({
           'info',
         );
 
-        void consoleSink.write(record(
-          'info',
-          'first',
-        ),);
-        void consoleSink.write(record(
-          'info',
-          'second',
-        ),);
+        void consoleSink.write(record({
+          level: 'info',
+          message: 'first',
+        },),);
+        void consoleSink.write(record({
+          level: 'info',
+          message: 'second',
+        },),);
 
         await waitForFlush();
         expect(spy.callCount,)
@@ -128,22 +133,22 @@ await describe({
           'warn',
         );
 
-        void consoleSink.write(record(
-          'debug',
-          'd1',
-        ),);
-        void consoleSink.write(record(
-          'debug',
-          'd2',
-        ),);
-        void consoleSink.write(record(
-          'warn',
-          'w1',
-        ),);
-        void consoleSink.write(record(
-          'debug',
-          'd3',
-        ),);
+        void consoleSink.write(record({
+          level: 'debug',
+          message: 'd1',
+        },),);
+        void consoleSink.write(record({
+          level: 'debug',
+          message: 'd2',
+        },),);
+        void consoleSink.write(record({
+          level: 'warn',
+          message: 'w1',
+        },),);
+        void consoleSink.write(record({
+          level: 'debug',
+          message: 'd3',
+        },),);
 
         await waitForFlush();
         expect(debugSpy.callCount,)
@@ -171,10 +176,10 @@ await describe({
           'info',
         );
 
-        void consoleSink.write(record(
-          'info',
-          'hi',
-        ),);
+        void consoleSink.write(record({
+          level: 'info',
+          message: 'hi',
+        },),);
         await waitForFlush();
 
         // oxlint-disable-next-line no-unsafe-type-assertion -- spy args
@@ -210,35 +215,35 @@ await describe({
           'error',
         );
 
-        void consoleSink.write(record(
-          'trace',
-          't',
-        ),);
+        void consoleSink.write(record({
+          level: 'trace',
+          message: 't',
+        },),);
         await waitForFlush();
-        void consoleSink.write(record(
-          'debug',
-          'd',
-        ),);
+        void consoleSink.write(record({
+          level: 'debug',
+          message: 'd',
+        },),);
         await waitForFlush();
-        void consoleSink.write(record(
-          'info',
-          'i',
-        ),);
+        void consoleSink.write(record({
+          level: 'info',
+          message: 'i',
+        },),);
         await waitForFlush();
-        void consoleSink.write(record(
-          'warn',
-          'w',
-        ),);
+        void consoleSink.write(record({
+          level: 'warn',
+          message: 'w',
+        },),);
         await waitForFlush();
-        void consoleSink.write(record(
-          'error',
-          'e',
-        ),);
+        void consoleSink.write(record({
+          level: 'error',
+          message: 'e',
+        },),);
         await waitForFlush();
-        void consoleSink.write(record(
-          'fatal',
-          'f',
-        ),);
+        void consoleSink.write(record({
+          level: 'fatal',
+          message: 'f',
+        },),);
         await waitForFlush();
 
         expect(traceSpy.callCount,)
@@ -275,14 +280,14 @@ await describe({
           'trace',
         );
 
-        void consoleSink.write(record(
-          'debug',
-          'hidden',
-        ),);
-        void consoleSink.write(record(
-          'trace',
-          'hidden',
-        ),);
+        void consoleSink.write(record({
+          level: 'debug',
+          message: 'hidden',
+        },),);
+        void consoleSink.write(record({
+          level: 'trace',
+          message: 'hidden',
+        },),);
 
         await waitForFlush();
         expect(debugSpy.callCount,)
@@ -302,15 +307,15 @@ await describe({
           'info',
         );
 
-        void consoleSink.write(record(
-          'info',
-          'first',
-        ),);
+        void consoleSink.write(record({
+          level: 'info',
+          message: 'first',
+        },),);
         await waitForFlush();
-        void consoleSink.write(record(
-          'info',
-          'second',
-        ),);
+        void consoleSink.write(record({
+          level: 'info',
+          message: 'second',
+        },),);
         await waitForFlush();
 
         expect(spy.callCount,)
@@ -328,10 +333,10 @@ await describe({
           'info',
         );
 
-        void consoleSink.write(record(
-          'info',
-          'force-drain',
-        ),);
+        void consoleSink.write(record({
+          level: 'info',
+          message: 'force-drain',
+        },),);
         expect(spy.callCount,)
           .toBe(0,);
 

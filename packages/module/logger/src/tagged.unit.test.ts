@@ -20,7 +20,7 @@ function createStubLogger(): {
   flushCalls: number;
 } {
   const messages: { level: string; message: string; }[] = [];
-  let flushCalls = 0;
+  const counters: { flushCalls: number; } = { flushCalls: 0, };
   const l: Logger = {
     debug: function debug(message: string,): void {
       messages.push({ level: 'debug', message, },);
@@ -32,7 +32,7 @@ function createStubLogger(): {
       messages.push({ level: 'fatal', message, },);
     },
     flush: function flush(): Promise<void> {
-      flushCalls++;
+      counters.flushCalls++;
       return Promise.resolve();
     },
     info: function info(message: string,): void {
@@ -47,7 +47,7 @@ function createStubLogger(): {
   };
   return {
     get flushCalls() {
-      return flushCalls;
+      return counters.flushCalls;
     },
     l,
     messages,

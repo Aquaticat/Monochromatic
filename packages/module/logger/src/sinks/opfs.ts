@@ -3,14 +3,22 @@ import type {
   Sink,
 } from '../types.ts';
 
-/** Writable stream to the OPFS log file, kept open for performance. */
-let writable: FileSystemWritableFileStream | null = null;
-
-/** Caches verification result to avoid repeated checks. */
-let verified = false;
-
-/** Whether OPFS backend is available for logging. */
-let available = false;
+/**
+ * Module-local mutable state grouped in a `const` container so module-root
+ * state stays out of a top-level `let` (`no-module-root-let` would otherwise
+ * reject it). `writable` is the kept-open OPFS stream reused across writes;
+ * `verified` short-circuits repeat verification; `available` flips false on
+ * a failed verification or a runtime throw.
+ */
+const state: {
+  writable: FileSystemWritableFileStream | null;
+  verified: boolean;
+  available: boolean;
+} = {
+  available: false,
+  verified: false,
+  writable: null,
+};
 
 /**
  * Verifies OPFS is available and can write/read data.
@@ -25,9 +33,9 @@ let available = false;
  * ```
  */
 export async function verifyOpfs(): Promise<boolean> {
-  if (verified)
-    return available;
-  verified = true;
+  if (state.verified)
+    return state.available;
+  state.verified = true;
 
   try {
     const opfsRoot = await navigator.storage.getDirectory();
@@ -48,16 +56,16 @@ export async function verifyOpfs(): Promise<boolean> {
 
     const file = await fileHandle.getFile();
     const content = await file.text();
-    available = content.includes('"test":true',);
+    state.available = content.includes('"test":true',);
 
     // Reopen for subsequent log writes
-    writable = await fileHandle.createWritable({ keepExistingData: true, },);
+    state.writable = await fileHandle.createWritable({ keepExistingData: true, },);
   }
   catch {
-    available = false;
+    state.available = false;
   }
 
-  return available;
+  return state.available;
 }
 
 /**
@@ -66,11 +74,11 @@ export async function verifyOpfs(): Promise<boolean> {
  * @param record - log record to write
  */
 async function write(record: LogRecord,): Promise<void> {
-  if (!available || !writable)
+  if (!state.available || !state.writable)
     return;
 
   try {
-    await writable.write(`${JSON.stringify(record,)}\n`,);
+    await state.writable.write(`${JSON.stringify(record,)}\n`,);
   }
   catch {
     // Silently fail

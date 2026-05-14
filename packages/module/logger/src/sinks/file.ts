@@ -9,23 +9,27 @@ import type {
   Sink,
 } from '../types.ts';
 
-/** Cached `appendFile` from `node:fs/promises`, set during verification. */
-// oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
-let appendFile: typeof import('node:fs/promises').appendFile | null = null;
-
-/** Path to the current log file, set during verification. */
-let filePath: string | null = null;
-
 /**
- * Cached verification promise so concurrent callers all wait on the same
- * async work. Without this, a caller arriving between "start verification"
- * and "verification resolves" would see the initial `available = false`
- * because a naive `verified` flag gets set synchronously at entry.
+ * Module-local mutable state grouped in a `const` container so module-root
+ * state stays out of a top-level `let` (`no-module-root-let` would otherwise
+ * reject it). `appendFile` and `filePath` are populated during verification
+ * and read by `write`; `verifyPromise` memoizes concurrent verification so a
+ * caller arriving mid-flight shares the same async work and never sees the
+ * initial `available = false`; `available` flips true once the test write
+ * round-trips.
  */
-let verifyPromise: Promise<boolean> | null = null;
-
-/** Whether file system backend is available for logging. */
-let available = false;
+const state: {
+  // oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
+  appendFile: typeof import('node:fs/promises').appendFile | null;
+  filePath: string | null;
+  verifyPromise: Promise<boolean> | null;
+  available: boolean;
+} = {
+  appendFile: null,
+  available: false,
+  filePath: null,
+  verifyPromise: null,
+};
 
 /**
  * Walks up from `cwd` to find the nearest ancestor directory containing a
@@ -70,28 +74,27 @@ export async function findNodeModulesUp(
     join: typeof Join;
   },
 ): Promise<string | undefined> {
-  let dir = cwd;
-
-  // oxlint-disable-next-line no-constant-condition -- terminates when dirname(dir) === dir (filesystem root)
-  while (true) {
-    const candidate = join(
-      dir,
-      'node_modules',
-    );
-    try {
-      // oxlint-disable-next-line eslint/no-await-in-loop -- sequential walk-up requires awaiting each level
-      const entry = await stat(candidate,);
-      if (entry.isDirectory())
-        return candidate;
-    }
-    catch {
-      /* ENOENT or similar; keep walking up */
-    }
-    const parent = dirname(dir,);
-    if (parent === dir)
-      return undefined;
-    dir = parent;
+  const candidate = join(
+    cwd,
+    'node_modules',
+  );
+  try {
+    const entry = await stat(candidate,);
+    if (entry.isDirectory())
+      return candidate;
   }
+  catch {
+    /* ENOENT or similar; keep walking up */
+  }
+  const parent = dirname(cwd,);
+  if (parent === cwd)
+    return undefined;
+  return await findNodeModulesUp({
+    cwd: parent,
+    stat,
+    dirname,
+    join,
+  },);
 }
 
 /**
@@ -109,7 +112,7 @@ async function runVerify(): Promise<boolean> {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- process.versions may be absent in non-Node polyfills
     || globalThis.process.versions?.node === undefined)
   {
-    available = false;
+    state.available = false;
     return false;
   }
 
@@ -121,7 +124,7 @@ async function runVerify(): Promise<boolean> {
       join,
     } = await import('node:path');
 
-    ({ appendFile, } = fs);
+    state.appendFile = fs.appendFile;
 
     const nodeModulesDir = await findNodeModulesUp({
       cwd: process.cwd(),
@@ -140,7 +143,7 @@ async function runVerify(): Promise<boolean> {
       // console.warn(
       //   `logger fs sink disabled: no ancestor node_modules found from cwd ${process.cwd()}`,
       // );
-      available = false;
+      state.available = false;
       return false;
     }
 
@@ -157,28 +160,28 @@ async function runVerify(): Promise<boolean> {
       ':',
       '-',
     );
-    filePath = join(
+    state.filePath = join(
       LOG_DIR,
       `${timestamp}.log.jsonl`,
     );
 
     // Verify by writing and reading test data
     const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
-    await appendFile(
-      filePath,
+    await state.appendFile(
+      state.filePath,
       testData,
     );
     const content = await fs.readFile(
-      filePath,
+      state.filePath,
       'utf8',
     );
-    available = content.includes('"test":true',);
+    state.available = content.includes('"test":true',);
   }
   catch {
-    available = false;
+    state.available = false;
   }
 
-  return available;
+  return state.available;
 }
 
 /**
@@ -201,11 +204,11 @@ async function runVerify(): Promise<boolean> {
  * ```
  */
 export function verifyFile(): Promise<boolean> {
-  if (verifyPromise !== null)
-    return verifyPromise;
+  if (state.verifyPromise !== null)
+    return state.verifyPromise;
 
-  verifyPromise = runVerify();
-  return verifyPromise;
+  state.verifyPromise = runVerify();
+  return state.verifyPromise;
 }
 
 /**
@@ -215,12 +218,12 @@ export function verifyFile(): Promise<boolean> {
  */
 async function write(record: LogRecord,): Promise<void> {
   // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath is string|null, checking both conditions
-  if (!available || !filePath || !appendFile)
+  if (!state.available || !state.filePath || !state.appendFile)
     return;
 
   try {
-    await appendFile(
-      filePath,
+    await state.appendFile(
+      state.filePath,
       `${JSON.stringify(record,)}\n`,
     );
   }

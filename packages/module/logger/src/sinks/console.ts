@@ -4,11 +4,26 @@ import type {
   Sink,
 } from '../types.ts';
 
-/** Caches verification result to avoid repeated checks. */
-let verified = false;
-
-/** Whether console backend is available for logging. */
-let available = true;
+/**
+ * Module-local mutable state grouped in a `const` container so module-root
+ * state stays out of a top-level `let` (`no-module-root-let` would otherwise
+ * reject it). `verified` short-circuits repeat verification; `available`
+ * flips false on a failed verification or a runtime throw; `verboseCache`
+ * lazily memoizes the verbose-mode detection (null sentinel = not yet
+ * computed); `scheduled` guards against redundant `queueMicrotask` calls
+ * within the same sync frame.
+ */
+const state: {
+  verified: boolean;
+  available: boolean;
+  verboseCache: boolean | null;
+  scheduled: boolean;
+} = {
+  available: true,
+  scheduled: false,
+  verboseCache: null,
+  verified: false,
+};
 
 /**
  * Levels silenced by default unless verbose mode is active.
@@ -92,21 +107,16 @@ function detectVerbose(): boolean {
 }
 
 /**
- * Lazily-evaluated verbose flag. Evaluating at module load prevents tests
- * (and hosts) from mutating `process.env.DEBUG` between import time and
- * first log. Reading on first `write()` call keeps the check cheap while
- * still letting the harness control the environment before any sink call.
- */
-let verboseCache: boolean | null = null;
-
-/**
  * Reads the memoized verbose flag, evaluating on first call.
+ * Lazily evaluated rather than at module load so tests (and hosts) can
+ * mutate `process.env.DEBUG` between import time and first log without
+ * stale cache. Cache lives on `state.verboseCache`.
  *
  * @returns Whether verbose logging is enabled for this process.
  */
 function getVerbose(): boolean {
-  verboseCache ??= detectVerbose();
-  return verboseCache;
+  state.verboseCache ??= detectVerbose();
+  return state.verboseCache;
 }
 
 /**
@@ -153,13 +163,6 @@ function formatRecord(record: LogRecord,): string {
 const buffer: LogRecord[] = [];
 
 /**
- * Whether a flush has already been scheduled for the current microtask
- * cycle. Prevents redundant `queueMicrotask` registrations when many
- * records arrive in the same synchronous frame.
- */
-let scheduled = false;
-
-/**
  * Emits a contiguous run of same-level records as a single console call,
  * joining formatted lines with `\n`.
  *
@@ -170,13 +173,18 @@ let scheduled = false;
  *
  * @example
  * ```ts
- * emitRun([{ level: 'info', message: 'a', timestamp: 0 }], 'info');
+ * emitRun({ records: [{ level: 'info', message: 'a', timestamp: 0 }], level: 'info' });
  * // calls console.info('[info] [1970-01-01T00:00:00.000Z] a')
  * ```
  */
 function emitRun(
-  records: readonly LogRecord[],
-  level: Level,
+  {
+    records,
+    level,
+  }: {
+    records: readonly LogRecord[];
+    level: Level;
+  },
 ): void {
   const text = records
     .map(function formatOne(r,) {
@@ -199,6 +207,57 @@ function emitRun(
 }
 
 /**
+ * A contiguous slice of buffered records that share one level. Built by
+ * `groupRuns` and consumed by `flushBuffer` to emit one `console.*` call
+ * per slice.
+ */
+type Run = {
+  level: Level;
+  records: LogRecord[];
+};
+
+/**
+ * Groups a record sequence into contiguous same-level runs. Each input
+ * record is appended to the trailing run when its level matches, otherwise
+ * a new run is opened. A reduce-based collapse keeps the cursor (run head
+ * and span) out of mutable function-body locals.
+ *
+ * @param records - Buffered records in arrival order.
+ *
+ * @returns Ordered list of runs covering every input record exactly once.
+ *
+ * @example
+ * ```ts
+ * groupRuns([
+ *   { level: 'debug', message: 'a', timestamp: 0 },
+ *   { level: 'debug', message: 'b', timestamp: 0 },
+ *   { level: 'warn',  message: 'c', timestamp: 0 },
+ * ]);
+ * // => [{ level: 'debug', records: [a, b] }, { level: 'warn', records: [c] }]
+ * ```
+ */
+function groupRuns(records: readonly LogRecord[],): Run[] {
+  return records.reduce<Run[]>(
+    function appendToRuns(
+      runs,
+      record,
+    ) {
+      const tail = runs.at(-1,);
+      if (tail !== undefined && tail.level === record.level) {
+        tail.records.push(record,);
+        return runs;
+      }
+      runs.push({
+        level: record.level,
+        records: [record,],
+      },);
+      return runs;
+    },
+    [],
+  );
+}
+
+/**
  * Drains the buffer, collapsing contiguous same-level runs into single
  * console calls. A sequence `[debug, debug, warn, debug]` becomes three
  * calls: `console.debug` (two lines joined), `console.warn`, then
@@ -211,33 +270,16 @@ function emitRun(
  * ```
  */
 function flushBuffer(): void {
-  scheduled = false;
+  state.scheduled = false;
   if (buffer.length === 0)
     return;
 
   const records = buffer.splice(0,);
-  const [firstRecord,] = records;
-  if (firstRecord === undefined)
-    return;
-
-  let runStart = 0;
-  let runLevel: Level = firstRecord.level;
-  for (let i = 1; i <= records.length; i++) {
-    const atEnd = i === records.length;
-    const nextRecord = records[i];
-    const nextLevel = nextRecord === undefined ? runLevel : nextRecord.level;
-    if (!atEnd && nextLevel === runLevel)
-      continue;
-
-    emitRun(
-      records.slice(
-        runStart,
-        i,
-      ),
-      runLevel,
-    );
-    runStart = i;
-    runLevel = nextLevel;
+  for (const run of groupRuns(records,)) {
+    emitRun({
+      level: run.level,
+      records: run.records,
+    },);
   }
 }
 
@@ -258,34 +300,34 @@ function flushBuffer(): void {
  * ```
  */
 export function verifyConsole(): boolean {
-  if (verified)
-    return available;
-  verified = true;
+  if (state.verified)
+    return state.available;
+  state.verified = true;
 
   try {
     if (typeof console === 'undefined') {
-      available = false;
-      return available;
+      state.available = false;
+      return state.available;
     }
 
     const testFn = console.debug;
     if (typeof testFn !== 'function') {
-      available = false;
-      return available;
+      state.available = false;
+      return state.available;
     }
 
     if (typeof queueMicrotask !== 'function') {
-      available = false;
-      return available;
+      state.available = false;
+      return state.available;
     }
 
-    available = true;
+    state.available = true;
   }
   catch {
-    available = false;
+    state.available = false;
   }
 
-  return available;
+  return state.available;
 }
 
 /**
@@ -302,7 +344,7 @@ export function verifyConsole(): boolean {
  * ```
  */
 function write(record: LogRecord,): void {
-  if (!available)
+  if (!state.available)
     return;
 
   if (!getVerbose() && SILENT_LEVELS.has(record.level,))
@@ -310,8 +352,8 @@ function write(record: LogRecord,): void {
 
   buffer.push(record,);
 
-  if (!scheduled) {
-    scheduled = true;
+  if (!state.scheduled) {
+    state.scheduled = true;
     queueMicrotask(flushBuffer,);
   }
 }
@@ -329,10 +371,10 @@ function write(record: LogRecord,): void {
  */
 export function __resetForTests(): void {
   buffer.length = 0;
-  scheduled = false;
-  verboseCache = null;
-  verified = false;
-  available = true;
+  state.scheduled = false;
+  state.verboseCache = null;
+  state.verified = false;
+  state.available = true;
 }
 
 /**
