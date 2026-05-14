@@ -149,12 +149,13 @@ export async function readArtifacts(): Promise<ArtifactData> {
         modelPath,
         subdirent.name,
       );
+      /* oxlint-disable no-await-in-loop -- sequential per-artifact reads with individual error handling */
       /** Raw `meta.json` contents; undefined when the file is missing or unreadable. */
-      // oxlint-disable-next-line no-await-in-loop -- sequential per-artifact reads with individual error handling
       const metaRaw = await readOptional(join(
         dirPath,
         'meta.json',
       ),);
+      /* oxlint-enable no-await-in-loop */
       if (metaRaw === undefined)
         continue;
 
@@ -177,9 +178,10 @@ export async function readArtifacts(): Promise<ArtifactData> {
         continue;
       }
 
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- validated via isFailure guard; shape matches ArtifactMeta */
       /** Parsed artifact metadata in its declared shape, before the fallback label is applied. */
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated via isFailure guard; shape matches ArtifactMeta
       const parsedMeta = parsed as ArtifactMeta;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       /** Artifact metadata with a guaranteed `label`; old artifacts without one fall back to the directory name. */
       const meta: ArtifactMeta = {
         ...parsedMeta,

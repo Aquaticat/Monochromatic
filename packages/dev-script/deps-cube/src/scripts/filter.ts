@@ -252,9 +252,10 @@ function passesToggles(
     toggles: ToggleState;
   },
 ): boolean {
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.entries() loses key type; cast narrows it back. */
   /** Key/value pairs from the toggle record, retyped so `passOne` sees the discriminated key. */
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Object.entries() loses key type; cast narrows it back.
   const entries = Object.entries(toggles,) as readonly (readonly [ToggleKey, ToggleValue,])[];
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   return entries.every(function passOne(
     [
       key,

@@ -102,9 +102,10 @@ export async function probeMedia({ path, }: { path: string; },): Promise<string 
      * nano-spawn's SubprocessError still carries the captured stderr.
      */
     if (error !== null && typeof error === 'object' && 'stderr' in error) {
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check */
       /** Stderr captured by nano-spawn on non-zero exit; still contains the metadata we want. */
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check
       const { stderr, } = error as { stderr: string; };
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       return extractMetadata({
         stderr,
         path,

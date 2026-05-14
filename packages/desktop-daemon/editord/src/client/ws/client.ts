@@ -189,14 +189,14 @@ export class EditorWsClient {
     /** Local alias for the pending-request map so the inner Promise executor closes over it without `this`. */
     const pending = this.#pending;
 
-    // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- pending request tracking requires storing resolve/reject callbacks in a map
+    /* oxlint-disable eslint-plugin-promise/avoid-new -- pending request tracking requires storing resolve/reject callbacks in a map */
     /** Promise that resolves with the matching response or rejects on timeout/close. */
     const responsePromise = new Promise<ServerMessage>(
       function awaitResponse(
         resolve,
         reject,
       ) {
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
+        /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded */
         /** Timer handle stored on the pending entry so the response handler can cancel it. */
         const timeoutId = globalThis.setTimeout(
           function rejectStale() {
@@ -208,6 +208,7 @@ export class EditorWsClient {
           },
           REQUEST_TIMEOUT_MS,
         ) as unknown as number;
+        /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         pending.set(
           id,
           {
@@ -218,6 +219,7 @@ export class EditorWsClient {
         );
       },
     );
+    /* oxlint-enable eslint-plugin-promise/avoid-new */
 
     this.#ws.send(JSON.stringify(fullMessage,),);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- wire correlation by id guarantees resolved value is the success-side variant matching TReq['type']; error variants reject through #handleMessage
@@ -242,9 +244,10 @@ export class EditorWsClient {
    * @param event - WebSocket message event
    */
   #handleMessage(event: MessageEvent,): void {
-    // oxlint-disable-next-line eslint/init-declarations -- try/catch initialization with early return requires split declaration
+    /* oxlint-disable eslint/init-declarations -- try/catch initialization with early return requires split declaration */
     /** Parsed message body; declared outside the try block so the catch can short-circuit before assignment. */
     let data: ServerMessage;
+    /* oxlint-enable eslint/init-declarations */
     try {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
       data = JSON.parse(String(event.data,),) as ServerMessage;

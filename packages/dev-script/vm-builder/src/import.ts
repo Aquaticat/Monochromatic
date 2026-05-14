@@ -98,12 +98,13 @@ async function run(
     [...args,],
     { stdio: 'inherit', },
   );
+  /* oxlint-disable typescript-eslint(no-unsafe-assignment) -- node:events once() returns Promise<any[]>; close event always passes [code: number | null, signal: string | null] */
   /** Exit code from the child's `close` event; non-zero signals command failure. */
-  // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- node:events once() returns Promise<any[]>; close event always passes [code: number | null, signal: string | null]
   const [code,] = await once(
     child,
     'close',
   );
+  /* oxlint-enable typescript-eslint(no-unsafe-assignment) */
   if (code !== 0)
     throw new Error(`${cmd} exited with code ${String(code,)}`,);
 }

@@ -97,9 +97,10 @@ export function wireGotoDefinition(
   editorPane.addEventListener(
     'click',
     function handleCtrlClick(event,) {
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- click is always a MouseEvent */
       /** Click event narrowed to MouseEvent so modifier flags and viewport coords are accessible. */
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- click is always a MouseEvent
       const me = event as MouseEvent;
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       if (!me.ctrlKey && !me.metaKey)
         return;
       /** Editor-space position under the cursor; null when the click misses any text. */

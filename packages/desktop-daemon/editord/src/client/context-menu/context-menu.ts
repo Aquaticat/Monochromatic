@@ -29,9 +29,10 @@ export type { ContextMenuItem, } from './items.ts';
 function handlePopoverToggle(event: Event,): void {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover elements always carries newState
   if ((event as ToggleEvent).newState === 'closed') {
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div */
     /** Popover element fired the toggle; remove it so the next show creates a fresh one. */
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div
     const popup = event.currentTarget as HTMLDivElement;
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     popup.remove();
   }
 }

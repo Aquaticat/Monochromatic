@@ -50,9 +50,10 @@ function handleToolExecutionStart(
   },
   ctx: TitleContext,
 ): void {
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
   /** Event arguments coerced to a string-keyed record so the title builder can sample fields by name. */
-  /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
   const args = (event.args ?? {}) as Record<string, unknown>;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   ctx.ui.setTitle(
     titleForEvent(
       'tool_execution_start',

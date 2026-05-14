@@ -296,14 +296,15 @@ try {
 }
 catch (error) {
   if (error !== null && typeof error === 'object' && 'exitCode' in error) {
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape */
     /** Subprocess failure narrowed to the shape exposed by the bun/node spawn libraries; carries the streams to filter. */
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape
     const subprocessError = error as {
       stdout?: string;
       stderr?: string;
       exitCode?: number;
       signalName?: string;
     };
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     /** Filtered stdout payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
     // Filter stdout (where tsgo writes diagnostics)

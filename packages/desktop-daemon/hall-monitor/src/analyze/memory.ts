@@ -57,13 +57,14 @@ let buffer: CaptureBuffer = [];
  * ```
  */
 export function store(set: CaptureSet,): void {
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- bounded tuple enforced by MAX_ENTRIES slice */
   /** Updated buffer with the new set appended; trimmed to the most recent {@link MAX_ENTRIES} entries. */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by MAX_ENTRIES slice
   const next = [
     ...buffer,
     set,
   ]
     .slice(-MAX_ENTRIES,) as CaptureBuffer;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   buffer = next;
   prune();
 }
