@@ -124,7 +124,7 @@ function importAttributesPlugin(): Plugin {
           };
         }
 
-        if (importer !== undefined && cleanSource.startsWith('.',)) {
+        if ((importer !== undefined) && (cleanSource.startsWith('.',))) {
           /** Importer directory used as the base for resolving the relative specifier. */
           const importerDir = dirname(importer.split('?',)[0] ?? importer,);
           /** Absolute path produced when the resolver could not locate the target. */

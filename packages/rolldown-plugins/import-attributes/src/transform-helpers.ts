@@ -72,7 +72,7 @@ function findWithClauseEnd({
     '}',
     afterLastAttr,
   );
-  return (closingBrace === -1 ? code.length : closingBrace) + 1;
+  return (closingBrace === (-1) ? code.length : closingBrace) + 1;
 }
 
 //endregion Clause scanning
@@ -122,7 +122,7 @@ export function collectStaticReplacements({
     code,
     fromPos: source.end,
   },);
-  if (withStart === -1)
+  if (withStart === (-1))
     return;
   /** Last attribute entry, used to anchor the end-of-clause scan. */
   const lastAttr = attributes.at(-1,);

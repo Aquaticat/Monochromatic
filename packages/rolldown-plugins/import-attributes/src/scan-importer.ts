@@ -88,7 +88,7 @@ export function scanImporterForAttribute({
     ImportDeclaration(node: ESTree.ImportDeclaration,): void {
       if (found !== undefined)
         return;
-      if (node.source.value !== specifier || node.attributes.length === 0)
+      if ((node.source.value !== specifier) || (node.attributes.length === 0))
         return;
       found = extractTypeFromAttributes(node.attributes,);
     },
@@ -96,9 +96,9 @@ export function scanImporterForAttribute({
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
       if (found !== undefined)
         return;
-      if (node.source === null
-        || node.source.value !== specifier
-        || node.attributes.length === 0)
+      if ((node.source === null)
+        || (node.source.value !== specifier)
+        || (node.attributes.length === 0))
       {
         return;
       }
@@ -108,7 +108,7 @@ export function scanImporterForAttribute({
     ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
       if (found !== undefined)
         return;
-      if (node.source.value !== specifier || node.attributes.length === 0)
+      if ((node.source.value !== specifier) || (node.attributes.length === 0))
         return;
       found = extractTypeFromAttributes(node.attributes,);
     },

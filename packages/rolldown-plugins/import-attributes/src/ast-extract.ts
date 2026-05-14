@@ -31,7 +31,7 @@ import { HANDLERS, } from './handlers.ts';
 function getPropertyKeyName(key: ESTree.PropertyKey,): string | undefined {
   if (key.type === 'Identifier')
     return key.name;
-  if ('value' in key && typeof key.value === 'string')
+  if (('value' in key) && ((typeof key.value) === 'string'))
     return key.value;
   return undefined;
 }
@@ -51,7 +51,7 @@ function getPropertyKeyName(key: ESTree.PropertyKey,): string | undefined {
  * ```
  */
 export function getStringLiteralValue(node: ESTree.Expression,): string | undefined {
-  if ('value' in node && typeof node.value === 'string')
+  if (('value' in node) && ((typeof node.value) === 'string'))
     return node.value as string;
   return undefined;
 }
@@ -82,7 +82,7 @@ export function extractTypeFromAttributes(
     const key = attr.key.type === 'Identifier'
       ? attr.key.name
       : attr.key.value;
-    if (key === 'type' && HANDLERS[attr.value.value] !== undefined)
+    if ((key === 'type') && (HANDLERS[attr.value.value] !== undefined))
       return attr.value.value;
   }
   return undefined;
@@ -116,7 +116,7 @@ export function extractTypeFromOptions(
 
     /** Outer property name; only the `with` clause is relevant. */
     const key = getPropertyKeyName(prop.key,);
-    if (key !== 'with' || prop.value.type !== 'ObjectExpression')
+    if ((key !== 'with') || (prop.value.type !== 'ObjectExpression'))
       continue;
 
     for (const innerProp of prop.value.properties) {
@@ -127,9 +127,9 @@ export function extractTypeFromOptions(
       const innerKey = getPropertyKeyName(innerProp.key,);
       /** String value paired with the `type` entry. */
       const innerValue = getStringLiteralValue(innerProp.value,);
-      if (innerKey === 'type'
-        && innerValue !== undefined
-        && HANDLERS[innerValue] !== undefined)
+      if ((innerKey === 'type')
+        && (innerValue !== undefined)
+        && (HANDLERS[innerValue] !== undefined))
       {
         return innerValue;
       }

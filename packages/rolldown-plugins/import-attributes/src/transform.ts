@@ -52,7 +52,7 @@ export function transformImportAttributes({
   code: string;
   id: string;
 },): { code: string; } | null {
-  if (!code.includes(' with ',) && !code.includes(' with{',))
+  if ((!code.includes(' with ',)) && (!code.includes(' with{',)))
     return null;
 
   /** Parsed AST root walked to collect attribute replacements. */
@@ -82,7 +82,7 @@ export function transformImportAttributes({
     },
 
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
-      if (node.source === null || node.attributes.length === 0)
+      if ((node.source === null) || (node.attributes.length === 0))
         return;
       /** Attribute type on this re-export with source; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
@@ -142,7 +142,7 @@ export function transformImportAttributes({
       /** Position of the comma within `between`; -1 means no comma was found. */
       const relCommaIndex = between.indexOf(',',);
       /** Absolute offset where the options-argument removal span begins. */
-      const commaPos = relCommaIndex === -1
+      const commaPos = relCommaIndex === (-1)
         ? node.options.start
         : node.source.end + relCommaIndex;
       replacements.push({

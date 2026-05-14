@@ -32,7 +32,7 @@ export const ATTR_QUERY_KEY = '__importattr';
 export function extractAttrType(id: string,): string | undefined {
   /** Offset of the attribute marker; -1 signals the ID has no encoded attribute. */
   const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`,);
-  if (queryIndex === -1)
+  if (queryIndex === (-1))
     return undefined;
   /** Position immediately after `?<key>=`, where the value substring begins. */
   const valueStart = queryIndex + ATTR_QUERY_KEY.length + 2;
@@ -41,7 +41,7 @@ export function extractAttrType(id: string,): string | undefined {
     '&',
     valueStart,
   );
-  if (ampIndex === -1)
+  if (ampIndex === (-1))
     return id.slice(valueStart,);
   return id.slice(
     valueStart,
@@ -65,7 +65,7 @@ export function extractAttrType(id: string,): string | undefined {
 export function stripAttrQuery(id: string,): string {
   /** Offset of the attribute marker; -1 means the ID is already clean. */
   const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`,);
-  if (queryIndex === -1)
+  if (queryIndex === (-1))
     return id;
   return id.slice(
     0,

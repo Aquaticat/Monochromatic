@@ -16,7 +16,10 @@
  *
  * @returns JavaScript module source code
  */
-export type AttributeTypeHandler = (content: string, id: string,) => string;
+export type AttributeTypeHandler = (
+  content: string,
+  id: string,
+) => string;
 
 //endregion Types
 
