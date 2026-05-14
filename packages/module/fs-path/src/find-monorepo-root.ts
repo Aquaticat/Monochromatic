@@ -51,7 +51,7 @@ async function resolveNodeReadFile(): Promise<ReadFileFn> {
       );
     }
     catch (error: unknown) {
-      if (Error.isError(error,) && 'code' in error && error.code === 'ENOENT')
+      if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
         return undefined;
       throw error;
     }
@@ -106,7 +106,7 @@ async function resolveReadFile(): Promise<ReadFileFn> {
 
   // Node/Bun: process.versions.node is set
   /* oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined */
-  if (typeof process !== 'undefined' && process.versions?.node !== undefined) {
+  if (((typeof process) !== 'undefined') && (process.versions?.node !== undefined)) {
     backendCache.readFile = await resolveNodeReadFile();
     return backendCache.readFile;
   }
@@ -156,7 +156,7 @@ async function walkUp({
 },): Promise<string | undefined> {
   /** `mise.toml` body at the current level, or `undefined` when the file is missing; the marker check decides whether this level is the root. */
   const content = await readFile(`${cwd}/mise.toml`,);
-  if (content !== undefined && content.includes(MONOREPO_SECTION_MARKER,))
+  if ((content !== undefined) && content.includes(MONOREPO_SECTION_MARKER,))
     return cwd;
 
   /** Next directory to inspect; equal to `cwd` only at the filesystem root, which terminates recursion with `undefined`. */
@@ -208,7 +208,7 @@ export async function findMonorepoRoot(
 ): Promise<string> {
   /* oxlint-disable typescript/no-unnecessary-condition -- process may be undefined in browser */
   /** Walk origin; falls back to `process.cwd()` on Node/Bun and the filesystem root in browsers without a working directory concept. */
-  const startDir = cwd ?? (typeof process !== 'undefined' ? process.cwd() : '/');
+  const startDir = cwd ?? (((typeof process) !== 'undefined') ? process.cwd() : '/');
   /* oxlint-enable typescript/no-unnecessary-condition */
   /** Resolved backend captured once so the walk uses a single read function regardless of how many recursion levels run. */
   const readFile = await resolveReadFile();

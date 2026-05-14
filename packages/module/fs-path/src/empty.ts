@@ -39,7 +39,7 @@ export async function emptyPath(path: string,): Promise<string> {
   /** Position of the query separator so the bundler-style `?raw` suffix can be stripped before `posix.parse`. */
   const queryIndex = path.indexOf('?',);
   /** Path with any query suffix removed; only this form is fed to `posix.parse` so extension detection is not fooled by the query. */
-  const cleanPath = queryIndex !== -1
+  const cleanPath = queryIndex !== (-1)
     ? path.slice(
       0,
       queryIndex,
@@ -106,7 +106,7 @@ export async function emptyFile(path: string,): Promise<string> {
   /** Position of the query separator so the bundler-style `?raw` suffix can be stripped before the write. */
   const queryIndex = path.indexOf('?',);
   /** Path with any query suffix removed so `writeFile` targets the actual on-disk file. */
-  const cleanPath = queryIndex !== -1
+  const cleanPath = queryIndex !== (-1)
     ? path.slice(
       0,
       queryIndex,

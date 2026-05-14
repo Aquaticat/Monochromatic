@@ -36,11 +36,11 @@ export function normalize(filePath: string,): string {
   const resolved: string[] = [];
 
   for (const part of parts) {
-    if (part === '' || part === '.')
+    if ((part === '') || (part === '.'))
       continue;
     if (part === '..') {
       // Don't pop past root
-      if (resolved.length > 0 && resolved.at(-1,) !== '..')
+      if ((resolved.length > 0) && (resolved.at(-1,) !== '..'))
         resolved.pop();
       else if (!isRoot)
         resolved.push('..',);
@@ -55,7 +55,7 @@ export function normalize(filePath: string,): string {
 
   if (isRoot)
     result = `/${result}`;
-  if (result === '' || result === '/')
+  if ((result === '') || (result === '/'))
     return isRoot ? '/' : '.';
   if (trailingSlash)
     result += '/';
@@ -93,8 +93,8 @@ export function dirnameFallback(filePath: string,): string {
    * one before a trailing slash, otherwise the last character. Skipping
    * any trailing slash keeps it from being picked as the directory boundary.
    */
-  const searchEnd = filePath.length > 1
-      && filePath.codePointAt(filePath.length - 1,) === SLASH_CODE_POINT
+  const searchEnd = ((filePath.length > 1)
+      && (filePath.codePointAt(filePath.length - 1,) === SLASH_CODE_POINT))
     ? filePath.length - 2
     : filePath.length - 1;
   /** Index of the last meaningful slash, or -1 when none exists. */
@@ -103,9 +103,9 @@ export function dirnameFallback(filePath: string,): string {
     searchEnd,
   );
 
-  if (lastSlash === -1)
+  if (lastSlash === (-1))
     return isRoot ? '/' : '.';
-  if (isRoot && lastSlash === 0)
+  if (isRoot && (lastSlash === 0))
     return '/';
   return filePath.slice(
     0,
@@ -173,11 +173,11 @@ export function resolveFallback(segments: readonly string[],): string {
    * discards everything to its left.
    */
   const absoluteIndex = segments.findLastIndex(function isAbsoluteSegment(segment,) {
-    return segment !== '' && segment.codePointAt(0,) === SLASH_CODE_POINT;
+    return (segment !== '') && (segment.codePointAt(0,) === SLASH_CODE_POINT);
   },);
 
   /** Segments from the rightmost absolute (or start when none) to end. */
-  const relevantSegments = segments.slice(absoluteIndex === -1 ? 0 : absoluteIndex,);
+  const relevantSegments = segments.slice(absoluteIndex === (-1) ? 0 : absoluteIndex,);
   /** Joined path built from the relevant segments, dropping empty entries. */
   const partial = relevantSegments
     .filter(function isNonEmpty(segment,) {
@@ -186,17 +186,17 @@ export function resolveFallback(segments: readonly string[],): string {
     .join('/',);
 
   /** Current working directory (falls back to `/` in browser) */
-  const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function'
+  const cwd = (((typeof process) !== 'undefined') && ((typeof process.cwd) === 'function'))
     ? process.cwd()
     : '/';
   /** Absolute composition: prepend cwd when no segment supplied a root. */
-  const composed = absoluteIndex === -1 ? `${cwd}/${partial}` : partial;
+  const composed = absoluteIndex === (-1) ? `${cwd}/${partial}` : partial;
   /** Normalized absolute path */
   const normalized = normalize(composed,);
 
   if (
-    normalized.length > 1
-    && normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT
+    (normalized.length > 1)
+    && (normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT)
   ) {
     return normalized.slice(
       0,
