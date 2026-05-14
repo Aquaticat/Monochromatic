@@ -58,11 +58,13 @@ async function run(
     args: readonly string[];
   },
 ): Promise<void> {
+  /** Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code. */
   const child = nodeSpawn(
     cmd,
     [...args,],
     { stdio: 'inherit', },
   );
+  /** Exit code from the child's `close` event; non-zero signals command failure. */
   // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- node:events once() returns Promise<any[]>; close event always passes [code: number | null, signal: string | null]
   const [code,] = await once(
     child,

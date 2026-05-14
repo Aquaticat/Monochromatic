@@ -92,11 +92,13 @@ async function run(
     args: readonly string[];
   },
 ): Promise<void> {
+  /** Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code. */
   const child = nodeSpawn(
     cmd,
     [...args,],
     { stdio: 'inherit', },
   );
+  /** Exit code from the child's `close` event; non-zero signals command failure. */
   // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- node:events once() returns Promise<any[]>; close event always passes [code: number | null, signal: string | null]
   const [code,] = await once(
     child,
@@ -128,6 +130,7 @@ async function undefineVmIfExists(name: string,): Promise<void> {
     return;
   }
   console.log(`[vm-builder] removing existing VM '${name}'...`,);
+  /** Current domain state from `virsh domstate`; `'running'` requires `destroy` before `undefine`. */
   const state = (await exec(
     'virsh',
     [
@@ -168,12 +171,14 @@ async function undefineVmIfExists(name: string,): Promise<void> {
  */
 async function importVm(name: string,): Promise<void> {
   console.log(`[vm-builder] importing '${name}' into libvirt...`,);
+  /** Domain XML rendered for {@link name}; consumed by `virsh define`. */
   const xml = generateDomainXml({
     name,
     memoryMib: VM_MEMORY_MIB,
     vcpus: VM_VCPUS,
     qcow2Path: QCOW2_PATH,
   },);
+  /** On-disk location of {@link xml}; `virsh define` reads from this path, not stdin. */
   const xmlPath = join(
     OUTPUT_DIR,
     'domain.xml',
@@ -240,6 +245,7 @@ async function copyToLibvirtImages(): Promise<void> {
       QCOW2_PATH,
     ],
   },);
+  /** Login name used to restore ownership of the qcow2 after the root-owned `sudo cp`. */
   const currentUser = process.env['USER'] ?? 'user';
   await run({
     cmd: 'sudo',
