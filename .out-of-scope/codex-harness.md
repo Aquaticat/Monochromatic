@@ -3,6 +3,10 @@
 This project does not maintain Codex harness plugins or invest further in Codex-specific
 agent integration work.
 
+This policy applies only to the Codex harness and its integration surface. It does not
+apply to Codex models, model providers, APIs, benchmarks, or other non-harness Codex
+technology.
+
 ## Why this is out of scope
 
 The Codex harness is not worth the maintenance cost for this workspace. Its plugin and
