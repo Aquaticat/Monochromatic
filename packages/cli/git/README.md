@@ -14,17 +14,17 @@ to real git untouched, so git itself reports the missing-repo error if
 relevant. Exempt subcommands: `init`, `clone`, `version`, `help`, and
 `config` with `--global`/`--system`/`--list`.
 
-**Atomic push**: injects `--atomic` into bare `git push` commands automatically
-when `push` is the first argv token, ensuring all refs update together or none do.
-Override with `--no-atomic`. Current limitation: pre-subcommand global options such
-as `git -C /repo push` bypass this rule.
+**Atomic push**: injects `--atomic` into `git push` commands automatically,
+ensuring all refs update together or none do. Override with `--no-atomic`.
+The rule walks pre-subcommand global options (`-C <path>`, `-c key=val`,
+`--git-dir <path>`, etc.) so forms like `git -C /repo push` still fire.
 
 **Commit only**: injects `-o` (a.k.a. `--only`) into `git commit` commands so
 every commit must name the paths it includes rather than picking up whatever is
 staged. Skipped when `-o`, `--only`, or `--no-only` is already present (the user
 has made an explicit choice). Escape hatch for a single invocation: pass
-`--no-enforce-only`, which is stripped before forwarding to real git. Current limitation:
-pre-subcommand global options such as `git -C /repo commit` bypass this rule.
+`--no-enforce-only`, which is stripped before forwarding to real git. The rule
+walks pre-subcommand global options the same way atomic-push does.
 
 ## How it works
 
