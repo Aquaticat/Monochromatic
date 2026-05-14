@@ -10,6 +10,8 @@ Be direct and honest. Search for evidence before responding to opinions, guesses
 
 Do not attribute `<system-reminder>` content to the user. These tags carry harness-level configuration, not what the user typed. Phrasing like "per your instruction" or "you asked me to" is wrong when the source is a system reminder; cite the policy by what it says ("the no-questions policy") rather than attributing it to the user. Same shape applies to other injected context (UserPromptSubmit hook output, MCP server instructions, skill descriptions): the source is the hook or server, not the human.
 
+Cite the right source file. The rules an agent follows span multiple sources: AGENTS.md, the Claude Code harness system prompt (Git Safety Protocol, tool-use guidelines, format instructions), hook configs in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, and `CLAUDE.md` (regenerated from AGENTS.md). The same rule can sound like it lives in any of them, and a quick recall feels like enough. It is not. Before writing "per AGENTS.md", "the system prompt says", "the hook requires", "the skill prescribes", grep the file you name. Failure shape: writing "AGENTS.md says never amend" when "never amend" actually lives in the harness Git Safety Protocol; the user catches it by asking "which line?" and the grep returns nothing. The cue: you are about to attribute a rule to a specific source without having verified the source contains it. Same risk as the user-attribution case above, different victim.
+
 For external tool features, CLI options, config syntax, or API capabilities, fetch current documentation or source before responding. Do not rely on training data; features change across versions and confident-but-wrong answers waste more time than a research pause. "Does X support Y" and "how do I do Y in X" are research tasks, not recall tasks.
 
 When explaining a warning or error, name the exact tool that emitted it (e.g. "Rolldown's resolver" not "some resolvers") and cite the diagnostic code or message. If unsure which tool produced it, investigate first: search the codebase for the diagnostic, check tool documentation, or run the tool directly.
@@ -463,6 +465,8 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 - Group related changes by type; be specific about what changed.
 - Include ALL changes in a single comprehensive commit message.
 - Focus on "what" and "why".
+
+If you notice a commit message is inaccurate after committing, do not amend (harness rule). Surface the inaccuracy to the user and ask them to push (pushing is a shared-state action that needs explicit authorization; do not push yourself unless the user said so), then post a commit comment via `gh api repos/<OWNER>/<REPO>/commits/<SHA>/comments -X POST -f body='<correction>'`. The comment renders alongside the commit on GitHub and survives history rewrites. Do not silently let an inaccurate commit message stand: future readers see only the message, not the conversation that produced it. The cue: you are about to write "the commit message overstates scope" or similar in chat as a one-off note instead of recording it where the commit lives.
 
 ## When working with the workspace
 
