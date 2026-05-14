@@ -124,7 +124,7 @@ await describe({
     //region field
 
     describe({
-      name: 'field',
+      name: field.name,
       children: [
         it({
           name: 'creates extractor for named field',
