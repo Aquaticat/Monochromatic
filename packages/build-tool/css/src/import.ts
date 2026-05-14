@@ -44,11 +44,22 @@ import {
  * @returns Absolute path to the resolved CSS file
  *
  * @throws When the specifier cannot be resolved
+ *
+ * @example
+ * ```ts
+ * resolveSpecifier({
+ *   specifier: './tokens.css',
+ *   fromFile: '/project/src/main.css',
+ * }); // → '/project/src/tokens.css'
+ * ```
  */
-function resolveSpecifier(
-  specifier: string,
-  fromFile: string,
-): string {
+function resolveSpecifier({
+  specifier,
+  fromFile,
+}: {
+  specifier: string;
+  fromFile: string;
+}): string {
   /** Directory containing the importing file */
   const fromDir = dirname(fromFile,);
 
@@ -77,8 +88,8 @@ function resolveSpecifier(
 
   // Could be bare-local (CSS convention) or a package specifier.
   // Try relative first: CSS treats `@import 'foo.css'` as relative.
-  if (!isPackageSpecifier(specifier,)
-    || !specifier.includes('/',) && !specifier.startsWith('@',))
+  if ((!isPackageSpecifier(specifier,))
+    || ((!specifier.includes('/',)) && (!specifier.startsWith('@',))))
   {
     /** Attempt to resolve as relative path */
     const asRelative = resolve(
@@ -92,10 +103,10 @@ function resolveSpecifier(
   }
 
   // Package specifier
-  return resolvePackage(
+  return resolvePackage({
     specifier,
     fromDir,
-  );
+  },);
 }
 
 //endregion Import Resolution
@@ -120,11 +131,11 @@ export const postcssInlineImport: Plugin = {
     if (rootFrom !== undefined)
       imported.add(rootFrom,);
 
-    inlineImports(
+    inlineImports({
       root,
-      rootFrom ?? `${process.cwd()}${sep}input.css`,
+      fromFile: rootFrom ?? `${process.cwd()}${sep}input.css`,
       imported,
-    );
+    },);
   },
 };
 
@@ -136,12 +147,25 @@ export const postcssInlineImport: Plugin = {
  * @param fromFile - Absolute path of the file being processed
  *
  * @param imported - Set of already-imported absolute paths (prevents cycles)
+ *
+ * @example
+ * ```ts
+ * inlineImports({
+ *   root: postcssRoot,
+ *   fromFile: '/project/src/main.css',
+ *   imported: new Set(),
+ * });
+ * ```
  */
-function inlineImports(
-  root: Root,
-  fromFile: string,
-  imported: Set<string>,
-): void {
+function inlineImports({
+  root,
+  fromFile,
+  imported,
+}: {
+  root: Root;
+  fromFile: string;
+  imported: Set<string>;
+}): void {
   // Collect @import nodes first to avoid mutating the tree while walking
   /**
    * All \@import at-rules in the current root.
@@ -159,10 +183,10 @@ function inlineImports(
     const specifier = stripImportSpecifier(node.params,);
 
     /** Absolute path to the imported file */
-    const resolvedPath = resolveSpecifier(
+    const resolvedPath = resolveSpecifier({
       specifier,
       fromFile,
-    );
+    },);
 
     // Skip already-imported files (prevents circular imports and duplicates)
     if (imported.has(resolvedPath,)) {
@@ -180,11 +204,11 @@ function inlineImports(
     );
 
     // Recursively process nested @import rules
-    inlineImports(
-      importedRoot,
-      resolvedPath,
+    inlineImports({
+      root: importedRoot,
+      fromFile: resolvedPath,
       imported,
-    );
+    },);
 
     // Replace the @import node with the inlined content
     if (importedRoot.nodes.length > 0)

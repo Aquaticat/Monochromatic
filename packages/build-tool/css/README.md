@@ -93,13 +93,16 @@ For consumers that already have CSS text in memory (such as web components with 
 import { applyMixins, } from '@monochromatic-dev/build-css/ts';
 import mixinSource from './mixins.css' with { type: 'text', };
 
-const expanded = applyMixins(`
-  .close { @apply --reset-button; @apply --touch-target; }
-  .pill  { @apply --pill; }
-`, mixinSource,);
+const expanded = applyMixins({
+  cssText: `
+    .close { @apply --reset-button; @apply --touch-target; }
+    .pill  { @apply --pill; }
+  `,
+  mixinCssText: mixinSource,
+},);
 ```
 
-`applyMixins(cssText, mixinCssText)` encapsulates the full pipeline (parse mixin definitions, expand nested mixin bodies, inline `@apply` rules, serialize) and returns the expanded CSS string.
+`applyMixins({ cssText, mixinCssText })` encapsulates the full pipeline (parse mixin definitions, expand nested mixin bodies, inline `@apply` rules, serialize) and returns the expanded CSS string.
 No filesystem access, no postcss import needed by the caller.
 
 ### Browser environments

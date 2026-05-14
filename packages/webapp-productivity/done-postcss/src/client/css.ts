@@ -32,8 +32,8 @@ import mixinSource from './mixins.css' with { type: 'text', };
  * ```
  */
 export function css(raw: string,): string {
-  return applyMixins(
-    raw,
-    mixinSource,
-  );
+  return applyMixins({
+    cssText: raw,
+    mixinCssText: mixinSource,
+  },);
 }

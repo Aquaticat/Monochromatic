@@ -41,7 +41,7 @@ export function collectMixins(root: Root,): void {
       if (!mixinName)
         throw new Error('@mixin requires a name: @mixin --name { ... }',);
 
-      if (!node.nodes || node.nodes.length === 0)
+      if ((!node.nodes) || (node.nodes.length === 0))
         throw new Error('mixin definition must include body',);
       else {
         mixins.set(

@@ -58,16 +58,19 @@ export {
  *
  * @example
  * ```ts
- * const expanded = applyMixins(
- *   '.btn { \@apply --card; }',
- *   '\@mixin --card { padding: 1rem; }',
- * );
+ * const expanded = applyMixins({
+ *   cssText: '.btn { \@apply --card; }',
+ *   mixinCssText: '\@mixin --card { padding: 1rem; }',
+ * });
  * ```
  */
-export function applyMixins(
-  cssText: string,
-  mixinCssText: string,
-): string {
+export function applyMixins({
+  cssText,
+  mixinCssText,
+}: {
+  cssText: string;
+  mixinCssText: string;
+}): string {
   mixins.clear();
 
   /**

@@ -30,10 +30,17 @@ function isAtRule(node: ChildNode,): node is AtRule {
 export const mixins: Map<string, ChildNode[]> = new Map<string, ChildNode[]>();
 
 /**
+ * Safety limit to detect circular \@apply references between mixins.
+ * Module-level because both {@link runMixinPasses} and {@link expandMixinBodies}
+ * reference it for the bound check and the error message.
+ */
+const MAX_PASSES = 10;
+
+/**
  * Recursively expands \@apply rules within a set of nodes.
  * Looks up each \@apply reference in the mixin registry and inlines the body.
  *
- * Uses an imperative loop with push because each node may expand into zero,
+ * Uses reduce with a callback per node because each node may expand into zero,
  * one, or many replacement nodes; flatMap would work but obscure the three
  * distinct branches (apply-expansion, container-recursion, leaf-clone).
  *
@@ -44,110 +51,63 @@ export const mixins: Map<string, ChildNode[]> = new Map<string, ChildNode[]>();
  * @throws When an \@apply references an unknown mixin name
  */
 function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
-  // flatMap would work but obscure the three distinct branches
-  // (apply-expansion, container-recursion, leaf-clone) that each produce
-  // a different number of output nodes.
-  /**
-   * Accumulates expanded nodes from each input node.
-   *
-   * @param result - Accumulator array of processed nodes
-   *
-   * @param node - Current node to expand
-   *
-   * @returns Accumulator with new nodes appended
-   */
-  function accumulateExpandedNode(
-    result: ChildNode[],
-    node: ChildNode,
-  ): ChildNode[] {
-    if (isAtRule(node,) && node.name === 'apply') {
-      /** Trimmed at-rule parameter identifying which mixin to inline */
-      const mixinName = node.params.trim();
-      /** Stored body nodes for the referenced mixin */
-      const mixinNodes = mixins.get(mixinName,);
-
-      if (mixinNodes === undefined)
-        throw new Error(`Unknown mixin referenced in nested @apply: ${mixinName}`,);
-
-      if (mixinNodes.length > 0) {
-        /** Recursively expanded clones of the mixin body */
-        const expanded = expandApplyInNodes(
-          mixinNodes.map(function cloneChild(childNode,) {
-            return childNode.clone();
-          },),
-        );
-        result.push(...expanded,);
-      }
-    }
-    else if ('nodes' in node && Array.isArray(node.nodes,)) {
-      /** Deep clone so mutations don't affect the original mixin registry */
-      const cloned = node.clone();
-      cloned.nodes = expandApplyInNodes(node.nodes.map(function cloneChild(childNode,) {
-        return childNode.clone();
-      },),);
-      result.push(cloned,);
-    }
-    else {
-      result.push(node.clone(),);
-    }
-
-    return result;
-  }
-
   return nodes.reduce<ChildNode[]>(
-    function accumulate(
+    function accumulateExpandedNode(
       result,
       node,
     ) {
-      return accumulateExpandedNode(
-        result,
-        node,
-      );
+      if (isAtRule(node,) && (node.name === 'apply')) {
+        /** Trimmed at-rule parameter identifying which mixin to inline */
+        const mixinName = node.params.trim();
+        /** Stored body nodes for the referenced mixin */
+        const mixinNodes = mixins.get(mixinName,);
+
+        if (mixinNodes === undefined)
+          throw new Error(`Unknown mixin referenced in nested @apply: ${mixinName}`,);
+
+        if (mixinNodes.length > 0) {
+          /** Recursively expanded clones of the mixin body */
+          const expanded = expandApplyInNodes(
+            mixinNodes.map(function cloneChild(childNode,) {
+              return childNode.clone();
+            },),
+          );
+          result.push(...expanded,);
+        }
+      }
+      else if (('nodes' in node) && Array.isArray(node.nodes,)) {
+        /** Deep clone so mutations don't affect the original mixin registry */
+        const cloned = node.clone();
+        cloned.nodes = expandApplyInNodes(node.nodes.map(function cloneChild(childNode,) {
+          return childNode.clone();
+        },),);
+        result.push(cloned,);
+      }
+      else {
+        result.push(node.clone(),);
+      }
+
+      return result;
     },
     [],
   );
 }
 
 /**
- * Expands nested \@apply rules in all mixin definitions.
- * Runs multiple passes until stable to handle deeply nested mixin references.
+ * Runs a single expansion pass over every registered mixin.
+ * Returns whether any mixin body changed during this pass.
  *
- * Fixed-point iteration requires mutable pass tracking: each pass may reveal
- * new nested \@apply rules that only become visible after a prior pass expanded
- * their parent mixin. A functional approach would need to thread state through
- * recursive calls with no clarity benefit.
- *
- * @throws When expansion exceeds the pass limit (circular \@apply references)
- *
- * @example
- * ```ts
- * collectMixins(root);
- * expandMixinBodies();
- * ```
+ * @returns True when at least one mixin was replaced with an expanded body
  */
-export function expandMixinBodies(): void {
-  /**
-   * Safety limit to detect circular \@apply references between mixins.
-   */
-  const MAX_PASSES = 10;
-  /** Pass index drives convergence detection against {@link MAX_PASSES}. */
-  let passCount = 0;
-  /** Sentinel flips false once a pass mutates no mixin, ending the loop. */
-  let hasChanges = true;
-
-  while (hasChanges) {
-    if (passCount >= MAX_PASSES) {
-      throw new Error(
-        `Mixin expansion exceeded ${MAX_PASSES} passes: likely caused by circular @apply references between mixins`,
-      );
-    }
-
-    hasChanges = false;
-    passCount++;
-
-    // for...of over the Map because each entry may mutate the map (replacing
-    // its own value with an expanded copy), which is inherently imperative.
-    for (const [mixinName, nodes,] of mixins) {
+function runSingleMixinPass(): boolean {
+  // Iterates every entry (rather than `.some`) so each pass evaluates every
+  // mixin and writes back any that changed; the reduce aggregates the
+  // per-entry change flag without a function-root `let`.
+  return [...mixins,].reduce(
+    function detectAnyChange(
+      changedSoFar: boolean,
+      [mixinName, nodes,],
+    ) {
       /**
        * Result of recursively expanding any nested \@apply in this mixin's body.
        */
@@ -166,14 +126,55 @@ export function expandMixinBodies(): void {
         .join('',);
 
       if (originalStr !== expandedStr) {
-        hasChanges = true;
         mixins.set(
           mixinName,
           expanded,
         );
+        return true;
       }
-    }
+      return changedSoFar;
+    },
+    false,
+  );
+}
+
+/**
+ * Recursively runs expansion passes until a pass produces no changes,
+ * or the remaining attempt counter reaches zero (circular reference guard).
+ *
+ * @param remainingAttempts - Passes still allowed before the cycle guard trips
+ *
+ * @throws When `remainingAttempts` hits zero with changes still occurring
+ */
+function runMixinPasses(remainingAttempts: number,): void {
+  if (remainingAttempts === 0) {
+    throw new Error(
+      `Mixin expansion exceeded ${MAX_PASSES} passes: likely caused by circular @apply references between mixins`,
+    );
   }
+  if (runSingleMixinPass()) {
+    runMixinPasses(remainingAttempts - 1,);
+  }
+}
+
+/**
+ * Expands nested \@apply rules in all mixin definitions.
+ * Runs multiple passes until stable to handle deeply nested mixin references.
+ *
+ * Fixed-point iteration drives convergence: each pass may reveal new nested
+ * \@apply rules that only become visible after a prior pass expanded their
+ * parent mixin. {@link runMixinPasses} bounds the recursion at {@link MAX_PASSES}.
+ *
+ * @throws When expansion exceeds the pass limit (circular \@apply references)
+ *
+ * @example
+ * ```ts
+ * collectMixins(root);
+ * expandMixinBodies();
+ * ```
+ */
+export function expandMixinBodies(): void {
+  runMixinPasses(MAX_PASSES,);
 }
 
 //endregion Mixin Registry

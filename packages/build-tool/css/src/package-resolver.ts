@@ -20,9 +20,11 @@ import { splitPackageSpecifier, } from './specifier.ts';
 
 /**
  * Walks up from `startDir` looking for a `node_modules/<packageName>` directory.
- * Mimics Node's module resolution algorithm.
+ * Mimics Node's module resolution algorithm via tail recursion: each call
+ * checks one directory and recurses into the parent until either the package
+ * is found or the filesystem root is reached.
  *
- * @param startDir - Directory to start searching from
+ * @param startDir - Directory to inspect this iteration
  *
  * @param packageName - Package name (e.g. `\@scope/pkg`)
  *
@@ -30,41 +32,40 @@ import { splitPackageSpecifier, } from './specifier.ts';
  *
  * @example
  * ```ts
- * const dir = findPackageDir('/project/src', '\@scope/tokens');
+ * const dir = findPackageDir({ startDir: '/project/src', packageName: '\@scope/tokens' });
  * // → '/project/node_modules/\@scope/tokens'
  * ```
  */
-export function findPackageDir(
-  startDir: string,
-  packageName: string,
-):
+export function findPackageDir({
+  startDir,
+  packageName,
+}: {
+  startDir: string;
+  packageName: string;
+}):
   | string
   | undefined
 {
-  /** Cursor advances toward the filesystem root each iteration. */
-  let current = startDir;
+  /** Candidate node_modules/<pkg> directory */
+  const candidate = join(
+    [
+      startDir,
+      'node_modules',
+      packageName,
+    ],
+  );
+  if (existsSync(candidate,))
+    return candidate;
 
-  // Walk up to filesystem root looking for node_modules
-  // oxlint-disable-next-line no-constant-condition
-  while (true) {
-    /** Candidate node_modules/<pkg> directory */
-    const candidate = join(
-      [
-        current,
-        'node_modules',
-        packageName,
-      ],
-    );
-    if (existsSync(candidate,))
-      return candidate;
-
-    /** Parent directory */
-    const parent = dirname(current,);
-    // Reached filesystem root
-    if (parent === current)
-      return undefined;
-    current = parent;
-  }
+  /** Parent directory */
+  const parent = dirname(startDir,);
+  // Reached filesystem root
+  if (parent === startDir)
+    return undefined;
+  return findPackageDir({
+    startDir: parent,
+    packageName,
+  },);
 }
 
 /**
@@ -112,14 +113,20 @@ export function readPackageJson(
  *
  * @example
  * ```ts
- * resolveExports({ '.': { style: './dist/index.css' } }, '.') // → './dist/index.css'
+ * resolveExports({
+ *   exports: { '.': { style: './dist/index.css' } },
+ *   subpath: '.',
+ * }); // → './dist/index.css'
  * ```
  */
-export function resolveExports(
-  exports: unknown,
-  subpath: string,
-): string | undefined {
-  if (typeof exports !== 'object' || exports === null)
+export function resolveExports({
+  exports,
+  subpath,
+}: {
+  exports: unknown;
+  subpath: string;
+}): string | undefined {
+  if (((typeof exports) !== 'object') || (exports === null))
     return undefined;
 
   /** Exports object keyed by subpath pattern */
@@ -128,11 +135,11 @@ export function resolveExports(
   /** Value for the requested subpath */
   const entry = exportsMap[subpath];
 
-  if (typeof entry === 'string')
+  if ((typeof entry) === 'string')
     return entry;
 
   // Condition object: check style -> import -> default
-  if (typeof entry === 'object' && entry !== null) {
+  if (((typeof entry) === 'object') && (entry !== null)) {
     /** Condition map for this subpath */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from object to Record for condition access
     const conditions = entry as Record<string, unknown>;
@@ -141,7 +148,7 @@ export function resolveExports(
       'import',
       'default',
     ]) {
-      if (typeof conditions[key] === 'string')
+      if ((typeof conditions[key]) === 'string')
         return conditions[key];
     }
   }
@@ -164,20 +171,26 @@ export function resolveExports(
  *
  * @example
  * ```ts
- * const path = resolvePackage('\@scope/tokens/index.css', '/project/src');
+ * const path = resolvePackage({
+ *   specifier: '\@scope/tokens/index.css',
+ *   fromDir: '/project/src',
+ * });
  * ```
  */
-export function resolvePackage(
-  specifier: string,
-  fromDir: string,
-): string {
+export function resolvePackage({
+  specifier,
+  fromDir,
+}: {
+  specifier: string;
+  fromDir: string;
+}): string {
   /** Split decouples package directory lookup from sub-path resolution. */
   const [packageName, subpath,] = splitPackageSpecifier(specifier,);
   /** Absolute path to the package directory in node_modules */
-  const packageDir = findPackageDir(
-    fromDir,
+  const packageDir = findPackageDir({
+    startDir: fromDir,
     packageName,
-  );
+  },);
 
   if (packageDir === undefined)
     throw new Error(`Cannot find package '${packageName}' from '${fromDir}'`,);
@@ -189,10 +202,10 @@ export function resolvePackage(
     // Try exports field
     if (packageJson.exports !== undefined) {
       /** Resolved path from exports map */
-      const resolved = resolveExports(
-        packageJson.exports,
+      const resolved = resolveExports({
+        exports: packageJson.exports,
         subpath,
-      );
+      },);
       if (resolved !== undefined) {
         /** Absolute path from exports resolution */
         const absolutePath = resolve(
@@ -214,7 +227,7 @@ export function resolvePackage(
       ]) {
         /** Field value from package.json */
         const value = packageJson[field];
-        if (typeof value === 'string') {
+        if ((typeof value) === 'string') {
           /** Absolute path from style/main field */
           const absolutePath = resolve(
             [

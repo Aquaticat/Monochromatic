@@ -76,7 +76,7 @@ export function stripImportSpecifier(raw: string,): string {
  * ```
  */
 export function isPackageSpecifier(specifier: string,): boolean {
-  return !specifier.startsWith('.',) && !specifier.startsWith('/',);
+  return (!specifier.startsWith('.',)) && (!specifier.startsWith('/',));
 }
 
 /**
@@ -106,7 +106,7 @@ export function splitPackageSpecifier(specifier: string,): [
       '/',
       specifier.indexOf('/',) + 1,
     );
-    if (secondSlash === -1) {
+    if (secondSlash === (-1)) {
       return [
         specifier,
         '.',
@@ -124,7 +124,7 @@ export function splitPackageSpecifier(specifier: string,): [
   // Unscoped: pkg or pkg/sub/path.css
   /** Index of the first slash */
   const firstSlash = specifier.indexOf('/',);
-  if (firstSlash === -1) {
+  if (firstSlash === (-1)) {
     return [
       specifier,
       '.',
