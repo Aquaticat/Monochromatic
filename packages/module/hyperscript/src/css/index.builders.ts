@@ -6,7 +6,6 @@
 
 import type {
   AtRuleOptions,
-  CssOptions,
   RuleOptions,
 } from './index.types.ts';
 import type { CssValue, } from './values.ts';
@@ -55,7 +54,9 @@ function serializeDecls(decls: object,): string {
 /**
  * Checks whether an at-rule has any block content (declarations, raw, or children).
  *
- * Statement at-rules like `@layer tokens;` have no block.
+ * Statement at-rules like `@layer tokens;` have no block. Note that empty
+ * `decls: {}` or empty `raw: ''` still count as block content (producing
+ * `@layer{}` rather than `@layer;`); see `AtRuleOptions` JSDoc for details.
  *
  * @param options - at-rule options to inspect
  *
@@ -72,6 +73,66 @@ function hasBlock(options: AtRuleOptions,): boolean {
     return true;
 
   return false;
+}
+
+/**
+ * Renders the inside of a `{ }` block from declarations, raw, and children.
+ *
+ * Inserts a `;` separator between any two non-empty segments so declarations
+ * never run into following raw content or children. Empty segments
+ * (`decls: {}`, `raw: ''`, omitted, or empty `children`) contribute nothing
+ * and emit no separator.
+ *
+ * Children concatenate without separators since each child is already a complete
+ * rule or at-rule string; CSS tolerates the absence of separators between
+ * adjacent block-form rules.
+ *
+ * @param decls - serialized declarations (any object), may be `undefined`
+ *
+ * @param raw - raw CSS string, may be `undefined`
+ *
+ * @param children - already-built child CSS strings, may be `undefined`
+ *
+ * @returns block body string with proper separators (no surrounding braces)
+ *
+ * @example
+ * ```ts
+ * renderBody({ decls: { display: 'flex' }, raw: 'background:url(a)' });
+ * // 'display:flex;background:url(a)'
+ * ```
+ */
+function renderBody(
+  {
+    decls,
+    raw,
+    children,
+  }: {
+    decls: object | undefined;
+    raw: string | undefined;
+    children: readonly string[] | undefined;
+  },
+): string {
+  const parts: string[] = [];
+
+  if (decls !== undefined) {
+    const serialized = serializeDecls(decls,);
+    if (serialized !== '')
+      parts.push(serialized,);
+  }
+
+  if (raw !== undefined && raw !== '')
+    parts.push(raw,);
+
+  const childrenStr = children !== undefined
+    ? children.join('',)
+    : '';
+
+  const innerStr = parts.join(';',);
+
+  if (innerStr !== '' && childrenStr !== '')
+    return `${innerStr};${childrenStr}`;
+
+  return `${innerStr}${childrenStr}`;
 }
 
 //endregion
@@ -105,31 +166,7 @@ export function buildRule(
     children,
   }: RuleOptions,
 ): string {
-  const parts: string[] = [`${rule}{`,];
-
-  if (decls !== undefined)
-    parts.push(serializeDecls(decls,),);
-
-  if (raw !== undefined)
-    parts.push(raw,);
-
-  if (children !== undefined) {
-    for (const child of children) {
-      //region Semicolon separator
-      // Insert a semicolon between trailing declarations and the first child,
-      // so `display:flex` + `&:hover{...}` produces `display:flex;&:hover{...}`
-      // rather than `display:flex&:hover{...}`.
-      //endregion
-      if (decls !== undefined && child === children[0])
-        parts.push(';',);
-
-      parts.push(child,);
-    }
-  }
-
-  parts.push('}',);
-
-  return parts.join('',);
+  return `${rule}{${renderBody({ decls, raw, children, },)}}`;
 }
 
 /**
@@ -168,26 +205,7 @@ export function buildAtRule(
   if (!hasBlock(options,))
     return `${head};`;
 
-  const parts: string[] = [`${head}{`,];
-
-  if (decls !== undefined)
-    parts.push(serializeDecls(decls,),);
-
-  if (raw !== undefined)
-    parts.push(raw,);
-
-  if (children !== undefined) {
-    for (const child of children) {
-      if (decls !== undefined && child === children[0])
-        parts.push(';',);
-
-      parts.push(child,);
-    }
-  }
-
-  parts.push('}',);
-
-  return parts.join('',);
+  return `${head}{${renderBody({ decls, raw, children, },)}}`;
 }
 
 //endregion

@@ -311,6 +311,87 @@ await describe({
           .toBe('@media (width >= 768px){.sidebar{display:block}}',);
       },
     },),
+    it({
+      name: 'separates decls from following raw with semicolon',
+      fn: async () => {
+        expect($({
+          rule: '.card',
+          decls: { display: 'flex', },
+          raw: 'background-image:url(a)',
+        },),)
+          .toBe('.card{display:flex;background-image:url(a)}',);
+      },
+    },),
+    it({
+      name: 'separates raw from following children with semicolon',
+      fn: async () => {
+        expect($({
+          rule: '.card',
+          raw: 'display:flex',
+          children: [
+            $({ rule: '&:hover', decls: { opacity: cssNum(0.8,), }, },),
+          ],
+        },),)
+          .toBe('.card{display:flex;&:hover{opacity:0.8}}',);
+      },
+    },),
+    it({
+      name: 'chains decls, raw, and children with proper separators',
+      fn: async () => {
+        expect($({
+          rule: '.card',
+          decls: { display: 'flex', },
+          raw: 'background-image:url(a)',
+          children: [
+            $({ rule: '&:hover', decls: { opacity: cssNum(0.8,), }, },),
+          ],
+        },),)
+          .toBe(
+            '.card{display:flex;background-image:url(a);&:hover{opacity:0.8}}',
+          );
+      },
+    },),
+
+    //endregion
+
+    //region Empty segments do not emit stray separators
+
+    it({
+      name: 'omits separator when decls is empty and children follow',
+      fn: async () => {
+        expect($({
+          rule: '.card',
+          decls: {},
+          children: [$({ rule: '&:hover', decls: { opacity: cssNum(1,), }, },),],
+        },),)
+          .toBe('.card{&:hover{opacity:1}}',);
+      },
+    },),
+    it({
+      name: 'omits separator when raw is empty and children follow',
+      fn: async () => {
+        expect($({
+          rule: '.card',
+          raw: '',
+          children: [$({ rule: '&:hover', decls: { opacity: cssNum(1,), }, },),],
+        },),)
+          .toBe('.card{&:hover{opacity:1}}',);
+      },
+    },),
+    it({
+      name: 'concatenates duplicate child strings without stray separators',
+      fn: async () => {
+        const child = $({ rule: '&:focus', decls: { color: cssVar('fg',), }, },);
+        expect($({
+          rule: '.btn',
+          decls: { display: 'flex', },
+          children: [child, child,],
+        },),)
+          .toBe(
+            '.btn{display:flex;&:focus{color:var(--fg)}&:focus{color:var(--fg)}}',
+          );
+      },
+    },),
 
     //endregion
 
