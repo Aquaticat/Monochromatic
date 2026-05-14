@@ -140,10 +140,13 @@ function readConfig(): ForcePushConfig {
  * ```
  */
 function concat(chunks: readonly Uint8Array[],): Uint8Array {
+  /** Pre-computed total length so the destination buffer is allocated once. */
   let total = 0;
   for (const chunk of chunks)
     total += chunk.byteLength;
+  /** Destination buffer sized to fit every chunk back-to-back. */
   const out = new Uint8Array(total,);
+  /** Write offset advanced by each chunk's length. */
   let cursor = 0;
   for (const chunk of chunks) {
     out.set(
@@ -176,6 +179,7 @@ async function fabricateCommit(row: {
   oid: string;
   packfile: Uint8Array;
 }> {
+  /** Isolated bare gitdir so fabrication does not collide with the forge's own state. */
   const gitdir = await mkdtemp(join(
     tmpdir(),
     'forge-fp-fab-',
@@ -186,13 +190,16 @@ async function fabricateCommit(row: {
     bare: true,
     defaultBranch: 'main',
   },);
+  /** Filler payload sized to `blobSize`; varied byte value differentiates iterations. */
   const blobBytes = new Uint8Array(row.blobSize,);
   blobBytes.fill(row.byteValue,);
+  /** Blob oid referenced from the synthesised tree. */
   const blobOid = await git.writeBlob({
     fs: nodeFs,
     gitdir,
     blob: blobBytes,
   },);
+  /** Tree oid pointing at the freshly written blob. */
   const treeOid = await git.writeTree({
     fs: nodeFs,
     gitdir,
@@ -205,6 +212,7 @@ async function fabricateCommit(row: {
       },
     ],
   },);
+  /** Commit oid the receive-pack body advances `refs/heads/main` to. */
   const commitOid = await git.writeCommit({
     fs: nodeFs,
     gitdir,
@@ -226,6 +234,7 @@ async function fabricateCommit(row: {
       message: `iteration ${String(row.iteration,)}\n`,
     },
   },);
+  /** Packfile bundle covering the new commit, tree, and blob for the receive-pack stream. */
   const result = await git.packObjects({
     fs: nodeFs,
     gitdir,
@@ -262,6 +271,7 @@ function buildReceivePackBody(row: {
   newOid: string;
   packfile: Uint8Array;
 },): Uint8Array {
+  /** Update line carrying the old-new oid pair, ref name, and capability flags. */
   const triplet =
     `${row.oldOid} ${row.newOid} ${REF_NAME}\0report-status side-band-64k\n`;
   return concat([
@@ -287,6 +297,7 @@ async function waitInterval(row: {
 },): Promise<void> {
   if (row.intervalMs <= 0)
     return;
+  /** Remaining slack inside the per-event budget; floored to avoid overshoot. */
   const sleep = Math.max(
     0,
     Math.floor(row.intervalMs - row.elapsedMs,),
@@ -306,10 +317,12 @@ async function waitInterval(row: {
  * ```
  */
 async function run(): Promise<ScenarioResult> {
+  /** Scenario knobs resolved from the `--blob-size`/`--burst-*` flags. */
   const config = readConfig();
 
   // Isolate the bare gitdir tree so the scenario does not pollute the
   // forge's persistent on-disk state.
+  /** Throwaway directory holding the scenario's gitdir, kept out of the forge's tree. */
   const gitdirRoot = await mkdtemp(join(
     tmpdir(),
     'forge-fp-root-',
@@ -322,36 +335,49 @@ async function run(): Promise<ScenarioResult> {
     }`,
   );
 
+  /** Wall-clock start used for the duration summary. */
   const startedAt = Date.now();
+  /** Per-iteration receive-pack latency samples feeding the percentile summary. */
   const samples: number[] = [];
+  /** Invariant breaches collected for the scenario result. */
   const violations: string[] = [];
+  /** Target spacing between iterations so the burst covers `burstDurationMs`. */
   const intervalMs = config.burstDurationMs / Math.max(
     config.burstEvents,
     1,
   );
+  /** Old oid each new force-push targets; seeded to the all-zero (no prior ref) sentinel. */
   let priorOid = ZERO_OID;
+  /** Running count of accepted ref updates used by the apply-count invariant. */
   let appliedTotal = 0;
 
   for (let i = 0; i < config.burstEvents; i += 1) {
-    // oxlint-disable-next-line no-await-in-loop -- per-iteration sequential is by design (each push depends on the prior ref state)
+    /* oxlint-disable no-await-in-loop -- per-iteration sequential is by design (each push depends on the prior ref state) */
+    /** Fabricated commit and packfile for this iteration's force-push. */
     const fab = await fabricateCommit({
       blobSize: config.blobSize,
       // Vary the blob byte each iteration so each commit oid differs.
       byteValue: i & 0xFF,
       iteration: i,
     },);
+    /* oxlint-enable no-await-in-loop */
+    /** Receive-pack request body advancing `refs/heads/main` from `priorOid` to `fab.oid`. */
     const body = buildReceivePackBody({
       oldOid: priorOid,
       newOid: fab.oid,
       packfile: fab.packfile,
     },);
+    /** Apply-phase start timestamp anchoring the latency sample. */
     const t0 = Date.now();
-    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
+    /* oxlint-disable no-await-in-loop -- paced burst by design */
+    /** Receive-pack outcome whose `applied` length proves the ref update was accepted. */
     const outcome = await handleReceivePack({
       owner: OWNER,
       repo: REPO,
       body,
     },);
+    /* oxlint-enable no-await-in-loop */
+    /** Apply-phase end timestamp; difference with `t0` is the sample. */
     const t1 = Date.now();
     samples.push(t1 - t0,);
     appliedTotal += outcome.applied.length;
@@ -364,6 +390,7 @@ async function run(): Promise<ScenarioResult> {
   }
 
   // Verify the resulting ref points where we expect, by upload-packing it back.
+  /** Upload-pack response proving the final commit oid is reachable via the smart-HTTP path. */
   const verifyBody = await handleUploadPack({
     owner: OWNER,
     repo: REPO,
@@ -376,14 +403,17 @@ async function run(): Promise<ScenarioResult> {
   if (verifyBody.byteLength === 0)
     violations.push('upload-pack returned an empty response after force-push burst',);
 
+  /** Median receive-pack latency over the burst. */
   const p50 = percentile({
     samples,
     p: P50,
   },);
+  /** Tail latency compared against `P99_LATENCY_BUDGET_MS`. */
   const p99 = percentile({
     samples,
     p: P99,
   },);
+  /** Wall-clock total used by the summary table. */
   const durationMs = Date.now() - startedAt;
 
   if (p99 > P99_LATENCY_BUDGET_MS) {

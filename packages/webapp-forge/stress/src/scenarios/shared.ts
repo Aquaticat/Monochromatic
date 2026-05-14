@@ -24,7 +24,9 @@ const DECIMAL_RADIX = 10;
  * ```
  */
 export function getFlag(name: string,): string | undefined {
+  /** Literal `--name=` prefix used to identify the flag entry in argv. */
   const prefix = `--${name}=`;
+  /** First argv entry matching the prefix, or `undefined` when the flag is absent. */
   const argument = process.argv.find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
   },);
@@ -49,9 +51,11 @@ export function intFlag(
   name: string,
   fallback: number,
 ): number {
+  /** String form of the flag; `undefined` falls through to the default. */
   const raw = getFlag(name,);
   if (raw === undefined)
     return fallback;
+  /** Numeric interpretation; non-finite results (NaN, Infinity) also fall back. */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,

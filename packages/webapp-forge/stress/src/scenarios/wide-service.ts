@@ -184,9 +184,12 @@ function issueIdFor(row: {
  * ```
  */
 async function sumStorageBytes(): Promise<number> {
+  /** Every storage key the index returns; the empty prefix means no filter. */
   const keys = await storage.list('',);
+  /** Per-key byte counts collected concurrently to avoid serialising the storage calls. */
   const lengths = await Promise.all(
     keys.map(async function lengthOf(key,) {
+      /** Persisted entry; `undefined` means no bytes contribute for this key. */
       const value = await storage.get(key,);
       return value?.byteLength ?? 0;
     },),
@@ -220,22 +223,28 @@ async function runBurst(row: {
   intervalMs: number;
   repoCount: number;
 },): Promise<number[]> {
+  /** Per-event latency samples returned to the caller for the percentile summary. */
   const samples: number[] = [];
   for (let i = 0; i < row.burstEvents; i += 1) {
+    /** Deterministic random repo index keyed on `i` so reruns hit the same repos. */
     const repoIndex = rngInt({
       seed: i,
       lo: 0,
       hi: row.repoCount,
     },);
+    /** Repo id reconstructed from the seed scheme used by the wide-service seeder. */
     const repoId = repoIdFor({
       seed: 2,
       index: repoIndex,
     },);
+    /** First issue in the target repo; the seeder reserves index 0 for the burst. */
     const issueId = issueIdFor({
       repoId,
       index: 0,
     },);
+    /** Unique synthetic comment id keyed off the iteration index. */
     const commentId = `c-wide-${String(i,)}`;
+    /** Per-event start timestamp anchoring the latency sample. */
     const t0 = Date.now();
     // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     await createCommentWithEvent({
@@ -247,6 +256,7 @@ async function runBurst(row: {
     },);
     samples.push(Date.now() - t0,);
     if (row.intervalMs > 0) {
+      /** Remaining slack inside the per-event budget; floored to avoid overshoot. */
       const sleep = Math.max(
         0,
         Math.floor(row.intervalMs - (Date.now() - t0),),
@@ -271,6 +281,7 @@ async function runBurst(row: {
  * ```
  */
 async function run(): Promise<ScenarioResult> {
+  /** Scenario knobs resolved from the `--repos`/`--users`/`--burst-*` flags. */
   const config = readConfig();
 
   l.info(
@@ -282,7 +293,9 @@ async function run(): Promise<ScenarioResult> {
   // Distinct seed from hot-repo (which uses seed=1) so the two scenarios
   // can share an in-memory DB inside `--scenario=all` runs without
   // colliding on `repos.(owner_id, name)` or `issues.(repo_id, number)`.
+  /** Shared creation timestamp keeps seeded rows chronologically coherent. */
   const baseTimestamp = Date.now();
+  /** Seed summary used by the trailing log line; also makes the seeded row counts visible. */
   const summary = await seedDataset({
     seed: 2,
     userCount: config.userCount,
@@ -292,6 +305,7 @@ async function run(): Promise<ScenarioResult> {
   },);
 
   // Drain seed events first.
+  /** Cursor advanced past the seed events so the burst is measured in isolation. */
   const seedCursor = await dispatchAndFlush({
     afterEventId: getEventCursor(),
     storage,
@@ -302,14 +316,18 @@ async function run(): Promise<ScenarioResult> {
   // Capture the pre-burst byte total so the ceiling check covers only
   // bytes written during this scenario (not bytes accumulated from
   // prior scenarios sharing the same in-memory storage in `--scenario=all` runs).
+  /** Baseline byte total subtracted from the post-burst total to isolate this scenario's writes. */
   const bytesBefore = await sumStorageBytes();
 
+  /** Wall-clock start used for the duration summary. */
   const startedAt = Date.now();
+  /** Target spacing between events so the burst covers `burstDurationMs`. */
   const intervalMs = config.burstDurationMs / Math.max(
     config.burstEvents,
     1,
   );
 
+  /** Per-event latency samples returned from the burst driver. */
   const samples = await runBurst({
     burstEvents: config.burstEvents,
     intervalMs,
@@ -317,6 +335,7 @@ async function run(): Promise<ScenarioResult> {
   },);
 
   // Drain trailing events.
+  /** Cursor advanced past any trailing events so the byte total reflects a quiesced state. */
   const finalCursor = await dispatchAndFlush({
     afterEventId: getEventCursor(),
     storage,
@@ -324,18 +343,25 @@ async function run(): Promise<ScenarioResult> {
   },);
   setEventCursor(finalCursor,);
 
+  /** Median rebuild latency over the burst samples. */
   const p50 = percentile({
     samples,
     p: P50,
   },);
+  /** Tail latency compared against `P99_LATENCY_BUDGET_MS`. */
   const p99 = percentile({
     samples,
     p: P99,
   },);
+  /** Wall-clock total used by the summary table. */
   const durationMs = Date.now() - startedAt;
+  /** Post-burst byte total; difference with `bytesBefore` is the burst's contribution. */
   const totalBytes = await sumStorageBytes();
+  /** Bytes attributable to this scenario, compared against the per-repo ceiling. */
   const burstDeltaBytes = totalBytes - bytesBefore;
+  /** Scaled byte ceiling: `BYTES_PER_REPO_CEILING * repoCount` so the budget tracks `--repos`. */
   const bytesCeiling = BYTES_PER_REPO_CEILING * config.repoCount;
+  /** Invariant breaches collected for the scenario result. */
   const violations: string[] = [];
 
   if (p99 > P99_LATENCY_BUDGET_MS) {

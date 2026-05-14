@@ -61,11 +61,13 @@ const SCENARIOS: readonly Scenario[] = [
  * ```
  */
 function formatSummary(results: readonly ScenarioResult[],): string {
+  /** Accumulator seeded with the markdown table header. */
   const lines: string[] = [
     '| scenario | duration ms | events | p50 ms | p99 ms | violations |',
     '| --- | ---: | ---: | ---: | ---: | --- |',
   ];
   for (const r of results) {
+    /** Rendered cell, joined for readability when a scenario reports multiple violations. */
     const violationText = r.invariantViolations.length === 0
       ? 'none'
       : r.invariantViolations.join('; ',);
@@ -108,8 +110,10 @@ else {
   const results: ScenarioResult[] = [];
   for (const scenario of toRun) {
     l.info(`running scenario: ${scenario.name}`,);
-    // oxlint-disable-next-line no-await-in-loop -- scenarios share the runtime; serial run by design
+    /* oxlint-disable no-await-in-loop -- scenarios share the runtime; serial run by design */
+    /** Single-scenario outcome appended to the aggregated report. */
     const result = await scenario.run();
+    /* oxlint-enable no-await-in-loop */
     results.push(result,);
     l.info(
       `scenario ${result.scenario} done durationMs=${String(result.durationMs,)} p50=${
@@ -120,6 +124,7 @@ else {
     );
   }
 
+  /** Markdown table emitted to stdout for piping into reports or CI artifacts. */
   const summary = formatSummary(results,);
   // CLI output goes through stdout for piping into reports / CI artifacts.
   process.stdout.write(`${summary}\n`,);

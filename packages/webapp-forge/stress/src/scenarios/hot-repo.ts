@@ -161,6 +161,7 @@ async function waitInterval(row: {
 },): Promise<void> {
   if (row.intervalMs <= 0)
     return;
+  /** Remaining slack inside the per-event budget; floored to avoid overshoot. */
   const sleep = Math.max(
     0,
     Math.floor(row.intervalMs - row.elapsedMs,),
@@ -183,19 +184,25 @@ async function waitInterval(row: {
  * ```
  */
 async function countStaleFragments(violations: string[],): Promise<number> {
+  /** Storage keys covered by the index; one comparison per key. */
   const indexedKeys = await storage.list('',);
+  /** Running stale count returned to the caller. */
   let stale = 0;
   for (const fragmentKey of indexedKeys) {
-    // oxlint-disable-next-line no-await-in-loop -- per-key serial check
+    /* oxlint-disable no-await-in-loop -- per-key serial check */
+    /** Ground-truth fragment used as the equality reference for this key. */
     const expected = await renderFragment(fragmentKey,);
-    // oxlint-disable-next-line no-await-in-loop -- per-key serial check
+    /** Persisted fragment; missing or text-mismatched counts as stale. */
     const stored = await storage.get(fragmentKey,);
+    /* oxlint-enable no-await-in-loop */
     if (stored === undefined) {
       stale += 1;
       violations.push(`missing storage entry for ${fragmentKey}`,);
       continue;
     }
+    /** Decoded persisted body for text comparison. */
     const storedText = new TextDecoder().decode(stored,);
+    /** Decoded ground-truth body for text comparison. */
     const expectedText = new TextDecoder().decode(expected.body,);
     if (storedText !== expectedText)
       stale += 1;
@@ -216,8 +223,10 @@ async function countStaleFragments(violations: string[],): Promise<number> {
  * ```
  */
 async function sumStorageBytes(keys: readonly string[],): Promise<number> {
+  /** Per-key byte counts collected concurrently to avoid serialising the storage calls. */
   const lengths = await Promise.all(
     keys.map(async function lengthOf(key,) {
+      /** Persisted entry; `undefined` means no bytes contribute for this key. */
       const value = await storage.get(key,);
       return value?.byteLength ?? 0;
     },),
@@ -244,6 +253,7 @@ async function sumStorageBytes(keys: readonly string[],): Promise<number> {
  * ```
  */
 async function run(): Promise<ScenarioResult> {
+  /** Scenario knobs resolved from the `--repo-issues`/`--burst-*` flags. */
   const config = readConfig();
 
   l.info(
@@ -253,7 +263,9 @@ async function run(): Promise<ScenarioResult> {
   );
 
   // Use deterministic seeds so reruns hit the same issues.
+  /** Shared creation timestamp keeps seeded rows chronologically coherent. */
   const baseTimestamp = Date.now();
+  /** Seed summary used to bound the random issue index for the burst. */
   const summary = await seedDataset({
     seed: 1,
     userCount: 5,
@@ -263,6 +275,7 @@ async function run(): Promise<ScenarioResult> {
   },);
 
   // Drain seed events first so we measure only the burst.
+  /** Cursor advanced past the seed events so the burst is measured in isolation. */
   const seedCursor = await dispatchAndFlush({
     afterEventId: getEventCursor(),
     storage,
@@ -270,17 +283,23 @@ async function run(): Promise<ScenarioResult> {
   },);
   setEventCursor(seedCursor,);
 
+  /** Wall-clock start used for the duration summary. */
   const startedAt = Date.now();
+  /** Per-event latency samples feeding the percentile summary. */
   const samples: number[] = [];
+  /** Invariant breaches collected for the scenario result. */
   const violations: string[] = [];
+  /** Repo id matching the deterministic seed factor used in `seedDataset`. */
   const knownRepoId = knownRepoIdFor(1,);
 
   // Fire a paced burst.
+  /** Target spacing between events so the burst covers `burstDurationMs`. */
   const intervalMs = config.burstDurationMs / Math.max(
     config.burstEvents,
     1,
   );
   for (let i = 0; i < config.burstEvents; i += 1) {
+    /** Deterministic per-iteration issue index so reruns target the same issues. */
     const issueIndex = rngInt({
       seed: i,
       lo: 0,
@@ -289,11 +308,14 @@ async function run(): Promise<ScenarioResult> {
         1,
       ),
     },);
+    /** Target issue id reconstructed from the deterministic seed scheme. */
     const issueId = issueIdFor(
       knownRepoId,
       issueIndex,
     );
+    /** Unique synthetic comment id keyed off the iteration index. */
     const commentId = `c-burst-${String(i,)}`;
+    /** Per-event start timestamp anchoring the latency sample. */
     const t0 = Date.now();
     // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     await createCommentWithEvent({
@@ -303,13 +325,16 @@ async function run(): Promise<ScenarioResult> {
       body: `burst comment ${String(i,)}`,
       createdAt: Date.now(),
     },);
-    // oxlint-disable-next-line no-await-in-loop -- paced burst by design
+    /* oxlint-disable no-await-in-loop -- paced burst by design */
+    /** Advanced cursor after the comment event has been dispatched and flushed. */
     const cursor = await dispatchAndFlush({
       afterEventId: getEventCursor(),
       storage,
       writeBuffer,
     },);
+    /* oxlint-enable no-await-in-loop */
     setEventCursor(cursor,);
+    /** Per-event end timestamp; difference with `t0` is the sample. */
     const t1 = Date.now();
     samples.push(t1 - t0,);
     // oxlint-disable-next-line no-await-in-loop -- paced burst by design
@@ -320,6 +345,7 @@ async function run(): Promise<ScenarioResult> {
   }
 
   // Drain trailing events.
+  /** Cursor advanced past any trailing events so the stale-fragment check sees a quiesced state. */
   const finalCursor = await dispatchAndFlush({
     afterEventId: getEventCursor(),
     storage,
@@ -327,17 +353,23 @@ async function run(): Promise<ScenarioResult> {
   },);
   setEventCursor(finalCursor,);
 
+  /** Stale-fragment count feeding both the result and the invariant check. */
   const staleReadCount = await countStaleFragments(violations,);
+  /** Median rebuild latency over the burst samples. */
   const p50 = percentile({
     samples,
     p: P50,
   },);
+  /** Tail latency compared against `P99_LATENCY_BUDGET_MS`. */
   const p99 = percentile({
     samples,
     p: P99,
   },);
+  /** Wall-clock total used by the summary table. */
   const durationMs = Date.now() - startedAt;
+  /** Storage keys covered by the index; passed to `sumStorageBytes` for the byte total. */
   const indexedKeys = await storage.list('',);
+  /** Aggregate fragment-storage byte count reported alongside latency. */
   const fragmentBytes = await sumStorageBytes(indexedKeys,);
 
   if (p99 > P99_LATENCY_BUDGET_MS)
