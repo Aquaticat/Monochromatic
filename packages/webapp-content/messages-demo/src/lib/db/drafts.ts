@@ -33,6 +33,7 @@ export async function createDraft(
     parentId: string | null;
   },
 ): Promise<void> {
+  /** Captured once so created_at and updated_at start as the same value. */
   const now = Date.now();
   await run(
     'INSERT INTO drafts(id, parent_id, user_id, created_at, updated_at, finalized) VALUES (?, ?, ?, ?, ?, 0)',
@@ -64,6 +65,7 @@ export async function putChunk(
     chunk: RenderedChunk;
   },
 ): Promise<void> {
+  /** Captured before the upsert so the chunks write and the drafts-update see the same timestamp. */
   const now = Date.now();
   // Drop the row first so the upsert path uses a single CONFLICT-free
   // INSERT. Turso's prepared-statement planner handles this well; the
@@ -111,10 +113,12 @@ export async function highestContiguousSeq(draftId: string,): Promise<number> {
   // Turso/libSQL does not implement window functions, so we materialise
   // the seq list and walk it in JS. A draft is capped at 100k chunks
   // by upstream limits; even at the maximum this scan is < 5 ms.
+  /** All seqs in ascending order; walked once in JS because libSQL has no window functions. */
   const rows = await all<{ seq: number; }>(
     'SELECT seq FROM chunks WHERE draft_id = ? ORDER BY seq ASC',
     [draftId,],
   );
+  /** Running tally; `-1` represents an empty draft per the function's contract. */
   let highest = -1;
   for (const row of rows) {
     if (row.seq === highest + 1)
@@ -139,6 +143,7 @@ export async function highestContiguousSeq(draftId: string,): Promise<number> {
  * ```
  */
 export async function hasChunks(draftId: string,): Promise<boolean> {
+  /** Single-row EXISTS probe; null when the query returns no rows. */
   const row = await get<{ exists: number; }>(
     'SELECT EXISTS(SELECT 1 FROM chunks WHERE draft_id = ? LIMIT 1) AS "exists"',
     [draftId,],
@@ -172,6 +177,7 @@ export async function finalizeDraft(
     preview: string;
   },
 ): Promise<number | null> {
+  /** Owner row used to cross-check identity before doing any write. */
   const draft = await get<{ user_id: string; }>(
     'SELECT user_id FROM drafts WHERE id = ?',
     [input.draftId,],
@@ -181,9 +187,11 @@ export async function finalizeDraft(
   if (!(await hasChunks(input.draftId,)))
     return null;
 
+  /** Captured once so messages.created_at and messages.updated_at start as the same value. */
   const now = Date.now();
   await db.exec('BEGIN IMMEDIATE',);
   try {
+    /** Insert result; `lastInsertRowid` is the new messages.id returned to the handler. */
     const insert = await run(
       `INSERT INTO messages(draft_id, user_id, created_at, updated_at,
                             revision, char_count, chunk_count, preview)
@@ -231,6 +239,7 @@ export async function cancelDraft(
     userId: string;
   },
 ): Promise<boolean> {
+  /** Delete result; `changes > 0` indicates a draft row was actually removed. */
   const result = await run(
     'DELETE FROM drafts WHERE id = ? AND user_id = ? AND finalized = 0',
     [
