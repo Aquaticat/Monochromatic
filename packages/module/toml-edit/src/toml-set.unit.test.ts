@@ -252,16 +252,152 @@ await describe({
     },),
 
     it({
-      name: 'array-of-tables wholesale replace throws with the clearer message',
+      name: 'array-of-tables wholesale replace emits one [[foo]] block per array element',
       fn: async () => {
         const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
-        expect(function aotReplaceThrows() {
+        const e1 = tomlSet({
+          edit: parseTomlEdit({ source, },),
+          path: ['foo',],
+          value: [
+            { y: 1, },
+            { y: 2, },
+          ],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('[[foo]]\ny = 1\n[[foo]]\ny = 2\n',);
+      },
+    },),
+
+    it({
+      name: 'array-of-tables replace shrinks the instance count (2 to 1)',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
+        const e1 = tomlSet({
+          edit: parseTomlEdit({ source, },),
+          path: ['foo',],
+          value: [{ z: 9, },],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('[[foo]]\nz = 9\n',);
+      },
+    },),
+
+    it({
+      name: 'array-of-tables replace grows the instance count (2 to 3)',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
+        const e1 = tomlSet({
+          edit: parseTomlEdit({ source, },),
+          path: ['foo',],
+          value: [
+            { z: 1, },
+            { z: 2, },
+            { z: 3, },
+          ],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe(
+          '[[foo]]\nz = 1\n[[foo]]\nz = 2\n[[foo]]\nz = 3\n',
+        );
+      },
+    },),
+
+    it({
+      name: 'array-of-tables replace with empty array clears every instance',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
+        const e1 = tomlSet({
+          edit: parseTomlEdit({ source, },),
+          path: ['foo',],
+          value: [],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('',);
+      },
+    },),
+
+    it({
+      name: 'array-of-tables replace preserves a sibling [bar] table',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n[bar]\nz = 3\n';
+        const e1 = tomlSet({
+          edit: parseTomlEdit({ source, },),
+          path: ['foo',],
+          value: [{ y: 1, },],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('[[foo]]\ny = 1\n[bar]\nz = 3\n',);
+      },
+    },),
+
+    it({
+      name: 'array-of-tables replace at a nested path [[a.b]]',
+      fn: async () => {
+        const source = '[[a.b]]\nx = 1\n[[a.b]]\nx = 2\n';
+        const e1 = tomlSet({
+          edit: parseTomlEdit({ source, },),
+          path: ['a', 'b',],
+          value: [{ y: 1, },],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('[[a.b]]\ny = 1\n',);
+      },
+    },),
+
+    it({
+      name: 'array-of-tables replace with non-array value throws TomlTypeError',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
+        expect(function aotNonArrayThrows() {
           tomlSet({
             edit: parseTomlEdit({ source, },),
             path: ['foo',],
             value: { y: 1, },
           },);
+        },).toThrow(TomlTypeError,);
+      },
+    },),
+
+    it({
+      name: 'array-of-tables replace with a non-object element throws TomlTypeError',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
+        expect(function aotNonObjectElementThrows() {
+          tomlSet({
+            edit: parseTomlEdit({ source, },),
+            path: ['foo',],
+            value: [
+              { y: 1, },
+              42,
+            ],
+          },);
+        },).toThrow(TomlTypeError,);
+      },
+    },),
+
+    it({
+      name: 'sibling-tables wholesale replace still throws TomlImmutableNodeError',
+      fn: async () => {
+        const source = '[a.b]\nx = 1\n[a.c]\ny = 2\n';
+        expect(function siblingTablesReplaceThrows() {
+          tomlSet({
+            edit: parseTomlEdit({ source, },),
+            path: ['a',],
+            value: [{ z: 3, },],
+          },);
         },).toThrow(TomlImmutableNodeError,);
+      },
+    },),
+
+    it({
+      name: 'immutable: AOT replace on derived state leaves original intact',
+      fn: async () => {
+        const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
+        const e0 = parseTomlEdit({ source, },);
+        const e1 = tomlSet({
+          edit: e0,
+          path: ['foo',],
+          value: [
+            { y: 1, },
+            { y: 2, },
+          ],
+        },);
+        expect(tomlStringify({ edit: e0, },),).toBe(source,);
+        expect(tomlStringify({ edit: e1, },),).toBe('[[foo]]\ny = 1\n[[foo]]\ny = 2\n',);
       },
     },),
 

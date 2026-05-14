@@ -47,19 +47,26 @@ import {
  *   cleared and the JS object's entries are inserted in `Object.entries`
  *   order. Sub-tables (`[foo.sub]`) are preserved. The JS value must be
  *   a plain object; arrays, scalars, and `Date` throw `TomlTypeError`.
- * - Existing array-of-tables collection (multiple `[[foo]]` or a path
- *   shared by multiple sibling tables): rejected; ambiguous semantics
- *   between N instances and one logical table. Set per-element instead.
+ * - Existing array-of-tables collection (multiple `[[foo]]` blocks):
+ *   replaces with one `[[foo]]` block per element of the supplied JS
+ *   array. The JS value must be an array of plain objects (use `[]` to
+ *   clear all instances). Numeric, string, or object values throw
+ *   `TomlTypeError`.
+ * - Existing sibling-tables collection (the path matches multiple
+ *   `[a.b]` / `[a.c]` standard tables under an implicit parent):
+ *   rejected; not the same shape as a true array-of-tables. Set per
+ *   sub-table instead.
  * - Missing path: a fresh entry is created. Dotted-key insertions check
  *   for sibling-table or inline-table collisions and throw
  *   `TomlImmutableNodeError` when the result would not re-parse.
  *
  * @returns A fresh `TomlEditState` reflecting the change.
  *
- * @throws TomlTypeError for `null`, `undefined`, or a non-object value
- *         when replacing a table body.
+ * @throws TomlTypeError for `null`, `undefined`, a non-object value when
+ *         replacing a table body, or a non-array value (or array with a
+ *         non-plain-object element) when replacing an array-of-tables.
  *
- * @throws TomlImmutableNodeError for array-of-tables wholesale
+ * @throws TomlImmutableNodeError for sibling-tables wholesale
  *         replacement, numeric segments inside the missing tail of the
  *         path, path-create through a scalar or `TOMLArray`, or any
  *         sibling-table / inline-table key collision.
@@ -69,6 +76,7 @@ import {
  * const e1 = tomlSet({ edit, path: ['tools', 'bun',], value: 'latest', },);
  * const e2 = tomlSet({ edit, path: ['foo',], value: { x: 1, y: 2 } as const, },);
  * const e3 = tomlSet({ edit, path: ['a','b','c',], value: 42, },);
+ * const e4 = tomlSet({ edit, path: ['fruits',], value: [{ name: 'apple', }, { name: 'pear', },], },);
  * ```
  */
 export function tomlSet(
@@ -127,11 +135,12 @@ export function tomlSet(
   }
 
   if (resolved.kind === 'array-of-tables')
-    throw new TomlImmutableNodeError(
-      `tomlSet on the array-of-tables at ${formatPath({ path, },)} is not supported; `
-      + `array-of-tables wholesale replacement is ambiguous between N instances and one logical table. `
-      + `Set per-element with tomlSet({ path: [..., N, 'key'], value }) instead.`,
-    );
+    return doAotReplace({
+      edit,
+      path,
+      value,
+      nodes: resolved.nodes,
+    },);
 
   if ((resolved.kind === 'table') || (resolved.kind === 'top-level'))
     return doTableReplace({
@@ -259,5 +268,115 @@ function describeNonObject(
   if (value instanceof Date) return 'Date';
   if ((typeof value) === 'object') return 'non-plain-object';
   return typeof value;
+}
+
+/**
+ * Replace an array-of-tables collection or reject when the resolver's
+ * `array-of-tables` result actually represents sibling standard tables.
+ *
+ * Disambiguates by inspecting `node.kind`: every node being `kind: 'array'`
+ * marks a true `[[foo]]` AOT; otherwise the path matched multiple sibling
+ * `[a.b]` / `[a.c]` standard tables under an implicit parent, which is a
+ * different shape and is still rejected.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ *
+ * @throws TomlImmutableNodeError when `nodes` are sibling standard tables
+ *         rather than a true AOT.
+ *
+ * @throws TomlTypeError when `value` is not an array, or an element of the
+ *         array is not a plain object.
+ */
+function doAotReplace(
+  {
+    edit,
+    path,
+    value,
+    nodes,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath;
+    value: unknown;
+    nodes: readonly AST.TOMLTable[];
+  },
+): TomlEditState {
+  const allAot = nodes.every(function isAot(n,) {
+    return n.kind === 'array';
+  },);
+  if (!allAot)
+    throw new TomlImmutableNodeError(
+      `tomlSet on the sibling tables at ${formatPath({ path, },)} is not supported; `
+      + `the path matches multiple standard tables under an implicit parent, not a true array-of-tables. `
+      + `Set per sub-table with tomlSet({ path: [...subpath], value }) instead.`,
+    );
+
+  if (!Array.isArray(value,))
+    throw new TomlTypeError(
+      `tomlSet on an array-of-tables at ${formatPath({ path, },)} requires an array value; `
+      + `got ${describeNonObject({ value, },)}. Pass [] to clear all instances.`,
+    );
+
+  const elements: readonly unknown[] = value;
+
+  const encodedHeader = path
+    .map(function each(seg,) {
+      if ((typeof seg) !== 'string')
+        throw new TomlImmutableNodeError(
+          `tomlSet on an array-of-tables at ${formatPath({ path, },)}: numeric path segment is not allowed on the array path`,
+        );
+      return encodeKey({ key: seg, },);
+    },)
+    .join('.',);
+
+  const [firstNode,] = nodes;
+  const anchor: AnchorKind = firstNode === undefined
+    ? 'eof'
+    : {
+      position: 'before-node',
+      node: firstNode,
+    };
+
+  const newInsertions: Insertion[] = elements.map(function each(
+    el,
+    i,
+  ) {
+    if (!isPlainObject(el,))
+      throw new TomlTypeError(
+        `tomlSet on an array-of-tables at ${formatPath({ path, },)} requires every element to be a plain object; `
+        + `element at index ${i} is ${describeNonObject({ value: el, },)}.`,
+      );
+    const bodyText = Object.entries(el,)
+      .map(function eachEntry([k, v,],) {
+        return `${encodeKey({ key: k, },)} = ${
+          jsValueToTomlText({
+            input: v,
+            options: edit.canonical,
+            existing: undefined,
+          },)
+        }\n`;
+      },)
+      .join('',);
+    return {
+      anchor,
+      text: `[[${encodedHeader}]]\n${bodyText}`,
+      path: [
+        ...path,
+        i,
+      ],
+      jsValue: el,
+    };
+  },);
+
+  return {
+    ...edit,
+    deletions: new Set([
+      ...edit.deletions,
+      ...nodes,
+    ],),
+    insertions: [
+      ...edit.insertions,
+      ...newInsertions,
+    ],
+  };
 }
 

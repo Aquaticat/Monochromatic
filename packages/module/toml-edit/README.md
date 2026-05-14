@@ -63,7 +63,7 @@ Default is `splice`, which emits unmutated regions verbatim from the source.
 -  **Existing key-value or array element**: replaces the value bytes canonically. Style and raw spelling are preserved for unchanged primitives.
 -  **Existing `[foo]` table or top-level**: replaces the body's key-values with the entries of the supplied JS object. Sub-tables (`[foo.sub]`) and top-level table headers are preserved. The JS value must be a plain object; arrays, scalars, and `Date` throw `TomlTypeError`. Pass `{}` to clear the body.
 -  **Missing path with the deepest parent present**: inserts a fresh entry. Multi-segment tails become dotted-key inserts (`a.b.c = 42` at top-level, `b.c = 42` inside `[a]`). Inline tables are extended in place (`foo = {}` -> `foo = { x = 1 }`). Path-create through a scalar or `TOMLArray` throws.
--  **Existing array-of-tables collection**: rejected with a clearer error. Wholesale replacement of `[[foo]]` instances is ambiguous; set per-element with `tomlSet({ path: ['foo', N, 'key'], value })`.
+-  **Existing array-of-tables collection (`[[foo]]`)**: requires an array value `[{...}, {...}, ...]`; one `[[foo]]` block is emitted per element. Pass `[]` to clear every instance. Multiple sibling standard tables under an implicit parent (`[a.b]` / `[a.c]` queried by `['a']`) are still rejected; set per sub-table.
 -  **Dotted-key collision** (sibling-table or inline-table key overlap that would not re-parse): rejected with `TomlImmutableNodeError`.
 
 `tomlDelete` handles four resolution outcomes:
@@ -81,12 +81,6 @@ In v1, `parseTomlEdit({ source, mode: 'canonical' })` falls back to splice emiss
 Per-node canonical re-emission is implemented (used when individual nodes are mutated), but a full AST walk that re-formats every byte of the parse output is deferred to v2.
 The intent: callers who only need canonical-from-scratch output go through `emptyTomlEdit()`; callers with a parsed source typically want to preserve the original layout for unchanged regions, which is what splice mode already provides.
 If full canonical re-formatting of parsed source is required (e.g. enforce indent, normalise array layouts on every key), reparse the splice output through `emptyTomlEdit()` + setters, or open an issue.
-
-### v1 limitation: array-of-tables wholesale replace
-
-`tomlSet({ path: ['foo'], value: {...} })` is rejected when the path resolves to an array-of-tables collection.
-The semantics are ambiguous (replace one logical table? replace each of N instances?), and the safer reading is per-element.
-Set values inside a specific instance with `tomlSet({ path: ['foo', N, 'key'], value })`.
 
 ### `tomlGetNode` and `tomlGetRaw` are parse-time views
 
