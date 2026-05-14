@@ -142,24 +142,38 @@ const SECONDS_PER_YEAR = SECONDS_PER_DAY * DAYS_PER_YEAR;
  * formatTrackedDuration((365 + 60) * 86_400); // "1y2m"
  */
 export function formatTrackedDuration(seconds: number,): string {
+  /** Clamped to non-negative integer seconds so the modulo chain below cannot consume a fraction or produce negative quotients. */
   const total = Math.max(
     0,
     Math.floor(seconds,),
   );
 
+  /** Top of the ladder; carved off first so subsequent units operate on a descending residual. */
   const years = Math.floor(total / SECONDS_PER_YEAR,);
+  /** Residual after years; fed to months. */
   const remAfterY = total % SECONDS_PER_YEAR;
+  /** Carved off the post-years residual using the 30-day approximation in {@link SECONDS_PER_MONTH}. */
   const months = Math.floor(remAfterY / SECONDS_PER_MONTH,);
+  /** Residual after months; fed to weeks. */
   const remAfterMo = remAfterY % SECONDS_PER_MONTH;
+  /** Carved off the post-months residual. */
   const weeks = Math.floor(remAfterMo / SECONDS_PER_WEEK,);
+  /** Residual after weeks; fed to days. */
   const remAfterW = remAfterMo % SECONDS_PER_WEEK;
+  /** Carved off the post-weeks residual. */
   const days = Math.floor(remAfterW / SECONDS_PER_DAY,);
+  /** Residual after days; fed to hours. */
   const remAfterD = remAfterW % SECONDS_PER_DAY;
+  /** Carved off the post-days residual. */
   const hours = Math.floor(remAfterD / SECONDS_PER_HOUR,);
+  /** Residual after hours; fed to minutes. */
   const remAfterH = remAfterD % SECONDS_PER_HOUR;
+  /** Carved off the post-hours residual. */
   const minutes = Math.floor(remAfterH / SECONDS_PER_MINUTE,);
+  /** Tail of the ladder; whatever does not fit in the units above. */
   const remSeconds = remAfterH % SECONDS_PER_MINUTE;
 
+  /** Paired (value, suffix) tuples ordered largest-to-smallest so a linear `findIndex` locates the top of the ladder. */
   const UNITS = [
     [
       years,
@@ -191,17 +205,20 @@ export function formatTrackedDuration(seconds: number,): string {
     ],
   ] as const;
 
+  /** Index of the first non-zero unit; defines the top of the rendered two-unit pair. */
   const biggestIdx = UNITS.findIndex(function isNonZero([value,],) {
     return value > 0;
   },);
 
   if (biggestIdx === -1) return '0s';
 
+  /** Top unit; primary cell of the rendered string. */
   const [bigValue, bigSuffix,] = nonNullishOrThrow(UNITS[biggestIdx],);
 
   if (biggestIdx === UNITS.length - 1)
     return `${bigValue}${bigSuffix}`;
 
+  /** Partner unit; immediately adjacent per the strict-adjacency rule (no skipping). */
   const [smallValue, smallSuffix,] = nonNullishOrThrow(UNITS[biggestIdx + 1],);
   return `${bigValue}${bigSuffix}${smallValue}${smallSuffix}`;
 }
