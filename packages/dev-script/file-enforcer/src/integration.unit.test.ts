@@ -41,9 +41,10 @@ await describe({
         /** Config that imports from the package and runs a simple copy */
         const configContent = `
             import { cat, overwrite } from '${join(import.meta.dirname, 'index.ts',)}';
-            await overwrite('${join(tempDir, 'dest.md',)}', await cat(['${
-          join(tempDir, 'source.md',)
-        }']));
+            await overwrite({
+              dest: '${join(tempDir, 'dest.md',)}',
+              content: await cat(['${join(tempDir, 'source.md',)}']),
+            });
           `;
         /** Write config to temp dir so it can be imported */
         const configPath = join(tempDir, 'test.config.ts',);
@@ -77,10 +78,10 @@ await describe({
         /** Config concatenating two files */
         const configContent = `
             import { cat, overwrite } from '${join(import.meta.dirname, 'index.ts',)}';
-            await overwrite(
-              '${join(tempDir, 'combined.txt',)}',
-              await cat(['${join(tempDir, 'a.txt',)}', '${join(tempDir, 'b.txt',)}'])
-            );
+            await overwrite({
+              dest: '${join(tempDir, 'combined.txt',)}',
+              content: await cat(['${join(tempDir, 'a.txt',)}', '${join(tempDir, 'b.txt',)}']),
+            });
           `;
         const configPath = join(tempDir, 'concat.config.ts',);
         await writeFile(configPath, configContent,);
@@ -110,10 +111,10 @@ await describe({
             import { cat, dedup, overwrite } from '${
           join(import.meta.dirname, 'index.ts',)
         }';
-            await overwrite(
-              '${join(tempDir, 'unique.txt',)}',
-              dedup(await cat(['${join(tempDir, 'dupes.txt',)}']))
-            );
+            await overwrite({
+              dest: '${join(tempDir, 'unique.txt',)}',
+              content: dedup(await cat(['${join(tempDir, 'dupes.txt',)}'])),
+            });
           `;
         const configPath = join(tempDir, 'dedup.config.ts',);
         await writeFile(configPath, configContent,);
@@ -145,12 +146,12 @@ await describe({
             import { cat, getJsonProperty, overwrite } from '${
           join(import.meta.dirname, 'index.ts',)
         }';
-            await overwrite(
-              '${join(tempDir, 'name.txt',)}',
-              getJsonProperty({ path: ['config', 'name'], content: await cat(['${
+            await overwrite({
+              dest: '${join(tempDir, 'name.txt',)}',
+              content: getJsonProperty({ path: ['config', 'name'], content: await cat(['${
           join(tempDir, 'data.json',)
-        }']) })
-            );
+        }']) }),
+            });
           `;
         const configPath = join(tempDir, 'prop.config.ts',);
         await writeFile(configPath, configContent,);
@@ -178,9 +179,10 @@ await describe({
         /** Config with a simple copy to verify tracker state */
         const configContent = `
             import { cat, overwrite } from '${join(import.meta.dirname, 'index.ts',)}';
-            await overwrite('${join(tempDir, 'output.md',)}', await cat(['${
-          join(tempDir, 'input.md',)
-        }']));
+            await overwrite({
+              dest: '${join(tempDir, 'output.md',)}',
+              content: await cat(['${join(tempDir, 'input.md',)}']),
+            });
           `;
         const configPath = join(tempDir, 'tracked.config.ts',);
         await writeFile(configPath, configContent,);
@@ -211,8 +213,11 @@ await describe({
           join(import.meta.dirname, 'index.ts',)
         }';
             addWatchedPaths(['${join(tempDir, 'dep.json',)}']);
-            const result = await exec('echo', ['from-exec']);
-            await overwrite('${join(tempDir, 'exec-out.txt',)}', result.trim());
+            const result = await exec({ cmd: 'echo', args: ['from-exec'] });
+            await overwrite({
+              dest: '${join(tempDir, 'exec-out.txt',)}',
+              content: result.trim(),
+            });
           `;
         const configPath = join(tempDir, 'escape.config.ts',);
         await writeFile(configPath, configContent,);
@@ -247,10 +252,10 @@ await describe({
             import { cat, overwriteIfNotExists } from '${
           join(import.meta.dirname, 'index.ts',)
         }';
-            await overwriteIfNotExists(
-              '${join(tempDir, 'keep.txt',)}',
-              await cat(['${join(tempDir, 'src.txt',)}'])
-            );
+            await overwriteIfNotExists({
+              dest: '${join(tempDir, 'keep.txt',)}',
+              content: await cat(['${join(tempDir, 'src.txt',)}']),
+            });
           `;
         const configPath = join(tempDir, 'skip.config.ts',);
         await writeFile(configPath, configContent,);
@@ -284,7 +289,10 @@ await describe({
           join(import.meta.dirname, 'index.ts',)
         }';
             const files = await cat('${join(srcDir, '*.ts',)}');
-            await overwriteEach('${join(tempDir, 'out', '*.ts',)}', files);
+            await overwriteEach({
+              destGlob: '${join(tempDir, 'out', '*.ts',)}',
+              files,
+            });
           `;
         const configPath = join(tempDir, 'mirror.config.ts',);
         await writeFile(configPath, configContent,);

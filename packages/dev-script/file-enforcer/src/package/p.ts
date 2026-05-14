@@ -32,7 +32,7 @@ export const DEFAULT_CHECK = '--version';
  * ```
  */
 export function p(shorthandOrSpec: string | PackageSpec,): PackageEntry {
-  if (typeof shorthandOrSpec === 'string')
+  if ((typeof shorthandOrSpec) === 'string')
     return buildFromShorthand(shorthandOrSpec,);
   return buildFromSpec(shorthandOrSpec,);
 }
@@ -114,7 +114,7 @@ function parseYes(
   /** Per-manager package-name overrides extracted from `[manager, packageName]` tuples. */
   const overrides: Record<string, string> = {};
   for (const entry of yes) {
-    if (typeof entry === 'string')
+    if ((typeof entry) === 'string')
       available.add(entry,);
     else {
       /** Tuple split: explicit manager plus its custom package name. */

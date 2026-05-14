@@ -76,11 +76,11 @@ await describe({
     it({
       name: 'tree (string shorthand)',
       fn: async () => {
-        const before = await binaryExists('tree',);
+        const before = await binaryExists({ binary: 'tree', },);
         if (before)
           return;
         await ensurePackage('tree',);
-        const after = await binaryExists('tree',);
+        const after = await binaryExists({ binary: 'tree', },);
         expect(after,).toBe(true,);
       },
     },),
@@ -88,11 +88,11 @@ await describe({
     it({
       name: 'jq (string shorthand)',
       fn: async () => {
-        const before = await binaryExists('jq',);
+        const before = await binaryExists({ binary: 'jq', },);
         if (before)
           return;
         await ensurePackage('jq',);
-        const after = await binaryExists('jq',);
+        const after = await binaryExists({ binary: 'jq', },);
         expect(after,).toBe(true,);
       },
     },),
@@ -104,11 +104,11 @@ await describe({
     it({
       name: 'rg (bin != effname)',
       fn: async () => {
-        const before = await binaryExists('rg',);
+        const before = await binaryExists({ binary: 'rg', },);
         if (before)
           return;
         await ensurePackage('rg',);
-        const after = await binaryExists('rg',);
+        const after = await binaryExists({ binary: 'rg', },);
         expect(after,).toBe(true,);
       },
     },),
@@ -120,11 +120,11 @@ await describe({
     it({
       name: 'convert (manager override)',
       fn: async () => {
-        const before = await binaryExists('convert',);
+        const before = await binaryExists({ binary: 'convert', },);
         if (before)
           return;
         await ensurePackage('convert',);
-        const after = await binaryExists('convert',);
+        const after = await binaryExists({ binary: 'convert', },);
         expect(after,).toBe(true,);
       },
     },),
@@ -136,11 +136,11 @@ await describe({
     it({
       name: 'strace (effname only)',
       fn: async () => {
-        const before = await binaryExists('strace',);
+        const before = await binaryExists({ binary: 'strace', },);
         if (before)
           return;
         await ensurePackage('strace',);
-        const after = await binaryExists('strace',);
+        const after = await binaryExists({ binary: 'strace', },);
         expect(after,).toBe(true,);
       },
     },),

@@ -18,8 +18,13 @@ const PKG_PLACEHOLDER = '{pkg}';
  * @returns Command array with placeholders replaced
  */
 function fillTemplate(
-  template: readonly string[],
-  packageName: string,
+  {
+    template,
+    packageName,
+  }: {
+    readonly template: readonly string[];
+    readonly packageName: string;
+  },
 ): readonly string[] {
   return template.map(function replacePlaceholder(segment,): string {
     return segment === PKG_PLACEHOLDER ? packageName : segment;
@@ -31,10 +36,12 @@ function fillTemplate(
 //region Manager detection
 
 /**
- * Cached detection result. `undefined` means detection has not run yet.
- * `null` means detection ran but no manager was found.
+ * Single-key holder for the lazily-detected package manager.
+ * `null` value means detection ran but no manager was found; missing key means
+ * detection has not run yet. Using a {@link Map} container side-steps a
+ * module-root `let` binding while keeping the same lazy-cache semantics.
  */
-let cachedManager: PackageManager | null | undefined = undefined;
+const managerCache = new Map<'manager', PackageManager | null>();
 
 /**
  * Detects the highest-priority available package manager on the current system.
@@ -50,8 +57,8 @@ let cachedManager: PackageManager | null | undefined = undefined;
  * ```
  */
 export async function detectManager(): Promise<PackageManager | null> {
-  if (cachedManager !== undefined)
-    return cachedManager;
+  if (managerCache.has('manager',))
+    return managerCache.get('manager',) ?? null;
   /** Snapshot of registered manager entries; iteration order defines detection priority. */
   const entries = [...MANAGERS.entries(),];
   /** Per-manager probe results: the manager name when its check succeeds, otherwise `null`. */
@@ -68,8 +75,13 @@ export async function detectManager(): Promise<PackageManager | null> {
   const detected = results.find(function isPresent(name,): name is PackageManager {
     return name !== null;
   },);
-  cachedManager = detected ?? null;
-  return cachedManager;
+  /** Resolved value stored in the cache and returned to the caller. */
+  const resolved = detected ?? null;
+  managerCache.set(
+    'manager',
+    resolved,
+  );
+  return resolved;
 }
 
 /**
@@ -82,7 +94,7 @@ export async function detectManager(): Promise<PackageManager | null> {
  * ```
  */
 export function resetManagerCache(): void {
-  cachedManager = undefined;
+  managerCache.delete('manager',);
 }
 
 //endregion Manager detection
@@ -103,14 +115,19 @@ export function resetManagerCache(): void {
  *
  * @example
  * ```ts
- * await binaryExists('rg')                 // uses --version
- * await binaryExists('openssl', 'version') // openssl uses bare subcommand
- * await binaryExists('convert', '-version') // imagemagick uses single dash
+ * await binaryExists({ binary: 'rg' });                            // uses --version
+ * await binaryExists({ binary: 'openssl', checkFlag: 'version' }); // openssl uses bare subcommand
+ * await binaryExists({ binary: 'convert', checkFlag: '-version' }); // imagemagick uses single dash
  * ```
  */
 export async function binaryExists(
-  binary: string,
-  checkFlag: string = '--version',
+  {
+    binary,
+    checkFlag = '--version',
+  }: {
+    readonly binary: string;
+    readonly checkFlag?: string;
+  },
 ): Promise<boolean> {
   return await evaluatePredicate([
     binary,
@@ -123,9 +140,10 @@ export async function binaryExists(
 //region Privilege detection
 
 /**
- * Cached root detection result. `undefined` means detection has not run yet.
+ * Single-key holder for the lazily-detected root status.
+ * Missing key means detection has not run yet.
  */
-let cachedIsRoot: boolean | undefined = undefined;
+const rootCache = new Map<'isRoot', boolean>();
 
 /**
  * Detects whether the current process is running as root (UID 0).
@@ -142,10 +160,17 @@ let cachedIsRoot: boolean | undefined = undefined;
  * ```
  */
 export function isRoot(): boolean {
-  if (cachedIsRoot !== undefined)
-    return cachedIsRoot;
-  cachedIsRoot = process.getuid?.() === 0;
-  return cachedIsRoot;
+  /** Cached detection, or `undefined` when detection has not run yet. */
+  const cached = rootCache.get('isRoot',);
+  if (cached !== undefined)
+    return cached;
+  /** Fresh detection result; stored before return so subsequent calls short-circuit. */
+  const detected = process.getuid?.() === 0;
+  rootCache.set(
+    'isRoot',
+    detected,
+  );
+  return detected;
 }
 
 /**
@@ -158,7 +183,7 @@ export function isRoot(): boolean {
  * ```
  */
 export function resetRootCache(): void {
-  cachedIsRoot = undefined;
+  rootCache.delete('isRoot',);
 }
 
 //endregion Privilege detection
@@ -177,23 +202,28 @@ export function resetRootCache(): void {
  *
  * @example
  * ```ts
- * await canProvide('apt', 'ripgrep') // true on Ubuntu
- * await canProvide('apt', 'nonexistent-pkg') // false
+ * await canProvide({ manager: 'apt', packageName: 'ripgrep' }) // true on Ubuntu
+ * await canProvide({ manager: 'apt', packageName: 'nonexistent-pkg' }) // false
  * ```
  */
 export async function canProvide(
-  manager: PackageManager,
-  packageName: string,
+  {
+    manager,
+    packageName,
+  }: {
+    readonly manager: PackageManager;
+    readonly packageName: string;
+  },
 ): Promise<boolean> {
   /** Manager definition; absent entry means `manager` is unrecognised. */
   const def = MANAGERS.get(manager,);
   if (!def)
     return false;
   /** Search command with `{pkg}` substituted to the resolved package name. */
-  const cmd = fillTemplate(
-    def.search,
+  const cmd = fillTemplate({
+    template: def.search,
     packageName,
-  );
+  },);
   return await evaluatePredicate(cmd,);
 }
 
@@ -215,26 +245,33 @@ export async function canProvide(
  *
  * @example
  * ```ts
- * await installPackage('apt', 'ripgrep')
+ * await installPackage({ manager: 'apt', packageName: 'ripgrep' })
  * // Runs: sudo apt-get install --yes ripgrep
  * ```
  */
 export async function installPackage(
-  manager: PackageManager,
-  packageName: string,
+  {
+    manager,
+    packageName,
+  }: {
+    readonly manager: PackageManager;
+    readonly packageName: string;
+  },
 ): Promise<string> {
   /** Manager definition; missing entry indicates a programmer bug, so we throw. */
   const def = MANAGERS.get(manager,);
   if (!def)
     throw new Error(`Unknown package manager: ${manager}`,);
   /** Install command with `{pkg}` substituted to the resolved package name. */
-  const cmd = fillTemplate(
-    def.install,
+  const cmd = fillTemplate({
+    template: def.install,
     packageName,
-  );
+  },);
   /** True when the manager needs root and the process is not already running as root. */
-  const needsSudo = def.needsRoot && !isRoot();
-  /** Final argv with `sudo` prepended only when {@link needsSudo} flagged it. */
+  const needsSudo = def.needsRoot && (!isRoot());
+  /**
+   * Final argv with `sudo` prepended only when {@link needsSudo} flagged it.
+   */
   const fullCmd = needsSudo
     ? [
       'sudo',
@@ -243,10 +280,10 @@ export async function installPackage(
     : cmd;
   /** Head/tail split of `fullCmd` so `exec` receives executable and args separately. */
   const [executable = '', ...args] = fullCmd;
-  return await exec(
-    executable,
+  return await exec({
+    cmd: executable,
     args,
-  );
+  },);
 }
 
 //endregion Install command

@@ -108,7 +108,10 @@ async function concatGroup(_unused: unknown, groupIndex: number,): Promise<void>
     groupReadmePath,
   );
   const content = await cat(sources,);
-  await overwrite(`${DEST}/combined-${String(groupIndex,)}.md`, content,);
+  await overwrite({
+    dest: `${DEST}/combined-${String(groupIndex,)}.md`,
+    content,
+  },);
 }
 
 /**
@@ -121,7 +124,7 @@ async function mirrorConfig(
 ): Promise<void> {
   const destGlob = `${DEST}/mirror-${config.dir}/*/${config.file}`;
   const files = await cat(`${SRC}/pkg-*/${config.dir}/${config.file}`,);
-  await overwriteEach(destGlob, files,);
+  await overwriteEach({ destGlob, files, },);
 }
 
 /**
@@ -129,10 +132,10 @@ async function mirrorConfig(
  */
 async function extractName(): Promise<void> {
   const content = await cat([`${pkgPath(0,)}/config/settings.json`,],);
-  await overwrite(
-    `${DEST}/name-0.txt`,
-    getJsonProperty({ path: ['name',], content, },),
-  );
+  await overwrite({
+    dest: `${DEST}/name-0.txt`,
+    content: getJsonProperty({ path: ['name',], content, },),
+  },);
 }
 
 /**
@@ -140,10 +143,10 @@ async function extractName(): Promise<void> {
  */
 async function extractFeatures(): Promise<void> {
   const content = await cat([`${pkgPath(1,)}/config/settings.json`,],);
-  await overwrite(
-    `${DEST}/features-1.txt`,
-    getJsonProperty({ path: ['config', 'features',], content, },),
-  );
+  await overwrite({
+    dest: `${DEST}/features-1.txt`,
+    content: getJsonProperty({ path: ['config', 'features',], content, },),
+  },);
 }
 
 /**
@@ -151,7 +154,10 @@ async function extractFeatures(): Promise<void> {
  */
 async function dedupAllReadmes(): Promise<void> {
   const allReadmes = await cat(allReadmeSources,);
-  await overwrite(`${DEST}/all-readmes-deduped.md`, dedup(allReadmes,),);
+  await overwrite({
+    dest: `${DEST}/all-readmes-deduped.md`,
+    content: dedup(allReadmes,),
+  },);
 }
 
 /**
@@ -159,7 +165,7 @@ async function dedupAllReadmes(): Promise<void> {
  */
 async function mirrorDeepFiles(): Promise<void> {
   const deepFiles = await cat(deepSourceGlob,);
-  await overwriteEach(deepDestGlob, deepFiles,);
+  await overwriteEach({ destGlob: deepDestGlob, files: deepFiles, },);
 }
 
 await Promise.all([

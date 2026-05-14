@@ -102,7 +102,11 @@ await describe({
             reset();
             resetWriteTimestamps();
             trackRead('/repo/AGENTS.md',);
-            expect(await classifyEvent('AGENTS.md', '/repo', '/repo/config.ts',),).toBe(
+            expect(await classifyEvent({
+              filename: 'AGENTS.md',
+              watchedDir: '/repo',
+              configPath: '/repo/config.ts',
+            },),).toBe(
               'source',
             );
           },
@@ -112,7 +116,11 @@ await describe({
           fn: async () => {
             reset();
             resetWriteTimestamps();
-            expect(await classifyEvent('config.ts', '/repo', '/repo/config.ts',),).toBe(
+            expect(await classifyEvent({
+              filename: 'config.ts',
+              watchedDir: '/repo',
+              configPath: '/repo/config.ts',
+            },),).toBe(
               'source',
             );
           },
@@ -135,7 +143,11 @@ await describe({
             trackWriteTime(filePath,);
 
             /** Immediately after our write, mtime should be <= our timestamp */
-            expect(await classifyEvent('managed.md', tempDir, '/repo/config.ts',),)
+            expect(await classifyEvent({
+              filename: 'managed.md',
+              watchedDir: tempDir,
+              configPath: '/repo/config.ts',
+            },),)
               .toBe(
                 'ignore',
               );
@@ -164,7 +176,11 @@ await describe({
             /** Now modify the file: its mtime will be "now", after our recorded timestamp */
             await writeFile(filePath, 'externally modified',);
 
-            expect(await classifyEvent('protected.md', tempDir, '/repo/config.ts',),)
+            expect(await classifyEvent({
+              filename: 'protected.md',
+              watchedDir: tempDir,
+              configPath: '/repo/config.ts',
+            },),)
               .toBe(
                 'protected',
               );
@@ -188,7 +204,11 @@ await describe({
             trackDest(filePath,);
             // No trackWriteTime: simulates content-based skip
 
-            expect(await classifyEvent('skipcase.md', tempDir, '/repo/config.ts',),)
+            expect(await classifyEvent({
+              filename: 'skipcase.md',
+              watchedDir: tempDir,
+              configPath: '/repo/config.ts',
+            },),)
               .toBe(
                 'protected',
               );
@@ -210,7 +230,11 @@ await describe({
             trackWriteTime(join(tempDir, 'deleted.md',),);
 
             /** stat() will fail since the file was never created */
-            expect(await classifyEvent('deleted.md', tempDir, '/repo/config.ts',),)
+            expect(await classifyEvent({
+              filename: 'deleted.md',
+              watchedDir: tempDir,
+              configPath: '/repo/config.ts',
+            },),)
               .toBe(
                 'protected',
               );
@@ -222,7 +246,11 @@ await describe({
             reset();
             resetWriteTimestamps();
             trackRead('/repo/AGENTS.md',);
-            expect(await classifyEvent('README.md', '/repo', '/repo/config.ts',),).toBe(
+            expect(await classifyEvent({
+              filename: 'README.md',
+              watchedDir: '/repo',
+              configPath: '/repo/config.ts',
+            },),).toBe(
               'ignore',
             );
           },
@@ -246,7 +274,11 @@ await describe({
             trackWriteTime(filePath,);
 
             // Immediately after write, echo detection should classify as ignore
-            expect(await classifyEvent('dual.md', tempDir, '/repo/config.ts',),).toBe(
+            expect(await classifyEvent({
+              filename: 'dual.md',
+              watchedDir: tempDir,
+              configPath: '/repo/config.ts',
+            },),).toBe(
               'ignore',
             );
           },
@@ -267,7 +299,11 @@ await describe({
             reset();
             resetWriteTimestamps();
             trackRead('/repo/AGENTS.md',);
-            expect(await shouldTrigger('AGENTS.md', '/repo', '/repo/config.ts',),).toBe(
+            expect(await shouldTrigger({
+              filename: 'AGENTS.md',
+              watchedDir: '/repo',
+              configPath: '/repo/config.ts',
+            },),).toBe(
               true,
             );
           },
@@ -292,7 +328,11 @@ await describe({
             setWriteTimestamp({ filePath, timestamp: Date.now() - pastOffset, },);
             await writeFile(filePath, 'modified externally',);
 
-            expect(await shouldTrigger('stale.md', tempDir, '/repo/config.ts',),).toBe(
+            expect(await shouldTrigger({
+              filename: 'stale.md',
+              watchedDir: tempDir,
+              configPath: '/repo/config.ts',
+            },),).toBe(
               true,
             );
           },
@@ -302,7 +342,11 @@ await describe({
           fn: async () => {
             reset();
             resetWriteTimestamps();
-            expect(await shouldTrigger('random.txt', '/repo', '/repo/config.ts',),).toBe(
+            expect(await shouldTrigger({
+              filename: 'random.txt',
+              watchedDir: '/repo',
+              configPath: '/repo/config.ts',
+            },),).toBe(
               false,
             );
           },
@@ -324,7 +368,11 @@ await describe({
             trackDest(filePath,);
             trackWriteTime(filePath,);
 
-            expect(await shouldTrigger('echo.md', tempDir, '/repo/config.ts',),).toBe(
+            expect(await shouldTrigger({
+              filename: 'echo.md',
+              watchedDir: tempDir,
+              configPath: '/repo/config.ts',
+            },),).toBe(
               false,
             );
           },

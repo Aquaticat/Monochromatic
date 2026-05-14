@@ -17,7 +17,10 @@ await describe({
           name: 'captures stdout from a successful command',
           fn: async () => {
             /** Simple echo command to verify stdout capture */
-            const result = await exec('echo', ['hello',],);
+            const result = await exec({
+              cmd: 'echo',
+              args: ['hello',],
+            },);
             expect(result.trim(),).toBe('hello',);
           },
         },),
@@ -25,7 +28,10 @@ await describe({
           name: 'passes multiple arguments to the command',
           fn: async () => {
             /** Multiple args should all be forwarded */
-            const result = await exec('echo', ['hello', 'world',],);
+            const result = await exec({
+              cmd: 'echo',
+              args: ['hello', 'world',],
+            },);
             expect(result.trim(),).toBe('hello world',);
           },
         },),
@@ -33,7 +39,7 @@ await describe({
           name: 'throws on non-zero exit code',
           fn: async () => {
             /** `false` always exits with code 1 */
-            await expect(exec('false',),).rejects.toThrow(
+            await expect(exec({ cmd: 'false', },),).rejects.toThrow(
               'Command failed with exit code 1: false',
             );
           },
@@ -43,7 +49,10 @@ await describe({
           fn: async () => {
             /** Command that writes to stderr and fails */
             await expect(
-              exec('sh', ['-c', 'echo error-msg >&2; exit 1',],),
+              exec({
+                cmd: 'sh',
+                args: ['-c', 'echo error-msg >&2; exit 1',],
+              },),
             )
               .rejects
               .toThrow('error-msg',);
@@ -53,7 +62,7 @@ await describe({
           name: 'handles command with no arguments',
           fn: async () => {
             /** `true` exits successfully with no output */
-            const result = await exec('true',);
+            const result = await exec({ cmd: 'true', },);
             expect(result,).toBe('',);
           },
         },),
@@ -61,7 +70,10 @@ await describe({
           name: 'preserves newlines in stdout',
           fn: async () => {
             /** printf outputs exact bytes without a trailing newline */
-            const result = await exec('printf', [String.raw`line1\nline2\nline3`,],);
+            const result = await exec({
+              cmd: 'printf',
+              args: [String.raw`line1\nline2\nline3`,],
+            },);
             expect(result,).toBe('line1\nline2\nline3',);
           },
         },),
@@ -69,7 +81,10 @@ await describe({
           name: 'handles large stdout output',
           fn: async () => {
             /** Generate 1000 lines of output */
-            const result = await exec('seq', ['1', '1000',],);
+            const result = await exec({
+              cmd: 'seq',
+              args: ['1', '1000',],
+            },);
             /** Should have 1000 lines (seq output ends with newline) */
             const lineCount = 1_000;
             expect(result.trim().split('\n',).length,).toBe(lineCount,);
@@ -89,10 +104,12 @@ await describe({
           name: 'executes the command of the first matching predicate',
           fn: async () => {
             /** First entry predicate succeeds, so its command runs */
-            const result = await exec([
-              [['true',], ['echo', 'first',],],
-              [['true',], ['echo', 'second',],],
-            ],);
+            const result = await exec({
+              platformCommands: [
+                [['true',], ['echo', 'first',],],
+                [['true',], ['echo', 'second',],],
+              ],
+            },);
             expect(result.trim(),).toBe('first',);
           },
         },),
@@ -100,10 +117,12 @@ await describe({
           name: 'skips entries whose predicate fails',
           fn: async () => {
             /** First predicate fails, second succeeds */
-            const result = await exec([
-              [['false',], ['echo', 'skipped',],],
-              [['true',], ['echo', 'matched',],],
-            ],);
+            const result = await exec({
+              platformCommands: [
+                [['false',], ['echo', 'skipped',],],
+                [['true',], ['echo', 'matched',],],
+              ],
+            },);
             expect(result.trim(),).toBe('matched',);
           },
         },),
@@ -111,9 +130,11 @@ await describe({
           name: 'supports command with no arguments',
           fn: async () => {
             /** Command as single-element array */
-            const result = await exec([
-              [['true',], ['true',],],
-            ],);
+            const result = await exec({
+              platformCommands: [
+                [['true',], ['true',],],
+              ],
+            },);
             expect(result,).toBe('',);
           },
         },),
@@ -121,9 +142,11 @@ await describe({
           name: 'supports predicate with arguments',
           fn: async () => {
             /** Predicate with multiple args */
-            const result = await exec([
-              [['ls', '/dev/null',], ['echo', 'found',],],
-            ],);
+            const result = await exec({
+              platformCommands: [
+                [['ls', '/dev/null',], ['echo', 'found',],],
+              ],
+            },);
             expect(result.trim(),).toBe('found',);
           },
         },),
@@ -132,10 +155,12 @@ await describe({
           fn: async () => {
             /** All predicates fail */
             await expect(
-              exec([
-                [['false',], ['echo', 'a',],],
-                [['false',], ['echo', 'b',],],
-              ],),
+              exec({
+                platformCommands: [
+                  [['false',], ['echo', 'a',],],
+                  [['false',], ['echo', 'b',],],
+                ],
+              },),
             )
               .rejects
               .toThrow('No platform predicate matched',);
@@ -146,10 +171,12 @@ await describe({
           fn: async () => {
             /** Verify predicate names appear in the error for debuggability */
             await expect(
-              exec([
-                [['nonexistent-check-1',], ['echo', 'a',],],
-                [['nonexistent-check-2', '--flag',], ['echo', 'b',],],
-              ],),
+              exec({
+                platformCommands: [
+                  [['nonexistent-check-1',], ['echo', 'a',],],
+                  [['nonexistent-check-2', '--flag',], ['echo', 'b',],],
+                ],
+              },),
             )
               .rejects
               .toThrow('nonexistent-check-1',);
@@ -160,9 +187,11 @@ await describe({
           fn: async () => {
             /** Predicate matches but the command itself exits non-zero */
             await expect(
-              exec([
-                [['true',], ['false',],],
-              ],),
+              exec({
+                platformCommands: [
+                  [['true',], ['false',],],
+                ],
+              },),
             )
               .rejects
               .toThrow('Command failed',);
@@ -176,9 +205,11 @@ await describe({
               [['false',], ['echo', 'inner-skipped',],],
               [['true',], ['echo', 'inner-matched',],],
             ] as const;
-            const result = await exec([
-              [['true',], innerCommands,],
-            ],);
+            const result = await exec({
+              platformCommands: [
+                [['true',], innerCommands,],
+              ],
+            },);
             expect(result.trim(),).toBe('inner-matched',);
           },
         },),
@@ -190,9 +221,11 @@ await describe({
               [['false',], ['echo', 'unreachable',],],
             ] as const;
             await expect(
-              exec([
-                [['true',], innerCommands,],
-              ],),
+              exec({
+                platformCommands: [
+                  [['true',], innerCommands,],
+                ],
+              },),
             )
               .rejects
               .toThrow('No platform predicate matched',);

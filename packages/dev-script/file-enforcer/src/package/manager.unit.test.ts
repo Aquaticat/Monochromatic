@@ -51,16 +51,16 @@ await describe({
           name: 'returns true for a binary that exists',
           fn: async () => {
             /** `ls` exists on every POSIX system */
-            const exists = await binaryExists('ls',);
+            const exists = await binaryExists({ binary: 'ls', },);
             expect(exists,).toBe(true,);
           },
         },),
         it({
           name: 'returns false for a binary that does not exist',
           fn: async () => {
-            const exists = await binaryExists(
-              'nonexistent-binary-that-should-not-exist-42',
-            );
+            const exists = await binaryExists({
+              binary: 'nonexistent-binary-that-should-not-exist-42',
+            },);
             expect(exists,).toBe(false,);
           },
         },),

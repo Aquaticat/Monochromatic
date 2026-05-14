@@ -198,7 +198,7 @@ async function loadMiseRegistry(): Promise<ReadonlySet<string>> {
   for (const line of result.stdout.split('\n',)) {
     /** First whitespace-separated token of `line`; tool name on `mise registry` output. */
     const [name,] = line.split(/\s+/,);
-    if (name !== undefined && name !== '')
+    if ((name !== undefined) && (name !== ''))
       names.add(name.toLowerCase(),);
   }
   console.log(`[generate-index] loaded ${names.size} mise registry entries`,);
@@ -326,7 +326,7 @@ function buildPCall(project: RepologyProject,): string {
   );
 
   /** Check if available in ALL supported managers with same name */
-  if (allSameName && managers.length === SUPPORTED_MANAGERS.size)
+  if (allSameName && (managers.length === SUPPORTED_MANAGERS.size))
     return `p('${escapeString(project.effname,)}',)`;
 
   /** Build yes array entries */

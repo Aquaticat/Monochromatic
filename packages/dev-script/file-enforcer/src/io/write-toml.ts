@@ -2,8 +2,8 @@ import {
   parseTomlEdit,
   tomlSet,
   tomlStringify,
+  type TomlValueInput,
 } from '@monochromatic-dev/module-toml-edit';
-import type { TomlValueInput, } from '@monochromatic-dev/module-toml-edit';
 import type { Path, } from '../types.ts';
 import {
   overwrite,
@@ -60,8 +60,15 @@ export async function overwriteTomlKey(
   /** Parsed TOML state for the existing content */
   const edit = parseTomlEdit({ source: existing, },);
   /** Fresh state with the pending edit recorded */
-  const edited = tomlSet({ edit, path, value, },);
+  const edited = tomlSet({
+    edit,
+    path,
+    value,
+  },);
   /** Updated source text; splice mode keeps unmutated regions byte-identical */
   const newContent = tomlStringify({ edit: edited, },);
-  await overwrite(dest, newContent,);
+  await overwrite({
+    dest,
+    content: newContent,
+  },);
 }

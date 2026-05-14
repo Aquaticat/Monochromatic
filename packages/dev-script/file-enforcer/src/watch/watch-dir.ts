@@ -29,16 +29,31 @@ export const DEBOUNCE_MS = 100;
  * @example
  * ```ts
  * const controller = new AbortController();
- * await watchDirectory('/abs/src', controller.signal, '/abs/config.ts', function onEvent(kind, filename) {
- *   console.log(kind, filename);
+ * await watchDirectory({
+ *   dir: '/abs/src',
+ *   signal: controller.signal,
+ *   configPath: '/abs/config.ts',
+ *   onEvent: function logEvent(kind, filename) {
+ *     console.log(kind, filename);
+ *   },
  * });
  * ```
  */
 export async function watchDirectory(
-  dir: string,
-  signal: AbortSignal,
-  configPath: string,
-  onEvent: (kind: EventKind, filename: string,) => void,
+  {
+    dir,
+    signal,
+    configPath,
+    onEvent,
+  }: {
+    readonly dir: string;
+    readonly signal: AbortSignal;
+    readonly configPath: string;
+    readonly onEvent: (
+      kind: EventKind,
+      filename: string,
+    ) => void;
+  },
 ): Promise<void> {
   /** Function-scoped logger tagged with the call site for traceable watcher logs. */
   const rl = tagged({
@@ -58,11 +73,11 @@ export async function watchDirectory(
         continue;
       /** Classification determines whether this event triggers action */
       // oxlint-disable-next-line no-await-in-loop -- sequential event processing required by async iterator
-      const kind = await classifyEvent(
-        event.filename,
-        dir,
+      const kind = await classifyEvent({
+        filename: event.filename,
+        watchedDir: dir,
         configPath,
-      );
+      },);
       if (kind === 'ignore')
         continue;
       onEvent(
@@ -73,7 +88,7 @@ export async function watchDirectory(
   }
   catch (watchError: unknown) {
     // AbortError is expected when closing watchers during re-setup
-    if (watchError instanceof Error && watchError.name === 'AbortError')
+    if ((watchError instanceof Error) && (watchError.name === 'AbortError'))
       return;
     rl.error(`watcher error in ${dir}: ${String(watchError,)}`,);
   }

@@ -37,7 +37,7 @@ function splitGlob(
   /** Position of the first metacharacter */
   const metaIndex = pattern.search(GLOB_META,);
 
-  if (metaIndex === -1) {
+  if (metaIndex === (-1)) {
     // No wildcards: treat entire pattern as a literal path
     return [
       resolve(pattern,),
@@ -54,7 +54,7 @@ function splitGlob(
   /** Index of the last separator in the static prefix */
   const lastSep = staticPrefix.lastIndexOf('/',);
 
-  if (lastSep === -1) {
+  if (lastSep === (-1)) {
     // Metacharacter appears in the first segment; cwd is the current directory
     return [
       resolve('.',),
@@ -93,7 +93,9 @@ function splitGlob(
  * ```
  */
 export async function expandGlob(pattern: string,): Promise<readonly string[]> {
-  /** Triple from {@link splitGlob}: matcher cwd, glob suffix, and originally-typed prefix. */
+  /**
+   * Triple from {@link splitGlob}: matcher cwd, glob suffix, and originally-typed prefix.
+   */
   const [cwd, relativeGlob, originalPrefix,] = splitGlob(pattern,);
 
   if (relativeGlob === '')
@@ -139,14 +141,24 @@ export async function expandGlob(pattern: string,): Promise<readonly string[]> {
  *
  * @example
  * ```ts
- * mirrorGlobPath('packages/*​/src/*.ts', 'temp/*​/src/*.ts', 'packages/foo/src/index.ts');
+ * mirrorGlobPath({
+ *   sourcePattern: 'packages/*​/src/*.ts',
+ *   destPattern: 'temp/*​/src/*.ts',
+ *   sourcePath: 'packages/foo/src/index.ts',
+ * });
  * // 'temp/foo/src/index.ts'
  * ```
  */
 export function mirrorGlobPath(
-  sourcePattern: string,
-  destPattern: string,
-  sourcePath: string,
+  {
+    sourcePattern,
+    destPattern,
+    sourcePath,
+  }: {
+    readonly sourcePattern: string;
+    readonly destPattern: string;
+    readonly sourcePath: string;
+  },
 ): string {
   /** Segments of the source pattern split by `*` */
   const sourceParts = sourcePattern.split('*',);
@@ -166,53 +178,63 @@ export function mirrorGlobPath(
     );
   }
 
-  /** Values captured from each wildcard position in the source path */
-  const captured: string[] = [];
-  // Walk the source path, peeling off fixed prefixes to isolate wildcard captures.
   /**
-   * Unconsumed tail of the source path; shrinks as fixed prefixes get peeled off each iteration.
-   *
-   * `let` is required: remainder is reassigned in every loop iteration.
+   * Walks the source path, peeling off fixed prefixes and capturing each wildcard segment.
+   * Wrapped in a named-function IIFE so the loop-mutated `remainder` lives inside the helper.
    */
-  let remainder = sourcePath;
-  for (let partIndex = 0; partIndex < sourceParts.length; partIndex++) {
-    /** Fixed text before (or after) the current wildcard */
-    const fixedPart = sourceParts[partIndex];
-    if (fixedPart === undefined)
-      break;
-    if (!remainder.startsWith(fixedPart,)) {
-      throw new Error(
-        `Source path "${sourcePath}" does not match pattern "${sourcePattern}" at segment "${fixedPart}"`,
-      );
-    }
-    remainder = remainder.slice(fixedPart.length,);
-
-    if (partIndex < sourceWildcardCount) {
-      /** Position of the next fixed segment, marking the end of this wildcard capture */
-      const nextFixed = sourceParts[partIndex + 1] ?? '';
-      /** Index in `remainder` where the next fixed segment begins, or end-of-string when none remains. */
-      const nextFixedPos = nextFixed === ''
-        ? remainder.length
-        : remainder.indexOf(nextFixed,);
-      if (nextFixedPos === -1) {
+  const captured: readonly string[] = (function captureSegments(): readonly string[] {
+    /** Wildcard captures appended in source-pattern order. */
+    const acc: string[] = [];
+    /** Unconsumed tail of the source path; shrinks as fixed prefixes get peeled off each iteration. */
+    let remainder = sourcePath;
+    for (let partIndex = 0; partIndex < sourceParts.length; partIndex++) {
+      /** Fixed text before (or after) the current wildcard */
+      const fixedPart = sourceParts[partIndex];
+      if (fixedPart === undefined)
+        break;
+      if (!remainder.startsWith(fixedPart,)) {
         throw new Error(
-          `Source path "${sourcePath}" does not match pattern "${sourcePattern}"`,
+          `Source path "${sourcePath}" does not match pattern "${sourcePattern}" at segment "${fixedPart}"`,
         );
       }
-      captured.push(remainder.slice(
-        0,
-        nextFixedPos,
-      ),);
-      remainder = remainder.slice(nextFixedPos,);
+      remainder = remainder.slice(fixedPart.length,);
+
+      if (partIndex < sourceWildcardCount) {
+        /** Position of the next fixed segment, marking the end of this wildcard capture */
+        const nextFixed = sourceParts[partIndex + 1] ?? '';
+        /** Index in `remainder` where the next fixed segment begins, or end-of-string when none remains. */
+        const nextFixedPos = (nextFixed === '')
+          ? remainder.length
+          : remainder.indexOf(nextFixed,);
+        if (nextFixedPos === (-1)) {
+          throw new Error(
+            `Source path "${sourcePath}" does not match pattern "${sourcePattern}"`,
+          );
+        }
+        acc.push(remainder.slice(
+          0,
+          nextFixedPos,
+        ),);
+        remainder = remainder.slice(nextFixedPos,);
+      }
     }
-  }
+    return acc;
+  })();
 
   /** Reconstructed destination path with wildcards replaced by captured values */
-  const result: string[] = [];
-  for (let destIndex = 0; destIndex < destParts.length; destIndex++) {
-    result.push(destParts[destIndex] ?? '',);
-    if (destIndex < destWildcardCount)
-      result.push(captured[destIndex] ?? '',);
-  }
+  const result = destParts.flatMap(function appendDestSegment(
+    part,
+    destIndex,
+  ): readonly string[] {
+    /** Raw fixed text for this position; coalesce missing entries to empty for safe joining. */
+    const fixed = part ?? '';
+    if (destIndex < destWildcardCount) {
+      return [
+        fixed,
+        captured[destIndex] ?? '',
+      ];
+    }
+    return [fixed,];
+  },);
   return result.join('',);
 }

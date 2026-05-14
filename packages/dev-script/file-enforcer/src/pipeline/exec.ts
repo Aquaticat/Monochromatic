@@ -14,78 +14,64 @@ import {
 //region exec
 
 /**
- * Runs an external command and returns its stdout.
+ * Direct invocation form: a single executable plus its arguments.
+ */
+export type ExecDirectInvocation = {
+  readonly cmd: string;
+  readonly args?: readonly string[];
+};
+
+/**
+ * Platform-aware invocation form: predicate/command tuples evaluated top-to-bottom.
+ */
+export type ExecPlatformInvocation = {
+  readonly platformCommands: PlatformCommands;
+};
+
+/**
+ * Discriminated invocation accepted by {@link exec}.
+ */
+export type ExecInvocation = ExecDirectInvocation | ExecPlatformInvocation;
+
+/**
+ * Runs an external command directly or evaluates platform entries to find a matching command.
  *
- * @param cmd - Executable name
+ * Direct form: pass `{ cmd, args? }` to spawn the executable with the given args.
  *
- * @param args - Arguments passed to the command
+ * Platform-aware form: pass `{ platformCommands }`; entries are evaluated top-to-bottom
+ * and the first matching predicate's command is executed. Predicates are direct commands
+ * (no shell); exit code 0 = match.
+ *
+ * @param invocation - Direct invocation `{ cmd, args? }` or platform-aware `{ platformCommands }`
  *
  * @returns Stdout output as a string
  *
  * @throws When the command exits with a non-zero code
  *
- * @example
- * ```ts
- * const version = await exec('git', ['--version']);
- * ```
- */
-export async function exec(
-  cmd: string,
-  args?: readonly string[],
-): Promise<string>;
-
-/**
- * Evaluates platform entries top-to-bottom and executes the first matching command.
- * Each entry is a `[predicate, command]` tuple.
- * Predicates are direct commands (no shell); exit code 0 = match.
- *
- * @param platformCommands - Ordered list of `[predicate, command]` tuples
- *
- * @returns Stdout output from the matched command
- *
- * @throws When no predicate matches: includes all tested predicates in the message
- *
- * @throws When the matched command exits with a non-zero code
+ * @throws When no platform predicate matches (platform-aware form only): includes all tested predicates
  *
  * @example
  * ```ts
- * // First match wins: try mise, then brew, then apt
- * const output = await exec([
- *   [['mise', '--version'],  ['mise', 'exec', '--', 'git', 'pull']],
- *   [['brew', '--version'],  ['brew', 'install', 'git']],
- *   [['apt-get', '--version'], ['apt-get', 'install', 'git']],
- * ]);
+ * // Direct form
+ * const version = await exec({ cmd: 'git', args: ['--version'] });
+ *
+ * // Platform-aware form: first match wins (try mise, then brew, then apt)
+ * const output = await exec({
+ *   platformCommands: [
+ *     [['mise', '--version'],    ['mise', 'exec', '--', 'git', 'pull']],
+ *     [['brew', '--version'],    ['brew', 'install', 'git']],
+ *     [['apt-get', '--version'], ['apt-get', 'install', 'git']],
+ *   ],
+ * });
  * ```
  */
-export async function exec(
-  platformCommands: PlatformCommands,
-): Promise<string>;
-
-/**
- * Runs an external command directly or evaluates platform entries to find a matching command.
- *
- * @param cmdOrPlatformCommands - Executable name (string) or ordered `[predicate, command]` tuples
- *
- * @param args - Arguments passed to the command (only used with string form)
- *
- * @returns Stdout output as a string
- *
- * @example
- * ```ts
- * const version = await exec('node', ['--version']);
- * ```
- */
-export async function exec(
-  cmdOrPlatformCommands: string | PlatformCommands,
-  args: readonly string[] = [],
-): Promise<string> {
-  if (typeof cmdOrPlatformCommands === 'string') {
-    return await execDirect(
-      cmdOrPlatformCommands,
-      args,
-    );
-  }
-  return await execPlatformAware(cmdOrPlatformCommands,);
+export async function exec(invocation: ExecInvocation,): Promise<string> {
+  if ('platformCommands' in invocation)
+    return await execPlatformAware(invocation.platformCommands,);
+  return await execDirect({
+    cmd: invocation.cmd,
+    args: invocation.args ?? [],
+  },);
 }
 
 //endregion exec
@@ -102,8 +88,13 @@ export async function exec(
  * @returns Stdout output as a string
  */
 async function execDirect(
-  cmd: string,
-  args: readonly string[],
+  {
+    cmd,
+    args,
+  }: {
+    readonly cmd: string;
+    readonly args: readonly string[];
+  },
 ): Promise<string> {
   /** Function-scoped logger tagged with the call site for traceable command logs. */
   const rl = tagged({
@@ -146,7 +137,7 @@ async function execPlatformAware(
   );
   /** Index of the first successful predicate, or `-1` if no platform matched. */
   const matchIndex = results.findIndex(Boolean,);
-  if (matchIndex === -1)
+  if (matchIndex === (-1))
     throw new PlatformMatchError(platformCommands,);
   /** Tuple at the winning index; revalidated since `at`-style access could be `undefined`. */
   const matched = platformCommands[matchIndex];
@@ -172,10 +163,10 @@ async function execCommand(cmd: Command,): Promise<string> {
     return await execPlatformAware(cmd,);
   /** Head/tail split so `execDirect` receives executable name and argv separately. */
   const [executable = '', ...args] = cmd as readonly string[];
-  return await execDirect(
-    executable,
+  return await execDirect({
+    cmd: executable,
     args,
-  );
+  },);
 }
 
 /**
@@ -189,7 +180,7 @@ async function execCommand(cmd: Command,): Promise<string> {
 function isNestedPlatformCommands(
   cmd: readonly string[] | PlatformCommands,
 ): cmd is PlatformCommands {
-  return cmd.length > 0 && Array.isArray(cmd[0],);
+  return (cmd.length > 0) && Array.isArray(cmd[0],);
 }
 
 //endregion Platform-aware execution

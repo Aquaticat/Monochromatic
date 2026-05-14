@@ -3,8 +3,8 @@ import {
   tomlGetValue,
   tomlSet,
   tomlStringify,
+  type TomlValueInput,
 } from '@monochromatic-dev/module-toml-edit';
-import type { TomlValueInput, } from '@monochromatic-dev/module-toml-edit';
 import type { Path, } from '../types.ts';
 
 /**
@@ -44,8 +44,11 @@ export function getTomlProperty(
   /** Parsed TOML state in splice mode; no pending edits */
   const edit = parseTomlEdit({ source: content, },);
   /** Effective JS value at the path, or undefined when missing */
-  const value: unknown = tomlGetValue({ edit, path, },);
-  return typeof value === 'string' ? value : JSON.stringify(
+  const value: unknown = tomlGetValue({
+    edit,
+    path,
+  },);
+  return ((typeof value) === 'string') ? value : JSON.stringify(
     value,
     null,
     2,
@@ -102,6 +105,10 @@ export function editTomlKey(
   /** Parsed TOML state ready for one mutation */
   const edit = parseTomlEdit({ source: content, },);
   /** Fresh state with the pending edit recorded */
-  const edited = tomlSet({ edit, path, value, },);
+  const edited = tomlSet({
+    edit,
+    path,
+    value,
+  },);
   return tomlStringify({ edit: edited, },);
 }

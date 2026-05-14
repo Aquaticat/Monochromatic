@@ -29,7 +29,7 @@ export type ManagerDef = {
  * should install it via mise instead of falling through to an OS manager:
  *
  * ```ts
- * await exec('mise', ['use', '-g', 'jq']);
+ * await exec({ cmd: 'mise', args: ['use', '-g', 'jq'] });
  * ```
  *
  * Mise installs to `~/.local/share/mise` without root, manages versions,

@@ -56,14 +56,12 @@ export function startWatching(configPath: string,): Promise<never> {
   const pendingPaths: Set<string> = new Set<string>();
   /** Protected paths that need notification, accumulated during the debounce window */
   const pendingProtected: Set<string> = new Set<string>();
-  // Debounce state: `let` needed because the timer is replaced on each event
   /**
-   * Active debounce timer handle, or `undefined` between bursts.
-   *
-   * Reassigned on every event so the most recent timer wins; previous timers
-   * are cleared via {@link clearTimeout} before a new one is scheduled.
+   * Single-key holder for the active debounce timer.
+   * Replaced on every event so the most recent timer wins; previous timers are
+   * cleared via {@link clearTimeout} before a new one is scheduled.
    */
-  let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined;
+  const debounceTimerHolder = new Map<'timer', ReturnType<typeof setTimeout>>();
 
   /**
    * Re-imports the config with a cache-busting query parameter,
@@ -100,9 +98,15 @@ export function startWatching(configPath: string,): Promise<never> {
    * @param dir - directory the event occurred in
    */
   function handleEvent(
-    kind: EventKind,
-    filename: string,
-    dir: string,
+    {
+      kind,
+      filename,
+      dir,
+    }: {
+      readonly kind: EventKind;
+      readonly filename: string;
+      readonly dir: string;
+    },
   ): void {
     /** Absolute path of the file that triggered this event */
     const changedPath = resolve(join(
@@ -112,25 +116,32 @@ export function startWatching(configPath: string,): Promise<never> {
     pendingPaths.add(changedPath,);
     if (kind === 'protected')
       pendingProtected.add(changedPath,);
-    clearTimeout(debounceTimer,);
-    debounceTimer = setTimeout(
-      function debouncedRerun(): void {
-        /** Snapshot accumulated state before clearing */
-        const paths = [...pendingPaths,];
-        /** Snapshot of paths that need write-protection notifications, paired with `paths`. */
-        const protectedPaths = [...pendingProtected,];
-        pendingPaths.clear();
-        pendingProtected.clear();
-        // oxlint-disable-next-line typescript/no-floating-promises -- debounced async re-run
-        (async function batchRerun(): Promise<void> {
-          for (const protectedPath of protectedPaths) {
-            // oxlint-disable-next-line no-await-in-loop -- sequential notification to avoid spamming
-            await notifyWriteProtection(protectedPath,);
-          }
-          await rerun(paths,);
-        })();
-      },
-      DEBOUNCE_MS,
+    /** Active debounce timer handle, or `undefined` between bursts. */
+    const previousTimer = debounceTimerHolder.get('timer',);
+    if (previousTimer !== undefined)
+      clearTimeout(previousTimer,);
+    debounceTimerHolder.set(
+      'timer',
+      setTimeout(
+        function debouncedRerun(): void {
+          /** Snapshot accumulated state before clearing */
+          const paths = [...pendingPaths,];
+          /** Snapshot of paths that need write-protection notifications, paired with `paths`. */
+          const protectedPaths = [...pendingProtected,];
+          pendingPaths.clear();
+          pendingProtected.clear();
+          debounceTimerHolder.delete('timer',);
+          // oxlint-disable-next-line typescript/no-floating-promises -- debounced async re-run
+          (async function batchRerun(): Promise<void> {
+            for (const protectedPath of protectedPaths) {
+              // oxlint-disable-next-line no-await-in-loop -- sequential notification to avoid spamming
+              await notifyWriteProtection(protectedPath,);
+            }
+            await rerun(paths,);
+          })();
+        },
+        DEBOUNCE_MS,
+      ),
     );
   }
 
@@ -149,21 +160,21 @@ export function startWatching(configPath: string,): Promise<never> {
       );
 
       // oxlint-disable-next-line typescript/no-floating-promises -- intentional fire-and-forget watcher loop
-      watchDirectory(
+      watchDirectory({
         dir,
-        controller.signal,
-        absoluteConfig,
-        function onWatchEvent(
+        signal: controller.signal,
+        configPath: absoluteConfig,
+        onEvent: function onWatchEvent(
           kind,
           filename,
         ): void {
-          handleEvent(
+          handleEvent({
             kind,
             filename,
             dir,
-          );
+          },);
         },
-      );
+      },);
     },);
   }
 

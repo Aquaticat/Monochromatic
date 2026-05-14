@@ -123,7 +123,7 @@ await describe({
         it({
           name: 'sets cache entry without reading from disk',
           fn: async () => {
-            updateCache('/fake/path.txt', 'injected',);
+            updateCache({ filePath: '/fake/path.txt', content: 'injected', },);
             expect(readCache.get(resolve('/fake/path.txt',),),).toBe('injected',);
           },
         },),
@@ -134,7 +134,7 @@ await describe({
             const file = join(dir, 'e.txt',);
             await writeFile(file, 'disk-content',);
             // Pre-populate cache with different content (simulates post-write update)
-            updateCache(file, 'written-content',);
+            updateCache({ filePath: file, content: 'written-content', },);
             expect(await readCached(file,),).toBe('written-content',);
             await rm(dir, { recursive: true, },);
           },

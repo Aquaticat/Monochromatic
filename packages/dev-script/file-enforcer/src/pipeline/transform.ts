@@ -58,7 +58,7 @@ export function getJsonProperty(
     parsed as Record<string, unknown>,
     path,
   );
-  return typeof extracted === 'string' ? extracted : JSON.stringify(
+  return ((typeof extracted) === 'string') ? extracted : JSON.stringify(
     extracted,
     null,
     2,

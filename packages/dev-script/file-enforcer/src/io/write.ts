@@ -37,6 +37,14 @@ async function ensureDir(filePath: string,): Promise<void> {
  * @param filePath - Path to check
  *
  * @returns File content as string, or undefined if missing
+ *
+ * @example
+ * ```ts
+ * const existing = await readExisting('./dist/config.json');
+ * if (existing === undefined) {
+ *   // file did not exist; safe to create
+ * }
+ * ```
  */
 export async function readExisting(filePath: string,): Promise<string | undefined> {
   try {
@@ -88,10 +96,10 @@ async function writeIfChanged(
     dest,
     content,
   );
-  updateCache(
-    dest,
+  updateCache({
+    filePath: dest,
     content,
-  );
+  },);
   trackWriteTime(dest,);
   rl.info(`${sourcePath !== undefined ? `${sourcePath} -> ` : '-> '}${dest}`,);
 }
@@ -106,12 +114,20 @@ async function writeIfChanged(
  *
  * @example
  * ```ts
- * await overwrite('./dist/config.json', JSON.stringify(config, null, 2));
+ * await overwrite({
+ *   dest: './dist/config.json',
+ *   content: JSON.stringify(config, null, 2),
+ * });
  * ```
  */
 export async function overwrite(
-  dest: string,
-  content: string,
+  {
+    dest,
+    content,
+  }: {
+    readonly dest: string;
+    readonly content: string;
+  },
 ): Promise<void> {
   await writeIfChanged({
     dest,
@@ -130,12 +146,20 @@ export async function overwrite(
  *
  * @example
  * ```ts
- * await overwriteIfNotExists('./config/defaults.json', '{}');
+ * await overwriteIfNotExists({
+ *   dest: './config/defaults.json',
+ *   content: '{}',
+ * });
  * ```
  */
 export async function overwriteIfNotExists(
-  dest: string,
-  content: string,
+  {
+    dest,
+    content,
+  }: {
+    readonly dest: string;
+    readonly content: string;
+  },
 ): Promise<void> {
   /** Existing content, or undefined if file doesn't exist */
   const existing = await readExisting(dest,);
@@ -161,22 +185,30 @@ export async function overwriteIfNotExists(
  *
  * @example
  * ```ts
- * await overwriteEach('./dest/*​/*.md', await cat('./src/*​/*.md'));
+ * await overwriteEach({
+ *   destGlob: './dest/*​/*.md',
+ *   files: await cat('./src/*​/*.md'),
+ * });
  * ```
  */
 export async function overwriteEach(
-  destGlob: string,
-  files: GlobResults,
+  {
+    destGlob,
+    files,
+  }: {
+    readonly destGlob: string;
+    readonly files: GlobResults;
+  },
 ): Promise<void> {
   l.info(`overwriteEach: ${String(files.length,)} files`,);
   await Promise.all(
     files.map(async function writeOneGlobMatch(file,): Promise<void> {
       /** Concrete destination path from the mirror-glob mapping */
-      const dest = mirrorGlobPath(
-        files.sourceGlob,
-        destGlob,
-        file.path,
-      );
+      const dest = mirrorGlobPath({
+        sourcePattern: files.sourceGlob,
+        destPattern: destGlob,
+        sourcePath: file.path,
+      },);
       await writeIfChanged({
         dest,
         content: file.content,

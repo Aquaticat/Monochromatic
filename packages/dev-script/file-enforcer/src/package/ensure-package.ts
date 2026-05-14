@@ -16,10 +16,11 @@ import type {
 //region Package index
 
 /**
- * Lookup index from binary name to {@link PackageEntry}.
- * Built lazily on first {@link ensurePackage} call via {@link buildIndex}.
+ * Single-key holder for the lazily-built lookup index.
+ * Using a {@link Map} container side-steps a module-root `let` binding while
+ * letting {@link registerPackages} clear the cache by deleting the sole key.
  */
-let index: ReadonlyMap<string, PackageEntry> | undefined = undefined;
+const indexCache = new Map<'index', ReadonlyMap<string, PackageEntry>>();
 
 /**
  * Registered package entries awaiting indexing.
@@ -44,7 +45,7 @@ const registered: PackageEntry[] = [];
 export function registerPackages(entries: readonly PackageEntry[],): void {
   registered.length = 0;
   registered.push(...entries,);
-  index = undefined;
+  indexCache.delete('index',);
 }
 
 /**
@@ -82,10 +83,15 @@ function buildIndex(): ReadonlyMap<string, PackageEntry> {
  * @returns Package name to pass to the install command, or `undefined` when unavailable
  */
 function resolvePackageName(
-  entry: PackageEntry,
-  manager: PackageManager,
+  {
+    entry,
+    manager,
+  }: {
+    readonly entry: PackageEntry;
+    readonly manager: PackageManager;
+  },
 ): string | undefined {
-  if (entry.available !== null && !entry.available.has(manager,))
+  if ((entry.available !== null) && (!entry.available.has(manager,)))
     return undefined;
   return entry.overrides[manager] ?? entry.effname;
 }
@@ -100,7 +106,7 @@ function resolvePackageName(
  * via the detected OS package manager.
  *
  * **For mise-installable tools** (node, python, jq, etc.), prefer
- * `exec('mise', ['use', '-g', '<tool>'])` instead; it avoids root,
+ * `exec({ cmd: 'mise', args: ['use', '-g', '<tool>'] })` instead; it avoids root,
  * manages versions, and works on immutable distros. Use this function
  * for system-level packages that mise does not cover.
  *
@@ -129,7 +135,22 @@ function resolvePackageName(
  * ```
  */
 export async function ensurePackage(binary: string,): Promise<void> {
-  index ??= buildIndex();
+  /**
+   * Lazily-built lookup index; reuses prior build when {@link registerPackages} hasn't cleared it.
+   */
+  const index = (function getOrBuildIndex(): ReadonlyMap<string, PackageEntry> {
+    /** Existing build, or `undefined` when the cache is empty. */
+    const cached = indexCache.get('index',);
+    if (cached !== undefined)
+      return cached;
+    /** Freshly-built lookup; stored before return so subsequent calls short-circuit. */
+    const fresh = buildIndex();
+    indexCache.set(
+      'index',
+      fresh,
+    );
+    return fresh;
+  })();
 
   /** Registered entry for `binary`, or `undefined` when the caller never declared it. */
   const entry = index.get(binary,);
@@ -143,10 +164,10 @@ export async function ensurePackage(binary: string,): Promise<void> {
   };
 
   /** Whether the binary already responds to its existence check; short-circuits the install path. */
-  const alreadyInstalled = await binaryExists(
+  const alreadyInstalled = await binaryExists({
     binary,
-    effectiveEntry.check,
-  );
+    checkFlag: effectiveEntry.check,
+  },);
   if (alreadyInstalled)
     return;
 
@@ -156,10 +177,10 @@ export async function ensurePackage(binary: string,): Promise<void> {
     throw new NoManagerError(binary,);
 
   /** Manager-specific package name; `undefined` when Repology says this manager cannot supply it. */
-  const packageName = resolvePackageName(
-    effectiveEntry,
+  const packageName = resolvePackageName({
+    entry: effectiveEntry,
     manager,
-  );
+  },);
 
   if (packageName === undefined) {
     throw new PackageNotFoundError(
@@ -170,10 +191,10 @@ export async function ensurePackage(binary: string,): Promise<void> {
   }
 
   /** Live confirmation from the manager's search command that the package is installable now. */
-  const available = await canProvide(
+  const available = await canProvide({
     manager,
     packageName,
-  );
+  },);
   if (!available) {
     throw new PackageNotFoundError(
       binary,
@@ -188,16 +209,16 @@ export async function ensurePackage(binary: string,): Promise<void> {
     l,
   },);
   rl.info(`installing ${packageName} via ${manager} (binary: ${binary})`,);
-  await installPackage(
+  await installPackage({
     manager,
     packageName,
-  );
+  },);
 
   /** Post-install existence check; non-true here means the package failed to provide the binary. */
-  const verified = await binaryExists(
+  const verified = await binaryExists({
     binary,
-    effectiveEntry.check,
-  );
+    checkFlag: effectiveEntry.check,
+  },);
   if (!verified) {
     throw new VerificationError(
       binary,

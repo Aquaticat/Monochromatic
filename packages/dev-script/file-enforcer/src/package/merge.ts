@@ -17,15 +17,23 @@ import type { PackageEntry, } from './types.ts';
  *
  * @example
  * ```ts
- * const packages = mergeOverrides(generated, [
- *   p({ bin: 'rg', effname: 'ripgrep' }),
- *   p({ check: 'version', effname: 'openssl' }),
- * ]);
+ * const packages = mergeOverrides({
+ *   generated,
+ *   overrideEntries: [
+ *     p({ bin: 'rg', effname: 'ripgrep' }),
+ *     p({ check: 'version', effname: 'openssl' }),
+ *   ],
+ * });
  * ```
  */
 export function mergeOverrides(
-  generated: readonly PackageEntry[],
-  overrideEntries: readonly PackageEntry[],
+  {
+    generated,
+    overrideEntries,
+  }: {
+    readonly generated: readonly PackageEntry[];
+    readonly overrideEntries: readonly PackageEntry[];
+  },
 ): readonly PackageEntry[] {
   /** Build lookup map from overrides array, keyed by effname */
   const overrideMap = new Map<string, PackageEntry>();

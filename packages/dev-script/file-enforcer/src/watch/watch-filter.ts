@@ -58,13 +58,23 @@ export function watchDirs(configPath: string,): Set<string> {
  *
  * @example
  * ```ts
- * const kind = await classifyEvent('index.ts', '/abs/src', '/abs/config.ts');
+ * const kind = await classifyEvent({
+ *   filename: 'index.ts',
+ *   watchedDir: '/abs/src',
+ *   configPath: '/abs/config.ts',
+ * });
  * ```
  */
 export async function classifyEvent(
-  filename: string,
-  watchedDir: string,
-  configPath: string,
+  {
+    filename,
+    watchedDir,
+    configPath,
+  }: {
+    readonly filename: string;
+    readonly watchedDir: string;
+    readonly configPath: string;
+  },
 ): Promise<EventKind> {
   /** Absolute path of the changed file */
   const absolutePath = resolve(join(
@@ -101,7 +111,7 @@ export async function classifyEvent(
   /** Resolved config path for comparison */
   const resolvedConfig = resolve(configPath,);
 
-  if (reads.has(absolutePath,) || absolutePath === resolvedConfig)
+  if (reads.has(absolutePath,) || (absolutePath === resolvedConfig))
     return 'source';
 
   return 'ignore';
@@ -120,19 +130,30 @@ export async function classifyEvent(
  *
  * @example
  * ```ts
- * if (await shouldTrigger('index.ts', '/abs/src', '/abs/config.ts')) {
+ * const trigger = await shouldTrigger({
+ *   filename: 'index.ts',
+ *   watchedDir: '/abs/src',
+ *   configPath: '/abs/config.ts',
+ * });
+ * if (trigger) {
  *   // re-run config
  * }
  * ```
  */
 export async function shouldTrigger(
-  filename: string,
-  watchedDir: string,
-  configPath: string,
-): Promise<boolean> {
-  return (await classifyEvent(
+  {
     filename,
     watchedDir,
     configPath,
-  )) !== 'ignore';
+  }: {
+    readonly filename: string;
+    readonly watchedDir: string;
+    readonly configPath: string;
+  },
+): Promise<boolean> {
+  return (await classifyEvent({
+    filename,
+    watchedDir,
+    configPath,
+  },)) !== 'ignore';
 }

@@ -25,14 +25,20 @@ export type GlobResults = readonly GlobResult[] & {
  *
  * @example
  * ```ts
- * const files = globResults(join(srcDir, '*.ts'), [
- *   { path: join(srcDir, 'a.ts'), content: 'alpha' },
- * ]);
+ * const files = globResults({
+ *   sourceGlob: join(srcDir, '*.ts'),
+ *   results: [{ path: join(srcDir, 'a.ts'), content: 'alpha' }],
+ * });
  * ```
  */
 export function globResults(
-  sourceGlob: string,
-  results: readonly GlobResult[],
+  {
+    sourceGlob,
+    results,
+  }: {
+    readonly sourceGlob: string;
+    readonly results: readonly GlobResult[];
+  },
 ): GlobResults {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- branded type construction requires double assertion
   return Object.assign(
@@ -79,7 +85,7 @@ export async function cat(files: readonly string[],): Promise<string>;
 export async function cat(
   input: string | readonly string[],
 ): Promise<string | GlobResults> {
-  if (typeof input === 'string') {
+  if ((typeof input) === 'string') {
     /** Paths matched by the glob pattern */
     const paths = await expandGlob(input,);
     /** Matched files with their contents */
@@ -92,10 +98,10 @@ export async function cat(
         };
       },),
     );
-    return globResults(
-      input,
+    return globResults({
+      sourceGlob: input,
       results,
-    );
+    },);
   }
 
   /** Expand any glob patterns in the array, then flatten */

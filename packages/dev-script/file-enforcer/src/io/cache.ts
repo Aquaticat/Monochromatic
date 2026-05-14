@@ -70,12 +70,20 @@ export async function readCached(filePath: string,): Promise<string> {
  *
  * @example
  * ```ts
- * updateCache('./dist/output.js', 'export default {};');
+ * updateCache({
+ *   filePath: './dist/output.js',
+ *   content: 'export default {};',
+ * });
  * ```
  */
 export function updateCache(
-  filePath: string,
-  content: string,
+  {
+    filePath,
+    content,
+  }: {
+    readonly filePath: string;
+    readonly content: string;
+  },
 ): void {
   readCache.set(
     resolve(filePath,),

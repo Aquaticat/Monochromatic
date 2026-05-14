@@ -169,16 +169,22 @@ summary(function ioBenchmarks() {
   },);
 
   bench('overwrite: skip (content unchanged)', async function overwriteSkipBench() {
-    await overwrite(overwriteFile, overwriteContent,);
+    await overwrite({ dest: overwriteFile, content: overwriteContent, },);
   },);
 
   bench('overwrite: write (content different)', async function overwriteWriteBench() {
-    await overwrite(overwriteFile, `iteration ${String(Date.now(),)}`,);
+    await overwrite({
+      dest: overwriteFile,
+      content: `iteration ${String(Date.now(),)}`,
+    },);
   },);
 
   bench('classifyEvent + stat: classification', async function classifyBench() {
-    const kind = await classifyEvent('tracked.txt', tempDir,
-      join(tempDir, 'config.ts',),);
+    const kind = await classifyEvent({
+      filename: 'tracked.txt',
+      watchedDir: tempDir,
+      configPath: join(tempDir, 'config.ts',),
+    },);
     do_not_optimize(kind,);
   },);
 },);
@@ -221,11 +227,11 @@ summary(function computeBenchmarks() {
 //region Path transformation benchmarks with range parameterization
 boxplot(function mirrorGlobPathBoxplot() {
   bench('mirrorGlobPath', function mirrorBench() {
-    const result = mirrorGlobPath(
-      'packages/*/src/*.ts',
-      'output/*/lib/*.ts',
-      'packages/pkg-00/src/index.ts',
-    );
+    const result = mirrorGlobPath({
+      sourcePattern: 'packages/*/src/*.ts',
+      destPattern: 'output/*/lib/*.ts',
+      sourcePath: 'packages/pkg-00/src/index.ts',
+    },);
     do_not_optimize(result,);
   },)
     .range('iterations', 1, 1024,);

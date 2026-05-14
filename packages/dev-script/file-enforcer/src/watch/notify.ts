@@ -16,10 +16,11 @@ import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
 type NotificationTool = 'notify-send' | 'osascript' | 'pwsh' | 'powershell';
 
 /**
- * Cached detection result.
- * `undefined` = detection not yet run, `null` = no tool found.
+ * Single-key holder for the lazily-detected notification backend.
+ * `null` value means detection ran but no tool was found; missing key means
+ * detection has not run yet.
  */
-let cachedTool: NotificationTool | null | undefined = undefined;
+const toolCache = new Map<'tool', NotificationTool | null>();
 
 /**
  * Detects the first available desktop notification tool.
@@ -29,41 +30,56 @@ let cachedTool: NotificationTool | null | undefined = undefined;
  * @returns Detected tool name, or `null` if none found
  */
 async function detectNotificationTool(): Promise<NotificationTool | null> {
-  if (cachedTool !== undefined)
-    return cachedTool;
+  if (toolCache.has('tool',))
+    return toolCache.get('tool',) ?? null;
 
   if (await evaluatePredicate([
     'notify-send',
     '--version',
   ],)) {
-    cachedTool = 'notify-send';
-    return cachedTool;
+    toolCache.set(
+      'tool',
+      'notify-send',
+    );
+    return 'notify-send';
   }
   if (await evaluatePredicate([
     'osascript',
     '-e',
     'return',
   ],)) {
-    cachedTool = 'osascript';
-    return cachedTool;
+    toolCache.set(
+      'tool',
+      'osascript',
+    );
+    return 'osascript';
   }
   if (await evaluatePredicate([
     'pwsh',
     '--version',
   ],)) {
-    cachedTool = 'pwsh';
-    return cachedTool;
+    toolCache.set(
+      'tool',
+      'pwsh',
+    );
+    return 'pwsh';
   }
   if (await evaluatePredicate([
     'powershell',
     '-Command',
     'exit',
   ],)) {
-    cachedTool = 'powershell';
-    return cachedTool;
+    toolCache.set(
+      'tool',
+      'powershell',
+    );
+    return 'powershell';
   }
 
-  cachedTool = null;
+  toolCache.set(
+    'tool',
+    null,
+  );
   return null;
 }
 
@@ -113,24 +129,24 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
 
   try {
     if (tool === 'notify-send') {
-      await exec(
-        'notify-send',
-        [
+      await exec({
+        cmd: 'notify-send',
+        args: [
           '--urgency=critical',
           title,
           body,
         ],
-      );
+      },);
       return;
     }
     if (tool === 'osascript') {
-      await exec(
-        'osascript',
-        [
+      await exec({
+        cmd: 'osascript',
+        args: [
           '-e',
           `display notification "${body}" with title "${title}"`,
         ],
-      );
+      },);
       return;
     }
     // pwsh or powershell
@@ -154,13 +170,13 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
       `[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('file-enforcer').Show([Windows.UI.Notifications.ToastNotification]::new($xml))`,
     ]
       .join('; ',);
-    await exec(
-      tool,
-      [
+    await exec({
+      cmd: tool,
+      args: [
         '-Command',
         script,
       ],
-    );
+    },);
   }
   catch (notifyError: unknown) {
     rl.warn(`could not send desktop notification: ${String(notifyError,)}`,);

@@ -38,7 +38,11 @@ await describe({
           name: 'substitutes a single wildcard',
           fn: async () => {
             expect(
-              mirrorGlobPath('src/*.ts', 'dist/*.ts', 'src/index.ts',),
+              mirrorGlobPath({
+                sourcePattern: 'src/*.ts',
+                destPattern: 'dist/*.ts',
+                sourcePath: 'src/index.ts',
+              },),
             )
               .toBe('dist/index.ts',);
           },
@@ -47,8 +51,11 @@ await describe({
           name: 'substitutes multiple wildcards positionally',
           fn: async () => {
             expect(
-              mirrorGlobPath('packages/*/src/*.ts', 'output/*/lib/*.ts',
-                'packages/foo/src/bar.ts',),
+              mirrorGlobPath({
+                sourcePattern: 'packages/*/src/*.ts',
+                destPattern: 'output/*/lib/*.ts',
+                sourcePath: 'packages/foo/src/bar.ts',
+              },),
             )
               .toBe('output/foo/lib/bar.ts',);
           },
@@ -57,7 +64,11 @@ await describe({
           name: 'handles wildcards capturing multi-character segments',
           fn: async () => {
             expect(
-              mirrorGlobPath('a/*/b', 'x/*/y', 'a/long-segment-name/b',),
+              mirrorGlobPath({
+                sourcePattern: 'a/*/b',
+                destPattern: 'x/*/y',
+                sourcePath: 'a/long-segment-name/b',
+              },),
             )
               .toBe('x/long-segment-name/y',);
           },
@@ -66,7 +77,11 @@ await describe({
           name: 'handles pattern with no wildcards (literal copy)',
           fn: async () => {
             expect(
-              mirrorGlobPath('exact/path.ts', 'other/path.ts', 'exact/path.ts',),
+              mirrorGlobPath({
+                sourcePattern: 'exact/path.ts',
+                destPattern: 'other/path.ts',
+                sourcePath: 'exact/path.ts',
+              },),
             )
               .toBe('other/path.ts',);
           },
@@ -74,7 +89,13 @@ await describe({
         it({
           name: 'throws when wildcard counts differ between source and dest',
           fn: async () => {
-            expect(() => mirrorGlobPath('src/*.ts', 'dist/*/*.ts', 'src/a.ts',)).toThrow(
+            expect(() =>
+              mirrorGlobPath({
+                sourcePattern: 'src/*.ts',
+                destPattern: 'dist/*/*.ts',
+                sourcePath: 'src/a.ts',
+              },),
+            ).toThrow(
               'Wildcard count mismatch',
             );
           },
@@ -82,7 +103,13 @@ await describe({
         it({
           name: 'throws when source path does not match source pattern prefix',
           fn: async () => {
-            expect(() => mirrorGlobPath('src/*.ts', 'dist/*.ts', 'lib/index.ts',))
+            expect(() =>
+              mirrorGlobPath({
+                sourcePattern: 'src/*.ts',
+                destPattern: 'dist/*.ts',
+                sourcePath: 'lib/index.ts',
+              },),
+            )
               .toThrow(
                 'does not match pattern',
               );
@@ -91,7 +118,13 @@ await describe({
         it({
           name: 'throws when source path does not match source pattern suffix',
           fn: async () => {
-            expect(() => mirrorGlobPath('src/*.ts', 'dist/*.ts', 'src/index.js',))
+            expect(() =>
+              mirrorGlobPath({
+                sourcePattern: 'src/*.ts',
+                destPattern: 'dist/*.ts',
+                sourcePath: 'src/index.js',
+              },),
+            )
               .toThrow(
                 'does not match pattern',
               );
@@ -102,7 +135,11 @@ await describe({
           fn: async () => {
             // Wildcard captures empty segment when path has nothing between fixed parts
             expect(
-              mirrorGlobPath('src/*-suffix.ts', 'out/*-suffix.ts', 'src/-suffix.ts',),
+              mirrorGlobPath({
+                sourcePattern: 'src/*-suffix.ts',
+                destPattern: 'out/*-suffix.ts',
+                sourcePath: 'src/-suffix.ts',
+              },),
             )
               .toBe('out/-suffix.ts',);
           },
@@ -111,7 +148,11 @@ await describe({
           name: 'handles wildcard at the very start of pattern',
           fn: async () => {
             expect(
-              mirrorGlobPath('*.txt', '*.md', 'readme.txt',),
+              mirrorGlobPath({
+                sourcePattern: '*.txt',
+                destPattern: '*.md',
+                sourcePath: 'readme.txt',
+              },),
             )
               .toBe('readme.md',);
           },
@@ -120,7 +161,11 @@ await describe({
           name: 'handles wildcard at the very end of pattern',
           fn: async () => {
             expect(
-              mirrorGlobPath('prefix-*', 'output-*', 'prefix-data',),
+              mirrorGlobPath({
+                sourcePattern: 'prefix-*',
+                destPattern: 'output-*',
+                sourcePath: 'prefix-data',
+              },),
             )
               .toBe('output-data',);
           },
@@ -129,7 +174,11 @@ await describe({
           name: 'handles adjacent wildcards in source and dest',
           fn: async () => {
             expect(
-              mirrorGlobPath('a/*/*.ext', 'b/*/*.ext', 'a/dir/file.ext',),
+              mirrorGlobPath({
+                sourcePattern: 'a/*/*.ext',
+                destPattern: 'b/*/*.ext',
+                sourcePath: 'a/dir/file.ext',
+              },),
             )
               .toBe('b/dir/file.ext',);
           },

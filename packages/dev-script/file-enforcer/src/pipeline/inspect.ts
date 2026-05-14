@@ -27,7 +27,7 @@ export function inspect<const TValue,>(value: TValue,): TValue {
     l,
   },);
   /** Stringified representation for logging */
-  const preview = typeof value === 'string'
+  const preview = ((typeof value) === 'string')
     ? value
     : JSON.stringify(
       value,
