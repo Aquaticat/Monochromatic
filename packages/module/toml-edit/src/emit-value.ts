@@ -10,8 +10,10 @@
  * @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import type { AST, } from 'toml-eslint-parser';
 
+import { TomlImmutableNodeError, } from './errors.ts';
 import { encodeKey, } from './values.ts';
 import type { CanonicalOptions, } from './types.ts';
 
@@ -206,6 +208,94 @@ export function emitArrayWithoutIndex(
         depth: depth + 1,
       },);
     },);
+  return assembleArrayParts({
+    parts,
+    options,
+    depth,
+  },);
+}
+
+/**
+ * Emit a `TOMLArray` with one nested element omitted at arbitrary depth.
+ *
+ * `skipPath` is a chain of array indices read outer-to-inner: each
+ * non-final index selects which element of the current `TOMLArray` to
+ * recurse into (that element must itself be a `TOMLArray`); the final
+ * index names the element to omit at the deepest level. A single-element
+ * `skipPath` reduces to `emitArrayWithoutIndex`.
+ *
+ * Used by `tomlDelete` on a nested-array element: when the immediate
+ * parent of the target is a `TOMLArray` whose own parent is another
+ * `TOMLArray`, the deletion walks up the parent chain to the enclosing
+ * key-value's outer array and re-emits the whole tree with the target
+ * element missing.
+ *
+ * @returns Computed string.
+ *
+ * @throws TomlImmutableNodeError if a non-final `skipPath` index lands on
+ *         a non-array element (caller-side AST inconsistency).
+ *
+ * @example
+ * ```ts
+ * emitArrayWithSkipPath({
+ *   array: outerArrayNode,
+ *   skipPath: [0, 1,],
+ *   options: edit.canonical,
+ *   depth: 0,
+ * },);
+ * ```
+ */
+export function emitArrayWithSkipPath(
+  {
+    array,
+    skipPath,
+    options,
+    depth,
+  }: {
+    array: AST.TOMLArray;
+    skipPath: readonly number[];
+    options: CanonicalOptions;
+    depth: number;
+  },
+): string {
+  if (skipPath.length === 0)
+    throw new TomlImmutableNodeError(
+      'emitArrayWithSkipPath: skipPath must not be empty',
+    );
+
+  const head = nonNullishOrThrow(skipPath[0],);
+  const rest = skipPath.slice(1,);
+
+  if (rest.length === 0)
+    return emitArrayWithoutIndex({
+      array,
+      skipIndex: head,
+      options,
+      depth,
+    },);
+
+  const parts = array.elements.map(function each(
+    el,
+    i,
+  ) {
+    if (i !== head)
+      return emitContentNode({
+        node: el,
+        options,
+        depth: depth + 1,
+      },);
+    if (el.type !== 'TOMLArray')
+      throw new TomlImmutableNodeError(
+        `emitArrayWithSkipPath: expected TOMLArray at index ${head}, got ${el.type}`,
+      );
+    return emitArrayWithSkipPath({
+      array: el,
+      skipPath: rest,
+      options,
+      depth: depth + 1,
+    },);
+  },);
+
   return assembleArrayParts({
     parts,
     options,

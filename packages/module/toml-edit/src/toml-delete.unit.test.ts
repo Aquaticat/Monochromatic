@@ -13,7 +13,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
-import { TomlImmutableNodeError, } from './errors.ts';
 import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlDelete, } from './toml-delete.ts';
 import { tomlGetValue, } from './toml-get-value.ts';
@@ -228,15 +227,88 @@ await describe({
     },),
 
     it({
-      name: 'nested-array element delete throws TomlImmutableNodeError',
+      name: 'nested-array element delete re-emits the outer array without the targeted element',
       fn: async () => {
         const source = 'outer = [[1, 2], [3, 4]]\n';
-        expect(function nestedThrows() {
-          tomlDelete({
-            edit: parseTomlEdit({ source, },),
-            path: ['outer', 0, 1,],
-          },);
-        },).toThrow(TomlImmutableNodeError,);
+        const e1 = tomlDelete({
+          edit: parseTomlEdit({ source, },),
+          path: ['outer', 0, 1,],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('outer = [ [ 1, ], [ 3, 4, ], ]\n',);
+      },
+    },),
+
+    it({
+      name: 'nested-array element delete: leftmost element of the inner array',
+      fn: async () => {
+        const source = 'outer = [[1, 2], [3, 4]]\n';
+        const e1 = tomlDelete({
+          edit: parseTomlEdit({ source, },),
+          path: ['outer', 0, 0,],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('outer = [ [ 2, ], [ 3, 4, ], ]\n',);
+      },
+    },),
+
+    it({
+      name: 'nested-array element delete: only-element collapses to empty inner array',
+      fn: async () => {
+        const source = 'outer = [[1]]\n';
+        const e1 = tomlDelete({
+          edit: parseTomlEdit({ source, },),
+          path: ['outer', 0, 0,],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('outer = [ [ ], ]\n',);
+      },
+    },),
+
+    it({
+      name: '3-level nested-array element delete',
+      fn: async () => {
+        const source = 'outer = [[[1, 2], [3]], []]\n';
+        const e1 = tomlDelete({
+          edit: parseTomlEdit({ source, },),
+          path: ['outer', 0, 0, 1,],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('outer = [ [ [ 1, ], [ 3, ], ], [ ], ]\n',);
+      },
+    },),
+
+    it({
+      name: 'nested-array delete removes an inline-table element',
+      fn: async () => {
+        const source = 'outer = [[{ a = 1 }, { b = 2 }]]\n';
+        const e1 = tomlDelete({
+          edit: parseTomlEdit({ source, },),
+          path: ['outer', 0, 1,],
+        },);
+        expect(tomlStringify({ edit: e1, },),).toBe('outer = [ [ { a = 1, }, ], ]\n',);
+      },
+    },),
+
+    it({
+      name: 'effective whole-outer-array read after nested delete reflects new shape',
+      fn: async () => {
+        const source = 'outer = [[1, 2], [3, 4]]\n';
+        const e1 = tomlDelete({
+          edit: parseTomlEdit({ source, },),
+          path: ['outer', 0, 1,],
+        },);
+        expect(tomlGetValue({ edit: e1, path: ['outer',], },),).toEqual([
+          [1,],
+          [3, 4,],
+        ],);
+      },
+    },),
+
+    it({
+      name: 'immutable: nested-array element delete on derived state leaves original intact',
+      fn: async () => {
+        const source = 'outer = [[1, 2], [3, 4]]\n';
+        const e0 = parseTomlEdit({ source, },);
+        const e1 = tomlDelete({ edit: e0, path: ['outer', 0, 1,], },);
+        expect(tomlStringify({ edit: e0, },),).toBe(source,);
+        expect(tomlStringify({ edit: e1, },),).toBe('outer = [ [ 1, ], [ 3, 4, ], ]\n',);
       },
     },),
 

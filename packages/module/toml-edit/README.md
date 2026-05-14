@@ -71,7 +71,7 @@ Default is `splice`, which emits unmutated regions verbatim from the source.
 -  **A key-value**: removes the entire line plus its trailing inline comment.
 -  **A `[foo]` table header**: removes the full block (header line + all body key-values + interleaved comments + trailing newline).
 -  **An array-of-tables collection**: removes every matched table block. Path `['foo']` against multiple `[[foo]]` instances clears them all; `['a']` against `[a.b]` + `[a.c]` removes both sub-tables.
--  **An array element** (inside the direct value of a key-value): rewrites the parent array via canonical re-emission, missing the indexed element. Element-delete inside a nested array (`[[1,2],[3,4]]`) is rejected.
+-  **An array element** at any depth (inside the direct value of a key-value, or nested inside one or more arrays under that value): walks the parent chain up to the enclosing key-value and rewrites the outermost array via canonical re-emission, omitting the targeted element at the deepest level.
 
 Sub-path reads (`tomlGetValue` / `tomlHas`) project pending edits through the path: after `tomlDelete({ path: ['arr', 1] })` on `arr = [10, 20, 30]`, `tomlGetValue({ path: ['arr', 1] })` returns `30` (the new array's index 1).
 
@@ -87,11 +87,6 @@ If full canonical re-formatting of parsed source is required (e.g. enforce inden
 `tomlSet({ path: ['foo'], value: {...} })` is rejected when the path resolves to an array-of-tables collection.
 The semantics are ambiguous (replace one logical table? replace each of N instances?), and the safer reading is per-element.
 Set values inside a specific instance with `tomlSet({ path: ['foo', N, 'key'], value })`.
-
-### v1 limitation: nested-array element delete
-
-`tomlDelete` on an element of an inner array (the outer container is itself a `TOMLArray`, not a key-value) is rejected.
-Re-emitting the entire outer container would force a layout choice the caller did not opt into.
 
 ### `tomlGetNode` and `tomlGetRaw` are parse-time views
 

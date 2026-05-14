@@ -11,12 +11,13 @@
  * @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import {
   type AST,
   getStaticTOMLValue,
 } from 'toml-eslint-parser';
 
-import { emitArrayWithoutIndex, } from './emit-value.ts';
+import { emitArrayWithSkipPath, } from './emit-value.ts';
 import { TomlImmutableNodeError, } from './errors.ts';
 import { formatPath, } from './path.ts';
 import { resolveByPath, } from './resolve.ts';
@@ -43,22 +44,25 @@ import type {
  *   to a path whose strict prefix is shared by multiple sibling tables
  *   such as `[a.b]` and `[a.c]` queried by `['a']`): removes every matched
  *   table block.
- * - An array element (path of shape `[..., key, index]` resolving to a
- *   primitive, array, or inline-table inside a `TOMLArray` that is the
- *   direct value of a key-value): rewrites the parent array via
- *   canonical re-emission, missing the indexed element.
+ * - An array element (path of shape `[..., key, ...indices]` resolving
+ *   to a primitive, array, or inline-table inside a `TOMLArray` that is
+ *   reached from a key-value through zero or more nested arrays): walks
+ *   the parent chain up to the containing key-value, then rewrites the
+ *   outermost array via canonical re-emission with the targeted element
+ *   omitted at the deepest level. Works at arbitrary nesting depth.
  *
  * @returns A fresh `TomlEditState` reflecting the change.
  *
- * @throws TomlImmutableNodeError when deleting an element nested inside
- *         an array of arrays (the outer container is also a `TOMLArray`,
- *         not a key-value).
+ * @throws TomlImmutableNodeError when the AST is internally inconsistent
+ *         (e.g. a target element has no parent chain that terminates at a
+ *         `TOMLKeyValue`). Not reachable from well-formed parser output.
  *
  * @example
  * ```ts
  * const e1 = tomlDelete({ edit, path: ['old',], },);
  * const e2 = tomlDelete({ edit, path: ['fruits',], },); // array-of-tables
  * const e3 = tomlDelete({ edit, path: ['arr', 1,], },); // element at index 1
+ * const e4 = tomlDelete({ edit, path: ['outer', 0, 1,], },); // nested array element
  * ```
  */
 export function tomlDelete(
@@ -144,12 +148,18 @@ function withDeletions(
 }
 
 /**
- * Remove an array element by rewriting the parent array via a
- * `replace-value` Edit on the containing `TOMLKeyValue`.
+ * Remove an array element by rewriting the outermost containing array
+ * via a `replace-value` Edit on its enclosing `TOMLKeyValue`.
  *
- * The Edit's `jsValue` is the post-delete JS array, so
- * `tomlGetValue({ path: containingKeyPath })` returns the new array on
- * the same or any branched state.
+ * Walks the parent chain through any number of nested `TOMLArray`s,
+ * accumulating the index taken at each level (outer to inner) in
+ * `skipPath`. The walk terminates at the first ancestor that is a
+ * `TOMLKeyValue`; that key-value's value is then re-emitted with the
+ * target element omitted at the deepest level.
+ *
+ * The Edit's `jsValue` is the post-delete JS structure rooted at the
+ * outermost array, so `tomlGetValue({ path: containingKeyPath, })` on
+ * the same or any branched state returns the new shape.
  *
  * @returns A fresh `TomlEditState` reflecting the change.
  */
@@ -164,37 +174,31 @@ function deleteArrayElement(
     element: AST.TOMLContentNode;
   },
 ): TomlEditState {
-  const {parent} = element;
+  const { parent, } = element;
   if ((parent === null) || (parent.type !== 'TOMLArray'))
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: expected an array element, found parent type ${String(parent?.type,)}`,
-    );
-  const grandparent = parent.parent;
-  if ((grandparent === null) || (grandparent.type !== 'TOMLKeyValue'))
-    throw new TomlImmutableNodeError(
-      `tomlDelete on a nested-array element at ${formatPath({ path, },)} is not supported in v1; the outer array is not the direct value of a key`,
     );
   const skipIndex = parent.elements.indexOf(element,);
   if (skipIndex === (-1))
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: element not found in parent array`,
     );
-  const newText = emitArrayWithoutIndex({
+  const walkResult = walkUpToKeyValue({
+    path,
     array: parent,
-    skipIndex,
+    trailingPath: [skipIndex,],
+  },);
+  const newText = emitArrayWithSkipPath({
+    array: walkResult.outerArray,
+    skipPath: walkResult.skipPath,
     options: edit.canonical,
     depth: 0,
   },);
-  const newJsArray = parent.elements
-    .filter(function notSkipped(
-      _el,
-      i,
-    ) {
-      return i !== skipIndex;
-    },)
-    .map(function each(el,) {
-      return getStaticTOMLValue(el,);
-    },);
+  const newJsArray = removeJsAtPath({
+    arr: getStaticTOMLValue(walkResult.outerArray,) as readonly unknown[],
+    path: walkResult.skipPath,
+  },);
   const delta: Edit = {
     kind: 'replace-value',
     newText,
@@ -203,7 +207,7 @@ function deleteArrayElement(
   const nextEdits = new Map([
     ...edit.edits,
     [
-      grandparent,
+      walkResult.keyValue,
       delta,
     ] as const,
   ],);
@@ -211,4 +215,106 @@ function deleteArrayElement(
     ...edit,
     edits: nextEdits,
   };
+}
+
+/**
+ * Walk the parent chain from `array` upward, prepending each enclosing
+ * array's index to `trailingPath`, until reaching a `TOMLKeyValue`.
+ *
+ * @returns The enclosing `TOMLKeyValue`, the outermost `TOMLArray`
+ *          directly under it, and the full outer-to-inner skip path.
+ *
+ * @throws TomlImmutableNodeError when the chain terminates without a
+ *         `TOMLKeyValue` (malformed AST).
+ */
+function walkUpToKeyValue(
+  {
+    path,
+    array,
+    trailingPath,
+  }: {
+    path: TomlPath;
+    array: AST.TOMLArray;
+    trailingPath: readonly number[];
+  },
+): {
+  readonly keyValue: AST.TOMLKeyValue;
+  readonly outerArray: AST.TOMLArray;
+  readonly skipPath: readonly number[];
+} {
+  const ancestor = array.parent;
+  if (ancestor === null)
+    throw new TomlImmutableNodeError(
+      `tomlDelete at ${formatPath({ path, },)}: array has no parent in the AST`,
+    );
+  if (ancestor.type === 'TOMLKeyValue')
+    return {
+      keyValue: ancestor,
+      outerArray: array,
+      skipPath: trailingPath,
+    };
+  if (ancestor.type === 'TOMLArray') {
+    const idx = ancestor.elements.indexOf(array,);
+    if (idx === (-1))
+      throw new TomlImmutableNodeError(
+        `tomlDelete at ${formatPath({ path, },)}: nested array not found in its parent`,
+      );
+    return walkUpToKeyValue({
+      path,
+      array: ancestor,
+      trailingPath: [
+        idx,
+        ...trailingPath,
+      ],
+    },);
+  }
+  throw new TomlImmutableNodeError(
+    `tomlDelete at ${formatPath({ path, },)}: array ancestor is neither TOMLArray nor TOMLKeyValue (unreachable for well-formed parser output)`,
+  );
+}
+
+/**
+ * Materialize the post-delete JS structure for an outer array by removing
+ * the element addressed by `path` (outer-to-inner array indices).
+ *
+ * @returns A fresh `unknown[]` mirroring `arr` with the targeted element
+ *          gone at the deepest level.
+ */
+function removeJsAtPath(
+  {
+    arr,
+    path,
+  }: {
+    arr: readonly unknown[];
+    path: readonly number[];
+  },
+): unknown[] {
+  if (path.length === 0)
+    throw new TomlImmutableNodeError(
+      'removeJsAtPath: path must not be empty',
+    );
+  const head = nonNullishOrThrow(path[0],);
+  const rest = path.slice(1,);
+  if (rest.length === 0)
+    return arr.filter(function notSkipped(
+      _el,
+      i,
+    ) {
+      return i !== head;
+    },);
+  const target = arr[head];
+  if (!Array.isArray(target,))
+    throw new TomlImmutableNodeError(
+      `removeJsAtPath: expected array at index ${head}, got ${typeof target}`,
+    );
+  return arr.map(function each(
+    el,
+    i,
+  ) {
+    if (i !== head) return el;
+    return removeJsAtPath({
+      arr: target as readonly unknown[],
+      path: rest,
+    },);
+  },);
 }
