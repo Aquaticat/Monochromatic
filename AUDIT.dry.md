@@ -111,10 +111,13 @@ multiplies linearly with package count.
 
 ### Major package forks
 
-#### `webapp-productivity/done` and `webapp-productivity/done-h-css-test` are forks
+#### `webapp-productivity/done` and `webapp-productivity/done-postcss` are intentional forks
 
-The two packages share **52 of 67 / 79 source file paths** (relative paths after stripping
-the package prefix). Of those 52:
+Status: superseded. The two packages share **52 of 67 / 79 source file paths** (relative
+paths after stripping the package prefix), but the duplication is intentional and kept
+by design for side-by-side CSS framework comparison; see the package READMEs.
+
+Of those 52:
 
 - 4 files are byte-identical:
   - `src/client/lib/page-data.ts`
@@ -134,12 +137,12 @@ Examples of near-twins (line counts then diff line counts):
 - `src/lib/args.ts`: 12-line diff
 - `src/lib/ai/client.ts`: 12-line diff
 
-The `done-h-css-test` README explains: this is the same product with CSS handling moved
-from build-time to runtime via h-css.
-
-Suggested resolution: extract the shared core (likely most of `lib/`, `server/pages/`,
-and `client/components/`) into a `webapp-productivity/done-shared/` package. The two
-shipping packages would then differ only in CSS strategy.
+Resolution: not consolidated. `done` is canonical (h-css). `done-postcss` is kept as a
+PostCSS `@apply` reference; future variants (`done-tailwind`, `done-vanilla-extract`, etc.)
+may join it. The earlier suggestion to extract a `done-shared/` package was rejected
+because the comparison only works while each variant carries its own full implementation
+of the surfaces being compared. The non-CSS overlap is the cost of keeping the comparison
+honest at full-app scale.
 
 #### `pi/terminal-title` and `claude-code-plugins/source/handlers/terminal-title` are forks
 

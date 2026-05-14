@@ -26,7 +26,7 @@ See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, V
 
 ### 1.1 Project setup (~1.5h) **done**
 
-- (0.25h) Initialize project at `packages/webapp-productivity/done/` with `package.json` (`workspace:*` references to monorepo packages)
+- (0.25h) Initialize project at `packages/webapp-productivity/done-postcss/` with `package.json` (`workspace:*` references to monorepo packages)
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
 - (0.25h) Create `src/server.ts`: entry point with build-css at startup, then h3 `H3` route registration and static serving
 - (0.25h) Create `src/client/` directory with a minimal `inbox.ts` entry point to verify the build pipeline
