@@ -34,15 +34,19 @@ export async function getIgnoreContent(): Promise<string> {
     tag: getIgnoreContent.name,
     l,
   },);
-  /** Mutable so the missing-directory catch can leave the empty default in place. */
-  let filesInDir: Dirent[] = [];
-  try {
-    filesInDir = await readdir(
-      IGNORE_PATH,
-      { withFileTypes: true, },
-    );
-  }
-  catch {
+  /** Directory entries or undefined when the ignore directory is missing. */
+  const filesInDir = await (async function readIgnoreDir(): Promise<Dirent[] | undefined> {
+    try {
+      return await readdir(
+        IGNORE_PATH,
+        { withFileTypes: true, },
+      );
+    }
+    catch {
+      return undefined;
+    }
+  })();
+  if (filesInDir === undefined) {
     innerL.debug('ignore directory not found',);
     return '';
   }
@@ -95,10 +99,10 @@ export function parseIgnoredLinks(content: string,): Set<string> {
     try {
       /** Parsed entry kept as unknown so the shape check below narrows it explicitly. */
       const parsed: unknown = JSON.parse(line,);
-      if (parsed !== null && typeof parsed === 'object' && 'link' in parsed) {
+      if ((parsed !== null) && ((typeof parsed) === 'object') && ('link' in parsed)) {
         /** Destructured link field so the type guard runs on a named binding. */
         const { link, } = parsed;
-        if (typeof link === 'string' && link !== '')
+        if (((typeof link) === 'string') && (link !== ''))
           links.add(link,);
       }
     }

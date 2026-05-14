@@ -107,7 +107,7 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
           entries,
           ...feedWithoutEntries
         } = atomFeed;
-        if (entries === undefined || entries.length === 0) {
+        if ((entries === undefined) || (entries.length === 0)) {
           innerL.warn(`atom feed ${outline.text ?? 'unnamed'} has no entries`,);
           return [];
         }
@@ -129,7 +129,7 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
         items,
         ...feedWithoutItems
       } = rssFeed;
-      if (items === undefined || items.length === 0) {
+      if ((items === undefined) || (items.length === 0)) {
         innerL.warn(`rss feed ${outline.text ?? 'unnamed'} has no items`,);
         return [];
       }

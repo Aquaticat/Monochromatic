@@ -67,23 +67,23 @@ function addScrollEvents(scrollOptions: {
       /** Current intersection ratio used by every transition check below. */
       const ratio = entry.intersectionRatio;
 
-      if (ratio === 1 && !wasFullyVisible) {
+      if ((ratio === 1) && (!wasFullyVisible)) {
         wasFullyVisible = true;
         element.dispatchEvent(new CustomEvent('scrolledIn',),);
       }
 
-      if (wasFullyVisible && ratio === 0) {
+      if (wasFullyVisible && (ratio === 0)) {
         element.dispatchEvent(new CustomEvent('scrolledOut',),);
         wasFullyVisible = false;
       }
 
-      if (lastRatio === 0 && ratio > 0)
+      if ((lastRatio === 0) && (ratio > 0))
         element.dispatchEvent(new CustomEvent('enterViewport',),);
 
-      if (lastRatio > 0 && ratio === 0)
+      if ((lastRatio > 0) && (ratio === 0))
         element.dispatchEvent(new CustomEvent('leaveViewport',),);
 
-      if (ratio >= HALF && lastRatio < HALF)
+      if ((ratio >= HALF) && (lastRatio < HALF))
         element.dispatchEvent(new CustomEvent('halfVisible',),);
 
       lastRatio = ratio;

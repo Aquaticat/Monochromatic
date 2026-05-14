@@ -64,7 +64,7 @@ export async function getOutlinesFromOpmls(
     ): outline is InnerOutlineWUrl {
       /** Destructured xmlUrl so the empty/undefined gate reads on a named binding. */
       const { xmlUrl, } = outline;
-      if (xmlUrl === undefined || xmlUrl === '') {
+      if ((xmlUrl === undefined) || (xmlUrl === '')) {
         innerL.warn(`outline ${outline.text ?? 'unnamed'} has no xmlUrl`,);
         return false;
       }
