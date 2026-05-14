@@ -282,6 +282,7 @@ const tsgoArgs = process.argv.length > 2
 await removeStaleBuildInfo();
 
 try {
+  /** Successful spawn result; stdout/stderr are forwarded unfiltered when tsgo exits 0. */
   const result = await spawn(
     'tsgo',
     [...tsgoArgs,],
@@ -295,6 +296,7 @@ try {
 }
 catch (error) {
   if (error !== null && typeof error === 'object' && 'exitCode' in error) {
+    /** Subprocess failure narrowed to the shape exposed by the bun/node spawn libraries; carries the streams to filter. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape
     const subprocessError = error as {
       stdout?: string;
@@ -303,8 +305,10 @@ catch (error) {
       signalName?: string;
     };
 
+    /** Filtered stdout payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
     // Filter stdout (where tsgo writes diagnostics)
     const stdoutResult = filterTsgoOutput(subprocessError.stdout ?? '',);
+    /** Filtered stderr payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
     // Filter stderr as well in case tsgo writes diagnostics there
     const stderrResult = filterTsgoOutput(subprocessError.stderr ?? '',);
 
