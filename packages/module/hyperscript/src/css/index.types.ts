@@ -90,11 +90,10 @@ type UntypedAtRuleOptions = {
  *
  * **Statement-form output requires omitting all three of `decls`, `raw`,
  * and `children`.** Passing an empty `decls: {}`, empty `raw: ''`, or
- * empty `children: []` still yields a block: `$({ at: 'font-face',
- * decls: {} })` produces `@font-face{}`, not `@font-face;`. This means
- * the library cannot emit `@font-face;` (which is invalid CSS anyway, since
- * `@font-face` requires a block); to emit a statement at-rule the input
- * must contain no body fields at all.
+ * empty `children: []` still yields a block. For example, `$({ at: 'font-face', decls: {} })`
+ * produces `\@font-face{}`, not `\@font-face;`. This means the library cannot
+ * emit `\@font-face;` (which is invalid CSS anyway, since `\@font-face` requires
+ * a block); to emit a statement at-rule the input must contain no body fields at all.
  */
 export type AtRuleOptions = TypedAtRuleOptions | UntypedAtRuleOptions;
 

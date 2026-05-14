@@ -166,7 +166,11 @@ export function buildRule(
     children,
   }: RuleOptions,
 ): string {
-  return `${rule}{${renderBody({ decls, raw, children, },)}}`;
+  return `${rule}{${renderBody({
+    decls,
+    raw,
+    children,
+  },)}}`;
 }
 
 /**
@@ -205,7 +209,11 @@ export function buildAtRule(
   if (!hasBlock(options,))
     return `${head};`;
 
-  return `${head}{${renderBody({ decls, raw, children, },)}}`;
+  return `${head}{${renderBody({
+    decls,
+    raw,
+    children,
+  },)}}`;
 }
 
 //endregion
