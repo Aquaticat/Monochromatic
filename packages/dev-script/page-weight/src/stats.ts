@@ -28,38 +28,6 @@ export type Stats = {
 };
 
 /**
- * Ascending numeric comparator for `Array#toSorted`.
- *
- * @param a - left operand
- *
- * @param b - right operand
- *
- * @returns negative if `a < b`, positive if `a > b`, zero when equal
- */
-function ascending(
-  a: number,
-  b: number,
-): number {
-  return a - b;
-}
-
-/**
- * Addition reducer used to sum a numeric array.
- *
- * @param acc - running total
- *
- * @param value - next value to add
- *
- * @returns updated total
- */
-function add(
-  acc: number,
-  value: number,
-): number {
-  return acc + value;
-}
-
-/**
  * Computes the median of an already-sorted-ascending array of numbers.
  *
  * @param sorted - ascending-sorted observations (non-empty)
@@ -77,7 +45,7 @@ function medianOfSorted(sorted: readonly number[],): number {
     throw new Error('cannot compute median of empty sample',);
   /** Index of the upper-middle element; for odd lengths this is the median position. */
   const mid = Math.floor(sorted.length / 2,);
-  if (sorted.length % 2 === 1)
+  if ((sorted.length % 2) === 1)
     return nonNullishOrThrow(sorted[mid],);
   /** Lower of the two central values for even-length samples. */
   const low = nonNullishOrThrow(sorted[mid - 1],);
@@ -109,10 +77,20 @@ export function summarize(sample: readonly number[],): Stats {
   if (sample.length === 0)
     throw new Error('cannot summarize an empty sample',);
   /** Ascending-sorted copy; needed for median computation and for `min`/`max` lookup. */
-  const sorted = sample.toSorted(ascending,);
+  const sorted = sample.toSorted(function ascending(
+    a,
+    b,
+  ) {
+    return a - b;
+  },);
   /** Sum of every observation; reused for both the `sum` output and the `mean` computation. */
   const sum = sorted.reduce(
-    add,
+    function add(
+      acc,
+      value,
+    ) {
+      return acc + value;
+    },
     0,
   );
   return {

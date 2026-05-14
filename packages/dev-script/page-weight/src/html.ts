@@ -77,7 +77,7 @@ function attr(
 ): string | null {
   /** Attribute value as hast stores it; may be missing or non-string. */
   const raw = element.properties[name];
-  if (typeof raw !== 'string')
+  if ((typeof raw) !== 'string')
     return null;
   /** Whitespace-stripped value so empty-after-trim attributes report as `null`. */
   const trimmed = raw.trim();
@@ -98,7 +98,7 @@ function attr(
 function firstSrcsetUrl(srcset: string,): string | null {
   /** First candidate descriptor in the srcset list; used as the canonical pick. */
   const first = srcset.split(',',)[0]?.trim();
-  if (first === undefined || first === '')
+  if ((first === undefined) || (first === ''))
     return null;
   return nonNullishOrThrow(first.split(/\s+/,)[0],);
 }
@@ -123,7 +123,7 @@ function addIfLocal(
     return;
   /** Whitespace-stripped form so empty and fragment-only references are filtered out. */
   const trimmed = raw.trim();
-  if (trimmed === '' || trimmed.startsWith('#',))
+  if ((trimmed === '') || trimmed.startsWith('#',))
     return;
   if (trimmed.startsWith('//',) || /^[a-z][a-z0-9+.-]*:/i.test(trimmed,))
     return;
@@ -220,7 +220,7 @@ function collectMediaUrl(
   }
   if (element.tagName === 'picture') {
     for (const child of element.children) {
-      if (isElement(child,) && child.tagName === 'img') {
+      if (isElement(child,) && (child.tagName === 'img')) {
         /** Fallback `<img>` `src` used when no `<source>` child matched. */
         const src = attr({
           element: child,
@@ -253,11 +253,11 @@ function ownAssetUrl(element: Element,): string | null {
     },);
   }
   if (
-    element.tagName === 'script'
-    || element.tagName === 'iframe'
-    || element.tagName === 'embed'
-    || element.tagName === 'audio'
-    || element.tagName === 'video'
+    (element.tagName === 'script')
+    || (element.tagName === 'iframe')
+    || (element.tagName === 'embed')
+    || (element.tagName === 'audio')
+    || (element.tagName === 'video')
   ) {
     return attr({
       element,

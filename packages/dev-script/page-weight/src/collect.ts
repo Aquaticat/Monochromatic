@@ -92,7 +92,9 @@ async function walkCss(
 ): Promise<string[]> {
   /** Accumulator of unique asset paths discovered through the CSS graph. */
   const collected: string[] = [];
-  /** BFS frontier so chained `@import`s are followed before the function returns. */
+  /**
+   * BFS frontier so chained `@import`s are followed before the function returns.
+   */
   const queue: string[] = [startPath,];
   /** Cycle guard so a CSS file reached twice is not re-parsed. */
   const visited = new Set<string>();
@@ -105,6 +107,7 @@ async function walkCss(
     visited.add(cssPath,);
 
     /** CSS text, or `null` when the file cannot be read so dead links don't abort the walk. */
+    // oxlint-disable-next-line eslint/no-await-in-loop -- BFS over a queue that grows as each iteration parses imports; each step depends on the previous shift and the shared `visited` set, so parallelisation would race on dedup state.
     const source = await readCssOrNull(cssPath,);
     if (source === null)
       continue;
@@ -120,8 +123,9 @@ async function walkCss(
         missing.push(ref,);
         continue;
       }
-      if (extname(resolved,).toLowerCase() === '.css' && !visited.has(resolved,))
+      if ((extname(resolved,).toLowerCase() === '.css') && (!visited.has(resolved,))) {
         queue.push(resolved,);
+      }
       if (!seen.has(resolved,)) {
         seen.add(resolved,);
         collected.push(resolved,);
@@ -199,7 +203,10 @@ export async function weighPage(
       assets.push(resolved,);
     }
     if (extname(resolved,).toLowerCase() === '.css') {
-      /** Assets reachable through the CSS `@import` / `url()` graph rooted at this stylesheet. */
+      /**
+       * Assets reachable through the CSS `@import` / `url()` graph rooted at this stylesheet.
+       */
+      // oxlint-disable-next-line eslint/no-await-in-loop -- walkCss mutates the shared `seen` and `missing` accumulators, so parallel calls would race on those sets; ordering also determines which `@import` chain claims a given asset path first.
       const nested = await walkCss({
         startPath: resolved,
         root,
@@ -230,17 +237,25 @@ export async function weighPage(
     }
   }
 
-  /** Running sum of wire sizes; mutable because each iteration adds conditionally. */
-  let totalBytes = 0;
-  for (const asset of assets) {
-    /** Wire size for the current asset, or `null` when it cannot be measured. */
-    const size = await wireSize(asset,);
-    if (size === null) {
-      missing.push(asset,);
-      continue;
-    }
-    totalBytes += size;
-  }
+  /** Wire sizes per asset, computed in parallel; `null` slots are surfaced via `missing` below. */
+  const sizes = await Promise.all(assets.map(function measure(asset: string,): Promise<number | null> {
+    return wireSize(asset,);
+  },),);
+  /** Sum of every successfully measured asset, with unmeasurable assets recorded into `missing`. */
+  const totalBytes = sizes.reduce(
+    function sumNonNull(
+      acc: number,
+      size: number | null,
+      index: number,
+    ): number {
+      if (size === null) {
+        missing.push(nonNullishOrThrow(assets[index],),);
+        return acc;
+      }
+      return acc + size;
+    },
+    0,
+  );
 
   /** Page path stripped of the dist root prefix so the report stays readable. */
   const relativePage = htmlPath.startsWith(root,)

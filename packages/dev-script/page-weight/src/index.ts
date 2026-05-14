@@ -44,6 +44,17 @@ const EXIT_USAGE = 1;
 const EXIT_MISSING_REFS = 2;
 
 /**
+ * Result of scaling a raw byte count into a chosen unit; pairs the scaled
+ * numeric value with the `BYTE_UNITS` index that names the unit.
+ */
+type Scaled = {
+  /** Byte count divided down by `BYTES_PER_KIB` repeatedly until the unit fits. */
+  value: number;
+  /** Position in `BYTE_UNITS` reached by the scaling loop. */
+  unitIndex: number;
+};
+
+/**
  * Formats a byte count as a human-readable string using binary prefixes.
  *
  * Keeps output readable in a small terminal; precision is capped at 1 decimal
@@ -59,33 +70,27 @@ const EXIT_MISSING_REFS = 2;
  * ```
  */
 function humanBytes(bytes: number,): string {
-  /** Scaled byte count divided down into the chosen unit. */
-  let value = bytes;
-  /** Position in `BYTE_UNITS` reached by the scaling loop. */
-  let unitIndex = 0;
-  while (value >= BYTES_PER_KIB && unitIndex < BYTE_UNITS.length - 1) {
-    value /= BYTES_PER_KIB;
-    unitIndex += 1;
-  }
+  /** Scaled byte count and the `BYTE_UNITS` index it lives in after dividing by `BYTES_PER_KIB` until the unit fits. */
+  const {
+    value,
+    unitIndex,
+  } = (function scale(): Scaled {
+    /** Working value mutated in-place by the scaling loop; renamed to avoid clashing with the destructured `value`. */
+    let scaledValue = bytes;
+    /** Working position in `BYTE_UNITS`; renamed to avoid clashing with the destructured `unitIndex`. */
+    let scaledIndex = 0;
+    while ((scaledValue >= BYTES_PER_KIB) && (scaledIndex < (BYTE_UNITS.length - 1))) {
+      scaledValue /= BYTES_PER_KIB;
+      scaledIndex += 1;
+    }
+    return {
+      value: scaledValue,
+      unitIndex: scaledIndex,
+    };
+  })();
   /** Decimals shown in the formatted output; raw bytes are reported as integers. */
   const precision = unitIndex === 0 ? 0 : 1;
   return `${value.toFixed(precision,)} ${BYTE_UNITS[unitIndex]}`;
-}
-
-/**
- * Descending comparator on `totalBytes` used to sort the report rows.
- *
- * @param a - first row
- *
- * @param b - second row
- *
- * @returns negative if `a` is heavier than `b`
- */
-function byTotalDescending(
-  a: PageWeight,
-  b: PageWeight,
-): number {
-  return b.totalBytes - a.totalBytes;
 }
 
 //region Main
@@ -94,7 +99,7 @@ function byTotalDescending(
 const args = process.argv.slice(2,);
 
 /** First positional argument: the dist directory to scan. */
-const distArg = args[0];
+const [distArg,] = args;
 if (distArg === undefined) {
   console.error('usage: page-weight <dist-dir>',);
   process.exitCode = EXIT_USAGE;
@@ -126,7 +131,12 @@ const weights: PageWeight[] = await Promise.all(
 );
 
 /** Page rows sorted largest-first for readability. */
-const sorted = weights.toSorted(byTotalDescending,);
+const sorted = weights.toSorted(function byTotalDescending(
+  a: PageWeight,
+  b: PageWeight,
+): number {
+  return b.totalBytes - a.totalBytes;
+},);
 
 /** Aggregate min/max/mean/median summary over page totals. */
 const totals = weights.map(function pageTotal(entry: PageWeight,): number {

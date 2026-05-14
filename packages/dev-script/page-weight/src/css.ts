@@ -70,7 +70,7 @@ function addIfLocal(
 ): void {
   /** URL with surrounding whitespace removed; raw CSS values often carry stray padding. */
   const trimmed = raw.trim();
-  if (trimmed === '' || trimmed.startsWith('#',))
+  if ((trimmed === '') || trimmed.startsWith('#',))
     return;
   if (trimmed.startsWith('//',) || /^[a-z][a-z0-9+.-]*:/i.test(trimmed,))
     return;
@@ -153,7 +153,7 @@ export function extractCssUrls(source: string,): string[] {
         tokens,
         startIndex: index + 1,
       },);
-      if (next !== null && isTokenString(next,)) {
+      if ((next !== null) && isTokenString(next,)) {
         addIfLocal({
           target: refs,
           raw: tokenValue(next,),
@@ -164,12 +164,14 @@ export function extractCssUrls(source: string,): string[] {
     if (isTokenAtKeyword(token,)) {
       if (tokenValue(token,).toLowerCase() !== 'import')
         continue;
-      /** First semantic token after `@import`; expected to be the imported stylesheet URL. */
+      /**
+       * First semantic token after `@import`; expected to be the imported stylesheet URL.
+       */
       const next = nextSemanticToken({
         tokens,
         startIndex: index + 1,
       },);
-      if (next !== null && isTokenString(next,)) {
+      if ((next !== null) && isTokenString(next,)) {
         addIfLocal({
           target: refs,
           raw: tokenValue(next,),
