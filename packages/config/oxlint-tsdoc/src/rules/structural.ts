@@ -40,23 +40,27 @@ export const checkAlignment: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Comment body split into lines; each continuation line is checked against `expectedIndent`. */
         const lines = getCommentLines(comment,);
         if (lines.length < 2)
           return;
 
         // The opening line `* ...` sets the expected indent
         // comment.loc.start.column is the column of `/*`, so `*` alignment is column + 1
+        /** Expected column for the leading `*` on continuation lines, derived from the opener. */
         const expectedIndent = comment.loc.start.column + 1;
 
         lines.slice(1,).forEach(function checkLine(
           line,
           index,
         ): void {
+          /** Continuation line with leading whitespace removed; used to test for the `*` marker. */
           const trimmed = line.trimStart();
           if (trimmed.length === 0)
             return;
           if (!trimmed.startsWith('*',))
             return;
+          /** Number of leading whitespace columns on the actual line; compared with `expectedIndent`. */
           const actualIndent = line.length - trimmed.length;
           if (actualIndent !== expectedIndent) {
             context.report({
@@ -103,6 +107,7 @@ export const multilineBlocks: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Comment body split into lines; the count determines whether the block is single-line. */
         const lines = getCommentLines(comment,);
         /** Minimum line count for a proper multiline comment: opener, content, closer. */
         const minMultilineLines = 3;

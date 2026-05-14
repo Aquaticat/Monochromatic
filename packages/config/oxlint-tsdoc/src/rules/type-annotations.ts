@@ -45,11 +45,13 @@ export const noTypes: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Comment body split into lines; each is scanned for the disallowed `@tag {type}` shape. */
         const lines = comment.value.split('\n',);
         lines.forEach(function checkLine(
           line,
           index,
         ): void {
+          /** Line stripped of indent and leading `*` so the regex matches at the start of the content. */
           const trimmed = line
             .trimStart()
             .replace(

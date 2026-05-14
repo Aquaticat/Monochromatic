@@ -76,6 +76,7 @@ export function createTsdocVisitor({
    * @param node - AST node to check
    */
   function check(node: Span,): void {
+    /** Located TSDoc comment for the node; only when present does the handler fire. */
     const comment = findTsdocComment({
       node,
       context,
@@ -151,12 +152,14 @@ export function createFunctionTsdocVisitor({
    * @param node - AST node to check
    */
   function check(node: Span,): void {
+    /** Parsed TSDoc bundle for the node; absent means no TSDoc and the handler is skipped. */
     const result = parseTsdocForNode({
       node,
       context,
     },);
     if (result === undefined)
       return;
+    /** Narrowed view that exposes the host AST's untyped extra properties to the handler. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const typedNode = node as Span & Record<string, unknown>;
     handler(
@@ -165,6 +168,7 @@ export function createFunctionTsdocVisitor({
     );
   }
 
+  /** Visitor object built up before the unsafe cast that satisfies the host's index-signature type. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   const visitor = {
     before() {

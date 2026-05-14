@@ -43,6 +43,7 @@ export const tagLines: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Raw lines of the comment body, including opener `/**` and closer `*\/`. */
         const lines = getCommentLines(comment,);
         /** Minimum line count for a comment that can contain tag spacing issues. */
         const minContentLines = 3;
@@ -54,9 +55,11 @@ export const tagLines: CreateOnceRule = {
          * Matches the opener's `*` column (column of `/*` + 1).
          */
         const blankLineIndent = ' '.repeat(comment.loc.start.column + 1,);
+        /** Pre-built ` * ` blank-line text inserted by the autofixer when spacing is missing. */
         const blankCommentLine = `${blankLineIndent}*`;
 
         // Check each content line (skip opener and closer)
+        /** Comment body without opener and closer; scanned for tag-spacing violations. */
         const contentLines = lines.slice(
           1,
           -1,
@@ -67,6 +70,7 @@ export const tagLines: CreateOnceRule = {
         ): void {
           if (index === 0)
             return;
+          /** Current line stripped of indent and the leading `*`, ready for tag matching. */
           const trimmed = line
             .trimStart()
             .replace(
@@ -77,9 +81,11 @@ export const tagLines: CreateOnceRule = {
           if (!trimmed.startsWith('@',))
             return;
           // Check if previous line is blank
+          /** Previous content line; required to determine whether the tag is preceded by a blank. */
           const prevLine = contentLines[index - 1];
           if (prevLine === undefined)
             return;
+          /** Previous line stripped of indent and `*`; empty string means the tag is preceded by blank. */
           const prevTrimmed = prevLine
             .trimStart()
             .replace(
@@ -88,7 +94,9 @@ export const tagLines: CreateOnceRule = {
             )
             .trimStart();
           if (prevTrimmed.length > 0) {
+            /** Match for the leading `@tag` on the current line; null when not a tag line. */
             const tagMatch = (/^(@\w+)/).exec(trimmed,);
+            /** Resolved tag string for the error message, with `@unknown` fallback for the impossible-null case. */
             const tag = tagMatch !== null ? tagMatch[1] ?? '@unknown' : '@unknown';
 
             /**

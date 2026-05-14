@@ -116,14 +116,17 @@ export function findTsdocComment({
   context,
 }: TsdocLookupParams,): Comment | undefined {
   // Fast path: getCommentsBefore works for most declarations
+  /** Leading comments returned by the standard API; scanned back-to-front for nearest TSDoc. */
   const comments = context.sourceCode.getCommentsBefore(node,);
   for (let i = comments.length - 1; i >= 0; i--) {
+    /** Single comment candidate at index `i`; checked for the TSDoc block marker. */
     const c = comments[i];
     if (c !== undefined && isTsdocBlock(c,))
       return c;
   }
 
   // Only fall back for declaration-level nodes, not expressions inside them
+  /** Node type string; gates whether the slow whole-file fallback is allowed. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const nodeType = (node as unknown as Record<string, unknown>).type as
     | string
@@ -135,13 +138,17 @@ export function findTsdocComment({
   // immediately before this node. Handles exported declarations where
   // getCommentsBefore returns nothing because the comment is before the
   // `export` keyword rather than the inner declaration.
+  /** Starting line of the declaration; comments must end exactly one line above. */
   const nodeStartLine = node.loc.start.line;
+  /** Full comment table for the file; needed because `getCommentsBefore` misses cross-scope ones. */
   const allComments = context.sourceCode.getAllComments();
 
+  /** Closest TSDoc comment found so far, tracked as the loop scans the whole comment table. */
   let best: Comment | undefined = undefined;
   for (const candidate of allComments) {
     if (!isTsdocBlock(candidate,))
       continue;
+    /** End line of the candidate comment; must immediately precede `nodeStartLine`. */
     const candidateEndLine = candidate.loc.end.line;
     if (candidateEndLine >= nodeStartLine)
       continue;
@@ -172,6 +179,7 @@ export function parseTsdocForNode({
   node,
   context,
 }: TsdocLookupParams,): TsdocParseResult | undefined {
+  /** Located TSDoc comment for the node; absent means nothing to parse. */
   const comment = findTsdocComment({
     node,
     context,
@@ -180,7 +188,9 @@ export function parseTsdocForNode({
     return undefined;
 
   // Reconstruct full comment text as the parser expects `/** ... */`
+  /** Reconstructed `/* ... *\/` form because `comment.value` strips the delimiters. */
   const commentText = `/*${comment.value}*/`;
+  /** Parser run state; holds the doc tree plus log messages forwarded to the rule. */
   const parserContext = tsdocParser.parseString(commentText,);
 
   return {

@@ -49,8 +49,10 @@ const INTERNAL_TAG_NAME = '@internal';
  * @returns true when the node's parent is an export declaration
  */
 function isDirectlyExported(node: Span,): boolean {
+  /** Narrowed view of `node` that exposes the untyped `parent` property added by the host. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const typed = node as Span & Record<string, unknown>;
+  /** Parent node, used to detect whether the function sits under an `export` declaration. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const parent = typed.parent as Record<string, unknown> | undefined;
   if (parent === undefined)
@@ -155,6 +157,7 @@ export const requireExample: CreateOnceRule = {
       /** TSDoc comment AST node for error location. */
       comment: Comment;
     },): void {
+      /** Parsed TSDoc result; undefined when the comment cannot be parsed at all. */
       const result = parseTsdocForNode({
         node,
         context,
@@ -178,6 +181,7 @@ export const requireExample: CreateOnceRule = {
      * @param node - AST node to check
      */
     function checkFunction(node: Span,): void {
+      /** Attached TSDoc comment, when present; absent means nothing to validate. */
       const comment = findTsdocComment({
         node,
         context,
@@ -194,6 +198,7 @@ export const requireExample: CreateOnceRule = {
       }
 
       // Defer: might be exported via `export { name }` seen later
+      /** Identifier of the function, used to match later `export { name }` specifiers. */
       const name = extractNodeName(node,);
       if (name !== 'anonymous') {
         functionNodes.set(
@@ -215,19 +220,23 @@ export const requireExample: CreateOnceRule = {
      * @param node - VariableDeclaration AST node
      */
     function checkVariable(node: Span,): void {
+      /** Narrowed view of the VariableDeclaration so untyped `declarations` is reachable. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const typed = node as Span & Record<string, unknown>;
+      /** Declarator list; for `const a = ..., b = ...` only the first is inspected. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const declarations = typed.declarations as Record<string, unknown>[] | undefined;
       if (declarations === undefined || declarations.length === 0)
         return;
 
+      /** First declarator; destructured here so its `init` can be inspected below. */
       const [decl,] = declarations;
       if (decl === undefined)
         return;
 
       // Only check variables whose init is a function expression or arrow.
       // AST uses null (not undefined) for missing initializers (e.g. for-of bindings).
+      /** Initializer of the first declarator; `null` for empty bindings, undefined absent. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const init = decl.init as Record<string, unknown> | null | undefined;
       if (init === undefined || init === null)
@@ -235,6 +244,7 @@ export const requireExample: CreateOnceRule = {
       if (init.type !== 'FunctionExpression' && init.type !== 'ArrowFunctionExpression')
         return;
 
+      /** Attached TSDoc comment for the variable; absent means nothing to validate. */
       const comment = findTsdocComment({
         node,
         context,
@@ -251,6 +261,7 @@ export const requireExample: CreateOnceRule = {
       }
 
       // Defer for specifier-list exports
+      /** Declared variable name, used to match later `export { name }` specifiers. */
       const name = extractNodeName(node,);
       if (name !== 'anonymous') {
         functionNodes.set(
@@ -279,14 +290,17 @@ export const requireExample: CreateOnceRule = {
       FunctionDeclaration: checkFunction,
       VariableDeclaration: checkVariable,
       ExportNamedDeclaration(node: Span,): void {
+        /** Narrowed view of the ExportNamedDeclaration so untyped `specifiers` is reachable. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const typed = node as Span & Record<string, unknown>;
+        /** Specifier list; populated only for `export { a, b }` form, absent for inline exports. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const specifiers = typed.specifiers as Record<string, unknown>[] | undefined;
         if (specifiers === undefined)
           return;
 
         for (const spec of specifiers) {
+          /** Local-name node of the specifier (`a` in `export { a as b }`). */
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const local = spec.local as Record<string, unknown> | undefined;
           if (local !== undefined && typeof local.name === 'string')

@@ -44,6 +44,7 @@ function unwrapMethodDefinition(
 function extractRawParams(
   node: Record<string, unknown>,
 ): readonly Record<string, unknown>[] {
+  /** Inner function value (for methods) or the node itself; the `.params` array lives here. */
   const target = unwrapMethodDefinition(node,);
   if (target === undefined)
     return [];
@@ -84,6 +85,7 @@ export function extractParamNames(
  */
 function extractBindingName(pattern: Record<string, unknown>,): readonly string[] {
   if (pattern.type === 'Identifier') {
+    /** Identifier text of the parameter binding; `this` is skipped because it is not a real param. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const name = pattern.name as string;
     // Skip `this` parameter in TypeScript

@@ -40,6 +40,7 @@ export const noMultiAsterisks: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Comment body split into lines; opener and closer are sliced off before scanning. */
         const lines = getCommentLines(comment,);
         // Skip first line (opening) and last line (closing)
         lines
@@ -51,6 +52,7 @@ export const noMultiAsterisks: CreateOnceRule = {
             line,
             index,
           ): void {
+            /** Leading-whitespace-stripped line; needed to detect a `**` that should be a single `*`. */
             const trimmed = line.trimStart();
             // After the leading *, check for immediate additional *
             if (trimmed.startsWith('**',) && !trimmed.startsWith('*/',)) {

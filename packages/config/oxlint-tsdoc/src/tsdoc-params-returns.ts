@@ -43,26 +43,31 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
   // because `kind` ("constructor", "get", "set", "method") is a property
   // of MethodDefinition, not of the inner FunctionExpression.
   if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
+    /** Method kind (constructor/get/set/method); read on the outer MethodDefinition before unwrap. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const kind = (node as Record<string, unknown>).kind as string | undefined;
     if (kind === 'constructor' || kind === 'set')
       return false;
   }
 
+  /** Inner function value (for methods) or the node itself; supplies the return-type info below. */
   const target = unwrapMethodDefinition(node,);
 
   if (target === undefined)
     return false;
 
   // Check for explicit void/never return type annotation
+  /** TS return-type annotation node; null when the parser observed the absence explicitly. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const returnType = target.returnType as Record<string, unknown> | undefined | null;
   if (returnType !== undefined && returnType !== null) {
+    /** Inner annotation wrapped by `returnType`; the actual TS type lives one level deeper. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const typeAnnotation = returnType.typeAnnotation as
       | Record<string, unknown>
       | undefined;
     if (typeAnnotation !== undefined) {
+      /** AST node-type tag (`TSVoidKeyword`, `TSTypeReference`, etc.) that drives the branch below. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const tsType = typeAnnotation.type as string | undefined;
       if (tsType === 'TSVoidKeyword' || tsType === 'TSNeverKeyword')
@@ -73,19 +78,24 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
        * and a single type parameter of `TSVoidKeyword` or `TSNeverKeyword`.
        */
       if (tsType === 'TSTypeReference') {
+        /** Type reference name node; used to detect the `Promise<...>` shape. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const typeName = typeAnnotation.typeName as Record<string, unknown> | undefined;
+        /** Identifier text of the reference; only `Promise` matters for the void/never special case. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const name = typeName?.name as string | undefined;
         if (name === 'Promise') {
           // oxc AST uses `typeArguments` (not `typeParameters`) for generic type arguments
+          /** Generic argument container for the `Promise<...>` reference. */
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const typeArgs = typeAnnotation.typeArguments as
             | Record<string, unknown>
             | undefined;
+          /** Concrete type parameters of `Promise<...>`; exactly one is the valid shape. */
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const params = typeArgs?.params as Record<string, unknown>[] | undefined;
           if (params !== undefined && params.length === 1) {
+            /** AST node-type of the single Promise type argument, e.g. `TSVoidKeyword`. */
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
             const innerType = params[0]?.type as string | undefined;
             if (innerType === 'TSVoidKeyword' || innerType === 'TSNeverKeyword')
@@ -112,6 +122,7 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
  * ```
  */
 export function isGeneratorFunction(node: Span & Record<string, unknown>,): boolean {
+  /** Inner function value (for methods) or the node itself; carries the `generator` flag. */
   const target = unwrapMethodDefinition(node,);
 
   if (target === undefined)

@@ -41,6 +41,7 @@ export const escapeInlineTags: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Comment body split into lines; the last (legitimate closer) is dropped before scanning. */
         const lines = getCommentLines(comment,);
         // Skip the last line which is the legitimate closing `*/`
         lines
@@ -55,6 +56,7 @@ export const escapeInlineTags: CreateOnceRule = {
             // Skip the first line opener
             if (index === 0 && line.trimEnd().endsWith('*',))
               return;
+            /** Line stripped of indent and `*` so an embedded `*\/` becomes detectable in content. */
             const trimmed = line.trimStart().replace(
               COMMENT_LINE_PREFIX,
               '',

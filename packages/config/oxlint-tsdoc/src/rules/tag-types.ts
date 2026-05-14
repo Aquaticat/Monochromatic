@@ -42,6 +42,7 @@ export const validTypes: CreateOnceRule = {
      * @param node - AST node to check
      */
     function check(node: Span,): void {
+      /** Parsed TSDoc result; only the `messages` field is consumed to surface parser errors. */
       const result = parseTsdocForNode({
         node,
         context,

@@ -36,6 +36,7 @@ function unwrapMethodDefinition(
 function extractRawParams(
   node: Record<string, unknown>,
 ): readonly Record<string, unknown>[] {
+  /** Inner function value (for methods) or the node itself; the `.params` array lives here. */
   const target = unwrapMethodDefinition(node,);
   if (target === undefined)
     return [];
@@ -67,6 +68,7 @@ function collectDestructuredNames({
   }
   if (pattern.type === 'AssignmentPattern') {
     // `{ a = defaultValue }`: unwrap to the left side
+    /** Binding side of `name = default`; recurse on this to collect the actual names. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const left = pattern.left as Record<string, unknown>;
     collectDestructuredNames({
@@ -77,6 +79,7 @@ function collectDestructuredNames({
   }
   if (pattern.type === 'RestElement') {
     // `...rest` inside destructuring
+    /** Inner binding pattern of `...rest`; recurse on this to extract its names. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const argument = pattern.argument as Record<string, unknown>;
     collectDestructuredNames({
@@ -86,6 +89,7 @@ function collectDestructuredNames({
     return;
   }
   if (pattern.type === 'TSParameterProperty') {
+    /** Inner parameter of a TS constructor `public/private` param; recurse on this. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const parameter = pattern.parameter as Record<string, unknown>;
     collectDestructuredNames({
@@ -95,6 +99,7 @@ function collectDestructuredNames({
     return;
   }
   if (pattern.type === 'ObjectPattern') {
+    /** Property list of the `{ a, b }` pattern; iterated to collect named keys. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const properties = pattern.properties as Record<string, unknown>[] | undefined;
     if (properties === undefined)
@@ -109,6 +114,7 @@ function collectDestructuredNames({
       }
       else {
         // Property node; extract the key name
+        /** Key node of a destructured property; only `Identifier` keys contribute a name. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const key = prop.key as Record<string, unknown> | undefined;
         if (key !== undefined && key.type === 'Identifier') {
@@ -121,6 +127,7 @@ function collectDestructuredNames({
   }
   if (pattern.type === 'ArrayPattern') {
     // Array destructuring: `[a, b]`: elements are binding patterns
+    /** Slot list of `[a, , c]`; `null` slots represent holes that contribute no name. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const elements = pattern.elements as (Record<string, unknown> | null)[] | undefined;
     if (elements === undefined)
@@ -162,6 +169,7 @@ function collectDestructuredNames({
 export function extractDestructuredParamNames(
   node: Span & Record<string, unknown>,
 ): ReadonlySet<string> {
+  /** Accumulator populated by the recursive walk; returned as a read-only view. */
   const names = new Set<string>();
 
   for (const param of extractRawParams(node,)) {

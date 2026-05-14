@@ -89,6 +89,7 @@ export const checkTagNames: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Raw comment body split into per-line slices; iterated to find tag occurrences. */
         const lines = comment.value.split('\n',);
         /**
          * Mutable code-fence state, kept in a `const` object so AGENTS.md's
@@ -111,10 +112,14 @@ export const checkTagNames: CreateOnceRule = {
 
           // Strip inline code and escaped @ to avoid false positives on
           // package names like `@microsoft/tsdoc` or escaped tag references
+          /** Line with inline code spans and escaped `@` sequences removed before scanning. */
           const stripped = stripInlineCodeAndEscapes(line,);
+          /** Iterable of `@word` matches in the stripped line; each becomes a candidate tag. */
           const tagMatches = stripped.matchAll(/@(\w+)/g,);
           for (const match of tagMatches) {
+            /** Recovered tag string with the leading `@` for lookup and message data. */
             const tag = `@${match[1]}`;
+            /** TSDoc-equivalent suggestion when the tag is JSDoc-only; undefined for unknowns. */
             const suggestion = JSDOC_TO_TSDOC_MAP.get(tag,);
             if (suggestion !== undefined) {
               context.report({

@@ -58,11 +58,13 @@ export const emptyTags: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Comment body split into lines; each is inspected independently for modifier-tag misuse. */
         const lines = getCommentLines(comment,);
         lines.forEach(function checkLine(
           line,
           index,
         ): void {
+          /** Line stripped of indent and `*` so the leading `@tag` (if any) is at column 0. */
           const trimmed = line
             .trimStart()
             .replace(
@@ -70,9 +72,11 @@ export const emptyTags: CreateOnceRule = {
               '',
             )
             .trimStart();
+          /** Match of `@tag <text>`; null when the line carries no tag with trailing text. */
           const tagMatch = (/^(@\w+)\s+(.+)/).exec(trimmed,);
           if (tagMatch === null)
             return;
+          /** Captured tag name and remainder; both populate the diagnostic and gate the report. */
           const {
             1: tag,
             2: rest,

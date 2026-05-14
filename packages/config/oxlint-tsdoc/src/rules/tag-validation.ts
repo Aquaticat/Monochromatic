@@ -44,14 +44,18 @@ export const checkAccess: CreateOnceRule = {
         _node,
         comment,
       ): void {
+        /** Accumulator of access tags actually present in the comment; multiple entries are a conflict. */
         const found: string[] = [];
+        /** Raw comment body searched once per access tag with the boundary-anchored pattern below. */
         const text = comment.value;
         accessTags.forEach(function findTag(tag,): void {
           // Match tag at word boundary to avoid false positives
+          /** Tag with `@` escaped for use inside the dynamic regex literal. */
           const escapedTag = tag.replace(
             '@',
             String.raw`\@`,
           );
+          /** Compiled regex that requires whitespace or line boundary around the tag. */
           const pattern = new RegExp(
             String.raw`(?:^|\s)${escapedTag}(?:\s|$|\*)`,
           );
