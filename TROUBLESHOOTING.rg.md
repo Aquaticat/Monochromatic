@@ -1,11 +1,9 @@
-# ripgrep (rg) troubleshooting
+# ripgrep `--glob` + `-l` confusion: file-name filtering and content matching are independent passes
 
-## `--glob` finds files but `-l` with a content pattern does not
+## Symptom
 
-### Problem
-
-Searching for test files with rg returns far fewer results than expected,
-appearing to skip files in directories with spaces:
+Listing test files with rg returns far fewer results than expected, and
+the missing files appear correlated with spaces in directory paths:
 
 ```bash
 # Returns 3 files -- all in paths without spaces
@@ -15,28 +13,56 @@ rg --glob '*.test.ts' -l '\.test\.' packages/
 rg --files --glob '*.test.ts' packages/
 ```
 
-The missing files seem correlated with spaces in paths,
-but spaces are a red herring.
+The spaces are a red herring; rg handles spaces in paths correctly.
+The real reason the first command returns three results is documented
+below.
 
-### Root cause
+## Root cause
 
-`--glob` and `-l` serve different purposes:
+`--glob` and `-l` participate in different stages of rg's pipeline:
 
-- `--glob '*.test.ts'` filters **which files to search** (by file name)
-- `-l '\.test\.'` searches **file contents** for the regex `\.test\.`
+- `--glob '*.test.ts'` filters **which files to search**, by file name.
+- `-l '\.test\.'` runs a regex content search for the pattern `\.test\.`
+  and lists files whose contents match.
 
-The 3 files that matched happen to contain the literal string `.test.`
-somewhere in their source code (e.g. in an import path or comment).
-The other 78 test files contain `test` (from test imports, `it(...)`)
-but never `.test.` surrounded by dots.
+The three files that survived `-l '\.test\.'` happen to contain the
+literal four-character sequence `.test.` somewhere in their text
+(typically in an import path like `'./foo.test.ts'` or a comment).
+The other 78 test files contain the word `test` (from test imports,
+`it(...)` calls, describe titles) but never the dotted form `.test.`.
 
-The spaces in directory names had no effect;
-rg handles spaces in paths correctly.
+The confusion arises because, when debugging, the natural instinct is
+to suspect path handling (spaces, special characters, symlinks) since
+the visible diff between matched and unmatched files is "path
+characters." The actual cause (a content pattern that does not match)
+is invisible until you stop searching contents and start enumerating
+files.
 
-### Fix
+## Verification
 
-Use `--files` with `--glob` to list files by name pattern,
-not `-l` with a content regex:
+Demonstrate the two operations are independent:
+
+```bash
+# Files whose NAME matches the glob (no content predicate)
+rg --files --glob '*.test.ts' packages/
+
+# Files whose CONTENTS match the regex (no name predicate)
+rg -l '\.test\.' packages/
+
+# Intersection: name matches glob AND content matches regex
+rg --glob '*.test.ts' -l '\.test\.' packages/
+```
+
+The first and second commands return supersets of the third by
+construction.
+
+`rg --debug` produces a per-file trace of which path was considered
+and why it was skipped, useful when the disconnect between expected
+and actual results is not obvious from the command line alone.
+
+## Verified workaround
+
+Use the operation that matches the intent:
 
 ```bash
 # List files whose NAME matches *.test.ts (no content search)
@@ -44,15 +70,37 @@ rg --files --glob '*.test.ts' packages/
 
 # Search file CONTENTS for "test" in files named *.test.ts
 rg --glob '*.test.ts' -l 'test' packages/
-
-# These are different operations -- don't confuse them
 ```
 
-### How this confusion arises
+Tradeoff: none. The two commands serve different needs; pick the one
+that asks the question you actually have. The pitfall is reaching for
+`-l <regex>` when the goal is "list files by name", which `--files`
+already provides without invoking the content engine.
 
-When debugging "rg can't find my files," the first instinct is to suspect
-path handling (spaces, special characters, symlinks).
-The actual cause (a content pattern that doesn't match) is invisible
-because you never see which files rg searched and rejected.
-Adding `--debug` or switching to `--files --glob` immediately reveals
-whether the issue is file discovery or content matching.
+## What does not work
+
+- Removing spaces from directory names: the spaces were never the
+  problem; the content regex never matched in the missing files
+  regardless of path shape.
+- Switching `\.test\.` to `test`: changes the result set but does not
+  fix the underlying confusion; the new pattern matches a different
+  subset of files. If the goal is "files whose name ends in
+  `.test.ts`", use `--files --glob '*.test.ts'`.
+
+## Why we do not file this upstream
+
+ripgrep's behaviour is documented and consistent with the rest of the
+content-search family (grep, ag). This entry exists for our own future
+sessions, not because ripgrep is at fault.
+
+1. **Is it really upstream's fault?** No. `--glob` filters file
+   inclusion; `-l` filters by content match. Each option does what its
+   `--help` text says.
+2. **Can upstream fix it?** Nothing to fix.
+3. **Are they supporting this use case?** Both operations are
+   supported; the user's question was misframed.
+4. **Will they likely fix it?** N/A.
+5. **Have we prototyped a minimal fix?** N/A.
+
+Decision: keep this doc as an internal reminder; do not file anything
+upstream.
